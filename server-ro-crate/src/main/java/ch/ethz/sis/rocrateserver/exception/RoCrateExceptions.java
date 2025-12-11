@@ -29,7 +29,8 @@ public enum RoCrateExceptions {
 
     NO_RESULTS_FOUND(List.of(UserUsageError), 90003, 404, "No results found"),
 
-    MALFORMED_INPUT(List.of(UserUsageError), 90004, 400, "Schema validation failed");
+    MALFORMED_INPUT(List.of(UserUsageError), 90004, 400,
+            "Malformed input, does not follow the RO-Crate format ");
 
 
 

@@ -21,6 +21,7 @@ public class SyncJob {
     @NonNull private String openBisUrl;
     @NonNull private String openBisPersonalAccessToken;
     @NonNull private String entityPermId;
+    @NonNull private String title;
 
     @NonNull private String remoteDirectoryRoot;
     @NonNull private String localDirectoryRoot;
@@ -30,11 +31,12 @@ public class SyncJob {
     private boolean skipHiddenFiles = true;
     @NonNull private ArrayList<String> hiddenPathPatterns = new ArrayList<>(getDefaultHiddenPathPatterns());
 
-    public SyncJob(@NonNull Type type, @NonNull String openBisUrl, @NonNull String openBisPersonalAccessToken, @NonNull String entityPermId, @NonNull String remoteDirectoryRoot, @NonNull String localDirectoryRoot, boolean enabled) {
+    public SyncJob(@NonNull Type type, @NonNull String openBisUrl, @NonNull String openBisPersonalAccessToken, @NonNull String entityPermId, @NonNull String title, @NonNull String remoteDirectoryRoot, @NonNull String localDirectoryRoot, boolean enabled) {
         this.enabled = enabled;
         this.localDirectoryRoot = localDirectoryRoot;
         this.remoteDirectoryRoot = remoteDirectoryRoot;
         this.entityPermId = entityPermId;
+        this.title = title;
         this.openBisPersonalAccessToken = openBisPersonalAccessToken;
         this.openBisUrl = openBisUrl;
         this.type = type;

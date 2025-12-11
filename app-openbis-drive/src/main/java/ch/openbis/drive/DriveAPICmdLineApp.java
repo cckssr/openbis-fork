@@ -37,7 +37,7 @@ public class DriveAPICmdLineApp {
      * <p>
      * Prints jobs on the standard output, one per line, fields separated by tabs
      * ./drive-app jobs
-     * ./drive-app jobs add -type='Bidirectional|Upload|Download' -dir='./dir-a/dir-b' -openBISurl='https://...' -entityPermId='123-abc-...' -personalAccessToken='098abc...' -remDir='/remote/dir/absolute-path/' -enabled=true|false  ( optional: -skipHiddenFiles=true|false with default-value: true )
+     * ./drive-app jobs add -title='Description...' -type='Bidirectional|Upload|Download' -dir='./dir-a/dir-b' -openBISurl='https://...' -entityPermId='123-abc-...' -personalAccessToken='098abc...' -remDir='/remote/dir/absolute-path/' -enabled=true|false  ( optional: -skipHiddenFiles=true|false with default-value: true )
      * ./drive-app jobs remove -dir='./dir-a/dir-b'
      * ./drive-app jobs start -dir='./dir-a/dir-b'
      * ./drive-app jobs stop -dir='./dir-a/dir-b'
@@ -157,6 +157,8 @@ public class DriveAPICmdLineApp {
             .addOption(Option.builder()
                 .option("entityPermId").longOpt("entityPermId").required(true).hasArg(true).desc("openBIS entityPermId: required").get())
             .addOption(Option.builder()
+                .option("title").longOpt("title").required(true).hasArg(true).desc("Sync-job descriptive title: required").get())
+            .addOption(Option.builder()
                 .option("personalAccessToken").longOpt("personalAccessToken").required(true).hasArg(true).desc("openBIS personal access token: required").get())
             .addOption(Option.builder()
                 .option("remDir").longOpt("remDir").required(true).hasArg(true).desc("openBIS remote directory: required").get())
@@ -203,6 +205,14 @@ public class DriveAPICmdLineApp {
             printHelp();
             return;
         }
+        String title;
+        try {
+            title = commandLine.getOptionValue("title");
+        } catch (Exception e) {
+            System.out.println("Wrong '-title=' option\n");
+            printHelp();
+            return;
+        }
         String personalAccessToken;
         try {
             personalAccessToken = commandLine.getOptionValue("personalAccessToken");
@@ -241,7 +251,7 @@ public class DriveAPICmdLineApp {
             }
         }
 
-        addJob(syncJobType, localDirectory, openBISurl, entityPermId, personalAccessToken, toServerPathString(Path.of(remoteDirectory)), enabled, skipHiddenFiles);
+        addJob(title, syncJobType, localDirectory, openBISurl, entityPermId, personalAccessToken, toServerPathString(Path.of(remoteDirectory)), enabled, skipHiddenFiles);
     }
 
     void handleRemoveJobCommand(String[] args) throws Exception {
@@ -462,7 +472,7 @@ public class DriveAPICmdLineApp {
                 config -startAtLogin=true|false -language=en|fr|de|it|es -syncInterval=120   -> sets configuration parameters: two-letter ISO-code for language, synchronization-interval in seconds (defaults: false, 'en', 120 seconds = 2 minutes)
                 
                 jobs    -> prints the currently registered synchronization-jobs
-                jobs add -type='Bidirectional|Upload|Download' -dir='./dir-a/dir-b' -openBISurl='https://...' -entityPermId='123-abc-...' -personalAccessToken='098abc...' -remDir='/remote/dir/absolute-path/' -enabled=true|false ( optional: -skipHiddenFiles=true|false with default-value: true )
+                jobs add -title='Description...' -type='Bidirectional|Upload|Download' -dir='./dir-a/dir-b' -openBISurl='https://...' -entityPermId='123-abc-...' -personalAccessToken='098abc...' -remDir='/remote/dir/absolute-path/' -enabled=true|false ( optional: -skipHiddenFiles=true|false with default-value: true )
                 jobs remove -dir='./dir-a/dir-b'
                 jobs start -dir='./dir-a/dir-b'
                 jobs stop -dir='./dir-a/dir-b'
@@ -521,9 +531,10 @@ public class DriveAPICmdLineApp {
         }
     }
 
-    void addJob(@NonNull SyncJob.Type type, @NonNull String localDirectory, @NonNull String openBISurl, @NonNull String entityPermId, @NonNull String personalAccessToken, @NonNull String remoteDirectory, boolean enabled, Boolean skipHiddenFiles) throws Exception {
+    void addJob(@NonNull String title, @NonNull SyncJob.Type type, @NonNull String localDirectory, @NonNull String openBISurl, @NonNull String entityPermId, @NonNull String personalAccessToken, @NonNull String remoteDirectory, boolean enabled, Boolean skipHiddenFiles) throws Exception {
         try ( DriveAPIClientProtobufImpl driveAPIClient = getNewDriveAPIClient() ) {
             SyncJob newSyncJob = new SyncJob();
+            newSyncJob.setTitle(title);
             newSyncJob.setType(type);
             newSyncJob.setLocalDirectoryRoot(localDirectory);
             newSyncJob.setOpenBisUrl(openBISurl);
@@ -798,6 +809,7 @@ public class DriveAPICmdLineApp {
     }
 
     void printSyncJob(@NonNull SyncJob syncJob) {
+        System.out.println("Title: " + syncJob.getTitle());
         System.out.println("Type: " + syncJob.getType());
         System.out.println("Local directory: " + syncJob.getLocalDirectoryRoot());
         System.out.println("openBIS url: " + syncJob.getOpenBisUrl());

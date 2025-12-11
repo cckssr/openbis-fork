@@ -88,7 +88,7 @@ public class SynchronizationTasksPanel extends ResizablePanel {
             syncJobs.setValue(syncJobsResult.getOk());
 
             syncJobCards.setValue(syncJobs.getValue().stream().sorted(
-                    Comparator.comparing(SyncJob::getEntityPermId)
+                    Comparator.comparing(SyncJob::getTitle)
             ).map(syncJob -> new SyncJobCard(syncJob, syncTaskListContainer)).toList());
             syncTaskListContainer.getChildren().addAll(syncJobCards.getValue());
 
@@ -276,7 +276,7 @@ public class SynchronizationTasksPanel extends ResizablePanel {
 
         syncTaskListContainer.setMaxSize(parent.getWidth() - 100, (syncJobCards.getValue().size()) * (DisplaySettings.SYNC_TASK_PANEL_JOB_CARD_HEIGHT + SYNC_JOB_CARD_SPACING));
         syncTaskListContainer.setPrefSize(parent.getWidth() - 100, (syncJobCards.getValue().size()) * (DisplaySettings.SYNC_TASK_PANEL_JOB_CARD_HEIGHT + SYNC_JOB_CARD_SPACING));
-        syncListScrollPane.setPrefHeight(syncTaskListContainer.getPrefHeight() + 50);
+        syncListScrollPane.setPrefHeight(parent.getHeight());
     }
 
     @Override

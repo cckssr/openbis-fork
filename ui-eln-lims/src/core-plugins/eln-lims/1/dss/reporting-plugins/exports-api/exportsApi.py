@@ -59,9 +59,15 @@ def displayResult(isOk, tableBuilder, result=None, errorMessage="Operation Faile
 def getDownloadUrlFromASService(sessionToken, exportModel):
     v3 = ServiceProvider.getV3ApplicationService()
     id = CustomASServiceCode('xls-export-extended')
-
     options = CustomASServiceExecutionOptions()
-    options.withParameter('nodeExportList', exportModel.get('nodeExportList'))
+
+    # The new export service doesn't understand nodes without a type and of type GROUP used by the Zenodo form to deal with publications
+    nodeExportListForService = []
+    for node in exportModel.get('nodeExportList'):
+        if node.get('type') != 'GROUP':
+            nodeExportListForService.append(node)
+    options.withParameter('nodeExportList', nodeExportListForService)
+    #options.withParameter('nodeExportList', exportModel.get('nodeExportList'))
     options.withParameter('withEmail', exportModel.get('withEmail'))
     options.withParameter('withImportCompatibility', exportModel.get('withImportCompatibility'))
     options.withParameter('formats', exportModel.get('formats'))

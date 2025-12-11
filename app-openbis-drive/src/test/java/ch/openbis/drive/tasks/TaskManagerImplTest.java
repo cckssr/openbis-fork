@@ -28,16 +28,16 @@ public class TaskManagerImplTest extends TestCase {
     @Test
     public void testClear() {
         List<SyncJob> syncJobList = List.of(
-                new SyncJob(SyncJob.Type.Bidirectional, "url", "token", "uuid", "/remotedir1", "/localdir1", true),
-                new SyncJob(SyncJob.Type.Bidirectional, "url", "token", "uuid", "/remotedir2", "/localdir2", false),
-                new SyncJob(SyncJob.Type.Bidirectional, "url", "token", "uuid", "/remotedir3", "/localdir3", true)
+                new SyncJob(SyncJob.Type.Bidirectional, "url", "token", "uuid", "title", "/remotedir1", "/localdir1", true),
+                new SyncJob(SyncJob.Type.Bidirectional, "url", "token", "uuid", "title", "/remotedir2", "/localdir2", false),
+                new SyncJob(SyncJob.Type.Bidirectional, "url", "token", "uuid", "title", "/remotedir3", "/localdir3", true)
         );
 
         taskManagerImpl.addSyncJobs(syncJobList, 1);
 
         Assert.assertEquals(
-                Set.of(new SyncJob(SyncJob.Type.Bidirectional, "url", "token", "uuid", "/remotedir1", "/localdir1", true),
-                        new SyncJob(SyncJob.Type.Bidirectional, "url", "token", "uuid", "/remotedir3", "/localdir3", true)),
+                Set.of(new SyncJob(SyncJob.Type.Bidirectional, "url", "token", "uuid", "title", "/remotedir1", "/localdir1", true),
+                        new SyncJob(SyncJob.Type.Bidirectional, "url", "token", "uuid", "title", "/remotedir3", "/localdir3", true)),
                 taskManagerImpl.jobTimers.keySet());
 
         taskManagerImpl.clear();
@@ -50,38 +50,38 @@ public class TaskManagerImplTest extends TestCase {
     @Test
     public void testAddSyncJobs() {
         List<SyncJob> syncJobList = List.of(
-                new SyncJob(SyncJob.Type.Bidirectional, "url", "token", "uuid", "/remotedir1", "/localdir1", true),
-                new SyncJob(SyncJob.Type.Bidirectional, "url", "token", "uuid", "/remotedir2", "/localdir2", false),
-                new SyncJob(SyncJob.Type.Bidirectional, "url", "token", "uuid", "/remotedir3", "/localdir3", true)
+                new SyncJob(SyncJob.Type.Bidirectional, "url", "token", "uuid", "title", "/remotedir1", "/localdir1", true),
+                new SyncJob(SyncJob.Type.Bidirectional, "url", "token", "uuid", "title", "/remotedir2", "/localdir2", false),
+                new SyncJob(SyncJob.Type.Bidirectional, "url", "token", "uuid", "title", "/remotedir3", "/localdir3", true)
         );
 
         taskManagerImpl.addSyncJobs(syncJobList, 1);
 
         Assert.assertEquals(
-                Set.of(new SyncJob(SyncJob.Type.Bidirectional, "url", "token", "uuid", "/remotedir1", "/localdir1", true),
-                new SyncJob(SyncJob.Type.Bidirectional, "url", "token", "uuid", "/remotedir3", "/localdir3", true)),
+                Set.of(new SyncJob(SyncJob.Type.Bidirectional, "url", "token", "uuid", "title", "/remotedir1", "/localdir1", true),
+                new SyncJob(SyncJob.Type.Bidirectional, "url", "token", "uuid", "title", "/remotedir3", "/localdir3", true)),
                 taskManagerImpl.jobTimers.keySet());
     }
 
     @Test
     public void testRemoveSyncJobs() {
         List<SyncJob> syncJobList = List.of(
-                new SyncJob(SyncJob.Type.Bidirectional, "url", "token", "uuid", "/remotedir1", "/localdir1", true),
-                new SyncJob(SyncJob.Type.Bidirectional, "url", "token", "uuid", "/remotedir2", "/localdir2", false),
-                new SyncJob(SyncJob.Type.Bidirectional, "url", "token", "uuid", "/remotedir3", "/localdir3", true)
+                new SyncJob(SyncJob.Type.Bidirectional, "url", "token", "uuid", "title", "/remotedir1", "/localdir1", true),
+                new SyncJob(SyncJob.Type.Bidirectional, "url", "token", "uuid", "title", "/remotedir2", "/localdir2", false),
+                new SyncJob(SyncJob.Type.Bidirectional, "url", "token", "uuid", "title", "/remotedir3", "/localdir3", true)
         );
 
         taskManagerImpl.addSyncJobs(syncJobList, 1);
 
         Assert.assertEquals(
-                Set.of(new SyncJob(SyncJob.Type.Bidirectional, "url", "token", "uuid", "/remotedir1", "/localdir1", true),
-                        new SyncJob(SyncJob.Type.Bidirectional, "url", "token", "uuid", "/remotedir3", "/localdir3", true)),
+                Set.of(new SyncJob(SyncJob.Type.Bidirectional, "url", "token", "uuid", "title", "/remotedir1", "/localdir1", true),
+                        new SyncJob(SyncJob.Type.Bidirectional, "url", "token", "uuid", "title", "/remotedir3", "/localdir3", true)),
                 taskManagerImpl.jobTimers.keySet());
 
-        taskManagerImpl.removeSyncJobs(List.of(new SyncJob(SyncJob.Type.Bidirectional, "url", "token", "uuid", "/remotedir1", "/localdir1", true)));
+        taskManagerImpl.removeSyncJobs(List.of(new SyncJob(SyncJob.Type.Bidirectional, "url", "token", "uuid", "title", "/remotedir1", "/localdir1", true)));
 
         Assert.assertEquals(
-                Set.of(new SyncJob(SyncJob.Type.Bidirectional, "url", "token", "uuid", "/remotedir3", "/localdir3", true)),
+                Set.of(new SyncJob(SyncJob.Type.Bidirectional, "url", "token", "uuid", "title", "/remotedir3", "/localdir3", true)),
                 taskManagerImpl.jobTimers.keySet());
     }
 }

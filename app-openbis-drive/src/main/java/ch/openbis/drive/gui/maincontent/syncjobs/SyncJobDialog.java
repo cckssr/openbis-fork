@@ -48,23 +48,25 @@ public class SyncJobDialog extends Dialog<SyncJob> {
     final List<SyncJob> currentSyncJobs;
 
     final TextField openbisServerUrlValue;
+    final TextField titleValue;
     final TextField openbisEntityIdValue;
     final TextField openbisServerDirectoryValue;
     final TextField personalAccessTokenValue;
     final TextField localDirectoryValue;
-    final SimpleObjectProperty<SyncJob.Type> selectedSyncJobType = new SimpleObjectProperty<>(SyncJob.Type.Bidirectional);
+    final SimpleObjectProperty<SyncJob.Type> selectedSyncJobType = new SimpleObjectProperty<>(SyncJob.Type.Download);
     final CheckBox enabledCheckBox;
     final CheckBox skipHiddenFilesCheckBox;
     final TextArea hiddenPathPatterns;
 
     final BooleanProperty openbisUrlPropertyError = new SimpleBooleanProperty(false);
+    final BooleanProperty titlePropertyError = new SimpleBooleanProperty(false);
     final BooleanProperty entityIdPropertyError = new SimpleBooleanProperty(false);
     final BooleanProperty remoteDirectoryPropertyError = new SimpleBooleanProperty(false);
     final BooleanProperty personalAccessTokenPropertyError = new SimpleBooleanProperty(false);
     final BooleanProperty localDirectoryPropertyError = new SimpleBooleanProperty(false);
     final BooleanProperty hiddenPathPatternPropertyError = new SimpleBooleanProperty(false);
     final List<BooleanProperty> validationErrors = List.of(
-            openbisUrlPropertyError, entityIdPropertyError, remoteDirectoryPropertyError, personalAccessTokenPropertyError, localDirectoryPropertyError, hiddenPathPatternPropertyError);
+            openbisUrlPropertyError, titlePropertyError, entityIdPropertyError, remoteDirectoryPropertyError, personalAccessTokenPropertyError, localDirectoryPropertyError, hiddenPathPatternPropertyError);
     final BooleanBinding allValid = Bindings.createBooleanBinding(
             () -> validationErrors.stream().noneMatch(BooleanProperty::getValue), validationErrors.toArray(BooleanProperty[]::new));
 
@@ -87,7 +89,7 @@ public class SyncJobDialog extends Dialog<SyncJob> {
 
         VBox content = new VBox();
         content.getStyleClass().add(DisplaySettings.MAIN_CONTENT_PADDED_FRAME_CLASS);
-        content.setSpacing(50);
+        content.setSpacing(30);
 
         Label description = new Label();
         description.textProperty().bind(i18n.createStringBinding(
@@ -95,10 +97,17 @@ public class SyncJobDialog extends Dialog<SyncJob> {
                         "sync_tasks.modal_panel.add_new_sync_task_description"
         ));
 
+        VBox headerBox = new VBox();
         HBox textParametersBox = new HBox();
         textParametersBox.setSpacing(80);
         VBox leftTextParametersBox = new VBox();
         VBox rightTextParametersBox = new VBox();
+
+        Label titleLabel = new Label();
+        titleLabel.textProperty().bind(i18n.createStringBinding("sync_tasks.modal_panel.sync_task_modal.title"));
+        titleLabel.setPadding(new Insets(30, 0, 0, 0));
+        titleValue = getTitleTextField();
+        headerBox.getChildren().addAll(description, titleLabel, titleValue);
 
         Label openbisServerUrlLabel = new Label();
         openbisServerUrlLabel.textProperty().bind(i18n.createStringBinding("sync_tasks.modal_panel.sync_task_modal.openbis_server_url"));
@@ -134,7 +143,7 @@ public class SyncJobDialog extends Dialog<SyncJob> {
 
         enabledCheckBox = getEnableCheckBox(i18n);
 
-        content.getChildren().add(description);
+        content.getChildren().add(headerBox);
         content.getChildren().add(textParametersBox);
         content.getChildren().add(syncModeChoiceBox);
         content.getChildren().add(enabledCheckBox);
@@ -181,6 +190,7 @@ public class SyncJobDialog extends Dialog<SyncJob> {
         setResultConverter((dialogButton) -> {
             if (dialogButton.getButtonData().getTypeCode().equals(ButtonType.APPLY.getButtonData().getTypeCode())) {
                 SyncJob newSyncJob = new SyncJob();
+                newSyncJob.setTitle(titleValue.getText());
                 newSyncJob.setEnabled(enabledCheckBox.isSelected());
                 newSyncJob.setOpenBisUrl(openbisServerUrlValue.getText());
                 newSyncJob.setEntityPermId(openbisEntityIdValue.getText());
@@ -308,15 +318,15 @@ public class SyncJobDialog extends Dialog<SyncJob> {
 
         ToggleGroup syncModeToggleGroup = new ToggleGroup();
 
-        RadioButton bidirectionalChoice = new RadioButton();
-        bidirectionalChoice.setToggleGroup(syncModeToggleGroup);
-        bidirectionalChoice.selectedProperty().addListener((observable, oldValue, newValue) -> {
+        RadioButton downloadChoice = new RadioButton();
+        downloadChoice.setToggleGroup(syncModeToggleGroup);
+        downloadChoice.selectedProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue) {
-                selectedSyncJobType.setValue(SyncJob.Type.Bidirectional);
+                selectedSyncJobType.setValue(SyncJob.Type.Download);
             }
         });
-        bidirectionalChoice.setSelected(true);
-        bidirectionalChoice.textProperty().bind(i18n.createStringBinding("main_panel.sync_tasks.sync_job_card.mode.bidirectional"));
+        downloadChoice.setSelected(true);
+        downloadChoice.textProperty().bind(i18n.createStringBinding("main_panel.sync_tasks.sync_job_card.mode.download"));
 
         RadioButton uploadChoice = new RadioButton();
         uploadChoice.setToggleGroup(syncModeToggleGroup);
@@ -327,14 +337,14 @@ public class SyncJobDialog extends Dialog<SyncJob> {
         });
         uploadChoice.textProperty().bind(i18n.createStringBinding("main_panel.sync_tasks.sync_job_card.mode.upload"));
 
-        RadioButton downloadChoice = new RadioButton();
-        downloadChoice.setToggleGroup(syncModeToggleGroup);
-        downloadChoice.selectedProperty().addListener((observable, oldValue, newValue) -> {
+        RadioButton bidirectionalChoice = new RadioButton();
+        bidirectionalChoice.setToggleGroup(syncModeToggleGroup);
+        bidirectionalChoice.selectedProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue) {
-                selectedSyncJobType.setValue(SyncJob.Type.Download);
+                selectedSyncJobType.setValue(SyncJob.Type.Bidirectional);
             }
         });
-        downloadChoice.textProperty().bind(i18n.createStringBinding("main_panel.sync_tasks.sync_job_card.mode.download"));
+        bidirectionalChoice.textProperty().bind(i18n.createStringBinding("main_panel.sync_tasks.sync_job_card.mode.bidirectional"));
 
         selectedSyncJobType.addListener(((observableValue, oldValue, newValue) -> {
             if(oldValue != newValue && newValue != null) {
@@ -349,7 +359,7 @@ public class SyncJobDialog extends Dialog<SyncJob> {
             selectedSyncJobType.setValue(editedSyncJob.getType());
         }
 
-        syncModeChoiceBox.getChildren().addAll(syncModeChoiceLabel, bidirectionalChoice, uploadChoice, downloadChoice);
+        syncModeChoiceBox.getChildren().addAll(syncModeChoiceLabel, downloadChoice, uploadChoice, bidirectionalChoice);
         return syncModeChoiceBox;
     }
 
@@ -456,6 +466,17 @@ public class SyncJobDialog extends Dialog<SyncJob> {
         }
     }
 
+    TextField getTitleTextField() {
+        TextField titleValue = new TextField();
+        titleValue.setPrefWidth(350);
+        titleValue.setMaxWidth(350);
+        addValidationLayerToTextInput(titleValue, (textInput) -> validateTitleValue(textInput.getText()), titlePropertyError);
+        if (editedSyncJob != null) {
+            titleValue.setText(editedSyncJob.getTitle());
+        }
+        return titleValue;
+    }
+
     TextField getEntityIdTextField() {
         TextField openbisEntityIdValue = new TextField();
         openbisEntityIdValue.setPrefWidth(350);
@@ -464,6 +485,18 @@ public class SyncJobDialog extends Dialog<SyncJob> {
             openbisEntityIdValue.setText(editedSyncJob.getEntityPermId());
         }
         return openbisEntityIdValue;
+    }
+
+    String[] validateTitleValue(String titleValue) {
+        if(titleValue == null || titleValue.isBlank()) {
+            return new String[] { "error_tooltip.required_value" };
+        } else {
+            if(titleValue.length() > MAX_TEXT_INPUT_LENGTH) {
+                return new String[] { "error_tooltip.too_long_text_input" };
+            } else {
+                return null;
+            }
+        }
     }
 
     String[] validateEntityIdValue(String entityIdInput) {
@@ -577,6 +610,7 @@ public class SyncJobDialog extends Dialog<SyncJob> {
         doValidationOnTextInputNode(personalAccessTokenValue, (textInput) -> validatePersonalAccessTokenValue(textInput.getText()), personalAccessTokenPropertyError);        
         doValidationOnTextInputNode(openbisServerDirectoryValue, (textInput) -> validateRemoteDirectoryValue(textInput.getText()), remoteDirectoryPropertyError);
         doValidationOnTextInputNode(openbisEntityIdValue, (textInput) -> validateEntityIdValue(textInput.getText()), entityIdPropertyError);
+        doValidationOnTextInputNode(titleValue, (textInput) -> validateTitleValue(textInput.getText()), titlePropertyError);
         doValidationOnTextInputNode(openbisServerUrlValue, (textInput) -> validateOpenbisServerUrlValue(textInput.getText()), openbisUrlPropertyError);
         doValidationOnTextInputNode(hiddenPathPatterns, (textInput) -> validateHiddenPathPatterns(textInput.getText()), hiddenPathPatternPropertyError);
     }

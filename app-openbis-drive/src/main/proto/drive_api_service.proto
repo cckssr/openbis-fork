@@ -19,6 +19,7 @@ message SyncJob {
     bool enabled = 7;
     bool skip_hidden_files = 8;
     HiddenPathPatterns hidden_path_patterns = 9;
+    string title = 10;
 
     enum Type {
       BIDIRECTIONAL = 0;

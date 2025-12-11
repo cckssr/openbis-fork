@@ -135,9 +135,10 @@ public class DriveAPICmdLineAppTest {
 
     @Test
     public void testHandleAddJobCommand() throws Exception {
-        Mockito.doNothing().when(driveAPICmdLineApp).addJob(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean(), Mockito.any());
+        Mockito.doNothing().when(driveAPICmdLineApp).addJob(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean(), Mockito.any());
 
         driveAPICmdLineApp.handleAddJobCommand(new String[] { "jobs" , "add",
+                "-title=MyTitle",
                 "-type=Bidirectional",
                 "-dir=/local-dir",
                 "-remDir=/remote-dir",
@@ -147,6 +148,7 @@ public class DriveAPICmdLineAppTest {
                 "-enabled=true",
         });
         Mockito.verify(driveAPICmdLineApp, Mockito.times(1)).addJob(
+                "MyTitle",
                 SyncJob.Type.Bidirectional,
                 "/local-dir",
                 "http://url",
@@ -168,7 +170,7 @@ public class DriveAPICmdLineAppTest {
                 "-enabled=true",
         });
         Mockito.verify(driveAPICmdLineApp, Mockito.times(0)).addJob(
-                Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean(), Mockito.any()
+                Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean(), Mockito.any()
         );
         Mockito.verify(driveAPICmdLineApp, Mockito.times(1)).printHelp();
         Mockito.clearInvocations(driveAPICmdLineApp);
@@ -360,7 +362,7 @@ public class DriveAPICmdLineAppTest {
         settings.setStartAtLogin(true);
         settings.setLanguage("es");
         settings.setSyncInterval(37);
-        SyncJob syncJob = new SyncJob(SyncJob.Type.Upload, "http://url", "tkn", "1234", "/remDir", "/dir", true);
+        SyncJob syncJob = new SyncJob(SyncJob.Type.Upload, "http://url", "tkn", "1234", "title", "/remDir", "/dir", true);
         settings.setJobs(new ArrayList<>(List.of(
                 syncJob
         )));
@@ -393,7 +395,7 @@ public class DriveAPICmdLineAppTest {
                     settings.setStartAtLogin(false);
                     settings.setLanguage("es");
                     settings.setSyncInterval(37);
-                    SyncJob syncJob = new SyncJob(SyncJob.Type.Upload, "http://url", "tkn", "1234", "/remDir", "/dir", true);
+                    SyncJob syncJob = new SyncJob(SyncJob.Type.Upload, "http://url", "tkn", "1234", "title", "/remDir", "/dir", true);
                     settings.setJobs(new ArrayList<>(List.of(
                             syncJob
                     )));
@@ -427,10 +429,10 @@ public class DriveAPICmdLineAppTest {
         Mockito.doNothing().when(driveAPIClient).addSyncJobs(Mockito.any());
         Mockito.doNothing().when(driveAPICmdLineApp).printJobs();
 
-        driveAPICmdLineApp.addJob(SyncJob.Type.Download, "/loc-dir", "http://URL", "abcd-1234", "tkn", "/remDIR", true, null);
+        driveAPICmdLineApp.addJob("title", SyncJob.Type.Download, "/loc-dir", "http://URL", "abcd-1234", "tkn", "/remDIR", true, null);
 
         Mockito.verify(driveAPIClient, Mockito.times(1)).addSyncJobs(List.of(
-                new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "/remDIR", "/loc-dir", true)
+                new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "title", "/remDIR", "/loc-dir", true)
         ));
         Mockito.verify(driveAPICmdLineApp, Mockito.times(1)).printJobs();
     }
@@ -441,16 +443,16 @@ public class DriveAPICmdLineAppTest {
         Mockito.doNothing().when(driveAPICmdLineApp).printJobs();
         Mockito.doReturn(
                 List.of(
-                        new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "/remDIR", "/loc-dir", true),
-                        new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "/remDIR", "/loc-dir2", true),
-                        new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "/remDIR", "/loc-dir3", true)
+                        new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "title", "/remDIR", "/loc-dir", true),
+                        new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "title", "/remDIR", "/loc-dir2", true),
+                        new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "title", "/remDIR", "/loc-dir3", true)
                 )
         ).when(driveAPIClient).getSyncJobs();
 
         driveAPICmdLineApp.removeJob("/loc-dir2");
 
         Mockito.verify(driveAPIClient, Mockito.times(1)).removeSyncJobs(Collections.singletonList(
-                new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "/remDIR", "/loc-dir2", true)
+                new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "title", "/remDIR", "/loc-dir2", true)
                 ));
         Mockito.verify(driveAPICmdLineApp, Mockito.times(1)).printJobs();
     }
@@ -461,16 +463,16 @@ public class DriveAPICmdLineAppTest {
         Mockito.doNothing().when(driveAPICmdLineApp).printJobs();
         Mockito.doReturn(
                 List.of(
-                        new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "/remDIR", "/loc-dir", true),
-                        new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "/remDIR", "/loc-dir2", true),
-                        new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "/remDIR", "/loc-dir3", true)
+                        new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "title", "/remDIR", "/loc-dir", true),
+                        new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "title", "/remDIR", "/loc-dir2", true),
+                        new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "title", "/remDIR", "/loc-dir3", true)
                 )
         ).when(driveAPIClient).getSyncJobs();
 
         driveAPICmdLineApp.startJob("/loc-dir2");
 
         Mockito.verify(driveAPIClient, Mockito.times(1)).startSyncJobs(Collections.singletonList(
-                new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "/remDIR", "/loc-dir2", true)
+                new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "title", "/remDIR", "/loc-dir2", true)
         ));
         Mockito.verify(driveAPICmdLineApp, Mockito.times(1)).printJobs();
     }
@@ -481,16 +483,16 @@ public class DriveAPICmdLineAppTest {
         Mockito.doNothing().when(driveAPICmdLineApp).printJobs();
         Mockito.doReturn(
                 List.of(
-                        new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "/remDIR", "/loc-dir", true),
-                        new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "/remDIR", "/loc-dir2", true),
-                        new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "/remDIR", "/loc-dir3", true)
+                        new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "title", "/remDIR", "/loc-dir", true),
+                        new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "title", "/remDIR", "/loc-dir2", true),
+                        new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "title", "/remDIR", "/loc-dir3", true)
                 )
         ).when(driveAPIClient).getSyncJobs();
 
         driveAPICmdLineApp.stopJob("/loc-dir2");
 
         Mockito.verify(driveAPIClient, Mockito.times(1)).stopSyncJobs(Collections.singletonList(
-                new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "/remDIR", "/loc-dir2", true)
+                new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "title", "/remDIR", "/loc-dir2", true)
         ));
         Mockito.verify(driveAPICmdLineApp, Mockito.times(1)).printJobs();
     }
@@ -503,9 +505,9 @@ public class DriveAPICmdLineAppTest {
         settings.setLanguage("es");
         settings.setSyncInterval(37);
         List<SyncJob> toBeReturnedSyncJobs = List.of(
-                new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "/remDIR", "/loc-dir", true),
-                new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "/remDIR", "/loc-dir2", true),
-                new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "/remDIR", "/loc-dir3", true)
+                new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "title", "/remDIR", "/loc-dir", true),
+                new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "title", "/remDIR", "/loc-dir2", true),
+                new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "title", "/remDIR", "/loc-dir3", true)
         );
         settings.setJobs(new ArrayList<>(toBeReturnedSyncJobs));
         Mockito.doNothing().when(driveAPICmdLineApp).printSyncJob(Mockito.any());
@@ -595,7 +597,7 @@ public class DriveAPICmdLineAppTest {
         System.setOut(new PrintStream(bo));
 
         driveAPICmdLineApp.printSyncJob(
-                new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "/remDIR", "/loc-dir", true));
+                new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "title", "/remDIR", "/loc-dir", true));
         bo.flush();
         String allWrittenLines = new String(bo.toByteArray());
         Assert.assertTrue(allWrittenLines.contains("Download"));
@@ -603,7 +605,9 @@ public class DriveAPICmdLineAppTest {
         Assert.assertTrue(allWrittenLines.contains("tkn"));
         Assert.assertTrue(allWrittenLines.contains("/remDIR"));
         Assert.assertTrue(allWrittenLines.contains("/loc-dir"));
-        Assert.assertTrue(allWrittenLines.contains("true"));
+        Assert.assertTrue(allWrittenLines.contains("Enabled: true"));
+        Assert.assertTrue(allWrittenLines.contains("Skip hidden files: true"));
+        Assert.assertTrue(allWrittenLines.contains("title"));
     }
 
     @Test
@@ -695,9 +699,9 @@ public class DriveAPICmdLineAppTest {
     public void testShowHiddenPathPatterns() throws Exception {
         Mockito.doNothing().when(driveAPICmdLineApp).printSyncJob(Mockito.any());
         List<SyncJob> toBeReturnedSyncJobs = List.of(
-                new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "/remDIR", "/loc-dir", true),
-                new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "/remDIR", "/loc-dir2", true, true, new ArrayList<>(List.of("^/hidden/?", "hidden2\\.txt$"))),
-                new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "/remDIR", "/loc-dir3", true)
+                new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "title", "/remDIR", "/loc-dir", true),
+                new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "title", "/remDIR", "/loc-dir2", true, true, new ArrayList<>(List.of("^/hidden/?", "hidden2\\.txt$"))),
+                new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "title", "/remDIR", "/loc-dir3", true)
         );
         Mockito.doNothing().when(driveAPICmdLineApp).printSyncJob(Mockito.any());
 
@@ -723,9 +727,9 @@ public class DriveAPICmdLineAppTest {
     public void testShowHiddenPathPatternsNotFound() throws Exception {
         Mockito.doNothing().when(driveAPICmdLineApp).printSyncJob(Mockito.any());
         List<SyncJob> toBeReturnedSyncJobs = List.of(
-                new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "/remDIR", "/loc-dir", true),
-                new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "/remDIR", "/loc-dir2", true, true, new ArrayList<>(List.of("^/hidden/?", "hidden2\\.txt$"))),
-                new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "/remDIR", "/loc-dir3", true)
+                new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "title", "/remDIR", "/loc-dir", true),
+                new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "title", "/remDIR", "/loc-dir2", true, true, new ArrayList<>(List.of("^/hidden/?", "hidden2\\.txt$"))),
+                new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "title", "/remDIR", "/loc-dir3", true)
         );
         Mockito.doNothing().when(driveAPICmdLineApp).printSyncJob(Mockito.any());
 
@@ -751,9 +755,9 @@ public class DriveAPICmdLineAppTest {
     public void testResetHiddenPathPatterns() throws Exception {
         Mockito.doNothing().when(driveAPICmdLineApp).printSyncJob(Mockito.any());
         List<SyncJob> toBeReturnedSyncJobs = List.of(
-                new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "/remDIR", "/loc-dir", true),
-                new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "/remDIR", "/loc-dir2", true, true, new ArrayList<>(List.of("^/hidden/?", "hidden2\\.txt$"))),
-                new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "/remDIR", "/loc-dir3", true)
+                new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "title", "/remDIR", "/loc-dir", true),
+                new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "title", "/remDIR", "/loc-dir2", true, true, new ArrayList<>(List.of("^/hidden/?", "hidden2\\.txt$"))),
+                new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "title", "/remDIR", "/loc-dir3", true)
         );
         Mockito.doNothing().when(driveAPICmdLineApp).printSyncJob(Mockito.any());
         Mockito.doNothing().when(driveAPICmdLineApp).showHiddenPathPatterns(Mockito.any());
@@ -767,7 +771,7 @@ public class DriveAPICmdLineAppTest {
         ArgumentCaptor<List<SyncJob>> syncJobArgumentCaptor = ArgumentCaptor.forClass(List.class);
         Mockito.verify(driveAPIClient, Mockito.times(1)).removeSyncJobs(syncJobArgumentCaptor.capture());
         Assert.assertEquals("/loc-dir2", syncJobArgumentCaptor.getValue().get(0).getLocalDirectoryRoot());
-        Mockito.verify(driveAPIClient, Mockito.times(1)).addSyncJobs(Collections.singletonList(new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "/remDIR", "/loc-dir2", true, true, new ArrayList<>(SyncJob.getDefaultHiddenPathPatterns()))));
+        Mockito.verify(driveAPIClient, Mockito.times(1)).addSyncJobs(Collections.singletonList(new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "title", "/remDIR", "/loc-dir2", true, true, new ArrayList<>(SyncJob.getDefaultHiddenPathPatterns()))));
         Mockito.verify(driveAPICmdLineApp, Mockito.times(1)).showHiddenPathPatterns("/loc-dir2");
     }
 
@@ -775,9 +779,9 @@ public class DriveAPICmdLineAppTest {
     public void testSetHiddenPathPatterns() throws Exception {
         Mockito.doNothing().when(driveAPICmdLineApp).printSyncJob(Mockito.any());
         List<SyncJob> toBeReturnedSyncJobs = List.of(
-                new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "/remDIR", "/loc-dir", true),
-                new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "/remDIR", "/loc-dir2", true, true, new ArrayList<>(List.of("^/hidden/?", "hidden2\\.txt$"))),
-                new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "/remDIR", "/loc-dir3", true)
+                new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "title", "/remDIR", "/loc-dir", true),
+                new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "title", "/remDIR", "/loc-dir2", true, true, new ArrayList<>(List.of("^/hidden/?", "hidden2\\.txt$"))),
+                new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "title", "/remDIR", "/loc-dir3", true)
         );
         Mockito.doNothing().when(driveAPICmdLineApp).printSyncJob(Mockito.any());
         Mockito.doNothing().when(driveAPICmdLineApp).showHiddenPathPatterns(Mockito.any());
@@ -791,7 +795,7 @@ public class DriveAPICmdLineAppTest {
         ArgumentCaptor<List<SyncJob>> syncJobArgumentCaptor = ArgumentCaptor.forClass(List.class);
         Mockito.verify(driveAPIClient, Mockito.times(1)).removeSyncJobs(syncJobArgumentCaptor.capture());
         Assert.assertEquals("/loc-dir2", syncJobArgumentCaptor.getValue().get(0).getLocalDirectoryRoot());
-        Mockito.verify(driveAPIClient, Mockito.times(1)).addSyncJobs(Collections.singletonList(new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "/remDIR", "/loc-dir2", true, true, new ArrayList<>(List.of("^/root/?", "^/boot/?", "\\.exe$")))));
+        Mockito.verify(driveAPIClient, Mockito.times(1)).addSyncJobs(Collections.singletonList(new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "title", "/remDIR", "/loc-dir2", true, true, new ArrayList<>(List.of("^/root/?", "^/boot/?", "\\.exe$")))));
         Mockito.verify(driveAPICmdLineApp, Mockito.times(1)).showHiddenPathPatterns("/loc-dir2");
     }
 }

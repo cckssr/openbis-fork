@@ -52,8 +52,8 @@ public class DriveAPIServerImplTest {
     synchronized public void setAndGetSettingsTest() {
         Settings settings1 = Settings.defaultSettings();
 
-        SyncJob syncJob1 = new SyncJob(SyncJob.Type.Bidirectional, "url1", "token1", "id1", "/remotedir1", "/localdir1", false);
-        SyncJob syncJob2 = new SyncJob(SyncJob.Type.Bidirectional, "url2", "token2", "id2", "/remotedir2", "/localdir2", true);
+        SyncJob syncJob1 = new SyncJob(SyncJob.Type.Bidirectional, "url1", "token1", "id1", "title", "/remotedir1", "/localdir1", false);
+        SyncJob syncJob2 = new SyncJob(SyncJob.Type.Bidirectional, "url2", "token2", "id2", "title", "/remotedir2", "/localdir2", true);
         Settings settings2 = new Settings(true, "it", 15, new ArrayList<>(List.of(syncJob1, syncJob2)));
 
         driveAPIServerImpl.setSettings(settings1);
@@ -78,8 +78,8 @@ public class DriveAPIServerImplTest {
     synchronized public void getSyncJobsTest() {
         Settings settings1 = Settings.defaultSettings();
 
-        SyncJob syncJob1 = new SyncJob(SyncJob.Type.Bidirectional, "url1", "token1", "id1", "remotedir1", "/localdir1", true);
-        SyncJob syncJob2 = new SyncJob(SyncJob.Type.Bidirectional, "url2", "token2", "id2", "remotedir2", "/localdir2", false);
+        SyncJob syncJob1 = new SyncJob(SyncJob.Type.Bidirectional, "url1", "token1", "id1", "title", "remotedir1", "/localdir1", true);
+        SyncJob syncJob2 = new SyncJob(SyncJob.Type.Bidirectional, "url2", "token2", "id2", "title", "remotedir2", "/localdir2", false);
         Settings settings2 = new Settings(true, "it", 15, new ArrayList<>(List.of(syncJob1, syncJob2)));
 
         Mockito.doReturn(settings1.getJobs()).when(settingsManager).getSyncJobs();
@@ -94,7 +94,7 @@ public class DriveAPIServerImplTest {
         Settings settings = new Settings(true, "it", 15, new ArrayList<>());
         Mockito.doReturn(settings).when(settingsManager).getSettings();
 
-        SyncJob syncJob1 = new SyncJob(SyncJob.Type.Bidirectional, "url1", "token1", "id1", "/remotedir1", "/localdir1", false);
+        SyncJob syncJob1 = new SyncJob(SyncJob.Type.Bidirectional, "url1", "token1", "id1", "title", "/remotedir1", "/localdir1", false);
         driveAPIServerImpl.addSyncJobs(List.of(syncJob1));
         Mockito.verify(settingsManager, Mockito.times(1)).addSyncJobs(List.of(syncJob1));
         Mockito.verify(taskManager, Mockito.times(1)).addSyncJobs(List.of(syncJob1), 15);
@@ -102,8 +102,8 @@ public class DriveAPIServerImplTest {
         Mockito.clearInvocations(settingsManager);
         Mockito.clearInvocations(taskManager);
 
-        SyncJob syncJob2 = new SyncJob(SyncJob.Type.Bidirectional, "url2", "token2", "id2", "remotedir2", "/localdir2", false);
-        SyncJob syncJob3 = new SyncJob(SyncJob.Type.Bidirectional, "url3", "token3", "id3", "/remotedir3", "/localdir3", true);
+        SyncJob syncJob2 = new SyncJob(SyncJob.Type.Bidirectional, "url2", "token2", "id2", "title", "remotedir2", "/localdir2", false);
+        SyncJob syncJob3 = new SyncJob(SyncJob.Type.Bidirectional, "url3", "token3", "id3", "title", "/remotedir3", "/localdir3", true);
         driveAPIServerImpl.addSyncJobs(List.of(syncJob2, syncJob3));
         Mockito.verify(settingsManager, Mockito.times(1)).addSyncJobs(List.of(syncJob2, syncJob3));
         Mockito.verify(taskManager, Mockito.times(1)).addSyncJobs(List.of(syncJob2, syncJob3), 15);
@@ -114,21 +114,21 @@ public class DriveAPIServerImplTest {
         DriveAPIServerImpl driveAPIServerWithRealSettingsManager = new DriveAPIServerImpl(new SettingsManager(configuration, syncJobEventDAO, notificationManager), notificationManager, taskManager, syncJobEventDAO);
         driveAPIServerWithRealSettingsManager.setSettings(Settings.defaultSettings());
 
-        SyncJob syncJob1 = new SyncJob(SyncJob.Type.Bidirectional, "url1", "token1", "id1", "/remotedir1", "/localdir1", false);
+        SyncJob syncJob1 = new SyncJob(SyncJob.Type.Bidirectional, "url1", "token1", "id1", "title", "/remotedir1", "/localdir1", false);
         driveAPIServerWithRealSettingsManager.addSyncJobs(List.of(syncJob1));
 
         Assert.assertEquals(List.of(syncJob1), driveAPIServerWithRealSettingsManager.getSettings().getJobs());
 
-        SyncJob syncJob2 = new SyncJob(SyncJob.Type.Bidirectional, "url2", "token2", "id2", "/remotedir2", "/localdir1", true);
+        SyncJob syncJob2 = new SyncJob(SyncJob.Type.Bidirectional, "url2", "token2", "id2", "title", "/remotedir2", "/localdir1", true);
         driveAPIServerWithRealSettingsManager.addSyncJobs(List.of(syncJob2));
     }
 
     @Test
     synchronized public void removeSyncJobTest() {
 
-        SyncJob syncJob1 = new SyncJob(SyncJob.Type.Bidirectional, "url1", "token1", "id1", "/remotedir1", "/localdir1", true);
-        SyncJob syncJob2 = new SyncJob(SyncJob.Type.Bidirectional, "url2", "token2", "id2", "/remotedir2", "/localdir2", false);
-        SyncJob syncJob3 = new SyncJob(SyncJob.Type.Bidirectional, "url3", "token3", "id3", "/remotedir3", "/localdir3", true);
+        SyncJob syncJob1 = new SyncJob(SyncJob.Type.Bidirectional, "url1", "token1", "id1", "title", "/remotedir1", "/localdir1", true);
+        SyncJob syncJob2 = new SyncJob(SyncJob.Type.Bidirectional, "url2", "token2", "id2", "title", "/remotedir2", "/localdir2", false);
+        SyncJob syncJob3 = new SyncJob(SyncJob.Type.Bidirectional, "url3", "token3", "id3", "title", "/remotedir3", "/localdir3", true);
 
 
         driveAPIServerImpl.removeSyncJobs(List.of(syncJob1));
@@ -145,13 +145,13 @@ public class DriveAPIServerImplTest {
 
     @Test
     synchronized public void startSyncJobTest() {
-        SyncJob syncJob1 = new SyncJob(SyncJob.Type.Bidirectional, "url1", "token1", "id1", "/remotedir1", "/localdir1", true);
-        SyncJob syncJob2 = new SyncJob(SyncJob.Type.Bidirectional, "url2", "token2", "id2", "/remotedir2", "/localdir2", false);
-        SyncJob syncJob3 = new SyncJob(SyncJob.Type.Bidirectional, "url3", "token3", "id3", "/remotedir3", "/localdir3", false);
-        SyncJob syncJob4 = new SyncJob(SyncJob.Type.Bidirectional, "url4", "token1", "id1", "/remotedir1", "/localdir4", true);
-        SyncJob syncJob5 = new SyncJob(SyncJob.Type.Bidirectional, "url5", "token2", "id2", "/remotedir2", "/localdir5", false);
-        SyncJob syncJob6 = new SyncJob(SyncJob.Type.Bidirectional, "url6", "token3", "id3", "/remotedir3", "/localdir6", true);
-        SyncJob syncJob7 = new SyncJob(SyncJob.Type.Bidirectional, "url7", "token3", "id3", "/remotedir3", "/localdir7", false);
+        SyncJob syncJob1 = new SyncJob(SyncJob.Type.Bidirectional, "url1", "token1", "id1", "title", "/remotedir1", "/localdir1", true);
+        SyncJob syncJob2 = new SyncJob(SyncJob.Type.Bidirectional, "url2", "token2", "id2", "title", "/remotedir2", "/localdir2", false);
+        SyncJob syncJob3 = new SyncJob(SyncJob.Type.Bidirectional, "url3", "token3", "id3", "title", "/remotedir3", "/localdir3", false);
+        SyncJob syncJob4 = new SyncJob(SyncJob.Type.Bidirectional, "url4", "token1", "id1", "title", "/remotedir1", "/localdir4", true);
+        SyncJob syncJob5 = new SyncJob(SyncJob.Type.Bidirectional, "url5", "token2", "id2", "title", "/remotedir2", "/localdir5", false);
+        SyncJob syncJob6 = new SyncJob(SyncJob.Type.Bidirectional, "url6", "token3", "id3", "title", "/remotedir3", "/localdir6", true);
+        SyncJob syncJob7 = new SyncJob(SyncJob.Type.Bidirectional, "url7", "token3", "id3", "title", "/remotedir3", "/localdir7", false);
 
         Settings settings = new Settings();
         settings.setLanguage("fr");
@@ -177,13 +177,13 @@ public class DriveAPIServerImplTest {
 
     @Test
     synchronized public void stopSyncJobTest() {
-        SyncJob syncJob1 = new SyncJob(SyncJob.Type.Bidirectional, "url1", "token1", "id1", "/remotedir1", "/localdir1", true);
-        SyncJob syncJob2 = new SyncJob(SyncJob.Type.Bidirectional, "url2", "token2", "id2", "/remotedir2", "/localdir2", false);
-        SyncJob syncJob3 = new SyncJob(SyncJob.Type.Bidirectional, "url3", "token3", "id3", "/remotedir3", "/localdir3", false);
-        SyncJob syncJob4 = new SyncJob(SyncJob.Type.Bidirectional, "url4", "token1", "id1", "/remotedir1", "/localdir4", true);
-        SyncJob syncJob5 = new SyncJob(SyncJob.Type.Bidirectional, "url5", "token2", "id2", "/remotedir2", "/localdir5", false);
-        SyncJob syncJob6 = new SyncJob(SyncJob.Type.Bidirectional, "url6", "token3", "id3", "/remotedir3", "/localdir6", true);
-        SyncJob syncJob7 = new SyncJob(SyncJob.Type.Bidirectional, "url7", "token3", "id3", "/remotedir3", "/localdir7", false);
+        SyncJob syncJob1 = new SyncJob(SyncJob.Type.Bidirectional, "url1", "token1", "id1", "title", "/remotedir1", "/localdir1", true);
+        SyncJob syncJob2 = new SyncJob(SyncJob.Type.Bidirectional, "url2", "token2", "id2", "title", "/remotedir2", "/localdir2", false);
+        SyncJob syncJob3 = new SyncJob(SyncJob.Type.Bidirectional, "url3", "token3", "id3", "title", "/remotedir3", "/localdir3", false);
+        SyncJob syncJob4 = new SyncJob(SyncJob.Type.Bidirectional, "url4", "token1", "id1", "title", "/remotedir1", "/localdir4", true);
+        SyncJob syncJob5 = new SyncJob(SyncJob.Type.Bidirectional, "url5", "token2", "id2", "title", "/remotedir2", "/localdir5", false);
+        SyncJob syncJob6 = new SyncJob(SyncJob.Type.Bidirectional, "url6", "token3", "id3", "title", "/remotedir3", "/localdir6", true);
+        SyncJob syncJob7 = new SyncJob(SyncJob.Type.Bidirectional, "url7", "token3", "id3", "title", "/remotedir3", "/localdir7", false);
 
         Settings settings = new Settings();
         settings.setLanguage("fr");
