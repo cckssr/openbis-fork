@@ -7,12 +7,14 @@ import ch.openbis.drive.model.Settings;
 import ch.openbis.drive.model.SyncJob;
 import ch.openbis.drive.protobuf.client.DriveAPIClientProtobufImpl;
 import ch.openbis.drive.util.OpenBISDriveUtil;
+import com.sun.istack.NotNull;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import lombok.NonNull;
 import org.apache.commons.cli.*;
 
 import java.io.File;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -192,6 +194,12 @@ public class DriveAPICmdLineApp {
         String openBISurl;
         try {
             openBISurl = commandLine.getOptionValue("openBISurl");
+
+            if (!validateOpenBISUrl(openBISurl)) {
+                System.out.println("Bad '-openBISurl=' value: it must be an http:// or https:// URL without path\n");
+                return;
+            }
+
         } catch (Exception e) {
             System.out.println("Wrong '-openBISurl=' option\n");
             printHelp();
@@ -252,6 +260,22 @@ public class DriveAPICmdLineApp {
         }
 
         addJob(title, syncJobType, localDirectory, openBISurl, entityPermId, personalAccessToken, toServerPathString(Path.of(remoteDirectory)), enabled, skipHiddenFiles);
+    }
+
+    boolean validateOpenBISUrl(@NotNull String url) {
+        URI uri = null;
+        try {
+            uri = URI.create(url);
+        } catch (Exception e) {
+            return false;
+        }
+        if (uri != null &&
+                List.of("http", "https").contains(uri.getScheme()) &&
+                Optional.ofNullable(uri.getPath()).orElse("").isBlank()) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     void handleRemoveJobCommand(String[] args) throws Exception {

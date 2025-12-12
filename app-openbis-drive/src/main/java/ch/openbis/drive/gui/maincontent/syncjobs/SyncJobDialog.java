@@ -40,7 +40,7 @@ import static ch.ethz.sis.afsclient.client.AfsClientUploadHelper.toServerPathStr
 
 public class SyncJobDialog extends Dialog<SyncJob> {
     final int MAX_TEXT_INPUT_LENGTH = 300;
-    Pattern HTTP_URL_PATTERN = Pattern.compile("^(http|https)://[^\\s/$.?#].[^\\s]*$");
+    Pattern HTTP_URL_PATTERN = Pattern.compile("^(http|https)://[^\\s/$.?#][^/]*$");
     final static String SUGGESTED_REMOTE_DIRECTORY = "/";
     final static String LINE_SEPARATOR = System.lineSeparator();
 

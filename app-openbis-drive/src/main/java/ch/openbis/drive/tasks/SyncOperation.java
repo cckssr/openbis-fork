@@ -37,6 +37,7 @@ public class SyncOperation {
     static final int MAX_READ_SIZE_BYTES = 10485760;
     static final int AFS_CLIENT_TIMEOUT = 10000;
     public static final String CONFLICT_FILE_SUFFIX = ".openbis-conflict";
+    public static final String AFS_SERVER_PATH = "/afs-server";
 
     private final @NonNull SyncJob syncJob;
     private final List<PathMatcher> hiddenPathMatchers = new ArrayList<>();
@@ -55,7 +56,7 @@ public class SyncOperation {
                          @NonNull SyncJobEventDAO syncJobEventDAO,
                          @NonNull NotificationManager notificationManager,
                          @NonNull Configuration configuration) throws SQLException, IOException {
-        AfsClient afsClient = new AfsClient(URI.create(syncJob.getOpenBisUrl()), MAX_READ_SIZE_BYTES, AFS_CLIENT_TIMEOUT);
+        AfsClient afsClient = new AfsClient(URI.create(syncJob.getOpenBisUrl() + AFS_SERVER_PATH), MAX_READ_SIZE_BYTES, AFS_CLIENT_TIMEOUT);
         afsClient.setSessionToken(syncJob.getOpenBisPersonalAccessToken());
 
         ClientAPI.DefaultTransferMonitorLister uploadMonitor = new ClientAPI.DefaultTransferMonitorLister();

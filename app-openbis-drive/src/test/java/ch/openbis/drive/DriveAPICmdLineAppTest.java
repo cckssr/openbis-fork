@@ -2,6 +2,7 @@ package ch.openbis.drive;
 
 import ch.openbis.drive.model.*;
 import ch.openbis.drive.protobuf.client.DriveAPIClientProtobufImpl;
+import com.sun.istack.NotNull;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import org.junit.Assert;
@@ -147,6 +148,7 @@ public class DriveAPICmdLineAppTest {
                 "-personalAccessToken=tkntkntkn",
                 "-enabled=true",
         });
+        Mockito.verify(driveAPICmdLineApp, Mockito.times(1)).validateOpenBISUrl("http://url");
         Mockito.verify(driveAPICmdLineApp, Mockito.times(1)).addJob(
                 "MyTitle",
                 SyncJob.Type.Bidirectional,
@@ -169,11 +171,66 @@ public class DriveAPICmdLineAppTest {
                 "-personalAccessToken=tkntkntkn",
                 "-enabled=true",
         });
+        Mockito.verify(driveAPICmdLineApp, Mockito.times(0)).validateOpenBISUrl("http://url");
         Mockito.verify(driveAPICmdLineApp, Mockito.times(0)).addJob(
                 Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean(), Mockito.any()
         );
         Mockito.verify(driveAPICmdLineApp, Mockito.times(1)).printHelp();
         Mockito.clearInvocations(driveAPICmdLineApp);
+    }
+
+    @Test
+    public void testHandleAddJobCommandWithBadURL() throws Exception {
+        Mockito.doNothing().when(driveAPICmdLineApp).addJob(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean(), Mockito.any());
+        Mockito.doReturn(false).when(driveAPICmdLineApp).validateOpenBISUrl(Mockito.any());
+
+        driveAPICmdLineApp.handleAddJobCommand(new String[] { "jobs" , "add",
+                "-title=MyTitle",
+                "-type=Bidirectional",
+                "-dir=/local-dir",
+                "-remDir=/remote-dir",
+                "-openBISurl=http://url/with-path",
+                "-entityPermId=1234-abcd",
+                "-personalAccessToken=tkntkntkn",
+                "-enabled=true",
+        });
+
+        Mockito.verify(driveAPICmdLineApp, Mockito.times(0)).addJob(
+                Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean(), Mockito.any()
+        );
+        Mockito.verify(driveAPICmdLineApp, Mockito.times(1)).validateOpenBISUrl("http://url/with-path");
+        Mockito.clearInvocations(driveAPICmdLineApp);
+    }
+
+    @Test
+    public void testValidateOpenBISUrl() {
+        Assert.assertTrue(driveAPICmdLineApp.validateOpenBISUrl("http://localhost"));
+        Assert.assertTrue(driveAPICmdLineApp.validateOpenBISUrl("https://localhost"));
+        Assert.assertTrue(driveAPICmdLineApp.validateOpenBISUrl("http://www.example.com"));
+        Assert.assertTrue(driveAPICmdLineApp.validateOpenBISUrl("http://www.example.com"));
+        Assert.assertTrue(driveAPICmdLineApp.validateOpenBISUrl("http://localhost:8058"));
+        Assert.assertTrue(driveAPICmdLineApp.validateOpenBISUrl("https://localhost:8080"));
+        Assert.assertTrue(driveAPICmdLineApp.validateOpenBISUrl("http://www.example.com:123"));
+        Assert.assertTrue(driveAPICmdLineApp.validateOpenBISUrl("http://www.example.com:111"));
+
+        Assert.assertFalse(driveAPICmdLineApp.validateOpenBISUrl("http://localhost/"));
+        Assert.assertFalse(driveAPICmdLineApp.validateOpenBISUrl("https://localhost/path"));
+        Assert.assertFalse(driveAPICmdLineApp.validateOpenBISUrl("http://www.example.com/a"));
+        Assert.assertFalse(driveAPICmdLineApp.validateOpenBISUrl("http://www.example.com/a"));
+        Assert.assertFalse(driveAPICmdLineApp.validateOpenBISUrl("http://localhost:8058/a"));
+        Assert.assertFalse(driveAPICmdLineApp.validateOpenBISUrl("https://localhost:8080/"));
+        Assert.assertFalse(driveAPICmdLineApp.validateOpenBISUrl("http://www.example.com:123//"));
+        Assert.assertFalse(driveAPICmdLineApp.validateOpenBISUrl("http://www.example.com:111///"));
+
+
+        Assert.assertFalse(driveAPICmdLineApp.validateOpenBISUrl("mqtt://localhost"));
+        Assert.assertFalse(driveAPICmdLineApp.validateOpenBISUrl("ftp://localhost"));
+        Assert.assertFalse(driveAPICmdLineApp.validateOpenBISUrl("aaa://www.example.com"));
+        Assert.assertFalse(driveAPICmdLineApp.validateOpenBISUrl("file://www.example.com"));
+        Assert.assertFalse(driveAPICmdLineApp.validateOpenBISUrl("bbb://localhost:8058"));
+        Assert.assertFalse(driveAPICmdLineApp.validateOpenBISUrl("vvv://localhost:8080"));
+        Assert.assertFalse(driveAPICmdLineApp.validateOpenBISUrl("xxx://www.example.com:123"));
+        Assert.assertFalse(driveAPICmdLineApp.validateOpenBISUrl("ppp://www.example.com:111"));
     }
 
     @Test

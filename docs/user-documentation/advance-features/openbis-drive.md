@@ -226,7 +226,7 @@ Synchronization-jobs:
 Title: Descriptive title...
 Type: Bidirectional
 Local directory: /home/myuser/openbis_sync_test
-openBIS url: http://localhost:8085/afs-server
+openBIS url: http://localhost:8085
 Entity-perm-id: a7bc2fbd-49af-4e2d-86cc-ea316028b793
 Remote directory: /remotedir
 Personal access token: a13fe879-1753-41dd-8c3e-eb5a97e1c7be
@@ -275,7 +275,7 @@ Synchronization-jobs:
 Title: Descriptive title...
 Type: Bidirectional
 Local directory: /home/myuser/openbis_sync_test
-openBIS url: http://localhost:8085/afs-server
+openBIS url: http://localhost:8085
 Entity-perm-id: a7bc2fbd-49af-4e2d-86cc-ea316028b793
 Remote directory: /remotedir
 Personal access token: a13fe879-1753-41dd-8c3e-eb5a97e1c7be
@@ -303,7 +303,7 @@ Synchronization-jobs:
 Title: Descriptive title...
 Type: Bidirectional
 Local directory: /home/myuser/openbis_sync_test
-openBIS url: http://localhost:8085/afs-server
+openBIS url: http://localhost:8085
 Entity-perm-id: a7bc2fbd-49af-4e2d-86cc-ea316028b793
 Remote directory: /remotedir
 Personal access token: a13fe879-1753-41dd-8c3e-eb5a97e1c7be
@@ -327,7 +327,7 @@ Synchronization-jobs:
 Title: Descriptive title...
 Type: Bidirectional
 Local directory: /home/myuser/openbis_sync_test
-openBIS url: http://localhost:8085/afs-server
+openBIS url: http://localhost:8085
 Entity-perm-id: a7bc2fbd-49af-4e2d-86cc-ea316028b793
 Remote directory: /remotedir
 Personal access token: a13fe879-1753-41dd-8c3e-eb5a97e1c7be
@@ -372,7 +372,7 @@ Option that represent properties are:
 For example: 
 
 ```shell
-./openbis-drive-cmd-line.sh jobs add -title='Description' -type='Bidirectional' -dir='/home/myuser/openbis_sync_test' -openBISurl='http://localhost:8085/afs-server' -entityPermId='a7bc2fbd-49af-4e2d-86cc-ea316028b793' -personalAccessToken='a13fe879-1753-41dd-8c3e-eb5a97e1c7be' -remDir='/remote/dir/absolute-path/' -enabled=true
+./openbis-drive-cmd-line.sh jobs add -title='Description' -type='Bidirectional' -dir='/home/myuser/openbis_sync_test' -openBISurl='http://localhost:8085' -entityPermId='a7bc2fbd-49af-4e2d-86cc-ea316028b793' -personalAccessToken='a13fe879-1753-41dd-8c3e-eb5a97e1c7be' -remDir='/remote/dir/absolute-path/' -enabled=true
 ```
 
 #### jobs remove

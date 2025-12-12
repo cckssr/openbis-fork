@@ -47,7 +47,7 @@ public class SyncOperationTest extends TestCase {
 
         Assert.assertEquals(syncJobEventDAO, syncOperation.syncJobEventDAO);
         Assert.assertEquals(syncOperation.afsClientProxy.afsClient, syncOperation.getAfsClient());
-        Assert.assertEquals(URI.create(syncJob.getOpenBisUrl()), syncOperation.getAfsClient().getServerUri());
+        Assert.assertEquals(URI.create(syncJob.getOpenBisUrl() + SyncOperation.AFS_SERVER_PATH), syncOperation.getAfsClient().getServerUri());
         Assert.assertEquals(SyncOperation.MAX_READ_SIZE_BYTES, syncOperation.getAfsClient().getMaxReadSizeInBytes());
         Assert.assertEquals("uuid", syncOperation.getAfsClient().getSessionToken());
         Assert.assertEquals(configuration.getLocalAppStateDirectory(), syncOperation.localOpenBisHiddenStateDirectory);
