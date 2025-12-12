@@ -1040,7 +1040,14 @@
 								FormUtil.setFieldValue(propertyType, $component, value);
 							} else if(propertyType.dataType === "TIMESTAMP" || propertyType.dataType === "DATE") {
 							} else if(isMultiValue) {
-								var valueV3 = this._sampleFormModel.v3_sample.properties[propertyType.code];
+								var valueV3 = null;
+								if(this._sampleFormModel.v3_sample) {
+								    valueV3 = this._sampleFormModel.v3_sample.properties[propertyType.code];
+								} else {
+								    //flow for templates
+                                    valueV3 = this._sampleFormModel.sample.properties[propertyType.code];
+								}
+
 								if(valueV3) {
 									var valueArray;
 									if(Array.isArray(value)) {
