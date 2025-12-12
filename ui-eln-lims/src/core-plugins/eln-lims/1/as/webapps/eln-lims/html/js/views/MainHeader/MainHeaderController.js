@@ -29,8 +29,12 @@ function MainHeaderController() {
         mainController.sideMenu.removeSubSideMenu();
         mainController.tabContent.changePage(value);
         var tabInfo = mainController.tabContent.getCurrentTabInfo();
-        var node = JSON.parse(tabInfo.node);
-        mainController.sideMenu.changeCurrentTree(value, node);
+        if(tabInfo) {
+            var node = JSON.parse(tabInfo.node);
+            mainController.sideMenu.changeCurrentTree(value, node);
+        } else {
+            mainController.sideMenu.changeCurrentTree(value);
+        }
         if(mainController.sideMenu.isCollapsed) {
             mainController.sideMenu.expandSideMenu();
         }
