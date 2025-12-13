@@ -2,13 +2,13 @@
 # -*- coding: utf-8 -*-
 
 #   Copyright ETH 2018 - 2025 Zürich, Scientific IT Services
-# 
+#
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
 #   You may obtain a copy of the License at
-# 
+#
 #        http://www.apache.org/licenses/LICENSE-2.0
-#   
+#
 #   Unless required by applicable law or agreed to in writing, software
 #   distributed under the License is distributed on an "AS IS" BASIS,
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -33,6 +33,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import List
 from urllib.parse import urljoin, urlparse
+from typing import Optional, Union, Dict, Literal, Any
 
 import requests
 import urllib3
@@ -40,6 +41,7 @@ from dateutil.relativedelta import relativedelta
 from pandas import DataFrame
 
 from . import data_set as pbds
+from .openbis_typing import *
 from .dataset import DataSet
 from .definitions import (
     get_definition_for_entity,
@@ -55,7 +57,7 @@ from .entity_type import (
     ExperimentType,
     MaterialType,
     SampleType,
-    PropertyType
+    PropertyType,
 )
 from .experiment import Experiment
 from .group import Group
@@ -661,15 +663,15 @@ def _subcriteria_for_properties(prop, value, entity):
 
     # searching for parent/child/container identifier
     if any(
-            relation == prop.lower()
-            for relation in [
-                "parent",
-                "child",
-                "container",
-                "parents",
-                "children",
-                "containers",
-            ]
+        relation == prop.lower()
+        for relation in [
+            "parent",
+            "child",
+            "container",
+            "parents",
+            "children",
+            "containers",
+        ]
     ):
         relation = prop.lower()
         if is_identifier(value):
@@ -708,8 +710,8 @@ def _subcriteria_for_properties(prop, value, entity):
 
     # searching for parent/child/container property:
     elif any(
-            prop.lower().startswith(relation)
-            for relation in ["parent_", "child_", "container_"]
+        prop.lower().startswith(relation)
+        for relation in ["parent_", "child_", "container_"]
     ):
         match = re.search(r"^(\w+?)_(.*)", prop.lower())
         if match:
@@ -960,12 +962,12 @@ class Openbis:
     token: str
 
     def __init__(
-            self,
-            url=None,
-            verify_certificates=True,
-            token=None,
-            use_cache=True,
-            allow_http_but_do_not_use_this_in_production_and_only_within_safe_networks=False,
+        self,
+        url: Optional[str] = None,
+        verify_certificates: bool = True,
+        token: Optional[str] = None,
+        use_cache: bool = True,
+        allow_http_but_do_not_use_this_in_production_and_only_within_safe_networks: bool = False,
     ):
         """Initialize a new connection to an openBIS server.
 
@@ -1005,8 +1007,8 @@ class Openbis:
         if url_obj.hostname is None:
             raise ValueError("hostname is missing")
         if (
-                url_obj.scheme == "http"
-                and not allow_http_but_do_not_use_this_in_production_and_only_within_safe_networks
+            url_obj.scheme == "http"
+            and not allow_http_but_do_not_use_this_in_production_and_only_within_safe_networks
         ):
             raise ValueError("always use https!")
 
@@ -1138,7 +1140,6 @@ class Openbis:
             "new_transaction()",
             "get_or_create_personal_access_token()",
             "set_token()",
-
         ]
 
     def _repr_html_(self):
@@ -1180,10 +1181,14 @@ class Openbis:
     def projects(self):
         return self.get_projects()
 
-    def gen_token_path(self, os_home=None):
-        """generates a path to the token file.
-        The token is usually saved in a file called
-        ~/.pybis/hostname.token
+    def gen_token_path(self, os_home: Optional[str] = None) -> str:
+        """Generate the path to the saved token file.
+        Default is ~/.pybis/hostname.token
+
+        Args:
+            os_home (str, optional): Override the home directory. Defaults to None.
+        Returns:
+            str: The path to the token file.
         """
         if self.hostname is None:
             raise ValueError(
@@ -1198,13 +1203,17 @@ class Openbis:
         path = os.path.join(parent_folder, self.hostname + ".token")
         return path
 
-    def save_token_on_behalf(self, os_home):
-        """Set the correct user, only the owner of the token should be able to access it,
-        used by jupyterhub authenticator
+    def save_token_on_behalf(self, os_home: Optional[str] = None) -> None:
+        """Save the token to disk and set the correct user permissions.
+
+        Args:
+            os_home (str, optional): Override the home directory. Defaults to None.
         """
         token_path = self._save_token_to_disk(os_home)
 
-        lastIndexOfMinus = len(self.token) - "".join(reversed(self.token)).index("-") - 1
+        lastIndexOfMinus = (
+            len(self.token) - "".join(reversed(self.token)).index("-") - 1
+        )
         token_user_name = self.token[0:lastIndexOfMinus]
         if token_user_name.startswith("$pat-"):
             token_user_name = token_user_name[5:]
@@ -1219,8 +1228,16 @@ class Openbis:
         token_parent_path = path.parent.absolute()
         os.chown(token_parent_path, token_user_name_uid, token_user_name_gid)
 
-    def _save_token_to_disk(self, os_home=None):
-        """saves the session token to the disk, usually here: ~/.pybis/hostname.token. When a new Openbis instance is created, it tries to read this saved token by default."""
+    def _save_token_to_disk(self, os_home: Optional[str] = None) -> str:
+        """Save the token to disk for later access.
+        Default location is ~/.pybis/hostname.token. After initialisation of an
+        Openbis instance, pybis tries to read this saved token by default.
+
+        Args:
+            os_home (str, optional): Override the home directory. Defaults to None.
+        Returns:
+            str: The path to the saved token file.
+        """
         token_path = self.gen_token_path(os_home)
         # create the necessary directories, if they don't exist yet
         os.makedirs(os.path.dirname(token_path), exist_ok=True)
@@ -1230,7 +1247,13 @@ class Openbis:
         os.chmod(token_path, 0o600)
         return token_path
 
-    def _delete_saved_token(self, os_home=None):
+    def _delete_saved_token(self, os_home: Optional[str] = None):
+        """Delete the saved token from disk.
+        Default location is ~/.pybis/hostname.token
+
+        Args:
+            os_home (str, optional): Override the home directory. Defaults to None.
+        """
         token_path = self.gen_token_path(os_home)
         if os.path.exists(token_path):
             os.unlink(token_path)
@@ -1250,9 +1273,14 @@ class Openbis:
         except FileNotFoundError:
             return None
 
-    def _post_request(self, resource, request):
-        """internal method, used to handle all post requests and serializing / deserializing
-        data
+    def _post_request(self, resource: str, request: dict) -> dict:
+        """Serialize and send a post request to openBIS.
+
+        Args:
+            resource (str): resource path, e.g. /openbis/openbis/rmi-application-server-v3.json
+            request (dict): the request dictionary to be serialized and sent
+        Returns:
+            dict: the response from openBIS, deserialized
         """
         return self._post_request_full_url(urljoin(self.url, resource), request)
 
@@ -1271,9 +1299,20 @@ class Openbis:
                         full_url, json.dumps(request), verify=self.verify_certificates
                     )
 
-    def _post_request_full_url(self, full_url, request):
-        """internal method, used to handle all post requests and serializing / deserializing
-        data
+    def _post_request_full_url(
+        self, full_url: str, request: dict[str, str]
+    ) -> dict[str, Any]:
+        """Handle all post requests to openBIS.
+
+        Args:
+            full_url (str): full url including resource path
+            request (dict): the request dictionary to be serialized and sent
+        Returns:
+            dict: the response from openBIS, deserialized
+        Raises:
+            ValueError: if the request fails
+            requests.exceptions.SSLError: if certificate validation fails
+            requests.ConnectionError: if connection to openBIS server fails
         """
 
         if "id" not in request:
@@ -1308,7 +1347,8 @@ class Openbis:
                 raise ValueError("request did not return either result nor error")
         else:
             raise ValueError(
-                f"general error while performing post request. {resp.status_code}:{resp.reason}")
+                f"general error while performing post request. {resp.status_code}:{resp.reason}"
+            )
 
     def logout(self):
         """Log out of openBIS. After logout, the session token is no longer valid."""
@@ -1323,16 +1363,30 @@ class Openbis:
         self.token = None
         return resp
 
-    def login(self, username=None, password=None, save_token=False):
-        """Log into openBIS.
-        Expects a username and a password and updates the token (session-ID).
-        The token is then used for every request.
-        Clients may want to store the credentials object in a credentials store after successful login.
-        Throw a ValueError with the error message if login failed.
+    def login(
+        self,
+        username: Optional[str] = None,
+        password: Optional[str] = None,
+        save_token: bool = False,
+    ) -> str:
+        """Logs into OpenBIS with given username and password.
+        On success, the session token is stored in the Openbis instance and returned.
+
+        Args:
+            username (str, optional): openBIS username. If not provided, the current username is used.
+            password (str, optional): openBIS password. If not provided, the user is prompted to enter it.
+            save_token (bool): If True, the token is saved to disk for later use. Default is False.
+
+        Returns:
+            str: The session token.
+
+        Raises:
+            ValueError: If login fails.
         """
 
         if password is None:
             import getpass
+
             password = getpass.getpass()
 
         def is_different_login():
@@ -1352,9 +1406,20 @@ class Openbis:
             self.username = username
         return self.token
 
-    def _password(self, password=None, pstore={}):
-        """An elegant way to store passwords which are used later
-        without giving the user an easy possibility to retrieve it.
+    def _password(
+        self, password: Optional[str] = None, pstore: dict = {}
+    ) -> Optional[str]:
+        """Store or retrieve the password from an internal store.
+
+        Args:
+            password (str, optional): If provided, the password is stored. If None, the password is retrieved.
+            pstore (dict): Internal password store.
+
+        Returns:
+            str: The stored password, if retrieving.
+
+        Raises:
+            Exception: If trying to retrieve the password from an unauthorized method.
         """
         import inspect
 
@@ -1370,10 +1435,16 @@ class Openbis:
                     f"This method can only be called from these internal methods: {allowed_methods}"
                 )
 
-    def unmount(self, mountpoint=None):
-        """Unmount a given mountpoint or unmount the stored mountpoint.
-        If the umount command does not work, try the pkill command.
-        If still not successful, throw an error message.
+    def unmount(self, mountpoint: Optional[str] = None) -> None:
+        """Unmounts the openBIS dataStore from the given mountpoint.
+        If the unmount fails, the process is killed and unmount is retried.
+
+        Args:
+            mountpoint (str, optional): The mountpoint to unmount. If None, the mountpoint
+                                        stored in the Openbis instance is used.
+        Raises:
+            ValueError: If no mountpoint is provided and none is stored in the instance.
+            OSError: If unmounting fails.
         """
 
         if mountpoint is None and not getattr(self, "mountpoint", None):
@@ -1406,8 +1477,15 @@ class Openbis:
                 print(f"Successfully unmounted {full_mountpoint_path}")
             self.mountpoint = None
 
-    def is_mounted(self, mountpoint=None):
-        """Check whether openBIS dataStore is mounted or not"""
+    def is_mounted(self, mountpoint: Optional[str] = None) -> bool:
+        """Check whether openBIS dataStore is mounted or not.
+
+        Args:
+            mountpoint (str, optional): The mountpoint to check. If None, the mountpoint
+                                        stored in the Openbis instance is used.
+        Returns:
+            bool: True if mounted, False otherwise.
+        """
         if mountpoint is None:
             mountpoint = getattr(self, "mountpoint", None)
 
@@ -1416,12 +1494,16 @@ class Openbis:
 
         return os.path.ismount(mountpoint)
 
-    def get_mountpoint(self, search_mountpoint=False):
-        """Returns the path to the active mountpoint.
-        Returns None if no mountpoint is found or if the mountpoint is not mounted anymore.
+    def get_mountpoint(self, search_mountpoint: bool = False) -> Optional[str]:
+        """Retrieve the active mountpoint.
 
-        search_mountpoint=True:  Tries to figure out an existing mountpoint for a given hostname
-                                 (experimental, does not work under Windows yet)
+        Args:
+            search_mountpoint (bool): If True, tries to find an existing mountpoint for the given hostname.
+                                       Default is False.
+        Returns:
+            str: The path to the active mountpoint, or None if not found or not mounted.
+        Raises:
+            Exception: If no mountpoint is set and search_mountpoint is False.
         """
 
         mountpoint = getattr(self, "mountpoint", None)
@@ -1454,40 +1536,40 @@ class Openbis:
             return None
 
     def mount(
-            self,
-            username=None,
-            password=None,
-            hostname=None,
-            mountpoint=None,
-            volname=None,
-            path="/",
-            port=2222,
-            kex_algorithms="+diffie-hellman-group1-sha1",
-    ):
-        """Mounts openBIS dataStore without being root, using sshfs and fuse. Both
-        SSHFS and FUSE must be installed on the system (see below)
+        self,
+        username: Optional[str] = None,
+        password: Optional[str] = None,
+        hostname: Optional[str] = None,
+        mountpoint: Optional[str] = None,
+        volname: Optional[str] = None,
+        path: str = "/",
+        port: int = 2222,
+        kex_algorithms: str = "+diffie-hellman-group1-sha1",
+    ) -> str:
+        """Mount the openBIS dataStore using sshfs and fuse.
+        Uses the provided system username and password instead of root privileges.
+        SSHFS and FUSE have to be installed on your system. If not installed, please follow the instructions below:
 
-        Params:
-        username -- default: the currently used username
-        password -- default: the currently used password
-        hostname -- default: the current hostname
-        mountpoint -- default: ~/hostname
+        Mac OS X: Follow instruction on https://osxfuse.github.io
 
+        Unix Cent OS 7:
+            $ sudo yum install epel-release
+            $ sudo yum --enablerepo=epel -y install fuse-sshfs
+            $ user="$(whoami)"
+            $ usermod -a -G fuse "$user"
 
-        FUSE / SSHFS Installation (requires root privileges):
+        Args:
+            username (str, optional): openBIS username. If not provided, the current username is used.
+            password (str, optional): openBIS password. If not provided, the user is prompted to enter it.
+            hostname (str, optional): The openBIS hostname. If not provided, the hostname from the Openbis instance is used.
+            mountpoint (str, optional): The mountpoint to mount the dataStore. If not provided, ~/hostname is used.
 
-        Mac OS X
-        ========
-        Follow the installation instructions on
-        https://osxfuse.github.io
+        Returns:
+            str: The path to the mountpoint.
 
-        Unix Cent OS 7
-        ==============
-        $ sudo yum install epel-release
-        $ sudo yum --enablerepo=epel -y install fuse-sshfs
-        $ user="$(whoami)"
-        $ usermod -a -G fuse "$user"
-
+        Raises:
+            ValueError: If required parameters are missing or if the platform is not supported.
+            OSError: If mounting fails.
         """
         if self.is_mounted():
             if VERBOSE:
@@ -1508,11 +1590,11 @@ class Openbis:
 
         check_sshfs_is_installed()
 
-        is_pat = self.token is not None and self.token.startswith('$pat')
+        is_pat = self.token is not None and self.token.startswith("$pat")
         if is_pat is True:
-            username = '?'
+            username = "?"
             # PAT start with '$' so an escape character is needed
-            password = '\\' + self.token
+            password = "\\" + self.token
         else:
             if username is None:
                 username = self._get_username()
@@ -1585,9 +1667,15 @@ class Openbis:
         else:
             raise OSError("mount failed, exit status: ", status)
 
-    def get_server_information(self):
-        """Returns a dict containing the following server information:
-        api-version, archiving-configured, authentication-service, enabled-technologies, project-samples-enabled
+    def get_server_information(self) -> "ServerInformation":
+        """Retrieve general information about the openBIS server.
+        Following attributes are available:
+            api-version, archiving-configured, authentication-service, enabled-technologies, project-samples-enabled
+
+        Returns:
+            ServerInformation: An object containing the server information.
+        Raises:
+            ValueError: If the server information could not be retrieved.
         """
         if self.server_information is not None:
             return self.server_information
@@ -1603,8 +1691,13 @@ class Openbis:
         else:
             raise ValueError("Could not get the server information")
 
-    def create_permId(self):
-        """Have the server generate a new permId"""
+    def create_permId(self) -> str:
+        """Create a new permId on server side.
+        Returns:
+            str: The newly created permId.
+        Raises:
+            ValueError: If the permId could not be created.
+        """
         # Request just 1 permId
         request = {
             "method": "createPermIdStrings",
@@ -1616,10 +1709,16 @@ class Openbis:
         else:
             raise ValueError("Could not create permId")
 
-    def get_datastores(self):
-        """Get a list of all available datastores. Usually there is only one, but in some cases
-        there might be multiple servers. If you upload a file, you need to specifiy the datastore you want
-        the file uploaded to.
+    def get_datastores(self) -> DataFrame:
+        """Get available datastores.
+        Usually there is only one datastore, but in some cases there might be multiple servers.
+        If you upload a file, you need to specify the datastore you want the file uploaded to.
+
+        Returns:
+            DataFrame: A DataFrame containing the available datastores with
+                        columns 'code', 'downloadUrl', and 'remoteUrl'.
+        Raises:
+            ValueError: If no datastore is found.
         """
         if hasattr(self, "datastores"):
             return self.datastores  # pylint: disable=E0203
@@ -1643,12 +1742,29 @@ class Openbis:
             self.datastores = datastores[attrs]
             return datastores[attrs]
 
-    def gen_codes(self, entity: str, prefix: str = "", count: int = 1) -> List[str]:
-        """Get multiple next sequence numbers for a Sample, Experiment, DataSet and Material. Other entities are currently not supported.
-        Usage::
-            gen_code('sample', 'SAM-')
-            gen_code('collection', 'COL-')
-            gen_code('dataset', '')
+    def gen_codes(
+        self, entity: EntityKindCode, prefix: str = "", count: int = 1
+    ) -> list[str]:
+        """Create multiple codes for the given entity type.
+        Get multiple next sequence numbers for a the given entity type.
+
+        Args:
+            entity (EntityKindCode): The entity type for which to generate codes.
+            prefix (str): The prefix to use for the generated codes.
+            count (int): The number of codes to generate.
+
+        Returns:
+            List[str]: A list of generated codes.
+        Raises:
+            ValueError: If the entity type is not supported or if code generation fails.
+
+        Examples:
+            >>> gen_code('sample', 'SAM-')
+            ['SAM-0001']
+            >>> gen_code('collection', 'COL-', 3)
+            ['COL-0001', 'COL-0002', 'COL-0003']
+            >>> gen_code('dataset', '')
+            ['0001']
         """
         entity = entity.upper()
 
@@ -1675,17 +1791,40 @@ class Openbis:
         except Exception as e:
             raise ValueError(f"Could not generate a code(s) for {entity}: {e}")
 
-    def gen_code(self, entity, prefix="") -> str:
-        """Get the next sequence number for a Sample, Experiment, DataSet and Material. Other entities are currently not supported.
-        Usage::
-            gen_code('sample', 'SAM-')
-            gen_code('collection', 'COL-')
-            gen_code('dataset', '')
+    def gen_code(self, entity: EntityKindCode, prefix: str = "") -> str:
+        """Create a code for the given entity type.
+        Get the next sequence number for a the given entity type.
+        Args:
+            entity (EntityKindCode): The entity type for which to generate a code.
+            prefix (str): The prefix to use for the generated code.
+        Returns:
+            str: The generated code.
+        Raises:
+            ValueError: If the entity type is not supported or if code generation fails.
+
+        Examples:
+            >>> gen_code('sample', 'SAM-')
+            SAM-0001
+            >>> gen_code('collection', 'COL-')
+            COL-0001
+            >>> gen_code('dataset', '')
+            0001
         """
         return self.gen_codes(entity=entity, prefix=prefix)[0]
 
-    def gen_permId(self, count=1):
-        """Generate a permId (or many permIds) for a dataSet"""
+    def gen_permId(self, count: int = 1) -> list[str]:
+        """Create a list of new permIds on server side.
+
+        Args:
+            count (int): The number of permIds to generate.
+        Returns:
+            list[str]: A list of newly created permIds.
+        Raises:
+            ValueError: If the permIds could not be created.
+        Examples:
+            >>> gen_permId(2)
+            ['20251213184712345-89', '20251213184712345-90', '20251213184712345-91']
+        """
 
         request = {"method": "createPermIdStrings", "params": [self.token, count]}
         try:
@@ -1693,16 +1832,51 @@ class Openbis:
         except Exception as exc:
             raise ValueError(f"Could not generate a code: {exc}")
 
-    def new_person(self, userId, space=None):
-        """creates an openBIS person or returns the existing person"""
+    def new_person(self, userId: str, space: Optional[str] = None) -> "Person":
+        """Create a new Person or return an existing one.
+        Args:
+            userId (str): The userId of the person.
+            space (str, optional): The space to which the person belongs. Defaults to None.
+        Returns:
+            Person: The created or existing Person object.
+        Raises:
+            ValueError: If the person could not be created.
+        Examples:
+            >>> new_person('jdoe', 'MYSPACE')
+            Person(userId='jdoe', space='MYSPACE') # new person
+            >>> new_person('asmith@ethz.ch')
+            Person(userId='asmith@ethz.ch', space=None) # existing person
+        """
         try:
             person = self.get_person(userId=userId)
             return person
         except Exception:
             return Person(self, userId=userId, space=space)
 
-    def new_group(self, code, description=None, userIds=None):
-        """creates an openBIS group or returns an existing one."""
+    def new_group(
+        self,
+        code: str,
+        description: Optional[str] = None,
+        userIds: Optional[list[str]] = None,
+    ) -> "Group":
+        """Create a new Group or return an existing one.
+        Args:
+            code (str): The code of the group.
+            description (str, optional): The description of the group. Defaults to None.
+            userIds (list[str], optional): List of userIds to be added to the group.
+                                           Defaults to None.
+        Returns:
+            Group: The created or existing Group object.
+        Raises:
+            ValueError: If the group could not be created.
+        Examples:
+            >>> new_group(code = 'MYGROUP',
+            ... description = 'My Group Description',
+            ... userIds = ['user1', 'user2'])
+            Group(...) # new group
+            >>> new_group(code = 'EXISTINGGROUP')
+            Group(...) # existing group
+        """
         try:
             group = self.get_group(code=code)
             group.description = description
@@ -1710,8 +1884,22 @@ class Openbis:
         except Exception:
             return Group(self, code=code, description=description, userIds=userIds)
 
-    def get_group(self, code, only_data=False):
-        """Get an openBIS AuthorizationGroup. Returns a Group object."""
+    def get_group(self, code: str, only_data: bool = False) -> Optional["Group"]:
+        """Get an authorization group by its code.
+        TODO: currently the exact return of this function is not well defined.
+        Args:
+            code (str): The code of the group.
+            only_data (bool): If True, return only the data dictionary. Defaults to False.
+        Returns:
+            Optional[Group]: The Group object or None if not found.
+        Raises:
+            ValueError: If no group is found.
+        Examples:
+            >>> get_group('MYGROUP')
+            Group(...) # existing group
+            >>> get_group('NONEXISTENTGROUP')
+            ValueError: No group found!
+        """
 
         ids = [
             {
@@ -1812,7 +2000,9 @@ class Openbis:
                 roles["user"] = roles["user"].map(extract_userId)
                 roles["group"] = roles["authorizationGroup"].map(extract_code)
                 spaces_s = roles["space"].map(extract_code)
-                spaces_p = roles["project"].map(lambda x: x['space']['code'] if x is not None else '')
+                spaces_p = roles["project"].map(
+                    lambda x: x["space"]["code"] if x is not None else ""
+                )
                 roles["space"] = spaces_s + spaces_p
                 roles["project"] = roles["project"].map(extract_nested_identifier)
             return roles[roles.columns.intersection(attrs)]
@@ -1828,8 +2018,25 @@ class Openbis:
             df_initializer=create_data_frame,
         )
 
-    def get_role_assignment(self, techId, only_data=False):
-        """Fetches one assigned role by its techId."""
+    def get_role_assignment(
+        self, techId: int, only_data: bool = False
+    ) -> Optional["RoleAssignment"]:
+        """Fetch a role assignment by its techID.
+
+        Args:
+            techId (int): The technical ID of the role assignment.
+            only_data (bool): If True, return only the data dictionary. Defaults to False.
+        Returns:
+            Optional[RoleAssignment]: The RoleAssignment object or None if not found.
+        Raises:
+            ValueError: If no role assignment is found.
+
+        Examples:
+            >>> get_role_assignment(12345)
+            RoleAssignment(...) # existing role assignment
+            >>> get_role_assignment(99999)
+            ValueError: No assigned role found for techId=99999
+        """
 
         fetchopts = get_fetchoption_for_entity("roleAssignment")
         for option in ["space", "project", "user", "authorizationGroup", "registrator"]:
@@ -1953,7 +2160,7 @@ class Openbis:
         for option in ["roleAssignments", "registrator", "users"]:
             fetchopts[option] = get_fetchoption_for_entity(option)
         for option in ["space", "project", "user", "authorizationGroup", "registrator"]:
-            fetchopts['roleAssignments'][option] = get_fetchoption_for_entity(option)
+            fetchopts["roleAssignments"][option] = get_fetchoption_for_entity(option)
         request = {
             "method": "searchAuthorizationGroups",
             "params": [self.token, search_criteria, fetchopts],
@@ -2000,11 +2207,11 @@ class Openbis:
         )
 
     def get_or_create_personal_access_token(
-            self,
-            sessionName: str,
-            validFrom: datetime = datetime.now(),
-            validTo: datetime = None,
-            force=False,
+        self,
+        sessionName: str,
+        validFrom: datetime = datetime.now(),
+        validTo: datetime = None,
+        force=False,
     ) -> str:
         """Creates a new personal access token (PAT).  If a PAT with the given sessionName
         already exists and its expiry date (validToDate) is not within the warning period,
@@ -2038,11 +2245,16 @@ class Openbis:
                 existing_pat.validToDate, "%Y-%m-%d %H:%M:%S"
             )
             user = self._get_username()
-            if validTo_date > (
+            if (
+                validTo_date
+                > (
                     datetime.now()
                     + relativedelta(
-                seconds=server_info.personal_access_tokens_validity_warning_period)
-            ) and user == existing_pat.owner:
+                        seconds=server_info.personal_access_tokens_validity_warning_period
+                    )
+                )
+                and user == existing_pat.owner
+            ):
                 # return existing PAT which is within warning period
                 if not force:
                     return existing_pat
@@ -2077,12 +2289,12 @@ class Openbis:
             pass
 
     def get_personal_access_tokens(
-            self,
-            sessionName=None,
-            start_with=None,
-            count=None,
-            save_to_disk=False,
-            **search_args,
+        self,
+        sessionName=None,
+        start_with=None,
+        count=None,
+        save_to_disk=False,
+        **search_args,
     ):
         """Get a list of Personal Access Tokens (PAT).
 
@@ -2351,9 +2563,9 @@ class Openbis:
 
         code = str(code).upper()
         space = (
-                not only_data
-                and use_cache
-                and self._object_cache(entity="space", code=code)
+            not only_data
+            and use_cache
+            and self._object_cache(entity="space", code=code)
         )
         if space:
             return space
@@ -2385,28 +2597,47 @@ class Openbis:
                     self._object_cache(entity="space", code=code, value=space)
                 return space
 
-    def get_samples(
-            self,
-            identifier=None,
-            code=None,
-            permId=None,
-            space=None,
-            project=None,
-            experiment=None,
-            collection=None,
-            type=None,
-            start_with=None,
-            count=None,
-            withParents=None,
-            withChildren=None,
-            tags=None,
-            attrs=None,
-            props=None,
-            where=None,
-            raw_response=False,
-            **properties,
+    def get_objects(
+        self,
+        identifier: Optional[str] = None,
+        code: Optional[str] = None,
+        permId: Optional[str] = None,
+        space: Optional[str] = None,
+        project: Optional[str] = None,
+        experiment: Optional[str] = None,
+        collection: Optional[str | List[str]] = None,
+        type: Optional[str] = None,
+        start_with: Optional[int] = None,
+        count: Optional[int] = None,
+        withParents: Optional[bool] = None,
+        withChildren: Optional[bool] = None,
+        tags: Optional[list] = None,
+        attrs: Optional[list] = None,
+        props=None,
+        where=None,
+        raw_response=False,
+        **properties,
     ):
-        """Returns a DataFrame of all samples for a given space/project/experiment (or any combination).
+        """Retrieve objects according to the specified criteria.
+
+        Args:
+            identifier (str, optional): Object identifier.
+                e.g., 'SPACE/PROJECT/EXP/SAMPLE' or 'SPACE/PROJECT/SAMPLE' 
+            code (str, optional): Object code.
+            permId (str, optional): Object permId.
+            space (str, optional): Space code or object.
+                e.g., 'MYSPACE' or o.get_space('MYSPACE')
+            project (str, optional): Project code or object.
+                e.g., 'MYPROJECT' or o.get_project('MYSPACE', 'MYPROJECT')
+            collection (str | List[str], optional): Experiment code or object.
+                e.g., 'MYEXP' or o.get_experiment('MYSPACE', 'MYPROJECT', 'MYEXP')
+            type (str, optional): Sample type code or object.
+                e.g., 'MY_SAMPLE_TYPE' or o.get_sample_type('MY_SAMPLE_TYPE')
+            start_with (int, optional): Paging start index. Default is None.
+            count (int, optional): Number of objects to fetch. Default is None.
+            
+        
+        Returns a DataFrame of all samples for a given space/project/experiment (or any combination).
         The default result contains only basic attributes, i.e identifier, permId, type, registrator,
         registrationDate, modifier, modificationDate. Additional attributes may be downloaded by specifying
         'attrs' list.
@@ -2553,7 +2784,7 @@ class Openbis:
 
         return result
 
-    get_objects = get_samples  # Alias
+    get_samples = get_objects  # Alias samples is old name
 
     def _get_fetchopts_for_attrs(self, attrs=None):
         if attrs is None:
@@ -2577,20 +2808,20 @@ class Openbis:
         return fetchopts
 
     def get_experiments(
-            self,
-            code=None,
-            permId=None,
-            type=None,
-            space=None,
-            project=None,
-            start_with=None,
-            count=None,
-            tags=None,
-            is_finished=None,
-            attrs=None,
-            props=None,
-            where=None,
-            **properties,
+        self,
+        code=None,
+        permId=None,
+        type=None,
+        space=None,
+        project=None,
+        start_with=None,
+        count=None,
+        tags=None,
+        is_finished=None,
+        attrs=None,
+        props=None,
+        where=None,
+        **properties,
     ):
         """Returns a DataFrame of all samples for a given space/project (or any combination).
         The default result contains only basic attributes, i.e identifier, permId, type, registrator,
@@ -2764,7 +2995,7 @@ class Openbis:
                         columns = []
                         for i, experiment in enumerate(response):
                             for prop_name, val in experiment.get(
-                                    "properties", {}
+                                "properties", {}
                             ).items():
                                 experiments.loc[i, prop_name.upper()] = val
                                 columns.append(prop_name.upper())
@@ -2797,26 +3028,26 @@ class Openbis:
     get_collections = get_experiments  # Alias
 
     def get_datasets(
-            self,
-            permId=None,
-            code=None,
-            type=None,
-            withParents=None,
-            withChildren=None,
-            start_with=None,
-            count=None,
-            kind=None,
-            status=None,
-            sample=None,
-            experiment=None,
-            collection=None,
-            project=None,
-            space=None,
-            tags=None,
-            attrs=None,
-            props=None,
-            where=None,
-            **properties,
+        self,
+        permId=None,
+        code=None,
+        type=None,
+        withParents=None,
+        withChildren=None,
+        start_with=None,
+        count=None,
+        kind=None,
+        status=None,
+        sample=None,
+        experiment=None,
+        collection=None,
+        project=None,
+        space=None,
+        tags=None,
+        attrs=None,
+        props=None,
+        where=None,
+        **properties,
     ):
         """Returns a DataFrame of all dataSets for a given project/experiment/sample (or any combination).
         The default result contains only basic attributes, i.e permId, type, experiment, sample, registrationDate,
@@ -2975,14 +3206,14 @@ class Openbis:
         )
 
     def get_experiment(
-            self, code, withAttachments=False, only_data=False, use_cache=True
+        self, code, withAttachments=False, only_data=False, use_cache=True
     ):
         """Returns an experiment object for a given identifier (code)."""
 
         experiment = (
-                not only_data
-                and use_cache
-                and self._object_cache(entity="experiment", code=code)
+            not only_data
+            and use_cache
+            and self._object_cache(entity="experiment", code=code)
         )
         if experiment:
             return experiment
@@ -3047,53 +3278,41 @@ class Openbis:
 
     def execute_custom_dss_service(self, code, parameters):
         """Executes a custom Datastore service with the provided service id. Additional execution options can be set via parameters.
-            code: serviceId of the custom Datastore service
-            parameters: parameters to be sent to the custom service
+        code: serviceId of the custom Datastore service
+        parameters: parameters to be sent to the custom service
         """
-        serviceId = {
-            "@type": "dss.dto.service.id.CustomDssServiceCode",
-            "permId": code
-        }
+        serviceId = {"@type": "dss.dto.service.id.CustomDssServiceCode", "permId": code}
         options = {
             "@type": "dss.dto.service.CustomDSSServiceExecutionOptions",
-            "parameters": parameters
+            "parameters": parameters,
         }
         request = {
             "method": "executeCustomDSSService",
-            "params": [
-                self.token,
-                serviceId,
-                options
-            ],
+            "params": [self.token, serviceId, options],
         }
-        return self._post_request_full_url(urljoin(self._get_dss_url(), self.dss_v3), request)
+        return self._post_request_full_url(
+            urljoin(self._get_dss_url(), self.dss_v3), request
+        )
 
     def execute_custom_as_service(self, code, parameters):
         """Executes a custom Application Server service with the provided service id. Additional execution options can be set via parameters.
-            code: serviceId of the custom Application Server service
-            parameters: parameters to be sent to the custom service
+        code: serviceId of the custom Application Server service
+        parameters: parameters to be sent to the custom service
         """
-        serviceId = {
-            "@type": "as.dto.service.id.CustomASServiceCode",
-            "permId": code
-        }
+        serviceId = {"@type": "as.dto.service.id.CustomASServiceCode", "permId": code}
         options = {
             "@type": "as.dto.service.CustomASServiceExecutionOptions",
-            "parameters": parameters
+            "parameters": parameters,
         }
         request = {
             "method": "executeCustomASService",
-            "params": [
-                self.token,
-                serviceId,
-                options
-            ],
+            "params": [self.token, serviceId, options],
         }
         resp = self._post_request(self.as_v3, request)
         return resp
 
     def create_external_data_management_system(
-            self, code, label, address, address_type="FILE_SYSTEM"
+        self, code, label, address, address_type="FILE_SYSTEM"
     ):
         """Create an external DMS.
         :param code: An openBIS code for the external DMS.
@@ -3145,7 +3364,14 @@ class Openbis:
 
     def confirm_deletions(self, deletion_ids):
         """Confirms performed deletions"""
-        deletions = [x if '@type' in x else { "@type": "as.dto.deletion.id.DeletionTechId", "id": x } for x in deletion_ids]
+        deletions = [
+            (
+                x
+                if "@type" in x
+                else {"@type": "as.dto.deletion.id.DeletionTechId", "id": x}
+            )
+            for x in deletion_ids
+        ]
         request = {
             "method": "confirmDeletions",
             "params": [
@@ -3161,10 +3387,10 @@ class Openbis:
             "method": "revertDeletions",
             "params": [
                 self.token,
-                [{
-                    "@type": 'as.dto.deletion.id.DeletionTechId',
-                    "id": x
-                } for x in deletion_ids],
+                [
+                    {"@type": "as.dto.deletion.id.DeletionTechId", "id": x}
+                    for x in deletion_ids
+                ],
             ],
         }
         self._post_request(self.as_v3, request)
@@ -3214,9 +3440,9 @@ class Openbis:
         """Returns a Project object for a given identifier, code or permId."""
 
         project = (
-                not only_data
-                and use_cache
-                and self._object_cache(entity="project", code=projectId)
+            not only_data
+            and use_cache
+            and self._object_cache(entity="project", code=projectId)
         )
         if project:
             return project
@@ -3255,7 +3481,9 @@ class Openbis:
             if len(resp["objects"]) == 0:
                 raise ValueError("No such project: %s" % projectId)
             elif len(resp["objects"]) > 1:
-                raise ValueError("There is more than one project with code '%s'" % projectId)
+                raise ValueError(
+                    "There is more than one project with code '%s'" % projectId
+                )
             if only_data:
                 return resp["objects"][0]
 
@@ -3265,11 +3493,11 @@ class Openbis:
             return project
 
     def get_projects(
-            self,
-            space=None,
-            code=None,
-            start_with=None,
-            count=None,
+        self,
+        space=None,
+        code=None,
+        start_with=None,
+        count=None,
     ):
         """Get a list of all available projects (DataFrame object)."""
 
@@ -3404,11 +3632,11 @@ class Openbis:
         """
 
         if (
-                use_cache
-                and self.use_cache
-                and vocabulary is not None
-                and start_with is None
-                and count is None
+            use_cache
+            and self.use_cache
+            and vocabulary is not None
+            and start_with is None
+            and count is None
         ):
             voc = self._object_cache(entity="term", code=vocabulary)
             if voc:
@@ -3422,9 +3650,9 @@ class Openbis:
                     "criteria": [{"vocabulary": "Vocabulary", "code": vocabulary}],
                 }
             )
-        search_request[
-            "@type"
-        ] = "as.dto.vocabulary.search.VocabularyTermSearchCriteria"
+        search_request["@type"] = (
+            "as.dto.vocabulary.search.VocabularyTermSearchCriteria"
+        )
 
         fetchopts = get_fetchoption_for_entity("vocabularyTerm")
         fetchopts["from"] = start_with
@@ -3468,10 +3696,10 @@ class Openbis:
             df_initializer=create_data_frame,
         )
         if (
-                self.use_cache
-                and vocabulary is not None
-                and start_with is None
-                and count is None
+            self.use_cache
+            and vocabulary is not None
+            and start_with is None
+            and count is None
         ):
             self._object_cache(entity="term", code=vocabulary, value=things)
 
@@ -3486,7 +3714,7 @@ class Openbis:
             vocabularyCode=vocabularyCode.upper(),
             label=label,
             description=description,
-            managedInternally=False
+            managedInternally=False,
         )
 
     def get_term(self, code, vocabularyCode, only_data=False):
@@ -3576,9 +3804,9 @@ class Openbis:
 
         code = str(code).upper()
         voc = (
-                not only_data
-                and use_cache
-                and self._object_cache(entity="vocabulary", code=code)
+            not only_data
+            and use_cache
+            and self._object_cache(entity="vocabulary", code=code)
         )
         if voc:
             return voc
@@ -3646,9 +3874,9 @@ class Openbis:
                 identifiers.append(_type_for_id(ident, "tag"))
         else:
             tag = (
-                    not only_data
-                    and use_cache
-                    and self._object_cache(entity="tag", code=permId)
+                not only_data
+                and use_cache
+                and self._object_cache(entity="tag", code=permId)
             )
             if tag:
                 return tag
@@ -3715,7 +3943,7 @@ class Openbis:
         )
 
     def search_semantic_annotations(
-            self, permId=None, entityType=None, propertyType=None, only_data=False
+        self, permId=None, entityType=None, propertyType=None, only_data=False
     ):
         """Get a list of semantic annotations for permId, entityType, propertyType or
         property type assignment (DataFrame object).
@@ -4008,19 +4236,19 @@ class Openbis:
         return Spreadsheet(columns, rows)
 
     def new_property_type(
-            self,
-            code,
-            label,
-            description,
-            dataType,
-            managedInternally=False,
-            vocabulary=None,
-            materialType=None,
-            sampleType=None,
-            schema=None,
-            transformation=None,
-            metaData=None,
-            multiValue=False
+        self,
+        code,
+        label,
+        description,
+        dataType,
+        managedInternally=False,
+        vocabulary=None,
+        materialType=None,
+        sampleType=None,
+        schema=None,
+        transformation=None,
+        metaData=None,
+        multiValue=False,
     ):
         """Creates a new property type.
 
@@ -4063,19 +4291,19 @@ class Openbis:
             schema=schema,
             transformation=transformation,
             metaData=metaData,
-            multiValue=multiValue
+            multiValue=multiValue,
         )
 
     def get_property_type(
-            self, code, only_data=False, start_with=None, count=None, use_cache=True
+        self, code, only_data=False, start_with=None, count=None, use_cache=True
     ):
         """Returns detailed information regarding particular property type given its code"""
         if not isinstance(code, list) and start_with is None and count is None:
             code = str(code).upper()
             pt = (
-                    use_cache
-                    and self.use_cache
-                    and self._object_cache(entity="property_type", code=code)
+                use_cache
+                and self.use_cache
+                and self._object_cache(entity="property_type", code=code)
             )
             if pt:
                 if only_data:
@@ -4157,7 +4385,7 @@ class Openbis:
         )
 
     def _property_type_things(
-            self, objects, start_with=None, count=None, totalCount=None
+        self, objects, start_with=None, count=None, totalCount=None
     ):
         """takes a list of objects and returns a Things object"""
 
@@ -4168,8 +4396,9 @@ class Openbis:
             else:
                 df = DataFrame(response)
                 df["sampleType"] = df["sampleType"].map(extract_code)
-                df['sampleType'] = df['sampleType'].mask((df['dataType'] == 'SAMPLE') & (df['sampleType'] == ''),
-                                                         '(ALL)')
+                df["sampleType"] = df["sampleType"].mask(
+                    (df["dataType"] == "SAMPLE") & (df["sampleType"] == ""), "(ALL)"
+                )
                 df["registrationDate"] = df["registrationDate"].map(format_timestamp)
                 df["registrator"] = df["registrator"].map(extract_person)
                 df["vocabulary"] = df["vocabulary"].map(extract_code)
@@ -4265,7 +4494,9 @@ class Openbis:
 
     get_object_types = get_sample_types  # Alias
 
-    def get_sample_type(self, type, only_data=False, with_vocabulary=False, use_cache=True):
+    def get_sample_type(
+        self, type, only_data=False, with_vocabulary=False, use_cache=True
+    ):
         """Returns detailed information regarding particular sample type, given its code"""
         return self.get_entity_type(
             entity="sampleType",
@@ -4274,13 +4505,13 @@ class Openbis:
             with_vocabulary=with_vocabulary,
             method=self.get_sample_type,
             only_data=only_data,
-            use_cache=use_cache
+            use_cache=use_cache,
         )
 
     get_object_type = get_sample_type  # Alias
 
     def get_entity_types(
-            self, entity, cls, type=None, start_with=None, count=None, with_vocabulary=False
+        self, entity, cls, type=None, start_with=None, count=None, with_vocabulary=False
     ):
         method_name = get_method_for_entity(entity, "search")
         if type is not None:
@@ -4330,21 +4561,21 @@ class Openbis:
         )
 
     def get_entity_type(
-            self,
-            entity,
-            identifier,
-            cls,
-            method=None,
-            only_data=False,
-            with_vocabulary=False,
-            use_cache=True,
+        self,
+        entity,
+        identifier,
+        cls,
+        method=None,
+        only_data=False,
+        with_vocabulary=False,
+        use_cache=True,
     ):
 
         et = (
-                not only_data
-                and not isinstance(identifier, list)
-                and use_cache
-                and self._object_cache(entity=entity, code=identifier)
+            not only_data
+            and not isinstance(identifier, list)
+            and use_cache
+            and self._object_cache(entity=entity, code=identifier)
         )
         if et:
             return et
@@ -4394,14 +4625,14 @@ class Openbis:
                 return obj
 
     def _get_types_of(
-            self,
-            method_name,
-            entity,
-            type_name=None,
-            start_with=None,
-            count=None,
-            additional_attributes=None,
-            optional_attributes=None,
+        self,
+        method_name,
+        entity,
+        type_name=None,
+        start_with=None,
+        count=None,
+        additional_attributes=None,
+        optional_attributes=None,
     ):
         """Returns a list of all available types of an entity.
         If the name of the entity-type is given, it returns a PropertyAssignments object
@@ -4476,7 +4707,7 @@ class Openbis:
         )
 
     def _get_attributes(
-            self, type_name, types, additional_attributes, optional_attributes
+        self, type_name, types, additional_attributes, optional_attributes
     ):
         attributes = ["code", "description"] + additional_attributes
         attributes += [
@@ -4609,15 +4840,15 @@ class Openbis:
             )
 
     def _dataset_list_for_response(
-            self,
-            response,
-            attrs=None,
-            props=None,
-            start_with=None,
-            count=None,
-            totalCount=0,
-            objects=None,
-            parsed=False,
+        self,
+        response,
+        attrs=None,
+        props=None,
+        start_with=None,
+        count=None,
+        totalCount=0,
+        objects=None,
+        parsed=False,
     ):
         """returns a Things object, containing a DataFrame plus some additional information"""
 
@@ -4778,8 +5009,14 @@ class Openbis:
         )
 
     def get_sample(
-            self, sample_ident, only_data=False, withAttachments=False, props=None,
-            withDataSetIds=False, raw_response=False, **kvals
+        self,
+        sample_ident,
+        only_data=False,
+        withAttachments=False,
+        props=None,
+        withDataSetIds=False,
+        raw_response=False,
+        **kvals,
     ):
         """Retrieve metadata for the sample.
         Get metadata for the sample and any directly connected parents of the sample to allow access
@@ -4853,14 +5090,14 @@ class Openbis:
             )
 
     def _sample_list_for_response(
-            self,
-            response,
-            attrs=None,
-            props=None,
-            start_with=None,
-            count=None,
-            totalCount=0,
-            parsed=False,
+        self,
+        response,
+        attrs=None,
+        props=None,
+        start_with=None,
+        count=None,
+        totalCount=0,
+        parsed=False,
     ):
         if not parsed:
             parse_jackson(response)
@@ -4966,7 +5203,7 @@ class Openbis:
                         openbis_obj=self,
                         type=self.get_sample_type(obj["type"]["code"]),
                         data=obj,
-                        attrs=attrs
+                        attrs=attrs,
                     ),
                     response,
                 )
@@ -5058,7 +5295,7 @@ class Openbis:
     get_object = get_sample  # Alias
 
     def get_external_data_management_systems(
-            self, start_with=None, count=None, only_data=False
+        self, start_with=None, count=None, only_data=False
     ):
         entity = "externalDms"
 
@@ -5139,19 +5376,19 @@ class Openbis:
         return Space(self, None, **kwargs)
 
     def new_git_data_set(
-            self,
-            data_set_type,
-            path,
-            commit_id,
-            repository_id,
-            dms,
-            sample=None,
-            experiment=None,
-            properties={},
-            dss_code=None,
-            parents=None,
-            data_set_code=None,
-            contents=[],
+        self,
+        data_set_type,
+        path,
+        commit_id,
+        repository_id,
+        dms,
+        sample=None,
+        experiment=None,
+        properties={},
+        dss_code=None,
+        parents=None,
+        data_set_code=None,
+        contents=[],
     ):
         """Create a link data set.
         :param data_set_type: The type of the data set
@@ -5288,17 +5525,17 @@ class Openbis:
         return Transaction(*entities)
 
     def new_sample_type(
-            self,
-            code,
-            generatedCodePrefix,
-            subcodeUnique=False,
-            autoGeneratedCode=False,
-            listable=True,
-            showContainer=False,
-            showParents=True,
-            showParentMetadata=False,
-            validationPlugin=None,
-            description=None
+        self,
+        code,
+        generatedCodePrefix,
+        subcodeUnique=False,
+        autoGeneratedCode=False,
+        listable=True,
+        showContainer=False,
+        showParents=True,
+        showParentMetadata=False,
+        validationPlugin=None,
+        description=None,
     ):
         """Creates a new sample type."""
 
@@ -5319,13 +5556,13 @@ class Openbis:
     new_object_type = new_sample_type
 
     def new_dataset_type(
-            self,
-            code,
-            description=None,
-            mainDataSetPattern=None,
-            mainDataSetPath=None,
-            disallowDeletion=False,
-            validationPlugin=None,
+        self,
+        code,
+        description=None,
+        mainDataSetPattern=None,
+        mainDataSetPath=None,
+        disallowDeletion=False,
+        validationPlugin=None,
     ):
         """Creates a new dataSet type."""
 
@@ -5341,10 +5578,10 @@ class Openbis:
         )
 
     def new_experiment_type(
-            self,
-            code,
-            description=None,
-            validationPlugin=None,
+        self,
+        code,
+        description=None,
+        validationPlugin=None,
     ):
         """Creates a new experiment type (collection type)"""
         return ExperimentType(
@@ -5358,10 +5595,10 @@ class Openbis:
     new_collection_type = new_experiment_type
 
     def new_material_type(
-            self,
-            code,
-            description=None,
-            validationPlugin=None,
+        self,
+        code,
+        description=None,
+        validationPlugin=None,
     ):
         """Creates a new material type."""
         return MaterialType(
@@ -5373,14 +5610,14 @@ class Openbis:
         )
 
     def new_dataset(
-            self,
-            type=None,
-            kind="PHYSICAL",
-            files=None,
-            file=None,
-            props=None,
-            folder=None,
-            **kwargs,
+        self,
+        type=None,
+        kind="PHYSICAL",
+        files=None,
+        file=None,
+        props=None,
+        folder=None,
+        **kwargs,
     ):
         """Creates a new dataset of a given type.
 
@@ -5437,7 +5674,7 @@ class Openbis:
         )
 
     def new_vocabulary(
-            self, code, terms, managedInternally=False, chosenFromList=True, **kwargs
+        self, code, terms, managedInternally=False, chosenFromList=True, **kwargs
     ):
         """Creates a new vocabulary
         Usage::
@@ -5467,14 +5704,11 @@ class Openbis:
         return TypeGroup(self, code=name, **kwargs)
 
     def delete_type_group(self, id):
-        attrs = {
-                '@type': 'as.dto.typegroup.id.TypeGroupId',
-                'permId': id
-        }
+        attrs = {"@type": "as.dto.typegroup.id.TypeGroupId", "permId": id}
 
         del_options = {
             "@type": "as.dto.typegroup.delete.TypeGroupDeletionOptions",
-            "reason": "pybis deletion"
+            "reason": "pybis deletion",
         }
 
         request = {
@@ -5488,42 +5722,34 @@ class Openbis:
             return resp
 
     def get_type_group(self, type_group_id, only_data=False):
-        ids = {
-                '@type' : 'as.dto.typegroup.id.TypeGroupId',
-                'permId' : type_group_id
-            }
+        ids = {"@type": "as.dto.typegroup.id.TypeGroupId", "permId": type_group_id}
 
         fetch_options = {
-            '@type' : 'as.dto.typegroup.fetchoptions.TypeGroupFetchOptions',
-            'registrator' : {
-                '@type' : 'as.dto.person.fetchoptions.PersonFetchOptions'
-            },
-            'modifier' : {
-                '@type' : 'as.dto.person.fetchoptions.PersonFetchOptions'
-            },
+            "@type": "as.dto.typegroup.fetchoptions.TypeGroupFetchOptions",
+            "registrator": {"@type": "as.dto.person.fetchoptions.PersonFetchOptions"},
+            "modifier": {"@type": "as.dto.person.fetchoptions.PersonFetchOptions"},
             "typeGroupAssignments": {
-                '@type': "as.dto.typegroup.fetchoptions.TypeGroupAssignmentFetchOptions",
-                'typeGroup': {
-                    '@type': "as.dto.typegroup.fetchoptions.TypeGroupFetchOptions",
-                    'registrator': {
-                        '@type': 'as.dto.person.fetchoptions.PersonFetchOptions'
-                    }
+                "@type": "as.dto.typegroup.fetchoptions.TypeGroupAssignmentFetchOptions",
+                "typeGroup": {
+                    "@type": "as.dto.typegroup.fetchoptions.TypeGroupFetchOptions",
+                    "registrator": {
+                        "@type": "as.dto.person.fetchoptions.PersonFetchOptions"
+                    },
                 },
-                'sampleType': {
+                "sampleType": {
                     "@type": "as.dto.sample.fetchoptions.SampleTypeFetchOptions",
-                    'registrator': {
-                        '@type': 'as.dto.person.fetchoptions.PersonFetchOptions'
-                    }
+                    "registrator": {
+                        "@type": "as.dto.person.fetchoptions.PersonFetchOptions"
+                    },
                 },
-                'registrator': {
-                    '@type': 'as.dto.person.fetchoptions.PersonFetchOptions'
-                }
+                "registrator": {
+                    "@type": "as.dto.person.fetchoptions.PersonFetchOptions"
+                },
             },
             # 'sort': {
             #     '@type' : 'as.dto.typegroup.fetchoptions.TypeGroupSortOptions',
             #
             # }
-
         }
 
         request = {
@@ -5548,31 +5774,28 @@ class Openbis:
     def search_type_group(self, name):
 
         criteria = {
-                '@type' : 'as.dto.typegroup.search.TypeGroupSearchCriteria',
-                'criteria' : [{
-                    '@type': 'as.dto.typegroup.search.TypeGroupCodeSearchCriteria',
-                    'fieldName': 'code',
-                    'fieldType': 'ATTRIBUTE',
+            "@type": "as.dto.typegroup.search.TypeGroupSearchCriteria",
+            "criteria": [
+                {
+                    "@type": "as.dto.typegroup.search.TypeGroupCodeSearchCriteria",
+                    "fieldName": "code",
+                    "fieldType": "ATTRIBUTE",
                     "fieldValue": {
                         "value": name,
                         "@type": "as.dto.common.search.StringStartsWithValue",
                     },
-                }]
-            }
+                }
+            ],
+        }
 
         fetch_options = {
-            '@type' : 'as.dto.typegroup.fetchoptions.TypeGroupFetchOptions',
-            'registrator' : {
-                '@type' : 'as.dto.person.fetchoptions.PersonFetchOptions'
-            },
-            'modifier' : {
-                '@type' : 'as.dto.person.fetchoptions.PersonFetchOptions'
-            },
+            "@type": "as.dto.typegroup.fetchoptions.TypeGroupFetchOptions",
+            "registrator": {"@type": "as.dto.person.fetchoptions.PersonFetchOptions"},
+            "modifier": {"@type": "as.dto.person.fetchoptions.PersonFetchOptions"},
             # 'sort': {
             #     '@type' : 'as.dto.typegroup.fetchoptions.TypeGroupSortOptions',
             #
             # }
-
         }
 
         request = {
@@ -5585,20 +5808,18 @@ class Openbis:
             print(resp)
             return resp
 
-
     def new_type_group_assignment(self, type_group_name, sample_type_code):
-        """
-        """
+        """ """
         attrs = {
             "@type": "as.dto.typegroup.create.TypeGroupAssignmentCreation",
             "sampleTypeId": {
-                "@type" : "as.dto.entitytype.id.EntityTypePermId",
+                "@type": "as.dto.entitytype.id.EntityTypePermId",
                 "entityKind": "SAMPLE",
-                "permId" : sample_type_code,
+                "permId": sample_type_code,
             },
             "typeGroupId": {
-                "@type" : "as.dto.typegroup.id.TypeGroupId",
-                "permId" : type_group_name,
+                "@type": "as.dto.typegroup.id.TypeGroupId",
+                "permId": type_group_name,
             },
             "managedInternally": False,
         }
@@ -5608,7 +5829,6 @@ class Openbis:
             "params": [self.token, [attrs]],
         }
 
-
         resp = self._post_request(self.as_v3, request)
         if resp is not None:
             print(resp)
@@ -5616,29 +5836,24 @@ class Openbis:
         else:
             raise ValueError("Could not get the server information")
 
-
     def delete_type_group_assignment(self, type_group, sample_type):
-        """
-        """
+        """ """
         attrs = {
-
-            '@type': 'as.dto.typegroup.id.TypeGroupAssignmentId',
+            "@type": "as.dto.typegroup.id.TypeGroupAssignmentId",
             "sampleTypeId": {
-                "@type" : "as.dto.entitytype.id.EntityTypePermId",
+                "@type": "as.dto.entitytype.id.EntityTypePermId",
                 "entityKind": "SAMPLE",
-                "permId" : sample_type,
+                "permId": sample_type,
             },
             "typeGroupId": {
-                "@type" : "as.dto.typegroup.id.TypeGroupId",
-                "permId" : type_group,
+                "@type": "as.dto.typegroup.id.TypeGroupId",
+                "permId": type_group,
             },
-
         }
 
         del_options = {
             "@type": "as.dto.typegroup.delete.TypeGroupAssignmentDeletionOptions",
-            "reason": "test"
-
+            "reason": "test",
         }
 
         request = {
@@ -5651,13 +5866,10 @@ class Openbis:
             print(resp)
             return resp
 
-
     def get_type_group_assignment(self, type_group, sample_type):
-        """
-                """
+        """ """
         attrs = {
-
-            '@type': 'as.dto.typegroup.id.TypeGroupAssignmentId',
+            "@type": "as.dto.typegroup.id.TypeGroupAssignmentId",
             "sampleTypeId": {
                 "@type": "as.dto.entitytype.id.EntityTypePermId",
                 "entityKind": "SAMPLE",
@@ -5667,23 +5879,20 @@ class Openbis:
                 "@type": "as.dto.typegroup.id.TypeGroupId",
                 "permId": type_group,
             },
-
         }
 
         fetch_options = {
             "@type": "as.dto.typegroup.fetchoptions.TypeGroupAssignmentFetchOptions",
-            'registrator' : {
-                '@type' : 'as.dto.person.fetchoptions.PersonFetchOptions'
+            "registrator": {"@type": "as.dto.person.fetchoptions.PersonFetchOptions"},
+            "typeGroup": {
+                "@type": "as.dto.typegroup.fetchoptions.TypeGroupFetchOptions"
             },
-            "typeGroup" : {
-                '@type': "as.dto.typegroup.fetchoptions.TypeGroupFetchOptions"
-            },
-            "sampleType" : {
-                '@type': "as.dto.sample.fetchoptions.SampleTypeFetchOptions",
+            "sampleType": {
+                "@type": "as.dto.sample.fetchoptions.SampleTypeFetchOptions",
                 "propertyAssignments": {
-                    "@type" : "as.dto.property.fetchoptions.PropertyAssignmentFetchOptions"
-                }
-            }
+                    "@type": "as.dto.property.fetchoptions.PropertyAssignmentFetchOptions"
+                },
+            },
         }
 
         request = {
@@ -5699,47 +5908,51 @@ class Openbis:
     def search_type_group_assignment(self, type_group, sample_type):
 
         criteria = {
-                '@type' : 'as.dto.typegroup.search.TypeGroupAssignmentSearchCriteria',
-                'criteria' : [{
-                        '@type': 'as.dto.typegroup.search.TypeGroupSearchCriteria',
-                        'criteria' : [{
-                            '@type': 'as.dto.common.search.CodeSearchCriteria',
-                            'fieldName': 'code',
-                            'fieldType': 'ATTRIBUTE',
+            "@type": "as.dto.typegroup.search.TypeGroupAssignmentSearchCriteria",
+            "criteria": [
+                {
+                    "@type": "as.dto.typegroup.search.TypeGroupSearchCriteria",
+                    "criteria": [
+                        {
+                            "@type": "as.dto.common.search.CodeSearchCriteria",
+                            "fieldName": "code",
+                            "fieldType": "ATTRIBUTE",
                             "fieldValue": {
                                 "value": type_group,
                                 "@type": "as.dto.common.search.StringStartsWithValue",
                             },
-                        }]
-                    },
-                    {
-                        '@type': 'as.dto.sample.search.SampleTypeSearchCriteria',
-                        'criteria' : [{
-                            '@type': 'as.dto.common.search.CodeSearchCriteria',
-                             'fieldName': 'code',
-                             'fieldType': 'ATTRIBUTE',
-                             "fieldValue": {
-                                 "value": sample_type,
-                                 "@type": "as.dto.common.search.StringStartsWithValue",
-                             }
-                        }]
-                    }]
-            }
+                        }
+                    ],
+                },
+                {
+                    "@type": "as.dto.sample.search.SampleTypeSearchCriteria",
+                    "criteria": [
+                        {
+                            "@type": "as.dto.common.search.CodeSearchCriteria",
+                            "fieldName": "code",
+                            "fieldType": "ATTRIBUTE",
+                            "fieldValue": {
+                                "value": sample_type,
+                                "@type": "as.dto.common.search.StringStartsWithValue",
+                            },
+                        }
+                    ],
+                },
+            ],
+        }
 
         fetch_options = {
             "@type": "as.dto.typegroup.fetchoptions.TypeGroupAssignmentFetchOptions",
-            'registrator': {
-                '@type': 'as.dto.person.fetchoptions.PersonFetchOptions'
-            },
+            "registrator": {"@type": "as.dto.person.fetchoptions.PersonFetchOptions"},
             "typeGroup": {
-                '@type': "as.dto.typegroup.fetchoptions.TypeGroupFetchOptions"
+                "@type": "as.dto.typegroup.fetchoptions.TypeGroupFetchOptions"
             },
             "sampleType": {
-                '@type': "as.dto.sample.fetchoptions.SampleTypeFetchOptions",
+                "@type": "as.dto.sample.fetchoptions.SampleTypeFetchOptions",
                 "propertyAssignments": {
                     "@type": "as.dto.property.fetchoptions.PropertyAssignmentFetchOptions"
-                }
-            }
+                },
+            },
         }
 
         request = {
@@ -5752,40 +5965,37 @@ class Openbis:
             print(resp)
             return resp
 
-
     def get_sample_type_new(self, sample_type):
-        """
-                """
+        """ """
         attrs = {
-                "@type": "as.dto.entitytype.id.EntityTypePermId",
-                "entityKind": "SAMPLE",
-                "permId": sample_type,
-            }
+            "@type": "as.dto.entitytype.id.EntityTypePermId",
+            "entityKind": "SAMPLE",
+            "permId": sample_type,
+        }
 
         fetch_options = {
             "@type": "as.dto.sample.fetchoptions.SampleTypeFetchOptions",
-
-            "typeGroupAssignments" : {
-                '@type': "as.dto.typegroup.fetchoptions.TypeGroupAssignmentFetchOptions",
-                'typeGroup': {
-                    '@type': "as.dto.typegroup.fetchoptions.TypeGroupFetchOptions",
-                    'registrator': {
-                        '@type': 'as.dto.person.fetchoptions.PersonFetchOptions'
-                    }
+            "typeGroupAssignments": {
+                "@type": "as.dto.typegroup.fetchoptions.TypeGroupAssignmentFetchOptions",
+                "typeGroup": {
+                    "@type": "as.dto.typegroup.fetchoptions.TypeGroupFetchOptions",
+                    "registrator": {
+                        "@type": "as.dto.person.fetchoptions.PersonFetchOptions"
+                    },
                 },
-                'sampleType': {
+                "sampleType": {
                     "@type": "as.dto.sample.fetchoptions.SampleTypeFetchOptions",
-                    'registrator': {
-                        '@type': 'as.dto.person.fetchoptions.PersonFetchOptions'
-                    }
+                    "registrator": {
+                        "@type": "as.dto.person.fetchoptions.PersonFetchOptions"
+                    },
                 },
-                'registrator' : {
-                    '@type': 'as.dto.person.fetchoptions.PersonFetchOptions'
-                }
+                "registrator": {
+                    "@type": "as.dto.person.fetchoptions.PersonFetchOptions"
+                },
             },
             "propertyAssignments": {
-                "@type" : "as.dto.property.fetchoptions.PropertyAssignmentFetchOptions"
-            }
+                "@type": "as.dto.property.fetchoptions.PropertyAssignmentFetchOptions"
+            },
         }
 
         request = {
@@ -5797,6 +6007,7 @@ class Openbis:
         if resp is not None:
             print(resp)
             return resp
+
 
 class ExternalDMS:
     """managing openBIS external data management systems"""
@@ -5842,7 +6053,7 @@ class ServerInformation:
             "personal_access_tokens_validity_warning_period",
             "project_samples_enabled",
             "server-public-information.afs-server.url",
-            "server-public-information.afs-server.timeout"
+            "server-public-information.afs-server.timeout",
         ]
 
     def _reformat_info(self, info):
@@ -5877,10 +6088,10 @@ class ServerInformation:
     def get_service_props(self):
         result = {}
         if "as-service-properties" in self._info:
-            props = self._info["as-service-properties"].split('\n')[1:]
+            props = self._info["as-service-properties"].split("\n")[1:]
             result = {"_resolution_date": props[0]}
             for prop in props[1:]:
-                split = prop.split('=')
+                split = prop.split("=")
                 if len(split) > 1:
                     result[split[0]] = "=".join(split[1:])
         return result
@@ -5901,7 +6112,9 @@ class ServerInformation:
         """Checks if server api version is greater than provided"""
         current_major = self.get_major_version()
         current_minor = self.get_minor_version()
-        return (current_major == major and current_minor > minor) or current_major > major
+        return (
+            current_major == major and current_minor > minor
+        ) or current_major > major
 
     def _repr_html_(self):
         html = """
@@ -5923,7 +6136,6 @@ class ServerInformation:
             </table>
         """
         return html
-
 
 
 class Plugin(OpenBisObject, entity="plugin", single_item_method_name="get_plugin"):
@@ -5969,6 +6181,7 @@ class SessionInformation(
 ):
     pass
 
+
 class ImagingControl:
 
     DEFAULT_SERVICE_NAME = "imaging"
@@ -5977,24 +6190,42 @@ class ImagingControl:
     DEFAULT_OBJECT_VIEW_PROP_NAME = "default_object_view"
     IMAGING_DATASET_VIEWER = "IMAGING_DATASET_VIEWER"
 
-    def __init__(self, openbis_instance, service_name=DEFAULT_SERVICE_NAME, service_type='AS', afs_url=None):
+    def __init__(
+        self,
+        openbis_instance,
+        service_name=DEFAULT_SERVICE_NAME,
+        service_type="AS",
+        afs_url=None,
+    ):
         self._openbis = openbis_instance
         self._service_name = service_name
         self._service_type = service_type
         self.afs_client = None
         if afs_url is not None:
-            self.afs_client = AfsClient(afs_url, openbis_instance.token, openbis_instance.verify_certificates)
+            self.afs_client = AfsClient(
+                afs_url, openbis_instance.token, openbis_instance.verify_certificates
+            )
 
     def _execute_service(self, parameters):
         if self._service_type == "AS":
-            return self._openbis.execute_custom_as_service(self._service_name, parameters)
+            return self._openbis.execute_custom_as_service(
+                self._service_name, parameters
+            )
         else:
-            return self._openbis.execute_custom_dss_service(self._service_name, parameters)
+            return self._openbis.execute_custom_dss_service(
+                self._service_name, parameters
+            )
 
-    def make_preview(self, perm_id: str, index: int, preview: ImagingDataSetPreview) -> ImagingDataSetPreview:
+    def make_preview(
+        self, perm_id: str, index: int, preview: ImagingDataSetPreview
+    ) -> ImagingDataSetPreview:
         """Execute preview generation of preview of imaging dataset with the config parameters"""
         preview_params = preview.__dict__
-        filter_config = [] if preview_params["filterConfig"] is None else preview_params["filterConfig"]
+        filter_config = (
+            []
+            if preview_params["filterConfig"] is None
+            else preview_params["filterConfig"]
+        )
         filter_params = [f.__dict__ for f in filter_config]
         preview_params["filterConfig"] = filter_params
         parameters = {
@@ -6002,23 +6233,25 @@ class ImagingControl:
             "permId": perm_id,
             "index": index,
             "error": None,
-            "preview": preview_params
+            "preview": preview_params,
         }
         service_response = self._execute_service(parameters)
-        if service_response['error'] is None:
-            if '@id' in service_response:
-                del service_response['@id']
-            if '@id' in service_response['preview']:
-                del service_response['preview']['@id']
-            for config in service_response['preview']['filterConfig']:
-                if '@id' in config:
-                    del config['@id']
+        if service_response["error"] is None:
+            if "@id" in service_response:
+                del service_response["@id"]
+            if "@id" in service_response["preview"]:
+                del service_response["preview"]["@id"]
+            for config in service_response["preview"]["filterConfig"]:
+                if "@id" in config:
+                    del config["@id"]
             preview.__dict__ = service_response["preview"]
             return preview
         else:
-            raise ValueError(service_response['error'])
+            raise ValueError(service_response["error"])
 
-    def _get_export_url(self, perm_id: str, export: ImagingDataSetExport, image_index: int = 0) -> str:
+    def _get_export_url(
+        self, perm_id: str, export: ImagingDataSetExport, image_index: int = 0
+    ) -> str:
         export_params = export.__dict__
         export_params["config"] = export_params["config"].__dict__
         parameters = {
@@ -6027,13 +6260,13 @@ class ImagingControl:
             "index": image_index,
             "error": None,
             "url": None,
-            "export": export_params
+            "export": export_params,
         }
         service_response = self._execute_service(parameters)
-        if service_response['error'] is None:
-            return service_response['url']
+        if service_response["error"] is None:
+            return service_response["url"]
         else:
-            raise ValueError(service_response['error'])
+            raise ValueError(service_response["error"])
 
     def _get_multi_export_url(self, exports: list) -> str:
         export_params = [export.__dict__ for export in exports]
@@ -6043,49 +6276,83 @@ class ImagingControl:
             "type": "multi-export",
             "error": None,
             "url": None,
-            "exports": [export.__dict__ for export in exports]
+            "exports": [export.__dict__ for export in exports],
         }
         service_response = self._execute_service(parameters)
-        if service_response['error'] is None:
-            return service_response['url']
+        if service_response["error"] is None:
+            return service_response["url"]
         else:
-            raise ValueError(service_response['error'])
+            raise ValueError(service_response["error"])
 
-    def export_image(self, perm_id:str, image_id:int, path_to_download:str,
-                     include=None, image_format='original', archive_format="zip", resolution='original'):
+    def export_image(
+        self,
+        perm_id: str,
+        image_id: int,
+        path_to_download: str,
+        include=None,
+        image_format="original",
+        archive_format="zip",
+        resolution="original",
+    ):
         """Export particular image  with all its previews of imaging dataset"""
         if include is None:
-            include = ['IMAGE', 'RAW_DATA']
+            include = ["IMAGE", "RAW_DATA"]
         else:
-            include = [x.upper() for x  in include]
+            include = [x.upper() for x in include]
 
-        export_config = ImagingDataSetExportConfig(archive_format, image_format, resolution, include)
+        export_config = ImagingDataSetExportConfig(
+            archive_format, image_format, resolution, include
+        )
         self._export_image(perm_id, image_id, path_to_download, export_config)
 
-
-    def _export_image(self, perm_id:str, image_id:int, path_to_download:str,
-                     export_config: ImagingDataSetExportConfig):
+    def _export_image(
+        self,
+        perm_id: str,
+        image_id: int,
+        path_to_download: str,
+        export_config: ImagingDataSetExportConfig,
+    ):
 
         imaging_export = ImagingDataSetExport(export_config)
-        self._single_export_download(perm_id, imaging_export, image_id, path_to_download)
+        self._single_export_download(
+            perm_id, imaging_export, image_id, path_to_download
+        )
 
-    def export_previews(self, perm_ids, image_ids, preview_ids,
-                            path_to_download, include=None, image_format='original',
-                            archive_format="zip", resolution='original'):
+    def export_previews(
+        self,
+        perm_ids,
+        image_ids,
+        preview_ids,
+        path_to_download,
+        include=None,
+        image_format="original",
+        archive_format="zip",
+        resolution="original",
+    ):
         """Export multiple previews of imaging datasets"""
         if include is None:
-            include = ['IMAGE', 'RAW_DATA']
+            include = ["IMAGE", "RAW_DATA"]
 
-        export_config = ImagingDataSetExportConfig(archive_format, image_format, resolution, include)
+        export_config = ImagingDataSetExportConfig(
+            archive_format, image_format, resolution, include
+        )
 
         imaging_multi_exports = []
         for i in range(len(perm_ids)):
-            imaging_multi_exports += [ImagingDataSetMultiExport(perm_ids[i], image_ids[i],
-                                                                        preview_ids[i], export_config)]
+            imaging_multi_exports += [
+                ImagingDataSetMultiExport(
+                    perm_ids[i], image_ids[i], preview_ids[i], export_config
+                )
+            ]
         self._multi_export_download(imaging_multi_exports, path_to_download)
 
-    def _single_export_download(self, perm_id: str, export: ImagingDataSetExport, image_index: int = 0,
-                               directory_path=""):
+    def _single_export_download(
+        self,
+        perm_id: str,
+        export: ImagingDataSetExport,
+        image_index: int = 0,
+        directory_path="",
+    ):
         export_url = self._get_export_url(perm_id, export, image_index)
         self._download(export_url, directory_path)
 
@@ -6094,11 +6361,13 @@ class ImagingControl:
         self._download(export_url, directory_path)
 
     def _download(self, url, directory_path=""):
-        get_response = requests.get(url, stream=True, verify=self._openbis.verify_certificates)
+        get_response = requests.get(
+            url, stream=True, verify=self._openbis.verify_certificates
+        )
         file_name = url.split("/")[-1]
         path = os.path.join(directory_path, file_name)
         os.makedirs(os.path.dirname(path), exist_ok=True)
-        with open(path, 'wb') as f:
+        with open(path, "wb") as f:
             for chunk in get_response.iter_content(chunk_size=1024):
                 if chunk:
                     f.write(chunk)
@@ -6106,37 +6375,62 @@ class ImagingControl:
     def get_property_config(self, perm_id: str) -> ImagingDataSetPropertyConfig:
         """Returns imaging property config of given imaging dataset."""
         dataset = self._openbis.get_dataset(perm_id)
-        imaging_property = json.loads(dataset.props[ImagingControl.IMAGING_CONFIG_PROP_NAME])
+        imaging_property = json.loads(
+            dataset.props[ImagingControl.IMAGING_CONFIG_PROP_NAME]
+        )
         return ImagingDataSetPropertyConfig.from_dict(imaging_property)
 
-    def update_property_config(self, perm_id: str, config: ImagingDataSetPropertyConfig):
+    def update_property_config(
+        self, perm_id: str, config: ImagingDataSetPropertyConfig
+    ):
         """Update imaging dataset with given imaging property config."""
         dataset = self._openbis.get_dataset(perm_id)
         dataset.props[ImagingControl.IMAGING_CONFIG_PROP_NAME] = config.to_json()
         dataset.save()
 
-    def create_imaging_dataset(self, dataset_type: str, config: ImagingDataSetPropertyConfig,
-                               experiment: str, sample: str,
-                               files: list, other_properties=None):
+    def create_imaging_dataset(
+        self,
+        dataset_type: str,
+        config: ImagingDataSetPropertyConfig,
+        experiment: str,
+        sample: str,
+        files: list,
+        other_properties=None,
+    ):
         """Create new imaging dataset with given files and property config."""
         if other_properties is None:
             other_properties = {}
         assert dataset_type is not None
-        assert files is not None and len(files) > 0, "Files parameter must not be empty!"
+        assert (
+            files is not None and len(files) > 0
+        ), "Files parameter must not be empty!"
         assert config is not None
         if self.afs_client is not None and self.afs_client.is_session_valid():
             props = other_properties
             props[ImagingControl.IMAGING_CONFIG_PROP_NAME] = config.to_json()
-            props[ImagingControl.DEFAULT_OBJECT_VIEW_PROP_NAME] = ImagingControl.IMAGING_DATASET_VIEWER
-            sample = self._openbis.new_sample(dataset_type, experiment=experiment, props=props)
+            props[ImagingControl.DEFAULT_OBJECT_VIEW_PROP_NAME] = (
+                ImagingControl.IMAGING_DATASET_VIEWER
+            )
+            sample = self._openbis.new_sample(
+                dataset_type, experiment=experiment, props=props
+            )
             sample = sample.save()
-            self.afs_client.upload_files(sample.permId, "/", files, wait_until_finished=True)
+            self.afs_client.upload_files(
+                sample.permId, "/", files, wait_until_finished=True
+            )
             return sample
 
         else:
             props = other_properties
             props[ImagingControl.IMAGING_CONFIG_PROP_NAME] = config.to_json()
-            props[ImagingControl.DEFAULT_DATASET_VIEW_PROP_NAME] = ImagingControl.IMAGING_DATASET_VIEWER
-            dataset = self._openbis.new_dataset(dataset_type, experiment=experiment, sample=sample, files=files,
-                                                props=props)
+            props[ImagingControl.DEFAULT_DATASET_VIEW_PROP_NAME] = (
+                ImagingControl.IMAGING_DATASET_VIEWER
+            )
+            dataset = self._openbis.new_dataset(
+                dataset_type,
+                experiment=experiment,
+                sample=sample,
+                files=files,
+                props=props,
+            )
             return dataset.save()
