@@ -140,7 +140,7 @@ public class IntegrationTestEnvironment
         if (serviceProperties != null)
         {
             serviceProperties.setProperty("httpServerPort", String.valueOf(TestInstanceHostUtils.getRoCratePort()));
-            serviceProperties.setProperty("openBISUrl", TestInstanceHostUtils.getOpenBISUrl());
+            serviceProperties.setProperty("openBISUrl", TestInstanceHostUtils.getOpenBISProxyUrl());
         }
 
         roCrateServer = new RoCrateServer();

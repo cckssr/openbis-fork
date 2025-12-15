@@ -1,6 +1,7 @@
 package ch.ethz.sis.openbis.systemtests.environment;
 
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.Properties;
 
 import javax.servlet.http.HttpServletRequest;
@@ -132,7 +133,7 @@ public class ApplicationServer
                     {
                         ProxyRequest proxyRequest = new ProxyRequest(request);
 
-                        if (request.getContentType().equals("application/octet-stream"))
+                        if (Objects.equals(request.getContentType(), "application/octet-stream"))
                         {
                             CodebaseAwareObjectInputStream objectInputStream =
                                     new CodebaseAwareObjectInputStream(proxyRequest.getInputStream(), getClass().getClassLoader(), true);
