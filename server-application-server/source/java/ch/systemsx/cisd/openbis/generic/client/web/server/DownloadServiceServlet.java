@@ -69,7 +69,7 @@ public class DownloadServiceServlet extends HttpServlet
     private IPersonalAccessTokenConverter personalAccessTokenConverter;
 
     @Override
-    @RequestMapping({ "/download", "/openbis/download" })
+    @RequestMapping({ "/download", "/openbis/download", "/openbis/openbis/download" })
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException
     {

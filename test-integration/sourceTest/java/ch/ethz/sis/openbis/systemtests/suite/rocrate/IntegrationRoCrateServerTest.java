@@ -25,6 +25,7 @@ import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -34,6 +35,8 @@ import static org.testng.Assert.*;
 
 public class IntegrationRoCrateServerTest
 {
+
+    private static final int TIMEOUT = 5 * 60 * 1000;
 
     private static String username = "system";
 
@@ -62,9 +65,6 @@ public class IntegrationRoCrateServerTest
         ImportOptions importOptions = new ImportOptions();
         importOptions.setMode(ImportMode.UPDATE_IF_EXISTS);
         openBIS.executeImport(importData, importOptions);
-
-
-
     }
 
     @AfterSuite
@@ -472,8 +472,7 @@ public class IntegrationRoCrateServerTest
             String successState, String failState)
             throws IOException, InterruptedException, ExecutionException, TimeoutException
     {
-
-        OpenBIS openBIS = environment.createOpenBIS();
+        OpenBIS openBIS = environment.createOpenBIS(TIMEOUT);
         openBIS.login(username, password);
 
         String export_type = exportMimeType;
@@ -485,6 +484,7 @@ public class IntegrationRoCrateServerTest
         request.header("Content-Type", "application/json");
         request.header("Export", export_type);
         request.body(new BytesRequestContent(identifiersJsonString.getBytes()));
+        request.idleTimeout(TIMEOUT, TimeUnit.MILLISECONDS);
 
         ContentResponse response = request.send();
         LinkedHashMap asyncJob =
@@ -501,6 +501,7 @@ public class IntegrationRoCrateServerTest
             pollRequest.method(HttpMethod.GET);
             pollRequest.header("api-key", openBIS.getSessionToken());
             pollRequest.header("jobId", jobId);
+            pollRequest.idleTimeout(TIMEOUT, TimeUnit.MILLISECONDS);
             ContentResponse pollResponse = pollRequest.send();
             LinkedHashMap asyncResult =
                     objectMapper.readValue(pollResponse.getContentAsString(), LinkedHashMap.class);

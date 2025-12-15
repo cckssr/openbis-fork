@@ -185,12 +185,11 @@ public final class ImportJob implements IAsyncJob
             importOperation.setImportOptions(getImportOptions(importParams));
             importOperation.setImportData(importData);
 
-            openBIS.executeOperations(importParams.getApiKey(), List.of(importOperation),
+            openBIS.executeOperations(List.of(importOperation),
                     asynchronousOperationExecutionOptions);
             AsynchronousOperationExecutionResults ongoingOperations =
                     (AsynchronousOperationExecutionResults)
-                            openBIS.executeOperations(importParams.getApiKey(),
-                                    List.of(importOperation),
+                            openBIS.executeOperations(List.of(importOperation),
                                     asynchronousOperationExecutionOptions);
 
             OperationExecutionFetchOptions ongoingOperationsFechOptions =

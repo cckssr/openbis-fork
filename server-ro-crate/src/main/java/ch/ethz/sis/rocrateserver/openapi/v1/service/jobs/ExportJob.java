@@ -1,5 +1,22 @@
 package ch.ethz.sis.rocrateserver.openapi.v1.service.jobs;
 
+import java.io.InputStream;
+import java.time.Duration;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+
+import org.eclipse.jetty.client.HttpClient;
+import org.eclipse.jetty.client.api.Request;
+import org.eclipse.jetty.client.http.HttpClientTransportOverHTTP;
+import org.eclipse.jetty.client.util.InputStreamResponseListener;
+import org.eclipse.jetty.io.ClientConnector;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
+
 import ch.ethz.sis.openbis.generic.OpenBIS;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.operation.IOperationResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
@@ -35,18 +52,6 @@ import ch.ethz.sis.rocrateserver.startup.StartupMain;
 import ch.openbis.rocrate.app.writer.Writer;
 import io.quarkus.logging.Log;
 import jakarta.ws.rs.HttpMethod;
-import org.eclipse.jetty.client.HttpClient;
-import org.eclipse.jetty.client.api.Request;
-import org.eclipse.jetty.client.http.HttpClientTransportOverHTTP;
-import org.eclipse.jetty.client.util.InputStreamResponseListener;
-import org.eclipse.jetty.io.ClientConnector;
-import org.eclipse.jetty.util.ssl.SslContextFactory;
-
-import java.io.InputStream;
-import java.time.Duration;
-import java.util.*;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 
 public final class ExportJob implements IAsyncJob
 {
@@ -171,7 +176,7 @@ public final class ExportJob implements IAsyncJob
 
             AsynchronousOperationExecutionResults ongoingOperations =
                     (AsynchronousOperationExecutionResults)
-                            openBIS.executeOperations(exportParams.getApiKey(),
+                            openBIS.executeOperations(
                                     List.of(exportOperation),
                                     asynchronousOperationExecutionOptions);
 

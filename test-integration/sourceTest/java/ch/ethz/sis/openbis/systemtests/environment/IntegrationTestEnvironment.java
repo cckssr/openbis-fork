@@ -61,6 +61,8 @@ public class IntegrationTestEnvironment
 
     public IntegrationTestEnvironment()
     {
+        System.setProperty("ant.project.name", "test-integration");
+
         createShares(Map.of(
                 1, loadProperties(Path.of("etc/default/shares/1/share.properties")),
                 2, loadProperties(Path.of("etc/default/shares/2/share.properties")),
@@ -80,6 +82,8 @@ public class IntegrationTestEnvironment
         {
             serviceProperties.setProperty(TransactionConfiguration.APPLICATION_SERVER_URL_PROPERTY_NAME, TestInstanceHostUtils.getOpenBISProxyUrl());
             serviceProperties.setProperty(TransactionConfiguration.AFS_SERVER_URL_PROPERTY_NAME,
+                    TestInstanceHostUtils.getAFSProxyUrl() + TestInstanceHostUtils.getAFSPath());
+            serviceProperties.setProperty("server-public-information.afs-server.url",
                     TestInstanceHostUtils.getAFSProxyUrl() + TestInstanceHostUtils.getAFSPath());
         }
 
@@ -136,7 +140,7 @@ public class IntegrationTestEnvironment
         if (serviceProperties != null)
         {
             serviceProperties.setProperty("httpServerPort", String.valueOf(TestInstanceHostUtils.getRoCratePort()));
-            serviceProperties.setProperty("openBISUrl", TestInstanceHostUtils.getOpenBISProxyUrl());
+            serviceProperties.setProperty("openBISUrl", TestInstanceHostUtils.getOpenBISUrl());
         }
 
         roCrateServer = new RoCrateServer();
@@ -215,6 +219,13 @@ public class IntegrationTestEnvironment
         return new OpenBIS(TestInstanceHostUtils.getOpenBISUrl() + TestInstanceHostUtils.getOpenBISPath(),
                 TestInstanceHostUtils.getDSSUrl() + TestInstanceHostUtils.getDSSPath(),
                 TestInstanceHostUtils.getAFSUrl() + TestInstanceHostUtils.getAFSPath());
+    }
+
+    public OpenBIS createOpenBIS(int timeout)
+    {
+        return new OpenBIS(TestInstanceHostUtils.getOpenBISUrl() + TestInstanceHostUtils.getOpenBISPath(),
+                TestInstanceHostUtils.getDSSUrl() + TestInstanceHostUtils.getDSSPath(),
+                TestInstanceHostUtils.getAFSUrl() + TestInstanceHostUtils.getAFSPath(), timeout);
     }
 
     private void dropOpenBISDatabase()
@@ -319,7 +330,8 @@ public class IntegrationTestEnvironment
     {
         try
         {
-            SQLUtils.execute(context.getAdminDataSource(), "drop database " + context.getDatabaseName() + " with (force)", new SQLUtils.NoParametersSetter());
+            SQLUtils.execute(context.getAdminDataSource(), "drop database " + context.getDatabaseName() + " with (force)",
+                    new SQLUtils.NoParametersSetter());
         } catch (SQLException e)
         {
             if (!DBUtilities.isDBNotExistException(e))
