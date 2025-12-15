@@ -63,7 +63,7 @@ public abstract class ScrollableResultsIterator<T> implements Iterable<T>, IRele
 
                     if (scroll.next())
                     {
-                        current = scroll.get();
+                        current = toArray(scroll.get());
                         return true;
                     } else
                     {
@@ -81,7 +81,7 @@ public abstract class ScrollableResultsIterator<T> implements Iterable<T>, IRele
                         {
                             return null;
                         }
-                        current = scroll.get();
+                        current = toArray(scroll.get());
                     }
 
                     Object[] o = current;
@@ -96,6 +96,19 @@ public abstract class ScrollableResultsIterator<T> implements Iterable<T>, IRele
                 }
             });
         return releasableIterator;
+    }
+
+    private Object[] toArray(Object row)
+    {
+        if (row == null)
+        {
+            return new Object[] { null };
+        }
+        if (row instanceof Object[])
+        {
+            return (Object[]) row;
+        }
+        return new Object[] { row };
     }
 
     @Override

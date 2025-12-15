@@ -24,21 +24,20 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import ch.ethz.sis.shared.log.classic.impl.Logger;
 import org.hibernate.Criteria;
-import org.hibernate.FetchMode;
-import org.hibernate.HibernateException;
-import org.hibernate.SQLQuery;
 import org.hibernate.Session;
-import org.hibernate.criterion.Criterion;
+
 import org.hibernate.criterion.DetachedCriteria;
-import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
+import org.hibernate.query.NativeQuery;
+
+import org.hibernate.query.Query;
+import org.hibernate.type.StandardBasicTypes;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.support.JdbcAccessor;
-import org.springframework.orm.hibernate5.HibernateCallback;
-import org.springframework.orm.hibernate5.HibernateTemplate;
 
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
@@ -59,6 +58,14 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePropertyPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SpacePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.TableNames;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.SampleIdentifier;
+import org.springframework.orm.hibernate5.HibernateTemplate;
+
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.JoinType;
+import javax.persistence.criteria.Root;
+
+import static ch.systemsx.cisd.openbis.generic.server.dataaccess.db.DAOUtils.BATCH_SIZE;
 
 /**
  * Implementation of {@link ISampleDAO} for databases.
@@ -84,8 +91,8 @@ public class SampleDAO extends AbstractGenericEntityWithPropertiesDAO<SamplePE> 
     }
 
     // LockSampleModificationsInterceptor automatically obtains lock
-    private final void internalCreateOrUpdateSample(final SamplePE sample, final PersonPE modifier,
-            final HibernateTemplate hibernateTemplate, final boolean doLog)
+    private SamplePE internalCreateOrUpdateSample(final SamplePE sample, final PersonPE modifier,
+            final Session session, final boolean doLog)
     {
         validatePE(sample);
         sample.setCode(CodeConverter.tryToDatabase(sample.getCode()));
@@ -96,11 +103,12 @@ public class SampleDAO extends AbstractGenericEntityWithPropertiesDAO<SamplePE> 
         lockEntity(sample.getExperiment());
         lockEntity(sample.getContainer());
         lockEntities(sample.getParents());
-        hibernateTemplate.saveOrUpdate(sample);
+        session.saveOrUpdate(sample);
         if (doLog && operationLog.isInfoEnabled())
         {
             operationLog.info(String.format("ADD: sample '%s'.", sample));
         }
+        return sample;
     }
 
     //
@@ -115,15 +123,15 @@ public class SampleDAO extends AbstractGenericEntityWithPropertiesDAO<SamplePE> 
 
         try
         {
-            final HibernateTemplate hibernateTemplate = getHibernateTemplate();
 
-            internalCreateOrUpdateSample(sample, modifier, hibernateTemplate, true);
+            SamplePE persistedSample = doExecute(session ->
+                                internalCreateOrUpdateSample(sample, modifier, session, true));
 
             // need to deal with exception thrown by trigger checking code uniqueness
-            flushWithSqlExceptionHandling(hibernateTemplate);
-            scheduleDynamicPropertiesEvaluation(Collections.singletonList(sample));
+            flushWithSqlExceptionHandling();
+            scheduleDynamicPropertiesEvaluation(Collections.singletonList(persistedSample));
             scheduleDynamicPropertiesEvaluation(getDynamicPropertyEvaluatorScheduler(),
-                    DataPE.class, new ArrayList<DataPE>(sample.getDatasets()));
+                    DataPE.class, new ArrayList<DataPE>(persistedSample.getDatasets()));
         } catch (DataAccessException e)
         {
             SampleDataAccessExceptionTranslator.translateAndThrow(e);
@@ -146,9 +154,9 @@ public class SampleDAO extends AbstractGenericEntityWithPropertiesDAO<SamplePE> 
 
         String queryFormat =
                 "from " + SamplePropertyPE.class.getSimpleName()
-                        + " where %s = ? and entity.space = ? "
-                        + " and entityTypePropertyType.propertyTypeInternal.simpleCode = ?"
-                        + " and entityTypePropertyType.propertyTypeInternal.managedInternally = ?";
+                        + " where %s = ?1 and entity.space = ?2 "
+                        + " and entityTypePropertyType.propertyTypeInternal.simpleCode = ?3"
+                        + " and entityTypePropertyType.propertyTypeInternal.managedInternally = ?4";
         List<SamplePE> entities =
                 listByPropertyValue(queryFormat, propertyCode, propertyValue, space);
         if (operationLog.isDebugEnabled())
@@ -170,11 +178,11 @@ public class SampleDAO extends AbstractGenericEntityWithPropertiesDAO<SamplePE> 
 
         String queryPropertySimpleValue = String.format(queryFormat, "value");
         List<SamplePropertyPE> properties1 =
-                cast(getHibernateTemplate().find(queryPropertySimpleValue, arguments));
+                find(SamplePropertyPE.class, queryPropertySimpleValue, arguments);
 
         String queryPropertyVocabularyTerm = String.format(queryFormat, "vocabularyTerm.simpleCode");
         List<SamplePropertyPE> properties2 =
-                cast(getHibernateTemplate().find(queryPropertyVocabularyTerm, arguments));
+                find(SamplePropertyPE.class, queryPropertyVocabularyTerm, arguments);
 
         properties1.addAll(properties2);
         List<SamplePE> entities = extractEntities(properties1);
@@ -195,10 +203,19 @@ public class SampleDAO extends AbstractGenericEntityWithPropertiesDAO<SamplePE> 
     public SamplePE tryToFindByPermID(String permID) throws DataAccessException
     {
         assert permID != null : "Unspecified permanent ID.";
-        final Criteria criteria = currentSession().createCriteria(ENTITY_CLASS);
-        criteria.add(Restrictions.eq("permId", permID));
-        criteria.setFetchMode("sampleType.sampleTypePropertyTypesInternal", FetchMode.JOIN);
-        final SamplePE sample = (SamplePE) criteria.uniqueResult();
+        SamplePE sample = currentSession()
+                .createQuery(
+                        "select distinct s " +
+                                "from " + ENTITY_CLASS.getName() + " s " +
+                                "join fetch s.sampleType st " +
+                                "left join fetch st.sampleTypePropertyTypesInternal " +
+                                "where s.permId = :permId",
+                        ENTITY_CLASS
+                )
+                .setParameter("permId", permID)
+                .uniqueResultOptional()
+                .orElse(null);
+
         if (operationLog.isDebugEnabled())
         {
             operationLog.debug(String.format("Following sample '%s' has been found for "
@@ -212,15 +229,14 @@ public class SampleDAO extends AbstractGenericEntityWithPropertiesDAO<SamplePE> 
     {
         assert sampleCode != null : "Unspecified sample code.";
 
-        Criteria criteria = currentSession().createCriteria(ENTITY_CLASS);
-        addSampleCodeCriterion(criteria, sampleCode);
-        criteria.add(Restrictions.isNull("space"));
-        SamplePE sample = (SamplePE) criteria.uniqueResult();
-        if (sample == null && isFullCode(sampleCode) == false)
+        SampleCodeParts parts = SampleCodeParts.from(sampleCode);
+        List<String> baseConditions = new ArrayList<String>();
+        baseConditions.add("s.space is null");
+
+        SamplePE sample = findSample(parts, null, baseConditions, ContainerRestriction.MATCH_FROM_CODE);
+        if (sample == null && parts.hasContainer() == false)
         {
-            criteria = currentSession().createCriteria(ENTITY_CLASS);
-            criteria.add(Restrictions.isNull("space"));
-            sample = tryFindContainedSampleWithUniqueSubcode(criteria, sampleCode);
+            sample = findSample(parts, null, baseConditions, ContainerRestriction.REQUIRE_PRESENT);
         }
         if (operationLog.isDebugEnabled())
         {
@@ -237,8 +253,9 @@ public class SampleDAO extends AbstractGenericEntityWithPropertiesDAO<SamplePE> 
     {
         assert sampleCodes != null : "Unspecified sample codes.";
 
-        final Criteria criteria = currentSession().createCriteria(ENTITY_CLASS);
-        return listByCodes(criteria, sampleCodes, containerCodeOrNull);
+        List<String> baseConditions = new ArrayList<String>();
+        baseConditions.add("s.space is null");
+        return listByCodes(sampleCodes, containerCodeOrNull, null, baseConditions);
     }
 
     @Override
@@ -247,13 +264,16 @@ public class SampleDAO extends AbstractGenericEntityWithPropertiesDAO<SamplePE> 
         assert sampleCode != null : "Unspecified sample code.";
         assert project != null : "Unspecified project.";
 
-        Criteria criteria = createProjectCriteria(project);
-        addSampleCodeCriterion(criteria, sampleCode);
-        SamplePE sample = (SamplePE) criteria.uniqueResult();
-        if (sample == null && isFullCode(sampleCode) == false)
+        SampleCodeParts parts = SampleCodeParts.from(sampleCode);
+        List<String> baseConditions = new ArrayList<String>();
+        baseConditions.add("s.projectInternal = :project");
+
+        SamplePE sample = findSample(parts, query -> query.setParameter("project", project),
+                baseConditions, ContainerRestriction.MATCH_FROM_CODE);
+        if (sample == null && parts.hasContainer() == false)
         {
-            criteria = createProjectCriteria(project);
-            sample = tryFindContainedSampleWithUniqueSubcode(criteria, sampleCode);
+            sample = findSample(parts, query -> query.setParameter("project", project),
+                    baseConditions, ContainerRestriction.REQUIRE_PRESENT);
         }
         if (operationLog.isDebugEnabled())
         {
@@ -276,13 +296,20 @@ public class SampleDAO extends AbstractGenericEntityWithPropertiesDAO<SamplePE> 
         assert sampleCode != null : "Unspecified sample code.";
         assert space != null : "Unspecified space.";
 
-        Criteria criteria = createSpaceCriteria(space, ignoringProject);
-        addSampleCodeCriterion(criteria, sampleCode);
-        SamplePE sample = (SamplePE) criteria.uniqueResult();
-        if (sample == null && isFullCode(sampleCode) == false)
+        SampleCodeParts parts = SampleCodeParts.from(sampleCode);
+        List<String> baseConditions = new ArrayList<String>();
+        baseConditions.add("s.space = :space");
+        if (ignoringProject == false)
         {
-            criteria = createSpaceCriteria(space, ignoringProject);
-            sample = tryFindContainedSampleWithUniqueSubcode(criteria, sampleCode);
+            baseConditions.add("s.projectInternal is null");
+        }
+
+        SamplePE sample = findSample(parts, query -> query.setParameter("space", space),
+                baseConditions, ContainerRestriction.MATCH_FROM_CODE);
+        if (sample == null && parts.hasContainer() == false)
+        {
+            sample = findSample(parts, query -> query.setParameter("space", space), baseConditions,
+                    ContainerRestriction.REQUIRE_PRESENT);
         }
         if (operationLog.isDebugEnabled())
         {
@@ -300,8 +327,12 @@ public class SampleDAO extends AbstractGenericEntityWithPropertiesDAO<SamplePE> 
         assert sampleCodes != null : "Unspecified sample codes.";
         assert space != null : "Unspecified space.";
 
-        Criteria criteria = createSpaceCriteria(space, false);
-        return listByCodes(criteria, sampleCodes, containerCodeOrNull);
+        List<String> baseConditions = new ArrayList<String>();
+        baseConditions.add("s.space = :space");
+        baseConditions.add("s.projectInternal is null");
+
+        return listByCodes(sampleCodes, containerCodeOrNull,
+                query -> query.setParameter("space", space), baseConditions);
     }
 
     @Override
@@ -310,14 +341,59 @@ public class SampleDAO extends AbstractGenericEntityWithPropertiesDAO<SamplePE> 
         assert sampleCodes != null : "Unspecified sample codes.";
         assert project != null : "Unspecified project.";
 
-        Criteria criteria = createProjectCriteria(project);
-        return listByCodes(criteria, sampleCodes, containerCodeOrNull);
+        List<String> baseConditions = new ArrayList<String>();
+        baseConditions.add("s.projectInternal = :project");
+
+        return listByCodes(sampleCodes, containerCodeOrNull,
+                query -> query.setParameter("project", project), baseConditions);
     }
 
-    private List<SamplePE> listByCodes(Criteria criteria, List<String> sampleCodes, String containerCodeOrNull)
+    private List<SamplePE> listByCodes(List<String> sampleCodes, String containerCodeOrNull,
+            Consumer<Query<SamplePE>> parameterBinder, List<String> baseConditions)
     {
-        addSampleCodesCriterion(criteria, sampleCodes, containerCodeOrNull);
-        List<SamplePE> result = cast(criteria.list());
+        if (sampleCodes == null || sampleCodes.isEmpty())
+        {
+            return new ArrayList<SamplePE>();
+        }
+
+        List<String> convertedCodes = new ArrayList<String>(sampleCodes.size());
+        for (String sampleCode : sampleCodes)
+        {
+            convertedCodes.add(CodeConverter.tryToDatabase(sampleCode));
+        }
+
+        List<String> conditions = new ArrayList<String>();
+        if (baseConditions != null)
+        {
+            for (String condition : baseConditions)
+            {
+                if (condition != null && condition.isEmpty() == false)
+                {
+                    conditions.add(condition);
+                }
+            }
+        }
+        conditions.add("s.code in (:codes)");
+        if (containerCodeOrNull != null)
+        {
+            conditions.add("s.container.code = :containerCode");
+        } else
+        {
+            conditions.add("s.container is null");
+        }
+
+        Query<SamplePE> query = createSampleSelectionQuery(conditions, true);
+        query.setParameterList("codes", convertedCodes);
+        if (containerCodeOrNull != null)
+        {
+            query.setParameter("containerCode", CodeConverter.tryToDatabase(containerCodeOrNull));
+        }
+        if (parameterBinder != null)
+        {
+            parameterBinder.accept(query);
+        }
+
+        List<SamplePE> result = query.getResultList();
         if (operationLog.isDebugEnabled())
         {
             operationLog.debug(String.format("%s samples has been found", result.size()));
@@ -325,76 +401,112 @@ public class SampleDAO extends AbstractGenericEntityWithPropertiesDAO<SamplePE> 
         return result;
     }
 
-    private boolean isFullCode(String sampleCode)
+    private SamplePE findSample(SampleCodeParts parts,
+            Consumer<Query<SamplePE>> parameterBinder,
+            List<String> baseConditions, ContainerRestriction containerRestriction)
     {
-        return sampleCode.contains(SampleIdentifier.CONTAINED_SAMPLE_CODE_SEPARARTOR_STRING);
-    }
-
-    private SamplePE tryFindContainedSampleWithUniqueSubcode(Criteria criteria, String sampleCode)
-    {
-        criteria.add(Restrictions.eq("code", CodeConverter.tryToDatabase(sampleCode)));
-        criteria.add(Restrictions.isNotNull("container"));
-        List<SamplePE> list = cast(criteria.list());
-        return list.size() == 1 ? list.get(0) : null;
-    }
-
-    private Criteria createFindCriteria(Criterion criterion)
-    {
-        final Criteria criteria = currentSession().createCriteria(ENTITY_CLASS);
-        criteria.setFetchMode("sampleType.sampleTypePropertyTypesInternal", FetchMode.JOIN);
-        criteria.add(criterion);
-        return criteria;
-    }
-
-    private Criteria createSpaceCriteria(final SpacePE space, boolean ignoringProject)
-    {
-        Criteria criteria = createFindCriteria(Restrictions.eq("space", space));
-        if (ignoringProject == false)
+        List<String> conditions = new ArrayList<String>();
+        if (baseConditions != null)
         {
-            criteria.add(Restrictions.isNull("projectInternal"));
+            for (String condition : baseConditions)
+            {
+                if (condition != null && condition.isEmpty() == false)
+                {
+                    conditions.add(condition);
+                }
+            }
         }
-        return criteria;
-    }
+        conditions.add("s.code = :code");
 
-    private Criteria createProjectCriteria(final ProjectPE project)
-    {
-        return createFindCriteria(Restrictions.eq("projectInternal", project));
-    }
-
-    private void addSampleCodesCriterion(Criteria criteria, List<String> sampleCodes,
-            String containerCodeOrNull)
-    {
-        List<String> convertedCodes = new ArrayList<String>();
-        for (String sampleCode : sampleCodes)
+        switch (containerRestriction)
         {
-            convertedCodes.add(CodeConverter.tryToDatabase(sampleCode));
+            case MATCH_FROM_CODE:
+                if (parts.hasContainer())
+                {
+                    conditions.add("s.container.code = :containerCode");
+                } else
+                {
+                    conditions.add("s.container is null");
+                }
+                break;
+            case REQUIRE_PRESENT:
+                conditions.add("s.container is not null");
+                break;
+            case REQUIRE_ABSENT:
+                conditions.add("s.container is null");
+                break;
+            default:
+                break;
         }
-        criteria.add(Restrictions.in("code", convertedCodes));
-        criteria.setFetchMode("sampleProperties", FetchMode.JOIN);
-        criteria.setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
-        addSampleContainerCriterion(criteria, containerCodeOrNull);
+
+        Query<SamplePE> query = createSampleSelectionQuery(conditions, false);
+        query.setParameter("code", parts.dbSubCode);
+        if (containerRestriction == ContainerRestriction.MATCH_FROM_CODE && parts.hasContainer())
+        {
+            query.setParameter("containerCode", parts.dbContainerCode);
+        }
+        if (parameterBinder != null)
+        {
+            parameterBinder.accept(query);
+        }
+
+        return query.uniqueResultOptional().orElse(null);
     }
 
-    private void addSampleCodeCriterion(Criteria criteria, String sampleCode)
+    private Query<SamplePE> createSampleSelectionQuery(List<String> conditions, boolean fetchProperties)
     {
-        String[] sampleCodeTokens =
-                sampleCode.split(SampleIdentifier.CONTAINED_SAMPLE_CODE_SEPARARTOR_STRING);
-        String subCode = sampleCodeTokens.length > 1 ? sampleCodeTokens[1] : sampleCode;
-        String containerCodeOrNull = sampleCodeTokens.length > 1 ? sampleCodeTokens[0] : null;
-        criteria.add(Restrictions.eq("code", CodeConverter.tryToDatabase(subCode)));
-        addSampleContainerCriterion(criteria, containerCodeOrNull);
+        StringBuilder hql = new StringBuilder();
+        hql.append("select distinct s from ").append(ENTITY_CLASS.getName()).append(" s ")
+                .append("join fetch s.sampleType st ")
+                .append("left join fetch st.sampleTypePropertyTypesInternal ");
+        if (fetchProperties)
+        {
+            hql.append("left join fetch s.sampleProperties sp ");
+        }
+        if (conditions != null && conditions.isEmpty() == false)
+        {
+            hql.append("where ").append(String.join(" and ", conditions)).append(' ');
+        }
+        return currentSession().createQuery(hql.toString(), ENTITY_CLASS);
     }
 
-    private void addSampleContainerCriterion(Criteria criteria, String containerCodeOrNull)
+    private enum ContainerRestriction
     {
-        if (containerCodeOrNull != null)
+        MATCH_FROM_CODE,
+        REQUIRE_PRESENT,
+        REQUIRE_ABSENT
+    }
+
+    private static final class SampleCodeParts
+    {
+        private final String dbSubCode;
+        private final String dbContainerCode;
+        private final boolean hasContainer;
+
+        private SampleCodeParts(String dbSubCode, String dbContainerCode, boolean hasContainer)
         {
-            criteria.createAlias("container", "c");
-            criteria.add(Restrictions
-                    .eq("c.code", CodeConverter.tryToDatabase(containerCodeOrNull)));
-        } else
+            this.dbSubCode = dbSubCode;
+            this.dbContainerCode = dbContainerCode;
+            this.hasContainer = hasContainer;
+        }
+
+        static SampleCodeParts from(String sampleCode)
         {
-            criteria.add(Restrictions.isNull("container"));
+            String[] sampleCodeTokens = sampleCode
+                    .split(SampleIdentifier.CONTAINED_SAMPLE_CODE_SEPARARTOR_STRING);
+            String subCodeRaw = sampleCodeTokens.length > 1 ? sampleCodeTokens[1] : sampleCode;
+            String containerRaw = sampleCodeTokens.length > 1 ? sampleCodeTokens[0] : null;
+
+            String dbSubCode = CodeConverter.tryToDatabase(subCodeRaw);
+            String dbContainerCode = containerRaw == null ? null
+                    : CodeConverter.tryToDatabase(containerRaw);
+
+            return new SampleCodeParts(dbSubCode, dbContainerCode, containerRaw != null);
+        }
+
+        boolean hasContainer()
+        {
+            return hasContainer;
         }
     }
 
@@ -407,24 +519,26 @@ public class SampleDAO extends AbstractGenericEntityWithPropertiesDAO<SamplePE> 
 
         try
         {
-            final HibernateTemplate hibernateTemplate = getHibernateTemplate();
+            doExecute(session -> {
 
-            for (final SamplePE samplePE : samples)
-            {
-                internalCreateOrUpdateSample(samplePE, modifier, hibernateTemplate, false);
-            }
-            if (operationLog.isInfoEnabled())
-            {
-                operationLog.info(String.format("ADD: %d samples.", samples.size()));
-            }
+                for (final SamplePE samplePE : samples)
+                {
+                    internalCreateOrUpdateSample(samplePE, modifier, session, false);
+                }
+                if (operationLog.isInfoEnabled())
+                {
+                    operationLog.info(String.format("ADD: %d samples.", samples.size()));
+                }
 
+                return null;
+            });
             // need to deal with exception thrown by trigger checking code uniqueness
-            flushWithSqlExceptionHandling(getHibernateTemplate());
+            flushWithSqlExceptionHandling();
             scheduleDynamicPropertiesEvaluation(samples);
 
             if (clearCache)
             {
-                hibernateTemplate.clear();
+                currentSession().clear();
             }
         } catch (DataAccessException e)
         {
@@ -444,7 +558,7 @@ public class SampleDAO extends AbstractGenericEntityWithPropertiesDAO<SamplePE> 
             validatePE(sample);
 
             // need to deal with exception thrown by trigger checking code uniqueness
-            flushWithSqlExceptionHandling(getHibernateTemplate());
+            flushWithSqlExceptionHandling();
             scheduleDynamicPropertiesEvaluation(Collections.singletonList(sample));
 
             if (operationLog.isInfoEnabled())
@@ -475,8 +589,37 @@ public class SampleDAO extends AbstractGenericEntityWithPropertiesDAO<SamplePE> 
         {
             return new ArrayList<SamplePE>();
         }
-        final List<SamplePE> list =
-                DAOUtils.listByCollection(getHibernateTemplate(), SamplePE.class, idName, values);
+        List<?> allValues = new ArrayList<>(values);
+        List<SamplePE> list = new ArrayList<>(allValues.size());
+
+        for (int i = 0; i < allValues.size(); i += BATCH_SIZE)
+        {
+            List<?> slice = allValues.subList(i, Math.min(allValues.size(), i + BATCH_SIZE));
+            if (slice.isEmpty())
+            {
+                continue;
+            }
+//
+            List<SamplePE> list1 = doExecute(session -> session.createCriteria(SamplePE.class)
+                    .add(Restrictions.in(idName, slice))
+                    .list());
+
+
+// Hibernate 6, use this one
+//            String hql =
+//                    "select  s " +
+//                            "from SamplePE s " +
+//                            "where s." + idName + " in (:ids)"
+//                            ;
+//
+//            List<SamplePE> batch = doExecute(session ->
+//                    session.createQuery(hql, SamplePE.class)
+//                            .setParameterList("ids", slice)
+//                            .getResultList());
+
+            list.addAll(list1);
+        }
+
         if (operationLog.isDebugEnabled())
         {
             operationLog.debug(String.format("%d sample(s) have been found.", list.size()));
@@ -508,6 +651,7 @@ public class SampleDAO extends AbstractGenericEntityWithPropertiesDAO<SamplePE> 
                 sqlSelectPermIds, sqlDeleteProperties,
                 sqlDeleteAttachments, sqlDeleteSamples, sqlInsertEvent, sqlSelectPropertyHistory,
                 sqlSelectRelationshipHistory, sqlSelectAttributes, null, AttachmentHolderKind.SAMPLE);
+        currentSession().clear();
     }
 
     private static String createQueryPropertyHistorySQL()
@@ -571,107 +715,108 @@ public class SampleDAO extends AbstractGenericEntityWithPropertiesDAO<SamplePE> 
     @Override
     public void deletePermanently(final DeletionPE deletion, final PersonPE registrator)
     {
-        getHibernateTemplate().execute(new HibernateCallback<Object>()
+         doExecute( session -> delete(deletion, registrator, session));
+    }
+
+    private Object delete(DeletionPE deletion, PersonPE registrator, Session session)
+    {
+        String permIdQuery = "SELECT id, perm_id FROM samples_all WHERE del_id = :id";
+
+        String properties =
+                "DELETE FROM sample_properties WHERE samp_id IN ("
+                        + "SELECT id FROM samples_all WHERE del_id = :id)";
+
+        String attachmentContentIdQuery =
+                "SELECT exac_id FROM attachments WHERE samp_id IN (SELECT id FROM samples_all WHERE del_id = :id)";
+
+        String attachments =
+                "DELETE FROM attachments WHERE samp_id IN ("
+                        + "SELECT id FROM samples_all WHERE del_id = :id)";
+
+        String attachmentContents =
+                "DELETE FROM attachment_contents WHERE id IN (:ids)";
+
+        String samples =
+                "DELETE FROM samples_all WHERE del_id = :id";
+
+        String event =
+                "INSERT INTO events (id, event_type, description, reason, pers_id_registerer, entity_type, identifiers, content) "
+                        + "VALUES (nextval('EVENT_ID_SEQ'), 'DELETION', :description, :reason, :registerer, 'SAMPLE', :identifiers, :content)";
+
+
+        NativeQuery<?> getPermIds = session.createNativeQuery(permIdQuery);
+        getPermIds.setParameter("id", deletion.getId());
+
+        StringBuffer permIdList = new StringBuffer();
+        List<Long> entityIdsToDelete = new ArrayList<>();
+        for (Object rowObj : getPermIds.getResultList())
+        {
+            Object[] result = (Object[]) rowObj;
+            permIdList.append(", ");
+            permIdList.append((String) result[1]);
+            Number idVal = (Number) result[0];
+            entityIdsToDelete.add(idVal != null ? idVal.longValue() : null);
+        }
+
+        if (permIdList.length() == 0)
+        {
+            return null;
+        }
+
+        String permIds = permIdList.substring(2);
+
+        InQueryScroller<Long> entityIdsToDeleteScroller = new InQueryScroller<>(entityIdsToDelete, 16384 /*
+                                                                                                          * createQueryPropertyHistorySQL
+                                                                                                          * uses the parameters twice
+                                                                                                          */);
+        List<Long> partialEntityIdsToDelete = null;
+        String content = "";
+        while ((partialEntityIdsToDelete = entityIdsToDeleteScroller.next()) != null)
+        {
+            if (content.length() > 0)
             {
-                @SuppressWarnings("unchecked")
-                @Override
-                public Object doInHibernate(Session session) throws HibernateException
-                {
-                    String permIdQuery = "SELECT id, perm_id FROM samples_all WHERE del_id = :id";
+                content += ", ";
+            }
+            content += historyCreator.apply(session, partialEntityIdsToDelete, createQueryPropertyHistorySQL(),
+                    createQueryRelationshipHistorySQL(), createQueryAttributesSQL(), null,
+                    AttachmentHolderKind.SAMPLE, registrator);
+        }
 
-                    String properties =
-                            "DELETE FROM sample_properties WHERE samp_id IN ("
-                                    + "SELECT id FROM samples_all WHERE del_id = :id)";
+        Query deleteProperties = session.createNativeQuery(properties);
+        deleteProperties.setParameter("id", deletion.getId());
+        deleteProperties.executeUpdate();
 
-                    String attachmentContentIdQuery =
-                            "SELECT exac_id FROM attachments WHERE samp_id IN (SELECT id FROM samples_all WHERE del_id = :id)";
+        NativeQuery<Long> getAttachmentContentIds =
+                session.createNativeQuery(attachmentContentIdQuery);
+        getAttachmentContentIds.addScalar("exac_id", StandardBasicTypes.LONG);
+        getAttachmentContentIds.setParameter("id", deletion.getId());
+        List<Long> attachmentContentIdList = getAttachmentContentIds.getResultList();
 
-                    String attachments =
-                            "DELETE FROM attachments WHERE samp_id IN ("
-                                    + "SELECT id FROM samples_all WHERE del_id = :id)";
+        Query deleteAttachments = session.createNativeQuery(attachments);
+        deleteAttachments.setParameter("id", deletion.getId());
+        deleteAttachments.executeUpdate();
 
-                    String attachmentContents =
-                            "DELETE FROM attachment_contents WHERE id IN (:ids)";
+        // if (attachmentContentIdList.size() > 0)
+        // {
+        // MutationQuery deleteAttachmentContents =
+        // session.createNativeMutationQuery(attachmentContents);
+        // deleteAttachmentContents.setParameterList("ids", attachmentContentIdList);
+        // deleteAttachmentContents.executeUpdate();
+        // }
+        //
+        Query deleteSamples = session.createNativeQuery(samples);
+        deleteSamples.setParameter("id", deletion.getId());
+        deleteSamples.executeUpdate();
 
-                    String samples =
-                            "DELETE FROM samples_all WHERE del_id = :id";
+        Query insertEvent = session.createNativeQuery(event);
+        insertEvent.setParameter("description", permIds);
+        insertEvent.setParameter("reason", deletion.getReason());
+        insertEvent.setParameter("registerer", registrator.getId());
+        insertEvent.setParameter("identifiers", permIds);
+        insertEvent.setParameter("content", content);
+        insertEvent.executeUpdate();
 
-                    String event =
-                            "INSERT INTO events (id, event_type, description, reason, pers_id_registerer, entity_type, identifiers, content) "
-                                    + "VALUES (nextval('EVENT_ID_SEQ'), 'DELETION', :description, :reason, :registerer, 'SAMPLE', :identifiers, :content)";
-
-                    SQLQuery getPermIds = session.createSQLQuery(permIdQuery);
-                    getPermIds.setParameter("id", deletion.getId());
-
-                    StringBuffer permIdList = new StringBuffer();
-                    List<Long> entityIdsToDelete = new ArrayList<>();
-                    for (Object[] result : (List<Object[]>) getPermIds.list())
-                    {
-                        permIdList.append(", ");
-                        permIdList.append((String) result[1]);
-                        entityIdsToDelete.add(((BigInteger) result[0]).longValue());
-                    }
-
-                    if (permIdList.length() == 0)
-                    {
-                        return null;
-                    }
-
-                    String permIds = permIdList.substring(2);
-
-                    InQueryScroller<Long> entityIdsToDeleteScroller = new InQueryScroller<>(entityIdsToDelete, 16384 /*
-                                                                                                                      * createQueryPropertyHistorySQL
-                                                                                                                      * uses the parameters twice
-                                                                                                                      */);
-                    List<Long> partialEntityIdsToDelete = null;
-                    String content = "";
-                    while ((partialEntityIdsToDelete = entityIdsToDeleteScroller.next()) != null)
-                    {
-                        if (content.length() > 0)
-                        {
-                            content += ", ";
-                        }
-                        content += historyCreator.apply(session, partialEntityIdsToDelete, createQueryPropertyHistorySQL(),
-                                createQueryRelationshipHistorySQL(), createQueryAttributesSQL(), null,
-                                AttachmentHolderKind.SAMPLE, registrator);
-                    }
-
-                    SQLQuery deleteProperties = session.createSQLQuery(properties);
-                    deleteProperties.setParameter("id", deletion.getId());
-                    deleteProperties.executeUpdate();
-
-                    SQLQuery getAttachmentContentIds =
-                            session.createSQLQuery(attachmentContentIdQuery);
-                    getAttachmentContentIds.setParameter("id", deletion.getId());
-                    List<Long> attachmentContentIdList = getAttachmentContentIds.list();
-
-                    SQLQuery deleteAttachments = session.createSQLQuery(attachments);
-                    deleteAttachments.setParameter("id", deletion.getId());
-                    deleteAttachments.executeUpdate();
-
-                    // if (attachmentContentIdList.size() > 0)
-                    // {
-                    // SQLQuery deleteAttachmentContents =
-                    // session.createSQLQuery(attachmentContents);
-                    // deleteAttachmentContents.setParameterList("ids", attachmentContentIdList);
-                    // deleteAttachmentContents.executeUpdate();
-                    // }
-                    //
-                    SQLQuery deleteSamples = session.createSQLQuery(samples);
-                    deleteSamples.setParameter("id", deletion.getId());
-                    deleteSamples.executeUpdate();
-
-                    SQLQuery insertEvent = session.createSQLQuery(event);
-                    insertEvent.setParameter("description", permIds);
-                    insertEvent.setParameter("reason", deletion.getReason());
-                    insertEvent.setParameter("registerer", registrator.getId());
-                    insertEvent.setParameter("identifiers", permIds);
-                    insertEvent.setParameter("content", content);
-                    insertEvent.executeUpdate();
-
-                    return null;
-                }
-            });
+        return null;
     }
 
     @Override
@@ -681,23 +826,13 @@ public class SampleDAO extends AbstractGenericEntityWithPropertiesDAO<SamplePE> 
         final String query =
                 "select sample_id_parent from " + TableNames.SAMPLE_RELATIONSHIPS_VIEW
                         + " where sample_id_child in (:ids) and relationship_id = :r ";
-        @SuppressWarnings("unchecked")
-        final List<? extends Number> results =
-                (List<? extends Number>) getHibernateTemplate().execute(new HibernateCallback()
-                    {
 
-                        @Override
-                        public final Object doInHibernate(final Session session)
-                        {
-                            InQuery<Long, Object> inQuery = new InQuery<>();
-                            Map<String, Object> fixParams = new HashMap<String, Object>();
-                            fixParams.put("r", relationship.getId());
+        InQuery<Long, ? extends Number> inQuery = new InQuery<>();
+        Map<String, Object> fixParams = new HashMap<String, Object>();
+        fixParams.put("r", relationship.getId());
 
-                            final List<Long> longIds = TechId.asLongs(children);
-                            List<Object> list = inQuery.withBatch(session, query, "ids", longIds, fixParams);
-                            return list;
-                        }
-                    });
+        final List<Long> longIds = TechId.asLongs(children);
+        final List<? extends Number> results = doExecute(session ->  inQuery.withBatch(session, query, "ids", longIds, fixParams));
         Set<TechId> result = transformNumbers2TechIdSet(results);
         if (operationLog.isDebugEnabled())
         {
@@ -713,22 +848,13 @@ public class SampleDAO extends AbstractGenericEntityWithPropertiesDAO<SamplePE> 
         final String query = "select sample_id_child, sample_id_parent from " + TableNames.SAMPLE_RELATIONSHIPS_VIEW
                 + " where relationship_id = :relationship and sample_id_child in (:children)";
 
-        @SuppressWarnings("unchecked")
-        final List<Object[]> results = (List<Object[]>) getHibernateTemplate().execute(new HibernateCallback()
-            {
-                @Override
-                public final Object doInHibernate(final Session session)
-                {
-                    InQuery<Long, Object> inQuery = new InQuery<>();
-                    Map<String, Object> fixParams = new HashMap<String, Object>();
-                    fixParams.put("relationship", relationship);
+        InQuery<Long, Object[]> inQuery = new InQuery<>();
+        Map<String, Object> fixParams = new HashMap<String, Object>();
+        fixParams.put("relationship", relationship);
 
-                    List<Object> list = inQuery.withBatch(session, query, "children", new ArrayList<>(children), fixParams);
-                    return list;
-                }
-            });
+        List<Object[]> results = inQuery.withBatch(currentSession(), query, "children", new ArrayList<>(children), fixParams);
 
-        Map<Long, Set<Long>> childIdToParentIdsMap = new HashMap<Long, Set<Long>>();
+        Map<Long, Set<Long>> childIdToParentIdsMap = new HashMap<>();
 
         for (Object[] result : results)
         {
@@ -764,20 +890,10 @@ public class SampleDAO extends AbstractGenericEntityWithPropertiesDAO<SamplePE> 
     {
         final String query = "SELECT sample_id_child FROM " + tableName + " WHERE sample_id_parent IN (:ids)";
 
-        @SuppressWarnings("unchecked")
-        final List<? extends Number> results =
-                (List<? extends Number>) getHibernateTemplate().execute(new HibernateCallback()
-                    {
 
-                        @Override
-                        public final Object doInHibernate(final Session session)
-                        {
-                            final List<Long> longIds = TechId.asLongs(parents);
-                            InQuery<Long, Object> inQuery = new InQuery<>();
-                            List<Object> list = inQuery.withBatch(session, query, "ids", longIds, null);
-                            return list;
-                        }
-                    });
+        final List<Long> longIds = TechId.asLongs(parents);
+        InQuery<Long, Number> inQuery = new InQuery<>();
+        List<Number> results = doExecute(session ->  inQuery.withBatch(session, query, "ids", longIds, null));
         Set<TechId> result = transformNumbers2TechIdSet(results);
         if (operationLog.isDebugEnabled())
         {
@@ -817,18 +933,26 @@ public class SampleDAO extends AbstractGenericEntityWithPropertiesDAO<SamplePE> 
 
     private List<TechId> listSampleIdsByColumn(String columnName, final List<Long> longIds, String message)
     {
-        final List<Long> results =
-                DAOUtils.listByCollection(getHibernateTemplate(), new IDetachedCriteriaFactory()
-                    {
-                        @Override
-                        public DetachedCriteria createCriteria()
-                        {
-                            final DetachedCriteria criteria =
-                                    DetachedCriteria.forClass(SamplePE.class);
-                            criteria.setProjection(Projections.id());
-                            return criteria;
-                        }
-                    }, columnName, longIds);
+        List<?> allValues = new ArrayList<>(longIds);
+        List<Long> results = new ArrayList<>(allValues.size());
+
+        for (int i = 0; i < allValues.size(); i += BATCH_SIZE)
+        {
+            List<?> slice = allValues.subList(i, Math.min(allValues.size(), i + BATCH_SIZE));
+            if (slice.isEmpty()){
+                continue;
+            }
+            List<Long> batch = doExecute(session -> session.createQuery(
+                                    "select e.id from " + SamplePE.class.getName() +
+                                            " e where e." + columnName + " in (:ids)",
+                                    Long.class
+                            )
+                            .setParameterList("ids", slice)
+                            .getResultList());
+
+            results.addAll(batch);
+        }
+
         operationLog.info(String.format("found %s " + message, results.size()));
         return transformNumbers2TechIdList(results);
     }
@@ -836,223 +960,186 @@ public class SampleDAO extends AbstractGenericEntityWithPropertiesDAO<SamplePE> 
     @Override
     public void setSampleContainer(final Long sampleId, final Long containerId)
     {
-        getHibernateTemplate().execute(new HibernateCallback()
-            {
-                @Override
-                public Object doInHibernate(Session session) throws HibernateException
-                {
-                    SQLQuery q = session.createSQLQuery("update samples set samp_id_part_of = :containerId where id = :sampleId");
-                    q.setLong("containerId", containerId);
-                    q.setLong("sampleId", sampleId);
-                    q.executeUpdate();
-                    return null;
-                }
-            });
+        doExecute(session -> {
+            Query q = session.createNativeQuery(
+                    "update samples set samp_id_part_of = :containerId where id = :sampleId");
+            q.setParameter("containerId", containerId);
+            q.setParameter("sampleId", sampleId);
+            q.executeUpdate();
+            return null;
+        });
+
     }
 
     @Override
     public void setSampleContained(final Long sampleId, final Collection<Long> containedIds)
     {
-        getHibernateTemplate().execute(new HibernateCallback()
-            {
-                @Override
-                public Object doInHibernate(Session session) throws HibernateException
-                {
-                    SQLQuery clearQuery =
-                            session.createSQLQuery(
-                                    "update samples set samp_id_part_of = null where id not in :containedIds and samp_id_part_of = :containerId");
-                    clearQuery.setLong("containerId", sampleId);
-                    clearQuery.setParameterList("containedIds", containedIds);
-                    clearQuery.executeUpdate();
+        doExecute(session -> {
+            Query clearQuery = session.createNativeQuery(
+                    "update samples set samp_id_part_of = null where id not in :containedIds and samp_id_part_of = :containerId");
+            clearQuery.setParameter("containerId", sampleId);
+            clearQuery.setParameterList("containedIds", containedIds);
+            clearQuery.executeUpdate();
 
-                    addSampleContained(sampleId, containedIds);
-                    return null;
-                }
-            });
+            addSampleContained(sampleId, containedIds);
+            return null;
+        });
+
     }
 
     @Override
     public void addSampleContained(final Long sampleId, final Collection<Long> containedIds)
     {
-        getHibernateTemplate().execute(new HibernateCallback()
-            {
-                @Override
-                public Object doInHibernate(Session session) throws HibernateException
-                {
-                    SQLQuery setQuery =
-                            session.createSQLQuery("update samples set samp_id_part_of = :containerId where id in :containedIds");
-                    setQuery.setLong("containerId", sampleId);
-                    setQuery.setParameterList("containedIds", containedIds);
-                    setQuery.executeUpdate();
-                    return null;
-                }
-            });
+        doExecute(session -> {
+            Query setQuery = session.createNativeQuery(
+                    "update samples set samp_id_part_of = :containerId where id in :containedIds");
+            setQuery.setParameter("containerId", sampleId);
+            setQuery.setParameterList("containedIds", containedIds);
+            setQuery.executeUpdate();
+           return null;
+        });
     }
 
     @Override
     public void removeSampleContained(final Long sampleId, final Collection<Long> containedIds)
     {
-        getHibernateTemplate().execute(new HibernateCallback()
-            {
-                @Override
-                public Object doInHibernate(Session session) throws HibernateException
-                {
-                    SQLQuery clearQuery =
-                            session.createSQLQuery(
-                                    "update samples set samp_id_part_of = null where id in :containedIds and samp_id_part_of = :containerId");
-                    clearQuery.setLong("containerId", sampleId);
-                    clearQuery.setParameterList("containedIds", containedIds);
-                    clearQuery.executeUpdate();
-                    return null;
-                }
-            });
+
+        doExecute(session -> {
+            Query clearQuery = session.createNativeQuery(
+                    "update samples set samp_id_part_of = null where id in :containedIds and samp_id_part_of = :containerId");
+            clearQuery.setParameter("containerId", sampleId);
+            clearQuery.setParameterList("containedIds", containedIds);
+            clearQuery.executeUpdate();
+            return null;
+        });
+
     }
 
     @Override
     public void setSampleRelationshipChildren(final Long sampleId, final Collection<Long> childrenIds, final Long relationshipId,
             final PersonPE author)
     {
-        getHibernateTemplate().execute(new HibernateCallback()
-            {
-                @Override
-                public Object doInHibernate(Session session) throws HibernateException
-                {
-                    SQLQuery q =
-                            session.createSQLQuery(
-                                    "delete from sample_relationships where sample_id_child not in :childrenIds and sample_id_parent = :parentId and relationship_id = :relationshipId");
-                    q.setParameterList("childrenIds", childrenIds);
-                    q.setLong("parentId", sampleId);
-                    q.setLong("relationshipId", relationshipId);
+        doExecute(session -> {
+            Query q = session.createNativeQuery(
+                    "delete from sample_relationships where sample_id_child not in :childrenIds and sample_id_parent = :parentId and relationship_id = :relationshipId");
+            q.setParameterList("childrenIds", childrenIds);
+            q.setParameter("parentId", sampleId);
+            q.setParameter("relationshipId", relationshipId);
 
-                    q.executeUpdate();
+            q.executeUpdate();
 
-                    addSampleRelationshipChildren(sampleId, childrenIds, relationshipId, author);
-                    return null;
-                }
-            });
+            addSampleRelationshipChildren(sampleId, childrenIds, relationshipId, author);
+            return null;
+        });
     }
 
     @Override
     public void addSampleRelationshipChildren(final Long sampleId, final Collection<Long> childrenIds, final Long relationshipId,
             final PersonPE author)
     {
-        getHibernateTemplate().execute(new HibernateCallback()
+        doExecute(session -> {
+            for (Long relatedSampleId : childrenIds)
             {
-                @Override
-                public Object doInHibernate(Session session) throws HibernateException
-                {
-                    for (Long relatedSampleId : childrenIds)
-                    {
-                        SQLQuery q =
-                                session.createSQLQuery(
-                                        "insert into sample_relationships (id, sample_id_parent, sample_id_child, relationship_id, pers_id_author, registration_timestamp, modification_timestamp) "
-                                                + "select nextval('sample_relationship_id_seq'),  :parentId, :childId, :relationshipId, :authorId, now(), now() where not exists "
-                                                + "(select 1 from sample_relationships where sample_id_parent = :parentId and sample_id_child = :childId and relationship_id = :relationshipId)");
-                        q.setLong("parentId", sampleId);
-                        q.setLong("childId", relatedSampleId);
-                        q.setLong("relationshipId", relationshipId);
-                        q.setLong("authorId", author.getId());
+                Query q = session.createNativeQuery(
+                        "insert into sample_relationships (id, sample_id_parent, sample_id_child, relationship_id, pers_id_author, registration_timestamp, modification_timestamp) "
+                                + "select nextval('sample_relationship_id_seq'),  :parentId, :childId, :relationshipId, :authorId, now(), now() where not exists "
+                                + "(select 1 from sample_relationships where sample_id_parent = :parentId and sample_id_child = :childId and relationship_id = :relationshipId)");
+                q.setParameter("parentId", sampleId);
+                q.setParameter("childId", relatedSampleId);
+                q.setParameter("relationshipId", relationshipId);
+                q.setParameter("authorId", author.getId());
 
-                        q.executeUpdate();
-                    }
-                    return null;
-                }
-            });
+                q.executeUpdate();
+            }
+            return null;
+        });
     }
 
     @Override
     public void removeSampleRelationshipChildren(final Long sampleId, final Collection<Long> childrenIds, final Long relationshipId,
             final PersonPE author)
     {
-        getHibernateTemplate().execute(new HibernateCallback()
-            {
-                @Override
-                public Object doInHibernate(Session session) throws HibernateException
-                {
-                    SQLQuery q =
-                            session.createSQLQuery(
-                                    "delete from sample_relationships where sample_id_parent = :parentId and sample_id_child in :childrenIds and relationship_id = :relationshipId");
-                    q.setLong("parentId", sampleId);
-                    q.setParameterList("childrenIds", childrenIds);
-                    q.setLong("relationshipId", relationshipId);
+        doExecute(session -> {
+            Query q = session.createNativeQuery(
+                    "delete from sample_relationships where sample_id_parent = :parentId and sample_id_child in :childrenIds and relationship_id = :relationshipId");
+            q.setParameter("parentId", sampleId);
+            q.setParameterList("childrenIds", childrenIds);
+            q.setParameter("relationshipId", relationshipId);
 
-                    q.executeUpdate();
-                    return null;
-                }
-            });
+            q.executeUpdate();
+            return null;
+        });
     }
 
     @Override
     public void setSampleRelationshipParents(final Long sampleId, final Collection<Long> parentsIds, final Long relationshipId, final PersonPE author)
     {
-        getHibernateTemplate().execute(new HibernateCallback()
-            {
-                @Override
-                public Object doInHibernate(Session session) throws HibernateException
-                {
-                    SQLQuery q =
-                            session.createSQLQuery(
-                                    "delete from sample_relationships where sample_id_parent not in :parentIds and sample_id_child = :childId and relationship_id = :relationshipId");
-                    q.setParameterList("parentIds", parentsIds);
-                    q.setLong("childId", sampleId);
-                    q.setLong("relationshipId", relationshipId);
+        doExecute(session -> {
+            Query q = session.createNativeQuery(
+                    "delete from sample_relationships where sample_id_parent not in :parentIds and sample_id_child = :childId and relationship_id = :relationshipId");
+            q.setParameterList("parentIds", parentsIds);
+            q.setParameter("childId", sampleId);
+            q.setParameter("relationshipId", relationshipId);
 
-                    q.executeUpdate();
+            q.executeUpdate();
 
-                    addSampleRelationshipParents(sampleId, parentsIds, relationshipId, author);
-                    return null;
-                }
-            });
+            addSampleRelationshipParents(sampleId, parentsIds, relationshipId, author);
+            return null;
+        });
     }
 
     @Override
     public void addSampleRelationshipParents(final Long sampleId, final Collection<Long> parentsIds, final Long relationshipId, final PersonPE author)
     {
-        getHibernateTemplate().execute(new HibernateCallback()
+        doExecute(session -> {
+            for (Long parentId : parentsIds)
             {
-                @Override
-                public Object doInHibernate(Session session) throws HibernateException
-                {
-                    for (Long parentId : parentsIds)
-                    {
-                        SQLQuery q =
-                                session.createSQLQuery(
-                                        "insert into sample_relationships (id, sample_id_parent, sample_id_child, relationship_id, pers_id_author, registration_timestamp, modification_timestamp) "
-                                                + "select nextval('sample_relationship_id_seq'),  :parentId, :childId, :relationshipId, :authorId, now(), now() where not exists "
-                                                + "(select 1 from sample_relationships where sample_id_parent = :parentId and sample_id_child = :childId and relationship_id = :relationshipId)");
-                        q.setLong("parentId", parentId);
-                        q.setLong("childId", sampleId);
-                        q.setLong("relationshipId", relationshipId);
-                        q.setLong("authorId", author.getId());
+                Query q = session.createNativeQuery(
+                        "insert into sample_relationships (id, sample_id_parent, sample_id_child, relationship_id, pers_id_author, registration_timestamp, modification_timestamp) "
+                                + "select nextval('sample_relationship_id_seq'),  :parentId, :childId, :relationshipId, :authorId, now(), now() where not exists "
+                                + "(select 1 from sample_relationships where sample_id_parent = :parentId and sample_id_child = :childId and relationship_id = :relationshipId)");
+                q.setParameter("parentId", parentId);
+                q.setParameter("childId", sampleId);
+                q.setParameter("relationshipId", relationshipId);
+                q.setParameter("authorId", author.getId());
 
-                        q.executeUpdate();
-                    }
-                    return null;
-                }
-            });
+                q.executeUpdate();
+            }
+            return null;
+        });
     }
 
     @Override
     public void removeSampleRelationshipParents(final Long sampleId, final Collection<Long> parentsIds, final Long relationshipId,
             final PersonPE author)
     {
-        getHibernateTemplate().execute(new HibernateCallback()
-            {
-                @Override
-                public Object doInHibernate(Session session) throws HibernateException
-                {
-                    SQLQuery q =
-                            session.createSQLQuery(
-                                    "delete from sample_relationships where sample_id_parent in :parentIds and sample_id_child = :childId and relationship_id = :relationshipId");
-                    q.setParameterList("parentIds", parentsIds);
-                    q.setLong("childId", sampleId);
-                    q.setLong("relationshipId", relationshipId);
+        doExecute(session -> {
+            Query q = session.createNativeQuery(
+                    "delete from sample_relationships where sample_id_parent in :parentIds and sample_id_child = :childId and relationship_id = :relationshipId");
+            q.setParameterList("parentIds", parentsIds);
+            q.setParameter("childId", sampleId);
+            q.setParameter("relationshipId", relationshipId);
 
-                    q.executeUpdate();
-                    return null;
-                }
-            });
+            q.executeUpdate();
+            return null;
+        });
     }
+
+    @Override
+    public SamplePE tryGetByIdWithTypePropertyTypesAndExperiment(TechId sampleId)
+    {
+        return (SamplePE) currentSession()
+                .createQuery(
+                        "select s from SamplePE s " +
+                                "left join fetch s.sampleType st " +
+                                "left join fetch st.sampleTypePropertyTypesInternal " +
+                                "left join fetch s.experimentInternal " +
+                                "where s.id = :id"
+                )
+                .setParameter("id", sampleId.getId())
+                .uniqueResult();
+    }
+
 
     @Override
     Logger getLogger()

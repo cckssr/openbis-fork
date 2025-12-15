@@ -21,9 +21,9 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.ISampleRelationshipDAO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.RelationshipTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SampleRelationshipPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SequenceNames;
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.criterion.DetachedCriteria;
-import org.hibernate.criterion.Restrictions;
+
 
 import java.util.Collection;
 import java.util.List;
@@ -58,15 +58,14 @@ public class SampleRelationshipDAO extends AbstractGenericEntityDAO<SampleRelati
 
     private RelationshipTypePE getParentChildRelationship()
     {
-        final DetachedCriteria criteria = DetachedCriteria.forClass(RelationshipTypePE.class);
-        criteria.add(Restrictions.eq("simpleCode", BasicConstant.PARENT_CHILD_DB_RELATIONSHIP));
-        List<RelationshipTypePE> cast = cast(getHibernateTemplate().findByCriteria(criteria));
-        return cast.get(0);
+        return doExecute(session ->
+                session.createQuery(
+                        "from RelationshipTypePE r where r.simpleCode = :code",
+                        RelationshipTypePE.class)
+                .setParameter("code", BasicConstant.PARENT_CHILD_DB_RELATIONSHIP)
+                .uniqueResultOptional()
+                .orElse(null));
     }
-
-//    private long getNextId() {
-//        return getNextSequenceId(SequenceNames.SAMPLE_RELATIONSHIPS_SEQUENCE);
-//    }
 
     //
     // DAO Methods
@@ -87,28 +86,58 @@ public class SampleRelationshipDAO extends AbstractGenericEntityDAO<SampleRelati
 //            if (getHibernateTemplate().contains(sampleRelationship) == false) {
 //                getHibernateTemplate().update(sampleRelationship);
 //            }
-            getHibernateTemplate().persist(sampleRelationship);
+            doExecute(session-> {
+                session.persist(sampleRelationship);
+                return null;
+            });
         }
     }
 
     public void delete(Collection<SampleRelationshipPE> sampleRelationships)
     {
-        getHibernateTemplate().deleteAll(sampleRelationships);
+
+        doExecute( session -> {
+            int i = 0;
+            for (SampleRelationshipPE rel : sampleRelationships) {
+                session.remove(rel);
+                // batching for large collections
+                if (++i % 100 == 0) {
+                    session.flush();
+                    session.clear();
+                }
+            }
+            session.flush();
+            return null;
+         });
     }
 
     public List<SampleRelationshipPE> listSampleParents(List<Long> childrenTechIds)
     {
-        final DetachedCriteria criteria = DetachedCriteria.forClass(SampleRelationshipPE.class);
-        criteria.add(Restrictions.eq("relationship.id", getParentChildRelationshipId()));
-        criteria.add(Restrictions.in("childSample.id", childrenTechIds));
-        return cast(getHibernateTemplate().findByCriteria(criteria));
+        Long relId = getParentChildRelationshipId();
+
+        return doExecute(session ->
+                session.createQuery(
+                        "from SampleRelationshipPE sr " +
+                                "where sr.relationship.id = :relId " +
+                                "  and sr.childSample.id in :childIds",
+                        SampleRelationshipPE.class)
+                .setParameter("relId", relId)
+                .setParameter("childIds", childrenTechIds)
+                .list());
+
     }
 
     public List<SampleRelationshipPE> listSampleChildren(List<Long> parentTechIds)
     {
-        final DetachedCriteria criteria = DetachedCriteria.forClass(SampleRelationshipPE.class);
-        criteria.add(Restrictions.eq("relationship.id", getParentChildRelationshipId()));
-        criteria.add(Restrictions.in("parentSample.id", parentTechIds));
-        return cast(getHibernateTemplate().findByCriteria(criteria));
+        Long relId = getParentChildRelationshipId();
+        return doExecute(session ->
+                session.createQuery(
+                        "from SampleRelationshipPE sr " +
+                                "where sr.relationship.id = :relId " +
+                                "  and sr.parentSample.id in :parentIds",
+                        SampleRelationshipPE.class)
+                .setParameter("relId", relId)
+                .setParameter("parentIds", parentTechIds)
+                .list());
     }
 }

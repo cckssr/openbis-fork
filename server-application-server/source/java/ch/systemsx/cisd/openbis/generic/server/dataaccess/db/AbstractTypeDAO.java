@@ -19,12 +19,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ch.ethz.sis.shared.log.classic.impl.Logger;
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.criterion.DetachedCriteria;
-import org.hibernate.criterion.Restrictions;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.support.JdbcAccessor;
-import org.springframework.orm.hibernate5.HibernateTemplate;
 
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
@@ -32,6 +30,7 @@ import ch.systemsx.cisd.common.reflection.MethodUtils;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.db.deletion.EntityHistoryCreator;
 import ch.systemsx.cisd.openbis.generic.shared.basic.CodeConverter;
 import ch.systemsx.cisd.openbis.generic.shared.dto.AbstractTypePE;
+import org.springframework.orm.hibernate5.HibernateTemplate;
 
 /**
  * An abstract extension of <code>HibernateAbstractDAO</code> suitable for tables that contains <i>type</i> information. <br>
@@ -65,9 +64,15 @@ abstract class AbstractTypeDAO<T extends AbstractTypePE> extends AbstractGeneric
     {
         assert code != null : "Unspecified code";
 
-        final DetachedCriteria criteria = DetachedCriteria.forClass(getEntityClass());
-        criteria.add(Restrictions.eq("code", CodeConverter.tryToDatabase(code)));
-        final List<T> list = cast(getHibernateTemplate().findByCriteria(criteria));
+        List<T> list = doExecute( session -> session
+                .createQuery("from " + getEntityClass().getName() + " e where e.code = :code", getEntityClass())
+                .setParameter("code", CodeConverter.tryToDatabase(code))
+                //.setMaxResults(2) // TODO :detect duplicates without scanning everything
+                .getResultList());
+
+//        final DetachedCriteria criteria = DetachedCriteria.forClass(getEntityClass());
+//        criteria.add(Restrictions.eq("code", CodeConverter.tryToDatabase(code)));
+//        final List<T> list = cast(getHibernateTemplate().findByCriteria(criteria));
         final T entity = tryFindEntity(list, "type");
         if (operationLog.isDebugEnabled())
         {
@@ -83,15 +88,17 @@ abstract class AbstractTypeDAO<T extends AbstractTypePE> extends AbstractGeneric
     {
         assert codes != null : "Unspecified codes";
 
-        List<String> dbCodes = new ArrayList<String>(codes.size());
-        for (String code : codes)
-        {
-            dbCodes.add(code);
-        }
+        List<String> dbCodes = new ArrayList<String>(codes);
 
-        final DetachedCriteria criteria = DetachedCriteria.forClass(getEntityClass());
-        criteria.add(Restrictions.in("code", dbCodes));
-        final List<T> list = cast(getHibernateTemplate().findByCriteria(criteria));
+        List<T> list = doExecute( session-> session
+                .createQuery("from " + getEntityClass().getName() + " e where e.code in :codes", getEntityClass())
+                .setParameter("codes", dbCodes)
+                //.setMaxResults(2) // TODO :detect duplicates without scanning everything
+                .getResultList());
+
+//        final DetachedCriteria criteria = DetachedCriteria.forClass(getEntityClass());
+//        criteria.add(Restrictions.in("code", dbCodes));
+//        final List<T> list = cast(getHibernateTemplate().findByCriteria(criteria));
 
         if (operationLog.isDebugEnabled())
         {
@@ -109,8 +116,9 @@ abstract class AbstractTypeDAO<T extends AbstractTypePE> extends AbstractGeneric
 
     final List<T> listTypes(final boolean appendDatabaseInstance) throws DataAccessException
     {
-        final DetachedCriteria criteria = DetachedCriteria.forClass(getEntityClass());
-        final List<T> list = cast(getHibernateTemplate().findByCriteria(criteria));
+        final List<T> list = doExecute( session -> session
+                .createQuery("from " + getEntityClass().getName(), getEntityClass())
+                .getResultList());
         if (operationLog.isDebugEnabled())
         {
             operationLog.debug(String.format("%s(%s): %d entity type(s) have been found.",
@@ -121,17 +129,19 @@ abstract class AbstractTypeDAO<T extends AbstractTypePE> extends AbstractGeneric
 
     protected void createOrUpdateType(T type)
     {
-        final HibernateTemplate hibernateTemplate = getHibernateTemplate();
+//            final Session hibernateTemplate = currentSession();
 
-        validatePE(type);
-        type.setCode(CodeConverter.tryToDatabase(type.getCode()));
-        hibernateTemplate.saveOrUpdate(type);
-        hibernateTemplate.flush();
-        if (operationLog.isInfoEnabled())
-        {
-            operationLog.info(String.format("ADD/UPDATE: type '%s'.", type));
-        }
-
+            validatePE(type);
+            type.setCode(CodeConverter.tryToDatabase(type.getCode()));
+            doExecute(session -> {
+                session.saveOrUpdate(type);
+                session.flush();
+                return null;
+            });
+            if (operationLog.isInfoEnabled())
+            {
+                operationLog.info(String.format("ADD/UPDATE: type '%s'.", type));
+            }
     }
 
 }

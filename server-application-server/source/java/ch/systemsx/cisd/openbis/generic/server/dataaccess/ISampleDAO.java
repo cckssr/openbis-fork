@@ -227,4 +227,5 @@ public interface ISampleDAO extends IGenericDAO<SamplePE>
     public void removeSampleRelationshipParents(final Long sampleId, final Collection<Long> parentsIds, final Long relationshipId,
             final PersonPE author);
 
+    SamplePE tryGetByIdWithTypePropertyTypesAndExperiment(TechId sampleId);
 }

@@ -30,10 +30,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.SampleTypeTypeGroupsPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SampleTypeTypeGroupsTechId;
 import ch.ethz.sis.shared.log.classic.impl.Logger;
 import org.hibernate.SessionFactory;
-import org.hibernate.criterion.Conjunction;
-import org.hibernate.criterion.DetachedCriteria;
-import org.hibernate.criterion.Disjunction;
-import org.hibernate.criterion.Restrictions;
+
 import org.springframework.orm.hibernate5.HibernateTemplate;
 
 import java.util.Collection;
@@ -59,11 +56,13 @@ final class TypeGroupAssignmentDAO extends AbstractGenericEntityWithCustomIdDAO<
 
         validatePE(typeGroupAssignment);
 
-        final HibernateTemplate template = getHibernateTemplate();
-        template.save(typeGroupAssignment);
-//        template.flush();
+        doExecute(session -> {
+            session.save(typeGroupAssignment);
+    //        template.flush();
+            return null;
+        });
 
-        flushWithSqlExceptionHandling(template);
+        flushWithSqlExceptionHandling();
 
         if (operationLog.isDebugEnabled())
         {
@@ -74,20 +73,32 @@ final class TypeGroupAssignmentDAO extends AbstractGenericEntityWithCustomIdDAO<
     @Override
     public List<SampleTypeTypeGroupsPE> findByTechId(List<SampleTypeTypeGroupsTechId> ids)
     {
-        final DetachedCriteria criteria = DetachedCriteria.forClass(SampleTypeTypeGroupsPE.class);
-        criteria.createAlias("sampleType", "st");
-        criteria.createAlias("typeGroup", "tg");
-        Disjunction disjunction = Restrictions.disjunction();
-        for(SampleTypeTypeGroupsTechId id : ids) {
 
-            Conjunction andClause = Restrictions.conjunction(
-                    Restrictions.eq("st.id", id.getSampleTypeTechId()),
-                    Restrictions.eq("tg.id", id.getTypeGroupTechId()));
-            disjunction.add(andClause);
+        StringBuilder hql = new StringBuilder()
+                .append("from " + SampleTypeTypeGroupsPE.class.getName() + " x ")
+                .append("join fetch x.sampleType st ")
+                .append("join fetch x.typeGroup tg ")
+                .append("where ");
 
+        // Build: (st.id = :s0 and tg.id = :t0) or (st.id = :s1 and tg.id = :t1) or ...
+        for (int i = 0; i < ids.size(); i++) {
+            if (i > 0) hql.append(" or ");
+            hql.append("(st.id = :s").append(i).append(" and tg.id = :t").append(i).append(")");
         }
-        criteria.add(disjunction);
-        final List<SampleTypeTypeGroupsPE> list = cast(getHibernateTemplate().findByCriteria(criteria));
+
+        List<SampleTypeTypeGroupsPE> list = doExecute(session -> {
+            var query = session.createQuery(hql.toString(), SampleTypeTypeGroupsPE.class);
+
+            for (int i = 0; i < ids.size(); i++)
+            {
+                SampleTypeTypeGroupsTechId id = ids.get(i);
+                query.setParameter("s" + i, id.getSampleTypeTechId());
+                query.setParameter("t" + i, id.getTypeGroupTechId());
+            }
+
+          return query.list();
+        });
+
         if (operationLog.isDebugEnabled())
         {
             operationLog.debug(String.format("%s(): %d type group assignment(s) have been found.", MethodUtils
@@ -99,22 +110,36 @@ final class TypeGroupAssignmentDAO extends AbstractGenericEntityWithCustomIdDAO<
     @Override
     public List<SampleTypeTypeGroupsPE> findByIds(Collection<TypeGroupAssignmentId> ids)
     {
-        final DetachedCriteria criteria = DetachedCriteria.forClass(SampleTypeTypeGroupsPE.class);
-        criteria.createAlias("sampleType", "st");
-        criteria.createAlias("typeGroup", "tg");
-        Disjunction disjunction = Restrictions.disjunction();
-        for(TypeGroupAssignmentId id : ids) {
-            EntityTypePermId st = (EntityTypePermId) id.getSampleTypeId();
-            TypeGroupId tg = (TypeGroupId) id.getTypeGroupId();
 
-            Conjunction andClause = Restrictions.conjunction(
-                    Restrictions.eq("st.code", st.getPermId()),
-                    Restrictions.eq("tg.code", tg.getPermId()));
-            disjunction.add(andClause);
+        StringBuilder hql = new StringBuilder()
+                .append("from " + SampleTypeTypeGroupsPE.class.getName() + " x ")
+                .append("join fetch x.sampleType st ")
+                .append("join fetch x.typeGroup tg ")
+                .append("where ");
 
-        }
-        criteria.add(disjunction);
-        final List<SampleTypeTypeGroupsPE> list = cast(getHibernateTemplate().findByCriteria(criteria));
+
+
+        List<SampleTypeTypeGroupsPE> list = doExecute(session -> {
+            int i = 0;
+            for (TypeGroupAssignmentId id : ids) {
+                if (i > 0) hql.append(" or ");
+                hql.append("(st.code = :s").append(i).append(" and tg.code = :t").append(i).append(")");
+                i++;
+            }
+            var query = session.createQuery(hql.toString(), SampleTypeTypeGroupsPE.class);
+
+            i = 0;
+            for (TypeGroupAssignmentId id : ids) {
+                EntityTypePermId st = (EntityTypePermId) id.getSampleTypeId();
+                TypeGroupId tg = (TypeGroupId) id.getTypeGroupId();
+                query.setParameter("s" + i, st.getPermId());
+                query.setParameter("t" + i, tg.getPermId());
+                i++;
+            }
+
+            return query.list();
+        });
+
         if (operationLog.isDebugEnabled())
         {
             operationLog.debug(String.format("%s(): %d type group assignment(s) have been found.", MethodUtils

@@ -133,15 +133,10 @@ public final class ExperimentBO extends AbstractBusinessObject implements IExper
         }
     }
 
-    @Private
-    static final String PROPERTY_TYPES = "experimentType.experimentTypePropertyTypesInternal";
-
     @Override
     public void loadDataByTechId(TechId experimentId)
     {
-        String[] connections =
-                { PROPERTY_TYPES };
-        experiment = getExperimentDAO().tryGetById(experimentId, connections);
+        experiment = getExperimentDAO().tryGetByIdWithTypePropertyTypes(experimentId);
         if (experiment == null)
         {
             throw new UserFailureException(String.format("Experiment with ID '%s' does not exist.",

@@ -18,18 +18,23 @@ package ch.systemsx.cisd.openbis.generic.server.dataaccess.db;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import ch.ethz.sis.shared.log.classic.impl.Logger;
+
+import javax.persistence.Query;
+import javax.persistence.criteria.Path;
+import javax.persistence.criteria.Predicate;
+import org.hibernate.Hibernate;
 import org.hibernate.HibernateException;
-import org.hibernate.Query;
-import org.hibernate.SQLQuery;
+
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.StatelessSession;
-import org.hibernate.criterion.Criterion;
-import org.hibernate.criterion.DetachedCriteria;
-import org.hibernate.criterion.Projections;
-import org.hibernate.criterion.Restrictions;
+
+//import org.hibernate.query.MutationQuery;
+//import org.hibernate.query.NativeQuery;
+//import org.hibernate.query.SelectionQuery;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.support.JdbcAccessor;
 import org.springframework.orm.hibernate5.HibernateCallback;
@@ -56,6 +61,8 @@ import ch.systemsx.cisd.openbis.generic.shared.util.HibernateUtils;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import net.lemnik.eodsql.QueryTool;
+
+import static ch.systemsx.cisd.openbis.generic.server.dataaccess.db.DAOUtils.BATCH_SIZE;
 
 /**
  * <i>Data Access Object</i> implementation for {@link IDeletionDAO}.
@@ -112,9 +119,11 @@ final class DeletionDAO extends AbstractGenericEntityDAO<DeletionPE> implements 
         assert deletion != null : "Unspecified deletion";
         validatePE(deletion);
 
-        final HibernateTemplate template = getHibernateTemplate();
-        template.save(deletion);
-        template.flush();
+        doExecute(session -> {
+            session.save(deletion);
+            session.flush();
+            return null;
+            });
         if (operationLog.isInfoEnabled())
         {
             operationLog.info(String.format("ADD: deletion '%s'.", deletion));
@@ -145,14 +154,19 @@ final class DeletionDAO extends AbstractGenericEntityDAO<DeletionPE> implements 
         List<TechId> ids =
                 findTrashedEntityIds(Collections.singletonList(TechId.create(deletion)), entityKind);
 
-        final HibernateTemplate hibernateTemplate = getHibernateTemplate();
-        String query =
-                String.format("UPDATE VERSIONED %s SET deletion = NULL WHERE deletion = ?",
-                        entityKind.getDeletedEntityClass().getSimpleName());
-        int updatedRows = hibernateTemplate.bulkUpdate(query, deletion);
-        hibernateTemplate.flush();
-        hibernateTemplate.clear();
+        int updatedRows = doExecute(session -> {
+                    String query =
+                            String.format("UPDATE VERSIONED %s SET deletion = NULL WHERE deletion = ?",
+                                    entityKind.getDeletedEntityClass().getSimpleName());
+                    //        int updatedRows = hibernateTemplate.bulkUpdate(query, deletion);
+                    Query q = session.createNativeQuery(query);
+                    q.setParameter("deletion", deletion);
 
+                    int upRows = q.executeUpdate();
+                    session.flush();
+                    session.clear();
+                    return upRows;
+                });
         scheduleDynamicPropertiesEvaluationByIds(TechId.asLongs(ids), entityKind);
 
         operationLog.info(String.format("%s %s(s) reverted", updatedRows, entityKind.name()));
@@ -181,7 +195,7 @@ final class DeletionDAO extends AbstractGenericEntityDAO<DeletionPE> implements 
                                             + "del_id = NULL, orig_del = NULL, pers_id_modifier = :modifierId "
                                             + "WHERE del_id = :deletionId",
                                     entityKind.getAllTableName());
-                    final SQLQuery sqlQuery = session.createSQLQuery(query);
+                    final Query sqlQuery = session.createNativeQuery(query);
                     sqlQuery.setParameter("deletionId", HibernateUtils.getId(deletion));
                     sqlQuery.setParameter("modifierId", HibernateUtils.getId(modifier));
                     return sqlQuery.executeUpdate();
@@ -223,7 +237,7 @@ final class DeletionDAO extends AbstractGenericEntityDAO<DeletionPE> implements 
                     String query =
                             String.format("UPDATE %s SET del_id = NULL WHERE del_id = :deletionId",
                                     tableName);
-                    final SQLQuery sqlQuery = session.createSQLQuery(query);
+                    final Query sqlQuery = session.createNativeQuery(query);
                     sqlQuery.setParameter("deletionId", HibernateUtils.getId(deletion));
                     return sqlQuery.executeUpdate();
                 }
@@ -242,14 +256,14 @@ final class DeletionDAO extends AbstractGenericEntityDAO<DeletionPE> implements 
     public List<TechId> findTrashedNonComponentSampleIds(final List<TechId> deletionIds)
     {
         return findTrashedEntityIds(deletionIds, EntityKind.SAMPLE,
-                Restrictions.isNull(CONTAINER_ID));
+                (root, cb) -> cb.isNull(path(root, CONTAINER_ID)));
     }
 
     @Override
     public List<TechId> findTrashedComponentSampleIds(final List<TechId> deletionIds)
     {
         return findTrashedEntityIds(deletionIds, EntityKind.SAMPLE,
-                Restrictions.isNotNull(CONTAINER_ID));
+                (root, cb) -> cb.isNotNull(path(root, CONTAINER_ID)));
     }
 
     @Override
@@ -266,19 +280,24 @@ final class DeletionDAO extends AbstractGenericEntityDAO<DeletionPE> implements 
             return Collections.emptyList();
         }
         final List<Long> longIds = TechId.asLongs(deletionIds);
-        final List<String> results =
-                DAOUtils.listByCollection(getHibernateTemplate(), new IDetachedCriteriaFactory()
-                    {
-                        @Override
-                        public DetachedCriteria createCriteria()
-                        {
-                            final DetachedCriteria criteria =
-                                    DetachedCriteria.forClass(EntityKind.DATA_SET
-                                            .getDeletedEntityClass());
-                            criteria.setProjection(Projections.property("code"));
-                            return criteria;
-                        }
-                    }, DELETION_ID, longIds);
+        List<Long> ids = new java.util.ArrayList<>(longIds);
+        List<String> results = new java.util.ArrayList<>(ids.size());
+        final Class<?> deletedEntityClass = EntityKind.DATA_SET.getDeletedEntityClass();
+
+        for (int i = 0; i < ids.size(); i += BATCH_SIZE) {
+            List<Long> slice = ids.subList(i, Math.min(ids.size(), i + BATCH_SIZE));
+            if (slice.isEmpty()) continue;
+
+            List<String> batch = doExecute(session -> session.createQuery(
+                                            "select d.code from " + deletedEntityClass.getName() + " d " +
+                                                    "where d." + DELETION_ID + " in (:ids)",
+                                            String.class
+                                    )
+                                    .setParameter("ids", slice)
+                                    .list());
+
+            results.addAll(batch);
+        }
 
         operationLog.info(String.format("found %s trashed %s(s)", results.size(),
                 EntityKind.DATA_SET.name()));
@@ -286,33 +305,54 @@ final class DeletionDAO extends AbstractGenericEntityDAO<DeletionPE> implements 
     }
 
     private List<TechId> findTrashedEntityIds(final List<TechId> deletionIds,
-            final EntityKind entityKind, final Criterion... additionalCriteria)
+            final EntityKind entityKind, final Pred... extra)
     {
         if (deletionIds.isEmpty())
         {
             return Collections.emptyList();
         }
         final List<Long> longIds = TechId.asLongs(deletionIds);
-        final List<Long> results =
-                DAOUtils.listByCollection(getHibernateTemplate(), new IDetachedCriteriaFactory()
-                    {
-                        @Override
-                        public DetachedCriteria createCriteria()
-                        {
-                            final DetachedCriteria criteria =
-                                    DetachedCriteria.forClass(entityKind.getDeletedEntityClass());
-                            criteria.setProjection(Projections.id());
-                            for (Criterion criterion : additionalCriteria)
-                            {
-                                criteria.add(criterion);
-                            }
-                            return criteria;
-                        }
-                    }, DELETION_ID, longIds);
+        final Class<?> deletedEntityClass = entityKind.getDeletedEntityClass();
+
+
+        List<Long> results = doExecute(session -> {
+            var cb = session.getCriteriaBuilder();
+            List<Long> out = new ArrayList<>(longIds.size());
+
+            for (int i = 0; i < longIds.size(); i += BATCH_SIZE) {
+                List<Long> slice = longIds.subList(i, Math.min(longIds.size(), i + BATCH_SIZE));
+
+                var cq = cb.createQuery(Long.class);
+                var root = cq.from(deletedEntityClass);
+
+                var predicates = new ArrayList<Predicate>();
+                predicates.add(path(root, DELETION_ID).in(slice));
+
+                if (extra != null) {
+                    for (Pred p : extra) {
+                        predicates.add(p.build(root, cb));
+                    }
+                }
+
+                cq.select(root.get("id")).where(predicates.toArray(new Predicate[0]));
+
+                out.addAll(session.createQuery(cq).getResultList());
+            }
+            return out;
+        });
+
 
         operationLog
                 .info(String.format("found %s trashed %s(s)", results.size(), entityKind.name()));
         return transformNumbers2TechIdList(results);
+    }
+
+    private static Path<?> path(Path<?> root, String dotPath) {
+        Path<?> p = root;
+        for (String part : dotPath.split("\\.")) {
+            p = p.get(part);
+        }
+        return p;
     }
 
     @Override
@@ -330,31 +370,9 @@ final class DeletionDAO extends AbstractGenericEntityDAO<DeletionPE> implements 
         {
             return 0;
         }
-        final HibernateTemplate hibernateTemplate = getHibernateTemplate();
-        int updatedRows = (Integer) hibernateTemplate.executeWithNativeSession(new HibernateCallback()
-            {
 
-                //
-                // HibernateCallback
-                //
-
-                @Override
-                public final Object doInHibernate(final Session session) throws HibernateException
-                {
-
-                    Query query = session
-                            .createQuery(
-                                    "UPDATE "
-                                            + entityKind.getEntityClass().getSimpleName()
-                                            + " c SET c.deletion = :deletion" + ", c.originalDeletion = "
-                                            + (isOriginalDeletion ? " :deletion" : " NULL")
-                                            + " WHERE c.deletion IS NULL AND c.id IN (:ids) ")
-                            .setParameter("deletion", deletion)
-                            .setParameterList("ids", TechId.asLongs(entityIds));
-
-                    return query.executeUpdate();
-                }
-            });
+//                    MutationQuery query = session
+        int updatedRows = trashEntities(entityKind, entityIds, deletion, isOriginalDeletion);
 
         switch (entityKind)
         {
@@ -376,10 +394,92 @@ final class DeletionDAO extends AbstractGenericEntityDAO<DeletionPE> implements 
         {
             operationLog.info(String.format("trashing %d %ss", updatedRows, entityKind.getLabel()));
         }
-        hibernateTemplate.flush();
+        currentSession().flush();
 
         List<Long> ids = TechId.asLongs(entityIds);
         scheduleRemoveFromFullTextIndex(ids, entityKind);
+
+        return updatedRows;
+    }
+
+    private int trashEntities(final EntityKind entityKind, final List<TechId> entityIds,
+            final DeletionPE deletion, final boolean isOriginalDeletion)
+    {
+        if (entityKind.getAllTableName() != null)
+        {
+            return trashEntitiesWithNativeUpdate(entityKind, entityIds, deletion, isOriginalDeletion);
+        } else
+        {
+            return trashEntitiesWithHql(entityKind, entityIds, deletion, isOriginalDeletion);
+        }
+    }
+
+    private int trashEntitiesWithHql(final EntityKind entityKind, final List<TechId> entityIds,
+            final DeletionPE deletion, final boolean isOriginalDeletion)
+    {
+        String hql = "UPDATE " + entityKind.getEntityClass().getSimpleName() + " c " +
+                "SET c.deletion = :delRef, " +
+                "    c.originalDeletion = " + (isOriginalDeletion ? ":delId" : "NULL") + " " +
+                "WHERE c.deletion IS NULL AND c.id IN (:ids)";
+
+        Query mutationQuery = currentSession().createQuery(hql)
+                .setParameter("delRef", deletion)
+                .setParameter("ids", TechId.asLongs(entityIds));
+
+        if (isOriginalDeletion)
+        {
+            mutationQuery.setParameter("delId", deletion.getId());
+        }
+
+        return mutationQuery.executeUpdate();
+    }
+
+    private int trashEntitiesWithNativeUpdate(final EntityKind entityKind, final List<TechId> entityIds,
+            final DeletionPE deletion, final boolean isOriginalDeletion)
+    {
+        final List<Long> ids = TechId.asLongs(entityIds);
+        final Long deletionId = HibernateUtils.getId(deletion);
+        final Long modifierId = HibernateUtils.getId(deletion.getRegistrator());
+
+        Session currentSession = currentSession();
+        currentSession.flush();
+
+        Integer updatedRows = (Integer) executeStatelessAction(new StatelessHibernateCallback()
+            {
+                @Override
+                public Object doInStatelessSession(StatelessSession session) throws HibernateException
+                {
+                    StringBuilder sql = new StringBuilder();
+                    sql.append("UPDATE ").append(entityKind.getAllTableName())
+                            .append(" SET del_id = :delId,")
+                            .append(" modification_timestamp = now(),")
+                            .append(" pers_id_modifier = :modifierId,");
+
+                    if (isOriginalDeletion)
+                    {
+                        sql.append(" orig_del = :origDel");
+                    } else
+                    {
+                        sql.append(" orig_del = NULL");
+                    }
+
+                    sql.append(" WHERE del_id IS NULL AND id IN (:ids)");
+
+                    var query = session.createNativeQuery(sql.toString());
+                    query.setParameter("delId", deletionId);
+                    query.setParameter("modifierId", modifierId);
+                    if (isOriginalDeletion)
+                    {
+                        query.setParameter("origDel", deletionId);
+                    }
+                    query.setParameterList("ids", ids);
+
+                    return query.executeUpdate();
+                }
+            });
+
+        // ensure the current session does not hold stale entity states after the stateless update
+        currentSession().clear();
 
         return updatedRows;
     }
@@ -391,34 +491,23 @@ final class DeletionDAO extends AbstractGenericEntityDAO<DeletionPE> implements 
         {
             return 0;
         }
-        final HibernateTemplate hibernateTemplate = getHibernateTemplate();
-        int updatedRows = (Integer) hibernateTemplate.execute(new HibernateCallback()
-            {
-                //
-                // HibernateCallback
-                //
-                @Override
-                public final Object doInHibernate(final Session session) throws HibernateException
-                {
                     // NOTE: 'VERSIONED' makes modification time modified too
-                    return session
-                            .createQuery(
-                                    "UPDATE "
-                                            + SampleRelationshipPE.class.getSimpleName()
-                                            + " SET deletion = :deletion, author = :author"
-                                            + " WHERE deletion IS NULL"
-                                            + " AND (parentSample.id IN (:ids) OR childSample.id in (:ids))")
-                            .setParameter("deletion", deletion)
-                            .setParameter("author", deletion.getRegistrator())
-                            .setParameterList("ids", TechId.asLongs(samplesIds)).executeUpdate();
-                }
-            });
+        int updatedRows = doExecute(session -> session
+                    .createQuery(
+                            "UPDATE "
+                                    + SampleRelationshipPE.class.getSimpleName()
+                                    + " SET deletion = :deletion, author = :author"
+                                    + " WHERE deletion IS NULL"
+                                    + " AND (parentSample.id IN (:ids) OR childSample.id in (:ids))")
+                    .setParameter("deletion", deletion)
+                    .setParameter("author", deletion.getRegistrator())
+                    .setParameterList("ids", TechId.asLongs(samplesIds)).executeUpdate());
         if (operationLog.isInfoEnabled())
         {
             operationLog.info(String
                     .format("trashing %d %ss", updatedRows, "sample relationships."));
         }
-        hibernateTemplate.flush();
+        currentSession().flush();
 
         return updatedRows;
     }
@@ -430,34 +519,23 @@ final class DeletionDAO extends AbstractGenericEntityDAO<DeletionPE> implements 
         {
             return 0;
         }
-        final HibernateTemplate hibernateTemplate = getHibernateTemplate();
-        int updatedRows = (Integer) hibernateTemplate.execute(new HibernateCallback()
+        return  doExecute(session -> {
+            int uRows = session.createQuery(
+                            "UPDATE " + MetaprojectAssignmentPE.class.getSimpleName()
+                                    + " SET deletion = :deletion"
+                                    + " WHERE deletion IS NULL" + " AND "
+                                    + entityKind.getLabel() + ".id IN (:ids)")
+                    .setParameter("deletion", deletion)
+                    .setParameterList("ids", TechId.asLongs(entityIds)).executeUpdate();
+            if (operationLog.isInfoEnabled())
             {
-                //
-                // HibernateCallback
-                //
-                @Override
-                public final Object doInHibernate(final Session session) throws HibernateException
-                {
-                    // NOTE: 'VERSIONED' makes modification time modified too
-                    return session
-                            .createQuery(
-                                    "UPDATE " + MetaprojectAssignmentPE.class.getSimpleName()
-                                            + " SET deletion = :deletion"
-                                            + " WHERE deletion IS NULL" + " AND "
-                                            + entityKind.getLabel() + ".id IN (:ids)")
-                            .setParameter("deletion", deletion)
-                            .setParameterList("ids", TechId.asLongs(entityIds)).executeUpdate();
-                }
-            });
-        if (operationLog.isInfoEnabled())
-        {
-            operationLog.info(String.format("trashing %d %ss", updatedRows, entityKind.getLabel()
-                    + " metaproject assignments."));
-        }
-        hibernateTemplate.flush();
-
-        return updatedRows;
+                operationLog.info(
+                        String.format("trashing %d %ss", uRows, entityKind.getLabel()
+                                + " metaproject assignments."));
+            }
+            session.flush();
+            return uRows;
+        });
     }
 
     private int trashDataSetRelationships(final List<TechId> dataSetIds, final DeletionPE deletion)
@@ -467,36 +545,26 @@ final class DeletionDAO extends AbstractGenericEntityDAO<DeletionPE> implements 
         {
             return 0;
         }
-        final HibernateTemplate hibernateTemplate = getHibernateTemplate();
-        int updatedRows = (Integer) hibernateTemplate.executeWithNativeSession(new HibernateCallback()
-            {
-                //
-                // HibernateCallback
-                //
-                @Override
-                public final Object doInHibernate(final Session session) throws HibernateException
-                {
-                    // NOTE: 'VERSIONED' makes modification time modified too
-                    return session
-                            .createQuery(
-                                    "UPDATE "
-                                            + DataSetRelationshipPE.class.getSimpleName()
-                                            + " SET deletion = :deletion, author = :author"
-                                            + " WHERE deletion IS NULL"
-                                            + " AND (parentDataSet.id IN (:ids) OR childDataSet.id in (:ids))")
-                            .setParameter("deletion", deletion)
-                            .setParameter("author", deletion.getRegistrator())
-                            .setParameterList("ids", TechId.asLongs(dataSetIds)).executeUpdate();
-                }
-            });
-        if (operationLog.isInfoEnabled())
-        {
-            operationLog.info(String.format("trashing %d %ss", updatedRows,
-                    "data set relationships."));
-        }
-        hibernateTemplate.flush();
+        return doExecute(session -> {
+            int updatedRows = session.createQuery(
+                            "UPDATE "
+                                    + DataSetRelationshipPE.class.getSimpleName()
+                                    + " SET deletion = :deletion, author = :author"
+                                    + " WHERE deletion IS NULL"
+                                    + " AND (parentDataSet.id IN (:ids) OR childDataSet.id in (:ids))")
+                    .setParameter("deletion", deletion)
+                    .setParameter("author", deletion.getRegistrator())
+                    .setParameterList("ids", TechId.asLongs(dataSetIds)).executeUpdate();
 
-        return updatedRows;
+            if (operationLog.isInfoEnabled())
+            {
+                operationLog.info(String.format("trashing %d %ss", updatedRows,
+                        "data set relationships."));
+            }
+            session.flush();
+
+            return updatedRows;
+        });
     }
 
     @Override
@@ -506,8 +574,24 @@ final class DeletionDAO extends AbstractGenericEntityDAO<DeletionPE> implements 
         {
             return Collections.emptyList();
         }
-        List<DeletionPE> result =
-                DAOUtils.listByCollection(getHibernateTemplate(), DeletionPE.class, "id", ids);
+
+        List<Long> all = new ArrayList<>(ids);
+        List<DeletionPE> result = new ArrayList<>(all.size());
+
+        for (int i = 0; i < all.size(); i += BATCH_SIZE) {
+            List<Long> slice = all.subList(i, Math.min(all.size(), i + BATCH_SIZE));
+            if (slice.isEmpty()) continue;
+
+            List<DeletionPE> batch =  doExecute(session -> session.createQuery(
+                                            "from " + DeletionPE.class.getName() + " d where d.id in (:ids)",
+                                            DeletionPE.class
+                                    )
+                                    .setParameter("ids", slice)
+                                    .list());
+
+            result.addAll(batch);
+        }
+
         if (operationLog.isDebugEnabled())
         {
             operationLog.debug(String.format("%s deletions has been found", result.size()));
@@ -551,10 +635,25 @@ final class DeletionDAO extends AbstractGenericEntityDAO<DeletionPE> implements 
         {
             return Collections.emptyList();
         }
-        HibernateTemplate hibernateTemplate = getHibernateTemplate();
+
         List<Long> ids = TechId.asLongs(entityIds);
-        return DAOUtils.listByCollection(hibernateTemplate, entityKind.getDeletedEntityClass(), ID,
-                ids);
+        final Class<?> deletedClass = entityKind.getDeletedEntityClass();
+
+        List<? extends IDeletablePE>  out = new ArrayList<>(ids.size());
+
+        for (int i = 0; i < ids.size(); i += BATCH_SIZE) {
+            List<Long> slice = ids.subList(i, Math.min(ids.size(), i + BATCH_SIZE));
+            if (slice.isEmpty()) continue;
+
+            List batch = doExecute(session -> session.createQuery(
+                                            "from " + deletedClass.getName() + " d where d.id in (:ids)", deletedClass
+                                    )
+                                    .setParameter("ids", slice)
+                                    .list());
+
+            out.addAll(batch);
+        }
+        return out;
     }
 
     @Override
@@ -580,11 +679,14 @@ final class DeletionDAO extends AbstractGenericEntityDAO<DeletionPE> implements 
                 return Collections.emptyList();
         }
 
-        DetachedCriteria criteria = DetachedCriteria.forClass(entityKind.getDeletedEntityClass());
-        criteria.setProjection(Projections.id());
-        criteria.add(Restrictions.eq(typeId, entityTypeId.getId()));
+        final Class<?> deletedEntityClass = entityKind.getDeletedEntityClass();
+        final String hql = "select d.id from " + deletedEntityClass.getName() + " d "
+                + "where d." + typeId + " = :typeId";
 
-        List<Long> result = cast(getHibernateTemplate().findByCriteria(criteria));
+        List<Long> result = doExecute(session -> session.createQuery(hql, Long.class)
+                        .setParameter("typeId", entityTypeId.getId())
+                        .getResultList());
+
         return TechId.createList(result);
     }
 
@@ -592,21 +694,21 @@ final class DeletionDAO extends AbstractGenericEntityDAO<DeletionPE> implements 
     public List<TechId> findOriginalTrashedDataSetIds(List<TechId> deletionIds)
     {
         return findTrashedEntityIds(deletionIds, EntityKind.DATA_SET,
-                Restrictions.isNotNull(ORIGINAL_DELETION));
+                (root, cb) -> cb.isNotNull(path(root, ORIGINAL_DELETION)));
     }
 
     @Override
     public List<TechId> findOriginalTrashedExperimentIds(List<TechId> deletionIds)
     {
         return findTrashedEntityIds(deletionIds, EntityKind.EXPERIMENT,
-                Restrictions.isNotNull(ORIGINAL_DELETION));
+                (root, cb) -> cb.isNotNull(path(root, ORIGINAL_DELETION)));
     }
 
     @Override
     public List<TechId> findOriginalTrashedSampleIds(List<TechId> deletionIds)
     {
         return findTrashedEntityIds(deletionIds, EntityKind.SAMPLE,
-                Restrictions.isNotNull(ORIGINAL_DELETION));
+                (root, cb) -> cb.isNotNull(path(root, ORIGINAL_DELETION)));
     }
 
     @Override

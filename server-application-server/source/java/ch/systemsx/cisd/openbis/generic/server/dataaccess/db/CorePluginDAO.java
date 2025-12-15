@@ -15,12 +15,15 @@
  */
 package ch.systemsx.cisd.openbis.generic.server.dataaccess.db;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import org.hibernate.Criteria;
+import javax.persistence.TypedQuery;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import org.hibernate.SessionFactory;
-import org.hibernate.criterion.CriteriaSpecification;
-import org.hibernate.criterion.Restrictions;
+import org.hibernate.query.criteria.HibernateCriteriaBuilder;
 import org.springframework.orm.hibernate5.HibernateTemplate;
 
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.ICorePluginDAO;
@@ -43,21 +46,27 @@ public class CorePluginDAO extends AbstractDAO implements ICorePluginDAO
     @Override
     public void createCorePlugins(List<CorePluginPE> corePlugins)
     {
-        HibernateTemplate template = getHibernateTemplate();
-        for (CorePluginPE plugin : corePlugins)
-        {
-            template.saveOrUpdate(plugin);
-        }
-        template.flush();
+        doExecute(session -> {
+            for (CorePluginPE plugin : corePlugins)
+            {
+                session.saveOrUpdate(plugin);   // handles insert or update
+            }
+            session.flush();
+            return null;
+        });
+
     }
 
     @Override
     public List<CorePluginPE> listCorePluginsByName(String name)
     {
-        final Criteria criteria = currentSession().createCriteria(ENTITY_CLASS);
-        criteria.add(Restrictions.eq("name", name));
-        criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
-        return cast(criteria.list());
+        return currentSession()
+                .createQuery(
+                        "select distinct c from " + ENTITY_CLASS.getName() + " c where c.name = :name",
+                        ENTITY_CLASS
+                )
+                .setParameter("name", name)
+                .list();
     }
 
 }

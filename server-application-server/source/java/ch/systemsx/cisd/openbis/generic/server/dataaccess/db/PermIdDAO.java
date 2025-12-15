@@ -21,8 +21,6 @@ import java.util.List;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import ch.ethz.sis.shared.log.classic.impl.Logger;
 import org.hibernate.SessionFactory;
-import org.hibernate.criterion.DetachedCriteria;
-import org.hibernate.criterion.Restrictions;
 
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
@@ -71,10 +69,17 @@ public class PermIdDAO extends AbstractDAO implements IPermIdDAO
     public IEntityInformationHolderDTO tryToFindByPermId(String permId, EntityKind entityKind)
     {
         assert permId != null : "Unspecified permId";
-        final DetachedCriteria criteria = DetachedCriteria.forClass(entityKind.getEntityClass());
-        criteria.add(Restrictions.eq("permId", permId));
-        final List<IEntityInformationHolderDTO> list =
-                cast(getHibernateTemplate().findByCriteria(criteria));
+        Class<?> entityClass = entityKind.getEntityClass();
+        List<?> raw = doExecute(session ->
+                session.createQuery(
+                        "from " + entityClass.getName() + " e where e.permId = :permId",
+                        entityClass
+                )
+                .setParameter("permId", permId)
+                .list());
+
+        List<IEntityInformationHolderDTO> list = cast(raw);
+
         final IEntityInformationHolderDTO entity = tryFindEntity(list, entityKind.name());
         if (operationLog.isDebugEnabled())
         {

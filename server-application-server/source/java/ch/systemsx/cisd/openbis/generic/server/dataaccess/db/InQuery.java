@@ -19,33 +19,39 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.hibernate.SQLQuery;
 import org.hibernate.Session;
+import org.hibernate.query.NativeQuery;
 
 public class InQuery<I, O>
 {
-    public List<O> withBatch(Session session, String inQuery, String inParameter, List<I> inArguments, Map<String, Object> fixParams)
+    public List<O> withBatch(Session session,
+            String inQuery,
+            String inParameter,
+            List<I> inArguments,
+            Map<String, Object> fixParams)
     {
         List<O> result = new ArrayList<O>(inArguments.size());
         int fixParamsSize = (fixParams == null) ? 0 : fixParams.size();
 
         InQueryScroller<I> scroller = new InQueryScroller<>(inArguments, fixParamsSize);
-        List<I> partialInArguments = null;
+        List<I> partialInArguments;
 
         while ((partialInArguments = scroller.next()) != null)
         {
-            SQLQuery query = session.createSQLQuery(inQuery);
-            query.setParameterList(inParameter, partialInArguments);
+
+            NativeQuery<O> query = session.createNativeQuery(inQuery);
+
+            query.setParameter(inParameter, partialInArguments);
 
             if (fixParams != null)
             {
-                for (String paramName : fixParams.keySet())
+                for (Map.Entry<String, Object> e : fixParams.entrySet())
                 {
-                    query.setParameter(paramName, fixParams.get(paramName));
+                    query.setParameter(e.getKey(), e.getValue());
                 }
             }
-            List<O> partialResult = query.list();
-            result.addAll(partialResult);
+
+            result.addAll(query.getResultList());
         }
 
         return result;

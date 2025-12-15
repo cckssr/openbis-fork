@@ -19,7 +19,7 @@ import org.hibernate.criterion.DetachedCriteria;
 
 /**
  * Factory of {@link DetachedCriteria} instances.
- * 
+ *
  * @author Franz-Josef Elmer
  */
 public interface IDetachedCriteriaFactory

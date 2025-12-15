@@ -54,14 +54,10 @@ public class AbstractMaterialBusinessObject extends AbstractBusinessObject
                 dataSetTypeChecker, relationshipService);
     }
 
-    private static final String PROPERTY_TYPES = "materialType.materialTypePropertyTypesInternal";
-
     protected MaterialPE getMaterialById(final TechId materialId)
     {
         assert materialId != null : "Material technical id unspecified.";
-        String[] connections =
-                { PROPERTY_TYPES };
-        final MaterialPE result = getMaterialDAO().tryGetById(materialId, connections);
+        final MaterialPE result = getMaterialDAO().tryGetByIdWithMaterialTypePropertyTypes(materialId);
         if (result == null)
         {
             throw new UserFailureException(String.format("Material with ID '%s' does not exist.",

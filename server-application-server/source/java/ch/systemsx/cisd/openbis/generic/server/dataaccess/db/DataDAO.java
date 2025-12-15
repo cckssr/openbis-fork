@@ -29,22 +29,18 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import ch.ethz.sis.shared.log.classic.impl.Logger;
-import org.hibernate.FetchMode;
+
 import org.hibernate.HibernateException;
-import org.hibernate.Query;
-import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.hibernate.StatelessSession;
-import org.hibernate.criterion.CriteriaSpecification;
-import org.hibernate.criterion.Criterion;
-import org.hibernate.criterion.DetachedCriteria;
-import org.hibernate.criterion.Projections;
-import org.hibernate.criterion.Restrictions;
+
+
 import org.hibernate.query.NativeQuery;
+import org.hibernate.query.Query;
 import org.hibernate.transform.ResultTransformer;
 import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.object.SqlQuery;
 import org.springframework.orm.hibernate5.HibernateCallback;
-import org.springframework.orm.hibernate5.HibernateTemplate;
 
 import ch.systemsx.cisd.common.collection.CollectionStyle;
 import ch.systemsx.cisd.common.collection.CollectionUtils;
@@ -80,6 +76,9 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.ProjectPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SpacePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.TableNames;
+import org.springframework.transaction.annotation.Transactional;
+
+import static ch.systemsx.cisd.openbis.generic.server.dataaccess.db.DAOUtils.BATCH_SIZE;
 
 /**
  * Implementation of {@link IDataDAO} for databases.
@@ -119,12 +118,15 @@ final class DataDAO extends AbstractGenericEntityWithPropertiesDAO<DataPE> imple
     @Override
     public boolean hasDataSet(SamplePE sample) throws DataAccessException
     {
-        final DetachedCriteria criteria = DetachedCriteria.forClass(DataPE.class);
-        criteria.add(Restrictions.eq("sampleInternal", sample));
-        criteria.setProjection(Projections.rowCount());
-        Integer count =
-                ((Number) getHibernateTemplate().findByCriteria(criteria).get(0)).intValue();
-        return count > 0;
+        Long count = doExecute(session -> session
+                .createQuery(
+                        "select count(d.id) from DataPE d where d.sampleInternal = :sample",
+                        Long.class)
+                .setParameter("sample", sample)
+                .uniqueResultOptional()
+                .orElse(0L));
+
+        return count.intValue() > 0L;
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -142,12 +144,7 @@ final class DataDAO extends AbstractGenericEntityWithPropertiesDAO<DataPE> imple
             sampleIds.add(sample.getId());
         }
 
-        Set<Long> idsOfSamplesWithDataSets = (Set<Long>) getHibernateTemplate().execute(new HibernateCallback()
-        {
-            @Override
-            public Object doInHibernate(Session session) throws HibernateException
-            {
-
+        Set<Long> idsOfSamplesWithDataSets  = doExecute(session -> {
                 InQuery inQuery = new InQuery<Long, Number>();
                 List<Number> list =
                         inQuery.withBatch(session, "select distinct samp_id from data where samp_id in (:sampleIds)", "sampleIds", sampleIds,
@@ -158,7 +155,6 @@ final class DataDAO extends AbstractGenericEntityWithPropertiesDAO<DataPE> imple
                     ids.add(item.longValue());
                 }
                 return ids;
-            }
         });
 
         Map<SamplePE, Boolean> result = new HashMap<SamplePE, Boolean>();
@@ -198,8 +194,10 @@ final class DataDAO extends AbstractGenericEntityWithPropertiesDAO<DataPE> imple
             public void execute(List<Long> entityIds)
             {
 
-                final List<DataPE> list =
-                        cast(getHibernateTemplate().findByNamedParam(query, "ids", entityIds));
+                List<DataPE> list = doExecute(session -> session
+                        .createQuery(query, DataPE.class)   // query must use "... IN (:ids) ..."
+                        .setParameter("ids", entityIds)     // Hibernate 6 supports Collection binding
+                        .getResultList());
                 results.addAll(list);
             }
 
@@ -237,8 +235,8 @@ final class DataDAO extends AbstractGenericEntityWithPropertiesDAO<DataPE> imple
     {
         assert sample != null : "Unspecified sample.";
 
-        final String query = String.format("from %s e where e.sampleInternal = ?", TABLE_NAME);
-        final List<DataPE> list = cast(getHibernateTemplate().find(query, toArray(sample)));
+        final String query = String.format("from %s e where e.sampleInternal = ?1", TABLE_NAME);
+        final List<DataPE> list = find(DataPE.class, query, toArray(sample));
 
         // distinct does not work properly in HQL for left joins
         distinct(list);
@@ -258,9 +256,9 @@ final class DataDAO extends AbstractGenericEntityWithPropertiesDAO<DataPE> imple
         final String query =
                 String.format("from %s e " + "left join fetch e.experimentInternal "
                                 + "left join fetch e.dataSetParentRelationships "
-                                + "left join fetch e.dataSetProperties " + "where e.sampleInternal = ?",
+                                + "left join fetch e.dataSetProperties " + "where e.sampleInternal = ?1",
                         TABLE_NAME);
-        final List<DataPE> list = cast(getHibernateTemplate().find(query, toArray(sample)));
+        final List<DataPE> list = find(DataPE.class, query, toArray(sample));
 
         // distinct does not work properly in HQL for left joins
         distinct(list);
@@ -277,9 +275,13 @@ final class DataDAO extends AbstractGenericEntityWithPropertiesDAO<DataPE> imple
             throws DataAccessException
     {
         assert dataStore != null : "Unspecified data store.";
-        final DetachedCriteria criteria = DetachedCriteria.forClass(ExternalDataPE.class);
-        criteria.add(Restrictions.eq("dataStore", dataStore));
-        final List<DataPE> list = cast(getHibernateTemplate().findByCriteria(criteria));
+        List<ExternalDataPE> raw = doExecute(session-> session
+                .createQuery("from " + ExternalDataPE.class.getName() + " e where e.dataStore = :ds", ExternalDataPE.class)
+                .setParameter("ds", dataStore)
+                .list());
+
+        List<DataPE> list = cast(raw);
+
         if (operationLog.isDebugEnabled())
         {
             operationLog.debug(String.format("%s(%s): %d data set(s) have been found.", MethodUtils
@@ -299,9 +301,9 @@ final class DataDAO extends AbstractGenericEntityWithPropertiesDAO<DataPE> imple
                         "from %s e " + "left join fetch e.experimentInternal "
                                 + "left join fetch e.dataSetParentRelationships "
                                 + "left join fetch e.dataSetProperties "
-                                + "where e.experimentInternal = ?",
+                                + "where e.experimentInternal = ?1",
                         TABLE_NAME);
-        final List<DataPE> list = cast(getHibernateTemplate().find(query, toArray(experiment)));
+        final List<DataPE> list = find(DataPE.class,query, toArray(experiment));
 
         // distinct does not work properly in HQL for left joins
         distinct(list);
@@ -327,14 +329,18 @@ final class DataDAO extends AbstractGenericEntityWithPropertiesDAO<DataPE> imple
         assert dataSetCode != null : "Unspecified data set code.";
 
         final String mangledCode = CodeConverter.tryToDatabase(dataSetCode);
-        final Criterion codeEq = Restrictions.eq("code", mangledCode);
+        List<DataPE> list = doExecute(session -> session
+                .createQuery(
+                        "select distinct d " +
+                                "from " + ENTITY_CLASS.getName() + " d " +
+                                "left join fetch d.dataSetType " +
+                                "left join fetch d.dataStore " +
+                                "where d.code = :code",
+                        ENTITY_CLASS
+                )
+                .setParameter("code", mangledCode)
+                .list());
 
-        final DetachedCriteria criteria = DetachedCriteria.forClass(ENTITY_CLASS);
-        criteria.add(codeEq);
-        criteria.setFetchMode("dataSetType", FetchMode.JOIN);
-        criteria.setFetchMode("dataStore", FetchMode.JOIN);
-        criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
-        final List<DataPE> list = cast(getHibernateTemplate().findByCriteria(criteria));
         final DataPE entity = tryFindEntity(list, "data set");
 
         if (operationLog.isDebugEnabled())
@@ -348,14 +354,17 @@ final class DataDAO extends AbstractGenericEntityWithPropertiesDAO<DataPE> imple
     @Override
     public TechId tryToFindDataSetIdByCode(String dataSetCode)
     {
-        SQLQuery query =
-                currentSession().createSQLQuery(
-                        "select id from data_all where code = :code");
-        query.setString("code", CodeConverter.tryToDatabase(dataSetCode));
-        Object uniqueResult = query.uniqueResult();
+        String code = CodeConverter.tryToDatabase(dataSetCode);
+
+        BigInteger uniqueResult = (BigInteger) currentSession()
+                .createNativeQuery("select id from data_all where code = :code")
+                .setParameter("code", code)
+                .uniqueResultOptional()
+                .orElse(null);
+
         if (uniqueResult != null)
         {
-            return new TechId((BigInteger) uniqueResult);
+            return new TechId(uniqueResult);
         } else
         {
             return null;
@@ -367,31 +376,33 @@ final class DataDAO extends AbstractGenericEntityWithPropertiesDAO<DataPE> imple
     {
         assert dataSetCodes != null : "Unspecified collection";
 
-        if (dataSetCodes.size() == 0)
+        if (dataSetCodes.isEmpty())
         {
             return Collections.emptyList();
         }
+        List<String> all = new ArrayList<>(dataSetCodes);
+        List<DeletedDataPE> result = new ArrayList<>(all.size());
 
-        final List<DeletedDataPE> list =
-                DAOUtils.listByCollection(getHibernateTemplate(), new IDetachedCriteriaFactory()
-                {
-                    @Override
-                    public DetachedCriteria createCriteria()
-                    {
-                        final DetachedCriteria criteria =
-                                DetachedCriteria.forClass(DeletedDataPE.class);
-                        criteria.setFetchMode("dataStore", FetchMode.SELECT);
-                        criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
-                        return criteria;
-                    }
-                }, "code", dataSetCodes);
-
+        for (int i = 0; i < all.size(); i += BATCH_SIZE) {
+            List<String> slice = all.subList(i, Math.min(all.size(), i + BATCH_SIZE));
+            if (!slice.isEmpty()) {
+                List<DeletedDataPE> batch =
+                        doExecute(session -> session.createQuery(
+                                    "select distinct d from " + DeletedDataPE.class.getName() + " d " +
+                                            "where d.code in (:codes)",
+                                    DeletedDataPE.class
+                            )
+                            .setParameter("codes", slice)
+                            .getResultList());
+                result.addAll(batch);
+            }
+        }
         if (operationLog.isDebugEnabled())
         {
-            operationLog.debug(String.format("Found '%s' data sets for codes '%s'.", list.size(),
+            operationLog.debug(String.format("Found '%s' data sets for codes '%s'.", result.size(),
                     dataSetCodes));
         }
-        return list;
+        return result;
     }
 
     @Override
@@ -450,36 +461,41 @@ final class DataDAO extends AbstractGenericEntityWithPropertiesDAO<DataPE> imple
             return Collections.emptyList();
         }
 
-        final List<DataPE> list =
-                DAOUtils.listByCollection(getHibernateTemplate(), new IDetachedCriteriaFactory()
-                {
-                    @Override
-                    public DetachedCriteria createCriteria()
-                    {
-                        final DetachedCriteria criteria =
-                                DetachedCriteria.forClass(ENTITY_CLASS);
-                        criteria.setFetchMode("dataSetType", FetchMode.SELECT);
-                        criteria.setFetchMode("dataStore", FetchMode.SELECT);
-                        criteria.setFetchMode("experimentInternal", FetchMode.SELECT);
-                        criteria.setFetchMode("sampleInternal", FetchMode.SELECT);
-                        criteria.setFetchMode("fileFormat", FetchMode.SELECT);
-                        if (withPropertyTypes)
-                        {
-                            criteria.setFetchMode(
-                                    "dataSetType.dataSetTypePropertyTypesInternal",
-                                    FetchMode.JOIN);
-                        }
-                        criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+        final Class<DataPE> entityClass = ENTITY_CLASS;
+        final int BATCH_SIZE = 1000;
 
-                        /**
+        List<?> all = new ArrayList<>(identifiers);
+        List<DataPE> list = new ArrayList<>(all.size());
+
+        for (int i = 0; i < all.size(); i += BATCH_SIZE) {
+            List<?> slice = all.subList(i, Math.min(all.size(), i + BATCH_SIZE));
+            if (slice.isEmpty()) continue;
+
+
+            String hql;
+            if (withPropertyTypes) {
+                hql = "select distinct e " +
+                        "from " + entityClass.getName() + " e " +
+                        "join fetch e.dataSetType dst " +
+                        "left join fetch dst.dataSetTypePropertyTypesInternal " +
+                        "where e." + identifierColumn + " in (:ids)";
+            } else {
+                hql = "from " + entityClass.getName() + " e " +
+                        "where e." + identifierColumn + " in (:ids)";
+            }
+
+            List<DataPE> batch = doExecute(session -> session.createQuery(hql, entityClass)
+                                .setParameter("ids", slice)
+                                .getResultList());
+
+                        /*
                          * lockForUpdate parameter is ignored. See LMS-2882 details
                          */
-                        /*
-                         * if (lockForUpdate) { criteria.setLockMode(LockMode.UPGRADE); }
-                         */
-                        return criteria;
-                    }
-                }, identifierColumn, identifiers);
+                        // if (lockForUpdate) {
+                        //     q.setLockMode("e", org.hibernate.LockMode.PESSIMISTIC_WRITE);
+                        // }
+            list.addAll(batch);
+        }
 
         if (operationLog.isDebugEnabled())
         {
@@ -496,28 +512,28 @@ final class DataDAO extends AbstractGenericEntityWithPropertiesDAO<DataPE> imple
         assert dataSetCode != null : "Unspecified data set code";
 
         final String mangledCode = CodeConverter.tryToDatabase(dataSetCode);
-        final Criterion codeEq = Restrictions.eq("code", mangledCode);
+        String hql;
+        if (withPropertyTypes) {
+            // Fetch dataset type and its property types
+            hql = "select distinct d " +
+                    "from " + ENTITY_CLASS.getName() + " d " +
+                    "join fetch d.dataSetType dst " +
+                    "left join fetch dst.dataSetTypePropertyTypesInternal " +
+                    "where d.code = :code";
+        } else {
+            hql =  "select distinct d " +
+                    "from " + ENTITY_CLASS.getName() + " d " +
+                        "where d.code = :code";
 
-        final DetachedCriteria criteria = DetachedCriteria.forClass(ENTITY_CLASS);
-        criteria.add(codeEq);
-        criteria.setFetchMode("dataSetType", FetchMode.SELECT);
-        criteria.setFetchMode("dataStore", FetchMode.SELECT);
-        criteria.setFetchMode("experimentInternal", FetchMode.SELECT);
-        criteria.setFetchMode("sampleInternal", FetchMode.SELECT);
-        criteria.setFetchMode("fileFormat", FetchMode.SELECT);
-        if (withPropertyTypes)
-        {
-            criteria.setFetchMode("dataSetType.dataSetTypePropertyTypesInternal", FetchMode.JOIN);
         }
-        criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 
-        /**
-         * lockForUpdate parameter is ignored. See LMS-2882 details
-         */
-        /*
-         * if (lockForUpdate) { criteria.setLockMode(LockMode.UPGRADE); }
-         */
-        final List<DataPE> list = cast(getHibernateTemplate().findByCriteria(criteria));
+
+        List<DataPE> list = doExecute( session -> session
+                .createQuery(hql, ENTITY_CLASS)
+                .setParameter("code", mangledCode)
+                .list());
+
+
         final DataPE entity = tryFindEntity(list, "data set");
 
         if (operationLog.isDebugEnabled())
@@ -540,33 +556,36 @@ final class DataDAO extends AbstractGenericEntityWithPropertiesDAO<DataPE> imple
             return;
         }
 
-        final HibernateTemplate hibernateTemplate = getHibernateTemplate();
+        //final HibernateTemplate hibernateTemplate = getHibernateTemplate();
         // PostgreSQL has a limit of 2^15-1 values in an IN clause, so we need to split the data set
         // codes into chunks to avoid a
         // java.io.IOException: Tried to send an out-of-range integer as a 2-byte value: nn
         // However, we know from experience that using chunk sizes larger than 999 we get bad
         // performance, so we split the query in chunks of 999 rather than 2^15-1.
-        final int len = dataSetCodes.size();
-        int updatedRows = 0;
-        if (len > MAX_BATCH_SIZE)
-        {
-            int startIndex = 0;
-            int endIndex = MAX_BATCH_SIZE;
-            while (endIndex > startIndex)
+        int updatedRows = doExecute( session -> {
+            final int len = dataSetCodes.size();
+            int upRows = 0;
+            if (len > MAX_BATCH_SIZE)
             {
-                final int startIndexFinal = startIndex;
-                final int endIndexFinal = endIndex;
-                List<String> codes = dataSetCodes.subList(startIndexFinal, endIndexFinal);
-                updatedRows += updateStatus(hibernateTemplate, status, codes);
-                startIndex = endIndex;
-                endIndex = Math.min(endIndex + MAX_BATCH_SIZE, len);
+                int startIndex = 0;
+                int endIndex = MAX_BATCH_SIZE;
+                while (endIndex > startIndex)
+                {
+                    final int startIndexFinal = startIndex;
+                    final int endIndexFinal = endIndex;
+                    List<String> codes = dataSetCodes.subList(startIndexFinal, endIndexFinal);
+                    upRows += updateStatus(session, status, codes);
+                    startIndex = endIndex;
+                    endIndex = Math.min(endIndex + MAX_BATCH_SIZE, len);
+                }
+            } else
+            {
+                upRows = updateStatus(session, status, dataSetCodes);
             }
-        } else
-        {
-            updatedRows = updateStatus(hibernateTemplate, status, dataSetCodes);
-        }
-        scheduleDynamicPropertiesEvaluationForDataSets(dataSetCodes);
-        hibernateTemplate.flush();
+            scheduleDynamicPropertiesEvaluationForDataSets(dataSetCodes);
+            session.flush();
+            return upRows;
+        });
         if (updatedRows != dataSetCodes.size())
         {
             throw UserFailureException.fromTemplate("Update of %s data set statuses to %s failed.", dataSetCodes.size(), status);
@@ -577,16 +596,12 @@ final class DataDAO extends AbstractGenericEntityWithPropertiesDAO<DataPE> imple
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    private Integer updateStatus(final HibernateTemplate hibernateTemplate, final DataSetArchivingStatus status, List<String> codes)
+    private Integer updateStatus(final Session session, final DataSetArchivingStatus status, List<String> codes)
     {
-        return (Integer) hibernateTemplate.execute(new HibernateCallback()
-        {
-            @Override
-            public final Object doInHibernate(final Session session)
-                    throws HibernateException
-            {
-                int result = session.createQuery(
-                                "UPDATE " + EXTERNAL_DATA_TABLE_NAME + " SET status = :status WHERE code IN (:codes) ")
+
+        return doExecute(session1 ->  {
+            int result =  session.createQuery(
+                        "UPDATE " + EXTERNAL_DATA_TABLE_NAME + " SET status = :status WHERE code IN (:codes) ")
                         .setParameter("status", status)
                         .setParameterList("codes", codes)
                         .executeUpdate();
@@ -603,7 +618,6 @@ final class DataDAO extends AbstractGenericEntityWithPropertiesDAO<DataPE> imple
                             .setParameterList("codes", codes)
                             .executeUpdate();
                      */
-            }
         });
     }
 
@@ -619,30 +633,25 @@ final class DataDAO extends AbstractGenericEntityWithPropertiesDAO<DataPE> imple
     @Override
     public void updateSizes(final Map<String, Long> sizeMap)
     {
-        final HibernateTemplate hibernateTemplate = getHibernateTemplate();
-        hibernateTemplate.execute(new HibernateCallback()
-        {
-            @Override
-            public final Object doInHibernate(final Session session)
-                    throws HibernateException
-            {
-                for (Map.Entry<String, Long> sizeEntry : sizeMap.entrySet())
-                {
-                    // data sets consisting out of empty folders have a size of 0,
-                    // but we want the size of a data set to be strictly positive
-                    long positiveSize = Math.max(1, sizeEntry.getValue());
 
-                    session.createQuery(
-                                    "UPDATE " + EXTERNAL_DATA_TABLE_NAME
-                                            + " SET size = :size WHERE code = :code")
-                            .setParameter("size", positiveSize)
-                            .setParameter("code", sizeEntry.getKey())
-                            .executeUpdate();
-                }
-                return null;
+        doExecute(session -> {
+            for (Map.Entry<String, Long> sizeEntry : sizeMap.entrySet())
+            {
+                // data sets consisting out of empty folders have a size of 0,
+                // but we want the size of a data set to be strictly positive
+                long positiveSize = Math.max(1, sizeEntry.getValue());
+
+                session.createQuery(
+                                "UPDATE " + EXTERNAL_DATA_TABLE_NAME
+                                        + " SET size = :size WHERE code = :code")
+                        .setParameter("size", positiveSize)
+                        .setParameter("code", sizeEntry.getKey())
+                        .executeUpdate();
             }
+            session.flush();
+            return null;
         });
-        hibernateTemplate.flush();
+
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -658,7 +667,6 @@ final class DataDAO extends AbstractGenericEntityWithPropertiesDAO<DataPE> imple
             return;
         }
 
-        final HibernateTemplate hibernateTemplate = getHibernateTemplate();
         // PostgreSQL has a limit of 2^15-1 values in an IN clause, so we need to split the data set
         // codes into chunks to avoid a
         // java.io.IOException: Tried to send an out-of-range integer as a 2-byte value: nn
@@ -675,16 +683,16 @@ final class DataDAO extends AbstractGenericEntityWithPropertiesDAO<DataPE> imple
                 final int startIndexFinal = startIndex;
                 final int endIndexFinal = endIndex;
                 final List<String> codes = dataSetCodes.subList(startIndexFinal, endIndexFinal);
-                updatedRows += (Integer) hibernateTemplate.execute(new StatusUpdater(presentInArchive, status, codes));
+                updatedRows += (Integer) doExecute(new StatusUpdater(presentInArchive, status, codes));
                 startIndex = endIndex;
                 endIndex = Math.min(endIndex + MAX_BATCH_SIZE, len);
             }
         } else
         {
-            updatedRows = (Integer) hibernateTemplate.execute(new StatusUpdater(presentInArchive, status, dataSetCodes));
+            updatedRows = (Integer) doExecute(new StatusUpdater(presentInArchive, status, dataSetCodes));
         }
         scheduleDynamicPropertiesEvaluationForDataSets(dataSetCodes);
-        hibernateTemplate.flush();
+        currentSession().flush();
         if (updatedRows != dataSetCodes.size())
         {
             throw UserFailureException.fromTemplate("Update of %s data set statuses to '%s' and presentInArchive to '%s' failed.",
@@ -726,7 +734,7 @@ final class DataDAO extends AbstractGenericEntityWithPropertiesDAO<DataPE> imple
             }
 
             // need to deal with exception thrown by trigger checking uniqueness
-            flushWithSqlExceptionHandling(getHibernateTemplate());
+            flushWithSqlExceptionHandling();
 
             scheduleDynamicPropertiesEvaluation(dataSets);
         } catch (DataAccessException e)
@@ -745,7 +753,10 @@ final class DataDAO extends AbstractGenericEntityWithPropertiesDAO<DataPE> imple
         validatePE(dataset);
 
         lockRelatedEntities(dataset);
-        getHibernateTemplate().saveOrUpdate(dataset);
+        doExecute(session -> {
+            session.saveOrUpdate(dataset);
+            return null;
+        });
     }
 
     private void lockRelatedEntities(DataPE data)
@@ -761,12 +772,14 @@ final class DataDAO extends AbstractGenericEntityWithPropertiesDAO<DataPE> imple
         assert data != null : "Given external data can not be null.";
         validatePE(data);
 
-        final HibernateTemplate hibernateTemplate = getHibernateTemplate();
         data.setCode(CodeConverter.tryToDatabase(data.getCode()));
         data.setModifier(modifier);
         lockRelatedEntities(data);
-        hibernateTemplate.update(data);
-        hibernateTemplate.flush();
+        doExecute(session -> {
+            session.update(data);
+            session.flush();
+            return null;
+        });
         scheduleDynamicPropertiesEvaluation(Collections.singletonList(data));
 
         if (operationLog.isInfoEnabled())
@@ -1098,7 +1111,7 @@ final class DataDAO extends AbstractGenericEntityWithPropertiesDAO<DataPE> imple
                 return null;
             }
 
-            private List<String> selectPermIds(final SQLQuery sqlQuerySelectPermIds,
+            private List<String> selectPermIds(final NativeQuery<?> sqlQuerySelectPermIds,
                     final List<Long> entityIds)
             {
                 sqlQuerySelectPermIds.setParameterList(ENTITY_IDS_PARAM, entityIds);
@@ -1107,7 +1120,7 @@ final class DataDAO extends AbstractGenericEntityWithPropertiesDAO<DataPE> imple
             }
 
             private List<DeletedDataSetLocation> selectLocations(
-                    final SQLQuery sqlQuerySelectLocations, final List<Long> entityIds)
+                    final NativeQuery<?> sqlQuerySelectLocations, final List<Long> entityIds)
             {
                 sqlQuerySelectLocations.setParameterList(ENTITY_IDS_PARAM, entityIds);
                 sqlQuerySelectLocations.setResultTransformer(new ResultTransformer()
@@ -1141,7 +1154,7 @@ final class DataDAO extends AbstractGenericEntityWithPropertiesDAO<DataPE> imple
                 a1.executeUpdate();
             }
 
-            private void insertEvent(final SQLQuery sqlQueryInsertEvent,
+            private void insertEvent(final Query sqlQueryInsertEvent,
                     final List<String> permIds, final List<DeletedDataSetLocation> locations, String content)
             {
                 sqlQueryInsertEvent.setParameter(EVENT_TYPE_PARAM, EventType.DELETION.name());
@@ -1179,21 +1192,17 @@ final class DataDAO extends AbstractGenericEntityWithPropertiesDAO<DataPE> imple
     @Override
     public Map<Long, Set<Long>> mapDataSetIdsByChildrenIds(final Collection<Long> children, final Long relationship)
     {
-        @SuppressWarnings({ "unchecked", "rawtypes" }) final List<Object[]> results =
-                (List<Object[]>) getHibernateTemplate().execute(new HibernateCallback()
-                {
-                    @Override
-                    public final Object doInHibernate(final Session session)
-                    {
-                        InQuery<Long, Object> inQuery = new InQuery<>();
-                        Map<String, Object> fixParams = new HashMap<String, Object>();
-                        fixParams.put("relationship", relationship);
 
-                        String query = "select data_id_child, data_id_parent from " + TableNames.DATA_SET_RELATIONSHIPS_VIEW
-                                + " where relationship_id = :relationship and data_id_child in (:children)";
-                        return inQuery.withBatch(session, query, "children", new ArrayList<>(children), fixParams);
-                    }
-                });
+
+        InQuery<Long, Object[]> inQuery = new InQuery<>();
+        Map<String, Object> fixParams = new HashMap<String, Object>();
+        fixParams.put("relationship", relationship);
+
+        String query = "select data_id_child, data_id_parent from " + TableNames.DATA_SET_RELATIONSHIPS_VIEW
+                + " where relationship_id = :relationship and data_id_child in (:children)";
+        final List<Object[]> results =
+                    doExecute(session ->  inQuery.withBatch(session, query, "children", new ArrayList<>(children), fixParams));
+
 
         Map<Long, Set<Long>> childIdToParentIdsMap = new HashMap<Long, Set<Long>>();
 
@@ -1250,24 +1259,13 @@ final class DataDAO extends AbstractGenericEntityWithPropertiesDAO<DataPE> imple
     @SuppressWarnings("unchecked")
     private Set<TechId> findRelatedIds(final String query, final Collection<TechId> dataSetIds, final long relationshipTypeId)
     {
-        @SuppressWarnings("rawtypes") final List<? extends Number> results =
-                (List<? extends Number>) getHibernateTemplate().execute(new HibernateCallback()
-                {
-
-                    //
-                    // HibernateCallback
-                    //
-
-                    @Override
-                    public final Object doInHibernate(final Session session)
-                    {
-                        // we could remove this transformation if we choose to pass Long values
-                        final List<Long> longIds = TechId.asLongs(dataSetIds);
-                        return session.createSQLQuery(query).setParameterList("ids", longIds)
+        // we could remove this transformation if we choose to pass Long values
+        final List<Long> longIds = TechId.asLongs(dataSetIds);
+        @SuppressWarnings("unchecked")
+        final List<? extends Number> results = doExecute(session -> session.createNativeQuery(query)
+                                .setParameterList("ids", longIds)
                                 .setParameter("type", relationshipTypeId)
-                                .list();
-                    }
-                });
+                                .getResultList());
         return transformNumbers2TechIdSet(results);
     }
 
@@ -1291,8 +1289,22 @@ final class DataDAO extends AbstractGenericEntityWithPropertiesDAO<DataPE> imple
         {
             return new ArrayList<DataPE>();
         }
-        final List<DataPE> list =
-                DAOUtils.listByCollection(getHibernateTemplate(), DataPE.class, idName, dataSetIds);
+        List<?> all = new ArrayList<>(dataSetIds);
+        List<DataPE> list = new ArrayList<>(all.size());
+
+        for (int i = 0; i < all.size(); i += BATCH_SIZE) {
+            List<?> slice = all.subList(i, Math.min(all.size(), i + BATCH_SIZE));
+            if (!slice.isEmpty()) {
+                List<DataPE> batch = doExecute(session -> session.createQuery(
+                                                "from " + DataPE.class.getName() + " e where e." + idName + " in (:ids)",
+                                                DataPE.class
+                                        )
+                                        .setParameter("ids", slice)
+                                        .list());
+                list.addAll(batch);
+            }
+        }
+
         if (operationLog.isDebugEnabled())
         {
             operationLog.debug(String.format("%d data set(s) have been found.", list.size()));
@@ -1312,14 +1324,26 @@ final class DataDAO extends AbstractGenericEntityWithPropertiesDAO<DataPE> imple
                         + ExperimentPE.class.getSimpleName()
                         + " as e where e.id in (select d.experimentInternal.id from "
                         + DataPE.class.getSimpleName() + " as d where d.id in (:ids))))";
+        //could be replaced with this
+//        final String query =
+//                "select distinct s " +
+//                        "from DataPE d " +
+//                        "join d.experimentInternal e " +
+//                        "join e.projectInternal p " +
+//                        "join p.space s " +
+//                        "where d.id in (:ids)";
+
         final List<SpacePE> result = new ArrayList<SpacePE>();
         BatchOperationExecutor.executeInBatches(new IBatchOperation<Long>()
         {
             @Override
             public void execute(List<Long> ids)
             {
-                List<SpacePE> spaces =
-                        cast(getHibernateTemplate().findByNamedParam(query, "ids", ids));
+                List<SpacePE> spaces = doExecute(session -> session
+                        .createQuery(query, SpacePE.class)
+                        .setParameter("ids", ids)
+                        .getResultList());
+
                 result.addAll(spaces);
             }
 
@@ -1352,24 +1376,27 @@ final class DataDAO extends AbstractGenericEntityWithPropertiesDAO<DataPE> imple
 
         try
         {
-            final HibernateTemplate hibernateTemplate = getHibernateTemplate();
-            for (DataPE data : dataSets)
-            {
-                validatePE(data);
-                data.setCode(CodeConverter.tryToDatabase(data.getCode()));
-                hibernateTemplate.saveOrUpdate(data);
-            }
+           doExecute(session -> {
+                       for (DataPE data : dataSets)
+                       {
+                           validatePE(data);
+                           data.setCode(CodeConverter.tryToDatabase(data.getCode()));
+                           session.saveOrUpdate(data);
+                       }
 
-            if (operationLog.isInfoEnabled())
-            {
-                operationLog.info(String.format("UPDATE: %d data sets.", dataSets.size()));
-            }
+                       if (operationLog.isInfoEnabled())
+                       {
+                           operationLog.info(String.format("UPDATE: %d data sets.", dataSets.size()));
+                       }
 
-            flushWithSqlExceptionHandling(getHibernateTemplate());
+                       return null;
+                   });
+
+            flushWithSqlExceptionHandling();
             scheduleDynamicPropertiesEvaluation(dataSets);
 
             // if session is not cleared registration of many samples slows down after each batch
-            hibernateTemplate.clear();
+            currentSession().clear();
         } catch (DataAccessException e)
         {
             DataSetDataAccessExceptionTranslator.translateAndThrow(e);
@@ -1379,7 +1406,7 @@ final class DataDAO extends AbstractGenericEntityWithPropertiesDAO<DataPE> imple
     @Override
     public final void validateAndSaveUpdatedEntity(DataPE entity) throws DataAccessException
     {
-        flushWithSqlExceptionHandling(getHibernateTemplate());
+        flushWithSqlExceptionHandling();
         super.validateAndSaveUpdatedEntity(entity);
         scheduleDynamicPropertiesEvaluation(Arrays.asList(entity));
     }
@@ -1405,18 +1432,21 @@ final class DataDAO extends AbstractGenericEntityWithPropertiesDAO<DataPE> imple
     public List<TechId> listDataSetIdsBySampleIds(final Collection<TechId> samples)
     {
         final List<Long> longIds = TechId.asLongs(samples);
-        final List<Long> results =
-                DAOUtils.listByCollection(getHibernateTemplate(), new IDetachedCriteriaFactory()
-                {
-                    @Override
-                    public DetachedCriteria createCriteria()
-                    {
-                        final DetachedCriteria criteria =
-                                DetachedCriteria.forClass(DataPE.class);
-                        criteria.setProjection(Projections.id());
-                        return criteria;
-                    }
-                }, "sampleInternal.id", longIds);
+        final List<Long> results = new ArrayList<>(longIds.size());
+
+        for (int i = 0; i < longIds.size(); i += BATCH_SIZE) {
+            List<Long> slice = longIds.subList(i, Math.min(longIds.size(), i + BATCH_SIZE));
+            if (slice.isEmpty()) continue;
+
+            List<Long> ids = doExecute(session -> session.createQuery(
+                                            "select e.id from " + DataPE.class.getName() + " e " +
+                                                    "where e.sampleInternal.id in (:sampleIds)",
+                                            Long.class
+                                    )
+                                    .setParameter("sampleIds", slice)
+                                    .list());
+            results.addAll(ids);
+        }
 
         if (operationLog.isDebugEnabled())
         {
@@ -1430,18 +1460,24 @@ final class DataDAO extends AbstractGenericEntityWithPropertiesDAO<DataPE> imple
     public List<TechId> listDataSetIdsByExperimentIds(final Collection<TechId> experiments)
     {
         final List<Long> longIds = TechId.asLongs(experiments);
-        final List<Long> results =
-                DAOUtils.listByCollection(getHibernateTemplate(), new IDetachedCriteriaFactory()
-                {
-                    @Override
-                    public DetachedCriteria createCriteria()
-                    {
-                        final DetachedCriteria criteria =
-                                DetachedCriteria.forClass(DataPE.class);
-                        criteria.setProjection(Projections.id());
-                        return criteria;
-                    }
-                }, "experimentInternal.id", longIds);
+        final List<Long> results = new ArrayList<>();
+        for (int i = 0; i < longIds.size(); i += BATCH_SIZE)
+        {
+            List<Long> slice = longIds.subList(i, Math.min(longIds.size(), i + BATCH_SIZE));
+            if (slice.isEmpty())
+                continue;
+
+            List<Long> ids = doExecute(session -> session.createQuery(
+                                            "select e.id from " + DataPE.class.getName() + " e " +
+                                                    "where e.experimentInternal.id in (:expIds)",
+                                            Long.class
+                                    )
+                                    .setParameter("expIds", slice)
+                                    .list());
+            results.addAll(ids);
+        }
+
+
         if (operationLog.isDebugEnabled())
         {
             operationLog.info(String.format("found %s data sets for given experiments",
@@ -1450,22 +1486,28 @@ final class DataDAO extends AbstractGenericEntityWithPropertiesDAO<DataPE> imple
         return transformNumbers2TechIdList(results);
     }
 
-    @Override public List<TechId> listAfsDataSetIdsBySampleDeletionId(final Long deletionId) throws DataAccessException
+    @Override
+    public List<TechId> listAfsDataSetIdsBySampleDeletionId(final Long deletionId)
+            throws DataAccessException
     {
-        SQLQuery query =
-                currentSession().createSQLQuery(
+        NativeQuery<?> query =
+                currentSession().createNativeQuery(
                         "select id from data_all where samp_id in (select id from samples_all where del_id = :deletionId) and afs_data = 't'");
         query.setParameter("deletionId", deletionId);
-        return transformNumbers2TechIdList(query.list());
+        @SuppressWarnings("unchecked")
+        List<? extends Number> ids = (List<? extends Number>) query.list();
+        return transformNumbers2TechIdList(ids);
     }
 
     @Override public List<TechId> listAfsDataSetIdsByExperimentDeletionId(final Long deletionId) throws DataAccessException
     {
-        SQLQuery query =
-                currentSession().createSQLQuery(
+        NativeQuery<?> query =
+                currentSession().createNativeQuery(
                         "select id from data_all where expe_id in (select id from experiments_all where del_id = :deletionId) and afs_data = 't'");
         query.setParameter("deletionId", deletionId);
-        return transformNumbers2TechIdList(query.list());
+        @SuppressWarnings("unchecked")
+        List<? extends Number> ids = (List<? extends Number>) query.list();
+        return transformNumbers2TechIdList(ids);
     }
 
     @Override public List<TechId> listAfsDataSetIdsBySampleIds(final Collection<TechId> sampleIds) throws DataAccessException
@@ -1474,10 +1516,12 @@ final class DataDAO extends AbstractGenericEntityWithPropertiesDAO<DataPE> imple
         {
             return Collections.emptyList();
         }
-        SQLQuery query =
-                currentSession().createSQLQuery("select id from data_all where samp_id in (:sampleIds) and afs_data = 't'");
+        NativeQuery<?> query =
+                currentSession().createNativeQuery("select id from data_all where samp_id in (:sampleIds) and afs_data = 't'");
         query.setParameter("sampleIds", TechId.asLongs(sampleIds));
-        return transformNumbers2TechIdList(query.list());
+        @SuppressWarnings("unchecked")
+        List<? extends Number> ids = (List<? extends Number>) query.list();
+        return transformNumbers2TechIdList(ids);
     }
 
     @Override public List<TechId> listAfsDataSetIdsByExperimentIds(final Collection<TechId> experimentIds) throws DataAccessException
@@ -1486,10 +1530,12 @@ final class DataDAO extends AbstractGenericEntityWithPropertiesDAO<DataPE> imple
         {
             return Collections.emptyList();
         }
-        SQLQuery query =
-                currentSession().createSQLQuery("select id from data_all where expe_id in (:experimentIds) and afs_data = 't'");
+        NativeQuery<?> query =
+                currentSession().createNativeQuery("select id from data_all where expe_id in (:experimentIds) and afs_data = 't'");
         query.setParameter("experimentIds", TechId.asLongs(experimentIds));
-        return transformNumbers2TechIdList(query.list());
+        @SuppressWarnings("unchecked")
+        List<? extends Number> ids = (List<? extends Number>) query.list();
+        return transformNumbers2TechIdList(ids);
     }
 
     @Override public List<TechId> listAfsDataSetIdsByCodes(final Collection<String> dataSetCodes)
@@ -1498,10 +1544,12 @@ final class DataDAO extends AbstractGenericEntityWithPropertiesDAO<DataPE> imple
         {
             return Collections.emptyList();
         }
-        SQLQuery query =
-                currentSession().createSQLQuery("select id from data_all where code in (:dataSetCodes) and afs_data = 't'");
+        NativeQuery<?> query =
+                currentSession().createNativeQuery("select id from data_all where code in (:dataSetCodes) and afs_data = 't'");
         query.setParameter("dataSetCodes", dataSetCodes);
-        return transformNumbers2TechIdList(query.list());
+        @SuppressWarnings("unchecked")
+        List<? extends Number> ids = (List<? extends Number>) query.list();
+        return transformNumbers2TechIdList(ids);
     }
 
     @Override public void updateAfsDataFlag(final Collection<TechId> dataSetIds, final boolean afsDataFlag)
@@ -1510,10 +1558,10 @@ final class DataDAO extends AbstractGenericEntityWithPropertiesDAO<DataPE> imple
         {
             return;
         }
-        SQLQuery query =
-                currentSession().createSQLQuery("update data_all set afs_data = (:afsDataFlag) where id in (:dataSetIds)");
-        query.setParameter("dataSetIds", TechId.asLongs(dataSetIds));
+        Query<?> query = currentSession().createNativeQuery(
+                "update data_all set afs_data = :afsDataFlag where id in (:dataSetIds)");
         query.setParameter("afsDataFlag", afsDataFlag);
+        query.setParameterList("dataSetIds", TechId.asLongs(dataSetIds));
         query.executeUpdate();
     }
 
@@ -1526,14 +1574,32 @@ final class DataDAO extends AbstractGenericEntityWithPropertiesDAO<DataPE> imple
     @Override
     public boolean confirmStorage(String dataSetCode)
     {
-        SQLQuery query =
-                currentSession().createSQLQuery(
+        Query query =
+                currentSession().createNativeQuery(
                         "update external_data set storage_confirmation = true "
                                 + "where storage_confirmation = false "
                                 + "and id in (select id from data_all where code = :code)");
-        query.setString("code", CodeConverter.tryToDatabase(dataSetCode));
+        query.setParameter("code", CodeConverter.tryToDatabase(dataSetCode));
         return query.executeUpdate() > 0;
     }
+
+
+    @Override
+    public DataPE tryGetByIdWithTypePropertyTypesAndSample(TechId dataSetId)
+    {
+        return currentSession()
+                .createQuery(
+                        "select d from DataPE d " +
+                                "left join fetch d.dataSetType dst " +
+                                "left join fetch dst.dataSetTypePropertyTypesInternal " +
+                                "left join fetch d.sampleInternal " +
+                                "where d.id = :id",
+                        DataPE.class
+                )
+                .setParameter("id", dataSetId.getId())
+                .uniqueResult();
+    }
+
 
     @Override
     public boolean isAccessTimestampEnabled()
@@ -1554,11 +1620,14 @@ final class DataDAO extends AbstractGenericEntityWithPropertiesDAO<DataPE> imple
 
     private boolean isAccessTimestampColumnDefined()
     {
-        SQLQuery query =
-                currentSession().createSQLQuery(
-                        "SELECT column_name FROM information_schema.columns WHERE table_name='data_all' and column_name='"
-                                + ColumnNames.ACCESS_TIMESTAMP + "'");
-        return query.list().size() > 0;
+        String sql = "SELECT column_name FROM information_schema.columns " +
+                "WHERE table_name='data_all' and column_name='" + ColumnNames.ACCESS_TIMESTAMP + "'";
+
+        List<String> cols = currentSession()
+                .createNativeQuery(sql)
+                .list();
+
+        return !cols.isEmpty();
     }
 
     @Override
@@ -1566,11 +1635,11 @@ final class DataDAO extends AbstractGenericEntityWithPropertiesDAO<DataPE> imple
     {
         if (isAccessTimestampEnabled())
         {
-            SQLQuery query =
-                    currentSession().createSQLQuery(
+            Query query =
+                    currentSession().createNativeQuery(
                             "update data_all set " + ColumnNames.ACCESS_TIMESTAMP + " = current_timestamp "
                                     + "where code = :code");
-            query.setString("code", CodeConverter.tryToDatabase(dataSetCode));
+            query.setParameter("code", CodeConverter.tryToDatabase(dataSetCode));
             return query.executeUpdate() > 0;
         }
         return false;
@@ -1579,9 +1648,9 @@ final class DataDAO extends AbstractGenericEntityWithPropertiesDAO<DataPE> imple
     @Override
     public boolean exists(String dataSetCode)
     {
-        SQLQuery query =
-                currentSession().createSQLQuery("select count(*) from data_all where code = :code");
-        query.setString("code", CodeConverter.tryToDatabase(dataSetCode));
+        NativeQuery<?> query =
+                currentSession().createNativeQuery("select count(*) from data_all where code = :code");
+        query.setParameter("code", CodeConverter.tryToDatabase(dataSetCode));
         Number count = (Number) query.uniqueResult();
         return count != null && count.intValue() > 0;
     }

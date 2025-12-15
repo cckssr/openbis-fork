@@ -149,14 +149,8 @@ abstract class AbstractSampleIdentifierBusinessObject extends AbstractBusinessOb
         return sample;
     }
 
-    private static final String PROPERTY_TYPES = "sampleType.sampleTypePropertyTypesInternal";
-
-    private static final String EXPERIMENT = "experimentInternal";
-
     protected SamplePE tryToGetSampleByTechId(final TechId sampleId)
     {
-        String[] connections =
-                { PROPERTY_TYPES, EXPERIMENT };
-        return getSampleDAO().tryGetById(sampleId, connections);
+        return getSampleDAO().tryGetByIdWithTypePropertyTypesAndExperiment(sampleId);
     }
 }
