@@ -27,7 +27,7 @@ public class DriveAPIServerImpl implements DriveAPI {
         syncJobEventDAO = new SyncJobEventDAOImp(configuration);
         notificationManager = new NotificationManagerSqliteImpl(configuration);
         settingsManager = new SettingsManager(configuration, syncJobEventDAO, notificationManager);
-        taskManager = new TaskManagerImpl(syncJobEventDAO, notificationManager, configuration);
+        taskManager = new TaskManagerImpl(syncJobEventDAO, notificationManager, settingsManager, configuration);
     }
 
     public DriveAPIServerImpl(SettingsManager settingsManager, NotificationManager notificationManager, TaskManager taskManager, SyncJobEventDAO syncJobEventDAO) {

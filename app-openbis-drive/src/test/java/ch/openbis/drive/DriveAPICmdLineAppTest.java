@@ -2,7 +2,6 @@ package ch.openbis.drive;
 
 import ch.openbis.drive.model.*;
 import ch.openbis.drive.protobuf.client.DriveAPIClientProtobufImpl;
-import com.sun.istack.NotNull;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import org.junit.Assert;
@@ -124,8 +123,8 @@ public class DriveAPICmdLineAppTest {
         Mockito.verify(driveAPICmdLineApp, Mockito.times(1)).handleStopJobCommand(new String[] { "jobs" , "stop", "..."});
         Mockito.clearInvocations(driveAPICmdLineApp);
 
-        driveAPICmdLineApp.handleJobsCommand( new String[] { "jobs", "hidden-path-patterns", "..."} );
-        Mockito.verify(driveAPICmdLineApp, Mockito.times(1)).handleHiddenPathPatternsJobCommand(new String[] { "jobs" , "hidden-path-patterns", "..."});
+        driveAPICmdLineApp.handleJobsCommand( new String[] { "jobs", "ignored-path-patterns", "..."} );
+        Mockito.verify(driveAPICmdLineApp, Mockito.times(1)).handleIgnoredPathPatternsJobCommand(new String[] { "jobs" , "ignored-path-patterns", "..."});
         Mockito.clearInvocations(driveAPICmdLineApp);
 
         driveAPICmdLineApp.handleJobsCommand( new String[] { "jobs", "other", "..."} );
@@ -158,7 +157,32 @@ public class DriveAPICmdLineAppTest {
                 "tkntkntkn",
                 "/remote-dir",
                 true,
-                null
+                SyncJob.IgnoredFilesMode.GlobalDefault
+        );
+        Mockito.clearInvocations(driveAPICmdLineApp);
+
+        driveAPICmdLineApp.handleAddJobCommand(new String[] { "jobs" , "add",
+                "-title=MyTitle",
+                "-type=Bidirectional",
+                "-dir=/local-dir",
+                "-remDir=/remote-dir",
+                "-openBISurl=http://url",
+                "-entityPermId=1234-abcd",
+                "-personalAccessToken=tkntkntkn",
+                "-enabled=true",
+                "-ignoreFiles=None"
+        });
+        Mockito.verify(driveAPICmdLineApp, Mockito.times(1)).validateOpenBISUrl("http://url");
+        Mockito.verify(driveAPICmdLineApp, Mockito.times(1)).addJob(
+                "MyTitle",
+                SyncJob.Type.Bidirectional,
+                "/local-dir",
+                "http://url",
+                "1234-abcd",
+                "tkntkntkn",
+                "/remote-dir",
+                true,
+                SyncJob.IgnoredFilesMode.None
         );
         Mockito.clearInvocations(driveAPICmdLineApp);
 
@@ -300,65 +324,48 @@ public class DriveAPICmdLineAppTest {
     }
 
     @Test
-    public void testHandleHiddenPathPatternsJobCommand() throws Exception {
+    public void testHandleIgnoredPathPatternsJobCommand() throws Exception {
         Mockito.doNothing().when(driveAPICmdLineApp).stopJob(Mockito.any());
 
-        //Show default hidden-patterns
-        driveAPICmdLineApp.handleHiddenPathPatternsJobCommand(new String[] { "jobs" , "hidden-path-patterns" });
-        Mockito.verify(driveAPICmdLineApp, Mockito.times(1)).showDefaultHiddenPathPatterns();
-        Mockito.clearInvocations(driveAPICmdLineApp);
-
-        //Show hidden path-patterns
-        driveAPICmdLineApp.handleHiddenPathPatternsJobCommand(new String[] { "jobs" , "hidden-path-patterns",
+        //Show ignored path-patterns
+        driveAPICmdLineApp.handleIgnoredPathPatternsJobCommand(new String[] { "jobs" , "ignored-path-patterns",
                 "-dir=/local-dir"
         });
-        Mockito.verify(driveAPICmdLineApp, Mockito.times(1)).showHiddenPathPatterns(
+        Mockito.verify(driveAPICmdLineApp, Mockito.times(1)).showSpecificIgnoredPathPattern(
                 "/local-dir"
         );
         Mockito.clearInvocations(driveAPICmdLineApp);
 
-        //Reset hidden path-patterns
-        driveAPICmdLineApp.handleHiddenPathPatternsJobCommand(new String[] { "jobs" , "hidden-path-patterns",
-                "-dir=/local-dir", "-reset"
-        });
-        Mockito.verify(driveAPICmdLineApp, Mockito.times(1)).resetHiddenPathPatternsToDefault(
-                "/local-dir"
-        );
-        Mockito.clearInvocations(driveAPICmdLineApp);
-
-        //Set hidden path-patterns from console
+        //Set ignored path-patterns from console
         System.setIn(new ByteArrayInputStream(String.format("^/bin/?%n   ^/root/?%n%n").getBytes(StandardCharsets.UTF_8)));
-        driveAPICmdLineApp.handleHiddenPathPatternsJobCommand(new String[] { "jobs" , "hidden-path-patterns",
+        driveAPICmdLineApp.handleIgnoredPathPatternsJobCommand(new String[] { "jobs" , "ignored-path-patterns",
                 "-dir=/local-dir", "-set"
         });
-        Mockito.verify(driveAPICmdLineApp, Mockito.times(1)).setHiddenPathPatterns(
+        Mockito.verify(driveAPICmdLineApp, Mockito.times(1)).setIgnoredPathPatterns(
                 "/local-dir", String.format("^/bin/?%n^/root/?%n")
         );
         Mockito.clearInvocations(driveAPICmdLineApp);
 
-        //Set hidden path-patterns from file
+        //Set ignored path-patterns from file
         Path newPatterns = Path.of(this.getClass().getClassLoader().getResource("placeholder.txt").getPath()).getParent().resolve("new-patterns.txt");
         Files.deleteIfExists(newPatterns);
         Files.write(newPatterns, String.format("^/bin/?%n   ^/root/?%n%n").getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
-        driveAPICmdLineApp.handleHiddenPathPatternsJobCommand(new String[] { "jobs" , "hidden-path-patterns",
+        driveAPICmdLineApp.handleIgnoredPathPatternsJobCommand(new String[] { "jobs" , "ignored-path-patterns",
                 "-dir=/local-dir", String.format("-setFromFile=%s", newPatterns)
         });
-        Mockito.verify(driveAPICmdLineApp, Mockito.times(1)).setHiddenPathPatterns(
+        Mockito.verify(driveAPICmdLineApp, Mockito.times(1)).setIgnoredPathPatterns(
                 "/local-dir", String.format("^/bin/?%n   ^/root/?%n%n")
         );
         Mockito.clearInvocations(driveAPICmdLineApp);
 
         //Wrong option
-        driveAPICmdLineApp.handleHiddenPathPatternsJobCommand(new String[] { "jobs" , "stop",
+        driveAPICmdLineApp.handleIgnoredPathPatternsJobCommand(new String[] { "jobs" , "stop",
                 "-dirWRONGOPTION=/local-dir"
         });
-        Mockito.verify(driveAPICmdLineApp, Mockito.times(0)).showHiddenPathPatterns(
+        Mockito.verify(driveAPICmdLineApp, Mockito.times(0)).showSpecificIgnoredPathPattern(
                 Mockito.any()
         );
-        Mockito.verify(driveAPICmdLineApp, Mockito.times(0)).resetHiddenPathPatternsToDefault(
-                Mockito.any()
-        );
-        Mockito.verify(driveAPICmdLineApp, Mockito.times(0)).setHiddenPathPatterns(
+        Mockito.verify(driveAPICmdLineApp, Mockito.times(0)).setIgnoredPathPatterns(
                 Mockito.any(), Mockito.anyString()
         );
         Mockito.verify(driveAPICmdLineApp, Mockito.times(1)).printHelp();
@@ -369,6 +376,7 @@ public class DriveAPICmdLineAppTest {
     public void testHandleConfigCommand() throws Exception {
         Mockito.doNothing().when(driveAPICmdLineApp).printConfig();
         Mockito.doNothing().when(driveAPICmdLineApp).setConfig(Mockito.any(), Mockito.any(), Mockito.any());
+        Mockito.doNothing().when(driveAPICmdLineApp).handleIgnoredPathPatternsConfigCommand(Mockito.any());
 
         driveAPICmdLineApp.handleConfigCommand(new String[] { "config"
         });
@@ -390,9 +398,10 @@ public class DriveAPICmdLineAppTest {
         Mockito.verify(driveAPICmdLineApp, Mockito.times(1)).setConfig(null, null, 40);
         Mockito.clearInvocations(driveAPICmdLineApp);
 
-        driveAPICmdLineApp.handleConfigCommand(new String[] { "config", "-startAtLogin=false", "-language=fr", "-syncInterval=45"
+        driveAPICmdLineApp.handleConfigCommand(new String[] { "config", "ignored-path-patterns"
         });
-        Mockito.verify(driveAPICmdLineApp, Mockito.times(1)).setConfig(false, "fr", 45);
+        Mockito.verify(driveAPICmdLineApp, Mockito.times(1)).handleIgnoredPathPatternsConfigCommand(new String[] { "config", "ignored-path-patterns"
+        });
         Mockito.clearInvocations(driveAPICmdLineApp);
     }
 
@@ -478,7 +487,51 @@ public class DriveAPICmdLineAppTest {
                 }
             }
         }
+    }
 
+    @Test
+    public void testHandleIgnoredPathPatternConfigCommand() throws Exception {
+        Mockito.doNothing().when(driveAPICmdLineApp).showGlobalIgnoredPathPatterns();
+
+        //Show active global default values
+        driveAPICmdLineApp.handleIgnoredPathPatternsConfigCommand(new String[] {"config", "ignored-path-patterns"});
+        Mockito.verify(driveAPICmdLineApp, Mockito.times(1)).showGlobalIgnoredPathPatterns();
+
+        Mockito.clearInvocations(driveAPICmdLineApp);
+        Mockito.clearInvocations(driveAPIClient);
+
+        //Show predefined global values
+        driveAPICmdLineApp.handleIgnoredPathPatternsConfigCommand(new String[] {"config", "ignored-path-patterns", "-showFactoryDefault"});
+        Mockito.verify(driveAPICmdLineApp, Mockito.times(1)).showFactoryDefaultIgnoredPathPatterns();
+
+        Mockito.clearInvocations(driveAPICmdLineApp);
+        Mockito.clearInvocations(driveAPIClient);
+
+
+        //Set ignored path-patterns from console
+        System.setIn(new ByteArrayInputStream(String.format("^/bin/?%n   ^/root/?%n%n").getBytes(StandardCharsets.UTF_8)));
+        driveAPICmdLineApp.handleIgnoredPathPatternsConfigCommand(new String[] { "config", "ignored-path-patterns", "-set"
+        });
+        Mockito.verify(driveAPICmdLineApp, Mockito.times(1)).setGlobalIgnoredPathPatterns(
+                String.format("^/bin/?%n^/root/?%n")
+        );
+        Mockito.clearInvocations(driveAPICmdLineApp);
+
+        //Set ignored path-patterns from file
+        Path newPatterns = Path.of(this.getClass().getClassLoader().getResource("placeholder.txt").getPath()).getParent().resolve("new-global-patterns.txt");
+        Files.deleteIfExists(newPatterns);
+        Files.write(newPatterns, String.format("^/bin/?%n   ^/root/?%n%n").getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+        driveAPICmdLineApp.handleIgnoredPathPatternsConfigCommand(new String[] { "config", "ignored-path-patterns", String.format("-setFromFile=%s", newPatterns)
+        });
+        Mockito.verify(driveAPICmdLineApp, Mockito.times(1)).setGlobalIgnoredPathPatterns(
+                String.format("^/bin/?%n   ^/root/?%n%n")
+        );
+        Mockito.clearInvocations(driveAPICmdLineApp);
+
+        //Reset ignored path-patterns to predefined values
+        driveAPICmdLineApp.handleIgnoredPathPatternsConfigCommand(new String[] { "config", "ignored-path-patterns", "-reset"});
+        Mockito.verify(driveAPICmdLineApp, Mockito.times(1)).resetGlobalIgnoredPathPatterns();
+        Mockito.clearInvocations(driveAPICmdLineApp);
     }
 
     @Test
@@ -486,10 +539,10 @@ public class DriveAPICmdLineAppTest {
         Mockito.doNothing().when(driveAPIClient).addSyncJobs(Mockito.any());
         Mockito.doNothing().when(driveAPICmdLineApp).printJobs();
 
-        driveAPICmdLineApp.addJob("title", SyncJob.Type.Download, "/loc-dir", "http://URL", "abcd-1234", "tkn", "/remDIR", true, null);
+        driveAPICmdLineApp.addJob("title", SyncJob.Type.Download, "/loc-dir", "http://URL", "abcd-1234", "tkn", "/remDIR", true, SyncJob.IgnoredFilesMode.SpecificList);
 
         Mockito.verify(driveAPIClient, Mockito.times(1)).addSyncJobs(List.of(
-                new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "title", "/remDIR", "/loc-dir", true)
+                new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "title", "/remDIR", "/loc-dir", true, SyncJob.IgnoredFilesMode.SpecificList, new ArrayList<>())
         ));
         Mockito.verify(driveAPICmdLineApp, Mockito.times(1)).printJobs();
     }
@@ -663,7 +716,7 @@ public class DriveAPICmdLineAppTest {
         Assert.assertTrue(allWrittenLines.contains("/remDIR"));
         Assert.assertTrue(allWrittenLines.contains("/loc-dir"));
         Assert.assertTrue(allWrittenLines.contains("Enabled: true"));
-        Assert.assertTrue(allWrittenLines.contains("Skip hidden files: true"));
+        Assert.assertTrue(allWrittenLines.contains("Ignored files: GlobalDefault"));
         Assert.assertTrue(allWrittenLines.contains("title"));
     }
 
@@ -739,25 +792,42 @@ public class DriveAPICmdLineAppTest {
     }
 
     @Test
-    public void testShowDefaultHiddenPathPatterns() throws Exception {
+    public void testShowFactoryDefaultIgnoredPathPatterns() throws Exception {
         ByteArrayOutputStream bo = new ByteArrayOutputStream();
         System.setOut(new PrintStream(bo));
 
-        driveAPICmdLineApp.showDefaultHiddenPathPatterns();
+        driveAPICmdLineApp.showFactoryDefaultIgnoredPathPatterns();
         bo.flush();
 
         String allWrittenLines = new String(bo.toByteArray());
-        for ( String pattern : SyncJob.getDefaultHiddenPathPatterns() ) {
+        for ( String pattern : SyncJob.getDefaultIgnoredPathPatterns() ) {
             Assert.assertTrue(allWrittenLines.contains(pattern));
         }
     }
 
     @Test
-    public void testShowHiddenPathPatterns() throws Exception {
+    public void testShowGloablIgnoredPathPatterns() throws Exception {
+        ByteArrayOutputStream bo = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(bo));
+
+        Settings settings = Settings.defaultSettings();
+        settings.setIgnoredPathPatterns(new ArrayList<>(List.of("aaa", "cc")));
+        Mockito.doReturn(settings).when(driveAPIClient).getSettings();
+        driveAPICmdLineApp.showGlobalIgnoredPathPatterns();
+        bo.flush();
+
+        String allWrittenLines = new String(bo.toByteArray());
+        for ( String pattern : List.of("aaa", "cc") ) {
+            Assert.assertTrue(allWrittenLines.contains(pattern));
+        }
+    }
+
+    @Test
+    public void testShowSpecificIgnoredPathPatterns() throws Exception {
         Mockito.doNothing().when(driveAPICmdLineApp).printSyncJob(Mockito.any());
         List<SyncJob> toBeReturnedSyncJobs = List.of(
                 new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "title", "/remDIR", "/loc-dir", true),
-                new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "title", "/remDIR", "/loc-dir2", true, true, new ArrayList<>(List.of("^/hidden/?", "hidden2\\.txt$"))),
+                new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "title", "/remDIR", "/loc-dir2", true, SyncJob.IgnoredFilesMode.SpecificList, new ArrayList<>(List.of("aaa", "bb"))),
                 new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "title", "/remDIR", "/loc-dir3", true)
         );
         Mockito.doNothing().when(driveAPICmdLineApp).printSyncJob(Mockito.any());
@@ -769,7 +839,7 @@ public class DriveAPICmdLineAppTest {
         ByteArrayOutputStream bo = new ByteArrayOutputStream();
         System.setOut(new PrintStream(bo));
 
-        driveAPICmdLineApp.showHiddenPathPatterns("/loc-dir2");
+        driveAPICmdLineApp.showSpecificIgnoredPathPattern("/loc-dir2");
         bo.flush();
 
         Mockito.verify(driveAPICmdLineApp, Mockito.times(0)).printSyncJob(toBeReturnedSyncJobs.get(0));
@@ -777,15 +847,15 @@ public class DriveAPICmdLineAppTest {
         Mockito.verify(driveAPICmdLineApp, Mockito.times(0)).printSyncJob(toBeReturnedSyncJobs.get(2));
 
         String allWrittenLines = new String(bo.toByteArray());
-        Assert.assertTrue(allWrittenLines.contains(String.format("^/hidden/?%nhidden2\\.txt$")));
+        Assert.assertTrue(allWrittenLines.contains(String.format("aaa%nbb")));
     }
 
     @Test
-    public void testShowHiddenPathPatternsNotFound() throws Exception {
+    public void testShowSpecificIgnoredPathPatternsNotFound() throws Exception {
         Mockito.doNothing().when(driveAPICmdLineApp).printSyncJob(Mockito.any());
         List<SyncJob> toBeReturnedSyncJobs = List.of(
                 new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "title", "/remDIR", "/loc-dir", true),
-                new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "title", "/remDIR", "/loc-dir2", true, true, new ArrayList<>(List.of("^/hidden/?", "hidden2\\.txt$"))),
+                new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "title", "/remDIR", "/loc-dir2", true, SyncJob.IgnoredFilesMode.SpecificList, new ArrayList<>(List.of("aaa", "bb"))),
                 new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "title", "/remDIR", "/loc-dir3", true)
         );
         Mockito.doNothing().when(driveAPICmdLineApp).printSyncJob(Mockito.any());
@@ -797,7 +867,7 @@ public class DriveAPICmdLineAppTest {
         ByteArrayOutputStream bo = new ByteArrayOutputStream();
         System.setOut(new PrintStream(bo));
 
-        driveAPICmdLineApp.showHiddenPathPatterns("/loc-dir4");
+        driveAPICmdLineApp.showSpecificIgnoredPathPattern("/loc-dir4");
         bo.flush();
 
         Mockito.verify(driveAPICmdLineApp, Mockito.times(0)).printSyncJob(toBeReturnedSyncJobs.get(0));
@@ -809,50 +879,58 @@ public class DriveAPICmdLineAppTest {
     }
 
     @Test
-    public void testResetHiddenPathPatterns() throws Exception {
+    public void testSetIgnoredPathPatterns() throws Exception {
         Mockito.doNothing().when(driveAPICmdLineApp).printSyncJob(Mockito.any());
         List<SyncJob> toBeReturnedSyncJobs = List.of(
                 new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "title", "/remDIR", "/loc-dir", true),
-                new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "title", "/remDIR", "/loc-dir2", true, true, new ArrayList<>(List.of("^/hidden/?", "hidden2\\.txt$"))),
+                new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "title", "/remDIR", "/loc-dir2", true, SyncJob.IgnoredFilesMode.SpecificList, new ArrayList<>(List.of("aaa", "bb"))),
                 new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "title", "/remDIR", "/loc-dir3", true)
         );
         Mockito.doNothing().when(driveAPICmdLineApp).printSyncJob(Mockito.any());
-        Mockito.doNothing().when(driveAPICmdLineApp).showHiddenPathPatterns(Mockito.any());
+        Mockito.doNothing().when(driveAPICmdLineApp).showSpecificIgnoredPathPattern(Mockito.any());
 
         Mockito.doReturn(
                 toBeReturnedSyncJobs
         ).when(driveAPIClient).getSyncJobs();
 
-        driveAPICmdLineApp.resetHiddenPathPatternsToDefault("/loc-dir2");
+        driveAPICmdLineApp.setIgnoredPathPatterns("/loc-dir2", String.format("aaa%nbb"));
 
         ArgumentCaptor<List<SyncJob>> syncJobArgumentCaptor = ArgumentCaptor.forClass(List.class);
         Mockito.verify(driveAPIClient, Mockito.times(1)).removeSyncJobs(syncJobArgumentCaptor.capture());
         Assert.assertEquals("/loc-dir2", syncJobArgumentCaptor.getValue().get(0).getLocalDirectoryRoot());
-        Mockito.verify(driveAPIClient, Mockito.times(1)).addSyncJobs(Collections.singletonList(new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "title", "/remDIR", "/loc-dir2", true, true, new ArrayList<>(SyncJob.getDefaultHiddenPathPatterns()))));
-        Mockito.verify(driveAPICmdLineApp, Mockito.times(1)).showHiddenPathPatterns("/loc-dir2");
+        Mockito.verify(driveAPIClient, Mockito.times(1)).addSyncJobs(Collections.singletonList(new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "title", "/remDIR", "/loc-dir2", true, SyncJob.IgnoredFilesMode.SpecificList, new ArrayList<>(List.of("aaa", "bb")))));
+        Mockito.verify(driveAPICmdLineApp, Mockito.times(1)).showSpecificIgnoredPathPattern("/loc-dir2");
     }
 
     @Test
-    public void testSetHiddenPathPatterns() throws Exception {
-        Mockito.doNothing().when(driveAPICmdLineApp).printSyncJob(Mockito.any());
-        List<SyncJob> toBeReturnedSyncJobs = List.of(
-                new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "title", "/remDIR", "/loc-dir", true),
-                new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "title", "/remDIR", "/loc-dir2", true, true, new ArrayList<>(List.of("^/hidden/?", "hidden2\\.txt$"))),
-                new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "title", "/remDIR", "/loc-dir3", true)
-        );
-        Mockito.doNothing().when(driveAPICmdLineApp).printSyncJob(Mockito.any());
-        Mockito.doNothing().when(driveAPICmdLineApp).showHiddenPathPatterns(Mockito.any());
+    public void testSetGlobalIgnoredPathPatterns() throws Exception {
+        Settings settings = Settings.defaultSettings();
+        settings.setIgnoredPathPatterns(new ArrayList<>(List.of("AAA", "CC")));
+        Mockito.doReturn(settings).when(driveAPIClient).getSettings();
+        Mockito.doNothing().when(driveAPIClient).setSettings(Mockito.any());
+        Mockito.doNothing().when(driveAPICmdLineApp).showGlobalIgnoredPathPatterns();
+        driveAPICmdLineApp.setGlobalIgnoredPathPatterns(String.format("aaa%nbb"));
 
-        Mockito.doReturn(
-                toBeReturnedSyncJobs
-        ).when(driveAPIClient).getSyncJobs();
+        ArgumentCaptor<Settings> argumentCaptor = ArgumentCaptor.forClass(Settings.class);
+        Mockito.verify(driveAPIClient, Mockito.times(1)).getSettings();
+        Mockito.verify(driveAPICmdLineApp, Mockito.times(1)).showGlobalIgnoredPathPatterns();
+        Mockito.verify(driveAPIClient, Mockito.times(1)).setSettings(argumentCaptor.capture());
+        Assert.assertEquals(List.of("aaa", "bb"), argumentCaptor.getValue().getIgnoredPathPatterns());
+    }
 
-        driveAPICmdLineApp.setHiddenPathPatterns("/loc-dir2", String.format("^/root/?%n^/boot/?%n\\.exe$"));
+    @Test
+    public void testResetGlobalIgnoredPathPatterns() throws Exception {
+        Settings settings = Settings.defaultSettings();
+        settings.setIgnoredPathPatterns(new ArrayList<>(List.of("AAA", "CC")));
+        Mockito.doReturn(settings).when(driveAPIClient).getSettings();
+        Mockito.doNothing().when(driveAPIClient).setSettings(Mockito.any());
+        Mockito.doNothing().when(driveAPICmdLineApp).showGlobalIgnoredPathPatterns();
+        driveAPICmdLineApp.resetGlobalIgnoredPathPatterns();
 
-        ArgumentCaptor<List<SyncJob>> syncJobArgumentCaptor = ArgumentCaptor.forClass(List.class);
-        Mockito.verify(driveAPIClient, Mockito.times(1)).removeSyncJobs(syncJobArgumentCaptor.capture());
-        Assert.assertEquals("/loc-dir2", syncJobArgumentCaptor.getValue().get(0).getLocalDirectoryRoot());
-        Mockito.verify(driveAPIClient, Mockito.times(1)).addSyncJobs(Collections.singletonList(new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "title", "/remDIR", "/loc-dir2", true, true, new ArrayList<>(List.of("^/root/?", "^/boot/?", "\\.exe$")))));
-        Mockito.verify(driveAPICmdLineApp, Mockito.times(1)).showHiddenPathPatterns("/loc-dir2");
+        ArgumentCaptor<Settings> argumentCaptor = ArgumentCaptor.forClass(Settings.class);
+        Mockito.verify(driveAPIClient, Mockito.times(1)).getSettings();
+        Mockito.verify(driveAPICmdLineApp, Mockito.times(1)).showGlobalIgnoredPathPatterns();
+        Mockito.verify(driveAPIClient, Mockito.times(1)).setSettings(argumentCaptor.capture());
+        Assert.assertTrue(argumentCaptor.getValue().getIgnoredPathPatterns().containsAll(SyncJob.getDefaultIgnoredPathPatternsForAnyPlatform()));
     }
 }

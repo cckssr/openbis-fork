@@ -8,18 +8,15 @@ import ch.ethz.sis.afsclient.client.AfsClientUploadHelper;
 import ch.openbis.drive.conf.Configuration;
 import ch.openbis.drive.db.SyncJobEventDAO;
 
-import ch.openbis.drive.model.Event;
-import ch.openbis.drive.model.Notification;
-import ch.openbis.drive.model.SyncJob;
-import ch.openbis.drive.model.SyncJobEvent;
+import ch.openbis.drive.model.*;
 import ch.openbis.drive.notifications.NotificationManager;
+import ch.openbis.drive.util.GlobUtil;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.Value;
 
 import java.io.IOException;
 import java.net.URI;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
@@ -40,7 +37,7 @@ public class SyncOperation {
     public static final String AFS_SERVER_PATH = "/afs-server";
 
     private final @NonNull SyncJob syncJob;
-    private final List<PathMatcher> hiddenPathMatchers = new ArrayList<>();
+    private final List<PathMatcher> ignoredPathMatchers = new ArrayList<>();
 
     final @NonNull AfsClientProxy afsClientProxy;
     final @NonNull ClientAPI.TransferMonitorListener uploadMonitor;
@@ -50,12 +47,14 @@ public class SyncOperation {
     final Path localOpenBisHiddenStateDirectory;
 
     final @NonNull NotificationManager notificationManager;
+    final @NonNull Settings settings;
 
 
     public SyncOperation(@NonNull SyncJob syncJob,
                          @NonNull SyncJobEventDAO syncJobEventDAO,
                          @NonNull NotificationManager notificationManager,
-                         @NonNull Configuration configuration) throws SQLException, IOException {
+                         @NonNull Configuration configuration,
+                         @NonNull Settings settings) throws SQLException, IOException {
         AfsClient afsClient = new AfsClient(URI.create(syncJob.getOpenBisUrl() + AFS_SERVER_PATH), MAX_READ_SIZE_BYTES, AFS_CLIENT_TIMEOUT);
         afsClient.setSessionToken(syncJob.getOpenBisPersonalAccessToken());
 
@@ -71,6 +70,7 @@ public class SyncOperation {
         this.syncJobEventDAO = syncJobEventDAO;
         this.localOpenBisHiddenStateDirectory = configuration.getLocalAppStateDirectory();
         this.notificationManager = notificationManager;
+        this.settings = settings;
 
         initializeHiddenPathPatterns();
     }
@@ -81,7 +81,8 @@ public class SyncOperation {
                   @NonNull ClientAPI.TransferMonitorListener downloadMonitor,
                   @NonNull SyncJobEventDAO syncJobEventDAO,
                   @NonNull Path localOpenBisHiddenStateDirectory,
-                  @NonNull NotificationManager notificationManager
+                  @NonNull NotificationManager notificationManager,
+                  @NonNull Settings settings
     ) {
         this.syncJob = syncJob;
         this.afsClientProxy = afsClient;
@@ -90,17 +91,23 @@ public class SyncOperation {
         this.syncJobEventDAO = syncJobEventDAO;
         this.localOpenBisHiddenStateDirectory = localOpenBisHiddenStateDirectory;
         this.notificationManager = notificationManager;
+        this.settings = settings;
 
         initializeHiddenPathPatterns();
     }
 
     private void initializeHiddenPathPatterns() {
-        for ( String hiddenPathPattern: syncJob.getHiddenPathPatterns() ) {
+        List<String> hiddenPathPatternsStrings = switch (syncJob.getIgnoreFiles()) {
+            case None -> Collections.emptyList();
+            case GlobalDefault -> settings.getIgnoredPathPatterns();
+            case SpecificList -> syncJob.getIgnoredPathPatterns();
+        };
+        for ( String hiddenPathPattern: hiddenPathPatternsStrings ) {
             try {
-                this.hiddenPathMatchers.add(FileSystems.getDefault().getPathMatcher("regex:" + hiddenPathPattern));
+                this.ignoredPathMatchers.addAll(GlobUtil.compileIgnoredPathGlob(hiddenPathPattern));
             } catch (Exception e) {
                 raiseJobExceptionNotification(e);
-                throw e;
+                throw new RuntimeException(e);
             }
         }
     }
@@ -174,7 +181,7 @@ public class SyncOperation {
             Optional<FileInfo> sourceInfoOpt;
             SyncJobEvent syncJobEvent = null;
 
-            if( skipAppPrivateFilesPrecheck(syncDirection, sourcePath, destinationPath) || skipHiddenFilesPrecheck(syncDirection, sourcePath, destinationPath) ) {
+            if( skipAppPrivateFilesPrecheck(syncDirection, sourcePath, destinationPath) || skipIgnoredFilesPrecheck(syncDirection, sourcePath, destinationPath) ) {
                 sourceInfoOpt = Optional.empty();
                 collisionAction = ClientAPI.CollisionAction.Skip;
             } else {
@@ -562,16 +569,17 @@ public class SyncOperation {
                 Optional.ofNullable(destination.getFileName()).map(Path::toString).orElse("").endsWith(CONFLICT_FILE_SUFFIX);
     }
 
-    boolean  skipHiddenFilesPrecheck(@NonNull SyncJobEvent.SyncDirection syncDirection, @NonNull Path source, @NonNull Path destination) {
-        if ( syncJob.isSkipHiddenFiles() ) {
-            Path normalizedLocalPath = switch (syncDirection) {
-                case UP -> source.normalize().toAbsolutePath();
-                case DOWN -> destination.normalize().toAbsolutePath();
-            };
+    boolean skipIgnoredFilesPrecheck(@NonNull SyncJobEvent.SyncDirection syncDirection, @NonNull Path source, @NonNull Path destination) {
+        if ( syncJob.getIgnoreFiles() != SyncJob.IgnoredFilesMode.None) {
+            Path relativizedLocalPath = Path.of(syncJob.getLocalDirectoryRoot()).normalize().toAbsolutePath()
+                    .relativize(switch (syncDirection) {
+                        case UP -> source.normalize().toAbsolutePath();
+                        case DOWN -> destination.normalize().toAbsolutePath();
+            });
 
-            return hiddenPathMatchers.stream().anyMatch(regex -> {
+            return ignoredPathMatchers.stream().anyMatch(glob -> {
                         try {
-                            return regex.matches(normalizedLocalPath);
+                            return glob.matches(relativizedLocalPath);
                         } catch (Exception e) {
                             raiseJobExceptionNotification(e);
                             return true;

@@ -7,11 +7,13 @@ import ch.openbis.drive.gui.util.SharedContext;
 import ch.openbis.drive.gui.util.Style;
 import ch.openbis.drive.model.Settings;
 import ch.openbis.drive.model.SyncJob;
+import ch.openbis.drive.util.GlobUtil;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.binding.BooleanExpression;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.event.ActionEvent;
@@ -32,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -53,10 +56,11 @@ public class SyncJobDialog extends Dialog<SyncJob> {
     final TextField openbisServerDirectoryValue;
     final TextField personalAccessTokenValue;
     final TextField localDirectoryValue;
-    final SimpleObjectProperty<SyncJob.Type> selectedSyncJobType = new SimpleObjectProperty<>(SyncJob.Type.Download);
+    final ObjectProperty<SyncJob.Type> selectedSyncJobType = new SimpleObjectProperty<>(SyncJob.Type.Download);
     final CheckBox enabledCheckBox;
-    final CheckBox skipHiddenFilesCheckBox;
-    final TextArea hiddenPathPatterns;
+    final ObjectProperty<SyncJob.IgnoredFilesMode> selectedIgnoredFilesMode = new SimpleObjectProperty<>(SyncJob.IgnoredFilesMode.GlobalDefault);
+    final TextArea ignoredPathPatterns;
+    final TextArea globalDefaultPathPatternsTextArea;
 
     final BooleanProperty openbisUrlPropertyError = new SimpleBooleanProperty(false);
     final BooleanProperty titlePropertyError = new SimpleBooleanProperty(false);
@@ -64,9 +68,9 @@ public class SyncJobDialog extends Dialog<SyncJob> {
     final BooleanProperty remoteDirectoryPropertyError = new SimpleBooleanProperty(false);
     final BooleanProperty personalAccessTokenPropertyError = new SimpleBooleanProperty(false);
     final BooleanProperty localDirectoryPropertyError = new SimpleBooleanProperty(false);
-    final BooleanProperty hiddenPathPatternPropertyError = new SimpleBooleanProperty(false);
+    final BooleanProperty ignoredPathPatternPropertyError = new SimpleBooleanProperty(false);
     final List<BooleanProperty> validationErrors = List.of(
-            openbisUrlPropertyError, titlePropertyError, entityIdPropertyError, remoteDirectoryPropertyError, personalAccessTokenPropertyError, localDirectoryPropertyError, hiddenPathPatternPropertyError);
+            openbisUrlPropertyError, titlePropertyError, entityIdPropertyError, remoteDirectoryPropertyError, personalAccessTokenPropertyError, localDirectoryPropertyError, ignoredPathPatternPropertyError);
     final BooleanBinding allValid = Bindings.createBooleanBinding(
             () -> validationErrors.stream().noneMatch(BooleanProperty::getValue), validationErrors.toArray(BooleanProperty[]::new));
 
@@ -149,15 +153,44 @@ public class SyncJobDialog extends Dialog<SyncJob> {
         content.getChildren().add(enabledCheckBox);
 
         Accordion accordion = new Accordion();
-        VBox hiddenFilesBox = new VBox();
-        hiddenFilesBox.setSpacing(20);
-        skipHiddenFilesCheckBox = getSkipHiddenFilesCheckBox(i18n);
-        hiddenFilesBox.getChildren().add(skipHiddenFilesCheckBox);
-        hiddenPathPatterns = getHiddenPathPatternsTextArea();
-        VBox hiddenPathPatternBox = getHiddenPathPatternsBox(hiddenPathPatterns, i18n);
-        hiddenFilesBox.getChildren().add(hiddenPathPatternBox);
-        TitledPane hiddenFilesPane = new TitledPane(i18n.get("sync_tasks.modal_panel.sync_task_modal.advanced_settings"), hiddenFilesBox);
-        accordion.getPanes().addAll(hiddenFilesPane);
+        VBox ignoredFilesBox = new VBox();
+        ignoredFilesBox.setSpacing(20);
+        HBox ignoredFilesModeChoiceBox = getIgnoredFilesModeChoice(i18n);
+        ignoredFilesBox.getChildren().add(ignoredFilesModeChoiceBox);
+
+        ignoredPathPatterns = getIgnoredPathPatternsTextArea();
+        VBox specificIgnoredPathPatternBox = getIgnoredPathPatternsBox(ignoredPathPatterns, i18n);
+        TextArea emptyPathPatternsTextArea = getEmptyPathPatternsTextArea();
+        globalDefaultPathPatternsTextArea = getGlobalDefaultPathPatternsTextArea();
+        Consumer<SyncJob.IgnoredFilesMode> fillIgnoredFilesBox = (SyncJob.IgnoredFilesMode ignoredFilesMode) -> {
+            if (ignoredFilesMode != null) {
+                ignoredFilesBox.getChildren().removeIf( node ->
+                        node.equals(globalDefaultPathPatternsTextArea) ||
+                                node.equals(emptyPathPatternsTextArea) ||
+                                node.equals(specificIgnoredPathPatternBox));
+                switch (ignoredFilesMode) {
+                    case GlobalDefault -> {
+                        ignoredFilesBox.getChildren().add(globalDefaultPathPatternsTextArea);
+                    }
+                    case SpecificList -> {
+                        ignoredFilesBox.getChildren().add(specificIgnoredPathPatternBox);
+                    }
+                    case None -> {
+                        ignoredFilesBox.getChildren().add(emptyPathPatternsTextArea);
+                    }
+                }
+            }
+        };
+        selectedIgnoredFilesMode.addListener( (obs, oldValue, newValue) -> {
+            fillIgnoredFilesBox.accept(newValue);
+        } );
+        selectedIgnoredFilesMode.addListener( (obs, oldValue, newValue) -> {
+            doValidationOnAllInputFields();
+        } );
+        fillIgnoredFilesBox.accept(selectedIgnoredFilesMode.getValue());
+
+        TitledPane ignoredFilesPane = new TitledPane(i18n.get("generic_messages.advanced_settings"), ignoredFilesBox);
+        accordion.getPanes().addAll(ignoredFilesPane);
         content.getChildren().add(accordion);
 
         getDialogPane().setContent(content);
@@ -198,13 +231,15 @@ public class SyncJobDialog extends Dialog<SyncJob> {
                 newSyncJob.setOpenBisPersonalAccessToken(personalAccessTokenValue.getText());
                 newSyncJob.setLocalDirectoryRoot(localDirectoryValue.getText());
                 newSyncJob.setType(selectedSyncJobType.get());
-                newSyncJob.setSkipHiddenFiles(skipHiddenFilesCheckBox.isSelected());
-                newSyncJob.setHiddenPathPatterns(
-                        new ArrayList<>(Arrays.stream(hiddenPathPatterns.getText().split("[\\r\\n]+"))
-                        .filter(str -> !str.isBlank())
-                        .map(String::trim)
-                        .toList())
-                );
+                newSyncJob.setIgnoreFiles(selectedIgnoredFilesMode.getValue());
+                if (selectedIgnoredFilesMode.getValue() == SyncJob.IgnoredFilesMode.SpecificList) {
+                    newSyncJob.setIgnoredPathPatterns(
+                            new ArrayList<>(Arrays.stream(ignoredPathPatterns.getText().split("[\\r\\n]+"))
+                                    .filter(str -> !str.isBlank())
+                                    .map(String::trim)
+                                    .toList())
+                    );
+                }
                 return newSyncJob;
             } else {
                 return null;
@@ -235,78 +270,91 @@ public class SyncJobDialog extends Dialog<SyncJob> {
         return enabledCheckBox;
     }
 
-    private CheckBox getSkipHiddenFilesCheckBox(I18n i18n) {
-        CheckBox skipHiddenFilesCheckBox = new CheckBox();
-        skipHiddenFilesCheckBox.textProperty().bind(i18n.createStringBinding("sync_tasks.modal_panel.sync_task_modal.skip_hidden_files"));
-        if(editedSyncJob != null) {
-            skipHiddenFilesCheckBox.setSelected(editedSyncJob.isSkipHiddenFiles());
-        } else {
-            skipHiddenFilesCheckBox.setSelected(true);
-        }
-        skipHiddenFilesCheckBox.selectedProperty().addListener((obs, oldValue, newValue) -> {
-            skipHiddenFilesCheckBox.setSelected(newValue);
-        });
-
-        return skipHiddenFilesCheckBox;
-    }
-
-    TextArea getHiddenPathPatternsTextArea() {
-        TextArea hiddenPathPatterns = new TextArea();
-        hiddenPathPatterns.setEditable(false);
-        hiddenPathPatterns.setStyle("-fx-text-fill: grey");
+    TextArea getIgnoredPathPatternsTextArea() {
+        TextArea ignoredPathPatterns = new TextArea();
+        ignoredPathPatterns.setEditable(false);
+        ignoredPathPatterns.setStyle("-fx-text-fill: grey");
         if (editedSyncJob != null) {
-            hiddenPathPatterns.setText(
-                    String.join(LINE_SEPARATOR, editedSyncJob.getHiddenPathPatterns())
+            ignoredPathPatterns.setText(
+                    String.join(LINE_SEPARATOR, editedSyncJob.getIgnoredPathPatterns())
             );
         } else {
-            hiddenPathPatterns.setText(
-                    String.join(LINE_SEPARATOR, new SyncJob().getHiddenPathPatterns())
+            ignoredPathPatterns.setText(
+                    String.join(LINE_SEPARATOR, new SyncJob().getIgnoredPathPatterns())
             );
         }
-        hiddenPathPatterns.addEventHandler(MouseEvent.MOUSE_CLICKED, (event) -> {
+        ignoredPathPatterns.addEventHandler(MouseEvent.MOUSE_CLICKED, (event) -> {
             if (event.getClickCount() == 2) {
-                hiddenPathPatterns.setEditable(true);
-                hiddenPathPatterns.setStyle("-fx-text-fill: black");
+                ignoredPathPatterns.setEditable(true);
+                ignoredPathPatterns.setStyle("-fx-text-fill: black");
 
             }
         });
-        hiddenPathPatterns.focusedProperty().addListener( (obs, oldValue, newValue) -> {
+        ignoredPathPatterns.focusedProperty().addListener( (obs, oldValue, newValue) -> {
             if( !newValue ) {
-                hiddenPathPatterns.setEditable(false);
-                hiddenPathPatterns.setText(new ArrayList<>(Arrays.stream(hiddenPathPatterns.getText().split("[\\r\\n]+"))
+                ignoredPathPatterns.setEditable(false);
+                ignoredPathPatterns.setText(new ArrayList<>(Arrays.stream(ignoredPathPatterns.getText().split("[\\r\\n]+"))
                         .filter(str -> !str.isBlank())
                         .map(String::trim)
                         .toList()).stream().collect(Collectors.joining(LINE_SEPARATOR)));
-                hiddenPathPatterns.setStyle("-fx-text-fill: grey");
+                ignoredPathPatterns.setStyle("-fx-text-fill: grey");
             }
         });
-        addValidationLayerToTextInput(hiddenPathPatterns, textInput -> validateHiddenPathPatterns(textInput.getText()), hiddenPathPatternPropertyError);
-        return hiddenPathPatterns;
+        addValidationLayerToTextInput(ignoredPathPatterns, textInput -> validateIgnoredPathPatterns(textInput.getText()), ignoredPathPatternPropertyError);
+        return ignoredPathPatterns;
     }
 
-    VBox getHiddenPathPatternsBox(@NonNull TextArea hiddenPathPatternsTextArea, I18n i18n) {
-        VBox hiddenPathPatternBox = new VBox();
-        hiddenPathPatternBox.setSpacing(5);
-        hiddenPathPatternBox.getChildren().add(new Label(i18n.get("sync_tasks.modal_panel.sync_task_modal.hidden_path_patterns")));
+    TextArea getEmptyPathPatternsTextArea() {
+        TextArea noneIgnoredPathPatterns = new TextArea();
+        noneIgnoredPathPatterns.setDisable(true);
+        noneIgnoredPathPatterns.setStyle("-fx-text-fill: grey");
+        return noneIgnoredPathPatterns;
+    }
 
-        HBox hiddenPathPatternValuesBox = new HBox();
-        hiddenPathPatternValuesBox.setSpacing(5);
-        hiddenPathPatternValuesBox.getChildren().add(hiddenPathPatternsTextArea);
+    TextArea getGlobalDefaultPathPatternsTextArea() {
+        TextArea globalDefaultPathPatternsTextArea = new TextArea();
+        globalDefaultPathPatternsTextArea.setEditable(false);
+        globalDefaultPathPatternsTextArea.setStyle("-fx-text-fill: grey");
 
-        Button restoreDefaultHiddenPathsButton = new Button(i18n.get("sync_tasks.modal_panel.sync_task_modal.restore_default_list"));
-        restoreDefaultHiddenPathsButton.setOnAction((event) -> {
+        ServiceCallHandler.ServiceCallResult<Settings> settings = SharedContext.getContext().getServiceCallHandler(getDialogPane()).getSettings();
+
+        if (settings.isOk()) {
+            globalDefaultPathPatternsTextArea.setText(
+                    String.join(LINE_SEPARATOR, settings.getOk().getIgnoredPathPatterns())
+            );
+        } else {
+            globalDefaultPathPatternsTextArea.setText(
+                    SharedContext.getContext().getI18n().get("dialog.service_response_error")
+            );
+            addErrorClass(globalDefaultPathPatternsTextArea);
+        }
+
+        return globalDefaultPathPatternsTextArea;
+    }
+
+    VBox getIgnoredPathPatternsBox(@NonNull TextArea ignoredPathPatternsTextArea, I18n i18n) {
+        VBox ignoredPathPatternBox = new VBox();
+        ignoredPathPatternBox.setSpacing(5);
+        ignoredPathPatternBox.getChildren().add(new Label(i18n.get("sync_tasks.modal_panel.sync_task_modal.ignored_path_patterns")));
+
+        HBox ignoredPathPatternValuesBox = new HBox();
+        ignoredPathPatternValuesBox.setSpacing(5);
+        ignoredPathPatternValuesBox.getChildren().add(ignoredPathPatternsTextArea);
+
+        Button restoreDefaultIgnoredPathsButton = new Button(i18n.get("sync_tasks.modal_panel.sync_task_modal.restore_default_list"));
+        restoreDefaultIgnoredPathsButton.setOnAction((event) -> {
             Platform.runLater( () -> {
-                hiddenPathPatternsTextArea.setText(
-                        String.join(LINE_SEPARATOR, new SyncJob().getHiddenPathPatterns())
+                ignoredPathPatternsTextArea.setText(
+                        globalDefaultPathPatternsTextArea.getText()
                 );
-                hiddenPathPatternsTextArea.commitValue();
+                ignoredPathPatternsTextArea.commitValue();
             });
             Platform.runLater(this::doValidationOnAllInputFields);
         });
-        hiddenPathPatternValuesBox.getChildren().add(restoreDefaultHiddenPathsButton);
+        ignoredPathPatternValuesBox.getChildren().add(restoreDefaultIgnoredPathsButton);
 
-        hiddenPathPatternBox.getChildren().add(hiddenPathPatternValuesBox);
-        return hiddenPathPatternBox;
+        ignoredPathPatternBox.getChildren().add(ignoredPathPatternValuesBox);
+        return ignoredPathPatternBox;
     }
 
     private HBox getSyncModeChoice(I18n i18n) {
@@ -382,6 +430,60 @@ public class SyncJobDialog extends Dialog<SyncJob> {
             localDirectoryValue.setText(editedSyncJob.getLocalDirectoryRoot());
         }
         return localDirectoryValue;
+    }
+
+    private HBox getIgnoredFilesModeChoice(I18n i18n) {
+        HBox ignoredFilesModeChoiceBox = new HBox();
+        ignoredFilesModeChoiceBox.setSpacing(50);
+
+        Label ignoredFilesModeLabel = new Label();
+        ignoredFilesModeLabel.textProperty().bind(i18n.createStringBinding("sync_tasks.modal_panel.sync_task_modal.ignored_files_mode"));
+
+        ToggleGroup ignoredFilesModeToggleGroup = new ToggleGroup();
+
+        RadioButton globalDefaultChoice = new RadioButton();
+        globalDefaultChoice.setToggleGroup(ignoredFilesModeToggleGroup);
+        globalDefaultChoice.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue) {
+                selectedIgnoredFilesMode.setValue(SyncJob.IgnoredFilesMode.GlobalDefault);
+            }
+        });
+        globalDefaultChoice.setSelected(true);
+        globalDefaultChoice.textProperty().bind(i18n.createStringBinding("sync_tasks.modal_panel.sync_task_modal.ignored_files_mode.global_default"));
+
+        RadioButton specificListChoice = new RadioButton();
+        specificListChoice.setToggleGroup(ignoredFilesModeToggleGroup);
+        specificListChoice.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue) {
+                selectedIgnoredFilesMode.setValue(SyncJob.IgnoredFilesMode.SpecificList);
+            }
+        });
+        specificListChoice.textProperty().bind(i18n.createStringBinding("sync_tasks.modal_panel.sync_task_modal.ignored_files_mode.specific_list"));
+
+        RadioButton noneChoice = new RadioButton();
+        noneChoice.setToggleGroup(ignoredFilesModeToggleGroup);
+        noneChoice.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue) {
+                selectedIgnoredFilesMode.setValue(SyncJob.IgnoredFilesMode.None);
+            }
+        });
+        noneChoice.textProperty().bind(i18n.createStringBinding("sync_tasks.modal_panel.sync_task_modal.ignored_files_mode.none"));
+
+        selectedIgnoredFilesMode.addListener(((observableValue, oldValue, newValue) -> {
+            if(oldValue != newValue && newValue != null) {
+                switch (newValue) {
+                    case GlobalDefault -> globalDefaultChoice.setSelected(true);
+                    case SpecificList -> specificListChoice.setSelected(true);
+                    case None -> noneChoice.setSelected(true);
+                }
+            }
+        }));
+        if (editedSyncJob != null) {
+            selectedIgnoredFilesMode.setValue(editedSyncJob.getIgnoreFiles());
+        }
+
+        ignoredFilesModeChoiceBox.getChildren().addAll(ignoredFilesModeLabel, globalDefaultChoice, specificListChoice, noneChoice);
+        return ignoredFilesModeChoiceBox;
     }
 
     String[] validateLocalDirectoryValue(String localDirectoryInput) {
@@ -539,19 +641,23 @@ public class SyncJobDialog extends Dialog<SyncJob> {
         }
     }
 
-    String[] validateHiddenPathPatterns(String hiddenPathPatterns) {
-        if(hiddenPathPatterns != null && !hiddenPathPatterns.isBlank()) {
-            for(String hiddenPathPattern : hiddenPathPatterns.split("[\\r\\n]+")) {
-                if (!hiddenPathPattern.isBlank()) {
-                    try {
-                        Pattern.compile(hiddenPathPattern.trim());
-                    } catch (Exception e) {
-                        return new String[] { "error_tooltip.wrong_regex", hiddenPathPattern };
+    String[] validateIgnoredPathPatterns(String ignoredPathPatterns) {
+        if (selectedIgnoredFilesMode.getValue() == SyncJob.IgnoredFilesMode.SpecificList) {
+            if(ignoredPathPatterns != null && !ignoredPathPatterns.isBlank()) {
+                for(String ignoredPathPattern : ignoredPathPatterns.split("[\\r\\n]+")) {
+                    if (!ignoredPathPattern.isBlank()) {
+                        try {
+                            GlobUtil.compileIgnoredPathGlob(ignoredPathPattern);
+                        } catch (Exception e) {
+                            return new String[] { "error_tooltip.wrong_glob", ignoredPathPattern };
+                        }
                     }
                 }
             }
+            return null;
+        } else {
+            return null;
         }
-        return null;
     }
 
     boolean isEditDialog() {
@@ -612,7 +718,7 @@ public class SyncJobDialog extends Dialog<SyncJob> {
         doValidationOnTextInputNode(openbisEntityIdValue, (textInput) -> validateEntityIdValue(textInput.getText()), entityIdPropertyError);
         doValidationOnTextInputNode(titleValue, (textInput) -> validateTitleValue(textInput.getText()), titlePropertyError);
         doValidationOnTextInputNode(openbisServerUrlValue, (textInput) -> validateOpenbisServerUrlValue(textInput.getText()), openbisUrlPropertyError);
-        doValidationOnTextInputNode(hiddenPathPatterns, (textInput) -> validateHiddenPathPatterns(textInput.getText()), hiddenPathPatternPropertyError);
+        doValidationOnTextInputNode(ignoredPathPatterns, (textInput) -> validateIgnoredPathPatterns(textInput.getText()), ignoredPathPatternPropertyError);
     }
 
     Optional<SyncJob> getMostRecentlyTouchedSyncJob() {

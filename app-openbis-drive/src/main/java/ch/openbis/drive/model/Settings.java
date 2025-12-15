@@ -15,10 +15,11 @@ public class Settings {
     private String language;
     private int syncInterval; //Seconds
     private ArrayList<@NonNull SyncJob> jobs;
+    private ArrayList<String> ignoredPathPatterns;
     //TODO private Proxy proxy;
 
     public static Settings defaultSettings() {
-        return new Settings(false, "en", 2 * 60, new ArrayList<>());
+        return new Settings(false, "en", 2 * 60, new ArrayList<>(), new ArrayList<>(SyncJob.getDefaultIgnoredPathPatterns()));
     }
 
     public ArrayList<@NonNull SyncJob> getJobs() {

@@ -4,6 +4,7 @@ import ch.openbis.drive.conf.Configuration;
 import ch.openbis.drive.db.SyncJobEventDAO;
 import ch.openbis.drive.model.SyncJob;
 import ch.openbis.drive.notifications.NotificationManager;
+import ch.openbis.drive.settings.SettingsManager;
 import lombok.NonNull;
 
 import java.util.*;
@@ -15,11 +16,16 @@ public class TaskManagerImpl implements TaskManager {
 
     private final @NonNull SyncJobEventDAO syncJobEventDAO;
     private final @NonNull NotificationManager notificationManager;
+    private final @NonNull SettingsManager settingsManager;
     private final @NonNull Configuration configuration;
 
-    public TaskManagerImpl(@NonNull SyncJobEventDAO syncJobEventDAO, @NonNull NotificationManager notificationManager, @NonNull Configuration configuration) {
+    public TaskManagerImpl(@NonNull SyncJobEventDAO syncJobEventDAO,
+                           @NonNull NotificationManager notificationManager,
+                           @NonNull SettingsManager settingsManager,
+                           @NonNull Configuration configuration) {
         this.syncJobEventDAO = syncJobEventDAO;
         this.notificationManager = notificationManager;
+        this.settingsManager = settingsManager;
         this.configuration = configuration;
     }
 
@@ -76,7 +82,7 @@ public class TaskManagerImpl implements TaskManager {
             try {
 
                 System.out.println(String.format("Sync-job %s", syncJob.getLocalDirectoryRoot()));
-                SyncOperation syncTaskOperation = new SyncOperation(syncJob, syncJobEventDAO, notificationManager, configuration);
+                SyncOperation syncTaskOperation = new SyncOperation(syncJob, syncJobEventDAO, notificationManager, configuration, settingsManager.getSettings());
                 syncOperations.put(syncJob, syncTaskOperation);
                 syncTaskOperation.start();
 

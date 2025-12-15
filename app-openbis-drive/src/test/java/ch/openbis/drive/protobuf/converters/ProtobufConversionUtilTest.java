@@ -13,8 +13,6 @@ import org.junit.runners.JUnit4;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.*;
-
 @RunWith(JUnit4.class)
 public class ProtobufConversionUtilTest {
 
@@ -75,7 +73,7 @@ public class ProtobufConversionUtilTest {
     public void toProtobufSettings() {
         Settings settings = new Settings(true, "it", 63, new ArrayList<>(List.of(
                 new SyncJob(SyncJob.Type.Upload, "http://loc", "tkntkn", "1234-abcd", "title", "/remDIR", "/LOCdir", true)
-        )));
+        )), new ArrayList<>(List.of("aaa", "bbb")));
 
         DriveApiService.Settings protobufSettings = ProtobufConversionUtil.toProtobufSettings(settings);
 
@@ -101,7 +99,8 @@ public class ProtobufConversionUtilTest {
                         .setOpenBisPersonalAccessToken("tkn-TKN")
                         .setRemoteDirectoryRoot("/remDIR")
                         .setType(DriveApiService.SyncJob.Type.BIDIRECTIONAL)
-                        .setHiddenPathPatterns(DriveApiService.HiddenPathPatterns.newBuilder().addAllHiddenPathPatterns(List.of("aaa", "bbb")))
+                        .setIgnoreFiles(DriveApiService.SyncJob.IgnoreFilesMode.SPECIFIC_LIST)
+                        .setIgnoredPathPatterns(DriveApiService.IgnoredPathPatterns.newBuilder().addAllIgnoredPathPatterns(List.of("aaa", "bbb")))
                         .build()
         ).addSyncJobs(
                 DriveApiService.SyncJob.newBuilder()
@@ -113,7 +112,8 @@ public class ProtobufConversionUtilTest {
                         .setOpenBisPersonalAccessToken("tkn-TKN2")
                         .setRemoteDirectoryRoot("/remDIR3")
                         .setType(DriveApiService.SyncJob.Type.DOWNLOAD)
-                        .setHiddenPathPatterns(DriveApiService.HiddenPathPatterns.newBuilder().addAllHiddenPathPatterns(List.of("aaa1", "bbb2")))
+                        .setIgnoreFiles(DriveApiService.SyncJob.IgnoreFilesMode.GLOBAL_DEFAULT)
+                        .setIgnoredPathPatterns(DriveApiService.IgnoredPathPatterns.newBuilder().addAllIgnoredPathPatterns(List.of("aaa1", "bbb2")))
                         .build()
         ).build();
 
@@ -129,7 +129,8 @@ public class ProtobufConversionUtilTest {
         Assert.assertEquals("/remDIR", syncJobs.get(0).getRemoteDirectoryRoot());
         Assert.assertEquals(SyncJob.Type.Bidirectional, syncJobs.get(0).getType());
         Assert.assertEquals("title1", syncJobs.get(0).getTitle());
-        Assert.assertEquals(List.of("aaa", "bbb"), syncJobs.get(0).getHiddenPathPatterns());
+        Assert.assertEquals(SyncJob.IgnoredFilesMode.SpecificList, syncJobs.get(0).getIgnoreFiles());
+        Assert.assertEquals(List.of("aaa", "bbb"), syncJobs.get(0).getIgnoredPathPatterns());
 
         Assert.assertEquals(false, syncJobs.get(1).isEnabled());
         Assert.assertEquals("/loc-dir2", syncJobs.get(1).getLocalDirectoryRoot());
@@ -139,7 +140,8 @@ public class ProtobufConversionUtilTest {
         Assert.assertEquals("/remDIR3", syncJobs.get(1).getRemoteDirectoryRoot());
         Assert.assertEquals(SyncJob.Type.Download, syncJobs.get(1).getType());
         Assert.assertEquals("title2", syncJobs.get(1).getTitle());
-        Assert.assertEquals(List.of("aaa1", "bbb2"), syncJobs.get(1).getHiddenPathPatterns());
+        Assert.assertEquals(SyncJob.IgnoredFilesMode.GlobalDefault, syncJobs.get(1).getIgnoreFiles());
+        Assert.assertEquals(List.of("aaa1", "bbb2"), syncJobs.get(1).getIgnoredPathPatterns());
     }
 
     @Test
@@ -148,8 +150,8 @@ public class ProtobufConversionUtilTest {
                 new SyncJob(SyncJob.Type.Upload, "http://loc", "tkntkn", "1234-abcd", "title", "/remDIR", "/LOCdir", true),
                 new SyncJob(SyncJob.Type.Bidirectional, "http://loc2", "tkntkn2", "1234-abcd2", "title2", "/remDIR3", "/LOCdir3", false)
         );
-        syncJobs.get(0).setHiddenPathPatterns(new ArrayList<>(List.of("aaa", "bbb")));
-        syncJobs.get(1).setHiddenPathPatterns(new ArrayList<>(List.of("aaa1", "bbb2")));
+        syncJobs.get(0).setIgnoredPathPatterns(new ArrayList<>(List.of("aaa", "bbb")));
+        syncJobs.get(1).setIgnoredPathPatterns(new ArrayList<>(List.of("aaa1", "bbb2")));
 
         DriveApiService.SyncJobs protobufSyncJobs = ProtobufConversionUtil.toProtobufSyncJobs(syncJobs);
 
@@ -163,7 +165,7 @@ public class ProtobufConversionUtilTest {
         Assert.assertEquals("tkntkn", protobufSyncJobs.getSyncJobs(0).getOpenBisPersonalAccessToken());
         Assert.assertEquals("/remDIR", protobufSyncJobs.getSyncJobs(0).getRemoteDirectoryRoot());
         Assert.assertEquals(DriveApiService.SyncJob.Type.UPLOAD, protobufSyncJobs.getSyncJobs(0).getType());
-        Assert.assertEquals(List.of("aaa", "bbb"), protobufSyncJobs.getSyncJobs(0).getHiddenPathPatterns().getHiddenPathPatternsList().stream().toList());
+        Assert.assertEquals(List.of("aaa", "bbb"), protobufSyncJobs.getSyncJobs(0).getIgnoredPathPatterns().getIgnoredPathPatternsList().stream().toList());
 
         Assert.assertEquals(false, protobufSyncJobs.getSyncJobs(1).getEnabled());
         Assert.assertEquals("title2", protobufSyncJobs.getSyncJobs(1).getTitle());
@@ -173,7 +175,7 @@ public class ProtobufConversionUtilTest {
         Assert.assertEquals("tkntkn2", protobufSyncJobs.getSyncJobs(1).getOpenBisPersonalAccessToken());
         Assert.assertEquals("/remDIR3", protobufSyncJobs.getSyncJobs(1).getRemoteDirectoryRoot());
         Assert.assertEquals(DriveApiService.SyncJob.Type.BIDIRECTIONAL, protobufSyncJobs.getSyncJobs(1).getType());
-        Assert.assertEquals(List.of("aaa1", "bbb2"), protobufSyncJobs.getSyncJobs(1).getHiddenPathPatterns().getHiddenPathPatternsList().stream().toList());
+        Assert.assertEquals(List.of("aaa1", "bbb2"), protobufSyncJobs.getSyncJobs(1).getIgnoredPathPatterns().getIgnoredPathPatternsList().stream().toList());
     }
 
     @Test

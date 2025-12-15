@@ -6,6 +6,7 @@ import ch.openbis.drive.model.Notification;
 import ch.openbis.drive.model.Settings;
 import ch.openbis.drive.model.SyncJob;
 import ch.openbis.drive.protobuf.client.DriveAPIClientProtobufImpl;
+import ch.openbis.drive.util.GlobUtil;
 import ch.openbis.drive.util.OpenBISDriveUtil;
 import com.sun.istack.NotNull;
 import io.grpc.Status;
@@ -16,11 +17,11 @@ import org.apache.commons.cli.*;
 import java.io.File;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.*;
-import java.util.regex.Pattern;
 
 import static ch.ethz.sis.afsclient.client.AfsClientUploadHelper.toServerPathString;
 
@@ -36,19 +37,23 @@ public class DriveAPICmdLineApp {
      * Prints config on the standard output, in one line, fields separated by tabs
      * ./drive-app config
      * ./drive-app config -startAtLogin=true|false -language=en|fr|de|it|es syncInterval=120 (-> seconds) (defaults: false, 'en', 120 seconds = 2 minutes)
+     * ./drive-app config ignored-path-patterns -> shows the active global default list of ignored file patterns (glob syntax)
+     * ./drive-app config ignored-path-patterns -showFactoryDefault -> shows the factory-default (not necessarily active) global default list of ignored file patterns (glob syntax)
+     * ./drive-app config ignored-path-patterns -reset -> resets the active global default list of ignored file patterns to factory-default values
+     * ./drive-app config ignored-path-patterns -set -> sets new ignored path-patterns from console-input
+     * ./drive-app config ignored-path-patterns -setFromFile -> sets new ignored path-patterns
+     *     from UTF-8 multiline text-file with a glob expression on each line
      * <p>
      * Prints jobs on the standard output, one per line, fields separated by tabs
      * ./drive-app jobs
-     * ./drive-app jobs add -title='Description...' -type='Bidirectional|Upload|Download' -dir='./dir-a/dir-b' -openBISurl='https://...' -entityPermId='123-abc-...' -personalAccessToken='098abc...' -remDir='/remote/dir/absolute-path/' -enabled=true|false  ( optional: -skipHiddenFiles=true|false with default-value: true )
+     * ./drive-app jobs add -title='Description...' -type='Bidirectional|Upload|Download' -dir='./dir-a/dir-b' -openBISurl='https://...' -entityPermId='123-abc-...' -personalAccessToken='098abc...' -remDir='/remote/dir/absolute-path/' -enabled=true|false  ( optional: -ignoreFiles=GlobalDefault|SpecificList|None with default-value: GlobalDefault )
      * ./drive-app jobs remove -dir='./dir-a/dir-b'
      * ./drive-app jobs start -dir='./dir-a/dir-b'
      * ./drive-app jobs stop -dir='./dir-a/dir-b'
-     * ./drive-app jobs hidden-path-patterns -> shows the predefined hidden path-patterns
-     * ./drive-app jobs hidden-path-patterns -dir='./dir-a/dir-b' (shows the hidden path-patterns for the job related to this local directory)
-     * ./drive-app jobs hidden-path-patterns -dir='./dir-a/dir-b' -reset (resets the hidden path-patterns to default-values for the job related to this local directory)
-     * ./drive-app jobs hidden-path-patterns -dir='./dir-a/dir-b' -set -> sets new hidden path-patterns from console-input
-     * ./drive-app jobs hidden-path-patterns -dir='./dir-a/dir-b' -setFromFile=./documents/new-patterns.txt -> sets new hidden path-patterns
-     *     from UTF-8 multiline text-file with a regular expression on each line
+     * ./drive-app jobs ignored-path-patterns -dir='./dir-a/dir-b' (shows the ignored path-patterns for the job related to this local directory)
+     * ./drive-app jobs ignored-path-patterns -dir='./dir-a/dir-b' -set -> sets new ignored path-patterns from console-input (glob syntax)
+     * ./drive-app jobs ignored-path-patterns -dir='./dir-a/dir-b' -setFromFile=./documents/new-patterns.txt -> sets new ignored path-patterns
+     *     from UTF-8 multiline text-file with a glob expression on each line
      * <p>
      * Prints notifications on the standard output, one per line, fields separated by tabs
      * ./drive-app notifications -limit=100 (default: 100)
@@ -139,7 +144,7 @@ public class DriveAPICmdLineApp {
                 case "remove" -> handleRemoveJobCommand(args);
                 case "start" -> handleStartJobCommand(args);
                 case "stop" -> handleStopJobCommand(args);
-                case "hidden-path-patterns" -> handleHiddenPathPatternsJobCommand(args);
+                case "ignored-path-patterns" -> handleIgnoredPathPatternsJobCommand(args);
                 default -> {
                     System.out.printf("Unknown 'jobs' subcommand %s\n", args[1]);
                     printHelp();
@@ -165,8 +170,11 @@ public class DriveAPICmdLineApp {
             .addOption(Option.builder()
                 .option("remDir").longOpt("remDir").required(true).hasArg(true).desc("openBIS remote directory: required").get())
             .addOption(Option.builder()
-                .option("enabled").longOpt("enabled").required(true).hasArg(true).desc("Enable sync-job or not: required").get());
-        CommandLineParser commandLineParser = new DefaultParser();
+                .option("enabled").longOpt("enabled").required(true).hasArg(true).desc("Enable sync-job or not: required").get())
+            .addOption(Option.builder()
+                .option("ignoreFiles").longOpt("ignoreFiles").required(false).hasArg(true).desc("Mode of ignoring files: optional (default value: GlobalDefault)").get());
+
+            CommandLineParser commandLineParser = new DefaultParser();
         CommandLine commandLine;
         try {
             commandLine = commandLineParser.parse(options, args);
@@ -248,18 +256,18 @@ public class DriveAPICmdLineApp {
             printHelp();
             return;
         }
-        Boolean skipHiddenFiles = null;
-        if (commandLine.hasOption("skipHiddenFiles")) {
+        SyncJob.IgnoredFilesMode ignoreFiles = SyncJob.IgnoredFilesMode.GlobalDefault;
+        if (commandLine.hasOption("ignoreFiles")) {
             try {
-                skipHiddenFiles = Boolean.parseBoolean(commandLine.getOptionValue("skipHiddenFiles"));
+                ignoreFiles = SyncJob.IgnoredFilesMode.valueOf(commandLine.getOptionValue("ignoreFiles"));
             } catch (Exception e) {
-                System.out.println("Wrong '-skipHiddenFiles=' option\n");
+                System.out.println("Wrong '-ignoreFiles=' option\n");
                 printHelp();
                 return;
             }
         }
 
-        addJob(title, syncJobType, localDirectory, openBISurl, entityPermId, personalAccessToken, toServerPathString(Path.of(remoteDirectory)), enabled, skipHiddenFiles);
+        addJob(title, syncJobType, localDirectory, openBISurl, entityPermId, personalAccessToken, toServerPathString(Path.of(remoteDirectory)), enabled, ignoreFiles);
     }
 
     boolean validateOpenBISUrl(@NotNull String url) {
@@ -350,16 +358,14 @@ public class DriveAPICmdLineApp {
         stopJob(localDirectory);
     }
 
-    void handleHiddenPathPatternsJobCommand(String[] args) throws Exception {
+    void handleIgnoredPathPatternsJobCommand(String[] args) throws Exception {
         Options options = new Options();
         options.addOption(Option.builder()
-                .option("dir").longOpt("dir").required(false).hasArg(true).desc("Local synchronized directory: required").get());
+                .option("dir").longOpt("dir").required(true).hasArg(true).desc("Local synchronized directory: required").get());
         options.addOption(Option.builder()
-                .option("reset").longOpt("reset").required(false).hasArg(false).desc("Reset hidden path-patterns to default-values: optional").get());
+                .option("set").longOpt("set").required(false).hasArg(false).desc("Set new ignored path-patterns from console-input: optional").get());
         options.addOption(Option.builder()
-                .option("set").longOpt("set").required(false).hasArg(false).desc("Set new hidden path-patterns from console-input: optional").get());
-        options.addOption(Option.builder()
-                .option("setFromFile").longOpt("setFromFile").required(false).hasArg(true).desc("Set new hidden path-patterns from file: optional").get());
+                .option("setFromFile").longOpt("setFromFile").required(false).hasArg(true).desc("Set new ignored path-patterns from file: optional").get());
         CommandLineParser commandLineParser = new DefaultParser();
         CommandLine commandLine;
         try {
@@ -370,63 +376,55 @@ public class DriveAPICmdLineApp {
             return;
         }
 
-        if ( commandLine.hasOption("dir") ) {
-            String localDirectory;
+        String localDirectory;
+        try {
+            localDirectory = commandLine.getOptionValue("dir");
+        } catch (Exception e) {
+            System.out.println("Wrong '-dir=' option\n");
+            printHelp();
+            return;
+        }
+
+        String setNewMultiLineValue = null;
+        if ( commandLine.hasOption("set") ) {
             try {
-                localDirectory = commandLine.getOptionValue("dir");
+                System.out.println("Please, enter new glob expressions one per line. End with empty line:");
+                Scanner scanner = new Scanner(System.in);
+                StringBuilder multilineValueBuilder = new StringBuilder();
+
+                while (true) {
+                    String input = scanner.nextLine();
+
+                    if (input.isBlank()) {
+                        setNewMultiLineValue = multilineValueBuilder.toString();
+                        break;
+                    } else {
+                        multilineValueBuilder.append(input.trim()).append(System.lineSeparator());
+                    }
+                }
             } catch (Exception e) {
-                System.out.println("Wrong '-dir=' option\n");
+                System.out.println("Error reading new ignored path-patterns\n");
                 printHelp();
                 return;
             }
-
-            boolean resetToDefault = commandLine.hasOption("reset");
-
-            String setNewMultiLineValue = null;
-            if ( commandLine.hasOption("set") ) {
-                try {
-                    System.out.println("Please, enter new regular expressions one per line. End with empty line:");
-                    Scanner scanner = new Scanner(System.in);
-                    StringBuilder multilineValueBuilder = new StringBuilder();
-
-                    while (true) {
-                        String input = scanner.nextLine();
-
-                        if (input.isBlank()) {
-                            setNewMultiLineValue = multilineValueBuilder.toString();
-                            break;
-                        } else {
-                            multilineValueBuilder.append(input.trim()).append(System.lineSeparator());
-                        }
-                    }
-                } catch (Exception e) {
-                    System.out.println("Error reading new hidden path-patterns\n");
-                    printHelp();
-                    return;
-                }
-            } else if ( commandLine.hasOption("setFromFile") ) {{
-                try {
-                    setNewMultiLineValue = new String(
-                            Files.readAllBytes(Path.of(commandLine.getOptionValue("setFromFile"))),
-                            StandardCharsets.UTF_8
-                    );
-                } catch (Exception e) {
-                    System.out.println("Error reading new hidden path-patterns from file\n");
-                    printHelp();
-                    return;
-                }
+        } else if ( commandLine.hasOption("setFromFile") ) {{
+            try {
+                setNewMultiLineValue = new String(
+                        Files.readAllBytes(Path.of(commandLine.getOptionValue("setFromFile"))),
+                        StandardCharsets.UTF_8
+                );
+            } catch (Exception e) {
+                System.out.println("Error reading new ignored path-patterns from file\n");
+                printHelp();
+                return;
             }
-            }
+        }
+        }
 
-            if ( resetToDefault ) {
-                resetHiddenPathPatternsToDefault(localDirectory);
-            } else if ( setNewMultiLineValue != null ) {
-                setHiddenPathPatterns(localDirectory, setNewMultiLineValue);
-            } else {
-                showHiddenPathPatterns(localDirectory);
-            }
+        if ( setNewMultiLineValue != null ) {
+            setIgnoredPathPatterns(localDirectory, setNewMultiLineValue);
         } else {
-            showDefaultHiddenPathPatterns();
+            showSpecificIgnoredPathPattern(localDirectory);
         }
     }
 
@@ -434,53 +432,128 @@ public class DriveAPICmdLineApp {
         if (args.length == 1) {
             printConfig();
         } else {
-            Options options = new Options();
-            options.addOption(Option.builder()
-                    .option("startAtLogin").longOpt("startAtLogin").required(false).hasArg(true).desc("Start application at system-login (defaults to: false)").get())
-                .addOption(Option.builder()
-                    .option("language").longOpt("language").required(false).hasArg(true).desc("Language (defaults to: en)").get())
-                .addOption(Option.builder()
-                    .option("syncInterval").longOpt("syncInterval").required(false).hasArg(true).desc("Synchronization interval in seconds (defaults to 120 seconds = 2 minutes)").get());
-            CommandLineParser commandLineParser = new DefaultParser();
-            CommandLine commandLine;
+            switch (args[1]) {
+                case "ignored-path-patterns" -> handleIgnoredPathPatternsConfigCommand(args);
+                default -> {
+                    Options options = new Options();
+                    options.addOption(Option.builder()
+                                    .option("startAtLogin").longOpt("startAtLogin").required(false).hasArg(true).desc("Start application at system-login (defaults to: false)").get())
+                            .addOption(Option.builder()
+                                    .option("language").longOpt("language").required(false).hasArg(true).desc("Language (defaults to: en)").get())
+                            .addOption(Option.builder()
+                                    .option("syncInterval").longOpt("syncInterval").required(false).hasArg(true).desc("Synchronization interval in seconds (defaults to 120 seconds = 2 minutes)").get());
+                    CommandLineParser commandLineParser = new DefaultParser();
+                    CommandLine commandLine;
+                    try {
+                        commandLine = commandLineParser.parse(options, args);
+                    } catch (Exception e) {
+                        System.out.println("Wrong options\n");
+                        printHelp();
+                        return;
+                    }
+                    Boolean startAtLogin = null;
+                    if (commandLine.hasOption("startAtLogin")) {
+                        try {
+                            startAtLogin = Boolean.parseBoolean(commandLine.getOptionValue("startAtLogin"));
+                        } catch (Exception e) {
+                            System.out.println("Wrong '-startAtLogin=' option\n");
+                            printHelp();
+                            return;
+                        }
+                    }
+                    String language = null;
+                    if (commandLine.hasOption("language")) {
+                        try {
+                            language = commandLine.getOptionValue("language");
+                        } catch (Exception e) {
+                            System.out.println("Wrong '-language=' option\n");
+                            printHelp();
+                            return;
+                        }
+                    }
+                    Integer syncInterval = null;
+                    if (commandLine.hasOption("syncInterval")) {
+                        try {
+                            syncInterval = Integer.parseInt(commandLine.getOptionValue("syncInterval"));
+                        } catch (Exception e) {
+                            System.out.println("Wrong '-syncInterval=' option\n");
+                            printHelp();
+                            return;
+                        }
+                    }
+                    setConfig(startAtLogin, language, syncInterval);
+                }
+            }
+        }
+    }
+
+    void handleIgnoredPathPatternsConfigCommand(String[] args) throws Exception {
+        Options options = new Options();
+        options.addOption(Option.builder()
+                .option("showFactoryDefault").longOpt("showFactoryDefault").required(false).hasArg(false).desc("Show factory-default ignored path-patterns: optional").get());
+        options.addOption(Option.builder()
+                .option("reset").longOpt("reset").required(false).hasArg(false).desc("Reset global default ignored path-patterns to factory-default values: optional").get());
+        options.addOption(Option.builder()
+                .option("set").longOpt("set").required(false).hasArg(false).desc("Set new global default ignored path-patterns from console-input: optional").get());
+        options.addOption(Option.builder()
+                .option("setFromFile").longOpt("setFromFile").required(false).hasArg(true).desc("Set new global default ignored path-patterns from file: optional").get());
+        CommandLineParser commandLineParser = new DefaultParser();
+        CommandLine commandLine;
+        try {
+            commandLine = commandLineParser.parse(options, args);
+        } catch (Exception e) {
+            System.out.println("Wrong options\n");
+            printHelp();
+            return;
+        }
+
+        boolean showFactoryDefault = commandLine.hasOption("showFactoryDefault");
+        boolean reset = commandLine.hasOption("reset");
+
+        String setNewMultiLineValue = null;
+        if ( commandLine.hasOption("set") ) {
             try {
-                commandLine = commandLineParser.parse(options, args);
+                System.out.println("Please, enter new glob expressions one per line. End with empty line:");
+                Scanner scanner = new Scanner(System.in);
+                StringBuilder multilineValueBuilder = new StringBuilder();
+
+                while (true) {
+                    String input = scanner.nextLine();
+
+                    if (input.isBlank()) {
+                        setNewMultiLineValue = multilineValueBuilder.toString();
+                        break;
+                    } else {
+                        multilineValueBuilder.append(input.trim()).append(System.lineSeparator());
+                    }
+                }
             } catch (Exception e) {
-                System.out.println("Wrong options\n");
+                System.out.println("Error reading new ignored path-patterns\n");
                 printHelp();
                 return;
             }
-            Boolean startAtLogin = null;
-            if (commandLine.hasOption("startAtLogin")) {
-                try {
-                    startAtLogin = Boolean.parseBoolean(commandLine.getOptionValue("startAtLogin"));
-                } catch (Exception e) {
-                    System.out.println("Wrong '-startAtLogin=' option\n");
-                    printHelp();
-                    return;
-                }
+        } else if ( commandLine.hasOption("setFromFile") ) {{
+            try {
+                setNewMultiLineValue = new String(
+                        Files.readAllBytes(Path.of(commandLine.getOptionValue("setFromFile"))),
+                        StandardCharsets.UTF_8
+                );
+            } catch (Exception e) {
+                System.out.println("Error reading new ignored path-patterns from file\n");
+                printHelp();
+                return;
             }
-            String language = null;
-            if (commandLine.hasOption("language")) {
-                try {
-                    language = commandLine.getOptionValue("language");
-                } catch (Exception e) {
-                    System.out.println("Wrong '-language=' option\n");
-                    printHelp();
-                    return;
-                }
-            }
-            Integer syncInterval = null;
-            if (commandLine.hasOption("syncInterval")) {
-                try {
-                    syncInterval = Integer.parseInt(commandLine.getOptionValue("syncInterval"));
-                } catch (Exception e) {
-                    System.out.println("Wrong '-syncInterval=' option\n");
-                    printHelp();
-                    return;
-                }
-            }
-            setConfig(startAtLogin, language, syncInterval);
+        }
+        }
+
+        if (showFactoryDefault) {
+            showFactoryDefaultIgnoredPathPatterns();
+        } else if ( setNewMultiLineValue != null ) {
+            setGlobalIgnoredPathPatterns(setNewMultiLineValue);
+        } else if (reset) {
+            resetGlobalIgnoredPathPatterns();
+        } else {
+            showGlobalIgnoredPathPatterns();
         }
     }
 
@@ -494,19 +567,23 @@ public class DriveAPICmdLineApp {
                 
                 config  -> prints the configuration with which the background service is running
                 config -startAtLogin=true|false -language=en|fr|de|it|es -syncInterval=120   -> sets configuration parameters: two-letter ISO-code for language, synchronization-interval in seconds (defaults: false, 'en', 120 seconds = 2 minutes)
+                config ignored-path-patterns -> shows the active global default list of ignored file patterns (glob syntax)
+                config ignored-path-patterns -showFactoryDefault -> shows the showFactoryDefault (not necessarily active) global default list of ignored file patterns (glob syntax)
+                config ignored-path-patterns -reset -> resets the active global default list of ignored file patterns to factory-default values
+                config ignored-path-patterns -set -> sets new ignored path-patterns from console-input
+                config ignored-path-patterns -setFromFile -> sets new ignored path-patterns
+                    from UTF-8 multiline text-file with a glob expression on each line
                 
                 jobs    -> prints the currently registered synchronization-jobs
-                jobs add -title='Description...' -type='Bidirectional|Upload|Download' -dir='./dir-a/dir-b' -openBISurl='https://...' -entityPermId='123-abc-...' -personalAccessToken='098abc...' -remDir='/remote/dir/absolute-path/' -enabled=true|false ( optional: -skipHiddenFiles=true|false with default-value: true )
+                jobs add -title='Description...' -type='Bidirectional|Upload|Download' -dir='./dir-a/dir-b' -openBISurl='https://...' -entityPermId='123-abc-...' -personalAccessToken='098abc...' -remDir='/remote/dir/absolute-path/' -enabled=true|false  ( optional: -ignoreFiles=GlobalDefault|SpecificList|None with default-value: GlobalDefault )
                 jobs remove -dir='./dir-a/dir-b'
                 jobs start -dir='./dir-a/dir-b'
                 jobs stop -dir='./dir-a/dir-b'
                 
-                jobs hidden-path-patterns -> shows the predefined hidden path-patterns
-                jobs hidden-path-patterns -dir='./dir-a/dir-b' -> shows the hidden path-patterns for the job related to this local directory
-                jobs hidden-path-patterns -dir='./dir-a/dir-b' -reset -> resets the hidden path-patterns to default-values for the job related to this local directory
-                jobs hidden-path-patterns -dir='./dir-a/dir-b' -set -> sets new hidden path-patterns from console-input
-                jobs hidden-path-patterns -dir='./dir-a/dir-b' -setFromFile=./documents/new-patterns.txt -> sets new hidden path-patterns
-                    from UTF-8 multiline text-file with a regular expression on each line
+                jobs ignored-path-patterns -dir='./dir-a/dir-b' (shows the ignored path-patterns for the job related to this local directory)
+                jobs ignored-path-patterns -dir='./dir-a/dir-b' -set -> sets new ignored path-patterns from console-input (glob syntax)
+                jobs ignored-path-patterns -dir='./dir-a/dir-b' -setFromFile=./documents/new-patterns.txt -> sets new ignored path-patterns
+                    from UTF-8 multiline text-file with a glob expression on each line
 
                 notifications -limit=100   (default: 100)  -> prints the last limit-number of notifications
                 events -limit=100   (default: 100)  -> prints the last limit-number of events""");
@@ -555,7 +632,7 @@ public class DriveAPICmdLineApp {
         }
     }
 
-    void addJob(@NonNull String title, @NonNull SyncJob.Type type, @NonNull String localDirectory, @NonNull String openBISurl, @NonNull String entityPermId, @NonNull String personalAccessToken, @NonNull String remoteDirectory, boolean enabled, Boolean skipHiddenFiles) throws Exception {
+    void addJob(@NonNull String title, @NonNull SyncJob.Type type, @NonNull String localDirectory, @NonNull String openBISurl, @NonNull String entityPermId, @NonNull String personalAccessToken, @NonNull String remoteDirectory, boolean enabled, @NonNull SyncJob.IgnoredFilesMode ignoredFilesMode) throws Exception {
         try ( DriveAPIClientProtobufImpl driveAPIClient = getNewDriveAPIClient() ) {
             SyncJob newSyncJob = new SyncJob();
             newSyncJob.setTitle(title);
@@ -566,7 +643,7 @@ public class DriveAPICmdLineApp {
             newSyncJob.setOpenBisPersonalAccessToken(personalAccessToken);
             newSyncJob.setRemoteDirectoryRoot(remoteDirectory);
             newSyncJob.setEnabled(enabled);
-            newSyncJob.setSkipHiddenFiles( skipHiddenFiles != null ? skipHiddenFiles : true);
+            newSyncJob.setIgnoreFiles(ignoredFilesMode);
             driveAPIClient.addSyncJobs(Collections.singletonList(newSyncJob));
             printJobs();
         } catch (Exception e) {
@@ -644,14 +721,32 @@ public class DriveAPICmdLineApp {
         }
     }
 
-    void showDefaultHiddenPathPatterns() throws Exception {
-        System.out.println("Default hidden path-patterns:");
+    void showFactoryDefaultIgnoredPathPatterns() throws Exception {
+        System.out.println("Factory-default ignored path-patterns:");
         System.out.println("----------");
-        SyncJob.getDefaultHiddenPathPatterns().forEach(System.out::println);
+        SyncJob.getDefaultIgnoredPathPatterns().forEach(System.out::println);
         System.out.println("----------");
     }
 
-    void showHiddenPathPatterns(@NonNull String localDirectory) throws Exception {
+    void showGlobalIgnoredPathPatterns() throws Exception {
+        try ( DriveAPIClientProtobufImpl driveAPIClient = getNewDriveAPIClient() ) {
+
+            System.out.println("Global default ignored path-patterns:");
+            System.out.println("----------");
+            driveAPIClient.getSettings().getIgnoredPathPatterns().forEach(System.out::println);
+            System.out.println("----------");
+
+        } catch (Exception e) {
+            if (e instanceof StatusRuntimeException && Status.UNAVAILABLE.getCode() == ((StatusRuntimeException) e).getStatus().getCode()) {
+                System.out.println("OpenBIS Drive Service is not running.");
+            } else {
+                System.out.println(String.format("Error: %s, %s", e.getClass().getSimpleName(), e.getMessage()));
+            }
+        }
+
+    }
+
+    void showSpecificIgnoredPathPattern(@NonNull String localDirectory) throws Exception {
         try ( DriveAPIClientProtobufImpl driveAPIClient = getNewDriveAPIClient() ) {
             String localDirectoryAbsolutePath = Path.of(localDirectory).toAbsolutePath().toString();
 
@@ -661,9 +756,9 @@ public class DriveAPICmdLineApp {
 
             if ( syncJob.isPresent() ) {
                 printSyncJob(syncJob.get());
-                System.out.println("Hidden path-patterns:");
+                System.out.println("Synchronization-job-specific ignored path-patterns:");
                 System.out.println("----------");
-                syncJob.get().getHiddenPathPatterns().forEach(System.out::println);
+                syncJob.get().getIgnoredPathPatterns().forEach(System.out::println);
                 System.out.println("----------");
             } else {
                 System.out.println(String.format("Synchronization-job not found for local directory: %s", localDirectory));
@@ -678,36 +773,8 @@ public class DriveAPICmdLineApp {
         }
     }
 
-    void resetHiddenPathPatternsToDefault(@NonNull String localDirectory) throws Exception {
-        try ( DriveAPIClientProtobufImpl driveAPIClient = getNewDriveAPIClient() ) {
-            String localDirectoryAbsolutePath = Path.of(localDirectory).toAbsolutePath().toString();
-
-            Optional<SyncJob> syncJob = driveAPIClient.getSyncJobs().stream().filter(
-                    item -> Path.of(item.getLocalDirectoryRoot()).toAbsolutePath().toString().equals(localDirectoryAbsolutePath)
-            ).findFirst();
-
-            if ( syncJob.isPresent() ) {
-
-                driveAPIClient.removeSyncJobs(Collections.singletonList(syncJob.get()));
-                syncJob.get().setHiddenPathPatterns(new ArrayList<>(SyncJob.getDefaultHiddenPathPatterns()));
-                driveAPIClient.addSyncJobs(Collections.singletonList(syncJob.get()));
-
-                showHiddenPathPatterns(localDirectory);
-            } else {
-                System.out.println(String.format("Synchronization-job not found for local directory: %s", localDirectory));
-            }
-
-        } catch (Exception e) {
-            if (e instanceof StatusRuntimeException && Status.UNAVAILABLE.getCode() == ((StatusRuntimeException) e).getStatus().getCode()) {
-                System.out.println("OpenBIS Drive Service is not running.");
-            } else {
-                System.out.println(String.format("Error: %s, %s", e.getClass().getSimpleName(), e.getMessage()));
-            }
-        }
-    }
-
-    void setHiddenPathPatterns(@NonNull String localDirectory, @NonNull String multiLineHiddenPathPatterns) throws Exception {
-        if ( validateMultiLineHiddenPathPatterns(multiLineHiddenPathPatterns) ) {
+    void setIgnoredPathPatterns(@NonNull String localDirectory, @NonNull String multiLineIgnoredPathPatterns) throws Exception {
+        if ( validateMultiLineIgnoredPathPatterns(multiLineIgnoredPathPatterns) ) {
             try ( DriveAPIClientProtobufImpl driveAPIClient = getNewDriveAPIClient() ) {
                 String localDirectoryAbsolutePath = Path.of(localDirectory).toAbsolutePath().toString();
 
@@ -718,14 +785,14 @@ public class DriveAPICmdLineApp {
                 if ( syncJob.isPresent() ) {
 
                     driveAPIClient.removeSyncJobs(Collections.singletonList(syncJob.get()));
-                    syncJob.get().setHiddenPathPatterns(
-                            new ArrayList<>(Arrays.stream(multiLineHiddenPathPatterns.split("[\\r\\n]+"))
+                    syncJob.get().setIgnoredPathPatterns(
+                            new ArrayList<>(Arrays.stream(multiLineIgnoredPathPatterns.split("[\\r\\n]+"))
                             .filter(str -> !str.isBlank())
                             .map(String::trim)
                             .toList()));
                     driveAPIClient.addSyncJobs(Collections.singletonList(syncJob.get()));
 
-                    showHiddenPathPatterns(localDirectory);
+                    showSpecificIgnoredPathPattern(localDirectory);
                 } else {
                     System.out.println(String.format("Synchronization-job not found for local directory: %s", localDirectory));
                 }
@@ -738,18 +805,63 @@ public class DriveAPICmdLineApp {
                 }
             }
         } else {
-            System.out.println("Bad hidden path-patterns");
+            System.out.println("Bad ignored path-patterns");
         }
     }
 
-    boolean validateMultiLineHiddenPathPatterns(@NonNull String multiLineHiddenPathPatterns) {
-        if(!multiLineHiddenPathPatterns.isBlank()) {
-            for(String hiddenPathPattern : multiLineHiddenPathPatterns.split("[\\r\\n]+")) {
-                if (!hiddenPathPattern.isBlank()) {
+    void setGlobalIgnoredPathPatterns(@NonNull String multiLineIgnoredPathPatterns) throws Exception {
+        if ( validateMultiLineIgnoredPathPatterns(multiLineIgnoredPathPatterns) ) {
+            try ( DriveAPIClientProtobufImpl driveAPIClient = getNewDriveAPIClient() ) {
+
+                Settings settings = driveAPIClient.getSettings();
+                settings.setIgnoredPathPatterns(
+                        new ArrayList<>(Arrays.stream(multiLineIgnoredPathPatterns.split("[\\r\\n]+"))
+                        .filter(str -> !str.isBlank())
+                        .map(String::trim)
+                        .toList()));
+                driveAPIClient.setSettings(settings);
+
+                showGlobalIgnoredPathPatterns();
+
+            } catch (Exception e) {
+                if (e instanceof StatusRuntimeException && Status.UNAVAILABLE.getCode() == ((StatusRuntimeException) e).getStatus().getCode()) {
+                    System.out.println("OpenBIS Drive Service is not running.");
+                } else {
+                    System.out.println(String.format("Error: %s, %s", e.getClass().getSimpleName(), e.getMessage()));
+                }
+            }
+        } else {
+            System.out.println("Bad ignored path-patterns");
+        }
+    }
+
+    void resetGlobalIgnoredPathPatterns() throws Exception {
+        try ( DriveAPIClientProtobufImpl driveAPIClient = getNewDriveAPIClient() ) {
+
+            Settings settings = driveAPIClient.getSettings();
+            settings.setIgnoredPathPatterns(new ArrayList<>(SyncJob.getDefaultIgnoredPathPatterns()));
+            driveAPIClient.setSettings(settings);
+
+            showGlobalIgnoredPathPatterns();
+
+        } catch (Exception e) {
+            if (e instanceof StatusRuntimeException && Status.UNAVAILABLE.getCode() == ((StatusRuntimeException) e).getStatus().getCode()) {
+                System.out.println("OpenBIS Drive Service is not running.");
+            } else {
+                System.out.println(String.format("Error: %s, %s", e.getClass().getSimpleName(), e.getMessage()));
+            }
+        }
+    }
+
+    boolean validateMultiLineIgnoredPathPatterns(@NonNull String multiLineIgnoredPathPatterns) {
+        if(!multiLineIgnoredPathPatterns.isBlank()) {
+            for(String ignoredPathPattern : multiLineIgnoredPathPatterns.split("[\\r\\n]+")) {
+                if (!ignoredPathPattern.isBlank()) {
                     try {
-                        Pattern.compile(hiddenPathPattern.trim());
+                        String trimmed = ignoredPathPattern.trim();
+                        GlobUtil.compileIgnoredPathGlob(trimmed);
                     } catch (Exception e) {
-                        System.out.println(String.format("Wrong regular expression: %s", hiddenPathPattern));
+                        System.out.println(String.format("Wrong glob expression: %s", ignoredPathPattern));
                         return false;
                     }
                 }
@@ -841,7 +953,7 @@ public class DriveAPICmdLineApp {
         System.out.println("Remote directory: " + syncJob.getRemoteDirectoryRoot());
         System.out.println("Personal access token: " + syncJob.getOpenBisPersonalAccessToken());
         System.out.println("Enabled: " + syncJob.isEnabled());
-        System.out.println("Skip hidden files: " + syncJob.isSkipHiddenFiles());
+        System.out.println("Ignored files: " + syncJob.getIgnoreFiles());
     }
 
     void handleStartCommand(String[] args) throws Exception {

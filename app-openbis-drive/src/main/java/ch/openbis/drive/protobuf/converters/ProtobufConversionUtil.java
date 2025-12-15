@@ -18,6 +18,7 @@ public class ProtobufConversionUtil {
         settings.setLanguage(settingsDto.getLanguage());
         settings.setSyncInterval(settingsDto.getSyncIntervalSeconds());
         settings.setJobs(fromProtobufSyncJobs(settingsDto.getJobs()));
+        settings.setIgnoredPathPatterns(new ArrayList<>(settingsDto.getIgnoredPathPatterns().getIgnoredPathPatternsList().stream().toList()));
 
         return settings;
     }
@@ -28,7 +29,8 @@ public class ProtobufConversionUtil {
             .setStartAtLogin(settings.isStartAtLogin())
             .setLanguage(settings.getLanguage())
             .setSyncIntervalSeconds(settings.getSyncInterval())
-            .setJobs(toProtobufSyncJobs(settings.getJobs())).build();
+            .setJobs(toProtobufSyncJobs(settings.getJobs()))
+            .setIgnoredPathPatterns(DriveApiService.IgnoredPathPatterns.newBuilder().addAllIgnoredPathPatterns(settings.getIgnoredPathPatterns())).build();
     }
 
     public static @NonNull ArrayList<@NonNull SyncJob> fromProtobufSyncJobs(@NonNull DriveApiService.SyncJobs syncJobsDto) {
@@ -44,8 +46,8 @@ public class ProtobufConversionUtil {
             syncJob.setOpenBisPersonalAccessToken(syncJobDto.getOpenBisPersonalAccessToken());
             syncJob.setRemoteDirectoryRoot(syncJobDto.getRemoteDirectoryRoot());
             syncJob.setLocalDirectoryRoot(syncJobDto.getLocalDirectoryRoot());
-            syncJob.setSkipHiddenFiles(syncJobDto.getSkipHiddenFiles());
-            syncJob.setHiddenPathPatterns(new ArrayList<>(syncJobDto.getHiddenPathPatterns().getHiddenPathPatternsList().stream().toList()));
+            syncJob.setIgnoreFiles(fromProtobuftoSyncJobIgnoreFilesModeEnum(syncJobDto.getIgnoreFiles()));
+            syncJob.setIgnoredPathPatterns(new ArrayList<>(syncJobDto.getIgnoredPathPatterns().getIgnoredPathPatternsList().stream().toList()));
             syncJobs.add(syncJob);
         }
 
@@ -65,8 +67,8 @@ public class ProtobufConversionUtil {
             syncJobBuilder.setEntityPermId(syncJob.getEntityPermId());
             syncJobBuilder.setOpenBisPersonalAccessToken(syncJob.getOpenBisPersonalAccessToken());
             syncJobBuilder.setRemoteDirectoryRoot(syncJob.getRemoteDirectoryRoot());
-            syncJobBuilder.setSkipHiddenFiles(syncJob.isSkipHiddenFiles());
-            syncJobBuilder.setHiddenPathPatterns(DriveApiService.HiddenPathPatterns.newBuilder().addAllHiddenPathPatterns(syncJob.getHiddenPathPatterns()).build());
+            syncJobBuilder.setIgnoreFiles(toProtobufSyncJobIgnoreFilesModeEnum(syncJob.getIgnoreFiles()));
+            syncJobBuilder.setIgnoredPathPatterns(DriveApiService.IgnoredPathPatterns.newBuilder().addAllIgnoredPathPatterns(syncJob.getIgnoredPathPatterns()).build());
             builder.addSyncJobs(syncJobBuilder.build());
         }
 
@@ -186,6 +188,23 @@ public class ProtobufConversionUtil {
             case Upload -> DriveApiService.SyncJob.Type.UPLOAD;
             case Download -> DriveApiService.SyncJob.Type.DOWNLOAD;
             case Bidirectional -> DriveApiService.SyncJob.Type.BIDIRECTIONAL;
+        };
+    }
+
+    public static SyncJob.IgnoredFilesMode fromProtobuftoSyncJobIgnoreFilesModeEnum(@NonNull DriveApiService.SyncJob.IgnoreFilesMode mode) {
+        return switch (mode) {
+            case GLOBAL_DEFAULT -> SyncJob.IgnoredFilesMode.GlobalDefault;
+            case SPECIFIC_LIST -> SyncJob.IgnoredFilesMode.SpecificList;
+            case NONE -> SyncJob.IgnoredFilesMode.None;
+            case UNRECOGNIZED -> throw new IllegalArgumentException("Unknown ignore-files mode");
+        };
+    }
+
+    public static DriveApiService.SyncJob.IgnoreFilesMode toProtobufSyncJobIgnoreFilesModeEnum(@NonNull SyncJob.IgnoredFilesMode mode) {
+        return switch (mode) {
+            case GlobalDefault -> DriveApiService.SyncJob.IgnoreFilesMode.GLOBAL_DEFAULT;
+            case SpecificList -> DriveApiService.SyncJob.IgnoreFilesMode.SPECIFIC_LIST;
+            case None -> DriveApiService.SyncJob.IgnoreFilesMode.NONE;
         };
     }
 }

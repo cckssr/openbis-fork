@@ -6,9 +6,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import java.nio.file.FileSystems;
 import java.util.List;
-import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 @RunWith(JUnit4.class)
 public class SyncJobTest {
@@ -16,17 +15,16 @@ public class SyncJobTest {
     @Test
     public void testDefaultValues() {
         SyncJob syncJob = new SyncJob(SyncJob.Type.Bidirectional, "https://url", "PAT", "entity-id", "title", "/remote-root", "/home/user/local-dir", false);
-        Assert.assertTrue(syncJob.isSkipHiddenFiles());
-        Assert.assertEquals(SyncJob.getDefaultHiddenPathPatterns(), syncJob.getHiddenPathPatterns());
+        Assert.assertEquals(SyncJob.IgnoredFilesMode.GlobalDefault, syncJob.getIgnoreFiles());
     }
 
     @Test
-    public void testDefaultHiddenPathPatterns() {
+    public void testDefaultIgnoredPathPatterns() {
         Assert.assertTrue(
-            SyncJob.getDefaultHiddenPathPatterns().stream().allMatch(
-            regex -> {
+            SyncJob.getDefaultIgnoredPathPatterns().stream().allMatch(
+            glob -> {
                 try {
-                    Pattern.compile(regex);
+                    FileSystems.getDefault().getPathMatcher("glob:" + glob);
                     return true;
                 } catch (Exception e) {
                     return false;
@@ -34,33 +32,33 @@ public class SyncJobTest {
             })
         );
 
-        Assert.assertTrue(SyncJob.getDefaultHiddenPathPatterns().containsAll(SyncJob.getDefaultHiddenPathPatternsForAnyPlatform()));
-        Assert.assertTrue(SyncJob.getDefaultHiddenPathPatterns().containsAll(SyncJob.getDefaultHiddenPathPatternsForCurrentPlatform(OsDetectionUtil.detectOS())));
+        Assert.assertTrue(SyncJob.getDefaultIgnoredPathPatterns().containsAll(SyncJob.getDefaultIgnoredPathPatternsForAnyPlatform()));
+        Assert.assertTrue(SyncJob.getDefaultIgnoredPathPatterns().containsAll(SyncJob.getDefaultIgnoredPathPatternsForCurrentPlatform(OsDetectionUtil.detectOS())));
     }
 
     @Test
-    public void testDefaultHiddenPathPatternsForSpecificPlatformPlatform() {
+    public void testDefaultIgnoredPathPatternsForSpecificPlatformPlatform() {
         Assert.assertTrue(
-                SyncJob.getDefaultHiddenPathPatternsForCurrentPlatform(OsDetectionUtil.OS.Linux).containsAll(SyncJob.getDefaultHiddenPathPatternsForLinux())
+                SyncJob.getDefaultIgnoredPathPatternsForCurrentPlatform(OsDetectionUtil.OS.Linux).containsAll(SyncJob.getDefaultIgnoredPathPatternsForLinux())
         );
         Assert.assertTrue(
-                SyncJob.getDefaultHiddenPathPatternsForCurrentPlatform(OsDetectionUtil.OS.Windows).containsAll(SyncJob.getDefaultHiddenPathPatternsForWindows())
+                SyncJob.getDefaultIgnoredPathPatternsForCurrentPlatform(OsDetectionUtil.OS.Windows).containsAll(SyncJob.getDefaultIgnoredPathPatternsForWindows())
         );
         Assert.assertTrue(
-                SyncJob.getDefaultHiddenPathPatternsForCurrentPlatform(OsDetectionUtil.OS.Mac).containsAll(SyncJob.getDefaultHiddenPathPatternsForMacOS())
+                SyncJob.getDefaultIgnoredPathPatternsForCurrentPlatform(OsDetectionUtil.OS.Mac).containsAll(SyncJob.getDefaultIgnoredPathPatternsForMacOS())
         );
         Assert.assertTrue(
-                SyncJob.getDefaultHiddenPathPatternsForCurrentPlatform(OsDetectionUtil.OS.Unknown).isEmpty()
+                SyncJob.getDefaultIgnoredPathPatternsForCurrentPlatform(OsDetectionUtil.OS.Unknown).isEmpty()
         );
     }
 
     @Test
-    public void testDefaultHiddenPathPatternsForAnyPlatform() {
+    public void testDefaultIgnoredPathPatternsForAnyPlatform() {
         Assert.assertTrue(
-                SyncJob.getDefaultHiddenPathPatternsForAnyPlatform().stream().allMatch(
-                        regex -> {
+                SyncJob.getDefaultIgnoredPathPatternsForAnyPlatform().stream().allMatch(
+                        glob -> {
                             try {
-                                Pattern.compile(regex);
+                                FileSystems.getDefault().getPathMatcher("glob:" + glob);
                                 return true;
                             } catch (Exception e) {
                                 return false;
@@ -69,26 +67,26 @@ public class SyncJobTest {
         );
 
         Assert.assertTrue(
-                SyncJob.getDefaultHiddenPathPatternsForAnyPlatform().containsAll(
+                SyncJob.getDefaultIgnoredPathPatternsForAnyPlatform().containsAll(
                     List.of(
                         //HIDDEN FILES WITH "DOT"
-                        ".*[/\\\\]\\..*",
-                        ".*'.*",
-                        ".*~.*",
-                        ".*\\$.*",
-                        ".*%.*"
+                        "**/.**",
+                        "**'**",
+                        "**~**",
+                        "**$**",
+                        "**%**"
                     )
                 )
         );
     }
 
     @Test
-    public void testDefaultHiddenPathPatternsForLinux() {
+    public void testDefaultIgnoredPathPatternsForLinux() {
         Assert.assertTrue(
-                SyncJob.getDefaultHiddenPathPatternsForLinux().stream().allMatch(
-                        regex -> {
+                SyncJob.getDefaultIgnoredPathPatternsForLinux().stream().allMatch(
+                        glob -> {
                             try {
-                                Pattern.compile(regex);
+                                FileSystems.getDefault().getPathMatcher("glob:" + glob);
                                 return true;
                             } catch (Exception e) {
                                 return false;
@@ -97,39 +95,17 @@ public class SyncJobTest {
         );
 
         Assert.assertTrue(
-                SyncJob.getDefaultHiddenPathPatternsForLinux().containsAll(
-                    List.of(
-                        //LINUX SYSTEM
-                        "/bin(/.*)?",
-                        "/boot(/.*)?",
-                        "/dev(/.*)?",
-                        "/etc(/.*)?",
-                        "/lib(/.*)?",
-                        "/media(/.*)?",
-                        "/mnt(/.*)?",
-                        "/opt(/.*)?",
-                        "/proc(/.*)?",
-                        "/root(/.*)?",
-                        "/run(/.*)?",
-                        "/sbin(/.*)?",
-                        "/snap(/.*)?",
-                        "/srv(/.*)?",
-                        "/sys(/.*)?",
-                        "/tmp(/.*)?",
-                        "/usr(/.*)?",
-                        "/var(/.*)?"
-                    )
-                )
+                SyncJob.getDefaultIgnoredPathPatternsForLinux().isEmpty()
         );
     }
 
     @Test
-    public void testDefaultHiddenPathPatternsForWindows() {
+    public void testDefaultIgnoredPathPatternsForWindows() {
         Assert.assertTrue(
-                SyncJob.getDefaultHiddenPathPatternsForWindows().stream().allMatch(
-                        regex -> {
+                SyncJob.getDefaultIgnoredPathPatternsForWindows().stream().allMatch(
+                        glob -> {
                             try {
-                                Pattern.compile(regex);
+                                FileSystems.getDefault().getPathMatcher("glob:" + glob);
                                 return true;
                             } catch (Exception e) {
                                 return false;
@@ -138,30 +114,23 @@ public class SyncJobTest {
         );
 
         Assert.assertTrue(
-                SyncJob.getDefaultHiddenPathPatternsForWindows().containsAll(
+                SyncJob.getDefaultIgnoredPathPatternsForWindows().containsAll(
                     List.of(
-                        //WINDOWS DB FILES
-                        ".*[/\\\\]desktop\\.ini",
-                        ".*[/\\\\]IconCache\\.db",
-                        ".*[/\\\\]thumbs\\.db",
-
-                        //WINDOWS SYSTEM
-                        "([^:]+:)?[/\\\\]Windows([/\\\\].*)?",
-                        "([^:]+:)?[/\\\\]Program Files([/\\\\].*)?",
-                        "([^:]+:)?[/\\\\]Program Files \\(x86\\)([/\\\\].*)?",
-                        "([^:]+:)?[/\\\\]ProgramData([/\\\\].*)?"
+                        "**/desktop.ini",
+                        "**/IconCache.db",
+                        "**/thumbs.db"
                     )
                 )
         );
     }
 
     @Test
-    public void testDefaultHiddenPathPatternsForMacOS() {
+    public void testDefaultIgnoredPathPatternsForMacOS() {
         Assert.assertTrue(
-                SyncJob.getDefaultHiddenPathPatternsForMacOS().stream().allMatch(
-                        regex -> {
+                SyncJob.getDefaultIgnoredPathPatternsForMacOS().stream().allMatch(
+                        glob -> {
                             try {
-                                Pattern.compile(regex);
+                                FileSystems.getDefault().getPathMatcher("glob:" + glob);
                                 return true;
                             } catch (Exception e) {
                                 return false;
@@ -170,15 +139,7 @@ public class SyncJobTest {
         );
 
         Assert.assertTrue(
-                SyncJob.getDefaultHiddenPathPatternsForMacOS().containsAll(
-                    List.of(
-                            //MAC-OS SYSTEM
-                            "/Applications(/.*)?",
-                            "/Library(/.*)?",
-                            "/System(/.*)?",
-                            "/Volumes(/.*)?"
-                    )
-                )
+                SyncJob.getDefaultIgnoredPathPatternsForMacOS().isEmpty()
         );
     }
 }
