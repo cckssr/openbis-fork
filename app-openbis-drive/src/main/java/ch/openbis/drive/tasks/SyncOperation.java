@@ -129,9 +129,17 @@ public class SyncOperation {
                 new FileSyncCollisionListener(SyncJobEvent.SyncDirection.DOWN), downloadMonitor);
     }
 
+    public synchronized void createServerEntityRootIfNecessary() throws Exception {
+        if ( getRemoteFilePresence( Path.of("/") ).isEmpty() ) {
+            afsClientProxy.create(syncJob.getEntityPermId(), "/", true);
+        }
+    }
+
     @SneakyThrows
     public void start() {
         try {
+            createServerEntityRootIfNecessary();
+
             switch (syncJob.getType()) {
                 case Upload -> upload();
                 case Download -> download();
@@ -785,6 +793,10 @@ public class SyncOperation {
 
         public void delete(@NonNull String sourceOwner, @NonNull String sourcePath) throws Exception {
             afsClient.delete(sourceOwner, sourcePath);
+        }
+
+        public void create(@NonNull String sourceOwner, @NonNull String sourcePath, boolean directory) throws Exception {
+            afsClient.create(sourceOwner, sourcePath, directory);
         }
     }
 }

@@ -81,24 +81,30 @@ public class SyncOperationTest extends TestCase {
 
         SyncJob syncJob1 = new SyncJob(SyncJob.Type.Upload, "url", "uuid", "token", "title", "/remotedir1", "/localdir1", true);
         SyncOperation syncOperation1 = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings()));
+        Mockito.doReturn(Optional.empty()).when(syncOperation1).getRemoteFilePresence(Mockito.any());
         syncOperation1.start();
 
+        Mockito.verify(syncOperation1, Mockito.times(1)).createServerEntityRootIfNecessary();
         Mockito.verify(syncOperation1, Mockito.times(1)).upload();
         Mockito.verify(syncOperation1, Mockito.times(1)).pruneOldDeletedSyncEvents();
 
         SyncJob syncJob2 = new SyncJob(SyncJob.Type.Download, "url", "uuid", "token", "title", "/remotedir1", "/localdir1", true);
 
         SyncOperation syncOperation2 = Mockito.spy(new SyncOperation(syncJob2, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings()));
+        Mockito.doReturn(Optional.empty()).when(syncOperation2).getRemoteFilePresence(Mockito.any());
         syncOperation2.start();
 
+        Mockito.verify(syncOperation2, Mockito.times(1)).createServerEntityRootIfNecessary();
         Mockito.verify(syncOperation2, Mockito.times(1)).download();
         Mockito.verify(syncOperation2, Mockito.times(1)).pruneOldDeletedSyncEvents();
 
         SyncJob syncJob3 = new SyncJob(SyncJob.Type.Bidirectional, "url", "uuid", "token", "title", "/remotedir1", "/localdir1", true);
 
         SyncOperation syncOperation3 = Mockito.spy(new SyncOperation(syncJob3, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings()));
+        Mockito.doReturn(Optional.empty()).when(syncOperation3).getRemoteFilePresence(Mockito.any());
         syncOperation3.start();
 
+        Mockito.verify(syncOperation3, Mockito.times(1)).createServerEntityRootIfNecessary();
         Mockito.verify(syncOperation3, Mockito.times(1)).synchronize();
         Mockito.verify(syncOperation3, Mockito.times(1)).pruneOldDeletedSyncEvents();
         Mockito.verify(syncOperation3, Mockito.times(1)).clearStaleConflictNotifications();
@@ -454,6 +460,33 @@ public class SyncOperationTest extends TestCase {
         Assert.assertEquals(true,  syncOperation.getLocalFileInfo(localSubDir).get().isDirectory());
         Files.delete(localSubDir);
 
+    }
+
+    @Test
+    public void testCreateRemoteEntityRootIfNecessary() throws Exception {
+        SyncJobEventDAO syncJobEventDAO = Mockito.mock(SyncJobEventDAO.class);
+        SyncOperation.AfsClientProxy afsClient = Mockito.mock(SyncOperation.AfsClientProxy.class);
+        ClientAPI.TransferMonitorListener uploadMonitor = Mockito.mock(ClientAPI.TransferMonitorListener.class);
+        ClientAPI.TransferMonitorListener downloadMonitor = Mockito.mock(ClientAPI.TransferMonitorListener.class);
+        NotificationManager notificationManager = Mockito.mock(NotificationManager.class);
+
+        SyncJob syncJob1 = new SyncJob(SyncJob.Type.Upload, "url", "uuid", "token", "title", "/remotedir1", "/localdir1", true);
+        SyncOperation syncOperation = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings()));
+
+        Mockito.doReturn(Optional.of(new File("owner", "/", "", true, null, null))).when(syncOperation).getRemoteFilePresence(Mockito.any());
+
+        syncOperation.createServerEntityRootIfNecessary();
+
+        Mockito.verify(syncOperation, Mockito.times(1)).getRemoteFilePresence(Mockito.eq(Path.of("/")));
+        Mockito.verify(syncOperation.afsClientProxy, Mockito.times(0)).create(Mockito.any(), Mockito.any(), Mockito.anyBoolean());
+
+        Mockito.reset(syncOperation);
+
+        Mockito.doReturn(Optional.empty()).when(syncOperation).getRemoteFilePresence(Mockito.any());
+        syncOperation.createServerEntityRootIfNecessary();
+
+        Mockito.verify(syncOperation, Mockito.times(1)).getRemoteFilePresence(Mockito.eq(Path.of("/")));
+        Mockito.verify(syncOperation.afsClientProxy, Mockito.times(1)).create(syncJob1.getEntityPermId(), "/", true);
     }
 
     @Test
