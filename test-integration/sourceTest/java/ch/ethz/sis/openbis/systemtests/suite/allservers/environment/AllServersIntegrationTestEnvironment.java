@@ -56,6 +56,7 @@ public final class AllServersIntegrationTestEnvironment
             environment.createDataStoreServer();
             environment.createAfsServer(IntegrationTestEnvironment.loadProperties(Path.of("etc/suite/allservers/afs/service.properties")));
             environment.createRoCrateServer();
+            environment.enableELN();
             environment.start();
             createTestData();
         }

@@ -59,6 +59,10 @@ public class IntegrationTestEnvironment
 
     private List<Share> shares = new ArrayList<>();
 
+    private boolean systemUserEnabled;
+
+    private boolean elnEnabled;
+
     public IntegrationTestEnvironment()
     {
         System.setProperty("ant.project.name", "test-integration");
@@ -413,6 +417,11 @@ public class IntegrationTestEnvironment
 
     private void configureSystemUser()
     {
+        if (!systemUserEnabled)
+        {
+            return;
+        }
+
         if (applicationServer != null)
         {
             OpenBIS openBIS = createOpenBIS();
@@ -475,6 +484,11 @@ public class IntegrationTestEnvironment
 
     private void configureELN()
     {
+        if (!elnEnabled)
+        {
+            return;
+        }
+
         if (applicationServer != null)
         {
             SoftLinkMaker.createSymbolicLink(new File("../ui-eln-lims/src/core-plugins/eln-lims"), new File("etc/default/as/core-plugins/eln-lims"));
@@ -491,6 +505,11 @@ public class IntegrationTestEnvironment
 
     private void configureELNSettings()
     {
+        if (!elnEnabled)
+        {
+            return;
+        }
+
         if (applicationServer != null)
         {
             OpenBIS openBIS = createOpenBIS();
@@ -516,6 +535,16 @@ public class IntegrationTestEnvironment
         {
             throw new RuntimeException("Loading properties from path: " + propertiesPath + " failed.", e);
         }
+    }
+
+    public void enableSystemUser()
+    {
+        systemUserEnabled = true;
+    }
+
+    public void enableELN()
+    {
+        elnEnabled = true;
     }
 
     public ApplicationServer getApplicationServer()

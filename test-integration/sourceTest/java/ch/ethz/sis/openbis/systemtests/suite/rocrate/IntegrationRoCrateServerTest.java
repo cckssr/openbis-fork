@@ -1,23 +1,9 @@
 package ch.ethz.sis.openbis.systemtests.suite.rocrate;
 
-import ch.ethz.sis.openbis.generic.OpenBIS;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.data.ImportData;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.data.ImportFormat;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.options.ImportMode;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.options.ImportOptions;
-import ch.ethz.sis.openbis.systemtests.suite.rocrate.environment.RoCrateServerIntegrationTestEnvironment;
-import ch.systemsx.cisd.common.http.JettyHttpClientFactory;
-import ch.systemsx.cisd.openbis.generic.shared.util.TestInstanceHostUtils;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.eclipse.jetty.client.HttpClient;
-import org.eclipse.jetty.client.api.ContentResponse;
-import org.eclipse.jetty.client.api.Request;
-import org.eclipse.jetty.client.util.BytesRequestContent;
-import org.eclipse.jetty.http.HttpMethod;
-import org.junit.Assert;
-import org.testng.annotations.AfterSuite;
-import org.testng.annotations.BeforeSuite;
-import org.testng.annotations.Test;
+import static ch.ethz.sis.openbis.systemtests.suite.rocrate.environment.RoCrateServerIntegrationTestEnvironment.environment;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertTrue;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -30,8 +16,26 @@ import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import static ch.ethz.sis.openbis.systemtests.suite.rocrate.environment.RoCrateServerIntegrationTestEnvironment.environment;
-import static org.testng.Assert.*;
+import org.eclipse.jetty.client.HttpClient;
+import org.eclipse.jetty.client.api.ContentResponse;
+import org.eclipse.jetty.client.api.Request;
+import org.eclipse.jetty.client.util.BytesRequestContent;
+import org.eclipse.jetty.http.HttpMethod;
+import org.junit.Assert;
+import org.testng.annotations.AfterSuite;
+import org.testng.annotations.BeforeSuite;
+import org.testng.annotations.Test;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import ch.ethz.sis.openbis.generic.OpenBIS;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.data.ImportData;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.data.ImportFormat;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.options.ImportMode;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.options.ImportOptions;
+import ch.ethz.sis.openbis.systemtests.suite.rocrate.environment.RoCrateServerIntegrationTestEnvironment;
+import ch.systemsx.cisd.common.http.JettyHttpClientFactory;
+import ch.systemsx.cisd.openbis.generic.shared.util.TestInstanceHostUtils;
 
 public class IntegrationRoCrateServerTest
 {
@@ -45,7 +49,6 @@ public class IntegrationRoCrateServerTest
     public static final String HEADER_API_KEY = "api-key";
 
     private static ObjectMapper objectMapper = new ObjectMapper();
-
 
     @BeforeSuite
     public void beforeSuite()
@@ -100,11 +103,11 @@ public class IntegrationRoCrateServerTest
         assertEquals(response.getContentAsString(), username);
     }
 
-    @Test(enabled = true, timeOut = 5000_000L)
+    @Test(enabled = true, timeOut = TIMEOUT)
     // This takes over 30 seconds, should be converted to async implementation
     public void testImport() throws Exception
     {
-        OpenBIS openBIS = environment.createOpenBIS();
+        OpenBIS openBIS = environment.createOpenBIS(TIMEOUT);
         openBIS.login(username, password);
 
         Path file = Path.of("sourceTest/resource/" + getClass().getSimpleName() + "/OkayExample.json");
@@ -115,6 +118,7 @@ public class IntegrationRoCrateServerTest
         request.header("api-key", openBIS.getSessionToken());
         request.header("Content-Type", "application/ld+json");
         request.body(new BytesRequestContent(Files.readAllBytes(file)));
+        request.idleTimeout(TIMEOUT, TimeUnit.MILLISECONDS);
 
         ContentResponse response = request.send();
         LinkedHashMap asyncJob =
@@ -131,11 +135,12 @@ public class IntegrationRoCrateServerTest
             pollRequest.method(HttpMethod.GET);
             pollRequest.header("api-key", openBIS.getSessionToken());
             pollRequest.header("jobId", jobId);
+            pollRequest.idleTimeout(TIMEOUT, TimeUnit.MILLISECONDS);
             ContentResponse pollResponse = pollRequest.send();
             LinkedHashMap asyncResult =
                     objectMapper.readValue(pollResponse.getContentAsString(), LinkedHashMap.class);
 
-            if (asyncResult.get("status").equals("DONE"))
+            if (asyncResult.get("status").equals("COMPLETED"))
             {
                 done = true;
             }
@@ -146,14 +151,9 @@ public class IntegrationRoCrateServerTest
                 Assert.fail(errors.stream().collect(Collectors.joining(",")));
                 done = true;
             }
+
             Thread.sleep(2000);
-
         }
-
-
-
-
-
     }
 
     @Test(enabled = false) // This takes over 30 seconds, should be converted to async implementation
@@ -183,7 +183,8 @@ public class IntegrationRoCrateServerTest
         OpenBIS openBIS = environment.createOpenBIS();
         openBIS.login(username, password);
 
-        Consumer<LinkedHashMap<String, Object>> assertions = x -> {
+        Consumer<LinkedHashMap<String, Object>> assertions = x ->
+        {
             LinkedHashMap<String, Object> validationResult =
                     (LinkedHashMap<String, Object>) x.get("validationResult");
 
@@ -192,7 +193,6 @@ public class IntegrationRoCrateServerTest
         };
 
         testValidateAstract("OkayExample.json", "application/ld+json", assertions);
-
 
     }
 
@@ -203,7 +203,8 @@ public class IntegrationRoCrateServerTest
         OpenBIS openBIS = environment.createOpenBIS();
         openBIS.login(username, password);
 
-        Consumer<LinkedHashMap<String, Object>> assertions = x -> {
+        Consumer<LinkedHashMap<String, Object>> assertions = x ->
+        {
             LinkedHashMap<String, Object> validationResult =
                     (LinkedHashMap<String, Object>) x.get("validationResult");
 
@@ -226,7 +227,8 @@ public class IntegrationRoCrateServerTest
         // AssertionUtil.assertContains("\"property\":\"wrong\"", response.getContentAsString());
         // AssertionUtil.assertContains("\"message\":\"Property not in schema\"", response.getContentAsString());
 
-        Consumer<LinkedHashMap<String, Object>> assertions = x -> {
+        Consumer<LinkedHashMap<String, Object>> assertions = x ->
+        {
             LinkedHashMap<String, Object> validationResult =
                     (LinkedHashMap<String, Object>) x.get("validationResult");
             LinkedHashMap<String, Object> entitiesToUndefinedProperties =
@@ -247,7 +249,8 @@ public class IntegrationRoCrateServerTest
     public void testValidateWrong()
             throws Exception
     {
-        Consumer<LinkedHashMap<String, Object>> validationStuff = x -> {
+        Consumer<LinkedHashMap<String, Object>> validationStuff = x ->
+        {
             LinkedHashMap<String, Object> validationResult =
                     (LinkedHashMap<String, Object>) x.get("validationResult");
             LinkedHashMap<String, Object> wrongDataTypes =
@@ -263,7 +266,7 @@ public class IntegrationRoCrateServerTest
         testValidateAstract("WrongDataType.json", "application/ld+json", validationStuff);
     }
 
-    @Test(enabled = true)
+    @Test(enabled = true, timeOut = TIMEOUT)
     // This test depends on some data which should be created before the test runs
     public void testExportDOI()
             throws Exception
@@ -516,8 +519,8 @@ public class IntegrationRoCrateServerTest
                 List<String> errors = (List<String>) asyncResult.get("errors");
                 Assert.fail(errors.stream().collect(Collectors.joining("")));
             }
-            Thread.sleep(2000);
 
+            Thread.sleep(2000);
         }
     }
 
@@ -576,7 +579,5 @@ public class IntegrationRoCrateServerTest
 
         }
     }
-
-
 
 }
