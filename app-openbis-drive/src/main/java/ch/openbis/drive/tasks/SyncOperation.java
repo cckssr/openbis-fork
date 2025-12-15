@@ -378,11 +378,11 @@ public class SyncOperation {
             case Upload, Download ->
                 switch (syncCheckResult) {
 
-                    case SYNC_STATE_INCOMPLETE, SYNC_STATE_INCOMPLETE_SRC_MODIFIED_LATER,
-                         SYNC_STATE_INCOMPLETE_NO_DEST, SOURCE_MODIFIED, DESTINATION_DELETED,
+                    case SYNC_STATE_INCOMPLETE_NO_DEST, SOURCE_MODIFIED, DESTINATION_DELETED,
                          BOTH_MODIFIED_DEST_DELETED -> SyncCheckAction.PROCEED;
 
-                    case BOTH_MODIFIED, DESTINATION_MODIFIED, SYNC_STATE_INCOMPLETE_DEST_MODIFIED_LATER ->
+                    case SYNC_STATE_INCOMPLETE, SYNC_STATE_INCOMPLETE_SRC_MODIFIED_LATER,
+                         BOTH_MODIFIED, DESTINATION_MODIFIED, SYNC_STATE_INCOMPLETE_DEST_MODIFIED_LATER ->
                             SyncCheckAction.RAISE_VERSION_CONFLICT;
 
                     case NONE_MODIFIED -> SyncCheckAction.SKIP;
@@ -391,13 +391,12 @@ public class SyncOperation {
             case Bidirectional ->
                     switch (syncCheckResult) {
 
-                    case SYNC_STATE_INCOMPLETE, SYNC_STATE_INCOMPLETE_SRC_MODIFIED_LATER, SOURCE_MODIFIED,
-                         SYNC_STATE_INCOMPLETE_NO_DEST, BOTH_MODIFIED_DEST_DELETED ->
+                    case SOURCE_MODIFIED, SYNC_STATE_INCOMPLETE_NO_DEST, BOTH_MODIFIED_DEST_DELETED ->
                             SyncCheckAction.PROCEED;
-                    case SYNC_STATE_INCOMPLETE_DEST_MODIFIED_LATER, NONE_MODIFIED, DESTINATION_MODIFIED ->
+                    case NONE_MODIFIED, DESTINATION_MODIFIED ->
                             SyncCheckAction.SKIP;
                     case DESTINATION_DELETED -> SyncCheckAction.DELETE_SOURCE;
-                    case BOTH_MODIFIED -> SyncCheckAction.RAISE_VERSION_CONFLICT;
+                    case SYNC_STATE_INCOMPLETE, SYNC_STATE_INCOMPLETE_SRC_MODIFIED_LATER, SYNC_STATE_INCOMPLETE_DEST_MODIFIED_LATER, BOTH_MODIFIED -> SyncCheckAction.RAISE_VERSION_CONFLICT;
                 };
         };
     }

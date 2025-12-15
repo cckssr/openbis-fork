@@ -351,10 +351,10 @@ public class SyncOperationTest extends TestCase {
     @Test
     public void testGetSyncActionForSyncResult() {
         
-        Assert.assertEquals(SyncOperation.SyncCheckAction.PROCEED, SyncOperation.getSyncActionForSyncResult(SyncOperation.SyncCheckResult.SYNC_STATE_INCOMPLETE, SyncJob.Type.Upload));
+        Assert.assertEquals(SyncOperation.SyncCheckAction.RAISE_VERSION_CONFLICT, SyncOperation.getSyncActionForSyncResult(SyncOperation.SyncCheckResult.SYNC_STATE_INCOMPLETE, SyncJob.Type.Upload));
         Assert.assertEquals(SyncOperation.SyncCheckAction.PROCEED, SyncOperation.getSyncActionForSyncResult(SyncOperation.SyncCheckResult.SYNC_STATE_INCOMPLETE_NO_DEST, SyncJob.Type.Upload));
         Assert.assertEquals(SyncOperation.SyncCheckAction.RAISE_VERSION_CONFLICT, SyncOperation.getSyncActionForSyncResult(SyncOperation.SyncCheckResult.SYNC_STATE_INCOMPLETE_DEST_MODIFIED_LATER, SyncJob.Type.Upload));
-        Assert.assertEquals(SyncOperation.SyncCheckAction.PROCEED, SyncOperation.getSyncActionForSyncResult(SyncOperation.SyncCheckResult.SYNC_STATE_INCOMPLETE_SRC_MODIFIED_LATER, SyncJob.Type.Upload));
+        Assert.assertEquals(SyncOperation.SyncCheckAction.RAISE_VERSION_CONFLICT, SyncOperation.getSyncActionForSyncResult(SyncOperation.SyncCheckResult.SYNC_STATE_INCOMPLETE_SRC_MODIFIED_LATER, SyncJob.Type.Upload));
         Assert.assertEquals(SyncOperation.SyncCheckAction.PROCEED, SyncOperation.getSyncActionForSyncResult(SyncOperation.SyncCheckResult.DESTINATION_DELETED, SyncJob.Type.Upload));
         Assert.assertEquals(SyncOperation.SyncCheckAction.RAISE_VERSION_CONFLICT, SyncOperation.getSyncActionForSyncResult(SyncOperation.SyncCheckResult.DESTINATION_MODIFIED, SyncJob.Type.Upload));
         Assert.assertEquals(SyncOperation.SyncCheckAction.PROCEED, SyncOperation.getSyncActionForSyncResult(SyncOperation.SyncCheckResult.SOURCE_MODIFIED, SyncJob.Type.Upload));
@@ -362,10 +362,10 @@ public class SyncOperationTest extends TestCase {
         Assert.assertEquals(SyncOperation.SyncCheckAction.PROCEED, SyncOperation.getSyncActionForSyncResult(SyncOperation.SyncCheckResult.BOTH_MODIFIED_DEST_DELETED, SyncJob.Type.Upload));
         Assert.assertEquals(SyncOperation.SyncCheckAction.SKIP, SyncOperation.getSyncActionForSyncResult(SyncOperation.SyncCheckResult.NONE_MODIFIED, SyncJob.Type.Upload));
 
-        Assert.assertEquals(SyncOperation.SyncCheckAction.PROCEED, SyncOperation.getSyncActionForSyncResult(SyncOperation.SyncCheckResult.SYNC_STATE_INCOMPLETE, SyncJob.Type.Download));
+        Assert.assertEquals(SyncOperation.SyncCheckAction.RAISE_VERSION_CONFLICT, SyncOperation.getSyncActionForSyncResult(SyncOperation.SyncCheckResult.SYNC_STATE_INCOMPLETE, SyncJob.Type.Download));
         Assert.assertEquals(SyncOperation.SyncCheckAction.PROCEED, SyncOperation.getSyncActionForSyncResult(SyncOperation.SyncCheckResult.SYNC_STATE_INCOMPLETE_NO_DEST, SyncJob.Type.Download));
         Assert.assertEquals(SyncOperation.SyncCheckAction.RAISE_VERSION_CONFLICT, SyncOperation.getSyncActionForSyncResult(SyncOperation.SyncCheckResult.SYNC_STATE_INCOMPLETE_DEST_MODIFIED_LATER, SyncJob.Type.Download));
-        Assert.assertEquals(SyncOperation.SyncCheckAction.PROCEED, SyncOperation.getSyncActionForSyncResult(SyncOperation.SyncCheckResult.SYNC_STATE_INCOMPLETE_SRC_MODIFIED_LATER, SyncJob.Type.Download));
+        Assert.assertEquals(SyncOperation.SyncCheckAction.RAISE_VERSION_CONFLICT, SyncOperation.getSyncActionForSyncResult(SyncOperation.SyncCheckResult.SYNC_STATE_INCOMPLETE_SRC_MODIFIED_LATER, SyncJob.Type.Download));
         Assert.assertEquals(SyncOperation.SyncCheckAction.PROCEED, SyncOperation.getSyncActionForSyncResult(SyncOperation.SyncCheckResult.DESTINATION_DELETED, SyncJob.Type.Download));
         Assert.assertEquals(SyncOperation.SyncCheckAction.RAISE_VERSION_CONFLICT, SyncOperation.getSyncActionForSyncResult(SyncOperation.SyncCheckResult.DESTINATION_MODIFIED, SyncJob.Type.Download));
         Assert.assertEquals(SyncOperation.SyncCheckAction.PROCEED, SyncOperation.getSyncActionForSyncResult(SyncOperation.SyncCheckResult.SOURCE_MODIFIED, SyncJob.Type.Download));
@@ -373,10 +373,10 @@ public class SyncOperationTest extends TestCase {
         Assert.assertEquals(SyncOperation.SyncCheckAction.PROCEED, SyncOperation.getSyncActionForSyncResult(SyncOperation.SyncCheckResult.BOTH_MODIFIED_DEST_DELETED, SyncJob.Type.Download));
         Assert.assertEquals(SyncOperation.SyncCheckAction.SKIP, SyncOperation.getSyncActionForSyncResult(SyncOperation.SyncCheckResult.NONE_MODIFIED, SyncJob.Type.Download));
 
-        Assert.assertEquals(SyncOperation.SyncCheckAction.PROCEED, SyncOperation.getSyncActionForSyncResult(SyncOperation.SyncCheckResult.SYNC_STATE_INCOMPLETE, SyncJob.Type.Bidirectional));
+        Assert.assertEquals(SyncOperation.SyncCheckAction.RAISE_VERSION_CONFLICT, SyncOperation.getSyncActionForSyncResult(SyncOperation.SyncCheckResult.SYNC_STATE_INCOMPLETE, SyncJob.Type.Bidirectional));
         Assert.assertEquals(SyncOperation.SyncCheckAction.PROCEED, SyncOperation.getSyncActionForSyncResult(SyncOperation.SyncCheckResult.SYNC_STATE_INCOMPLETE_NO_DEST, SyncJob.Type.Bidirectional));
-        Assert.assertEquals(SyncOperation.SyncCheckAction.SKIP, SyncOperation.getSyncActionForSyncResult(SyncOperation.SyncCheckResult.SYNC_STATE_INCOMPLETE_DEST_MODIFIED_LATER, SyncJob.Type.Bidirectional));
-        Assert.assertEquals(SyncOperation.SyncCheckAction.PROCEED, SyncOperation.getSyncActionForSyncResult(SyncOperation.SyncCheckResult.SYNC_STATE_INCOMPLETE_SRC_MODIFIED_LATER, SyncJob.Type.Bidirectional));
+        Assert.assertEquals(SyncOperation.SyncCheckAction.RAISE_VERSION_CONFLICT, SyncOperation.getSyncActionForSyncResult(SyncOperation.SyncCheckResult.SYNC_STATE_INCOMPLETE_DEST_MODIFIED_LATER, SyncJob.Type.Bidirectional));
+        Assert.assertEquals(SyncOperation.SyncCheckAction.RAISE_VERSION_CONFLICT, SyncOperation.getSyncActionForSyncResult(SyncOperation.SyncCheckResult.SYNC_STATE_INCOMPLETE_SRC_MODIFIED_LATER, SyncJob.Type.Bidirectional));
         Assert.assertEquals(SyncOperation.SyncCheckAction.DELETE_SOURCE, SyncOperation.getSyncActionForSyncResult(SyncOperation.SyncCheckResult.DESTINATION_DELETED, SyncJob.Type.Bidirectional));
         Assert.assertEquals(SyncOperation.SyncCheckAction.SKIP, SyncOperation.getSyncActionForSyncResult(SyncOperation.SyncCheckResult.DESTINATION_MODIFIED, SyncJob.Type.Bidirectional));
         Assert.assertEquals(SyncOperation.SyncCheckAction.PROCEED, SyncOperation.getSyncActionForSyncResult(SyncOperation.SyncCheckResult.SOURCE_MODIFIED, SyncJob.Type.Bidirectional));
