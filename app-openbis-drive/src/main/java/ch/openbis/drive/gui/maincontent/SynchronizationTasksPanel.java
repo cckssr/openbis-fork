@@ -8,6 +8,7 @@ import ch.openbis.drive.gui.util.DisplaySettings;
 import ch.openbis.drive.gui.util.ErrorLabel;
 import ch.openbis.drive.gui.util.ServiceCallHandler;
 import ch.openbis.drive.gui.util.SharedContext;
+import ch.openbis.drive.model.Settings;
 import ch.openbis.drive.model.SyncJob;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
@@ -230,8 +231,14 @@ public class SynchronizationTasksPanel extends ResizablePanel {
             Optional<SyncJob> newSyncJob = syncJobDialog.showAndWait();
             if (newSyncJob.isPresent()) {
                 ServiceCallHandler serviceCallHandler = SharedContext.getContext().getServiceCallHandler(parent);
-                serviceCallHandler.removeSyncJob(syncJob);
-                serviceCallHandler.addSyncJob(newSyncJob.get());
+                ServiceCallHandler.ServiceCallResult<Settings> settings = serviceCallHandler.getSettings();
+                if (settings.isOk()) {
+                    Settings toBeUpdated = settings.getOk();
+                    if (toBeUpdated.getJobs().remove(syncJob)) {
+                        toBeUpdated.getJobs().add(newSyncJob.get());
+                        serviceCallHandler.setSettings(toBeUpdated);
+                    }
+                }
             }
         }
         refreshAll();
