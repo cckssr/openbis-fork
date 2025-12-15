@@ -1014,7 +1014,7 @@ public class SyncOperationTest extends TestCase {
                 ClientAPI.CollisionAction collisionAction = fileSyncCollisionListener.precheck(sourcePath, destinationPath, false);
 
                 Mockito.verify(fileSyncCollisionListener, Mockito.times(0)).handleSyncResult(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
-                Mockito.verify(syncOperation1, Mockito.times(0)).handleFileVersionConflict(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
+                Mockito.verify(syncOperation1, Mockito.times(0)).handleFileVersionConflict(Mockito.any(), Mockito.any(), Mockito.any());
 
                 Assert.assertEquals(ClientAPI.CollisionAction.Skip, collisionAction);
                 Mockito.verify(syncOperation1, Mockito.times(0)).insertNewSyncEntry(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
@@ -1046,7 +1046,7 @@ public class SyncOperationTest extends TestCase {
                 ClientAPI.CollisionAction collisionAction = fileSyncCollisionListener.precheck(sourcePath, destinationPath, false);
 
                 Mockito.verify(fileSyncCollisionListener, Mockito.times(0)).handleSyncResult(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
-                Mockito.verify(syncOperation1, Mockito.times(0)).handleFileVersionConflict(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
+                Mockito.verify(syncOperation1, Mockito.times(0)).handleFileVersionConflict(Mockito.any(), Mockito.any(), Mockito.any());
 
                 Assert.assertEquals(ClientAPI.CollisionAction.Skip, collisionAction);
                 Mockito.verify(syncOperation1, Mockito.times(0)).insertNewSyncEntry(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
@@ -1082,7 +1082,7 @@ public class SyncOperationTest extends TestCase {
                     ClientAPI.CollisionAction collisionAction = fileSyncCollisionListener.precheck(sourcePath, destinationPath, false);
 
                     Mockito.verify(fileSyncCollisionListener, Mockito.times(0)).handleSyncResult(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
-                    Mockito.verify(syncOperation1, Mockito.times(0)).handleFileVersionConflict(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
+                    Mockito.verify(syncOperation1, Mockito.times(0)).handleFileVersionConflict(Mockito.any(), Mockito.any(), Mockito.any());
 
 
                     Assert.assertEquals(ClientAPI.CollisionAction.Skip, collisionAction);
@@ -1135,7 +1135,7 @@ public class SyncOperationTest extends TestCase {
 
                                 Mockito.verify(syncOperation1, Mockito.times(collision ? 1 : 0)).getDestinationInfo(Mockito.any(), Mockito.any());
                                 Mockito.verify(fileSyncCollisionListener, Mockito.times(1)).handleSyncResult(sourcePath, destinationPath, expectedSyncCheckResult, sourceInfo.get(), fakeSyncEntry);
-                                Mockito.verify(syncOperation1, Mockito.times(0)).handleFileVersionConflict(sourcePath, destinationPath, syncDirection, fakeSyncEntry);
+                                Mockito.verify(syncOperation1, Mockito.times(0)).handleFileVersionConflict(sourcePath, destinationPath, syncDirection);
                                 Assert.assertEquals(expectedCollisionAction, collisionAction);
 
                                 if(expectedCollisionAction != ClientAPI.CollisionAction.Override) {
@@ -1195,31 +1195,31 @@ public class SyncOperationTest extends TestCase {
 
                             Mockito.doReturn(isSourceDirEmpty).when(fileSyncCollisionListener).isSourceDirEmpty(sourcePath);
                             Mockito.doNothing().when(fileSyncCollisionListener).deleteSourceFile(sourcePath);
-                            Mockito.doReturn(ClientAPI.CollisionAction.Skip).when(syncOperation1).handleFileVersionConflict(sourcePath, destinationPath, syncDirection, fakeSyncEntry);
+                            Mockito.doReturn(ClientAPI.CollisionAction.Skip).when(syncOperation1).handleFileVersionConflict(sourcePath, destinationPath, syncDirection);
                             ClientAPI.CollisionAction collisionAction = fileSyncCollisionListener.handleSyncResult(sourcePath, destinationPath, syncCheckResult, sourceInfo, fakeSyncEntry);
 
                             SyncOperation.SyncCheckAction syncCheckAction = SyncOperation.getSyncActionForSyncResult(syncCheckResult, syncJobType);
 
                             if(syncCheckAction == SyncOperation.SyncCheckAction.SKIP) {
                                 Mockito.verify(fileSyncCollisionListener, Mockito.times(0)).deleteSourceFile(Mockito.any());
-                                Mockito.verify(syncOperation1, Mockito.times(0)).handleFileVersionConflict(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
+                                Mockito.verify(syncOperation1, Mockito.times(0)).handleFileVersionConflict(Mockito.any(), Mockito.any(), Mockito.any());
                                 Mockito.verify(syncOperation1, Mockito.times(0)).insertNewSyncEntryForSourceDeleted(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean());
                                 Assert.assertEquals(ClientAPI.CollisionAction.Skip, collisionAction);
                             }
                             if(syncCheckAction == SyncOperation.SyncCheckAction.PROCEED) {
                                 Mockito.verify(fileSyncCollisionListener, Mockito.times(0)).deleteSourceFile(Mockito.any());
-                                Mockito.verify(syncOperation1, Mockito.times(0)).handleFileVersionConflict(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
+                                Mockito.verify(syncOperation1, Mockito.times(0)).handleFileVersionConflict(Mockito.any(), Mockito.any(), Mockito.any());
                                 Mockito.verify(syncOperation1, Mockito.times(0)).insertNewSyncEntryForSourceDeleted(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean());
                                 Assert.assertEquals(ClientAPI.CollisionAction.Override, collisionAction);
                             }
                             if(syncCheckAction == SyncOperation.SyncCheckAction.RAISE_VERSION_CONFLICT) {
                                 if(!isSourcePathDir) {
                                     Mockito.verify(fileSyncCollisionListener, Mockito.times(0)).deleteSourceFile(Mockito.any());
-                                    Mockito.verify(syncOperation1, Mockito.times(1)).handleFileVersionConflict(sourcePath, destinationPath, syncDirection, fakeSyncEntry);
+                                    Mockito.verify(syncOperation1, Mockito.times(1)).handleFileVersionConflict(sourcePath, destinationPath, syncDirection);
                                     Assert.assertEquals(ClientAPI.CollisionAction.Skip, collisionAction);
                                 } else {
                                     Mockito.verify(fileSyncCollisionListener, Mockito.times(0)).deleteSourceFile(Mockito.any());
-                                    Mockito.verify(syncOperation1, Mockito.times(0)).handleFileVersionConflict(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
+                                    Mockito.verify(syncOperation1, Mockito.times(0)).handleFileVersionConflict(Mockito.any(), Mockito.any(), Mockito.any());
                                     Assert.assertEquals(ClientAPI.CollisionAction.Override, collisionAction);
                                 }
                                 Mockito.verify(syncOperation1, Mockito.times(0)).insertNewSyncEntryForSourceDeleted(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean());
@@ -1232,7 +1232,7 @@ public class SyncOperationTest extends TestCase {
                                     Mockito.verify(fileSyncCollisionListener, Mockito.times(0)).deleteSourceFile(Mockito.any());
                                     Mockito.verify(syncOperation1, Mockito.times(0)).insertNewSyncEntryForSourceDeleted(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean());
                                 }
-                                Mockito.verify(syncOperation1, Mockito.times(0)).handleFileVersionConflict(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
+                                Mockito.verify(syncOperation1, Mockito.times(0)).handleFileVersionConflict(Mockito.any(), Mockito.any(), Mockito.any());
                                 Assert.assertEquals(ClientAPI.CollisionAction.Skip, collisionAction);
                             }
                         }
@@ -1301,7 +1301,7 @@ public class SyncOperationTest extends TestCase {
 
                         Exception exception = null;
                         try {
-                            syncOperation1.handleFileVersionConflict(source, destination, syncDirection, fakeSyncEntry);
+                            syncOperation1.handleFileVersionConflict(source, destination, syncDirection);
                         } catch (Exception e) {
                             exception = e;
                         }
@@ -1399,7 +1399,7 @@ public class SyncOperationTest extends TestCase {
 
                                 Exception exception = null;
                                 try {
-                                    syncOperation1.handleFileVersionConflict(source, destination, syncDirection, fakeSyncEntry);
+                                    syncOperation1.handleFileVersionConflict(source, destination, syncDirection);
                                 } catch (Exception e) {
                                     exception = e;
                                 }
@@ -1408,18 +1408,18 @@ public class SyncOperationTest extends TestCase {
                                         Assert.assertNull(exception);
                                         Mockito.verify(afsClient, Mockito.times(1)).download(Mockito.eq(syncJob1.getEntityPermId()), Mockito.eq(remoteFile), Mockito.eq(conflictLocalFile), Mockito.any(), Mockito.any());
                                         Mockito.verify(afsClient, Mockito.times(0)).upload(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
-                                        Mockito.verify(syncOperation1, Mockito.times(1)).raiseConflictNotification(source, destination, syncDirection, fakeSyncEntry);
+                                        Mockito.verify(syncOperation1, Mockito.times(1)).raiseConflictNotification(source, destination, syncDirection);
                                     } else {
                                         Assert.assertNotNull(exception);
                                         Mockito.verify(afsClient, Mockito.times(1)).download(Mockito.eq(syncJob1.getEntityPermId()), Mockito.eq(remoteFile), Mockito.eq(conflictLocalFile), Mockito.any(), Mockito.any());
                                         Mockito.verify(afsClient, Mockito.times(0)).upload(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
-                                        Mockito.verify(syncOperation1, Mockito.times(0)).raiseConflictNotification(source, destination, syncDirection, fakeSyncEntry);
+                                        Mockito.verify(syncOperation1, Mockito.times(0)).raiseConflictNotification(source, destination, syncDirection);
                                     }
                                 } else {
                                     Assert.assertNull(exception);
                                     Mockito.verify(afsClient, Mockito.times(0)).download(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
                                     Mockito.verify(afsClient, Mockito.times(0)).upload(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
-                                    Mockito.verify(syncOperation1, Mockito.times(1)).raiseConflictNotification(source, destination, syncDirection, fakeSyncEntry);
+                                    Mockito.verify(syncOperation1, Mockito.times(1)).raiseConflictNotification(source, destination, syncDirection);
                                 }
 
                             }
@@ -1448,7 +1448,7 @@ public class SyncOperationTest extends TestCase {
                 .entityPermId(syncJob1.getEntityPermId()).localDirectoryRoot(syncJob1.getLocalDirectoryRoot()).sourceTimestamp(System.currentTimeMillis()).timestamp(System.currentTimeMillis()).build();
         Instant now = Instant.now();
 
-        syncOperation1.raiseConflictNotification(source, destination, SyncJobEvent.SyncDirection.UP, fakeSyncEntry);
+        syncOperation1.raiseConflictNotification(source, destination, SyncJobEvent.SyncDirection.UP);
 
         ArgumentCaptor<List<Notification>> notificationArgumentCaptor = ArgumentCaptor.forClass(List.class);
         Mockito.verify(syncOperation1.notificationManager, Mockito.times(1)).addNotifications(notificationArgumentCaptor.capture());

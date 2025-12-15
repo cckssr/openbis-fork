@@ -239,7 +239,7 @@ public class SyncOperation {
                 }
                 case RAISE_VERSION_CONFLICT -> {
                     if (!sourceInfo.isDirectory()) {
-                        yield handleFileVersionConflict(sourcePath, destinationPath, syncDirection, syncJobEvent);
+                        yield handleFileVersionConflict(sourcePath, destinationPath, syncDirection);
                     } else {
                         yield ClientAPI.CollisionAction.Override;
                     }
@@ -604,7 +604,7 @@ public class SyncOperation {
     }
 
     @SneakyThrows
-    ClientAPI.CollisionAction handleFileVersionConflict(@NonNull Path source, @NonNull Path destination, @NonNull SyncJobEvent.SyncDirection syncDirection, @NonNull SyncJobEvent syncJobEvent) {
+    ClientAPI.CollisionAction handleFileVersionConflict(@NonNull Path source, @NonNull Path destination, @NonNull SyncJobEvent.SyncDirection syncDirection) {
         Path localFile = syncDirection == SyncJobEvent.SyncDirection.UP ? source : destination;
         Path remoteFile = syncDirection == SyncJobEvent.SyncDirection.UP ? destination : source;
         Notification alreadyPresentConflictNotification = notificationManager.getSpecificNotification(new Notification(
@@ -680,13 +680,13 @@ public class SyncOperation {
                 }
             }
 
-            raiseConflictNotification(source, destination, syncDirection, syncJobEvent);
+            raiseConflictNotification(source, destination, syncDirection);
         }
 
         return ClientAPI.CollisionAction.Skip;
     }
 
-    void raiseConflictNotification(@NonNull Path source, @NonNull Path destination, @NonNull SyncJobEvent.SyncDirection syncDirection, @NonNull SyncJobEvent syncJobEvent) {
+    void raiseConflictNotification(@NonNull Path source, @NonNull Path destination, @NonNull SyncJobEvent.SyncDirection syncDirection) {
         String localFile = syncDirection == SyncJobEvent.SyncDirection.UP ? source.toString() : destination.toString();
         String remoteFile = syncDirection == SyncJobEvent.SyncDirection.UP ? toServerPathString(destination) : toServerPathString(source);
 
