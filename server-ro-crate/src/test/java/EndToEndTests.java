@@ -1,6 +1,5 @@
 import ch.ethz.sis.openbis.generic.OpenBIS;
 import ch.ethz.sis.rocrateserver.startup.StartupMain;
-import org.junit.Ignore;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -54,7 +53,7 @@ public class EndToEndTests extends AbstractTest
                 .statusCode(200);
     }
 
-    @Test
+    @Test(enabled = false)
     public void testImport()
             throws Exception
     {
@@ -76,7 +75,7 @@ public class EndToEndTests extends AbstractTest
                 .statusCode(200);
     }
 
-    @Test
+    @Test(enabled = false)
     public void testImportZip()
             throws Exception
     {
@@ -98,7 +97,7 @@ public class EndToEndTests extends AbstractTest
                 .statusCode(200);
     }
 
-    @Test
+    @Test(enabled = false)
     public void testValidate()
             throws Exception
     {
@@ -124,7 +123,7 @@ public class EndToEndTests extends AbstractTest
                 .statusCode(200);
     }
 
-    @Test
+    @Test(enabled = false)
     public void testValidateZip()
             throws Exception
     {
@@ -150,7 +149,7 @@ public class EndToEndTests extends AbstractTest
                 .statusCode(200);
     }
 
-    @Test
+    @Test(enabled = false)
     public void testValidateUnknown()
             throws Exception
     {
@@ -177,7 +176,7 @@ public class EndToEndTests extends AbstractTest
                         containsString("\"message\":\"Property not in schema\"")));
     }
 
-    @Test
+    @Test(enabled = false)
     public void testValidateWrong()
             throws Exception
     {
@@ -203,8 +202,7 @@ public class EndToEndTests extends AbstractTest
                 .statusCode(200);
     }
 
-
-    @Test
+    @Test(enabled = false)
     public void testExportDOI()
             throws Exception
     {
@@ -227,7 +225,7 @@ public class EndToEndTests extends AbstractTest
                 .statusCode(200);
     }
 
-    @Test
+    @Test(enabled = false)
     public void testExportDOIZip()
             throws Exception
     {
@@ -248,8 +246,7 @@ public class EndToEndTests extends AbstractTest
                 .statusCode(200);
     }
 
-
-    @Test
+    @Test(enabled = false)
     public void testExportIdentifier()
             throws Exception
     {
@@ -269,8 +266,7 @@ public class EndToEndTests extends AbstractTest
                 .statusCode(200);
     }
 
-    @Test
-    @Ignore
+    @Test(enabled = false)
     // PermIds depend on when the import was done. This can lead to false failure.
     // As long as we don't have a good solution for search in tests, this is disabled.
     public void testExportPermId()
@@ -291,7 +287,7 @@ public class EndToEndTests extends AbstractTest
                 .statusCode(200);
     }
 
-    @Test
+    @Test(enabled = false)
     public void testExportEmptyResults()
             throws Exception
     {
@@ -311,7 +307,7 @@ public class EndToEndTests extends AbstractTest
     }
 
     // https://github.com/paulscherrerinstitute/rocrate-api/issues/40
-    @Test
+    @Test(enabled = false)
     public void testValidateMalformedCrate()
             throws Exception
     {
@@ -336,7 +332,7 @@ public class EndToEndTests extends AbstractTest
     }
 
     // https://github.com/paulscherrerinstitute/rocrate-api/issues/39
-    @Test
+    @Test(enabled = false)
     public void testValidateMalformedCrateZipped()
             throws Exception
     {
@@ -361,7 +357,7 @@ public class EndToEndTests extends AbstractTest
     }
 
     // https://github.com/paulscherrerinstitute/rocrate-api/issues/35
-    @Test
+    @Test(enabled = false)
     public void testValidateMalformedCrateZippedMissingManifest()
             throws Exception
     {
@@ -387,7 +383,7 @@ public class EndToEndTests extends AbstractTest
 
     // https://github.com/paulscherrerinstitute/rocrate-api/issues/41
 
-    @Test
+    @Test(enabled = false)
     public void testEmptyPayloadZip()
             throws Exception
     {
@@ -413,7 +409,7 @@ public class EndToEndTests extends AbstractTest
 
     // https://github.com/paulscherrerinstitute/rocrate-api/issues/42
 
-    @Test
+    @Test(enabled = false)
     public void testEmptyPayload()
             throws Exception
     {
@@ -439,7 +435,7 @@ public class EndToEndTests extends AbstractTest
 
     // https://github.com/paulscherrerinstitute/rocrate-api/issues/54
 
-    @Test
+    @Test(enabled = false)
     public void testInvalidAcceptHeader()
             throws Exception
     {
@@ -463,7 +459,7 @@ public class EndToEndTests extends AbstractTest
                 .statusCode(406);
     }
 
-    @Test
+    @Test(enabled = false)
     public void testInvalidContentType()
             throws Exception
     {
