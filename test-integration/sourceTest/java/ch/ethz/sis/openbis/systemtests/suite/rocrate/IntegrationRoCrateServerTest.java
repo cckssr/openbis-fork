@@ -1,11 +1,10 @@
 package ch.ethz.sis.openbis.systemtests.suite.rocrate;
 
-import static ch.ethz.sis.openbis.systemtests.suite.rocrate.environment.RoCrateServerIntegrationTestEnvironment.environment;
-import static org.testng.Assert.assertEquals;
-
-import java.nio.file.Files;
-import java.nio.file.Path;
-
+import ch.ethz.sis.openbis.generic.OpenBIS;
+import ch.ethz.sis.openbis.systemtests.suite.rocrate.environment.RoCrateServerIntegrationTestEnvironment;
+import ch.systemsx.cisd.common.http.JettyHttpClientFactory;
+import ch.systemsx.cisd.common.test.AssertionUtil;
+import ch.systemsx.cisd.openbis.generic.shared.util.TestInstanceHostUtils;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.client.api.Request;
@@ -15,11 +14,11 @@ import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Test;
 
-import ch.ethz.sis.openbis.generic.OpenBIS;
-import ch.ethz.sis.openbis.systemtests.suite.rocrate.environment.RoCrateServerIntegrationTestEnvironment;
-import ch.systemsx.cisd.common.http.JettyHttpClientFactory;
-import ch.systemsx.cisd.common.test.AssertionUtil;
-import ch.systemsx.cisd.openbis.generic.shared.util.TestInstanceHostUtils;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
+import static ch.ethz.sis.openbis.systemtests.suite.rocrate.environment.RoCrateServerIntegrationTestEnvironment.environment;
+import static org.testng.Assert.assertEquals;
 
 public class IntegrationRoCrateServerTest
 {
@@ -147,7 +146,7 @@ public class IntegrationRoCrateServerTest
 
         ContentResponse response = request.send();
         assertEquals(response.getStatus(), 200);
-        AssertionUtil.assertContains("\"validationErrors\":[]", response.getContentAsString());
+        AssertionUtil.assertContains("\"errors\":[]", response.getContentAsString());
         AssertionUtil.assertContains("\"isValid\":true", response.getContentAsString());
     }
 
@@ -170,7 +169,7 @@ public class IntegrationRoCrateServerTest
 
         ContentResponse response = request.send();
         assertEquals(response.getStatus(), 200);
-        AssertionUtil.assertContains("\"validationErrors\":[{", response.getContentAsString());
+        AssertionUtil.assertContains("\"errors\":[{", response.getContentAsString());
         AssertionUtil.assertContains("\"isValid\":false", response.getContentAsString());
         AssertionUtil.assertContains("\"property\":\"wrong\"", response.getContentAsString());
         AssertionUtil.assertContains("\"message\":\"Property not in schema\"", response.getContentAsString());
@@ -195,7 +194,7 @@ public class IntegrationRoCrateServerTest
 
         ContentResponse response = request.send();
         assertEquals(response.getStatus(), 200);
-        AssertionUtil.assertContains("\"validationErrors\":[{", response.getContentAsString());
+        AssertionUtil.assertContains("\"errors\":[{", response.getContentAsString());
         AssertionUtil.assertContains("\"isValid\":false", response.getContentAsString());
         AssertionUtil.assertContains("NUMBEROFFILES", response.getContentAsString());
     }

@@ -17,13 +17,20 @@ package ch.systemsx.cisd.openbis.generic.server.dataaccess.db;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import ch.ethz.sis.shared.log.classic.impl.Logger;
-import org.hibernate.FetchMode;
+
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.JoinType;
+import javax.persistence.criteria.Root;
+import org.hibernate.FlushMode;
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.criterion.DetachedCriteria;
-import org.hibernate.criterion.Restrictions;
+
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.support.JdbcAccessor;
 import org.springframework.orm.hibernate5.HibernateTemplate;
@@ -35,6 +42,8 @@ import ch.systemsx.cisd.openbis.generic.server.dataaccess.ISpaceDAO;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.db.deletion.EntityHistoryCreator;
 import ch.systemsx.cisd.openbis.generic.shared.basic.CodeConverter;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SpacePE;
+
+import static ch.systemsx.cisd.openbis.generic.server.dataaccess.db.DAOUtils.BATCH_SIZE;
 
 /**
  * <i>Data Access Object</i> implementation for {@link SpacePE}.
@@ -67,9 +76,9 @@ final class SpaceDAO extends AbstractGenericEntityDAO<SpacePE> implements ISpace
         assert spaceCode != null : "Unspecified space code.";
 
         final List<SpacePE> list =
-                cast(getHibernateTemplate().find(
-                        String.format("select g from %s g where g.code = ?", getEntityClass().getSimpleName()),
-                        toArray(CodeConverter.tryToDatabase(spaceCode))));
+                find(SpacePE.class,
+                        String.format("select g from %s g where g.code = ?1", getEntityClass().getSimpleName()),
+                        toArray(CodeConverter.tryToDatabase(spaceCode)));
         final SpacePE entity = tryFindEntity(list, "space");
         if (operationLog.isDebugEnabled())
         {
@@ -82,10 +91,10 @@ final class SpaceDAO extends AbstractGenericEntityDAO<SpacePE> implements ISpace
     @Override
     public List<SpacePE> tryFindSpaceByCodes(List<String> spaceCodes) throws DataAccessException
     {
-        final DetachedCriteria criteria = DetachedCriteria.forClass(getEntityClass());
-        criteria.add(Restrictions.in("code", spaceCodes));
+        List<SpacePE> list = doExecute(session -> session.createQuery("select s from SpacePE s where s.code in :codes", SpacePE.class)
+                        .setParameter("codes", spaceCodes)
+                        .getResultList());
 
-        final List<SpacePE> list = cast(getHibernateTemplate().findByCriteria(criteria));
         if (operationLog.isDebugEnabled())
         {
             operationLog.debug(String.format("%s(): %d space(s) have been found.", MethodUtils
@@ -97,9 +106,16 @@ final class SpaceDAO extends AbstractGenericEntityDAO<SpacePE> implements ISpace
     @Override
     public final List<SpacePE> listSpaces() throws DataAccessException
     {
-        final DetachedCriteria criteria = DetachedCriteria.forClass(getEntityClass());
-        criteria.setFetchMode("registrator", FetchMode.JOIN);
-        final List<SpacePE> list = cast(getHibernateTemplate().findByCriteria(criteria));
+
+        // hibernate 6  fails on the join
+        List<SpacePE> list = doExecute(session->
+                                session.createQuery(
+                                "select distinct s from SpacePE s ",
+                                SpacePE.class)
+                        .getResultList());
+        list.forEach(s -> org.hibernate.Hibernate.initialize(s.getRegistrator()));
+
+
         if (operationLog.isDebugEnabled())
         {
             operationLog.debug(String.format("%s(): %d space(s) have been found.", MethodUtils
@@ -120,8 +136,25 @@ final class SpaceDAO extends AbstractGenericEntityDAO<SpacePE> implements ISpace
         {
             return new ArrayList<SpacePE>();
         }
-        final List<SpacePE> list =
-                DAOUtils.listByCollection(getHibernateTemplate(), SpacePE.class, idName, ids);
+
+        List<?> allIds = new ArrayList<>(ids);
+        List<SpacePE> list = new ArrayList<>(allIds.size());
+
+        for (int i = 0; i < allIds.size(); i += BATCH_SIZE)
+        {
+            List<?> slice = allIds.subList(i, Math.min(allIds.size(), i + BATCH_SIZE));
+            if (slice.isEmpty())
+                continue;
+
+            List<SpacePE> batch = doExecute(session -> session.createQuery(
+                                            "from " + SpacePE.class.getName() + " e where e.id  in (:ids)",
+                                            SpacePE.class
+                                    )
+                                    .setParameter("ids", slice)
+                                    .list());
+
+            list.addAll(batch);
+        }
         if (operationLog.isDebugEnabled())
         {
             operationLog.debug(String.format("%d spaces(s) have been found.", list.size()));
@@ -135,10 +168,12 @@ final class SpaceDAO extends AbstractGenericEntityDAO<SpacePE> implements ISpace
         assert space != null : "Unspecified space";
         validatePE(space);
 
-        final HibernateTemplate template = getHibernateTemplate();
         space.setCode(CodeConverter.tryToDatabase(space.getCode()));
-        template.save(space);
-        template.flush();
+        doExecute(session -> {
+           session.persist(space);
+           session.flush();
+           return null;
+        });
         if (operationLog.isInfoEnabled())
         {
             operationLog.info(String.format("ADD: space '%s'.", space));

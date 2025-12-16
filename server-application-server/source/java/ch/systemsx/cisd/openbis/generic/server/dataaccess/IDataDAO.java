@@ -229,4 +229,6 @@ public interface IDataDAO extends IGenericDAO<DataPE>
      */
     TechId tryToFindDataSetIdByCode(String dataSetCode);
 
+    DataPE tryGetByIdWithTypePropertyTypesAndSample(TechId dataSetId);
+
 }

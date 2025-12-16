@@ -18,13 +18,12 @@ package ch.systemsx.cisd.openbis.generic.server.dataaccess.db;
 import java.util.List;
 
 import ch.ethz.sis.shared.log.classic.impl.Logger;
-import org.hibernate.Criteria;
+
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.criterion.DetachedCriteria;
-import org.hibernate.criterion.Restrictions;
+
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.support.JdbcAccessor;
-import org.springframework.orm.hibernate5.HibernateTemplate;
 
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
@@ -61,9 +60,11 @@ final class ScriptDAO extends AbstractGenericEntityDAO<ScriptPE> implements IScr
     {
         assert script != null : "Missing script.";
         validatePE(script);
-        final HibernateTemplate template = getHibernateTemplate();
-        template.saveOrUpdate(script);
-        template.flush();
+        doExecute(session -> {
+            session.saveOrUpdate(script);
+            session.flush();
+            return null;
+        });
         if (operationLog.isInfoEnabled())
         {
             operationLog.info(String.format("SAVE: script '%s'.", script));
@@ -75,27 +76,41 @@ final class ScriptDAO extends AbstractGenericEntityDAO<ScriptPE> implements IScr
     {
         assert scriptName != null : "Unspecified script.";
 
-        final Criteria criteria = currentSession().createCriteria(ScriptPE.class);
-        criteria.add(Restrictions.eq("name", scriptName));
-        return (ScriptPE) criteria.uniqueResult();
+        return currentSession()
+                .createQuery("from ScriptPE s where s.name = :name", ScriptPE.class)
+                .setParameter("name", scriptName)
+                .uniqueResultOptional()
+                .orElse(null);
+
+
     }
 
     @Override
-    public List<ScriptPE> listEntities(ScriptType scriptTypeOrNull, EntityKind entityKindOrNull)
+    public List<ScriptPE> listEntities(final ScriptType scriptTypeOrNull, final EntityKind entityKindOrNull)
             throws DataAccessException
     {
-        final DetachedCriteria criteria = DetachedCriteria.forClass(ScriptPE.class);
-        if (scriptTypeOrNull != null)
-        {
-            criteria.add(Restrictions.or(Restrictions.isNull("scriptType"),
-                    Restrictions.eq("scriptType", scriptTypeOrNull)));
+        StringBuilder hql = new StringBuilder("from ScriptPE s where 1=1");
+
+        if (scriptTypeOrNull != null) {
+            hql.append(" and (s.scriptType is null or s.scriptType = :st)");
         }
-        if (entityKindOrNull != null)
-        {
-            criteria.add(Restrictions.or(Restrictions.isNull("entityKind"),
-                    Restrictions.eq("entityKind", entityKindOrNull)));
+        if (entityKindOrNull != null) {
+            hql.append(" and (s.entityKind is null or s.entityKind = :ek)");
         }
-        final List<ScriptPE> list = cast(getHibernateTemplate().findByCriteria(criteria));
+
+        List<ScriptPE> list = doExecute(session -> {
+            var q =session.createQuery(hql.toString(), ScriptPE.class);
+
+
+            if (scriptTypeOrNull != null) {
+                q.setParameter("st", scriptTypeOrNull);
+            }
+            if (entityKindOrNull != null) {
+                q.setParameter("ek", entityKindOrNull);
+            }
+
+            return q.list();
+        });
         if (operationLog.isDebugEnabled())
         {
             operationLog.debug(String.format("%s(%s): %d scripts(s) have been found.", MethodUtils

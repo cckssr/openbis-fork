@@ -243,11 +243,35 @@ tasks.register('dynamicApiJavadocTar', Tar) {
 
 testProjectSamplesEnabled.dependsOn(copyTestData)
 cleanDbSuiteProjectSamplesEnabled.dependsOn(testProjectSamplesEnabled)
+
 test.maxHeapSize = "10240m"
 test.jvmArgs += [
         '-Duser.timezone=Europe/Zurich',
         '-Djava.util.logging.config.file=etc/jullogging.properties']
 test.dependsOn(copyTestData)
 test.dependsOn(cleanDbSuite)
+
+task dbTest(type: Test) {
+    // Dedicated task to run only the DB TestNG suite.
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    environment.remove("DISPLAY")
+    useTestNG {
+        suites 'sourceTest/java/tests_db.xml'
+    }
+    systemProperty "ant.project.name", project.name
+    maxHeapSize = "10240m"
+    jvmArgs += [
+            '-Duser.timezone=Europe/Zurich',
+            '-Djava.util.logging.config.file=etc/jullogging.properties',
+            '-Dorg.eclipse.jetty.util.log.class=org.eclipse.jetty.util.log.StrErrLog',
+            "--add-opens", "java.base/java.lang=ALL-UNNAMED",
+            "--add-opens", "java.base/java.lang.reflect=ALL-UNNAMED",
+            "--add-opens", "java.base/java.io=ALL-UNNAMED"
+    ]
+    testLogging.showStandardStreams = true
+    ignoreFailures = true
+    dependsOn(testClasses, copyTestData)
+}
 
 apply from: 'elndev.gradle'

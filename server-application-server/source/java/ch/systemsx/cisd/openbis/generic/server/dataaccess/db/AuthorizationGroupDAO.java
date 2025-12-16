@@ -19,9 +19,10 @@ import java.util.Collection;
 import java.util.List;
 
 import ch.ethz.sis.shared.log.classic.impl.Logger;
-import org.hibernate.Criteria;
+
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.criterion.Restrictions;
+
 import org.springframework.orm.hibernate5.HibernateTemplate;
 
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
@@ -56,8 +57,8 @@ public class AuthorizationGroupDAO extends AbstractGenericEntityDAO<Authorizatio
     public List<AuthorizationGroupPE> list()
     {
         final List<AuthorizationGroupPE> list =
-                cast(getHibernateTemplate().find(
-                        String.format("from %s a", TABLE_NAME)));
+                find(AuthorizationGroupPE.class,
+                        String.format("from %s a", TABLE_NAME));
         if (operationLog.isDebugEnabled())
         {
             operationLog.debug(String.format("%s(): %d authorization group(s) have been found.",
@@ -85,9 +86,11 @@ public class AuthorizationGroupDAO extends AbstractGenericEntityDAO<Authorizatio
         validatePE(authorizationGroup);
 
         authorizationGroup.setCode(CodeConverter.tryToDatabase(authorizationGroup.getCode()));
-        final HibernateTemplate template = getHibernateTemplate();
-        template.saveOrUpdate(authorizationGroup);
-        template.flush();
+        doExecute(session -> {
+            session.saveOrUpdate(authorizationGroup);
+            session.flush();
+            return null;
+        });
         if (operationLog.isInfoEnabled())
         {
             operationLog.info(String.format("SAVE: authorization group '%s'.", authorizationGroup));
@@ -97,9 +100,15 @@ public class AuthorizationGroupDAO extends AbstractGenericEntityDAO<Authorizatio
     @Override
     public AuthorizationGroupPE tryFindByCode(String code)
     {
-        final Criteria criteria = currentSession().createCriteria(ENTITY_CLASS);
-        criteria.add(Restrictions.eq("code", CodeConverter.tryToDatabase(code)));
-        return (AuthorizationGroupPE) criteria.uniqueResult();
+        String dbCode = CodeConverter.tryToDatabase(code);
+        return currentSession()
+                .createQuery(
+                        "from " + ENTITY_CLASS.getName() + " g where g.code = :code",
+                        ENTITY_CLASS
+                )
+                .setParameter("code", dbCode)
+                .uniqueResultOptional()
+                .orElse(null);
     }
 
 }

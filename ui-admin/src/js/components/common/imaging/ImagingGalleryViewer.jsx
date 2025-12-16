@@ -240,7 +240,7 @@ const ImagingGalleryViewer = ({ objId, objType, extOpenbis, onOpenPreview, onSto
                 {previewContainerList.length === 0 && !isLoading && ( // Conditional rendering for empty state
                     <Grid2 container sx={{ justifyContent: "space-evenly" }}>
                         <Typography key="no-dataset-comment" gutterBottom >
-                            No Datasets to display.
+                            No Imaging Datasets to display.
                         </Typography>
                     </Grid2>
                 )}</Loading>

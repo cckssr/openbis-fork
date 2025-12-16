@@ -25,8 +25,6 @@ import ch.systemsx.cisd.openbis.generic.server.dataaccess.db.deletion.EntityHist
 import ch.systemsx.cisd.openbis.generic.shared.dto.TypeGroupPE;
 import ch.ethz.sis.shared.log.classic.impl.Logger;
 import org.hibernate.SessionFactory;
-import org.hibernate.criterion.DetachedCriteria;
-import org.hibernate.criterion.Restrictions;
 import org.springframework.orm.hibernate5.HibernateTemplate;
 
 import java.util.Collection;
@@ -48,10 +46,11 @@ final class TypeGroupDAO extends AbstractGenericEntityDAO<TypeGroupPE> implement
     {
         validatePE(typeGroup);
 
-        final HibernateTemplate template = getHibernateTemplate();
-        template.saveOrUpdate(typeGroup);
-
-        flushWithSqlExceptionHandling(template);
+        doExecute(session -> {
+            session.saveOrUpdate(typeGroup);
+            return null;
+        });
+        flushWithSqlExceptionHandling();
 
         if (operationLog.isDebugEnabled())
         {
@@ -62,10 +61,12 @@ final class TypeGroupDAO extends AbstractGenericEntityDAO<TypeGroupPE> implement
     @Override
     public List<TypeGroupPE> findByIds(Collection<Long> ids)
     {
-        final DetachedCriteria criteria = DetachedCriteria.forClass(TypeGroupPE.class);
-        criteria.add(Restrictions.in("id", ids));
+        List<TypeGroupPE> list = doExecute(session -> session.createQuery(
+                                "select tg from TypeGroupPE tg where tg.id in (:ids)",
+                                TypeGroupPE.class)
+                        .setParameter("ids", ids)   // Hibernate 6: bind collection directly
+                        .list());
 
-        final List<TypeGroupPE> list = cast(getHibernateTemplate().findByCriteria(criteria));
         if (operationLog.isDebugEnabled())
         {
             operationLog.debug(String.format("%s(): %d type group(s) have been found.", MethodUtils
@@ -77,10 +78,11 @@ final class TypeGroupDAO extends AbstractGenericEntityDAO<TypeGroupPE> implement
     @Override
     public List<TypeGroupPE> findByCodes(Collection<String> ids)
     {
-        final DetachedCriteria criteria = DetachedCriteria.forClass(TypeGroupPE.class);
-        criteria.add(Restrictions.in("code", ids));
-
-        final List<TypeGroupPE> list = cast(getHibernateTemplate().findByCriteria(criteria));
+          final List<TypeGroupPE> list = doExecute(session -> session.createQuery(
+                                "select tg from TypeGroupPE tg where tg.code in (:codes)",
+                                TypeGroupPE.class)
+                        .setParameter("codes", ids)
+                        .list());
         if (operationLog.isDebugEnabled())
         {
             operationLog.debug(String.format("%s(): %d type group(s) have been found.", MethodUtils

@@ -946,8 +946,7 @@ public final class ExperimentBOTest extends AbstractBOTest
         context.checking(new Expectations()
             {
                 {
-                    one(experimentDAO).tryGetById(new TechId(experiment),
-                            ExperimentBO.PROPERTY_TYPES);
+                    one(experimentDAO).tryGetByIdWithTypePropertyTypes(new TechId(experiment));
                     will(returnValue(experiment));
 
                     one(entityTypeDAO).listEntityTypes();

@@ -881,8 +881,7 @@ public class DataBOTest extends AbstractBOTest
         context.checking(new Expectations()
             {
                 {
-                    one(dataDAO).tryGetById(TECH_ID, DataBO.PROPERTY_TYPES,
-                            DataBO.DATA_SET_TYPE);
+                    one(dataDAO).tryGetByIdWithTypePropertyTypesAndSample (TECH_ID);
                     will(returnValue(dataSet));
 
                     one(propertiesConverter).updateProperties(
@@ -905,8 +904,7 @@ public class DataBOTest extends AbstractBOTest
         context.checking(new Expectations()
             {
                 {
-                    one(dataDAO).tryGetById(TECH_ID, DataBO.PROPERTY_TYPES,
-                            DataBO.DATA_SET_TYPE);
+                    one(dataDAO).tryGetByIdWithTypePropertyTypesAndSample(TECH_ID);
                     will(returnValue(dataSet));
 
                     ExperimentIdentifier identifier = EXPERIMENT_IDENTIFIER;

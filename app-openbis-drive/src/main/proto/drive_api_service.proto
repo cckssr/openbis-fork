@@ -7,6 +7,7 @@ message Settings {
     string language = 2;
     int32 sync_interval_seconds = 3;
     SyncJobs jobs = 4;
+    IgnoredPathPatterns ignored_path_patterns = 5;
 }
 
 message SyncJob {
@@ -17,8 +18,8 @@ message SyncJob {
     string remote_directory_root = 5;
     string local_directory_root = 6;
     bool enabled = 7;
-    bool skip_hidden_files = 8;
-    HiddenPathPatterns hidden_path_patterns = 9;
+    IgnoreFilesMode ignore_files = 8;
+    IgnoredPathPatterns ignored_path_patterns = 9;
     string title = 10;
 
     enum Type {
@@ -26,10 +27,16 @@ message SyncJob {
       UPLOAD = 1;
       DOWNLOAD = 2;
     }
+
+    enum IgnoreFilesMode {
+      GLOBAL_DEFAULT = 0;
+      SPECIFIC_LIST = 1;
+      NONE = 2;
+    }
 }
 
-message HiddenPathPatterns {
-    repeated string hidden_path_patterns = 1;
+message IgnoredPathPatterns {
+    repeated string ignored_path_patterns = 1;
 }
 
 message SyncJobs {

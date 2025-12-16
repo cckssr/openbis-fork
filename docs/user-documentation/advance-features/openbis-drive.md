@@ -189,22 +189,27 @@ Supported commands:
 
     config  -> prints the configuration with which the background service is running
     config -startAtLogin=true|false -language=en|fr|de|it|es -syncInterval=120   -> sets configuration parameters: two-letter ISO-code for language, synchronization-interval in seconds (defaults: false, 'en', 120 seconds = 2 minutes)
+    config ignored-path-patterns -> shows the active global default list of ignored file patterns (glob syntax)
+    config ignored-path-patterns -showFactoryDefault -> shows the showFactoryDefault (not necessarily active) global default list of ignored file patterns (glob syntax)
+    config ignored-path-patterns -reset -> resets the active global default list of ignored file patterns to factory-default values
+    config ignored-path-patterns -set -> sets new ignored path-patterns from console-input
+    config ignored-path-patterns -setFromFile -> sets new ignored path-patterns
+        from UTF-8 multiline text-file with a glob expression on each line
 
     jobs    -> prints the currently registered synchronization-jobs
-    jobs add -title='Description...' -type='Bidirectional|Upload|Download' -dir='./dir-a/dir-b' -openBISurl='https://...' -entityPermId='123-abc-...' -personalAccessToken='098abc...' -remDir='/remote/dir/absolute-path/' -enabled=true|false ( optional: -skipHiddenFiles=true|false with default-value: true )
+    jobs add -title='Description...' -type='Bidirectional|Upload|Download' -dir='./dir-a/dir-b' -openBISurl='https://...' -entityPermId='123-abc-...' -personalAccessToken='098abc...' -remDir='/remote/dir/absolute-path/' -enabled=true|false  ( optional: -ignoreFiles=GlobalDefault|SpecificList|None with default-value: GlobalDefault )
     jobs remove -dir='./dir-a/dir-b'
     jobs start -dir='./dir-a/dir-b'
     jobs stop -dir='./dir-a/dir-b'
 
-    jobs hidden-path-patterns -> shows the predefined hidden path-patterns
-    jobs hidden-path-patterns -dir='./dir-a/dir-b' -> shows the hidden path-patterns for the job related to this local directory
-    jobs hidden-path-patterns -dir='./dir-a/dir-b' -reset -> resets the hidden path-patterns to default-values for the job related to this local directory
-    jobs hidden-path-patterns -dir='./dir-a/dir-b' -set -> sets new hidden path-patterns from console-input
-    jobs hidden-path-patterns -dir='./dir-a/dir-b' -setFromFile=./documents/new-patterns.txt -> sets new hidden path-patterns
-        from UTF-8 multiline text-file with a regular expression on each line
+    jobs ignored-path-patterns -dir='./dir-a/dir-b' (shows the ignored path-patterns for the job related to this local directory)
+    jobs ignored-path-patterns -dir='./dir-a/dir-b' -set -> sets new ignored path-patterns from console-input (glob syntax)
+    jobs ignored-path-patterns -dir='./dir-a/dir-b' -setFromFile=./documents/new-patterns.txt -> sets new ignored path-patterns
+        from UTF-8 multiline text-file with a glob expression on each line
 
     notifications -limit=100   (default: 100)  -> prints the last limit-number of notifications
     events -limit=100   (default: 100)  -> prints the last limit-number of events
+
 ```
 
 #### status
@@ -226,12 +231,12 @@ Synchronization-jobs:
 Title: Descriptive title...
 Type: Bidirectional
 Local directory: /home/myuser/openbis_sync_test
-openBIS url: http://localhost:8085/afs-server
+openBIS url: http://localhost:8085
 Entity-perm-id: a7bc2fbd-49af-4e2d-86cc-ea316028b793
 Remote directory: /remotedir
 Personal access token: a13fe879-1753-41dd-8c3e-eb5a97e1c7be
 Enabled: false
-Skip hidden files: true
+Ignored files: GlobalDefault
 ```
 
 If the background-service is not running:
@@ -275,12 +280,12 @@ Synchronization-jobs:
 Title: Descriptive title...
 Type: Bidirectional
 Local directory: /home/myuser/openbis_sync_test
-openBIS url: http://localhost:8085/afs-server
+openBIS url: http://localhost:8085
 Entity-perm-id: a7bc2fbd-49af-4e2d-86cc-ea316028b793
 Remote directory: /remotedir
 Personal access token: a13fe879-1753-41dd-8c3e-eb5a97e1c7be
 Enabled: false
-Skip hidden files: true
+Ignored files: GlobalDefault
 ```
 
 - Start-at-login: indicates if the background-process has to be started at system-login
@@ -303,13 +308,38 @@ Synchronization-jobs:
 Title: Descriptive title...
 Type: Bidirectional
 Local directory: /home/myuser/openbis_sync_test
-openBIS url: http://localhost:8085/afs-server
+openBIS url: http://localhost:8085
 Entity-perm-id: a7bc2fbd-49af-4e2d-86cc-ea316028b793
 Remote directory: /remotedir
 Personal access token: a13fe879-1753-41dd-8c3e-eb5a97e1c7be
 Enabled: false
-Skip hidden files: true
+Ignored files: GlobalDefault
 ```
+
+#### config ignored-path-patterns
+
+Use the `config` command with `ignored-path-patterns` subcommand, to inspect and possibly to modify the global-default list of ignored path-patterns.
+
+That is a list of glob expressions used only by synchronization-tasks which work in `GlobalDefault` ignore-files mode (see: [jobs ignored-path-patterns](#jobs-ignored-path-patterns) ).
+For such tasks, the background-process ignores local files whose path (relative to the synchronization-task local-root-directory) matches at least one of the glob expressions.
+
+```shell
+./openbis-drive-cmd-line.sh config ignored-path-patterns
+./openbis-drive-cmd-line.sh config ignored-path-patterns -showFactoryDefault
+./openbis-drive-cmd-line.sh config ignored-path-patterns -reset
+./openbis-drive-cmd-line.sh config ignored-path-patterns -set
+./openbis-drive-cmd-line.sh config ignored-path-patterns -setFromFile=./dir/new-patterns.txt
+```
+
+Without options: it shows the currently saved list of glob expressions which are considered global-default.
+
+With `-showFactoryDefault` option: it shows the factory-default list of glob-expressions for ignored paths.
+
+With `-reset` option: it resets the global-default list of glob expressions to the factory-default list.
+
+With `-set` option: it sets the global-default list of glob expressions to new values, given one after the other from console input.
+
+With `-setFromFile` option: it sets the global-default list of glob expressions to new values, given from a UTF-8 multiline text file.
 
 ### Jobs commands
 
@@ -327,12 +357,12 @@ Synchronization-jobs:
 Title: Descriptive title...
 Type: Bidirectional
 Local directory: /home/myuser/openbis_sync_test
-openBIS url: http://localhost:8085/afs-server
+openBIS url: http://localhost:8085
 Entity-perm-id: a7bc2fbd-49af-4e2d-86cc-ea316028b793
 Remote directory: /remotedir
 Personal access token: a13fe879-1753-41dd-8c3e-eb5a97e1c7be
 Enabled: false
-Skip hidden files: true
+Ignored files: GlobalDefault
 ```
 
 Each synchronization-task consists of:
@@ -345,8 +375,8 @@ Each synchronization-task consists of:
 to be kept in synchronization
 - personal access token: user credential to get access to the openBIS server
 - indication of enabled or disabled state
-- indication whether local paths which are considered hidden should be left untouched or not (defaults to "true": that is, they should be ignored)
-- a list of regular expressions which determine which local paths are considered hidden (see [jobs hidden-path-patterns](#jobs-hidden-path-patterns))
+- a mode of ignoring some local paths (defaults to "GlobalDefault": that is, local paths which match certain global-default glob expressions are skipped)
+- a list of glob expressions which determine which local paths have to be ignored (if the mode of ignoring files is `SpecificList` ) (see [jobs ignored-path-patterns](#jobs-ignored-path-patterns))
 
 #### jobs add
 
@@ -366,13 +396,13 @@ Option that represent properties are:
 -remDir   :   absolute path of the remote directory on openBIS server within the entity ID
 -personalAccessToken   :   personal access token
 -enabled   :   true or false
--skipHiddenFiles   :   true or false (optional: it defaults to true)
+-ignoreFiles   :   GlobalDefault|SpecificList|None ( optional: with default-value: GlobalDefault )
 ```
 
 For example: 
 
 ```shell
-./openbis-drive-cmd-line.sh jobs add -title='Description' -type='Bidirectional' -dir='/home/myuser/openbis_sync_test' -openBISurl='http://localhost:8085/afs-server' -entityPermId='a7bc2fbd-49af-4e2d-86cc-ea316028b793' -personalAccessToken='a13fe879-1753-41dd-8c3e-eb5a97e1c7be' -remDir='/remote/dir/absolute-path/' -enabled=true
+./openbis-drive-cmd-line.sh jobs add -title='Description' -type='Bidirectional' -dir='/home/myuser/openbis_sync_test' -openBISurl='http://localhost:8085' -entityPermId='a7bc2fbd-49af-4e2d-86cc-ea316028b793' -personalAccessToken='a13fe879-1753-41dd-8c3e-eb5a97e1c7be' -remDir='/remote/dir/absolute-path/' -enabled=true
 ```
 
 #### jobs remove
@@ -409,32 +439,35 @@ so the background-service will immediately interrupt it (if running) and will no
 Stopped synchronization-tasks are not deleted from configuration: they can be restarted at any time
 with the `jobs start` command.
 
-#### jobs hidden-path-patterns
+#### jobs ignored-path-patterns
 
-This subcommand allows to inspect and modify the hidden path-patterns of a synchronization-task with different options:
+Each synchronization-task can have a different ignore-files mode:
+
+- `GlobalDefault` : the default option for ignore-files mode: it means that the background-process will ignore local files matching the global-default list of ignored-patterns (see: [config ignored-path-patterns](#config-ignored-path-patterns))
+- `SpecificList` : it means that the background-process will ignore local files matching the task-specific list of ignored-patterns (see below)
+- `None` : it means, no files are ignored by the background-process
+
+This subcommand allows to inspect and modify the ignored path-patterns specific to a synchronization-task with different options.
+Note: the synchronization-task-specific list of ignored-patterns is taken into account by the background-process if and only if the ignore-files mode is `SpecificList`.
 
 ```shell
-./openbis-drive-cmd-line.sh jobs hidden-path-patterns
-./openbis-drive-cmd-line.sh jobs hidden-path-patterns -dir='./my-local-dir'
-./openbis-drive-cmd-line.sh jobs hidden-path-patterns -dir='./my-local-dir' -reset
-./openbis-drive-cmd-line.sh jobs hidden-path-patterns -dir='./my-local-dir' -set
-./openbis-drive-cmd-line.sh jobs hidden-path-patterns -dir='./my-local-dir' -setFromFile=./documents/new-patterns.txt
+./openbis-drive-cmd-line.sh jobs ignored-path-patterns -dir='./my-local-dir'
+./openbis-drive-cmd-line.sh jobs ignored-path-patterns -dir='./my-local-dir' -set
+./openbis-drive-cmd-line.sh jobs ignored-path-patterns -dir='./my-local-dir' -setFromFile=./documents/new-patterns.txt
 ```
 
-Without options: it shows the list of predefined regular expressions, which are matched against local paths to determine which of them should be considered "hidden".
-
 With `-dir` option: for the synchronization-task with local directory indicated by `-dir`,
-it shows the list of regular expressions, which are matched against local paths to determine which of them should be considered "hidden".
+it shows the specific-list of glob expressions, which are matched against local paths (relative to the local task-directory) to determine which of them should be ignored.
 
 With `-dir` and `-reset` option: for the synchronization-task with local directory indicated by `-dir`,
-it resets the list of hidden path-patterns to the predefined list.
+it resets the list of ignored path-patterns to the global-default list: see [config ignored-path-patterns](#config-ignored-path-patterns)
 
 With `-dir` and `-set` option: for the synchronization-task with local directory indicated by `-dir`,
-it resets the list of hidden path-patterns to a new list, given one line after the other from console with regex-syntax.
+it sets the list of ignored path-patterns to a new list, given one line after the other from console with glob-syntax.
 
 With `-dir` and `-setFromFile` option: for the synchronization-task with local directory indicated by `-dir`,
-it resets the list of hidden path-patterns to a new list, given from a UTF-8 multiline text-file (as per `-setFromFile`)
-with a regular expression on each line.
+it sets the list of ignored path-patterns to a new list, given from a UTF-8 multiline text-file (as per `-setFromFile`)
+with a glob expression on each line.
 
 ### Event and notification commands
 

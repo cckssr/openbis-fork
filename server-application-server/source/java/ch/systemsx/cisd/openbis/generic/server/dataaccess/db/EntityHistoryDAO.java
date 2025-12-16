@@ -46,11 +46,10 @@ class EntityHistoryDAO extends AbstractDAO implements IEntityHistoryDAO
     public List<AbstractEntityPropertyHistoryPE> getPropertyHistory(EntityKind entityKind,
             final TechId id)
     {
-        List<AbstractEntityPropertyHistoryPE> result =
-                cast(getHibernateTemplate().find(
-                        String.format("from %s eh where eh.entityInternal.id = ?", entityKind
+        List<AbstractEntityPropertyHistoryPE> result = find(AbstractEntityPropertyHistoryPE.class,
+                        String.format("from %s eh where eh.entityInternal.id = ?1", entityKind
                                 .getEntityPropertyHistoryClass().getSimpleName()),
-                        toArray(id.getId())));
+                        toArray(id.getId()));
         if (operationLog.isDebugEnabled())
         {
             operationLog.debug(result.size()

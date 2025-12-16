@@ -19,10 +19,8 @@ import java.util.Collection;
 import java.util.List;
 
 import ch.ethz.sis.shared.log.classic.impl.Logger;
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.criterion.DetachedCriteria;
-import org.hibernate.criterion.Restrictions;
-import org.springframework.orm.hibernate5.HibernateTemplate;
 
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
@@ -71,10 +69,12 @@ public final class SemanticAnnotationDAO extends AbstractGenericEntityDAO<Semant
         validatePE(annotation);
         validateAnnotation(annotation);
 
-        final HibernateTemplate template = getHibernateTemplate();
-        template.saveOrUpdate(annotation);
+        doExecute(session -> {
+            session.saveOrUpdate(annotation);
+            return null;
+        });
 
-        flushWithSqlExceptionHandling(template);
+        flushWithSqlExceptionHandling();
 
         if (operationLog.isDebugEnabled())
         {
@@ -85,10 +85,13 @@ public final class SemanticAnnotationDAO extends AbstractGenericEntityDAO<Semant
     @Override
     public List<SemanticAnnotationPE> findByIds(Collection<Long> ids)
     {
-        final DetachedCriteria criteria = DetachedCriteria.forClass(SemanticAnnotationPE.class);
-        criteria.add(Restrictions.in("id", ids));
 
-        final List<SemanticAnnotationPE> list = cast(getHibernateTemplate().findByCriteria(criteria));
+        List<SemanticAnnotationPE> list = doExecute(session->
+                session.createQuery(
+                        "from SemanticAnnotationPE s where s.id in :ids",
+                        SemanticAnnotationPE.class)
+                .setParameter("ids", ids)
+                .list());
         if (operationLog.isDebugEnabled())
         {
             operationLog.debug(String.format("%s(): %d semantic annotation(s) have been found.", MethodUtils
@@ -100,10 +103,13 @@ public final class SemanticAnnotationDAO extends AbstractGenericEntityDAO<Semant
     @Override
     public List<SemanticAnnotationPE> findByPermIds(Collection<String> permIds)
     {
-        final DetachedCriteria criteria = DetachedCriteria.forClass(SemanticAnnotationPE.class);
-        criteria.add(Restrictions.in("permId", permIds));
+        List<SemanticAnnotationPE> list = doExecute(session ->
+                session.createQuery(
+                        "from SemanticAnnotationPE s where s.permId in :ids",
+                        SemanticAnnotationPE.class)
+                .setParameter("ids", permIds)
+                .list());
 
-        final List<SemanticAnnotationPE> list = cast(getHibernateTemplate().findByCriteria(criteria));
         if (operationLog.isDebugEnabled())
         {
             operationLog.debug(String.format("%s(): %d semantic annotation(s) have been found.", MethodUtils

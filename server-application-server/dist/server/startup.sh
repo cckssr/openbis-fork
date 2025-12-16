@@ -41,6 +41,27 @@ CONSOLE_WAIT=${CONSOLE_WAIT:-60}
 
 AWK_BIN=$(awkBin)   # or just 'awk'
 
+# ---------------------------------------------------------------------------
+# Build tee targets:
+#   1) readiness/error detector (always)
+#   2) Docker stdout (only if available)
+# ---------------------------------------------------------------------------
+TEE_TARGETS=()
+
+TEE_TARGETS+=( >(
+  "$AWK_BIN" -v s="$STARTED_MESSAGE" \
+             -v r="$READY_FLAG" \
+             -v e="$ERROR_FLAG" \
+             -v err="$ERROR_MESSAGE" '
+    index($0, err) { system("touch " e); fflush(); exit }
+    index($0, s)   { system("touch " r); fflush(); exit }
+    { fflush() }
+  ' >/dev/null
+) )
+
+if [ "$HAS_DOCKER_STDOUT" = true ]; then
+  TEE_TARGETS+=( "$DOCKER_STDOUT" )
+fi
 # Launch server in a subshell so we can capture the Java PID and keep the pipe open
 (
   # Start Java (line-buffered) in background
@@ -58,15 +79,7 @@ AWK_BIN=$(awkBin)   # or just 'awk'
   #echo "$CHILD" > "$PID_FILE"
   # Keep the pipe open until Java exits (important so tee/awk keep receiving)
   wait "$CHILD"
-) | tee >(
-      "$AWK_BIN" -v s="$SUCCESS_MSG" -v r="$READY_FLAG" -v e="$ERROR_FLAG" -v err="ERROR" '
-        # mark error immediately if you want fail-fast
-        index($0, err) { system("touch " e); fflush(); exit }
-        # mark ready on success line
-        index($0, s)   { system("touch " r); fflush(); exit }
-        { fflush() }
-      ' >/dev/null
-    ) &
+) | tee "${TEE_TARGETS[@]}" &
 PIPE_PID=$!
 
 # Poll for initial state (ready/error/child exit) up to MAX_LOOPS seconds

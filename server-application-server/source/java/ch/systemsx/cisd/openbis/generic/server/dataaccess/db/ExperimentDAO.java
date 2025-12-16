@@ -22,13 +22,12 @@ import java.util.LinkedList;
 import java.util.List;
 
 import ch.ethz.sis.shared.log.classic.impl.Logger;
-import org.hibernate.Criteria;
-import org.hibernate.FetchMode;
-import org.hibernate.criterion.CriteriaSpecification;
-import org.hibernate.criterion.DetachedCriteria;
-import org.hibernate.criterion.Projections;
-import org.hibernate.criterion.Restrictions;
+
+import org.hibernate.HibernateException;
+import org.hibernate.Session;
+import org.hibernate.query.Query;
 import org.springframework.dao.DataAccessException;
+import org.springframework.orm.hibernate5.HibernateExceptionTranslator;
 import org.springframework.orm.hibernate5.HibernateTemplate;
 
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
@@ -55,6 +54,9 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.TableNames;
 import net.lemnik.eodsql.BaseQuery;
 import net.lemnik.eodsql.QueryTool;
 import net.lemnik.eodsql.Select;
+import org.springframework.orm.hibernate5.SessionFactoryUtils;
+
+import static ch.systemsx.cisd.openbis.generic.server.dataaccess.db.DAOUtils.BATCH_SIZE;
 
 /**
  * Data access object for {@link ExperimentPE}.
@@ -128,37 +130,41 @@ public class ExperimentDAO extends AbstractGenericEntityWithPropertiesDAO<Experi
             final SpacePE spaceOrNull, final boolean onlyHavingSamples,
             final boolean onlyHavingDataSets) throws DataAccessException
     {
-        final DetachedCriteria criteria = createCriteriaForUndeleted();
-        if (experimentTypeOrNull != null)
-        {
-            criteria.add(Restrictions.eq("experimentType", experimentTypeOrNull));
+
+        StringBuilder hql = new StringBuilder();
+        hql.append("select distinct e from ExperimentPE e ");
+        if (spaceOrNull != null) {
+            hql.append("join e.projectInternal p ");
         }
-        if (projectsOrNull != null && projectsOrNull.isEmpty() == false)
-        {
-            criteria.add(Restrictions.in("projectInternal", projectsOrNull));
+        hql.append("where e.deletion is null ");
+
+        if (experimentTypeOrNull != null) {
+            hql.append("and e.experimentType = :etype ");
         }
-        if (spaceOrNull != null)
-        {
-            // alias is the easiest way to restrict on association using criteria
-            criteria.createAlias("projectInternal", "project");
-            criteria.add(Restrictions.eq("project.space", spaceOrNull));
+        if (projectsOrNull != null) {
+            hql.append("and e.projectInternal in (:projects) ");
         }
-        if (onlyHavingDataSets)
-        {
-            criteria.add(Restrictions.isNotEmpty("experimentDataSets"));
+        if (spaceOrNull != null) {
+            hql.append("and p.space = :space ");
+        }
+        if (onlyHavingDataSets) {
+            hql.append("and e.experimentDataSets is not empty ");
+        }
+        if (onlyHavingSamples) {
+            hql.append("and exists (select 1 from SamplePE s ")
+                    .append("where s.deletion is null and s.experimentInternal = e) ");
         }
 
-        criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
-        List<ExperimentPE> list = cast(getHibernateTemplate().findByCriteria(criteria));
-
-        if (onlyHavingSamples)
-        {
-            final DetachedCriteria criteria2 = DetachedCriteria.forClass(SamplePE.class);
-            criteria2.add(Restrictions.isNull("deletion"));
-            criteria2.add(Restrictions.in("experimentInternal", list));
-            criteria2.setProjection(Projections.distinct(Projections.property("experimentInternal")));
-            list = cast(getHibernateTemplate().findByCriteria(criteria2));
-        }
+        List<ExperimentPE> list = doExecute(session -> {
+            var q = session.createQuery(hql.toString(), ExperimentPE.class);
+            if (experimentTypeOrNull != null)
+                q.setParameter("etype", experimentTypeOrNull);
+            if (projectsOrNull != null)
+                q.setParameter("projects", projectsOrNull);
+            if (spaceOrNull != null)
+                q.setParameter("space", spaceOrNull);
+            return q.list();
+        });
 
         if (operationLog.isDebugEnabled())
         {
@@ -178,18 +184,26 @@ public class ExperimentDAO extends AbstractGenericEntityWithPropertiesDAO<Experi
         {
             return new ArrayList<ExperimentPE>();
         }
-        final List<ExperimentPE> list =
-                DAOUtils.listByCollection(getHibernateTemplate(), new IDetachedCriteriaFactory()
-                    {
-                        @Override
-                        public DetachedCriteria createCriteria()
-                        {
-                            DetachedCriteria criteria = DetachedCriteria.forClass(getEntityClass());
-                            criteria.setFetchMode("experimentProperties", FetchMode.JOIN);
-                            criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
-                            return criteria;
-                        }
-                    }, "id", experimentIDs);
+
+        List<Long> ids = new ArrayList<>(experimentIDs);
+        List<ExperimentPE> list = new ArrayList<>(ids.size());
+
+        for (int i = 0; i < ids.size(); i += BATCH_SIZE) {
+            List<Long> slice = ids.subList(i, Math.min(ids.size(), i + BATCH_SIZE));
+            List<ExperimentPE> batch = doExecute(session -> session.createQuery(
+                                    "select distinct e " +
+                                            "from " + getEntityClass().getName() + " e " +
+                                            "left join fetch e.experimentProperties " + // replaces FetchMode.JOIN
+                                            "where e.id in (:ids)",
+                                    ExperimentPE.class)
+                            .setParameter("ids", slice)
+                            .list());
+            if(batch != null)
+            {
+                list.addAll(batch);
+            }
+        }
+
         if (operationLog.isDebugEnabled())
         {
             operationLog.debug(String.format("%d experiments have been found for specified IDs.",
@@ -201,8 +215,14 @@ public class ExperimentDAO extends AbstractGenericEntityWithPropertiesDAO<Experi
     @Override
     public List<ExperimentPE> listExperiments() throws DataAccessException
     {
-        final DetachedCriteria criteria = createCriteriaForUndeleted();
-        final List<ExperimentPE> list = cast(getHibernateTemplate().findByCriteria(criteria));
+
+        List<ExperimentPE> list = doExecute(session -> session
+                .createQuery(
+                        "from " + getEntityClass().getName() + " e where e.deletion is null",
+                        getEntityClass()
+                )
+                .list());
+
         if (operationLog.isDebugEnabled())
         {
             operationLog.debug(String.format("%s(): %d experiment(s) have been found.", MethodUtils
@@ -211,24 +231,27 @@ public class ExperimentDAO extends AbstractGenericEntityWithPropertiesDAO<Experi
         return list;
     }
 
-    private DetachedCriteria createCriteriaForUndeleted()
-    {
-        final DetachedCriteria criteria = DetachedCriteria.forClass(getEntityClass());
-        criteria.add(Restrictions.isNull("deletion"));
-        return criteria;
-    }
-
     @Override
     public ExperimentPE tryFindByCodeAndProject(final ProjectPE project, final String experimentCode)
     {
         assert experimentCode != null : "Unspecified experiment code.";
         assert project != null : "Unspecified project.";
 
-        final Criteria criteria = currentSession().createCriteria(getEntityClass());
-        criteria.add(Restrictions.eq("code", CodeConverter.tryToDatabase(experimentCode)));
-        criteria.add(Restrictions.eq("projectInternal", project));
-        criteria.setFetchMode("experimentType.experimentTypePropertyTypesInternal", FetchMode.JOIN);
-        final ExperimentPE experiment = (ExperimentPE) criteria.uniqueResult();
+        String codeDb = CodeConverter.tryToDatabase(experimentCode);
+
+        ExperimentPE experiment =
+                currentSession().createQuery(
+                                "select distinct e " +
+                                        "from ExperimentPE e " +
+                                        "join fetch e.experimentType et " +
+                                        "left join fetch et.experimentTypePropertyTypesInternal " +
+                                        "where e.code = :code and e.projectInternal = :project",
+                                ExperimentPE.class)
+                        .setParameter("code", codeDb)
+                        .setParameter("project", project)
+                        .uniqueResultOptional()
+                        .orElse(null);
+
         if (operationLog.isDebugEnabled())
         {
             operationLog.debug(String.format(
@@ -250,10 +273,15 @@ public class ExperimentDAO extends AbstractGenericEntityWithPropertiesDAO<Experi
             dbExperimentCodes.add(CodeConverter.tryToDatabase(experimentCode));
         }
 
-        final Criteria criteria = currentSession().createCriteria(getEntityClass());
-        criteria.add(Restrictions.in("code", dbExperimentCodes));
-        criteria.add(Restrictions.eq("projectInternal", project));
-        final List<ExperimentPE> experiments = cast(criteria.list());
+
+        List<ExperimentPE> experiments = currentSession()
+                .createQuery(
+                        "from ExperimentPE e " +
+                                "where e.code in :codes and e.projectInternal = :project",
+                        ExperimentPE.class)
+                .setParameter("codes", dbExperimentCodes)
+                .setParameter("project", project)
+                .list();
 
         if (operationLog.isDebugEnabled())
         {
@@ -272,9 +300,9 @@ public class ExperimentDAO extends AbstractGenericEntityWithPropertiesDAO<Experi
 
         String queryFormat =
                 "from " + ExperimentPropertyPE.class.getSimpleName()
-                        + " where %s = ? and entity.projectInternal = ? "
-                        + " and entityTypePropertyType.propertyTypeInternal.simpleCode = ?"
-                        + " and entityTypePropertyType.propertyTypeInternal.managedInternally = ?";
+                        + " where %s = ?1 and entity.projectInternal = ?2 "
+                        + " and entityTypePropertyType.propertyTypeInternal.simpleCode = ?3"
+                        + " and entityTypePropertyType.propertyTypeInternal.managedInternally = ?4";
 
         List<ExperimentPE> entities =
                 listByPropertyValue(queryFormat, propertyCode, propertyValue, project);
@@ -298,11 +326,11 @@ public class ExperimentDAO extends AbstractGenericEntityWithPropertiesDAO<Experi
 
         String queryPropertySimpleValue = String.format(queryFormat, "value");
         List<ExperimentPropertyPE> properties1 =
-                cast(getHibernateTemplate().find(queryPropertySimpleValue, arguments));
+                cast(find(ExperimentPropertyPE.class, queryPropertySimpleValue, arguments));
 
         String queryPropertyVocabularyTerm = String.format(queryFormat, "vocabularyTerm.simpleCode");
         List<ExperimentPropertyPE> properties2 =
-                cast(getHibernateTemplate().find(queryPropertyVocabularyTerm, arguments));
+                cast(find(ExperimentPropertyPE.class, queryPropertyVocabularyTerm, arguments));
 
         properties1.addAll(properties2);
         List<ExperimentPE> entities = extractEntities(properties1);
@@ -322,9 +350,16 @@ public class ExperimentDAO extends AbstractGenericEntityWithPropertiesDAO<Experi
     @Override
     public ExperimentPE tryGetByPermID(String permId)
     {
-        final Criteria criteria = currentSession().createCriteria(getEntityClass());
-        criteria.add(Restrictions.eq("permId", permId));
-        final ExperimentPE experimentOrNull = (ExperimentPE) criteria.uniqueResult();
+
+        ExperimentPE experimentOrNull = currentSession()
+                .createQuery(
+                        "from " + getEntityClass().getName() + " e where e.permId = :permId",
+                        getEntityClass())
+                .setParameter("permId", permId)
+                .uniqueResultOptional()
+                .orElse(null);
+
+
         if (operationLog.isDebugEnabled())
         {
             operationLog.debug(String.format(
@@ -350,8 +385,11 @@ public class ExperimentDAO extends AbstractGenericEntityWithPropertiesDAO<Experi
                 @Override
                 public void execute(List<Long> ids)
                 {
-                    List<SpacePE> spaces =
-                            cast(getHibernateTemplate().findByNamedParam(query, "ids", ids));
+
+                    Session session = currentSession();
+                    Query<SpacePE> q = session.createQuery(query, SpacePE.class);
+                    q.setParameter("ids", ids);
+                    List<SpacePE> spaces = q.getResultList();
                     result.addAll(spaces);
                 }
 
@@ -395,8 +433,26 @@ public class ExperimentDAO extends AbstractGenericEntityWithPropertiesDAO<Experi
         {
             return new ArrayList<ExperimentPE>();
         }
-        final List<ExperimentPE> list =
-                DAOUtils.listByCollection(getHibernateTemplate(), ExperimentPE.class, idName, ids);
+        final Class<ExperimentPE> entityClass = (Class<ExperimentPE>) getEntityClass();
+        final int BATCH_SIZE = 1000;
+
+        List<?> all = new ArrayList<>(ids);
+        List<ExperimentPE> list = new ArrayList<>(all.size());
+
+        for (int i = 0; i < all.size(); i += BATCH_SIZE) {
+            List<?> slice = all.subList(i, Math.min(all.size(), i + BATCH_SIZE));
+            if (slice.isEmpty()) continue;
+
+            List<ExperimentPE> batch = doExecute(session -> session.createQuery(
+                                            "from " + entityClass.getName() + " e where e." + idName + " in (:ids)",
+                                            entityClass
+                                    )
+                                    .setParameter("ids", slice)
+                                    .list());
+
+            list.addAll(batch);
+        }
+
         if (operationLog.isDebugEnabled())
         {
             operationLog.debug(String.format("%d experiment(s) have been found.", list.size()));
@@ -420,12 +476,14 @@ public class ExperimentDAO extends AbstractGenericEntityWithPropertiesDAO<Experi
     {
         try
         {
-            HibernateTemplate template = getHibernateTemplate();
             lockEntity(experiment.getProject());
 
-            internalCreateOrUpdateExperiment(experiment, modifier, template);
+            doExecute(session ->{
+                internalCreateOrUpdateExperiment(experiment, modifier, session);
+                return null;
+            });
             // need to deal with exception thrown by trigger checking uniqueness
-            flushWithSqlExceptionHandling(template);
+            flushWithSqlExceptionHandling();
 
             scheduleDynamicPropertiesEvaluation(Collections.singletonList(experiment));
 
@@ -447,19 +505,22 @@ public class ExperimentDAO extends AbstractGenericEntityWithPropertiesDAO<Experi
 
         try
         {
-            final HibernateTemplate hibernateTemplate = getHibernateTemplate();
-            for (final ExperimentPE experiment : experiments)
-            {
-                internalCreateOrUpdateExperiment(experiment, modifier, hibernateTemplate);
-            }
+
+            doExecute(session -> {
+                for (final ExperimentPE experiment : experiments)
+                {
+                    internalCreateOrUpdateExperiment(experiment, modifier, session);
+                }
+                return null;
+            });
 
             // need to deal with exception thrown by trigger checking uniqueness
-            flushWithSqlExceptionHandling(hibernateTemplate);
+            flushWithSqlExceptionHandling();
 
             if (clearCache)
             {
                 // if session is not cleared registration of many experiments slows down after each batch
-                hibernateTemplate.clear();
+                currentSession().clear();
             }
 
             scheduleDynamicPropertiesEvaluation(experiments);
@@ -470,7 +531,7 @@ public class ExperimentDAO extends AbstractGenericEntityWithPropertiesDAO<Experi
     }
 
     private void internalCreateOrUpdateExperiment(ExperimentPE experiment, PersonPE modifier,
-            HibernateTemplate hibernateTemplate)
+            Session session)
     {
         assert experiment != null : "Missing experiment.";
         experiment.setCode(CodeConverter.tryToDatabase(experiment.getCode()));
@@ -479,8 +540,7 @@ public class ExperimentDAO extends AbstractGenericEntityWithPropertiesDAO<Experi
             experiment.setModificationDate(getTransactionTimeStamp());
         }
         validatePE(experiment);
-        final HibernateTemplate template = getHibernateTemplate();
-        template.saveOrUpdate(experiment);
+        session.saveOrUpdate(experiment);
         if (operationLog.isDebugEnabled())
         {
             operationLog.debug(String.format("ADD: experiment '%s'.", experiment));
@@ -514,6 +574,21 @@ public class ExperimentDAO extends AbstractGenericEntityWithPropertiesDAO<Experi
                 sqlInsertEvent, sqlSelectPropertyHistory, sqlSelectRelationshipHistory, sqlSelectAttributes,
                 null, AttachmentHolderKind.EXPERIMENT);
     }
+
+    public ExperimentPE tryGetByIdWithTypePropertyTypes(TechId experimentId)
+    {
+        return currentSession()
+                .createQuery(
+                        "select e from ExperimentPE e " +
+                                "left join fetch e.experimentType et " +
+                                "left join fetch et.experimentTypePropertyTypesInternal " +
+                                "where e.id = :id",
+                        ExperimentPE.class
+                )
+                .setParameter("id", experimentId.getId())
+                .uniqueResult();
+    }
+
 
     private static String createQueryPropertyHistorySQL()
     {

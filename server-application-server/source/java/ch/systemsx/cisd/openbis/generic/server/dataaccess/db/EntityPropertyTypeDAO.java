@@ -22,13 +22,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import ch.ethz.sis.shared.log.classic.impl.Logger;
 import org.hibernate.*;
-import org.hibernate.criterion.DetachedCriteria;
-import org.hibernate.criterion.ProjectionList;
-import org.hibernate.criterion.Projections;
-import org.hibernate.criterion.Restrictions;
+
 import org.hibernate.query.Query;
 import org.springframework.dao.DataAccessException;
 import org.springframework.orm.hibernate5.HibernateCallback;
@@ -51,6 +49,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.TableNames;
 import ch.systemsx.cisd.openbis.generic.shared.dto.VocabularyPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.VocabularyTermWithStats;
 import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
+import javax.persistence.TemporalType;
 
 /**
  * The unique {@link IEntityPropertyTypeDAO} implementation.
@@ -90,7 +89,7 @@ final class EntityPropertyTypeDAO extends AbstractDAO implements IEntityProperty
     @Override
     public List<EntityTypePropertyTypePE> listEntityPropertyTypes() throws DataAccessException
     {
-        return cast(getHibernateTemplate().loadAll(getEntityTypePropertyTypeAssignmentClass()));
+        return cast(loadAll(getEntityTypePropertyTypeAssignmentClass()));
     }
 
     @Override
@@ -100,8 +99,8 @@ final class EntityPropertyTypeDAO extends AbstractDAO implements IEntityProperty
         assert entityType != null : "Unspecified EntityType";
 
         final List<EntityTypePropertyTypePE> assignments =
-                cast(getHibernateTemplate().find(
-                        String.format("from %s etpt where etpt.entityTypeInternal = ?",
+                cast(find(EntityTypePropertyTypePE.class,
+                        String.format("from %s etpt where etpt.entityTypeInternal = ?1",
                                 getEntityTypePropertyTypeAssignmentClass().getSimpleName()),
                         toArray(entityType)));
         if (operationLog.isDebugEnabled())
@@ -117,7 +116,7 @@ final class EntityPropertyTypeDAO extends AbstractDAO implements IEntityProperty
     public List<String> listPropertyTypeCodes() throws DataAccessException
     {
         final List<EntityTypePropertyTypePE> assignments =
-                cast(getHibernateTemplate().loadAll(getEntityTypePropertyTypeAssignmentClass()));
+                cast(loadAll(getEntityTypePropertyTypeAssignmentClass()));
         Set<String> propertyTypeCodes = new HashSet<String>();
 
         for (EntityTypePropertyTypePE assignment : assignments)
@@ -141,12 +140,17 @@ final class EntityPropertyTypeDAO extends AbstractDAO implements IEntityProperty
         assert entityType != null : "Unspecified entity type.";
         assert propertyType != null : "Unspecified property type.";
 
-        final Criteria criteria =
-                currentSession().createCriteria(getEntityTypePropertyTypeAssignmentClass());
-        criteria.add(Restrictions.eq("propertyTypeInternal", propertyType));
-        criteria.add(Restrictions.eq("entityTypeInternal", entityType));
-        final EntityTypePropertyTypePE etpt = (EntityTypePropertyTypePE) criteria.uniqueResult();
-        return etpt;
+        final Class<? extends EntityTypePropertyTypePE> cls = getEntityTypePropertyTypeAssignmentClass();
+
+        return currentSession()
+                .createQuery(
+                        "from " + cls.getName() + " e " +
+                                "where e.propertyTypeInternal = :pt and e.entityTypeInternal = :et",
+                        cls)
+                .setParameter("pt", propertyType)
+                .setParameter("et", entityType)
+                .uniqueResultOptional()
+                .orElse(null);
     }
 
     @Override
@@ -157,11 +161,14 @@ final class EntityPropertyTypeDAO extends AbstractDAO implements IEntityProperty
         assert entityPropertyTypeAssignement != null : "Unspecified EntityTypePropertyType";
         validatePE(entityPropertyTypeAssignement);
 
-        final HibernateTemplate template = getHibernateTemplate();
-        template.save(entityPropertyTypeAssignement);
-        template.flush();
-        if (operationLog.isInfoEnabled())
-        {
+
+       doExecute(session -> {
+           session.save(entityPropertyTypeAssignement);
+           session.flush();
+           return null;
+       });
+
+        if (operationLog.isInfoEnabled()) {
             operationLog.info("ADD: assignment of property '"
                     + entityPropertyTypeAssignement.getPropertyType().getCode()
                     + "' with entity type '"
@@ -174,10 +181,18 @@ final class EntityPropertyTypeDAO extends AbstractDAO implements IEntityProperty
     {
         assert entityType != null : "Unspecified entity type.";
 
-        final DetachedCriteria criteria = DetachedCriteria.forClass(entityKind.getEntityClass());
-        criteria.add(Restrictions.eq(entityKind.getEntityTypeFieldName(), entityType));
-        criteria.setProjection(Projections.id());
-        final List<Long> list = cast(getHibernateTemplate().findByCriteria(criteria));
+//        Hibernate 6 changes
+        final Class<?> entityClass = entityKind.getEntityClass();
+        final String typeField = entityKind.getEntityTypeFieldName(); // e.g. "sampleTypeInternal"
+
+        // Select the identifier using the portable HQL/JPQL id(...) selector
+        final String hql = "select e.id from " + entityClass.getName() + " e " +
+                "where e." + typeField + " = :type";
+
+        final List<Long> list = doExecute(session -> session
+                .createQuery(hql, Long.class)
+                .setParameter("type", entityType)
+                .getResultList());
 
         if (operationLog.isInfoEnabled())
         {
@@ -212,31 +227,31 @@ final class EntityPropertyTypeDAO extends AbstractDAO implements IEntityProperty
                 query =
                         String.format("SELECT DISTINCT sample.id "
                                 + "FROM SamplePE sample, SampleTypePropertyTypePE stpt "
-                                + "WHERE sample.sampleType = stpt.entityTypeInternal AND stpt = ?");
+                                + "WHERE sample.sampleType = stpt.entityTypeInternal AND stpt = ?1");
                 break;
             case DATA_SET:
                 query =
                         String.format("SELECT DISTINCT data.id "
                                 + "FROM DataPE data, DataSetTypePropertyTypePE dtpt "
-                                + "WHERE data.dataSetType = dtpt.entityTypeInternal AND dtpt = ?");
+                                + "WHERE data.dataSetType = dtpt.entityTypeInternal AND dtpt = ?1");
                 break;
             case MATERIAL:
                 query =
                         String.format("SELECT DISTINCT material.id "
                                 + "FROM MaterialPE material, MaterialTypePropertyTypePE mtpt "
-                                + "WHERE material.materialType = mtpt.entityTypeInternal AND mtpt = ?");
+                                + "WHERE material.materialType = mtpt.entityTypeInternal AND mtpt = ?1");
                 break;
             case EXPERIMENT:
                 query =
                         String.format("SELECT DISTINCT experiment.id "
                                 + "FROM ExperimentPE experiment, ExperimentTypePropertyTypePE etpt "
-                                + "WHERE experiment.experimentType = etpt.entityTypeInternal AND etpt = ?");
+                                + "WHERE experiment.experimentType = etpt.entityTypeInternal AND etpt = ?1");
                 break;
             default:
                 throw new IllegalArgumentException(entityKind.toString());
         }
 
-        final List<Long> list = cast(getHibernateTemplate().find(query, toArray(assignment)));
+        final List<Long> list = cast(find(Long.class, query, toArray(assignment)));
 
         if (operationLog.isInfoEnabled())
         {
@@ -257,43 +272,38 @@ final class EntityPropertyTypeDAO extends AbstractDAO implements IEntityProperty
             return;
         }
 
-        getHibernateTemplate().execute(new HibernateCallback()
-            {
-                @Override
-                public Object doInHibernate(Session session) throws HibernateException
-                {
-                    String entityTableName = null;
+        doExecute(session -> {
+            String entityTableName = null;
 
-                    switch (entityKind)
-                    {
-                        case SAMPLE:
-                            entityTableName = TableNames.SAMPLES_ALL_TABLE;
-                            break;
-                        case DATA_SET:
-                            entityTableName = TableNames.DATA_ALL_TABLE;
-                            break;
-                        case MATERIAL:
-                            entityTableName = TableNames.MATERIALS_TABLE;
-                            break;
-                        case EXPERIMENT:
-                            entityTableName = TableNames.EXPERIMENTS_VIEW;
-                            break;
-                        default:
-                            throw new IllegalArgumentException(entityKind.toString());
-                    }
-                    InQueryScroller<Long> updateQueryScroller = new InQueryScroller(entityIds, 1);
-                    List<Long> partialEntityId;
-                    while ((partialEntityId = updateQueryScroller.next()) != null)
-                    {
-                        SQLQuery updateQuery = session
-                                .createSQLQuery("update " + entityTableName + " set modification_timestamp = :timestamp where id in :entityIds ");
-                        updateQuery.setTimestamp("timestamp", getTransactionTimeStamp());
-                        updateQuery.setParameterList("entityIds", partialEntityId);
-                        updateQuery.executeUpdate();
-                    }
-                    return null;
-                }
-            });
+            switch (entityKind)
+            {
+                case SAMPLE:
+                    entityTableName = TableNames.SAMPLES_ALL_TABLE;
+                    break;
+                case DATA_SET:
+                    entityTableName = TableNames.DATA_ALL_TABLE;
+                    break;
+                case MATERIAL:
+                    entityTableName = TableNames.MATERIALS_TABLE;
+                    break;
+                case EXPERIMENT:
+                    entityTableName = TableNames.EXPERIMENTS_VIEW;
+                    break;
+                default:
+                    throw new IllegalArgumentException(entityKind.toString());
+            }
+            InQueryScroller<Long> updateQueryScroller = new InQueryScroller(entityIds, 1);
+            List<Long> partialEntityId;
+            while ((partialEntityId = updateQueryScroller.next()) != null)
+            {
+                Query updateQuery = session
+                        .createNativeQuery("update " + entityTableName + " set modification_timestamp = :timestamp where id in :entityIds ");
+                updateQuery.setParameter("timestamp", getTransactionTimeStamp(), TemporalType.TIMESTAMP);
+                updateQuery.setParameterList("entityIds", partialEntityId);
+                updateQuery.executeUpdate();
+            }
+            return null;
+        });
     }
 
     @Override
@@ -328,14 +338,14 @@ final class EntityPropertyTypeDAO extends AbstractDAO implements IEntityProperty
 
         String query =
                 String.format(
-                        "SELECT e.id FROM %s e WHERE e.%s = ? AND e not in (SELECT p.entity FROM %s p WHERE p.entityTypePropertyType = ?)",
+                        "SELECT e.id FROM %s e WHERE e.%s = ?1 AND e not in (SELECT p.entity FROM %s p WHERE p.entityTypePropertyType = ?2)",
                         entityKind.getEntityClass().getSimpleName(), entityKind
                                 .getEntityTypeFieldName(),
                         entityKind.getEntityPropertyClass()
                                 .getSimpleName());
         final List<Long> list =
-                cast(getHibernateTemplate().find(query,
-                        toArray(assignment.getEntityType(), assignment)));
+                find(Long.class,query,
+                        toArray(assignment.getEntityType(), assignment));
 
         if (operationLog.isInfoEnabled())
         {
@@ -390,9 +400,10 @@ final class EntityPropertyTypeDAO extends AbstractDAO implements IEntityProperty
                 @Override
                 public Object doInStatelessSession(StatelessSession session)
                 {
-                    final SQLQuery sqlQuery = session.createSQLQuery(sql);
+                    final Query sqlQuery = session.createNativeQuery(sql);
                     sqlQuery.setParameter("registratorId", registratorId);
                     sqlQuery.setParameter("etptId", etptId);
+                    // TODO check how to handle null values
                     sqlQuery.setParameter("value", valueObject);
                     int counter = 0;
                     for (Long entityId : entityIds)
@@ -448,25 +459,27 @@ final class EntityPropertyTypeDAO extends AbstractDAO implements IEntityProperty
         assert termsWithStats.size() == vocabulary.getTerms().size() : "Sizes of terms to be filled and vocabulary terms don't match.";
 
         Map<Long, VocabularyTermWithStats> termsById =
-                new HashMap<Long, VocabularyTermWithStats>(termsWithStats.size());
+                new HashMap<>(termsWithStats.size());
         for (VocabularyTermWithStats termWithStats : termsWithStats)
         {
             Long id = termWithStats.getTerm().getId();
             termsById.put(id, termWithStats);
         }
 
-        final DetachedCriteria criteria =
-                DetachedCriteria.forClass(entityKind.getEntityPropertyClass());
-        // alias is the easiest way to restrict on association using criteria
-        criteria.createAlias("vocabularyTerm", "term");
-        criteria.add(Restrictions.eq("term.vocabularyInternal", vocabulary));
-        ProjectionList projectionList = Projections.projectionList();
-        projectionList.add(Projections.rowCount());
-        projectionList.add(Projections.groupProperty("term.id"));
-        criteria.setProjection(projectionList);
+        Class<?> epClass = entityKind.getEntityPropertyClass();
 
-        final List<Object[]> results = cast(getHibernateTemplate().findByCriteria(criteria));
+        List<Object[]> results = doExecute(session -> session.createQuery(
+                                "select count(ep), t.id " +
+                                        "from " + epClass.getName() + " ep " +
+                                        "join ep.vocabularyTerm t " +
+                                        "where t.vocabularyInternal = :vocab " +
+                                        "group by t.id",
+                                Object[].class
+                        )
+                        .setParameter("vocab", vocabulary)
+                        .getResultList());
 
+        assert results != null;
         for (Object[] result : results)
         {
             Integer numberOfUsages = ((Number) result[0]).intValue();
@@ -482,11 +495,11 @@ final class EntityPropertyTypeDAO extends AbstractDAO implements IEntityProperty
         // otherwise
         String query =
                 String.format(
-                        "from %s props join fetch props.entity where props.vocabularyTerm.id = ?",
+                        "from %s props join fetch props.entity where props.vocabularyTerm.id = ?1",
                         entityKind.getEntityPropertyClass().getSimpleName());
         //
         List<EntityPropertyPE> properties =
-                cast(getHibernateTemplate().find(query, toArray(vocabularyTermId)));
+                find(EntityPropertyPE.class, query, toArray(vocabularyTermId));
         if (operationLog.isDebugEnabled())
         {
             operationLog.debug(String.format("Term '%s' is used in %d properties of kind %s.",
@@ -498,12 +511,14 @@ final class EntityPropertyTypeDAO extends AbstractDAO implements IEntityProperty
     @Override
     public void updateProperties(List<EntityPropertyPE> properties)
     {
-        final HibernateTemplate template = getHibernateTemplate();
         for (EntityPropertyPE entityProperty : properties)
         {
-            template.save(entityProperty);
+            doExecute(session -> session.save(entityProperty));
         }
-        template.flush();
+        doExecute(session ->{
+            session.flush();
+            return null;
+        });
         if (operationLog.isInfoEnabled())
         {
             operationLog.info("UPDATE: " + properties.size() + " of kind " + entityKind
@@ -517,17 +532,23 @@ final class EntityPropertyTypeDAO extends AbstractDAO implements IEntityProperty
         assert entityType != null : "Unspecified entity type.";
         assert fromOrdinal != null : "Unspecified ordinal.";
 
-        final HibernateTemplate hibernateTemplate = getHibernateTemplate();
+        String hql =
+                "update " + entityKind.getEntityTypePropertyTypeAssignmentClass().getSimpleName() + " etpt " +
+                        "set etpt.ordinal = etpt.ordinal + :inc " +
+                        "where etpt.entityTypeInternal = :etype and etpt.ordinal >= :fromOrd";
 
-        String query =
-                String.format("UPDATE %s etpt SET etpt.ordinal = etpt.ordinal + ? "
-                        + "WHERE etpt.entityTypeInternal = ? AND etpt.ordinal >= ?",
-                        entityKind
-                                .getEntityTypePropertyTypeAssignmentClass().getSimpleName());
-        final int updatedRows =
-                hibernateTemplate.bulkUpdate(query,
-                        toArray(Long.valueOf(increment), entityType, fromOrdinal));
-        hibernateTemplate.flush();
+        int updatedRows =
+                doExecute(session -> {
+                    int upRows = session.createQuery(hql)
+                            .setParameter("inc",
+                                    (long) increment)   // or Integer if ordinal is an int
+                            .setParameter("etype", entityType)
+                            .setParameter("fromOrd", fromOrdinal)
+                            .executeUpdate();
+                    session.flush();
+                    return upRows;
+                });
+
 
         if (operationLog.isInfoEnabled())
         {
@@ -542,14 +563,13 @@ final class EntityPropertyTypeDAO extends AbstractDAO implements IEntityProperty
     {
         assert entityType != null : "Unspecified entity type.";
 
-        final HibernateTemplate hibernateTemplate = getHibernateTemplate();
         String query =
                 String.format("select max(etpt.ordinal) from %s etpt "
-                        + "WHERE etpt.entityTypeInternal = ?",
+                        + "WHERE etpt.entityTypeInternal = ?1",
                         entityKind
                                 .getEntityTypePropertyTypeAssignmentClass().getSimpleName());
 
-        List<Long> resultList = cast(hibernateTemplate.find(query, entityType));
+        List<Long> resultList = find(Long.class, query, entityType);
         Long maxOrdinal = resultList.get(0);
         return maxOrdinal == null ? 0L : maxOrdinal;
     }
@@ -560,7 +580,7 @@ final class EntityPropertyTypeDAO extends AbstractDAO implements IEntityProperty
         assert entity != null : "entity is null";
 
         validatePE(entity);
-        getHibernateTemplate().flush();
+        flush();
     }
 
     @Override
@@ -572,28 +592,43 @@ final class EntityPropertyTypeDAO extends AbstractDAO implements IEntityProperty
         String query =
                 String.format("SELECT count(pv.id) FROM %s pa join %s pv "
                             + " ON pa.id = pv.entityTypePropertyType.id "
-                            + " WHERE pa.propertyTypeInternal.simpleCode = ? "
-                            + " AND pa.entityTypeInternal.code = ?",
+                            + " WHERE pa.propertyTypeInternal.simpleCode = ?1 "
+                            + " AND pa.entityTypeInternal.code = ?2",
                         entityKind
                                 .getEntityTypePropertyTypeAssignmentClass().getSimpleName(),
                         entityKind.getEntityPropertyClass().getSimpleName()
                         );
 
-        return ((Long) (getHibernateTemplate().find(query,
-                toArray(propertyTypeCode, entityTypeCode)).get(0))).intValue();
+        return find(Long.class, query,
+                toArray(propertyTypeCode, entityTypeCode)).get(0).intValue();
     }
 
     @Override
     public void delete(EntityTypePropertyTypePE assignment)
     {
-        HibernateTemplate template = getHibernateTemplate();
 
         List<Long> entityIds = listEntityIds(assignment);
-        template.bulkUpdate(String.format("DELETE FROM %s WHERE entityTypePropertyType = ?",
-                entityKind.getEntityPropertyClass().getSimpleName()), assignment);
-        template.flush();
-        template.clear();
-        template.delete(assignment);
+
+        String hql = "delete from " + entityKind.getEntityPropertyClass().getSimpleName()
+                + " ep where ep.entityTypePropertyType = :assignment";
+
+        int affected =
+            doExecute(session -> {
+                        int updated = session
+                                .createQuery(hql)
+                                .setParameter("assignment", assignment)
+                                .executeUpdate();
+                        session.flush();
+                        session.clear();
+
+                        session.createQuery(
+                                        "delete from " + assignment.getClass().getName() + " a where a.id = :id")
+                                .setParameter("id", assignment.getId())
+                                .executeUpdate();
+
+                        session.flush();
+                        return updated;
+                    });
 
         updateEntityModificationTimestamps(entityIds);
         scheduleDynamicPropertiesEvaluation(entityIds);

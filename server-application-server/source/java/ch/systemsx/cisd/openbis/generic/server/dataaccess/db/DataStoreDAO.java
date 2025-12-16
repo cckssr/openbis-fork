@@ -18,15 +18,9 @@ package ch.systemsx.cisd.openbis.generic.server.dataaccess.db;
 import java.util.List;
 
 import ch.ethz.sis.shared.log.classic.impl.Logger;
-import org.hibernate.Criteria;
-import org.hibernate.FetchMode;
-import org.hibernate.HibernateException;
-import org.hibernate.Session;
+
 import org.hibernate.SessionFactory;
-import org.hibernate.criterion.CriteriaSpecification;
-import org.hibernate.criterion.Restrictions;
-import org.springframework.orm.hibernate5.HibernateCallback;
-import org.springframework.orm.hibernate5.HibernateTemplate;
+
 
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
@@ -34,6 +28,10 @@ import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDataStoreDAO;
 import ch.systemsx.cisd.openbis.generic.shared.Constants;
 import ch.systemsx.cisd.openbis.generic.shared.basic.CodeConverter;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataStorePE;
+
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
 
 /**
  * Hibernate-based implementation of {@link IDataStoreDAO}.
@@ -56,12 +54,13 @@ public class DataStoreDAO extends AbstractDAO implements IDataStoreDAO
     public void createOrUpdateDataStore(DataStorePE dataStore)
     {
         assert dataStore != null : "Unspecified data store";
-
-        HibernateTemplate template = getHibernateTemplate();
-
         dataStore.setCode(CodeConverter.tryToDatabase(dataStore.getCode()));
-        template.saveOrUpdate(dataStore);
-        template.flush();
+
+        doExecute(session -> {
+            session.saveOrUpdate(dataStore);
+            session.flush();
+            return null;
+        });
         if (operationLog.isInfoEnabled())
         {
             operationLog.info(String.format("SAVE/UPDATE: data store '%s'.", dataStore));
@@ -73,15 +72,17 @@ public class DataStoreDAO extends AbstractDAO implements IDataStoreDAO
     {
         assert dataStoreCode != null : "Unspecified data store code.";
 
-        return getHibernateTemplate().executeWithNativeSession(new HibernateCallback<DataStorePE>()
-        {
-            @Override
-            public DataStorePE doInHibernate(Session session) throws HibernateException
-            {
-                final Criteria criteria = session.createCriteria(DataStorePE.class);
-                criteria.add(Restrictions.eq("code", CodeConverter.tryToDatabase(dataStoreCode)));
-                return (DataStorePE) criteria.uniqueResult();
-            }
+        return doExecute(session -> {
+            CriteriaBuilder cb = session.getCriteriaBuilder();
+            CriteriaQuery<DataStorePE> cq = cb.createQuery(DataStorePE.class);
+            Root<DataStorePE> root = cq.from(DataStorePE.class);
+
+            cq.select(root).where(
+                    cb.equal(root.get("code"), CodeConverter.tryToDatabase(dataStoreCode))
+            );
+
+            var results = session.createQuery(cq).getResultList();
+            return results.isEmpty() ? null : results.get(0);
         });
     }
 
@@ -94,38 +95,35 @@ public class DataStoreDAO extends AbstractDAO implements IDataStoreDAO
     @Override
     public List<DataStorePE> listDataStores(final boolean includeDss, final boolean includeAfs)
     {
-        return getHibernateTemplate().executeWithNativeSession(new HibernateCallback<List<DataStorePE>>()
-        {
+        if (!includeAfs && !includeDss) {
+            return List.of();
+        }
 
-            @Override
-            public List<DataStorePE> doInHibernate(Session session) throws HibernateException
+        return doExecute(session -> {
+            CriteriaBuilder cb = session.getCriteriaBuilder();
+            CriteriaQuery<DataStorePE> cq = cb.createQuery(DataStorePE.class);
+            Root<DataStorePE> root = cq.from(DataStorePE.class);
+
+            if (includeAfs)
             {
-                final Criteria criteria = session.createCriteria(ENTITY_CLASS);
-
-                if (includeAfs)
-                {
-                    if (!includeDss)
-                    {
-                        criteria.add(Restrictions.eq("code", Constants.AFS_DATA_STORE_CODE));
-                    }
-                } else if (includeDss)
-                {
-                    criteria.add(Restrictions.ne("code", Constants.AFS_DATA_STORE_CODE));
-                } else
-                {
-                    return List.of();
+                if (!includeDss) {
+                    cq.where(cb.equal(root.get("code"), Constants.AFS_DATA_STORE_CODE));
                 }
-
-                criteria.setFetchMode("servicesInternal", FetchMode.JOIN);
-                criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
-                final List<DataStorePE> list = cast(criteria.list());
-
-                if (operationLog.isDebugEnabled())
-                {
-                    operationLog.debug(String.format("%d data stores have been found.", list.size()));
-                }
-                return list;
+            } else if (includeDss) {
+                cq.where(cb.notEqual(root.get("code"), Constants.AFS_DATA_STORE_CODE));
+            } else
+            {
+                return List.of();
             }
+
+            root.fetch("servicesInternal", javax.persistence.criteria.JoinType.LEFT);
+            cq.select(root).distinct(true);
+            List<DataStorePE> list = session.createQuery(cq).getResultList();
+
+            if (operationLog.isDebugEnabled()) {
+                operationLog.debug(String.format("%d data stores have been found.", list.size()));
+            }
+            return list;
         });
     }
 

@@ -5,13 +5,32 @@ import ObjectType from "@src/js/common/consts/objectType";
 
 const SUPPORTED_DATA_TYPE = ["VARCHAR", "MULTILINE_VARCHAR", "CONTROLLEDVOCABULARY"]; //"JSON"
 
+/**
+ * Facade for imaging operations.
+ * Provides a simplified API for React components.
+ *
+ * @example
+ * const facade = new ImagingFacade(extOpenbis);
+ * const datasets = await facade.loadPaginatedGalleryDatasets(objId, objType, 0, 8);
+ */
 export default class ImagingFacade {
 
+    /**
+     * Creates a new ImagingFacade instance.
+     *
+     * @param {Object} extOpenbis - The openBIS API instance
+     */
     constructor(extOpenbis) {
         this.openbis = extOpenbis;
         this.isDataset = true;
     }
 
+    /**
+     * Loads imaging vocabulary terms for a given vocabulary code.
+     *
+     * @param {string} code - Vocabulary code to search for
+     * @returns {Promise<Array<Object>>} Array of {label, value} objects
+     */
     async loadImagingVocabularyTerms(code) {
         const criteria = new this.openbis.VocabularyTermSearchCriteria();
         criteria.withVocabulary().withCode().thatContains(code);
@@ -24,6 +43,11 @@ export default class ImagingFacade {
         return result.getObjects().map(vocabularyTerm => ({ label: vocabularyTerm.label, value: vocabularyTerm.code }));
     }
 
+    /**
+     * Loads dataset types and their property assignments for imaging datasets.
+     *
+     * @returns {Promise<Array<Object>>} Array of property type objects with label, value, and optional options
+     */
     async loadDataSetTypes() {
         const fetchOptions = new this.openbis.DataSetTypeFetchOptions();
         fetchOptions.withPropertyAssignments().withPropertyType();
@@ -56,6 +80,16 @@ export default class ImagingFacade {
         return Array.from(dataSetTypesMap.values());
     }
 
+    /**
+     * Creates a located SXM preview by combining configs from two datasets.
+     *
+     * @param {string} objId - Target dataset permanent ID
+     * @param {string} sxmPermId - SXM dataset permanent ID
+     * @param {string} sxmFilePath - Path to SXM file
+     * @param {number} activeImageIdx - Active image index
+     * @param {Object} selectedDatPreview - Selected DAT preview object
+     * @returns {Promise<Object>} Updated imaging dataset
+     */
     createLocatedSXMPreview = async (objId, sxmPermId, sxmFilePath, activeImageIdx, selectedDatPreview) => {
         const sxmPreviewConfig = await this.getImagingDatasetPreviewConfig(sxmPermId);
         const spectraConfig = { spectraLocator: true, objId, sxmPreviewConfig, sxmPermId, sxmFilePath, ...selectedDatPreview.config }
@@ -64,6 +98,13 @@ export default class ImagingFacade {
         return updatedImagingDataset;
     }
 
+    /**
+     * Gets list of file paths for given dataset codes.
+     * Filters out directories and .dat files.
+     *
+     * @param {Array<string>} datasetList - Array of dataset codes
+     * @returns {Promise<Array>} Array of [permId, path] tuples
+     */
     getPathsList = async (datasetList) => {
         const criteria = new this.openbis.DataSetFileSearchCriteria();
         criteria.withDataSet().withCodes().thatIn(datasetList);
@@ -77,6 +118,12 @@ export default class ImagingFacade {
     };
 
 
+    /**
+     * Gets file paths for datasets related to a sample.
+     *
+     * @param {Object} dataset - Dataset object with sample relationship
+     * @returns {Promise<Array>} Array of [permId, path] tuples
+     */
     getDatasetFilesPath = async (dataset) => {
         const getDatasetCodes = (datasets) => datasets.map(d => d.code);
 
@@ -93,10 +140,23 @@ export default class ImagingFacade {
         return [];
     };
 
+    /**
+     * Loads imaging dataset configuration from a dataset's properties.
+     *
+     * @param {string} objId - Dataset permanent ID
+     * @param {boolean} [withProperties=false] - Whether to return raw properties object
+     * @param {boolean} [withType=false] - Whether to include dataset type and file paths
+     * @param {boolean} [withDatasetsHierarchy=false] - Whether to fetch related datasets for file paths
+     * @returns {Promise<Object|Array|null>}
+     *   - If withProperties: returns dataset properties object
+     *   - If withType: returns [filePaths, datasetType, imagingDataConfig]
+     *   - Otherwise: returns imagingDataConfig object
+     *   - Returns null if dataset not found
+     */
     loadImagingDataset = async (objId, withProperties = false, withType = false, withDatasetsHierarchy = false) => {
         let skip = false;
         let dataset = null;
-        if(this.openbis.isAFSAvailable()) {
+        if(this.openbis.hasAfsDataStore()) {
             //TODO improve this -> make use of objType?
             const sampleFetchOptions = new this.openbis.SampleFetchOptions();
             sampleFetchOptions.withProperties();
@@ -149,6 +209,12 @@ export default class ImagingFacade {
         return imagingDataConfig;
     };
 
+    /**
+     * Gets the preview config from the first preview of the first image in a dataset.
+     *
+     * @param {string} objId - Dataset permanent ID
+     * @returns {Promise<Object|undefined>} Preview config object or undefined if not found
+     */
     getImagingDatasetPreviewConfig = async (objId) => {
         const fetchOptions = new this.openbis.DataSetFetchOptions();
         fetchOptions.withProperties();
@@ -157,6 +223,13 @@ export default class ImagingFacade {
         return loadedImgDS.images[0]?.previews[0]?.config;
     };
 
+    /**
+     * Edits the note property of an imaging dataset.
+     *
+     * @param {string} permId - Dataset permanent ID
+     * @param {string} note - Note text to set
+     * @returns {Promise<Object>} Update result
+     */
     editImagingDatasetNote = async (permId, note) => {
         const imagingDataset = await this.loadImagingDataset(permId);
         const update = new this.openbis.DataSetUpdate();
@@ -166,6 +239,14 @@ export default class ImagingFacade {
         return this.openbis.updateDataSets([update]);
     };
 
+    /**
+         * Saves an imaging dataset configuration.
+         * Calculates and sets the preview count metadata.
+         *
+         * @param {string} permId - Dataset permanent ID
+         * @param {Object} imagingDataset - Imaging dataset configuration object
+         * @returns {Promise<Object>} Update result
+         */
     saveImagingDataset = async (permId, objType, imagingDataset) => {
         if(objType === ObjectType.OBJECT)
         {
@@ -186,6 +267,14 @@ export default class ImagingFacade {
 
     };
 
+    /**
+     * Updates a preview within a dataset.
+     *
+     * @param {string} permId - Dataset permanent ID
+     * @param {number} imageIdx - Index of the image
+     * @param {Object} preview - Preview object to update
+     * @returns {Promise<Object>} Update result
+     */
     updatePreview = async (permId, imageIdx, preview) => {
         const toUpdateImgDS = await this.loadImagingDataset(permId);
         toUpdateImgDS.images[imageIdx].previews[preview.index] = preview;
@@ -195,38 +284,76 @@ export default class ImagingFacade {
         return this.openbis.updateDataSets([update]);
     };
 
+    /**
+     * Updates an imaging dataset via custom DSS service.
+     *
+     * @param {string} objId - Dataset permanent ID
+     * @param {number} activeImageIdx - Active image index
+     * @param {Object} preview - Preview object to update
+     * @returns {Promise<Object>} Updated imaging dataset
+     */
     updateImagingDataset = async (objId, activeImageIdx, preview) => {
         const serviceId = new this.openbis.CustomASServiceCode(constants.IMAGING_CODE);
         const options = new this.openbis.CustomASServiceExecutionOptions();
         options.parameters = new ImagingMapper(this.openbis).mapToImagingUpdateParams(objId, activeImageIdx, preview);
-        const updatedImagingDataset = await this.openbis.executeCustomASService(serviceId, options);
+        const updatedImagingDataset = await this.openbis.executeService(serviceId, options);
         return this.openbis.fromJson(null, updatedImagingDataset);
     };
 
+    /**
+     * Exports multiple imaging dataset previews in a single operation.
+     *
+     * @param {Object} exportConfig - Export configuration object
+     * @param {Array<Object>} exportList - Array of preview objects to export
+     * @returns {Promise<string>} URL to download the exported archive
+     */
     multiExportImagingDataset = async (exportConfig, exportList) => {
         const serviceId = new this.openbis.CustomASServiceCode(constants.IMAGING_CODE);
         const options = new this.openbis.CustomASServiceExecutionOptions();
         options.parameters = new ImagingMapper(this.openbis).mapToImagingMultiExportParams(exportConfig, exportList);
-        const exportedImagingDataset = await this.openbis.executeCustomASService(serviceId, options);
+        const exportedImagingDataset = await this.openbis.executeService(serviceId, options);
         return exportedImagingDataset.url;
     };
 
+    /**
+     * Exports a single imaging dataset preview.
+     *
+     * @param {string} objId - Dataset permanent ID
+     * @param {number} activeImageIdx - Index of the active image
+     * @param {Object} exportConfig - Export configuration object
+     * @param {Object} metadata - Metadata to include in export
+     * @returns {Promise<string>} URL to download the exported file
+     */
     exportImagingDataset = async (objId, activeImageIdx, exportConfig, metadata) => {
         const serviceId = new this.openbis.CustomASServiceCode(constants.IMAGING_CODE);
         const options = new this.openbis.CustomASServiceExecutionOptions();
         options.parameters = new ImagingMapper(this.openbis).mapToImagingExportParams(objId, activeImageIdx, exportConfig, metadata);
-        const exportedImagingDataset = await this.openbis.executeCustomASService(serviceId, options);
+        const exportedImagingDataset = await this.openbis.executeService(serviceId, options);
         return exportedImagingDataset.url;
     };
 
+    /**
+     * Fetches datasets for an experiment.
+     *
+     * @param {string} objId - Experiment permanent ID
+     * @returns {Promise<Array>} Array of dataset objects filtered to imaging types
+     */
     fetchExperimentDataSets = async (objId) => {
         const fetchOptions = new this.openbis.ExperimentFetchOptions();
         fetchOptions.withProperties();
         fetchOptions.withDataSets();
+        fetchOptions.withDataSets().withType();
         const experiments = await this.openbis.getExperiments([new this.openbis.ExperimentPermId(objId)], fetchOptions);
-        return experiments[objId]?.dataSets || [];
+        const expDatasets = experiments[objId]?.dataSets?.filter(dataset => dataset.type.code === constants.IMAGING_DATA || dataset.type.code === constants.USER_DEFINED_IMAGING_DATA) || [];
+        return expDatasets;
     };
 
+    /**
+     * Recursively gets all datasets from a sample and its children.
+     *
+     * @param {Object} sample - Sample object
+     * @returns {Array} Array of dataset objects
+     */
     getRecursiveDescendants = sample => {
         let children = sample.getChildren();
         let datasetList = [];
@@ -249,11 +376,18 @@ export default class ImagingFacade {
         return datasetList;
     }
 
+    /**
+     * Fetches datasets for a sample, including recursive descendants.
+     *
+     * @param {string} objId - Sample permanent ID
+     * @returns {Promise<Array>} Array of dataset objects from sample and all descendants, filtered to imaging types
+     */
     fetchSampleDataSets = async (objId) => {
         const fetchOptions = new this.openbis.SampleFetchOptions();
         fetchOptions.withType();
         fetchOptions.withProperties();
         fetchOptions.withDataSets();
+        fetchOptions.withDataSets().withType();
         fetchOptions.withChildrenUsing(fetchOptions);
 
         const samples = await this.openbis.getSamples(
@@ -262,9 +396,17 @@ export default class ImagingFacade {
         );
 
         const dataSets = this.getRecursiveDescendants(samples[objId]);
-        return dataSets;
+        const sampleDatasets = dataSets.filter(dataset => dataset.type.code === constants.IMAGING_DATA || dataset.type.code === constants.USER_DEFINED_IMAGING_DATA) || [];
+        return sampleDatasets;
     }
 
+    /**
+     * Calculates preview sorting information for datasets without loading the dataset properties.
+     * Creates an array of preview entries with dataset ID and sorting index.
+     *
+     * @param {Array<Object>} dataSets - Array of dataset objects with metadata
+     * @returns {Array<Object>} Array of {datasetId, sortingId, metadata} objects
+     */
     fetchDataSetsSortingInfo = (dataSets) => {
         return dataSets.map(dataset => {
             if (constants.METADATA_PREVIEW_COUNT in dataset.metaData) {
@@ -276,6 +418,17 @@ export default class ImagingFacade {
         }).flat();
     }
 
+    /**
+     * Paginates imaging datasets by loading preview containers for a specific page.
+     *
+     * This method efficiently loads only the datasets needed for the current page,
+     * caching dataset properties to avoid redundant API calls.
+     *
+     * @param {Array<Object>} datasetCodeList - Array of {datasetId, sortingId} objects
+     * @param {number} page - Current page (0-indexed)
+     * @param {number} pageSize - Number of items per page
+     * @returns {Promise<Array<Object>>} Array of preview container objects
+     */
     paginateImagingDatasets = async (datasetCodeList, page, pageSize) => {
         const startIdx = page * pageSize;
         const endIdx = Math.min(startIdx + pageSize, datasetCodeList.length); // Calculate end index correctly
@@ -317,6 +470,15 @@ export default class ImagingFacade {
         return previewContainerList;
     };
 
+    /**
+     * Loads paginated gallery datasets for an experiment or sample.
+     *
+     * @param {string} objId - Object ID (experiment or sample permanent ID)
+     * @param {string} objType - Object type (ObjectType.COLLECTION or ObjectType.OBJECT)
+     * @param {number} page - Current page (0-indexed)
+     * @param {number} pageSize - Number of items per page
+     * @returns {Promise<Object>} Object with previewContainerList and totalCount
+     */
     loadPaginatedGalleryDatasets = async (objId, objType, page, pageSize) => {
         const dataSets = objType === ObjectType.COLLECTION
             ? await this.fetchExperimentDataSets(objId)
@@ -325,12 +487,24 @@ export default class ImagingFacade {
                 : []; // Handle other object types or return empty array
 
         const datasetCodeList = this.fetchDataSetsSortingInfo(dataSets);
+        console.log('loadPaginatedGalleryDatasets - datasetCodeList: ', datasetCodeList);
         const totalCount = datasetCodeList.length;
         const previewContainerList = await this.paginateImagingDatasets(datasetCodeList, page, pageSize);
 
         return { previewContainerList, totalCount };
     };
 
+    /**
+     * Filters and paginates previews based on preview properties (tags, comments).
+     *
+     * @param {Array<Object>} dataSets - Array of dataset objects
+     * @param {number} page - Current page (0-indexed)
+     * @param {number} pageSize - Number of items per page
+     * @param {string} operator - Filter operator ('AND' or 'OR')
+     * @param {string} filterText - Text to filter by
+     * @param {string} property - Property to filter on (IMAGING_TAGS or PREVIEW_COMMENT)
+     * @returns {Promise<Object>} Object with previewContainerList and totalCount
+     */
     filterAndPaginateImagingDatasets = async (dataSets, page, pageSize, operator, filterText, property) => {
         const filteredDatasets = [];
 
@@ -376,6 +550,18 @@ export default class ImagingFacade {
         return { previewContainerList, totalCount };
     };
 
+    /**
+     * Filters gallery datasets based on various criteria.
+     *
+     * @param {string} objId - Object ID (experiment or sample)
+     * @param {string} objType - Object type (ObjectType.COLLECTION or ObjectType.OBJECT)
+     * @param {string} operator - Filter operator ('AND' or 'OR')
+     * @param {string} filterText - Text to filter by
+     * @param {string} property - Property to filter on
+     * @param {number} page - Current page (0-indexed)
+     * @param {number} pageSize - Number of items per page
+     * @returns {Promise<Object>} Object with previewContainerList and totalCount
+     */
     filterGallery = async (objId, objType, operator, filterText, property, page, pageSize) => {
         let dataSets = [];
 

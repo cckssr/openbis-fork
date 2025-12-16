@@ -19,8 +19,6 @@ import java.util.List;
 
 import ch.ethz.sis.shared.log.classic.impl.Logger;
 import org.hibernate.SessionFactory;
-import org.hibernate.criterion.DetachedCriteria;
-import org.hibernate.criterion.Restrictions;
 
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
@@ -58,9 +56,14 @@ public class GridCustomFilterDAO extends AbstractGenericEntityDAO<GridCustomFilt
     {
         assert gridId != null : "Unspecified grid ID.";
 
-        final DetachedCriteria criteria = DetachedCriteria.forClass(getEntityClass());
-        criteria.add(Restrictions.eq("gridId", gridId));
-        final List<GridCustomFilterPE> list = cast(getHibernateTemplate().findByCriteria(criteria));
+        List<GridCustomFilterPE> list = currentSession()
+                .createQuery(
+                        "from " + getEntityClass().getName() + " f where f.gridId = :gridId",
+                        getEntityClass()
+                )
+                .setParameter("gridId", gridId)
+                .list();
+
         if (operationLog.isDebugEnabled())
         {
             operationLog.debug(String.format("%s(%s): %d filter(s) have been found.", MethodUtils

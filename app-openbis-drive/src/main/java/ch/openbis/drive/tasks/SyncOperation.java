@@ -8,18 +8,15 @@ import ch.ethz.sis.afsclient.client.AfsClientUploadHelper;
 import ch.openbis.drive.conf.Configuration;
 import ch.openbis.drive.db.SyncJobEventDAO;
 
-import ch.openbis.drive.model.Event;
-import ch.openbis.drive.model.Notification;
-import ch.openbis.drive.model.SyncJob;
-import ch.openbis.drive.model.SyncJobEvent;
+import ch.openbis.drive.model.*;
 import ch.openbis.drive.notifications.NotificationManager;
+import ch.openbis.drive.util.GlobUtil;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.Value;
 
 import java.io.IOException;
 import java.net.URI;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
@@ -37,9 +34,10 @@ public class SyncOperation {
     static final int MAX_READ_SIZE_BYTES = 10485760;
     static final int AFS_CLIENT_TIMEOUT = 10000;
     public static final String CONFLICT_FILE_SUFFIX = ".openbis-conflict";
+    public static final String AFS_SERVER_PATH = "/afs-server";
 
     private final @NonNull SyncJob syncJob;
-    private final List<PathMatcher> hiddenPathMatchers = new ArrayList<>();
+    private final List<PathMatcher> ignoredPathMatchers = new ArrayList<>();
 
     final @NonNull AfsClientProxy afsClientProxy;
     final @NonNull ClientAPI.TransferMonitorListener uploadMonitor;
@@ -49,13 +47,15 @@ public class SyncOperation {
     final Path localOpenBisHiddenStateDirectory;
 
     final @NonNull NotificationManager notificationManager;
+    final @NonNull Settings settings;
 
 
     public SyncOperation(@NonNull SyncJob syncJob,
                          @NonNull SyncJobEventDAO syncJobEventDAO,
                          @NonNull NotificationManager notificationManager,
-                         @NonNull Configuration configuration) throws SQLException, IOException {
-        AfsClient afsClient = new AfsClient(URI.create(syncJob.getOpenBisUrl()), MAX_READ_SIZE_BYTES, AFS_CLIENT_TIMEOUT);
+                         @NonNull Configuration configuration,
+                         @NonNull Settings settings) throws SQLException, IOException {
+        AfsClient afsClient = new AfsClient(URI.create(syncJob.getOpenBisUrl() + AFS_SERVER_PATH), MAX_READ_SIZE_BYTES, AFS_CLIENT_TIMEOUT);
         afsClient.setSessionToken(syncJob.getOpenBisPersonalAccessToken());
 
         ClientAPI.DefaultTransferMonitorLister uploadMonitor = new ClientAPI.DefaultTransferMonitorLister();
@@ -70,6 +70,7 @@ public class SyncOperation {
         this.syncJobEventDAO = syncJobEventDAO;
         this.localOpenBisHiddenStateDirectory = configuration.getLocalAppStateDirectory();
         this.notificationManager = notificationManager;
+        this.settings = settings;
 
         initializeHiddenPathPatterns();
     }
@@ -80,7 +81,8 @@ public class SyncOperation {
                   @NonNull ClientAPI.TransferMonitorListener downloadMonitor,
                   @NonNull SyncJobEventDAO syncJobEventDAO,
                   @NonNull Path localOpenBisHiddenStateDirectory,
-                  @NonNull NotificationManager notificationManager
+                  @NonNull NotificationManager notificationManager,
+                  @NonNull Settings settings
     ) {
         this.syncJob = syncJob;
         this.afsClientProxy = afsClient;
@@ -89,17 +91,23 @@ public class SyncOperation {
         this.syncJobEventDAO = syncJobEventDAO;
         this.localOpenBisHiddenStateDirectory = localOpenBisHiddenStateDirectory;
         this.notificationManager = notificationManager;
+        this.settings = settings;
 
         initializeHiddenPathPatterns();
     }
 
     private void initializeHiddenPathPatterns() {
-        for ( String hiddenPathPattern: syncJob.getHiddenPathPatterns() ) {
+        List<String> hiddenPathPatternsStrings = switch (syncJob.getIgnoreFiles()) {
+            case None -> Collections.emptyList();
+            case GlobalDefault -> settings.getIgnoredPathPatterns();
+            case SpecificList -> syncJob.getIgnoredPathPatterns();
+        };
+        for ( String hiddenPathPattern: hiddenPathPatternsStrings ) {
             try {
-                this.hiddenPathMatchers.add(FileSystems.getDefault().getPathMatcher("regex:" + hiddenPathPattern));
+                this.ignoredPathMatchers.addAll(GlobUtil.compileIgnoredPathGlob(hiddenPathPattern));
             } catch (Exception e) {
                 raiseJobExceptionNotification(e);
-                throw e;
+                throw new RuntimeException(e);
             }
         }
     }
@@ -121,9 +129,17 @@ public class SyncOperation {
                 new FileSyncCollisionListener(SyncJobEvent.SyncDirection.DOWN), downloadMonitor);
     }
 
+    public synchronized void createServerEntityRootIfNecessary() throws Exception {
+        if ( getRemoteFilePresence( Path.of("/") ).isEmpty() ) {
+            afsClientProxy.create(syncJob.getEntityPermId(), "/", true);
+        }
+    }
+
     @SneakyThrows
     public void start() {
         try {
+            createServerEntityRootIfNecessary();
+
             switch (syncJob.getType()) {
                 case Upload -> upload();
                 case Download -> download();
@@ -173,7 +189,7 @@ public class SyncOperation {
             Optional<FileInfo> sourceInfoOpt;
             SyncJobEvent syncJobEvent = null;
 
-            if( skipAppPrivateFilesPrecheck(syncDirection, sourcePath, destinationPath) || skipHiddenFilesPrecheck(syncDirection, sourcePath, destinationPath) ) {
+            if( skipAppPrivateFilesPrecheck(syncDirection, sourcePath, destinationPath) || skipIgnoredFilesPrecheck(syncDirection, sourcePath, destinationPath) ) {
                 sourceInfoOpt = Optional.empty();
                 collisionAction = ClientAPI.CollisionAction.Skip;
             } else {
@@ -223,7 +239,7 @@ public class SyncOperation {
                 }
                 case RAISE_VERSION_CONFLICT -> {
                     if (!sourceInfo.isDirectory()) {
-                        yield handleFileVersionConflict(sourcePath, destinationPath, syncDirection, syncJobEvent);
+                        yield handleFileVersionConflict(sourcePath, destinationPath, syncDirection);
                     } else {
                         yield ClientAPI.CollisionAction.Override;
                     }
@@ -362,11 +378,11 @@ public class SyncOperation {
             case Upload, Download ->
                 switch (syncCheckResult) {
 
-                    case SYNC_STATE_INCOMPLETE, SYNC_STATE_INCOMPLETE_SRC_MODIFIED_LATER,
-                         SYNC_STATE_INCOMPLETE_NO_DEST, SOURCE_MODIFIED, DESTINATION_DELETED,
+                    case SYNC_STATE_INCOMPLETE_NO_DEST, SOURCE_MODIFIED, DESTINATION_DELETED,
                          BOTH_MODIFIED_DEST_DELETED -> SyncCheckAction.PROCEED;
 
-                    case BOTH_MODIFIED, DESTINATION_MODIFIED, SYNC_STATE_INCOMPLETE_DEST_MODIFIED_LATER ->
+                    case SYNC_STATE_INCOMPLETE, SYNC_STATE_INCOMPLETE_SRC_MODIFIED_LATER,
+                         BOTH_MODIFIED, DESTINATION_MODIFIED, SYNC_STATE_INCOMPLETE_DEST_MODIFIED_LATER ->
                             SyncCheckAction.RAISE_VERSION_CONFLICT;
 
                     case NONE_MODIFIED -> SyncCheckAction.SKIP;
@@ -375,13 +391,12 @@ public class SyncOperation {
             case Bidirectional ->
                     switch (syncCheckResult) {
 
-                    case SYNC_STATE_INCOMPLETE, SYNC_STATE_INCOMPLETE_SRC_MODIFIED_LATER, SOURCE_MODIFIED,
-                         SYNC_STATE_INCOMPLETE_NO_DEST, BOTH_MODIFIED_DEST_DELETED ->
+                    case SOURCE_MODIFIED, SYNC_STATE_INCOMPLETE_NO_DEST, BOTH_MODIFIED_DEST_DELETED ->
                             SyncCheckAction.PROCEED;
-                    case SYNC_STATE_INCOMPLETE_DEST_MODIFIED_LATER, NONE_MODIFIED, DESTINATION_MODIFIED ->
+                    case NONE_MODIFIED, DESTINATION_MODIFIED ->
                             SyncCheckAction.SKIP;
                     case DESTINATION_DELETED -> SyncCheckAction.DELETE_SOURCE;
-                    case BOTH_MODIFIED -> SyncCheckAction.RAISE_VERSION_CONFLICT;
+                    case SYNC_STATE_INCOMPLETE, SYNC_STATE_INCOMPLETE_SRC_MODIFIED_LATER, SYNC_STATE_INCOMPLETE_DEST_MODIFIED_LATER, BOTH_MODIFIED -> SyncCheckAction.RAISE_VERSION_CONFLICT;
                 };
         };
     }
@@ -471,19 +486,12 @@ public class SyncOperation {
             case DOWN -> source;
         };
 
-        if (syncJob.getType() == SyncJob.Type.Bidirectional) {
+        SyncJobEvent uploadSyncJobEvent = syncJobEventDAO.selectByPrimaryKey(
+                SyncJobEvent.SyncDirection.UP, localFile.toAbsolutePath().toString(), toServerPathString(remoteFile));
+        SyncJobEvent downloadSyncJobEvent = syncJobEventDAO.selectByPrimaryKey(
+                SyncJobEvent.SyncDirection.DOWN, localFile.toAbsolutePath().toString(), toServerPathString(remoteFile));
 
-            SyncJobEvent uploadSyncJobEvent = syncJobEventDAO.selectByPrimaryKey(
-                    SyncJobEvent.SyncDirection.UP, localFile.toAbsolutePath().toString(), toServerPathString(remoteFile));
-
-            SyncJobEvent downloadSyncJobEvent = syncJobEventDAO.selectByPrimaryKey(
-                    SyncJobEvent.SyncDirection.DOWN, localFile.toAbsolutePath().toString(), toServerPathString(remoteFile));
-
-            return pickMoreRecentCompletedFileSyncState(uploadSyncJobEvent, downloadSyncJobEvent);
-        } else {
-            return syncJobEventDAO.selectByPrimaryKey(
-                    syncDirection, localFile.toAbsolutePath().toString(), toServerPathString(remoteFile));
-        }
+        return pickMoreRecentCompletedFileSyncState(uploadSyncJobEvent, downloadSyncJobEvent);
     }
 
     void insertNewSyncEntry(SyncJobEvent.SyncDirection syncDirection, Path source, Path destination, Instant sourceLastModified) throws SQLException, IOException {
@@ -561,16 +569,17 @@ public class SyncOperation {
                 Optional.ofNullable(destination.getFileName()).map(Path::toString).orElse("").endsWith(CONFLICT_FILE_SUFFIX);
     }
 
-    boolean  skipHiddenFilesPrecheck(@NonNull SyncJobEvent.SyncDirection syncDirection, @NonNull Path source, @NonNull Path destination) {
-        if ( syncJob.isSkipHiddenFiles() ) {
-            Path normalizedLocalPath = switch (syncDirection) {
-                case UP -> source.normalize().toAbsolutePath();
-                case DOWN -> destination.normalize().toAbsolutePath();
-            };
+    boolean skipIgnoredFilesPrecheck(@NonNull SyncJobEvent.SyncDirection syncDirection, @NonNull Path source, @NonNull Path destination) {
+        if ( syncJob.getIgnoreFiles() != SyncJob.IgnoredFilesMode.None) {
+            Path relativizedLocalPath = Path.of(syncJob.getLocalDirectoryRoot()).normalize().toAbsolutePath()
+                    .relativize(switch (syncDirection) {
+                        case UP -> source.normalize().toAbsolutePath();
+                        case DOWN -> destination.normalize().toAbsolutePath();
+            });
 
-            return hiddenPathMatchers.stream().anyMatch(regex -> {
+            return ignoredPathMatchers.stream().anyMatch(glob -> {
                         try {
-                            return regex.matches(normalizedLocalPath);
+                            return glob.matches(relativizedLocalPath);
                         } catch (Exception e) {
                             raiseJobExceptionNotification(e);
                             return true;
@@ -588,7 +597,7 @@ public class SyncOperation {
     }
 
     @SneakyThrows
-    ClientAPI.CollisionAction handleFileVersionConflict(@NonNull Path source, @NonNull Path destination, @NonNull SyncJobEvent.SyncDirection syncDirection, @NonNull SyncJobEvent syncJobEvent) {
+    ClientAPI.CollisionAction handleFileVersionConflict(@NonNull Path source, @NonNull Path destination, @NonNull SyncJobEvent.SyncDirection syncDirection) {
         Path localFile = syncDirection == SyncJobEvent.SyncDirection.UP ? source : destination;
         Path remoteFile = syncDirection == SyncJobEvent.SyncDirection.UP ? destination : source;
         Notification alreadyPresentConflictNotification = notificationManager.getSpecificNotification(new Notification(
@@ -664,13 +673,13 @@ public class SyncOperation {
                 }
             }
 
-            raiseConflictNotification(source, destination, syncDirection, syncJobEvent);
+            raiseConflictNotification(source, destination, syncDirection);
         }
 
         return ClientAPI.CollisionAction.Skip;
     }
 
-    void raiseConflictNotification(@NonNull Path source, @NonNull Path destination, @NonNull SyncJobEvent.SyncDirection syncDirection, @NonNull SyncJobEvent syncJobEvent) {
+    void raiseConflictNotification(@NonNull Path source, @NonNull Path destination, @NonNull SyncJobEvent.SyncDirection syncDirection) {
         String localFile = syncDirection == SyncJobEvent.SyncDirection.UP ? source.toString() : destination.toString();
         String remoteFile = syncDirection == SyncJobEvent.SyncDirection.UP ? toServerPathString(destination) : toServerPathString(source);
 
@@ -776,6 +785,10 @@ public class SyncOperation {
 
         public void delete(@NonNull String sourceOwner, @NonNull String sourcePath) throws Exception {
             afsClient.delete(sourceOwner, sourcePath);
+        }
+
+        public void create(@NonNull String sourceOwner, @NonNull String sourcePath, boolean directory) throws Exception {
+            afsClient.create(sourceOwner, sourcePath, directory);
         }
     }
 }

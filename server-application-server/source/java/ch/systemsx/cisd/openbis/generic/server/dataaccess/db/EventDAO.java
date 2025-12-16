@@ -26,12 +26,8 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.EventPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EventPE.EntityType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EventType;
 import ch.ethz.sis.shared.log.classic.impl.Logger;
-import org.hibernate.Criteria;
+
 import org.hibernate.SessionFactory;
-import org.hibernate.criterion.DetachedCriteria;
-import org.hibernate.criterion.MatchMode;
-import org.hibernate.criterion.Order;
-import org.hibernate.criterion.Restrictions;
 import org.springframework.jdbc.support.JdbcAccessor;
 
 import java.util.ArrayList;
@@ -66,11 +62,22 @@ public class EventDAO extends AbstractGenericEntityDAO<EventPE> implements IEven
         assert entityType != null : "Unspecified entityType.";
         assert eventType != null : "Unspecified eventType.";
 
-        final Criteria criteria = currentSession().createCriteria(EventPE.class);
-        criteria.add(Restrictions.like("identifiersInternal", identifier, MatchMode.ANYWHERE));
-        criteria.add(Restrictions.eq("entityType", entityType));
-        criteria.add(Restrictions.eq("eventType", eventType));
-        final EventPE result = tryGetEntity(criteria.uniqueResult());
+        String identifiersInternal = "%" + identifier + "%";
+
+        EventPE unique = currentSession()
+                .createQuery(
+                        "from EventPE e " +
+                                "where e.identifiersInternal like :identifiersInternal " +
+                                "and e.entityType = :entityType " +
+                                "and e.eventType = :eventType",
+                        EventPE.class)
+                .setParameter("identifiersInternal", identifiersInternal)
+                .setParameter("entityType", entityType)
+                .setParameter("eventType", eventType)
+                .uniqueResultOptional()
+                .orElse(null);
+
+        final EventPE result = tryGetEntity(unique);
         if (operationLog.isDebugEnabled())
         {
             String methodName = MethodUtils.getCurrentMethod().getName();
@@ -83,18 +90,30 @@ public class EventDAO extends AbstractGenericEntityDAO<EventPE> implements IEven
     public List<DeletedDataSet> listDeletedDataSets(Long lastSeenDeletionEventIdOrNull,
             Date maxDeletionDataOrNull)
     {
-        final DetachedCriteria criteria = DetachedCriteria.forClass(EventPE.class);
-        if (lastSeenDeletionEventIdOrNull != null)
-        {
-            criteria.add(Restrictions.gt("id", lastSeenDeletionEventIdOrNull));
+
+        StringBuilder hql = new StringBuilder(
+                "from EventPE e where e.eventType = :evt and e.entityType = :ent"
+        );
+        if (lastSeenDeletionEventIdOrNull != null) {
+            hql.append(" and e.id > :lastId");
         }
-        if (maxDeletionDataOrNull != null)
-        {
-            criteria.add(Restrictions.lt("registrationDate", maxDeletionDataOrNull));
+        if (maxDeletionDataOrNull != null) {
+            hql.append(" and e.registrationDate < :maxDate");
         }
-        criteria.add(Restrictions.eq("eventType", EventType.DELETION));
-        criteria.add(Restrictions.eq("entityType", EntityType.DATASET));
-        final List<EventPE> list = cast(getHibernateTemplate().findByCriteria(criteria));
+
+        var query = currentSession().createQuery(hql.toString(), EventPE.class)
+                .setParameter("evt", EventType.DELETION)
+                .setParameter("ent", EntityType.DATASET);
+
+        if (lastSeenDeletionEventIdOrNull != null) {
+            query.setParameter("lastId", lastSeenDeletionEventIdOrNull);
+        }
+        if (maxDeletionDataOrNull != null) {
+            query.setParameter("maxDate", maxDeletionDataOrNull);
+        }
+
+        List<EventPE> list = query.list();
+
         if (operationLog.isDebugEnabled())
         {
             String lastDesc =
@@ -116,37 +135,64 @@ public class EventDAO extends AbstractGenericEntityDAO<EventPE> implements IEven
 
     @Override public List<EventPE> listEvents(EventType eventType, EntityType entityTypeOrNull, Date lastSeenTimestampOrNull, Integer limitOrNull)
     {
-        final DetachedCriteria criteria = DetachedCriteria.forClass(EventPE.class);
-        criteria.addOrder(Order.asc("registrationDate"));
-        criteria.addOrder(Order.asc("id"));
-        criteria.add(Restrictions.eq("eventType", eventType));
 
-        if (entityTypeOrNull != null)
-        {
-            criteria.add(Restrictions.eq("entityType", entityTypeOrNull));
+        StringBuilder hql = new StringBuilder(
+                "from " + EventPE.class.getName() + " e where e.eventType = :evt"
+        );
+        if (entityTypeOrNull != null) {
+            hql.append(" and e.entityType = :ent");
+        }
+        if (lastSeenTimestampOrNull != null) {
+            hql.append(" and e.registrationDate > :lastSeen");
+        }
+        hql.append(" order by e.registrationDate asc, e.id asc");
+
+        int limit = (limitOrNull != null ? limitOrNull : 1);
+
+        var q = currentSession().createQuery(hql.toString(), EventPE.class)
+                .setParameter("evt", eventType);
+        if (entityTypeOrNull != null) {
+            q.setParameter("ent", entityTypeOrNull);
+        }
+        if (lastSeenTimestampOrNull != null) {
+            q.setParameter("lastSeen", lastSeenTimestampOrNull);
         }
 
-        if (lastSeenTimestampOrNull != null)
-        {
-            criteria.add(Restrictions.gt("registrationDate", lastSeenTimestampOrNull));
-        }
+        List<EventPE> list = q.setMaxResults(limit).list();
 
-        int limit = limitOrNull != null ? limitOrNull : 1;
-
-        List<EventPE> list = cast(getHibernateTemplate().findByCriteria(criteria, 0, limit));
-
-        if (list.size() == limit)
-        {
+        if (list.size() == limit) {
             Date lastRegistrationDate = list.get(list.size() - 1).getRegistrationDateInternal();
-            criteria.add(Restrictions.le("registrationDate", lastRegistrationDate));
 
-            List<EventPE> remainderList = cast(getHibernateTemplate().findByCriteria(criteria, limit, Integer.MAX_VALUE));
+            StringBuilder hqlUpToBoundary = new StringBuilder(
+                    "from EventPE e where e.eventType = :evt"
+            );
+            if (entityTypeOrNull != null) {
+                hqlUpToBoundary.append(" and e.entityType = :ent");
+            }
+            if (lastSeenTimestampOrNull != null) {
+                hqlUpToBoundary.append(" and e.registrationDate > :lastSeen");
+            }
+            hqlUpToBoundary.append(" and e.registrationDate <= :boundaryDate");
+            hqlUpToBoundary.append(" order by e.registrationDate asc, e.id asc");
 
-            if (remainderList.size() > 0)
-            {
-                List<EventPE> fullList = new ArrayList<>(list);
-                fullList.addAll(remainderList);
-                list = fullList;
+            var q2 = currentSession().createQuery(hqlUpToBoundary.toString(), EventPE.class)
+                    .setParameter("evt", eventType)
+                    .setParameter("boundaryDate", lastRegistrationDate);
+
+            if (entityTypeOrNull != null) {
+                q2.setParameter("ent", entityTypeOrNull);
+            }
+            if (lastSeenTimestampOrNull != null) {
+                q2.setParameter("lastSeen", lastSeenTimestampOrNull);
+            }
+
+            // Skip the first 'limit' already returned rows; fetch the remainder up to the boundary
+            List<EventPE> remainder = q2.setFirstResult(limit).list();
+            if (!remainder.isEmpty()) {
+                List<EventPE> full = new ArrayList<>(list.size() + remainder.size());
+                full.addAll(list);
+                full.addAll(remainder);
+                list = full;
             }
         }
 

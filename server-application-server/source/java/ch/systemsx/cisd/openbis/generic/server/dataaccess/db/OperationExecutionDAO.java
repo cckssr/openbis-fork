@@ -24,11 +24,8 @@ import java.util.Date;
 import java.util.List;
 
 import ch.ethz.sis.shared.log.classic.impl.Logger;
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.criterion.DetachedCriteria;
-import org.hibernate.criterion.Order;
-import org.hibernate.criterion.Restrictions;
-import org.springframework.orm.hibernate5.HibernateTemplate;
 
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
@@ -58,9 +55,11 @@ final class OperationExecutionDAO extends AbstractGenericEntityDAO<OperationExec
     public void createOrUpdate(OperationExecutionPE execution)
     {
         validatePE(execution);
-        final HibernateTemplate template = getHibernateTemplate();
-        template.saveOrUpdate(execution);
-        template.flush();
+        doExecute(session -> {
+            session.saveOrUpdate(execution);
+            session.flush();
+            return null;
+        });
 
         if (operationLog.isDebugEnabled())
         {
@@ -78,11 +77,15 @@ final class OperationExecutionDAO extends AbstractGenericEntityDAO<OperationExec
     @Override
     public List<OperationExecutionPE> findByCodes(Collection<String> codes)
     {
-        final DetachedCriteria criteria = DetachedCriteria.forClass(OperationExecutionPE.class);
-        criteria.add(Restrictions.in("code", codes));
-        criteria.addOrder(Order.asc("code"));
 
-        final List<OperationExecutionPE> list = cast(getHibernateTemplate().findByCriteria(criteria));
+        List<OperationExecutionPE> list = doExecute(session ->  session.createQuery(
+                                "select oe from OperationExecutionPE oe " +
+                                        "where oe.code in :codes " +
+                                        "order by oe.code asc",
+                                OperationExecutionPE.class)
+                        .setParameter("codes", codes) // Hibernate 6: pass the Collection directly
+                        .getResultList());
+
         if (operationLog.isDebugEnabled())
         {
             operationLog.debug(String.format("%s(): %d executions(s) have been found.", MethodUtils
@@ -94,10 +97,13 @@ final class OperationExecutionDAO extends AbstractGenericEntityDAO<OperationExec
     @Override
     public List<OperationExecutionPE> findByIds(Collection<Long> ids)
     {
-        final DetachedCriteria criteria = DetachedCriteria.forClass(OperationExecutionPE.class);
-        criteria.add(Restrictions.in("id", ids));
+        List<OperationExecutionPE> list = doExecute(session -> session.createQuery(
+                                "select oe from OperationExecutionPE oe where oe.id in :ids",
+                                OperationExecutionPE.class)
+                        .setParameter("ids", ids)
+                        .getResultList());
 
-        final List<OperationExecutionPE> list = cast(getHibernateTemplate().findByCriteria(criteria));
+
         if (operationLog.isDebugEnabled())
         {
             operationLog.debug(String.format("%s(): %d executions(s) have been found.", MethodUtils
@@ -109,13 +115,23 @@ final class OperationExecutionDAO extends AbstractGenericEntityDAO<OperationExec
     @Override
     public List<OperationExecutionPE> getExecutionsToBeFailedAfterServerRestart(Date serverStartDate)
     {
-        DetachedCriteria criteria = DetachedCriteria.forClass(OperationExecutionPE.class);
-        criteria.add(Restrictions.in("state",
-                Arrays.asList(OperationExecutionState.NEW, OperationExecutionState.SCHEDULED, OperationExecutionState.RUNNING)));
-        criteria.add(Restrictions.lt("creationDate", serverStartDate));
 
-        final List<OperationExecutionPE> executions = new ArrayList<OperationExecutionPE>();
-        executions.addAll(findByCriteria(criteria));
+        List<OperationExecutionState> states = Arrays.asList(
+                OperationExecutionState.NEW,
+                OperationExecutionState.SCHEDULED,
+                OperationExecutionState.RUNNING
+        );
+
+        var se = doExecute(session ->
+                    session.createQuery(
+                        "from OperationExecutionPE e " +
+                                "where e.state in :states and e.creationDate < :start " +
+                                "order by e.creationDate asc, e.id asc",
+                        OperationExecutionPE.class)
+                    .setParameter("states", states)
+                    .setParameter("start", serverStartDate)
+                    .list());
+        final List<OperationExecutionPE> executions = new ArrayList<>(se);
         sortFromOldestToNewest(executions);
         return executions;
     }
@@ -123,15 +139,29 @@ final class OperationExecutionDAO extends AbstractGenericEntityDAO<OperationExec
     @Override
     public List<OperationExecutionPE> getExecutionsToBeTimeOutPending()
     {
-        DetachedCriteria criteria = DetachedCriteria.forClass(OperationExecutionPE.class);
-        criteria.add(Restrictions.in("state", Arrays.asList(OperationExecutionState.FAILED, OperationExecutionState.FINISHED)));
-        criteria.add(Restrictions.or(Restrictions.eq("availability", OperationExecutionAvailability.AVAILABLE),
-                Restrictions.eq("summaryAvailability", OperationExecutionAvailability.AVAILABLE),
-                Restrictions.eq("detailsAvailability", OperationExecutionAvailability.AVAILABLE)));
+
+        List<OperationExecutionState> states = Arrays.asList(
+                OperationExecutionState.FAILED,
+                OperationExecutionState.FINISHED
+        );
+
+        List<OperationExecutionPE> prefiltered = doExecute(session ->
+                session.createQuery(
+                        "from OperationExecutionPE e " +
+                                "where e.state in :states and " +
+                                "      (e.availability = :avail " +
+                                "       or e.summaryAvailability = :avail " +
+                                "       or e.detailsAvailability = :avail) " +
+                                "order by e.creationDate asc, e.id asc",
+                        OperationExecutionPE.class)
+                .setParameter("states", states)
+                .setParameter("avail", OperationExecutionAvailability.AVAILABLE)
+                .list());
+
 
         final List<OperationExecutionPE> executions = new ArrayList<OperationExecutionPE>();
 
-        for (OperationExecutionPE execution : findByCriteria(criteria))
+        for (OperationExecutionPE execution : prefiltered)
         {
             boolean matches = false;
 
@@ -165,13 +195,24 @@ final class OperationExecutionDAO extends AbstractGenericEntityDAO<OperationExec
     @Override
     public List<OperationExecutionPE> getExecutionsToBeTimedOut()
     {
-        DetachedCriteria criteria = DetachedCriteria.forClass(OperationExecutionPE.class);
-        criteria.add(Restrictions.in("state", Arrays.asList(OperationExecutionState.FAILED, OperationExecutionState.FINISHED)));
-        criteria.add(Restrictions.or(Restrictions.eq("availability", OperationExecutionAvailability.TIME_OUT_PENDING),
-                Restrictions.eq("summaryAvailability", OperationExecutionAvailability.TIME_OUT_PENDING),
-                Restrictions.eq("detailsAvailability", OperationExecutionAvailability.TIME_OUT_PENDING)));
+        List<OperationExecutionState> states = Arrays.asList(
+                OperationExecutionState.FAILED,
+                OperationExecutionState.FINISHED
+        );
 
-        List<OperationExecutionPE> executions = findByCriteria(criteria);
+        List<OperationExecutionPE> executions = doExecute(session ->
+                session.createQuery(
+                        "from OperationExecutionPE e " +
+                                "where e.state in :states and " +
+                                "      (e.availability = :pending " +
+                                "       or e.summaryAvailability = :pending " +
+                                "       or e.detailsAvailability = :pending) " +
+                                "order by e.creationDate asc, e.id asc",
+                        OperationExecutionPE.class)
+                .setParameter("states", states)
+                .setParameter("pending", OperationExecutionAvailability.TIME_OUT_PENDING)
+                .list());
+
         sortFromOldestToNewest(executions);
         return executions;
     }
@@ -179,13 +220,25 @@ final class OperationExecutionDAO extends AbstractGenericEntityDAO<OperationExec
     @Override
     public List<OperationExecutionPE> getExecutionsToBeDeleted()
     {
-        DetachedCriteria criteria = DetachedCriteria.forClass(OperationExecutionPE.class);
-        criteria.add(Restrictions.in("state", Arrays.asList(OperationExecutionState.FAILED, OperationExecutionState.FINISHED)));
-        criteria.add(Restrictions.or(Restrictions.eq("availability", OperationExecutionAvailability.DELETE_PENDING),
-                Restrictions.eq("summaryAvailability", OperationExecutionAvailability.DELETE_PENDING),
-                Restrictions.eq("detailsAvailability", OperationExecutionAvailability.DELETE_PENDING)));
+        List<OperationExecutionState> states = Arrays.asList(
+                OperationExecutionState.FAILED,
+                OperationExecutionState.FINISHED
+        );
 
-        List<OperationExecutionPE> executions = findByCriteria(criteria);
+        List<OperationExecutionPE> executions = doExecute(session ->
+                session
+                .createQuery(
+                        "from OperationExecutionPE e " +
+                                "where e.state in :states and " +
+                                "      (e.availability = :pending " +
+                                "       or e.summaryAvailability = :pending " +
+                                "       or e.detailsAvailability = :pending) " +
+                                "order by e.creationDate asc, e.id asc",
+                        OperationExecutionPE.class)
+                .setParameter("states", states)
+                .setParameter("pending", OperationExecutionAvailability.DELETE_PENDING)
+                .list());
+
         sortFromOldestToNewest(executions);
         return executions;
     }
@@ -202,9 +255,5 @@ final class OperationExecutionDAO extends AbstractGenericEntityDAO<OperationExec
             });
     }
 
-    private List<OperationExecutionPE> findByCriteria(DetachedCriteria criteria)
-    {
-        return cast(getHibernateTemplate().findByCriteria(criteria));
-    }
 
 }

@@ -19,12 +19,9 @@ import java.util.Collection;
 import java.util.List;
 
 import ch.ethz.sis.shared.log.classic.impl.Logger;
-import org.hibernate.Criteria;
+
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.criterion.CriteriaSpecification;
-import org.hibernate.criterion.Restrictions;
-import org.springframework.orm.hibernate5.HibernateTemplate;
 
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
@@ -55,12 +52,14 @@ public class ExternalDataManagementSystemDAO extends AbstractDAO implements
     {
         assert externalDataManagementSystem != null : "Unspecified external data management system.";
 
-        HibernateTemplate template = getHibernateTemplate();
 
         externalDataManagementSystem.setCode(CodeConverter
                 .tryToDatabase(externalDataManagementSystem.getCode()));
-        template.saveOrUpdate(externalDataManagementSystem);
-        template.flush();
+        doExecute(session -> {
+            session.saveOrUpdate(externalDataManagementSystem);
+            session.flush();
+            return null;
+        });
         if (operationLog.isInfoEnabled())
         {
             operationLog.info(String.format("SAVE/UPDATE: external data management system '%s'.",
@@ -73,9 +72,14 @@ public class ExternalDataManagementSystemDAO extends AbstractDAO implements
     {
         assert id != null : "Unspecified external data management system id.";
 
-        final Criteria criteria = currentSession().createCriteria(ENTITY_CLASS);
-        criteria.add(Restrictions.eq("id", id));
-        return (ExternalDataManagementSystemPE) criteria.uniqueResult();
+        return currentSession()
+                .createQuery(
+                        "from " + ENTITY_CLASS.getName() + " e where e.id = :id",
+                        ENTITY_CLASS
+                )
+                .setParameter("id", id)
+                .uniqueResultOptional()
+                .orElse(null);
     }
 
     @Override
@@ -84,18 +88,25 @@ public class ExternalDataManagementSystemDAO extends AbstractDAO implements
     {
         assert externalDataManagementSystemCode != null : "Unspecified external data management system code.";
 
-        final Criteria criteria = currentSession().createCriteria(ENTITY_CLASS);
-        criteria.add(Restrictions.eq("code",
-                CodeConverter.tryToDatabase(externalDataManagementSystemCode)));
-        return (ExternalDataManagementSystemPE) criteria.uniqueResult();
+
+        String code = CodeConverter.tryToDatabase(externalDataManagementSystemCode);
+
+        return currentSession()
+                .createQuery(
+                        "from " + ENTITY_CLASS.getName() + " e where e.code = :code",
+                        ENTITY_CLASS
+                )
+                .setParameter("code", code)
+                .uniqueResultOptional()
+                .orElse(null);
     }
 
     @Override
     public List<ExternalDataManagementSystemPE> listExternalDataManagementSystems()
     {
-        final Criteria criteria = currentSession().createCriteria(ENTITY_CLASS);
-        criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
-        final List<ExternalDataManagementSystemPE> list = cast(criteria.list());
+        List<ExternalDataManagementSystemPE> list = currentSession()
+                .createQuery("select distinct e from " + ENTITY_CLASS.getName() + " e", ENTITY_CLASS)
+                .list();
         if (operationLog.isDebugEnabled())
         {
             operationLog.debug(String.format(
@@ -121,11 +132,15 @@ public class ExternalDataManagementSystemDAO extends AbstractDAO implements
     @Override
     public List<ExternalDataManagementSystemPE> listExternalDataManagementSystems(Collection<Long> ids)
     {
-        final Criteria criteria = currentSession().createCriteria(ENTITY_CLASS);
-        criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
-        criteria.add(Restrictions.in("id", ids));
 
-        final List<ExternalDataManagementSystemPE> list = cast(criteria.list());
+        List<ExternalDataManagementSystemPE> list = currentSession()
+                .createQuery(
+                        "from " + ENTITY_CLASS.getName() + " e where e.id in :ids",
+                        ENTITY_CLASS
+                )
+                .setParameter("ids", ids)
+                .list();
+
         if (operationLog.isDebugEnabled())
         {
             operationLog.debug(String.format(

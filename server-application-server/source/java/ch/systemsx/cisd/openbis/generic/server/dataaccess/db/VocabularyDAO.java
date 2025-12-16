@@ -18,9 +18,10 @@ package ch.systemsx.cisd.openbis.generic.server.dataaccess.db;
 import java.util.List;
 
 import ch.ethz.sis.shared.log.classic.impl.Logger;
-import org.hibernate.Criteria;
+
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.criterion.Restrictions;
+
 import org.springframework.jdbc.support.JdbcAccessor;
 import org.springframework.orm.hibernate5.HibernateTemplate;
 
@@ -67,9 +68,12 @@ final class VocabularyDAO extends AbstractGenericEntityDAO<VocabularyPE> impleme
         assert vocabularyPE != null : "Given vocabulary can not be null.";
         validatePE(vocabularyPE);
 
-        final HibernateTemplate template = getHibernateTemplate();
-        template.save(vocabularyPE);
-        template.flush();
+        doExecute(session -> {
+                    session.save(vocabularyPE);
+                    session.flush();
+                    return null;
+                }
+        );
         if (operationLog.isInfoEnabled())
         {
             operationLog.info(String.format("ADD/UPDATE: vocabulary '%s'.", vocabularyPE));
@@ -84,10 +88,10 @@ final class VocabularyDAO extends AbstractGenericEntityDAO<VocabularyPE> impleme
 
         final String mangledVocabularyCode = CodeConverter.tryToDatabase(vocabularyCode);
         final List<VocabularyPE> list =
-                cast(getHibernateTemplate().find(
-                        String.format("select v from %s v where v.simpleCode = ? ",
+                find(VocabularyPE.class,
+                        String.format("select v from %s v where v.simpleCode = ?1 ",
                                 TABLE_NAME),
-                        toArray(mangledVocabularyCode)));
+                        toArray(mangledVocabularyCode));
         final VocabularyPE entity = tryFindEntity(list, "vocabulary", vocabularyCode);
         if (operationLog.isDebugEnabled())
         {
@@ -102,9 +106,9 @@ final class VocabularyDAO extends AbstractGenericEntityDAO<VocabularyPE> impleme
     {
         String excludeInternalQuery = " where v.managedInternally = false";
         final List<VocabularyPE> list =
-                cast(getHibernateTemplate().find(
+                find(VocabularyPE.class,
                         String.format("from %s v "
-                                + (excludeInternal ? excludeInternalQuery : ""), TABLE_NAME)));
+                                + (excludeInternal ? excludeInternalQuery : ""), TABLE_NAME));
         if (operationLog.isDebugEnabled())
         {
             operationLog.debug(list.size() + " vocabulary(ies) have been found.");
@@ -119,10 +123,17 @@ final class VocabularyDAO extends AbstractGenericEntityDAO<VocabularyPE> impleme
         assert vocabulary != null : "Unspecified vocabulary.";
         assert code != null : "Unspecified code.";
 
-        final Criteria criteria = currentSession().createCriteria(VocabularyTermPE.class);
-        criteria.add(Restrictions.eq("simpleCode", code));
-        criteria.add(Restrictions.eq("vocabularyInternal", vocabulary));
-        final VocabularyTermPE result = tryGetEntity(criteria.uniqueResult());
+        VocabularyTermPE found = currentSession()
+            .createQuery(
+            "from VocabularyTermPE vt " +
+                    "where vt.simpleCode = :code and vt.vocabularyInternal = :vocab",
+                    VocabularyTermPE.class)
+            .setParameter("code", code)
+            .setParameter("vocab", vocabulary)
+            .uniqueResultOptional()
+            .orElse(null);
+
+        final VocabularyTermPE result = tryGetEntity(found);
         if (operationLog.isDebugEnabled())
         {
             operationLog.debug(String.format("%s(%s): '%s'.", vocabulary.getCode(), code, result));

@@ -292,7 +292,7 @@ $.extend(ImagingTechnology.prototype, ELNLIMSPlugin.prototype, {
                         executeCustomASService: mainController.openbisV3.executeCustomASService.bind(mainController.openbisV3),
                         getExperiments: mainController.openbisV3.getExperiments.bind(mainController.openbisV3),
                         getSamples: mainController.openbisV3.getSamples.bind(mainController.openbisV3),
-                        isAFSAvailable: profile.isAFSAvailable.bind(profile),
+                        hasAfsDataStore: profile.isAFSAvailable.bind(profile),
                         searchFiles: mainController.openbisV3.getDataStoreFacade().searchFiles.bind(mainController.openbisV3.getDataStoreFacade()),
                         fromJson: utilJson.fromJson.bind(utilJson),
                         SampleUpdate: SampleUpdate,

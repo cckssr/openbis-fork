@@ -20,8 +20,7 @@ import java.util.List;
 
 import ch.ethz.sis.shared.log.classic.impl.Logger;
 import org.hibernate.SessionFactory;
-import org.hibernate.criterion.DetachedCriteria;
-import org.hibernate.criterion.Restrictions;
+
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.UncategorizedSQLException;
 
@@ -50,12 +49,16 @@ public class QueryDAO extends AbstractGenericEntityDAO<QueryPE> implements IQuer
     @Override
     public List<QueryPE> listQueries(QueryType queryType)
     {
-        final DetachedCriteria criteria = DetachedCriteria.forClass(getEntityClass());
-        if (queryType != QueryType.UNSPECIFIED)
-        {
-            criteria.add(Restrictions.eq("queryType", queryType));
-        }
-        final List<QueryPE> list = cast(getHibernateTemplate().findByCriteria(criteria));
+        List<QueryPE> list = doExecute(session -> {
+            var cb = session.getCriteriaBuilder();
+            var cq = cb.createQuery(QueryPE.class);
+            var root = cq.from(QueryPE.class);
+
+            if (queryType != QueryType.UNSPECIFIED) {
+                cq.where(cb.equal(root.get("queryType"), queryType));
+            }
+            return  session.createQuery(cq).getResultList();
+        });
         if (operationLog.isDebugEnabled())
         {
             operationLog.debug(String.format("%s(): %d queries have been found.", MethodUtils

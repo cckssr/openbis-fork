@@ -1,0 +1,12 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="Single Test Suite" verbose="2">
+    <test name="Sample Freezing Test" annotations="JDK">
+        <classes>
+            <class name="ch.ethz.sis.openbis.systemtest.freezing.SampleFreezingTest">
+                <methods>
+                    <include name="testFreezeComponentAndContainer" />
+                </methods>
+            </class>
+        </classes>
+    </test>
+</suite>

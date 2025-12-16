@@ -36,6 +36,15 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.ScriptPE;
 import ch.systemsx.cisd.openbis.generic.shared.managed_property.IAtomicEvaluation;
 import ch.systemsx.cisd.openbis.generic.shared.managed_property.IEvaluationRunner;
 import ch.systemsx.cisd.openbis.generic.shared.managed_property.ManagedPropertyFunctions;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.context.event.EventListener;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionException;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.SimpleTransactionStatus;
+import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * Pool of Jython Evaluators for managed properties. When the pool is created, it is filled with new Evaluator instances for every managed property

@@ -20,11 +20,12 @@ import java.util.List;
 
 import ch.ethz.sis.shared.log.classic.impl.Logger;
 import org.hibernate.FetchMode;
+import org.hibernate.HibernateException;
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.criterion.CriteriaSpecification;
-import org.hibernate.criterion.DetachedCriteria;
 import org.springframework.dao.DataAccessException;
-import org.springframework.orm.hibernate5.HibernateTemplate;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.orm.hibernate5.SessionFactoryUtils;
 
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
@@ -38,6 +39,8 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SampleTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
+
+import javax.persistence.PersistenceException;
 
 /**
  * Database based implementation of {@link IEntityTypeDAO}.
@@ -82,12 +85,19 @@ final class EntityTypeDAO extends AbstractTypeDAO<EntityTypePE> implements IEnti
     @Override
     public final <T extends EntityTypePE> List<T> listEntityTypes() throws DataAccessException
     {
-        final DetachedCriteria criteria = DetachedCriteria.forClass(getEntityClass());
-        final String entityKindName = entityKind.getLabel();
-        criteria.setFetchMode(entityKindName + "TypePropertyTypesInternal", FetchMode.JOIN);
-        criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
-        final List<T> list = cast(getHibernateTemplate().findByCriteria(criteria));
-        return list;
+        final String entityKindName = entityKind.getLabel(); // e.g., "sample", "dataSet", "experiment", ...
+        final Class<T> clazz = (Class<T>) getEntityClass();
+
+        return currentSession()
+                .createQuery(
+                        "select distinct t " +
+                                "from " + clazz.getName() + " t " +
+                                "left join fetch t." + entityKindName + "TypePropertyTypesInternal",
+                        clazz
+                )
+                .list();
+
+
     }
 
     @Override
@@ -95,15 +105,17 @@ final class EntityTypeDAO extends AbstractTypeDAO<EntityTypePE> implements IEnti
             throws DataAccessException
     {
         assert entityType != null : "entityType is null";
-        final HibernateTemplate hibernateTemplate = getHibernateTemplate();
 
         validatePE(entityType);
         String strippedCode = CodeConverter.tryToDatabase(entityType.getCode());
         boolean isInternalNamespace = entityType.isManagedInternally();
         entityType.setCode(strippedCode);
         entityType.setManagedInternally(isInternalNamespace);
-        hibernateTemplate.saveOrUpdate(entityType);
-        hibernateTemplate.flush();
+        doExecute(session -> {
+            session.saveOrUpdate(entityType);
+            session.flush();
+            return null;
+        });
         if (operationLog.isInfoEnabled())
         {
             operationLog.info(String.format("ADD: entity type '%s'.", entityType));
@@ -124,9 +136,11 @@ final class EntityTypeDAO extends AbstractTypeDAO<EntityTypePE> implements IEnti
     {
         assert entityType != null : "Entity Type unspecified";
 
-        final HibernateTemplate hibernateTemplate = getHibernateTemplate();
-        hibernateTemplate.delete(entityType);
-        hibernateTemplate.flush();
+        doExecute(session -> {
+            session.delete(entityType);
+            session.flush();
+            return null;
+        });
         if (operationLog.isInfoEnabled())
         {
             operationLog.info(String.format("DELETE: entity type '%s'.", entityType));

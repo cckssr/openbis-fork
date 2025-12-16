@@ -24,12 +24,9 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.EventType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EventsSearchPE;
 import ch.ethz.sis.shared.log.classic.impl.Logger;
 import org.hibernate.SessionFactory;
-import org.hibernate.criterion.DetachedCriteria;
-import org.hibernate.criterion.Projections;
-import org.hibernate.criterion.Restrictions;
+
 
 import java.util.Date;
-import java.util.List;
 
 /**
  * Data access object for {@link EventsSearchPE}.
@@ -49,19 +46,24 @@ public class EventsSearchDAO extends AbstractGenericEntityDAO<EventsSearchPE> im
 
     @Override public void createOrUpdate(EventsSearchPE eventsSearchPE)
     {
-        getHibernateTemplate().saveOrUpdate(eventsSearchPE);
+        doExecute(session -> {
+            session.saveOrUpdate(eventsSearchPE);
+            return null;
+        });
     }
 
     @Override public Date getLastTimestamp(EventType eventType, EventPE.EntityType entityType)
     {
-        DetachedCriteria criteria = DetachedCriteria.forClass(EventsSearchPE.class);
-        criteria.setProjection(Projections.max("registrationTimestamp"));
-        criteria.add(Restrictions.eq("eventType", eventType));
-        criteria.add(Restrictions.eq("entityType", entityType));
-
-        final List list = cast(getHibernateTemplate().findByCriteria(criteria));
-
-        final Date lastTimestamp = list.isEmpty() ? null : (Date) list.get(0);
+        Date lastTimestamp = doExecute(session->
+                session.createQuery(
+                        "select max(e.registrationTimestamp) " +
+                                "from EventsSearchPE e " +
+                                "where e.eventType = :evt and e.entityType = :ent",
+                        Date.class)
+                .setParameter("evt", eventType)
+                .setParameter("ent", entityType)
+                .uniqueResultOptional()
+                .orElse(null));
 
         if (operationLog.isDebugEnabled())
         {

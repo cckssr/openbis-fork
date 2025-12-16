@@ -122,7 +122,7 @@ public class PersonalAccessTokenDAOTest
                 allowing(personDAO).tryFindPersonByUserId(with(any(String.class)));
                 will(returnValue(null));
 
-                allowing(personDAO).tryGetById(with(any(TechId.class)), with(any(String[].class)));
+                allowing(personDAO).tryGetById(with(any(TechId.class)));
                 will(returnValue(null));
             }
         });

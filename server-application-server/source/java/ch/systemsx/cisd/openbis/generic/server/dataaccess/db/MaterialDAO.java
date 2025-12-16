@@ -15,28 +15,27 @@
  */
 package ch.systemsx.cisd.openbis.generic.server.dataaccess.db;
 
+import static ch.systemsx.cisd.openbis.generic.server.dataaccess.db.DAOUtils.BATCH_SIZE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ValidationMessages.CODE_PATTERN_MESSAGE;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 import ch.ethz.sis.shared.log.classic.impl.Logger;
-import org.hibernate.Criteria;
-import org.hibernate.FetchMode;
-import org.hibernate.SQLQuery;
+import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.StatelessSession;
-import org.hibernate.criterion.CriteriaSpecification;
-import org.hibernate.criterion.Restrictions;
+
 import org.hibernate.exception.ConstraintViolationException;
+import org.hibernate.query.NativeQuery;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.orm.hibernate5.HibernateTemplate;
 
 import ch.systemsx.cisd.common.collection.CollectionUtils;
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
@@ -57,6 +56,11 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SequenceNames;
 import ch.systemsx.cisd.openbis.generic.shared.dto.TableNames;
 import ch.systemsx.cisd.openbis.generic.shared.util.MaterialConfigurationProvider;
+import org.springframework.orm.hibernate5.HibernateExceptionTranslator;
+import org.springframework.orm.hibernate5.HibernateTemplate;
+import org.springframework.orm.hibernate5.SessionFactoryUtils;
+
+import javax.persistence.Query;
 
 /**
  * Data access object for {@link MaterialPE}.
@@ -89,19 +93,30 @@ public class MaterialDAO extends AbstractGenericEntityWithPropertiesDAO<Material
     {
         assert materialType != null : "Unspecified material type.";
 
-        final Criteria criteria = currentSession().createCriteria(ENTITY_CLASS);
-        criteria.add(Restrictions.eq("materialType", materialType));
-        final int count = DAOUtils.getCount(criteria);
-        if (count <= DAOUtils.MAX_COUNT_FOR_PROPERTIES)
-        {
-            criteria.setFetchMode("materialProperties", FetchMode.JOIN);
-        } else
-        {
-            operationLog.info(String.format("Found %d materials, disable properties loading.",
-                    count));
+        Long countLong = currentSession().createQuery(
+                                "select count(m) from " + ENTITY_CLASS.getName() + " m " +
+                                        "where m.materialType = :mt", Long.class)
+                        .setParameter("mt", materialType)
+                        .uniqueResult();
+        long count = countLong != null ? countLong : 0;
+
+        final String hql;
+        final boolean fetchProps = count <= DAOUtils.MAX_COUNT_FOR_PROPERTIES;
+        if (fetchProps) {
+            hql = "select distinct m " +
+                    "from " + ENTITY_CLASS.getName() + " m " +
+                    "left join fetch m.materialProperties " +
+                    "where m.materialType = :mt";
+        } else {
+            operationLog.info(String.format(
+                    "Found %d materials, disable properties loading.", count));
+            hql = "from " + ENTITY_CLASS.getName() + " m " +
+                    "where m.materialType = :mt";
         }
-        criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
-        final List<MaterialPE> list = cast(criteria.list());
+
+        List<MaterialPE> list = currentSession().createQuery(hql, ENTITY_CLASS)
+                        .setParameter("mt", materialType)
+                        .list();
         if (operationLog.isDebugEnabled())
         {
             operationLog.debug(String.format(
@@ -116,19 +131,22 @@ public class MaterialDAO extends AbstractGenericEntityWithPropertiesDAO<Material
     {
         assert materials != null && materials.size() > 0 : "Unspecified or empty materials.";
 
-        final HibernateTemplate hibernateTemplate = getHibernateTemplate();
-        for (final MaterialPE materialPE : materials)
-        {
-            internalCreateMaterial(materialPE, hibernateTemplate);
-        }
-        hibernateTemplate.flush();
+        doExecute(session -> {
+            for (MaterialPE it : materials)
+            {
+                internalCreateMaterial(it, session);
 
-        // if session is not cleared registration of many materials slows down after each batch
-        hibernateTemplate.clear();
+            }
+            session.flush();
+            // if session is not cleared registration of many materials slows down after each batch
+            session.clear();
+            return null;
+        });
+
         scheduleDynamicPropertiesEvaluation(materials);
     }
 
-    private void internalCreateMaterial(MaterialPE material, HibernateTemplate hibernateTemplate)
+    private void internalCreateMaterial(MaterialPE material, Session hibernateTemplate)
     {
         material.setModificationDate(getTransactionTimeStamp());
         validatePE(material);
@@ -200,10 +218,16 @@ public class MaterialDAO extends AbstractGenericEntityWithPropertiesDAO<Material
                         getMaterialConfig());
         String typeCode = CodeConverter.tryToDatabase(identifier.getTypeCode());
 
-        final Criteria criteria = session.createCriteria(ENTITY_CLASS);
-        criteria.add(Restrictions.eq("code", code));
-        criteria.createCriteria("materialType").add(Restrictions.eq("code", typeCode));
-        final MaterialPE material = (MaterialPE) criteria.uniqueResult();
+        MaterialPE material = session.createQuery(
+                        "select m " +
+                                "from " + ENTITY_CLASS.getName() + " m " +
+                                "join m.materialType mt " +
+                                "where m.code = :code and mt.code = :typeCode",
+                        ENTITY_CLASS)
+                .setParameter("code", code)
+                .setParameter("typeCode", typeCode)
+                .uniqueResultOptional()
+                .orElse(null);
         if (operationLog.isDebugEnabled())
         {
             operationLog.debug(String.format("Following material '%s' has been found for "
@@ -219,8 +243,25 @@ public class MaterialDAO extends AbstractGenericEntityWithPropertiesDAO<Material
         {
             return Collections.emptyList();
         }
-        final List<MaterialPE> list =
-                DAOUtils.listByCollection(getHibernateTemplate(), ENTITY_CLASS, "id", ids);
+
+        List<Long> allIds = new ArrayList<>(ids);
+        List<MaterialPE> list = new ArrayList<>(allIds.size());
+
+        for (int i = 0; i < allIds.size(); i += BATCH_SIZE) {
+            List<Long> slice = allIds.subList(i, Math.min(allIds.size(), i + BATCH_SIZE));
+            if (slice.isEmpty()) continue;
+
+
+            List<MaterialPE> batch = doExecute(session -> session.createQuery(
+                                            "from " + ENTITY_CLASS.getName() + " e where e.id in (:ids)",
+                                            ENTITY_CLASS
+                                    )
+                                    .setParameter("ids", slice)
+                                    .list());
+
+            list.addAll(batch);
+        }
+
         if (operationLog.isDebugEnabled())
         {
             operationLog.debug(String.format("%d materials have been found for ids: %s.",
@@ -288,11 +329,14 @@ public class MaterialDAO extends AbstractGenericEntityWithPropertiesDAO<Material
                 @Override
                 public Object doInStatelessSession(StatelessSession session)
                 {
-                    final SQLQuery sqlQueryCodeAndType = session.createSQLQuery(sqlCodeAndType);
-                    final SQLQuery sqlQueryDeleteProperties =
-                            session.createSQLQuery(sqlDeleteProperties);
-                    final SQLQuery sqlQueryDeleteSample = session.createSQLQuery(sqlDeleteSample);
-                    final SQLQuery sqlQueryInsertEvent = session.createSQLQuery(sqlInsertEvent);
+                    final NativeQuery<?> sqlQueryCodeAndType =
+                            session.createNativeQuery(sqlCodeAndType);
+                    final Query sqlQueryDeleteProperties =
+                            session.createNativeQuery(sqlDeleteProperties);
+                    final Query sqlQueryDeleteSample =
+                            session.createNativeQuery(sqlDeleteSample);
+                    final Query sqlQueryInsertEvent =
+                            session.createNativeQuery(sqlInsertEvent);
                     sqlQueryInsertEvent.setParameter("eventType", EventType.DELETION.name());
                     sqlQueryInsertEvent.setParameter("reason", reason);
                     sqlQueryInsertEvent.setParameter("registratorId", registrator.getId());
@@ -301,7 +345,7 @@ public class MaterialDAO extends AbstractGenericEntityWithPropertiesDAO<Material
                     for (TechId techId : materialIds)
                     {
                         sqlQueryCodeAndType.setParameter("mId", techId.getId());
-                        Object[] codeAndType = (Object[]) sqlQueryCodeAndType.uniqueResult();
+                        Object[] codeAndType = (Object[]) sqlQueryCodeAndType.uniqueResultOptional().orElse(null);
                         if (codeAndType != null)
                         {
                             String materialCode = (String) codeAndType[0];
@@ -361,6 +405,19 @@ public class MaterialDAO extends AbstractGenericEntityWithPropertiesDAO<Material
         }
         Matcher m = pattern.matcher(code);
         return m.matches();
+    }
+
+    public MaterialPE tryGetByIdWithMaterialTypePropertyTypes(TechId materialId)
+    {
+        return (MaterialPE) currentSession()
+                .createQuery(
+                        "select m from MaterialPE m " +
+                                "left join fetch m.materialType mt " +
+                                "left join fetch mt.materialTypePropertyTypesInternal " +
+                                "where m.id = :id"
+                )
+                .setParameter("id", materialId.getId())
+                .uniqueResult();
     }
 
 }

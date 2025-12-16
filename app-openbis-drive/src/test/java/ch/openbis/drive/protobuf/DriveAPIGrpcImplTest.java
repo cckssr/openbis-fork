@@ -34,7 +34,7 @@ public class DriveAPIGrpcImplTest {
         StreamObserver<DriveApiService.Empty> streamObserver = Mockito.mock(StreamObserver.class);
         Settings settings = new Settings(true, "it", 63, new ArrayList<>(List.of(
                 new SyncJob(SyncJob.Type.Upload, "http://loc", "tkntkn", "1234-abcd", "title", "/remDIR", "/LOCdir", true)
-        )));
+        )), new ArrayList<>(List.of("aaa", "bbb")));
         driveAPIGrpc.setSettings(ProtobufConversionUtil.toProtobufSettings(settings), streamObserver);
         Mockito.verify(driveAPIServer, Mockito.times(1)).setSettings(settings);
         Mockito.verify(streamObserver, Mockito.times(1)).onNext(DriveApiService.Empty.newBuilder().build());
@@ -58,7 +58,7 @@ public class DriveAPIGrpcImplTest {
         StreamObserver<DriveApiService.Settings> streamObserver = Mockito.mock(StreamObserver.class);
         Settings settings = new Settings(true, "it", 63, new ArrayList<>(List.of(
                 new SyncJob(SyncJob.Type.Upload, "http://loc", "tkntkn", "1234-abcd", "title", "/remDIR", "/LOCdir", true)
-        )));
+        )), new ArrayList<>(List.of("aaa", "bbb")));
         Mockito.doReturn(settings).when(driveAPIServer).getSettings();
         driveAPIGrpc.getSettings(DriveApiService.Empty.newBuilder().build(), streamObserver);
         Mockito.verify(driveAPIServer, Mockito.times(1)).getSettings();

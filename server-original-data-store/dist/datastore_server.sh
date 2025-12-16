@@ -161,23 +161,48 @@ case "$command" in
     echo -n "Starting Data Store Server "
     shift 1
 
+    # ------------------------------------------------------------
+    # Detect Docker stdout safely
+    # ------------------------------------------------------------
+    DOCKER_STDOUT="/proc/1/fd/1"
+    HAS_DOCKER_STDOUT=false
+    if [ -e "$DOCKER_STDOUT" ] && [ -w "$DOCKER_STDOUT" ]; then
+      HAS_DOCKER_STDOUT=true
+    fi
+
     # Create a flag file when SUCCESS_MSG is seen on stdout
     READY_FLAG=$(mktemp -t dss_ready.XXXXXX)
     trap 'rm -f "$READY_FLAG"' EXIT
 
     AWK_BIN=$(awkBin)
 
+    # ------------------------------------------------------------
+    # Build tee targets:
+    #   1) readiness detector (always)
+    #   2) Docker stdout (only if available)
+    # ------------------------------------------------------------
+    TEE_TARGETS=()
+
+    TEE_TARGETS+=( >(
+      "$AWK_BIN" -v s="$SUCCESS_MSG" -v ready="$READY_FLAG" '
+        index($0, s) { system("touch " ready); fflush(); exit }
+        { fflush() }
+      ' >/dev/null
+    ) )
+
+    if [ "$HAS_DOCKER_STDOUT" = true ]; then
+      TEE_TARGETS+=( "$DOCKER_STDOUT" )
+    fi
+
     # Launch server in a subshell; capture the real Java PID and keep the pipe open
     (
       # Start Java (line-buffered) in background so we can write the PID file
       stdbuf -oL -eL "${CMD}" $COMMON_OPTIONS "$@" 2>&1 &
       CHILD=$!
-      echo $CHILD > "$PIDFILE"
-      # Wait for the Java process so the pipe stays open for tee
-      wait $CHILD
-    ) | tee >( "$AWK_BIN" -v s="$SUCCESS_MSG" -v ready="$READY_FLAG" '
-          index($0, s) { system("touch " ready); exit }
-        ' > /dev/null ) &
+      echo "$CHILD" > "$PIDFILE"
+      # Keep pipe open until Java exits
+      wait "$CHILD"
+    ) | tee "${TEE_TARGETS[@]}" &
     PIPE_PID=$!
 
     # Wait for initial self-test to finish (by success line or process exit)

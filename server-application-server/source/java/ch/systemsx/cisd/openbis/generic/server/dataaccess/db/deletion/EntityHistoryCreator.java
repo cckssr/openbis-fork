@@ -29,7 +29,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 
-import org.hibernate.SQLQuery;
+import org.hibernate.query.NativeQuery;
 import org.hibernate.SharedSessionContract;
 import org.hibernate.transform.ResultTransformer;
 
@@ -85,18 +85,18 @@ public class EntityHistoryCreator
         if (attributesQuery != null)
         {
             List<AttributeEntry> attributeEntries =
-                    selectAttributeEntries(session.createSQLQuery(attributesQuery), entityIdsToDelete);
+                    selectAttributeEntries(session.createNativeQuery(attributesQuery), entityIdsToDelete);
             addToHistories(histories, attributeEntries);
         }
 
         List<PropertyHistoryEntry> propertyHistory =
-                selectHistoryPropertyEntries(session.createSQLQuery(propertyHistoryQuery), entityIdsToDelete);
+                selectHistoryPropertyEntries(session.createNativeQuery(propertyHistoryQuery), entityIdsToDelete);
         addToHistories(histories, propertyHistory);
 
         if (relationshipHistoryQuery != null)
         {
             List<RelationshipHistoryEntry> relationshipHistory =
-                    selectRelationshipHistoryEntries(session.createSQLQuery(relationshipHistoryQuery),
+                    selectRelationshipHistoryEntries(session.createNativeQuery(relationshipHistoryQuery),
                             entityIdsToDelete);
             addToHistories(histories, relationshipHistory);
         }
@@ -133,10 +133,11 @@ public class EntityHistoryCreator
     private List<RelationshipHistoryEntry> deleteAttachments(SharedSessionContract session,
             PersonPE registrator, AttachmentHolderKind attachmentHolderKind, List<Long> holderIds)
     {
-        SQLQuery sqlQuery = session.createSQLQuery(createSelectHolderStatement(attachmentHolderKind));
+        NativeQuery sqlQuery = session.createNativeQuery(createSelectHolderStatement(attachmentHolderKind));
         List<AttachmentHolder> attachmentHolders = new ArrayList<>();
         Map<Long, AttachmentHolder> attachmentHoldersById = new HashMap<>();
-        for (Map<String, Object> row : getRows(sqlQuery, holderIds))
+        List<Map<String, Object>> rows = getRows(sqlQuery, holderIds);
+        for (Map<String, Object> row : rows)
         {
             AttachmentHolder attachmentHolder = new AttachmentHolder();
             attachmentHolder.id = ((Number) row.get("ID")).longValue();
@@ -145,12 +146,13 @@ public class EntityHistoryCreator
             attachmentHoldersById.put(attachmentHolder.id, attachmentHolder);
         }
         Map<String, AttachmentEntry> attachmentEntries = new TreeMap<>();
-        SQLQuery insertQuery = session.createSQLQuery("INSERT INTO events (id, event_type, description, reason, pers_id_registerer, "
+        NativeQuery insertQuery = session.createNativeQuery("INSERT INTO events (id, event_type, description, reason, pers_id_registerer, "
                 + "entity_type, identifiers, content, exac_id) "
                 + "VALUES (nextval('EVENT_ID_SEQ'), 'DELETION', :description, '', :registerer, "
                 + "'ATTACHMENT', :identifiers, :content, :attachment)");
-        sqlQuery = session.createSQLQuery(createSelectAttachmentsStatement(attachmentHolderKind));
-        for (Map<String, Object> row : getRows(sqlQuery, holderIds))
+        sqlQuery = session.createNativeQuery(createSelectAttachmentsStatement(attachmentHolderKind));
+        List<Map<String, Object>> rowList = getRows(sqlQuery, holderIds);
+        for (Map<String, Object> row : rowList)
         {
             long holderId = ((Number) row.get("HOLDER_ID")).longValue();
             AttachmentHolder holder = attachmentHoldersById.get(holderId);
@@ -172,7 +174,7 @@ public class EntityHistoryCreator
             attachmentEntry.relationType = "OWNED";
             attachmentEntry.entityType = attachmentHolderKind.toString();
             attachmentEntry.relatedEntity = holder.permId;
-            attachmentEntry.validFrom = (Date) row.get("REGISTRATION_TIMESTAMP");
+            attachmentEntry.validFrom = toDate(row.get("REGISTRATION_TIMESTAMP"));
             attachmentEntry.userId = (String) row.get("USER_ID");
             modifications.put(identifier, Arrays.asList(attachmentEntry));
             attachmentEntries.put(identifier, attachmentEntry);
@@ -265,14 +267,15 @@ public class EntityHistoryCreator
         return relationshipHistoryEntries;
     }
 
-    private List<AttributeEntry> selectAttributeEntries(SQLQuery sqlQuery, List<Long> entityIdsToDelete)
+    private <T> List<AttributeEntry> selectAttributeEntries(NativeQuery<T> sqlQuery, List<Long> entityIdsToDelete)
     {
         List<Map<String, Object>> rows = getRows(sqlQuery, entityIdsToDelete);
 
         Map<Long, EntityAttributes> result = new HashMap<>();
         for (Map<String, Object> row : rows)
         {
-            Long id = ((BigInteger) row.get("ID")).longValue();
+            Number idValue = (Number) row.get("ID");
+            Long id = idValue != null ? idValue.longValue() : null;
             String permId = (String) row.get("PERM_ID");
             EntityAttributes attributes = new EntityAttributes(permId);
             for (Entry<String, Object> entry : row.entrySet())
@@ -343,8 +346,8 @@ public class EntityHistoryCreator
         return Collections.unmodifiableList(list);
     }
 
-    private List<PropertyHistoryEntry> selectHistoryPropertyEntries(
-            final SQLQuery selectPropertyHistory, final List<Long> entityIds)
+    private <T> List<PropertyHistoryEntry> selectHistoryPropertyEntries(
+            final NativeQuery<T> selectPropertyHistory, final List<Long> entityIds)
     {
         selectPropertyHistory.setParameterList(ENTITY_IDS, entityIds);
         selectPropertyHistory.setResultTransformer(new ResultTransformer()
@@ -360,8 +363,8 @@ public class EntityHistoryCreator
                     entry.propertyCode = (String) values[i++];
                     entry.value = (String) values[i++];
                     entry.userId = (String) values[i++];
-                    entry.validFrom = (Date) values[i++];
-                    entry.validUntil = (Date) values[i++];
+                    entry.validFrom = toDate(values[i++]);
+                    entry.validUntil = toDate( values[i++]);
                     return entry;
                 }
 
@@ -375,7 +378,7 @@ public class EntityHistoryCreator
         return cast(selectPropertyHistory.list());
     }
 
-    private List<RelationshipHistoryEntry> selectRelationshipHistoryEntries(final SQLQuery selectRelationshipHistory,
+    private <T> List<RelationshipHistoryEntry> selectRelationshipHistoryEntries(final NativeQuery<T> selectRelationshipHistory,
             final List<Long> entityIds)
     {
         selectRelationshipHistory.setParameterList(ENTITY_IDS, entityIds);
@@ -393,8 +396,8 @@ public class EntityHistoryCreator
                     entry.relatedEntity = (String) values[i++];
                     entry.entityType = (String) values[i++];
                     entry.userId = (String) values[i++];
-                    entry.validFrom = (Date) values[i++];
-                    entry.validUntil = (Date) values[i++];
+                    entry.validFrom = toDate(values[i++]);
+                    entry.validUntil = toDate(values[i++]);
                     return entry;
                 }
 
@@ -408,7 +411,15 @@ public class EntityHistoryCreator
         return cast(selectRelationshipHistory.list());
     }
 
-    private List<Map<String, Object>> getRows(SQLQuery sqlQuery, List<Long> entityIdsToDelete)
+    private static Date toDate(Object o) {
+        if (o == null) return null;
+        if (o instanceof java.util.Date d) return d;
+        if (o instanceof java.time.Instant i) return java.util.Date.from(i);
+        if (o instanceof java.sql.Timestamp ts) return new java.util.Date(ts.getTime());
+        throw new IllegalArgumentException("Unsupported time type: " + o.getClass());
+    }
+
+    private <T> List<Map<String, Object>> getRows(NativeQuery<T> sqlQuery, List<Long> entityIdsToDelete)
     {
         sqlQuery.setParameterList(ENTITY_IDS, entityIdsToDelete);
         sqlQuery.setResultTransformer(new ResultTransformer()

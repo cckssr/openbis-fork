@@ -40,12 +40,11 @@ public interface ICustomIdDAO<T extends ICustomIdHolder, X extends ICustomIdHold
 
     /**
      * @param techId the entity technical identifier
-     * @param connections the (lazy) connections to additionally initialize
      * @return entity with the given technical identifier or null if it is not found <br>
      *         NOTE: don't rely on T.getId() value because returned value can be a {@link HibernateProxy}. Use {@link HibernateUtils#getId(IIdHolder)}
      *         instead.
      */
-    public T tryGetById(final X techId, String... connections);
+    public T tryGetById(final X techId);
 
     /**
      * Updates given persistent (already saved) <var>entity</var> after successful validation.<br>
