@@ -151,11 +151,38 @@ case "$command" in
 
     shift 1
 
+    # ------------------------------------------------------------
+    # Detect Docker stdout safely
+    # ------------------------------------------------------------
+    DOCKER_STDOUT="/proc/1/fd/1"
+    HAS_DOCKER_STDOUT=false
+    if [ -e "$DOCKER_STDOUT" ] && [ -w "$DOCKER_STDOUT" ]; then
+      HAS_DOCKER_STDOUT=true
+    fi
+
+    # ------------------------------------------------------------
     # Flag file toggled when SUCCESS_MSG appears on stdout
     READY_FLAG=$(mktemp -t afs_ready.XXXXXX)
     trap 'rm -f "$READY_FLAG"' EXIT
 
     AWK_BIN=$(awkBin)
+
+    # ------------------------------------------------------------
+    # Build tee targets:
+    #   1) readiness detector (always)
+    #   2) Docker stdout (only if available)
+    # ------------------------------------------------------------
+    TEE_TARGETS=()
+
+    TEE_TARGETS+=( >( "$AWK_BIN" -v s="$SUCCESS_MSG" -v ready="$READY_FLAG" '
+        index($0, s) { system("touch " ready); exit }
+      ' > /dev/null ) )
+
+    if [ "$HAS_DOCKER_STDOUT" = true ]; then
+      TEE_TARGETS+=( "$DOCKER_STDOUT" )
+    fi
+
+    # ------------------------------------------------------------
 
     # Launch server in a subshell so we can capture the actual Java PID and keep the pipe open
     (
@@ -165,9 +192,7 @@ case "$command" in
       echo $CHILD > "$PID_FILE"
       # Wait for the Java process so the pipe stays open for tee
       wait $CHILD
-    ) | tee >( "$AWK_BIN" -v s="$SUCCESS_MSG" -v ready="$READY_FLAG" '
-          index($0, s) { system("touch " ready); exit }
-        ' > /dev/null ) &
+    ) | tee "${TEE_TARGETS[@]}" &
     PIPE_PID=$!
 
     # wait for initial self-test to finish (by success message or process exit)
