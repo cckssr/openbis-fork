@@ -34,18 +34,20 @@ class DatabaseComponent extends React.PureComponent {
     this.state = {
       json: null,
       showDataBrowser: false,
-      value: "2",
-      datasetTab: "0"
+      datasetTab: "0",
+      showImagingGallery: false,
     }
   }
 
   async componentDidMount() {
     try {
       const { object } = this.props
+      const allowedImagingDataTypes = [constants.IMAGING_DATA, constants.USER_DEFINED_IMAGING_DATA]
       let json = {}
       let showDataBrowser = false
       let canUseDataBrowser = false
-
+      let showImagingGallery = false
+      
       if (
         object.type === objectType.COLLECTION ||
         object.type === objectType.OBJECT
@@ -68,12 +70,15 @@ class DatabaseComponent extends React.PureComponent {
         const fetchOptions = new openbis.ExperimentFetchOptions()
         fetchOptions.withProperties()
         fetchOptions.withDataSets().withProperties()
+        fetchOptions.withDataSets().withType()
         const experiments = await openbis.getExperiments(
           [new openbis.ExperimentPermId(object.id)],
           fetchOptions
         )
         json = experiments[object.id]
         showDataBrowser = canUseDataBrowser
+        const defaultCollectionView = constants.DEFAULT_COLLECTION_VIEW
+        showImagingGallery = json.dataSets.filter(dataset => allowedImagingDataTypes.includes(dataset.type.code)).length > 0 && Object.keys(json.properties || {}).includes(defaultCollectionView)
       } else if (object.type === objectType.OBJECT) {
         const fetchOptions = new openbis.SampleFetchOptions()
         fetchOptions.withSpace()
@@ -82,12 +87,14 @@ class DatabaseComponent extends React.PureComponent {
         fetchOptions.withParents()
         fetchOptions.withProperties()
         fetchOptions.withDataSets().withProperties()
+        fetchOptions.withDataSets().withType()
         const samples = await openbis.getSamples(
           [new openbis.SamplePermId(object.id)],
           fetchOptions
         )
         json = samples[object.id]
         showDataBrowser = canUseDataBrowser
+        showImagingGallery = json.dataSets.filter(dataset => allowedImagingDataTypes.includes(dataset.type.code)).length > 0 && Object.keys(json.properties || {}).includes(constants.DEFAULT_OBJECT_VIEW)
       } else if (object.type === objectType.DATA_SET) {
         const fetchOptions = new openbis.DataSetFetchOptions()
         fetchOptions.withExperiment()
@@ -103,7 +110,8 @@ class DatabaseComponent extends React.PureComponent {
 
       this.setState({
         json,
-        showDataBrowser
+        showDataBrowser,
+        showImagingGallery
       })
     } catch (error) {
       AppController.getInstance().errorChange(error)
@@ -200,13 +208,12 @@ class DatabaseComponent extends React.PureComponent {
   }
 
   renderDataBrowsers() {
-    const { object, classes } = this.props
-    const { value } = this.state
+    const { object } = this.props
+    const { showImagingGallery } = this.state
 
     const tabs = [
       { key: 'details-tab-id', label: 'Details' },
       { key: 'files-tab-id', label: 'Files' },
-      { key: 'images-tab-id', label: 'Images' },
     ]
 
     const tabContent = [
@@ -226,8 +233,12 @@ class DatabaseComponent extends React.PureComponent {
         onStoreDisplaySettings={this.onGridSettingsChange}
         leftToolbar={true}
       />
-      </div>,
-      <div key="images">
+      </div>
+    ]
+
+    if (showImagingGallery) {
+      tabs.push({ key: 'images-tab-id', label: 'Images' })
+      tabContent.push(<div key="images">
         {(object.type === objectType.COLLECTION
           || object.type === objectType.OBJECT)
           && <ImagingGalleryViewer onStoreDisplaySettings={null}
@@ -236,8 +247,8 @@ class DatabaseComponent extends React.PureComponent {
             objId={object.id}
             objType={object.type}
             extOpenbis={openbis} />}
-      </div>
-    ]
+      </div>)
+    }
 
     return (
       <TabViewer
@@ -296,9 +307,8 @@ class DatabaseComponent extends React.PureComponent {
   }
 
 
-  renderJson() {
+  renderJson() {  
     const { object } = this.props
-    console.log('DatabaseComponent.renderJson', { object });
     return (<EntityFormContextProvider openbisFacade={openbis}
       params={object.params}
       entityKind={object.type}
