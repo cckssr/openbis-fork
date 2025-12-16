@@ -486,19 +486,12 @@ public class SyncOperation {
             case DOWN -> source;
         };
 
-        if (syncJob.getType() == SyncJob.Type.Bidirectional) {
+        SyncJobEvent uploadSyncJobEvent = syncJobEventDAO.selectByPrimaryKey(
+                SyncJobEvent.SyncDirection.UP, localFile.toAbsolutePath().toString(), toServerPathString(remoteFile));
+        SyncJobEvent downloadSyncJobEvent = syncJobEventDAO.selectByPrimaryKey(
+                SyncJobEvent.SyncDirection.DOWN, localFile.toAbsolutePath().toString(), toServerPathString(remoteFile));
 
-            SyncJobEvent uploadSyncJobEvent = syncJobEventDAO.selectByPrimaryKey(
-                    SyncJobEvent.SyncDirection.UP, localFile.toAbsolutePath().toString(), toServerPathString(remoteFile));
-
-            SyncJobEvent downloadSyncJobEvent = syncJobEventDAO.selectByPrimaryKey(
-                    SyncJobEvent.SyncDirection.DOWN, localFile.toAbsolutePath().toString(), toServerPathString(remoteFile));
-
-            return pickMoreRecentCompletedFileSyncState(uploadSyncJobEvent, downloadSyncJobEvent);
-        } else {
-            return syncJobEventDAO.selectByPrimaryKey(
-                    syncDirection, localFile.toAbsolutePath().toString(), toServerPathString(remoteFile));
-        }
+        return pickMoreRecentCompletedFileSyncState(uploadSyncJobEvent, downloadSyncJobEvent);
     }
 
     void insertNewSyncEntry(SyncJobEvent.SyncDirection syncDirection, Path source, Path destination, Instant sourceLastModified) throws SQLException, IOException {
