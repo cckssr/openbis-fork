@@ -1,4 +1,4 @@
-import { Form, } from '@src/js/components/database/new-forms/types/formITypes.ts';
+import { Form, IExtendedActionContext, } from '@src/js/components/database/new-forms/types/formITypes.ts';
 import {
   getCodeField,
   getPermIdField,
@@ -9,24 +9,31 @@ import {
   getModifierField,
   getModificationDateField,
   getTypeField,
-  getPropertyFieldsFromAssignments
+  getPropertyFieldsFromAssignments,
+  getObjectField,
+  getCollectionField,
 } from '@src/js/components/database/new-forms/entities/formFieldGetters.ts';
-import { FormMode } from '@src/js/components/database/new-forms/types/formEnums.ts';
+import { EntityKind, FormMode } from '@src/js/components/database/new-forms/types/formEnums.ts';
+import { getAutoSaveAction, getCancelAction, getDividerAction, getEditAction, getSaveAction } from '@src/js/components/database/new-forms/entities/actionsFieldGetters.ts';
 
 export class DatasetFormModel {
+
   static adaptDatasetDtoToForm(dto: any): Form {
     const permId = dto.permId.permId;
+
     const staticFields = [
       getTypeField(dto),
       getPermIdField(dto),
-      getIdentifierField(dto),
-      getPathField(dto),
       getCodeField(dto),
+      dto.experiment? getCollectionField(dto) : null,
+      dto.sample? getObjectField(dto) : null,
+      getPathField(dto),
       getRegistratorField(dto),
       getRegistrationDateField(dto),
       getModifierField(dto),
       getModificationDateField(dto),
     ];
+
     const propertyFields = getPropertyFieldsFromAssignments(dto);
     return {
       entityPermId: permId,
@@ -35,55 +42,35 @@ export class DatasetFormModel {
       version: dto.version,
       entityKind: 'DATASET',
       meta: {},
-      fields: [...staticFields, ...propertyFields],
+      fields: [...staticFields.filter(field => field !== null), ...propertyFields],
       isDirty: false,
       isValid: true,
       actions: [
-        {
-          name: 'dataset:save',
-          label: 'Save',
-          component: 'button',
-          isAllowed: true,
-          visibility: [
-            {
-              mode: FormMode.EDIT,
-            },
-          ],
-        },
-        {
-          name: 'edit',
-          label: 'Edit',
-          component: 'button',
-          isAllowed: true,
-          visibility: [
-            {
-              mode: FormMode.VIEW,
-            },
-          ],
-        },
-        {
-          name: 'cancel',
-          label: 'Cancel',
-          component: 'button',
-          isAllowed: true,
-          visibility: [
-            {
-              mode: FormMode.EDIT,
-            },
-          ],
-        },
-        {
-          name: 'auto-save',
-          label: 'Auto-save',
-          component: 'switch',
-          isAllowed: true,
-          visibility: [
-            {
-              mode: FormMode.EDIT,
-            },
-          ],
-        }
+        // getNewObjectAction(EntityKind.COLLECTION),
+				// getNewDatasetAction(EntityKind.COLLECTION),
+				// getDividerAction(FormMode.VIEW),
+				getEditAction(),
+				// getMoveAction(),
+				// getDeleteAction(),
+				//getDividerAction(FormMode.VIEW),
+				// getMoreActionsAction(),
+				getSaveAction(),
+				getCancelAction(),
+				getDividerAction(FormMode.EDIT),
+				getAutoSaveAction(),
       ]
     };
+  }
+
+  static saveDatasetAction = async (context: IExtendedActionContext) => {
+    const { form, controller, onAfterSave, mode } = context;
+    await new Promise(resolve => setTimeout(resolve, 500));
+    const newPermId = await controller.save(form, mode);
+    console.log("Dataset saved successfully! New permId:", newPermId);
+    if (mode === FormMode.CREATE) {
+      alert(`CREATE to be implemented`);
+    } else {
+      onAfterSave();
+    }
   }
 }

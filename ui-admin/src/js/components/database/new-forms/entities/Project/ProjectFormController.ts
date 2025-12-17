@@ -25,7 +25,8 @@ export class ProjectFormController implements IFormController {
     const id = new ProjectPermId(permId);
     const fetchOptions = new ProjectFetchOptions();
     fetchOptions.withSpace();
-
+    fetchOptions.withModifier();
+	fetchOptions.withRegistrator();
     const result = await this.openbisFacade.getProjects([id], fetchOptions);
 
     const projectDto = result[permId];
@@ -59,7 +60,6 @@ export class ProjectFormController implements IFormController {
     const projectIdentifierField = findFormFieldById(form.fields, form.entityPermId, 'identifier', true);
     if (!projectIdentifierField || typeof projectIdentifierField !== 'string') throw new Error('Project identifier not found');
     const projectIdentifier = projectIdentifierField;
-    console.log({projectIdentifier})
     const dummyExperimentId = new ExperimentIdentifier(createDummyExperimentIdentifierFromProjectIdentifier(projectIdentifier));
     const dummySampleId = new SampleIdentifier(createDummySampleIdentifierFromProjectIdentifier(projectIdentifier));
     const ids = [projectPermId, dummyExperimentId, dummySampleId];

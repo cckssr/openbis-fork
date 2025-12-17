@@ -20,6 +20,7 @@ export class SpaceFormController implements IFormController {
     const fetchOptions = new SpaceFetchOptions();
     fetchOptions.withProjects && fetchOptions.withProjects();
     fetchOptions.withRegistrator && fetchOptions.withRegistrator();
+    fetchOptions.withModifier && fetchOptions.withModifier();
     fetchOptions.withSamples && fetchOptions.withSamples();
     const result = await this.openbisFacade.getSpaces([id], fetchOptions);
 

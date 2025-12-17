@@ -53,6 +53,7 @@ const CLASS_FULL_NAMES = [
   'as/dto/experiment/search/SearchExperimentsOperation',
   'as/dto/experiment/update/ExperimentTypeUpdate',
   'as/dto/experiment/update/UpdateExperimentTypesOperation',
+  'as/dto/experiment/update/ExperimentUpdate',
   'as/dto/material/create/CreateMaterialTypesOperation',
   'as/dto/material/create/MaterialTypeCreation',
   'as/dto/material/delete/DeleteMaterialTypesOperation',

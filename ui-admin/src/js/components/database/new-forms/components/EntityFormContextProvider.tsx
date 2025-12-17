@@ -77,7 +77,6 @@ export const EntityFormContextProvider = ({
 
   // Handle data restoration from localStorage
   const handleDataRestore = useCallback((savedData: Form) => {
-    console.log('[EntityFormContextProvider] Restoring saved form data from localStorage');
     setForm(savedData);
     actionToastContext.raiseInfo('Restored unsaved changes');
   }, [setForm, actionToastContext]);
@@ -135,7 +134,7 @@ export const EntityFormContextProvider = ({
   }, [permId, controller]);
 
   const loadForm = useCallback(async () => {
-    console.log('loadForm', { permId }, { entityKind }, { params });
+    //console.log('loadForm', { permId }, { entityKind }, { params });
 
     await executeOperation(
       async () => {
@@ -144,6 +143,7 @@ export const EntityFormContextProvider = ({
           //setForm(loadedForm);
         } else {
           const loadedForm = await controller.load(permId, entityKind, params);
+          console.log('loadedForm: ', loadedForm);
           setForm(loadedForm);
         }
       },

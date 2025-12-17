@@ -144,6 +144,40 @@ export function getProjectField(dto: any, overrides: FieldOverrides = {}): FormF
   };
 }
 
+export function getCollectionField(dto: any, overrides: FieldOverrides = {}): FormField<string> {
+  const permId = dto.permId.permId;
+  return {
+    id: permId + '-collection',
+    label: 'Collection',
+    value: overrides.value ?? dto.experiment?.identifier?.identifier,
+    dataType: FormFieldDataType.VARCHAR,
+    required: true,
+    readOnly: true,
+    isMultiValue: false,
+    section: FormSection.IDENTIFICATION_INFO,
+    column: 'left',
+    meta: {},
+    ...overrides
+  };
+}
+
+export function getObjectField(dto: any, overrides: FieldOverrides = {}): FormField<string> {
+  const permId = dto.permId.permId;
+  return {
+    id: permId + '-object',
+    label: 'Object',
+    value: overrides.value ?? dto.sample?.identifier?.identifier,
+    dataType: FormFieldDataType.VARCHAR,
+    required: true,
+    readOnly: true,
+    isMultiValue: false,
+    section: FormSection.IDENTIFICATION_INFO,
+    column: 'left',
+    meta: {},
+    ...overrides
+  };
+}
+
 export function getRegistratorField(dto: any, overrides: FieldOverrides = {}): FormField<string> {
   const permId = dto.permId.permId;
   return {
@@ -183,7 +217,7 @@ export function getModifierField(dto: any, overrides: FieldOverrides = {}): Form
   return {
     id: permId + '-modifier',
     label: 'Modifier',
-    value: overrides.value ?? dto.modifier,
+    value: overrides.value ?? dto.modifier?.userId,
     dataType: FormFieldDataType.VARCHAR,
     required: false,
     readOnly: true,

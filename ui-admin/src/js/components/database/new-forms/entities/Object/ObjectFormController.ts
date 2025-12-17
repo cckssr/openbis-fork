@@ -49,7 +49,8 @@ export class ObjectFormController implements IFormController {
 		fetchOptions.withExperiment();
 		fetchOptions.withParents();
 		fetchOptions.withDataSets();
-
+		fetchOptions.withModifier();
+		fetchOptions.withRegistrator();
 		const result = await this.openbisFacade.searchSamples(criteria, fetchOptions);
 		const sampleDto = Object.values(result.objects)[0];
 		console.log('ObjectFormController.load', { sampleDto });

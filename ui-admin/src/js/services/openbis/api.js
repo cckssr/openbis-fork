@@ -269,6 +269,14 @@ class Facade {
     return this.promise(this.v3.updateProjects(updates))
   }
 
+  updateExperiments(updates) {
+    return this.promise(this.v3.updateExperiments(updates))
+  }
+
+  updateDataSets(updates) {
+    return this.promise(this.v3.updateDataSets(updates))
+  }
+
   updateSamples(updates) {
     return this.promise(this.v3.updateSamples(updates))
   }
@@ -283,10 +291,6 @@ class Facade {
 
   updateExperimentTypes(updates) {
     return this.promise(this.v3.updateExperimentTypes(updates))
-  }
-
-  updateDataSets(updates) {
-    return this.promise(this.v3.updateDataSets(updates))
   }
 
   updateDataSetTypes(updates) {

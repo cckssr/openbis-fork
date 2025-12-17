@@ -2,8 +2,9 @@ import { Form } from '@src/js/components/database/new-forms/types/formITypes.ts'
 import { IFormController } from '@src/js/components/database/new-forms/types/IFormController.ts';
 import { CollectionFormModel } from '@src/js/components/database/new-forms/entities/Collection/CollectionFormModel.ts';
 import { fetchRights } from '@src/js/components/database/new-forms/utils/authorizationServiceUtil.ts';
-import { createDummyDataSetIdentifierFromExperimentIdentifier, createDummySampleIdentifierFromSampleIdentifier } from '@src/js/components/database/new-forms/utils/identifierUtil.ts';
-import { findFormFieldById } from '@src/js/components/database/new-forms/utils/formFieldUtil.ts';
+import { createDummyDataSetIdentifierFromExperimentIdentifier, createDummySampleIdentifierFromSampleIdentifier, getProjectIdentifierFromExperimentIdentifier } from '@src/js/components/database/new-forms/utils/identifierUtil.ts';
+import { findFormFieldById, getChangedEditableFieldValues } from '@src/js/components/database/new-forms/utils/formFieldUtil.ts';
+import { FormMode } from '@src/js/components/database/new-forms/types/formEnums.ts';
 
 export class CollectionFormController implements IFormController {
 	private openbisFacade: any;
@@ -13,7 +14,8 @@ export class CollectionFormController implements IFormController {
 		this.openbisFacade = openbisFacade;
 	}
 
-	async load(permId: string): Promise<Form> {
+	async load(permId: string, entityKind?: string, params?: any, type?: string): Promise<Form> {
+		console.log('CollectionFormController.load', { permId, entityKind, params, type });
 		const { ExperimentPermId, ExperimentFetchOptions } = this.openbisFacade;
 		const id = new ExperimentPermId(permId);
 		const fetchOptions = new ExperimentFetchOptions();
@@ -24,6 +26,9 @@ export class CollectionFormController implements IFormController {
 		fetchOptions.withType().withPropertyAssignments().withPropertyType();
 		fetchOptions.withProject();
 		fetchOptions.withDataSets();
+		fetchOptions.withModifier();
+		fetchOptions.withRegistrator();
+
 		// Add more fetch options as needed
 		const result = await this.openbisFacade.getExperiments([id], fetchOptions);
 
@@ -31,16 +36,37 @@ export class CollectionFormController implements IFormController {
 
 		//const roles = await getUserRole(this.openbisFacade, this.user==='admin', permId);
 		//console.log({roles});
-		console.log(collectionDto);
+		console.log('collectionDto: ', collectionDto);
 		if (!collectionDto) throw new Error(`Collection with permId ${permId} not found`);
 		return CollectionFormModel.adaptCollectionDtoToForm(collectionDto);
 	}
 
-	async save(form: Form): Promise<number> {
-		console.log('--- CONTROLLER: SAVING FORM ---');
-		console.log(JSON.stringify(form, null, 2));
-		console.log('-----------------------------');
-		// Simulate a successful save by returning an incremented version number.
+	async save(form: Form, mode: FormMode): Promise<number> {
+		if (mode === FormMode.CREATE) {
+			return this._createCollection(form);
+		  } else if (mode === FormMode.EDIT) {
+			return this._updateCollection(form);
+		  } else {
+			throw new Error(`Invalid form mode: ${mode}`);
+		  }
+	}
+
+	async _createCollection(form: Form): Promise<number> {
+		console.log('CollectionFormController._createCollection', { form });
+		return Promise.resolve(form.version + 1);
+	}
+
+	async _updateCollection(form: Form): Promise<number> {
+		const { ExperimentUpdate, ExperimentPermId, ProjectIdentifier } = this.openbisFacade;
+		const experimentUpdate = new ExperimentUpdate();
+		experimentUpdate.setExperimentId(new ExperimentPermId(form.entityPermId));
+		experimentUpdate.setProjectId(new ProjectIdentifier(getProjectIdentifierFromExperimentIdentifier(findFormFieldById(form.fields, form.entityPermId, 'identifier', true) as string)));
+		
+		const properties = getChangedEditableFieldValues(form);
+		experimentUpdate.setProperties(properties);
+		
+		const result = await this.openbisFacade.updateExperiments([ experimentUpdate ]);
+		console.log('CollectionFormController._updateCollection', { result });
 		return Promise.resolve(form.version + 1);
 	}
 
