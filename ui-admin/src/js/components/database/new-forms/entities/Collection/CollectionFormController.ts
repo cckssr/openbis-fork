@@ -62,8 +62,7 @@ export class CollectionFormController implements IFormController {
 		experimentUpdate.setExperimentId(new ExperimentPermId(form.entityPermId));
 		experimentUpdate.setProjectId(new ProjectIdentifier(getProjectIdentifierFromExperimentIdentifier(findFormFieldById(form.fields, form.entityPermId, 'identifier', true) as string)));
 		
-		const properties = getChangedEditableFieldValues(form);
-		experimentUpdate.setProperties(properties);
+		getChangedEditableFieldValues(form, experimentUpdate);
 		
 		const result = await this.openbisFacade.updateExperiments([ experimentUpdate ]);
 		console.log('CollectionFormController._updateCollection', { result });
@@ -74,8 +73,12 @@ export class CollectionFormController implements IFormController {
 		const objId = form.entityPermId;
 		const { ExperimentPermId, SampleIdentifier, DataSetPermId } = this.openbisFacade;
 		const experimentId = new ExperimentPermId(objId);
-		const collectionIdentifier = findFormFieldById(form.fields, form.entityPermId, 'identifier', true);
-		console.log({collectionIdentifier})
+		const collectionIdentifierValue = findFormFieldById(form.fields, form.entityPermId, 'identifier', true);
+		if (typeof collectionIdentifierValue !== 'string' || !collectionIdentifierValue) {
+			throw new Error('[CollectionFormController.checkPermissions] Missing collection identifier');
+		}
+		const collectionIdentifier = collectionIdentifierValue;
+		console.log({ collectionIdentifier });
 		const dummyId = new DataSetPermId(createDummyDataSetIdentifierFromExperimentIdentifier(collectionIdentifier));
         const dummyId2 = new SampleIdentifier(createDummySampleIdentifierFromSampleIdentifier(collectionIdentifier));
 		const ids = [experimentId, dummyId, dummyId2];
