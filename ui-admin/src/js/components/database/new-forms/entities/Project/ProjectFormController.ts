@@ -237,7 +237,6 @@ export class ProjectFormController implements IFormController {
   }
 
   async _updateProject(form: Form): Promise<any> {
-    console.log('ProjectFormController.update', form);
     const { ProjectPermId, ProjectUpdate } = this.openbisFacade;
     const projectUpdate = new ProjectUpdate();
     projectUpdate.setProjectId(new ProjectPermId(form.entityPermId));

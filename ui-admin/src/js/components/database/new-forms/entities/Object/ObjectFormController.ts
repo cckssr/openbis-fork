@@ -127,8 +127,7 @@ export class ObjectFormController implements IFormController {
 		update.getMetaData().set(metadata); */
 		//console.log('ObjectFormController._updateSample metadata', { metadata });
 		//update.getMetaData().set("isMarkdown", "true");
-		const properties = getChangedEditableFieldValues(form);
-		update.setProperties(properties);
+		getChangedEditableFieldValues(form, update);
 		return update;
 	}
 
@@ -136,7 +135,11 @@ export class ObjectFormController implements IFormController {
 		const { SamplePermId, DataSetPermId, SampleIdentifier } = this.openbisFacade;
 		const objId = form.entityPermId;
 		const samplePermId = new this.openbisFacade.SamplePermId(objId);
-		const sampleIdentifier = findFormFieldById(form.fields, form.entityPermId, 'identifier', true);
+		const sampleIdentifierValue = findFormFieldById(form.fields, form.entityPermId, 'identifier', true);
+		if (typeof sampleIdentifierValue !== 'string' || !sampleIdentifierValue) {
+			throw new Error('[ObjectFormController.checkPermissions] Missing sample identifier');
+		}
+		const sampleIdentifier = sampleIdentifierValue;
 		const dummyId = new DataSetPermId(createDummyDataSetIdentifierFromSampleIdentifier(sampleIdentifier));
 		const dummyId2 = new SampleIdentifier(createDummySampleIdentifierFromSampleIdentifier(sampleIdentifier));
 		const ids = [samplePermId, dummyId, dummyId2];

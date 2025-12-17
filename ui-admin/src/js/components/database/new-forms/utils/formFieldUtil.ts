@@ -1,6 +1,7 @@
 import { Form, FormField } from '@src/js/components/database/new-forms/types/formITypes.ts';
 import objectType from "@src/js/common/consts/objectType";
 import { EntityKind } from "@src/js/components/database/new-forms/types/formEnums.ts";
+import { setPropertyValue } from '@src/js/components/database/new-forms/entities/formFieldGetters.ts';
 
 export function findFormFieldById(fields: FormField[], permId: string, label: string, onlyValue: boolean = false): FormField | string | null {
 	const field = fields.find(field => field.id === permId + '-' + label);
@@ -14,16 +15,6 @@ export function findFormFieldByLabel(fields: FormField[], label: string, onlyVal
 	if (!field) return null;
 	if (onlyValue) return field.value;
 	return field;
-}
-
-export const getFormatedDate = (date: Date): string => {
-	const day = String(date.getDate()).padStart(2, '0');
-	const month = String(date.getMonth() + 1).padStart(2, '0');
-	const year = date.getFullYear();
-	const hour = String(date.getHours()).padStart(2, '0');
-	const minute = String(date.getMinutes()).padStart(2, '0');
-	const second = String(date.getSeconds()).padStart(2, '0');
-	return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
 }
 
 // Map admin UI objectTypes to form EntityKind enum
@@ -66,6 +57,7 @@ interface ChangedFieldsOptions {
 
 export function getChangedEditableFieldValues(
 	form: Form,
+	dto?: any,
 	options: ChangedFieldsOptions = {}
 ): Record<string, any> {
 	const { includeReadOnly = false, mapFieldToKey = defaultFieldKeyMapper } = options;
@@ -85,6 +77,12 @@ export function getChangedEditableFieldValues(
 
 		if (!areValuesEqual(field.value, initialValue)) {
 			changedValues[key] = field.value;
+
+			// Apply to DTO using datatype-specific setter when possible.
+			// We only do this when the key matches the property code (`field.name`).
+			if (dto && field.name && key === field.name) {
+				setPropertyValue(dto, key, field.value, field.dataType, field.isMultiValue);
+			}
 		}
 	});
 

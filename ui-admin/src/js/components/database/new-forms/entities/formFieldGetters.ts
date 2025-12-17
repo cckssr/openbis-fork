@@ -1,6 +1,6 @@
 import { FormField } from '@src/js/components/database/new-forms/types/formITypes.ts';
 import { FormFieldDataType, FormSection, Widget } from '@src/js/components/database/new-forms/types/formEnums.ts';
-import { getFormatedDate } from '@src/js/components/database/new-forms/utils/formFieldUtil.ts';
+import { getFormatedDate } from '@src/js/components/database/new-forms/utils/dateUtil.ts';
 
 // Helper type for overrides
 export type FieldOverrides<T = any> = Partial<Omit<FormField<T>, 'value'>> & { value?: T };
@@ -491,19 +491,13 @@ function mapAssignmentToFormField(
   const customWidget = propertyType.metaData?.custom_widget;
   const dataType = mapDataTypeToFormFieldDataType(propertyType.dataType, customWidget);
 
-  // Determine section: use override if provided, otherwise assignment section, otherwise UNKNOWN
   const section = fieldOverrides.section ?? assignment.section ?? FormSection.UNKNOWN;
-
-  // Determine if this is a multi-value property
   const isMultiValue = propertyType.multiValue || false;
 
   // Extract value using the appropriate getter method based on dataType
   const propertyValue = getPropertyValue(dto, propertyCode, dataType, isMultiValue) ?? '';
 
-  // Determine column based on section (default to 'left' for GENERAL, 'center' for word processor)
   const column = determineFieldColumn(dataType, section, assignment.ordinal);
-
-  // Build meta object from propertyType.metaData
   const meta = buildFieldMeta(propertyType.metaData, dataType);
 
   const readOnly = fieldOverrides.readOnly !== undefined 

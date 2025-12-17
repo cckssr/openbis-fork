@@ -50,7 +50,6 @@ export class SpaceFormController implements IFormController {
     const spaceUpdate = new SpaceUpdate()
     spaceUpdate.setSpaceId(new SpacePermId(form.entityPermId));
     const description = findFormFieldByLabel(form.fields, 'Description', true);
-    console.log({description})
     spaceUpdate.setDescription(description);
     const result = await this.openbisFacade.updateSpaces([spaceUpdate]);
     console.log('SpaceFormController.updateSpace', result);

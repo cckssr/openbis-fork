@@ -61,7 +61,7 @@ export class DatasetFormController implements IFormController {
 		if (objectIdentifier) {
 			datasetUpdate.setSampleId(new SampleIdentifier(objectIdentifier));
 		} */
-		datasetUpdate.setProperties(getChangedEditableFieldValues(form));
+		getChangedEditableFieldValues(form, datasetUpdate);
 		console.log('DatasetFormController._updateDataset', { datasetUpdate });
 		const result = await this.openbisFacade.updateDataSets([datasetUpdate]);
 		console.log('DatasetFormController._updateDataset', { result });
