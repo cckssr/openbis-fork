@@ -1577,11 +1577,11 @@ export default class GridController {
             }
           }
         })
+        this.measureQueue = []
         return {
           heights: newHeights
         }
       })
-      this.measureQueue = []
     }, 500)
   }
 
