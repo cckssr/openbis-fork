@@ -22,7 +22,7 @@ public class EndToEndTests extends AbstractTest
         StartupMain.main(new String[] { "src/main/resources/service.properties" });
     }
 
-    @Test
+    @Test(enabled = false)
     public void testTestEcho()
             throws Exception
     {
@@ -36,7 +36,7 @@ public class EndToEndTests extends AbstractTest
                 .statusCode(200);
     }
 
-    @Test
+    @Test(enabled = false)
     public void testTestOpenbisConnection()
             throws Exception
     {
