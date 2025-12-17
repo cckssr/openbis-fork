@@ -312,7 +312,7 @@ export const EntityFormContextProvider = ({
         onFieldChange={updateField}
         onFieldMetadataChange={updateFieldMetadata}
         onAction={handleAction}
-        params={{ sessionID: sessionID }}
+        params={{ sessionID: sessionID, user: user, entityPermId: form.entityPermId }}
         actionOverrides={actionOverrides}
       />
       {dialogs.conflict.isOpen && (
