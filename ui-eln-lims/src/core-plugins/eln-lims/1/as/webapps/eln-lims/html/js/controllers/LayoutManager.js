@@ -14,6 +14,7 @@ var LayoutManager = {
 	mainHeader : null,
 	tabContent: null,
 	MAIN_HEADER_HEIGHT: 48,
+	TAB_TOP_BAR_HEIGHT: 50,
 	currentContainer : null,
 	containers : null,
 	firstColumn : null,
@@ -29,6 +30,27 @@ var LayoutManager = {
 				height : $( window ).height() - LayoutManager.secondColumnHeader.outerHeight() - LayoutManager.MAIN_HEADER_HEIGHT
 			});
 		}
+	},
+	tabContentResize : function() {
+	    var width = $( window ).width();
+	    var fund = LayoutManager.FOUND_SIZE;
+        if (width > LayoutManager.TABLET_SIZE && LayoutManager.tabContent) {
+            var offset =  LayoutManager.MAIN_HEADER_HEIGHT;
+            var height = $( window ).height();
+            LayoutManager.tabContent.css({
+                height : height - offset
+            });
+
+            offset += LayoutManager.TAB_TOP_BAR_HEIGHT;
+            LayoutManager.tabContent.find(".addedTab").css({
+                height : height - offset
+            })
+            var tabHeader = LayoutManager.tabContent.find("#tab-content-header");
+            offset += tabHeader.outerHeight();
+            LayoutManager.tabContent.find(".addedTab #tab-content-body").css({
+                height : height -  offset
+            })
+        }
 	},
 	thirdColumn : null,
 	thirdColumnResize: null,
@@ -84,7 +106,7 @@ var LayoutManager = {
 		}
 
 		if(this.firstColumn == null) {
-			this.firstColumn = $("<div>");
+			this.firstColumn = $("<div>", { id: "first-column" });
 			this.firstColumn.css({
 				"display" : "none",
 				"overflow" : "visible", //To show the dropdowns
@@ -105,7 +127,7 @@ var LayoutManager = {
         }
 
 		if(this.secondColumn == null) {
-			this.secondColumn = $("<div>");
+			this.secondColumn = $("<div>", { id: "second-column" });
 			this.secondColumn.css({
 				"display" : "none",
 				"overflow-x": "hidden",
@@ -113,12 +135,12 @@ var LayoutManager = {
 				"padding" : "0",
 				"float" : "left"
 			});
-			this.secondColumnHeader = $("<div>");
+			this.secondColumnHeader = $("<div>", { id: "second-column-header" });
 			this.secondColumnHeader.css({
 				'display' : "none",
 				'overflow': "visible" //To show the dropdowns
 			});
-			this.secondColumnContent = $("<div>");
+			this.secondColumnContent = $("<div>", { id: "second-column-content" });
 			this.secondColumnContent.css({
 				display : "none",
 				"overflow-x" : "auto",
@@ -138,11 +160,15 @@ var LayoutManager = {
 
             // If you need to observe other types of changes (like attribute changes), add them here
             // this.mutationObserver.observe(this.secondColumnHeader[0], { childList: true, attributes: true, subtree: true });
-        
+
+            // Set up MutationObserver to replace DOMNodeInserted and DOMNodeRemoved
+            this.mutationObserverTabContent = new MutationObserver(this.tabContentResize);
+            this.mutationObserverTabContent.observe(this.tabContent[0], { childList: true });
+
 		}
 
 		if(this.thirdColumn == null) {
-			this.thirdColumn = $("<div>");
+			this.thirdColumn = $("<div>", { id: "third-column" });
 			this.thirdColumn.css({
 				"display" : "none",
 				"overflow-x" : "hidden",
@@ -217,6 +243,9 @@ var LayoutManager = {
     _destroy: function() {
         if (this.mutationObserver) {
             this.mutationObserver.disconnect();
+        }
+        if(this.mutationObserverTabContent) {
+            this.mutationObserverTabContent.disconnect();
         }
     },
 	_setDesktopLayout : function(view, isFirstTime) {
@@ -406,12 +435,24 @@ var LayoutManager = {
 		//
 		// Set screen size
 		//
-		this.firstColumn.css({
-			display : "block",
-			height : height,
-			"overflow-y" : "auto",
-			"width" : width
-		});
+		if(!isFirstTime) {
+		    this.firstColumn.css({
+                display : "block",
+                height : height - LayoutManager.MAIN_HEADER_HEIGHT,
+                "overflow-y" : "auto",
+                "width" : width,
+
+            });
+		} else {
+            this.firstColumn.css({
+                display : "block",
+                height : height,
+                "overflow-y" : "auto",
+                "width" : width,
+                "overflow-x" : "hidden"
+            });
+		}
+
 		this.secondColumn.css({ display : "none" });
 		this.thirdColumn.css({ display : "none" });
 
@@ -438,6 +479,7 @@ var LayoutManager = {
 		if(view.content) {
 			if(isFirstTime) {
 				this.firstColumn.append(view.content);
+				view.content.css("padding-bottom", "40px")
 			}
 		}
 
@@ -594,6 +636,7 @@ var LayoutManager = {
 			this.resizeEventHandlers[idx]();
 		}
 		this.secondColumnContentResize();
+		this.tabContentResize();
 	},
 	setColumnSize : function(firstColumn, secondColumn, thirdColumn) {
 	    LayoutManager.firstColumnResize = firstColumn;
