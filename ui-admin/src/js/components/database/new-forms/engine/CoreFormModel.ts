@@ -2,6 +2,21 @@ import { IAutoSaveActionContext, IModeActionContext, IExtendedActionContext } fr
 import { FormMode } from "@src/js/components/database/new-forms/types/formEnums.ts";
 
 export class CoreFormModel {
+
+	static saveAction = async (context: IExtendedActionContext) => {
+		const { form, controller, onAfterSave, mode } = context;
+		await new Promise(resolve => setTimeout(resolve, 500));
+		const newPermId = await controller.save(form, mode);
+		console.log("CoreFormModel.saveAction: saved successfully! New permId:", newPermId);
+		if (mode === FormMode.CREATE) {
+			alert(`TODO: CREATE to be implemented`);
+			//nAfterSave({ oldType: EntityKind.NEW_OBJECT, oldId: form.entityPermId, newType: EntityKind.OBJECT, newId: newPermId });
+			//onAfterSave({ oldType: EntityKind.NEW_PROJECT, oldId: form.entityPermId, newType: EntityKind.PROJECT, newId: newPermId });
+		} else {
+			onAfterSave();
+		}
+	};
+
 	static editAction = (context: IModeActionContext) => {
 		context.setMode(FormMode.EDIT);
 	};

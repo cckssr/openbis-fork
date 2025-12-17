@@ -8,6 +8,8 @@ class ActionHandlerDispatcher {
   static getActionHandler(actionName: string) {
     switch (actionName) {
       // Core actions
+      case 'save':
+        return CoreFormModel.saveAction;
       case 'edit':
         return CoreFormModel.editAction;
       case 'cancel':

@@ -1,8 +1,9 @@
 import { EntityKind, FormMode } from '@src/js/components/database/new-forms/types/formEnums.ts';
 
-export const getSaveAction = (entityType: EntityKind) => {
+export const getSaveAction = (entityType?: EntityKind) => {
+	const actionName = entityType ? `${entityType}:save` : 'save';
 	return {
-		name: `${entityType}:save`,
+		name: actionName,
 		label: 'Save',
 		component: 'button',
 		isAllowed: true,
