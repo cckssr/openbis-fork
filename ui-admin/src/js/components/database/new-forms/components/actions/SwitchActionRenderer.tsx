@@ -8,7 +8,20 @@ export const SwitchActionRenderer: React.FC<ActionRendererProps> = ({ action, on
     <FormGroup>
       <FormControlLabel key={action.name}
         name={action.name}
-        control={<Switch size='small' checked={action.value} onChange={() => action.handler?.(action.name)} color='primary' />}
+        control={
+          <Switch
+            size='small'
+            checked={!!action.value}
+            onChange={() => {
+              if (action.handler) {
+                action.handler(action.name)
+              } else {
+                onAction(action.name)
+              }
+            }}
+            color='primary'
+          />
+        }
         label={action.label}
         labelPlacement='start'
       />

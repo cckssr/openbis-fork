@@ -87,6 +87,12 @@ export interface IExtendedActionContext extends IModeActionContext {
   onAfterSave: (params?: any) => void;
   deleteReason?: string;
   dependentEntities?: any;
+  /**
+   * Optional auto-save wiring. Some actions (e.g. 'auto-save') can toggle this.
+   * Kept optional so existing actions/contexts don't need to provide it.
+   */
+  isAutoSaveEnabled?: boolean;
+  setAutoSaveEnabled?: (isAutoSaveEnabled: boolean) => void;
 }
 
 export interface IAutoSaveActionContext extends IBaseActionContext {

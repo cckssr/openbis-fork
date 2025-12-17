@@ -22,8 +22,7 @@ import { useDialogState } from '@src/js/components/database/new-forms/hooks/useD
 import { useMoveFlow } from '@src/js/components/database/new-forms/hooks/useMoveFlow.ts';
 import { useConflictFlow } from '@src/js/components/database/new-forms/hooks/useConflictFlow.ts';
 import { useDeleteFlow } from '@src/js/components/database/new-forms/hooks/useDeleteFlow.ts';
-import { useAutoSave } from '@src/js/components/database/new-forms/hooks/useAutoSave.tsx';
-import { useAutoSaveRestore } from '@src/js/components/database/new-forms/hooks/useAutoSaveRestore.tsx';
+import { useEntityAutoSaveFlow } from '@src/js/components/database/new-forms/hooks/useEntityAutoSaveFlow.tsx';
 
 import { ActionToast, useActionToastCtx } from '@src/js/components/database/new-forms/components/common/ActionToast.tsx';
 
@@ -48,6 +47,8 @@ export const EntityFormContextProvider = ({
 }) => {
 
   const actionToastContext = useActionToastCtx();
+  // ErrorDialog is a .jsx component without TS typings; cast to any to satisfy TSX type checking.
+  const ErrorDialogAny = ErrorDialog as any;
 
   // Form state (already well-organized)
   const { form, originalForm, mode, setForm, setMode, updateField, updateFieldMetadata } = useFormState({
@@ -73,7 +74,6 @@ export const EntityFormContextProvider = ({
 
   // Other state (could also be extracted if needed)
   const [permissions] = useState({ canEdit: true, canDelete: true, canMove: true });
-  const [isAutoSaveEnabled] = useState(true);
 
   // Handle data restoration from localStorage
   const handleDataRestore = useCallback((savedData: Form) => {
@@ -81,23 +81,20 @@ export const EntityFormContextProvider = ({
     actionToastContext.raiseInfo('Restored unsaved changes');
   }, [setForm, actionToastContext]);
 
-  // Auto-save hook - handles saving dirty fields only
-  const { saveToStorage, loadFromStorage, clearStorage } = useAutoSave({
+  // Auto-save feature flow (preference + save + restore + actionOverrides)
+  const {
+    isAutoSaveEnabled,
+    setAutoSaveEnabled,
+    actionOverrides,
+    clearStorage
+  } = useEntityAutoSaveFlow({
     form,
     originalForm,
-    storageKey: `form-data-${entityKind}-${permId || 'new'}-${user}`,
-    isEnabled: isAutoSaveEnabled && mode === FormMode.EDIT && !!form && !!originalForm,
-    interval: 5000,
-  });
-
-  // Auto-save restoration hook - handles all restoration logic
-  useAutoSaveRestore({
-    form,
     mode,
-    isEnabled: isAutoSaveEnabled,
-    loadFromStorage,
-    onRestore: handleDataRestore,
-    onClearStorage: clearStorage,
+    user,
+    entityKind,
+    permId,
+    onRestore: handleDataRestore
   });
 
   // Create controller using dispatcher
@@ -114,6 +111,8 @@ export const EntityFormContextProvider = ({
       setForm,
       mode,
       setMode,
+      isAutoSaveEnabled,
+      setAutoSaveEnabled,
       onAfterSave: (params?: any) => {
         console.log('[EntityFormContextProvider] context onAfterSave:', params);
         setMode(FormMode.VIEW);
@@ -126,7 +125,7 @@ export const EntityFormContextProvider = ({
       deleteReason: reason || undefined,
       dependentEntities: dialogs.delete.config?.dependentEntities || undefined,
     };
-  }, [form, mode, externalAppController, controller, dialogs.delete.config]);
+  }, [form, mode, externalAppController, controller, dialogs.delete.config, isAutoSaveEnabled, setAutoSaveEnabled]);
 
   // Load initial form data
   useEffect(() => {
@@ -194,14 +193,19 @@ export const EntityFormContextProvider = ({
   // Handle actions by creating them from dispatcher
   const handleAction = useCallback(async (actionName: string) => {
     console.log(`[EntityFormContextProvider] Handling action: ${actionName}`);
-    const actionHandler = ActionHandlerDispatcher.getActionHandler(actionName);
+    // Action handlers can require different context shapes (mode, extended, autosave, etc.)
+    // so we treat them as dynamic at runtime.
+    const actionHandler: any = ActionHandlerDispatcher.getActionHandler(actionName);
 
     if (!actionHandler || !form) {
       console.warn(`No action handler registered for '${actionName}'`);
       return;
     }
 
-    if (actionName.toLowerCase().includes('save')) {
+    const lowerActionName = actionName.toLowerCase();
+    const isSaveAction = lowerActionName === 'save' || lowerActionName.endsWith(':save');
+
+    if (isSaveAction) {
       await handleSaveActions(actionHandler);
     } else if (actionName === 'delete') {
       await handleDeleteWithDependencyCheck();
@@ -293,7 +297,12 @@ export const EntityFormContextProvider = ({
     <>
       {operationState.saving && <LoadingDialog loading={operationState.saving} />}
       {operationState.error && (
-        <ErrorDialog key='entity-form-error-dialog' open={!!operationState.error} error={operationState.error} onClose={handleErrorCancel}/>
+        <ErrorDialogAny
+          key='entity-form-error-dialog'
+          open={!!operationState.error}
+          error={operationState.error}
+          onClose={handleErrorCancel}
+        />
       )}
       <ActionToast ctx={actionToastContext}></ActionToast>
       <EntityForm
@@ -304,6 +313,7 @@ export const EntityFormContextProvider = ({
         onFieldMetadataChange={updateFieldMetadata}
         onAction={handleAction}
         params={{ sessionID: sessionID }}
+        actionOverrides={actionOverrides}
       />
       {dialogs.conflict.isOpen && (
         <ConflictResolutionDialog

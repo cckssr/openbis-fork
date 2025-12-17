@@ -85,7 +85,11 @@ export const ActionToast: React.FC<ActionToastProps> = ({ ctx } : ActionToastPro
               open={alertList.length > 0}>
       <div>
         <div style={{'minHeight': '50px'}}></div>
-        {alertList.map( alert => <>{alert}</>)}
+        {alertList.map((alert, index) => (
+          <React.Fragment key={(alert as any)?.key ?? index}>
+            {alert}
+          </React.Fragment>
+        ))}
       </div>
     </Snackbar>
   )

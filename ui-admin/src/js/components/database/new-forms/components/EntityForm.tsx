@@ -14,9 +14,14 @@ interface EntityFormProps {
   onFieldMetadataChange: (fieldId: string, meta: any) => void;
   onAction: (actionName: string) => void;
   params: any;
+  /**
+   * Optional overrides applied to actions at render time (does NOT mutate the form).
+   * Useful for UI/session-driven values like switch checked states.
+   */
+  actionOverrides?: Record<string, Partial<FormActionDef>>;
 }
 
-const EntityForm = ({ form, mode, permissions, onFieldChange, onFieldMetadataChange, onAction, params }: EntityFormProps) => {
+const EntityForm = ({ form, mode, permissions, onFieldChange, onFieldMetadataChange, onAction, params, actionOverrides = {} }: EntityFormProps) => {
 
   const renderToolbar = () => {
     // UPDATED: Interpret declarative visibility rules
@@ -50,7 +55,10 @@ const EntityForm = ({ form, mode, permissions, onFieldChange, onFieldMetadataCha
         {visibleActions?.map((action: FormActionDef) => {
           const ActionRenderer = ComponentRegistry.getActionRenderer(action.component);
           if (ActionRenderer) {
-            return <ActionRenderer key={action.name} action={action} onAction={onAction} mode={mode} />
+            const overriddenAction = actionOverrides[action.name]
+              ? { ...action, ...actionOverrides[action.name] }
+              : action
+            return <ActionRenderer key={overriddenAction.name} action={overriddenAction} onAction={onAction} mode={mode} />
           }
         })}
       </Stack>
