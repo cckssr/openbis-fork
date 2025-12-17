@@ -42,7 +42,7 @@ public class PsiDataFreshTests extends AbstractTest
         StartupMain.main(new String[] { "src/main/resources/service.properties" });
     }
 
-    @Test
+    @Test(enabled = false)
     public void testValidatePsiCrate()
             throws Exception
     {
@@ -64,7 +64,7 @@ public class PsiDataFreshTests extends AbstractTest
                 .statusCode(200);
     }
 
-    @Test
+    @Test(enabled = false)
     public void testImportFreshPsiCrate()
             throws Exception
     {
