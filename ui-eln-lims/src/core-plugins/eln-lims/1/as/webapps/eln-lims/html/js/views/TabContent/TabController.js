@@ -9,8 +9,7 @@ class TabController extends window.NgComponents.default.ContentController {
         let arg = 'div'
         let ele = React.createElement(arg, { id: tab,
             style: {
-                "overflow-x": "auto",
-                "overflow-y": "auto",
+                "overflow": "hidden",
                 "width" : "100%",
                 "height": LayoutManager.secondColumn.height() - 50
             }

@@ -389,6 +389,7 @@ function MainController(profile) {
 
 	this.reInitCurrentView = function() {
 	    if(this.currentView) {
+	        this.currentView.refresh();
 	        var tabInfo = mainController.tabContent.getCurrentTabInfo();
 	        var views = this._getNewViewModel(true, true, undefined, tabInfo);
 	        this.currentView.init(views);
@@ -1146,8 +1147,9 @@ function MainController(profile) {
 	this._getBackwardsCompatibleMainContainer = function(id, navigationTabInfo) {
 	    var header = null;
 		var content = $("<div>");
-		content.css("padding", "10px");
-		
+		content.css("padding-left", "10px");
+		content.css("padding-top", "10px");
+
 		if(id) {
 			content.attr("id", id);
 		}
@@ -1196,15 +1198,25 @@ function MainController(profile) {
 		    tabContentHeader.css("position", "sticky");
 		    tabContentHeader.css("top", "0");
 		    let tabContentBody = $("<div>", { id: "tab-content-body" });
+		    tabContentBody.css("overflow", "auto");
 
             mainController.tabContent.openTab(navigationTab, function() {
                 tab = $("[id='"+navigationTab.id+"']")
                 tab.empty()
+                tab.addClass("addedTab")
                 tab.append(tabContentHeader);
                 tab.append(tabContentBody);
+
                 if(callback) {
                     callback();
                 }
+
+                var height = $(window).height() - LayoutManager.MAIN_HEADER_HEIGHT
+                                    - LayoutManager.TAB_TOP_BAR_HEIGHT
+                                    - tabContentHeader.outerHeight();
+                tabContentBody.css({
+                    "height" : height,
+                })
             });
             header = tabContentHeader;
             content = tabContentBody;
@@ -1230,8 +1242,8 @@ function MainController(profile) {
 		    if(!content) {
 			    content = $("<div>");
 			}
-			content.css({ 
-				"padding" : "10px"
+			content.css({
+				"padding-left" : "10px"
 			});
 			if(!withAuxContentOrAuxContentId) {  // Setting 100% height breaks views with 3 columns on tablet mode, better to explicitly set to 100% when the third column is not used
 				content.css({
