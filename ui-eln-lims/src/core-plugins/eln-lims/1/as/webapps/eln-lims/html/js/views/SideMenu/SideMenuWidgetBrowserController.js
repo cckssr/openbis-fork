@@ -1824,8 +1824,10 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
             withExperiment: true,
             withParents: true,
             withParentsExperiment: true,
+            withParentsSpace: true,
             withDataSets: true,
             withDataSetSample: true,
+            withSpace: true,
             from: params.offset,
             count: params.limit,
             sortings: [],
@@ -1851,9 +1853,8 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
                     if(searchResult.totalCount > 0 && profile.isAFSAvailable()) {
                         var promises = [];
                         var parentless = [];
-                        var ids = searchResult.objects.map(x => x.permId.permId);
                         searchResult.objects.forEach((sample) => {
-                            if(this._isSampleTypeOnNav(sample) && sample.parents && !sample.parents.some(parent => ids.includes(parent.permId.permId) )) {
+                            if(this._isSampleTypeOnNav(sample) && sample.parents && !sample.parents.some(parent => parent.space && parent.space.permId.permId === sample.space.permId.permId)  ) {
                                promises.push(mainController.openbisV3.getAfsServerFacade().list(sample.permId.permId ,"", false))
                                parentless.push(sample);
                             }
@@ -1867,26 +1868,19 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
                                 parentless.forEach((sample) => {
                                     var hasAfsFile = files.some(file => file.length > 0 && file[0].owner === sample.permId.permId);
                                     results.nodes.push(this._createSampleNode(sample, hasAfsFile));
-                                    results.totalCount++;
                                 })
                                 return results;
                             })
                         )
                     } else {
-                        var results = { nodes: [], totalCount: 0 }
-
-                        var ids = searchResult.objects.map(x => x.permId.permId);
+                        var results = { nodes: [], totalCount: searchResult.totalCount }
 
                         searchResult.objects.forEach((sample) => {
-                            if(this._isSampleTypeOnNav(sample) && sample.parents && !sample.parents.some(parent => ids.includes(parent.permId.permId) )) {
+                            if(this._isSampleTypeOnNav(sample) && sample.parents && !sample.parents.some(parent => parent.space && parent.space.permId.permId === sample.space.permId.permId)  ) {
                                 var node = this._createSampleNode(sample);
-
                                 results.nodes.push(node);
-                                results.totalCount++;
                             }
-
                         });
-
                         resolve(results)
                     }
                 }
@@ -1930,10 +1924,11 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
         var samplesFolderNode = this._createSpaceSamplesNode()
         samplesFolderNode.space = params.node.object.id
         samplesFolderNode.sortingId = params.node.sortingId
+        samplesFolderNode.id = params.node.id
         var loadSamplesPromise = this._loadNodesSpaceSamples({
             node: samplesFolderNode,
-            offset: 0,
-            limit: this.LOAD_LIMIT,
+            offset: params.offset || 0,
+            limit: params.limit || this.LOAD_LIMIT,
             sortings: this.SORTINGS_BY_NAME_AND_REGISTRATION_DATE,
         })
 
@@ -1942,8 +1937,8 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
         projectsFolderNode.sortingId = params.node.sortingId
         var loadProjectsPromise = this._loadNodesSpaceProjects({
             node: projectsFolderNode,
-            offset: 0,
-            limit: this.LOAD_LIMIT,
+            offset: params.offset || 0,
+            limit: params.limit || this.LOAD_LIMIT,
             sortings: this.SORTINGS_BY_CODE_AND_REGISTRATION_DATE,
         })
 
@@ -1974,15 +1969,17 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
                 results.totalCount++
             } else {
                 samplesResults.nodes.forEach((sampleNode) => {
+                    //space samples only
                     results.nodes.push(sampleNode);
-                    results.totalCount++;
                 })
+                results.totalCount = samplesResults.totalCount;
             }
         } else if (projectsResults.totalCount > 0) {
             projectsResults.nodes.forEach((projectNode) => {
+                // projects only
                 results.nodes.push(projectNode);
-                results.totalCount++;
             })
+            results.totalCount = projectsResults.totalCount;
         }
 
         return results
@@ -2003,6 +2000,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
             withExperiment: true,
             withParents: true,
             withParentsExperiment: true,
+            withParentsProject: true,
             withDataSets: true,
             withDataSetSample: true,
             from: params.offset,
@@ -2031,9 +2029,9 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
                     if(searchResult.totalCount > 0 && profile.isAFSAvailable()) {
                          var promises = [];
                          var parentless = [];
-                         var ids = searchResult.objects.map(x => x.permId.permId);
                          searchResult.objects.forEach((sample) => {
-                             if(this._isSampleTypeOnNav(sample) && sample.parents && !sample.parents.some(parent => ids.includes(parent.permId.permId) )) {
+                             //project sample
+                             if(this._isSampleTypeOnNav(sample) && sample.parents && !sample.parents.some(parent => parent.project && parent.project.permId.permId === sample.project.permId.permId)  ) {
                                 promises.push(mainController.openbisV3.getAfsServerFacade().list(sample.permId.permId ,"", false))
                                 parentless.push(sample);
                              }
@@ -2047,22 +2045,19 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
                                 parentless.forEach((sample) => {
                                         var hasAfsFile = files.some(file => file.length > 0 && file[0].owner === sample.permId.permId);
                                         results.nodes.push(this._createSampleNode(sample, hasAfsFile));
-                                        results.totalCount++;
                                 })
                                 return results;
                             })
                         )
                     } else {
-                        var results = { nodes: [], totalCount: 0 }
+                        var results = { nodes: [], totalCount: searchResult.totalCount }
 
-                        var ids = searchResult.objects.map(x => x.permId.permId);
                         searchResult.objects.forEach((sample) => {
-                            if(this._isSampleTypeOnNav(sample) && sample.parents && !sample.parents.some(parent => ids.includes(parent.permId.permId) )) {
+                            //project samples
+                            if(this._isSampleTypeOnNav(sample) && sample.parents && !sample.parents.some(parent => parent.project && parent.project.permId.permId === sample.project.permId.permId)  ) {
                                 results.nodes.push(this._createSampleNode(sample, false))
-                                results.totalCount++;
                             }
                         })
-
                         resolve(results)
                     }
                 }
@@ -2075,10 +2070,11 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
         var samplesFolderNode = this._createProjectSamplesNode()
         samplesFolderNode.projectPermId = params.node.object.id
         samplesFolderNode.sortingId = params.node.sortingId
+        samplesFolderNode.id = params.node.id
         var loadSamplesPromise = this._loadNodesProjectSamples({
             node: samplesFolderNode,
-            offset: 0,
-            limit: this.LOAD_LIMIT,
+            offset: params.offset || 0,
+            limit: params.limit || this.LOAD_LIMIT,
             sortings: this.SORTINGS_BY_CODE_AND_REGISTRATION_DATE,
         })
 
@@ -2087,8 +2083,8 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
         experimentFolderNode.sortingId = params.node.sortingId
         var loadExperimentsPromise = this._loadNodesProjectExperiments({
             node: experimentFolderNode,
-            offset: 0,
-            limit: this.LOAD_LIMIT,
+            offset: params.offset || 0,
+            limit: params.limit || this.LOAD_LIMIT,
             sortings: this.SORTINGS_BY_CODE_AND_REGISTRATION_DATE,
         })
 
@@ -2111,9 +2107,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
 
             });
             await Promise.all(promises);
-        }
 
-        if (samplesResults.totalCount > 0) {
             if (experimentsResults.totalCount > 0) {
                 results.nodes.push(samplesFolderNode)
                 results.totalCount++
@@ -2123,14 +2117,14 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
             } else {
                 samplesResults.nodes.forEach((sampleNode) => {
                     results.nodes.push(sampleNode);
-                    results.totalCount++;
                 })
+                results.totalCount = samplesResults.totalCount;
             }
         } else if (experimentsResults.totalCount > 0) {
             experimentsResults.nodes.forEach((experimentNode) => {
                 results.nodes.push(experimentNode);
-                results.totalCount++;
             })
+            results.totalCount = experimentsResults.totalCount;
         }
         return results
     }
@@ -2214,8 +2208,8 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
 
         var loadSamplesPromise = this._loadNodesExperimentSamples({
             node: samplesFolderNode,
-            offset: 0,
-            limit: this.LOAD_LIMIT,
+            offset: params.offset || 0,
+            limit: params.limit || this.LOAD_LIMIT,
         })
 
         var dataSetsFolderNode = this._createExperimentDataSetsNode()
@@ -2325,13 +2319,11 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
                 sampleFetchOptions,
                 (searchResult) => {
 
-                    var results = { nodes: [], totalCount: 0 }
+                    var results = { nodes: [], totalCount: searchResult.totalCount }
 
-                    var ids = searchResult.objects.map(x => x.permId.permId);
                     searchResult.objects.forEach((sample) => {
-                        if(this._isSampleTypeOnNav(sample) && sample.parents && !sample.parents.some(parent => ids.includes(parent.permId.permId) )) {
+                        if(this._isSampleTypeOnNav(sample) && sample.parents && !sample.parents.some(parent => parent.experiment && parent.experiment.permId.permId === sample.experiment.permId.permId)  ) {
                             results.nodes.push(this._createSampleNode(sample))
-                            results.totalCount++;
                         }
                     })
 
@@ -2423,8 +2415,8 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
 
         var loadChildrenPromise = this._loadNodesSampleChildren({
             node: childrenFolderNode,
-            offset: 0,
-            limit: this.LOAD_LIMIT,
+            offset: params.offset || 0,
+            limit: params.limit || this.LOAD_LIMIT,
         })
 
         var dataSetsFolderNode = this._createSampleDataSetsNode()
