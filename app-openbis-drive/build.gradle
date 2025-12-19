@@ -110,6 +110,14 @@ tasks.named('jar', Jar) {
     }
 }
 
+tasks.named('distTar') {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+tasks.named('distZip') {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
 tasks.register('layReleaseDirectoriesOut') {
     mkdir('build/release')
     mkdir('build/release/launch-scripts')
