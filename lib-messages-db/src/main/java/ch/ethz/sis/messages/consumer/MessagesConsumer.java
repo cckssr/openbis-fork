@@ -2,10 +2,11 @@ package ch.ethz.sis.messages.consumer;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.stream.Collectors;
 
 import ch.ethz.sis.messages.db.IMessagesDatabase;
 import ch.ethz.sis.messages.db.LastSeenMessage;
@@ -35,30 +36,49 @@ public class MessagesConsumer
         this.messageHandlers = messageHandlers;
         this.messageBatchSize = messageBatchSize;
         this.messagesDatabase = messagesDatabase;
+        getMessageHandlersByType();
     }
 
     public void consume()
     {
         final Set<String> allSupportedMessageTypes = getAllSupportedMessageTypes();
+        final Map<String, IMessageHandler> messageHandlersByType = getMessageHandlersByType();
 
-        Message newestMessage = MessagesDatabaseUtil.execute(messagesDatabase,
-                () -> messagesDatabase.getMessagesDAO().getNewestByTypes(new ArrayList<>(allSupportedMessageTypes)));
-
-        while (true)
+        try
         {
-
-            LastSeenMessage lastSeenMessage =
-                    MessagesDatabaseUtil.execute(messagesDatabase, () -> messagesDatabase.getLastSeenMessagesDAO().getByConsumerId(consumerId));
-
-            List<Message> messages = loadNextBatch(allSupportedMessageTypes, lastSeenMessage != null ? lastSeenMessage.getLastSeenMessageId() : null,
-                    newestMessage != null ? newestMessage.getId() : null);
-
-            if (messages.isEmpty())
+            for (IMessageHandler messageHandler : messageHandlers)
             {
-                break;
+                messageHandler.beforeFirstMessage();
             }
 
-            consume(lastSeenMessage, messages);
+            Message newestMessage = MessagesDatabaseUtil.execute(messagesDatabase,
+                    () -> messagesDatabase.getMessagesDAO().getNewestByTypes(new ArrayList<>(allSupportedMessageTypes)));
+
+            while (true)
+            {
+                LastSeenMessage lastSeenMessage =
+                        MessagesDatabaseUtil.execute(messagesDatabase, () -> messagesDatabase.getLastSeenMessagesDAO().getByConsumerId(consumerId));
+
+                List<Message> messages =
+                        loadNextBatch(allSupportedMessageTypes, lastSeenMessage != null ? lastSeenMessage.getLastSeenMessageId() : null,
+                                newestMessage != null ? newestMessage.getId() : null);
+
+                if (messages.isEmpty())
+                {
+                    break;
+                }
+
+                consumeBatch(messages, messageHandlersByType, lastSeenMessage);
+            }
+        } catch (Exception e)
+        {
+            throw new RuntimeException("Message consumption has failed. No more messages will be processed.", e);
+        } finally
+        {
+            for (IMessageHandler messageHandler : messageHandlers)
+            {
+                messageHandler.afterLastMessage();
+            }
         }
     }
 
@@ -72,7 +92,7 @@ public class MessagesConsumer
             operationLog.info("No new messages found with types " + messageTypes + ".");
         } else
         {
-            List<String> foundMessageTypes = messages.stream().map(Message::getType).collect(Collectors.toList());
+            List<String> foundMessageTypes = messages.stream().map(Message::getType).toList();
             operationLog.info(
                     "Found " + messages.size() + " new message(s) with types " + foundMessageTypes + ".");
         }
@@ -80,76 +100,75 @@ public class MessagesConsumer
         return messages;
     }
 
-    private void consume(LastSeenMessage lastSeenMessage, List<Message> messages)
+    private void consumeBatch(List<Message> messages, Map<String, IMessageHandler> messageHandlersByType, LastSeenMessage lastSeenMessage)
     {
-        int successCounter = 0;
-        int failureCounter = 0;
-
         for (Message message : messages)
         {
-            IMessageHandler matchingHandler = null;
-
-            for (IMessageHandler messageHandler : messageHandlers)
-            {
-                Set<String> supportedMessageTypes = messageHandler.getSupportedMessageTypes();
-
-                if (supportedMessageTypes != null && supportedMessageTypes.contains(message.getType()))
-                {
-                    matchingHandler = messageHandler;
-                    break;
-                }
-            }
-
-            if (matchingHandler != null)
-            {
-                try
-                {
-                    MessageProcessId.setCurrent(message.getProcessId());
-                    operationLog.info("Started handling message " + toString(message) + ".");
-                    matchingHandler.handleMessage(message);
-                    operationLog.info("Finished handling message " + toString(message) + ".");
-                    successCounter++;
-                } catch (Exception e)
-                {
-                    operationLog.info("Handling of message " + toString(message) + " has failed.", e);
-                    failureCounter++;
-                } finally
-                {
-                    MessageProcessId.setCurrent(null);
-                }
-            } else
+            IMessageHandler messageHandler = messageHandlersByType.get(message.getType());
+            if (messageHandler == null)
             {
                 throw new RuntimeException("Message " + toString(message) + " could not be handled. No handler found for the message type.");
             }
-
-            try
-            {
-                messagesDatabase.begin();
-
-                if (lastSeenMessage == null)
-                {
-                    lastSeenMessage = new LastSeenMessage();
-                    lastSeenMessage.setConsumerId(consumerId);
-                    lastSeenMessage.setLastSeenMessageId(message.getId());
-                    lastSeenMessage.setId(messagesDatabase.getLastSeenMessagesDAO().create(lastSeenMessage));
-                } else
-                {
-                    lastSeenMessage.setLastSeenMessageId(message.getId());
-                    messagesDatabase.getLastSeenMessagesDAO().update(lastSeenMessage);
-                }
-
-                message.setConsumptionTimestamp(new Date());
-                messagesDatabase.getMessagesDAO().update(message);
-
-                messagesDatabase.commit();
-            } catch (Exception e)
-            {
-                messagesDatabase.rollback();
-                throw e;
-            }
+            executeMessageHandler(messageHandler, message);
+            lastSeenMessage = updateLastSeenMessage(lastSeenMessage, message);
         }
 
-        operationLog.info("Handled " + messages.size() + " message(s). Successes: " + successCounter + ", failures: " + failureCounter + ".");
+        operationLog.info("Handled " + messages.size() + " message(s).");
+    }
+
+    private void executeMessageHandler(IMessageHandler messageHandler, Message message)
+    {
+        try
+        {
+            MessageProcessId.setCurrent(message.getProcessId());
+            operationLog.info("Started handling message " + toString(message) + ".");
+            messageHandler.handleMessage(message);
+            operationLog.info("Finished handling message " + toString(message) + ".");
+        } catch (Exception e)
+        {
+            throw new RuntimeException("Handling of message " + toString(message) + " has failed.", e);
+        } finally
+        {
+            MessageProcessId.setCurrent(null);
+        }
+    }
+
+    private LastSeenMessage updateLastSeenMessage(LastSeenMessage lastSeenMessage, Message message)
+    {
+        try
+        {
+            messagesDatabase.begin();
+
+            if (lastSeenMessage == null)
+            {
+                lastSeenMessage = new LastSeenMessage();
+                lastSeenMessage.setConsumerId(consumerId);
+                lastSeenMessage.setLastSeenMessageId(message.getId());
+                lastSeenMessage.setId(messagesDatabase.getLastSeenMessagesDAO().create(lastSeenMessage));
+            } else
+            {
+                lastSeenMessage.setLastSeenMessageId(message.getId());
+                messagesDatabase.getLastSeenMessagesDAO().update(lastSeenMessage);
+            }
+
+            message.setConsumptionTimestamp(new Date());
+            messagesDatabase.getMessagesDAO().update(message);
+
+            messagesDatabase.commit();
+        } catch (Exception e)
+        {
+            try
+            {
+                messagesDatabase.rollback();
+            } catch (Exception rollbackException)
+            {
+                operationLog.warn("Rollback failed", rollbackException);
+            }
+
+            throw new RuntimeException("Updating last seen message to " + toString(message) + " has failed.", e);
+        }
+
+        return lastSeenMessage;
     }
 
     private Set<String> getAllSupportedMessageTypes()
@@ -162,6 +181,38 @@ public class MessagesConsumer
         }
 
         return allMessageTypes;
+    }
+
+    private Map<String, IMessageHandler> getMessageHandlersByType()
+    {
+        Map<String, IMessageHandler> messageHandlersByType = new HashMap<>();
+
+        for (IMessageHandler messageHandler : messageHandlers)
+        {
+            Set<String> supportedMessageTypes = messageHandler.getSupportedMessageTypes();
+
+            if (supportedMessageTypes == null || supportedMessageTypes.isEmpty())
+            {
+                throw new RuntimeException(
+                        "Message handler " + messageHandler.getClass().getName() + " is incorrect. It does not support any message types.");
+            }
+
+            for (String messageType : supportedMessageTypes)
+            {
+                if (messageHandlersByType.containsKey(messageType))
+                {
+                    IMessageHandler existingMessageHandler = messageHandlersByType.get(messageType);
+                    throw new RuntimeException(
+                            "Message handlers " + existingMessageHandler.getClass().getName() + " and " + messageHandler.getClass().getName()
+                                    + " both support the same message type. Configure a separate message consumer for the handlers to tract their last seen messages correctly.");
+                } else
+                {
+                    messageHandlersByType.put(messageType, messageHandler);
+                }
+            }
+        }
+
+        return messageHandlersByType;
     }
 
     private String toString(Message message)

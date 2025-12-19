@@ -28,6 +28,8 @@ public class MessagesDAO implements IMessagesDAO
     private static final String LIST_BY_TYPES_NOT_CONSUMED_SQL =
             "SELECT ID, TYPE, DESCRIPTION, META_DATA, PROCESS_ID, CREATION_TIMESTAMP, CONSUMPTION_TIMESTAMP FROM MESSAGES WHERE TYPE IN (SELECT UNNEST(?)) AND CONSUMPTION_TIMESTAMP IS NULL ORDER BY ID ASC;";
 
+    private static final String DELETE_SQL = "DELETE FROM MESSAGES WHERE ID IN (SELECT UNNEST(?));";
+
     private final Connection connection;
 
     public MessagesDAO(Connection connection)
@@ -107,7 +109,7 @@ public class MessagesDAO implements IMessagesDAO
         {
             statement.setObject(1, messageTypes.toArray(new String[0]));
             statement.setLong(2, minMessageId != null ? minMessageId : 0);
-            statement.setLong(3, maxMessageId != null ? maxMessageId : 0);
+            statement.setLong(3, maxMessageId != null ? maxMessageId : Long.MAX_VALUE);
             statement.setInt(4, messageBatchSize);
 
             List<Message> result = new ArrayList<>();
@@ -140,6 +142,18 @@ public class MessagesDAO implements IMessagesDAO
             }
 
             return result;
+        } catch (SQLException e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override public void delete(List<Long> messageIds)
+    {
+        try (PreparedStatement statement = connection.prepareStatement(DELETE_SQL))
+        {
+            statement.setObject(1, messageIds.toArray(new Long[0]));
+            statement.executeUpdate();
         } catch (SQLException e)
         {
             throw new RuntimeException(e);

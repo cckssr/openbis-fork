@@ -8,6 +8,7 @@ import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
+import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -41,6 +42,8 @@ public class MessagesConsumerTest
 
     private IMessageHandler handler2;
 
+    private IMessageHandler handler12;
+
     private IMessagesDatabase database;
 
     private IMessagesDAO messagesDAO;
@@ -54,6 +57,7 @@ public class MessagesConsumerTest
         context = new Mockery();
         handler1 = context.mock(IMessageHandler.class, "handler1");
         handler2 = context.mock(IMessageHandler.class, "handler2");
+        handler12 = context.mock(IMessageHandler.class, "handler12");
         database = context.mock(IMessagesDatabase.class);
         messagesDAO = context.mock(IMessagesDAO.class);
         lastSeenMessagesDAO = context.mock(ILastSeenMessagesDAO.class);
@@ -70,6 +74,9 @@ public class MessagesConsumerTest
 
             allowing(handler2).getSupportedMessageTypes();
             will(returnValue(Set.of(MESSAGE_TYPE_2)));
+
+            allowing(handler12).getSupportedMessageTypes();
+            will(returnValue(Set.of(MESSAGE_TYPE_1, MESSAGE_TYPE_2)));
         }});
     }
 
@@ -81,6 +88,19 @@ public class MessagesConsumerTest
     }
 
     @Test
+    public void testCreateWithOverlappingHandlers()
+    {
+        try
+        {
+            new MessagesConsumer(CONSUMER_ID, List.of(handler1, handler2, handler12), BATCH_SIZE, database);
+        } catch (Exception e)
+        {
+            Assert.assertEquals(e.getMessage(), "Message handlers " + handler1.getClass().getName() + " and " + handler12.getClass().getName()
+                    + " both support the same message type. Configure a separate message consumer for the handlers to tract their last seen messages correctly.");
+        }
+    }
+
+    @Test
     public void testConsumeTwoSuccessfulMessages()
     {
         Message message1 = message(1L, MESSAGE_TYPE_1);
@@ -89,6 +109,8 @@ public class MessagesConsumerTest
         context.checking(new Expectations()
         {
             {
+                expectBeforeFirstMessage(List.of(handler1, handler2));
+
                 // get newest = message2
                 expectGetNewestMessagesByTypes(List.of(MESSAGE_TYPE_1, MESSAGE_TYPE_2), message2);
 
@@ -117,6 +139,8 @@ public class MessagesConsumerTest
                 // get messages between [message2, message2] returns []
                 expectListMessagesByTypesAndIdRange(List.of(MESSAGE_TYPE_1, MESSAGE_TYPE_2), message2.getId(), message2.getId(), BATCH_SIZE,
                         List.of());
+
+                expectAfterLastMessage(List.of(handler1, handler2));
             }
         });
 
@@ -129,7 +153,7 @@ public class MessagesConsumerTest
                         + "INFO  OPERATION.MessagesConsumer - Finished handling message {id: 1, type: 'message-type-1', description: 'null'}.\n"
                         + "INFO  OPERATION.MessagesConsumer - Started handling message {id: 2, type: 'message-type-2', description: 'null'}.\n"
                         + "INFO  OPERATION.MessagesConsumer - Finished handling message {id: 2, type: 'message-type-2', description: 'null'}.\n"
-                        + "INFO  OPERATION.MessagesConsumer - Handled 2 message(s). Successes: 2, failures: 0.\n"
+                        + "INFO  OPERATION.MessagesConsumer - Handled 2 message(s).\n"
                         + "INFO  OPERATION.MessagesConsumer - No new messages found with types [message-type-1, message-type-2].",
                 logRecorder.getLogContent());
     }
@@ -140,9 +164,13 @@ public class MessagesConsumerTest
         Message message1 = message(1L, MESSAGE_TYPE_1);
         Message message2 = message(2L, MESSAGE_TYPE_2);
 
+        RuntimeException testException = new RuntimeException("Test exception");
+
         context.checking(new Expectations()
         {
             {
+                expectBeforeFirstMessage(List.of(handler1, handler2));
+
                 // get newest = message2
                 expectGetNewestMessagesByTypes(List.of(MESSAGE_TYPE_1, MESSAGE_TYPE_2), message2);
 
@@ -155,38 +183,26 @@ public class MessagesConsumerTest
 
                 // handle message1 fails with exception
                 one(handler1).handleMessage(message1);
-                RuntimeException testException = new RuntimeException();
                 will(throwException(testException));
 
-                // create last seen = message1
-                expectCreateLastSeenMessage(message1);
-
-                // handle message2
-                one(handler2).handleMessage(message2);
-
-                // update last seen = message2
-                expectUpdateLastSeenMessage(message2);
-
-                // get last seen = message2
-                expectGetLastSeenMessage(message2);
-
-                // get messages between [message2, message2] returns []
-                expectListMessagesByTypesAndIdRange(List.of(MESSAGE_TYPE_1, MESSAGE_TYPE_2), message2.getId(), message2.getId(), BATCH_SIZE,
-                        List.of());
+                expectAfterLastMessage(List.of(handler1, handler2));
             }
         });
 
         MessagesConsumer consumer = new MessagesConsumer(CONSUMER_ID, List.of(handler1, handler2), BATCH_SIZE, database);
-        consumer.consume();
+        try
+        {
+            consumer.consume();
+        } catch (Exception e)
+        {
+            Assert.assertEquals(e.getMessage(), "Message consumption has failed. No more messages will be processed.");
+            Assert.assertEquals(e.getCause().getMessage(), "Handling of message {id: 1, type: 'message-type-1', description: 'null'} has failed.");
+            Assert.assertEquals(e.getCause().getCause(), testException);
+        }
 
         AssertionUtil.assertContainsLines(
                 "INFO  OPERATION.MessagesConsumer - Found 2 new message(s) with types [message-type-1, message-type-2].\n"
-                        + "INFO  OPERATION.MessagesConsumer - Started handling message {id: 1, type: 'message-type-1', description: 'null'}.\n"
-                        + "INFO  OPERATION.MessagesConsumer - Handling of message {id: 1, type: 'message-type-1', description: 'null'} has failed.\n"
-                        + "INFO  OPERATION.MessagesConsumer - Started handling message {id: 2, type: 'message-type-2', description: 'null'}.\n"
-                        + "INFO  OPERATION.MessagesConsumer - Finished handling message {id: 2, type: 'message-type-2', description: 'null'}.\n"
-                        + "INFO  OPERATION.MessagesConsumer - Handled 2 message(s). Successes: 1, failures: 1.\n"
-                        + "INFO  OPERATION.MessagesConsumer - No new messages found with types [message-type-1, message-type-2].",
+                        + "INFO  OPERATION.MessagesConsumer - Started handling message {id: 1, type: 'message-type-1', description: 'null'}.\n",
                 logRecorder.getLogContent());
     }
 
@@ -200,6 +216,8 @@ public class MessagesConsumerTest
         context.checking(new Expectations()
         {
             {
+                expectBeforeFirstMessage(List.of(handler1, handler2));
+
                 // get newest = message2
                 expectGetNewestMessagesByTypes(List.of(MESSAGE_TYPE_1, MESSAGE_TYPE_2), message3);
 
@@ -241,6 +259,8 @@ public class MessagesConsumerTest
                 // get messages between [message3, message3] returns []
                 expectListMessagesByTypesAndIdRange(List.of(MESSAGE_TYPE_1, MESSAGE_TYPE_2), message3.getId(), message3.getId(), 2,
                         List.of());
+
+                expectAfterLastMessage(List.of(handler1, handler2));
             }
         });
 
@@ -253,11 +273,11 @@ public class MessagesConsumerTest
                         + "INFO  OPERATION.MessagesConsumer - Finished handling message {id: 1, type: 'message-type-1', description: 'null'}.\n"
                         + "INFO  OPERATION.MessagesConsumer - Started handling message {id: 2, type: 'message-type-2', description: 'null'}.\n"
                         + "INFO  OPERATION.MessagesConsumer - Finished handling message {id: 2, type: 'message-type-2', description: 'null'}.\n"
-                        + "INFO  OPERATION.MessagesConsumer - Handled 2 message(s). Successes: 2, failures: 0.\n"
+                        + "INFO  OPERATION.MessagesConsumer - Handled 2 message(s).\n"
                         + "INFO  OPERATION.MessagesConsumer - Found 1 new message(s) with types [message-type-1].\n"
                         + "INFO  OPERATION.MessagesConsumer - Started handling message {id: 3, type: 'message-type-1', description: 'null'}.\n"
                         + "INFO  OPERATION.MessagesConsumer - Finished handling message {id: 3, type: 'message-type-1', description: 'null'}.\n"
-                        + "INFO  OPERATION.MessagesConsumer - Handled 1 message(s). Successes: 1, failures: 0.\n"
+                        + "INFO  OPERATION.MessagesConsumer - Handled 1 message(s).\n"
                         + "INFO  OPERATION.MessagesConsumer - No new messages found with types [message-type-1, message-type-2].",
                 logRecorder.getLogContent());
     }
@@ -268,6 +288,28 @@ public class MessagesConsumerTest
         message.setId(id);
         message.setType(type);
         return message;
+    }
+
+    private void expectBeforeFirstMessage(List<IMessageHandler> handlers)
+    {
+        context.checking(new Expectations()
+        {{
+            for (IMessageHandler handler : handlers)
+            {
+                one(handler).beforeFirstMessage();
+            }
+        }});
+    }
+
+    private void expectAfterLastMessage(List<IMessageHandler> handlers)
+    {
+        context.checking(new Expectations()
+        {{
+            for (IMessageHandler handler : handlers)
+            {
+                one(handler).afterLastMessage();
+            }
+        }});
     }
 
     private void expectGetNewestMessagesByTypes(List<String> messageTypes, Message result)

@@ -8,5 +8,14 @@ public interface IMessageHandler
 {
     Set<String> getSupportedMessageTypes();
 
+    default void beforeFirstMessage()
+    {
+    }
+
     void handleMessage(Message message);
+
+    default void afterLastMessage()
+    {
+    }
+
 }

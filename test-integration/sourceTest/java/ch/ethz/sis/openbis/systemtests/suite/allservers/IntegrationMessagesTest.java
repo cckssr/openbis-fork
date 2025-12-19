@@ -15,8 +15,10 @@ import org.testng.annotations.Test;
 
 import ch.ethz.sis.messages.consumer.IMessageHandler;
 import ch.ethz.sis.messages.consumer.MessagesConsumer;
+import ch.ethz.sis.messages.db.LastSeenMessage;
 import ch.ethz.sis.messages.db.Message;
 import ch.ethz.sis.messages.db.MessagesDatabase;
+import ch.ethz.sis.messages.db.MessagesDatabaseUtil;
 import ch.ethz.sis.openbis.afsserver.server.common.DatabaseConfiguration;
 import ch.ethz.sis.openbis.afsserver.server.messages.MessagesDatabaseConfiguration;
 import ch.ethz.sis.openbis.systemtests.suite.allservers.environment.AllServersIntegrationTestEnvironment;
@@ -55,13 +57,33 @@ public class IntegrationMessagesTest
         Configuration afsConfiguration = new Configuration(environment.getAfsServer().getServiceProperties());
         DatabaseConfiguration messagesDatabaseConfiguration = MessagesDatabaseConfiguration.getInstance(afsConfiguration);
         messagesDatabase = new MessagesDatabase(messagesDatabaseConfiguration.getDataSource());
+
+        MessagesDatabaseUtil.execute(messagesDatabase, () ->
+        {
+            // delete existing messages
+            List<Message> messages =
+                    messagesDatabase.getMessagesDAO().listByTypesAndIdRange(List.of(MESSAGE_TYPE_1, MESSAGE_TYPE_2), null, null, Integer.MAX_VALUE);
+            if (!messages.isEmpty())
+            {
+                messagesDatabase.getMessagesDAO().delete(messages.stream().map(Message::getId).toList());
+            }
+
+            // delete existing last seen
+            LastSeenMessage lastSeenMessage = messagesDatabase.getLastSeenMessagesDAO().getByConsumerId(CONSUMER_ID);
+            if (lastSeenMessage != null)
+            {
+                messagesDatabase.getLastSeenMessagesDAO().delete(List.of(lastSeenMessage.getId()));
+            }
+
+            return null;
+        });
     }
 
     @Test
-    public void testConsumeMessages()
+    public void testConsumeMessagesWhereNoneOfThemFails()
     {
         MessageHandler handler1 = new MessageHandler(Set.of(MESSAGE_TYPE_1), false);
-        MessageHandler handler2 = new MessageHandler(Set.of(MESSAGE_TYPE_2), true);
+        MessageHandler handler2 = new MessageHandler(Set.of(MESSAGE_TYPE_2), false);
 
         MessagesConsumer consumer = new MessagesConsumer(CONSUMER_ID, List.of(handler1, handler2), 1, messagesDatabase);
 
@@ -96,6 +118,78 @@ public class IntegrationMessagesTest
         List<Message> afterMessages = messagesDatabase.getMessagesDAO().listByTypesNotConsumed(List.of(MESSAGE_TYPE_1, MESSAGE_TYPE_2));
         Assert.assertEquals(afterMessages.size(), 0);
         messagesDatabase.commit();
+    }
+
+    @Test
+    public void testConsumeMessagesWhereSomeOfThemFail()
+    {
+        MessageHandler handler1 = new MessageHandler(Set.of(MESSAGE_TYPE_1), false);
+        MessageHandler handler2 = new MessageHandler(Set.of(MESSAGE_TYPE_2), true);
+
+        MessagesConsumer consumer = new MessagesConsumer(CONSUMER_ID, List.of(handler1, handler2), 1, messagesDatabase);
+
+        messagesDatabase.begin();
+
+        // create 3 messages
+        Message message1 = new Message();
+        message1.setType(MESSAGE_TYPE_1);
+        message1.setDescription(UUID.randomUUID().toString());
+        Long message1Id = messagesDatabase.getMessagesDAO().create(message1);
+
+        Message message2 = new Message();
+        message2.setType(MESSAGE_TYPE_2);
+        message2.setDescription(UUID.randomUUID().toString());
+        Long message2Id = messagesDatabase.getMessagesDAO().create(message2);
+
+        Message message3 = new Message();
+        message3.setType(MESSAGE_TYPE_1);
+        message3.setDescription(UUID.randomUUID().toString());
+        Long message3Id = messagesDatabase.getMessagesDAO().create(message3);
+
+        // check there are 3 unconsumed messages
+        List<Message> beforeMessages = messagesDatabase.getMessagesDAO().listByTypesNotConsumed(List.of(MESSAGE_TYPE_1, MESSAGE_TYPE_2));
+        Assert.assertEquals(beforeMessages.size(), 3);
+        messagesDatabase.commit();
+
+        try
+        {
+            // consume
+            consumer.consume();
+        } catch (Exception e)
+        {
+            Assert.assertEquals(e.getMessage(), "Message consumption has failed. No more messages will be processed.");
+            Assert.assertEquals(e.getCause().getMessage(),
+                    "Handling of message {id: " + message2Id + ", type: '" + message2.getType() + "', description: '"
+                            + message2.getDescription() + "'} has failed.");
+            Assert.assertEquals(e.getCause().getCause().getMessage(), "Intentional failure of handling message: " + message2Id);
+        }
+
+        messagesDatabase.begin();
+
+        // check only message1 was marked as seen
+        LastSeenMessage lastSeenMessage = messagesDatabase.getLastSeenMessagesDAO().getByConsumerId(CONSUMER_ID);
+        Assert.assertEquals(lastSeenMessage.getLastSeenMessageId(), message1Id);
+
+        // check there are 2 unconsumed messages
+        List<Message> afterMessages = messagesDatabase.getMessagesDAO().listByTypesNotConsumed(List.of(MESSAGE_TYPE_1, MESSAGE_TYPE_2));
+        Assert.assertEquals(afterMessages.size(), 2);
+        Assert.assertEquals(afterMessages.get(0).getId(), message2Id);
+        Assert.assertEquals(afterMessages.get(1).getId(), message3Id);
+
+        messagesDatabase.commit();
+
+        try
+        {
+            // consume again
+            consumer.consume();
+        } catch (Exception e)
+        {
+            Assert.assertEquals(e.getMessage(), "Message consumption has failed. No more messages will be processed.");
+            Assert.assertEquals(e.getCause().getMessage(),
+                    "Handling of message {id: " + message2Id + ", type: '" + message2.getType() + "', description: '"
+                            + message2.getDescription() + "'} has failed.");
+            Assert.assertEquals(e.getCause().getCause().getMessage(), "Intentional failure of handling message: " + message2Id);
+        }
     }
 
     @Test
@@ -136,6 +230,15 @@ public class IntegrationMessagesTest
         List<Message> afterMessages = messagesDatabase.getMessagesDAO().listByTypesNotConsumed(List.of(MESSAGE_TYPE_1, MESSAGE_TYPE_2));
         Assert.assertEquals(afterMessages.size(), 1);
         Assert.assertEquals(afterMessages.get(0).getDescription(), messageCreatedByHandler.getDescription());
+        messagesDatabase.commit();
+
+        // consume again
+        consumer.consume();
+
+        // check there are 0 unconsumed messages
+        messagesDatabase.begin();
+        afterMessages = messagesDatabase.getMessagesDAO().listByTypesNotConsumed(List.of(MESSAGE_TYPE_1, MESSAGE_TYPE_2));
+        Assert.assertEquals(afterMessages.size(), 0);
         messagesDatabase.commit();
     }
 
@@ -178,6 +281,7 @@ public class IntegrationMessagesTest
                 Long messageId = messagesDatabase.getMessagesDAO().create(messageToCreate);
                 log.info("Created message: " + messageId + " while handling message: " + message.getId());
                 messagesDatabase.commit();
+                messageToCreate = null;
             }
         }
     }
