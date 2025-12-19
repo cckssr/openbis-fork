@@ -1,13 +1,17 @@
 package ch.openbis.drive.gui.maincontent.syncjobs;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.entity.AbstractEntity;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.openbis.drive.gui.i18n.I18n;
-import ch.openbis.drive.gui.util.DisplaySettings;
-import ch.openbis.drive.gui.util.ServiceCallHandler;
-import ch.openbis.drive.gui.util.SharedContext;
-import ch.openbis.drive.gui.util.Style;
+import ch.openbis.drive.gui.util.*;
 import ch.openbis.drive.model.Settings;
 import ch.openbis.drive.model.SyncJob;
 import ch.openbis.drive.util.GlobUtil;
+import ch.openbis.drive.util.OpenBISQueryUtil;
+import impl.org.controlsfx.skin.AutoCompletePopup;
+import impl.org.controlsfx.skin.AutoCompletePopupSkin;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
@@ -19,13 +23,21 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
+import javafx.geometry.Point2D;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.shape.Circle;
+import javafx.scene.text.TextAlignment;
 import javafx.stage.*;
+import javafx.util.Callback;
 import lombok.NonNull;
+import lombok.SneakyThrows;
+import lombok.Value;
+import org.controlsfx.control.textfield.CustomTextField;
 
 import javax.annotation.Nullable;
 import java.io.File;
@@ -46,6 +58,7 @@ public class SyncJobDialog extends Dialog<SyncJob> {
     Pattern HTTP_URL_PATTERN = Pattern.compile("^(http|https)://[^\\s/$.?#][^/]*$");
     final static String SUGGESTED_REMOTE_DIRECTORY = "/";
     final static String LINE_SEPARATOR = System.lineSeparator();
+    final OpenBISQueryUtil.SearchUnit searchUnit;
 
     final SyncJob editedSyncJob;
     final List<SyncJob> currentSyncJobs;
@@ -53,6 +66,8 @@ public class SyncJobDialog extends Dialog<SyncJob> {
     final TextField openbisServerUrlValue;
     final TextField titleValue;
     final TextField openbisEntityIdValue;
+    final ProgressIndicator openbisEntityIdValueProgressIndicator = new ProgressIndicator();
+    final AutoCompletePopup<EntitySuggestion> openbisEntityIdAutocompletion;
     final TextField openbisServerDirectoryValue;
     final TextField personalAccessTokenValue;
     final TextField localDirectoryValue;
@@ -73,6 +88,8 @@ public class SyncJobDialog extends Dialog<SyncJob> {
             openbisUrlPropertyError, titlePropertyError, entityIdPropertyError, remoteDirectoryPropertyError, personalAccessTokenPropertyError, localDirectoryPropertyError, ignoredPathPatternPropertyError);
     final BooleanBinding allValid = Bindings.createBooleanBinding(
             () -> validationErrors.stream().noneMatch(BooleanProperty::getValue), validationErrors.toArray(BooleanProperty[]::new));
+
+    final ObjectProperty<AbstractEntity> entityChosen = new SimpleObjectProperty<>(null);
 
     public SyncJobDialog(@Nullable SyncJob toBeModified, Stage mainStage, List<SyncJob> currentSyncJobs) {
         super();
@@ -116,22 +133,32 @@ public class SyncJobDialog extends Dialog<SyncJob> {
         Label openbisServerUrlLabel = new Label();
         openbisServerUrlLabel.textProperty().bind(i18n.createStringBinding("sync_tasks.modal_panel.sync_task_modal.openbis_server_url"));
         openbisServerUrlValue = getOpenbisServerUrlTextField();
+
+        HBox openbisEntityIdLabelBox = new HBox();
+        openbisEntityIdLabelBox.setSpacing(6);
+        openbisEntityIdLabelBox.setAlignment(Pos.CENTER_LEFT);
+        openbisEntityIdLabelBox.setPadding(new Insets(30, 0, 0, 0));
         Label openbisEntityIdLabel = new Label();
         openbisEntityIdLabel.textProperty().bind(i18n.createStringBinding("sync_tasks.modal_panel.sync_task_modal.openbis_entity_id"));
-        openbisEntityIdLabel.setPadding(new Insets(30, 0, 0, 0));
+        Button openbisEntityIdHelpButton = getInputTooltipHelpButton(i18n.get("sync_tasks.modal_panel.sync_task_modal.entity_id_help_tooltip"));
+        openbisEntityIdLabelBox.getChildren().addAll(openbisEntityIdLabel, openbisEntityIdHelpButton);
+        openbisEntityIdAutocompletion = getOpenbisEntityIdAutocompletion();
         openbisEntityIdValue = getEntityIdTextField();
+
         Label openbisServerDirectoryLabel = new Label();
         openbisServerDirectoryLabel.textProperty().bind(i18n.createStringBinding("sync_tasks.modal_panel.sync_task_modal.server_directory"));
         openbisServerDirectoryLabel.setPadding(new Insets(30, 0, 0, 0));
         openbisServerDirectoryValue = getRemoteDirectoryTextField();
+
         leftTextParametersBox.getChildren().addAll(
                 openbisServerUrlLabel, openbisServerUrlValue,
-                openbisEntityIdLabel, openbisEntityIdValue,
+                openbisEntityIdLabelBox, openbisEntityIdValue,
                 openbisServerDirectoryLabel, openbisServerDirectoryValue);
 
         Label personalAccessTokenLabel = new Label();
         personalAccessTokenLabel.textProperty().bind(i18n.createStringBinding("sync_tasks.modal_panel.sync_task_modal.personal_access_token"));
         personalAccessTokenValue = getPersonalAccessTokenTextField();
+
         Label localDirectoryLabel = new Label();
         localDirectoryLabel.textProperty().bind(i18n.createStringBinding("sync_tasks.modal_panel.sync_task_modal.local_directory"));
         localDirectoryLabel.setPadding(new Insets(30, 0, 0, 0));
@@ -153,44 +180,13 @@ public class SyncJobDialog extends Dialog<SyncJob> {
         content.getChildren().add(enabledCheckBox);
 
         Accordion accordion = new Accordion();
-        VBox ignoredFilesBox = new VBox();
-        ignoredFilesBox.setSpacing(20);
-        HBox ignoredFilesModeChoiceBox = getIgnoredFilesModeChoice(i18n);
-        ignoredFilesBox.getChildren().add(ignoredFilesModeChoiceBox);
-
         ignoredPathPatterns = getIgnoredPathPatternsTextArea();
-        VBox specificIgnoredPathPatternBox = getIgnoredPathPatternsBox(ignoredPathPatterns, i18n);
         TextArea emptyPathPatternsTextArea = getEmptyPathPatternsTextArea();
         globalDefaultPathPatternsTextArea = getGlobalDefaultPathPatternsTextArea();
-        Consumer<SyncJob.IgnoredFilesMode> fillIgnoredFilesBox = (SyncJob.IgnoredFilesMode ignoredFilesMode) -> {
-            if (ignoredFilesMode != null) {
-                ignoredFilesBox.getChildren().removeIf( node ->
-                        node.equals(globalDefaultPathPatternsTextArea) ||
-                                node.equals(emptyPathPatternsTextArea) ||
-                                node.equals(specificIgnoredPathPatternBox));
-                switch (ignoredFilesMode) {
-                    case GlobalDefault -> {
-                        ignoredFilesBox.getChildren().add(globalDefaultPathPatternsTextArea);
-                    }
-                    case SpecificList -> {
-                        ignoredFilesBox.getChildren().add(specificIgnoredPathPatternBox);
-                    }
-                    case None -> {
-                        ignoredFilesBox.getChildren().add(emptyPathPatternsTextArea);
-                    }
-                }
-            }
-        };
-        selectedIgnoredFilesMode.addListener( (obs, oldValue, newValue) -> {
-            fillIgnoredFilesBox.accept(newValue);
-        } );
-        selectedIgnoredFilesMode.addListener( (obs, oldValue, newValue) -> {
-            doValidationOnAllInputFields();
-        } );
-        fillIgnoredFilesBox.accept(selectedIgnoredFilesMode.getValue());
-
+        VBox ignoredFilesBox = getIgnoredFilesBox(i18n, emptyPathPatternsTextArea);
         TitledPane ignoredFilesPane = new TitledPane(i18n.get("generic_messages.advanced_settings"), ignoredFilesBox);
         accordion.getPanes().addAll(ignoredFilesPane);
+
         content.getChildren().add(accordion);
 
         getDialogPane().setContent(content);
@@ -251,6 +247,101 @@ public class SyncJobDialog extends Dialog<SyncJob> {
                 getDialogPane().getScene().getWindow().setHeight(newValue != null ? 800 : 650);
             });
         });
+
+        //Search unit supporting suggestions for openBIS entity-id
+        searchUnit = getSearchUnit();
+
+        setOnHidden(new EventHandler<DialogEvent>() {
+            @Override
+            @SneakyThrows
+            public void handle(DialogEvent dialogEvent) {
+                searchUnit.close();
+            }
+        });
+    }
+
+    OpenBISQueryUtil.SearchUnit getSearchUnit() {
+        final OpenBISQueryUtil.SearchUnit searchUnit;
+        searchUnit = new OpenBISQueryUtil.SearchUnit((result, ex) -> {
+            if (ex == null) {
+                openbisEntityIdAutocompletion.getSuggestions().clear();
+
+                List<EntitySuggestion> resultsWithSectionTitles = new ArrayList<>();
+                List<EntitySuggestion> samples = result.stream().filter( it -> it instanceof Sample).map(EntitySuggestion::newEntity).toList();
+                List<EntitySuggestion> experiments = result.stream().filter( it -> it instanceof Experiment).map(EntitySuggestion::newEntity).toList();
+                List<EntitySuggestion> dataSets = result.stream().filter( it -> it instanceof DataSet).map(EntitySuggestion::newEntity).toList();
+
+                if (!samples.isEmpty()) {
+                    resultsWithSectionTitles.add(EntitySuggestion.newTitle("Samples"));
+                    resultsWithSectionTitles.addAll(samples);
+                }
+                if (!experiments.isEmpty()) {
+                    resultsWithSectionTitles.add(EntitySuggestion.newTitle("Experiments"));
+                    resultsWithSectionTitles.addAll(experiments);
+                }
+                if (!dataSets.isEmpty()) {
+                    resultsWithSectionTitles.add(EntitySuggestion.newTitle("Datasets"));
+                    resultsWithSectionTitles.addAll(dataSets);
+                }
+
+                openbisEntityIdAutocompletion.getSuggestions().addAll(resultsWithSectionTitles);
+                Platform.runLater( () -> {
+                    openbisEntityIdAutocompletion.show(openbisEntityIdValue);
+                });
+            } else {
+                ex.printStackTrace();
+
+                openbisEntityIdAutocompletion.getSuggestions().clear();
+                openbisEntityIdAutocompletion.getSuggestions().addAll(EntitySuggestion.newError(
+                        SharedContext.getContext().getI18n().get("sync_tasks.modal_panel.sync_task_modal.error_retrieving_entity_suggestions")
+                ));
+                Platform.runLater(() -> {
+                    openbisEntityIdAutocompletion.show(openbisEntityIdValue);
+                });
+            }
+            return null;
+        }, openbisEntityIdValueProgressIndicator::setVisible);
+
+        searchUnit.setOpenBISUrl(openbisServerUrlValue.getText());
+        searchUnit.setPersonalAccessToken(personalAccessTokenValue.getText().trim());
+        return searchUnit;
+    }
+
+    VBox getIgnoredFilesBox(I18n i18n, TextArea emptyPathPatternsTextArea) {
+        VBox ignoredFilesBox = new VBox();
+        ignoredFilesBox.setSpacing(20);
+        HBox ignoredFilesModeChoiceBox = getIgnoredFilesModeChoice(i18n);
+        ignoredFilesBox.getChildren().add(ignoredFilesModeChoiceBox);
+
+        VBox specificIgnoredPathPatternBox = getIgnoredPathPatternsBox(ignoredPathPatterns, i18n);
+
+        Consumer<SyncJob.IgnoredFilesMode> fillIgnoredFilesBox = (SyncJob.IgnoredFilesMode ignoredFilesMode) -> {
+            if (ignoredFilesMode != null) {
+                ignoredFilesBox.getChildren().removeIf( node ->
+                        node.equals(globalDefaultPathPatternsTextArea) ||
+                                node.equals(emptyPathPatternsTextArea) ||
+                                node.equals(specificIgnoredPathPatternBox));
+                switch (ignoredFilesMode) {
+                    case GlobalDefault -> {
+                        ignoredFilesBox.getChildren().add(globalDefaultPathPatternsTextArea);
+                    }
+                    case SpecificList -> {
+                        ignoredFilesBox.getChildren().add(specificIgnoredPathPatternBox);
+                    }
+                    case None -> {
+                        ignoredFilesBox.getChildren().add(emptyPathPatternsTextArea);
+                    }
+                }
+            }
+        };
+        selectedIgnoredFilesMode.addListener( (obs, oldValue, newValue) -> {
+            fillIgnoredFilesBox.accept(newValue);
+        } );
+        selectedIgnoredFilesMode.addListener( (obs, oldValue, newValue) -> {
+            doValidationOnAllInputFields();
+        } );
+        fillIgnoredFilesBox.accept(selectedIgnoredFilesMode.getValue());
+        return ignoredFilesBox;
     }
 
     private CheckBox getEnableCheckBox(I18n i18n) {
@@ -407,6 +498,20 @@ public class SyncJobDialog extends Dialog<SyncJob> {
             selectedSyncJobType.setValue(editedSyncJob.getType());
         }
 
+        entityChosen.addListener( (obs, oldValue, newValue) -> {
+            if (newValue != null) {
+                if (!OpenBISQueryUtil.isEntityDataMutable(newValue)) {
+                    selectedSyncJobType.setValue(SyncJob.Type.Download);
+
+                    uploadChoice.setDisable(true);
+                    bidirectionalChoice.setDisable(true);
+                }
+            } else {
+                uploadChoice.setDisable(false);
+                bidirectionalChoice.setDisable(false);
+            }
+        });
+
         syncModeChoiceBox.getChildren().addAll(syncModeChoiceLabel, downloadChoice, uploadChoice, bidirectionalChoice);
         return syncModeChoiceBox;
     }
@@ -533,6 +638,7 @@ public class SyncJobDialog extends Dialog<SyncJob> {
             return new String[] { "error_tooltip.required_value" };
         } else {
             if(personalAccessTokenInput.length() > MAX_TEXT_INPUT_LENGTH) {
+                searchUnit.setPersonalAccessToken(personalAccessTokenInput.trim());
                 return new String[] { "error_tooltip.too_long_text_input" };
             } else {
                 return null;
@@ -579,13 +685,88 @@ public class SyncJobDialog extends Dialog<SyncJob> {
         return titleValue;
     }
 
+    AutoCompletePopup<EntitySuggestion> getOpenbisEntityIdAutocompletion() {
+        AutoCompletePopup<EntitySuggestion> autoCompletePopup = new AutoCompletePopup<>();
+        autoCompletePopup.setMinWidth(350);
+        Callback<ListView<EntitySuggestion>, ListCell<EntitySuggestion>> cellFactory = new Callback<ListView<EntitySuggestion>, ListCell<EntitySuggestion>>() {
+            @Override
+            public ListCell<EntitySuggestion> call(ListView<EntitySuggestion> abstractEntityListView) {
+                return new ListCell<>() {
+                    @Override
+                    protected void updateItem(EntitySuggestion item, boolean empty) {
+                        super.updateItem(item, empty);
+
+                        Platform.runLater( () -> {
+                            if (empty || item == null) {
+                                setText(null);
+                                setDisable(false);
+                            } else {
+                                // Detect your header item and disable it
+                                if (item.getKind() == EntitySuggestion.Kind.TITLE) {
+                                    setText(item.getTitle());
+                                    setStyle("-fx-font-weight: bold;");
+                                    setDisable(true);
+                                } else if (item.getKind() == EntitySuggestion.Kind.ERROR) {
+                                    setText(item.getError());
+                                    setStyle("-fx-text-fill: red;");
+                                    setDisable(true);
+                                } else if (item.getKind() == EntitySuggestion.Kind.ENTITY) {
+                                    setText(OpenBISQueryUtil.getDisplayName(item.getAbstractEntity()));
+                                    setStyle("");
+                                    setDisable(false);
+                                } else {
+                                    setText(null);
+                                    setDisable(false);
+                                }
+                            }
+                        });
+
+                    }
+                };
+            }
+        };
+        autoCompletePopup.setSkin(new AutoCompletePopupSkin<>(autoCompletePopup, cellFactory));
+        autoCompletePopup.setOnSuggestion((abstractEntitySuggestionEvent -> {
+            EntitySuggestion entitySuggestion = abstractEntitySuggestionEvent.getSuggestion();
+
+            if( entitySuggestion.getKind() == EntitySuggestion.Kind.ENTITY ) {
+                AbstractEntity abstractEntity = entitySuggestion.getAbstractEntity();
+                entityChosen.set(abstractEntity);
+                openbisEntityIdValue.setText(OpenBISQueryUtil.getEntityPermId(abstractEntity));
+                titleValue.setText(OpenBISQueryUtil.getDisplayName(abstractEntity));
+                Platform.runLater(autoCompletePopup::hide);
+            }
+        }));
+        return autoCompletePopup;
+    }
+
     TextField getEntityIdTextField() {
-        TextField openbisEntityIdValue = new TextField();
+        CustomTextField openbisEntityIdValue = new CustomTextField();
         openbisEntityIdValue.setPrefWidth(350);
         addValidationLayerToTextInput(openbisEntityIdValue, (textInput) -> validateEntityIdValue(textInput.getText()), entityIdPropertyError);
         if (editedSyncJob != null) {
             openbisEntityIdValue.setText(editedSyncJob.getEntityPermId());
         }
+        openbisEntityIdValue.textProperty().addListener( (obs, oldValue, newValue) -> {
+            if (newValue == null ||
+                    (entityChosen.getValue() != null &&
+                            !newValue.trim().equals(OpenBISQueryUtil.getEntityPermId(entityChosen.getValue())))) {
+                entityChosen.setValue(null);
+            }
+            if ( entityChosen.getValue() == null && newValue != null ) {
+                searchUnit.inputSearchText(newValue.trim());
+            }
+        });
+        openbisEntityIdValue.focusedProperty().addListener( (obs, oldValue, newValue) -> {
+            if (Boolean.FALSE.equals(oldValue) && Boolean.TRUE.equals(newValue)) {
+                searchUnit.inputSearchText(openbisEntityIdValue.getText().trim());
+            }
+        });
+
+        openbisEntityIdValueProgressIndicator.setVisible(false);
+        openbisEntityIdValueProgressIndicator.setMaxSize(15, 15);
+        openbisEntityIdValue.setRight(openbisEntityIdValueProgressIndicator);
+
         return openbisEntityIdValue;
     }
 
@@ -622,23 +803,35 @@ public class SyncJobDialog extends Dialog<SyncJob> {
         } else {
             openbisServerUrlValue.setText(getMostRecentlyTouchedSyncJob().map( SyncJob::getOpenBisUrl ).orElse(""));
         }
+        openbisServerUrlValue.textProperty().addListener( (obs, oldValue, newValue) -> {
+            entityChosen.setValue(null);
+        });
         return openbisServerUrlValue;
     }
 
     String[] validateOpenbisServerUrlValue(String serverUrlInput) {
+        String[] error;
         if(serverUrlInput == null || serverUrlInput.isBlank()) {
-            return new String[] { "error_tooltip.required_value" };
+            error = new String[] { "error_tooltip.required_value" };
         } else {
             if(serverUrlInput.length() > MAX_TEXT_INPUT_LENGTH) {
-                return new String[] { "error_tooltip.too_long_text_input" };
+                error = new String[] { "error_tooltip.too_long_text_input" };
             } else {
                 if(HTTP_URL_PATTERN.asMatchPredicate().test(serverUrlInput)) {
-                    return null;
+                    //No error
+                    error = null;
                 } else {
-                    return new String[] { "error_tooltip.required_http_or_https_path" };
+                    error = new String[] { "error_tooltip.required_http_or_https_path" };
                 }
             }
         }
+
+        if (error == null) {
+            searchUnit.setOpenBISUrl(serverUrlInput.trim());
+        } else {
+            searchUnit.setOpenBISUrl(null);
+        }
+        return error;
     }
 
     String[] validateIgnoredPathPatterns(String ignoredPathPatterns) {
@@ -727,5 +920,46 @@ public class SyncJobDialog extends Dialog<SyncJob> {
         } else {
             return Optional.empty();
         }
+    }
+
+    Button getInputTooltipHelpButton(String tooltipText) {
+        Button aboutButton = new Button();
+        aboutButton.getStyleClass().add(DisplaySettings.FONT_AWESOME_CLASS);
+        aboutButton.setPadding(new Insets(0, 0, 0, 0));
+        aboutButton.setTextAlignment(TextAlignment.CENTER);
+        aboutButton.setMinSize(12,12);
+        aboutButton.setShape(new Circle(10));
+        aboutButton.setStyle("-fx-font-size: 13");
+        Label questionMarkLabel = new Label(DisplaySettings.FONT_AWESOME_7_FREE_SOLID_CIRCLE_QUESTION_MARK);
+        aboutButton.setGraphic(questionMarkLabel);
+        questionMarkLabel.setTranslateY(-1);
+        Tooltip tooltip = new Tooltip(tooltipText);
+        tooltip.setAutoHide(true);
+        aboutButton.setOnAction( (e) -> {
+            Point2D screenCoordinates = aboutButton.localToScreen(12, 12);
+            tooltip.show(openbisEntityIdValue, screenCoordinates.getX(), screenCoordinates.getY());
+        });
+        return aboutButton;
+    }
+
+    @Value
+    static class EntitySuggestion {
+        enum Kind { ENTITY, TITLE, ERROR}
+
+        static EntitySuggestion newEntity(@NonNull AbstractEntity abstractEntity) {
+            return new EntitySuggestion(Kind.ENTITY, null, null, abstractEntity);
+        }
+        static EntitySuggestion newTitle(@NonNull String title) {
+            return new EntitySuggestion(Kind.TITLE, title, null, null);
+        }
+        static EntitySuggestion newError(@NonNull String error) {
+            return new EntitySuggestion(Kind.ERROR, null, error, null);
+        }
+
+        Kind kind;
+
+        String title;
+        String error;
+        AbstractEntity abstractEntity;
     }
 }
