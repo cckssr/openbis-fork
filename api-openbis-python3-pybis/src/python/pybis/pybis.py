@@ -2635,7 +2635,12 @@ class Openbis:
                 e.g., 'MY_SAMPLE_TYPE' or o.get_sample_type('MY_SAMPLE_TYPE')
             start_with (int, optional): Paging start index. Default is None.
             count (int, optional): Number of objects to fetch. Default is None.
-            
+            withParents (bool, optional): Include parent's permIds in 'parents' column.
+            withChildren (bool, optional): Include children's permIds in 'children' column.
+            tags (list, optional): Only return samples with the specified tags.
+            attrs (list, optional): List of desired attributes to include in the result.
+                e.g., ['space', 'project', 'experiment', 'container']
+
         
         Returns a DataFrame of all samples for a given space/project/experiment (or any combination).
         The default result contains only basic attributes, i.e identifier, permId, type, registrator,
