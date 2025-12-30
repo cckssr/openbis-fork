@@ -74,14 +74,15 @@ public final class ImagingDataSetInterceptorTest
         properConfig = new ImagingDataSetPropertyConfig();
         ImagingDataSetConfig config = new ImagingDataSetConfig();
         config.setAdaptor("some.proper.adaptor.class.AdaptorName");
-        properConfig.setConfig(config);
         ImagingDataSetImage image1 = new ImagingDataSetImage();
         ImagingDataSetPreview preview11 = new ImagingDataSetPreview();
         image1.setPreviews(Arrays.asList(preview11));
+        image1.setConfig(config);
         ImagingDataSetImage image2 = new ImagingDataSetImage();
         ImagingDataSetPreview preview21 = new ImagingDataSetPreview();
         ImagingDataSetPreview preview22 = new ImagingDataSetPreview();
         image2.setPreviews(Arrays.asList(preview21, preview22));
+        image2.setConfig(config);
         properConfig.setImages(Arrays.asList(image1, image2));
 
         dataSet = new DataSet();
@@ -122,7 +123,7 @@ public final class ImagingDataSetInterceptorTest
             interceptor.beforeOperation(asApi, TEST_SESSION_TOKEN, operation);
             fail("It should fail!");
         } catch (UserFailureException e) {
-            assertTrue(e.getMessage().contains("Imaging property config must not be empty!"));
+            assertTrue(e.getMessage().contains("Property IMAGING_DATA_CONFIG must not be empty!"));
         }
 
     }
@@ -141,7 +142,7 @@ public final class ImagingDataSetInterceptorTest
             interceptor.beforeOperation(asApi, TEST_SESSION_TOKEN, operation);
             fail("It should fail!");
         } catch (UserFailureException e) {
-           assertTrue(e.getMessage().contains("missing type id property '@type'"));
+           assertTrue(e.getMessage().contains("Property IMAGING_DATA_CONFIG must not be empty!"));
         }
     }
 
