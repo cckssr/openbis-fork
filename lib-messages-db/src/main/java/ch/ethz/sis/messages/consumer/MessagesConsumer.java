@@ -44,13 +44,10 @@ public class MessagesConsumer
         final Set<String> allSupportedMessageTypes = getAllSupportedMessageTypes();
         final Map<String, IMessageHandler> messageHandlersByType = getMessageHandlersByType();
 
+        int numberOfConsumedMessages = 0;
+
         try
         {
-            for (IMessageHandler messageHandler : messageHandlers)
-            {
-                messageHandler.beforeFirstMessage();
-            }
-
             Message newestMessage = MessagesDatabaseUtil.execute(messagesDatabase,
                     () -> messagesDatabase.getMessagesDAO().getNewestByTypes(new ArrayList<>(allSupportedMessageTypes)));
 
@@ -59,25 +56,37 @@ public class MessagesConsumer
                 LastSeenMessage lastSeenMessage =
                         MessagesDatabaseUtil.execute(messagesDatabase, () -> messagesDatabase.getLastSeenMessagesDAO().getByConsumerId(consumerId));
 
-                List<Message> messages =
+                List<Message> batch =
                         loadNextBatch(allSupportedMessageTypes, lastSeenMessage != null ? lastSeenMessage.getLastSeenMessageId() : null,
                                 newestMessage != null ? newestMessage.getId() : null);
 
-                if (messages.isEmpty())
+                if (batch.isEmpty())
                 {
                     break;
                 }
 
-                consumeBatch(messages, messageHandlersByType, lastSeenMessage);
+                if (numberOfConsumedMessages == 0)
+                {
+                    for (IMessageHandler messageHandler : messageHandlers)
+                    {
+                        messageHandler.beforeFirstMessage();
+                    }
+                }
+
+                consumeBatch(batch, messageHandlersByType, lastSeenMessage);
+                numberOfConsumedMessages += batch.size();
             }
         } catch (Exception e)
         {
             throw new RuntimeException("Message consumption has failed. No more messages will be processed.", e);
         } finally
         {
-            for (IMessageHandler messageHandler : messageHandlers)
+            if (numberOfConsumedMessages > 0)
             {
-                messageHandler.afterLastMessage();
+                for (IMessageHandler messageHandler : messageHandlers)
+                {
+                    messageHandler.afterLastMessage();
+                }
             }
         }
     }
