@@ -6096,6 +6096,9 @@ class ImagingControl:
     def _download(self, url, directory_path=""):
         get_response = requests.get(url, stream=True, verify=self._openbis.verify_certificates)
         file_name = url.split("/")[-1]
+        if '%2F' in file_name:
+            # Flow for cases where name is more complex
+            file_name = file_name.split('%2F')[-1]
         path = os.path.join(directory_path, file_name)
         os.makedirs(os.path.dirname(path), exist_ok=True)
         with open(path, 'wb') as f:

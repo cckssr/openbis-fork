@@ -17,6 +17,7 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.helper.service;
 
 import java.io.Serializable;
 
+import ch.ethz.sis.afsapi.exception.ThrowableReason;
 import ch.ethz.sis.shared.log.classic.impl.Logger;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
@@ -110,7 +111,18 @@ class CustomASServiceScriptRunnerFactory implements IScriptRunnerFactory
             {
                 operationLog.error("Evaluation failed", e);
                 Throwable throwable = ExceptionUtils.getEndOfChain(e);
-                throw CheckedExceptionTunnel.wrapIfNecessary(throwable);
+                if(throwable instanceof Error || throwable instanceof Exception) {
+                    throw CheckedExceptionTunnel.wrapIfNecessary(throwable);
+                } else {
+                    //AFS throws ThrowableReason
+                    if(throwable instanceof ThrowableReason afsThrowable) {
+                        throw new RuntimeException(afsThrowable.getReason().toString());
+                    } else {
+                        throw new RuntimeException(throwable.getMessage());
+                    }
+
+                }
+
             }
             if (result == null || result instanceof Serializable)
             {

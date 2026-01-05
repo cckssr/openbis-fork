@@ -72,6 +72,8 @@ dependencies {
 
     implementation("org.xerial:sqlite-jdbc:3.50.2.0")
     implementation("commons-cli:commons-cli:1.10.0")
+    api("slf4j:slf4j-api:1.7.24")
+    api("org.slf4j:slf4j-nop:1.7.24")
 
     //GOOGLE PROTOBUF
     implementation("com.google.protobuf:protobuf-java:4.31.1")
@@ -106,6 +108,14 @@ tasks.named('jar', Jar) {
                 'Implementation-Version': implementationVersion
         )
     }
+}
+
+tasks.named('distTar') {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+tasks.named('distZip') {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
 tasks.register('layReleaseDirectoriesOut') {

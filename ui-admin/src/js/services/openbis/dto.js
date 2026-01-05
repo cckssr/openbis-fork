@@ -158,7 +158,7 @@ const CLASS_FULL_NAMES = [
   'as/dto/roleassignment/delete/DeleteRoleAssignmentsOperation',
   'as/dto/roleassignment/delete/RoleAssignmentDeletionOptions',
   'as/dto/roleassignment/id/RoleAssignmentTechId',
-  'as/dto/roleassignment/search/RoleAssignmentSearchCriteria', 
+  'as/dto/roleassignment/search/RoleAssignmentSearchCriteria',
   'as/dto/roleassignment/fetchoptions/RoleAssignmentFetchOptions',
   'as/dto/sample/create/CreateSampleTypesOperation',
   'as/dto/sample/create/SampleTypeCreation',
@@ -175,7 +175,7 @@ const CLASS_FULL_NAMES = [
   'as/dto/sample/search/SearchSamplesOperation',
   'as/dto/sample/update/SampleTypeUpdate',
   'as/dto/sample/update/UpdateSampleTypesOperation',
-  'as/dto/sample/update/SampleUpdate', 
+  'as/dto/sample/update/SampleUpdate',
   'as/dto/typegroup/id/TypeGroupAssignmentId',
   'as/dto/typegroup/id/TypeGroupId',
   'as/dto/typegroup/search/TypeGroupSearchCriteria',
@@ -240,6 +240,11 @@ const CLASS_FULL_NAMES = [
   'imaging/dto/ImagingSemanticAnnotation',
   'as/dto/deletion/search/DeletionSearchCriteria',
   'as/dto/deletion/fetchoptions/DeletionFetchOptions'
+  'imaging/dto/ImagingSemanticAnnotation',
+  'as/dto/importer/data/ImportData',
+  'as/dto/importer/data/ImportFormat',
+  'as/dto/importer/options/ImportOptions',
+  'as/dto/importer/options/ImportMode'
 ]
 
 class Dto {

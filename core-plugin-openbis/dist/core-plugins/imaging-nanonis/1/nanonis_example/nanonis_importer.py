@@ -35,7 +35,7 @@ DEFAULT_URL = "http://localhost:8888/openbis"
 # DEFAULT_URL = "http://local.openbis.ch:8080/openbis"
 # DEFAULT_URL = "https://openbis-sis-ci-sprint.ethz.ch/openbis"
 
-SERVICE_TYPE = 'DSS'
+SERVICE_TYPE = 'AS'
 
 if SERVICE_TYPE == "AS":
     SXM_ADAPTOR = "ch.ethz.sis.openbis.generic.server.as.plugins.imaging.adaptor.NanonisSxmAdaptor"

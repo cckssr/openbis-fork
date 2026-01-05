@@ -104,7 +104,7 @@ public class ImagingFixes
         String pythonPathProperty = CommonServiceProvider.tryToGetProperty(PYTHON_PATH_PROPERTY);
         String pythonPath = null;
         if(pythonPathProperty != null && !pythonPathProperty.trim().isEmpty()) {
-            pythonPath = Paths.get(pathToDir, pythonPathProperty).toAbsolutePath().toString();
+            pythonPath = Paths.get(pythonPathProperty).toAbsolutePath().toString();
         } else {
             pythonPath = Paths.get(pathToDir, PYTHON_PATH).toAbsolutePath().toString();
         }
@@ -131,7 +131,7 @@ public class ImagingFixes
         }
     }
 
-    private static PersonalAccessTokenPermId getOrCreatePersonPAT(String sessionToken, String sessionName) {
+    private static synchronized PersonalAccessTokenPermId getOrCreatePersonPAT(String sessionToken, String sessionName) {
         IApplicationServerInternalApi api = CommonServiceProvider.getApplicationServerApi();
         IPersonId personId = new PersonPermId(PERSON_ID);
         PersonalAccessTokenPermId patToken = null;
@@ -171,7 +171,7 @@ public class ImagingFixes
         String pythonPathProperty = CommonServiceProvider.tryToGetProperty(PYTHON_PATH_PROPERTY);
         String pythonPath = null;
         if(pythonPathProperty != null && !pythonPathProperty.trim().isEmpty()) {
-            pythonPath = Paths.get(pathToDir, pythonPathProperty).toAbsolutePath().toString();
+            pythonPath = Paths.get(pythonPathProperty).toAbsolutePath().toString();
         } else {
             pythonPath = Paths.get(pathToDir, PYTHON_PATH).toAbsolutePath().toString();
         }
