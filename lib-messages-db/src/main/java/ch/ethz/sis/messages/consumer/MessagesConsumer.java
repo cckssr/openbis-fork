@@ -204,7 +204,7 @@ public class MessagesConsumer
                     IMessageHandler existingMessageHandler = messageHandlersByType.get(messageType);
                     throw new RuntimeException(
                             "Message handlers " + existingMessageHandler.getClass().getName() + " and " + messageHandler.getClass().getName()
-                                    + " both support the same message type. Configure a separate message consumer for the handlers to tract their last seen messages correctly.");
+                                    + " both support the same message type. Configure a separate message consumer for the handlers to track their last seen messages correctly.");
                 } else
                 {
                     messageHandlersByType.put(messageType, messageHandler);

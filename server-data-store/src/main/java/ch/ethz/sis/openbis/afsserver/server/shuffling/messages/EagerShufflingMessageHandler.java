@@ -52,7 +52,11 @@ public class EagerShufflingMessageHandler implements IMessageHandler
 
     private static final Logger notificationLog = LogFactory.getLogger(LogCategory.NOTIFY, EagerShufflingMessageHandler.class);
 
+    private static final String SHUFFLING_SECTION_NAME = "shuffling";
+
     private static final String SHARE_FINDER_KEY = "share-finder";
+
+    private static final String CLASS_KEY = "class";
 
     private static final String FREE_SPACE_LIMIT_KEY = "free-space-limit-in-MB-triggering-notification";
 
@@ -84,16 +88,18 @@ public class EagerShufflingMessageHandler implements IMessageHandler
         Set<String> incomingShares = ShufflingServiceProviderFactory.getInstance().getIncomingShareIdProvider().getIdsOfIncomingShares();
         IOpenBISService service = ShufflingServiceProviderFactory.getInstance().getOpenBISService();
 
-        Configuration configuration = ServiceProvider.getInstance().getConfiguration();
+        Properties shufflingProperties =
+                PropertyParametersUtil.extractSingleSectionProperties(ServiceProvider.getInstance().getConfiguration().getProperties(),
+                        SHUFFLING_SECTION_NAME, false).getProperties();
         Properties finderProperties =
-                PropertyParametersUtil.extractSingleSectionProperties(configuration.getProperties(), SHARE_FINDER_KEY,
+                PropertyParametersUtil.extractSingleSectionProperties(shufflingProperties, SHARE_FINDER_KEY,
                         false).getProperties();
-        finder = ClassUtils.create(IShareFinder.class, finderProperties.getProperty("class"), finderProperties);
+        finder = ClassUtils.create(IShareFinder.class, finderProperties.getProperty(CLASS_KEY), finderProperties);
         freeSpaceLimitTriggeringNotification =
-                FileUtils.ONE_MB * PropertyUtils.getInt(configuration.getProperties(), FREE_SPACE_LIMIT_KEY, 0);
+                FileUtils.ONE_MB * PropertyUtils.getInt(shufflingProperties, FREE_SPACE_LIMIT_KEY, 0);
         stopOnNoShareFound =
-                PropertyUtils.getBoolean(configuration.getProperties(), STOP_ON_NO_SHARE_FOUND_KEY, false);
-        verifyChecksum = PropertyUtils.getBoolean(configuration.getProperties(), VERIFY_CHECKSUM_KEY, true);
+                PropertyUtils.getBoolean(shufflingProperties, STOP_ON_NO_SHARE_FOUND_KEY, false);
+        verifyChecksum = PropertyUtils.getBoolean(shufflingProperties, VERIFY_CHECKSUM_KEY, true);
         shares = SegmentedStoreUtils.getSharesWithDataSets(storeRoot, dataStoreCode,
                 SegmentedStoreUtils.FilterOptions.AVAILABLE_FOR_SHUFFLING,
                 incomingShares, new SimpleFreeSpaceProvider(), service, new SimpleLogger(operationLog));
@@ -138,7 +144,7 @@ public class EagerShufflingMessageHandler implements IMessageHandler
 
         for (SimpleDataSetInformationDTO foundDataSet : foundDataSets)
         {
-            if (foundDataSet.getDataSetSize() == null)
+            if (foundDataSet.getDataSetSize() == null || foundDataSet.getImmutableDataDate() == null)
             {
                 updateDataSetSize(foundDataSet);
             }
@@ -180,7 +186,7 @@ public class EagerShufflingMessageHandler implements IMessageHandler
 
     private void updateDataSetSize(SimpleDataSetInformationDTO dataSet)
     {
-        final File dataSetInStore = new File(dataSet.getDataSetShareId(), dataSet.getDataSetLocation());
+        final File dataSetInStore = new File(new File(storeRoot, dataSet.getDataSetShareId()), dataSet.getDataSetLocation());
 
         if (FileOperations.getMonitoredInstanceForCurrentThread().exists(dataSetInStore))
         {

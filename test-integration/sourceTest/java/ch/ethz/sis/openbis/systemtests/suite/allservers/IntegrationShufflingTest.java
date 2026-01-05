@@ -27,6 +27,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
 import ch.ethz.sis.openbis.systemtests.environment.IntegrationTestFacade;
 import ch.ethz.sis.openbis.systemtests.suite.allservers.environment.AllServersIntegrationTestEnvironment;
+import ch.ethz.sis.openbis.systemtests.suite.allservers.environment.TestMessagesConsumerMaintenanceTask;
 import ch.ethz.sis.openbis.systemtests.suite.allservers.environment.TestSegmentedStoreShufflingTask;
 import ch.ethz.sis.openbis.systemtests.suite.allservers.environment.TestSegmentedStoreShufflingTask.TestChecksumProvider;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
@@ -39,6 +40,8 @@ public class IntegrationShufflingTest
 {
 
     private static final Logger log = LogFactory.getLogger(IntegrationShufflingTest.class);
+
+    private static final String EAGER_SHUFFLING_MESSAGES_CONSUMER_TASK = "eagerShufflingMessagesConsumerTask";
 
     private static final String ENTITY_CODE_PREFIX = "SHUFFLING_TEST_";
 
@@ -124,6 +127,36 @@ public class IntegrationShufflingTest
                         + "INFO  OPERATION.EagerShufflingTask - Unlocked data set " + sample.getPermId().getPermId()
                         + " after shuffling.\n"
                         + "INFO  OPERATION.EagerShufflingTask - Data set " + sample.getPermId().getPermId()
+                        + " successfully moved from share 1 to 2.\n",
+                TestLogger.getRecordedLog());
+    }
+
+    @Test
+    public void testAFSDataIsEagerlyShuffledByAFS() throws Exception
+    {
+        OpenBIS openBIS = facade.createOpenBIS();
+        openBIS.login(INSTANCE_ADMIN, PASSWORD);
+
+        // create data at AFS (should be stored in the incoming share i.e. 1)
+        Sample sample = facade.createSample(openBIS, experimentShuffledToShare2.getPermId(), ENTITY_CODE_PREFIX + UUID.randomUUID());
+
+        openBIS.getAfsServerFacade()
+                .write(sample.getPermId().getPermId(), TEST_FILE_NAME, 0L, TEST_FILE_CONTENT.getBytes());
+
+        facade.assertDataExistsInStoreInShare(sample.getPermId().getPermId(), true, 1);
+        facade.assertDataExistsInStoreInShare(sample.getPermId().getPermId(), false, 2);
+
+        TestMessagesConsumerMaintenanceTask.executeOnce(EAGER_SHUFFLING_MESSAGES_CONSUMER_TASK);
+
+        facade.assertDataExistsInStoreInShare(sample.getPermId().getPermId(), true, 2);
+        facade.assertDataExistsInStoreInShare(sample.getPermId().getPermId(), false, 1);
+
+        AssertionUtil.assertContainsLines(
+                "INFO  OPERATION.EagerShufflingMessageHandler - Locked data set " + sample.getPermId().getPermId()
+                        + " before shuffling.\n"
+                        + "INFO  OPERATION.EagerShufflingMessageHandler - Unlocked data set " + sample.getPermId().getPermId()
+                        + " after shuffling.\n"
+                        + "INFO  OPERATION.EagerShufflingMessageHandler - Data set " + sample.getPermId().getPermId()
                         + " successfully moved from share 1 to 2.\n",
                 TestLogger.getRecordedLog());
     }
