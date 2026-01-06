@@ -126,7 +126,7 @@ public class EagerShufflingMessageHandler implements IMessageHandler
         if (foundDataSets.isEmpty())
         {
             operationLog.info("Could not find any of the data sets to be shuffled: " + CollectionUtils.abbreviate(createdMessage.getDataSetCodes(),
-                    CollectionUtils.DEFAULT_MAX_LENGTH) + ". Nothing will be archived.");
+                    CollectionUtils.DEFAULT_MAX_LENGTH) + ". Nothing will be shuffled.");
             return;
         } else
         {

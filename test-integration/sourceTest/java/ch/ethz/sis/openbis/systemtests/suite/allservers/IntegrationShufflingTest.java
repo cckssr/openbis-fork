@@ -4,11 +4,13 @@ import static ch.ethz.sis.openbis.systemtests.suite.allservers.environment.AllSe
 import static ch.ethz.sis.openbis.systemtests.suite.allservers.environment.AllServersIntegrationTestEnvironment.PASSWORD;
 import static ch.ethz.sis.openbis.systemtests.suite.allservers.environment.AllServersIntegrationTestEnvironment.environment;
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.List;
 import java.util.UUID;
 
 import org.testng.annotations.AfterMethod;
@@ -24,6 +26,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.Project;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.delete.SampleDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
 import ch.ethz.sis.openbis.systemtests.environment.IntegrationTestFacade;
 import ch.ethz.sis.openbis.systemtests.suite.allservers.environment.AllServersIntegrationTestEnvironment;
@@ -132,7 +135,28 @@ public class IntegrationShufflingTest
     }
 
     @Test
-    public void testAFSDataIsEagerlyShuffledByAFS() throws Exception
+    public void testDSSDataIsNotShuffledByAFS() throws Exception
+    {
+        OpenBIS openBIS = facade.createOpenBIS();
+        openBIS.login(INSTANCE_ADMIN, PASSWORD);
+
+        // create data at DSS (should be stored in the incoming share i.e. 1)
+        DataSet dataSet =
+                facade.createDataSet(openBIS, experimentShuffledToShare2.getPermId(), ENTITY_CODE_PREFIX + UUID.randomUUID(), TEST_FILE_NAME,
+                        TEST_FILE_CONTENT.getBytes());
+
+        facade.assertDataExistsInStoreInShare(dataSet.getPermId().getPermId(), true, 1);
+        facade.assertDataExistsInStoreInShare(dataSet.getPermId().getPermId(), false, 2);
+
+        TestChecksumProvider checksumProvider = new TestChecksumProvider();
+        TestSegmentedStoreShufflingTask.executeOnce(checksumProvider);
+
+        facade.assertDataExistsInStoreInShare(dataSet.getPermId().getPermId(), true, 1);
+        facade.assertDataExistsInStoreInShare(dataSet.getPermId().getPermId(), false, 2);
+    }
+
+    @Test
+    public void testEagerShuffling() throws Exception
     {
         OpenBIS openBIS = facade.createOpenBIS();
         openBIS.login(INSTANCE_ADMIN, PASSWORD);
@@ -162,25 +186,39 @@ public class IntegrationShufflingTest
     }
 
     @Test
-    public void testDSSDataIsNotShuffledByAFS() throws Exception
+    public void testEagerShufflingWithDataSetNotFound() throws Exception
     {
         OpenBIS openBIS = facade.createOpenBIS();
         openBIS.login(INSTANCE_ADMIN, PASSWORD);
 
-        // create data at DSS (should be stored in the incoming share i.e. 1)
-        DataSet dataSet =
-                facade.createDataSet(openBIS, experimentShuffledToShare2.getPermId(), ENTITY_CODE_PREFIX + UUID.randomUUID(), TEST_FILE_NAME,
-                        TEST_FILE_CONTENT.getBytes());
+        // create data at AFS (should be stored in the incoming share i.e. 1)
+        Sample sample = facade.createSample(openBIS, experimentShuffledToShare2.getPermId(), ENTITY_CODE_PREFIX + UUID.randomUUID());
 
-        facade.assertDataExistsInStoreInShare(dataSet.getPermId().getPermId(), true, 1);
-        facade.assertDataExistsInStoreInShare(dataSet.getPermId().getPermId(), false, 2);
+        openBIS.getAfsServerFacade()
+                .write(sample.getPermId().getPermId(), TEST_FILE_NAME, 0L, TEST_FILE_CONTENT.getBytes());
 
-        TestChecksumProvider checksumProvider = new TestChecksumProvider();
-        TestSegmentedStoreShufflingTask.executeOnce(checksumProvider);
+        facade.assertDataExistsInStoreInShare(sample.getPermId().getPermId(), true, 1);
+        facade.assertDataExistsInStoreInShare(sample.getPermId().getPermId(), false, 2);
 
-        facade.assertDataExistsInStoreInShare(dataSet.getPermId().getPermId(), true, 1);
-        facade.assertDataExistsInStoreInShare(dataSet.getPermId().getPermId(), false, 2);
+        // delete sample and therefore also AFS data set
+        SampleDeletionOptions deletionOptions = new SampleDeletionOptions();
+        deletionOptions.setReason("test shuffling when deleted");
+        openBIS.deleteSamples(List.of(sample.getPermId()), deletionOptions);
+
+        Sample sampleAfterDeletion = facade.getSample(openBIS, sample.getPermId());
+        assertNull(sampleAfterDeletion);
+
+        TestMessagesConsumerMaintenanceTask.executeOnce(EAGER_SHUFFLING_MESSAGES_CONSUMER_TASK);
+
+        facade.assertDataExistsInStoreInShare(sample.getPermId().getPermId(), true, 1);
+        facade.assertDataExistsInStoreInShare(sample.getPermId().getPermId(), false, 2);
+
+        AssertionUtil.assertContainsLines(
+                "INFO  OPERATION.EagerShufflingMessageHandler - Could not find any of the data sets to be shuffled: [" + sample.getPermId()
+                        .getPermId() + "]. Nothing will be shuffled.",
+                TestLogger.getRecordedLog());
     }
+
 
     @Test
     public void testDataIsLockedDuringShuffling() throws Exception
