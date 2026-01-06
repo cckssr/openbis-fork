@@ -37,16 +37,16 @@ export class FormService {
     return await this.controller.save(form);
   }
 
-  async deleteForm(permId: string): Promise<void> {
-    return await this.controller.delete(permId);
+  async deleteForm(form: Form): Promise<void> {
+    await this.controller.delete(form);
   }
 
-  async checkPermissions(form: Form, user: string): Promise<Record<string, boolean>> {
+  async checkPermissions(form: Form): Promise<Record<string, boolean>> {
     if (!this.controller.checkPermissions) {
       // Return default permissions if not implemented
       return { canEdit: true, canDelete: true, canMove: true };
     }
-    return await this.controller.checkPermissions(form, user);
+    return await this.controller.checkPermissions(form);
   }
 
   private validateForm(form: Form): void {
