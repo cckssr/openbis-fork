@@ -3861,14 +3861,14 @@ var FormUtil = new function() {
 
                                         $window.append($hierarchyInclusions);
 
-                                        var $withLevelsAbove = $("<span class='checkbox'><label><input type='checkbox' id='LEVELS-ABOVE-EXPORT' checked disabled>Include levels below from same space. Non optional.</label></span>");
+                                        var $withLevelsAbove = $("<span class='checkbox'><label><input type='checkbox' id='LEVELS-ABOVE-EXPORT' checked disabled>Include levels above from same space. Non optional.</label></span>");
                                         $window.append($withLevelsAbove);
-                                        var $includeParents = $("</span><span class='checkbox'><label><input type='checkbox' id='PARENTS-EXPORT'>Include Object and Dataset parents from same space.</label></span>");
+                                        var $includeParents = $("</span><span class='checkbox'><label><input type='checkbox' id='PARENTS-EXPORT'>Include Object and Dataset parents from same space.</label></span>").css({ "padding-left" : "20px" });
                                         $window.append($includeParents);
 
                                         var $levelsBelow = $("<span class='checkbox'><label><input type='checkbox' id='LEVELS-BELOW-EXPORT'>Include levels below from same space.</label></span>");
                                         $window.append($levelsBelow);
-                                        var $includeChildren = $("<span class='checkbox'><label><input type='checkbox' id='CHILDREN-EXPORT' disabled>Include Object and Dataset children from same space.</label></span>");
+                                        var $includeChildren = $("<span class='checkbox'><label><input type='checkbox' id='CHILDREN-EXPORT' disabled>Include Object and Dataset children from same space.</label></span>").css({ "padding-left" : "20px" });
                                         $window.append($includeChildren);
 
                                         $levelsBelow.change(function(event) {
