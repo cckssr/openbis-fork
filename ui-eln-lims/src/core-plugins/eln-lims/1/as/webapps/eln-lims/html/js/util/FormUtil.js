@@ -3860,13 +3860,26 @@ var FormUtil = new function() {
                                         var $hierarchyInclusions = $("<span>").append($("<b>").append("Hierarchy Inclusions"));
 
                                         $window.append($hierarchyInclusions);
-                                        var $levelsBelow = $("<span class='checkbox'><label><input type='checkbox' id='LEVELS-BELOW-EXPORT'>Include levels below from same space</label></span>");
-                                        $window.append($levelsBelow);
-                                        var $includeParents = $("<span class='checkbox'><label><input type='checkbox' id='PARENTS-EXPORT'>Include Object and Dataset parents from same space</label></span>");
+
+                                        var $withLevelsAbove = $("<span class='checkbox'><label><input type='checkbox' id='LEVELS-ABOVE-EXPORT' checked disabled>Include levels below from same space. Non optional.</label></span>");
+                                        $window.append($withLevelsAbove);
+                                        var $includeParents = $("</span><span class='checkbox'><label><input type='checkbox' id='PARENTS-EXPORT'>Include Object and Dataset parents from same space.</label></span>");
                                         $window.append($includeParents);
-                                        var $includeChildren = $("<span class='checkbox'><label><input type='checkbox' id='CHILDREN-EXPORT'>Include Object and Dataset children from same space</label></span>");
+
+                                        var $levelsBelow = $("<span class='checkbox'><label><input type='checkbox' id='LEVELS-BELOW-EXPORT'>Include levels below from same space.</label></span>");
+                                        $window.append($levelsBelow);
+                                        var $includeChildren = $("<span class='checkbox'><label><input type='checkbox' id='CHILDREN-EXPORT' disabled>Include Object and Dataset children from same space.</label></span>");
                                         $window.append($includeChildren);
-                                        var $includeOtherSpaces = $("<span class='checkbox'><label><input type='checkbox' id='OTHER-SPACES-EXPORT'>Include Objects and Datasets parents and children from different spaces</label></span>");
+
+                                        $levelsBelow.change(function(event) {
+                                            $("#CHILDREN-EXPORT")[0].disabled = !event.target.checked;
+                                            if (!event.target.checked) {
+                                                $("#CHILDREN-EXPORT")[0].checked = false;
+                                            }
+                                        });
+
+                                        $window.append($("<br>"));
+                                        var $includeOtherSpaces = $("<span class='checkbox'><label><input type='checkbox' id='OTHER-SPACES-EXPORT'>Include Objects and Datasets parents and children from different spaces.</label></span>");
                                         $window.append($includeOtherSpaces);
 
                                         var $exportOptions = $("<span>").append($("<b>").append("Export Options"));
@@ -3883,7 +3896,7 @@ var FormUtil = new function() {
                                                 nodeExportList: [{
                                                     kind : entityKind,
                                                     permId : entityPermId,
-                                                    withLevelsAbove: true,
+                                                    withLevelsAbove: $("#LEVELS-ABOVE-EXPORT").is(":checked"), //LEVELS-ABOVE-EXPORT,
                                                     withLevelsBelow : $("#LEVELS-BELOW-EXPORT").is(":checked"), //LEVELS-BELOW-EXPORT
                                                     withObjectsAndDataSetsParents : $("#PARENTS-EXPORT").is(":checked"), //PARENTS-EXPORT
                                                     withObjectsAndDataSetsChildren : $("#CHILDREN-EXPORT").is(":checked"), //CHILDREN-EXPORT
