@@ -5,13 +5,22 @@ import { fetchRights } from '@src/js/components/database/new-forms/utils/authori
 import { createDummyDataSetIdentifierFromExperimentIdentifier, createDummySampleIdentifierFromSampleIdentifier, getProjectIdentifierFromExperimentIdentifier } from '@src/js/components/database/new-forms/utils/identifierUtil.ts';
 import { findFormFieldById, getChangedEditableFieldValues } from '@src/js/components/database/new-forms/utils/formFieldUtil.ts';
 import { FormMode } from '@src/js/components/database/new-forms/types/formEnums.ts';
+import { DeleteService } from '@src/js/components/database/new-forms/services/DeleteService.ts';
 
 export class CollectionFormController implements IFormController {
 	private openbisFacade: any;
+	private deleteService: DeleteService;
 
 	constructor(openbisFacade: any) {
 		if (!openbisFacade) throw new Error('openbisFacade is required');
 		this.openbisFacade = openbisFacade;
+		this.deleteService = new DeleteService({ openbisFacade: this.openbisFacade });
+	}
+
+	async executeOperations(operations: any[]): Promise<any> {
+		const { SynchronousOperationExecutionOptions } = this.openbisFacade;
+		const result = await this.openbisFacade.executeOperations(operations, new SynchronousOperationExecutionOptions());
+		return result;
 	}
 
 	async load(permId: string, entityKind?: string, params?: any, type?: string): Promise<Form> {
@@ -89,7 +98,55 @@ export class CollectionFormController implements IFormController {
 	}
 
 	async delete(form: Form, context?: any): Promise<void> {
-		console.log(`CONTROLLER: Deleting ${form.entityPermId}`, context);
+		console.log(`CollectionFormController.delete`, form.entityPermId, context);
+		
+		// If this is just a check, return early
+		if (context?.checkOnly) {
+			return;
+		}
+		
+		// Get dependent entities if not provided in context
+		// Use rawDependentEntities from context if available (from normalized structure)
+		let dependentEntities = context?.rawDependentEntities || context?.dependentEntities;
+		if (!dependentEntities) {
+			dependentEntities = await this.getDependentEntities(form);
+		}
+		
+		console.log('CollectionFormController.dependentEntities:', dependentEntities);
+		
+		// Get delete reason from context or use default
+		const deleteReason = context?.deleteReason || 'delete via ng-ui';
+		
+		// Move all objects (samples) to trashcan first using DeleteService
+		if (dependentEntities.samples && dependentEntities.samples.length > 0) {
+			const result = await this.deleteService.moveSamplesToTrashcan(dependentEntities.samples, deleteReason);
+			if (!result.success) {
+				throw new Error(result.error || 'Failed to move samples to trashcan');
+			}
+			console.log('CollectionFormController.moved samples to trashcan:', result.count);
+		}
+		
+		// Move all datasets to trashcan using DeleteService
+		if (dependentEntities.datasets && dependentEntities.datasets.length > 0) {
+			const result = await this.deleteService.moveDataSetsToTrashcan(dependentEntities.datasets, deleteReason);
+			if (!result.success) {
+				throw new Error(result.error || 'Failed to move datasets to trashcan');
+			}
+			console.log('CollectionFormController.moved datasets to trashcan:', result.count);
+		}
+		
+		// Finally, move the collection (experiment) itself to trashcan using DeleteService
+		const collectionIdentifier = findFormFieldById(form.fields, form.entityPermId, 'identifier', true);
+		if (!collectionIdentifier || typeof collectionIdentifier !== 'string') {
+			throw new Error('Collection identifier not found');
+		}
+		// Pass the identifier string directly - DeleteService will create the ExperimentIdentifier
+		const result = await this.deleteService.moveExperimentsToTrashcan([{ identifier: collectionIdentifier }], deleteReason);
+		if (!result.success) {
+			throw new Error(result.error || 'Failed to move collection to trashcan');
+		}
+		console.log('CollectionFormController.delete result:', result);
+		return Promise.resolve();
 	}
 
 	async getDependentEntities(form: Form): Promise<any> {
@@ -100,6 +157,7 @@ export class CollectionFormController implements IFormController {
 		fetchOptions.withSamples && fetchOptions.withSamples();
 		fetchOptions.withDataSets && fetchOptions.withDataSets();
 		const result = await this.openbisFacade.getExperiments([id], fetchOptions);
+		console.log('CollectionFormController.getDependentEntities', result);
 		const experiment = result[form.entityPermId];
 		
 		return { 

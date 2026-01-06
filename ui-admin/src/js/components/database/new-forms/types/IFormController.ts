@@ -33,8 +33,9 @@ export interface IFormController {
    * @param form The form object representing the entity to delete.
    * @param context Optional context containing additional information like delete reason and dependent entities.
    * @returns A promise that resolves when the deletion is complete.
+   *         Can return { skipped: true, message: string } if deletion was skipped (e.g., non-empty project - only moved entities).
    */
-  delete(form: Form, context?: any): Promise<void>;
+  delete(form: Form, context?: any): Promise<void | { skipped: boolean; message?: string }>;
 
   /**
    * Gets dependent entities that would be affected by deleting this entity.

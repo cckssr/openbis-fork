@@ -188,6 +188,7 @@ export const EntityFormContextProvider = ({
     clearError,
     executeOperation,
     externalAppController,
+    actionToastContext,
   });
 
   // Handle actions by creating them from dispatcher
@@ -282,7 +283,6 @@ export const EntityFormContextProvider = ({
       throw new Error('Invalid mode');
     }
   };
-
 
   // Early returns
   if (operationState.loading) {

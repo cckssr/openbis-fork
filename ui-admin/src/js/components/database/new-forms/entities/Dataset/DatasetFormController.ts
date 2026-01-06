@@ -3,13 +3,24 @@ import { IFormController } from '@src/js/components/database/new-forms/types/IFo
 import { DatasetFormModel } from '@src/js/components/database/new-forms/entities/Dataset/DatasetFormModel.ts';
 import { FormMode } from '@src/js/components/database/new-forms/types/formEnums.ts';
 import { findFormFieldById, getChangedEditableFieldValues } from '@src/js/components/database/new-forms/utils/formFieldUtil.ts';
+import { createDummyDataSetIdentifierFromExperimentIdentifier, createDummySampleIdentifierFromSampleIdentifier } from '@src/js/components/database/new-forms/utils/identifierUtil.ts';
+import { fetchRights } from '@src/js/components/database/new-forms/utils/authorizationServiceUtil.ts';
+import { DeleteService } from '@src/js/components/database/new-forms/services/DeleteService.ts';
 
 export class DatasetFormController implements IFormController {
 	private openbisFacade: any;
+	private deleteService: DeleteService;
 
 	constructor(openbisFacade: any) {
 		if (!openbisFacade) throw new Error('openbisFacade is required');
 		this.openbisFacade = openbisFacade;
+		this.deleteService = new DeleteService({ openbisFacade: this.openbisFacade });
+	}
+
+	async executeOperations(operations: any[]): Promise<any> {
+		const { SynchronousOperationExecutionOptions } = this.openbisFacade;
+		const result = await this.openbisFacade.executeOperations(operations, new SynchronousOperationExecutionOptions());
+		return result;
 	}
 
 	async load(permId: string): Promise<Form> {
@@ -18,6 +29,7 @@ export class DatasetFormController implements IFormController {
 		const fetchOptions = new DataSetFetchOptions();
 		fetchOptions.withExperiment();
 		fetchOptions.withSample();
+		fetchOptions.withChildren();
 		fetchOptions.withParents();
 		fetchOptions.withProperties();
 		fetchOptions.withType();
@@ -68,61 +80,100 @@ export class DatasetFormController implements IFormController {
 		return Promise.resolve(form.version + 1);
 	}
 
-	async checkPermissions(form: Form) {
-		/* const objId = form.entityPermId;
-		const { ExperimentPermId, SampleIdentifier, DataSetPermId } = this.openbisFacade;
-		const experimentId = new ExperimentPermId(objId);
-		const collectionIdentifier = findFormFieldById(form.fields, 'identifier')?.value;
-		console.log({collectionIdentifier})
-		const dummyId = new DataSetPermId(getProjectIdentifierFromExperimentIdentifier(collectionIdentifier) + "/DUMMY_" + guid());
-		const dummyId2 = new SampleIdentifier(getProjectIdentifierFromExperimentIdentifier(collectionIdentifier) + "/DUMMY2_" + guid());
-		const ids = [experimentId, dummyId, dummyId2];
-		const { editable, deletable } = await fetchRights(this.openbisFacade, objId, ids);
-		console.log({editable, deletable})
-		return { canEdit: editable, canDelete: deletable, canMove: true }; */
+	async checkPermissions(form: Form) {	
 		return { canEdit: true, canDelete: true, canMove: true };
+		/* const objId = form.entityPermId;
+		const { ExperimentPermId, SampleIdentifier, DataSetPermId, RightsFetchOptions } = this.openbisFacade;
+		const experimentId = new ExperimentPermId(objId);
+		const collectionIdentifier = findFormFieldById(form.fields, form.entityPermId, 'identifier', true);
+		if (typeof collectionIdentifier !== 'string' || !collectionIdentifier) {
+			throw new Error('[DatasetFormController.checkPermissions] Missing collection identifier');
+		}
+		console.log({collectionIdentifier})
+		const dummyId = new DataSetPermId(createDummyDataSetIdentifierFromExperimentIdentifier(collectionIdentifier));
+		const dummyId2 = new SampleIdentifier(createDummySampleIdentifierFromSampleIdentifier(collectionIdentifier));
+		console.log({dummyId, dummyId2})
+		const ids = [experimentId, dummyId, dummyId2];
+		console.log({ids})
+		const { editable, deletable } = await fetchRights(this.openbisFacade, objId, ids);
+		//return new this.openbisFacade.GetRightsOperation(ids, new RightsFetchOptions());
+		console.log({editable, deletable}) */
+		//return { canEdit: editable, canDelete: deletable, canMove: true };
 	}
 
 	async delete(form: Form, context?: any): Promise<void> {
-		console.log(`CONTROLLER: Deleting ${form.entityPermId}`, context);
-		/**
-	 * this.deleteDataSet = function(reason) {
-		var _this = this;
-		Util.blockUI();
-		mainController.serverFacade.deleteDataSets([this._dataSetFormModel.dataSetV3.code], reason, function(data) {
-			if(data.error) {
-				Util.showError(data.error.message);
-			} else {
-				Util.showSuccess("Data Set moved to Trashcan");
-				
-				setTimeout(function() { //Give some time to update the index
-					var space = null;
-					if(_this._dataSetFormModel.isExperiment()) {
-						mainController.changeView('showExperimentPageFromIdentifier', encodeURIComponent('["' +
-								_this._dataSetFormModel.entity.identifier.identifier + '",false]'));
-						experimentIdentifier = _this._dataSetFormModel.entity.identifier.identifier;
-						space = IdentifierUtil.getSpaceCodeFromIdentifier(experimentIdentifier);
-					} else {
-						mainController.changeView('showViewSamplePageFromPermId', _this._dataSetFormModel.entity.permId);
-						sampleIdentifier = _this._dataSetFormModel.entity.identifier;
-						space = IdentifierUtil.getSpaceCodeFromIdentifier(sampleIdentifier);
-					}
-					
-					var isInventory = profile.isInventorySpace(space);
-					if(!isInventory) {
-						mainController.sideMenu.refreshNodeParentByPermId("DATASET", _this._dataSetFormModel.dataSetV3.code);
-					}
-				}, 3000);
+		console.log(`DatasetFormController.delete`, form.entityPermId, context);
+		
+		// If this is just a check, return early
+		if (context?.checkOnly) {
+			return;
+		}
+		
+		// Get delete reason from context or use default
+		const deleteReason = context?.deleteReason || 'delete via ng-ui';
+		
+		// Check if descendants should be deleted (from checkbox in dialog)
+		const includeDescendants = context?.includeDescendants || false;
+		
+		// If descendants checkbox is checked, find and move descendant datasets to trashcan first using DeleteService
+		if (includeDescendants) {
+			const descendantDatasets = await this.getDescendantDatasets(form.entityPermId);
+			if (descendantDatasets.length > 0) {
+				const result = await this.deleteService.moveDataSetsToTrashcan(descendantDatasets, deleteReason);
+				if (!result.success) {
+					throw new Error(result.error || 'Failed to move descendant datasets to trashcan');
+				}
+				console.log('DatasetFormController.moved descendant datasets to trashcan:', result.count);
 			}
-		});
+		}
+		
+		// Finally, move the dataset itself to trashcan using DeleteService
+		// Pass the permId as an object - DeleteService will extract it
+		const result = await this.deleteService.moveDataSetsToTrashcan([{ permId: form.entityPermId }], deleteReason);
+		if (!result.success) {
+			throw new Error(result.error || 'Failed to move dataset to trashcan');
+		}
+		console.log('DatasetFormController.delete result:', result);
+		return Promise.resolve();
 	}
+	
+	/**
+	 * Get descendant datasets (child datasets)
+	 * @param datasetPermId The permId of the parent dataset
+	 * @returns Array of descendant dataset objects
 	 */
+	async getDescendantDatasets(datasetPermId: string): Promise<any[]> {
+		const { DataSetPermId, DataSetFetchOptions } = this.openbisFacade;
+		const id = new DataSetPermId(datasetPermId);
+		const fetchOptions = new DataSetFetchOptions();
+		fetchOptions.withChildren && fetchOptions.withChildren();
+		
+		try {
+			const result = await this.openbisFacade.getDataSets([id], fetchOptions);
+			const dataset = result[datasetPermId];
+			if (dataset && dataset.getChildren) {
+				const children = dataset.getChildren();
+				// Recursively get all descendants
+				const allDescendants: any[] = [];
+				for (const child of children) {
+					allDescendants.push(child);
+					const childPermId = child.getPermId ? child.getPermId() : child.permId || child;
+					const childDescendants = await this.getDescendantDatasets(childPermId);
+					allDescendants.push(...childDescendants);
+				}
+				return allDescendants;
+			}
+		} catch (error) {
+			console.warn('DatasetFormController.getDescendantDatasets error:', error);
+		}
+		return [];
 	}
 
 	async getDependentEntities(form: Form): Promise<any> {
-		// Datasets typically don't have dependent entities
+		// Check for descendant datasets (children)
+		const descendantDatasets = await this.getDescendantDatasets(form.entityPermId);
 		return {
-			datasets: [],
+			datasets: descendantDatasets,
 			samples: []
 		};
 	}

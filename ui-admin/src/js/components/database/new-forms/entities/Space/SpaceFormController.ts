@@ -5,13 +5,16 @@ import { findFormFieldByLabel } from '@src/js/components/database/new-forms/util
 import { fetchRights } from '@src/js/components/database/new-forms/utils/authorizationServiceUtil.ts';
 import { SpaceFormModel } from '@src/js/components/database/new-forms/entities/Space/SpaceFormModel.ts';
 import { FormMode } from '@src/js/components/database/new-forms/types/formEnums.ts';
+import { DeleteService } from '@src/js/components/database/new-forms/services/DeleteService.ts';
 
 export class SpaceFormController implements IFormController {
   private openbisFacade: any;
+  private deleteService: DeleteService;
 
   constructor(openbisFacade: any) {
     if (!openbisFacade) throw new Error('openbisFacade is required');
     this.openbisFacade = openbisFacade;
+    this.deleteService = new DeleteService({ openbisFacade: this.openbisFacade });
   }
 
   async load(permId: string): Promise<Form> {
@@ -62,17 +65,59 @@ export class SpaceFormController implements IFormController {
     const spacePermId = new SpacePermId(spaceCode);
     const dummyProjectId = new ProjectIdentifier(createDummySampleIdentifier(spaceCode));
     const dummySampleId = new SampleIdentifier(createDummySampleIdentifier(spaceCode));
-    console.log({dummyProjectId, dummySampleId})
+    console.log({ dummyProjectId, dummySampleId })
     const ids = [spacePermId, dummyProjectId, dummySampleId];
     const { editable, deletable } = await fetchRights(this.openbisFacade, spaceCode, ids);
-		console.log({editable, deletable})
-		//return { canEdit: editable, canDelete: deletable, canMove: true };
+    console.log({ editable, deletable })
+    //return { canEdit: editable, canDelete: deletable, canMove: true };
     return { canEdit: true, canDelete: true, canMove: true };
   }
 
   async delete(form: Form, context?: any): Promise<void> {
-    // Implement delete logic as needed
-    console.log('SpaceFormController.delete', form, context);
+    const spaceCode = form.entityPermId;
+    
+    // Check for existing deletions in trashcan before proceeding using DeleteService
+    const dependentDeletions = await this.deleteService.checkExistingDeletions(
+      spaceCode,
+      'SPACE',
+      ['SAMPLE']
+    );
+    if (dependentDeletions.length > 0) {
+      const errorMessage = this.deleteService.formatDeletionError(dependentDeletions, 'space');
+      throw new Error(errorMessage);
+    }
+    
+    // Check for dependent entities to validate space is empty
+    const dependentEntities = await this.getDependentEntities(form);
+    const projectsCount = dependentEntities.projects?.length || 0;
+    const samplesCount = dependentEntities.samples?.length || 0;
+    const totalDependentEntities = projectsCount + samplesCount;
+
+    // If this is just a check, validate and return early
+    if (context?.checkOnly) {
+      if (totalDependentEntities > 0) {
+        throw new Error(
+          `Cannot delete space: Space is not empty. It contains ${projectsCount} project(s) and ${samplesCount} sample(s). Please delete or move these entities first.`
+        );
+      }
+      return;
+    }
+
+    // Prevent deletion if space is not empty
+    if (totalDependentEntities > 0) {
+      throw new Error(
+        `Cannot delete space: Space is not empty. It contains ${projectsCount} project(s) and ${samplesCount} sample(s). Please delete or move these entities first.`
+      );
+    }
+
+    // Space is empty, proceed with deletion (moves to trashcan) using DeleteService
+    const deleteReason = context?.deleteReason || 'delete via ng-ui';
+    const result = await this.deleteService.moveSpacesToTrashcan([spaceCode], deleteReason);
+    if (!result.success) {
+      throw new Error(result.error || 'Failed to move space to trashcan');
+    }
+    console.log('SpaceFormController.delete result:', result);
+    return Promise.resolve();
   }
 
   async getDependentEntities(form: Form): Promise<any> {
@@ -84,12 +129,12 @@ export class SpaceFormController implements IFormController {
     fetchOptions.withSamples && fetchOptions.withSamples();
     const result = await this.openbisFacade.getSpaces([id], fetchOptions);
     const space = result[form.entityPermId];
-    
-    return { 
-      projects: space.getProjects ? space.getProjects() : [], 
-      samples: space.getSamples ? space.getSamples() : [] 
+    return {
+      projects: space.getProjects ? space.getProjects() : [],
+      samples: space.getSamples ? space.getSamples() : []
     };
   }
+
 
   move(form: Form, context?: any): Promise<void> {
     // Implement move logic as needed

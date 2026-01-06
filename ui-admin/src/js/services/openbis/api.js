@@ -349,12 +349,20 @@ class Facade {
     return this.promise(this.v3.deleteExperimentTypes(ids, options))
   }
 
+  deleteDataSets(ids, options) {
+    return this.promise(this.v3.deleteDataSets(ids, options))
+  }
+
   deleteDataSetTypes(ids, options) {
     return this.promise(this.v3.deleteDataSetTypes(ids, options))
   }
 
   deleteMaterialTypes(ids, options) {
     return this.promise(this.v3.deleteMaterialTypes(ids, options))
+  }
+
+  deleteSpaces(ids, options) {
+    return this.promise(this.v3.deleteSpaces(ids, options))
   }
 
   deleteProjects(ids, options) {

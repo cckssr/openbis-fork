@@ -14,7 +14,7 @@ import {
   getCollectionField,
 } from '@src/js/components/database/new-forms/entities/formFieldGetters.ts';
 import { EntityKind, FormMode } from '@src/js/components/database/new-forms/types/formEnums.ts';
-import { getAutoSaveAction, getCancelAction, getDividerAction, getEditAction, getSaveAction } from '@src/js/components/database/new-forms/entities/actionsFieldGetters.ts';
+import { getAutoSaveAction, getCancelAction, getDividerAction, getEditAction, getSaveAction, getDeleteAction } from '@src/js/components/database/new-forms/entities/actionsFieldGetters.ts';
 
 export class DatasetFormModel {
 
@@ -40,7 +40,7 @@ export class DatasetFormModel {
       entityType: dto.type.code,
       title: `Dataset: ${dto.code}`,
       version: dto.version,
-      entityKind: 'DATASET',
+      entityKind: EntityKind.DATASET,
       meta: {},
       fields: [...staticFields.filter(field => field !== null), ...propertyFields],
       isDirty: false,
@@ -51,7 +51,7 @@ export class DatasetFormModel {
 				// getDividerAction(FormMode.VIEW),
 				getEditAction(),
 				// getMoveAction(),
-				// getDeleteAction(),
+				getDeleteAction(),
 				//getDividerAction(FormMode.VIEW),
 				// getMoreActionsAction(),
 				getSaveAction(),

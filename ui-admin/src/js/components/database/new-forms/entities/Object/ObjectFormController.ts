@@ -6,13 +6,16 @@ import { findFormFieldById } from '@src/js/components/database/new-forms/utils/f
 import { EntityKind, FormFieldDataType, FormMode } from '@src/js/components/database/new-forms/types/formEnums.ts';
 import { ObjectFormModel } from '@src/js/components/database/new-forms/entities/Object/ObjectFormModel.ts';
 import { getChangedEditableFieldValues } from '@src/js/components/database/new-forms/utils/formFieldUtil.ts';
+import { DeleteService } from '@src/js/components/database/new-forms/services/DeleteService.ts';
 
 export class ObjectFormController implements IFormController {
 	private openbisFacade: any;
+	private deleteService: DeleteService;
 
 	constructor(openbisFacade: any) {
 		if (!openbisFacade) throw new Error('openbisFacade is required');
 		this.openbisFacade = openbisFacade;
+		this.deleteService = new DeleteService({ openbisFacade: this.openbisFacade });
 	}
 
 	async _getNextSequenceForType(sampleTypeCode: string): Promise<string> {
@@ -150,7 +153,110 @@ export class ObjectFormController implements IFormController {
 	}
 
 	async delete(form: Form, context?: any): Promise<void> {
-		console.log(`CONTROLLER: Deleting ${form.entityPermId}`, context);
+		console.log(`ObjectFormController.delete`, form.entityPermId, context);
+		
+		// If this is just a check, return early
+		if (context?.checkOnly) {
+			return;
+		}
+		
+		// Get dependent entities if not provided in context
+		// Use rawDependentEntities from context if available (from normalized structure)
+		let dependentEntities = context?.rawDependentEntities || context?.dependentEntities;
+		if (!dependentEntities) {
+			dependentEntities = await this.getDependentEntities(form);
+		}
+		
+		console.log('ObjectFormController.dependentEntities:', dependentEntities);
+		
+		// Get delete reason from context or use default
+		const deleteReason = context?.deleteReason || 'delete via ng-ui';
+		
+		// Check if descendants should be deleted (from checkbox in dialog)
+		const includeDescendants = context?.includeDescendants || false;
+		
+		// Move all datasets to trashcan first using DeleteService
+		if (dependentEntities.datasets && dependentEntities.datasets.length > 0) {
+			const result = await this.deleteService.moveDataSetsToTrashcan(dependentEntities.datasets, deleteReason);
+			if (!result.success) {
+				throw new Error(result.error || 'Failed to move datasets to trashcan');
+			}
+			console.log('ObjectFormController.moved datasets to trashcan:', result.count);
+		}
+		
+		// If descendants checkbox is checked, move all descendant objects and their datasets to trashcan
+		// Handle both raw structure (children) and normalized structure (samples)
+		const children = dependentEntities.children || dependentEntities.samples || [];
+		if (includeDescendants && children.length > 0) {
+			await this.deleteDescendantObjects(children, deleteReason);
+		}
+		
+		// Finally, move the object (sample) itself to trashcan using DeleteService
+		const sampleIdentifier = findFormFieldById(form.fields, form.entityPermId, 'identifier', true);
+		if (!sampleIdentifier || typeof sampleIdentifier !== 'string') {
+			throw new Error('Sample identifier not found');
+		}
+		const result = await this.deleteService.moveSamplesToTrashcan(
+			[{ identifier: sampleIdentifier }],
+			deleteReason
+		);
+		if (!result.success) {
+			throw new Error(result.error || 'Failed to move object to trashcan');
+		}
+		console.log('ObjectFormController.delete result:', result);
+		return Promise.resolve();
+	}
+	
+	/**
+	 * Recursively delete descendant objects and their datasets
+	 * @param children Array of child sample objects
+	 * @param reason Deletion reason
+	 */
+	async deleteDescendantObjects(children: any[], reason: string): Promise<void> {
+		if (!children || children.length === 0) {
+			return;
+		}
+		
+		// Process each child
+		for (const child of children) {
+			// Get child's datasets and children
+			const { SamplePermId, SampleFetchOptions } = this.openbisFacade;
+			const childPermId = child.getPermId ? child.getPermId() : child.permId || child;
+			const id = new SamplePermId(childPermId);
+			const fetchOptions = new SampleFetchOptions();
+			fetchOptions.withDataSets && fetchOptions.withDataSets();
+			fetchOptions.withChildren && fetchOptions.withChildren();
+			const result = await this.openbisFacade.getSamples([id], fetchOptions);
+			const childSample = result[childPermId];
+			
+			if (childSample) {
+				const childDatasets = childSample.getDataSets ? childSample.getDataSets() : [];
+				const childChildren = childSample.getChildren ? childSample.getChildren() : [];
+				
+				// Move child's datasets to trashcan using DeleteService
+				if (childDatasets.length > 0) {
+					const result = await this.deleteService.moveDataSetsToTrashcan(childDatasets, reason);
+					if (!result.success) {
+						throw new Error(result.error || 'Failed to move child datasets to trashcan');
+					}
+				}
+				
+				// Recursively delete grandchildren
+				if (childChildren.length > 0) {
+					await this.deleteDescendantObjects(childChildren, reason);
+				}
+				
+				// Move child object to trashcan using DeleteService
+				const childIdentifier = child.getIdentifier ? child.getIdentifier().getIdentifier() : child.identifier || child;
+				const result = await this.deleteService.moveSamplesToTrashcan(
+					[{ identifier: childIdentifier }],
+					reason
+				);
+				if (!result.success) {
+					throw new Error(result.error || 'Failed to move child object to trashcan');
+				}
+			}
+		}
 	}
 
 	async getDependentEntities(form: Form): Promise<any> {

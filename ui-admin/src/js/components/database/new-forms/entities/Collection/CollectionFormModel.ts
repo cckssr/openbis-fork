@@ -40,7 +40,7 @@ export class CollectionFormModel {
 				// getDividerAction(FormMode.VIEW),
 				getEditAction(),
 				// getMoveAction(),
-				// getDeleteAction(),
+				getDeleteAction(),
 				//getDividerAction(FormMode.VIEW),
 				// getMoreActionsAction(),
 				getSaveAction(),

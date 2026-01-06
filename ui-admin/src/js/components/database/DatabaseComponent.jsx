@@ -299,11 +299,21 @@ class DatabaseComponent extends React.PureComponent {
     )
   }
 
+  objectDelete(type, id) {
+    console.log('DatabaseComponent.objectDelete', type, id);
+    AppController.getInstance().objectDelete(
+      pages.DATABASE,
+      type,
+      id
+    )
+  }
+
   externalAppController = {
     createNewObject: (params) => this.createNewObject(params.newObjectType, params.fromObjectType, params.fromId),
     objectChange: (params) => this.objectChange(params.id, params.objectTypeChanging, params.changed),
     objectCreate: (params) => this.objectCreate(params.oldType, params.oldId, params.newType, params.newId),
-    closeForm: (params) => this.closeForm(params.type, params.id)
+    closeForm: (params) => this.closeForm(params.type, params.id),
+    objectDelete: (params) => this.objectDelete(params.type, params.id)
   }
 
 
