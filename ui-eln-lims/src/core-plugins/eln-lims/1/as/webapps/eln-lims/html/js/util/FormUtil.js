@@ -3861,14 +3861,14 @@ var FormUtil = new function() {
 
                                         $window.append($hierarchyInclusions);
 
-                                        var $withLevelsAbove = $("<span class='checkbox'><label><input type='checkbox' id='LEVELS-ABOVE-EXPORT' checked disabled>Include levels above from same space. Non optional.</label></span>");
+                                        var $withLevelsAbove = $("<span class='checkbox'><label><input type='checkbox' id='LEVELS-ABOVE-EXPORT' checked disabled>Include levels above from same space. (Non optional)</label></span>");
                                         $window.append($withLevelsAbove);
-                                        var $includeParents = $("</span><span class='checkbox'><label><input type='checkbox' id='PARENTS-EXPORT'>Include Object and Dataset parents from same space.</label></span>").css({ "padding-left" : "20px" });
+                                        var $includeParents = $("</span><span class='checkbox'><label><input type='checkbox' id='PARENTS-EXPORT'>Include Object and Dataset parents from same space. (Requires levels above)</label></span>").css({ "padding-left" : "20px" });
                                         $window.append($includeParents);
 
                                         var $levelsBelow = $("<span class='checkbox'><label><input type='checkbox' id='LEVELS-BELOW-EXPORT'>Include levels below from same space.</label></span>");
                                         $window.append($levelsBelow);
-                                        var $includeChildren = $("<span class='checkbox'><label><input type='checkbox' id='CHILDREN-EXPORT' disabled>Include Object and Dataset children from same space.</label></span>").css({ "padding-left" : "20px" });
+                                        var $includeChildren = $("<span class='checkbox'><label><input type='checkbox' id='CHILDREN-EXPORT' disabled>Include Object and Dataset children from same space. (Requires levels below)</label></span>").css({ "padding-left" : "20px" });
                                         $window.append($includeChildren);
 
                                         $levelsBelow.change(function(event) {
@@ -3878,8 +3878,19 @@ var FormUtil = new function() {
                                             }
                                         });
 
-                                        $window.append($("<br>"));
-                                        var $includeOtherSpaces = $("<span class='checkbox'><label><input type='checkbox' id='OTHER-SPACES-EXPORT'>Include Objects and Datasets parents and children from different spaces.</label></span>");
+                                        var includeParentsChildrenChangeEvent = function(event) {
+                                            var enabled = $("#PARENTS-EXPORT")[0].checked || $("#CHILDREN-EXPORT")[0].checked;
+                                            $("#OTHER-SPACES-EXPORT")[0].disabled = !enabled;
+                                            if (!enabled) {
+                                                $("#OTHER-SPACES-EXPORT")[0].checked = false;
+                                            }
+                                        }
+                                        $includeParents.change(includeParentsChildrenChangeEvent);
+                                        $includeChildren.change(includeParentsChildrenChangeEvent);
+
+                                        var $spaceInclusions = $("<span>").append($("<b>").append("Space Inclusions"));
+                                        $window.append($spaceInclusions);
+                                        var $includeOtherSpaces = $("<span class='checkbox'><label><input type='checkbox' id='OTHER-SPACES-EXPORT' disabled>Include Objects and Datasets parents and children from other spaces.</label></span>");
                                         $window.append($includeOtherSpaces);
 
                                         var $exportOptions = $("<span>").append($("<b>").append("Export Options"));
