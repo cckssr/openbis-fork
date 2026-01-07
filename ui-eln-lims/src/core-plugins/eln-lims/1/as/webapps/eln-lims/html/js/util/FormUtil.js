@@ -3861,14 +3861,14 @@ var FormUtil = new function() {
 
                                         $window.append($hierarchyInclusions);
 
-                                        var $withLevelsAbove = $("<span class='checkbox'><label><input type='checkbox' id='LEVELS-ABOVE-EXPORT' checked disabled>Include levels above. (Always included)</label></span>");
+                                        var $withLevelsAbove = $("<span class='checkbox'><label><input type='checkbox' id='LEVELS-ABOVE-EXPORT' checked disabled>Include levels above (Always included)</label></span>");
                                         $window.append($withLevelsAbove);
-                                        var $includeParents = $("</span><span class='checkbox'><label><input type='checkbox' id='PARENTS-EXPORT'>Include Object and Dataset parents.</label></span>").css({ "padding-left" : "20px" });
+                                        var $includeParents = $("</span><span class='checkbox'><label><input type='checkbox' id='PARENTS-EXPORT'>Include Object and Dataset parents</label></span>").css({ "padding-left" : "20px" });
                                         $window.append($includeParents);
 
-                                        var $levelsBelow = $("<span class='checkbox'><label><input type='checkbox' id='LEVELS-BELOW-EXPORT'>Include levels below.</label></span>");
+                                        var $levelsBelow = $("<span class='checkbox'><label><input type='checkbox' id='LEVELS-BELOW-EXPORT'>Include levels below</label></span>");
                                         $window.append($levelsBelow);
-                                        var $includeChildren = $("<span class='checkbox'><label><input type='checkbox' id='CHILDREN-EXPORT' disabled>Include Object and Dataset children.</label></span>").css({ "padding-left" : "20px" });
+                                        var $includeChildren = $("<span class='checkbox'><label><input type='checkbox' id='CHILDREN-EXPORT' disabled>Include Object and Dataset children</label></span>").css({ "padding-left" : "20px" });
                                         $window.append($includeChildren);
 
                                         $levelsBelow.change(function(event) {
@@ -3890,7 +3890,7 @@ var FormUtil = new function() {
 
                                         var $spaceInclusions = $("<span>").append($("<b>").append("Hierarchy Inclusions (Other Spaces)"));
                                         $window.append($spaceInclusions);
-                                        var $includeOtherSpaces = $("<span class='checkbox'><label><input type='checkbox' id='OTHER-SPACES-EXPORT' disabled>Include Objects and Datasets parents and children.</label></span>");
+                                        var $includeOtherSpaces = $("<span class='checkbox'><label><input type='checkbox' id='OTHER-SPACES-EXPORT' disabled>Include Objects and Datasets parents and children</label></span>");
                                         $window.append($includeOtherSpaces);
 
                                         var $exportOptions = $("<span>").append($("<b>").append("Export Options"));
