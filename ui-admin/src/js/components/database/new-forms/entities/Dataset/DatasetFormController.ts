@@ -6,15 +6,18 @@ import { findFormFieldById, getChangedEditableFieldValues } from '@src/js/compon
 import { createDummyDataSetIdentifierFromExperimentIdentifier, createDummySampleIdentifierFromSampleIdentifier } from '@src/js/components/database/new-forms/utils/identifierUtil.ts';
 import { fetchRights } from '@src/js/components/database/new-forms/utils/authorizationServiceUtil.ts';
 import { DeleteService } from '@src/js/components/database/new-forms/services/DeleteService.ts';
+import { MoveService } from '@src/js/components/database/new-forms/services/MoveService.ts';
 
 export class DatasetFormController implements IFormController {
 	private openbisFacade: any;
 	private deleteService: DeleteService;
+	private moveService: MoveService;
 
 	constructor(openbisFacade: any) {
 		if (!openbisFacade) throw new Error('openbisFacade is required');
 		this.openbisFacade = openbisFacade;
 		this.deleteService = new DeleteService({ openbisFacade: this.openbisFacade });
+		this.moveService = new MoveService({ openbisFacade: this.openbisFacade });
 	}
 
 	async executeOperations(operations: any[]): Promise<any> {
@@ -178,8 +181,18 @@ export class DatasetFormController implements IFormController {
 		};
 	}
 
-	move(form: Form, context?: any): Promise<void> {
-		console.log('DatasetFormController.move', form, context);
+	async move(form: Form, context?: any, params?: any): Promise<void> {
+		console.log('DatasetFormController.move', form, context, params);
+
+		if (!params || !params.target) {
+			throw new Error('Target is required for move operation');
+		}
+
+		const result = await this.moveService.moveDataset(form.entityPermId, params.target);
+
+		if (!result.success) {
+			throw new Error(result.error || 'Failed to move dataset');
+		}
 		return Promise.resolve();
 	}
 }

@@ -7,15 +7,18 @@ import { EntityKind, FormFieldDataType, FormMode } from '@src/js/components/data
 import { ObjectFormModel } from '@src/js/components/database/new-forms/entities/Object/ObjectFormModel.ts';
 import { getChangedEditableFieldValues } from '@src/js/components/database/new-forms/utils/formFieldUtil.ts';
 import { DeleteService } from '@src/js/components/database/new-forms/services/DeleteService.ts';
+import { MoveService } from '@src/js/components/database/new-forms/services/MoveService.ts';
 
 export class ObjectFormController implements IFormController {
 	private openbisFacade: any;
 	private deleteService: DeleteService;
+	private moveService: MoveService;
 
 	constructor(openbisFacade: any) {
 		if (!openbisFacade) throw new Error('openbisFacade is required');
 		this.openbisFacade = openbisFacade;
 		this.deleteService = new DeleteService({ openbisFacade: this.openbisFacade });
+		this.moveService = new MoveService({ openbisFacade: this.openbisFacade });
 	}
 
 	async _getNextSequenceForType(sampleTypeCode: string): Promise<string> {
@@ -276,122 +279,16 @@ export class ObjectFormController implements IFormController {
 	}
 
 	async move(form: Form, context?: any, params?: any): Promise<void> {
-		const { SampleFetchOptions, SampleUpdate, SpacePermId } = this.openbisFacade;
+		if (!params || !params.target) {
+			throw new Error('Target is required for move operation');
+		}
 
-		if (params.moveDescendants) {
-			await this.moveSampleWithDescendants([form.entityPermId], params.target['@type']);
-		} else {
-			const sampleUpdate = this._prepareSampleUpdate(form.entityPermId, params);
+		const includeDescendants = params.moveDescendants || false;
+		const result = await this.moveService.moveObject(form.entityPermId, params.target, includeDescendants);
 
-			console.log('ObjectFormController.move', form, context, params);
-			const result = await this.openbisFacade.updateSamples([sampleUpdate]);
-			console.log('ObjectFormController.move', result);
+		if (!result.success) {
+			throw new Error(result.error || 'Failed to move object');
 		}
 		return Promise.resolve();
-	}
-
-	/**
-	 * Prepare the sample update for the move
-	 * @param samplePermId - The permId of the sample to update
-	 * @param params - The parameters for the move
-	 * @returns The sample update
-	 */
-	_prepareSampleUpdate(samplePermId: string, params: any) {
-		const { SampleUpdate, SamplePermId } = this.openbisFacade;
-		const sampleUpdate = new SampleUpdate();
-		sampleUpdate.setSampleId(new SamplePermId(samplePermId));
-
-		const selectedEntityType = params.target['@type'];
-		switch (selectedEntityType) {
-			case 'as.dto.project.Project':
-				sampleUpdate.setExperimentId(null);
-				sampleUpdate.setProjectId(params.target.getPermId());
-				sampleUpdate.setSpaceId(params.target.getSpace().getPermId());
-				break;
-			case 'as.dto.experiment.Experiment':
-				sampleUpdate.setSpaceId(params.target.getProject().getSpace().getPermId());
-				sampleUpdate.setProjectId(params.target.getProject().getPermId());
-				sampleUpdate.setExperimentId(params.target.getPermId());
-				break;
-			case 'as.dto.space.Space':
-				sampleUpdate.setExperimentId(null);
-				sampleUpdate.setProjectId(null);
-				sampleUpdate.setSpaceId(params.target.getPermId());
-				break;
-		}
-		return sampleUpdate;
-	};
-
-	/**
-	 * Move samples with descendants
-	 * @param permIds - The permIds of the samples to move
-	 * @param selectedEntityType - The type of the entity to move to
-	 * @returns The void because the implementation is not yet implemented
-	 */
-	async moveSampleWithDescendants(
-		permIds: any[],
-		selectedEntityType: string,
-	): Promise<void> {
-		throw new Error('[ObjectFormController.moveSampleWithDescendants] Not implemented yet.');
-		/* 
-		// implementation taken from ELN-LIMS
-		const { SampleFetchOptions } = this.openbisFacade;
-		const fetchOptions = new SampleFetchOptions();
-		fetchOptions.withExperiment();
-		fetchOptions.withProject();
-		fetchOptions.withSpace();
-		fetchOptions.withChildrenUsing(fetchOptions);
-	
-		const map = await this.openbisFacade.getSamples(permIds, fetchOptions);
-		const samplesToUpdate: any[] = [];
-		const updates: any[] = [];
-	
-		for (let i = 0; i < this.moveEntityModel.entities.length; i++) {
-		  const entity = this.moveEntityModel.entities[i];
-		  const permId = entity.getPermId();
-		  this.gatherAllDescendants(samplesToUpdate, map[permId]);
-	
-		  let level: string;
-		  let currentEntity: string;
-	
-		  if (entity.getExperiment()) {
-			level = 'EXPERIMENT';
-			currentEntity = entity.getExperiment().getPermId().getPermId();
-		  } else if (entity.getProject()) {
-			level = 'PROJECT';
-			currentEntity = entity.getProject().getPermId().getPermId();
-		  } else {
-			level = 'SPACE';
-			currentEntity = entity.getSpace().getPermId().getPermId();
-		  }
-	
-		  // Filter samples based on current level
-		  samplesToUpdate.forEach((sample: any) => {
-			let shouldUpdate = false;
-	
-			switch (level) {
-			  case 'EXPERIMENT':
-				shouldUpdate = sample.getExperiment() != null &&
-				  currentEntity === sample.getExperiment().getPermId().getPermId();
-				break;
-			  case 'PROJECT':
-				shouldUpdate = sample.getExperiment() == null &&
-				  currentEntity === sample.getProject().getPermId().getPermId();
-				break;
-			  case 'SPACE':
-				shouldUpdate = sample.getExperiment() == null &&
-				  sample.getProject() == null &&
-				  currentEntity === sample.getSpace().getPermId().getPermId();
-				break;
-			}
-	
-			if (shouldUpdate) {
-			  const sampleUpdate = prepareSampleUpdate(sample.getPermId());
-			  updates.push(sampleUpdate);
-			}
-		  });
-		}
-	
-		await this.openbisFacade.updateSamples(updates); */
 	}
 }

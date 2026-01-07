@@ -35,7 +35,7 @@ export class ProjectFormModel {
 				// getNewObjectAction(EntityKind.PROJECT),
 				// getDividerAction(FormMode.VIEW),
 				getEditAction(),
-				// getMoveAction(),
+				getMoveAction(),
 				getDeleteAction(),
 				//getDividerAction(FormMode.VIEW),
 				// getMoreActionsAction(),

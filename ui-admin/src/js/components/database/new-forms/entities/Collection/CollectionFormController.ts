@@ -6,15 +6,18 @@ import { createDummyDataSetIdentifierFromExperimentIdentifier, createDummySample
 import { findFormFieldById, getChangedEditableFieldValues } from '@src/js/components/database/new-forms/utils/formFieldUtil.ts';
 import { FormMode } from '@src/js/components/database/new-forms/types/formEnums.ts';
 import { DeleteService } from '@src/js/components/database/new-forms/services/DeleteService.ts';
+import { MoveService } from '@src/js/components/database/new-forms/services/MoveService.ts';
 
 export class CollectionFormController implements IFormController {
 	private openbisFacade: any;
 	private deleteService: DeleteService;
+	private moveService: MoveService;
 
 	constructor(openbisFacade: any) {
 		if (!openbisFacade) throw new Error('openbisFacade is required');
 		this.openbisFacade = openbisFacade;
 		this.deleteService = new DeleteService({ openbisFacade: this.openbisFacade });
+		this.moveService = new MoveService({ openbisFacade: this.openbisFacade });
 	}
 
 	async executeOperations(operations: any[]): Promise<any> {
@@ -166,8 +169,25 @@ export class CollectionFormController implements IFormController {
 		};
 	}
 
-	move(form: Form, context?: any): Promise<void> {
-		console.log('CollectionFormController.move', form, context);
+	async move(form: Form, context?: any, params?: any): Promise<void> {
+		console.log('CollectionFormController.move', form, context, params);
+
+		if (!params || !params.target) {
+			throw new Error('Target is required for move operation');
+		}
+
+		// Target should be a Project entity
+		const targetType = params.target['@type'];
+		if (targetType !== 'as.dto.project.Project') {
+			throw new Error(`Invalid target type for collection move: ${targetType}. Expected Project.`);
+		}
+
+		const result = await this.moveService.moveCollection(form.entityPermId, params.target);
+
+		if (!result.success) {
+			throw new Error(result.error || 'Failed to move collection');
+		}
+
 		return Promise.resolve();
 	}
 }

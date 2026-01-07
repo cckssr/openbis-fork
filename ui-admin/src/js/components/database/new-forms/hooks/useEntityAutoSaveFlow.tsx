@@ -72,6 +72,7 @@ export function useEntityAutoSaveFlow({
           localStorage.setItem(preferenceKey, 'true')
         } else {
           localStorage.removeItem(preferenceKey)
+          localStorage.removeItem(storageKey)
         }
       } catch {
         // ignore persistence failures (quota/private mode)

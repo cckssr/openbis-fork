@@ -1,29 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Dialog from '@src/js/components/common/dialog/Dialog.jsx';
 import Button from '@src/js/components/common/form/Button.jsx';
 import Message from '@src/js/components/common/form/Message.jsx';
 import TextField from '@src/js/components/common/form/TextField.jsx';
-import { Form, FormField } from '@src/js/components/database/new-forms/types/formITypes.ts';
+import { Form } from '@src/js/components/database/new-forms/types/formITypes.ts';
 import { EntityKind, FormMode } from '@src/js/components/database/new-forms/types/formEnums.ts';
-import { MoveService, MoveEntityConfig } from '@src/js/components/database/new-forms/services/MoveService.ts';
 import { AdvancedEntitySearchDropdown } from '@src/js/components/database/new-forms/components/common/AdvancedEntitySearchDropdown.tsx';
 import messages from '@src/js/common/messages';
 import {
   Box,
   Typography,
-  FormControl,
-  FormLabel,
-  RadioGroup,
   FormControlLabel,
-  Radio,
   Checkbox,
-  FormGroup,
-  FormHelperText,
-  Divider
+  FormGroup
 } from '@mui/material';
 import { IFormController } from '@src/js/components/database/new-forms/types/IFormController.ts';
 import { findFormFieldById } from '@src/js/components/database/new-forms/utils/formFieldUtil.ts';
-import { getProjectIdentifierFromSampleIdentifier } from '@src/js/components/database/new-forms/utils/identifierUtil.ts';
 
 interface MoveDialogProps {
   open: boolean;
@@ -35,67 +27,26 @@ interface MoveDialogProps {
   entityFormController?: IFormController;
 }
 
-const MoveDialog: React.FC<MoveDialogProps> = ({ 
-  open, 
-  onConfirm, 
-  onCancel, 
+const MoveDialog: React.FC<MoveDialogProps> = ({
+  open,
+  onConfirm,
+  onCancel,
   form,
   moveInfo,
   openbisFacade,
-  entityFormController 
+  entityFormController
 }) => {
-  const [moveService, setMoveService] = useState<MoveService | null>(null);
   const [selectedTarget, setSelectedTarget] = useState<any>(null);
   const [moveDescendants, setMoveDescendants] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Initialize MoveService when dialog opens
-  useEffect(() => {
-    if (open && form && openbisFacade) {
-      /* const config: MoveEntityConfig = {
-        entityType: form.entityType as EntityKind,
-        entityPermIds: form.entityPermId,
-        openbisFacade,
-        entityFormController,
-        optionalPostAction: () => {
-          console.log('Move operation completed');
-        }
-      };
-      
-      const service = new MoveService(config);
-      setMoveService(service);
-      
-      // Initialize the service
-      service.init().catch(err => {
-        setError(`Failed to initialize move service: ${err.message}`);
-      }); */
-    }
-  }, [open, form, openbisFacade, entityFormController]);
 
   const handleConfirm = async () => {
-    /* if (!moveService) {
-      setError('Move service not initialized');
-      return;
-    } */
-
     setLoading(true);
     setError(null);
- 
-    //try {
-      // Set the selected target in the service
-      //moveService.selected = selectedTarget;
-
-      // Execute the move operation
-      //const result = await moveService.move(moveDescendants);
-      console.log('handleConfirm', selectedTarget, moveDescendants);
-      const result = await entityFormController?.move(form, null, { target: selectedTarget, moveDescendants: moveDescendants });
-      onConfirm(result);
-    /* } catch (err: any) {
-      setError(err.message || 'Move operation failed');
-    } finally {
-      setLoading(false);
-    } */
+    const result = await entityFormController?.move(form, null, { target: selectedTarget, moveDescendants: moveDescendants });
+    onConfirm(result);
   };
 
   const handleCancel = () => {
@@ -110,60 +61,71 @@ const MoveDialog: React.FC<MoveDialogProps> = ({
     setError(null);
   };
 
-  const currentParent = () => {
-    switch (form.entityKind) {
-      case EntityKind.PROJECT:
-        return 'Space';
-      case EntityKind.EXPERIMENT:
-        return 'Space or Project';
-      case EntityKind.SAMPLE:
-        return 'Space or Project or Experiment/Collection';
-      case EntityKind.DATASET:
-        return 'Space or Project or Experiment/Collection or Sample';
-      default:
-        return 'Unknown';
-    }
-  };
-
   const renderEntityInfo = () => {
     if (!form) return null;
-    
-      const entity = moveInfo.entity;
-      const identifier = findFormFieldById(form.fields, form.entityPermId, 'identifier', true);
-      const type = form.entityType;
-      const space = findFormFieldById(form.fields, form.entityPermId, 'space', true);
-      const project = findFormFieldById(form.fields, form.entityPermId, 'project', true);
-      //const owningEntityType = form.entityKind;
-      //const owningEntityIdentifier = findFormFieldById(form.fields, form.entityPermId, 'identifier', true);
-      const projectIdentifier = getProjectIdentifierFromSampleIdentifier(identifier);
 
-      return (
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 2 }}>
-            {/* <Typography variant="body2">
-              <strong>Type:</strong> {type}
-            </Typography> 
-            <Typography variant="body2">
-              <strong>Current {project ? 'Project' : 'Space'}:</strong> {project ? projectIdentifier : space}
-            </Typography>*/}
-            <TextField 
-              mandatory={true}
-              label='Type'
-              mode={FormMode.VIEW}
-              disabled={true}
-              value={type}
-              disableUnderline={true}
-            />
-            
-            <TextField 
-              mandatory={true}
-              label={`Current ${project ? 'Project' : 'Space'}:`}
-              mode={FormMode.VIEW}
-              disabled={true}
-              value={project ? projectIdentifier : space}
-              disableUnderline={true}
-            />
-          </Box>
-      );
+    const entityKind = moveInfo.entityKind;
+    let identifier: string | null = null;
+    let label: string | null = null;
+    let space: string | null = null;
+    let project: string | null = null;
+    let collection: string | null = null;
+    let object: string | null = null;
+    let value: string | null = null;
+    switch (entityKind) {
+      case EntityKind.PROJECT:
+        identifier = findFormFieldById(form.fields, form.entityPermId, 'identifier', true) as string | null;
+        space = findFormFieldById(form.fields, form.entityPermId, 'space', true) as string | null;
+        label = 'Current Space:';
+        value = space;
+        break;
+      case EntityKind.SAMPLE:
+      case EntityKind.OBJECT:
+        identifier = findFormFieldById(form.fields, form.entityPermId, 'identifier', true) as string | null;
+        space = findFormFieldById(form.fields, form.entityPermId, 'space', true) as string | null;
+        project = findFormFieldById(form.fields, form.entityPermId, 'project', true) as string | null;
+        collection = findFormFieldById(form.fields, form.entityPermId, 'collection', true) as string | null;
+        label = `Current ${collection ? 'Collection' : project ? 'Project' : space ? 'Space' : 'Unknown'}:`;
+        value = collection ? collection : project ? project : space ? space : null;
+        break;
+      case EntityKind.COLLECTION:
+      case EntityKind.EXPERIMENT:
+        identifier = findFormFieldById(form.fields, form.entityPermId, 'identifier', true) as string | null;
+        project = findFormFieldById(form.fields, form.entityPermId, 'project', true) as string | null;
+        label = 'Current Project:';
+        value = project;
+        break;
+      case EntityKind.DATASET:
+        object = findFormFieldById(form.fields, form.entityPermId, 'object', true) as string | null;
+        collection = findFormFieldById(form.fields, form.entityPermId, 'collection', true) as string | null;
+        label = `Current ${collection ? 'Collection' : object ? 'Object' : 'Unknown'}:`;
+        value = collection ? collection : object ? object : null;
+        break;
+      default:
+        return null;
+    }
+    const type = form.entityType;
+
+    return (
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 2 }}>
+        <TextField
+          mandatory={true}
+          label='Type'
+          mode={FormMode.VIEW}
+          disabled={true}
+          value={type}
+          disableUnderline={true}
+        />
+        <TextField
+          mandatory={true}
+          label={label}
+          mode={FormMode.VIEW}
+          disabled={true}
+          value={value}
+          disableUnderline={true}
+        />
+      </Box>
+    );
   };
 
   const renderDescendantsOption = () => {
@@ -181,7 +143,7 @@ const MoveDialog: React.FC<MoveDialogProps> = ({
             }
             label={
               <Typography variant="body2" fontWeight='bold'>
-                Click the checkbox if also all descendant objects (i.e. children, grand children etc.) including their data sets should be moved. 
+                Click the checkbox if also all descendant objects (i.e. children, grand children etc.) including their data sets should be moved.
                 Only those descendants are moved which belong to the same entity as this object.
               </Typography>
             }
@@ -206,7 +168,8 @@ const MoveDialog: React.FC<MoveDialogProps> = ({
 
   const getMoveTitle = () => {
     if (!form) return 'Move Entity';
-    const identifier = findFormFieldById(form.fields, form.entityPermId, 'identifier', true);
+    const entityKind = moveInfo.entityKind;
+    const identifier = findFormFieldById(form.fields, form.entityPermId, entityKind === EntityKind.DATASET ? 'object' : 'identifier', true);
     return `Moving ${identifier}`;
   };
 
@@ -215,7 +178,7 @@ const MoveDialog: React.FC<MoveDialogProps> = ({
       <Dialog
         open={open}
         onClose={handleCancel}
-        title={getMoveTitle()}
+        title="No move info"
         content={
           <Box>
             <Message type="error">No move information available</Message>
@@ -249,13 +212,13 @@ const MoveDialog: React.FC<MoveDialogProps> = ({
       }
       actions={
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
-          <Button 
-            label={messages.get(messages.CANCEL)} 
+          <Button
+            label={messages.get(messages.CANCEL)}
             onClick={handleCancel}
             disabled={loading}
           />
-          <Button 
-            label={messages.get(messages.CONFIRM)} 
+          <Button
+            label={messages.get(messages.CONFIRM)}
             type='final'
             onClick={handleConfirm}
             disabled={loading || !selectedTarget}

@@ -4,12 +4,8 @@ import {
   TextField,
   Box,
   Typography,
-  CircularProgress,
-  InputAdornment
+  CircularProgress
 } from '@mui/material';
-import AutocompleterField from '@src/js/components/common/form/AutocompleterField.jsx'
-import FormFieldContainer from '@src/js/components/common/form/FormFieldContainer';
-import FormFieldLabel from '@src/js/components/common/form/FormFieldLabel';
 import { EntityKind } from '@src/js/components/database/new-forms/types/formEnums.ts';
 
 
@@ -55,7 +51,6 @@ export const AdvancedEntitySearchDropdown: React.FC<AdvancedEntitySearchDropdown
   const [inputValue, setInputValue] = useState('');
   const [value, setValue] = useState<any>(selectedEntity || null);
 
-  // TODO: Implement search functionality
   const searchEntities = async (searchTerm: string) => {
     if (!searchTerm || searchTerm.length < 2) {
       setOptions([]);
@@ -65,26 +60,27 @@ export const AdvancedEntitySearchDropdown: React.FC<AdvancedEntitySearchDropdown
     setLoading(true);
     
     try {
-      // TODO: Implement actual search logic based on entityType and search criteria
-      // This should call the appropriate openBIS API methods based on the entity type
       let entityOptions: any[] = [];
       switch (entityType) {
         case EntityKind.PROJECT:
           entityOptions = [...entityOptions, ...await searchSpaces(searchTerm)];
           break;
         case EntityKind.EXPERIMENT:
-          entityOptions = [...entityOptions, ...await searchSpaces(searchTerm)];
+        case EntityKind.COLLECTION:
           entityOptions = [...entityOptions, ...await searchProject(searchTerm)];
-          //entityOptions.experiments = await searchExperiment(searchTerm);
           break;
         case EntityKind.SAMPLE:
-          entityOptions = [...entityOptions, ...await searchSpaces(searchTerm)];
-          entityOptions = [...entityOptions, ...await searchProject(searchTerm)];
-          //entityOptions.experiments = await searchExperiment(searchTerm);
-          //entityOptions.samples = await searchSample(searchTerm);
+        case EntityKind.OBJECT:
+          entityOptions = [...entityOptions, 
+            ...await searchSpaces(searchTerm), 
+            ...await searchProject(searchTerm), 
+            ...await searchExperiment(searchTerm)];
           break;
+        case EntityKind.DATASET:
+          entityOptions = [...entityOptions, 
+            ...await searchSample(searchTerm), 
+            ...await searchExperiment(searchTerm)];
       }
-      console.log({ entityOptions });
       setOptions(entityOptions);
     } catch (error) {
       console.error('Error searching entities:', error);
@@ -100,7 +96,6 @@ export const AdvancedEntitySearchDropdown: React.FC<AdvancedEntitySearchDropdown
     criteria.withCode().thatContains(searchTerm);
     const fetchOptions = new SpaceFetchOptions();
     const result = await openbisFacade.searchSpaces(criteria, fetchOptions);
-    console.log({ result });
     return result.getObjects();
   };
 
@@ -111,6 +106,28 @@ export const AdvancedEntitySearchDropdown: React.FC<AdvancedEntitySearchDropdown
     const fetchOptions = new ProjectFetchOptions();
     fetchOptions.withSpace();
     const result = await openbisFacade.searchProjects(criteria, fetchOptions);
+    return result.getObjects();
+  };
+
+  const searchExperiment = async (searchTerm: string) => {
+    const { ExperimentPermId, ExperimentFetchOptions, ExperimentSearchCriteria } = openbisFacade;
+    const criteria = new ExperimentSearchCriteria();
+    criteria.withCode().thatContains(searchTerm);
+    const fetchOptions = new ExperimentFetchOptions();
+    fetchOptions.withProject().withSpace();
+    const result = await openbisFacade.searchExperiments(criteria, fetchOptions);
+    return result.getObjects();
+  };
+
+  const searchSample = async (searchTerm: string) => {
+    const { SamplePermId, SampleFetchOptions, SampleSearchCriteria } = openbisFacade;
+    const criteria = new SampleSearchCriteria();
+    criteria.withCode().thatContains(searchTerm);
+    const fetchOptions = new SampleFetchOptions();
+    fetchOptions.withExperiment();
+    fetchOptions.withProject();
+    fetchOptions.withSpace();
+    const result = await openbisFacade.searchSamples(criteria, fetchOptions);
     return result.getObjects();
   };
 

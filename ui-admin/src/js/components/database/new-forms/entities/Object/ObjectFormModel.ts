@@ -12,10 +12,13 @@ import {
   getModifierField,
   getModificationDateField,
   getTypeField,
-  getPropertyFieldsFromAssignments
+  getPropertyFieldsFromAssignments,
+  getCollectionField
 } from '@src/js/components/database/new-forms/entities/formFieldGetters.ts';
-import { getMoveAction, getDeleteAction, getEditAction, getDividerAction, getMoreActionsAction, 
-  getSaveAction, getCancelAction, getNewObjectAction, getAutoSaveAction, getNewDatasetAction } from '@src/js/components/database/new-forms/entities/actionsFieldGetters.ts';
+import {
+  getMoveAction, getDeleteAction, getEditAction, getDividerAction, getMoreActionsAction,
+  getSaveAction, getCancelAction, getNewObjectAction, getAutoSaveAction, getNewDatasetAction
+} from '@src/js/components/database/new-forms/entities/actionsFieldGetters.ts';
 
 export class ObjectFormModel {
 
@@ -29,6 +32,7 @@ export class ObjectFormModel {
       getPathField(dto),
       getSpaceField(dto),
       getProjectField(dto),
+      getCollectionField(dto),
       getCodeField(dto),
       getRegistratorField(dto),
       getRegistrationDateField(dto),
@@ -51,17 +55,17 @@ export class ObjectFormModel {
       isValid: true,
       actions: [
         // getNewObjectAction(EntityKind.OBJECT),
-				// getNewDatasetAction(EntityKind.OBJECT),
-				// getDividerAction(FormMode.VIEW),
-				getEditAction(),
-        // getMoveAction(),
-				getDeleteAction(),
-				//getDividerAction(FormMode.VIEW),
-				// getMoreActionsAction(),
-				getSaveAction(EntityKind.OBJECT),
-				getCancelAction(),
-				getDividerAction(FormMode.EDIT),
-				getAutoSaveAction(),
+        // getNewDatasetAction(EntityKind.OBJECT),
+        // getDividerAction(FormMode.VIEW),
+        getEditAction(),
+        getMoveAction(),
+        getDeleteAction(),
+        //getDividerAction(FormMode.VIEW),
+        // getMoreActionsAction(),
+        getSaveAction(EntityKind.OBJECT),
+        getCancelAction(),
+        getDividerAction(FormMode.EDIT),
+        getAutoSaveAction(),
       ]
     };
   }
