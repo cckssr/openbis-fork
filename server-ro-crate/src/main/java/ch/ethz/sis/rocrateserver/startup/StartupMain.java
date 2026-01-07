@@ -1,17 +1,18 @@
 package ch.ethz.sis.rocrateserver.startup;
 
-import io.quarkus.runtime.LaunchMode;
-import io.quarkus.runtime.Quarkus;
-import io.quarkus.runtime.QuarkusApplication;
-import io.quarkus.runtime.annotations.QuarkusMain;
-import org.apache.commons.io.FileUtils;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Stream;
+
+import org.apache.commons.io.FileUtils;
+
+import io.quarkus.runtime.LaunchMode;
+import io.quarkus.runtime.Quarkus;
+import io.quarkus.runtime.QuarkusApplication;
+import io.quarkus.runtime.annotations.QuarkusMain;
 
 @QuarkusMain
 public class StartupMain implements QuarkusApplication
@@ -44,7 +45,6 @@ public class StartupMain implements QuarkusApplication
         System.setProperty("quarkus.http.port", configuration.getStringProperty(RoCrateServerParameter.httpServerPort));
         System.setProperty("quarkus.http.idle-timeout", configuration.getStringProperty(RoCrateServerParameter.httpServerTimeout));
         System.setProperty("quarkus.http.read-timeout", configuration.getStringProperty(RoCrateServerParameter.httpServerTimeout));
-
 
         if (LaunchMode.current().isDevOrTest())
         {
@@ -81,19 +81,23 @@ public class StartupMain implements QuarkusApplication
 
         Path sessionWorkSpacePath =
                 Path.of(configuration.getStringProperty(RoCrateServerParameter.sessionWorkSpace));
-        Stream<Path> list = Files.list(sessionWorkSpacePath);
-        list.forEach(x -> {
-            try
+
+        if (Files.exists(sessionWorkSpacePath))
+        {
+            Stream<Path> list = Files.list(sessionWorkSpacePath);
+            list.forEach(x ->
             {
+                try
+                {
 
-                FileUtils.deleteDirectory(new File(x.toString()));
-            } catch (IOException e)
-            {
-                throw new RuntimeException(e);
-            }
+                    FileUtils.deleteDirectory(new File(x.toString()));
+                } catch (IOException e)
+                {
+                    throw new RuntimeException(e);
+                }
 
-        });
-
+            });
+        }
     }
 
 }
