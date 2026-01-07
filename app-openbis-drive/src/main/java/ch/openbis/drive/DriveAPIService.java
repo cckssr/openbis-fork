@@ -31,7 +31,7 @@ public class DriveAPIService {
                     @Override
                     @SneakyThrows
                     public void run() {
-                        driveAPIService.stop();
+                        driveAPIService.server.shutdownNow();
                     }
                 }
         ));

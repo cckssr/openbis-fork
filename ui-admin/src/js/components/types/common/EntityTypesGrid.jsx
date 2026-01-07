@@ -90,8 +90,8 @@ class EntityTypesGrid extends React.PureComponent {
 
     columns.push({
       name: 'validationPlugin',
-      label: messages.get(messages.VALIDATION_PLUGIN),
-      exportableField: GridExportOptions.EXPORTABLE_FIELD.VALIDATION_PLUGIN,
+      label: messages.get(messages.VALIDATION_SCRIPT),
+      exportableField: GridExportOptions.EXPORTABLE_FIELD.VALIDATION_SCRIPT,
       getValue: ({ row }) => row.validationPlugin,
       renderValue: ({ value }) => {
         return (

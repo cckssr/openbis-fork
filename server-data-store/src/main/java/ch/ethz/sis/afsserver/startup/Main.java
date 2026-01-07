@@ -16,7 +16,8 @@
 package ch.ethz.sis.afsserver.startup;
 
 import java.io.File;
-import java.util.Arrays;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.List;
 
 import ch.ethz.sis.afsserver.server.Server;
@@ -39,8 +40,10 @@ public class Main
             Thread.currentThread().join();
         } catch (Exception e)
         {
-            System.out.println(e);
-            Arrays.stream(e.getStackTrace()).forEach(System.out::println);
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            e.printStackTrace(pw);
+            System.out.println(sw);
             throw e;
         }
     }
