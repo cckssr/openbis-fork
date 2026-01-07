@@ -15,11 +15,15 @@
  */
 package ch.ethz.sis.openbis.systemtest.asapi.v3;
 
+import static org.testng.Assert.assertEquals;
+
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 import org.testng.annotations.Test;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.DataSetCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.id.DeletionTechId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.id.IDeletionId;
@@ -63,6 +67,45 @@ public class RevertDeletionTest extends AbstractDeletionTest
     }
 
     @Test
+    public void testRevertDeletionOfExperimentWithAFSDataSet()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        ExperimentPermId experimentPermId = createCisdExperiment();
+
+        DataSetCreation afsDataSetCreation = physicalDataSetCreation();
+        afsDataSetCreation.setExperimentId(experimentPermId);
+        afsDataSetCreation.setAfsData(true);
+
+        DataSetCreation nonAfsDataSetCreation = physicalDataSetCreation();
+        nonAfsDataSetCreation.setExperimentId(experimentPermId);
+
+        List<DataSetPermId> dataSetPermIds = v3api.createDataSets(sessionToken, List.of(afsDataSetCreation, nonAfsDataSetCreation));
+        assertEquals(dataSetPermIds.size(), 2);
+
+        ExperimentDeletionOptions deletionOptions = new ExperimentDeletionOptions();
+        deletionOptions.setReason("It is just a test");
+
+        assertExperimentExists(experimentPermId);
+        assertDataSetExists(dataSetPermIds.get(0));
+        assertDataSetExists(dataSetPermIds.get(1));
+
+        IDeletionId deletionId = v3api.deleteExperiments(sessionToken, Collections.singletonList(experimentPermId), deletionOptions);
+
+        assertDeletionExists(deletionId);
+        assertExperimentDoesNotExist(experimentPermId);
+        assertDataSetDoesNotExist(dataSetPermIds.get(0));
+        assertDataSetDoesNotExist(dataSetPermIds.get(1));
+
+        v3api.revertDeletions(sessionToken, Collections.singletonList(deletionId));
+
+        assertDeletionDoesNotExist(deletionId);
+        assertExperimentExists(experimentPermId);
+        assertDataSetExists(dataSetPermIds.get(0));
+        assertDataSetExists(dataSetPermIds.get(1));
+    }
+
+    @Test
     public void testRevertDeletionOfSampleWithDataSet()
     {
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
@@ -94,19 +137,61 @@ public class RevertDeletionTest extends AbstractDeletionTest
     }
 
     @Test
+    public void testRevertDeletionOfSampleWithAFSDataSet()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        ExperimentPermId experimentPermId = createCisdExperiment();
+        SamplePermId samplePermId = createCisdSample(experimentPermId);
+
+        DataSetCreation afsDataSetCreation = physicalDataSetCreation();
+        afsDataSetCreation.setExperimentId(experimentPermId);
+        afsDataSetCreation.setSampleId(samplePermId);
+        afsDataSetCreation.setAfsData(true);
+
+        DataSetCreation nonAfsDataSetCreation = physicalDataSetCreation();
+        nonAfsDataSetCreation.setSampleId(samplePermId);
+        nonAfsDataSetCreation.setExperimentId(experimentPermId);
+
+        List<DataSetPermId> dataSetPermIds = v3api.createDataSets(sessionToken, List.of(afsDataSetCreation, nonAfsDataSetCreation));
+        assertEquals(dataSetPermIds.size(), 2);
+
+        SampleDeletionOptions deletionOptions = new SampleDeletionOptions();
+        deletionOptions.setReason("It is just a test");
+
+        assertSampleExists(samplePermId);
+        assertDataSetExists(dataSetPermIds.get(0));
+        assertDataSetExists(dataSetPermIds.get(1));
+
+        IDeletionId deletionId = v3api.deleteSamples(sessionToken, Collections.singletonList(samplePermId), deletionOptions);
+
+        assertDeletionExists(deletionId);
+        assertSampleDoesNotExist(samplePermId);
+        assertDataSetDoesNotExist(dataSetPermIds.get(0));
+        assertDataSetDoesNotExist(dataSetPermIds.get(1));
+
+        v3api.revertDeletions(sessionToken, Collections.singletonList(deletionId));
+
+        assertDeletionDoesNotExist(deletionId);
+        assertSampleExists(samplePermId);
+        assertDataSetExists(dataSetPermIds.get(0));
+        assertDataSetExists(dataSetPermIds.get(1));
+    }
+
+    @Test
     public void testRevertDeletionWithNonexistentDeletion()
     {
         final IDeletionId deletionId = new DeletionTechId(-1L);
 
         assertObjectNotFoundException(new IDelegatedAction()
+        {
+            @Override
+            public void execute()
             {
-                @Override
-                public void execute()
-                {
-                    String sessionToken = v3api.login(TEST_USER, PASSWORD);
-                    v3api.revertDeletions(sessionToken, Collections.singletonList(deletionId));
-                }
-            }, deletionId);
+                String sessionToken = v3api.login(TEST_USER, PASSWORD);
+                v3api.revertDeletions(sessionToken, Collections.singletonList(deletionId));
+            }
+        }, deletionId);
     }
 
     @Test
@@ -121,14 +206,14 @@ public class RevertDeletionTest extends AbstractDeletionTest
         final IDeletionId deletionId = v3api.deleteExperiments(sessionToken, Collections.singletonList(experimentId), deletionOptions);
 
         assertUnauthorizedObjectAccessException(new IDelegatedAction()
+        {
+            @Override
+            public void execute()
             {
-                @Override
-                public void execute()
-                {
-                    String sessionToken2 = v3api.login(TEST_SPACE_USER, PASSWORD);
-                    v3api.revertDeletions(sessionToken2, Collections.singletonList(deletionId));
-                }
-            }, deletionId);
+                String sessionToken2 = v3api.login(TEST_SPACE_USER, PASSWORD);
+                v3api.revertDeletions(sessionToken2, Collections.singletonList(deletionId));
+            }
+        }, deletionId);
     }
 
     @Test
@@ -143,14 +228,14 @@ public class RevertDeletionTest extends AbstractDeletionTest
         final IDeletionId deletionId = v3api.deleteExperiments(sessionToken, Collections.singletonList(experimentId), deletionOptions);
 
         assertUnauthorizedObjectAccessException(new IDelegatedAction()
+        {
+            @Override
+            public void execute()
             {
-                @Override
-                public void execute()
-                {
-                    String sessionToken2 = v3api.login(TEST_OBSERVER_CISD, PASSWORD);
-                    v3api.revertDeletions(sessionToken2, Collections.singletonList(deletionId));
-                }
-            }, deletionId);
+                String sessionToken2 = v3api.login(TEST_OBSERVER_CISD, PASSWORD);
+                v3api.revertDeletions(sessionToken2, Collections.singletonList(deletionId));
+            }
+        }, deletionId);
     }
 
     @Test
@@ -184,14 +269,14 @@ public class RevertDeletionTest extends AbstractDeletionTest
         final IDeletionId deletionId = v3api.deleteExperiments(sessionToken, Collections.singletonList(experimentId), deletionOptions);
 
         assertUnauthorizedObjectAccessException(new IDelegatedAction()
+        {
+            @Override
+            public void execute()
             {
-                @Override
-                public void execute()
-                {
-                    String sessionToken2 = v3api.login(TEST_POWER_USER_CISD, PASSWORD);
-                    v3api.revertDeletions(sessionToken2, Collections.singletonList(deletionId));
-                }
-            }, deletionId);
+                String sessionToken2 = v3api.login(TEST_POWER_USER_CISD, PASSWORD);
+                v3api.revertDeletions(sessionToken2, Collections.singletonList(deletionId));
+            }
+        }, deletionId);
     }
 
     @Test

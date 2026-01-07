@@ -15,6 +15,8 @@
  */
 package ch.ethz.sis.messages.db;
 
+import java.util.List;
+
 /**
  * @author pkupczyk
  */
@@ -26,5 +28,7 @@ public interface ILastSeenMessagesDAO
     void update(LastSeenMessage message);
 
     LastSeenMessage getByConsumerId(String consumerId);
+
+    void delete(List<Long> lastSeenIds);
 
 }

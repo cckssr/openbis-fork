@@ -178,6 +178,10 @@ public class DeleteExperimentTest extends AbstractDeletionTest
         IDeletionId deletionId = v3api.deleteExperiments(sessionToken, Collections.singletonList(experimentPermId), options);
         Assert.assertNotNull(deletionId);
 
+        assertExperimentDoesNotExist(experimentPermId);
+        assertDataSetDoesNotExist(dataSetPermIds.get(0));
+        assertDataSetDoesNotExist(dataSetPermIds.get(1));
+
         v3api.confirmDeletions(sessionToken, List.of(deletionId));
 
         assertExperimentDoesNotExist(experimentPermId);
