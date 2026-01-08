@@ -407,7 +407,7 @@ public class DriveAPICmdLineApp {
                 printHelp();
                 return;
             }
-        } else if ( commandLine.hasOption("setFromFile") ) {{
+        } else if ( commandLine.hasOption("setFromFile") ) {
             try {
                 setNewMultiLineValue = new String(
                         Files.readAllBytes(Path.of(commandLine.getOptionValue("setFromFile"))),
@@ -418,7 +418,6 @@ public class DriveAPICmdLineApp {
                 printHelp();
                 return;
             }
-        }
         }
 
         if ( setNewMultiLineValue != null ) {

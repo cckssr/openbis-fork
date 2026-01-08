@@ -33,6 +33,7 @@ public class AfsClientUploadHelper
             FileCollisionListener fileCollisionListener,
             @NonNull TransferMonitorListener transferMonitorListener, boolean transactional) throws Exception
     {
+        sourcePath = sourcePath.normalize().toAbsolutePath();
         UploadCurrentsAndTotals currentsAndTotals = new UploadCurrentsAndTotals();
 
         //Preliminary argument validation

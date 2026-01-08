@@ -30,6 +30,7 @@ public class AfsClientDownloadHelper {
             @NonNull String sourceOwner, @NonNull Path sourcePath, @NonNull Path destinationPath,
             FileCollisionListener fileCollisionListener,
             @NonNull TransferMonitorListener transferMonitorListener) throws Exception {
+        destinationPath = destinationPath.normalize().toAbsolutePath();
         DownloadCurrentsAndTotals currentsAndTotals = new DownloadCurrentsAndTotals();
 
         //Preliminary argument validation
