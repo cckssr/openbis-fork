@@ -276,11 +276,13 @@ export class AppController {
     const objectToClose = { type, id }
 
     let selectedObject = this.getSelectedObject(page)
-    if (selectedObject && _.isEqual(selectedObject, objectToClose)) {
+    //if (selectedObject && _.isEqual(selectedObject, objectToClose)) {
+    if (selectedObject && selectedObject.type === objectToClose.type && selectedObject.id === objectToClose.id) {
       if (_.size(openTabs) === 1) {
         selectedObject = null
       } else {
-        let selectedIndex = _.findIndex(openTabs, { object: selectedObject })
+        //let selectedIndex = _.findIndex(openTabs, { object: selectedObject })
+        let selectedIndex = _.findIndex(openTabs, tab => tab.object.type === selectedObject.type && tab.object.id === selectedObject.id)
         if (selectedIndex === 0) {
           selectedObject = openTabs[selectedIndex + 1].object
         } else {
@@ -289,7 +291,8 @@ export class AppController {
       }
     }
 
-    let tabToClose = _.find(openTabs, { object: objectToClose })
+    //let tabToClose = _.find(openTabs, { object: objectToClose })
+    let tabToClose = _.find(openTabs, tab => tab.object.type === objectToClose.type && tab.object.id === objectToClose.id)
     if (tabToClose) {
       await this.removeOpenTab(page, tabToClose.id)
     }

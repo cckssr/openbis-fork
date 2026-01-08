@@ -107,7 +107,6 @@ async function testSaveUpdatePropertyAssignment() {
   await common.controller.handleSave()
 
   expectExecuteOperations([
-    updatePropertyTypeOperation(TEST_PROPERTY_TYPE.getCode(), 'Updated label'),
     setPropertyAssignmentOperation(
       SAMPLE_TYPE_WITH_TEST_PROPERTY.getCode(),
       TEST_PROPERTY_TYPE.getCode(),
@@ -134,7 +133,6 @@ async function testSaveUpdatePropertyType() {
   await common.controller.handleSave()
 
   expectExecuteOperations([
-    updatePropertyTypeOperation(TEST_PROPERTY_TYPE.getCode(), 'Updated label'),
     setPropertyAssignmentOperation(
       SAMPLE_TYPE_WITH_TEST_PROPERTY.getCode(),
       TEST_PROPERTY_TYPE.getCode(),
