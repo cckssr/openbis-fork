@@ -29,7 +29,7 @@ export class SpaceFormController implements IFormController {
 
     const spaceDto = result[permId];
 
-    console.log(spaceDto);
+    console.log({spaceDto});
     if (!spaceDto) throw new Error(`Space with permId ${permId} not found`);
     return SpaceFormModel.adaptSpaceDtoToForm(spaceDto);
   }
@@ -55,7 +55,6 @@ export class SpaceFormController implements IFormController {
     const description = findFormFieldByLabel(form.fields, 'Description', true);
     spaceUpdate.setDescription(description);
     const result = await this.openbisFacade.updateSpaces([spaceUpdate]);
-    console.log('SpaceFormController.updateSpace', result);
     return Promise.resolve(form.version ? form.version + 1 : 1);
   }
 
@@ -65,10 +64,8 @@ export class SpaceFormController implements IFormController {
     const spacePermId = new SpacePermId(spaceCode);
     const dummyProjectId = new ProjectIdentifier(createDummySampleIdentifier(spaceCode));
     const dummySampleId = new SampleIdentifier(createDummySampleIdentifier(spaceCode));
-    console.log({ dummyProjectId, dummySampleId })
     const ids = [spacePermId, dummyProjectId, dummySampleId];
     const { editable, deletable } = await fetchRights(this.openbisFacade, spaceCode, ids);
-    console.log({ editable, deletable })
     //return { canEdit: editable, canDelete: deletable, canMove: true };
     return { canEdit: true, canDelete: true, canMove: true };
   }
@@ -116,7 +113,6 @@ export class SpaceFormController implements IFormController {
     if (!result.success) {
       throw new Error(result.error || 'Failed to move space to trashcan');
     }
-    console.log('SpaceFormController.delete result:', result);
     return Promise.resolve();
   }
 

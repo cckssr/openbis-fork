@@ -125,11 +125,9 @@ export const useDeleteFlow = ({
 
         // Check for dependent entities
         const rawDependentEntities = await controller.getDependentEntities(form);
-        console.log('handleDeleteWithDependencyCheck.rawDependentEntities:', rawDependentEntities);
 
         // Normalize dependent entities structure based on entity kind
         const normalizedDeps = normalizeDependentEntities(entityKind, rawDependentEntities);
-        console.log('handleDeleteWithDependencyCheck.normalizedDeps:', normalizedDeps);
 
         const deleteConfig = {
           includeReason: true,

@@ -59,12 +59,10 @@ export class DatasetFormController implements IFormController {
 	}
 
 	async _createDataset(form: Form): Promise<number> {
-		console.log('DatasetFormController._createDataset', { form });
 		return Promise.resolve(form.version + 1);
 	}
 
 	async _updateDataset(form: Form): Promise<number> {
-		console.log('DatasetFormController._updateDataset', { form });
 		const { DataSetUpdate, DataSetPermId, ExperimentIdentifier, SampleIdentifier } = this.openbisFacade;
 		//const collectionIdentifier = findFormFieldById(form.fields, form.entityPermId, 'collection', true);
 		//const objectIdentifier = findFormFieldById(form.fields, form.entityPermId, 'object', true);
@@ -77,9 +75,7 @@ export class DatasetFormController implements IFormController {
 			datasetUpdate.setSampleId(new SampleIdentifier(objectIdentifier));
 		} */
 		getChangedEditableFieldValues(form, datasetUpdate);
-		console.log('DatasetFormController._updateDataset', { datasetUpdate });
 		const result = await this.openbisFacade.updateDataSets([datasetUpdate]);
-		console.log('DatasetFormController._updateDataset', { result });
 		return Promise.resolve(form.version + 1);
 	}
 
@@ -104,9 +100,7 @@ export class DatasetFormController implements IFormController {
 		//return { canEdit: editable, canDelete: deletable, canMove: true };
 	}
 
-	async delete(form: Form, context?: any): Promise<void> {
-		console.log(`DatasetFormController.delete`, form.entityPermId, context);
-		
+	async delete(form: Form, context?: any): Promise<void> {		
 		// If this is just a check, return early
 		if (context?.checkOnly) {
 			return;
@@ -126,7 +120,6 @@ export class DatasetFormController implements IFormController {
 				if (!result.success) {
 					throw new Error(result.error || 'Failed to move descendant datasets to trashcan');
 				}
-				console.log('DatasetFormController.moved descendant datasets to trashcan:', result.count);
 			}
 		}
 		
@@ -136,7 +129,6 @@ export class DatasetFormController implements IFormController {
 		if (!result.success) {
 			throw new Error(result.error || 'Failed to move dataset to trashcan');
 		}
-		console.log('DatasetFormController.delete result:', result);
 		return Promise.resolve();
 	}
 	
@@ -182,8 +174,6 @@ export class DatasetFormController implements IFormController {
 	}
 
 	async move(form: Form, context?: any, params?: any): Promise<void> {
-		console.log('DatasetFormController.move', form, context, params);
-
 		if (!params || !params.target) {
 			throw new Error('Target is required for move operation');
 		}

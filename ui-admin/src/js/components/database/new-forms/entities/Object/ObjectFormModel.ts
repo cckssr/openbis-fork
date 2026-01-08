@@ -71,7 +71,6 @@ export class ObjectFormModel {
   }
 
   static adaptNewDefaultObjectDtoToForm(type: string, tmpPermId: string, params: any): Form {
-    console.log('ObjectFormModel.adaptNewObjectDtoToForm', { type, tmpPermId, params });
     const permId = tmpPermId + '-' + EntityKind.NEW_OBJECT;
     return {
       entityPermId: tmpPermId,
@@ -120,7 +119,6 @@ export class ObjectFormModel {
   }
 
   static adaptNewEntryDtoToForm(type: string, tmpPermId: string, params: any): Form {
-    console.log('ObjectFormModel.adaptNewEntryDtoToForm', { type, tmpPermId, params });
     const permId = tmpPermId + '-' + EntityKind.NEW_OBJECT;
     return {
       entityPermId: tmpPermId,
@@ -182,7 +180,6 @@ export class ObjectFormModel {
     const { form, controller, onAfterSave, mode } = context;
     await new Promise(resolve => setTimeout(resolve, 500));
     const newPermId = await controller.save(form, mode);
-    console.log("Object saved successfully! New permId:", newPermId);
     if (mode === FormMode.CREATE) {
       onAfterSave({ oldType: EntityKind.NEW_OBJECT, oldId: form.entityPermId, newType: EntityKind.OBJECT, newId: newPermId });
     } else {

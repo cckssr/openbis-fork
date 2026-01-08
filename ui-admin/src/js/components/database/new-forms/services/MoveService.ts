@@ -45,11 +45,11 @@ export class MoveService {
       projectUpdate.setSpaceId(targetSpacePermId);
 
       await this.openbisFacade.updateProjects([projectUpdate]);
-      console.log(`[MoveService] Moved project ${projectPermId} to space ${targetSpacePermId}`);
       return { success: true, message: 'Project moved successfully' };
     } catch (error: any) {
-      console.error('[MoveService] Error moving project:', error);
-      return { success: false, error: error.message || String(error) };
+      // Sanitize error for logging - only log safe message, not full error object
+      const errorMessage = error?.message || String(error);
+      return { success: false, error: errorMessage };
     }
   }
 
@@ -110,11 +110,11 @@ export class MoveService {
       }
 
       await this.openbisFacade.updateExperiments([experimentUpdate]);
-      console.log(`[MoveService] Moved collection ${collectionPermId} to project`);
       return { success: true, message: 'Collection moved successfully' };
     } catch (error: any) {
-      console.error('[MoveService] Error moving collection:', error);
-      return { success: false, error: error.message || String(error) };
+      // Sanitize error for logging - only log safe message, not full error object
+      const errorMessage = error?.message || String(error);
+      return { success: false, error: errorMessage };
     }
   }
 
@@ -137,11 +137,11 @@ export class MoveService {
 
       const sampleUpdate = this.prepareSampleUpdate(objectPermId, target);
       await this.openbisFacade.updateSamples([sampleUpdate]);
-      console.log(`[MoveService] Moved object ${objectPermId}`);
       return { success: true, message: 'Object moved successfully' };
     } catch (error: any) {
-      console.error('[MoveService] Error moving object:', error);
-      return { success: false, error: error.message || String(error) };
+      // Sanitize error for logging - only log safe message, not full error object
+      const errorMessage = error?.message || String(error);
+      return { success: false, error: errorMessage };
     }
   }
 
@@ -197,11 +197,11 @@ export class MoveService {
       }
 
       await this.openbisFacade.updateDataSets([datasetUpdate]);
-      console.log(`[MoveService] Moved dataset ${datasetPermId}`);
       return { success: true, message: 'Dataset moved successfully' };
     } catch (error: any) {
-      console.error('[MoveService] Error moving dataset:', error);
-      return { success: false, error: error.message || String(error) };
+      // Sanitize error for logging - only log safe message, not full error object
+      const errorMessage = error?.message || String(error);
+      return { success: false, error: errorMessage };
     }
   }
 
@@ -315,16 +315,16 @@ export class MoveService {
 
       if (updates.length > 0) {
         await this.openbisFacade.updateSamples(updates);
-        console.log(`[MoveService] Moved ${updates.length} object(s) with descendants`);
         return { success: true, message: `Moved ${updates.length} object(s) with descendants successfully` };
       }
 
       return { success: true, message: 'No descendants to move' };
     } catch (error: any) {
-      console.error('[MoveService] Error moving object with descendants:', error);
-      return { success: false, error: error.message || String(error) };
+      // Sanitize error for logging - only log safe message, not full error object
+      const errorMessage = error?.message || String(error);
+      return { success: false, error: errorMessage };
     }
-  }
+  } 
 
   /**
    * Recursively gathers all descendant samples

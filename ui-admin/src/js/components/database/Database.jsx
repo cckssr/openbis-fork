@@ -26,7 +26,6 @@ class Database extends React.PureComponent {
     logger.log(logger.DEBUG, 'Database.render')
 
     const classes = this.props.classes
-    console.log( 'Database.render: ', this.props );
     return (
       <div className={classes.container}>
         <DatabaseBrowser />

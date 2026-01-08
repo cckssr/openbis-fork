@@ -55,9 +55,8 @@ export class CollectionFormModel {
 		const { form, controller, onAfterSave, mode } = context;
 		await new Promise(resolve => setTimeout(resolve, 500));
 		const newPermId = await controller.save(form, mode);
-		console.log("Collection saved successfully! New permId:", newPermId);
 		if (mode === FormMode.CREATE) {
-			alert(`CREATE to be implemented`);
+			alert(`TODO: CREATE to be implemented`);
 		} else {
 			onAfterSave();
 		}

@@ -27,7 +27,6 @@ export class CollectionFormController implements IFormController {
 	}
 
 	async load(permId: string, entityKind?: string, params?: any, type?: string): Promise<Form> {
-		console.log('CollectionFormController.load', { permId, entityKind, params, type });
 		const { ExperimentPermId, ExperimentFetchOptions } = this.openbisFacade;
 		const id = new ExperimentPermId(permId);
 		const fetchOptions = new ExperimentFetchOptions();
@@ -46,10 +45,7 @@ export class CollectionFormController implements IFormController {
 
 		const collectionDto = result[permId];
 
-		//const roles = await getUserRole(this.openbisFacade, this.user==='admin', permId);
-		//console.log({roles});
-		console.log('collectionDto: ', collectionDto);
-		if (!collectionDto) throw new Error(`Collection with permId ${permId} not found`);
+		if (!collectionDto) throw new Error(`[CollectionFormController.load] Collection with permId ${permId} not found`);
 		return CollectionFormModel.adaptCollectionDtoToForm(collectionDto);
 	}
 
@@ -64,7 +60,6 @@ export class CollectionFormController implements IFormController {
 	}
 
 	async _createCollection(form: Form): Promise<number> {
-		console.log('CollectionFormController._createCollection', { form });
 		return Promise.resolve(form.version + 1);
 	}
 
@@ -77,7 +72,6 @@ export class CollectionFormController implements IFormController {
 		getChangedEditableFieldValues(form, experimentUpdate);
 		
 		const result = await this.openbisFacade.updateExperiments([ experimentUpdate ]);
-		console.log('CollectionFormController._updateCollection', { result });
 		return Promise.resolve(form.version + 1);
 	}
 
@@ -90,18 +84,15 @@ export class CollectionFormController implements IFormController {
 			throw new Error('[CollectionFormController.checkPermissions] Missing collection identifier');
 		}
 		const collectionIdentifier = collectionIdentifierValue;
-		console.log({ collectionIdentifier });
 		const dummyId = new DataSetPermId(createDummyDataSetIdentifierFromExperimentIdentifier(collectionIdentifier));
         const dummyId2 = new SampleIdentifier(createDummySampleIdentifierFromSampleIdentifier(collectionIdentifier));
 		const ids = [experimentId, dummyId, dummyId2];
 		const { editable, deletable } = await fetchRights(this.openbisFacade, objId, ids);
-		console.log({editable, deletable})
 		return { canEdit: editable, canDelete: deletable, canMove: true };
 		//return { canEdit: true, canDelete: true, canMove: true };
 	}
 
 	async delete(form: Form, context?: any): Promise<void> {
-		console.log(`CollectionFormController.delete`, form.entityPermId, context);
 		
 		// If this is just a check, return early
 		if (context?.checkOnly) {
@@ -114,9 +105,7 @@ export class CollectionFormController implements IFormController {
 		if (!dependentEntities) {
 			dependentEntities = await this.getDependentEntities(form);
 		}
-		
-		console.log('CollectionFormController.dependentEntities:', dependentEntities);
-		
+				
 		// Get delete reason from context or use default
 		const deleteReason = context?.deleteReason || 'delete via ng-ui';
 		
@@ -126,7 +115,6 @@ export class CollectionFormController implements IFormController {
 			if (!result.success) {
 				throw new Error(result.error || 'Failed to move samples to trashcan');
 			}
-			console.log('CollectionFormController.moved samples to trashcan:', result.count);
 		}
 		
 		// Move all datasets to trashcan using DeleteService
@@ -135,7 +123,6 @@ export class CollectionFormController implements IFormController {
 			if (!result.success) {
 				throw new Error(result.error || 'Failed to move datasets to trashcan');
 			}
-			console.log('CollectionFormController.moved datasets to trashcan:', result.count);
 		}
 		
 		// Finally, move the collection (experiment) itself to trashcan using DeleteService
@@ -148,7 +135,6 @@ export class CollectionFormController implements IFormController {
 		if (!result.success) {
 			throw new Error(result.error || 'Failed to move collection to trashcan');
 		}
-		console.log('CollectionFormController.delete result:', result);
 		return Promise.resolve();
 	}
 
@@ -160,7 +146,6 @@ export class CollectionFormController implements IFormController {
 		fetchOptions.withSamples && fetchOptions.withSamples();
 		fetchOptions.withDataSets && fetchOptions.withDataSets();
 		const result = await this.openbisFacade.getExperiments([id], fetchOptions);
-		console.log('CollectionFormController.getDependentEntities', result);
 		const experiment = result[form.entityPermId];
 		
 		return { 
@@ -170,7 +155,6 @@ export class CollectionFormController implements IFormController {
 	}
 
 	async move(form: Form, context?: any, params?: any): Promise<void> {
-		console.log('CollectionFormController.move', form, context, params);
 
 		if (!params || !params.target) {
 			throw new Error('Target is required for move operation');

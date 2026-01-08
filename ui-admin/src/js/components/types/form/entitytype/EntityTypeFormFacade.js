@@ -150,7 +150,6 @@ export default class EntityTypeFormFacade {
     const result = await openbis.searchTypeGroups(criteria, fo).then(results => {
       return results.getObjects()
     })
-    console.log('loadTypeGroups', result)
     const typeGroups = result.map(typeGroup => {
       return {
         id: typeGroup.getId().getPermId(),

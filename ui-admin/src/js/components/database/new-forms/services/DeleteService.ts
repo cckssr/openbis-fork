@@ -55,11 +55,11 @@ export class DeleteService {
       experimentDeletionOptions.setReason(reason);
       await this.openbisFacade.deleteExperiments(experimentIds, experimentDeletionOptions);
 
-      console.log(`[DeleteService] Moved ${experimentIds.length} experiment(s) to trashcan`);
       return { success: true, count: experimentIds.length };
     } catch (error: any) {
-      console.error('[DeleteService] Error moving experiments to trashcan:', error);
-      return { success: false, count: 0, error: error.message || String(error) };
+      // Sanitize error for logging - only log safe message, not full error object
+      const errorMessage = error?.message || String(error);
+      return { success: false, count: 0, error: errorMessage };
     }
   }
 
@@ -88,11 +88,11 @@ export class DeleteService {
       sampleDeletionOptions.setReason(reason);
       await this.openbisFacade.deleteSamples(sampleIds, sampleDeletionOptions);
 
-      console.log(`[DeleteService] Moved ${sampleIds.length} sample(s) to trashcan`);
       return { success: true, count: sampleIds.length };
     } catch (error: any) {
-      console.error('[DeleteService] Error moving samples to trashcan:', error);
-      return { success: false, count: 0, error: error.message || String(error) };
+      // Sanitize error for logging - only log safe message, not full error object
+      const errorMessage = error?.message || String(error);
+      return { success: false, count: 0, error: errorMessage };
     }
   }
 
@@ -121,11 +121,11 @@ export class DeleteService {
       datasetDeletionOptions.setReason(reason);
       await this.openbisFacade.deleteDataSets(datasetIds, datasetDeletionOptions);
 
-      console.log(`[DeleteService] Moved ${datasetIds.length} dataset(s) to trashcan`);
       return { success: true, count: datasetIds.length };
     } catch (error: any) {
-      console.error('[DeleteService] Error moving datasets to trashcan:', error);
-      return { success: false, count: 0, error: error.message || String(error) };
+      // Sanitize error for logging - only log safe message, not full error object
+      const errorMessage = error?.message || String(error);
+      return { success: false, count: 0, error: errorMessage };
     }
   }
 
@@ -158,11 +158,11 @@ export class DeleteService {
       projectDeletionOptions.setReason(reason);
       await this.openbisFacade.deleteProjects(projectIds, projectDeletionOptions);
 
-      console.log(`[DeleteService] Moved ${projectIds.length} project(s) to trashcan`);
       return { success: true, count: projectIds.length };
     } catch (error: any) {
-      console.error('[DeleteService] Error moving projects to trashcan:', error);
-      return { success: false, count: 0, error: error.message || String(error) };
+      // Sanitize error for logging - only log safe message, not full error object
+      const errorMessage = error?.message || String(error);
+      return { success: false, count: 0, error: errorMessage };
     }
   }
 
@@ -195,11 +195,11 @@ export class DeleteService {
       spaceDeletionOptions.setReason(reason);
       await this.openbisFacade.deleteSpaces(spaceIds, spaceDeletionOptions);
 
-      console.log(`[DeleteService] Moved ${spaceIds.length} space(s) to trashcan`);
       return { success: true, count: spaceIds.length };
     } catch (error: any) {
-      console.error('[DeleteService] Error moving spaces to trashcan:', error);
-      return { success: false, count: 0, error: error.message || String(error) };
+      // Sanitize error for logging - only log safe message, not full error object
+      const errorMessage = error?.message || String(error);
+      return { success: false, count: 0, error: errorMessage };
     }
   }
 
@@ -222,7 +222,6 @@ export class DeleteService {
       fetchOptions.withDeletedObjects();
 
       const deletions = await this.openbisFacade.searchDeletions(criteria, fetchOptions);
-      console.log(`[DeleteService] Found ${deletions?.getObjects?.()?.length || 0} deletion(s) in trashcan`);
 
       const dependentDeletions: any[] = [];
       const deletionList = deletions.getObjects() || deletions;
@@ -246,11 +245,12 @@ export class DeleteService {
         });
       }
 
-      console.log(`[DeleteService] Found ${dependentDeletions.length} dependent deletion(s) for ${entityKind}`);
       return dependentDeletions;
     } catch (error: any) {
-      console.error('[DeleteService] Error checking existing deletions:', error);
-      throw new Error(`Failed to check existing deletions: ${error.message || String(error)}`);
+      // Sanitize error for logging - only log safe message, not full error object
+      const errorMessage = error?.message || String(error);
+      // Sanitize user-facing error message - don't expose internal details
+      throw new Error(`Failed to check existing deletions: ${errorMessage}`);
     }
   }
 
@@ -398,7 +398,6 @@ export class DeleteService {
           result = await this.moveSpacesToTrashcan(entities, reason);
           break;
         default:
-          console.warn(`[DeleteService] Unknown entity kind: ${entityKind}`);
           result = { success: false, count: 0, error: `Unknown entity kind: ${entityKind}` };
       }
 

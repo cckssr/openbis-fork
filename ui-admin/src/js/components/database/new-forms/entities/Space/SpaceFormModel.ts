@@ -47,7 +47,6 @@ export class SpaceFormModel {
 		const { form, mode, controller, onAfterSave } = context;
 		await new Promise(resolve => setTimeout(resolve, 500)); // to display the loading spinner
 		const newVersion = await controller.save(form, mode);
-		console.log("Space saved successfully! New version:", newVersion);
 		onAfterSave();
 	};
 

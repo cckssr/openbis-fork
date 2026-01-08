@@ -291,7 +291,7 @@ class DatabaseComponent extends React.PureComponent {
   }
 
   closeForm(type, id) {
-    console.log(`closeForm for ${type}: ${id}`);
+    console.log(`DatabaseComponent.closeForm for ${type}: ${id}`);
     AppController.getInstance().objectClose(
       pages.DATABASE,
       type,

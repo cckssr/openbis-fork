@@ -156,7 +156,6 @@ export const useAutoSave = ({
       };
 
       localStorage.setItem(storageKey, JSON.stringify(storageData));
-      console.log('[useAutoSave] Saved dirty fields:', storageData.dirtyFields.length);
     } catch (error: any) {
       // Handle quota exceeded or other storage errors
       if (error.name === 'QuotaExceededError') {
@@ -260,7 +259,6 @@ export const useAutoSave = ({
   const clearStorage = useCallback(() => {
     try {
       localStorage.removeItem(storageKey);
-      console.log('[useAutoSave] Cleared saved data');
     } catch (error) {
       console.warn('[useAutoSave] Failed to clear form data from localStorage:', error);
     }

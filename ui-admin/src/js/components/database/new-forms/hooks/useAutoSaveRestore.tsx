@@ -75,9 +75,7 @@ export const useAutoSaveRestore = ({
           restorationStateRef.current?.mode === FormMode.EDIT;
 
         if (savedData.entityPermId === currentEntityPermId && !alreadyRestored) {
-          // Valid saved data for current entity - restore it
-          console.log('[useAutoSaveRestore] Restoring saved data for entity:', currentEntityPermId);
-          
+          // Valid saved data for current entity - restore it          
           // Update refs BEFORE restoring to prevent infinite loop
           formEntityPermIdRef.current = currentEntityPermId;
           restorationStateRef.current = {
@@ -88,7 +86,6 @@ export const useAutoSaveRestore = ({
           onRestore(savedData);
         } else if (savedData.entityPermId !== currentEntityPermId) {
           // Different entity - clear stale data
-          console.log('[useAutoSaveRestore] Clearing stale data for different entity');
           onClearStorage?.();
           restorationStateRef.current = null;
           formEntityPermIdRef.current = currentEntityPermId;

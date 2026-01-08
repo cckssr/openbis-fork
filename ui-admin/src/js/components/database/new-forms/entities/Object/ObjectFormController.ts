@@ -31,12 +31,10 @@ export class ObjectFormController implements IFormController {
 		const result = await this.openbisFacade.searchSamples(criteria, fetchOptions);
 		const samples = result.getObjects();
 		const nextNumber = Math.max(...samples.map((s: any) => parseInt(s.getCode().match(/(\d+)$/)?.[1] ?? '0', 10))) + 1;
-		console.log({ nextNumber })
 		return sampleTypeCode + nextNumber;
 	}
 
 	async load(permId: string, entityKind?: string, params?: any, type?: string): Promise<Form> {
-		console.log('ObjectFormController.load', { permId, type, entityKind, params });
 		if (entityKind === EntityKind.NEW_OBJECT) {
 			params.defaultCode = await this._getNextSequenceForType('ENTRY');
 			return ObjectFormModel.adaptNewEntryDtoToForm(type || '', permId, params);
@@ -76,19 +74,14 @@ export class ObjectFormController implements IFormController {
 
 
 	async _createObject(form: Form): Promise<any> {
-		console.log('ObjectFormController._createObject', { form });
 		const sampleCreation = this._createSample(form);
 		const result = await this.openbisFacade.createSamples([sampleCreation]);
-		console.log('ObjectFormController._createObject', { result });
 		return Promise.resolve(result[0].getPermId());
 	}
 
 	async _updateObject(form: Form): Promise<any> {
-		console.log('ObjectFormController._updateObject', { form });
 		const sampleUpdate = this._updateSample(form);
-		console.log('ObjectFormController._updateObject', { sampleUpdate });
 		const result = await this.openbisFacade.updateSamples([sampleUpdate]);
-		console.log('ObjectFormController._updateObject', result);
 		return Promise.resolve(form.version ? form.version + 1 : 1);
 	}
 
@@ -105,7 +98,6 @@ export class ObjectFormController implements IFormController {
 	}
 
 	_createSample(form: Form): Promise<any> {
-		console.log('ObjectFormController._createSample', { form });
 		const { SampleCreation, EntityTypePermId, ExperimentPermId, SpacePermId } = this.openbisFacade;
 		const creation = new SampleCreation();
 		creation.setTypeId(new EntityTypePermId(form.entityType, EntityKind.SAMPLE));
@@ -115,7 +107,6 @@ export class ObjectFormController implements IFormController {
 	}
 
 	_updateSample(form: Form): Promise<any> {
-		console.log('ObjectFormController._updateSample', { form });
 		const { SampleUpdate, SamplePermId } = this.openbisFacade;
 		const update = new SampleUpdate();
 		update.setSampleId(new SamplePermId(form.entityPermId));
@@ -150,28 +141,21 @@ export class ObjectFormController implements IFormController {
 		const dummyId2 = new SampleIdentifier(createDummySampleIdentifierFromSampleIdentifier(sampleIdentifier));
 		const ids = [samplePermId, dummyId, dummyId2];
 		const { editable, deletable } = await fetchRights(this.openbisFacade, objId, ids);
-		console.log({ editable, deletable })
 		return { canEdit: editable, canDelete: deletable, canMove: true };
 		//return { canEdit: true, canDelete: true, canMove: true };
 	}
 
-	async delete(form: Form, context?: any): Promise<void> {
-		console.log(`ObjectFormController.delete`, form.entityPermId, context);
-		
+	async delete(form: Form, context?: any): Promise<void> {		
 		// If this is just a check, return early
 		if (context?.checkOnly) {
 			return;
 		}
-		
 		// Get dependent entities if not provided in context
 		// Use rawDependentEntities from context if available (from normalized structure)
 		let dependentEntities = context?.rawDependentEntities || context?.dependentEntities;
 		if (!dependentEntities) {
 			dependentEntities = await this.getDependentEntities(form);
-		}
-		
-		console.log('ObjectFormController.dependentEntities:', dependentEntities);
-		
+		}		
 		// Get delete reason from context or use default
 		const deleteReason = context?.deleteReason || 'delete via ng-ui';
 		
@@ -184,9 +168,7 @@ export class ObjectFormController implements IFormController {
 			if (!result.success) {
 				throw new Error(result.error || 'Failed to move datasets to trashcan');
 			}
-			console.log('ObjectFormController.moved datasets to trashcan:', result.count);
 		}
-		
 		// If descendants checkbox is checked, move all descendant objects and their datasets to trashcan
 		// Handle both raw structure (children) and normalized structure (samples)
 		const children = dependentEntities.children || dependentEntities.samples || [];
@@ -206,7 +188,6 @@ export class ObjectFormController implements IFormController {
 		if (!result.success) {
 			throw new Error(result.error || 'Failed to move object to trashcan');
 		}
-		console.log('ObjectFormController.delete result:', result);
 		return Promise.resolve();
 	}
 	

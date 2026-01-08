@@ -108,7 +108,6 @@ export class ProjectFormModel {
 		const { form, controller, onAfterSave, mode } = context;
 		await new Promise(resolve => setTimeout(resolve, 500));
 		const newPermId = await controller.save(form, mode);
-		console.log("Project saved successfully! New permId:", newPermId);
 		if (mode === FormMode.CREATE) {
 			onAfterSave({ oldType: EntityKind.NEW_PROJECT, oldId: form.entityPermId, newType: EntityKind.PROJECT, newId: newPermId });
 		} else {

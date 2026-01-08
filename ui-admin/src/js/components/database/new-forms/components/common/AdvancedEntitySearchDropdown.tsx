@@ -211,7 +211,6 @@ export const AdvancedEntitySearchDropdown: React.FC<AdvancedEntitySearchDropdown
           />
         )}
         renderOption={(props, option) => {
-          console.log({ option });
           const displayName = option?.identifier?.identifier || option?.displayName || option?.code || 'Unknown';
           const permId = option?.permId?.permId;
           

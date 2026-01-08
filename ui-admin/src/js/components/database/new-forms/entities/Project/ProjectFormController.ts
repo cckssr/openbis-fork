@@ -23,7 +23,6 @@ export class ProjectFormController implements IFormController {
   }
 
   async load(permId: string, entityKind?: string, params?: any): Promise<Form> {
-    console.log('ProjectFormController.load', permId, entityKind);
     if (entityKind === EntityKind.NEW_PROJECT) {
       return ProjectFormModel.adaptNewProjectDtoToForm(permId, params);
     }
@@ -36,7 +35,6 @@ export class ProjectFormController implements IFormController {
     const result = await this.openbisFacade.getProjects([id], fetchOptions);
 
     const projectDto = result[permId];
-    console.log({ projectDto });
     if (!projectDto) throw new Error(`Project with permId ${permId} not found`);
     /* const spaceCode = projectDto.getSpace().getCode();
     const projectCode = projectDto.getCode();
@@ -75,8 +73,6 @@ export class ProjectFormController implements IFormController {
   }
 
   async delete(form: Form, context?: any): Promise<void> {
-    console.log('ProjectFormController.delete', form, context);
-
     // Check for existing deletions in trashcan before proceeding
     const projectIdentifier = findFormFieldById(form.fields, form.entityPermId, 'identifier', true);
 
@@ -103,8 +99,6 @@ export class ProjectFormController implements IFormController {
     if (!dependentEntities) {
       dependentEntities = await this.getDependentEntities(form);
     }
-
-    console.log('ProjectFormController.dependentEntities:', dependentEntities);
 
     // Get delete reason from context or use default
     const deleteReason = context?.deleteReason || 'delete via ng-ui';
@@ -149,7 +143,6 @@ export class ProjectFormController implements IFormController {
     if (!result.success) {
       throw new Error(result.error || 'Failed to move project to trashcan');
     }
-    console.log('ProjectFormController.delete result:', result);
     return Promise.resolve();
   }
 
@@ -161,7 +154,6 @@ export class ProjectFormController implements IFormController {
     fetchOptions.withSamples().withExperiment();
     const result = await this.openbisFacade.getProjects([id], fetchOptions);
     const project = result[id];
-    console.log('ProjectFormController.dependentEntities:', result);
     return { experiments: project.getExperiments(), samples: project.getSamples() };
   }
 
@@ -171,19 +163,14 @@ export class ProjectFormController implements IFormController {
    * Kept for backward compatibility but should not be used for non-empty projects.
    */
   async deleteDependentEntities(reason: string, dependentEntities: any): Promise<void> {
-    console.log('ProjectFormController.deleteDependentEntities', reason, dependentEntities);
-
     const { ExperimentIdentifier, SampleIdentifier, ExperimentDeletionOptions, SampleDeletionOptions } = this.openbisFacade;
-
     // Delete experiments first
     if (dependentEntities.experiments && dependentEntities.experiments.length > 0) {
       const experimentIds = dependentEntities.experiments.map((exp: any) => new ExperimentIdentifier(exp.getIdentifier().getIdentifier()));
       const experimentDeletionOptions = new ExperimentDeletionOptions();
       experimentDeletionOptions.setReason(reason);
       await this.openbisFacade.deleteExperiments(experimentIds, experimentDeletionOptions);
-      console.log('ProjectFormController.deleted experiments:', experimentIds.length);
     }
-
     // Then delete independent samples (samples not associated with experiments we just deleted)
     if (dependentEntities.samples && dependentEntities.samples.length > 0) {
       const experimentIds = new Set((dependentEntities.experiments || []).map((exp: any) => exp.getPermId()));
@@ -198,7 +185,6 @@ export class ProjectFormController implements IFormController {
         const sampleDeletionOptions = new SampleDeletionOptions();
         sampleDeletionOptions.setReason(reason);
         await this.openbisFacade.deleteSamples(independentSamples, sampleDeletionOptions);
-        console.log('ProjectFormController.deleted independent samples:', independentSamples.length);
       }
     }
   }
@@ -217,14 +203,12 @@ export class ProjectFormController implements IFormController {
   }
 
   async _createProject(form: Form): Promise<any> {
-    console.log('ProjectFormController.create', form);
     const { ProjectCreation, SpacePermId } = this.openbisFacade;
     const creation = new ProjectCreation();
     creation.setCode(findFormFieldByLabel(form.fields, 'Code', true));
     creation.setSpaceId(new SpacePermId(form.meta.spacePermId));
     creation.setDescription(findFormFieldByLabel(form.fields, 'Description', true));
     const result = await this.openbisFacade.createProjects([creation]);
-    console.log('ProjectFormController.create', result);
     return result[0].getPermId();
   }
 
@@ -234,7 +218,6 @@ export class ProjectFormController implements IFormController {
     projectUpdate.setProjectId(new ProjectPermId(form.entityPermId));
     projectUpdate.setDescription(findFormFieldByLabel(form.fields, 'Description', true));
     const result = await this.openbisFacade.updateProjects([projectUpdate]);
-    console.log('ProjectFormController.update', result);
     return Promise.resolve(form.version ? form.version + 1 : 1);
   }
 }
