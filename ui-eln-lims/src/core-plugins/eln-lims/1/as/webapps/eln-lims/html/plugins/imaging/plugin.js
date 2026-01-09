@@ -289,7 +289,7 @@ $.extend(ImagingTechnology.prototype, ELNLIMSPlugin.prototype, {
                         updateDataSets: mainController.openbisV3.updateDataSets.bind(mainController.openbisV3),
                         updateSamples: mainController.openbisV3.updateSamples.bind(mainController.openbisV3),
                         executeCustomDSSService: mainController.openbisV3.getDataStoreFacade().executeCustomDSSService.bind(mainController.openbisV3.getDataStoreFacade()),
-                        executeCustomASService: mainController.openbisV3.executeCustomASService.bind(mainController.openbisV3),
+                        executeService: mainController.openbisV3.executeCustomASService.bind(mainController.openbisV3),
                         getExperiments: mainController.openbisV3.getExperiments.bind(mainController.openbisV3),
                         getSamples: mainController.openbisV3.getSamples.bind(mainController.openbisV3),
                         hasAfsDataStore: profile.isAFSAvailable.bind(profile),
