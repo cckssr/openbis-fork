@@ -18,6 +18,8 @@ package ch.systemsx.cisd.openbis.generic.server.business.bo;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -211,6 +213,9 @@ public final class TrashBOTest extends AbstractBOTest
                 {
                     allowing(daoFactory).getAuthorizationConfig();
                     will(returnValue(new TestAuthorizationConfig(false, false)));
+
+                    one(dataDAO).listAfsDataSetIdsByExperimentIds(new HashSet<>(experimentIds));
+                    will(returnValue(Collections.emptyList()));
 
                     one(deletionDAO).trash(EntityKind.EXPERIMENT, experimentIds, deletion, true);
                     will(returnValue(0));
