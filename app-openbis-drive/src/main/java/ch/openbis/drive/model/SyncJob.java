@@ -78,12 +78,21 @@ public class SyncJob {
         return List.of(
                 //WINDOWS DB FILES
                 "**/desktop.ini",
+                "**/Desktop.ini",
                 "**/IconCache.db",
-                "**/thumbs.db"
+                "**/thumbs.db",
+                "**/Thumbs.db"
         );
     }
 
     static public List<String> getDefaultIgnoredPathPatternsForMacOS() {
-        return Collections.emptyList();
+        return List.of(
+                //MAC desktop store
+                "**/.DS_Store",
+                "**/._.DS_Store",
+
+                //MAC time machine markers
+                "**/.com.apple.timemachine.supported-*"
+        );
     }
 }

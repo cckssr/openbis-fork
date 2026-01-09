@@ -117,8 +117,10 @@ public class SyncJobTest {
                 SyncJob.getDefaultIgnoredPathPatternsForWindows().containsAll(
                     List.of(
                         "**/desktop.ini",
+                        "**/Desktop.ini",
                         "**/IconCache.db",
-                        "**/thumbs.db"
+                        "**/thumbs.db",
+                        "**/Thumbs.db"
                     )
                 )
         );
@@ -139,7 +141,16 @@ public class SyncJobTest {
         );
 
         Assert.assertTrue(
-                SyncJob.getDefaultIgnoredPathPatternsForMacOS().isEmpty()
+            SyncJob.getDefaultIgnoredPathPatternsForMacOS().containsAll(
+                List.of(
+                    //MAC desktop store
+                    "**/.DS_Store",
+                    "**/._.DS_Store",
+
+                    //MAC time machine markers
+                    "**/.com.apple.timemachine.supported-*"
+                )
+            )
         );
     }
 }
