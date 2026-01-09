@@ -50,6 +50,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.id.CustomASServiceCode;
 import ch.ethz.sis.openbis.systemtest.asapi.v3.util.EmailUtil;
 import ch.ethz.sis.openbis.systemtest.asapi.v3.util.EmailUtil.Email;
 import ch.systemsx.cisd.common.http.JettyHttpClientFactory;
+import ch.systemsx.cisd.common.test.AssertionUtil;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
 import ch.systemsx.cisd.openbis.generic.shared.util.TestInstanceHostUtils;
 
@@ -238,10 +239,31 @@ public class ObjectsImportTest extends AbstractFileTest
 
     protected void assertEmail(long timestamp, String expectedEmail, String expectedSubject)
     {
-        Email latestEmail = EmailUtil.findLatestEmail();
-        assertTrue("Timestamp: " + timestamp + ", Latest email: " + latestEmail, latestEmail != null && latestEmail.timestamp >= timestamp);
-        assertEquals(expectedEmail, latestEmail.to);
-        assertTrue(latestEmail.subject, latestEmail.subject.contains(expectedSubject));
+        long startTimestamp = System.currentTimeMillis();
+
+        while (System.currentTimeMillis() < startTimestamp + DEFAULT_TIMEOUT)
+        {
+            Email latestEmail = EmailUtil.findLatestEmail();
+
+            if (latestEmail != null && latestEmail.timestamp >= timestamp)
+            {
+                assertEquals(expectedEmail, latestEmail.to);
+                AssertionUtil.assertContains(expectedSubject, latestEmail.subject);
+                return;
+            } else
+            {
+                try
+                {
+                    Thread.sleep(100);
+                } catch (InterruptedException e)
+                {
+                    // silently ignored
+                }
+            }
+        }
+
+        throw new RuntimeException(
+                "No expected email found. Expected email timestamp >= " + timestamp + ", expected email subject: " + expectedSubject);
     }
 
     protected long getTimestampAndWaitASecond()
