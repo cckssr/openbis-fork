@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.regex.Pattern;
@@ -90,6 +91,8 @@ public class SyncJobDialog extends Dialog<SyncJob> {
             () -> validationErrors.stream().noneMatch(BooleanProperty::getValue), validationErrors.toArray(BooleanProperty[]::new));
 
     final ObjectProperty<AbstractEntity> entityChosen = new SimpleObjectProperty<>(null);
+    final AtomicInteger reducedHeight = new AtomicInteger(0);
+    final static int EXTENDED_HEIGHT = 750;
 
     public SyncJobDialog(@Nullable SyncJob toBeModified, Stage mainStage, List<SyncJob> currentSyncJobs) {
         super();
@@ -124,20 +127,25 @@ public class SyncJobDialog extends Dialog<SyncJob> {
         VBox leftTextParametersBox = new VBox();
         VBox rightTextParametersBox = new VBox();
 
+        headerBox.getChildren().add(description);
+
         Label titleLabel = new Label();
         titleLabel.textProperty().bind(i18n.createStringBinding("sync_tasks.modal_panel.sync_task_modal.title"));
-        titleLabel.setPadding(new Insets(30, 0, 0, 0));
         titleValue = getTitleTextField();
-        headerBox.getChildren().addAll(description, titleLabel, titleValue);
 
         Label openbisServerUrlLabel = new Label();
         openbisServerUrlLabel.textProperty().bind(i18n.createStringBinding("sync_tasks.modal_panel.sync_task_modal.openbis_server_url"));
+        openbisServerUrlLabel.setPadding(new Insets(30, 0, 0, 0));
         openbisServerUrlValue = getOpenbisServerUrlTextField();
+
+        Label personalAccessTokenLabel = new Label();
+        personalAccessTokenLabel.textProperty().bind(i18n.createStringBinding("sync_tasks.modal_panel.sync_task_modal.personal_access_token"));
+        personalAccessTokenLabel.setPadding(new Insets(30, 0, 0, 0));
+        personalAccessTokenValue = getPersonalAccessTokenTextField();
 
         HBox openbisEntityIdLabelBox = new HBox();
         openbisEntityIdLabelBox.setSpacing(6);
         openbisEntityIdLabelBox.setAlignment(Pos.CENTER_LEFT);
-        openbisEntityIdLabelBox.setPadding(new Insets(30, 0, 0, 0));
         Label openbisEntityIdLabel = new Label();
         openbisEntityIdLabel.textProperty().bind(i18n.createStringBinding("sync_tasks.modal_panel.sync_task_modal.openbis_entity_id"));
         Button openbisEntityIdHelpButton = getInputTooltipHelpButton(i18n.get("sync_tasks.modal_panel.sync_task_modal.entity_id_help_tooltip"));
@@ -151,13 +159,9 @@ public class SyncJobDialog extends Dialog<SyncJob> {
         openbisServerDirectoryValue = getRemoteDirectoryTextField();
 
         leftTextParametersBox.getChildren().addAll(
+                titleLabel, titleValue,
                 openbisServerUrlLabel, openbisServerUrlValue,
-                openbisEntityIdLabelBox, openbisEntityIdValue,
-                openbisServerDirectoryLabel, openbisServerDirectoryValue);
-
-        Label personalAccessTokenLabel = new Label();
-        personalAccessTokenLabel.textProperty().bind(i18n.createStringBinding("sync_tasks.modal_panel.sync_task_modal.personal_access_token"));
-        personalAccessTokenValue = getPersonalAccessTokenTextField();
+                personalAccessTokenLabel, personalAccessTokenValue);
 
         Label localDirectoryLabel = new Label();
         localDirectoryLabel.textProperty().bind(i18n.createStringBinding("sync_tasks.modal_panel.sync_task_modal.local_directory"));
@@ -165,7 +169,8 @@ public class SyncJobDialog extends Dialog<SyncJob> {
         localDirectoryValue = getLocalDirectoryTextField();
 
         rightTextParametersBox.getChildren().addAll(
-                personalAccessTokenLabel, personalAccessTokenValue,
+                openbisEntityIdLabelBox, openbisEntityIdValue,
+                openbisServerDirectoryLabel, openbisServerDirectoryValue,
                 localDirectoryLabel, localDirectoryValue);
 
         textParametersBox.getChildren().addAll(leftTextParametersBox, rightTextParametersBox);
@@ -244,7 +249,14 @@ public class SyncJobDialog extends Dialog<SyncJob> {
 
         accordion.expandedPaneProperty().addListener((obs, oldValue, newValue) -> {
             Platform.runLater(() -> {
-                getDialogPane().getScene().getWindow().setHeight(newValue != null ? 800 : 650);
+                int newHeight;
+                if (newValue != null) {
+                    reducedHeight.set((int) getDialogPane().getScene().getWindow().getHeight());
+                    newHeight = EXTENDED_HEIGHT;
+                } else {
+                    newHeight = reducedHeight.get();
+                }
+                getDialogPane().getScene().getWindow().setHeight(newHeight);
             });
         });
 
@@ -432,7 +444,7 @@ public class SyncJobDialog extends Dialog<SyncJob> {
         ignoredPathPatternValuesBox.setSpacing(5);
         ignoredPathPatternValuesBox.getChildren().add(ignoredPathPatternsTextArea);
 
-        Button restoreDefaultIgnoredPathsButton = new Button(i18n.get("sync_tasks.modal_panel.sync_task_modal.restore_default_list"));
+        Button restoreDefaultIgnoredPathsButton = new Button(i18n.get("sync_tasks.modal_panel.sync_task_modal.copy_global_default_list"));
         restoreDefaultIgnoredPathsButton.setOnAction((event) -> {
             Platform.runLater( () -> {
                 ignoredPathPatternsTextArea.setText(
