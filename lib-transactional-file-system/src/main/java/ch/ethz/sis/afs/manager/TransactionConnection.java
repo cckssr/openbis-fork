@@ -309,6 +309,8 @@ public class TransactionConnection implements TransactionalFileSystem {
         String tempSource = OperationExecutor.getTempPath(transaction, source) + "." + UUID.randomUUID();
         source = getSafePath(OperationName.Write, source);
         WriteOperation operation = new WriteOperation(transaction.getUuid(), source, tempSource, offset, data);
+        PathLockFinder.getParentSubPaths(source).forEach(deleted::remove);
+        deleted.remove(source);
         prepare(operation, source, null);
         written.add(source);
         return Boolean.TRUE;
@@ -358,6 +360,8 @@ public class TransactionConnection implements TransactionalFileSystem {
     {
         source = getSafePath(OperationName.Create, source);
         final CreateOperation operation = new CreateOperation(transaction.getUuid(), source, directory);
+        PathLockFinder.getParentSubPaths(source).forEach(deleted::remove);
+        deleted.remove(source);
         prepare(operation, source, null);
         written.add(source);
         return Boolean.TRUE;
