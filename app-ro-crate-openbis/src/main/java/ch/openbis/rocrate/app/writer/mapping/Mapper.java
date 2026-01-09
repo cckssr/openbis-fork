@@ -1,6 +1,7 @@
 package ch.openbis.rocrate.app.writer.mapping;
 
 import ch.eth.sis.rocrate.facade.*;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.ObjectIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IEntityType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetType;
@@ -22,6 +23,8 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.Serializable;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
@@ -33,9 +36,7 @@ public class Mapper
 
     public static final String CANONICAL_OPENBIS_DATE_FORMAT_PATTERN = "yyyy-MM-dd HH:mm:ss Z";
 
-
-
-    public MapResult transform(OpenBisModel openBisModel)
+    public MapResult transform(OpenBisModel openBisModel) throws Exception
     {
         Map<String, List<Pair<PropertyAssignment, IType>>> classesUsingProperty =
                 new HashMap<>();
@@ -289,6 +290,18 @@ public class Mapper
                         .map(x -> x.getIdentifier().getIdentifier()).collect(Collectors.toList()));
                 references.put("parents", ((Sample) val).getChildren().stream()
                         .map(x -> x.getIdentifier().getIdentifier()).collect(Collectors.toList()));
+
+                List<OpenBisModel.FileInfo> files =
+                        openBisModel.getFiles().getOrDefault(metaData.getKey(), new ArrayList<>());
+                for (var file : files)
+                {
+                    file.filePath();
+                    file.objectIdentifier();
+                    String[] parts = file.filePath().split("/");
+                    String fileName = parts[parts.length - 1];
+
+                }
+
                 MetadataEntry
                         entry =
                         new MetadataEntry(sample.getIdentifier().toString(), Set.of(type), props,
@@ -349,10 +362,38 @@ public class Mapper
 
         }
 
+        List<MapResult.RoCrateFile> files = new ArrayList<>();
+        for (Map.Entry<ObjectIdentifier, List<OpenBisModel.FileInfo>> a : openBisModel.getFiles()
+                .entrySet())
+        {
+
+            List<String> identifiersToWrite = new ArrayList<>();
+            for (OpenBisModel.FileInfo b : a.getValue())
+            {
+
+                UUID uuid = UUID.randomUUID();
+                Path path = Path.of("/tmp/ro-crate/" + uuid);
+                Files.createDirectories(Path.of("/tmp/ro-crate/"));
+                Files.write(path, b.contents());
+                MapResult.RoCrateFile roCrateFile = new MapResult.RoCrateFile(path, b.filePath());
+                files.add(roCrateFile);
+                identifiersToWrite.add(b.filePath());
+            }
+
+            Map<String, MetadataEntry> idToEntities =
+                    metaDataEntries.stream().collect(Collectors.toMap(x -> x.getId(), x -> x));
+            // here I should be using MetaDataEntry instead
+
+            MetadataEntry metadataEntry = idToEntities.get(a.getKey().toString());
+            metadataEntry.getReferences().put(Constants.PROPERTY_ID_FILES, identifiersToWrite);
+
+
+        }
+
 
         return new MapResult(
-                new RdfsSchema(classes.values().stream().collect(Collectors.toList()), properties),
-                new MappingInfo(reverseMapping, rdfsPropertiesUsedIn), metaDataEntries);
+                new RdfsSchema(new ArrayList<>(classes.values()), properties),
+                new MappingInfo(reverseMapping, rdfsPropertiesUsedIn), metaDataEntries, files);
     }
 
     private String mapValue(String val, DataType dataType)

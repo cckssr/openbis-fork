@@ -5,15 +5,12 @@ import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
 import ch.openbis.rocrate.app.writer.Writer;
 import org.apache.commons.cli.*;
 
-import java.io.IOException;
 import java.nio.file.Path;
 
 public class Write
 {
 
-
-
-    public static void main(String[] args) throws IOException, ParseException
+    public static void main(String[] args) throws Exception
     {
 
 

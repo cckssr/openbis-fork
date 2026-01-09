@@ -57,7 +57,7 @@ public class JSON2ExcelTest {
                 openBisModel =
                 RdfToModel.convert(types, schemaFacade.getPropertyTypes(),
                         entryList.stream().toList(), "DEFAULT",
-                        "DEFAULT");
+                        "DEFAULT", schemaFacade);
 
         // assertions on model because the Excel files might have different orders of stuff
         // ordering comes from the RO-Crate library and is outside our control

@@ -1,5 +1,6 @@
 package ch.openbis.rocrate.app.reader;
 
+import ch.eth.sis.rocrate.SchemaFacade;
 import ch.eth.sis.rocrate.facade.*;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.entity.AbstractEntityPropertyHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.ObjectIdentifier;
@@ -31,12 +32,15 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
 import ch.openbis.rocrate.app.Constants;
 import ch.openbis.rocrate.app.reader.helper.DataTypeMatcher;
+import ch.openbis.rocrate.app.reader.helper.PropertyTypeSpecialHandling;
+import ch.openbis.rocrate.app.reader.helper.SampleCodeHelper;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.io.IOException;
 import java.io.Serializable;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
@@ -54,8 +58,14 @@ public class RdfToModel
 {
 
     public static OpenBisModel convert(List<IType> types, List<IPropertyType> typeProperties,
-            List<IMetadataEntry> entries, String fallbackSpaceCode, String fallbackProjectCode)
+            List<IMetadataEntry> entries, String fallbackSpaceCode, String fallbackProjectCode,
+            SchemaFacade schemaFacade)
+            throws IOException
     {
+
+        Set<SampleType> openBisDerivedTypes = new LinkedHashSet<>();
+        Map<ObjectIdentifier, List<OpenBisModel.FileInfo>> samplesToFiles = new LinkedHashMap<>();
+
 
         Map<String, IType> IdsToTypes =
                 types.stream().collect(Collectors.toMap(IType::getId, Function.identity()));
@@ -77,12 +87,13 @@ public class RdfToModel
         Map<String, ExperimentType> identifierToCollectionType = new LinkedHashMap<>();
 
         Map<ExperimentIdentifier, Experiment> idsToCollections = new LinkedHashMap<>();
-
+        Map<ObjectIdentifier, List<OpenBisModel.FileInfo>> objectIdentifiersToFiles =
+                new LinkedHashMap<>();
 
         Map<EntityTypePermId, IEntityType> schema = new LinkedHashMap<>();
         handleTypes(types, IdsToTypes, typeToInheritanceChain, entityTypeToRdfIdentifier,
                 codeToSampleType,
-                schema, identifierToCollectionType);
+                schema, identifierToCollectionType, openBisDerivedTypes);
 
         Map<IType, List<String>> typesToProperties = new LinkedHashMap<>();
         for (IPropertyType typeProperty : typeProperties)
@@ -111,7 +122,8 @@ public class RdfToModel
                 codeToSampleType,
                 externalIdentifierToSample, baseCodeToPossibleDataTypes, idToEntities,
                 roCrateIdsToObjects,
-                samplesWithSpaceAndProjectCodes, spaces, projects);
+                samplesWithSpaceAndProjectCodes, spaces, projects, objectIdentifiersToFiles,
+                metadata);
 
         mapSpaces(fallbackSpaceCode, fallbackProjectCode, spaces, projects);
         mapProjects(projects, spaces);
@@ -120,7 +132,7 @@ public class RdfToModel
                 idsToCollections);
 
         resolveSpaceProjectAndCollections(samplesWithSpaceAndProjectCodes, spaces, projects,
-                idsToCollections, metadata);
+                idsToCollections, metadata, fallbackProjectCode, fallbackSpaceCode);
 
         resolveOpenBisStructure(entries, fallbackSpaceCode, fallbackProjectCode,
                 typeToInheritanceChain,
@@ -132,15 +144,16 @@ public class RdfToModel
                 .collect(Collectors.toMap(x -> x.getKey(), x -> x.getValue().getCode()));
 
         return new OpenBisModel(Map.of(), schema, spaces, projects, metadata, Map.of(), Map.of(),
-                collect
-        );
+                collect,
+                objectIdentifiersToFiles);
     }
 
     private static void handleTypes(List<IType> types, Map<String, IType> IdsToTypes,
             Map<String, List<String>> typeToInheritanceChain,
             Map<String, EntityTypePermId> entityTypeToRdfIdentifier,
             Map<String, SampleType> codeToSampleType, Map<EntityTypePermId, IEntityType> schema,
-            Map<String, ExperimentType> identifierToCollectionType)
+            Map<String, ExperimentType> identifierToCollectionType,
+            Set<SampleType> openBisDerivedTypes)
     {
         for (IType type : types)
         {
@@ -171,6 +184,11 @@ public class RdfToModel
                 sampleType.setPropertyAssignments(new ArrayList<>());
 
                 codeToSampleType.put(sampleType.getCode(), sampleType);
+
+                if (inheritanceChain.stream().anyMatch(x -> x.getId().equals(GRAPH_ID_OBJECT)))
+                {
+                    openBisDerivedTypes.add(sampleType);
+                }
 
                 if (!isCollection(type) && (isOpenBisDerivedType(type) || isSample(type)))
                 {
@@ -222,6 +240,11 @@ public class RdfToModel
     {
         for (IPropertyType a : typeProperties)
         {
+            if (PropertyTypeSpecialHandling.requiresFileHandling(a))
+            {
+                continue;
+            }
+
             Set<DataType> dataTypes = matchDataTypes(a);
             boolean addSuffixes = dataTypes.size() > 1;
             String baseCode = openBisifyCode(deRdfIdentifier(a.getId()));
@@ -382,7 +405,10 @@ public class RdfToModel
             Map<String, Set<DataType>> baseCodeToPossibleDataTypes,
             Map<String, IMetadataEntry> idToEntities, Map<String, Sample> roCrateIdsToObjects,
             List<Pair<Sample, ReferencesToResolve>> samplesWithSpaceAndProjectCodes,
-            Map<SpacePermId, Space> spaces, Map<ProjectIdentifier, Project> projects)
+            Map<SpacePermId, Space> spaces, Map<ProjectIdentifier, Project> projects,
+            Map<ObjectIdentifier, List<OpenBisModel.FileInfo>> objectIdentifiersToFiles,
+            Map<ObjectIdentifier, AbstractEntityPropertyHolder> metadata)
+            throws IOException
     {
         for (IMetadataEntry entry : entries)
         {
@@ -411,7 +437,7 @@ public class RdfToModel
                 SampleType type = codeToSampleType.get(openBisifyCode(typeCode));
                 sample.setType(type);
 
-                String code = createSampleCode(type, entry.getId());
+                String code = SampleCodeHelper.createSampleCode(type, entry.getId());
                 sample.setCode(code);
                 externalIdentifierToSample.put(entry.getId(), sample);
 
@@ -457,7 +483,7 @@ public class RdfToModel
                 }
 
                 roCrateIdsToObjects.put(entry.getId(), sample);
-
+                handleFiles(entry, objectIdentifier, objectIdentifiersToFiles);
 
 
                 sample.setProperties(properties);
@@ -468,6 +494,7 @@ public class RdfToModel
                                 fallbackProjectCode, sample.getType().getCode() + "_COLLECTION");
                 samplesWithSpaceAndProjectCodes.add(
                         new ImmutablePair<>(sample, referencesToResolve));
+                metadata.put(objectIdentifier, entity);
 
             } else if (entry.getTypes().stream().anyMatch(x -> x.equals(GRAPH_ID_SPACE)))
             {
@@ -498,6 +525,43 @@ public class RdfToModel
 
         }
     }
+
+    private static void handleFiles(IMetadataEntry metadataEntry, ObjectIdentifier objectIdentifier,
+            Map<ObjectIdentifier, List<OpenBisModel.FileInfo>> res)
+            throws IOException
+    {
+
+        List<OpenBisModel.FileInfo> myRes = new ArrayList<>();
+
+        metadataEntry.getFileOrDirectory().ifPresent(x -> {
+            try
+            {
+                OpenBisModel.FileInfo fileInfo =
+                        new OpenBisModel.FileInfo(objectIdentifier.getIdentifier(), x.toString(),
+                                Files.readAllBytes(x));
+                myRes.add(fileInfo);
+
+            } catch (IOException e)
+            {
+                throw new RuntimeException(e);
+            }
+
+        });
+        for (var a : metadataEntry.getDataEntitiesReferenced())
+        {
+            if (a.getPath() != null)
+            {
+                OpenBisModel.FileInfo fileInfo =
+                        new OpenBisModel.FileInfo(objectIdentifier.getIdentifier(),
+                                a.getPath().toString(), Files.readAllBytes(a.getPath()));
+                myRes.add(fileInfo);
+            }
+
+        }
+
+        res.put(objectIdentifier, myRes);
+    }
+
 
     private static void mapSpaces(String fallbackSpaceCode, String fallbackProjectCode,
             Map<SpacePermId, Space> spaces, Map<ProjectIdentifier, Project> projects)
@@ -571,7 +635,8 @@ public class RdfToModel
             List<Pair<Sample, ReferencesToResolve>> samplesWithSpaceAndProjectCodes,
             Map<SpacePermId, Space> spaces, Map<ProjectIdentifier, Project> projects,
             Map<ExperimentIdentifier, Experiment> idsToCollections,
-            Map<ObjectIdentifier, AbstractEntityPropertyHolder> metadata)
+            Map<ObjectIdentifier, AbstractEntityPropertyHolder> metadata,
+            String fallbacbProjectCode, String fallbackSpaceCode)
     {
         for (Pair<Sample, ReferencesToResolve> sampleToResolve : samplesWithSpaceAndProjectCodes)
         {
@@ -579,6 +644,24 @@ public class RdfToModel
             Project project = projects.get(
                     new ProjectIdentifier(space.getCode(),
                             sampleToResolve.getRight().getProjectCode()));
+            if (space == null)
+            {
+                System.out.println("Cannot find space, using default stuff");
+
+                continue;
+            }
+            if (project == null)
+            {
+                System.out.println("Cannot find project, using default stuff");
+                Space space1 = spaces.get(new SpacePermId(fallbackSpaceCode));
+                Project project1 = projects.get(
+                        new ProjectIdentifier("/" + fallbackSpaceCode + "/" + fallbacbProjectCode));
+                sampleToResolve.getLeft().setProject(project1);
+                sampleToResolve.getLeft().setSpace(space1);
+
+                continue;
+            }
+
             sampleToResolve.getLeft().setSpace(space);
             sampleToResolve.getLeft().setProject(project);
             sampleToResolve.getLeft().setExperiment(idsToCollections.get(new ExperimentIdentifier(
@@ -621,6 +704,18 @@ public class RdfToModel
 
         }
     }
+
+    private void addFiles(OpenBisModel openBisModel, Map<String, Sample> externalIdentifierToSample)
+    {
+        for (var a : openBisModel.getFiles().entrySet())
+        {
+
+        }
+
+    }
+
+
+
 
     private static void resolveOpenBisStructure(List<IMetadataEntry> entries,
             String fallbackSpaceCode,
@@ -708,6 +803,7 @@ public class RdfToModel
                 Optional.ofNullable(properties.get(Constants.PROPERTY_COLLECTION)).map(
                                 Object::toString)
                         .map(x -> x.split("/"))
+                        .filter(x -> x.length >= 5)
                         .map(x -> x[3])
                         .map(x -> x.replaceAll("]$", ""))
                         .orElse(defaultExperimentCode);
@@ -716,6 +812,7 @@ public class RdfToModel
                 Optional.ofNullable(properties.get(Constants.PROPERTY_COLLECTION)).map(
                                 Object::toString)
                         .map(x -> x.split("/"))
+                        .filter(x -> x.length >= 3)
                         .map(x -> x[2])
                         .map(x -> x.replaceAll("]$", ""))
                         .orElse(myProject);
@@ -727,6 +824,12 @@ public class RdfToModel
 
         return new ReferencesToResolve(mySpace, myProject, myExperiment, samplesToResolve);
     }
+
+    private static void resolveFile()
+    {
+
+    }
+
 
 
 
@@ -1020,34 +1123,6 @@ public class RdfToModel
         return code.replaceAll(":", "_");
     }
 
-    private static String createSampleCode(SampleType sampleType, String identifier)
-    {
-        boolean isUrl = false;
-        try
-        {
-            URL url = new URL(identifier);
-            isUrl = true;
-
-        } catch (MalformedURLException ignored)
-        {
-        }
-        if (isUrl)
-        {
-            String[] parts = identifier.split("/");
-            return OpenBisModel.makeOpenBisCodeCompliant(
-                    sampleType.getCode() + "_" + parts[parts.length - 1]);
-        }
-        if (DataTypeMatcher.matches(identifier, DataType.SAMPLE))
-        {
-            String[] parts = identifier.split("/");
-            return parts[parts.length - 1];
-        }
-
-
-        return OpenBisModel.makeOpenBisCodeCompliant(identifier);
-
-    }
-
     private static String mapIdentifier(String fallbackSpace, String fallBackProject,
             Map<SpacePermId, Space> spaces, Map<ProjectIdentifier, Project> projects, Sample sample)
     {
@@ -1055,7 +1130,7 @@ public class RdfToModel
         String spaceCode =
                 Optional.ofNullable(sample.getSpace()).map(Space::getCode).orElse(fallbackSpace);
         String projectCode = Optional.ofNullable(sample.getProject()).map(Project::getCode)
-                .orElse(fallbackSpace);
+                .orElse(fallBackProject);
 
         return "/" + spaceCode + "/" + projectCode + "/" + sample.getCode();
 
@@ -1099,5 +1174,12 @@ public class RdfToModel
     }
 
 
+
+    private static boolean isOpenBisDerived(Set<SampleType> openBisDerivedTypes,
+            SampleType sampleType)
+    {
+        return openBisDerivedTypes.contains(sampleType);
+
+    }
 
 }

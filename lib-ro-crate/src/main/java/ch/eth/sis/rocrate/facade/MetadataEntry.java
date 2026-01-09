@@ -1,6 +1,10 @@
 package ch.eth.sis.rocrate.facade;
 
+import edu.kit.datamanager.ro_crate.entities.AbstractEntity;
+import edu.kit.datamanager.ro_crate.entities.data.DataEntity;
+
 import java.io.Serializable;
+import java.nio.file.Path;
 import java.util.*;
 
 public class MetadataEntry implements IMetadataEntry
@@ -17,6 +21,12 @@ public class MetadataEntry implements IMetadataEntry
 
     List<String> parentIdentifiers = new ArrayList<>();
 
+    AbstractEntity abstractEntity;
+
+    Path path;
+
+    List<DataEntity> fileEntitiesReferenced = List.of();
+
     public MetadataEntry()
     {
     }
@@ -28,6 +38,11 @@ public class MetadataEntry implements IMetadataEntry
         this.types = types;
         this.props = props;
         this.references = references;
+    }
+
+    public void setPath(Path path)
+    {
+        this.path = path;
     }
 
     public String getId()
@@ -51,6 +66,24 @@ public class MetadataEntry implements IMetadataEntry
     public Map<String, List<String>> getReferences()
     {
         return references;
+    }
+
+    @Override
+    public Optional<Path> getFileOrDirectory()
+    {
+        return Optional.ofNullable(path);
+    }
+
+    public void setFileEntitiesReferenced(
+            List<DataEntity> fileEntitiesReferenced)
+    {
+        this.fileEntitiesReferenced = fileEntitiesReferenced;
+    }
+
+    @Override
+    public List<DataEntity> getDataEntitiesReferenced()
+    {
+        return fileEntitiesReferenced;
     }
 
     public void setId(String id)

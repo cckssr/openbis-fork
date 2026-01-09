@@ -42,13 +42,20 @@ public class OpenBisModel
 
     public static final String CODE_SPECIAL_CHARACTER_REPLACEMENT = "_";
 
+    private final Map<ObjectIdentifier, List<FileInfo>> files;
+
+    public record FileInfo(String objectIdentifier, String filePath, byte[] contents)
+    {
+    }
+
 
     public OpenBisModel(Map<VocabularyPermId, Vocabulary> vocabularyTypes,
             Map<EntityTypePermId, IEntityType> entityTypes, Map<SpacePermId, Space> spaces,
             Map<ProjectIdentifier, Project> projects,
             Map<ObjectIdentifier, AbstractEntityPropertyHolder> entities,
             Map<PluginPermId, Plugin> plugins,
-            Map<String, List<Path>> miscellaneous, Map<String, String> externalToOpenBisIdentifiers)
+            Map<String, List<Path>> miscellaneous, Map<String, String> externalToOpenBisIdentifiers,
+            Map<ObjectIdentifier, List<FileInfo>> files)
     {
         this.vocabularyTypes = vocabularyTypes;
         this.entityTypes = entityTypes;
@@ -58,6 +65,7 @@ public class OpenBisModel
         this.plugins = plugins;
         this.miscellaneous = miscellaneous;
         this.externalToOpenBisIdentifiers = externalToOpenBisIdentifiers;
+        this.files = files;
     }
 
     public Map<VocabularyPermId, Vocabulary> getVocabularyTypes() {
@@ -105,6 +113,11 @@ public class OpenBisModel
     public Map<String, String> getExternalToOpenBisIdentifiers()
     {
         return externalToOpenBisIdentifiers;
+    }
+
+    public Map<ObjectIdentifier, List<FileInfo>> getFiles()
+    {
+        return files;
     }
 
     public static String makeOpenBisCodeCompliant(String candiate)
