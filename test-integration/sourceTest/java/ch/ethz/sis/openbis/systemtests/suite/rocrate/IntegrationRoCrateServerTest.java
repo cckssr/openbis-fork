@@ -19,6 +19,7 @@ import java.nio.file.Path;
 
 import static ch.ethz.sis.openbis.systemtests.suite.rocrate.environment.RoCrateServerIntegrationTestEnvironment.environment;
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
 
 public class IntegrationRoCrateServerTest
 {
@@ -322,6 +323,8 @@ public class IntegrationRoCrateServerTest
 
         ContentResponse response = request.send();
         assertEquals(response.getStatus(), 400);
+        assertTrue(response.getContentAsString().toLowerCase().contains("malformed"),
+                "Response should contain feedback");
     }
 
     // https://github.com/paulscherrerinstitute/rocrate-api/issues/39
@@ -344,6 +347,9 @@ public class IntegrationRoCrateServerTest
 
         ContentResponse response = request.send();
         assertEquals(response.getStatus(), 400);
+        assertTrue(response.getContentAsString().toLowerCase().contains("malformed"),
+                "Response should contain feedback");
+
     }
 
     // https://github.com/paulscherrerinstitute/rocrate-api/issues/35

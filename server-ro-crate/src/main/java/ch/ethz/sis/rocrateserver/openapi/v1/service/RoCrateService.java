@@ -90,7 +90,7 @@ public class RoCrateService {
             ObjectMapper objectMapper = new ObjectMapper();
             Response.ResponseBuilder responseBuilder = new ResponseBuilderImpl();
             responseBuilder.status(ex.getResponse().getStatus());
-            responseBuilder.entity(objectMapper.writeValueAsString(errorResponse));
+            responseBuilder.entity(ex.getMessage());
             return responseBuilder.build();
 
         } catch (Exception ex)
@@ -135,7 +135,7 @@ public class RoCrateService {
             ObjectMapper objectMapper = new ObjectMapper();
             Response.ResponseBuilder responseBuilder = new ResponseBuilderImpl();
             responseBuilder.status(ex.getResponse().getStatus());
-            responseBuilder.entity(objectMapper.writeValueAsString(errorResponse));
+            responseBuilder.entity(ex.getMessage());
             return responseBuilder.build();
         } catch (Exception ex)
         {
