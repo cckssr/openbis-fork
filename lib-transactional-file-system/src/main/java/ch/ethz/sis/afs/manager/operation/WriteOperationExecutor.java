@@ -17,12 +17,7 @@ package ch.ethz.sis.afs.manager.operation;
 
 import static ch.ethz.sis.afs.exception.AFSExceptions.PathIsDirectory;
 
-import java.util.Objects;
-
 import ch.ethz.sis.afs.dto.Transaction;
-import ch.ethz.sis.afs.dto.operation.CreateOperation;
-import ch.ethz.sis.afs.dto.operation.DeleteOperation;
-import ch.ethz.sis.afs.dto.operation.Operation;
 import ch.ethz.sis.afs.dto.operation.OperationName;
 import ch.ethz.sis.afs.dto.operation.WriteOperation;
 import ch.ethz.sis.afs.exception.AFSExceptions;
@@ -59,28 +54,8 @@ public class WriteOperationExecutor implements OperationExecutor<WriteOperation,
     public Void prepare(Transaction transaction, WriteOperation operation) throws Exception
     {
         // 1. Check that if the file exists, is not a directory
-
-        boolean sourceExists = IOUtils.exists(operation.getSource());
-        boolean sourceIsDirectory = sourceExists ? IOUtils.getFile(operation.getSource()).getDirectory() : false;
-
-        for (Operation previousOperation : transaction.getOperations())
-        {
-            if (previousOperation instanceof final DeleteOperation deleteOperation)
-            {
-                if (Objects.equals(operation.getOwner(), deleteOperation.getOwner()) && operation.getSource().startsWith(deleteOperation.getSource()))
-                {
-                    sourceExists = false;
-                    sourceIsDirectory = false;
-                }
-            } else if (previousOperation instanceof final CreateOperation createOperation)
-            {
-                if (Objects.equals(operation.getOwner(), createOperation.getOwner()) && createOperation.getSource().startsWith(operation.getSource()))
-                {
-                    sourceExists = true;
-                    sourceIsDirectory = Objects.equals(createOperation.getSource(), operation.getSource()) ? createOperation.isDirectory() : true;
-                }
-            }
-        }
+        boolean sourceExists = OperationExecutor.exists(transaction, operation.getSource());
+        boolean sourceIsDirectory = OperationExecutor.isDirectory(transaction, operation.getSource());
 
         if (sourceExists && sourceIsDirectory)
         {

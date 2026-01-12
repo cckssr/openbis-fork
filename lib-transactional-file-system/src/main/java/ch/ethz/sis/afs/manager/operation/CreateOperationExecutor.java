@@ -17,12 +17,8 @@ package ch.ethz.sis.afs.manager.operation;
 
 import static ch.ethz.sis.afs.exception.AFSExceptions.PathInStore;
 
-import java.util.Objects;
-
 import ch.ethz.sis.afs.dto.Transaction;
 import ch.ethz.sis.afs.dto.operation.CreateOperation;
-import ch.ethz.sis.afs.dto.operation.DeleteOperation;
-import ch.ethz.sis.afs.dto.operation.Operation;
 import ch.ethz.sis.afs.dto.operation.OperationName;
 import ch.ethz.sis.afs.exception.AFSExceptions;
 import ch.ethz.sis.shared.io.IOUtils;
@@ -59,24 +55,7 @@ public class CreateOperationExecutor implements OperationExecutor<CreateOperatio
     public Void prepare(final @NonNull Transaction transaction, final CreateOperation operation) throws Exception
     {
         // Check that file/directory does not exist
-        boolean exists = IOUtils.exists(operation.getSource());
-
-        for (Operation previousOperation : transaction.getOperations())
-        {
-            if (previousOperation instanceof final DeleteOperation deleteOperation)
-            {
-                if (Objects.equals(operation.getOwner(), deleteOperation.getOwner()) && operation.getSource().startsWith(deleteOperation.getSource()))
-                {
-                    exists = false;
-                }
-            } else if (previousOperation instanceof final CreateOperation createOperation)
-            {
-                if (Objects.equals(operation.getOwner(), createOperation.getOwner()) && createOperation.getSource().startsWith(operation.getSource()))
-                {
-                    exists = true;
-                }
-            }
-        }
+        boolean exists = OperationExecutor.exists(transaction, operation.getSource());
 
         if (exists)
         {
