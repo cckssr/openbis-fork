@@ -126,6 +126,8 @@ public class IntegrationRoCrateServerTest
         ContentResponse response = request.send();
         assertEquals(response.getStatus(), 200);
         AssertionUtil.assertContains("\"isValid\":true", response.getContentAsString());
+        AssertionUtil.assertContains("\"2e19c57d-ca62-4fa2-b8b0-a0a4e73db299\"",
+                response.getContentAsString());
     }
 
     @Test
@@ -149,6 +151,8 @@ public class IntegrationRoCrateServerTest
         assertEquals(response.getStatus(), 200);
         AssertionUtil.assertContains("\"errors\":[]", response.getContentAsString());
         AssertionUtil.assertContains("\"isValid\":true", response.getContentAsString());
+        AssertionUtil.assertContains("\"2e19c57d-ca62-4fa2-b8b0-a0a4e73db299\"",
+                response.getContentAsString());
     }
 
     @Test
