@@ -15,22 +15,21 @@
  */
 package ch.ethz.sis.afs.manager.operation;
 
-import static ch.ethz.sis.afs.exception.AFSExceptions.MD5NotMatch;
 import static ch.ethz.sis.afs.exception.AFSExceptions.PathInStore;
-import static ch.ethz.sis.afs.exception.AFSExceptions.PathIsDirectory;
 
-import java.util.Arrays;
+import java.util.Objects;
 
-import ch.ethz.sis.afs.api.dto.File;
 import ch.ethz.sis.afs.dto.Transaction;
 import ch.ethz.sis.afs.dto.operation.CreateOperation;
+import ch.ethz.sis.afs.dto.operation.DeleteOperation;
+import ch.ethz.sis.afs.dto.operation.Operation;
 import ch.ethz.sis.afs.dto.operation.OperationName;
-import ch.ethz.sis.afs.dto.operation.WriteOperation;
 import ch.ethz.sis.afs.exception.AFSExceptions;
 import ch.ethz.sis.shared.io.IOUtils;
 import lombok.NonNull;
 
-public class CreateOperationExecutor implements OperationExecutor<CreateOperation, Void> {
+public class CreateOperationExecutor implements OperationExecutor<CreateOperation, Void>
+{
 
     //
     // Singleton
@@ -47,7 +46,8 @@ public class CreateOperationExecutor implements OperationExecutor<CreateOperatio
     {
     }
 
-    public static CreateOperationExecutor getInstance() {
+    public static CreateOperationExecutor getInstance()
+    {
         return INSTANCE;
     }
 
@@ -56,17 +56,39 @@ public class CreateOperationExecutor implements OperationExecutor<CreateOperatio
     //
 
     @Override
-    public Void prepare(final @NonNull Transaction transaction, final CreateOperation operation) throws Exception {
+    public Void prepare(final @NonNull Transaction transaction, final CreateOperation operation) throws Exception
+    {
         // Check that file/directory does not exist
-        if (IOUtils.exists(operation.getSource()))
+        boolean exists = IOUtils.exists(operation.getSource());
+
+        for (Operation previousOperation : transaction.getOperations())
+        {
+            if (previousOperation instanceof final DeleteOperation deleteOperation)
+            {
+                if (Objects.equals(operation.getOwner(), deleteOperation.getOwner()) && operation.getSource().startsWith(deleteOperation.getSource()))
+                {
+                    exists = false;
+                }
+            } else if (previousOperation instanceof final CreateOperation createOperation)
+            {
+                if (Objects.equals(operation.getOwner(), createOperation.getOwner()) && createOperation.getSource().startsWith(operation.getSource()))
+                {
+                    exists = true;
+                }
+            }
+        }
+
+        if (exists)
         {
             AFSExceptions.throwInstance(PathInStore, OperationName.Create.name(), operation.getSource());
         }
+
         return null;
     }
 
     @Override
-    public boolean commit(final @NonNull Transaction transaction, final CreateOperation operation) throws Exception {
+    public boolean commit(final @NonNull Transaction transaction, final CreateOperation operation) throws Exception
+    {
         final String directoriesToCreate = operation.isDirectory() ? operation.getSource() : IOUtils.getParentPath(operation.getSource());
         IOUtils.createDirectories(directoriesToCreate);
         if (!operation.isDirectory())

@@ -1196,11 +1196,12 @@ public class Integration2PCTest
         openBISWithNoTr.login(INSTANCE_ADMIN, PASSWORD);
 
         // check there is the folder instead of the file now
-        File[] files = openBISWithNoTr.getAfsServerFacade().list(writeData.owner, writeData.source, false);
+        File[] files = openBISWithNoTr.getAfsServerFacade().list(writeData.owner, "/", false);
 
         assertEquals(files.length, 1);
-        assertEquals(files[0].getSize(), Long.valueOf(0));
+        assertEquals(files[0].getName(), writeData.source);
         assertEquals(files[0].getDirectory(), Boolean.TRUE);
+        assertNull(files[0].getSize());
     }
 
     @Test
