@@ -110,6 +110,49 @@ public class WriteTransactionOperationTest extends AbstractTransactionOperationT
     }
 
     @Test
+    public void operation_writeFileThatWasDeletedAndCreated_succeed() throws Exception
+    {
+        String baseDir = AFSEnvironment.getDefaultAFSConfig().getStringProperty(AtomicFileSystemParameter.storageRoot);
+
+        Path file = Path.of(getPath(baseDir, FILE_B_PATH));
+        assertTrue(Files.exists(file));
+        assertFalse(Files.isDirectory(file));
+
+        begin();
+        delete(FILE_B_PATH);
+        create(FILE_B_PATH, false);
+        write(FILE_B_PATH, 0, DATA);
+        write(FILE_B_PATH, DATA.length, DATA);
+        prepare();
+        commit();
+
+        assertTrue(Files.exists(file));
+        assertFalse(Files.isDirectory(file));
+        assertEquals(2 * DATA.length, Files.size(file));
+    }
+
+    @Test
+    public void operation_writeFileThatWasDeletedCreatesFileAgain_succeed() throws Exception
+    {
+        String baseDir = AFSEnvironment.getDefaultAFSConfig().getStringProperty(AtomicFileSystemParameter.storageRoot);
+
+        Path file = Path.of(getPath(baseDir, FILE_B_PATH));
+        assertTrue(Files.exists(file));
+        assertFalse(Files.isDirectory(file));
+
+        begin();
+        delete(FILE_B_PATH);
+        write(FILE_B_PATH, 0, DATA);
+        write(FILE_B_PATH, DATA.length, DATA);
+        prepare();
+        commit();
+
+        assertTrue(Files.exists(file));
+        assertFalse(Files.isDirectory(file));
+        assertEquals(2 * DATA.length, Files.size(file));
+    }
+
+    @Test
     public void operation_writeTwice_succeed() throws Exception
     {
         begin();

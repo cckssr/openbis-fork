@@ -20,6 +20,7 @@ import java.util.Objects;
 
 import ch.ethz.sis.afs.api.dto.File;
 import ch.ethz.sis.afs.dto.Transaction;
+import ch.ethz.sis.afs.dto.Transaction.PathState;
 import ch.ethz.sis.afs.dto.operation.CreateOperation;
 import ch.ethz.sis.afs.dto.operation.DeleteOperation;
 import ch.ethz.sis.afs.dto.operation.Operation;
@@ -155,9 +156,16 @@ public interface OperationExecutor<OPERATION extends Operation, RESULT>
         }
     }
 
-    static boolean exists(Transaction transaction, String source) throws Exception
+    static PathState getCachedPathState(Transaction transaction, String source) throws Exception
     {
-        boolean exists = IOUtils.exists(source);
+        if (transaction.getPathStateCache().containsKey(source))
+        {
+            return transaction.getPathStateCache().get(source);
+        }
+
+        PathState pathState = new PathState();
+        pathState.setExists(IOUtils.exists(source));
+        pathState.setDirectory(IOUtils.exists(source) ? IOUtils.getFile(source).getDirectory() : false);
 
         for (Operation previousOperation : transaction.getOperations())
         {
@@ -165,42 +173,26 @@ public interface OperationExecutor<OPERATION extends Operation, RESULT>
             {
                 if (source.startsWith(deleteOperation.getSource()))
                 {
-                    exists = false;
+                    pathState.setExists(false);
+                    pathState.setDirectory(false);
                 }
             } else if (previousOperation instanceof final CreateOperation createOperation)
             {
                 if (createOperation.getSource().startsWith(source))
                 {
-                    exists = true;
+                    pathState.setExists(true);
+                    pathState.setDirectory(!Objects.equals(createOperation.getSource(), source) || createOperation.isDirectory());
                 }
             }
         }
 
-        return exists;
+        transaction.getPathStateCache().put(source, pathState);
+        return pathState;
     }
 
-    static boolean isDirectory(Transaction transaction, String source) throws Exception
+    static void clearCachedPathState(Transaction transaction, String source) throws Exception
     {
-        boolean isDirectory = IOUtils.exists(source) ? IOUtils.getFile(source).getDirectory() : false;
 
-        for (Operation previousOperation : transaction.getOperations())
-        {
-            if (previousOperation instanceof final DeleteOperation deleteOperation)
-            {
-                if (source.startsWith(deleteOperation.getSource()))
-                {
-                    isDirectory = false;
-                }
-            } else if (previousOperation instanceof final CreateOperation createOperation)
-            {
-                if (createOperation.getSource().startsWith(source))
-                {
-                    isDirectory = Objects.equals(createOperation.getSource(), source) ? createOperation.isDirectory() : true;
-                }
-            }
-        }
-
-        return isDirectory;
     }
 
     /*

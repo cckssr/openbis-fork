@@ -17,7 +17,10 @@ package ch.ethz.sis.afs.manager.operation;
 
 import static ch.ethz.sis.afs.exception.AFSExceptions.PathIsDirectory;
 
+import java.util.Map;
+
 import ch.ethz.sis.afs.dto.Transaction;
+import ch.ethz.sis.afs.dto.Transaction.PathState;
 import ch.ethz.sis.afs.dto.operation.OperationName;
 import ch.ethz.sis.afs.dto.operation.WriteOperation;
 import ch.ethz.sis.afs.exception.AFSExceptions;
@@ -54,17 +57,36 @@ public class WriteOperationExecutor implements OperationExecutor<WriteOperation,
     public Void prepare(Transaction transaction, WriteOperation operation) throws Exception
     {
         // 1. Check that if the file exists, is not a directory
-        boolean sourceExists = OperationExecutor.exists(transaction, operation.getSource());
-        boolean sourceIsDirectory = OperationExecutor.isDirectory(transaction, operation.getSource());
+        PathState pathState = OperationExecutor.getCachedPathState(transaction, operation.getSource());
 
-        if (sourceExists && sourceIsDirectory)
+        if (pathState.isExists() && pathState.isDirectory())
         {
             AFSExceptions.throwInstance(PathIsDirectory, OperationName.Write.name(), operation.getSource());
         }
 
+        // 2. Update state of the path and its parents
+        if (!pathState.isExists())
+        {
+            pathState.setExists(true);
+            pathState.setDirectory(false);
+
+            for (Map.Entry<String, PathState> pathStateEntry : transaction.getPathStateCache().entrySet())
+            {
+                if (pathStateEntry.getValue() == pathState)
+                {
+                    continue;
+                }
+                if (operation.getSource().startsWith(pathStateEntry.getKey()))
+                {
+                    pathStateEntry.getValue().setExists(true);
+                    pathStateEntry.getValue().setDirectory(true);
+                }
+            }
+        }
+
         //byte md5Hash = IOUtils.getMD5(operation.getData());
 
-        // 1. Create temporary file if it has not been created already
+        // 3. Create temporary file if it has not been created already
         boolean tempSourceExists = IOUtils.exists(operation.getTempSource());
         if (!tempSourceExists)
         {
@@ -72,7 +94,7 @@ public class WriteOperationExecutor implements OperationExecutor<WriteOperation,
             IOUtils.createFile(operation.getTempSource());
         }
 
-        // 2. Flush bytes
+        // 4. Flush bytes
         IOUtils.write(operation.getTempSource(), 0, operation.getData());
         return null;
     }

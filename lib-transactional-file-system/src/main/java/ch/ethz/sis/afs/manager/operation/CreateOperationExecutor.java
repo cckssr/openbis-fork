@@ -15,7 +15,10 @@
  */
 package ch.ethz.sis.afs.manager.operation;
 
+import static ch.ethz.sis.afs.dto.Transaction.PathState;
 import static ch.ethz.sis.afs.exception.AFSExceptions.PathInStore;
+
+import java.util.Map;
 
 import ch.ethz.sis.afs.dto.Transaction;
 import ch.ethz.sis.afs.dto.operation.CreateOperation;
@@ -55,11 +58,28 @@ public class CreateOperationExecutor implements OperationExecutor<CreateOperatio
     public Void prepare(final @NonNull Transaction transaction, final CreateOperation operation) throws Exception
     {
         // Check that file/directory does not exist
-        boolean exists = OperationExecutor.exists(transaction, operation.getSource());
+        PathState pathState = OperationExecutor.getCachedPathState(transaction, operation.getSource());
 
-        if (exists)
+        if (pathState.isExists())
         {
             AFSExceptions.throwInstance(PathInStore, OperationName.Create.name(), operation.getSource());
+        }
+
+        // Update state of the path and its parents
+        pathState.setExists(true);
+        pathState.setDirectory(operation.isDirectory());
+
+        for (Map.Entry<String, PathState> pathStateEntry : transaction.getPathStateCache().entrySet())
+        {
+            if (pathStateEntry.getValue() == pathState)
+            {
+                continue;
+            }
+            if (operation.getSource().startsWith(pathStateEntry.getKey()))
+            {
+                pathStateEntry.getValue().setExists(true);
+                pathStateEntry.getValue().setDirectory(true);
+            }
         }
 
         return null;

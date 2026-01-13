@@ -153,7 +153,7 @@ public class TransactionConnection implements TransactionalFileSystem {
             transaction = recoveredTransactions.getRecovered(transactionId);
             state = State.Prepare;
         } else if (state == State.New) {
-            transaction = new Transaction(writeAheadLogRoot, storageRoot, transactionId, new ArrayList<>());
+            transaction = new Transaction(writeAheadLogRoot, storageRoot, transactionId, new ArrayList<>(), new HashMap<>());
             String transactionLogDir = OperationExecutor.getTransactionLogDir(transaction);
             IOUtils.createDirectories(transactionLogDir);
             state = State.Begin;
@@ -167,7 +167,7 @@ public class TransactionConnection implements TransactionalFileSystem {
                 transaction.getWriteAheadLogRoot(),
                 transaction.getStorageRoot(),
                 transaction.getUuid(),
-                new ArrayList<>());
+                new ArrayList<>(), new HashMap<>());
 
         transaction.getOperations().forEach(operation ->{
             OperationName operationName = operation.getName();
@@ -372,7 +372,6 @@ public class TransactionConnection implements TransactionalFileSystem {
     {
         source = getSafePath(OperationName.Free, source);
         validateOperationAndPaths(OperationName.Free, source, null);
-        validateWritten(OperationName.Free, source);
         String safeExistingSource = source;
         while (safeExistingSource != null && !safeExistingSource.isEmpty()
                 && !IOUtils.exists(safeExistingSource))
