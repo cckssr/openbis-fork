@@ -58,22 +58,14 @@ public class DeleteOperationExecutor implements OperationExecutor<DeleteOperatio
     {
         // Check that file/directory exist
         PathState pathState = OperationExecutor.getCachedPathState(transaction, operation.getSource());
-
         if (!pathState.isExists())
         {
             AFSExceptions.throwInstance(PathNotInStore, OperationName.Delete.name(), operation.getSource());
         }
 
         // Update state of the path and its children
-        pathState.setExists(false);
-        pathState.setDeleted(true);
-
         for (Map.Entry<String, PathState> pathStateEntry : transaction.getPathStateCache().entrySet())
         {
-            if (pathStateEntry.getValue() == pathState)
-            {
-                continue;
-            }
             if (pathStateEntry.getKey().startsWith(operation.getSource()))
             {
                 pathStateEntry.getValue().setExists(false);

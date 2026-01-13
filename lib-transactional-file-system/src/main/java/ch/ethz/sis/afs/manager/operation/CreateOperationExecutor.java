@@ -18,12 +18,13 @@ package ch.ethz.sis.afs.manager.operation;
 import static ch.ethz.sis.afs.dto.Transaction.PathState;
 import static ch.ethz.sis.afs.exception.AFSExceptions.PathInStore;
 
-import java.util.Map;
+import java.util.List;
 
 import ch.ethz.sis.afs.dto.Transaction;
 import ch.ethz.sis.afs.dto.operation.CreateOperation;
 import ch.ethz.sis.afs.dto.operation.OperationName;
 import ch.ethz.sis.afs.exception.AFSExceptions;
+import ch.ethz.sis.afs.manager.PathLockFinder;
 import ch.ethz.sis.shared.io.IOUtils;
 import lombok.NonNull;
 
@@ -59,29 +60,25 @@ public class CreateOperationExecutor implements OperationExecutor<CreateOperatio
     {
         // Check that file/directory does not exist
         PathState pathState = OperationExecutor.getCachedPathState(transaction, operation.getSource());
-
         if (pathState.isExists())
         {
             AFSExceptions.throwInstance(PathInStore, OperationName.Create.name(), operation.getSource());
         }
 
         // Update state of the path and its parents
-        pathState.setExists(true);
-        pathState.setWritten(true);
-        pathState.setDeleted(false);
-        pathState.setDirectory(operation.isDirectory());
-
-        for (Map.Entry<String, PathState> pathStateEntry : transaction.getPathStateCache().entrySet())
+        List<String> parentSubPaths = PathLockFinder.getParentSubPaths(operation.getSource());
+        for (String parentSubPath : parentSubPaths)
         {
-            if (pathStateEntry.getValue() == pathState)
+            PathState parentSubPathState = OperationExecutor.getCachedPathState(transaction, parentSubPath);
+            parentSubPathState.setExists(true);
+            parentSubPathState.setDeleted(false);
+            if (parentSubPathState == pathState)
             {
-                continue;
-            }
-            if (operation.getSource().startsWith(pathStateEntry.getKey()))
+                parentSubPathState.setWritten(true);
+                parentSubPathState.setDirectory(operation.isDirectory());
+            } else
             {
-                pathStateEntry.getValue().setExists(true);
-                pathStateEntry.getValue().setDeleted(false);
-                pathStateEntry.getValue().setDirectory(true);
+                parentSubPathState.setDirectory(true);
             }
         }
 
