@@ -325,12 +325,14 @@ class AttrHolder:
                     continue
                 additions = []
                 deletions = []
+                items_identifiers = [x['identifier'] for x in items]
+                orig_identifiers = [x['identifier'] for x in items_orig]
                 for item in items:
-                    if item['identifier'] in items_orig:
+                    if item['identifier'] in orig_identifiers:
                         continue
                     additions += [item]
                 for item in items_orig:
-                    if item in items:
+                    if item['identifier'] in items_identifiers:
                         continue
                     deletions += [item]
 
@@ -339,14 +341,16 @@ class AttrHolder:
                         "actions": [],
                         "@type": "as.dto.common.update.IdListUpdateValue",
                     }
-                    up_obj[attr2ids[attr]]["actions"] += [{
-                        "items": additions,
-                        "@type": "as.dto.common.update.ListUpdateActionAdd",
-                    }]
-                    up_obj[attr2ids[attr]]["actions"] += [{
-                        "items": deletions,
-                        "@type": "as.dto.common.update.ListUpdateActionRemove",
-                    }]
+                    if additions:
+                        up_obj[attr2ids[attr]]["actions"] += [{
+                            "items": additions,
+                            "@type": "as.dto.common.update.ListUpdateActionAdd",
+                        }]
+                    if deletions:
+                        up_obj[attr2ids[attr]]["actions"] += [{
+                            "items": deletions,
+                            "@type": "as.dto.common.update.ListUpdateActionRemove",
+                        }]
             elif "_" + attr in self.__dict__:
                 # handle multivalue attributes (tags etc.)
                 # we only cover the Set mechanism, which means we always update
