@@ -58,5 +58,7 @@ public class Transaction
         boolean isDirectory;
 
         boolean written;
+
+        boolean deleted;
     }
 }

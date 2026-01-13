@@ -67,6 +67,8 @@ public class CreateOperationExecutor implements OperationExecutor<CreateOperatio
 
         // Update state of the path and its parents
         pathState.setExists(true);
+        pathState.setWritten(true);
+        pathState.setDeleted(false);
         pathState.setDirectory(operation.isDirectory());
 
         for (Map.Entry<String, PathState> pathStateEntry : transaction.getPathStateCache().entrySet())
@@ -78,6 +80,7 @@ public class CreateOperationExecutor implements OperationExecutor<CreateOperatio
             if (operation.getSource().startsWith(pathStateEntry.getKey()))
             {
                 pathStateEntry.getValue().setExists(true);
+                pathStateEntry.getValue().setDeleted(false);
                 pathStateEntry.getValue().setDirectory(true);
             }
         }

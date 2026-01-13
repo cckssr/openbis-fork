@@ -190,11 +190,6 @@ public interface OperationExecutor<OPERATION extends Operation, RESULT>
         return pathState;
     }
 
-    static void clearCachedPathState(Transaction transaction, String source) throws Exception
-    {
-
-    }
-
     /*
      * The first step
      * If the operation is a write operation is pre written to the transaction commit log directory.

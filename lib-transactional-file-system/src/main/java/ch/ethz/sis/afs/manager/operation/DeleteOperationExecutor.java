@@ -66,6 +66,7 @@ public class DeleteOperationExecutor implements OperationExecutor<DeleteOperatio
 
         // Update state of the path and its children
         pathState.setExists(false);
+        pathState.setDeleted(true);
 
         for (Map.Entry<String, PathState> pathStateEntry : transaction.getPathStateCache().entrySet())
         {
@@ -76,6 +77,7 @@ public class DeleteOperationExecutor implements OperationExecutor<DeleteOperatio
             if (pathStateEntry.getKey().startsWith(operation.getSource()))
             {
                 pathStateEntry.getValue().setExists(false);
+                pathStateEntry.getValue().setDeleted(true);
             }
         }
 

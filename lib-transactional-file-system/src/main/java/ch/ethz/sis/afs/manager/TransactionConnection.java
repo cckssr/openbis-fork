@@ -20,7 +20,6 @@ import static ch.ethz.sis.shared.collection.List.safe;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -163,7 +162,6 @@ public class TransactionConnection implements TransactionalFileSystem {
             copiedTargetToSource.clear();
             movedSourceToTarget.clear();
             movedTargetToSource.clear();
-            deleted.clear();
         } else {
             AFSExceptions.throwInstance(AFSExceptions.TransactionReuse, transaction.getUuid(), state.name());
         }
@@ -326,22 +324,15 @@ public class TransactionConnection implements TransactionalFileSystem {
         String tempSource = OperationExecutor.getTempPath(transaction, source) + "." + UUID.randomUUID();
         source = getSafePath(OperationName.Write, source);
         WriteOperation operation = new WriteOperation(transaction.getUuid(), source, tempSource, offset, data);
-        PathLockFinder.getParentSubPaths(source).forEach(deleted::remove);
-        deleted.remove(source);
         prepare(operation, source, null);
-        PathState pathState = OperationExecutor.getCachedPathState(transaction, source);
-        pathState.setWritten(true);
         return Boolean.TRUE;
     }
-
-    private final Set<String> deleted = new HashSet<>();
 
     @Override
     public boolean delete(String source) throws Exception {
         source = getSafePath(OperationName.Delete, source);
         DeleteOperation operation = new DeleteOperation(transaction.getUuid(), source);
         prepare(operation, source, null);
-        deleted.add(source);
         return Boolean.TRUE;
     }
 
@@ -378,11 +369,7 @@ public class TransactionConnection implements TransactionalFileSystem {
     {
         source = getSafePath(OperationName.Create, source);
         final CreateOperation operation = new CreateOperation(transaction.getUuid(), source, directory);
-        PathLockFinder.getParentSubPaths(source).forEach(deleted::remove);
-        deleted.remove(source);
         prepare(operation, source, null);
-        PathState pathState = OperationExecutor.getCachedPathState(transaction, source);
-        pathState.setWritten(true);
         return Boolean.TRUE;
     }
 
@@ -468,7 +455,7 @@ public class TransactionConnection implements TransactionalFileSystem {
         }
     }
 
-    private void validateOperationAndPaths(OperationName operationName, String finalSource, String finalTarget) {
+    private void validateOperationAndPaths(OperationName operationName, String finalSource, String finalTarget) throws Exception {
         List<String> sourceSubPaths = null;
         if (finalSource != null) {
             sourceSubPaths = PathLockFinder.getParentSubPaths(finalSource);
@@ -480,14 +467,23 @@ public class TransactionConnection implements TransactionalFileSystem {
         if (state != State.Begin) {
             AFSExceptions.throwInstance(AFSExceptions.OperationNotAddedDueToState, operationName.name(), state, State.Begin);
         }
-        for (String source:safe(sourceSubPaths)) {
-            if (deleted.contains(source)) {
-                AFSExceptions.throwInstance(AFSExceptions.PathCantBeOperatedAfterDeleted, operationName.name(), source);
+        if(OperationName.Create != operationName && OperationName.Write != operationName)
+        {
+            for (String source : safe(sourceSubPaths))
+            {
+                PathState pathState = OperationExecutor.getCachedPathState(transaction, source);
+                if (pathState.isDeleted())
+                {
+                    AFSExceptions.throwInstance(AFSExceptions.PathCantBeOperatedAfterDeleted, operationName.name(), source);
+                }
             }
-        }
-        for (String target:safe(targetSubPaths)) {
-            if (deleted.contains(target)) {
-                AFSExceptions.throwInstance(AFSExceptions.PathCantBeOperatedAfterDeleted, operationName.name(), target);
+            for (String target : safe(targetSubPaths))
+            {
+                PathState pathState = OperationExecutor.getCachedPathState(transaction, target);
+                if (pathState.isDeleted())
+                {
+                    AFSExceptions.throwInstance(AFSExceptions.PathCantBeOperatedAfterDeleted, operationName.name(), target);
+                }
             }
         }
         for (String source:safe(sourceSubPaths)) {

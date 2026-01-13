@@ -65,22 +65,22 @@ public class WriteOperationExecutor implements OperationExecutor<WriteOperation,
         }
 
         // 2. Update state of the path and its parents
-        if (!pathState.isExists())
-        {
-            pathState.setExists(true);
-            pathState.setDirectory(false);
+        pathState.setExists(true);
+        pathState.setWritten(true);
+        pathState.setDeleted(false);
+        pathState.setDirectory(false);
 
-            for (Map.Entry<String, PathState> pathStateEntry : transaction.getPathStateCache().entrySet())
+        for (Map.Entry<String, PathState> pathStateEntry : transaction.getPathStateCache().entrySet())
+        {
+            if (pathStateEntry.getValue() == pathState)
             {
-                if (pathStateEntry.getValue() == pathState)
-                {
-                    continue;
-                }
-                if (operation.getSource().startsWith(pathStateEntry.getKey()))
-                {
-                    pathStateEntry.getValue().setExists(true);
-                    pathStateEntry.getValue().setDirectory(true);
-                }
+                continue;
+            }
+            if (operation.getSource().startsWith(pathStateEntry.getKey()))
+            {
+                pathStateEntry.getValue().setExists(true);
+                pathStateEntry.getValue().setDeleted(false);
+                pathStateEntry.getValue().setDirectory(true);
             }
         }
 
