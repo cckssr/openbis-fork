@@ -18,7 +18,6 @@ package ch.ethz.sis.afs.manager;
 import static ch.ethz.sis.shared.collection.List.safe;
 
 import java.io.Serializable;
-import java.nio.file.NoSuchFileException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -32,9 +31,30 @@ import ch.ethz.sis.afs.api.TransactionalFileSystem;
 import ch.ethz.sis.afs.api.dto.File;
 import ch.ethz.sis.afs.api.dto.FreeSpace;
 import ch.ethz.sis.afs.dto.Transaction;
-import ch.ethz.sis.afs.dto.operation.*;
+import ch.ethz.sis.afs.dto.Transaction.PathState;
+import ch.ethz.sis.afs.dto.operation.CopyOperation;
+import ch.ethz.sis.afs.dto.operation.CreateOperation;
+import ch.ethz.sis.afs.dto.operation.DeleteOperation;
+import ch.ethz.sis.afs.dto.operation.HashOperation;
+import ch.ethz.sis.afs.dto.operation.ListOperation;
+import ch.ethz.sis.afs.dto.operation.MoveOperation;
+import ch.ethz.sis.afs.dto.operation.Operation;
+import ch.ethz.sis.afs.dto.operation.OperationName;
+import ch.ethz.sis.afs.dto.operation.PreviewOperation;
+import ch.ethz.sis.afs.dto.operation.ReadOperation;
+import ch.ethz.sis.afs.dto.operation.WriteOperation;
 import ch.ethz.sis.afs.exception.AFSExceptions;
-import ch.ethz.sis.afs.manager.operation.*;
+import ch.ethz.sis.afs.manager.operation.CopyOperationExecutor;
+import ch.ethz.sis.afs.manager.operation.CreateOperationExecutor;
+import ch.ethz.sis.afs.manager.operation.DeleteOperationExecutor;
+import ch.ethz.sis.afs.manager.operation.HashOperationExecutor;
+import ch.ethz.sis.afs.manager.operation.ListOperationExecutor;
+import ch.ethz.sis.afs.manager.operation.MoveOperationExecutor;
+import ch.ethz.sis.afs.manager.operation.NonModifyingOperationExecutor;
+import ch.ethz.sis.afs.manager.operation.OperationExecutor;
+import ch.ethz.sis.afs.manager.operation.PreviewOperationExecutor;
+import ch.ethz.sis.afs.manager.operation.ReadOperationExecutor;
+import ch.ethz.sis.afs.manager.operation.WriteOperationExecutor;
 import ch.ethz.sis.afsjson.JsonObjectMapper;
 import ch.ethz.sis.shared.io.IOUtils;
 import lombok.NonNull;
@@ -143,7 +163,6 @@ public class TransactionConnection implements TransactionalFileSystem {
             copiedTargetToSource.clear();
             movedSourceToTarget.clear();
             movedTargetToSource.clear();
-            written.clear();
             deleted.clear();
         } else {
             AFSExceptions.throwInstance(AFSExceptions.TransactionReuse, transaction.getUuid(), state.name());
@@ -302,8 +321,6 @@ public class TransactionConnection implements TransactionalFileSystem {
         throw AFSExceptions.Unknown.getInstance(IllegalStateException.class.getSimpleName(), "Statement should be unreachable.");
     }
 
-    private final Set<String> written = new HashSet<>();
-
     @Override
     public boolean write(String source, long offset, byte[] data) throws Exception {
         String tempSource = OperationExecutor.getTempPath(transaction, source) + "." + UUID.randomUUID();
@@ -312,7 +329,8 @@ public class TransactionConnection implements TransactionalFileSystem {
         PathLockFinder.getParentSubPaths(source).forEach(deleted::remove);
         deleted.remove(source);
         prepare(operation, source, null);
-        written.add(source);
+        PathState pathState = OperationExecutor.getCachedPathState(transaction, source);
+        pathState.setWritten(true);
         return Boolean.TRUE;
     }
 
@@ -363,7 +381,8 @@ public class TransactionConnection implements TransactionalFileSystem {
         PathLockFinder.getParentSubPaths(source).forEach(deleted::remove);
         deleted.remove(source);
         prepare(operation, source, null);
-        written.add(source);
+        PathState pathState = OperationExecutor.getCachedPathState(transaction, source);
+        pathState.setWritten(true);
         return Boolean.TRUE;
     }
 
@@ -436,13 +455,14 @@ public class TransactionConnection implements TransactionalFileSystem {
         return OperationExecutor.getRealPath(transaction, source);
     }
 
-    private void validateWritten(OperationName operationName, String finalSource) {
+    private void validateWritten(OperationName operationName, String finalSource) throws Exception {
         List<String> sourceSubPaths = null;
         if (finalSource != null) {
             sourceSubPaths = PathLockFinder.getParentSubPaths(finalSource);
         }
         for (String source:safe(sourceSubPaths)) {
-            if (written.contains(source)) {
+            PathState pathState = OperationExecutor.getCachedPathState(transaction, source);
+            if (pathState.isWritten()) {
                 AFSExceptions.throwInstance(AFSExceptions.PathCantBeReadAfterWritten, operationName.name(), source);
             }
         }

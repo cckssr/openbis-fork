@@ -56,5 +56,7 @@ public class Transaction
         boolean exists;
 
         boolean isDirectory;
+
+        boolean written;
     }
 }

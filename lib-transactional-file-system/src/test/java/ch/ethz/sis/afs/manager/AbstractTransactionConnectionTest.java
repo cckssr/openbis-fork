@@ -172,7 +172,7 @@ public abstract class AbstractTransactionConnectionTest extends AbstractTest {
     public void assertError(Throwable throwable, String expectedError){
         ThrowableReason cause = (ThrowableReason) throwable.getCause();
         ExceptionReason reason = (ExceptionReason) cause.getReason();
-        Assert.assertEquals(reason.getMessage(), expectedError);
+        Assert.assertEquals(expectedError, reason.getMessage());
     }
 
 }
