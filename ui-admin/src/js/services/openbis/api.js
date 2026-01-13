@@ -446,9 +446,11 @@ class Facade {
   }
 
   createProjects(projects) {
-    return this.promise(
-      this.v3.createProjects(projects)
-    )
+    return this.promise(this.v3.createProjects(projects))
+  }
+
+  createDataSets(dataSets) {
+    return this.promise(this.v3.createDataSets(dataSets))
   }
 
   free(owner, source) {

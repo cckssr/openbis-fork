@@ -202,7 +202,7 @@ export const EntityFormContextProvider = ({
       await handleDeleteWithDependencyCheck();
     } else if (actionName === 'move') {
       await handleMoveRequest();
-    } else if (actionName === 'newCollection' || actionName === 'newObject') {
+    } else if (actionName === 'newCollection' || actionName === 'newObject' || actionName === 'newDataSet') {
       openNewDialog(form?.entityKind, actionName);
     } else {
 

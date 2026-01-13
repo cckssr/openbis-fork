@@ -12,6 +12,7 @@ const CLASS_FULL_NAMES = [
   'as/dto/common/search/SearchResult',
   'as/dto/dataset/create/CreateDataSetTypesOperation',
   'as/dto/dataset/create/DataSetTypeCreation',
+  'as/dto/dataset/create/DataSetCreation',
   'as/dto/dataset/delete/DataSetTypeDeletionOptions',
   'as/dto/dataset/delete/DeleteDataSetTypesOperation',
   'as/dto/dataset/delete/DataSetDeletionOptions',

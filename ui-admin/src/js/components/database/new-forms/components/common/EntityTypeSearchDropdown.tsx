@@ -31,7 +31,7 @@ export const EntityTypeSearchDropdown: React.FC<EntityTypeSearchDropdownProps> =
   const [value, setValue] = useState<any>(selectedEntity || null);
 
   const searchCollectionTypes = useCallback(async (searchTerm: string | null, limit?: number) => {
-    const { ExperimentTypePermId, ExperimentTypeFetchOptions, ExperimentTypeSearchCriteria } = openbisFacade;
+    const { ExperimentTypeFetchOptions, ExperimentTypeSearchCriteria } = openbisFacade;
     const criteria = new ExperimentTypeSearchCriteria();
     if (searchTerm && searchTerm.length >= 2) {
       criteria.withCode().thatContains(searchTerm);
@@ -45,7 +45,7 @@ export const EntityTypeSearchDropdown: React.FC<EntityTypeSearchDropdownProps> =
   }, [openbisFacade]);
 
   const searchObjectTypes = useCallback(async (searchTerm: string | null, limit?: number) => {
-    const { SampleTypePermId, SampleTypeFetchOptions, SampleTypeSearchCriteria } = openbisFacade;
+    const { SampleTypeFetchOptions, SampleTypeSearchCriteria } = openbisFacade;
     const criteria = new SampleTypeSearchCriteria();
     if (searchTerm && searchTerm.length >= 2) {
       criteria.withCode().thatContains(searchTerm);
@@ -58,29 +58,39 @@ export const EntityTypeSearchDropdown: React.FC<EntityTypeSearchDropdownProps> =
     return result.getObjects();
   }, [openbisFacade]);
 
+  const searchDatasetTypes = useCallback(async (searchTerm: string | null, limit?: number) => {
+    const { DataSetTypeFetchOptions, DataSetTypeSearchCriteria } = openbisFacade;
+    const criteria = new DataSetTypeSearchCriteria();
+    if (searchTerm && searchTerm.length >= 2) {
+      criteria.withCode().thatContains(searchTerm);
+    }
+    const fetchOptions = new DataSetTypeFetchOptions();
+    if (limit !== undefined) {
+      fetchOptions.from(0).count(limit);
+    }
+    const result = await openbisFacade.searchDataSetTypes(criteria, fetchOptions);
+    return result.getObjects();
+  }, [openbisFacade]);
+
   const searchEntityTypes = useCallback(async (searchTerm: string, limit?: number) => {
     setLoading(true);
-    
-    try {
-      let entityOptions: any[] = [];
-      switch (actionName) {
-        case EntityKind.NEW_COLLECTION:
-          entityOptions = [...entityOptions, ...await searchCollectionTypes(searchTerm, limit)];
-          break;
-        case EntityKind.NEW_OBJECT:
-          entityOptions = [...entityOptions, ...await searchObjectTypes(searchTerm, limit)];
-          break;
-        default:
-          break;
-      }
-      setOptions(entityOptions);
-    } catch (error) {
-      console.error('Error searching entity types:', error);
-      setOptions([]);
-    } finally {
-      setLoading(false);
+    let entityOptions: any[] = [];
+    switch (actionName) {
+      case EntityKind.NEW_COLLECTION:
+        entityOptions = [...entityOptions, ...await searchCollectionTypes(searchTerm, limit)];
+        break;
+      case EntityKind.NEW_OBJECT:
+        entityOptions = [...entityOptions, ...await searchObjectTypes(searchTerm, limit)];
+        break;
+      case EntityKind.NEW_DATASET:
+        entityOptions = [...entityOptions, ...await searchDatasetTypes(searchTerm, limit)];
+        break;
+      default:
+        throw new Error(`Unknown new entity type action: ${actionName}`);
     }
-  }, [actionName, searchCollectionTypes, searchObjectTypes]);
+    setOptions(entityOptions);
+    setLoading(false);
+  }, [actionName, searchCollectionTypes, searchObjectTypes, searchDatasetTypes]);
 
   // Load initial 10 items on mount
   useEffect(() => {
@@ -113,34 +123,34 @@ export const EntityTypeSearchDropdown: React.FC<EntityTypeSearchDropdownProps> =
 
   const getOptionLabel = (option: any) => {
     if (typeof option === 'string') return option;
-    
+
     // Handle nested identifier structure (for Projects, Spaces, etc.)
     if (option?.identifier?.identifier) {
       return option.identifier.identifier;
     }
-    
+
     // Fall back to other properties
     return option?.displayName || option?.code || option?.identifier || option?.id || 'Unknown';
   };
 
   const isOptionEqualToValue = (option: any, value: any) => {
     if (!option || !value) return false;
-    
+
     // Compare permIds
     if (option?.permId?.permId && value?.permId?.permId) {
       return option.permId.permId === value.permId.permId;
     }
-    
+
     // Compare identifiers
     if (option?.identifier?.identifier && value?.identifier?.identifier) {
       return option.identifier.identifier === value.identifier.identifier;
     }
-    
+
     // Compare IDs
     return option?.id === value?.id;
   };
 
-  return ( 
+  return (
     <Box sx={{ width: '100%' }}>
       <Autocomplete
         value={value}
@@ -172,12 +182,13 @@ export const EntityTypeSearchDropdown: React.FC<EntityTypeSearchDropdownProps> =
         renderOption={(props, option) => {
           const displayName = option?.identifier?.identifier || option?.displayName || option?.code || 'Unknown';
           const permId = option?.permId?.permId;
-          
+          const generatedCodePrefix = option?.generatedCodePrefix;
+          const description = option?.description;
           return (
             <Box component="li" {...props}>
-                <Typography variant="body1">
-                  {displayName} ({permId})
-                </Typography>
+              <Typography variant="body1">
+                {displayName}
+              </Typography>
             </Box>
           );
         }}
@@ -186,7 +197,7 @@ export const EntityTypeSearchDropdown: React.FC<EntityTypeSearchDropdownProps> =
         selectOnFocus
         handleHomeEndKeys
       />
-      
+
     </Box>
   );
 };

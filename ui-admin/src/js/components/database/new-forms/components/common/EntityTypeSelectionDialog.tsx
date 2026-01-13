@@ -1,16 +1,9 @@
 import React, { useState } from 'react';
 import Dialog from '@src/js/components/common/dialog/Dialog.jsx';
 import Button from '@src/js/components/common/form/Button.jsx';
-import Message from '@src/js/components/common/form/Message.jsx';
-import { EntityKind } from '@src/js/components/database/new-forms/types/formEnums.ts';
-import {
-	Autocomplete,
-	TextField,
-	Box,
-	Typography,
-	CircularProgress
-} from '@mui/material';
+import { Box } from '@mui/material';
 import { EntityTypeSearchDropdown } from '@src/js/components/database/new-forms/components/common/EntityTypeSearchDropdown.tsx';
+import { EntityKind } from '@src/js/components/database/new-forms/types/formEnums.ts';
 
 interface EntityTypeSelectionDialogProps {
 	open: boolean;
@@ -24,7 +17,6 @@ const EntityTypeSelectionDialog: React.FC<EntityTypeSelectionDialogProps> = ({ o
 	const [selectedTarget, setSelectedTarget] = useState<any>(null);
 
 	const handleTargetSelection = (target: any) => {
-		console.log({target});
 		setSelectedTarget(target);
 		onConfirm(target);
 	};
@@ -42,11 +34,24 @@ const EntityTypeSelectionDialog: React.FC<EntityTypeSelectionDialogProps> = ({ o
 		);
 	};
 
+	const getTitle = () => {
+		switch (actionName) {
+			case EntityKind.NEW_COLLECTION:
+				return "Select a Collection type";
+			case EntityKind.NEW_OBJECT:
+				return "Select a Object type";
+			case EntityKind.NEW_DATASET:
+				return "Select a Dataset type";
+			default:
+				return "Select a Entity type";
+		}
+	};
+
 	return (
 		<Dialog
 			open={open}
 			onClose={onCancel}
-			title="Select a Experiment/Collection type"
+			title={getTitle()}
 			content={
 				renderEntitySelection()
 			}

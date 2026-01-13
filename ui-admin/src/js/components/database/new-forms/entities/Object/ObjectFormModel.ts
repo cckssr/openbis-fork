@@ -54,14 +54,14 @@ export class ObjectFormModel {
       isDirty: false,
       isValid: true,
       actions: [
-        // getNewObjectAction(EntityKind.OBJECT),
-        // getNewDatasetAction(EntityKind.OBJECT),
-        // getDividerAction(FormMode.VIEW),
+        getNewObjectAction(EntityKind.OBJECT),
+        getNewDatasetAction(EntityKind.OBJECT),
+        getDividerAction(FormMode.VIEW),
         getEditAction(),
         getMoveAction(),
         getDeleteAction(),
-        //getDividerAction(FormMode.VIEW),
-        // getMoreActionsAction(),
+        getDividerAction(FormMode.VIEW),
+        getMoreActionsAction(),
         getSaveAction(EntityKind.OBJECT),
         getCancelAction(),
         getDividerAction(FormMode.EDIT),
@@ -76,7 +76,7 @@ export class ObjectFormModel {
     const staticFields = [
       getCodeField({ permId: { permId: permId } }, { readOnly: false, value: '', id: permId + '-code' }),
 			getProjectField({ permId: { permId: permId } }, { value: params.parentId, id: permId + '-project' }),
-      getTypeField({ permId: { permId: permId } }, { value: params.entityType, id: permId + '-objectTypeCode' }),
+      getTypeField({ permId: { permId: permId } }, { value: params.entityType, id: permId + '-entityType' }),
     ];
 
     const propertyFields = getPropertyFieldsFromAssignments(dto);
@@ -95,64 +95,6 @@ export class ObjectFormModel {
       actions: [
         getSaveAction(),
         getCancelAction(),
-      ],
-    }
-  }
-
-  static adaptNewEntryDtoToForm(type: string, tmpPermId: string, params: any): Form {
-    const permId = tmpPermId + '-' + EntityKind.NEW_OBJECT;
-    return {
-      entityPermId: tmpPermId,
-      entityType: type,
-      title: `New ENTRY`,
-      version: 1,
-      entityKind: EntityKind.NEW_OBJECT,
-      meta: { spacePermId: params.parentId },
-      sections: [
-        {
-          section: FormSection.IDENTIFICATION_INFO,
-          fields: [
-            permId + '-objectTypeCode',
-            permId + '-code',
-          ],
-        },
-        {
-          section: FormSection.GENERAL,
-          fields: [
-            permId + '-showOnProjectOverview',
-            permId + '-document',
-          ],
-        },
-      ],
-      fields: [
-        getCodeField({ permId: { permId: permId } }, { readOnly: false, value: params.defaultCode, id: permId + '-code' }),
-        getTypeField({ permId: { permId: permId } }, { value: 'ENTRY', id: permId + '-objectTypeCode' }),
-      ],
-      isDirty: false,
-      isValid: true,
-      actions: [
-        {
-          name: 'object:save',
-          label: 'Save',
-          component: 'button',
-          isAllowed: true,
-          visibility: [
-            {
-              mode: FormMode.CREATE,
-            },
-          ],
-        },
-        {
-          name: 'new-form:cancel',
-          label: 'Cancel',
-          component: 'button',
-          isAllowed: true,
-          visibility: [
-            {
-              mode: FormMode.CREATE,
-            },
-          ],
-        }
       ],
     }
   }

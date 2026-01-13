@@ -307,12 +307,12 @@ class DatabaseComponent extends React.PureComponent {
       id
     )
   }
-  //params.oldId.substring(0, params.oldId.indexOf('-'))
+
   externalAppController = {
     createNewObject: (params) => this.createNewObject(params.newObjectType, params.fromObjectType, params.fromId, params.selectedEntityType),
     objectChange: (params) => this.objectChange(params.id, params.objectTypeChanging, params.changed),
-    objectCreate: (params) => this.objectCreate(params.oldType, params.oldId, params.newType, params.newId),
-    closeForm: (params) => this.closeForm(params.type, params.id),
+    objectCreate: (params) => this.objectCreate(params.oldType, params.oldId.substring(0, params.oldId.indexOf('-')), params.newType, params.newId),
+    closeForm: (params) => this.closeForm(params.type, params.id.substring(0, params.oldId.indexOf('-'))),
     objectDelete: (params) => this.objectDelete(params.type, params.id)
   }
 

@@ -1,7 +1,7 @@
 import { Form } from '@src/js/components/database/new-forms/types/formITypes.ts';
 import { IFormController } from '@src/js/components/database/new-forms/types/IFormController.ts';
 import { DatasetFormModel } from '@src/js/components/database/new-forms/entities/Dataset/DatasetFormModel.ts';
-import { FormMode } from '@src/js/components/database/new-forms/types/formEnums.ts';
+import { EntityKind, FormMode } from '@src/js/components/database/new-forms/types/formEnums.ts';
 import { findFormFieldById, getChangedEditableFieldValues } from '@src/js/components/database/new-forms/utils/formFieldUtil.ts';
 import { createDummyDataSetIdentifierFromExperimentIdentifier, createDummySampleIdentifierFromSampleIdentifier } from '@src/js/components/database/new-forms/utils/identifierUtil.ts';
 import { fetchRights } from '@src/js/components/database/new-forms/utils/authorizationServiceUtil.ts';
@@ -26,7 +26,18 @@ export class DatasetFormController implements IFormController {
 		return result;
 	}
 
-	async load(permId: string): Promise<Form> {
+	async load(permId: string, entityKind?: string, params?: any): Promise<Form> {
+		if (entityKind === EntityKind.NEW_DATASET) {
+			const typeCode = params.entityType;
+			const { EntityTypePermId, DataSetTypeFetchOptions } = this.openbisFacade;
+			const id = new EntityTypePermId(typeCode)
+			const fetchOptions = new DataSetTypeFetchOptions()
+			fetchOptions.withPropertyAssignments().withPropertyType().withVocabulary().withTerms();
+			const types = await this.openbisFacade.getDataSetTypes([id], fetchOptions)
+			const dto = types[typeCode];
+			console.log('DatasetFormController.load', { dto });
+			return DatasetFormModel.adaptNewDatasetDtoToForm(dto, permId, params);
+		}
 		const { DataSetPermId, DataSetFetchOptions } = this.openbisFacade;
 		const id = new DataSetPermId(permId);
 		const fetchOptions = new DataSetFetchOptions();
@@ -35,9 +46,7 @@ export class DatasetFormController implements IFormController {
 		fetchOptions.withChildren();
 		fetchOptions.withParents();
 		fetchOptions.withProperties();
-		fetchOptions.withType();
-		fetchOptions.withType().withPropertyAssignments();
-		fetchOptions.withType().withPropertyAssignments().withPropertyType();
+		fetchOptions.withType().withPropertyAssignments().withPropertyType().withVocabulary().withTerms();
 		fetchOptions.withModifier();
 		fetchOptions.withRegistrator();
 		const result = await this.openbisFacade.getDataSets([id], fetchOptions);
@@ -59,7 +68,21 @@ export class DatasetFormController implements IFormController {
 	}
 
 	async _createDataset(form: Form): Promise<number> {
-		return Promise.resolve(form.version + 1);
+		const { DataSetCreation, EntityTypePermId, ExperimentIdentifier, SampleIdentifier } = this.openbisFacade;
+		const creation = new DataSetCreation();
+		creation.setCode(form.fields.find((field: any) => field.id === form.entityPermId + '-code')?.value);
+		creation.setTypeId(new EntityTypePermId(form.entityType, EntityKind.DATA_SET));
+		const collectionId = form.fields.find((field: any) => field.id === form.entityPermId + '-collection')?.value;
+		if (collectionId) {
+			creation.setExperimentId(new ExperimentIdentifier(collectionId));
+		}
+		const objectId = form.fields.find((field: any) => field.id === form.entityPermId + '-object')?.value;
+		if (objectId) {
+			creation.setSampleId(new SampleIdentifier(objectId));
+		}
+		getChangedEditableFieldValues(form, creation);
+		const result = await this.openbisFacade.createDataSets([creation]);
+		return Promise.resolve(result[0].getPermId() || '');
 	}
 
 	async _updateDataset(form: Form): Promise<number> {
@@ -79,7 +102,7 @@ export class DatasetFormController implements IFormController {
 		return Promise.resolve(form.version + 1);
 	}
 
-	async checkPermissions(form: Form) {	
+	async checkPermissions(form: Form) {
 		return { canEdit: true, canDelete: true, canMove: true };
 		/* const objId = form.entityPermId;
 		const { ExperimentPermId, SampleIdentifier, DataSetPermId, RightsFetchOptions } = this.openbisFacade;
@@ -100,18 +123,18 @@ export class DatasetFormController implements IFormController {
 		//return { canEdit: editable, canDelete: deletable, canMove: true };
 	}
 
-	async delete(form: Form, context?: any): Promise<void> {		
+	async delete(form: Form, context?: any): Promise<void> {
 		// If this is just a check, return early
 		if (context?.checkOnly) {
 			return;
 		}
-		
+
 		// Get delete reason from context or use default
 		const deleteReason = context?.deleteReason || 'delete via ng-ui';
-		
+
 		// Check if descendants should be deleted (from checkbox in dialog)
 		const includeDescendants = context?.includeDescendants || false;
-		
+
 		// If descendants checkbox is checked, find and move descendant datasets to trashcan first using DeleteService
 		if (includeDescendants) {
 			const descendantDatasets = await this.getDescendantDatasets(form.entityPermId);
@@ -122,7 +145,7 @@ export class DatasetFormController implements IFormController {
 				}
 			}
 		}
-		
+
 		// Finally, move the dataset itself to trashcan using DeleteService
 		// Pass the permId as an object - DeleteService will extract it
 		const result = await this.deleteService.moveDataSetsToTrashcan([{ permId: form.entityPermId }], deleteReason);
@@ -131,7 +154,7 @@ export class DatasetFormController implements IFormController {
 		}
 		return Promise.resolve();
 	}
-	
+
 	/**
 	 * Get descendant datasets (child datasets)
 	 * @param datasetPermId The permId of the parent dataset
@@ -142,7 +165,7 @@ export class DatasetFormController implements IFormController {
 		const id = new DataSetPermId(datasetPermId);
 		const fetchOptions = new DataSetFetchOptions();
 		fetchOptions.withChildren && fetchOptions.withChildren();
-		
+
 		try {
 			const result = await this.openbisFacade.getDataSets([id], fetchOptions);
 			const dataset = result[datasetPermId];

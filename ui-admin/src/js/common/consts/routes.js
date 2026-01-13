@@ -140,6 +140,10 @@ const routes = {
     page: pages.DATABASE,
     type: objectTypes.DATA_SET
   }),
+  NEW_DATA_SET: new Route('/new-dataset/:entityType/:parentId/:id', {
+    page: pages.DATABASE,
+    type: objectTypes.NEW_DATA_SET,
+  }),
   DATA_SET_TYPE: new Route('/dataset-type/:id', {
     page: pages.TYPES,
     type: objectTypes.DATA_SET_TYPE

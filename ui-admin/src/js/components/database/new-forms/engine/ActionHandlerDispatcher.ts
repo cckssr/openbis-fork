@@ -27,7 +27,9 @@ class ActionHandlerDispatcher {
         return CoreFormModel.newCollectionAction;
       case 'newObject':
         return CoreFormModel.newObjectAction;
-      
+      case 'newDataSet':
+        return CoreFormModel.newDatasetAction;
+
       // Space-specific actions
       case 'space:save':
         return SpaceFormModel.saveSpaceAction;

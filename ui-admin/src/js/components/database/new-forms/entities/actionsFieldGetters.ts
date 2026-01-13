@@ -147,7 +147,7 @@ export const getNewCollectionAction = (entityType: EntityKind) => {
 
 export const getNewDatasetAction = (entityType: EntityKind) => {
 	return {
-		name: `${entityType}:new-dataset`,
+		name: `newDataSet`,
 		label: 'New Dataset',
 		component: 'button',
 		isAllowed: true,

@@ -4,7 +4,7 @@ import { findFormFieldById } from "@src/js/components/database/new-forms/utils/f
 
 export class CoreFormModel {
 
-	static mapEntityKindToCollectionType = (entityKind: string) => {
+	static mapNewToEntityKind = (entityKind: string) => {
 		switch (entityKind) {
 			case EntityKind.NEW_COLLECTION:
 				return EntityKind.COLLECTION;
@@ -28,7 +28,7 @@ export class CoreFormModel {
 			onAfterSave({
 				oldType: form.entityKind,
 				oldId: form.entityPermId,
-				newType: CoreFormModel.mapEntityKindToCollectionType(form.entityKind),
+				newType: CoreFormModel.mapNewToEntityKind(form.entityKind),
 				newId: newPermId
 			});
 		} else {
@@ -72,6 +72,17 @@ export class CoreFormModel {
 		context.controller.move(context.form);
 	};
 
+	/* 	static newEntityAction = (context: IExtendedActionContext, selectedEntityType: string) => {
+			const fromId = findFormFieldById(context.form.fields, context.form.entityPermId, 'identifier', true) as string;
+			const fromObjectType = CoreFormModel.mapNewToEntityKind(context.form.entityKind);
+			if (context.externalAppController) {
+				context.externalAppController.createNewObject({ newObjectType: EntityKind.NEW_ENTITY, fromObjectType: context.form.entityKind, fromId: fromId, selectedEntityType: selectedEntityType });
+			} else {
+				console.warn("onNewEntity callback not provided to context.");
+				throw new Error("onNewEntity callback not provided to context.");
+			}
+		}; */
+
 	static newCollectionAction = (context: IExtendedActionContext, selectedEntityType: string) => {
 		if (context.externalAppController) {
 			context.externalAppController.createNewObject({ newObjectType: EntityKind.NEW_COLLECTION, fromObjectType: context.form.entityKind, fromId: findFormFieldById(context.form.fields, context.form.entityPermId, 'identifier', true) as string, selectedEntityType: selectedEntityType });
@@ -87,6 +98,15 @@ export class CoreFormModel {
 		} else {
 			console.warn("onNewObject callback not provided to context.");
 			throw new Error("onNewObject callback not provided to context.");
+		}
+	};
+
+	static newDatasetAction = (context: IExtendedActionContext, selectedEntityType: string) => {
+		if (context.externalAppController) {
+			context.externalAppController.createNewObject({ newObjectType: EntityKind.NEW_DATASET, fromObjectType: context.form.entityKind, fromId: findFormFieldById(context.form.fields, context.form.entityPermId, 'identifier', true) as string, selectedEntityType: selectedEntityType });
+		} else {
+			console.warn("onNewDataset callback not provided to context.");
+			throw new Error("onNewDataset callback not provided to context.");
 		}
 	};
 }

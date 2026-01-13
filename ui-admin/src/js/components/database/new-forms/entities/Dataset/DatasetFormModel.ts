@@ -2,7 +2,6 @@ import { Form, IExtendedActionContext, } from '@src/js/components/database/new-f
 import {
   getCodeField,
   getPermIdField,
-  getIdentifierField,
   getPathField,
   getRegistratorField,
   getRegistrationDateField,
@@ -11,10 +10,10 @@ import {
   getTypeField,
   getPropertyFieldsFromAssignments,
   getObjectField,
-  getCollectionField,
+  getCollectionField
 } from '@src/js/components/database/new-forms/entities/formFieldGetters.ts';
 import { EntityKind, FormMode } from '@src/js/components/database/new-forms/types/formEnums.ts';
-import { getAutoSaveAction, getCancelAction, getDividerAction, getEditAction, getSaveAction, getDeleteAction, getMoveAction } from '@src/js/components/database/new-forms/entities/actionsFieldGetters.ts';
+import { getAutoSaveAction, getCancelAction, getDividerAction, getEditAction, getSaveAction, getDeleteAction, getMoveAction, getNewObjectAction, getNewDatasetAction, getMoreActionsAction } from '@src/js/components/database/new-forms/entities/actionsFieldGetters.ts';
 
 export class DatasetFormModel {
 
@@ -25,8 +24,8 @@ export class DatasetFormModel {
       getTypeField(dto),
       getPermIdField(dto),
       getCodeField(dto),
-      dto.experiment? getCollectionField(dto) : null,
-      dto.sample? getObjectField(dto) : null,
+      dto.experiment ? getCollectionField(dto) : null,
+      dto.sample ? getObjectField(dto) : null,
       getPathField(dto),
       getRegistratorField(dto),
       getRegistrationDateField(dto),
@@ -46,20 +45,51 @@ export class DatasetFormModel {
       isDirty: false,
       isValid: true,
       actions: [
-        // getNewObjectAction(EntityKind.COLLECTION),
-				// getNewDatasetAction(EntityKind.COLLECTION),
-				// getDividerAction(FormMode.VIEW),
-				getEditAction(),
-				getMoveAction(),
-				getDeleteAction(),
-				//getDividerAction(FormMode.VIEW),
-				// getMoreActionsAction(),
-				getSaveAction(),
-				getCancelAction(),
-				getDividerAction(FormMode.EDIT),
-				getAutoSaveAction(),
+        getNewObjectAction(EntityKind.DATASET),
+        getNewDatasetAction(EntityKind.DATASET),
+        getDividerAction(FormMode.VIEW),
+        getEditAction(),
+        getMoveAction(),
+        getDeleteAction(),
+        getDividerAction(FormMode.VIEW),
+        getMoreActionsAction(),
+        getSaveAction(),
+        getCancelAction(),
+        getDividerAction(FormMode.EDIT),
+        getAutoSaveAction(),
       ]
     };
+  }
+
+  static adaptNewDatasetDtoToForm(dto: any, tmpPermId: string, params: any): Form {
+
+    const permId = tmpPermId + '-' + EntityKind.NEW_DATASET;
+    const staticFields = [
+      getCodeField({ permId: { permId: permId } }, { readOnly: false, value: '', id: permId + '-code' }),
+      getTypeField({ permId: { permId: permId } }, { value: params.entityType, id: permId + '-entityType' }),
+      getCollectionField({ permId: { permId: permId } }, { value: params.parentId, id: permId + '-collection' }),
+      getObjectField({ permId: { permId: permId } }, { value: params.parentId, id: permId + '-object' }),
+    ];
+    const propertyFields = getPropertyFieldsFromAssignments(dto);
+
+    return {
+      entityPermId: permId,
+      entityType: params.entityType,
+      title: `New Dataset`,
+      version: 1,
+      entityKind: EntityKind.NEW_DATASET,
+      meta: {},
+      fields: [
+        ...staticFields,
+        ...propertyFields,
+      ],
+      isDirty: false,
+      isValid: true,
+      actions: [
+        getSaveAction(),
+        getCancelAction(),
+      ],
+    }
   }
 
   static saveDatasetAction = async (context: IExtendedActionContext) => {
@@ -68,6 +98,7 @@ export class DatasetFormModel {
     const newPermId = await controller.save(form, mode);
     if (mode === FormMode.CREATE) {
       alert(`CREATE to be implemented`);
+      //onAfterSave({ oldType: EntityKind.NEW_DATASET, oldId: form.entityPermId, newType: EntityKind.DATASET, newId: newPermId });
     } else {
       onAfterSave();
     }
