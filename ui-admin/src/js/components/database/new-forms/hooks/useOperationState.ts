@@ -47,20 +47,23 @@ export const useOperationState = () => {
     ): Promise<T | null> => {
       const { setLoading: shouldSetLoading = false, setSaving: shouldSetSaving = false } = options;
 
-      try {
-        if (shouldSetLoading) setLoading(true);
-        if (shouldSetSaving) setSaving(true);
-        setError(null);
+      /* try { */
+      if (shouldSetLoading) setLoading(true);
+      if (shouldSetSaving) setSaving(true);
+      setError(null);
 
-        const result = await operation();
-        return result;
-      } catch (error: any) {
+      const result = await operation();
+      if (shouldSetLoading) setLoading(false);
+      if (shouldSetSaving) setSaving(false);
+      return result;
+      /* } catch (error: any) {
         setError(error);
         return null;
       } finally {
         if (shouldSetLoading) setLoading(false);
         if (shouldSetSaving) setSaving(false);
-      }
+      } */
+      
     },
     [setLoading, setSaving, setError]
   );

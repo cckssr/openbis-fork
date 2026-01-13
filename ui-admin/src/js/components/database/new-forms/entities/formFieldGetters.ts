@@ -1,5 +1,5 @@
 import { FormField } from '@src/js/components/database/new-forms/types/formITypes.ts';
-import { FormFieldDataType, FormSection, Widget } from '@src/js/components/database/new-forms/types/formEnums.ts';
+import { FormFieldDataType, FormMode, FormSection, Widget } from '@src/js/components/database/new-forms/types/formEnums.ts';
 import { getFormatedDate } from '@src/js/components/database/new-forms/utils/dateUtil.ts';
 
 // Helper type for overrides
@@ -299,7 +299,7 @@ export function getPropertyValue(
         return dto.getMultiValueBooleanProperty?.(propertyCode) || null;
       case FormFieldDataType.HYPERLINK:
         return dto.getMultiValueHyperlinkProperty?.(propertyCode) || null;
-      case FormFieldDataType.CONTROLLED_VOCABULARY:
+      case FormFieldDataType.CONTROLLEDVOCABULARY:
         return dto.getMultiValueControlledVocabularyProperty?.(propertyCode) || null;
       case FormFieldDataType.SAMPLE:
         return dto.getMultiValueSampleProperty?.(propertyCode) || null;
@@ -325,7 +325,7 @@ export function getPropertyValue(
       return dto.getTimestampProperty?.(propertyCode) || null;
     case FormFieldDataType.BOOLEAN:
       return dto.getBooleanProperty?.(propertyCode) || null;
-    case FormFieldDataType.CONTROLLED_VOCABULARY:
+    case FormFieldDataType.CONTROLLEDVOCABULARY:
       return dto.getControlledVocabularyProperty?.(propertyCode) || null;
     case FormFieldDataType.SAMPLE:
       return dto.getSampleProperty?.(propertyCode) || null;
@@ -387,7 +387,7 @@ export function setPropertyValue(
       case FormFieldDataType.HYPERLINK:
         dto.setMultiValueHyperlinkProperty?.(propertyCode, value);
         return;
-      case FormFieldDataType.CONTROLLED_VOCABULARY:
+      case FormFieldDataType.CONTROLLEDVOCABULARY:
         dto.setMultiValueControlledVocabularyProperty?.(propertyCode, value);
         return;
       case FormFieldDataType.SAMPLE:
@@ -422,7 +422,7 @@ export function setPropertyValue(
     case FormFieldDataType.BOOLEAN:
       dto.setBooleanProperty?.(propertyCode, value);
       return;
-    case FormFieldDataType.CONTROLLED_VOCABULARY:
+    case FormFieldDataType.CONTROLLEDVOCABULARY:
       dto.setControlledVocabularyProperty?.(propertyCode, value);
       return;
     case FormFieldDataType.SAMPLE:
@@ -505,6 +505,8 @@ function mapAssignmentToFormField(
     : !(assignment.showInEditView ?? true);
   const value = fieldOverrides.value !== undefined ? fieldOverrides.value : propertyValue;
   
+  const options = propertyType.vocabulary && propertyType.vocabulary.terms ? propertyType.vocabulary.terms.map((term: any) => ({ label: term.label, value: term.code })) : [];
+
   const field: FormField = {
     id: fieldId,
     name: propertyCode,
@@ -521,6 +523,7 @@ function mapAssignmentToFormField(
     section: section,
     column: fieldOverrides.column || column,
     meta: { ...meta, ...(fieldOverrides.meta || {}) },
+    options,
     ...fieldOverrides
   };
 
@@ -643,6 +646,12 @@ export function getPropertyFieldsFromAssignments(
   dto: any,
   overrides: Record<string, FieldOverrides> = {}
 ): FormField[] {
+  if (dto.propertyAssignments && Array.isArray(dto.propertyAssignments)) {
+    return dto.propertyAssignments.map((assignment: any) => {
+      overrides[assignment.propertyType.code] = { readOnly: false };
+      return mapAssignmentToFormField(assignment, dto, permId, overrides) }
+    );
+  }
   if (!dto?.type?.propertyAssignments || !Array.isArray(dto.type.propertyAssignments)) {
     return [];
   }

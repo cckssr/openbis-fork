@@ -29,8 +29,8 @@ export class SpaceFormModel {
 			isValid: true,
 			actions: [
 				getNewProjectAction(),
-				//getNewObjectAction(EntityKind.SPACE),
-				//getDividerAction(FormMode.VIEW),
+				getNewObjectAction(EntityKind.SPACE),
+				getDividerAction(FormMode.VIEW),
 				getEditAction(),
 				getDeleteAction(),
 				//getDividerAction(FormMode.VIEW),

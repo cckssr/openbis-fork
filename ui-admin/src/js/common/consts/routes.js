@@ -85,7 +85,7 @@ const routes = {
     page: pages.DATABASE,
     type: objectTypes.OBJECT
   }),
-  NEW_OBJECT: new Route('/new-object/:parentId/:id', {
+  NEW_OBJECT: new Route('/new-object/:entityType/:parentId/:id', {
     page: pages.DATABASE,
     type: objectTypes.NEW_OBJECT
   }),
@@ -118,6 +118,10 @@ const routes = {
   COLLECTION: new Route('/collection/:id', {
     page: pages.DATABASE,
     type: objectTypes.COLLECTION
+  }),
+  NEW_COLLECTION: new Route('/new-collection/:entityType/:parentId/:id', {
+    page: pages.DATABASE,
+    type: objectTypes.NEW_COLLECTION,
   }),
   COLLECTION_TYPE: new Route('/collection-type/:id', {
     page: pages.TYPES,

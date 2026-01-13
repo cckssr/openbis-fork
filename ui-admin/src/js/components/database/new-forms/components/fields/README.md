@@ -98,11 +98,11 @@ Renders date picker fields. Used for `TIMESTAMP` data types.
 
 ### SelectFieldRenderer
 
-Renders dropdown/select fields. Used for `CONTROLLED_VOCABULARY` data types.
+Renders dropdown/select fields. Used for `CONTROLLEDVOCABULARY` data types.
 
 **File**: `SelectFieldRender.tsx`
 
-**Data Type**: `FormFieldDataType.CONTROLLED_VOCABULARY`
+**Data Type**: `FormFieldDataType.CONTROLLEDVOCABULARY`
 
 **Features**:
 - Dropdown select component
@@ -118,7 +118,7 @@ Renders dropdown/select fields. Used for `CONTROLLED_VOCABULARY` data types.
     id: 'status',
     label: 'Status',
     value: 'active',
-    dataType: FormFieldDataType.CONTROLLED_VOCABULARY,
+    dataType: FormFieldDataType.CONTROLLEDVOCABULARY,
     meta: {
       emptyOption: 'Select a status',
       helpText: 'Choose the project status'
@@ -238,7 +238,7 @@ static getFieldRenderer(dataType: string) {
       return DateFieldRenderer;
     case FormFieldDataType.MULTILINE_VARCHAR:
       return TextAreaFieldRenderer;
-    case FormFieldDataType.CONTROLLED_VOCABULARY:
+    case FormFieldDataType.CONTROLLEDVOCABULARY:
       return SelectFieldRenderer;
     case FormFieldDataType.BOOLEAN:
       return SwitchFieldRenderer;

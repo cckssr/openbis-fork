@@ -1,7 +1,23 @@
 import { IAutoSaveActionContext, IModeActionContext, IExtendedActionContext } from "@src/js/components/database/new-forms/types/formITypes.ts";
-import { FormMode } from "@src/js/components/database/new-forms/types/formEnums.ts";
+import { EntityKind, FormMode } from "@src/js/components/database/new-forms/types/formEnums.ts";
+import { findFormFieldById } from "@src/js/components/database/new-forms/utils/formFieldUtil.ts";
 
 export class CoreFormModel {
+
+	static mapEntityKindToCollectionType = (entityKind: string) => {
+		switch (entityKind) {
+			case EntityKind.NEW_COLLECTION:
+				return EntityKind.COLLECTION;
+			case EntityKind.NEW_PROJECT:
+				return EntityKind.PROJECT;
+			case EntityKind.NEW_OBJECT:
+				return EntityKind.OBJECT;
+			case EntityKind.NEW_DATASET:
+				return EntityKind.DATASET;
+			default:
+				return entityKind;
+		}
+	}
 
 	static saveAction = async (context: IExtendedActionContext) => {
 		const { form, controller, onAfterSave, mode } = context;
@@ -9,9 +25,12 @@ export class CoreFormModel {
 		const newPermId = await controller.save(form, mode);
 		console.log("CoreFormModel.saveAction: saved successfully! New permId:", newPermId);
 		if (mode === FormMode.CREATE) {
-			alert(`TODO: CREATE to be implemented`);
-			//nAfterSave({ oldType: EntityKind.NEW_OBJECT, oldId: form.entityPermId, newType: EntityKind.OBJECT, newId: newPermId });
-			//onAfterSave({ oldType: EntityKind.NEW_PROJECT, oldId: form.entityPermId, newType: EntityKind.PROJECT, newId: newPermId });
+			onAfterSave({
+				oldType: form.entityKind,
+				oldId: form.entityPermId,
+				newType: CoreFormModel.mapEntityKindToCollectionType(form.entityKind),
+				newId: newPermId
+			});
 		} else {
 			onAfterSave();
 		}
@@ -20,7 +39,7 @@ export class CoreFormModel {
 	static editAction = (context: IModeActionContext) => {
 		context.setMode(FormMode.EDIT);
 	};
-	
+
 	static cancelEditAction = async (context: IModeActionContext) => {
 		// Reload the form to restore original values
 		try {
@@ -32,11 +51,11 @@ export class CoreFormModel {
 			context.setMode(FormMode.VIEW);
 		}
 	};
-	
+
 	static cancelNewFormAction = (context: IExtendedActionContext) => {
 		context.externalAppController.closeForm(context.form.entityType, context.form.entityPermId);
 	};
-	
+
 	static autoSaveAction = (context: IAutoSaveActionContext) => {
 		context.setAutoSaveEnabled(!context.isAutoSaveEnabled);
 	};
@@ -51,5 +70,23 @@ export class CoreFormModel {
 
 	static moveAction = (context: IExtendedActionContext) => {
 		context.controller.move(context.form);
+	};
+
+	static newCollectionAction = (context: IExtendedActionContext, selectedEntityType: string) => {
+		if (context.externalAppController) {
+			context.externalAppController.createNewObject({ newObjectType: EntityKind.NEW_COLLECTION, fromObjectType: context.form.entityKind, fromId: findFormFieldById(context.form.fields, context.form.entityPermId, 'identifier', true) as string, selectedEntityType: selectedEntityType });
+		} else {
+			console.warn("onNewCollection callback not provided to context.");
+			throw new Error("onNewCollection callback not provided to context.");
+		}
+	};
+
+	static newObjectAction = (context: IExtendedActionContext, selectedEntityType: string) => {
+		if (context.externalAppController) {
+			context.externalAppController.createNewObject({ newObjectType: EntityKind.NEW_OBJECT, fromObjectType: context.form.entityKind, fromId: findFormFieldById(context.form.fields, context.form.entityPermId, 'identifier', true) as string, selectedEntityType: selectedEntityType });
+		} else {
+			console.warn("onNewObject callback not provided to context.");
+			throw new Error("onNewObject callback not provided to context.");
+		}
 	};
 }

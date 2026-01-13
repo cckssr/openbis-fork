@@ -14,6 +14,7 @@ class ControllerDispatcher {
       case EntityKind.NEW_PROJECT:
         return new ProjectFormController(openbisFacade);
       case EntityKind.COLLECTION:
+      case EntityKind.NEW_COLLECTION:
         return new CollectionFormController(openbisFacade);
       case EntityKind.DATASET:
         return new DatasetFormController(openbisFacade);

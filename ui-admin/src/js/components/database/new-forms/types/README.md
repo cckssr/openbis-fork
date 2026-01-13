@@ -227,7 +227,7 @@ enum FormFieldDataType {
   REAL = 'REAL',                                 // Decimal number
   TIMESTAMP = 'TIMESTAMP',                       // Date picker
   BOOLEAN = 'BOLEAN',                            // Switch/checkbox
-  CONTROLLED_VOCABULARY = 'CONTROLLED_VOCABULARY', // Dropdown
+  CONTROLLEDVOCABULARY = 'CONTROLLEDVOCABULARY', // Dropdown
   HYPERLINK = 'HYPERLINK',                       // URL field
   SAMPLE = 'SAMPLE',                             // Sample reference
   WORD_PROCESSOR = 'WORD_PROCESSOR',              // Rich text editor
@@ -241,7 +241,7 @@ enum FormFieldDataType {
 - `MULTILINE_VARCHAR` → `TextAreaFieldRenderer`
 - `TIMESTAMP` → `DateFieldRenderer`
 - `BOOLEAN` → `SwitchFieldRenderer`
-- `CONTROLLED_VOCABULARY` → `SelectFieldRenderer`
+- `CONTROLLEDVOCABULARY` → `SelectFieldRenderer`
 - `WORD_PROCESSOR` → `CKEditorFieldRenderer`
 
 ### FormSection

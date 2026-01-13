@@ -1,5 +1,5 @@
 import openbis from '@srcV3/openbis.esm';
-import { Form, } from '@src/js/components/database/new-forms/types/formITypes.ts';
+import { Form, IExtendedActionContext, } from '@src/js/components/database/new-forms/types/formITypes.ts';
 import { EntityKind, FormMode } from '@src/js/components/database/new-forms/types/formEnums.ts';
 import { IFormController } from '@src/js/components/database/new-forms/types/IFormController.ts';
 import { fetchRights } from '@src/js/components/database/new-forms/utils/authorizationServiceUtil.ts';
@@ -25,26 +25,27 @@ export class ProjectFormController implements IFormController {
   async load(permId: string, entityKind?: string, params?: any): Promise<Form> {
     if (entityKind === EntityKind.NEW_PROJECT) {
       return ProjectFormModel.adaptNewProjectDtoToForm(permId, params);
-    }
-    const { ProjectPermId, ProjectFetchOptions, ExperimentIdentifier, RightsFetchOptions } = this.openbisFacade;
-    const id = new ProjectPermId(permId);
-    const fetchOptions = new ProjectFetchOptions();
-    fetchOptions.withSpace();
-    fetchOptions.withModifier();
-    fetchOptions.withRegistrator();
-    const result = await this.openbisFacade.getProjects([id], fetchOptions);
+    } else {
+      const { ProjectPermId, ProjectFetchOptions, ExperimentIdentifier, RightsFetchOptions } = this.openbisFacade;
+      const id = new ProjectPermId(permId);
+      const fetchOptions = new ProjectFetchOptions();
+      fetchOptions.withSpace();
+      fetchOptions.withModifier();
+      fetchOptions.withRegistrator();
+      const result = await this.openbisFacade.getProjects([id], fetchOptions);
 
-    const projectDto = result[permId];
-    if (!projectDto) throw new Error(`Project with permId ${permId} not found`);
-    /* const spaceCode = projectDto.getSpace().getCode();
-    const projectCode = projectDto.getCode();
-    
-    const sessionInfo = await this.openbisFacade.getSessionInformation();
-    console.log({ sessionInfo })
-    console.log({ spaceCode }, { projectCode });
-    const roles = await getUserRole(this.openbisFacade, false, spaceCode, projectCode);
-    console.log({roles}); */
-    return ProjectFormModel.adaptProjectDtoToForm(projectDto);
+      const projectDto = result[permId];
+      if (!projectDto) throw new Error(`Project with permId ${permId} not found`);
+      /* const spaceCode = projectDto.getSpace().getCode();
+      const projectCode = projectDto.getCode();
+      
+      const sessionInfo = await this.openbisFacade.getSessionInformation();
+      console.log({ sessionInfo })
+      console.log({ spaceCode }, { projectCode });
+      const roles = await getUserRole(this.openbisFacade, false, spaceCode, projectCode);
+      console.log({roles}); */
+      return ProjectFormModel.adaptProjectDtoToForm(projectDto);
+    }
   }
 
   async save(form: Form, mode: FormMode): Promise<any> {
@@ -156,7 +157,6 @@ export class ProjectFormController implements IFormController {
     const project = result[id];
     return { experiments: project.getExperiments(), samples: project.getSamples() };
   }
-
 
   /**
    * @deprecated Use moveEntitiesToTrashcan instead. This method actually deletes entities.

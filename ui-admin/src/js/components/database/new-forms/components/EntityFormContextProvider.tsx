@@ -14,6 +14,7 @@ import { findConflicts, checkModificationDateConflict } from '@src/js/components
 import ConflictResolutionDialog from '@src/js/components/database/new-forms/components/common/ConflictResolutionDialog.tsx';
 import DeleteConfirmationDialog from '@src/js/components/database/new-forms/components/common/DeleteConfirmationDialog.tsx';
 import MoveDialog from '@src/js/components/database/new-forms/components/common/MoveDialog.tsx';
+import EntityTypeSelectionDialog from '@src/js/components/database/new-forms/components/common/EntityTypeSelectionDialog.tsx';
 
 import { useFormState } from '@src/js/components/database/new-forms/hooks/useFormState.ts';
 import { useOperationState } from '@src/js/components/database/new-forms/hooks/useOperationState.ts';
@@ -67,6 +68,7 @@ export const EntityFormContextProvider = ({
   // Dialog state (conflict, delete, move) - NEW
   const {
     dialogs,
+    openNewDialog, closeNewDialog,
     openConflictDialog, closeConflictDialog, setConflictResolving,
     openDeleteDialog, closeDeleteDialog,
     openMoveDialog, closeMoveDialog,
@@ -120,6 +122,7 @@ export const EntityFormContextProvider = ({
           externalAppController.objectCreate(params);
         }
         loadForm();
+        setSaving(false);
       },
       externalAppController,
       deleteReason: reason || undefined,
@@ -133,18 +136,13 @@ export const EntityFormContextProvider = ({
   }, [permId, controller]);
 
   const loadForm = useCallback(async () => {
-    //console.log('loadForm', { permId }, { entityKind }, { params });
+    console.log('loadForm', { permId }, { entityKind }, { params });
 
     await executeOperation(
       async () => {
-        if (entityKind === EntityKind.NEW_OBJECT) {
-          //const loadedForm = await controller.load(permId, entityKind, params, 'ENTRY');
-          //setForm(loadedForm);
-        } else {
-          const loadedForm = await controller.load(permId, entityKind, params);
-          console.log('loadedForm: ', loadedForm);
-          setForm(loadedForm);
-        }
+        const loadedForm = await controller.load(permId, entityKind, params);
+        console.log('loadedForm: ', loadedForm);
+        setForm(loadedForm);
       },
       { setLoading: true }
     );
@@ -194,32 +192,43 @@ export const EntityFormContextProvider = ({
   // Handle actions by creating them from dispatcher
   const handleAction = useCallback(async (actionName: string) => {
     console.log(`[EntityFormContextProvider] Handling action: ${actionName}`);
-    // Action handlers can require different context shapes (mode, extended, autosave, etc.)
-    // so we treat them as dynamic at runtime.
-    const actionHandler: any = ActionHandlerDispatcher.getActionHandler(actionName);
 
-    if (!actionHandler || !form) {
-      console.warn(`No action handler registered for '${actionName}'`);
+    if (!form) {
+      console.error('Form is not loaded');
       return;
     }
 
-    const lowerActionName = actionName.toLowerCase();
-    const isSaveAction = lowerActionName === 'save' || lowerActionName.endsWith(':save');
-
-    if (isSaveAction) {
-      await handleSaveActions(actionHandler);
-    } else if (actionName === 'delete') {
+    if (actionName === 'delete') {
       await handleDeleteWithDependencyCheck();
     } else if (actionName === 'move') {
       await handleMoveRequest();
+    } else if (actionName === 'newCollection' || actionName === 'newObject') {
+      openNewDialog(form?.entityKind, actionName);
     } else {
-      const context: IExtendedActionContext = getExtendedActionContext();
-      try {
-        await actionHandler(context);
-      } catch (e: any) {
-        setError(e.message);
-      } finally {
-        setSaving(false);
+
+      // Action handlers can require different context shapes (mode, extended, autosave, etc.)
+      // so we treat them as dynamic at runtime.
+      const actionHandler: any = ActionHandlerDispatcher.getActionHandler(actionName);
+
+      if (!actionHandler) {
+        console.warn(`No action handler registered for '${actionName}'`);
+        return;
+      }
+
+      const lowerActionName = actionName.toLowerCase();
+      const isSaveAction = lowerActionName === 'save' || lowerActionName.endsWith(':save');
+
+      if (isSaveAction) {
+        await handleSaveActions(actionHandler);
+      } else {
+        const context: IExtendedActionContext = getExtendedActionContext();
+        try {
+          await actionHandler(context);
+        } catch (e: any) {
+          setError(e.message);
+        } finally {
+          setSaving(false);
+        }
       }
     }
   }, [form, mode, permissions, openbisFacade, externalAppController, getExtendedActionContext, setSaving, setError, handleMoveRequest, handleDeleteWithDependencyCheck, clearStorage]);
@@ -265,20 +274,20 @@ export const EntityFormContextProvider = ({
         setSaving(false);
       }
     } else if (mode === FormMode.CREATE) {
-      try {
+      //try {
         await actionHandler(context);
         actionToastContext.raiseSuccess('SUCCESSFULLY SAVED ');
         //alert('SUCCESSFULLY SAVED (GENERAL)');
 
         // Clear saved data after successful save
         clearStorage();
-      } catch (error: any) {
+      /* } catch (error: any) {
         setError(error.message);
         actionToastContext.raiseError('ERROR SAVING ');
         //alert('ERROR SAVING (GENERAL)');
       } finally {
         setSaving(false);
-      }
+      } */
     } else {
       throw new Error('Invalid mode');
     }
@@ -340,6 +349,31 @@ export const EntityFormContextProvider = ({
           moveInfo={dialogs.move.info}
           openbisFacade={openbisFacade}
           entityFormController={controller}
+        />
+      )}
+      {dialogs.new.isOpen && (
+        <EntityTypeSelectionDialog
+          open={dialogs.new.isOpen}
+          actionName={dialogs.new.actionName || ''}
+          onConfirm={async (selectedEntityType: any) => {
+            const actionName = dialogs.new.actionName || '';
+            const context: IExtendedActionContext = getExtendedActionContext();
+            const actionHandler: any = ActionHandlerDispatcher.getActionHandler(actionName);
+            if (!actionHandler) {
+              console.warn(`No action handler registered for '${actionName}'`);
+              return;
+            }
+            try {
+              await actionHandler(context, selectedEntityType.code);
+            } catch (e: any) {
+              setError(e.message);
+            } finally {
+              setSaving(false);
+              closeNewDialog();
+            }
+          }}
+          onCancel={closeNewDialog}
+          openbisFacade={openbisFacade}
         />
       )}
     </>

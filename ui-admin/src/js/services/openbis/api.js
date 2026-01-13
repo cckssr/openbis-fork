@@ -285,6 +285,10 @@ class Facade {
     return this.promise(this.v3.createSamples(samples))
   }
 
+  createExperiments(experiments) {
+    return this.promise(this.v3.createExperiments(experiments))
+  }
+
   updateSampleTypes(updates) {
     return this.promise(this.v3.updateSampleTypes(updates))
   }

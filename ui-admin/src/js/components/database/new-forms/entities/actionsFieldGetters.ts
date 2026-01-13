@@ -9,7 +9,7 @@ export const getSaveAction = (entityType?: EntityKind) => {
 		isAllowed: true,
 		visibility: [
 			{
-				mode: FormMode.EDIT,
+				mode: [FormMode.EDIT, FormMode.CREATE],
 			},
 		],
 	};
@@ -37,7 +37,7 @@ export const getCancelAction = () => {
 		isAllowed: true,
 		visibility: [
 			{
-				mode: FormMode.EDIT,
+				mode: [FormMode.EDIT, FormMode.CREATE],
 			},
 		],
 	};
@@ -119,7 +119,7 @@ export const getDividerAction = (onMode?: FormMode) => {
 
 export const getNewObjectAction = (entityType: EntityKind) => {
 	return {
-		name: `${entityType}:new-object`,
+		name: `newObject`,
 		label: 'New Object',
 		component: 'button',
 		isAllowed: true,
@@ -133,7 +133,7 @@ export const getNewObjectAction = (entityType: EntityKind) => {
 
 export const getNewCollectionAction = (entityType: EntityKind) => {
 	return {
-		name: `${entityType}:new-collection`,
+		name: `newCollection`,
 		label: 'New Collection',
 		component: 'button',
 		isAllowed: true,

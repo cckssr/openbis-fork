@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { Form } from '@src/js/components/database/new-forms/types/formITypes.ts';
 
 /**
  * Centralized hook for managing dialog states
@@ -18,6 +19,11 @@ export interface DialogState {
     isOpen: boolean;
     info: any | null;
   };
+  new: {
+    isOpen: boolean;
+    entityKind: string | null;
+    actionName: string | null;
+  };
 }
 
 const initialDialogState: DialogState = {
@@ -34,10 +40,30 @@ const initialDialogState: DialogState = {
     isOpen: false,
     info: null,
   },
+  new: {
+    isOpen: false,
+    entityKind: null,
+    actionName: null,
+  },
 };
 
 export const useDialogState = () => {
   const [dialogs, setDialogs] = useState<DialogState>(initialDialogState);
+
+  // New dialog actions
+  const openNewDialog = useCallback((entityKind: string, actionName: string) => {
+    setDialogs(prev => ({
+      ...prev,
+      new: { isOpen: true, entityKind, actionName },
+    }));
+  }, []);
+
+  const closeNewDialog = useCallback(() => {
+    setDialogs(prev => ({
+      ...prev,
+      new: { isOpen: false, entityKind: null, actionName: null },
+    }));
+  }, []);
 
   // Conflict dialog actions
   const openConflictDialog = useCallback((fields: any[]) => {
@@ -93,6 +119,9 @@ export const useDialogState = () => {
 
   return {
     dialogs,
+    // New dialog
+    openNewDialog,
+    closeNewDialog,
     // Conflict dialog
     openConflictDialog,
     closeConflictDialog,

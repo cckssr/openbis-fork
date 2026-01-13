@@ -42,6 +42,7 @@ const CLASS_FULL_NAMES = [
   'as/dto/event/EntityType',
   'as/dto/event/Event',
   'as/dto/event/EventType',
+  'as/dto/experiment/create/ExperimentCreation',
   'as/dto/experiment/create/CreateExperimentTypesOperation',
   'as/dto/experiment/create/ExperimentTypeCreation',
   'as/dto/experiment/delete/DeleteExperimentTypesOperation',

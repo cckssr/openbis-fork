@@ -58,6 +58,7 @@ class DatabaseTab extends React.PureComponent {
         idText = object.id
       }
 
+      //label: (object.params.entityType ? ('new ' + object.params.entityType) : (typeText || object.type)) + ': ' + (idText || object.id)
       const tabWithLabel = {
         ...tab,
         label: (typeText || object.type) + ': ' + (idText || object.id)

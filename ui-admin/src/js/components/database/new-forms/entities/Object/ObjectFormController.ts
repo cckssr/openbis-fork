@@ -1,7 +1,7 @@
 import { Form, FormField } from '@src/js/components/database/new-forms/types/formITypes.ts';
 import { IFormController } from '@src/js/components/database/new-forms/types/IFormController.ts';
 import { fetchRights } from '@src/js/components/database/new-forms/utils/authorizationServiceUtil.ts';
-import { createDummyDataSetIdentifierFromSampleIdentifier, createDummySampleIdentifierFromSampleIdentifier } from '@src/js/components/database/new-forms/utils/identifierUtil.ts';
+import { createDummyDataSetIdentifierFromSampleIdentifier, createDummySampleIdentifierFromSampleIdentifier, getSpaceCodeFromIdentifier } from '@src/js/components/database/new-forms/utils/identifierUtil.ts';
 import { findFormFieldById } from '@src/js/components/database/new-forms/utils/formFieldUtil.ts';
 import { EntityKind, FormFieldDataType, FormMode } from '@src/js/components/database/new-forms/types/formEnums.ts';
 import { ObjectFormModel } from '@src/js/components/database/new-forms/entities/Object/ObjectFormModel.ts';
@@ -34,20 +34,24 @@ export class ObjectFormController implements IFormController {
 		return sampleTypeCode + nextNumber;
 	}
 
-	async load(permId: string, entityKind?: string, params?: any, type?: string): Promise<Form> {
+	async load(permId: string, entityKind?: string, params?: any): Promise<Form> {
 		if (entityKind === EntityKind.NEW_OBJECT) {
-			params.defaultCode = await this._getNextSequenceForType('ENTRY');
-			return ObjectFormModel.adaptNewEntryDtoToForm(type || '', permId, params);
-			//return ObjectFormModel.adaptNewDefaultObjectDtoToForm(type || '', permId, params);
+			const typeCode = params.entityType;
+			params.defaultCode = await this._getNextSequenceForType(typeCode);
+			const { EntityTypePermId, SampleTypeFetchOptions } = this.openbisFacade;
+			const id = new EntityTypePermId(typeCode)
+			const fetchOptions = new SampleTypeFetchOptions()
+			fetchOptions.withPropertyAssignments().withPropertyType().withVocabulary().withTerms();
+			const types = await this.openbisFacade.getSampleTypes([id], fetchOptions)
+			const dto = types[typeCode];
+			return ObjectFormModel.adaptNewObjectDtoToForm(dto, permId, params);
 		}
 		const { SampleSearchCriteria, SampleFetchOptions } = this.openbisFacade;
 		const criteria = new SampleSearchCriteria();
 		criteria.withPermId().thatEquals(permId);
 		const fetchOptions = new SampleFetchOptions();
 		fetchOptions.withProperties();
-		fetchOptions.withType();
-		fetchOptions.withType().withPropertyAssignments();
-		fetchOptions.withType().withPropertyAssignments().withPropertyType();
+		fetchOptions.withType().withPropertyAssignments().withPropertyType().withVocabulary().withTerms();
 		fetchOptions.withProject();
 		fetchOptions.withSpace();
 		fetchOptions.withExperiment();
@@ -98,11 +102,17 @@ export class ObjectFormController implements IFormController {
 	}
 
 	_createSample(form: Form): Promise<any> {
-		const { SampleCreation, EntityTypePermId, ExperimentPermId, SpacePermId } = this.openbisFacade;
+		const { SampleCreation, EntityTypePermId, ProjectIdentifier, SpacePermId } = this.openbisFacade;
 		const creation = new SampleCreation();
-		creation.setTypeId(new EntityTypePermId(form.entityType, EntityKind.SAMPLE));
-		creation.setExperimentId(new ExperimentPermId(form.meta.experimentPermId));
-		creation.setSpaceId(new SpacePermId(form.meta.spacePermId));
+		creation.setCode(form.fields.find((field: any) => field.id === form.entityPermId + '-code')?.value);
+		creation.setTypeId(new EntityTypePermId(form.entityType, EntityKind.SAMPLE.toUpperCase()));
+		const projectId = form.fields.find((field: any) => field.id === form.entityPermId + '-project')?.value;
+		if (projectId) {
+			creation.setProjectId(new ProjectIdentifier(projectId));
+		}
+		creation.setSpaceId(new SpacePermId(getSpaceCodeFromIdentifier(projectId || '')));
+
+		getChangedEditableFieldValues(form, creation);
 		return creation;
 	}
 

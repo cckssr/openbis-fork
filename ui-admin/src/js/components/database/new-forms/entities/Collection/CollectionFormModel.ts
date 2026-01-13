@@ -1,6 +1,6 @@
 import { Form } from "@src/js/components/database/new-forms/types/formITypes.ts";
 import { EntityKind, FormMode, FormSection } from "@src/js/components/database/new-forms/types/formEnums.ts";
-import { getCodeField, getPermIdField, getIdentifierField, getPathField, getRegistratorField, getRegistrationDateField, getModifierField, getModificationDateField, getTypeField, getPropertyFieldsFromAssignments, getProjectField } from "@src/js/components/database/new-forms/entities/formFieldGetters.ts";
+import { getCodeField, getPermIdField, getIdentifierField, getPathField, getRegistratorField, getRegistrationDateField, getModifierField, getModificationDateField, getTypeField, getPropertyFieldsFromAssignments, getProjectField, getDescriptionField } from "@src/js/components/database/new-forms/entities/formFieldGetters.ts";
 import { IExtendedActionContext } from "@src/js/components/database/new-forms/types/formITypes.ts";
 import { getNewObjectAction, getNewDatasetAction, getDividerAction, getEditAction, getMoveAction, getAutoSaveAction, getDeleteAction, getCancelAction, getMoreActionsAction, getSaveAction } from "@src/js/components/database/new-forms/entities/actionsFieldGetters.ts";
 
@@ -35,9 +35,9 @@ export class CollectionFormModel {
 			isDirty: false,
 			isValid: true,
 			actions: [
-				// getNewObjectAction(EntityKind.COLLECTION),
+				getNewObjectAction(EntityKind.COLLECTION),
 				// getNewDatasetAction(EntityKind.COLLECTION),
-				// getDividerAction(FormMode.VIEW),
+				getDividerAction(FormMode.VIEW),
 				getEditAction(),
 				getMoveAction(),
 				getDeleteAction(),
@@ -48,6 +48,33 @@ export class CollectionFormModel {
 				getDividerAction(FormMode.EDIT),
 				getAutoSaveAction(),
 			],
+		};
+	}
+
+	static adaptNewCollectionDtoToForm(tmpPermId: string, dto: any, params: any): Form {
+		const permId = tmpPermId + '-' + EntityKind.NEW_COLLECTION;
+		const staticFields = [
+			getCodeField({ permId: { permId: permId } }, { readOnly: false, value: '', id: permId + '-code' }),
+			getProjectField({ permId: { permId: permId } }, { value: params.parentId, id: permId + '-project' }),
+		];
+		const propertyFields = getPropertyFieldsFromAssignments(dto);
+		return {
+			entityPermId: permId,
+			entityType: params.entityType,
+			title: `New Collection`,
+			version: 1,
+			entityKind: EntityKind.NEW_COLLECTION,
+			meta: {},
+			fields: [
+				...staticFields,
+				...propertyFields,
+			],
+			isDirty: false,
+			isValid: true,
+			actions: [
+				getSaveAction(),
+				getCancelAction(),
+			]
 		};
 	}
 

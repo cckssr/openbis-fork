@@ -281,12 +281,12 @@ class DatabaseComponent extends React.PureComponent {
       newId)
   }
 
-  createNewObject(newObjectType, fromObjectType, fromId) {
-    console.log('DatabaseComponent.createNewObject', newObjectType, fromObjectType, fromId);
+  createNewObject(newObjectType, fromObjectType, fromId, selectedEntityType) {
+    console.log('DatabaseComponent.createNewObject', newObjectType, fromObjectType, fromId, selectedEntityType);
     AppController.getInstance().objectNew(
       pages.DATABASE,
       newObjectType,
-      { parentId: fromId, parentType: fromObjectType }
+      { parentId: fromId, parentType: fromObjectType, entityType: selectedEntityType }
     )
   }
 
@@ -307,9 +307,9 @@ class DatabaseComponent extends React.PureComponent {
       id
     )
   }
-
+  //params.oldId.substring(0, params.oldId.indexOf('-'))
   externalAppController = {
-    createNewObject: (params) => this.createNewObject(params.newObjectType, params.fromObjectType, params.fromId),
+    createNewObject: (params) => this.createNewObject(params.newObjectType, params.fromObjectType, params.fromId, params.selectedEntityType),
     objectChange: (params) => this.objectChange(params.id, params.objectTypeChanging, params.changed),
     objectCreate: (params) => this.objectCreate(params.oldType, params.oldId, params.newType, params.newId),
     closeForm: (params) => this.closeForm(params.type, params.id),

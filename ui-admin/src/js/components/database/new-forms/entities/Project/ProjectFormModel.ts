@@ -2,6 +2,7 @@ import { Form, IExtendedActionContext } from '@src/js/components/database/new-fo
 import { FormMode, FormSection, EntityKind } from '@src/js/components/database/new-forms/types/formEnums.ts';
 import { getPermIdField, getIdentifierField, getPathField, getSpaceField, getCodeField, getRegistratorField, getRegistrationDateField, getModifierField, getModificationDateField, getDescriptionField } from '@src/js/components/database/new-forms/entities/formFieldGetters.ts';
 import { getAutoSaveAction, getCancelAction, getDividerAction, getEditAction, getMoveAction, getSaveAction, getNewCollectionAction, getDeleteAction, getNewObjectAction, getMoreActionsAction } from '@src/js/components/database/new-forms/entities/actionsFieldGetters.ts';
+import objectType from '@src/js/common/consts/objectType';
 
 export class ProjectFormModel {
 
@@ -31,9 +32,9 @@ export class ProjectFormModel {
 			isDirty: false,
 			isValid: true,
 			actions: [
-				// getNewCollectionAction(EntityKind.PROJECT),
-				// getNewObjectAction(EntityKind.PROJECT),
-				// getDividerAction(FormMode.VIEW),
+				getNewCollectionAction(EntityKind.PROJECT),
+				getNewObjectAction(EntityKind.PROJECT),
+				getDividerAction(FormMode.VIEW),
 				getEditAction(),
 				getMoveAction(),
 				getDeleteAction(),
@@ -51,55 +52,22 @@ export class ProjectFormModel {
 	static adaptNewProjectDtoToForm(tmpPermId: string, params: any): Form {
 		const permId = tmpPermId + '-' + EntityKind.NEW_PROJECT;
 		return {
-			entityPermId: tmpPermId,
-			entityType: EntityKind.NEW_PROJECT,
+			entityPermId: permId,
+			entityType: EntityKind.PROJECT,
 			title: `New Project`,
 			version: 1,
 			entityKind: EntityKind.NEW_PROJECT,
 			meta: { spacePermId: params.parentId },
-			sections: [
-				{
-					section: FormSection.IDENTIFICATION_INFO,
-					fields: [
-						permId + '-code',
-					],
-				},
-				{
-					section: FormSection.GENERAL,
-					fields: [
-						permId + '-description',
-					],
-				},
-			],
 			fields: [
 				getCodeField({ permId: { permId: permId } }, { readOnly: false, value: '', id: permId + '-code' }),
+				getSpaceField({ permId: { permId: permId } }, { value: params.parentId, id: permId + '-space' }),
 				getDescriptionField({ permId: { permId: permId } }, { column: 'center', value: '', id: permId + '-description' }),
 			],
 			isDirty: false,
 			isValid: true,
 			actions: [
-				{
-					name: 'project:save',
-					label: 'Save',
-					component: 'button',
-					isAllowed: true,
-					visibility: [
-						{
-							mode: FormMode.CREATE,
-						},
-					],
-				},
-				{
-					name: 'new-form:cancel',
-					label: 'Cancel',
-					component: 'button',
-					isAllowed: true,
-					visibility: [
-						{
-							mode: FormMode.CREATE,
-						},
-					],
-				}
+				getSaveAction(),
+				getCancelAction(),
 			],
 		}
 	}

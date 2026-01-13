@@ -74,7 +74,7 @@ const ActionRenderer = ComponentRegistry.getActionRenderer('button');
 - `FormFieldDataType.VARCHAR` → `TextFieldRenderer`
 - `FormFieldDataType.TIMESTAMP` → `DateFieldRenderer`
 - `FormFieldDataType.MULTILINE_VARCHAR` → `TextAreaFieldRenderer`
-- `FormFieldDataType.CONTROLLED_VOCABULARY` → `SelectFieldRenderer`
+- `FormFieldDataType.CONTROLLEDVOCABULARY` → `SelectFieldRenderer`
 - `FormFieldDataType.BOOLEAN` → `SwitchFieldRenderer`
 - `FormFieldDataType.WORD_PROCESSOR` → `CKEditorFieldRenderer`
 

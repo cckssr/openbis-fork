@@ -95,12 +95,16 @@ const EntityForm = ({ form, mode, permissions, onFieldChange, onFieldMetadataCha
   };
 
   const isSectionCollapsed = (section: string) => {
-    switch (section) {
-      case FormSection.IDENTIFICATION_INFO:
-      case FormSection.OVERVIEW:
-        return true;
-      default:
-        return false;
+    if (mode === FormMode.CREATE) {
+      return false;
+    } else {
+      switch (section) {
+        case FormSection.IDENTIFICATION_INFO:
+        case FormSection.OVERVIEW:
+          return true;
+        default:
+          return false;
+      }
     }
   }
 
@@ -142,7 +146,7 @@ const EntityForm = ({ form, mode, permissions, onFieldChange, onFieldMetadataCha
       return <div key={field.id}>Unsupported field type: {field.dataType}</div>;
     }
     return (
-      <div key={field.id} style={mode === FormMode.EDIT && !field.readOnly ? { marginBottom: '8px' } : {}}>
+      <div key={field.id} style={(mode === FormMode.EDIT || mode === FormMode.CREATE) && !field.readOnly ? { marginBottom: '8px' } : {}}>
         <FieldRenderer
           field={field}
           onFieldChange={onFieldChange}

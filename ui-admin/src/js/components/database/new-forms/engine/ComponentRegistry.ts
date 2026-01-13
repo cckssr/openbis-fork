@@ -22,7 +22,7 @@ class ComponentRegistry {
       case FormFieldDataType.MULTILINE_VARCHAR:
       case FormFieldDataType.MONOSPACE_FONT:
         return TextAreaFieldRenderer;
-      case FormFieldDataType.CONTROLLED_VOCABULARY:
+      case FormFieldDataType.CONTROLLEDVOCABULARY:
         return SelectFieldRenderer;
       case FormFieldDataType.BOOLEAN:
         return SwitchFieldRenderer;

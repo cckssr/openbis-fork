@@ -70,50 +70,31 @@ export class ObjectFormModel {
     };
   }
 
-  static adaptNewDefaultObjectDtoToForm(type: string, tmpPermId: string, params: any): Form {
+  static adaptNewObjectDtoToForm(dto: any, tmpPermId: string, params: any): Form {
     const permId = tmpPermId + '-' + EntityKind.NEW_OBJECT;
+
+    const staticFields = [
+      getCodeField({ permId: { permId: permId } }, { readOnly: false, value: '', id: permId + '-code' }),
+			getProjectField({ permId: { permId: permId } }, { value: params.parentId, id: permId + '-project' }),
+      getTypeField({ permId: { permId: permId } }, { value: params.entityType, id: permId + '-objectTypeCode' }),
+    ];
+
+    const propertyFields = getPropertyFieldsFromAssignments(dto);
+    const fields = [...staticFields, ...propertyFields];
+
     return {
-      entityPermId: tmpPermId,
-      entityType: type,
+      entityPermId: permId,
+      entityType: params.entityType,
       title: `New Object`,
       version: 1,
       entityKind: EntityKind.NEW_OBJECT,
-      meta: { spacePermId: params.parentId },
-      sections: [
-        {
-          section: FormSection.SELECT_TYPE,
-          fields: [
-            permId + '-objectTypeCode',
-          ],
-        },
-      ],
-      fields: [
-      ],
+      meta: {},
+      fields,
       isDirty: false,
       isValid: true,
       actions: [
-        {
-          name: 'object:save',
-          label: 'Save',
-          component: 'button',
-          isAllowed: true,
-          visibility: [
-            {
-              mode: FormMode.CREATE,
-            },
-          ],
-        },
-        {
-          name: 'new-form:cancel',
-          label: 'Cancel',
-          component: 'button',
-          isAllowed: true,
-          visibility: [
-            {
-              mode: FormMode.CREATE,
-            },
-          ],
-        }
+        getSaveAction(),
+        getCancelAction(),
       ],
     }
   }
