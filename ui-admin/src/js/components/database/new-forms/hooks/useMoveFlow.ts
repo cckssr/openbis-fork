@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import { Form } from '@src/js/components/database/new-forms/types/formITypes.ts';
 import { IFormController } from '@src/js/components/database/new-forms/types/IFormController.ts';
 import { DialogState } from '@src/js/components/database/new-forms/hooks/useDialogState.ts';
+import { getErrorMessage, formatErrorForLogging } from '@src/js/components/database/new-forms/utils/errorUtil.ts';
 
 interface UseMoveFlowParams {
   form: Form | null;
@@ -40,7 +41,9 @@ export const useMoveFlow = ({
       clearError();
       openMoveDialog(form);
     } catch (error: any) {
-      setError(error.message ?? error);
+      const errorMessage = getErrorMessage(error, 'Failed to prepare move operation');
+      setError(errorMessage);
+      console.error(formatErrorForLogging(error, 'useMoveFlow.handleMoveRequest'));
     } finally {
       setLoading(false);
     }
@@ -70,8 +73,9 @@ export const useMoveFlow = ({
           await loadForm();
         }
       } catch (error: any) {
-        console.error('Move failed:', error);
-        setError(error.message ?? error);
+        const errorMessage = getErrorMessage(error, 'Failed to move entity');
+        setError(errorMessage);
+        console.error(formatErrorForLogging(error, 'useMoveFlow.handleMoveConfirm'));
       } finally {
         setSaving(false);
       }

@@ -39,35 +39,6 @@ export const useOperationState = () => {
     setOperationState(initialOperationState);
   }, []);
 
-  // Helper to wrap async operations with loading/error handling
-  const executeOperation = useCallback(
-    async <T,>(
-      operation: () => Promise<T>,
-      options: { setLoading?: boolean; setSaving?: boolean } = {}
-    ): Promise<T | null> => {
-      const { setLoading: shouldSetLoading = false, setSaving: shouldSetSaving = false } = options;
-
-      /* try { */
-      if (shouldSetLoading) setLoading(true);
-      if (shouldSetSaving) setSaving(true);
-      setError(null);
-
-      const result = await operation();
-      if (shouldSetLoading) setLoading(false);
-      if (shouldSetSaving) setSaving(false);
-      return result;
-      /* } catch (error: any) {
-        setError(error);
-        return null;
-      } finally {
-        if (shouldSetLoading) setLoading(false);
-        if (shouldSetSaving) setSaving(false);
-      } */
-      
-    },
-    [setLoading, setSaving, setError]
-  );
-
   return {
     operationState,
     setLoading,
@@ -75,7 +46,6 @@ export const useOperationState = () => {
     setError,
     clearError,
     resetOperationState,
-    executeOperation,
   };
 };
 

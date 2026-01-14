@@ -51,6 +51,12 @@ export function useEntityAutoSaveFlow({
     return `new-forms:auto-save-enabled:${user}:${entityKind}:${permId || 'unknown'}`
   }, [user, entityKind, permId])
 
+  // ----- Draft storage (per entity) -----
+  const storageKey = useMemo(() => {
+    // Draft (auto-saved form data) key — keep separate from preference key.
+    return `form-data-${entityKind}-${permId || 'new'}-${user}`
+  }, [entityKind, permId, user])
+
   const [isAutoSaveEnabled, setAutoSaveEnabledState] = useState(false)
 
   // Load preference on identity change
@@ -78,14 +84,8 @@ export function useEntityAutoSaveFlow({
         // ignore persistence failures (quota/private mode)
       }
     },
-    [preferenceKey]
+    [preferenceKey, storageKey]
   )
-
-  // ----- Draft storage (per entity) -----
-  const storageKey = useMemo(() => {
-    // Draft (auto-saved form data) key — keep separate from preference key.
-    return `form-data-${entityKind}-${permId || 'new'}-${user}`
-  }, [entityKind, permId, user])
 
   const isDraftFlowEnabled = Boolean(
     isAutoSaveEnabled && mode === FormMode.EDIT && form && originalForm

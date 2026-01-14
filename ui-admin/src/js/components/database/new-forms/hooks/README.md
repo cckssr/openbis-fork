@@ -75,60 +75,6 @@ if (isDirty) {
 - Stores original form separately for comparison
 - Handles function updates in `setForm` for React state updates
 
-### useFormLoading
-
-Manages form loading state and error handling.
-
-**File**: `useFormLoading.ts`
-
-**Purpose**: Handles async form loading with loading and error states
-
-**Returns**:
-```typescript
-{
-  loading: boolean;
-  error: string | null;
-  loadForm: () => Promise<Form | null>;
-  clearError: () => void;
-}
-```
-
-**Features**:
-- Manages loading state during async operations
-- Handles and stores errors
-- Provides error clearing function
-- Returns loaded form or null on error
-
-**Usage**:
-```typescript
-const { loading, error, loadForm, clearError } = useFormLoading({
-  controller: projectController,
-  permId: 'PROJECT-123',
-  entityKind: EntityKind.PROJECT,
-  params: {}
-});
-
-// Load form
-useEffect(() => {
-  loadForm().then(form => {
-    if (form) {
-      setForm(form);
-    }
-  });
-}, []);
-
-// Display loading state
-if (loading) return <Spinner />;
-
-// Display error
-if (error) return <ErrorMessage message={error} />;
-```
-
-**Key Implementation Details**:
-- Automatically sets loading to false in finally block
-- Catches and formats errors consistently
-- Returns null on error to allow graceful handling
-
 ### useOperationState
 
 Manages generic async operation states (loading, saving, error).
@@ -146,48 +92,58 @@ Manages generic async operation states (loading, saving, error).
   setError: (error: any | null) => void;
   clearError: () => void;
   resetOperationState: () => void;
-  executeOperation: <T>(operation: () => Promise<T>, options?: { setLoading?: boolean; setSaving?: boolean }) => Promise<T | null>;
 }
 ```
 
 **Features**:
 - Separate loading and saving states
 - Error state management
-- Helper function to wrap async operations
-- Automatic state management
+- Simple state setters for manual error handling
 
 **Usage**:
 ```typescript
-const { operationState, executeOperation, setSaving } = useOperationState();
+const { operationState, setLoading, setSaving, setError, clearError } = useOperationState();
 
-// Manual state management
+// Example: Loading form data
+const loadForm = useCallback(async () => {
+  setLoading(true);
+  clearError();
+  
+  try {
+    const form = await controller.load(permId, entityKind, params);
+    setForm(form);
+  } catch (error: any) {
+    const errorMessage = error?.message || error?.toString() || 'Failed to load form';
+    setError(errorMessage);
+    console.error('Load failed:', error);
+  } finally {
+    setLoading(false);
+  }
+}, [permId, entityKind, params, controller, setLoading, clearError, setError, setForm]);
+
+// Example: Saving form
 const handleSave = async () => {
   setSaving(true);
+  clearError();
+  
   try {
-    await saveForm(form);
-  } catch (error) {
-    setError(error);
+    await controller.save(form, mode);
+    actionToastContext.raiseSuccess('Saved successfully');
+  } catch (error: any) {
+    const errorMessage = error?.message || error?.toString() || 'Failed to save';
+    setError(errorMessage);
+    actionToastContext.raiseError('Save failed');
   } finally {
     setSaving(false);
-  }
-};
-
-// Using executeOperation helper
-const handleSave = async () => {
-  const result = await executeOperation(
-    () => saveForm(form),
-    { setSaving: true }
-  );
-  if (result) {
-    // Success
   }
 };
 ```
 
 **Key Implementation Details**:
-- `executeOperation` automatically handles try/catch/finally
-- Clears error when starting new operation
-- Returns null on error, result on success
+- Use try/catch/finally blocks directly for error handling
+- Always clear errors at the start of operations
+- Always reset loading/saving state in finally blocks
+- Format errors consistently before setting them
 
 ### useAutoSave
 
@@ -200,32 +156,31 @@ Manages automatic saving of form data to localStorage.
 **Returns**:
 ```typescript
 {
-  saveToStorage: () => void;
   loadFromStorage: () => Form | null;
   clearStorage: () => void;
 }
 ```
 
 **Features**:
-- Saves form data to localStorage at intervals
-- Saves on page unload
-- Loads saved data on mount if enabled
-- Configurable save interval
-- Optional restore callback
+- Saves form data to localStorage at intervals (configurable, default: 5000ms)
+- Saves on page unload (`beforeunload` event)
+- Only saves dirty fields (changed fields compared to `originalForm`)
+- Loads saved data via `loadFromStorage()` function
+- Configurable save interval and max age for stale data
+- Handles storage quota errors gracefully
 
 **Usage**:
 ```typescript
-const { saveToStorage, loadFromStorage, clearStorage } = useAutoSave({
-  formData: form,
-  storageKey: `form-${permId}`,
+const { loadFromStorage, clearStorage } = useAutoSave({
+  form,
+  originalForm,
+  storageKey: `form-data-${entityKind}-${permId}-${user}`,
   isEnabled: isAutoSaveEnabled,
   interval: 5000, // 5 seconds
-  onDataRestore: (savedData) => {
-    setForm(savedData);
-    showRestoreDialog();
-  }
+  maxAge: 24 * 60 * 60 * 1000 // 24 hours
 });
 
+// Restoration is handled separately by useAutoSaveRestore hook
 // Clear storage after successful save
 const handleSave = async () => {
   await saveForm(form);
@@ -235,17 +190,16 @@ const handleSave = async () => {
 
 **Key Implementation Details**:
 - Uses refs to avoid stale closures in intervals
-- Saves timestamp with data for potential expiration
-- Handles localStorage errors gracefully
-- Cleans up intervals on unmount
-
-**Note**: Currently commented out in `EntityFormContextProvider` - may need activation
+- Saves timestamp with data for expiration checking
+- Handles localStorage errors gracefully (quota exceeded, private mode)
+- Cleans up intervals and event listeners on unmount
+- Only saves when there are dirty fields (compares form vs originalForm)
 
 ### Conflict Resolution Utilities
 
 Pure helper functions for detecting conflicts between local and server forms.
 
-**File**: `useConflictResolution.tsx` (exports plain functions)
+**File**: `utils/conflictResolutionUtil.ts` (exports plain functions, not a hook)
 
 **Exports**:
 ```typescript
@@ -261,7 +215,7 @@ checkModificationDateConflict(localForm: Form, serverForm: Form): boolean;
 
 **Usage**:
 ```typescript
-import { findConflicts, checkModificationDateConflict } from './useConflictResolution';
+import { findConflicts, checkModificationDateConflict } from '../utils/conflictResolutionUtil';
 
 const serverForm = await controller.load(form.entityPermId);
 
@@ -280,6 +234,72 @@ await save(form);
 - Pure functions (no React state)
 - Can be reused in any module without hook rules
 - Keeps UI-specific flow inside `useConflictFlow`
+
+### useEntityAutoSaveFlow
+
+Feature-level hook that orchestrates the complete auto-save flow for a single form entity.
+
+**File**: `useEntityAutoSaveFlow.tsx`
+
+**Purpose**: Encapsulates preference management, auto-save, restoration, and UI integration
+
+**Returns**:
+```typescript
+{
+  isAutoSaveEnabled: boolean;
+  setAutoSaveEnabled: (enabled: boolean) => void;
+  actionOverrides: Record<string, Partial<FormAction>>;
+  clearStorage: () => void;
+}
+```
+
+**Features**:
+- Per-entity auto-save preference (stored in localStorage, defaults to false)
+- Integrates `useAutoSave` for draft saving
+- Integrates `useAutoSaveRestore` for restoration logic
+- Provides `actionOverrides` for UI integration (auto-save toggle switch)
+- Clears draft storage when disabled or after successful save
+
+**Usage**:
+```typescript
+const {
+  isAutoSaveEnabled,
+  setAutoSaveEnabled,
+  actionOverrides,
+  clearStorage
+} = useEntityAutoSaveFlow({
+  form,
+  originalForm,
+  mode,
+  user,
+  entityKind,
+  permId,
+  onRestore: (savedData) => {
+    setForm(savedData);
+    actionToastContext.raiseInfo('Restored unsaved changes');
+  }
+});
+
+// Use actionOverrides in EntityForm
+<EntityForm
+  form={form}
+  actionOverrides={actionOverrides}
+  // ... other props
+/>
+
+// Clear storage after successful save
+const handleSave = async () => {
+  await controller.save(form);
+  clearStorage();
+};
+```
+
+**Key Implementation Details**:
+- Preference key format: `new-forms:auto-save-enabled:${user}:${entityKind}:${permId || 'unknown'}`
+- Draft key format: `form-data-${entityKind}-${permId || 'new'}-${user}`
+- Preference is removed (not set to false) when disabled to keep localStorage clean
+- Draft is cleared when preference is disabled
+- See [AUTOSAVE_FEATURE.md](../AUTOSAVE_FEATURE.md) for complete documentation
 
 ### useDialogState
 
@@ -358,32 +378,40 @@ function EntityForm({ permId, entityKind }) {
     [entityKind]
   );
   
-  const { loading, error, loadForm } = useFormLoading({
-    controller,
-    permId,
-    entityKind
-  });
-  
+  const { operationState, setLoading, setError, clearError } = useOperationState();
   const { form, mode, updateField, setForm } = useFormState({
     initialForm: null,
     initialMode: FormMode.VIEW
   });
   
+  const loadForm = useCallback(async () => {
+    setLoading(true);
+    clearError();
+    
+    try {
+      const loadedForm = await controller.load(permId, entityKind, params);
+      setForm(loadedForm);
+    } catch (error: any) {
+      const errorMessage = error?.message || error?.toString() || 'Failed to load form';
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  }, [permId, entityKind, params, controller, setLoading, clearError, setError, setForm]);
+  
   useEffect(() => {
-    loadForm().then(loadedForm => {
-      if (loadedForm) {
-        setForm(loadedForm);
-      }
-    });
+    loadForm();
   }, [permId]);
   
-  if (loading) return <Spinner />;
-  if (error) return <ErrorMessage error={error} />;
+  if (operationState.loading) return <Spinner />;
+  if (operationState.error) return <ErrorMessage error={operationState.error} />;
   if (!form) return null;
   
   return <FormRenderer form={form} onFieldChange={updateField} />;
 }
 ```
+<｜tool▁calls▁begin｜><｜tool▁call▁begin｜>
+read_file
 
 ### Form with Conflict Resolution
 
@@ -433,19 +461,26 @@ function EntityFormWithConflicts({ permId, entityKind }) {
 ### Form with Auto-Save
 
 ```typescript
-function EntityFormWithAutoSave({ permId, entityKind }) {
-  const { form, updateField } = useFormState({ ... });
-  const [isAutoSaveEnabled, setAutoSaveEnabled] = useState(false);
+function EntityFormWithAutoSave({ permId, entityKind, user }) {
+  const { form, originalForm, updateField, setForm } = useFormState({ ... });
+  const actionToastContext = useActionToastCtx();
   
-  const { loadFromStorage, clearStorage } = useAutoSave({
-    formData: form,
-    storageKey: `form-${permId}`,
-    isEnabled: isAutoSaveEnabled,
-    interval: 5000,
-    onDataRestore: (savedData) => {
-      if (confirm('Restore unsaved changes?')) {
-        setForm(savedData);
-      }
+  // Use the orchestrating hook for complete auto-save flow
+  const {
+    isAutoSaveEnabled,
+    setAutoSaveEnabled,
+    actionOverrides,
+    clearStorage
+  } = useEntityAutoSaveFlow({
+    form,
+    originalForm,
+    mode: FormMode.EDIT,
+    user,
+    entityKind,
+    permId,
+    onRestore: (savedData) => {
+      setForm(savedData);
+      actionToastContext.raiseInfo('Restored unsaved changes');
     }
   });
   
@@ -456,11 +491,11 @@ function EntityFormWithAutoSave({ permId, entityKind }) {
   
   return (
     <>
-      <FormRenderer form={form} onFieldChange={updateField} />
-      <Switch
-        checked={isAutoSaveEnabled}
-        onChange={setAutoSaveEnabled}
-        label="Enable Auto-save"
+      <EntityForm
+        form={form}
+        onFieldChange={updateField}
+        actionOverrides={actionOverrides} // Auto-save toggle uses this
+        // ... other props
       />
     </>
   );
@@ -485,57 +520,77 @@ function CompleteEntityForm({ permId, entityKind }) {
     initialMode: FormMode.VIEW
   });
   
-  // 3. Loading state
-  const { loading, error, loadForm, clearError } = useFormLoading({
-    controller,
-    permId,
-    entityKind
-  });
+  // 3. Operation state (for loading, saving, errors)
+  const { operationState, setLoading, setSaving, setError, clearError } = useOperationState();
   
-  // 4. Operation state (for save/delete)
-  const { operationState, executeOperation, setSaving } = useOperationState();
+  // 4. Conflict resolution
+  import { checkModificationDateConflict, findConflicts } from '../utils/conflictResolutionUtil';
   
-  // 5. Conflict resolution
-  
-  // 6. Dialog state
+  // 5. Dialog state
   const { dialogs, openConflictDialog, openDeleteDialog, ... } = useDialogState();
   
-  // 7. Auto-save (optional)
-  const { clearStorage } = useAutoSave({
-    formData: form,
-    storageKey: `form-${permId}`,
-    isEnabled: false, // Enable as needed
-    interval: 5000
+  // 6. Auto-save (optional)
+  const {
+    isAutoSaveEnabled,
+    setAutoSaveEnabled,
+    actionOverrides,
+    clearStorage
+  } = useEntityAutoSaveFlow({
+    form,
+    originalForm,
+    mode,
+    user: currentUser,
+    entityKind,
+    permId,
+    onRestore: (savedData) => setForm(savedData)
   });
+  
+  // Load form handler
+  const loadForm = useCallback(async () => {
+    setLoading(true);
+    clearError();
+    
+    try {
+      const loadedForm = await controller.load(permId, entityKind, params);
+      setForm(loadedForm);
+    } catch (error: any) {
+      const errorMessage = error?.message || error?.toString() || 'Failed to load form';
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  }, [permId, entityKind, params, controller, setLoading, clearError, setError, setForm]);
   
   // Load form on mount
   useEffect(() => {
-    loadForm().then(loadedForm => {
-      if (loadedForm) setForm(loadedForm);
-    });
+    loadForm();
   }, [permId]);
   
   // Save handler
   const handleSave = async () => {
-    await executeOperation(
-      async () => {
-        // Check conflicts
-        const serverForm = await controller.load(permId);
-        if (checkModificationDateConflict(form, serverForm)) {
-          const conflicts = findConflicts(form, serverForm);
-          if (conflicts.length > 0) {
-            openConflictDialog(conflicts);
-            throw new Error('Conflicts detected');
-          }
+    setSaving(true);
+    clearError();
+    
+    try {
+      // Check conflicts
+      const serverForm = await controller.load(permId);
+      if (checkModificationDateConflict(form, serverForm)) {
+        const conflicts = findConflicts(form, serverForm);
+        if (conflicts.length > 0) {
+          openConflictDialog(conflicts);
+          return;
         }
-        
-        // Save
-        const result = await controller.save(form);
-        clearStorage();
-        return result;
-      },
-      { setSaving: true }
-    );
+      }
+      
+      // Save
+      await controller.save(form, mode);
+      clearStorage();
+    } catch (error: any) {
+      const errorMessage = error?.message || error?.toString() || 'Failed to save';
+      setError(errorMessage);
+    } finally {
+      setSaving(false);
+    }
   };
   
   // Render...
@@ -551,24 +606,31 @@ Use hooks in a consistent order:
 2. Form state (useFormState)
 3. Loading state (useFormLoading)
 4. Operation state (useOperationState)
-5. Specialized helpers (conflictResolution utils, useDialogState)
-6. Auto-save (useAutoSave) - if needed
+5. Specialized helpers (conflictResolution utils from `utils/conflictResolutionUtil.ts`, useDialogState)
+6. Auto-save (useEntityAutoSaveFlow) - if needed
 
 ### 2. Error Handling
 
-Always handle errors from hooks:
+Always use try/catch/finally blocks for error handling:
 
 ```typescript
-const { error, loadForm } = useFormLoading({ ... });
+const { setLoading, setError, clearError } = useOperationState();
 
-useEffect(() => {
-  loadForm().then(form => {
-    if (!form) {
-      // Handle error (error state is already set)
-      console.error('Failed to load form');
-    }
-  });
-}, []);
+const loadForm = useCallback(async () => {
+  setLoading(true);
+  clearError();
+  
+  try {
+    const form = await controller.load(permId, entityKind, params);
+    setForm(form);
+  } catch (error: any) {
+    const errorMessage = error?.message || error?.toString() || 'Failed to load form';
+    setError(errorMessage);
+    console.error('Failed to load form:', error);
+  } finally {
+    setLoading(false);
+  }
+}, [permId, entityKind, params, controller, setLoading, clearError, setError, setForm]);
 ```
 
 ### 3. Cleanup
@@ -686,7 +748,8 @@ useEffect(() => {
 ## Related Files
 
 - `EntityFormContextProvider.tsx` - Uses all hooks together
-- `types/FormState.ts` - Type definitions for hook return values
-- `types/formITypes.ts.ts` - Form and field type definitions
-- Form controllers - Used by `useFormLoading`
+- `types/formITypes.ts` - Form and field type definitions
+- `utils/conflictResolutionUtil.ts` - Conflict resolution utilities (not a hook)
+- `AUTOSAVE_FEATURE.md` - Complete auto-save feature documentation
+- Form controllers - Used by form loading operations
 

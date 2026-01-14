@@ -1,12 +1,12 @@
 # Form Components Architecture
 
-This document explains the main form components (`EntityForm.tsx`, `EntityFormContextProvider2.tsx`) and their integration with the application entry point (`DatabaseComponent.jsx`). These components form the core of the new form system.
+This document explains the main form components (`EntityForm.tsx`, `EntityFormContextProvider.tsx`) and their integration with the application entry point (`DatabaseComponent.jsx`). These components form the core of the new form system.
 
 ## Table of Contents
 
 1. [Overview](#overview)
 2. [Component Hierarchy](#component-hierarchy)
-3. [EntityFormContextProvider2](#entityformcontextprovider2)
+3. [EntityFormContextProvider](#entityformcontextprovider)
 4. [EntityForm](#entityform)
 5. [DatabaseComponent Integration](#databasecomponent-integration)
 6. [Data Flow](#data-flow)
@@ -17,7 +17,7 @@ This document explains the main form components (`EntityForm.tsx`, `EntityFormCo
 
 The form system follows a **container/presenter pattern**:
 
-- **`EntityFormContextProvider2.tsx`** (Container) - Manages all state, business logic, and side effects
+- **`EntityFormContextProvider.tsx`** (Container) - Manages all state, business logic, and side effects
 - **`EntityForm.tsx`** (Presenter) - Pure presentation component that renders the form UI
 - **`DatabaseComponent.jsx`** (Entry Point) - Integrates the form system into the application
 
@@ -31,16 +31,16 @@ This separation provides:
 ```
 DatabaseComponent.jsx (Entry Point)
   ↓
-EntityFormContextProvider2.tsx (State Management)
+EntityFormContextProvider.tsx (State Management)
   ↓
 EntityForm.tsx (UI Rendering)
   ↓
 Field Renderers / Action Renderers (via ComponentRegistry)
 ```
 
-## EntityFormContextProvider2
+## EntityFormContextProvider
 
-**File**: `EntityFormContextProvider2.tsx`
+**File**: `EntityFormContextProvider.tsx`
 
 **Role**: Container component that manages all form state and business logic.
 
@@ -68,8 +68,7 @@ const { form, mode, setForm, setMode, updateField, updateFieldMetadata } = useFo
 const { 
   operationState, 
   setLoading, setSaving, 
-  setError, clearError, 
-  executeOperation 
+  setError, clearError
 } = useOperationState();
 
 // Dialog state management
@@ -81,7 +80,7 @@ const {
 } = useDialogState();
 
 // Conflict resolution helpers (plain functions)
-import { checkModificationDateConflict, findConflicts } from '../hooks/useConflictResolution';
+import { checkModificationDateConflict, findConflicts } from '../utils/conflictResolutionUtil';
 ```
 
 ### Controller Creation
@@ -120,25 +119,32 @@ Loads form data from the controller:
 
 ```typescript
 const loadForm = useCallback(async () => {
-  await executeOperation(
-    async () => {
-      if (entityKind === EntityKind.NEW_OBJECT) {
-        const loadedForm = await controller.load(permId, entityKind, params, 'ENTRY');
-        setForm(loadedForm);
-      } else {
-        const loadedForm = await controller.load(permId, entityKind, params);
-        setForm(loadedForm);
-      }
-    },
-    { setLoading: true }
-  );
-}, [permId, entityKind, params, controller]);
+  setLoading(true);
+  clearError();
+  
+  try {
+    let loadedForm;
+    if (entityKind === EntityKind.NEW_OBJECT) {
+      loadedForm = await controller.load(permId, entityKind, params, 'ENTRY');
+    } else {
+      loadedForm = await controller.load(permId, entityKind, params);
+    }
+    setForm(loadedForm);
+  } catch (error: any) {
+    const errorMessage = error?.message || error?.toString() || 'Failed to load form';
+    setError(errorMessage);
+    console.error('[EntityFormContextProvider] Load failed:', error);
+  } finally {
+    setLoading(false);
+  }
+}, [permId, entityKind, params, controller, setLoading, clearError, setError, setForm]);
 ```
 
 **Behavior**:
 - Handles both new entity creation and existing entity loading
-- Uses `executeOperation` for automatic loading state management
+- Uses try/catch/finally for error handling and loading state management
 - Updates form state on success
+- Sets error state on failure
 
 #### `handleAction()`
 
@@ -148,7 +154,10 @@ Processes user actions from the form:
 const handleAction = useCallback(async (actionName: string) => {
   const actionHandler = ActionHandlerDispatcher.getActionHandler(actionName);
   
-  if (actionName.toLowerCase().includes('save')) {
+  const lowerActionName = actionName.toLowerCase();
+  const isSaveAction = lowerActionName === 'save' || lowerActionName.endsWith(':save');
+  
+  if (isSaveAction) {
     await handleSaveActions(actionHandler);
   } else if (actionName === 'delete') {
     await handleDeleteWithDependencyCheck();
@@ -203,7 +212,7 @@ const handleSaveActions = async (actionHandler: any) => {
 4. Shows conflict resolution dialog if conflicts exist
 5. Proceeds with save if no conflicts
 
-See [hooks documentation](../hooks/README.md#useconflictresolution) for conflict resolution details.
+See [utils documentation](../utils/conflictResolutionUtil.ts) for conflict resolution details.
 
 #### `getExtendedActionContext()`
 
@@ -291,8 +300,15 @@ interface EntityFormProps {
   onFieldMetadataChange: (fieldId: string, meta: any) => void;
   onAction: (actionName: string) => void;        // Action handler callback
   params: any;                                   // Additional parameters
+  actionOverrides?: Record<string, Partial<FormAction>>; // Optional render-time action overrides
 }
 ```
+
+**actionOverrides**:
+- Allows overriding action properties at render time without mutating the form
+- Useful for UI-only state like switch checked states (e.g., auto-save toggle)
+- Applied via spread operator: `{ ...action, ...actionOverrides[action.name] }`
+- See [AUTOSAVE_FEATURE.md](../AUTOSAVE_FEATURE.md) for detailed explanation of this pattern
 
 ### Component Structure
 
@@ -517,7 +533,7 @@ initialMode={String(object.type).includes('new') ? 'create' : 'view'}
 ```
 DatabaseComponent
   ↓ (renders with props)
-EntityFormContextProvider2
+EntityFormContextProvider
   ↓ (useEffect on mount)
 loadForm()
   ↓
@@ -543,7 +559,7 @@ FieldRenderer.onChange()
   ↓
 onFieldChange(fieldId, value)
   ↓
-EntityFormContextProvider2.updateField()
+EntityFormContextProvider.updateField()
   ↓
 useFormState.updateField()
   ↓
@@ -559,7 +575,7 @@ User clicks Save
   ↓
 EntityForm.onAction('entity:save')
   ↓
-EntityFormContextProvider2.handleAction()
+EntityFormContextProvider.handleAction()
   ↓
 handleSaveActions()
   ↓
@@ -585,7 +601,7 @@ User clicks Delete
   ↓
 EntityForm.onAction('delete')
   ↓
-EntityFormContextProvider2.handleAction()
+EntityFormContextProvider.handleAction()
   ↓
 handleDeleteWithDependencyCheck()
   ↓
@@ -608,8 +624,8 @@ externalAppController.closeForm()
 
 1. **User Interaction**: User clicks action button in toolbar
 2. **Action Renderer**: `ButtonActionRenderer` calls `onAction(actionName)`
-3. **EntityForm**: Passes action to `EntityFormContextProvider2.handleAction()`
-4. **Action Routing**: Routes to appropriate handler based on action name
+3. **EntityForm**: Passes action to `EntityFormContextProvider.handleAction()`
+4. **Action Routing**: Routes to appropriate handler based on action name (strict matching: `'save'` or `':save'` suffix)
 5. **Action Handler**: Retrieved from `ActionHandlerDispatcher`
 6. **Context Creation**: `getExtendedActionContext()` creates action context
 7. **Handler Execution**: Action handler executes with context
@@ -686,7 +702,7 @@ See [hooks documentation](../hooks/README.md) for detailed hook documentation.
 
 ## Best Practices
 
-### EntityFormContextProvider2
+### EntityFormContextProvider
 
 1. **Use Hooks**: Always use custom hooks for state management
 2. **Error Handling**: Always handle errors in async operations
@@ -694,14 +710,16 @@ See [hooks documentation](../hooks/README.md) for detailed hook documentation.
 4. **Conflict Detection**: Always check for conflicts before saving in EDIT mode
 5. **Dependency Checks**: Check for dependent entities before delete
 6. **External Integration**: Use `externalAppController` for app integration
+7. **Action Overrides**: Use `actionOverrides` prop for UI-only state (like auto-save toggle) without mutating form
 
 ### EntityForm
 
 1. **Pure Component**: Keep it as a pure presentation component
-2. **No Business Logic**: All logic should be in EntityFormContextProvider2
+2. **No Business Logic**: All logic should be in EntityFormContextProvider
 3. **Visibility Rules**: Respect action visibility rules
 4. **Field Rendering**: Use ComponentRegistry for field renderers
 5. **Layout**: Follow column layout conventions
+6. **Action Overrides**: Apply `actionOverrides` at render time to override action properties without mutating form
 
 ### DatabaseComponent Integration
 

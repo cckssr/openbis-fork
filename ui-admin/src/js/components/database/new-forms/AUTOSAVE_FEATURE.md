@@ -56,16 +56,17 @@ Core goals:
 Used by: `useEntityAutoSaveFlow`
 
 Key format:
-- `new-forms:auto-save-enabled:${user}:${entityKind}:${permId}`
+- `new-forms:auto-save-enabled:${user}:${entityKind}:${permId || 'unknown'}`
 
 Value:
 - Stored only when enabled: `'true'`
 - **Removed** when disabled (default is false), to avoid storing useless `"false"` entries.
 
 **Reasoning**
-- Preference is **UI/session behavior**, not part of the entity’s domain model.
-- Per entity gives the most intuitive UX: “I want auto-save for this object, not globally for everything.”
+- Preference is **UI/session behavior**, not part of the entity's domain model.
+- Per entity gives the most intuitive UX: "I want auto-save for this object, not globally for everything."
 - Storing only `'true'` keeps `localStorage` clean and avoids unlimited key growth with false values.
+- Fallback to `'unknown'` handles cases where `permId` is undefined (e.g., during entity creation).
 
 ### 2) Draft key (per entity)
 
@@ -74,25 +75,37 @@ Value:
 Used by: `useAutoSave` / `useAutoSaveRestore`
 
 Key format:
-- `form-data-${entityKind}-${permId}-${user}`
+- `form-data-${entityKind}-${permId || 'new'}-${user}`
 
-Value (shape)
-- Includes:
-  - dirty fields + metadata needed to merge
-  - `timestamp` (stale data handling)
-  - entity identifiers (safety / mismatch detection)
+Value (shape):
+```typescript
+{
+  data: Partial<Form>,        // Only dirty fields
+  dirtyFields: string[],      // Field IDs that were changed
+  timestamp: number,           // Unix timestamp
+  entityPermId: string,       // Entity identifier for mismatch detection
+  version: number              // Form version for schema validation
+}
+```
 
 **Reasoning**
 - Separating preference vs draft prevents coupling: clearing a draft should not reset preference.
 - Key includes user + entity identifiers to avoid cross-user and cross-entity collisions.
+- Fallback to `'new'` handles cases where `permId` is undefined (e.g., during new entity creation).
 
 ---
 
-## Data saving strategy: “dirty fields only”
+## Data saving strategy: "dirty fields only"
 
 ### What is saved
 
 `useAutoSave` computes diffs between `form` and `originalForm` and saves **only changed fields**.
+
+### Save Triggers
+
+Auto-save triggers on:
+- **Periodic intervals** (configurable, default: 5000ms)
+- **Page unload** (`beforeunload` event) - ensures data is saved even if user closes tab/window
 
 **Reasoning**
 - Performance: less serialization, smaller `localStorage` footprint

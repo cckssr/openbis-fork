@@ -18,6 +18,7 @@ import withStyles from '@mui/styles/withStyles';
 import messages from '@src/js/common/messages.js'
 import TabViewer from '@src/js/components/common/tab/TabViewer.jsx'
 import { EntityFormContextProvider } from '@src/js/components/database/new-forms/components/EntityFormContextProvider.tsx';
+import FormErrorBoundary from '@src/js/components/database/new-forms/components/common/FormErrorBoundary.tsx';
 
 const styles = theme => ({
   tabsPanel: {
@@ -319,15 +320,20 @@ class DatabaseComponent extends React.PureComponent {
 
   renderJson() {  
     const { object } = this.props
-    return (<EntityFormContextProvider openbisFacade={openbis}
-      params={object.params}
-      entityKind={object.type}
-      permId={object.id}
-      user={AppController.getInstance().getUser()}
-      sessionID={AppController.getInstance().getSessionToken()}
-      initialMode={String(object.type).includes('new') ? 'create' : 'view'}
-      externalAppController={this.externalAppController}
-    />)
+    return (
+      <FormErrorBoundary>
+        <EntityFormContextProvider 
+          openbisFacade={openbis}
+          params={object.params}
+          entityKind={object.type}
+          permId={object.id}
+          user={AppController.getInstance().getUser()}
+          sessionID={AppController.getInstance().getSessionToken()}
+          initialMode={String(object.type).includes('new') ? 'create' : 'view'}
+          externalAppController={this.externalAppController}
+        />
+      </FormErrorBoundary>
+    )
   }
 
   render() {

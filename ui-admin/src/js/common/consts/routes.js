@@ -66,7 +66,7 @@ const routes = {
     page: pages.DATABASE,
     type: objectTypes.PROJECT
   }),
-  NEW_PROJECT: new Route('/new-project/:parentId/:id', {
+  NEW_PROJECT: new Route('/new-project/:id/parentId=:parentId', {
     page: pages.DATABASE,
     type: objectTypes.NEW_PROJECT
   }),
@@ -85,7 +85,7 @@ const routes = {
     page: pages.DATABASE,
     type: objectTypes.OBJECT
   }),
-  NEW_OBJECT: new Route('/new-object/:entityType/:parentId/:id', {
+  NEW_OBJECT: new Route('/new-object/:id/entityType=:entityType/parentId=:parentId', {
     page: pages.DATABASE,
     type: objectTypes.NEW_OBJECT
   }),
@@ -119,7 +119,7 @@ const routes = {
     page: pages.DATABASE,
     type: objectTypes.COLLECTION
   }),
-  NEW_COLLECTION: new Route('/new-collection/:entityType/:parentId/:id', {
+  NEW_COLLECTION: new Route('/new-collection/:id/parentId=:parentId/entityType=:entityType', {
     page: pages.DATABASE,
     type: objectTypes.NEW_COLLECTION,
   }),
@@ -140,7 +140,7 @@ const routes = {
     page: pages.DATABASE,
     type: objectTypes.DATA_SET
   }),
-  NEW_DATA_SET: new Route('/new-dataset/:entityType/:parentId/:id', {
+  NEW_DATA_SET: new Route('/new-dataset/:id/parentId=:parentId/entityType=:entityType', {
     page: pages.DATABASE,
     type: objectTypes.NEW_DATA_SET,
   }),

@@ -120,20 +120,6 @@ export class ObjectFormController implements IFormController {
 		const { SampleUpdate, SamplePermId } = this.openbisFacade;
 		const update = new SampleUpdate();
 		update.setSampleId(new SamplePermId(form.entityPermId));
-		/* const metadata = update.getMetaData();
-		form.fields
-		.filter(field => !field.readOnly)
-		.filter(field => field.dataType === FormFieldDataType.WORD_PROCESSOR_CLASSIC 
-			|| field.dataType === FormFieldDataType.WORD_PROCESSOR_PAGE 
-			|| field.dataType === FormFieldDataType.WORD_PROCESSOR)
-		.forEach(field => {
-			Object.keys(field.meta).forEach(key => {
-				metadata.set(key, field.meta[key]);
-			});
-		});
-		update.getMetaData().set(metadata); */
-		//console.log('ObjectFormController._updateSample metadata', { metadata });
-		//update.getMetaData().set("isMarkdown", "true");
 		getChangedEditableFieldValues(form, update);
 		return update;
 	}

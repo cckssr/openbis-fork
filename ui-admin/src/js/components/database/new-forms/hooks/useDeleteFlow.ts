@@ -4,6 +4,7 @@ import { IFormController } from '@src/js/components/database/new-forms/types/IFo
 import { IExtendedActionContext } from '@src/js/components/database/new-forms/types/formITypes.ts';
 import { DialogState } from '@src/js/components/database/new-forms/hooks/useDialogState.ts';
 import { EntityKind } from '@src/js/components/database/new-forms/types/formEnums.ts';
+import { getErrorMessage, formatErrorForLogging } from '@src/js/components/database/new-forms/utils/errorUtil.ts';
 
 /**
  * Normalizes dependent entities structure to a consistent format
@@ -79,13 +80,10 @@ interface UseDeleteFlowParams {
   getExtendedActionContext: (reason?: string) => IExtendedActionContext;
   openDeleteDialog: (config: any) => void;
   closeDeleteDialog: () => void;
+  setLoading: (loading: boolean) => void;
   setSaving: (saving: boolean) => void;
   setError: (error: any) => void;
   clearError: () => void;
-  executeOperation: <T, >(
-    operation: () => Promise<T>,
-    options?: { setLoading?: boolean; setSaving?: boolean }
-  ) => Promise<T | null>;
   externalAppController?: any;
   actionToastContext?: any; // For showing success/error toasts
 }
@@ -102,10 +100,10 @@ export const useDeleteFlow = ({
   getExtendedActionContext,
   openDeleteDialog,
   closeDeleteDialog,
+  setLoading,
   setSaving,
   setError,
   clearError,
-  executeOperation,
   externalAppController,
   actionToastContext,
 }: UseDeleteFlowParams) => {
@@ -114,40 +112,48 @@ export const useDeleteFlow = ({
       return;
     }
 
-    await executeOperation(
-      async () => {
-        // Check for existing deletions in trashcan
-        try {
-          await controller.delete(form, { checkOnly: true });
-        } catch (deletionError: any) {
-          throw new Error(deletionError.message);
-        }
+    setLoading(true);
+    clearError();
 
-        // Check for dependent entities
-        const rawDependentEntities = await controller.getDependentEntities(form);
+    try {
+      // Check for existing deletions in trashcan
+      try {
+        await controller.delete(form, { checkOnly: true });
+      } catch (deletionError: any) {
+        throw new Error(deletionError.message);
+      }
 
-        // Normalize dependent entities structure based on entity kind
-        const normalizedDeps = normalizeDependentEntities(entityKind, rawDependentEntities);
+      // Check for dependent entities
+      const rawDependentEntities = await controller.getDependentEntities(form);
 
-        const deleteConfig = {
-          includeReason: true,
-          numberOfEntities: normalizedDeps.totalCount,
-          bypassesTrashcan: normalizedDeps.totalCount === 0,
-          dependentEntities: normalizedDeps,
-          rawDependentEntities: rawDependentEntities, // Keep original for controller use and dialog display
-          entityKind: entityKind,
-        };
+      // Normalize dependent entities structure based on entity kind
+      const normalizedDeps = normalizeDependentEntities(entityKind, rawDependentEntities);
 
-        openDeleteDialog(deleteConfig);
-      },
-      { setLoading: true }
-    );
+      const deleteConfig = {
+        includeReason: true,
+        numberOfEntities: normalizedDeps.totalCount,
+        bypassesTrashcan: normalizedDeps.totalCount === 0,
+        dependentEntities: normalizedDeps,
+        rawDependentEntities: rawDependentEntities, // Keep original for controller use and dialog display
+        entityKind: entityKind,
+      };
+
+      openDeleteDialog(deleteConfig);
+    } catch (error: any) {
+      const errorMessage = getErrorMessage(error, 'Failed to check dependencies');
+      setError(errorMessage);
+      console.error(formatErrorForLogging(error, 'useDeleteFlow.handleDeleteWithDependencyCheck'));
+    } finally {
+      setLoading(false);
+    }
   }, [
     form,
     controller,
     entityKind,
     openDeleteDialog,
-    executeOperation,
+    setLoading,
+    clearError,
+    setError,
   ]);
 
   const handleDeleteConfirm = useCallback(
@@ -182,7 +188,9 @@ export const useDeleteFlow = ({
             });
           }
         } catch (error: any) {
-          setError(error.message ?? error);
+          const errorMessage = getErrorMessage(error, 'Failed to delete entity');
+          setError(errorMessage);
+          console.error(formatErrorForLogging(error, 'useDeleteFlow.handleDeleteConfirm'));
         } finally {
           setSaving(false);
         }
@@ -197,6 +205,8 @@ export const useDeleteFlow = ({
       clearError,
       setError,
       externalAppController,
+      dialogs.delete.config,
+      actionToastContext,
     ]
   );
 

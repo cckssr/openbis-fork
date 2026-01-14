@@ -11,6 +11,7 @@ import { Form, IExtendedActionContext } from '@src/js/components/database/new-fo
 import { IFormController } from '@src/js/components/database/new-forms/types/IFormController.ts';
 
 import { findConflicts, checkModificationDateConflict } from '@src/js/components/database/new-forms/utils/conflictResolutionUtil.ts';
+import { getErrorMessage, formatErrorForLogging } from '@src/js/components/database/new-forms/utils/errorUtil.ts';
 import ConflictResolutionDialog from '@src/js/components/database/new-forms/components/common/ConflictResolutionDialog.tsx';
 import DeleteConfirmationDialog from '@src/js/components/database/new-forms/components/common/DeleteConfirmationDialog.tsx';
 import MoveDialog from '@src/js/components/database/new-forms/components/common/MoveDialog.tsx';
@@ -57,12 +58,11 @@ export const EntityFormContextProvider = ({
     initialMode
   });
 
-  // Operation state (loading, saving, error) - NEW
+  // Operation state (loading, saving, error)
   const {
     operationState,
     setLoading, setSaving,
     setError, clearError,
-    executeOperation
   } = useOperationState();
 
   // Dialog state (conflict, delete, move) - NEW
@@ -138,15 +138,21 @@ export const EntityFormContextProvider = ({
   const loadForm = useCallback(async () => {
     console.log('loadForm', { permId }, { entityKind }, { params });
 
-    await executeOperation(
-      async () => {
-        const loadedForm = await controller.load(permId, entityKind, params);
-        console.log('loadedForm: ', loadedForm);
-        setForm(loadedForm);
-      },
-      { setLoading: true }
-    );
-  }, [permId, entityKind, params, controller, executeOperation, setForm]);
+    setLoading(true);
+    clearError();
+
+    try {
+      const loadedForm = await controller.load(permId, entityKind, params);
+      console.log('loadedForm: ', loadedForm);
+      setForm(loadedForm);
+    } catch (error: any) {
+      const errorMessage = getErrorMessage(error, 'Failed to load form');
+      setError(errorMessage);
+      console.error(formatErrorForLogging(error, 'EntityFormContextProvider.loadForm'));
+    } finally {
+      setLoading(false);
+    }
+  }, [permId, entityKind, params, controller, setLoading, clearError, setError, setForm]);
 
   const handleErrorCancel = () => {
     clearError();
@@ -181,10 +187,10 @@ export const EntityFormContextProvider = ({
     getExtendedActionContext,
     openDeleteDialog,
     closeDeleteDialog,
+    setLoading,
     setSaving,
     setError,
     clearError,
-    executeOperation,
     externalAppController,
     actionToastContext,
   });
@@ -225,7 +231,9 @@ export const EntityFormContextProvider = ({
         try {
           await actionHandler(context);
         } catch (e: any) {
-          setError(e.message);
+          const errorMessage = getErrorMessage(e, 'Action failed');
+          setError(errorMessage);
+          console.error(formatErrorForLogging(e, `EntityFormContextProvider.handleAction.${actionName}`));
         } finally {
           setSaving(false);
         }
@@ -265,29 +273,29 @@ export const EntityFormContextProvider = ({
           const conflicts = findConflicts(form, latestForm) as any[];
           openConflictDialog(conflicts);
         } else {
-          console.error('Save failed:', error);
+          const errorMessage = getErrorMessage(error, 'Failed to save entity');
+          setError(errorMessage);
           actionToastContext.raiseError('ERROR SAVING');
-          //alert('ERROR SAVING (GENERAL)');
-          setError(error.message);
+          console.error(formatErrorForLogging(error, 'EntityFormContextProvider.handleSaveActions.EDIT'));
         }
       } finally {
         setSaving(false);
       }
     } else if (mode === FormMode.CREATE) {
-      //try {
+      try {
         await actionHandler(context);
         actionToastContext.raiseSuccess('SUCCESSFULLY SAVED ');
-        //alert('SUCCESSFULLY SAVED (GENERAL)');
 
         // Clear saved data after successful save
         clearStorage();
-      /* } catch (error: any) {
-        setError(error.message);
+      } catch (error: any) {
+        const errorMessage = getErrorMessage(error, 'Failed to create entity');
+        setError(errorMessage);
         actionToastContext.raiseError('ERROR SAVING ');
-        //alert('ERROR SAVING (GENERAL)');
+        console.error(formatErrorForLogging(error, 'EntityFormContextProvider.handleSaveActions.CREATE'));
       } finally {
         setSaving(false);
-      } */
+      }
     } else {
       throw new Error('Invalid mode');
     }
@@ -366,7 +374,9 @@ export const EntityFormContextProvider = ({
             try {
               await actionHandler(context, selectedEntityType.code);
             } catch (e: any) {
-              setError(e.message);
+              const errorMessage = getErrorMessage(e, 'Failed to create entity');
+              setError(errorMessage);
+              console.error(formatErrorForLogging(e, 'EntityFormContextProvider.newEntity'));
             } finally {
               setSaving(false);
               closeNewDialog();
