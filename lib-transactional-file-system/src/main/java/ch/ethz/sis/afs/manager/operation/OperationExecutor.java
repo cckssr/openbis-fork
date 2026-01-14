@@ -16,13 +16,10 @@
 package ch.ethz.sis.afs.manager.operation;
 
 import java.nio.file.Path;
-import java.util.Objects;
 
 import ch.ethz.sis.afs.api.dto.File;
 import ch.ethz.sis.afs.dto.Transaction;
 import ch.ethz.sis.afs.dto.Transaction.PathState;
-import ch.ethz.sis.afs.dto.operation.CreateOperation;
-import ch.ethz.sis.afs.dto.operation.DeleteOperation;
 import ch.ethz.sis.afs.dto.operation.Operation;
 import ch.ethz.sis.shared.io.IOUtils;
 import lombok.NonNull;
@@ -158,35 +155,19 @@ public interface OperationExecutor<OPERATION extends Operation, RESULT>
 
     static PathState getCachedPathState(Transaction transaction, String source) throws Exception
     {
-        if (transaction.getPathStateCache().containsKey(source))
+        PathState pathState = transaction.getPathStateCache().get(source);
+
+        if (pathState != null)
         {
-            return transaction.getPathStateCache().get(source);
+            return pathState;
         }
 
-        PathState pathState = new PathState();
+        pathState = new PathState();
         pathState.setExists(IOUtils.exists(source));
         pathState.setDirectory(IOUtils.exists(source) ? IOUtils.getFile(source).getDirectory() : false);
 
-        for (Operation previousOperation : transaction.getOperations())
-        {
-            if (previousOperation instanceof final DeleteOperation deleteOperation)
-            {
-                if (source.startsWith(deleteOperation.getSource()))
-                {
-                    pathState.setExists(false);
-                    pathState.setDirectory(false);
-                }
-            } else if (previousOperation instanceof final CreateOperation createOperation)
-            {
-                if (createOperation.getSource().startsWith(source))
-                {
-                    pathState.setExists(true);
-                    pathState.setDirectory(!Objects.equals(createOperation.getSource(), source) || createOperation.isDirectory());
-                }
-            }
-        }
-
         transaction.getPathStateCache().put(source, pathState);
+
         return pathState;
     }
 
