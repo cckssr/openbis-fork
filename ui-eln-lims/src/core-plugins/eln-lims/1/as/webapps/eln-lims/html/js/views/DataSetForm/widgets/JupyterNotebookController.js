@@ -14,21 +14,21 @@
  * limitations under the License.
  */
 
-function JupyterNotebookController(entity) {
-	this._jupyterNotebookModel = new JupyterNotebookModel(entity);
+function JupyterNotebookController(entity, customNotebookContent) {
+	this._jupyterNotebookModel = new JupyterNotebookModel(entity, customNotebookContent);
 	this._jupyterNotebookView = new JupyterNotebookView(this, this._jupyterNotebookModel);
-	
+
 	this.init = function() {
 		this._jupyterNotebookView.repaint();
 	}
 	
 	this.create = function(workspace, notebook, datasets, notebookOwner) {
-		JupyterUtil.createJupyterNotebookAndOpen(workspace, notebook, datasets, notebookOwner);
+		JupyterUtil.createJupyterNotebookAndOpen(workspace, notebook, datasets, notebookOwner, this._jupyterNotebookModel.customNotebookContent);
 		Util.unblockUI();
 	}
 	
 	this.createAndSave = function(fileName, datasets, notebookOwner) {
-		var jnb = JSON.stringify(JupyterUtil.createJupyterNotebookContent(datasets, notebookOwner, fileName));
+		var jnb = JSON.stringify(JupyterUtil.createJupyterNotebookContent(datasets, notebookOwner, fileName, this._jupyterNotebookModel.customNotebookContent));
 		Util.downloadTextFile(jnb, fileName);
 		Util.unblockUI();
 	}

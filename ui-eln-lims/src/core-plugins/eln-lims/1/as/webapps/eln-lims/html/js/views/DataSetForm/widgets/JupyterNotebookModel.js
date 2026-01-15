@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
-function JupyterNotebookModel(entity) {
+function JupyterNotebookModel(entity, customNotebookContent) {
 	this.entity = entity;
+	this.customNotebookContent = customNotebookContent;
 }
