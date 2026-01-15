@@ -13,7 +13,8 @@ import {
   getModificationDateField,
   getTypeField,
   getPropertyFieldsFromAssignments,
-  getCollectionField
+  getCollectionField,
+  getObjectField
 } from '@src/js/components/database/new-forms/entities/formFieldGetters.ts';
 import {
   getMoveAction, getDeleteAction, getEditAction, getDividerAction, getMoreActionsAction,
@@ -71,11 +72,19 @@ export class ObjectFormModel {
   }
 
   static adaptNewObjectDtoToForm(dto: any, tmpPermId: string, params: any): Form {
+    console.log('ObjectFormModel.adaptNewObjectDtoToForm: dto', { dto, tmpPermId, params });
     const permId = tmpPermId + '-' + EntityKind.NEW_OBJECT;
-
+    const parentType = params.parentType;
+    const parentTypeField = parentType === EntityKind.SPACE ? getSpaceField({ permId: { permId: permId } }, { value: params.parentId, id: permId + '-space' }) : 
+      parentType === EntityKind.PROJECT ? getProjectField({ permId: { permId: permId } }, { value: params.parentId, id: permId + '-project' }) : 
+      (parentType === EntityKind.COLLECTION || parentType === EntityKind.EXPERIMENT) ? getCollectionField({ permId: { permId: permId } }, { value: params.parentId, id: permId + '-collection' }) : 
+      (parentType === EntityKind.OBJECT || parentType === EntityKind.SAMPLE) ? getObjectField({ permId: { permId: permId } }, { value: params.parentId, id: permId + '-object' }) : null;
+    if (!parentTypeField) {
+      throw new Error(`Parent type ${parentType} not supported`);
+    }
     const staticFields = [
       getCodeField({ permId: { permId: permId } }, { readOnly: false, value: '', id: permId + '-code' }),
-			getProjectField({ permId: { permId: permId } }, { value: params.parentId, id: permId + '-project' }),
+			parentTypeField,
       getTypeField({ permId: { permId: permId } }, { value: params.entityType, id: permId + '-entityType' }),
     ];
 
@@ -89,7 +98,7 @@ export class ObjectFormModel {
       version: 1,
       entityKind: EntityKind.NEW_OBJECT,
       meta: {},
-      fields,
+      fields: fields.filter(field => field !== null),
       isDirty: false,
       isValid: true,
       actions: [

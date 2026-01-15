@@ -36,6 +36,26 @@ export class DatasetFormController implements IFormController {
 			const types = await this.openbisFacade.getDataSetTypes([id], fetchOptions)
 			const dto = types[typeCode];
 			console.log('DatasetFormController.load', { dto });
+			const { ExperimentPermId, SamplePermId, ExperimentFetchOptions, SampleFetchOptions } = this.openbisFacade;
+			let parentDto = null;
+			switch (params.parentType) {
+				case EntityKind.COLLECTION:
+				case EntityKind.EXPERIMENT:
+					const collectionId = new ExperimentPermId(params.parentId);
+					const collection = await this.openbisFacade.getExperiments([collectionId], new ExperimentFetchOptions());
+					parentDto = collection[collectionId];
+					params.parentId = parentDto.getIdentifier().getIdentifier();
+					break;
+				case EntityKind.OBJECT:
+				case EntityKind.SAMPLE:
+					const objectId = new SamplePermId(params.parentId);
+					const object = await this.openbisFacade.getSamples([objectId], new SampleFetchOptions());
+					parentDto = object[objectId];
+					params.parentId = parentDto.getIdentifier().getIdentifier();
+					break;
+				default:
+					throw new Error(`Parent type ${params.parentType} not supported`);
+			}
 			return DatasetFormModel.adaptNewDatasetDtoToForm(dto, permId, params);
 		}
 		const { DataSetPermId, DataSetFetchOptions } = this.openbisFacade;

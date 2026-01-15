@@ -34,6 +34,11 @@ export class CollectionFormController implements IFormController {
 			const fetchOptions = new ExperimentTypeFetchOptions()
 			fetchOptions.withPropertyAssignments().withPropertyType().withVocabulary().withTerms();
 			const types = await this.openbisFacade.getExperimentTypes([id], fetchOptions)
+			const { ProjectPermId, ProjectFetchOptions } = this.openbisFacade;
+			const projectId = new ProjectPermId(params.parentId);
+			const project = await this.openbisFacade.getProjects([projectId], new ProjectFetchOptions());
+			const projectDto = project[projectId];
+			params.parentId = projectDto.getIdentifier().getIdentifier();
 			return CollectionFormModel.adaptNewCollectionDtoToForm(permId, types[typeCode], params);
 		}
 		const { ExperimentPermId, ExperimentFetchOptions } = this.openbisFacade;
@@ -70,7 +75,7 @@ export class CollectionFormController implements IFormController {
 		const { ExperimentCreation, EntityTypePermId, ProjectIdentifier } = this.openbisFacade;
 		const experimentCreation = new ExperimentCreation();
 		experimentCreation.setTypeId(new EntityTypePermId(form.entityType));
-		experimentCreation.setProjectId(new ProjectIdentifier(form.fields.find((field: any) => field.id === form.entityPermId + '-project')?.value));
+		experimentCreation.setProjectId(new ProjectIdentifier(findFormFieldById(form.fields, form.entityPermId, 'project', true) as string));
 		experimentCreation.setCode(findFormFieldById(form.fields, form.entityPermId, 'code', true) as string);
 		const result = await this.openbisFacade.createExperiments([experimentCreation]);
 		return result[0].getPermId();

@@ -90,8 +90,14 @@ export class CoreFormModel {
 		}; */
 
 	static newCollectionAction = (context: IExtendedActionContext, selectedEntityType: string) => {
-		if (context.externalAppController) {
-			context.externalAppController.createNewObject({ newObjectType: EntityKind.NEW_COLLECTION, fromObjectType: context.form.entityKind, fromId: findFormFieldById(context.form.fields, context.form.entityPermId, 'identifier', true) as string, selectedEntityType: selectedEntityType });
+		const { form, externalAppController } = context;
+		if (externalAppController) {
+			externalAppController.createNewObject({ 
+				newObjectType: EntityKind.NEW_COLLECTION, 
+				fromObjectType: form.entityKind, 
+				fromId: form.entityPermId, 
+				selectedEntityType: selectedEntityType 
+			});
 		} else {
 			console.warn("onNewCollection callback not provided to context.");
 			throw new Error("onNewCollection callback not provided to context.");
@@ -99,8 +105,21 @@ export class CoreFormModel {
 	};
 
 	static newObjectAction = (context: IExtendedActionContext, selectedEntityType: string) => {
-		if (context.externalAppController) {
-			context.externalAppController.createNewObject({ newObjectType: EntityKind.NEW_OBJECT, fromObjectType: context.form.entityKind, fromId: findFormFieldById(context.form.fields, context.form.entityPermId, 'identifier', true) as string, selectedEntityType: selectedEntityType });
+		const { form, externalAppController } = context;
+		const sourceEntityKind = form.entityKind;
+		let sourceEntityId = null;
+		if (sourceEntityKind === EntityKind.SPACE) {
+			sourceEntityId = findFormFieldById(form.fields, form.entityPermId, 'code', true) as string;
+		} else {
+			sourceEntityId = form.entityPermId;
+		}
+		if (externalAppController) {
+			externalAppController.createNewObject({ 
+				newObjectType: EntityKind.NEW_OBJECT, 
+				fromObjectType: sourceEntityKind, 
+				fromId: sourceEntityId, 
+				selectedEntityType: selectedEntityType 
+			});
 		} else {
 			console.warn("onNewObject callback not provided to context.");
 			throw new Error("onNewObject callback not provided to context.");
@@ -108,11 +127,17 @@ export class CoreFormModel {
 	};
 
 	static newDatasetAction = (context: IExtendedActionContext, selectedEntityType: string) => {
-		if (context.externalAppController) {
-			context.externalAppController.createNewObject({ newObjectType: EntityKind.NEW_DATASET, fromObjectType: context.form.entityKind, fromId: findFormFieldById(context.form.fields, context.form.entityPermId, 'identifier', true) as string, selectedEntityType: selectedEntityType });
+		const { form, externalAppController } = context;
+		if (externalAppController) {
+			externalAppController.createNewObject({ 
+				newObjectType: EntityKind.NEW_DATASET, 
+				fromObjectType: form.entityKind, 
+				fromId: form.entityPermId, 
+				selectedEntityType: selectedEntityType 
+			});
 		} else {
 			console.warn("onNewDataset callback not provided to context.");
 			throw new Error("onNewDataset callback not provided to context.");
-		}
+		}	
 	};
 }

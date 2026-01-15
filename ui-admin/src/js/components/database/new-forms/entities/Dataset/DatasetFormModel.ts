@@ -62,13 +62,17 @@ export class DatasetFormModel {
   }
 
   static adaptNewDatasetDtoToForm(dto: any, tmpPermId: string, params: any): Form {
-
     const permId = tmpPermId + '-' + EntityKind.NEW_DATASET;
+    const parentType = params.parentType;
+    const parentTypeField = (parentType === EntityKind.COLLECTION || parentType === EntityKind.EXPERIMENT) ? getCollectionField({ permId: { permId: permId } }, { value: params.parentId, id: permId + '-collection' }) :
+      (parentType === EntityKind.OBJECT || parentType === EntityKind.SAMPLE) ? getObjectField({ permId: { permId: permId } }, { value: params.parentId, id: permId + '-object' }) : null;
+    if (!parentTypeField) {
+      throw new Error(`Parent type ${parentType} not supported`);
+    }
     const staticFields = [
       getCodeField({ permId: { permId: permId } }, { readOnly: false, value: '', id: permId + '-code' }),
       getTypeField({ permId: { permId: permId } }, { value: params.entityType, id: permId + '-entityType' }),
-      getCollectionField({ permId: { permId: permId } }, { value: params.parentId, id: permId + '-collection' }),
-      getObjectField({ permId: { permId: permId } }, { value: params.parentId, id: permId + '-object' }),
+      parentTypeField,
     ];
     const propertyFields = getPropertyFieldsFromAssignments(dto);
 

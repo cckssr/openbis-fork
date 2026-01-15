@@ -1,7 +1,8 @@
 import { Form, FormField } from '@src/js/components/database/new-forms/types/formITypes.ts';
 import { IFormController } from '@src/js/components/database/new-forms/types/IFormController.ts';
 import { fetchRights } from '@src/js/components/database/new-forms/utils/authorizationServiceUtil.ts';
-import { createDummyDataSetIdentifierFromSampleIdentifier, createDummySampleIdentifierFromSampleIdentifier, getSpaceCodeFromIdentifier } from '@src/js/components/database/new-forms/utils/identifierUtil.ts';
+import { createDummyDataSetIdentifierFromSampleIdentifier, createDummySampleIdentifierFromSampleIdentifier, 
+	getProjectCodeFromExperimentIdentifier, getProjectIdentifier, getProjectIdentifierFromExperimentIdentifier, getProjectIdentifierFromSampleIdentifier, getSpaceCodeFromIdentifier } from '@src/js/components/database/new-forms/utils/identifierUtil.ts';
 import { findFormFieldById } from '@src/js/components/database/new-forms/utils/formFieldUtil.ts';
 import { EntityKind, FormFieldDataType, FormMode } from '@src/js/components/database/new-forms/types/formEnums.ts';
 import { ObjectFormModel } from '@src/js/components/database/new-forms/entities/Object/ObjectFormModel.ts';
@@ -36,6 +37,7 @@ export class ObjectFormController implements IFormController {
 
 	async load(permId: string, entityKind?: string, params?: any): Promise<Form> {
 		if (entityKind === EntityKind.NEW_OBJECT) {
+			console.log('ObjectFormController.load: new object', { permId, entityKind, params });
 			const typeCode = params.entityType;
 			params.defaultCode = await this._getNextSequenceForType(typeCode);
 			const { EntityTypePermId, SampleTypeFetchOptions } = this.openbisFacade;
@@ -44,6 +46,35 @@ export class ObjectFormController implements IFormController {
 			fetchOptions.withPropertyAssignments().withPropertyType().withVocabulary().withTerms();
 			const types = await this.openbisFacade.getSampleTypes([id], fetchOptions)
 			const dto = types[typeCode];
+			const { ProjectPermId, ExperimentPermId, SamplePermId, ProjectFetchOptions, ExperimentFetchOptions, SampleFetchOptions } = this.openbisFacade;
+			let parentDto = null;
+			switch (params.parentType) {
+				case EntityKind.SPACE:
+					break
+				case EntityKind.PROJECT:
+					const projectId = new ProjectPermId(params.parentId);
+					const project = await this.openbisFacade.getProjects([projectId], new ProjectFetchOptions());
+					parentDto = project[projectId];
+					params.parentId = parentDto.getIdentifier().getIdentifier();
+					break;
+				case EntityKind.COLLECTION:
+				case EntityKind.EXPERIMENT:
+					const collectionId = new ExperimentPermId(params.parentId);
+					const collection = await this.openbisFacade.getExperiments([collectionId], new ExperimentFetchOptions());
+					parentDto = collection[collectionId];
+					params.parentId = parentDto.getIdentifier().getIdentifier();
+					break;
+				case EntityKind.OBJECT:
+				case EntityKind.SAMPLE:
+					const objectId = new SamplePermId(params.parentId);
+					const object = await this.openbisFacade.getSamples([objectId], new SampleFetchOptions());
+					parentDto = object[objectId];
+					params.parentId = parentDto.getIdentifier().getIdentifier();
+					break;
+				default:
+					throw new Error(`Parent type ${params.parentType} not supported`);
+			}
+			console.log('ObjectFormController.load: parentDto', { parentDto });
 			return ObjectFormModel.adaptNewObjectDtoToForm(dto, permId, params);
 		}
 		const { SampleSearchCriteria, SampleFetchOptions } = this.openbisFacade;
@@ -102,16 +133,39 @@ export class ObjectFormController implements IFormController {
 	}
 
 	_createSample(form: Form): Promise<any> {
-		const { SampleCreation, EntityTypePermId, ProjectIdentifier, SpacePermId } = this.openbisFacade;
+		const { SampleCreation, EntityTypePermId, ProjectIdentifier, SpacePermId, ExperimentIdentifier, SampleIdentifier } = this.openbisFacade;
 		const creation = new SampleCreation();
 		creation.setCode(form.fields.find((field: any) => field.id === form.entityPermId + '-code')?.value);
 		creation.setTypeId(new EntityTypePermId(form.entityType, EntityKind.SAMPLE.toUpperCase()));
+		const objectId = form.fields.find((field: any) => field.id === form.entityPermId + '-object')?.value;
+		if (objectId) {
+			const spaceId = getSpaceCodeFromIdentifier(objectId);
+			const projectId = getProjectIdentifierFromSampleIdentifier(objectId);
+			creation.setSpaceId(new SpacePermId(spaceId));
+			if (projectId && projectId !== objectId) {
+				creation.setProjectId(new ProjectIdentifier(projectId));
+			}
+			creation.setParentIds([new SampleIdentifier(objectId)]);
+		}
+
+		const collectionId = form.fields.find((field: any) => field.id === form.entityPermId + '-collection')?.value;
+		if (collectionId) {
+			const spaceId = getSpaceCodeFromIdentifier(collectionId);
+			const projectId = getProjectIdentifierFromExperimentIdentifier(collectionId);
+			creation.setSpaceId(new SpacePermId(spaceId));
+			creation.setProjectId(new ProjectIdentifier(projectId));
+			creation.setExperimentId(new ExperimentIdentifier(collectionId));
+		}
 		const projectId = form.fields.find((field: any) => field.id === form.entityPermId + '-project')?.value;
 		if (projectId) {
+			const spaceId = getSpaceCodeFromIdentifier(projectId);
+			creation.setSpaceId(new SpacePermId(spaceId));
 			creation.setProjectId(new ProjectIdentifier(projectId));
 		}
-		creation.setSpaceId(new SpacePermId(getSpaceCodeFromIdentifier(projectId || '')));
-
+		const spaceId = form.fields.find((field: any) => field.id === form.entityPermId + '-space')?.value;
+		if (spaceId) {
+			creation.setSpaceId(new SpacePermId(spaceId));
+		}
 		getChangedEditableFieldValues(form, creation);
 		return creation;
 	}
@@ -141,7 +195,7 @@ export class ObjectFormController implements IFormController {
 		//return { canEdit: true, canDelete: true, canMove: true };
 	}
 
-	async delete(form: Form, context?: any): Promise<void> {		
+	async delete(form: Form, context?: any): Promise<void> {
 		// If this is just a check, return early
 		if (context?.checkOnly) {
 			return;
@@ -151,13 +205,13 @@ export class ObjectFormController implements IFormController {
 		let dependentEntities = context?.rawDependentEntities || context?.dependentEntities;
 		if (!dependentEntities) {
 			dependentEntities = await this.getDependentEntities(form);
-		}		
+		}
 		// Get delete reason from context or use default
 		const deleteReason = context?.deleteReason || 'delete via ng-ui';
-		
+
 		// Check if descendants should be deleted (from checkbox in dialog)
 		const includeDescendants = context?.includeDescendants || false;
-		
+
 		// Move all datasets to trashcan first using DeleteService
 		if (dependentEntities.datasets && dependentEntities.datasets.length > 0) {
 			const result = await this.deleteService.moveDataSetsToTrashcan(dependentEntities.datasets, deleteReason);
@@ -171,7 +225,7 @@ export class ObjectFormController implements IFormController {
 		if (includeDescendants && children.length > 0) {
 			await this.deleteDescendantObjects(children, deleteReason);
 		}
-		
+
 		// Finally, move the object (sample) itself to trashcan using DeleteService
 		const sampleIdentifier = findFormFieldById(form.fields, form.entityPermId, 'identifier', true);
 		if (!sampleIdentifier || typeof sampleIdentifier !== 'string') {
@@ -186,7 +240,7 @@ export class ObjectFormController implements IFormController {
 		}
 		return Promise.resolve();
 	}
-	
+
 	/**
 	 * Recursively delete descendant objects and their datasets
 	 * @param children Array of child sample objects
@@ -196,7 +250,7 @@ export class ObjectFormController implements IFormController {
 		if (!children || children.length === 0) {
 			return;
 		}
-		
+
 		// Process each child
 		for (const child of children) {
 			// Get child's datasets and children
@@ -208,11 +262,11 @@ export class ObjectFormController implements IFormController {
 			fetchOptions.withChildren && fetchOptions.withChildren();
 			const result = await this.openbisFacade.getSamples([id], fetchOptions);
 			const childSample = result[childPermId];
-			
+
 			if (childSample) {
 				const childDatasets = childSample.getDataSets ? childSample.getDataSets() : [];
 				const childChildren = childSample.getChildren ? childSample.getChildren() : [];
-				
+
 				// Move child's datasets to trashcan using DeleteService
 				if (childDatasets.length > 0) {
 					const result = await this.deleteService.moveDataSetsToTrashcan(childDatasets, reason);
@@ -220,12 +274,12 @@ export class ObjectFormController implements IFormController {
 						throw new Error(result.error || 'Failed to move child datasets to trashcan');
 					}
 				}
-				
+
 				// Recursively delete grandchildren
 				if (childChildren.length > 0) {
 					await this.deleteDescendantObjects(childChildren, reason);
 				}
-				
+
 				// Move child object to trashcan using DeleteService
 				const childIdentifier = child.getIdentifier ? child.getIdentifier().getIdentifier() : child.identifier || child;
 				const result = await this.deleteService.moveSamplesToTrashcan(
