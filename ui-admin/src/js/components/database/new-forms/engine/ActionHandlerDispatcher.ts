@@ -17,7 +17,7 @@ class ActionHandlerDispatcher {
         return CoreFormModel.autoSaveAction;
       case 'cancel':
         return CoreFormModel.cancelEditAction;
-      case 'new-form:cancel':
+      case 'cancelNewForm':
         return CoreFormModel.cancelNewFormAction;
       case 'delete':
         return CoreFormModel.deleteAction;

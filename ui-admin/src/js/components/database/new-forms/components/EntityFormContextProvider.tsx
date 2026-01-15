@@ -136,14 +136,14 @@ export const EntityFormContextProvider = ({
   }, [permId, controller]);
 
   const loadForm = useCallback(async () => {
-    console.log('loadForm', { permId }, { entityKind }, { params });
+    console.log('[EntityFormContextProvider] loadForm', { permId }, { entityKind }, { params });
 
     setLoading(true);
     clearError();
 
     try {
       const loadedForm = await controller.load(permId, entityKind, params);
-      console.log('loadedForm: ', loadedForm);
+      //console.log('loadedForm: ', loadedForm);
       setForm(loadedForm);
     } catch (error: any) {
       const errorMessage = getErrorMessage(error, 'Failed to load form');

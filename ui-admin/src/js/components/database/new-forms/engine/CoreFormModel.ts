@@ -25,9 +25,10 @@ export class CoreFormModel {
 		const newPermId = await controller.save(form, mode);
 		console.log("CoreFormModel.saveAction: saved successfully! New permId:", newPermId);
 		if (mode === FormMode.CREATE) {
+			const oldId = form.entityPermId.substring(0, form.entityPermId.indexOf('-'));
 			onAfterSave({
 				oldType: form.entityKind,
-				oldId: form.entityPermId,
+				oldId: oldId,
 				newType: CoreFormModel.mapNewToEntityKind(form.entityKind),
 				newId: newPermId
 			});
@@ -53,7 +54,12 @@ export class CoreFormModel {
 	};
 
 	static cancelNewFormAction = (context: IExtendedActionContext) => {
-		context.externalAppController.closeForm(context.form.entityType, context.form.entityPermId);
+		const originalId = context.form.entityPermId.substring(0, context.form.entityPermId.indexOf('-'));
+		const params = {
+			type: context.form.entityKind,
+			id: originalId
+		};
+		context.externalAppController.closeForm(params);
 	};
 
 	static autoSaveAction = (context: IAutoSaveActionContext) => {

@@ -10,11 +10,11 @@ import CancelIcon from '@mui/icons-material/Cancel';
 
 export const ButtonActionRenderer: React.FC<ActionRendererProps> = ({ action, onAction, mode }) => {
 	
-    const startIcon = action.name.includes('new') ? <AddIcon /> : 
-    action.name.includes('delete') ? <DeleteIcon /> : 
+    const startIcon = action.name.includes('delete') ? <DeleteIcon /> : 
     action.name.includes('edit') ? <EditIcon /> : 
     action.name.includes('save') ? <SaveIcon /> : 
-    action.name.includes('cancel') ? <CancelIcon /> : undefined;
+    action.name.includes('cancel') ? <CancelIcon /> :
+    action.name.includes('new') ? <AddIcon /> : undefined;
 
     return (
 		//@ts-ignore

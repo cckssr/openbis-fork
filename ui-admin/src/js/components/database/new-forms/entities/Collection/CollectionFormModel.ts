@@ -73,7 +73,7 @@ export class CollectionFormModel {
 			isValid: true,
 			actions: [
 				getSaveAction(),
-				getCancelAction(),
+				getCancelAction(true),
 			]
 		};
 	}

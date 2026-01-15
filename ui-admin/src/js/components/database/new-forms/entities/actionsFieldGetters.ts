@@ -29,9 +29,9 @@ export const getEditAction = () => {
 	};
 };
 
-export const getCancelAction = () => {	
+export const getCancelAction = (isNewForm: boolean = false) => {
 	return {
-		name: 'cancel',
+		name: isNewForm ? 'cancelNewForm' : 'cancel',
 		label: 'Cancel',
 		component: 'button',
 		isAllowed: true,

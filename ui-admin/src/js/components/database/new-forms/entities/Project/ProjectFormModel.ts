@@ -67,7 +67,7 @@ export class ProjectFormModel {
 			isValid: true,
 			actions: [
 				getSaveAction(),
-				getCancelAction(),
+				getCancelAction(true),
 			],
 		}
 	}

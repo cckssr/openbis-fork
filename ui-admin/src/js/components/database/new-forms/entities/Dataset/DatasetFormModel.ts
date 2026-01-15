@@ -87,7 +87,7 @@ export class DatasetFormModel {
       isValid: true,
       actions: [
         getSaveAction(),
-        getCancelAction(),
+        getCancelAction(true),
       ],
     }
   }

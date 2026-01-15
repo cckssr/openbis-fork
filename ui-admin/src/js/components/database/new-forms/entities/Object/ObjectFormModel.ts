@@ -94,7 +94,7 @@ export class ObjectFormModel {
       isValid: true,
       actions: [
         getSaveAction(),
-        getCancelAction(),
+        getCancelAction(true),
       ],
     }
   }
