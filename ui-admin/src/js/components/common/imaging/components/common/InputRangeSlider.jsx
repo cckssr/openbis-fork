@@ -3,6 +3,7 @@ import { Input, Slider, Grid2, FormHelperText, InputLabel } from '@mui/material'
 import Player from '@src/js/components/common/imaging/components/common/Player.jsx';
 import { makeStyles } from '@mui/styles';
 import InfoOntology from '@src/js/components/common/imaging/components/viewer/InfoOntology.js';
+import { useImagingDataContext } from '@src/js/components/common/imaging/components/viewer/ImagingDataContext.jsx';
 
 const useStyles = makeStyles(theme => ({
     showText: {
@@ -23,14 +24,15 @@ const InputRangeSlider = ({ label, range, initValue = null, playable, speeds, di
         (value, index) => min + index * step
     );
     const [value, setValue] = React.useState(initValue == null ? [Number(range[0]), Number(range[1])] : initValue.map(n => Number(n)));
+    const { autoUpdate } = useImagingDataContext();
 
     function roundToClosest(counts, goal) {
         return counts.reduce((prev, curr) => Math.abs(curr - goal) < Math.abs(prev - goal) ? curr : prev);
     }
 
-    const handleSliderChange = (newValue, name) => {
+    const handleSliderChange = (newValue, name, update, autoUpdate) => {
         setValue(newValue);
-        onChange(name, newValue);
+        onChange(name, newValue, update, autoUpdate);
     };
 
     const handleInputMinChange = (event) => {
@@ -57,7 +59,7 @@ const InputRangeSlider = ({ label, range, initValue = null, playable, speeds, di
             newValue = [value[0], roundToClosest(arrayRange, value[1])]
         }
         setValue(newValue);
-        onChange(event.target.name, newValue);
+        onChange(event.target.name, newValue, false, autoUpdate);
     };
 
 
@@ -87,7 +89,8 @@ const InputRangeSlider = ({ label, range, initValue = null, playable, speeds, di
                     value={initValue == null ? [min, max] : initValue.map(n => Number(n))}
                     name={label}
                     disabled={disabled}
-                    onChange={(event, newValue) => handleSliderChange(newValue, label)}
+                    onChange={(event, newValue) => handleSliderChange(newValue, label, false, false)}
+                    onChangeCommitted={(event, newValue) => autoUpdate && handleSliderChange(newValue, label, false, autoUpdate)}
                     min={min}
                     max={max}
                     step={step}
