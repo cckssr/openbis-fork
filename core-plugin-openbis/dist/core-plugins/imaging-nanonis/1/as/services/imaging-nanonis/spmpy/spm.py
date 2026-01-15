@@ -840,7 +840,6 @@ class Spm:
             width = [self.get_param("scan_range")[0][0]]
             height = [self.get_param("scan_range")[0][1]]
             unit = self.get_param("scan_range")[1]
-            print('||> HEIGTH')
             print(self.get_param("scan_range")[0][0])
             pix_y, pix_x = np.shape(chData)
 
@@ -874,6 +873,16 @@ class Spm:
                     origin=ImgOrigin,
                     interpolation = 'none'
                 )
+                # im = plt.imshow(
+                #     # np.abs(chData),
+                #     chData,
+                #     aspect="equal",
+                #     extent=[0, width[0], 0, height[0]],
+                #     cmap=cmap,
+                #     norm=SymLogNorm(linthresh=0.03, linscale=0.03, vmin=-1.0, vmax=1.0),
+                #     origin=ImgOrigin,
+                #     interpolation = 'none'
+                # )
             else:
                 im = plt.imshow(
                     chData,
@@ -885,9 +894,10 @@ class Spm:
                     origin=ImgOrigin,
                     interpolation = 'none'
                 )
+                plt.clim(color_scale)
 
-            if clim:
-                plt.clim(clim)
+            # if clim:
+            #     plt.clim(clim)
 
             ### >>>> PREMISE - specific modifications
             ### ---- PREMISE - specific modifications
@@ -911,7 +921,7 @@ class Spm:
             plt.ylabel(f"y ({unit})")
 
             ### >>>> PREMISE - specific modifications
-            cbar = plt.colorbar(im)
+            cbar = fig.colorbar(im, format="%.3g", pad=0.02)
             cbar.set_label(f'Channel: {channel} ({chUnit})')
             ### ---- PREMISE - specific modifications
             # cbar = plt.colorbar(
