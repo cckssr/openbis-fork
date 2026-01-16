@@ -122,6 +122,33 @@ def parse_jackson(input_json):
     deref_graph(input_json)
 
 
+def assign_jackson_ids(input_json):
+    """Ensure all objects with an @type have unique @id values and reuse ids via references."""
+    counter = 1
+    seen = {}
+
+    def visit(graph):
+        nonlocal counter
+        if isinstance(graph, dict):
+            if "@type" in graph:
+                obj_key = id(graph)
+                existing = seen.get(obj_key)
+                if existing is not None:
+                    return existing
+                obj_id = counter
+                counter += 1
+                seen[obj_key] = obj_id
+                graph["@id"] = obj_id
+            for key, value in list(graph.items()):
+                graph[key] = visit(value)
+            return graph
+        if isinstance(graph, list):
+            return [visit(item) for item in graph]
+        return graph
+
+    return visit(input_json)
+
+
 def check_datatype(type_name, value, is_multi_value=False):
     if is_multi_value:
         if type_name == "INTEGER":

@@ -17,8 +17,8 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.dataset;
 
 import java.util.Properties;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
 
 import org.springframework.stereotype.Component;
 

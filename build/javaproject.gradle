@@ -23,6 +23,12 @@ configurations {
 configurations.all {
     resolutionStrategy.cacheDynamicVersionsFor 0, 'hours'
     resolutionStrategy.cacheChangingModulesFor 0, 'hours'
+    resolutionStrategy.eachDependency { details ->
+        if (details.requested.group == 'apache'
+                && details.requested.name == 'commons-io') {
+            details.useTarget 'commons-io:commons-io:2.19.0'
+        }
+    }
 }
 
 //task wrapper(type: Wrapper) {
@@ -405,7 +411,7 @@ publishing {
             ivyPattern "file://${project.ivyRepository}/[organisation]/[module]/[revision]/ivy.xml"
             artifactPattern "file://${project.ivyRepository}/[organisation]/[module]/[revision]/[artifact]-[revision](-[classifier]).[ext]"
         }
-        mavenCentral()
+        //mavenCentral()
     }
 }
 

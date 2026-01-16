@@ -6,7 +6,7 @@ dependencies {
             'cglib:cglib-nodep:2.2',
             'jline:jline:0.9.94',
             'apache:commons-codec:1.10',
-            'apache:commons-io:2.6',
+            'commons-io:commons-io:2.19.0',
             'apache:httpclient:4.3.6',
             'apache:commons-lang3:3.14',
             'apache:commons-text:1.11',
@@ -20,15 +20,14 @@ dependencies {
             'imagej:ij:1.43u',
             'python:jython:2.5.2',
             'sybit:image-viewer:0.3.6',
-            'fasterxml:jackson-databind:2.9.10.8',
-            'springframework:spring-aop:5.3.39',
-            'springframework:spring-beans:5.3.39',
-            'springframework:spring-context:5.3.39',
-            'springframework:spring-core:5.3.39',
-            'springframework:spring-web:5.3.39',
-            'springframework:spring-webmvc:5.3.39',
-            'springframework:spring-expression:5.3.39',
-            'marathon:marathon-spring-util:1.2.5',
+            'fasterxml:jackson-databind:2.18.1',
+            'org.springframework:spring-aop:6.1.10',
+            'org.springframework:spring-beans:6.1.10',
+            'org.springframework:spring-context:6.1.10',
+            'org.springframework:spring-core:6.1.10',
+            'org.springframework:spring-web:6.1.10',
+            'org.springframework:spring-webmvc:6.1.10',
+            'org.springframework:spring-expression:6.1.10',
             'aopalliance:aopalliance:1.0'
 
     appbundler 'oracle:appbundler:1.0-CISD'
@@ -128,7 +127,6 @@ task copyJarsForWebStart(type: Copy, dependsOn: [createOpenbisJar, createDssClie
     rename 'dom4j.jar', 'dom4j-1.6.1.jar'
     rename 'geronimo-stax.jar', 'geronimo-stax-api_1.0_spec-1.0.jar'
     rename 'xmlbeans.jar', 'xmlbeans-2.6.0.jar'
-    rename 'marathon-spring-util.*jar', 'stream-supporting-httpinvoker.jar'
 }
 
 task signWebStartJars(type: Copy, dependsOn: [copyJarsForWebStart]) {

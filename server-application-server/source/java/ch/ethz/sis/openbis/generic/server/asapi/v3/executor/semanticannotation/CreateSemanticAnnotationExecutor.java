@@ -18,7 +18,9 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.semanticannotation;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 
+import ch.systemsx.cisd.openbis.generic.shared.dto.MetaprojectPE;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Component;

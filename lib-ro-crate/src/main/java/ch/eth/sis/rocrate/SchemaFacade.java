@@ -15,6 +15,7 @@ import edu.kit.datamanager.ro_crate.entities.data.DataEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.*;
@@ -216,58 +217,31 @@ public class SchemaFacade implements ISchemaFacade
         ObjectMapper objectMapper = new ObjectMapper();
 
         metaDataEntry.getValues().forEach((s, o) -> {
-            addVals(s, o, builder);
+            if (o instanceof Double)
+            {
+                builder.addProperty(s, (Double) o);
+            } else if (o instanceof Integer)
+            {
+                builder.addProperty(s, (Integer) o);
+            } else if (o instanceof Boolean)
+            {
+                builder.addProperty(s, (Boolean) o);
+            } else if (o instanceof String)
+            {
+                builder.addProperty(s, o.toString());
+            }
         });
         DataEntity dataEntity = builder.build();
         metaDataEntry.getReferences().forEach(dataEntity::addIdListProperties);
-        this.metadataEntries.put(metaDataEntry.getId(), metaDataEntry);
 
         crate.addDataEntity(dataEntity);
 
-    }
-
-    private static void addVals(String s, Serializable o, DataEntity.DataEntityBuilder builder)
-    {
-        if (o instanceof Double)
-        {
-            builder.addProperty(s, (Double) o);
-        } else if (o instanceof Double[])
-        {
-            Arrays.stream((Double[]) o).forEach(x -> builder.addProperty(s, x));
-
-        } else if (o instanceof Integer)
-        {
-            builder.addProperty(s, (Integer) o);
-        } else if (o instanceof Integer[])
-        {
-            Arrays.stream((Integer[]) o).forEach(x -> builder.addProperty(s, x));
-
-        } else if (o instanceof Boolean)
-        {
-            builder.addProperty(s, (Boolean) o);
-        } else if (o instanceof Boolean[])
-        {
-            Arrays.stream((Boolean[]) o).forEach(x -> builder.addProperty(s, x));
-
-        } else if (o instanceof String)
-        {
-            builder.addProperty(s, o.toString());
-        } else if (o instanceof String[])
-        {
-            Arrays.stream((String[]) o).forEach(x -> builder.addProperty(s, x));
-
-        }
     }
 
     @Override
     public IMetadataEntry getEntry(String id)
     {
         return metadataEntries.get(id);
-    }
-
-    List<IMetadataEntry> getAllEntries()
-    {
-        return metadataEntries.values().stream().collect(Collectors.toList());
     }
 
     @Override
@@ -306,12 +280,17 @@ public class SchemaFacade implements ISchemaFacade
         ClassLoader classLoader = getClass().getClassLoader();
         classLoader.getName();
 
-        InputStream inputStream = classLoader.getResourceAsStream(
-                "ch/eth/sis/rocrate/schemaorg/schemaorg-all-https-v29.0.ttl");
 
         if (schema_org_information == null)
         {
-            schema_org_information = SchemaOrgReader.read(inputStream);
+            try (InputStream inputStream = classLoader.getResourceAsStream(
+                    "ch/eth/sis/rocrate/schemaorg/schemaorg-all-https-v29.0.ttl"))
+            {
+                schema_org_information = SchemaOrgReader.read(inputStream);
+            } catch (IOException e)
+            {
+                throw new RuntimeException(e);
+            }
         }
 
         localPrefix = getLocalPrefix(crate.getJsonMetadata());
@@ -536,6 +515,8 @@ public class SchemaFacade implements ISchemaFacade
             entry.setReferences(references);
             entries.put(id, entry);
         }
+
+        System.out.println("Done");
         this.types = idsToTypes;
         this.propertyTypes = properties;
         this.metadataEntries = entries;

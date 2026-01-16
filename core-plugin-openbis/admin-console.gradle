@@ -8,15 +8,14 @@ dependencies {
             'apache:httpclient:4.3.6',
             'apache:httpcore:4.3.3',
             'apache:commons-logging:1.2',
-            'apache:commons-io:2.6',
-            'springframework:spring-aop:5.3.39',
-            'springframework:spring-beans:5.3.39',
-            'springframework:spring-context:5.3.39',
-            'springframework:spring-core:5.3.39',
-            'springframework:spring-web:5.3.39',
-            'springframework:spring-webmvc:5.3.39',
-            'springframework:spring-expression:5.3.39',
-            'marathon:marathon-spring-util:1.2.5',
+            'commons-io:commons-io:2.19.0',
+            'org.springframework:spring-aop:6.1.10',
+            'org.springframework:spring-beans:6.1.10',
+            'org.springframework:spring-context:6.1.10',
+            'org.springframework:spring-core:6.1.10',
+            'org.springframework:spring-web:6.1.10',
+            'org.springframework:spring-webmvc:6.1.10',
+            'org.springframework:spring-expression:6.1.10',
             'jline:jline:0.9.94',
             'aopalliance:aopalliance:1.0'
 }
@@ -64,7 +63,7 @@ task adminConsole(type: Jar) {
     }
     manifest {
         attributes("Main-Class": "ch.systemsx.cisd.openbis.generic.client.console.AdminConsole",
-                "Class-Path": "openbis-admin-console.jar sis-base.jar commons-codec.jar httpclient.jar httpcore.jar aopalliance.jar commons-io.jar commons-logging.jar log4j.jar jline.jar spring-aop.jar spring-beans.jar spring-context.jar spring-core.jar spring-web.jar spring-webmvc.jar spring-expression.jar marathon-spring-util.jar")
+                "Class-Path": "openbis-admin-console.jar sis-base.jar commons-codec.jar httpclient.jar httpcore.jar aopalliance.jar commons-io.jar commons-logging.jar log4j.jar jline.jar spring-aop.jar spring-beans.jar spring-context.jar spring-core.jar spring-web.jar spring-webmvc.jar spring-expression.jar")
     }
 }
 

@@ -19,8 +19,8 @@ import static org.apache.commons.io.FileUtils.ONE_KB;
 
 import java.util.Properties;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
 
 import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.stereotype.Component;

@@ -86,6 +86,7 @@ from .utils import (
     is_identifier,
     is_number,
     is_permid,
+    assign_jackson_ids,
     parse_jackson,
     split_identifier,
 )
@@ -1282,6 +1283,10 @@ class Openbis:
             request["jsonrpc"] = "2.0"
         if request["params"][0] is None:
             raise ValueError("Your session expired, please log in again")
+
+        if "params" in request:
+            for param in request["params"]:
+                assign_jackson_ids(param)
 
         if DEBUG_LEVEL >= LOG_DEBUG:
             print(json.dumps(request))

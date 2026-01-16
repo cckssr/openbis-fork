@@ -148,7 +148,7 @@ dependencies {
             'springframework:spring-aop:5.3.39',
             'springframework:spring-web:5.3.39',
             'springframework:spring-context:5.3.39',
-            'marathon:marathon-spring-util:1.2.5',
+            'marathon:marathon-spring-util:1.2.5-jakarta',
             'fasterxml:jackson-annotations:2.9.10',
             'fasterxml:jackson-core:2.9.10',
             'fasterxml:jackson-databind:2.9.10.8',

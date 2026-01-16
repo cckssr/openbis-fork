@@ -14,6 +14,7 @@ import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.vocabulary.RDFS;
 
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.*;
 import java.util.stream.Collectors;

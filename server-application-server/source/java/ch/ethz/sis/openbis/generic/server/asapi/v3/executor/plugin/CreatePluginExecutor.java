@@ -18,8 +18,9 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.plugin;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.ListIterator;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -172,8 +173,9 @@ public class CreatePluginExecutor
     @Override
     protected void save(IOperationContext context, List<ScriptPE> scripts, boolean clearCache)
     {
-        for (ScriptPE script : scripts)
+        for (ListIterator<ScriptPE> it = scripts.listIterator(); it.hasNext();)
         {
+            ScriptPE script = it.next();
             daoFactory.getScriptDAO().createOrUpdate(script);
         }
     }
