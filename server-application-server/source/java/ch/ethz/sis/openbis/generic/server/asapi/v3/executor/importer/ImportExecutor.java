@@ -19,6 +19,8 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.importer;
 
 import java.io.IOException;
 
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.transaction.ITransactionExecutor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.ImportOperation;
@@ -35,6 +37,10 @@ import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider;
 @Component
 public class ImportExecutor implements IImportExecutor
 {
+
+    @Autowired
+    private ITransactionExecutor transactionExecutor;
+
 
     @Override
     public ImportResult doImport(final IOperationContext context, final ImportOperation operation)
@@ -55,13 +61,29 @@ public class ImportExecutor implements IImportExecutor
         {
             final XLSImport xlsImport = new XLSImport(context.getSession().getSessionToken(), applicationServerApi,
                     ImportModes.valueOf(importOptions.getMode().name()), importerImportOptions, importData.getSessionWorkspaceFiles(), false);
-            return new ImportResult(xlsImport.start());
+            ImportResult result = new ImportResult();
+
+            transactionExecutor.executeInSeparateTransaction(() -> importMetaData(xlsImport, result));
+            xlsImport.importZipAfsData();
+
+            return result;
         } catch (final IOException e)
         {
             throw UserFailureException.fromTemplate(e, "IO exception importing.");
         } catch (final Exception e)
         {
             throw UserFailureException.fromTemplate(e,"Exception importing data: %s", e.getMessage());
+        }
+    }
+
+    private void importMetaData(final XLSImport xlsImport, ImportResult result)
+    {
+        try
+        {
+            result.setObjectIds(xlsImport.start());
+        } catch (IOException e)
+        {
+            throw new RuntimeException(e);
         }
     }
 

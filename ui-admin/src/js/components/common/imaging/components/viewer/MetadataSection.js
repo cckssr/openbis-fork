@@ -1,78 +1,135 @@
 import React from 'react'
-import { Chip, Typography } from '@mui/material';
+import { Typography, Box, TextField, Autocomplete, Checkbox } from '@mui/material';
+import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
+import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import { isObjectEmpty } from '@src/js/components/common/imaging/utils.js';
-import DefaultMetadataField from '@src/js/components/common/imaging/components/gallery/DefaultMetadataField.js';
 import CollapsableSection from '@src/js/components/common/imaging/components/viewer/CollapsableSection.jsx';
 import EditableMetadataField from "@src/js/components/common/imaging/components/gallery/EditableMetadataField.jsx";
+import { useImagingDataContext } from '@src/js/components/common/imaging/components/viewer/ImagingDataContext.jsx';
 
 const MetadataSection = ({ activePreview, activeImage, imagingTags, onEditComment }) => {
 
-	const currImageMetadata = activeImage.metadata;
-	const configMetadata = activeImage.config.metadata;
 	const currPreviewMetadata = activePreview.metadata;
 	const currPreviewTags = activePreview.tags;
 	const currPreviewComment = activePreview.comment;
+	const currImageMetadata = activeImage.metadata;
+	const configMetadata = activeImage.config.metadata;
 
-	const matchTagsToLabel = () => {
-		var trasformedTags = []
-		for (const activePreviewTag of currPreviewTags) {
-			const matchTag = imagingTags.find(imagingTag => imagingTag.value === activePreviewTag);
-			trasformedTags.push(matchTag.label);
+	const { handleTagImage } = useImagingDataContext();
+
+	// State for tags autocomplete
+	const [tags, setTags] = React.useState([]);
+	const [inputValue, setInputValue] = React.useState('');
+
+	// Update tags when preview tags change
+	React.useEffect(() => {
+		if (currPreviewTags && currPreviewTags.length > 0) {
+			const transformedTags = [];
+			for (const activePreviewTag of currPreviewTags) {
+				const matchTag = imagingTags.find(imagingTag => imagingTag.value === activePreviewTag);
+				if (matchTag) {
+					transformedTags.push(matchTag);
+				}
+			}
+			setTags(transformedTags);
+			setInputValue(transformedTags.map(t => t.label).join(', '));
+		} else {
+			setTags([]);
+			setInputValue('');
 		}
-		return <DefaultMetadataField key={'property-tags'}
-			label={'Preview Tags'}
-			value={trasformedTags.map(item => (<Chip sx={{ mr: '4px' }} key={item}
-				size='small'
-				tabIndex={-1}
-				label={item} />))} />
-	}
+	}, [currPreviewTags, imagingTags]);
 
-	const renderPreviewMetadata = () => {
-		return (<CollapsableSection title='Preview Metadata' span={true} isCollapsed={false}>
+	const renderParameters = () => {
+		// Use preview metadata dynamically, as it was implemented before
+		if (!currImageMetadata || isObjectEmpty(currImageMetadata)) {
+			return null;
+		}
 
-			<Typography key={`preview-comment-${activePreview.index}`} variant='body2'
-				component={'span'} sx={{
-					color: 'textSecondary'
-				}}>
-				<EditableMetadataField keyProp={"Preview Comment"}
+		return (
+			<Box sx={{ py: 1 }}>
+				{Object.entries(currImageMetadata).map(([key, value]) => (
+					<Typography
+						key={key}
+						variant='body2'
+						component='div'
+						sx={{
+							color: 'textSecondary',
+							mb: 0.5
+						}}
+					>
+						<strong>{key}:</strong> {value}
+					</Typography>
+				))}
+			</Box>
+		);
+	};
+
+	const handleTagsChange = (event, newTags) => {
+		setTags(newTags);
+		const tagsArray = newTags.map(tag => tag.value);
+		handleTagImage(false, tagsArray);
+	};
+
+	const renderTags = () => {
+
+		return (
+			<Box sx={{ py: 1 }}>
+				<Autocomplete
+					multiple
+					id='tags-autocomplete'
+					options={imagingTags || []}
+					disableCloseOnSelect
+					getOptionLabel={(option) => option.label || option}
+					inputValue={inputValue}
+					value={tags}
+					onInputChange={(event, newInputValue) => {
+						setInputValue(newInputValue);
+					}}
+					renderInput={(params) => (
+						<TextField variant='standard' label='Tags' {...params} placeholder='Search Tag' />
+					)}
+					renderOption={(props, option, { selected }) => {
+						const { key, ...optionProps } = props;
+						return (
+							<li key={key} {...optionProps}>
+								<Checkbox
+									icon={<CheckBoxOutlineBlankIcon fontSize='small' />}
+									checkedIcon={<CheckBoxIcon fontSize='small' />}
+									style={{ marginRight: 8 }}
+									checked={selected}
+								/>
+								{option.label || option}
+							</li>
+						);
+					}}
+					onChange={handleTagsChange}
+					size='small'
+				/>
+			</Box>
+		);
+	};
+
+	const renderComments = () => {
+		return (
+			<Box sx={{ py: 1 }}>
+				<EditableMetadataField
+					key={`comment-${activePreview.index}`}
+					keyProp={"Comment"}
 					valueProp={currPreviewComment}
-					onEdit={newVal => onEditComment(newVal)} />
+					onEdit={newVal => onEditComment(newVal)}
+				/>
+			</Box>
+		);
+	};
 
-				{(currPreviewTags !== null && currPreviewTags.length > 0) && matchTagsToLabel()}
-			</Typography>
-			<Typography key={`preview-metadata-${activePreview.index}`} variant='body2'
-				component={'span'} sx={{
-					color: 'textSecondary'
-				}}>
-				{!isObjectEmpty(currPreviewMetadata) &&
-					Object.entries(currPreviewMetadata).map(([key, value], pos) =>
-						<DefaultMetadataField key={'preview-property-' + pos} label={'(raw metadata) ' + key}
-							value={value} />)
-				}
-			</Typography>
-		</CollapsableSection>);
-	}
-
-	const renderImageMetadata = () => {
-		return (<CollapsableSection title='Image Metadata' span={true} isCollapsed={false}>
-			<Typography key={`image-metadata-${activeImage.index}`} variant='body2'
-				component={'span'} sx={{
-					color: 'textSecondary'
-				}}>
-				{(currImageMetadata === null || isObjectEmpty(currImageMetadata)) ?
-					<p>No image metadata to display</p>
-					: Object.entries(currImageMetadata).map(([key, value], pos) =>
-						<DefaultMetadataField key={'image-property-' + pos} label={key}
-							value={value} />)
-				}
-			</Typography>
-		</CollapsableSection>);
-	}
-
-	return (<CollapsableSection title='Metadata' isCollapsed={false}>
-		{renderPreviewMetadata()}
-		{renderImageMetadata()}
-	</CollapsableSection>
+	return (
+		<CollapsableSection title='Parameters' isCollapsed={false}>
+			<div style={{ marginLeft: '32px' }}>
+				{renderParameters()}
+				{renderTags()}
+				{renderComments()}
+			</div>
+		</CollapsableSection>
 	);
 };
 

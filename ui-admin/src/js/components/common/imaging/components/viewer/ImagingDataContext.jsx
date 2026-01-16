@@ -28,6 +28,7 @@ export const ImagingDataProvider = ({ onUnsavedChanges, objId, objType, extOpenb
         datasetFilePaths: [],
         showSemanticAnnotations: showSemanticAnnotations
     });
+    const [autoUpdate, setAutoUpdate] = useState(false);
 
     const loadImagingDataset = useCallback(async () => {
         if (!state.loaded) {
@@ -103,7 +104,7 @@ export const ImagingDataProvider = ({ onUnsavedChanges, objId, objType, extOpenb
         const { imagingDataset } = state;
         handleOpen();
         try {
-            const isSaved = await imagingFacade.saveImagingDataset(objId, imagingDataset);
+            const isSaved = await imagingFacade.saveImagingDataset(objId, objType, imagingDataset);
             if (isSaved === null) {
                 setState(prev => ({ ...prev, open: false, isChanged: false, isSaved: true }));
                 if (onUnsavedChanges !== null)
@@ -125,6 +126,9 @@ export const ImagingDataProvider = ({ onUnsavedChanges, objId, objType, extOpenb
             imagingDataset: toUpdateImgDs,
             isChanged: true
         }));
+        if (autoUpdate) {
+            handleUpdate();
+        }
     }
 
     const deleteSerializationIds = (imagingDataset) => {
@@ -271,13 +275,14 @@ export const ImagingDataProvider = ({ onUnsavedChanges, objId, objType, extOpenb
         setState(prev => ({ ...prev, resolution: v_list }));
     };
 
-    const handleActiveConfigChange = (name, value, update = false) => {
+    const handleActiveConfigChange = (name, value, update = false, autoUpdate = false) => {
+        console.log('handleActiveConfigChange - name: ', name, 'value: ', value, 'update: ', update);
         const { imagingDataset, activeImageIdx, activePreviewIdx, } = state;
         let toUpdateIDS = { ...imagingDataset };
         toUpdateIDS.images[activeImageIdx].previews[activePreviewIdx].config[name] = value;
         setState(prev => ({ ...prev, imagingDataset: toUpdateIDS, isChanged: true }));
         // Used by the player to autoupdate
-        if (update) {
+        if (update || autoUpdate) {
             handleUpdate();
         }
     }
@@ -313,7 +318,7 @@ export const ImagingDataProvider = ({ onUnsavedChanges, objId, objType, extOpenb
 
     return (
         <ImagingDataContext.Provider value={{
-            state, handleOpen, handleError, handleErrorCancel,
+            state, autoUpdate, setAutoUpdate, handleOpen, handleError, handleErrorCancel,
             saveDataset, handleOnAddFilter,
             handleUpdate, onExport, deletePreview,
             handleActiveImageChange, handleActivePreviewChange,

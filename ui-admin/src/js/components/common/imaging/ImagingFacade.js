@@ -248,8 +248,7 @@ export default class ImagingFacade {
          * @returns {Promise<Object>} Update result
          */
     saveImagingDataset = async (permId, objType, imagingDataset) => {
-        if(objType === ObjectType.OBJECT)
-        {
+        if(objType === ObjectType.OBJECT){
             const update = new this.openbis.SampleUpdate();
             update.setSampleId(new this.openbis.SamplePermId(permId))
             update.setProperty(constants.IMAGING_DATA_CONFIG, JSON.stringify(imagingDataset));
@@ -456,6 +455,7 @@ export default class ImagingFacade {
                             datasetId,
                             preview,
                             imageIdx: loadedImgDS.images.indexOf(image), // Get image index
+                            imageMetadata: image.metadata,
                             select: false,
                             datasetProperties,
                             exportConfig: image.config.exports

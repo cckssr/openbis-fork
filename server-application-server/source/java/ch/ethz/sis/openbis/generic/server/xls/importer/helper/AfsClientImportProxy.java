@@ -3,11 +3,10 @@ package ch.ethz.sis.openbis.generic.server.xls.importer.helper;
 import ch.ethz.sis.afsapi.api.ClientAPI;
 import ch.ethz.sis.afsapi.dto.File;
 import ch.ethz.sis.afsclient.client.AfsClient;
+import ch.ethz.sis.openbis.generic.server.xls.importer.enums.ImportModes;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.UUID;
@@ -64,10 +63,14 @@ final class AfsClientImportProxy
         return afsClient;
     }
 
+    File[] listFilesBase(String permId, String source, boolean recursively) throws Exception
+    {
+        return client.list(permId, source, recursively);
+    }
 
-    public File[] listFiles(String permId) {
+    public File[] listFiles(String permId, boolean recursively) {
         try {
-            return client.list(permId, "", true);
+            return listFilesBase(permId, "", recursively);
         } catch (Exception e)
         {
             if(e.toString().contains("NoSuchFileException")) {
@@ -91,11 +94,18 @@ final class AfsClientImportProxy
     }
 
     public void createDirectory(String permId, String path) {
+        createDirectory(permId, path, false);
+    }
+
+    public void createDirectory(String permId, String path, boolean failIfExist) {
         try
         {
             client.create(permId, path, true);
         } catch (Exception e)
         {
+            if(!failIfExist && e.toString().contains("NoSuchFileException")) {
+                return;
+            }
             throw new RuntimeException(e);
         }
     }
@@ -119,34 +129,35 @@ final class AfsClientImportProxy
         }
     }
 
-    public void upload(String permId, String name, long size, InputStream stream) {
-        final int bufferSize = 1024;
-        byte[] buffer = new byte[bufferSize];
-        int bytesRead = 0;
-        try
-        {
-            int count = 0;
-            while ((bytesRead = stream.read(buffer, 0, bufferSize)) != -1)
-            {
-                long offset = bufferSize*count;
-                if(bytesRead < bufferSize) {
-                    byte[] tmp = new byte[bytesRead];
-                    System.arraycopy(buffer, 0, tmp, 0, bytesRead);
-                    client.write(permId, name, offset, tmp);
+    public Boolean uploadFiles(Path sourcePath, String permId, Path destinationPath, ImportModes importModes) throws Exception
+    {
+        ClientAPI.FileCollisionListener collisionListener = new ClientAPI.FileCollisionListener() {
+            public ClientAPI.CollisionAction precheck(Path sourcePath, Path destinationPath, boolean collision) {
+                if (sourcePath == null) {
+                    throw new IllegalArgumentException("sourcePath is marked non-null but is null");
+                } else if (destinationPath == null) {
+                    throw new IllegalArgumentException("destinationPath is marked non-null but is null");
                 } else {
-                    client.write(permId, name, offset, buffer);
+                    switch (importModes) {
+                        case FAIL_IF_EXISTS -> {
+                            if(collision) {
+                                throw new UserFailureException(String.format("File '%s' is already present in '%s'", destinationPath, permId));
+                            }
+                        }
+                        case IGNORE_EXISTING -> {
+                            return ClientAPI.CollisionAction.Skip;
+                        }
+                        case UPDATE_IF_EXISTS -> {
+                            return ClientAPI.CollisionAction.Override;
+                        }
+                    }
+
+                    return ClientAPI.CollisionAction.Override;
                 }
-                count++;
             }
+        };
 
-        } catch (IOException e)
-        {
-            throw new RuntimeException(e);
-        } catch (Exception e)
-        {
-            throw new RuntimeException(e);
-        }
-
+       return client.upload(sourcePath, permId, destinationPath, collisionListener, new ClientAPI.DefaultTransferMonitorLister());
     }
 
     public void begin() {
