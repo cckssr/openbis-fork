@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import jakarta.servlet.MultipartConfigElement;
 import org.apache.commons.io.FileUtils;
 import ch.ethz.sis.shared.log.standard.core.Level;
 import ch.ethz.sis.shared.log.classic.impl.Logger;
@@ -33,9 +34,9 @@ import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
-import org.springframework.beans.factory.xml.XmlBeanFactory;
+import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
+import org.eclipse.jetty.ee10.servlet.ServletHolder;
+import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.web.context.WebApplicationContext;
@@ -197,18 +198,32 @@ public abstract class SystemTestCase extends AssertJUnit
             @Override
             protected WebApplicationContext findWebApplicationContext()
             {
-                XmlBeanFactory f =
-                        new XmlBeanFactory(new FileSystemResource(springServletPath));
-                applicationContext = new GenericWebApplicationContext(f);
+//                XmlBeanFactory f =
+//                        new XmlBeanFactory(new FileSystemResource(springServletPath));
+                applicationContext= new GenericWebApplicationContext();
+                XmlBeanDefinitionReader reader = new XmlBeanDefinitionReader(applicationContext);
+                reader.loadBeanDefinitions(new FileSystemResource(springServletPath));
+                //applicationContext = new GenericWebApplicationContext(f);
                 applicationContext.setParent(new ClassPathXmlApplicationContext(
                         getApplicationContextLocation()));
                 applicationContext.refresh();
                 return applicationContext;
             }
         };
+//        ServletContextHandler sch =
+//                new ServletContextHandler(server, "/", ServletContextHandler.SESSIONS);
+
         ServletContextHandler sch =
-                new ServletContextHandler(server, "/", ServletContextHandler.SESSIONS);
-        sch.addServlet(new ServletHolder(dispatcherServlet), "/*");
+                new ServletContextHandler(ServletContextHandler.SESSIONS);
+        sch.setContextPath("/");
+        server.setHandler(sch);
+
+        ServletHolder servlet = new ServletHolder(dispatcherServlet);
+        servlet.getRegistration().setMultipartConfig(
+                new MultipartConfigElement(System.getProperty("java.io.tmpdir"))
+        );
+        sch.addServlet(servlet, "/*");
+
         server.start();
 
         if(SYSTEM_PROPERTY_PREFIX.equals("dss.")) {

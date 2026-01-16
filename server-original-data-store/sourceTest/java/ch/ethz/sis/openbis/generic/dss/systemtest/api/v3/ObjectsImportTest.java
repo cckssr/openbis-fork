@@ -25,12 +25,13 @@ import java.util.concurrent.TimeoutException;
 
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jetty.client.HttpClient;
-import org.eclipse.jetty.client.api.ContentProvider;
-import org.eclipse.jetty.client.api.ContentResponse;
-import org.eclipse.jetty.client.api.Request;
-import org.eclipse.jetty.client.util.MultiPartContentProvider;
-import org.eclipse.jetty.client.util.StringContentProvider;
+import org.eclipse.jetty.client.MultiPartRequestContent;
+import org.eclipse.jetty.client.ContentResponse;
+import org.eclipse.jetty.client.Request;
+import org.eclipse.jetty.client.StringRequestContent;
+import org.eclipse.jetty.http.HttpFields;
 import org.eclipse.jetty.http.HttpMethod;
+import org.eclipse.jetty.http.MultiPart;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 
@@ -99,7 +100,7 @@ public class ObjectsImportTest extends AbstractFileTest
         as = ServiceProvider.getV3ApplicationService();
     }
 
-    protected ContentResponse uploadFiles(String sessionToken, String uploadSessionKey, MultiPartContentProvider multiPart)
+    protected ContentResponse uploadFiles(String sessionToken, String uploadSessionKey, MultiPartRequestContent multiPart)
             throws InterruptedException, TimeoutException, ExecutionException
     {
         HttpClient client = JettyHttpClientFactory.getHttpClient();
@@ -107,7 +108,7 @@ public class ObjectsImportTest extends AbstractFileTest
         request.param("sessionID", sessionToken);
         request.param("sessionKeysNumber", "1");
         request.param("sessionKey_0", uploadSessionKey);
-        request.content(multiPart);
+        request.body(multiPart);
 
         return request.send();
     }
@@ -115,15 +116,19 @@ public class ObjectsImportTest extends AbstractFileTest
     protected ContentResponse uploadFiles(String sessionToken, String uploadSessionKey, String... filesContent)
             throws InterruptedException, TimeoutException, ExecutionException
     {
-        MultiPartContentProvider multiPart = new MultiPartContentProvider();
+        MultiPartRequestContent multiPart = new MultiPartRequestContent();
 
         for (int i = 0; i < filesContent.length; i++)
         {
-            ContentProvider contentProvider = new StringContentProvider(filesContent[i]);
-
             String fieldName = uploadSessionKey + "_" + i;
-            String fileName = "fileName_" + i;
-            multiPart.addFilePart(fieldName, fileName, contentProvider, null);
+            String fileName  = "fileName_" + i;
+
+            multiPart.addPart(new MultiPart.ContentSourcePart(
+                    fieldName,
+                    fileName,
+                    HttpFields.EMPTY,
+                    new StringRequestContent(filesContent[i]) // or new StringRequestContent("text/plain", filesContent[i])
+            ));
         }
 
         multiPart.close();

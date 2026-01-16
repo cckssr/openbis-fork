@@ -15,7 +15,7 @@
  */
 package ch.systemsx.cisd.openbis.plugin;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 import ch.systemsx.cisd.openbis.generic.server.ComponentNames;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.AbstractBusinessObjectFactory;

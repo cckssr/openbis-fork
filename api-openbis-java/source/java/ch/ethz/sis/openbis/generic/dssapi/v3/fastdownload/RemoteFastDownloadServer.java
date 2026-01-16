@@ -35,9 +35,9 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jetty.client.HttpClient;
-import org.eclipse.jetty.client.api.ContentResponse;
-import org.eclipse.jetty.client.api.Request;
-import org.eclipse.jetty.client.api.Response;
+import org.eclipse.jetty.client.ContentResponse;
+import org.eclipse.jetty.client.Request;
+import org.eclipse.jetty.client.Response;
 import org.eclipse.jetty.util.Callback;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -138,18 +138,19 @@ class RemoteFastDownloadServer implements IDownloadServer
         {
             PipedOutputStream pipedOutputStream = new PipedOutputStream(pipedInputStream);
             WritableByteChannel channel = Channels.newChannel(pipedOutputStream);
-            request.send(new Response.Listener.Adapter()
+            request.send(new Response.Listener()
                 {
                     @Override
-                    public void onContent(Response response, ByteBuffer content, Callback callback)
+                    public void onContent(Response response, ByteBuffer content)
                     {
-                        try
-                        {
-                            channel.write(content);
-                            callback.succeeded();
-                        } catch (IOException e)
-                        {
-                            callback.failed(e);
+                        try {
+                            // Consume the whole buffer before returning (Jetty 12 requirement)
+                            while (content.hasRemaining()) {
+                                channel.write(content);
+                            }
+                        } catch (IOException e) {
+                            // Nothing to "callback.failed" in Jetty 12 here; just propagate/handle
+                            throw CheckedExceptionTunnel.wrapIfNecessary(e);
                         }
                     }
 

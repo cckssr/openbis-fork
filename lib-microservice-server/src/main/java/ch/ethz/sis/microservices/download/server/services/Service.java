@@ -15,7 +15,7 @@
  */
 package ch.ethz.sis.microservices.download.server.services;
 
-import javax.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServlet;
 
 import ch.ethz.sis.microservices.download.api.configuration.ServiceConfig;
 

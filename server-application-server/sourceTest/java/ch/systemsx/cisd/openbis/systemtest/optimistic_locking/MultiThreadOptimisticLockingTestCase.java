@@ -28,7 +28,7 @@ import ch.systemsx.cisd.openbis.systemtest.PersistentSystemTestCase;
  * 
  * @author Franz-Josef Elmer
  */
-@Transactional
+//@Transactional
 public class MultiThreadOptimisticLockingTestCase extends PersistentSystemTestCase
 {
     static final String CREATING_ENTITIES = "creating";

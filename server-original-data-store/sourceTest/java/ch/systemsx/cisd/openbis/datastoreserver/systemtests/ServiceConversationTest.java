@@ -28,8 +28,8 @@ import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
+import org.eclipse.jetty.ee10.servlet.ServletHolder;
 import org.hamcrest.Description;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
@@ -737,8 +737,12 @@ public class ServiceConversationTest
                     }
                 };
 
+//            ServletContextHandler servletCtx =
+//                    new ServletContextHandler(server, "/", ServletContextHandler.SESSIONS);
             ServletContextHandler servletCtx =
-                    new ServletContextHandler(server, "/", ServletContextHandler.SESSIONS);
+                    new ServletContextHandler(ServletContextHandler.SESSIONS);
+            servletCtx.setContextPath("/");
+            server.setHandler(servletCtx);
             servletCtx.addServlet(new ServletHolder(dispatcher), "/*");
         }
 

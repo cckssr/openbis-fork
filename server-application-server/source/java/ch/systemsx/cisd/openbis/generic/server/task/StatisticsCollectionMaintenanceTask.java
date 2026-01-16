@@ -31,9 +31,9 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import ch.ethz.sis.shared.log.classic.impl.Logger;
-import org.eclipse.jetty.client.api.ContentResponse;
-import org.eclipse.jetty.client.api.Request;
-import org.eclipse.jetty.client.util.BytesContentProvider;
+import org.eclipse.jetty.client.BytesRequestContent;
+import org.eclipse.jetty.client.ContentResponse;
+import org.eclipse.jetty.client.Request;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -121,7 +121,7 @@ public class StatisticsCollectionMaintenanceTask implements IMaintenanceTask
 
             final Request request = JettyHttpClientFactory.getHttpClient()
                     .POST("http://statistics.openbis.ch/statistics")
-                    .content(new BytesContentProvider(body));
+                    .body(new BytesRequestContent(body));
             try
             {
                 final ContentResponse contentResponse = request.send();

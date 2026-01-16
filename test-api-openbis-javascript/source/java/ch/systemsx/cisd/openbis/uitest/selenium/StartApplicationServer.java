@@ -1,156 +1,69 @@
-/*
- *  Copyright ETH 2012 - 2025 Zürich, Scientific IT Services
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *       http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- *
- */
 package ch.systemsx.cisd.openbis.uitest.selenium;
 
 import java.io.File;
-import java.io.PrintStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.handler.AllowSymLinkAliasChecker;
 import org.eclipse.jetty.util.component.LifeCycle;
-import org.eclipse.jetty.webapp.WebAppContext;
+import org.eclipse.jetty.util.resource.Resource;
+import org.eclipse.jetty.ee10.webapp.WebAppContext;
+import org.eclipse.jetty.server.SymlinkAllowedResourceAliasChecker;
 
-/**
- * @author anttil
- */
-public class StartApplicationServer
-{
+public class StartApplicationServer {
 
-    public static String go() throws Exception
-    {
-
+    public static String go() throws Exception {
         final Object lock = new Object();
-        Runnable r = new Runnable()
-        {
-            @Override
-            public void run()
-            {
 
-                /*
-                 * com.google.gwt.dev.DevMode.main(new String[] { "-startupUrl", "ch.systemsx.cisd.openbis.OpenBIS/index.html",
-                 * "ch.systemsx.cisd.openbis.OpenBIS", "-war", "../server-application-server/targets/www", "-logLevel", "INFO" });
-                 */
-                Server server = new Server(10000);
+        Runnable r = () -> {
+            Server server = new Server(10000);
 
-
-                server.addEventListener(new LifeCycle.Listener() {
-                    @Override
-                    public void lifeCycleStarting(LifeCycle lifeCycle)
-                    {
-
-                    }
-
-                    @Override public void lifeCycleStarted(LifeCycle event) {
-                        synchronized(lock) { lock.notifyAll(); }
-                    }
-
-                    @Override
-                    public void lifeCycleFailure(LifeCycle lifeCycle, Throwable throwable)
-                    {
-
-                    }
-
-                    @Override
-                    public void lifeCycleStopping(LifeCycle lifeCycle)
-                    {
-
-                    }
-
-                    @Override
-                    public void lifeCycleStopped(LifeCycle lifeCycle)
-                    {
-
-                    }
-                    // other callbacks no‑ops …
-                });
-
-                WebAppContext context = new WebAppContext();
-
-                if (new File("targets/gradle/openbis-war/openbis.war").exists() == false)
-                {
-                    context.setDescriptor("targets/www/WEB-INF/web.xml");
-                    context.setResourceBase("targets/www");
-                } else
-                {
-                    context.setWar("targets/gradle/openbis-war/openbis.war");
+            server.addEventListener(new LifeCycle.Listener() {
+                @Override public void lifeCycleStarted(LifeCycle event) {
+                    synchronized (lock) { lock.notifyAll(); }
                 }
+            });
 
-                context.setContextPath("/");
-                context.setParentLoaderPriority(true);
-                context.addAliasCheck(new AllowSymLinkAliasChecker());
+            WebAppContext context = new WebAppContext();
+            context.setContextPath("/");
 
-                server.setHandler(context);
-                try
-                {
-                    server.start();
-                    server.join();
-                } catch (Exception ex)
-                {
-                    // TODO Auto-generated catch block
-                    ex.printStackTrace();
+            // prefer the WAR if present, otherwise run from exploded dir
+            Path war = Path.of("targets/gradle/openbis-war/openbis.war");
+            if (Files.exists(war)) {
+                // Jetty 12 still supports setWar(String) for a WAR path
+                context.setWar(war.toAbsolutePath().toString()); // see WebAppContext#setWar
+            } else {
+                // For an exploded webapp use setWarResource(Resource)
+                Path webroot = Path.of("targets/www");
+                try {
+                    Resource base = context.newResource(webroot.toUri()); // ServletContextHandler#newResource
+                    context.setWarResource(base);                 // WebAppContext#setWarResource
+                    // If you have an explicit web.xml:
+                    context.setDescriptor(webroot.resolve("WEB-INF/web.xml").toString());
+
+                    // Allow serving files via symlinks inside this base (Jetty 12-style)
+                    context.addAliasCheck(new SymlinkAllowedResourceAliasChecker(context, base));
+                    // (Alternative: new AllowedResourceAliasChecker(context, base))
+                } catch (Exception e) {
+                    throw new RuntimeException("Cannot configure exploded webapp at " + webroot, e);
                 }
+            }
 
-
+            server.setHandler(context);
+            try {
+                server.start();
+                server.join();
+            } catch (Exception ex) {
+                ex.printStackTrace();
             }
         };
-
-
-
-
-        PrintStream originalOut = System.out;
-        //
-        //        PipedOutputStream outpipe = new PipedOutputStream();
-        //        PipedInputStream inpipe = new PipedInputStream(outpipe);
-        //        BufferedReader reader = new BufferedReader(new InputStreamReader(inpipe));
-        //        PrintStream newOut = new PrintStream(outpipe);
-        //        System.setOut(newOut);
 
         Thread t = new Thread(r);
         t.setDaemon(true);
         t.start();
 
-
-        // wait for Jetty to signal it’s fully started
-        synchronized(lock) {
-            try
-            {
-                lock.wait();
-            } catch (InterruptedException e)
-            {
-                throw new RuntimeException(e);
-            }
-        }
-
-        //        String line;
-        //        while ((line = reader.readLine()) != null)
-        //        {
-        //            if (line.contains("SERVER STARTED"))
-        //            {
-        originalOut.println("SERVER START DETECTED");
-        //                break;
-        //            }
-        //        }
-        //        outpipe.close();
-        //        inpipe.close();
-        //        reader.close();
-        //        newOut.close();
-        //
-        //        System.setOut(originalOut);
+        synchronized (lock) { lock.wait(); }
+        System.out.println("SERVER START DETECTED");
         return "http://localhost:10000";
     }
-
 }

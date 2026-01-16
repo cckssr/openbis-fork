@@ -21,9 +21,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
-import org.eclipse.jetty.client.api.ContentProvider;
-import org.eclipse.jetty.client.util.BytesContentProvider;
-import org.eclipse.jetty.client.util.MultiPartContentProvider;
+import org.eclipse.jetty.client.BytesRequestContent;
+import org.eclipse.jetty.client.MultiPartRequestContent;
+
+import org.eclipse.jetty.http.HttpFields;
+import org.eclipse.jetty.http.MultiPart;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.Material;
@@ -59,9 +61,17 @@ public class GeneralImportTest extends ObjectsImportTest
             TestResources resources = new TestResources(getClass());
             File materialsFile = resources.getResourceFile("materials_excel_97_2003.xls");
 
-            MultiPartContentProvider multiPart = new MultiPartContentProvider();
-            ContentProvider contentProvider = new BytesContentProvider(FileUtils.readFileToByteArray(materialsFile));
-            multiPart.addFilePart(TEST_UPLOAD_KEY, materialsFile.getName(), contentProvider, null);
+            MultiPartRequestContent multiPart = new MultiPartRequestContent();
+
+            byte[] bytes = FileUtils.readFileToByteArray(materialsFile);
+            multiPart.addPart(new MultiPart.ContentSourcePart(
+                    TEST_UPLOAD_KEY,                                // field name
+                    materialsFile.getName(),                        // filename
+                    HttpFields.EMPTY,                               // headers (none)
+                    new BytesRequestContent(bytes)
+
+            ));
+
             multiPart.close();
 
             uploadFiles(sessionToken, TEST_UPLOAD_KEY, multiPart);

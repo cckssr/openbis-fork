@@ -20,9 +20,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import org.eclipse.jetty.client.api.ContentProvider;
-import org.eclipse.jetty.client.util.MultiPartContentProvider;
-import org.eclipse.jetty.client.util.StringContentProvider;
+import org.eclipse.jetty.client.MultiPartRequestContent;
+import org.eclipse.jetty.client.StringRequestContent;
+
+import org.eclipse.jetty.http.HttpFields;
+import org.eclipse.jetty.http.MultiPart;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
@@ -44,9 +46,18 @@ public class CustomImportTest extends ObjectsImportTest
 
         try
         {
-            MultiPartContentProvider multiPart = new MultiPartContentProvider();
-            ContentProvider contentProvider = new StringContentProvider("test-file-content");
-            multiPart.addFilePart(TEST_UPLOAD_KEY, dataSetPermId.getPermId(), contentProvider, null);
+//            MultiPartContentProvider multiPart = new MultiPartContentProvider();
+//            ContentProvider contentProvider = new StringContentProvider("test-file-content");
+//            multiPart.addFilePart(TEST_UPLOAD_KEY, dataSetPermId.getPermId(), contentProvider, null);
+//            multiPart.close();
+
+            MultiPartRequestContent multiPart = new MultiPartRequestContent();
+            multiPart.addPart(new MultiPart.ContentSourcePart(
+                    TEST_UPLOAD_KEY,                     // field name
+                    dataSetPermId.getPermId(),           // filename
+                    HttpFields.EMPTY,                    // no extra headers
+                    new StringRequestContent("test-file-content") // content (defaults to text/plain)
+            ));
             multiPart.close();
 
             uploadFiles(sessionToken, TEST_UPLOAD_KEY, multiPart);

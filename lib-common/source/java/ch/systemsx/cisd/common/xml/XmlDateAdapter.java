@@ -18,7 +18,7 @@ package ch.systemsx.cisd.common.xml;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import javax.xml.bind.annotation.adapters.XmlAdapter;
+import jakarta.xml.bind.annotation.adapters.XmlAdapter;
 
 /**
  * Allows to read dates from XML files using JAXB.

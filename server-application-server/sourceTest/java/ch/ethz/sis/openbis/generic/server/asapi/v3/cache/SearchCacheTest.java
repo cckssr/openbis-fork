@@ -27,6 +27,9 @@ import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
 import ch.ethz.sis.shared.log.standard.core.Level;
+import org.ehcache.CacheManager;
+import org.ehcache.config.Configuration;
+import org.ehcache.config.builders.CacheManagerBuilder;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
@@ -37,8 +40,6 @@ import ch.ethz.sis.shared.log.standard.utils.LogInitializer;
 import ch.systemsx.cisd.common.test.AssertionUtil;
 import ch.systemsx.cisd.openbis.generic.shared.util.RuntimeCache;
 import ch.ethz.sis.shared.log.classic.utils.LogRecordingUtils;
-
-import net.sf.ehcache.CacheManager;
 
 /**
  * @author pkupczyk
@@ -204,12 +205,17 @@ public class SearchCacheTest
 
     private SearchCache createCache(final long memorySize, final String cacheSize)
     {
-        String managerConfig = "<ehcache name='" + UUID.randomUUID() + "'></ehcache>";
-        final CacheManager manager = new CacheManager(new ByteArrayInputStream(managerConfig.getBytes()));
 
+        //String managerConfig = "<ehcache name='" + UUID.randomUUID() + "'></ehcache>";
+        final CacheManager manager = CacheManagerBuilder.newCacheManagerBuilder().build(true);
+        final Class<Serializable> keyType =
+                (Class<Serializable> )(Class<?>) SearchCacheKey.class;
         SearchCache cache = new SearchCache(
-                new RuntimeCache<Serializable, Serializable>(manager, SearchCache.CACHE_NAME,
-                        SearchCache.CACHE_SIZE_PROPERTY_NAME)
+                new RuntimeCache<Serializable, Serializable>(
+                        manager,
+                        SearchCache.CACHE_NAME,
+                        SearchCache.CACHE_SIZE_PROPERTY_NAME,
+                        keyType)
                     {
                         @Override
                         protected long getMemorySize()

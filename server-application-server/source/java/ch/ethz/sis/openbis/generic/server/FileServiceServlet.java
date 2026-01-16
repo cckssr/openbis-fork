@@ -23,10 +23,10 @@ import java.util.Properties;
 import java.util.UUID;
 
 import javax.activation.MimetypesFileTypeMap;
-import javax.annotation.Resource;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.annotation.Resource;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -56,7 +56,7 @@ import ch.systemsx.cisd.openbis.generic.client.web.server.AbstractServlet;
 public class FileServiceServlet extends AbstractServlet
 {
     public static final String FILE_SERVICE_PATH = "file-service";
-    public static final String FILE_SERVICE_PATH_MAPPING = FILE_SERVICE_PATH + "/**/*";
+    public static final String FILE_SERVICE_PATH_MAPPING = FILE_SERVICE_PATH + "/{*path}";
 
     private static final String KEY_PREFIX = "file-server.";
     public static final String REPO_PATH_KEY = KEY_PREFIX + "repository-path";
@@ -85,7 +85,7 @@ public class FileServiceServlet extends AbstractServlet
     @RequestMapping({ "/" + FileServiceServlet.FILE_SERVICE_PATH_MAPPING,
         "/openbis/" + FileServiceServlet.FILE_SERVICE_PATH_MAPPING,
         "/openbis/openbis/" + FileServiceServlet.FILE_SERVICE_PATH_MAPPING})
-    protected void respondToRequest(HttpServletRequest request, HttpServletResponse response) 
+    public void respondToRequest(HttpServletRequest request, HttpServletResponse response)
             throws Exception, IOException
     {
         String fullPath = request.getPathInfo();
@@ -94,7 +94,7 @@ public class FileServiceServlet extends AbstractServlet
         {
             return;
         }
-        
+
         PathInfo pathInfo = new PathInfo(fullPath.substring(indexOfPrefix + APP_PREFIX.length()));
         File filesRepository = getFilesRepository();
         operationLog.info(fullPath);

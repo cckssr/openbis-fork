@@ -3,8 +3,8 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3;
 import java.security.SecureRandom;
 import java.util.Properties;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.stereotype.Component;

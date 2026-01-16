@@ -15,25 +15,26 @@
  */
 package ch.systemsx.cisd.openbis.generic.shared.util;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 
-import net.sf.ehcache.Cache;
-import net.sf.ehcache.CacheManager;
-import net.sf.ehcache.Element;
-import net.sf.ehcache.config.CacheConfiguration;
-import net.sf.ehcache.config.CacheConfiguration.CacheEventListenerFactoryConfiguration;
-import net.sf.ehcache.config.MemoryUnit;
-import net.sf.ehcache.config.PersistenceConfiguration;
-import net.sf.ehcache.config.PersistenceConfiguration.Strategy;
-import net.sf.ehcache.config.SizeOfPolicyConfiguration;
-import net.sf.ehcache.config.SizeOfPolicyConfiguration.MaxDepthExceededBehavior;
-import net.sf.ehcache.store.MemoryStoreEvictionPolicy;
+import org.ehcache.Cache;
+import org.ehcache.CacheManager;
+import org.ehcache.config.CacheConfiguration;
+import org.ehcache.config.builders.CacheConfigurationBuilder;
+import org.ehcache.config.builders.CacheEventListenerConfigurationBuilder;
 
-import ch.ethz.sis.shared.log.classic.impl.Logger;
+import org.ehcache.config.builders.ExpiryPolicyBuilder;
+import org.ehcache.config.builders.ResourcePoolsBuilder;
+
+import org.ehcache.config.units.MemoryUnit;
+import org.ehcache.event.EventType;
 
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 import ch.systemsx.cisd.common.parser.MemorySizeFormatter;
 import ch.systemsx.cisd.common.parser.PercentFormatter;
 
@@ -44,94 +45,130 @@ public class RuntimeCache<K, V>
 {
     private final Logger operationLog = LogFactory.getLogger(LogCategory.OPERATION, RuntimeCache.class);
 
-    private CacheManager cacheManager;
+    private final CacheManager cacheManager;
 
-    private String name;
+    private final String name;
 
-    private String cacheSizePropertyName;
+    private final String cacheSizePropertyName;
 
-    public RuntimeCache(CacheManager cacheManager, String name, String cacheSizePropertyName)
+    private final Class<K> keyType;
+
+    private Cache<K, ValueWrapper<V>> cache;
+    private final AtomicLong entryCount = new AtomicLong();
+
+    public RuntimeCache(CacheManager cacheManager, String name, String cacheSizePropertyName, Class<K> keyType)
     {
         this.cacheManager = cacheManager;
         this.name = name;
         this.cacheSizePropertyName = cacheSizePropertyName;
+        this.keyType = keyType;
     }
 
     @SuppressWarnings("unchecked")
     public V get(K key)
     {
-        Element element = getCache().get(key);
-        return element == null ? null : ((ValueWrapper<V>) element.getObjectValue()).getValue();
+        ensureCacheInitialized();
+        ValueWrapper<V> vw = cache.get(key);
+        return vw == null ? null : vw.getValue();
     }
 
     public void put(K key, V value)
     {
-        Element element = getCache().get(key);
+        ensureCacheInitialized();
+        // In Ehcache 3, put is safe for updates; eviction/size are handled internally
+        cache.put(key, new ValueWrapper<>(value));
+    }
 
-        if (element == null)
-        {
-            getCache().put(new Element(key, new ValueWrapper<V>(value)));
-        } else
-        {
-            // do not call put() when updating an existing value as the eviction won't work properly
-            @SuppressWarnings("unchecked")
-            ValueWrapper<V> existingValue = (ValueWrapper<V>) element.getObjectValue();
-            existingValue.setValue(value);
-            // manually log update message because the cache does not log anything during recalculateSize() call
-            RuntimeCacheEventListenerFactory.getListener().notifyElementUpdated(getCache(), element);
-            getCache().recalculateSize(key);
+    public boolean remove(K key) {
+        ensureCacheInitialized();
+        ValueWrapper<V> current = cache.get(key);
+        if (current == null) {
+            return false;
         }
+        return cache.remove(key, current);
     }
 
-    public boolean remove(K key)
-    {
-        return getCache().remove(key);
-    }
-
-    @SuppressWarnings("unchecked")
     public List<K> getKeys()
     {
-        return getCache().getKeys();
+        ensureCacheInitialized();
+        List<K> keys = new ArrayList<>();
+        cache.forEach(entry -> keys.add(entry.getKey()));
+        return keys;
     }
 
     public List<V> getValues()
     {
-        List<V> values = new ArrayList<V>(getKeys().size());
-
-        for (K key : getKeys())
-        {
-            values.add(get(key));
-        }
-
+        ensureCacheInitialized();
+        List<V> values = new ArrayList<>();
+        cache.forEach(entry -> {
+            ValueWrapper<V> vw = entry.getValue();
+            values.add(vw == null ? null : vw.getValue());
+        });
         return values;
     }
 
-    public void initCache()
+    /**
+     * Initializes the cache if it doesn't exist.
+     * In Ehcache 3, caches are created via the CacheManager with a typed configuration.
+     */
+    public synchronized void initCache()
     {
-        Cache cache = cacheManager.getCache(name);
+        if (cache != null) return;
 
-        if (cache == null)
+        Cache<K, ValueWrapper<V>> existing =
+                cacheManager.getCache(name, keyType, (Class<ValueWrapper<V>>) (Class<?>) ValueWrapper.class);
+
+        if (existing != null)
         {
-            operationLog.info("Creating the cache: " + name);
-
-            CacheConfiguration config = new CacheConfiguration();
-            config.setName(name);
-            config.setEternal(false);
-            config.maxBytesLocalHeap(getCacheSize(), MemoryUnit.BYTES);
-            config.persistence(new PersistenceConfiguration().strategy(Strategy.NONE));
-            config.setTimeToIdleSeconds(3600);
-            config.setTimeToLiveSeconds(0);
-            config.memoryStoreEvictionPolicy(MemoryStoreEvictionPolicy.LRU);
-            config.addCacheEventListenerFactory(new CacheEventListenerFactoryConfiguration().className(RuntimeCacheEventListenerFactory.class
-                    .getName()));
-            config.sizeOfPolicy(new SizeOfPolicyConfiguration().maxDepth(10000000).maxDepthExceededBehavior(MaxDepthExceededBehavior.CONTINUE));
-
-            cache = new Cache(config);
-            cacheManager.addCache(cache);
-        } else
-        {
-            operationLog.info("The cache " + name + " already exists. It must have been configured in ehcache.xml file.");
+            operationLog.info("The cache " + name + " already exists (Ehcache 3). Using the configured cache.");
+            cache = existing;
+            entryCount.set(0);
+            existing.forEach(entry -> entryCount.incrementAndGet());
+            return;
         }
+
+        operationLog.info("Creating the cache: " + name);
+
+        long heapBytes = getCacheSize();
+
+//        // Optional: event listener to mirror previous logging on updates/puts/removes
+//        CacheEventListenerConfigurationBuilder listenerCfg =
+//                CacheEventListenerConfigurationBuilder
+//                        .newEventListenerConfiguration(
+//                                (event) -> {
+//                                    // Keep it lightweight; you can adapt to your RuntimeCacheEventListenerFactory, if ported.
+//                                    operationLog.debug("Cache event [" + name + "]: " + event.getType()
+//                                            + " key=" + event.getKey());
+//                                    RuntimeCacheEventListenerFactory.getListener().notifyElementUpdated(getCache(), event.getNewValue());
+//                                },
+//                                EventType.CREATED, EventType.UPDATED, EventType.REMOVED, EventType.EXPIRED)
+//                        .unordered()
+//                        .asynchronous();
+
+        //synchronous makes sure that cache operations return only after done, like put
+        CacheEventListenerConfigurationBuilder listenerCfg =
+                CacheEventListenerConfigurationBuilder
+                        .newEventListenerConfiguration(
+                                new RuntimeCacheEventListener<K, ValueWrapper<V>>(operationLog, entryCount),
+                                EventType.CREATED, EventType.UPDATED, EventType.REMOVED, EventType.EXPIRED, EventType.EVICTED)
+                        .unordered()
+                        .synchronous();
+
+        CacheConfiguration<K, ValueWrapper<V>> cacheConfig =
+                CacheConfigurationBuilder
+                        .newCacheConfigurationBuilder(
+                                keyType,
+                                (Class<ValueWrapper<V>>) (Class<?>) ValueWrapper.class,
+                                ResourcePoolsBuilder.newResourcePoolsBuilder()
+                                        .heap(heapBytes, MemoryUnit.B))
+                        // Ehcache 3 uses ExpiryPolicy for TTI/TTL. Here we set TTI=3600s and no TTL limit.
+                        .withExpiry(ExpiryPolicyBuilder.timeToIdleExpiration(Duration.ofSeconds(3600)))
+                        .withSizeOfMaxObjectGraph(10_000_000L)          // replaces maxDepth
+                        .withSizeOfMaxObjectSize(Long.MAX_VALUE, MemoryUnit.B)
+                        .add(listenerCfg)
+                        .build();
+
+        cache = cacheManager.createCache(name, cacheConfig);
     }
 
     protected long getCacheSize()
@@ -178,10 +215,20 @@ public class RuntimeCache<K, V>
         return System.getProperty(propertyName);
     }
 
-    private Cache getCache()
+    private void ensureCacheInitialized()
     {
-        return cacheManager.getCache(name);
+        if (cache == null)
+        {
+            initCache();
+        }
     }
+
+    private Cache<K, ValueWrapper<V>> getCache()
+    {
+        ensureCacheInitialized();
+        return cache;
+    }
+
 
     private long getCacheDefaultSize()
     {

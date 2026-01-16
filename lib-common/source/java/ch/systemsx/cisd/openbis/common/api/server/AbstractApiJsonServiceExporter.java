@@ -15,14 +15,22 @@
  */
 package ch.systemsx.cisd.openbis.common.api.server;
 
+import java.lang.reflect.Method;
+import java.util.List;
+
+import jakarta.annotation.Resource;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.googlecode.jsonrpc4j.ErrorData;
+import com.googlecode.jsonrpc4j.ErrorResolver;
+import com.googlecode.jsonrpc4j.JsonRpcInterceptor;
+import com.googlecode.jsonrpc4j.spring.JsonServiceExporter;
+
 import ch.systemsx.cisd.common.api.IRpcService;
 import ch.systemsx.cisd.common.api.IRpcServiceNameServer;
 import ch.systemsx.cisd.common.api.RpcServiceInterfaceVersionDTO;
 import ch.systemsx.cisd.common.spring.ServiceExceptionTranslator;
 import ch.systemsx.cisd.openbis.common.api.server.json.resolver.JsonErrorResolver;
-import com.googlecode.jsonrpc4j.spring.JsonServiceExporter;
-
-import javax.annotation.Resource;
 
 /**
  * Abstract super class of all classes make an API available via {@link JsonServiceExporter}.
@@ -43,7 +51,34 @@ public abstract class AbstractApiJsonServiceExporter extends JsonServiceExporter
     {
         setServiceInterface(serviceInterface);
         setService(service);
-        setInterceptors(new Object[] { new ServiceExceptionTranslator() });
+        setInterceptorList(List.of(new JsonRpcInterceptor()
+        {
+            @Override
+            public void preHandleJson(JsonNode json)
+            {
+
+            }
+
+            @Override
+            public void preHandle(Object target, Method method, List<JsonNode> params)
+            {
+
+            }
+
+            @Override
+            public void postHandle(Object target, Method method, List<JsonNode> params,
+                    JsonNode result)
+            {
+
+            }
+
+            @Override
+            public void postHandleJson(JsonNode json)
+            {
+
+            }
+        }));
+        // TODO FIX setInterceptors(new Object[] { new ServiceExceptionTranslator() });
         int majorVersion = service.getMajorVersion();
         int minorVersion = service.getMinorVersion();
         RpcServiceInterfaceVersionDTO ifaceVersion =

@@ -18,8 +18,8 @@ package ch.systemsx.cisd.openbis.plugin.screening.client.web.server;
 import java.util.LinkedList;
 import java.util.List;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpSession;
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpSession;
 
 import org.springframework.stereotype.Component;
 

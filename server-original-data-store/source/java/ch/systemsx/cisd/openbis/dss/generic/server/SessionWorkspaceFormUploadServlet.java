@@ -18,16 +18,16 @@ package ch.systemsx.cisd.openbis.dss.generic.server;
 import java.io.IOException;
 import java.io.InputStream;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
-import org.apache.commons.fileupload.FileItemIterator;
-import org.apache.commons.fileupload.FileItemStream;
-import org.apache.commons.fileupload.FileUploadException;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.fileupload2.core.FileItemInput;
+import org.apache.commons.fileupload2.core.FileItemInputIterator;
+import org.apache.commons.fileupload2.core.FileUploadException;
+import org.apache.commons.fileupload2.jakarta.servlet5.JakartaServletFileUpload;
 import org.apache.commons.io.IOUtils;
 
 import com.marathon.util.spring.StreamSupportingHttpInvokerServiceExporter;
@@ -76,17 +76,17 @@ public final class SessionWorkspaceFormUploadServlet extends HttpServlet
 
         try
         {
-            FileItemIterator iterator = uploadRequest.getFiles();
+            FileItemInputIterator iterator = uploadRequest.getFiles();
 
             while (iterator.hasNext())
             {
-                FileItemStream file = null;
+                FileItemInput file = null;
                 InputStream stream = null;
 
                 try
                 {
                     file = iterator.next();
-                    stream = file.openStream();
+                    stream = file.getInputStream();
                     service.putFileToSessionWorkspace(uploadRequest.getSessionId(), file.getName(),
                             stream);
                 } finally
@@ -117,15 +117,15 @@ public final class SessionWorkspaceFormUploadServlet extends HttpServlet
             return request.getParameter(Utils.SESSION_ID_PARAM);
         }
 
-        public FileItemIterator getFiles() throws FileUploadException, IOException
+        public FileItemInputIterator getFiles() throws FileUploadException, IOException
         {
-            ServletFileUpload upload = new ServletFileUpload();
+            var upload = new JakartaServletFileUpload<>();
             return upload.getItemIterator(request);
         }
 
         public void validate()
         {
-            if (ServletFileUpload.isMultipartContent(request) == false)
+            if (JakartaServletFileUpload.isMultipartContent(request) == false)
             {
                 throw new IllegalArgumentException(
                         "The session workspace form upload accepts only multipart requests");

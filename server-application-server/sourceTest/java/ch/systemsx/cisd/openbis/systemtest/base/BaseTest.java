@@ -28,6 +28,7 @@ import java.util.function.Consumer;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.annotation.Rollback;
@@ -35,7 +36,9 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.testng.AbstractTransactionalTestNGSpringContextTests;
 import org.springframework.test.context.transaction.AfterTransaction;
 import org.springframework.test.context.transaction.TestTransaction;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
@@ -151,6 +154,9 @@ public abstract class BaseTest extends AbstractTransactionalTestNGSpringContextT
 
     protected EntityGraphManager entityGraphManager;
 
+    @Autowired
+    private PlatformTransactionManager txManager;
+
     private Project defaultProject;
 
     @BeforeSuite(groups = "system-cleandb")
@@ -200,8 +206,16 @@ public abstract class BaseTest extends AbstractTransactionalTestNGSpringContextT
         dataStoreDAO.createOrUpdateDataStore(dataStore);
     }
 
+
     @AfterTransaction
-    public void cleanDatabase()
+    public void cleanDatabase() {
+        new TransactionTemplate(txManager).execute(status -> {
+            reallyCleanDb();
+            return null;
+        });
+    }
+
+    public void reallyCleanDb()
     {
         List<DataPE> allDataSets = daoFactory.getDataDAO().listAllEntities();
         DeletionType deletionType = DeletionType.TRASH;
@@ -218,7 +232,9 @@ public abstract class BaseTest extends AbstractTransactionalTestNGSpringContextT
     @AfterSuite(groups = "system-cleandb")
     public void testingThis()
     {
-        ((GenericApplicationContext) applicationContext).destroy();
+        if (applicationContext instanceof ConfigurableApplicationContext) {
+            ((ConfigurableApplicationContext) applicationContext).close();
+        }
     }
 
     @BeforeClass(alwaysRun = true, dependsOnMethods = "springTestContextPrepareTestInstance")

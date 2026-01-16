@@ -15,7 +15,7 @@
  */
 package ch.systemsx.cisd.common.servlet;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * @author pkupczyk

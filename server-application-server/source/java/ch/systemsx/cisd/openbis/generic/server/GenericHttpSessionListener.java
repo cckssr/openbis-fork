@@ -18,10 +18,10 @@ package ch.systemsx.cisd.openbis.generic.server;
 import java.io.Serializable;
 import java.util.Enumeration;
 
-import javax.servlet.http.HttpSession;
-import javax.servlet.http.HttpSessionActivationListener;
-import javax.servlet.http.HttpSessionEvent;
-import javax.servlet.http.HttpSessionListener;
+import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpSessionActivationListener;
+import jakarta.servlet.http.HttpSessionEvent;
+import jakarta.servlet.http.HttpSessionListener;
 
 import ch.ethz.sis.shared.log.classic.impl.Logger;
 

@@ -65,7 +65,7 @@ import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 import org.apache.commons.io.filefilter.NameFileFilter;
 import org.apache.poi.ss.usermodel.Workbook;

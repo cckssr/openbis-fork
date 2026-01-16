@@ -22,7 +22,7 @@ import java.time.Duration;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.HttpProxy;
 import org.eclipse.jetty.client.ProxyConfiguration;
-import org.eclipse.jetty.client.http.HttpClientTransportOverHTTP;
+import org.eclipse.jetty.client.transport.HttpClientTransportOverHTTP;
 import org.eclipse.jetty.io.ClientConnector;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
@@ -54,8 +54,8 @@ public class JettyHttpClientFactory
             {
                 HttpClient client = createHttpClient(idleTimeout);
 
-                String proxyHost = System.getProperties().getProperty("openbis.proxyHost");
-                String proxyPort = System.getProperties().getProperty("openbis.proxyPort");
+                String proxyHost = System.getProperty("openbis.proxyHost");
+                String proxyPort = System.getProperty("openbis.proxyPort");
 
                 if (proxyHost != null && proxyPort != null)
                 {
@@ -82,7 +82,7 @@ public class JettyHttpClientFactory
         SslContextFactory.Client sslContextFactory = new SslContextFactory.Client();
         sslContextFactory.setEndpointIdentificationAlgorithm(null); // disable hostname verification
 
-        String trustStorePath = System.getProperties().getProperty("javax.net.ssl.trustStore");
+        String trustStorePath = System.getProperty("javax.net.ssl.trustStore");
         if (trustStorePath != null)
         {
             // Dummy key store is needed. We can not used trust store as key store because a password would be needed

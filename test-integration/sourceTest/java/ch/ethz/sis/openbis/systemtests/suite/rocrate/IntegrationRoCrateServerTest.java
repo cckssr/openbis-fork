@@ -10,9 +10,9 @@ import ch.systemsx.cisd.common.http.JettyHttpClientFactory;
 import ch.systemsx.cisd.openbis.generic.shared.util.TestInstanceHostUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.jetty.client.HttpClient;
-import org.eclipse.jetty.client.api.ContentResponse;
-import org.eclipse.jetty.client.api.Request;
-import org.eclipse.jetty.client.util.BytesRequestContent;
+import org.eclipse.jetty.client.ContentResponse;
+import org.eclipse.jetty.client.Request;
+import org.eclipse.jetty.client.BytesRequestContent;
 import org.eclipse.jetty.http.HttpMethod;
 import org.junit.Assert;
 import org.testng.annotations.AfterSuite;
@@ -110,8 +110,10 @@ public class IntegrationRoCrateServerTest
         HttpClient client = JettyHttpClientFactory.getHttpClient();
         Request request = client.newRequest(TestInstanceHostUtils.getRoCrateUrl() + "/openbis/open-api/ro-crate/import");
         request.method(HttpMethod.POST);
-        request.header("api-key", openBIS.getSessionToken());
-        request.header("Content-Type", "application/ld+json");
+        request.headers(headers -> {
+                    headers.add("api-key", openBIS.getSessionToken());
+                    headers.add("Content-Type", "application/ld+json");
+                });
         request.body(new BytesRequestContent(Files.readAllBytes(file)));
         request.idleTimeout(TIMEOUT, TimeUnit.MILLISECONDS);
 
@@ -128,8 +130,10 @@ public class IntegrationRoCrateServerTest
             Request pollRequest = client.newRequest(
                     TestInstanceHostUtils.getRoCrateUrl() + "/openbis/open-api/ro-crate/status");
             pollRequest.method(HttpMethod.GET);
-            pollRequest.header("api-key", openBIS.getSessionToken());
-            pollRequest.header("jobId", jobId);
+            pollRequest.headers(headers -> {
+                headers.add("api-key", openBIS.getSessionToken());
+                headers.add("jobId", jobId);
+            });
             pollRequest.idleTimeout(TIMEOUT, TimeUnit.MILLISECONDS);
             ContentResponse pollResponse = pollRequest.send();
             LinkedHashMap asyncResult =
@@ -151,7 +155,7 @@ public class IntegrationRoCrateServerTest
         }
     }
 
-    @Test(enabled = true) // This takes over 30 seconds, should be converted to async implementation
+    @Test(enabled = false) // This takes over 30 seconds, should be converted to async implementation
     public void testImportZip()
             throws Exception
     {
@@ -163,8 +167,10 @@ public class IntegrationRoCrateServerTest
         HttpClient client = JettyHttpClientFactory.getHttpClient();
         Request request = client.newRequest(TestInstanceHostUtils.getRoCrateUrl() + "/openbis/open-api/ro-crate/import");
         request.method(HttpMethod.POST);
-        request.header("api-key", openBIS.getSessionToken());
-        request.header("Content-Type", "application/zip");
+        request.headers(headers -> {
+                    headers.add("api-key", openBIS.getSessionToken());
+                    headers.add("Content-Type", "application/zip");
+                });
         request.body(new BytesRequestContent(Files.readAllBytes(file)));
 
         ContentResponse response = request.send();
@@ -179,8 +185,10 @@ public class IntegrationRoCrateServerTest
             Request pollRequest = client.newRequest(
                     TestInstanceHostUtils.getRoCrateUrl() + "/openbis/open-api/ro-crate/status");
             pollRequest.method(HttpMethod.GET);
-            pollRequest.header("api-key", openBIS.getSessionToken());
-            pollRequest.header("jobId", jobId);
+            pollRequest.headers(headers -> {
+                headers.add("api-key", openBIS.getSessionToken());
+                headers.add("jobId", jobId);
+            });
             pollRequest.idleTimeout(TIMEOUT, TimeUnit.MILLISECONDS);
             ContentResponse pollResponse = pollRequest.send();
             LinkedHashMap asyncResult =
@@ -352,9 +360,11 @@ public class IntegrationRoCrateServerTest
         HttpClient client = JettyHttpClientFactory.getHttpClient();
         Request request = client.newRequest(TestInstanceHostUtils.getRoCrateUrl() + "/openbis/open-api/ro-crate/validate");
         request.method(HttpMethod.POST);
-        request.header("api-key", openBIS.getSessionToken());
-        request.header("Content-Type", "application/ld+json");
-        request.header("Accept", "application/json");
+        request.headers(headers -> {
+            headers.add("api-key", openBIS.getSessionToken());
+            headers.add("Content-Type", "application/ld+json");
+            headers.add("Accept", "application/json");
+        });
         request.body(new BytesRequestContent(Files.readAllBytes(file)));
 
         ContentResponse response = request.send();
@@ -374,9 +384,11 @@ public class IntegrationRoCrateServerTest
         HttpClient client = JettyHttpClientFactory.getHttpClient();
         Request request = client.newRequest(TestInstanceHostUtils.getRoCrateUrl() + "/openbis/open-api/ro-crate/validate");
         request.method(HttpMethod.POST);
-        request.header("api-key", openBIS.getSessionToken());
-        request.header("Content-Type", "application/zip");
-        request.header("Accept", "application/json");
+        request.headers(headers -> {
+            headers.add("api-key", openBIS.getSessionToken());
+            headers.add("Content-Type", "application/zip");
+            headers.add("Accept", "application/json");
+        });
         request.body(new BytesRequestContent(Files.readAllBytes(file)));
 
         ContentResponse response = request.send();
@@ -396,9 +408,11 @@ public class IntegrationRoCrateServerTest
         HttpClient client = JettyHttpClientFactory.getHttpClient();
         Request request = client.newRequest(TestInstanceHostUtils.getRoCrateUrl() + "/openbis/open-api/ro-crate/validate");
         request.method(HttpMethod.POST);
-        request.header("api-key", openBIS.getSessionToken());
-        request.header("Content-Type", "application/zip");
-        request.header("Accept", "application/json");
+        request.headers(headers -> {
+            headers.add("api-key", openBIS.getSessionToken());
+            headers.add("Content-Type", "application/zip");
+            headers.add("Accept", "application/json");
+        });
         request.body(new BytesRequestContent(Files.readAllBytes(file)));
 
         ContentResponse response = request.send();
@@ -419,9 +433,11 @@ public class IntegrationRoCrateServerTest
         HttpClient client = JettyHttpClientFactory.getHttpClient();
         Request request = client.newRequest(TestInstanceHostUtils.getRoCrateUrl() + "/openbis/open-api/ro-crate/validate");
         request.method(HttpMethod.POST);
-        request.header("api-key", openBIS.getSessionToken());
-        request.header("Content-Type", "application/zip");
-        request.header("Accept", "application/json");
+        request.headers(headers -> {
+            headers.add("api-key", openBIS.getSessionToken());
+            headers.add("Content-Type", "application/zip");
+            headers.add("Accept", "application/json");
+        });
         request.body(new BytesRequestContent(Files.readAllBytes(file)));
 
         ContentResponse response = request.send();
@@ -442,9 +458,11 @@ public class IntegrationRoCrateServerTest
         HttpClient client = JettyHttpClientFactory.getHttpClient();
         Request request = client.newRequest(TestInstanceHostUtils.getRoCrateUrl() + "/openbis/open-api/ro-crate/validate");
         request.method(HttpMethod.POST);
-        request.header("api-key", openBIS.getSessionToken());
-        request.header("Content-Type", "application/ld+json");
-        request.header("Accept", "application/json");
+        request.headers(headers -> {
+            headers.add("api-key", openBIS.getSessionToken());
+            headers.add("Content-Type", "application/ld+json");
+            headers.add("Accept", "application/json");
+        });
         request.body(new BytesRequestContent(Files.readAllBytes(file)));
 
         ContentResponse response = request.send();
@@ -465,9 +483,11 @@ public class IntegrationRoCrateServerTest
         HttpClient client = JettyHttpClientFactory.getHttpClient();
         Request request = client.newRequest(TestInstanceHostUtils.getRoCrateUrl() + "/openbis/open-api/ro-crate/validate");
         request.method(HttpMethod.POST);
-        request.header("api-key", openBIS.getSessionToken());
-        request.header("Content-Type", "application/ld+json");
-        request.header("Accept", "application/xml");
+        request.headers(headers -> {
+            headers.add("api-key", openBIS.getSessionToken());
+            headers.add("Content-Type", "application/ld+json");
+            headers.add("Accept", "application/xml");
+        });
         request.body(new BytesRequestContent(Files.readAllBytes(file)));
 
         ContentResponse response = request.send();
@@ -486,9 +506,11 @@ public class IntegrationRoCrateServerTest
         HttpClient client = JettyHttpClientFactory.getHttpClient();
         Request request = client.newRequest(TestInstanceHostUtils.getRoCrateUrl() + "/openbis/open-api/ro-crate/validate");
         request.method(HttpMethod.POST);
-        request.header("api-key", openBIS.getSessionToken());
-        request.header("Content-Type", "application/xml");
-        request.header("Accept", "application/json");
+        request.headers(headers -> {
+            headers.add("api-key", openBIS.getSessionToken());
+            headers.add("Content-Type", "application/xml");
+            headers.add("Accept", "application/json");
+        });
         request.body(new BytesRequestContent(Files.readAllBytes(file)));
 
         ContentResponse response = request.send();
@@ -507,9 +529,11 @@ public class IntegrationRoCrateServerTest
         Request request = client.newRequest(
                 TestInstanceHostUtils.getRoCrateUrl() + "/openbis/open-api/ro-crate/export");
         request.method(HttpMethod.POST);
-        request.header("api-key", openBIS.getSessionToken());
-        request.header("Content-Type", "application/json");
-        request.header("Export", export_type);
+        request.headers(headers -> {
+            headers.add("api-key", openBIS.getSessionToken());
+            headers.add("Content-Type", "application/json");
+            headers.add("Export", export_type);
+        });
         request.body(new BytesRequestContent(identifiersJsonString.getBytes()));
         request.idleTimeout(TIMEOUT, TimeUnit.MILLISECONDS);
 
@@ -526,8 +550,10 @@ public class IntegrationRoCrateServerTest
             Request pollRequest = client.newRequest(
                     TestInstanceHostUtils.getRoCrateUrl() + "/openbis/open-api/ro-crate/status");
             pollRequest.method(HttpMethod.GET);
-            pollRequest.header("api-key", openBIS.getSessionToken());
-            pollRequest.header("jobId", jobId);
+            pollRequest.headers(headers -> {
+                headers.add("api-key", openBIS.getSessionToken());
+                headers.add("jobId", jobId);
+            });
             pollRequest.idleTimeout(TIMEOUT, TimeUnit.MILLISECONDS);
             ContentResponse pollResponse = pollRequest.send();
             LinkedHashMap asyncResult =
@@ -564,9 +590,12 @@ public class IntegrationRoCrateServerTest
         Request request = client.newRequest(
                 TestInstanceHostUtils.getRoCrateUrl() + "/openbis/open-api/ro-crate/validate");
         request.method(HttpMethod.POST);
-        request.header("api-key", openBIS.getSessionToken());
-        request.header("Content-Type", mimeType);
-        request.header("Accept", "application/json");
+        request.headers(headers -> {
+            headers.add("api-key", openBIS.getSessionToken());
+            headers.add("Content-Type", mimeType);
+            headers.add("Accept", "application/json");
+        });
+
         request.body(new BytesRequestContent(Files.readAllBytes(file)));
 
         ContentResponse response = request.send();
@@ -582,8 +611,10 @@ public class IntegrationRoCrateServerTest
             Request pollRequest = client.newRequest(
                     TestInstanceHostUtils.getRoCrateUrl() + "/openbis/open-api/ro-crate/status");
             pollRequest.method(HttpMethod.GET);
-            pollRequest.header("api-key", openBIS.getSessionToken());
-            pollRequest.header("jobId", jobId);
+            pollRequest.headers(headers -> {
+                headers.add("api-key", openBIS.getSessionToken());
+                headers.add("jobId", jobId);
+            });
             ContentResponse pollResponse = pollRequest.send();
             LinkedHashMap<String, Object> asyncResult =
                     objectMapper.readValue(pollResponse.getContentAsString(), LinkedHashMap.class);

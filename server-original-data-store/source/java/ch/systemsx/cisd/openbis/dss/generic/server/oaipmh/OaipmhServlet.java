@@ -19,11 +19,11 @@ import java.io.IOException;
 import java.util.Enumeration;
 import java.util.Properties;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import ch.systemsx.cisd.openbis.dss.generic.server.ConfigParameters;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SessionContextDTO;

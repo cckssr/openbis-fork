@@ -15,7 +15,7 @@
  */
 package ch.systemsx.cisd.openbis.generic.shared.util;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * @author Enimanev Kaloyan
