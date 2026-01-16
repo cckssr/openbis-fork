@@ -12,14 +12,13 @@ const ColorItem = ({ colorMapValue }) => {
 	)
 }
 
-const InputControlsSection = ({ sectionKey, imageDatasetControlList, inputValues, isUploadedPreview, onChangeActConf }) => {
+const InputControlsSection = ({ sectionKey, imageDatasetControlList, inputValues, isUploadedPreview, onChangeActConf, autoUpdate }) => {
 
 	const renderColorMapItems = (values, label) => {
 		return values.map((v, i) => <MenuItem key={'select-' + label + '-menuitem-' + i} value={v}>
 			<span style={{ width: '30%' }}>{v}</span> <ColorItem colorMapValue={v} />
 		</MenuItem>)
 	}
-
 	const renderType = (imageDatasetControl, idx) => {
 		switch (imageDatasetControl.type) {
 			case constants.DROPDOWN:
@@ -30,7 +29,7 @@ const InputControlsSection = ({ sectionKey, imageDatasetControlList, inputValues
 					values={imageDatasetControl.values}
 					isMulti={imageDatasetControl.multiselect}
 					disabled={isUploadedPreview}
-					onSelectChange={(event) => onChangeActConf(event.target.name, event.target.value)}
+					onSelectChange={(event) => onChangeActConf(event.target.name, event.target.value, false, autoUpdate)}
 					mappingItemsCallback={imageDatasetControl.type === constants.DROPDOWN ? null : renderColorMapItems} 
 					semanticAnnotation={imageDatasetControl.semanticAnnotation}/>;
 			case constants.SLIDER:
@@ -42,7 +41,7 @@ const InputControlsSection = ({ sectionKey, imageDatasetControlList, inputValues
 					playable={imageDatasetControl.playable && !isUploadedPreview}
 					speeds={imageDatasetControl.speeds}
 					disabled={isUploadedPreview}
-					onChange={(name, value, update) => onChangeActConf(name, value, update)} 
+					onChange={(name, value, update, autoUpdate) => onChangeActConf(name, value, update, autoUpdate)} 
 					semanticAnnotation={imageDatasetControl.semanticAnnotation}/>;
 			case constants.RANGE:
 				return <InputRangeSlider key={`InputsPanel-${imageDatasetControl.type}-${idx}`}
@@ -53,7 +52,7 @@ const InputControlsSection = ({ sectionKey, imageDatasetControlList, inputValues
 					unit={imageDatasetControl.unit}
 					playable={imageDatasetControl.playable && !isUploadedPreview}
 					speeds={imageDatasetControl.speeds}
-					onChange={(name, value, update) => onChangeActConf(name, value, update)} 
+					onChange={(name, value, update, autoUpdate) => onChangeActConf(name, value, update, autoUpdate)} 
 					semanticAnnotation={imageDatasetControl.semanticAnnotation}/>;
 		}
 	}

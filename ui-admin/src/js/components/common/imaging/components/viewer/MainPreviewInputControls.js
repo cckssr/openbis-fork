@@ -41,7 +41,7 @@ const MainPreviewInputControls = ({ activePreview, configInputs, configFilters, 
 
   const { state, handleUpdate, handleTagImage,
     handleResolutionChange, handleActiveConfigChange,
-    handleShowPreview, createLocatedSXMPreview, handleOnAddFilter } = useImagingDataContext();
+    handleShowPreview, createLocatedSXMPreview, handleOnAddFilter, autoUpdate, setAutoUpdate } = useImagingDataContext();
 
   const { imagingDataset, resolution, isChanged, imagingTags, datasetType, datasetFilePaths } = state;
 
@@ -77,6 +77,10 @@ const MainPreviewInputControls = ({ activePreview, configInputs, configFilters, 
     createLocatedSXMPreview(sxmPermId, sxmFilePath);
   }
 
+  const handleAutoUpdate = () => {
+    setAutoUpdate(!autoUpdate);
+  }
+
   const renderStaticUpdateControls = (isUploadedPreview,) => {
     return (<>
       <Grid2 size={{ md: 12 }} container sx={{ justifyContent: 'space-around', alignContent: 'center', height: '24px' }}>
@@ -93,6 +97,11 @@ const MainPreviewInputControls = ({ activePreview, configInputs, configFilters, 
           startIcon={<RefreshIcon />}
           onClick={handleUpdate}
           disabled={!isChanged || isUploadedPreview} />
+
+        <CustomSwitch labelPlacement='start'
+          label='Auto Update'
+          isChecked={autoUpdate}
+          onChange={handleAutoUpdate} />
 
         <CustomSwitch labelPlacement='start'
           label={messages.get(messages.SHOW)}
@@ -146,7 +155,12 @@ const MainPreviewInputControls = ({ activePreview, configInputs, configFilters, 
       const sectionGroups = Map.groupBy(configInputs, imageDatasetControl => imageDatasetControl.section)
       var sectionsArray = []
       for (let [key, imageDatasetControlList] of sectionGroups) {
-        sectionsArray.push(<InputControlsSection key={key} sectionKey={key} imageDatasetControlList={imageDatasetControlList} inputValues={inputValues} isUploadedPreview={isUploadedPreview} onChangeActConf={handleActiveConfigChange} />)
+        sectionsArray.push(<InputControlsSection key={key} sectionKey={key} 
+          imageDatasetControlList={imageDatasetControlList} 
+          inputValues={inputValues} 
+          isUploadedPreview={isUploadedPreview} 
+          onChangeActConf={handleActiveConfigChange} 
+          autoUpdate={autoUpdate} />)
       }
       return (<Grid2 container sx={{ justifyContent: 'space-between', maxHeight: '70%', width: '100%', minHeight: '300px' }}> {sectionsArray} </Grid2>);
     } else {
