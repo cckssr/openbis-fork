@@ -101,20 +101,29 @@ const GalleryListView = ({ previewContainerList, onOpenPreview, onEditComment, o
                             onClick={() => onOpenPreview(previewContainer.datasetId)}
                         />
                     </CardActionArea>
-                    <CardContent className={classes.content}>
-                        <Typography key={`dataset-types-header-${idx}`} gutterBottom variant="h6">
-                            Data Set Types
+                    <CardContent className={classes.content} sx={{ overflow: 'auto', maxHeight: '100%' }}>
+                        <Typography key={`image-parameters-header-${idx}`} variant="h6">
+                            Parameters
                         </Typography>
-                        <Typography key={`dataset-types-${idx}`} variant="body2" component={'span'} sx={{ color: "textSecondary" }}>
-                            {renderDatasetProps(previewContainer.datasetProperties, previewContainer.datasetId, idx)}
-                        </Typography>
-                        <Typography key={`preview-metadata-header-${idx}`} gutterBottom variant="h6">
+                        <div style={{ marginLeft: '16px' }}>
+                            {previewContainer.imageMetadata && Object.entries(previewContainer.imageMetadata).map(([key, value]) => (
+                                <Typography
+                                    key={key}
+                                    variant='body2'
+                                    component='div'
+                                    sx={{
+                                        color: 'textSecondary'
+                                    }}
+                                >
+                                    <strong>{key}:</strong> {value}
+                                </Typography>
+                            ))}
+                        </div>
+                        <Typography key={`preview-metadata-header-${idx}`} variant="h6">
                             Preview Metadata
                         </Typography>
                         <Typography key={`preview-metadata-${idx}`} variant="body2"
-                            component={'span'} sx={{
-                                color: "textSecondary"
-                            }}>
+                            component={'span'} sx={{ color: "textSecondary" }}>
                             {renderMetadataFields(previewContainer.preview.metadata, idx)}
                             {previewContainer.preview.tags !== null && previewContainer.preview.tags.length > 0 && renderTags(previewContainer.preview.tags, idx)}
                             {renderCommentField(previewContainer, idx)}

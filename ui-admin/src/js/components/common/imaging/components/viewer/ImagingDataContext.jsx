@@ -104,7 +104,7 @@ export const ImagingDataProvider = ({ onUnsavedChanges, objId, objType, extOpenb
         const { imagingDataset } = state;
         handleOpen();
         try {
-            const isSaved = await imagingFacade.saveImagingDataset(objId, imagingDataset);
+            const isSaved = await imagingFacade.saveImagingDataset(objId, objType, imagingDataset);
             if (isSaved === null) {
                 setState(prev => ({ ...prev, open: false, isChanged: false, isSaved: true }));
                 if (onUnsavedChanges !== null)

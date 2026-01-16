@@ -12,6 +12,9 @@ const MetadataSection = ({ activePreview, activeImage, imagingTags, onEditCommen
 	const currPreviewMetadata = activePreview.metadata;
 	const currPreviewTags = activePreview.tags;
 	const currPreviewComment = activePreview.comment;
+	const currImageMetadata = activeImage.metadata;
+	const configMetadata = activeImage.config.metadata;
+
 	const { handleTagImage } = useImagingDataContext();
 
 	// State for tags autocomplete
@@ -38,28 +41,26 @@ const MetadataSection = ({ activePreview, activeImage, imagingTags, onEditCommen
 
 	const renderParameters = () => {
 		// Use preview metadata dynamically, as it was implemented before
-		if (!currPreviewMetadata || isObjectEmpty(currPreviewMetadata)) {
+		if (!currImageMetadata || isObjectEmpty(currImageMetadata)) {
 			return null;
 		}
 
 		return (
-			<CollapsableSection title='Parameters' span={true} isCollapsed={false}>
-				<Box sx={{ py: 1 }}>
-					{Object.entries(currPreviewMetadata).map(([key, value]) => (
-						<Typography 
-							key={key}
-							variant='body2'
-							component='div'
-							sx={{
-								color: 'textSecondary',
-								mb: 0.5
-							}}
-						>
-							<strong>{key}:</strong> {value}
-						</Typography>
-					))}
-				</Box>
-			</CollapsableSection>
+			<Box sx={{ py: 1 }}>
+				{Object.entries(currImageMetadata).map(([key, value]) => (
+					<Typography
+						key={key}
+						variant='body2'
+						component='div'
+						sx={{
+							color: 'textSecondary',
+							mb: 0.5
+						}}
+					>
+						<strong>{key}:</strong> {value}
+					</Typography>
+				))}
+			</Box>
 		);
 	};
 
@@ -72,63 +73,62 @@ const MetadataSection = ({ activePreview, activeImage, imagingTags, onEditCommen
 	const renderTags = () => {
 
 		return (
-			<CollapsableSection title='Tags' span={true} isCollapsed={false}>
-				<Box sx={{ py: 1 }}>
-					<Autocomplete
-						multiple
-						id='tags-autocomplete'
-						options={imagingTags || []}
-						disableCloseOnSelect
-						getOptionLabel={(option) => option.label || option}
-						inputValue={inputValue}
-						value={tags}
-						onInputChange={(event, newInputValue) => {
-							setInputValue(newInputValue);
-						}}
-						renderInput={(params) => (
-							<TextField variant='standard' label='Tags' {...params} placeholder='Search Tag' />
-						)}
-						renderOption={(props, option, { selected }) => {
-							const { key, ...optionProps } = props;
-							return (
-								<li key={key} {...optionProps}>
-									<Checkbox
-										icon={<CheckBoxOutlineBlankIcon fontSize='small' />}
-										checkedIcon={<CheckBoxIcon fontSize='small' />}
-										style={{ marginRight: 8 }}
-										checked={selected}
-									/>
-									{option.label || option}
-								</li>
-							);
-						}}
-						onChange={handleTagsChange}
-						size='small'
-					/>
-				</Box>
-			</CollapsableSection>
+			<Box sx={{ py: 1 }}>
+				<Autocomplete
+					multiple
+					id='tags-autocomplete'
+					options={imagingTags || []}
+					disableCloseOnSelect
+					getOptionLabel={(option) => option.label || option}
+					inputValue={inputValue}
+					value={tags}
+					onInputChange={(event, newInputValue) => {
+						setInputValue(newInputValue);
+					}}
+					renderInput={(params) => (
+						<TextField variant='standard' label='Tags' {...params} placeholder='Search Tag' />
+					)}
+					renderOption={(props, option, { selected }) => {
+						const { key, ...optionProps } = props;
+						return (
+							<li key={key} {...optionProps}>
+								<Checkbox
+									icon={<CheckBoxOutlineBlankIcon fontSize='small' />}
+									checkedIcon={<CheckBoxIcon fontSize='small' />}
+									style={{ marginRight: 8 }}
+									checked={selected}
+								/>
+								{option.label || option}
+							</li>
+						);
+					}}
+					onChange={handleTagsChange}
+					size='small'
+				/>
+			</Box>
 		);
 	};
 
 	const renderComments = () => {
 		return (
-			<CollapsableSection title='Comments' span={true} isCollapsed={false}>
-				<Box sx={{ py: 1 }}>
-					<EditableMetadataField 
-						keyProp={"Comment"}
-						valueProp={currPreviewComment}
-						onEdit={newVal => onEditComment(newVal)} 
-					/>
-				</Box>
-			</CollapsableSection>
+			<Box sx={{ py: 1 }}>
+				<EditableMetadataField
+					key={`comment-${activePreview.index}`}
+					keyProp={"Comment"}
+					valueProp={currPreviewComment}
+					onEdit={newVal => onEditComment(newVal)}
+				/>
+			</Box>
 		);
 	};
 
 	return (
-		<CollapsableSection title='Metadata' isCollapsed={false}>
-			{renderParameters()}
-			{renderTags()}
-			{renderComments()}
+		<CollapsableSection title='Parameters' isCollapsed={false}>
+			<div style={{ marginLeft: '32px' }}>
+				{renderParameters()}
+				{renderTags()}
+				{renderComments()}
+			</div>
 		</CollapsableSection>
 	);
 };

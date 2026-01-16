@@ -1,18 +1,27 @@
 import React from "react";
-import { FormControl, IconButton, Stack, TextareaAutosize, Typography} from "@mui/material";
+import { FormControl, IconButton, Stack, TextareaAutosize, Typography } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
+import CancelIcon from "@mui/icons-material/Cancel";
 import TextField from '@src/js/components/common/form/TextField.jsx'
+import TextAreaField from '@src/js/components/common/form/TextAreaField.jsx'
 
 const EditableMetadataField = ({ keyProp, valueProp, onEdit }) => {
 	const [editMode, setEditMode] = React.useState(false);
-	const [editableValue, setEditableValue] = React.useState("");
+	const [editableValue, setEditableValue] = React.useState(valueProp || "");
 
+	// Update editableValue when valueProp changes (e.g., when switching previews)
 	React.useEffect(() => {
-		setEditableValue(valueProp);
-	}, [])
+		if (!editMode) {
+			setEditableValue(valueProp || "");
+		}
+	}, [valueProp, editMode]);
 
 	const toggleEditMode = () => {
+		if (!editMode) {
+			// Entering edit mode: reset to current valueProp
+			setEditableValue(valueProp || "");
+		}
 		setEditMode(!editMode);
 	}
 
@@ -21,34 +30,45 @@ const EditableMetadataField = ({ keyProp, valueProp, onEdit }) => {
 		onEdit(editableValue);
 	}
 
+	const cancelEdit = () => {
+		setEditMode(false);
+		setEditableValue(valueProp || "");
+	}
+
+	// Use editableValue when in edit mode, valueProp when in view mode
+	const displayValue = editMode ? editableValue : (valueProp || "");
+
 	return <Stack direction='row'>
-		{!editMode ?
-			(<div style={{ width: '100%' }}>
-				<TextField label={keyProp}
-					fullWidth
-					value={valueProp}
-					variant='standard'
-					mode='view'/>
-			</div>
-			) :
-			(<FormControl>
-				<Typography variant="body2" component={'span'} sx={{ color: "textSecondary"}}> 
-					{keyProp}: 
-				</Typography>
-				<TextareaAutosize name='text-area-comment'
-					placeholder="Add a comment"
-					value={editableValue}
-					onChange={event => setEditableValue(event.target.value)} />
-			</FormControl>
-			)}
-		<IconButton aria-label="edit" size="small" color="primary"
-			onClick={toggleEditMode}>
-			<EditIcon />
-		</IconButton>
-		<IconButton aria-label="save" size="small" sx={{ display: editMode ? 'unset' : 'none' }}
-			color="primary" onClick={saveComment}>
-			<SaveIcon />
-		</IconButton>
+		<div style={{ width: '100%' }}>
+			<TextAreaField
+				name={editMode ? 'text-area-comment' : ''}
+				label={keyProp}
+				fullWidth
+				value={displayValue}
+				placeholder="Add a comment"
+				variant='standard'
+				mode={editMode ? 'edit' : 'view'}
+				onChange={event => setEditableValue(event.target.value)}
+				styles={{}}
+			/>
+		</div>
+
+		{!editMode && (
+			<IconButton aria-label="edit" size="small" color="secondary"
+				onClick={toggleEditMode}>
+				<EditIcon />
+			</IconButton>
+		)}
+		{editMode && (
+			<>
+				<IconButton aria-label="save" size="small" color="primary" onClick={saveComment}>
+					<SaveIcon />
+				</IconButton>
+				<IconButton aria-label="cancel" size="small" color="secondary" onClick={cancelEdit}>
+					<CancelIcon />
+				</IconButton>
+			</>
+		)}
 	</Stack>
 }
 
