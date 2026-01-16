@@ -25,8 +25,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePE;
+import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.IdentifierHelper;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DataRetrievalFailureException;
@@ -348,6 +351,10 @@ public class VocabularyBO extends AbstractBusinessObject implements IVocabularyB
 
         } catch (final DataAccessException e)
         {
+            throwException(e, String.format("Vocabulary '%s'.", vocabularyPE.getCode()));
+        } catch (ConstraintViolationException ce)
+        {
+            DataAccessException e = new DataIntegrityViolationException(ce.getMessage(), ce);
             throwException(e, String.format("Vocabulary '%s'.", vocabularyPE.getCode()));
         }
     }

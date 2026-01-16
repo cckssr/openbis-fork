@@ -15,10 +15,10 @@
  */
 package ch.systemsx.cisd.openbis.generic.shared.dto;
 
-import javax.persistence.*;
-import javax.persistence.Id;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
+import jakarta.persistence.*;
+import jakarta.persistence.Id;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 
 import ch.systemsx.cisd.openbis.generic.shared.IServer;
 import org.hibernate.validator.constraints.Length;

@@ -60,7 +60,7 @@ import org.springframework.orm.hibernate5.HibernateExceptionTranslator;
 import org.springframework.orm.hibernate5.HibernateTemplate;
 import org.springframework.orm.hibernate5.SessionFactoryUtils;
 
-import javax.persistence.Query;
+import jakarta.persistence.Query;
 
 /**
  * Data access object for {@link MaterialPE}.

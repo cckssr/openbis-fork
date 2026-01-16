@@ -17,11 +17,12 @@ package ch.systemsx.cisd.openbis.generic.shared.dto;
 
 import java.io.Serializable;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 import ch.systemsx.cisd.openbis.generic.shared.IServer;
 import ch.systemsx.cisd.openbis.generic.shared.basic.IIdHolder;
@@ -31,32 +32,33 @@ import ch.systemsx.cisd.openbis.generic.shared.util.DisplaySettingsSerialization
 /**
  * @author Jakub Straszewski
  */
-@Entity
-@Table(name = TableNames.PERSONS_TABLE)
-public final class PersonDisplaySettingsPE implements IIdHolder, Serializable
+//@Entity
+//@Table(name = TableNames.PERSONS_TABLE)
+@Embeddable
+public final class PersonDisplaySettingsPE implements Serializable
 {
     private static final long serialVersionUID = IServer.VERSION;
 
-    private transient Long id;
+//    private transient Long id;
 
     private DisplaySettings displaySettings;
 
     private byte[] serializedDisplaySettings;
 
-    //
-    // IIdHolder
-    //
-    @Override
-    @Id
-    public final Long getId()
-    {
-        return id;
-    }
-
-    public final void setId(final Long id)
-    {
-        this.id = id;
-    }
+//    //
+//    // IIdHolder
+//    //
+//    @Override
+//    @Id
+//    public final Long getId()
+//    {
+//        return id;
+//    }
+//
+//    public final void setId(final Long id)
+//    {
+//        this.id = id;
+//    }
 
     @Transient
     public DisplaySettings getDisplaySettings()

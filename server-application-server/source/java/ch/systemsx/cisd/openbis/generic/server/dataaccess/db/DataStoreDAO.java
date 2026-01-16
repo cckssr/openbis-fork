@@ -19,6 +19,9 @@ import java.util.List;
 
 import ch.ethz.sis.shared.log.classic.impl.Logger;
 
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Root;
 import org.hibernate.SessionFactory;
 
 
@@ -28,10 +31,6 @@ import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDataStoreDAO;
 import ch.systemsx.cisd.openbis.generic.shared.Constants;
 import ch.systemsx.cisd.openbis.generic.shared.basic.CodeConverter;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataStorePE;
-
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
 
 /**
  * Hibernate-based implementation of {@link IDataStoreDAO}.
@@ -116,7 +115,7 @@ public class DataStoreDAO extends AbstractDAO implements IDataStoreDAO
                 return List.of();
             }
 
-            root.fetch("servicesInternal", javax.persistence.criteria.JoinType.LEFT);
+            root.fetch("servicesInternal", jakarta.persistence.criteria.JoinType.LEFT);
             cq.select(root).distinct(true);
             List<DataStorePE> list = session.createQuery(cq).getResultList();
 

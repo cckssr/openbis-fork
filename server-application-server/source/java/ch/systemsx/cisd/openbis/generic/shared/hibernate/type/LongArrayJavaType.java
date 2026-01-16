@@ -1,5 +1,5 @@
 /*
- * Copyright ETH 2008 - 2023 Zürich, Scientific IT Services
+ * Copyright ETH 2025 Zürich, Scientific IT Services
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,16 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ch.systemsx.cisd.openbis.generic.server.dataaccess.db;
+package ch.systemsx.cisd.openbis.generic.shared.hibernate.type;
 
-import org.hibernate.criterion.DetachedCriteria;
+import org.hibernate.type.descriptor.java.LongJavaType;
 
-/**
- * Factory of {@link DetachedCriteria} instances.
- *
- * @author Franz-Josef Elmer
- */
-public interface IDetachedCriteriaFactory
+public class LongArrayJavaType extends AbstractPgArrayJavaType<Long>
 {
-    public DetachedCriteria createCriteria();
+    public LongArrayJavaType()
+    {
+        super(LongJavaType.INSTANCE);
+    }
+
+    @Override
+    protected Long convertElement(String value)
+    {
+        return Long.valueOf(value);
+    }
+
+    @Override
+    protected Long[] createArray(int length)
+    {
+        return new Long[length];
+    }
 }

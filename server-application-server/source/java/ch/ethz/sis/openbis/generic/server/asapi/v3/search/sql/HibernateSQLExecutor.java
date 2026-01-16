@@ -18,7 +18,7 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql;
 import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider;
 import ch.systemsx.cisd.openbis.generic.server.ComponentNames;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.db.DAOFactory;
-import org.apache.commons.dbcp.DelegatingConnection;
+import org.apache.commons.dbcp2.DelegatingConnection;
 import org.hibernate.internal.SessionImpl;
 
 import java.sql.Connection;
@@ -34,8 +34,14 @@ public class HibernateSQLExecutor extends AbstractSQLExecutor
     public Connection getConnection() {
         DAOFactory daoFactory = (DAOFactory) CommonServiceProvider.getApplicationContext().getBean(ComponentNames.DAO_FACTORY);
         SessionImpl currentSession = (SessionImpl) daoFactory.getSessionFactory().getCurrentSession();
-        DelegatingConnection delegatingConnection = (DelegatingConnection) currentSession.connection();
-        Connection connection = delegatingConnection.getInnermostDelegate();
+//        DelegatingConnection delegatingConnection = (DelegatingConnection) currentSession.connection();
+
+        Connection connection = currentSession.doReturningWork(c -> c);
+
+        // If it's a DBCP wrapper and you need the physical connection, unwrap it
+        if (connection instanceof DelegatingConnection) {
+            return ((DelegatingConnection) connection).getInnermostDelegate();
+        }
         return connection;
     }
 }

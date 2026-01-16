@@ -99,6 +99,11 @@ public class ExperimentOptimisticLockingTest extends OptimisticLockingTestCase
     public void testChangePropertyOfAnExperimentWithOldVersion()
     {
         Experiment experiment = toolBox.createAndLoadExperiment(1);
+
+        //clear() call is necessary in hibernate 6
+        // to simulate "Creation" and the "Update" happening in distinct transactions
+        daoFactory.getSampleDAO().clear();
+
         String sessionToken = logIntoCommonClientService().getSessionID();
         ExperimentUpdatesDTO updates = new ExperimentUpdatesDTO();
         updates.setVersion(experiment.getVersion());

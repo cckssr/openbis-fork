@@ -21,8 +21,10 @@ import java.util.List;
 import javax.sql.DataSource;
 
 import ch.ethz.sis.shared.log.classic.impl.Logger;
-import org.hibernate.SQLQuery;
+
 import org.hibernate.StatelessSession;
+import org.hibernate.query.MutationQuery;
+import org.hibernate.query.NativeQuery;
 import org.springframework.dao.DataAccessException;
 
 import ch.systemsx.cisd.common.collection.CollectionStyle;
@@ -239,13 +241,13 @@ public abstract class AbstractGenericEntityWithPropertiesDAO<T extends IEntityIn
             @Override
             public Object doInStatelessSession(StatelessSession session)
             {
-                final SQLQuery sqlQuerySelectPermIds = session.createSQLQuery(sqlSelectPermIds);
-                final SQLQuery sqlQueryDeleteProperties =
-                        session.createSQLQuery(sqlDeleteProperties);
-                final SQLQuery sqlQueryDeleteEntities = session.createSQLQuery(sqlDeleteEntities);
-                final SQLQuery sqlQueryInsertEvent = session.createSQLQuery(sqlInsertEvent);
-                final SQLQuery sqlQueryDeleteAttachments =
-                        session.createSQLQuery(sqlDeleteAttachments);
+                final NativeQuery<String> sqlQuerySelectPermIds = session.createNativeQuery(sqlSelectPermIds, String.class);
+                final MutationQuery sqlQueryDeleteProperties =
+                        session.createNativeMutationQuery(sqlDeleteProperties);
+                final MutationQuery sqlQueryDeleteEntities = session.createNativeMutationQuery(sqlDeleteEntities);
+                final MutationQuery sqlQueryInsertEvent = session.createNativeMutationQuery(sqlInsertEvent);
+                final MutationQuery sqlQueryDeleteAttachments =
+                        session.createNativeMutationQuery(sqlDeleteAttachments);
 
                 final List<String> permIds =
                         selectPermIds(sqlQuerySelectPermIds, entityIdsToDelete);
@@ -265,7 +267,7 @@ public abstract class AbstractGenericEntityWithPropertiesDAO<T extends IEntityIn
                 return null;
             }
 
-            private List<String> selectPermIds(final SQLQuery sqlQuerySelectPermIds,
+            private List<String> selectPermIds(final NativeQuery<?> sqlQuerySelectPermIds,
                     final List<Long> entityIds)
             {
                 sqlQuerySelectPermIds.setParameterList(ENTITY_IDS_PARAM, entityIds);
@@ -273,7 +275,7 @@ public abstract class AbstractGenericEntityWithPropertiesDAO<T extends IEntityIn
                 return permIdsOrNull == null ? Collections.<String> emptyList() : permIdsOrNull;
             }
 
-            private void deleteProperties(final SQLQuery sqlQueryDeleteProperties,
+            private void deleteProperties(final MutationQuery sqlQueryDeleteProperties,
                     List<Long> entityIds)
             {
                 sqlQueryDeleteProperties.setParameterList(ENTITY_IDS_PARAM, entityIds);
@@ -281,20 +283,20 @@ public abstract class AbstractGenericEntityWithPropertiesDAO<T extends IEntityIn
             }
 
             private void deleteAttachmentsWithContents(
-                    final SQLQuery sqlQueryDeleteAttachments, List<Long> entityIds)
+                    final MutationQuery sqlQueryDeleteAttachments, List<Long> entityIds)
             {
                 sqlQueryDeleteAttachments.setParameterList(ENTITY_IDS_PARAM, entityIds);
                 sqlQueryDeleteAttachments.executeUpdate();
             }
 
-            private void deleteMainEntities(final SQLQuery sqlQueryDeleteEntities,
+            private void deleteMainEntities(final MutationQuery sqlQueryDeleteEntities,
                     List<Long> entityIds)
             {
                 sqlQueryDeleteEntities.setParameterList(ENTITY_IDS_PARAM, entityIds);
                 sqlQueryDeleteEntities.executeUpdate();
             }
 
-            private void insertEvent(final SQLQuery sqlQueryInsertEvent, final List<String> permIds, String content)
+            private void insertEvent(final MutationQuery sqlQueryInsertEvent, final List<String> permIds, String content)
             {
                 final String description =
                         CollectionUtils.abbreviate(permIds, 3, CollectionStyle.NO_BOUNDARY);

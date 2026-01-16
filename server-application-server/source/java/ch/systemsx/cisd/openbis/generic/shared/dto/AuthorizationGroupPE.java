@@ -23,28 +23,27 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.ManyToMany;
-import javax.persistence.OneToMany;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.persistence.Transient;
-import javax.persistence.Version;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
+import jakarta.persistence.Version;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 
 import ch.systemsx.cisd.openbis.generic.shared.dto.hibernate.JsonMapUserType;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
-import org.hibernate.annotations.TypeDefs;
+
 import org.hibernate.validator.constraints.Length;
 
 import ch.rinn.restrictions.Friend;
@@ -63,7 +62,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.hibernate.SearchFieldConstant
 @Entity
 @Table(name = TableNames.AUTHORIZATION_GROUPS_TABLE)
 @Friend(toClasses = RoleAssignmentPE.class)
-@TypeDefs({ @TypeDef(name = "JsonMap", typeClass = JsonMapUserType.class) })
+//@TypeDefs({ @TypeDef(name = "JsonMap", typeClass = JsonMapUserType.class) })
 public class AuthorizationGroupPE extends HibernateAbstractRegistrationHolder implements
         Comparable<AuthorizationGroupPE>, IIdAndCodeHolder, IIdentityHolder, IMetaDataHolder, Serializable
 {
@@ -91,12 +90,12 @@ public class AuthorizationGroupPE extends HibernateAbstractRegistrationHolder im
     @SequenceGenerator(name = SequenceNames.AUTHORIZATION_GROUP_ID_SEQUENCE, sequenceName = SequenceNames.AUTHORIZATION_GROUP_ID_SEQUENCE, allocationSize = 1)
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = SequenceNames.AUTHORIZATION_GROUP_ID_SEQUENCE)
-    public final Long getId()
+    public Long getId()
     {
         return id;
     }
 
-    public final void setId(final Long id)
+    public void setId(final Long id)
     {
         this.id = id;
     }
@@ -213,7 +212,7 @@ public class AuthorizationGroupPE extends HibernateAbstractRegistrationHolder im
 
     @Override
     @Column(name = "meta_data")
-    @Type(type = "JsonMap")
+    @Type(JsonMapUserType.class)
     public Map<String, String> getMetaData()
     {
         return metaData;

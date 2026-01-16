@@ -39,6 +39,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.RoleWithHierarchy.RoleC
 import ch.systemsx.cisd.openbis.generic.shared.dto.AuthorizationGroupPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.RoleAssignmentPE;
+import ch.systemsx.cisd.openbis.generic.shared.dto.SpacePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.ProjectIdentifier;
 
 /**
@@ -254,6 +255,21 @@ public final class RoleAssignmentDAO extends AbstractGenericEntityDAO<RoleAssign
         {
             operationLog.info(String.format("LIST: role assignments for authorization group '%s'.",
                     authGroup));
+        }
+        return result;
+    }
+
+    @Override
+    public List<RoleAssignmentPE> listRoleAssignmentsBySpace(SpacePE space)
+    {
+        List<RoleAssignmentPE> result = currentSession()
+                .createQuery("from RoleAssignmentPE ra where ra.space = :space", RoleAssignmentPE.class)
+                .setParameter("space", space)
+                .list();
+
+        if (operationLog.isInfoEnabled())
+        {
+            operationLog.info(String.format("LIST: role assignments for space '%s'.", space));
         }
         return result;
     }

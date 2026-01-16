@@ -31,19 +31,22 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.create.PropertyAssignme
 import ch.ethz.sis.openbis.generic.server.asapi.v3.IApplicationServerInternalApi;
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider;
 import ch.systemsx.cisd.openbis.generic.server.ComponentNames;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.db.DAOFactory;
-
-import ch.ethz.sis.shared.log.classic.impl.Logger;
 import org.hibernate.Session;
-import org.hibernate.internal.SessionImpl;
 import org.hibernate.query.NativeQuery;
 
-import java.math.BigInteger;
-import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.util.*;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -239,21 +242,26 @@ public class ELNCollectionTypeMigration
         {
             DAOFactory daoFactory = (DAOFactory) CommonServiceProvider.getApplicationContext().getBean(ComponentNames.DAO_FACTORY);
             Session currentSession = daoFactory.getSessionFactory().getCurrentSession();
-            Connection connection = ((SessionImpl) currentSession).connection();
-            PreparedStatement statement = connection.prepareStatement(SQL);
-            return statement.executeUpdate();
+//            Connection connection = ((SessionImpl) currentSession).connection(); -> hibernate 6 removed
+//            PreparedStatement statement = connection.prepareStatement(SQL);
+//            return statement.executeUpdate();
+            return currentSession.doReturningWork(conn -> {
+                try (PreparedStatement ps = conn.prepareStatement(SQL)) {
+                    return ps.executeUpdate();
+                }
+            });
         } catch (Exception ex)
         {
             throw new RuntimeException(ex);
         }
     }
 
-    private static Map<BigInteger, BigInteger> getMap(List<Object[]> prty_id_AND_etpt_id)
+    private static Map<Long, Long> getMap(List<Object[]> prty_id_AND_etpt_id)
     {
-        Map<BigInteger, BigInteger> prty_id_2_etpt_id = new HashMap();
+        Map<Long, Long> prty_id_2_etpt_id = new HashMap();
         for (Object[] row : prty_id_AND_etpt_id)
         {
-            prty_id_2_etpt_id.put((BigInteger) row[0], (BigInteger) row[1]);
+            prty_id_2_etpt_id.put((Long) row[0], (Long) row[1]);
         }
         return prty_id_2_etpt_id;
     }
@@ -312,23 +320,23 @@ public class ELNCollectionTypeMigration
 
                     // Current type id
                     final String COLLECTION_TYPE_ID = "SELECT id FROM experiment_types WHERE code = :code";
-                    BigInteger collectionTypeTechId = (BigInteger) executeNativeQuery(COLLECTION_TYPE_ID, "code", COLLECTION).get(0);
+                    Long collectionTypeTechId = (Long) executeNativeQuery(COLLECTION_TYPE_ID, "code", COLLECTION).get(0);
                     final String EXPERIMENT_TYPE_ID = "SELECT exty_id FROM experiments_all WHERE code = :code";
-                    BigInteger experimentTypeTechId = (BigInteger) executeNativeQuery(EXPERIMENT_TYPE_ID, "code", experimentCode).get(0);
+                    Long experimentTypeTechId = (Long) executeNativeQuery(EXPERIMENT_TYPE_ID, "code", experimentCode).get(0);
 
                     // Current type properties
                     final String EXPERIMENT_PROPERTY_TYPE_IDS =
                             "SELECT etpt.prty_id, etpt.id FROM experiment_type_property_types etpt WHERE etpt.exty_id = :exty_id";
-                    Map<BigInteger, BigInteger> collection_prty_id_2_etpt_id =
+                    Map<Long, Long> collection_prty_id_2_etpt_id =
                             getMap(executeNativeQuery(EXPERIMENT_PROPERTY_TYPE_IDS, "exty_id", collectionTypeTechId));
-                    Map<BigInteger, BigInteger> experiment_prty_id_2_etpt_id =
+                    Map<Long, Long> experiment_prty_id_2_etpt_id =
                             getMap(executeNativeQuery(EXPERIMENT_PROPERTY_TYPE_IDS, "exty_id", experimentTypeTechId));
 
                     // Update properties
-                    for (BigInteger propertyTechId : experiment_prty_id_2_etpt_id.keySet())
+                    for (Long propertyTechId : experiment_prty_id_2_etpt_id.keySet())
                     {
-                        BigInteger oldAssignment = experiment_prty_id_2_etpt_id.get(propertyTechId);
-                        BigInteger newAssignment = collection_prty_id_2_etpt_id.get(propertyTechId);
+                        Long oldAssignment = experiment_prty_id_2_etpt_id.get(propertyTechId);
+                        Long newAssignment = collection_prty_id_2_etpt_id.get(propertyTechId);
                         final String UPDATE_PROPERTY_ASSIGNMENT =
                                 "UPDATE experiment_properties SET etpt_id = :new_etpt_id WHERE etpt_id = :old_etpt_id";
                         operationLog.info(

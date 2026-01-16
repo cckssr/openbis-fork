@@ -28,12 +28,14 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
 
 import org.apache.commons.lang3.StringUtils;
+import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.transaction.annotation.Transactional;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
@@ -321,12 +323,17 @@ public abstract class AbstractServer<T> extends AbstractServiceWithLogger<T> imp
         } catch (final DataAccessException e)
         {
             throw new UserFailureException(e.getMessage(), e);
+        } catch (ConstraintViolationException e)
+        {
+            DataAccessException dataAccessException = new DataIntegrityViolationException(e.getMessage(), e);
+            throw new UserFailureException(dataAccessException.getMessage(), dataAccessException);
         }
         return person;
     }
 
-    private final void updatePersonIfNecessary(final PersonPE person, final Principal principal)
+    private final PersonPE updatePersonIfNecessary(PersonPE person, final Principal principal)
     {
+
         boolean changed = false;
         if (updateNeeded(person.getEmail(), principal.getEmail()))
         {
@@ -351,8 +358,13 @@ public abstract class AbstractServer<T> extends AbstractServiceWithLogger<T> imp
             } catch (final DataAccessException e)
             {
                 throw new UserFailureException(e.getMessage(), e);
+            } catch (ConstraintViolationException e)
+            {
+                DataAccessException dataAccessException = new DataIntegrityViolationException(e.getMessage(), e);
+                throw new UserFailureException(dataAccessException.getMessage(), dataAccessException);
             }
         }
+        return person;
     }
 
     private boolean updateNeeded(String currentValue, String newValue)
@@ -629,7 +641,7 @@ public abstract class AbstractServer<T> extends AbstractServiceWithLogger<T> imp
                     roles = Collections.emptySet();
                 } else
                 {
-                    updatePersonIfNecessary(person, session.getPrincipal());
+                    person = updatePersonIfNecessary(person, session.getPrincipal());
                     roles = person.getAllPersonRoles();
                     HibernateUtils.initialize(roles);
                 }

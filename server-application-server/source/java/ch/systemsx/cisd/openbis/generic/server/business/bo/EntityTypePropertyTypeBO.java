@@ -209,7 +209,7 @@ public class EntityTypePropertyTypeBO extends AbstractBusinessObject implements
 
         try (ScrollableResults propertyValues = entityPropertyTypeDAO.listPropertyValues(entityTypeCode, propertyTypeCode)) {
             while (propertyValues.next()) {
-                String value = (String) propertyValues.get()[0];
+                String value = (String) propertyValues.get();
                 if (!newPattern.matcher(value).matches()) {
                     throw new UserFailureException(String.format(errorMsgTemplate, value));
                 }

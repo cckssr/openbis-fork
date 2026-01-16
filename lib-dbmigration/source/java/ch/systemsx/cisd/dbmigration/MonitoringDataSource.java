@@ -17,11 +17,13 @@ package ch.systemsx.cisd.dbmigration;
 
 import java.sql.SQLException;
 
-import org.apache.commons.dbcp.BasicDataSource;
+import org.apache.commons.dbcp2.BasicDataSource;
 import ch.ethz.sis.shared.log.classic.impl.Logger;
 
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
+
+import javax.sql.DataSource;
 
 /**
  * A data source that performs monitoring of active connections to help track load and connection leaks.
@@ -64,13 +66,14 @@ public class MonitoringDataSource extends BasicDataSource
     }
 
     @Override
-    protected void createDataSourceInstance() throws SQLException
+    protected DataSource createDataSourceInstance() throws SQLException
     {
         final MonitoringPoolingDataSource pds =
-                new MonitoringPoolingDataSource(connectionPool, url, activeConnectionsLogInterval);
+                new MonitoringPoolingDataSource(getConnectionPool(), getUrl(), activeConnectionsLogInterval);
         pds.setAccessToUnderlyingConnectionAllowed(isAccessToUnderlyingConnectionAllowed());
-        pds.setLogWriter(logWriter);
-        dataSource = pds;
+        //pds.setLogWriter(getLogWriter());
+        //dataSource = pds;
+        return  pds;
     }
 
     // Remove once we switched to commons dbcp 1.4 or later.

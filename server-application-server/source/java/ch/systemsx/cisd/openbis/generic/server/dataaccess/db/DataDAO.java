@@ -15,7 +15,6 @@
  */
 package ch.systemsx.cisd.openbis.generic.server.dataaccess.db;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -30,6 +29,8 @@ import java.util.TreeSet;
 
 import ch.ethz.sis.shared.log.classic.impl.Logger;
 
+import ch.systemsx.cisd.openbis.generic.shared.util.HibernateUtils;
+import org.hibernate.Hibernate;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.StatelessSession;
@@ -356,7 +357,7 @@ final class DataDAO extends AbstractGenericEntityWithPropertiesDAO<DataPE> imple
     {
         String code = CodeConverter.tryToDatabase(dataSetCode);
 
-        BigInteger uniqueResult = (BigInteger) currentSession()
+        Long uniqueResult = (Long) currentSession()
                 .createNativeQuery("select id from data_all where code = :code")
                 .setParameter("code", code)
                 .uniqueResultOptional()
@@ -843,7 +844,7 @@ final class DataDAO extends AbstractGenericEntityWithPropertiesDAO<DataPE> imple
                                 "UPDATE "
                                         + EXTERNAL_DATA_TABLE_NAME
                                         + " SET status = :status, presentInArchive = :presentInArchive, "
-                                        + "     archivingRequested = 'f'"
+                                        + "     archivingRequested = false"
                                         + " WHERE code IN (:codes) ");
             } else
             {
@@ -1424,7 +1425,15 @@ final class DataDAO extends AbstractGenericEntityWithPropertiesDAO<DataPE> imple
         for (DataPE dataSet : dataSets)
         {
             resultDataSets.add(dataSet);
-            addAllDataSetsAndComponentsRecursively(resultDataSets, dataSet.getContainedDataSets());
+            try
+            {
+                addAllDataSetsAndComponentsRecursively(resultDataSets, dataSet.getContainedDataSets());
+            } catch (AssertionError e)
+            {
+                // Hibernate 6 occasionally throws an assertion when initializing this collection; skip recursion in that case.
+                // shouldn't happen in prod mode
+                getLogger().error("Hibernate Bug :", e);
+            }
         }
     }
 

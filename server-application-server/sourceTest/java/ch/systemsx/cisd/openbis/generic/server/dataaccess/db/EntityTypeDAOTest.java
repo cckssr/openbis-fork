@@ -220,6 +220,7 @@ public final class EntityTypeDAOTest extends AbstractDAOTest
         materialTypeDAO.createOrUpdateEntityType(materialType);
         PropertyTypePE materialPropertyType = createMaterialPropertyType(materialType);
         daoFactory.getPropertyTypeDAO().createPropertyType(materialPropertyType);
+        materialPropertyType.setMaterialType(null);
         int sizeBeforeDeletion = materialTypeDAO.listEntityTypes().size();
         materialTypeDAO.deleteEntityType(materialType);
         assertEquals(sizeBeforeDeletion - 1, materialTypeDAO.listEntityTypes().size());
@@ -237,6 +238,7 @@ public final class EntityTypeDAOTest extends AbstractDAOTest
         daoFactory.getPropertyTypeDAO().createPropertyType(materialPropertyType);
         // Assign property type to data set type
         assignPropertyType(selectFirstExperimentType(), materialPropertyType);
+        materialPropertyType.setMaterialType(null);
         // Delete material type
         int sizeBeforeDeletion = materialTypeDAO.listEntityTypes().size();
         materialTypeDAO.deleteEntityType(materialType);
@@ -283,7 +285,12 @@ public final class EntityTypeDAOTest extends AbstractDAOTest
         final IEntityTypeDAO materialTypeDAO = daoFactory.getEntityTypeDAO(EntityKind.MATERIAL);
         MaterialTypePE materialType = createMaterialType(MATERIAL_TYPE);
         materialTypeDAO.createOrUpdateEntityType(materialType);
-        assignPropertyType(materialType, selectFirstPropertyType());
+        EntityTypePropertyTypePE entityTypePropertyTypePE =
+                assignPropertyType(materialType, selectFirstPropertyType());
+
+        daoFactory.getSessionFactory().getCurrentSession().clear();
+        materialType = (MaterialTypePE) materialTypeDAO.tryToFindEntityTypeByCode(MATERIAL_TYPE);
+
         int sizeBeforeDeletion = materialTypeDAO.listEntityTypes().size();
         materialTypeDAO.deleteEntityType(materialType);
         assertEquals(sizeBeforeDeletion - 1, materialTypeDAO.listEntityTypes().size());

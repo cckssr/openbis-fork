@@ -31,7 +31,7 @@ import ch.systemsx.cisd.openbis.generic.server.dataaccess.db.deletion.EntityHist
 import ch.systemsx.cisd.openbis.generic.shared.basic.CodeConverter;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PostRegistrationPE;
 
-import javax.persistence.Query;
+import jakarta.persistence.Query;
 
 public class PostRegistrationDAO extends AbstractGenericEntityDAO<PostRegistrationPE> implements
         IPostRegistrationDAO

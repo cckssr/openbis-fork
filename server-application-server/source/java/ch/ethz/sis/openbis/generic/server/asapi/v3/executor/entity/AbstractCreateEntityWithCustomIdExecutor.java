@@ -34,8 +34,10 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.ICustomIdHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 
-import javax.persistence.PersistenceException;
-import javax.validation.ConstraintViolationException;
+import jakarta.persistence.PersistenceException;
+import jakarta.validation.ConstraintViolationException;
+import org.springframework.dao.DataIntegrityViolationException;
+
 import java.io.Serializable;
 import java.util.*;
 

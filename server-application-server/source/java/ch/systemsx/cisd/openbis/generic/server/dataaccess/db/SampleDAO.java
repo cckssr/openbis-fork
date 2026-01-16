@@ -15,7 +15,6 @@
  */
 package ch.systemsx.cisd.openbis.generic.server.dataaccess.db;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -27,11 +26,9 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import ch.ethz.sis.shared.log.classic.impl.Logger;
-import org.hibernate.Criteria;
+
 import org.hibernate.Session;
 
-import org.hibernate.criterion.DetachedCriteria;
-import org.hibernate.criterion.Restrictions;
 import org.hibernate.query.NativeQuery;
 
 import org.hibernate.query.Query;
@@ -58,12 +55,6 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePropertyPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SpacePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.TableNames;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.SampleIdentifier;
-import org.springframework.orm.hibernate5.HibernateTemplate;
-
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.JoinType;
-import javax.persistence.criteria.Root;
 
 import static ch.systemsx.cisd.openbis.generic.server.dataaccess.db.DAOUtils.BATCH_SIZE;
 
@@ -599,25 +590,20 @@ public class SampleDAO extends AbstractGenericEntityWithPropertiesDAO<SamplePE> 
             {
                 continue;
             }
-//
-            List<SamplePE> list1 = doExecute(session -> session.createCriteria(SamplePE.class)
-                    .add(Restrictions.in(idName, slice))
-                    .list());
-
 
 // Hibernate 6, use this one
-//            String hql =
-//                    "select  s " +
-//                            "from SamplePE s " +
-//                            "where s." + idName + " in (:ids)"
-//                            ;
-//
-//            List<SamplePE> batch = doExecute(session ->
-//                    session.createQuery(hql, SamplePE.class)
-//                            .setParameterList("ids", slice)
-//                            .getResultList());
+        String hql =
+                "select  s " +
+                        "from SamplePE s " +
+                        "where s." + idName + " in (:ids)"
+                        ;
 
-            list.addAll(list1);
+        List<SamplePE> batch = doExecute(session ->
+                session.createQuery(hql, SamplePE.class)
+                        .setParameterList("ids", slice)
+                        .getResultList());
+
+            list.addAll(batch);
         }
 
         if (operationLog.isDebugEnabled())

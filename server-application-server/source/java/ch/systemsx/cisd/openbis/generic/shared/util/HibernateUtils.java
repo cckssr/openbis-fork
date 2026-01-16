@@ -15,6 +15,7 @@
  */
 package ch.systemsx.cisd.openbis.generic.shared.util;
 
+import jakarta.persistence.FlushModeType;
 import org.hibernate.CacheMode;
 import org.hibernate.FlushMode;
 import org.hibernate.Hibernate;
@@ -122,7 +123,7 @@ public final class HibernateUtils
         CacheMode cacheMode = (batchMode ? CacheMode.IGNORE : CacheMode.NORMAL);
         session.setCacheMode(cacheMode);
 
-        FlushMode mode = (batchMode ? FlushMode.COMMIT : FlushMode.AUTO);
+        FlushModeType mode = (batchMode ? FlushModeType.COMMIT : FlushModeType.AUTO);
         session.setFlushMode(mode);
     }
 

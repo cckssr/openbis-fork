@@ -22,9 +22,9 @@ import java.util.Optional;
 
 import ch.ethz.sis.shared.log.classic.impl.Logger;
 
-import javax.persistence.Query;
-import javax.persistence.criteria.Path;
-import javax.persistence.criteria.Predicate;
+import jakarta.persistence.Query;
+import jakarta.persistence.criteria.Path;
+import jakarta.persistence.criteria.Predicate;
 import org.hibernate.Hibernate;
 import org.hibernate.HibernateException;
 
@@ -142,6 +142,8 @@ final class DeletionDAO extends AbstractGenericEntityDAO<DeletionPE> implements 
                 revertDeletionOfEntities(deletion, entityKind, modifier);
             }
         }
+        super.flush();
+        super.clear();
         super.delete(deletion);
     }
 

@@ -646,15 +646,15 @@ def getNextSequenceForType(context, parameters):
     sampleTypeCode = parameters.get("sampleTypeCode")
     daoFactory = CommonServiceProvider.getApplicationContext().getBean(ComponentNames.DAO_FACTORY)
     currentSession = daoFactory.getSessionFactory().getCurrentSession()
-    querySampleTypeId = currentSession.createSQLQuery("SELECT id from sample_types WHERE code = :sampleTypeCode")
+    querySampleTypeId = currentSession.createNativeQuery("SELECT id from sample_types WHERE code = :sampleTypeCode")
     querySampleTypeId.setParameter("sampleTypeCode", sampleTypeCode)
     sampleTypeId = querySampleTypeId.uniqueResult()
 
-    querySampleTypePrefix = currentSession.createSQLQuery("SELECT generated_code_prefix from sample_types WHERE code = :sampleTypeCode")
+    querySampleTypePrefix = currentSession.createNativeQuery("SELECT generated_code_prefix from sample_types WHERE code = :sampleTypeCode")
     querySampleTypePrefix.setParameter("sampleTypeCode", sampleTypeCode)
     sampleTypePrefix = querySampleTypePrefix.uniqueResult().upper()
     sampleTypePrefixLengthPlusOneAsString = str((len(sampleTypePrefix) + 1))
-    querySampleCount = currentSession.createSQLQuery("SELECT COALESCE(MAX(CAST(substring(code, " + sampleTypePrefixLengthPlusOneAsString + ") as int)), 0) FROM samples_all WHERE saty_id = :sampleTypeId AND code ~ :codePattern")
+    querySampleCount = currentSession.createNativeQuery("SELECT COALESCE(MAX(CAST(substring(code, " + sampleTypePrefixLengthPlusOneAsString + ") as int)), 0) FROM samples_all WHERE saty_id = :sampleTypeId AND code ~ :codePattern")
     querySampleCount.setParameter("sampleTypeId", sampleTypeId)
     querySampleCount.setParameter("codePattern", "^" + sampleTypePrefix + "[0-9]+$")
     sampleCount = querySampleCount.uniqueResult()
@@ -667,14 +667,14 @@ def getNextExperimentCode(context, parameters):
 
     projectId = int(parameters.get("projectId"))
 
-    queryProjectCode = currentSession.createSQLQuery("SELECT code from projects WHERE id = :projectId")
+    queryProjectCode = currentSession.createNativeQuery("SELECT code from projects WHERE id = :projectId")
     queryProjectCode.setParameter("projectId", projectId)
     projectCode = queryProjectCode.uniqueResult()
 
     experimentPrefix = projectCode + '_EXP_'
     experimentPrefixLengthPlusOneAsString = str((len(experimentPrefix) + 1))
 
-    queryExperimentCount = currentSession.createSQLQuery("SELECT COALESCE(MAX(CAST(substring(code, " + experimentPrefixLengthPlusOneAsString + ") as int)), 0) FROM experiments_all WHERE proj_id = :projectId AND code ~ :codePattern")
+    queryExperimentCount = currentSession.createNativeQuery("SELECT COALESCE(MAX(CAST(substring(code, " + experimentPrefixLengthPlusOneAsString + ") as int)), 0) FROM experiments_all WHERE proj_id = :projectId AND code ~ :codePattern")
     queryExperimentCount.setParameter("projectId", projectId)
     queryExperimentCount.setParameter("codePattern", "^" + experimentPrefix + "[0-9]+$")
 
@@ -689,7 +689,7 @@ def doSpacesBelongToDisabledUsers(context, parameters):
     if spaceCodes is None or len(spaceCodes) == 0:
         return []
 
-    disabled_spaces = currentSession.createSQLQuery("SELECT sp.code FROM spaces sp WHERE sp.id IN(SELECT p.space_id FROM persons p WHERE p.space_id IN (SELECT s.id FROM spaces s WHERE s.code IN (:codes)) AND p.is_active = FALSE)")
+    disabled_spaces = currentSession.createNativeQuery("SELECT sp.code FROM spaces sp WHERE sp.id IN(SELECT p.space_id FROM persons p WHERE p.space_id IN (SELECT s.id FROM spaces s WHERE s.code IN (:codes)) AND p.is_active = FALSE)")
     disabled_spaces.setParameterList("codes", spaceCodes)
     disabled_spaces_result = disabled_spaces.list()
     return disabled_spaces_result

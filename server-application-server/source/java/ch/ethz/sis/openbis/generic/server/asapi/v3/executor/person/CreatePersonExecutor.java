@@ -20,11 +20,13 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 import org.apache.commons.lang3.StringUtils;
+import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.IObjectId;
@@ -221,6 +223,10 @@ public class CreatePersonExecutor
             } catch (final DataAccessException e)
             {
                 throw new UserFailureException(e.getMessage(), e);
+            } catch (ConstraintViolationException e)
+            {
+                DataAccessException dataAccessException = new DataIntegrityViolationException(e.getMessage(), e);
+                throw new UserFailureException(dataAccessException.getMessage(), dataAccessException);
             }
         }
     }

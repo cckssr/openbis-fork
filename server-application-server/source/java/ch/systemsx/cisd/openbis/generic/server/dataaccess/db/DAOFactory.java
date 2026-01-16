@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.*;
 import ch.ethz.sis.shared.log.classic.impl.Logger;

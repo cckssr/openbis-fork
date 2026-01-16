@@ -16,6 +16,7 @@
 package ch.systemsx.cisd.openbis.generic.server.business.bo;
 
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
+import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePE;
 
 /**
  * Common method(s) all Business Objects and Tables have to implement.
@@ -26,8 +27,10 @@ public interface IBusinessObject
 {
     /**
      * Writes changed or added data to the Data Access Layers.
-     * 
-     * @throws UnsupportedOperationException if saving isn't supported because it is a read-only object.
+     *
+     * @return
+     * @throws UnsupportedOperationException if saving isn't supported because it is a read-only
+     *                                       object.
      */
     public void save() throws UserFailureException;
 

@@ -27,9 +27,10 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 
-import javax.validation.ValidationException;
+import jakarta.validation.ValidationException;
 
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.testng.AssertJUnit;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -319,7 +320,8 @@ public class ExperimentDAOTest extends AbstractDAOTest
         assertEquals(rowsInAttachmentContents + 1, countRowsInTable(ATT_CONTENTS_TABLE));
     }
 
-    @Test(expectedExceptions = DataIntegrityViolationException.class)
+    @Test(expectedExceptions = {DataIntegrityViolationException.class,
+            InvalidDataAccessApiUsageException.class })
     public final void testDeleteFailWithDataSets()
     {
         final IExperimentDAO experimentDAO = daoFactory.getExperimentDAO();
@@ -347,7 +349,8 @@ public class ExperimentDAOTest extends AbstractDAOTest
         experimentDAO.delete(deletedExperiment);
     }
 
-    @Test(expectedExceptions = DataIntegrityViolationException.class)
+    @Test(expectedExceptions = {DataIntegrityViolationException.class,
+            InvalidDataAccessApiUsageException.class })
     public final void testDeleteFailWithSamples()
     {
         final IExperimentDAO experimentDAO = daoFactory.getExperimentDAO();

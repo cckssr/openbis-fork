@@ -19,7 +19,7 @@ import ch.systemsx.cisd.openbis.generic.shared.IServer;
 import org.hibernate.annotations.Generated;
 import org.hibernate.annotations.GenerationTime;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
 

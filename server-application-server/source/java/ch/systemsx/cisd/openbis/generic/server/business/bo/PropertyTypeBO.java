@@ -17,6 +17,7 @@ package ch.systemsx.cisd.openbis.generic.server.business.bo;
 
 import java.util.Collections;
 
+import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DataRetrievalFailureException;
@@ -176,6 +177,10 @@ public final class PropertyTypeBO extends VocabularyBO implements IPropertyTypeB
             getPropertyTypeDAO().createPropertyType(propertyTypePE);
         } catch (final DataAccessException e)
         {
+            throwException(e, String.format("Property type '%s'.", propertyTypePE.getCode()));
+        }  catch (ConstraintViolationException ce)
+        {
+            DataAccessException e = new DataIntegrityViolationException(ce.getMessage(), ce);
             throwException(e, String.format("Property type '%s'.", propertyTypePE.getCode()));
         }
     }

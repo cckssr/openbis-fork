@@ -1986,7 +1986,7 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
     {
         try
         {
-            updateEntityType(sessionToken, EntityKind.SAMPLE, entityType);
+           updateEntityType(sessionToken, EntityKind.SAMPLE, entityType);
         } catch (DataAccessException e)
         {
             if (SampleDataAccessExceptionTranslator.isUniqueSubcodeViolationException(e))
@@ -2091,7 +2091,7 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
         }
     }
 
-    private void updateEntityType(String sessionToken, EntityKind entityKind, EntityType entityType)
+    private void  updateEntityType(String sessionToken, EntityKind entityKind, EntityType entityType)
     {
         checkSession(sessionToken);
         IEntityTypeDAO entityTypeDAO =
@@ -2821,6 +2821,8 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
     @RolesAllowed(RoleWithHierarchy.INSTANCE_ADMIN)
     public void deleteDataSetTypes(String sessionToken, List<String> entityTypesCodes)
     {
+        // Hibernate 6 rejects deleting a type that is still referenced by data store services.
+        removeDataSetTypesFromDataStoreServices(entityTypesCodes);
         deleteEntityTypes(sessionToken, EntityKind.DATA_SET, entityTypesCodes);
     }
 
@@ -2845,6 +2847,44 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
     public void deleteSampleTypes(String sessionToken, List<String> entityTypesCodes)
     {
         deleteEntityTypes(sessionToken, EntityKind.SAMPLE, entityTypesCodes);
+    }
+
+    // Defensive clean-up to avoid transient DataSetTypePE references when deleting data set types.
+    private void removeDataSetTypesFromDataStoreServices(List<String> entityTypesCodes)
+    {
+        Set<String> codes = new HashSet<String>();
+        for (String code : entityTypesCodes)
+        {
+            codes.add(CodeConverter.tryToDatabase(code));
+        }
+
+        IDataStoreDAO dataStoreDAO = getDAOFactory().getDataStoreDAO();
+        List<DataStorePE> dataStores = dataStoreDAO.listDataStores();
+
+        for (DataStorePE dataStore : dataStores)
+        {
+            boolean modified = false;
+            for (DataStoreServicePE service : dataStore.getServices())
+            {
+                if (service.getDatasetTypes() == null)
+                {
+                    continue;
+                }
+                Iterator<DataSetTypePE> iterator = service.getDatasetTypes().iterator();
+                while (iterator.hasNext())
+                {
+                    if (codes.contains(iterator.next().getCode()))
+                    {
+                        iterator.remove();
+                        modified = true;
+                    }
+                }
+            }
+            if (modified)
+            {
+                dataStoreDAO.createOrUpdateDataStore(dataStore);
+            }
+        }
     }
 
     @Override

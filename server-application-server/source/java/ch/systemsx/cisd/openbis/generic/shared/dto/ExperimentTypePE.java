@@ -20,16 +20,15 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import javax.persistence.*;
-import javax.persistence.Id;
+import jakarta.persistence.*;
+import jakarta.persistence.Id;
 
 import ch.systemsx.cisd.openbis.generic.shared.IServer;
 import ch.systemsx.cisd.openbis.generic.shared.basic.IIdentityHolder;
 import ch.systemsx.cisd.openbis.generic.shared.dto.hibernate.JsonMapUserType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
 import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
-import org.hibernate.annotations.TypeDefs;
+
 
 /**
  * Persistence entity representing type of experiment.
@@ -39,7 +38,7 @@ import org.hibernate.annotations.TypeDefs;
  */
 @Entity
 @Table(name = TableNames.EXPERIMENT_TYPES_TABLE, uniqueConstraints = { @UniqueConstraint(columnNames = { ColumnNames.CODE_COLUMN }) })
-@TypeDefs({ @TypeDef(name = "JsonMap", typeClass = JsonMapUserType.class) })
+//@TypeDefs({ @TypeDef(name = "JsonMap", typeClass = JsonMapUserType.class) })
 public final class ExperimentTypePE extends EntityTypePE implements IMetaDataHolder,
         IIdentityHolder
 {
@@ -116,7 +115,7 @@ public final class ExperimentTypePE extends EntityTypePE implements IMetaDataHol
 
     @Override
     @Column(name = "meta_data")
-    @Type(type = "JsonMap")
+    @Type(JsonMapUserType.class)
     public Map<String, String> getMetaData()
     {
         return metaData;

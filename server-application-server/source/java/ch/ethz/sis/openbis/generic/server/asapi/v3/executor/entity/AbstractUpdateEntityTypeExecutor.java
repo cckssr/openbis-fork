@@ -15,6 +15,7 @@
  */
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.entity;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -178,7 +179,9 @@ public abstract class AbstractUpdateEntityTypeExecutor<UPDATE extends IEntityTyp
     {
         for (TYPE_PE entityType : entities)
         {
-            daoFactory.getEntityTypeDAO(getDAOEntityKind()).createOrUpdateEntityType(entityType);
+            daoFactory.getEntityTypeDAO(getDAOEntityKind())
+                    .createOrUpdateEntityType(entityType);
+
         }
     }
 

@@ -25,12 +25,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.persistence.criteria.JoinType;
 
 import org.hibernate.EmptyInterceptor;
-import org.hibernate.FetchMode;
+
 import org.hibernate.Interceptor;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
@@ -38,7 +35,6 @@ import org.hibernate.Transaction;
 import org.hibernate.engine.spi.EntityKey;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
-import org.hibernate.internal.SessionImpl;
 import org.hibernate.metamodel.spi.MetamodelImplementor;
 import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.type.Type;
@@ -290,7 +286,7 @@ public class EntityValidationInterceptor extends EmptyInterceptor implements
         var root = cq.from(entityClass);
 
         try {
-            root.fetch("sampleProperties", JoinType.LEFT);
+            root.fetch("sampleProperties", jakarta.persistence.criteria.JoinType.LEFT);
         } catch (IllegalArgumentException ignored) {
             // entity doesn’t have that association – mimic legacy behaviour
         }

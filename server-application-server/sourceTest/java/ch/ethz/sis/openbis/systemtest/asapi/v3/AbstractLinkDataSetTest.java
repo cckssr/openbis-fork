@@ -21,7 +21,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.hibernate.Query;
 import org.hibernate.Session;
 import org.springframework.test.context.transaction.TestTransaction;
 import org.testng.annotations.AfterClass;
@@ -453,10 +452,10 @@ public abstract class AbstractLinkDataSetTest extends AbstractExternalDmsTest
         TestTransaction.end();
 
         Session session = daoFactory.getSessionFactory().openSession();
-        Query query = session.createQuery(
+        var query = session.createSelectionQuery(
                         "FROM DataSetHistoryPE as entry "
                                 + "LEFT JOIN FETCH entry.entityInternal "
-                                + "WHERE entry.entityInternal.code = :code")
+                                + "WHERE entry.entityInternal.code = :code", DataSetHistoryPE.class)
                 .setParameter("code", id.getPermId());
 
         @SuppressWarnings("unchecked")

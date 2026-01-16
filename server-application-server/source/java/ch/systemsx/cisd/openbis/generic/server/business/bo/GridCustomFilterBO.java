@@ -15,7 +15,10 @@
  */
 package ch.systemsx.cisd.openbis.generic.server.business.bo;
 
+import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePE;
+import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DataRetrievalFailureException;
 
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
@@ -95,6 +98,10 @@ public class GridCustomFilterBO extends AbstractBusinessObject implements
         } catch (final DataAccessException e)
         {
             throwException(e, "Filter '" + filter + "'");
+        } catch (ConstraintViolationException ce)
+        {
+            DataAccessException e = new DataIntegrityViolationException(ce.getMessage(), ce);
+            throwException(e, "Filter '" + filter + "'");
         }
     }
 
@@ -123,6 +130,10 @@ public class GridCustomFilterBO extends AbstractBusinessObject implements
             getGridCustomFilterDAO().validateAndSaveUpdatedEntity(filter);
         } catch (final DataAccessException e)
         {
+            throwException(e, "Filter '" + filter + "'");
+        }  catch (ConstraintViolationException ce)
+        {
+            DataAccessException e = new DataIntegrityViolationException(ce.getMessage(), ce);
             throwException(e, "Filter '" + filter + "'");
         }
     }

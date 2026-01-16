@@ -22,32 +22,31 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.persistence.Transient;
-import javax.persistence.UniqueConstraint;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
+import jakarta.persistence.UniqueConstraint;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 
 import ch.systemsx.cisd.openbis.generic.shared.dto.hibernate.JsonMapUserType;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
-import org.hibernate.annotations.TypeDefs;
 import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.Length;
 
@@ -68,7 +67,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DisplaySettings;
 { @UniqueConstraint(columnNames =
 { ColumnNames.USER_COLUMN }) })
 @Friend(toClasses = RoleAssignmentPE.class)
-@TypeDefs({ @TypeDef(name = "JsonMap", typeClass = JsonMapUserType.class) })
+////@TypeDefs({ @TypeDef(name = "JsonMap", typeClass = JsonMapUserType.class) })
 public final class PersonPE extends HibernateAbstractRegistrationHolder implements
         Comparable<PersonPE>, IIdentityHolder, Serializable, IMetaDataHolder
 {
@@ -173,8 +172,9 @@ public final class PersonPE extends HibernateAbstractRegistrationHolder implemen
         this.id = id;
     }
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = ColumnNames.ID_COLUMN, nullable = true)
+//    @OneToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = ColumnNames.ID_COLUMN, nullable = true)
+    @Embedded
     public final PersonDisplaySettingsPE getPersonDisplaySettings()
     {
         return this.personDisplaySettings;
@@ -268,8 +268,8 @@ public final class PersonPE extends HibernateAbstractRegistrationHolder implemen
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = TableNames.AUTHORIZATION_GROUP_PERSONS_TABLE, joinColumns =
-    { @JoinColumn(name = ColumnNames.PERSON_ID_COLUMN, updatable = false) }, inverseJoinColumns =
-    { @JoinColumn(name = ColumnNames.AUTHORIZATION_GROUP_ID_COLUMN, updatable = false) })
+    { @JoinColumn(name = ColumnNames.PERSON_ID_COLUMN) }, inverseJoinColumns =
+    { @JoinColumn(name = ColumnNames.AUTHORIZATION_GROUP_ID_COLUMN) })
     final Set<AuthorizationGroupPE> getAuthorizationGroupsInternal()
     {
         return authorizationGroups;
@@ -320,7 +320,7 @@ public final class PersonPE extends HibernateAbstractRegistrationHolder implemen
 
     @Override
     @Column(name = ColumnNames.META_DATA)
-    @Type(type = "JsonMap")
+    @Type(JsonMapUserType.class)
     public Map<String, String> getMetaData()
     {
         return metaData;

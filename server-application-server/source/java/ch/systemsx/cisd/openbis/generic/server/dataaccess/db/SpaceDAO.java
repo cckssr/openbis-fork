@@ -23,12 +23,6 @@ import java.util.Optional;
 
 import ch.ethz.sis.shared.log.classic.impl.Logger;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.JoinType;
-import javax.persistence.criteria.Root;
-import org.hibernate.FlushMode;
-import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 
 import org.springframework.dao.DataAccessException;
