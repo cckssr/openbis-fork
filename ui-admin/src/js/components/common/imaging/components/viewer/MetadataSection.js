@@ -40,7 +40,6 @@ const MetadataSection = ({ activePreview, activeImage, imagingTags, onEditCommen
 	}, [currPreviewTags, imagingTags]);
 
 	const renderParameters = () => {
-		// Use preview metadata dynamically, as it was implemented before
 		if (!currImageMetadata || isObjectEmpty(currImageMetadata)) {
 			return null;
 		}
@@ -48,14 +47,10 @@ const MetadataSection = ({ activePreview, activeImage, imagingTags, onEditCommen
 		return (
 			<Box sx={{ py: 1 }}>
 				{Object.entries(currImageMetadata).map(([key, value]) => (
-					<Typography
-						key={key}
+					<Typography key={key}
 						variant='body2'
 						component='div'
-						sx={{
-							color: 'textSecondary',
-							mb: 0.5
-						}}
+						sx={{color: 'textSecondary'}}
 					>
 						<strong>{key}:</strong> {value}
 					</Typography>
