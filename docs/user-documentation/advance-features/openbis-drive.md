@@ -26,157 +26,105 @@ Note: none of the aforementioned processes require root-user permissions.
 
 ## Installation
 
+In many places, this document refers to the system-dependent installation directory and subdirectories in this way:
+- [installation directory](#installation-directory)
+- [launcher and command-line directory](#launcher-and-command-line-directory)
+- [configuration directory](#state-and-configuration-directory)
+
+See [appendix](#appendix) at the end of the document.
+
 ### System requirements
 
-- Java 17 (or more recent)
-- for Linux and MAC-OS: check that `pkill` utility is available in terminal 
-(it should be preinstalled and already available in all recent distributions)
+- for Linux and MAC-OS: check that `pkill` utility is available in terminal
+  (it should be preinstalled and already available in all recent distributions)
 
-### Preparation
+### Installation
 
-Extract the installation-package `app-openbis-drive-{VERSION}.tar.gz` 
-(at the moment of writing this documentation: `app-openbis-drive-0.0.1.tar.gz`)
-to a suitable working-space local directory: 
-it can be the desktop or the home directory for example.
-In the uncompressed directory, you will find:
-- a README.txt (which will give the same information as here, possibly beside some more specific details)
-- a `launch-scripts` folder: this is the actual content which will be installed (simply copied) to a different
-position according to the operating-system (this position will always be within those 
-under the permission-scope of the current user)
-- a series of `install-on-***` scripts, one for each supported platform, 
-which will guide you through the installation process
-- a series of `uninstall-on-***` scripts, to be kept for possible deinstallation need
-- some other files, which can be useful for getting a launch-icon for the graphical interface
-(which one and their specific use depends on the platform)
+- **Linux** (Debian based, AMD-64 architecture) : double-click on the .deb installation package (or from command line: `sudo dpkg -i openbis-drive-***.deb`) to start the installation process
+- **Windows** : double-click (or launch from console) the installer `openbis-drive-***.exe` to start the installation process (recommended: confirm the creation of a menu shortcut)
+- **MAC OS** : open the `openbis-drive-***.dmg` package and drag openBIS Drive to the `/Applications` folder
 
-### Automatic installation (through script)
+### Deinstallation
 
-To install the application, choose the correct script for your platform:
+Before uninstalling the application, make sure the background-process (see [Running the application](#running-the-application)) is stopped: otherwise it will keep running until you log out from the system.
 
-#### Linux 
-```
-install-on-linux.sh
-```
-Either right-click and launch this as program or open a terminal in the containing directory and
-```shell
-sh install-on-linux.sh
-```
-You will be prompted for confirmation to copy the entire `launch-scripts` directory onto:
-```
-$HOME/.local/state/openbis-drive/launch-scripts
-```
-The prompt should then indicate a file (`openbis-drive.desktop`) which you can copy
-from the uncompressed distribution directory to the desktop as a launch-icon
-for the graphical interface.
+- **Linux** (Debian based, AMD-64 architecture) : from console: `sudo apt-get purge openbis-drive` (or `sudo apt purge openbis-drive`)
+- **Windows** : from main menu, look for "Installed Apps" administration tool and remove openBIS Drive from there
+- **MAC OS** : open the `/Applications` folder in "Finder" (file explorer) and drag openBIS Drive from there to the "recycle bin"
 
-#### Windows
-```
-install-on-windows.bat
-```
-Either right-click and launch this as program or open a CMD terminal in the containing folder and
-```shell
-install-on-windows.bat
-```
-You will be prompted for confirmation to copy the entire `launch-scripts` folder onto:
-```
-%USERPROFILE%\AppData\Local\openbis-drive\launch-scripts
-```
-The prompt should then indicate a file (`openbis-drive.lnk`) which you can copy
-from the uncompressed distribution folder to the desktop as a launch-icon
-for the graphical interface.
+You can keep files under the [configuration directory](#state-and-configuration-directory) , if you wish to find your last openBIS Drive data,
+in case you install a compatible openBIS Drive version again in the future; otherwise, you can safely remove that folder.
 
-#### Mac
-```
-install-on-mac.sh
-```
-Open a terminal in the containing directory and
-```shell
-sh install-on-mac.sh
-```
-You will be prompted for confirmation to copy the entire `launch-scripts` directory onto:
-```
-$HOME/Library/"Application Support"/openbis-drive/launch-scripts
-```
-The prompt should then indicate a file (`openbis-drive.app`) which you can copy
-from the uncompressed distribution directory to the desktop as a launch-icon
-for the graphical interface.
+## Running the application
 
-### Manual installation
+### Application launch and stop
 
-If for any reason the installation by script does not work, you can simply copy the `launch-scripts` directory
-to the appropriate location according to platform: see the points above.
-(Always check the README in the uncompressed distribution directory to see if other actions are needed)
+The background-process can be started:
+- through the graphical interface, which will always prompt for starting the background-process, if that is not running (see [Graphical user-interface](#graphical-user-interface) section below)
+- by using the command-line-application start command:
+    - `openbis-drive start` for Linux and MAC OS
+    - `openbis-drive-cmd.exe start` for Windows
+
+Check running status with the command-line:
+- `openbis-drive status` for Linux and MAC OS
+- `openbis-drive-cmd.exe status` for Windows
+
+Stop with the command-line:
+- `openbis-drive stop` for Linux and MAC OS
+- `openbis-drive-cmd.exe stop` for Windows
+
+See [Command-line](#command-line) section below.
+
 
 ### Application data directory
 
-According to the platform, application executable files, configuration and data will be stored in:
-- Linux
-```
-$HOME/.local/state/openbis-drive/launch-scripts   :   executable files
-$HOME/.local/state/openbis-drive/state            :   configuration and data
-```
-- Windows
-```
-%USERPROFILE%\AppData\Local\openbis-drive\launch-scripts   :   executable files
-%USERPROFILE%\AppData\Local\openbis-drive\state            :   configuration and data
-```
-- Mac
-```
-$HOME/Library/"Application Support"/openbis-drive/launch-scripts   :   executable files
-$HOME/Library/"Application Support"/openbis-drive/state            :   configuration and data
-```
+According to the platform, application installation and executable files, configuration and data will be stored in:
+- [installation directory](#installation-directory)
+- [configuration directory](#state-and-configuration-directory)
 
-When installing a new version, normally only the `launch-scripts` will be overwritten.
-When deinstalling, the possibility is given to remove both directories `launch-scripts` and `state`
-or only one of them: if, for example, one wishes to maintain the current configuration for
-future installations.
+When uninstalling, the possibility is given to maintain the [configuration directory](#state-and-configuration-directory),
+if, for example, one wishes to maintain the current configuration and data for future compatible installations.
 
-## Command line client
+## Command-line
 
-To use the command-line tool, open a terminal and move the working directory (`cd`) to the appropriate `launch-scripts` location:
-- Linux
-```shell
-cd $HOME/.local/state/openbis-drive/launch-scripts
-```
-- Windows CMD
-```shell
-cd %USERPROFILE%\AppData\Local\openbis-drive\launch-scripts
-```
-- Mac
-```shell
-cd $HOME/Library/"Application Support"/openbis-drive/launch-scripts
-```
+The command-line can be invoked in a terminal by entering into the [launcher and command-line directory](#launcher-and-command-line-directory)
+(or by adding this to the PATH environment variable) and typing:
 
-Then use it as in the following examples:
+- **Linux** and **MAC OS** : `./openbis-drive help`
+  (`openbis-drive-cmd-line.sh help` without initial dot if the [launcher and command-line directory](#launcher-and-command-line-directory) is added to the PATH)
+- **Windows** : `openbis-drive-cmd.exe help`
+
+
+Use it as in the following examples:
 - on Linux and MAC-OS
 ```
-./openbis-drive-cmd-line.sh help
-./openbis-drive-cmd-line.sh status
-./openbis-drive-cmd-line.sh ...other-command...
+./openbis-drive help
+./openbis-drive status
+./openbis-drive ...other-command...
 ```
 - on Windows
 ```
-openbis-drive-cmd-line.bat help
-openbis-drive-cmd-line.bat status
-openbis-drive-cmd-line.bat ...other-command...
+openbis-drive-cmd.exe help
+openbis-drive-cmd.exe status
+openbis-drive-cmd.exe ...other-command...
 ```
 
-(To avoid the step of moving to the `launch-scripts` directory, you can add its specific path to
+(To avoid the step of moving to the [launcher and command-line directory](#launcher-and-command-line-directory), you can add its specific path to
 the `PATH` environment variable for your operating system: this is done differently on different
 platforms. Please, check the documentation of your operating system.
 At that point, also on MAC and Linux you will skip the initial dot when launching the command-line:
-`openbis-drive-cmd-line.sh` instead of `./openbis-drive-cmd-line.sh` )
+`openbis-drive` instead of `./openbis-drive` )
 
 ### Basic commands
 
-(Note: from here on, `./openbis-drive-cmd-line.sh` will be used.
-Replace this with `openbis-drive-cmd-line.bat` on Windows and 
-with `openbis-drive-cmd-line.sh` on Linux and MAC-OS with adapted `PATH` variable)
+(Note: from here on, `./openbis-drive` will be used.
+Replace this with `openbis-drive-cmd.exe` on Windows and
+with `openbis-drive` on Linux and MAC-OS with adapted `PATH` variable)
 
 #### help
 
 ```shell
-./openbis-drive-cmd-line.sh help
+./openbis-drive help
 ```
 
 Returns a short helping guide for the command-line tool itself:
@@ -215,7 +163,7 @@ Supported commands:
 #### status
 
 ```shell
-./openbis-drive-cmd-line.sh status
+./openbis-drive status
 ```
 
 Reports if the background-service is running and, if so, 
@@ -248,7 +196,7 @@ OpenBIS Drive Service is not running.
 #### start
 
 ```shell
-./openbis-drive-cmd-line.sh start
+./openbis-drive start
 ```
 
 Starts the background process.
@@ -256,7 +204,7 @@ Starts the background process.
 #### stop
 
 ```shell
-./openbis-drive-cmd-line.sh stop
+./openbis-drive stop
 ```
 
 Stops the background process.
@@ -266,7 +214,7 @@ Stops the background process.
 #### config
 
 ```shell
-./openbis-drive-cmd-line.sh config
+./openbis-drive config
 ```
 
 Prints the current configuration of the background-process:
@@ -297,7 +245,7 @@ it affects only the graphical interface
 Use the `config` command with options to modify the configuration 
 (not necessarily all options have to be specified):
 ```shell
-./openbis-drive-cmd-config -startAtLogin=true -language=fr -syncInterval=60
+./openbis-drive -startAtLogin=true -language=fr -syncInterval=60
 ```
 ```
 Start-at-login: true
@@ -324,11 +272,11 @@ That is a list of glob expressions used only by synchronization-tasks which work
 For such tasks, the background-process ignores local files whose path (relative to the synchronization-task local-root-directory) matches at least one of the glob expressions.
 
 ```shell
-./openbis-drive-cmd-line.sh config ignored-path-patterns
-./openbis-drive-cmd-line.sh config ignored-path-patterns -showFactoryDefault
-./openbis-drive-cmd-line.sh config ignored-path-patterns -reset
-./openbis-drive-cmd-line.sh config ignored-path-patterns -set
-./openbis-drive-cmd-line.sh config ignored-path-patterns -setFromFile=./dir/new-patterns.txt
+./openbis-drive config ignored-path-patterns
+./openbis-drive config ignored-path-patterns -showFactoryDefault
+./openbis-drive config ignored-path-patterns -reset
+./openbis-drive config ignored-path-patterns -set
+./openbis-drive config ignored-path-patterns -setFromFile=./dir/new-patterns.txt
 ```
 
 Without options: it shows the currently saved list of glob expressions which are considered global-default.
@@ -346,7 +294,7 @@ With `-setFromFile` option: it sets the global-default list of glob expressions 
 #### jobs
 
 ```shell
-./openbis-drive-cmd-line.sh jobs
+./openbis-drive jobs
 ```
 
 Prints the synchronization-tasks registered in the background-service:
@@ -402,7 +350,7 @@ Option that represent properties are:
 For example: 
 
 ```shell
-./openbis-drive-cmd-line.sh jobs add -title='Description' -type='Bidirectional' -dir='/home/myuser/openbis_sync_test' -openBISurl='http://localhost:8085' -entityPermId='a7bc2fbd-49af-4e2d-86cc-ea316028b793' -personalAccessToken='a13fe879-1753-41dd-8c3e-eb5a97e1c7be' -remDir='/remote/dir/absolute-path/' -enabled=true
+./openbis-drive jobs add -title='Description' -type='Bidirectional' -dir='/home/myuser/openbis_sync_test' -openBISurl='http://localhost:8085' -entityPermId='a7bc2fbd-49af-4e2d-86cc-ea316028b793' -personalAccessToken='a13fe879-1753-41dd-8c3e-eb5a97e1c7be' -remDir='/remote/dir/absolute-path/' -enabled=true
 ```
 
 #### jobs remove
@@ -410,7 +358,7 @@ For example:
 When removing a synchronization-task, only the local directory needs to be specified:
 
 ```shell
-./openbis-drive-cmd-line.sh jobs remove -dir='./my-local-dir'
+./openbis-drive jobs remove -dir='./my-local-dir'
 ```
 
 Removing a synchronization-task means completely and definitively deleting it from the registered configuration.
@@ -420,7 +368,7 @@ Removing a synchronization-task means completely and definitively deleting it fr
 When starting or restarting a synchronization-task, only the local directory needs to be specified:
 
 ```shell
-./openbis-drive-cmd-line.sh jobs start -dir='./my-local-dir'
+./openbis-drive jobs start -dir='./my-local-dir'
 ```
 
 Starting a synchronization-task merely means changing its state attribute from false to true (if not already true):
@@ -431,7 +379,7 @@ so the background-service actually executes it at each synchronization interval,
 When stopping a synchronization-task, only the local directory needs to be specified:
 
 ```shell
-./openbis-drive-cmd-line.sh jobs stop -dir='./my-local-dir'
+./openbis-drive jobs stop -dir='./my-local-dir'
 ```
 
 Stopping a synchronization-task merely means changing its state attribute from true to false (if not already false):
@@ -451,9 +399,9 @@ This subcommand allows to inspect and modify the ignored path-patterns specific 
 Note: the synchronization-task-specific list of ignored-patterns is taken into account by the background-process if and only if the ignore-files mode is `SpecificList`.
 
 ```shell
-./openbis-drive-cmd-line.sh jobs ignored-path-patterns -dir='./my-local-dir'
-./openbis-drive-cmd-line.sh jobs ignored-path-patterns -dir='./my-local-dir' -set
-./openbis-drive-cmd-line.sh jobs ignored-path-patterns -dir='./my-local-dir' -setFromFile=./documents/new-patterns.txt
+./openbis-drive jobs ignored-path-patterns -dir='./my-local-dir'
+./openbis-drive jobs ignored-path-patterns -dir='./my-local-dir' -set
+./openbis-drive jobs ignored-path-patterns -dir='./my-local-dir' -setFromFile=./documents/new-patterns.txt
 ```
 
 With `-dir` option: for the synchronization-task with local directory indicated by `-dir`,
@@ -475,12 +423,12 @@ with a glob expression on each line.
 
 Use this command to read the log of synchronization events (default-maximum-number of retrieved entries is 100):
 ```shell
-./openbis-drive-cmd-line.sh events
+./openbis-drive events
 ```
 (
 or with `limit` option, to use a different default-number for the maximum number of retrieved events:
 ```shell
-./openbis-drive-cmd-line.sh events -limit=10
+./openbis-drive events -limit=10
 ```
 )
 
@@ -509,12 +457,12 @@ Timestamp: 2025-11-04T13:49:01.828Z
 
 Use this command to read the notifications raised and stored by the background-service (default-maximum-number of retrieved entries is 100):
 ```shell
-./openbis-drive-cmd-line.sh notifications
+./openbis-drive notifications
 ```
 (
 or with `limit` option, to use a different default-number for the maximum number of retrieved notifications:
 ```shell
-./openbis-drive-cmd-line.sh notifications -limit=10
+./openbis-drive notifications -limit=10
 ```
 )
 
@@ -543,39 +491,22 @@ At the moment of writing this documentation, possible types of notifications are
 - Conflict : a version conflict was detected between a local and the corresponding remote file, 
 in that both were concurrently modified (see [File version conflict](#file-version-conflict))
 
-## Graphical interface
+## Graphical user-interface
 
-To use the graphical interface, open a terminal and move the working directory (`cd`) to the appropriate `launch-scripts` location:
-- Linux
-```shell
-cd $HOME/.local/state/openbis-drive/launch-scripts
-```
-- Windows CMD
-```shell
-cd %USERPROFILE%\AppData\Local\openbis-drive\launch-scripts
-```
-- Mac
-```shell
-cd $HOME/Library/"Application Support"/openbis-drive/launch-scripts
-```
+The most direct way to start the graphical user interface is through the platform-specific menu short-cut.
 
-Then:
-- on Linux and MAC-OS
-```
-./openbis-drive-gui.sh
-```
-- on Windows
-```
-openbis-drive-gui.bat
-```
+The graphical user-interface can also be started by entering into the [launcher and command-line directory](#launcher-and-command-line-directory)
+(or by adding this to the PATH environment variable) and typing:
 
-(To avoid the step of moving to the `launch-scripts` directory, you can add its specific path to
+- **Linux** and **MAC OS** : `./openbis-drive`
+  (`openbis-drive` without initial dot if the [launcher and command-line directory](#launcher-and-command-line-directory) is added to the PATH)
+- **Windows** : `openbis-drive.exe`
+
+(To avoid the step of moving to the [launcher and command-line directory](#launcher-and-command-line-directory), you can add its specific path to
 the `PATH` environment variable for your operating system: this is done differently on different
 platforms. Please, check the documentation of your operating system.
 At that point, also on MAC and Linux you will skip the initial dot when launching the command-line:
-`openbis-drive-gui.sh` instead of `./openbis-drive-gui.sh` )
-
-(If, during the installation process, a launch-icon was added to the desktop, that can be used too)
+`openbis-drive` instead of `./openbis-drive` )
 
 When started, the graphical interface will always check if the background-service is running:
 if not, it will ask for confirmation to start it.
@@ -593,3 +524,24 @@ but suffixed with `.openbis-conflict`.
 After checking both contents and adapting the local one if necessary,
 delete the suffixed `.openbis-conflict` file to mark the resolution of the conflict:
 at that point, the background process will keep the local version as the valid one.
+
+## Appendix:
+#### Installation directory
+- for Linux: `/opt/openbis-drive`
+- for Windows: `C:\Program Files\openbis-drive`
+- for MAC OS: `/Applications/openbis-drive`
+
+#### Launcher and command-line directory
+- for Linux: `/opt/openbis-drive/bin`
+- for Windows: `C:\Program Files\openbis-drive`
+- for MAC OS: `/Applications/openbis-drive.app/Contents/MacOS`
+
+In particular, the command-line executable is:
+- for Linux: `/opt/openbis-drive/bin/openbis-drive`
+- for Windows: `C:\Program Files\openbis-drive\openbis-drive-cmd.exe`
+- for MAC OS: `/Applications/openbis-drive.app/Contents/MacOS/openbis-drive`
+
+#### State and configuration directory
+- for Linux: `$HOME/.local/state/openbis-drive/state`
+- for Windows: `%USERPROFILE%\AppData\Local\openbis-drive\state`
+- for MAC OS: `$HOME/Library/"Application Support"/openbis-drive/state`

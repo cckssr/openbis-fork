@@ -38,7 +38,7 @@ if not defined OPENBIS_DRIVE_DIR (
 ) else (
     cd %OPENBIS_DRIVE_DIR% && cd launch-scripts
 )
-"%JAVA_EXE%" -cp app-openbis-drive-full.jar ch.openbis.drive.DriveAPICmdLineApp %*
+"%JAVA_EXE%" -Dch.openbis.drive.manualInstallation=true -cp app-openbis-drive-full.jar ch.openbis.drive.DriveAPICmdLineApp %*
 
 :end
 @rem End local scope for the variables with windows NT shell
