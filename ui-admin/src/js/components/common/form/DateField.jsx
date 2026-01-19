@@ -1,5 +1,5 @@
 import React from 'react'
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '@mui/styles/withStyles'
 import TextField from '@mui/material/TextField'
 import FormFieldView from '@src/js/components/common/form/FormFieldView.jsx'
 import FormFieldLabel from '@src/js/components/common/form/FormFieldLabel.jsx'
@@ -143,11 +143,11 @@ class DateField extends React.PureComponent {
   }
 
   renderView() {
-    const { label, value, color, disableUnderline } = this.props
+    const { dateTime, label, value, color, disableUnderline } = this.props
     return (
       <FormFieldView
         label={label}
-        value={value && value.dateObject ? date.format(value.dateObject) : null}
+        value={value && value.dateObject ? date.format(value.dateObject, dateTime) : null}
         color={color}
         disableUnderline={disableUnderline | false}
       />

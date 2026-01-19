@@ -7,7 +7,7 @@ const MILLIS_PER_HOUR = 60 * MILLIS_PER_MINUTE
 const MILLIS_PER_DAY = 24 * MILLIS_PER_HOUR
 const MILLIS_PER_YEAR = 365 * MILLIS_PER_DAY
 
-function format(value) {
+function format(value, includeTime = true) {
   if (_.isNil(value)) {
     return ''
   }
@@ -25,13 +25,16 @@ function format(value) {
   const year = String(date.getFullYear()).padStart(4, '0')
   const month = String(date.getMonth() + 1).padStart(2, '0')
   const day = String(date.getDate()).padStart(2, '0')
-  const hours = String(date.getHours()).padStart(2, '0')
-  const minutes = String(date.getMinutes()).padStart(2, '0')
-  const seconds = String(date.getSeconds()).padStart(2, '0')
 
-  return (
-    year + '-' + month + '-' + day + ' ' + hours + ':' + minutes + ':' + seconds
-  )
+  if (includeTime) {
+    const hours = String(date.getHours()).padStart(2, '0')
+    const minutes = String(date.getMinutes()).padStart(2, '0')
+    const seconds = String(date.getSeconds()).padStart(2, '0')
+
+    return (year + '-' + month + '-' + day + ' ' + hours + ':' + minutes + ':' + seconds)
+  } else {
+    return (year + '-' + month + '-' + day)
+  }
 }
 
 function duration(millis) {

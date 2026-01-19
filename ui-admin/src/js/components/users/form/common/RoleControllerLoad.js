@@ -2,7 +2,6 @@ import _ from 'lodash'
 import RoleSelectionType from '@src/js/components/users/form/common/RoleSelectionType.js'
 import FormUtil from '@src/js/components/common/form/FormUtil.js'
 import openbis from '@src/js/services/openbis.js'
-import date from '@src/js/common/date.js'
 
 export default class RoleControllerLoad {
   constructor(controller) {

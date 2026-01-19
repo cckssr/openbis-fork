@@ -32,12 +32,12 @@ function dateColumn(params) {
     getValue: ({ row, operation }) => {
       const value = _.get(row, params.path)
       if (operation === 'export') {
-        return date.format(value)
+        return date.format(value, true)
       } else {
         return value
       }
     },
-    renderValue: ({ value }) => date.format(value),
+    renderValue: ({ value }) => date.format(value, true),
     renderFilter: ({ value, onChange }) => {
       return (
         <DateRangeField value={value} variant='standard' onChange={onChange} />
@@ -64,12 +64,12 @@ function dateObjectColumn(params) {
       const value = _.get(row, params.path)
       const valueChecked = value ? value.dateObject : value
       if (operation === 'export') {
-        return date.format(valueChecked)
+        return date.format(valueChecked, true)
       } else {
         return valueChecked
       }
     },
-    renderValue: ({ value }) => date.format(value),
+    renderValue: ({ value }) => date.format(value, true),
     renderFilter: ({ value, onChange }) => {
       return (
         <DateRangeField value={value} variant='standard' onChange={onChange} />
