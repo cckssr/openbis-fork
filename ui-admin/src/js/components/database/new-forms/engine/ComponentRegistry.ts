@@ -17,11 +17,15 @@ class ComponentRegistry {
     switch (dataType) {
       case FormFieldDataType.VARCHAR:
       case FormFieldDataType.HYPERLINK:
+      case FormFieldDataType.INTEGER:
+      case FormFieldDataType.REAL:
         return TextFieldRenderer;
       case FormFieldDataType.TIMESTAMP:
         return DateFieldRenderer;
       case FormFieldDataType.MULTILINE_VARCHAR:
       case FormFieldDataType.MONOSPACE_FONT:
+      case FormFieldDataType.JSON:
+      case FormFieldDataType.XML:
         return TextAreaFieldRenderer;
       case FormFieldDataType.CONTROLLEDVOCABULARY:
         return SelectFieldRenderer;
