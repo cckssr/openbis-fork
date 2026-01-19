@@ -7,7 +7,7 @@ plugins {
 
 protobuf {
     protoc {
-        artifact = "com.google.protobuf:protoc:3.25.5"
+        artifact = 'com.google.protobuf:protoc:3.25.5'
     }
     plugins {
         grpc {
@@ -22,7 +22,7 @@ protobuf {
 }
 
 def baseName =  'app-openbis-drive'
-def implementationVersion = '0.0.1'
+def implementationVersion = '1.0.0'
 
 java {
     sourceCompatibility = JavaVersion.VERSION_17
@@ -120,25 +120,19 @@ tasks.named('distZip') {
 
 tasks.register('layReleaseDirectoriesOut') {
     mkdir('build/release')
-    mkdir('build/release/launch-scripts')
+    mkdir('build/release/installer-resources')
+    mkdir('build/release/installer-release')
 }
 
-tasks.register('copyLaunchScripts', Copy) {
+tasks.register('copyInstallerResources', Copy) {
     dependsOn('layReleaseDirectoriesOut')
-    from('launch-scripts')
-    into('build/release/launch-scripts')
-}
-
-tasks.register('copyInstallScripts', Copy) {
-    dependsOn('layReleaseDirectoriesOut')
-    from('install-scripts')
-    into('build/release')
+    from('installer-resources')
+    into('build/release/installer-resources')
 }
 
 tasks.register('appOpenbisDriveFullJar', Jar) {
     zip64 = true;
     dependsOn('build')
-    dependsOn('copyLaunchScripts')
 
     manifest {
         attributes(
@@ -151,21 +145,119 @@ tasks.register('appOpenbisDriveFullJar', Jar) {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
     with jar
+}
+
+tasks.register('copyFullJarToInstallerResources', Copy) {
+    dependsOn('copyInstallerResources')
+    dependsOn('appOpenbisDriveFullJar')
+
+    from('build/libs/' + baseName + '-full.jar')
+    into('build/release/installer-resources/include')
+}
+
+tasks.register('jpackageOnLinux', Exec) {
+    dependsOn('copyFullJarToInstallerResources')
+
+    workingDir = 'build/release/installer-resources'
+    commandLine = [
+        'jpackage',
+        '-i', 'include',
+        '-d', 'include',
+        '-n', 'openbis-drive',
+        '--main-class', 'ch.openbis.drive.ProxyLauncher',
+        '--main-jar', baseName + '-full.jar',
+        '--icon', 'openbis-drive-icon-small.png',
+        '--app-version', implementationVersion,
+        '--description', 'Synchronization tool for openBIS',
+        '--linux-shortcut'
+    ]
+
     doLast {
         copy {
-            from('build/libs/' + baseName + '-full.jar')
-            into('build/release/launch-scripts')
+            from('build/release/installer-resources/include')
+            include('README.md', 'openbis-drive*' + implementationVersion + '*.deb')
+            into('build/release/installer-release')
         }
     }
 }
 
-tasks.register('release', Tar) {
-    dependsOn('copyInstallScripts')
-    dependsOn('appOpenbisDriveFullJar')
+tasks.register('releaseOnLinux', Tar) {
+    dependsOn('jpackageOnLinux')
 
-    archiveFileName = baseName + '-' + implementationVersion+ ".tar.gz"
+    archiveFileName = baseName + '-' + implementationVersion+ '-linux.tar.gz'
 
-    from 'build/release'
+    from 'build/release/installer-release'
+    compression = Compression.GZIP
+}
+
+tasks.register('jpackageOnMacOS', Exec) {
+    dependsOn('copyFullJarToInstallerResources')
+
+    workingDir = 'build/release/installer-resources'
+    commandLine = [ // jpackage on MAC-OS complains if major number of "implementationVersion" is 0 or negative
+        'jpackage',
+        '-i', 'include',
+        '-d', 'include',
+        '-n', 'openbis-drive',
+        '--main-class', 'ch.openbis.drive.ProxyLauncher',
+        '--main-jar', baseName + '-full.jar',
+        '--icon', 'openbis-drive-icon.icns',
+        '--app-version', implementationVersion,
+        '--description', 'Synchronization tool for openBIS',
+    ]
+
+    doLast {
+        copy {
+            from('build/release/installer-resources/include')
+            include('README.md', 'openbis-drive*' + implementationVersion + '*.dmg')
+            into('build/release/installer-release')
+        }
+    }
+}
+
+tasks.register('releaseOnMacOS', Tar) {
+    dependsOn('jpackageOnMacOS')
+
+    archiveFileName = baseName + '-' + implementationVersion+ '-mac.tar.gz'
+
+    from 'build/release/installer-release'
+    compression = Compression.GZIP
+}
+
+tasks.register('jpackageOnWindows', Exec) {
+    dependsOn('copyFullJarToInstallerResources')
+
+    workingDir = 'build/release/installer-resources'
+    commandLine = [
+        'jpackage',
+        '-i', 'include',
+        '-d', 'include',
+        '-n', 'openbis-drive',
+        '--main-class', 'ch.openbis.drive.ProxyLauncher',
+        '--main-jar', baseName + '-full.jar',
+        '--icon', 'openbis-drive-icon-small.ico',
+        '--app-version', implementationVersion,
+        '--description', 'Synchronization tool for openBIS',
+        '--win-menu',
+        '--win-shortcut-prompt',
+        '--add-launcher', 'openbis-drive-cmd="openbis-drive-cmd.jpackage.properties"'
+    ]
+
+    doLast {
+        copy {
+            from('build/release/installer-resources/include')
+            include('README.md', 'openbis-drive*' + implementationVersion + '*.exe')
+            into('build/release/installer-release')
+        }
+    }
+}
+
+tasks.register('releaseOnWindows', Tar) {
+    dependsOn('jpackageOnWindows')
+
+    archiveFileName = baseName + '-' + implementationVersion+ '-win.tar.gz'
+
+    from 'build/release/installer-release'
     compression = Compression.GZIP
 }
 
@@ -192,3 +284,43 @@ tasks.register('openBISDevelopmentEnvironmentDriveCommandLine', JavaExec) {
     mainClass = 'ch.openbis.drive.DriveAPICmdLineApp'
     classpath = sourceSets.main.runtimeClasspath
 }
+
+
+/////////////////////////////////////////////////////////////////////////////////////////
+//MANUAL INSTALLATION RELEASE (useful for development or non-standard environments) /////
+/////////////////////////////////////////////////////////////////////////////////////////
+tasks.register('manualRelease', Tar) {
+    dependsOn('copyInstallScripts')
+    dependsOn('copyLaunchScripts')
+    dependsOn('appOpenbisDriveFullJar')
+
+    doFirst {
+        copy {
+            from('build/libs/' + baseName + '-full.jar')
+            into('build/manual-release/launch-scripts')
+        }
+    }
+
+    archiveFileName = baseName + '-' + implementationVersion+ ".tar.gz"
+
+    from 'build/manual-release'
+    compression = Compression.GZIP
+}
+
+tasks.register('layManualReleaseDirectoriesOut') {
+    mkdir('build/manual-release')
+    mkdir('build/manual-release/launch-scripts')
+}
+
+tasks.register('copyLaunchScripts', Copy) {
+    dependsOn('layManualReleaseDirectoriesOut')
+    from('launch-scripts')
+    into('build/manual-release/launch-scripts')
+}
+
+tasks.register('copyInstallScripts', Copy) {
+    dependsOn('layManualReleaseDirectoriesOut')
+    from('install-scripts')
+    into('build/manual-release')
+}
+/////////////////////////////////////////////////////////////////////////////////////////

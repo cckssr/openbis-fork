@@ -1,10 +1,20 @@
 # App openBIS-Drive
 
 This application can keep local directories synchronized with AFS-server directories.
+It consists of a background-process, which performs the synchronization tasks,
+and of a graphical interface and a command-line interface to start, stop, configure and monitor it.
 
-## Installation
+## Start in development environment
 
-After building the Gradle task: "release"
+See Gradle tasks:
+
+- `openBISDevelopmentEnvironmentDriveServerStart`
+- `openBISDevelopmentEnvironmentDriveGUIStart`
+- `openBISDevelopmentEnvironmentDriveCommandLine`
+
+## Manual installation
+
+After building the Gradle task: `manualRelease`
 
 extract the content of build/distributions/app-openbis-drive-$VERSION.tar.gz and copy it all under:
 (equivalently, copy the content of build/release under:)
