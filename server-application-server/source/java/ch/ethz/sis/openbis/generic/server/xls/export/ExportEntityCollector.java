@@ -241,7 +241,7 @@ public final class ExportEntityCollector {
                         experimentAboveFetchOptions.withProject();
                         Map<IExperimentId, Experiment> experimentsAbove = api.getExperiments(sessionToken,
                                         List.of(new ExperimentPermId(current.getPermId())),
-                                        experimentFetchOptions);
+                                experimentAboveFetchOptions);
                         for (Experiment experiment : experimentsAbove.values())
                         {
                             Project project = experiment.getProject();
