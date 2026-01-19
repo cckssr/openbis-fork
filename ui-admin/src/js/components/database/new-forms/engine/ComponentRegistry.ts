@@ -16,6 +16,7 @@ class ComponentRegistry {
   static getFieldRenderer(dataType: string) {
     switch (dataType) {
       case FormFieldDataType.VARCHAR:
+      case FormFieldDataType.HYPERLINK:
         return TextFieldRenderer;
       case FormFieldDataType.TIMESTAMP:
         return DateFieldRenderer;

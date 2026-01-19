@@ -38,7 +38,7 @@ const styles = theme => ({
 
 class FormFieldView extends React.PureComponent {
   render() {
-    const { label, value, description, classes, color, disableUnderline, monospaceFont } = this.props
+    const { label, value, description, classes, color, disableUnderline, monospaceFont, hyperlink } = this.props
     
     // Build className array and filter out falsy values
     const classNameParts = []
@@ -57,7 +57,7 @@ class FormFieldView extends React.PureComponent {
             {label}
           </Typography>
           <Typography variant='body2' component='div' className={className || undefined} color={color}>
-            {value ? value : <span>&nbsp;</span>}
+            {value ? (hyperlink ? <a href={value} target="_blank">{value}</a> : value) : <span>&nbsp;</span>}
           </Typography>
         </div>
         {!_.isNil(description) && (
