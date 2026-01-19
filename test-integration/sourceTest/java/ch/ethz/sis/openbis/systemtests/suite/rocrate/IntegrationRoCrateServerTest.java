@@ -1,9 +1,23 @@
 package ch.ethz.sis.openbis.systemtests.suite.rocrate;
 
-import static ch.ethz.sis.openbis.systemtests.suite.rocrate.environment.RoCrateServerIntegrationTestEnvironment.environment;
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertTrue;
+import ch.ethz.sis.openbis.generic.OpenBIS;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.data.ImportData;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.data.ImportFormat;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.options.ImportMode;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.options.ImportOptions;
+import ch.ethz.sis.openbis.systemtests.suite.rocrate.environment.RoCrateServerIntegrationTestEnvironment;
+import ch.systemsx.cisd.common.http.JettyHttpClientFactory;
+import ch.systemsx.cisd.openbis.generic.shared.util.TestInstanceHostUtils;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.eclipse.jetty.client.HttpClient;
+import org.eclipse.jetty.client.api.ContentResponse;
+import org.eclipse.jetty.client.api.Request;
+import org.eclipse.jetty.client.util.BytesRequestContent;
+import org.eclipse.jetty.http.HttpMethod;
+import org.junit.Assert;
+import org.testng.annotations.AfterSuite;
+import org.testng.annotations.BeforeSuite;
+import org.testng.annotations.Test;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -16,26 +30,8 @@ import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import org.eclipse.jetty.client.HttpClient;
-import org.eclipse.jetty.client.api.ContentResponse;
-import org.eclipse.jetty.client.api.Request;
-import org.eclipse.jetty.client.util.BytesRequestContent;
-import org.eclipse.jetty.http.HttpMethod;
-import org.junit.Assert;
-import org.testng.annotations.AfterSuite;
-import org.testng.annotations.BeforeSuite;
-import org.testng.annotations.Test;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import ch.ethz.sis.openbis.generic.OpenBIS;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.data.ImportData;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.data.ImportFormat;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.options.ImportMode;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.options.ImportOptions;
-import ch.ethz.sis.openbis.systemtests.suite.rocrate.environment.RoCrateServerIntegrationTestEnvironment;
-import ch.systemsx.cisd.common.http.JettyHttpClientFactory;
-import ch.systemsx.cisd.openbis.generic.shared.util.TestInstanceHostUtils;
+import static ch.ethz.sis.openbis.systemtests.suite.rocrate.environment.RoCrateServerIntegrationTestEnvironment.environment;
+import static org.testng.Assert.*;
 
 public class IntegrationRoCrateServerTest
 {
@@ -104,7 +100,6 @@ public class IntegrationRoCrateServerTest
     }
 
     @Test(enabled = true, timeOut = TIMEOUT)
-    // This takes over 30 seconds, should be converted to async implementation
     public void testImport() throws Exception
     {
         OpenBIS openBIS = environment.createOpenBIS(TIMEOUT);
@@ -156,7 +151,7 @@ public class IntegrationRoCrateServerTest
         }
     }
 
-    @Test(enabled = false) // This takes over 30 seconds, should be converted to async implementation
+    @Test(enabled = true) // This takes over 30 seconds, should be converted to async implementation
     public void testImportZip()
             throws Exception
     {
@@ -173,7 +168,40 @@ public class IntegrationRoCrateServerTest
         request.body(new BytesRequestContent(Files.readAllBytes(file)));
 
         ContentResponse response = request.send();
-        assertEquals(response.getStatus(), 200);
+        LinkedHashMap asyncJob =
+                objectMapper.readValue(response.getContentAsString(), LinkedHashMap.class);
+        String jobId = asyncJob.get("jobId").toString();
+        assertEquals(response.getStatus(), 202);
+
+        boolean done = false;
+        while (!done)
+        {
+            Request pollRequest = client.newRequest(
+                    TestInstanceHostUtils.getRoCrateUrl() + "/openbis/open-api/ro-crate/status");
+            pollRequest.method(HttpMethod.GET);
+            pollRequest.header("api-key", openBIS.getSessionToken());
+            pollRequest.header("jobId", jobId);
+            pollRequest.idleTimeout(TIMEOUT, TimeUnit.MILLISECONDS);
+            ContentResponse pollResponse = pollRequest.send();
+            LinkedHashMap asyncResult =
+                    objectMapper.readValue(pollResponse.getContentAsString(), LinkedHashMap.class);
+
+            if (asyncResult.get("status").equals("COMPLETED"))
+            {
+                done = true;
+            }
+
+            if (asyncResult.get("status").equals("FAILED"))
+            {
+                List<String> errors = (List<String>) asyncResult.get("errors");
+                Assert.fail(errors.stream().collect(Collectors.joining(",")));
+                done = true;
+            }
+
+            Thread.sleep(2000);
+        }
+
+
     }
 
     @Test
@@ -221,11 +249,6 @@ public class IntegrationRoCrateServerTest
     {
         OpenBIS openBIS = environment.createOpenBIS();
         openBIS.login(username, password);
-
-        // AssertionUtil.assertContains("\"validationErrors\":[{", response.getContentAsString());
-        // AssertionUtil.assertContains("\"isValid\":false", response.getContentAsString());
-        // AssertionUtil.assertContains("\"property\":\"wrong\"", response.getContentAsString());
-        // AssertionUtil.assertContains("\"message\":\"Property not in schema\"", response.getContentAsString());
 
         Consumer<LinkedHashMap<String, Object>> assertions = x ->
         {
@@ -278,7 +301,8 @@ public class IntegrationRoCrateServerTest
 
     }
 
-    @Test(enabled = false) // This test depends on some data which should be created before the test runs
+    @Test(enabled = true)
+    // This test depends on some data which should be created before the test runs
     public void testExportDOIZip()
             throws Exception
     {
@@ -287,7 +311,7 @@ public class IntegrationRoCrateServerTest
         testExport(mimeType, payload, "COMPLETED", "FAILED");
     }
 
-    @Test(enabled = false) // This depends on some data which should be created before the test runs
+    @Test(enabled = true) // This depends on some data which should be created before the test runs
     public void testExportIdentifier()
             throws Exception
     {
@@ -360,7 +384,7 @@ public class IntegrationRoCrateServerTest
     }
 
     // https://github.com/paulscherrerinstitute/rocrate-api/issues/35
-    @Test(enabled = false) // This uses MissingManifest.zip file which does not exist
+    @Test(enabled = true) // This uses MissingManifest.zip file which does not exist
     public void testValidateMalformedCrateZippedMissingManifest()
             throws Exception
     {
