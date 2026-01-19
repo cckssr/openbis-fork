@@ -1,7 +1,6 @@
 package ch.openbis.drive.db;
 
 import ch.openbis.drive.conf.Configuration;
-import ch.openbis.drive.model.SyncJob;
 import ch.openbis.drive.model.SyncJobEvent;
 import lombok.SneakyThrows;
 import org.junit.Assert;
@@ -91,7 +90,7 @@ public class SyncJobEventDAOImpTest {
             events.add(SyncJobEvent.builder().syncDirection(SyncJobEvent.SyncDirection.UP)
                     .sourceTimestamp(System.currentTimeMillis())
                     .destinationTimestamp(System.currentTimeMillis())
-                    .timestamp(now += ThreadLocalRandom.current().nextInt(0, 10000))
+                    .timestamp(now += UNIQUE_RANDOM_LONG_INTEGERS.get(3 * i))
                     .entityPermId("" + i)
                     .localDirectoryRoot("loc-root")
                     .localFile("loc" + i)
@@ -100,7 +99,7 @@ public class SyncJobEventDAOImpTest {
             events.add(SyncJobEvent.builder().syncDirection(SyncJobEvent.SyncDirection.UP)
                     .sourceTimestamp(System.currentTimeMillis())
                     .destinationTimestamp(null)
-                    .timestamp(now += ThreadLocalRandom.current().nextInt(0, 10000))
+                    .timestamp(now += UNIQUE_RANDOM_LONG_INTEGERS.get(3 * i + 1))
                     .entityPermId("" + i)
                     .localDirectoryRoot("loc-root")
                     .localFile("loc-incomplete" + i)
@@ -109,7 +108,7 @@ public class SyncJobEventDAOImpTest {
             events.add(SyncJobEvent.builder().syncDirection(SyncJobEvent.SyncDirection.DOWN)
                     .sourceTimestamp(System.currentTimeMillis())
                     .destinationTimestamp(null)
-                    .timestamp(now += ThreadLocalRandom.current().nextInt(0, 10000))
+                    .timestamp(now += UNIQUE_RANDOM_LONG_INTEGERS.get(3 * i + 2))
                     .entityPermId("" + i)
                     .localDirectoryRoot("loc-root2")
                     .localFile("loc" + i)
@@ -149,7 +148,7 @@ public class SyncJobEventDAOImpTest {
             events.add(SyncJobEvent.builder().syncDirection(SyncJobEvent.SyncDirection.UP)
                     .sourceTimestamp(System.currentTimeMillis())
                     .destinationTimestamp(System.currentTimeMillis())
-                    .timestamp(now += ThreadLocalRandom.current().nextInt(0, 10000))
+                    .timestamp(now += UNIQUE_RANDOM_LONG_INTEGERS.get(3 * i))
                     .entityPermId("" + i)
                     .localDirectoryRoot("loc-root")
                     .localFile("loc" + i)
@@ -158,7 +157,7 @@ public class SyncJobEventDAOImpTest {
             events.add(SyncJobEvent.builder().syncDirection(SyncJobEvent.SyncDirection.UP)
                     .sourceTimestamp(System.currentTimeMillis())
                     .destinationTimestamp(null)
-                    .timestamp(now += ThreadLocalRandom.current().nextInt(0, 10000))
+                    .timestamp(now += UNIQUE_RANDOM_LONG_INTEGERS.get(3 * i + 1))
                     .entityPermId("" + i)
                     .localDirectoryRoot("loc-root")
                     .localFile("loc-incomplete" + i)
@@ -167,7 +166,7 @@ public class SyncJobEventDAOImpTest {
             events.add(SyncJobEvent.builder().syncDirection(SyncJobEvent.SyncDirection.DOWN)
                     .sourceTimestamp(System.currentTimeMillis())
                     .destinationTimestamp(null)
-                    .timestamp(now += ThreadLocalRandom.current().nextInt(0, 10000))
+                    .timestamp(now += UNIQUE_RANDOM_LONG_INTEGERS.get(3 * i + 2))
                     .entityPermId("" + i)
                     .localDirectoryRoot("loc-root2")
                     .localFile("loc" + i)
@@ -244,7 +243,7 @@ public class SyncJobEventDAOImpTest {
             events.add(SyncJobEvent.builder().syncDirection(SyncJobEvent.SyncDirection.UP)
                     .sourceTimestamp(System.currentTimeMillis())
                     .destinationTimestamp(System.currentTimeMillis())
-                    .timestamp(now += ThreadLocalRandom.current().nextInt(0, 10000))
+                    .timestamp(now += UNIQUE_RANDOM_LONG_INTEGERS.get(2 * i))
                     .entityPermId("" + i)
                     .localDirectoryRoot("loc-root")
                     .localFile("loc" + i)
@@ -253,7 +252,7 @@ public class SyncJobEventDAOImpTest {
             events.add(SyncJobEvent.builder().syncDirection(SyncJobEvent.SyncDirection.DOWN)
                     .sourceTimestamp(System.currentTimeMillis())
                     .destinationTimestamp(System.currentTimeMillis())
-                    .timestamp(now += ThreadLocalRandom.current().nextInt(0, 10000))
+                    .timestamp(now += UNIQUE_RANDOM_LONG_INTEGERS.get(2 * i + 1))
                     .entityPermId("" + i)
                     .localDirectoryRoot("loc-root2")
                     .localFile("loc" + i)
@@ -272,5 +271,14 @@ public class SyncJobEventDAOImpTest {
         Assert.assertEquals(200, syncJobEventDAOImp.selectMostRecent(10000).size());
         syncJobEventDAOImp.clearAll();
         Assert.assertEquals(0, syncJobEventDAOImp.selectMostRecent(10000).size());
+    }
+
+    public static final HashSet<Long> RANDOM_LONG_INTEGERS_SET = new HashSet<>();
+    public static final List<Long> UNIQUE_RANDOM_LONG_INTEGERS;
+    static {
+        while ( RANDOM_LONG_INTEGERS_SET.size() < 1000 ) {
+            RANDOM_LONG_INTEGERS_SET.add(ThreadLocalRandom.current().nextLong(0, 1000000));
+        }
+        UNIQUE_RANDOM_LONG_INTEGERS = RANDOM_LONG_INTEGERS_SET.stream().toList();
     }
 }
