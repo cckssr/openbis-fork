@@ -64,7 +64,7 @@ public class ImportExecutor implements IImportExecutor
             ImportResult result = new ImportResult();
             result.setObjectIds(xlsImport.start());
 //            transactionExecutor.executeInSeparateTransaction(() -> importMetaData(xlsImport, result));
-            xlsImport.importZipAfsData();
+//            xlsImport.importZipAfsData();
 
             return result;
         } catch (final IOException e)
