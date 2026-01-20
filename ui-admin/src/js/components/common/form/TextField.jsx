@@ -51,13 +51,25 @@ class TextFormField extends React.PureComponent {
 
   renderView() {
     const { label, value, description, disableUnderline, hyperlink } = this.props
+    let finalValue = null
+    if (hyperlink) {
+      finalValue = (
+        <a href={value} target='_blank'>
+          {value}
+        </a>
+      )
+    } else if (Array.isArray(value)) {
+      finalValue = '[' + value.join(', ') + ']'
+    } else {
+      finalValue = value
+    }
+
     return (
       <FormFieldView
         label={label}
-        value={value}
+        value={finalValue}
         description={description}
         disableUnderline={disableUnderline || false}
-        hyperlink={hyperlink || false}
       />
     )
   }
