@@ -45,13 +45,17 @@ dependencies {
             project(path: ':lib-transactional-file-system'),
             //project(path: ':test-ui-core', configuration: 'tests'),
             'reflections:reflections:0.9.10',
-            'fasterxml:jackson-core:2.9.10',
+            'fasterxml:jackson-core:2.18.1',
             'fasterxml:jackson-annotations:2.9.10',
-            'fasterxml:jackson-databind:2.9.10.8',
+            'fasterxml:jackson-databind:2.18.1',
             'testng:testng:6.8-CISD',
-            'selenium:selenium-java:3.141.59'
+            'junit:junit:4.13.2',
+            api('selenium:selenium-java:3.141.59'){
+                exclude group: "bytebuddy", module: "byte-buddy"
+            }
 
-    testRuntimeFirst 'javax:servlet-api:4.0.1', 'reflections:reflections:0.9.10', 'apache:commons-lang3:3.14'
+
+    testRuntimeFirst 'jakarta:jakarta.servlet-api:6.1.0', 'reflections:reflections:0.9.10', 'apache:commons-lang3:3.14'
 
     externalDss project(':server-screening')
 

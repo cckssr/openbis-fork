@@ -15,16 +15,16 @@
  */
 package ch.ethz.sis.openbis.systemtest.asapi.v3;
 
-import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItem;
 
 import java.util.Objects;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeDiagnosingMatcher;
-import org.hibernate.Query;
+
 import org.hibernate.Session;
 import org.springframework.test.annotation.Commit;
 import org.testng.annotations.Test;
@@ -156,7 +156,9 @@ public class ContentCopyHistoryTest extends AbstractLinkDataSetTest
     private TypeSafeDiagnosingMatcher<DataSetHistoryPE> representing(final ContentCopyCreationBuilder copy)
     {
         Session dbSession = daoFactory.getSessionFactory().openSession();
-        Query query = dbSession.createQuery("FROM ExternalDataManagementSystemPE as edms WHERE edms.code = :code").setParameter("code",
+        var query = dbSession.createSelectionQuery("FROM ExternalDataManagementSystemPE as edms WHERE edms.code = :code",
+                        ExternalDataManagementSystemPE.class)
+                .setParameter("code",
                 copy.getEdmsId().getPermId());
         ExternalDataManagementSystemPE edmsPE = (ExternalDataManagementSystemPE) query.uniqueResult();
 

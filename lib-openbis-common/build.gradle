@@ -11,14 +11,17 @@ dependencies {
             project(':lib-authentication'),
             project(':lib-hierarchical-content'),
             project(':lib-hdf5'),
-            'googlecode:jsonrpc4j:1.5.3',
-            'fasterxml:jackson-databind:2.9.10.8',
+            'googlecode:jsonrpc4j:1.8-CISD',
+            'fasterxml:jackson-databind:2.18.1',
+            'fasterxml:jackson-annotations:2.18.1',
             'reflections:reflections:0.9.10',
             'lemnik:eodsql:2.2-CISD',
-            'springframework:spring-jdbc:5.3.39',
-            'springframework:spring-tx:5.3.39',
+            'org.springframework:spring-jdbc:6.1.10',
+            'org.springframework:spring-tx:6.1.10',
             'apache:commons-collections4:4.1',
             'truezip:truezip:6.8.1'
+
+
 
 
 
@@ -28,9 +31,11 @@ dependencies {
             project(path: ':lib-authentication', configuration: 'tests'),
             'fjelmer:classycle:1.4.2',
             'testng:testng:6.8-CISD',
-            'eclipse:jetty-servlet:10.0.25',
+            'junit:junit:4.13.2',
+            'org.eclipse.jetty.ee10:jetty-ee10-servlet:12.1.1',
             'hamcrest:hamcrest-integration:1.3',
             'hamcrest:hamcrest-library:1.3',
             'slf4j:slf4j-api:1.7.24',
-            'slf4j:slf4j-jdk14:1.7.24'
+            'slf4j:slf4j-jdk14:1.7.24',
+            'org.eclipse.jetty:jetty-server:12.1.1'
 }

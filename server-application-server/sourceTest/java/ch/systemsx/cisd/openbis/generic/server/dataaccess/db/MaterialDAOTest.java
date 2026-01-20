@@ -27,6 +27,7 @@ import java.util.List;
 import junit.framework.Assert;
 
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -137,7 +138,8 @@ public final class MaterialDAOTest extends AbstractDAOTest
         assertNull(materialDAO.tryFindMaterial(identifier));
     }
 
-    @Test(expectedExceptions = DataIntegrityViolationException.class)
+    @Test(expectedExceptions = {DataIntegrityViolationException.class,
+            InvalidDataAccessApiUsageException.class })
     public final void testFailDeleteMaterialUsedAsPropertyValue()
     {
         String bacteriumX = "BACTERIUM-X";

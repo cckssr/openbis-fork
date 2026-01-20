@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
 import org.testng.AssertJUnit;
 import org.testng.annotations.Test;
 
@@ -528,10 +529,11 @@ public final class DataDAOTest extends AbstractDAOTest
         final String dataSetCode = daoFactory.getPermIdDAO().createPermId();
         final SamplePE sample = pickASample();
         DataPE parentData = findData(PARENT_CODE);
+        PersonPE testPerson = getTestPerson();
         DataPE data = createExternalData(dataSetCode, sample);
         data.addParentRelationship(new DataSetRelationshipPE(parentData, data,
-                getParentChildRelationshipType(), null, getTestPerson()));
-        dataDAO.createDataSet(data, getTestPerson());
+                getParentChildRelationshipType(), null, testPerson));
+        dataDAO.createDataSet(data, testPerson);
     }
 
     @Test()

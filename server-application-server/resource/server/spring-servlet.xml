@@ -36,9 +36,9 @@
         // Needs 'commons-fileupload' library.
     -->
     <bean id="multipartResolver"
-        class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+          class="org.springframework.web.multipart.support.StandardServletMultipartResolver">
         <!-- Default is 10240 (10kB). Set to 1MB (1048576). -->
-        <property name="maxInMemorySize" value="1048576" />
+        <!--<property name="maxInMemorySize" value="1048576" />-->
     </bean>
     
     

@@ -15,7 +15,7 @@
  */
 package ch.systemsx.cisd.common.servlet;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * Implementation of this interface provides a way to expose the native {@link HttpServletRequest}.

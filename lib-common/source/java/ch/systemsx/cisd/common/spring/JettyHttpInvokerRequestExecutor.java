@@ -21,19 +21,22 @@ import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.eclipse.jetty.client.HttpClient;
-import org.eclipse.jetty.client.api.ContentResponse;
-import org.eclipse.jetty.client.api.Request;
-import org.eclipse.jetty.client.util.BytesContentProvider;
-import org.eclipse.jetty.client.util.FutureResponseListener;
-import org.eclipse.jetty.client.util.InputStreamContentProvider;
-import org.eclipse.jetty.client.util.InputStreamResponseListener;
-import org.springframework.lang.Nullable;
+import org.eclipse.jetty.client.Request;
+import org.eclipse.jetty.client.ContentResponse;
+import org.eclipse.jetty.client.CompletableResponseListener;
+import org.eclipse.jetty.client.InputStreamResponseListener;
+import org.eclipse.jetty.client.BytesRequestContent;
+import org.eclipse.jetty.client.InputStreamRequestContent;
+
 import org.springframework.remoting.httpinvoker.AbstractHttpInvokerRequestExecutor;
 import org.springframework.remoting.httpinvoker.HttpInvokerClientConfiguration;
 import org.springframework.remoting.rmi.CodebaseAwareObjectInputStream;
@@ -57,21 +60,31 @@ public class JettyHttpInvokerRequestExecutor extends AbstractHttpInvokerRequestE
     public JettyHttpInvokerRequestExecutor(HttpClient client, long serverTimeoutInMillis)
     {
         this.client = client;
+        // Preserve original semantics.
         this.serverTimeoutInMillis = serverTimeoutInMillis <= 0 ? serverTimeoutInMillis : Math.max(1000, serverTimeoutInMillis);
     }
 
     protected RemoteInvocationResult doExecuteBasicRequest(HttpInvokerClientConfiguration config,
             ByteArrayOutputStream baos) throws Exception
     {
-        Request request =
-                client.POST(config.getServiceUrl()).content(new BytesContentProvider(baos.toByteArray()))
-                        .timeout(serverTimeoutInMillis, TimeUnit.MILLISECONDS);
+        Request request = client.POST(config.getServiceUrl())
+                // Set body with content type; Jetty will set the Content-Type header from this.
+                .body(new BytesRequestContent(getContentType(), baos.toByteArray()))
+                .timeout(serverTimeoutInMillis, TimeUnit.MILLISECONDS);
 
-        FutureResponseListener listener = new FutureResponseListener(request, (int) RESPONSE_BUFFER_SIZE);
-        request.send(listener);
+        // Buffer the response up to RESPONSE_BUFFER_SIZE , then get ContentResponse.
+        CompletableResponseListener crl = new CompletableResponseListener(request, (int) RESPONSE_BUFFER_SIZE);
+        try {
+            ContentResponse response = crl.send().get(serverTimeoutInMillis, TimeUnit.MILLISECONDS);
 
-        ContentResponse response = listener.get();
-        return readRemoteInvocationResult(new ByteArrayInputStream(response.getContent()), config.getCodebaseUrl());
+            return readRemoteInvocationResult(new ByteArrayInputStream(response.getContent()), config.getCodebaseUrl());
+        } catch (java.util.concurrent.TimeoutException te) {
+            // jetty 12 client doesn't give message for all paths
+            java.util.concurrent.TimeoutException norm =
+                    new java.util.concurrent.TimeoutException("Total timeout " + serverTimeoutInMillis + " ms elapsed");
+            norm.initCause(te);
+            throw new java.util.concurrent.ExecutionException(norm);
+        }
     }
 
     @Override
@@ -154,13 +167,11 @@ public class JettyHttpInvokerRequestExecutor extends AbstractHttpInvokerRequestE
             final ByteArrayOutputStream baos, final StreamSupportingRemoteInvocation invocation)
             throws IOException, ClassNotFoundException
     {
-
-        final Request postMethod;
+        final Request post;
 
         if (invocation.getClientSideInputStream() != null)
         {
-            final ByteArrayInputStream serializedInvocation =
-                    new ByteArrayInputStream(baos.toByteArray());
+            final ByteArrayInputStream serializedInvocation = new ByteArrayInputStream(baos.toByteArray());
 
             // We don't want to close the client side input stream unless the remote
             // method closes the input stream, so we "shield" the close for now.
@@ -171,17 +182,32 @@ public class JettyHttpInvokerRequestExecutor extends AbstractHttpInvokerRequestE
                                     serializedInvocation,
                                     new CloseShieldedInputStream(invocation
                                             .getClientSideInputStream()) });
-            postMethod = client.POST(config.getServiceUrl())
-                    .header(HTTP_HEADER_CONTENT_TYPE, "application/x-java-serialized-object-with-stream")
-                    .content(new InputStreamContentProvider(body), "application/x-java-serialized-object-with-stream");
-
-        } else
+            post = client.POST(config.getServiceUrl())
+                    .body(new InputStreamRequestContent(
+                            "application/x-java-serialized-object-with-stream",
+                            body))
+                    .timeout(serverTimeoutInMillis, TimeUnit.MILLISECONDS);
+        }
+        else
         {
-            postMethod = client.POST(config.getServiceUrl()).content(new BytesContentProvider(baos.toByteArray()));
+            post = client.POST(config.getServiceUrl())
+                    .body(new BytesRequestContent(AbstractHttpInvokerRequestExecutor.CONTENT_TYPE_SERIALIZED_OBJECT, baos.toByteArray()))
+                    .timeout(serverTimeoutInMillis, TimeUnit.MILLISECONDS);
         }
 
-        InputStreamResponseListener listener = new InputStreamResponseListener();
-        postMethod.timeout(serverTimeoutInMillis, TimeUnit.MILLISECONDS).send(listener);
+        // Do NOT try-with-resources the listener here; if the return value contains a stream,
+        // the underlying connection must remain open until the caller closes that stream.
+        final InputStreamResponseListener listener = new InputStreamResponseListener();
+        post.send(listener);
+
+        // Ensure headers are available before reading the stream.
+        try
+        {
+            listener.get(serverTimeoutInMillis, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException|TimeoutException|ExecutionException e)
+        {
+            throw new RuntimeException(e);
+        }
 
         final RemoteInvocationResult ret =
                 readRemoteInvocationResult(listener.getInputStream(), config
@@ -229,6 +255,7 @@ public class JettyHttpInvokerRequestExecutor extends AbstractHttpInvokerRequestE
         {
             warnInputStreamParameterStateNotSpecified(invocation);
         }
+
         return ret;
     }
 
@@ -321,7 +348,7 @@ public class JettyHttpInvokerRequestExecutor extends AbstractHttpInvokerRequestE
      */
     public static class CompositeInputStream extends FilterInputStream
     {
-        private InputStream[] inputStreams;
+        private final InputStream[] inputStreams;
 
         private int currentInputStreamIdx;
 
@@ -414,7 +441,7 @@ public class JettyHttpInvokerRequestExecutor extends AbstractHttpInvokerRequestE
         @Override
         public void close() throws IOException
         {
-            // All InputStreams preceeding the current one have already been closed.
+            // All InputStreams preceding the current one have already been closed.
             // Be sure to close all InputStreams following the current one as well.
             final InputStream[] myInputStreams = getInputStreams();
             for (int i = getCurrentInputStreamIdx(); i < myInputStreams.length; i++)

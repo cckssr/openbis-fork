@@ -15,7 +15,7 @@
  */
 package ch.systemsx.cisd.common.spring;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 import ch.ethz.sis.shared.log.classic.impl.Logger;
 import org.springframework.beans.BeansException;

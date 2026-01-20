@@ -33,10 +33,10 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import ch.ethz.sis.shared.log.classic.impl.Logger;
 import org.eclipse.jetty.client.HttpClient;
-import org.eclipse.jetty.client.api.ContentResponse;
-import org.eclipse.jetty.client.api.Request;
-import org.eclipse.jetty.client.api.Response;
-import org.eclipse.jetty.client.util.InputStreamResponseListener;
+import org.eclipse.jetty.client.ContentResponse;
+import org.eclipse.jetty.client.Request;
+import org.eclipse.jetty.client.Response;
+import org.eclipse.jetty.client.InputStreamResponseListener;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.http.HttpStatus;
 import org.w3c.dom.Document;
@@ -240,7 +240,7 @@ public class DataSourceConnector implements IDataSourceConnector
         Request requestEntity = client
                 .newRequest(url)
                 .method("GET");
-        requestEntity.header(HttpHeader.AUTHORIZATION, basicAuth);
+        requestEntity.headers(h -> h.put(HttpHeader.AUTHORIZATION, basicAuth));
         return requestEntity;
     }
 

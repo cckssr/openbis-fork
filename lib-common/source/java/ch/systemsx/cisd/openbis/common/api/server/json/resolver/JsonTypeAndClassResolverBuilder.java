@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.DeserializationConfig;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.SerializationConfig;
 import com.fasterxml.jackson.databind.jsontype.NamedType;
+import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
 import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
 import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
@@ -52,7 +53,7 @@ public class JsonTypeAndClassResolverBuilder extends StdTypeResolverBuilder
     public TypeDeserializer buildTypeDeserializer(DeserializationConfig config, JavaType baseType,
             Collection<NamedType> subtypes)
     {
-        TypeIdResolver idRes = idResolver(config, baseType, subtypes, false, true);
+        TypeIdResolver idRes = idResolver(config, baseType, null, subtypes,false, true);
         JsonTypeAndClassDeserializer deserializer =
                 new JsonTypeAndClassDeserializer(baseType, subtypes, idRes, _typeProperty,
                         _typeIdVisible);
@@ -63,7 +64,7 @@ public class JsonTypeAndClassResolverBuilder extends StdTypeResolverBuilder
     @Override
     public TypeSerializer buildTypeSerializer(SerializationConfig config, JavaType baseType, Collection<NamedType> subtypes)
     {
-        TypeIdResolver resolver = idResolver(config, baseType, subtypes, true, false);
+        TypeIdResolver resolver = idResolver(config, baseType, null, subtypes, true, false);
         return new JsonTypeAndClassSerializer(resolver, null, JsonConstants.getTypeField());
     }
 

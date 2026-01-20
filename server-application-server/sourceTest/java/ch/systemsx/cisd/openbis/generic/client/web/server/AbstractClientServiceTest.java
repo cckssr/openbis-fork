@@ -15,8 +15,8 @@
  */
 package ch.systemsx.cisd.openbis.generic.client.web.server;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 
 import org.jmock.Expectations;
 import org.jmock.Mockery;

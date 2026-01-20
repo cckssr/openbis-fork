@@ -15,18 +15,22 @@
  */
 package ch.systemsx.cisd.common.api.retry;
 
+import java.io.IOException;
+import java.net.ConnectException;
+import java.net.NoRouteToHostException;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
+import java.util.concurrent.TimeoutException;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.springframework.remoting.RemoteAccessException;
-import org.springframework.remoting.RemoteConnectFailureException;
 
-import ch.systemsx.cisd.common.api.retry.config.DefaultRetryConfiguration;
-import ch.systemsx.cisd.common.api.retry.config.RetryConfiguration;
-import ch.ethz.sis.shared.log.classic.impl.ConsoleLogger;
 import ch.ethz.sis.shared.log.classic.ISimpleLogger;
 import ch.ethz.sis.shared.log.classic.core.LogLevel;
+import ch.ethz.sis.shared.log.classic.impl.ConsoleLogger;
+import ch.systemsx.cisd.common.api.retry.config.DefaultRetryConfiguration;
+import ch.systemsx.cisd.common.api.retry.config.RetryConfiguration;
+import org.springframework.remoting.RemoteConnectFailureException;
 
 /**
  * @author pkupczyk
@@ -84,9 +88,9 @@ public abstract class RetryCaller<T, E extends Throwable>
         {
             try
             {
-                T result = call();
-                return result;
-            } catch (RuntimeException e)
+                return call();
+            }
+            catch (RuntimeException e)
             {
                 if (isRetryableException(e))
                 {
@@ -94,38 +98,42 @@ public abstract class RetryCaller<T, E extends Throwable>
                     {
                         logger.log(LogLevel.WARN, "Call failed - will retry");
                         waitForRetry();
-                    } else
-                    {
-                        logger.log(LogLevel.WARN, "Call failed - will NOT retry");
-                        throw e;
+                        continue;
                     }
-                } else
-                {
-                    throw e;
+                    logger.log(LogLevel.WARN, "Call failed - will NOT retry");
                 }
+                throw e;
             }
         }
     }
 
     protected boolean isRetryableException(RuntimeException e)
     {
-        if (e instanceof RemoteConnectFailureException)
-        {
-            return true;
-        }
-        if (e instanceof RemoteAccessException)
-        {
-            Throwable cause = e.getCause();
-            Throwable rootCause = ExceptionUtils.getRootCause(e);
+        if (e == null) return false;
 
-            return isRetryableRemoteAccessCause(cause) || isRetryableRemoteAccessCause(rootCause);
+        // Check direct cause chain
+        for (Throwable t = e; t != null; t = t.getCause())
+        {
+            if (isRetryableRemoteAccessCause(t))
+                return true;
         }
-        return false;
+
+        Throwable root = ExceptionUtils.getRootCause(e);
+        return isRetryableRemoteAccessCause(root);
     }
 
-    private boolean isRetryableRemoteAccessCause(Throwable cause)
+    private boolean isRetryableRemoteAccessCause(Throwable t)
     {
-        return cause instanceof SocketTimeoutException || cause instanceof SocketException;
+        if (t == null) return false;
+
+        if (t instanceof ConnectException) return true;
+        if (t instanceof UnknownHostException) return true;
+        if (t instanceof NoRouteToHostException) return true;
+        if (t instanceof SocketTimeoutException) return true;
+        if (t instanceof SocketException) return true;
+        if (t instanceof TimeoutException) return true;
+        if (t instanceof RemoteConnectFailureException) return true;
+        return t instanceof IOException;
     }
 
     private boolean shouldRetry()

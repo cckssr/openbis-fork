@@ -102,7 +102,7 @@ class AttachmentDeletionProcessor extends DeletionEventProcessor
                     String validFrom = entry.get(ENTRY_VALID_FROM);
                     if (validFrom != null)
                     {
-                        newEvent.entityRegistrationTimestamp = ENTRY_VALID_TIMESTAMP_FORMAT.parse(validFrom);
+                        newEvent.entityRegistrationTimestamp = parseDate(validFrom, ENTRY_VALID_TIMESTAMP_FORMAT);
                     }
 
                     newEvents.add(newEvent);

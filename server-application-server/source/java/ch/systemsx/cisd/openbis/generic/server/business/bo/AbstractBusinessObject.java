@@ -31,6 +31,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.hibernate.LockMode;
 import org.hibernate.LockOptions;
 import org.hibernate.SessionFactory;
+import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.dao.DataAccessException;
 
 import ch.systemsx.cisd.common.collection.CollectionUtils;
@@ -57,6 +58,7 @@ import ch.systemsx.cisd.openbis.generic.shared.managed_property.IManagedProperty
 import ch.systemsx.cisd.openbis.generic.shared.managed_property.api.IEntityInformationProvider;
 import ch.systemsx.cisd.openbis.generic.shared.translator.AttachmentTranslator;
 import ch.systemsx.cisd.openbis.generic.shared.util.WebClientConfigUtils;
+import org.springframework.dao.DataIntegrityViolationException;
 
 /**
  * An <code>abstract</code> <i>Business Object</i>.
@@ -619,8 +621,10 @@ abstract class AbstractBusinessObject implements IDAOFactory
                 convertProperties(entityType, existingProperties, properties, propertiesToUpdate);
         if (isEqualsMultiple(existingPropertyValuesByCode, convertedProperties) == false)
         {
-            getSessionFactory().getCurrentSession().buildLockRequest(LockOptions.UPGRADE).setLockMode(LockMode.PESSIMISTIC_FORCE_INCREMENT)
-                    .lock(entityAsPropertiesHolder);
+//            getSessionFactory().getCurrentSession().buildLockRequest(LockOptions.UPGRADE).setLockMode(LockMode.PESSIMISTIC_FORCE_INCREMENT)
+//                    .lock(entityAsPropertiesHolder);
+            getSessionFactory().getCurrentSession()
+                    .lock(entityAsPropertiesHolder, LockMode.PESSIMISTIC_FORCE_INCREMENT);
             entityAsPropertiesHolder.setProperties(convertedProperties);
             if (entityAsModifierBean != null)
             {
@@ -809,6 +813,14 @@ abstract class AbstractBusinessObject implements IDAOFactory
                 final String fileName = attachment.getFileName();
                 throwException(
                         e,
+                        String.format("Filename '%s' for %s '%s'", fileName,
+                                attachmentHolder.getHolderName(), attachmentHolder.getIdentifier()));
+            } catch (ConstraintViolationException e)
+            {
+                DataAccessException dataAccessException = new DataIntegrityViolationException(e.getMessage(), e);
+                final String fileName = attachment.getFileName();
+                throwException(
+                        dataAccessException,
                         String.format("Filename '%s' for %s '%s'", fileName,
                                 attachmentHolder.getHolderName(), attachmentHolder.getIdentifier()));
             }

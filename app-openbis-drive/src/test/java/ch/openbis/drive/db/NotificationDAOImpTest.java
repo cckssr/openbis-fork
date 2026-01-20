@@ -37,6 +37,7 @@ public class NotificationDAOImpTest {
 
         NotificationDAOImpl notificationDAOImpl = new NotificationDAOImpl(configuration);
 
+        long counter = 0;
         for (Notification.Type type : Notification.Type.values()) {
             Notification notification = Notification.builder()
                     .type(type)
@@ -44,13 +45,14 @@ public class NotificationDAOImpTest {
                     .localFile(type == Notification.Type.Conflict ? "localFile" : null)
                     .remoteFile(type == Notification.Type.Conflict ? "remoteFile" : null)
                     .message("MESSAGE__")
-                    .timestamp(System.currentTimeMillis())
+                    .timestamp(System.currentTimeMillis() + counter)
                     .build();
 
             notificationDAOImpl.insertOrUpdate(notification);
             Notification readNotification = notificationDAOImpl.selectByPrimaryKey(notification.getType(), notification.getLocalDirectory(), notification.getLocalFile(), notification.getRemoteFile());
 
             Assert.assertEquals(notification, readNotification);
+            counter++;
         }
 
     }
@@ -60,6 +62,7 @@ public class NotificationDAOImpTest {
 
         NotificationDAOImpl notificationDAOImpl = new NotificationDAOImpl(configuration);
 
+        long counter = 0;
         for (Notification.Type type : Notification.Type.values()) {
             Notification notification = Notification.builder()
                     .type(type)
@@ -67,13 +70,14 @@ public class NotificationDAOImpTest {
                     .localFile(type == Notification.Type.Conflict ? "localFile" : null)
                     .remoteFile(type == Notification.Type.Conflict ? "remoteFile" : null)
                     .message("MESSAGE__")
-                    .timestamp(System.currentTimeMillis())
+                    .timestamp(System.currentTimeMillis() + counter)
                     .build();
 
             notificationDAOImpl.insertOrUpdate(notification);
             Notification readNotification = notificationDAOImpl.selectByPrimaryKey(notification.getType(), notification.getLocalDirectory(), notification.getLocalFile(), notification.getRemoteFile());
 
             Assert.assertEquals(notification, readNotification);
+            counter++;
         }
     }
 
@@ -82,6 +86,7 @@ public class NotificationDAOImpTest {
 
         NotificationDAOImpl notificationDAOImpl = new NotificationDAOImpl(configuration);
 
+        long counter = 0;
         for (Notification.Type type : Notification.Type.values()) {
             Notification notification = Notification.builder()
                     .type(type)
@@ -89,10 +94,11 @@ public class NotificationDAOImpTest {
                     .localFile(type == Notification.Type.Conflict ? "localFile" : null)
                     .remoteFile(type == Notification.Type.Conflict ? "remoteFile" : null)
                     .message("MESSAGE__")
-                    .timestamp(System.currentTimeMillis())
+                    .timestamp(System.currentTimeMillis() + counter)
                     .build();
 
             notificationDAOImpl.insertOrUpdate(notification);
+            counter++;
         }
 
         Assert.assertEquals(3, notificationDAOImpl.selectLast(100).size());
@@ -117,6 +123,7 @@ public class NotificationDAOImpTest {
 
         LinkedList<Notification> expectedNotifications = new LinkedList<>();
 
+        long counter = 0;
         for(int limit=0; limit<100; limit = limit + 10) {
 
             for(int j = 0; j<30; j++) {
@@ -127,7 +134,7 @@ public class NotificationDAOImpTest {
                             .localFile("localFile" + j)
                             .remoteFile("remoteFile" + j)
                             .message("MESSAGE__")
-                            .timestamp(System.currentTimeMillis())
+                            .timestamp(System.currentTimeMillis() + counter)
                             .build();
 
                     notificationDAOImpl.insertOrUpdate(notification);
@@ -136,6 +143,7 @@ public class NotificationDAOImpTest {
                     Assert.assertEquals(notification, readNotification);
 
                     expectedNotifications.addFirst(notification);
+                    counter++;
                 }
 
                 List<Notification> retrievedNotifications = notificationDAOImpl.selectLast(limit);
@@ -151,6 +159,7 @@ public class NotificationDAOImpTest {
 
         LinkedList<Notification> expectedNotifications = new LinkedList<>();
 
+        long counter = 0;
         for(int j = 0; j<30; j++) {
             for (Notification.Type type : Notification.Type.values()) {
                 Notification notification = Notification.builder()
@@ -159,7 +168,7 @@ public class NotificationDAOImpTest {
                         .localFile("localFile" + j)
                         .remoteFile("remoteFile" + j)
                         .message("MESSAGE__")
-                        .timestamp(System.currentTimeMillis())
+                        .timestamp(System.currentTimeMillis() + counter)
                         .build();
 
                 notificationDAOImpl.insertOrUpdate(notification);
@@ -170,6 +179,7 @@ public class NotificationDAOImpTest {
                 if (readNotification.getLocalDirectory().equals("localDir1") && readNotification.getType() == Notification.Type.Conflict) {
                     expectedNotifications.addFirst(notification);
                 }
+                counter++;
             }
         }
 
@@ -185,6 +195,7 @@ public class NotificationDAOImpTest {
 
         NotificationDAOImpl notificationDAOImpl = new NotificationDAOImpl(configuration);
 
+        long counter = 0;
         for(int i = 0; i<10; i++) {
             for (Notification.Type type : Notification.Type.values()) {
                 Notification notification = Notification.builder()
@@ -193,10 +204,11 @@ public class NotificationDAOImpTest {
                         .localFile(type == Notification.Type.Conflict ? "localFile" : null)
                         .remoteFile(type == Notification.Type.Conflict ? "remoteFile" : null)
                         .message("MESSAGE__")
-                        .timestamp(System.currentTimeMillis())
+                        .timestamp(System.currentTimeMillis() + counter)
                         .build();
 
                 notificationDAOImpl.insertOrUpdate(notification);
+                counter++;
             }
         }
 
@@ -263,6 +275,7 @@ public class NotificationDAOImpTest {
 
         NotificationDAOImpl notificationDAOImpl = new NotificationDAOImpl(configuration);
 
+        long counter = 0;
         for(int i = 0; i<10; i++) {
             for (Notification.Type type : Notification.Type.values()) {
                 Notification notification = Notification.builder()
@@ -271,10 +284,11 @@ public class NotificationDAOImpTest {
                         .localFile(type == Notification.Type.Conflict ? "localFile" : null)
                         .remoteFile(type == Notification.Type.Conflict ? "remoteFile" : null)
                         .message("MESSAGE__")
-                        .timestamp(System.currentTimeMillis())
+                        .timestamp(System.currentTimeMillis() + counter)
                         .build();
 
                 notificationDAOImpl.insertOrUpdate(notification);
+                counter++;
             }
         }
 

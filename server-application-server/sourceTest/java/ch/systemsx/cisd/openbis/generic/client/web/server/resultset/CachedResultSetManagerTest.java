@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import org.ehcache.config.builders.CacheManagerBuilder;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.testng.AssertJUnit;
@@ -304,8 +305,9 @@ public final class CachedResultSetManagerTest extends AssertJUnit
         keyGenerator = context.mock(IResultSetKeyGenerator.class);
         customColumnsProvider = context.mock(ICustomColumnsProvider.class);
         columnCalculator = new ColumnCalculatorProxy();
-        String managerConfig = "<ehcache name='" + UUID.randomUUID() + "'></ehcache>";
-        net.sf.ehcache.CacheManager cacheManager = new net.sf.ehcache.CacheManager(new ByteArrayInputStream(managerConfig.getBytes()));
+//        String managerConfig = "<ehcache name='" + UUID.randomUUID() + "'></ehcache>";
+//        net.sf.ehcache.CacheManager cacheManager = new net.sf.ehcache.CacheManager(new ByteArrayInputStream(managerConfig.getBytes()));
+        final org.ehcache.CacheManager cacheManager = CacheManagerBuilder.newCacheManagerBuilder().build(true);
         TableDataCache<Long, Object> tableDataCache = new TableDataCache<Long, Object>(cacheManager);
         tableDataCache.initCache();
 

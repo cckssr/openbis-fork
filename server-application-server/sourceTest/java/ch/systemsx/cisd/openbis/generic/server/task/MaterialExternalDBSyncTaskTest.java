@@ -507,10 +507,12 @@ public class MaterialExternalDBSyncTaskTest extends AbstractFileSystemTestCase
             assertEquals("Couldn't save timestamp to report database. Property '"
                     + INSERT_TIMESTAMP_SQL_KEY + "' or '" + UPDATE_TIMESTAMP_SQL_KEY
                     + "' could be invalid.", ex.getMessage());
-            assertEquals("PreparedStatementCallback; bad SQL grammar [insert into b values(?)]; "
-                    + "nested exception is org.postgresql.util.PSQLException: "
-                    + "ERROR: relation \"b\" does not exist\n" + "  Position: 13", ex.getCause()
-                    .getMessage());
+            Throwable sqlFailure = ex.getCause();
+            assertTrue(sqlFailure.getMessage()
+                    .startsWith("PreparedStatementCallback; bad SQL grammar [insert into b values(?)]"));
+            Throwable jdbcCause = sqlFailure.getCause();
+            assertNotNull(jdbcCause);
+            assertTrue(jdbcCause.getMessage().contains("relation \"b\" does not exist"));
         }
 
         context.assertIsSatisfied();
@@ -531,10 +533,12 @@ public class MaterialExternalDBSyncTaskTest extends AbstractFileSystemTestCase
         {
             assertEquals("Couldn't save timestamp to report database. Property '"
                     + UPDATE_TIMESTAMP_SQL_KEY + "' could be invalid.", ex.getMessage());
-            assertEquals("PreparedStatementCallback; bad SQL grammar [insert into b values(?)]; "
-                    + "nested exception is org.postgresql.util.PSQLException: "
-                    + "ERROR: relation \"b\" does not exist\n" + "  Position: 13", ex.getCause()
-                    .getMessage());
+            Throwable sqlFailure = ex.getCause();
+            assertTrue(sqlFailure.getMessage()
+                    .startsWith("PreparedStatementCallback; bad SQL grammar [insert into b values(?)]"));
+            Throwable jdbcCause = sqlFailure.getCause();
+            assertNotNull(jdbcCause);
+            assertTrue(jdbcCause.getMessage().contains("relation \"b\" does not exist"));
         }
 
         context.assertIsSatisfied();
@@ -557,10 +561,12 @@ public class MaterialExternalDBSyncTaskTest extends AbstractFileSystemTestCase
         {
             assertEquals("Couldn't get timestamp from report database. Property '"
                     + READ_TIMESTAMP_SQL_KEY + "' could be invalid.", ex.getMessage());
-            assertEquals("StatementCallback; bad SQL grammar [select blabla from timestamp]; "
-                    + "nested exception is org.postgresql.util.PSQLException: "
-                    + "ERROR: column \"blabla\" does not exist\n" + "  Position: 8", ex.getCause()
-                    .getMessage());
+            Throwable sqlFailure = ex.getCause();
+            assertTrue(sqlFailure.getMessage()
+                    .startsWith("StatementCallback; bad SQL grammar [select blabla from timestamp]"));
+            Throwable jdbcCause = sqlFailure.getCause();
+            assertNotNull(jdbcCause);
+            assertTrue(jdbcCause.getMessage().contains("column \"blabla\" does not exist"));
         }
 
         context.assertIsSatisfied();

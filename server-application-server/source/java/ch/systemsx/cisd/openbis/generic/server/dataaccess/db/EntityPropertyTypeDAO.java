@@ -49,7 +49,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.TableNames;
 import ch.systemsx.cisd.openbis.generic.shared.dto.VocabularyPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.VocabularyTermWithStats;
 import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
-import javax.persistence.TemporalType;
+import jakarta.persistence.TemporalType;
 
 /**
  * The unique {@link IEntityPropertyTypeDAO} implementation.

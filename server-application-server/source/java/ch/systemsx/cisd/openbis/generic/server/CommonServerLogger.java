@@ -122,6 +122,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.id.metaproject.IMetapro
 import ch.systemsx.cisd.openbis.generic.shared.coreplugin.ICorePluginResourceLoader;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataSetUpdatesDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataSetUploadContext;
+import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentUpdatesDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ListSampleCriteriaDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ProjectUpdatesDTO;
@@ -849,6 +850,7 @@ final class CommonServerLogger extends AbstractServerLogger implements ICommonSe
     public void updateSampleType(String sessionToken, EntityType entityType)
     {
         logTracking(sessionToken, "update_sample_type", "CODE(%s)", entityType.getCode());
+
     }
 
     @Override

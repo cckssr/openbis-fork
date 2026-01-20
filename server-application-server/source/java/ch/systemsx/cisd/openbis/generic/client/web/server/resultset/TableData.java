@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import net.sf.ehcache.pool.sizeof.annotations.IgnoreSizeOf;
+//import net.sf.ehcache.pool.sizeof.annotations.IgnoreSizeOf;
 
 import ch.systemsx.cisd.openbis.generic.client.web.client.dto.ColumnDistinctValues;
 import ch.systemsx.cisd.openbis.generic.client.web.client.dto.CustomFilterInfo;
@@ -50,20 +50,20 @@ class TableData<K, T>
 
     private final List<T> originalData;
 
-    @IgnoreSizeOf
+    //@IgnoreSizeOf
     private final ICustomColumnsProvider customColumnsProvider;
 
-    @IgnoreSizeOf
+    //@IgnoreSizeOf
     private final IColumnCalculator columnCalculator;
 
-    @IgnoreSizeOf
+    //@IgnoreSizeOf
     private final List<TableModelColumnHeader> headers;
 
-    @IgnoreSizeOf
+    //@IgnoreSizeOf
     private final List<IColumnDefinition<T>> headerColumnDefinitions =
             new ArrayList<IColumnDefinition<T>>();
 
-    @IgnoreSizeOf
+    //@IgnoreSizeOf
     private Map<String, Column> calculatedColumns = new HashMap<String, Column>();
 
     TableData(K dataKey, List<T> originalData, List<TableModelColumnHeader> headers,

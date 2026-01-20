@@ -15,7 +15,6 @@
  */
 package ch.systemsx.cisd.openbis.generic.server.dataaccess.db;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -95,25 +94,24 @@ public final class PersonDAO extends AbstractGenericEntityDAO<PersonPE> implemen
     public final void createPerson(final PersonPE person) throws DataAccessException
     {
         assert person != null : "Given person can not be null.";
+        if (person.getUserId() == null)
+        {
+            throw new IllegalStateException(
+                    "Person.userId must be set before persisting PersonPE"
+            );
+        }
         person.setEmail(StringUtils.trim(person.getEmail()));
         person.setActive(true);
         validatePE(person);
 
-        doExecute( session -> {
+        doExecute(session -> {
+
             session.save(person);
             session.flush();
             return null;
         });
 
-        if (person.getPersonDisplaySettings() != null)
-        {
-            doExecute( session -> {
-                person.getPersonDisplaySettings().setId(person.getId());
-                session.update(person.getPersonDisplaySettings());
-                session.flush();
-                return null;
-            });
-        }
+
 
         if (operationLog.isInfoEnabled())
         {
@@ -128,21 +126,6 @@ public final class PersonDAO extends AbstractGenericEntityDAO<PersonPE> implemen
         validatePE(person);
 
         doExecute(session -> {
-            if (person.getPersonDisplaySettings() != null)
-            {
-                if (person.getPersonDisplaySettings().getId() == null)
-                {
-                    person.getPersonDisplaySettings().setId(person.getId());
-                }
-                //template.merge(person.getPersonDisplaySettings()); // cannot be update - look below
-                PersonDisplaySettingsPE settings = person.getPersonDisplaySettings();
-                if (settings != null)
-                {
-                    PersonDisplaySettingsPE managed =
-                            (PersonDisplaySettingsPE) session.merge(settings);
-                    person.setPersonDisplaySettings(managed); // keep graph consistent in memory
-                }
-            }
             PersonPE personManaged = (PersonPE) session.merge(
                     person); // WORKAROUND update cannot be used - see LMS-1603
             session.flush();
@@ -300,7 +283,7 @@ public final class PersonDAO extends AbstractGenericEntityDAO<PersonPE> implemen
     @Override
     public final int countActivePersons() throws DataAccessException
     {
-        return ((BigInteger) executeStatelessAction(new StatelessHibernateCallback()
+        return ((Long) executeStatelessAction(new StatelessHibernateCallback()
             {
                 @Override
                 public Object doInStatelessSession(StatelessSession session)

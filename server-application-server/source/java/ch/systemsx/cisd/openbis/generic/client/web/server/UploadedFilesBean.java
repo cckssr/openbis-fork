@@ -18,6 +18,8 @@ package ch.systemsx.cisd.openbis.generic.client.web.server;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -65,21 +67,30 @@ public final class UploadedFilesBean
         try
         {
             File tempFile = null;
+            String originalFilename =
+                    getOriginalFilename(multipartFile.getOriginalFilename(), false);
             if (keepOriginalFileName) {
                 File sessionWorkspaceFolder = sessionWorkspaceProvider.getSessionWorkspace(sessionToken);
-                tempFile = new File(sessionWorkspaceFolder, multipartFile.getOriginalFilename());
+                tempFile = new File(sessionWorkspaceFolder, originalFilename);
                 if (tempFile.exists()) {
                     tempFile.delete();
                 }
-                tempFile.createNewFile();
+                Files.createFile(tempFile.toPath());
                 tempFile.deleteOnExit();
             } else {
                 tempFile = createTempFile(sessionToken, sessionWorkspaceProvider);
             }
+//            Files.createDirectories(Path.of(tempFile.getParent()));
+//            multipartFile.transferTo(tempFile);
 
-            multipartFile.transferTo(tempFile);
+            Path target = tempFile.toPath();
+            Files.createDirectories(target.getParent());
 
-            operationLog.info("Uploaded file '" + multipartFile.getOriginalFilename() + "' to session workspace");
+            try (InputStream in = multipartFile.getInputStream()) {
+                Files.copy(in, target, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            }
+
+            operationLog.info("Uploaded file '" + originalFilename + "' to session workspace");
 
             final FileMultipartFileAdapter multipartFileAdapter =
                     new FileMultipartFileAdapter(multipartFile, tempFile);
@@ -87,6 +98,32 @@ public final class UploadedFilesBean
         } catch (final IOException ex)
         {
             throw new IOExceptionUnchecked(ex);
+        }
+    }
+
+    public String getOriginalFilename(String filename, boolean preserveFilename) {
+        if (filename == null) {
+            // Should never happen.
+            return "";
+        }
+        if (preserveFilename) {
+            // Do not try to strip off a path...
+            return filename;
+        }
+
+        // Check for Unix-style path
+        int unixSep = filename.lastIndexOf('/');
+        // Check for Windows-style path
+        int winSep = filename.lastIndexOf('\\');
+        // Cut off at latest possible point
+        int pos = Math.max(winSep, unixSep);
+        if (pos != -1)  {
+            // Any sort of path separator found...
+            return filename.substring(pos + 1);
+        }
+        else {
+            // A plain name
+            return filename;
         }
     }
 

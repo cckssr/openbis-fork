@@ -17,14 +17,14 @@ package ch.systemsx.cisd.openbis.generic.shared.dto;
 
 import java.io.Serializable;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
 
 import ch.systemsx.cisd.openbis.generic.shared.IServer;
 import ch.systemsx.cisd.openbis.generic.shared.basic.IIdHolder;
@@ -50,7 +50,7 @@ public class EntityOperationsLogEntryPE implements IIdHolder, Serializable
     @SequenceGenerator(name = SequenceNames.ENTITY_OPERATIONS_LOG_SEQUENCE, sequenceName = SequenceNames.ENTITY_OPERATIONS_LOG_SEQUENCE, allocationSize = 1)
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = SequenceNames.ENTITY_OPERATIONS_LOG_SEQUENCE)
-    public final Long getId()
+    public Long getId()
     {
         return id;
     }

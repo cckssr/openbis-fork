@@ -98,9 +98,14 @@ public class StartAtLoginUtil {
                     try (Stream<Path> pathStream = Files.list(startAtLoginDir)) {
                         if (pathStream.noneMatch(path -> path.getFileName().equals(Path.of(LINUX_START_AT_LOGIN_SCRIPT_NAME)))) {
                             Path startAtLoginScript = startAtLoginDir.resolve(LINUX_START_AT_LOGIN_SCRIPT_NAME);
-                            Path launchScriptsDir = configuration.getLocalAppLaunchDirectory();
                             Files.createFile(startAtLoginScript);
-                            Files.write(startAtLoginScript, String.format(LINUX_START_AT_LOGIN_SCRIPT, launchScriptsDir.toAbsolutePath()).getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+                            if ( !configuration.isManualInstallation() ) {
+                                Path appLauncher = configuration.getAppLauncherPath();
+                                Files.writeString(startAtLoginScript, String.format("nohup %s background-process >/dev/null 2>&1 &", appLauncher.toAbsolutePath()), StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
+                            } else {
+                                Path launchScriptsDir = configuration.getManualInstallationAppLaunchDirectory();
+                                Files.writeString(startAtLoginScript, String.format("cd %s\nsh openbis-drive-service-start.sh", launchScriptsDir.toAbsolutePath()), StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
+                            }
                         }
                     }
                 } else {
@@ -114,8 +119,13 @@ public class StartAtLoginUtil {
 
                 Path startupScriptCopy = userMenuStartupDir.resolve("openbis-drive-service-start.bat");
                 if(!Files.exists(startupScriptCopy)) {
-                    Path launchScriptsDir = configuration.getLocalAppLaunchDirectory();
-                    Files.copy(launchScriptsDir.resolve("openbis-drive-service-start.bat"), startupScriptCopy, StandardCopyOption.REPLACE_EXISTING);
+                    if ( !configuration.isManualInstallation() ) {
+                        Path appLauncher = configuration.getAppLauncherPath();
+                        Files.writeString(startupScriptCopy, String.format("start /b \"\" \"%s\" background-process", appLauncher.toAbsolutePath()), StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
+                    } else {
+                        Path launchScriptsDir = configuration.getManualInstallationAppLaunchDirectory();
+                        Files.copy(launchScriptsDir.resolve("openbis-drive-service-start.bat"), startupScriptCopy, StandardCopyOption.REPLACE_EXISTING);
+                    }
                 }
             }
             case Mac -> {
@@ -127,8 +137,17 @@ public class StartAtLoginUtil {
                     try (Stream<Path> pathStream = Files.list(startAtLoginDir)) {
                         if (pathStream.noneMatch(path -> path.getFileName().equals(Path.of(MAC_OS_START_AT_LOGIN_PLIST_FILE_NAME)))) {
                             Path startAtLoginScript = startAtLoginDir.resolve(MAC_OS_START_AT_LOGIN_PLIST_FILE_NAME);
-                            Path launchScriptsDir = configuration.getLocalAppLaunchDirectory();
-                            Files.write(startAtLoginScript, String.format(MAC_OS_START_AT_LOGIN_PLIST_FILE, launchScriptsDir.toAbsolutePath()).getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+                            if ( !configuration.isManualInstallation() ) {
+                                Path launchScript = configuration.getLocalAppStateDirectory().resolve("openbis-drive-service-start-for-launchd.sh");
+                                Path appLauncher = configuration.getAppLauncherPath();
+                                Files.writeString(launchScript, String.format("%s background-process >/dev/null 2>&1", appLauncher.toAbsolutePath()), StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
+                                launchScript.toFile().setExecutable(true, false);
+                                Files.writeString(startAtLoginScript, String.format(MAC_OS_START_AT_LOGIN_PLIST_FILE, launchScript.toAbsolutePath()), StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
+                            } else {
+                                Path launchScriptsDir = configuration.getManualInstallationAppLaunchDirectory();
+                                Files.writeString(startAtLoginScript, String.format(MAC_OS_START_AT_LOGIN_PLIST_FILE, launchScriptsDir.toAbsolutePath() + "/mac-os-launchd/openbis-drive-service-start-for-launchd.sh"),
+                                        StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
+                            }
                         }
                     }
                 } else {
@@ -144,7 +163,6 @@ public class StartAtLoginUtil {
 
     public static String LINUX_USER_LOGIN_PROFILE_ADDITION = "\n# Added by openBIS-Drive\nfor script in %s ; do\nsh \"$script\"\ndone\n";
 
-    public static String LINUX_START_AT_LOGIN_SCRIPT = "cd %s\nsh openbis-drive-service-start.sh";
     public static String LINUX_START_AT_LOGIN_SCRIPT_NAME = "start-at-login.sh";
 
     public static String MAC_OS_START_AT_LOGIN_PLIST_FILE_NAME = "ch.openbis.drive.loginscript.plist";
@@ -157,12 +175,12 @@ public class StartAtLoginUtil {
                <string>ch.openbis.drive.loginscript</string>
                <key>ProgramArguments</key>
                <array>
-                   <string>%s/mac-os-launchd/openbis-drive-service-start-for-launchd.sh</string>
+                   <string>%s</string>
                </array>
                <key>RunAtLoad</key>
                <true/>
                <key>KeepAlive</key>
-               <true/>
+               <false/>
             </dict>
             </plist>""";
 }

@@ -25,6 +25,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.RoleWithHierarchy.RoleC
 import ch.systemsx.cisd.openbis.generic.shared.dto.AuthorizationGroupPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.RoleAssignmentPE;
+import ch.systemsx.cisd.openbis.generic.shared.dto.SpacePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.ProjectIdentifier;
 
 /**
@@ -79,4 +80,9 @@ public interface IRoleAssignmentDAO extends IGenericDAO<RoleAssignmentPE>
      */
     public List<RoleAssignmentPE> listRoleAssignmentsByAuthorizationGroup(
             AuthorizationGroupPE authGroup);
+
+    /**
+     * Lists all role assignments found in the database for given space.
+     */
+    public List<RoleAssignmentPE> listRoleAssignmentsBySpace(SpacePE space);
 }

@@ -20,6 +20,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import ch.systemsx.cisd.openbis.generic.shared.dto.*;
+import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.dao.DataAccessException;
 
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
@@ -34,6 +35,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SampleType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
 import ch.systemsx.cisd.openbis.generic.shared.managed_property.IManagedPropertyEvaluatorFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 
 /**
  * Manipulations on {@link EntityTypePE} subclasses.
@@ -115,6 +117,10 @@ public final class EntityTypeBO extends AbstractBusinessObject implements IEntit
         } catch (final DataAccessException e)
         {
             throwException(e, String.format("Entity type '%s' ", entityTypePE.getCode()));
+        } catch (ConstraintViolationException e)
+        {
+            DataAccessException dataAccessException = new DataIntegrityViolationException(e.getMessage(), e);
+            throwException(dataAccessException, String.format("Entity type '%s' ", entityTypePE.getCode()));
         }
     }
 
@@ -210,6 +216,10 @@ public final class EntityTypeBO extends AbstractBusinessObject implements IEntit
         } catch (final DataAccessException e)
         {
             throwException(e, String.format("'%s'", entityTypePE.getCode()));
+        } catch (ConstraintViolationException e)
+        {
+            DataAccessException dataAccessException = new DataIntegrityViolationException(e.getMessage(), e);
+            throwException(dataAccessException, String.format("'%s'", entityTypePE.getCode()));
         }
     }
 }

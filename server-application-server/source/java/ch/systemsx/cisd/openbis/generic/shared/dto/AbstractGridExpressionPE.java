@@ -15,9 +15,9 @@
  */
 package ch.systemsx.cisd.openbis.generic.shared.dto;
 
-import javax.persistence.Column;
-import javax.persistence.MappedSuperclass;
-import javax.validation.constraints.NotNull;
+import jakarta.persistence.Column;
+import jakarta.persistence.MappedSuperclass;
+import jakarta.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.Length;
 

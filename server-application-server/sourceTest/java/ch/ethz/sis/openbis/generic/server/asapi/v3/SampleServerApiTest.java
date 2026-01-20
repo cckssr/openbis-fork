@@ -327,6 +327,8 @@ public class SampleServerApiTest extends AbstractApplicationServerApiTestCase
                 {
                     allowing(sampleDAO).createOrUpdateSample(with(sampleRecorder),
                             with(person));
+                    will(returnValue(sampleRecorder));
+
                 }
             });
         return repository;

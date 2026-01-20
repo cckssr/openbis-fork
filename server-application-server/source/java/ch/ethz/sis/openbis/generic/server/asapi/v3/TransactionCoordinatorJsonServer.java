@@ -28,10 +28,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import javax.annotation.Resource;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.annotation.Resource;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.eclipse.jetty.http.HttpMethod;
 import org.springframework.beans.factory.annotation.Autowired;

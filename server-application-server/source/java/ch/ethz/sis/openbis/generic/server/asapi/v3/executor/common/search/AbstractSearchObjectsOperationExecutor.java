@@ -30,7 +30,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.xml.bind.DatatypeConverter;
+import jakarta.xml.bind.DatatypeConverter;
 
 import ch.ethz.sis.shared.log.classic.impl.Logger;
 import org.springframework.beans.factory.annotation.Autowired;

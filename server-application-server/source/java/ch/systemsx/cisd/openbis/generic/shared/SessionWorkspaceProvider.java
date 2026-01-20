@@ -26,8 +26,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
 
 import ch.ethz.sis.shared.log.classic.impl.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -95,6 +95,11 @@ public class SessionWorkspaceProvider implements ISessionWorkspaceProvider
     @Override
     public Map<String, File> getSessionWorkspaces()
     {
+        if (sessionWorkspaceRootDir == null) {
+            operationLog.error("Session workspace root dir is not configured.");
+            return java.util.Collections.emptyMap();
+        }
+
         File[] sessionWorkspaces = sessionWorkspaceRootDir.listFiles(new FileFilter()
             {
                 @Override

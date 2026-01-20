@@ -25,8 +25,8 @@ import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
+import org.eclipse.jetty.ee10.servlet.ServletHolder;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.context.annotation.AnnotationConfigUtils;
@@ -123,7 +123,9 @@ public class JsonBaseTest
         };
 
         ServletContextHandler clientSch =
-                new ServletContextHandler(server, "/", ServletContextHandler.SESSIONS);
+                new ServletContextHandler(ServletContextHandler.SESSIONS);
+        clientSch.setContextPath("/");
+        server.setHandler(clientSch);
         clientSch.addServlet(new ServletHolder(clientDispatcherServlet), "/*");
         server.start();
 

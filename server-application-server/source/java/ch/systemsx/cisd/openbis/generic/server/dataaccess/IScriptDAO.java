@@ -33,6 +33,8 @@ public interface IScriptDAO extends IGenericDAO<ScriptPE>
 
     /**
      * Creates or updates the specified script.
+     *
+     * @return
      */
     void createOrUpdate(ScriptPE script);
 

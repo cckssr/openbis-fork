@@ -28,6 +28,8 @@ public interface IDataStoreDAO
 {
     /**
      * Creates or updates specified data store.
+     *
+     * @return
      */
     public void createOrUpdateDataStore(DataStorePE dataStore);
 

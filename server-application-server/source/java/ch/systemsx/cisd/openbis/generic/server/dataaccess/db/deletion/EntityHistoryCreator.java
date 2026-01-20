@@ -15,8 +15,13 @@
  */
 package ch.systemsx.cisd.openbis.generic.server.dataaccess.db.deletion;
 
-import java.math.BigInteger;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -100,6 +105,8 @@ public class EntityHistoryCreator
                             entityIdsToDelete);
             addToHistories(histories, relationshipHistory);
         }
+        daoFactory.getSessionFactory().getCurrentSession().flush();
+        daoFactory.getSessionFactory().getCurrentSession().clear();
 
         if (attachmentHolders != null)
         {
@@ -245,6 +252,7 @@ public class EntityHistoryCreator
         for (AttachmentHolderPE holder : attachmentHolders)
         {
             List<AttachmentPE> attachments = attachmentDAO.listAttachments(holder);
+            holder.setInternalAttachments(new HashSet<>(attachments));
             List<String> fileNames = new ArrayList<>();
             for (AttachmentPE attachment : attachments)
             {
@@ -309,11 +317,18 @@ public class EntityHistoryCreator
 
     private String render(Object value)
     {
-        if (value instanceof Date)
+        if (value == null)
         {
-            return DateFormatThreadLocal.DATE_FORMAT.get().format((Date) value);
+            return null;
         }
-        return value == null ? null : value.toString();
+
+        Date dateValue = tryToDate(value);
+        if (dateValue != null)
+        {
+            return DateFormatThreadLocal.DATE_FORMAT.get().format(dateValue);
+        }
+
+        return value.toString();
     }
 
     private void addToHistories(Map<String, List<? extends EntityModification>> histories,
@@ -414,9 +429,24 @@ public class EntityHistoryCreator
     private static Date toDate(Object o) {
         if (o == null) return null;
         if (o instanceof java.util.Date d) return d;
-        if (o instanceof java.time.Instant i) return java.util.Date.from(i);
         if (o instanceof java.sql.Timestamp ts) return new java.util.Date(ts.getTime());
+        if (o instanceof Instant i) return java.util.Date.from(i);
+        if (o instanceof OffsetDateTime odt) return java.util.Date.from(odt.toInstant());
+        if (o instanceof ZonedDateTime zdt) return java.util.Date.from(zdt.toInstant());
+        if (o instanceof LocalDateTime ldt) return java.util.Date.from(ldt.atZone(ZoneId.systemDefault()).toInstant());
+        if (o instanceof LocalDate ld) return java.util.Date.from(ld.atStartOfDay(ZoneId.systemDefault()).toInstant());
         throw new IllegalArgumentException("Unsupported time type: " + o.getClass());
+    }
+
+    private static Date tryToDate(Object value)
+    {
+        try
+        {
+            return toDate(value);
+        } catch (IllegalArgumentException ex)
+        {
+            return null;
+        }
     }
 
     private <T> List<Map<String, Object>> getRows(NativeQuery<T> sqlQuery, List<Long> entityIdsToDelete)

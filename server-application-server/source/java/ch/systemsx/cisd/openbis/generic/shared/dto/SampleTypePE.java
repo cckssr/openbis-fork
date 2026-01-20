@@ -20,10 +20,10 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import javax.persistence.*;
-import javax.persistence.Id;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
+import jakarta.persistence.*;
+import jakarta.persistence.Id;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 
 import ch.rinn.restrictions.Friend;
 import ch.systemsx.cisd.common.collection.UnmodifiableSetDecorator;
@@ -31,8 +31,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.IIdentityHolder;
 import ch.systemsx.cisd.openbis.generic.shared.dto.hibernate.JsonMapUserType;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
-import org.hibernate.annotations.TypeDefs;
 import org.hibernate.validator.constraints.Length;
 
 import ch.systemsx.cisd.openbis.generic.shared.IServer;
@@ -48,7 +46,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
 @Table(name = TableNames.SAMPLE_TYPES_TABLE, uniqueConstraints = {
         @UniqueConstraint(columnNames = { ColumnNames.CODE_COLUMN }) })
 @Friend(toClasses = SampleTypeTypeGroupsPE.class)
-@TypeDefs({ @TypeDef(name = "JsonMap", typeClass = JsonMapUserType.class) })
+////@TypeDefs({ @TypeDef(name = "JsonMap", typeClass = JsonMapUserType.class) })
 public final class SampleTypePE extends EntityTypePE implements IMetaDataHolder, IIdentityHolder
 {
     private static final long serialVersionUID = IServer.VERSION;
@@ -258,7 +256,7 @@ public final class SampleTypePE extends EntityTypePE implements IMetaDataHolder,
 
     @Override
     @Column(name = "meta_data")
-    @Type(type = "JsonMap")
+    @Type(JsonMapUserType.class)
     public Map<String, String> getMetaData()
     {
         return metaData;

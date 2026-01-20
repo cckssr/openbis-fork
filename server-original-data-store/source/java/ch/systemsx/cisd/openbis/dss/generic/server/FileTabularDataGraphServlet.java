@@ -18,7 +18,7 @@ package ch.systemsx.cisd.openbis.dss.generic.server;
 import java.io.File;
 import java.io.IOException;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchicalContent;

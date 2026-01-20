@@ -33,8 +33,11 @@ import java.util.Map;
 import java.util.Set;
 
 import ch.systemsx.cisd.openbis.generic.shared.dto.RelationshipTypePE;
+import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.orm.hibernate5.HibernateExceptionTranslator;
+import org.springframework.orm.hibernate5.SessionFactoryUtils;
 import org.testng.AssertJUnit;
 import org.testng.annotations.Test;
 

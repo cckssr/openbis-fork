@@ -18,7 +18,7 @@ package ch.systemsx.cisd.openbis.generic.server.api.v1;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;

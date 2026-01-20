@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 import org.springframework.stereotype.Component;
 

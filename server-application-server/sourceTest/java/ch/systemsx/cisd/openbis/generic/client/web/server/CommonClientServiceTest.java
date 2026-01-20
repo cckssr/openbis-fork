@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
 
+import org.ehcache.config.builders.CacheManagerBuilder;
 import org.jmock.Expectations;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -168,8 +169,8 @@ public final class CommonClientServiceTest extends AbstractClientServiceTest
         commonClientService.setCifexRecipient(CIFEX_RECIPIENT);
         commonClientService.webClientConfigurationProvider =
                 new WebClientConfigurationProvider(new Properties());
-        String managerConfig = "<ehcache name='" + UUID.randomUUID() + "'></ehcache>";
-        net.sf.ehcache.CacheManager cacheManager = new net.sf.ehcache.CacheManager(new ByteArrayInputStream(managerConfig.getBytes()));
+        //String managerConfig = "<ehcache name='" + UUID.randomUUID() + "'></ehcache>";
+        final org.ehcache.CacheManager cacheManager = CacheManagerBuilder.newCacheManagerBuilder().build(true);
         tableDataCache = new TableDataCache<String, Object>(cacheManager);
         tableDataCache.initCache();
     }

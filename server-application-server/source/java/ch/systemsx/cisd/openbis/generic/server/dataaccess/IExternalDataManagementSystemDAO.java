@@ -29,6 +29,8 @@ public interface IExternalDataManagementSystemDAO
 {
     /**
      * Creates or updates specified external data management system.
+     *
+     * @return
      */
     public void createOrUpdateExternalDataManagementSystem(
             ExternalDataManagementSystemPE externalDataManagementSystem);

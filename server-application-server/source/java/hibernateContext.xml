@@ -119,16 +119,31 @@
         -->
         <property name="hibernateProperties">
             <props>
+                    <!-- 1. DATABASE COMPATIBILITY -->
+                    <prop key="hibernate.dialect">org.hibernate.dialect.PostgreSQLDialect</prop>
 
-                <prop key="hibernate.current_session_context_class">org.springframework.orm.hibernate5.SpringSessionContext</prop>
-            
+                    <!-- 2. TRANSACTION SETUP - CRITICAL FIX -->
+                    <!-- Force Hibernate to use local JDBC transactions instead of JTA -->
+                    <prop key="hibernate.transaction.coordinator_class">jdbc</prop>
+                    <!-- Explicitly disable JTA platform detection to prevent startup crash -->
+                    <prop key="hibernate.transaction.jta.platform">org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform</prop>
+
+                    <!-- 3. SESSION CONTEXT -->
+                    <!-- Required for HibernateTransactionManager to find the session bound by Spring -->
+                    <prop key="hibernate.current_session_context_class">org.springframework.orm.hibernate5.SpringSessionContext</prop>
             
                 <!-- Set this to "true" in order to enable the second-level cache. --> 
                     <prop key="hibernate.cache.use_second_level_cache">false</prop>
-                <prop key="hibernate.cache.provider_class">
-                    org.hibernate.cache.EhCacheProvider
-                </prop>
+<!--                <prop key="hibernate.cache.provider_class">-->
+<!--                    org.hibernate.cache.EhCacheProvider-->
+<!--                </prop>-->
                 <prop key="hibernate.max_fetch_depth">4</prop>
+
+                <!-- Hibernate 6 Force inline UPDATE/DELETE so Postgres RULEs don't clash with CTEs -->
+                <prop key="hibernate.query.mutation_strategy">
+                    org.hibernate.query.sqm.mutation.internal.inline.InlineMutationStrategy
+                </prop>
+
                 <!--  Uncomment this for debugging the Hibernate sql queries>
 <prop key="hibernate.show_sql">true</prop>
 <prop key="hibernate.use_sql_comments">true</prop>

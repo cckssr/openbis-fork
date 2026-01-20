@@ -6,5 +6,6 @@ dependencies {
             'lemnik:eodsql:2.2-CISD',
             'unimi:fastutil:5.1.5'
     testImplementation 'testng:testng:6.8-CISD',
+            'junit:junit:4.13.2',
             'jmock:jmock:2.5.1'
 }

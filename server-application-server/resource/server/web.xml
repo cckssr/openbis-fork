@@ -12,6 +12,13 @@
         <servlet-name>spring</servlet-name>
         <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
         <load-on-startup>1</load-on-startup>
+        <multipart-config>
+            <!-- <location>/tmp</location>
+             <max-file-size>52428800</max-file-size>        &lt;!&ndash; 50 MB &ndash;&gt;
+             <max-request-size>52428800</max-request-size>  &lt;!&ndash; 50 MB &ndash;&gt;
+             <file-size-threshold>0</file-size-threshold>-->
+            <file-size-threshold>1048576</file-size-threshold>
+        </multipart-config>
     </servlet>
 
     <context-param>

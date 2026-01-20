@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.springframework.beans.factory.annotation.Autowired;

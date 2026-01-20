@@ -17,25 +17,25 @@ package ch.systemsx.cisd.openbis.generic.shared.dto;
 
 import java.util.*;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.persistence.Transient;
-import javax.persistence.UniqueConstraint;
-import javax.persistence.Version;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
+import jakarta.persistence.UniqueConstraint;
+import jakarta.persistence.Version;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 
 import ch.systemsx.cisd.openbis.generic.shared.dto.hibernate.JsonMapUserType;
 import org.hibernate.annotations.*;
@@ -59,7 +59,7 @@ import ch.systemsx.cisd.openbis.generic.shared.util.HibernateUtils;
  */
 @Entity
 @Table(name = TableNames.DATA_VIEW, uniqueConstraints = @UniqueConstraint(columnNames = ColumnNames.CODE_COLUMN))
-@TypeDefs({ @TypeDef(name = "JsonMap", typeClass = JsonMapUserType.class) })
+//@TypeDefs({ @TypeDef(name = "JsonMap", typeClass = JsonMapUserType.class) })
 @Inheritance(strategy = InheritanceType.JOINED)
 public class DataPE extends AbstractIdAndCodeHolder<DataPE> implements
         IEntityInformationWithPropertiesHolder, IMatchingEntity, IIdentifierHolder, IDeletablePE,
@@ -148,7 +148,7 @@ public class DataPE extends AbstractIdAndCodeHolder<DataPE> implements
     private boolean afsData;
 
     @OptimisticLock(excluded = true)
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "parentDataSet")
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "parentDataSet", cascade = CascadeType.ALL, orphanRemoval = true)
     @Fetch(FetchMode.SUBSELECT)
     private Set<DataSetRelationshipPE> getDataSetChildRelationships()
     {
@@ -175,9 +175,9 @@ public class DataPE extends AbstractIdAndCodeHolder<DataPE> implements
     }
 
     @OptimisticLock(excluded = true)
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "childDataSet", orphanRemoval = true)
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "childDataSet")
     @Fetch(FetchMode.SUBSELECT)
-    private Set<DataSetRelationshipPE> getDataSetParentRelationships()
+    public Set<DataSetRelationshipPE> getDataSetParentRelationships()
     {
         return parentRelationships;
     }
@@ -247,6 +247,11 @@ public class DataPE extends AbstractIdAndCodeHolder<DataPE> implements
     {
         relationship.setChildDataSet(this);
         getDataSetParentRelationships().add(relationship);
+        DataPE parent = relationship.getParentDataSet();
+        if (parent != null)
+        {
+            parent.getDataSetChildRelationships().add(relationship);
+        }
     }
 
     public void removeParentRelationship(final DataSetRelationshipPE relationship)
@@ -619,8 +624,8 @@ public class DataPE extends AbstractIdAndCodeHolder<DataPE> implements
         this.modificationDate = versionDate;
     }
 
-    @Column(name = ColumnNames.ACCESS_TIMESTAMP, nullable = false, insertable = false)
-    @Generated(GenerationTime.INSERT)
+    @Column(name = ColumnNames.ACCESS_TIMESTAMP, nullable = false, updatable = true)
+    @CreationTimestamp
     public Date getAccessDate()
     {
         return accessDate;
@@ -1045,7 +1050,7 @@ public class DataPE extends AbstractIdAndCodeHolder<DataPE> implements
 
     @Override
     @Column(name = ColumnNames.META_DATA)
-    @Type(type = "JsonMap")
+    @Type(JsonMapUserType.class)
     public Map<String, String> getMetaData()
     {
         return metaData;

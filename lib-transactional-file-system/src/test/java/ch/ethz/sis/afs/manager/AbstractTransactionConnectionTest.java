@@ -15,25 +15,30 @@
  */
 package ch.ethz.sis.afs.manager;
 
-import ch.ethz.sis.afs.api.dto.File;
-import ch.ethz.sis.shared.io.IOUtils;
-import ch.ethz.sis.afsjson.JsonObjectMapper;
-import ch.ethz.sis.afs.AFSEnvironment;
-import ch.ethz.sis.afs.AbstractTest;
-import ch.ethz.sis.afs.dto.Transaction;
-import ch.ethz.sis.afs.startup.AtomicFileSystemParameter;
-import org.junit.After;
-import org.junit.Before;
-
-import java.io.IOException;
-import java.util.*;
-
 import static ch.ethz.sis.shared.io.IOUtils.createDirectories;
 import static ch.ethz.sis.shared.io.IOUtils.createDirectory;
 import static ch.ethz.sis.shared.io.IOUtils.createFile;
 import static ch.ethz.sis.shared.io.IOUtils.getPath;
 import static ch.ethz.sis.shared.io.IOUtils.readWritePermissions;
 import static ch.ethz.sis.shared.io.IOUtils.setFilePermissions;
+
+import java.io.IOException;
+import java.util.Set;
+import java.util.UUID;
+
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+
+import ch.ethz.sis.afs.AFSEnvironment;
+import ch.ethz.sis.afs.AbstractTest;
+import ch.ethz.sis.afs.api.dto.ExceptionReason;
+import ch.ethz.sis.afs.api.dto.File;
+import ch.ethz.sis.afs.dto.Transaction;
+import ch.ethz.sis.afs.startup.AtomicFileSystemParameter;
+import ch.ethz.sis.afsjson.JsonObjectMapper;
+import ch.ethz.sis.shared.exception.ThrowableReason;
+import ch.ethz.sis.shared.io.IOUtils;
 
 public abstract class AbstractTransactionConnectionTest extends AbstractTest {
 
@@ -162,6 +167,12 @@ public abstract class AbstractTransactionConnectionTest extends AbstractTest {
 
     public boolean create(final String source, final boolean directory) throws Exception {
         return transaction.create(source, directory);
+    }
+
+    public void assertError(Throwable throwable, String expectedError){
+        ThrowableReason cause = (ThrowableReason) throwable.getCause();
+        ExceptionReason reason = (ExceptionReason) cause.getReason();
+        Assert.assertEquals(expectedError, reason.getMessage());
     }
 
 }

@@ -17,8 +17,8 @@ package ch.systemsx.cisd.openbis.generic.shared.dto.hibernate;
 
 import java.io.Serializable;
 
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 
 import ch.systemsx.cisd.openbis.generic.shared.IServer;
 

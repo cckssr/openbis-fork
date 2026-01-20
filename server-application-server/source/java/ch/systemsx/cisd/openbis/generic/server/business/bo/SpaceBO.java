@@ -17,7 +17,10 @@ package ch.systemsx.cisd.openbis.generic.server.business.bo;
 
 import java.util.Collections;
 
+import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePE;
+import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DataRetrievalFailureException;
 
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
@@ -31,8 +34,10 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.EventPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EventPE.EntityType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EventType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
+import ch.systemsx.cisd.openbis.generic.shared.dto.RoleAssignmentPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.Session;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SpacePE;
+import org.hibernate.TransientObjectException;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.IdentifierHelper;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.SpaceIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.managed_property.IManagedPropertyEvaluatorFactory;
@@ -68,6 +73,10 @@ public final class SpaceBO extends AbstractBusinessObject implements ISpaceBO
             getSpaceDAO().createSpace(space);
         } catch (final DataAccessException e)
         {
+            throwException(e, "Space '" + IdentifierHelper.createGroupIdentifier(space) + "'");
+        }   catch (ConstraintViolationException ce)
+        {
+            DataAccessException e = new DataIntegrityViolationException(ce.getMessage(), ce);
             throwException(e, "Space '" + IdentifierHelper.createGroupIdentifier(space) + "'");
         }
     }
@@ -139,10 +148,18 @@ public final class SpaceBO extends AbstractBusinessObject implements ISpaceBO
         loadDataByTechId(spaceId);
         try
         {
+            for (RoleAssignmentPE roleAssignment : getRoleAssignmentDAO().listRoleAssignmentsBySpace(space))
+            {
+                getRoleAssignmentDAO().deleteRoleAssignment(roleAssignment);
+            }
             getSpaceDAO().delete(space);
             getEventDAO().persist(createDeletionEvent(space, session.tryGetPerson(), reason));
         } catch (final DataAccessException ex)
         {
+            if (containsTransientObjectException(ex))
+            {
+                throwEntityInUseException(String.format("Space '%s'", space.getCode()), null);
+            }
             throwException(ex, String.format("Space '%s'", space.getCode()));
         }
     }
@@ -163,5 +180,18 @@ public final class SpaceBO extends AbstractBusinessObject implements ISpaceBO
     private static String getDeletionDescription(SpacePE space)
     {
         return String.format("%s", space.getCode());
+    }
+
+    private boolean containsTransientObjectException(Throwable throwable)
+    {
+        while (throwable != null)
+        {
+            if (throwable instanceof TransientObjectException)
+            {
+                return true;
+            }
+            throwable = throwable.getCause();
+        }
+        return false;
     }
 }

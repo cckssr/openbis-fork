@@ -44,6 +44,7 @@ import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 

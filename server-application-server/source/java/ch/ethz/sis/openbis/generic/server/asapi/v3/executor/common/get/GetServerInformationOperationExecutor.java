@@ -18,7 +18,7 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.get;
 import java.io.StringWriter;
 import java.util.*;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.RoleWithHierarchy;
 import ch.systemsx.cisd.openbis.generic.shared.dto.RoleAssignmentPE;

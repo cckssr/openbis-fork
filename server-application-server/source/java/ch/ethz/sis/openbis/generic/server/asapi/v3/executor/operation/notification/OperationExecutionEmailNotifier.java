@@ -21,8 +21,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
 
 import ch.ethz.sis.shared.log.classic.impl.Logger;
 import org.springframework.stereotype.Component;

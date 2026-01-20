@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePE;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataRetrievalFailureException;
 
@@ -35,6 +36,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.EventPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EventPE.EntityType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EventType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
+import ch.systemsx.cisd.openbis.generic.shared.dto.RoleAssignmentPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.Session;
 import ch.systemsx.cisd.openbis.generic.shared.managed_property.IManagedPropertyEvaluatorFactory;
 
@@ -136,6 +138,10 @@ public class AuthorizationGroupBO extends AbstractBusinessObject implements IAut
             for (PersonPE personPE : persons)
             {
                 authorizationGroup.removePerson(personPE);
+            }
+            for (RoleAssignmentPE roleAssignment : getRoleAssignmentDAO().listRoleAssignmentsByAuthorizationGroup(authorizationGroup))
+            {
+                getRoleAssignmentDAO().deleteRoleAssignment(roleAssignment);
             }
             getAuthorizationGroupDAO().delete(authorizationGroup);
             getEventDAO().persist(createDeletionEvent(code, session.tryGetPerson(), reason));

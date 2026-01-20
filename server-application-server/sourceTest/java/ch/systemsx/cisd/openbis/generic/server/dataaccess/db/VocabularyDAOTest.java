@@ -24,6 +24,7 @@ import static org.testng.AssertJUnit.assertTrue;
 import java.util.List;
 
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.testng.annotations.Test;
 
 import ch.rinn.restrictions.Friend;
@@ -182,7 +183,8 @@ public final class VocabularyDAOTest extends AbstractDAOTest
         }
     }
 
-    @Test(expectedExceptions = DataIntegrityViolationException.class)
+    @Test(expectedExceptions = {DataIntegrityViolationException.class,
+            InvalidDataAccessApiUsageException.class })
     public final void testDeleteFail()
     {
         final IVocabularyDAO vocabularyDAO = daoFactory.getVocabularyDAO();

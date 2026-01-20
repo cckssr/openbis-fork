@@ -206,7 +206,8 @@ public abstract class AbstractGenericEntityWithCustomIdDAO<T extends ICustomIdHo
 
             doExecute( session -> {
                         //            Session session = currentSession();
-                        session.delete(entity); // Or session.remove(entity) in pure JPA
+                        T managed = (T) session.merge(entity);
+                        session.delete(managed); // Or session.remove(entity) in pure JPA
                         session.flush();
                         return  null;
                     });

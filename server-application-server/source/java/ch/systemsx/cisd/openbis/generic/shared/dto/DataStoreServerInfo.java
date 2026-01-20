@@ -18,7 +18,7 @@ package ch.systemsx.cisd.openbis.generic.shared.dto;
 import java.io.Serializable;
 import java.util.List;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import ch.systemsx.cisd.openbis.generic.shared.IServer;
 

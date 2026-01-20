@@ -15,27 +15,36 @@
  */
 package ch.ethz.sis.afs.manager.operation;
 
-import static ch.ethz.sis.shared.io.IOUtils.getMD5;
+import static ch.ethz.sis.shared.io.IOUtils.getPath;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 
 import org.junit.Test;
 
+import ch.ethz.sis.afs.AFSEnvironment;
 import ch.ethz.sis.afs.api.dto.File;
+import ch.ethz.sis.afs.startup.AtomicFileSystemParameter;
 import ch.ethz.sis.shared.io.IOUtils;
 
-public class WriteTransactionOperationTest extends AbstractTransactionOperationTest {
+public class WriteTransactionOperationTest extends AbstractTransactionOperationTest
+{
 
     @Override
-    public void operation() throws Exception {
+    public void operation() throws Exception
+    {
         write(FILE_B_PATH, 0, DATA);
     }
 
     @Test
-    public void operation_write_succeed() throws Exception {
+    public void operation_write_succeed() throws Exception
+    {
         begin();
         String realPath = OperationExecutor.getRealPath(getTransaction(), FILE_B_PATH);
         File beforeWrite = IOUtils.getFile(realPath);
@@ -50,13 +59,102 @@ public class WriteTransactionOperationTest extends AbstractTransactionOperationT
     }
 
     @Test(expected = RuntimeException.class)
-    public void operation_writeDirectory_exception() throws Exception {
+    public void operation_writeDirectory_exception() throws Exception
+    {
         begin();
         write(DIR_B_PATH, 0, DATA);
     }
 
     @Test
-    public void operation_writeTwice_succeed() throws Exception {
+    public void operation_writeDirectoryThatWasDeletedAndReplacedWithFile_succeed() throws Exception
+    {
+        String baseDir = AFSEnvironment.getDefaultAFSConfig().getStringProperty(AtomicFileSystemParameter.storageRoot);
+
+        Path folder = Path.of(getPath(baseDir, DIR_B_PATH));
+        assertTrue(Files.exists(folder));
+        assertTrue(Files.isDirectory(folder));
+
+        begin();
+        delete(DIR_B_PATH);
+        write(DIR_B_PATH, 0, DATA);
+        prepare();
+        commit();
+
+        Path file = Path.of(getPath(baseDir, DIR_B_PATH));
+        assertTrue(Files.exists(file));
+        assertFalse(Files.isDirectory(file));
+        assertEquals(DATA.length, Files.size(file));
+    }
+
+    @Test
+    public void operation_writeFileThatWasDeletedAndReplacedWithFolder_fail() throws Exception
+    {
+        String baseDir = AFSEnvironment.getDefaultAFSConfig().getStringProperty(AtomicFileSystemParameter.storageRoot);
+
+        Path file = Path.of(getPath(baseDir, FILE_B_PATH));
+        assertTrue(Files.exists(file));
+        assertFalse(Files.isDirectory(file));
+
+        begin();
+        delete(FILE_B_PATH);
+        create(FILE_B_PATH, true);
+
+        try
+        {
+            write(FILE_B_PATH, 0, DATA);
+            fail();
+        } catch (Exception e)
+        {
+            assertError(e, "Path can't be operated by: Write - ./target/tests/storage/B/B.txt is a directory");
+        }
+    }
+
+    @Test
+    public void operation_writeFileThatWasDeletedAndCreated_succeed() throws Exception
+    {
+        String baseDir = AFSEnvironment.getDefaultAFSConfig().getStringProperty(AtomicFileSystemParameter.storageRoot);
+
+        Path file = Path.of(getPath(baseDir, FILE_B_PATH));
+        assertTrue(Files.exists(file));
+        assertFalse(Files.isDirectory(file));
+
+        begin();
+        delete(FILE_B_PATH);
+        create(FILE_B_PATH, false);
+        write(FILE_B_PATH, 0, DATA);
+        write(FILE_B_PATH, DATA.length, DATA);
+        prepare();
+        commit();
+
+        assertTrue(Files.exists(file));
+        assertFalse(Files.isDirectory(file));
+        assertEquals(2 * DATA.length, Files.size(file));
+    }
+
+    @Test
+    public void operation_writeFileThatWasDeletedCreatesFileAgain_succeed() throws Exception
+    {
+        String baseDir = AFSEnvironment.getDefaultAFSConfig().getStringProperty(AtomicFileSystemParameter.storageRoot);
+
+        Path file = Path.of(getPath(baseDir, FILE_B_PATH));
+        assertTrue(Files.exists(file));
+        assertFalse(Files.isDirectory(file));
+
+        begin();
+        delete(FILE_B_PATH);
+        write(FILE_B_PATH, 0, DATA);
+        write(FILE_B_PATH, DATA.length, DATA);
+        prepare();
+        commit();
+
+        assertTrue(Files.exists(file));
+        assertFalse(Files.isDirectory(file));
+        assertEquals(2 * DATA.length, Files.size(file));
+    }
+
+    @Test
+    public void operation_writeTwice_succeed() throws Exception
+    {
         begin();
         String realPath = OperationExecutor.getRealPath(getTransaction(), FILE_B_PATH);
         File beforeWrite = IOUtils.getFile(realPath);
@@ -76,7 +174,8 @@ public class WriteTransactionOperationTest extends AbstractTransactionOperationT
     }
 
     @Test
-    public void operation_writeEmpty_succeed() throws Exception {
+    public void operation_writeEmpty_succeed() throws Exception
+    {
         begin();
         String realPath = OperationExecutor.getRealPath(getTransaction(), FILE_B_PATH);
         File beforeWrite = IOUtils.getFile(realPath);
@@ -92,7 +191,8 @@ public class WriteTransactionOperationTest extends AbstractTransactionOperationT
     }
 
     @Test
-    public void operation_writeOver_succeed() throws Exception {
+    public void operation_writeOver_succeed() throws Exception
+    {
         begin();
         String realPath = OperationExecutor.getRealPath(getTransaction(), FILE_B_PATH);
         File beforeWrite = IOUtils.getFile(realPath);

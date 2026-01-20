@@ -17,8 +17,10 @@
 
 package ch.ethz.sis.openbis.generic.server.dev;
 
+
+import org.eclipse.jetty.ee.webapp.WebAppClassLoader;
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.webapp.WebAppContext;
+import org.eclipse.jetty.ee10.webapp.WebAppContext;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -87,35 +89,81 @@ public class EmbeddedJettyDevelopmentServer
             System.exit(1);
         }
 
+        Thread.currentThread().setContextClassLoader(
+                EmbeddedJettyDevelopmentServer.class.getClassLoader()
+        );
+
+        ClassLoader parentCL = EmbeddedJettyDevelopmentServer.class.getClassLoader();
+        // make the thread context CL the same parent (helps ServiceLoader too)
+        Thread.currentThread().setContextClassLoader(parentCL);
+
+
         // Build a ClassLoader combining all “classes” folders + all JARs under “lib”
         ClassLoader webappCl = createWebappClassLoader(classesDirs, libDir);
 
-        // Create Jetty Server on the given port
+        // build server and context as you already do
         Server server = new Server(port);
+        WebAppContext context = getWebAppContext(webappBase, /* will set CL next */ null);
+        context.setParentLoaderPriority(true);
+        // create a Jetty WebAppClassLoader with the parent = launcher CL
+        WebAppClassLoader webappCL = new WebAppClassLoader(parentCL, context);
 
-        // Create WebAppContext: root path “/” serving files under webappBase
-        WebAppContext context = new WebAppContext();
-        context.setContextPath("/");
-        context.setResourceBase(webappBase);
+        // add your /classes dirs
+
+        for (String dir : classesDirs) {
+            File f = new File(dir);
+            if (f.isDirectory()) {
+                webappCL.addClassPath(dir);
+            }
+        }
+        context.setParentLoaderPriority(true);
+        // add jars from --lib folder
+        File libFolder = new File(libDir);
+        File[] jars = libFolder.listFiles((d, name) -> name.toLowerCase().endsWith(".jar"));
+        if (jars != null) {
+            for (File jar : jars) {
+                webappCL.addClassPath(jar.getAbsolutePath());
+            }
+        }
+        context.setParentLoaderPriority(true);
+        // install the CL and prefer parent-first
+        context.setClassLoader(webappCL);
+        context.setParentLoaderPriority(true);
+
+        // now proceed
+        server.setHandler(context);
+
+       // context.setDefaultsDescriptor("resource/source/webdefault-ee10-no-cleaner.xml");
+        // copy Jetty’s webdefault-ee10.xml and delete the <listener>IntrospectorCleaner</listener>
+
+        var sh = context.getServletHandler();
+        System.out.println("== Servlet mappings ==");
+        for (var m : sh.getServletMappings()) {
+            System.out.println(m.getServletName() + " -> " + String.join(",", m.getPathSpecs()));
+        }
+
+        System.out.println(">>> Embedded Jetty starting on port " + port);
+        System.out.println("WAR dir: " + new File(webappBase).getAbsolutePath());
+        server.start();
+        server.join();
+    }
+
+    private static WebAppContext getWebAppContext(String webappBase, ClassLoader webappCl)
+    {
+        WebAppContext context = new WebAppContext(webappBase, "/");
+        //        context.setContextPath("/");
+        //        context.setResourceBase(webappBase);
         context.setParentLoaderPriority(true);
         context.setClassLoader(webappCl);
 
         // --- BEGIN: ensure jetty-web.xml in WEB-INF is picked up ---
         // Provide the list of Configuration classes, including JettyWebXmlConfiguration:
-        context.setConfigurationClasses(new String[] {
-                "org.eclipse.jetty.webapp.WebInfConfiguration",
-                "org.eclipse.jetty.webapp.WebXmlConfiguration",
-                "org.eclipse.jetty.webapp.JettyWebXmlConfiguration"
-        });
-
-        // --- END: this ensures WEB-INF/jetty-web.xml is processed ---
-
-        // WEB-INF/web.xml, Jetty picks it up automatically.
-        server.setHandler(context);
-
-        System.out.println(">>> Embedded Jetty starting on port " + port);
-        server.start();
-        server.join();
+//        context.setConfigurationClasses(new String[] {
+//                "org.eclipse.jetty.ee10.webapp.WebInfConfiguration",
+//                "org.eclipse.jetty.ee10.webapp.WebXmlConfiguration",
+//                "org.eclipse.jetty.ee10.webapp.JettyWebXmlConfiguration"
+//        });
+        return context;
     }
 
     private static ClassLoader createWebappClassLoader(List<String> classesDirs, String libDir)

@@ -15,16 +15,15 @@
  */
 package ch.ethz.sis.openbis.systemtest.asapi.v3;
 
-import static org.hamcrest.CoreMatchers.both;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.both;
 import static org.hamcrest.Matchers.lessThan;
 
 import java.util.Date;
 import java.util.List;
 
 import org.hamcrest.Matchers;
-import org.junit.internal.matchers.IsCollectionContaining;
 import org.springframework.test.context.transaction.TestTransaction;
 import org.testng.annotations.Test;
 
@@ -133,7 +132,7 @@ public class UpdateLinkDataSetTest extends AbstractLinkDataSetTest
         List<ContentCopy> copies = get(id).getLinkedData().getContentCopies();
 
         assertThat(copies.size(), is(2));
-        assertThat(copies, IsCollectionContaining.<ContentCopy> hasItems(
+        assertThat(copies, Matchers.<ContentCopy> hasItems(
                 both(Matchers.<ContentCopy> hasProperty("externalDms", isSimilarTo(get(dms3)))).and(
                         Matchers.<ContentCopy> hasProperty("externalCode", is(code3))),
                 both(Matchers.<ContentCopy> hasProperty("externalDms", isSimilarTo(get(dms4)))).and(

@@ -29,9 +29,13 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 
-import javax.persistence.PersistenceException;
-import javax.persistence.TemporalType;
-import javax.validation.*;
+import jakarta.persistence.PersistenceException;
+import jakarta.persistence.TemporalType;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
 
 import org.hibernate.FlushMode;
 import org.hibernate.HibernateException;
@@ -312,7 +316,7 @@ public abstract class AbstractDAO {
             });
         } catch (org.springframework.jdbc.UncategorizedSQLException e) {
             translateUncategorizedSQLException(e);
-        } catch (javax.validation.ConstraintViolationException e) {
+        } catch (jakarta.validation.ConstraintViolationException e) {
             translateConstraintViolationException(e);
         } catch (PersistenceException e) {
             translatePersistenceConstraintViolationException(e);
@@ -474,6 +478,9 @@ public abstract class AbstractDAO {
             throw ex;
         }
         catch (RuntimeException ex) {
+            if (ex.getCause() instanceof HibernateException) {
+                throw SessionFactoryUtils.convertHibernateAccessException((HibernateException) ex.getCause());
+            }
             // Callback code threw application exception...
             throw ex;
         }

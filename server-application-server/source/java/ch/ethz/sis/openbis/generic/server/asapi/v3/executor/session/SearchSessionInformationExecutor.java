@@ -17,7 +17,7 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.session;
 
 import java.util.List;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

@@ -12,7 +12,7 @@ dependencies {
             project(':lib-pathinfo-db'),
             project(':api-openbis-java'),
             'fasterxml:jackson-annotations:2.9.10',
-            'fasterxml:jackson-databind:2.9.10.8',
+            'fasterxml:jackson-databind:2.18.1',
             'lemnik:eodsql:2.2-CISD',
             'apache:commons-compress:1.8',
             'truezip:truezip:6.8.1'

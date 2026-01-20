@@ -15,7 +15,7 @@
  */
 package ch.systemsx.cisd.common.servlet;
 
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpSession;
 
 /**
  * Super interface of all action log classes. Has action methods concerning authentication.

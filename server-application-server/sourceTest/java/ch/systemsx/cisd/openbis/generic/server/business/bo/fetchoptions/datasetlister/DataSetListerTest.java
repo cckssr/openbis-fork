@@ -30,7 +30,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;

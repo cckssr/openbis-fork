@@ -18,10 +18,10 @@ package ch.systemsx.cisd.openbis.generic.server.dataaccess.db;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.persistence.TypedQuery;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
+import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import org.hibernate.SessionFactory;
 import org.hibernate.query.criteria.HibernateCriteriaBuilder;
 import org.springframework.orm.hibernate5.HibernateTemplate;

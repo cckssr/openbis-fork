@@ -18,6 +18,7 @@ package ch.systemsx.cisd.openbis.generic.server.dataaccess.db;
 import java.util.List;
 
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.testng.AssertJUnit;
 import org.testng.annotations.Test;
 
@@ -100,7 +101,8 @@ public class AuthorizationGroupDAOTest extends AbstractDAOTest
         AssertJUnit.assertNull(daoFactory.getAuthorizationGroupDAO().tryFindByCode(code));
     }
 
-    @Test(expectedExceptions = DataIntegrityViolationException.class)
+    @Test(expectedExceptions = {DataIntegrityViolationException.class,
+            InvalidDataAccessApiUsageException.class })
     public void testTryDeleteAuthGroupWithUsers() throws Exception
     {
         String code = "code";

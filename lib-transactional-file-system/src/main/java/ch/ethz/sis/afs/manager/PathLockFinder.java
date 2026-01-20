@@ -23,7 +23,7 @@ import java.util.*;
 
 import static ch.ethz.sis.afs.exception.AFSExceptions.NotAPath;
 
-class PathLockFinder implements HierarchicalLockFinder<UUID, String> {
+public class PathLockFinder implements HierarchicalLockFinder<UUID, String> {
 
     private Map<String, Lock<UUID, String>> hierarchicallyExclusiveLocks;
     private Map<String, Lock<UUID, String>> hierarchyExclusivityBlockedResouces;
@@ -39,7 +39,7 @@ class PathLockFinder implements HierarchicalLockFinder<UUID, String> {
         return hierarchicallyExclusiveLocks;
     }
 
-    static List<String> getParentSubPaths(String path) {
+    public static List<String> getParentSubPaths(String path) {
         String[] pathParts = path.split(IOUtils.PATH_SEPARATOR_AS_STRING);
         List<String> subPaths = new ArrayList<>();
 

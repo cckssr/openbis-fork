@@ -16,31 +16,31 @@
 package ch.systemsx.cisd.openbis.generic.shared.dto;
 
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.Date;
 import java.util.Map;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
-import javax.persistence.Version;
-import javax.validation.constraints.NotNull;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
+import jakarta.persistence.Version;
+import jakarta.validation.constraints.NotNull;
 
 import ch.systemsx.cisd.openbis.generic.shared.basic.IIdHolder;
 import org.hibernate.annotations.Generated;
 import org.hibernate.annotations.GenerationTime;
+import org.hibernate.annotations.Source;
+import org.hibernate.annotations.SourceType;
 import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
-import org.hibernate.annotations.TypeDefs;
-import org.hibernate.type.DbTimestampType;
 
 import ch.systemsx.cisd.openbis.generic.shared.IServer;
 import ch.systemsx.cisd.openbis.generic.shared.dto.hibernate.JsonMapUserType;
@@ -54,8 +54,6 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.hibernate.JsonMapUserType;
 @Table(name = TableNames.SAMPLE_RELATIONSHIPS_VIEW, uniqueConstraints = @UniqueConstraint(columnNames = { ColumnNames.PARENT_SAMPLE_COLUMN,
         ColumnNames.CHILD_SAMPLE_COLUMN,
         ColumnNames.RELATIONSHIP_COLUMN }))
-@TypeDefs({ @TypeDef(name = "transactiontimestamp", typeClass = DbTimestampType.class),
-    @TypeDef(name = "JsonMap", typeClass = JsonMapUserType.class) })
 public class SampleRelationshipPE implements IIdHolder, Serializable {
     private static final long serialVersionUID = IServer.VERSION;
 
@@ -123,7 +121,7 @@ public class SampleRelationshipPE implements IIdHolder, Serializable {
     }
 
     @Column(name = "parent_annotations")
-    @Type(type = "JsonMap")
+    @Type(JsonMapUserType.class)
     public Map<String, String> getParentAnnotations()
     {
         return parentAnnotations;
@@ -168,7 +166,7 @@ public class SampleRelationshipPE implements IIdHolder, Serializable {
     }
 
     @Column(name = "child_annotations")
-    @Type(type = "JsonMap")
+    @Type(JsonMapUserType.class)
     public Map<String, String> getChildAnnotations()
     {
         return childAnnotations;
@@ -247,7 +245,7 @@ public class SampleRelationshipPE implements IIdHolder, Serializable {
 
     @Version
     @Column(name = ColumnNames.MODIFICATION_TIMESTAMP_COLUMN, nullable = false)
-    @Type(type = "transactiontimestamp")
+    @Source(SourceType.DB)
     public Date getModificationDate()
     {
         return modificationDate;

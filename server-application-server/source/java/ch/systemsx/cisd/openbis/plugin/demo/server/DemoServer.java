@@ -17,7 +17,7 @@ package ch.systemsx.cisd.openbis.plugin.demo.server;
 
 import java.util.Collection;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 import org.springframework.stereotype.Component;
 

@@ -12,19 +12,21 @@ repositories {
         ivyPattern "https://sissource.ethz.ch/openbis/openbis-public/openbis-ivy/-/raw/main/[organisation]/[module]/[revision]/ivy.xml"
         artifactPattern "https://sissource.ethz.ch/openbis/openbis-public/openbis-ivy/-/raw/main/[organisation]/[module]/[revision]/[artifact]-[revision](-[classifier]).[ext]"
     }
+    //mavenCentral()
 }
 
 
 dependencies {
     implementation project(':lib-logging')
-    api     'eclipse:jetty-server:10.0.25',
-             "eclipse:jetty-servlet:10.0.25",
-            "eclipse:jetty-webapp:10.0.25",
-            'javax:servlet-api:4.0.1',
+    api     'org.eclipse.jetty:jetty-server:12.1.1',
+             "org.eclipse.jetty.ee10:jetty-ee10-servlet:12.1.1",
+            "org.eclipse.jetty.ee10:jetty-ee10-webapp:12.1.1",
+            "org.eclipse.jetty:jetty-util:12.1.1",
+            'jakarta:jakarta.servlet-api:6.1.0',
             'lombok:lombok:1.18.38',
             'fasterxml:jackson-annotations:2.9.10',
-            'fasterxml:jackson-core:2.9.10',
-            'fasterxml:jackson-databind:2.9.10.8',
+            'fasterxml:jackson-core:2.18.1',
+            'fasterxml:jackson-databind:2.18.1',
             'slf4j:slf4j-api:1.7.24', // Required by Jetty that uses SLF4J
             'slf4j:slf4j-jdk14:1.7.24' // Required by Jetty to tell SLF4J to use JDK
 

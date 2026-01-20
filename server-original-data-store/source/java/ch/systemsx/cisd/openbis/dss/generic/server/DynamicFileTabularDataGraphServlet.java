@@ -18,8 +18,8 @@ package ch.systemsx.cisd.openbis.dss.generic.server;
 import java.util.Enumeration;
 import java.util.Properties;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.http.HttpServletRequest;
 
 import ch.systemsx.cisd.openbis.dss.generic.server.graph.TabularDataGraphCollectionConfiguration;
 import ch.systemsx.cisd.openbis.dss.generic.server.graph.TabularDataGraphCollectionConfiguration.DynamicTabularDataGraphCollectionConfiguration;

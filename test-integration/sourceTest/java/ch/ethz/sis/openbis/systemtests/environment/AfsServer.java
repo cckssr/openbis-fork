@@ -8,16 +8,16 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
-import org.eclipse.jetty.proxy.ProxyServlet;
+import org.eclipse.jetty.ee10.proxy.ProxyServlet;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
+import org.eclipse.jetty.ee10.servlet.ServletHolder;
 
 import ch.ethz.sis.afs.manager.TransactionConnection;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
@@ -130,7 +130,9 @@ public class AfsServer
             ServletHolder proxyServletHolder = new ServletHolder(proxyServlet);
             proxyServletHolder.setInitParameter("proxyTo", TestInstanceHostUtils.getAFSUrl());
             ServletContextHandler servletContext =
-                    new ServletContextHandler(server, "/", ServletContextHandler.SESSIONS);
+                    new ServletContextHandler(ServletContextHandler.SESSIONS);
+            servletContext.setContextPath("/");
+            server.setHandler(servletContext);
             servletContext.addServlet(proxyServletHolder, "/*");
             server.start();
 

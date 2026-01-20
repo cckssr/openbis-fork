@@ -18,7 +18,7 @@ package ch.systemsx.cisd.openbis.plugin.screening.server;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 import org.springframework.stereotype.Component;
 

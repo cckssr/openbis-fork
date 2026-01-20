@@ -242,22 +242,34 @@ public class PostgreSQLMassUploader implements IMassUploader
     private final PGConnection getPGConnection(final Connection conn) throws SQLException,
             NoSuchFieldException, IllegalAccessException
     {
-        if (conn instanceof PGConnection)
-        {
-            return (PGConnection) conn;
-        }
-        if (operationLog.isDebugEnabled())
-        {
-            operationLog.debug("Found connection of type '" + conn.getClass().getCanonicalName()
-                    + "'.");
-        }
-        final Field delegateField = getField(conn.getClass(), "_conn");
-        if (delegateField == null)
-        {
-            throw new RuntimeException("No PostgreSQL driver found - cannot perform mass upload.");
-        }
-        delegateField.setAccessible(true);
-        return getPGConnection((Connection) delegateField.get(conn));
+        if (conn instanceof PGConnection) return (PGConnection) conn;
+        if (conn.isWrapperFor(PGConnection.class)) return conn.unwrap(PGConnection.class);
+
+        // Try to unwrap to a raw java.sql.Connection first (for pools), then PGConnection.
+        Connection raw = (conn.isWrapperFor(Connection.class)) ? conn.unwrap(Connection.class) : conn;
+        if (raw instanceof PGConnection) return (PGConnection) raw;
+        if (raw.isWrapperFor(PGConnection.class)) return raw.unwrap(PGConnection.class);
+
+        throw new IllegalStateException(
+                "Could not unwrap to org.postgresql.PGConnection." +
+                        " Ensure the PostgreSQL driver (org.postgresql:postgresql) " +
+                        "is on the runtime classpath and your pool supports unwrap().");
+//        if (conn instanceof PGConnection)
+//        {
+//            return (PGConnection) conn;
+//        }
+//        if (operationLog.isDebugEnabled())
+//        {
+//            operationLog.debug("Found connection of type '" + conn.getClass().getCanonicalName()
+//                    + "'.");
+//        }
+//        final Field delegateField = getField(conn.getClass(), "_conn");
+//        if (delegateField == null)
+//        {
+//            throw new RuntimeException("No PostgreSQL driver found - cannot perform mass upload.");
+//        }
+//        delegateField.setAccessible(true);
+//        return getPGConnection((Connection) delegateField.get(conn));
     }
 
     private final static Field getField(final Class<?> clazz, final String fieldName)

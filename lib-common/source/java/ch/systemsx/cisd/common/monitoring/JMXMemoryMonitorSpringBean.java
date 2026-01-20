@@ -17,7 +17,7 @@ package ch.systemsx.cisd.common.monitoring;
 
 import java.util.Properties;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 import ch.ethz.sis.shared.log.classic.impl.Logger;
 import org.springframework.beans.factory.InitializingBean;

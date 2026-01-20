@@ -28,12 +28,14 @@ import java.util.concurrent.TimeoutException;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.eclipse.jetty.client.HttpClient;
-import org.eclipse.jetty.client.api.ContentResponse;
-import org.eclipse.jetty.client.api.Request;
-import org.eclipse.jetty.client.util.MultiPartContentProvider;
-import org.eclipse.jetty.client.util.StringContentProvider;
+import org.eclipse.jetty.client.ContentResponse;
+import org.eclipse.jetty.client.MultiPartRequestContent;
+import org.eclipse.jetty.client.Request;
+import org.eclipse.jetty.client.StringRequestContent;
+import org.eclipse.jetty.http.HttpFields;
 import org.eclipse.jetty.http.HttpMethod;
 import org.eclipse.jetty.http.HttpStatus;
+import org.eclipse.jetty.http.MultiPart;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -939,11 +941,25 @@ public class CreateUploadedDataSetsTest extends AbstractFileTest
             throws InterruptedException, TimeoutException, ExecutionException
     {
         HttpClient client = JettyHttpClientFactory.getHttpClient();
-        MultiPartContentProvider multiPart = new MultiPartContentProvider();
+//        MultiPartContentProvider multiPart = new MultiPartContentProvider();
+//
+//        for (FileToUpload fileToUpload : filesToUpload)
+//        {
+//            multiPart.addFilePart(fileToUpload.fieldName, fileToUpload.fileName, new StringContentProvider(fileToUpload.content), null);
+//        }
+//
+//        multiPart.close();
+
+        MultiPartRequestContent multiPart = new MultiPartRequestContent();
 
         for (FileToUpload fileToUpload : filesToUpload)
         {
-            multiPart.addFilePart(fileToUpload.fieldName, fileToUpload.fileName, new StringContentProvider(fileToUpload.content), null);
+            multiPart.addPart(new MultiPart.ContentSourcePart(
+                    fileToUpload.fieldName,              // form field name
+                    fileToUpload.fileName,               // filename
+                    HttpFields.EMPTY,                    // no extra headers
+                    new StringRequestContent(fileToUpload.content)
+            ));
         }
 
         multiPart.close();
@@ -970,7 +986,7 @@ public class CreateUploadedDataSetsTest extends AbstractFileTest
         {
             request.param(StoreShareFileUploadServlet.DATA_SET_TYPE_PARAM, dataSetType);
         }
-        request.content(multiPart);
+        request.body(multiPart);
         return request.send();
     }
 

@@ -23,7 +23,7 @@ import java.util.StringTokenizer;
 
 import javax.sql.DataSource;
 
-import org.apache.commons.dbcp.BasicDataSource;
+import org.apache.commons.dbcp2.BasicDataSource;
 import org.apache.commons.lang3.StringUtils;
 import ch.ethz.sis.shared.log.classic.impl.Logger;
 

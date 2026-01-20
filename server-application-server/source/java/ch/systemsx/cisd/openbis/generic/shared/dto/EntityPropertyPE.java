@@ -17,22 +17,22 @@ package ch.systemsx.cisd.openbis.generic.shared.dto;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.*;
 import java.util.stream.Stream;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 
-import ch.systemsx.cisd.openbis.generic.shared.basic.BasicConstant;
 import ch.systemsx.cisd.openbis.generic.shared.dto.hibernate.PatternValue;
-import ch.systemsx.cisd.openbis.generic.shared.dto.types.*;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
-import org.hibernate.annotations.TypeDefs;
-import org.hibernate.type.DbTimestampType;
+import org.hibernate.annotations.JavaType;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.Source;
+import org.hibernate.annotations.SourceType;
+import org.hibernate.type.SqlTypes;
 
 import ch.systemsx.cisd.common.reflection.ClassUtils;
 import ch.systemsx.cisd.common.reflection.ModifiedShortPrefixToStringStyle;
@@ -40,6 +40,10 @@ import ch.systemsx.cisd.openbis.generic.shared.IServer;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
 import ch.systemsx.cisd.openbis.generic.shared.util.EqualsHashUtils;
+import ch.systemsx.cisd.openbis.generic.shared.hibernate.type.DoubleArrayJavaType;
+import ch.systemsx.cisd.openbis.generic.shared.hibernate.type.LongArrayJavaType;
+import ch.systemsx.cisd.openbis.generic.shared.hibernate.type.StringArrayJavaType;
+import ch.systemsx.cisd.openbis.generic.shared.hibernate.type.DateArrayJavaType;
 
 /**
  * Persistence entity representing entity property.
@@ -48,12 +52,6 @@ import ch.systemsx.cisd.openbis.generic.shared.util.EqualsHashUtils;
  * @author Izabela Adamczyk
  */
 @MappedSuperclass
-@TypeDefs({ @TypeDef(name = "transaction_timestamp", typeClass = DbTimestampType.class),
-        @TypeDef(name = "long_array_type", typeClass = LongArrayType.class),
-        @TypeDef(name = "double_array_type", typeClass = DoubleArrayType.class),
-        @TypeDef(name = "string_array_type", typeClass = StringArrayType.class),
-        @TypeDef(name = "timestamp_array_type", typeClass = TimestampArrayType.class),
-        @TypeDef(name = "json_string_type", typeClass = JsonStringType.class)})
 @PatternValue
 public abstract class EntityPropertyPE extends HibernateAbstractRegistrationHolder implements
         IUntypedValueSetter, IEntityPropertyHolder
@@ -208,8 +206,9 @@ public abstract class EntityPropertyPE extends HibernateAbstractRegistrationHold
         this.material = material;
     }
 
+    @JavaType(LongArrayJavaType.class)
     @Column(name = ColumnNames.INTEGER_ARRAY_VALUE_COLUMN)
-    @Type(type = "long_array_type")
+    @JdbcTypeCode(SqlTypes.ARRAY)
     public Long[] getIntegerArrayValue()
     {
         return integerArrayValue;
@@ -227,7 +226,8 @@ public abstract class EntityPropertyPE extends HibernateAbstractRegistrationHold
     }
 
     @Column(name = ColumnNames.REAL_ARRAY_VALUE_COLUMN)
-    @Type(type = "double_array_type")
+    @JavaType(DoubleArrayJavaType.class)
+    @JdbcTypeCode(SqlTypes.ARRAY)
     public Double[] getRealArrayValue()
     {
         return realArrayValue;
@@ -239,7 +239,8 @@ public abstract class EntityPropertyPE extends HibernateAbstractRegistrationHold
     }
 
     @Column(name = ColumnNames.TIMESTAMP_ARRAY_VALUE_COLUMN)
-    @Type(type = "timestamp_array_type")
+    @JavaType(DateArrayJavaType.class)
+    @JdbcTypeCode(SqlTypes.ARRAY)
     public Date[] getTimestampArrayValue()
     {
         return timestampArrayValue;
@@ -251,14 +252,15 @@ public abstract class EntityPropertyPE extends HibernateAbstractRegistrationHold
     }
 
     @Column(name = ColumnNames.STRING_ARRAY_VALUE_COLUMN)
-    @Type(type = "string_array_type")
+    @JavaType(StringArrayJavaType.class)
+    @JdbcTypeCode(SqlTypes.ARRAY)
     public String[] getStringArrayValue()
     {
         return stringArrayValue;
     }
 
     @Column(name = ColumnNames.JSON_VALUE_COLUMN)
-    @Type(type = "json_string_type")
+    @JdbcTypeCode(SqlTypes.JSON)
     public String getJsonValue()
     {
         return jsonValue;
@@ -309,7 +311,7 @@ public abstract class EntityPropertyPE extends HibernateAbstractRegistrationHold
 
     @Version
     @Column(name = ColumnNames.MODIFICATION_TIMESTAMP_COLUMN, nullable = false)
-    @Type(type = "transaction_timestamp")
+    @Source(SourceType.DB)
     public Date getModificationDate()
     {
         return modificationDate;

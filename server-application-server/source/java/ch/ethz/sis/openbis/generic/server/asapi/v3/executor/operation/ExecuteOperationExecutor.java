@@ -17,8 +17,8 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.operation;
 
 import java.util.List;
 
-import javax.annotation.Resource;
-import javax.transaction.Transactional;
+import jakarta.annotation.Resource;
+import jakarta.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

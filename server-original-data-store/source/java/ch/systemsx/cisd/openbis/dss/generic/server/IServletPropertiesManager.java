@@ -17,7 +17,7 @@ package ch.systemsx.cisd.openbis.dss.generic.server;
 
 import java.util.Properties;
 
-import javax.servlet.Servlet;
+import jakarta.servlet.Servlet;
 
 import ch.systemsx.cisd.common.properties.PropertyParametersUtil.SectionProperties;
 

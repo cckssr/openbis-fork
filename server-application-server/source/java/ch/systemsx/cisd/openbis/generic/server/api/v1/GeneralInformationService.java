@@ -27,11 +27,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.Transformer;
-import org.hibernate.SQLQuery;
+import org.hibernate.query.NativeQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -1400,13 +1400,15 @@ public class GeneralInformationService extends AbstractServer<IGeneralInformatio
     public Long countNumberOfSamplesForType(String sessionToken, String sampleTypeCode)
     {
         org.hibernate.Session currentSession = this.getDAOFactory().getSessionFactory().getCurrentSession();
-        SQLQuery querySampleTypeId = currentSession.createSQLQuery("SELECT id from sample_types WHERE code = :sampleTypeCode");
+        NativeQuery<Number> querySampleTypeId = currentSession.createNativeQuery(
+                "SELECT id from sample_types WHERE code = :sampleTypeCode", Number.class);
         querySampleTypeId.setParameter("sampleTypeCode", sampleTypeCode);
-        int sampleTypeId = ((Number) querySampleTypeId.uniqueResult()).intValue();
+        int sampleTypeId = querySampleTypeId.uniqueResult().intValue();
 
-        SQLQuery querySampleCount = currentSession.createSQLQuery("SELECT COUNT(*) FROM samples_all WHERE saty_id = :sampleTypeId");
+        NativeQuery<Number> querySampleCount = currentSession.createNativeQuery(
+                "SELECT COUNT(*) FROM samples_all WHERE saty_id = :sampleTypeId", Number.class);
         querySampleCount.setParameter("sampleTypeId", sampleTypeId);
-        long sampleCount = ((Number) querySampleCount.uniqueResult()).longValue();
+        long sampleCount = querySampleCount.uniqueResult().longValue();
 
         return sampleCount;
     }

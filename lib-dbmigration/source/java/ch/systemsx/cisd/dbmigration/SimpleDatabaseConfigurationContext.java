@@ -24,7 +24,7 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
-import org.apache.commons.dbcp.BasicDataSource;
+import org.apache.commons.dbcp2.BasicDataSource;
 import ch.ethz.sis.shared.log.classic.impl.Logger;
 
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;

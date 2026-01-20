@@ -33,9 +33,10 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import javax.sql.DataSource;
 
+import ch.systemsx.cisd.openbis.generic.server.dataaccess.db.OpenBISHibernateTransactionManager;
 import org.apache.commons.lang3.StringUtils;
 import ch.ethz.sis.shared.log.classic.impl.Logger;
 import org.springframework.beans.factory.InitializingBean;
@@ -57,6 +58,10 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.DataSourceDefinition;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataSourceWithDefinition;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataStorePE;
 import ch.systemsx.cisd.openbis.generic.shared.util.IDataSourceFactory;
+import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.context.event.EventListener;
+import org.springframework.orm.hibernate5.HibernateTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * Data source provider based on configuration per Data Store Server.

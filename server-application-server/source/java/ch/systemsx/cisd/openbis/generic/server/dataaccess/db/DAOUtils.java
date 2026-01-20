@@ -19,9 +19,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.hibernate.criterion.DetachedCriteria;
-import org.hibernate.criterion.Restrictions;
-import org.springframework.orm.hibernate5.HibernateTemplate;
 
 /**
  * Utility routines for DAOs.

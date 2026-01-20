@@ -21,7 +21,8 @@ public class DataTypeMatcher
 {
 
     private static List<DataType> orderedTypes =
-            List.of(DataType.INTEGER, DataType.REAL, DataType.BOOLEAN, DataType.DATE,
+            List.of(DataType.INTEGER, DataType.REAL, DataType.BOOLEAN, DataType.TIMESTAMP,
+                    DataType.DATE,
                     DataType.HYPERLINK, DataType.SAMPLE, DataType.SAMPLE, DataType.VARCHAR);
 
     public static DataType findDataType(Serializable value, Set<DataType> possibleTypes,

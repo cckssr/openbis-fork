@@ -16,10 +16,13 @@
 package ch.systemsx.cisd.openbis.test.server;
 
 import java.io.File;
+import java.nio.file.Path;
 
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.handler.AllowSymLinkAliasChecker;
-import org.eclipse.jetty.webapp.WebAppContext;
+import org.eclipse.jetty.server.SymlinkAllowedResourceAliasChecker;
+
+import org.eclipse.jetty.ee10.webapp.WebAppContext;
+import org.eclipse.jetty.util.resource.Resource;
 
 /**
  * @author anttil
@@ -53,11 +56,13 @@ public class TestApplicationServer
             context.setWar(war.getAbsolutePath());
             context.setExtractWAR(true);
             context.setTempDirectory(new File(System.getProperty("jetty.home") + "/webapps"));
-            context.addAliasCheck(new AllowSymLinkAliasChecker());
+            context.addAliasCheck(new SymlinkAllowedResourceAliasChecker(context));
         } else
         {
             context.setDescriptor(getWebXmlPath());
-            context.setResourceBase(getRootPath());
+            Path webroot = Path.of(getRootPath());
+            Resource base = context.newResource(webroot.toUri()); // ServletContextHandler#newResource
+            context.setBaseResource(base);
         }
         context.setContextPath(getContextPath());
         context.setParentLoaderPriority(true);

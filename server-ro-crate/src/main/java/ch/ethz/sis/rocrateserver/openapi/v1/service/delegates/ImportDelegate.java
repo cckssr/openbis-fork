@@ -1,47 +1,33 @@
 package ch.ethz.sis.rocrateserver.openapi.v1.service.delegates;
 
 import ch.eth.sis.rocrate.SchemaFacade;
-import ch.eth.sis.rocrate.facade.IMetadataEntry;
-import ch.eth.sis.rocrate.facade.IPropertyType;
-import ch.eth.sis.rocrate.facade.IType;
 import ch.ethz.sis.openbis.generic.OpenBIS;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.ImportResult;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.data.ImportData;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.data.ImportFormat;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.options.ImportMode;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.options.ImportOptions;
-import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
-import ch.ethz.sis.openbis.generic.excel.v3.to.ExcelWriter;
 import ch.ethz.sis.rocrateserver.exception.RoCrateExceptions;
-import ch.ethz.sis.rocrateserver.openapi.v1.service.helper.SessionWorkSpaceManager;
-import ch.ethz.sis.rocrateserver.openapi.v1.service.helper.validation.RoCrateSchemaValidation;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.helper.validation.ValidationResult;
+import ch.ethz.sis.rocrateserver.openapi.v1.service.jobs.AsyncJobRegistry;
+import ch.ethz.sis.rocrateserver.openapi.v1.service.jobs.ImportJob;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.params.ImportParams;
-import ch.openbis.rocrate.app.reader.RdfToModel;
+import ch.ethz.sis.rocrateserver.openapi.v1.service.response.AsyncJob;
 import edu.kit.datamanager.ro_crate.RoCrate;
-import edu.kit.datamanager.ro_crate.reader.FolderReader;
-import edu.kit.datamanager.ro_crate.reader.RoCrateReader;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import org.jboss.logging.Logger;
 
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
+
+import static ch.ethz.sis.rocrateserver.openapi.v1.service.jobs.ImportJob.getRoCrate;
 
 @ApplicationScoped
 public class ImportDelegate
 {
     private static final Logger LOG = Logger.getLogger(ImportDelegate.class);
 
-
-    public class OpenBisImportResult
+    public static class OpenBisImportResult
     {
         List<String> identifiers;
 
@@ -91,26 +77,38 @@ public class ImportDelegate
         }
     }
 
-    public OpenBisImportResult import_(
+    public AsyncJob import_(AsyncJobRegistry asyncJobRegistry,
             OpenBIS openBIS,
             ImportParams headers,
             InputStream body,
             boolean validateOnly)
             throws IOException
     {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-        RoCrate crate = null;
-        SchemaFacade schemaFacade = null;
-        List<IType> types = null;
-        List<IPropertyType> propertyTypes = null;
-        List<IMetadataEntry> entryList = new ArrayList<>();
+        // Code simulating the copy
+        // You could alternatively use NIO
+        // And please, unlike me, do something about the Exceptions :D
+        byte[] buffer = new byte[1024];
+        int len;
+        while ((len = body.read(buffer)) > -1)
+        {
+            baos.write(buffer, 0, len);
+        }
+        baos.flush();
+
+        // Open new InputStreams using recorded bytes
+        // Can be repeated as many times as you wish
+        InputStream is1 = new ByteArrayInputStream(baos.toByteArray());
+        InputStream is2 = new ByteArrayInputStream(baos.toByteArray());
 
         try
         {
-            crate = getRoCrate(headers, body);
-            schemaFacade = SchemaFacade.of(crate);
-            types = schemaFacade.getTypes();
-            propertyTypes = schemaFacade.getPropertyTypes();
+
+            RoCrate crate = getRoCrate(headers, is1);
+            SchemaFacade schemaFacade = SchemaFacade.of(crate);
+            var types = schemaFacade.getTypes();
+            var propertyTypes = schemaFacade.getPropertyTypes();
             if (types == null || propertyTypes == null)
             {
                 throw new IllegalArgumentException(
@@ -119,147 +117,19 @@ public class ImportDelegate
 
         } catch (Exception e)
         {
-            Log.error("Problem for user " + System.getProperty("user.name")); //platform independent
+            Log.error("Problem for user " + System.getProperty(
+                    "user.name")); //platform independent
             LOG.error("Could not open RO-Crate", e);
             RoCrateExceptions.throwInstance(RoCrateExceptions.MALFORMED_INPUT);
 
         }
-        for (var type : types)
-        {
-            entryList.addAll(schemaFacade.getEntries(type.getId()));
-        }
 
-        // Converting ro-crate model to openBIS model
-        OpenBisModel conversion = RdfToModel.convert(types, propertyTypes, entryList, "DEFAULT", "DEFAULT");
-        ValidationResult validationResult =
-                RoCrateSchemaValidation.validate(conversion);
+        String userName = openBIS.getSessionInformation().getUserName();
+        ImportJob importJob = new ImportJob(userName, headers, is2, openBIS, validateOnly);
+        String jobId = asyncJobRegistry.register(importJob);
+        return new AsyncJob(jobId);
 
-        // Convert openbis model to openbis excel format for import
-        byte[] importExcel = ExcelWriter.convert(ExcelWriter.Format.EXCEL, conversion);
-        java.nio.file.Path modelAsExcel = java.nio.file.Path.of(UUID.randomUUID() + ".xlsx");
 
-        if (validateOnly) {
-            return new OpenBisImportResult(List.of(), Map.of(), validationResult);
-        }
-        if (!validationResult.isOkay())
-        {
-            RoCrateExceptions.throwInstance(RoCrateExceptions.SCHEMA_VALIDATION_FAILED);
-        }
-
-        // Import
-        SessionWorkSpaceManager.write(openBIS.getSessionToken(), modelAsExcel, new ByteArrayInputStream(importExcel));
-        java.nio.file.Path realPath = SessionWorkSpaceManager.getRealPath(openBIS.getSessionToken(), modelAsExcel);
-        openBIS.uploadToSessionWorkspace(realPath);
-
-        ImportData importData = new ImportData();
-        importData.setSessionWorkspaceFiles(new String[] { modelAsExcel.toString() });
-        importData.setFormat(ImportFormat.EXCEL);
-        ImportResult apiResult = openBIS.executeImport(importData, getImportOptions(headers));
-        return new OpenBisImportResult(
-                apiResult.getObjectIds().stream().map(id -> id.toString()).toList(),
-                conversion.getExternalToOpenBisIdentifiers(), validationResult);
     }
 
-    private static RoCrate getRoCrate(ImportParams headers, InputStream body) throws IOException
-    {
-        RoCrate crate = null;
-        if (headers.getContentType().contains("application/ld+json"))
-        {
-            // Unpack ro-crate
-            Path roCrateMetadata = Path.of("ro-crate-metadata.json");
-            SessionWorkSpaceManager.write(headers.getApiKey(), roCrateMetadata, body);
-
-            // Reading ro-crate model
-            RoCrateReader roCrateFolderReader = new RoCrateReader(new FolderReader());
-            String realPath =
-                    SessionWorkSpaceManager.getRealPath(headers.getApiKey(), null).toString();
-            LOG.debug(String.format("Crate location %s",
-                    realPath));
-
-            crate = roCrateFolderReader.readCrate(
-                    realPath);
-        } else if (headers.getContentType().contains("application/zip"))
-        {
-
-            UUID uuid = UUID.randomUUID();
-            Path path = Path.of(uuid + ".zip");
-            byte[] buffer = new byte[1024];
-            LOG.debug("Path: " + path.toString());
-            SessionWorkSpaceManager.write(headers.getApiKey(), path, body);
-            Path realPath1 = SessionWorkSpaceManager.getRealPath(headers.getApiKey(), path);
-            Files.newInputStream(realPath1);
-            ZipInputStream zis = new ZipInputStream(new FileInputStream(realPath1.toString()));
-            ZipEntry nextEntry = zis.getNextEntry();
-            File destDir = new File(SessionWorkSpaceManager.getRealPath(headers.getApiKey(),
-                    Path.of(uuid.toString())).toString());
-
-            while (nextEntry != null)
-            {
-                File newFile = newFile(destDir, nextEntry);
-                if (nextEntry.isDirectory())
-                {
-                    if (!newFile.isDirectory() && !newFile.mkdirs())
-                    {
-                        throw new IOException("Failed to create directory " + newFile);
-                    }
-                } else
-                {
-                    // fix for Windows-created archives
-                    File parent = newFile.getParentFile();
-                    if (!parent.isDirectory() && !parent.mkdirs())
-                    {
-                        throw new IOException("Failed to create directory " + parent);
-                    }
-
-                    // write file content
-                    FileOutputStream fos = new FileOutputStream(newFile);
-                    int len;
-                    while ((len = zis.read(buffer)) > 0)
-                    {
-                        fos.write(buffer, 0, len);
-                    }
-                    fos.close();
-                }
-                nextEntry = zis.getNextEntry();
-
-            }
-
-            RoCrateReader roCrateReader = new RoCrateReader(new FolderReader());
-            Path realPath = SessionWorkSpaceManager.getRealPath(headers.getApiKey(),
-                    Path.of(uuid.toString()));
-            LOG.debug(String.format("Crate location %s",
-                    realPath));
-            if (realPath.toString().startsWith("./"))
-            {
-                LOG.error("How did this happen?");
-            }
-
-            crate = roCrateReader.readCrate(
-                    realPath.toString());
-        }
-        return crate;
-    }
-
-    private static ImportOptions getImportOptions(ImportParams importParams)
-    {
-        ImportOptions importOptions = new ImportOptions();
-        importOptions.setMode(ImportMode.valueOf(importParams.getImportMode()));
-        return importOptions;
-    }
-
-    // https://www.baeldung.com/java-compress-and-uncompress
-    public static File newFile(File destinationDir, ZipEntry zipEntry) throws IOException
-    {
-        File destFile = new File(destinationDir, zipEntry.getName());
-
-        String destDirPath = destinationDir.getCanonicalPath();
-        String destFilePath = destFile.getCanonicalPath();
-
-        if (!destFilePath.startsWith(destDirPath + File.separator))
-        {
-            throw new IOException("Entry is outside of the target dir: " + zipEntry.getName());
-        }
-
-        return destFile;
-    }
 }

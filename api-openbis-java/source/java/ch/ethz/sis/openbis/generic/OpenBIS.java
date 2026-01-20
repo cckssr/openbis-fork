@@ -36,14 +36,15 @@ import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
+import org.eclipse.jetty.client.BytesRequestContent;
+import org.eclipse.jetty.client.MultiPartRequestContent;
+import org.eclipse.jetty.client.StringRequestContent;
+import org.eclipse.jetty.client.ContentResponse;
 import org.eclipse.jetty.client.HttpClient;
-import org.eclipse.jetty.client.api.ContentResponse;
-import org.eclipse.jetty.client.api.Request;
-import org.eclipse.jetty.client.util.BytesContentProvider;
-import org.eclipse.jetty.client.util.MultiPartContentProvider;
-import org.eclipse.jetty.client.util.PathContentProvider;
-import org.eclipse.jetty.client.util.StringContentProvider;
+import org.eclipse.jetty.client.Request;
+import org.eclipse.jetty.http.HttpFields;
 import org.eclipse.jetty.http.HttpMethod;
+import org.eclipse.jetty.http.MultiPart;
 
 import ch.ethz.sis.afsapi.api.ClientAPI;
 import ch.ethz.sis.afsapi.api.OperationsAPI;
@@ -322,6 +323,7 @@ import ch.ethz.sis.openbis.generic.excel.v3.to.ExcelWriter;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.common.http.JettyHttpClientFactory;
 import ch.systemsx.cisd.common.spring.HttpInvokerUtils;
+import org.eclipse.jetty.io.ByteBufferPool;
 
 public class OpenBIS
 {
@@ -1287,18 +1289,31 @@ public class OpenBIS
         {
             HttpClient httpClient = JettyHttpClientFactory.getHttpClient();
 
-            MultiPartContentProvider multiPart = new MultiPartContentProvider();
-            multiPart.addFieldPart("sessionKeysNumber", new StringContentProvider("1"), null);
-            multiPart.addFieldPart("sessionKey_0", new StringContentProvider("openbis-file-upload"), null);
-            multiPart.addFilePart("openbis-file-upload", uploadId, new PathContentProvider(fileOrFolder), null);
-            multiPart.addFieldPart("keepOriginalFileName", new StringContentProvider("True"), null);
-            multiPart.addFieldPart("sessionID", new StringContentProvider(this.sessionToken), null);
+            MultiPartRequestContent multiPart = new MultiPartRequestContent();
+            multiPart.addPart(new MultiPart.ContentSourcePart(
+                             "sessionKeysNumber", null, HttpFields.EMPTY, new StringRequestContent("1")));
+            multiPart.addPart(new MultiPart.ContentSourcePart(
+                             "sessionKey_0", null, HttpFields.EMPTY, new StringRequestContent("openbis-file-upload")));
+//            multiPart.addPart(new MultiPart.PathPart(
+//                             "openbis-file-upload", uploadId, HttpFields.EMPTY, fileOrFolder));
+            ByteBufferPool.Sized sized = new ByteBufferPool.Sized(httpClient.getByteBufferPool());
+            multiPart.addPart(new MultiPart.PathPart(
+                    sized,
+                    "openbis-file-upload",
+                    uploadId,
+                    HttpFields.EMPTY,
+                    fileOrFolder
+            ));
+            multiPart.addPart(new MultiPart.ContentSourcePart(
+                             "keepOriginalFileName", null, HttpFields.EMPTY, new StringRequestContent("True")));
+            multiPart.addPart(new MultiPart.ContentSourcePart(
+                             "sessionID", null, HttpFields.EMPTY, new StringRequestContent(this.sessionToken)));
             multiPart.close();
 
             ContentResponse response = httpClient.newRequest(this.asURL + "/upload")
-                    .method(HttpMethod.POST)
-                    .content(multiPart)
-                    .send();
+                     .method(HttpMethod.POST)
+                     .body(multiPart)
+                     .send();
 
             final int status = response.getStatus();
             if (status != 200)
@@ -1450,7 +1465,8 @@ public class OpenBIS
                     httpRequest.param("startByte", Long.toString(start));
                     httpRequest.param("endByte", Long.toString(end));
                     httpRequest.param("size", Long.toString(file.length()));
-                    httpRequest.content(new BytesContentProvider(chunk));
+                    //httpRequest.content(new BytesContentProvider(chunk));
+                    httpRequest.body(new BytesRequestContent("application/octet-stream", chunk));
                     final ContentResponse response = httpRequest.send();
                     final int status = response.getStatus();
                     if (status != 200)

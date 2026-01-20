@@ -17,7 +17,10 @@ package ch.systemsx.cisd.openbis.generic.server.business.bo;
 
 import java.util.Properties;
 
+import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePE;
+import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DataRetrievalFailureException;
 
 import ch.rinn.restrictions.Private;
@@ -133,6 +136,10 @@ public final class ScriptBO extends AbstractBusinessObject implements IScriptBO
             getScriptDAO().createOrUpdate(script);
         } catch (final DataAccessException e)
         {
+            throwException(e, "Script '" + script.getName() + "'");
+        }  catch (ConstraintViolationException ce)
+        {
+            DataAccessException e = new DataIntegrityViolationException(ce.getMessage(), ce);
             throwException(e, "Script '" + script.getName() + "'");
         }
     }

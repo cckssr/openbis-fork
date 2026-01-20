@@ -19,13 +19,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import ch.ethz.sis.shared.log.classic.impl.Logger;
-import org.hibernate.FetchMode;
-import org.hibernate.HibernateException;
-import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.dao.DataAccessException;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.orm.hibernate5.SessionFactoryUtils;
 
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
@@ -39,8 +34,6 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SampleTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
-
-import javax.persistence.PersistenceException;
 
 /**
  * Database based implementation of {@link IEntityTypeDAO}.

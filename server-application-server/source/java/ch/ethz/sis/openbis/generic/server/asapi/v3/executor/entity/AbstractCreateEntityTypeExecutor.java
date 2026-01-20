@@ -19,7 +19,7 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 import ch.systemsx.cisd.common.exceptions.AuthorizationFailureException;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePropertyTypePE;

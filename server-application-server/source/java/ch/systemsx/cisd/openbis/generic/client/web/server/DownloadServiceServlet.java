@@ -22,11 +22,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLConnection;
 
-import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
@@ -69,7 +69,7 @@ public class DownloadServiceServlet extends HttpServlet
     private IPersonalAccessTokenConverter personalAccessTokenConverter;
 
     @Override
-    @RequestMapping({ "/download", "/openbis/download" })
+    @RequestMapping({ "/download", "/openbis/download", "/openbis/openbis/download" })
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException
     {

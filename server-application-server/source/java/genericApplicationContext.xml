@@ -659,6 +659,7 @@
 
 
 	<!-- Caching -->
+<!--
 
 	<bean id="cacheManager" class="org.springframework.cache.ehcache.EhCacheCacheManager">
 		<property name="cacheManager" ref="ehcache" />
@@ -667,5 +668,18 @@
 		class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean">
 		<property name="configLocation" value="classpath:ehcache.xml" />
 	</bean>
+-->
 
+    <bean id="eh3Config" class="org.ehcache.xml.XmlConfiguration">
+        <constructor-arg value="classpath:ehcache.xml"/>
+    </bean>
+
+    <!-- Build, init, and expose the native Ehcache 3 CacheManager -->
+    <bean id="cacheManager"
+          class="org.ehcache.config.builders.CacheManagerBuilder"
+          factory-method="newCacheManager"
+          init-method="init"
+          destroy-method="close">
+        <constructor-arg ref="eh3Config"/>
+    </bean>
 </beans>

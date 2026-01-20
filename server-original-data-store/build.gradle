@@ -48,11 +48,13 @@ dependencies {
             'shriop:javacsv:2.0',
             'cisd:cisd-image-readers:r1553067167',
             'hjg:pngj:0.62',
-            'apache:commons-fileupload:1.3.3',
+            //'apache:commons-fileupload:1.3.3',
+            'org.apache.commons:commons-fileupload2-jakarta-servlet5:2.0.0-M4',
             'docx4j:docx4j:6.1.2',
             'freva:ascii-table:1.2.0',
-            'sis:sis-jhdf5:19.04.0'
-            'jsoup:jsoup:1.14.2'
+            'sis:sis-jhdf5:19.04.0',
+            'jsoup:jsoup:1.14.2',
+            'commons-io:commons-io:2.19.0'
     api('dspace:xoai-data-provider:4.2.0'){
         exclude module: 'log4j'
     }
@@ -95,7 +97,7 @@ dependencies {
 
     testImplementation(project(path: ':server-application-server', configuration: 'tests'))
 
-    testRuntimeFirst 'javax:servlet-api:4.0.1',
+    testRuntimeFirst 'jakarta:jakarta.servlet-api:6.1.0',
             files("../core-plugin-openbis/dist/core-plugins/imaging/1/as/services/imaging/lib/openBIS-imaging-technology.jar"),
             files("../core-plugin-openbis/dist/core-plugins/imaging/1/as/api-listener/imaging-dataset-interceptor/lib/imaging-dataset-interceptor.jar")
 }

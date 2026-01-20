@@ -22,7 +22,7 @@ import ch.systemsx.cisd.common.spring.ServiceExceptionTranslator;
 import ch.systemsx.cisd.common.spring.WhiteAndBlackListHttpInvokerServiceExporter;
 import org.springframework.remoting.httpinvoker.HttpInvokerServiceExporter;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 /**
  * Abstract super class of all classes make an API available via {@link HttpInvokerServiceExporter}.

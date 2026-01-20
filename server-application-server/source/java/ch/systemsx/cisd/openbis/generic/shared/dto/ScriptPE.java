@@ -20,20 +20,20 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.persistence.Transient;
-import javax.persistence.Version;
-import javax.validation.constraints.NotNull;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
+import jakarta.persistence.Version;
+import jakarta.validation.constraints.NotNull;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -107,7 +107,7 @@ public class ScriptPE extends HibernateAbstractRegistrationHolder implements IId
         this.description = description;
     }
 
-    public final void setId(final Long id)
+    public void setId(final Long id)
     {
         this.id = id;
     }
@@ -116,7 +116,7 @@ public class ScriptPE extends HibernateAbstractRegistrationHolder implements IId
     @SequenceGenerator(name = SequenceNames.SCRIPT_SEQUENCE, sequenceName = SequenceNames.SCRIPT_SEQUENCE, allocationSize = 1)
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = SequenceNames.SCRIPT_SEQUENCE)
-    public final Long getId()
+    public Long getId()
     {
         return id;
     }

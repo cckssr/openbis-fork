@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePE;
 import org.springframework.dao.DataIntegrityViolationException;
 
 import ch.systemsx.cisd.common.collection.TableMap;

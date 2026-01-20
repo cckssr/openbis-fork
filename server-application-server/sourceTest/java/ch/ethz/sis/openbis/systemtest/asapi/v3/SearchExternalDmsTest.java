@@ -15,8 +15,8 @@
  */
 package ch.ethz.sis.openbis.systemtest.asapi.v3;
 
-import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItem;
 import static org.testng.Assert.assertEquals;
 
 import java.util.Arrays;

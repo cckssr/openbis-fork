@@ -19,6 +19,7 @@ import java.io.File;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -28,11 +29,11 @@ import java.util.Properties;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
-import org.springframework.scheduling.support.CronSequenceGenerator;
 
 import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
 import ch.systemsx.cisd.common.properties.PropertyUtils;
 import ch.systemsx.cisd.common.time.DateTimeUtils;
+import org.springframework.scheduling.support.CronExpression;
 
 /**
  * @author Izabela Adamczyk
@@ -204,33 +205,27 @@ public class MaintenanceTaskParameters
         return persistentNextDateFile;
     }
 
-    private static final INextTimestampProvider createNextTimestampProvider(String runScheduleDescription)
-    {
-        if (runScheduleDescription.startsWith(CRON_PREFIX))
-        {
-            CronSequenceGenerator cronSequenceGenerator =
-                    new CronSequenceGenerator(runScheduleDescription.substring(CRON_PREFIX.length()));
-            return new CronSequenceBaseNextTimestampProvider(cronSequenceGenerator);
+//    private static final INextTimestampProvider createNextTimestampProvider(String runScheduleDescription)
+//    {
+//        if (runScheduleDescription.startsWith(CRON_PREFIX))
+//        {
+//            CronSequenceGenerator cronSequenceGenerator =
+//                    new CronSequenceGenerator(runScheduleDescription.substring(CRON_PREFIX.length()));
+//            return new CronSequenceBaseNextTimestampProvider(cronSequenceGenerator);
+//        }
+//        return new NextTimestampProviderCollection(runScheduleDescription);
+//
+//    }
+
+    private static INextTimestampProvider createNextTimestampProvider(String runScheduleDescription) {
+        if (runScheduleDescription.startsWith(CRON_PREFIX)) {
+            String expr = runScheduleDescription.substring(CRON_PREFIX.length());
+            CronExpression cron = CronExpression.parse(expr);
+            return new CronExpressionBaseNextTimestampProvider(cron, ZoneId.systemDefault());
         }
         return new NextTimestampProviderCollection(runScheduleDescription);
-
     }
 
-    private static final class CronSequenceBaseNextTimestampProvider implements INextTimestampProvider
-    {
-        private CronSequenceGenerator cronSequenceGenerator;
-
-        CronSequenceBaseNextTimestampProvider(CronSequenceGenerator cronSequenceGenerator)
-        {
-            this.cronSequenceGenerator = cronSequenceGenerator;
-        }
-
-        @Override
-        public Date getNextTimestamp(Date timestamp)
-        {
-            return cronSequenceGenerator.next(timestamp);
-        }
-    }
 
     private static final class NextTimestampProviderCollection implements INextTimestampProvider
     {

@@ -2,13 +2,14 @@ apply from: '../build/javaproject.gradle'
 
 dependencies {
     api project(':lib-logging'),
-            'apache:commons-io:2.6',
+            'commons-io:commons-io:2.19.0',
             'apache:commons-lang3:3.14',
             'sis:sis-base:23.06.0',
             'rinn:restrictions:1.0.2'
 
     testImplementation project(path: ':lib-logging', configuration: 'tests'),
             'testng:testng:6.8-CISD',
+            'junit:junit:4.13.2',
             api('jmock:jmock:2.5.1') {
                 exclude group: 'hamcrest', module: 'hamcrest-core'
                 exclude group: 'hamcrest', module: 'hamcrest-library'

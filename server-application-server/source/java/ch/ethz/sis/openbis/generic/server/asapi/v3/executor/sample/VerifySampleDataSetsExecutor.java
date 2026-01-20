@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Component;

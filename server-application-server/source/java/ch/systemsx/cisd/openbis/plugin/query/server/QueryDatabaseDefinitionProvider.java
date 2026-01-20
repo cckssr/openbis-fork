@@ -22,8 +22,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -83,16 +83,42 @@ public class QueryDatabaseDefinitionProvider implements IQueryDatabaseDefinition
      */
     private Map<String, DatabaseDefinition> definitions;
 
-    @PostConstruct
+    private final Object initializationLock = new Object();
+
     @Override
     public void initDatabaseDefinitions()
+    {
+        ensureInitialized();
+    }
+
+    @PostConstruct
+    private void postConstruct()
+    {
+        // Defer heavy initialization until the first real use, but keep compatibility
+        // with components that explicitly call initDatabaseDefinitions() at startup.
+        // No-op here to avoid accessing Hibernate outside a transaction.
+    }
+
+    private void ensureInitialized()
     {
         if (definitions != null)
         {
             return;
         }
 
-        definitions = new HashMap<String, DatabaseDefinition>();
+        synchronized (initializationLock)
+        {
+            if (definitions != null)
+            {
+                return;
+            }
+            definitions = new HashMap<String, DatabaseDefinition>();
+            initializeDefinitions();
+        }
+    }
+
+    private void initializeDefinitions()
+    {
         Properties resolvedProps = configurer.getResolvedProps();
         SectionProperties[] sectionsProperties =
                 PropertyParametersUtil
@@ -156,7 +182,6 @@ public class QueryDatabaseDefinitionProvider implements IQueryDatabaseDefinition
                         + "' is not defined properly. '" + creatorMinimalRoleString
                         + "' is not a valid role.");
             }
-
         }
         QueryAccessController.initialize(daoFactory, definitions);
     }
@@ -175,23 +200,15 @@ public class QueryDatabaseDefinitionProvider implements IQueryDatabaseDefinition
     @Override
     public DatabaseDefinition getDefinition(String dbKey)
     {
-        checkInitialization();
+        ensureInitialized();
         return definitions.get(dbKey);
     }
 
     @Override
     public Collection<DatabaseDefinition> getAllDefinitions() throws UserFailureException
     {
-        checkInitialization();
+        ensureInitialized();
         return definitions.values();
-    }
-
-    private void checkInitialization()
-    {
-        if (definitions == null)
-        {
-            throw UserFailureException.fromTemplate("Query databases were not initialized yet.");
-        }
     }
 
 }

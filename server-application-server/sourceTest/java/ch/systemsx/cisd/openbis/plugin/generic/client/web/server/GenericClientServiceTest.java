@@ -15,8 +15,10 @@
  */
 package ch.systemsx.cisd.openbis.plugin.generic.client.web.server;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -36,7 +38,6 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import ch.rinn.restrictions.Friend;
-import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import ch.systemsx.cisd.openbis.generic.client.web.server.AbstractClientServiceTest;
 import ch.systemsx.cisd.openbis.generic.client.web.server.UploadedFilesBean;
 import ch.systemsx.cisd.openbis.generic.shared.CommonTestUtils;
@@ -306,19 +307,10 @@ public final class GenericClientServiceTest extends AbstractClientServiceTest
                     allowing(multipartFile).getOriginalFilename();
                     will(returnValue(fileName));
 
-                    one(multipartFile).transferTo(with(any(File.class)));
-                    will(new CustomAction("copy content")
-                        {
-                            @Override
-                            public Object invoke(Invocation invocation) throws Throwable
-                            {
-                                final File target = (File) invocation.getParameter(0);
-                                FileUtilities
-                                        .writeToFile(target,
-                                                "[DEFAULT]\nprop1\tRED\n[DEFAULT]\nidentifier\tcontainer\tparent\tprop2\nMP1\tMP2\tMP3\t1");
-                                return null;
-                            }
-                        });
+                    one(multipartFile).getInputStream();
+                    will(returnValue(new ByteArrayInputStream(
+                            "[DEFAULT]\nprop1\tRED\n[DEFAULT]\nidentifier\tcontainer\tparent\tprop2\nMP1\tMP2\tMP3\t1"
+                                    .getBytes(StandardCharsets.UTF_8))));
 
                     one(genericServer).registerOrUpdateSamples(with(equal(SESSION_TOKEN)),
                             with(newSampleWithTypesList()));
@@ -396,18 +388,9 @@ public final class GenericClientServiceTest extends AbstractClientServiceTest
                     allowing(multipartFile).getOriginalFilename();
                     will(returnValue(fileName));
 
-                    one(multipartFile).transferTo(with(any(File.class)));
-                    will(new CustomAction("copy content")
-                        {
-                            @Override
-                            public Object invoke(Invocation invocation) throws Throwable
-                            {
-                                final File target = (File) invocation.getParameter(0);
-                                FileUtilities.writeToFile(target,
-                                        "identifier\tparents\nMP\tMP_1,MP_2");
-                                return null;
-                            }
-                        });
+                    one(multipartFile).getInputStream();
+                    will(returnValue(new ByteArrayInputStream(
+                            "identifier\tparents\nMP\tMP_1,MP_2".getBytes(StandardCharsets.UTF_8))));
 
                     one(genericServer).registerOrUpdateSamples(with(equal(SESSION_TOKEN)),
                             with(newSampleWithTypesList()));
@@ -476,20 +459,11 @@ public final class GenericClientServiceTest extends AbstractClientServiceTest
                     allowing(multipartFile).getOriginalFilename();
                     will(returnValue(fileName));
 
-                    one(multipartFile).transferTo(with(any(File.class)));
-                    will(new CustomAction("copy content")
-                        {
-                            @Override
-                            public Object invoke(Invocation invocation) throws Throwable
-                            {
-                                final File target = (File) invocation.getParameter(0);
-                                FileUtilities.writeToFile(target,
-                                        "identifier\tcontainer\tparent\texperiment\tprop1\tprop2\n"
-                                                + "MP1\t/G1/MP2\t\tEXP1\tRED\t\n"
-                                                + "/G2/MP1\t\t/G2/MP2\tEXP2\t\t1");
-                                return null;
-                            }
-                        });
+                    one(multipartFile).getInputStream();
+                    will(returnValue(new ByteArrayInputStream(
+                            ("identifier\tcontainer\tparent\texperiment\tprop1\tprop2\n"
+                                    + "MP1\t/G1/MP2\t\tEXP1\tRED\t\n"
+                                    + "/G2/MP1\t\t/G2/MP2\tEXP2\t\t1").getBytes(StandardCharsets.UTF_8))));
 
                     one(genericServer).updateSamples(with(equal(SESSION_TOKEN)),
                             with(newSampleWithTypesList()));
@@ -567,18 +541,10 @@ public final class GenericClientServiceTest extends AbstractClientServiceTest
                     allowing(multipartFile).getOriginalFilename();
                     will(returnValue(fileName));
 
-                    one(multipartFile).transferTo(with(any(File.class)));
-                    will(new CustomAction("copy content")
-                        {
-                            @Override
-                            public Object invoke(Invocation invocation) throws Throwable
-                            {
-                                final File target = (File) invocation.getParameter(0);
-                                FileUtilities.writeToFile(target, "identifier\tparents\n"
-                                        + "MP_1\t/G1/MP_11, /G1/MP_12\n" + "/G2/MP_2\t/G2/MP_21");
-                                return null;
-                            }
-                        });
+                    one(multipartFile).getInputStream();
+                    will(returnValue(new ByteArrayInputStream(
+                            ("identifier\tparents\n" + "MP_1\t/G1/MP_11, /G1/MP_12\n"
+                                    + "/G2/MP_2\t/G2/MP_21").getBytes(StandardCharsets.UTF_8))));
 
                     one(genericServer).updateSamples(with(equal(SESSION_TOKEN)),
                             with(newSampleWithTypesList()));
@@ -698,17 +664,9 @@ public final class GenericClientServiceTest extends AbstractClientServiceTest
                     allowing(multipartFile).getOriginalFilename();
                     will(returnValue("file name"));
 
-                    one(multipartFile).transferTo(with(any(File.class)));
-                    will(new CustomAction("copy content")
-                        {
-                            @Override
-                            public Object invoke(Invocation invocation) throws Throwable
-                            {
-                                final File target = (File) invocation.getParameter(0);
-                                FileUtilities.writeToFile(target, "code\nM1");
-                                return null;
-                            }
-                        });
+                    one(multipartFile).getInputStream();
+                    will(returnValue(
+                            new ByteArrayInputStream("code\nM1".getBytes(StandardCharsets.UTF_8))));
 
                     one(httpSession).removeAttribute(sessionKey);
 
@@ -799,19 +757,10 @@ public final class GenericClientServiceTest extends AbstractClientServiceTest
                     allowing(multipartFile).getOriginalFilename();
                     will(returnValue(fileName));
 
-                    one(multipartFile).transferTo(with(any(File.class)));
-                    will(new CustomAction("copy content")
-                        {
-                            @Override
-                            public Object invoke(Invocation invocation) throws Throwable
-                            {
-                                final File target = (File) invocation.getParameter(0);
-                                FileUtilities.writeToFile(target, "identifier\tprop1\tprop2\n"
-                                        + "/SPACE1/PROJECT1/EXP1\tRED\t\n"
-                                        + "/SPACE1/PROJECT2/EXP1\t\t1");
-                                return null;
-                            }
-                        });
+                    one(multipartFile).getInputStream();
+                    will(returnValue(new ByteArrayInputStream(
+                            ("identifier\tprop1\tprop2\n" + "/SPACE1/PROJECT1/EXP1\tRED\t\n"
+                                    + "/SPACE1/PROJECT2/EXP1\t\t1").getBytes(StandardCharsets.UTF_8))));
 
                     exactly(2).of(genericServer).getAuthSession(SESSION_TOKEN);
 
@@ -883,22 +832,11 @@ public final class GenericClientServiceTest extends AbstractClientServiceTest
                     allowing(multipartFile).getOriginalFilename();
                     will(returnValue(fileName));
 
-                    one(multipartFile).transferTo(with(any(File.class)));
-                    will(new CustomAction("copy content")
-                        {
-                            @Override
-                            public Object invoke(Invocation invocation) throws Throwable
-                            {
-                                final File target = (File) invocation.getParameter(0);
-                                FileUtilities
-                                        .writeToFile(
-                                                target,
-                                                "identifier\tproject\tprop1\tprop2\n"
-                                                        + "/SPACE1/PROJECT1/EXP1\t/SPACE1/PROJECT3/\tRED\t\n"
-                                                        + "/SPACE1/PROJECT2/EXP1\t\t\t1");
-                                return null;
-                            }
-                        });
+                    one(multipartFile).getInputStream();
+                    will(returnValue(new ByteArrayInputStream(
+                            ("identifier\tproject\tprop1\tprop2\n"
+                                    + "/SPACE1/PROJECT1/EXP1\t/SPACE1/PROJECT3/\tRED\t\n"
+                                    + "/SPACE1/PROJECT2/EXP1\t\t\t1").getBytes(StandardCharsets.UTF_8))));
 
                     exactly(2).of(genericServer).getAuthSession(SESSION_TOKEN);
 
