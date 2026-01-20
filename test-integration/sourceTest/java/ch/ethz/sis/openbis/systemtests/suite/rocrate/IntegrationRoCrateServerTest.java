@@ -323,7 +323,7 @@ public class IntegrationRoCrateServerTest
     public void testExportIdentifier()
             throws Exception
     {
-        String payload = "[\"/PUBLICATIONS/PUBLIC_REPOSITORIES/PUB29\"";
+        String payload = "[\"/PUBLICATIONS/PUBLIC_REPOSITORIES/PUB29\"]";
         String mimeType = "application/ld+json";
         testExport(mimeType, payload, "COMPLETED", "FAILED");
     }
