@@ -15,15 +15,19 @@
  */
 package ch.ethz.sis.afs.manager.operation;
 
-import ch.ethz.sis.shared.io.IOUtils;
+import static ch.ethz.sis.afs.dto.Transaction.PathState;
+import static ch.ethz.sis.afs.exception.AFSExceptions.PathNotInStore;
+
+import java.util.Map;
+
 import ch.ethz.sis.afs.dto.Transaction;
 import ch.ethz.sis.afs.dto.operation.DeleteOperation;
 import ch.ethz.sis.afs.dto.operation.OperationName;
 import ch.ethz.sis.afs.exception.AFSExceptions;
+import ch.ethz.sis.shared.io.IOUtils;
 
-import static ch.ethz.sis.afs.exception.AFSExceptions.PathNotInStore;
-
-public class DeleteOperationExecutor implements OperationExecutor<DeleteOperation, Void> {
+public class DeleteOperationExecutor implements OperationExecutor<DeleteOperation, Void>
+{
 
     //
     // Singleton
@@ -31,14 +35,17 @@ public class DeleteOperationExecutor implements OperationExecutor<DeleteOperatio
 
     private static final DeleteOperationExecutor instance;
 
-    static {
+    static
+    {
         instance = new DeleteOperationExecutor();
     }
 
-    private DeleteOperationExecutor() {
+    private DeleteOperationExecutor()
+    {
     }
 
-    public static DeleteOperationExecutor getInstance() {
+    public static DeleteOperationExecutor getInstance()
+    {
         return instance;
     }
 
@@ -47,16 +54,33 @@ public class DeleteOperationExecutor implements OperationExecutor<DeleteOperatio
     //
 
     @Override
-    public Void prepare(Transaction transaction, DeleteOperation operation) throws Exception {
-        if (!IOUtils.exists(operation.getSource())) {
-            AFSExceptions.throwInstance(PathNotInStore, OperationName.Move.name(), operation.getSource());
+    public Void prepare(Transaction transaction, DeleteOperation operation) throws Exception
+    {
+        // Check that file/directory exist
+        PathState pathState = OperationExecutor.getCachedPathState(transaction, operation.getSource());
+        if (!pathState.isExists())
+        {
+            AFSExceptions.throwInstance(PathNotInStore, OperationName.Delete.name(), operation.getSource());
         }
+
+        // Update state of the path and its children
+        for (Map.Entry<String, PathState> pathStateEntry : transaction.getPathStateCache().entrySet())
+        {
+            if (pathStateEntry.getKey().startsWith(operation.getSource()))
+            {
+                pathStateEntry.getValue().setExists(false);
+                pathStateEntry.getValue().setDeleted(true);
+            }
+        }
+
         return null;
     }
 
     @Override
-    public boolean commit(Transaction transaction, DeleteOperation operation) throws Exception {
-        if (IOUtils.exists(operation.getSource())) {
+    public boolean commit(Transaction transaction, DeleteOperation operation) throws Exception
+    {
+        if (IOUtils.exists(operation.getSource()))
+        {
             IOUtils.delete(operation.getSource());
             OperationExecutor.clearCaches(operation.getSource());
         }

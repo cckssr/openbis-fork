@@ -16,12 +16,16 @@ import static org.testng.Assert.fail;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -35,6 +39,7 @@ import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.afsapi.api.ClientAPI;
+import ch.ethz.sis.afsapi.dto.File;
 import ch.ethz.sis.afsclient.client.AfsClient;
 import ch.ethz.sis.openbis.generic.OpenBIS;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.pat.PersonalAccessToken;
@@ -1028,7 +1033,7 @@ public class Integration2PCTest
     }
 
     @Test
-    public void testAFSUpload() throws IOException
+    public void testAFSUploadFile() throws IOException
     {
         OpenBIS openBISWithTr = facade.createOpenBIS();
         OpenBIS openBISWithNoTr = facade.createOpenBIS();
@@ -1063,6 +1068,182 @@ public class Integration2PCTest
 
         assertEquals(hash, expectedHash);
         assertEquals(preview, expectedPreview);
+    }
+
+    @Test
+    public void testAFSUploadFolder() throws IOException
+    {
+        OpenBIS openBISWithTr = facade.createOpenBIS();
+        OpenBIS openBISWithNoTr = facade.createOpenBIS();
+
+        openBISWithTr.setInteractiveSessionKey(TEST_INTERACTIVE_SESSION_KEY);
+
+        openBISWithTr.login(INSTANCE_ADMIN, PASSWORD);
+        openBISWithNoTr.login(INSTANCE_ADMIN, PASSWORD);
+
+        openBISWithTr.beginTransaction();
+
+        // create space and sample at AS
+        Space space = facade.createSpace(openBISWithTr, ENTITY_CODE_PREFIX + UUID.randomUUID());
+        Sample sample = facade.createSample(openBISWithTr, space.getPermId(), ENTITY_CODE_PREFIX + UUID.randomUUID());
+
+        // upload "upload-before"
+        Path sourceBefore = Path.of("sourceTest/resource/" + getClass().getSimpleName() + "/upload-before/");
+        openBISWithTr.getAfsServerFacade()
+                .upload(sourceBefore, sample.getPermId().getPermId(), Path.of("/"), AfsClient.overrideCollisionListener,
+                        new ClientAPI.DefaultTransferMonitorLister());
+        openBISWithTr.commitTransaction();
+
+        assertAFSDirectoryEquals(openBISWithTr, sample.getPermId().getPermId(), Path.of("/"), sourceBefore);
+
+        openBISWithTr.beginTransaction();
+
+        // upload "upload-before"
+        Path sourceAfter = Path.of("sourceTest/resource/" + getClass().getSimpleName() + "/upload-after/");
+        openBISWithTr.getAfsServerFacade()
+                .upload(sourceAfter, sample.getPermId().getPermId(), Path.of("/"), AfsClient.overrideCollisionListener,
+                        new ClientAPI.DefaultTransferMonitorLister());
+        openBISWithTr.commitTransaction();
+
+        assertAFSDirectoryEquals(openBISWithTr, sample.getPermId().getPermId(), Path.of("/"), sourceAfter);
+    }
+
+    @Test
+    public void testAFSDeletesFileAndWritesToFileWithTheSameNameInTransaction() throws IOException
+    {
+        OpenBIS openBIS = facade.createOpenBIS();
+        openBIS.setInteractiveSessionKey(TEST_INTERACTIVE_SESSION_KEY);
+        openBIS.login(INSTANCE_ADMIN, PASSWORD);
+
+        // creates data in transaction 1
+        openBIS.beginTransaction();
+
+        Space space = facade.createSpace(openBIS, ENTITY_CODE_PREFIX + UUID.randomUUID());
+        Sample sample = facade.createSample(openBIS, space.getPermId(), ENTITY_CODE_PREFIX + UUID.randomUUID());
+
+        WriteData writeData = createWriteData(sample.getPermId().getPermId());
+        WriteData writeData2 = createWriteData(sample.getPermId().getPermId());
+
+        // create a file with two data chunks
+        openBIS.getAfsServerFacade().write(writeData.owner, writeData.source, 0L, writeData.bytes);
+        openBIS.getAfsServerFacade().write(writeData.owner, writeData.source, (long) writeData.bytes.length, writeData2.bytes);
+
+        // commit transaction 1
+        openBIS.commitTransaction();
+
+        // overwrite the data in transaction 2
+        openBIS.beginTransaction();
+
+        // delete the file and write only one data chunk
+        WriteData writeData3 = createWriteData(sample.getPermId().getPermId());
+        openBIS.getAfsServerFacade().delete(writeData.owner, writeData.source);
+        openBIS.getAfsServerFacade().write(writeData.owner, writeData.source, 0L, writeData3.bytes);
+
+        // commit transaction 2
+        openBIS.commitTransaction();
+
+        OpenBIS openBISWithNoTr = facade.createOpenBIS();
+        openBISWithNoTr.login(INSTANCE_ADMIN, PASSWORD);
+
+        // check the file contains only the new data chunk
+        File[] files = openBISWithNoTr.getAfsServerFacade().list(writeData.owner, writeData.source, false);
+
+        assertEquals(files.length, 1);
+        assertEquals(files[0].getSize(), Long.valueOf(writeData3.bytes.length));
+        assertEquals(files[0].getDirectory(), Boolean.FALSE);
+
+        byte[] bytesRead = openBISWithNoTr.getAfsServerFacade().read(writeData.owner, writeData.source, 0L, writeData3.bytes.length);
+        assertEquals(bytesRead, writeData3.bytes);
+    }
+
+    @Test
+    public void testAFSDeletesFolderAndCreatesFileWithTheSameNameInTransaction() throws IOException
+    {
+        OpenBIS openBIS = facade.createOpenBIS();
+        openBIS.setInteractiveSessionKey(TEST_INTERACTIVE_SESSION_KEY);
+        openBIS.login(INSTANCE_ADMIN, PASSWORD);
+
+        // creates data in transaction 1
+        openBIS.beginTransaction();
+
+        Space space = facade.createSpace(openBIS, ENTITY_CODE_PREFIX + UUID.randomUUID());
+        Sample sample = facade.createSample(openBIS, space.getPermId(), ENTITY_CODE_PREFIX + UUID.randomUUID());
+
+        WriteData writeData = createWriteData(sample.getPermId().getPermId());
+        WriteData writeData2 = createWriteData(sample.getPermId().getPermId());
+
+        // create a folder with a file
+        openBIS.getAfsServerFacade().create(writeData.owner, writeData.source, true);
+        openBIS.getAfsServerFacade().write(writeData.owner, writeData.source + "/" + writeData2.source, 0L, writeData2.bytes);
+
+        // commit transaction 1
+        openBIS.commitTransaction();
+
+        // overwrite the data in transaction 2
+        openBIS.beginTransaction();
+
+        // delete the folder and create a file with the same name
+        openBIS.getAfsServerFacade().delete(writeData.owner, writeData.source);
+        openBIS.getAfsServerFacade().write(writeData.owner, writeData.source, 0L, writeData.bytes);
+
+        // commit transaction 2
+        openBIS.commitTransaction();
+
+        OpenBIS openBISWithNoTr = facade.createOpenBIS();
+        openBISWithNoTr.login(INSTANCE_ADMIN, PASSWORD);
+
+        // check there is the file instead of the folder now
+        File[] files = openBISWithNoTr.getAfsServerFacade().list(writeData.owner, writeData.source, false);
+
+        assertEquals(files.length, 1);
+        assertEquals(files[0].getSize(), Long.valueOf(writeData.bytes.length));
+        assertEquals(files[0].getDirectory(), Boolean.FALSE);
+
+        byte[] bytesRead = openBISWithNoTr.getAfsServerFacade().read(writeData.owner, writeData.source, 0L, writeData.bytes.length);
+        assertEquals(bytesRead, writeData.bytes);
+    }
+
+    @Test
+    public void testAFSDeletesFileAndCreatesFolderWithTheSameNameInTransaction() throws IOException
+    {
+        OpenBIS openBIS = facade.createOpenBIS();
+        openBIS.setInteractiveSessionKey(TEST_INTERACTIVE_SESSION_KEY);
+        openBIS.login(INSTANCE_ADMIN, PASSWORD);
+
+        // creates data in transaction 1
+        openBIS.beginTransaction();
+
+        Space space = facade.createSpace(openBIS, ENTITY_CODE_PREFIX + UUID.randomUUID());
+        Sample sample = facade.createSample(openBIS, space.getPermId(), ENTITY_CODE_PREFIX + UUID.randomUUID());
+
+        WriteData writeData = createWriteData(sample.getPermId().getPermId());
+
+        // create a file
+        openBIS.getAfsServerFacade().write(writeData.owner, writeData.source, 0L, writeData.bytes);
+
+        // commit transaction 1
+        openBIS.commitTransaction();
+
+        // overwrite the data in transaction 2
+        openBIS.beginTransaction();
+
+        // delete the file and create a folder with the same names
+        openBIS.getAfsServerFacade().delete(writeData.owner, writeData.source);
+        openBIS.getAfsServerFacade().create(writeData.owner, writeData.source, true);
+
+        // commit transaction 2
+        openBIS.commitTransaction();
+
+        OpenBIS openBISWithNoTr = facade.createOpenBIS();
+        openBISWithNoTr.login(INSTANCE_ADMIN, PASSWORD);
+
+        // check there is the folder instead of the file now
+        File[] files = openBISWithNoTr.getAfsServerFacade().list(writeData.owner, "/", false);
+
+        assertEquals(files.length, 1);
+        assertEquals(files[0].getName(), writeData.source);
+        assertEquals(files[0].getDirectory(), Boolean.TRUE);
+        assertNull(files[0].getSize());
     }
 
     @Test
@@ -1292,6 +1473,68 @@ public class Integration2PCTest
             statement.execute("DELETE FROM projects WHERE code LIKE '" + ENTITY_CODE_PREFIX + "%'");
             statement.execute("DELETE FROM spaces WHERE code LIKE '" + ENTITY_CODE_PREFIX + "%'");
         }
+    }
+
+    private static void assertAFSDirectoryEquals(final OpenBIS openBIS, final String owner, final Path serverDirectory, final Path localDirectory)
+            throws IOException
+    {
+        Path tempDirectory = Files.createTempDirectory("upload-test");
+        openBIS.getAfsServerFacade()
+                .download(owner, serverDirectory, tempDirectory, ClientAPI.overrideCollisionListener, new ClientAPI.DefaultTransferMonitorLister());
+        Files.walkFileTree(tempDirectory, new CheckFilesEqualVisitor(tempDirectory, localDirectory));
+        Files.walkFileTree(localDirectory, new CheckFilesEqualVisitor(localDirectory, tempDirectory));
+    }
+
+    private static class CheckFilesEqualVisitor extends SimpleFileVisitor<Path>
+    {
+        private final Path root1;
+
+        private final Path root2;
+
+        public CheckFilesEqualVisitor(Path root1, Path root2)
+        {
+            this.root1 = root1;
+            this.root2 = root2;
+        }
+
+        @Override public FileVisitResult preVisitDirectory(final Path dir1, final BasicFileAttributes attrs) throws IOException
+        {
+            FileVisitResult result = super.preVisitDirectory(dir1, attrs);
+
+            Path relativePath = root1.relativize(dir1);
+            Path subfolder2 = root2.resolve(relativePath);
+
+            if (!Files.exists(subfolder2))
+            {
+                throw new AssertionError(subfolder2 + " does not exist");
+            }
+
+            return result;
+        }
+
+        @Override public FileVisitResult visitFile(final Path file1, final BasicFileAttributes attrs) throws IOException
+        {
+            FileVisitResult result = super.visitFile(file1, attrs);
+
+            Path relativePath = root1.relativize(file1);
+            Path file2 = root2.resolve(relativePath);
+
+            if (!Files.exists(file2))
+            {
+                throw new AssertionError(file2 + " does not exist");
+            }
+
+            byte[] file1Bytes = Files.readAllBytes(file1);
+            byte[] file2Bytes = Files.readAllBytes(file2);
+
+            if (!Arrays.equals(file1Bytes, file2Bytes))
+            {
+                throw new AssertionError(file1 + " is not equal to " + file2);
+            }
+
+            return result;
+        }
+
     }
 
     private static WriteData createWriteData(String owner)
