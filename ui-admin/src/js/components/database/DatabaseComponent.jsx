@@ -262,16 +262,6 @@ class DatabaseComponent extends React.PureComponent {
     )
   }
 
-  objectChange(id, objectTypeChanging, changed) {
-    console.log('DatabaseComponent.objectChange', id, objectTypeChanging, changed);
-    AppController.getInstance().objectChange(
-      pages.DATABASE,
-      objectTypeChanging,
-      id,
-      changed
-    )
-  }
-
   objectCreate(oldType, oldId, newType, newId) {
     console.log('DatabaseComponent.objectCreate', oldType, oldId, newType, newId);
     AppController.getInstance().objectCreate(
@@ -301,26 +291,19 @@ class DatabaseComponent extends React.PureComponent {
     )
   }
 
-  objectDelete(type, id) {
-    console.log('DatabaseComponent.objectDelete', type, id);
-    AppController.getInstance().objectDelete(
-      pages.DATABASE,
-      type,
-      id
-    )
-  }
-
   externalAppController = {
     createNewObject: (params) => this.createNewObject(params.newObjectType, params.fromObjectType, params.fromId, params.selectedEntityType),
-    objectChange: (params) => this.objectChange(params.id, params.objectTypeChanging, params.changed),
+    objectChange: (params) => AppController.getInstance().objectChange(pages.DATABASE, params.objectTypeChanging, params.id, params.changed),
     objectCreate: (params) => this.objectCreate(params.oldType, params.oldId, params.newType, params.newId),
     closeForm: (params) => this.closeForm(params.type, params.id),
-    objectDelete: (params) => this.objectDelete(params.type, params.id)
+    objectDelete: (params) => AppController.getInstance().objectDelete(pages.DATABASE, params.type, params.id),
+    objectMove: (params) => AppController.getInstance().objectUpdate(params.type)
   }
 
 
   renderJson() {  
     const { object } = this.props
+    console.log('DatabaseComponent.renderJson', object);
     return (
       <FormErrorBoundary>
         <EntityFormContextProvider 

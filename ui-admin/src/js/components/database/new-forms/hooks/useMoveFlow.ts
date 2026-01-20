@@ -3,6 +3,7 @@ import { Form } from '@src/js/components/database/new-forms/types/formITypes.ts'
 import { IFormController } from '@src/js/components/database/new-forms/types/IFormController.ts';
 import { DialogState } from '@src/js/components/database/new-forms/hooks/useDialogState.ts';
 import { getErrorMessage, formatErrorForLogging } from '@src/js/components/database/new-forms/utils/errorUtil.ts';
+import { EntityKind } from '@src/js/components/database/new-forms/types/formEnums.ts';
 
 interface UseMoveFlowParams {
   form: Form | null;
@@ -16,6 +17,7 @@ interface UseMoveFlowParams {
   setError: (error: any) => void;
   clearError: () => void;
   externalAppController?: any;
+  actionToastContext?: any;
 }
 
 export const useMoveFlow = ({
@@ -30,6 +32,7 @@ export const useMoveFlow = ({
   setError,
   clearError,
   externalAppController,
+  actionToastContext,
 }: UseMoveFlowParams) => {
   const handleMoveRequest = useCallback(async () => {
     if (!form || !controller) {
@@ -62,11 +65,10 @@ export const useMoveFlow = ({
       try {
         if (moveResult && moveResult.success) {
           await loadForm();
+          actionToastContext?.raiseSuccess(`Entity successfully moved to ${moveResult.targetKind}: ${moveResult.targetIdentifier} `);
           if (externalAppController?.objectMove) {
             externalAppController.objectMove({
-              type: form.entityType,
-              id: form.entityPermId,
-              moveInfo: dialogs.move.info,
+              type: form.entityKind == EntityKind.SAMPLE ? EntityKind.OBJECT : form.entityKind
             });
           }
         } else {

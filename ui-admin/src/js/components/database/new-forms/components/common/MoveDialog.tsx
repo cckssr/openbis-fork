@@ -41,12 +41,28 @@ const MoveDialog: React.FC<MoveDialogProps> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const getTargetIdentifier = (target: any) => {
+    switch (target['@type']) {
+      case 'as.dto.space.Space':
+        return { targetIdentifier: target.getCode(), targetKind: EntityKind.SPACE };
+      case 'as.dto.project.Project':
+        return { targetIdentifier: target.getIdentifier().getIdentifier(), targetKind: EntityKind.PROJECT };
+      case 'as.dto.experiment.Experiment':
+        return { targetIdentifier: target.getIdentifier().getIdentifier(), targetKind: EntityKind.COLLECTION };
+      case 'as.dto.sample.Sample':
+        return { targetIdentifier: target.getIdentifier().getIdentifier(), targetKind: EntityKind.OBJECT };
+      case 'as.dto.dataset.DataSet':
+        return { targetIdentifier: target.getIdentifier().getIdentifier(), targetKind: EntityKind.DATASET };
+      default:
+        return { targetIdentifier: null, targetKind: null };
+    }
+  }
 
   const handleConfirm = async () => {
     setLoading(true);
     setError(null);
     const result = await entityFormController?.move(form, null, { target: selectedTarget, moveDescendants: moveDescendants });
-    onConfirm(result);
+    onConfirm({ success: true, ...getTargetIdentifier(selectedTarget)});
   };
 
   const handleCancel = () => {

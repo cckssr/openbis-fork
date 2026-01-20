@@ -15,18 +15,22 @@ export default class DatabaseBrowserControllerReload extends BrowserControllerRe
       ],
       [objectType.PROJECT]: [
         objectOperation.CREATE,
+        objectOperation.UPDATE,
         objectOperation.DELETE
       ],
       [objectType.COLLECTION]: [
         objectOperation.CREATE,
+        objectOperation.UPDATE,
         objectOperation.DELETE
       ],
       [objectType.OBJECT]: [
         objectOperation.CREATE,
+        objectOperation.UPDATE,
         objectOperation.DELETE
       ],
       [objectType.DATA_SET]: [
         objectOperation.CREATE,
+        objectOperation.UPDATE,
         objectOperation.DELETE
       ]
     }

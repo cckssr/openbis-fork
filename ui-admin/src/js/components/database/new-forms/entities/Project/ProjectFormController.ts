@@ -127,13 +127,8 @@ export class ProjectFormController implements IFormController {
         }
         movedCount += result.count;
       }
-
-      // Return early - don't delete the project itself
-      // Return object to indicate deletion was skipped
-      return Promise.resolve({
-        skipped: true,
-        message: `Successfully moved ${movedCount} entit${movedCount > 1 ? 'ies' : 'y'} to trashcan`
-      });
+      
+      return Promise.resolve();
     }
 
     // Empty project: Move the project itself to trashcan using DeleteService

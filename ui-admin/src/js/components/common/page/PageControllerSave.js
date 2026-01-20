@@ -55,9 +55,7 @@ export default class PageControllerSave {
         } else if (oldObject.type === this.controller.getExistingObjectType()) {
           if (oldObject.id === newObject.id) {
             AppController.getInstance().objectUpdate(
-              this.controller.getPage(),
-              oldObject.type,
-              oldObject.id
+              oldObject.type
             )
           } else { 
             AppController.getInstance().objectCreate(
