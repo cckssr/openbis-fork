@@ -130,6 +130,8 @@ public class XLSImport
 
     private final AfsDataImportHelper afsDataImportHelper;
 
+    private final boolean containsAfsData;
+
     private static final String ZIP_EXTENSION = "." + "zip";
 
     public XLSImport(String sessionToken,
@@ -174,6 +176,7 @@ public class XLSImport
         final Map<String, String> scripts = new HashMap<>();
         byte[][] xls = new byte[sessionWorkspaceFiles.length][];
         this.importValues = new HashMap<>();
+        boolean containsData = false;
 
         for (int i = 0; i < sessionWorkspaceFiles.length; i++)
         {
@@ -217,6 +220,8 @@ public class XLSImport
                             {
                                 validateEntrySize(entry.getSize(), EMBEDDED_DOCUMENT_LIMIT);
                                 this.importValues.put(entryName.substring(DATA_FOLDER_NAME.length()), new String(zip.readAllBytes()));
+                            } else if(entryName.startsWith(HIERARCHY + PATH_SEPARATOR) && entryName.contains(PATH_SEPARATOR + DATA_FOLDER_NAME)) {
+                                containsData = true;
                             } else if (!entryName.startsWith(MISCELLANEOUS_FOLDER_NAME) &&
                                         !entryName.startsWith(HIERARCHY))
                             {
@@ -269,8 +274,13 @@ public class XLSImport
             }
         }
 
+        this.containsAfsData = containsData;
         this.xls = xls;
         this.scriptHelper = new ScriptImportHelper(this.delayedExecutor, mode, options, scripts);
+    }
+
+    public boolean importContainsAfsData() {
+        return this.containsAfsData;
     }
 
     private static void validateEntrySize(final long size, final int limit)
