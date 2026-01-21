@@ -10,7 +10,7 @@ Field renderers receive field definitions and render them as appropriate input c
 
 ### TextFieldRenderer
 
-Renders single-line text input fields. Used for `VARCHAR` data types.
+Renders single-line text input fields. Used for `VARCHAR`, `HYPERLINK`, `INTEGER`, `REAL` and `ARRAY_` data types.
 
 **File**: `TextFieldRenderer.tsx`
 

@@ -1,11 +1,13 @@
 import React from 'react'
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '@mui/styles/withStyles'
 import TextField from '@mui/material/TextField'
 import InputAdornment from '@mui/material/InputAdornment'
 import FormFieldContainer from '@src/js/components/common/form/FormFieldContainer.jsx'
 import FormFieldLabel from '@src/js/components/common/form/FormFieldLabel.jsx'
 import FormFieldView from '@src/js/components/common/form/FormFieldView.jsx'
 import logger from '@src/js/common/logger.js'
+import date from '@src/js/common/date.js'
+import { FormFieldDataType } from '@src/js/components/database/new-forms/types/formEnums.ts'
 
 const styles = theme => ({
   startAdornment: {
@@ -35,6 +37,20 @@ class TextFormField extends React.PureComponent {
     autoComplete: 'off'
   }
 
+  arrayToString(array, dataType) {
+    switch (dataType) {
+      case FormFieldDataType.ARRAY_INTEGER:
+      case FormFieldDataType.ARRAY_REAL:
+        return `[${array.join(', ')}]`
+      case FormFieldDataType.ARRAY_STRING:
+        return `['${array.join("', '")}']`
+      case FormFieldDataType.ARRAY_TIMESTAMP:
+        return `[${array.map(v => date.format(new Date(v), true)).join(', ')}]`
+      default:
+        throw 'Unsupported array data type: ' + dataType
+    }
+  }
+
   render() {
     logger.log(logger.DEBUG, 'TextFormField.render')
 
@@ -49,25 +65,32 @@ class TextFormField extends React.PureComponent {
     }
   }
 
-  renderView() {
-    const { label, value, description, disableUnderline, hyperlink } = this.props
-    let finalValue = null
-    if (hyperlink) {
-      finalValue = (
-        <a href={value} target='_blank'>
-          {value}
-        </a>
-      )
-    } else if (Array.isArray(value)) {
-      finalValue = '[' + value.join(', ') + ']'
+  renderValue(value, dataType) {
+    if (value) {
+      if (dataType === FormFieldDataType.HYPERLINK) {
+        return <a href={value} target='_blank'>{value}</a>
+      } else if (
+        dataType === FormFieldDataType.ARRAY_TIMESTAMP ||
+        dataType === FormFieldDataType.ARRAY_STRING ||
+        dataType === FormFieldDataType.ARRAY_INTEGER ||
+        dataType === FormFieldDataType.ARRAY_REAL
+      ) {
+        return this.arrayToString(value, dataType)
+      } else {
+        return value
+      }
     } else {
-      finalValue = value
+      return null
     }
+  }
+
+  renderView() {
+    const { label, value, description, disableUnderline, dataType } = this.props
 
     return (
       <FormFieldView
         label={label}
-        value={finalValue}
+        value={this.renderValue(value, dataType)}
         description={description}
         disableUnderline={disableUnderline || false}
       />
@@ -103,7 +126,7 @@ class TextFormField extends React.PureComponent {
     } = this.props
 
     return (
-      (<FormFieldContainer
+      <FormFieldContainer
         description={description}
         error={error}
         metadata={metadata}
@@ -163,8 +186,8 @@ class TextFormField extends React.PureComponent {
             }
           }}
         />
-      </FormFieldContainer>)
-    );
+      </FormFieldContainer>
+    )
   }
 }
 
