@@ -511,15 +511,16 @@ CREATE RULE data_all AS
   WHERE ((data_all.id)::bigint = (old.id)::bigint);
 CREATE RULE data_insert AS
     ON INSERT TO data DO INSTEAD  INSERT INTO data_all (id, frozen, frozen_for_children, frozen_for_parents, frozen_for_comps, frozen_for_conts, code, del_id, orig_del, expe_id, expe_frozen, dast_id, data_producer_code, dsty_id, is_derived, is_valid, modification_timestamp, access_timestamp, pers_id_registerer, pers_id_modifier, production_timestamp, registration_timestamp, samp_id, samp_frozen, version, data_set_kind, meta_data, afs_data)
-  VALUES (new.id, new.frozen, new.frozen_for_children, new.frozen_for_parents, new.frozen_for_comps, new.frozen_for_conts, new.code, new.del_id, new.orig_del, new.expe_id, new.expe_frozen, new.dast_id, new.data_producer_code, new.dsty_id, new.is_derived, new.is_valid, new.modification_timestamp, new.access_timestamp, new.pers_id_registerer, new.pers_id_modifier, new.production_timestamp, new.registration_timestamp, new.samp_id, new.samp_frozen, new.version, new.data_set_kind, new.meta_data, new.afs_data);
+  VALUES (new.id, new.frozen, new.frozen_for_children, new.frozen_for_parents, new.frozen_for_comps, new.frozen_for_conts, new.code, new.del_id, new.orig_del, new.expe_id, new.expe_frozen, new.dast_id, new.data_producer_code, new.dsty_id, new.is_derived, new.is_valid, new.modification_timestamp, new.access_timestamp, new.pers_id_registerer, new.pers_id_modifier, new.production_timestamp, new.registration_timestamp, new.samp_id, new.samp_frozen, new.version, new.data_set_kind, new.meta_data, new.afs_data)
+  RETURNING id, code, dsty_id, dast_id, expe_id, expe_frozen, data_producer_code, production_timestamp, samp_id, samp_frozen, registration_timestamp, access_timestamp, pers_id_registerer, pers_id_modifier, is_valid, modification_timestamp, is_derived, del_id, orig_del, version, data_set_kind, frozen, frozen_for_children, frozen_for_parents, frozen_for_comps, frozen_for_conts, tsvector_document, meta_data, afs_data;
 CREATE RULE data_relationship_delete AS
     ON DELETE TO data_set_relationships_all
    WHERE (old.del_id IS NULL) DO  UPDATE data_set_relationships_history SET valid_until_timestamp = CURRENT_TIMESTAMP
-  WHERE ((((data_set_relationships_history.main_data_id)::bigint = (old.data_id_parent)::bigint) AND ((data_set_relationships_history.data_id)::bigint = (old.data_id_child)::bigint) AND ((data_set_relationships_history.relation_type)::text = ( SELECT upper((relationship_types.parent_label)::text) AS upper
-           FROM relationship_types
-          WHERE ((relationship_types.id)::bigint = (old.relationship_id)::bigint))) AND (data_set_relationships_history.valid_until_timestamp IS NULL)) OR (((data_set_relationships_history.main_data_id)::bigint = (old.data_id_child)::bigint) AND ((data_set_relationships_history.data_id)::bigint = (old.data_id_parent)::bigint) AND ((data_set_relationships_history.relation_type)::text = ( SELECT upper((relationship_types.child_label)::text) AS upper
-           FROM relationship_types
-          WHERE ((relationship_types.id)::bigint = (old.relationship_id)::bigint))) AND (data_set_relationships_history.valid_until_timestamp IS NULL)));
+                                  WHERE ((((data_set_relationships_history.main_data_id)::bigint = (old.data_id_parent)::bigint) AND ((data_set_relationships_history.data_id)::bigint = (old.data_id_child)::bigint) AND ((data_set_relationships_history.relation_type)::text = ( SELECT upper((relationship_types.parent_label)::text) AS upper
+                                      FROM relationship_types
+                                      WHERE ((relationship_types.id)::bigint = (old.relationship_id)::bigint))) AND (data_set_relationships_history.valid_until_timestamp IS NULL)) OR (((data_set_relationships_history.main_data_id)::bigint = (old.data_id_child)::bigint) AND ((data_set_relationships_history.data_id)::bigint = (old.data_id_parent)::bigint) AND ((data_set_relationships_history.relation_type)::text = ( SELECT upper((relationship_types.child_label)::text) AS upper
+                                      FROM relationship_types
+                                      WHERE ((relationship_types.id)::bigint = (old.relationship_id)::bigint))) AND (data_set_relationships_history.valid_until_timestamp IS NULL)));
 CREATE RULE data_relationship_insert AS
     ON INSERT TO data_set_relationships_all
    WHERE (new.del_id IS NULL) DO ( INSERT INTO data_set_relationships_history (id, main_data_id, relation_type, data_id, entity_kind, entity_perm_id, pers_id_author, valid_from_timestamp, ordinal)
@@ -537,7 +538,7 @@ CREATE RULE data_relationship_insert AS
 );
 CREATE RULE data_relationship_trash_revert_update AS
     ON UPDATE TO data_set_relationships_all
-   WHERE ((old.del_id IS NOT NULL) AND (new.del_id IS NULL)) DO ( INSERT INTO data_set_relationships_history (id, main_data_id, relation_type, data_id, entity_kind, entity_perm_id, pers_id_author, valid_from_timestamp, ordinal)
+       WHERE ((old.del_id IS NOT NULL) AND (new.del_id IS NULL)) DO ( INSERT INTO data_set_relationships_history (id, main_data_id, relation_type, data_id, entity_kind, entity_perm_id, pers_id_author, valid_from_timestamp, ordinal)
   VALUES (nextval('data_set_relationships_history_id_seq'::regclass), new.data_id_parent, ( SELECT upper((relationship_types.parent_label)::text) AS upper
            FROM relationship_types
           WHERE ((relationship_types.id)::bigint = (new.relationship_id)::bigint)), new.data_id_child, 'DATA SET'::text, ( SELECT data_all.code
@@ -552,15 +553,15 @@ CREATE RULE data_relationship_trash_revert_update AS
 );
 CREATE RULE data_relationship_trash_update AS
     ON UPDATE TO data_set_relationships_all
-   WHERE ((new.del_id IS NOT NULL) AND (old.del_id IS NULL)) DO  UPDATE data_set_relationships_history SET valid_until_timestamp = CURRENT_TIMESTAMP
-  WHERE ((((data_set_relationships_history.main_data_id)::bigint = (old.data_id_parent)::bigint) AND ((data_set_relationships_history.data_id)::bigint = (old.data_id_child)::bigint) AND ((data_set_relationships_history.relation_type)::text = ( SELECT upper((relationship_types.parent_label)::text) AS upper
-           FROM relationship_types
-          WHERE ((relationship_types.id)::bigint = (old.relationship_id)::bigint))) AND (data_set_relationships_history.valid_until_timestamp IS NULL)) OR (((data_set_relationships_history.main_data_id)::bigint = (old.data_id_child)::bigint) AND ((data_set_relationships_history.data_id)::bigint = (old.data_id_parent)::bigint) AND ((data_set_relationships_history.relation_type)::text = ( SELECT upper((relationship_types.child_label)::text) AS upper
-           FROM relationship_types
-          WHERE ((relationship_types.id)::bigint = (old.relationship_id)::bigint))) AND (data_set_relationships_history.valid_until_timestamp IS NULL)));
+       WHERE ((new.del_id IS NOT NULL) AND (old.del_id IS NULL)) DO  UPDATE data_set_relationships_history SET valid_until_timestamp = CURRENT_TIMESTAMP
+       WHERE ((((data_set_relationships_history.main_data_id)::bigint = (old.data_id_parent)::bigint) AND ((data_set_relationships_history.data_id)::bigint = (old.data_id_child)::bigint) AND ((data_set_relationships_history.relation_type)::text = ( SELECT upper((relationship_types.parent_label)::text) AS upper
+                  FROM relationship_types
+                  WHERE ((relationship_types.id)::bigint = (old.relationship_id)::bigint))) AND (data_set_relationships_history.valid_until_timestamp IS NULL)) OR (((data_set_relationships_history.main_data_id)::bigint = (old.data_id_child)::bigint) AND ((data_set_relationships_history.data_id)::bigint = (old.data_id_parent)::bigint) AND ((data_set_relationships_history.relation_type)::text = ( SELECT upper((relationship_types.child_label)::text) AS upper
+                  FROM relationship_types
+                  WHERE ((relationship_types.id)::bigint = (old.relationship_id)::bigint))) AND (data_set_relationships_history.valid_until_timestamp IS NULL)));
 CREATE RULE data_relationship_update AS
     ON UPDATE TO data_set_relationships_all
-   WHERE ((new.del_id IS NULL) AND (old.del_id IS NULL)) DO ( UPDATE data_set_relationships_history SET valid_until_timestamp = CURRENT_TIMESTAMP
+       WHERE ((new.del_id IS NULL) AND (old.del_id IS NULL)) DO ( UPDATE data_set_relationships_history SET valid_until_timestamp = CURRENT_TIMESTAMP
   WHERE ((((data_set_relationships_history.main_data_id)::bigint = (old.data_id_parent)::bigint) AND ((data_set_relationships_history.data_id)::bigint = (old.data_id_child)::bigint) AND ((data_set_relationships_history.relation_type)::text = ( SELECT upper((relationship_types.parent_label)::text) AS upper
            FROM relationship_types
           WHERE ((relationship_types.id)::bigint = (old.relationship_id)::bigint))) AND (data_set_relationships_history.valid_until_timestamp IS NULL)) OR (((data_set_relationships_history.main_data_id)::bigint = (old.data_id_child)::bigint) AND ((data_set_relationships_history.data_id)::bigint = (old.data_id_parent)::bigint) AND ((data_set_relationships_history.relation_type)::text = ( SELECT upper((relationship_types.child_label)::text) AS upper
@@ -595,41 +596,42 @@ CREATE RULE data_set_properties_delete AS
           WHERE ((samples_all.id)::bigint = (old.samp_prop_id)::bigint)), OLD.SAMP_PROP_ID::text), old.pers_id_author, old.modification_timestamp, CURRENT_TIMESTAMP, old.integer_array_value, old.real_array_value, old.string_array_value, old.timestamp_array_value, old.json_value);
 CREATE RULE data_set_properties_update AS
     ON UPDATE TO data_set_properties
-   WHERE (((old.value IS NOT NULL) AND (decode(replace("substring"((old.value)::text, 1, 1), '\'::text, '\\'::text), 'escape'::text) <> '\xefbfbd'::bytea) AND ((old.value)::text <> (new.value)::text))
-    OR ((old.cvte_id IS NOT NULL) AND ((old.cvte_id)::bigint <> (new.cvte_id)::bigint))
-    OR ((old.mate_prop_id IS NOT NULL) AND ((old.mate_prop_id)::bigint <> (new.mate_prop_id)::bigint))
-    OR ((old.samp_prop_id IS NOT NULL) AND ((old.samp_prop_id)::bigint <> (new.samp_prop_id)::bigint))
-    OR ((old.integer_array_value IS NOT NULL) AND ((old.integer_array_value)::long_value[] <> (new.integer_array_value)::long_value[]))
-    OR ((old.real_array_value IS NOT NULL) AND ((old.real_array_value)::double_value[] <> (new.real_array_value)::double_value[]))
-    OR ((old.string_array_value IS NOT NULL) AND ((old.string_array_value)::text_value[] <> (new.string_array_value)::text_value[]))
-    OR ((old.timestamp_array_value IS NOT NULL) AND ((old.timestamp_array_value)::time_stamp[] <> (new.timestamp_array_value)::time_stamp[]))
-    OR ((old.json_value IS NOT NULL) AND ((old.json_value)::jsonb <> (new.json_value)::jsonb)) )
-   DO INSERT INTO data_set_properties_history (id, ds_id, dstpt_id, value, vocabulary_term, material, sample, pers_id_author, valid_from_timestamp, valid_until_timestamp, integer_array_value, real_array_value, string_array_value, timestamp_array_value, json_value)
-  VALUES (nextval('data_set_property_id_seq'::regclass), old.ds_id, old.dstpt_id, old.value, ( SELECT ((((t.code)::text || ' ['::text) || (v.code)::text) || ']'::text)
-           FROM (controlled_vocabulary_terms t
-             JOIN controlled_vocabularies v ON (((t.covo_id)::bigint = (v.id)::bigint)))
-          WHERE ((t.id)::bigint = (old.cvte_id)::bigint)), ( SELECT ((((m.code)::text || ' ['::text) || (mt.code)::text) || ']'::text)
-           FROM (materials m
-             JOIN material_types mt ON (((m.maty_id)::bigint = (mt.id)::bigint)))
-          WHERE ((m.id)::bigint = (old.mate_prop_id)::bigint)), COALESCE(( SELECT samples_all.perm_id
-           FROM samples_all
-          WHERE ((samples_all.id)::bigint = (old.samp_prop_id)::bigint)), OLD.SAMP_PROP_ID::text), old.pers_id_author, old.modification_timestamp, new.modification_timestamp, old.integer_array_value, old.real_array_value, old.string_array_value, old.timestamp_array_value, old.json_value);
+       WHERE (((old.value IS NOT NULL) AND (decode(replace("substring"((old.value)::text, 1, 1), '\'::text, '\\'::text), 'escape'::text) <> '\xefbfbd'::bytea) AND ((old.value)::text <> (new.value)::text))
+          OR ((old.cvte_id IS NOT NULL) AND ((old.cvte_id)::bigint <> (new.cvte_id)::bigint))
+          OR ((old.mate_prop_id IS NOT NULL) AND ((old.mate_prop_id)::bigint <> (new.mate_prop_id)::bigint))
+          OR ((old.samp_prop_id IS NOT NULL) AND ((old.samp_prop_id)::bigint <> (new.samp_prop_id)::bigint))
+          OR ((old.integer_array_value IS NOT NULL) AND ((old.integer_array_value)::long_value[] <> (new.integer_array_value)::long_value[]))
+          OR ((old.real_array_value IS NOT NULL) AND ((old.real_array_value)::double_value[] <> (new.real_array_value)::double_value[]))
+          OR ((old.string_array_value IS NOT NULL) AND ((old.string_array_value)::text_value[] <> (new.string_array_value)::text_value[]))
+          OR ((old.timestamp_array_value IS NOT NULL) AND ((old.timestamp_array_value)::time_stamp[] <> (new.timestamp_array_value)::time_stamp[]))
+          OR ((old.json_value IS NOT NULL) AND ((old.json_value)::jsonb <> (new.json_value)::jsonb)) )
+           DO INSERT INTO data_set_properties_history (id, ds_id, dstpt_id, value, vocabulary_term, material, sample, pers_id_author, valid_from_timestamp, valid_until_timestamp, integer_array_value, real_array_value, string_array_value, timestamp_array_value, json_value)
+       VALUES (nextval('data_set_property_id_seq'::regclass), old.ds_id, old.dstpt_id, old.value, ( SELECT ((((t.code)::text || ' ['::text) || (v.code)::text) || ']'::text)
+                                       FROM (controlled_vocabulary_terms t
+                                       JOIN controlled_vocabularies v ON (((t.covo_id)::bigint = (v.id)::bigint)))
+                                       WHERE ((t.id)::bigint = (old.cvte_id)::bigint)), ( SELECT ((((m.code)::text || ' ['::text) || (mt.code)::text) || ']'::text)
+                                       FROM (materials m
+                                       JOIN material_types mt ON (((m.maty_id)::bigint = (mt.id)::bigint)))
+                                       WHERE ((m.id)::bigint = (old.mate_prop_id)::bigint)), COALESCE(( SELECT samples_all.perm_id
+                                       FROM samples_all
+                                       WHERE ((samples_all.id)::bigint = (old.samp_prop_id)::bigint)), OLD.SAMP_PROP_ID::text), old.pers_id_author, old.modification_timestamp, new.modification_timestamp, old.integer_array_value, old.real_array_value, old.string_array_value, old.timestamp_array_value, old.json_value);
 CREATE RULE data_set_relationships_delete AS
     ON DELETE TO data_set_relationships DO INSTEAD  DELETE FROM data_set_relationships_all
   WHERE (((data_set_relationships_all.data_id_parent)::bigint = (old.data_id_parent)::bigint) AND ((data_set_relationships_all.data_id_child)::bigint = (old.data_id_child)::bigint) AND ((data_set_relationships_all.relationship_id)::bigint = (old.relationship_id)::bigint));
 CREATE RULE data_set_relationships_insert AS
     ON INSERT TO data_set_relationships DO INSTEAD  INSERT INTO data_set_relationships_all (data_id_parent, parent_frozen, cont_frozen, data_id_child, child_frozen, comp_frozen, pers_id_author, relationship_id, ordinal, registration_timestamp, modification_timestamp)
-  VALUES (new.data_id_parent, new.parent_frozen, new.cont_frozen, new.data_id_child, new.child_frozen, new.comp_frozen, new.pers_id_author, new.relationship_id, new.ordinal, new.registration_timestamp, new.modification_timestamp);
+  VALUES (new.data_id_parent, new.parent_frozen, new.cont_frozen, new.data_id_child, new.child_frozen, new.comp_frozen, new.pers_id_author, new.relationship_id, new.ordinal, new.registration_timestamp, new.modification_timestamp)
+  RETURNING data_id_parent, parent_frozen, cont_frozen, data_id_child, child_frozen, comp_frozen, relationship_id, ordinal, del_id, pers_id_author, registration_timestamp, modification_timestamp;
 CREATE RULE data_set_relationships_update AS
     ON UPDATE TO data_set_relationships DO INSTEAD  UPDATE data_set_relationships_all SET data_id_parent = new.data_id_parent, parent_frozen = new.parent_frozen, cont_frozen = new.cont_frozen, data_id_child = new.data_id_child, child_frozen = new.child_frozen, comp_frozen = new.comp_frozen, del_id = new.del_id, relationship_id = new.relationship_id, ordinal = new.ordinal, pers_id_author = new.pers_id_author, registration_timestamp = new.registration_timestamp, modification_timestamp = new.modification_timestamp
-  WHERE (((data_set_relationships_all.data_id_parent)::bigint = (new.data_id_parent)::bigint) AND ((data_set_relationships_all.data_id_child)::bigint = (new.data_id_child)::bigint) AND ((data_set_relationships_all.relationship_id)::bigint = (new.relationship_id)::bigint));
+       WHERE (((data_set_relationships_all.data_id_parent)::bigint = (new.data_id_parent)::bigint) AND ((data_set_relationships_all.data_id_child)::bigint = (new.data_id_child)::bigint) AND ((data_set_relationships_all.relationship_id)::bigint = (new.relationship_id)::bigint));
 CREATE RULE data_update AS
     ON UPDATE TO data DO INSTEAD  UPDATE data_all SET code = new.code, frozen = new.frozen, frozen_for_children = new.frozen_for_children, frozen_for_parents = new.frozen_for_parents, frozen_for_comps = new.frozen_for_comps, frozen_for_conts = new.frozen_for_conts, del_id = new.del_id, orig_del = new.orig_del, expe_id = new.expe_id, expe_frozen = new.expe_frozen, dast_id = new.dast_id, data_producer_code = new.data_producer_code, dsty_id = new.dsty_id, is_derived = new.is_derived, is_valid = new.is_valid, modification_timestamp = new.modification_timestamp, access_timestamp = new.access_timestamp, pers_id_registerer = new.pers_id_registerer, pers_id_modifier = new.pers_id_modifier, production_timestamp = new.production_timestamp, registration_timestamp = new.registration_timestamp, samp_id = new.samp_id, samp_frozen = new.samp_frozen, version = new.version, data_set_kind = new.data_set_kind, meta_data = new.meta_data, afs_data = new.afs_data
-  WHERE ((data_all.id)::bigint = (new.id)::bigint);
+       WHERE ((data_all.id)::bigint = (new.id)::bigint);
 CREATE RULE dataset_experiment_delete AS
     ON DELETE TO data_all
    WHERE ((old.expe_id IS NOT NULL) AND (old.samp_id IS NULL)) DO  UPDATE experiment_relationships_history SET valid_until_timestamp = CURRENT_TIMESTAMP
-  WHERE (((experiment_relationships_history.main_expe_id)::bigint = (old.expe_id)::bigint) AND ((experiment_relationships_history.data_id)::bigint = (old.id)::bigint) AND (experiment_relationships_history.valid_until_timestamp IS NULL));
+                                                                   WHERE (((experiment_relationships_history.main_expe_id)::bigint = (old.expe_id)::bigint) AND ((experiment_relationships_history.data_id)::bigint = (old.id)::bigint) AND (experiment_relationships_history.valid_until_timestamp IS NULL));
 CREATE RULE dataset_experiment_insert AS
     ON INSERT TO data_all
    WHERE ((new.expe_id IS NOT NULL) AND (new.samp_id IS NULL)) DO ( INSERT INTO experiment_relationships_history (id, main_expe_id, relation_type, data_id, entity_kind, entity_perm_id, pers_id_author, valid_from_timestamp)
@@ -641,28 +643,28 @@ CREATE RULE dataset_experiment_insert AS
 );
 CREATE RULE dataset_experiment_remove_update AS
     ON UPDATE TO data_all
-   WHERE ((old.samp_id IS NULL) AND (new.samp_id IS NOT NULL)) DO ( UPDATE experiment_relationships_history SET valid_until_timestamp = new.modification_timestamp
+       WHERE ((old.samp_id IS NULL) AND (new.samp_id IS NOT NULL)) DO ( UPDATE experiment_relationships_history SET valid_until_timestamp = new.modification_timestamp
   WHERE (((experiment_relationships_history.main_expe_id)::bigint = (old.expe_id)::bigint) AND ((experiment_relationships_history.data_id)::bigint = (old.id)::bigint) AND (experiment_relationships_history.valid_until_timestamp IS NULL));
  UPDATE data_set_relationships_history SET valid_until_timestamp = new.modification_timestamp
   WHERE (((data_set_relationships_history.main_data_id)::bigint = (old.id)::bigint) AND ((data_set_relationships_history.expe_id)::bigint = (old.expe_id)::bigint) AND (data_set_relationships_history.valid_until_timestamp IS NULL));
 );
 CREATE RULE dataset_experiment_update AS
     ON UPDATE TO data_all
-   WHERE ((((old.expe_id)::bigint <> (new.expe_id)::bigint) OR (old.samp_id IS NOT NULL)) AND (new.samp_id IS NULL)) DO ( UPDATE experiment_relationships_history SET valid_until_timestamp = new.modification_timestamp
-  WHERE (((experiment_relationships_history.main_expe_id)::bigint = (old.expe_id)::bigint) AND ((experiment_relationships_history.data_id)::bigint = (old.id)::bigint) AND (experiment_relationships_history.valid_until_timestamp IS NULL));
- INSERT INTO experiment_relationships_history (id, main_expe_id, relation_type, data_id, entity_kind, entity_perm_id, pers_id_author, valid_from_timestamp)
-  VALUES (nextval('experiment_relationships_history_id_seq'::regclass), new.expe_id, 'OWNER'::text, new.id, 'DATA SET'::text, new.code, new.pers_id_modifier, new.modification_timestamp);
- UPDATE data_set_relationships_history SET valid_until_timestamp = new.modification_timestamp
-  WHERE (((data_set_relationships_history.main_data_id)::bigint = (old.id)::bigint) AND ((data_set_relationships_history.expe_id)::bigint = (old.expe_id)::bigint) AND (data_set_relationships_history.valid_until_timestamp IS NULL));
- INSERT INTO data_set_relationships_history (id, main_data_id, relation_type, expe_id, entity_kind, entity_perm_id, pers_id_author, valid_from_timestamp)
-  VALUES (nextval('data_set_relationships_history_id_seq'::regclass), new.id, 'OWNED'::text, new.expe_id, 'EXPERIMENT'::text, ( SELECT experiments_all.perm_id
-           FROM experiments_all
-          WHERE ((experiments_all.id)::bigint = (new.expe_id)::bigint)), new.pers_id_modifier, new.modification_timestamp);
-);
+       WHERE ((((old.expe_id)::bigint <> (new.expe_id)::bigint) OR (old.samp_id IS NOT NULL)) AND (new.samp_id IS NULL)) DO ( UPDATE experiment_relationships_history SET valid_until_timestamp = new.modification_timestamp
+       WHERE (((experiment_relationships_history.main_expe_id)::bigint = (old.expe_id)::bigint) AND ((experiment_relationships_history.data_id)::bigint = (old.id)::bigint) AND (experiment_relationships_history.valid_until_timestamp IS NULL));
+       INSERT INTO experiment_relationships_history (id, main_expe_id, relation_type, data_id, entity_kind, entity_perm_id, pers_id_author, valid_from_timestamp)
+       VALUES (nextval('experiment_relationships_history_id_seq'::regclass), new.expe_id, 'OWNER'::text, new.id, 'DATA SET'::text, new.code, new.pers_id_modifier, new.modification_timestamp);
+       UPDATE data_set_relationships_history SET valid_until_timestamp = new.modification_timestamp
+       WHERE (((data_set_relationships_history.main_data_id)::bigint = (old.id)::bigint) AND ((data_set_relationships_history.expe_id)::bigint = (old.expe_id)::bigint) AND (data_set_relationships_history.valid_until_timestamp IS NULL));
+       INSERT INTO data_set_relationships_history (id, main_data_id, relation_type, expe_id, entity_kind, entity_perm_id, pers_id_author, valid_from_timestamp)
+       VALUES (nextval('data_set_relationships_history_id_seq'::regclass), new.id, 'OWNED'::text, new.expe_id, 'EXPERIMENT'::text, ( SELECT experiments_all.perm_id
+                  FROM experiments_all
+                  WHERE ((experiments_all.id)::bigint = (new.expe_id)::bigint)), new.pers_id_modifier, new.modification_timestamp);
+                  );
 CREATE RULE dataset_sample_delete AS
     ON DELETE TO data_all
    WHERE (old.samp_id IS NOT NULL) DO  UPDATE sample_relationships_history SET valid_until_timestamp = CURRENT_TIMESTAMP
-  WHERE (((sample_relationships_history.main_samp_id)::bigint = (old.samp_id)::bigint) AND ((sample_relationships_history.data_id)::bigint = (old.id)::bigint) AND (sample_relationships_history.valid_until_timestamp IS NULL));
+                                       WHERE (((sample_relationships_history.main_samp_id)::bigint = (old.samp_id)::bigint) AND ((sample_relationships_history.data_id)::bigint = (old.id)::bigint) AND (sample_relationships_history.valid_until_timestamp IS NULL));
 CREATE RULE dataset_sample_insert AS
     ON INSERT TO data_all
    WHERE (new.samp_id IS NOT NULL) DO ( INSERT INTO sample_relationships_history (id, main_samp_id, relation_type, data_id, entity_kind, entity_perm_id, pers_id_author, valid_from_timestamp)
@@ -674,54 +676,55 @@ CREATE RULE dataset_sample_insert AS
 );
 CREATE RULE dataset_sample_remove_update AS
     ON UPDATE TO data_all
-   WHERE ((old.samp_id IS NOT NULL) AND (new.samp_id IS NULL)) DO ( UPDATE sample_relationships_history SET valid_until_timestamp = new.modification_timestamp
+       WHERE ((old.samp_id IS NOT NULL) AND (new.samp_id IS NULL)) DO ( UPDATE sample_relationships_history SET valid_until_timestamp = new.modification_timestamp
   WHERE (((sample_relationships_history.main_samp_id)::bigint = (old.samp_id)::bigint) AND ((sample_relationships_history.data_id)::bigint = (old.id)::bigint) AND (sample_relationships_history.valid_until_timestamp IS NULL));
  UPDATE data_set_relationships_history SET valid_until_timestamp = new.modification_timestamp
   WHERE (((data_set_relationships_history.main_data_id)::bigint = (old.id)::bigint) AND ((data_set_relationships_history.samp_id)::bigint = (old.samp_id)::bigint) AND (data_set_relationships_history.valid_until_timestamp IS NULL));
 );
 CREATE RULE dataset_sample_update AS
     ON UPDATE TO data_all
-   WHERE ((((old.samp_id)::bigint <> (new.samp_id)::bigint) OR (old.samp_id IS NULL)) AND (new.samp_id IS NOT NULL)) DO ( UPDATE sample_relationships_history SET valid_until_timestamp = new.modification_timestamp
-  WHERE (((sample_relationships_history.main_samp_id)::bigint = (old.samp_id)::bigint) AND ((sample_relationships_history.data_id)::bigint = (old.id)::bigint) AND (sample_relationships_history.valid_until_timestamp IS NULL));
- INSERT INTO sample_relationships_history (id, main_samp_id, relation_type, data_id, entity_kind, entity_perm_id, pers_id_author, valid_from_timestamp)
-  VALUES (nextval('sample_relationships_history_id_seq'::regclass), new.samp_id, 'OWNER'::text, new.id, 'DATA SET'::text, new.code, new.pers_id_modifier, new.modification_timestamp);
- UPDATE data_set_relationships_history SET valid_until_timestamp = new.modification_timestamp
-  WHERE (((data_set_relationships_history.main_data_id)::bigint = (old.id)::bigint) AND ((data_set_relationships_history.samp_id)::bigint = (old.samp_id)::bigint) AND (data_set_relationships_history.valid_until_timestamp IS NULL));
- INSERT INTO data_set_relationships_history (id, main_data_id, relation_type, samp_id, entity_kind, entity_perm_id, pers_id_author, valid_from_timestamp)
-  VALUES (nextval('data_set_relationships_history_id_seq'::regclass), new.id, 'OWNED'::text, new.samp_id, 'SAMPLE'::text, ( SELECT samples_all.perm_id
-           FROM samples_all
-          WHERE ((samples_all.id)::bigint = (new.samp_id)::bigint)), new.pers_id_modifier, new.modification_timestamp);
-);
+       WHERE ((((old.samp_id)::bigint <> (new.samp_id)::bigint) OR (old.samp_id IS NULL)) AND (new.samp_id IS NOT NULL)) DO ( UPDATE sample_relationships_history SET valid_until_timestamp = new.modification_timestamp
+       WHERE (((sample_relationships_history.main_samp_id)::bigint = (old.samp_id)::bigint) AND ((sample_relationships_history.data_id)::bigint = (old.id)::bigint) AND (sample_relationships_history.valid_until_timestamp IS NULL));
+       INSERT INTO sample_relationships_history (id, main_samp_id, relation_type, data_id, entity_kind, entity_perm_id, pers_id_author, valid_from_timestamp)
+       VALUES (nextval('sample_relationships_history_id_seq'::regclass), new.samp_id, 'OWNER'::text, new.id, 'DATA SET'::text, new.code, new.pers_id_modifier, new.modification_timestamp);
+       UPDATE data_set_relationships_history SET valid_until_timestamp = new.modification_timestamp
+       WHERE (((data_set_relationships_history.main_data_id)::bigint = (old.id)::bigint) AND ((data_set_relationships_history.samp_id)::bigint = (old.samp_id)::bigint) AND (data_set_relationships_history.valid_until_timestamp IS NULL));
+       INSERT INTO data_set_relationships_history (id, main_data_id, relation_type, samp_id, entity_kind, entity_perm_id, pers_id_author, valid_from_timestamp)
+       VALUES (nextval('data_set_relationships_history_id_seq'::regclass), new.id, 'OWNED'::text, new.samp_id, 'SAMPLE'::text, ( SELECT samples_all.perm_id
+                  FROM samples_all
+                  WHERE ((samples_all.id)::bigint = (new.samp_id)::bigint)), new.pers_id_modifier, new.modification_timestamp);
+                  );
 CREATE RULE edms_a_insert_content_copy_history AS
     ON UPDATE TO external_data_management_systems DO  INSERT INTO data_set_copies_history (id, cc_id, data_id, external_code, path, git_commit_hash, git_repository_id, edms_id, edms_code, edms_label, edms_address, pers_id_author, valid_from_timestamp)  SELECT nextval('data_set_copies_history_id_seq'::regclass) AS nextval,
-            dsch.cc_id,
-            dsch.data_id,
-            dsch.external_code,
-            dsch.path,
-            dsch.git_commit_hash,
-            dsch.git_repository_id,
-            dsch.edms_id,
-            new.code,
-            new.label,
-            new.address,
-            dsch.pers_id_author,
-            now() AS now
-           FROM (data_set_copies_history dsch
-             JOIN external_data_management_systems edms ON (((edms.id)::bigint = (dsch.edms_id)::bigint)))
-          WHERE (((new.id)::bigint = (dsch.edms_id)::bigint) AND (dsch.valid_until_timestamp IS NULL));
+    dsch.cc_id,
+    dsch.data_id,
+    dsch.external_code,
+    dsch.path,
+    dsch.git_commit_hash,
+    dsch.git_repository_id,
+    dsch.edms_id,
+    new.code,
+    new.label,
+    new.address,
+    dsch.pers_id_author,
+    now() AS now
+       FROM (data_set_copies_history dsch
+                  JOIN external_data_management_systems edms ON (((edms.id)::bigint = (dsch.edms_id)::bigint)))
+       WHERE (((new.id)::bigint = (dsch.edms_id)::bigint) AND (dsch.valid_until_timestamp IS NULL));
 CREATE RULE edms_b_expire_content_copy_history AS
     ON UPDATE TO external_data_management_systems DO  UPDATE data_set_copies_history SET valid_until_timestamp = now()
-  WHERE ((data_set_copies_history.valid_until_timestamp IS NULL) AND ((data_set_copies_history.edms_id)::bigint = (new.id)::bigint) AND ((data_set_copies_history.valid_from_timestamp)::timestamp with time zone <> now()));
+       WHERE ((data_set_copies_history.valid_until_timestamp IS NULL) AND ((data_set_copies_history.edms_id)::bigint = (new.id)::bigint) AND ((data_set_copies_history.valid_from_timestamp)::timestamp with time zone <> now()));
 CREATE RULE experiment_delete AS
     ON DELETE TO experiments DO INSTEAD  DELETE FROM experiments_all
   WHERE ((experiments_all.id)::bigint = (old.id)::bigint);
 CREATE RULE experiment_insert AS
     ON INSERT TO experiments DO INSTEAD  INSERT INTO experiments_all (id, frozen, frozen_for_samp, frozen_for_data, code, del_id, orig_del, exty_id, is_public, modification_timestamp, perm_id, pers_id_registerer, pers_id_modifier, proj_id, proj_frozen, registration_timestamp, version, meta_data, immutable_data_timestamp)
-  VALUES (new.id, new.frozen, new.frozen_for_samp, new.frozen_for_data, new.code, new.del_id, new.orig_del, new.exty_id, new.is_public, new.modification_timestamp, new.perm_id, new.pers_id_registerer, new.pers_id_modifier, new.proj_id, new.proj_frozen, new.registration_timestamp, new.version, new.meta_data, new.immutable_data_timestamp);
+  VALUES (new.id, new.frozen, new.frozen_for_samp, new.frozen_for_data, new.code, new.del_id, new.orig_del, new.exty_id, new.is_public, new.modification_timestamp, new.perm_id, new.pers_id_registerer, new.pers_id_modifier, new.proj_id, new.proj_frozen, new.registration_timestamp, new.version, new.meta_data, new.immutable_data_timestamp)
+  RETURNING id, perm_id, code, exty_id, pers_id_registerer, pers_id_modifier, registration_timestamp, modification_timestamp, proj_id, proj_frozen, del_id, orig_del, is_public, version, frozen, frozen_for_samp, frozen_for_data, tsvector_document, meta_data, immutable_data_timestamp;
 CREATE RULE experiment_project_delete AS
     ON DELETE TO experiments_all
    WHERE (old.proj_id IS NOT NULL) DO  UPDATE project_relationships_history SET valid_until_timestamp = CURRENT_TIMESTAMP
-  WHERE (((project_relationships_history.main_proj_id)::bigint = (old.proj_id)::bigint) AND ((project_relationships_history.expe_id)::bigint = (old.id)::bigint) AND (project_relationships_history.valid_until_timestamp IS NULL));
+                                       WHERE (((project_relationships_history.main_proj_id)::bigint = (old.proj_id)::bigint) AND ((project_relationships_history.expe_id)::bigint = (old.id)::bigint) AND (project_relationships_history.valid_until_timestamp IS NULL));
 CREATE RULE experiment_project_insert AS
     ON INSERT TO experiments_all
    WHERE (new.proj_id IS NOT NULL) DO ( INSERT INTO project_relationships_history (id, main_proj_id, relation_type, expe_id, entity_kind, entity_perm_id, pers_id_author, valid_from_timestamp)
@@ -733,24 +736,24 @@ CREATE RULE experiment_project_insert AS
 );
 CREATE RULE experiment_project_remove_update AS
     ON UPDATE TO experiments_all
-   WHERE ((old.proj_id IS NOT NULL) AND (new.proj_id IS NULL)) DO ( UPDATE project_relationships_history SET valid_until_timestamp = new.modification_timestamp
+       WHERE ((old.proj_id IS NOT NULL) AND (new.proj_id IS NULL)) DO ( UPDATE project_relationships_history SET valid_until_timestamp = new.modification_timestamp
   WHERE (((project_relationships_history.main_proj_id)::bigint = (old.proj_id)::bigint) AND ((project_relationships_history.expe_id)::bigint = (old.id)::bigint) AND (project_relationships_history.valid_until_timestamp IS NULL));
  UPDATE experiment_relationships_history SET valid_until_timestamp = new.modification_timestamp
   WHERE (((experiment_relationships_history.main_expe_id)::bigint = (old.id)::bigint) AND ((experiment_relationships_history.proj_id)::bigint = (old.proj_id)::bigint) AND (experiment_relationships_history.valid_until_timestamp IS NULL));
 );
 CREATE RULE experiment_project_update AS
     ON UPDATE TO experiments_all
-   WHERE ((((old.proj_id)::bigint <> (new.proj_id)::bigint) OR (old.proj_id IS NULL)) AND (new.proj_id IS NOT NULL)) DO ( UPDATE project_relationships_history SET valid_until_timestamp = new.modification_timestamp
-  WHERE (((project_relationships_history.main_proj_id)::bigint = (old.proj_id)::bigint) AND ((project_relationships_history.expe_id)::bigint = (old.id)::bigint) AND (project_relationships_history.valid_until_timestamp IS NULL));
- INSERT INTO project_relationships_history (id, main_proj_id, relation_type, expe_id, entity_kind, entity_perm_id, pers_id_author, valid_from_timestamp)
-  VALUES (nextval('project_relationships_history_id_seq'::regclass), new.proj_id, 'OWNER'::text, new.id, 'EXPERIMENT'::text, new.perm_id, new.pers_id_modifier, new.modification_timestamp);
- UPDATE experiment_relationships_history SET valid_until_timestamp = new.modification_timestamp
-  WHERE (((experiment_relationships_history.main_expe_id)::bigint = (old.id)::bigint) AND ((experiment_relationships_history.proj_id)::bigint = (old.proj_id)::bigint) AND (experiment_relationships_history.valid_until_timestamp IS NULL));
- INSERT INTO experiment_relationships_history (id, main_expe_id, relation_type, proj_id, entity_kind, entity_perm_id, pers_id_author, valid_from_timestamp)
-  VALUES (nextval('experiment_relationships_history_id_seq'::regclass), new.id, 'OWNED'::text, new.proj_id, 'PROJECT'::text, ( SELECT projects.perm_id
-           FROM projects
-          WHERE ((projects.id)::bigint = (new.proj_id)::bigint)), new.pers_id_modifier, new.modification_timestamp);
-);
+       WHERE ((((old.proj_id)::bigint <> (new.proj_id)::bigint) OR (old.proj_id IS NULL)) AND (new.proj_id IS NOT NULL)) DO ( UPDATE project_relationships_history SET valid_until_timestamp = new.modification_timestamp
+       WHERE (((project_relationships_history.main_proj_id)::bigint = (old.proj_id)::bigint) AND ((project_relationships_history.expe_id)::bigint = (old.id)::bigint) AND (project_relationships_history.valid_until_timestamp IS NULL));
+       INSERT INTO project_relationships_history (id, main_proj_id, relation_type, expe_id, entity_kind, entity_perm_id, pers_id_author, valid_from_timestamp)
+       VALUES (nextval('project_relationships_history_id_seq'::regclass), new.proj_id, 'OWNER'::text, new.id, 'EXPERIMENT'::text, new.perm_id, new.pers_id_modifier, new.modification_timestamp);
+       UPDATE experiment_relationships_history SET valid_until_timestamp = new.modification_timestamp
+       WHERE (((experiment_relationships_history.main_expe_id)::bigint = (old.id)::bigint) AND ((experiment_relationships_history.proj_id)::bigint = (old.proj_id)::bigint) AND (experiment_relationships_history.valid_until_timestamp IS NULL));
+       INSERT INTO experiment_relationships_history (id, main_expe_id, relation_type, proj_id, entity_kind, entity_perm_id, pers_id_author, valid_from_timestamp)
+       VALUES (nextval('experiment_relationships_history_id_seq'::regclass), new.id, 'OWNED'::text, new.proj_id, 'PROJECT'::text, ( SELECT projects.perm_id
+                  FROM projects
+                  WHERE ((projects.id)::bigint = (new.proj_id)::bigint)), new.pers_id_modifier, new.modification_timestamp);
+                  );
 CREATE RULE experiment_properties_delete AS
     ON DELETE TO experiment_properties
    WHERE (((old.value IS NOT NULL) AND (decode(replace("substring"((old.value)::text, 1, 1), '\'::text, '\\'::text), 'escape'::text) <> '\xefbfbd'::bytea))
@@ -774,28 +777,28 @@ CREATE RULE experiment_properties_delete AS
           WHERE ((samples_all.id)::bigint = (old.samp_prop_id)::bigint)), OLD.SAMP_PROP_ID::text), old.pers_id_author, old.modification_timestamp, CURRENT_TIMESTAMP, old.integer_array_value, old.real_array_value, old.string_array_value, old.timestamp_array_value, old.json_value);
 CREATE RULE experiment_properties_update AS
     ON UPDATE TO experiment_properties
-   WHERE (((old.value IS NOT NULL) AND (decode(replace("substring"((old.value)::text, 1, 1), '\'::text, '\\'::text), 'escape'::text) <> '\xefbfbd'::bytea) AND ((old.value)::text <> (new.value)::text))
-        OR ((old.cvte_id IS NOT NULL) AND ((old.cvte_id)::bigint <> (new.cvte_id)::bigint))
-        OR ((old.mate_prop_id IS NOT NULL) AND ((old.mate_prop_id)::bigint <> (new.mate_prop_id)::bigint))
-        OR ((old.samp_prop_id IS NOT NULL) AND ((old.samp_prop_id)::bigint <> (new.samp_prop_id)::bigint))
-        OR ((old.integer_array_value IS NOT NULL) AND ((old.integer_array_value)::long_value[] <> (new.integer_array_value)::long_value[]))
-        OR ((old.real_array_value IS NOT NULL) AND ((old.real_array_value)::double_value[] <> (new.real_array_value)::double_value[]))
-        OR ((old.string_array_value IS NOT NULL) AND ((old.string_array_value)::text_value[] <> (new.string_array_value)::text_value[]))
-        OR ((old.timestamp_array_value IS NOT NULL) AND ((old.timestamp_array_value)::time_stamp[] <> (new.timestamp_array_value)::time_stamp[]))
-        OR ((old.json_value IS NOT NULL) AND ((old.json_value)::jsonb <> (new.json_value)::jsonb)) )
-    DO INSERT INTO experiment_properties_history (id, expe_id, etpt_id, value, vocabulary_term, material, sample, pers_id_author, valid_from_timestamp, valid_until_timestamp, integer_array_value, real_array_value, string_array_value, timestamp_array_value, json_value)
-  VALUES (nextval('experiment_property_id_seq'::regclass), old.expe_id, old.etpt_id, old.value, ( SELECT ((((t.code)::text || ' ['::text) || (v.code)::text) || ']'::text)
-           FROM (controlled_vocabulary_terms t
-             JOIN controlled_vocabularies v ON (((t.covo_id)::bigint = (v.id)::bigint)))
-          WHERE ((t.id)::bigint = (old.cvte_id)::bigint)), ( SELECT ((((m.code)::text || ' ['::text) || (mt.code)::text) || ']'::text)
-           FROM (materials m
-             JOIN material_types mt ON (((m.maty_id)::bigint = (mt.id)::bigint)))
-          WHERE ((m.id)::bigint = (old.mate_prop_id)::bigint)), COALESCE(( SELECT samples_all.perm_id
-           FROM samples_all
-          WHERE ((samples_all.id)::bigint = (old.samp_prop_id)::bigint)), OLD.SAMP_PROP_ID::text), old.pers_id_author, old.modification_timestamp, new.modification_timestamp, old.integer_array_value, old.real_array_value, old.string_array_value, old.timestamp_array_value, old.json_value);
+       WHERE (((old.value IS NOT NULL) AND (decode(replace("substring"((old.value)::text, 1, 1), '\'::text, '\\'::text), 'escape'::text) <> '\xefbfbd'::bytea) AND ((old.value)::text <> (new.value)::text))
+          OR ((old.cvte_id IS NOT NULL) AND ((old.cvte_id)::bigint <> (new.cvte_id)::bigint))
+          OR ((old.mate_prop_id IS NOT NULL) AND ((old.mate_prop_id)::bigint <> (new.mate_prop_id)::bigint))
+          OR ((old.samp_prop_id IS NOT NULL) AND ((old.samp_prop_id)::bigint <> (new.samp_prop_id)::bigint))
+          OR ((old.integer_array_value IS NOT NULL) AND ((old.integer_array_value)::long_value[] <> (new.integer_array_value)::long_value[]))
+          OR ((old.real_array_value IS NOT NULL) AND ((old.real_array_value)::double_value[] <> (new.real_array_value)::double_value[]))
+          OR ((old.string_array_value IS NOT NULL) AND ((old.string_array_value)::text_value[] <> (new.string_array_value)::text_value[]))
+          OR ((old.timestamp_array_value IS NOT NULL) AND ((old.timestamp_array_value)::time_stamp[] <> (new.timestamp_array_value)::time_stamp[]))
+          OR ((old.json_value IS NOT NULL) AND ((old.json_value)::jsonb <> (new.json_value)::jsonb)) )
+           DO INSERT INTO experiment_properties_history (id, expe_id, etpt_id, value, vocabulary_term, material, sample, pers_id_author, valid_from_timestamp, valid_until_timestamp, integer_array_value, real_array_value, string_array_value, timestamp_array_value, json_value)
+       VALUES (nextval('experiment_property_id_seq'::regclass), old.expe_id, old.etpt_id, old.value, ( SELECT ((((t.code)::text || ' ['::text) || (v.code)::text) || ']'::text)
+                                       FROM (controlled_vocabulary_terms t
+                                       JOIN controlled_vocabularies v ON (((t.covo_id)::bigint = (v.id)::bigint)))
+                                       WHERE ((t.id)::bigint = (old.cvte_id)::bigint)), ( SELECT ((((m.code)::text || ' ['::text) || (mt.code)::text) || ']'::text)
+                                       FROM (materials m
+                                       JOIN material_types mt ON (((m.maty_id)::bigint = (mt.id)::bigint)))
+                                       WHERE ((m.id)::bigint = (old.mate_prop_id)::bigint)), COALESCE(( SELECT samples_all.perm_id
+                                       FROM samples_all
+                                       WHERE ((samples_all.id)::bigint = (old.samp_prop_id)::bigint)), OLD.SAMP_PROP_ID::text), old.pers_id_author, old.modification_timestamp, new.modification_timestamp, old.integer_array_value, old.real_array_value, old.string_array_value, old.timestamp_array_value, old.json_value);
 CREATE RULE experiment_update AS
     ON UPDATE TO experiments DO INSTEAD  UPDATE experiments_all SET code = new.code, frozen = new.frozen, frozen_for_samp = new.frozen_for_samp, frozen_for_data = new.frozen_for_data, del_id = new.del_id, orig_del = new.orig_del, exty_id = new.exty_id, is_public = new.is_public, modification_timestamp = new.modification_timestamp, perm_id = new.perm_id, pers_id_registerer = new.pers_id_registerer, pers_id_modifier = new.pers_id_modifier, proj_id = new.proj_id, proj_frozen = new.proj_frozen, registration_timestamp = new.registration_timestamp, version = new.version, meta_data = new.meta_data, immutable_data_timestamp = new.immutable_data_timestamp
-  WHERE ((experiments_all.id)::bigint = (new.id)::bigint);
+       WHERE ((experiments_all.id)::bigint = (new.id)::bigint);
 CREATE RULE material_properties_delete AS
     ON DELETE TO material_properties
    WHERE (((old.value IS NOT NULL) AND (decode(replace("substring"((old.value)::text, 1, 1), '\'::text, '\\'::text), 'escape'::text) <> '\xefbfbd'::bytea)) OR (old.cvte_id IS NOT NULL) OR (old.mate_prop_id IS NOT NULL)) DO  INSERT INTO material_properties_history (id, mate_id, mtpt_id, value, vocabulary_term, material, pers_id_author, valid_from_timestamp, valid_until_timestamp)
@@ -808,14 +811,14 @@ CREATE RULE material_properties_delete AS
           WHERE ((m.id)::bigint = (old.mate_prop_id)::bigint)), old.pers_id_author, old.modification_timestamp, now());
 CREATE RULE material_properties_update AS
     ON UPDATE TO material_properties
-   WHERE (((old.value IS NOT NULL) AND (decode(replace("substring"((old.value)::text, 1, 1), '\'::text, '\\'::text), 'escape'::text) <> '\xefbfbd'::bytea) AND ((old.value)::text <> (new.value)::text)) OR ((old.cvte_id IS NOT NULL) AND ((old.cvte_id)::bigint <> (new.cvte_id)::bigint)) OR ((old.mate_prop_id IS NOT NULL) AND ((old.mate_prop_id)::bigint <> (new.mate_prop_id)::bigint))) DO  INSERT INTO material_properties_history (id, mate_id, mtpt_id, value, vocabulary_term, material, pers_id_author, valid_from_timestamp, valid_until_timestamp)
-  VALUES (nextval('material_property_id_seq'::regclass), old.mate_id, old.mtpt_id, old.value, ( SELECT ((((t.code)::text || ' ['::text) || (v.code)::text) || ']'::text)
-           FROM (controlled_vocabulary_terms t
-             JOIN controlled_vocabularies v ON (((t.covo_id)::bigint = (v.id)::bigint)))
-          WHERE ((t.id)::bigint = (old.cvte_id)::bigint)), ( SELECT ((((m.code)::text || ' ['::text) || (mt.code)::text) || ']'::text)
-           FROM (materials m
-             JOIN material_types mt ON (((m.maty_id)::bigint = (mt.id)::bigint)))
-          WHERE ((m.id)::bigint = (old.mate_prop_id)::bigint)), old.pers_id_author, old.modification_timestamp, new.modification_timestamp);
+       WHERE (((old.value IS NOT NULL) AND (decode(replace("substring"((old.value)::text, 1, 1), '\'::text, '\\'::text), 'escape'::text) <> '\xefbfbd'::bytea) AND ((old.value)::text <> (new.value)::text)) OR ((old.cvte_id IS NOT NULL) AND ((old.cvte_id)::bigint <> (new.cvte_id)::bigint)) OR ((old.mate_prop_id IS NOT NULL) AND ((old.mate_prop_id)::bigint <> (new.mate_prop_id)::bigint))) DO  INSERT INTO material_properties_history (id, mate_id, mtpt_id, value, vocabulary_term, material, pers_id_author, valid_from_timestamp, valid_until_timestamp)
+       VALUES (nextval('material_property_id_seq'::regclass), old.mate_id, old.mtpt_id, old.value, ( SELECT ((((t.code)::text || ' ['::text) || (v.code)::text) || ']'::text)
+                                       FROM (controlled_vocabulary_terms t
+                                       JOIN controlled_vocabularies v ON (((t.covo_id)::bigint = (v.id)::bigint)))
+                                       WHERE ((t.id)::bigint = (old.cvte_id)::bigint)), ( SELECT ((((m.code)::text || ' ['::text) || (mt.code)::text) || ']'::text)
+                                       FROM (materials m
+                                       JOIN material_types mt ON (((m.maty_id)::bigint = (mt.id)::bigint)))
+                                       WHERE ((m.id)::bigint = (old.mate_prop_id)::bigint)), old.pers_id_author, old.modification_timestamp, new.modification_timestamp);
 CREATE RULE metaproject_assignments_delete AS
     ON DELETE TO metaproject_assignments DO INSTEAD  DELETE FROM metaproject_assignments_all
   WHERE ((metaproject_assignments_all.id)::bigint = (old.id)::bigint);
@@ -824,7 +827,7 @@ CREATE RULE metaproject_assignments_insert AS
   VALUES (new.id, new.mepr_id, new.expe_id, new.samp_id, new.data_id, new.mate_id, new.del_id, new.creation_date);
 CREATE RULE metaproject_assignments_update AS
     ON UPDATE TO metaproject_assignments DO INSTEAD  UPDATE metaproject_assignments_all SET id = new.id, mepr_id = new.mepr_id, expe_id = new.expe_id, samp_id = new.samp_id, data_id = new.data_id, mate_id = new.mate_id, del_id = new.del_id, creation_date = new.creation_date
-  WHERE ((metaproject_assignments_all.id)::bigint = (new.id)::bigint);
+       WHERE ((metaproject_assignments_all.id)::bigint = (new.id)::bigint);
 CREATE RULE project_space_insert AS
     ON INSERT TO projects
    WHERE (new.space_id IS NOT NULL) DO  INSERT INTO project_relationships_history (id, main_proj_id, relation_type, space_id, entity_kind, entity_perm_id, pers_id_author, valid_from_timestamp)
@@ -833,27 +836,27 @@ CREATE RULE project_space_insert AS
           WHERE ((spaces.id)::bigint = (new.space_id)::bigint)), new.pers_id_modifier, new.modification_timestamp);
 CREATE RULE project_space_remove_update AS
     ON UPDATE TO projects
-   WHERE ((old.space_id IS NOT NULL) AND (new.space_id IS NULL)) DO  UPDATE project_relationships_history SET valid_until_timestamp = new.modification_timestamp
-  WHERE (((project_relationships_history.main_proj_id)::bigint = (old.id)::bigint) AND ((project_relationships_history.space_id)::bigint = (old.space_id)::bigint) AND (project_relationships_history.valid_until_timestamp IS NULL));
+       WHERE ((old.space_id IS NOT NULL) AND (new.space_id IS NULL)) DO  UPDATE project_relationships_history SET valid_until_timestamp = new.modification_timestamp
+       WHERE (((project_relationships_history.main_proj_id)::bigint = (old.id)::bigint) AND ((project_relationships_history.space_id)::bigint = (old.space_id)::bigint) AND (project_relationships_history.valid_until_timestamp IS NULL));
 CREATE RULE project_space_update AS
     ON UPDATE TO projects
-   WHERE ((((old.space_id)::bigint <> (new.space_id)::bigint) OR (old.space_id IS NULL)) AND (new.space_id IS NOT NULL)) DO ( UPDATE project_relationships_history SET valid_until_timestamp = new.modification_timestamp
-  WHERE (((project_relationships_history.main_proj_id)::bigint = (old.id)::bigint) AND ((project_relationships_history.space_id)::bigint = (old.space_id)::bigint) AND (project_relationships_history.valid_until_timestamp IS NULL));
- INSERT INTO project_relationships_history (id, main_proj_id, relation_type, space_id, entity_kind, entity_perm_id, pers_id_author, valid_from_timestamp)
-  VALUES (nextval('project_relationships_history_id_seq'::regclass), new.id, 'OWNED'::text, new.space_id, 'SPACE'::text, ( SELECT spaces.code
-           FROM spaces
-          WHERE ((spaces.id)::bigint = (new.space_id)::bigint)), new.pers_id_modifier, new.modification_timestamp);
-);
+       WHERE ((((old.space_id)::bigint <> (new.space_id)::bigint) OR (old.space_id IS NULL)) AND (new.space_id IS NOT NULL)) DO ( UPDATE project_relationships_history SET valid_until_timestamp = new.modification_timestamp
+       WHERE (((project_relationships_history.main_proj_id)::bigint = (old.id)::bigint) AND ((project_relationships_history.space_id)::bigint = (old.space_id)::bigint) AND (project_relationships_history.valid_until_timestamp IS NULL));
+       INSERT INTO project_relationships_history (id, main_proj_id, relation_type, space_id, entity_kind, entity_perm_id, pers_id_author, valid_from_timestamp)
+       VALUES (nextval('project_relationships_history_id_seq'::regclass), new.id, 'OWNED'::text, new.space_id, 'SPACE'::text, ( SELECT spaces.code
+                  FROM spaces
+                  WHERE ((spaces.id)::bigint = (new.space_id)::bigint)), new.pers_id_modifier, new.modification_timestamp);
+                  );
 CREATE RULE sample_child_annotations_update AS
     ON UPDATE TO sample_relationships_all
-   WHERE ((old.del_id IS NULL) AND (new.del_id IS NULL) AND ((old.sample_id_child)::bigint = (new.sample_id_child)::bigint) AND ((old.sample_id_parent)::bigint = (new.sample_id_parent)::bigint) AND (old.child_annotations <> new.child_annotations)) DO  INSERT INTO sample_relationships_history (id, main_samp_id, relation_type, samp_id, entity_kind, entity_perm_id, annotations, pers_id_author, valid_from_timestamp, valid_until_timestamp)
-  VALUES (nextval('sample_relationships_history_id_seq'::regclass), new.sample_id_child, 'CHILD'::text, new.sample_id_parent, 'SAMPLE'::text, ( SELECT samples_all.perm_id
-           FROM samples_all
-          WHERE ((samples_all.id)::bigint = (new.sample_id_parent)::bigint)), old.child_annotations, new.pers_id_author, old.modification_timestamp, new.modification_timestamp);
+       WHERE ((old.del_id IS NULL) AND (new.del_id IS NULL) AND ((old.sample_id_child)::bigint = (new.sample_id_child)::bigint) AND ((old.sample_id_parent)::bigint = (new.sample_id_parent)::bigint) AND (old.child_annotations <> new.child_annotations)) DO  INSERT INTO sample_relationships_history (id, main_samp_id, relation_type, samp_id, entity_kind, entity_perm_id, annotations, pers_id_author, valid_from_timestamp, valid_until_timestamp)
+       VALUES (nextval('sample_relationships_history_id_seq'::regclass), new.sample_id_child, 'CHILD'::text, new.sample_id_parent, 'SAMPLE'::text, ( SELECT samples_all.perm_id
+                  FROM samples_all
+                  WHERE ((samples_all.id)::bigint = (new.sample_id_parent)::bigint)), old.child_annotations, new.pers_id_author, old.modification_timestamp, new.modification_timestamp);
 CREATE RULE sample_container_delete AS
     ON DELETE TO samples_all
    WHERE (old.samp_id_part_of IS NOT NULL) DO  UPDATE sample_relationships_history SET valid_until_timestamp = CURRENT_TIMESTAMP
-  WHERE (((sample_relationships_history.main_samp_id)::bigint = (old.samp_id_part_of)::bigint) AND ((sample_relationships_history.samp_id)::bigint = (old.id)::bigint) AND (sample_relationships_history.valid_until_timestamp IS NULL) AND ((sample_relationships_history.relation_type)::text = 'CONTAINER'::text));
+                                               WHERE (((sample_relationships_history.main_samp_id)::bigint = (old.samp_id_part_of)::bigint) AND ((sample_relationships_history.samp_id)::bigint = (old.id)::bigint) AND (sample_relationships_history.valid_until_timestamp IS NULL) AND ((sample_relationships_history.relation_type)::text = 'CONTAINER'::text));
 CREATE RULE sample_container_insert AS
     ON INSERT TO samples_all
    WHERE (new.samp_id_part_of IS NOT NULL) DO ( INSERT INTO sample_relationships_history (id, main_samp_id, relation_type, samp_id, entity_kind, entity_perm_id, pers_id_author, valid_from_timestamp)
@@ -865,26 +868,26 @@ CREATE RULE sample_container_insert AS
 );
 CREATE RULE sample_container_remove_update AS
     ON UPDATE TO samples_all
-   WHERE ((old.samp_id_part_of IS NOT NULL) AND (new.samp_id_part_of IS NULL)) DO  UPDATE sample_relationships_history SET valid_until_timestamp = new.modification_timestamp
-  WHERE ((((sample_relationships_history.main_samp_id)::bigint = (old.samp_id_part_of)::bigint) AND ((sample_relationships_history.samp_id)::bigint = (old.id)::bigint) AND (sample_relationships_history.valid_until_timestamp IS NULL) AND ((sample_relationships_history.relation_type)::text = 'CONTAINER'::text)) OR (((sample_relationships_history.main_samp_id)::bigint = (old.id)::bigint) AND ((sample_relationships_history.samp_id)::bigint = (old.samp_id_part_of)::bigint) AND (sample_relationships_history.valid_until_timestamp IS NULL) AND ((sample_relationships_history.relation_type)::text = 'CONTAINED'::text)));
+       WHERE ((old.samp_id_part_of IS NOT NULL) AND (new.samp_id_part_of IS NULL)) DO  UPDATE sample_relationships_history SET valid_until_timestamp = new.modification_timestamp
+       WHERE ((((sample_relationships_history.main_samp_id)::bigint = (old.samp_id_part_of)::bigint) AND ((sample_relationships_history.samp_id)::bigint = (old.id)::bigint) AND (sample_relationships_history.valid_until_timestamp IS NULL) AND ((sample_relationships_history.relation_type)::text = 'CONTAINER'::text)) OR (((sample_relationships_history.main_samp_id)::bigint = (old.id)::bigint) AND ((sample_relationships_history.samp_id)::bigint = (old.samp_id_part_of)::bigint) AND (sample_relationships_history.valid_until_timestamp IS NULL) AND ((sample_relationships_history.relation_type)::text = 'CONTAINED'::text)));
 CREATE RULE sample_container_update AS
     ON UPDATE TO samples_all
-   WHERE ((((old.samp_id_part_of)::bigint <> (new.samp_id_part_of)::bigint) OR (old.samp_id_part_of IS NULL)) AND (new.samp_id_part_of IS NOT NULL)) DO ( UPDATE sample_relationships_history SET valid_until_timestamp = new.modification_timestamp
-  WHERE ((((sample_relationships_history.main_samp_id)::bigint = (old.samp_id_part_of)::bigint) AND ((sample_relationships_history.samp_id)::bigint = (old.id)::bigint) AND (sample_relationships_history.valid_until_timestamp IS NULL) AND ((sample_relationships_history.relation_type)::text = 'CONTAINER'::text)) OR (((sample_relationships_history.main_samp_id)::bigint = (old.id)::bigint) AND ((sample_relationships_history.samp_id)::bigint = (old.samp_id_part_of)::bigint) AND (sample_relationships_history.valid_until_timestamp IS NULL) AND ((sample_relationships_history.relation_type)::text = 'CONTAINED'::text)));
- INSERT INTO sample_relationships_history (id, main_samp_id, relation_type, samp_id, entity_kind, entity_perm_id, pers_id_author, valid_from_timestamp)
-  VALUES (nextval('sample_relationships_history_id_seq'::regclass), new.samp_id_part_of, 'CONTAINER'::text, new.id, 'SAMPLE'::text, new.perm_id, new.pers_id_modifier, new.modification_timestamp);
- INSERT INTO sample_relationships_history (id, main_samp_id, relation_type, samp_id, entity_kind, entity_perm_id, pers_id_author, valid_from_timestamp)
-  VALUES (nextval('sample_relationships_history_id_seq'::regclass), new.id, 'CONTAINED'::text, new.samp_id_part_of, 'SAMPLE'::text, ( SELECT samples_all.perm_id
-           FROM samples_all
-          WHERE ((samples_all.id)::bigint = (new.samp_id_part_of)::bigint)), new.pers_id_modifier, new.modification_timestamp);
-);
+       WHERE ((((old.samp_id_part_of)::bigint <> (new.samp_id_part_of)::bigint) OR (old.samp_id_part_of IS NULL)) AND (new.samp_id_part_of IS NOT NULL)) DO ( UPDATE sample_relationships_history SET valid_until_timestamp = new.modification_timestamp
+       WHERE ((((sample_relationships_history.main_samp_id)::bigint = (old.samp_id_part_of)::bigint) AND ((sample_relationships_history.samp_id)::bigint = (old.id)::bigint) AND (sample_relationships_history.valid_until_timestamp IS NULL) AND ((sample_relationships_history.relation_type)::text = 'CONTAINER'::text)) OR (((sample_relationships_history.main_samp_id)::bigint = (old.id)::bigint) AND ((sample_relationships_history.samp_id)::bigint = (old.samp_id_part_of)::bigint) AND (sample_relationships_history.valid_until_timestamp IS NULL) AND ((sample_relationships_history.relation_type)::text = 'CONTAINED'::text)));
+       INSERT INTO sample_relationships_history (id, main_samp_id, relation_type, samp_id, entity_kind, entity_perm_id, pers_id_author, valid_from_timestamp)
+       VALUES (nextval('sample_relationships_history_id_seq'::regclass), new.samp_id_part_of, 'CONTAINER'::text, new.id, 'SAMPLE'::text, new.perm_id, new.pers_id_modifier, new.modification_timestamp);
+       INSERT INTO sample_relationships_history (id, main_samp_id, relation_type, samp_id, entity_kind, entity_perm_id, pers_id_author, valid_from_timestamp)
+       VALUES (nextval('sample_relationships_history_id_seq'::regclass), new.id, 'CONTAINED'::text, new.samp_id_part_of, 'SAMPLE'::text, ( SELECT samples_all.perm_id
+                  FROM samples_all
+                  WHERE ((samples_all.id)::bigint = (new.samp_id_part_of)::bigint)), new.pers_id_modifier, new.modification_timestamp);
+                  );
 CREATE RULE sample_delete AS
     ON DELETE TO samples DO INSTEAD  DELETE FROM samples_all
   WHERE ((samples_all.id)::bigint = (old.id)::bigint);
 CREATE RULE sample_experiment_delete AS
     ON DELETE TO samples_all
    WHERE (old.expe_id IS NOT NULL) DO  UPDATE experiment_relationships_history SET valid_until_timestamp = CURRENT_TIMESTAMP
-  WHERE (((experiment_relationships_history.main_expe_id)::bigint = (old.expe_id)::bigint) AND ((experiment_relationships_history.samp_id)::bigint = (old.id)::bigint) AND (experiment_relationships_history.valid_until_timestamp IS NULL));
+                                       WHERE (((experiment_relationships_history.main_expe_id)::bigint = (old.expe_id)::bigint) AND ((experiment_relationships_history.samp_id)::bigint = (old.id)::bigint) AND (experiment_relationships_history.valid_until_timestamp IS NULL));
 CREATE RULE sample_experiment_insert AS
     ON INSERT TO samples_all
    WHERE (new.expe_id IS NOT NULL) DO ( INSERT INTO experiment_relationships_history (id, main_expe_id, relation_type, samp_id, entity_kind, entity_perm_id, pers_id_author, valid_from_timestamp)
@@ -896,37 +899,38 @@ CREATE RULE sample_experiment_insert AS
 );
 CREATE RULE sample_experiment_remove_update AS
     ON UPDATE TO samples_all
-   WHERE ((old.expe_id IS NOT NULL) AND (new.expe_id IS NULL)) DO ( UPDATE experiment_relationships_history SET valid_until_timestamp = new.modification_timestamp
+       WHERE ((old.expe_id IS NOT NULL) AND (new.expe_id IS NULL)) DO ( UPDATE experiment_relationships_history SET valid_until_timestamp = new.modification_timestamp
   WHERE (((experiment_relationships_history.main_expe_id)::bigint = (old.expe_id)::bigint) AND ((experiment_relationships_history.samp_id)::bigint = (old.id)::bigint) AND (experiment_relationships_history.valid_until_timestamp IS NULL));
  UPDATE sample_relationships_history SET valid_until_timestamp = new.modification_timestamp
   WHERE (((sample_relationships_history.main_samp_id)::bigint = (old.id)::bigint) AND ((sample_relationships_history.expe_id)::bigint = (old.expe_id)::bigint) AND (sample_relationships_history.valid_until_timestamp IS NULL));
 );
 CREATE RULE sample_experiment_update AS
     ON UPDATE TO samples_all
-   WHERE ((((old.expe_id)::bigint <> (new.expe_id)::bigint) OR (old.expe_id IS NULL)) AND (new.expe_id IS NOT NULL)) DO ( UPDATE experiment_relationships_history SET valid_until_timestamp = new.modification_timestamp
-  WHERE (((experiment_relationships_history.main_expe_id)::bigint = (old.expe_id)::bigint) AND ((experiment_relationships_history.samp_id)::bigint = (old.id)::bigint) AND (experiment_relationships_history.valid_until_timestamp IS NULL));
- INSERT INTO experiment_relationships_history (id, main_expe_id, relation_type, samp_id, entity_kind, entity_perm_id, pers_id_author, valid_from_timestamp)
-  VALUES (nextval('experiment_relationships_history_id_seq'::regclass), new.expe_id, 'OWNER'::text, new.id, 'SAMPLE'::text, new.perm_id, new.pers_id_modifier, new.modification_timestamp);
- UPDATE sample_relationships_history SET valid_until_timestamp = new.modification_timestamp
-  WHERE (((sample_relationships_history.main_samp_id)::bigint = (old.id)::bigint) AND ((sample_relationships_history.expe_id)::bigint = (old.expe_id)::bigint) AND (sample_relationships_history.valid_until_timestamp IS NULL));
- INSERT INTO sample_relationships_history (id, main_samp_id, relation_type, expe_id, entity_kind, entity_perm_id, pers_id_author, valid_from_timestamp)
-  VALUES (nextval('sample_relationships_history_id_seq'::regclass), new.id, 'OWNED'::text, new.expe_id, 'EXPERIMENT'::text, ( SELECT experiments_all.perm_id
-           FROM experiments_all
-          WHERE ((experiments_all.id)::bigint = (new.expe_id)::bigint)), new.pers_id_modifier, new.modification_timestamp);
-);
+       WHERE ((((old.expe_id)::bigint <> (new.expe_id)::bigint) OR (old.expe_id IS NULL)) AND (new.expe_id IS NOT NULL)) DO ( UPDATE experiment_relationships_history SET valid_until_timestamp = new.modification_timestamp
+       WHERE (((experiment_relationships_history.main_expe_id)::bigint = (old.expe_id)::bigint) AND ((experiment_relationships_history.samp_id)::bigint = (old.id)::bigint) AND (experiment_relationships_history.valid_until_timestamp IS NULL));
+       INSERT INTO experiment_relationships_history (id, main_expe_id, relation_type, samp_id, entity_kind, entity_perm_id, pers_id_author, valid_from_timestamp)
+       VALUES (nextval('experiment_relationships_history_id_seq'::regclass), new.expe_id, 'OWNER'::text, new.id, 'SAMPLE'::text, new.perm_id, new.pers_id_modifier, new.modification_timestamp);
+       UPDATE sample_relationships_history SET valid_until_timestamp = new.modification_timestamp
+       WHERE (((sample_relationships_history.main_samp_id)::bigint = (old.id)::bigint) AND ((sample_relationships_history.expe_id)::bigint = (old.expe_id)::bigint) AND (sample_relationships_history.valid_until_timestamp IS NULL));
+       INSERT INTO sample_relationships_history (id, main_samp_id, relation_type, expe_id, entity_kind, entity_perm_id, pers_id_author, valid_from_timestamp)
+       VALUES (nextval('sample_relationships_history_id_seq'::regclass), new.id, 'OWNED'::text, new.expe_id, 'EXPERIMENT'::text, ( SELECT experiments_all.perm_id
+                  FROM experiments_all
+                  WHERE ((experiments_all.id)::bigint = (new.expe_id)::bigint)), new.pers_id_modifier, new.modification_timestamp);
+                  );
 CREATE RULE sample_insert AS
     ON INSERT TO samples DO INSTEAD  INSERT INTO samples_all (id, frozen, frozen_for_comp, frozen_for_children, frozen_for_parents, frozen_for_data, code, del_id, orig_del, expe_id, expe_frozen, proj_id, proj_frozen, modification_timestamp, perm_id, pers_id_registerer, pers_id_modifier, registration_timestamp, samp_id_part_of, cont_frozen, saty_id, space_id, space_frozen, version, meta_data, immutable_data_timestamp)
-  VALUES (new.id, new.frozen, new.frozen_for_comp, new.frozen_for_children, new.frozen_for_parents, new.frozen_for_data, new.code, new.del_id, new.orig_del, new.expe_id, new.expe_frozen, new.proj_id, new.proj_frozen, new.modification_timestamp, new.perm_id, new.pers_id_registerer, new.pers_id_modifier, new.registration_timestamp, new.samp_id_part_of, new.cont_frozen, new.saty_id, new.space_id, new.space_frozen, new.version, new.meta_data, new.immutable_data_timestamp);
+  VALUES (new.id, new.frozen, new.frozen_for_comp, new.frozen_for_children, new.frozen_for_parents, new.frozen_for_data, new.code, new.del_id, new.orig_del, new.expe_id, new.expe_frozen, new.proj_id, new.proj_frozen, new.modification_timestamp, new.perm_id, new.pers_id_registerer, new.pers_id_modifier, new.registration_timestamp, new.samp_id_part_of, new.cont_frozen, new.saty_id, new.space_id, new.space_frozen, new.version, new.meta_data, new.immutable_data_timestamp)
+  RETURNING id, perm_id, code, proj_id, proj_frozen, expe_id, expe_frozen, saty_id, registration_timestamp, modification_timestamp, pers_id_registerer, pers_id_modifier, del_id, orig_del, space_id, space_frozen, samp_id_part_of, cont_frozen, version, frozen, frozen_for_comp, frozen_for_children, frozen_for_parents, frozen_for_data, tsvector_document, sample_identifier, meta_data, immutable_data_timestamp;
 CREATE RULE sample_parent_annotations_update AS
     ON UPDATE TO sample_relationships_all
-   WHERE ((old.del_id IS NULL) AND (new.del_id IS NULL) AND ((old.sample_id_child)::bigint = (new.sample_id_child)::bigint) AND ((old.sample_id_parent)::bigint = (new.sample_id_parent)::bigint) AND (old.parent_annotations <> new.parent_annotations)) DO  INSERT INTO sample_relationships_history (id, main_samp_id, relation_type, samp_id, entity_kind, entity_perm_id, annotations, pers_id_author, valid_from_timestamp)
-  VALUES (nextval('sample_relationships_history_id_seq'::regclass), new.sample_id_parent, 'PARENT'::text, new.sample_id_child, 'SAMPLE'::text, ( SELECT samples_all.perm_id
-           FROM samples_all
-          WHERE ((samples_all.id)::bigint = (new.sample_id_child)::bigint)), old.parent_annotations, new.pers_id_author, new.modification_timestamp);
+       WHERE ((old.del_id IS NULL) AND (new.del_id IS NULL) AND ((old.sample_id_child)::bigint = (new.sample_id_child)::bigint) AND ((old.sample_id_parent)::bigint = (new.sample_id_parent)::bigint) AND (old.parent_annotations <> new.parent_annotations)) DO  INSERT INTO sample_relationships_history (id, main_samp_id, relation_type, samp_id, entity_kind, entity_perm_id, annotations, pers_id_author, valid_from_timestamp)
+       VALUES (nextval('sample_relationships_history_id_seq'::regclass), new.sample_id_parent, 'PARENT'::text, new.sample_id_child, 'SAMPLE'::text, ( SELECT samples_all.perm_id
+                         FROM samples_all
+                         WHERE ((samples_all.id)::bigint = (new.sample_id_child)::bigint)), old.parent_annotations, new.pers_id_author, new.modification_timestamp);
 CREATE RULE sample_parent_child_delete AS
     ON DELETE TO sample_relationships_all
    WHERE (old.del_id IS NULL) DO  UPDATE sample_relationships_history SET valid_until_timestamp = CURRENT_TIMESTAMP
-  WHERE ((((sample_relationships_history.main_samp_id)::bigint = (old.sample_id_parent)::bigint) AND ((sample_relationships_history.samp_id)::bigint = (old.sample_id_child)::bigint) AND (sample_relationships_history.valid_until_timestamp IS NULL)) OR (((sample_relationships_history.main_samp_id)::bigint = (old.sample_id_child)::bigint) AND ((sample_relationships_history.samp_id)::bigint = (old.sample_id_parent)::bigint) AND (sample_relationships_history.valid_until_timestamp IS NULL)));
+                                  WHERE ((((sample_relationships_history.main_samp_id)::bigint = (old.sample_id_parent)::bigint) AND ((sample_relationships_history.samp_id)::bigint = (old.sample_id_child)::bigint) AND (sample_relationships_history.valid_until_timestamp IS NULL)) OR (((sample_relationships_history.main_samp_id)::bigint = (old.sample_id_child)::bigint) AND ((sample_relationships_history.samp_id)::bigint = (old.sample_id_parent)::bigint) AND (sample_relationships_history.valid_until_timestamp IS NULL)));
 CREATE RULE sample_parent_child_insert AS
     ON INSERT TO sample_relationships_all
    WHERE (new.del_id IS NULL) DO ( INSERT INTO sample_relationships_history (id, main_samp_id, relation_type, samp_id, entity_kind, entity_perm_id, annotations, pers_id_author, valid_from_timestamp)
@@ -940,7 +944,7 @@ CREATE RULE sample_parent_child_insert AS
 );
 CREATE RULE sample_parent_child_revert_update AS
     ON UPDATE TO sample_relationships_all
-   WHERE ((new.del_id IS NULL) AND (old.del_id IS NOT NULL)) DO ( INSERT INTO sample_relationships_history (id, main_samp_id, relation_type, samp_id, entity_kind, entity_perm_id, annotations, pers_id_author, valid_from_timestamp)
+       WHERE ((new.del_id IS NULL) AND (old.del_id IS NOT NULL)) DO ( INSERT INTO sample_relationships_history (id, main_samp_id, relation_type, samp_id, entity_kind, entity_perm_id, annotations, pers_id_author, valid_from_timestamp)
   VALUES (nextval('sample_relationships_history_id_seq'::regclass), new.sample_id_parent, 'PARENT'::text, new.sample_id_child, 'SAMPLE'::text, ( SELECT samples_all.perm_id
            FROM samples_all
           WHERE ((samples_all.id)::bigint = (new.sample_id_child)::bigint)), new.parent_annotations, new.pers_id_author, new.modification_timestamp);
@@ -951,8 +955,8 @@ CREATE RULE sample_parent_child_revert_update AS
 );
 CREATE RULE sample_parent_child_update AS
     ON UPDATE TO sample_relationships_all
-   WHERE ((new.del_id IS NOT NULL) AND (old.del_id IS NULL)) DO  UPDATE sample_relationships_history SET valid_until_timestamp = CURRENT_TIMESTAMP
-  WHERE ((((sample_relationships_history.main_samp_id)::bigint = (old.sample_id_parent)::bigint) AND ((sample_relationships_history.samp_id)::bigint = (old.sample_id_child)::bigint) AND (sample_relationships_history.valid_until_timestamp IS NULL)) OR (((sample_relationships_history.main_samp_id)::bigint = (old.sample_id_child)::bigint) AND ((sample_relationships_history.samp_id)::bigint = (old.sample_id_parent)::bigint) AND (sample_relationships_history.valid_until_timestamp IS NULL)));
+       WHERE ((new.del_id IS NOT NULL) AND (old.del_id IS NULL)) DO  UPDATE sample_relationships_history SET valid_until_timestamp = CURRENT_TIMESTAMP
+       WHERE ((((sample_relationships_history.main_samp_id)::bigint = (old.sample_id_parent)::bigint) AND ((sample_relationships_history.samp_id)::bigint = (old.sample_id_child)::bigint) AND (sample_relationships_history.valid_until_timestamp IS NULL)) OR (((sample_relationships_history.main_samp_id)::bigint = (old.sample_id_child)::bigint) AND ((sample_relationships_history.samp_id)::bigint = (old.sample_id_parent)::bigint) AND (sample_relationships_history.valid_until_timestamp IS NULL)));
 CREATE RULE sample_project_insert AS
     ON INSERT TO samples_all
    WHERE ((new.expe_id IS NULL) AND (new.proj_id IS NOT NULL)) DO ( INSERT INTO project_relationships_history (id, main_proj_id, relation_type, samp_id, entity_kind, entity_perm_id, pers_id_author, valid_from_timestamp)
@@ -964,24 +968,24 @@ CREATE RULE sample_project_insert AS
 );
 CREATE RULE sample_project_remove_update AS
     ON UPDATE TO samples_all
-   WHERE ((old.proj_id IS NOT NULL) AND ((new.proj_id IS NULL) OR ((old.expe_id IS NULL) AND (new.expe_id IS NOT NULL)))) DO ( UPDATE project_relationships_history SET valid_until_timestamp = new.modification_timestamp
+       WHERE ((old.proj_id IS NOT NULL) AND ((new.proj_id IS NULL) OR ((old.expe_id IS NULL) AND (new.expe_id IS NOT NULL)))) DO ( UPDATE project_relationships_history SET valid_until_timestamp = new.modification_timestamp
   WHERE (((project_relationships_history.main_proj_id)::bigint = (old.proj_id)::bigint) AND ((project_relationships_history.samp_id)::bigint = (old.id)::bigint) AND (project_relationships_history.valid_until_timestamp IS NULL));
  UPDATE sample_relationships_history SET valid_until_timestamp = new.modification_timestamp
   WHERE (((sample_relationships_history.main_samp_id)::bigint = (old.id)::bigint) AND ((sample_relationships_history.proj_id)::bigint = (old.proj_id)::bigint) AND (sample_relationships_history.valid_until_timestamp IS NULL));
 );
 CREATE RULE sample_project_update AS
     ON UPDATE TO samples_all
-   WHERE ((((old.proj_id)::bigint <> (new.proj_id)::bigint) OR (old.proj_id IS NULL) OR (old.expe_id IS NOT NULL)) AND (new.proj_id IS NOT NULL) AND (new.expe_id IS NULL)) DO ( UPDATE project_relationships_history SET valid_until_timestamp = new.modification_timestamp
-  WHERE (((project_relationships_history.main_proj_id)::bigint = (old.proj_id)::bigint) AND ((project_relationships_history.samp_id)::bigint = (old.id)::bigint) AND (project_relationships_history.valid_until_timestamp IS NULL));
- INSERT INTO project_relationships_history (id, main_proj_id, relation_type, samp_id, entity_kind, entity_perm_id, pers_id_author, valid_from_timestamp)
-  VALUES (nextval('project_relationships_history_id_seq'::regclass), new.proj_id, 'OWNER'::text, new.id, 'SAMPLE'::text, new.perm_id, new.pers_id_modifier, new.modification_timestamp);
- UPDATE sample_relationships_history SET valid_until_timestamp = new.modification_timestamp
-  WHERE (((sample_relationships_history.main_samp_id)::bigint = (old.id)::bigint) AND ((sample_relationships_history.proj_id)::bigint = (old.proj_id)::bigint) AND (sample_relationships_history.valid_until_timestamp IS NULL));
- INSERT INTO sample_relationships_history (id, main_samp_id, relation_type, proj_id, entity_kind, entity_perm_id, pers_id_author, valid_from_timestamp)
-  VALUES (nextval('sample_relationships_history_id_seq'::regclass), new.id, 'OWNED'::text, new.proj_id, 'PROJECT'::text, ( SELECT projects.perm_id
-           FROM projects
-          WHERE ((projects.id)::bigint = (new.proj_id)::bigint)), new.pers_id_modifier, new.modification_timestamp);
-);
+       WHERE ((((old.proj_id)::bigint <> (new.proj_id)::bigint) OR (old.proj_id IS NULL) OR (old.expe_id IS NOT NULL)) AND (new.proj_id IS NOT NULL) AND (new.expe_id IS NULL)) DO ( UPDATE project_relationships_history SET valid_until_timestamp = new.modification_timestamp
+       WHERE (((project_relationships_history.main_proj_id)::bigint = (old.proj_id)::bigint) AND ((project_relationships_history.samp_id)::bigint = (old.id)::bigint) AND (project_relationships_history.valid_until_timestamp IS NULL));
+       INSERT INTO project_relationships_history (id, main_proj_id, relation_type, samp_id, entity_kind, entity_perm_id, pers_id_author, valid_from_timestamp)
+       VALUES (nextval('project_relationships_history_id_seq'::regclass), new.proj_id, 'OWNER'::text, new.id, 'SAMPLE'::text, new.perm_id, new.pers_id_modifier, new.modification_timestamp);
+       UPDATE sample_relationships_history SET valid_until_timestamp = new.modification_timestamp
+       WHERE (((sample_relationships_history.main_samp_id)::bigint = (old.id)::bigint) AND ((sample_relationships_history.proj_id)::bigint = (old.proj_id)::bigint) AND (sample_relationships_history.valid_until_timestamp IS NULL));
+       INSERT INTO sample_relationships_history (id, main_samp_id, relation_type, proj_id, entity_kind, entity_perm_id, pers_id_author, valid_from_timestamp)
+       VALUES (nextval('sample_relationships_history_id_seq'::regclass), new.id, 'OWNED'::text, new.proj_id, 'PROJECT'::text, ( SELECT projects.perm_id
+                  FROM projects
+                  WHERE ((projects.id)::bigint = (new.proj_id)::bigint)), new.pers_id_modifier, new.modification_timestamp);
+                  );
 CREATE RULE sample_properties_delete AS
     ON DELETE TO sample_properties
    WHERE ((((old.value IS NOT NULL) AND (decode(replace("substring"((old.value)::text, 1, 1), '\'::text, '\\'::text), 'escape'::text) <> '\xefbfbd'::bytea))
@@ -1008,45 +1012,46 @@ CREATE RULE sample_properties_delete AS
           WHERE ((samples_all.id)::bigint = (old.samp_prop_id)::bigint)), OLD.SAMP_PROP_ID::text), old.pers_id_author, old.modification_timestamp, CURRENT_TIMESTAMP, old.integer_array_value, old.real_array_value, old.string_array_value, old.timestamp_array_value, old.json_value);
 CREATE RULE sample_properties_update AS
     ON UPDATE TO sample_properties
-   WHERE (((old.value IS NOT NULL) AND (decode(replace("substring"((old.value)::text, 1, 1), '\'::text, '\\'::text), 'escape'::text) <> '\xefbfbd'::bytea) AND ((old.value)::text <> (new.value)::text))
-        OR ((old.cvte_id IS NOT NULL) AND ((old.cvte_id)::bigint <> (new.cvte_id)::bigint))
-        OR ((old.mate_prop_id IS NOT NULL) AND ((old.mate_prop_id)::bigint <> (new.mate_prop_id)::bigint))
-        OR ((old.samp_prop_id IS NOT NULL) AND ((old.samp_prop_id)::bigint <> (new.samp_prop_id)::bigint))
-        OR ((old.integer_array_value IS NOT NULL) AND ((old.integer_array_value)::long_value[] <> (new.integer_array_value)::long_value[]))
-        OR ((old.real_array_value IS NOT NULL) AND ((old.real_array_value)::double_value[] <> (new.real_array_value)::double_value[]))
-        OR ((old.string_array_value IS NOT NULL) AND ((old.string_array_value)::text_value[] <> (new.string_array_value)::text_value[]))
-        OR ((old.timestamp_array_value IS NOT NULL) AND ((old.timestamp_array_value)::time_stamp[] <> (new.timestamp_array_value)::time_stamp[]))
-        OR ((old.json_value IS NOT NULL) AND ((old.json_value)::jsonb <> (new.json_value)::jsonb)))
-    DO INSERT INTO sample_properties_history (id, samp_id, stpt_id, value, vocabulary_term, material, sample, pers_id_author, valid_from_timestamp, valid_until_timestamp, integer_array_value, real_array_value, string_array_value, timestamp_array_value, json_value)
-  VALUES (nextval('sample_property_id_seq'::regclass), old.samp_id, old.stpt_id, old.value, ( SELECT ((((t.code)::text || ' ['::text) || (v.code)::text) || ']'::text)
-           FROM (controlled_vocabulary_terms t
-             JOIN controlled_vocabularies v ON (((t.covo_id)::bigint = (v.id)::bigint)))
-          WHERE ((t.id)::bigint = (old.cvte_id)::bigint)), ( SELECT ((((m.code)::text || ' ['::text) || (mt.code)::text) || ']'::text)
-           FROM (materials m
-             JOIN material_types mt ON (((m.maty_id)::bigint = (mt.id)::bigint)))
-          WHERE ((m.id)::bigint = (old.mate_prop_id)::bigint)), COALESCE(( SELECT samples_all.perm_id
-           FROM samples_all
-          WHERE ((samples_all.id)::bigint = (old.samp_prop_id)::bigint)), OLD.SAMP_PROP_ID::text), old.pers_id_author, old.modification_timestamp, new.modification_timestamp, old.integer_array_value, old.real_array_value, old.string_array_value, old.timestamp_array_value, old.json_value);
+       WHERE (((old.value IS NOT NULL) AND (decode(replace("substring"((old.value)::text, 1, 1), '\'::text, '\\'::text), 'escape'::text) <> '\xefbfbd'::bytea) AND ((old.value)::text <> (new.value)::text))
+          OR ((old.cvte_id IS NOT NULL) AND ((old.cvte_id)::bigint <> (new.cvte_id)::bigint))
+          OR ((old.mate_prop_id IS NOT NULL) AND ((old.mate_prop_id)::bigint <> (new.mate_prop_id)::bigint))
+          OR ((old.samp_prop_id IS NOT NULL) AND ((old.samp_prop_id)::bigint <> (new.samp_prop_id)::bigint))
+          OR ((old.integer_array_value IS NOT NULL) AND ((old.integer_array_value)::long_value[] <> (new.integer_array_value)::long_value[]))
+          OR ((old.real_array_value IS NOT NULL) AND ((old.real_array_value)::double_value[] <> (new.real_array_value)::double_value[]))
+          OR ((old.string_array_value IS NOT NULL) AND ((old.string_array_value)::text_value[] <> (new.string_array_value)::text_value[]))
+          OR ((old.timestamp_array_value IS NOT NULL) AND ((old.timestamp_array_value)::time_stamp[] <> (new.timestamp_array_value)::time_stamp[]))
+          OR ((old.json_value IS NOT NULL) AND ((old.json_value)::jsonb <> (new.json_value)::jsonb)))
+           DO INSERT INTO sample_properties_history (id, samp_id, stpt_id, value, vocabulary_term, material, sample, pers_id_author, valid_from_timestamp, valid_until_timestamp, integer_array_value, real_array_value, string_array_value, timestamp_array_value, json_value)
+       VALUES (nextval('sample_property_id_seq'::regclass), old.samp_id, old.stpt_id, old.value, ( SELECT ((((t.code)::text || ' ['::text) || (v.code)::text) || ']'::text)
+                                       FROM (controlled_vocabulary_terms t
+                                       JOIN controlled_vocabularies v ON (((t.covo_id)::bigint = (v.id)::bigint)))
+                                       WHERE ((t.id)::bigint = (old.cvte_id)::bigint)), ( SELECT ((((m.code)::text || ' ['::text) || (mt.code)::text) || ']'::text)
+                                       FROM (materials m
+                                       JOIN material_types mt ON (((m.maty_id)::bigint = (mt.id)::bigint)))
+                                       WHERE ((m.id)::bigint = (old.mate_prop_id)::bigint)), COALESCE(( SELECT samples_all.perm_id
+                                       FROM samples_all
+                                       WHERE ((samples_all.id)::bigint = (old.samp_prop_id)::bigint)), OLD.SAMP_PROP_ID::text), old.pers_id_author, old.modification_timestamp, new.modification_timestamp, old.integer_array_value, old.real_array_value, old.string_array_value, old.timestamp_array_value, old.json_value);
 CREATE RULE sample_relationships_delete AS
     ON DELETE TO sample_relationships DO INSTEAD  DELETE FROM sample_relationships_all
   WHERE ((sample_relationships_all.id)::bigint = (old.id)::bigint);
 CREATE RULE sample_relationships_insert AS
     ON INSERT TO sample_relationships DO INSTEAD  INSERT INTO sample_relationships_all (id, sample_id_parent, parent_frozen, relationship_id, sample_id_child, child_frozen, pers_id_author, registration_timestamp, modification_timestamp, child_annotations, parent_annotations)
-  VALUES (new.id, new.sample_id_parent, new.parent_frozen, new.relationship_id, new.sample_id_child, new.child_frozen, new.pers_id_author, new.registration_timestamp, new.modification_timestamp, new.child_annotations, new.parent_annotations);
+  VALUES (new.id, new.sample_id_parent, new.parent_frozen, new.relationship_id, new.sample_id_child, new.child_frozen, new.pers_id_author, new.registration_timestamp, new.modification_timestamp, new.child_annotations, new.parent_annotations)
+  RETURNING id, sample_id_parent, parent_frozen, relationship_id, sample_id_child, child_frozen, del_id, pers_id_author, registration_timestamp, modification_timestamp, child_annotations, parent_annotations;
 CREATE RULE sample_relationships_update AS
     ON UPDATE TO sample_relationships DO INSTEAD  UPDATE sample_relationships_all SET sample_id_parent = new.sample_id_parent, parent_frozen = new.parent_frozen, relationship_id = new.relationship_id, sample_id_child = new.sample_id_child, child_frozen = new.child_frozen, del_id = new.del_id, pers_id_author = new.pers_id_author, registration_timestamp = new.registration_timestamp, modification_timestamp = new.modification_timestamp, child_annotations = new.child_annotations, parent_annotations = new.parent_annotations
-  WHERE ((sample_relationships_all.id)::bigint = (new.id)::bigint);
+       WHERE ((sample_relationships_all.id)::bigint = (new.id)::bigint);
 CREATE RULE sample_shared_insert AS
     ON INSERT TO samples_all
    WHERE (new.space_id IS NULL) DO  INSERT INTO sample_relationships_history (id, main_samp_id, relation_type, expe_id, pers_id_author, valid_from_timestamp)
   VALUES (nextval('sample_relationships_history_id_seq'::regclass), new.id, 'OWNED'::text, new.expe_id, new.pers_id_modifier, new.modification_timestamp);
 CREATE RULE sample_shared_remove_update AS
     ON UPDATE TO samples_all
-   WHERE ((old.space_id IS NULL) AND (new.space_id IS NOT NULL)) DO  UPDATE sample_relationships_history SET valid_until_timestamp = new.modification_timestamp
-  WHERE (((sample_relationships_history.main_samp_id)::bigint = (old.id)::bigint) AND (sample_relationships_history.space_id IS NULL) AND (sample_relationships_history.entity_perm_id IS NULL) AND (sample_relationships_history.proj_id IS NULL) AND (sample_relationships_history.expe_id IS NULL) AND (sample_relationships_history.valid_until_timestamp IS NULL));
+       WHERE ((old.space_id IS NULL) AND (new.space_id IS NOT NULL)) DO  UPDATE sample_relationships_history SET valid_until_timestamp = new.modification_timestamp
+       WHERE (((sample_relationships_history.main_samp_id)::bigint = (old.id)::bigint) AND (sample_relationships_history.space_id IS NULL) AND (sample_relationships_history.entity_perm_id IS NULL) AND (sample_relationships_history.proj_id IS NULL) AND (sample_relationships_history.expe_id IS NULL) AND (sample_relationships_history.valid_until_timestamp IS NULL));
 CREATE RULE sample_shared_update AS
     ON UPDATE TO samples_all
-   WHERE ((old.space_id IS NOT NULL) AND (new.space_id IS NULL)) DO ( UPDATE sample_relationships_history SET valid_until_timestamp = new.modification_timestamp
+       WHERE ((old.space_id IS NOT NULL) AND (new.space_id IS NULL)) DO ( UPDATE sample_relationships_history SET valid_until_timestamp = new.modification_timestamp
   WHERE (((sample_relationships_history.main_samp_id)::bigint = (old.id)::bigint) AND ((sample_relationships_history.space_id)::bigint = (old.space_id)::bigint) AND (sample_relationships_history.valid_until_timestamp IS NULL));
  INSERT INTO sample_relationships_history (id, main_samp_id, relation_type, space_id, entity_perm_id, pers_id_author, valid_from_timestamp)
   VALUES (nextval('sample_relationships_history_id_seq'::regclass), new.id, 'OWNED'::text, new.space_id, NULL::text, new.pers_id_modifier, new.modification_timestamp);
@@ -1059,20 +1064,20 @@ CREATE RULE sample_space_insert AS
           WHERE ((spaces.id)::bigint = (new.space_id)::bigint)), new.pers_id_modifier, new.modification_timestamp);
 CREATE RULE sample_space_remove_update AS
     ON UPDATE TO samples_all
-   WHERE ((old.space_id IS NOT NULL) AND ((new.space_id IS NULL) OR ((old.expe_id IS NULL) AND (new.expe_id IS NOT NULL)) OR ((old.proj_id IS NULL) AND (new.proj_id IS NOT NULL)))) DO  UPDATE sample_relationships_history SET valid_until_timestamp = new.modification_timestamp
-  WHERE (((sample_relationships_history.main_samp_id)::bigint = (old.id)::bigint) AND ((sample_relationships_history.space_id)::bigint = (old.space_id)::bigint) AND (sample_relationships_history.valid_until_timestamp IS NULL));
+       WHERE ((old.space_id IS NOT NULL) AND ((new.space_id IS NULL) OR ((old.expe_id IS NULL) AND (new.expe_id IS NOT NULL)) OR ((old.proj_id IS NULL) AND (new.proj_id IS NOT NULL)))) DO  UPDATE sample_relationships_history SET valid_until_timestamp = new.modification_timestamp
+       WHERE (((sample_relationships_history.main_samp_id)::bigint = (old.id)::bigint) AND ((sample_relationships_history.space_id)::bigint = (old.space_id)::bigint) AND (sample_relationships_history.valid_until_timestamp IS NULL));
 CREATE RULE sample_space_update AS
     ON UPDATE TO samples_all
-   WHERE ((((old.space_id)::bigint <> (new.space_id)::bigint) OR (old.space_id IS NULL) OR (old.expe_id IS NOT NULL) OR (old.proj_id IS NOT NULL)) AND (new.space_id IS NOT NULL) AND (new.expe_id IS NULL) AND (new.proj_id IS NULL)) DO ( UPDATE sample_relationships_history SET valid_until_timestamp = new.modification_timestamp
-  WHERE (((sample_relationships_history.main_samp_id)::bigint = (old.id)::bigint) AND ((sample_relationships_history.space_id)::bigint = (old.space_id)::bigint) AND (sample_relationships_history.valid_until_timestamp IS NULL));
- INSERT INTO sample_relationships_history (id, main_samp_id, relation_type, space_id, entity_kind, entity_perm_id, pers_id_author, valid_from_timestamp)
-  VALUES (nextval('sample_relationships_history_id_seq'::regclass), new.id, 'OWNED'::text, new.space_id, 'SPACE'::text, ( SELECT spaces.code
-           FROM spaces
-          WHERE ((spaces.id)::bigint = (new.space_id)::bigint)), new.pers_id_modifier, new.modification_timestamp);
-);
+       WHERE ((((old.space_id)::bigint <> (new.space_id)::bigint) OR (old.space_id IS NULL) OR (old.expe_id IS NOT NULL) OR (old.proj_id IS NOT NULL)) AND (new.space_id IS NOT NULL) AND (new.expe_id IS NULL) AND (new.proj_id IS NULL)) DO ( UPDATE sample_relationships_history SET valid_until_timestamp = new.modification_timestamp
+       WHERE (((sample_relationships_history.main_samp_id)::bigint = (old.id)::bigint) AND ((sample_relationships_history.space_id)::bigint = (old.space_id)::bigint) AND (sample_relationships_history.valid_until_timestamp IS NULL));
+       INSERT INTO sample_relationships_history (id, main_samp_id, relation_type, space_id, entity_kind, entity_perm_id, pers_id_author, valid_from_timestamp)
+       VALUES (nextval('sample_relationships_history_id_seq'::regclass), new.id, 'OWNED'::text, new.space_id, 'SPACE'::text, ( SELECT spaces.code
+                  FROM spaces
+                  WHERE ((spaces.id)::bigint = (new.space_id)::bigint)), new.pers_id_modifier, new.modification_timestamp);
+                  );
 CREATE RULE sample_update AS
     ON UPDATE TO samples DO INSTEAD  UPDATE samples_all SET code = new.code, frozen = new.frozen, frozen_for_comp = new.frozen_for_comp, frozen_for_children = new.frozen_for_children, frozen_for_parents = new.frozen_for_parents, frozen_for_data = new.frozen_for_data, del_id = new.del_id, orig_del = new.orig_del, expe_id = new.expe_id, expe_frozen = new.expe_frozen, proj_id = new.proj_id, proj_frozen = new.proj_frozen, modification_timestamp = new.modification_timestamp, perm_id = new.perm_id, pers_id_registerer = new.pers_id_registerer, pers_id_modifier = new.pers_id_modifier, registration_timestamp = new.registration_timestamp, samp_id_part_of = new.samp_id_part_of, cont_frozen = new.cont_frozen, saty_id = new.saty_id, space_id = new.space_id, space_frozen = new.space_frozen, version = new.version, meta_data = new.meta_data, immutable_data_timestamp = new.immutable_data_timestamp
-  WHERE ((samples_all.id)::bigint = (new.id)::bigint);
+       WHERE ((samples_all.id)::bigint = (new.id)::bigint);
 CREATE TRIGGER add_data_set_to_experiment_check AFTER INSERT ON data_all FOR EACH ROW WHEN (new.expe_frozen) EXECUTE PROCEDURE raise_exception_frozen_experiment_relationship('data set');
 CREATE TRIGGER add_data_set_to_sample_check AFTER INSERT ON data_all FOR EACH ROW WHEN (new.samp_frozen) EXECUTE PROCEDURE raise_exception_frozen_data_set_sample_relationship();
 CREATE TRIGGER add_experiment_to_project_check AFTER INSERT ON experiments_all FOR EACH ROW WHEN (new.proj_frozen) EXECUTE PROCEDURE raise_exception_frozen_project_relationship('experiment');

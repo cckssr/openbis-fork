@@ -6113,15 +6113,23 @@ class ImagingControl:
 
     def get_property_config(self, perm_id: str) -> ImagingDataSetPropertyConfig:
         """Returns imaging property config of given imaging dataset."""
-        dataset = self._openbis.get_dataset(perm_id)
-        imaging_property = json.loads(dataset.props[ImagingControl.IMAGING_CONFIG_PROP_NAME])
+        sample = self._openbis.get_samples(permId=perm_id)
+        if len(sample) > 0:
+            entity = sample[0]
+        else:
+            entity = self._openbis.get_dataset(perm_id)
+        imaging_property = json.loads(entity.props[ImagingControl.IMAGING_CONFIG_PROP_NAME])
         return ImagingDataSetPropertyConfig.from_dict(imaging_property)
 
     def update_property_config(self, perm_id: str, config: ImagingDataSetPropertyConfig):
         """Update imaging dataset with given imaging property config."""
-        dataset = self._openbis.get_dataset(perm_id)
-        dataset.props[ImagingControl.IMAGING_CONFIG_PROP_NAME] = config.to_json()
-        dataset.save()
+        sample = self._openbis.get_samples(permId=perm_id)
+        if len(sample) > 0:
+            entity = sample[0]
+        else:
+            entity = self._openbis.get_dataset(perm_id)
+        entity.props[ImagingControl.IMAGING_CONFIG_PROP_NAME] = config.to_json()
+        entity.save()
 
     def create_imaging_dataset(self, dataset_type: str, config: ImagingDataSetPropertyConfig,
                                experiment: str, sample: str,
@@ -6137,7 +6145,7 @@ class ImagingControl:
             props[ImagingControl.IMAGING_CONFIG_PROP_NAME] = config.to_json()
             props[ImagingControl.DEFAULT_OBJECT_VIEW_PROP_NAME] = ImagingControl.IMAGING_DATASET_VIEWER
             sample = self._openbis.new_sample(dataset_type, experiment=experiment, props=props)
-            sample = sample.save()
+            sample.save()
             self.afs_client.upload_files(sample.permId, "/", files, wait_until_finished=True)
             return sample
 

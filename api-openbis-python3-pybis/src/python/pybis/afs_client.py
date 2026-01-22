@@ -54,6 +54,8 @@ class AfsClient:
 
     def __init__(self, url, sessionToken, verify=True):
         self._afs_url = url
+        if url is not None and not url.endswith("/api"):
+            self._afs_url = url + "/api"
         self._sessionToken = sessionToken
         self._verify = verify
         self.session = _create_session(url)
@@ -197,7 +199,7 @@ class AfsClient:
             else:
                 real_files.append(("", os.path.join(filename)))
 
-        with AfsFileUploadQueue(self._afs_url) as queue:
+        with AfsFileUploadQueue(self._afs_url, self._verify) as queue:
             for filename in real_files:
                 file_path_afs = os.path.join(source_path, filename[0], os.path.basename(filename[1]))
                 if file_path_afs in existing_files:
@@ -218,7 +220,7 @@ class AfsClient:
         if not os.path.exists(destination):
             os.makedirs(os.path.dirname(destination), exist_ok=True)
 
-        with AfsFileDownloadQueue(self._afs_url) as queue:
+        with AfsFileDownloadQueue(self._afs_url, self._verify) as queue:
             for file in file_list:
                 if file.directory:
                     os.makedirs(os.path.join(destination, file.path[1:]), exist_ok=True)
@@ -254,7 +256,7 @@ class AfsFileUploadQueue:
     It works as a queue where each item is a single file upload. """
 
 
-    def __init__(self, url, workers=10):
+    def __init__(self, url, verify_certificates=True, workers=10):
         self.url = url
         self.session = _create_session(url)
         self.items = []
@@ -265,6 +267,7 @@ class AfsFileUploadQueue:
         self.exceptions = Queue()
         self.cancelled = threading.Event()
         self._drain_lock = threading.Lock()
+        self.verify_certificates = verify_certificates
         # define number of threads and start them
         for t in range(workers):
             t = PropagatingThread(target=self.upload_file)
@@ -324,7 +327,7 @@ class AfsFileUploadQueue:
                         "directory": True
                     }
 
-                    response = self.session.post(self.url, data=params, params=params, stream=True)
+                    response = self.session.post(self.url, data=params, params=params, stream=True, verify=self.verify_certificates)
                     if response.ok:
                         content = response.content.decode("utf-8").lower() == "true"
                         if not content:
@@ -359,7 +362,7 @@ class AfsFileUploadQueue:
 
                                 chunks_encoded = encode_chunks_as_bytes(chunks)
 
-                                with self.session.post(self.url, data=chunks_encoded, params=params, stream=True) as response:
+                                with self.session.post(self.url, data=chunks_encoded, params=params, stream=True, verify=self.verify_certificates) as response:
                                     if response.ok:
                                         content = response.content.decode("utf-8").lower() == "true"
                                         if not content:
@@ -381,7 +384,7 @@ class AfsFileUploadQueue:
 
                             chunks_encoded = encode_chunks_as_bytes(chunks)
 
-                            with self.session.post(self.url, data=chunks_encoded, params=params, stream=True) as response:
+                            with self.session.post(self.url, data=chunks_encoded, params=params, stream=True, verify=self.verify_certificates) as response:
                                 content = response.content.decode("utf-8").lower() == "true"
                                 if not content:
                                     message = json.loads(response.text)
@@ -506,7 +509,7 @@ class AfsFileDownloadQueue:
 
                     chunks_encoded = encode_chunks_as_bytes(chunks)
 
-                    with self.session.post(self.url, data=chunks_encoded, params=params, stream=True) as r:
+                    with self.session.post(self.url, data=chunks_encoded, params=params, stream=True, verify=self.verify_certificates) as r:
                         content = r.content
                         decoded = decode_chunks(content)[0]
                         data = decoded['data']
