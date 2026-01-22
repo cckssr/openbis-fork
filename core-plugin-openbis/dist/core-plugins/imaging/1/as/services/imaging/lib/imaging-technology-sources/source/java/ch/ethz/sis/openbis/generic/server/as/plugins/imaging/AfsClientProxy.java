@@ -18,6 +18,8 @@ final class AfsClientProxy
 {
     public static final String AFS_SERVER_URL_PROPERTY_NAME = "server-public-information.afs-server.url";
 
+    private static final String AFS_API_SUFFIX = "/api";
+
     public static final String AFS_SERVER_TIMEOUT_PROPERTY_NAME = "server-public-information.afs-server.timeout";
 
     public static final String AFS_SERVER_TIMEOUT_DEFAULT = "3600";
@@ -59,7 +61,7 @@ final class AfsClientProxy
 //            }
             final int timeout = Integer.parseInt(timeoutStr);
 //            AfsClient client = getAfsClient(sessionToken, url, timeout, interactiveSessionKey);
-            AfsClient client = getAfsClient(sessionToken, url, timeout);
+            AfsClient client = getAfsClient(sessionToken, url+AFS_API_SUFFIX, timeout);
 
             return new AfsClientProxy(client);
         } else {
