@@ -21,4 +21,6 @@ public class Constants
 
     public static final String PROPERTY_COLLECTION = "openBIS:hasCOLLECTION";
 
+    public static final String PROPERTY_ID_FILES = "schema:hasPart";
+
 }

@@ -6,6 +6,7 @@ import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
 import ch.ethz.sis.openbis.generic.excel.v3.to.ExcelWriter;
 import ch.openbis.rocrate.app.reader.RdfToModel;
 import edu.kit.datamanager.ro_crate.RoCrate;
+import edu.kit.datamanager.ro_crate.entities.data.DataEntity;
 import edu.kit.datamanager.ro_crate.reader.FolderReader;
 import edu.kit.datamanager.ro_crate.reader.RoCrateReader;
 import org.apache.commons.cli.*;
@@ -14,6 +15,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class Read
 {
@@ -51,12 +53,14 @@ public class Read
             entryList.addAll(schemaFacade.getEntries(type.getId()));
 
         }
+        Set<DataEntity> allDataEntities = crate.getAllDataEntities();
+
 
         OpenBisModel
                 openBisModel =
                 RdfToModel.convert(types, schemaFacade.getPropertyTypes(), entryList, "DEFAULT",
-                        "DEFAULT");
-        byte[] writtenStuff = ExcelWriter.convert(ExcelWriter.Format.EXCEL, openBisModel);
+                        "DEFAULT", schemaFacade);
+        byte[] writtenStuff = ExcelWriter.convert(ExcelWriter.Format.ZIP_EXPORT, openBisModel);
         String outPath = cmd.getOptionValue('o');
         try (FileOutputStream byteArrayOutputStream = new FileOutputStream(
                 outPath))

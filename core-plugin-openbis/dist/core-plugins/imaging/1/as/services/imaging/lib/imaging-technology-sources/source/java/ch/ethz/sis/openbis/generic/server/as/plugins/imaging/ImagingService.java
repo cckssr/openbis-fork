@@ -107,6 +107,10 @@ public class ImagingService implements ICustomASServiceExecutor
             } else if (data.getType().equalsIgnoreCase("multi-export"))
             {
                 return processMultiExportFlow(sessionToken, (ImagingMultiExportContainer) data);
+            } else if (data.getType().equalsIgnoreCase("init"))
+            {
+                //TODO
+//              throw new UserFailureException("Unknown request type!");
             } else
             {
                 throw new UserFailureException("Unknown request type!");
@@ -156,6 +160,9 @@ public class ImagingService implements ICustomASServiceExecutor
             path  = Path.of(this.storeRootAfs, dataSet.getPhysicalData().getShareId(), dataSet.getPhysicalData().getLocation());
         }
         File file = path.toFile();
+        if(!file.exists()) {
+            throw new UserFailureException("Could not find configured root file!");
+        }
         return file;
     }
 
@@ -273,7 +280,7 @@ public class ImagingService implements ICustomASServiceExecutor
                     int tmp = 1;
                 }
                 File[] files = rootFile.listFiles();
-                if(files.length == 1 && files[0].getName().equalsIgnoreCase("original")) {
+                if(files != null && files.length == 1 && files[0].getName().equalsIgnoreCase("original")) {
                     rootFile = files[0];
                 }
                 String adaptor = image.getConfig().getAdaptor();
@@ -696,6 +703,8 @@ public class ImagingService implements ICustomASServiceExecutor
             {
                 return sampleResult.get(samplePermId);
             }
+        } else {
+            operationLog.info("AFS not available, switching to DSS mode.");
         }
         DataSetPermId dataSetPermId = new DataSetPermId(permId);
         DataSetFetchOptions fetchOptions = new DataSetFetchOptions();

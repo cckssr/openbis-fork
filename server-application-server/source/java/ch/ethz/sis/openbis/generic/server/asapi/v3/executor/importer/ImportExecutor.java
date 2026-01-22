@@ -62,9 +62,13 @@ public class ImportExecutor implements IImportExecutor
             final XLSImport xlsImport = new XLSImport(context.getSession().getSessionToken(), applicationServerApi,
                     ImportModes.valueOf(importOptions.getMode().name()), importerImportOptions, importData.getSessionWorkspaceFiles(), false);
             ImportResult result = new ImportResult();
-            result.setObjectIds(xlsImport.start());
-//            transactionExecutor.executeInSeparateTransaction(() -> importMetaData(xlsImport, result));
-//            xlsImport.importZipAfsData();
+            if(xlsImport.importContainsAfsData()) {
+                // TODO 2PT and dirty transaction check
+                transactionExecutor.executeInSeparateTransaction(() -> importMetaData(xlsImport, result));
+                xlsImport.importZipAfsData();
+            } else {
+                result.setObjectIds(xlsImport.start());
+            }
 
             return result;
         } catch (final IOException e)

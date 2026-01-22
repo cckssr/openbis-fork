@@ -37,7 +37,7 @@ import java.util.Map;
 public class MapperTest extends TestCase
 {
     @Test
-    public void testEmpty()
+    public void testEmpty() throws Exception
     {
 
         Map<EntityTypePermId, IEntityType> schema = new HashMap<>();
@@ -47,7 +47,7 @@ public class MapperTest extends TestCase
 
         OpenBisModel openBisModel =
                 new OpenBisModel(Map.of(), schema, spaces, projects, metadata, Map.of(), Map.of(),
-                        Map.of());
+                        Map.of(), Map.of());
         Mapper mapper = new Mapper();
         MapResult result = mapper.transform(openBisModel);
         assertEquals(3, result.getSchema().getClasses().size());
@@ -58,7 +58,7 @@ public class MapperTest extends TestCase
     }
 
     @Test
-    public void testEmptyObject()
+    public void testEmptyObject() throws Exception
     {
 
         Map<EntityTypePermId, IEntityType> schema = new HashMap<>();
@@ -97,7 +97,7 @@ public class MapperTest extends TestCase
 
         OpenBisModel openBisModel =
                 new OpenBisModel(Map.of(), schema, spaces, projects, metadata, Map.of(), Map.of(),
-                        Map.of());
+                        Map.of(), Map.of());
         Mapper mapper = new Mapper();
         MapResult result = mapper.transform(openBisModel);
 
@@ -108,7 +108,7 @@ public class MapperTest extends TestCase
     }
 
     @Test
-    public void testObjectWithProperties()
+    public void testObjectWithProperties() throws Exception
     {
 
         Map<EntityTypePermId, IEntityType> schema = new HashMap<>();
@@ -153,7 +153,7 @@ public class MapperTest extends TestCase
 
         OpenBisModel openBisModel =
                 new OpenBisModel(Map.of(), schema, spaces, projects, metadata, Map.of(), Map.of(),
-                        Map.of());
+                        Map.of(), Map.of());
         Mapper mapper = new Mapper();
         MapResult result = mapper.transform(openBisModel);
 
@@ -165,7 +165,7 @@ public class MapperTest extends TestCase
     }
 
     @Test
-    public void testObjectWithPropertiesAndMetaData()
+    public void testObjectWithPropertiesAndMetaData() throws Exception
     {
 
         Map<EntityTypePermId, IEntityType> schema = new HashMap<>();
@@ -243,7 +243,7 @@ public class MapperTest extends TestCase
 
         OpenBisModel openBisModel =
                 new OpenBisModel(Map.of(), schema, spaces, projects, metadata, Map.of(), Map.of(),
-                        Map.of());
+                        Map.of(), Map.of());
         Mapper mapper = new Mapper();
         MapResult result = mapper.transform(openBisModel);
 
@@ -257,7 +257,7 @@ public class MapperTest extends TestCase
     }
 
     @Test
-    public void testSpace()
+    public void testSpace() throws Exception
     {
         Map<EntityTypePermId, IEntityType> schema = new HashMap<>();
 
@@ -272,7 +272,7 @@ public class MapperTest extends TestCase
 
         OpenBisModel openBisModel =
                 new OpenBisModel(Map.of(), schema, spaces, projects, metadata, Map.of(), Map.of(),
-                        Map.of());
+                        Map.of(), Map.of());
         Mapper mapper = new Mapper();
         MapResult result = mapper.transform(openBisModel);
         MetadataEntry entry = result.getMetaDataEntries().get(0);
@@ -281,7 +281,7 @@ public class MapperTest extends TestCase
     }
 
     @Test
-    public void testProject()
+    public void testProject() throws Exception
     {
 
         Map<EntityTypePermId, IEntityType> schema = new HashMap<>();
@@ -300,7 +300,7 @@ public class MapperTest extends TestCase
 
         OpenBisModel openBisModel =
                 new OpenBisModel(Map.of(), schema, spaces, projects, metadata, Map.of(), Map.of(),
-                        Map.of());
+                        Map.of(), Map.of());
         Mapper mapper = new Mapper();
         MapResult result = mapper.transform(openBisModel);
         MetadataEntry entry = result.getMetaDataEntries().get(0);

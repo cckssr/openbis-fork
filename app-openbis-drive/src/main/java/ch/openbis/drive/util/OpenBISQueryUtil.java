@@ -176,7 +176,7 @@ public class OpenBISQueryUtil {
             this.openBISUrl = openBISUrl;
         }
 
-        synchronized public void setPersonalAccessToken(@NonNull String personalAccessToken) {
+        synchronized public void setPersonalAccessToken(String personalAccessToken) {
             this.personalAccessToken = personalAccessToken;
         }
 

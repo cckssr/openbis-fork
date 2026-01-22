@@ -57,7 +57,9 @@ dependencies {
 }
 
 test {
-    useTestNG()
+    useTestNG() {
+        suites 'src/test/resources/testng.xml'
+    }
 }
 
 mainClassName = "ch.ethz.sis.rocrateserver.startup.StartupMain"

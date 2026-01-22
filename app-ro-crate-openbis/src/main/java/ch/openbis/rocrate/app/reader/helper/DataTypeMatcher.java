@@ -120,13 +120,10 @@ public class DataTypeMatcher
                     {
 
                         String[] parts = identifier.toString().split("/");
-                        if (parts.length != 4)
+                        if (parts.length != 4 && parts.length != 3)
                         {
                             return false;
                         }
-                        String space = parts[1];
-                        String project = parts[2];
-                        String code = parts[3];
                     }
                     return true;
                 } catch (RuntimeException e)

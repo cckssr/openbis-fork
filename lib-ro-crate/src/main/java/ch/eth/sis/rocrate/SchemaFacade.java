@@ -114,6 +114,14 @@ public class SchemaFacade implements ISchemaFacade
 
         SchemaFacade schemaFacade = new SchemaFacade(crate);
         schemaFacade.parseEntities();
+
+        List<DataEntity> fileEntities = crate.getAllDataEntities().stream()
+                .filter(x -> schemaFacade.parseMultiValued(x, "@type").contains("File"))
+                .toList();
+
+        Map<String, DataEntity> idToFileNode =
+                fileEntities.stream().collect(Collectors.toMap(x -> x.getId(), x -> x));
+
         return schemaFacade;
 
     }
@@ -256,6 +264,14 @@ public class SchemaFacade implements ISchemaFacade
     public List<IRestriction> getRestrictions()
     {
         return null;
+    }
+
+    @Override
+    public List<DataEntity> getFiles()
+    {
+        return crate.getAllDataEntities().stream()
+                .filter(x -> this.parseMultiValued(x, "@type").contains("File"))
+                .collect(Collectors.toList());
     }
 
     private boolean matchClasses(String queryClassId, IMetadataEntry entry)
@@ -436,6 +452,7 @@ public class SchemaFacade implements ISchemaFacade
         List<AbstractEntity> entities = new ArrayList<>();
         entities.addAll(crate.getAllDataEntities());
         entities.addAll(crate.getAllContextualEntities());
+        List<DataEntity> allDataEntities = getFiles();
         for (AbstractEntity entity : entities)
         {
 
@@ -471,6 +488,13 @@ public class SchemaFacade implements ISchemaFacade
 
             Map<String, Serializable> entryProperties = new LinkedHashMap<>();
             MetadataEntry entry = new MetadataEntry();
+            if (entity instanceof DataEntity)
+            {
+                if (((DataEntity) entity).getPath() != null)
+                {
+                    entry.setPath(((DataEntity) entity).getPath());
+                }
+            }
             entry.setId(id);
 
             entry.setTypes(resolvePrefix(type));
@@ -483,7 +507,8 @@ public class SchemaFacade implements ISchemaFacade
                 String key =
                         properties.containsKey(a.getKey()) ? a.getKey() : "schema:" + a.getKey();
 
-                if (!a.getKey().equals("@type") && !a.getKey().equals("@id"))
+                if (!a.getKey().equals("@type") && !a.getKey().equals("@id") && !a.getKey()
+                        .equals("schema:hasPart"))
                 {
                     IPropertyType property = properties.get(key);
                     if (property == null)
@@ -513,6 +538,7 @@ public class SchemaFacade implements ISchemaFacade
             }
             entry.setProps(entryProperties);
             entry.setReferences(references);
+            setFileReferences(entity, entry, allDataEntities);
             entries.put(id, entry);
         }
 
@@ -522,6 +548,23 @@ public class SchemaFacade implements ISchemaFacade
         this.metadataEntries = entries;
 
     }
+
+    private void setFileReferences(AbstractEntity abstractEntity, MetadataEntry metadataEntry,
+            Collection<DataEntity> fileEntities)
+    {
+        assert abstractEntity.getId().equals(metadataEntry.getId());
+
+        Map<String, DataEntity> idToFileEntity =
+                fileEntities.stream().collect(Collectors.toMap(x -> x.getId(), x -> x));
+
+        List<DataEntity> collect =
+                abstractEntity.getLinkedTo().stream().map(x -> idToFileEntity.get(x))
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toList());
+        metadataEntry.setFileEntitiesReferenced(collect);
+
+    }
+
 
     private Set<String> resolvePrefix(Set<String> types)
     {
@@ -558,6 +601,16 @@ public class SchemaFacade implements ISchemaFacade
     private List<String> parseMultiValued(AbstractEntity dataEntity, String key)
     {
         JsonNode node = dataEntity.getProperty(key);
+        if (node == null)
+        {
+            return List.of();
+        }
+
+        if (node.isTextual())
+        {
+            return List.of(node.asText());
+        }
+
         if (node instanceof ObjectNode)
         {
             return List.of(node.get("@id").textValue());

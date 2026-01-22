@@ -646,16 +646,23 @@ public class SyncJobDialog extends Dialog<SyncJob> {
     }
 
     String[] validatePersonalAccessTokenValue(String personalAccessTokenInput) {
+        String[] error;
         if(personalAccessTokenInput == null || personalAccessTokenInput.isBlank()) {
-            return new String[] { "error_tooltip.required_value" };
+            error = new String[] { "error_tooltip.required_value" };
         } else {
             if(personalAccessTokenInput.length() > MAX_TEXT_INPUT_LENGTH) {
-                searchUnit.setPersonalAccessToken(personalAccessTokenInput.trim());
-                return new String[] { "error_tooltip.too_long_text_input" };
+                error = new String[] { "error_tooltip.too_long_text_input" };
             } else {
-                return null;
+                error = null;
             }
         }
+
+        if (error == null) {
+            searchUnit.setPersonalAccessToken(personalAccessTokenInput.trim());
+        } else {
+            searchUnit.setPersonalAccessToken(null);
+        }
+        return error;
     }
 
     TextField getRemoteDirectoryTextField() {

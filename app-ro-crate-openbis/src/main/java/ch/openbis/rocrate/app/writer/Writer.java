@@ -6,13 +6,15 @@ import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
 import ch.openbis.rocrate.app.Constants;
 import ch.openbis.rocrate.app.writer.mapping.Mapper;
 import ch.openbis.rocrate.app.writer.mapping.types.MapResult;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import edu.kit.datamanager.ro_crate.RoCrate;
 import edu.kit.datamanager.ro_crate.entities.contextual.ContextualEntity;
+import edu.kit.datamanager.ro_crate.entities.data.FileEntity;
 import edu.kit.datamanager.ro_crate.writer.FolderWriter;
 import edu.kit.datamanager.ro_crate.writer.ZipWriter;
 
+import java.io.IOException;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Map;
 
 public class Writer
@@ -20,9 +22,7 @@ public class Writer
 
     private static final String TYPE = "@type";
 
-
-
-    public void write(OpenBisModel openBisModel, Path outPath) throws JsonProcessingException
+    public void write(OpenBisModel openBisModel, Path outPath) throws IOException, Exception
     {
 
         SchemaFacade schemaFacade = new SchemaFacade(
@@ -37,6 +37,7 @@ public class Writer
                 mapper.transform(openBisModel);
         addSchema(schemaFacade, rdfsRepresentation);
         addMetaData(schemaFacade, rdfsRepresentation);
+        handleFiles(schemaFacade, rdfsRepresentation);
         RoCrate roCrate = schemaFacade.getCrate();
 
         if (outPath.toString().toLowerCase().endsWith(".zip"))
@@ -50,6 +51,24 @@ public class Writer
 
             folderRoCrateWriter.save(roCrate, outPath.toString());
         }
+    }
+
+    private void handleFiles(SchemaFacade schemaFacade, MapResult mapResult)
+    {
+        FileEntity.FileEntityBuilder fileEntityBuilder = new FileEntity.FileEntityBuilder();
+
+        for (MapResult.RoCrateFile file : mapResult.getFiles())
+        {
+
+            fileEntityBuilder.addType("File");
+            fileEntityBuilder.setId(file.id());
+            fileEntityBuilder.setLocation(file.path());
+
+        }
+        schemaFacade.getCrate().addDataEntity(fileEntityBuilder.build());
+
+        fileEntityBuilder.addType("File");
+
     }
 
     private void addContextEntities(OpenBisModel openBisModel)
@@ -72,6 +91,16 @@ public class Writer
         {
             Type type = new Type();
             type.setId(Constants.GRAPH_ID_OBJECT);
+            PropertyType propertyType = new PropertyType();
+            propertyType.setId(Constants.PROPERTY_ID_FILES);
+            {
+                Type roCrateFileType = new Type();
+                roCrateFileType.setId("File");
+                propertyType.addType(roCrateFileType);
+                type.addProperty(propertyType);
+                facade.addPropertyType(propertyType);
+                propertyType.setDomainIncludes(List.of(type));
+            }
             facade.addType(type);
 
         }

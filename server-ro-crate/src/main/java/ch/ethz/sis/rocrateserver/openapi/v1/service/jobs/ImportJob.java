@@ -150,7 +150,8 @@ public final class ImportJob implements IAsyncJob
 
             // Converting ro-crate model to openBIS model
             OpenBisModel conversion =
-                    RdfToModel.convert(types, propertyTypes, entryList, "DEFAULT", "DEFAULT");
+                    RdfToModel.convert(types, propertyTypes, entryList, "DEFAULT", "DEFAULT",
+                            schemaFacade);
             ValidationResult validationResult =
                     RoCrateSchemaValidation.validate(conversion);
 

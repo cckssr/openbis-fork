@@ -9,12 +9,12 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
 import ch.openbis.rocrate.app.reader.RdfToModel;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import edu.kit.datamanager.ro_crate.RoCrate;
 import edu.kit.datamanager.ro_crate.reader.FolderReader;
 import edu.kit.datamanager.ro_crate.reader.RoCrateReader;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
@@ -36,7 +36,7 @@ public class PsiExcel2Json
 
 
     @Test
-    public void testPsiCrate() throws JsonProcessingException
+    public void testPsiCrate() throws IOException
     {
         RoCrateReader roCrateFolderReader = new RoCrateReader(new FolderReader());
         RoCrate crate = roCrateFolderReader.readCrate(INPUT);
@@ -55,7 +55,7 @@ public class PsiExcel2Json
                 openBisModel =
                 RdfToModel.convert(types, schemaFacade.getPropertyTypes(),
                         entryList.stream().toList(), "DEFAULT",
-                        "DEFAULT");
+                        "DEFAULT", schemaFacade);
         Optional<IEntityType>
                 maybePublicatioNType =
                 openBisModel.getEntityTypes().values().stream().filter(x -> x.getPermId().equals(
