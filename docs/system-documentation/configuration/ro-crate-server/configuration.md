@@ -44,7 +44,7 @@ There are the following config files
 .global.handlerAliases=myFileHandler, resolvedPropertiesHandler
 # Custom File Handler using your custom class
 myFileHandler.class=ch.ethz.sis.shared.log.standard.handlers.DailyRollingFileHandler
-myFileHandler.logFileName=log/afs_server.log
+myFileHandler.logFileName=log/ro_crate.log
 myFileHandler.maxLogFileSize=10485760
 myFileHandler.append=true
 myFileHandler.level=INFO
