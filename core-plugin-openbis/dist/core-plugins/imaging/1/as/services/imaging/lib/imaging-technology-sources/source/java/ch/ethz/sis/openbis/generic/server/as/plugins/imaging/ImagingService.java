@@ -703,6 +703,8 @@ public class ImagingService implements ICustomASServiceExecutor
             {
                 return sampleResult.get(samplePermId);
             }
+        } else {
+            operationLog.info("AFS not available, switching to DSS mode.");
         }
         DataSetPermId dataSetPermId = new DataSetPermId(permId);
         DataSetFetchOptions fetchOptions = new DataSetFetchOptions();
