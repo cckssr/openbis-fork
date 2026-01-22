@@ -619,7 +619,15 @@ public class SchemaFacade implements ISchemaFacade
         {
             List<String> accumulator = new ArrayList<>();
             arrayNode.elements().forEachRemaining(
-                    x -> accumulator.add(x.get("@id").textValue())
+                    x -> {
+                        if (x.isTextual())
+                        {
+                            accumulator.add(x.asText());
+                        } else
+                        {
+                            accumulator.add(x.get("@id").textValue());
+                        }
+                    }
             );
             return accumulator;
         }
