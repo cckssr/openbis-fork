@@ -51,7 +51,7 @@ public class MapperTest extends TestCase
         Mapper mapper = new Mapper();
         MapResult result = mapper.transform(openBisModel);
         assertEquals(3, result.getSchema().getClasses().size());
-        assertEquals(result.getSchema().getProperties().size(), 2);
+        assertEquals(result.getSchema().getProperties().size(), 3);
         assertTrue(result.getMetaDataEntries().isEmpty());
         assertTrue(result.getMappingInfo().getRdfsToObjects().isEmpty());
         assertTrue(result.getMappingInfo().getRdfsPropertiesUsedIn().isEmpty());
@@ -102,7 +102,7 @@ public class MapperTest extends TestCase
         MapResult result = mapper.transform(openBisModel);
 
         assertEquals(4, result.getSchema().getClasses().size());
-        assertEquals(2, result.getSchema().getProperties().size());
+        assertEquals(3, result.getSchema().getProperties().size());
         assertTrue(result.getMetaDataEntries().isEmpty());
 
     }

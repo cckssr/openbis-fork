@@ -1,0 +1,253 @@
+{
+  "@context": [
+    "https://w3id.org/ro/crate/1.1/context",
+    {
+      "schema": "https://schema.org",
+      "owl": "http://www.w3.org/2002/07/owl#",
+      "openBIS": "www.openbis.ch"
+    }
+  ],
+  "@graph": [
+    {
+      "name": "name",
+      "description": "description",
+      "@id": "./",
+      "@type": "Dataset",
+      "license": {
+        "@id": "licenseIdentifier"
+      },
+      "datePublished": "2024-12-04T07:53:11Z",
+      "hasPart": [
+        {
+          "@id": "openBIS:isSHOW_IN_PROJECT_OVERVIEW"
+        },
+        {
+          "@id": "e82ea7bb-5a3b-4791-b2a0-94f7deaf2d9e"
+        },
+        {
+          "@id": "ENTRY"
+        },
+        {
+          "@id": "schema:hasPart"
+        },
+        {
+          "@id": "/DEFAULT/DEFAULT/ENTRY1"
+        },
+        {
+          "@id": "/DEFAULT/DEFAULT"
+        },
+        {
+          "@id": "8ac20883-3cd6-4687-9814-b008ef92d19e"
+        },
+        {
+          "@id": "openBIS:Dataset"
+        },
+        {
+          "@id": "openBIS:Object"
+        },
+        {
+          "@id": "openBIS:hasSPACE"
+        },
+        {
+          "@id": "openBIS:hasDOCUMENT"
+        },
+        {
+          "@id": "openBIS:hasCOLLECTION"
+        },
+        {
+          "@id": "openBIS:Collection"
+        },
+        {
+          "@id": "openBIS:Project"
+        },
+        {
+          "@id": "138bf15f-3ede-41d3-aff7-140ce29157b9"
+        },
+        {
+          "@id": "openBIS:hasNAME"
+        },
+        {
+          "@id": "f65c8fc7-2ec0-439e-bdbe-5e067fdbeed5"
+        },
+        {
+          "@id": "openBIS:Space"
+        },
+        {
+          "@id": "DEFAULT"
+        },
+        {
+          "@id": "openBIS:Vocabulary"
+        }
+      ]
+    },
+    {
+      "about": {
+        "@id": "./"
+      },
+      "conformsTo": {
+        "@id": "https://w3id.org/ro/crate/1.1"
+      },
+      "@id": "ro-crate-metadata.json",
+      "@type": "CreativeWork"
+    },
+    {
+      "@type": "rdfs:Property",
+      "@id": "schema:hasPart",
+      "schema:rangeIncludes": {
+        "@id": "File"
+      },
+      "schema:domainIncludes": {
+        "@id": "openBIS:Object"
+      }
+    },
+    {
+      "@type": "rdfs:Property",
+      "rdfs:label": "Name",
+      "rdfs:comment": "Name",
+      "@id": "openBIS:hasNAME",
+      "schema:rangeIncludes": {
+        "@id": "xsd:string"
+      },
+      "schema:domainIncludes": {
+        "@id": "ENTRY"
+      }
+    },
+    {
+      "@id": "openBIS:Object",
+      "@type": "rdfs:Class"
+    },
+    {
+      "@type": "rdfs:Property",
+      "rdfs:label": "Document",
+      "rdfs:comment": "Document",
+      "@id": "openBIS:hasDOCUMENT",
+      "schema:rangeIncludes": {
+        "@id": "xsd:string"
+      },
+      "schema:domainIncludes": {
+        "@id": "ENTRY"
+      }
+    },
+    {
+      "openBIS:hasDOCUMENT": "<h2>TZOMPANTLI</h2><p>new content</p>",
+      "openBIS:hasNAME": "TZOMPANTLI",
+      "@id": "/DEFAULT/DEFAULT/ENTRY1",
+      "openBIS:hasSPACE": {
+        "@id": "DEFAULT"
+      },
+      "openBIS:hasPROJECT": {
+        "@id": "/DEFAULT/DEFAULT"
+      },
+      "@type": "ENTRY"
+    },
+    {
+      "@id": "/DEFAULT/DEFAULT",
+      "@type": "openBIS:Project"
+    },
+    {
+      "@type": "rdfs:Property",
+      "@id": "openBIS:hasCOLLECTION",
+      "schema:rangeIncludes": {
+        "@id": "openBIS:Collection"
+      },
+      "schema:domainIncludes": {
+        "@id": "ENTRY"
+      }
+    },
+    {
+      "@id": "8ac20883-3cd6-4687-9814-b008ef92d19e",
+      "@type": "File"
+    },
+    {
+      "@id": "openBIS:Space",
+      "@type": "rdfs:Class"
+    },
+    {
+      "@id": "openBIS:Project",
+      "@type": "rdfs:Class"
+    },
+    {
+      "@id": "138bf15f-3ede-41d3-aff7-140ce29157b9",
+      "@type": "owl:restriction",
+      "owl:onProperty": {
+        "@id": "openBIS:hasNAME"
+      },
+      "owl:minCardinality": 0,
+      "owl:maxCardinality": 1
+    },
+    {
+      "@type": "rdfs:Property",
+      "rdfs:label": "Show in project overview",
+      "rdfs:comment": "Show in project overview page",
+      "@id": "openBIS:isSHOW_IN_PROJECT_OVERVIEW",
+      "schema:rangeIncludes": {
+        "@id": "xsd:string"
+      },
+      "schema:domainIncludes": {
+        "@id": "ENTRY"
+      }
+    },
+    {
+      "@type": "rdfs:Property",
+      "@id": "openBIS:hasSPACE",
+      "schema:rangeIncludes": {
+        "@id": "openBIS:Space"
+      },
+      "schema:domainIncludes": {
+        "@id": "ENTRY"
+      }
+    },
+    {
+      "@id": "ENTRY",
+      "@type": "rdfs:Class",
+      "owl:restriction": [
+        {
+          "@id": "f65c8fc7-2ec0-439e-bdbe-5e067fdbeed5"
+        },
+        {
+          "@id": "e82ea7bb-5a3b-4791-b2a0-94f7deaf2d9e"
+        },
+        {
+          "@id": "138bf15f-3ede-41d3-aff7-140ce29157b9"
+        }
+      ],
+      "rdfs:subClassOf": {
+        "@id": "openBIS:Object"
+      }
+    },
+    {
+      "@id": "e82ea7bb-5a3b-4791-b2a0-94f7deaf2d9e",
+      "@type": "owl:restriction",
+      "owl:onProperty": {
+        "@id": "openBIS:hasDOCUMENT"
+      },
+      "owl:minCardinality": 0,
+      "owl:maxCardinality": 1
+    },
+    {
+      "@id": "f65c8fc7-2ec0-439e-bdbe-5e067fdbeed5",
+      "@type": "owl:restriction",
+      "owl:onProperty": {
+        "@id": "openBIS:isSHOW_IN_PROJECT_OVERVIEW"
+      },
+      "owl:minCardinality": 0,
+      "owl:maxCardinality": 1
+    },
+    {
+      "@id": "DEFAULT",
+      "@type": "openBIS:Space"
+    },
+    {
+      "@id": "openBIS:Vocabulary",
+      "@type": "rdfs:Class"
+    },
+    {
+      "@id": "openBIS:Dataset",
+      "@type": "rdfs:Class"
+    },
+    {
+      "@id": "openBIS:Collection",
+      "@type": "rdfs:Class"
+    }
+  ]
+}

@@ -21,6 +21,7 @@ import org.junit.Test;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.*;
 
 import static org.junit.Assert.*;
@@ -108,9 +109,11 @@ public class JSON2ExcelTest {
             assertEquals("https://www.science.org/doi/10.1126/science.abe8770",
                     sample.getProperties().get("PUBLICATION.URL").toString());
             assertEquals("/PUBLICATIONS/PUBLIC_REPOSITORIES/PUBCREA27",
-                    sample.getProperties().get("PUBLICATION.CREATOR").toString());
+                    extractSingleValue(
+                            sample.getProperties().get("PUBLICATION.CREATOR")).toString());
             assertEquals("/PUBLICATIONS/PUBLIC_REPOSITORIES/PUBPUB26",
-                    sample.getProperties().get("PUBLICATION.PUBLISHER").toString());
+                    extractSingleValue(
+                            sample.getProperties().get("PUBLICATION.PUBLISHER")).toString());
 
             Sample creatorSample = (Sample) openBisModel.getEntities()
                     .get(new SampleIdentifier("/PUBLICATIONS/PUBLIC_REPOSITORIES/PUBCREA27"));
@@ -257,6 +260,17 @@ public class JSON2ExcelTest {
                 throw new IllegalArgumentException(
                         "Unsupported cell type: " + cell1.getCellTypeEnum());
         }
+    }
+
+    private Serializable extractSingleValue(Serializable a)
+    {
+        if (a instanceof Serializable[])
+        {
+            Serializable[] stuffs = (Serializable[]) a;
+            return stuffs[0];
+        }
+        return a;
+
     }
 
 }

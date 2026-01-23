@@ -32,15 +32,16 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
 import ch.openbis.rocrate.app.Constants;
 import ch.openbis.rocrate.app.reader.helper.DataTypeMatcher;
+import ch.openbis.rocrate.app.reader.helper.OpenBisStructureHelper;
 import ch.openbis.rocrate.app.reader.helper.PropertyTypeSpecialHandling;
 import ch.openbis.rocrate.app.reader.helper.SampleCodeHelper;
+import jakarta.annotation.Nullable;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
@@ -138,8 +139,7 @@ public class RdfToModel
                 typeToInheritanceChain,
                 roCrateIdsToObjects, spaces, projects);
 
-        resolveSamples(samplesWithSpaceAndProjectCodes, spaces, projects, idsToCollections,
-                metadata, externalIdentifierToSample);
+        resolveSamples(samplesWithSpaceAndProjectCodes, externalIdentifierToSample);
         Map<String, String> collect = externalIdentifierToSample.entrySet().stream()
                 .collect(Collectors.toMap(x -> x.getKey(), x -> x.getValue().getCode()));
 
@@ -489,9 +489,7 @@ public class RdfToModel
                 sample.setProperties(properties);
                 properties.get("SPACE");
                 ReferencesToResolve referencesToResolve =
-                        buildEntryWithSpaceAndProjectToResolve(entry.getReferences(),
-                                fallbackSpaceCode,
-                                fallbackProjectCode, sample.getType().getCode() + "_COLLECTION");
+                        buildEntryWithSpaceAndProjectToResolve(entry);
                 samplesWithSpaceAndProjectCodes.add(
                         new ImmutablePair<>(sample, referencesToResolve));
                 metadata.put(objectIdentifier, entity);
@@ -640,39 +638,28 @@ public class RdfToModel
     {
         for (Pair<Sample, ReferencesToResolve> sampleToResolve : samplesWithSpaceAndProjectCodes)
         {
-            Space space = spaces.get(new SpacePermId(sampleToResolve.getRight().getSpaceCode()));
-            Project project = projects.get(
-                    new ProjectIdentifier(space.getCode(),
-                            sampleToResolve.getRight().getProjectCode()));
-            if (space == null)
-            {
-                System.out.println("Cannot find space, using default stuff");
 
-                continue;
-            }
-            if (project == null)
-            {
-                System.out.println("Cannot find project, using default stuff");
-                Space space1 = spaces.get(new SpacePermId(fallbackSpaceCode));
-                Project project1 = projects.get(
-                        new ProjectIdentifier("/" + fallbackSpaceCode + "/" + fallbacbProjectCode));
-                sampleToResolve.getLeft().setProject(project1);
-                sampleToResolve.getLeft().setSpace(space1);
+            OpenBisStructureHelper.Structure structure =
+                    OpenBisStructureHelper.findStructure(spaces, projects, idsToCollections,
+                            sampleToResolve, fallbacbProjectCode, fallbackSpaceCode);
 
-                continue;
+            if (structure.space() != null)
+            {
+                sampleToResolve.getLeft().setSpace(structure.space());
             }
 
-            sampleToResolve.getLeft().setSpace(space);
-            sampleToResolve.getLeft().setProject(project);
-            sampleToResolve.getLeft().setExperiment(idsToCollections.get(new ExperimentIdentifier(
-                    "/" + space.getCode() + "/" + project.getCode() + "/" + sampleToResolve.getRight().collectionCode)));
-            ObjectIdentifier objectIdentifier = new SampleIdentifier(
-                    "/" + sampleToResolve.getLeft().getSpace()
-                            .getCode() + "/" + sampleToResolve.getLeft().getProject()
-                            .getCode() + "/" + sampleToResolve.getLeft().getCode());
-            sampleToResolve.getLeft()
-                    .setIdentifier(new SampleIdentifier(objectIdentifier.toString()));
-            metadata.put(objectIdentifier, sampleToResolve.getLeft());
+            if (structure.project() != null)
+            {
+                sampleToResolve.getLeft().setProject(structure.project());
+
+            }
+            if (structure.experiment() != null)
+            {
+                sampleToResolve.getLeft().setExperiment(structure.experiment());
+
+            }
+            sampleToResolve.getLeft().setIdentifier(structure.sampleIdentifier());
+
 
 
         }
@@ -680,9 +667,6 @@ public class RdfToModel
 
     private static void resolveSamples(
             List<Pair<Sample, ReferencesToResolve>> samplesWithSpaceAndProjectCodes,
-            Map<SpacePermId, Space> spaces, Map<ProjectIdentifier, Project> projects,
-            Map<ExperimentIdentifier, Experiment> idsToCollections,
-            Map<ObjectIdentifier, AbstractEntityPropertyHolder> metadata,
             Map<String, Sample> externalIdentifierToSample)
     {
         for (Pair<Sample, ReferencesToResolve> sampleToResolve : samplesWithSpaceAndProjectCodes)
@@ -694,6 +678,7 @@ public class RdfToModel
             {
                 String[] array = propertyToVals.getValue().stream()
                         .map(x -> externalIdentifierToSample.get(x))
+                        .filter(Objects::nonNull)
                         .map(x -> x.getIdentifier().toString()).toArray(String[]::new);
 
                 Map<String, Serializable> properties = sample.getProperties();
@@ -790,33 +775,51 @@ public class RdfToModel
     }
 
     private static ReferencesToResolve buildEntryWithSpaceAndProjectToResolve(
-            Map<String, List<String>> properties, String spaceCode, String projectCode,
-            String defaultExperimentCode)
+            IMetadataEntry entry)
     {
 
+        var properties = entry.getReferences();
+        var parts = entry.getId().split("/");
+
+        String identifierSpaceCode = parts[0];
+
+
+
         String mySpace = Optional.ofNullable(properties.get(PROPERTY_SPACE)).map(x -> x.get(0))
-                .orElse(spaceCode);
+                .orElse(null);
         String myProject =
                 Optional.ofNullable(properties.get(PROPERTY_PROJECT)).map(x -> x.get(0))
-                        .orElse(spaceCode);
+                        .orElse(null);
+
+
         String myExperiment =
                 Optional.ofNullable(properties.get(Constants.PROPERTY_COLLECTION)).map(
                                 Object::toString)
                         .map(x -> x.split("/"))
-                        .filter(x -> x.length >= 5)
+                        .filter(x -> x.length >= 4)
                         .map(x -> x[3])
                         .map(x -> x.replaceAll("]$", ""))
-                        .orElse(defaultExperimentCode);
+                        .orElse(null);
 
         myProject =
-                Optional.ofNullable(properties.get(Constants.PROPERTY_COLLECTION)).map(
+                Optional.ofNullable(properties.get(PROPERTY_PROJECT)).map(
                                 Object::toString)
                         .map(x -> x.split("/"))
                         .filter(x -> x.length >= 3)
                         .map(x -> x[2])
                         .map(x -> x.replaceAll("]$", ""))
                         .orElse(myProject);
+        if (myProject == null)
+        {
+            String s = entry.getValues().entrySet().stream()
+                    .filter(x -> x.getKey().equals(PROPERTY_PROJECT))
+                    .findFirst()
+                    .map(x -> x.getValue())
+                    .map(Object::toString)
+                    .orElse(null);
+            myProject = s;
 
+        }
         Set<String> filterSet = Set.of(PROPERTY_SPACE, PROPERTY_PROJECT, PROPERTY_COLLECTION);
         Map<String, List<String>> samplesToResolve =
                 properties.entrySet().stream().filter(x -> !filterSet.contains(x.getKey()))
@@ -1076,7 +1079,7 @@ public class RdfToModel
         }
     }
 
-    private static class ReferencesToResolve
+    public static class ReferencesToResolve
     {
         String spaceCode;
 
@@ -1086,7 +1089,8 @@ public class RdfToModel
 
         Map<String, List<String>> sampleIdentifiers;
 
-        public ReferencesToResolve(String spaceCode, String projectCode, String collectionCode,
+        public ReferencesToResolve(@Nullable String spaceCode, @Nullable String projectCode,
+                @Nullable String collectionCode,
                 Map<String, List<String>> sampleIdentifiers)
         {
             this.spaceCode = spaceCode;
@@ -1105,6 +1109,10 @@ public class RdfToModel
             return projectCode;
         }
 
+        public String getCollectionCode()
+        {
+            return collectionCode;
+        }
     }
 
     private static String getIntersectionTypeIdentifier(Set<String> types)
