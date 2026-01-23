@@ -1,12 +1,10 @@
 import React from 'react'
-import { Divider, Grid2, TextField, Autocomplete, Checkbox, Typography, Tab } from '@mui/material';
+import { Divider, Grid2, Typography, Tab } from '@mui/material';
 import { isObjectEmpty, createInitValues } from '@src/js/components/common/imaging/utils.js';
 import Dropdown from '@src/js/components/common/imaging/components/common/Dropdown.jsx';
 import constants from '@src/js/components/common/imaging/constants.js';
 import CustomSwitch from '@src/js/components/common/imaging/components/common/CustomSwitch.jsx';
 import RefreshIcon from '@mui/icons-material/Refresh';
-import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
-import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import AddToQueueIcon from '@mui/icons-material/AddToQueue';
 
 import messages from '@src/js/common/messages.js'
@@ -18,6 +16,7 @@ import { TabContext, TabList, TabPanel } from '@mui/lab';
 import TuneIcon from '@mui/icons-material/Tune';
 import PhotoFilterIcon from '@mui/icons-material/PhotoFilter';
 import FilterSelector from '@src/js/components/common/imaging/components/viewer/FilterSelector.jsx';
+import TagsAutocomplete from '@src/js/components/common/imaging/components/viewer/TagsAutocomplete.jsx';
 import { makeStyles } from '@mui/styles';
 
 const useStyles = makeStyles(theme => ({
@@ -34,8 +33,6 @@ const useStyles = makeStyles(theme => ({
 const MainPreviewInputControls = ({ activePreview, configInputs, configFilters, configResolutions }) => {
   const classes = useStyles();
 
-  const [tags, setTags] = React.useState([])
-  const [inputValue, setInputValue] = React.useState('');
   const [spectraLocator, setSpectraLocator] = React.useState(constants.NONE);
   const [tab, setTab] = React.useState('1');
 
@@ -50,25 +47,11 @@ const MainPreviewInputControls = ({ activePreview, configInputs, configFilters, 
       handleUpdate();
   }, []);
 
-  React.useEffect(() => {
-    if (activePreview && activePreview.tags != null) {
-      var trasformedTags = []
-      for (const activePreviewTag of activePreview.tags) {
-        const matchTag = imagingTags.find(imagingTag => imagingTag.value === activePreviewTag);
-        trasformedTags.push(matchTag);
-      }
-      setTags(trasformedTags);
-      setInputValue(trasformedTags.join(', '));
-    }
-  }, [activePreview]);
-
   const handleChange = (event, newValue) => {
     setTab(newValue);
   };
 
-  const handleTagsChange = (event, newTags) => {
-    setTags(newTags);
-    const tagsArray = newTags.map(tag => tag.value);
+  const handleTagsChange = (event, tagsArray) => {
     handleTagImage(false, tagsArray);
   }
 
@@ -117,33 +100,10 @@ const MainPreviewInputControls = ({ activePreview, configInputs, configFilters, 
         key={'InputsPanel-resolutions'} />
 
       <Grid2 sx={{ alignItems: 'center', mb: 1, px: 1 }} size={{ xs: 12, sm: 12 }}>
-        <Autocomplete multiple
-          id='tags-autocomplete'
-          options={imagingTags}
-          disableCloseOnSelect
-          getOptionLabel={(option) => option.label}
-          inputValue={inputValue}
-          value={tags}
-          onInputChange={(event, newInputValue) => {
-            setInputValue(newInputValue);
-          }}
-          renderInput={(params) => (
-            <TextField variant='standard' label='Preview Tags' {...params} placeholder='Search Tag' />
-          )}
-          renderOption={(props, option, { selected }) => {
-            const { key, ...optionProps } = props;
-            return (
-              <li key={key} {...optionProps}>
-                <Checkbox
-                  icon={<CheckBoxOutlineBlankIcon fontSize='small' />}
-                  checkedIcon={<CheckBoxIcon fontSize='small' />}
-                  style={{ marginRight: 8 }}
-                  checked={selected}
-                />
-                {option.label}
-              </li>
-            );
-          }}
+        <TagsAutocomplete
+          activePreviewTags={activePreview?.tags}
+          imagingTags={imagingTags}
+          label='Preview Tags'
           onChange={handleTagsChange}
         />
       </Grid2>

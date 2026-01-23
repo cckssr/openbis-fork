@@ -1,13 +1,12 @@
 import React from 'react'
-import { Typography, Box, TextField, Autocomplete, Checkbox } from '@mui/material';
-import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
-import CheckBoxIcon from '@mui/icons-material/CheckBox';
+import { Typography, Box } from '@mui/material';
 import { isObjectEmpty } from '@src/js/components/common/imaging/utils.js';
 import CollapsableSection from '@src/js/components/common/imaging/components/viewer/CollapsableSection.jsx';
 import EditableMetadataField from "@src/js/components/common/imaging/components/gallery/EditableMetadataField.jsx";
 import { useImagingDataContext } from '@src/js/components/common/imaging/components/viewer/ImagingDataContext.jsx';
+import TagsAutocomplete from '@src/js/components/common/imaging/components/viewer/TagsAutocomplete.jsx';
 
-const MetadataSection = ({ activePreview, activeImage, imagingTags, onEditComment }) => {
+const MetadataSection = ({ activePreview, activeImage, onEditComment }) => {
 
 	const currPreviewMetadata = activePreview.metadata;
 	const currPreviewTags = activePreview.tags;
@@ -15,29 +14,8 @@ const MetadataSection = ({ activePreview, activeImage, imagingTags, onEditCommen
 	const currImageMetadata = activeImage.metadata;
 	const configMetadata = activeImage.config.metadata;
 
-	const { handleTagImage } = useImagingDataContext();
-
-	// State for tags autocomplete
-	const [tags, setTags] = React.useState([]);
-	const [inputValue, setInputValue] = React.useState('');
-
-	// Update tags when preview tags change
-	React.useEffect(() => {
-		if (currPreviewTags && currPreviewTags.length > 0) {
-			const transformedTags = [];
-			for (const activePreviewTag of currPreviewTags) {
-				const matchTag = imagingTags.find(imagingTag => imagingTag.value === activePreviewTag);
-				if (matchTag) {
-					transformedTags.push(matchTag);
-				}
-			}
-			setTags(transformedTags);
-			setInputValue(transformedTags.map(t => t.label).join(', '));
-		} else {
-			setTags([]);
-			setInputValue('');
-		}
-	}, [currPreviewTags, imagingTags]);
+	const { handleTagImage, state} = useImagingDataContext();
+	const { imagingTags } = state;
 
 	const renderParameters = () => {
 		if (!currImageMetadata || isObjectEmpty(currImageMetadata)) {
@@ -59,46 +37,19 @@ const MetadataSection = ({ activePreview, activeImage, imagingTags, onEditCommen
 		);
 	};
 
-	const handleTagsChange = (event, newTags) => {
-		setTags(newTags);
-		const tagsArray = newTags.map(tag => tag.value);
+	const handleTagsChange = (event, tagsArray) => {
 		handleTagImage(false, tagsArray);
 	};
 
 	const renderTags = () => {
-
 		return (
 			<Box sx={{ py: 1 }}>
-				<Autocomplete
-					multiple
-					id='tags-autocomplete'
-					options={imagingTags || []}
-					disableCloseOnSelect
-					getOptionLabel={(option) => option.label || option}
-					inputValue={inputValue}
-					value={tags}
-					onInputChange={(event, newInputValue) => {
-						setInputValue(newInputValue);
-					}}
-					renderInput={(params) => (
-						<TextField variant='standard' label='Tags' {...params} placeholder='Search Tag' />
-					)}
-					renderOption={(props, option, { selected }) => {
-						const { key, ...optionProps } = props;
-						return (
-							<li key={key} {...optionProps}>
-								<Checkbox
-									icon={<CheckBoxOutlineBlankIcon fontSize='small' />}
-									checkedIcon={<CheckBoxIcon fontSize='small' />}
-									style={{ marginRight: 8 }}
-									checked={selected}
-								/>
-								{option.label || option}
-							</li>
-						);
-					}}
-					onChange={handleTagsChange}
+				<TagsAutocomplete
+					activePreviewTags={currPreviewTags}
+					imagingTags={imagingTags}
+					label='Preview Tags'
 					size='small'
+					onChange={handleTagsChange}
 				/>
 			</Box>
 		);
