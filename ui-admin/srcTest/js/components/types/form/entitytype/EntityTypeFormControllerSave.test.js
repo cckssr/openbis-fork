@@ -98,12 +98,6 @@ async function testSaveUpdatePropertyAssignment() {
     value: true
   })
 
-  common.controller.handleChange(EntityTypeFormSelectionType.PROPERTY, {
-    id: 'property-0',
-    field: 'label',
-    value: 'Updated label'
-  })
-
   await common.controller.handleSave()
 
   expectExecuteOperations([
@@ -133,6 +127,7 @@ async function testSaveUpdatePropertyType() {
   await common.controller.handleSave()
 
   expectExecuteOperations([
+    updatePropertyTypeOperation(TEST_PROPERTY_TYPE.getCode(), 'Updated label'),
     setPropertyAssignmentOperation(
       SAMPLE_TYPE_WITH_TEST_PROPERTY.getCode(),
       TEST_PROPERTY_TYPE.getCode(),
