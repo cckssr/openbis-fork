@@ -237,6 +237,13 @@ public class SchemaFacade implements ISchemaFacade
             } else if (o instanceof String)
             {
                 builder.addProperty(s, o.toString());
+            } else if (o instanceof String[])
+            {
+                for (String a : (String[]) o)
+                {
+                    builder.addProperty(s, a);
+                }
+
             }
         });
         DataEntity dataEntity = builder.build();
