@@ -92,20 +92,16 @@ export const EntityTypeSearchDropdown: React.FC<EntityTypeSearchDropdownProps> =
     setLoading(false);
   }, [actionName, searchCollectionTypes, searchObjectTypes, searchDatasetTypes]);
 
-  // Load initial 10 items on mount
   useEffect(() => {
-    searchEntityTypes('', 10);
+    searchEntityTypes('', undefined);
   }, [searchEntityTypes]);
 
-  // Debounced search - remove limit when user types 2+ characters
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       if (inputValue.length >= 2) {
-        // Remove limit when searching with 2+ characters
         searchEntityTypes(inputValue);
       } else if (inputValue.length === 0) {
-        // Reset to initial 10 items when input is cleared
-        searchEntityTypes('', 10);
+        searchEntityTypes('', undefined);
       }
     }, 300);
 
