@@ -21,6 +21,7 @@ import java.io.StringWriter;
 import java.util.List;
 
 import ch.ethz.sis.afsserver.server.Server;
+import ch.ethz.sis.shared.exception.ThrowableReason;
 import ch.ethz.sis.shared.startup.Configuration;
 
 public class Main
@@ -40,6 +41,10 @@ public class Main
             Thread.currentThread().join();
         } catch (Exception e)
         {
+            if (e.getCause() instanceof ThrowableReason)
+            {
+                System.out.println(((ThrowableReason) e.getCause()).getReason());
+            }
             StringWriter sw = new StringWriter();
             PrintWriter pw = new PrintWriter(sw);
             e.printStackTrace(pw);

@@ -7,7 +7,7 @@ Server Configuration
 |-------|-----------------------------------------------------------------------------------------------------------|
 | `bin` | Contains one file, `afs_server.sh` that can be used for start, stop, restart or get status of the server. |
 | `lib` | Compiled server libraries                                                                                 |
-| `log` | Contains log, by default one log file `afs_server.log`.                                                   |
+| `log` | Contains log, by default one log file `afs.log`.                                                   |
 | `etc` | config files                                                                                              |
 
 ### etc config files
@@ -51,7 +51,7 @@ For 10 concurrent users doing uploads using the defaults that means: 15728640 * 
 
 # Custom File Handler using your custom class
 myFileHandler.class = ch.ethz.sis.shared.log.standard.handlers.DailyRollingFileHandler
-myFileHandler.logFileName = log/afs_server.log
+myFileHandler.logFileName = log/afs.log
 myFileHandler.maxLogFileSize = 10485760
 myFileHandler.append = true
 myFileHandler.level = INFO

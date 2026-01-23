@@ -37,10 +37,11 @@ public class AtomicFileSystemServerParameterUtil
             {
                 storageIncomingShareId = shares.get(0);
             }
-        } else if (!shares.contains(storageIncomingShareId))
+        } else if (!shares.isEmpty() && !shares.contains(storageIncomingShareId))
         {
-            throw new RuntimeException("Share '" + storageIncomingShareId + "' defined in '" + AtomicFileSystemServerParameter.storageIncomingShareId
-                    + "' configuration parameter does not exist in the storage root '" + storageRoot + "'.");
+            throw new RuntimeException(
+                    "Share '" + storageIncomingShareId + "' defined in '" + AtomicFileSystemServerParameter.storageIncomingShareId
+                            + "' configuration parameter does not exist in the storage root '" + storageRoot + "'.");
         }
 
         return storageIncomingShareId;

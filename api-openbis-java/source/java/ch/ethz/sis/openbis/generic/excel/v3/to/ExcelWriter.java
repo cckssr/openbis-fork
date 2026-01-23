@@ -82,7 +82,8 @@ public class ExcelWriter
     //TODO Remove projectIdentifier from write method
     private byte[] write(OpenBisModel openBisModel, Format format, boolean writeSchema)
     {
-        if (!openBisModel.getFiles().isEmpty() && format == Format.EXCEL)
+        if (openBisModel.getFiles().values().stream()
+                .anyMatch(x -> !x.isEmpty()) && format == Format.EXCEL)
         {
             throw new UserFailureException(
                     "Attempting to write data to Excel sheet, this requires Zip format");

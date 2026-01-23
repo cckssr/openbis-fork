@@ -16,4 +16,4 @@ if [ ${BASE#/} == ${BASE} ]; then
     BASE="`pwd`/${BASE}"
 fi
 
-less $BASE/../servers/afs-server/log/afs_server.log
+less $BASE/../servers/afs-server/log/afs.log
