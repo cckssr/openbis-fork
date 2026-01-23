@@ -242,10 +242,13 @@ public class Mapper
                 String experimentIdentifier = Optional.ofNullable(sample.getExperiment())
                         .map(x -> x.getIdentifier())
                         .map(x -> x.getIdentifier())
-                        .orElse(sample.getType().getCode() + "_Collection");
+                        .orElse(null);
 
-                references.put(Constants.PROPERTY_COLLECTION,
-                        List.of(experimentIdentifier));
+                if (experimentIdentifier != null)
+                {
+                    references.put(Constants.PROPERTY_COLLECTION,
+                            List.of(experimentIdentifier));
+                }
 
                 Set<String> referenceTypeNames = openBisModel.getEntityTypes().values().stream()
                         .map(x -> x.getPropertyAssignments())
@@ -351,6 +354,7 @@ public class Mapper
             propertyType.setId(Constants.PROPERTY_PROJECT);
             propertyType.setDomainIncludes(typesWithProject);
             propertyType.addType(getProjectType());
+            properties.add(propertyType);
         }
         {
             PropertyType propertyType = new PropertyType();

@@ -1,0 +1,263 @@
+{
+  "@context": [
+    "https://w3id.org/ro/crate/1.1/context",
+    {
+      "schema": "https://schema.org",
+      "owl": "http://www.w3.org/2002/07/owl#",
+      "openBIS": "www.openbis.ch"
+    }
+  ],
+  "@graph": [
+    {
+      "name": "name",
+      "description": "description",
+      "@id": "./",
+      "@type": "Dataset",
+      "license": {
+        "@id": "licenseIdentifier"
+      },
+      "datePublished": "2024-12-04T07:53:11Z",
+      "hasPart": [
+        {
+          "@id": "63c31dec-9f15-4195-83d1-cf58d06823c1"
+        },
+        {
+          "@id": "openBIS:isSHOW_IN_PROJECT_OVERVIEW"
+        },
+        {
+          "@id": "ENTRY"
+        },
+        {
+          "@id": "schema:hasPart"
+        },
+        {
+          "@id": "openBIS:Dataset"
+        },
+        {
+          "@id": "dce394db-b900-4621-8a23-f00b7744d933"
+        },
+        {
+          "@id": "openBIS:Object"
+        },
+        {
+          "@id": "openBIS:hasSPACE"
+        },
+        {
+          "@id": "892b811e-d47d-4c13-83b4-b979bbe73258"
+        },
+        {
+          "@id": "openBIS:hasDOCUMENT"
+        },
+        {
+          "@id": "openBIS:hasCOLLECTION"
+        },
+        {
+          "@id": "openBIS:Collection"
+        },
+        {
+          "@id": "openBIS:Project"
+        },
+        {
+          "@id": "openBIS:hasNAME"
+        },
+        {
+          "@id": "MATERIALS/ENTRY1"
+        },
+        {
+          "@id": "MATERIALS"
+        },
+        {
+          "@id": "MATERIALS/ENTRY1/Mosaic_doves_Musei_Capitolini_MC402.jpg"
+        },
+        {
+          "@id": "openBIS:Space"
+        },
+        {
+          "@id": "openBIS:Vocabulary"
+        },
+        ,
+        {
+          "@id": "openBIS:hasPROJECT"
+        }
+      ]
+    },
+    {
+      "about": {
+        "@id": "./"
+      },
+      "conformsTo": {
+        "@id": "https://w3id.org/ro/crate/1.1"
+      },
+      "@id": "ro-crate-metadata.json",
+      "@type": "CreativeWork"
+    },
+    {
+      "@id": "openBIS:Space",
+      "@type": "rdfs:Class"
+    },
+    {
+      "@id": "ENTRY",
+      "@type": "rdfs:Class",
+      "owl:restriction": [
+        {
+          "@id": "dce394db-b900-4621-8a23-f00b7744d933"
+        },
+        {
+          "@id": "892b811e-d47d-4c13-83b4-b979bbe73258"
+        },
+        {
+          "@id": "63c31dec-9f15-4195-83d1-cf58d06823c1"
+        }
+      ],
+      "rdfs:subClassOf": {
+        "@id": "openBIS:Object"
+      }
+    },
+    {
+      "@type": "rdfs:Property",
+      "rdfs:label": "Name",
+      "rdfs:comment": "Name",
+      "@id": "openBIS:hasNAME",
+      "schema:rangeIncludes": {
+        "@id": "xsd:string"
+      },
+      "schema:domainIncludes": {
+        "@id": "ENTRY"
+      }
+    },
+    {
+      "@type": "rdfs:Property",
+      "@id": "openBIS:hasCOLLECTION",
+      "schema:rangeIncludes": {
+        "@id": "openBIS:Collection"
+      },
+      "schema:domainIncludes": {
+        "@id": "ENTRY"
+      }
+    },
+    {
+      "openBIS:hasDOCUMENT": "<h2>New Title</h2><p>new contentASDasdasdasdasdasd</p>",
+      "openBIS:hasNAME": "New Title",
+      "@id": "MATERIALS/ENTRY1",
+      "openBIS:hasSPACE": {
+        "@id": "MATERIALS"
+      },
+      "openBIS:hasPROJECT": {
+        "@id": "/DEFAULT/DEFAULT"
+      },
+      "openBIS:hasCOLLECTION": {
+        "@id": "ENTRY_Collection"
+      },
+      "schema:hasPart": {
+        "@id": "MATERIALS/ENTRY1/Mosaic_doves_Musei_Capitolini_MC402.jpg"
+      },
+      "@type": "ENTRY"
+    },
+    {
+      "@id": "MATERIALS",
+      "@type": "openBIS:Space"
+    },
+    {
+      "@type": "rdfs:Property",
+      "@id": "openBIS:hasSPACE",
+      "schema:rangeIncludes": {
+        "@id": "openBIS:Space"
+      },
+      "schema:domainIncludes": {
+        "@id": "ENTRY"
+      }
+    },
+    {
+      "@type": "rdfs:Property",
+      "@id": "schema:hasPart",
+      "schema:rangeIncludes": {
+        "@id": "File"
+      },
+      "schema:domainIncludes": {
+        "@id": "openBIS:Object"
+      }
+    },
+    {
+      "@id": "MATERIALS/ENTRY1/Mosaic_doves_Musei_Capitolini_MC402.jpg",
+      "@type": "File"
+    },
+    {
+      "@id": "dce394db-b900-4621-8a23-f00b7744d933",
+      "@type": "owl:restriction",
+      "owl:onProperty": {
+        "@id": "openBIS:isSHOW_IN_PROJECT_OVERVIEW"
+      },
+      "owl:minCardinality": 0,
+      "owl:maxCardinality": 1
+    },
+    {
+      "@id": "openBIS:Vocabulary",
+      "@type": "rdfs:Class"
+    },
+    {
+      "@id": "63c31dec-9f15-4195-83d1-cf58d06823c1",
+      "@type": "owl:restriction",
+      "owl:onProperty": {
+        "@id": "openBIS:hasNAME"
+      },
+      "owl:minCardinality": 0,
+      "owl:maxCardinality": 1
+    },
+    {
+      "@id": "openBIS:Collection",
+      "@type": "rdfs:Class"
+    },
+    {
+      "@id": "openBIS:Dataset",
+      "@type": "rdfs:Class"
+    },
+    {
+      "@type": "rdfs:Property",
+      "rdfs:label": "Show in project overview",
+      "rdfs:comment": "Show in project overview page",
+      "@id": "openBIS:isSHOW_IN_PROJECT_OVERVIEW",
+      "schema:rangeIncludes": {
+        "@id": "xsd:string"
+      },
+      "schema:domainIncludes": {
+        "@id": "ENTRY"
+      }
+    },
+    {
+      "@id": "openBIS:Project",
+      "@type": "rdfs:Class"
+    },
+    {
+      "@id": "openBIS:Object",
+      "@type": "rdfs:Class"
+    },
+    {
+      "@id": "892b811e-d47d-4c13-83b4-b979bbe73258",
+      "@type": "owl:restriction",
+      "owl:onProperty": {
+        "@id": "openBIS:hasDOCUMENT"
+      },
+      "owl:minCardinality": 0,
+      "owl:maxCardinality": 1
+    },
+    {
+      "@type": "rdfs:Property",
+      "rdfs:label": "Document",
+      "rdfs:comment": "Document",
+      "@id": "openBIS:hasDOCUMENT",
+      "schema:rangeIncludes": {
+        "@id": "xsd:string"
+      },
+      "schema:domainIncludes": {
+        "@id": "ENTRY"
+      }
+    },
+    {
+      "@type": "rdfs:Property",
+      "@id": "openBIS:hasPROJECT",
+      "schema:rangeIncludes": {
+        "@id": "openBIS:Project"
+      }
+    }
+  ]
+}

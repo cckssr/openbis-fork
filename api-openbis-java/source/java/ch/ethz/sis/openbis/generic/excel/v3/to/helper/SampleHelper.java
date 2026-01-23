@@ -11,10 +11,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -86,18 +83,21 @@ public class SampleHelper
             OpenBisModel openBisModel, List<String> allColumnList)
     {
 
-        String projectId = sampleObject.getProject().getIdentifier().getIdentifier();
+        String projectId =
+                Optional.ofNullable(sampleObject.getProject()).map(x -> x.getIdentifier())
+                        .map(x -> x.getIdentifier()).orElse(null);
         Row propertyRowValues = sheet.createRow(rowNum);
         //propertyRowValues.createCell(0).setCellValue(""); // $
         propertyRowValues.createCell(1)
-                .setCellValue(sampleObject.getProject().getIdentifier()
-                        .getIdentifier() + "/" + sampleObject.getCode()); // Identifier
+                .setCellValue(sampleObject.getIdentifier().getIdentifier()); // Identifier
         propertyRowValues.createCell(2).setCellValue(sampleObject.getCode()); // Code
-        propertyRowValues.createCell(3).setCellValue(sampleObject.getSpace().getCode()); // Space
+        propertyRowValues.createCell(3).setCellValue(
+                Optional.ofNullable(sampleObject.getSpace()).map(x -> x.getCode())
+                        .orElse(null)); // Space
         propertyRowValues.createCell(4).setCellValue(projectId); // Project
         propertyRowValues.createCell(5).setCellValue(
-                projectId + "/" + sampleObject.getType().getCode()
-                        .toUpperCase(Locale.ROOT) + "_COLLECTION"); // Experiment
+                Optional.ofNullable(sampleObject.getExperiment()).map(x -> x.getIdentifier())
+                        .map(x -> x.toString()).orElse(null)); // Experiment
         //propertyRowValues.createCell(6).setCellValue(""); // Parents
         //propertyRowValues.createCell(7).setCellValue(""); // Children
 

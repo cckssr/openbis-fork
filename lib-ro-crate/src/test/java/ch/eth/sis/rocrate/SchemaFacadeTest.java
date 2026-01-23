@@ -57,7 +57,7 @@ public class SchemaFacadeTest extends TestCase
         schemaFacade.addType(rdfsClass);
 
         schemaFacade.addEntry(metadataEntry);
-        List<IMetadataEntry> entries = schemaFacade.getAllEntries();
+        List<IMetadataEntry> entries = schemaFacade.getEntries(type);
         assertEquals(1, entries.size());
         IMetadataEntry metadataentry1 = entries.get(0);
         assertTrue(metadataentry1.getValues().get(BOOL) instanceof Boolean);

@@ -7,6 +7,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.entity.AbstractEntityProp
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IEntityType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
 import ch.openbis.rocrate.app.reader.RdfToModel;
 import edu.kit.datamanager.ro_crate.RoCrate;
@@ -14,7 +15,6 @@ import edu.kit.datamanager.ro_crate.reader.FolderReader;
 import edu.kit.datamanager.ro_crate.reader.RoCrateReader;
 import org.junit.Test;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -26,7 +26,7 @@ import static org.junit.Assert.assertTrue;
 
 public class SciCatExportTest
 {
-    static final String INPUT = "src/test/resources/example-export-2025-08-15";
+    static final String INPUT = "src/test/resources/scicat/example-export-2025-08-15";
 
     public static final EntityTypePermId
             PUBLICATION_TYPE_PERMID =
@@ -39,13 +39,9 @@ public class SciCatExportTest
     public void testSciCatCrate20250815() throws IOException
     {
 
-        ClassLoader classLoader = getClass().getClassLoader();
-        String resourceName = "scicat/example-export-2025-08-15";
-        File file = new File(classLoader.getResource(resourceName).getFile());
-
 
         RoCrateReader roCrateFolderReader = new RoCrateReader(new FolderReader());
-        RoCrate crate = roCrateFolderReader.readCrate(file.getPath());
+        RoCrate crate = roCrateFolderReader.readCrate(INPUT);
         SchemaFacade schemaFacade = SchemaFacade.of(crate);
 
         List<IType> types = schemaFacade.getTypes();
@@ -81,7 +77,13 @@ public class SciCatExportTest
                     .isPresent());
         }
         AbstractEntityPropertyHolder
-                entity = openBisModel.getEntities().values().stream().findFirst().orElseThrow();
+
+                entity =
+                openBisModel.getEntities().values().stream().filter(x -> x instanceof Sample)
+                        .map(Sample.class::cast)
+                        .filter(x -> x.getCode().contains(
+                                "schema_CreativeWork_scicat_PublishedData_4b55cbae-ac98-445a-a15e-1534b2a8b01f"))
+                        .findFirst().orElseThrow();
         assertEquals("0.0", entity.getProperties().get("numberOfFiles").toString());
         assertEquals("4000.0", entity.getProperties().get("sizeOfArchive").toString());
 

@@ -19,6 +19,9 @@
       "datePublished": "2024-12-04T07:53:11Z",
       "hasPart": [
         {
+          "@id": "openBIS:hasPROJECT"
+        },
+        {
           "@id": "COLLECTION"
         },
         {
@@ -1324,6 +1327,13 @@
     },
       "owl:minCardinality": 1,
       "owl:maxCardinality": 1
+    },
+    {
+      "@type": "rdfs:Property",
+      "@id": "openBIS:hasPROJECT",
+      "schema:rangeIncludes": {
+        "@id": "openBIS:Project"
+      }
     }
   ]
 }
