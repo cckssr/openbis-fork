@@ -23,6 +23,7 @@ import org.junit.BeforeClass;
 
 import ch.ethz.sis.afsserver.server.Server;
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameter;
+import ch.ethz.sis.shared.io.IOUtils;
 import ch.ethz.sis.shared.startup.Configuration;
 
 public final class DummyAuthApiClientTest extends BaseApiClientTest
@@ -45,6 +46,10 @@ public final class DummyAuthApiClientTest extends BaseApiClientTest
     {
         configuration = new Configuration(List.of(AtomicFileSystemServerParameter.class),
                 "src/test/resources/test-server-config.properties");
+
+        storageRoot = configuration.getStringProperty(AtomicFileSystemServerParameter.storageRoot);
+        IOUtils.createDirectories(storageRoot);
+
         afsServer = new Server<>(configuration);
         httpServerPort =
                 configuration.getIntegerProperty(AtomicFileSystemServerParameter.httpServerPort);
