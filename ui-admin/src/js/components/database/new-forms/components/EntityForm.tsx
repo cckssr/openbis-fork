@@ -19,9 +19,10 @@ interface EntityFormProps {
    * Useful for UI/session-driven values like switch checked states.
    */
   actionOverrides?: Record<string, Partial<FormActionDef>>;
+  openbisFacade?: any;
 }
 
-const EntityForm = ({ form, mode, permissions, onFieldChange, onFieldMetadataChange, onAction, params, actionOverrides = {} }: EntityFormProps) => {
+const EntityForm = ({ form, mode, permissions, onFieldChange, onFieldMetadataChange, onAction, params, actionOverrides = {}, openbisFacade = null }: EntityFormProps) => {
 
   const renderToolbar = () => {
     // UPDATED: Interpret declarative visibility rules
@@ -148,6 +149,7 @@ const EntityForm = ({ form, mode, permissions, onFieldChange, onFieldMetadataCha
     return (
       <div key={field.id} style={(mode === FormMode.EDIT || mode === FormMode.CREATE) && !field.readOnly ? { marginBottom: '8px' } : {}}>
         <FieldRenderer
+          openbisFacade={openbisFacade}
           field={field}
           onFieldChange={onFieldChange}
           onFieldMetadataChange={onFieldMetadataChange}

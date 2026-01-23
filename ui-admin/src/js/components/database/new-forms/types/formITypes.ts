@@ -123,6 +123,7 @@ export interface FieldRendererProps {
   onFieldMetadataChange?: (fieldId: string, meta: any) => void;
   mode: FormMode;
   params?: any;
+  openbisFacade?: any;
 }
 
 export interface ActionRendererProps {

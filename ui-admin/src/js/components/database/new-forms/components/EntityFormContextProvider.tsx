@@ -332,6 +332,7 @@ export const EntityFormContextProvider = ({
         onAction={handleAction}
         params={{ sessionID: sessionID, user: user, entityPermId: form.entityPermId }}
         actionOverrides={actionOverrides}
+        openbisFacade={openbisFacade}
       />
       {dialogs.conflict.isOpen && (
         <ConflictResolutionDialog

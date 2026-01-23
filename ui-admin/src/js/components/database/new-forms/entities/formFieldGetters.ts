@@ -646,6 +646,7 @@ export function getPropertyFieldsFromAssignments(
   dto: any,
   overrides: Record<string, FieldOverrides> = {}
 ): FormField[] {
+  const permId = dto.permId?.permId || 'unknown';
   if (dto.propertyAssignments && Array.isArray(dto.propertyAssignments)) {
     return dto.propertyAssignments.map((assignment: any) => {
       overrides[assignment.propertyType.code] = { readOnly: false };
@@ -656,7 +657,6 @@ export function getPropertyFieldsFromAssignments(
     return [];
   }
   
-  const permId = dto.permId?.permId || 'unknown';
   const propertyAssignments = dto.type.propertyAssignments.filter(
     (assignment: any) => assignment?.propertyType
   );

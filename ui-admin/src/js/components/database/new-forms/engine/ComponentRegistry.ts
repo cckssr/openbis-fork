@@ -6,6 +6,7 @@ import { TextAreaFieldRenderer } from '@src/js/components/database/new-forms/com
 import { SelectFieldRenderer } from '@src/js/components/database/new-forms/components/fields/SelectFieldRender.tsx';
 import { SwitchFieldRenderer } from '@src/js/components/database/new-forms/components/fields/SwitchFieldRender.tsx';
 import { CKEditorFieldRenderer } from '@src/js/components/database/new-forms/components/fields/CKEditorFieldRenderer.tsx';
+import { ObjectFieldRenderer } from '@src/js/components/database/new-forms/components/fields/ObjectFieldRenderer.tsx';
 
 import { ButtonActionRenderer } from '@src/js/components/database/new-forms/components/actions/ButtonActionRenderer.tsx';
 import { SwitchActionRenderer } from '@src/js/components/database/new-forms/components/actions/SwitchActionRenderer.tsx';
@@ -36,6 +37,8 @@ class ComponentRegistry {
       case FormFieldDataType.WORD_PROCESSOR_PAGE:
       case FormFieldDataType.WORD_PROCESSOR_CLASSIC:
         return CKEditorFieldRenderer;
+      case FormFieldDataType.SAMPLE:
+        return ObjectFieldRenderer;
       default:
         return TextFieldRenderer; 
     }
