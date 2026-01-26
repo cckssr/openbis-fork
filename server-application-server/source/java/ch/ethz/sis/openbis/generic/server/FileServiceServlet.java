@@ -15,9 +15,10 @@
  */
 package ch.ethz.sis.openbis.generic.server;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.UUID;
@@ -190,7 +191,18 @@ public class FileServiceServlet extends AbstractServlet
                 + "/" + uuid.substring(4, 6) + "/" + uuid + "/" + nameUUID;
         File file = new File(filesRepository, filePath);
         file.getParentFile().mkdirs();
-        multipartFile.transferTo(file);
+
+        FileOutputStream fout = null;
+        try {
+            fout = new FileOutputStream(file);
+            fout.write(multipartFile.getBytes());
+        } finally {
+            if (fout != null) {
+                fout.close();
+            }
+
+        }
+
         operationLog.info(multipartFile.getSize() + " bytes have been uploaded for file '"
                 + originalFilename + "' and stored in '" + filePath + "'.");
 
