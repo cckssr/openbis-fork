@@ -19,6 +19,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import org.springframework.web.multipart.MultipartFile;
 
@@ -102,19 +104,17 @@ public class MultipartFileAdapter implements IUncheckedMultipartFile
     {
         try
         {
-            FileOutputStream fout = null;
-            try {
-                fout = new FileOutputStream(dest);
-                fout.write(multipartFile.getBytes());
-            } finally {
-                if (fout != null) {
-                    fout.close();
-                }
-
-            }
+            transferTo(multipartFile, dest.toPath());
         } catch (final IOException ex)
         {
             throw new IOExceptionUnchecked(ex);
+        }
+    }
+
+    public static void transferTo(MultipartFile multipartFile, Path target) throws IOException {
+        Files.createDirectories(target.getParent());
+        try (InputStream in = multipartFile.getInputStream()) {
+            Files.copy(in, target, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
         }
     }
 }
