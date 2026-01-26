@@ -32,8 +32,6 @@ SXM_ADAPTOR = "ch.ethz.sis.openbis.generic.server.dss.plugins.imaging.adaptor.Na
 DAT_ADAPTOR = "ch.ethz.sis.openbis.generic.server.dss.plugins.imaging.adaptor.NanonisDatAdaptor"
 VERBOSE = False
 DEFAULT_URL = "http://localhost:8888/openbis"
-# DEFAULT_URL = "http://local.openbis.ch:8080/openbis"
-# DEFAULT_URL = "https://openbis-sis-ci-sprint.ethz.ch/openbis"
 
 SERVICE_TYPE = 'AS'
 
@@ -43,18 +41,14 @@ if SERVICE_TYPE == "AS":
 
 AFS_URL = None
 
-def get_instance(url=None, token=None):
+def get_instance(url, token):
     if url is None:
         url = DEFAULT_URL
     openbis_instance = Openbis(
         url=url,
-        verify_certificates=False,
-        allow_http_but_do_not_use_this_in_production_and_only_within_safe_networks=True
+        verify_certificates=False
     )
-    if token is None:
-        token = openbis_instance.login('admin', 'changeit')
-    else:
-        openbis_instance.token = token
+    openbis_instance.token = token
     print(f'Connected to {url} -> token: {token}')
     return openbis_instance
 
@@ -160,7 +154,9 @@ def create_sxm_dataset(openbis, experiment, file_path, sample=None):
     exports = [imaging.ImagingDataSetControl('include', "Dropdown", values=['image', 'raw data'], multiselect=True),
                imaging.ImagingDataSetControl('image-format', "Dropdown", values=['png', 'svg'], semanticAnnotation=imaging.ImagingSemanticAnnotation('schema.org', 'https://schema.org/version/28.1', 'https://schema.org/encoding')),
                imaging.ImagingDataSetControl('archive-format', "Dropdown", values=['zip', 'tar'], semanticAnnotation=imaging.ImagingSemanticAnnotation('schema.org', 'https://schema.org/version/28.1', 'https://schema.org/fileFormat')),
-               imaging.ImagingDataSetControl('resolution', "Dropdown", values=['original', '150dpi', '300dpi'], semanticAnnotation=None)]
+               imaging.ImagingDataSetControl('resolution', "Dropdown", values=['original', '150dpi', '300dpi'], semanticAnnotation=None),
+               imaging.ImagingDataSetControl('include labels', "Dropdown", values=['True', 'False'], semanticAnnotation=None),
+               imaging.ImagingDataSetControl('include parameters', "Dropdown", values=['True', 'False'], semanticAnnotation=None)]
 
     inputs = [
         imaging.ImagingDataSetControl('Channel', "Dropdown", values=channels, section="Data"),
@@ -575,7 +571,7 @@ def export_image(openbis: Openbis, perm_id: str, image_id: int, path_to_download
 
 def multi_export_images(openbis: Openbis, perm_ids: list[str], image_ids: list[int], preview_ids: list[int],
                         path_to_download: str, include=None, image_format='original',
-                        archive_format="zip", resolution='original'):
+                        archive_format="zip", resolution='original', include_labels=True, include_parameters=True):
     if include is None:
         include = ['IMAGE', 'RAW_DATA']
     imaging_control = ImagingControl(openbis, service_type=SERVICE_TYPE, afs_url=AFS_URL)
@@ -873,15 +869,19 @@ def upload_measurements_into_openbis(openbis_url, data_folder, collection_permid
 
 openbis_url = None
 data_folder = ['data', 'data/dat2']
+# data_folder = ['data/sxm2']
 token = None
 
 if len(sys.argv) >= 3:
     openbis_url = sys.argv[1]
     data_folder = sys.argv[2]
-    if len(sys.argv) > 3:
-        token = sys.argv[3]
+    # afs_url = openbis_url + "/afs-server/api"
+    token = sys.argv[3]
+    if len(sys.argv) > 4:
+        AFS_URL = sys.argv[4]
+
 else:
-    print(f'Usage: python3 nanonis_importer.py <OPENBIS_URL> <PATH_TO_DATA_FOLDER>')
+    print(f'Usage: python3 nanonis_importer.py <OPENBIS_URL> <PATH_TO_DATA_FOLDER> <TOKEN> [AFS_URL]')
     print(f'Using default parameters')
     print(f'URL: {DEFAULT_URL}')
     print(f'Data folder: {data_folder}')
@@ -931,111 +931,59 @@ for sorted_files in sorted_measurement_files:
         grouped_measurement_files.append(group)
         group = []
 
-IMPORT = True
-# IMPORT = False
 
-if IMPORT:
-    for group in grouped_measurement_files:
-        if group[0].endswith(".sxm"):
-            print(f"SXM file: {group[0]}")
-            # file_path = os.path.join(data_folder, group[0])
-            file_path = group[0]
+for group in grouped_measurement_files:
+    if group[0].endswith(".sxm"):
+        print(f"SXM file: {group[0]}")
+        # file_path = os.path.join(data_folder, group[0])
+        file_path = group[0]
+        try:
+            demo_sxm_flow(o, file_path)
+            # exit(0)
+        except ValueError as e:
+            print(f"Cannot upload {group[0]}. Reason: {e}")
+    else:
+
+        # Split the dat files by measurement type (e.g.: bias spec dI vs V in one list, bias spec z vs V in another list, etc.)
+        dat_files_types = []
+        for dat_file in group:
+            # dat_data = spm(f"{data_folder}/{dat_file}")
+            dat_data = spm(f"{dat_file}")
+            dat_files_types.append(get_dat_type(dat_data.header))
+
+        grouped = defaultdict(list)
+
+        for item1, item2 in zip(group, dat_files_types):
+            grouped[item2].append(item1)
+
+        dat_files_grouped_by_type = list(grouped.values())
+        # ---------------
+
+        for dat_files_group in dat_files_grouped_by_type:
+            data_folder_path = os.path.dirname(dat_files_group[0])
+            dat_files_directory = os.path.join(data_folder_path, "dat_files")
+            shutil.rmtree(dat_files_directory, ignore_errors=True)
+            os.mkdir(dat_files_directory)
+
+            for dat_file in dat_files_group:
+                file_name = os.path.basename(dat_file)
+                shutil.copy(dat_file, os.path.join(dat_files_directory, file_name))
             try:
-                demo_sxm_flow(o, file_path)
-                # exit(0)
+                demo_dat_flow(o, dat_files_directory)
             except ValueError as e:
-                print(f"Cannot upload {group[0]}. Reason: {e}")
-        else:
-
-            # Split the dat files by measurement type (e.g.: bias spec dI vs V in one list, bias spec z vs V in another list, etc.)
-            dat_files_types = []
-            for dat_file in group:
-                # dat_data = spm(f"{data_folder}/{dat_file}")
-                dat_data = spm(f"{dat_file}")
-                dat_files_types.append(get_dat_type(dat_data.header))
-
-            grouped = defaultdict(list)
-
-            for item1, item2 in zip(group, dat_files_types):
-                grouped[item2].append(item1)
-
-            dat_files_grouped_by_type = list(grouped.values())
-            # ---------------
-
-            for dat_files_group in dat_files_grouped_by_type:
-                data_folder_path = os.path.dirname(dat_files_group[0])
-                dat_files_directory = os.path.join(data_folder_path, "dat_files")
-                shutil.rmtree(dat_files_directory, ignore_errors=True)
-                os.mkdir(dat_files_directory)
-
-                for dat_file in dat_files_group:
-                    file_name = os.path.basename(dat_file)
-                    shutil.copy(dat_file, os.path.join(dat_files_directory, file_name))
-                try:
-                    demo_dat_flow(o, dat_files_directory)
-                except ValueError as e:
-                    print(f"Cannot upload {dat_files_directory}. Reason: {e}")
-                shutil.rmtree(dat_files_directory)
-
-else:
-
-    perm_id_sxm = '20250218142736365-19062'
-    perm_id_dat = '20250217145145421-19046'
-
-    config_dat_preview = {
-        "spectraLocator": True,
-        "objId": perm_id_dat,
-        "sxmPreviewConfig": {
-            "Channel": 'z',  # usually one of these: ['z', 'I', 'dIdV', 'dIdV_Y']
-            "X-axis": ["0", "3.0"],  # file dependent
-            "Y-axis": ["0", "3.0"],  # file dependent
-            "Color-scale": ["-71", "-68"],  # file dependent
-            "Colormap": "gray",  # [gray, YlOrBr, viridis, cividis, inferno, rainbow, Spectral, RdBu, RdGy]
-            "Scaling": "logarithmic",  # ['linear', 'logarithmic']
-            # "Filter": "None",
-            # "Gaussian Sigma": "0",
-            # "Gaussian Truncate": "0",
-            # "Laplace Size": "3"
-        },
-        "sxmPermId": perm_id_sxm,
-        "sxmFilePath": "original/img_0150.sxm",
-        "Grouping": [
-            "didv_00063.dat",
-            "didv_00064.dat",
-            "didv_00065.dat",
-            "didv_00066.dat",
-            "didv_00067.dat",
-            "didv_00068.dat",
-            "didv_00069.dat",
-            # "didv_00070.dat",
-        ],
-
-
-        "Channel X": "V",
-        "Channel Y": "I",
-        "X-axis": ["-3.0", "1"],
-        "Y-axis": ["-331", "107"],
-        "Colormap": "rainbow",
-        "Scaling": "lin-lin",  # ['lin-lin', 'lin-log', 'log-lin', 'log-log']
-        "Print legend": "True", # disable legend in image
-    }
-
-    config_preview = config_dat_preview.copy()
-
-    preview = create_preview(o, perm_id_dat, config_preview)
-
-    preview.index = 2
-    update_image_with_preview(o, perm_id_dat, 0, preview)
+                print(f"Cannot upload {dat_files_directory}. Reason: {e}")
+            shutil.rmtree(dat_files_directory)
 
 
 
-# export_image(o, '20241218074117986-44', 0, '/home/alaskowski/PREMISE/test')
-# export_image(o, '20240111135043750-39', 0, '/home/alaskowski/PREMISE')
 
-# multi_export_images(o, ['20241218074117986-44', '20241218074117986-44'],
-#                     [0, 0],
-#                     [0, 1],
-#                     '/home/alaskowski/PREMISE/test2')
+
+# export_image(o, permId, image_index, export_path)
+
+# multi_export_images(o, [permId1, permId2],
+#                     [image1_index, image2_index],
+#                     [image1_preview_index, image2_preview_index],
+#                     export_path)
 
 o.logout()
-print("OK")
+print("DONE")

@@ -813,6 +813,17 @@ class Spm:
             else:
                 data = False
 
+            print(f"params: {params}")
+            if "include_labels" in params:
+                include_labels = params["include_labels"]
+            else:
+                include_labels = True
+
+            if "include_parameters" in params:
+                include_parameters = params["include_parameters"]
+            else:
+                include_parameters = False
+
 
             if data is False:
                 (chData,chUnit) = self.get_channel(channel, direction = direction, flatten=flatten, offset=offset, zero=zero)
@@ -845,6 +856,7 @@ class Spm:
 
             ### >>>> PREMISE - specific modifications
             fig = plt.figure()
+            # fig = plt.figure(figsize=(7, 8))
             # fig = plt.gcf()
             ### ---- PREMISE - specific modifications
             # fig = plt.figure(figsize=(7, 8))
@@ -862,6 +874,19 @@ class Spm:
                 plt.ylim(y_axis[0], y_axis[1])
                 plt.xlim(x_axis[0], x_axis[1])
             ### ---- PREMISE - specific modifications
+
+
+
+            if include_parameters:
+                x_offset = (x_axis[1] - x_axis[0]) / 100
+                y_offset = (y_axis[1] - y_axis[0]) / 100
+                # header = self.print_params_dict()
+                # print(f"PARAMS: {header}")
+                # offset = 1
+                # for x in header:
+                #     plt.text(x_axis[0] + x_offset, y_axis[1] + 0.1 * offset, rf'{x}: {header[x]}', fontsize=10)
+                #     offset += 1
+                plt.text(x_axis[0] + x_offset, y_axis[0] + y_offset + 0.01, rf'{channel}', fontsize=18)
 
             if log:
                 im = plt.imshow(
@@ -915,19 +940,20 @@ class Spm:
             ### ---- PREMISE - specific modifications
             # plt.title(title + "\n", loc="left")
 
-            # plt.xlabel(f"x ({width[1]})")
-            plt.xlabel(f"x ({unit})")
-            # plt.ylabel(f"y ({height[1]})")
-            plt.ylabel(f"y ({unit})")
+            if include_labels is True:
+                plt.xlabel(f"x ({unit})")
+                plt.ylabel(f"y ({unit})")
 
-            ### >>>> PREMISE - specific modifications
-            cbar = fig.colorbar(im, format="%.3g", pad=0.02)
-            cbar.set_label(f'Channel: {channel} ({chUnit})')
-            ### ---- PREMISE - specific modifications
-            # cbar = plt.colorbar(
-            #     im, fraction=0.046, pad=0.02, format="%.2g", shrink=0.5, aspect=10
-            # )
-            # cbar.set_label(f"{channel} ({chUnit}")
+                ### >>>> PREMISE - specific modifications
+                cbar = fig.colorbar(im, fraction=0.046, format="%.3g", pad=0.02)
+                cbar.set_label(f'Channel: {channel} ({chUnit})')
+                ### ---- PREMISE - specific modifications
+                # cbar = plt.colorbar(
+                #     im, fraction=0.046, pad=0.02, format="%.2g", shrink=0.5, aspect=10
+                # )
+                # cbar.set_label(f"{channel} ({chUnit}")
+            else:
+                fig.axes[0].set_axis_off()
 
             if show:
                 plt.show()

@@ -2,6 +2,14 @@
 This core-plugin was created to showcase an imaging technology plugin capabilities with scientific data. It contains a set of input
 .SXM and .DAT files with scripts to turn them into images. 
 
+
+## Structure
+This repository is split into following sections:
+- `as` - directory with implementation of openbis core-plugin. It contains required master-data and adaptors needed for data-to-image conversion. 
+- `nanonis-importer` - python script for uploading .sxm and .dat files to openbis in proper imaging format  
+- `scripts` - directory with helpful scripts and python requirements needed for imaging-nanonis python scripts
+
+
 ## Prerequisites - Python Installation
 
 ### using Python Virtual Environment
@@ -18,11 +26,11 @@ pip3 install -r scripts/python_requirements.txt
 ```
 
 Configuring imaging plugin to use virtual environment:
-1. Modify `plugin.properties` of `imaging` core plugin and add `python3-path` property pointing to your python virtual environment (you can find `plugin.properties` here: `<CORE_PLUGINS_FOLDER>/imaging/1/dss/services/imaging/plugin.properties`)
+1. Modify `python3-path` property of `imaging` core plugin and set it to point to your python virtual environment (either by setting environment property `imaging.as.services.imaging.python3-path` or you can find `plugin.properties` here: `<CORE_PLUGINS_FOLDER>/imaging/1/as/services/imaging/plugin.properties`)
    ```properties
    python3-path = ~/my_venv/bin/python
    ```
-2. Restart Openbis
+2. Start Openbis
 
 ### Removal of virtual environment
 
@@ -47,14 +55,8 @@ pip3 install -r scripts/python_requirements.txt
 
 ### Plugin Configuration
 
-1. Include imaging-test core plugin into core-plugins of your installation
-2. Configure DSS service properties (`<DSS_FOLDER>/etc/service.properties`) to include paths to python scripts needed for image generation. Properties are `imaging.nanonis.sxm-script-path` and `imaging.nanonis.dat-script-path`.
-   ```properties
-   imaging.nanonis.sxm-script-path=<PATH_TO_CORE_PLUGINS_FOLDER>/imaging-nanonis/1/dss/services/imaging-nanonis/nanonis_sxm.py
-   imaging.nanonis.dat-script-path=<PATH_TO_CORE_PLUGINS_FOLDER>/imaging-nanonis/1/dss/services/imaging-nanonis/nanonis_dat.py
-   ```
-3. run `install.sh` script from `imaging-nanonis/1/scripts/` directory.
-4. restart Openbis
+1. Include imaging-nanonis core plugin into core-plugins of your installation
+2. (Optional) set python3-path property 
 
 ### Data import
 

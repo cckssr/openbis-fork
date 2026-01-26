@@ -136,6 +136,16 @@ def get_sxm_image(sxm_file_path, format, channel_name, x_axis, y_axis, scaling, 
     img = load_image(sxm_file_path)
     img_byte_arr = io.BytesIO()
 
+    if other_params and "include labels" in other_params:
+        include_labels = other_params["include labels"].lower() == "true"
+    else:
+        include_labels = True
+
+    if other_params and "include parameters" in other_params:
+        include_parameters = other_params["include parameters"].lower() == "true"
+    else:
+        include_parameters = False
+
     log = False
     if scaling == 'logarithmic':
         log = True
@@ -227,7 +237,7 @@ def get_sxm_image(sxm_file_path, format, channel_name, x_axis, y_axis, scaling, 
 
     img.plot(show=False, show_params=False, channel=channel_name, log=log, cmap=colormap,
              color_scale=color_scale, colormap_scaling=colormap_scaling, data=(chData,chUnit),
-             clim=clim,  x_axis=x_axis, y_axis=y_axis, axis=False)
+             clim=clim,  x_axis=x_axis, y_axis=y_axis, axis=False, include_labels=include_labels, include_parameters=include_parameters)
 
     if print_out:
         plt.savefig(img_byte_arr, format=format, dpi=resolution)
