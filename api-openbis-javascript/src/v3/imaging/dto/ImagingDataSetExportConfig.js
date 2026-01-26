@@ -8,6 +8,7 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		prototype.imageFormat = null;
 		prototype.resolution = null;
 		prototype.include = null;
+		prototype.customOptions = null;
 
 		prototype.getArchiveFormat = function() {
             return this.archiveFormat;
@@ -39,6 +40,12 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
         prototype.setInclude = function(include) {
             this.include = include;
         };
+        prototype.getCustomOptions = function() {
+            return this.customOptions;
+        };
+        prototype.setCustomOptions = function(customOptions) {
+            this.customOptions = customOptions;
+        };
 		prototype.toString = function() {
             return "ImagingDataSetExportConfig: " + this.config;
         };
@@ -47,6 +54,10 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		exports : {
             name : "List",
             arguments : [ "ImagingExportIncludeOptions"]
+        },
+        customOptions : {
+            name : "Map",
+            arguments : [ "String", "String" ]
         }
 	});
 	return ImagingDataSetExportConfig;
