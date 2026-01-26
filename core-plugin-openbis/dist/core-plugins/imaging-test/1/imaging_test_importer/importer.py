@@ -24,9 +24,6 @@ TEST_ADAPTOR = "ch.ethz.sis.openbis.generic.server.as.plugins.imaging.adaptor.Im
 VERBOSE = False
 DEFAULT_URL = "http://localhost:8888/openbis"
 AFS_URL = 'http://localhost:8085/afs-server/api'
-# DEFAULT_URL = "https://localhost:8443/openbis"
-# DEFAULT_URL = "https://openbis-sis-ci-sprint.ethz.ch/openbis"
-# DEFAULT_URL = "https://local.openbis.ch/openbis"
 
 
 def get_instance(url=None, token=None):

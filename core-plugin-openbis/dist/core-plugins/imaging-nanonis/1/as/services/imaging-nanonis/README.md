@@ -1,30 +1,32 @@
-# Custom imaging adapters configuration
+# Imaging-nanonis service
+
+This repository contains source code of imaging-nanonis service for OpenBIS, it contains:
+
+- `lib` directory with java project implementing classes needed for custom logic for handling imaging adapters. Java classes are responsible for communication with core `imaging` plugin, they allow for additional pre/post processing.
+- python scripts that convert `.SXM` and `.DAT` files into images, they are triggered by Java adaptors specified in `lib` directory.
 
 
-In order to create custom adapters you need to do following things:
+## Python scripts
 
-1. Create a new DSS-service core-plugin and enable it in the main core-plugin.properties
-2. Write java classes([*](#generic-imaging-technology-jar)), it must either: 
-   * implement ch.ethz.sis.openbis.generic.server.as.plugins.imaging.adaptor.imaging.IImagingDataSetAdaptor interface 
-   * extend a class that does it (e.g. ch.ethz.sis.openbis.generic.server.as.plugins.imaging.adaptor.imaging.ImagingDataSetAbstractPythonAdaptor)
-3. Compile it into .jar file and drop it in the lib directory (e.g. imaging-nanonis/1/dss/services/imaging-nanonis/lib/my_custom_adapters.jar)
-4. Create plugin.properties - it can be empty
-5. (*Optional*) if your class makes use of java.util.Properties, you have to add them to the service.properties of the DSS with a prefix `imaging`, e.g:
-   ```properties
-    imaging.nanonis.my-python-script-path=${core-plugins-folder}/path/to/the/script/in/my/newly/created/plugin/script.py
-    ```
+- `nanonis_core.py` - core script for converting raw data into image, applying filters and computing output.
+- `nanonis_sxm.py` - script for converting and validating input parameters for SXM image generation. 
+- `nanonis_dat.py` - script for converting and validating input parameters for DAT and Spectra image generation.
+- `spmpy` - new library for image generation.
+- `spmpy_terry.py` - deprecated library for image generation. 
 
+# Adding new adaptor
 
-
+1. Create new Java class implementing interface `IImagingDataSetAdaptor` from imaging core technology in `./lib/imaging-nanonis-adapters-sources/source/java/ch/ethz/sis/openbis/generic/server/as/plugins/imaging/adaptor`
+2. Rebuild the `premise-adapters.jar`
+3. Add new adaptor (full package name) in `plugin.properties` file
+4. Restart OpenBIS
 
 # Development environment notes
-Please remember to link jar files in the compilation paths of the DSS in the build.gradle:
+In development environment, please remember to link jar files in the compilation paths of the AS in the build.gradle:
 ```java
- datastoreExecRuntime files("../core-plugin-openbis/dist/core-plugins/imaging/1/dss/services/imaging/lib/openBIS-imaging-technology.jar"),
-            files("../core-plugin-openbis/dist/core-plugins/imaging-nanonis/1/dss/services/imaging-nanonis/lib/premise-adapters.jar")
+asExecRuntime files("../core-plugin-openbis/dist/core-plugins/imaging/1/as/api-listener/imaging-dataset-interceptor/lib/imaging-dataset-interceptor.jar"),
+      files("../core-plugin-openbis/dist/core-plugins/imaging/1/as/services/imaging/lib/openBIS-imaging-technology.jar"),
+      files("../core-plugin-openbis/dist/core-plugins/imaging-nanonis/1/as/services/imaging-nanonis/lib/premise-adapters.jar"),
+      files("../core-plugin-openbis/dist/core-plugins/imaging-test/1/as/services/imaging-test/lib/imaging-test-adapters.jar")
+
 ```
-
-
-### Generic Imaging Technology jar
-To access GenericImagingTechnology classes for custom adapter compilation, you need to link technology jar:
-core-plugin-openbis/dist/core-plugins/imaging/`VERSION_NUMBER`/dss/services/imaging/lib/openBIS-imaging-technology.jar
