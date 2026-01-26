@@ -16,6 +16,7 @@
 package ch.systemsx.cisd.openbis.common.spring;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -101,7 +102,16 @@ public class MultipartFileAdapter implements IUncheckedMultipartFile
     {
         try
         {
-            multipartFile.transferTo(dest);
+            FileOutputStream fout = null;
+            try {
+                fout = new FileOutputStream(dest);
+                fout.write(multipartFile.getBytes());
+            } finally {
+                if (fout != null) {
+                    fout.close();
+                }
+
+            }
         } catch (final IOException ex)
         {
             throw new IOExceptionUnchecked(ex);
