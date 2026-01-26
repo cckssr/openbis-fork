@@ -11,6 +11,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @RunWith(JUnit4.class)
@@ -148,14 +149,17 @@ public class ProtobufConversionUtilTest {
     public void toProtobufSyncJobs() {
         List<SyncJob> syncJobs = List.of(
                 new SyncJob(SyncJob.Type.Upload, "http://loc", "tkntkn", "1234-abcd", "title", "/remDIR", "/LOCdir", true),
-                new SyncJob(SyncJob.Type.Bidirectional, "http://loc2", "tkntkn2", "1234-abcd2", "title2", "/remDIR3", "/LOCdir3", false)
+                new SyncJob(SyncJob.Type.Bidirectional, "http://loc2", "tkntkn2", "1234-abcd2", "title2", "/remDIR3", "/LOCdir3", false),
+                new SyncJob(SyncJob.Type.Bidirectional, "http://loc2", "tkntkn2", "1234-abcd2", SyncJob.EntityType.Sample, true, "title2", "/remDIR3", "/LOCdir3", false, SyncJob.IgnoredFilesMode.None, new ArrayList<>()),
+                new SyncJob(SyncJob.Type.Bidirectional, "http://loc2", "tkntkn2", "1234-abcd2", SyncJob.EntityType.Experiment, false, "title2", "/remDIR3", "/LOCdir3", true, SyncJob.IgnoredFilesMode.SpecificList, new ArrayList<>()),
+                new SyncJob(SyncJob.Type.Download, "http://loc2", "tkntkn2", "1234-abcd2", SyncJob.EntityType.Dataset, true, "title2", "/remDIR3", "/LOCdir3", false, SyncJob.IgnoredFilesMode.GlobalDefault, new ArrayList<>())
         );
         syncJobs.get(0).setIgnoredPathPatterns(new ArrayList<>(List.of("aaa", "bbb")));
         syncJobs.get(1).setIgnoredPathPatterns(new ArrayList<>(List.of("aaa1", "bbb2")));
 
         DriveApiService.SyncJobs protobufSyncJobs = ProtobufConversionUtil.toProtobufSyncJobs(syncJobs);
 
-        Assert.assertEquals(2, protobufSyncJobs.getSyncJobsCount());
+        Assert.assertEquals(5, protobufSyncJobs.getSyncJobsCount());
 
         Assert.assertEquals(true, protobufSyncJobs.getSyncJobs(0).getEnabled());
         Assert.assertEquals("title", protobufSyncJobs.getSyncJobs(0).getTitle());
@@ -176,6 +180,45 @@ public class ProtobufConversionUtilTest {
         Assert.assertEquals("/remDIR3", protobufSyncJobs.getSyncJobs(1).getRemoteDirectoryRoot());
         Assert.assertEquals(DriveApiService.SyncJob.Type.BIDIRECTIONAL, protobufSyncJobs.getSyncJobs(1).getType());
         Assert.assertEquals(List.of("aaa1", "bbb2"), protobufSyncJobs.getSyncJobs(1).getIgnoredPathPatterns().getIgnoredPathPatternsList().stream().toList());
+
+        Assert.assertEquals(false, protobufSyncJobs.getSyncJobs(2).getEnabled());
+        Assert.assertEquals("title2", protobufSyncJobs.getSyncJobs(2).getTitle());
+        Assert.assertEquals("/LOCdir3", protobufSyncJobs.getSyncJobs(2).getLocalDirectoryRoot());
+        Assert.assertEquals("http://loc2", protobufSyncJobs.getSyncJobs(2).getOpenBisUrl());
+        Assert.assertEquals("1234-abcd2", protobufSyncJobs.getSyncJobs(2).getEntityPermId());
+        Assert.assertEquals(DriveApiService.SyncJob.EntityType.SAMPLE, protobufSyncJobs.getSyncJobs(2).getEntityType());
+        Assert.assertEquals(true, protobufSyncJobs.getSyncJobs(2).getEntityImmutable());
+        Assert.assertEquals("tkntkn2", protobufSyncJobs.getSyncJobs(2).getOpenBisPersonalAccessToken());
+        Assert.assertEquals("/remDIR3", protobufSyncJobs.getSyncJobs(2).getRemoteDirectoryRoot());
+        Assert.assertEquals(DriveApiService.SyncJob.Type.BIDIRECTIONAL, protobufSyncJobs.getSyncJobs(2).getType());
+        Assert.assertEquals(DriveApiService.SyncJob.IgnoreFilesMode.NONE, protobufSyncJobs.getSyncJobs(2).getIgnoreFiles());
+        Assert.assertEquals(List.of(), protobufSyncJobs.getSyncJobs(2).getIgnoredPathPatterns().getIgnoredPathPatternsList().stream().toList());
+
+        Assert.assertEquals(true, protobufSyncJobs.getSyncJobs(3).getEnabled());
+        Assert.assertEquals("title2", protobufSyncJobs.getSyncJobs(3).getTitle());
+        Assert.assertEquals("/LOCdir3", protobufSyncJobs.getSyncJobs(3).getLocalDirectoryRoot());
+        Assert.assertEquals("http://loc2", protobufSyncJobs.getSyncJobs(3).getOpenBisUrl());
+        Assert.assertEquals("1234-abcd2", protobufSyncJobs.getSyncJobs(3).getEntityPermId());
+        Assert.assertEquals(DriveApiService.SyncJob.EntityType.EXPERIMENT, protobufSyncJobs.getSyncJobs(3).getEntityType());
+        Assert.assertEquals(false, protobufSyncJobs.getSyncJobs(3).getEntityImmutable());
+        Assert.assertEquals("tkntkn2", protobufSyncJobs.getSyncJobs(3).getOpenBisPersonalAccessToken());
+        Assert.assertEquals("/remDIR3", protobufSyncJobs.getSyncJobs(3).getRemoteDirectoryRoot());
+        Assert.assertEquals(DriveApiService.SyncJob.Type.BIDIRECTIONAL, protobufSyncJobs.getSyncJobs(3).getType());
+        Assert.assertEquals(DriveApiService.SyncJob.IgnoreFilesMode.SPECIFIC_LIST, protobufSyncJobs.getSyncJobs(3).getIgnoreFiles());
+        Assert.assertEquals(List.of(), protobufSyncJobs.getSyncJobs(3).getIgnoredPathPatterns().getIgnoredPathPatternsList().stream().toList());
+
+        Assert.assertEquals(false, protobufSyncJobs.getSyncJobs(4).getEnabled());
+        Assert.assertEquals("title2", protobufSyncJobs.getSyncJobs(4).getTitle());
+        Assert.assertEquals("/LOCdir3", protobufSyncJobs.getSyncJobs(4).getLocalDirectoryRoot());
+        Assert.assertEquals("http://loc2", protobufSyncJobs.getSyncJobs(4).getOpenBisUrl());
+        Assert.assertEquals("1234-abcd2", protobufSyncJobs.getSyncJobs(4).getEntityPermId());
+        Assert.assertEquals(DriveApiService.SyncJob.EntityType.DATASET, protobufSyncJobs.getSyncJobs(4).getEntityType());
+        Assert.assertEquals(true, protobufSyncJobs.getSyncJobs(4).getEntityImmutable());
+        Assert.assertEquals("tkntkn2", protobufSyncJobs.getSyncJobs(4).getOpenBisPersonalAccessToken());
+        Assert.assertEquals("/remDIR3", protobufSyncJobs.getSyncJobs(4).getRemoteDirectoryRoot());
+        Assert.assertEquals(DriveApiService.SyncJob.Type.DOWNLOAD, protobufSyncJobs.getSyncJobs(4).getType());
+        Assert.assertEquals(DriveApiService.SyncJob.IgnoreFilesMode.GLOBAL_DEFAULT, protobufSyncJobs.getSyncJobs(4).getIgnoreFiles());
+        Assert.assertEquals(List.of(), protobufSyncJobs.getSyncJobs(4).getIgnoredPathPatterns().getIgnoredPathPatternsList().stream().toList());
     }
 
     @Test

@@ -21,6 +21,8 @@ message SyncJob {
     IgnoreFilesMode ignore_files = 8;
     IgnoredPathPatterns ignored_path_patterns = 9;
     string title = 10;
+    optional EntityType entity_type = 11;
+    optional bool entity_immutable = 12;
 
     enum Type {
       BIDIRECTIONAL = 0;
@@ -32,6 +34,12 @@ message SyncJob {
       GLOBAL_DEFAULT = 0;
       SPECIFIC_LIST = 1;
       NONE = 2;
+    }
+
+    enum EntityType {
+      SAMPLE = 0;
+      EXPERIMENT = 1;
+      DATASET = 2;
     }
 }
 

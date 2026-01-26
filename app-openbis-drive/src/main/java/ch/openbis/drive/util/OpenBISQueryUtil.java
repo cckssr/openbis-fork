@@ -11,11 +11,14 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchObjectsOpera
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.SearchDataSetsOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.SearchDataSetsOperationResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifier;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.SearchExperimentsOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.SearchExperimentsOperationResult;
@@ -23,6 +26,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.SynchronousOperationEx
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.SynchronousOperationExecutionResults;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SearchSamplesOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SearchSamplesOperationResult;
@@ -98,18 +103,12 @@ public class OpenBISQueryUtil {
 
     public static List<AbstractEntity> searchSynchronizableOpenBISEntities(@NonNull String openBISUrl, @NonNull String personalAccessToken, @NonNull String searchText) throws Exception {
         OpenBIS openbis;
-        if ("true".equalsIgnoreCase(System.getenv("OPENBIS_DRIVE_LOCAL_DEVELOPMENT_TESTS"))) {
-            //TODO remove after local tests !!!   //////////////////////////////////////////////////
+        if ("true".equalsIgnoreCase(System.getenv("OPENBIS_DRIVE_LOCAL_DEVELOPMENT_AS_AND_AFS_URL"))) {
             openBISUrl = openBISUrl.replaceAll("localhost:8085", "localhost:8888");
-            //TODO /////////////////////////////////////////////////////////////////////////////////
-
             openbis = new OpenBIS(openBISUrl);
-
-            //TODO remove after local tests !!!   //////////////////////////////////////////////////
             if ( openBISUrl.contains("localhost:8888") ) {
-                personalAccessToken = openbis.login("admin", "...");
+                openbis.login("admin", "...");
             }
-            //TODO /////////////////////////////////////////////////////////////////////////////////
         } else {
             openbis = new OpenBIS(openBISUrl);
             openbis.setSessionToken(personalAccessToken);
@@ -198,7 +197,7 @@ public class OpenBISQueryUtil {
                 public void run() {
                     timerTaskJob();
                 }
-            }, 2000);
+            }, 1000);
         }
 
         synchronized void timerTaskJob() {
