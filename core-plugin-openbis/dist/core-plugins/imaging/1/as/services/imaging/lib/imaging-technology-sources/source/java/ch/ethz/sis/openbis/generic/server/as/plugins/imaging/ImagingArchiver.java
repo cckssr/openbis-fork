@@ -156,14 +156,9 @@ class ImagingArchiver
             packager.close();
         }
         String url = getDownloadPath(sessionToken, Path.of(exportDirName, exportArchiveName).toString());
-//        String url = DataStoreServer.getConfigParameters().getDownloadURL() + "/datastore_server/session_workspace_file_download?sessionID=" + sessionToken + "&filePath=";
         return url;
     }
 
-//    private ISessionWorkspaceProvider getSessionWorkspaceProvider(String sessionToken)
-//    {
-//        return ServiceProvider.getDataStoreService().getSessionWorkspaceProvider(sessionToken);
-//    }
 
     private String getDownloadPath(final String sessionToken, final String fileName)
     {

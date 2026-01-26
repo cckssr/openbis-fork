@@ -637,7 +637,10 @@ public class ImagingService implements ICustomASServiceExecutor
             String imgString;
             Map<String, Serializable> imageConfig = image.getImageConfig();
             Map<String, Serializable> previewConfig = preview.getConfig();
-
+            if(exportConfig.getCustomOptions() != null)
+            {
+                previewConfig.putAll(exportConfig.getCustomOptions());
+            }
             if ((imageConfig != null && !imageConfig.isEmpty())
                     || (previewConfig != null && !previewConfig.isEmpty()))
             {
