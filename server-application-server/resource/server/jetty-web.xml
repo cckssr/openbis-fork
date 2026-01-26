@@ -20,4 +20,13 @@
             </New>
         </Arg>
     </Call>
+    <Call class="java.lang.System" name="setProperty">
+        <Arg>org.eclipse.jetty.util.UrlEncoded.allowEncodedSlash</Arg>
+        <Arg>true</Arg>
+    </Call>
+    <!-- allow legacy path -->
+    <Call class="java.lang.System" name="setProperty">
+        <Arg>org.eclipse.jetty.http.UriCompliance</Arg>
+        <Arg>UNSAFE</Arg>
+    </Call>
 </Configure>

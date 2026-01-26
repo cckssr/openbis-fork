@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.eclipse.jetty.ee10.proxy.ProxyServlet;
+import org.eclipse.jetty.http.UriCompliance;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.ServerConnector;
@@ -76,8 +77,11 @@ public class ApplicationServer
                 System.setProperty(String.valueOf(key), String.valueOf(value));
             }
 
+            System.setProperty("org.eclipse.jetty.util.UrlEncoded.allowEncodedSlash", "true");
+
             org.eclipse.jetty.server.Server server = new org.eclipse.jetty.server.Server();
             HttpConfiguration httpConfig = new HttpConfiguration();
+            httpConfig.setUriCompliance(UriCompliance.UNSAFE);
             ServerConnector connector =
                     new ServerConnector(server, new HttpConnectionFactory(httpConfig));
             connector.setPort(TestInstanceHostUtils.getOpenBISPort());
@@ -136,6 +140,7 @@ public class ApplicationServer
 
             org.eclipse.jetty.server.Server server = new org.eclipse.jetty.server.Server();
             HttpConfiguration httpConfig = new HttpConfiguration();
+            httpConfig.setUriCompliance(UriCompliance.UNSAFE);
             ServerConnector connector =
                     new ServerConnector(server, new HttpConnectionFactory(httpConfig));
             connector.setPort(TestInstanceHostUtils.getOpenBISProxyPort());
