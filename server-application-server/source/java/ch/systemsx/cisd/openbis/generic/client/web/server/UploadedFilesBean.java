@@ -80,15 +80,7 @@ public final class UploadedFilesBean
             } else {
                 tempFile = createTempFile(sessionToken, sessionWorkspaceProvider);
             }
-//            Files.createDirectories(Path.of(tempFile.getParent()));
-//            multipartFile.transferTo(tempFile);
-
-            Path target = tempFile.toPath();
-            Files.createDirectories(target.getParent());
-
-            try (InputStream in = multipartFile.getInputStream()) {
-                Files.copy(in, target, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-            }
+            MultipartFileAdapter.transferTo(multipartFile,  tempFile.toPath());
 
             operationLog.info("Uploaded file '" + originalFilename + "' to session workspace");
 

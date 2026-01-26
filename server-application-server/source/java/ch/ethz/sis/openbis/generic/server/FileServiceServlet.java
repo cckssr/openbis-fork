@@ -24,6 +24,8 @@ import java.util.Properties;
 import java.util.UUID;
 
 import javax.activation.MimetypesFileTypeMap;
+
+import ch.systemsx.cisd.openbis.common.spring.MultipartFileAdapter;
 import jakarta.annotation.Resource;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletRequest;
@@ -190,19 +192,7 @@ public class FileServiceServlet extends AbstractServlet
         String filePath = pathInfo.getSection() + "/" + uuid.substring(0, 2) + "/" + uuid.substring(2, 4)
                 + "/" + uuid.substring(4, 6) + "/" + uuid + "/" + nameUUID;
         File file = new File(filesRepository, filePath);
-        file.getParentFile().mkdirs();
-
-        FileOutputStream fout = null;
-        try {
-            fout = new FileOutputStream(file);
-            fout.write(multipartFile.getBytes());
-        } finally {
-            if (fout != null) {
-                fout.close();
-            }
-
-        }
-
+        MultipartFileAdapter.transferTo(multipartFile, file.toPath());
         operationLog.info(multipartFile.getSize() + " bytes have been uploaded for file '"
                 + originalFilename + "' and stored in '" + filePath + "'.");
 
