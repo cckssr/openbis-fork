@@ -761,7 +761,7 @@ public class SyncOperationTest extends TestCase {
 
             for (SyncJob.Type type : List.of(SyncJob.Type.Upload, SyncJob.Type.Download, SyncJob.Type.Bidirectional)) {
                 SyncJobEventDAO syncJobEventDAO = Mockito.mock(SyncJobEventDAO.class);
-                SyncJob syncJob = new SyncJob(type, "url", "uuid", "token", "title", "/remotedir1", "/localdir1", true, ignoreFiles, new ArrayList<>(List.of("hidden-dir?", "ignored-dir/aaa/**")));
+                SyncJob syncJob = new SyncJob(type, "url", "uuid", "token", SyncJob.EntityType.Sample, false, "title", "/remotedir1", "/localdir1", true, ignoreFiles, new ArrayList<>(List.of("hidden-dir?", "ignored-dir/aaa/**")));
                 syncJob.getIgnoredPathPatterns().add("hidden-dir?");
                 SyncOperation syncOperation = Mockito.spy(new SyncOperation(syncJob, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO, Path.of("/private-dir"), notificationManager, Settings.defaultSettings()));
 

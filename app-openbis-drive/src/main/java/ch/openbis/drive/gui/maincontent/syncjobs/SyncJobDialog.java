@@ -16,10 +16,7 @@ import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.binding.BooleanExpression;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.*;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -46,7 +43,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.regex.Pattern;
@@ -90,14 +86,21 @@ public class SyncJobDialog extends Dialog<SyncJob> {
     final BooleanBinding allValid = Bindings.createBooleanBinding(
             () -> validationErrors.stream().noneMatch(BooleanProperty::getValue), validationErrors.toArray(BooleanProperty[]::new));
 
-    final ObjectProperty<AbstractEntity> entityChosen = new SimpleObjectProperty<>(null);
-    final AtomicInteger reducedHeight = new AtomicInteger(0);
+    final ObjectProperty<ChosenEntity> entityChosen = new SimpleObjectProperty<>(null);
     final static int EXTENDED_HEIGHT = 750;
+    final static int EXTENDED_WIDTH = 900;
 
     public SyncJobDialog(@Nullable SyncJob toBeModified, Stage mainStage, List<SyncJob> currentSyncJobs) {
         super();
         this.editedSyncJob = toBeModified;
         this.currentSyncJobs = currentSyncJobs;
+        if (this.editedSyncJob != null) {
+            entityChosen.setValue(new ChosenEntity(
+                    this.editedSyncJob.getEntityPermId(),
+                    this.editedSyncJob.getEntityType(),
+                    this.editedSyncJob.isEntityImmutable()
+            ));
+        }
 
         I18n i18n = SharedContext.getContext().getI18n();
         initStyle(StageStyle.DECORATED);
@@ -158,20 +161,20 @@ public class SyncJobDialog extends Dialog<SyncJob> {
         openbisServerDirectoryLabel.setPadding(new Insets(30, 0, 0, 0));
         openbisServerDirectoryValue = getRemoteDirectoryTextField();
 
-        leftTextParametersBox.getChildren().addAll(
-                titleLabel, titleValue,
-                openbisServerUrlLabel, openbisServerUrlValue,
-                personalAccessTokenLabel, personalAccessTokenValue);
-
         Label localDirectoryLabel = new Label();
         localDirectoryLabel.textProperty().bind(i18n.createStringBinding("sync_tasks.modal_panel.sync_task_modal.local_directory"));
         localDirectoryLabel.setPadding(new Insets(30, 0, 0, 0));
         localDirectoryValue = getLocalDirectoryTextField();
 
+        leftTextParametersBox.getChildren().addAll(
+                titleLabel, titleValue,
+                openbisServerUrlLabel, openbisServerUrlValue,
+                localDirectoryLabel, localDirectoryValue);
+
         rightTextParametersBox.getChildren().addAll(
                 openbisEntityIdLabelBox, openbisEntityIdValue,
                 openbisServerDirectoryLabel, openbisServerDirectoryValue,
-                localDirectoryLabel, localDirectoryValue);
+                personalAccessTokenLabel, personalAccessTokenValue);
 
         textParametersBox.getChildren().addAll(leftTextParametersBox, rightTextParametersBox);
 
@@ -228,6 +231,10 @@ public class SyncJobDialog extends Dialog<SyncJob> {
                 newSyncJob.setEnabled(enabledCheckBox.isSelected());
                 newSyncJob.setOpenBisUrl(openbisServerUrlValue.getText());
                 newSyncJob.setEntityPermId(openbisEntityIdValue.getText());
+                if (entityChosen.getValue() != null) {
+                    newSyncJob.setEntityType(entityChosen.getValue().getEntityType());
+                    newSyncJob.setEntityImmutable(entityChosen.getValue().isImmutable());
+                }
                 newSyncJob.setRemoteDirectoryRoot(toServerPathString(Path.of(openbisServerDirectoryValue.getText())));
                 newSyncJob.setOpenBisPersonalAccessToken(personalAccessTokenValue.getText());
                 newSyncJob.setLocalDirectoryRoot(localDirectoryValue.getText());
@@ -247,18 +254,10 @@ public class SyncJobDialog extends Dialog<SyncJob> {
             }
         });
 
-        accordion.expandedPaneProperty().addListener((obs, oldValue, newValue) -> {
-            Platform.runLater(() -> {
-                int newHeight;
-                if (newValue != null) {
-                    reducedHeight.set((int) getDialogPane().getScene().getWindow().getHeight());
-                    newHeight = EXTENDED_HEIGHT;
-                } else {
-                    newHeight = reducedHeight.get();
-                }
-                getDialogPane().getScene().getWindow().setHeight(newHeight);
-            });
-        });
+        Platform.runLater( () -> {
+            getDialogPane().getScene().getWindow().setWidth(EXTENDED_WIDTH);
+            getDialogPane().getScene().getWindow().setHeight(EXTENDED_HEIGHT);
+        } );
 
         //Search unit supporting suggestions for openBIS entity-id
         searchUnit = getSearchUnit();
@@ -298,6 +297,7 @@ public class SyncJobDialog extends Dialog<SyncJob> {
 
                 openbisEntityIdAutocompletion.getSuggestions().addAll(resultsWithSectionTitles);
                 Platform.runLater( () -> {
+                    openbisEntityIdAutocompletion.setMinWidth(openbisEntityIdValue.getWidth());
                     openbisEntityIdAutocompletion.show(openbisEntityIdValue);
                 });
             } else {
@@ -308,6 +308,7 @@ public class SyncJobDialog extends Dialog<SyncJob> {
                         SharedContext.getContext().getI18n().get("sync_tasks.modal_panel.sync_task_modal.error_retrieving_entity_suggestions")
                 ));
                 Platform.runLater(() -> {
+                    openbisEntityIdAutocompletion.setMinWidth(openbisEntityIdValue.getWidth());
                     openbisEntityIdAutocompletion.show(openbisEntityIdValue);
                 });
             }
@@ -375,6 +376,7 @@ public class SyncJobDialog extends Dialog<SyncJob> {
 
     TextArea getIgnoredPathPatternsTextArea() {
         TextArea ignoredPathPatterns = new TextArea();
+        ignoredPathPatterns.setPrefWidth(2000);
         ignoredPathPatterns.setEditable(false);
         ignoredPathPatterns.setStyle("-fx-text-fill: grey");
         if (editedSyncJob != null) {
@@ -445,6 +447,7 @@ public class SyncJobDialog extends Dialog<SyncJob> {
         ignoredPathPatternValuesBox.getChildren().add(ignoredPathPatternsTextArea);
 
         Button restoreDefaultIgnoredPathsButton = new Button(i18n.get("sync_tasks.modal_panel.sync_task_modal.copy_global_default_list"));
+        restoreDefaultIgnoredPathsButton.setMinWidth(250);
         restoreDefaultIgnoredPathsButton.setOnAction((event) -> {
             Platform.runLater( () -> {
                 ignoredPathPatternsTextArea.setText(
@@ -508,11 +511,16 @@ public class SyncJobDialog extends Dialog<SyncJob> {
         }));
         if (editedSyncJob != null) {
             selectedSyncJobType.setValue(editedSyncJob.getType());
+
+            if (editedSyncJob.isEntityImmutable()) {
+                uploadChoice.setDisable(true);
+                bidirectionalChoice.setDisable(true);
+            }
         }
 
         entityChosen.addListener( (obs, oldValue, newValue) -> {
             if (newValue != null) {
-                if (!OpenBISQueryUtil.isEntityDataMutable(newValue)) {
+                if (newValue.isImmutable()) {
                     selectedSyncJobType.setValue(SyncJob.Type.Download);
 
                     uploadChoice.setDisable(true);
@@ -530,7 +538,7 @@ public class SyncJobDialog extends Dialog<SyncJob> {
 
     TextField getLocalDirectoryTextField() {
         TextField localDirectoryValue = new TextField();
-        localDirectoryValue.setPrefWidth(350);
+        localDirectoryValue.setPrefWidth(1200);
         localDirectoryValue.setEditable(false);
         DirectoryChooser directoryChooser = new DirectoryChooser();
         localDirectoryValue.setOnMouseClicked(new EventHandler<MouseEvent>() {
@@ -635,7 +643,7 @@ public class SyncJobDialog extends Dialog<SyncJob> {
 
     TextField getPersonalAccessTokenTextField() {
         TextField personalAccessTokenValue = new TextField();
-        personalAccessTokenValue.setPrefWidth(350);
+        personalAccessTokenValue.setPrefWidth(1200);
         addValidationLayerToTextInput(personalAccessTokenValue, (textInput) -> validatePersonalAccessTokenValue(textInput.getText()), personalAccessTokenPropertyError);
         if (editedSyncJob != null) {
             personalAccessTokenValue.setText(editedSyncJob.getOpenBisPersonalAccessToken());
@@ -667,7 +675,7 @@ public class SyncJobDialog extends Dialog<SyncJob> {
 
     TextField getRemoteDirectoryTextField() {
         TextField openbisServerDirectoryValue = new TextField();
-        openbisServerDirectoryValue.setPrefWidth(350);
+        openbisServerDirectoryValue.setPrefWidth(1200);
         addValidationLayerToTextInput(openbisServerDirectoryValue, (textInput) -> validateRemoteDirectoryValue(textInput.getText()), remoteDirectoryPropertyError);
         if (editedSyncJob != null) {
             openbisServerDirectoryValue.setText(editedSyncJob.getRemoteDirectoryRoot());
@@ -695,8 +703,7 @@ public class SyncJobDialog extends Dialog<SyncJob> {
 
     TextField getTitleTextField() {
         TextField titleValue = new TextField();
-        titleValue.setPrefWidth(350);
-        titleValue.setMaxWidth(350);
+        titleValue.setPrefWidth(1200);
         addValidationLayerToTextInput(titleValue, (textInput) -> validateTitleValue(textInput.getText()), titlePropertyError);
         if (editedSyncJob != null) {
             titleValue.setText(editedSyncJob.getTitle());
@@ -750,10 +757,17 @@ public class SyncJobDialog extends Dialog<SyncJob> {
 
             if( entitySuggestion.getKind() == EntitySuggestion.Kind.ENTITY ) {
                 AbstractEntity abstractEntity = entitySuggestion.getAbstractEntity();
-                entityChosen.set(abstractEntity);
+                entityChosen.set(
+                    new ChosenEntity(
+                        OpenBISQueryUtil.getEntityPermId(abstractEntity),
+                        toSyncJobEntityType(abstractEntity),
+                        !OpenBISQueryUtil.isEntityDataMutable(abstractEntity)
+                    )
+                );
                 openbisEntityIdValue.setText(OpenBISQueryUtil.getEntityPermId(abstractEntity));
                 titleValue.setText(OpenBISQueryUtil.getDisplayName(abstractEntity));
                 Platform.runLater(autoCompletePopup::hide);
+                Platform.runLater(this::doValidationOnAllInputFields);
             }
         }));
         return autoCompletePopup;
@@ -761,7 +775,7 @@ public class SyncJobDialog extends Dialog<SyncJob> {
 
     TextField getEntityIdTextField() {
         CustomTextField openbisEntityIdValue = new CustomTextField();
-        openbisEntityIdValue.setPrefWidth(350);
+        openbisEntityIdValue.setPrefWidth(1200);
         addValidationLayerToTextInput(openbisEntityIdValue, (textInput) -> validateEntityIdValue(textInput.getText()), entityIdPropertyError);
         if (editedSyncJob != null) {
             openbisEntityIdValue.setText(editedSyncJob.getEntityPermId());
@@ -769,7 +783,7 @@ public class SyncJobDialog extends Dialog<SyncJob> {
         openbisEntityIdValue.textProperty().addListener( (obs, oldValue, newValue) -> {
             if (newValue == null ||
                     (entityChosen.getValue() != null &&
-                            !newValue.trim().equals(OpenBISQueryUtil.getEntityPermId(entityChosen.getValue())))) {
+                            !newValue.trim().equals(entityChosen.getValue().getEntityId()))) {
                 entityChosen.setValue(null);
             }
             if ( entityChosen.getValue() == null && newValue != null ) {
@@ -804,9 +818,13 @@ public class SyncJobDialog extends Dialog<SyncJob> {
     String[] validateEntityIdValue(String entityIdInput) {
         if(entityIdInput == null || entityIdInput.isBlank()) {
             return new String[] { "error_tooltip.required_value" };
+        } else if(entityIdInput.length() > MAX_TEXT_INPUT_LENGTH) {
+            return new String[] { "error_tooltip.too_long_text_input" };
         } else {
-            if(entityIdInput.length() > MAX_TEXT_INPUT_LENGTH) {
-                return new String[] { "error_tooltip.too_long_text_input" };
+            String acceptedEntityId = ( entityChosen.getValue() != null ) ? entityChosen.getValue().getEntityId() : null;
+
+            if (acceptedEntityId == null || !acceptedEntityId.equals(entityIdInput.trim())) {
+                return new String[] { "error_tooltip.entity_id_non_from_server_suggestions" };
             } else {
                 return null;
             }
@@ -815,7 +833,7 @@ public class SyncJobDialog extends Dialog<SyncJob> {
 
     TextField getOpenbisServerUrlTextField() {
         TextField openbisServerUrlValue = new TextField();
-        openbisServerUrlValue.setPrefWidth(350);
+        openbisServerUrlValue.setPrefWidth(1200);
         addValidationLayerToTextInput(openbisServerUrlValue, (textInput) -> validateOpenbisServerUrlValue(openbisServerUrlValue.getText()), openbisUrlPropertyError);
         if (editedSyncJob != null) {
             openbisServerUrlValue.setText(editedSyncJob.getOpenBisUrl());
@@ -825,6 +843,7 @@ public class SyncJobDialog extends Dialog<SyncJob> {
         openbisServerUrlValue.textProperty().addListener( (obs, oldValue, newValue) -> {
             entityChosen.setValue(null);
         });
+        openbisServerUrlValue.setPromptText("http(s)://myopenbis.com");
         return openbisServerUrlValue;
     }
 
@@ -980,5 +999,24 @@ public class SyncJobDialog extends Dialog<SyncJob> {
         String title;
         String error;
         AbstractEntity abstractEntity;
+    }
+
+    @Value
+    static class ChosenEntity {
+        @NonNull String entityId;
+        SyncJob.EntityType entityType;
+        boolean immutable;
+    }
+
+    static SyncJob.EntityType toSyncJobEntityType(@NonNull AbstractEntity abstractEntity) {
+        if (abstractEntity instanceof Sample) {
+            return SyncJob.EntityType.Sample;
+        } else if (abstractEntity instanceof Experiment) {
+            return SyncJob.EntityType.Experiment;
+        } else if (abstractEntity instanceof DataSet) {
+            return SyncJob.EntityType.Dataset;
+        } else {
+            return null;
+        }
     }
 }

@@ -17,11 +17,14 @@ import java.util.stream.Stream;
 public class SyncJob {
     public enum Type { Bidirectional, Upload, Download }
     public enum IgnoredFilesMode { GlobalDefault, SpecificList, None }
+    public enum EntityType { Sample, Experiment, Dataset }
 
     @NonNull private Type type;
     @NonNull private String openBisUrl;
     @NonNull private String openBisPersonalAccessToken;
     @NonNull private String entityPermId;
+    private EntityType entityType;
+    private boolean entityImmutable;
     @NonNull private String title;
 
     @NonNull private String remoteDirectoryRoot;

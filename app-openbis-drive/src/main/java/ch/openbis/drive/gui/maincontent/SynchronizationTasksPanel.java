@@ -228,6 +228,7 @@ public class SynchronizationTasksPanel extends ResizablePanel {
         if (selectedSyncJob.isPresent()) {
             SyncJob syncJob = selectedSyncJob.get();
             SyncJobDialog syncJobDialog = new SyncJobDialog(syncJob, (Stage) this.getScene().getWindow(), syncJobs.getValue());
+            syncJobDialog.setResizable(true);
             Optional<SyncJob> newSyncJob = syncJobDialog.showAndWait();
             if (newSyncJob.isPresent()) {
                 ServiceCallHandler serviceCallHandler = SharedContext.getContext().getServiceCallHandler(parent);
@@ -246,6 +247,7 @@ public class SynchronizationTasksPanel extends ResizablePanel {
 
     private void openCreationDialogForNewSyncJob() {
         SyncJobDialog syncJobDialog = new SyncJobDialog(null, (Stage) this.getScene().getWindow(), syncJobs.getValue());
+        syncJobDialog.setResizable(true);
         Optional<SyncJob> newSyncJob = syncJobDialog.showAndWait();
         if (newSyncJob.isPresent()) {
             ServiceCallHandler serviceCallHandler = SharedContext.getContext().getServiceCallHandler(parent);

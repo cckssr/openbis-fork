@@ -43,6 +43,12 @@ public class ProtobufConversionUtil {
             syncJob.setEnabled(syncJobDto.getEnabled());
             syncJob.setOpenBisUrl(syncJobDto.getOpenBisUrl());
             syncJob.setEntityPermId(syncJobDto.getEntityPermId());
+            if (syncJobDto.hasEntityType()) {
+                syncJob.setEntityType(fromProtobuftoSyncJobEntityTypeEnum(syncJobDto.getEntityType()));
+            }
+            if (syncJobDto.hasEntityImmutable()) {
+                syncJob.setEntityImmutable(syncJobDto.getEntityImmutable());
+            }
             syncJob.setOpenBisPersonalAccessToken(syncJobDto.getOpenBisPersonalAccessToken());
             syncJob.setRemoteDirectoryRoot(syncJobDto.getRemoteDirectoryRoot());
             syncJob.setLocalDirectoryRoot(syncJobDto.getLocalDirectoryRoot());
@@ -65,6 +71,10 @@ public class ProtobufConversionUtil {
             syncJobBuilder.setLocalDirectoryRoot(syncJob.getLocalDirectoryRoot());
             syncJobBuilder.setOpenBisUrl(syncJob.getOpenBisUrl());
             syncJobBuilder.setEntityPermId(syncJob.getEntityPermId());
+            if (syncJob.getEntityType() != null) {
+                syncJobBuilder.setEntityType(toProtobufSyncJobEntityTypeEnum(syncJob.getEntityType()));
+            }
+            syncJobBuilder.setEntityImmutable(syncJob.isEntityImmutable());
             syncJobBuilder.setOpenBisPersonalAccessToken(syncJob.getOpenBisPersonalAccessToken());
             syncJobBuilder.setRemoteDirectoryRoot(syncJob.getRemoteDirectoryRoot());
             syncJobBuilder.setIgnoreFiles(toProtobufSyncJobIgnoreFilesModeEnum(syncJob.getIgnoreFiles()));
@@ -205,6 +215,23 @@ public class ProtobufConversionUtil {
             case GlobalDefault -> DriveApiService.SyncJob.IgnoreFilesMode.GLOBAL_DEFAULT;
             case SpecificList -> DriveApiService.SyncJob.IgnoreFilesMode.SPECIFIC_LIST;
             case None -> DriveApiService.SyncJob.IgnoreFilesMode.NONE;
+        };
+    }
+
+    public static SyncJob.EntityType fromProtobuftoSyncJobEntityTypeEnum(@NonNull DriveApiService.SyncJob.EntityType entityType) {
+        return switch (entityType) {
+            case SAMPLE -> SyncJob.EntityType.Sample;
+            case EXPERIMENT -> SyncJob.EntityType.Experiment;
+            case DATASET -> SyncJob.EntityType.Dataset;
+            case UNRECOGNIZED -> throw new IllegalArgumentException("Unknown entity type");
+        };
+    }
+
+    public static DriveApiService.SyncJob.EntityType toProtobufSyncJobEntityTypeEnum(@NonNull SyncJob.EntityType entityType) {
+        return switch (entityType) {
+            case Sample -> DriveApiService.SyncJob.EntityType.SAMPLE;
+            case Experiment -> DriveApiService.SyncJob.EntityType.EXPERIMENT;
+            case Dataset -> DriveApiService.SyncJob.EntityType.DATASET;
         };
     }
 }
