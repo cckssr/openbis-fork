@@ -1,12 +1,15 @@
 package ch.ethz.sis.openbis.generic.imagingapi.v3.dto;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.property.PropertiesDeserializer;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @JsonObject("imaging.dto.ImagingDataSetExportConfig")
 public class ImagingDataSetExportConfig implements Serializable
@@ -24,6 +27,10 @@ public class ImagingDataSetExportConfig implements Serializable
 
     @JsonProperty
     private List<ImagingExportIncludeOptions> include = new ArrayList<>();
+
+    @JsonProperty
+    @JsonDeserialize(contentUsing = PropertiesDeserializer.class)
+    private Map<String, String> customOptions;
 
 
     @JsonIgnore
@@ -68,6 +75,17 @@ public class ImagingDataSetExportConfig implements Serializable
     public void setInclude(List<ImagingExportIncludeOptions> include)
     {
         this.include = include;
+    }
+
+    @JsonIgnore
+    public Map<String, String> getCustomOptions()
+    {
+        return customOptions;
+    }
+
+    public void setCustomOptions(Map<String, String> customOptions)
+    {
+        this.customOptions = customOptions;
     }
 
 }
