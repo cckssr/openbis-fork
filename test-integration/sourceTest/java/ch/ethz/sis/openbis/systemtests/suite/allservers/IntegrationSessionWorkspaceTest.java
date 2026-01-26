@@ -16,6 +16,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.eclipse.jetty.client.ContentResponse;
+import org.eclipse.jetty.client.HttpClient;
+import org.eclipse.jetty.client.Request;
+import org.testng.Assert;
 import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeSuite;
@@ -48,6 +52,9 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 import ch.ethz.sis.openbis.systemtests.environment.IntegrationTestFacade;
 import ch.ethz.sis.openbis.systemtests.suite.allservers.environment.AllServersIntegrationTestEnvironment;
+import ch.systemsx.cisd.common.http.JettyHttpClientFactory;
+import ch.systemsx.cisd.openbis.generic.shared.util.TestInstanceHostUtils;
+import ch.systemsx.cisd.openbis.dss.generic.shared.api.v1.DataStoreApiUrlUtilities;
 
 public class IntegrationSessionWorkspaceTest
 {
@@ -203,9 +210,163 @@ public class IntegrationSessionWorkspaceTest
         openBIS.logout();
     }
 
+    @Test
+    public void testDownloadUrlCompatibility() throws Exception
+    {
+        final OpenBIS openBIS = facade.createOpenBIS();
+        final String sessionId = openBIS.login(INSTANCE_ADMIN, PASSWORD);
+        final String sampleIdentifierString = "/DEFAULT/DEFAULT/DEFAULT";
+
+        final SamplePermId samplePermId = openBIS.getSamples(
+                        List.of(new SampleIdentifier(sampleIdentifierString)),
+                        new SampleFetchOptions())
+                .values().iterator().next().getPermId();
+
+        final ExportResult exportResult = openBIS.executeExport(
+                new ExportData(
+                        List.of(new ExportablePermId(ExportableKind.SAMPLE, samplePermId.getPermId())),
+                        AllFields.INSTANCE),
+                new ExportOptions(Set.of(ExportFormat.HTML), XlsTextFormat.PLAIN, true, false, false));
+
+        final String downloadURL = exportResult.getDownloadURL();
+        assertNotNull(downloadURL);
+        assertFalse(downloadURL.isBlank());
+
+        // sanity: file really exists on disk
+        final File exportedFile = new File(String.format(
+                "targets/sessionWorkspace/%s/%s",
+                sessionId, getBareFileName(downloadURL)));
+        assertTrue(exportedFile.exists());
+
+        HttpClient client = JettyHttpClientFactory.getHttpClient();
+
+        // --- 1. Normal URL (baseline) ---
+        assertDownloadWorks(client, downloadURL, sampleIdentifierString, "normal URL");
+
+        // --- 2. Trailing slash ---
+        String trailingSlashUrl = addTrailingSlash(downloadURL);
+        assertDownloadWorks(client, trailingSlashUrl, sampleIdentifierString, "trailing slash");
+
+        // --- 3. Double slash ---
+        String doubleSlashUrl = downloadURL.replaceFirst("/([^/]+)$", "//$1");
+        assertDownloadWorks(client, doubleSlashUrl, sampleIdentifierString, "double slash");
+
+        // --- 4. Encoded slash in last path segment (%2F) ---
+        if (downloadURL.contains("/"))
+        {
+            String encodedSlashUrl = replaceLastSlashWithEncoded(downloadURL);
+            assertDownloadWorks(client, encodedSlashUrl, sampleIdentifierString, "encoded slash %2F");
+        }
+
+        openBIS.logout();
+    }
+
+    @Test
+    public void testDssDownloadUrlCompatibility() throws Exception
+    {
+        final OpenBIS openBIS = facade.createOpenBIS();
+        final String sessionId = openBIS.login(INSTANCE_ADMIN, PASSWORD);
+
+        final Path originalFilePath = Path.of("sourceTest/resource/" + getClass().getSimpleName() + "/dss-download-test.txt");
+        final String expectedContent = new String(Files.readAllBytes(originalFilePath));
+
+        final String uploadId = openBIS.getDataStoreFacade().uploadToSessionWorkspace(originalFilePath);
+        final String filePath = uploadId + "/" + originalFilePath.getFileName();
+
+        final String dssBaseUrl = DataStoreApiUrlUtilities.getDownloadUrlFromDataStoreUrl(
+                TestInstanceHostUtils.getDSSUrl());
+        final String downloadURL = dssBaseUrl + "/session_workspace_file_download?sessionID=" + sessionId + "&filePath=" + filePath;
+
+        HttpClient client = JettyHttpClientFactory.getHttpClient();
+
+        // --- 1. Normal URL (baseline) ---
+        assertDownloadWorks(client, downloadURL, expectedContent, "DSS normal URL");
+
+        // --- 2. Trailing slash ---
+        String trailingSlashUrl = addTrailingSlash(downloadURL);
+        assertDownloadWorks(client, trailingSlashUrl, expectedContent, "DSS trailing slash");
+
+        // --- 3. Double slash ---
+        String doubleSlashUrl = downloadURL.replaceFirst("/([^/]+)$", "//$1");
+        assertDownloadWorks(client, doubleSlashUrl, expectedContent, "DSS double slash");
+
+        // --- 4. Encoded slash in last path segment (%2F) ---
+        if (downloadURL.contains("/"))
+        {
+            String encodedSlashUrl = replaceLastSlashWithEncoded(downloadURL);
+            assertDownloadWorks(client, encodedSlashUrl, expectedContent, "DSS encoded slash %2F");
+        }
+
+
+        openBIS.logout();
+    }
+
+
+    private String replaceLastSlashWithEncoded(String url)
+    {
+        int idx = url.lastIndexOf('/');
+        if (idx < 0)
+        {
+            return url;
+        }
+        return url.substring(0, idx) + "%2F" + url.substring(idx + 1);
+    }
+
+    private void assertDownloadWorks(HttpClient client,
+            String url,
+            String expectedContent,
+            String label) throws Exception
+    {
+        Request request = client.newRequest(url);
+        ContentResponse response = request.send();
+
+        Assert.assertEquals(
+                response.getStatus(),
+                200,
+                "Failed for case: " + label + " with URL: " + url);
+    }
+
+    private String toggleCase(String url)
+    {
+        // crude but effective: flip case of path only
+        int idx = url.indexOf("://");
+        if (idx < 0) return url;
+
+        int pathStart = url.indexOf('/', idx + 3);
+        if (pathStart < 0) return url;
+
+        String prefix = url.substring(0, pathStart);
+        String path = url.substring(pathStart);
+
+        StringBuilder sb = new StringBuilder();
+        for (char c : path.toCharArray())
+        {
+            if (Character.isUpperCase(c)) sb.append(Character.toLowerCase(c));
+            else if (Character.isLowerCase(c)) sb.append(Character.toUpperCase(c));
+            else sb.append(c);
+        }
+
+        return prefix + sb.toString();
+    }
+
+
     private static String getBareFileName(final String url)
     {
         return url.substring(url.lastIndexOf("=") + 1);
+    }
+
+    private static String addTrailingSlash(final String url)
+    {
+        int queryIndex = url.indexOf('?');
+        if (queryIndex < 0)
+        {
+            return url.endsWith("/") ? url : url + "/";
+        }
+        if (queryIndex > 0 && url.charAt(queryIndex - 1) == '/')
+        {
+            return url;
+        }
+        return url.substring(0, queryIndex) + "/" + url.substring(queryIndex);
     }
 
 }

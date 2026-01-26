@@ -35,6 +35,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import ch.ethz.sis.shared.log.classic.impl.Logger;
 import org.eclipse.jetty.ee10.servlet.SessionHandler;
 import ch.ethz.sis.shared.log.classic.impl.SimpleLogger;
+import org.eclipse.jetty.http.UriCompliance;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
@@ -157,6 +158,8 @@ public class DataStoreServer
     public static final void start()
     {
         assert server == null : "Server already started";
+        System.setProperty("org.eclipse.jetty.util.UrlEncoded.allowEncodedSlash", "true");
+
         ConfigParameters configParams = getConfigParameters();
         final IEncapsulatedOpenBISService openBISService = ServiceProvider.getOpenBISService();
         OpenbisSessionTokenCache sessionTokenCache =
@@ -511,6 +514,7 @@ public class DataStoreServer
     {
         HttpConfiguration httpConfig = new HttpConfiguration();
         httpConfig.setSecureScheme("https");
+        httpConfig.setUriCompliance(UriCompliance.UNSAFE);
 
         if (configParams.isUseSSL())
         {
@@ -543,6 +547,7 @@ public class DataStoreServer
             sslContextFactory.setSniRequired(false);
 
             HttpConfiguration httpsConfig = new HttpConfiguration(httpConfig);
+            httpConfig.setUriCompliance(UriCompliance.UNSAFE);
 
             SecureRequestCustomizer customizer = new SecureRequestCustomizer();
             customizer.setSniHostCheck(false);

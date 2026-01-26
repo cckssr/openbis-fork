@@ -16,6 +16,35 @@
     -->
     <context:annotation-config />
 
+    <!-- spring 5 old url compatibility  -->
+    <bean id="requestMappingHandlerMapping"
+          class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping">
+
+        <property name="patternParser">
+            <null/>
+        </property>
+
+        <property name="useTrailingSlashMatch" value="true"/>
+
+        <property name="pathMatcher">
+            <bean class="org.springframework.util.AntPathMatcher">
+                <property name="caseSensitive" value="false"/>
+                <property name="trimTokens" value="false"/>
+            </bean>
+        </property>
+
+        <property name="urlPathHelper">
+            <bean class="org.springframework.web.util.UrlPathHelper">
+                <property name="removeSemicolonContent" value="false"/>
+                <property name="urlDecode" value="true"/>
+                <property name="alwaysUseFullPath" value="false"/>
+            </bean>
+        </property>
+    </bean>
+
+
+
+
 
     <bean class="ch.systemsx.cisd.common.spring.CheckSecureHttpInvokerBeanPostProcessor" />
     

@@ -26,6 +26,8 @@ import com.googlecode.jsonrpc4j.ErrorResolver;
 import com.googlecode.jsonrpc4j.JsonRpcInterceptor;
 import com.googlecode.jsonrpc4j.spring.JsonServiceExporter;
 
+import org.springframework.aop.framework.ProxyFactory;
+
 import ch.systemsx.cisd.common.api.IRpcService;
 import ch.systemsx.cisd.common.api.IRpcServiceNameServer;
 import ch.systemsx.cisd.common.api.RpcServiceInterfaceVersionDTO;
@@ -50,35 +52,7 @@ public abstract class AbstractApiJsonServiceExporter extends JsonServiceExporter
             IRpcService service, String serviceName, String serviceURL)
     {
         setServiceInterface(serviceInterface);
-        setService(service);
-        setInterceptorList(List.of(new JsonRpcInterceptor()
-        {
-            @Override
-            public void preHandleJson(JsonNode json)
-            {
-
-            }
-
-            @Override
-            public void preHandle(Object target, Method method, List<JsonNode> params)
-            {
-
-            }
-
-            @Override
-            public void postHandle(Object target, Method method, List<JsonNode> params,
-                    JsonNode result)
-            {
-
-            }
-
-            @Override
-            public void postHandleJson(JsonNode json)
-            {
-
-            }
-        }));
-        // TODO FIX setInterceptors(new Object[] { new ServiceExceptionTranslator() });
+        setService(wrapWithExceptionTranslator(service));
         int majorVersion = service.getMajorVersion();
         int minorVersion = service.getMinorVersion();
         RpcServiceInterfaceVersionDTO ifaceVersion =
@@ -86,5 +60,12 @@ public abstract class AbstractApiJsonServiceExporter extends JsonServiceExporter
                         minorVersion);
         nameServer.addSupportedInterfaceVersion(ifaceVersion);
         setErrorResolver(new JsonErrorResolver());
+    }
+
+    private IRpcService wrapWithExceptionTranslator(IRpcService service)
+    {
+        ProxyFactory proxyFactory = new ProxyFactory(service);
+        proxyFactory.addAdvice(new ServiceExceptionTranslator());
+        return (IRpcService) proxyFactory.getProxy();
     }
 }
