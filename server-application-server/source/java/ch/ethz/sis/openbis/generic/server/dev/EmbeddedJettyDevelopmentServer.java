@@ -19,6 +19,8 @@ package ch.ethz.sis.openbis.generic.server.dev;
 
 
 import org.eclipse.jetty.ee.webapp.WebAppClassLoader;
+import org.eclipse.jetty.server.Connector;
+import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.ee10.webapp.WebAppContext;
 
@@ -40,6 +42,8 @@ public class EmbeddedJettyDevelopmentServer
         String libDir = null;
         int port = 0;
         String webappBase = null;
+
+        System.setProperty("org.eclipse.jetty.util.UrlEncoded.allowEncodedSlash", "true");
 
         // parse args exactly as “--classes DIR” … “--lib DIR” “--port N” “<webappBase>”
         for (int i = 0; i < args.length; i++) {
@@ -103,6 +107,17 @@ public class EmbeddedJettyDevelopmentServer
 
         // build server and context as you already do
         Server server = new Server(port);
+
+        Connector[] connectors = server.getConnectors();
+        if (connectors.length > 0 && connectors[0] instanceof org.eclipse.jetty.server.ServerConnector sc) {
+            HttpConnectionFactory httpConnectionFactory = sc.getConnectionFactory(org.eclipse.jetty.server.HttpConnectionFactory.class);
+            if (httpConnectionFactory != null) {
+                httpConnectionFactory.getHttpConfiguration()
+                        .setUriCompliance(org.eclipse.jetty.http.UriCompliance.UNSAFE);
+            }
+        }
+
+
         WebAppContext context = getWebAppContext(webappBase, /* will set CL next */ null);
         context.setParentLoaderPriority(true);
         // create a Jetty WebAppClassLoader with the parent = launcher CL
@@ -132,9 +147,6 @@ public class EmbeddedJettyDevelopmentServer
 
         // now proceed
         server.setHandler(context);
-
-       // context.setDefaultsDescriptor("resource/source/webdefault-ee10-no-cleaner.xml");
-        // copy Jetty’s webdefault-ee10.xml and delete the <listener>IntrospectorCleaner</listener>
 
         var sh = context.getServletHandler();
         System.out.println("== Servlet mappings ==");
