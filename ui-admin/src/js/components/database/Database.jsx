@@ -40,7 +40,7 @@ class Database extends React.PureComponent {
   }
 
   renderComponent(tab) {
-    return <DatabaseComponent object={tab.object} />
+    return <DatabaseComponent object={tab.route} />
   }
 
   renderTab(tab) {
