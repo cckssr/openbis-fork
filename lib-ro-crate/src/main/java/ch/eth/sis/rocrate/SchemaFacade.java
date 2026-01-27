@@ -248,6 +248,10 @@ public class SchemaFacade implements ISchemaFacade
         });
         DataEntity dataEntity = builder.build();
         metaDataEntry.getReferences().forEach(dataEntity::addIdListProperties);
+        for (String type : metaDataEntry.getTypes())
+        {
+            metadataEntries.put(type, metaDataEntry);
+        }
 
         crate.addDataEntity(dataEntity);
 
@@ -589,6 +593,16 @@ public class SchemaFacade implements ISchemaFacade
 
     private String resolvePrefixSingleValue(String type)
     {
+        if (identifiersToEnlong == null)
+        {
+            identifiersToEnlong = new LinkedHashMap<>();
+
+        }
+        if (identifiersToShorten == null)
+        {
+            identifiersToShorten = new LinkedHashMap<>();
+        }
+
         if (identifiersToEnlong.containsKey(type))
         {
             return identifiersToEnlong.get(type);
