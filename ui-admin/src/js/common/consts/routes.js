@@ -28,10 +28,20 @@ class Route {
     let toPathObject = match(this.pattern, { decode: decodeURIComponent })
     let pathObject = toPathObject(path)
     if (pathObject) {
+
+      var object = { ...pathObject.params, ...this.params }
+      _.unset(object, "page")
+      if (_.isEmpty(object)) {
+        object = null
+      }
+
       return {
+        object: object,
         path: pathObject.path,
-        ...pathObject.params,
-        ...this.params
+        params: {
+          ...pathObject.params,
+          ...this.params
+        }
       }
     } else {
       return null
@@ -317,9 +327,9 @@ function parse(path) {
   let keys = Object.keys(routes)
   for (let i = 0; i < keys.length; i++) {
     let route = routes[keys[i]]
-    let params = route.parse(path)
-    if (params) {
-      return params
+    let result = route.parse(path)
+    if (result) {
+      return result
     }
   }
   return null

@@ -171,15 +171,14 @@ export class AppController {
 
   async routeChanged(path) {
     const newRoute = routes.parse(path)
-    if (newRoute.type && newRoute.id) {
-      const object = { type: newRoute.type, id: newRoute.id, params: newRoute }
-      const openTabs = this.getOpenTabs(newRoute.page)
+    if (newRoute.object) {
+      const openTabs = this.getOpenTabs(newRoute.params.page)
       if (openTabs) {
         let found = false
         let id = 1
 
         openTabs.forEach(openTab => {
-          if (_.isMatch(openTab.object, object)) {
+          if (_.isEqual(openTab.route, newRoute)) {
             found = true
           }
           if (openTab.id >= id) {
@@ -187,11 +186,11 @@ export class AppController {
           }
         })
         if (!found) {
-          await this.addOpenTab(newRoute.page, id, { id, object })
+          await this.addOpenTab(newRoute.params.page, id, { id, route: newRoute, object: newRoute.object })
         }
       }
     }
-    await this.setCurrentRoute(newRoute.page, newRoute.path)
+    await this.setCurrentRoute(newRoute.params.page, newRoute.path)
     const newState = this.context.getState()
   }
 
@@ -205,7 +204,7 @@ export class AppController {
     this.history.replace(route)
   }
 
-  async objectNew(page, type, params) {
+  async objectNew(page, type, params = {}) {
     let id = 1
     const openObjects = this.getOpenObjects(page)
     openObjects.forEach(openObject => {
@@ -223,15 +222,18 @@ export class AppController {
     const oldTab = _.find(openTabs, { object: { type: oldType, id: oldId } })
 
     if (oldTab) {
+      const path = routes.format({ page, type: newType, id: newId })
+      const route = routes.parse(path)
+
       const newTab = {
-        ...oldTab,
+        id: oldTab.id,
+        route: route,
         object: { type: newType, id: newId },
         changed: false
       }
-      await this.replaceOpenTab(page, oldTab.id, newTab)
-      const route = routes.format({ page, type: newType, id: newId })
-      await this.routeReplace(route)
 
+      await this.replaceOpenTab(page, oldTab.id, newTab)
+      await this.routeReplace(path)
       await this.setLastObjectModification(
         newType,
         objectOperation.CREATE,
@@ -240,7 +242,7 @@ export class AppController {
     }
   }
 
-  async objectOpen(page, type, id, params={}) {
+  async objectOpen(page, type, id, params = {}) {
     const route = routes.format({ page, type, id, ...params })
     await this.routeChange(route)
   }
@@ -271,35 +273,32 @@ export class AppController {
     }
   }
 
-  async objectClose(page, type, id) {
+  async objectClose(page, type, id, params = {}) {
     const openTabs = this.getOpenTabs(page)
-    const objectToClose = { type, id }
+    const selectedObject = this.getSelectedObject(page)
+    const objectToClose = { type, id, ...params }
 
-    let selectedObject = this.getSelectedObject(page)
-    if (selectedObject && selectedObject.type === objectToClose.type && selectedObject.id === objectToClose.id) {
+    let tabToSelect = null
+    if (selectedObject && _.isEqual(selectedObject, objectToClose)) {
       if (_.size(openTabs) === 1) {
-        selectedObject = null
+        tabToSelect = null
       } else {
-        let selectedIndex = _.findIndex(openTabs, tab => tab.object.type === selectedObject.type && tab.object.id === selectedObject.id)
+        let selectedIndex = _.findIndex(openTabs, { object: selectedObject })
         if (selectedIndex === 0) {
-          selectedObject = openTabs[selectedIndex + 1].object
+          tabToSelect = openTabs[selectedIndex + 1]
         } else {
-          selectedObject = openTabs[selectedIndex - 1].object
+          tabToSelect = openTabs[selectedIndex - 1]
         }
       }
     }
 
-    let tabToClose = _.find(openTabs, tab => tab.object.type === objectToClose.type && tab.object.id === objectToClose.id)
+    let tabToClose = _.find(openTabs, { object: objectToClose })
     if (tabToClose) {
       await this.removeOpenTab(page, tabToClose.id)
     }
 
-    if (selectedObject) {
-      const route = routes.format({
-        page,
-        type: selectedObject.type,
-        id: selectedObject.id
-      })
+    if (tabToSelect) {
+      const route = routes.format(tabToSelect.route.params)
       await this.routeChange(route)
     } else {
       const route = routes.format({ page })
@@ -352,7 +351,7 @@ export class AppController {
 
   getCurrentPage() {
     const route = this.getRoute()
-    return routes.parse(route).page
+    return routes.parse(route).params.page
   }
 
   getCurrentRoute(page) {
@@ -376,8 +375,8 @@ export class AppController {
     const path = this.getCurrentRoute(page)
     if (path) {
       const route = routes.parse(path)
-      if (route && route.type && route.id) {
-        return { type: route.type, id: route.id, params: route }
+      if (route && route.object) {
+        return route.object
       }
     }
     return null
@@ -407,15 +406,15 @@ export class AppController {
 
   async setOpenTabs(page, newOpenTabs) {
     await this.context.setState(state => (
-    {
-      pages: {
-        ...state.pages,
-        [page]: {
-          ...state.pages[page],
-          openTabs: newOpenTabs
+      {
+        pages: {
+          ...state.pages,
+          [page]: {
+            ...state.pages[page],
+            openTabs: newOpenTabs
+          }
         }
-      }
-    }))
+      }))
   }
 
   async addOpenTab(page, id, tab) {

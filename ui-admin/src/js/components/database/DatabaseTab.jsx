@@ -1,10 +1,11 @@
-import React from 'react'
-import AppController from '@src/js/components/AppController.js'
-import openbis from '@src/js/services/openbis.js'
 import objectType from '@src/js/common/consts/objectType.js'
 import pages from '@src/js/common/consts/pages.js'
 import logger from '@src/js/common/logger.js'
+import AppController from '@src/js/components/AppController.js'
 import ContentTab from '@src/js/components/common/content/ContentTab.jsx'
+import openbis from '@src/js/services/openbis.js'
+import _ from 'lodash'
+import React from 'react'
 
 class DatabaseTab extends React.PureComponent {
   constructor(props) {
@@ -15,9 +16,17 @@ class DatabaseTab extends React.PureComponent {
   }
 
   async componentDidMount() {
+    await this.componentDidUpdate()
+  }
+
+  async componentDidUpdate() {
     try {
       const { tab } = this.props
-      const { object, changed } = tab
+      const { object, label } = tab
+
+      if (!_.isEmpty(label)) {
+        return;
+      }
 
       let typeText = null
       let idText = null
@@ -76,7 +85,6 @@ class DatabaseTab extends React.PureComponent {
 
   render() {
     logger.log(logger.DEBUG, 'DatabaseTab.render')
-    //return this.props.tab.label || ''
     return <ContentTab label={this.props.tab.label} changed={this.props.tab.changed} />
   }
 }

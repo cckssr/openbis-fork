@@ -306,9 +306,9 @@ class DatabaseComponent extends React.PureComponent {
     console.log('DatabaseComponent.renderJson', object);
     return (
       <FormErrorBoundary>
-        <EntityFormContextProvider 
+        <EntityFormContextProvider
           openbisFacade={openbis}
-          params={object.params}
+          params={object}
           entityKind={object.type}
           permId={object.id}
           user={AppController.getInstance().getUser()}
