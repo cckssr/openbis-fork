@@ -1147,8 +1147,8 @@ function MainController(profile) {
 	this._getBackwardsCompatibleMainContainer = function(id, navigationTabInfo) {
 	    var header = null;
 		var content = $("<div>");
-		content.css("padding-left", "10px");
-		content.css("padding-top", "10px");
+		content.css("margin-left", "10px");
+		content.css("margin-top", "10px");
 
 		if(id) {
 			content.attr("id", id);
@@ -1243,7 +1243,7 @@ function MainController(profile) {
 			    content = $("<div>");
 			}
 			content.css({
-				"padding-left" : "10px"
+				"margin-left" : "10px"
 			});
 			if(!withAuxContentOrAuxContentId) {  // Setting 100% height breaks views with 3 columns on tablet mode, better to explicitly set to 100% when the third column is not used
 				content.css({
