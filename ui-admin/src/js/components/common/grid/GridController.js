@@ -1450,7 +1450,7 @@ export default class GridController {
         const filePath = exportResult.result.file_name
         const fileName = filePath.substring(filePath.lastIndexOf('/') + 1)
         const fileUrl =
-          '/openbis/openbis/download/?sessionID=' +
+          '/openbis/openbis/download?sessionID=' +
           encodeURIComponent(sessionToken) +
           '&filePath=' +
           encodeURIComponent(filePath)
