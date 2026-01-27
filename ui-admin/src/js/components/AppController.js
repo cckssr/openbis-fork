@@ -171,14 +171,15 @@ export class AppController {
 
   async routeChanged(path) {
     const newRoute = routes.parse(path)
-    if (newRoute.object) {
-      const openTabs = this.getOpenTabs(newRoute.params.page)
+    if (newRoute.type && newRoute.id) {
+      const object = { type: newRoute.type, id: newRoute.id }
+      const openTabs = this.getOpenTabs(newRoute.page)
       if (openTabs) {
         let found = false
         let id = 1
 
         openTabs.forEach(openTab => {
-          if (_.isEqual(openTab.route, newRoute)) {
+          if (_.isEqual(openTab.object, object)) {
             found = true
           }
           if (openTab.id >= id) {
@@ -186,11 +187,11 @@ export class AppController {
           }
         })
         if (!found) {
-          await this.addOpenTab(newRoute.params.page, id, { id, route: newRoute, object: newRoute.object })
+          await this.addOpenTab(newRoute.page, id, { id, route: newRoute, object })
         }
       }
     }
-    await this.setCurrentRoute(newRoute.params.page, newRoute.path)
+    await this.setCurrentRoute(newRoute.page, newRoute.path)
     const newState = this.context.getState()
   }
 
@@ -273,10 +274,10 @@ export class AppController {
     }
   }
 
-  async objectClose(page, type, id, params = {}) {
+  async objectClose(page, type, id) {
     const openTabs = this.getOpenTabs(page)
     const selectedObject = this.getSelectedObject(page)
-    const objectToClose = { type, id, ...params }
+    const objectToClose = { type, id }
 
     let tabToSelect = null
     if (selectedObject && _.isEqual(selectedObject, objectToClose)) {
@@ -298,7 +299,7 @@ export class AppController {
     }
 
     if (tabToSelect) {
-      const route = routes.format(tabToSelect.route.params)
+      const route = routes.format(tabToSelect.route)
       await this.routeChange(route)
     } else {
       const route = routes.format({ page })
@@ -351,7 +352,7 @@ export class AppController {
 
   getCurrentPage() {
     const route = this.getRoute()
-    return routes.parse(route).params.page
+    return routes.parse(route).page
   }
 
   getCurrentRoute(page) {
@@ -375,8 +376,8 @@ export class AppController {
     const path = this.getCurrentRoute(page)
     if (path) {
       const route = routes.parse(path)
-      if (route && route.object) {
-        return route.object
+      if (route && route.type && route.id) {
+        return { type: route.type, id: route.id }
       }
     }
     return null
