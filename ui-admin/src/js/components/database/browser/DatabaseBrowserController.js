@@ -41,8 +41,10 @@ export default class DatabaseBrowserController extends BrowserController {
   }
 
   async selectObject(nodeObject, event) {
-    if (_.isNil(nodeObject) || OBJECT_TYPES.includes(nodeObject.type)) {
+    if (!_.isNil(nodeObject) && OBJECT_TYPES.includes(nodeObject.type)) {
       await super.selectObject(nodeObject, event);
+    } else {
+      await super.selectObject(null);
     }
   }
 
