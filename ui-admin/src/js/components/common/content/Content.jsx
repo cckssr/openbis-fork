@@ -40,7 +40,8 @@ class Content extends React.PureComponent {
     AppController.getInstance().objectOpen(
       this.props.page,
       tab.object.type,
-      tab.object.id
+      tab.object.id,
+      tab.route
     )
   }
 

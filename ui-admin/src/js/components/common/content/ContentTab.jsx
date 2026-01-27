@@ -1,3 +1,4 @@
+import _ from 'lodash'
 import React from 'react'
 import logger from '@src/js/common/logger.js'
 import withStyles from '@mui/styles/withStyles';
@@ -20,16 +21,22 @@ class ContentTab extends React.PureComponent {
 
     const { label, icon, changed } = this.props
 
-    let text = label + (changed ? '*' : '');
-    if(!icon) {
-        return text;
+    if (_.isEmpty(label)) {
+      return null
     }
-    return (<>
-                <div className={this.props.classes.iconTab}>
-                    <div dangerouslySetInnerHTML={{ __html: icon }} />
-                    <div className={this.props.classes.text}>{' ' + text}</div>
-                </div>
-            </>)
+
+    let text = label + (changed ? '*' : '');
+
+    if (icon) {
+      return (<>
+        <div className={this.props.classes.iconTab}>
+          <div dangerouslySetInnerHTML={{ __html: icon }} />
+          <div className={this.props.classes.text}>{' ' + text}</div>
+        </div>
+      </>)
+    } else {
+      return text;
+    }
   }
 }
 

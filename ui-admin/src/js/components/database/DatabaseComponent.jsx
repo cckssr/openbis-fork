@@ -320,7 +320,7 @@ class DatabaseComponent extends React.PureComponent {
   renderJson() {  
     const { object } = this.props
     return (<EntityFormContextProvider openbisFacade={openbis}
-      params={object.params}
+      params={object}
       entityKind={object.type}
       permId={object.id}
       user={AppController.getInstance().getUser()}
