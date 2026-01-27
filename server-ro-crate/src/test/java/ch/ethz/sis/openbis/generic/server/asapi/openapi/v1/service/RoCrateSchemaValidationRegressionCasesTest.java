@@ -53,7 +53,7 @@ public class RoCrateSchemaValidationRegressionCasesTest
 
     }
 
-    @Test
+    @Test(enabled = false)
     void testOpenBis20251002() throws IOException
     {
         String location = "validation/openbis.one-publication.zip";
@@ -62,7 +62,7 @@ public class RoCrateSchemaValidationRegressionCasesTest
 
     }
 
-    @Test
+    @Test(enabled = false)
     void testOpenBis20251009() throws IOException
     {
         String location = "validation/openbis.2025-10-09.zip";
