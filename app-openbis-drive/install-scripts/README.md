@@ -120,6 +120,12 @@ The graphical user-interface can be started by entering into the [launch-scripts
 
 Alternatively and more directly, through the desktop-link, if it was added to the desktop.
 
+### Skipping TLS certificate checks for OpenBIS servers
+
+If working with OpenBIS servers covered by self-signed TLS certificates (or anyway not validatable by public certificate authorities, or expired, ...),
+one can modify (create if necessary) a file openbis-drive.properties under the [installation directory](#installation-directory)
+adding (or adapting) the following key-value line: `ch.ethz.sis.afs.client.client.noTLSCertCheck=true`
+
 ### Appendix:
 #### Installation directory
 - for Linux: `$HOME/.local/state/openbis-drive/`

@@ -7,9 +7,13 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.mockito.Mockito;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.Map;
 
@@ -65,5 +69,25 @@ public class ConfigurationTest extends TestCase {
         String dirPath = Path.of(this.getClass().getClassLoader().getResource("placeholder.txt").getPath()).getParent().toString();
         Configuration configuration = new Configuration(Map.of(Configuration.LOCAL_APPLICATION_DIRECTORY_ENV_KEY, dirPath));
         Assert.assertEquals(Path.of(dirPath).toAbsolutePath().resolve(Configuration.LOCAL_OPENBIS_STATE_DIRECTORY), configuration.getLocalAppStateDirectory());
+    }
+
+    @Test()
+    public void testReadOpenbisDriveProperties() throws IOException {
+        String dirPath = Path.of(this.getClass().getClassLoader().getResource("placeholder.txt").getPath()).getParent().toString();
+
+        Files.write(Path.of(dirPath).resolve(Path.of("openbis-drive.properties")),
+                "ch.ethz.sis.afs.client.client.noTLSCertCheck=true".getBytes(StandardCharsets.UTF_8),
+                StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+
+        Configuration configuration = Mockito.spy(new Configuration(Map.of(Configuration.LOCAL_APPLICATION_DIRECTORY_ENV_KEY, dirPath)));
+        Mockito.doNothing().when(configuration).setSystemProperty(Mockito.anyString(), Mockito.anyString());
+
+        configuration.readOpenbisDriveProperties();
+        Mockito.verify(configuration, Mockito.times(1)).setSystemProperty("ch.ethz.sis.afs.client.client.noTLSCertCheck", "true");
+
+        Mockito.clearInvocations(configuration);
+        Files.delete(Path.of(dirPath).resolve(Path.of("openbis-drive.properties")));
+        configuration.readOpenbisDriveProperties();
+        Mockito.verify(configuration, Mockito.times(0)).setSystemProperty(Mockito.anyString(), Mockito.anyString());
     }
 }

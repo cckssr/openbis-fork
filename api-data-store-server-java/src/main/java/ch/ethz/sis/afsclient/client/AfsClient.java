@@ -10,6 +10,9 @@ import java.nio.ByteBuffer;
 import java.nio.channels.CompletionHandler;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.util.AbstractMap;
 import java.util.Arrays;
@@ -33,11 +36,17 @@ import ch.ethz.sis.afsjson.JsonObjectMapper;
 import ch.ethz.sis.afsjson.jackson.JacksonObjectMapper;
 import lombok.NonNull;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+
 public final class AfsClient implements PublicAPI, ClientAPI
 {
     public static final int DEFAULT_PACKAGE_SIZE_IN_BYTES = 10485760; // 10 Megabytes;
 
     private static final int DEFAULT_TIMEOUT_IN_MILLIS = 30000; // 30 seconds
+
+    public static final String NO_TLS_CERT_CHECK_SYSTEM_PROPERTY = "ch.ethz.sis.afs.client.client.noTLSCertCheck";
 
     private int maxReadSizeInBytes;
 
@@ -523,6 +532,11 @@ public final class AfsClient implements PublicAPI, ClientAPI
                 .followRedirects(HttpClient.Redirect.NORMAL)
                 .connectTimeout(Duration.ofMillis(timeout));
 
+        if ("true".equalsIgnoreCase(System.getProperty(NO_TLS_CERT_CHECK_SYSTEM_PROPERTY))) {
+            SSLContext getInsecureSslContext = getInsecureSslContext();
+            clientBuilder.sslContext(getInsecureSslContext);
+        }
+
         HttpClient client = clientBuilder.build();
 
         final HttpResponse<byte[]> httpResponse =
@@ -552,6 +566,20 @@ public final class AfsClient implements PublicAPI, ClientAPI
         {
             throw ClientExceptions.OTHER_ERROR.getInstance(String.valueOf(statusCode));
         }
+    }
+
+    private static SSLContext getInsecureSslContext() throws NoSuchAlgorithmException, KeyManagementException {
+        SSLContext getInsecureSslContext = SSLContext.getInstance("TLS");
+        getInsecureSslContext.init(null, new TrustManager[]{
+            new X509TrustManager() {
+                public void checkClientTrusted(X509Certificate[] xcs, String string) {}
+                public void checkServerTrusted(X509Certificate[] xcs, String string) {}
+                public X509Certificate[] getAcceptedIssuers() {
+                    return null;
+                }
+            }
+        }, null);
+        return getInsecureSslContext;
     }
 
     public static <T> T getResponseResult(Class<T> responseType, String contentType,

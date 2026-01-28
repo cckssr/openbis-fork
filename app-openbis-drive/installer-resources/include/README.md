@@ -70,6 +70,19 @@ The graphical user-interface can also be started by entering into the [launcher 
   (`openbis-drive` without initial dot if the [launcher and command-line directory](#launcher-and-command-line-directory) is added to the PATH)
 - **Windows** : `openbis-drive.exe`
 
+### Skipping TLS certificate checks for OpenBIS servers
+
+If working with OpenBIS servers covered by self-signed TLS certificates (or anyway not validatable by public certificate authorities, or expired, ...),
+one can modify (create if necessary) a file openbis-drive.properties under
+
+for Linux: `$HOME/.local/state/openbis-drive/`
+
+for Windows: `%USERPROFILE%\AppData\Local\openbis-drive\`
+
+for MAC-OS: `$HOME/Library/"Application Support"/openbis-drive/`
+
+adding (or adapting) the following key-value line: `ch.ethz.sis.afs.client.client.noTLSCertCheck=true`
+
 ## Appendix:
 #### Installation directory
 - for Linux: `/opt/openbis-drive`

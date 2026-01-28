@@ -1,14 +1,17 @@
 package ch.openbis.drive.conf;
 
+import ch.ethz.sis.afsclient.client.AfsClient;
 import ch.openbis.drive.util.OpenBISDriveUtil;
 import ch.openbis.drive.util.OsDetectionUtil;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.Properties;
 
 public class Configuration {
     public static final String LOCAL_OPENBIS_HIDDEN_DIRECTORY = "openbis-drive";
@@ -18,6 +21,7 @@ public class Configuration {
     public static final int OPENBIS_DRIVE_DEFAULT_PORT = 65342;
     public static final String OPENBIS_DRIVE_PORT_ENV_KEY = "OPENBIS_DRIVE_PORT";
     public static final String OPENBIS_DRIVE_MANUAL_INSTALLATION_PROPERTY = "ch.openbis.drive.manualInstallation";
+    public static final String OPENBIS_DRIVE_PROPERTIES_FILE = "openbis-drive.properties";
 
     @NonNull
     private final Path localAppDirectory;
@@ -61,6 +65,20 @@ public class Configuration {
         if ( isManualInstallation() ) {
             Files.createDirectories(localAppDirectory.resolve(LOCAL_OPENBIS_LAUNCH_SCRIPTS_DIRECTORY));
         }
+    }
+
+    public void readOpenbisDriveProperties() throws IOException {
+        if (Files.exists(localAppDirectory.resolve(OPENBIS_DRIVE_PROPERTIES_FILE))) {
+            Properties properties = new Properties();
+            properties.load(new FileInputStream(localAppDirectory.resolve(OPENBIS_DRIVE_PROPERTIES_FILE).toFile()));
+            if (properties.getProperty(AfsClient.NO_TLS_CERT_CHECK_SYSTEM_PROPERTY) != null) {
+                setSystemProperty(AfsClient.NO_TLS_CERT_CHECK_SYSTEM_PROPERTY, properties.getProperty(AfsClient.NO_TLS_CERT_CHECK_SYSTEM_PROPERTY));
+            }
+        }
+    }
+
+    void setSystemProperty(@NonNull String key, @NonNull String value) {
+        System.setProperty(key, value);
     }
 
     public Path getLocalAppStateDirectory() {
