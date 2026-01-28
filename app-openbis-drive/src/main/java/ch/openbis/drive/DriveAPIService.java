@@ -48,6 +48,7 @@ public class DriveAPIService {
 
     public DriveAPIService() throws Exception {
         this.configuration = new Configuration();
+        configuration.readOpenbisDriveProperties();
         applicationFileLock = FileChannel.open(configuration.getLocalAppStateDirectory().resolve(LOCK_FILE_NAME), StandardOpenOption.CREATE, StandardOpenOption.WRITE).tryLock();
         driveAPIServer = new DriveAPIServerImpl(configuration);
 

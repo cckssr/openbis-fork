@@ -82,7 +82,9 @@ public class DriveAPICmdLineApp {
     }
 
     DriveAPIClientProtobufImpl getNewDriveAPIClient() throws Exception {
-        return new DriveAPIClientProtobufImpl(new Configuration());
+        Configuration configuration = new Configuration();
+        configuration.readOpenbisDriveProperties();
+        return new DriveAPIClientProtobufImpl(configuration);
     }
 
     void handleEventsCommand(String[] args) throws Exception {

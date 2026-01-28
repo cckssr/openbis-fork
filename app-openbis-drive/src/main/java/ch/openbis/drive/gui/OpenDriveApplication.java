@@ -23,7 +23,9 @@ public class OpenDriveApplication extends Application {
     public void start(Stage stage) throws IOException {
         //Initialize shared context: with drive-api-protobuf-client and localization utility
         I18n i18n = new I18n(Locale.getDefault().getLanguage());
-        DriveAPIClientProtobufImpl driveAPIClientProtobuf = new DriveAPIClientProtobufImpl(new Configuration());
+        Configuration configuration = new Configuration();
+        configuration.readOpenbisDriveProperties();
+        DriveAPIClientProtobufImpl driveAPIClientProtobuf = new DriveAPIClientProtobufImpl(configuration);
         SharedContext.initializeSharedContext(driveAPIClientProtobuf, i18n, getHostServices());
         SharedContext.getContext().getServiceCallHandler(stage).getSettings();
 
