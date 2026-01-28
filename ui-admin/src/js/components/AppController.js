@@ -277,6 +277,8 @@ export class AppController {
           tabToSelect = openTabs[selectedIndex - 1]
         }
       }
+    } else {
+      tabToSelect = _.findIndex(openTabs, { object: selectedObject })
     }
 
     let tabToClose = _.find(openTabs, { object: objectToClose })
