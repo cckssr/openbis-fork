@@ -1,13 +1,15 @@
+import _ from 'lodash'
 import AppController from '@src/js/components/AppController.js'
 import BrowserController from '@src/js/components/common/browser/BrowserController.js'
 import DatabaseBrowserControllerLoadNodePath from '@src/js/components/database/browser/DatabaseBrowserControllerLoadNodePath.js'
 import DatabaseBrowserControllerLoadNodesFiltered from '@src/js/components/database/browser/DatabaseBrowserControllerLoadNodesFiltered.js'
 import DatabaseBrowserControllerLoadNodesUnfiltered from '@src/js/components/database/browser/DatabaseBrowserControllerLoadNodesUnfiltered.js'
-import DatabaseBrowserControllerAddNode from '@src/js/components/database/browser/DatabaseBrowserControllerAddNode.js'
-import DatabaseBrowserControllerRemoveNode from '@src/js/components/database/browser/DatabaseBrowserControllerRemoveNode.js'
 import DatabaseBrowserControllerReload from '@src/js/components/database/browser/DatabaseBrowserControllerReload.js'
+import objectType from '@src/js/common/consts/objectType.js'
 import pages from '@src/js/common/consts/pages.js'
 import ids from '@src/js/common/consts/ids.js'
+
+const OBJECT_TYPES = [objectType.SPACE, objectType.PROJECT, objectType.COLLECTION, objectType.OBJECT, objectType.DATA_SET]
 
 export default class DatabaseBrowserController extends BrowserController {
   getId() {
@@ -38,36 +40,22 @@ export default class DatabaseBrowserController extends BrowserController {
     new DatabaseBrowserControllerReload(this).reload(objectModifications)
   }
 
+  async selectObject(nodeObject, event) {
+    if (!_.isNil(nodeObject) && OBJECT_TYPES.includes(nodeObject.type)) {
+      await super.selectObject(nodeObject, event);
+    } else {
+      await super.selectObject(null);
+    }
+  }
+
   onSelectedChange({ object }) {
     if (object) {
       AppController.getInstance().objectOpen(
         pages.DATABASE,
         object.type,
-        object.id,
-        object.params
+        object.id
       )
     }
   }
 
-  canAddNode() {
-    return new DatabaseBrowserControllerAddNode().canAddNode(
-      this.getSelectedObject()
-    )
-  }
-
-  async addNode() {
-    await new DatabaseBrowserControllerAddNode().doAddNode(this.getSelectedObject())
-  }
-
-  canRemoveNode() {
-    return new DatabaseBrowserControllerRemoveNode().canRemoveNode(
-      this.getSelectedObject()
-    )
-  }
-
-  async removeNode() {
-    await new DatabaseBrowserControllerRemoveNode().doRemoveNode(
-      this.getSelectedObject()
-    )
-  }
 }
