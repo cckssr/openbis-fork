@@ -156,6 +156,17 @@ public class ExcelWriter
 
                             }
                         }
+                        for (var objectAndFileInfo : openBisModel.getImageFiles().entrySet())
+                        {
+                            for (var file : objectAndFileInfo.getValue())
+                            {
+                                ZipEntry zipEntry = new ZipEntry(file.originalPath());
+                                zos.putNextEntry(zipEntry);
+                                bos.write(file.contents());
+                                bos.flush();
+
+                            }
+                        }
 
 
                         for (final Map.Entry<String, String> valueFile : valueFiles.entrySet())

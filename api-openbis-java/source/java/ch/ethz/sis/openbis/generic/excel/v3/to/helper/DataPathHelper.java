@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 
 public class DataPathHelper
 {
+
     public static String getPath(OpenBisModel.FileInfo fileInfo,
             AbstractEntityPropertyHolder entity)
     {

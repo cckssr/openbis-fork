@@ -44,7 +44,14 @@ public class OpenBisModel
 
     private final Map<ObjectIdentifier, List<FileInfo>> files;
 
-    public record FileInfo(String objectIdentifier, String filePath, byte[] contents)
+    private final Map<ObjectIdentifier, List<FileInfo>> imageFiles;
+
+    public record FileInfo(String objectIdentifier, String filePath, byte[] contents,
+                           String originalPath)
+    {
+    }
+
+    public record MiscFile()
     {
     }
 
@@ -55,7 +62,8 @@ public class OpenBisModel
             Map<ObjectIdentifier, AbstractEntityPropertyHolder> entities,
             Map<PluginPermId, Plugin> plugins,
             Map<String, List<Path>> miscellaneous, Map<String, String> externalToOpenBisIdentifiers,
-            Map<ObjectIdentifier, List<FileInfo>> files)
+            Map<ObjectIdentifier, List<FileInfo>> files,
+            Map<ObjectIdentifier, List<FileInfo>> imageFiles)
     {
         this.vocabularyTypes = vocabularyTypes;
         this.entityTypes = entityTypes;
@@ -66,6 +74,7 @@ public class OpenBisModel
         this.miscellaneous = miscellaneous;
         this.externalToOpenBisIdentifiers = externalToOpenBisIdentifiers;
         this.files = files;
+        this.imageFiles = imageFiles;
     }
 
     public Map<VocabularyPermId, Vocabulary> getVocabularyTypes() {
@@ -128,4 +137,8 @@ public class OpenBisModel
                 .replaceAll("\\\\u([0-9A-Fa-f]{2}){3}", CODE_SPECIAL_CHARACTER_REPLACEMENT);
     }
 
+    public Map<ObjectIdentifier, List<FileInfo>> getImageFiles()
+    {
+        return imageFiles;
+    }
 }

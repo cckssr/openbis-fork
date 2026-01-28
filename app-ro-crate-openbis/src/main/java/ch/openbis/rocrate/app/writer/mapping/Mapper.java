@@ -19,6 +19,7 @@ import ch.openbis.rocrate.app.Constants;
 import ch.openbis.rocrate.app.writer.mapping.types.MapResult;
 import ch.openbis.rocrate.app.writer.mapping.types.RdfsSchema;
 import ch.openbis.rocrate.app.writer.mappinginfo.MappingInfo;
+import com.google.common.collect.Streams;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -30,6 +31,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Mapper
 {
@@ -296,7 +298,13 @@ public class Mapper
 
                 List<OpenBisModel.FileInfo> files =
                         openBisModel.getFiles().getOrDefault(metaData.getKey(), new ArrayList<>());
-                for (var file : files)
+                List<OpenBisModel.FileInfo> imageFiles =
+                        openBisModel.getImageFiles()
+                                .getOrDefault(metaData.getKey(), new ArrayList<>());
+                List<OpenBisModel.FileInfo> allFiles =
+                        Streams.concat(files.stream(), imageFiles.stream()).collect(
+                                Collectors.toList());
+                for (OpenBisModel.FileInfo file : allFiles)
                 {
                     file.filePath();
                     file.objectIdentifier();
@@ -367,12 +375,16 @@ public class Mapper
         }
 
         List<MapResult.RoCrateFile> files = new ArrayList<>();
+
         for (Map.Entry<ObjectIdentifier, List<OpenBisModel.FileInfo>> a : openBisModel.getFiles()
                 .entrySet())
         {
 
             List<String> identifiersToWrite = new ArrayList<>();
-            for (OpenBisModel.FileInfo b : a.getValue())
+
+            Stream<OpenBisModel.FileInfo> fileInfoStream = Stream.concat(a.getValue().stream(),
+                    openBisModel.getImageFiles().get(a.getKey()).stream());
+            for (OpenBisModel.FileInfo b : fileInfoStream.collect(Collectors.toList()))
             {
 
                 UUID uuid = UUID.randomUUID();
@@ -386,7 +398,6 @@ public class Mapper
 
             Map<String, MetadataEntry> idToEntities =
                     metaDataEntries.stream().collect(Collectors.toMap(x -> x.getId(), x -> x));
-            // here I should be using MetaDataEntry instead
 
             MetadataEntry metadataEntry = idToEntities.get(a.getKey().toString());
             metadataEntry.getReferences().put(Constants.PROPERTY_ID_FILES, identifiersToWrite);
@@ -427,6 +438,11 @@ public class Mapper
         {
             return Arrays.stream(((Serializable[]) a)).map(x -> x.toString()).toList();
         }
+        if (a instanceof Object[])
+        {
+            return Arrays.stream((Object[]) a).map(x -> x.toString()).collect(Collectors.toList());
+        }
+
         return List.of(a.toString());
 
     }

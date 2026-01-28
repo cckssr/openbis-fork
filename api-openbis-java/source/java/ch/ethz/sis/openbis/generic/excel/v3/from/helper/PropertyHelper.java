@@ -10,11 +10,11 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.Vocabulary;
 import ch.ethz.sis.openbis.generic.excel.v3.from.utils.IAttribute;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.IOException;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static ch.ethz.sis.openbis.generic.excel.v3.from.utils.PropertyTypeSearcher.SAMPLE_DATA_TYPE_MANDATORY_TYPE;
 
@@ -167,7 +167,19 @@ public class PropertyHelper extends BasicImportHelper
         }
         if (metadata != null && !metadata.trim().isEmpty())
         {
-            creation.setMetaData(Map.of("val", metadata));
+            ObjectMapper objectMapper = new ObjectMapper();
+            try
+            {
+                LinkedHashMap<String, Object> linkedHashMap =
+                        objectMapper.readValue(metadata, LinkedHashMap.class);
+
+                Map<String, String> collect = linkedHashMap.entrySet().stream()
+                        .collect(Collectors.toMap(x -> x.getKey(), x -> x.getValue().toString()));
+                creation.setMetaData(collect);
+            } catch (IOException e)
+            {
+                throw new RuntimeException(e);
+            }
         }
         accumulator.put(code, creation);
 

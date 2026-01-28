@@ -35,8 +35,9 @@ public class DataPathHelperTest
         project.setSpace(space);
         sample.setProject(project);
 
+        String filePath = "/stuff/more/out.txt";
         OpenBisModel.FileInfo fileInfo =
-                new OpenBisModel.FileInfo("a", "/stuff/more/out.txt", new byte[] {});
+                new OpenBisModel.FileInfo("a", filePath, new byte[] {}, filePath);
 
         String path = DataPathHelper.getPath(fileInfo, sample);
         Assert.assertEquals("hierarchy/SPACE1/PROJECT1/Testentry (ENTRY1)/data/out.txt", path);

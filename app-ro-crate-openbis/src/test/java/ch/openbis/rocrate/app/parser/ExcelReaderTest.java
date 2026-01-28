@@ -44,12 +44,16 @@ public class ExcelReaderTest extends TestCase
         AbstractEntityPropertyHolder sample1 =
                 result.getEntities().get(new SampleIdentifier("/JOHN/JOHN:ENTRY1"));
         assertEquals("Title A", sample1.getProperties().get("NAME"));
-        assertEquals("<h2>Title A</h2><p>Content A</p>", sample1.getProperties().get("DOCUMENT"));
+        assertEquals(
+                "<html> <head></head> <body>  <h2>Title A</h2>  <p>Content A</p> </body></html>",
+                sample1.getProperties().get("DOCUMENT").toString().replaceAll("\n", ""));
 
         AbstractEntityPropertyHolder sample2 =
                 result.getEntities().get(new SampleIdentifier("/JOHN/JOHN:ENTRY2"));
         assertEquals("Title B", sample2.getProperties().get("NAME"));
-        assertEquals("<h2>Title B</h2><p>Content B</p>", sample2.getProperties().get("DOCUMENT"));
+        assertEquals(
+                "<html> <head></head> <body>  <h2>Title B</h2>  <p>Content B</p> </body></html>",
+                sample2.getProperties().get("DOCUMENT").toString().replaceAll("\n", ""));
 
         assertTrue(
                 result.getEntities().containsKey(new ExperimentIdentifier("JOHN", "JOHN", "JOHN")));

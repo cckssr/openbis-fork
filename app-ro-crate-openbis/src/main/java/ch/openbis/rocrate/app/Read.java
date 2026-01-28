@@ -9,6 +9,7 @@ import edu.kit.datamanager.ro_crate.RoCrate;
 import edu.kit.datamanager.ro_crate.entities.data.DataEntity;
 import edu.kit.datamanager.ro_crate.reader.FolderReader;
 import edu.kit.datamanager.ro_crate.reader.RoCrateReader;
+import edu.kit.datamanager.ro_crate.reader.ZipReader;
 import org.apache.commons.cli.*;
 
 import java.io.FileOutputStream;
@@ -33,8 +34,16 @@ public class Read
         cmd = parser.parse(options, args);
 
         String path = cmd.getOptionValue('i');
-        RoCrateReader roCrateFolderReader = new RoCrateReader(new FolderReader());
-        RoCrate crate = roCrateFolderReader.readCrate(path);
+        RoCrateReader roCrateReader;
+        if (path.endsWith(".zip"))
+        {
+            roCrateReader = new RoCrateReader(new ZipReader());
+        } else
+        {
+            roCrateReader = new RoCrateReader(new FolderReader());
+        }
+
+        RoCrate crate = roCrateReader.readCrate(path);
         SchemaFacade schemaFacade = SchemaFacade.of(crate);
         schemaFacade.getTypes().forEach(
                 x -> System.out.println("RDFS Class " + x.getId())
