@@ -6,8 +6,8 @@
             <!--<class name="EndToEndTests"/>-->
             <!--class name="PsiDataFreshTests"/-->
 
-            <!--<class name="ch.ethz.sis.openbis.generic.server.asapi.openapi.v1.service.RoCrateSchemaValidationTest"/>-->
-            <!--<class name="ch.ethz.sis.openbis.generic.server.asapi.openapi.v1.service.RoCrateSchemaValidationRegressionCasesTest"/>-->
+            <class name="ch.ethz.sis.openbis.generic.server.asapi.openapi.v1.service.RoCrateSchemaValidationTest"/>
+            <class name="ch.ethz.sis.openbis.generic.server.asapi.openapi.v1.service.RoCrateSchemaValidationRegressionCasesTest"/>
         </classes>
     </test>
 
