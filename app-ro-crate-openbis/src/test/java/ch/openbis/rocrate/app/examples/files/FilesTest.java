@@ -8,8 +8,6 @@ import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
 import ch.ethz.sis.openbis.generic.excel.v3.to.ExcelWriter;
 import ch.openbis.rocrate.app.reader.RdfToModel;
 import ch.openbis.rocrate.app.writer.Writer;
-import ch.openbis.rocrate.app.writer.mapping.Mapper;
-import ch.openbis.rocrate.app.writer.mapping.types.MapResult;
 import edu.kit.datamanager.ro_crate.RoCrate;
 import edu.kit.datamanager.ro_crate.reader.RoCrateReader;
 import edu.kit.datamanager.ro_crate.reader.ZipReader;
@@ -47,9 +45,6 @@ public class FilesTest
     {
         Path path = Paths.get(INPUT);
         OpenBisModel excelModel = ExcelReader.convert(ExcelReader.Format.ZIP_EXPORT, path);
-        Mapper mapper = new Mapper();
-        MapResult rocrateModel = mapper.transform(
-                excelModel);
         Assert.assertEquals(1, excelModel.getFiles().size());
 
         List<OpenBisModel.FileInfo> fileInfos =

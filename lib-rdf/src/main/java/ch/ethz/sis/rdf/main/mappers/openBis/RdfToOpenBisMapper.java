@@ -252,7 +252,7 @@ public class RdfToOpenBisMapper
 
         Map<String, String> externalToOpenBisIdentifiers = new LinkedHashMap<>();
         return new OpenBisModel(vocabularyMap, schema, spaces, projects, metadata, Map.of(),
-                Map.of(), externalToOpenBisIdentifiers, Map.of());
+                Map.of(), externalToOpenBisIdentifiers, Map.of(), Map.of());
 
     }
 

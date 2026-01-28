@@ -30,7 +30,7 @@ public class NewExportFileReader
         byte[] content = zipInputStream.readAllBytes();
         String fileIdentifier = makeFileIdentifierRoCrateCompatible(identifier + "/" + fileName);
 
-        return new OpenBisModel.FileInfo(identifier, fileIdentifier, content);
+        return new OpenBisModel.FileInfo(identifier, fileIdentifier, content, zipEntry.getName());
 
     }
 
