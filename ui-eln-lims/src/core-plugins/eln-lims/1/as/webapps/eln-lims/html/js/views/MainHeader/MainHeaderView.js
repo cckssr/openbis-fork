@@ -51,8 +51,6 @@ function MainHeaderView(controller) {
 
             userName: mainController.serverFacade.getUserId(),
 
-            controller: this._controller._mainHeaderController,
-
             tabs: [
                 {page: "lab_notebook", label: "Lab Notebook"},
                 {page: "lims", label: "Inventory"},
