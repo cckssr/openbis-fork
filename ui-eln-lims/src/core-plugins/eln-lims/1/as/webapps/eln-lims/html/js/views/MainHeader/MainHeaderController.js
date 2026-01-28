@@ -38,6 +38,8 @@ function MainHeaderController() {
         if(mainController.sideMenu.isCollapsed) {
             mainController.sideMenu.expandSideMenu();
         }
+
+        _this._mainHeaderView.repaint(_this._mainHeaderModel.$container);
     }
 
     this.setSearchDomains = function(searchDomains) {
@@ -73,6 +75,7 @@ function MainHeaderController() {
             searchDomainLabel: searchDomainLabel,
         }
         var argsMapStr = JSON.stringify(argsMap)
+
 
         mainController.changeView("showSearchPage", argsMapStr)
 
