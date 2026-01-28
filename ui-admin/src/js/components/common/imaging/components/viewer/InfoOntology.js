@@ -21,8 +21,8 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const InfoOntology = ({ semanticAnnotation }) => {
-	const { state } = useImagingDataContext();
-	const { showSemanticAnnotations } = state;
+	const imagingContext = useImagingDataContext();
+	const showSemanticAnnotations = imagingContext?.state?.showSemanticAnnotations || false;
 
 	const classes = useStyles();
 	const TRUNCATE_VALUE = 30;
