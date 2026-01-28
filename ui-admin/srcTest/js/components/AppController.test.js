@@ -63,32 +63,14 @@ describe(SUITE, () => {
     let object1 = {
       type: objectType.OBJECT_TYPE,
       id: fixture.TEST_SAMPLE_TYPE_DTO.code,
-      params: {
-        path: '/object-type/TEST_TYPE',
-        id: 'TEST_TYPE',
-        page: 'types',
-        type: 'objectType'
-      }
     }
     let object2 = {
       type: objectType.COLLECTION_TYPE,
       id: fixture.TEST_EXPERIMENT_TYPE_DTO.code,
-      params: {
-        path: '/collection-type/TEST_TYPE',
-        id: 'TEST_TYPE',
-        page: 'types',
-        type: 'collectionType'
-      }
     }
     let object3 = {
       type: objectType.VOCABULARY_TYPE,
       id: fixture.TEST_VOCABULARY_DTO.code,
-      params: {
-        path: '/vocabulary-type/TEST_VOCABULARY',
-        id: 'TEST_VOCABULARY',
-        page: 'types',
-        type: 'vocabularyType'
-      }
     }
 
     await controller.objectOpen(pages.TYPES, object1.type, object1.id)
@@ -129,31 +111,15 @@ describe(SUITE, () => {
   })
 
   test('open and close users and groups', async () => {
-    let object1 = { type: objectType.USER, id: fixture.TEST_USER_DTO.userId,
-      params: {
-        path: '/user/test-user',
-        id: 'test-user',
-        page: 'users',
-        type: 'user'
-      }
-     }
-    let object2 = { type: objectType.USER, id: fixture.ANOTHER_USER_DTO.userId,
-      params: {
-        path: '/user/another-user',
-        id: 'another-user',
-        page: 'users',
-        type: 'user'
-      }
-     }
+    let object1 = {
+      type: objectType.USER, id: fixture.TEST_USER_DTO.userId
+    }
+    let object2 = {
+      type: objectType.USER, id: fixture.ANOTHER_USER_DTO.userId
+    }
     let object3 = {
       type: objectType.USER_GROUP,
-      id: fixture.TEST_USER_GROUP_DTO.code,
-      params: {
-        path: '/user-group/test-group',
-        id: 'test-group',
-        page: 'users',
-        type: 'userGroup'
-      }
+      id: fixture.TEST_USER_GROUP_DTO.code
     }
 
     await controller.objectOpen(pages.USERS, object1.type, object1.id)
