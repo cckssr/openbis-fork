@@ -388,6 +388,10 @@ public class ImagingService implements ICustomASServiceExecutor
             rootFile  = getRootFile(dataSet, false);
         } else {
             rootFile = getRootFile(dataSet, true);
+            File[] files = rootFile.listFiles();
+            if(files != null && files.length == 1 && files[0].getName().equalsIgnoreCase("original")) {
+                rootFile = files[0];
+            }
         }
 
         final int index = data.getIndex();
@@ -487,6 +491,10 @@ public class ImagingService implements ICustomASServiceExecutor
                 rootFile  = getRootFile(dataSet, false);
             } else {
                 rootFile = getRootFile(dataSet, true);
+                File[] files = rootFile.listFiles();
+                if(files != null && files.length == 1 && files[0].getName().equalsIgnoreCase("original")) {
+                    rootFile = files[0];
+                }
             }
             Map<Integer, Map<String, Object>> imageToMetaDataMap = new HashMap<>();
             for (ImagingDataSetMultiExport export : sortedExports.get(permId))
