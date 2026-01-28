@@ -1,4 +1,3 @@
-<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
 <suite name="OpenBIS Ro-Crate Test Suite" verbose="1">
 
     <test name="All Tests">
