@@ -20,6 +20,10 @@ class ComponentRegistry {
       case FormFieldDataType.HYPERLINK:
       case FormFieldDataType.INTEGER:
       case FormFieldDataType.REAL:
+      case FormFieldDataType.ARRAY_INTEGER:
+      case FormFieldDataType.ARRAY_REAL:
+      case FormFieldDataType.ARRAY_STRING:
+      case FormFieldDataType.ARRAY_TIMESTAMP:
         return TextFieldRenderer;
       case FormFieldDataType.TIMESTAMP:
       case FormFieldDataType.DATE:
