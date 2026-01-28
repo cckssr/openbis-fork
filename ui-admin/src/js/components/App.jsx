@@ -6,6 +6,7 @@ import logger from '@src/js/common/logger.js'
 import util from '@src/js/common/util.js'
 import pages from '@src/js/common/consts/pages.js'
 import messages from '@src/js/common/messages.js'
+import objectType from '@src/js/common/consts/objectType.js'
 
 import Loading from '@src/js/components/common/loading/Loading.jsx'
 import Error from '@src/js/components/common/error/Error.jsx'
@@ -115,10 +116,7 @@ class App extends React.Component {
   }
 
   searchFunction(page, searchText) {
-    AppController.getInstance().search(
-      page,
-      searchText
-    )
+    AppController.getInstance().objectOpen(page, objectType.SEARCH, searchText.trim())
   }
 
   handleLogout() {
@@ -169,7 +167,6 @@ class App extends React.Component {
             searchFunction={this.searchFunction}
             logoutFunction={this.handleLogout}
             currentPage={AppController.getInstance().getCurrentPage()}
-            searchText={AppController.getInstance().getSearch()}
             menuStyles={menuStyles}
             showChatbot={true}
             sendMessageCallback={this.sendMessage}

@@ -1,16 +1,14 @@
-import _ from 'lodash'
-import React from 'react'
-import { createHashHistory } from 'history'
-import openbis from '@src/js/services/openbis.js'
-import objectType from '@src/js/common/consts/objectType.js'
+import ids from '@src/js/common/consts/ids.js'
 import objectOperation from '@src/js/common/consts/objectOperation.js'
 import routes from '@src/js/common/consts/routes.js'
 import users from '@src/js/common/consts/users.js'
 import cookie from '@src/js/common/cookie.js'
-import ids from '@src/js/common/consts/ids.js'
+import openbis from '@src/js/services/openbis.js'
+import { createHashHistory } from 'history'
+import _ from 'lodash'
+import React from 'react'
 
 const AppContext = React.createContext()
-const showDebug = false;
 
 export class AppController {
   init(context) {
@@ -31,7 +29,6 @@ export class AppController {
       loaded: false,
       loading: false,
       session: null,
-      search: null,
       pages: [],
       error: null,
       settings: {},
@@ -138,17 +135,6 @@ export class AppController {
     } finally {
       await this.context.setState({ loading: false })
     }
-  }
-
-  async search(page, text) {
-    if (text.trim().length > 0) {
-      await this.objectOpen(page, objectType.SEARCH, text.trim())
-    }
-    await this.context.setState({ search: '' })
-  }
-
-  async searchChange(text) {
-    await this.context.setState({ search: text })
   }
 
   async pageChange(page) {
@@ -340,10 +326,6 @@ export class AppController {
 
   getRoute() {
     return routes.parse(this.history.location.pathname).path
-  }
-
-  getSearch() {
-    return this.context.getState().search
   }
 
   getError() {
