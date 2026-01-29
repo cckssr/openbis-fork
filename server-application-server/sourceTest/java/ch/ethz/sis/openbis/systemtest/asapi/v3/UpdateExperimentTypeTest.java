@@ -78,7 +78,10 @@ public class UpdateExperimentTypeTest extends UpdateEntityTypeTest<ExperimentTyp
         ec.setCode(UUID.randomUUID().toString());
         ec.setProjectId(new ProjectIdentifier("/CISD/NEMO"));
         ec.setTypeId(entityType);
-        ec.setStringProperty(propertyType, propertyValue);
+        if(propertyType != null)
+        {
+            ec.setStringProperty(propertyType, propertyValue);
+        }
         v3api.createExperiments(sessionToken, Arrays.asList(ec));
     }
 

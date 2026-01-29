@@ -73,7 +73,10 @@ public class UpdateSampleTypeTest extends UpdateEntityTypeTest<SampleTypeCreatio
         SampleCreation sc = new SampleCreation();
         sc.setCode(UUID.randomUUID().toString());
         sc.setTypeId(entityType);
-        sc.setStringProperty(propertyType, propertyValue);
+        if(propertyType != null)
+        {
+            sc.setStringProperty(propertyType, propertyValue);
+        }
         v3api.createSamples(sessionToken, Arrays.asList(sc));
     }
 
