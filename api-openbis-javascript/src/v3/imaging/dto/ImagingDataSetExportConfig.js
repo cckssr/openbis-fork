@@ -22,13 +22,7 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
         prototype.setImageFormat = function(imageFormat) {
             this.imageFormat = imageFormat;
         };
-		prototype.getResolution = function() {
-			return this.resolution;
-		};
-		prototype.setResolution = function(resolution) {
-			this.resolution = resolution;
-		};
-		prototype.getResolution = function() {
+        prototype.getResolution = function() {
             return this.resolution;
         };
         prototype.setResolution = function(resolution) {
