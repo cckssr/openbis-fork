@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -45,6 +46,9 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.create.PropertyTypeCrea
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.IPropertyTypeId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyAssignmentPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyTypePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.SampleCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.SampleTypeCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 import ch.systemsx.cisd.common.action.IDelegatedAction;
 import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
 
@@ -90,14 +94,15 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
                         "Access denied to object with EntityTypePermId = [NEW_ENTITY_TYPE (" + getEntityKind() + ")]" },
 
                 { "NEW_INTERNAL", true, SYSTEM_USER, null },
-                { "NEW_INTERNAL", true,TEST_USER, null },
-                { "NEW_INTERNAL", true,TEST_POWER_USER_CISD,
+                { "NEW_INTERNAL", true, TEST_USER, null },
+                { "NEW_INTERNAL", true, TEST_POWER_USER_CISD,
                         "Access denied to object with EntityTypePermId = [NEW_ENTITY_TYPE (" + getEntityKind() + ")]" }
         };
     }
 
     @Test(dataProvider = "providerTestUpdateAuthorizationWithCreateAssignment")
-    public void testUpdateAuthorizationWithCreateAssignment(String propertyTypeCode, boolean isInternal, String propertyAssignmentRegistrator, String expectedError)
+    public void testUpdateAuthorizationWithCreateAssignment(String propertyTypeCode, boolean isInternal, String propertyAssignmentRegistrator,
+            String expectedError)
     {
         String systemSessionToken = v3api.loginAsSystem();
         String registratorSessionToken =
@@ -124,16 +129,16 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
         entityTypeUpdate.getPropertyAssignments().add(propertyAssignmentCreation);
 
         assertExceptionMessage(new IDelegatedAction()
+        {
+            @Override
+            public void execute()
             {
-                @Override
-                public void execute()
-                {
-                    updateTypes(registratorSessionToken, Arrays.asList(entityTypeUpdate));
+                updateTypes(registratorSessionToken, Arrays.asList(entityTypeUpdate));
 
-                    TYPE entityType = getType(systemSessionToken, entityTypeIds.get(0));
-                    assertEquals(entityType.getPropertyAssignments().size(), 1);
-                }
-            }, expectedError);
+                TYPE entityType = getType(systemSessionToken, entityTypeIds.get(0));
+                assertEquals(entityType.getPropertyAssignments().size(), 1);
+            }
+        }, expectedError);
     }
 
     @DataProvider
@@ -184,7 +189,8 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
     }
 
     @Test(dataProvider = "providerTestUpdateAuthorizationWithUpdateAssignment")
-    public void testUpdateAuthorizationWithUpdateAssignment(String propertyTypeCode, boolean isInternal, boolean isPropertyInternal, String propertyAssignmentRegistrator,
+    public void testUpdateAuthorizationWithUpdateAssignment(String propertyTypeCode, boolean isInternal, boolean isPropertyInternal,
+            String propertyAssignmentRegistrator,
             String propertyAssignmentUpdater, boolean updateLayoutFieldsOnly, String expectedError)
     {
         String systemSessionToken = v3api.loginAsSystem();
@@ -239,30 +245,30 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
         entityTypeUpdateWithAssignmentUpdate.getPropertyAssignments().set(propertyAssignmentUpdate);
 
         assertExceptionMessage(new IDelegatedAction()
+        {
+            @Override
+            public void execute()
             {
-                @Override
-                public void execute()
+                updateTypes(updaterSessionToken, Arrays.asList(entityTypeUpdateWithAssignmentUpdate));
+
+                TYPE entityType = getType(systemSessionToken, entityTypeIds.get(0));
+                assertEquals(entityType.getPropertyAssignments().size(), 1);
+
+                PropertyAssignment updatedAssignment = entityType.getPropertyAssignments().get(0);
+
+                if (updateLayoutFieldsOnly)
                 {
-                    updateTypes(updaterSessionToken, Arrays.asList(entityTypeUpdateWithAssignmentUpdate));
-
-                    TYPE entityType = getType(systemSessionToken, entityTypeIds.get(0));
-                    assertEquals(entityType.getPropertyAssignments().size(), 1);
-
-                    PropertyAssignment updatedAssignment = entityType.getPropertyAssignments().get(0);
-
-                    if (updateLayoutFieldsOnly)
-                    {
-                        assertEquals(updatedAssignment.getSection(), "Updated section");
-                        assertEquals(updatedAssignment.getOrdinal(), Integer.valueOf(2));
-                        assertEquals(updatedAssignment.isMandatory(), Boolean.valueOf(false));
-                    } else
-                    {
-                        assertEquals(updatedAssignment.getSection(), "Test section");
-                        assertEquals(updatedAssignment.getOrdinal(), Integer.valueOf(1));
-                        assertEquals(updatedAssignment.isMandatory(), Boolean.valueOf(true));
-                    }
+                    assertEquals(updatedAssignment.getSection(), "Updated section");
+                    assertEquals(updatedAssignment.getOrdinal(), Integer.valueOf(2));
+                    assertEquals(updatedAssignment.isMandatory(), Boolean.valueOf(false));
+                } else
+                {
+                    assertEquals(updatedAssignment.getSection(), "Test section");
+                    assertEquals(updatedAssignment.getOrdinal(), Integer.valueOf(1));
+                    assertEquals(updatedAssignment.isMandatory(), Boolean.valueOf(true));
                 }
-            }, expectedError);
+            }
+        }, expectedError);
     }
 
     @DataProvider
@@ -271,7 +277,7 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
         return new Object[][] {
                 { "NEW_NON_INTERNAL", false, false, SYSTEM_USER, SYSTEM_USER, null },
                 { "NEW_NON_INTERNAL", false, false, SYSTEM_USER, TEST_USER, null },
-                { "NEW_NON_INTERNAL", false, false,SYSTEM_USER, TEST_POWER_USER_CISD,
+                { "NEW_NON_INTERNAL", false, false, SYSTEM_USER, TEST_POWER_USER_CISD,
                         "Access denied to object with EntityTypePermId = [NEW_ENTITY_TYPE (" + getEntityKind() + ")]" },
 
                 { "NEW_NON_INTERNAL", false, false, TEST_USER, SYSTEM_USER, null },
@@ -293,7 +299,8 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
     }
 
     @Test(dataProvider = "providerTestUpdateAuthorizationWithDeleteAssignment")
-    public void testUpdateAuthorizationWithDeleteAssignment(String propertyTypeCode, boolean isPropertyInternal, boolean isAssignmentInternal, String propertyAssignmentRegistrator,
+    public void testUpdateAuthorizationWithDeleteAssignment(String propertyTypeCode, boolean isPropertyInternal, boolean isAssignmentInternal,
+            String propertyAssignmentRegistrator,
             String propertyAssignmentDeleter, String expectedError)
     {
         String systemSessionToken = v3api.loginAsSystem();
@@ -330,16 +337,16 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
         entityTypeUpdateWithAssignmentDeletion.getPropertyAssignments().set();
 
         assertExceptionMessage(new IDelegatedAction()
+        {
+            @Override
+            public void execute()
             {
-                @Override
-                public void execute()
-                {
-                    updateTypes(deleterSessionToken, Arrays.asList(entityTypeUpdateWithAssignmentDeletion));
+                updateTypes(deleterSessionToken, Arrays.asList(entityTypeUpdateWithAssignmentDeletion));
 
-                    TYPE entityType = getType(systemSessionToken, entityTypeIds.get(0));
-                    assertEquals(entityType.getPropertyAssignments().size(), 0);
-                }
-            }, expectedError);
+                TYPE entityType = getType(systemSessionToken, entityTypeIds.get(0));
+                assertEquals(entityType.getPropertyAssignments().size(), 0);
+            }
+        }, expectedError);
     }
 
     @Test
@@ -350,13 +357,13 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
         UPDATE update = newTypeUpdate();
 
         assertUserFailureException(new IDelegatedAction()
-            {
-                @Override
-                public void execute()
-                {// When
-                    updateTypes(sessionToken, Arrays.asList(update));
-                }
-            },
+                                   {
+                                       @Override
+                                       public void execute()
+                                       {// When
+                                           updateTypes(sessionToken, Arrays.asList(update));
+                                       }
+                                   },
                 // Then
                 "Missing type id.");
     }
@@ -371,13 +378,13 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
         update.setTypeId(new EntityTypePermId("UNDEFINED", getTypeId().getEntityKind()));
 
         assertUserFailureException(new IDelegatedAction()
-            {
-                @Override
-                public void execute()
-                {// When
-                    updateTypes(sessionToken, Arrays.asList(update));
-                }
-            },
+                                   {
+                                       @Override
+                                       public void execute()
+                                       {// When
+                                           updateTypes(sessionToken, Arrays.asList(update));
+                                       }
+                                   },
                 "Object with EntityTypePermId = [" + update.getTypeId() + "] has not been found.");
     }
 
@@ -391,14 +398,14 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
         update.setTypeId(new EntityTypePermId(typeId.getPermId(), nextEntityKind(typeId.getEntityKind())));
 
         assertUserFailureException(new IDelegatedAction()
-            {
-                @Override
-                public void execute()
-                {
-                    // When
-                    updateTypes(sessionToken, Arrays.asList(update));
-                }
-            },
+                                   {
+                                       @Override
+                                       public void execute()
+                                       {
+                                           // When
+                                           updateTypes(sessionToken, Arrays.asList(update));
+                                       }
+                                   },
                 // Then
                 "Entity kind " + typeId.getEntityKind() + " expected: ");
     }
@@ -500,14 +507,14 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
         update.setValidationPluginId(new PluginPermId("properties"));
 
         assertUserFailureException(new IDelegatedAction()
-            {
-                @Override
-                public void execute()
-                {
-                    // When
-                    updateTypes(sessionToken, Arrays.asList(update));
-                }
-            },
+                                   {
+                                       @Override
+                                       public void execute()
+                                       {
+                                           // When
+                                           updateTypes(sessionToken, Arrays.asList(update));
+                                       }
+                                   },
                 // Then
                 "Entity type validation plugin has to be of type 'Entity Validator'. "
                         + "The specified plugin with id 'properties' is of type 'Dynamic Property Evaluator'");
@@ -525,14 +532,14 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
         update.setValidationPluginId(new PluginPermId("test" + incorrectEntityKind));
 
         assertUserFailureException(new IDelegatedAction()
-            {
-                @Override
-                public void execute()
-                {
-                    // When
-                    updateTypes(sessionToken, Arrays.asList(update));
-                }
-            },
+                                   {
+                                       @Override
+                                       public void execute()
+                                       {
+                                           // When
+                                           updateTypes(sessionToken, Arrays.asList(update));
+                                       }
+                                   },
                 // Then
                 "Entity type validation plugin has entity kind set to '" + incorrectEntityKind.name()
                         + "'. Expected a plugin where entity kind is either '" + getEntityKind().name() + "' or null");
@@ -630,14 +637,14 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
         update.getPropertyAssignments().remove(new PropertyAssignmentPermId(typeId, new PropertyTypePermId(code)));
 
         assertUserFailureException(new IDelegatedAction()
-            {
-                @Override
-                public void execute()
-                {
-                    // When
-                    updateTypes(sessionToken, Arrays.asList(update));
-                }
-            },
+                                   {
+                                       @Override
+                                       public void execute()
+                                       {
+                                           // When
+                                           updateTypes(sessionToken, Arrays.asList(update));
+                                       }
+                                   },
                 // Then
                 "Can not remove property type " + code + " from type " + typeId.getPermId());
     }
@@ -678,7 +685,6 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
         TYPE type = getType(sessionToken, typeId);
         assertNotNull(type);
 
-
         UPDATE updateAddAssignment = newTypeUpdate();
         updateAddAssignment.setTypeId(typeId);
         updateAddAssignment.getPropertyAssignments().set(assignmentCreation);
@@ -708,14 +714,14 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
         update.getPropertyAssignments().add(assignmentCreation);
 
         assertUserFailureException(new IDelegatedAction()
-            {
-                @Override
-                public void execute()
-                {
-                    // When
-                    updateTypes(sessionToken, Arrays.asList(update));
-                }
-            },
+                                   {
+                                       @Override
+                                       public void execute()
+                                       {
+                                           // When
+                                           updateTypes(sessionToken, Arrays.asList(update));
+                                       }
+                                   },
                 "Property type '" + propertyTypePermId + "' is already assigned to "
                         + getEntityKind().getLabel() + " type '" + typeId.getPermId() + "'.");
     }
@@ -732,7 +738,6 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
         List<EntityTypePermId> entityTypeIds = createTypes(sessionToken, Arrays.asList(entityTypeCreation));
 
         EntityTypePermId typeId = entityTypeIds.get(0);
-
 
         // Given
         String regularSessionToken = v3api.login(TEST_USER, PASSWORD);
@@ -765,7 +770,6 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
         propertyTypeCreation.setLabel("some property type");
         propertyTypeCreation.setDescription("some property type");
         v3api.createPropertyTypes(sessionToken, Arrays.asList(propertyTypeCreation));
-
 
         final CREATION typeCreation = newTypeCreation();
         typeCreation.setCode("NEW_TEST_ENTITY_TYPE");
@@ -816,7 +820,6 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
         propertyTypeCreation.setDescription("some property type");
         v3api.createPropertyTypes(sessionToken, Arrays.asList(propertyTypeCreation));
 
-
         final CREATION typeCreation = newTypeCreation();
         typeCreation.setCode("NEW_TEST_ENTITY_TYPE_2");
         typeCreation.setManagedInternally(false);
@@ -849,7 +852,7 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
             {
                 updateTypes(sessionToken, Arrays.asList(update));
             }
-        }, "Existing property '"+propertyValue+"' does not match the new pattern!");
+        }, "Existing property '" + propertyValue + "' does not match the new pattern!");
     }
 
     @Test
@@ -891,12 +894,9 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
         propertyTypeCreation.setDescription("internal property type");
         v3api.createPropertyTypes(sessionToken, Arrays.asList(propertyTypeCreation));
 
-
         final CREATION typeCreation = newTypeCreation();
         typeCreation.setCode("NEW_INTERNAL_ENTITY_TYPE");
         typeCreation.setManagedInternally(true);
-
-
 
         PropertyAssignmentCreation assignmentCreation = new PropertyAssignmentCreation();
         assignmentCreation.setPropertyTypeId(new PropertyTypePermId("DESCRIPTION"));
@@ -941,7 +941,6 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
         propertyTypeCreation.setLabel("internal property type");
         propertyTypeCreation.setDescription("internal property type");
         v3api.createPropertyTypes(sessionToken, Arrays.asList(propertyTypeCreation));
-
 
         PropertyAssignmentCreation assignmentCreationInternal = new PropertyAssignmentCreation();
         assignmentCreationInternal.setPropertyTypeId(new PropertyTypePermId("INTERNAL_TYPE"));
@@ -1017,14 +1016,14 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
         update.getPropertyAssignments().set(replaceCreation);
 
         assertUserFailureException(new IDelegatedAction()
-            {
-                @Override
-                public void execute()
-                {
-                    // When
-                    updateTypes(sessionToken, Arrays.asList(update));
-                }
-            },
+                                   {
+                                       @Override
+                                       public void execute()
+                                       {
+                                           // When
+                                           updateTypes(sessionToken, Arrays.asList(update));
+                                       }
+                                   },
                 // Then
                 "PropertyTypeId cannot be null.");
     }
@@ -1039,22 +1038,70 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
         update.setTypeId(typeId);
         PropertyAssignmentCreation replaceCreation = new PropertyAssignmentCreation();
         replaceCreation.setPropertyTypeId(new IPropertyTypeId()
-            {
-                private static final long serialVersionUID = 1L;
-            });
+        {
+            private static final long serialVersionUID = 1L;
+        });
         update.getPropertyAssignments().set(replaceCreation);
 
         assertUserFailureException(new IDelegatedAction()
-            {
-                @Override
-                public void execute()
-                {
-                    // When
-                    updateTypes(sessionToken, Arrays.asList(update));
-                }
-            },
+                                   {
+                                       @Override
+                                       public void execute()
+                                       {
+                                           // When
+                                           updateTypes(sessionToken, Arrays.asList(update));
+                                       }
+                                   },
                 // Then
                 "Unknown type of property type id: ch.ethz.sis.openbis.systemtest.asapi.v3.UpdateEntityTypeTest$");
+    }
+
+    @Test
+    public void testMakeExistingPropertyWithDataTypeObjectMandatory()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        // Create object type for property value
+        SampleTypeCreation objectTypeForPropertyValueCreation = new SampleTypeCreation();
+        objectTypeForPropertyValueCreation.setCode("OBJECT_TYPE_FOR_PROPERTY_VALUE_" + UUID.randomUUID());
+        EntityTypePermId objectTypeForPropertyValueId = v3api.createSampleTypes(sessionToken, List.of(objectTypeForPropertyValueCreation)).get(0);
+
+        // Create object for property value
+        SampleCreation objectForPropertyValueCreation = new SampleCreation();
+        objectForPropertyValueCreation.setCode("OBJECT_FOR_PROPERTY_VALUE_" + UUID.randomUUID());
+        objectForPropertyValueCreation.setTypeId(objectTypeForPropertyValueId);
+        SamplePermId objectForPropertyValueId = v3api.createSamples(sessionToken, List.of(objectForPropertyValueCreation)).get(0);
+
+        // Create object property
+        PropertyTypePermId objectPropertyId = createASamplePropertyType(sessionToken, objectTypeForPropertyValueId);
+
+        // Create entity type with object property not mandatory
+        PropertyAssignmentCreation propertyAssignmentCreation = new PropertyAssignmentCreation();
+        propertyAssignmentCreation.setPropertyTypeId(objectPropertyId);
+
+        CREATION entityTypeCreation = newTypeCreation();
+        entityTypeCreation.setCode("ENTITY_TYPE_" + UUID.randomUUID());
+        entityTypeCreation.setPropertyAssignments(List.of(propertyAssignmentCreation));
+        EntityTypePermId entityTypeId = createTypes(sessionToken, List.of(entityTypeCreation)).get(0);
+
+        // Create entity with the newly created entity type
+        createEntity(sessionToken, entityTypeId, null, null);
+
+        // Update the entity type and make the object property mandatory
+        PropertyAssignmentCreation propertyAssignmentUpdate = new PropertyAssignmentCreation();
+        propertyAssignmentUpdate.setPropertyTypeId(objectPropertyId);
+        propertyAssignmentUpdate.setMandatory(true);
+        propertyAssignmentUpdate.setInitialValueForExistingEntities(objectForPropertyValueId.getPermId());
+
+        UPDATE entityTypeUpdate = newTypeUpdate();
+        entityTypeUpdate.setTypeId(entityTypeId);
+        entityTypeUpdate.getPropertyAssignments().set(propertyAssignmentUpdate);
+
+        updateTypes(sessionToken, List.of(entityTypeUpdate));
+
+        // Check the entity got the initial property value
+        IPropertiesHolder entity = searchEntities(sessionToken, createSearchCriteria(entityTypeId)).get(0);
+        assertEquals(entity.getProperty(objectPropertyId.getPermId()), objectForPropertyValueId.getPermId());
     }
 
     @Test(dataProvider = "usersNotAllowedToUpdate")
@@ -1062,20 +1109,20 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
     {
         EntityTypePermId typeId = getTypeId();
         assertUnauthorizedObjectAccessException(new IDelegatedAction()
+        {
+            @Override
+            public void execute()
             {
-                @Override
-                public void execute()
-                {
-                    // Given
-                    String sessionToken = v3api.login(user, PASSWORD);
-                    UPDATE update = newTypeUpdate();
-                    update.setTypeId(typeId);
-                    update.setDescription("new description " + System.currentTimeMillis());
+                // Given
+                String sessionToken = v3api.login(user, PASSWORD);
+                UPDATE update = newTypeUpdate();
+                update.setTypeId(typeId);
+                update.setDescription("new description " + System.currentTimeMillis());
 
-                    // When
-                    updateTypes(sessionToken, Arrays.asList(update));
-                }
-            }, typeId, patternContains("checking access"));
+                // When
+                updateTypes(sessionToken, Arrays.asList(update));
+            }
+        }, typeId, patternContains("checking access"));
     }
 
     @Test
@@ -1091,7 +1138,6 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
         propertyTypeCreation.setLabel("some property type");
         propertyTypeCreation.setDescription("some property type");
         v3api.createPropertyTypes(sessionToken, Arrays.asList(propertyTypeCreation));
-
 
         final CREATION typeCreation = newTypeCreation();
         typeCreation.setCode("PATTERN_ASSIGNMENT_ENTITY_TYPE");

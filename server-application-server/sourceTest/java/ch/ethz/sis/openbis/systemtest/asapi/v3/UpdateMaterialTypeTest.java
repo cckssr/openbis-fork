@@ -73,7 +73,10 @@ public class UpdateMaterialTypeTest extends UpdateEntityTypeTest<MaterialTypeCre
         MaterialCreation mc = new MaterialCreation();
         mc.setCode(UUID.randomUUID().toString());
         mc.setTypeId(entityType);
-        mc.setStringProperty(propertyType, propertyValue);
+        if(propertyType != null)
+        {
+            mc.setStringProperty(propertyType, propertyValue);
+        }
         v3api.createMaterials(sessionToken, Arrays.asList(mc));
     }
 
