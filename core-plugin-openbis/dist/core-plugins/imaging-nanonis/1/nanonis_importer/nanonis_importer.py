@@ -48,7 +48,10 @@ def get_instance(url, token):
         url=url,
         verify_certificates=False
     )
-    openbis_instance.token = token
+    if token is None:
+        token = openbis_instance.login('admin', 'changeit')
+    else:
+        openbis_instance.token = token
     print(f'Connected to {url} -> token: {token}')
     return openbis_instance
 
@@ -156,7 +159,8 @@ def create_sxm_dataset(openbis, experiment, file_path, sample=None):
                imaging.ImagingDataSetControl('archive-format', "Dropdown", values=['zip', 'tar'], semanticAnnotation=imaging.ImagingSemanticAnnotation('schema.org', 'https://schema.org/version/28.1', 'https://schema.org/fileFormat')),
                imaging.ImagingDataSetControl('resolution', "Dropdown", values=['original', '150dpi', '300dpi'], semanticAnnotation=None),
                imaging.ImagingDataSetControl('include labels', "Dropdown", values=['True', 'False'], semanticAnnotation=None),
-               imaging.ImagingDataSetControl('include parameters', "Dropdown", values=['True', 'False'], semanticAnnotation=None)]
+               imaging.ImagingDataSetControl('include parameters', "Dropdown", values=['True', 'False'], semanticAnnotation=None)
+               ]
 
     inputs = [
         imaging.ImagingDataSetControl('Channel', "Dropdown", values=channels, section="Data"),
@@ -499,7 +503,10 @@ def create_dat_dataset(openbis, folder_path, file_prefix='', sample=None, experi
     exports = [imaging.ImagingDataSetControl('include', "Dropdown", values=['image', 'raw data'], multiselect=True),
                imaging.ImagingDataSetControl('image-format', "Dropdown", values=['png', 'svg'], semanticAnnotation=imaging.ImagingSemanticAnnotation('schema.org', 'https://schema.org/version/28.1', 'https://schema.org/encoding')),
                imaging.ImagingDataSetControl('archive-format', "Dropdown", values=['zip', 'tar'], semanticAnnotation=imaging.ImagingSemanticAnnotation('schema.org', 'https://schema.org/version/28.1', 'https://schema.org/fileFormat')),
-               imaging.ImagingDataSetControl('resolution', "Dropdown", values=['original', '150dpi', '300dpi'])]
+               imaging.ImagingDataSetControl('resolution', "Dropdown", values=['original', '150dpi', '300dpi'], semanticAnnotation=None),
+               imaging.ImagingDataSetControl('include labels', "Dropdown", values=['True', 'False'], semanticAnnotation=None),
+               imaging.ImagingDataSetControl('include parameters', "Dropdown", values=['True', 'False'], semanticAnnotation=None)
+               ]
 
     inputs = [
         imaging.ImagingDataSetControl('Channel X', "Dropdown", values=[channel[0] for channel in channels_x]),
