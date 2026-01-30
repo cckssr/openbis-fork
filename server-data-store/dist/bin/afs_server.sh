@@ -88,14 +88,17 @@ printStatus()
 #
 
 
-PID_FILE=./afs_server.pid
+PID_FILE="$AFS_HOME/afs_server.pid"
 LIB_FOLDER=./lib
 CONF_FILE=./etc/afs_server.conf
 SERVICE_PROPERTIES_FILE=./etc/service.properties
 LOG_FOLDER=./log
 LOG_FILE=$LOG_FOLDER/afs.log
-SUCCESS_MSG="=== Server ready ==="
+#SUCCESS_MSG="=== Server ready ==="
 MAX_LOOPS=20
+
+STARTED_MARKER="$AFS_HOME/SERVER_STARTED"
+TIMEOUT=120
 
 #
 # change to installation directory
@@ -151,73 +154,23 @@ case "$command" in
 
     shift 1
 
-    # ------------------------------------------------------------
-    # Detect Docker stdout safely
-    # ------------------------------------------------------------
-    DOCKER_STDOUT="/proc/1/fd/1"
-    HAS_DOCKER_STDOUT=false
-    if [ -e "$DOCKER_STDOUT" ] && [ -w "$DOCKER_STDOUT" ]; then
-      HAS_DOCKER_STDOUT=true
-    fi
+    rm -f "$STARTED_MARKER" "$PID_FILE"
 
-    # ------------------------------------------------------------
-    # Flag file toggled when SUCCESS_MSG appears on stdout
-    READY_FLAG=$(mktemp -t afs_ready.XXXXXX)
-    trap 'rm -f "$READY_FLAG"' EXIT
+    # Launch server - output goes to stdout (captured by Docker or terminal)
+    stdbuf -oL -eL $JAVA_BIN $JAVA_OPTIONS "$@" 2>&1 &
 
-    AWK_BIN=$(awkBin)
+    echo $! > "$PID_FILE"
+    JAVA_PID=$!
 
-    # ------------------------------------------------------------
-    # Build tee targets:
-    #   1) readiness detector (always)
-    #   2) Docker stdout (only if available)
-    # ------------------------------------------------------------
-    TEE_TARGETS=()
+    # Poll for marker file
+    for i in $(seq 1 $TIMEOUT); do
+        sleep 1
 
-    TEE_TARGETS+=( >( "$AWK_BIN" -v s="$SUCCESS_MSG" -v ready="$READY_FLAG" '
-        index($0, s) { system("touch " ready); exit }
-      ' > /dev/null ) )
+        [ -f "$STARTED_MARKER" ] && { echo "Server started in ${i}s"; exit 0; }
 
-    if [ "$HAS_DOCKER_STDOUT" = true ]; then
-      TEE_TARGETS+=( "$DOCKER_STDOUT" )
-    fi
-
-    # ------------------------------------------------------------
-
-    # Launch server in a subshell so we can capture the actual Java PID and keep the pipe open
-    (
-      # Start Java (line-buffered) in background
-      stdbuf -oL -eL $JAVA_BIN $JAVA_OPTIONS "$@" 2>&1 &
-      CHILD=$!
-      echo $CHILD > "$PID_FILE"
-      # Wait for the Java process so the pipe stays open for tee
-      wait $CHILD
-    ) | tee "${TEE_TARGETS[@]}" &
-    PIPE_PID=$!
-
-    # wait for initial self-test to finish (by success message or process exit)
-    n=0
-    while [ $n -lt $MAX_LOOPS ]; do
-      sleep 1
-
-      # If pid file vanished, assume process terminated
-      if [ ! -f "$PID_FILE" ]; then
-        break
-      fi
-
-      PID=`cat "$PID_FILE" 2> /dev/null`
-      isPIDRunning "$PID"
-      if [ $? -ne 0 ]; then
-        break
-      fi
-
-      # Success line seen?
-      if [ -f "$READY_FLAG" ]; then
-        break
-      fi
-
-      n=$((n+1))
+        isPIDRunning "$JAVA_PID" || { echo "Server died"; exit 1; }
     done
+
 
     # Final status check
     if [ -f "$PID_FILE" ]; then

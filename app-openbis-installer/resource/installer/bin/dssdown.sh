@@ -16,4 +16,5 @@ if [ ${BASE#/} == ${BASE} ]; then
     BASE="`pwd`/${BASE}"
 fi
 
-$BASE/../servers/datastore_server/datastore_server.sh stop
+export DSS_HOME="$BASE/../servers/datastore_server"
+$DSS_HOME/datastore_server.sh stop
