@@ -384,6 +384,22 @@ final class EntityPropertyTypeDAO extends AbstractDAO implements IEntityProperty
         {
             valueColumn = "mate_prop_id";
             valueObject = property.getMaterialValue().getId();
+        } else if (property.getStringArrayValue() != null)
+        {
+            valueColumn = "string_array_value";
+            valueObject = property.getStringArrayValue();
+        } else if (property.getIntegerArrayValue() != null)
+        {
+            valueColumn = "integer_array_value";
+            valueObject = property.getIntegerArrayValue();
+        } else if (property.getRealArrayValue() != null)
+        {
+            valueColumn = "real_array_value";
+            valueObject = property.getRealArrayValue();
+        } else if (property.getTimestampArrayValue() != null)
+        {
+            valueColumn = "timestamp_array_value";
+            valueObject = property.getTimestampArrayValue();
         } else if (property.getJsonValue() != null)
         {
             valueColumn = "json_value";

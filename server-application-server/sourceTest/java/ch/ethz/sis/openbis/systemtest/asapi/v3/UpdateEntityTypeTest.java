@@ -18,6 +18,7 @@ package ch.ethz.sis.openbis.systemtest.asapi.v3;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -1102,6 +1103,10 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
     {
         List<Object[]> list = new ArrayList<>();
         list.add(new Object[] { DataType.INTEGER, "123", "123" });
+        list.add(new Object[] { DataType.ARRAY_INTEGER, "[123, 234]", new String[] { "123", "234" } });
+        list.add(new Object[] { DataType.ARRAY_REAL, "[1.23, 2.34]", new String[] { "1.23", "2.34" } });
+        list.add(new Object[] { DataType.ARRAY_STRING, "[\"abc\", \"def\"]", new String[] { "abc", "def" } });
+        list.add(new Object[] { DataType.ARRAY_TIMESTAMP, "[\"2026-01-30 10:18:30\"]", new String[] { "2026-01-30 10:18:30 +0100" } });
         list.add(new Object[] { DataType.DATE, "2026-01-30", "2026-01-30" });
         list.add(new Object[] { DataType.VARCHAR, "Hello World", "Hello World" });
         list.add(new Object[] { DataType.BOOLEAN, "true", "true" });
@@ -1115,7 +1120,8 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
     }
 
     @Test(dataProvider = "provideSimplePropertyDataTypesAndPropertyValues")
-    public void testMakeExistingSimplePropertyMandatoryWithInitialValue(DataType dataType, String initialPropertyValue, String expectedPropertyValue)
+    public void testMakeExistingSimplePropertyMandatoryWithInitialValue(DataType dataType, String initialPropertyValue,
+            Serializable expectedPropertyValue)
     {
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
 
@@ -1130,7 +1136,7 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
     }
 
     private void testMakeExistingPropertyMandatory(String sessionToken, PropertyTypePermId propertyTypeId, String initialPropertyValue,
-            String expectedPropertyValue)
+            Serializable expectedPropertyValue)
     {
         // Create entity type with property not mandatory
         PropertyAssignmentCreation propertyAssignmentCreation = new PropertyAssignmentCreation();
