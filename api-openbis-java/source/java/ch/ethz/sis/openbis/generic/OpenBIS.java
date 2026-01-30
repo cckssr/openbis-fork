@@ -36,6 +36,17 @@ import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.TypeGroup;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.TypeGroupAssignment;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.create.TypeGroupAssignmentCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.delete.TypeGroupAssignmentDeletionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.fetchoptions.TypeGroupAssignmentFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.fetchoptions.TypeGroupFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.ITypeGroupAssignmentId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.ITypeGroupId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.TypeGroupAssignmentId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.search.TypeGroupAssignmentSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.update.TypeGroupUpdate;
 import org.eclipse.jetty.client.BytesRequestContent;
 import org.eclipse.jetty.client.MultiPartRequestContent;
 import org.eclipse.jetty.client.StringRequestContent;
@@ -613,9 +624,13 @@ public class OpenBIS
         return asFacadeWithTransactions.createPersonalAccessTokens(sessionToken, newPersonalAccessTokens);
     }
 
-    public List<TypeGroupId> createTypeGroups(String sessionToken, List<TypeGroupCreation> newTypeGroups)
+    public List<TypeGroupId> createTypeGroups(List<TypeGroupCreation> newTypeGroups)
     {
         return asFacadeWithTransactions.createTypeGroups(sessionToken, newTypeGroups);
+    }
+
+    public List<TypeGroupAssignmentId> createTypeGroupAssignments(List<TypeGroupAssignmentCreation> newTypeGroupAssignments) {
+        return asFacadeWithTransactions.createTypeGroupAssignments(sessionToken, newTypeGroupAssignments);
     }
 
     public void updateSpaces(List<SpaceUpdate> spaceUpdates)
@@ -726,6 +741,10 @@ public class OpenBIS
     public void updatePersonalAccessTokens(List<PersonalAccessTokenUpdate> personalAccessTokenUpdates)
     {
         asFacadeWithTransactions.updatePersonalAccessTokens(sessionToken, personalAccessTokenUpdates);
+    }
+
+    public void updateTypeGroups(List<TypeGroupUpdate> typeGroupUpdates) {
+        asFacadeWithTransactions.updateTypeGroups(sessionToken, typeGroupUpdates);
     }
 
     public Map<IObjectId, Rights> getRights(List<? extends IObjectId> ids, RightsFetchOptions fetchOptions)
@@ -859,6 +878,16 @@ public class OpenBIS
             PersonalAccessTokenFetchOptions fetchOptions)
     {
         return asFacadeWithTransactions.getPersonalAccessTokens(sessionToken, personalAccessTokenIds, fetchOptions);
+    }
+
+    public Map<ITypeGroupId, TypeGroup> getTypeGroups(List<? extends ITypeGroupId> typeGroupIds,
+            TypeGroupFetchOptions fetchOptions) {
+        return asFacadeWithTransactions.getTypeGroups(sessionToken, typeGroupIds, fetchOptions);
+    }
+
+    public Map<ITypeGroupAssignmentId, TypeGroupAssignment> getTypeGroupAssignments(List<? extends ITypeGroupAssignmentId> ids,
+            TypeGroupAssignmentFetchOptions fetchOptions) {
+        return asFacadeWithTransactions.getTypeGroupAssignments(sessionToken, ids, fetchOptions);
     }
 
     public SearchResult<Space> searchSpaces(SpaceSearchCriteria searchCriteria, SpaceFetchOptions fetchOptions)
@@ -1032,6 +1061,11 @@ public class OpenBIS
         return asFacadeWithTransactions.searchQueryDatabases(sessionToken, searchCriteria, fetchOptions);
     }
 
+    public SearchResult<TypeGroupAssignment> searchTypeGroupAssignments(TypeGroupAssignmentSearchCriteria searchCriteria,
+            TypeGroupAssignmentFetchOptions fetchOptions) {
+        return asFacadeWithTransactions.searchTypeGroupAssignments(sessionToken, searchCriteria, fetchOptions);
+    }
+
     public void deleteSpaces(List<? extends ISpaceId> spaceIds, SpaceDeletionOptions deletionOptions)
     {
         asFacadeWithTransactions.deleteSpaces(sessionToken, spaceIds, deletionOptions);
@@ -1146,6 +1180,11 @@ public class OpenBIS
             PersonalAccessTokenDeletionOptions deletionOptions)
     {
         asFacadeWithTransactions.deletePersonalAccessTokens(sessionToken, personalAccessTokenIds, deletionOptions);
+    }
+
+    public void deleteTypeGroupAssignments(List<? extends ITypeGroupAssignmentId> typeGroupAssignmentIds,
+            TypeGroupAssignmentDeletionOptions deletionOptions) {
+        asFacadeWithTransactions.deleteTypeGroupAssignments(sessionToken, typeGroupAssignmentIds, deletionOptions);
     }
 
     public SearchResult<Deletion> searchDeletions(DeletionSearchCriteria searchCriteria, DeletionFetchOptions fetchOptions)
