@@ -66,9 +66,25 @@ public class StartupMain implements QuarkusApplication
     @Override
     public int run(String... args) throws Exception
     {
+        createServerStartedFile();
         System.out.println(">> Quarkus app running. Press Ctrl+C to exit.");
         Quarkus.waitForExit();
         return 0;
+    }
+
+    private void createServerStartedFile()
+    {
+        File STARTED_FILE = new File("SERVER_STARTED");
+        try
+        {
+            STARTED_FILE.createNewFile();
+            STARTED_FILE.deleteOnExit();
+            System.out.println(STARTED_FILE.getAbsolutePath()+" created");
+        } catch (IOException ex)
+        {
+            System.out.println("Couldn't create marker file " + STARTED_FILE);
+            ex.printStackTrace();
+        }
     }
 
     private static void cleanBeforeRun(Configuration configuration) throws IOException

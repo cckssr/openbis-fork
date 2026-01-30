@@ -87,7 +87,7 @@ printStatus()
 # definitions
 #
 
-PIDFILE=${DATASTORE_SERVER_PID:-datastore_server.pid}
+PIDFILE="${DATASTORE_SERVER_PID:-$DSS_HOME/datastore_server.pid}"
 CONFFILE=etc/datastore_server.conf
 LOGFILE=log/datastore_server.log
 # STARTUPLOG intentionally unused; we only stream to stdout now
@@ -96,6 +96,8 @@ LIB_FOLDER=lib
 # contains custom libraries e.g. JDBC drivers for external databases
 EXT_LIB_FOLDER=ext-lib
 MAX_LOOPS=20
+STARTED_MARKER="$DSS_HOME/SERVER_STARTED"
+TIMEOUT=120
 
 #
 # change to installation directory
@@ -130,7 +132,7 @@ rm -rf $LIB_FOLDER/native
 unzip -q lib/sis-base-*.jar -d $LIB_FOLDER native/*
 unzip -q lib/sis-jhdf5-*.jar -d $LIB_FOLDER native/*
 
-# Build classpath from $LIB_FOLDER and $EXT_LIB_FOLDER content. 
+# Build classpath from $LIB_FOLDER and $EXT_LIB_FOLDER content.
 # datastore_server.jar and lib-common.jar have to appear before cifex.jar
 CP=`echo $LIB_FOLDER/slf4j-log4j12-1.6.2.jar $LIB_FOLDER/server-original-data-store.jar $LIB_FOLDER/lib-common.jar \
     $LIB_FOLDER/lib-dbmigration*.jar $LIB_FOLDER/*.jar $EXT_LIB_FOLDER/*.jar \
@@ -146,7 +148,7 @@ fi
 COMMON_OPTIONS="${JAVA_OPTS} ${JAVA_MEM_OPTS} $JAVA_VERSION_OPTS -Djava.awt.headless=true -Dnative.libpath=$LIB_FOLDER/native -classpath $CP ch.systemsx.cisd.openbis.dss.generic.DataStoreServer"
 
 
-# ensure that we ignore a possible prefix "--" for any command 
+# ensure that we ignore a possible prefix "--" for any command
 command="${command#--*}"
 case "$command" in
   start)
@@ -161,73 +163,24 @@ case "$command" in
     echo -n "Starting Data Store Server "
     shift 1
 
-    # ------------------------------------------------------------
-    # Detect Docker stdout safely
-    # ------------------------------------------------------------
-    DOCKER_STDOUT="/proc/1/fd/1"
-    HAS_DOCKER_STDOUT=false
-    if [ -e "$DOCKER_STDOUT" ] && [ -w "$DOCKER_STDOUT" ]; then
-      HAS_DOCKER_STDOUT=true
-    fi
+    rm -f "$STARTED_MARKER" "$PIDFILE"
 
-    # Create a flag file when SUCCESS_MSG is seen on stdout
-    READY_FLAG=$(mktemp -t dss_ready.XXXXXX)
-    trap 'rm -f "$READY_FLAG"' EXIT
+    # Start Java (line-buffered) in background so we can write the PID file
+    stdbuf -oL -eL "${CMD}" $COMMON_OPTIONS "$@" 2>&1 &
 
-    AWK_BIN=$(awkBin)
+    echo $! > "$PIDFILE"
+    JAVA_PID=$!
 
-    # ------------------------------------------------------------
-    # Build tee targets:
-    #   1) readiness detector (always)
-    #   2) Docker stdout (only if available)
-    # ------------------------------------------------------------
-    TEE_TARGETS=()
+    # Poll for marker file
+    for i in $(seq 1 $TIMEOUT); do
+        sleep 1
 
-    TEE_TARGETS+=( >(
-      "$AWK_BIN" -v s="$SUCCESS_MSG" -v ready="$READY_FLAG" '
-        index($0, s) { system("touch " ready); fflush(); exit }
-        { fflush() }
-      ' >/dev/null
-    ) )
+        [ -f "$STARTED_MARKER" ] && { echo "Server started in ${i}s"; exit 0; }
 
-    if [ "$HAS_DOCKER_STDOUT" = true ]; then
-      TEE_TARGETS+=( "$DOCKER_STDOUT" )
-    fi
-
-    # Launch server in a subshell; capture the real Java PID and keep the pipe open
-    (
-      # Start Java (line-buffered) in background so we can write the PID file
-      stdbuf -oL -eL "${CMD}" $COMMON_OPTIONS "$@" 2>&1 &
-      CHILD=$!
-      echo "$CHILD" > "$PIDFILE"
-      # Keep pipe open until Java exits
-      wait "$CHILD"
-    ) | tee "${TEE_TARGETS[@]}" &
-    PIPE_PID=$!
-
-    # Wait for initial self-test to finish (by success line or process exit)
-    n=0
-    while [ $n -lt $MAX_LOOPS ]; do
-      sleep 1
-
-      # If pid file vanished, assume process terminated
-      if [ ! -f "$PIDFILE" ]; then
-        break
-      fi
-
-      PID=`cat "$PIDFILE" 2> /dev/null`
-      isPIDRunning "$PID"
-      if [ $? -ne 0 ]; then
-        break
-      fi
-
-      # Success line seen?
-      if [ -f "$READY_FLAG" ]; then
-        break
-      fi
-
-      n=$((n+1))
+        isPIDRunning "$JAVA_PID" || { echo "Server died"; exit 1; }
     done
+
+
 
     # Final status check
     if [ -f "$PIDFILE" ]; then
