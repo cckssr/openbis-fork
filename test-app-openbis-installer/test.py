@@ -30,7 +30,6 @@ import settings
 from systemtest.util import printAndFlush, renderDuration
 
 startTime = time.time()
-WAIT_SECONDS = 20
 testCases = [] 
 failedTestCases = {}
 testCaseDurations = {}
@@ -48,8 +47,6 @@ for f in sorted(os.listdir(os.path.dirname(os.path.abspath(__file__)))):
             except:
                 failedTestCases[moduleName] = sys.exc_info()
             testCaseDurations[moduleName] = time.time() - moduleStartTime
-            printAndFlush("Waiting %d seconds before starting next test..." % WAIT_SECONDS)
-            time.sleep(WAIT_SECONDS)
 renderedStartTime = time.strftime('%Y-%m-%dT%H:%M:%S', time.localtime(startTime))
 duration = time.time() - startTime
 testResultsFolder = 'targets/test-results'
