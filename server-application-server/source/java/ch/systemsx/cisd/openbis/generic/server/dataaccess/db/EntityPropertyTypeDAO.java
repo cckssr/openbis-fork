@@ -374,6 +374,8 @@ final class EntityPropertyTypeDAO extends AbstractDAO implements IEntityProperty
 
         final String valueColumn;
         final Serializable valueObject;
+        String valuePlaceHolder = ":value";
+
         if (property.getVocabularyTerm() != null)
         {
             valueColumn = "cvte_id";
@@ -382,6 +384,11 @@ final class EntityPropertyTypeDAO extends AbstractDAO implements IEntityProperty
         {
             valueColumn = "mate_prop_id";
             valueObject = property.getMaterialValue().getId();
+        } else if (property.getJsonValue() != null)
+        {
+            valueColumn = "json_value";
+            valueObject = property.getJsonValue();
+            valuePlaceHolder = "CAST(:value AS jsonb)";
         } else if (property instanceof final EntityPropertyWithSampleDataTypePE sampleProperty && sampleProperty.getSampleValue() != null)
         {
             valueColumn = "samp_prop_id";
@@ -396,7 +403,7 @@ final class EntityPropertyTypeDAO extends AbstractDAO implements IEntityProperty
         final String sql =
                 String.format(
                         "INSERT INTO %s (id, pers_id_registerer, pers_id_author, %s, %s, %s) "
-                                + "VALUES (nextval('%s'), :registratorId, :registratorId, :entityId, :etptId, :value)",
+                                + "VALUES (nextval('%s'), :registratorId, :registratorId, :entityId, :etptId, " + valuePlaceHolder + ")",
                         tableName, entityColumn, propertyTypeColumn, valueColumn, sequenceName);
 
         // inserts are performed using stateless session for better memory management
