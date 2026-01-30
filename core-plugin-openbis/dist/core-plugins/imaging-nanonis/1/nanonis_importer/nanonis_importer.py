@@ -50,8 +50,8 @@ def get_instance(url, token):
     )
     if token is None:
         token = openbis_instance.login('admin', 'changeit')
-    else:
-        openbis_instance.token = token
+
+    openbis_instance.token = token
     print(f'Connected to {url} -> token: {token}')
     return openbis_instance
 
@@ -883,8 +883,9 @@ if len(sys.argv) >= 3:
     openbis_url = sys.argv[1]
     data_folder = sys.argv[2]
     # afs_url = openbis_url + "/afs-server/api"
-    token = sys.argv[3]
-    if len(sys.argv) > 4:
+    if len(sys.argv) >= 4:
+        token = sys.argv[3]
+    if len(sys.argv) >= 5:
         AFS_URL = sys.argv[4]
 
 else:
