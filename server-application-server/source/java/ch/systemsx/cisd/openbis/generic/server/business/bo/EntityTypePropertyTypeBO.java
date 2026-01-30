@@ -15,6 +15,7 @@
  */
 package ch.systemsx.cisd.openbis.generic.server.business.bo;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -234,7 +235,7 @@ public class EntityTypePropertyTypeBO extends AbstractBusinessObject implements
                         entityKind.getLabel(), createPlural(size), entityType.getCode()));
             }
             PersonPE registrator = findPerson();
-            String validatedValue =
+            Serializable validatedValue =
                     propertiesConverter.tryCreateValidatedPropertyValue(propertyType, assignment,
                             defaultValue);
 

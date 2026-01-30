@@ -49,7 +49,7 @@ public interface IEntityPropertiesConverter
     /**
      * Returns given value validated and converted for given property type and entity type. Result may be null if given value is null.
      */
-    public String tryCreateValidatedPropertyValue(PropertyTypePE propertyType,
+    public Serializable tryCreateValidatedPropertyValue(PropertyTypePE propertyType,
             EntityTypePropertyTypePE entityTypPropertyType, String value);
 
     /**
@@ -57,7 +57,7 @@ public interface IEntityPropertiesConverter
      */
     public <T extends EntityPropertyPE> List<T> createValidatedProperty(PropertyTypePE propertyType,
             EntityTypePropertyTypePE entityTypePropertyType, final PersonPE registrator,
-            String validatedValue);
+            Serializable validatedValue);
 
     /**
      * Modifies value of given {@link EntityPropertyPE}. Value should be already validated.
