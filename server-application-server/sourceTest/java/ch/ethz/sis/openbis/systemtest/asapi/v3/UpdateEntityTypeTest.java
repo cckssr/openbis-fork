@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.BiFunction;
 
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -1061,7 +1062,99 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
     }
 
     @Test
-    public void testMakeExistingObjectPropertyMandatoryWithPermIdAsInitialValue()
+    public void testMakeExistingStringPropertyMandatory()
+    {
+        testMakeExistingSimplePropertyMandatory(DataType.VARCHAR, "Hello World", IPropertiesHolder::getProperty, "Hello World");
+    }
+
+    @Test
+    public void testMakeExistingMultilineStringPropertyMandatory()
+    {
+        testMakeExistingSimplePropertyMandatory(DataType.MULTILINE_VARCHAR, "Hello\nWorld", IPropertiesHolder::getProperty, "Hello\nWorld");
+    }
+
+    @Test
+    public void testMakeExistingStringArrayPropertyMandatory()
+    {
+        testMakeExistingSimplePropertyMandatory(DataType.ARRAY_STRING, "[\"abc\", \"def\"]", IPropertiesHolder::getStringArrayProperty,
+                new String[] { "abc", "def" });
+    }
+
+    @Test
+    public void testMakeExistingIntegerPropertyMandatory()
+    {
+        testMakeExistingSimplePropertyMandatory(DataType.INTEGER, "123", IPropertiesHolder::getIntegerProperty, 123L);
+    }
+
+    @Test
+    public void testMakeExistingIntegerArrayPropertyMandatory()
+    {
+        testMakeExistingSimplePropertyMandatory(DataType.ARRAY_INTEGER, "[123, 234]", IPropertiesHolder::getIntegerArrayProperty,
+                new Long[] { 123L, 234L });
+    }
+
+    @Test
+    public void testMakeExistingRealPropertyMandatory()
+    {
+        testMakeExistingSimplePropertyMandatory(DataType.REAL, "1.23", IPropertiesHolder::getRealProperty, 1.23);
+    }
+
+    @Test
+    public void testMakeExistingRealArrayPropertyMandatory()
+    {
+        testMakeExistingSimplePropertyMandatory(DataType.ARRAY_REAL, "[1.23, 2.34]", IPropertiesHolder::getRealArrayProperty,
+                new Double[] { 1.23, 2.34 });
+    }
+
+    @Test
+    public void testMakeExistingBooleanPropertyMandatory()
+    {
+        testMakeExistingSimplePropertyMandatory(DataType.BOOLEAN, "true", IPropertiesHolder::getBooleanProperty, true);
+    }
+
+    @Test
+    public void testMakeExistingDatePropertyMandatory()
+    {
+        testMakeExistingSimplePropertyMandatory(DataType.DATE, "2026-01-30", IPropertiesHolder::getProperty, "2026-01-30");
+    }
+
+    @Test
+    public void testMakeExistingTimestampPropertyMandatory()
+    {
+        testMakeExistingSimplePropertyMandatory(DataType.TIMESTAMP, "2026-01-30 10:18:30", IPropertiesHolder::getProperty,
+                "2026-01-30 10:18:30 +0100");
+    }
+
+    @Test
+    public void testMakeExistingTimestampArrayPropertyMandatory()
+    {
+        testMakeExistingSimplePropertyMandatory(DataType.ARRAY_TIMESTAMP, "[\"2026-01-30 10:18:30\"]", IPropertiesHolder::getProperty,
+                new String[] { "2026-01-30 10:18:30 +0100" });
+    }
+
+    @Test
+    public void testMakeExistingJsonPropertyMandatory()
+    {
+        testMakeExistingSimplePropertyMandatory(DataType.JSON, "{\"abc\":\"123\"}", IPropertiesHolder::getJsonProperty,
+                "{\"abc\": \"123\"}");
+    }
+
+    @Test
+    public void testMakeExistingXmlPropertyMandatory()
+    {
+        testMakeExistingSimplePropertyMandatory(DataType.XML, "<abc><def/></abc>", IPropertiesHolder::getProperty,
+                "<abc><def/></abc>");
+    }
+
+    @Test
+    public void testMakeExistingHyperlinkPropertyMandatory()
+    {
+        testMakeExistingSimplePropertyMandatory(DataType.HYPERLINK, "https://openbis.ch", IPropertiesHolder::getProperty,
+                "https://openbis.ch");
+    }
+
+    @Test
+    public void testMakeExistingObjectPropertyMandatory()
     {
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
 
@@ -1080,12 +1173,14 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
         SamplePermId sampleId = v3api.createSamples(sessionToken, List.of(sampleCreation)).get(0);
         Sample sample = v3api.getSamples(sessionToken, List.of(sampleId), new SampleFetchOptions()).get(sampleId);
 
-        testMakeExistingPropertyMandatory(sessionToken, samplePropertyId, sample.getPermId().getPermId(), sample.getPermId().getPermId());
-        testMakeExistingPropertyMandatory(sessionToken, samplePropertyId, sample.getIdentifier().getIdentifier(), sample.getPermId().getPermId());
+        testMakeExistingPropertyMandatory(sessionToken, samplePropertyId, sample.getPermId().getPermId(),
+                IPropertiesHolder::getSampleProperty, sample.getPermId());
+        testMakeExistingPropertyMandatory(sessionToken, samplePropertyId, sample.getIdentifier().getIdentifier(),
+                IPropertiesHolder::getSampleProperty, sample.getPermId());
     }
 
     @Test
-    public void testMakeExistingVocabularyPropertyMandatoryWithTermCodeAsInitialValue()
+    public void testMakeExistingVocabularyPropertyMandatory()
     {
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
 
@@ -1095,33 +1190,11 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
         // Create vocabulary property
         PropertyTypePermId propertyId = createAVocabularyPropertyType(sessionToken, vocabularyId, "VOCABULARY_PROPERTY_" + UUID.randomUUID());
 
-        testMakeExistingPropertyMandatory(sessionToken, propertyId, "TERM_1", "TERM_1");
+        testMakeExistingPropertyMandatory(sessionToken, propertyId, "TERM_1", IPropertiesHolder::getControlledVocabularyProperty, "TERM_1");
     }
 
-    @DataProvider(name = "provideSimplePropertyDataTypesAndPropertyValues")
-    public static Object[][] provideSimplePropertyDataTypes()
-    {
-        List<Object[]> list = new ArrayList<>();
-        list.add(new Object[] { DataType.INTEGER, "123", "123" });
-        list.add(new Object[] { DataType.ARRAY_INTEGER, "[123, 234]", new String[] { "123", "234" } });
-        list.add(new Object[] { DataType.ARRAY_REAL, "[1.23, 2.34]", new String[] { "1.23", "2.34" } });
-        list.add(new Object[] { DataType.ARRAY_STRING, "[\"abc\", \"def\"]", new String[] { "abc", "def" } });
-        list.add(new Object[] { DataType.ARRAY_TIMESTAMP, "[\"2026-01-30 10:18:30\"]", new String[] { "2026-01-30 10:18:30 +0100" } });
-        list.add(new Object[] { DataType.DATE, "2026-01-30", "2026-01-30" });
-        list.add(new Object[] { DataType.VARCHAR, "Hello World", "Hello World" });
-        list.add(new Object[] { DataType.BOOLEAN, "true", "true" });
-        list.add(new Object[] { DataType.HYPERLINK, "https://openbis.ch", "https://openbis.ch" });
-        list.add(new Object[] { DataType.JSON, "{\"abc\":\"123\"}", "{\"abc\": \"123\"}" });
-        list.add(new Object[] { DataType.MULTILINE_VARCHAR, "Hello\nWorld", "Hello\nWorld" });
-        list.add(new Object[] { DataType.REAL, "1.23", "1.23" });
-        list.add(new Object[] { DataType.TIMESTAMP, "2026-01-30 10:18:30", "2026-01-30 10:18:30 +0100" });
-        list.add(new Object[] { DataType.XML, "<abc><def/></abc>", "<abc><def/></abc>" });
-        return list.toArray(Object[][]::new);
-    }
-
-    @Test(dataProvider = "provideSimplePropertyDataTypesAndPropertyValues")
-    public void testMakeExistingSimplePropertyMandatoryWithInitialValue(DataType dataType, String initialPropertyValue,
-            Serializable expectedPropertyValue)
+    private void testMakeExistingSimplePropertyMandatory(DataType dataType, String initialPropertyValue,
+            BiFunction<IPropertiesHolder, String, Object> propertyValueGetter, Serializable expectedPropertyValue)
     {
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
 
@@ -1132,11 +1205,11 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
         propertyTypeCreation.setLabel(propertyTypeCreation.getCode());
         PropertyTypePermId propertyId = v3api.createPropertyTypes(sessionToken, List.of(propertyTypeCreation)).get(0);
 
-        testMakeExistingPropertyMandatory(sessionToken, propertyId, initialPropertyValue, expectedPropertyValue);
+        testMakeExistingPropertyMandatory(sessionToken, propertyId, initialPropertyValue, propertyValueGetter, expectedPropertyValue);
     }
 
     private void testMakeExistingPropertyMandatory(String sessionToken, PropertyTypePermId propertyTypeId, String initialPropertyValue,
-            Serializable expectedPropertyValue)
+            BiFunction<IPropertiesHolder, String, Object> propertyValueGetter, Serializable expectedPropertyValue)
     {
         // Create entity type with property not mandatory
         PropertyAssignmentCreation propertyAssignmentCreation = new PropertyAssignmentCreation();
@@ -1164,7 +1237,8 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
 
         // Check the entity got the initial property value
         IPropertiesHolder entity = searchEntities(sessionToken, createSearchCriteria(entityTypeId)).get(0);
-        assertEquals(entity.getProperty(propertyTypeId.getPermId()), expectedPropertyValue);
+        Object actualPropertyValue = propertyValueGetter.apply(entity, propertyTypeId.getPermId());
+        assertEquals(actualPropertyValue, expectedPropertyValue);
     }
 
     @Test(dataProvider = "usersNotAllowedToUpdate")
