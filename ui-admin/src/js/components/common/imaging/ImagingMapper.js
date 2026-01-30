@@ -49,15 +49,43 @@ export default class ImagingMapper{
     }
 
     mapToImagingDataSetExportConfig(exportConfig) {
-        let imagingDataSetExportConfig = new this.openbis.ImagingDataSetExportConfig();
-        imagingDataSetExportConfig.imageFormat = exportConfig['image-format'];
-        imagingDataSetExportConfig.archiveFormat = exportConfig['archive-format'];
-        imagingDataSetExportConfig.resolution = exportConfig['resolution'];
-        if (Array.isArray(exportConfig['include'])) {
-            imagingDataSetExportConfig.include = exportConfig['include'].map(c => c.toUpperCase().replace(' ', '_'));
-        } else if (typeof exportConfig['include'] === 'string') {
-            imagingDataSetExportConfig.include = [exportConfig['include'].toUpperCase().replace(' ', '_')];
-        }
+        const imagingDataSetExportConfig = new this.openbis.ImagingDataSetExportConfig();
+
+        Object.entries(exportConfig || {}).forEach(([key, value]) => {
+            switch (key) {
+              case 'include': {
+                  if (Array.isArray(value)) {
+                      imagingDataSetExportConfig.include = value.map(c =>
+                          c.toUpperCase().replace(' ', '_')
+                      )
+                  } else if (typeof value === 'string') {
+                      imagingDataSetExportConfig.include = [
+                          value.toUpperCase().replace(' ', '_')
+                      ]
+                  }
+                  break
+              }
+              case 'image-format': {
+                  imagingDataSetExportConfig.imageFormat = value;
+                  break
+              }
+              case 'archive-format': {
+                  imagingDataSetExportConfig.archiveFormat = value;
+                  break
+              }
+              case 'resolution': {
+                  imagingDataSetExportConfig.resolution = value;
+                  break
+              }
+              default: {
+                  if (!imagingDataSetExportConfig.customOptions) {
+                      imagingDataSetExportConfig.customOptions = {};
+                  }
+                  imagingDataSetExportConfig.customOptions[key] = value;
+                  break
+              }
+            }
+        });
         return imagingDataSetExportConfig;
     }
 

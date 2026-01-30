@@ -19,7 +19,7 @@ python3 -m venv ~/my_venv
 # Activation 
 source ~/my_venv/bin/activate
 # Installation of packages
-pip3 install -r scripts/python_requirements.txt
+pip3 install -r ../scripts/python_requirements.txt
 ```
 
 #### Removal of virtual environment
