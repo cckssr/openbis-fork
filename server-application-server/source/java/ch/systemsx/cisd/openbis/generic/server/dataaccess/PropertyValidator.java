@@ -227,7 +227,7 @@ public final class PropertyValidator implements IPropertyValueValidator
                 } catch (Exception e)
                 {
                     throw UserFailureException.fromTemplate(e,
-                            "Array value '%s' is not valid. Provided value is a string and could not be parsed to an array.", value);
+                            "Array value '%s' is not valid. Provided value is a String which could not be parsed to an array.", value);
                 }
             } else
             {

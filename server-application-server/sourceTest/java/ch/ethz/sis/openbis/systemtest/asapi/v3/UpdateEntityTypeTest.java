@@ -1078,12 +1078,27 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
     {
         testMakeExistingSimplePropertyMandatory(DataType.ARRAY_STRING, "[\"abc\", \"def\"]", IPropertiesHolder::getStringArrayProperty,
                 new String[] { "abc", "def" });
+        testMakeExistingSimplePropertyMandatory(DataType.ARRAY_STRING, "[123, 234]", IPropertiesHolder::getStringArrayProperty,
+                new String[] { "123", "234" });
+
+        assertExceptionMessage(() ->
+                        testMakeExistingSimplePropertyMandatory(DataType.ARRAY_STRING, "[abc, def]", IPropertiesHolder::getStringArrayProperty,
+                                new String[] { "abc", "def" }),
+                "Array value '[abc, def]' is not valid. Provided value is a String which could not be parsed to an array.");
+
+        assertExceptionMessage(() ->
+                        testMakeExistingSimplePropertyMandatory(DataType.ARRAY_STRING, "not an array", IPropertiesHolder::getStringArrayProperty, null),
+                "Array value 'not an array' is not valid. Provided value is a String which could not be parsed to an array.");
     }
 
     @Test
     public void testMakeExistingIntegerPropertyMandatory()
     {
         testMakeExistingSimplePropertyMandatory(DataType.INTEGER, "123", IPropertiesHolder::getIntegerProperty, 123L);
+
+        assertExceptionMessage(() ->
+                        testMakeExistingSimplePropertyMandatory(DataType.INTEGER, "abc", IPropertiesHolder::getIntegerProperty, null),
+                "Integer value 'abc' has improper format.");
     }
 
     @Test
@@ -1091,12 +1106,21 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
     {
         testMakeExistingSimplePropertyMandatory(DataType.ARRAY_INTEGER, "[123, 234]", IPropertiesHolder::getIntegerArrayProperty,
                 new Long[] { 123L, 234L });
+
+        assertExceptionMessage(() ->
+                        testMakeExistingSimplePropertyMandatory(DataType.ARRAY_INTEGER, "[\"abc\", \"def\"]", IPropertiesHolder::getIntegerArrayProperty,
+                                null),
+                "For input string: \"abc\"");
     }
 
     @Test
     public void testMakeExistingRealPropertyMandatory()
     {
         testMakeExistingSimplePropertyMandatory(DataType.REAL, "1.23", IPropertiesHolder::getRealProperty, 1.23);
+
+        assertExceptionMessage(() ->
+                        testMakeExistingSimplePropertyMandatory(DataType.REAL, "abc", IPropertiesHolder::getRealProperty, 1.23),
+                "Double value 'abc' has improper format.");
     }
 
     @Test
@@ -1104,6 +1128,11 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
     {
         testMakeExistingSimplePropertyMandatory(DataType.ARRAY_REAL, "[1.23, 2.34]", IPropertiesHolder::getRealArrayProperty,
                 new Double[] { 1.23, 2.34 });
+
+        assertExceptionMessage(() ->
+                        testMakeExistingSimplePropertyMandatory(DataType.ARRAY_REAL, "[\"abc\", \"def\"]", IPropertiesHolder::getRealArrayProperty,
+                                null),
+                "For input string: \"abc\"");
     }
 
     @Test
