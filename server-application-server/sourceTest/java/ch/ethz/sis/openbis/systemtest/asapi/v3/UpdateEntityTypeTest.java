@@ -46,9 +46,12 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.create.PropertyTypeCrea
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.IPropertyTypeId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyAssignmentPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyTypePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.SampleCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.SampleTypeCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.id.VocabularyPermId;
 import ch.systemsx.cisd.common.action.IDelegatedAction;
 import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
 
@@ -1057,27 +1060,81 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
     }
 
     @Test
-    public void testMakeExistingPropertyWithDataTypeObjectMandatory()
+    public void testMakeExistingObjectPropertyMandatoryWithPermIdAsInitialValue()
     {
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
 
-        // Create object type for property value
-        SampleTypeCreation objectTypeForPropertyValueCreation = new SampleTypeCreation();
-        objectTypeForPropertyValueCreation.setCode("OBJECT_TYPE_FOR_PROPERTY_VALUE_" + UUID.randomUUID());
-        EntityTypePermId objectTypeForPropertyValueId = v3api.createSampleTypes(sessionToken, List.of(objectTypeForPropertyValueCreation)).get(0);
+        // Create sample type
+        SampleTypeCreation sampleTypeCreation = new SampleTypeCreation();
+        sampleTypeCreation.setCode("SAMPLE_TYPE_FOR_PROPERTY_VALUE_" + UUID.randomUUID());
+        EntityTypePermId sampleTypeId = v3api.createSampleTypes(sessionToken, List.of(sampleTypeCreation)).get(0);
 
-        // Create object for property value
-        SampleCreation objectForPropertyValueCreation = new SampleCreation();
-        objectForPropertyValueCreation.setCode("OBJECT_FOR_PROPERTY_VALUE_" + UUID.randomUUID());
-        objectForPropertyValueCreation.setTypeId(objectTypeForPropertyValueId);
-        SamplePermId objectForPropertyValueId = v3api.createSamples(sessionToken, List.of(objectForPropertyValueCreation)).get(0);
+        // Create sample property
+        PropertyTypePermId samplePropertyId = createASamplePropertyType(sessionToken, sampleTypeId);
 
-        // Create object property
-        PropertyTypePermId objectPropertyId = createASamplePropertyType(sessionToken, objectTypeForPropertyValueId);
+        // Create sample
+        SampleCreation sampleCreation = new SampleCreation();
+        sampleCreation.setCode("SAMPLE_FOR_PROPERTY_VALUE_" + UUID.randomUUID());
+        sampleCreation.setTypeId(sampleTypeId);
+        SamplePermId sampleId = v3api.createSamples(sessionToken, List.of(sampleCreation)).get(0);
+        Sample sample = v3api.getSamples(sessionToken, List.of(sampleId), new SampleFetchOptions()).get(sampleId);
 
-        // Create entity type with object property not mandatory
+        testMakeExistingPropertyMandatory(sessionToken, samplePropertyId, sample.getPermId().getPermId(), sample.getPermId().getPermId());
+        testMakeExistingPropertyMandatory(sessionToken, samplePropertyId, sample.getIdentifier().getIdentifier(), sample.getPermId().getPermId());
+    }
+
+    @Test
+    public void testMakeExistingVocabularyPropertyMandatoryWithTermCodeAsInitialValue()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        // Create vocabulary
+        VocabularyPermId vocabularyId = createVocabulary(sessionToken, "VOCABULARY_FOR_PROPERTY_VALUE_" + UUID.randomUUID(), "TERM_1", "TERM_2");
+
+        // Create vocabulary property
+        PropertyTypePermId propertyId = createAVocabularyPropertyType(sessionToken, vocabularyId, "VOCABULARY_PROPERTY_" + UUID.randomUUID());
+
+        testMakeExistingPropertyMandatory(sessionToken, propertyId, "TERM_1", "TERM_1");
+    }
+
+    @DataProvider(name = "provideSimplePropertyDataTypesAndPropertyValues")
+    public static Object[][] provideSimplePropertyDataTypes()
+    {
+        List<Object[]> list = new ArrayList<>();
+        list.add(new Object[] { DataType.INTEGER, "123", "123" });
+        list.add(new Object[] { DataType.DATE, "2026-01-30", "2026-01-30" });
+        list.add(new Object[] { DataType.VARCHAR, "Hello World", "Hello World" });
+        list.add(new Object[] { DataType.BOOLEAN, "true", "true" });
+        list.add(new Object[] { DataType.HYPERLINK, "https://openbis.ch", "https://openbis.ch" });
+        list.add(new Object[] { DataType.JSON, "{\"abc\":\"123\"}", "{\"abc\": \"123\"}" });
+        list.add(new Object[] { DataType.MULTILINE_VARCHAR, "Hello\nWorld", "Hello\nWorld" });
+        list.add(new Object[] { DataType.REAL, "1.23", "1.23" });
+        list.add(new Object[] { DataType.TIMESTAMP, "2026-01-30 10:18:30", "2026-01-30 10:18:30 +0100" });
+        list.add(new Object[] { DataType.XML, "<abc><def/></abc>", "<abc><def/></abc>" });
+        return list.toArray(Object[][]::new);
+    }
+
+    @Test(dataProvider = "provideSimplePropertyDataTypesAndPropertyValues")
+    public void testMakeExistingSimplePropertyMandatoryWithInitialValue(DataType dataType, String initialPropertyValue, String expectedPropertyValue)
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        PropertyTypeCreation propertyTypeCreation = new PropertyTypeCreation();
+        propertyTypeCreation.setCode(dataType + "_PROPERTY_TYPE_" + UUID.randomUUID());
+        propertyTypeCreation.setDataType(dataType);
+        propertyTypeCreation.setDescription(propertyTypeCreation.getCode());
+        propertyTypeCreation.setLabel(propertyTypeCreation.getCode());
+        PropertyTypePermId propertyId = v3api.createPropertyTypes(sessionToken, List.of(propertyTypeCreation)).get(0);
+
+        testMakeExistingPropertyMandatory(sessionToken, propertyId, initialPropertyValue, expectedPropertyValue);
+    }
+
+    private void testMakeExistingPropertyMandatory(String sessionToken, PropertyTypePermId propertyTypeId, String initialPropertyValue,
+            String expectedPropertyValue)
+    {
+        // Create entity type with property not mandatory
         PropertyAssignmentCreation propertyAssignmentCreation = new PropertyAssignmentCreation();
-        propertyAssignmentCreation.setPropertyTypeId(objectPropertyId);
+        propertyAssignmentCreation.setPropertyTypeId(propertyTypeId);
 
         CREATION entityTypeCreation = newTypeCreation();
         entityTypeCreation.setCode("ENTITY_TYPE_" + UUID.randomUUID());
@@ -1087,11 +1144,11 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
         // Create entity with the newly created entity type
         createEntity(sessionToken, entityTypeId, null, null);
 
-        // Update the entity type and make the object property mandatory
+        // Update the entity type and make the property mandatory
         PropertyAssignmentCreation propertyAssignmentUpdate = new PropertyAssignmentCreation();
-        propertyAssignmentUpdate.setPropertyTypeId(objectPropertyId);
+        propertyAssignmentUpdate.setPropertyTypeId(propertyTypeId);
         propertyAssignmentUpdate.setMandatory(true);
-        propertyAssignmentUpdate.setInitialValueForExistingEntities(objectForPropertyValueId.getPermId());
+        propertyAssignmentUpdate.setInitialValueForExistingEntities(initialPropertyValue);
 
         UPDATE entityTypeUpdate = newTypeUpdate();
         entityTypeUpdate.setTypeId(entityTypeId);
@@ -1101,7 +1158,7 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
 
         // Check the entity got the initial property value
         IPropertiesHolder entity = searchEntities(sessionToken, createSearchCriteria(entityTypeId)).get(0);
-        assertEquals(entity.getProperty(objectPropertyId.getPermId()), objectForPropertyValueId.getPermId());
+        assertEquals(entity.getProperty(propertyTypeId.getPermId()), expectedPropertyValue);
     }
 
     @Test(dataProvider = "usersNotAllowedToUpdate")
