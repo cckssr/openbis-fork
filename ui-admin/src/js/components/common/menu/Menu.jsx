@@ -11,7 +11,6 @@ import InputAdornment from '@mui/material/InputAdornment'
 import IconButton from '@mui/material/IconButton'
 import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer';
 
-import SvgIcon from '@mui/material/SvgIcon';
 import Logo from '@src/resources/img/openbis-logo-alt-transparent.png'
 
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
@@ -25,7 +24,6 @@ import CloseIcon from '@mui/icons-material/Close'
 import LogoutIcon from '@mui/icons-material/PowerSettingsNew'
 import { alpha } from '@mui/material/styles';
 import withStyles from '@mui/styles/withStyles';
-import AppController from '@src/js/components/AppController.js'
 import messages from '@src/js/common/messages.js'
 import logger from '@src/js/common/logger.js'
 import Typography from "@mui/material/Typography";
@@ -103,7 +101,6 @@ class Menu extends React.PureComponent {
     }
 
     this.state = {
-      currentPage: this.props.currentPage,
       searchText: this.props.searchText || '',
       searchDomain: searchDomain,
       anchorEl: null,
@@ -122,25 +119,22 @@ class Menu extends React.PureComponent {
   }
 
   handlePageChange(event, value) {
-    this.setState({ currentPage: value })
     this.props.pageChangeFunction(event, value)
   }
 
   handleSearchChange(event) {
     this.setState({ searchText: event.target.value })
-    AppController.getInstance().searchChange(event.target.value)
   }
 
   handleSearchKeyPress(event) {
     if (event.key === 'Enter') {
-      this.props.searchFunction(this.state.currentPage, this.state.searchText)
+      this.props.searchFunction(this.props.currentPage, this.state.searchText)
     }
   }
 
   handleSearchClear(event) {
     event.preventDefault()
     this.setState({ searchText: '' })
-    AppController.getInstance().searchChange('')
     this.searchRef.current.focus()
   }
 
@@ -165,7 +159,7 @@ class Menu extends React.PureComponent {
             <img src={Logo} height='100%' width='100%' />
           </div>
           <Tabs
-            value={this.state.currentPage}
+            value={this.props.currentPage}
             onChange={this.handlePageChange}
             classes={{ root: classes.tabs }}
             textColor='inherit'

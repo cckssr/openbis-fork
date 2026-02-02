@@ -281,7 +281,6 @@
 
 	<script type="text/javascript" src="./js/views/MainHeader/MainHeaderController.js"></script>
 	<script type="text/javascript" src="./js/views/MainHeader/MainHeaderModel.js"></script>
-	<script type="text/javascript" src="./js/views/MainHeader/MainHeaderMenu.js"></script>
 	<script type="text/javascript" src="./js/views/MainHeader/MainHeaderView.js"></script>
 
 	<script type="text/javascript" src="./js/views/Login/LoginView.js"></script>
@@ -377,18 +376,25 @@
 				)
 			)
 
-			var dedicatedDomContainer = document.createElement("div")
-			dedicatedDomContainer.style.width = "100%"
-			dedicatedDomContainer.style.height = "100%"
-			domContainer.appendChild(dedicatedDomContainer)
+			var foundComponent = this.components.find(function(component){
+				return component.domContainer === domContainer
+			});
 
-			var reactRoot = ReactDOM.createRoot(dedicatedDomContainer)
-			reactRoot.render(reactComponentWithProviders)
-			var url = window.location.href;
-			if(!isNotRemovable) {
-			    this.components.push({ reactRoot: reactRoot, domContainer: dedicatedDomContainer, url: url })
+			if(foundComponent && foundComponent.isNotRemovable){
+				foundComponent.reactRoot.render(reactComponentWithProviders)
+				return foundComponent.reactRoot;
+			}else{
+				var dedicatedDomContainer = document.createElement("div")
+				dedicatedDomContainer.style.width = "100%"
+				dedicatedDomContainer.style.height = "100%"
+				domContainer.appendChild(dedicatedDomContainer)
+
+				var reactRoot = ReactDOM.createRoot(dedicatedDomContainer)
+				reactRoot.render(reactComponentWithProviders)
+				this.components.push({ reactRoot: reactRoot, domContainer: domContainer, dedicatedDomContainer: dedicatedDomContainer, url: window.location.href, isNotRemovable: isNotRemovable })
+				
+				return reactRoot;
 			}
-			return reactRoot;
 		}
 		
 		this.cleanupComponents = function(){
@@ -398,7 +404,9 @@
 				backStack = mainController.backStack;
 			}
 			this.components.forEach(function(component){
-				if (component.domContainer.isConnected) {
+				if(component.isNotRemovable){
+					stillConnectedComponents.push(component)
+				} else if (component.dedicatedDomContainer.isConnected) {
 					stillConnectedComponents.push(component)
 				} else if(backStack.some(x => decodeURI(x.url) === decodeURI(component.url))) {
 					stillConnectedComponents.push(component)
