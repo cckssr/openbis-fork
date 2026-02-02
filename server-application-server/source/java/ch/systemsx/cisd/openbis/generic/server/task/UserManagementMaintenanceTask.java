@@ -60,9 +60,9 @@ public class UserManagementMaintenanceTask extends AbstractGroupMaintenanceTask
     
     static final String LDAP_GROUP_QUERY_TEMPLATE = "ldap-group-query-template";
 
-    private enum Mode { ldap, manual };
+    public enum Mode { ldap, manual };
 
-    static final String MODE = "mode";
+    public static final String MODE = "mode";
 
     private File auditLogFile;
 
@@ -83,6 +83,10 @@ public class UserManagementMaintenanceTask extends AbstractGroupMaintenanceTask
     private String groupQueryTemplateOrNull;
 
     private Mode mode;
+
+    public Mode getMode() {
+        return mode;
+    }
 
     public UserManagementMaintenanceTask()
     {
