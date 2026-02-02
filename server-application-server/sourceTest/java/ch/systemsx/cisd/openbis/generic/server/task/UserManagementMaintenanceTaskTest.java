@@ -470,6 +470,11 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
             + "\"groups\": [{\"name\":\"sis\",\"key\":\"SIS\",\"ldapGroupKeys\": [\"s\"],\"users\":[\"u2\"],\"admins\": [\"u2\"]},"
             + "{\"name\":\"abc\",\"key\":\"ABC\",\"ldapGroupKeys\": [\"a\"],\"enabled\": false}]}";
 
+    public static final String testExecuteHappyCaseManualConfig = "{\"globalSpaces\":[\"ES\"],\"commonSpaces\":{\"USER\": [\"ALPHA\"]},"
+            + "\"commonSamples\":{\"ALPHA/B\":\"B\"}," + getCommonExperiments("ALPHA/P/E", "E")
+            + ",\"instanceAdmins\":[\"u3\"],"
+            + "\"groups\": [{\"name\":\"sis\",\"key\":\"SIS\",\"users\":[\"u2\"],\"admins\": [\"u2\"]}]}";
+
     @Test
     public void testExecuteHappyCase()
     {
@@ -514,6 +519,46 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
                 + "{\"name\":\"abc\",\"key\":\"ABC\",\"ldapGroupKeys\": [\"a\"],\"enabled\": false}]}\n"
                 + "1970-01-01 01:00:03 [CONFIG-UPDATE-END] \n"
                 + "1970-01-01 01:00:04 [ADD-AUTHORIZATION-GROUP] dummy group, known users: [u2, u3]\n\n",
+                FileUtilities.loadToString(auditLogFile));
+    }
+
+    @Test
+    public void testExecuteHappyCaseManualMode()
+    {
+        // Given
+        UserManagerReport report = new UserManagerReport(new MockTimeProvider(0, 1000));
+        UserManagementMaintenanceTaskWithMocks task = new UserManagementMaintenanceTaskWithMocks().withUserManagerReport(report);
+        properties.setProperty(UserManagementMaintenanceTask.MODE, UserManagementMaintenanceTask.Mode.manual.name());
+
+        FileUtilities.writeToFile(configFile, "");
+        task.setUp("", properties);
+        FileUtilities.writeToFile(configFile, testExecuteHappyCaseManualConfig);
+
+        // When
+        assertEquals(task.getMode(), UserManagementMaintenanceTask.Mode.manual);
+        task.execute();
+
+        // Then
+        assertEquals("INFO  OPERATION.UserManagementMaintenanceTaskWithMocks - Setup plugin \n"
+                        + "INFO  OPERATION.UserManagementMaintenanceTaskWithMocks - Plugin '' initialized. Configuration file: "
+                        + configFile.getAbsolutePath() + "\n"
+                        + "INFO  OPERATION.UserManagementMaintenanceTaskWithMocks - manage 1 groups\n"
+                        + "INFO  OPERATION.UserManagementMaintenanceTaskWithMocks - Global spaces: [ES]\n"
+                        + "INFO  OPERATION.UserManagementMaintenanceTaskWithMocks - Common spaces: {USER=[ALPHA]}\n"
+                        + "INFO  OPERATION.UserManagementMaintenanceTaskWithMocks - Common samples: {ALPHA/B=B}\n"
+                        + "INFO  OPERATION.UserManagementMaintenanceTaskWithMocks - Common experiments: [{identifierTemplate=ALPHA/P/E, experimentType=E}]\n"
+                        + "INFO  OPERATION.UserManagementMaintenanceTaskWithMocks - Add group SIS[name:sis, enabled:true, ldapGroupKeys:null, users:[u2], admins:[u2]] with users [u2=u2]\n"
+                        + "INFO  OPERATION.UserManagementMaintenanceTaskWithMocks - 1 users for group SIS\n"
+                        + "INFO  OPERATION.UserManagementMaintenanceTaskWithMocks - finished",
+                logRecorder.getLogContent());
+        String lastModified = new SimpleDateFormat(UserManagerReport.DATE_FORMAT).format(new Date(configFile.lastModified()));
+        assertEquals(
+                "1970-01-01 01:00:00 [CONFIG-UPDATE-START] Last modified: " + lastModified + "\n"
+                        + "{\"globalSpaces\":[\"ES\"],\"commonSpaces\":{\"USER\": [\"ALPHA\"]},\"commonSamples\":{\"ALPHA/B\":\"B\"},"
+                        + getCommonExperiments("ALPHA/P/E", "E") + ",\"instanceAdmins\":[\"u3\"],\"groups\": ["
+                        + "{\"name\":\"sis\",\"key\":\"SIS\",\"users\":[\"u2\"],\"admins\": [\"u2\"]}]}\n"
+                        + "1970-01-01 01:00:01 [CONFIG-UPDATE-END] \n"
+                        + "1970-01-01 01:00:02 [ADD-AUTHORIZATION-GROUP] dummy group, known users: [u2, u3]\n\n",
                 FileUtilities.loadToString(auditLogFile));
     }
 
