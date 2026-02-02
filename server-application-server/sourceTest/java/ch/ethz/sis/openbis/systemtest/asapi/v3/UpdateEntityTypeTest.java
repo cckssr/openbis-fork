@@ -1082,13 +1082,12 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
                 new String[] { "123", "234" });
 
         assertExceptionMessage(() ->
+                        testMakeExistingSimplePropertyMandatory(DataType.ARRAY_STRING, "abc", IPropertiesHolder::getStringArrayProperty, null),
+                "Array value 'abc' is not valid. Provided value is a String which could not be parsed to an array.");
+        assertExceptionMessage(() ->
                         testMakeExistingSimplePropertyMandatory(DataType.ARRAY_STRING, "[abc, def]", IPropertiesHolder::getStringArrayProperty,
                                 new String[] { "abc", "def" }),
                 "Array value '[abc, def]' is not valid. Provided value is a String which could not be parsed to an array.");
-
-        assertExceptionMessage(() ->
-                        testMakeExistingSimplePropertyMandatory(DataType.ARRAY_STRING, "not an array", IPropertiesHolder::getStringArrayProperty, null),
-                "Array value 'not an array' is not valid. Provided value is a String which could not be parsed to an array.");
     }
 
     @Test
@@ -1107,6 +1106,9 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
         testMakeExistingSimplePropertyMandatory(DataType.ARRAY_INTEGER, "[123, 234]", IPropertiesHolder::getIntegerArrayProperty,
                 new Long[] { 123L, 234L });
 
+        assertExceptionMessage(() ->
+                        testMakeExistingSimplePropertyMandatory(DataType.ARRAY_INTEGER, "abc", IPropertiesHolder::getIntegerArrayProperty, null),
+                "Array value 'abc' is not valid. Provided value is a String which could not be parsed to an array.");
         assertExceptionMessage(() ->
                         testMakeExistingSimplePropertyMandatory(DataType.ARRAY_INTEGER, "[\"abc\", \"def\"]", IPropertiesHolder::getIntegerArrayProperty,
                                 null),
@@ -1139,12 +1141,21 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
     public void testMakeExistingBooleanPropertyMandatory()
     {
         testMakeExistingSimplePropertyMandatory(DataType.BOOLEAN, "true", IPropertiesHolder::getBooleanProperty, true);
+
+        assertExceptionMessage(() ->
+                        testMakeExistingSimplePropertyMandatory(DataType.BOOLEAN, "abc", IPropertiesHolder::getBooleanProperty, null),
+                "Boolean value 'abc' has improper format. It should be either 'true' or 'false'.");
     }
 
     @Test
     public void testMakeExistingDatePropertyMandatory()
     {
         testMakeExistingSimplePropertyMandatory(DataType.DATE, "2026-01-30", IPropertiesHolder::getProperty, "2026-01-30");
+
+        assertExceptionMessage(() ->
+                        testMakeExistingSimplePropertyMandatory(DataType.DATE, "abc", IPropertiesHolder::getProperty, null),
+                "Date value 'abc' has improper format. It must be one of '[yyyy-MM-dd\n" +
+                        "M/d/yy]'.");
     }
 
     @Test
@@ -1152,6 +1163,21 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
     {
         testMakeExistingSimplePropertyMandatory(DataType.TIMESTAMP, "2026-01-30 10:18:30", IPropertiesHolder::getProperty,
                 "2026-01-30 10:18:30 +0100");
+
+        assertExceptionMessage(() ->
+                        testMakeExistingSimplePropertyMandatory(DataType.TIMESTAMP, "abc", IPropertiesHolder::getProperty, null),
+                "Date value 'abc' has improper format. It must be one of '[yyyy-MM-dd'T'HH:mm:ssXXX\n"
+                        + "yyyy-MM-dd'T'HH:mm:ssX\n"
+                        + "yyyy-MM-dd'T'HH:mm:ss\n"
+                        + "yyyy-MM-dd'T'HH:mm\n"
+                        + "yyyy-MM-dd HH:mm:ss Z\n"
+                        + "yyyy-MM-dd HH:mm:ss Z\n"
+                        + "yyyy-MM-dd HH:mm:ss\n"
+                        + "yyyy-MM-dd HH:mm\n"
+                        + "yyyy-MM-dd\n"
+                        + "M/d/yy h:mm a\n"
+                        + "M/d/yy HH:mm\n"
+                        + "M/d/yy]'.");
     }
 
     @Test
@@ -1159,6 +1185,13 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
     {
         testMakeExistingSimplePropertyMandatory(DataType.ARRAY_TIMESTAMP, "[\"2026-01-30 10:18:30\"]", IPropertiesHolder::getProperty,
                 new String[] { "2026-01-30 10:18:30 +0100" });
+
+        assertExceptionMessage(() ->
+                        testMakeExistingSimplePropertyMandatory(DataType.ARRAY_TIMESTAMP, "abc", IPropertiesHolder::getProperty, null),
+                "Array value 'abc' is not valid. Provided value is a String which could not be parsed to an array.");
+        assertExceptionMessage(() ->
+                        testMakeExistingSimplePropertyMandatory(DataType.ARRAY_TIMESTAMP, "[\"abc\", \"def\"]", IPropertiesHolder::getProperty, null),
+                "Wrong date format:abc");
     }
 
     @Test
@@ -1166,6 +1199,10 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
     {
         testMakeExistingSimplePropertyMandatory(DataType.JSON, "{\"abc\":\"123\"}", IPropertiesHolder::getJsonProperty,
                 "{\"abc\": \"123\"}");
+
+        assertExceptionMessage(() ->
+                        testMakeExistingSimplePropertyMandatory(DataType.JSON, "abc", IPropertiesHolder::getJsonProperty, null),
+                "invalid input syntax for type json");
     }
 
     @Test
@@ -1173,6 +1210,14 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
     {
         testMakeExistingSimplePropertyMandatory(DataType.XML, "<abc><def/></abc>", IPropertiesHolder::getProperty,
                 "<abc><def/></abc>");
+
+        assertExceptionMessage(() ->
+                testMakeExistingSimplePropertyMandatory(DataType.XML, "abc", IPropertiesHolder::getProperty,
+                        null), "Provided value:\n"
+                + "\n"
+                + "abc\n"
+                + "\n"
+                + "isn't a well formed XML document.");
     }
 
     @Test
@@ -1180,6 +1225,10 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
     {
         testMakeExistingSimplePropertyMandatory(DataType.HYPERLINK, "https://openbis.ch", IPropertiesHolder::getProperty,
                 "https://openbis.ch");
+
+        assertExceptionMessage(() ->
+                testMakeExistingSimplePropertyMandatory(DataType.HYPERLINK, "abc", IPropertiesHolder::getProperty,
+                        null), "Hyperlink 'abc' should start with one of the following protocols: '[http://, https://, ftp://]'");
     }
 
     @Test
