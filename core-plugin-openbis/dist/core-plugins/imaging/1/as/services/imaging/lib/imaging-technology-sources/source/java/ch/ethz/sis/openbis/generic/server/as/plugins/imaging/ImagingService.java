@@ -93,7 +93,7 @@ public class ImagingService implements ICustomASServiceExecutor
     private Serializable executeService(String sessionToken, String serviceId,
             Map<String, Object> params)
     {
-        operationLog.info("Executing imaging service:" + serviceId);
+        operationLog.info("Executing imaging service: " + serviceId);
         this.afs = AfsClientProxy.getAfsClient(sessionToken);
         ImagingDataContainer data = getDataFromParams(params);
         try
@@ -117,6 +117,7 @@ public class ImagingService implements ICustomASServiceExecutor
             }
         } catch (Exception e)
         {
+            operationLog.info("Exception during imaging service: " + e.toString());
             data.setError(e.toString());
         }
         return data;

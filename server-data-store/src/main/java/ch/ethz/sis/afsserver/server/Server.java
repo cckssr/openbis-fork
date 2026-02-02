@@ -15,6 +15,8 @@
  */
 package ch.ethz.sis.afsserver.server;
 
+import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.UUID;
@@ -171,6 +173,7 @@ public final class Server<CONNECTION, API>
         observer.beforeStartup();
 
         // 3 Startup
+        createServerStartedFile();
         logger.info("=== Server ready ===");
         Runtime.getRuntime().addShutdownHook(new Thread()
         {
@@ -185,6 +188,19 @@ public final class Server<CONNECTION, API>
                 }
             }
         });
+    }
+    private void createServerStartedFile()
+    {
+        File STARTED_FILE = new File("SERVER_STARTED");
+        try
+        {
+            STARTED_FILE.createNewFile();
+            STARTED_FILE.deleteOnExit();
+            logger.info(STARTED_FILE.getAbsolutePath()+" created");
+        } catch (IOException ex)
+        {
+            logger.catching(new RuntimeException("Couldn't create marker file " + STARTED_FILE, ex));
+        }
     }
 
     public void shutdown(boolean gracefully) throws Exception

@@ -16,4 +16,6 @@ if [ ${BASE#/} == ${BASE} ]; then
     BASE="`pwd`/${BASE}"
 fi
 
-$BASE/../servers/afs-server/bin/afs_server.sh stop
+export AFS_HOME="$BASE/../servers/afs-server"
+$AFS_HOME/bin/afs_server.sh stop
+

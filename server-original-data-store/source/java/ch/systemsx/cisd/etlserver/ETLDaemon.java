@@ -18,6 +18,7 @@ package ch.systemsx.cisd.etlserver;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FilenameFilter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -727,6 +728,22 @@ public final class ETLDaemon
                 SessionWorkspaceCleanUpMaintenanceTask.DEFAULT_MAINTENANCE_TASK_NAME);
 
         operationLog.info("Data Store Server ready and waiting for data.");
+
+        createServerStartedFile();
+    }
+
+    private static void createServerStartedFile()
+    {
+        File STARTED_FILE = new File("SERVER_STARTED");
+        try
+        {
+            STARTED_FILE.createNewFile();
+            STARTED_FILE.deleteOnExit();
+            operationLog.info(STARTED_FILE.getAbsolutePath()+" created");
+        } catch (IOException ex)
+        {
+            operationLog.error("Couldn't create marker file " + STARTED_FILE, ex);
+        }
     }
 
     private static void assertNotMoreThanOnePostRegistrationMaintenanceTask(

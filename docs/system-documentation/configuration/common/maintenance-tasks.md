@@ -660,14 +660,15 @@ log file. For more details see [User Group Management for Multi-groups openBIS I
 
 **Configuration:**
 
-| Property Key              | Description                                                                                                                                                                          |
-|---------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| configuration-file-path   | Relative or absolute path to the configuration file. Default: `etc/user-management-maintenance-config.json`                                                                            |
-| audit-log-file-path       | Relative or absolute path to the audit log file. Default: `logs/user-management-audit.log`                                                                                         |
-| shares-mapping-file-path  | Relative or absolute path to the mapping file for data store shares. This is optional. If not specified the mapping file will not be managed by this maintenance task.               |
-| filter-key                | Key which is used to filter LDAP results. Will be ignored if `ldap-group-query-template` is specified. Default value: `ou`                                                              |
-| ldap-group-query-template | Direct LDAP query template. It should have '%' character which will be replaced by an LDAP key as specified in the configuration file.                                               |
+| Property Key              | Description                                                                                                                                                                                |
+|---------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| configuration-file-path   | Relative or absolute path to the configuration file. Default: `etc/user-management-maintenance-config.json`                                                                                |
+| audit-log-file-path       | Relative or absolute path to the audit log file. Default: `logs/user-management-audit.log`                                                                                                 |
+| shares-mapping-file-path  | Relative or absolute path to the mapping file for data store shares. This is optional. If not specified the mapping file will not be managed by this maintenance task.                     |
+| filter-key                | Key which is used to filter LDAP results. Will be ignored if `ldap-group-query-template` is specified. Default value: `ou`                                                                 |
+| ldap-group-query-template | Direct LDAP query template. It should have '%' character which will be replaced by an LDAP key as specified in the configuration file.                                                     |
 | deactivate-unknown-users  | If `true` a user unknown by the authentication service will be deactivated. It should be set to `false` if no authenication service can be asked (like in Single-Sign-On). Default: `true` |
+| mode                      | `ldap` or `manual` to bypass the use of ldap and use only the users specified manually at `etc/user-management-maintenance-config.json` . Default: `ldap`                                  |
 
 **Example**:
 

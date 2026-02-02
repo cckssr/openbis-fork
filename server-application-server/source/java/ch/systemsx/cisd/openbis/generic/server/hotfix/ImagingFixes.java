@@ -111,10 +111,13 @@ public class ImagingFixes
         operationLog.info("Configured python path: " + pythonPath);
 
         String examplePath =
-                Paths.get(pathToDir, "..", "nanonis_example").toAbsolutePath().toString();
+                Paths.get(pathToDir, "..", "nanonis_importer").toAbsolutePath().toString();
         String scriptPath =
                 Paths.get(examplePath, "nanonis_importer.py").toAbsolutePath().toString();
         String dataPath = Paths.get(examplePath, "data").toAbsolutePath().toString();
+
+        operationLog.info("Script path: " + scriptPath);
+        operationLog.info("Data path: " + dataPath);
 
         PersonalAccessTokenPermId patToken = null;
         try
@@ -177,9 +180,12 @@ public class ImagingFixes
         }
         operationLog.info("Configured python path: " + pythonPath);
 
-        String examplePath = Paths.get(pathToDir, "..", "imaging_test_example").toAbsolutePath().toString();
+        String examplePath = Paths.get(pathToDir, "..", "imaging_test_importer").toAbsolutePath().toString();
         String scriptPath = Paths.get(examplePath, "importer.py").toAbsolutePath().toString();
         String dataPath = Paths.get(examplePath, "data").toAbsolutePath().toString();
+
+        operationLog.info("Script path: " + scriptPath);
+        operationLog.info("Data path: " + dataPath);
 
         PersonalAccessTokenPermId patToken = null;
         try
