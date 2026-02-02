@@ -22,23 +22,22 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
-import ch.ethz.sis.shared.log.classic.impl.Logger;
-import org.hibernate.*;
-
+import org.hibernate.ScrollMode;
+import org.hibernate.ScrollableResults;
+import org.hibernate.StatelessSession;
 import org.hibernate.query.Query;
 import org.springframework.dao.DataAccessException;
-import org.springframework.orm.hibernate5.HibernateCallback;
-import org.springframework.orm.hibernate5.HibernateTemplate;
 
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDynamicPropertyEvaluationScheduler;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IEntityPropertyTypeDAO;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.PersistencyResources;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EntityPropertyPE;
+import ch.systemsx.cisd.openbis.generic.shared.dto.EntityPropertyWithSampleDataTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePropertyTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExternalDataPE;
@@ -53,7 +52,7 @@ import jakarta.persistence.TemporalType;
 
 /**
  * The unique {@link IEntityPropertyTypeDAO} implementation.
- * 
+ *
  * @author Christian Ribeaud
  * @author Tomasz Pylak
  * @author Izabela Adamczyk
@@ -161,14 +160,15 @@ final class EntityPropertyTypeDAO extends AbstractDAO implements IEntityProperty
         assert entityPropertyTypeAssignement != null : "Unspecified EntityTypePropertyType";
         validatePE(entityPropertyTypeAssignement);
 
+        doExecute(session ->
+        {
+            session.save(entityPropertyTypeAssignement);
+            session.flush();
+            return null;
+        });
 
-       doExecute(session -> {
-           session.save(entityPropertyTypeAssignement);
-           session.flush();
-           return null;
-       });
-
-        if (operationLog.isInfoEnabled()) {
+        if (operationLog.isInfoEnabled())
+        {
             operationLog.info("ADD: assignment of property '"
                     + entityPropertyTypeAssignement.getPropertyType().getCode()
                     + "' with entity type '"
@@ -181,7 +181,7 @@ final class EntityPropertyTypeDAO extends AbstractDAO implements IEntityProperty
     {
         assert entityType != null : "Unspecified entity type.";
 
-//        Hibernate 6 changes
+        //        Hibernate 6 changes
         final Class<?> entityClass = entityKind.getEntityClass();
         final String typeField = entityKind.getEntityTypeFieldName(); // e.g. "sampleTypeInternal"
 
@@ -272,7 +272,8 @@ final class EntityPropertyTypeDAO extends AbstractDAO implements IEntityProperty
             return;
         }
 
-        doExecute(session -> {
+        doExecute(session ->
+        {
             String entityTableName = null;
 
             switch (entityKind)
@@ -344,7 +345,7 @@ final class EntityPropertyTypeDAO extends AbstractDAO implements IEntityProperty
                         entityKind.getEntityPropertyClass()
                                 .getSimpleName());
         final List<Long> list =
-                find(Long.class,query,
+                find(Long.class, query,
                         toArray(assignment.getEntityType(), assignment));
 
         if (operationLog.isInfoEnabled())
@@ -373,6 +374,8 @@ final class EntityPropertyTypeDAO extends AbstractDAO implements IEntityProperty
 
         final String valueColumn;
         final Serializable valueObject;
+        String valuePlaceHolder = ":value";
+
         if (property.getVocabularyTerm() != null)
         {
             valueColumn = "cvte_id";
@@ -381,6 +384,31 @@ final class EntityPropertyTypeDAO extends AbstractDAO implements IEntityProperty
         {
             valueColumn = "mate_prop_id";
             valueObject = property.getMaterialValue().getId();
+        } else if (property.getStringArrayValue() != null)
+        {
+            valueColumn = "string_array_value";
+            valueObject = property.getStringArrayValue();
+        } else if (property.getIntegerArrayValue() != null)
+        {
+            valueColumn = "integer_array_value";
+            valueObject = property.getIntegerArrayValue();
+        } else if (property.getRealArrayValue() != null)
+        {
+            valueColumn = "real_array_value";
+            valueObject = property.getRealArrayValue();
+        } else if (property.getTimestampArrayValue() != null)
+        {
+            valueColumn = "timestamp_array_value";
+            valueObject = property.getTimestampArrayValue();
+        } else if (property.getJsonValue() != null)
+        {
+            valueColumn = "json_value";
+            valueObject = property.getJsonValue();
+            valuePlaceHolder = "CAST(:value AS jsonb)";
+        } else if (property instanceof final EntityPropertyWithSampleDataTypePE sampleProperty && sampleProperty.getSampleValue() != null)
+        {
+            valueColumn = "samp_prop_id";
+            valueObject = sampleProperty.getSampleValue().getId();
         } else
         {
             assert property.getValue() != null;
@@ -391,45 +419,45 @@ final class EntityPropertyTypeDAO extends AbstractDAO implements IEntityProperty
         final String sql =
                 String.format(
                         "INSERT INTO %s (id, pers_id_registerer, pers_id_author, %s, %s, %s) "
-                                + "VALUES (nextval('%s'), :registratorId, :registratorId, :entityId, :etptId, :value)",
+                                + "VALUES (nextval('%s'), :registratorId, :registratorId, :entityId, :etptId, " + valuePlaceHolder + ")",
                         tableName, entityColumn, propertyTypeColumn, valueColumn, sequenceName);
 
         // inserts are performed using stateless session for better memory management
         executeStatelessAction(new StatelessHibernateCallback()
+        {
+            @Override
+            public Object doInStatelessSession(StatelessSession session)
             {
-                @Override
-                public Object doInStatelessSession(StatelessSession session)
+                final Query sqlQuery = session.createNativeQuery(sql);
+                sqlQuery.setParameter("registratorId", registratorId);
+                sqlQuery.setParameter("etptId", etptId);
+                // TODO check how to handle null values
+                sqlQuery.setParameter("value", valueObject);
+                int counter = 0;
+                for (Long entityId : entityIds)
                 {
-                    final Query sqlQuery = session.createNativeQuery(sql);
-                    sqlQuery.setParameter("registratorId", registratorId);
-                    sqlQuery.setParameter("etptId", etptId);
-                    // TODO check how to handle null values
-                    sqlQuery.setParameter("value", valueObject);
-                    int counter = 0;
-                    for (Long entityId : entityIds)
+                    sqlQuery.setParameter("entityId", entityId);
+                    sqlQuery.executeUpdate();
+                    if (operationLog.isDebugEnabled())
                     {
-                        sqlQuery.setParameter("entityId", entityId);
-                        sqlQuery.executeUpdate();
+                        operationLog.debug(String.format(
+                                "Created property '%s' for %s with id %s", property,
+                                entityKind.getLabel(), entityId));
+                    }
+                    if (++counter % 1000 == 0)
+                    {
+                        operationLog.info(String.format(
+                                "%d %s properties have been created...", counter,
+                                entityKind.getLabel()));
                         if (operationLog.isDebugEnabled())
                         {
-                            operationLog.debug(String.format(
-                                    "Created property '%s' for %s with id %s", property,
-                                    entityKind.getLabel(), entityId));
-                        }
-                        if (++counter % 1000 == 0)
-                        {
-                            operationLog.info(String.format(
-                                    "%d %s properties have been created...", counter,
-                                    entityKind.getLabel()));
-                            if (operationLog.isDebugEnabled())
-                            {
-                                operationLog.debug(getMemoryUsageMessage());
-                            }
+                            operationLog.debug(getMemoryUsageMessage());
                         }
                     }
-                    return null;
                 }
-            });
+                return null;
+            }
+        });
 
         if (operationLog.isInfoEnabled())
         {
@@ -469,15 +497,15 @@ final class EntityPropertyTypeDAO extends AbstractDAO implements IEntityProperty
         Class<?> epClass = entityKind.getEntityPropertyClass();
 
         List<Object[]> results = doExecute(session -> session.createQuery(
-                                "select count(ep), t.id " +
-                                        "from " + epClass.getName() + " ep " +
-                                        "join ep.vocabularyTerm t " +
-                                        "where t.vocabularyInternal = :vocab " +
-                                        "group by t.id",
-                                Object[].class
-                        )
-                        .setParameter("vocab", vocabulary)
-                        .getResultList());
+                        "select count(ep), t.id " +
+                                "from " + epClass.getName() + " ep " +
+                                "join ep.vocabularyTerm t " +
+                                "where t.vocabularyInternal = :vocab " +
+                                "group by t.id",
+                        Object[].class
+                )
+                .setParameter("vocab", vocabulary)
+                .getResultList());
 
         assert results != null;
         for (Object[] result : results)
@@ -515,7 +543,8 @@ final class EntityPropertyTypeDAO extends AbstractDAO implements IEntityProperty
         {
             doExecute(session -> session.save(entityProperty));
         }
-        doExecute(session ->{
+        doExecute(session ->
+        {
             session.flush();
             return null;
         });
@@ -538,7 +567,8 @@ final class EntityPropertyTypeDAO extends AbstractDAO implements IEntityProperty
                         "where etpt.entityTypeInternal = :etype and etpt.ordinal >= :fromOrd";
 
         int updatedRows =
-                doExecute(session -> {
+                doExecute(session ->
+                {
                     int upRows = session.createQuery(hql)
                             .setParameter("inc",
                                     (long) increment)   // or Integer if ordinal is an int
@@ -548,7 +578,6 @@ final class EntityPropertyTypeDAO extends AbstractDAO implements IEntityProperty
                     session.flush();
                     return upRows;
                 });
-
 
         if (operationLog.isInfoEnabled())
         {
@@ -565,7 +594,7 @@ final class EntityPropertyTypeDAO extends AbstractDAO implements IEntityProperty
 
         String query =
                 String.format("select max(etpt.ordinal) from %s etpt "
-                        + "WHERE etpt.entityTypeInternal = ?1",
+                                + "WHERE etpt.entityTypeInternal = ?1",
                         entityKind
                                 .getEntityTypePropertyTypeAssignmentClass().getSimpleName());
 
@@ -591,13 +620,13 @@ final class EntityPropertyTypeDAO extends AbstractDAO implements IEntityProperty
 
         String query =
                 String.format("SELECT count(pv.id) FROM %s pa join %s pv "
-                            + " ON pa.id = pv.entityTypePropertyType.id "
-                            + " WHERE pa.propertyTypeInternal.simpleCode = ?1 "
-                            + " AND pa.entityTypeInternal.code = ?2",
+                                + " ON pa.id = pv.entityTypePropertyType.id "
+                                + " WHERE pa.propertyTypeInternal.simpleCode = ?1 "
+                                + " AND pa.entityTypeInternal.code = ?2",
                         entityKind
                                 .getEntityTypePropertyTypeAssignmentClass().getSimpleName(),
                         entityKind.getEntityPropertyClass().getSimpleName()
-                        );
+                );
 
         return find(Long.class, query,
                 toArray(propertyTypeCode, entityTypeCode)).get(0).intValue();
@@ -613,22 +642,23 @@ final class EntityPropertyTypeDAO extends AbstractDAO implements IEntityProperty
                 + " ep where ep.entityTypePropertyType = :assignment";
 
         int affected =
-            doExecute(session -> {
-                        int updated = session
-                                .createQuery(hql)
-                                .setParameter("assignment", assignment)
-                                .executeUpdate();
-                        session.flush();
-                        session.clear();
+                doExecute(session ->
+                {
+                    int updated = session
+                            .createQuery(hql)
+                            .setParameter("assignment", assignment)
+                            .executeUpdate();
+                    session.flush();
+                    session.clear();
 
-                        session.createQuery(
-                                        "delete from " + assignment.getClass().getName() + " a where a.id = :id")
-                                .setParameter("id", assignment.getId())
-                                .executeUpdate();
+                    session.createQuery(
+                                    "delete from " + assignment.getClass().getName() + " a where a.id = :id")
+                            .setParameter("id", assignment.getId())
+                            .executeUpdate();
 
-                        session.flush();
-                        return updated;
-                    });
+                    session.flush();
+                    return updated;
+                });
 
         updateEntityModificationTimestamps(entityIds);
         scheduleDynamicPropertiesEvaluation(entityIds);

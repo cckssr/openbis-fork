@@ -19,7 +19,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.create.MaterialCreation;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IPropertiesHolder;
@@ -27,6 +26,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractEntitySear
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.IEntityTypeId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.MaterialType;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.create.MaterialCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.create.MaterialTypeCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.fetchoptions.MaterialFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.fetchoptions.MaterialTypeFetchOptions;
@@ -73,7 +73,10 @@ public class UpdateMaterialTypeTest extends UpdateEntityTypeTest<MaterialTypeCre
         MaterialCreation mc = new MaterialCreation();
         mc.setCode(UUID.randomUUID().toString());
         mc.setTypeId(entityType);
-        mc.setStringProperty(propertyType, propertyValue);
+        if (propertyType != null)
+        {
+            mc.setStringProperty(propertyType, propertyValue);
+        }
         v3api.createMaterials(sessionToken, Arrays.asList(mc));
     }
 
@@ -140,6 +143,42 @@ public class UpdateMaterialTypeTest extends UpdateEntityTypeTest<MaterialTypeCre
         MaterialFetchOptions fetchOptions = new MaterialFetchOptions();
         fetchOptions.withProperties();
         return v3api.searchMaterials(sessionToken, (MaterialSearchCriteria) searchCriteria, fetchOptions).getObjects();
+    }
+
+    @Test
+    public void testMakeExistingIntegerArrayPropertyMandatory()
+    {
+        // nothing to test - not supported
+    }
+
+    @Test
+    public void testMakeExistingRealArrayPropertyMandatory()
+    {
+        // nothing to test - not supported
+    }
+
+    @Test
+    public void testMakeExistingStringArrayPropertyMandatory()
+    {
+        // nothing to test - not supported
+    }
+
+    @Test
+    public void testMakeExistingTimestampArrayPropertyMandatory()
+    {
+        // nothing to test - not supported
+    }
+
+    @Test
+    public void testMakeExistingJsonPropertyMandatory()
+    {
+        // nothing to test - not supported
+    }
+
+    @Test
+    public void testMakeExistingObjectPropertyMandatory()
+    {
+        // nothing to test - not supported
     }
 
     @Test
