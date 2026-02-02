@@ -45,7 +45,17 @@ openbis.bundle.min.js
 - Software Requirements
 - IntelliJ IDEA CE
 
-## Step By Step
+## Postgresql Installation
+
+Postgresql installation instructions for Ubuntu can be found [here](https://www.postgresql.org/download/linux/).
+Make sure to install a supported version of Postgresql: 11 or 18.
+
+Edit the file /etc/postgresql/15/main/pg_hba.conf or /etc/postgresql/11/main/pg_hba.conf and change all 
+the lines with the type "local" (at the beginning) to use the method "trust" (at the end).
+Do the same for "IPv4 local connections" and "IPv6 local connections". Save the file and restart the service with 
+`sudo systemctl restart postgresql`.
+
+## Project Setup in IntelliJ IDEA
 
 ```
 File -> New -> Project From Existing Sources
