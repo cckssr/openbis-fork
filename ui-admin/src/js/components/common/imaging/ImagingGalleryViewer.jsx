@@ -25,7 +25,7 @@ const ImagingGalleryViewer = ({ objId, objType, extOpenbis, onOpenPreview, onSto
         previewContainerList: [],
         totalCount: 0
     });
-    const [paging, setPaging] = React.useState({ page: 0, pageSize: 8, pageColumns: 4 });
+    const [paging, setPaging] = React.useState({ page: 0, pageSize: 10, pageColumns: 4 });
     const [showAll, setShowAll] = React.useState(true);
     const [selectAll, setSelectAll] = React.useState(true);
     const [galleryFilter, setGalleryFilter] = React.useState({
@@ -128,11 +128,15 @@ const ImagingGalleryViewer = ({ objId, objType, extOpenbis, onOpenPreview, onSto
         setOpen(true);
         const exportList = previewsInfo.previewContainerList.filter(previewObj => previewObj.select);
         try {
-            const downloadableURL = await imagingFacade
-                .multiExportImagingDataset(currentConfigExport, exportList);
-            if (downloadableURL)
-                window.open(downloadableURL, '_blank');
-            setOpen(false);
+            const exportResult = await imagingFacade.multiExportImagingDataset(currentConfigExport, exportList);
+            if (exportResult.url) {
+                window.open(exportResult.url, '_blank');
+                setOpen(false);
+            } else {
+                const error = exportResult.error || 'No URL returned from the server.';
+                setOpen(false);
+                handleError(error);
+            }
         } catch (error) {
             setOpen(false);
             handleError(error);
