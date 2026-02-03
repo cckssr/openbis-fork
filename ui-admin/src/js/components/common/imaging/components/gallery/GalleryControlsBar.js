@@ -29,7 +29,7 @@ const GalleryControlsBar = ({
 }) => {
 
     const classes = useStyles();
-    const options = GridPagingOptions.GALLERY_PAGE_SIZE_OPTIONS[paging.pageColumns - 1].map(pageSize => ({
+    const options = GridPagingOptions.PAGE_SIZE_OPTIONS.map(pageSize => ({
         label: pageSize,
         value: pageSize
     }))
@@ -49,8 +49,7 @@ const GalleryControlsBar = ({
                         options={options}
                         isGridView={gridView}
                         onColumnChange={(value) => setPaging({
-                            page: 0,
-                            pageSize: value,
+                            ...paging,
                             pageColumns: value
                         })}
                         onPageChange={(value) => setPaging({
