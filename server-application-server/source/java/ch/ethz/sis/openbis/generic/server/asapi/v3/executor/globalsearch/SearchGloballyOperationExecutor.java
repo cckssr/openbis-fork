@@ -15,14 +15,34 @@
  */
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.globalsearch;
 
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.GlobalSearchCriteriaTranslator.TOTAL_COUNT_ALIAS;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchObjectsOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchObjectsOperationResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.GlobalSearchObject;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.fetchoptions.GlobalSearchObjectFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.*;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchObjectKind;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchObjectKindCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.SearchGloballyOperation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.SearchGloballyOperationResult;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.ISearchObjectExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.InconsistentSearchResultsException;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.SearchObjectsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.sort.SortAndPage;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
@@ -33,18 +53,10 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.TranslationContext
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.globalsearch.IGlobalSearchObjectTranslator;
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 import ch.systemsx.cisd.openbis.generic.shared.authorization.AuthorizationConfig;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MatchingEntity;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
-import ch.ethz.sis.shared.log.classic.impl.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.GlobalSearchCriteriaTranslator.TOTAL_COUNT_ALIAS;
 
 /**
  * @author pkupczyk
@@ -116,10 +128,7 @@ public class SearchGloballyOperationExecutor
 
         if (pagedMatchingEntities.size() != pagedResultV3DTOs.size())
         {
-            throw new RuntimeException(String.format("Number of results after translation has changed. "
-                            + "Total count value will be incorrect. "
-                            + "[pagedResultPEs.size()=%d, pagedResultV3DTOs.size()=%d]",
-                    pagedMatchingEntities.size(), pagedResultV3DTOs.size()));
+            throw new InconsistentSearchResultsException(pagedMatchingEntities.size(), pagedResultV3DTOs.size());
         }
 
         // Reordering of pagedResultV3DTOs is needed because translation mixes the order
@@ -132,7 +141,7 @@ public class SearchGloballyOperationExecutor
 
         final Collection<Map<String, Object>> totalCountCollection = shortRecords.isEmpty()
                 ? globalSearchManager.searchForIDs(userId, authorisationInformation, criteria, null, objectKinds,
-                        fetchOptions, true)
+                fetchOptions, true)
                 : shortRecords;
         final int totalCount = (int) (long) totalCountCollection.iterator().next().get(TOTAL_COUNT_ALIAS);
         return getOperationResult(new SearchResult<>(objectResults, totalCount));
