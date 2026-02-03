@@ -35,9 +35,9 @@ const GalleryGridView = ({
         <ImageList sx={{ width: '100%', maxHeight: '70vh' }} cols={cols} >
             {previewContainerList.map((previewContainer, idx) => (
                 <ImageListItem sx={{ height: 'unset', justifyContent: 'space-between' }} key={`image-grid-item-${idx}`}>
-                    <CardActionArea sx={{ justifyItems: 'center' }}>
+                    <CardActionArea sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                         <CardMedia component='img'
-                            sx={{ height: '200px', width: 'unset' }}
+                            sx={{ height: '200px', width: 'auto' }}
                             alt={''}
                             src={previewContainer.preview.bytes ? `data:image/${previewContainer.preview.format};base64,${previewContainer.preview.bytes}` : constants.BLANK_IMG_SRC}
                             onClick={() => onOpenPreview(previewContainer.datasetId)}

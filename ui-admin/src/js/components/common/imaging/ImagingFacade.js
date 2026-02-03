@@ -304,14 +304,13 @@ export default class ImagingFacade {
      *
      * @param {Object} exportConfig - Export configuration object
      * @param {Array<Object>} exportList - Array of preview objects to export
-     * @returns {Promise<string>} URL to download the exported archive
+     * @returns {Promise<Object>} URL to download the exported archive
      */
     multiExportImagingDataset = async (exportConfig, exportList) => {
         const serviceId = new this.openbis.CustomASServiceCode(constants.IMAGING_CODE);
         const options = new this.openbis.CustomASServiceExecutionOptions();
         options.parameters = new ImagingMapper(this.openbis).mapToImagingMultiExportParams(exportConfig, exportList);
-        const exportedImagingDataset = await this.openbis.executeService(serviceId, options);
-        return exportedImagingDataset.url;
+        return await this.openbis.executeService(serviceId, options);
     };
 
     /**
@@ -321,14 +320,13 @@ export default class ImagingFacade {
      * @param {number} activeImageIdx - Index of the active image
      * @param {Object} exportConfig - Export configuration object
      * @param {Object} metadata - Metadata to include in export
-     * @returns {Promise<string>} URL to download the exported file
+     * @returns {Promise<Object>} URL to download the exported file
      */
     exportImagingDataset = async (objId, activeImageIdx, exportConfig, metadata) => {
         const serviceId = new this.openbis.CustomASServiceCode(constants.IMAGING_CODE);
         const options = new this.openbis.CustomASServiceExecutionOptions();
         options.parameters = new ImagingMapper(this.openbis).mapToImagingExportParams(objId, activeImageIdx, exportConfig, metadata);
-        const exportedImagingDataset = await this.openbis.executeService(serviceId, options);
-        return exportedImagingDataset.url;
+        return await this.openbis.executeService(serviceId, options);
     };
 
     /**

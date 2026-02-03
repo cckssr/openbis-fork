@@ -70,7 +70,7 @@ const GalleryControlsBar = ({
                         onChange={setShowAll} />
                 </Grid2>
                 <Grid2 size={{ sm: 4, md: 'auto' }}>
-                    <CustomSwitch label='Select'
+                    <CustomSwitch label='Show Controls'
                         labelPlacement='top'
                         disabled={!gridView}
                         isChecked={selectAll}

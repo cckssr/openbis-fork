@@ -171,10 +171,15 @@ export const ImagingDataProvider = ({ onUnsavedChanges, objId, objType, extOpenb
         handleOpen();
         const { activeImageIdx } = state;
         try {
-            const downloadableURL = await imagingFacade.exportImagingDataset(objId, activeImageIdx, state, {});
-            if (downloadableURL)
-                window.open(downloadableURL, '_blank');
-            setState(prev => ({ ...prev, open: false }));
+            const exportResult = await imagingFacade.exportImagingDataset(objId, activeImageIdx, state, {});
+            if (exportResult.url) {
+                window.open(exportResult.url, '_blank');
+                setState(prev => ({...prev, open: false}));
+            } else {
+                const error = exportResult.error || 'No URL returned from the server.';
+                setState(prev => ({ ...prev, open: false }));
+                handleError(error);
+            }
         } catch (error) {
             setState(prev => ({ ...prev, open: false }));
             handleError(error);
