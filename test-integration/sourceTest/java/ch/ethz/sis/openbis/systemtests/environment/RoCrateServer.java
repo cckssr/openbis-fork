@@ -3,7 +3,6 @@ package ch.ethz.sis.openbis.systemtests.environment;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Properties;
@@ -56,7 +55,6 @@ public class RoCrateServer
 
                 if (line.contains("Started RO-CRATE server") || line.contains("Startup of RO-CRATE server failed"))
                 {
-                    createServerStartedFile();
                     log.info("Started ro-crate server.");
                     break;
                 }
@@ -65,20 +63,6 @@ public class RoCrateServer
         {
             log.error("Starting ro-crate server failed.", e);
             throw new RuntimeException(e);
-        }
-    }
-
-    private void createServerStartedFile()
-    {
-        File STARTED_FILE = new File("SERVER_STARTED");
-        try
-        {
-            STARTED_FILE.createNewFile();
-            STARTED_FILE.deleteOnExit();
-            log.info(STARTED_FILE.getAbsolutePath()+" created");
-        } catch (IOException ex)
-        {
-            log.error("Couldn't create marker file " + STARTED_FILE, ex);
         }
     }
 
