@@ -9,14 +9,15 @@ import ch.ethz.sis.openbis.systemtests.suite.rocrate.environment.RoCrateServerIn
 import ch.systemsx.cisd.common.http.JettyHttpClientFactory;
 import ch.systemsx.cisd.openbis.generic.shared.util.TestInstanceHostUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.eclipse.jetty.client.HttpClient;
-import org.eclipse.jetty.client.ContentResponse;
-import org.eclipse.jetty.client.Request;
 import org.eclipse.jetty.client.BytesRequestContent;
+import org.eclipse.jetty.client.ContentResponse;
+import org.eclipse.jetty.client.HttpClient;
+import org.eclipse.jetty.client.Request;
 import org.eclipse.jetty.http.HttpMethod;
 import org.junit.Assert;
 import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeSuite;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
@@ -347,6 +348,66 @@ public class IntegrationRoCrateServerTest
         testExport("application/ld+json", "[\"DOES-NOT-EXIST\"]", "FAILED", "COMPLETED");
     }
 
+    @Test(dataProvider = "acceptableMimeTypes")
+    public void testAcceptableExportMimeTypes(String acceptableExportMimeType,
+            int expectedStatusCode)
+            throws Exception
+    {
+        String payload = "[\"/PUBLICATIONS/PUBLIC_REPOSITORIES/PUB29\"]";
+
+        OpenBIS openBIS = environment.createOpenBIS(TIMEOUT);
+        openBIS.login(username, password);
+
+        String export_type = acceptableExportMimeType;
+        HttpClient client = JettyHttpClientFactory.getHttpClient();
+        Request request = client.newRequest(
+                TestInstanceHostUtils.getRoCrateUrl() + "/openbis/open-api/ro-crate/export");
+        request.method(HttpMethod.POST);
+        request.headers(headers -> {
+            headers.add("api-key", openBIS.getSessionToken());
+            headers.add("Content-Type", "application/json");
+            headers.add("Export", export_type);
+        });
+        request.body(new BytesRequestContent(payload.getBytes()));
+        request.idleTimeout(TIMEOUT, TimeUnit.MILLISECONDS);
+
+        ContentResponse response = request.send();
+        assertEquals(response.getStatus(), expectedStatusCode);
+    }
+
+    @Test
+    public void testMissingExportMimeType()
+            throws Exception
+    {
+        String payload = "[\"/PUBLICATIONS/PUBLIC_REPOSITORIES/PUB29\"]";
+
+        OpenBIS openBIS = environment.createOpenBIS(TIMEOUT);
+        openBIS.login(username, password);
+
+        HttpClient client = JettyHttpClientFactory.getHttpClient();
+        Request request = client.newRequest(
+                TestInstanceHostUtils.getRoCrateUrl() + "/openbis/open-api/ro-crate/export");
+        request.method(HttpMethod.POST);
+        request.headers(headers -> {
+            headers.add("api-key", openBIS.getSessionToken());
+            headers.add("Content-Type", "application/json");
+        });
+        request.body(new BytesRequestContent(payload.getBytes()));
+        request.idleTimeout(TIMEOUT, TimeUnit.MILLISECONDS);
+
+        ContentResponse response = request.send();
+        assertEquals(response.getStatus(), 400);
+        String contentAsString = response.getContentAsString();
+        assertTrue(contentAsString.contains(
+                "The Export header is not in the range of supported options. Please use one of"));
+        assertTrue(contentAsString.contains("application/ld+json"));
+        assertTrue(contentAsString.contains("application/zip"));
+
+    }
+
+
+
+
     // https://github.com/paulscherrerinstitute/rocrate-api/issues/40
     @Test
     public void testValidateMalformedCrate()
@@ -633,6 +694,14 @@ public class IntegrationRoCrateServerTest
             Thread.sleep(2000);
 
         }
+    }
+
+    @DataProvider(name = "acceptableMimeTypes")
+    public static Object[][] acceptableMimeTypeProvider()
+    {
+        return new Object[][] { { "application/ld+json", 202 }, { "application/zip", 202 },
+                { "application/xml", 400 }, { "metlapiltetzotzontzin/hmeephmeep", 400 } };
+
     }
 
 }
