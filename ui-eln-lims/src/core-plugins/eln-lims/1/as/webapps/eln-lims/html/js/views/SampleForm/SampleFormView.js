@@ -861,9 +861,20 @@
                         }
                         document.removeEventListener('keyup', _this._sampleFormViewGlobalEventListener);
                     }
+                    var tabInfo = mainController.tabContent.getCurrentTabInfo();
+                    tabInfo.finalize = mainController.currentView.finalize;
+                    mainController.tabContent.updateCurrentTabInfo(tabInfo);
 
                     this._sampleFormViewGlobalEventListener = arrowKeyEventListener(_this._sampleFormModel.paginationInfo);
                     document.addEventListener('keyup',  this._sampleFormViewGlobalEventListener);
+
+                    var eventRefresh = {
+                        refresh: function() {
+                            document.addEventListener('keyup',  _this._sampleFormViewGlobalEventListener);
+                        }
+                    }
+                    _refreshableFields.push(eventRefresh);
+
 
                     var $backBtn = FormUtil.getToolbarButton("PAGINATION_LEFT", function () {
                                         moveToIndex(_this._sampleFormModel.paginationInfo.currentIndex-1);
