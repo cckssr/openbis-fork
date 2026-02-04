@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 @ApplicationScoped
 public class ExportDelegate
 {
-    Set<String> acceptableMimeTypes =
+    public static Set<String> ACCEPTABLE_MIME_TYPES =
             Set.of(RoCrateService.APPLICATION_LD_JSON, RoCrateService.APPLICATION_ZIP);
 
     public AsyncJob export(
@@ -27,10 +27,10 @@ public class ExportDelegate
             InputStream body) throws Exception
     {
         String exportMimeType = headers.getExportMimeType();
-        if (!acceptableMimeTypes.contains(exportMimeType))
+        if (!ACCEPTABLE_MIME_TYPES.contains(exportMimeType))
         {
             throw new WebApplicationException(
-                    exportMimeType + " is not spported, please use" + acceptableMimeTypes.stream()
+                    exportMimeType + " is not spported, please use" + ACCEPTABLE_MIME_TYPES.stream()
                             .sorted().collect(
                                     Collectors.joining(",")), Response.Status.NOT_ACCEPTABLE);
         }

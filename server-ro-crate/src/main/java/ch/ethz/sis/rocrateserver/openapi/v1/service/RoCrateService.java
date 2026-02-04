@@ -182,6 +182,23 @@ public class RoCrateService
         {
             RoCrateExceptions.throwInstance(RoCrateExceptions.UNAVAILABLE_API_KEY);
         }
+        if (headers.getExportMimeType() == null || !ExportDelegate.ACCEPTABLE_MIME_TYPES.contains(
+                headers.getExportMimeType()))
+        {
+
+            String message =
+                    "The Export header is not in the range of supported options. Please use one of " + ExportDelegate.ACCEPTABLE_MIME_TYPES.stream()
+                            .collect(
+                                    Collectors.joining(", "));
+            ErrorResponse errorResponse = new ErrorResponse(message);
+            ObjectMapper objectMapper = new ObjectMapper();
+            Response.ResponseBuilder responseBuilder = new ResponseBuilderImpl();
+            responseBuilder.status(Response.Status.BAD_REQUEST);
+            responseBuilder.entity(objectMapper.writeValueAsString(errorResponse));
+            return responseBuilder.build();
+        }
+
+
 
         try
         {
