@@ -18,8 +18,16 @@
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.importer;
 
 import java.io.IOException;
+import java.util.UUID;
 
+import ch.ethz.sis.openbis.generic.OpenBIS;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.DataStore;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.fetchoptions.DataStoreFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.search.DataStoreKind;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.search.DataStoreSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.transaction.ITransactionExecutor;
+import ch.ethz.sis.transaction.TransactionId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -48,6 +56,27 @@ public class ImportExecutor implements IImportExecutor
         final ImportData importData = operation.getImportData();
 
         final IApplicationServerInternalApi applicationServerApi = CommonServiceProvider.getApplicationServerApi();
+
+        String transactionEnabled = CommonServiceProvider.tryToGetProperty("api.v3.transaction.enabled");
+        String interactiveSessionKey = CommonServiceProvider.tryToGetProperty("api.v3.transaction.interactive-session-key");
+
+        String url = CommonServiceProvider.tryToGetProperty("server-public-information.afs-server.url");
+        String asUrl = CommonServiceProvider.tryToGetProperty("api.v3.transaction.participant.application-server.url");
+
+        DataStoreSearchCriteria searchCriteria = new DataStoreSearchCriteria();
+        searchCriteria.withKind().thatIn(DataStoreKind.DSS);
+        SearchResult<DataStore> stores = applicationServerApi.searchDataStores(context.getSession().getSessionToken(), searchCriteria, new DataStoreFetchOptions());
+        String dssUrl = null;
+        if(stores.getTotalCount() > 0) {
+            dssUrl = stores.getObjects().get(0).getRemoteUrl() + "/datastore_server";
+        }
+
+        OpenBIS openBIS = new OpenBIS(asUrl + "/openbis/openbis", dssUrl, url, 30000);
+
+        openBIS.setSessionToken(context.getSession().getSessionToken());
+        openBIS.setInteractiveSessionKey(interactiveSessionKey);
+
+
         final ImportOptions importOptions = operation.getImportOptions();
 
         final ch.ethz.sis.openbis.generic.server.xls.importer.ImportOptions importerImportOptions =
@@ -59,13 +88,41 @@ public class ImportExecutor implements IImportExecutor
 
         try
         {
-            final XLSImport xlsImport = new XLSImport(context.getSession().getSessionToken(), applicationServerApi,
+            XLSImport xlsImport = new XLSImport(context.getSession().getSessionToken(), openBIS,
                     ImportModes.valueOf(importOptions.getMode().name()), importerImportOptions, importData.getSessionWorkspaceFiles(), false);
             ImportResult result = new ImportResult();
-            if(xlsImport.importContainsAfsData()) {
-                // TODO 2PT and dirty transaction check
-                transactionExecutor.executeInSeparateTransaction(() -> importMetaData(xlsImport, result));
-                xlsImport.importZipAfsData();
+            if(xlsImport.importContainsAfsData())
+            {
+
+                if (transactionEnabled != null && !transactionEnabled.equalsIgnoreCase("true"))
+                {
+                    //transactions disabled
+                    transactionExecutor.executeInSeparateTransaction(
+                            () -> importMetaData(xlsImport, result));
+                    xlsImport.importZipAfsData();
+                } else
+                {
+                    UUID transactionId = TransactionId.getCurrent();
+                    if (transactionId == null)
+                    {
+                        try
+                        {
+                            openBIS.beginTransaction();
+                            importMetaData(xlsImport, result);
+                            xlsImport.importZipAfsData();
+
+                            openBIS.commitTransaction();
+                        } catch (Exception e)
+                        {
+                            openBIS.rollbackTransaction();
+                            throw e;
+                        }
+                    } else
+                    {
+                        throw UserFailureException.fromTemplate(
+                                "Import in Two-Phase transactions is not supported!");
+                    }
+                }
             } else {
                 result.setObjectIds(xlsImport.start());
             }
