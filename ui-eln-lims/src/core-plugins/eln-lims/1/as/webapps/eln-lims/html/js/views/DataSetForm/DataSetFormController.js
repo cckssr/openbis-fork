@@ -22,9 +22,7 @@ function DataSetFormController(parentController, mode, entity, dataSet, isMini, 
 	this._wasSideMenuCollapsed = mainController.sideMenu.isCollapsed;
 
 	this.refresh = function() {
-	    if(this._dataSetFormModel.mode !== FormMode.VIEW) {
-	        this._dataSetFormView.refresh();
-	    }
+        this._dataSetFormView.refresh();
     }
 	
 	this.init = function(views) {
