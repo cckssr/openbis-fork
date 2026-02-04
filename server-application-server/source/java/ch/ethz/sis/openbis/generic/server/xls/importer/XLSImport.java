@@ -18,16 +18,14 @@ package ch.ethz.sis.openbis.generic.server.xls.importer;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
 import ch.ethz.sis.afsapi.exception.ThrowableReason;
+import ch.ethz.sis.afsclient.client.AfsClient;
+import ch.ethz.sis.openbis.generic.OpenBIS;
 import ch.ethz.sis.openbis.generic.server.xls.importer.helper.*;
 import ch.ethz.sis.openbis.generic.server.xls.importer.helper.semanticannotation.SemanticAnnotationHelper;
 import ch.ethz.sis.shared.log.classic.impl.Logger;
@@ -80,7 +78,7 @@ public class XLSImport
 
     private final String sessionToken;
 
-    private final IApplicationServerApi api;
+    private final OpenBIS openBIS;
 
     private final DelayedExecutionDecorator delayedExecutor;
 
@@ -135,19 +133,19 @@ public class XLSImport
     private static final String ZIP_EXTENSION = "." + "zip";
 
     public XLSImport(String sessionToken,
-            IApplicationServerApi api,
+            OpenBIS openBIS,
             ImportModes mode,
             ImportOptions options,
             String[] sessionWorkspaceFiles,
             boolean shouldCheckVersionsOnDatabase) throws IOException
     {
         this.sessionToken = sessionToken;
-        this.api = api;
+        this.openBIS = openBIS;
         this.options = options;
         this.beforeVersions = Collections.unmodifiableMap(VersionInfoHandler.loadAllVersions(options));
         this.afterVersions = VersionInfoHandler.loadAllVersions(options);
-        this.dbChecker = new DatabaseConsistencyChecker(this.sessionToken, this.api, this.afterVersions);
-        this.delayedExecutor = new DelayedExecutionDecorator(this.sessionToken, this.api);
+        this.dbChecker = new DatabaseConsistencyChecker(this.sessionToken, this.openBIS, this.afterVersions);
+        this.delayedExecutor = new DelayedExecutionDecorator(this.sessionToken, this.openBIS);
 
         SemanticAnnotationHelper annotationCache = new SemanticAnnotationHelper(delayedExecutor);
 
@@ -166,7 +164,7 @@ public class XLSImport
         this.typeGroupImportHelper = new TypeGroupImportHelper(this.delayedExecutor, mode, options);
         this.shouldCheckVersionsOnDatabase = shouldCheckVersionsOnDatabase;
 
-        this.afsDataImportHelper = new AfsDataImportHelper(sessionToken, mode, options);
+        this.afsDataImportHelper = new AfsDataImportHelper(sessionToken, mode, options, openBIS);
 
         // File Parsing
         this.sessionWorkspaceFiles = sessionWorkspaceFiles;

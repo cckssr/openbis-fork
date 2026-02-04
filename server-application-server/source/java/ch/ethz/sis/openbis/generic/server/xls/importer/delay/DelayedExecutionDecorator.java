@@ -29,6 +29,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import ch.ethz.sis.openbis.generic.OpenBIS;
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.IObjectId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IEntityType;
@@ -122,7 +123,7 @@ public class DelayedExecutionDecorator
 {
     private String sessionToken;
 
-    private IApplicationServerApi v3;
+    private OpenBIS openBIS;
 
     Set<IObjectId> ids;
 
@@ -137,10 +138,10 @@ public class DelayedExecutionDecorator
         return sessionToken.startsWith("system");
     }
 
-    public DelayedExecutionDecorator(String sessionToken, IApplicationServerApi v3)
+    public DelayedExecutionDecorator(String sessionToken, OpenBIS openBIS)
     {
         this.sessionToken = sessionToken;
-        this.v3 = v3;
+        this.openBIS = openBIS;
         this.ids = new LinkedHashSet<>();
         this.resolvedVariables = new HashMap<>();
         this.delayedExecutions =
@@ -322,17 +323,17 @@ public class DelayedExecutionDecorator
 
     public Space getSpace(ISpaceId spaceId, SpaceFetchOptions fetchOptions)
     {
-        return v3.getSpaces(this.sessionToken, List.of(spaceId), fetchOptions).getOrDefault(spaceId, null);
+        return openBIS.getSpaces(List.of(spaceId), fetchOptions).getOrDefault(spaceId, null);
     }
 
     public void createSpace(SpaceCreation newSpace)
     {
-        addIdsAndExecuteDelayed(v3.createSpaces(this.sessionToken, List.of(newSpace)).get(0), ImportTypes.SPACE, null);
+        addIdsAndExecuteDelayed(openBIS.createSpaces(List.of(newSpace)).get(0), ImportTypes.SPACE, null);
     }
 
     public void updateSpace(SpaceUpdate spaceUpdate)
     {
-        v3.updateSpaces(this.sessionToken, List.of(spaceUpdate));
+        openBIS.updateSpaces(List.of(spaceUpdate));
         this.ids.add(spaceUpdate.getSpaceId());
     }
 
@@ -342,7 +343,7 @@ public class DelayedExecutionDecorator
 
     public Project getProject(IProjectId projectId, ProjectFetchOptions fetchOptions)
     {
-        return v3.getProjects(this.sessionToken, List.of(projectId), fetchOptions).getOrDefault(projectId, null);
+        return openBIS.getProjects(List.of(projectId), fetchOptions).getOrDefault(projectId, null);
     }
 
     public void createProject(ProjectCreation projectCreation, int page, int line)
@@ -357,7 +358,7 @@ public class DelayedExecutionDecorator
             addDelayedExecution(delayedExecution);
         } else
         { // Execute
-            addIdsAndExecuteDelayed(v3.createProjects(this.sessionToken, List.of(projectCreation)).get(0), ImportTypes.PROJECT, null);
+            addIdsAndExecuteDelayed(openBIS.createProjects(List.of(projectCreation)).get(0), ImportTypes.PROJECT, null);
         }
     }
 
@@ -374,12 +375,12 @@ public class DelayedExecutionDecorator
                 addDelayedExecution(delayedExecution);
             } else
             { // Execute
-                v3.updateProjects(sessionToken, List.of(projectUpdate));
+                openBIS.updateProjects(List.of(projectUpdate));
                 this.ids.add(projectUpdate.getProjectId());
             }
         } else
         { // Execute
-            v3.updateProjects(sessionToken, List.of(projectUpdate));
+            openBIS.updateProjects(List.of(projectUpdate));
             this.ids.add(projectUpdate.getProjectId());
         }
     }
@@ -390,7 +391,7 @@ public class DelayedExecutionDecorator
 
     public Experiment getExperiment(IExperimentId experimentId, ExperimentFetchOptions fetchOptions)
     {
-        return v3.getExperiments(this.sessionToken, List.of(experimentId), fetchOptions).getOrDefault(experimentId, null);
+        return openBIS.getExperiments(List.of(experimentId), fetchOptions).getOrDefault(experimentId, null);
     }
 
     public void createExperiment(ExperimentCreation experimentCreation, int page, int line)
@@ -413,7 +414,7 @@ public class DelayedExecutionDecorator
 
         } else
         { // Execute
-            addIdsAndExecuteDelayed(v3.createExperiments(this.sessionToken, List.of(experimentCreation)).get(0), ImportTypes.EXPERIMENT, null);
+            addIdsAndExecuteDelayed(openBIS.createExperiments(List.of(experimentCreation)).get(0), ImportTypes.EXPERIMENT, null);
         }
     }
 
@@ -433,14 +434,14 @@ public class DelayedExecutionDecorator
             addDelayedExecution(delayedExecution);
         } else
         {// Execute
-            v3.updateExperiments(this.sessionToken, List.of(experimentUpdate));
+            openBIS.updateExperiments(List.of(experimentUpdate));
             this.ids.add(experimentUpdate.getExperimentId());
         }
     }
 
     public ExperimentType getExperimentType(IEntityTypeId experimentTypeId, ExperimentTypeFetchOptions fetchOptions)
     {
-        return v3.getExperimentTypes(this.sessionToken, List.of(experimentTypeId), fetchOptions).getOrDefault(experimentTypeId, null);
+        return openBIS.getExperimentTypes(List.of(experimentTypeId), fetchOptions).getOrDefault(experimentTypeId, null);
     }
 
     public void createExperimentType(ExperimentTypeCreation experimentTypeCreation, int page, int line)
@@ -449,7 +450,7 @@ public class DelayedExecutionDecorator
         {
             throw new IllegalStateException("XLS Parser - createExperimentType called with properties.");
         }
-        addIdsAndExecuteDelayed(v3.createExperimentTypes(this.sessionToken, List.of(experimentTypeCreation)).get(0), ImportTypes.EXPERIMENT_TYPE,
+        addIdsAndExecuteDelayed(openBIS.createExperimentTypes(List.of(experimentTypeCreation)).get(0), ImportTypes.EXPERIMENT_TYPE,
                 null);
     }
 
@@ -490,7 +491,7 @@ public class DelayedExecutionDecorator
             addDelayedExecution(delayedExecution);
         } else
         {
-            v3.updateExperimentTypes(this.sessionToken, List.of(experimentTypeUpdate));
+            openBIS.updateExperimentTypes(List.of(experimentTypeUpdate));
             this.ids.add(experimentTypeUpdate.getTypeId());
         }
     }
@@ -501,7 +502,7 @@ public class DelayedExecutionDecorator
 
     public Sample getSample(ISampleId sampleId, SampleFetchOptions fetchOptions)
     {
-        return v3.getSamples(this.sessionToken, List.of(sampleId), fetchOptions).getOrDefault(sampleId, null);
+        return openBIS.getSamples(List.of(sampleId), fetchOptions).getOrDefault(sampleId, null);
     }
 
     public void createSample(String variable, SampleCreation sampleCreation, int page, int line)
@@ -552,7 +553,7 @@ public class DelayedExecutionDecorator
             addDelayedExecution(delayedExecution);
         } else
         {
-            addIdsAndExecuteDelayed(v3.createSamples(sessionToken, List.of(sampleCreation)).get(0), ImportTypes.SAMPLE, variable);
+            addIdsAndExecuteDelayed(openBIS.createSamples(List.of(sampleCreation)).get(0), ImportTypes.SAMPLE, variable);
         }
     }
 
@@ -895,14 +896,14 @@ public class DelayedExecutionDecorator
             addDelayedExecution(delayedExecution);
         } else
         { // Execute
-            v3.updateSamples(sessionToken, List.of(sampleUpdate));
+            openBIS.updateSamples(List.of(sampleUpdate));
             this.ids.add(sampleUpdate.getSampleId());
         }
     }
 
     public SampleType getSampleType(IEntityTypeId sampleTypeId, SampleTypeFetchOptions fetchOptions)
     {
-        return v3.getSampleTypes(this.sessionToken, List.of(sampleTypeId), fetchOptions).getOrDefault(sampleTypeId, null);
+        return openBIS.getSampleTypes(List.of(sampleTypeId), fetchOptions).getOrDefault(sampleTypeId, null);
     }
 
     public void createSampleType(SampleTypeCreation sampleTypeCreation, int page, int line)
@@ -911,7 +912,7 @@ public class DelayedExecutionDecorator
         {
             throw new IllegalStateException("XLS Parser - createSampleType called with properties.");
         }
-        addIdsAndExecuteDelayed(v3.createSampleTypes(this.sessionToken, List.of(sampleTypeCreation)).get(0), ImportTypes.SAMPLE_TYPE, null);
+        addIdsAndExecuteDelayed(openBIS.createSampleTypes(List.of(sampleTypeCreation)).get(0), ImportTypes.SAMPLE_TYPE, null);
     }
 
     public void updateSampleType(SampleTypeUpdate sampleTypeUpdate, int page, int line)
@@ -951,7 +952,7 @@ public class DelayedExecutionDecorator
             addDelayedExecution(delayedExecution);
         } else
         {
-            v3.updateSampleTypes(this.sessionToken, List.of(sampleTypeUpdate));
+            openBIS.updateSampleTypes(List.of(sampleTypeUpdate));
             this.ids.add(sampleTypeUpdate.getTypeId());
         }
     }
@@ -962,7 +963,7 @@ public class DelayedExecutionDecorator
 
     public DataSetType getDataSetType(IEntityTypeId dataSetTypeId, DataSetTypeFetchOptions fetchOptions)
     {
-        return v3.getDataSetTypes(this.sessionToken, List.of(dataSetTypeId), fetchOptions).getOrDefault(dataSetTypeId, null);
+        return openBIS.getDataSetTypes(List.of(dataSetTypeId), fetchOptions).getOrDefault(dataSetTypeId, null);
     }
 
     public void createDataSetType(DataSetTypeCreation dataSetTypeCreation, int page, int line)
@@ -971,7 +972,7 @@ public class DelayedExecutionDecorator
         {
             throw new IllegalStateException("XLS Parser - createDataSetType called with properties.");
         }
-        addIdsAndExecuteDelayed(v3.createDataSetTypes(this.sessionToken, List.of(dataSetTypeCreation)).get(0), ImportTypes.DATASET_TYPE, null);
+        addIdsAndExecuteDelayed(openBIS.createDataSetTypes(List.of(dataSetTypeCreation)).get(0), ImportTypes.DATASET_TYPE, null);
     }
 
     public void updateDataSetType(DataSetTypeUpdate dataSetTypeUpdate, int page, int line)
@@ -1011,7 +1012,7 @@ public class DelayedExecutionDecorator
             addDelayedExecution(delayedExecution);
         } else
         {
-            v3.updateDataSetTypes(this.sessionToken, List.of(dataSetTypeUpdate));
+            openBIS.updateDataSetTypes(List.of(dataSetTypeUpdate));
             this.ids.add(dataSetTypeUpdate.getTypeId());
         }
     }
@@ -1030,7 +1031,7 @@ public class DelayedExecutionDecorator
             fetchOptions.withVocabulary().withTerms().withVocabulary();
             fetchOptions.withSampleType();
 
-            PropertyType propertyType = v3.getPropertyTypes(this.sessionToken, List.of(typeId), fetchOptions).getOrDefault(typeId, null);
+            PropertyType propertyType = openBIS.getPropertyTypes(List.of(typeId), fetchOptions).getOrDefault(typeId, null);
             if (propertyType != null)
             {
                 propertyTypeCache2.put(typeId, propertyType);
@@ -1082,14 +1083,14 @@ public class DelayedExecutionDecorator
             addDelayedExecution(delayedExecution);
         } else
         { // Execute
-            addIdsAndExecuteDelayed(v3.createPropertyTypes(sessionToken, List.of(newPropertyType)).get(0), ImportTypes.PROPERTY_TYPE, null);
+            addIdsAndExecuteDelayed(openBIS.createPropertyTypes(List.of(newPropertyType)).get(0), ImportTypes.PROPERTY_TYPE, null);
         }
     }
 
     public void updatePropertyType(PropertyTypeUpdate propertyTypeUpdate, int page, int line)
     {
         // Data type and vocabulary can't be updated. That is mean - no delay.
-        v3.updatePropertyTypes(this.sessionToken, List.of(propertyTypeUpdate));
+        openBIS.updatePropertyTypes(List.of(propertyTypeUpdate));
         this.ids.add(propertyTypeUpdate.getTypeId());
     }
 
@@ -1099,17 +1100,17 @@ public class DelayedExecutionDecorator
 
     public Plugin getPlugin(IPluginId plugin, PluginFetchOptions fetchOptions)
     {
-        return v3.getPlugins(this.sessionToken, List.of(plugin), fetchOptions).getOrDefault(plugin, null);
+        return openBIS.getPlugins(List.of(plugin), fetchOptions).getOrDefault(plugin, null);
     }
 
     public void createPlugin(PluginCreation newPlugin)
     {
-        addIdsAndExecuteDelayed(v3.createPlugins(this.sessionToken, List.of(newPlugin)).get(0), ImportTypes.SCRIPT, null);
+        addIdsAndExecuteDelayed(openBIS.createPlugins(List.of(newPlugin)).get(0), ImportTypes.SCRIPT, null);
     }
 
     public void updatePlugin(PluginUpdate pluginUpdate)
     {
-        v3.updatePlugins(this.sessionToken, List.of(pluginUpdate));
+        openBIS.updatePlugins(List.of(pluginUpdate));
         this.ids.add(pluginUpdate.getPluginId());
     }
 
@@ -1118,33 +1119,33 @@ public class DelayedExecutionDecorator
     //
     public Vocabulary getVocabulary(IVocabularyId vocabularyId, VocabularyFetchOptions fetchOptions)
     {
-        return v3.getVocabularies(this.sessionToken, List.of(vocabularyId), fetchOptions).getOrDefault(vocabularyId, null);
+        return openBIS.getVocabularies(List.of(vocabularyId), fetchOptions).getOrDefault(vocabularyId, null);
     }
 
     public void createVocabulary(VocabularyCreation newVocabulary)
     {
-        addIdsAndExecuteDelayed(v3.createVocabularies(this.sessionToken, List.of(newVocabulary)).get(0), ImportTypes.VOCABULARY_TYPE, null);
+        addIdsAndExecuteDelayed(openBIS.createVocabularies(List.of(newVocabulary)).get(0), ImportTypes.VOCABULARY_TYPE, null);
     }
 
     public void updateVocabulary(VocabularyUpdate vocabularyUpdate)
     {
-        v3.updateVocabularies(this.sessionToken, List.of(vocabularyUpdate));
+        openBIS.updateVocabularies(List.of(vocabularyUpdate));
         this.ids.add(vocabularyUpdate.getVocabularyId());
     }
 
     public VocabularyTerm getVocabularyTerm(IVocabularyTermId vocabularyTerm, VocabularyTermFetchOptions fetchOptions)
     {
-        return v3.getVocabularyTerms(this.sessionToken, List.of(vocabularyTerm), fetchOptions).getOrDefault(vocabularyTerm, null);
+        return openBIS.getVocabularyTerms(List.of(vocabularyTerm), fetchOptions).getOrDefault(vocabularyTerm, null);
     }
 
     public void createVocabularyTerm(VocabularyTermCreation newVocabularyTerm)
     {
-        addIdsAndExecuteDelayed(v3.createVocabularyTerms(this.sessionToken, List.of(newVocabularyTerm)).get(0), ImportTypes.VOCABULARY_TERM, null);
+        addIdsAndExecuteDelayed(openBIS.createVocabularyTerms(List.of(newVocabularyTerm)).get(0), ImportTypes.VOCABULARY_TERM, null);
     }
 
     public void updateVocabularyTerm(VocabularyTermUpdate vocabularyTermUpdate)
     {
-        v3.updateVocabularyTerms(this.sessionToken, List.of(vocabularyTermUpdate));
+        openBIS.updateVocabularyTerms(List.of(vocabularyTermUpdate));
         this.ids.add(vocabularyTermUpdate.getVocabularyTermId());
     }
 
@@ -1154,7 +1155,7 @@ public class DelayedExecutionDecorator
 
     public SemanticAnnotation getSemanticAnnotation(SemanticAnnotationSearchCriteria criteria, SemanticAnnotationFetchOptions fetchOptions)
     {
-        SearchResult<SemanticAnnotation> semanticAnnotationSearchResult = v3.searchSemanticAnnotations(this.sessionToken, criteria, fetchOptions);
+        SearchResult<SemanticAnnotation> semanticAnnotationSearchResult = openBIS.searchSemanticAnnotations(criteria, fetchOptions);
 
         if (semanticAnnotationSearchResult.getTotalCount() > 0)
         {
@@ -1167,7 +1168,7 @@ public class DelayedExecutionDecorator
 
     public List<SemanticAnnotation> searchSemanticAnnotations(SemanticAnnotationSearchCriteria criteria, SemanticAnnotationFetchOptions fetchOptions)
     {
-        SearchResult<SemanticAnnotation> semanticAnnotationSearchResult = v3.searchSemanticAnnotations(this.sessionToken, criteria, fetchOptions);
+        SearchResult<SemanticAnnotation> semanticAnnotationSearchResult = openBIS.searchSemanticAnnotations(criteria, fetchOptions);
 
         if (semanticAnnotationSearchResult.getTotalCount() > 0)
         {
@@ -1236,49 +1237,49 @@ public class DelayedExecutionDecorator
             addDelayedExecution(delayedExecution);
         } else
         { // Execute
-            v3.createSemanticAnnotations(sessionToken, List.of(creation));
+            openBIS.createSemanticAnnotations(List.of(creation));
         }
     }
 
 
     public TypeGroup getTypeGroup(ITypeGroupId typeGroupId, TypeGroupFetchOptions fetchOptions)
     {
-        return v3.getTypeGroups(this.sessionToken, List.of(typeGroupId), fetchOptions).getOrDefault(typeGroupId, null);
+        return openBIS.getTypeGroups(List.of(typeGroupId), fetchOptions).getOrDefault(typeGroupId, null);
     }
 
     public Map<ITypeGroupId, TypeGroup> getTypeGroups(List<ITypeGroupId> typeGroupIds, TypeGroupFetchOptions fetchOptions)
     {
-        return v3.getTypeGroups(this.sessionToken, typeGroupIds, fetchOptions);
+        return openBIS.getTypeGroups(typeGroupIds, fetchOptions);
     }
 
 
     public void createTypeGroup(TypeGroupCreation creation)
     {
-        addIdsAndExecuteDelayed(v3.createTypeGroups(this.sessionToken, List.of(creation)).get(0), ImportTypes.TYPE_GROUP, null);
+        addIdsAndExecuteDelayed(openBIS.createTypeGroups(List.of(creation)).get(0), ImportTypes.TYPE_GROUP, null);
     }
 
     public void updateTypeGroup(TypeGroupUpdate update)
     {
-        v3.updateTypeGroups(this.sessionToken, List.of(update));
+        openBIS.updateTypeGroups(List.of(update));
     }
 
     public TypeGroupAssignment getTypeGroupAssignment(ITypeGroupAssignmentId typeGroupAssignmentId, TypeGroupAssignmentFetchOptions fetchOptions)
     {
-        return v3.getTypeGroupAssignments(this.sessionToken, List.of(typeGroupAssignmentId), fetchOptions).getOrDefault(typeGroupAssignmentId, null);
+        return openBIS.getTypeGroupAssignments(List.of(typeGroupAssignmentId), fetchOptions).getOrDefault(typeGroupAssignmentId, null);
     }
 
     public List<TypeGroupAssignment> getTypeGroupAssignmentsForSampleType(String sampleTypeId, TypeGroupAssignmentFetchOptions fetchOptions)
     {
         TypeGroupAssignmentSearchCriteria criteria = new TypeGroupAssignmentSearchCriteria();
         criteria.withSampleType().withCode().thatEquals(sampleTypeId);
-        SearchResult<TypeGroupAssignment> result = v3.searchTypeGroupAssignments(this.sessionToken, criteria, fetchOptions);
+        SearchResult<TypeGroupAssignment> result = openBIS.searchTypeGroupAssignments(criteria, fetchOptions);
         return result.getObjects();
     }
 
     public void deleteTypeGroupAssignments(List<ITypeGroupAssignmentId> typeGroupAssignmentIds,
             TypeGroupAssignmentDeletionOptions deletionOptions)
     {
-        v3.deleteTypeGroupAssignments(this.sessionToken, typeGroupAssignmentIds, deletionOptions);
+        openBIS.deleteTypeGroupAssignments(typeGroupAssignmentIds, deletionOptions);
     }
 
 
@@ -1303,7 +1304,7 @@ public class DelayedExecutionDecorator
 
         if(!readyCreations.isEmpty())
         {
-            v3.createTypeGroupAssignments(this.sessionToken, readyCreations);
+            openBIS.createTypeGroupAssignments(readyCreations);
         }
 
 

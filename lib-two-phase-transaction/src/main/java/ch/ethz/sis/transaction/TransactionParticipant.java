@@ -181,8 +181,9 @@ public class TransactionParticipant extends AbstractTransactionNode<TransactionP
 
                 try
                 {
-
+                    TransactionId.setCurrent(transactionId);
                     result = operationExecutor.executeOperation(sessionToken, operationName, operationArguments);
+                    TransactionId.setCurrent(null);
                 } catch (Exception operationException)
                 {
                     throw new TransactionOperationException(operationException.getMessage(), operationException);
@@ -477,6 +478,7 @@ public class TransactionParticipant extends AbstractTransactionNode<TransactionP
         public Transaction(final UUID transactionId, final String sessionToken)
         {
             super(transactionId, sessionToken);
+//            TransactionId.setCurrent(transactionId);
         }
 
         @Override protected <T> T executeAction(final Callable<T> action) throws Exception
@@ -528,6 +530,7 @@ public class TransactionParticipant extends AbstractTransactionNode<TransactionP
         {
             try
             {
+                TransactionId.setCurrent(null);
                 executor.shutdown();
             } catch (Exception e)
             {
