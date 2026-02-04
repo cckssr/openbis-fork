@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 - 2024 ETH Zuerich, Scientific IT Services
+ * Copyright 2014 - 2026 ETH Zuerich, Scientific IT Services
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -562,9 +562,18 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
                     }
                     document.removeEventListener('keyup', _this._dataSetFormViewGlobalEventListener);
                 }
+                var tabInfo = mainController.tabContent.getCurrentTabInfo();
+                tabInfo.finalize = mainController.currentView.finalize;
+                mainController.tabContent.updateCurrentTabInfo(tabInfo);
 
                 this._dataSetFormViewGlobalEventListener = arrowKeyEventListener(_this._dataSetFormModel.paginationInfo);
                 document.addEventListener('keyup',  this._dataSetFormViewGlobalEventListener);
+                var eventRefresh = {
+                    refresh: function() {
+                        document.addEventListener('keyup',  _this._dataSetFormViewGlobalEventListener);
+                    }
+                }
+                _refreshableFields.push(eventRefresh);
 
                 var $backBtn = FormUtil.getToolbarButton("PAGINATION_LEFT", function () {
                                     moveToIndex(_this._dataSetFormModel.paginationInfo.currentIndex-1);

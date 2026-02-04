@@ -1750,7 +1750,7 @@ function MainController(profile) {
 		sampleFormController.init(views);
 		sampleFormController.tabId = tabInfo.id;
 		this.currentView = sampleFormController;
-		mainController.tabContent.updateView(this.currentView)
+		mainController.tabContent.updateView(this.currentView);
 	}
 	
 	this._showEditSamplePage = function(sample, isELNSubExperiment, paginationInfo) {
@@ -1855,15 +1855,19 @@ function MainController(profile) {
 		newView.init(views);
 		newView.tabId = tabInfo.id;
 		this.currentView = newView;
+		mainController.tabContent.updateView(this.currentView)
 		this.sideMenu.collapseSideMenu();
 	}
 	
 	this._showViewDataSetPage = function(sampleOrExperiment, dataset, datasetV3, paginationInfo) {
 		//Show Form
 		var newView = new DataSetFormController(this, FormMode.VIEW, sampleOrExperiment, dataset, null, datasetV3, paginationInfo);
-		var views = this._getNewViewModel(true, true, false, TabContentUtil.getDataSetTabInfo(dataset, FormMode.VIEW));
+		var tabInfo = TabContentUtil.getDataSetTabInfo(dataset, FormMode.VIEW);
+		var views = this._getNewViewModel(true, true, false, tabInfo);
 		newView.init(views);
 		this.currentView = newView;
+		this.currentView.tabId = tabInfo.id;
+		mainController.tabContent.updateView(this.currentView);
 	}
 	
 	this._showEditDataSetPage = function(sampleOrExperiment, dataset, datasetV3, paginationInfo) {
@@ -1874,6 +1878,7 @@ function MainController(profile) {
 		newView.init(views);
 		newView.tabId = tabInfo.id;
 		this.currentView = newView;
+		mainController.tabContent.updateView(this.currentView);
 		this.sideMenu.collapseSideMenu();
 	}
 	

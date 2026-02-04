@@ -175,7 +175,7 @@ function DataSetViewerController(containerId, profile, entity, serverFacade, dat
 						var currentIds = _this._datasetViewerModel.v3Datasets.map(x => x.permId.permId);
 						// V3 List
 						for(datasetId in toShow.standard) {
-                            if(currentIds.length == 0 || currentIds.some(x => x !== datasetId)) {
+                            if(currentIds.length == 0 || !currentIds.some(x => x === datasetId)) {
                                 _this._datasetViewerModel.v3Datasets.push(toShow.standard[datasetId]);
                             }
 						}
