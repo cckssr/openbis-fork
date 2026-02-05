@@ -27,6 +27,9 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.fetchoptions.DataStore
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.search.DataStoreKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.search.DataStoreSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.transaction.ITransactionExecutor;
+import ch.ethz.sis.shared.log.classic.core.LogCategory;
+import ch.ethz.sis.shared.log.classic.impl.LogFactory;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 import ch.ethz.sis.transaction.TransactionId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -49,6 +52,9 @@ public class ImportExecutor implements IImportExecutor
     @Autowired
     private ITransactionExecutor transactionExecutor;
 
+    private static final Logger
+            operationLog = LogFactory.getLogger(LogCategory.OPERATION, ImportExecutor.class);
+
 
     @Override
     public ImportResult doImport(final IOperationContext context, final ImportOperation operation)
@@ -60,7 +66,7 @@ public class ImportExecutor implements IImportExecutor
         String transactionEnabled = CommonServiceProvider.tryToGetProperty("api.v3.transaction.enabled");
         String interactiveSessionKey = CommonServiceProvider.tryToGetProperty("api.v3.transaction.interactive-session-key");
 
-        String url = CommonServiceProvider.tryToGetProperty("server-public-information.afs-server.url");
+        String afsUrl = CommonServiceProvider.tryToGetProperty("server-public-information.afs-server.url");
         String asUrl = CommonServiceProvider.tryToGetProperty("api.v3.transaction.participant.application-server.url");
 
         DataStoreSearchCriteria searchCriteria = new DataStoreSearchCriteria();
@@ -71,7 +77,7 @@ public class ImportExecutor implements IImportExecutor
             dssUrl = stores.getObjects().get(0).getRemoteUrl() + "/datastore_server";
         }
 
-        OpenBIS openBIS = new OpenBIS(asUrl + "/openbis/openbis", dssUrl, url, 30000);
+        OpenBIS openBIS = new OpenBIS(asUrl, dssUrl, afsUrl, 30000);
 
         openBIS.setSessionToken(context.getSession().getSessionToken());
         openBIS.setInteractiveSessionKey(interactiveSessionKey);
@@ -93,9 +99,10 @@ public class ImportExecutor implements IImportExecutor
             ImportResult result = new ImportResult();
             if(xlsImport.importContainsAfsData())
             {
-
+                operationLog.info("Importing metadata and data");
                 if (transactionEnabled != null && !transactionEnabled.equalsIgnoreCase("true"))
                 {
+                    operationLog.info("Transactions are not enabled");
                     //transactions disabled
                     transactionExecutor.executeInSeparateTransaction(
                             () -> importMetaData(xlsImport, result));
@@ -105,6 +112,7 @@ public class ImportExecutor implements IImportExecutor
                     UUID transactionId = TransactionId.getCurrent();
                     if (transactionId == null)
                     {
+                        operationLog.info("No Two-Phase transaction id found");
                         try
                         {
                             openBIS.beginTransaction();
