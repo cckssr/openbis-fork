@@ -15,6 +15,7 @@
  */
 package ch.ethz.sis.openbis.generic.server.xls.importer.utils;
 
+import ch.ethz.sis.openbis.generic.OpenBIS;
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
@@ -34,18 +35,18 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-public class DatabaseConsistencyChecker
+public class DatabaseConsistencyCheckerOpenBIS
 {
     private final String sessionToken;
 
-    private final IApplicationServerApi api;
+    private final OpenBIS openBIS;
 
     private final Map<String, Integer> versions;
 
-    public DatabaseConsistencyChecker(String sessionToken, IApplicationServerApi api, Map<String, Integer> versions)
+    public DatabaseConsistencyCheckerOpenBIS(String sessionToken, OpenBIS openBIS, Map<String, Integer> versions)
     {
         this.sessionToken = sessionToken;
-        this.api = api;
+        this.openBIS = openBIS;
         this.versions = versions;
     }
 
@@ -64,14 +65,14 @@ public class DatabaseConsistencyChecker
             if (version.startsWith(ImportTypes.DATASET_TYPE.getType()))
             {
                 EntityTypePermId id = new EntityTypePermId(code);
-                if (api.getDataSetTypes(sessionToken, Arrays.asList(id), new DataSetTypeFetchOptions()).isEmpty())
+                if (openBIS.getDataSetTypes(Arrays.asList(id), new DataSetTypeFetchOptions()).isEmpty())
                 {
                     missing.add(version);
                 }
             } else if (version.startsWith(ImportTypes.EXPERIMENT_TYPE.getType()))
             {
                 EntityTypePermId id = new EntityTypePermId(code);
-                if (api.getExperimentTypes(sessionToken, Arrays.asList(id), new ExperimentTypeFetchOptions()).isEmpty())
+                if (openBIS.getExperimentTypes(Arrays.asList(id), new ExperimentTypeFetchOptions()).isEmpty())
                 {
                     missing.add(version);
                 }
@@ -82,14 +83,14 @@ public class DatabaseConsistencyChecker
                 PropertyTypeFetchOptions fetchOptions = new PropertyTypeFetchOptions();
                 fetchOptions.withVocabulary().withTerms().withVocabulary();
 
-                if (api.getPropertyTypes(sessionToken, Arrays.asList(propertyTypePermId), fetchOptions).isEmpty())
+                if (openBIS.getPropertyTypes(Arrays.asList(propertyTypePermId), fetchOptions).isEmpty())
                 {
                     missing.add(version);
                 }
             } else if (version.startsWith(ImportTypes.SAMPLE_TYPE.getType()))
             {
                 EntityTypePermId id = new EntityTypePermId(code);
-                if (api.getSampleTypes(sessionToken, Arrays.asList(id), new SampleTypeFetchOptions()).isEmpty())
+                if (openBIS.getSampleTypes(Arrays.asList(id), new SampleTypeFetchOptions()).isEmpty())
                 {
                     missing.add(version);
                 }
@@ -123,7 +124,7 @@ public class DatabaseConsistencyChecker
                 }
                 VocabularyTermFetchOptions fetchOptions = new VocabularyTermFetchOptions();
                 fetchOptions.withVocabulary();
-                if (api.getVocabularyTerms(sessionToken, possiblePermIds, fetchOptions).isEmpty())
+                if (openBIS.getVocabularyTerms(possiblePermIds, fetchOptions).isEmpty())
                 {
                     missing.add(version);
                 }
@@ -134,7 +135,7 @@ public class DatabaseConsistencyChecker
                 VocabularyFetchOptions fetchOptions = new VocabularyFetchOptions();
                 fetchOptions.withTerms().withVocabulary();
 
-                if (api.getVocabularies(sessionToken, Arrays.asList(vocabularyPermId), fetchOptions).isEmpty())
+                if (openBIS.getVocabularies(Arrays.asList(vocabularyPermId), fetchOptions).isEmpty())
                 {
                     missing.add(version);
                 }
