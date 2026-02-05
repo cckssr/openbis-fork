@@ -226,15 +226,8 @@ public class OpenBISQueryUtil {
         synchronized public void inputSearchText(@NonNull String searchText) {
             this.searchText = searchText;
             if (getOpenBISUrl() != null && getPersonalAccessToken() != null && !searching) {
-                this.searchStartingMoment = System.currentTimeMillis() + 1500;
+                this.searchStartingMoment = System.currentTimeMillis() + 500;
                 setTimer();
-            }
-        }
-
-        synchronized private void innerThreadCycle() throws InterruptedException {
-            while (true) {
-
-                Thread.sleep(1000);
             }
         }
 
