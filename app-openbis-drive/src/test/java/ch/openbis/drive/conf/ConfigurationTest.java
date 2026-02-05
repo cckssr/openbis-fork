@@ -84,6 +84,7 @@ public class ConfigurationTest extends TestCase {
 
         configuration.readOpenbisDriveProperties();
         Mockito.verify(configuration, Mockito.times(1)).setSystemProperty("ch.ethz.sis.afs.client.client.noTLSCertCheck", "true");
+        Mockito.verify(configuration, Mockito.times(1)).setSystemProperty("jdk.internal.httpclient.disableHostnameVerification", "true");
 
         Mockito.clearInvocations(configuration);
         Files.delete(Path.of(dirPath).resolve(Path.of("openbis-drive.properties")));
