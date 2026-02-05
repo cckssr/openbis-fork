@@ -30,7 +30,9 @@ public final class AfsDataImportHelper
         this.sessionToken = sessionToken;
         this.importModes = importModes;
         this.options = options;
-        this.afs = AfsClientImportProxy.getAfsClient(openBIS);
+        if(openBIS != null) {
+            this.afs = AfsClientImportProxy.getAfsClient(openBIS);
+        }
         this.openBIS = openBIS;
     }
 
