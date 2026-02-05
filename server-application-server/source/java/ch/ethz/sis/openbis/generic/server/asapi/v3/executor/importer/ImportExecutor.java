@@ -18,6 +18,7 @@
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.importer;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
 
 import ch.ethz.sis.openbis.generic.OpenBIS;
@@ -26,6 +27,9 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.DataStore;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.fetchoptions.DataStoreFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.search.DataStoreKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.search.DataStoreSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.fetchoptions.SpaceFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.search.SpaceSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.transaction.ITransactionExecutor;
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
@@ -80,6 +84,15 @@ public class ImportExecutor implements IImportExecutor
         OpenBIS openBIS = new OpenBIS(asUrl, dssUrl, afsUrl, 30000);
 
         openBIS.setSessionToken(context.getSession().getSessionToken());
+
+        try {
+            List<Space> spaces = openBIS.searchSpaces(new SpaceSearchCriteria(), new SpaceFetchOptions()).getObjects();
+            operationLog.info("Found " + spaces.size() + " spaces");
+        } catch (Exception e)
+        {
+            operationLog.error("Failed to search spaces", e);
+        }
+
         openBIS.setInteractiveSessionKey(interactiveSessionKey);
 
 
