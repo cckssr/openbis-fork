@@ -109,7 +109,7 @@ public class SyncJobDialog extends Dialog<SyncJob> {
         window.addEventHandler(WindowEvent.WINDOW_SHOWN, new EventHandler<WindowEvent>() {
             @Override
             public void handle(WindowEvent event) {
-                DisplaySettings.centerStageOnMainStage((Stage) window, mainStage);
+                Platform.runLater(() -> DisplaySettings.centerStageOnMainStage((Stage) window, mainStage));
             }
         });
         Style.applyStyle(getDialogPane().getScene());

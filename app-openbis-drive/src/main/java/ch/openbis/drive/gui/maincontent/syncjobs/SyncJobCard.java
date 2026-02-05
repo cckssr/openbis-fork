@@ -37,6 +37,12 @@ public class SyncJobCard extends ResizablePanel implements AutoCloseable {
         this.radioButton = new RadioButton();
 
         I18n i18n = SharedContext.getContext().getI18n();
+        EventHandler<MouseEvent> mouseClickEvent = new EventHandler<>() {
+            @Override
+            public void handle(MouseEvent mouseEvent) {
+                radioButton.selectedProperty().setValue(!radioButton.selectedProperty().getValue());
+            }
+        };
 
         this.getStyleClass().add(DisplaySettings.SYNC_JOB_CARD_CLASS);
         this.setMaxSize(2 * DisplaySettings.DEFAULT_INITIAL_WINDOW_WIDTH, DisplaySettings.SYNC_TASK_PANEL_JOB_CARD_HEIGHT);
@@ -53,8 +59,9 @@ public class SyncJobCard extends ResizablePanel implements AutoCloseable {
         TextField titleLabel = new TextField(syncJob.getTitle());
         titleLabel.setPrefWidth(this.getMaxWidth());
         titleLabel.setStyle(String.format("-fx-font-weight: bold; -fx-font-size: %spt; -fx-background-color: transparent", 14));
-        titleLabel.setPadding(new Insets(15, 0, 10, 0));
+        titleLabel.setPadding(new Insets(15, 0, 10, -8));
         titleLabel.setEditable(false);
+        titleLabel.setOnMouseClicked(mouseClickEvent);
         dataBox.getChildren().add(titleLabel);
         hBoxContainer.getChildren().add(dataBox);
 
@@ -64,10 +71,10 @@ public class SyncJobCard extends ResizablePanel implements AutoCloseable {
         syncJobCoordinates.setPrefHeight(DisplaySettings.SYNC_TASK_PANEL_JOB_CARD_HEIGHT);
         ObservableValue<Double> desiredSyncJobCoordinatesWidth = parent.widthProperty().map( (parentWidth) -> Math.min(parentWidth.doubleValue(), this.getMaxWidth()) - SYNC_JOB_ATTRIBUTE_WIDTH - 180);
 
-        SyncJobCardLabel entityPermIdLabel = new SyncJobCardLabel(i18n.get("main_panel.sync_tasks.sync_job_card.entity_perm_id"), syncJob.getEntityPermId(), SyncJobCardLabel.DEFAULT_SMALL_LABEL_SIZE, desiredSyncJobCoordinatesWidth);
-        SyncJobCardLabel serverDirectoryLabel = new SyncJobCardLabel(i18n.get("main_panel.sync_tasks.sync_job_card.server_directory"), syncJob.getRemoteDirectoryRoot(), SyncJobCardLabel.DEFAULT_SMALL_LABEL_SIZE, desiredSyncJobCoordinatesWidth);
-        SyncJobCardLabel localDirectoryLabel = new SyncJobCardLabel(i18n.get("main_panel.sync_tasks.sync_job_card.local_directory"), syncJob.getLocalDirectoryRoot(), SyncJobCardLabel.DEFAULT_SMALL_LABEL_SIZE, desiredSyncJobCoordinatesWidth);
-        SyncJobCardLabel openBisServerUrlLabel = new SyncJobCardLabel(i18n.get("main_panel.sync_tasks.sync_job_card.open_bis_url"), syncJob.getOpenBisUrl(), SyncJobCardLabel.DEFAULT_SMALL_LABEL_SIZE, desiredSyncJobCoordinatesWidth);
+        SyncJobCardLabel entityPermIdLabel = new SyncJobCardLabel(i18n.get("main_panel.sync_tasks.sync_job_card.entity_perm_id"), syncJob.getEntityPermId(), SyncJobCardLabel.DEFAULT_SMALL_LABEL_SIZE, desiredSyncJobCoordinatesWidth, mouseClickEvent);
+        SyncJobCardLabel serverDirectoryLabel = new SyncJobCardLabel(i18n.get("main_panel.sync_tasks.sync_job_card.server_directory"), syncJob.getRemoteDirectoryRoot(), SyncJobCardLabel.DEFAULT_SMALL_LABEL_SIZE, desiredSyncJobCoordinatesWidth, mouseClickEvent);
+        SyncJobCardLabel localDirectoryLabel = new SyncJobCardLabel(i18n.get("main_panel.sync_tasks.sync_job_card.local_directory"), syncJob.getLocalDirectoryRoot(), SyncJobCardLabel.DEFAULT_SMALL_LABEL_SIZE, desiredSyncJobCoordinatesWidth, mouseClickEvent);
+        SyncJobCardLabel openBisServerUrlLabel = new SyncJobCardLabel(i18n.get("main_panel.sync_tasks.sync_job_card.open_bis_url"), syncJob.getOpenBisUrl(), SyncJobCardLabel.DEFAULT_SMALL_LABEL_SIZE, desiredSyncJobCoordinatesWidth, mouseClickEvent);
         syncJobCoordinates.getChildren().addAll(entityPermIdLabel, openBisServerUrlLabel, serverDirectoryLabel, localDirectoryLabel);
         labelPane.getChildren().add(syncJobCoordinates);
 
@@ -83,10 +90,10 @@ public class SyncJobCard extends ResizablePanel implements AutoCloseable {
                     case Upload -> "main_panel.sync_tasks.sync_job_card.mode.upload";
                     case Download -> "main_panel.sync_tasks.sync_job_card.mode.download";
                 }),
-                SyncJobCardLabel.DEFAULT_SMALL_LABEL_SIZE, syncJobAttributes.widthProperty().map(Number::doubleValue), 55);
+                SyncJobCardLabel.DEFAULT_SMALL_LABEL_SIZE, syncJobAttributes.widthProperty().map(Number::doubleValue), 55, mouseClickEvent);
         SyncJobCardLabel stateLabel = new SyncJobCardLabel(i18n.get("main_panel.sync_tasks.sync_job_card.state"),
                 i18n.get(syncJob.isEnabled() ? "main_panel.sync_tasks.sync_job_card.state.enabled" : "main_panel.sync_tasks.sync_job_card.state.disabled"),
-                SyncJobCardLabel.DEFAULT_SMALL_LABEL_SIZE,  syncJobAttributes.widthProperty().map(Number::doubleValue),55);
+                SyncJobCardLabel.DEFAULT_SMALL_LABEL_SIZE,  syncJobAttributes.widthProperty().map(Number::doubleValue),55, mouseClickEvent);
         syncJobAttributes.getChildren().addAll(modeLabel, stateLabel);
         AnchorPane.setRightAnchor(syncJobAttributes, 0.0);
         AnchorPane.setTopAnchor(syncJobAttributes, 0.0);
@@ -97,13 +104,7 @@ public class SyncJobCard extends ResizablePanel implements AutoCloseable {
         AnchorPane.setLeftAnchor(hBoxContainer, 30.0);
         this.getChildren().add(hBoxContainer);
 
-
-        this.setOnMouseClicked(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent mouseEvent) {
-                radioButton.selectedProperty().setValue(!radioButton.selectedProperty().getValue());
-            }
-        });
+        this.setOnMouseClicked(mouseClickEvent);
 
         syncJobCardLabels = List.of(serverDirectoryLabel, entityPermIdLabel, localDirectoryLabel, openBisServerUrlLabel, modeLabel, stateLabel);
         resize();
