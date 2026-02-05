@@ -2,9 +2,11 @@ package ch.openbis.drive.gui.maincontent.syncjobs;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import lombok.NonNull;
 
@@ -15,11 +17,21 @@ public class SyncJobCardLabel extends HBox implements AutoCloseable {
     private final @NonNull ChangeListener<Number> desiredWidthChangeListener;
     private final @NonNull ObservableValue<Double> desiredWidth;
 
-    public SyncJobCardLabel(@NonNull String tag, @NonNull String value, int fontSize, @NonNull ObservableValue<Double> desiredWidth) {
-        this(tag, value, fontSize, desiredWidth, DEFAULT_TAG_MIN_WIDTH);
+    public SyncJobCardLabel(@NonNull String tag,
+                            @NonNull String value,
+                            int fontSize,
+                            @NonNull ObservableValue<Double> desiredWidth,
+                            EventHandler<MouseEvent> clickHandler
+                            ) {
+        this(tag, value, fontSize, desiredWidth, DEFAULT_TAG_MIN_WIDTH, clickHandler);
     }
 
-    public SyncJobCardLabel(@NonNull String tag, @NonNull String value, int fontSize, @NonNull ObservableValue<Double> desiredWidth, int tagMinWidth) {
+    public SyncJobCardLabel(@NonNull String tag,
+                            @NonNull String value,
+                            int fontSize,
+                            @NonNull ObservableValue<Double> desiredWidth,
+                            int tagMinWidth,
+                            EventHandler<MouseEvent> clickHandler) {
         SyncJobCardLabel self = this;
         this.setAlignment(Pos.CENTER);
         this.prefWidthProperty().bind(desiredWidth);
@@ -41,6 +53,9 @@ public class SyncJobCardLabel extends HBox implements AutoCloseable {
                 valueNode.setMaxWidth(newValue.doubleValue() - tagMinWidth);
             }
         };
+        if (clickHandler != null) {
+            valueNode.setOnMouseClicked(clickHandler);
+        }
         this.desiredWidth = desiredWidth;
         this.desiredWidth.addListener(desiredWidthChangeListener);
         this.getChildren().addAll(labelNode, valueNode);
