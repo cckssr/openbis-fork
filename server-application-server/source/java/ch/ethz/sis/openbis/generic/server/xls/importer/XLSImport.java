@@ -78,7 +78,8 @@ public class XLSImport
 
     private final String sessionToken;
 
-    private final OpenBIS openBIS;
+    private OpenBIS openBIS;
+    private IApplicationServerApi v3;
 
     private final DelayedExecutionDecorator delayedExecutor;
 
@@ -133,19 +134,20 @@ public class XLSImport
     private static final String ZIP_EXTENSION = "." + "zip";
 
     public XLSImport(String sessionToken,
-            OpenBIS openBIS,
+            IApplicationServerApi v3,
             ImportModes mode,
             ImportOptions options,
             String[] sessionWorkspaceFiles,
             boolean shouldCheckVersionsOnDatabase) throws IOException
     {
         this.sessionToken = sessionToken;
-        this.openBIS = openBIS;
+//        this.openBIS = openBIS;
+        this.v3 = v3;
         this.options = options;
         this.beforeVersions = Collections.unmodifiableMap(VersionInfoHandler.loadAllVersions(options));
         this.afterVersions = VersionInfoHandler.loadAllVersions(options);
-        this.dbChecker = new DatabaseConsistencyChecker(this.sessionToken, this.openBIS, this.afterVersions);
-        this.delayedExecutor = new DelayedExecutionDecorator(this.sessionToken, this.openBIS);
+        this.dbChecker = new DatabaseConsistencyChecker(this.sessionToken, this.v3, this.afterVersions);
+        this.delayedExecutor = new DelayedExecutionDecorator(this.sessionToken, this.v3);
 
         SemanticAnnotationHelper annotationCache = new SemanticAnnotationHelper(delayedExecutor);
 
@@ -272,7 +274,8 @@ public class XLSImport
             }
         }
 
-        this.containsAfsData = containsData;
+//        this.containsAfsData = containsData;
+        this.containsAfsData = false;
         this.xls = xls;
         this.scriptHelper = new ScriptImportHelper(this.delayedExecutor, mode, options, scripts);
     }

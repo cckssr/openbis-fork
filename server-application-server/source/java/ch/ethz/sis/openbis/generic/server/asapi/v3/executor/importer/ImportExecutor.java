@@ -94,7 +94,7 @@ public class ImportExecutor implements IImportExecutor
 
         try
         {
-            XLSImport xlsImport = new XLSImport(context.getSession().getSessionToken(), openBIS,
+            XLSImport xlsImport = new XLSImport(context.getSession().getSessionToken(), applicationServerApi,
                     ImportModes.valueOf(importOptions.getMode().name()), importerImportOptions, importData.getSessionWorkspaceFiles(), false);
             ImportResult result = new ImportResult();
             if(xlsImport.importContainsAfsData())
