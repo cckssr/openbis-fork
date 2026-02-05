@@ -542,6 +542,12 @@ class OpenbisController(_Controller):
             self.asProperties = util.readProperties(self.asServicePropertiesFile)
             self.asProperties['database.kind'] = self.databaseKind
             self.asProperties['code-plugins.allowed-editing-users'] = '.*'
+
+            self.asProperties['api.v3.transaction.enabled'] = 'true'
+            self.asProperties['api.v3.transaction.interactive-session-key'] = 'test-interactive-session-key-for-pybis'
+            # self.asProperties['server-public-information.afs-server.url'] = 'true'
+            self.asProperties['api.v3.transaction.participant.application-server.url'] = 'https://localhost:8443'
+
             self.asPropertiesModified = True
         self.dssServicePropertiesFile = "%s/servers/datastore_server/etc/service.properties" % installPath
         self.dssProperties = util.readProperties(self.dssServicePropertiesFile)
