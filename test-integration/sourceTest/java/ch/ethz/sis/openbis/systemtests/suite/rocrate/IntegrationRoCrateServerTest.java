@@ -429,7 +429,50 @@ public class IntegrationRoCrateServerTest
         request.body(new BytesRequestContent(Files.readAllBytes(file)));
 
         ContentResponse response = request.send();
+        System.out.println(response.getStatus());
+        System.out.println(response.getMediaType());
+        System.out.println(response.getContentAsString());
+
         assertEquals(response.getStatus(), 400);
+        assertEquals(response.getMediaType(), "application/json");
+        LinkedHashMap<String, Object> res =
+                objectMapper.readValue(response.getContentAsString(), LinkedHashMap.class);
+        objectMapper.readValue(response.getContentAsString(), LinkedHashMap.class);
+        assertTrue(res.containsKey("message"));
+
+    }
+
+    @Test
+    public void testImportMalformedCrate()
+            throws Exception
+    {
+        OpenBIS openBIS = environment.createOpenBIS();
+        openBIS.login(username, password);
+
+        Path file =
+                Path.of("sourceTest/resource/" + getClass().getSimpleName() + "/Malformed.json");
+
+        HttpClient client = JettyHttpClientFactory.getHttpClient();
+        Request request = client.newRequest(
+                TestInstanceHostUtils.getRoCrateUrl() + "/openbis/open-api/ro-crate/import");
+        request.method(HttpMethod.POST);
+        request.headers(headers -> {
+            headers.add("api-key", openBIS.getSessionToken());
+            headers.add("Content-Type", "application/ld+json");
+            headers.add("Accept", "application/json");
+        });
+        request.body(new BytesRequestContent(Files.readAllBytes(file)));
+
+        ContentResponse response = request.send();
+        System.out.println(response.getStatus());
+        System.out.println(response.getMediaType());
+        System.out.println(response.getContentAsString());
+
+        assertEquals(response.getStatus(), 400);
+        assertEquals(response.getMediaType(), "application/json");
+        LinkedHashMap<String, Object> res =
+                objectMapper.readValue(response.getContentAsString(), LinkedHashMap.class);
+        assertTrue(res.containsKey("message"));
     }
 
     // https://github.com/paulscherrerinstitute/rocrate-api/issues/39

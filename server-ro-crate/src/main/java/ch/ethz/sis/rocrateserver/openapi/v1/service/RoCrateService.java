@@ -6,6 +6,7 @@ import ch.ethz.sis.rocrateserver.exception.RoCrateExceptions;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.delegates.ExportDelegate;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.delegates.ImportDelegate;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.helper.OpeBISFactory;
+import ch.ethz.sis.rocrateserver.openapi.v1.service.helper.validation.ValidationResult;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.jobs.*;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.params.ExportParams;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.params.ImportParams;
@@ -106,7 +107,11 @@ public class RoCrateService
             ObjectMapper objectMapper = new ObjectMapper();
             Response.ResponseBuilder responseBuilder = new ResponseBuilderImpl();
             responseBuilder.status(ex.getResponse().getStatus());
-            responseBuilder.entity(ex.getMessage());
+            responseBuilder.type(MediaType.APPLICATION_JSON_TYPE);
+            String o = objectMapper.writeValueAsString(new ErrorResponse(ex.getMessage()));
+
+            System.out.println(o);
+            responseBuilder.entity(o);
             return responseBuilder.build();
         } catch (Exception ex)
         {
@@ -152,7 +157,9 @@ public class RoCrateService
             ObjectMapper objectMapper = new ObjectMapper();
             Response.ResponseBuilder responseBuilder = new ResponseBuilderImpl();
             responseBuilder.status(ex.getResponse().getStatus());
-            responseBuilder.entity(ex.getMessage());
+            responseBuilder.type(MediaType.APPLICATION_JSON_TYPE);
+            String o = objectMapper.writeValueAsString(new ErrorResponse(ex.getMessage()));
+            responseBuilder.entity(o);
             return responseBuilder.build();
         } catch (Exception ex)
         {
@@ -212,6 +219,7 @@ public class RoCrateService
             ObjectMapper objectMapper = new ObjectMapper();
             Response.ResponseBuilder responseBuilder = new ResponseBuilderImpl();
             responseBuilder.status(ex.getResponse().getStatus());
+            responseBuilder.type(MediaType.APPLICATION_JSON_TYPE);
             responseBuilder.entity(objectMapper.writeValueAsString(errorResponse));
             return responseBuilder.build();
 
@@ -261,7 +269,8 @@ public class RoCrateService
             {
                 responseBuilder.status(Response.Status.OK);
                 responseBuilder.type(MediaType.APPLICATION_JSON);
-                responseBuilder.entity(((ValidateJob) job).getResult());
+                ValidationResult result1 = ((ValidateJob) job).getResult();
+                responseBuilder.entity(objectMapper.writeValueAsString(result1));
                 return responseBuilder.build();
             }
             if (job instanceof ImportJob)
