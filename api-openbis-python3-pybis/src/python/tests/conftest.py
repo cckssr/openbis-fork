@@ -19,12 +19,10 @@ import pytest
 from pybis import Openbis
 from pybis import AfsClient
 
-openbis_url = "http://localhost:8888/openbis"
-# openbis_url = "https://localhost:8443"
-# openbis_url = "https://openbis-sis-ci-sprint.ethz.ch/"
-
+openbis_url = "https://localhost:8443"
 admin_username = "admin"
-admin_password = "changeit"
+admin_password = "admin"
+
 
 @pytest.fixture(scope="module")
 def openbis_instance():
