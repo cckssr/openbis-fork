@@ -14,7 +14,7 @@ public class ValidationResult implements IResultPayload
 
     private Map<String, List<PropertyProblem>> wrongDataTypes;
 
-    private List<String> foundIdentifiers;
+    private List<String> entities;
 
     public ValidationResult()
     {
@@ -22,12 +22,12 @@ public class ValidationResult implements IResultPayload
 
     public ValidationResult(Map<String, List<PropertyProblem>> entitiesToMissingProperties,
             Map<String, List<PropertyProblem>> entititesToUndefinedProperties,
-            Map<String, List<PropertyProblem>> wrongDataTypes, List<String> foundIdentifiers)
+            Map<String, List<PropertyProblem>> wrongDataTypes, List<String> entities)
     {
         this.entitiesToMissingProperties = entitiesToMissingProperties;
         this.entititesToUndefinedProperties = entititesToUndefinedProperties;
         this.wrongDataTypes = wrongDataTypes;
-        this.foundIdentifiers = foundIdentifiers;
+        this.entities = entities;
     }
 
     @JsonProperty("isValid")
@@ -52,9 +52,9 @@ public class ValidationResult implements IResultPayload
         return wrongDataTypes;
     }
 
-    public List<String> getFoundIdentifiers()
+    public List<String> getEntities()
     {
-        return foundIdentifiers;
+        return entities;
     }
 
 }
