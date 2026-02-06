@@ -32,7 +32,7 @@ const GalleryGridView = ({
     const classes = useStyles();
 
     return (
-        <ImageList sx={{ width: '100%', maxHeight: '70vh' }} cols={cols} >
+        <ImageList sx={{ width: '100%', overflow: 'visible' }} cols={cols} >
             {previewContainerList.map((previewContainer, idx) => (
                 <ImageListItem sx={{ height: 'unset', justifyContent: 'space-between' }} key={`image-grid-item-${idx}`}>
                     <CardActionArea sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
@@ -57,10 +57,10 @@ const GalleryGridView = ({
                                 <Grid2 sx={{ alignContent: 'center' }}>
                                     <FormControlLabel
                                         value='start'
-                                        control={<Checkbox value={previewContainer.select}
-                                                            onChange={() => handleSelectPreview(idx)}
+                                        control={<Checkbox checked={previewContainer.select}
+                                                            onChange={() => handleSelectPreview(previewContainer)}
                                                             color='primary' />}
-                                        label='Export'
+                                        label='Select'
                                         labelPlacement='start' />
                                 </Grid2>
                             }

@@ -4,7 +4,7 @@ import { ImagingDataProvider } from '@src/js/components/common/imaging/component
 
 //Component needed as uniqe access point for the context provider, to avoid changing DatabaseComponent.jsx
 
-const ImagingDataSetViewer = ({onUnsavedChanges, objId, objType, extOpenbis, showSemanticAnnotations}) => {
+const ImagingDatasetViewer = ({onUnsavedChanges, objId, objType, extOpenbis, showSemanticAnnotations}) => {
 	return (
 		<ImagingDataProvider onUnsavedChanges={onUnsavedChanges}
 			objId={objId}
@@ -16,4 +16,4 @@ const ImagingDataSetViewer = ({onUnsavedChanges, objId, objType, extOpenbis, sho
 	);
 };
 
-export default ImagingDataSetViewer;
+export default ImagingDatasetViewer;
