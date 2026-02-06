@@ -95,9 +95,9 @@ function StorageListView(storageListController, storageListModel) {
 			});
 		}
 		
-		if(!this._storageListModel.isDisabled) {
-			columns.push(this.createOperationsColumn());
-		}
+//		if(!this._storageListModel.isDisabled) {
+//			columns.push(this.createOperationsColumn());
+//		}
 		
 		var getDataList = function(callback) {
 			var dataList = [];
@@ -293,32 +293,32 @@ function StorageListView(storageListController, storageListModel) {
 		});
 	}
 	
-	this.createOperationsColumn = function() {
-		var _this = this;
-		return {
-			label : "",
-			property : "_Operations_",
-			isExportable: false,
-			showByDefault: true,
-			sortable : false,
-			render : function(data) {
-				var $minus = FormUtil.getButtonWithIcon("glyphicon-minus", function(event) { 
-					event.stopPropagation();
-					event.preventDefault();
-					var sample = data['$object'];
-					_this.removeChildFromSampleOrMarkToDelete(sample);
-					_this._dataGrid.refresh();
-				}, null, "Delete");
-				return $minus;
-			},
-			filter : function(data, filter) {
-				return false;
-			},
-			sort : function(data1, data2, asc) {
-				return 0;
-			}
-		}
-	}
+//	this.createOperationsColumn = function() {
+//		var _this = this;
+//		return {
+//			label : "",
+//			property : "_Operations_",
+//			isExportable: false,
+//			showByDefault: true,
+//			sortable : false,
+//			render : function(data) {
+//				var $minus = FormUtil.getButtonWithIcon("glyphicon-minus", function(event) {
+//					event.stopPropagation();
+//					event.preventDefault();
+//					var sample = data['$object'];
+//					_this.removeChildFromSampleOrMarkToDelete(sample);
+//					_this._dataGrid.refresh();
+//				}, null, "Delete");
+//				return $minus;
+//			},
+//			filter : function(data, filter) {
+//				return false;
+//			},
+//			sort : function(data1, data2, asc) {
+//				return 0;
+//			}
+//		}
+//	}
 	
 	this.removeChildFromSampleOrMarkToDelete = function(child) {
 		if(child.newSample) {
