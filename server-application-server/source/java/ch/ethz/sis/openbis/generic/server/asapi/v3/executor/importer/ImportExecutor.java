@@ -48,14 +48,17 @@ import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider;
 @Component
 public class ImportExecutor implements IImportExecutor
 {
-
-    @Autowired
-    private ITransactionExecutor transactionExecutor;
-
     private static final Logger
             operationLog = LogFactory.getLogger(LogCategory.OPERATION, ImportExecutor.class);
 
-    private static final int AFS_CLIENT_TIMEOUT = 30000;
+    public static final String TWO_PHASE_TRANSACTIONS_ENABLED_PROPERTY_NAME = "api.v3.transaction.enabled";
+    public static final String TWO_PHASE_TRANSACTIONS_SESSION_KEY_PROPERTY_NAME = "api.v3.transaction.interactive-session-key";
+    public static final String AFS_SERVER_URL_PROPERTY_NAME = "api.v3.transaction.participant.afs-server.url";
+    public static final String AFS_SERVER_TIMEOUT_PROPERTY_NAME = "api.v3.transaction.participant.afs-server.timeout";
+    private static final String DEFAULT_AFS_CLIENT_TIMEOUT = "30000";
+
+    @Autowired
+    private ITransactionExecutor transactionExecutor;
 
     private UUID transactionId;
 
@@ -66,9 +69,14 @@ public class ImportExecutor implements IImportExecutor
         transactionId = TransactionId.getCurrent();
         final ImportData importData = operation.getImportData();
         final String sessionToken = context.getSession().getSessionToken();
-        final String transactionEnabled = CommonServiceProvider.tryToGetProperty("api.v3.transaction.enabled");
-        final String interactiveSessionKey = CommonServiceProvider.tryToGetProperty("api.v3.transaction.interactive-session-key");
-        final String afsUrl = CommonServiceProvider.tryToGetProperty("server-public-information.afs-server.url");
+        final String transactionEnabledProperty = CommonServiceProvider.tryToGetProperty(TWO_PHASE_TRANSACTIONS_ENABLED_PROPERTY_NAME);
+        boolean transactionEnabled = true;
+        if (transactionEnabledProperty == null || !transactionEnabledProperty.trim().equalsIgnoreCase("true")) {
+            transactionId = null;
+            transactionEnabled = false;
+        }
+        final String interactiveSessionKey = CommonServiceProvider.tryToGetProperty(TWO_PHASE_TRANSACTIONS_SESSION_KEY_PROPERTY_NAME);
+        final String afsUrl = CommonServiceProvider.tryToGetProperty(AFS_SERVER_URL_PROPERTY_NAME);
 //        String asUrl = CommonServiceProvider.tryToGetProperty("api.v3.transaction.participant.application-server.url");
 
         final ITransactionCoordinatorApi transactionCoordinatorApi = CommonServiceProvider.getTransactionCoordinatorApi();
@@ -78,11 +86,16 @@ public class ImportExecutor implements IImportExecutor
 
         AfsClient afsClient = null;
         if(afsUrl != null && !afsUrl.isEmpty()) {
-            afsClient = new AfsClient(URI.create(afsUrl), AfsClient.DEFAULT_PACKAGE_SIZE_IN_BYTES, AFS_CLIENT_TIMEOUT);
+            final String afsTimeoutProperty = CommonServiceProvider.tryToGetProperty(AFS_SERVER_TIMEOUT_PROPERTY_NAME, DEFAULT_AFS_CLIENT_TIMEOUT);
+            final int timeout = Integer.parseInt(afsTimeoutProperty);
+
+            afsClient = new AfsClient(URI.create(afsUrl), AfsClient.DEFAULT_PACKAGE_SIZE_IN_BYTES,
+                    timeout);
             afsClient.setSessionToken(sessionToken);
 
             afsClient = new AfsClient(createTransactionalProxy(ITransactionCoordinatorApi.AFS_SERVER_PARTICIPANT_ID, PublicAPI.class,
-                    afsClient, transactionCoordinatorApi, sessionToken, interactiveSessionKey), AfsClient.DEFAULT_PACKAGE_SIZE_IN_BYTES, AFS_CLIENT_TIMEOUT);
+                    afsClient, transactionCoordinatorApi, sessionToken, interactiveSessionKey), AfsClient.DEFAULT_PACKAGE_SIZE_IN_BYTES,
+                    timeout);
             afsClient.setSessionToken(sessionToken);
             afsClient.setInteractiveSessionKey(interactiveSessionKey);
         } else {
@@ -114,10 +127,9 @@ public class ImportExecutor implements IImportExecutor
                     throw new UserFailureException("AFS configuration not found!");
                 }
 
-                if (transactionEnabled != null && !transactionEnabled.equalsIgnoreCase("true"))
+                if (!transactionEnabled)
                 {
-                    operationLog.info("Transactions are not enabled. Executing in separate transactions mode");
-                    //transactions disabled
+                    operationLog.info("Two-Phase transactions are not enabled. Executing in separate transactions mode");
                     transactionExecutor.executeInSeparateTransaction(
                             () -> importMetaData(xlsImport, result));
                     xlsImport.importZipAfsData();
