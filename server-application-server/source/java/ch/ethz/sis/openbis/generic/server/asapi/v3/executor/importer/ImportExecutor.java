@@ -76,13 +76,18 @@ public class ImportExecutor implements IImportExecutor
         final IApplicationServerInternalApi applicationServerApi = createTransactionalProxy(ITransactionCoordinatorApi.APPLICATION_SERVER_PARTICIPANT_ID, IApplicationServerInternalApi.class,
                 CommonServiceProvider.getApplicationServerApi(), transactionCoordinatorApi, sessionToken, interactiveSessionKey);
 
-        AfsClient afsClient = new AfsClient(URI.create(afsUrl), AfsClient.DEFAULT_PACKAGE_SIZE_IN_BYTES, AFS_CLIENT_TIMEOUT);
-        afsClient.setSessionToken(sessionToken);
+        AfsClient afsClient = null;
+        if(afsUrl != null && !afsUrl.isEmpty()) {
+            afsClient = new AfsClient(URI.create(afsUrl), AfsClient.DEFAULT_PACKAGE_SIZE_IN_BYTES, AFS_CLIENT_TIMEOUT);
+            afsClient.setSessionToken(sessionToken);
 
-        afsClient = new AfsClient(createTransactionalProxy(ITransactionCoordinatorApi.AFS_SERVER_PARTICIPANT_ID, PublicAPI.class,
-                afsClient, transactionCoordinatorApi, sessionToken, interactiveSessionKey), AfsClient.DEFAULT_PACKAGE_SIZE_IN_BYTES, AFS_CLIENT_TIMEOUT);
-        afsClient.setSessionToken(sessionToken);
-        afsClient.setInteractiveSessionKey(interactiveSessionKey);
+            afsClient = new AfsClient(createTransactionalProxy(ITransactionCoordinatorApi.AFS_SERVER_PARTICIPANT_ID, PublicAPI.class,
+                    afsClient, transactionCoordinatorApi, sessionToken, interactiveSessionKey), AfsClient.DEFAULT_PACKAGE_SIZE_IN_BYTES, AFS_CLIENT_TIMEOUT);
+            afsClient.setSessionToken(sessionToken);
+            afsClient.setInteractiveSessionKey(interactiveSessionKey);
+        } else {
+            operationLog.info("AFS url configuration not found.");
+        }
 
 
         final ImportOptions importOptions = operation.getImportOptions();
@@ -104,6 +109,11 @@ public class ImportExecutor implements IImportExecutor
             if(xlsImport.importContainsAfsData())
             {
                 operationLog.info("Importing metadata and data");
+                if(afsClient == null) {
+                    operationLog.info("AFS configuration not found!");
+                    throw new UserFailureException("AFS configuration not found!");
+                }
+
                 if (transactionEnabled != null && !transactionEnabled.equalsIgnoreCase("true"))
                 {
                     operationLog.info("Transactions are not enabled. Executing in separate transactions mode");
