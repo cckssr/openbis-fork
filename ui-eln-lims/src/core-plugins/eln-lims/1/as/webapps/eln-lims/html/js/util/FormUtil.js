@@ -1523,7 +1523,6 @@ var FormUtil = new function() {
 //                            evt.stop(); // we don't let editor to paste data;
 //                            alert('paste');
 //                        });
-                        LayoutManager.triggerResizeEventHandlers();
                     })
                     .catch(error => {
                         Util.showError(error);
