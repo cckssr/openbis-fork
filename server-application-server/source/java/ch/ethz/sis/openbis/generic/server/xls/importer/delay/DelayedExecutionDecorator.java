@@ -119,9 +119,9 @@ import ch.systemsx.cisd.common.exceptions.UserFailureException;
 
 public class DelayedExecutionDecorator
 {
-    private String sessionToken;
+    private final String sessionToken;
 
-    private IApplicationServerApi v3;
+    private final IApplicationServerApi v3;
 
     Set<IObjectId> ids;
 

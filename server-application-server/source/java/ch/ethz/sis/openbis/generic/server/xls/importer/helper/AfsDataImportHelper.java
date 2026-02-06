@@ -1,6 +1,9 @@
 package ch.ethz.sis.openbis.generic.server.xls.importer.helper;
 
+import ch.ethz.sis.afsclient.client.AfsClient;
 import ch.ethz.sis.openbis.generic.OpenBIS;
+import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentSearchCriteria;
@@ -21,19 +24,20 @@ public final class AfsDataImportHelper
     private AfsClientImportProxy afs;
     private final ImportModes importModes;
     private final ImportOptions options;
-    private final OpenBIS openBIS;
+    private final IApplicationServerApi v3;
+
 
     private static final String DATA = "/data";
     private static final String HIERARCHY  = "hierarchy/";
 
-    public AfsDataImportHelper( String sessionToken, ImportModes importModes, ImportOptions options, OpenBIS openBIS) {
+    public AfsDataImportHelper(String sessionToken, ImportModes importModes, ImportOptions options,
+            IApplicationServerApi applicationServerApi, AfsClient afsClient)
+    {
         this.sessionToken = sessionToken;
         this.importModes = importModes;
         this.options = options;
-        if(openBIS != null) {
-            this.afs = AfsClientImportProxy.getAfsClient(openBIS);
-        }
-        this.openBIS = openBIS;
+        this.afs = AfsClientImportProxy.getAfsClient(sessionToken, applicationServerApi, afsClient);
+        this.v3 = applicationServerApi;
     }
 
     private void validateSampleFrozen(Sample s) {
@@ -144,7 +148,7 @@ public final class AfsDataImportHelper
         searchCriteria.withCode().thatEquals(sample);
 
         SampleFetchOptions fetchOptions = new SampleFetchOptions();
-        List<Sample> samples = openBIS.searchSamples(searchCriteria, fetchOptions).getObjects();
+        List<Sample> samples = v3.searchSamples(sessionToken, searchCriteria, fetchOptions).getObjects();
         if(samples.isEmpty()) {
             return null;
         } else {
@@ -159,7 +163,7 @@ public final class AfsDataImportHelper
         searchCriteria.withIdentifier().thatEquals(id.getIdentifier());
 
         ExperimentFetchOptions fetchOptions = new ExperimentFetchOptions();
-        List<Experiment> experiments = openBIS.searchExperiments(searchCriteria, fetchOptions).getObjects();
+        List<Experiment> experiments = v3.searchExperiments(sessionToken, searchCriteria, fetchOptions).getObjects();
         if(experiments.isEmpty()) {
             return null;
         } else {
