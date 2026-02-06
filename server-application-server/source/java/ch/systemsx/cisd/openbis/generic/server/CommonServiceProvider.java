@@ -15,6 +15,8 @@
  */
 package ch.systemsx.cisd.openbis.generic.server;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.ITransactionCoordinatorApi;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.TransactionCoordinatorApi;
 import ch.systemsx.cisd.common.spring.ExposablePropertyPlaceholderConfigurer;
 import org.springframework.context.ApplicationContext;
 
@@ -114,6 +116,11 @@ public class CommonServiceProvider
     public static IApplicationServerInternalApi getApplicationServerApi()
     {
         return (IApplicationServerInternalApi) applicationContext.getBean(ApplicationServerApi.INTERNAL_SERVICE_NAME);
+    }
+
+    public static ITransactionCoordinatorApi getTransactionCoordinatorApi()
+    {
+        return (ITransactionCoordinatorApi) applicationContext.getBean(TransactionCoordinatorApi.SERVICE_NAME);
     }
 
     public static Object tryToGetBean(String beanName)

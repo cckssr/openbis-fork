@@ -133,12 +133,24 @@ public class XLSImport
 
     private static final String ZIP_EXTENSION = "." + "zip";
 
+//    public XLSImport(String sessionToken,
+//            IApplicationServerApi v3,
+//            ImportModes mode,
+//            ImportOptions options,
+//            String[] sessionWorkspaceFiles,
+//            boolean shouldCheckVersionsOnDatabase
+//            ) throws IOException
+//    {
+//        this(sessionToken, v3, mode, options, sessionWorkspaceFiles, shouldCheckVersionsOnDatabase, null);
+//    }
+
     public XLSImport(String sessionToken,
             IApplicationServerApi v3,
             ImportModes mode,
             ImportOptions options,
             String[] sessionWorkspaceFiles,
-            boolean shouldCheckVersionsOnDatabase) throws IOException
+            boolean shouldCheckVersionsOnDatabase,
+            AfsClient client) throws IOException
     {
         this.sessionToken = sessionToken;
 //        this.openBIS = openBIS;
@@ -166,7 +178,8 @@ public class XLSImport
         this.typeGroupImportHelper = new TypeGroupImportHelper(this.delayedExecutor, mode, options);
         this.shouldCheckVersionsOnDatabase = shouldCheckVersionsOnDatabase;
 
-        this.afsDataImportHelper = new AfsDataImportHelper(sessionToken, mode, options, openBIS);
+//        this.afsDataImportHelper = new AfsDataImportHelper(sessionToken, mode, options, openBIS);
+        this.afsDataImportHelper = new AfsDataImportHelper(sessionToken, mode, options, this.v3, client);
 
         // File Parsing
         this.sessionWorkspaceFiles = sessionWorkspaceFiles;
@@ -274,8 +287,7 @@ public class XLSImport
             }
         }
 
-//        this.containsAfsData = containsData;
-        this.containsAfsData = false;
+        this.containsAfsData = containsData;
         this.xls = xls;
         this.scriptHelper = new ScriptImportHelper(this.delayedExecutor, mode, options, scripts);
     }
