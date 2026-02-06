@@ -29,6 +29,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static ch.ethz.sis.openbis.systemtests.suite.rocrate.environment.RoCrateServerIntegrationTestEnvironment.environment;
@@ -306,9 +307,44 @@ public class IntegrationRoCrateServerTest
 
         String payload = "[\"https://doi.org/10.1038/s41586-020-3010-5\"]";
         String mimeType = "application/ld+json";
-        testExport(mimeType, payload, "COMPLETED", "FAILED");
+        testExport(mimeType, payload, x -> testMimeAndStatus(x, "COMPLETED", mimeType),
+                x -> testStatus(x, "COMPLETED"));
 
     }
+
+    private static boolean testMimeAndStatus(ContentResponse contentResponse, String asyncStatus,
+            String mimeType)
+    {
+        try
+        {
+            if (contentResponse.getMediaType().equals(mimeType))
+            {
+                return true;
+            }
+            LinkedHashMap asyncJob =
+                    objectMapper.readValue(contentResponse.getContentAsString(),
+                            LinkedHashMap.class);
+            return asyncJob.get("status").toString().equals(asyncStatus);
+        } catch (Exception e)
+        {
+            throw new RuntimeException();
+        }
+    }
+
+    private static boolean testStatus(ContentResponse contentResponse, String asyncStatus)
+    {
+        try
+        {
+            LinkedHashMap asyncJob =
+                    objectMapper.readValue(contentResponse.getContentAsString(),
+                            LinkedHashMap.class);
+            return asyncJob.get("status").toString().equals(asyncStatus);
+        } catch (Exception e)
+        {
+            throw new RuntimeException();
+        }
+    }
+
 
     @Test(enabled = true)
     // This test depends on some data which should be created before the test runs
@@ -317,7 +353,8 @@ public class IntegrationRoCrateServerTest
     {
         String payload = "[\"https://doi.org/10.1038/s41586-020-3010-5\"]";
         String mimeType = "application/zip";
-        testExport(mimeType, payload, "COMPLETED", "FAILED");
+        testExport(mimeType, payload, x -> testMimeAndStatus(x, "COMPLETED", mimeType),
+                x -> testStatus(x, "COMPLETED"));
     }
 
     @Test(enabled = true) // This depends on some data which should be created before the test runs
@@ -326,7 +363,8 @@ public class IntegrationRoCrateServerTest
     {
         String payload = "[\"/PUBLICATIONS/PUBLIC_REPOSITORIES/PUB29\"]";
         String mimeType = "application/ld+json";
-        testExport(mimeType, payload, "COMPLETED", "FAILED");
+        testExport(mimeType, payload, x -> testMimeAndStatus(x, "COMPLETED", mimeType),
+                x -> testStatus(x, "COMPLETED"));
     }
 
     @Test(enabled = false)
@@ -337,7 +375,8 @@ public class IntegrationRoCrateServerTest
     {
         String payload = "[\"/PUBLICATIONS/PUBLIC_REPOSITORIES/PUB29\"";
         String mimeType = "application/ld+json";
-        testExport(mimeType, payload, "COMPLETED", "FAILED");
+        testExport(mimeType, payload, x -> testMimeAndStatus(x, "COMPLETED", mimeType),
+                x -> testStatus(x, "COMPLETED"));
 
     }
 
@@ -345,7 +384,9 @@ public class IntegrationRoCrateServerTest
     public void testExportEmptyResults()
             throws Exception
     {
-        testExport("application/ld+json", "[\"DOES-NOT-EXIST\"]", "FAILED", "COMPLETED");
+
+        testExport("application/ld+json", "[\"DOES-NOT-EXIST\"]", x -> testStatus(x, "FAILED"),
+                x -> testStatus(x, "COMPLETED"));
     }
 
     @Test(dataProvider = "acceptableMimeTypes")
@@ -622,7 +663,7 @@ public class IntegrationRoCrateServerTest
     }
 
     private static void testExport(String exportMimeType, String identifiersJsonString,
-            String successState, String failState)
+            Predicate<ContentResponse> successCheck, Predicate<ContentResponse> failCheck)
             throws IOException, InterruptedException, ExecutionException, TimeoutException
     {
         OpenBIS openBIS = environment.createOpenBIS(TIMEOUT);
@@ -660,15 +701,16 @@ public class IntegrationRoCrateServerTest
             });
             pollRequest.idleTimeout(TIMEOUT, TimeUnit.MILLISECONDS);
             ContentResponse pollResponse = pollRequest.send();
-            LinkedHashMap asyncResult =
-                    objectMapper.readValue(pollResponse.getContentAsString(), LinkedHashMap.class);
-
-            if (asyncResult.get("status").equals(successState))
+            if (successCheck.test(pollResponse))
             {
                 done = true;
             }
 
-            if (asyncResult.get("status").equals(failState))
+
+            LinkedHashMap asyncResult =
+                    objectMapper.readValue(pollResponse.getContentAsString(), LinkedHashMap.class);
+
+            if (failCheck.test(pollResponse))
             {
                 List<String> errors = (List<String>) asyncResult.get("errors");
                 Assert.fail(errors.stream().collect(Collectors.joining("")));

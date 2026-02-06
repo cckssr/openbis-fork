@@ -109,8 +109,6 @@ public class RoCrateService
             responseBuilder.status(ex.getResponse().getStatus());
             responseBuilder.type(MediaType.APPLICATION_JSON_TYPE);
             String o = objectMapper.writeValueAsString(new ErrorResponse(ex.getMessage()));
-
-            System.out.println(o);
             responseBuilder.entity(o);
             return responseBuilder.build();
         } catch (Exception ex)
@@ -242,6 +240,10 @@ public class RoCrateService
     {
         OpenBIS openBIS = null;
         SessionInformation sessionInformation = null;
+        if (headers.getJobId() == null)
+        {
+        }
+
         try
         {
             openBIS = OpeBISFactory.createOpenBIS(headers.getApiKey());
@@ -262,7 +264,8 @@ public class RoCrateService
             if (job instanceof ExportJob)
             {
                 result = new AsyncResult(status.getStatus().toString(), List.of(), null);
-                responseBuilder = Response.ok(objectMapper.writeValueAsString(result));
+                responseBuilder = Response.ok(((ExportJob) job).getResult().readAllBytes(),
+                        job.getMimeType());
                 return responseBuilder.build();
             }
             if (job instanceof ValidateJob)

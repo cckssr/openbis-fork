@@ -125,7 +125,10 @@ public class AsyncJobRegistry
 
         public Status getStatus()
         {
-            return status;
+
+            Status status1 = job.getStatus();
+            this.status = status1;
+            return status1;
         }
 
         public IAsyncJob getJob()
