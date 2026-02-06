@@ -155,15 +155,15 @@ scanner should read them and type the correct output.
 
 -   Barcode Code 128.
     [scanner-test-code128-50-15](att/scanner-test-code128-50-15.pdf).
-    This should give as output “20210720122856003-454071” without
+    This should give as output “20260206132848576-4839” without
     quotes.
 -   Barcode QR Code.
     [scanner-test-qrcode-50-50](att/scanner-test-qrcode-50-50.pdf).
-    This should give as output “20210720122856003-454071” without
+    This should give as output “20260206132543407-4838” without
     quotes.
 -   Barcode Micro QR Code.
     [scanner-test-microqrcode-30-30](att/scanner-test-microqrcode-30-30.pdf).
-    This should give as output “20210720122856003-454071” without
+    This should give as output “20260206132450067-4836” without
     quotes.
 
 #### Scanner Advice before purchasing
