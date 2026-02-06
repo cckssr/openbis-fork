@@ -21,6 +21,13 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import ch.ethz.sis.afsapi.dto.File;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.ImportResult;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.data.ImportData;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.data.ImportFormat;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.options.ImportMode;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.options.ImportOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
 import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.io.IOUtils;
 import org.testng.annotations.AfterSuite;
@@ -681,6 +688,36 @@ public class IntegrationAfsDataTest
         assertEquals(result.getObjects().get(0).getPath(), "");
         assertEquals(result.getObjects().get(1).getPath(), "test-file-2.txt");
         assertEquals(result.getObjects().get(2).getPath(), "test-file.txt");
+    }
+
+    @Test
+    public void testImportDataToAsAndAfs() throws Exception
+    {
+        OpenBIS openBIS = facade.createOpenBIS();
+
+        openBIS.login(INSTANCE_ADMIN, PASSWORD);
+
+        // upload data to a session workspace
+        final String ARCHIVE_NAME = "import_data.zip";
+
+        Path source = Path.of("sourceTest/resource/" + getClass().getSimpleName() + "/" + ARCHIVE_NAME);
+
+        openBIS.uploadToSessionWorkspace(source);
+
+        ImportData importData = new ImportData();
+        importData.setFormat(ImportFormat.EXCEL);
+        importData.setSessionWorkspaceFiles(new String[]{ARCHIVE_NAME});
+
+        ImportOptions importOptions = new ImportOptions();
+        importOptions.setMode(ImportMode.UPDATE_IF_EXISTS);
+
+        ImportResult result = openBIS.executeImport(importData, importOptions);
+        assertEquals(result.getObjectIds().size(), 3);
+
+        Sample sample = facade.getSample(openBIS, new SampleIdentifier("/DEFAULT/AFS_UPLOAD_TEST_CODE"));
+
+        File[] files = openBIS.getAfsServerFacade().list(sample.getPermId().getPermId(), "/", true);
+        assertEquals(files.length, 3);
     }
 
     @Test
