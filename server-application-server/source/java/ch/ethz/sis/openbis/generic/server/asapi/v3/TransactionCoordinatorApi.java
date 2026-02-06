@@ -31,7 +31,7 @@ import ch.systemsx.cisd.openbis.common.pat.IPersonalAccessTokenAware;
 import ch.systemsx.cisd.openbis.common.pat.IPersonalAccessTokenInvocation;
 import ch.systemsx.cisd.openbis.generic.shared.IOpenBisSessionManager;
 
-@Component
+@Component(TransactionCoordinatorApi.SERVICE_NAME)
 public class TransactionCoordinatorApi extends AbstractTransactionNodeApi
         implements ITransactionCoordinatorApi, ITransactionCoordinatorInternalApi, IPersonalAccessTokenAware
 {

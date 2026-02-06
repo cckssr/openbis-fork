@@ -3,31 +3,19 @@ package ch.ethz.sis.openbis.generic.server.xls.importer.helper;
 import ch.ethz.sis.afsapi.api.ClientAPI;
 import ch.ethz.sis.afsapi.dto.File;
 import ch.ethz.sis.afsclient.client.AfsClient;
-import ch.ethz.sis.openbis.generic.OpenBIS;
+import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.ethz.sis.openbis.generic.server.xls.importer.enums.ImportModes;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
-import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider;
 
-import java.net.URI;
 import java.nio.file.Path;
-import java.util.UUID;
 
 final class AfsClientImportProxy
 {
 
-    public static final String AFS_SERVER_URL_PROPERTY_NAME = "server-public-information.afs-server.url";
 
-    public static final String AFS_SERVER_TIMEOUT_PROPERTY_NAME = "server-public-information.afs-server.timeout";
-
-    public static final String INTERACTIVE_SESSION_KEY_PROPERTY_NAME = "api.v3.transaction.interactive-session-key";
-
-    public static final String AFS_SERVER_TIMEOUT_DEFAULT = "3600";
-
-    private UUID transactionId;
-
-    private final OpenBIS.AfsServerFacade client;
-
-    private final OpenBIS openBIS;
+    private final AfsClient client;
+    private final IApplicationServerApi v3;
+    private final String sessionToken;
 
     private final ClientAPI.FileCollisionListener overrideCollisionListener = new ClientAPI.FileCollisionListener() {
         @Override
@@ -36,19 +24,17 @@ final class AfsClientImportProxy
         }
     };
 
-    private AfsClientImportProxy(OpenBIS openBIS, OpenBIS.AfsServerFacade client) {
-        this.openBIS = openBIS;
+
+
+    private AfsClientImportProxy(String sessionToken, IApplicationServerApi api, AfsClient client) {
+        this.sessionToken = sessionToken;
+        this.v3 = api;
         this.client = client;
     }
 
 
-    public static AfsClientImportProxy getAfsClient(OpenBIS openBIS) {
-        try
-        {
-            return new AfsClientImportProxy(openBIS, openBIS.getAfsServerFacade());
-        } catch (IllegalStateException ex) {
-            return new AfsClientImportProxy(openBIS, null);
-        }
+    public static AfsClientImportProxy getAfsClient(String sessionToken, IApplicationServerApi api, AfsClient client) {
+        return new AfsClientImportProxy(sessionToken, api, client);
     }
 
 
@@ -75,7 +61,7 @@ final class AfsClientImportProxy
             return false;
         }
         try {
-            return openBIS.isSessionActive();
+            return v3.isSessionActive(sessionToken);
         } catch (Exception e)
         {
             return false;
@@ -148,6 +134,5 @@ final class AfsClientImportProxy
 
        return client.upload(sourcePath, permId, destinationPath, collisionListener, new ClientAPI.DefaultTransferMonitorLister());
     }
-
 
 }

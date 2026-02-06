@@ -18,18 +18,14 @@
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.importer;
 
 import java.io.IOException;
-import java.util.List;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Proxy;
+import java.net.URI;
 import java.util.UUID;
 
-import ch.ethz.sis.openbis.generic.OpenBIS;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.DataStore;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.fetchoptions.DataStoreFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.search.DataStoreKind;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.search.DataStoreSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.fetchoptions.SpaceFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.search.SpaceSearchCriteria;
+import ch.ethz.sis.afsapi.api.PublicAPI;
+import ch.ethz.sis.afsclient.client.AfsClient;
+import ch.ethz.sis.openbis.generic.asapi.v3.ITransactionCoordinatorApi;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.transaction.ITransactionExecutor;
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
@@ -59,41 +55,34 @@ public class ImportExecutor implements IImportExecutor
     private static final Logger
             operationLog = LogFactory.getLogger(LogCategory.OPERATION, ImportExecutor.class);
 
+    private static final int AFS_CLIENT_TIMEOUT = 30000;
+
+    private UUID transactionId;
+
 
     @Override
     public ImportResult doImport(final IOperationContext context, final ImportOperation operation)
     {
+        transactionId = TransactionId.getCurrent();
         final ImportData importData = operation.getImportData();
+        final String sessionToken = context.getSession().getSessionToken();
+        final String transactionEnabled = CommonServiceProvider.tryToGetProperty("api.v3.transaction.enabled");
+        final String interactiveSessionKey = CommonServiceProvider.tryToGetProperty("api.v3.transaction.interactive-session-key");
+        final String afsUrl = CommonServiceProvider.tryToGetProperty("server-public-information.afs-server.url");
+//        String asUrl = CommonServiceProvider.tryToGetProperty("api.v3.transaction.participant.application-server.url");
 
-        final IApplicationServerInternalApi applicationServerApi = CommonServiceProvider.getApplicationServerApi();
+        final ITransactionCoordinatorApi transactionCoordinatorApi = CommonServiceProvider.getTransactionCoordinatorApi();
 
-        String transactionEnabled = CommonServiceProvider.tryToGetProperty("api.v3.transaction.enabled");
-        String interactiveSessionKey = CommonServiceProvider.tryToGetProperty("api.v3.transaction.interactive-session-key");
+        final IApplicationServerInternalApi applicationServerApi = createTransactionalProxy(ITransactionCoordinatorApi.APPLICATION_SERVER_PARTICIPANT_ID, IApplicationServerInternalApi.class,
+                CommonServiceProvider.getApplicationServerApi(), transactionCoordinatorApi, sessionToken, interactiveSessionKey);
 
-        String afsUrl = CommonServiceProvider.tryToGetProperty("server-public-information.afs-server.url");
-        String asUrl = CommonServiceProvider.tryToGetProperty("api.v3.transaction.participant.application-server.url");
+        AfsClient afsClient = new AfsClient(URI.create(afsUrl), AfsClient.DEFAULT_PACKAGE_SIZE_IN_BYTES, AFS_CLIENT_TIMEOUT);
+        afsClient.setSessionToken(sessionToken);
 
-        DataStoreSearchCriteria searchCriteria = new DataStoreSearchCriteria();
-        searchCriteria.withKind().thatIn(DataStoreKind.DSS);
-        SearchResult<DataStore> stores = applicationServerApi.searchDataStores(context.getSession().getSessionToken(), searchCriteria, new DataStoreFetchOptions());
-        String dssUrl = null;
-        if(stores.getTotalCount() > 0) {
-            dssUrl = stores.getObjects().get(0).getRemoteUrl() + "/datastore_server";
-        }
-
-        OpenBIS openBIS = new OpenBIS(asUrl, dssUrl, afsUrl, 30000);
-
-        openBIS.setSessionToken(context.getSession().getSessionToken());
-
-        try {
-            List<Space> spaces = openBIS.searchSpaces(new SpaceSearchCriteria(), new SpaceFetchOptions()).getObjects();
-            operationLog.info("Found " + spaces.size() + " spaces");
-        } catch (Exception e)
-        {
-            operationLog.error("Failed to search spaces", e);
-        }
-
-        openBIS.setInteractiveSessionKey(interactiveSessionKey);
+        afsClient = new AfsClient(createTransactionalProxy(ITransactionCoordinatorApi.AFS_SERVER_PARTICIPANT_ID, PublicAPI.class,
+                afsClient, transactionCoordinatorApi, sessionToken, interactiveSessionKey), AfsClient.DEFAULT_PACKAGE_SIZE_IN_BYTES, AFS_CLIENT_TIMEOUT);
+        afsClient.setSessionToken(sessionToken);
+        afsClient.setInteractiveSessionKey(interactiveSessionKey);
 
 
         final ImportOptions importOptions = operation.getImportOptions();
@@ -101,41 +90,42 @@ public class ImportExecutor implements IImportExecutor
         final ch.ethz.sis.openbis.generic.server.xls.importer.ImportOptions importerImportOptions =
                 new ch.ethz.sis.openbis.generic.server.xls.importer.ImportOptions();
 
-        final boolean projectSamplesEnabled = Boolean.parseBoolean(applicationServerApi.getServerInformation(context.getSession().getSessionToken())
+        final boolean projectSamplesEnabled = Boolean.parseBoolean(applicationServerApi.getServerInformation(sessionToken)
                 .get("project-samples-enabled"));
         importerImportOptions.setAllowProjectSamples(projectSamplesEnabled);
 
         try
         {
-            XLSImport xlsImport = new XLSImport(context.getSession().getSessionToken(), applicationServerApi,
-                    ImportModes.valueOf(importOptions.getMode().name()), importerImportOptions, importData.getSessionWorkspaceFiles(), false);
+
+            final XLSImport xlsImport = new XLSImport(sessionToken, applicationServerApi,
+                    ImportModes.valueOf(importOptions.getMode().name()), importerImportOptions, importData.getSessionWorkspaceFiles(), false, afsClient);
+
             ImportResult result = new ImportResult();
             if(xlsImport.importContainsAfsData())
             {
                 operationLog.info("Importing metadata and data");
                 if (transactionEnabled != null && !transactionEnabled.equalsIgnoreCase("true"))
                 {
-                    operationLog.info("Transactions are not enabled");
+                    operationLog.info("Transactions are not enabled. Executing in separate transactions mode");
                     //transactions disabled
                     transactionExecutor.executeInSeparateTransaction(
                             () -> importMetaData(xlsImport, result));
                     xlsImport.importZipAfsData();
                 } else
                 {
-                    UUID transactionId = TransactionId.getCurrent();
                     if (transactionId == null)
                     {
-                        operationLog.info("No Two-Phase transaction id found");
+                        operationLog.info("No existing transaction id found");
+                        transactionId = UUID.randomUUID();
                         try
                         {
-                            openBIS.beginTransaction();
+                            transactionCoordinatorApi.beginTransaction(transactionId, sessionToken, interactiveSessionKey);
                             importMetaData(xlsImport, result);
                             xlsImport.importZipAfsData();
-
-                            openBIS.commitTransaction();
+                            transactionCoordinatorApi.commitTransaction(transactionId, sessionToken, interactiveSessionKey);
                         } catch (Exception e)
                         {
-                            openBIS.rollbackTransaction();
+                            transactionCoordinatorApi.rollbackTransaction(transactionId, sessionToken, interactiveSessionKey);
                             throw e;
                         }
                     } else
@@ -145,6 +135,7 @@ public class ImportExecutor implements IImportExecutor
                     }
                 }
             } else {
+                operationLog.info("No data detected. Importing metadata only.");
                 result.setObjectIds(xlsImport.start());
             }
 
@@ -167,6 +158,29 @@ public class ImportExecutor implements IImportExecutor
         {
             throw new RuntimeException(e);
         }
+    }
+
+    private <T> T createTransactionalProxy(String transactionParticipantId, Class<T> serviceInterface, T service,
+            ITransactionCoordinatorApi transactionCoordinatorApi, String sessionToken, String interactiveSessionKey)
+    {
+        return (T) Proxy.newProxyInstance(serviceInterface.getClassLoader(), new Class[] { serviceInterface },
+                (proxy, method, args) ->
+                {
+                    if (transactionId != null)
+                    {
+                        return transactionCoordinatorApi.executeOperation(transactionId, sessionToken, interactiveSessionKey,
+                                transactionParticipantId, method.getName(), args);
+                    } else
+                    {
+                        try
+                        {
+                            return method.invoke(service, args);
+                        } catch (InvocationTargetException e)
+                        {
+                            throw e.getTargetException();
+                        }
+                    }
+                });
     }
 
 }
