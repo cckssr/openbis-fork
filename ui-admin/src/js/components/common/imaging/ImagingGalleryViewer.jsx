@@ -5,6 +5,7 @@ import ImagingFacade from "@src/js/components/common/imaging/ImagingFacade.js";
 import LoadingDialog from "@src/js/components/common/loading/LoadingDialog.jsx";
 import Loading from "@src/js/components/common/loading/Loading.jsx";
 import ErrorDialog from "@src/js/components/common/error/ErrorDialog.jsx";
+import Container from '@src/js/components/common/form/Container.jsx'
 
 import GalleryGridView from "@src/js/components/common/imaging/components/gallery/GalleryGridView.js";
 import GalleryListView from "@src/js/components/common/imaging/components/gallery/GalleryListView.js";
@@ -23,6 +24,7 @@ const ImagingGalleryViewer = ({ objId, objType, extOpenbis, onOpenPreview, onSto
     const [error, setError] = React.useState({ open: false, error: null });
     const [previewsInfo, setPreviewsInfo] = React.useState({
         previewContainerList: [],
+        allContainerList: [],
         totalCount: 0
     });
     const [paging, setPaging] = React.useState({ page: 0, pageSize: 10, pageColumns: 4 });
@@ -35,6 +37,26 @@ const ImagingGalleryViewer = ({ objId, objType, extOpenbis, onOpenPreview, onSto
     });
     const [dataSetTypes, setDataSetTypes] = React.useState([]);
     const [imagingTags, setImagingTags] = React.useState([]);
+
+    const getPreviewKey = (previewContainer) => {
+        return `${previewContainer.datasetId}-${previewContainer.previewIdx}`;
+    }
+
+    const mergeSelections = (previewContainerList, allContainerList) => {
+        if (!allContainerList || allContainerList.length === 0) {
+            return previewContainerList;
+        }
+        const selectedByKey = new Map(
+            allContainerList.map((container) => [getPreviewKey(container), container.select])
+        );
+        return previewContainerList.map((container) => {
+            const key = getPreviewKey(container);
+            if (!selectedByKey.has(key)) {
+                return container;
+            }
+            return { ...container, select: selectedByKey.get(key) };
+        });
+    }
 
     React.useEffect(() => {
         // Set the config for the gallery view from previous store config in ELN-LIMS
@@ -65,7 +87,11 @@ const ImagingGalleryViewer = ({ objId, objType, extOpenbis, onOpenPreview, onSto
         const loadGalleryView = async () => {
             const { previewContainerList, totalCount } = await loadPreviewsInfo(imagingFacade, objId, objType, galleryFilter, paging, setOpen);
             if (!isCancelled) {
-                setPreviewsInfo({ previewContainerList, totalCount });
+                setPreviewsInfo((prev) => ({
+                    ...prev,
+                    previewContainerList: mergeSelections(previewContainerList, prev.allContainerList),
+                    totalCount
+                }));
                 setIsLoaded(true);
                 setOpen(false);
                 setIsLoading(false);
@@ -96,11 +122,14 @@ const ImagingGalleryViewer = ({ objId, objType, extOpenbis, onOpenPreview, onSto
     const handleSelectAll = (val) => {
         //console.log('handleSelectAll: ', val, previewContainerList.map(previewContainer => previewContainer.select === false));
         if (!val) {
-            let updatedContainerList = [...previewsInfo.previewContainerList];
-            updatedContainerList = updatedContainerList.map(previewContainer => {
-                return { ...previewContainer, select: false }
-            });
-            setPreviewsInfo({ ...previewsInfo, previewContainerList: updatedContainerList });
+            setPreviewsInfo((prev) => ({
+                ...prev,
+                previewContainerList: prev.previewContainerList.map((previewContainer) => ({
+                    ...previewContainer,
+                    select: false
+                })),
+                allContainerList: []
+            }));
         }
         setSelectAll(val);
     }
@@ -118,15 +147,41 @@ const ImagingGalleryViewer = ({ objId, objType, extOpenbis, onOpenPreview, onSto
         }
     }
 
-    const handleSelectPreview = (idx) => {
-        let updatedList = [...previewsInfo.previewContainerList];
-        updatedList[idx].select = !updatedList[idx].select;
-        setPreviewsInfo({ ...previewsInfo, previewContainerList: updatedList });
+    const handleSelectPreview = (previewContainer) => {
+        const key = getPreviewKey(previewContainer);
+        const nextSelect = !previewContainer.select;
+        setPreviewsInfo((prev) => {
+            const updatedPreviewContainerList = prev.previewContainerList.map((container) => {
+                if (getPreviewKey(container) !== key) {
+                    return container;
+                }
+                return { ...container, select: nextSelect };
+            });
+
+            let updatedAllContainerList = prev.allContainerList;
+            const existingIndex = prev.allContainerList.findIndex((container) => getPreviewKey(container) === key);
+            if (nextSelect) {
+                const selectedContainer = { ...previewContainer, select: true };
+                updatedAllContainerList = existingIndex === -1
+                    ? [...prev.allContainerList, selectedContainer]
+                    : prev.allContainerList.map((container, idx) => idx === existingIndex ? selectedContainer : container);
+            } else if (existingIndex !== -1) {
+                updatedAllContainerList = prev.allContainerList.filter((_, idx) => idx !== existingIndex);
+            }
+
+            return {
+                ...prev,
+                previewContainerList: updatedPreviewContainerList,
+                allContainerList: updatedAllContainerList
+            };
+        });
     }
 
     const handleExport = async (currentConfigExport) => {
         setOpen(true);
-        const exportList = previewsInfo.previewContainerList.filter(previewObj => previewObj.select);
+        const exportList = previewsInfo.allContainerList.length > 0
+            ? previewsInfo.allContainerList
+            : previewsInfo.previewContainerList.filter(previewObj => previewObj.select);
         try {
             const exportResult = await imagingFacade.multiExportImagingDataset(currentConfigExport, exportList);
             if (exportResult.url) {
@@ -192,22 +247,24 @@ const ImagingGalleryViewer = ({ objId, objType, extOpenbis, onOpenPreview, onSto
     }
 
     const renderControlsBar = (isExportDisable, configExports) => {
-        return <GalleryControlsBar isExportDisable={isExportDisable}
-            configExports={configExports}
-            gridView={gridView}
-            handleViewChange={handleViewChange}
-            paging={paging}
-            setPaging={setPaging}
-            showAll={showAll}
-            setShowAll={setShowAll}
-            selectAll={selectAll}
-            handleSelectAll={handleSelectAll}
-            galleryFilter={galleryFilter}
-            onGalleryFilterChange={onGalleryFilterChange}
-            count={previewsInfo.totalCount}
-            handleExport={handleExport}
-            dataSetTypes={dataSetTypes}
-        />
+        return <Container>
+            <GalleryControlsBar isExportDisable={isExportDisable}
+                configExports={configExports}
+                gridView={gridView}
+                handleViewChange={handleViewChange}
+                paging={paging}
+                setPaging={setPaging}
+                showAll={showAll}
+                setShowAll={setShowAll}
+                selectAll={selectAll}
+                handleSelectAll={handleSelectAll}
+                galleryFilter={galleryFilter}
+                onGalleryFilterChange={onGalleryFilterChange}
+                count={previewsInfo.totalCount}
+                handleExport={handleExport}
+                dataSetTypes={dataSetTypes}
+            />
+        </Container>
     }
 
     if (!isLoaded) return null;
@@ -216,7 +273,8 @@ const ImagingGalleryViewer = ({ objId, objType, extOpenbis, onOpenPreview, onSto
         ? previewsInfo.previewContainerList
         : previewsInfo.previewContainerList.filter(previewContainer => previewContainer.preview.show);
 
-    const isExportDisable = !(previewContainerList.some(previewContainer => previewContainer.select) && gridView);
+    const isExportDisable = !((previewsInfo.allContainerList.length > 0 ||
+        previewContainerList.some(previewContainer => previewContainer.select)) && gridView);
     const commonExportConfig = extractCommonExportsConfig();
     return (
         <>

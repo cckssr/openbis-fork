@@ -452,6 +452,7 @@ export default class ImagingFacade {
                         previewContainerList.push({
                             datasetId,
                             preview,
+                            previewIdx: previewIndexInDataset,
                             imageIdx: loadedImgDS.images.indexOf(image), // Get image index
                             imageMetadata: image.metadata,
                             select: false,
@@ -511,6 +512,7 @@ export default class ImagingFacade {
             const loadedImgDS = await this.openbis.fromJson(null, JSON.parse(datasetProperties[constants.IMAGING_DATA_CONFIG]));
             delete datasetProperties[constants.IMAGING_DATA_CONFIG];
 
+            let previewIndexInDataset = 0;
             for (const image of loadedImgDS.images) {
                 for (const preview of image.previews) {
                     let match = false;
@@ -521,21 +523,24 @@ export default class ImagingFacade {
                             : operator === messages.get(messages.OPERATOR_AND)
                                 ? filteringTags.every(tag => preview.tags.includes(tag))
                                 : false; // Handle other operators or invalid input
-
                     } else if (property === constants.PREVIEW_COMMENT) {
-                        match = preview.comment.includes(filterText);
+                        // We treat new lines as spaces.
+                        const singleLineComment = preview.comment.replace(/(\r\n|\n|\r)/g, ' ');
+                        match = singleLineComment.includes(filterText);
                     }
 
                     if (match) {
                         filteredDatasets.push({
                             datasetId: dataSet.permId.permId,
                             preview,
+                            previewIdx: previewIndexInDataset,
                             imageIdx: loadedImgDS.images.indexOf(image),
                             select: false,
                             datasetProperties,
                             exportConfig: image.config.exports
                         });
                     }
+                    previewIndexInDataset++;
                 }
             }
         }
@@ -563,6 +568,8 @@ export default class ImagingFacade {
     filterGallery = async (objId, objType, operator, filterText, property, page, pageSize) => {
         let dataSets = [];
 
+        // TODO: here everything is loaded and then filtered
+        // Consider adding fetchOptions.from() and fetchOptions.count()
         if (objType === ObjectType.COLLECTION) {
             const criteria = new this.openbis.DataSetSearchCriteria();
             criteria.withExperiment().withPermId().thatEquals(objId);

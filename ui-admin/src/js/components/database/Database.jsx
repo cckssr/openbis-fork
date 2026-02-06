@@ -14,10 +14,15 @@ const styles = () => ({
     display: 'flex',
     width: '100%'
   },
+  contentContainer: {
+    minHeight: 0,
+    overflow: 'hidden'
+  },
   component: {
     height: 0,
     flex: '1 1 100%',
-    overflow: 'hidden'
+    minHeight: 0,
+    overflow: 'auto'
   },
 })
 
@@ -30,7 +35,10 @@ class Database extends React.PureComponent {
       <div className={classes.container}>
         <DatabaseBrowser />
         <Content
-          classes={{component: classes.component}}
+          classes={{
+            container: classes.contentContainer,
+            component: classes.component
+          }}
           page={pages.DATABASE}
           renderComponent={this.renderComponent}
           renderTab={this.renderTab}
