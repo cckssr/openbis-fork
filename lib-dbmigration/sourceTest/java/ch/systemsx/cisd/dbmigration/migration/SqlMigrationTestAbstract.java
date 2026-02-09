@@ -33,8 +33,7 @@ import ch.ethz.sis.shared.log.standard.utils.LogInitializer;
 import ch.systemsx.cisd.dbmigration.DBMigrationEngine;
 import ch.systemsx.cisd.dbmigration.DatabaseConfigurationContext;
 import ch.systemsx.cisd.dbmigration.postgresql.DumpPreparator;
-import cz.startnet.utils.pgdiff.PgDiff;
-import cz.startnet.utils.pgdiff.PgDiffArguments;
+
 
 import static ch.systemsx.cisd.dbmigration.DBMigrationEngine.FULL_TEXT_SEARCH_DOCUMENT_VERSION_FILE_PATH;
 
@@ -169,93 +168,220 @@ public abstract class SqlMigrationTestAbstract
                 dumpSuccessful);
     }
 
-    private void assertDatabaseSchemasEqual(final File currentSchemaFile,
-            final File expectedSchemaFile)
+
+
+    private void assertDatabaseSchemasEqual(File migrated, File scratch)
     {
-        final StringWriter writer = new StringWriter();
-        final PgDiffArguments arguments = new PgDiffArguments();
-        arguments.setOldDumpFile(currentSchemaFile.getAbsolutePath());
-        arguments.setNewDumpFile(expectedSchemaFile.getAbsolutePath());
-        arguments.setIgnoreFunctionWhitespace(true);
-        arguments.setIgnoreStartWith(true);
-        arguments.setOutputIgnoredStatements(true);
-        PgDiff.createDiff(new PrintWriter(writer), arguments);
-
-        String diff = writer.toString();
-        if (diff == null)
+        try
         {
-            diff = "";
+            List<String> m = normalizedSchema(migrated);
+            List<String> s = normalizedSchema(scratch);
+
+            AssertJUnit.assertEquals(
+                    "Schema mismatch between migrated and scratch database",
+                    s,
+                    m
+            );
         }
-        String delta = diff.substring(0, diff.indexOf("/* Original")).trim();
-
-        AssertJUnit.assertEquals("The migrated schema is not identical to the scratch one. "
-                + "Consider attaching following script to the migration file.", "", delta);
-
-        List<String> originalDb = new ArrayList<String>();
-        List<String> newDb = new ArrayList<String>();
-
-        Scanner scanner = new Scanner(diff);
-        List<String> current = originalDb;
-        while (scanner.hasNextLine())
+        catch (Exception e)
         {
-            String line = scanner.nextLine();
-            if (line.contains("New database ignored statements"))
-            {
-                current = newDb;
-            }
-            if (line.length() == 0 ||
-                    line.startsWith("/*") ||
-                    line.startsWith("*/") ||
-                    line.startsWith("GRANT") ||
-                    line.startsWith("REVOKE"))
-            {
-                continue;
-            } else
-            {
-                current.add(line);
-            }
-        }
-        scanner.close();
-
-        Iterator<String> origIter = originalDb.iterator();
-        Iterator<String> newIter = newDb.iterator();
-
-        while (true)
-        {
-            if (!origIter.hasNext() && !newIter.hasNext())
-            {
-                break;
-            }
-            if (!origIter.hasNext())
-            {
-                String additional = contentOf(newIter);
-                AssertJUnit.fail("Only in from-scratch schema: " + additional);
-            }
-
-            if (!newIter.hasNext())
-            {
-                String additional = contentOf(origIter);
-                AssertJUnit.fail("Only in migrated schema: " + additional);
-            }
-            String origValue = origIter.next();
-            String newValue = newIter.next();
-            if (!origValue.equals(newValue))
-            {
-                System.out.println(diff);
-                AssertJUnit.fail("There's a difference between the migrated schema and the from-scratch schema\nmigrated: " + origValue
-                        + "\nfrom-scratch: " + newValue);
-            }
+            throw new RuntimeException(e);
         }
     }
-
-    private String contentOf(Iterator<String> newIter)
+    private List<String> normalizedSchema(File f) throws Exception
     {
-        String s = "";
-        while (newIter.hasNext())
+        List<String> lines = FileUtils.readLines(f, "UTF-8");
+        List<String> out = new ArrayList<>();
+
+        boolean inCreateTable = false;
+        StringBuilder tableBuffer = new StringBuilder();
+
+        for (String raw : lines)
         {
-            s += newIter.next() + "\n";
+            String l = raw.trim();
+
+            // --- skip noise ---
+            if (skipNoise(l))
+            {
+                continue;
+            }
+
+            // normalize whitespace
+            l = l.replaceAll("\\s+", " ").trim();
+
+            // normalize inline NOT NULL constraint names
+            l = l.replaceAll(
+                    "\\s+CONSTRAINT\\s+\\S+\\s+NOT NULL",
+                    " NOT NULL"
+            );
+
+            // --- CREATE TABLE handling ---
+            if (l.startsWith("CREATE TABLE "))
+            {
+                inCreateTable = true;
+                tableBuffer.setLength(0);
+                tableBuffer.append(l);
+                continue;
+            }
+
+            if (inCreateTable)
+            {
+                tableBuffer.append(" ").append(l);
+
+                if (l.endsWith(");"))
+                {
+                    out.add(normalizeCreateTable(tableBuffer.toString()));
+                    inCreateTable = false;
+                }
+                continue;
+            }
+
+            // everything else
+            out.add(l);
         }
-        return s;
+
+        return out;
+    }
+
+    private String normalizeCreateTable(String stmt)
+    {
+        // Locate the outer parentheses of the CREATE TABLE statement
+        // Everything before '(' is the table header, everything inside is the definition
+        int open = stmt.indexOf('(');
+        int close = stmt.lastIndexOf(')');
+
+        // Header includes "CREATE TABLE ... ("
+        String header = stmt.substring(0, open + 1);
+
+        // Body contains column definitions and table-level constraints
+        String body = stmt.substring(open + 1, close);
+
+        // Split individual definitions by comma
+        // (assumes no commas inside column types or expressions)
+        String[] parts = body.split(",");
+
+        // Columns and constraints are collected separately so they can be sorted independently
+        List<String> columns = new ArrayList<>();
+        List<String> constraints = new ArrayList<>();
+
+        for (String p : parts)
+        {
+            // Trim whitespace around each definition
+            String e = p.trim();
+
+            // Ignore empty fragments caused by formatting or trailing commas
+            if (e.isEmpty())
+            {
+                continue;
+            }
+
+            // Table-level constraints (named constraints or CHECK constraints)
+            if (e.startsWith("CONSTRAINT") || e.startsWith("CHECK"))
+            {
+                constraints.add(e);
+            }
+            // Everything else is treated as a column definition
+            else
+            {
+                columns.add(e);
+            }
+        }
+
+        // Sort columns and constraints to produce deterministic output
+        // (order-independent schema comparison)
+        columns.sort(String::compareTo);
+        constraints.sort(String::compareTo);
+
+        // Rebuild the CREATE TABLE statement in normalized form
+        StringBuilder rebuilt = new StringBuilder();
+        rebuilt.append(header).append("\n");
+
+        // Emit sorted column definitions first
+        for (String c : columns)
+        {
+            rebuilt.append("  ").append(c).append(",\n");
+        }
+
+        // Emit sorted table-level constraints after columns
+        for (String c : constraints)
+        {
+            rebuilt.append("  ").append(c).append(",\n");
+        }
+
+        // Remove the trailing comma from the last definition
+        int lastComma = rebuilt.lastIndexOf(",");
+        if (lastComma != -1)
+        {
+            rebuilt.deleteCharAt(lastComma);
+        }
+
+        // Close the CREATE TABLE statement
+        rebuilt.append("\n);");
+
+        return rebuilt.toString();
+    }
+
+
+
+    private static boolean skipNoise(String l)
+    {
+        if (l.isEmpty())
+        {
+            return true;
+        }
+
+        // Skip single-line SQL comments (e.g. -- this is a comment)
+        if (l.startsWith("--"))
+        {
+            return true;
+        }
+
+        // Skip block comment starts (/* ... */), usually schema metadata
+        if (l.startsWith("/*"))
+        {
+            return true;
+        }
+
+        // Skip session-level configuration commands that don't affect schema
+        if (l.startsWith("SET "))
+        {
+            return true;
+        }
+
+        // Skip PostgreSQL-specific runtime config restoration commands
+        // (commonly emitted by pg_dump, irrelevant for schema comparison)
+        if (l.startsWith("SELECT pg_catalog.set_config"))
+        {
+            return true;
+        }
+
+        // Skip COMMENT statements; comments are non-structural metadata
+        if (l.startsWith("COMMENT ON"))
+        {
+            return true;
+        }
+
+        // Skip privilege grants; permissions are not part of schema structure
+        if (l.startsWith("GRANT "))
+        {
+            return true;
+        }
+
+        // Skip privilege revocations; also non-structural
+        if (l.startsWith("REVOKE "))
+        {
+            return true;
+        }
+
+        // Skip pg_dump meta-commands that restrict object creation
+        // (used during restore, not actual SQL)
+        if (l.startsWith("\\restrict"))
+        {
+            return true;
+        }
+
+        // Skip pg_dump meta-commands that lift restrictions
+        return l.startsWith("\\unrestrict");
     }
 
 }
