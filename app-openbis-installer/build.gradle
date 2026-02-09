@@ -45,7 +45,7 @@ dependencies {
 
     runtimeOnly 'commons-io:commons-io:2.19.0',
                 'sis:sis-base:23.06.0',
-                'postgresql:postgresql:42.5.0'
+                'postgresql:postgresql:42.7.9'
 
 }
 
