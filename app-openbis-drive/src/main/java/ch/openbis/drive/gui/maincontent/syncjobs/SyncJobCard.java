@@ -17,6 +17,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import lombok.NonNull;
 
 import java.util.List;
@@ -45,7 +46,7 @@ public class SyncJobCard extends ResizablePanel implements AutoCloseable {
         };
 
         this.getStyleClass().add(DisplaySettings.SYNC_JOB_CARD_CLASS);
-        this.setMaxSize(2 * DisplaySettings.DEFAULT_INITIAL_WINDOW_WIDTH, DisplaySettings.SYNC_TASK_PANEL_JOB_CARD_HEIGHT);
+        this.setMaxSize(10 * DisplaySettings.DEFAULT_INITIAL_WINDOW_WIDTH, DisplaySettings.SYNC_TASK_PANEL_JOB_CARD_HEIGHT);
         this.setMinWidth(DisplaySettings.DEFAULT_INITIAL_WINDOW_WIDTH - DisplaySettings.SIDE_MENU_WIDTH - 100);
 
         hBoxContainer = new HBox();
@@ -90,10 +91,11 @@ public class SyncJobCard extends ResizablePanel implements AutoCloseable {
                     case Upload -> "main_panel.sync_tasks.sync_job_card.mode.upload";
                     case Download -> "main_panel.sync_tasks.sync_job_card.mode.download";
                 }),
-                SyncJobCardLabel.DEFAULT_SMALL_LABEL_SIZE, syncJobAttributes.widthProperty().map(Number::doubleValue), 55, mouseClickEvent);
+                SyncJobCardLabel.DEFAULT_SMALL_LABEL_SIZE, syncJobAttributes.widthProperty().map(Number::doubleValue), 55, mouseClickEvent, null);
         SyncJobCardLabel stateLabel = new SyncJobCardLabel(i18n.get("main_panel.sync_tasks.sync_job_card.state"),
                 i18n.get(syncJob.isEnabled() ? "main_panel.sync_tasks.sync_job_card.state.enabled" : "main_panel.sync_tasks.sync_job_card.state.disabled"),
-                SyncJobCardLabel.DEFAULT_SMALL_LABEL_SIZE,  syncJobAttributes.widthProperty().map(Number::doubleValue),55, mouseClickEvent);
+                SyncJobCardLabel.DEFAULT_SMALL_LABEL_SIZE,  syncJobAttributes.widthProperty().map(Number::doubleValue),55, mouseClickEvent,
+                syncJob.isEnabled() ? Color.GREEN : Color.RED);
         syncJobAttributes.getChildren().addAll(modeLabel, stateLabel);
         AnchorPane.setRightAnchor(syncJobAttributes, 0.0);
         AnchorPane.setTopAnchor(syncJobAttributes, 0.0);
