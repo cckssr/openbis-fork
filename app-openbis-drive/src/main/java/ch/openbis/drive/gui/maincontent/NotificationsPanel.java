@@ -201,7 +201,7 @@ public class NotificationsPanel extends ResizablePanel {
 
         tableView.setMinSize(parent.getWidth() - 80, 80);
         tableView.setMaxSize(parent.getWidth() - 80, parent.getHeight() - 80);
-        tableView.setPrefSize(parent.getWidth() - 80, 30 + NOTIFICATIONS_PER_PAGE * FIXED_CELL_SIZE);
+        tableView.setPrefSize(parent.getWidth() - 80, 32 + NOTIFICATIONS_PER_PAGE * FIXED_CELL_SIZE);
     }
 
     @NonNull static String getNormalizedLocalFile(@NonNull Notification notification) {
