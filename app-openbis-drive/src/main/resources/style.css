@@ -99,3 +99,7 @@
 .font-awesome-7-free-solid {
     -fx-font-family: "Font Awesome 7 Free Solid";
 }
+
+.table-view .column-header {
+    -fx-pref-height: 30;
+}

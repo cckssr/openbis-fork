@@ -27,7 +27,7 @@ import java.util.Optional;
 
 public class NotificationsPanel extends ResizablePanel {
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy hh:mm:ss z");
-    private static final int NOTIFICATIONS_PER_PAGE = 20;
+    private static final int NOTIFICATIONS_PER_PAGE = 10;
     private static final int FIXED_CELL_SIZE = 85;
 
     private final VBox mainVBox;
@@ -65,10 +65,11 @@ public class NotificationsPanel extends ResizablePanel {
         BorderPane filters = new BorderPane();
 
         HBox leftFilters = new HBox();
-        leftFilters.setPadding(new Insets(15, 15, 15, 15));
+        leftFilters.setPadding(new Insets(0, 10, 30, 0));
         leftFilters.setSpacing(20);
         leftFilters.setAlignment(Pos.CENTER_LEFT);
         RefreshButton refreshButton = new RefreshButton();
+        refreshButton.setMinSize(DisplaySettings.TOP_CONTROL_WIDTH, DisplaySettings.TOP_CONTROL_HEIGHT);
         refreshButton.setOnAction((e) -> {
             refreshNotificationList();
             refreshNotificationTableAtPage(pagination.getCurrentPageIndex(), pagination);
@@ -76,15 +77,18 @@ public class NotificationsPanel extends ResizablePanel {
         leftFilters.getChildren().add(refreshButton);
 
         HBox rightFilters = new HBox();
-        rightFilters.setPadding(new Insets(15, 15, 15, 15));
+        rightFilters.setPadding(new Insets(0, 0, 30, 0));
         rightFilters.setSpacing(20);
         rightFilters.setAlignment(Pos.CENTER_RIGHT);
         Label notificationTypeSelectionLabel = new Label();
         notificationTypeSelectionLabel.textProperty().bind(i18n.createStringBinding("main_panel.notification_table.type_filter_label"));
         ChoiceBox<Optional<Notification.Type>> languageChoiceBox = getNotificationTypeFilterSelection(i18n);
+        languageChoiceBox.setMinSize(DisplaySettings.TOP_CONTROL_WIDTH, DisplaySettings.TOP_CONTROL_HEIGHT);
         rightFilters.getChildren().add(notificationTypeSelectionLabel);
         rightFilters.getChildren().add(languageChoiceBox);
-        rightFilters.getChildren().add(new SearchField(filterText));
+        SearchField searchField = new SearchField(filterText);
+        searchField.setMinSize(DisplaySettings.TOP_CONTROL_WIDTH, DisplaySettings.TOP_CONTROL_HEIGHT);
+        rightFilters.getChildren().add(searchField);
         filterText.addListener((obs, oldValue, newValue) -> {
             if(newValue != null && !newValue.equals(oldValue)) {
                 refreshNotificationTableAtPage(pagination.getCurrentPageIndex(), pagination);
@@ -197,7 +201,7 @@ public class NotificationsPanel extends ResizablePanel {
 
         tableView.setMinSize(parent.getWidth() - 80, 80);
         tableView.setMaxSize(parent.getWidth() - 80, parent.getHeight() - 80);
-        tableView.setPrefSize(parent.getWidth() - 80, (NOTIFICATIONS_PER_PAGE + 1.1) * FIXED_CELL_SIZE);
+        tableView.setPrefSize(parent.getWidth() - 80, 30 + NOTIFICATIONS_PER_PAGE * FIXED_CELL_SIZE);
     }
 
     @NonNull static String getNormalizedLocalFile(@NonNull Notification notification) {
@@ -274,6 +278,7 @@ public class NotificationsPanel extends ResizablePanel {
     }
 
     private synchronized void refreshFilteredNotificationList() {
+        tableView.getSortOrder().clear();
         filteredNotifications.setValue(notificationRows.getValue().stream().filter( notificationRow -> {
             Notification.Type typeFilterValue = notificationTypeFilter.getValue();
             if (typeFilterValue != null) {

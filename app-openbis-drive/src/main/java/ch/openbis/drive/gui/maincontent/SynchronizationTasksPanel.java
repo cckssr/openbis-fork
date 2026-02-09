@@ -59,7 +59,7 @@ public class SynchronizationTasksPanel extends ResizablePanel {
 
         mainVBox = new VBox();
         mainVBox.getStyleClass().add(DisplaySettings.MAIN_CONTENT_PADDED_FRAME_CLASS);
-        mainVBox.setSpacing(50);
+        mainVBox.setSpacing(30);
         this.getChildren().add(mainVBox);
 
         HBox topButtonRow = new HBox();
@@ -283,8 +283,8 @@ public class SynchronizationTasksPanel extends ResizablePanel {
         editButtonGroup.setMaxWidth(parent.getWidth() - mainVBox.getPadding().getLeft() - addButton.getWidth());
         editButtonGroup.setPrefWidth(parent.getWidth() - mainVBox.getPadding().getLeft() - addButton.getWidth());
 
-        syncTaskListContainer.setMaxSize(parent.getWidth() - 100, (syncJobCards.getValue().size()) * (DisplaySettings.SYNC_TASK_PANEL_JOB_CARD_HEIGHT + SYNC_JOB_CARD_SPACING));
-        syncTaskListContainer.setPrefSize(parent.getWidth() - 100, (syncJobCards.getValue().size()) * (DisplaySettings.SYNC_TASK_PANEL_JOB_CARD_HEIGHT + SYNC_JOB_CARD_SPACING));
+        syncTaskListContainer.setMaxSize(parent.getWidth() - 82, (syncJobCards.getValue().size()) * (DisplaySettings.SYNC_TASK_PANEL_JOB_CARD_HEIGHT + SYNC_JOB_CARD_SPACING));
+        syncTaskListContainer.setPrefSize(parent.getWidth() - 82, (syncJobCards.getValue().size()) * (DisplaySettings.SYNC_TASK_PANEL_JOB_CARD_HEIGHT + SYNC_JOB_CARD_SPACING));
         syncListScrollPane.setPrefHeight(parent.getHeight());
     }
 
