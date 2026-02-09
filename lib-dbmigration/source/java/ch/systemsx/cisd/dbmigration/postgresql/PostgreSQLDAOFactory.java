@@ -43,7 +43,7 @@ import ch.systemsx.cisd.dbmigration.java.MigrationStepExecutor;
  */
 public class PostgreSQLDAOFactory implements IDAOFactory
 {
-    private static final String DEFAULT_VALID_VERSIONS = "11 15";
+    private static final String DEFAULT_VALID_VERSIONS = "11 15 18";
 
     private final IDatabaseAdminDAO databaseDAO;
 
