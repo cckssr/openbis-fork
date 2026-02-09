@@ -1,5 +1,5 @@
 /*
- * Copyright ETH 2022 - 2023 Zürich, Scientific IT Services
+ * Copyright ETH 2022 - 2026 Zürich, Scientific IT Services
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -133,16 +133,16 @@ public class XLSImport
 
     private static final String ZIP_EXTENSION = "." + "zip";
 
-//    public XLSImport(String sessionToken,
-//            IApplicationServerApi v3,
-//            ImportModes mode,
-//            ImportOptions options,
-//            String[] sessionWorkspaceFiles,
-//            boolean shouldCheckVersionsOnDatabase
-//            ) throws IOException
-//    {
-//        this(sessionToken, v3, mode, options, sessionWorkspaceFiles, shouldCheckVersionsOnDatabase, null);
-//    }
+    public XLSImport(String sessionToken,
+            IApplicationServerApi v3,
+            ImportModes mode,
+            ImportOptions options,
+            String[] sessionWorkspaceFiles,
+            boolean shouldCheckVersionsOnDatabase
+            ) throws IOException
+    {
+        this(sessionToken, v3, mode, options, sessionWorkspaceFiles, shouldCheckVersionsOnDatabase, null);
+    }
 
     public XLSImport(String sessionToken,
             IApplicationServerApi v3,
@@ -153,7 +153,6 @@ public class XLSImport
             AfsClient client) throws IOException
     {
         this.sessionToken = sessionToken;
-//        this.openBIS = openBIS;
         this.v3 = v3;
         this.options = options;
         this.beforeVersions = Collections.unmodifiableMap(VersionInfoHandler.loadAllVersions(options));
@@ -178,7 +177,6 @@ public class XLSImport
         this.typeGroupImportHelper = new TypeGroupImportHelper(this.delayedExecutor, mode, options);
         this.shouldCheckVersionsOnDatabase = shouldCheckVersionsOnDatabase;
 
-//        this.afsDataImportHelper = new AfsDataImportHelper(sessionToken, mode, options, openBIS);
         this.afsDataImportHelper = new AfsDataImportHelper(sessionToken, mode, options, this.v3, client);
 
         // File Parsing
@@ -529,7 +527,7 @@ public class XLSImport
         try {
             boolean isAfsAvailable = afsDataImportHelper.isAfsConnectionAvailable();
             if(!isAfsAvailable) {
-                return;
+                throw new UserFailureException("Imported file contains AFS data but connection is not available.");
             }
             final ISessionWorkspaceProvider sessionWorkspaceProvider = CommonServiceProvider.getSessionWorkspaceProvider();
             File sessionWorkspaceFile = sessionWorkspaceProvider.getSessionWorkspace(this.sessionToken);
