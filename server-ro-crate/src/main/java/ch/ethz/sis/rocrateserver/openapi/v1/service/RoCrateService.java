@@ -28,6 +28,7 @@ import org.jboss.resteasy.specimpl.ResponseBuilderImpl;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -242,6 +243,19 @@ public class RoCrateService
         SessionInformation sessionInformation = null;
         if (headers.getJobId() == null)
         {
+            ErrorResponse errorResponse = new ErrorResponse("Header jobID is missing");
+            return new ResponseBuilderImpl().entity(objectMapper.writeValueAsString(errorResponse))
+                    .status(Response.Status.BAD_REQUEST)
+                    .type(MediaType.APPLICATION_JSON_TYPE)
+                    .build();
+        }
+        if (headers.getApiKey() == null)
+        {
+            ErrorResponse errorResponse = new ErrorResponse("Header api-key is missing");
+            return new ResponseBuilderImpl().entity(objectMapper.writeValueAsString(errorResponse))
+                    .status(Response.Status.BAD_REQUEST)
+                    .type(MediaType.APPLICATION_JSON_TYPE)
+                    .build();
         }
 
         try
@@ -264,7 +278,9 @@ public class RoCrateService
             if (job instanceof ExportJob)
             {
                 result = new AsyncResult(status.getStatus().toString(), List.of(), null);
-                responseBuilder = Response.ok(((ExportJob) job).getResult().readAllBytes(),
+                java.nio.file.Path path = ((ExportJob) job).getResult();
+
+                responseBuilder = Response.ok(Files.readAllBytes(path),
                         job.getMimeType());
                 return responseBuilder.build();
             }

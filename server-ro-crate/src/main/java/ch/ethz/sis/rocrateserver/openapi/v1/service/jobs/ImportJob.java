@@ -36,7 +36,6 @@ import io.quarkus.logging.Log;
 import org.jboss.logging.Logger;
 
 import java.io.*;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -276,55 +275,59 @@ public final class ImportJob implements IAsyncJob
             LOG.debug("Path: " + path.toString());
             SessionWorkSpaceManager.write(headers.getApiKey(), path, body);
             Path realPath1 = SessionWorkSpaceManager.getRealPath(headers.getApiKey(), path);
-            Files.newInputStream(realPath1);
-            ZipInputStream zis = new ZipInputStream(new FileInputStream(realPath1.toString()));
-            ZipEntry nextEntry = zis.getNextEntry();
-            File destDir = new File(SessionWorkSpaceManager.getRealPath(headers.getApiKey(),
-                    Path.of(uuid.toString())).toString());
-
-            while (nextEntry != null)
+            try (ZipInputStream zis = new ZipInputStream(new FileInputStream(realPath1.toString())))
             {
-                File newFile = newFile(destDir, nextEntry);
-                if (nextEntry.isDirectory())
-                {
-                    if (!newFile.isDirectory() && !newFile.mkdirs())
-                    {
-                        throw new IOException("Failed to create directory " + newFile);
-                    }
-                } else
-                {
-                    // fix for Windows-created archives
-                    File parent = newFile.getParentFile();
-                    if (!parent.isDirectory() && !parent.mkdirs())
-                    {
-                        throw new IOException("Failed to create directory " + parent);
-                    }
+                ZipEntry nextEntry = zis.getNextEntry();
+                File destDir = new File(SessionWorkSpaceManager.getRealPath(headers.getApiKey(),
+                        Path.of(uuid.toString())).toString());
 
-                    // write file content
-                    FileOutputStream fos = new FileOutputStream(newFile);
-                    int len;
-                    while ((len = zis.read(buffer)) > 0)
+                while (nextEntry != null)
+                {
+                    File newFile = newFile(destDir, nextEntry);
+                    if (nextEntry.isDirectory())
                     {
-                        fos.write(buffer, 0, len);
+                        if (!newFile.isDirectory() && !newFile.mkdirs())
+                        {
+                            throw new IOException("Failed to create directory " + newFile);
+                        }
+                    } else
+                    {
+                        // fix for Windows-created archives
+                        File parent = newFile.getParentFile();
+                        if (!parent.isDirectory() && !parent.mkdirs())
+                        {
+                            throw new IOException("Failed to create directory " + parent);
+                        }
+
+                        // write file content
+                        FileOutputStream fos = new FileOutputStream(newFile);
+                        int len;
+                        while ((len = zis.read(buffer)) > 0)
+                        {
+                            fos.write(buffer, 0, len);
+                        }
+                        fos.close();
                     }
-                    fos.close();
+                    nextEntry = zis.getNextEntry();
+
                 }
-                nextEntry = zis.getNextEntry();
 
-            }
+                RoCrateReader roCrateReader = new RoCrateReader(new FolderReader());
+                Path realPath = SessionWorkSpaceManager.getRealPath(headers.getApiKey(),
+                        Path.of(uuid.toString()));
+                LOG.debug(String.format("Crate location %s",
+                        realPath));
+                if (realPath.toString().startsWith("./"))
+                {
+                    LOG.error("How did this happen?");
+                }
 
-            RoCrateReader roCrateReader = new RoCrateReader(new FolderReader());
-            Path realPath = SessionWorkSpaceManager.getRealPath(headers.getApiKey(),
-                    Path.of(uuid.toString()));
-            LOG.debug(String.format("Crate location %s",
-                    realPath));
-            if (realPath.toString().startsWith("./"))
+                crate = roCrateReader.readCrate(
+                        realPath.toString());
+            } catch (Exception e)
             {
-                LOG.error("How did this happen?");
+                throw new RuntimeException(e);
             }
-
-            crate = roCrateReader.readCrate(
-                    realPath.toString());
         }
         return crate;
     }
