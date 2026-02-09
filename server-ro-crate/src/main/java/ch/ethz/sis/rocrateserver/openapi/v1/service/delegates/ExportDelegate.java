@@ -10,6 +10,8 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -26,6 +28,9 @@ public class ExportDelegate
             ExportParams headers,
             InputStream body) throws Exception
     {
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
         String exportMimeType = headers.getExportMimeType();
         if (!ACCEPTABLE_MIME_TYPES.contains(exportMimeType))
         {
@@ -34,10 +39,25 @@ public class ExportDelegate
                             .sorted().collect(
                                     Collectors.joining(",")), Response.Status.NOT_ACCEPTABLE);
         }
+        // Code simulating the copy
+        // You could alternatively use NIO
+        // And please, unlike me, do something about the Exceptions :D
+        byte[] buffer = new byte[1024];
+        int len;
+        while ((len = body.read(buffer)) > -1)
+        {
+            baos.write(buffer, 0, len);
+        }
+        baos.flush();
+
+        // Open new InputStreams using recorded bytes
+        // Can be repeated as many times as you wish
+        InputStream inputStream = new ByteArrayInputStream(baos.toByteArray());
+
 
 
         String userName = openBIS.getSessionInformation().getUserName();
-        ExportJob exportJob = new ExportJob(headers, body, openBIS, userName);
+        ExportJob exportJob = new ExportJob(headers, inputStream, openBIS, userName);
         String jobId = asyncJobRegistry.register(exportJob);
 
         return new AsyncJob(jobId);
