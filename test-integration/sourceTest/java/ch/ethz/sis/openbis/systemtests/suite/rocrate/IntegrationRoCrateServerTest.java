@@ -327,7 +327,7 @@ public class IntegrationRoCrateServerTest
             return asyncJob.get("status").toString().equals(asyncStatus);
         } catch (Exception e)
         {
-            throw new RuntimeException();
+            throw new RuntimeException(e);
         }
     }
 
