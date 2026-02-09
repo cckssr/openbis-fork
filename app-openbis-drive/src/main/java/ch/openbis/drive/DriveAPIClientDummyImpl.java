@@ -1,11 +1,7 @@
 package ch.openbis.drive;
 
-import ch.openbis.drive.model.Event;
-import ch.openbis.drive.model.Notification;
-import ch.openbis.drive.model.Settings;
-import ch.openbis.drive.model.SyncJob;
+import ch.openbis.drive.model.*;
 import lombok.NonNull;
-import lombok.SneakyThrows;
 
 import java.util.List;
 
@@ -30,15 +26,17 @@ public class DriveAPIClientDummyImpl implements DriveAPI, AutoCloseable {
 
     synchronized public void stopSyncJobs(@NonNull List<@NonNull SyncJob> syncJobs) {}
 
-    @SneakyThrows
     synchronized public @NonNull List<? extends Event> getEvents(@NonNull Integer limit) {
         return null;
     }
 
-    synchronized @NonNull public List<Notification> getNotifications(@NonNull Integer limit) {
+    synchronized public @NonNull  List<Notification> getNotifications(@NonNull Integer limit) {
         return null;
     }
 
+    synchronized public @NonNull List<@NonNull SyncJobLive> getSyncJobsLive() {
+        return null;
+    }
 
     @Override
     public void close() {}

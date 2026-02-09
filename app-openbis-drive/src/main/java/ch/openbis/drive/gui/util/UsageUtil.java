@@ -10,6 +10,7 @@ import lombok.Value;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.text.DecimalFormat;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -155,6 +156,20 @@ public class UsageUtil {
             this.availableSpacePercentage = Math.min(((double) availableSpace) / totalSize * 100, 100.0);
             this.localDirUsedPercentageMap = UsageUtil.getLocalDirUsedPercentageMap(localDirUsedSpaceMap, totalSize);
             this.totalLocalDirSpacePercentage = Math.min(((double) totalLocalDirSpace) / totalSize * 100, 100.0);
+        }
+    }
+
+    public static String getFileSizeWithUnitOfMeasurement(long bytes) {
+        if (bytes < 1024) {
+            return bytes + " B";
+        } else if (bytes < 1048576) {
+            return new DecimalFormat("#.##").format(((double) bytes) / 1024) + " KB";
+        } else if (bytes < 1073741824) {
+            return new DecimalFormat("#.##").format(((double) bytes) / 1048576) + " MB";
+        } else if (bytes < 1099511627776L) {
+            return new DecimalFormat("#.##").format(((double) bytes) / 1073741824) + " GB";
+        } else {
+            return new DecimalFormat("#.##").format(((double) bytes) / 1099511627776L) + " TB";
         }
     }
 }

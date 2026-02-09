@@ -1,6 +1,7 @@
 package ch.openbis.drive.tasks;
 
 import ch.openbis.drive.model.SyncJob;
+import ch.openbis.drive.model.SyncJobLive;
 import lombok.NonNull;
 
 import java.util.List;
@@ -16,4 +17,6 @@ public interface TaskManager {
 
     void addSyncJobs(@NonNull List<@NonNull SyncJob> syncJobs, int periodSeconds);
     void removeSyncJobs(@NonNull List<@NonNull SyncJob> syncJobs);
+
+    @NonNull List<@NonNull SyncJobLive> getSyncJobsLive();
 }

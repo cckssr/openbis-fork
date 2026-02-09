@@ -92,6 +92,10 @@ public class DriveAPIServerImpl implements DriveAPI {
         return notificationManager.getNotifications(limit);
     }
 
+    synchronized public @NonNull List<@NonNull SyncJobLive> getSyncJobsLive() {
+        return taskManager.getSyncJobsLive();
+    }
+
     // NON-PUBLIC METHODS
 
     synchronized void addNotifications(@NonNull List<@NonNull Notification> notifications) {
