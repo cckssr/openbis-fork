@@ -163,7 +163,7 @@ public class SyncOperationTest extends TestCase {
 
         SyncJob syncJob1 = new SyncJob(SyncJob.Type.Upload, "url", "uuid", "token", "title", "/remotedir1", "/localdir1", true);
         SyncOperation syncOperation1 = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings()));
-        Assert.assertEquals(uploadMonitor, syncOperation1.getTransferMonitor());
+        Assert.assertEquals(uploadMonitor, syncOperation1.getUploadTransferMonitor());
 
 
         uploadMonitor = Mockito.mock(ClientAPI.TransferMonitorListener.class);
@@ -172,7 +172,7 @@ public class SyncOperationTest extends TestCase {
         notificationManager = Mockito.mock(NotificationManager.class);
 
         SyncOperation syncOperation2 = Mockito.spy(new SyncOperation(syncJob2, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings()));
-        Assert.assertEquals(downloadMonitor, syncOperation2.getTransferMonitor());
+        Assert.assertEquals(downloadMonitor, syncOperation2.getDownloadTransferMonitor());
 
         uploadMonitor = Mockito.mock(ClientAPI.TransferMonitorListener.class);
         downloadMonitor = Mockito.mock(ClientAPI.TransferMonitorListener.class);
@@ -180,9 +180,8 @@ public class SyncOperationTest extends TestCase {
         notificationManager = Mockito.mock(NotificationManager.class);
 
         SyncOperation syncOperation3 = Mockito.spy(new SyncOperation(syncJob3, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings()));
-        Assert.assertEquals(uploadMonitor, syncOperation3.getTransferMonitor());
-        Mockito.when(uploadMonitor.isFinished()).thenReturn(true);
-        Assert.assertEquals(downloadMonitor, syncOperation3.getTransferMonitor());
+        Assert.assertEquals(uploadMonitor, syncOperation3.getUploadTransferMonitor());
+        Assert.assertEquals(downloadMonitor, syncOperation3.getDownloadTransferMonitor());
     }
 
     @Test

@@ -73,16 +73,16 @@ public class UsageSettingsPanel extends ResizablePanel {
 
     private VBox getPieChart(@NonNull UsageUtil.Data data, @NonNull I18n i18n) {
         VBox vBox = new VBox();
-        vBox.getChildren().add(getLabelledSizeIndicator(i18n.get("main_panel.settings.usage.total_space"), getFileSizeWithUnitOfMeasurement(data.getTotalSize())));
-        vBox.getChildren().add(getLabelledSizeIndicator(i18n.get("main_panel.settings.usage.available_space"), getFileSizeWithUnitOfMeasurement(data.getAvailableSpace())));
-        vBox.getChildren().add(getLabelledSizeIndicator(i18n.get("main_panel.settings.usage.app_occupied_space"), getFileSizeWithUnitOfMeasurement(data.getTotalLocalDirSpace())));
+        vBox.getChildren().add(getLabelledSizeIndicator(i18n.get("main_panel.settings.usage.total_space"), UsageUtil.getFileSizeWithUnitOfMeasurement(data.getTotalSize())));
+        vBox.getChildren().add(getLabelledSizeIndicator(i18n.get("main_panel.settings.usage.available_space"), UsageUtil.getFileSizeWithUnitOfMeasurement(data.getAvailableSpace())));
+        vBox.getChildren().add(getLabelledSizeIndicator(i18n.get("main_panel.settings.usage.app_occupied_space"), UsageUtil.getFileSizeWithUnitOfMeasurement(data.getTotalLocalDirSpace())));
         List<PieChart.Data> pieChartData = new ArrayList<>();
         pieChartData.add(new PieChart.Data(i18n.get("main_panel.settings.usage.available_space"), data.getAvailableSpacePercentage()));
         pieChartData.add(new PieChart.Data(
-                getFileSizeWithUnitOfMeasurement(data.getAvailableSpace() - data.getTotalLocalDirSpace()) + "  " + i18n.get("main_panel.settings.usage.other_files"),
+                UsageUtil.getFileSizeWithUnitOfMeasurement(data.getAvailableSpace() - data.getTotalLocalDirSpace()) + "  " + i18n.get("main_panel.settings.usage.other_files"),
                 100 - data.getAvailableSpacePercentage() - data.getTotalLocalDirSpacePercentage()));
         data.getLocalDirUsedPercentageMap().forEach( (locDir, usedSpacePercentage) -> {
-            pieChartData.add(new PieChart.Data(getFileSizeWithUnitOfMeasurement(data.getLocalDirUsedSpaceMap().get(locDir)) + "  " + locDir, usedSpacePercentage));
+            pieChartData.add(new PieChart.Data(UsageUtil.getFileSizeWithUnitOfMeasurement(data.getLocalDirUsedSpaceMap().get(locDir)) + "  " + locDir, usedSpacePercentage));
         });
         PieChart pieChart = new PieChart();
         pieChart.setData(new ObservableListWrapper<>(pieChartData));
@@ -103,20 +103,6 @@ public class UsageSettingsPanel extends ResizablePanel {
         size.setText(sizeWithUnit);
         hBox.getChildren().addAll(name, size);
         return hBox;
-    }
-
-    private String getFileSizeWithUnitOfMeasurement(long bytes) {
-        if (bytes < 1024) {
-            return bytes + " B";
-        } else if (bytes < 1048576) {
-            return new DecimalFormat("#.##").format(((double) bytes) / 1024) + " KB";
-        } else if (bytes < 1073741824) {
-            return new DecimalFormat("#.##").format(((double) bytes) / 1048576) + " MB";
-        } else if (bytes < 1099511627776L) {
-            return new DecimalFormat("#.##").format(((double) bytes) / 1073741824) + " GB";
-        } else {
-            return new DecimalFormat("#.##").format(((double) bytes) / 1099511627776L) + " TB";
-        }
     }
 
     @Override

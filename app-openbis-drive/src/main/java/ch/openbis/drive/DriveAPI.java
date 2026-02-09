@@ -1,15 +1,9 @@
 package ch.openbis.drive;
 
-import ch.openbis.drive.model.Event;
-import ch.openbis.drive.model.Notification;
-import ch.openbis.drive.model.Settings;
-import ch.openbis.drive.model.SyncJob;
+import ch.openbis.drive.model.*;
 import lombok.NonNull;
-import lombok.SneakyThrows;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public interface DriveAPI {
     void setSettings(@NonNull Settings settings);
@@ -23,4 +17,6 @@ public interface DriveAPI {
 
     @NonNull List<? extends Event> getEvents(@NonNull Integer limit);
     @NonNull List<Notification> getNotifications(@NonNull Integer limit);
+
+    @NonNull List<@NonNull SyncJobLive> getSyncJobsLive();
 }

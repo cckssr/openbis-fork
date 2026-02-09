@@ -1,9 +1,6 @@
 package ch.openbis.drive.protobuf.converters;
 
-import ch.openbis.drive.model.Event;
-import ch.openbis.drive.model.Notification;
-import ch.openbis.drive.model.Settings;
-import ch.openbis.drive.model.SyncJob;
+import ch.openbis.drive.model.*;
 import ch.openbis.drive.protobuf.DriveApiService;
 import lombok.NonNull;
 
@@ -79,6 +76,42 @@ public class ProtobufConversionUtil {
             syncJobBuilder.setRemoteDirectoryRoot(syncJob.getRemoteDirectoryRoot());
             syncJobBuilder.setIgnoreFiles(toProtobufSyncJobIgnoreFilesModeEnum(syncJob.getIgnoreFiles()));
             syncJobBuilder.setIgnoredPathPatterns(DriveApiService.IgnoredPathPatterns.newBuilder().addAllIgnoredPathPatterns(syncJob.getIgnoredPathPatterns()).build());
+            builder.addSyncJobs(syncJobBuilder.build());
+        }
+
+        return builder.build();
+    }
+
+    public static @NonNull ArrayList<@NonNull SyncJobLive> fromProtobufSyncJobsLive(@NonNull DriveApiService.SyncJobsLive syncJobsLiveDto) {
+        ArrayList<SyncJobLive> syncJobs = new ArrayList<>();
+
+        for(DriveApiService.SyncJobLive syncJobDto: syncJobsLiveDto.getSyncJobsList()) {
+            SyncJobLive.SyncJobLiveBuilder syncJobLive = SyncJobLive.builder();
+            syncJobLive.localDirectory(syncJobDto.getLocalDirectoryRoot());
+            syncJobLive.uploading(syncJobDto.getUploading());
+            syncJobLive.downloading(syncJobDto.getDownloading());
+            syncJobLive.totalUpload(syncJobDto.getTotalUpload());
+            syncJobLive.totalDownload(syncJobDto.getTotalDownload());
+            syncJobLive.currentUpload(syncJobDto.getCurrentUpload());
+            syncJobLive.currentDownload(syncJobDto.getCurrentDownload());
+            syncJobs.add(syncJobLive.build());
+        }
+
+        return syncJobs;
+    }
+
+    public static DriveApiService.SyncJobsLive toProtobufSyncJobsLive(@NonNull List<@NonNull SyncJobLive> syncJobsLive) {
+        DriveApiService.SyncJobsLive.Builder builder = DriveApiService.SyncJobsLive.newBuilder();
+
+        for(SyncJobLive syncJobLive : syncJobsLive) {
+            DriveApiService.SyncJobLive.Builder syncJobBuilder = DriveApiService.SyncJobLive.newBuilder();
+            syncJobBuilder.setLocalDirectoryRoot(syncJobLive.getLocalDirectory());
+            syncJobBuilder.setUploading(syncJobLive.isUploading());
+            syncJobBuilder.setDownloading(syncJobLive.isDownloading());
+            syncJobBuilder.setTotalUpload(syncJobLive.getTotalUpload());
+            syncJobBuilder.setTotalDownload(syncJobLive.getTotalDownload());
+            syncJobBuilder.setCurrentUpload(syncJobLive.getCurrentUpload());
+            syncJobBuilder.setCurrentDownload(syncJobLive.getCurrentDownload());
             builder.addSyncJobs(syncJobBuilder.build());
         }
 

@@ -1,10 +1,7 @@
 package ch.openbis.drive.protobuf;
 
 import ch.openbis.drive.DriveAPIServerImpl;
-import ch.openbis.drive.model.Event;
-import ch.openbis.drive.model.Notification;
-import ch.openbis.drive.model.Settings;
-import ch.openbis.drive.model.SyncJob;
+import ch.openbis.drive.model.*;
 import ch.openbis.drive.protobuf.converters.ProtobufConversionUtil;
 import io.grpc.stub.StreamObserver;
 
@@ -118,6 +115,18 @@ public class DriveAPIGrpcImpl extends DriveAPIServiceGrpc.DriveAPIServiceImplBas
         try {
             List<Notification> notifications = driveAPIServer.getNotifications(request.getLimit());
             responseObserver.onNext(ProtobufConversionUtil.toProtobufNotifications(notifications));
+        } catch (Exception e) {
+            responseObserver.onError(e);
+        } finally {
+            responseObserver.onCompleted();
+        }
+    }
+
+    @Override
+    public void getSyncJobsLive(DriveApiService.Empty request, StreamObserver<DriveApiService.SyncJobsLive> responseObserver) {
+        try {
+            List<SyncJobLive> syncJobsLive = driveAPIServer.getSyncJobsLive();
+            responseObserver.onNext(ProtobufConversionUtil.toProtobufSyncJobsLive(syncJobsLive));
         } catch (Exception e) {
             responseObserver.onError(e);
         } finally {

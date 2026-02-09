@@ -1,10 +1,7 @@
 package ch.openbis.drive.gui.util;
 
 import ch.openbis.drive.gui.i18n.I18n;
-import ch.openbis.drive.model.Event;
-import ch.openbis.drive.model.Notification;
-import ch.openbis.drive.model.Settings;
-import ch.openbis.drive.model.SyncJob;
+import ch.openbis.drive.model.*;
 import ch.openbis.drive.protobuf.client.DriveAPIClientProtobufImpl;
 import ch.openbis.drive.util.OpenBISDriveUtil;
 import io.grpc.Status;
@@ -98,6 +95,10 @@ public class ServiceCallHandler {
 
     public @NonNull ServiceCallResult<List<SyncJob>> getSyncJobs() {
         return doCall(driveAPIClientProtobuf::getSyncJobs);
+    }
+
+    public @NonNull ServiceCallResult<List<SyncJobLive>> getSyncJobsLive() {
+        return doCall(driveAPIClientProtobuf::getSyncJobsLive);
     }
 
     interface ServiceCall<T> {
