@@ -45,6 +45,7 @@ import org.jboss.logging.Logger;
 
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.util.*;
 import java.util.zip.ZipEntry;
@@ -56,7 +57,7 @@ public final class ExportJob implements IAsyncJob
 
     ExportParams exportParams;
 
-    InputStream result;
+    Path result;
 
     Exception exception;
 
@@ -65,6 +66,11 @@ public final class ExportJob implements IAsyncJob
     OpenBIS openBIS;
 
     String username;
+
+    int retry_count = 0;
+
+    private static final int MAX_RETRIES = 3;
+
 
     public ExportJob(ExportParams exportParams, InputStream body, OpenBIS openBIS, String username)
     {
@@ -193,10 +199,24 @@ public final class ExportJob implements IAsyncJob
             boolean isOperationFinished = false;
             while (isOperationFinished == false)
             {
-                Map<IOperationExecutionId, OperationExecution> operationExecutions =
-                        openBIS.getOperationExecutions(List.of(executionId),
-                                ongoingOperationsFetchOptions);
-                OperationExecution operationExecution = operationExecutions.get(executionId);
+                OperationExecution operationExecution;
+                try
+                {
+                    Map<IOperationExecutionId, OperationExecution> operationExecutions =
+                            openBIS.getOperationExecutions(List.of(executionId),
+                                    ongoingOperationsFetchOptions);
+                    operationExecution = operationExecutions.get(executionId);
+                } catch (RuntimeException e)
+                {
+
+                    retry_count++;
+                    if (retry_count >= MAX_RETRIES)
+                    {
+                        this.exception = e;
+                        isOperationFinished = true;
+                    }
+                    continue;
+                }
 
                 if (operationExecution.getState() == OperationExecutionState.FAILED)
                 {
@@ -233,16 +253,37 @@ public final class ExportJob implements IAsyncJob
                                     tempRoCratePath);
                     writer.write(openBisModel, realTempRoCratePath);
 
+
                     if (exportParams.getExportMimeType().equals(RoCrateService.APPLICATION_LD_JSON))
                     {
                         ZipFile zipFile = new ZipFile(realTempRoCratePath.toFile());
                         ZipEntry zipEntry = zipFile.getEntry("ro-crate-metadata.json");
-                        this.result = zipFile.getInputStream(zipEntry);
+                        try (var a = zipFile.getInputStream(zipEntry))
+                        {
+                            UUID uuid = UUID.randomUUID();
+                            Path path = Path.of(uuid + ".json");
+                            SessionWorkSpaceManager.write(this.exportParams.getApiKey(), path, a);
+                            this.result = SessionWorkSpaceManager.getRealPath(
+                                    this.exportParams.getApiKey(), path);
+                        } catch (Exception e)
+                        {
+                            this.exception = e;
+                        }
 
                     } else if (exportParams.getExportMimeType()
                             .equals(RoCrateService.APPLICATION_ZIP))
                     {
-                        this.result = Files.newInputStream(realTempRoCratePath);
+                        try (var a = Files.newInputStream(realTempRoCratePath))
+                        {
+                            UUID uuid = UUID.randomUUID();
+                            Path path = Path.of(uuid + ".json");
+                            SessionWorkSpaceManager.write(this.exportParams.getApiKey(), path, a);
+                            this.result = SessionWorkSpaceManager.getRealPath(
+                                    this.exportParams.getApiKey(), path);
+                        } catch (Exception e)
+                        {
+                            this.exception = e;
+                        }
                     }
                 }
                 Thread.sleep(2000);
@@ -347,7 +388,7 @@ public final class ExportJob implements IAsyncJob
         return exportOptions;
     }
 
-    public InputStream getResult()
+    public Path getResult()
     {
         return result;
     }
