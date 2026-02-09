@@ -26,6 +26,9 @@ public class DisplaySettings {
     public static final double SYNC_TASK_PANEL_JOB_CARD_HEIGHT = 125;
     public static final int SYNC_JOB_CARD_SPACING = 12;
 
+    public static final double TOP_CONTROL_WIDTH = 130;
+    public static final double TOP_CONTROL_HEIGHT = 40;
+
     public static final String MAIN_CONTENT_PADDED_FRAME_CLASS = "main-content-frame";
     public static final String SYNC_JOB_CARD_CLASS = "sync-job-card";
     public static final String TEXT_AREA_TABLE_CELL_CLASS = "text-area-table-cell";
