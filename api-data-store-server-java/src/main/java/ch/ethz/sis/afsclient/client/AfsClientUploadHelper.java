@@ -654,7 +654,9 @@ public class AfsClientUploadHelper
                 {
                     Optional<File> remoteTmpToFile =
                             getServerFilePresence(afsClient, ownerId, toServerPathString(TemporaryPathUtil.getTwinTemporaryPath(toPath)));
-                    if (remoteTmpToFile.isPresent() && (long) remoteTmpToFile.get().getSize() == total &&
+                    if (remoteTmpToFile.isPresent() &&
+                            remoteTmpToFile.get().getSize() != null &&
+                            (long) remoteTmpToFile.get().getSize() == total &&
                             Files.exists(fromPath) && Files.size(fromPath) == total &&
                             Files.getLastModifiedTime(fromPath).toMillis() == expectedSrcLastModification &&
                             afsClient.hash(ownerId, remoteTmpToFile.get().getPath()).equals(expectedChecksum)
