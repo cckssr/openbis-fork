@@ -1,23 +1,5 @@
 package ch.ethz.sis.rocrateserver.openapi.v1.service.jobs;
 
-import java.io.InputStream;
-import java.time.Duration;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
-
-import org.eclipse.jetty.client.HttpClient;
-import org.eclipse.jetty.client.InputStreamResponseListener;
-import org.eclipse.jetty.client.Request;
-
-import org.eclipse.jetty.client.transport.HttpClientTransportOverHTTP;
-import org.eclipse.jetty.io.ClientConnector;
-import org.eclipse.jetty.util.ssl.SslContextFactory;
-
 import ch.ethz.sis.openbis.generic.OpenBIS;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.operation.IOperationResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
@@ -53,9 +35,24 @@ import ch.ethz.sis.rocrateserver.startup.StartupMain;
 import ch.openbis.rocrate.app.writer.Writer;
 import io.quarkus.logging.Log;
 import jakarta.ws.rs.HttpMethod;
+import org.eclipse.jetty.client.HttpClient;
+import org.eclipse.jetty.client.InputStreamResponseListener;
+import org.eclipse.jetty.client.Request;
+import org.eclipse.jetty.client.transport.HttpClientTransportOverHTTP;
+import org.eclipse.jetty.io.ClientConnector;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
+import org.jboss.logging.Logger;
+
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.time.Duration;
+import java.util.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 public final class ExportJob implements IAsyncJob
 {
+    private static final Logger LOG = Logger.getLogger(ExportJob.class);
 
     ExportParams exportParams;
 
@@ -219,7 +216,7 @@ public final class ExportJob implements IAsyncJob
                     ExportOperationResult exportOperationResult =
                             (ExportOperationResult) iOperationResult;
                     String downloadURL = exportOperationResult.getExportResult().getDownloadURL();
-                    System.out.println("Download url: " + downloadURL);
+                    LOG.info("Download url: " + downloadURL);
 
                     java.nio.file.Path realPathToExcel =
                             downloadExcel(openBIS, exportParams, downloadURL);
@@ -242,6 +239,10 @@ public final class ExportJob implements IAsyncJob
                         ZipEntry zipEntry = zipFile.getEntry("ro-crate-metadata.json");
                         this.result = zipFile.getInputStream(zipEntry);
 
+                    } else if (exportParams.getExportMimeType()
+                            .equals(RoCrateService.APPLICATION_ZIP))
+                    {
+                        this.result = Files.newInputStream(realTempRoCratePath);
                     }
                 }
                 Thread.sleep(2000);
@@ -280,7 +281,7 @@ public final class ExportJob implements IAsyncJob
                                 openBIS.getSessionToken()));
         request.method(HttpMethod.GET);
         request.send(listener);
-        System.out.println("Got a response!:");
+        LOG.info("Got a response!:");
 
         // Write openBIS export to disk
         // TODO: Extract this part with previous
