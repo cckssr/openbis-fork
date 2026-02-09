@@ -3,10 +3,7 @@ package ch.openbis.drive.protobuf.client;
 import ch.openbis.drive.DriveAPI;
 import ch.openbis.drive.DriveAPIService;
 import ch.openbis.drive.conf.Configuration;
-import ch.openbis.drive.model.Event;
-import ch.openbis.drive.model.Notification;
-import ch.openbis.drive.model.Settings;
-import ch.openbis.drive.model.SyncJob;
+import ch.openbis.drive.model.*;
 import ch.openbis.drive.protobuf.*;
 import ch.openbis.drive.protobuf.converters.ProtobufConversionUtil;
 import ch.openbis.drive.util.OsDetectionUtil;
@@ -100,8 +97,13 @@ public class DriveAPIClientProtobufImpl implements DriveAPI, AutoCloseable {
     }
 
     @SneakyThrows
-    synchronized @NonNull public List<Notification> getNotifications(@NonNull Integer limit) {
+    synchronized public @NonNull List<Notification> getNotifications(@NonNull Integer limit) {
         return ProtobufConversionUtil.fromProtobufNotifications(DriveAPIServiceGrpc.newBlockingStub(grpcManagedChannel).getNotifications(DriveApiService.Limit.newBuilder().setLimit(limit).build()));
+    }
+
+    @SneakyThrows
+    public @NonNull List<@NonNull SyncJobLive> getSyncJobsLive() {
+        return ProtobufConversionUtil.fromProtobufSyncJobsLive(DriveAPIServiceGrpc.newBlockingStub(grpcManagedChannel).getSyncJobsLive(DriveApiService.Empty.newBuilder().build()));
     }
 
     @Override

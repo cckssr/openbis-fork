@@ -1,8 +1,10 @@
 package ch.openbis.drive.tasks;
 
+import ch.ethz.sis.afsapi.api.ClientAPI;
 import ch.openbis.drive.conf.Configuration;
 import ch.openbis.drive.db.SyncJobEventDAO;
 import ch.openbis.drive.model.SyncJob;
+import ch.openbis.drive.model.SyncJobLive;
 import ch.openbis.drive.notifications.NotificationManager;
 import ch.openbis.drive.settings.SettingsManager;
 import ch.openbis.drive.util.DirectoryWatch;
@@ -198,6 +200,30 @@ public class TaskManagerImpl implements TaskManager {
         public boolean isCancelled() {
             return cancelled.get();
         }
+    }
+
+    @Override
+    public synchronized @NonNull List<@NonNull SyncJobLive> getSyncJobsLive() {
+        return jobTimers.entrySet().stream()
+                .map( entry -> {
+                    SyncJob syncJob = entry.getKey();
+                    SyncOperation syncOperation = syncOperations.get(syncJob);
+                    if (syncOperation != null) {
+                        ClientAPI.TransferMonitorListener uploadMonitor = syncOperation.getUploadTransferMonitor();
+                        ClientAPI.TransferMonitorListener downloadMonitor = syncOperation.getDownloadTransferMonitor();
+                        return new SyncJobLive(syncJob.getLocalDirectoryRoot(),
+                                !uploadMonitor.isFinished(),
+                                uploadMonitor.isFinished() && !downloadMonitor.isFinished(),
+                                uploadMonitor.getTotal(),
+                                downloadMonitor.getTotal(),
+                                uploadMonitor.getCurrent(),
+                                downloadMonitor.getCurrent());
+                    } else {
+                        return new SyncJobLive(syncJob.getLocalDirectoryRoot(),
+                                false, false,
+                                0, 0, 0, 0);
+                    }
+                }).toList();
     }
 
     //Through this method, it can be known if a synchronization-task is underway.

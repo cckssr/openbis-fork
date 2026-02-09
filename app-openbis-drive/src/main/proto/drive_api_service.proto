@@ -51,6 +51,20 @@ message SyncJobs {
     repeated SyncJob sync_jobs = 1;
 }
 
+message SyncJobLive {
+  string local_directory_root = 1;
+  bool uploading = 2;
+  bool downloading = 3;
+  int64 total_upload = 4;
+  int64 total_download = 5;
+  int64 current_upload = 6;
+  int64 current_download = 7;
+}
+
+message SyncJobsLive {
+  repeated SyncJobLive sync_jobs = 1;
+}
+
 message Event {
     SyncDirection sync_direction = 1;
     string local_file = 2;
@@ -109,4 +123,6 @@ service DriveAPIService {
 
     rpc GetEvents(Limit) returns (Events);
     rpc GetNotifications(Limit) returns (Notifications);
+
+    rpc GetSyncJobsLive(Empty) returns (SyncJobsLive);
 }

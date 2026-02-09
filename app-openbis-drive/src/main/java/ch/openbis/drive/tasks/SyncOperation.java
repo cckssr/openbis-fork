@@ -160,19 +160,12 @@ public class SyncOperation {
         raiseJobStoppedNotification();
     }
 
-    public ClientAPI.TransferMonitorListener getTransferMonitor() {
-        switch (syncJob.getType()) {
-            case Upload:
-                return uploadMonitor;
-            case Download:
-                return downloadMonitor;
-            default: //Bidirectional
-                if (!uploadMonitor.isFinished()) {
-                    return uploadMonitor;
-                } else {
-                    return downloadMonitor;
-                }
-        }
+    public ClientAPI.TransferMonitorListener getUploadTransferMonitor() {
+        return uploadMonitor;
+    }
+
+    public ClientAPI.TransferMonitorListener getDownloadTransferMonitor() {
+        return downloadMonitor;
     }
 
     public class FileSyncCollisionListener implements ClientAPI.FileCollisionListener {
