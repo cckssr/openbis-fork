@@ -53,9 +53,10 @@ import static ch.ethz.sis.afsclient.client.AfsClientUploadHelper.toServerPathStr
 public class SyncJobDialog extends Dialog<SyncJob> {
     final int MAX_TEXT_INPUT_LENGTH = 300;
     Pattern HTTP_URL_PATTERN = Pattern.compile("^(http|https)://[^\\s/$.?#][^/]*$");
-    final static String SUGGESTED_REMOTE_DIRECTORY = "/";
+    final static String SUGGESTED_REMOTE_ROOT_DIRECTORY = "/";
     final static String LINE_SEPARATOR = System.lineSeparator();
     final OpenBISQueryUtil.SearchUnit searchUnit;
+    final OpenBISQueryUtil.AfsSearchUnit afsSearchUnit;
 
     final SyncJob editedSyncJob;
     final List<SyncJob> currentSyncJobs;
@@ -64,7 +65,9 @@ public class SyncJobDialog extends Dialog<SyncJob> {
     final TextField titleValue;
     final TextField openbisEntityIdValue;
     final ProgressIndicator openbisEntityIdValueProgressIndicator = new ProgressIndicator();
+    final ProgressIndicator openbisServerDirectoryValueProgressIndicator = new ProgressIndicator();
     final AutoCompletePopup<EntitySuggestion> openbisEntityIdAutocompletion;
+    final AutoCompletePopup<ServerDirectorySuggestion> openbisServerDirectoryAutocompletion;
     final TextField openbisServerDirectoryValue;
     final TextField personalAccessTokenValue;
     final TextField localDirectoryValue;
@@ -87,6 +90,7 @@ public class SyncJobDialog extends Dialog<SyncJob> {
             () -> validationErrors.stream().noneMatch(BooleanProperty::getValue), validationErrors.toArray(BooleanProperty[]::new));
 
     final ObjectProperty<ChosenEntity> entityChosen = new SimpleObjectProperty<>(null);
+    final ObjectProperty<String> serverDirectoryChosen = new SimpleObjectProperty<>(null);
     final static int EXTENDED_HEIGHT = 750;
     final static int EXTENDED_WIDTH = 900;
 
@@ -159,6 +163,7 @@ public class SyncJobDialog extends Dialog<SyncJob> {
         Label openbisServerDirectoryLabel = new Label();
         openbisServerDirectoryLabel.textProperty().bind(i18n.createStringBinding("sync_tasks.modal_panel.sync_task_modal.server_directory"));
         openbisServerDirectoryLabel.setPadding(new Insets(30, 0, 0, 0));
+        openbisServerDirectoryAutocompletion = getOpenbisServerDirectoryAutocompletion();
         openbisServerDirectoryValue = getRemoteDirectoryTextField();
 
         Label localDirectoryLabel = new Label();
@@ -235,7 +240,9 @@ public class SyncJobDialog extends Dialog<SyncJob> {
                     newSyncJob.setEntityType(entityChosen.getValue().getEntityType());
                     newSyncJob.setEntityImmutable(entityChosen.getValue().isImmutable());
                 }
-                newSyncJob.setRemoteDirectoryRoot(toServerPathString(Path.of(openbisServerDirectoryValue.getText())));
+                if (serverDirectoryChosen.getValue() != null) {
+                    newSyncJob.setRemoteDirectoryRoot(toServerPathString(Path.of(serverDirectoryChosen.getValue())));
+                }
                 newSyncJob.setOpenBisPersonalAccessToken(personalAccessTokenValue.getText());
                 newSyncJob.setLocalDirectoryRoot(localDirectoryValue.getText());
                 newSyncJob.setType(selectedSyncJobType.get());
@@ -262,62 +269,30 @@ public class SyncJobDialog extends Dialog<SyncJob> {
         //Search unit supporting suggestions for openBIS entity-id
         searchUnit = getSearchUnit();
 
+        //Search unit supporting suggestions for AFS-directories under openBIS entity-id
+        afsSearchUnit = getAfsSearchUnit();
+
+        // If the chosen openBIS entity is changed or invalidated (set to null),
+        // the chosen server-directory must be invalidated
+        // and the afsSearchUnit must be updated
+        entityChosen.addListener( (obs, oldValue, newValue) -> {
+            if ( !SUGGESTED_REMOTE_ROOT_DIRECTORY.equals(serverDirectoryChosen.getValue()) ) {
+                serverDirectoryChosen.setValue(null);
+            }
+            afsSearchUnit.setEntityId(
+                    Optional.ofNullable(newValue)
+                            .map( entityChosen -> newValue.getEntityId())
+                            .orElse(null));
+        });
+
         setOnHidden(new EventHandler<DialogEvent>() {
             @Override
             @SneakyThrows
             public void handle(DialogEvent dialogEvent) {
                 searchUnit.close();
+                afsSearchUnit.close();
             }
         });
-    }
-
-    OpenBISQueryUtil.SearchUnit getSearchUnit() {
-        final OpenBISQueryUtil.SearchUnit searchUnit;
-        searchUnit = new OpenBISQueryUtil.SearchUnit((result, ex) -> {
-            if (ex == null) {
-                openbisEntityIdAutocompletion.getSuggestions().clear();
-
-                List<EntitySuggestion> resultsWithSectionTitles = new ArrayList<>();
-                List<EntitySuggestion> samples = result.stream().filter( it -> it instanceof Sample).map(EntitySuggestion::newEntity).toList();
-                List<EntitySuggestion> experiments = result.stream().filter( it -> it instanceof Experiment).map(EntitySuggestion::newEntity).toList();
-                List<EntitySuggestion> dataSets = result.stream().filter( it -> it instanceof DataSet).map(EntitySuggestion::newEntity).toList();
-
-                if (!samples.isEmpty()) {
-                    resultsWithSectionTitles.add(EntitySuggestion.newTitle("Samples"));
-                    resultsWithSectionTitles.addAll(samples);
-                }
-                if (!experiments.isEmpty()) {
-                    resultsWithSectionTitles.add(EntitySuggestion.newTitle("Experiments"));
-                    resultsWithSectionTitles.addAll(experiments);
-                }
-                if (!dataSets.isEmpty()) {
-                    resultsWithSectionTitles.add(EntitySuggestion.newTitle("Datasets"));
-                    resultsWithSectionTitles.addAll(dataSets);
-                }
-
-                openbisEntityIdAutocompletion.getSuggestions().addAll(resultsWithSectionTitles);
-                Platform.runLater( () -> {
-                    openbisEntityIdAutocompletion.setMinWidth(openbisEntityIdValue.getWidth());
-                    openbisEntityIdAutocompletion.show(openbisEntityIdValue);
-                });
-            } else {
-                ex.printStackTrace();
-
-                openbisEntityIdAutocompletion.getSuggestions().clear();
-                openbisEntityIdAutocompletion.getSuggestions().addAll(EntitySuggestion.newError(
-                        SharedContext.getContext().getI18n().get("sync_tasks.modal_panel.sync_task_modal.error_retrieving_entity_suggestions")
-                ));
-                Platform.runLater(() -> {
-                    openbisEntityIdAutocompletion.setMinWidth(openbisEntityIdValue.getWidth());
-                    openbisEntityIdAutocompletion.show(openbisEntityIdValue);
-                });
-            }
-            return null;
-        }, openbisEntityIdValueProgressIndicator::setVisible);
-
-        searchUnit.setOpenBISUrl(openbisServerUrlValue.getText());
-        searchUnit.setPersonalAccessToken(personalAccessTokenValue.getText().trim());
-        return searchUnit;
     }
 
     VBox getIgnoredFilesBox(I18n i18n, TextArea emptyPathPatternsTextArea) {
@@ -667,36 +642,117 @@ public class SyncJobDialog extends Dialog<SyncJob> {
 
         if (error == null) {
             searchUnit.setPersonalAccessToken(personalAccessTokenInput.trim());
+            afsSearchUnit.setPersonalAccessToken(personalAccessTokenInput.trim());
         } else {
             searchUnit.setPersonalAccessToken(null);
+            afsSearchUnit.setPersonalAccessToken(null);
         }
         return error;
     }
 
+    AutoCompletePopup<ServerDirectorySuggestion> getOpenbisServerDirectoryAutocompletion() {
+        AutoCompletePopup<ServerDirectorySuggestion> autoCompletePopup = new AutoCompletePopup<>();
+        autoCompletePopup.setMinWidth(350);
+        Callback<ListView<ServerDirectorySuggestion>, ListCell<ServerDirectorySuggestion>> cellFactory = new Callback<ListView<ServerDirectorySuggestion>, ListCell<ServerDirectorySuggestion>>() {
+            @Override
+            public ListCell<ServerDirectorySuggestion> call(ListView<ServerDirectorySuggestion> abstractEntityListView) {
+                return new ListCell<>() {
+                    @Override
+                    protected void updateItem(ServerDirectorySuggestion item, boolean empty) {
+                        super.updateItem(item, empty);
+
+                        Platform.runLater( () -> {
+                            if (empty || item == null) {
+                                setText(null);
+                                setDisable(false);
+                            } else {
+                                if (item.getKind() == ServerDirectorySuggestion.Kind.ERROR) {
+                                    setText(item.getError());
+                                    setStyle("-fx-text-fill: red;");
+                                    setDisable(true);
+                                } else if (item.getKind() == ServerDirectorySuggestion.Kind.DIRECTORY) {
+                                    setText(item.getDirectory());
+                                    setStyle("");
+                                    setDisable(false);
+                                } else {
+                                    setText(null);
+                                    setDisable(false);
+                                }
+                            }
+                        });
+
+                    }
+                };
+            }
+        };
+        autoCompletePopup.setSkin(new AutoCompletePopupSkin<>(autoCompletePopup, cellFactory));
+        autoCompletePopup.setOnSuggestion((serverDirectorySuggestionEvent -> {
+            ServerDirectorySuggestion directorySuggestion = serverDirectorySuggestionEvent.getSuggestion();
+
+            if( directorySuggestion.getKind() == ServerDirectorySuggestion.Kind.DIRECTORY ) {
+                String serverDirectory = directorySuggestion.getDirectory();
+                serverDirectoryChosen.set(
+                        serverDirectory
+                );
+                openbisServerDirectoryValue.setText(serverDirectory);
+                Platform.runLater(autoCompletePopup::hide);
+                Platform.runLater(this::doValidationOnAllInputFields);
+            }
+        }));
+
+        return autoCompletePopup;
+    }
+
     TextField getRemoteDirectoryTextField() {
-        TextField openbisServerDirectoryValue = new TextField();
+        CustomTextField openbisServerDirectoryValue = new CustomTextField();
         openbisServerDirectoryValue.setPrefWidth(1200);
         addValidationLayerToTextInput(openbisServerDirectoryValue, (textInput) -> validateRemoteDirectoryValue(textInput.getText()), remoteDirectoryPropertyError);
         if (editedSyncJob != null) {
             openbisServerDirectoryValue.setText(editedSyncJob.getRemoteDirectoryRoot());
+            serverDirectoryChosen.setValue(editedSyncJob.getRemoteDirectoryRoot());
         } else {
-            openbisServerDirectoryValue.setText(SUGGESTED_REMOTE_DIRECTORY);
+            openbisServerDirectoryValue.setText(SUGGESTED_REMOTE_ROOT_DIRECTORY);
+            serverDirectoryChosen.setValue(SUGGESTED_REMOTE_ROOT_DIRECTORY);
         }
+
+        openbisServerDirectoryValue.textProperty().addListener( (obs, oldValue, newValue) -> {
+            if (newValue == null ||
+                    (serverDirectoryChosen.getValue() != null &&
+                            !newValue.trim().equals(serverDirectoryChosen.getValue()))) {
+                serverDirectoryChosen.setValue(null);
+            }
+            if (newValue == null || !newValue.equals(serverDirectoryChosen.getValue())) {
+                afsSearchUnit.inputSearchText(
+                        Optional.ofNullable(newValue)
+                                .map(String::trim).orElse(""));
+            }
+        });
+        openbisServerDirectoryValue.focusedProperty().addListener( (obs, oldValue, newValue) -> {
+            if (Boolean.FALSE.equals(oldValue) && Boolean.TRUE.equals(newValue)) {
+                afsSearchUnit.inputSearchText(openbisServerDirectoryValue.getText().trim());
+            }
+        });
+
+        openbisServerDirectoryValueProgressIndicator.setVisible(false);
+        openbisServerDirectoryValueProgressIndicator.setMaxSize(15, 15);
+        openbisServerDirectoryValue.setRight(openbisServerDirectoryValueProgressIndicator);
         return openbisServerDirectoryValue;
     }
 
     String[] validateRemoteDirectoryValue(String remoteDirectoryInput) {
         if(remoteDirectoryInput == null || remoteDirectoryInput.isBlank()) {
             return new String[] { "error_tooltip.required_value" };
+        } else if(remoteDirectoryInput.length() > MAX_TEXT_INPUT_LENGTH) {
+            return new String[] { "error_tooltip.too_long_text_input" };
+        } else if(!Path.of(remoteDirectoryInput).startsWith(File.separator)) {
+            return new String[] { "error_tooltip.required_absolute_path" };
         } else {
-            if(remoteDirectoryInput.length() > MAX_TEXT_INPUT_LENGTH) {
-                return new String[] { "error_tooltip.too_long_text_input" };
+            String acceptedServerDirectory = ( serverDirectoryChosen.getValue() != null ) ? serverDirectoryChosen.getValue() : null;
+
+            if (acceptedServerDirectory == null || !acceptedServerDirectory.equals(openbisServerDirectoryValue.getText().trim())) {
+                return new String[] { "error_tooltip.server_directory_not_from_suggestions" };
             } else {
-                if(Path.of(remoteDirectoryInput).startsWith(File.separator)) {
-                    return null;
-                } else {
-                    return new String[] { "error_tooltip.required_absolute_path" };
-                }
+                return null;
             }
         }
     }
@@ -824,7 +880,7 @@ public class SyncJobDialog extends Dialog<SyncJob> {
             String acceptedEntityId = ( entityChosen.getValue() != null ) ? entityChosen.getValue().getEntityId() : null;
 
             if (acceptedEntityId == null || !acceptedEntityId.equals(entityIdInput.trim())) {
-                return new String[] { "error_tooltip.entity_id_non_from_server_suggestions" };
+                return new String[] { "error_tooltip.entity_id_not_from_server_suggestions" };
             } else {
                 return null;
             }
@@ -866,8 +922,10 @@ public class SyncJobDialog extends Dialog<SyncJob> {
 
         if (error == null) {
             searchUnit.setOpenBISUrl(serverUrlInput.trim());
+            afsSearchUnit.setOpenBISUrl(serverUrlInput.trim());
         } else {
             searchUnit.setOpenBISUrl(null);
+            afsSearchUnit.setOpenBISUrl(null);
         }
         return error;
     }
@@ -980,6 +1038,95 @@ public class SyncJobDialog extends Dialog<SyncJob> {
         return aboutButton;
     }
 
+    OpenBISQueryUtil.SearchUnit getSearchUnit() {
+        final OpenBISQueryUtil.SearchUnit searchUnit;
+        searchUnit = new OpenBISQueryUtil.SearchUnit((result, ex) -> {
+            if (ex == null) {
+                openbisEntityIdAutocompletion.getSuggestions().clear();
+
+                List<EntitySuggestion> resultsWithSectionTitles = new ArrayList<>();
+                List<EntitySuggestion> samples = result.stream().filter( it -> it instanceof Sample).map(EntitySuggestion::newEntity).toList();
+                List<EntitySuggestion> experiments = result.stream().filter( it -> it instanceof Experiment).map(EntitySuggestion::newEntity).toList();
+                List<EntitySuggestion> dataSets = result.stream().filter( it -> it instanceof DataSet).map(EntitySuggestion::newEntity).toList();
+
+                if (!samples.isEmpty()) {
+                    resultsWithSectionTitles.add(EntitySuggestion.newTitle("Samples"));
+                    resultsWithSectionTitles.addAll(samples);
+                }
+                if (!experiments.isEmpty()) {
+                    resultsWithSectionTitles.add(EntitySuggestion.newTitle("Experiments"));
+                    resultsWithSectionTitles.addAll(experiments);
+                }
+                if (!dataSets.isEmpty()) {
+                    resultsWithSectionTitles.add(EntitySuggestion.newTitle("Datasets"));
+                    resultsWithSectionTitles.addAll(dataSets);
+                }
+
+                openbisEntityIdAutocompletion.getSuggestions().addAll(resultsWithSectionTitles);
+                Platform.runLater( () -> {
+                    openbisEntityIdAutocompletion.setMinWidth(openbisEntityIdValue.getWidth());
+                    openbisEntityIdAutocompletion.show(openbisEntityIdValue);
+                });
+            } else {
+                ex.printStackTrace();
+
+                openbisEntityIdAutocompletion.getSuggestions().clear();
+                openbisEntityIdAutocompletion.getSuggestions().addAll(EntitySuggestion.newError(
+                        SharedContext.getContext().getI18n().get("sync_tasks.modal_panel.sync_task_modal.error_retrieving_entity_suggestions")
+                ));
+                Platform.runLater(() -> {
+                    openbisEntityIdAutocompletion.setMinWidth(openbisEntityIdValue.getWidth());
+                    openbisEntityIdAutocompletion.show(openbisEntityIdValue);
+                });
+            }
+            return null;
+        }, openbisEntityIdValueProgressIndicator::setVisible);
+
+        searchUnit.setOpenBISUrl(openbisServerUrlValue.getText());
+        searchUnit.setPersonalAccessToken(personalAccessTokenValue.getText().trim());
+        return searchUnit;
+    }
+
+    OpenBISQueryUtil.AfsSearchUnit getAfsSearchUnit() {
+        final OpenBISQueryUtil.AfsSearchUnit afsSearchUnit;
+        afsSearchUnit = new OpenBISQueryUtil.AfsSearchUnit((result, ex) -> {
+            if (ex == null) {
+                List<ServerDirectorySuggestion> directorySuggestions = result.stream()
+                        .map( dir -> new ServerDirectorySuggestion(ServerDirectorySuggestion.Kind.DIRECTORY, dir, null))
+                        .toList();
+                Platform.runLater( () -> {
+                    openbisServerDirectoryAutocompletion.getSuggestions().clear();
+                    openbisServerDirectoryAutocompletion.getSuggestions().addAll(directorySuggestions);
+                    openbisServerDirectoryAutocompletion.setMinWidth(openbisServerDirectoryValue.getWidth());
+                    openbisServerDirectoryAutocompletion.show(openbisServerDirectoryValue);
+                });
+            } else {
+                ex.printStackTrace();
+                List<ServerDirectorySuggestion> directorySuggestions = List.of(
+                        new ServerDirectorySuggestion(ServerDirectorySuggestion.Kind.DIRECTORY, SUGGESTED_REMOTE_ROOT_DIRECTORY, null),
+                        new ServerDirectorySuggestion(ServerDirectorySuggestion.Kind.ERROR, null,
+                                SharedContext.getContext().getI18n().get("sync_tasks.modal_panel.sync_task_modal.error_retrieving_server_directory_suggestions")
+                        )
+                );
+                Platform.runLater(() -> {
+                    openbisServerDirectoryAutocompletion.getSuggestions().clear();
+                    openbisServerDirectoryAutocompletion.getSuggestions().addAll(directorySuggestions);
+                    openbisServerDirectoryAutocompletion.setMinWidth(openbisServerDirectoryValue.getWidth());
+                    openbisServerDirectoryAutocompletion.show(openbisServerDirectoryValue);
+                });
+            }
+            return null;
+        }, openbisServerDirectoryValueProgressIndicator::setVisible);
+
+        afsSearchUnit.setOpenBISUrl(openbisServerUrlValue.getText());
+        afsSearchUnit.setPersonalAccessToken(personalAccessTokenValue.getText().trim());
+        afsSearchUnit.setEntityId(
+                Optional.ofNullable(entityChosen)
+                        .map( entityChosen -> entityChosen.getValue().getEntityId())
+                        .orElse(null));
+        return afsSearchUnit;
+    }
+
     @Value
     static class EntitySuggestion {
         enum Kind { ENTITY, TITLE, ERROR}
@@ -1006,6 +1153,16 @@ public class SyncJobDialog extends Dialog<SyncJob> {
         @NonNull String entityId;
         SyncJob.EntityType entityType;
         boolean immutable;
+    }
+
+    @Value
+    static class ServerDirectorySuggestion {
+        enum Kind { DIRECTORY, ERROR}
+
+        Kind kind;
+
+        String directory;
+        String error;
     }
 
     static SyncJob.EntityType toSyncJobEntityType(@NonNull AbstractEntity abstractEntity) {
