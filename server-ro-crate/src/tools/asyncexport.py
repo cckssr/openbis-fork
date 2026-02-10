@@ -1,3 +1,4 @@
+import argparse
 import json
 import os
 import sys
@@ -5,15 +6,32 @@ import time
 
 import requests
 
+
+
 if __name__ == '__main__':
 
-    url = 'http://localhost:8086/openbis/open-api/ro-crate/export'
-    identifiers = ['20260119123615519-39']
+    parser = argparse.ArgumentParser(
+        prog='ProgramName',
+        description='What the program does',
+        epilog='Text at the bottom of help')
+
+    parser.add_argument('-u', '--url', required=True)  # option that takes a value
+    parser.add_argument('-m', '--maxcalls', type=int)  # option that takes a value
+
+    args = vars( parser.parse_args())
+    base_url = args['url']
+    count = 0
+    max_calls = None
+    if 'maxcalls' in args and args['maxcalls']:
+        max_calls = int(args['maxcalls'])
+
+    url = f'{base_url}/export'
+    identifiers = ['20250808093031564-89', '20250808093031564-90']
     headers = {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
         'api-key': os.environ['OPENBIS_KEY'],
-        'Export': 'application/zip'
+        'Export': 'application/ld+json'
     }
 
     response = requests.post(url, json.dumps(identifiers), headers=headers, verify=False)
@@ -23,8 +41,13 @@ if __name__ == '__main__':
     job_id = response_obj["jobId"]
 
     done = False
+    count = 0
     while not done:
-        url = 'http://localhost:8086/openbis/open-api/ro-crate/status'
+        count = count + 1
+        if max_calls and count > max_calls:
+            raise Exception("Too many attempts")
+
+        url = f'{base_url}/status'
         headers = {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
@@ -37,7 +60,7 @@ if __name__ == '__main__':
         content_type = response.headers['Content-Type']
         if content_type != 'application/json':
             done = True
-            with open('/tmp/out.zip', 'wb') as out_file:
+            with open('/tmp/out.json', 'wb') as out_file:
                 out_file.write(response.content)
                 sys.exit(0)
         response_json = response.json()
@@ -47,6 +70,8 @@ if __name__ == '__main__':
 
         time.sleep(2.0)
 
-        print("lol")
+        output = f"Call {count} of {max_calls}" if max_calls else f"Call {count}"
+
+        print(output)
 
 
