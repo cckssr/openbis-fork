@@ -48,6 +48,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -159,6 +160,8 @@ public final class ExportJob implements IAsyncJob
 
             if (searchResults.getTotalCount() < 1)
             {
+                LOG.error("No results for [" + Arrays.stream(identifiers)
+                        .collect(Collectors.joining(", ")) + "]");
                 RoCrateExceptions.throwInstance(RoCrateExceptions.NO_RESULTS_FOUND);
             }
 
