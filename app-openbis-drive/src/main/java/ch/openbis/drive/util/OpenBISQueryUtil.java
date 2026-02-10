@@ -1,5 +1,7 @@
 package ch.openbis.drive.util;
 
+import ch.ethz.sis.afsapi.dto.File;
+import ch.ethz.sis.afsclient.client.AfsClient;
 import ch.ethz.sis.openbis.generic.OpenBIS;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.entity.AbstractEntity;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.AbstractEntityFetchOptions;
@@ -26,15 +28,20 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchO
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SearchSamplesOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SearchSamplesOperationResult;
+import ch.openbis.drive.tasks.SyncOperation;
 import com.google.common.collect.Streams;
 import lombok.NonNull;
 
+import java.net.URI;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 public class OpenBISQueryUtil {
+    static final int AFS_MAX_READ_SIZE_BYTES = 10485760;
+    static final int AFS_CLIENT_TIMEOUT = 30000;
+
     public static String getDisplayName(AbstractEntity entity) {
         String identifier =  null;
         if (entity instanceof IIdentifierHolder) {
@@ -145,6 +152,23 @@ public class OpenBISQueryUtil {
         }
     }
 
+    public static List<String> searchOpenBISEntityAfsDirectories(@NonNull String openBISUrl,
+                                                                         @NonNull String personalAccessToken,
+                                                                         @NonNull String entityId,
+                                                                         @NonNull String searchText) throws Exception {
+        AfsClient afsClient = new AfsClient(URI.create(openBISUrl + SyncOperation.AFS_SERVER_PATH), AFS_MAX_READ_SIZE_BYTES, AFS_CLIENT_TIMEOUT);
+        afsClient.setSessionToken(personalAccessToken);
+
+        File[] files = afsClient.list(entityId, "/", true);
+
+        return Streams.concat(
+            Stream.of("/"),
+            Arrays.stream(files).filter(Objects::nonNull)
+                .filter( fileDto -> Boolean.TRUE.equals(fileDto.getDirectory())
+                ).map( File::getPath )
+        ).filter(path -> path != null && path.contains(searchText) ).toList();
+    }
+
     public static class SearchUnit implements AutoCloseable {
         private String openBISUrl = null;
         private String personalAccessToken = null;
@@ -226,6 +250,111 @@ public class OpenBISQueryUtil {
         synchronized public void inputSearchText(@NonNull String searchText) {
             this.searchText = searchText;
             if (getOpenBISUrl() != null && getPersonalAccessToken() != null && !searching) {
+                this.searchStartingMoment = System.currentTimeMillis() + 500;
+                setTimer();
+            }
+        }
+
+        @Override
+        public void close() throws Exception {
+            this.timer.cancel();
+        }
+    }
+
+    public static class AfsSearchUnit implements AutoCloseable {
+        private String openBISUrl = null;
+        private String personalAccessToken = null;
+        private String entityId = null;
+
+        private Timer timer = null;
+        private String searchText;
+        private Long searchStartingMoment = null;
+        private boolean searching;
+
+        private final BiFunction<List<String>, Exception, Void> resultListener;
+        private final Consumer<Boolean> searchingStateChangeListener;
+
+        public AfsSearchUnit(
+                @NonNull BiFunction<List<String>, Exception, Void> resultListener,
+                @NonNull Consumer<Boolean> searchingStateChangeListener) {
+            this.resultListener = resultListener;
+            this.searchingStateChangeListener = searchingStateChangeListener;
+
+            this.timer = new Timer();
+        }
+
+        synchronized public void setOpenBISUrl(String openBISUrl) {
+            this.openBISUrl = openBISUrl;
+        }
+
+        synchronized public void setPersonalAccessToken(String personalAccessToken) {
+            this.personalAccessToken = personalAccessToken;
+        }
+
+        synchronized public void setEntityId(String entityId) {
+            this.entityId = entityId;
+        }
+
+        synchronized public String getOpenBISUrl() {
+            return this.openBISUrl;
+        }
+
+        synchronized public String getPersonalAccessToken() {
+            return this.personalAccessToken;
+        }
+
+        synchronized public String getEntityId() {
+            return this.entityId;
+        }
+
+        synchronized public boolean isSearching() {
+            return this.searching;
+        }
+
+        synchronized void setTimer() {
+            timer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    timerTaskJob();
+                }
+            }, 1000);
+        }
+
+        synchronized void timerTaskJob() {
+            if ( searchStartingMoment != null ) {
+                if ( searchStartingMoment < System.currentTimeMillis() ) {
+
+                    if (this.openBISUrl != null && this.personalAccessToken != null && this.entityId != null) {
+                        this.searching = true;
+                        searchingStateChangeListener.accept(true);
+                        this.searchStartingMoment = null;
+
+                        try {
+                            List<String> result =
+                                    searchOpenBISEntityAfsDirectories(this.openBISUrl, this.personalAccessToken, this.entityId, this.searchText);
+                            resultListener.apply(result, null);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            resultListener.apply(null, e);
+                        } finally {
+                            this.searching = false;
+                            searchingStateChangeListener.accept(false);
+                        }
+                    }
+
+                } else {
+                    setTimer();
+                }
+            }
+        }
+
+        synchronized public void inputSearchText(@NonNull String searchText) {
+            this.searchText = searchText;
+            if (getOpenBISUrl() != null &&
+                    getPersonalAccessToken() != null &&
+                    getEntityId() != null &&
+                    !searching) {
+
                 this.searchStartingMoment = System.currentTimeMillis() + 500;
                 setTimer();
             }
