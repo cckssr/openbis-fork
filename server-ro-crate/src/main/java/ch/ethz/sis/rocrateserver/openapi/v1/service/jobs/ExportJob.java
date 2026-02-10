@@ -212,6 +212,7 @@ public final class ExportJob implements IAsyncJob
                     retry_count++;
                     if (retry_count >= MAX_RETRIES)
                     {
+                        LOG.error("Too many retries", e);
                         this.exception = e;
                         isOperationFinished = true;
                     }
@@ -267,6 +268,7 @@ public final class ExportJob implements IAsyncJob
                                     this.exportParams.getApiKey(), path);
                         } catch (Exception e)
                         {
+                            LOG.error("Error writing JSON-LD", e);
                             this.exception = e;
                         }
 
@@ -282,6 +284,7 @@ public final class ExportJob implements IAsyncJob
                                     this.exportParams.getApiKey(), path);
                         } catch (Exception e)
                         {
+                            LOG.error("Error writing zip", e);
                             this.exception = e;
                         }
                     }
