@@ -88,6 +88,7 @@ public class TaskManagerImpl implements TaskManager {
         private final SyncJob syncJob;
         private final CloseableSyncTimer timer;
         private final DirectoryWatch directoryWatch;
+        private final AtomicBoolean isGracePeriod = new AtomicBoolean(false);
 
         public SyncJobTimeTask(SyncJob syncJob, CloseableSyncTimer timer) {
             this.syncJob = syncJob;
@@ -115,9 +116,19 @@ public class TaskManagerImpl implements TaskManager {
                     directoryWatch.close();
 
                     if (canStartImmediately(triggeringCause)) {
+                        isGracePeriod.set(false);
                         syncTaskOperation.start();
                     } else {
-                        rescheduleSyncOperationAfterGracePeriod();
+                        if ( triggeringCause == TriggeringCause.FILESYSTEM_EVENT ) {
+                            if ( !isGracePeriod.get() ) {
+                                isGracePeriod.set(true);
+                                rescheduleSyncOperationAfterGracePeriod();
+                            }
+                        } else if ( triggeringCause == TriggeringCause.FILESYSTEM_EVENT_CHECK_AFTER_GRACE_PERIOD ) {
+                            if ( isGracePeriod.get() ) {
+                                rescheduleSyncOperationAfterGracePeriod();
+                            }
+                        }
                     }
 
                 } catch (Exception e) {
