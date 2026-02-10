@@ -68,6 +68,7 @@ public interface ClientAPI
 
     class DefaultTransferMonitorLister implements TransferMonitorListener {
         private volatile Exception exception = null;
+        private volatile boolean finishedSuccessfully = false;
         private final AtomicLong current = new AtomicLong(0);
         private final AtomicLong total = new AtomicLong(0);
         private final List<FileTransferredListener> fileTransferredListeners = new ArrayList<>();
@@ -103,7 +104,7 @@ public interface ClientAPI
 
         @Override
         public void success() {
-
+            this.finishedSuccessfully = true;
         }
 
         @Override
@@ -118,7 +119,7 @@ public interface ClientAPI
 
         @Override
         public boolean isFinished() {
-            return current.get() == total.get() || exception != null;
+            return finishedSuccessfully || exception != null;
         }
 
         @Override
