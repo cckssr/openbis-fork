@@ -376,12 +376,24 @@ public final class ExportJob implements IAsyncJob
     {
         ExportOptions exportOptions = new ExportOptions();
 
-        // Mandatory, non-optional for ro-crate exports
-        exportOptions.setWithImportCompatibility(true);
+        exportOptions.setWithImportCompatibility(exportParams.isImportCompatible());
         exportOptions.setWithReferredTypes(true);
         exportOptions.setXlsTextFormat(XlsTextFormat.RICH);
         exportOptions.setWithLevelsAbove(true);
-        exportOptions.setFormats(Set.of(ExportFormat.XLSX));
+        Set<ExportFormat> formats = new HashSet<>();
+        if(exportParams.isFormatPDF()) {
+            formats.add(ExportFormat.PDF);
+        }
+        if(exportParams.isFormatXLSX()) {
+            formats.add(ExportFormat.XLSX);
+        }
+        if(exportParams.isImportDatasetData()) {
+            formats.add(ExportFormat.DATA);
+        }
+        if(exportParams.isImportAfsData()) {
+            formats.add(ExportFormat.AFS_DATA);
+        }
+        exportOptions.setFormats(formats);
         exportOptions.setZipSingleFiles(false);
 
         // Defaults, could be overridden with options
@@ -390,6 +402,8 @@ public final class ExportJob implements IAsyncJob
                 exportParams.isWithObjectsAndDataSetsParents());
         exportOptions.setWithObjectsAndDataSetsOtherSpaces(
                 exportParams.isWithObjectsAndDataSetsOtherSpaces());
+        exportOptions.setWithObjectsAndDataSetsChildren(
+                exportParams.isWithObjectsAndDataSetsChildren());
 
         return exportOptions;
     }

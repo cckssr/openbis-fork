@@ -25,8 +25,26 @@ public class ExportParams {
     @HeaderParam("openbis.identifier-annotations")
     private String identifierAnnotations;
 
+    @HeaderParam("openbis.import-compatible")
+    private String importCompatible;
+
+    @HeaderParam("openbis.metadata-pdf")
+    private String formatPDF;
+
+    @HeaderParam("openbis.metadata-xlsx")
+    private String formatXLSX;
+
+    @HeaderParam("openbis.dataset-data")
+    private String importDatasetData;
+
+    @HeaderParam("openbis.afs-data")
+    private String importAfsData;
+
     @HeaderParam("openbis.with-Levels-below")
     private String withLevelsBelow; // Include levels below from same space
+
+    @HeaderParam("openbis.with-objects-and-dataSets-children")
+    private String withObjectsAndDataSetsChildren; // Include levels below from same space
 
     @HeaderParam("openbis.with-objects-and-dataSets-parents")
     private String withObjectsAndDataSetsParents; // Include levels below from same space
@@ -117,5 +135,65 @@ public class ExportParams {
     public String getExportMimeType()
     {
         return exportMimeTyp;
+    }
+
+    public boolean isImportCompatible()
+    {
+        return importCompatible != null &&  Boolean.parseBoolean(importCompatible);
+    }
+
+    public void setImportCompatible(String importCompatible)
+    {
+        this.importCompatible = importCompatible;
+    }
+
+    public boolean isFormatPDF()
+    {
+        return formatPDF != null && Boolean.parseBoolean(formatPDF);
+    }
+
+    public void setFormatPDF(String formatPDF)
+    {
+        this.formatPDF = formatPDF;
+    }
+
+    public boolean isFormatXLSX()
+    {
+        return formatXLSX != null && Boolean.parseBoolean(formatXLSX);
+    }
+
+    public void setFormatXLSX(String formatXLSX)
+    {
+        this.formatXLSX = formatXLSX;
+    }
+
+    public boolean isImportDatasetData()
+    {
+        return importDatasetData != null && Boolean.parseBoolean(importDatasetData);
+    }
+
+    public void setImportDatasetData(String importDatasetData)
+    {
+        this.importDatasetData = importDatasetData;
+    }
+
+    public boolean isImportAfsData()
+    {
+        return importAfsData != null && Boolean.parseBoolean(importAfsData);
+    }
+
+    public boolean isWithObjectsAndDataSetsChildren()
+    {
+        return withObjectsAndDataSetsChildren != null && Boolean.parseBoolean(withObjectsAndDataSetsChildren);
+    }
+
+    public void setWithObjectsAndDataSetsChildren(String withObjectsAndDataSetsChildren)
+    {
+        this.withObjectsAndDataSetsChildren = withObjectsAndDataSetsChildren;
+    }
+
+    public void setImportAfsData(String importAfsData)
+    {
+        this.importAfsData = importAfsData;
     }
 }
