@@ -1,5 +1,34 @@
 # OpenBIS Change Log
 
+## Version 20.10.12.4 (10 Feb 2026)
+
+### Core
+- Improvement: UserManagementMaintenanceTask Manual Mode (BIS-2469)
+
+### ELN-LIMS
+- Bugfix: Using arrows to scroll in text opens new tabs (BIS-2417)
+
+## Version 20.10.12.3 (10 Feb 2026)
+
+### Core
+- Improvement: modify xlsx export to support use of labels instead of codes for vocabulary terms (BIS-2159)
+
+### Admin
+- Bugfix: cannot change "editable" and "mandatory" fields of property assignment (BIS-2376)
+
+### ELN-LIMS
+
+- Bugfix: Cannot visualize some datasets in a couple of instances (BIS-2346)
+- Bugfix: Wrong link to documentation (BIS-2351)
+- Bugfix: Cannot filter objects in collection tables by date or timestamp (BIS-2367)
+- Bugfix: Objects not correctly shown in navigation menu (BIS-2380)
+- Bugfix: Problems with ELN tables (BIS-2383)
+- Bugfix: Cannot switch between "Lab notebook", "Inventory", "Tools" after closing all tabs in one of these sections (BIS-2384)
+- Bugfix: New Settings cannot be opened in multi group instances (BIS-2390)
+- Bugfix: Tables with long text, cut the text content and do not have the option to "show more" (BIS-2391)
+- Bugfix: Zenodo Export Broken after Export Service Update (BIS-2396)
+- Bugfix: Export Breaks PDF Generator (BIS-2427)
+
 ## Version 20.10.12.2 (24 Nov 2025)
 
 ### ELN-LIMS
