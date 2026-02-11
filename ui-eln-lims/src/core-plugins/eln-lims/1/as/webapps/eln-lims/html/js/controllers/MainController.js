@@ -1203,20 +1203,12 @@ function MainController(profile) {
             mainController.tabContent.openTab(navigationTab, function() {
                 tab = $("[id='"+navigationTab.id+"']")
                 tab.empty()
-                tab.addClass("addedTab")
                 tab.append(tabContentHeader);
                 tab.append(tabContentBody);
 
                 if(callback) {
                     callback();
                 }
-
-                var height = $(window).height() - LayoutManager.MAIN_HEADER_HEIGHT
-                                    - LayoutManager.TAB_TOP_BAR_HEIGHT
-                                    - tabContentHeader.outerHeight();
-                tabContentBody.css({
-                    "height" : height,
-                })
             });
             header = tabContentHeader;
             content = tabContentBody;
