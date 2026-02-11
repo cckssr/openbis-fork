@@ -73,6 +73,7 @@ public class Configuration {
             properties.load(new FileInputStream(localAppDirectory.resolve(OPENBIS_DRIVE_PROPERTIES_FILE).toFile()));
             if (properties.getProperty(AfsClient.NO_TLS_CERT_CHECK_SYSTEM_PROPERTY) != null) {
                 setSystemProperty(AfsClient.NO_TLS_CERT_CHECK_SYSTEM_PROPERTY, properties.getProperty(AfsClient.NO_TLS_CERT_CHECK_SYSTEM_PROPERTY));
+                setSystemProperty("jdk.internal.httpclient.disableHostnameVerification", "true");
             }
         }
     }

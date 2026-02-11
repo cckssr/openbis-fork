@@ -1,23 +1,5 @@
 package ch.ethz.sis.rocrateserver.openapi.v1.service.jobs;
 
-import java.io.InputStream;
-import java.time.Duration;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
-
-import org.eclipse.jetty.client.HttpClient;
-import org.eclipse.jetty.client.InputStreamResponseListener;
-import org.eclipse.jetty.client.Request;
-
-import org.eclipse.jetty.client.transport.HttpClientTransportOverHTTP;
-import org.eclipse.jetty.io.ClientConnector;
-import org.eclipse.jetty.util.ssl.SslContextFactory;
-
 import ch.ethz.sis.openbis.generic.OpenBIS;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.operation.IOperationResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
@@ -53,13 +35,30 @@ import ch.ethz.sis.rocrateserver.startup.StartupMain;
 import ch.openbis.rocrate.app.writer.Writer;
 import io.quarkus.logging.Log;
 import jakarta.ws.rs.HttpMethod;
+import org.eclipse.jetty.client.HttpClient;
+import org.eclipse.jetty.client.InputStreamResponseListener;
+import org.eclipse.jetty.client.Request;
+import org.eclipse.jetty.client.transport.HttpClientTransportOverHTTP;
+import org.eclipse.jetty.io.ClientConnector;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
+import org.jboss.logging.Logger;
+
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.Duration;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 public final class ExportJob implements IAsyncJob
 {
+    private static final Logger LOG = Logger.getLogger(ExportJob.class);
 
     ExportParams exportParams;
 
-    InputStream result;
+    Path result;
 
     Exception exception;
 
@@ -68,6 +67,11 @@ public final class ExportJob implements IAsyncJob
     OpenBIS openBIS;
 
     String username;
+
+    int retry_count = 0;
+
+    private static final int MAX_RETRIES = 3;
+
 
     public ExportJob(ExportParams exportParams, InputStream body, OpenBIS openBIS, String username)
     {
@@ -156,6 +160,8 @@ public final class ExportJob implements IAsyncJob
 
             if (searchResults.getTotalCount() < 1)
             {
+                LOG.error("No results for [" + Arrays.stream(identifiers)
+                        .collect(Collectors.joining(", ")) + "]");
                 RoCrateExceptions.throwInstance(RoCrateExceptions.NO_RESULTS_FOUND);
             }
 
@@ -196,10 +202,25 @@ public final class ExportJob implements IAsyncJob
             boolean isOperationFinished = false;
             while (isOperationFinished == false)
             {
-                Map<IOperationExecutionId, OperationExecution> operationExecutions =
-                        openBIS.getOperationExecutions(List.of(executionId),
-                                ongoingOperationsFetchOptions);
-                OperationExecution operationExecution = operationExecutions.get(executionId);
+                OperationExecution operationExecution;
+                try
+                {
+                    Map<IOperationExecutionId, OperationExecution> operationExecutions =
+                            openBIS.getOperationExecutions(List.of(executionId),
+                                    ongoingOperationsFetchOptions);
+                    operationExecution = operationExecutions.get(executionId);
+                } catch (RuntimeException e)
+                {
+
+                    retry_count++;
+                    if (retry_count >= MAX_RETRIES)
+                    {
+                        LOG.error("Too many retries", e);
+                        this.exception = e;
+                        isOperationFinished = true;
+                    }
+                    continue;
+                }
 
                 if (operationExecution.getState() == OperationExecutionState.FAILED)
                 {
@@ -219,7 +240,7 @@ public final class ExportJob implements IAsyncJob
                     ExportOperationResult exportOperationResult =
                             (ExportOperationResult) iOperationResult;
                     String downloadURL = exportOperationResult.getExportResult().getDownloadURL();
-                    System.out.println("Download url: " + downloadURL);
+                    LOG.info("Download url: " + downloadURL);
 
                     java.nio.file.Path realPathToExcel =
                             downloadExcel(openBIS, exportParams, downloadURL);
@@ -236,12 +257,39 @@ public final class ExportJob implements IAsyncJob
                                     tempRoCratePath);
                     writer.write(openBisModel, realTempRoCratePath);
 
+
                     if (exportParams.getExportMimeType().equals(RoCrateService.APPLICATION_LD_JSON))
                     {
                         ZipFile zipFile = new ZipFile(realTempRoCratePath.toFile());
                         ZipEntry zipEntry = zipFile.getEntry("ro-crate-metadata.json");
-                        this.result = zipFile.getInputStream(zipEntry);
+                        try (var a = zipFile.getInputStream(zipEntry))
+                        {
+                            UUID uuid = UUID.randomUUID();
+                            Path path = Path.of(uuid + ".json");
+                            SessionWorkSpaceManager.write(this.exportParams.getApiKey(), path, a);
+                            this.result = SessionWorkSpaceManager.getRealPath(
+                                    this.exportParams.getApiKey(), path);
+                        } catch (Exception e)
+                        {
+                            LOG.error("Error writing JSON-LD", e);
+                            this.exception = e;
+                        }
 
+                    } else if (exportParams.getExportMimeType()
+                            .equals(RoCrateService.APPLICATION_ZIP))
+                    {
+                        try (var a = Files.newInputStream(realTempRoCratePath))
+                        {
+                            UUID uuid = UUID.randomUUID();
+                            Path path = Path.of(uuid + ".json");
+                            SessionWorkSpaceManager.write(this.exportParams.getApiKey(), path, a);
+                            this.result = SessionWorkSpaceManager.getRealPath(
+                                    this.exportParams.getApiKey(), path);
+                        } catch (Exception e)
+                        {
+                            LOG.error("Error writing zip", e);
+                            this.exception = e;
+                        }
                     }
                 }
                 Thread.sleep(2000);
@@ -280,7 +328,7 @@ public final class ExportJob implements IAsyncJob
                                 openBIS.getSessionToken()));
         request.method(HttpMethod.GET);
         request.send(listener);
-        System.out.println("Got a response!:");
+        LOG.info("Got a response!:");
 
         // Write openBIS export to disk
         // TODO: Extract this part with previous
@@ -328,12 +376,24 @@ public final class ExportJob implements IAsyncJob
     {
         ExportOptions exportOptions = new ExportOptions();
 
-        // Mandatory, non-optional for ro-crate exports
-        exportOptions.setWithImportCompatibility(true);
+        exportOptions.setWithImportCompatibility(exportParams.isImportCompatible());
         exportOptions.setWithReferredTypes(true);
         exportOptions.setXlsTextFormat(XlsTextFormat.RICH);
         exportOptions.setWithLevelsAbove(true);
-        exportOptions.setFormats(Set.of(ExportFormat.XLSX));
+        Set<ExportFormat> formats = new HashSet<>();
+        if(exportParams.isFormatPDF()) {
+            formats.add(ExportFormat.PDF);
+        }
+        if(exportParams.isFormatXLSX()) {
+            formats.add(ExportFormat.XLSX);
+        }
+        if(exportParams.isImportDatasetData()) {
+            formats.add(ExportFormat.DATA);
+        }
+        if(exportParams.isImportAfsData()) {
+            formats.add(ExportFormat.AFS_DATA);
+        }
+        exportOptions.setFormats(formats);
         exportOptions.setZipSingleFiles(false);
 
         // Defaults, could be overridden with options
@@ -342,11 +402,13 @@ public final class ExportJob implements IAsyncJob
                 exportParams.isWithObjectsAndDataSetsParents());
         exportOptions.setWithObjectsAndDataSetsOtherSpaces(
                 exportParams.isWithObjectsAndDataSetsOtherSpaces());
+        exportOptions.setWithObjectsAndDataSetsChildren(
+                exportParams.isWithObjectsAndDataSetsChildren());
 
         return exportOptions;
     }
 
-    public InputStream getResult()
+    public Path getResult()
     {
         return result;
     }

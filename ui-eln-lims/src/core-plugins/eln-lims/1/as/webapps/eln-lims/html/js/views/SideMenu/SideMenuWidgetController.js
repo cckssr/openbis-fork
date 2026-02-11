@@ -112,7 +112,10 @@ function SideMenuWidgetController(mainController) {
                     parentIds.push(parent.parentId)
                 }
             }
-            this.moveToNodeId(JSON.stringify(parent.object));
+
+            if(parent){
+                this.moveToNodeId(JSON.stringify(parent.object));
+            }
         }
     }
 

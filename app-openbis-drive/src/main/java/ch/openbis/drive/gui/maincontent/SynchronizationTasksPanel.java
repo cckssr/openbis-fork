@@ -10,6 +10,10 @@ import ch.openbis.drive.gui.util.ServiceCallHandler;
 import ch.openbis.drive.gui.util.SharedContext;
 import ch.openbis.drive.model.Settings;
 import ch.openbis.drive.model.SyncJob;
+import ch.openbis.drive.model.SyncJobLive;
+import javafx.animation.Animation;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -19,6 +23,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.HBox;
@@ -26,12 +31,10 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Callback;
+import javafx.util.Duration;
 import lombok.NonNull;
 
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static ch.openbis.drive.gui.util.DisplaySettings.SYNC_JOB_CARD_SPACING;
 
@@ -51,6 +54,8 @@ public class SynchronizationTasksPanel extends ResizablePanel {
     private final BooleanProperty isSomeSelected = new SimpleBooleanProperty(false);
     private final ScrollPane syncListScrollPane;
 
+    private final Timeline timeline;
+
     public SynchronizationTasksPanel(@NonNull Pane parent, @NonNull Callback<Void, Void> refreshAll) {
         super(parent);
         this.refreshAll = refreshAll;
@@ -59,7 +64,7 @@ public class SynchronizationTasksPanel extends ResizablePanel {
 
         mainVBox = new VBox();
         mainVBox.getStyleClass().add(DisplaySettings.MAIN_CONTENT_PADDED_FRAME_CLASS);
-        mainVBox.setSpacing(50);
+        mainVBox.setSpacing(30);
         this.getChildren().add(mainVBox);
 
         HBox topButtonRow = new HBox();
@@ -116,6 +121,8 @@ public class SynchronizationTasksPanel extends ResizablePanel {
             ErrorLabel errorLabel = new ErrorLabel();
             mainVBox.getChildren().add(errorLabel);
         }
+
+        timeline = getSyncJobsLiveTimeline();
 
         resize();
     }
@@ -283,13 +290,46 @@ public class SynchronizationTasksPanel extends ResizablePanel {
         editButtonGroup.setMaxWidth(parent.getWidth() - mainVBox.getPadding().getLeft() - addButton.getWidth());
         editButtonGroup.setPrefWidth(parent.getWidth() - mainVBox.getPadding().getLeft() - addButton.getWidth());
 
-        syncTaskListContainer.setMaxSize(parent.getWidth() - 100, (syncJobCards.getValue().size()) * (DisplaySettings.SYNC_TASK_PANEL_JOB_CARD_HEIGHT + SYNC_JOB_CARD_SPACING));
-        syncTaskListContainer.setPrefSize(parent.getWidth() - 100, (syncJobCards.getValue().size()) * (DisplaySettings.SYNC_TASK_PANEL_JOB_CARD_HEIGHT + SYNC_JOB_CARD_SPACING));
+        syncTaskListContainer.setMaxSize(parent.getWidth() - 82, (syncJobCards.getValue().size()) * (DisplaySettings.SYNC_TASK_PANEL_JOB_CARD_HEIGHT + SYNC_JOB_CARD_SPACING));
+        syncTaskListContainer.setPrefSize(parent.getWidth() - 82, (syncJobCards.getValue().size()) * (DisplaySettings.SYNC_TASK_PANEL_JOB_CARD_HEIGHT + SYNC_JOB_CARD_SPACING));
         syncListScrollPane.setPrefHeight(parent.getHeight());
+    }
+
+    private Timeline getSyncJobsLiveTimeline() {
+        final Timeline timeline;
+        Node node = this;
+        timeline = new Timeline(new KeyFrame(Duration.seconds(1.5), (e) -> {
+            ServiceCallHandler.ServiceCallResult<List<SyncJobLive>> syncJobsLiveResult = SharedContext.getContext().getServiceCallHandler(node).getSyncJobsLive();
+            if ( syncJobsLiveResult.isOk() ) {
+                Map<String, SyncJobLive> jobsLive = new HashMap<>();
+                syncJobsLiveResult.getOk().forEach( syncJobLive -> jobsLive.put(syncJobLive.getLocalDirectory(), syncJobLive));
+
+                for (SyncJobCard syncJobCard : syncJobCards.getValue()) {
+                    SyncJobLive syncJobLive = jobsLive.get(syncJobCard.getSyncJob().getLocalDirectoryRoot());
+                    if (syncJobLive != null) {
+                        if (syncJobLive.isUploading()) {
+                            syncJobCard.setUploading(syncJobLive.getTotalUpload(), syncJobLive.getCurrentUpload());
+                        } else if (syncJobLive.isDownloading()) {
+                            syncJobCard.setDownloading(syncJobLive.getTotalDownload(), syncJobLive.getCurrentDownload());
+                        } else {
+                            syncJobCard.setNotRunning();
+                        }
+                    } else {
+                        syncJobCard.setNotRunning();
+                    }
+                }
+            } else {
+                syncJobsLiveResult.getErr().printStackTrace();
+            }
+        }));
+        timeline.setCycleCount(Animation.INDEFINITE);
+        timeline.play();
+        return timeline;
     }
 
     @Override
     public void close() throws Exception {
+        this.timeline.stop();
         super.close();
         List<SyncJobCard> syncJobCardList = syncJobCards.getValue();
         if(syncJobCardList != null) {

@@ -47,7 +47,7 @@ public class MapperTest extends TestCase
 
         OpenBisModel openBisModel =
                 new OpenBisModel(Map.of(), schema, spaces, projects, metadata, Map.of(), Map.of(),
-                        Map.of(), Map.of());
+                        Map.of(), Map.of(), Map.of());
         Mapper mapper = new Mapper();
         MapResult result = mapper.transform(openBisModel);
         assertEquals(3, result.getSchema().getClasses().size());
@@ -97,7 +97,7 @@ public class MapperTest extends TestCase
 
         OpenBisModel openBisModel =
                 new OpenBisModel(Map.of(), schema, spaces, projects, metadata, Map.of(), Map.of(),
-                        Map.of(), Map.of());
+                        Map.of(), Map.of(), Map.of());
         Mapper mapper = new Mapper();
         MapResult result = mapper.transform(openBisModel);
 
@@ -153,7 +153,7 @@ public class MapperTest extends TestCase
 
         OpenBisModel openBisModel =
                 new OpenBisModel(Map.of(), schema, spaces, projects, metadata, Map.of(), Map.of(),
-                        Map.of(), Map.of());
+                        Map.of(), Map.of(), Map.of());
         Mapper mapper = new Mapper();
         MapResult result = mapper.transform(openBisModel);
 
@@ -243,7 +243,7 @@ public class MapperTest extends TestCase
 
         OpenBisModel openBisModel =
                 new OpenBisModel(Map.of(), schema, spaces, projects, metadata, Map.of(), Map.of(),
-                        Map.of(), Map.of());
+                        Map.of(), Map.of(), Map.of());
         Mapper mapper = new Mapper();
         MapResult result = mapper.transform(openBisModel);
 
@@ -272,7 +272,7 @@ public class MapperTest extends TestCase
 
         OpenBisModel openBisModel =
                 new OpenBisModel(Map.of(), schema, spaces, projects, metadata, Map.of(), Map.of(),
-                        Map.of(), Map.of());
+                        Map.of(), Map.of(), Map.of());
         Mapper mapper = new Mapper();
         MapResult result = mapper.transform(openBisModel);
         MetadataEntry entry = result.getMetaDataEntries().get(0);
@@ -300,7 +300,7 @@ public class MapperTest extends TestCase
 
         OpenBisModel openBisModel =
                 new OpenBisModel(Map.of(), schema, spaces, projects, metadata, Map.of(), Map.of(),
-                        Map.of(), Map.of());
+                        Map.of(), Map.of(), Map.of());
         Mapper mapper = new Mapper();
         MapResult result = mapper.transform(openBisModel);
         MetadataEntry entry = result.getMetaDataEntries().get(0);

@@ -30,9 +30,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import jakarta.xml.bind.DatatypeConverter;
-
-import ch.ethz.sis.shared.log.classic.impl.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.CacheMode;
@@ -53,11 +50,13 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.sort.SortAndPage;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ILocalSearchManager;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.TranslationContext;
-import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
+import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
 import ch.systemsx.cisd.openbis.generic.shared.authorization.AuthorizationConfig;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
+import jakarta.xml.bind.DatatypeConverter;
 
 /**
  * @author pkupczyk
@@ -83,7 +82,8 @@ public abstract class AbstractSearchObjectsOperationExecutor<OBJECT, OBJECT_PE, 
 
     protected abstract List<OBJECT_PE> doSearch(IOperationContext context, CRITERIA criteria, FETCH_OPTIONS fetchOptions);
 
-    protected abstract Map<OBJECT_PE, OBJECT> doTranslate(TranslationContext translationContext, Collection<OBJECT_PE> ids, FETCH_OPTIONS fetchOptions);
+    protected abstract Map<OBJECT_PE, OBJECT> doTranslate(TranslationContext translationContext, Collection<OBJECT_PE> ids,
+            FETCH_OPTIONS fetchOptions);
 
     protected abstract SearchObjectsOperationResult<OBJECT> getOperationResult(SearchResult<OBJECT> searchResult);
 
@@ -258,8 +258,26 @@ public abstract class AbstractSearchObjectsOperationExecutor<OBJECT, OBJECT_PE, 
             throw new IllegalArgumentException("Fetch options cannot be null.");
         }
 
-        Set<Long> ids = getIds(context, criteria, fetchOptions);
+        try
+        {
+            return doExecuteDirectSQLSearchForIds(context, criteria, fetchOptions);
+        } catch (InconsistentSearchResultsException e)
+        {
+            if (CacheMode.CACHE.equals(fetchOptions.getCacheMode()))
+            {
+                fetchOptions.cacheMode(CacheMode.RELOAD_AND_CACHE);
+                return doExecuteDirectSQLSearchForIds(context, criteria, fetchOptions);
+            } else
+            {
+                throw e;
+            }
+        }
+    }
 
+    private SearchObjectsOperationResult<OBJECT> doExecuteDirectSQLSearchForIds(final IOperationContext context,
+            final CRITERIA criteria, FETCH_OPTIONS fetchOptions)
+    {
+        Set<Long> ids = getIds(context, criteria, fetchOptions);
         final Collection<Long> pagedResultIds = sortAndPage(ids, fetchOptions);
         final Collection<OBJECT_PE> pagedResultPEs = getSearchManager().map(pagedResultIds);
         final TranslationContext translationContext = new TranslationContext(context.getSession());
@@ -268,10 +286,7 @@ public abstract class AbstractSearchObjectsOperationExecutor<OBJECT, OBJECT_PE, 
 
         if (pagedResultPEs.size() != pagedResultV3DTOs.size())
         {
-            throw new RuntimeException(String.format("Number of results after translation has changed. "
-                            + "Total count value will be incorrect. "
-                            + "[pagedResultPEs.size()=%d, pagedResultV3DTOs.size()=%d]",
-                    pagedResultPEs.size(), pagedResultV3DTOs.size()));
+            throw new InconsistentSearchResultsException(pagedResultPEs.size(), pagedResultV3DTOs.size());
         }
 
         // Reordering of pagedResultV3DTOs is needed because translation mixes the order
@@ -349,23 +364,29 @@ public abstract class AbstractSearchObjectsOperationExecutor<OBJECT, OBJECT_PE, 
         SortOptions<OBJECT> sortOptions = fetchOptions.getSortBy();
 
         // Filter out sorts to ignore
-        if (sortOptions != null) {
+        if (sortOptions != null)
+        {
             List<Sorting> sortingToRemove = new ArrayList<>();
-            for (Sorting sorting : sortOptions.getSortings()) {
-                for (String sortToIgnore : SORTS_TO_IGNORE) {
-                    if (sorting.getField().equals(sortToIgnore)) {
+            for (Sorting sorting : sortOptions.getSortings())
+            {
+                for (String sortToIgnore : SORTS_TO_IGNORE)
+                {
+                    if (sorting.getField().equals(sortToIgnore))
+                    {
                         sortingToRemove.add(sorting);
                     }
                 }
             }
 
-            for (Sorting sorting : sortingToRemove) {
+            for (Sorting sorting : sortingToRemove)
+            {
                 sortOptions.getSortings().remove(sorting);
                 OPERATION_LOG.warn("[SQL Query Engine - backwards compatibility warning - stop using this feature] " +
                         "SORTING ORDER IGNORED!: " + sorting.getField());
             }
 
-            if (sortOptions.getSortings().isEmpty()) {
+            if (sortOptions.getSortings().isEmpty())
+            {
                 sortOptions = null;
             }
         }
@@ -399,7 +420,8 @@ public abstract class AbstractSearchObjectsOperationExecutor<OBJECT, OBJECT_PE, 
         }
     }
 
-    private static void throwIllegalArgumentException(final String message) throws RuntimeException {
+    private static void throwIllegalArgumentException(final String message) throws RuntimeException
+    {
         throw new IllegalArgumentException(message);
     }
 

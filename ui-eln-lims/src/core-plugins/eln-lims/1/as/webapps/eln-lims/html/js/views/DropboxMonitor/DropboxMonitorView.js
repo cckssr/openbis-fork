@@ -77,7 +77,7 @@ function DropboxMonitorView(dropboxMonitorController, dropboxMonitorModel) {
 
         var dataGrid = new DataGridController(null, columns, [], null, getDataList, rowClick, false, "DROPBOX_MONITOR_OVERVIEW", false, false, 90);
         dataGrid.setId("dropbox-monitor-overview-grid");
-        var dataGridContainer = $("<div>").css("margin-top", "-10px");
+        var dataGridContainer = $("<div>");
         dataGrid.init(dataGridContainer);
         var $containerColumn = $("<form>", {
             'role' : "form", 

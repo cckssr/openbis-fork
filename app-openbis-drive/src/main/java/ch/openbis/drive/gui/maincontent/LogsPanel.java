@@ -23,10 +23,11 @@ import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class LogsPanel extends ResizablePanel {
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy hh:mm:ss z");
-    private static final int EVENTS_PER_PAGE = 20;
+    private static final int EVENTS_PER_PAGE = 35;
     private static final int FIXED_CELL_SIZE = 25;
 
     private final VBox mainVBox;
@@ -62,10 +63,11 @@ public class LogsPanel extends ResizablePanel {
         AnchorPane filters = new AnchorPane();
 
         HBox refreshButton = new HBox();
-        refreshButton.setPadding(new Insets(15, 15, 15, 15));
+        refreshButton.setPadding(new Insets(0, 10, 30, 0));
         refreshButton.setSpacing(20);
         refreshButton.setAlignment(Pos.CENTER_LEFT);
         Button refresh = new RefreshButton();
+        refresh.setMinSize(DisplaySettings.TOP_CONTROL_WIDTH, DisplaySettings.TOP_CONTROL_HEIGHT);
         refresh.setOnAction((e) -> {
             refreshEventList();
             refreshEventTableAtPage(pagination.getCurrentPageIndex(), pagination);
@@ -76,10 +78,12 @@ public class LogsPanel extends ResizablePanel {
         filters.getChildren().add(refreshButton);
 
         HBox textFilter = new HBox();
-        textFilter.setPadding(new Insets(15, 15, 15, 15));
+        textFilter.setPadding(new Insets(0, 0, 0, 0));
         textFilter.setSpacing(20);
+        textFilter.setMinSize(DisplaySettings.TOP_CONTROL_WIDTH, DisplaySettings.TOP_CONTROL_HEIGHT);
         textFilter.setAlignment(Pos.CENTER_RIGHT);
         SearchField searchField = new SearchField(filterText);
+        searchField.setMinSize(DisplaySettings.TOP_CONTROL_WIDTH, DisplaySettings.TOP_CONTROL_HEIGHT);
         textFilter.getChildren().add(searchField);
         AnchorPane.setRightAnchor(textFilter, 0.0);
         AnchorPane.setTopAnchor(textFilter, 0.0);
@@ -136,6 +140,7 @@ public class LogsPanel extends ResizablePanel {
     }
 
     private synchronized void refreshEventList() {
+        tableView.getSortOrder().clear();
         ServiceCallHandler.ServiceCallResult<List<? extends Event>> eventListResult = SharedContext.getContext().getServiceCallHandler(parent).getEvents(2000);
         if (eventListResult.isOk()) {
             eventRows.setValue(eventListResult.getOk().stream().map(EventRow::new).toList());
@@ -208,7 +213,7 @@ public class LogsPanel extends ResizablePanel {
 
         tableView.setMinSize(parent.getWidth() - 80, 80);
         tableView.setMaxSize(parent.getWidth() - 80, parent.getHeight() - 80);
-        tableView.setPrefSize(parent.getWidth() - 80, (EVENTS_PER_PAGE + 1.1) * FIXED_CELL_SIZE);
+        tableView.setPrefSize(parent.getWidth() - 80, 32 + EVENTS_PER_PAGE * FIXED_CELL_SIZE);
     }
 
     public static final Callback<TableColumn<EventRow,String>, TableCell<EventRow,String>> SELECTABLE_CELL_FACTORY =

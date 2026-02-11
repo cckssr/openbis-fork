@@ -1,6 +1,9 @@
 package ch.ethz.sis.openbis.generic.server.xls.importer.helper;
 
+import ch.ethz.sis.afsclient.client.AfsClient;
+import ch.ethz.sis.openbis.generic.OpenBIS;
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentSearchCriteria;
@@ -11,7 +14,6 @@ import ch.ethz.sis.openbis.generic.server.xls.importer.ImportOptions;
 import ch.ethz.sis.openbis.generic.server.xls.importer.enums.ImportModes;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.generic.client.web.client.dto.ExperimentIdentifier;
-import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider;
 
 import java.nio.file.Path;
 import java.util.*;
@@ -19,30 +21,23 @@ import java.util.*;
 public final class AfsDataImportHelper
 {
     private final String sessionToken;
-    private final AfsClientImportProxy afs;
+    private AfsClientImportProxy afs;
     private final ImportModes importModes;
     private final ImportOptions options;
+    private final IApplicationServerApi v3;
+
 
     private static final String DATA = "/data";
     private static final String HIERARCHY  = "hierarchy/";
 
-    public AfsDataImportHelper(String sessionToken, ImportModes importModes, ImportOptions options) {
+    public AfsDataImportHelper(String sessionToken, ImportModes importModes, ImportOptions options,
+            IApplicationServerApi applicationServerApi, AfsClient afsClient)
+    {
         this.sessionToken = sessionToken;
         this.importModes = importModes;
         this.options = options;
-        this.afs = AfsClientImportProxy.getAfsClient(sessionToken);
-    }
-
-    public void beginIfNotStarted() {
-        this.afs.begin();
-    }
-
-    public void commit() {
-        this.afs.commit();
-    }
-
-    public void rollback() {
-        this.afs.rollback();
+        this.afs = AfsClientImportProxy.getAfsClient(sessionToken, applicationServerApi, afsClient);
+        this.v3 = applicationServerApi;
     }
 
     private void validateSampleFrozen(Sample s) {
@@ -140,7 +135,6 @@ public final class AfsDataImportHelper
     }
 
     private Sample getSample(String space, String project, String experiment, String sample) {
-        IApplicationServerApi api = CommonServiceProvider.getApplicationServerApi();
         SampleSearchCriteria searchCriteria = new SampleSearchCriteria();
         if(space != null) {
             searchCriteria.withSpace().withCode().thatEquals(space);
@@ -154,7 +148,7 @@ public final class AfsDataImportHelper
         searchCriteria.withCode().thatEquals(sample);
 
         SampleFetchOptions fetchOptions = new SampleFetchOptions();
-        List<Sample> samples = api.searchSamples(this.sessionToken, searchCriteria, fetchOptions).getObjects();
+        List<Sample> samples = v3.searchSamples(sessionToken, searchCriteria, fetchOptions).getObjects();
         if(samples.isEmpty()) {
             return null;
         } else {
@@ -165,12 +159,11 @@ public final class AfsDataImportHelper
     private Experiment getCollection(String space, String project, String experiment) {
         ExperimentIdentifier id = new ExperimentIdentifier(String.format("/%s/%s/%s", space, project, experiment));
 
-        IApplicationServerApi api = CommonServiceProvider.getApplicationServerApi();
         ExperimentSearchCriteria searchCriteria = new ExperimentSearchCriteria();
         searchCriteria.withIdentifier().thatEquals(id.getIdentifier());
 
         ExperimentFetchOptions fetchOptions = new ExperimentFetchOptions();
-        List<Experiment> experiments = api.searchExperiments(this.sessionToken, searchCriteria, fetchOptions).getObjects();
+        List<Experiment> experiments = v3.searchExperiments(sessionToken, searchCriteria, fetchOptions).getObjects();
         if(experiments.isEmpty()) {
             return null;
         } else {

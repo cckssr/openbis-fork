@@ -6,6 +6,7 @@ import ch.ethz.sis.rocrateserver.exception.RoCrateExceptions;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.delegates.ExportDelegate;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.delegates.ImportDelegate;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.helper.OpeBISFactory;
+import ch.ethz.sis.rocrateserver.openapi.v1.service.helper.validation.ValidationResult;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.jobs.*;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.params.ExportParams;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.params.ImportParams;
@@ -27,6 +28,7 @@ import org.jboss.resteasy.specimpl.ResponseBuilderImpl;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -106,7 +108,9 @@ public class RoCrateService
             ObjectMapper objectMapper = new ObjectMapper();
             Response.ResponseBuilder responseBuilder = new ResponseBuilderImpl();
             responseBuilder.status(ex.getResponse().getStatus());
-            responseBuilder.entity(ex.getMessage());
+            responseBuilder.type(MediaType.APPLICATION_JSON_TYPE);
+            String o = objectMapper.writeValueAsString(new ErrorResponse(ex.getMessage()));
+            responseBuilder.entity(o);
             return responseBuilder.build();
         } catch (Exception ex)
         {
@@ -152,7 +156,9 @@ public class RoCrateService
             ObjectMapper objectMapper = new ObjectMapper();
             Response.ResponseBuilder responseBuilder = new ResponseBuilderImpl();
             responseBuilder.status(ex.getResponse().getStatus());
-            responseBuilder.entity(ex.getMessage());
+            responseBuilder.type(MediaType.APPLICATION_JSON_TYPE);
+            String o = objectMapper.writeValueAsString(new ErrorResponse(ex.getMessage()));
+            responseBuilder.entity(o);
             return responseBuilder.build();
         } catch (Exception ex)
         {
@@ -182,6 +188,23 @@ public class RoCrateService
         {
             RoCrateExceptions.throwInstance(RoCrateExceptions.UNAVAILABLE_API_KEY);
         }
+        if (headers.getExportMimeType() == null || !ExportDelegate.ACCEPTABLE_MIME_TYPES.contains(
+                headers.getExportMimeType()))
+        {
+
+            String message =
+                    "The Export header is not in the range of supported options. Please use one of " + ExportDelegate.ACCEPTABLE_MIME_TYPES.stream()
+                            .collect(
+                                    Collectors.joining(", "));
+            ErrorResponse errorResponse = new ErrorResponse(message);
+            ObjectMapper objectMapper = new ObjectMapper();
+            Response.ResponseBuilder responseBuilder = new ResponseBuilderImpl();
+            responseBuilder.status(Response.Status.BAD_REQUEST);
+            responseBuilder.entity(objectMapper.writeValueAsString(errorResponse));
+            return responseBuilder.build();
+        }
+
+
 
         try
         {
@@ -195,6 +218,7 @@ public class RoCrateService
             ObjectMapper objectMapper = new ObjectMapper();
             Response.ResponseBuilder responseBuilder = new ResponseBuilderImpl();
             responseBuilder.status(ex.getResponse().getStatus());
+            responseBuilder.type(MediaType.APPLICATION_JSON_TYPE);
             responseBuilder.entity(objectMapper.writeValueAsString(errorResponse));
             return responseBuilder.build();
 
@@ -217,6 +241,23 @@ public class RoCrateService
     {
         OpenBIS openBIS = null;
         SessionInformation sessionInformation = null;
+        if (headers.getJobId() == null)
+        {
+            ErrorResponse errorResponse = new ErrorResponse("Header jobID is missing");
+            return new ResponseBuilderImpl().entity(objectMapper.writeValueAsString(errorResponse))
+                    .status(Response.Status.BAD_REQUEST)
+                    .type(MediaType.APPLICATION_JSON_TYPE)
+                    .build();
+        }
+        if (headers.getApiKey() == null)
+        {
+            ErrorResponse errorResponse = new ErrorResponse("Header api-key is missing");
+            return new ResponseBuilderImpl().entity(objectMapper.writeValueAsString(errorResponse))
+                    .status(Response.Status.BAD_REQUEST)
+                    .type(MediaType.APPLICATION_JSON_TYPE)
+                    .build();
+        }
+
         try
         {
             openBIS = OpeBISFactory.createOpenBIS(headers.getApiKey());
@@ -237,14 +278,18 @@ public class RoCrateService
             if (job instanceof ExportJob)
             {
                 result = new AsyncResult(status.getStatus().toString(), List.of(), null);
-                responseBuilder = Response.ok(objectMapper.writeValueAsString(result));
+                java.nio.file.Path path = ((ExportJob) job).getResult();
+
+                responseBuilder = Response.ok(Files.readAllBytes(path),
+                        job.getMimeType());
                 return responseBuilder.build();
             }
             if (job instanceof ValidateJob)
             {
                 responseBuilder.status(Response.Status.OK);
                 responseBuilder.type(MediaType.APPLICATION_JSON);
-                responseBuilder.entity(((ValidateJob) job).getResult());
+                ValidationResult result1 = ((ValidateJob) job).getResult();
+                responseBuilder.entity(objectMapper.writeValueAsString(result1));
                 return responseBuilder.build();
             }
             if (job instanceof ImportJob)

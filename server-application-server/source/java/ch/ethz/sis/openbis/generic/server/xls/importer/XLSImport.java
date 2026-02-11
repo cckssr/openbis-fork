@@ -1,5 +1,5 @@
 /*
- * Copyright ETH 2022 - 2023 Zürich, Scientific IT Services
+ * Copyright ETH 2022 - 2026 Zürich, Scientific IT Services
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,16 +18,14 @@ package ch.ethz.sis.openbis.generic.server.xls.importer;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
 import ch.ethz.sis.afsapi.exception.ThrowableReason;
+import ch.ethz.sis.afsclient.client.AfsClient;
+import ch.ethz.sis.openbis.generic.OpenBIS;
 import ch.ethz.sis.openbis.generic.server.xls.importer.helper.*;
 import ch.ethz.sis.openbis.generic.server.xls.importer.helper.semanticannotation.SemanticAnnotationHelper;
 import ch.ethz.sis.shared.log.classic.impl.Logger;
@@ -80,7 +78,8 @@ public class XLSImport
 
     private final String sessionToken;
 
-    private final IApplicationServerApi api;
+    private OpenBIS openBIS;
+    private IApplicationServerApi v3;
 
     private final DelayedExecutionDecorator delayedExecutor;
 
@@ -135,19 +134,31 @@ public class XLSImport
     private static final String ZIP_EXTENSION = "." + "zip";
 
     public XLSImport(String sessionToken,
-            IApplicationServerApi api,
+            IApplicationServerApi v3,
             ImportModes mode,
             ImportOptions options,
             String[] sessionWorkspaceFiles,
-            boolean shouldCheckVersionsOnDatabase) throws IOException
+            boolean shouldCheckVersionsOnDatabase
+            ) throws IOException
+    {
+        this(sessionToken, v3, mode, options, sessionWorkspaceFiles, shouldCheckVersionsOnDatabase, null);
+    }
+
+    public XLSImport(String sessionToken,
+            IApplicationServerApi v3,
+            ImportModes mode,
+            ImportOptions options,
+            String[] sessionWorkspaceFiles,
+            boolean shouldCheckVersionsOnDatabase,
+            AfsClient client) throws IOException
     {
         this.sessionToken = sessionToken;
-        this.api = api;
+        this.v3 = v3;
         this.options = options;
         this.beforeVersions = Collections.unmodifiableMap(VersionInfoHandler.loadAllVersions(options));
         this.afterVersions = VersionInfoHandler.loadAllVersions(options);
-        this.dbChecker = new DatabaseConsistencyChecker(this.sessionToken, this.api, this.afterVersions);
-        this.delayedExecutor = new DelayedExecutionDecorator(this.sessionToken, this.api);
+        this.dbChecker = new DatabaseConsistencyChecker(this.sessionToken, this.v3, this.afterVersions);
+        this.delayedExecutor = new DelayedExecutionDecorator(this.sessionToken, this.v3);
 
         SemanticAnnotationHelper annotationCache = new SemanticAnnotationHelper(delayedExecutor);
 
@@ -166,7 +177,7 @@ public class XLSImport
         this.typeGroupImportHelper = new TypeGroupImportHelper(this.delayedExecutor, mode, options);
         this.shouldCheckVersionsOnDatabase = shouldCheckVersionsOnDatabase;
 
-        this.afsDataImportHelper = new AfsDataImportHelper(sessionToken, mode, options);
+        this.afsDataImportHelper = new AfsDataImportHelper(sessionToken, mode, options, this.v3, client);
 
         // File Parsing
         this.sessionWorkspaceFiles = sessionWorkspaceFiles;
@@ -516,7 +527,7 @@ public class XLSImport
         try {
             boolean isAfsAvailable = afsDataImportHelper.isAfsConnectionAvailable();
             if(!isAfsAvailable) {
-                return;
+                throw new UserFailureException("Imported file contains AFS data but connection is not available.");
             }
             final ISessionWorkspaceProvider sessionWorkspaceProvider = CommonServiceProvider.getSessionWorkspaceProvider();
             File sessionWorkspaceFile = sessionWorkspaceProvider.getSessionWorkspace(this.sessionToken);

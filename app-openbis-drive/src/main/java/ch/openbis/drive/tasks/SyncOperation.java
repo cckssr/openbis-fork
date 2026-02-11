@@ -32,7 +32,7 @@ import static ch.ethz.sis.afsclient.client.AfsClientUploadHelper.toServerPathStr
 
 public class SyncOperation {
     static final int MAX_READ_SIZE_BYTES = 10485760;
-    static final int AFS_CLIENT_TIMEOUT = 10000;
+    static final int AFS_CLIENT_TIMEOUT = 30000;
     public static final String CONFLICT_FILE_SUFFIX = ".openbis-conflict";
     public static final String AFS_SERVER_PATH = "/afs-server";
 
@@ -160,19 +160,12 @@ public class SyncOperation {
         raiseJobStoppedNotification();
     }
 
-    public ClientAPI.TransferMonitorListener getTransferMonitor() {
-        switch (syncJob.getType()) {
-            case Upload:
-                return uploadMonitor;
-            case Download:
-                return downloadMonitor;
-            default: //Bidirectional
-                if (!uploadMonitor.isFinished()) {
-                    return uploadMonitor;
-                } else {
-                    return downloadMonitor;
-                }
-        }
+    public ClientAPI.TransferMonitorListener getUploadTransferMonitor() {
+        return uploadMonitor;
+    }
+
+    public ClientAPI.TransferMonitorListener getDownloadTransferMonitor() {
+        return downloadMonitor;
     }
 
     public class FileSyncCollisionListener implements ClientAPI.FileCollisionListener {

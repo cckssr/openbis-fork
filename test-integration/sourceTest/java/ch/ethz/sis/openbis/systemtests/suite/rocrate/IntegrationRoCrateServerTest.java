@@ -9,14 +9,15 @@ import ch.ethz.sis.openbis.systemtests.suite.rocrate.environment.RoCrateServerIn
 import ch.systemsx.cisd.common.http.JettyHttpClientFactory;
 import ch.systemsx.cisd.openbis.generic.shared.util.TestInstanceHostUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.eclipse.jetty.client.HttpClient;
-import org.eclipse.jetty.client.ContentResponse;
-import org.eclipse.jetty.client.Request;
 import org.eclipse.jetty.client.BytesRequestContent;
+import org.eclipse.jetty.client.ContentResponse;
+import org.eclipse.jetty.client.HttpClient;
+import org.eclipse.jetty.client.Request;
 import org.eclipse.jetty.http.HttpMethod;
 import org.junit.Assert;
 import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeSuite;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
@@ -28,6 +29,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static ch.ethz.sis.openbis.systemtests.suite.rocrate.environment.RoCrateServerIntegrationTestEnvironment.environment;
@@ -305,9 +307,44 @@ public class IntegrationRoCrateServerTest
 
         String payload = "[\"https://doi.org/10.1038/s41586-020-3010-5\"]";
         String mimeType = "application/ld+json";
-        testExport(mimeType, payload, "COMPLETED", "FAILED");
+        testExport(mimeType, payload, x -> testMimeAndStatus(x, "COMPLETED", mimeType),
+                x -> testStatus(x, "COMPLETED"));
 
     }
+
+    private static boolean testMimeAndStatus(ContentResponse contentResponse, String asyncStatus,
+            String mimeType)
+    {
+        try
+        {
+            if (contentResponse.getMediaType().equals(mimeType))
+            {
+                return true;
+            }
+            LinkedHashMap asyncJob =
+                    objectMapper.readValue(contentResponse.getContentAsString(),
+                            LinkedHashMap.class);
+            return asyncJob.get("status").toString().equals(asyncStatus);
+        } catch (Exception e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static boolean testStatus(ContentResponse contentResponse, String asyncStatus)
+    {
+        try
+        {
+            LinkedHashMap asyncJob =
+                    objectMapper.readValue(contentResponse.getContentAsString(),
+                            LinkedHashMap.class);
+            return asyncJob.get("status").toString().equals(asyncStatus);
+        } catch (Exception e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
 
     @Test(enabled = true)
     // This test depends on some data which should be created before the test runs
@@ -316,7 +353,8 @@ public class IntegrationRoCrateServerTest
     {
         String payload = "[\"https://doi.org/10.1038/s41586-020-3010-5\"]";
         String mimeType = "application/zip";
-        testExport(mimeType, payload, "COMPLETED", "FAILED");
+        testExport(mimeType, payload, x -> testMimeAndStatus(x, "COMPLETED", mimeType),
+                x -> testStatus(x, "COMPLETED"));
     }
 
     @Test(enabled = true) // This depends on some data which should be created before the test runs
@@ -325,7 +363,8 @@ public class IntegrationRoCrateServerTest
     {
         String payload = "[\"/PUBLICATIONS/PUBLIC_REPOSITORIES/PUB29\"]";
         String mimeType = "application/ld+json";
-        testExport(mimeType, payload, "COMPLETED", "FAILED");
+        testExport(mimeType, payload, x -> testMimeAndStatus(x, "COMPLETED", mimeType),
+                x -> testStatus(x, "COMPLETED"));
     }
 
     @Test(enabled = false)
@@ -336,7 +375,8 @@ public class IntegrationRoCrateServerTest
     {
         String payload = "[\"/PUBLICATIONS/PUBLIC_REPOSITORIES/PUB29\"";
         String mimeType = "application/ld+json";
-        testExport(mimeType, payload, "COMPLETED", "FAILED");
+        testExport(mimeType, payload, x -> testMimeAndStatus(x, "COMPLETED", mimeType),
+                x -> testStatus(x, "COMPLETED"));
 
     }
 
@@ -344,8 +384,70 @@ public class IntegrationRoCrateServerTest
     public void testExportEmptyResults()
             throws Exception
     {
-        testExport("application/ld+json", "[\"DOES-NOT-EXIST\"]", "FAILED", "COMPLETED");
+
+        testExport("application/ld+json", "[\"DOES-NOT-EXIST\"]", x -> testStatus(x, "FAILED"),
+                x -> testStatus(x, "COMPLETED"));
     }
+
+    @Test(dataProvider = "acceptableMimeTypes")
+    public void testAcceptableExportMimeTypes(String acceptableExportMimeType,
+            int expectedStatusCode)
+            throws Exception
+    {
+        String payload = "[\"/PUBLICATIONS/PUBLIC_REPOSITORIES/PUB29\"]";
+
+        OpenBIS openBIS = environment.createOpenBIS(TIMEOUT);
+        openBIS.login(username, password);
+
+        String export_type = acceptableExportMimeType;
+        HttpClient client = JettyHttpClientFactory.getHttpClient();
+        Request request = client.newRequest(
+                TestInstanceHostUtils.getRoCrateUrl() + "/openbis/open-api/ro-crate/export");
+        request.method(HttpMethod.POST);
+        request.headers(headers -> {
+            headers.add("api-key", openBIS.getSessionToken());
+            headers.add("Content-Type", "application/json");
+            headers.add("Export", export_type);
+        });
+        request.body(new BytesRequestContent(payload.getBytes()));
+        request.idleTimeout(TIMEOUT, TimeUnit.MILLISECONDS);
+
+        ContentResponse response = request.send();
+        assertEquals(response.getStatus(), expectedStatusCode);
+    }
+
+    @Test
+    public void testMissingExportMimeType()
+            throws Exception
+    {
+        String payload = "[\"/PUBLICATIONS/PUBLIC_REPOSITORIES/PUB29\"]";
+
+        OpenBIS openBIS = environment.createOpenBIS(TIMEOUT);
+        openBIS.login(username, password);
+
+        HttpClient client = JettyHttpClientFactory.getHttpClient();
+        Request request = client.newRequest(
+                TestInstanceHostUtils.getRoCrateUrl() + "/openbis/open-api/ro-crate/export");
+        request.method(HttpMethod.POST);
+        request.headers(headers -> {
+            headers.add("api-key", openBIS.getSessionToken());
+            headers.add("Content-Type", "application/json");
+        });
+        request.body(new BytesRequestContent(payload.getBytes()));
+        request.idleTimeout(TIMEOUT, TimeUnit.MILLISECONDS);
+
+        ContentResponse response = request.send();
+        assertEquals(response.getStatus(), 400);
+        String contentAsString = response.getContentAsString();
+        assertTrue(contentAsString.contains(
+                "The Export header is not in the range of supported options. Please use one of"));
+        assertTrue(contentAsString.contains("application/ld+json"));
+        assertTrue(contentAsString.contains("application/zip"));
+
+    }
+
+
+
 
     // https://github.com/paulscherrerinstitute/rocrate-api/issues/40
     @Test
@@ -368,7 +470,50 @@ public class IntegrationRoCrateServerTest
         request.body(new BytesRequestContent(Files.readAllBytes(file)));
 
         ContentResponse response = request.send();
+        System.out.println(response.getStatus());
+        System.out.println(response.getMediaType());
+        System.out.println(response.getContentAsString());
+
         assertEquals(response.getStatus(), 400);
+        assertEquals(response.getMediaType(), "application/json");
+        LinkedHashMap<String, Object> res =
+                objectMapper.readValue(response.getContentAsString(), LinkedHashMap.class);
+        objectMapper.readValue(response.getContentAsString(), LinkedHashMap.class);
+        assertTrue(res.containsKey("message"));
+
+    }
+
+    @Test
+    public void testImportMalformedCrate()
+            throws Exception
+    {
+        OpenBIS openBIS = environment.createOpenBIS();
+        openBIS.login(username, password);
+
+        Path file =
+                Path.of("sourceTest/resource/" + getClass().getSimpleName() + "/Malformed.json");
+
+        HttpClient client = JettyHttpClientFactory.getHttpClient();
+        Request request = client.newRequest(
+                TestInstanceHostUtils.getRoCrateUrl() + "/openbis/open-api/ro-crate/import");
+        request.method(HttpMethod.POST);
+        request.headers(headers -> {
+            headers.add("api-key", openBIS.getSessionToken());
+            headers.add("Content-Type", "application/ld+json");
+            headers.add("Accept", "application/json");
+        });
+        request.body(new BytesRequestContent(Files.readAllBytes(file)));
+
+        ContentResponse response = request.send();
+        System.out.println(response.getStatus());
+        System.out.println(response.getMediaType());
+        System.out.println(response.getContentAsString());
+
+        assertEquals(response.getStatus(), 400);
+        assertEquals(response.getMediaType(), "application/json");
+        LinkedHashMap<String, Object> res =
+                objectMapper.readValue(response.getContentAsString(), LinkedHashMap.class);
+        assertTrue(res.containsKey("message"));
     }
 
     // https://github.com/paulscherrerinstitute/rocrate-api/issues/39
@@ -518,7 +663,7 @@ public class IntegrationRoCrateServerTest
     }
 
     private static void testExport(String exportMimeType, String identifiersJsonString,
-            String successState, String failState)
+            Predicate<ContentResponse> successCheck, Predicate<ContentResponse> failCheck)
             throws IOException, InterruptedException, ExecutionException, TimeoutException
     {
         OpenBIS openBIS = environment.createOpenBIS(TIMEOUT);
@@ -556,15 +701,17 @@ public class IntegrationRoCrateServerTest
             });
             pollRequest.idleTimeout(TIMEOUT, TimeUnit.MILLISECONDS);
             ContentResponse pollResponse = pollRequest.send();
+            if (successCheck.test(pollResponse))
+            {
+                done = true;
+                continue;
+            }
+
+
             LinkedHashMap asyncResult =
                     objectMapper.readValue(pollResponse.getContentAsString(), LinkedHashMap.class);
 
-            if (asyncResult.get("status").equals(successState))
-            {
-                done = true;
-            }
-
-            if (asyncResult.get("status").equals(failState))
+            if (failCheck.test(pollResponse))
             {
                 List<String> errors = (List<String>) asyncResult.get("errors");
                 Assert.fail(errors.stream().collect(Collectors.joining("")));
@@ -633,6 +780,14 @@ public class IntegrationRoCrateServerTest
             Thread.sleep(2000);
 
         }
+    }
+
+    @DataProvider(name = "acceptableMimeTypes")
+    public static Object[][] acceptableMimeTypeProvider()
+    {
+        return new Object[][] { { "application/ld+json", 202 }, { "application/zip", 202 },
+                { "application/xml", 400 }, { "metlapiltetzotzontzin/hmeephmeep", 400 } };
+
     }
 
 }

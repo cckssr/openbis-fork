@@ -395,12 +395,33 @@ var BarcodeUtil = new function() {
             }
         });
 
+        var widthLabel = $("<div>");
+        widthLabel.append($('<label>', {'class': 'control-label', 'text': 'Width:'}));
+        var $helpBtn = $("<a>", { 'class' : 'btn btn-default help' });
+        var iconType = IconUtil.getToolbarIconType("?");
+        $helpBtn.append(IconUtil.getIcon(iconType));
+        $helpBtn.attr("title", "Additional margin of 5 mm will be added.");
+        $helpBtn.tooltipster();
+        widthLabel.append($helpBtn);
+
+        var heightLabel = $("<div>");
+        heightLabel.append($('<label>', {'class': 'control-label', 'text': 'Height:'}));
+        $helpBtn = $("<a>", { 'class' : 'btn btn-default help' });
+        iconType = IconUtil.getToolbarIconType("?");
+        $helpBtn.append(IconUtil.getIcon(iconType));
+        $helpBtn.attr("title", "Additional margin of 5 mm will be added.");
+        $helpBtn.tooltipster();
+        heightLabel.append($helpBtn);
+
+
         var $lineHeaders = $("<div>");
         $lineHeaders.append($("<span>", { style:"width:15%; margin-left: 10px; display:inline-block;"}).append($("<label>", { class : "control-label"}).append("Type:")))
                 .append($("<span>", { style:"width:10%; margin-left: 10px; display:inline-block;"}).append($("<label>", { class : "control-label"}).append("Count:")))
                 .append($("<span>", { style:"width:15%; margin-left: 10px; display:inline-block;"}).append($("<label>", { class : "control-label"}).append("Layout:")))
-                .append($("<span>", { style:"width:15%; margin-left: 10px; display:inline-block;"}).append($("<label>", { class : "control-label"}).append("Width:")))
-                .append($("<span>", { style:"width:15%; margin-left: 10px; display:inline-block;"}).append($("<label>", { class : "control-label"}).append("Height:")));
+//                .append($("<span>", { style:"width:15%; margin-left: 10px; display:inline-block;"}).append($("<label>", { class : "control-label"}).append("Width:")))
+                .append($("<span>", { style:"width:15%; margin-left: 10px; display:inline-block;"}).append(widthLabel))
+                .append($("<span>", { style:"width:15%; margin-left: 10px; display:inline-block;"}).append(heightLabel))
+//                .append($("<span>", { style:"width:15%; margin-left: 10px; display:inline-block;"}).append($("<label>", { class : "control-label"}).append("Height:")));
         $toolbar.append($lineHeaders);
 
         var $lineOne = $("<div>");
@@ -431,53 +452,68 @@ var BarcodeUtil = new function() {
             views.content.append($layoutForPrinter);
             var margin = 5;
             var lineWidth = 0.3;
-            if(width && height) {
-                var pageSize = null;
-                var orientation = null;
-                if(layout === 'split') {
-                    pageSize = [width+margin*2, height+margin*2];
-                    orientation = 'l';
-                } else {
-                    pageSize = [width+margin*2, (height) * (barcodes.length) + (barcodes.length) * margin*2 + (barcodes.length)*lineWidth ];
-                    orientation = pageSize[0] > pageSize[1] ? 'l' : 'p';
-                }
-                format = {
-                    orientation: orientation,
-                    unit: 'mm',
-                    format: pageSize,
-                    putOnlyUsedFonts:true
-                };
+            var orientation = null;
 
-                pdf = new jsPDF(format);
-            }
+            var barcodeImages = [];
+            var pdfWidth = 0;
+            var pdfHeight = 0;
 
-            if(pdf !== null && layout !== 'split') {
-                pdf.setDrawColor(150, 150, 150);
-                pdf.setLineWidth(lineWidth)
-                pdf.setLineDash([2, 2], 0);
-            }
 
             for(var idx = 0; idx < barcodes.length; idx++) {
                 // HTML
                 _this.addBarcode($layoutForPrinter, idx, $barcodeTypesDropdown.val(), barcodes[idx], idx === 0, width, height, layout);
 
                 // PDF
-                var imgData = _this.generateBarcode($barcodeTypesDropdown.val(), barcodes[idx], barcodes[idx], null, width, height);
-                if(pdf !== null) {
-                    if(layout === 'split') {
-                        if(idx > 0) {
-                            pdf.addPage(format.format, 'l');
-                        }
-                        pdf.addImage(imgData, 'png', margin, margin, width, height);
-                     } else {
-                        var yCoordinate = (height * idx + margin + (idx * (margin*2+lineWidth)));
-                        pdf.addImage(imgData, 'png', margin, yCoordinate, width, height);
-                        if(idx !== barcodes.length-1) {
-                            pdf.line(0, yCoordinate + height + margin, width + margin*2, yCoordinate + height + margin, 'S');
-                        }
+//                var imgData = _this.generateBarcode($barcodeTypesDropdown.val(), barcodes[idx], barcodes[idx], null, width, height);
+                var imgData = _this.generateBarcode($barcodeTypesDropdown.val(), barcodes[idx], "", null, width, height);
+                barcodeImages.push({img:imgData, text:barcodes[idx]});
+                if(layout === 'split') {
+                    pdfWidth = width + margin*2;
+                    pdfHeight = height + margin*2;
+                    orientation = 'l';
+                } else {
+                    pdfWidth = width + margin*2;
+                    pdfHeight += height + margin*2 + lineWidth;
+                    orientation = pdfWidth > pdfHeight ? 'l' : 'p';
+                }
+            }
+
+            format = {
+                orientation: orientation,
+                unit: 'mm',
+                format: [pdfWidth, pdfHeight],
+                putOnlyUsedFonts: true
+            };
+            pdf = new jsPDF(format);
+
+            if(layout !== 'split') {
+                pdf.setDrawColor(150, 150, 150);
+                pdf.setLineWidth(lineWidth)
+                pdf.setLineDash([2, 2], 0);
+            }
+
+
+            pdf.setFontSize(width / 10 + 3);
+
+            for(var idx = 0; idx < barcodeImages.length; idx++) {
+                var imgData = barcodeImages[idx];
+                if(layout === 'split') {
+                    if(idx > 0) {
+                        format.format = [imgData.width+margin*2, imgData.height+margin*2];
+                        pdf.addPage(format.format, format.orientation);
+                    }
+                    pdf.addImage(imgData.img, 'png', margin, margin, width, height);
+                    pdf.text(imgData.text, (width+margin*2)*0.5, height+margin+3, {align: "center"})
+                } else {
+                    var yCoordinate = (height * idx + margin + (idx * (margin*2+lineWidth)));
+                    pdf.addImage(imgData.img, 'png', margin, yCoordinate, width, height);
+                    pdf.text(imgData.text, (width+margin*2)*0.5, yCoordinate+height+3, {align: "center"})
+                    if(idx !== barcodeImages.length-1) {
+                        pdf.line(0, yCoordinate + height + margin, width + margin*2, yCoordinate + height + margin, 'S');
                     }
                 }
             }
+
         }
 
         if(selectedBarcodes === undefined) {
@@ -500,7 +536,6 @@ var BarcodeUtil = new function() {
         var refreshController = new function() {
             this.tabId = "BARCODE_GENERATOR-id";
             this.refresh = function() {
-                var aa = viewId;
                 var barcodeTypesDropdown = $("#" + barcodeTypesDropdownId);
                 Select2Manager.add($("#" + barcodeTypesDropdownId));
                 Select2Manager.add($("#" + numberDropdownId));
@@ -536,13 +571,9 @@ var BarcodeUtil = new function() {
             }
             content.append($br);
         }
-        var imageSRC = this.generateBarcode(type, text, text, null, width, height, 10, 10);
+        var imageSRC = this.generateBarcode(type, text, text, null, width, height, 10, 10).toDataURL('image/png');
         var imagePNG = $('<img>', { src : imageSRC });
         content.append(imagePNG);
-        if(width && height) {
-            imagePNG.css('width', width + 'mm');
-            imagePNG.css('height', height + 'mm');
-        }
     }
 
     this.preventFormSubmit = function(e) {
@@ -882,21 +913,25 @@ var BarcodeUtil = new function() {
         var updateBarcode = function() {
             _this.generateBarcode($barcodeTypesDropdown.val(), barcode, barcode, function() {
                 var imageData = _this.generateBarcode($barcodeTypesDropdown.val(), barcode, barcode,  null, parseInt($width.val()), parseInt($height.val()), 10, 10);
-                $canvas.attr('src', imageData);
+                $canvas.attr('src', imageData.toDataURL('image/png'));
             }, parseInt($width.val()), parseInt($height.val()));
         };
 
         var $btnAccept = $('<input>', { 'type': 'submit', 'class' : 'btn btn-primary', 'value' : 'Download' });
         $btnAccept.click(function(event) {
             var margin = 5;
+            var imageData = _this.generateBarcode($barcodeTypesDropdown.val(), barcode, "",  null, parseInt($width.val()), parseInt($height.val()));
+            var w = parseInt($width.val());
+            var h = parseInt($height.val());
             var pdf = new jsPDF({
-                orientation: 'l',
+                orientation: w > h ? 'l' : 'p',
                 unit: 'mm',
-                format: [parseInt($width.val())+margin*2, parseInt($height.val())+margin*2],
+                format: [w+margin*2, h+margin*2],
                 putOnlyUsedFonts:true
             });
-            var imageData = _this.generateBarcode($barcodeTypesDropdown.val(), barcode, barcode,  null, parseInt($width.val()), parseInt($height.val()));
-            pdf.addImage(imageData, 'png', margin, margin, parseInt($width.val()), parseInt($height.val()));
+            pdf.setFontSize(w / 10 + 3);
+            pdf.addImage(imageData, 'png', margin, margin, w, h);
+            pdf.text(barcode, (w+margin*2)*0.5, h+margin+3, {align: "center"})
             pdf.save("barcodes.pdf");
         });
 
@@ -910,13 +945,30 @@ var BarcodeUtil = new function() {
         $height.change(updateBarcode);
 
 		$window.append($('<legend>').append("Print Barcode/QR Code"));
-	    $window.append($('<br>'));
+	    $window.append($('<label>', {'class': 'control-label', 'text': 'Type'}));
 	    $window.append($('<center>').append($barcodeTypesDropdown));
-	    $window.append($('<br>'));
+
+        var widthLabel = $("<div>");
+        widthLabel.append($('<label>', {'class': 'control-label', 'text': 'Width'}));
+        var $helpBtn = $("<a>", { 'class' : 'btn btn-default help' });
+        var iconType = IconUtil.getToolbarIconType("?");
+        $helpBtn.append(IconUtil.getIcon(iconType));
+        $helpBtn.attr("title", "Additional margin of 5 mm will be added.");
+        $helpBtn.tooltipster();
+        widthLabel.append($helpBtn);
+
+        $window.append(widthLabel);
 	    $window.append($('<center>').append($width));
-	    $window.append($('<br>'));
+        var heightLabel = $("<div>");
+        heightLabel.append($('<label>', {'class': 'control-label', 'text': 'Height'}));
+        $helpBtn = $("<a>", { 'class' : 'btn btn-default help' });
+        iconType = IconUtil.getToolbarIconType("?");
+        $helpBtn.append(IconUtil.getIcon(iconType));
+        $helpBtn.attr("title", "Additional margin of 5 mm will be added.");
+        $helpBtn.tooltipster();
+        heightLabel.append($helpBtn);
+        $window.append(heightLabel);
 	    $window.append($('<center>').append($height));
-	    $window.append($('<br>'));
 	    $window.append($('<center>').append($canvas));
 	    $window.append($('<br>'));
 	    $window.append($btnAccept).append('&nbsp;').append($btnCancel);
@@ -975,6 +1027,8 @@ var BarcodeUtil = new function() {
             opts.alttext = altx;
             opts.includetext = true;
             opts.textyoffset = 5;
+//            opts.textsize = 1;
+            opts.textxalign='center';
 
             if(barcodeType === "qrcode") {
                 if(width >= 30) {
@@ -1058,6 +1112,6 @@ var BarcodeUtil = new function() {
                 Util.manageError(e);
             }
         }
-        return canvas.toDataURL('image/png');
+        return canvas;
     }
 }

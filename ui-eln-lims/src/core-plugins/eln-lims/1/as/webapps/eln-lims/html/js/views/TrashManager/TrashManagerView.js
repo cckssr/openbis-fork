@@ -212,7 +212,7 @@ function TrashManagerView(trashManagerController, trashManagerModel) {
 			callback(dataList);
 		}
 		
-		var dataGridContainer = $("<div>").css("margin-top", "-10px");
+		var dataGridContainer = $("<div>");
 		var dataGrid = new DataGridController(null, columns, [], null, getDataList, null, true, "TRASHCAN_TABLE", false, {
 			fileFormat: DataGridExportOptions.FILE_FORMAT.TSV,
 			filePrefix: 'trashcan'

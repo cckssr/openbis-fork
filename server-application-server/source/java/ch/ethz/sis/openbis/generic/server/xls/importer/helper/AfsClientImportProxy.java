@@ -3,28 +3,19 @@ package ch.ethz.sis.openbis.generic.server.xls.importer.helper;
 import ch.ethz.sis.afsapi.api.ClientAPI;
 import ch.ethz.sis.afsapi.dto.File;
 import ch.ethz.sis.afsclient.client.AfsClient;
+import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.ethz.sis.openbis.generic.server.xls.importer.enums.ImportModes;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
-import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider;
 
-import java.net.URI;
 import java.nio.file.Path;
-import java.util.UUID;
 
 final class AfsClientImportProxy
 {
 
-    public static final String AFS_SERVER_URL_PROPERTY_NAME = "server-public-information.afs-server.url";
-
-    public static final String AFS_SERVER_TIMEOUT_PROPERTY_NAME = "server-public-information.afs-server.timeout";
-
-    public static final String INTERACTIVE_SESSION_KEY_PROPERTY_NAME = "api.v3.transaction.interactive-session-key";
-
-    public static final String AFS_SERVER_TIMEOUT_DEFAULT = "3600";
-
-    private UUID transactionId;
 
     private final AfsClient client;
+    private final IApplicationServerApi v3;
+    private final String sessionToken;
 
     private final ClientAPI.FileCollisionListener overrideCollisionListener = new ClientAPI.FileCollisionListener() {
         @Override
@@ -33,35 +24,19 @@ final class AfsClientImportProxy
         }
     };
 
-    private AfsClientImportProxy(AfsClient client) {
+
+
+    private AfsClientImportProxy(String sessionToken, IApplicationServerApi api, AfsClient client) {
+        this.sessionToken = sessionToken;
+        this.v3 = api;
         this.client = client;
     }
 
 
-    public static AfsClientImportProxy getAfsClient(String sessionToken) {
-        String url = CommonServiceProvider.tryToGetProperty(AFS_SERVER_URL_PROPERTY_NAME);
-        if(url != null && !url.isBlank()) {
-            String timeoutStr = CommonServiceProvider.tryToGetProperty(AFS_SERVER_TIMEOUT_PROPERTY_NAME, AFS_SERVER_TIMEOUT_DEFAULT);
-            String interactiveSessionKey = CommonServiceProvider.tryToGetProperty(INTERACTIVE_SESSION_KEY_PROPERTY_NAME);
-//            if(interactiveSessionKey == null || interactiveSessionKey.isBlank()) {
-//                throw new IllegalStateException("Interactive Session Key is not configured!");
-//            }
-            final int timeout = Integer.parseInt(timeoutStr);
-            AfsClient client = getAfsClient(sessionToken, url, timeout, interactiveSessionKey);
-
-            return new AfsClientImportProxy(client);
-        } else {
-            return new AfsClientImportProxy(null);
-        }
+    public static AfsClientImportProxy getAfsClient(String sessionToken, IApplicationServerApi api, AfsClient client) {
+        return new AfsClientImportProxy(sessionToken, api, client);
     }
 
-    private static AfsClient getAfsClient(String sessionToken, String afsServerUrl, int timeoutInSeconds, String interactiveSessionKey)
-    {
-        AfsClient afsClient = new AfsClient(URI.create(afsServerUrl), timeoutInSeconds * 1000);
-        afsClient.setSessionToken(sessionToken);
-//        afsClient.setInteractiveSessionKey(interactiveSessionKey);
-        return afsClient;
-    }
 
     File[] listFilesBase(String permId, String source, boolean recursively) throws Exception
     {
@@ -86,7 +61,7 @@ final class AfsClientImportProxy
             return false;
         }
         try {
-            return client.isSessionValid();
+            return v3.isSessionActive(sessionToken);
         } catch (Exception e)
         {
             return false;
@@ -159,49 +134,5 @@ final class AfsClientImportProxy
 
        return client.upload(sourcePath, permId, destinationPath, collisionListener, new ClientAPI.DefaultTransferMonitorLister());
     }
-
-    public void begin() {
-        if(transactionId != null) {
-            return;
-        }
-        UUID transactionId = UUID.randomUUID();
-        try
-        {
-            client.begin(transactionId);
-            this.transactionId = transactionId;
-        } catch (Exception e)
-        {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public void commit() {
-        if(transactionId == null) {
-            return;
-        }
-        try
-        {
-            client.commit();
-        } catch (Exception e)
-        {
-            throw new RuntimeException(e);
-        }
-
-    }
-
-    public void rollback() {
-        if(transactionId == null) {
-            return;
-        }
-        try
-        {
-            client.rollback();
-        } catch (Exception e)
-        {
-            throw new RuntimeException(e);
-        }
-
-    }
-
 
 }
