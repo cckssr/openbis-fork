@@ -21,13 +21,13 @@ dependencies {
             'python:jython:2.5.2',
             'sybit:image-viewer:0.3.6',
             'fasterxml:jackson-databind:2.18.1',
-            'org.springframework:spring-aop:6.1.10',
-            'org.springframework:spring-beans:6.1.10',
-            'org.springframework:spring-context:6.1.10',
-            'org.springframework:spring-core:6.1.10',
-            'org.springframework:spring-web:6.1.10',
-            'org.springframework:spring-webmvc:6.1.10',
-            'org.springframework:spring-expression:6.1.10',
+            'org.springframework:spring-aop:6.2.15',
+            'org.springframework:spring-beans:6.2.15',
+            'org.springframework:spring-context:6.2.15',
+            'org.springframework:spring-core:6.2.15',
+            'org.springframework:spring-web:6.2.15',
+            'org.springframework:spring-webmvc:6.2.15',
+            'org.springframework:spring-expression:6.2.15',
             'aopalliance:aopalliance:1.0'
 
     appbundler 'oracle:appbundler:1.0-CISD'
