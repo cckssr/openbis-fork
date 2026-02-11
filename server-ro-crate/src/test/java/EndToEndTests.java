@@ -433,7 +433,7 @@ public class EndToEndTests extends AbstractTest
         String export_type = exportMimeType;
         io.restassured.response.Response response = given()
                 .header(HEADER_API_KEY, openBIS.getSessionToken())
-                .header("openbis.with-Levels-below", "true")
+                .header("openbis.with-levels-below", "true")
                 .header("Content-Type", "application/json")
                 .header(ExportParams.EXPORT_MIME_TYPE_HEADER, export_type)
                 .body(identifiersJsonString)
@@ -526,7 +526,7 @@ public class EndToEndTests extends AbstractTest
 
         io.restassured.response.Response response = given()
                 .header(HEADER_API_KEY, openBIS.getSessionToken())
-                .header("openbis.with-Levels-below", "true")
+                .header("openbis.with-levels-below", "true")
                 .header("Content-Type", "application/json")
                 .header("Accept", "application/json")
                 .header(ExportParams.EXPORT_MIME_TYPE_HEADER, RoCrateService.APPLICATION_LD_JSON)
