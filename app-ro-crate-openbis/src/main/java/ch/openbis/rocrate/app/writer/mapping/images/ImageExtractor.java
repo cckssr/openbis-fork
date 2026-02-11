@@ -7,6 +7,7 @@ import org.jsoup.select.Elements;
 
 import java.io.Serializable;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class ImageExtractor
 
@@ -52,11 +53,21 @@ public class ImageExtractor
     static String getUpdatedPath(String a)
     {
         String prefix = "xlsx/miscellaneous/file-service/eln-lims/";
-        if (a.startsWith(prefix))
+        if (a.startsWith("file-service/eln-lims/"))
         {
-            return a;
+            // This means it's an openBIS import, we don't have to rename potential naming collisions
+            return prefix + a;
         }
-        return prefix + a;
+
+        String[] parts = a.split("/");
+        String fileName = parts[parts.length - 1];
+        String[] split = fileName.split("\\.");
+        parts[parts.length - 1] =
+                split[0] + "-" + UUID.randomUUID() + "." + Arrays.stream(split).skip(1)
+                        .collect(Collectors.joining("."));
+        String b = Arrays.stream(parts).collect(Collectors.joining("/"));
+
+        return prefix + b;
     }
 
 }
