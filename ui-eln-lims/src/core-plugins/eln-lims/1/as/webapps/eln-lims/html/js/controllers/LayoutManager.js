@@ -379,7 +379,7 @@ var LayoutManager = {
         if (view.content) {
             view.content.css({
                 display : "block",
-                height : height - headerHeight
+                height : height - headerHeight - LayoutManager.TAB_TOP_BAR_HEIGHT
             });
 
         } else {
