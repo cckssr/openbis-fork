@@ -1202,6 +1202,7 @@ function MainController(profile) {
 
             mainController.tabContent.openTab(navigationTab, function() {
                 tab = $("[id='"+navigationTab.id+"']")
+                tab.css("overflow", "hidden");
                 tab.empty()
                 tab.append(tabContentHeader);
                 tab.append(tabContentBody);
