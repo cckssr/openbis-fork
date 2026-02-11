@@ -16,6 +16,7 @@ import java.io.FileOutputStream;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 public class CombinedExternalCrateTest
 {
@@ -58,8 +59,21 @@ public class CombinedExternalCrateTest
         Assert.assertTrue(fileInfosData.stream().findFirst()
                 .filter(x -> x.originalPath().equals("data/stuff.csv")).isPresent());
 
-        Assert.assertEquals("xlsx/miscellaneous/file-service/eln-lims/image/test.png",
-                fileInfos.get(0).originalPath());
+        String actual = fileInfos.get(0).originalPath();
+        String prefix = "xlsx/miscellaneous/file-service/eln-lims/image/test";
+        Assert.assertTrue(
+                actual.startsWith(prefix));
+        String suffix = ".png";
+        Assert.assertTrue(actual.endsWith(suffix));
+        try
+        {
+
+            String replace = actual.replace(prefix + "-", "").replace(suffix, "");
+            UUID.fromString(replace);
+        } catch (RuntimeException e)
+        {
+            Assert.fail();
+        }
 
         byte[] writtenStuff = ExcelWriter.convert(ExcelWriter.Format.ZIP_EXPORT, openBisModel);
         try (FileOutputStream byteArrayOutputStream = new FileOutputStream(
