@@ -39,7 +39,7 @@ dependencies {
             'fjelmer:classycle:1.4.2',
             'testng:testng:6.8-CISD',
             'junit:junit:4.13.2',
-            'org.springframework:spring-test:6.0.0',
+            'org.springframework:spring-test:6.2.15',
             'bioformats:bioformats:6.5.2'
     testImplementation(project(path: ':server-application-server', configuration: 'tests'))
 }
