@@ -3,6 +3,8 @@ package ch.openbis.rocrate.app.examples.files;
 import ch.eth.sis.rocrate.SchemaFacade;
 import ch.eth.sis.rocrate.facade.IMetadataEntry;
 import ch.eth.sis.rocrate.facade.IType;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.ObjectIdentifier;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
 import ch.ethz.sis.openbis.generic.excel.v3.to.ExcelWriter;
 import ch.openbis.rocrate.app.reader.RdfToModel;
@@ -74,6 +76,14 @@ public class CombinedExternalCrateTest
         {
             Assert.fail();
         }
+        ObjectIdentifier objectIdentifier = openBisModel.getImageFiles().entrySet().stream()
+                .filter(x -> !x.getValue().isEmpty())
+                .map(x -> x.getKey())
+                .findFirst().orElseThrow();
+        Sample sample = (Sample) openBisModel.getEntities().get(objectIdentifier);
+
+        String abstractString = sample.getProperties().get("abstract").toString();
+        Assert.assertTrue(abstractString.contains(actual));
 
         byte[] writtenStuff = ExcelWriter.convert(ExcelWriter.Format.ZIP_EXPORT, openBisModel);
         try (FileOutputStream byteArrayOutputStream = new FileOutputStream(
