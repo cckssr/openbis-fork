@@ -42,6 +42,11 @@ public class ImageExtractor
 
             if (isRichText(propertyType))
             {
+                if (property.getValue() == null)
+                {
+                    continue;
+                }
+
                 Serializable[] vals;
                 if (property.getValue() instanceof Serializable[])
                 {
