@@ -36,16 +36,14 @@ public class FilesTest
 
     public static final String TMP_OPENBIS_TEST_RO_OUT_ZIP = "/tmp/openbis_test_ro_out.zip";
 
-
-
-
-    static final String OUTPUT = "out/test/resources/";
+    static final String OUTPUT = "/tmp/out1.zip";
 
     @Test
     public void openBisToCrateTest() throws Exception
     {
         Path path = Paths.get(INPUT);
-        OpenBisModel excelModel = ExcelReader.convert(ExcelReader.Format.ZIP_EXPORT, path);
+        OpenBisModel excelModel = ExcelReader.convert(ExcelReader.Format.ZIP_EXPORT, path,
+                ExcelReader.FileMode.DUMMY);
         Assert.assertEquals(1, excelModel.getFiles().size());
 
         List<OpenBisModel.FileInfo> fileInfos =

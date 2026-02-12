@@ -39,7 +39,8 @@ public class ImageFileTest
 
         String output = "/tmp/openbis_test_ro_out.zip";
         Path path = Paths.get(INPUT_OPENBIS_XLSX_ZIP);
-        OpenBisModel excelModel = ExcelReader.convert(ExcelReader.Format.ZIP_EXPORT, path);
+        OpenBisModel excelModel = ExcelReader.convert(ExcelReader.Format.ZIP_EXPORT, path,
+                ExcelReader.FileMode.DUMMY);
         Mapper mapper = new Mapper();
         MapResult rocrateModel = mapper.transform(
                 excelModel);

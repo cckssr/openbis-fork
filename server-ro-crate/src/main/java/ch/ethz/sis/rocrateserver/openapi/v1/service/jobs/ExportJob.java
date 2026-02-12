@@ -24,8 +24,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriter
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.SemanticAnnotation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.fetchoptions.SemanticAnnotationFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.search.SemanticAnnotationSearchCriteria;
-import org.apache.commons.compress.archivers.zip.*;
-import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import ch.ethz.sis.openbis.generic.excel.v3.from.ExcelReader;
 import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
 import ch.ethz.sis.rocrateserver.exception.RoCrateExceptions;
@@ -37,6 +35,8 @@ import ch.ethz.sis.rocrateserver.startup.StartupMain;
 import ch.openbis.rocrate.app.writer.Writer;
 import io.quarkus.logging.Log;
 import jakarta.ws.rs.HttpMethod;
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.InputStreamResponseListener;
 import org.eclipse.jetty.client.Request;
@@ -280,7 +280,8 @@ public final class ExportJob implements IAsyncJob
 
                     // Convert openBIS Excel to Ro-Crate
                     OpenBisModel openBisModel =
-                            ExcelReader.convert(ExcelReader.Format.EXCEL, realPathToExcel);
+                            ExcelReader.convert(ExcelReader.Format.EXCEL, realPathToExcel,
+                                    ExcelReader.FileMode.DUMMY);
 
                     Path resultZipPath =
                             SessionWorkSpaceManager.getRealPath(exportParams.getApiKey(),

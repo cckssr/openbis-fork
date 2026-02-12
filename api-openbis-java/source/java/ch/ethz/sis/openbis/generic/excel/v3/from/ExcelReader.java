@@ -99,6 +99,12 @@ public class ExcelReader
 
     public static enum Format { ZIP_EXPORT, EXCEL }
 
+    public static enum FileMode
+    {FULL, DUMMY}
+
+    private final FileMode fileMode;
+
+
     Map<Path, Path> externalToZipPath = new LinkedHashMap<>();
 
 
@@ -107,17 +113,27 @@ public class ExcelReader
     private final Map<ObjectIdentifier, List<OpenBisModel.FileInfo>> imageFiles =
             new LinkedHashMap<>();
 
-    public static OpenBisModel convert(Format inputFormat, Path inputFile) throws IOException {
-            if (inputFormat != Format.EXCEL && inputFormat != Format.ZIP_EXPORT) {
-                throw new IllegalArgumentException("Argument with name inputFormat and value: " + inputFormat +  " not supported.");
-            }
-            ExcelReader excelReader = new ExcelReader(new Path[]{ inputFile });
-            return excelReader.start();
+    public static OpenBisModel convert(Format inputFormat, Path inputFile) throws IOException
+    {
+        return convert(inputFormat, inputFile, FileMode.FULL);
+    }
+
+    public static OpenBisModel convert(Format inputFormat, Path inputFile, FileMode fileMode)
+            throws IOException
+    {
+        if (inputFormat != Format.EXCEL && inputFormat != Format.ZIP_EXPORT)
+        {
+            throw new IllegalArgumentException(
+                    "Argument with name inputFormat and value: " + inputFormat + " not supported.");
+        }
+        ExcelReader excelReader = new ExcelReader(new Path[] { inputFile }, fileMode);
+        return excelReader.start();
     }
 
     private ExcelReader(
-            Path[] sessionWorkspaceFiles) throws IOException
+            Path[] sessionWorkspaceFiles, FileMode fileMode) throws IOException
     {
+        this.fileMode = fileMode;
         this.vocabularyHelper = new VocabularyHelper();
         this.vocabularyTermHelper = new VocabularyTermHelper(vocabularyHelper);
         this.dataSetTypeHelper = new DataSetTypeHelper();
@@ -205,7 +221,7 @@ public class ExcelReader
                             {
                                 validateEntrySize(entry.getSize(), EMBEDDED_DOCUMENT_LIMIT);
                                 OpenBisModel.FileInfo fileInfo =
-                                        NewExportFileReader.readFiles(entry, zip);
+                                        NewExportFileReader.readFiles(entry, zip, fileMode);
                                 SampleIdentifier key =
                                         new SampleIdentifier(fileInfo.objectIdentifier());
                                 List<OpenBisModel.FileInfo> vals =
@@ -469,7 +485,8 @@ public class ExcelReader
             {
                 Path filePath = externalToZipPath.get(
                         Path.of(myPath.toString()));
-                byte[] contents = Files.readAllBytes(filePath);
+                byte[] contents =
+                        fileMode != FileMode.DUMMY ? Files.readAllBytes(filePath) : new byte[] {};
 
                 OpenBisModel.FileInfo fileInfo =
                         new OpenBisModel.FileInfo(mapKey.getIdentifier(), myPath.toString(),

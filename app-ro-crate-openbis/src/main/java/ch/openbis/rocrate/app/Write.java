@@ -20,9 +20,14 @@ public class Write
         HelpFormatter formatter = new HelpFormatter();
         CommandLine cmd = null;
         cmd = parser.parse(options, args);
+        boolean dummy = cmd.hasOption("dummy");
+        ExcelReader.FileMode fileMode =
+                dummy ? ExcelReader.FileMode.DUMMY : ExcelReader.FileMode.FULL;
+
 
         Path path = Path.of(cmd.getOptionValues('i')[0]);
-        OpenBisModel openBisModel = ExcelReader.convert(ExcelReader.Format.EXCEL, path);
+        OpenBisModel openBisModel =
+                ExcelReader.convert(ExcelReader.Format.EXCEL, path, fileMode);
 
 
         Writer writer = new Writer();
@@ -53,6 +58,12 @@ public class Write
                     .build();
             options.addOption(option);
 
+        }
+
+        {
+            Option dummy = new Option("d", "dummy", false,
+                    "Set files to 1 B dummy files for testint puropses");
+            options.addOption(dummy);
         }
 
         return options;
