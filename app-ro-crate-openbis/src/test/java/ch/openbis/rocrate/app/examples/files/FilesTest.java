@@ -20,6 +20,7 @@ import java.nio.file.Paths;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 public class FilesTest
 {
@@ -53,6 +54,41 @@ public class FilesTest
 
         Writer writer = new Writer();
         writer.write(excelModel, Path.of(OUTPUT));
+    }
+
+    @Test
+    public void openBisToCrateTestNoSampleName() throws Exception
+    {
+        String input =
+                "src/test/resources/files/export.2026-02-12-10-57-51-092-entity-without-name.zip";
+        String output = "/tmp/" + UUID.randomUUID() + ".zip";
+
+        Path path = Paths.get(input);
+        OpenBisModel excelModel = ExcelReader.convert(ExcelReader.Format.ZIP_EXPORT, path);
+        Assert.assertEquals(1, excelModel.getFiles().size());
+
+        List<OpenBisModel.FileInfo> fileInfos =
+                excelModel.getFiles().values().stream().findFirst().orElseThrow();
+        Assert.assertEquals(3, fileInfos.size());
+
+        Writer writer = new Writer();
+        writer.write(excelModel, Path.of(output));
+        RoCrateReader roCrateFolderReader = new RoCrateReader(new ZipReader());
+        RoCrate crate = roCrateFolderReader.readCrate(output);
+        SchemaFacade schemaFacade = SchemaFacade.of(crate);
+        List<IType> types = schemaFacade.getTypes();
+
+        Set<IMetadataEntry> entryList = new LinkedHashSet<>();
+        for (var type : types)
+        {
+            entryList.addAll(schemaFacade.getEntries(type.getId()));
+
+        }
+
+        OpenBisModel openBisModel = RdfToModel.convert(types, schemaFacade.getPropertyTypes(),
+                entryList.stream().toList(), "DEFAULT", "DEFAULT", schemaFacade);
+        Assert.assertTrue(true);
+
     }
 
     @Test

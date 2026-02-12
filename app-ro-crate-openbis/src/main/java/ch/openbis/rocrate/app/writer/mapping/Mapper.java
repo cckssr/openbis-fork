@@ -209,7 +209,7 @@ public class Mapper
         {
             metaDataEntries.add(
                     new MetadataEntry(space.getKey().getPermId(), Set.of(Constants.GRAPH_ID_SPACE),
-                            Map.of(), Map.of()))
+                            new HashMap<>(), new LinkedHashMap<>()))
             ;
         }
         openBisModel.getProjects().entrySet().forEach(project -> {
@@ -222,7 +222,7 @@ public class Mapper
                     new MetadataEntry(project.getKey().toString(),
                             Set.of(Constants.GRAPH_ID_PROJECT),
                             props,
-                            Map.of()));
+                            new LinkedHashMap<>()));
         });
 
         for (var metaData : openBisModel.getEntities().entrySet())
@@ -331,7 +331,8 @@ public class Mapper
                     props.put(propName, a.getValue());
                 }
                 metaDataEntries.add(
-                        new MetadataEntry(dataSet.getCode(), Set.of(type), props, Map.of()));
+                        new MetadataEntry(dataSet.getCode(), Set.of(type), props,
+                                new LinkedHashMap<>()));
 
             }
             if (val instanceof Experiment experiment)
@@ -383,7 +384,8 @@ public class Mapper
             List<String> identifiersToWrite = new ArrayList<>();
 
             Stream<OpenBisModel.FileInfo> fileInfoStream = Stream.concat(a.getValue().stream(),
-                    openBisModel.getImageFiles().get(a.getKey()).stream());
+                    openBisModel.getImageFiles().getOrDefault(a.getKey(), new ArrayList<>())
+                            .stream());
             for (OpenBisModel.FileInfo b : fileInfoStream.collect(Collectors.toList()))
             {
 
