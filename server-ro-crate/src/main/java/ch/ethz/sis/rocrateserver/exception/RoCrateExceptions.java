@@ -30,7 +30,11 @@ public enum RoCrateExceptions {
     NO_RESULTS_FOUND(List.of(UserUsageError), 90003, 404, "No results found"),
 
     MALFORMED_INPUT(List.of(UserUsageError), 90004, 400,
-            "Malformed input, does not follow the RO-Crate format ");
+            "Malformed input, does not follow the RO-Crate format "),
+    OPENBIS_MISSING_METADATA(List.of(UserUsageError), 90005, 400,
+            "OpenBIS did not provide metadata "),
+    OPENBIS_EXPORT_FORMAT_FAILURE(List.of(UserUsageError), 90006, 500,
+            "RO-Crate server does not support such export format ");
 
 
 
