@@ -24,6 +24,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriter
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.SemanticAnnotation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.fetchoptions.SemanticAnnotationFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.search.SemanticAnnotationSearchCriteria;
+import org.apache.commons.compress.archivers.zip.*;
+import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import ch.ethz.sis.openbis.generic.excel.v3.from.ExcelReader;
 import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
 import ch.ethz.sis.rocrateserver.exception.RoCrateExceptions;
@@ -43,7 +45,7 @@ import org.eclipse.jetty.io.ClientConnector;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.jboss.logging.Logger;
 
-import java.io.InputStream;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -51,6 +53,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import java.util.zip.ZipInputStream;
 
 public final class ExportJob implements IAsyncJob
 {
@@ -242,61 +245,119 @@ public final class ExportJob implements IAsyncJob
                     String downloadURL = exportOperationResult.getExportResult().getDownloadURL();
                     LOG.info("Download url: " + downloadURL);
 
-                    java.nio.file.Path realPathToExcel =
-                            downloadExcel(openBIS, exportParams, downloadURL);
+                    java.nio.file.Path realPathToExcel = null;
+                    java.nio.file.Path downloadPath =
+                            downloadOpenBISExport(openBIS, exportParams, downloadURL);
+
+                    final String downloadedFileName = downloadPath.toFile().getName();
+
+                    if(downloadedFileName.endsWith(".xlsx")) {
+                        realPathToExcel = downloadPath;
+                    } else if(downloadedFileName.endsWith(".zip")) {
+                        InputStream read = SessionWorkSpaceManager.read(openBIS.getSessionToken(), downloadPath);
+                        try (final ZipInputStream zip = new ZipInputStream(read)) {
+                            ZipEntry entry;
+                            while ((entry = zip.getNextEntry()) != null) {
+                                final String filePath = entry.getName();
+                                if(filePath.equalsIgnoreCase("xlsx/metadata.xlsx")) {
+                                    final Path filePathAsPath = SessionWorkSpaceManager.getRealPath(
+                                            openBIS.getSessionToken(), Path.of("metadata.xlsx"));
+                                    try (final OutputStream outputStream = Files.newOutputStream(filePathAsPath))
+                                    {
+                                        zip.transferTo(outputStream);
+                                    }
+                                    realPathToExcel = filePathAsPath;
+                                    break;
+                                }
+                            }
+                            if(realPathToExcel == null) {
+                                RoCrateExceptions.throwInstance(RoCrateExceptions.OPENBIS_MISSING_METADATA);
+                            }
+                        }
+                    } else {
+                        RoCrateExceptions.throwInstance(RoCrateExceptions.OPENBIS_EXPORT_FORMAT_FAILURE);
+                    }
 
                     // Convert openBIS Excel to Ro-Crate
                     OpenBisModel openBisModel =
                             ExcelReader.convert(ExcelReader.Format.EXCEL, realPathToExcel);
 
-                    Writer writer = new Writer();
-                    java.nio.file.Path tempRoCratePath =
-                            java.nio.file.Path.of("result-crate" + UUID.randomUUID() + ".zip");
-                    java.nio.file.Path realTempRoCratePath =
+                    Path resultZipPath =
                             SessionWorkSpaceManager.getRealPath(exportParams.getApiKey(),
-                                    tempRoCratePath);
-                    writer.write(openBisModel, realTempRoCratePath);
+                                    Path.of("result-crate.zip"));
+                    File zipOut = resultZipPath.toFile();
+                    Path roCrateFolderPath = SessionWorkSpaceManager.getRealPath(exportParams.getApiKey(),
+                            Path.of("ro-crate-metadata"));
+                    Writer writer = new Writer();
+                    writer.write(openBisModel, roCrateFolderPath);
+
+                    Path roCrateJsonPath = SessionWorkSpaceManager.getRealPath(exportParams.getApiKey(),
+                            Path.of("ro-crate-metadata", "ro-crate-metadata.json"));
+                    File roCrateFile = roCrateJsonPath.toFile();
 
 
                     if (exportParams.getExportMimeType().equals(RoCrateService.APPLICATION_LD_JSON))
                     {
-                        ZipFile zipFile = new ZipFile(realTempRoCratePath.toFile());
-                        ZipEntry zipEntry = zipFile.getEntry("ro-crate-metadata.json");
-                        try (var a = zipFile.getInputStream(zipEntry))
-                        {
-                            UUID uuid = UUID.randomUUID();
-                            Path path = Path.of(uuid + ".json");
-                            SessionWorkSpaceManager.write(this.exportParams.getApiKey(), path, a);
-                            this.result = SessionWorkSpaceManager.getRealPath(
-                                    this.exportParams.getApiKey(), path);
-                        } catch (Exception e)
-                        {
-                            LOG.error("Error writing JSON-LD", e);
-                            this.exception = e;
-                        }
-
-                    } else if (exportParams.getExportMimeType()
-                            .equals(RoCrateService.APPLICATION_ZIP))
+                        this.result = roCrateJsonPath;
+                    } else if (exportParams.getExportMimeType().equals(RoCrateService.APPLICATION_ZIP))
                     {
-                        try (var a = Files.newInputStream(realTempRoCratePath))
-                        {
-                            UUID uuid = UUID.randomUUID();
-                            Path path = Path.of(uuid + ".json");
-                            SessionWorkSpaceManager.write(this.exportParams.getApiKey(), path, a);
-                            this.result = SessionWorkSpaceManager.getRealPath(
-                                    this.exportParams.getApiKey(), path);
-                        } catch (Exception e)
-                        {
-                            LOG.error("Error writing zip", e);
-                            this.exception = e;
+                        byte[] buffer = new byte[8192];
+                        if(downloadedFileName.endsWith(".xlsx")) {
+                            try (final ZipArchiveOutputStream zos = new ZipArchiveOutputStream(zipOut)) {
+                                addFileToZip(zos, realPathToExcel.toFile(), buffer);
+                                addFileToZip(zos, roCrateFile, buffer);
+                            }
+                        } else if(downloadedFileName.endsWith(".zip")) {
+                            File zipIn = downloadPath.toFile();
+
+
+                            try (ZipFile downloadedZip = new ZipFile(zipIn);
+                                ZipArchiveOutputStream zos = new ZipArchiveOutputStream(zipOut))
+                            {
+                                // Copy existing entries
+                                Enumeration<? extends ZipEntry> entries = downloadedZip.entries();
+                                while (entries.hasMoreElements()) {
+                                    ZipEntry entry = entries.nextElement();
+
+                                    if(!exportParams.isFormatXLSX()) {
+                                        String entryName = entry.getName();
+                                        if(entryName.startsWith("xlsx/")) {
+                                            continue;
+                                        }
+                                    }
+
+                                    ZipArchiveEntry newEntry = new ZipArchiveEntry(entry.getName());
+
+                                    // Preserve metadata
+                                    newEntry.setComment(entry.getComment());
+                                    newEntry.setTime(entry.getTime());
+                                    newEntry.setMethod(entry.getMethod());
+                                    newEntry.setSize(entry.getSize());
+                                    newEntry.setCrc(entry.getCrc());
+                                    newEntry.setCompressedSize(entry.getCompressedSize());
+                                    // Add entry header
+                                    zos.putArchiveEntry(newEntry);
+
+                                    // Copy raw data directly from the old zip
+                                    try (InputStream raw = downloadedZip.getInputStream(entry))
+                                    {
+                                        int len;
+                                        while ((len = raw.read(buffer)) != -1) {
+                                            zos.write(buffer, 0, len);
+                                        }
+                                    }
+                                    zos.closeArchiveEntry();
+                                }
+
+                                // add the new file (this will be compressed normally)
+                                addFileToZip(zos, roCrateFile, buffer);
+                            }
                         }
+                        this.result = resultZipPath;
                     }
                 }
                 Thread.sleep(2000);
             }
-
-            // Download of openBIS export
-            // TODO: Extract this download to a separate method and deal with data as streams not as arrays
 
         } catch (Exception e)
         {
@@ -307,7 +368,23 @@ public final class ExportJob implements IAsyncJob
 
     }
 
-    private static java.nio.file.Path downloadExcel(OpenBIS openBIS, ExportParams headers,
+    private static void addFileToZip(ZipArchiveOutputStream zos, File fileToAdd, byte[] commonBuffer) throws IOException
+    {
+        ZipArchiveEntry newFileEntry = new ZipArchiveEntry(fileToAdd.getName());
+        newFileEntry.setTime(fileToAdd.lastModified());
+        zos.putArchiveEntry(newFileEntry);
+
+        try (InputStream raw = new FileInputStream(fileToAdd))
+        {
+            int len;
+            while ((len = raw.read(commonBuffer)) != -1) {
+                zos.write(commonBuffer, 0, len);
+            }
+        }
+        zos.closeArchiveEntry();
+    }
+
+    private static java.nio.file.Path downloadOpenBISExport(OpenBIS openBIS, ExportParams headers,
             String downloadUrl) throws Exception
     {
         SslContextFactory.Client sslContextFactory = new SslContextFactory.Client();
@@ -332,7 +409,9 @@ public final class ExportJob implements IAsyncJob
 
         // Write openBIS export to disk
         // TODO: Extract this part with previous
-        java.nio.file.Path pathToExcel = java.nio.file.Path.of("metadata.xlsx");
+        final String filePathSubstring = "filePath=";
+        final String fileName = downloadUrl.substring(downloadUrl.indexOf(filePathSubstring) +  filePathSubstring.length());
+        java.nio.file.Path pathToExcel = java.nio.file.Path.of(fileName);
         SessionWorkSpaceManager.write(headers.getApiKey(), pathToExcel, listener.getInputStream());
         java.nio.file.Path realPathToExcel =
                 SessionWorkSpaceManager.getRealPath(headers.getApiKey(), pathToExcel);
@@ -375,28 +454,32 @@ public final class ExportJob implements IAsyncJob
     private static ExportOptions getExportOptions(ExportParams exportParams)
     {
         ExportOptions exportOptions = new ExportOptions();
-
-        exportOptions.setWithImportCompatibility(exportParams.isImportCompatible());
-        exportOptions.setWithReferredTypes(true);
-        exportOptions.setXlsTextFormat(XlsTextFormat.RICH);
-        exportOptions.setWithLevelsAbove(true);
-        Set<ExportFormat> formats = new HashSet<>();
-        if(exportParams.isFormatPDF()) {
-            formats.add(ExportFormat.PDF);
-        }
-        if(exportParams.isFormatXLSX()) {
+        String mimeType = exportParams.getExportMimeType();
+        if(mimeType.equalsIgnoreCase(RoCrateService.APPLICATION_LD_JSON)) {
+            exportOptions.setFormats(Set.of(ExportFormat.XLSX));
+        } else {
+            exportOptions.setWithImportCompatibility(exportParams.isImportCompatible());
+            Set<ExportFormat> formats = new HashSet<>();
+            if(exportParams.isFormatPDF()) {
+                formats.add(ExportFormat.PDF);
+            }
+            if(exportParams.isImportDatasetData()) {
+                formats.add(ExportFormat.DATA);
+            }
+            if(exportParams.isImportAfsData()) {
+                formats.add(ExportFormat.AFS_DATA);
+            }
+            //xlsx is required for ro-crate export
             formats.add(ExportFormat.XLSX);
+            exportOptions.setFormats(formats);
         }
-        if(exportParams.isImportDatasetData()) {
-            formats.add(ExportFormat.DATA);
-        }
-        if(exportParams.isImportAfsData()) {
-            formats.add(ExportFormat.AFS_DATA);
-        }
-        exportOptions.setFormats(formats);
-        exportOptions.setZipSingleFiles(false);
+
+        exportOptions.setXlsTextFormat(XlsTextFormat.RICH);
+        exportOptions.setZipSingleFiles(true);
+        exportOptions.setWithReferredTypes(true);
 
         // Defaults, could be overridden with options
+        exportOptions.setWithLevelsAbove(exportParams.isWithLevelsAbove());
         exportOptions.setWithLevelsBelow(exportParams.isWithLevelsBelow());
         exportOptions.setWithObjectsAndDataSetsParents(
                 exportParams.isWithObjectsAndDataSetsParents());
