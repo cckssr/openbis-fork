@@ -200,7 +200,8 @@ public class ExcelReader
                                         entryName.substring(DATA_FOLDER_NAME.length()),
                                         new String(zip.readAllBytes()));
                             } else if (entryName.startsWith(
-                                    FOLDER_NAME_NEW_DATA) && !entry.isDirectory())
+                                    FOLDER_NAME_NEW_DATA) && !entry.isDirectory() && entry.getName()
+                                    .contains("data"))
                             {
                                 validateEntrySize(entry.getSize(), EMBEDDED_DOCUMENT_LIMIT);
                                 OpenBisModel.FileInfo fileInfo =
@@ -218,6 +219,9 @@ public class ExcelReader
                                         new String(zip.readAllBytes()));
 
                             } else if (entryName.startsWith(FILE_SERVICES_FOLDER_NAME))
+                            {
+
+                            } else if (entryName.toLowerCase().contains("pdf"))
                             {
 
                             } else if (!entryName.startsWith(MISCELLANEOUS_FOLDER_NAME))
