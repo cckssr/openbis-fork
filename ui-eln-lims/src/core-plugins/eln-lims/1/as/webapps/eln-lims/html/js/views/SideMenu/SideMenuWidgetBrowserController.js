@@ -1998,6 +1998,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
             withProperties: true,
             withType: true,
             withExperiment: true,
+            withProject: true,
             withParents: true,
             withParentsExperiment: true,
             withParentsProject: true,
