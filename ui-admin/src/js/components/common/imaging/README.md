@@ -149,13 +149,13 @@ const result = await facade.filterGallery(
 
 ```javascript
 // Get just the config
-const config = await facade.loadImagingDataset(permId);
+const config = await facade.loadImagingDataset(permId, false, false, false, ObjectType.DATA_SET);
 
 // Get config with type and file paths
-const [paths, type, config] = await facade.loadImagingDataset(permId, false, true, true);
+const [paths, type, config] = await facade.loadImagingDataset(permId, false, true, true, ObjectType.DATA_SET);
 
 // Get raw properties
-const properties = await facade.loadImagingDataset(permId, true);
+const properties = await facade.loadImagingDataset(permId, true, false, false, ObjectType.DATA_SET);
 ```
 
 ### Update Preview
@@ -262,7 +262,7 @@ Displays and allows editing of a single imaging dataset.
 
 #### Dataset Operations
 
-- `loadImagingDataset(objId, withProperties, withType, withDatasetsHierarchy)` - Load dataset
+- `loadImagingDataset(objId, withProperties, withType, withDatasetsHierarchy, objType)` - Load dataset
 - `saveImagingDataset(permId, imagingDataset)` - Save dataset
 - `updatePreview(permId, imageIdx, preview)` - Update preview
 - `editImagingDatasetNote(permId, note)` - Edit dataset note
