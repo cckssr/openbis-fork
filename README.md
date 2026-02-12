@@ -14,8 +14,8 @@ The repository contains these kind of modules used to build the openBIS distribu
 
 # Software Requirements
 
-- JDK 17
-- Postgres 15
+- JDK 21
+- Postgres 18
 
 # Change log
 Change log is available [here](CHANGELOG.md) 
@@ -26,15 +26,15 @@ Change log is available [here](CHANGELOG.md)
 
 ```
 git clone https://sissource.ethz.ch/sispub/openbis.git
-cd app-openbis-installer/
+cd release/
 ./gradlew clean
-./gradlew build -x test "-Dorg.gradle.jvmargs=--add-opens=java.base/java.text=ALL-UNNAMED --add-opens=java.desktop/java.awt.font=ALL-UNNAMED"
+./gradlew buildRelease "-Dorg.gradle.jvmargs=--add-opens=java.base/java.text=ALL-UNNAMED --add-opens=java.desktop/java.awt.font=ALL-UNNAMED"
 ```
 
 ## Where the build is found?
 
 ```
-./app-openbis-installer/targets/gradle/distributions/openBIS-installation-standard-technologies-SNAPSHOT-rXXXXXXXXXX.tar.gz
+./release/build/openbis-release-SNAPSHOT.tar.gz
 ```
 
 ## Why we disable tests to make the build?
