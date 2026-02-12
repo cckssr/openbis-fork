@@ -1,5 +1,6 @@
 package ch.ethz.sis.openbis.generic.excel.v3.from.utils;
 
+import ch.ethz.sis.openbis.generic.excel.v3.from.ExcelReader;
 import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
 import com.google.common.annotations.VisibleForTesting;
 
@@ -12,7 +13,8 @@ import java.util.zip.ZipInputStream;
 
 public class NewExportFileReader
 {
-    public static OpenBisModel.FileInfo readFiles(ZipEntry zipEntry, ZipInputStream zipInputStream)
+    public static OpenBisModel.FileInfo readFiles(ZipEntry zipEntry, ZipInputStream zipInputStream,
+            ExcelReader.FileMode fileMode)
             throws IOException
     {
         String[] parts = zipEntry.getName().split("/");
@@ -27,7 +29,9 @@ public class NewExportFileReader
         identifierParts.add(getObjectCode(parts[parts.length - 3]));
 
         String identifier = "/" + identifierParts.stream().collect(Collectors.joining("/"));
-        byte[] content = zipInputStream.readAllBytes();
+        byte[] content = fileMode != ExcelReader.FileMode.DUMMY ?
+                zipInputStream.readAllBytes() :
+                new byte[] { 0x00 };
         String fileIdentifier = makeFileIdentifierRoCrateCompatible(identifier + "/" + fileName);
 
         return new OpenBisModel.FileInfo(identifier, fileIdentifier, content, zipEntry.getName());
@@ -38,9 +42,9 @@ public class NewExportFileReader
     {
         if (a.startsWith("/"))
         {
-            return a.substring(1);
+            return "hierarchy/" + a.substring(1);
         }
-        return a;
+        return "hierarchy/" + a;
 
     }
 
