@@ -33,7 +33,7 @@ export const ImagingDataProvider = ({ onUnsavedChanges, objId, objType, extOpenb
     const loadImagingDataset = useCallback(async () => {
         if (!state.loaded) {
             try {
-                const [datasetFilePaths, datasetType, imagingDataSetPropertyConfig] = await imagingFacade.loadImagingDataset(objId, false, true, true);
+                const [datasetFilePaths, datasetType, imagingDataSetPropertyConfig] = await imagingFacade.loadImagingDataset(objId, false, true, true, objType);
                 const imagingTagsArr = await imagingFacade.loadImagingVocabularyTerms(constants.IMAGING_TAGS);
 
                 const isInitConfigEmpty = isObjectEmpty(imagingDataSetPropertyConfig.images[0].previews[0].config);
@@ -55,7 +55,7 @@ export const ImagingDataProvider = ({ onUnsavedChanges, objId, objType, extOpenb
                 handleError(error);
             }
         }
-    }, [state.loaded, objId, imagingFacade]);
+    }, [state.loaded, objId, objType, imagingFacade]);
 
     const createLocatedSXMPreview = async (sxmPermId, sxmFilePath) => {
         handleOpen();

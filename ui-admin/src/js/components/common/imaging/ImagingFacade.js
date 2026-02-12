@@ -147,17 +147,18 @@ export default class ImagingFacade {
      * @param {boolean} [withProperties=false] - Whether to return raw properties object
      * @param {boolean} [withType=false] - Whether to include dataset type and file paths
      * @param {boolean} [withDatasetsHierarchy=false] - Whether to fetch related datasets for file paths
+     * @param {string|null} [objType=null] - Object type (ObjectType.OBJECT for samples, ObjectType.DATA_SET for datasets)
      * @returns {Promise<Object|Array|null>}
      *   - If withProperties: returns dataset properties object
      *   - If withType: returns [filePaths, datasetType, imagingDataConfig]
      *   - Otherwise: returns imagingDataConfig object
      *   - Returns null if dataset not found
      */
-    loadImagingDataset = async (objId, withProperties = false, withType = false, withDatasetsHierarchy = false) => {
+    loadImagingDataset = async (objId, withProperties = false, withType = false, withDatasetsHierarchy = false, objType = null) => {
         let skip = false;
         let dataset = null;
-        if(this.openbis.hasAfsDataStore()) {
-            //TODO improve this -> make use of objType?
+        const trySampleFirst = objType === ObjectType.OBJECT || objType === ObjectType.NEW_OBJECT;
+        if (this.openbis.hasAfsDataStore() && trySampleFirst) {
             const sampleFetchOptions = new this.openbis.SampleFetchOptions();
             sampleFetchOptions.withProperties();
             sampleFetchOptions.withType();
@@ -231,7 +232,7 @@ export default class ImagingFacade {
      * @returns {Promise<Object>} Update result
      */
     editImagingDatasetNote = async (permId, note) => {
-        const imagingDataset = await this.loadImagingDataset(permId);
+        const imagingDataset = await this.loadImagingDataset(permId, false, false, false, ObjectType.DATA_SET);
         const update = new this.openbis.DataSetUpdate();
         update.setDataSetId(new this.openbis.DataSetPermId(permId));
         update.setProperty(constants.IMAGING_DATA_CONFIG, JSON.stringify(imagingDataset));
@@ -275,7 +276,7 @@ export default class ImagingFacade {
      * @returns {Promise<Object>} Update result
      */
     updatePreview = async (permId, imageIdx, preview) => {
-        const toUpdateImgDS = await this.loadImagingDataset(permId);
+        const toUpdateImgDS = await this.loadImagingDataset(permId, false, false, false, ObjectType.DATA_SET);
         toUpdateImgDS.images[imageIdx].previews[preview.index] = preview;
         const update = new this.openbis.DataSetUpdate();
         update.setDataSetId(new this.openbis.DataSetPermId(permId));
@@ -440,7 +441,7 @@ export default class ImagingFacade {
 
             if (datasetId !== currentDatasetId) {
                 currentDatasetId = datasetId;
-                datasetProperties = await this.loadImagingDataset(datasetId, true);
+                datasetProperties = await this.loadImagingDataset(datasetId, true, false, false, ObjectType.DATA_SET);
                 loadedImgDS = await this.openbis.fromJson(null, JSON.parse(datasetProperties[constants.IMAGING_DATA_CONFIG]));
                 delete datasetProperties[constants.IMAGING_DATA_CONFIG];
             }
@@ -508,7 +509,7 @@ export default class ImagingFacade {
         const filteredDatasets = [];
 
         for (const dataSet of dataSets) {
-            const datasetProperties = await this.loadImagingDataset(dataSet.permId.permId, true);
+            const datasetProperties = await this.loadImagingDataset(dataSet.permId.permId, true, false, false, ObjectType.DATA_SET);
             const loadedImgDS = await this.openbis.fromJson(null, JSON.parse(datasetProperties[constants.IMAGING_DATA_CONFIG]));
             delete datasetProperties[constants.IMAGING_DATA_CONFIG];
 
