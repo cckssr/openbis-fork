@@ -62,8 +62,7 @@ tasks.register('javadoc', Copy) {
 }
 
 
-tasks.register('buildRelease', Tar) {
-//tasks.register('release', Tar) {
+tasks.register('release', Tar) {
     // API
     dependsOn([project(':api-openbis-java').tasks.release,
                project(':api-openbis-java').tasks.releaseDependenciesIncluded,
