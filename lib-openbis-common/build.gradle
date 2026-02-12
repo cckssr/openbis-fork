@@ -16,8 +16,8 @@ dependencies {
             'fasterxml:jackson-annotations:2.18.1',
             'reflections:reflections:0.9.10',
             'lemnik:eodsql:2.2-CISD',
-            'org.springframework:spring-jdbc:6.1.10',
-            'org.springframework:spring-tx:6.1.10',
+            'org.springframework:spring-jdbc:6.2.15',
+            'org.springframework:spring-tx:6.2.15',
             'apache:commons-collections4:4.1',
             'truezip:truezip:6.8.1'
 

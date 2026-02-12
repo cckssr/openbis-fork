@@ -51,14 +51,9 @@ public class NewExportFileReader
     @VisibleForTesting
     public static String getObjectCode(String stuff)
     {
-        StringBuilder stringBuilder = new StringBuilder();
         if (!stuff.endsWith(")"))
         {
-            throw new RuntimeException();
-        }
-        if (!stuff.contains("("))
-        {
-            throw new RuntimeException();
+            return stuff;
         }
         int pos = stuff.length() - 2;
         while (stuff.charAt(pos) != '(')

@@ -40,7 +40,10 @@ public class ExportParams {
     @HeaderParam("openbis.afs-data")
     private String importAfsData;
 
-    @HeaderParam("openbis.with-Levels-below")
+    @HeaderParam("openbis.with-levels-above")
+    private String withLevelsAbove;
+
+    @HeaderParam("openbis.with-levels-below")
     private String withLevelsBelow; // Include levels below from same space
 
     @HeaderParam("openbis.with-objects-and-dataSets-children")
@@ -69,6 +72,14 @@ public class ExportParams {
 
     public void setIdentifierAnnotations(String identifierAnnotations) {
         this.identifierAnnotations = identifierAnnotations;
+    }
+
+    public boolean isWithLevelsAbove() {
+        return Boolean.parseBoolean(withLevelsAbove);
+    }
+
+    public void setWithLevelsAbove(String withLevelsAbove) {
+        this.withLevelsAbove = withLevelsAbove;
     }
 
     public boolean isWithLevelsBelow() {
@@ -139,7 +150,7 @@ public class ExportParams {
 
     public boolean isImportCompatible()
     {
-        return importCompatible != null &&  Boolean.parseBoolean(importCompatible);
+        return Boolean.parseBoolean(importCompatible);
     }
 
     public void setImportCompatible(String importCompatible)
@@ -149,7 +160,7 @@ public class ExportParams {
 
     public boolean isFormatPDF()
     {
-        return formatPDF != null && Boolean.parseBoolean(formatPDF);
+        return Boolean.parseBoolean(formatPDF);
     }
 
     public void setFormatPDF(String formatPDF)
@@ -159,7 +170,7 @@ public class ExportParams {
 
     public boolean isFormatXLSX()
     {
-        return formatXLSX != null && Boolean.parseBoolean(formatXLSX);
+        return Boolean.parseBoolean(formatXLSX);
     }
 
     public void setFormatXLSX(String formatXLSX)
@@ -169,7 +180,7 @@ public class ExportParams {
 
     public boolean isImportDatasetData()
     {
-        return importDatasetData != null && Boolean.parseBoolean(importDatasetData);
+        return Boolean.parseBoolean(importDatasetData);
     }
 
     public void setImportDatasetData(String importDatasetData)
@@ -179,12 +190,12 @@ public class ExportParams {
 
     public boolean isImportAfsData()
     {
-        return importAfsData != null && Boolean.parseBoolean(importAfsData);
+        return Boolean.parseBoolean(importAfsData);
     }
 
     public boolean isWithObjectsAndDataSetsChildren()
     {
-        return withObjectsAndDataSetsChildren != null && Boolean.parseBoolean(withObjectsAndDataSetsChildren);
+        return Boolean.parseBoolean(withObjectsAndDataSetsChildren);
     }
 
     public void setWithObjectsAndDataSetsChildren(String withObjectsAndDataSetsChildren)

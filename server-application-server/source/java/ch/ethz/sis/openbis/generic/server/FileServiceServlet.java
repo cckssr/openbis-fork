@@ -59,7 +59,8 @@ import ch.systemsx.cisd.openbis.generic.client.web.server.AbstractServlet;
 public class FileServiceServlet extends AbstractServlet
 {
     public static final String FILE_SERVICE_PATH = "file-service";
-    public static final String FILE_SERVICE_PATH_MAPPING = FILE_SERVICE_PATH + "/{*path}";
+
+    public static final String FILE_SERVICE_PATH_MAPPING = FILE_SERVICE_PATH + "/**/*";
 
     private static final String KEY_PREFIX = "file-server.";
     public static final String REPO_PATH_KEY = KEY_PREFIX + "repository-path";

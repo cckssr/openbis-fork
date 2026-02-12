@@ -49,7 +49,8 @@ dependencies {
             'com.networknt:json-schema-validator:1.5.7',
             'net.lingala.zip4j:zip4j:2.11.5',
             'io.smallrye:jandex:3.2.7',
-            "org.eclipse.jetty:jetty-client:12.1.1"
+            "org.eclipse.jetty:jetty-client:12.1.1",
+            'apache:commons-compress:1.8'
 
     testImplementation 'testng:testng:6.8-CISD',
             'junit:junit:4.13.2',
