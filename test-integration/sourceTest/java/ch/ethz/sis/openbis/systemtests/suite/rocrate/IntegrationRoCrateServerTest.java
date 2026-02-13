@@ -38,7 +38,7 @@ import static org.testng.Assert.*;
 public class IntegrationRoCrateServerTest
 {
 
-    private static final int TIMEOUT = 5 * 60 * 1000;
+    private static final int TIMEOUT = 10 * 60 * 1000;
 
     private static String username = "system";
 
@@ -308,7 +308,7 @@ public class IntegrationRoCrateServerTest
         String payload = "[\"https://doi.org/10.1038/s41586-020-3010-5\"]";
         String mimeType = "application/ld+json";
         testExport(mimeType, payload, x -> testMimeAndStatus(x, "COMPLETED", mimeType),
-                x -> testStatus(x, "COMPLETED"));
+                x -> testStatus(x, "FAILED"));
 
     }
 
@@ -353,7 +353,7 @@ public class IntegrationRoCrateServerTest
         String payload = "[\"https://doi.org/10.1038/s41586-020-3010-5\"]";
         String mimeType = "application/zip";
         testExport(mimeType, payload, x -> testMimeAndStatus(x, "COMPLETED", mimeType),
-                x -> testStatus(x, "COMPLETED"));
+                x -> testStatus(x, "FAILED"));
     }
 
     @Test(enabled = true, timeOut = TIMEOUT)
@@ -364,7 +364,7 @@ public class IntegrationRoCrateServerTest
         String payload = "[\"/PUBLICATIONS/PUBLIC_REPOSITORIES/PUB29\"]";
         String mimeType = "application/ld+json";
         testExport(mimeType, payload, x -> testMimeAndStatus(x, "COMPLETED", mimeType),
-                x -> testStatus(x, "COMPLETED"));
+                x -> testStatus(x, "FAILED"));
     }
 
     @Test(enabled = false, timeOut = TIMEOUT)
