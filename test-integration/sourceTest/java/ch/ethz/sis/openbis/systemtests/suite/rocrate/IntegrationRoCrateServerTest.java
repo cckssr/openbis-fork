@@ -345,8 +345,7 @@ public class IntegrationRoCrateServerTest
         }
     }
 
-
-    @Test(enabled = true)
+    @Test(enabled = true, timeOut = TIMEOUT)
     // This test depends on some data which should be created before the test runs
     public void testExportDOIZip()
             throws Exception
@@ -357,7 +356,8 @@ public class IntegrationRoCrateServerTest
                 x -> testStatus(x, "COMPLETED"));
     }
 
-    @Test(enabled = true) // This depends on some data which should be created before the test runs
+    @Test(enabled = true, timeOut = TIMEOUT)
+    // This depends on some data which should be created before the test runs
     public void testExportIdentifier()
             throws Exception
     {
@@ -367,7 +367,7 @@ public class IntegrationRoCrateServerTest
                 x -> testStatus(x, "COMPLETED"));
     }
 
-    @Test(enabled = false)
+    @Test(enabled = false, timeOut = TIMEOUT)
     // PermIds depend on when the import was done. This can lead to false failure.
     // As long as we don't have a good solution for search in tests, this is disabled.
     public void testExportPermId()
@@ -380,7 +380,7 @@ public class IntegrationRoCrateServerTest
 
     }
 
-    @Test
+    @Test(timeOut = TIMEOUT)
     public void testExportEmptyResults()
             throws Exception
     {
