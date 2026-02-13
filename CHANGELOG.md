@@ -1,5 +1,11 @@
 # OpenBIS Change Log
 
+## Version 20.10.12.5 (13 Feb 2026)
+
+### ELN-LIMS
+- Bugfix: Setting proper form height (BIS-2540)
+- Bugfix: Project sample load in side menu browser (BIS-2536)
+
 ## Version 20.10.12.4 (10 Feb 2026)
 
 ### Core
