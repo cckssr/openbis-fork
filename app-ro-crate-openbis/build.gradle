@@ -38,9 +38,7 @@ dependencies {
 
 
 test {
-    // remove DISPLAY completely
-    environment.remove("DISPLAY");
-    useTestNG();
+    useJUnit();
     systemProperty "java.awt.headless", "true";
     jvmArgs "-Djava.awt.headless=true"
 }
