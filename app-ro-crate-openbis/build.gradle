@@ -42,4 +42,5 @@ test {
     environment.remove("DISPLAY");
     useTestNG();
     systemProperty "java.awt.headless", "true";
+    jvmArgs "-Djava.awt.headless=true"
 }
