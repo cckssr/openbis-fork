@@ -35,3 +35,11 @@ dependencies {
 
     testImplementation 'junit:junit:4.10', 'hamcrest:hamcrest-core:1.3', 'hamcrest:hamcrest-library:1.3'
 }
+
+
+test {
+    // remove DISPLAY completely
+    environment.remove("DISPLAY");
+    useTestNG();
+    systemProperty "java.awt.headless", "true";
+}
