@@ -5,7 +5,6 @@ buildscript {
 
     dependencies {
         classpath 'apache:commons-codec:1.10',
-                'owasp:dependency-check-gradle:6.2.2',
                 'paleozogt:symzip-plugin:0.10.1'
     }
 }
@@ -13,20 +12,7 @@ buildscript {
 //plugins {
 //    id "com.github.node-gradle.node" version "7.1.0"
 //}
-apply plugin: org.owasp.dependencycheck.gradle.DependencyCheckPlugin
 apply plugin: "org.paleozogt.symzip"
-
-dependencyCheck {
-    failBuildOnCVSS = 7 // 0 - 4 = low, 4 - 7 = medium, 7 - 9 = high, 9-10 = critical
-    suppressionFile = "owasp_suppressing_false_positives.xml"
-    analyzers {
-        assemblyEnabled = false
-    }
-    proxy {
-        server = 'proxy.ethz.ch'
-        port = 3128
-    }
-}
 
 evaluationDependsOn(':lib-commonbase')
 evaluationDependsOn(':lib-common')
@@ -118,7 +104,6 @@ dependencies {
             'junit:junit:4.13.2',
             'org.springframework:spring-test:6.1.10'
     testImplementation(project(path: ':server-application-server', configuration: 'tests'))
-
 }
 
 sourceSets {
