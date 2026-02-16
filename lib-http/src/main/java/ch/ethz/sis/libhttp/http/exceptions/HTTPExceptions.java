@@ -13,22 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ch.ethz.sis.afsserver.exception;
+package ch.ethz.sis.libhttp.http.exceptions;
 
-import ch.ethz.sis.afs.api.dto.ExceptionReason;
-import ch.ethz.sis.afs.api.dto.ExceptionType;
-import ch.ethz.sis.afs.exception.RuntimeExceptionTemplate;
-import ch.ethz.sis.shared.exception.ExceptionTemplateHolder;
 
 import java.util.List;
 
-import static ch.ethz.sis.afs.api.dto.ExceptionType.*;
-
 public enum HTTPExceptions implements ExceptionTemplateHolder {
     // APIServer
-    UNKNOWN(                                    RuntimeException.class,                         List.of(UnknownError),                             20001, "Unknown error of type %s, please contact support, this error comes with message: %s"),
-    INVALID_PARAMETERS(                IllegalArgumentException.class,                 List.of(ClientDeveloperCodingError),               20002, "Invalid parameters"),
-    INVALID_HTTP_METHOD(                IllegalArgumentException.class,                 List.of(ClientDeveloperCodingError),               20003, "Invalid HTTP method");
+    UNKNOWN(RuntimeException.class, List.of(
+            ExceptionType.UnknownError), 20001,
+            "Unknown error of type %s, please contact support, this error comes with message: %s"),
+    INVALID_PARAMETERS(IllegalArgumentException.class, List.of(
+            ExceptionType.ClientDeveloperCodingError), 20002, "Invalid parameters"),
+    INVALID_HTTP_METHOD(IllegalArgumentException.class, List.of(
+            ExceptionType.ClientDeveloperCodingError), 20003, "Invalid HTTP method");
 
     private RuntimeExceptionTemplate template;
 

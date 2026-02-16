@@ -15,10 +15,25 @@
  */
 package ch.ethz.sis.afsserver.server.impl;
 
-import static ch.ethz.sis.afsserver.exception.HTTPExceptions.INVALID_PARAMETERS;
-import static ch.ethz.sis.afsserver.exception.HTTPExceptions.throwInstance;
-import static io.netty.handler.codec.http.HttpMethod.GET;
-import static io.netty.handler.codec.http.HttpMethod.POST;
+import ch.ethz.sis.afsapi.dto.Chunk;
+import ch.ethz.sis.afsapi.dto.DTO;
+import ch.ethz.sis.afsapi.dto.File;
+import ch.ethz.sis.afsclient.client.ChunkEncoderDecoder;
+import ch.ethz.sis.afsclient.client.FileEncoderDecoder;
+import ch.ethz.sis.afsjson.JsonObjectMapper;
+import ch.ethz.sis.afsserver.server.APIServer;
+import ch.ethz.sis.afsserver.server.APIServerException;
+import ch.ethz.sis.afsserver.server.Request;
+import ch.ethz.sis.afsserver.server.Response;
+import ch.ethz.sis.afsserver.server.performance.Event;
+import ch.ethz.sis.afsserver.server.performance.PerformanceAuditor;
+import ch.ethz.sis.libhttp.http.HttpResponse;
+import ch.ethz.sis.libhttp.http.HttpServerHandler;
+import ch.ethz.sis.libhttp.http.exceptions.HTTPExceptions;
+import ch.ethz.sis.libhttp.http.impl.NettyHttpHandler;
+import ch.ethz.sis.shared.log.standard.LogManager;
+import ch.ethz.sis.shared.log.standard.Logger;
+import io.netty.handler.codec.http.HttpMethod;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
@@ -27,25 +42,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import ch.ethz.sis.afsapi.dto.Chunk;
-import ch.ethz.sis.afsapi.dto.DTO;
-import ch.ethz.sis.afsapi.dto.File;
-import ch.ethz.sis.afsclient.client.ChunkEncoderDecoder;
-import ch.ethz.sis.afsclient.client.FileEncoderDecoder;
-import ch.ethz.sis.afsjson.JsonObjectMapper;
-import ch.ethz.sis.afsserver.exception.HTTPExceptions;
-import ch.ethz.sis.afsserver.http.HttpResponse;
-import ch.ethz.sis.afsserver.http.HttpServerHandler;
-import ch.ethz.sis.afsserver.http.impl.NettyHttpHandler;
-import ch.ethz.sis.afsserver.server.APIServer;
-import ch.ethz.sis.afsserver.server.APIServerException;
-import ch.ethz.sis.afsserver.server.Request;
-import ch.ethz.sis.afsserver.server.Response;
-import ch.ethz.sis.afsserver.server.performance.Event;
-import ch.ethz.sis.afsserver.server.performance.PerformanceAuditor;
-import ch.ethz.sis.shared.log.standard.LogManager;
-import ch.ethz.sis.shared.log.standard.Logger;
-import io.netty.handler.codec.http.HttpMethod;
+import static ch.ethz.sis.libhttp.http.exceptions.HTTPExceptions.INVALID_PARAMETERS;
+import static ch.ethz.sis.libhttp.http.exceptions.HTTPExceptions.throwInstance;
+import static io.netty.handler.codec.http.HttpMethod.GET;
+import static io.netty.handler.codec.http.HttpMethod.POST;
 
 /*
  * This class is supposed to be called by a TCP or HTTP transport class

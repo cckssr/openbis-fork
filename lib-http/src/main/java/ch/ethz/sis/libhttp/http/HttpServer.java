@@ -13,22 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ch.ethz.sis.afsserver.http;
+package ch.ethz.sis.libhttp.http;
 
-import io.netty.handler.codec.http.HttpMethod;
+public interface HttpServer {
+    void start(int port, int maxContentLength, String uri, HttpServerHandler[] httpServerHandlers);
 
-import java.util.List;
-import java.util.Map;
-
-public interface HttpServerHandler {
-
-    /*
-     * The path that indicates the webserver that should use this handler
-     */
-    public String getPath();
-
-    /*
-     * The handler
-     */
-    public HttpResponse process(HttpMethod method, Map<String, List<String>> uriParameters, byte[] requestBody);
+    void shutdown(boolean gracefully);
 }

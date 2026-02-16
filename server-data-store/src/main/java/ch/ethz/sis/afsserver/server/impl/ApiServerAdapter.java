@@ -15,22 +15,20 @@
  */
 package ch.ethz.sis.afsserver.server.impl;
 
-import static io.netty.handler.codec.http.HttpMethod.DELETE;
-import static io.netty.handler.codec.http.HttpMethod.GET;
-import static io.netty.handler.codec.http.HttpMethod.POST;
-
-import java.util.List;
-import java.util.Map;
-
 import ch.ethz.sis.afsjson.JsonObjectMapper;
-import ch.ethz.sis.afsserver.http.HttpResponse;
 import ch.ethz.sis.afsserver.server.APIServer;
 import ch.ethz.sis.afsserver.server.Request;
 import ch.ethz.sis.afsserver.server.Response;
 import ch.ethz.sis.afsserver.server.performance.PerformanceAuditor;
+import ch.ethz.sis.libhttp.http.HttpResponse;
 import ch.ethz.sis.shared.log.standard.LogManager;
 import ch.ethz.sis.shared.log.standard.Logger;
 import io.netty.handler.codec.http.HttpMethod;
+
+import java.util.List;
+import java.util.Map;
+
+import static io.netty.handler.codec.http.HttpMethod.*;
 
 /*
  * This class is supposed to be called by a TCP or HTTP transport class

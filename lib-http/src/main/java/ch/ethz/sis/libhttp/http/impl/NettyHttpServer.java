@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ch.ethz.sis.afsserver.http.impl;
+package ch.ethz.sis.libhttp.http.impl;
 
-import ch.ethz.sis.afsserver.http.HttpServerHandler;
+import ch.ethz.sis.libhttp.http.HttpServer;
+import ch.ethz.sis.libhttp.http.HttpServerHandler;
 import ch.ethz.sis.shared.log.standard.LogManager;
 import ch.ethz.sis.shared.log.standard.Logger;
-import ch.ethz.sis.afsserver.http.HttpServer;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;

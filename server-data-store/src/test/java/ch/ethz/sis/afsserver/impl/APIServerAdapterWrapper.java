@@ -15,18 +15,18 @@
  */
 package ch.ethz.sis.afsserver.impl;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import ch.ethz.sis.afsclient.client.AfsClient;
 import ch.ethz.sis.afsserver.core.AbstractPublicAPIWrapper;
-import ch.ethz.sis.afsserver.http.HttpResponse;
 import ch.ethz.sis.afsserver.server.impl.ApiServerAdapter;
+import ch.ethz.sis.libhttp.http.HttpResponse;
 import ch.ethz.sis.shared.io.IOUtils;
 import ch.ethz.sis.shared.log.standard.LogManager;
 import ch.ethz.sis.shared.log.standard.Logger;
 import io.netty.handler.codec.http.HttpMethod;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class APIServerAdapterWrapper extends AbstractPublicAPIWrapper
 {

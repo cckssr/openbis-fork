@@ -13,10 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ch.ethz.sis.afsserver.http;
+package ch.ethz.sis.libhttp.http.exceptions;
 
-public interface HttpServer {
-    void start(int port, int maxContentLength, String uri, HttpServerHandler[] httpServerHandlers);
-
-    void shutdown(boolean gracefully);
+public enum ExceptionType
+{
+    UnknownError,
+    UserUsageError,
+    AdminConfigError,
+    ClientDeveloperCodingError,
+    CoreDeveloperCodingError,
+    RecoverableSystemStateError,
+    IrrecoverableSystemStateError
 }

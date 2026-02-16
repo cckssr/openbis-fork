@@ -17,16 +17,16 @@
 
 package ch.ethz.sis.afsserver.server.impl;
 
-import java.util.List;
-import java.util.Map;
-
 import ch.ethz.sis.afsjson.JsonObjectMapper;
-import ch.ethz.sis.afsserver.http.HttpResponse;
 import ch.ethz.sis.afsserver.server.APIServer;
 import ch.ethz.sis.afsserver.server.Request;
 import ch.ethz.sis.afsserver.server.Response;
 import ch.ethz.sis.afsserver.server.performance.PerformanceAuditor;
+import ch.ethz.sis.libhttp.http.HttpResponse;
 import io.netty.handler.codec.http.HttpMethod;
+
+import java.util.List;
+import java.util.Map;
 
 public class HttpDownloadAdapter<CONNECTION, API> extends AbstractAdapter<CONNECTION, API>
 {

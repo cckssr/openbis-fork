@@ -15,14 +15,10 @@
  */
 package ch.ethz.sis.afsserver;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import ch.ethz.sis.afs.manager.NopLockMapper;
 import ch.ethz.sis.afsapi.api.PublicAPI;
 import ch.ethz.sis.afsclient.client.AfsClient;
 import ch.ethz.sis.afsjson.jackson.JacksonObjectMapper;
-import ch.ethz.sis.afsserver.http.impl.NettyHttpServer;
 import ch.ethz.sis.afsserver.server.Server;
 import ch.ethz.sis.afsserver.server.observer.APIServerObserver;
 import ch.ethz.sis.afsserver.server.observer.ServerObserver;
@@ -31,8 +27,12 @@ import ch.ethz.sis.afsserver.worker.ConnectionFactory;
 import ch.ethz.sis.afsserver.worker.WorkerFactory;
 import ch.ethz.sis.afsserver.worker.providers.impl.DummyAuthenticationInfoProvider;
 import ch.ethz.sis.afsserver.worker.providers.impl.DummyAuthorizationInfoProvider;
+import ch.ethz.sis.libhttp.http.impl.NettyHttpServer;
 import ch.ethz.sis.shared.log.standard.impl.StandardLogFactory;
 import ch.ethz.sis.shared.startup.Configuration;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class ServerClientEnvironmentFS
 {

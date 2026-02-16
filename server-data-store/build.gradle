@@ -43,6 +43,7 @@ dependencies {
             project(':lib-maintenance'),
             project(':lib-hierarchical-content'),
             project(':lib-transactional-file-system'),
+            project(':lib-http'),
             project(':api-data-store-server-java'),
             project(':api-openbis-java'),
             'lombok:lombok:1.18.38',

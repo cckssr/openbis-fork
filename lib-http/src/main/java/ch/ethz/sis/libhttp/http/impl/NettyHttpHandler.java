@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ch.ethz.sis.afsserver.http.impl;
+package ch.ethz.sis.libhttp.http.impl;
 
-import ch.ethz.sis.afsserver.exception.HTTPExceptions;
-import ch.ethz.sis.afsserver.http.HttpResponse;
-import ch.ethz.sis.afsserver.http.HttpServerHandler;
+import ch.ethz.sis.libhttp.http.HttpResponse;
+import ch.ethz.sis.libhttp.http.HttpServerHandler;
+import ch.ethz.sis.libhttp.http.exceptions.HTTPExceptions;
 import ch.ethz.sis.shared.log.standard.LogManager;
 import ch.ethz.sis.shared.log.standard.Logger;
 import io.netty.buffer.ByteBuf;
@@ -27,14 +27,7 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.FullHttpResponse;
-import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http.HttpMethod;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.HttpVersion;
-import io.netty.handler.codec.http.QueryStringDecoder;
+import io.netty.handler.codec.http.*;
 import io.netty.handler.stream.ChunkedStream;
 
 import java.nio.charset.StandardCharsets;
@@ -44,12 +37,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-import static io.netty.handler.codec.http.HttpMethod.DELETE;
-import static io.netty.handler.codec.http.HttpMethod.GET;
-import static io.netty.handler.codec.http.HttpMethod.OPTIONS;
-import static io.netty.handler.codec.http.HttpMethod.POST;
-import static io.netty.handler.codec.http.HttpMethod.PUT;
-import static io.netty.handler.codec.http.HttpMethod.valueOf;
+import static io.netty.handler.codec.http.HttpMethod.*;
 
 public class NettyHttpHandler extends ChannelInboundHandlerAdapter
 {
