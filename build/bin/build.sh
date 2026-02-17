@@ -37,31 +37,11 @@ git checkout $tag
 if [ $? -ne 0 ]; then echo "Tag does not exist!"; exit 1; fi
 
 # build
-#cd core-plugin-openbis
-#./gradlew :clientsAndApis -x test
-#./gradlew :generateJavadoc
-#cd ../app-openbis-installer
-#./gradlew :build -x test
-
 cd release
 ./gradlew release -Dorg.gradle.jvmargs="--add-opens=java.base/java.text=ALL-UNNAMED --add-opens=java.desktop/java.awt.font=ALL-UNNAMED"
 
 
 cd ../..
-
-# move documentation to fileserver
-#cp -r openbis/core-plugin-openbis/targets/gradle/docs/javadoc ~openbis/fileserver/doc/openbis/$tag
-#cd ~openbis/fileserver/doc/openbis
-#if [ ${tag:0:1} == "S" ]; then
-#  rm current
-#  ln -s $tag current
-#else
-#  dir=${tag%.*}
-#  rm $dir
-#  ln -s $tag $dir
-#fi
-
-cd -
 
 # move components to fileserver
 mv openbis/release/build/openbis-release-*.tar.gz .
