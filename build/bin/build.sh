@@ -50,19 +50,20 @@ cd release
 cd ../..
 
 # move documentation to fileserver
-cp -r openbis/core-plugin-openbis/targets/gradle/docs/javadoc ~openbis/fileserver/doc/openbis/$tag
-cd ~openbis/fileserver/doc/openbis
-if [ ${tag:0:1} == "S" ]; then
-  rm current
-  ln -s $tag current
-else
-  dir=${tag%.*}
-  rm $dir
-  ln -s $tag $dir
-fi
+#cp -r openbis/core-plugin-openbis/targets/gradle/docs/javadoc ~openbis/fileserver/doc/openbis/$tag
+#cd ~openbis/fileserver/doc/openbis
+#if [ ${tag:0:1} == "S" ]; then
+#  rm current
+#  ln -s $tag current
+#else
+#  dir=${tag%.*}
+#  rm $dir
+#  ln -s $tag $dir
+#fi
+
 cd -
 
 # move components to fileserver
-mv openbis/release/buildopenbis-release-*.zip .
+mv openbis/release/build/openbis-release-*.zip .
 
 move_to_file_server
