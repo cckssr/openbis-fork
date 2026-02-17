@@ -10,8 +10,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 @RunWith(JUnit4.class)
@@ -76,14 +76,16 @@ public class ProtobufConversionUtilTest {
                 new SyncJob(SyncJob.Type.Upload, "http://loc", "tkntkn", "1234-abcd", "title", "/remDIR", "/LOCdir", true)
         )), new ArrayList<>(List.of("aaa", "bbb")));
 
-        DriveApiService.Settings protobufSettings = ProtobufConversionUtil.toProtobufSettings(settings);
+        DriveApiService.Settings protobufSettings = ProtobufConversionUtil.toProtobufSettings(settings, "seCReT".getBytes(StandardCharsets.UTF_8));
 
         Assert.assertEquals("it", protobufSettings.getLanguage());
         Assert.assertEquals(true, protobufSettings.getStartAtLogin());
         Assert.assertEquals(63, protobufSettings.getSyncIntervalSeconds());
+        Assert.assertArrayEquals("seCReT".getBytes(StandardCharsets.UTF_8), protobufSettings.getClientSecret().toByteArray());
         Assert.assertEquals(ProtobufConversionUtil.toProtobufSyncJobs(List.of(
                         new SyncJob(SyncJob.Type.Upload, "http://loc", "tkntkn", "1234-abcd", "title", "/remDIR", "/LOCdir", true)
-                )
+                ),
+                "seCReT".getBytes(StandardCharsets.UTF_8)
         ), protobufSettings.getJobs());
     }
 
@@ -157,7 +159,7 @@ public class ProtobufConversionUtilTest {
         syncJobs.get(0).setIgnoredPathPatterns(new ArrayList<>(List.of("aaa", "bbb")));
         syncJobs.get(1).setIgnoredPathPatterns(new ArrayList<>(List.of("aaa1", "bbb2")));
 
-        DriveApiService.SyncJobs protobufSyncJobs = ProtobufConversionUtil.toProtobufSyncJobs(syncJobs);
+        DriveApiService.SyncJobs protobufSyncJobs = ProtobufConversionUtil.toProtobufSyncJobs(syncJobs, "seCReT".getBytes(StandardCharsets.UTF_8));
 
         Assert.assertEquals(5, protobufSyncJobs.getSyncJobsCount());
 
@@ -219,6 +221,8 @@ public class ProtobufConversionUtilTest {
         Assert.assertEquals(DriveApiService.SyncJob.Type.DOWNLOAD, protobufSyncJobs.getSyncJobs(4).getType());
         Assert.assertEquals(DriveApiService.SyncJob.IgnoreFilesMode.GLOBAL_DEFAULT, protobufSyncJobs.getSyncJobs(4).getIgnoreFiles());
         Assert.assertEquals(List.of(), protobufSyncJobs.getSyncJobs(4).getIgnoredPathPatterns().getIgnoredPathPatternsList().stream().toList());
+
+        Assert.assertArrayEquals("seCReT".getBytes(StandardCharsets.UTF_8), protobufSyncJobs.getClientSecret().toByteArray());
     }
 
     @Test
@@ -389,5 +393,18 @@ public class ProtobufConversionUtilTest {
         Assert.assertEquals(DriveApiService.SyncJob.Type.BIDIRECTIONAL, ProtobufConversionUtil.toProtobufSyncJobTypeEnum(SyncJob.Type.Bidirectional));
         Assert.assertEquals(DriveApiService.SyncJob.Type.UPLOAD, ProtobufConversionUtil.toProtobufSyncJobTypeEnum(SyncJob.Type.Upload));
         Assert.assertEquals(DriveApiService.SyncJob.Type.DOWNLOAD, ProtobufConversionUtil.toProtobufSyncJobTypeEnum(SyncJob.Type.Download));
+    }
+
+    @Test
+    public void toProtobufLimit() {
+        DriveApiService.Limit limit = ProtobufConversionUtil.toProtobufLimit(3732, "SeCrET".getBytes(StandardCharsets.UTF_8));
+        Assert.assertEquals(3732, limit.getLimit());
+        Assert.assertArrayEquals("SeCrET".getBytes(StandardCharsets.UTF_8), limit.getClientSecret().toByteArray());
+    }
+
+    @Test
+    public void toProtobufEmpty() {
+        DriveApiService.Empty empty = ProtobufConversionUtil.toProtobufEmpty("Se__CrET".getBytes(StandardCharsets.UTF_8));
+        Assert.assertArrayEquals("Se__CrET".getBytes(StandardCharsets.UTF_8), empty.getClientSecret().toByteArray());
     }
 }

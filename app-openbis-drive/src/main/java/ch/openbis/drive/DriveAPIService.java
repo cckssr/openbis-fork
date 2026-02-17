@@ -71,14 +71,14 @@ public class DriveAPIService {
                             .channelType(EpollServerDomainSocketChannel.class)
                             .workerEventLoopGroup(new EpollEventLoopGroup())
                             .bossEventLoopGroup(new EpollEventLoopGroup())
-                            .addService(new DriveAPIGrpcImpl(driveAPIServer))
+                            .addService(new DriveAPIGrpcImpl(driveAPIServer, configuration))
                             .build()
                             .start();
                     }
 
                     case Windows, Mac -> {
                         server = NettyServerBuilder.forAddress(new InetSocketAddress("localhost", configuration.getOpenbisDrivePort()))
-                            .addService(new DriveAPIGrpcImpl(driveAPIServer))
+                            .addService(new DriveAPIGrpcImpl(driveAPIServer, configuration))
                             .build()
                             .start();
                     }

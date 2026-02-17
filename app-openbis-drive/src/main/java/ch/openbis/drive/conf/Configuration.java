@@ -4,14 +4,17 @@ import ch.ethz.sis.afsclient.client.AfsClient;
 import ch.openbis.drive.util.OpenBISDriveUtil;
 import ch.openbis.drive.util.OsDetectionUtil;
 import lombok.NonNull;
-import lombok.SneakyThrows;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.Map;
 import java.util.Properties;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class Configuration {
     public static final String LOCAL_OPENBIS_HIDDEN_DIRECTORY = "openbis-drive";
@@ -22,10 +25,12 @@ public class Configuration {
     public static final String OPENBIS_DRIVE_PORT_ENV_KEY = "OPENBIS_DRIVE_PORT";
     public static final String OPENBIS_DRIVE_MANUAL_INSTALLATION_PROPERTY = "ch.openbis.drive.manualInstallation";
     public static final String OPENBIS_DRIVE_PROPERTIES_FILE = "openbis-drive.properties";
+    public static final String OPENBIS_DRIVE_CLIENT_SECRET_FILE = "openbis-drive.secret";
 
     @NonNull
     private final Path localAppDirectory;
     private final int openbisDrivePort;
+    final AtomicReference<byte[]> clientSecret = new AtomicReference<>(null);
 
     public Configuration() throws IOException {
         this(System.getenv());
@@ -49,11 +54,20 @@ public class Configuration {
         }
     }
 
+    //Only for unit-tests
     public Configuration(@NonNull Path localAppDirectory) {
         this.localAppDirectory = localAppDirectory;
         this.openbisDrivePort = OPENBIS_DRIVE_DEFAULT_PORT;
     }
 
+    //Only for unit-tests
+    public Configuration(@NonNull Path localAppDirectory, byte[] clientSecret) {
+        this.localAppDirectory = localAppDirectory;
+        this.clientSecret.set(clientSecret);
+        this.openbisDrivePort = OPENBIS_DRIVE_DEFAULT_PORT;
+    }
+
+    //Only for unit-tests
     public Configuration(@NonNull Path localAppDirectory, int openbisDrivePort) {
         this.localAppDirectory = localAppDirectory;
         this.openbisDrivePort = openbisDrivePort;
@@ -76,6 +90,30 @@ public class Configuration {
                 setSystemProperty("jdk.internal.httpclient.disableHostnameVerification", "true");
             }
         }
+    }
+
+    public byte[] getClientSecret() {
+        return clientSecret.get();
+    }
+
+    public static synchronized void generateClientSecretIfNecessary(@NonNull Configuration configuration) throws IOException {
+        configuration.readOpenbisDriveClientSecret();
+        if ( configuration.getClientSecret() == null ) {
+            byte[] newSecret = UUID.randomUUID().toString().getBytes(StandardCharsets.UTF_8);
+            configuration.writeDriveClientSecret(newSecret);
+            configuration.clientSecret.set(newSecret);
+        }
+    }
+
+    public void readOpenbisDriveClientSecret() throws IOException {
+        if (Files.exists(localAppDirectory.resolve(OPENBIS_DRIVE_CLIENT_SECRET_FILE))) {
+            this.clientSecret.set(Files.readAllBytes(localAppDirectory.resolve(OPENBIS_DRIVE_CLIENT_SECRET_FILE)));
+        }
+    }
+
+    public void writeDriveClientSecret(@NonNull byte[] clientSecret) throws IOException {
+        Files.write(localAppDirectory.resolve(OPENBIS_DRIVE_CLIENT_SECRET_FILE), clientSecret,
+                StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE);
     }
 
     void setSystemProperty(@NonNull String key, @NonNull String value) {

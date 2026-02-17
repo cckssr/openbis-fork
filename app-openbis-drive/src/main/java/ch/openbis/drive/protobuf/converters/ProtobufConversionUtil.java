@@ -2,6 +2,7 @@ package ch.openbis.drive.protobuf.converters;
 
 import ch.openbis.drive.model.*;
 import ch.openbis.drive.protobuf.DriveApiService;
+import com.google.protobuf.ByteString;
 import lombok.NonNull;
 
 import java.util.ArrayList;
@@ -21,13 +22,19 @@ public class ProtobufConversionUtil {
     }
 
 
-    public static DriveApiService.Settings toProtobufSettings(@NonNull Settings settings) {
-        return DriveApiService.Settings.newBuilder()
+    public static DriveApiService.Settings toProtobufSettings(@NonNull Settings settings, byte[] clientSecret) {
+        DriveApiService.Settings.Builder builder = DriveApiService.Settings.newBuilder()
             .setStartAtLogin(settings.isStartAtLogin())
             .setLanguage(settings.getLanguage())
             .setSyncIntervalSeconds(settings.getSyncInterval())
-            .setJobs(toProtobufSyncJobs(settings.getJobs()))
-            .setIgnoredPathPatterns(DriveApiService.IgnoredPathPatterns.newBuilder().addAllIgnoredPathPatterns(settings.getIgnoredPathPatterns())).build();
+            .setJobs(toProtobufSyncJobs(settings.getJobs(), clientSecret))
+            .setIgnoredPathPatterns(DriveApiService.IgnoredPathPatterns.newBuilder().addAllIgnoredPathPatterns(settings.getIgnoredPathPatterns()));
+
+        if (clientSecret != null) {
+            builder.setClientSecret(ByteString.copyFrom(clientSecret));
+        }
+
+        return builder.build();
     }
 
     public static @NonNull ArrayList<@NonNull SyncJob> fromProtobufSyncJobs(@NonNull DriveApiService.SyncJobs syncJobsDto) {
@@ -57,7 +64,7 @@ public class ProtobufConversionUtil {
         return syncJobs;
     }
 
-    public static DriveApiService.SyncJobs toProtobufSyncJobs(@NonNull List<@NonNull SyncJob> syncJobs) {
+    public static DriveApiService.SyncJobs toProtobufSyncJobs(@NonNull List<@NonNull SyncJob> syncJobs, byte[] clientSecret) {
         DriveApiService.SyncJobs.Builder builder = DriveApiService.SyncJobs.newBuilder();
 
         for(SyncJob syncJob : syncJobs) {
@@ -79,6 +86,9 @@ public class ProtobufConversionUtil {
             builder.addSyncJobs(syncJobBuilder.build());
         }
 
+        if ( clientSecret != null ) {
+            builder.setClientSecret(ByteString.copyFrom(clientSecret));
+        }
         return builder.build();
     }
 
@@ -266,5 +276,21 @@ public class ProtobufConversionUtil {
             case Experiment -> DriveApiService.SyncJob.EntityType.EXPERIMENT;
             case Dataset -> DriveApiService.SyncJob.EntityType.DATASET;
         };
+    }
+
+    public static DriveApiService.Limit toProtobufLimit(int limit, byte[] clientSecret) {
+        DriveApiService.Limit.Builder builder = DriveApiService.Limit.newBuilder().setLimit(limit);
+        if (clientSecret != null) {
+            builder.setClientSecret(ByteString.copyFrom(clientSecret)).build();
+        }
+        return builder.build();
+    }
+
+    public static DriveApiService.Empty toProtobufEmpty(byte[] clientSecret) {
+        DriveApiService.Empty.Builder builder = DriveApiService.Empty.newBuilder();
+        if (clientSecret != null) {
+            builder.setClientSecret(ByteString.copyFrom(clientSecret)).build();
+        }
+        return builder.build();
     }
 }

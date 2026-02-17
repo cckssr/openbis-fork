@@ -8,6 +8,7 @@ message Settings {
     int32 sync_interval_seconds = 3;
     SyncJobs jobs = 4;
     IgnoredPathPatterns ignored_path_patterns = 5;
+    optional bytes client_secret = 6;
 }
 
 message SyncJob {
@@ -49,6 +50,7 @@ message IgnoredPathPatterns {
 
 message SyncJobs {
     repeated SyncJob sync_jobs = 1;
+    optional bytes client_secret = 2;
 }
 
 message SyncJobLive {
@@ -107,9 +109,12 @@ message Notifications {
 
 message Limit {
     int32 limit = 1;
+    optional bytes client_secret = 2;
 }
 
-message Empty {}
+message Empty {
+    optional bytes client_secret = 1;
+}
 
 service DriveAPIService {
     rpc SetSettings(Settings) returns (Empty);

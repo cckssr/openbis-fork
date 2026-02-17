@@ -23,6 +23,8 @@ import java.util.List;
 
 public class DriveAPIClientProtobufImpl implements DriveAPI, AutoCloseable {
 
+    final Configuration configuration;
+
     final ManagedChannel grpcManagedChannel;
     final EpollEventLoopGroup eventLoopGroup;
 
@@ -31,6 +33,9 @@ public class DriveAPIClientProtobufImpl implements DriveAPI, AutoCloseable {
     }
 
     public DriveAPIClientProtobufImpl(Configuration configuration) throws Exception {
+        Configuration.generateClientSecretIfNecessary(configuration);
+        this.configuration = configuration;
+
         switch (OsDetectionUtil.detectOS()) {
             case Linux -> {
                 eventLoopGroup = new EpollEventLoopGroup();
@@ -58,52 +63,52 @@ public class DriveAPIClientProtobufImpl implements DriveAPI, AutoCloseable {
 
     @SneakyThrows
     synchronized public void setSettings(@NonNull Settings settings) {
-        DriveAPIServiceGrpc.newBlockingStub(grpcManagedChannel).setSettings(ProtobufConversionUtil.toProtobufSettings(settings));
+        DriveAPIServiceGrpc.newBlockingStub(grpcManagedChannel).setSettings(ProtobufConversionUtil.toProtobufSettings(settings, configuration.getClientSecret()));
     }
 
     @SneakyThrows
     synchronized public @NonNull Settings getSettings() {
-        return ProtobufConversionUtil.fromProtobufSettings(DriveAPIServiceGrpc.newBlockingStub(grpcManagedChannel).getSettings(DriveApiService.Empty.newBuilder().build()));
+        return ProtobufConversionUtil.fromProtobufSettings(DriveAPIServiceGrpc.newBlockingStub(grpcManagedChannel).getSettings(ProtobufConversionUtil.toProtobufEmpty(configuration.getClientSecret())));
     }
 
     @SneakyThrows
     synchronized public @NonNull List<@NonNull SyncJob> getSyncJobs() {
-        return ProtobufConversionUtil.fromProtobufSyncJobs(DriveAPIServiceGrpc.newBlockingStub(grpcManagedChannel).getSyncJobs(DriveApiService.Empty.newBuilder().build()));
+        return ProtobufConversionUtil.fromProtobufSyncJobs(DriveAPIServiceGrpc.newBlockingStub(grpcManagedChannel).getSyncJobs(ProtobufConversionUtil.toProtobufEmpty(configuration.getClientSecret())));
     }
 
     @SneakyThrows
     synchronized public void addSyncJobs(@NonNull List<@NonNull SyncJob> syncJobs) {
-        DriveAPIServiceGrpc.newBlockingStub(grpcManagedChannel).addSyncJobs(ProtobufConversionUtil.toProtobufSyncJobs(syncJobs));
+        DriveAPIServiceGrpc.newBlockingStub(grpcManagedChannel).addSyncJobs(ProtobufConversionUtil.toProtobufSyncJobs(syncJobs, configuration.getClientSecret()));
     }
 
     @SneakyThrows
     synchronized public void removeSyncJobs(@NonNull List<@NonNull SyncJob> syncJobs) {
-        DriveAPIServiceGrpc.newBlockingStub(grpcManagedChannel).removeSyncJobs(ProtobufConversionUtil.toProtobufSyncJobs(syncJobs));
+        DriveAPIServiceGrpc.newBlockingStub(grpcManagedChannel).removeSyncJobs(ProtobufConversionUtil.toProtobufSyncJobs(syncJobs, configuration.getClientSecret()));
     }
 
     @SneakyThrows
     synchronized public void startSyncJobs(@NonNull List<@NonNull SyncJob> syncJobs) {
-        DriveAPIServiceGrpc.newBlockingStub(grpcManagedChannel).startSyncJobs(ProtobufConversionUtil.toProtobufSyncJobs(syncJobs));
+        DriveAPIServiceGrpc.newBlockingStub(grpcManagedChannel).startSyncJobs(ProtobufConversionUtil.toProtobufSyncJobs(syncJobs, configuration.getClientSecret()));
     }
 
     @SneakyThrows
     synchronized public void stopSyncJobs(@NonNull List<@NonNull SyncJob> syncJobs) {
-        DriveAPIServiceGrpc.newBlockingStub(grpcManagedChannel).stopSyncJobs(ProtobufConversionUtil.toProtobufSyncJobs(syncJobs));
+        DriveAPIServiceGrpc.newBlockingStub(grpcManagedChannel).stopSyncJobs(ProtobufConversionUtil.toProtobufSyncJobs(syncJobs, configuration.getClientSecret()));
     }
 
     @SneakyThrows
     synchronized public @NonNull List<? extends Event> getEvents(@NonNull Integer limit) {
-        return ProtobufConversionUtil.fromProtobufEvents(DriveAPIServiceGrpc.newBlockingStub(grpcManagedChannel).getEvents(DriveApiService.Limit.newBuilder().setLimit(limit).build()));
+        return ProtobufConversionUtil.fromProtobufEvents(DriveAPIServiceGrpc.newBlockingStub(grpcManagedChannel).getEvents(ProtobufConversionUtil.toProtobufLimit(limit, configuration.getClientSecret())));
     }
 
     @SneakyThrows
     synchronized public @NonNull List<Notification> getNotifications(@NonNull Integer limit) {
-        return ProtobufConversionUtil.fromProtobufNotifications(DriveAPIServiceGrpc.newBlockingStub(grpcManagedChannel).getNotifications(DriveApiService.Limit.newBuilder().setLimit(limit).build()));
+        return ProtobufConversionUtil.fromProtobufNotifications(DriveAPIServiceGrpc.newBlockingStub(grpcManagedChannel).getNotifications(ProtobufConversionUtil.toProtobufLimit(limit, configuration.getClientSecret())));
     }
 
     @SneakyThrows
     public @NonNull List<@NonNull SyncJobLive> getSyncJobsLive() {
-        return ProtobufConversionUtil.fromProtobufSyncJobsLive(DriveAPIServiceGrpc.newBlockingStub(grpcManagedChannel).getSyncJobsLive(DriveApiService.Empty.newBuilder().build()));
+        return ProtobufConversionUtil.fromProtobufSyncJobsLive(DriveAPIServiceGrpc.newBlockingStub(grpcManagedChannel).getSyncJobsLive(ProtobufConversionUtil.toProtobufEmpty(configuration.getClientSecret())));
     }
 
     @Override
