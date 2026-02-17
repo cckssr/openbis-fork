@@ -82,12 +82,13 @@ class GridColumnsConfig extends React.PureComponent {
   render() {
     logger.log(logger.DEBUG, 'GridColumnsConfig.render')
 
-    const { id, classes, loading } = this.props
+    const { id, classes, loading, selectionButtonProps} = this.props
     const { el } = this.state
 
     return (
       (<div className={classes.container}>
         <Button
+          {...selectionButtonProps}
           id={id + '.columns-button-id'}
           label={messages.get(messages.COLUMNS)}
           onClick={this.handleOpen}
@@ -117,16 +118,18 @@ class GridColumnsConfig extends React.PureComponent {
   }
 
   renderColumns() {
-    const { classes, columns, columnsVisibility, onVisibleChange } = this.props
+    const { classes, columns, columnsVisibility, onVisibleChange , selectionButtonProps } = this.props
     return (
       <div>
         <div className={classes.buttons}>
           <Button
+            {...selectionButtonProps}
             label={messages.get(messages.SHOW_ALL)}
             onClick={this.handleShowAll}
             color='white'
           />
           <Button
+            {...selectionButtonProps}
             label={messages.get(messages.HIDE_ALL)}
             onClick={this.handleHideAll}
             color='white'

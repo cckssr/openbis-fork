@@ -151,7 +151,8 @@ class GridExports extends React.PureComponent {
       multiselectLimit,
       visibleColumns,
       totalCount,
-      classes
+      classes,
+      selectionButtonProps
     } = this.props
     const { el, importCompatibleError } = this.state
 
@@ -190,6 +191,7 @@ class GridExports extends React.PureComponent {
     return (
       (<div className={classes.container}>
         <Button
+          {...selectionButtonProps}
           id={id + '.exports-button-id'}
           label={messages.get(messages.EXPORTS)}
           disabled={disabled}
@@ -336,6 +338,7 @@ class GridExports extends React.PureComponent {
             )}
             <div className={classes.button}>
               <Button
+                {...selectionButtonProps}
                 id={id + '.trigger-exports-button-id'}
                 label={messages.get(messages.EXPORT)}
                 type='neutral'

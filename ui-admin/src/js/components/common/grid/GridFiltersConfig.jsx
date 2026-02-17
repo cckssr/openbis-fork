@@ -50,7 +50,7 @@ class GridFiltersConfig extends React.PureComponent {
   render() {
     logger.log(logger.DEBUG, 'GridFiltersConfig.render')
 
-    const { id, filterModes, loading, classes } = this.props
+    const { id, filterModes, loading, classes, selectionButtonProps } = this.props
     const { el } = this.state
 
     if (filterModes && filterModes.length <= 1) {
@@ -60,6 +60,7 @@ class GridFiltersConfig extends React.PureComponent {
     return (
       (<div className={classes.container}>
         <Button
+          {...selectionButtonProps}
           id={id + '.filters-button-id'}
           label={messages.get(messages.FILTERS)}
 //           color='inherit'

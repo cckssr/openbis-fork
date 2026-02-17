@@ -1470,7 +1470,7 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 			});
 			columnsLast = columnsLast.concat(_this.additionalLastColumns);
 
-            var filterModes = isGlobalSearch ? [] : null
+			var filterModes = isGlobalSearch ? [] : null
 			var getDataRows = this._advancedSearchController.searchWithPagination(criteria, isGlobalSearch);
 			var dataGrid = new DataGridController(this.resultsTitle, this._filterColumns(columns), columnsLast, dynamicColumnsFunc, getDataRows, null, false, this.configKeyPrefix + this._advancedSearchModel.criteria.entityKind, isMultiselectable, {
 				fileFormat: DataGridExportOptions.FILE_FORMAT.XLS,

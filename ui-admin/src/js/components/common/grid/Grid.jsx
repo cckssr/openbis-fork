@@ -269,7 +269,7 @@ class Grid extends React.PureComponent {
   }
 
   renderPaging() {
-    const { id, showRowsPerPage } = this.props
+    const { id, showRowsPerPage, selectionButtonProps } = this.props
     const { page, pageSize, totalCount } = this.state
 
     return (
@@ -279,6 +279,7 @@ class Grid extends React.PureComponent {
         page={page}
         pageSize={pageSize}
         showRowsPerPage={showRowsPerPage}
+        selectionButtonProps={selectionButtonProps}
         onPageChange={this.controller.handlePageChange}
         onPageSizeChange={this.controller.handlePageSizeChange}
       />
@@ -286,7 +287,7 @@ class Grid extends React.PureComponent {
   }
 
   renderConfigs() {
-    const { id, filterModes } = this.props
+    const { id, filterModes, selectionButtonProps } = this.props
     const { loading, filterMode, columnsVisibility } = this.state
 
     const allColumns = this.controller.getAllColumns()
@@ -298,6 +299,7 @@ class Grid extends React.PureComponent {
           columns={allColumns}
           columnsVisibility={columnsVisibility}
           loading={loading}
+          selectionButtonProps={selectionButtonProps}
           onVisibleChange={this.controller.handleColumnVisibleChange}
           onOrderChange={this.controller.handleColumnOrderChange}
         />
@@ -306,6 +308,7 @@ class Grid extends React.PureComponent {
           filterModes={filterModes}
           filterMode={filterMode}
           loading={loading}
+          selectionButtonProps={selectionButtonProps}
           onFilterModeChange={this.controller.handleFilterModeChange}
         />
       </React.Fragment>
@@ -313,7 +316,7 @@ class Grid extends React.PureComponent {
   }
 
   renderExports() {
-    const { id, multiselectable } = this.props
+    const { id, multiselectable, selectionButtonProps } = this.props
     const { rows, multiselectedRows, exportOptions } = this.state
 
     const exportable = this.controller.getExportable()
@@ -337,6 +340,7 @@ class Grid extends React.PureComponent {
         multiselectLimit={multiselectLimit}
         visibleColumns={visibleColumns}
         totalCount={totalCount}
+        selectionButtonProps={selectionButtonProps}
         onExport={this.controller.handleExport}
         onExportOptionsChange={this.controller.handleExportOptionsChange}
       />
@@ -344,6 +348,7 @@ class Grid extends React.PureComponent {
   }
 
   renderExportState() {
+    const { selectionButtonProps } = this.props
     const { exportState } = this.state
 
     if (!exportState) {
@@ -356,11 +361,13 @@ class Grid extends React.PureComponent {
         <GridExportError
           open={!_.isEmpty(exportState.error)}
           error={exportState.error}
+          selectionButtonProps={selectionButtonProps}
           onClose={this.controller.handleExportCancel}
         />
         <GridExportWarnings
           open={!_.isEmpty(exportState.warnings)}
           warnings={exportState.warnings}
+          selectionButtonProps={selectionButtonProps}
           onDownload={() =>
             this.controller.handleExportDownload(
               exportState.fileName,
@@ -467,6 +474,7 @@ class Grid extends React.PureComponent {
   }
 
   renderConfirmSelectAllPages() {
+    const { selectionButtonProps } = this.props
     const { confirmSelectAllPagesOpen, totalCount } = this.state
     const multiselectLimit = this.controller.getMultiselectLimit()
 
@@ -481,6 +489,7 @@ class Grid extends React.PureComponent {
       open={confirmSelectAllPagesOpen}
       onConfirm={this.controller.handleConfirmSelectAllPages}
       onCancel={this.controller.handleCancelSelectAllPages}
+      selectionButtonProps={selectionButtonProps}
       title={messages.get(messages.SELECT_ALL_PAGES)}
       content={content}
     />)
