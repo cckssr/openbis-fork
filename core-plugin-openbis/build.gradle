@@ -5,6 +5,7 @@ buildscript {
 
     dependencies {
         classpath 'apache:commons-codec:1.10',
+                'org.apache.commons:commons-compress:1.8',
                 'paleozogt:symzip-plugin:0.10.1'
     }
 }
