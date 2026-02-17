@@ -622,6 +622,7 @@ class DataBrowser extends React.Component {
         onCancel={this.handleCancel}
         onApplyToAllChange={showApplyToAll ? this.handleApplyToAllSelection : null}
         applyToAll={applyToAllFiles}
+        selectionButtonProps={this.props.selectionButtonProps}
         title={messages.get(messages.FILE_EXISTS)}
         content={messages.get(messages.CONFIRMATION_FILE_OVERWRITE, this.state.currentFile)}
       />,
@@ -634,6 +635,7 @@ class DataBrowser extends React.Component {
         onCancel={this.uploadManager.handleFileExistsCancel}
         onApplyToAllChange={showApplyToAll ? this.uploadManager.handleApplyToAllSelection : null}
         applyToAll={applyToAllFiles}
+        selectionButtonProps={this.props.selectionButtonProps}
         title={messages.get(messages.FILE_EXISTS)}
         content={messages.get(
           this.state.allowResume 

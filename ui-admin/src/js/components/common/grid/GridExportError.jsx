@@ -5,8 +5,15 @@ import logger from '@src/js/common/logger.js'
 class GridExportError extends React.PureComponent {
   render() {
     logger.log(logger.DEBUG, 'GridExportError.render')
-    const { open, error, onClose } = this.props
-    return <ErrorDialog open={open} error={error} onClose={onClose} />
+    const { open, error, onClose, selectionButtonProps } = this.props
+    return (
+      <ErrorDialog
+        open={open}
+        error={error}
+        onClose={onClose}
+        selectionButtonProps={selectionButtonProps}
+      />
+    )
   }
 }
 

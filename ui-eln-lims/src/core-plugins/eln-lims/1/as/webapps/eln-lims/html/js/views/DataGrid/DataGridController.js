@@ -26,7 +26,8 @@ function DataGridController(
     multiselectable,
     exportable,
     heightPercentage,
-    filterModes
+    filterModes,
+    gridProps
 ) {
     if (!configKey) {
         window.alert(
@@ -35,6 +36,14 @@ function DataGridController(
     }
 
     var _this = this
+    // default to text transform: none
+    gridProps = gridProps || {
+        className: 'btn btn-default',
+        primaryClassName: 'btn btn-primary',
+        selectionButtonProps: {
+            sx: { textTransform: 'none' }
+        }
+    };
 
     this._refreshableFields = [];
 
@@ -58,6 +67,9 @@ function DataGridController(
                     id: _this.id,
                     header: title,
                     filterModes: filterModes,
+                    className: gridProps.className,
+                    primaryClassName: gridProps.primaryClassName,
+                    selectionButtonProps: gridProps.selectionButtonProps,
                     loadSettings: _this._loadSettings,
                     loadColumns: _this._loadColumns,
                     loadRows: _this._loadRows,
