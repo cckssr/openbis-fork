@@ -37,11 +37,15 @@ git checkout $tag
 if [ $? -ne 0 ]; then echo "Tag does not exist!"; exit 1; fi
 
 # build
-cd core-plugin-openbis
-./gradlew :clientsAndApis -x test
-./gradlew :generateJavadoc
-cd ../app-openbis-installer
-./gradlew :build -x test
+#cd core-plugin-openbis
+#./gradlew :clientsAndApis -x test
+#./gradlew :generateJavadoc
+#cd ../app-openbis-installer
+#./gradlew :build -x test
+
+cd release
+./gradlew release -Dorg.gradle.jvmargs="--add-opens=java.base/java.text=ALL-UNNAMED --add-opens=java.desktop/java.awt.font=ALL-UNNAMED"
+
 
 cd ../..
 
@@ -59,8 +63,6 @@ fi
 cd -
 
 # move components to fileserver
-mv openbis/core-plugin-openbis/targets/gradle/distributions/openBIS-clients-and-APIs*.zip .
-mv openbis/core-plugin-openbis/targets/gradle/distributions/big_data_link_server*.zip .
-mv openbis/app-openbis-installer/targets/gradle/distributions/openbis-installer*.tar.gz .
+mv openbis/release/buildopenbis-release-*.zip .
 
 move_to_file_server
