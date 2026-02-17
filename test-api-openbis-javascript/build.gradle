@@ -45,9 +45,9 @@ dependencies {
             project(path: ':lib-transactional-file-system'),
             //project(path: ':test-ui-core', configuration: 'tests'),
             'reflections:reflections:0.9.10',
-            'fasterxml:jackson-core:2.18.1',
-            'fasterxml:jackson-annotations:2.9.10',
-            'fasterxml:jackson-databind:2.18.1',
+            'com.fasterxml.jackson.core:jackson-core:2.18.3',
+            'com.fasterxml.jackson.core:jackson-annotations:2.18.3',
+            'com.fasterxml.jackson.core:jackson-databind:2.18.3',
             'testng:testng:6.8-CISD',
             'junit:junit:4.13.2',
             api('selenium:selenium-java:3.141.59'){

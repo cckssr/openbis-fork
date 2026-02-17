@@ -11,8 +11,8 @@ dependencies {
             project(':lib-archiver-db'),
             project(':lib-pathinfo-db'),
             project(':api-openbis-java'),
-            'fasterxml:jackson-annotations:2.9.10',
-            'fasterxml:jackson-databind:2.18.1',
+            'com.fasterxml.jackson.core:jackson-annotations:2.18.3',
+            'com.fasterxml.jackson.core:jackson-databind:2.18.3',
             'lemnik:eodsql:2.2-CISD',
             'apache:commons-compress:1.8',
             'truezip:truezip:6.8.1'

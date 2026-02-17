@@ -20,7 +20,7 @@ dependencies {
             'imagej:ij:1.43u',
             'python:jython:2.5.2',
             'sybit:image-viewer:0.3.6',
-            'fasterxml:jackson-databind:2.18.1',
+            'com.fasterxml.jackson.core:jackson-databind:2.18.3',
             'org.springframework:spring-aop:6.2.15',
             'org.springframework:spring-beans:6.2.15',
             'org.springframework:spring-context:6.2.15',
@@ -114,7 +114,9 @@ task createDssClientJar(type: Jar) {
 }
 
 task copyJarsForWebStart(type: Copy, dependsOn: [createOpenbisJar, createDssClientJar]) {
-    from configurations.webStartJars.files
+    from(configurations.webStartJars.files) {
+        include '*.jar'
+    }
     from(jarsToBeSignedFolder) {
         include dssGuiClientJarName
         rename { String fileName -> fileName.replace(dssGuiClientJarName, dssCliClientJarName) }
@@ -136,6 +138,9 @@ task signWebStartJars(type: Copy, dependsOn: [copyJarsForWebStart]) {
     inputs.file keystoreFile
     doLast {
         file(signedJarsFolder).listFiles().each { file ->
+            if (!file.isFile() || !file.name.toLowerCase().endsWith('.jar')) {
+                return
+            }
             if (file.name == dssCliClientJarName) {
                 ant.jar(destfile: file, update: true) {
                     delegate.manifest {
@@ -258,5 +263,4 @@ task dssUploadGuiStandaloneZip(type: Zip, dependsOn: dssUploadGuiStandalone) {
         into 'DataSetUploader.app'
     }
 }
-
 

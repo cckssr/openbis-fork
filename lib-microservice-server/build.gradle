@@ -24,9 +24,9 @@ dependencies {
             "org.eclipse.jetty:jetty-util:12.1.1",
             'jakarta:jakarta.servlet-api:6.1.0',
             'lombok:lombok:1.18.38',
-            'fasterxml:jackson-annotations:2.9.10',
-            'fasterxml:jackson-core:2.18.1',
-            'fasterxml:jackson-databind:2.18.1',
+            'com.fasterxml.jackson.core:jackson-annotations:2.18.3',
+            'com.fasterxml.jackson.core:jackson-core:2.18.3',
+            'com.fasterxml.jackson.core:jackson-databind:2.18.3',
             'slf4j:slf4j-api:1.7.24', // Required by Jetty that uses SLF4J
             'slf4j:slf4j-jdk14:1.7.24' // Required by Jetty to tell SLF4J to use JDK
 

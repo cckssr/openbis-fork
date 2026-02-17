@@ -3,7 +3,7 @@ apply from: '../build/javalibrary.gradle'
 dependencies {
     api project(':lib-logging'),
             project(':lib-commonbase'),
-            'fasterxml:jackson-databind:2.18.1'
+            'com.fasterxml.jackson.core:jackson-databind:2.18.3'
     testImplementation 'testng:testng:6.8-CISD',
             'junit:junit:4.13.2',
             'jmock:jmock:2.5.1',

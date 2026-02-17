@@ -12,10 +12,10 @@ dependencies {
             project(':api-openbis-java'),
             project(':server-original-data-store')
 
-    implementation 'fasterxml:jackson-annotations:2.9.10',
-            'fasterxml:jackson-core:2.18.1',
-            'fasterxml:jackson-databind:2.18.1',
-            'fasterxml:jackson-datatype-jsr310:2.9.10'
+    implementation 'com.fasterxml.jackson.core:jackson-annotations:2.18.3',
+            'com.fasterxml.jackson.core:jackson-core:2.18.3',
+            'com.fasterxml.jackson.core:jackson-databind:2.18.3',
+            'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.18.3'
 
     testImplementation 'junit:junit:4.10',
             'testng:testng:6.8-CISD'
