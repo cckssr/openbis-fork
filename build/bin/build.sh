@@ -64,6 +64,6 @@ cd ../..
 cd -
 
 # move components to fileserver
-mv openbis/release/build/openbis-release-*.zip .
+mv openbis/release/build/openbis-release-*.tar.gz .
 
 move_to_file_server
