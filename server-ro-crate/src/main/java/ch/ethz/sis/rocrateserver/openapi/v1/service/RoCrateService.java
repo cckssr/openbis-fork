@@ -279,14 +279,9 @@ public class RoCrateService
             {
                 result = new AsyncResult(status.getStatus().toString(), List.of(), null);
                 java.nio.file.Path path = ((ExportJob) job).getResult();
-                //TODO Implement download path
-                result.setDownloadUrl(path.toUri().toString());
-
-                responseBuilder = Response.ok(objectMapper.writeValueAsString(result));
-                responseBuilder.status(statusCode);
-
-//                responseBuilder = Response.ok(Files.readAllBytes(path),
-//                        job.getMimeType());
+                AsyncResult asyncResult = new AsyncResult();
+                asyncResult.setStatus(status.getStatus().toString());
+                responseBuilder.entity(objectMapper.writeValueAsString(asyncResult));
                 return responseBuilder.build();
             }
             if (job instanceof ValidateJob)
