@@ -165,7 +165,9 @@ tasks.register('jarWithDependencies', Jar) {
     from(zipTree(jar.archivePath)) {
         include '**/*'
     }
-    from(configurations.apiDependenciesIncluded.collect { zipTree(it) }) {
+    from(configurations.apiDependenciesIncluded
+            .findAll { it.isFile() && it.name.toLowerCase().endsWith('.jar') }
+            .collect { zipTree(it) }) {
         include '**/*'
     }
 }
