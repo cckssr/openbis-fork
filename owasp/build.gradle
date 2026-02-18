@@ -11,32 +11,14 @@ buildscript {
         }
     }
 
-    repositories {
-        //gradlePluginPortal()
-        //mavenCentral()
-    }
     dependencies {
         classpath("org.owasp:dependency-check-gradle:12.2.0")
     }
 }
 
-// MORE RECENT WAY OF APPLYING GRADLE PLUGINS: but it works only if gradlePluginPortal() is reachable
-//plugins {
-    //id("org.owasp.dependencycheck") version "12.2.0"
-//}
-
 apply from: '../build/javaproject.gradle'
 
 apply plugin : 'org.owasp.dependencycheck'
-
-apply plugin: 'war'
-
-configurations.create('zipping')
-// TODO: find how configuration can be renamed into 'server-original-data-store'
-configurations.create('server_original_data_store')
-configurations.create('javadoc_sources')
-configurations.create('javadoc_compilation')
-configurations.create('blast_tar')
 
 dependencyCheck {
     nvd {
@@ -47,64 +29,72 @@ dependencyCheck {
     analyzers {
         assemblyEnabled = false
     }
+    // Share DB across modules
+    data {
+        directory = "${projectDir}/.dependency-check-data"
+    }
+    skipConfigurations = ["testRuntimeClasspath", "testCompileClasspath"]
+    // scanConfigurations = ["runtimeClasspath"]
     proxy {
         server = 'proxy.ethz.ch'
         port = 3128
     }
-}
-
-def jettyVersion = '12.1.1'
-
-dependencies {
-    api project(':server-screening')
-
-    providedRuntime "org.eclipse.jetty:jetty-deploy:${jettyVersion}@jar",
-            "org.eclipse.jetty:jetty-xml:${jettyVersion}@jar",
-            "org.eclipse.jetty:jetty-security:${jettyVersion}@jar",
-            "org.eclipse.jetty:jetty-server:${jettyVersion}@jar",
-            "org.eclipse.jetty.ee10:jetty-ee10-annotations:${jettyVersion}@jar",
-            "org.eclipse.jetty.ee10:jetty-ee10-jndi:${jettyVersion}@jar",
-            "org.eclipse.jetty.ee10:jetty-ee10-plus:${jettyVersion}@jar",
-            "org.eclipse.jetty.ee10:jetty-ee10-servlet:${jettyVersion}@jar",
-            "org.eclipse.jetty.ee10:jetty-ee10-webapp:${jettyVersion}@jar",
-            "org.eclipse.jetty.ee:jetty-ee-webapp:${jettyVersion}@jar"
-
-    zipping "eclipse:jetty-distribution:${jettyVersion}@zip"
-
-    blast_tar "blast:blast:2.2.30@tar.gz"
-
-    server_original_data_store project(':server-screening'),
-            //'bioformats:bioformats:6.5.1',
-            'imagej:ij:1.43u',
-            'cisd:cisd-openbis-knime-server:13.6.0.r29301',
-            'apache:xml-apis:1.3.03',
-            'slf4j:slf4j-api:1.7.24',
-            'slf4j:slf4j-jdk14:1.7.24',
-            'sybit:image-viewer:0.3.6'
-
-    javadoc_sources project(path: ':lib-commonbase', configuration: 'archives'),
-            project(path: ':lib-common', configuration: 'archives'),
-            project(path: ':api-openbis-java', configuration: 'archives'),
-            project(path: ':lib-openbis-common', configuration: 'archives'),
-            project(path: ':server-application-server', configuration: 'archives'),
-            project(path: ':server-original-data-store', configuration: 'archives'),
-            project(path: ':server-screening', configuration: 'archives'),
-            'sis:sis-base:23.06.0:sources',
-            'cisd:cisd-args4j:9.11.2:sources',
-            'cisd:cisd-hotdeploy:13.01.0:sources'
-
-    javadoc_compilation project(path: ':server-screening')
-
-    testImplementation project(path: ':lib-commonbase', configuration: 'tests'),
-            project(path: ':lib-common', configuration: 'tests'),
-            project(path: ':lib-dbmigration', configuration: 'tests'),
-            project(path: ':lib-authentication', configuration: 'tests'),
-            project(path: ':api-openbis-java', configuration: 'tests'),
-            project(path: ':lib-openbis-common', configuration: 'tests'),
-            project(path: ':server-original-data-store', configuration: 'tests'),
-            'fjelmer:classycle:1.4.2',
-            'testng:testng:6.8-CISD',
-            'junit:junit:4.13.2',
-            'org.springframework:spring-test:6.1.10'
-    testImplementation(project(path: ':server-application-server', configuration: 'tests'))
+    scanProjects = [
+            ":lib-logging",
+            ":lib-commonbase",
+            ":lib-common",
+            ":api-openbis-java",
+            ":lib-openbis-commonbase",
+            ":lib-openbis-common",
+            ":lib-openbis-messages",
+            ":lib-authentication",
+            ":lib-db",
+            ":lib-dbmigration",
+            ":lib-messages-db",
+            ":lib-pathinfo-db",
+            ":lib-pathinfo",
+            ":lib-mail",
+            ":lib-maintenance",
+            ":lib-compress",
+            ":lib-shuffling",
+            ":lib-folder-monitor",
+            ":lib-data-store-commonbase",
+            ":lib-data-store-common",
+            ":lib-hdf5",
+            ":lib-hierarchical-content",
+            ":lib-archiver-db",
+            ":lib-archiver",
+            ":lib-two-phase-transaction",
+            ":server-application-server",
+            ":server-original-data-store",
+            ":server-screening",
+            ":core-plugin-openbis",
+            ":app-openbis-installer",
+            ":lib-image-readers",
+            ":test-api-openbis-javascript",
+            ":server-external-data-store",
+            ":ui-admin",
+            ":lib-microservice-server",
+            ":lib-transactional-file-system",
+            ":server-data-store",
+            ":ui-eln-lims",
+            ":api-openbis-javascript",
+            ":lib-json",
+            ":api-data-store-server-java",
+            ":api-data-store-server-javascript",
+            ":api-openbis-typescript",
+            ":test-integration",
+            ":lib-rdf",
+            ":docs",
+            ":lib-ro-crate",
+            ":app-ro-crate-openbis",
+            ":app-migration",
+            ":app-openbis-drive",
+            ":app-openbis-command-line",
+            ":test-app-openbis-installer",
+            ":api-openbis-python3-pybis",
+            ":release",
+            ":owasp",
+            ":server-ro-crate"
+    ]
 }
