@@ -46,14 +46,12 @@ import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.jboss.logging.Logger;
 
 import java.io.*;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-import java.util.zip.ZipInputStream;
 
 public final class ExportJob implements IAsyncJob
 {
@@ -122,58 +120,73 @@ public final class ExportJob implements IAsyncJob
 
         try
         {
-            String[] identifiers = ExportParams.getIdentifiers(body);
+            Map<String, String> identifiers[] = ExportParams.getIdentifiers(exportParams.getInputBodyFormat(), body);
             String[] identifierAnnotations = exportParams.getIdentifierAnnotations();
 
-            // Obtain openBIS Properties annotated with semantic annotations used to hold identifiers
-            Set<String> identifierAnnotationPropertyTypeCodes =
-                    getIdentifierAnnotationPropertyTypes(openBIS, identifierAnnotations);
+            List<ExportablePermId> exportablePermIds = new ArrayList<>();
+            if(exportParams.getInputBodyFormat() != null &&  exportParams.getInputBodyFormat().equalsIgnoreCase("json")) {
+                for(Map<String, String> ids : identifiers) {
+                    String kindStr = ids.get("kind");
+                    String permId = ids.get("permId");
 
-            // Search for any openBIS samples holding identifiers on their properties or matching openBIS identifiers or permIds
-            SampleSearchCriteria criteria = new SampleSearchCriteria();
-            criteria.withOrOperator();
-
-            for (String identifier : identifiers)
-            {
-
-                // Semantic Annotation Matching to properties
-                for (String propertyTypeCode : identifierAnnotationPropertyTypeCodes)
-                {
-                    criteria.withStringProperty(propertyTypeCode)
-                            .withoutWildcards()
-                            .thatEquals(identifier);
+                    if(kindStr != null){
+                        ExportableKind kind = ExportableKind.valueOf(kindStr);
+                        exportablePermIds.add(new ExportablePermId(kind, permId));
+                    }
                 }
 
-                // Could it be an openBIS permId ?
-                if (identifier.contains("-") && !identifier.contains("/"))
+            } else {
+                // Obtain openBIS Properties annotated with semantic annotations used to hold identifiers
+                Set<String> identifierAnnotationPropertyTypeCodes =
+                        getIdentifierAnnotationPropertyTypes(openBIS, identifierAnnotations);
+
+                // Search for any openBIS samples holding identifiers on their properties or matching openBIS identifiers or permIds
+                SampleSearchCriteria criteria = new SampleSearchCriteria();
+                criteria.withOrOperator();
+
+                for (Map<String, String> identifierElement : identifiers)
                 {
-                    criteria.withPermId().withoutWildcards().thatEquals(identifier);
+                    String identifier = identifierElement.get("permId");
+                    // Semantic Annotation Matching to properties
+                    for (String propertyTypeCode : identifierAnnotationPropertyTypeCodes)
+                    {
+                        criteria.withStringProperty(propertyTypeCode)
+                                .withoutWildcards()
+                                .thatEquals(identifier);
+                    }
+
+                    // Could it be an openBIS permId ?
+                    if (identifier.contains("-") && !identifier.contains("/"))
+                    {
+                        criteria.withPermId().withoutWildcards().thatEquals(identifier);
+                    }
+
+                    // Could it be an openBIS identifier ?
+                    if (identifier.contains("/"))
+                    {
+                        criteria.withIdentifier().withoutWildcards().thatEquals(identifier);
+                    }
+
                 }
 
-                // Could it be an openBIS identifier ?
-                if (identifier.contains("/"))
+                SearchResult<Sample> searchResults =
+                        openBIS.searchSamples(criteria, new SampleFetchOptions());
+
+                if (searchResults.getTotalCount() < 1)
                 {
-                    criteria.withIdentifier().withoutWildcards().thatEquals(identifier);
+                    LOG.error("No results for [" + Arrays.stream(identifiers).map(x -> x.get("permId"))
+                            .collect(Collectors.joining(", ")) + "]");
+                    RoCrateExceptions.throwInstance(RoCrateExceptions.NO_RESULTS_FOUND);
                 }
 
+                exportablePermIds =
+                        List.of(new ExportablePermId(ExportableKind.SAMPLE,
+                                searchResults.getObjects().get(0).getPermId().toString()));
             }
 
-            SearchResult<Sample> searchResults =
-                    openBIS.searchSamples(criteria, new SampleFetchOptions());
-
-            if (searchResults.getTotalCount() < 1)
-            {
-                LOG.error("No results for [" + Arrays.stream(identifiers)
-                        .collect(Collectors.joining(", ")) + "]");
-                RoCrateExceptions.throwInstance(RoCrateExceptions.NO_RESULTS_FOUND);
-            }
 
             // Request openBIS export for found samples
             ExportData exportData = new ExportData();
-            List<ExportablePermId> exportablePermIds =
-                    List.of(new ExportablePermId(ExportableKind.SAMPLE,
-                            searchResults.getObjects().get(0).getPermId().toString()));
-
             exportData.setPermIds(exportablePermIds);
             ExportOptions exportOptions = getExportOptions(exportParams);
 
@@ -251,36 +264,8 @@ public final class ExportJob implements IAsyncJob
 
                     final String downloadedFileName = downloadPath.toFile().getName();
 
-                    if(downloadedFileName.endsWith(".xlsx")) {
-                        realPathToExcel = downloadPath;
-                    } else if(downloadedFileName.endsWith(".zip")) {
-                        InputStream read = SessionWorkSpaceManager.read(openBIS.getSessionToken(), downloadPath);
-                        try (final ZipInputStream zip = new ZipInputStream(read)) {
-                            ZipEntry entry;
-                            while ((entry = zip.getNextEntry()) != null) {
-                                final String filePath = entry.getName();
-                                if(filePath.equalsIgnoreCase("xlsx/metadata.xlsx")) {
-                                    final Path filePathAsPath = SessionWorkSpaceManager.getRealPath(
-                                            openBIS.getSessionToken(), Path.of("metadata.xlsx"));
-                                    try (final OutputStream outputStream = Files.newOutputStream(filePathAsPath))
-                                    {
-                                        zip.transferTo(outputStream);
-                                    }
-                                    realPathToExcel = filePathAsPath;
-                                    break;
-                                }
-                            }
-                            if(realPathToExcel == null) {
-                                RoCrateExceptions.throwInstance(RoCrateExceptions.OPENBIS_MISSING_METADATA);
-                            }
-                        }
-                    } else {
-                        RoCrateExceptions.throwInstance(RoCrateExceptions.OPENBIS_EXPORT_FORMAT_FAILURE);
-                    }
-
-                    // Convert openBIS Excel to Ro-Crate
                     OpenBisModel openBisModel =
-                            ExcelReader.convert(ExcelReader.Format.EXCEL, realPathToExcel,
+                            ExcelReader.convert(ExcelReader.Format.ZIP_EXPORT, downloadPath,
                                     ExcelReader.FileMode.DUMMY);
 
                     Path resultZipPath =
