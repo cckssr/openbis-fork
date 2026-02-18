@@ -16,6 +16,8 @@ public class AsyncResult
 
     ImportResponse importResponse;
 
+    String downloadUrl;
+
 
     public String getStatus()
     {
@@ -67,5 +69,15 @@ public class AsyncResult
             ImportResponse importResponse)
     {
         this.importResponse = importResponse;
+    }
+
+    public void setDownloadUrl(String downloadUrl)
+    {
+        this.downloadUrl = downloadUrl;
+    }
+
+    public String getDownloadUrl()
+    {
+        return downloadUrl;
     }
 }
