@@ -294,7 +294,10 @@ public class RoCrateService
                 responseBuilder.status(Response.Status.OK);
                 responseBuilder.type(MediaType.APPLICATION_JSON);
                 ValidationResult result1 = ((ValidateJob) job).getResult();
-                responseBuilder.entity(objectMapper.writeValueAsString(result1));
+                AsyncResult asyncResult =
+                        new AsyncResult(status.getStatus().toString(), List.of(), null);
+                asyncResult.setValidationResult(result1);
+                responseBuilder.entity(objectMapper.writeValueAsString(asyncResult));
                 return responseBuilder.build();
             }
             if (job instanceof ImportJob)
