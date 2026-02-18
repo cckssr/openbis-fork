@@ -354,4 +354,85 @@ public class RoCrateService
 
     }
 
+    @GET
+    @Path("download")
+    public Response download(
+            @BeanParam ResultParams headers,
+            InputStream body) throws Exception
+    {
+        OpenBIS openBIS = null;
+        SessionInformation sessionInformation = null;
+        if (headers.getJobId() == null)
+        {
+            ErrorResponse errorResponse = new ErrorResponse("Header jobID is missing");
+            return new ResponseBuilderImpl().entity(objectMapper.writeValueAsString(errorResponse))
+                    .status(Response.Status.BAD_REQUEST)
+                    .type(MediaType.APPLICATION_JSON_TYPE)
+                    .build();
+        }
+        if (headers.getApiKey() == null)
+        {
+            ErrorResponse errorResponse = new ErrorResponse("Header api-key is missing");
+            return new ResponseBuilderImpl().entity(objectMapper.writeValueAsString(errorResponse))
+                    .status(Response.Status.BAD_REQUEST)
+                    .type(MediaType.APPLICATION_JSON_TYPE)
+                    .build();
+        }
+
+        try
+        {
+            openBIS = OpeBISFactory.createOpenBIS(headers.getApiKey());
+            sessionInformation = openBIS.getSessionInformation();
+        } catch (Exception ex)
+        {
+            RoCrateExceptions.throwInstance(RoCrateExceptions.UNAVAILABLE_API_KEY);
+        }
+        AsyncJobRegistry.AsyncStatus status =
+                asyncJobRegistry.poll(sessionInformation.getUserName(), headers.getJobId());
+        AsyncResult result = null;
+        int statusCode = 0;
+        Response.ResponseBuilder responseBuilder = new ResponseBuilderImpl();
+
+        if (status.getStatus() == AsyncJobRegistry.Status.COMPLETED)
+        {
+            IAsyncJob job = status.getJob();
+            if (job instanceof ExportJob)
+            {
+                result = new AsyncResult(status.getStatus().toString(), List.of(), null);
+                java.nio.file.Path path = ((ExportJob) job).getResult();
+
+                responseBuilder = Response.ok(Files.readAllBytes(path),
+                        job.getMimeType());
+                return responseBuilder.build();
+            } else
+            {
+                ErrorResponse errorResponse =
+                        new ErrorResponse("Unsupported async job type, only export supported here");
+                ObjectMapper objectMapper = new ObjectMapper();
+                responseBuilder = new ResponseBuilderImpl();
+                responseBuilder.status(Response.Status.BAD_REQUEST);
+                responseBuilder.type(MediaType.APPLICATION_JSON_TYPE);
+            }
+
+        } else if (status.getStatus() == AsyncJobRegistry.Status.FAILED)
+        {
+            result = new AsyncResult(status.getStatus().toString(),
+                    List.of(status.getJob().getException().getMessage() + "\n" + Arrays.stream(
+                                    status.getJob().getException().getStackTrace()).toList().stream()
+                            .map(x -> x.toString()).collect(
+                                    Collectors.joining(","))), null);
+            statusCode = Response.Status.OK.getStatusCode();
+
+        } else
+        {
+
+            responseBuilder.status(Response.Status.CONFLICT);
+            return responseBuilder.build();
+        }
+        responseBuilder = Response.ok(objectMapper.writeValueAsString(result));
+        responseBuilder.status(statusCode);
+
+        return responseBuilder.build();
+
+    }
 }
