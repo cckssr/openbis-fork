@@ -307,11 +307,8 @@ public class IntegrationRoCrateServerTest
 
         String payload = "[\"https://doi.org/10.1038/s41586-020-3010-5\"]";
         String mimeType = "application/ld+json";
-        testExport(mimeType, payload, x -> testMimeAndStatus(x, "COMPLETED", mimeType),
-                x -> testStatus(x, "FAILED"), x -> {
-
-                });
-
+        testExport(mimeType, payload, x -> testStatus(x, "COMPLETED"),
+                x -> testStatus(x, "FAILED"), IntegrationRoCrateServerTest::checkDownload);
     }
 
     private static boolean testMimeAndStatus(ContentResponse contentResponse, String asyncStatus,
@@ -354,8 +351,8 @@ public class IntegrationRoCrateServerTest
     {
         String payload = "[\"https://doi.org/10.1038/s41586-020-3010-5\"]";
         String mimeType = "application/zip";
-        testExport(mimeType, payload, x -> testMimeAndStatus(x, "COMPLETED", mimeType),
-                x -> testStatus(x, "FAILED"));
+        testExport(mimeType, payload, x -> testStatus(x, "COMPLETED"),
+                x -> testStatus(x, "FAILED"), IntegrationRoCrateServerTest::checkDownload);
     }
 
     @Test(enabled = true, timeOut = TIMEOUT)
@@ -365,8 +362,8 @@ public class IntegrationRoCrateServerTest
     {
         String payload = "[\"/PUBLICATIONS/PUBLIC_REPOSITORIES/PUB29\"]";
         String mimeType = "application/ld+json";
-        testExport(mimeType, payload, x -> testMimeAndStatus(x, "COMPLETED", mimeType),
-                x -> testStatus(x, "FAILED"));
+        testExport(mimeType, payload, x -> testStatus(x, "COMPLETED"),
+                x -> testStatus(x, "FAILED"), IntegrationRoCrateServerTest::checkDownload);
     }
 
     @Test(enabled = false, timeOut = TIMEOUT)
@@ -377,8 +374,8 @@ public class IntegrationRoCrateServerTest
     {
         String payload = "[\"/PUBLICATIONS/PUBLIC_REPOSITORIES/PUB29\"";
         String mimeType = "application/ld+json";
-        testExport(mimeType, payload, x -> testMimeAndStatus(x, "COMPLETED", mimeType),
-                x -> testStatus(x, "COMPLETED"));
+        testExport(mimeType, payload, x -> testStatus(x, "COMPLETED"),
+                x -> testStatus(x, "COMPLETED"), IntegrationRoCrateServerTest::checkDownload);
 
     }
 
@@ -388,7 +385,8 @@ public class IntegrationRoCrateServerTest
     {
 
         testExport("application/ld+json", "[\"DOES-NOT-EXIST\"]", x -> testStatus(x, "FAILED"),
-                x -> testStatus(x, "COMPLETED"));
+                x -> testStatus(x, "COMPLETED"), x -> {
+                });
     }
 
     @Test(dataProvider = "acceptableMimeTypes")
