@@ -94,7 +94,11 @@ dependencyCheck {
             ":test-app-openbis-installer",
             ":api-openbis-python3-pybis",
             ":release",
-            ":owasp",
+            ":lib-http",
+            ":imaging-technology-sources",
+            ":imaging-technology-dataset-interceptor",
+            ":imaging-nanonis-adapters-sources",
+            ":imaging-test-adapters-sources",
             ":server-ro-crate"
     ]
 }
