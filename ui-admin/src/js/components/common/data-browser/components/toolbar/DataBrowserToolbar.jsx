@@ -273,7 +273,8 @@ class DataBrowserToolbar extends React.Component {
       owner,  
       extOpenbis,
       className,
-      primaryClassName
+      primaryClassName,
+      selectionButtonProps
     } = this.props
 
     const normalizedClassName = className || classes.btnDefaultEln
@@ -319,7 +320,8 @@ class DataBrowserToolbar extends React.Component {
             primaryClassName: normalizedPrimaryClassName,
             controller: this.controller,
             afterUpload: handleAfterUpload,
-            frozen
+            frozen,
+            selectionButtonProps
           }}
         />
         
@@ -346,7 +348,8 @@ class DataBrowserToolbar extends React.Component {
       owner,
       extOpenbis,
       className,
-      primaryClassName
+      primaryClassName,
+      selectionButtonProps
     } = this.props
 
     const normalizedClassName = className || classes.btnDefaultEln
@@ -374,6 +377,7 @@ class DataBrowserToolbar extends React.Component {
             className={normalizedClassName}
             primaryClassName={normalizedPrimaryClassName}
             controller={this.controller}
+            selectionButtonProps={selectionButtonProps}
             afterUpload={ () => {
                 this.fetchSpaceStatus()
                 this.onGridActionComplete()
@@ -430,6 +434,7 @@ class DataBrowserToolbar extends React.Component {
       extOpenbis,
       className,
       primaryClassName,
+      selectionButtonProps,
     } = this.props
 
     const normalizedClassName = className || classes.btnDefaultEln
@@ -457,6 +462,7 @@ class DataBrowserToolbar extends React.Component {
             className={normalizedClassName}
             primaryClassName={normalizedPrimaryClassName}
             controller={this.controller}
+            selectionButtonProps={selectionButtonProps}
             afterUpload={ () => {
                   this.fetchSpaceStatus()
                   this.onGridActionComplete()

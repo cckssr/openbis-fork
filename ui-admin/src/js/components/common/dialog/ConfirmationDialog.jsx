@@ -42,20 +42,35 @@ class ConfirmationDialog extends React.Component {
   }
 
   renderButtons() {
-    const { onConfirm, onCancel, classes } = this.props
+    const { onConfirm, onCancel, classes, selectionButtonProps } = this.props
+
+    const sharedButtonProps = selectionButtonProps || {}
+    const incomingStyles = sharedButtonProps.styles
+
+    const mergedStyles = incomingStyles
+      ? {
+          ...incomingStyles,
+          root: [classes.button, incomingStyles.root]
+            .filter(Boolean)
+            .join(' ')
+        }
+      : { root: classes.button }
+
     return (
       <div>
         <Button
+          {...sharedButtonProps}
           name='confirm'
           label={messages.get(messages.CONFIRM)}
           type={this.getButtonType()}
-          styles={{ root: classes.button }}
+          styles={mergedStyles}
           onClick={onConfirm}
         />
         <Button
+          {...sharedButtonProps}
           name='cancel'
           label={messages.get(messages.CANCEL)}
-          styles={{ root: classes.button }}
+          styles={mergedStyles}
           onClick={onCancel}
         />
       </div>

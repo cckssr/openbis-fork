@@ -514,6 +514,7 @@ class DataBrowser extends React.Component {
             viewType={viewType}
             frozen={frozen}
             archived={archived}
+            selectionButtonProps={this.props.selectionButtonProps}
           />
         }
         <InfoBar
@@ -607,12 +608,14 @@ class DataBrowser extends React.Component {
         customProgressDetails={customProgressDetails}        
         progressStatus={progressStatus}
         onCancel={this.cancelFileTransfer}
+        selectionButtonProps={this.props.selectionButtonProps}
       />,
       <ErrorDialog
         key='data-browser-error-dialog'
         open={!!errorMessage}
         error={errorMessage}
         onClose={this.closeErrorDialog}
+        selectionButtonProps={this.props.selectionButtonProps}
       />,
       <FileExistsDialog
         key="db-overwrite-modal-title"
@@ -653,6 +656,7 @@ class DataBrowser extends React.Component {
         open={showMergeDialog}
         onConfirm={this.handleConfirmMerge}
         onCancel={this.handleCancelMerge}
+        selectionButtonProps={this.props.selectionButtonProps}
         title={messages.get(messages.NON_EMPTY_FOLDER)}
         content={messages.get(messages.NON_EMPTY_FOLDER_MSG)}
       />,

@@ -797,7 +797,7 @@ const messages_en = {
   [keys.SHOW_PARENTS]: 'Show Parents',
   [keys.SHOW_STACK_TRACE]: 'Show stack trace',
   [keys.SHOW_ALL]: 'Show All',
-  [keys.SKIP]: 'SKIP',
+  [keys.SKIP]: 'Skip',
   [keys.SPACE]: 'Space',
   [keys.SIZE]: 'Size',
   [keys.SPACES]: 'Spaces',
