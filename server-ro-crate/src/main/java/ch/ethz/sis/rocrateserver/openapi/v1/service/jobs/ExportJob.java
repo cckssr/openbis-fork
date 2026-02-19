@@ -443,6 +443,7 @@ public final class ExportJob implements IAsyncJob
         String mimeType = exportParams.getExportMimeType();
         if(mimeType.equalsIgnoreCase(RoCrateService.APPLICATION_LD_JSON)) {
             exportOptions.setFormats(Set.of(ExportFormat.XLSX));
+            exportOptions.setWithImportCompatibility(true);
         } else {
             exportOptions.setWithImportCompatibility(exportParams.isImportCompatible());
             Set<ExportFormat> formats = new HashSet<>();
