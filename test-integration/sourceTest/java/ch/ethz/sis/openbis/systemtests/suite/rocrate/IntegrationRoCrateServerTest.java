@@ -308,7 +308,9 @@ public class IntegrationRoCrateServerTest
         String payload = "[\"https://doi.org/10.1038/s41586-020-3010-5\"]";
         String mimeType = "application/ld+json";
         testExport(mimeType, payload, x -> testMimeAndStatus(x, "COMPLETED", mimeType),
-                x -> testStatus(x, "FAILED"));
+                x -> testStatus(x, "FAILED"), x -> {
+
+                });
 
     }
 
@@ -662,8 +664,25 @@ public class IntegrationRoCrateServerTest
         assertEquals(response.getStatus(), 415);
     }
 
+    public static void checkDownload(ExportCallerParams exportCallerParams)
+    {
+        Request pollRequest = exportCallerParams.client.newRequest(
+                TestInstanceHostUtils.getRoCrateUrl() + "/openbis/open-api/ro-crate/status");
+        pollRequest.method(HttpMethod.GET);
+        pollRequest.headers(headers -> {
+            headers.add("api-key", exportCallerParams.apiKey);
+            headers.add("jobId", exportCallerParams.jobId);
+        });
+
+    }
+
+    record ExportCallerParams(String apiKey, String jobId, String mimeType, HttpClient client)
+    {
+    }
+
     private static void testExport(String exportMimeType, String identifiersJsonString,
-            Predicate<ContentResponse> successCheck, Predicate<ContentResponse> failCheck)
+            Predicate<ContentResponse> successCheck, Predicate<ContentResponse> failCheck,
+            Consumer<ExportCallerParams> afterCompletionCheck)
             throws IOException, InterruptedException, ExecutionException, TimeoutException
     {
         OpenBIS openBIS = environment.createOpenBIS(TIMEOUT);
@@ -719,6 +738,10 @@ public class IntegrationRoCrateServerTest
 
             Thread.sleep(2000);
         }
+
+        afterCompletionCheck.accept(
+                new ExportCallerParams(openBIS.getSessionToken(), jobId, exportMimeType, client));
+
     }
 
     private void testValidateAstract(String fileName, String mimeType,
