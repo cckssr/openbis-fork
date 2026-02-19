@@ -68,7 +68,7 @@ public class SearchServiceTest extends AbstractTest
                 fetchOptions);
 
         assertEquals(result.getObjects().toString(), "[CustomASService: service3]");
-        assertEquals(result.getTotalCount(), 6);
+        assertEquals(result.getTotalCount(), 5);
     }
 
     @Test
