@@ -695,6 +695,7 @@ public class IntegrationRoCrateServerTest
             headers.add("api-key", openBIS.getSessionToken());
             headers.add("Content-Type", "application/json");
             headers.add("Export", export_type);
+            headers.add("openbis.with-levels-above", "true");
         });
         request.body(new BytesRequestContent(identifiersJsonString.getBytes()));
         request.idleTimeout(TIMEOUT, TimeUnit.MILLISECONDS);
