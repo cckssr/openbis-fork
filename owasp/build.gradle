@@ -27,10 +27,25 @@ dependencyCheck {
     failBuildOnCVSS = 7 // 0 - 4 = low, 4 - 7 = medium, 7 - 9 = high, 9-10 = critical
     suppressionFile = "../owasp/owasp_suppressing_false_positives.xml"
     analyzers {
+        // Disable .NET Assembly Analyzer, .dll, .exe
         assemblyEnabled = false
+        // Disable JavaScript / Node.js related analyzers
+        nodeEnabled = false        // disables Node.js package.json analyzer
+        nodeAuditEnabled = false   // disables npm audit analyzer
+
+        // Keep Java analyzers enabled (these are on by default)
+        jarEnabled = true
+        centralEnabled = true
     }
+//    HTML – Human-readable report (most commonly used)
+//    XML – Machine-readable XML output
+//    JSON – Structured JSON (good for automation / parsing)
+//    CSV – Spreadsheet-friendly format
+//    JUNIT – JUnit-style report (useful for CI test result parsing)
+//    SARIF – Static Analysis Results Interchange Format (used by GitHub, Azure DevOps, etc.)
+//    ALL – Generates every supported format
     formats = ['HTML', 'CSV', 'JSON']
-    outputDirectory = "${buildDir}/reports/dependency-check"
+    // outputDirectory = "${buildDir}/reports/dependency-check"
 
     // Share DB across modules
     data {
