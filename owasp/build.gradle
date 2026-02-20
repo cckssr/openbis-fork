@@ -29,6 +29,9 @@ dependencyCheck {
     analyzers {
         assemblyEnabled = false
     }
+    formats = ['HTML', 'CSV', 'JSON']
+    outputDirectory = "${buildDir}/reports/dependency-check"
+
     // Share DB across modules
     data {
         directory = "${projectDir}/.dependency-check-data"
