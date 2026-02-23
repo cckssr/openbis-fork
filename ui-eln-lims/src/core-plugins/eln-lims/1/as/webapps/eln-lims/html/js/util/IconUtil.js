@@ -289,13 +289,15 @@ var IconUtil = new function() {
             icon.class = "glyphicon glyphicon-cog";
         } else if(type === "OTHERTOOLS" || type === "OTHER_TOOLS") {
             icon.class = "glyphicon glyphicon-wrench";
-        } else if(type === "EXPORT_TO_ZIP") {
+        } else if(type === "EXPORT_TO_ZIP" || type === "EXPORT") {
             icon.class = "glyphicon glyphicon-export";
-        } else if(type === "EXPORT_TO_RESEARCH_COLLECTION") {
+        } else if(type === "EXPORT_TO_RESEARCH_COLLECTION" || type === "RESEARCH_COLLECTION") {
             icon.type = "img_with_class";
             icon.class = "fancytree-icon";
             icon.url = "./img/research-collection-icon.png";
-        } else if(type === "EXPORT_TO_ZENODO") {
+        } else if(type === "EXPORT_TO_ZENODO" || type === 'ZENODO_EXPORT') {
+            icon.class = "glyphicon glyphicon-export";
+        } else if(type === "TYPE_EXPORT_TO_RO_CRATE" || type === 'RO-CRATE_EXPORT') {
             icon.class = "glyphicon glyphicon-export";
         } else if(type === "ABOUT") {
             icon.class = "glyphicon glyphicon-info-sign";
