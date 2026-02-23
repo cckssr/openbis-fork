@@ -68,7 +68,7 @@ public class XLSExportExtendedService implements ICustomASServiceExecutor
         boolean pdf = ((Map<String, Boolean>) parameters.get("formats")).get("pdf");
         boolean xlsx = ((Map<String, Boolean>) parameters.get("formats")).get("xlsx");
         boolean data = ((Map<String, Boolean>) parameters.get("formats")).get("data");
-        boolean afsData = ((Map<String, Boolean>) parameters.get("formats")).get("afsData");
+        boolean afsData = ((Map<String, Boolean>) parameters.get("formats")).getOrDefault("afsData", false);
 
         IApplicationServerInternalApi api = CommonServiceProvider.getApplicationServerApi();
         ExportData exportData = new ExportData();
