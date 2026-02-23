@@ -99,10 +99,13 @@ dependencies {
                 exclude group:'org.junit'
             }
 
-    asExecRuntime files("../core-plugin-openbis/dist/core-plugins/imaging/1/as/api-listener/imaging-dataset-interceptor/lib/imaging-dataset-interceptor.jar"),
+    asExecRuntime /* imaging jar dependencies */files("../core-plugin-openbis/dist/core-plugins/imaging/1/as/api-listener/imaging-dataset-interceptor/lib/imaging-dataset-interceptor.jar"),
             files("../core-plugin-openbis/dist/core-plugins/imaging/1/as/services/imaging/lib/openBIS-imaging-technology.jar"),
             files("../core-plugin-openbis/dist/core-plugins/imaging-nanonis/1/as/services/imaging-nanonis/lib/premise-adapters.jar"),
-            files("../core-plugin-openbis/dist/core-plugins/imaging-test/1/as/services/imaging-test/lib/imaging-test-adapters.jar")
+            files("../core-plugin-openbis/dist/core-plugins/imaging-test/1/as/services/imaging-test/lib/imaging-test-adapters.jar"),
+            // zenodo export dependencies
+            files("../ui-eln-lims/src/core-plugins/eln-lims/1/dss/reporting-plugins/zenodo-exports-api/lib/job-scheduler.jar"),
+            files("../ui-eln-lims/src/core-plugins/eln-lims/1/dss/reporting-plugins/zenodo-exports-api/lib/json-20250517.jar")
 
     testImplementation project(path: ':lib-commonbase', configuration: 'tests'),
             project(path: ':lib-common', configuration: 'tests'),
@@ -127,7 +130,7 @@ dependencies {
 
 }
 
-sourceSets.test.runtimeClasspath = configurations.testRuntimeFirst + sourceSets.test.runtimeClasspath
+sourceSets.test.runtimeClasspath = configurations.testRuntimeFirst + sourceSets.test.runtimeClasspath + configurations.asExecRuntime
 
 
 sourceSets {
@@ -217,6 +220,19 @@ task openBISDevelopmentEnvironmentASStart(type: JavaExec) {
              '-Dimaging.as.services.imaging.storageRoot.dss=../server-original-data-store/targets/store',
              '-Dimaging.as.services.imaging.storageRoot.afs=../server-data-store/targets/tests/storage',
 
+//             '-Das.logging..global.handlerAliases=myConsoleHandler, resolvedPropertiesHandler, myPropertiesHandler',
+//             '-Das.logging.myPropertiesHandler.class=ch.ethz.sis.shared.log.standard.handlers.SingleFileHandler',
+//             '-Das.logging.myPropertiesHandler.level=INFO',
+//             '-Das.logging.myPropertiesHandler.append=false',
+//             '-Das.logging.myPropertiesHandler.maxLogFileSize=10048576',
+//             '-Das.logging.myPropertiesHandler.filter=OPERATION.ExposablePropertyPlaceholderConfigurer',
+//             '-Das.logging.myPropertiesHandler.logFileName=targets/startup_properties_from_cmd.log',
+//             '-Das.logging.myPropertiesHandler.messagePattern=%d %-5p [%t] %c - %m%n',
+//             '-Das.logging.org.hibernate.orm.deprecation.level=SEVERE',
+//             '-Das.aaaaaa=___DUPA___',
+
+             '-Deln-lims.as.miscellaneous.file-service.file-server.repository-path=./targets/data/file-server',
+
              '-Dorg.mortbay.util.FileResource.checkAliases=false',
              '--add-opens=java.base/java.util=ALL-UNNAMED', '--add-opens=java.base/java.lang=ALL-UNNAMED',
              '-Xmx4096M', '-ea'])
@@ -287,8 +303,8 @@ test.maxHeapSize = "10240m"
 test.jvmArgs += [
         '-Duser.timezone=Europe/Zurich',
         '-Djava.util.logging.config.file=etc/jullogging.properties']
-test.dependsOn(copyTestData)
-test.dependsOn(cleanDbSuite)
+//test.dependsOn(copyTestData)
+//test.dependsOn(cleanDbSuite)
 
 task runOnlyOneTestSuite(type: Test) {
     // Dedicated task to run only the DB TestNG suite.
