@@ -655,26 +655,42 @@ function MainController(profile) {
 					document.title = "Export Builder";
 					this.mainHeader.navigateToTab("TOOLS");
 					var newExportView = new ExportTreeController(this);
-					var exportViews = this._getNewViewModel(true, true, false, TabContentUtil.getToolTabInfo('EXPORT'));
+					var tabInfo = TabContentUtil.getToolTabInfo('EXPORT');
+					var exportViews = this._getNewViewModel(true, true, false, tabInfo);
 					newExportView.init(exportViews);
+					newExportView.tabId = tabInfo.id;
 					this.currentView = newExportView;
 					break;
 				case "showResearchCollectionExportPage":
 					document.title = "Research Collection Export Builder";
 					this.mainHeader.navigateToTab("TOOLS");
 					var newResearchCollectionExportView = new ResearchCollectionExportController(this);
-					var researchCollectionExportViews = this._getNewViewModel(true, true, false, TabContentUtil.getToolTabInfo('RESEARCH_COLLECTION'));
+					var tabInfo = TabContentUtil.getToolTabInfo('RESEARCH_COLLECTION');
+					var researchCollectionExportViews = this._getNewViewModel(true, true, false, tabInfo);
 					newResearchCollectionExportView.init(researchCollectionExportViews);
+					newResearchCollectionExportView.tabId = tabInfo.id;
 					this.currentView = newResearchCollectionExportView;
 					break;
 				case "showZenodoExportPage":
-					document.title = "Zenodo Export Builder";
-					this.mainHeader.navigateToTab("TOOLS");
-					var newZenodoExportView = new ZenodoExportController(this);
-					var zenodoExportViews = this._getNewViewModel(true, true, false, TabContentUtil.getToolTabInfo('ZENODO_EXPORT'));
-					newZenodoExportView.init(zenodoExportViews);
-					this.currentView = newZenodoExportView;
-					break;
+                    document.title = "Zenodo Export Builder";
+                    this.mainHeader.navigateToTab("TOOLS");
+                    var newZenodoExportView = new ZenodoExportController(this);
+                    var tabInfo = TabContentUtil.getToolTabInfo('ZENODO_EXPORT');
+                    var zenodoExportViews = this._getNewViewModel(true, true, false, tabInfo);
+                    newZenodoExportView.init(zenodoExportViews);
+                    newZenodoExportView.tabId = tabInfo.id;
+                    this.currentView = newZenodoExportView;
+                    break;
+                case "showRoCrateExportPage":
+                    document.title = "RO-CRATE Export Builder";
+                    this.mainHeader.navigateToTab("TOOLS");
+                    var newRoCrateExportView = new RoCrateExportController(this);
+                    var tabInfo = TabContentUtil.getToolTabInfo('RO-CRATE_EXPORT');
+                    var roCrateExportViews = this._getNewViewModel(true, true, false, tabInfo);
+                    newRoCrateExportView.init(roCrateExportViews);
+                    newRoCrateExportView.tabId = tabInfo.id;
+                    this.currentView = newRoCrateExportView;
+                    break;
 				case "showLabNotebookPage":
 					document.title = "Lab Notebook";
 					this.mainHeader.navigateToTab("LAB_NOTEBOOK");
