@@ -108,6 +108,18 @@ function TabContentController(controller) {
 
             if(tab.url) {
                 history.pushState({}, null, tab.url)
+                var queryParams = tab.url;
+                var result = {};
+                queryParams.split("&").forEach(function(part) {
+                    var item = part.split("=");
+                    result[item[0]] = decodeURIComponent(item[1]);
+                });
+                if(result.viewName) {
+                    mainController.lastViewChange = result.viewName;
+                    if(result.viewData) {
+                        mainController.lastArg = result.viewData;
+                    }
+                }
             }
 
             mainController.sideMenu.removeSubSideMenu();
@@ -128,6 +140,7 @@ function TabContentController(controller) {
     }
 
     this.handleTabClose = function(tab, newSelectedTab) {
+
         if(newSelectedTab) {
             _this._updateView(newSelectedTab)
             if(mainController.sideMenu.getCurrentTree() !== newSelectedTab.tree) {
