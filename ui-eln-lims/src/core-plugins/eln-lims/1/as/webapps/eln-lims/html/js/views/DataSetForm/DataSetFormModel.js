@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-function DataSetFormModel(mode, entity, isMini, dataSetV3, paginationInfo) {
+function DataSetFormModel(mode, entity, isMini, dataSetV3, paginationInfo, imageIdx, previewIdx) {
 	this.mode = mode;
 	this.isMini = isMini;
 	this.isAutoUpload = true;
@@ -31,8 +31,11 @@ function DataSetFormModel(mode, entity, isMini, dataSetV3, paginationInfo) {
 	this.files = [];
 	this.datasetParentsComponent = null;
 
-    this.isExperiment = function() {
-        return this.entity && this.entity["@type"] === "as.dto.experiment.Experiment";
-    }
     this.paginationInfo = paginationInfo;
+	this.imageIdx = imageIdx;
+	this.previewIdx = previewIdx;
+
+	this.isExperiment = function() {
+		return this.entity && this.entity["@type"] === "as.dto.experiment.Experiment";
+	}
 }

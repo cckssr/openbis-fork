@@ -1021,9 +1021,13 @@ function MainController(profile) {
 					var _this = this;
 					var permId = null;
 					var paginationInfo = null;
+					var imageIdx = null;
+					var previewIdx = null;
                     if((typeof arg) !== "string") {
                         permId = arg.permIdOrIdentifier;
                         paginationInfo = arg.paginationInfo;
+						imageIdx = arg.imageIndex;
+						previewIdx = arg.previewIndex;
                         arg = permId;
                     } else {
                         permId = arg;
@@ -1051,7 +1055,7 @@ function MainController(profile) {
 										document.title = "Data Set " + dataSetData.result[0].code;
 										var spaceCode = IdentifierUtil.getSpaceCodeFromIdentifier(dataSetData.result[0].sampleIdentifierOrNull)
                                         _this.mainHeader.navigateToTabByEntity("DATASET", spaceCode, dataset.code);
-                                        _this._showViewDataSetPage(sampleData[0], dataSetData.result[0], dataset, paginationInfo);
+                                        _this._showViewDataSetPage(sampleData[0], dataSetData.result[0], dataset, paginationInfo, imageIdx, previewIdx);
 									});
 								} else if(dataSetData.result[0].experimentIdentifier) {
 									_this.serverFacade.listExperimentsForIdentifiers([dataSetData.result[0].experimentIdentifier], function(experimentResults) {
@@ -1061,7 +1065,7 @@ function MainController(profile) {
 											document.title = "Data Set " + dataSetData.result[0].code;
 											var spaceCode = IdentifierUtil.getSpaceCodeFromIdentifier(dataSetData.result[0].experimentIdentifier)
                                             _this.mainHeader.navigateToTabByEntity("DATASET", spaceCode, dataset.code);
-                                            _this._showViewDataSetPage(experimentData.objects[0], dataSetData.result[0], dataset, paginationInfo);
+                                            _this._showViewDataSetPage(experimentData.objects[0], dataSetData.result[0], dataset, paginationInfo, imageIdx, previewIdx);
 										});
 									});
 								}
@@ -1868,9 +1872,9 @@ function MainController(profile) {
 		this.sideMenu.collapseSideMenu();
 	}
 	
-	this._showViewDataSetPage = function(sampleOrExperiment, dataset, datasetV3, paginationInfo) {
+	this._showViewDataSetPage = function(sampleOrExperiment, dataset, datasetV3, paginationInfo, imageIdx, previewIdx) {
 		//Show Form
-		var newView = new DataSetFormController(this, FormMode.VIEW, sampleOrExperiment, dataset, null, datasetV3, paginationInfo);
+		var newView = new DataSetFormController(this, FormMode.VIEW, sampleOrExperiment, dataset, null, datasetV3, paginationInfo, imageIdx, previewIdx);
 		var tabInfo = TabContentUtil.getDataSetTabInfo(dataset, FormMode.VIEW);
 		var views = this._getNewViewModel(true, true, false, tabInfo);
 		newView.init(views);
@@ -1881,7 +1885,7 @@ function MainController(profile) {
 	
 	this._showEditDataSetPage = function(sampleOrExperiment, dataset, datasetV3, paginationInfo) {
 		//Show Form
-		var newView = new DataSetFormController(this, FormMode.EDIT, sampleOrExperiment, dataset, null, datasetV3, paginationInfo);
+		var newView = new DataSetFormController(this, FormMode.EDIT, sampleOrExperiment, dataset, null, datasetV3, paginationInfo, null, null);
 		var tabInfo = TabContentUtil.getDataSetTabInfo(dataset, FormMode.EDIT);
 		var views = this._getNewViewModel(true, true, false, tabInfo);
 		newView.init(views);
