@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 ETH Zuerich, CISD
+ * Copyright 2011-2026 ETH Zuerich, CISD
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,12 @@
 function ResearchCollectionExportController(parentController) {
     var researchCollectionExportModel = new ResearchCollectionExportModel();
     var researchCollectionExportView = new ResearchCollectionExportView(this, researchCollectionExportModel);
+
+    this.refresh = function() {
+        if(researchCollectionExportView) {
+            researchCollectionExportView.refresh();
+        }
+    }
 
     this.init = function(views) {
         researchCollectionExportView.repaint(views);
@@ -40,8 +46,22 @@ function ResearchCollectionExportController(parentController) {
         });
     };
 
+    this._addNodeToList = function(node, list, _viewId) {
+        list.push({
+            kind: node.data.entityType,
+            permId: node.key,
+
+            withLevelsAbove: $("#LEVELS-ABOVE-EXPORT-"+_viewId).is(":checked"),
+            withLevelsBelow: $("#LEVELS-BELOW-EXPORT-"+_viewId).is(":checked"),
+            withObjectsAndDataSetsParents: $("#PARENTS-EXPORT-"+_viewId).is(":checked"),
+            withObjectsAndDataSetsChildren: $("#CHILDREN-EXPORT-"+_viewId).is(":checked"),
+            withObjectsAndDataSetsOtherSpaces: $("#OTHER-SPACES-EXPORT-"+_viewId).is(":checked"),
+        })
+    }
+
     this.exportSelected = function() {
         var _this = this;
+        var _viewId = researchCollectionExportView._viewId;
         var selectedNodes = $(researchCollectionExportModel.tree).fancytree('getTree').getSelectedNodes();
 
         var selectedStOption = researchCollectionExportView.$submissionTypeDropdown.find(":selected");
@@ -57,28 +77,33 @@ function ResearchCollectionExportController(parentController) {
         var checkedGroups = groupRows.flatMap(row => row[valueColumn.label] ? [row[nameColumn.label]] : []);
 
         var nodeExportList = [];
-        var toExport = [];
         for (var eIdx = 0; eIdx < selectedNodes.length; eIdx++) {
             var node = selectedNodes[eIdx];
-            toExport.push({type: node.data.entityType, permId: node.key, expand: !node.expanded});
-            nodeExportList.push({
-				kind: node.data.entityType,
-				permId: node.key,
-				withLevelsAbove: true,
-				withLevelsBelow: !node.expanded,
-				withObjectsAndDataSetsParents: true,
-				withObjectsAndDataSetsOtherSpaces: true,
-			})
+            if(node.data.entityType === "ROOT") {
+                for(var id = 0; id < node.children.length; id++) {
+                    var childNode = node.children[id];
+                    this._addNodeToList(childNode, nodeExportList, _viewId);
+                }
+                break;
+            }
+        }
+
+        for (var eIdx = 0; eIdx < selectedNodes.length; eIdx++) {
+            var node = selectedNodes[eIdx];
+            if(node.data.entityType !== "ROOT") {
+                this._addNodeToList(node, nodeExportList, _viewId);
+            }
         }
 
 		var toExportModel = {
 			nodeExportList: nodeExportList,
 			withEmail: false,
-			withImportCompatibility: $("#COMPATIBLE-IMPORT").is(":checked"), //COMPATIBLE-IMPORT
+			withImportCompatibility: $("#COMPATIBLE-IMPORT-"+_viewId).is(":checked"), //COMPATIBLE-IMPORT
 			formats: {
-				pdf: $("#PDF-EXPORT").is(":checked"), //PDF-EXPORT
-				xlsx: $("#XLSX-EXPORT").is(":checked"), //XLSX-EXPORT
-				data: $("#DATA-EXPORT").is(":checked") //DATA-EXPORT
+				pdf: $("#PDF-EXPORT-"+_viewId).is(":checked"), //PDF-EXPORT
+				xlsx: $("#XLSX-EXPORT-"+_viewId).is(":checked"), //XLSX-EXPORT
+				data: $("#DATA-EXPORT-"+_viewId).is(":checked"), //DATA-EXPORT
+				afsData: $("#FILES-EXPORT-"+_viewId).is(":checked") //DATA-EXPORT
 			}
 		}
 
@@ -121,7 +146,7 @@ function ResearchCollectionExportController(parentController) {
     this.isValid = function(nodeExportList) {
         for (var i = 0; i < nodeExportList.length; i++) {
             var value = nodeExportList[i];
-            if (value.kind !== 'ROOT' && value.kind !== 'SPACE' || value.withLevelsBelow) {
+            if (value.kind !== 'SPACE' || value.withLevelsBelow) {
                 return true;
             }
         }
