@@ -174,7 +174,6 @@ public class ObjectHelper extends BasicImportHelper
             int line)
     {
         Sample sample = new Sample();
-        ;
         sample.setType((SampleType) objectTypeHelper.getResult().get(sampleType));
         SampleFetchOptions fetchOptions = new SampleFetchOptions();
         fetchOptions.withProperties();
@@ -228,6 +227,8 @@ public class ObjectHelper extends BasicImportHelper
         {
             collectionsToResolve.put(code, experiment);
         }
+
+        System.out.println(String.format("||> Created object: code:%s identifier:%s space:%s project:%s exp:%s", sample.getCode(), sample.getIdentifier(), sample.getSpace(), sample.getProject(), sample.getExperiment()));
 
         // Start - Special case - Sample Variables
         if (parents != null && !parents.isEmpty())
