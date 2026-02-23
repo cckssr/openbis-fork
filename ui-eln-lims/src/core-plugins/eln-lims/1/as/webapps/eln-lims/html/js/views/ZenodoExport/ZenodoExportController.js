@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 ETH Zuerich, CISD
+ * Copyright 2011-2026 ETH Zuerich, CISD
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,12 @@ function ZenodoExportController(parentController) {
     this.exportView = null;
     this.zenodoApiTokenKey = parentController.zenodoApiTokenKey;
 
+    this.refresh = function() {
+        if(this.exportView) {
+            this.exportView.refresh();
+        }
+    }
+
     this.init = function(views) {
         this.getSettingValue(this.zenodoApiTokenKey, (function (accessToken) {
             if (accessToken && accessToken !== '') {
@@ -31,8 +37,22 @@ function ZenodoExportController(parentController) {
         }).bind(this));
     };
 
+    this._addNodeToList = function(node, list, _viewId) {
+        list.push({
+            kind: node.data.entityType,
+            permId: node.key,
+
+            withLevelsAbove: $("#LEVELS-ABOVE-EXPORT-"+_viewId).is(":checked"),
+            withLevelsBelow: $("#LEVELS-BELOW-EXPORT-"+_viewId).is(":checked"),
+            withObjectsAndDataSetsParents: $("#PARENTS-EXPORT-"+_viewId).is(":checked"),
+            withObjectsAndDataSetsChildren: $("#CHILDREN-EXPORT-"+_viewId).is(":checked"),
+            withObjectsAndDataSetsOtherSpaces: $("#OTHER-SPACES-EXPORT-"+_viewId).is(":checked"),
+        })
+    }
+
     this.exportSelected = function() {
         var _this = this;
+        var _viewId = this.exportView._viewId;
         var selectedNodes = $(this.exportModel.tree).fancytree('getTree').getSelectedNodes();
         var title = this.exportView.$titleTextBox.val().trim();
 
@@ -44,24 +64,31 @@ function ZenodoExportController(parentController) {
         var nodeExportList = [];
         for (var eIdx = 0; eIdx < selectedNodes.length; eIdx++) {
             var node = selectedNodes[eIdx];
-            nodeExportList.push({
-				kind: node.data.entityType,
-				permId: node.key,
-				withLevelsAbove: true,
-				withLevelsBelow: !node.expanded,
-				withObjectsAndDataSetsParents: true,
-				withObjectsAndDataSetsOtherSpaces: true,
-			})
+            if(node.data.entityType === "ROOT") {
+                for(var id = 0; id < node.children.length; id++) {
+                    var childNode = node.children[id];
+                    this._addNodeToList(childNode, nodeExportList, _viewId);
+                }
+                break;
+            }
+        }
+
+        for (var eIdx = 0; eIdx < selectedNodes.length; eIdx++) {
+            var node = selectedNodes[eIdx];
+            if(node.data.entityType !== "ROOT") {
+                this._addNodeToList(node, nodeExportList, _viewId);
+            }
         }
 
 		var toExportModel = {
 			nodeExportList: nodeExportList,
 			withEmail: false,
-			withImportCompatibility: $("#COMPATIBLE-IMPORT").is(":checked"), //COMPATIBLE-IMPORT
+			withImportCompatibility: $("#COMPATIBLE-IMPORT-"+_viewId).is(":checked"), //COMPATIBLE-IMPORT
 			formats: {
-				pdf: $("#PDF-EXPORT").is(":checked"), //PDF-EXPORT
-				xlsx: $("#XLSX-EXPORT").is(":checked"), //XLSX-EXPORT
-				data: $("#DATA-EXPORT").is(":checked") //DATA-EXPORT
+				pdf: $("#PDF-EXPORT-"+_viewId).is(":checked"), //PDF-EXPORT
+				xlsx: $("#XLSX-EXPORT-"+_viewId).is(":checked"), //XLSX-EXPORT
+				data: $("#DATA-EXPORT-"+_viewId).is(":checked"), //DATA-EXPORT
+				afsData: $("#FILES-EXPORT-"+_viewId).is(":checked") //DATA-EXPORT
 			}
 		}
 
@@ -106,7 +133,7 @@ function ZenodoExportController(parentController) {
     this.isValid = function(nodeExportList) {
         for (var i = 0; i < nodeExportList.length; i++) {
             var value = nodeExportList[i];
-            if (value.kind !== 'ROOT' && value.kind !== 'SPACE' || value.withLevelsBelow) {
+            if (value.kind !== 'SPACE' || value.withLevelsBelow) {
                 return true;
             }
         }
