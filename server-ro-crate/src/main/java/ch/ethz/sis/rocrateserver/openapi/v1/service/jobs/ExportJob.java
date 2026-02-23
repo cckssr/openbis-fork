@@ -45,7 +45,10 @@ import org.eclipse.jetty.io.ClientConnector;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.jboss.logging.Logger;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.*;
@@ -98,6 +101,11 @@ public final class ExportJob implements IAsyncJob
 
     @Override
     public String getMimeType()
+    {
+        return exportParams.getExportMimeType();
+    }
+
+    public String getExportType()
     {
         return exportParams.getExportMimeType();
     }

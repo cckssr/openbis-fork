@@ -400,7 +400,8 @@ public class RoCrateService
                 java.nio.file.Path path = ((ExportJob) job).getResult();
 
                 responseBuilder = Response.ok(Files.readAllBytes(path),
-                        job.getMimeType());
+                        ((ExportJob) job).getExportType());
+                responseBuilder.type(((ExportJob) job).getExportType());
                 return responseBuilder.build();
             } else
             {
