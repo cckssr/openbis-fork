@@ -134,16 +134,16 @@ function ServerFacade(openbisServer) {
         });
     }
 
-		this.importSamples = function(mode, sessionKey, allowedSampleTypes, experimentsByType, spacesByType, callback) {
-				this.customASService({
-					"method" : "import",
-					"mode" : mode,
-					"fileName" : sessionKey,
-					"allowedSampleTypes" : allowedSampleTypes,
-					"experimentsByType" : experimentsByType,
-					"spacesByType" : spacesByType,
-				}, callback, "xls-import", null, true);
-		}
+    this.importSamples = function(mode, sessionKey, allowedSampleTypes, experimentsByType, spacesByType, callback) {
+            this.customASService({
+                "method" : "import",
+                "mode" : mode,
+                "fileName" : sessionKey,
+                "allowedSampleTypes" : allowedSampleTypes,
+                "experimentsByType" : experimentsByType,
+                "spacesByType" : spacesByType,
+            }, callback, "xls-import", null, true);
+    }
 
     this.deleteSpace = function(code, reason, callback) {
         this.customELNASAPI({
@@ -498,16 +498,48 @@ function ServerFacade(openbisServer) {
 	//
 	//
 	//
-	this.exportAll = function(entities, callbackFunction) {
-		this.customELNApi({
-			"method" : "exportAll",
-			"entities" : entities,
-		}, callbackFunction, "exports-api");
-	};
+	this.exportAll = function(exportData, callbackFunction) {
+        this.customASService({
+                 "method" : "exportAll",
+                 "entities" : exportData,
+         }, callbackFunction, "exports-api", null);
+    };
+
+	this.exportRoCrate = function(exportData, callbackFunction) {
+        this.customASService({
+                 "method" : "exportRoCrate",
+                 "exportData" : exportData,
+             }, callbackFunction, "exports-api", null);
+    };
+
+    this.statusRoCrate = function(jobId, callbackFunction) {
+        this.customASService({
+                 "method" : "statusRoCrateJob",
+                 "jobId" : jobId,
+             }, callbackFunction, "exports-api", null);
+    };
 
 	//
 	// Research collection export
 	//
+	this.exportRcAs = function(entities, submissionUrl, submissionType, retentionPeriod, userInformation, callbackFunction) {
+	    this.customASService({
+                         "method" : "exportResearchCollection",
+                         "entities": entities,
+                         "submissionUrl": submissionUrl,
+                         "submissionType": submissionType,
+                         "retentionPeriod": retentionPeriod,
+                         "userFirstName": userInformation["firstName"],
+                         "userLastName": userInformation["lastName"],
+                         "userEmail": userInformation["email"],
+                         "userId": userInformation["id"],
+                         "userInformation": userInformation,
+                         "originUrl": window.location.origin,
+                         "pathNameUrl": window.location.pathname,
+                         "sessionToken": this.openbisServer.getSession(),
+                     }, callbackFunction, "rc-exports-api", null, true);
+    };
+
 	this.exportRc = function(entities, submissionUrl, submissionType, retentionPeriod, userInformation, callbackFunction) {
 		this.asyncExportRc({
 			"method": "exportAll",
@@ -554,6 +586,22 @@ function ServerFacade(openbisServer) {
 				});
 			});
 	};
+
+	this.exportZenodoAs = function(entities, userInformation, title, accessToken, callbackFunction) {
+	    this.customASService({
+	        "method": "exportZenodo",
+            "entities": entities,
+            "userInformation": userInformation,
+            "originUrl": window.location.origin,
+            "sessionToken": this.openbisServer.getSession(),
+            "submissionTitle": title,
+            "accessToken": accessToken,
+            "userFirstName": userInformation["firstName"],
+            "userLastName": userInformation["lastName"],
+            "userEmail": userInformation["email"],
+            "userId": userInformation["id"],
+            }, callbackFunction, "zenodo-exports-api", null, true);
+    };
 
     this.exportZenodo = function(entities, userInformation, title, accessToken, callbackFunction) {
         this.asyncExportZenodo({
