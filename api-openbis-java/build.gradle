@@ -132,6 +132,7 @@ sourcesJar {
 
 // openbis-java-api-javadoc-VERSION.tar.gz
 tasks.register('javadocTar', Tar) {
+    compression = Compression.GZIP
     dependsOn javadoc
     archiveFileName = baseName + '-javadoc-' + project.ext.versionNumber + '.tar.gz'
     from javadoc.destinationDir
@@ -175,6 +176,7 @@ tasks.register('jarWithDependencies', Jar) {
 
 // openbis-java-api-VERSION.tar.gz
 tasks.register('release', Tar) {
+    compression = Compression.GZIP
     dependsOn jar
     archiveFileName = "${baseName}-${version}.tar.gz"
     from jar.archiveFile
@@ -186,6 +188,7 @@ tasks.register('release', Tar) {
 
 // openbis-java-api-VERSION-dependencies-included.tar.gz
 tasks.register('releaseDependenciesIncluded', Tar) {
+    compression = Compression.GZIP
     dependsOn([jarWithDependencies, sourcesJar, javadocTar])
     archiveFileName = "${baseName}-${version}-dependencies-included.tar.gz"
     from jarWithDependencies.archiveFile
