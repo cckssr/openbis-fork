@@ -38,7 +38,7 @@ import static org.testng.Assert.*;
 public class IntegrationRoCrateServerTest
 {
 
-    private static final int TIMEOUT = 10 * 60 * 1000;
+    private static final int TIMEOUT = 4 * 60 * 1000;
 
     private static String username = "system";
 
