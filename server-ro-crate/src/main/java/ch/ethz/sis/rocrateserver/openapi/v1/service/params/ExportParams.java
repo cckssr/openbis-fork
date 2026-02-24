@@ -80,7 +80,11 @@ public class ExportParams {
     }
 
     public boolean isWithLevelsAbove() {
-        return withLevelsAbove != null && Boolean.parseBoolean(withLevelsAbove);
+        if(withLevelsAbove == null || withLevelsAbove.isBlank()) {
+            return true;
+        } else {
+            return Boolean.parseBoolean(withLevelsAbove);
+        }
     }
 
     public void setWithLevelsAbove(String withLevelsAbove) {
@@ -113,7 +117,11 @@ public class ExportParams {
 
     public boolean isImportCompatible()
     {
-        return importCompatible != null && Boolean.parseBoolean(importCompatible);
+        if(importCompatible == null || importCompatible.isBlank()) {
+            return true;
+        } else {
+            return Boolean.parseBoolean(importCompatible);
+        }
     }
 
     public void setImportCompatible(String importCompatible)
