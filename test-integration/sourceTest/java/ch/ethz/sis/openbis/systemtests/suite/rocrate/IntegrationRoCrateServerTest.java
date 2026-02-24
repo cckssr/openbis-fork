@@ -311,25 +311,6 @@ public class IntegrationRoCrateServerTest
                 x -> testStatus(x, "FAILED"), IntegrationRoCrateServerTest::checkDownload);
     }
 
-    private static boolean testMimeAndStatus(ContentResponse contentResponse, String asyncStatus,
-            String mimeType)
-    {
-        try
-        {
-            if (contentResponse.getMediaType().equals(mimeType))
-            {
-                return true;
-            }
-            LinkedHashMap asyncJob =
-                    objectMapper.readValue(contentResponse.getContentAsString(),
-                            LinkedHashMap.class);
-            return asyncJob.get("status").toString().equals(asyncStatus);
-        } catch (Exception e)
-        {
-            throw new RuntimeException(e);
-        }
-    }
-
     private static boolean testStatus(ContentResponse contentResponse, String asyncStatus)
     {
         try
@@ -696,6 +677,7 @@ public class IntegrationRoCrateServerTest
             headers.add("Content-Type", "application/json");
             headers.add("Export", export_type);
             headers.add("openbis.with-levels-above", "true");
+            headers.add("openbis.import-compatible", "true");
         });
         request.body(new BytesRequestContent(identifiersJsonString.getBytes()));
         request.idleTimeout(TIMEOUT, TimeUnit.MILLISECONDS);
