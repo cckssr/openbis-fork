@@ -725,6 +725,26 @@ public class IntegrationRoCrateServerTest
 
     }
 
+    @Test
+    private void testUnknownJobIdMeansNotFound()
+            throws ExecutionException, InterruptedException, TimeoutException
+    {
+        OpenBIS openBIS = environment.createOpenBIS();
+        openBIS.login(username, password);
+        HttpClient client = JettyHttpClientFactory.getHttpClient();
+        Request request = client.newRequest(
+                TestInstanceHostUtils.getRoCrateUrl() + "/openbis/open-api/ro-crate/download");
+        request.method(HttpMethod.GET);
+        request.headers(headers -> {
+            headers.add("api-key", openBIS.getSessionToken());
+            headers.add("jobId", "atexpetlatl");
+
+        });
+        ContentResponse send = request.send();
+        Assert.assertEquals(404, send.getStatus());
+
+    }
+
     private void testValidateAstract(String fileName, String mimeType,
             Consumer<LinkedHashMap<String, Object>> validationStuff)
             throws IOException, InterruptedException, ExecutionException, TimeoutException

@@ -99,6 +99,11 @@ public class AsyncJobRegistry
         Future future = results.get(jobKey);
         IAsyncJob asyncJob = jobs.get(jobKey);
 
+        if (future == null)
+        {
+            return null;
+        }
+
         if (!future.isDone())
         {
             return new AsyncStatus(Status.RUNNING, asyncJob);

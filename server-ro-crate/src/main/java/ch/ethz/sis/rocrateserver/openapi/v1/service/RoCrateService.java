@@ -387,9 +387,17 @@ public class RoCrateService
         }
         AsyncJobRegistry.AsyncStatus status =
                 asyncJobRegistry.poll(sessionInformation.getUserName(), headers.getJobId());
+        Response.ResponseBuilder responseBuilder = new ResponseBuilderImpl();
+
+        if (status == null)
+        {
+            responseBuilder.status(Response.Status.NOT_FOUND);
+            return responseBuilder.build();
+
+        }
+
         AsyncResult result = null;
         int statusCode = 0;
-        Response.ResponseBuilder responseBuilder = new ResponseBuilderImpl();
 
         if (status.getStatus() == AsyncJobRegistry.Status.COMPLETED)
         {
