@@ -153,12 +153,6 @@ public class AsyncJobRegistry
 
         public IAsyncJob getJob()
         {
-            if (this.status != Status.COMPLETED && this.status != Status.FAILED)
-            {
-                throw new IllegalStateException(
-                        "Cannot provide result of operation that has not been completed.");
-            }
-
             return job;
         }
 
