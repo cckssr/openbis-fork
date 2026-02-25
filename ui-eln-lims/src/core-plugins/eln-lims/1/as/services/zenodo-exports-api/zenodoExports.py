@@ -21,27 +21,31 @@ from ch.ethz.sis import JobScheduler
 from ch.ethz.sis.openbis.generic.asapi.v3.dto.service import CustomASServiceExecutionOptions
 from ch.ethz.sis.openbis.generic.asapi.v3.dto.service.id import CustomASServiceCode
 from java.nio.file import Paths
+from java.nio.file import Path
 
 
 from org.eclipse.jetty.client import HttpClient
 from org.eclipse.jetty.client import HttpProxy
-from org.eclipse.jetty.client.transport import HttpClientTransportOverHTTP
+
 from org.eclipse.jetty.util import Jetty
 from org.eclipse.jetty.util.ssl import SslContextFactory
-from org.eclipse.jetty.client import BasicAuthentication
 from org.eclipse.jetty.http import HttpMethod
-from org.eclipse.jetty.client import StringRequestContent
 
-# from org.eclipse.jetty.client import HttpClient
-# from org.eclipse.jetty.client import HttpProxy
-# from org.eclipse.jetty.client.http import HttpClientTransportOverHTTP
-# from org.eclipse.jetty.client.util import MultiPartContentProvider
-# from org.eclipse.jetty.client.util import PathContentProvider
-# from org.eclipse.jetty.client.util import StringContentProvider
-# from org.eclipse.jetty.http import HttpMethod
-# from org.eclipse.jetty.util import Jetty
-# from org.eclipse.jetty.util.ssl import SslContextFactory
+if Jetty.VERSION.startswith('12.'):
+    from org.eclipse.jetty.client.transport import HttpClientTransportOverHTTP
+    from org.eclipse.jetty.http import HttpFields
+    from org.eclipse.jetty.http import MultiPart
+    from org.eclipse.jetty.client import StringRequestContent
+    from org.eclipse.jetty.client import MultiPartRequestContent
+    from org.eclipse.jetty.io import ByteBufferPool
+else:
+    from org.eclipse.jetty.client.http import HttpClientTransportOverHTTP
+    from org.eclipse.jetty.client.util import MultiPartContentProvider
+    from org.eclipse.jetty.client.util import PathContentProvider
+    from org.eclipse.jetty.client.util import StringContentProvider
+
 from org.json import JSONObject
+
 import ch.ethz.sis.shared.log.classic.core.LogCategory as LogCategory
 import ch.ethz.sis.shared.log.classic.impl.LogFactory as LogFactory
 
@@ -55,14 +59,11 @@ OPERATION_LOG = LogFactory.getLogger(LogCategory.OPERATION, LogFactory)
 def process(context, params):
     method = params.get('method')
 
-    # Set user using the service
-    # tr.setUserId(userId)
     if method == 'exportZenodo':
         resultUrl = exportZenodo(context, params)
         return {
             "url": resultUrl
         }
-        # displayResult(resultUrl is not None, tableBuilder, '{"url": "' + resultUrl + '"}' if resultUrl is not None else None)
 
 def exportZenodo(context, params):
     sessionToken = params.get('sessionToken')
@@ -80,9 +81,6 @@ def sendToZenodo(context, params, tempZipFilePath, entities):
     httpProxyURL = CommonServiceProvider.tryToGetProperty('zenodo-exports-api.httpProxyURL')
     httpProxyPort = CommonServiceProvider.tryToGetProperty('zenodo-exports-api.httpProxyPort')
 
-    # depositRootUrl = str(getConfigurationProperty(tr, 'zenodoUrl')) + '/api/deposit/depositions'
-    # httpProxyURL = str(getConfigurationProperty(tr, 'httpProxyURL'))
-    # httpProxyPort = str(getConfigurationProperty(tr, 'httpProxyPort'))
     accessToken = params.get('accessToken')
 
     httpClient = None
@@ -93,19 +91,22 @@ def sendToZenodo(context, params, tempZipFilePath, entities):
         httpClient.start()
         OPERATION_LOG.info('Creating request to: ' + str(depositRootUrl))
         depositionData = createDepositionResource(httpClient.newRequest(depositRootUrl), accessToken)
-        OPERATION_LOG.error('||> TESTAaa 0: ')
         depositionLinks = depositionData.get('links')
         depositUrl = depositionLinks.get('files')
         selfUrl = depositionLinks.get('self')
-        OPERATION_LOG.error('||> TESTAbbb 0: ')
-        submitFile(httpClient.newRequest(depositUrl), accessToken, tempZipFilePath)
+        OPERATION_LOG.info('Submitting file to: ' + str(depositUrl))
+        if Jetty.VERSION.startswith('12.'):
+            submitFileJettyLess(depositUrl, accessToken, tempZipFilePath, httpProxyURL, httpProxyPort)
+        else:
+            submitFile(httpClient, httpClient.newRequest(depositUrl), accessToken, tempZipFilePath)
+        OPERATION_LOG.info('Submitting metadata to: ' + str(selfUrl))
         addMetadata(params, httpClient.newRequest(selfUrl), accessToken)
-        OPERATION_LOG.error('||> TESTA 0: ')
+
         entityPermIds = map(lambda entity: entity['permId'], entities)
         zenodoCallable = ZenodoCallable(params, accessToken, selfUrl, httpProxyURL, httpProxyPort,
                                         reduce(lambda str, permId: str + ',' + permId, entityPermIds),
                                         context)
-        OPERATION_LOG.error('||> TESTA 1: ')
+
         zenodoCallable.scheduleMetadataCheck()
 
         result = depositionLinks.get('html')
@@ -119,17 +120,85 @@ def sendToZenodo(context, params, tempZipFilePath, entities):
             httpClient.stop()
 
 
-def submitFile(request, accessToken, tempZipFilePath):
-    multiPart = MultiPartContentProvider()
-    multiPart.addFilePart('file', 'content.zip', PathContentProvider(Paths.get(tempZipFilePath)), None)
-    multiPart.close()
-    addAuthenticationHeader(accessToken, request)
-    response = request.method(HttpMethod.POST).content(multiPart).send()
+
+def upload_file_with_proxy(url, file_path, accessToken, proxy_host=None, proxy_port=None):
+    '''
+        Pure Java implementation of multi-part upload of data to zenodo.org
+    '''
+    import java.net.URI as URI
+    import java.net.InetSocketAddress as InetSocketAddress
+    import java.net.ProxySelector as ProxySelector
+    import java.net.http.HttpClient as HttpClient
+    import java.net.http.HttpRequest as HttpRequest
+    import java.net.http.HttpResponse as HttpResponse
+    import java.nio.file.Path as Path
+    import java.lang.System as System
+    boundary = "OpenBISBoundary" + str(System.currentTimeMillis())
+    path = Path.of(file_path)
+
+    if proxy_host is None or proxy_host == "":
+        client = HttpClient.newHttpClient()
+    else:
+        client = HttpClient.newBuilder() \
+            .proxy(ProxySelector.of(InetSocketAddress(proxy_host, int(proxy_port)))) \
+            .build()
+
+    before = ("--" + boundary + "\r\n" +
+              "Content-Disposition: form-data; name=\"file\"; filename=\"" + str(path.getFileName()) + "\"\r\n" +
+              "Content-Type: application/octet-stream\r\n\r\n").encode('utf-8')
+    after = ("\r\n--" + boundary + "--\r\n").encode('utf-8')
+
+    BodyPublishers = HttpRequest.BodyPublishers
+
+    request = HttpRequest.newBuilder() \
+        .uri(URI.create(url)) \
+        .header("Content-Type", "multipart/form-data; boundary=" + boundary) \
+        .header("Authorization", 'Bearer ' + accessToken) \
+        .POST(BodyPublishers.concat(
+        BodyPublishers.ofByteArray(before),
+        BodyPublishers.ofFile(path),
+        BodyPublishers.ofByteArray(after)
+    )) \
+        .build()
+
+    response = client.send(request, HttpResponse.BodyHandlers.ofString())
+
+    status = response.statusCode()
+    if status >= 300:
+        reason = json.loads(response.body())['message']
+        raise ValueError('Unsuccessful response from the server: %s %s' % (status, reason))
+
+    return response.body()
+
+def submitFileJettyLess(url, accessToken, tempZipFilePath, httpProxyURL=None, proxyPort=None):
+    response = upload_file_with_proxy(url, tempZipFilePath, accessToken, httpProxyURL, proxyPort)
+    return JSONObject(str(response))
+
+def submitFile(httpClient, request, accessToken, tempZipFilePath):
+    if Jetty.VERSION.startswith('12.'):
+        '''
+        Although this looks proper, upload to zenodo.org fails with 400 Bad Request error for jetty 12+
+        check out submitFileJettyLess() method.
+        '''
+        sized = ByteBufferPool.Sized(httpClient.getByteBufferPool())
+        path = Path.of(tempZipFilePath)
+        multiPart = MultiPartRequestContent()
+        multiPart.addPart(MultiPart.PathPart(sized, "file", path.getFileName().toString(), HttpFields.EMPTY, path))
+        multiPart.close()
+
+        addAuthenticationHeader(accessToken, request)
+        response = request.method(HttpMethod.POST).body(multiPart).send()
+    else:
+        multiPart = MultiPartContentProvider()
+        multiPart.addFilePart('file', 'content.zip', PathContentProvider(Paths.get(tempZipFilePath)), None)
+        multiPart.close()
+        addAuthenticationHeader(accessToken, request)
+        response = request.method(HttpMethod.POST).content(multiPart).send()
+
     checkResponseStatus(response)
     contentStr = response.getContentAsString()
 
     return JSONObject(contentStr)
-
 
 def addMetadata(params, request, accessToken):
     data = {
@@ -138,15 +207,18 @@ def addMetadata(params, request, accessToken):
             'license': 'cc-zero',
             'upload_type': 'dataset',
             'description': 'Add some description.',
-            'creators': [{'name': userId}]
+            'creators': [{'name': params['userId']}]
         }
     }
 
     addAuthenticationHeader(accessToken, request)
     jsonString = json.dumps(data)
-    content = StringRequestContent('application/json', jsonString)
-    response = request.method(HttpMethod.PUT).body(content).send()
-    # response = request.method(HttpMethod.PUT).body(StringContentProvider(jsonString), 'application/json').send()
+    if Jetty.VERSION.startswith('12.'):
+        content = StringRequestContent('application/json', jsonString)
+        response = request.method(HttpMethod.PUT).body(content).send()
+    else:
+        content = StringContentProvider(jsonString)
+        response = request.method(HttpMethod.PUT).content(content, 'application/json').send()
 
     checkResponseStatus(response)
 
@@ -167,20 +239,24 @@ def retrieve(request, accessToken):
 
 def createDepositionResource(request, accessToken):
     addAuthenticationHeader(accessToken, request)
-    content = StringRequestContent('application/json', '{}')
-    # response = request.method(HttpMethod.POST).body(StringContentProvider('{}'), 'application/json').send()
-    response = request.method(HttpMethod.POST).body(content).send()
+
+    if Jetty.VERSION.startswith('12.'):
+        content = StringRequestContent('application/json', '{}')
+        response = request.method(HttpMethod.POST).body(content).send()
+    else:
+        content = StringContentProvider('{}')
+        response = request.method(HttpMethod.POST).content(content, 'application/json').send()
     checkResponseStatus(response)
 
     contentStr = response.getContentAsString()
     return JSONObject(contentStr)
-    # return JSONObject(json.dumps({
-    #     "links": []
-    # }))
 
 
 def addAuthenticationHeader(accessToken, request):
-    request.getHeaders().add('Authorization', 'Bearer ' + accessToken)
+    if Jetty.VERSION.startswith('12.'):
+        request.getHeaders().add('Authorization', 'Bearer ' + accessToken)
+    else:
+        request.header('Authorization', 'Bearer ' + accessToken)
 
 
 def isNonEmptyString(s):
@@ -204,8 +280,12 @@ def createHttpClient(httpProxyURL, httpProxyPort):
         raise ValueError('Unsupported Jetty version: %s. Only [9.x, 10.x, 12.x] are handled for HttpClient creation.' % jettyVersion)
 
     if isNonEmptyString(httpProxyURL) and isNonEmptyString(httpProxyPort):
-        proxyConfig = httpClient.getProxyConfiguration()
-        proxyConfig.getProxies().add(HttpProxy(httpProxyURL, int(httpProxyPort)))
+        if jettyVersion.startswith('12.'):
+            proxyConfig = httpClient.getProxyConfiguration()
+            proxyConfig.addProxy(HttpProxy(httpProxyURL, int(httpProxyPort)))
+        else:
+            proxyConfig = httpClient.getProxyConfiguration()
+            proxyConfig.getProxies().add(HttpProxy(httpProxyURL, int(httpProxyPort)))
     return httpClient
 
 

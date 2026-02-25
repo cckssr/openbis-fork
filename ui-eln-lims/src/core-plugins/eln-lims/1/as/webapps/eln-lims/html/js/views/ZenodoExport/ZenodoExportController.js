@@ -109,22 +109,15 @@ function ZenodoExportController(parentController) {
             }
 
             this.getUserInformation((function(userInformation) {
-                mainController.serverFacade.exportZenodo(toExportModel, userInformation, title, this.exportModel.accessToken,
-                        function(operationExecutionPermId) {
-                            _this.waitForOpExecutionResponse(operationExecutionPermId, function(error, result) {
-                                Util.unblockUI();
-                                if (result && result.data && result.data.url) {
-                                    var win = window.open(result.data.url, '_blank');
-                                    win.focus();
-                                    mainController.refreshView();
-                                } else {
-                                    if (error) {
-                                        Util.showError(error);
-                                    } else {
-                                        Util.showError('Returned result format is not correct.');
-                                    }
-                                }
-                            });
+                mainController.serverFacade.exportZenodoAs(toExportModel, userInformation, title, this.exportModel.accessToken,
+                        function(serviceResult) {
+                            Util.unblockUI();
+                            var zenodoResultUrl = serviceResult.result.url;
+                            if(zenodoResultUrl) {
+                                var win = window.open(zenodoResultUrl, '_blank');
+                                win.focus();
+                                mainController.refreshView();
+                            }
                         });
             }).bind(this));
         }
