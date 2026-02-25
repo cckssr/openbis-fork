@@ -74,6 +74,11 @@ function ResearchCollectionExportView(researchCollectionExportController, resear
             $("#CHILDREN-EXPORT-"+_this._viewId)[0].disabled = !event.target.checked;
             if (!event.target.checked) {
                 $("#CHILDREN-EXPORT-"+_this._viewId)[0].checked = false;
+                var enabled = $("#PARENTS-EXPORT-"+_this._viewId)[0].checked || $("#CHILDREN-EXPORT-"+_this._viewId)[0].checked;
+                if(!enabled) {
+                    $("#OTHER-SPACES-EXPORT-"+_this._viewId)[0].disabled = true;
+                    $("#OTHER-SPACES-EXPORT-"+_this._viewId)[0].checked = false;
+                }
             }
         }
         $levelsBelow.change(levelsBelowChange);
