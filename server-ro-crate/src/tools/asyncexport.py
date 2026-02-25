@@ -62,7 +62,7 @@ if __name__ == '__main__':
         if max_calls and count > max_calls:
             raise Exception("Too many attempts")
 
-        url = f'{base_url}/status'
+        url = f'{base_url}/status/{job_id}'
         headers = {
             'Accept': 'application/json',
             'Content-Type': 'application/json',

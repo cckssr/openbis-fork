@@ -8,6 +8,9 @@ import java.util.List;
 
 public class AsyncResult
 {
+
+    String jobId;
+
     String status;
 
     List<String> errors;
@@ -43,10 +46,12 @@ public class AsyncResult
     {
     }
 
-    public AsyncResult(String status, List<String> errors, @Nullable IResultPayload result)
+    public AsyncResult(String status, List<String> errors, @Nullable IResultPayload result,
+            String jobId)
     {
         this.status = status;
         this.errors = errors;
+        this.jobId = jobId;
     }
 
     public ValidationResult getValidationResult()
@@ -79,5 +84,15 @@ public class AsyncResult
     public String getDownloadUrl()
     {
         return downloadUrl;
+    }
+
+    public String getJobId()
+    {
+        return jobId;
+    }
+
+    public void setJobId(String jobId)
+    {
+        this.jobId = jobId;
     }
 }

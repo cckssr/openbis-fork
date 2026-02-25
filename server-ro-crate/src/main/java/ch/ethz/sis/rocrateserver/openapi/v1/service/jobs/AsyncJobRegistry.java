@@ -2,6 +2,7 @@ package ch.ethz.sis.rocrateserver.openapi.v1.service.jobs;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -106,25 +107,39 @@ public class AsyncJobRegistry
 
         if (!future.isDone())
         {
-            return new AsyncStatus(Status.RUNNING, asyncJob);
+            return new AsyncStatus(Status.RUNNING, jobId, username, asyncJob);
         }
         if (asyncJob.getException() != null)
         {
-            return new AsyncStatus(Status.FAILED, asyncJob);
+            return new AsyncStatus(Status.FAILED, jobId, username, asyncJob);
         }
 
-        return new AsyncStatus(Status.COMPLETED, asyncJob);
+        return new AsyncStatus(Status.COMPLETED, jobId, username, asyncJob);
+    }
+
+    public List<AsyncStatus> pollAll(String username)
+    {
+        return jobs.entrySet().stream().filter(x -> x.getKey().userName.equals(username))
+                .map(x -> this.poll(username, x.getKey().jobId))
+                .toList();
+
     }
 
     public static class AsyncStatus
     {
         Status status;
 
+        String jobId;
+
+        String username;
+
         IAsyncJob job;
 
-        public AsyncStatus(Status status, IAsyncJob job)
+        public AsyncStatus(Status status, String jobId, String username, IAsyncJob job)
         {
             this.status = status;
+            this.jobId = jobId;
+            this.username = username;
             this.job = job;
         }
 
@@ -146,6 +161,13 @@ public class AsyncJobRegistry
 
             return job;
         }
+
+        public String getJobId()
+        {
+            return jobId;
+        }
     }
+
+
 
 }
