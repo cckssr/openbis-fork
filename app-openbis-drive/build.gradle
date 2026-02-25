@@ -274,6 +274,7 @@ tasks.register('openBISDevelopmentEnvironmentDriveServerStart', JavaExec) {
 // 'openBISDevelopmentEnvironmentDriveServerStart' instead
 tasks.register('openBISDevelopmentEnvironmentDriveGUIStart', JavaExec) {
     environment('OPENBIS_DRIVE_DEV_MODE','true')
+    //environment('OPENBIS_DRIVE_LOCAL_DEVELOPMENT_AS_AND_AFS_URL','true') //see README.md
     mainClass = 'ch.openbis.drive.gui.Launcher'
     classpath = sourceSets.main.runtimeClasspath
 }
