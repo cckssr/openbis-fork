@@ -198,12 +198,20 @@ public final class DBMigrationEngine
         final Integer ftsDocumentVersionFromFile = readVersionFromFileAsInteger(file);
         operationLog.info("Deciding application of full text search scripts, looking for current at:" + file.getAbsolutePath());
         operationLog.info("Deciding application of full text search scripts, current: " + ftsDocumentVersionFromFile + " available: " + fullTextSearchDocumentVersion);
-        if (fullTextSearchDocumentVersion != null && (ftsDocumentVersionFromFile == null
-                || Integer.parseInt(fullTextSearchDocumentVersion) > ftsDocumentVersionFromFile))
-        {
+
+
+        boolean createFromScratch =
+                shouldCreateFromScratch || ftsDocumentVersionFromFile == null;
+
+        boolean hasNewerVersion =
+                fullTextSearchDocumentVersion != null
+                        && (createFromScratch
+                        || Integer.parseInt(fullTextSearchDocumentVersion) > ftsDocumentVersionFromFile);
+
+        if (hasNewerVersion) {
             operationLog.info("Applying full text search scripts...");
             adminDAO.applyFullTextSearchScripts(scriptProvider, fullTextSearchDocumentVersion,
-                    shouldCreateFromScratch || ftsDocumentVersionFromFile == null);
+                    true);
             operationLog.info("Full text search scripts applied.");
             operationLog.info(String.format("Writing new version to file %s.", file.getAbsolutePath()));
             FileUtilities.writeToFile(file, fullTextSearchDocumentVersion);

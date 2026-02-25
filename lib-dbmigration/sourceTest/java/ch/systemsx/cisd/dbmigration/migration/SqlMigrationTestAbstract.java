@@ -80,7 +80,7 @@ public abstract class SqlMigrationTestAbstract
 
     public void testMigration(final String newestVersionString, final String newestFullTextSearchVersionString, final String newestPatchesVersionString)
     {
-        new File(FULL_TEXT_SEARCH_DOCUMENT_VERSION_FILE_PATH).delete();
+        //new File(FULL_TEXT_SEARCH_DOCUMENT_VERSION_FILE_PATH).delete();
 
         SqlMigrationVersion newestVersion = new SqlMigrationVersion(newestVersionString);
         SqlMigrationVersion firstVersion =
