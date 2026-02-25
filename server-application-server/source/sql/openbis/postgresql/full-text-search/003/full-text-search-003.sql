@@ -80,7 +80,7 @@ BEGIN
             SELECT code INTO STRICT container_code FROM samples_all WHERE id = NEW.samp_id_part_of;
             sample_code := container_code || ':' || NEW.code;
             NEW.sample_identifier := identifier || sample_code;
-            NEW.tsvector_document := setweight((NEW.escape_tsvector_string(NEW.perm_id) || ':1')::tsvector, 'A') ||
+            NEW.tsvector_document := setweight((escape_tsvector_string(NEW.perm_id) || ':1')::tsvector, 'A') ||
                                      setweight((escape_tsvector_string(NEW.sample_identifier) || ':1')::tsvector,
                                          'A') ||
                                      setweight((escape_tsvector_string(sample_code) || ':1')::tsvector, 'B') ||
