@@ -282,7 +282,7 @@ public class RoCrateService
 
     private AsyncResult mapAsyncResult(AsyncJobRegistry.AsyncStatus status)
     {
-        String statusVal = status.toString();
+        String statusVal = status.getStatus().toString();
         List<String> errors = status.getJob().getException() != null ?
                 List.of(status.getJob().getException().toString()) :
                 List.of();
