@@ -20,16 +20,10 @@ from java.lang import Throwable
 
 import ch.ethz.sis.shared.log.classic.core.LogCategory as LogCategory
 import ch.ethz.sis.shared.log.classic.impl.LogFactory as LogFactory
-from java.lang import Throwable
-
-
-from java.net import URL, URLEncoder
-from javax.net.ssl import HttpsURLConnection
-from java.io import BufferedReader, InputStreamReader, OutputStreamWriter
 
 
 from generalExports import exportAll
-from roCrateExports import exportRoCrate, checkStatus
+from roCrateExports import exportRoCrate, checkStatues, downloadRoCrate, getRoCrateUrl
 
 
 
@@ -44,8 +38,12 @@ def process(executionContext, params):
         return exportAll(executionContext, params)
     elif method == "exportRoCrate":
         return exportRoCrate(executionContext, params)
-    elif method == "statusRoCrateJob":
-        return checkStatus(executionContext, params)
+    elif method == "statusRoCrateJobs":
+        return checkStatues(executionContext, params)
+    elif method == "downloadRoCrate":
+        return downloadRoCrate(executionContext, params)
+    elif method == "getRoCrateUrl":
+        return getRoCrateUrl(executionContext, params)
     else:
         OPERATION_LOG.error("No such method '%s'" % method)
         return {

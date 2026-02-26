@@ -8,7 +8,9 @@ from java.lang import Throwable
 
 from java.net import URL, URLEncoder
 from javax.net.ssl import HttpsURLConnection
+from java.io import BufferedInputStream, FileOutputStream, OutputStreamWriter
 from java.io import BufferedReader, InputStreamReader, OutputStreamWriter
+from java.net import SocketTimeoutException
 
 import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider as CommonServiceProvider
 
@@ -43,7 +45,6 @@ def exportRoCrate(context, params):
             })
 
         identifiers = json.dumps(identifiers)
-        OPERATION_LOG.error("||> EXPORT_RO_CRATE_identifiers: %s" % identifiers)
 
         headers = {
             'Accept': 'application/json',
@@ -62,9 +63,6 @@ def exportRoCrate(context, params):
             'openbis.with-objects-and-dataSets-other-spaces': str(withObjectsAndDataSetsOtherSpaces),
             'openbis.input-body-format' : "JSON"
         }
-
-        OPERATION_LOG.error("||> EXPORT_RO_CRATE_IDENTIFIERS: %s" % identifiers)
-        OPERATION_LOG.error("||> EXPORT_RO_CRATE_HEADERS: %s" % headers)
 
         error = None
         code, output = https_post(ro_crate_export, identifiers, headers)
@@ -87,17 +85,15 @@ def exportRoCrate(context, params):
             "error": e
         }
 
-def checkStatus(context, params):
+def checkStatues(context, params):
     try:
         sessionToken = context.getSessionToken()
-        job_id = params.get("jobId")
         ro_crate_url = CommonServiceProvider.tryToGetProperty(RO_CRATE_URL_PROPERTY_KEY)
         status_url = ro_crate_url + "/status"
         headers = {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
-            'api-key': sessionToken,
-            'jobId': job_id
+            'api-key': sessionToken
         }
 
         code, output = https_get(status_url, headers)
@@ -121,6 +117,78 @@ def checkStatus(context, params):
             "result": None,
             "error": e
         }
+
+def getRoCrateUrl(context, params):
+    ro_crate_url = CommonServiceProvider.tryToGetProperty(RO_CRATE_URL_PROPERTY_KEY)
+    return ro_crate_url
+
+def downloadRoCrate(context, params):
+    sessionWorkspaceProvider = CommonServiceProvider.getSessionWorkspaceProvider()
+    sessionToken = context.getSessionToken()
+
+
+    ro_crate_url = CommonServiceProvider.tryToGetProperty(RO_CRATE_URL_PROPERTY_KEY)
+    download_url = ro_crate_url + "/download"
+    headers = {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'api-key': sessionToken,
+        'jobid': params.get("jobId")
+    }
+
+    conn = None
+    try:
+        url = URL(download_url)
+        conn = url.openConnection()
+        conn.setRequestMethod("GET")
+        conn.setDoOutput(True)
+        # conn.setConnectTimeout(connect_timeout)
+        # conn.setReadTimeout(read_timeout)
+
+        # --- Default headers ---
+        conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
+        conn.setRequestProperty("Accept", "*/*")  # accept any type (for file)
+
+        # --- Add custom headers ---
+        if headers:
+            for key, value in headers.items():
+                conn.setRequestProperty(key, value)
+
+        # --- Get HTTP response code ---
+        code = conn.getResponseCode()
+        print("Response Code:", code)
+
+        if code < 300:
+            print("Saving response to session workspace")
+            input_stream = BufferedInputStream(conn.getInputStream())
+            sessionWorkspaceProvider.write(sessionToken, 'ro_crate_result.zip', input_stream)
+
+            download_url = CommonServiceProvider.tryToGetProperty("download-url")
+            return {
+                "result": download_url + "/openbis/openbis/download?sessionID=" + sessionToken + "&filePath=ro_crate_result.zip",
+                "error": None
+            }
+        else:
+            return {
+                "result": None,
+                "error": "RO-CRATE server returned error: " +str(code) + ": " + conn.getResponseMessage()
+            }
+
+    except SocketTimeoutException as e:
+        print("Request timed out:", e)
+    except Exception as e:
+        print("Error during request:", e)
+        return {
+            "result": None,
+            "error": e
+        }
+    finally:
+
+        try:
+            if conn:
+                conn.disconnect()
+        except:
+            pass
 
 
 def https_post(url_str, data, headers=None):

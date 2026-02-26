@@ -175,6 +175,9 @@ function RoCrateExportView(exportController, exportModel) {
                label : '',
                property : 'deleteButton',
                render: function(data) {
+                   if(data.currentStatus !== "DELETED") {
+                    return null;
+                   }
                    var delBtn = FormUtil.getToolbarButton("MINUS");
                    var delFun = function(event) {
                      event.stopPropagation();
@@ -210,10 +213,43 @@ function RoCrateExportView(exportController, exportModel) {
             var rowClick = function(e) {
                 var job = _this.exportModel.jobs[e.data.id];
                 if(e.data.currentStatus === "COMPLETED") {
-                    var downloadUrl = job.downloadUrl;
-                    // TODO download result
-//                    window.open(result.result, "_blank");
-                    Util.showSuccess("TODO Downloading File");
+                // OPTION 1: Download via OpenBIS session workspace
+//                    mainController.serverFacade.downloadRoCrate(job.jobId, function(output) {
+//                        var result = output;
+//                        if(output.error) {
+//                            if(output.error.message) {
+//                                Util.showError(output.error.message);
+//                            } else {
+//                                Util.showError(output.error);
+//                            }
+//                        } else {
+//                            window.open(output.result, "_blank");
+//                            Util.showSuccess("Downloading File");
+//                        }
+//                    });
+                // OPTION 2: Download RO-CRATE
+                    mainController.serverFacade.getRoCrateUrl(function(url) {
+                        Util.showSuccess("Downloading File");
+                        fetch(url + "/download", {
+                            method: "GET",
+                            headers: {
+                                'api-key': mainController.serverFacade.getSession(),
+                                'jobid': job.jobId,
+                                'Export': 'application/zip'
+                              },
+                        }).then((transfer) => {
+                            return transfer.blob();
+                        }).then((bytes) => {
+                            let elm = document.createElement('a');
+                            elm.href = URL.createObjectURL(bytes);
+                            elm.setAttribute('download', 'ro_crate_export.'+job.jobId+'.zip');
+                            elm.click()
+                        }).catch((error) => {
+                            Util.showError(error);
+                        });
+
+                    });
+
                 } else if(e.data.currentStatus === "FAILED") {
                     Util.showError(job.errors);
                 }

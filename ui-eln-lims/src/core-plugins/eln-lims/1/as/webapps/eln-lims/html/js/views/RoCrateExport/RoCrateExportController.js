@@ -33,47 +33,7 @@ function RoCrateExportController(parentController) {
             if(jobsStr) {
                 var jobs = JSON.parse(jobsStr);
                 _this.exportModel.jobs = jobs;
-
-                var idsToCheck = [];
-                for (var id = 0; id < _this.exportModel.jobs.length; id++) {
-                    var job = _this.exportModel.jobs[id];
-                    if(job.status !== "COMPLETED" && job.status !== "FAILED") {
-                        idsToCheck.push(job.jobId);
-                    }
-                }
-
-                if(idsToCheck.length > 0) {
-                    var currentId = 0;
-                    var fun = function() {
-                        mainController.serverFacade.statusRoCrate(idsToCheck[currentId], function(output) {
-                            if(output.result) {
-                                var result = output.result;
-                                var job = null;
-                                for(var i = 0; i < _this.exportModel.jobs.length; i++) {
-                                    if(_this.exportModel.jobs[i].jobId === idsToCheck[currentId]) {
-                                        job = _this.exportModel.jobs[i];
-                                        break;
-                                    }
-                                }
-                                if(job) {
-                                    job.status = result.status
-                                    job.downloadUrl = result.downloadUrl;
-                                    job.errors = result.errors;
-                                }
-
-                            }
-                            currentId++;
-                            if(currentId < idsToCheck.length) {
-                                fun();
-                            } else {
-                                _this.updateJobs();
-                                _this.exportView.dataGrid.refresh();
-                            }
-                        })
-                    }
-                    fun();
-                }
-
+                _this.checkStatues();
             }
             _this.exportView.repaint(views);
         }).bind(this));
@@ -82,54 +42,34 @@ function RoCrateExportController(parentController) {
     };
 
     this.checkStatues = function() {
-        var idsToCheck = [];
-        for (var id = 0; id < _this.exportModel.jobs.length; id++) {
-            var job = _this.exportModel.jobs[id];
-            if(job.status !== "COMPLETED" && job.status !== "FAILED") {
-                idsToCheck.push(job.jobId);
-            }
-        }
-
-        if(idsToCheck.length > 0) {
-            Util.blockUI();
-            var currentId = 0;
-            var fun = function() {
-                mainController.serverFacade.statusRoCrate(idsToCheck[currentId], function(result) {
-                    if(result.error) {
-                        if(result.error.message) {
-                            Util.showError(result.error.message);
-                        } else {
-                            Util.showError(result.error);
-                        }
-                        _this.exportView.dataGrid.refresh();
-                    } else {
-                        result = result.result;
-                        var job = null;
-                        for(var i = 0; i < _this.exportModel.jobs.length; i++) {
-                            if(_this.exportModel.jobs[i].jobId === idsToCheck[currentId]) {
-                                job = _this.exportModel.jobs[i];
+        mainController.serverFacade.statusRoCrateJobs(function(output) {
+            if(output.error) {
+                if(output.error.message) {
+                    Util.showError(output.error.message);
+                } else {
+                    Util.showError(output.error);
+                }
+            } else {
+                var result = output.result;
+                if(result.jobs) {
+                    for(var i = 0; i < _this.exportModel.jobs.length; i++) {
+                        var found = false;
+                        for(var j = 0; j < result.jobs.length; j++) {
+                            if(_this.exportModel.jobs[i].jobId === result.jobs[j].jobId) {
+                                found = true;
+                                _this.exportModel.jobs[i].status = result.jobs[j].status;
                                 break;
                             }
                         }
-                        if(job) {
-                            job.status = result.status
-                            job.downloadUrl = result.downloadUrl;
-                            job.errors = result.errors;
-                        }
-                        currentId++;
-                        if(currentId < idsToCheck.length) {
-                            fun();
-                        } else {
-                            _this.updateJobs();
-                            _this.exportView.dataGrid.refresh();
-                            Util.unblockUI();
+                        if(!found) {
+                            _this.exportModel.jobs[i].status = "DELETED";
                         }
                     }
-                });
+                    _this.updateJobs();
+                    _this.exportView.dataGrid.refresh();
+                }
             }
-            fun();
-        }
-
+        });
     }
 
     this.updateJobs = function() {

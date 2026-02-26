@@ -512,11 +512,23 @@ function ServerFacade(openbisServer) {
              }, callbackFunction, "exports-api", null);
     };
 
-    this.statusRoCrate = function(jobId, callbackFunction) {
+    this.statusRoCrateJobs = function(callbackFunction) {
         this.customASService({
-                 "method" : "statusRoCrateJob",
+                 "method" : "statusRoCrateJobs",
+             }, callbackFunction, "exports-api", null);
+    };
+
+    this.downloadRoCrate = function(jobId, callbackFunction) {
+        this.customASService({
+                 "method" : "downloadRoCrate",
                  "jobId" : jobId,
              }, callbackFunction, "exports-api", null);
+    };
+
+    this.getRoCrateUrl = function(callbackFunction) {
+        this.customASService({
+                 "method" : "getRoCrateUrl"
+        }, callbackFunction, "exports-api", null);
     };
 
 	//
