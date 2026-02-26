@@ -525,6 +525,22 @@ After checking both contents and adapting the local one if necessary,
 delete the suffixed `.openbis-conflict` file to mark the resolution of the conflict:
 at that point, the background process will keep the local version as the valid one.
 
+## OpenBIS servers with TLS exceptions
+
+If for any reason a connection to an openBIS server should be supported, which is covered by a self-signed (not public) TLS certificate
+or by a certificate which is not standard-compliant in other ways (for example, as to the hostname):
+then, an `openbis-drive.properties` file can be placed in the user-home installation directory with the following key-value:
+
+`ch.ethz.sis.afs.client.client.noTLSCertCheck=true`
+
+By user-home installation directory, the following is meant:
+
+for Linux: `$HOME/.local/state/openbis-drive/`
+
+for Windows: `%USERPROFILE%\AppData\\Local\openbis-drive\`
+
+for MAC-OS: `$HOME/Library/"Application Support"/openbis-drive/`
+
 ## Appendix:
 #### Installation directory
 - for Linux: `/opt/openbis-drive`
