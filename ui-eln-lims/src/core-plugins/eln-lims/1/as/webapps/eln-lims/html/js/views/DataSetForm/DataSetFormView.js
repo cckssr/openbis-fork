@@ -604,15 +604,14 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 				altRightToolbarModel.push({ component : $paginationInfoLabel.clone(true), tooltip: null });
                 altRightToolbarModel.push({ component : $nextBtn.clone(true), tooltip: null });
             }
-            if(shouldUseTabs) {
-					this._initTabHandling($header, $container, $form, toolbarModel, rightToolbarModel, altRightToolbarModel.length > 0 ? altRightToolbarModel : rightToolbarModel);
-			} else {
-            	$header.append(FormUtil.getToolbar(rightToolbarModel).css("float", "right"));
-			}
+
         }
 
-
-
+        if(shouldUseTabs) {
+           this._initTabHandling($header, $container, $form, toolbarModel, rightToolbarModel, altRightToolbarModel.length > 0 ? altRightToolbarModel : rightToolbarModel);
+        } else {
+           $header.append(FormUtil.getToolbar(rightToolbarModel).css("float", "right"));
+        }
 	}
 
 	this._createIdentificationInfoSection = function(hideShowOptionsModel, views) {
