@@ -55,6 +55,7 @@ function ZenodoExportController(parentController) {
         var _viewId = this.exportView._viewId;
         var selectedNodes = $(this.exportModel.tree).fancytree('getTree').getSelectedNodes();
         var title = this.exportView.$titleTextBox.val().trim();
+        var fileName = this.exportView.$fileNameBox.val().trim();
 
         var groupRows = this.exportModel.tableModel.getValues();
         var nameColumn = this.exportModel.tableModel.columns[0];
@@ -109,7 +110,7 @@ function ZenodoExportController(parentController) {
             }
 
             this.getUserInformation((function(userInformation) {
-                mainController.serverFacade.exportZenodoAs(toExportModel, userInformation, title, this.exportModel.accessToken,
+                mainController.serverFacade.exportZenodoAs(toExportModel, userInformation, title, fileName, this.exportModel.accessToken,
                         function(serviceResult) {
                             Util.unblockUI();
                             var zenodoResultUrl = serviceResult.result.url;

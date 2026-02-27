@@ -592,7 +592,7 @@ function ServerFacade(openbisServer) {
 			});
 	};
 
-	this.exportZenodoAs = function(entities, userInformation, title, accessToken, callbackFunction) {
+	this.exportZenodoAs = function(entities, userInformation, title, fileName, accessToken, callbackFunction) {
 	    this.customASService({
 	        "method": "exportZenodo",
             "entities": entities,
@@ -600,6 +600,7 @@ function ServerFacade(openbisServer) {
             "originUrl": window.location.origin,
             "sessionToken": this.openbisServer.getSession(),
             "submissionTitle": title,
+            "fileName": fileName,
             "accessToken": accessToken,
             "userFirstName": userInformation["firstName"],
             "userLastName": userInformation["lastName"],
@@ -607,50 +608,6 @@ function ServerFacade(openbisServer) {
             "userId": userInformation["id"],
             }, callbackFunction, "zenodo-exports-api", null, true);
     };
-
-    this.exportZenodo = function(entities, userInformation, title, accessToken, callbackFunction) {
-        this.asyncExportZenodo({
-            "method": "exportAll",
-            "entities": entities,
-            "userInformation": userInformation,
-            "originUrl": window.location.origin,
-            "sessionToken": this.openbisServer.getSession(),
-			"submissionTitle": title,
-			"accessToken": accessToken
-        }, callbackFunction, "zenodo-exports-api");
-    };
-
-	this.asyncExportZenodo = function(parameters, callbackFunction, serviceId) {
-		require(["as/dto/service/execute/ExecuteAggregationServiceOperation",
-				"as/dto/operation/AsynchronousOperationExecutionOptions", "as/dto/service/id/DssServicePermId",
-				"as/dto/datastore/id/DataStorePermId", "as/dto/service/execute/AggregationServiceExecutionOptions"],
-			function(ExecuteAggregationServiceOperation, AsynchronousOperationExecutionOptions, DssServicePermId, DataStorePermId,
-					 AggregationServiceExecutionOptions) {
-				var dataStoreCode = profile.getDefaultDataStoreCode();
-				var dataStoreId = new DataStorePermId(dataStoreCode);
-				var dssServicePermId = new DssServicePermId(serviceId, dataStoreId);
-				var options = new AggregationServiceExecutionOptions();
-
-				options.withParameter("sessionToken", parameters["sessionToken"]);
-				options.withParameter("entities", parameters["entities"]);
-				options.withParameter("method", parameters["method"]);
-				options.withParameter("originUrl", parameters["originUrl"]);
-				options.withParameter("submissionType", parameters["submissionType"]);
-				options.withParameter("submissionUrl", parameters["submissionUrl"]);
-				options.withParameter("entities", parameters["entities"]);
-				options.withParameter("submissionTitle", parameters["submissionTitle"]);
-				options.withParameter("accessToken", parameters["accessToken"]);
-				options.withParameter("userId", parameters["userInformation"]["id"]);
-				options.withParameter("userEmail", parameters["userInformation"]["email"]);
-				options.withParameter("userFirstName", parameters["userInformation"]["firstName"]);
-				options.withParameter("userLastName", parameters["userInformation"]["lastName"]);
-
-				var operation = new ExecuteAggregationServiceOperation(dssServicePermId, options);
-				mainController.openbisV3.executeOperations([operation], new AsynchronousOperationExecutionOptions()).done(function(results) {
-					callbackFunction(results.executionId.permId);
-				});
-			});
-	};
 
 	//
 	// Gets submission types

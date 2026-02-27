@@ -96,9 +96,9 @@ def sendToZenodo(context, params, tempZipFilePath, entities):
         selfUrl = depositionLinks.get('self')
         OPERATION_LOG.info('Submitting file to: ' + str(depositUrl))
         if Jetty.VERSION.startswith('12.'):
-            submitFileJettyLess(depositUrl, accessToken, tempZipFilePath, httpProxyURL, httpProxyPort)
+            submitFileJettyLess(depositUrl, accessToken, tempZipFilePath, params.get('fileName'), httpProxyURL, httpProxyPort)
         else:
-            submitFile(httpClient, httpClient.newRequest(depositUrl), accessToken, tempZipFilePath)
+            submitFile(httpClient, httpClient.newRequest(depositUrl), accessToken, tempZipFilePath, params.get('fileName'),)
         OPERATION_LOG.info('Submitting metadata to: ' + str(selfUrl))
         addMetadata(params, httpClient.newRequest(selfUrl), accessToken)
 
@@ -121,7 +121,7 @@ def sendToZenodo(context, params, tempZipFilePath, entities):
 
 
 
-def upload_file_with_proxy(url, file_path, accessToken, proxy_host=None, proxy_port=None):
+def upload_file_with_proxy(url, file_path, accessToken, fileName, proxy_host=None, proxy_port=None):
     '''
         Pure Java implementation of multi-part upload of data to zenodo.org
     '''
@@ -143,8 +143,11 @@ def upload_file_with_proxy(url, file_path, accessToken, proxy_host=None, proxy_p
             .proxy(ProxySelector.of(InetSocketAddress(proxy_host, int(proxy_port)))) \
             .build()
 
+    if fileName == "":
+        fileName = "content"
+
     before = ("--" + boundary + "\r\n" +
-              "Content-Disposition: form-data; name=\"file\"; filename=\"" + str(path.getFileName()) + "\"\r\n" +
+              "Content-Disposition: form-data; name=\"file\"; filename=\"" + str(fileName) + ".zip\"\r\n" +
               "Content-Type: application/octet-stream\r\n\r\n").encode('utf-8')
     after = ("\r\n--" + boundary + "--\r\n").encode('utf-8')
 
@@ -170,11 +173,13 @@ def upload_file_with_proxy(url, file_path, accessToken, proxy_host=None, proxy_p
 
     return response.body()
 
-def submitFileJettyLess(url, accessToken, tempZipFilePath, httpProxyURL=None, proxyPort=None):
-    response = upload_file_with_proxy(url, tempZipFilePath, accessToken, httpProxyURL, proxyPort)
+def submitFileJettyLess(url, accessToken, tempZipFilePath, fileName, httpProxyURL=None, proxyPort=None):
+    response = upload_file_with_proxy(url, tempZipFilePath, accessToken, fileName, httpProxyURL, proxyPort)
     return JSONObject(str(response))
 
-def submitFile(httpClient, request, accessToken, tempZipFilePath):
+def submitFile(httpClient, request, accessToken, tempZipFilePath, fileName):
+    if fileName == "":
+        fileName = "content"
     if Jetty.VERSION.startswith('12.'):
         '''
         Although this looks proper, upload to zenodo.org fails with 400 Bad Request error for jetty 12+
@@ -183,14 +188,14 @@ def submitFile(httpClient, request, accessToken, tempZipFilePath):
         sized = ByteBufferPool.Sized(httpClient.getByteBufferPool())
         path = Path.of(tempZipFilePath)
         multiPart = MultiPartRequestContent()
-        multiPart.addPart(MultiPart.PathPart(sized, "file", path.getFileName().toString(), HttpFields.EMPTY, path))
+        multiPart.addPart(MultiPart.PathPart(sized, "file", str(fileName) + '.zip', HttpFields.EMPTY, path))
         multiPart.close()
 
         addAuthenticationHeader(accessToken, request)
         response = request.method(HttpMethod.POST).body(multiPart).send()
     else:
         multiPart = MultiPartContentProvider()
-        multiPart.addFilePart('file', 'content.zip', PathContentProvider(Paths.get(tempZipFilePath)), None)
+        multiPart.addFilePart('file', str(fileName) + '.zip', PathContentProvider(Paths.get(tempZipFilePath)), None)
         multiPart.close()
         addAuthenticationHeader(accessToken, request)
         response = request.method(HttpMethod.POST).content(multiPart).send()

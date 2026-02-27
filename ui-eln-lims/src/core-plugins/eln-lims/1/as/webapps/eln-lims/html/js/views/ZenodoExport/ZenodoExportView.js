@@ -143,6 +143,7 @@ function ZenodoExportView(exportController, exportModel) {
         exportModel.tableModel = ExportUtil.getTableModel();
 
         this.paintTitleTextBox($container);
+        this.paintFileNameTextBox($container);
         if (exportModel.tableModel.getValues().length > 0) {
             ExportUtil.paintGroupCheckboxes($container, "zenodo-groups");
         }
@@ -162,6 +163,13 @@ function ZenodoExportView(exportController, exportModel) {
         var titleTextBoxFormGroup = FormUtil.getFieldForComponentWithLabel(this.$titleTextBox, 'Submission Title', null, true);
         titleTextBoxFormGroup.css('width', '50%');
         $container.append(titleTextBoxFormGroup);
+    };
+
+    this.paintFileNameTextBox = function ($container) {
+        this.$fileNameBox = FormUtil.getTextInputField('zenodo-submission-file-name', 'Submission file name', false);
+        var fileNameBoxFormGroup = FormUtil.getFieldForComponentWithLabel(this.$fileNameBox, 'Submission file name', null, true);
+        fileNameBoxFormGroup.css('width', '50%');
+        $container.append(fileNameBoxFormGroup);
     };
 
 
