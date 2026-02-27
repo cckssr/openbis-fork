@@ -43,9 +43,9 @@ class TextFormField extends React.PureComponent {
       case FormFieldDataType.ARRAY_REAL:
         return `[${array.join(', ')}]`
       case FormFieldDataType.ARRAY_STRING:
-        return `['${array.join("', '")}']`
+        return `["${array.join('", "')}"]`
       case FormFieldDataType.ARRAY_TIMESTAMP:
-        return `[${array.map(v => date.format(new Date(v), true)).join(', ')}]`
+        return `["${array.map(v => date.format(new Date(v), true)).join('", "')}"]`
       default:
         throw 'Unsupported array data type: ' + dataType
     }
