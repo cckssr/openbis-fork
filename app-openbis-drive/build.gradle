@@ -147,7 +147,10 @@ tasks.register('appOpenbisDriveFullJar', Jar) {
     }
     archiveBaseName = baseName + '-full'
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-    from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
+    from { configurations.runtimeClasspath.collect {
+            it.isDirectory() ? it : (it.name.endsWith('.jar') ? zipTree(it) : it)
+        }
+    }
     with jar
 }
 
