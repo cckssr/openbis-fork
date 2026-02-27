@@ -338,7 +338,10 @@ public class SchemaFacade implements ISchemaFacade
 
         Map<String, Type> restrictionToTypeId = new LinkedHashMap<>();
 
-        for (DataEntity entity : crate.getAllDataEntities())
+        List<AbstractEntity> abstractEntities = new ArrayList<>();
+        abstractEntities.addAll(crate.getAllContextualEntities());
+        abstractEntities.addAll(crate.getAllDataEntities());
+        for (AbstractEntity entity : abstractEntities)
         {
             String type = entity
                     .getProperty("@type").asText();
@@ -365,7 +368,7 @@ public class SchemaFacade implements ISchemaFacade
 
         }
 
-        for (DataEntity entity : crate.getAllDataEntities())
+        for (AbstractEntity entity : abstractEntities)
         {
             String type = entity
                     .getProperty("@type").asText();
@@ -419,14 +422,14 @@ public class SchemaFacade implements ISchemaFacade
 
         }
 
-        for (DataEntity entity : crate.getAllDataEntities())
+        for (AbstractEntity entity : abstractEntities)
         {
             String type = entity.getProperty("@type").asText();
             String id =
                     entity.getProperty("@id")
                             .asText();
 
-            if (type.equals(OWL_RESTRICTION))
+            if (type.equalsIgnoreCase(OWL_RESTRICTION))
             {
                 String onProperty = parseMultiValued(entity, ON_PROPERTY).get(0);
                 int minCardinality =
