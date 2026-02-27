@@ -518,13 +518,6 @@ function ServerFacade(openbisServer) {
              }, callbackFunction, "exports-api", null);
     };
 
-    this.downloadRoCrate = function(jobId, callbackFunction) {
-        this.customASService({
-                 "method" : "downloadRoCrate",
-                 "jobId" : jobId,
-             }, callbackFunction, "exports-api", null);
-    };
-
     this.getRoCrateUrl = function(callbackFunction) {
         this.customASService({
                  "method" : "getRoCrateUrl"

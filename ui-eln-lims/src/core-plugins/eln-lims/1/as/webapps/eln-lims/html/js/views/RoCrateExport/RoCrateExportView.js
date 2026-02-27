@@ -213,21 +213,6 @@ function RoCrateExportView(exportController, exportModel) {
             var rowClick = function(e) {
                 var job = _this.exportModel.jobs[e.data.id];
                 if(e.data.currentStatus === "COMPLETED") {
-                // OPTION 1: Download via OpenBIS session workspace
-//                    mainController.serverFacade.downloadRoCrate(job.jobId, function(output) {
-//                        var result = output;
-//                        if(output.error) {
-//                            if(output.error.message) {
-//                                Util.showError(output.error.message);
-//                            } else {
-//                                Util.showError(output.error);
-//                            }
-//                        } else {
-//                            window.open(output.result, "_blank");
-//                            Util.showSuccess("Downloading File");
-//                        }
-//                    });
-                // OPTION 2: Download RO-CRATE
                     mainController.serverFacade.getRoCrateUrl(function(url) {
                         Util.showSuccess("Downloading File");
                         fetch(url + "/download", {
@@ -242,7 +227,7 @@ function RoCrateExportView(exportController, exportModel) {
                         }).then((bytes) => {
                             let elm = document.createElement('a');
                             elm.href = URL.createObjectURL(bytes);
-                            elm.setAttribute('download', 'ro_crate_export.'+job.jobId+'.zip');
+                            elm.setAttribute('download', 'ro-crate-export.'+_this._timeConverter(job.time)+'.zip');
                             elm.click()
                         }).catch((error) => {
                             Util.showError(error);
@@ -307,5 +292,18 @@ function RoCrateExportView(exportController, exportModel) {
 
             $container.append($('<br>'));
         };
+
+    this._timeConverter = function(timestamp){
+         var a = new Date(timestamp);
+         var year = '' +a.getFullYear();
+         var month = ('' + (a.getMonth()+1)).padStart(2, "0");
+         var date = ('' + a.getDate()).padStart(2, "0");
+         var hour = ('' + a.getHours()).padStart(2, "0");
+         var min = ('' + a.getMinutes()).padStart(2, "0");
+         var sec = ('' + a.getSeconds()).padStart(2, "0");
+         var time = year + '-' + month + '-' + date + '-' + hour + '-' + min + '-' + sec ;
+         return time;
+       }
+
 
 }

@@ -23,7 +23,7 @@ import ch.ethz.sis.shared.log.classic.impl.LogFactory as LogFactory
 
 
 from generalExports import exportAll
-from roCrateExports import exportRoCrate, checkStatues, downloadRoCrate, getRoCrateUrl
+from roCrateExports import exportRoCrate, checkStatues, getRoCrateUrl
 
 
 
@@ -40,8 +40,6 @@ def process(executionContext, params):
         return exportRoCrate(executionContext, params)
     elif method == "statusRoCrateJobs":
         return checkStatues(executionContext, params)
-    elif method == "downloadRoCrate":
-        return downloadRoCrate(executionContext, params)
     elif method == "getRoCrateUrl":
         return getRoCrateUrl(executionContext, params)
     else:
