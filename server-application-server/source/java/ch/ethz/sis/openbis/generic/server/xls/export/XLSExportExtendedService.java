@@ -79,9 +79,9 @@ public class XLSExportExtendedService implements ICustomASServiceExecutor
             String permId = (String) nodeExportMap.get("permId");
             boolean withLevelsAbove = (boolean) nodeExportMap.get("withLevelsAbove");
             boolean withLevelsBelow = (boolean) nodeExportMap.get("withLevelsBelow");
-            boolean withObjectsAndDataSetsParents = (boolean) nodeExportMap.get("withObjectsAndDataSetsParents");
-            boolean withObjectsAndDataSetsChildren = (boolean) nodeExportMap.get("withObjectsAndDataSetsChildren");
-            boolean withObjectsAndDataSetsOtherSpaces = (boolean) nodeExportMap.get("withObjectsAndDataSetsOtherSpaces");
+            boolean withObjectsAndDataSetsParents = (boolean) nodeExportMap.getOrDefault("withObjectsAndDataSetsParents", false);
+            boolean withObjectsAndDataSetsChildren = (boolean) nodeExportMap.getOrDefault("withObjectsAndDataSetsChildren", false);
+            boolean withObjectsAndDataSetsOtherSpaces = (boolean) nodeExportMap.getOrDefault("withObjectsAndDataSetsOtherSpaces", false);
 
             ExportableKind rootKind = ExportableKind.valueOf(kind);
             ExportablePermId root = new ExportablePermId(rootKind, permId);

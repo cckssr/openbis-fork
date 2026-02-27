@@ -511,10 +511,10 @@ public class ExportExecutor implements IExportExecutor
     private List<Consumer<ZipArchiveOutputStream>> exportAfsData(final String sessionToken, final File exportWorkspaceDirectory, final EntitiesVo entitiesVo
             )
     {
-
-
         final AfsClientExportProxy afs = AfsClientExportProxy.getAfsClient(sessionToken);
-
+        if(!afs.isSessionValid()) {
+            throw new UserFailureException("Could not connect to AFS server!");
+        }
         long totalSize = 0;
 
         final Collection<Sample> samples = entitiesVo.getSamples();
