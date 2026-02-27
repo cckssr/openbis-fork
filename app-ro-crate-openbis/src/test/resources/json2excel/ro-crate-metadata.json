@@ -266,7 +266,7 @@
     },
     {
       "@id": "431dcce6-41ce-4246-99bd-3d2b30a18d21",
-      "@type": "owl:restriction",
+      "@type": "owl:Restriction",
       "owl:onProperty": {
         "@id": "openBIS:hasPUBLICATION_CREATOR.AFFILITION_IDENTIFIER_SCHEME"
     },
@@ -275,7 +275,7 @@
     },
     {
       "@id": "9e471192-4447-4bf9-9de9-9ccf9fe942ba",
-      "@type": "owl:restriction",
+      "@type": "owl:Restriction",
       "owl:onProperty": {
         "@id": "openBIS:hasPUBLICATION.TYPE"
       },
@@ -300,7 +300,7 @@
     },
     {
       "@id": "6018f76e-1ec0-405c-8fb8-0bae31c399ab",
-      "@type": "owl:restriction",
+      "@type": "owl:Restriction",
       "owl:onProperty": {
         "@id": "openBIS:hasPUBLICATION.OPENBIS_RELATED_IDENTIFIERS"
       },
@@ -347,7 +347,7 @@
     },
     {
       "@id": "d27f2c13-653c-48ba-935d-69b229668cfb",
-      "@type": "owl:restriction",
+      "@type": "owl:Restriction",
       "owl:onProperty": {
         "@id": "openBIS:hasPUBLICATION_CREATOR.FAMILY_NAME"
       },
@@ -357,7 +357,7 @@
     {
       "@id": "COLLECTION",
       "@type": "rdfs:Class",
-      "owl:restriction": [
+      "owl:Restriction": [
         {
           "@id": "2f9d92e7-2e90-47c0-949b-a50c2ab147e7"
         },
@@ -386,7 +386,7 @@
     },
     {
       "@id": "77a56e0c-ba8a-491f-97ad-3cc65b6ff63d",
-      "@type": "owl:restriction",
+      "@type": "owl:Restriction",
       "owl:onProperty": {
         "@id": "openBIS:hasNAME"
     },
@@ -395,7 +395,7 @@
     },
     {
       "@id": "e78bc0d6-0cda-4192-bf9c-2e8925311d59",
-      "@type": "owl:restriction",
+      "@type": "owl:Restriction",
       "owl:onProperty": {
         "@id": "openBIS:hasPUBLICATION.STATUS"
       },
@@ -465,7 +465,7 @@
     {
       "@id": "PUBLICATION_PUBLISHER",
       "@type": "rdfs:Class",
-      "owl:restriction": [
+      "owl:Restriction": [
         {
           "@id": "b0b6618c-f548-458f-bb0a-a6589614c250"
         },
@@ -488,7 +488,7 @@
     },
     {
       "@id": "a9f438ba-0048-40f8-8ba2-b83d153e85a7",
-      "@type": "owl:restriction",
+      "@type": "owl:Restriction",
       "owl:onProperty": {
         "@id": "openBIS:hasPUBLICATION_PUBLISHER.IDENTIFIER"
       },
@@ -509,7 +509,7 @@
     },
     {
       "@id": "14d56b04-2b08-4e0b-a5aa-6a00ecede709",
-      "@type": "owl:restriction",
+      "@type": "owl:Restriction",
       "owl:onProperty": {
         "@id": "openBIS:hasNAME"
       },
@@ -519,7 +519,7 @@
     {
       "@id": "PUBLICATION_CREATOR",
       "@type": "rdfs:Class",
-      "owl:restriction": [
+      "owl:Restriction": [
         {
           "@id": "52a8af1f-32c7-409e-b915-f037363e9536"
         },
@@ -577,7 +577,7 @@
     },
     {
       "@id": "2f9d92e7-2e90-47c0-949b-a50c2ab147e7",
-      "@type": "owl:restriction",
+      "@type": "owl:Restriction",
       "owl:onProperty": {
         "@id": "openBIS:hasDEFAULT_OBJECT_TYPE"
       },
@@ -601,7 +601,7 @@
     },
     {
       "@id": "6e9cc4a2-b791-4510-b9cf-58b78081bac7",
-      "@type": "owl:restriction",
+      "@type": "owl:Restriction",
       "owl:onProperty": {
         "@id": "openBIS:hasPUBLICATION_CREATOR.AFFILITION_IDENTIFIER"
       },
@@ -631,7 +631,7 @@
     },
     {
       "@id": "f34f64d6-df55-4b9e-bec7-a8b4c6dbb783",
-      "@type": "owl:restriction",
+      "@type": "owl:Restriction",
       "owl:onProperty": {
         "@id": "openBIS:hasXMLCOMMENTS"
     },
@@ -644,7 +644,7 @@
     },
     {
       "@id": "a04bbb06-65a5-4990-80b9-e357c424eb78",
-      "@type": "owl:restriction",
+      "@type": "owl:Restriction",
       "owl:onProperty": {
         "@id": "openBIS:hasNAME"
       },
@@ -677,7 +677,7 @@
     },
     {
       "@id": "8b107a0e-116b-4ee5-a761-c9c1f1f37131",
-      "@type": "owl:restriction",
+      "@type": "owl:Restriction",
       "owl:onProperty": {
         "@id": "openBIS:hasPUBLICATION.PUBLICATION_YEAR"
       },
@@ -710,7 +710,7 @@
     },
     {
       "@id": "9fd87f95-7840-42e8-8d4e-13581a58681c",
-      "@type": "owl:restriction",
+      "@type": "owl:Restriction",
       "owl:onProperty": {
         "@id": "openBIS:hasPUBLICATION_CREATOR.IDENTIFIER"
       },
@@ -817,7 +817,7 @@
     },
     {
       "@id": "52a78636-9a1a-46fa-8637-a7657d9a7d83",
-      "@type": "owl:restriction",
+      "@type": "owl:Restriction",
       "owl:onProperty": {
         "@id": "openBIS:hasPUBLICATION_PUBLISHER.IDENTIFIER_SCHEME_URI"
     },
@@ -840,7 +840,7 @@
     },
     {
       "@id": "4730dab1-ff0e-4680-b6c8-5a55eab1a63f",
-      "@type": "owl:restriction",
+      "@type": "owl:Restriction",
       "owl:onProperty": {
         "@id": "openBIS:hasDEFAULT_COLLECTION_VIEW"
     },
@@ -856,7 +856,7 @@
     },
     {
       "@id": "90b0a506-d4b5-4640-8df1-0ea3152952b7",
-      "@type": "owl:restriction",
+      "@type": "owl:Restriction",
       "owl:onProperty": {
         "@id": "openBIS:hasPUBLICATION_CREATOR.IDENTIFIER_SCHEME"
       },
@@ -875,7 +875,7 @@
     },
     {
       "@id": "52a8af1f-32c7-409e-b915-f037363e9536",
-      "@type": "owl:restriction",
+      "@type": "owl:Restriction",
       "owl:onProperty": {
         "@id": "openBIS:hasPUBLICATION_CREATOR.AFFILITION_IDENTIFIER_SCHEME_URI"
       },
@@ -884,7 +884,7 @@
     },
     {
       "@id": "ada2e928-acf4-4dfa-840d-18218d18ee91",
-      "@type": "owl:restriction",
+      "@type": "owl:Restriction",
       "owl:onProperty": {
         "@id": "openBIS:hasPUBLICATION.ORGANIZATION"
     },
@@ -893,7 +893,7 @@
     },
     {
       "@id": "b0b6618c-f548-458f-bb0a-a6589614c250",
-      "@type": "owl:restriction",
+      "@type": "owl:Restriction",
       "owl:onProperty": {
         "@id": "openBIS:hasPUBLICATION_PUBLISHER.IDENTIFIER_SCHEME"
       },
@@ -922,7 +922,7 @@
     },
     {
       "@id": "ebe20931-4fa6-4b7a-977b-36f2059a7e5e",
-      "@type": "owl:restriction",
+      "@type": "owl:Restriction",
       "owl:onProperty": {
         "@id": "openBIS:hasPUBLICATION_CREATOR.GIVEN_NAME"
     },
@@ -1034,7 +1034,7 @@
     },
     {
       "@id": "29c6f0d3-b6ab-426e-88e6-c2efe8b6c3a6",
-      "@type": "owl:restriction",
+      "@type": "owl:Restriction",
       "owl:onProperty": {
         "@id": "openBIS:hasPUBLICATION.PUBLISHER"
       },
@@ -1043,7 +1043,7 @@
     },
     {
       "@id": "76abbae2-dc17-4c2b-8e2f-5377a8a54e12",
-      "@type": "owl:restriction",
+      "@type": "owl:Restriction",
       "owl:onProperty": {
         "@id": "openBIS:hasNAME"
       },
@@ -1072,7 +1072,7 @@
     },
     {
       "@id": "6f446021-bb2f-40c7-a610-b174ba28019e",
-      "@type": "owl:restriction",
+      "@type": "owl:Restriction",
       "owl:onProperty": {
         "@id": "openBIS:hasPUBLICATION.CREATOR"
       },
@@ -1122,7 +1122,7 @@
     {
       "@id": "PUBLICATION",
       "@type": "rdfs:Class",
-      "owl:restriction": [
+      "owl:Restriction": [
         {
           "@id": "0ba94db4-fcbe-4d60-90b2-500890764b59"
         },
@@ -1215,7 +1215,7 @@
     },
     {
       "@id": "691a4e5a-7138-44b1-be58-ceabf988d8eb",
-      "@type": "owl:restriction",
+      "@type": "owl:Restriction",
       "owl:onProperty": {
         "@id": "openBIS:hasPUBLICATION.IDENTIFIER"
       },
@@ -1239,7 +1239,7 @@
     },
     {
       "@id": "0ba94db4-fcbe-4d60-90b2-500890764b59",
-      "@type": "owl:restriction",
+      "@type": "owl:Restriction",
       "owl:onProperty": {
         "@id": "openBIS:hasPUBLICATION.DESCRIPTION"
     },
@@ -1321,7 +1321,7 @@
     },
     {
       "@id": "6c034c79-2ac2-412c-8233-40462d5394a4",
-      "@type": "owl:restriction",
+      "@type": "owl:Restriction",
       "owl:onProperty": {
         "@id": "openBIS:hasPUBLICATION.URL"
     },

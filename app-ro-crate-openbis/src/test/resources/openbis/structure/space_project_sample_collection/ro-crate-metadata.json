@@ -230,7 +230,7 @@
     },
     {
       "@id": "6ab970e0-3d93-43f1-881b-da84416f0894",
-      "@type": "owl:restriction",
+      "@type": "owl:Restriction",
       "owl:onProperty": {
         "@id": "openBIS:hasDEFAULT_EXPERIMENT.EXPERIMENTAL_GOALS"
       },
@@ -243,7 +243,7 @@
     },
     {
       "@id": "c0ab48d1-cb48-4205-90ca-3800506a7259",
-      "@type": "owl:restriction",
+      "@type": "owl:Restriction",
       "owl:onProperty": {
         "@id": "openBIS:hasNAME"
       },
@@ -252,7 +252,7 @@
     },
     {
       "@id": "58e8b5f1-6271-43d6-a03c-492273b6b82d",
-      "@type": "owl:restriction",
+      "@type": "owl:Restriction",
       "owl:onProperty": {
         "@id": "openBIS:hasDEFAULT_EXPERIMENT.EXPERIMENTAL_RESULTS"
       },
@@ -273,7 +273,7 @@
     },
     {
       "@id": "25a23796-7209-41a8-88cd-cc5aa420e93e",
-      "@type": "owl:restriction",
+      "@type": "owl:Restriction",
       "owl:onProperty": {
         "@id": "openBIS:hasDEFAULT_COLLECTION_VIEW"
       },
@@ -286,7 +286,7 @@
     },
     {
       "@id": "f431ecf0-8520-4bd7-9e97-3c633a637f94",
-      "@type": "owl:restriction",
+      "@type": "owl:Restriction",
       "owl:onProperty": {
         "@id": "openBIS:hasSTART_DATE"
       },
@@ -307,7 +307,7 @@
     },
     {
       "@id": "ee169b8d-36ba-4389-bb91-ebbb19de3532",
-      "@type": "owl:restriction",
+      "@type": "owl:Restriction",
       "owl:onProperty": {
         "@id": "openBIS:hasREFERENCE"
       },
@@ -317,7 +317,7 @@
     {
       "@id": "DEFAULT_EXPERIMENT",
       "@type": "rdfs:Class",
-      "owl:restriction": [
+      "owl:Restriction": [
         {
           "@id": "9f19a93f-547f-4069-a35c-f9320a9f8315"
         },
@@ -394,7 +394,7 @@
     },
     {
       "@id": "5ee950fb-fe62-4b73-a3ad-fb79012fb0ba",
-      "@type": "owl:restriction",
+      "@type": "owl:Restriction",
       "owl:onProperty": {
         "@id": "openBIS:isFINISHED_FLAG"
       },
@@ -403,7 +403,7 @@
     },
     {
       "@id": "fffa4ec1-db81-4853-a01c-2aec00b27b84",
-      "@type": "owl:restriction",
+      "@type": "owl:Restriction",
       "owl:onProperty": {
         "@id": "openBIS:hasDEFAULT_EXPERIMENT.GRANT"
       },
@@ -412,7 +412,7 @@
     },
     {
       "@id": "4d03a636-e304-432d-a0ba-882c6f155a48",
-      "@type": "owl:restriction",
+      "@type": "owl:Restriction",
       "owl:onProperty": {
         "@id": "openBIS:hasPUBLICATION"
       },
@@ -436,7 +436,7 @@
     },
     {
       "@id": "1d9e83d9-29cf-4547-9c0f-35669c855c84",
-      "@type": "owl:restriction",
+      "@type": "owl:Restriction",
       "owl:onProperty": {
         "@id": "openBIS:isSHOW_IN_PROJECT_OVERVIEW"
       },
@@ -453,7 +453,7 @@
     },
     {
       "@id": "24c48c3e-8695-4123-b11f-2975265ad4e5",
-      "@type": "owl:restriction",
+      "@type": "owl:Restriction",
       "owl:onProperty": {
         "@id": "openBIS:hasXMLCOMMENTS"
       },
@@ -486,7 +486,7 @@
     },
     {
       "@id": "9f19a93f-547f-4069-a35c-f9320a9f8315",
-      "@type": "owl:restriction",
+      "@type": "owl:Restriction",
       "owl:onProperty": {
         "@id": "openBIS:isSHOW_IN_PROJECT_OVERVIEW"
       },
@@ -557,7 +557,7 @@
     {
       "@id": "ENTRY",
       "@type": "rdfs:Class",
-      "owl:restriction": [
+      "owl:Restriction": [
         {
           "@id": "1d9e83d9-29cf-4547-9c0f-35669c855c84"
         },
@@ -586,7 +586,7 @@
     },
     {
       "@id": "18af0377-31fa-4842-9c35-fe8478fb5097",
-      "@type": "owl:restriction",
+      "@type": "owl:Restriction",
       "owl:onProperty": {
         "@id": "openBIS:hasDEFAULT_OBJECT_TYPE"
       },
@@ -611,7 +611,7 @@
     },
     {
       "@id": "6dcb24a4-11dc-427b-a8ef-0d3562f430ed",
-      "@type": "owl:restriction",
+      "@type": "owl:Restriction",
       "owl:onProperty": {
         "@id": "openBIS:hasDOCUMENT"
       },
@@ -620,7 +620,7 @@
     },
     {
       "@id": "ae83a368-16c6-4383-9dd8-eefd1f7465b3",
-      "@type": "owl:restriction",
+      "@type": "owl:Restriction",
       "owl:onProperty": {
         "@id": "openBIS:hasEND_DATE"
     },
@@ -644,7 +644,7 @@
     },
     {
       "@id": "9a26feb8-d358-4ef6-bcb3-3ed8c7cacbd8",
-      "@type": "owl:restriction",
+      "@type": "owl:Restriction",
       "owl:onProperty": {
         "@id": "openBIS:hasNAME"
       },
@@ -680,7 +680,7 @@
     },
     {
       "@id": "9c71492f-69ae-42d9-8494-ef86d0eef19a",
-      "@type": "owl:restriction",
+      "@type": "owl:Restriction",
       "owl:onProperty": {
         "@id": "openBIS:hasDEFAULT_EXPERIMENT.EXPERIMENTAL_DESCRIPTION"
       },
@@ -705,7 +705,7 @@
     },
     {
       "@id": "9733ed82-5c2e-4d4f-80e8-151fa76b3766",
-      "@type": "owl:restriction",
+      "@type": "owl:Restriction",
       "owl:onProperty": {
         "@id": "openBIS:hasNOTES"
       },

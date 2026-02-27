@@ -47,7 +47,7 @@ public class SchemaFacade implements ISchemaFacade
 
     public static final String OWL_MAX_CARDINALITY = "owl:maxCardinality";
 
-    public static final String OWL_RESTRICTION = "owl:restriction";
+    public static final String OWL_RESTRICTION = "owl:Restriction";
 
     public static final String ON_PROPERTY = "owl:onProperty";
 

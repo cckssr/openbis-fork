@@ -100,7 +100,7 @@
     {
       "@id": "ENTRY",
       "@type": "rdfs:Class",
-      "owl:restriction": [
+      "owl:Restriction": [
         {
           "@id": "70128911-5326-4bcf-b8a8-e23ac3a9a5b9"
         },
@@ -157,7 +157,7 @@
     },
     {
       "@id": "70128911-5326-4bcf-b8a8-e23ac3a9a5b9",
-      "@type": "owl:restriction",
+      "@type": "owl:Restriction",
       "owl:onProperty": {
         "@id": "openBIS:isSHOW_IN_PROJECT_OVERVIEW"
     },
@@ -194,7 +194,7 @@
     },
     {
       "@id": "c744cf14-2f9c-44f7-8fa6-185bdda6a7ea",
-      "@type": "owl:restriction",
+      "@type": "owl:Restriction",
       "owl:onProperty": {
         "@id": "openBIS:hasDOCUMENT"
       },
@@ -215,7 +215,7 @@
     },
     {
       "@id": "dfcd6985-7ac4-4c1a-b39e-93ae725f9655",
-      "@type": "owl:restriction",
+      "@type": "owl:Restriction",
       "owl:onProperty": {
         "@id": "openBIS:hasNAME"
       },
