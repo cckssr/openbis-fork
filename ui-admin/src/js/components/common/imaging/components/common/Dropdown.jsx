@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { FormControl, MenuItem, Select, Grid2, InputLabel } from '@mui/material';
+import React, {useState, useEffect, useCallback, useMemo} from 'react';
+import { FormControl, MenuItem, Select, Grid2, InputLabel, Link, ListSubheader } from '@mui/material';
 import InfoOntology from '@src/js/components/common/imaging/components/viewer/InfoOntology.js';
 
 const Dropdown = ({
@@ -18,20 +18,64 @@ const Dropdown = ({
         if (initValue !== value) setValue(initValue);
     }, [initValue]);
 
+    const emitSyntheticChange = useCallback((nextValue, sourceEvent) => {
+        setValue(nextValue);
+        if (!onSelectChange) {
+            return;
+        }
+        onSelectChange({
+            target: {
+                name: label,
+                value: nextValue,
+            },
+            stopPropagation: sourceEvent?.stopPropagation ?? (() => {}),
+            preventDefault: sourceEvent?.preventDefault ?? (() => {}),
+        });
+    }, [label, onSelectChange]);
+
     const handleChange = useCallback((event) => {
         setValue(event.target.value);
         onSelectChange?.(event);
     }, [onSelectChange]);
 
+    const handleSelectAll = useCallback((event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        emitSyntheticChange([...values], event);
+    }, [emitSyntheticChange, values]);
+
+    const handleUnselectAll = useCallback((event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        emitSyntheticChange([], event);
+    }, [emitSyntheticChange]);
+
     // Memoize menu items to prevent unnecessary re-renders
     const menuItems = useMemo(() => {
         return mappingItemsCallback
             ? mappingItemsCallback(values, label)
-            : values.map((v, i) => (
-                <MenuItem key={`select-${label}-menuitem-${i}`} value={v}>
-                    {v}
-                </MenuItem>
-            ));
+            : [
+                ...(isMulti ? [
+                    <ListSubheader key='select-all-menuitem' disableSticky component='div' sx={{
+                        py: 0.5,
+                        lineHeight: 'inherit',
+                        borderBottom: (theme) => `1px solid ${theme.palette.divider}`,
+                    }}>
+                        <Link component='button' variant='body2' underline='hover' onClick={handleSelectAll}>
+                            Select all
+                        </Link>
+                        {' | '}
+                        <Link component='button' variant='body2' underline='hover' onClick={handleUnselectAll}>
+                            Unselect all
+                        </Link>
+                    </ListSubheader>
+                ] : []),
+                ...values.map((v, i) => (
+                    <MenuItem key={`select-${label}-menuitem-${i}`} value={v}>
+                        {v}
+                    </MenuItem>
+                ))
+            ];
     }, [values, label, mappingItemsCallback]);
 
     return (
