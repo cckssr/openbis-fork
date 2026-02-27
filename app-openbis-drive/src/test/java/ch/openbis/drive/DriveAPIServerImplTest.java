@@ -215,9 +215,9 @@ public class DriveAPIServerImplTest {
 
         for(int i = 0; i<100; i++) {
             notifications.add(new Notification( i % 2 == 0 ? Notification.Type.Conflict : Notification.Type.JobStopped,
-                    "/localdir" + i,
-                    "/remotedir" + i,
-                    "/remotefile" + i,
+                    "/001_localdir" + i,
+                    "/001_remotedir" + i,
+                    "/001_remotefile" + i,
                     "message" + i,
                     now + i));
         }
@@ -229,9 +229,9 @@ public class DriveAPIServerImplTest {
         List<Notification> notifications2 = new LinkedList<>();
         for(int i = 100; i<200; i++) {
             notifications2.add(new Notification( i % 2 == 0 ? Notification.Type.Conflict : Notification.Type.JobStopped,
-                    "/localdir" + i,
-                    "/remotedir" + i,
-                    "/remotefile" + i,
+                    "/001_localdir" + i,
+                    "/001_remotedir" + i,
+                    "/001_remotefile" + i,
                     "message" + i,
                     now + 2000 + i));
         }
@@ -252,9 +252,9 @@ public class DriveAPIServerImplTest {
 
         for(int i = 0; i<1000; i++) {
             notifications.add(new Notification( i % 2 == 0 ? Notification.Type.Conflict : Notification.Type.JobStopped,
-                    "/localdir" + i,
-                    "/remotedir" + i,
-                    "/remotefile" + i,
+                    "/002_localdir" + i,
+                    "/002_remotedir" + i,
+                    "/002_remotefile" + i,
                     "message" + i,
                     now + i));
         }
@@ -263,9 +263,9 @@ public class DriveAPIServerImplTest {
         List<Notification> notificationsToBeRemoved = new LinkedList<>();
         for(int i : List.of(5,34,765)) {
             notificationsToBeRemoved.add(new Notification( i % 2 == 0 ? Notification.Type.Conflict : Notification.Type.JobStopped,
-                    "/localdir" + i,
-                    "/remotedir" + i,
-                    "/remotefile" + i,
+                    "/002_localdir" + i,
+                    "/002_remotedir" + i,
+                    "/002_remotefile" + i,
                     "message" + i,
                     now + i));
         }

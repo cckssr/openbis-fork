@@ -37,7 +37,7 @@ public class NotificationManagerSqliteImplTest {
     public void testAddNotifications() {
         notificationManager.clearAllNotifications();
 
-        String localDir = "localDir";
+        String localDir = "001_localDir";
         long now = System.currentTimeMillis();
         List<Notification> notificationList = List.of(
                 new Notification(Notification.Type.Conflict, localDir, "localFile", "remoteFile", "MESSAGE__", now+1000),
@@ -64,7 +64,7 @@ public class NotificationManagerSqliteImplTest {
     public void testGetNotifications() {
         notificationManager.clearAllNotifications();
 
-        String localDir = "localDir";
+        String localDir = "002_localDir";
         long now = System.currentTimeMillis();
         List<Notification> notificationList = List.of(
                 new Notification(Notification.Type.Conflict, localDir, "localFile", "remoteFile", "MESSAGE__", now+1000),
@@ -94,8 +94,8 @@ public class NotificationManagerSqliteImplTest {
     public void testGetConflictNotifications() {
         notificationManager.clearAllNotifications();
 
-        String localDir = "localDir";
-        String otherLocalDir = "other-localDir";
+        String localDir = "003_localDir";
+        String otherLocalDir = "003_other-localDir";
         SyncJob syncJob = new SyncJob(SyncJob.Type.Bidirectional, "url1", "token1", "id1", "title", "remotedir1", localDir, false);
         long now = System.currentTimeMillis();
         List<Notification> notificationList = List.of(
@@ -128,7 +128,7 @@ public class NotificationManagerSqliteImplTest {
     public void testRemoveNotifications() {
         notificationManager.clearAllNotifications();
 
-        String localDir = "localDir";
+        String localDir = "004_localDir";
         long now = System.currentTimeMillis();
         List<Notification> notificationList = List.of(
                 new Notification(Notification.Type.Conflict, localDir, "localFile", "remoteFile", "MESSAGE__", now+1000),
@@ -170,7 +170,7 @@ public class NotificationManagerSqliteImplTest {
     public void testGetSpecificNotification() {
         notificationManager.clearAllNotifications();
 
-        String localDir = "localDir";
+        String localDir = "005_localDir";
         long now = System.currentTimeMillis();
         List<Notification> notificationList = List.of(
                 new Notification(Notification.Type.Conflict, localDir, "localFile", "remoteFile", "MESSAGE__", now+1000),
@@ -206,8 +206,8 @@ public class NotificationManagerSqliteImplTest {
     public void testClearNotifications() {
         notificationManager.clearAllNotifications();
 
-        String localDir = "localDir";
-        String localDir2 = "localDir2";
+        String localDir = "006_localDir";
+        String localDir2 = "006_localDir2";
         long now = System.currentTimeMillis();
         List<Notification> notificationList = List.of(
                 new Notification(Notification.Type.Conflict, localDir, "localFile", "remoteFile", "MESSAGE__", now+1000),

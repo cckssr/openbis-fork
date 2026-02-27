@@ -41,7 +41,7 @@ public class NotificationDAOImpTest {
         for (Notification.Type type : Notification.Type.values()) {
             Notification notification = Notification.builder()
                     .type(type)
-                    .localDirectory("localDir")
+                    .localDirectory("001_localDir")
                     .localFile(type == Notification.Type.Conflict ? "localFile" : null)
                     .remoteFile(type == Notification.Type.Conflict ? "remoteFile" : null)
                     .message("MESSAGE__")
@@ -66,7 +66,7 @@ public class NotificationDAOImpTest {
         for (Notification.Type type : Notification.Type.values()) {
             Notification notification = Notification.builder()
                     .type(type)
-                    .localDirectory("localDir")
+                    .localDirectory("002_localDir")
                     .localFile(type == Notification.Type.Conflict ? "localFile" : null)
                     .remoteFile(type == Notification.Type.Conflict ? "remoteFile" : null)
                     .message("MESSAGE__")
@@ -90,7 +90,7 @@ public class NotificationDAOImpTest {
         for (Notification.Type type : Notification.Type.values()) {
             Notification notification = Notification.builder()
                     .type(type)
-                    .localDirectory("localDir")
+                    .localDirectory("003_localDir")
                     .localFile(type == Notification.Type.Conflict ? "localFile" : null)
                     .remoteFile(type == Notification.Type.Conflict ? "remoteFile" : null)
                     .message("MESSAGE__")
@@ -103,15 +103,15 @@ public class NotificationDAOImpTest {
 
         Assert.assertEquals(3, notificationDAOImpl.selectLast(100).size());
 
-        notificationDAOImpl.removeByPrimaryKey(Notification.Type.JobStopped, "localDir", null, null);
+        notificationDAOImpl.removeByPrimaryKey(Notification.Type.JobStopped, "003_localDir", null, null);
         Assert.assertEquals(2, notificationDAOImpl.selectLast(100).size());
         Assert.assertEquals(Set.of(Notification.Type.Conflict, Notification.Type.JobException), notificationDAOImpl.selectLast(100).stream().map(Notification::getType).collect(Collectors.toSet()));
 
-        notificationDAOImpl.removeByPrimaryKey(Notification.Type.Conflict, "localDir", "localFile", "remoteFile");
+        notificationDAOImpl.removeByPrimaryKey(Notification.Type.Conflict, "003_localDir", "localFile", "remoteFile");
         Assert.assertEquals(1, notificationDAOImpl.selectLast(100).size());
         Assert.assertEquals(Set.of(Notification.Type.JobException), notificationDAOImpl.selectLast(100).stream().map(Notification::getType).collect(Collectors.toSet()));
 
-        notificationDAOImpl.removeByPrimaryKey(Notification.Type.JobException, "localDir", null, null);
+        notificationDAOImpl.removeByPrimaryKey(Notification.Type.JobException, "003_localDir", null, null);
         Assert.assertEquals(0, notificationDAOImpl.selectLast(100).size());
         Assert.assertEquals(Collections.emptySet(), notificationDAOImpl.selectLast(100).stream().map(Notification::getType).collect(Collectors.toSet()));
     }
@@ -130,7 +130,7 @@ public class NotificationDAOImpTest {
                 for (Notification.Type type : Notification.Type.values()) {
                     Notification notification = Notification.builder()
                             .type(type)
-                            .localDirectory("localDir")
+                            .localDirectory("004_localDir")
                             .localFile("localFile" + j)
                             .remoteFile("remoteFile" + j)
                             .message("MESSAGE__")
@@ -164,7 +164,7 @@ public class NotificationDAOImpTest {
             for (Notification.Type type : Notification.Type.values()) {
                 Notification notification = Notification.builder()
                         .type(type)
-                        .localDirectory("localDir" + (j % 3))
+                        .localDirectory("005_localDir" + (j % 3))
                         .localFile("localFile" + j)
                         .remoteFile("remoteFile" + j)
                         .message("MESSAGE__")
@@ -176,7 +176,7 @@ public class NotificationDAOImpTest {
 
                 Assert.assertEquals(notification, readNotification);
 
-                if (readNotification.getLocalDirectory().equals("localDir1") && readNotification.getType() == Notification.Type.Conflict) {
+                if (readNotification.getLocalDirectory().equals("005_localDir1") && readNotification.getType() == Notification.Type.Conflict) {
                     expectedNotifications.addFirst(notification);
                 }
                 counter++;
@@ -184,7 +184,7 @@ public class NotificationDAOImpTest {
         }
 
         for(int i=0; i<20; i++) {
-            List<Notification> retrievedNotifications = notificationDAOImpl.selectByLocalDirectoryAndType("localDir1", Notification.Type.Conflict, i);
+            List<Notification> retrievedNotifications = notificationDAOImpl.selectByLocalDirectoryAndType("005_localDir1", Notification.Type.Conflict, i);
             Assert.assertTrue(expectedNotifications.containsAll(retrievedNotifications));
             Assert.assertTrue(retrievedNotifications.size() == Math.min(i, expectedNotifications.size()));
         }
@@ -200,7 +200,7 @@ public class NotificationDAOImpTest {
             for (Notification.Type type : Notification.Type.values()) {
                 Notification notification = Notification.builder()
                         .type(type)
-                        .localDirectory("localDir" + i)
+                        .localDirectory("006_localDir" + i)
                         .localFile(type == Notification.Type.Conflict ? "localFile" : null)
                         .remoteFile(type == Notification.Type.Conflict ? "remoteFile" : null)
                         .message("MESSAGE__")
@@ -214,15 +214,15 @@ public class NotificationDAOImpTest {
 
         Assert.assertEquals(30, notificationDAOImpl.selectLast(100).size());
 
-        notificationDAOImpl.removeByLocalDirectory("localDir3");
+        notificationDAOImpl.removeByLocalDirectory("006_localDir3");
 
         Assert.assertEquals(27, notificationDAOImpl.selectLast(100).size());
 
-        notificationDAOImpl.removeByLocalDirectory("localDir7");
+        notificationDAOImpl.removeByLocalDirectory("006_localDir7");
 
         Assert.assertEquals(24, notificationDAOImpl.selectLast(100).size());
 
-        Assert.assertEquals(Set.of("localDir0","localDir1", "localDir2","localDir4","localDir5","localDir6","localDir8","localDir9"),
+        Assert.assertEquals(Set.of("006_localDir0","006_localDir1", "006_localDir2","006_localDir4","006_localDir5","006_localDir6","006_localDir8","006_localDir9"),
                 notificationDAOImpl.selectLast(100).stream().map(Notification::getLocalDirectory).collect(Collectors.toSet()));
     }
 
@@ -233,8 +233,8 @@ public class NotificationDAOImpTest {
         notificationDAOImpl.clearAll();
 
 
-        String localDir = "localDir";
-        String localDir2 = "localDir2";
+        String localDir = "007_localDir";
+        String localDir2 = "007_localDir2";
         long now = System.currentTimeMillis();
         List<Notification> notificationList = List.of(
                 new Notification(Notification.Type.JobStopped, localDir, null, null, "MESSAGE__", now+1000),
@@ -280,7 +280,7 @@ public class NotificationDAOImpTest {
             for (Notification.Type type : Notification.Type.values()) {
                 Notification notification = Notification.builder()
                         .type(type)
-                        .localDirectory("localDir" + i)
+                        .localDirectory("008_localDir" + i)
                         .localFile(type == Notification.Type.Conflict ? "localFile" : null)
                         .remoteFile(type == Notification.Type.Conflict ? "remoteFile" : null)
                         .message("MESSAGE__")

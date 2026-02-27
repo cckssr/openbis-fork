@@ -39,8 +39,8 @@ public class SyncJobEventDAOImpTest {
             for(boolean sourceDeleted : List.of(Boolean.FALSE, Boolean.TRUE)) {
                 SyncJobEvent testJobEvent = SyncJobEvent.builder()
                         .syncDirection(SyncJobEvent.SyncDirection.UP)
-                        .localFile("a.txt")
-                        .remoteFile("a.txt")
+                        .localFile("001_a.txt")
+                        .remoteFile("001_a.txt")
                         .entityPermId(UUID.randomUUID().toString())
                         .localDirectoryRoot(localDirectoryRoot)
                         .sourceTimestamp(Instant.now().toEpochMilli())
@@ -64,8 +64,8 @@ public class SyncJobEventDAOImpTest {
 
         SyncJobEvent testJobEvent = SyncJobEvent.builder()
                 .syncDirection(SyncJobEvent.SyncDirection.UP)
-                .localFile("a.txt")
-                .remoteFile("a.txt")
+                .localFile("002_a.txt")
+                .remoteFile("002_a.txt")
                 .entityPermId(UUID.randomUUID().toString())
                 .localDirectoryRoot(localDirectoryRoot)
                 .sourceTimestamp(Instant.now().toEpochMilli())
@@ -92,7 +92,7 @@ public class SyncJobEventDAOImpTest {
                     .destinationTimestamp(System.currentTimeMillis())
                     .timestamp(now += UNIQUE_RANDOM_LONG_INTEGERS.get(3 * i))
                     .entityPermId("" + i)
-                    .localDirectoryRoot("loc-root")
+                    .localDirectoryRoot("003_loc-root")
                     .localFile("loc" + i)
                     .remoteFile("rem" + i)
                     .build());
@@ -101,7 +101,7 @@ public class SyncJobEventDAOImpTest {
                     .destinationTimestamp(null)
                     .timestamp(now += UNIQUE_RANDOM_LONG_INTEGERS.get(3 * i + 1))
                     .entityPermId("" + i)
-                    .localDirectoryRoot("loc-root")
+                    .localDirectoryRoot("003_loc-root")
                     .localFile("loc-incomplete" + i)
                     .remoteFile("rem-incomplete" + i)
                     .build());
@@ -110,7 +110,7 @@ public class SyncJobEventDAOImpTest {
                     .destinationTimestamp(null)
                     .timestamp(now += UNIQUE_RANDOM_LONG_INTEGERS.get(3 * i + 2))
                     .entityPermId("" + i)
-                    .localDirectoryRoot("loc-root2")
+                    .localDirectoryRoot("003_loc-root2")
                     .localFile("loc" + i)
                     .remoteFile("rem" + i)
                     .sourceDeleted(true)
@@ -150,7 +150,7 @@ public class SyncJobEventDAOImpTest {
                     .destinationTimestamp(System.currentTimeMillis())
                     .timestamp(now += UNIQUE_RANDOM_LONG_INTEGERS.get(3 * i))
                     .entityPermId("" + i)
-                    .localDirectoryRoot("loc-root")
+                    .localDirectoryRoot("004_loc-root")
                     .localFile("loc" + i)
                     .remoteFile("rem" + i)
                     .build());
@@ -159,7 +159,7 @@ public class SyncJobEventDAOImpTest {
                     .destinationTimestamp(null)
                     .timestamp(now += UNIQUE_RANDOM_LONG_INTEGERS.get(3 * i + 1))
                     .entityPermId("" + i)
-                    .localDirectoryRoot("loc-root")
+                    .localDirectoryRoot("004_loc-root")
                     .localFile("loc-incomplete" + i)
                     .remoteFile("rem-incomplete" + i)
                     .build());
@@ -168,7 +168,7 @@ public class SyncJobEventDAOImpTest {
                     .destinationTimestamp(null)
                     .timestamp(now += UNIQUE_RANDOM_LONG_INTEGERS.get(3 * i + 2))
                     .entityPermId("" + i)
-                    .localDirectoryRoot("loc-root2")
+                    .localDirectoryRoot("004_loc-root2")
                     .localFile("loc" + i)
                     .remoteFile("rem" + i)
                     .sourceDeleted(true)
@@ -182,9 +182,9 @@ public class SyncJobEventDAOImpTest {
             syncJobEventDAOImp.insertOrUpdate(syncJobEvent);
         }
 
-        syncJobEventDAOImp.pruneOldDeletedByLocalDirectoryRoot("loc-root", 120);
+        syncJobEventDAOImp.pruneOldDeletedByLocalDirectoryRoot("004_loc-root", 120);
 
-        events.stream().filter( syncJobEvent -> "loc-root".equals(syncJobEvent.getLocalDirectoryRoot()))
+        events.stream().filter( syncJobEvent -> "004_loc-root".equals(syncJobEvent.getLocalDirectoryRoot()))
                         .sorted(Comparator.comparing(SyncJobEvent::getTimestamp).reversed())
                         .limit(120)
                 .forEach(new Consumer<SyncJobEvent>() {
@@ -196,7 +196,7 @@ public class SyncJobEventDAOImpTest {
                     }
                 });
 
-        events.stream().filter( syncJobEvent -> "loc-root".equals(syncJobEvent.getLocalDirectoryRoot()))
+        events.stream().filter( syncJobEvent -> "004_loc-root".equals(syncJobEvent.getLocalDirectoryRoot()))
                         .sorted(Comparator.comparing(SyncJobEvent::getTimestamp).reversed())
                         .skip(120)
                 .forEach(new Consumer<SyncJobEvent>() {
@@ -215,8 +215,8 @@ public class SyncJobEventDAOImpTest {
         String uuid = UUID.randomUUID().toString();
         SyncJobEvent testJobEvent = SyncJobEvent.builder()
                 .syncDirection(SyncJobEvent.SyncDirection.UP)
-                .localFile("a.txt")
-                .remoteFile("a.txt")
+                .localFile("005_a.txt")
+                .remoteFile("005_a.txt")
                 .entityPermId(uuid)
                 .localDirectoryRoot(localDirectoryRoot)
                 .sourceTimestamp(Instant.now().toEpochMilli())
@@ -245,7 +245,7 @@ public class SyncJobEventDAOImpTest {
                     .destinationTimestamp(System.currentTimeMillis())
                     .timestamp(now += UNIQUE_RANDOM_LONG_INTEGERS.get(2 * i))
                     .entityPermId("" + i)
-                    .localDirectoryRoot("loc-root")
+                    .localDirectoryRoot("006_loc-root")
                     .localFile("loc" + i)
                     .remoteFile("rem" + i)
                     .build());
@@ -254,7 +254,7 @@ public class SyncJobEventDAOImpTest {
                     .destinationTimestamp(System.currentTimeMillis())
                     .timestamp(now += UNIQUE_RANDOM_LONG_INTEGERS.get(2 * i + 1))
                     .entityPermId("" + i)
-                    .localDirectoryRoot("loc-root2")
+                    .localDirectoryRoot("006_loc-root2")
                     .localFile("loc" + i)
                     .remoteFile("rem" + i)
                     .build());
