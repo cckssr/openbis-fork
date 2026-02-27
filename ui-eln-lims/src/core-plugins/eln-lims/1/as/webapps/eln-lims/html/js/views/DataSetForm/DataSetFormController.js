@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-function DataSetFormController(parentController, mode, entity, dataSet, isMini, dataSetV3, paginationInfo) {
+function DataSetFormController(parentController, mode, entity, dataSet, isMini, dataSetV3, paginationInfo,
+							   imageIdx, previewIdx) {
 	this._parentController = parentController;
-	this._dataSetFormModel = new DataSetFormModel(mode, entity, isMini, dataSetV3, paginationInfo);
+	this._dataSetFormModel = new DataSetFormModel(mode, entity, isMini, dataSetV3, paginationInfo, imageIdx, previewIdx);
 	this._dataSetFormView = new DataSetFormView(this, this._dataSetFormModel);
 	this._commentsController = null;
 	this._wasSideMenuCollapsed = mainController.sideMenu.isCollapsed;
