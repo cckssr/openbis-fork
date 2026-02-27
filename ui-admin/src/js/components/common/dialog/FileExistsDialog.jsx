@@ -77,40 +77,53 @@ class FileExistsDialog extends React.Component {
   }
 
   renderButtons() {
-    const { onReplace, onResume, onSkip, onCancel, classes } = this.props
+    const { onReplace, onResume, onSkip, onCancel, classes, selectionButtonProps } = this.props
+    const sharedButtonProps = selectionButtonProps || {}
+    const incomingStyles = sharedButtonProps.styles
+    const mergedStyles = incomingStyles
+      ? {
+          ...incomingStyles,
+          root: [classes.button, incomingStyles.root].filter(Boolean).join(' ')
+        }
+      : { root: classes.button }
+
     return (
       <div>
         {!!onReplace && (
           <Button
+            {...sharedButtonProps}
             name='replace'
             label={messages.get(messages.REPLACE)}
             type={'risky'}
-            styles={{ root: classes.button }}
+            styles={mergedStyles}
             onClick={onReplace}
           />
         )}
         {!!onResume && (
           <Button
+            {...sharedButtonProps}
             name='resume'
             label={messages.get(messages.RESUME)}
             type={'risky'}
-            styles={{ root: classes.button }}
+            styles={mergedStyles}
             onClick={onResume}
           />
         )}
         {!!onSkip && (
           <Button
+            {...sharedButtonProps}
             name='skip'
             label={messages.get(messages.SKIP)}
-            styles={{ root: classes.button }}
+            styles={mergedStyles}
             onClick={onSkip}
           />
         )}
         {!!onCancel && (
           <Button
+            {...sharedButtonProps}
             name='cancel'
             label={messages.get(messages.CANCEL)}
-            styles={{ root: classes.button }}
+            styles={mergedStyles}
             onClick={onCancel}
           />
         )}

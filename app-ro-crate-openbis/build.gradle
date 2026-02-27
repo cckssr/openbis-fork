@@ -23,8 +23,8 @@ repositories {
 dependencies {
                 // Ro-crate library
     implementation 'edu.kit.datamanager:ro-crate-java:2.0.1',
-                    'com.fasterxml.jackson.core:jackson-core:2.18.1',
-                    'com.fasterxml.jackson.core:jackson-databind:2.18.1',
+                    'com.fasterxml.jackson.core:jackson-core:2.18.3',
+                    'com.fasterxml.jackson.core:jackson-databind:2.18.3',
                     // Command Line App
                     'apache:commons-collections4:4.1',
                     'commons-cli:commons-cli:1.4',

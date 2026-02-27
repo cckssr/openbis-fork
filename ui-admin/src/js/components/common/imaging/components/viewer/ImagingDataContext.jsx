@@ -10,7 +10,7 @@ const ImagingDataContext = createContext();
 // Custom hook for accessing the context
 export const useImagingDataContext = () => useContext(ImagingDataContext);
 
-export const ImagingDataProvider = ({ onUnsavedChanges, objId, objType, extOpenbis, children, showSemanticAnnotations}) => {
+export const ImagingDataProvider = ({ onUnsavedChanges, objId, objType, extOpenbis, children, showSemanticAnnotations, imageIndex, previewIndex}) => {
     const imagingFacade = useMemo(() => new ImagingFacade(extOpenbis), [extOpenbis]);
     const mapper = useMemo(() => new ImagingMapper(extOpenbis), [extOpenbis]);
     const [state, setState] = useState({
@@ -30,6 +30,24 @@ export const ImagingDataProvider = ({ onUnsavedChanges, objId, objType, extOpenb
     });
     const [autoUpdate, setAutoUpdate] = useState(false);
 
+    const findRequestedIndex = (items, requestedIdx) => {
+        if (!Array.isArray(items) || items.length === 0 || requestedIdx === null || requestedIdx === undefined || requestedIdx === '') {
+            return 0;
+        }
+        const parsedRequestedIdx = Number(requestedIdx);
+        if (Number.isNaN(parsedRequestedIdx)) {
+            return 0;
+        }
+        const indexByValue = items.findIndex(item => Number(item.index) === parsedRequestedIdx);
+        if (indexByValue !== -1) {
+            return indexByValue;
+        }
+        if (parsedRequestedIdx >= 0 && parsedRequestedIdx < items.length) {
+            return parsedRequestedIdx;
+        }
+        return 0;
+    }
+
     const loadImagingDataset = useCallback(async () => {
         if (!state.loaded) {
             try {
@@ -40,12 +58,17 @@ export const ImagingDataProvider = ({ onUnsavedChanges, objId, objType, extOpenb
                 if (isInitConfigEmpty) {
                     imagingDataSetPropertyConfig.images[0].previews[0].config = createInitValues(imagingDataSetPropertyConfig.images[0].config.inputs, {});
                 }
+                const selectedImageIdx = findRequestedIndex(imagingDataSetPropertyConfig.images, imageIndex || 0);
+                const previews = imagingDataSetPropertyConfig.images[selectedImageIdx].previews;
+                const selectedPreviewIdx = findRequestedIndex(previews, previewIndex || 0);
                 setState(prev => ({
                     ...prev,
                     open: false,
                     loaded: true,
                     isChanged: isInitConfigEmpty,
                     imagingDataset: imagingDataSetPropertyConfig,
+                    activeImageIdx: selectedImageIdx,
+                    activePreviewIdx: selectedPreviewIdx,
                     imagingTags: imagingTagsArr,
                     datasetType: datasetType,
                     datasetFilePaths: datasetFilePaths
@@ -55,7 +78,7 @@ export const ImagingDataProvider = ({ onUnsavedChanges, objId, objType, extOpenb
                 handleError(error);
             }
         }
-    }, [state.loaded, objId, objType, imagingFacade]);
+    }, [state.loaded, objId, objType, imagingFacade, imageIndex, previewIndex]);
 
     const createLocatedSXMPreview = async (sxmPermId, sxmFilePath) => {
         handleOpen();

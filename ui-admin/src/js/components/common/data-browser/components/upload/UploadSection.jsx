@@ -195,11 +195,13 @@ class UploadSection extends React.Component {
           customProgressDetails={this.state.customProgressDetails}
           progressStatus={this.state.progressStatus}
           onCancel={this.cancelFileTransfer}
+          selectionButtonProps={this.props.selectionButtonProps}
         />
         <ErrorDialog
           open={!!errorMessage}
           error={errorMessage}
           onClose={this.closeErrorDialog}
+          selectionButtonProps={this.props.selectionButtonProps}
         />
         <FileExistsDialog
           open={!!uploadFileExistsDialogFile}
@@ -209,6 +211,7 @@ class UploadSection extends React.Component {
           onCancel={this.uploadManager.handleFileExistsCancel}
           onApplyToAllChange={this.state.showApplyToAll ? this.uploadManager.handleApplyToAllSelection : null}
           applyToAll={this.state.applyToAllFiles}
+          selectionButtonProps={this.props.selectionButtonProps}
           title={messages.get(messages.FILE_EXISTS)}
           content={messages.get(
             messages.CONFIRMATION_FILE_NAME_CONFLICT,

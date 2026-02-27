@@ -194,12 +194,22 @@ class LinearLoadingDialog extends React.Component {
   }
 
   renderButtons() {
-    const { onCancel, classes } = this.props
+    const { onCancel, classes, selectionButtonProps } = this.props
+    const sharedButtonProps = selectionButtonProps || {}
+    const incomingStyles = sharedButtonProps.styles
+    const mergedStyles = incomingStyles
+      ? {
+          ...incomingStyles,
+          root: [classes.button, incomingStyles.root].filter(Boolean).join(' ')
+        }
+      : { root: classes.button }
+
     return (       
       <Button
+        {...sharedButtonProps}
         name='cancel'
         label={messages.get(messages.CANCEL)}
-        styles={{ root: classes.button }}
+        styles={mergedStyles}
         color='inherit'
         variant='outlined'
         onClick={onCancel}

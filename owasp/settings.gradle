@@ -1,5 +1,28 @@
-includeFlat 'lib-commonbase', 'lib-common', 'lib-logging', 'lib-two-phase-transaction', 'lib-dbmigration', 'lib-db', 'lib-pathinfo-db', 'lib-pathinfo', 'lib-hierarchical-content', 'lib-mail',
-        'api-openbis-java', 'lib-openbis-common', 'lib-openbis-messages', 'lib-authentication', 'lib-json', 'lib-ro-crate', 'lib-rdf', 'lib-transactional-file-system', 'lib-hdf5', 'lib-openbis-commonbase',
-        'lib-data-store-commonbase', 'lib-data-store-common', 'lib-maintenance', 'lib-microservice-server', 'lib-messages-db', 'lib-archiver-db', 'lib-archiver', 'lib-shuffling', 'lib-compress',
-        'server-application-server', 'server-original-data-store', 'server-screening', 'server-external-data-store', 'server-data-store', 'server-ro-crate',
-        'ui-admin', 'ui-eln-lims', 'api-openbis-javascript', 'api-openbis-typescript', 'api-data-store-server-java', 'api-data-store-server-javascript', 'app-ro-crate-openbis', 'lib-folder-monitor'
+def includes = ['lib-logging', 'lib-commonbase', 'lib-common', 'api-openbis-java', 'lib-openbis-commonbase', 'lib-openbis-common', 'lib-openbis-messages', 'lib-authentication',
+                'lib-db', 'lib-dbmigration', 'lib-messages-db', 'lib-pathinfo-db', 'lib-pathinfo', 'lib-mail', 'lib-maintenance', 'lib-compress', 'lib-shuffling', 'lib-folder-monitor',
+                'lib-data-store-commonbase', 'lib-data-store-common', 'lib-hdf5', 'lib-hierarchical-content', 'lib-archiver-db', 'lib-archiver', 'lib-two-phase-transaction',
+                'server-application-server', 'server-original-data-store', 'server-screening',
+                'core-plugin-openbis', 'app-openbis-installer', 'lib-image-readers',
+                'test-api-openbis-javascript', 'server-external-data-store', 'ui-admin', 'lib-microservice-server',
+                'lib-transactional-file-system', 'server-data-store', 'ui-eln-lims', 'api-openbis-javascript',
+                'lib-json', 'api-data-store-server-java', 'api-data-store-server-javascript', 'api-openbis-typescript',
+                'test-integration', 'lib-rdf', 'docs', 'lib-ro-crate', 'app-ro-crate-openbis', 'app-migration',
+                'app-openbis-drive', 'app-openbis-command-line' , 'test-app-openbis-installer', 'api-openbis-python3-pybis', 'release',
+                'lib-http', 'server-ro-crate'
+]
+
+includes.forEach { name ->
+    includeFlat(name)
+}
+
+includeFlat('imaging-technology-sources')
+project(":imaging-technology-sources").projectDir = new File("../core-plugin-openbis/dist/core-plugins/imaging/1/as/services/imaging/lib/imaging-technology-sources")
+
+includeFlat('imaging-technology-dataset-interceptor')
+project(":imaging-technology-dataset-interceptor").projectDir = new File("../core-plugin-openbis/dist/core-plugins/imaging/1/as/api-listener/imaging-dataset-interceptor/lib/imaging-technology-dataset-interceptor")
+
+includeFlat('imaging-nanonis-adapters-sources')
+project(":imaging-nanonis-adapters-sources").projectDir = new File("../core-plugin-openbis/dist/core-plugins/imaging-nanonis/1/as/services/imaging-nanonis/lib/imaging-nanonis-adapters-sources")
+
+includeFlat('imaging-test-adapters-sources')
+project(":imaging-test-adapters-sources").projectDir = new File("../core-plugin-openbis/dist/core-plugins/imaging-test/1/as/services/imaging-test/lib/imaging-test-adapters-sources")

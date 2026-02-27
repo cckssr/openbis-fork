@@ -31,7 +31,15 @@ class GridExportWarnings extends React.PureComponent {
   render() {
     logger.log(logger.DEBUG, 'GridExportWarnings.render')
 
-    const { open, classes } = this.props
+    const { open, classes, selectionButtonProps } = this.props
+    const sharedButtonProps = selectionButtonProps || {}
+    const incomingStyles = sharedButtonProps.styles
+    const mergedStyles = incomingStyles
+      ? {
+          ...incomingStyles,
+          root: [classes.button, incomingStyles.root].filter(Boolean).join(' ')
+        }
+      : { root: classes.button }
 
     return (
       <Dialog
@@ -41,15 +49,17 @@ class GridExportWarnings extends React.PureComponent {
         actions={
           <div>
             <Button
+              {...sharedButtonProps}
               name='download'
               label={messages.get(messages.DOWNLOAD)}
-              styles={{ root: classes.button }}
+              styles={mergedStyles}
               onClick={this.handleDownload}
             />
             <Button
+              {...sharedButtonProps}
               name='cancel'
               label={messages.get(messages.CANCEL)}
-              styles={{ root: classes.button }}
+              styles={mergedStyles}
               onClick={this.handleCancel}
             />
           </div>

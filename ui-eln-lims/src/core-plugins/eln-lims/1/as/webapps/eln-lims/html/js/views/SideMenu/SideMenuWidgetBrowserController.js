@@ -47,6 +47,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
     TYPE_EXPORT_TO_ZIP = "EXPORT_TO_ZIP"
     TYPE_EXPORT_TO_RESEARCH_COLLECTION = "EXPORT_TO_RESEARCH_COLLECTION"
     TYPE_EXPORT_TO_ZENODO = "EXPORT_TO_ZENODO"
+    TYPE_EXPORT_TO_RO_CRATE = "TYPE_EXPORT_TO_RO_CRATE"
     TYPE_ABOUT = "ABOUT"
 
     SORTINGS_BY_NAME = [
@@ -474,6 +475,10 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
             path.push(this._createUtilitiesNode())
             path.push(this._createExportsNode())
             path.push(this._createExportToZenodoNode())
+        } else if (object.type === this.TYPE_EXPORT_TO_RO_CRATE) {
+            path.push(this._createUtilitiesNode())
+            path.push(this._createExportsNode())
+            path.push(this._createExportToRoCrateNode())
         }
 
         if (path.some((pathItem) => !pathItem)) {
@@ -1662,25 +1667,33 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
     async _loadNodesRoot(params) {
         var results = { nodes: [] }
 
-        if(!this.TREES_INITIALIZED) {
-            var elnNodes = this._createLabNotebookNode();
-            this.TREES_BY_TYPE[this.TREE_LAB_NOTEBOOK].push(elnNodes);
+        if(LayoutManager.FOUND_SIZE == LayoutManager.MOBILE_SIZE) {
+            results.nodes.push(this._createLabNotebookNode())
+            results.nodes.push(this._createInventoryNode())
+            results.nodes.push(this._createStockNode())
+            results.nodes.push(this._createUtilitiesNode())
+            results.nodes.push(this._createAboutNode())
+        } else {
+            if(!this.TREES_INITIALIZED) {
+                var elnNodes = this._createLabNotebookNode();
+                this.TREES_BY_TYPE[this.TREE_LAB_NOTEBOOK].push(elnNodes);
 
-            var inv = this._createInventoryNode()
-            var stock = this._createStockNode()
+                var inv = this._createInventoryNode()
+                var stock = this._createStockNode()
 
-            this.TREES_BY_TYPE[this.TREE_LIMS].push(inv);
-            this.TREES_BY_TYPE[this.TREE_LIMS].push(stock);
+                this.TREES_BY_TYPE[this.TREE_LIMS].push(inv);
+                this.TREES_BY_TYPE[this.TREE_LIMS].push(stock);
 
-            var utilities = this._createUtilitiesNode();
-            this.TREES_BY_TYPE[this.TREE_TOOLS].push(utilities);
+                var utilities = this._createUtilitiesNode();
+                this.TREES_BY_TYPE[this.TREE_TOOLS].push(utilities);
 
-            var about = this._createAboutNode();
+                var about = this._createAboutNode();
 
-            this.TREES_BY_TYPE[this.TREE_TOOLS].push(about);
-            this.TREES_INITIALIZED = true
+                this.TREES_BY_TYPE[this.TREE_TOOLS].push(about);
+                this.TREES_INITIALIZED = true
+            }
+            results.nodes = this.TREES_BY_TYPE[this.CURRENT_TREE];
         }
-        results.nodes = this.TREES_BY_TYPE[this.CURRENT_TREE];
 
         results.nodes = results.nodes.filter((node) => !!node)
 
@@ -2206,11 +2219,14 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
     async _loadNodesExperiment(params) {
         var samplesFolderNode = this._createExperimentSamplesNode()
         samplesFolderNode.experimentPermId = params.node.object.id
+        samplesFolderNode.sortingId = params.node.sortingId
+        samplesFolderNode.id = params.node.id
 
         var loadSamplesPromise = this._loadNodesExperimentSamples({
             node: samplesFolderNode,
             offset: params.offset || 0,
             limit: params.limit || this.LOAD_LIMIT,
+            sortings: this.SORTINGS_BY_NAME_AND_REGISTRATION_DATE,
         })
 
         var dataSetsFolderNode = this._createExperimentDataSetsNode()
@@ -2292,6 +2308,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
             only: true,
             withProperties: true,
             withType: true,
+            withProject: true,
             withExperiment: true,
             withParents: true,
             withParentsExperiment: true,
@@ -2736,6 +2753,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
         results.nodes.push(this._createExportToZipNode())
         results.nodes.push(this._createExportToResearchCollectionNode())
         results.nodes.push(this._createExportToZenodoNode())
+        results.nodes.push(this._createExportToRoCrateNode())
 
         results.nodes = results.nodes.filter((node) => !!node)
 
@@ -3210,6 +3228,22 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
                 },
                 view: "showZenodoExportPage",
                 icon: IconUtil.getNavigationIcon(this.TYPE_EXPORT_TO_ZENODO)
+            }
+        } else {
+            return null
+        }
+    }
+
+    _createExportToRoCrateNode() {
+        if (profile.mainMenu.showExports) {
+            return {
+                text: "Export to RO-Crate",
+                object: {
+                    type: this.TYPE_EXPORT_TO_RO_CRATE,
+                    id: this.TYPE_EXPORT_TO_RO_CRATE,
+                },
+                view: "showRoCrateExportPage",
+                icon: IconUtil.getNavigationIcon(this.TYPE_EXPORT_TO_RO_CRATE)
             }
         } else {
             return null

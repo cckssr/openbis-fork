@@ -134,16 +134,16 @@ function ServerFacade(openbisServer) {
         });
     }
 
-		this.importSamples = function(mode, sessionKey, allowedSampleTypes, experimentsByType, spacesByType, callback) {
-				this.customASService({
-					"method" : "import",
-					"mode" : mode,
-					"fileName" : sessionKey,
-					"allowedSampleTypes" : allowedSampleTypes,
-					"experimentsByType" : experimentsByType,
-					"spacesByType" : spacesByType,
-				}, callback, "xls-import", null, true);
-		}
+    this.importSamples = function(mode, sessionKey, allowedSampleTypes, experimentsByType, spacesByType, callback) {
+            this.customASService({
+                "method" : "import",
+                "mode" : mode,
+                "fileName" : sessionKey,
+                "allowedSampleTypes" : allowedSampleTypes,
+                "experimentsByType" : experimentsByType,
+                "spacesByType" : spacesByType,
+            }, callback, "xls-import", null, true);
+    }
 
     this.deleteSpace = function(code, reason, callback) {
         this.customELNASAPI({
@@ -498,16 +498,53 @@ function ServerFacade(openbisServer) {
 	//
 	//
 	//
-	this.exportAll = function(entities, callbackFunction) {
-		this.customELNApi({
-			"method" : "exportAll",
-			"entities" : entities,
-		}, callbackFunction, "exports-api");
-	};
+	this.exportAll = function(exportData, callbackFunction) {
+        this.customASService({
+                 "method" : "exportAll",
+                 "entities" : exportData,
+         }, callbackFunction, "exports-api", null);
+    };
+
+	this.exportRoCrate = function(exportData, callbackFunction) {
+        this.customASService({
+                 "method" : "exportRoCrate",
+                 "exportData" : exportData,
+             }, callbackFunction, "exports-api", null);
+    };
+
+    this.statusRoCrateJobs = function(callbackFunction) {
+        this.customASService({
+                 "method" : "statusRoCrateJobs",
+             }, callbackFunction, "exports-api", null);
+    };
+
+    this.getRoCrateUrl = function(callbackFunction) {
+        this.customASService({
+                 "method" : "getRoCrateUrl"
+        }, callbackFunction, "exports-api", null);
+    };
 
 	//
 	// Research collection export
 	//
+	this.exportRcAs = function(entities, submissionUrl, submissionType, retentionPeriod, userInformation, callbackFunction) {
+	    this.customASService({
+                         "method" : "exportResearchCollection",
+                         "entities": entities,
+                         "submissionUrl": submissionUrl,
+                         "submissionType": submissionType,
+                         "retentionPeriod": retentionPeriod,
+                         "userFirstName": userInformation["firstName"],
+                         "userLastName": userInformation["lastName"],
+                         "userEmail": userInformation["email"],
+                         "userId": userInformation["id"],
+                         "userInformation": userInformation,
+                         "originUrl": window.location.origin,
+                         "pathNameUrl": window.location.pathname,
+                         "sessionToken": this.openbisServer.getSession(),
+                     }, callbackFunction, "rc-exports-api", null, true);
+    };
+
 	this.exportRc = function(entities, submissionUrl, submissionType, retentionPeriod, userInformation, callbackFunction) {
 		this.asyncExportRc({
 			"method": "exportAll",
@@ -555,49 +592,22 @@ function ServerFacade(openbisServer) {
 			});
 	};
 
-    this.exportZenodo = function(entities, userInformation, title, accessToken, callbackFunction) {
-        this.asyncExportZenodo({
-            "method": "exportAll",
+	this.exportZenodoAs = function(entities, userInformation, title, fileName, accessToken, callbackFunction) {
+	    this.customASService({
+	        "method": "exportZenodo",
             "entities": entities,
             "userInformation": userInformation,
             "originUrl": window.location.origin,
             "sessionToken": this.openbisServer.getSession(),
-			"submissionTitle": title,
-			"accessToken": accessToken
-        }, callbackFunction, "zenodo-exports-api");
+            "submissionTitle": title,
+            "fileName": fileName,
+            "accessToken": accessToken,
+            "userFirstName": userInformation["firstName"],
+            "userLastName": userInformation["lastName"],
+            "userEmail": userInformation["email"],
+            "userId": userInformation["id"],
+            }, callbackFunction, "zenodo-exports-api", null, true);
     };
-
-	this.asyncExportZenodo = function(parameters, callbackFunction, serviceId) {
-		require(["as/dto/service/execute/ExecuteAggregationServiceOperation",
-				"as/dto/operation/AsynchronousOperationExecutionOptions", "as/dto/service/id/DssServicePermId",
-				"as/dto/datastore/id/DataStorePermId", "as/dto/service/execute/AggregationServiceExecutionOptions"],
-			function(ExecuteAggregationServiceOperation, AsynchronousOperationExecutionOptions, DssServicePermId, DataStorePermId,
-					 AggregationServiceExecutionOptions) {
-				var dataStoreCode = profile.getDefaultDataStoreCode();
-				var dataStoreId = new DataStorePermId(dataStoreCode);
-				var dssServicePermId = new DssServicePermId(serviceId, dataStoreId);
-				var options = new AggregationServiceExecutionOptions();
-
-				options.withParameter("sessionToken", parameters["sessionToken"]);
-				options.withParameter("entities", parameters["entities"]);
-				options.withParameter("method", parameters["method"]);
-				options.withParameter("originUrl", parameters["originUrl"]);
-				options.withParameter("submissionType", parameters["submissionType"]);
-				options.withParameter("submissionUrl", parameters["submissionUrl"]);
-				options.withParameter("entities", parameters["entities"]);
-				options.withParameter("submissionTitle", parameters["submissionTitle"]);
-				options.withParameter("accessToken", parameters["accessToken"]);
-				options.withParameter("userId", parameters["userInformation"]["id"]);
-				options.withParameter("userEmail", parameters["userInformation"]["email"]);
-				options.withParameter("userFirstName", parameters["userInformation"]["firstName"]);
-				options.withParameter("userLastName", parameters["userInformation"]["lastName"]);
-
-				var operation = new ExecuteAggregationServiceOperation(dssServicePermId, options);
-				mainController.openbisV3.executeOperations([operation], new AsynchronousOperationExecutionOptions()).done(function(results) {
-					callbackFunction(results.executionId.permId);
-				});
-			});
-	};
 
 	//
 	// Gets submission types

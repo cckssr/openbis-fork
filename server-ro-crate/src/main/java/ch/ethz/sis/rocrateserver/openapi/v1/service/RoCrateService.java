@@ -8,6 +8,7 @@ import ch.ethz.sis.rocrateserver.openapi.v1.service.delegates.ImportDelegate;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.helper.OpeBISFactory;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.helper.validation.ValidationResult;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.jobs.*;
+import ch.ethz.sis.rocrateserver.openapi.v1.service.params.DownloadParams;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.params.ExportParams;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.params.ImportParams;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.params.ResultParams;
@@ -15,6 +16,7 @@ import ch.ethz.sis.rocrateserver.openapi.v1.service.response.AsyncJob;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.response.ErrorResponse;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.response.ImportResponse;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.response.result.AsyncResult;
+import ch.ethz.sis.rocrateserver.openapi.v1.service.response.result.StatusResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.logging.Log;
@@ -52,6 +54,7 @@ public class RoCrateService
     AsyncJobRegistry asyncJobRegistry = new AsyncJobRegistry();
 
     ObjectMapper objectMapper = new ObjectMapper();
+
 
     @GET
     @Produces(MediaType.TEXT_PLAIN)
@@ -241,6 +244,210 @@ public class RoCrateService
     {
         OpenBIS openBIS = null;
         SessionInformation sessionInformation = null;
+
+        try
+        {
+            openBIS = OpeBISFactory.createOpenBIS(headers.getApiKey());
+            sessionInformation = openBIS.getSessionInformation();
+        } catch (Exception ex)
+        {
+            RoCrateExceptions.throwInstance(RoCrateExceptions.UNAVAILABLE_API_KEY);
+        }
+
+        try
+        {
+            List<AsyncResult> asyncStatuses =
+                    asyncJobRegistry.pollAll(openBIS.getSessionInformation().getUserName()).stream()
+                            .map(x -> mapAsyncResult(x)).toList();
+            StatusResponse statusResponse = new StatusResponse(asyncStatuses);
+            ObjectMapper objectMapper = new ObjectMapper();
+
+            ResponseBuilderImpl responseBuilder = new ResponseBuilderImpl();
+            responseBuilder.status(Response.Status.OK);
+            responseBuilder.type(MediaType.APPLICATION_JSON_TYPE);
+            responseBuilder.entity(objectMapper.writeValueAsString(statusResponse));
+            return responseBuilder.build();
+        } catch (Exception e)
+        {
+            Response.ResponseBuilder responseBuilder = new ResponseBuilderImpl();
+            responseBuilder.entity(
+                    e.getMessage() + "\n" + Arrays.stream(e.getStackTrace()).map(x -> x.toString())
+                            .collect(
+                                    Collectors.joining("\n")));
+            return responseBuilder.build();
+
+        }
+
+    }
+
+    private AsyncResult mapAsyncResult(AsyncJobRegistry.AsyncStatus status)
+    {
+        String statusVal = status.getStatus().toString();
+        List<String> errors = status.getJob().getException() != null ?
+                List.of(status.getJob().getException().toString()) :
+                List.of();
+
+        AsyncResult asyncResult = new AsyncResult(statusVal, errors, null, status.getJobId());
+
+        IAsyncJob job = status.getJob();
+        if (status.getStatus() == AsyncJobRegistry.Status.COMPLETED && status.getJob() instanceof ImportJob)
+        {
+
+            if (((ImportJob) job).isValidateOnly())
+            {
+                asyncResult.setValidationResult(
+                        ((ImportJob) job).getResult().getValidationResult());
+
+            } else
+            {
+
+                ImportDelegate.OpenBisImportResult openBisImportResult =
+                        ((ImportJob) job).getResult();
+
+                ImportResponse importResponse = new ImportResponse(
+                        openBisImportResult.getExternalToOpenBisIdentifiers());
+
+                asyncResult.setImportResponse(importResponse);
+
+            }
+
+        }
+
+        return asyncResult;
+    }
+
+    @GET
+    @Path("status/{jobId}")
+    public Response statusDetail(
+            @BeanParam ResultParams headers,
+            @PathParam("jobId") String jobId,
+            InputStream body) throws Exception
+    {
+
+        OpenBIS openBIS = null;
+        SessionInformation sessionInformation = null;
+        if (jobId == null)
+        {
+            ErrorResponse errorResponse = new ErrorResponse("Header jobID is missing");
+            return new ResponseBuilderImpl().entity(
+                            objectMapper.writeValueAsString(errorResponse))
+                    .status(Response.Status.BAD_REQUEST)
+                    .type(MediaType.APPLICATION_JSON_TYPE)
+                    .build();
+        }
+        if (headers.getApiKey() == null)
+        {
+            ErrorResponse errorResponse = new ErrorResponse("Header api-key is missing");
+            return new ResponseBuilderImpl().entity(
+                            objectMapper.writeValueAsString(errorResponse))
+                    .status(Response.Status.BAD_REQUEST)
+                    .type(MediaType.APPLICATION_JSON_TYPE)
+                    .build();
+        }
+
+        try
+        {
+            openBIS = OpeBISFactory.createOpenBIS(headers.getApiKey());
+            sessionInformation = openBIS.getSessionInformation();
+        } catch (Exception ex)
+        {
+            RoCrateExceptions.throwInstance(RoCrateExceptions.UNAVAILABLE_API_KEY);
+        }
+        AsyncJobRegistry.AsyncStatus status =
+                asyncJobRegistry.poll(sessionInformation.getUserName(), jobId);
+        AsyncResult result = null;
+        int statusCode = 0;
+        Response.ResponseBuilder responseBuilder = new ResponseBuilderImpl();
+
+        if (status.getStatus() == AsyncJobRegistry.Status.COMPLETED)
+        {
+            IAsyncJob job = status.getJob();
+            if (job instanceof ExportJob)
+            {
+                result = new AsyncResult(status.getStatus().toString(), List.of(), null, jobId);
+                java.nio.file.Path path = ((ExportJob) job).getResult();
+                AsyncResult asyncResult = new AsyncResult();
+                asyncResult.setStatus(status.getStatus().toString());
+                responseBuilder.entity(objectMapper.writeValueAsString(asyncResult));
+                return responseBuilder.build();
+            }
+            if (job instanceof ValidateJob)
+            {
+                responseBuilder.status(Response.Status.OK);
+                responseBuilder.type(MediaType.APPLICATION_JSON);
+                ValidationResult result1 = ((ValidateJob) job).getResult();
+                AsyncResult asyncResult =
+                        new AsyncResult(status.getStatus().toString(), List.of(), null, jobId);
+                asyncResult.setValidationResult(result1);
+                responseBuilder.entity(objectMapper.writeValueAsString(asyncResult));
+                return responseBuilder.build();
+            }
+            if (job instanceof ImportJob)
+            {
+                responseBuilder.type(MediaType.APPLICATION_JSON);
+                responseBuilder.status(Response.Status.OK);
+
+                if (((ImportJob) job).isValidateOnly())
+                {
+                    responseBuilder.status(Response.Status.OK);
+                    AsyncResult asyncResult =
+                            new AsyncResult(status.getStatus().toString(), List.of(), null,
+                                    jobId
+                            );
+                    asyncResult.setValidationResult(
+                            ((ImportJob) job).getResult().getValidationResult());
+                    responseBuilder.entity(objectMapper.writeValueAsString(asyncResult));
+
+                } else
+                {
+
+                    ImportDelegate.OpenBisImportResult openBisImportResult =
+                            ((ImportJob) job).getResult();
+
+                    ImportResponse importResponse = new ImportResponse(
+                            openBisImportResult.getExternalToOpenBisIdentifiers());
+
+                    AsyncResult asyncResult =
+                            new AsyncResult(status.getStatus().toString(), List.of(),
+                                    ((ImportJob) job).getResult().getValidationResult(), jobId);
+                    asyncResult.setImportResponse(importResponse);
+                    responseBuilder.entity(objectMapper.writeValueAsString(asyncResult));
+
+                }
+
+                return responseBuilder.build();
+
+            }
+
+        } else if (status.getStatus() == AsyncJobRegistry.Status.FAILED)
+        {
+            result = new AsyncResult(status.getStatus().toString(),
+                    List.of(status.getJob().getException().getMessage() + "\n" + Arrays.stream(
+                                    status.getJob().getException().getStackTrace()).toList().stream()
+                            .map(x -> x.toString()).collect(
+                                    Collectors.joining(","))), null, jobId);
+            statusCode = Response.Status.OK.getStatusCode();
+
+        } else
+        {
+
+            result = new AsyncResult(status.getStatus().toString(), List.of(), null, jobId);
+            statusCode = Response.Status.OK.getStatusCode();
+        }
+        responseBuilder = Response.ok(objectMapper.writeValueAsString(result));
+        responseBuilder.status(statusCode);
+
+        return responseBuilder.build();
+    }
+
+    @GET
+    @Path("download")
+    public Response download(
+            @BeanParam DownloadParams headers,
+            InputStream body) throws Exception
+    {
+        OpenBIS openBIS = null;
+        SessionInformation sessionInformation = null;
         if (headers.getJobId() == null)
         {
             ErrorResponse errorResponse = new ErrorResponse("Header jobID is missing");
@@ -268,63 +475,37 @@ public class RoCrateService
         }
         AsyncJobRegistry.AsyncStatus status =
                 asyncJobRegistry.poll(sessionInformation.getUserName(), headers.getJobId());
+        Response.ResponseBuilder responseBuilder = new ResponseBuilderImpl();
+
+        if (status == null)
+        {
+            responseBuilder.status(Response.Status.NOT_FOUND);
+            return responseBuilder.build();
+
+        }
+
         AsyncResult result = null;
         int statusCode = 0;
-        Response.ResponseBuilder responseBuilder = new ResponseBuilderImpl();
 
         if (status.getStatus() == AsyncJobRegistry.Status.COMPLETED)
         {
             IAsyncJob job = status.getJob();
             if (job instanceof ExportJob)
             {
-                result = new AsyncResult(status.getStatus().toString(), List.of(), null);
                 java.nio.file.Path path = ((ExportJob) job).getResult();
 
                 responseBuilder = Response.ok(Files.readAllBytes(path),
-                        job.getMimeType());
+                        ((ExportJob) job).getExportType());
+                responseBuilder.type(((ExportJob) job).getExportType());
                 return responseBuilder.build();
-            }
-            if (job instanceof ValidateJob)
+            } else
             {
-                responseBuilder.status(Response.Status.OK);
-                responseBuilder.type(MediaType.APPLICATION_JSON);
-                ValidationResult result1 = ((ValidateJob) job).getResult();
-                responseBuilder.entity(objectMapper.writeValueAsString(result1));
-                return responseBuilder.build();
-            }
-            if (job instanceof ImportJob)
-            {
-                responseBuilder.type(MediaType.APPLICATION_JSON);
-                responseBuilder.status(Response.Status.OK);
-
-                if (((ImportJob) job).isValidateOnly())
-                {
-                    responseBuilder.status(Response.Status.OK);
-                    AsyncResult asyncResult =
-                            new AsyncResult(status.getStatus().toString(), List.of(), null
-                            );
-                    asyncResult.setValidationResult(
-                            ((ImportJob) job).getResult().getValidationResult());
-                    responseBuilder.entity(objectMapper.writeValueAsString(asyncResult));
-
-                } else
-                {
-
-                    ImportDelegate.OpenBisImportResult openBisImportResult =
-                            ((ImportJob) job).getResult();
-
-                    ImportResponse importResponse = new ImportResponse(
-                            openBisImportResult.getExternalToOpenBisIdentifiers());
-
-                    AsyncResult asyncResult = new AsyncResult(status.getStatus().toString(), List.of(),
-                            ((ImportJob) job).getResult().getValidationResult());
-                    asyncResult.setImportResponse(importResponse);
-                    responseBuilder.entity(objectMapper.writeValueAsString(asyncResult));
-
-                }
-
-                return responseBuilder.build();
-
+                ErrorResponse errorResponse =
+                        new ErrorResponse("Unsupported async job type, only export supported here");
+                ObjectMapper objectMapper = new ObjectMapper();
+                responseBuilder = new ResponseBuilderImpl();
+                responseBuilder.status(Response.Status.BAD_REQUEST);
+                responseBuilder.type(MediaType.APPLICATION_JSON_TYPE);
             }
 
         } else if (status.getStatus() == AsyncJobRegistry.Status.FAILED)
@@ -333,14 +514,14 @@ public class RoCrateService
                     List.of(status.getJob().getException().getMessage() + "\n" + Arrays.stream(
                                     status.getJob().getException().getStackTrace()).toList().stream()
                             .map(x -> x.toString()).collect(
-                                    Collectors.joining(","))), null);
+                                    Collectors.joining(","))), null, headers.getJobId());
             statusCode = Response.Status.OK.getStatusCode();
 
         } else
         {
 
-            result = new AsyncResult(status.getStatus().toString(), List.of(), null);
-            statusCode = Response.Status.OK.getStatusCode();
+            responseBuilder.status(Response.Status.CONFLICT);
+            return responseBuilder.build();
         }
         responseBuilder = Response.ok(objectMapper.writeValueAsString(result));
         responseBuilder.status(statusCode);
@@ -348,5 +529,4 @@ public class RoCrateService
         return responseBuilder.build();
 
     }
-
 }

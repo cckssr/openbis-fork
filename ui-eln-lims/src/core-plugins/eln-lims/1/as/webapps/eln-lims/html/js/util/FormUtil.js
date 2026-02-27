@@ -3875,6 +3875,11 @@ var FormUtil = new function() {
                                             $("#CHILDREN-EXPORT")[0].disabled = !event.target.checked;
                                             if (!event.target.checked) {
                                                 $("#CHILDREN-EXPORT")[0].checked = false;
+                                                var enabled = $("#PARENTS-EXPORT")[0].checked || $("#CHILDREN-EXPORT")[0].checked;
+                                                if(!enabled) {
+                                                    $("#OTHER-SPACES-EXPORT")[0].disabled = true;
+                                                    $("#OTHER-SPACES-EXPORT")[0].checked = false;
+                                                }
                                             }
                                         });
 

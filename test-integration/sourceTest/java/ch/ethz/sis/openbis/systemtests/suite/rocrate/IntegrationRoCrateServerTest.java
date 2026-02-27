@@ -8,6 +8,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.options.ImportOptions;
 import ch.ethz.sis.openbis.systemtests.suite.rocrate.environment.RoCrateServerIntegrationTestEnvironment;
 import ch.systemsx.cisd.common.http.JettyHttpClientFactory;
 import ch.systemsx.cisd.openbis.generic.shared.util.TestInstanceHostUtils;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.jetty.client.BytesRequestContent;
 import org.eclipse.jetty.client.ContentResponse;
@@ -38,7 +39,7 @@ import static org.testng.Assert.*;
 public class IntegrationRoCrateServerTest
 {
 
-    private static final int TIMEOUT = 10 * 60 * 1000;
+    private static final int TIMEOUT = 4 * 60 * 1000;
 
     private static String username = "system";
 
@@ -101,7 +102,7 @@ public class IntegrationRoCrateServerTest
         assertEquals(response.getContentAsString(), username);
     }
 
-    @Test(enabled = true, timeOut = TIMEOUT)
+    @Test(enabled = true, timeOut = TIMEOUT, priority = 4)
     public void testImport() throws Exception
     {
         OpenBIS openBIS = environment.createOpenBIS(TIMEOUT);
@@ -130,7 +131,7 @@ public class IntegrationRoCrateServerTest
         while (!done)
         {
             Request pollRequest = client.newRequest(
-                    TestInstanceHostUtils.getRoCrateUrl() + "/openbis/open-api/ro-crate/status");
+                    TestInstanceHostUtils.getRoCrateUrl() + "/openbis/open-api/ro-crate/status/" + jobId);
             pollRequest.method(HttpMethod.GET);
             pollRequest.headers(headers -> {
                 headers.add("api-key", openBIS.getSessionToken());
@@ -157,7 +158,8 @@ public class IntegrationRoCrateServerTest
         }
     }
 
-    @Test(enabled = false) // This takes over 30 seconds, should be converted to async implementation
+    @Test(enabled = false, priority = 4)
+    // This takes over 30 seconds, should be converted to async implementation
     public void testImportZip()
             throws Exception
     {
@@ -214,7 +216,7 @@ public class IntegrationRoCrateServerTest
 
     }
 
-    @Test
+    @Test(priority = 4)
     public void testValidate()
             throws Exception
     {
@@ -234,7 +236,7 @@ public class IntegrationRoCrateServerTest
 
     }
 
-    @Test
+    @Test(priority = 4)
     public void testValidateZip()
             throws Exception
     {
@@ -253,7 +255,7 @@ public class IntegrationRoCrateServerTest
         testValidateAstract("OkayExample.zip", "application/zip", assertions);
     }
 
-    @Test
+    @Test(priority = 4)
     public void testValidateUnknown()
             throws Exception
     {
@@ -278,7 +280,7 @@ public class IntegrationRoCrateServerTest
 
     }
 
-    @Test
+    @Test(priority = 4)
     public void testValidateWrong()
             throws Exception
     {
@@ -299,7 +301,7 @@ public class IntegrationRoCrateServerTest
         testValidateAstract("WrongDataType.json", "application/ld+json", validationStuff);
     }
 
-    @Test(enabled = true, timeOut = TIMEOUT)
+    @Test(enabled = true, timeOut = TIMEOUT, priority = 4)
     // This test depends on some data which should be created before the test runs
     public void testExportDOI()
             throws Exception
@@ -307,28 +309,8 @@ public class IntegrationRoCrateServerTest
 
         String payload = "[\"https://doi.org/10.1038/s41586-020-3010-5\"]";
         String mimeType = "application/ld+json";
-        testExport(mimeType, payload, x -> testMimeAndStatus(x, "COMPLETED", mimeType),
-                x -> testStatus(x, "FAILED"));
-
-    }
-
-    private static boolean testMimeAndStatus(ContentResponse contentResponse, String asyncStatus,
-            String mimeType)
-    {
-        try
-        {
-            if (contentResponse.getMediaType().equals(mimeType))
-            {
-                return true;
-            }
-            LinkedHashMap asyncJob =
-                    objectMapper.readValue(contentResponse.getContentAsString(),
-                            LinkedHashMap.class);
-            return asyncJob.get("status").toString().equals(asyncStatus);
-        } catch (Exception e)
-        {
-            throw new RuntimeException(e);
-        }
+        testExport(mimeType, payload, x -> testStatus(x, "COMPLETED"),
+                x -> testStatus(x, "FAILED"), IntegrationRoCrateServerTest::checkDownload);
     }
 
     private static boolean testStatus(ContentResponse contentResponse, String asyncStatus)
@@ -345,29 +327,29 @@ public class IntegrationRoCrateServerTest
         }
     }
 
-    @Test(enabled = true, timeOut = TIMEOUT)
+    @Test(enabled = true, timeOut = TIMEOUT, priority = 4)
     // This test depends on some data which should be created before the test runs
     public void testExportDOIZip()
             throws Exception
     {
         String payload = "[\"https://doi.org/10.1038/s41586-020-3010-5\"]";
         String mimeType = "application/zip";
-        testExport(mimeType, payload, x -> testMimeAndStatus(x, "COMPLETED", mimeType),
-                x -> testStatus(x, "FAILED"));
+        testExport(mimeType, payload, x -> testStatus(x, "COMPLETED"),
+                x -> testStatus(x, "FAILED"), IntegrationRoCrateServerTest::checkDownload);
     }
 
-    @Test(enabled = true, timeOut = TIMEOUT)
+    @Test(enabled = true, timeOut = TIMEOUT, priority = 4)
     // This depends on some data which should be created before the test runs
     public void testExportIdentifier()
             throws Exception
     {
         String payload = "[\"/PUBLICATIONS/PUBLIC_REPOSITORIES/PUB29\"]";
         String mimeType = "application/ld+json";
-        testExport(mimeType, payload, x -> testMimeAndStatus(x, "COMPLETED", mimeType),
-                x -> testStatus(x, "FAILED"));
+        testExport(mimeType, payload, x -> testStatus(x, "COMPLETED"),
+                x -> testStatus(x, "FAILED"), IntegrationRoCrateServerTest::checkDownload);
     }
 
-    @Test(enabled = false, timeOut = TIMEOUT)
+    @Test(enabled = false, timeOut = TIMEOUT, priority = 4)
     // PermIds depend on when the import was done. This can lead to false failure.
     // As long as we don't have a good solution for search in tests, this is disabled.
     public void testExportPermId()
@@ -375,21 +357,22 @@ public class IntegrationRoCrateServerTest
     {
         String payload = "[\"/PUBLICATIONS/PUBLIC_REPOSITORIES/PUB29\"";
         String mimeType = "application/ld+json";
-        testExport(mimeType, payload, x -> testMimeAndStatus(x, "COMPLETED", mimeType),
-                x -> testStatus(x, "COMPLETED"));
+        testExport(mimeType, payload, x -> testStatus(x, "COMPLETED"),
+                x -> testStatus(x, "COMPLETED"), IntegrationRoCrateServerTest::checkDownload);
 
     }
 
-    @Test(timeOut = TIMEOUT)
+    @Test(timeOut = TIMEOUT, priority = 4)
     public void testExportEmptyResults()
             throws Exception
     {
 
         testExport("application/ld+json", "[\"DOES-NOT-EXIST\"]", x -> testStatus(x, "FAILED"),
-                x -> testStatus(x, "COMPLETED"));
+                x -> testStatus(x, "COMPLETED"), x -> {
+                });
     }
 
-    @Test(dataProvider = "acceptableMimeTypes")
+    @Test(dataProvider = "acceptableMimeTypes", priority = 4)
     public void testAcceptableExportMimeTypes(String acceptableExportMimeType,
             int expectedStatusCode)
             throws Exception
@@ -416,7 +399,7 @@ public class IntegrationRoCrateServerTest
         assertEquals(response.getStatus(), expectedStatusCode);
     }
 
-    @Test
+    @Test(priority = 4)
     public void testMissingExportMimeType()
             throws Exception
     {
@@ -450,7 +433,7 @@ public class IntegrationRoCrateServerTest
 
 
     // https://github.com/paulscherrerinstitute/rocrate-api/issues/40
-    @Test
+    @Test(priority = 4)
     public void testValidateMalformedCrate()
             throws Exception
     {
@@ -483,7 +466,7 @@ public class IntegrationRoCrateServerTest
 
     }
 
-    @Test
+    @Test(priority = 4)
     public void testImportMalformedCrate()
             throws Exception
     {
@@ -517,7 +500,7 @@ public class IntegrationRoCrateServerTest
     }
 
     // https://github.com/paulscherrerinstitute/rocrate-api/issues/39
-    @Test
+    @Test(priority = 4)
     public void testValidateMalformedCrateZipped()
             throws Exception
     {
@@ -541,7 +524,8 @@ public class IntegrationRoCrateServerTest
     }
 
     // https://github.com/paulscherrerinstitute/rocrate-api/issues/35
-    @Test(enabled = true) // This uses MissingManifest.zip file which does not exist
+    @Test(priority = 4)
+    // This uses MissingManifest.zip file which does not exist
     public void testValidateMalformedCrateZippedMissingManifest()
             throws Exception
     {
@@ -566,7 +550,7 @@ public class IntegrationRoCrateServerTest
 
     // https://github.com/paulscherrerinstitute/rocrate-api/issues/41
 
-    @Test
+    @Test(priority = 4)
     public void testEmptyPayloadZip()
             throws Exception
     {
@@ -591,7 +575,7 @@ public class IntegrationRoCrateServerTest
 
     // https://github.com/paulscherrerinstitute/rocrate-api/issues/42
 
-    @Test
+    @Test(priority = 4)
     public void testEmptyPayload()
             throws Exception
     {
@@ -616,7 +600,7 @@ public class IntegrationRoCrateServerTest
 
     // https://github.com/paulscherrerinstitute/rocrate-api/issues/54
 
-    @Test
+    @Test(priority = 4)
     public void testInvalidAcceptHeader()
             throws Exception
     {
@@ -639,7 +623,7 @@ public class IntegrationRoCrateServerTest
         assertEquals(response.getStatus(), 406);
     }
 
-    @Test
+    @Test(priority = 4)
     public void testInvalidContentType()
             throws Exception
     {
@@ -662,8 +646,25 @@ public class IntegrationRoCrateServerTest
         assertEquals(response.getStatus(), 415);
     }
 
+    public static void checkDownload(ExportCallerParams exportCallerParams)
+    {
+        Request pollRequest = exportCallerParams.client.newRequest(
+                TestInstanceHostUtils.getRoCrateUrl() + "/openbis/open-api/ro-crate/status");
+        pollRequest.method(HttpMethod.GET);
+        pollRequest.headers(headers -> {
+            headers.add("api-key", exportCallerParams.apiKey);
+            headers.add("jobId", exportCallerParams.jobId);
+        });
+
+    }
+
+    record ExportCallerParams(String apiKey, String jobId, String mimeType, HttpClient client)
+    {
+    }
+
     private static void testExport(String exportMimeType, String identifiersJsonString,
-            Predicate<ContentResponse> successCheck, Predicate<ContentResponse> failCheck)
+            Predicate<ContentResponse> successCheck, Predicate<ContentResponse> failCheck,
+            Consumer<ExportCallerParams> afterCompletionCheck)
             throws IOException, InterruptedException, ExecutionException, TimeoutException
     {
         OpenBIS openBIS = environment.createOpenBIS(TIMEOUT);
@@ -678,6 +679,8 @@ public class IntegrationRoCrateServerTest
             headers.add("api-key", openBIS.getSessionToken());
             headers.add("Content-Type", "application/json");
             headers.add("Export", export_type);
+            headers.add("openbis.with-levels-above", "true");
+            headers.add("openbis.import-compatible", "true");
         });
         request.body(new BytesRequestContent(identifiersJsonString.getBytes()));
         request.idleTimeout(TIMEOUT, TimeUnit.MILLISECONDS);
@@ -693,7 +696,7 @@ public class IntegrationRoCrateServerTest
         while (!done)
         {
             Request pollRequest = client.newRequest(
-                    TestInstanceHostUtils.getRoCrateUrl() + "/openbis/open-api/ro-crate/status");
+                    TestInstanceHostUtils.getRoCrateUrl() + "/openbis/open-api/ro-crate/status/" + jobId);
             pollRequest.method(HttpMethod.GET);
             pollRequest.headers(headers -> {
                 headers.add("api-key", openBIS.getSessionToken());
@@ -719,6 +722,176 @@ public class IntegrationRoCrateServerTest
 
             Thread.sleep(2000);
         }
+
+        afterCompletionCheck.accept(
+                new ExportCallerParams(openBIS.getSessionToken(), jobId, exportMimeType, client));
+
+    }
+
+    @Test(priority = 1)
+    private void testStatusRegisteringOneJob()
+            throws IOException, ExecutionException, InterruptedException,
+            TimeoutException
+    {
+
+        OpenBIS openBIS = environment.createOpenBIS();
+        openBIS.login(username, password);
+        HttpClient client = JettyHttpClientFactory.getHttpClient();
+
+        Consumer<LinkedHashMap<String, Object>> assertions = x ->
+        {
+        };
+
+        testValidateAstract("OkayExample.json", "application/ld+json", assertions);
+
+        Request request = client.newRequest(
+                TestInstanceHostUtils.getRoCrateUrl() + "/openbis/open-api/ro-crate/status");
+        request.method(HttpMethod.GET);
+        request.headers(headers -> {
+            headers.add("api-key", openBIS.getSessionToken());
+        });
+
+        ContentResponse send = request.send();
+        ;
+        LinkedHashMap linkedHashMap =
+                objectMapper.readValue(send.getContentAsString(), LinkedHashMap.class);
+        List<LinkedHashMap> jobs = (List<LinkedHashMap>) linkedHashMap.get("jobs");
+        Assert.assertEquals(1, jobs.size());
+
+    }
+
+    @Test(priority = 2)
+    private void testStatusRegisteringMultipleJobs()
+            throws IOException, ExecutionException, InterruptedException, TimeoutException
+    {
+
+        OpenBIS openBIS = environment.createOpenBIS();
+        openBIS.login(username, password);
+        HttpClient client = JettyHttpClientFactory.getHttpClient();
+
+        Consumer<LinkedHashMap<String, Object>> assertions = x ->
+        {
+        };
+
+        testValidateAstract("OkayExample.json", "application/ld+json", assertions);
+        testValidateAstract("OkayExample.json", "application/ld+json", assertions);
+        testValidateAstract("OkayExample.json", "application/ld+json", assertions);
+        testValidateAstract("OkayExample.json", "application/ld+json", assertions);
+
+        Request request = client.newRequest(
+                TestInstanceHostUtils.getRoCrateUrl() + "/openbis/open-api/ro-crate/status");
+        request.method(HttpMethod.GET);
+        request.headers(headers -> {
+            headers.add("api-key", openBIS.getSessionToken());
+        });
+
+        ContentResponse send = request.send();
+        ;
+        LinkedHashMap linkedHashMap =
+                objectMapper.readValue(send.getContentAsString(), LinkedHashMap.class);
+        List<LinkedHashMap> jobs = (List<LinkedHashMap>) linkedHashMap.get("jobs");
+        Assert.assertEquals(5,
+                jobs.size()); //state from previous test is still around, therefore 4 + 1 jobs
+
+    }
+
+    @Test(priority = 0)
+    private void testStatusRegisteringNoJobs()
+            throws ExecutionException, InterruptedException, TimeoutException,
+            JsonProcessingException
+    {
+
+        OpenBIS openBIS = environment.createOpenBIS();
+        openBIS.login(username, password);
+        HttpClient client = JettyHttpClientFactory.getHttpClient();
+        Request request = client.newRequest(
+                TestInstanceHostUtils.getRoCrateUrl() + "/openbis/open-api/ro-crate/status");
+        request.method(HttpMethod.GET);
+        request.headers(headers -> {
+            headers.add("api-key", openBIS.getSessionToken());
+        });
+        ContentResponse send = request.send();
+        ;
+        LinkedHashMap linkedHashMap =
+                objectMapper.readValue(send.getContentAsString(), LinkedHashMap.class);
+        List<LinkedHashMap> jobs = (List<LinkedHashMap>) linkedHashMap.get("jobs");
+        Assert.assertTrue(jobs.isEmpty());
+
+    }
+
+    @Test(priority = 4)
+    private void testCanFindStatusAgain()
+            throws ExecutionException, InterruptedException, TimeoutException,
+            IOException
+    {
+
+        OpenBIS openBIS = environment.createOpenBIS();
+        String jobId;
+        openBIS.login(username, password);
+        {
+            String mimeType = "application/ld+json";
+            HttpClient client = JettyHttpClientFactory.getHttpClient();
+            Request request = client.newRequest(
+                    TestInstanceHostUtils.getRoCrateUrl() + "/openbis/open-api/ro-crate/validate");
+            request.method(HttpMethod.POST);
+            request.headers(headers -> {
+                headers.add("api-key", openBIS.getSessionToken());
+                headers.add("Content-Type", mimeType);
+                headers.add("Accept", "application/json");
+            });
+            String fileName = "OkayExample.json";
+            Path file =
+                    Path.of("sourceTest/resource/" + getClass().getSimpleName() + "/" + fileName);
+
+            request.body(new BytesRequestContent(Files.readAllBytes(file)));
+
+            ContentResponse response = request.send();
+            LinkedHashMap asyncJob =
+                    objectMapper.readValue(response.getContentAsString(), LinkedHashMap.class);
+            jobId = asyncJob.get("jobId").toString();
+
+            assertEquals(response.getStatus(), 202);
+
+        }
+
+        HttpClient client = JettyHttpClientFactory.getHttpClient();
+
+        {
+
+        }
+
+        Request request = client.newRequest(
+                TestInstanceHostUtils.getRoCrateUrl() + "/openbis/open-api/ro-crate/status/" + jobId);
+        request.method(HttpMethod.GET);
+        request.headers(headers -> {
+            headers.add("api-key", openBIS.getSessionToken());
+        });
+        ContentResponse send = request.send();
+        ;
+        Assert.assertEquals(200, send.getStatus());
+        Assert.assertTrue(send.getContentAsString().contains(jobId));
+        objectMapper.readValue(send.getContentAsString(), LinkedHashMap.class);
+
+    }
+
+    @Test
+    private void testUnknownJobIdMeansNotFound()
+            throws ExecutionException, InterruptedException, TimeoutException
+    {
+        OpenBIS openBIS = environment.createOpenBIS();
+        openBIS.login(username, password);
+        HttpClient client = JettyHttpClientFactory.getHttpClient();
+        Request request = client.newRequest(
+                TestInstanceHostUtils.getRoCrateUrl() + "/openbis/open-api/ro-crate/download");
+        request.method(HttpMethod.GET);
+        request.headers(headers -> {
+            headers.add("api-key", openBIS.getSessionToken());
+            headers.add("jobId", "atexpetlatl");
+
+        });
+        ContentResponse send = request.send();
+        Assert.assertEquals(404, send.getStatus());
+
     }
 
     private void testValidateAstract(String fileName, String mimeType,
@@ -756,7 +929,7 @@ public class IntegrationRoCrateServerTest
         while (!done)
         {
             Request pollRequest = client.newRequest(
-                    TestInstanceHostUtils.getRoCrateUrl() + "/openbis/open-api/ro-crate/status");
+                    TestInstanceHostUtils.getRoCrateUrl() + "/openbis/open-api/ro-crate/status/" + jobId);
             pollRequest.method(HttpMethod.GET);
             pollRequest.headers(headers -> {
                 headers.add("api-key", openBIS.getSessionToken());

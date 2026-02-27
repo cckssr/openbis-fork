@@ -221,14 +221,25 @@ public class GlobalSearchTest extends AbstractTest
         final SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
 
         List<GlobalSearchObject> objects = result.getObjects();
-        assertEquals(objects.size(), 3);
-        final GlobalSearchObject obj1 = findObjectByPermId(objects, "200811050919915-8");
-        final GlobalSearchObject obj2 = findObjectByPermId(objects, "200811050946559-981");
-        final GlobalSearchObject obj3 = findObjectByPermId(objects, "201206191219327-1055");
 
-        assertSample(obj1, "200811050919915-8", "/CISD/CL1", "Property 'Description': test control layout", true);
-        assertSample(obj2, "200811050946559-981", "/CISD/3VCP7", "Property 'Comment': test comment", true);
-        assertSample(obj3, "201206191219327-1055", "/TEST-SPACE/TEST-PROJECT/EV-TEST", "Property 'Comment': test comment", true);
+        assertEquals(objects.size(), 8);
+        final GlobalSearchObject obj1 = findObjectByPermId(objects, "200811050919915-8");
+        final GlobalSearchObject obj2 = findObjectByPermId(objects, "201206191219327-1055"); // /TEST-SPACE/TEST-PROJECT/EV-TEST
+        final GlobalSearchObject obj3 = findObjectByPermId(objects, "200811050926038-1001"); // /CISD/C3
+        final GlobalSearchObject obj4 = findObjectByPermId(objects, "200811050925507-999");  // /CISD/C2
+        final GlobalSearchObject obj5 = findObjectByPermId(objects, "200811050924898-997");  // /CISD/C1
+        final GlobalSearchObject obj6 = findObjectByPermId(objects, "200811050924274-994");  // /CISD/B1B3
+        final GlobalSearchObject obj7 = findObjectByPermId(objects, "200811050946559-981");  // /CISD/3VCP7
+        final GlobalSearchObject obj8 = findObjectByPermId(objects, "200811050944030-973");  // /CISD/CL-3V
+
+        assertSample(objects.get(0), "200811050919915-8",   "/CISD/CL1",                       "Property 'Description': test control layout\nEntity type: CONTROL_LAYOUT", true);
+        assertSample(objects.get(1), "201206191219327-1055","/TEST-SPACE/TEST-PROJECT/EV-TEST","Property 'Comment': test comment", true);
+        assertSample(objects.get(2), "200811050926038-1001","/CISD/C3",                        "Entity type: CONTROL_LAYOUT", true);
+        assertSample(objects.get(3), "200811050925507-999", "/CISD/C2",                        "Entity type: CONTROL_LAYOUT", true);
+        assertSample(objects.get(4), "200811050924898-997", "/CISD/C1",                        "Entity type: CONTROL_LAYOUT", true);
+        assertSample(objects.get(5), "200811050924274-994", "/CISD/B1B3",                      "Entity type: CONTROL_LAYOUT", true);
+        assertSample(objects.get(6), "200811050946559-981", "/CISD/3VCP7",                     "Property 'Comment': test comment", true);
+        assertSample(objects.get(7), "200811050944030-973", "/CISD/CL-3V",                     "Entity type: CONTROL_LAYOUT", true);
     }
 
     @Test

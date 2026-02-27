@@ -98,7 +98,7 @@ const GalleryListView = ({ previewContainerList, onOpenPreview, onEditComment, o
                         <CardMedia component="img"
                             alt={""}
                             src={previewContainer.preview.bytes ? `data:image/${previewContainer.preview.format};base64,${previewContainer.preview.bytes}` : constants.BLANK_IMG_SRC}
-                            onClick={() => onOpenPreview(previewContainer.datasetId)}
+                            onClick={() => onOpenPreview(previewContainer.datasetId, previewContainer.imageIdx, previewContainer.previewIdx)}
                         />
                     </CardActionArea>
                     <CardContent className={classes.content} sx={{ overflow: 'auto', maxHeight: '100%' }}>

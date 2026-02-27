@@ -15,7 +15,17 @@
  */
 
 function ExportTreeView(exportTreeController, exportTreeModel) {
+    var _refreshableFields = [];
+	var _this = this;
 	var exportTreeModel = exportTreeModel;
+
+	this._viewId = mainController.getNextId();
+
+	this.refresh = function() {
+        for(var field of _refreshableFields) {
+            field.refresh();
+        }
+    }
 
 	this.repaint = function (views) {
 		var $header = views.header;
@@ -42,38 +52,101 @@ function ExportTreeView(exportTreeController, exportTreeModel) {
 		$header.append($exportButton);
 
 
+        var $options = $("<div>");
+        var $compatible = $("<span class='checkbox'><label><input type='checkbox' checked id='COMPATIBLE-IMPORT-"+_this._viewId+"'>Make import compatible</label></span>");
+        $options.append($compatible);
 
-		var $compatible = $("<span class='checkbox'><label><input type='checkbox' checked id='COMPATIBLE-IMPORT'>Make import compatible</label></span>");
-		$container.append($compatible);
+        $options.append($("<legend>").append("File formats"));
 
-		var $info_formats = $("<span>").append($("<b>").append("File formats"));
-		$container.append($info_formats);
-		var $pdf = $("<span class='checkbox'><label><input type='checkbox' checked id='PDF-EXPORT'>Export metadata as PDF</label></span>");
-		$container.append($pdf);
-		var $xlsx = $("<span class='checkbox'><label><input type='checkbox' checked id='XLSX-EXPORT'>Export metadata as XLSX</label></span>");
-		$container.append($xlsx);
-		var $data = $("<span class='checkbox'><label><input type='checkbox' checked id='DATASET-EXPORT'>Export dataset data</label></span>");
-		$container.append($data);
-		var $data = $("<span class='checkbox'><label><input type='checkbox' checked id='FILES-EXPORT'>Export files</label></span>");
-		$container.append($data);
+        var $pdf = $("<span class='checkbox'><label><input type='checkbox' checked id='PDF-EXPORT-"+_this._viewId+"'>Export metadata as PDF</label></span>");
+        $options.append($pdf);
+        var $xlsx = $("<span class='checkbox'><label><input type='checkbox' checked id='XLSX-EXPORT-"+_this._viewId+"'>Export metadata as XLSX</label></span>");
+        $options.append($xlsx);
+        var $data = $("<span class='checkbox'><label><input type='checkbox' checked id='DATASET-EXPORT-"+_this._viewId+"'>Export dataset data</label></span>");
+        $options.append($data);
+        var $data = $("<span class='checkbox'><label><input type='checkbox' checked id='FILES-EXPORT-"+_this._viewId+"'>Export files</label></span>");
+        $options.append($data);
 
-		var $hierarchyInclusions = $("<span>").append($("<b>").append("Hierarchy Inclusions"));
+        var $hierarchyInclusions = $("<legend>").append("Hierarchy Inclusions (Same Space)");
 
-		$container.append($hierarchyInclusions);
+        $options.append($hierarchyInclusions);
 
-		var $infoBox = FormUtil.getInfoBox("You can select any parts of the accessible openBIS structure to export:", [
-			"If you select a tree node and do not expand it, everything below this node will be exported by default.",
-			"To export selectively only parts of a tree, open the nodes and select what to export.",
-			"Under any case dependencies of the selected nodes will be exported too."]);
-		$infoBox.css("border", "none");
-		$container.append($infoBox);
+        var $withLevelsAbove = $("<span class='checkbox'><label><input type='checkbox' id='LEVELS-ABOVE-EXPORT-"+_this._viewId+"' checked>Include levels above</label></span>");
+        $options.append($withLevelsAbove);
+        var $includeParents = $("</span><span class='checkbox'><label><input type='checkbox' id='PARENTS-EXPORT-"+_this._viewId+"'>Include Object and Dataset parents</label></span>").css({ "padding-left" : "20px" });
+        $options.append($includeParents);
 
-		var $tree = $("<div>", { "id": "exportsTree" });
-		$formColumn.append($("<br>"));
+        var $levelsBelow = $("<span class='checkbox'><label><input type='checkbox' id='LEVELS-BELOW-EXPORT-"+_this._viewId+"'>Include levels below</label></span>");
+        $options.append($levelsBelow);
+        var $includeChildren = $("<span class='checkbox'><label><input type='checkbox' id='CHILDREN-EXPORT-"+_this._viewId+"' disabled>Include Object and Dataset children</label></span>").css({ "padding-left" : "20px" });
+        $options.append($includeChildren);
+
+        var levelsBelowChange = function(event) {
+            $("#CHILDREN-EXPORT-"+_this._viewId)[0].disabled = !event.target.checked;
+            if (!event.target.checked) {
+                $("#CHILDREN-EXPORT-"+_this._viewId)[0].checked = false;
+                var enabled = $("#PARENTS-EXPORT-"+_this._viewId)[0].checked || $("#CHILDREN-EXPORT-"+_this._viewId)[0].checked;
+                if(!enabled) {
+                    $("#OTHER-SPACES-EXPORT-"+_this._viewId)[0].disabled = true;
+                    $("#OTHER-SPACES-EXPORT-"+_this._viewId)[0].checked = false;
+                }
+            }
+        }
+        $levelsBelow.change(levelsBelowChange);
+        $levelsBelow.refresh = function() {
+            this.off('change')
+            this.change(levelsBelowChange);
+        }
+        _refreshableFields.push($levelsBelow)
+
+        var includeParentsChildrenChangeEvent = function(event) {
+            var enabled = $("#PARENTS-EXPORT-"+_this._viewId)[0].checked || $("#CHILDREN-EXPORT-"+_this._viewId)[0].checked;
+            $("#OTHER-SPACES-EXPORT-"+_this._viewId)[0].disabled = !enabled;
+            if (!enabled) {
+                $("#OTHER-SPACES-EXPORT-"+_this._viewId)[0].checked = false;
+            }
+        }
+        $includeParents.change(includeParentsChildrenChangeEvent);
+        $includeParents.refresh = function() {
+            this.off('change')
+            this.change(includeParentsChildrenChangeEvent);
+        }
+        _refreshableFields.push($includeParents)
+        $includeChildren.change(includeParentsChildrenChangeEvent);
+        $includeChildren.refresh = function() {
+            this.off('change')
+            this.change(includeParentsChildrenChangeEvent);
+        }
+        _refreshableFields.push($includeChildren)
+
+        var $spaceInclusions = $("<legend>").append("Hierarchy Inclusions (Other Spaces)");
+        $options.append($spaceInclusions);
+        var $includeOtherSpaces = $("<span class='checkbox'><label><input type='checkbox' id='OTHER-SPACES-EXPORT-"+_this._viewId+"' disabled>Include Objects and Datasets parents and children</label></span>");
+        $options.append($includeOtherSpaces);
+
+        $container.append($options);
+
+        var $entityTree = $("<legend>").append("Inclusion tree");
+        $container.append($entityTree);
+
+
+		var $tree = $("<div>", { "id": "exportsTree-"+_this._viewId });
+
 		$formColumn.append(FormUtil.getBox().append($tree));
+
+		$formColumn.refresh = function() {
+            $("form[name='exportTreeForm']").children().remove()
+            var $tree = $('<div>', { 'id' : 'exportsTree-'+_this._viewId });
+            $("form[name='exportTreeForm']").append(FormUtil.getBox().append($tree));
+            exportTreeModel.tree = TreeUtil.getCompleteTree($tree);
+            exportTreeModel.tree.fancytree('getTree').rootNode.children[0].setExpanded();
+        }
+        _refreshableFields.push($formColumn);
 
 		$container.append($form);
 
 		exportTreeModel.tree = TreeUtil.getCompleteTree($tree);
+        exportTreeModel.tree.fancytree('getTree').rootNode.children[0].setExpanded();
+        $container.append($('<br>'));
 	}
 }

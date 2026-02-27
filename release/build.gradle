@@ -61,8 +61,8 @@ tasks.register('javadoc', Copy) {
     into file('build/javadoc')
 }
 
-
 tasks.register('release', Tar) {
+    compression = Compression.GZIP
     // API
     dependsOn([project(':api-openbis-java').tasks.release,
                project(':api-openbis-java').tasks.releaseDependenciesIncluded,

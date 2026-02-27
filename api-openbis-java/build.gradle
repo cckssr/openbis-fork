@@ -8,8 +8,8 @@ apply from: '../build/javaproject.gradle'
 dependencies {
     api project(':lib-common'), project(':lib-two-phase-transaction'), project(':api-data-store-server-java'),
             'sis:sis-file-transfer:19.03.1',
-            'fasterxml:jackson-core:2.18.1',
-            'fasterxml:jackson-annotations:2.9.10',
+            'com.fasterxml.jackson.core:jackson-core:2.18.3',
+            'com.fasterxml.jackson.core:jackson-annotations:2.18.3',
             'apache:poi:3.17',
             'apache:poi-ooxml:3.17',
             'apache:poi-ooxml-schemas:3.17',
@@ -132,6 +132,7 @@ sourcesJar {
 
 // openbis-java-api-javadoc-VERSION.tar.gz
 tasks.register('javadocTar', Tar) {
+    compression = Compression.GZIP
     dependsOn javadoc
     archiveFileName = baseName + '-javadoc-' + project.ext.versionNumber + '.tar.gz'
     from javadoc.destinationDir
@@ -150,10 +151,10 @@ dependencies {
             'org.springframework:spring-web:6.2.15',
             'org.springframework:spring-context:6.2.15',
             'marathon:marathon-spring-util:1.2.5-jakarta',
-            'fasterxml:jackson-annotations:2.9.10',
-            'fasterxml:jackson-core:2.9.10',
-            'fasterxml:jackson-databind:2.9.10.8',
-            'fasterxml:jackson-datatype-jsr310:2.9.10',
+            'com.fasterxml.jackson.core:jackson-annotations:2.18.3',
+            'com.fasterxml.jackson.core:jackson-core:2.18.3',
+            'com.fasterxml.jackson.core:jackson-databind:2.18.3',
+            'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.18.3',
             'slf4j:slf4j-api:1.7.24'
 }
 
@@ -165,7 +166,9 @@ tasks.register('jarWithDependencies', Jar) {
     from(zipTree(jar.archivePath)) {
         include '**/*'
     }
-    from(configurations.apiDependenciesIncluded.collect { zipTree(it) }) {
+    from(configurations.apiDependenciesIncluded
+            .findAll { it.isFile() && it.name.toLowerCase().endsWith('.jar') }
+            .collect { zipTree(it) }) {
         include '**/*'
     }
 }
@@ -173,6 +176,7 @@ tasks.register('jarWithDependencies', Jar) {
 
 // openbis-java-api-VERSION.tar.gz
 tasks.register('release', Tar) {
+    compression = Compression.GZIP
     dependsOn jar
     archiveFileName = "${baseName}-${version}.tar.gz"
     from jar.archiveFile
@@ -184,6 +188,7 @@ tasks.register('release', Tar) {
 
 // openbis-java-api-VERSION-dependencies-included.tar.gz
 tasks.register('releaseDependenciesIncluded', Tar) {
+    compression = Compression.GZIP
     dependsOn([jarWithDependencies, sourcesJar, javadocTar])
     archiveFileName = "${baseName}-${version}-dependencies-included.tar.gz"
     from jarWithDependencies.archiveFile

@@ -136,10 +136,8 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 		}
 		
 		//Attach to main form
-			if(!shouldUseAFSWidget) {
-				$container.append($formContainer);
-			}
-		
+		$container.append($formContainer);
+
 		if(this._dataSetFormModel.mode === FormMode.CREATE) {
 			//Initialize file chooser
 			var onComplete = function(data) {
@@ -504,9 +502,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
             }, null, "Documentation", "help-dataset-btn-"+this._viewId, 'btn btn-default help');
             $helpBtn.find("span").css("vertical-align", "middle").css("font-size", "24px")
             toolbarModel.push({ component : $helpBtn });
-			if(!shouldUseTabs) {
-				$header.append(FormUtil.getToolbar(toolbarModel));
-			}
+			$header.append(FormUtil.getToolbar(toolbarModel));
 		}
 
 		if(this._dataSetFormModel.mode === FormMode.VIEW && this._dataSetFormModel.paginationInfo && this._dataSetFormModel.paginationInfo.pagFunction) {
@@ -604,15 +600,14 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 				altRightToolbarModel.push({ component : $paginationInfoLabel.clone(true), tooltip: null });
                 altRightToolbarModel.push({ component : $nextBtn.clone(true), tooltip: null });
             }
-            if(shouldUseTabs) {
-					this._initTabHandling($header, $container, $form, toolbarModel, rightToolbarModel, altRightToolbarModel.length > 0 ? altRightToolbarModel : rightToolbarModel);
-			} else {
-            	$header.append(FormUtil.getToolbar(rightToolbarModel).css("float", "right"));
-			}
+
         }
 
-
-
+        if(shouldUseTabs) {
+           this._initTabHandling($header, $container, $form, toolbarModel, rightToolbarModel, altRightToolbarModel.length > 0 ? altRightToolbarModel : rightToolbarModel);
+        } else {
+           $header.append(FormUtil.getToolbar(rightToolbarModel).css("float", "right"));
+        }
 	}
 
 	this._createIdentificationInfoSection = function(hideShowOptionsModel, views) {

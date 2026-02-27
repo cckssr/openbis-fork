@@ -3597,7 +3597,29 @@ public class SearchSampleTest extends AbstractSampleTest
         criteria.withAnyField().thatMatches("test cp-test-1 cp-test-2");
         criteria.withPermId().thatContains("19");
 
-        testSearch(TEST_USER, criteria, "/CISD/CL1", "/TEST-SPACE/TEST-PROJECT/EV-TEST", "/CISD/NEMO/CP-TEST-1");
+        testSearch(
+                TEST_USER,
+                criteria,
+                "/CISD/DEFAULT/CP1-B1",
+                "/CISD/MP002-1:J10",
+                "/TEST-SPACE/TEST-PROJECT/EV-INVALID",
+                "/CISD/CL1",
+                "/TEST-SPACE/TEST-PROJECT/EV-NOT_INVALID",
+                "/MP:N09",
+                "/CISD/NEMO/CP-TEST-1",
+                "/TEST-SPACE/TEST-PROJECT/EV-PARENT-NORMAL",
+                "/CISD/MP002-1:O10",
+                "/MP:I09",
+                "/TEST-SPACE/TEST-PROJECT/EV-PARENT",
+                "/MP:D09",
+                "/TEST-SPACE/TEST-PROJECT/SAMPLE-TO-DELETE",
+                "/CISD/MP002-1:E10",
+                "/CISD/CL1:A01",
+                "/TEST-SPACE/TEST-PROJECT/EV-TEST",
+                "/TEST-SPACE/TEST-PROJECT/FV-TEST",
+                "/CISD/CL1:A03",
+                "/CISD/NEMO/DYNA-TEST-1"
+        );
     }
 
     @Test

@@ -147,7 +147,10 @@ tasks.register('appOpenbisDriveFullJar', Jar) {
     }
     archiveBaseName = baseName + '-full'
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-    from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
+    from { configurations.runtimeClasspath.collect {
+            it.isDirectory() ? it : (it.name.endsWith('.jar') ? zipTree(it) : it)
+        }
+    }
     with jar
 }
 
@@ -274,6 +277,7 @@ tasks.register('openBISDevelopmentEnvironmentDriveServerStart', JavaExec) {
 // 'openBISDevelopmentEnvironmentDriveServerStart' instead
 tasks.register('openBISDevelopmentEnvironmentDriveGUIStart', JavaExec) {
     environment('OPENBIS_DRIVE_DEV_MODE','true')
+    //environment('OPENBIS_DRIVE_LOCAL_DEVELOPMENT_AS_AND_AFS_URL','true') //see README.md
     mainClass = 'ch.openbis.drive.gui.Launcher'
     classpath = sourceSets.main.runtimeClasspath
 }

@@ -21,28 +21,18 @@ import java.util.List;
 @RunWith(JUnit4.class)
 public class SettingsManagerTest {
 
-    private final Configuration configuration;
-    private final SettingsManager settingsManager;
-
-    public SettingsManagerTest() throws Exception {
-        configuration = new Configuration(Path.of(this.getClass().getClassLoader().getResource("placeholder.txt").getPath()).getParent().resolve("settings-manager-test"));
+    @Test
+    synchronized public void setAndGetSettingsTest() throws Exception {
+        Configuration configuration = new Configuration(Path.of(this.getClass().getClassLoader().getResource("placeholder.txt").getPath()).getParent().resolve("settings-manager-test-001"));
         Files.createDirectories(configuration.getLocalAppStateDirectory());
         NotificationManager notificationManager = Mockito.mock(NotificationManager.class);
         SyncJobEventDAO syncJobEventDAO = Mockito.mock(SyncJobEventDAO.class);
-        settingsManager = Mockito.spy(new SettingsManager(configuration, syncJobEventDAO, notificationManager));
+        SettingsManager settingsManager = Mockito.spy(new SettingsManager(configuration, syncJobEventDAO, notificationManager));
         Mockito.doNothing().when(settingsManager).addStartAtLogin();
         Mockito.doNothing().when(settingsManager).removeStartAtLogin();
-    }
-
-    @Before
-    synchronized public void before() throws Exception {
         settingsManager.setSettings(Settings.defaultSettings());
         Mockito.clearInvocations(settingsManager);
-    }
-    
 
-    @Test
-    synchronized public void setAndGetSettingsTest() throws Exception {
         Settings settings1 = Settings.defaultSettings();
 
         SyncJob syncJob1 = new SyncJob(SyncJob.Type.Bidirectional, "url1", "token1", "id1", "title", "remotedir1", "localdir1", false);
@@ -65,6 +55,16 @@ public class SettingsManagerTest {
 
     @Test
     synchronized public void addAndRemoveStartAtLoginTest() throws Exception {
+        Configuration configuration = new Configuration(Path.of(this.getClass().getClassLoader().getResource("placeholder.txt").getPath()).getParent().resolve("settings-manager-test-002"));
+        Files.createDirectories(configuration.getLocalAppStateDirectory());
+        NotificationManager notificationManager = Mockito.mock(NotificationManager.class);
+        SyncJobEventDAO syncJobEventDAO = Mockito.mock(SyncJobEventDAO.class);
+        SettingsManager settingsManager = Mockito.spy(new SettingsManager(configuration, syncJobEventDAO, notificationManager));
+        Mockito.doNothing().when(settingsManager).addStartAtLogin();
+        Mockito.doNothing().when(settingsManager).removeStartAtLogin();
+        settingsManager.setSettings(Settings.defaultSettings());
+        Mockito.clearInvocations(settingsManager);
+
         Settings settings = Settings.defaultSettings();
         settings.setStartAtLogin(false);
         settingsManager.setSettings(settings);
@@ -114,6 +114,16 @@ public class SettingsManagerTest {
 
     @Test
     synchronized public void getSyncJobsTest() throws Exception {
+        Configuration configuration = new Configuration(Path.of(this.getClass().getClassLoader().getResource("placeholder.txt").getPath()).getParent().resolve("settings-manager-test-003"));
+        Files.createDirectories(configuration.getLocalAppStateDirectory());
+        NotificationManager notificationManager = Mockito.mock(NotificationManager.class);
+        SyncJobEventDAO syncJobEventDAO = Mockito.mock(SyncJobEventDAO.class);
+        SettingsManager settingsManager = Mockito.spy(new SettingsManager(configuration, syncJobEventDAO, notificationManager));
+        Mockito.doNothing().when(settingsManager).addStartAtLogin();
+        Mockito.doNothing().when(settingsManager).removeStartAtLogin();
+        settingsManager.setSettings(Settings.defaultSettings());
+        Mockito.clearInvocations(settingsManager);
+
         Settings settings1 = Settings.defaultSettings();
 
         SyncJob syncJob1 = new SyncJob(SyncJob.Type.Bidirectional, "url1", "token1", "id1", "title", "remotedir1", "localdir1", false);
@@ -132,7 +142,16 @@ public class SettingsManagerTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    synchronized public void setInvalidSettingsForOverlappingLocalDirTest() {
+    synchronized public void setInvalidSettingsForOverlappingLocalDirTest() throws Exception {
+        Configuration configuration = new Configuration(Path.of(this.getClass().getClassLoader().getResource("placeholder.txt").getPath()).getParent().resolve("settings-manager-test-004"));
+        Files.createDirectories(configuration.getLocalAppStateDirectory());
+        NotificationManager notificationManager = Mockito.mock(NotificationManager.class);
+        SyncJobEventDAO syncJobEventDAO = Mockito.mock(SyncJobEventDAO.class);
+        SettingsManager settingsManager = Mockito.spy(new SettingsManager(configuration, syncJobEventDAO, notificationManager));
+        Mockito.doNothing().when(settingsManager).addStartAtLogin();
+        Mockito.doNothing().when(settingsManager).removeStartAtLogin();
+        settingsManager.setSettings(Settings.defaultSettings());
+        Mockito.clearInvocations(settingsManager);
 
         SyncJob syncJob1 = new SyncJob(SyncJob.Type.Bidirectional, "url1", "token1", "id1", "title", "remotedir1", "localdir1/subdir", true);
         SyncJob syncJob2 = new SyncJob(SyncJob.Type.Bidirectional, "url2", "token2", "id2", "title", "remotedir2", "localdir1", false);
@@ -143,7 +162,15 @@ public class SettingsManagerTest {
 
     @Test
     synchronized public void addSyncJobsTest() throws Exception {
+        Configuration configuration = new Configuration(Path.of(this.getClass().getClassLoader().getResource("placeholder.txt").getPath()).getParent().resolve("settings-manager-test-005"));
+        Files.createDirectories(configuration.getLocalAppStateDirectory());
+        NotificationManager notificationManager = Mockito.mock(NotificationManager.class);
+        SyncJobEventDAO syncJobEventDAO = Mockito.mock(SyncJobEventDAO.class);
+        SettingsManager settingsManager = Mockito.spy(new SettingsManager(configuration, syncJobEventDAO, notificationManager));
+        Mockito.doNothing().when(settingsManager).addStartAtLogin();
+        Mockito.doNothing().when(settingsManager).removeStartAtLogin();
         settingsManager.setSettings(Settings.defaultSettings());
+        Mockito.clearInvocations(settingsManager);
 
         SyncJob syncJob1 = new SyncJob(SyncJob.Type.Bidirectional, "url1", "token1", "id1", "title", "remotedir1", "localdir1", true);
         settingsManager.addSyncJobs(Collections.singletonList(syncJob1));
@@ -162,6 +189,16 @@ public class SettingsManagerTest {
 
     @Test
     synchronized public void removeSyncJobsTest() throws Exception {
+        Configuration configuration = new Configuration(Path.of(this.getClass().getClassLoader().getResource("placeholder.txt").getPath()).getParent().resolve("settings-manager-test-006"));
+        Files.createDirectories(configuration.getLocalAppStateDirectory());
+        NotificationManager notificationManager = Mockito.mock(NotificationManager.class);
+        SyncJobEventDAO syncJobEventDAO = Mockito.mock(SyncJobEventDAO.class);
+        SettingsManager settingsManager = Mockito.spy(new SettingsManager(configuration, syncJobEventDAO, notificationManager));
+        Mockito.doNothing().when(settingsManager).addStartAtLogin();
+        Mockito.doNothing().when(settingsManager).removeStartAtLogin();
+        settingsManager.setSettings(Settings.defaultSettings());
+        Mockito.clearInvocations(settingsManager);
+
         settingsManager.setSettings(Settings.defaultSettings());
 
         SyncJob syncJob1 = new SyncJob(SyncJob.Type.Bidirectional, "url1", "token1", "id1", "title", "remotedir1", "localdir1", true);

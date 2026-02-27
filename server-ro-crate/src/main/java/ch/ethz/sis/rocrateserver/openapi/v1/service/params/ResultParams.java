@@ -7,9 +7,6 @@ public class ResultParams
     @HeaderParam("api-key")
     private String apiKey;
 
-    @HeaderParam("jobid")
-    private String jobId;
-
     public String getApiKey()
     {
         return apiKey;
@@ -20,13 +17,4 @@ public class ResultParams
         this.apiKey = apiKey;
     }
 
-    public String getJobId()
-    {
-        return jobId;
-    }
-
-    public void setJobId(String jobId)
-    {
-        this.jobId = jobId;
-    }
 }

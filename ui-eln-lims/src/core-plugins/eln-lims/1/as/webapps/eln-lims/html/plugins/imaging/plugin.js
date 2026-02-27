@@ -210,7 +210,7 @@ $.extend(ImagingTechnology.prototype, ELNLIMSPlugin.prototype, {
             });
         }
     },
-    displayImagingTechViewer: function ($container, isDataset, objId, objType, onActionCallback, objTypeCode) {
+    displayImagingTechViewer: function ($container, isDataset, objId, objType, onActionCallback, objTypeCode, imageIndex, previewIndex) {
         let $element = $("<div>")
         require(["as/dto/service/id/CustomASServiceCode",
                 "as/dto/service/CustomASServiceExecutionOptions",
@@ -303,6 +303,8 @@ $.extend(ImagingTechnology.prototype, ELNLIMSPlugin.prototype, {
                 if (isDataset) {
                     props['onUnsavedChanges'] = onActionCallback;
                     props['showSemanticAnnotations'] = mainController.profile.showSemanticAnnotations;
+                    props['imageIndex'] = imageIndex;
+                    props['previewIndex'] = previewIndex;
                     reactImagingComponent = React.createElement(window.NgComponents.default.ImagingDatasetViewer, props);
                 } else {
                     let configKey = "IMAGING_GALLERY_VIEW-" + objTypeCode;
@@ -334,7 +336,7 @@ $.extend(ImagingTechnology.prototype, ELNLIMSPlugin.prototype, {
             if (isGalleryView) {
                 var _this = this;
                 this.displayImagingTechViewer($container, false, model.experiment.permId, 'collection',
-                    function (objId) {
+                    function (objId, imageIndex, previewIndex) {
                         require([ "as/dto/dataset/id/DataSetPermId", "as/dto/dataset/fetchoptions/DataSetFetchOptions" ],
                         function(DataSetPermId, DataSetFetchOptions) {
                             var ids = [new DataSetPermId(objId)];
@@ -360,8 +362,10 @@ $.extend(ImagingTechnology.prototype, ELNLIMSPlugin.prototype, {
                                     }
                                 }
                                 var arg = {
-                                        permIdOrIdentifier : objId,
-                                        paginationInfo : paginationInfo
+                                    permIdOrIdentifier : objId,
+                                    paginationInfo : paginationInfo,
+                                    imageIndex: imageIndex,
+                                    previewIndex: previewIndex
                                 }
                                 mainController.changeView('showViewDataSetPageFromPermId', arg)
                             });
@@ -378,7 +382,7 @@ $.extend(ImagingTechnology.prototype, ELNLIMSPlugin.prototype, {
             if (isGalleryView) {
                 var _this = this;
                 this.displayImagingTechViewer($container, false, model.sample.permId, 'object',
-                    function (objId) {
+                    function (objId, imageIndex, previewIndex) {
                         var dataSets = model.v3_sample.dataSets;
                         var paginationInfo = null;
                         var indexFound = null;
@@ -398,7 +402,9 @@ $.extend(ImagingTechnology.prototype, ELNLIMSPlugin.prototype, {
                         }
                         var arg = {
                                 permIdOrIdentifier : objId,
-                                paginationInfo : paginationInfo
+                                paginationInfo : paginationInfo,
+                                imageIndex: imageIndex,
+                                previewIndex: previewIndex
                         }
                         mainController.changeView('showViewDataSetPageFromPermId', arg)
                     }, model.sampleType.code);
@@ -425,7 +431,7 @@ $.extend(ImagingTechnology.prototype, ELNLIMSPlugin.prototype, {
                 let viewDirty = function(objId, isDirty) {
                     model.isFormDirty = isDirty;
                 }
-                this.displayImagingTechViewer($container, true, model.dataSetV3.permId.permId, '', viewDirty, null);
+                this.displayImagingTechViewer($container, true, model.dataSetV3.permId.permId, '', viewDirty, null, model.imageIdx, model.previewIdx);
             }
         }
     }

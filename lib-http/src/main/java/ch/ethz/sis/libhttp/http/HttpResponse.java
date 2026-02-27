@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ch.ethz.sis.afsserver.http;
-
-import java.io.InputStream;
-import java.util.Map;
+package ch.ethz.sis.libhttp.http;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Value;
+
+import java.io.InputStream;
+import java.util.Map;
 
 @Value
 @Builder(toBuilder = true)

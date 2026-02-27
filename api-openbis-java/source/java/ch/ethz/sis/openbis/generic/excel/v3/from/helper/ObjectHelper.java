@@ -15,6 +15,9 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import ch.ethz.sis.openbis.generic.excel.v3.from.utils.AttributeValidator;
 import ch.ethz.sis.openbis.generic.excel.v3.from.utils.IAttribute;
 import ch.ethz.sis.openbis.generic.excel.v3.from.utils.PropertyTypeSearcher;
+import ch.ethz.sis.shared.log.classic.core.LogCategory;
+import ch.ethz.sis.shared.log.classic.impl.LogFactory;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 
 import java.util.ArrayList;
@@ -28,6 +31,8 @@ import static ch.ethz.sis.openbis.generic.excel.v3.from.utils.PropertyTypeSearch
 
 public class ObjectHelper extends BasicImportHelper
 {
+    private static final Logger
+            operationLog = LogFactory.getLogger(LogCategory.OPERATION, ObjectHelper.class);
 
     public static final String SAMPLE_TYPE_FIELD = "Sample type";
 
@@ -174,7 +179,6 @@ public class ObjectHelper extends BasicImportHelper
             int line)
     {
         Sample sample = new Sample();
-        ;
         sample.setType((SampleType) objectTypeHelper.getResult().get(sampleType));
         SampleFetchOptions fetchOptions = new SampleFetchOptions();
         fetchOptions.withProperties();
@@ -228,6 +232,8 @@ public class ObjectHelper extends BasicImportHelper
         {
             collectionsToResolve.put(code, experiment);
         }
+
+        operationLog.info(String.format("||> Created object: code:%s identifier:%s space:%s project:%s exp:%s", sample.getCode(), sample.getIdentifier(), sample.getSpace(), sample.getProject(), sample.getExperiment()));
 
         // Start - Special case - Sample Variables
         if (parents != null && !parents.isEmpty())

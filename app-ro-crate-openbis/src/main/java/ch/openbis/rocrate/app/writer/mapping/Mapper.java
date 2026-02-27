@@ -19,7 +19,6 @@ import ch.openbis.rocrate.app.Constants;
 import ch.openbis.rocrate.app.writer.mapping.types.MapResult;
 import ch.openbis.rocrate.app.writer.mapping.types.RdfsSchema;
 import ch.openbis.rocrate.app.writer.mappinginfo.MappingInfo;
-import com.google.common.collect.Streams;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -301,9 +300,11 @@ public class Mapper
                 List<OpenBisModel.FileInfo> imageFiles =
                         openBisModel.getImageFiles()
                                 .getOrDefault(metaData.getKey(), new ArrayList<>());
-                List<OpenBisModel.FileInfo> allFiles =
-                        Streams.concat(files.stream(), imageFiles.stream()).collect(
-                                Collectors.toList());
+                List<OpenBisModel.FileInfo> allFiles = new ArrayList<>();
+                allFiles.addAll(files);
+                allFiles.addAll(imageFiles);
+
+
                 for (OpenBisModel.FileInfo file : allFiles)
                 {
                     file.filePath();

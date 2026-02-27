@@ -15,17 +15,9 @@
  */
 package ch.ethz.sis.afsserver.server;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.UUID;
-
 import ch.ethz.sis.afs.exception.AFSExceptions;
 import ch.ethz.sis.afs.manager.LockMapper;
 import ch.ethz.sis.afsjson.jackson.JacksonObjectMapper;
-import ch.ethz.sis.afsserver.http.HttpServer;
-import ch.ethz.sis.afsserver.http.HttpServerHandler;
 import ch.ethz.sis.afsserver.server.impl.ApiServerAdapter;
 import ch.ethz.sis.afsserver.server.impl.HttpDownloadAdapter;
 import ch.ethz.sis.afsserver.server.observer.APIServerObserver;
@@ -33,6 +25,8 @@ import ch.ethz.sis.afsserver.server.observer.ServerObserver;
 import ch.ethz.sis.afsserver.server.observer.impl.DummyServerObserver;
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameter;
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameterUtil;
+import ch.ethz.sis.libhttp.http.HttpServer;
+import ch.ethz.sis.libhttp.http.HttpServerHandler;
 import ch.ethz.sis.shared.log.standard.LogFactory;
 import ch.ethz.sis.shared.log.standard.LogFactoryFactory;
 import ch.ethz.sis.shared.log.standard.LogManager;
@@ -40,6 +34,12 @@ import ch.ethz.sis.shared.log.standard.Logger;
 import ch.ethz.sis.shared.pool.Factory;
 import ch.ethz.sis.shared.pool.Pool;
 import ch.ethz.sis.shared.startup.Configuration;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.UUID;
 
 public final class Server<CONNECTION, API>
 {

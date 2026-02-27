@@ -176,7 +176,9 @@ task createInstallerJar(type: Jar, dependsOn: [compileInstaller, jar]) {
     from zipTree(project(':lib-common').jar.archivePath)
     from zipTree(project(':lib-commonbase').jar.archivePath)
     from {
-        configurations.runtimeClasspath.files.collect { zipTree(it) }
+        configurations.runtimeClasspath.files
+                .findAll { it.isFile() && it.name.toLowerCase().endsWith('.jar') }
+                .collect { zipTree(it) }
     }
 }
 

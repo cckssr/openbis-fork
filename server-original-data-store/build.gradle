@@ -70,15 +70,6 @@ dependencies {
             /* eln-lims */ files("../ui-eln-lims/src/core-plugins/eln-lims/1/dss/reporting-plugins/eln-lims-api/lib/zip4j_1.3.2.jar"),
             files("../ui-eln-lims/src/core-plugins/eln-lims/1/dss/reporting-plugins/eln-lims-api/lib/plasmapper.jar"),
             files("../ui-eln-lims/src/core-plugins/eln-lims/1/dss/reporting-plugins/eln-lims-api/lib/htmlcleaner-2.23.jar"),
-            files("../ui-eln-lims/src/core-plugins/eln-lims/1/dss/reporting-plugins/exports-api/lib/docx4j-3.3.3.jar"),
-            files("../ui-eln-lims/src/core-plugins/eln-lims/1/dss/reporting-plugins/exports-api/lib/ascii-table-1.1.0.jar"),
-            files("../ui-eln-lims/src/dist/core-plugins/eln-lims/1/dss/reporting-plugins/exports-api/lib/docxbuilder.jar"),
-            files("../ui-eln-lims/src/core-plugins/eln-lims/1/dss/reporting-plugins/exports-api/lib/jsoup-1.11.3.jar"),
-            files("../ui-eln-lims/src/core-plugins/eln-lims/1/dss/reporting-plugins/exports-api/lib/serializer-2.7.2.jar"),
-            files("../ui-eln-lims/src/core-plugins/eln-lims/1/dss/reporting-plugins/exports-api/lib/slf4j-api-1.7.21.jar"),
-            files("../ui-eln-lims/src/core-plugins/eln-lims/1/dss/reporting-plugins/exports-api/lib/xalan-2.7.2.jar"),
-            files("../ui-eln-lims/src/core-plugins/eln-lims/1/dss/reporting-plugins/zenodo-exports-api/lib/job-scheduler.jar"),
-            files("../ui-eln-lims/src/core-plugins/eln-lims/1/dss/reporting-plugins/zenodo-exports-api/lib/json-20250517.jar"),
             files("../ui-eln-lims/src/core-plugins/eln-lims/1/dss/reporting-plugins/password-reset-api/lib/persistentkeyvaluestore.jar")
 
     testImplementation project(path: ':lib-commonbase', configuration: 'tests'),
@@ -169,6 +160,7 @@ tasks.register('serverOriginalDataStoreJavadocZip', Zip) {
 }
 
 tasks.register('javadocTar', Tar) {
+    compression = Compression.GZIP
     dependsOn serverOriginalDataStoreJavadoc
     archiveFileName = "openbis-original-data-store-javadoc-${version}.tar.gz"
     from serverOriginalDataStoreJavadoc.destinationDir
@@ -212,6 +204,7 @@ tasks.register('dropboxJavaDocZip', Zip) {
 }
 
 tasks.register('dropboxJavadocTar', Tar) {
+    compression = Compression.GZIP
     dependsOn dropboxApiJavadoc
     archiveFileName = "openbis-dropbox-javadoc-${version}.tar.gz"
     from dropboxApiJavadoc.destinationDir

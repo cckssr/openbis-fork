@@ -655,26 +655,42 @@ function MainController(profile) {
 					document.title = "Export Builder";
 					this.mainHeader.navigateToTab("TOOLS");
 					var newExportView = new ExportTreeController(this);
-					var exportViews = this._getNewViewModel(true, true, false, TabContentUtil.getToolTabInfo('EXPORT'));
+					var tabInfo = TabContentUtil.getToolTabInfo('EXPORT');
+					var exportViews = this._getNewViewModel(true, true, false, tabInfo);
 					newExportView.init(exportViews);
+					newExportView.tabId = tabInfo.id;
 					this.currentView = newExportView;
 					break;
 				case "showResearchCollectionExportPage":
 					document.title = "Research Collection Export Builder";
 					this.mainHeader.navigateToTab("TOOLS");
 					var newResearchCollectionExportView = new ResearchCollectionExportController(this);
-					var researchCollectionExportViews = this._getNewViewModel(true, true, false, TabContentUtil.getToolTabInfo('RESEARCH_COLLECTION'));
+					var tabInfo = TabContentUtil.getToolTabInfo('RESEARCH_COLLECTION');
+					var researchCollectionExportViews = this._getNewViewModel(true, true, false, tabInfo);
 					newResearchCollectionExportView.init(researchCollectionExportViews);
+					newResearchCollectionExportView.tabId = tabInfo.id;
 					this.currentView = newResearchCollectionExportView;
 					break;
 				case "showZenodoExportPage":
-					document.title = "Zenodo Export Builder";
-					this.mainHeader.navigateToTab("TOOLS");
-					var newZenodoExportView = new ZenodoExportController(this);
-					var zenodoExportViews = this._getNewViewModel(true, true, false, TabContentUtil.getToolTabInfo('ZENODO_EXPORT'));
-					newZenodoExportView.init(zenodoExportViews);
-					this.currentView = newZenodoExportView;
-					break;
+                    document.title = "Zenodo Export Builder";
+                    this.mainHeader.navigateToTab("TOOLS");
+                    var newZenodoExportView = new ZenodoExportController(this);
+                    var tabInfo = TabContentUtil.getToolTabInfo('ZENODO_EXPORT');
+                    var zenodoExportViews = this._getNewViewModel(true, true, false, tabInfo);
+                    newZenodoExportView.init(zenodoExportViews);
+                    newZenodoExportView.tabId = tabInfo.id;
+                    this.currentView = newZenodoExportView;
+                    break;
+                case "showRoCrateExportPage":
+                    document.title = "RO-CRATE Export Builder";
+                    this.mainHeader.navigateToTab("TOOLS");
+                    var newRoCrateExportView = new RoCrateExportController(this);
+                    var tabInfo = TabContentUtil.getToolTabInfo('RO-CRATE_EXPORT');
+                    var roCrateExportViews = this._getNewViewModel(true, true, false, tabInfo);
+                    newRoCrateExportView.init(roCrateExportViews);
+                    newRoCrateExportView.tabId = tabInfo.id;
+                    this.currentView = newRoCrateExportView;
+                    break;
 				case "showLabNotebookPage":
 					document.title = "Lab Notebook";
 					this.mainHeader.navigateToTab("LAB_NOTEBOOK");
@@ -1005,9 +1021,13 @@ function MainController(profile) {
 					var _this = this;
 					var permId = null;
 					var paginationInfo = null;
+					var imageIdx = null;
+					var previewIdx = null;
                     if((typeof arg) !== "string") {
                         permId = arg.permIdOrIdentifier;
                         paginationInfo = arg.paginationInfo;
+						imageIdx = arg.imageIndex;
+						previewIdx = arg.previewIndex;
                         arg = permId;
                     } else {
                         permId = arg;
@@ -1035,7 +1055,7 @@ function MainController(profile) {
 										document.title = "Data Set " + dataSetData.result[0].code;
 										var spaceCode = IdentifierUtil.getSpaceCodeFromIdentifier(dataSetData.result[0].sampleIdentifierOrNull)
                                         _this.mainHeader.navigateToTabByEntity("DATASET", spaceCode, dataset.code);
-                                        _this._showViewDataSetPage(sampleData[0], dataSetData.result[0], dataset, paginationInfo);
+                                        _this._showViewDataSetPage(sampleData[0], dataSetData.result[0], dataset, paginationInfo, imageIdx, previewIdx);
 									});
 								} else if(dataSetData.result[0].experimentIdentifier) {
 									_this.serverFacade.listExperimentsForIdentifiers([dataSetData.result[0].experimentIdentifier], function(experimentResults) {
@@ -1045,7 +1065,7 @@ function MainController(profile) {
 											document.title = "Data Set " + dataSetData.result[0].code;
 											var spaceCode = IdentifierUtil.getSpaceCodeFromIdentifier(dataSetData.result[0].experimentIdentifier)
                                             _this.mainHeader.navigateToTabByEntity("DATASET", spaceCode, dataset.code);
-                                            _this._showViewDataSetPage(experimentData.objects[0], dataSetData.result[0], dataset, paginationInfo);
+                                            _this._showViewDataSetPage(experimentData.objects[0], dataSetData.result[0], dataset, paginationInfo, imageIdx, previewIdx);
 										});
 									});
 								}
@@ -1852,9 +1872,10 @@ function MainController(profile) {
 		this.sideMenu.collapseSideMenu();
 	}
 	
-	this._showViewDataSetPage = function(sampleOrExperiment, dataset, datasetV3, paginationInfo) {
+	this._showViewDataSetPage = function(sampleOrExperiment, dataset, datasetV3, paginationInfo, imageIdx, previewIdx) {
 		//Show Form
-		var newView = new DataSetFormController(this, FormMode.VIEW, sampleOrExperiment, dataset, null, datasetV3, paginationInfo);
+		var newView = new DataSetFormController(this, FormMode.VIEW, sampleOrExperiment, dataset, null, datasetV3, paginationInfo, imageIdx, previewIdx);
+		var tabInfo = TabContentUtil.getDataSetTabInfo(dataset, FormMode.VIEW);
 		var tabInfo = TabContentUtil.getDataSetTabInfo(dataset, FormMode.VIEW);
 		var views = this._getNewViewModel(true, true, false, tabInfo);
 		newView.init(views);
@@ -1865,7 +1886,7 @@ function MainController(profile) {
 	
 	this._showEditDataSetPage = function(sampleOrExperiment, dataset, datasetV3, paginationInfo) {
 		//Show Form
-		var newView = new DataSetFormController(this, FormMode.EDIT, sampleOrExperiment, dataset, null, datasetV3, paginationInfo);
+		var newView = new DataSetFormController(this, FormMode.EDIT, sampleOrExperiment, dataset, null, datasetV3, paginationInfo, null, null);
 		var tabInfo = TabContentUtil.getDataSetTabInfo(dataset, FormMode.EDIT);
 		var views = this._getNewViewModel(true, true, false, tabInfo);
 		newView.init(views);

@@ -40,7 +40,7 @@ const GalleryGridView = ({
                             sx={{ height: '200px', width: 'auto' }}
                             alt={''}
                             src={previewContainer.preview.bytes ? `data:image/${previewContainer.preview.format};base64,${previewContainer.preview.bytes}` : constants.BLANK_IMG_SRC}
-                            onClick={() => onOpenPreview(previewContainer.datasetId)}
+                            onClick={() => onOpenPreview(previewContainer.datasetId, previewContainer.imageIdx, previewContainer.previewIdx)}
                         />
                     </CardActionArea>
                     {selectAll && <CardActions className={classes.content}>

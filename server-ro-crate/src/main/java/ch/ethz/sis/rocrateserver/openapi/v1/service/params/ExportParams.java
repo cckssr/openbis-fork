@@ -5,6 +5,8 @@ import jakarta.ws.rs.HeaderParam;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ExportParams {
     public static final String EXPORT_MIME_TYPE_HEADER = "Export";
@@ -55,6 +57,9 @@ public class ExportParams {
     @HeaderParam("openbis.with-objects-and-dataSets-other-spaces")
     private String withObjectsAndDataSetsOtherSpaces; // Include Objects and Datasets parents and children from different spaces
 
+    @HeaderParam("openbis.input-body-format")
+    private String inputBodyFormat;
+
     public String getApiKey() {
         return apiKey;
     }
@@ -75,7 +80,11 @@ public class ExportParams {
     }
 
     public boolean isWithLevelsAbove() {
-        return Boolean.parseBoolean(withLevelsAbove);
+        if(withLevelsAbove == null || withLevelsAbove.isBlank()) {
+            return true;
+        } else {
+            return Boolean.parseBoolean(withLevelsAbove);
+        }
     }
 
     public void setWithLevelsAbove(String withLevelsAbove) {
@@ -83,7 +92,7 @@ public class ExportParams {
     }
 
     public boolean isWithLevelsBelow() {
-        return Boolean.parseBoolean(withLevelsBelow);
+        return withLevelsBelow != null && Boolean.parseBoolean(withLevelsBelow);
     }
 
     public void setWithLevelsBelow(String withLevelsBelow) {
@@ -91,7 +100,7 @@ public class ExportParams {
     }
 
     public boolean isWithObjectsAndDataSetsParents() {
-        return Boolean.parseBoolean(withObjectsAndDataSetsParents);
+        return withObjectsAndDataSetsParents != null && Boolean.parseBoolean(withObjectsAndDataSetsParents);
     }
 
     public void setWithObjectsAndDataSetsParents(String withObjectsAndDataSetsParents) {
@@ -106,13 +115,100 @@ public class ExportParams {
         this.withObjectsAndDataSetsOtherSpaces = withObjectsAndDataSetsOtherSpaces;
     }
 
+    public boolean isImportCompatible()
+    {
+        if(importCompatible == null || importCompatible.isBlank()) {
+            return true;
+        } else {
+            return Boolean.parseBoolean(importCompatible);
+        }
+    }
+
+    public void setImportCompatible(String importCompatible)
+    {
+        this.importCompatible = importCompatible;
+    }
+
+    public boolean isFormatPDF()
+    {
+        return formatPDF != null && Boolean.parseBoolean(formatPDF);
+    }
+
+    public void setFormatPDF(String formatPDF)
+    {
+        this.formatPDF = formatPDF;
+    }
+
+    public boolean isFormatXLSX()
+    {
+        return formatXLSX != null && Boolean.parseBoolean(formatXLSX);
+    }
+
+    public void setFormatXLSX(String formatXLSX)
+    {
+        this.formatXLSX = formatXLSX;
+    }
+
+    public boolean isImportDatasetData()
+    {
+        return importDatasetData != null && Boolean.parseBoolean(importDatasetData);
+    }
+
+    public void setImportDatasetData(String importDatasetData)
+    {
+        this.importDatasetData = importDatasetData;
+    }
+
+    public boolean isImportAfsData()
+    {
+        return importAfsData != null && Boolean.parseBoolean(importAfsData);
+    }
+
+    public void setImportAfsData(String importAfsData)
+    {
+        this.importAfsData = importAfsData;
+    }
+
+    public boolean isWithObjectsAndDataSetsChildren()
+    {
+        return withObjectsAndDataSetsChildren != null && Boolean.parseBoolean(withObjectsAndDataSetsChildren);
+    }
+
+    public void setWithObjectsAndDataSetsChildren(String withObjectsAndDataSetsChildren)
+    {
+        this.withObjectsAndDataSetsChildren = withObjectsAndDataSetsChildren;
+    }
+
+    public String getInputBodyFormat()
+    {
+        return inputBodyFormat;
+    }
+
+    public void setInputBodyFormat(String inputBodyFormat)
+    {
+        this.inputBodyFormat = inputBodyFormat;
+    }
+
     //
     // Body Parameters
     //
 
-    public static String[] getIdentifiers(InputStream body) throws IOException {
+    public static Map<String,String>[] getIdentifiers(String inputBodyFormat, InputStream body) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
-        return mapper.readValue(body, String[].class);
+        if(inputBodyFormat != null && inputBodyFormat.equalsIgnoreCase("json")) {
+            Map<String,String> ids[] = mapper.readValue(body, Map[].class);
+            return ids;
+        } else {
+            String[] identifiers = mapper.readValue(body, String[].class);
+            Map<String, String> ids[] = new Map[identifiers.length];
+
+            for(int i=0;i<ids.length;i++) {
+                ids[i] = new HashMap<>();
+                ids[i].put("permId", identifiers[i]);
+                ids[i].put("kind", "SAMPLE");
+            }
+            return ids;
+        }
     }
 
     //
@@ -128,83 +224,10 @@ public class ExportParams {
         return accept;
     }
 
-    public String getWithLevelsBelow()
-    {
-        return withLevelsBelow;
-    }
-
-    public String getWithObjectsAndDataSetsParents()
-    {
-        return withObjectsAndDataSetsParents;
-    }
-
-    public String getWithObjectsAndDataSetsOtherSpaces()
-    {
-        return withObjectsAndDataSetsOtherSpaces;
-    }
-
     public String getExportMimeType()
     {
         return exportMimeTyp;
     }
 
-    public boolean isImportCompatible()
-    {
-        return Boolean.parseBoolean(importCompatible);
-    }
 
-    public void setImportCompatible(String importCompatible)
-    {
-        this.importCompatible = importCompatible;
-    }
-
-    public boolean isFormatPDF()
-    {
-        return Boolean.parseBoolean(formatPDF);
-    }
-
-    public void setFormatPDF(String formatPDF)
-    {
-        this.formatPDF = formatPDF;
-    }
-
-    public boolean isFormatXLSX()
-    {
-        return Boolean.parseBoolean(formatXLSX);
-    }
-
-    public void setFormatXLSX(String formatXLSX)
-    {
-        this.formatXLSX = formatXLSX;
-    }
-
-    public boolean isImportDatasetData()
-    {
-        return Boolean.parseBoolean(importDatasetData);
-    }
-
-    public void setImportDatasetData(String importDatasetData)
-    {
-        this.importDatasetData = importDatasetData;
-    }
-
-    public boolean isImportAfsData()
-    {
-        return Boolean.parseBoolean(importAfsData);
-    }
-
-    public boolean isWithObjectsAndDataSetsChildren()
-    {
-        return Boolean.parseBoolean(withObjectsAndDataSetsChildren);
-    }
-
-    public void setWithObjectsAndDataSetsChildren(String withObjectsAndDataSetsChildren)
-    {
-        this.withObjectsAndDataSetsChildren = withObjectsAndDataSetsChildren;
-    }
-
-    public void setImportAfsData(String importAfsData)
-    {
-        this.importAfsData = importAfsData;
-    }
 }

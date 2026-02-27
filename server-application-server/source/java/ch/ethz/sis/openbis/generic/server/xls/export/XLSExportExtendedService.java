@@ -68,7 +68,7 @@ public class XLSExportExtendedService implements ICustomASServiceExecutor
         boolean pdf = ((Map<String, Boolean>) parameters.get("formats")).get("pdf");
         boolean xlsx = ((Map<String, Boolean>) parameters.get("formats")).get("xlsx");
         boolean data = ((Map<String, Boolean>) parameters.get("formats")).get("data");
-        boolean afsData = ((Map<String, Boolean>) parameters.get("formats")).get("afsData");
+        boolean afsData = ((Map<String, Boolean>) parameters.get("formats")).getOrDefault("afsData", false);
 
         IApplicationServerInternalApi api = CommonServiceProvider.getApplicationServerApi();
         ExportData exportData = new ExportData();
@@ -79,9 +79,9 @@ public class XLSExportExtendedService implements ICustomASServiceExecutor
             String permId = (String) nodeExportMap.get("permId");
             boolean withLevelsAbove = (boolean) nodeExportMap.get("withLevelsAbove");
             boolean withLevelsBelow = (boolean) nodeExportMap.get("withLevelsBelow");
-            boolean withObjectsAndDataSetsParents = (boolean) nodeExportMap.get("withObjectsAndDataSetsParents");
-            boolean withObjectsAndDataSetsChildren = (boolean) nodeExportMap.get("withObjectsAndDataSetsChildren");
-            boolean withObjectsAndDataSetsOtherSpaces = (boolean) nodeExportMap.get("withObjectsAndDataSetsOtherSpaces");
+            boolean withObjectsAndDataSetsParents = (boolean) nodeExportMap.getOrDefault("withObjectsAndDataSetsParents", false);
+            boolean withObjectsAndDataSetsChildren = (boolean) nodeExportMap.getOrDefault("withObjectsAndDataSetsChildren", false);
+            boolean withObjectsAndDataSetsOtherSpaces = (boolean) nodeExportMap.getOrDefault("withObjectsAndDataSetsOtherSpaces", false);
 
             ExportableKind rootKind = ExportableKind.valueOf(kind);
             ExportablePermId root = new ExportablePermId(rootKind, permId);

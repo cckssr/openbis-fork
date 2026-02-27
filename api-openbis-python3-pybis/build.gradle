@@ -21,6 +21,7 @@ tasks.register('clean', Delete) {
 }
 
 tasks.register('release', Tar) {
+    compression = Compression.GZIP
     dependsOn tasks.clean
     destinationDirectory = layout.buildDirectory.dir(".")
     def contentOfSetUpFile = file('src/python/setup.cfg').text

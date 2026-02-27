@@ -16,7 +16,7 @@ repositories {
 }
 
 dependencies {
-    implementation project(':api-openbis-java'), 'fasterxml:jackson-core:2.18.1', 'fasterxml:jackson-databind:2.18.1', 'com.google.guava:guava:31.1-jre', 'cz.habarta.typescript-generator:typescript-generator-core:3.2.1263', 'sis:sis-base:23.06.0'
+    implementation project(':api-openbis-java'), 'com.fasterxml.jackson.core:jackson-core:2.18.3', 'com.fasterxml.jackson.core:jackson-databind:2.18.3', 'com.google.guava:guava:31.1-jre', 'cz.habarta.typescript-generator:typescript-generator-core:3.2.1263', 'sis:sis-base:23.06.0'
     testImplementation 'testng:testng:6.8-CISD', 'javax.activation:javax.activation-api:1.2.0', 'junit:junit:4.13.2'
 }
 

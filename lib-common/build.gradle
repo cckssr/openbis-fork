@@ -42,13 +42,12 @@ dependencies {
         exclude group: "org.eclipse.jetty", module: "jetty-http"
     }
     api 'apache:commons-csv:1.2',
-        'com.fasterxml.jackson.core:jackson-databind:2.18.0',
+        'com.fasterxml.jackson.core:jackson-databind:2.18.3',
         'slf4j:slf4j-api:1.7.24',
         'deltavisio:http-invoker-reloaded:25.03.8-ac6cb8a',
-        'com.fasterxml.jackson:jackson-bom:2.18.0',
 
         'googlecode:jsonrpc4j:1.8-CISD',
-        'fasterxml:jackson-databind:2.9.10.8',
+        'com.fasterxml.jackson.core:jackson-databind:2.18.3',
         'reflections:reflections:0.9.10'
 
     testImplementation project(path: ':lib-logging', configuration: 'tests'),
