@@ -158,9 +158,3 @@ DROP TRIGGER IF EXISTS data_all_tsvector_document ON data_all;
 CREATE TRIGGER data_all_tsvector_document BEFORE INSERT OR UPDATE
     ON data_all FOR EACH ROW EXECUTE PROCEDURE
     data_all_tsvector_document_trigger();
-
--- Recompute indexed values so migrated DB content matches scratch DB content.
-UPDATE samples_all SET id = id;
-UPDATE experiments_all SET id = id;
-UPDATE data_all SET id = id;
-UPDATE projects SET id = id;
