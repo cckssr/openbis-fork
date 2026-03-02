@@ -1463,7 +1463,7 @@ test("createReportFromDataSets()", function() {
 test("listAggregationServices()", function() {
 	createFacadeAndLogin(function(facade) {
 		facade.listAggregationServices(function(response) {
-			assertObjectsCount(response.result, 20);
+			assertObjectsCount(response.result, 18);
 			facade.close();
 		});
 	});
