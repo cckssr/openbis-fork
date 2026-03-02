@@ -2,8 +2,8 @@
 
 Mandatory:
 
-- JDK 17 (JDK is necessary for the development, for running the system JRE 17 headless is sufficient)
-- Postgres 15
+- JDK 21 (JDK is necessary for the development, for running the system JRE 21 headless is sufficient)
+- Postgres 18
 
 Optional:
 
