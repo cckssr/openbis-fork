@@ -14,6 +14,7 @@ import edu.kit.datamanager.ro_crate.writer.ZipWriter;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -55,19 +56,17 @@ public class Writer
 
     private void handleFiles(SchemaFacade schemaFacade, MapResult mapResult)
     {
-        FileEntity.FileEntityBuilder fileEntityBuilder = new FileEntity.FileEntityBuilder();
 
         for (MapResult.RoCrateFile file : mapResult.getFiles())
         {
+            FileEntity.FileEntityBuilder fileEntityBuilder = new FileEntity.FileEntityBuilder();
 
             fileEntityBuilder.addType("File");
             fileEntityBuilder.setId(file.id());
             fileEntityBuilder.setLocation(file.path());
+            schemaFacade.getCrate().addDataEntity(fileEntityBuilder.build());
 
         }
-        schemaFacade.getCrate().addDataEntity(fileEntityBuilder.build());
-
-        fileEntityBuilder.addType("File");
 
     }
 
@@ -82,6 +81,7 @@ public class Writer
     private void addSystemSchema(ISchemaFacade facade)
     {
 
+        List<IType> fileTypes = new ArrayList<>();
         {
             Type type = new Type();
             type.setId(Constants.PROPERTY_SPACE);
@@ -91,22 +91,15 @@ public class Writer
         {
             Type type = new Type();
             type.setId(Constants.GRAPH_ID_OBJECT);
-            PropertyType propertyType = new PropertyType();
-            propertyType.setId(Constants.PROPERTY_ID_FILES);
-            {
-                Type roCrateFileType = new Type();
-                roCrateFileType.setId("File");
-                propertyType.addType(roCrateFileType);
-                type.addProperty(propertyType);
-                facade.addPropertyType(propertyType);
-                propertyType.setDomainIncludes(List.of(type));
-            }
+            fileTypes.add(type);
+
             facade.addType(type);
 
         }
         {
             Type type = new Type();
             type.setId(Constants.GRAPH_ID_Collection);
+            fileTypes.add(type);
             facade.addType(type);
         }
         {
@@ -123,6 +116,24 @@ public class Writer
             Type type = new Type();
             type.setId(Constants.GRAPH_ID_VOCABULARY);
             facade.addType(type);
+        }
+
+        {
+            PropertyType propertyType = new PropertyType();
+            propertyType.setId(Constants.PROPERTY_ID_FILES);
+            {
+                Type roCrateFileType = new Type();
+                roCrateFileType.setId("File");
+                propertyType.addType(roCrateFileType);
+                for (IType fileType : fileTypes)
+                {
+                    Type type = (Type) fileType;
+                    type.addProperty(propertyType);
+                }
+
+                facade.addPropertyType(propertyType);
+                propertyType.setDomainIncludes(fileTypes);
+            }
         }
 
     }

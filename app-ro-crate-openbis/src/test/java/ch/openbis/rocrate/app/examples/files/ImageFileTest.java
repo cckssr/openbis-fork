@@ -80,7 +80,7 @@ public class ImageFileTest
                         entryList.stream().toList(), "DEFAULT",
                         "DEFAULT", schemaFacade);
 
-        Assert.assertEquals(1, openBisModel.getFiles().size());
+        Assert.assertEquals(2, openBisModel.getFiles().size());
 
         List<OpenBisModel.FileInfo> fileInfos =
                 openBisModel.getImageFiles().values().stream().findFirst().orElseThrow();

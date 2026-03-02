@@ -19,6 +19,7 @@ import ch.openbis.rocrate.app.Constants;
 import ch.openbis.rocrate.app.writer.mapping.types.MapResult;
 import ch.openbis.rocrate.app.writer.mapping.types.RdfsSchema;
 import ch.openbis.rocrate.app.writer.mappinginfo.MappingInfo;
+import com.google.common.net.PercentEscaper;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -347,7 +348,7 @@ public class Mapper
                 metaDataEntries.add(
                         new MetadataEntry(experiment.getIdentifier().toString(), Set.of(type),
                                 props,
-                                Map.of()));
+                                new LinkedHashMap<>()));
 
             }
 
@@ -394,9 +395,11 @@ public class Mapper
                 Path path = Path.of("/tmp/ro-crate/" + uuid);
                 Files.createDirectories(Path.of("/tmp/ro-crate/"));
                 Files.write(path, b.contents());
-                MapResult.RoCrateFile roCrateFile = new MapResult.RoCrateFile(path, b.filePath());
+                MapResult.RoCrateFile roCrateFile =
+                        new MapResult.RoCrateFile(path, b.originalPath());
                 files.add(roCrateFile);
-                identifiersToWrite.add(b.filePath());
+                PercentEscaper percentEscaper = new PercentEscaper("-_/().", false);
+                identifiersToWrite.add(percentEscaper.escape(b.originalPath()));
             }
 
             Map<String, MetadataEntry> idToEntities =

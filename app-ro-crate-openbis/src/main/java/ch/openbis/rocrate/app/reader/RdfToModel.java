@@ -67,7 +67,6 @@ public class RdfToModel
     {
 
         Set<SampleType> openBisDerivedTypes = new LinkedHashSet<>();
-        Map<ObjectIdentifier, List<OpenBisModel.FileInfo>> samplesToFiles = new LinkedHashMap<>();
 
 
         Map<String, IType> IdsToTypes =
@@ -498,7 +497,7 @@ public class RdfToModel
                             sample.getCode()); // We need a name to construct certain paths inside the zip
                 }
                 sample.setProperties(properties);
-                handleFiles(entry, objectIdentifier, sample, objectIdentifiersToFiles, images);
+                handleFiles(entry, objectIdentifier, objectIdentifiersToFiles, images, sample);
 
                 properties.get("SPACE");
                 ReferencesToResolve referencesToResolve =
@@ -532,15 +531,19 @@ public class RdfToModel
 
                 projects.put(identifier, project);
 
+            } else if (entry.getTypes().contains(GRAPH_ID_Collection))
+            {
+                objectIdentifier = new ExperimentIdentifier(entry.getId());
+                handleFilesExperiment(entry, objectIdentifier, objectIdentifiersToFiles);
+
             }
 
         }
     }
 
     private static void handleFiles(IMetadataEntry metadataEntry, ObjectIdentifier objectIdentifier,
-            Sample sample,
             Map<ObjectIdentifier, List<OpenBisModel.FileInfo>> res,
-            Map<ObjectIdentifier, List<OpenBisModel.FileInfo>> richTextImageFiles)
+            Map<ObjectIdentifier, List<OpenBisModel.FileInfo>> richTextImageFiles, Sample sample)
             throws IOException
     {
 
@@ -624,6 +627,48 @@ public class RdfToModel
 
         richTextImageFiles.put(objectIdentifier, imageRes);
     }
+
+    private static void handleFilesExperiment(IMetadataEntry metadataEntry,
+            ObjectIdentifier objectIdentifier,
+            Map<ObjectIdentifier, List<OpenBisModel.FileInfo>> res)
+            throws IOException
+    {
+
+        List<OpenBisModel.FileInfo> myRes = new ArrayList<>();
+
+        metadataEntry.getFileOrDirectory().ifPresent(x -> {
+            try
+            {
+                OpenBisModel.FileInfo fileInfo =
+                        new OpenBisModel.FileInfo(objectIdentifier.getIdentifier(), x.toString(),
+                                Files.readAllBytes(x), metadataEntry.getId());
+                myRes.add(fileInfo);
+
+            } catch (IOException e)
+            {
+                throw new RuntimeException(e);
+            }
+
+        });
+        for (var a : metadataEntry.getDataEntitiesReferenced())
+        {
+            if (a.getPath() != null)
+            {
+                OpenBisModel.FileInfo fileInfo =
+                        new OpenBisModel.FileInfo(objectIdentifier.getIdentifier(),
+                                a.getPath().toString(), Files.readAllBytes(a.getPath()), a.getId());
+                myRes.add(fileInfo);
+            }
+
+        }
+        var compareMap = new LinkedHashMap<>();
+        var fileRes = myRes;
+        ;
+
+        res.put(objectIdentifier, fileRes);
+
+    }
+
 
     private static boolean isImageMatch(OpenBisModel.FileInfo x, Map<String, String> images)
     {

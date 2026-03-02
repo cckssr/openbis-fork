@@ -3,6 +3,8 @@ package ch.openbis.rocrate.app.examples.files;
 import ch.eth.sis.rocrate.SchemaFacade;
 import ch.eth.sis.rocrate.facade.IMetadataEntry;
 import ch.eth.sis.rocrate.facade.IType;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifier;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
 import ch.ethz.sis.openbis.generic.excel.v3.from.ExcelReader;
 import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
 import ch.ethz.sis.openbis.generic.excel.v3.to.ExcelWriter;
@@ -165,5 +167,50 @@ public class FilesTest
 
 
     }
+
+    @Test
+    public void openBisToCrateTestWithCollectionFile() throws Exception
+    {
+        Path path = Paths.get(
+                "src/test/resources/files/export.2026-03-02-12-52-38-755-collection-with-files.zip");
+        OpenBisModel excelModel = ExcelReader.convert(ExcelReader.Format.ZIP_EXPORT, path,
+                ExcelReader.FileMode.DUMMY);
+        Assert.assertEquals(2,
+                excelModel.getFiles().values().stream().filter(x -> !x.isEmpty()).count());
+        Writer writer = new Writer();
+        writer.write(excelModel, Path.of(OUTPUT));
+
+    }
+
+    @Test
+    public void testCrateToOpenBisWithCollectionFile() throws Exception
+    {
+        Path path = Paths.get(
+                "src/test/resources/files/collection_file_crate.zip");
+        RoCrateReader roCrateFolderReader = new RoCrateReader(new ZipReader());
+        RoCrate crate = roCrateFolderReader.readCrate(path.toString());
+        SchemaFacade schemaFacade = SchemaFacade.of(crate);
+        List<IType> types = schemaFacade.getTypes();
+
+        Set<IMetadataEntry> entryList = new LinkedHashSet<>();
+        for (var type : types)
+        {
+            entryList.addAll(schemaFacade.getEntries(type.getId()));
+
+        }
+        OpenBisModel
+                openBisModel =
+                RdfToModel.convert(types, schemaFacade.getPropertyTypes(),
+                        entryList.stream().toList(), "DEFAULT",
+                        "DEFAULT", schemaFacade);
+        Assert.assertEquals(1, openBisModel.getFiles()
+                .get(new SampleIdentifier("/PUBLICATIONS/PUBLIC_REPOSITORIES/PUB30")).size());
+        Assert.assertEquals(1, openBisModel.getFiles().get(new ExperimentIdentifier(
+                "/PUBLICATIONS/PUBLIC_REPOSITORIES/PUBLICATIONS_COLLECTION")).size());
+
+        System.out.println("lol");
+
+    }
+
 
 }

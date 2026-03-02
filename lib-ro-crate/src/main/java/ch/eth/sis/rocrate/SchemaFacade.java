@@ -571,6 +571,8 @@ public class SchemaFacade implements ISchemaFacade
         Map<String, DataEntity> idToFileEntity =
                 fileEntities.stream().collect(Collectors.toMap(x -> x.getId(), x -> x));
 
+        abstractEntity.getProperty("schema:hasPart");
+
         List<DataEntity> collect =
                 abstractEntity.getLinkedTo().stream().map(x -> idToFileEntity.get(x))
                         .filter(Objects::nonNull)
