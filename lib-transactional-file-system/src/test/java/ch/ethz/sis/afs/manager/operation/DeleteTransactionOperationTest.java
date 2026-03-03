@@ -27,7 +27,7 @@ public class DeleteTransactionOperationTest extends AbstractTransactionOperation
 
     @Override
     public void operation() throws Exception {
-        delete(FILE_B_PATH);
+        delete(FILE_B_PATH, false);
     }
 
     @Test
@@ -35,7 +35,7 @@ public class DeleteTransactionOperationTest extends AbstractTransactionOperation
         begin();
         String realPath = OperationExecutor.getRealPath(getTransaction(), FILE_B_PATH);
         File before = IOUtils.getFile(realPath);
-        delete(FILE_B_PATH);
+        delete(FILE_B_PATH, false);
         File after = IOUtils.getFile(realPath);
         assertEquals(1, getTransaction().getOperations().size());
         assertEquals(before, after);
@@ -50,7 +50,7 @@ public class DeleteTransactionOperationTest extends AbstractTransactionOperation
     @Test(expected = RuntimeException.class)
     public void operation_deleteTwice_exception() throws Exception {
         begin();
-        delete(FILE_B_PATH);
-        delete(FILE_B_PATH);
+        delete(FILE_B_PATH, false);
+        delete(FILE_B_PATH, false);
     }
 }

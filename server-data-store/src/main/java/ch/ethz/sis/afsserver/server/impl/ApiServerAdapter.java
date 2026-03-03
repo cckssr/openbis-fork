@@ -81,6 +81,8 @@ public class ApiServerAdapter<CONNECTION, API> extends AbstractAdapter<CONNECTIO
             case "commit":
             case "rollback":
             case "recover":
+            case "truncate":
+            case "snapshot":
                 return POST; // all parameters from POST methods come on the body
             case "delete":
                 return HttpMethod.DELETE; // all parameters from DELETE methods come on the body
@@ -103,9 +105,11 @@ public class ApiServerAdapter<CONNECTION, API> extends AbstractAdapter<CONNECTIO
             case "directory":
                 // Fall though
             case "recursively":
+            case "trash":
                 parsedParameters.put(key, Boolean.valueOf(value));
                 break;
             case "offset":
+            case "size":
                 parsedParameters.put(key, Long.valueOf(value));
                 break;
             case "limit":

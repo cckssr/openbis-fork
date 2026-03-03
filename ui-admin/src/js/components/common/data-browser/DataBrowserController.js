@@ -136,10 +136,23 @@ export default class DataBrowserController extends ComponentController {
   }
 
 
-  async deleteAndUpdateProgress(file, onProgressUpdate) {
-    const onRetryCallback = this.createOnRetryCallback(onProgressUpdate, file.name);
+  async deleteAndUpdateProgress(filePath, onProgressUpdate) {
+    const fileName = getFileNameFromPath(filePath)
+    const onRetryCallback = this.createOnRetryCallback(onProgressUpdate, fileName);
     await this.retryCaller.callWithRetry(() =>
-      this.openbis.delete(this.owner, file.path),
+      this.openbis.delete(this.owner, filePath, false),
+      onRetryCallback
+    )
+    if (this.component && this.component.fetchSpaceStatus) {
+      this.component.fetchSpaceStatus();
+    }
+  }
+
+  async snapshotAndUpdateProgress(filePath, onProgressUpdate) {
+    const fileName = getFileNameFromPath(filePath)
+    const onRetryCallback = this.createOnRetryCallback(onProgressUpdate, fileName);
+    await this.retryCaller.callWithRetry(() =>
+      this.openbis.snapshot(this.owner, filePath),
       onRetryCallback
     )
     if (this.component && this.component.fetchSpaceStatus) {
@@ -149,7 +162,7 @@ export default class DataBrowserController extends ComponentController {
 
   async _delete(file, onProgressUpdate = undefined) {
     await this.handleError(async () => {
-      await this.openbis.delete(this.owner, file.path)
+      await this.openbis.delete(this.owner, file.path, true)
     })
   }
 
@@ -172,11 +185,11 @@ export default class DataBrowserController extends ComponentController {
     }
   }
 
-  async moveFileByPath(filePath, newLocation, onProgressUpdate) {
+  async copyFileByPath(filePath, newLocation, onProgressUpdate) {
     const fileName = getFileNameFromPath(filePath)
     const onRetryCallback = this.createOnRetryCallback(onProgressUpdate, fileName);
     await this.retryCaller.callWithRetry(() =>
-      this.openbis.move(this.owner, filePath, this.owner, newLocation),
+      this.openbis.copy(this.owner, filePath, this.owner, newLocation),
       onRetryCallback
     )
   }

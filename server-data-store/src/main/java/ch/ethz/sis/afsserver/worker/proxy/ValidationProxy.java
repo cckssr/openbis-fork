@@ -15,8 +15,6 @@
  */
 package ch.ethz.sis.afsserver.worker.proxy;
 
-import java.util.List;
-
 import ch.ethz.sis.afsapi.dto.Chunk;
 import ch.ethz.sis.afsapi.dto.File;
 import ch.ethz.sis.afsapi.dto.FreeSpace;
@@ -53,8 +51,8 @@ public class ValidationProxy extends AbstractProxy {
     }
 
     @Override
-    public Boolean delete(String owner, String source) throws Exception {
-        return nextProxy.delete(owner, source);
+    public Boolean delete(String owner, String source, Boolean trash) throws Exception {
+        return nextProxy.delete(owner, source, trash);
     }
 
     @Override
@@ -71,6 +69,18 @@ public class ValidationProxy extends AbstractProxy {
     public @NonNull Boolean create(@NonNull final String owner, @NonNull final String source, @NonNull final Boolean directory) throws Exception
     {
         return nextProxy.create(owner, source, directory);
+    }
+
+    @Override
+    public @NonNull Boolean truncate(@NonNull final String owner, @NonNull final String source, @NonNull final Long size) throws Exception
+    {
+        return nextProxy.truncate(owner, source, size);
+    }
+
+    @Override
+    public @NonNull Boolean snapshot(@NonNull final String owner, @NonNull final String source) throws Exception
+    {
+        return nextProxy.snapshot(owner, source);
     }
 
     @Override

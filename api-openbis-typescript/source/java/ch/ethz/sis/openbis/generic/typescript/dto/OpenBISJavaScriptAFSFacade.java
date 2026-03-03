@@ -33,7 +33,7 @@ public class OpenBISJavaScriptAFSFacade
     }
 
     @TypeScriptMethod(sessionToken = false)
-    public boolean delete(final String owner, final String source)
+    public boolean delete(final String owner, final String source, final Boolean trash)
     {
         return false;
     }
@@ -52,6 +52,18 @@ public class OpenBISJavaScriptAFSFacade
 
     @TypeScriptMethod(sessionToken = false)
     public boolean create(final String owner, final String source, final boolean directory)
+    {
+        return false;
+    }
+
+    @TypeScriptMethod(sessionToken = false)
+    public boolean truncate(final String owner, final String source, final Long size)
+    {
+        return false;
+    }
+
+    @TypeScriptMethod(sessionToken = false)
+    public boolean snapshot(final String owner, final String source)
     {
         return false;
     }

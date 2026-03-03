@@ -31,7 +31,7 @@ exports.default = new Promise((resolve) => {
                     await c.login(facade)
 
                     var ownerPermId = (await c.createSample(facade)).getPermId()
-                    await c.deleteFile(facade, ownerPermId, "")
+                    await c.deleteFile(facade, ownerPermId, "", false)
 
                     await facade.getAfsServerFacade().write(ownerPermId, "test-file-1", 0, testContent1)
                     await facade.getAfsServerFacade().write(ownerPermId, "/test-folder-1/test-file-2", 0, testContent2)
@@ -166,7 +166,7 @@ exports.default = new Promise((resolve) => {
                     await c.login(facade)
 
                     var ownerPermId = (await c.createSample(facade)).getPermId()
-                    await c.deleteFile(facade, ownerPermId, "")
+                    await c.deleteFile(facade, ownerPermId, "", false)
 
                     await facade.getAfsServerFacade().write(ownerPermId, testFile, 0, testContent)
 
@@ -228,7 +228,7 @@ exports.default = new Promise((resolve) => {
                     await c.login(facade)
 
                     var ownerPermId = (await c.createSample(facade)).getPermId()
-                    await c.deleteFile(facade, ownerPermId, "")
+                    await c.deleteFile(facade, ownerPermId, "", false)
 
                     if (useTransaction) {
                         facade.setInteractiveSessionKey(testInteractiveSessionKey)
@@ -280,9 +280,10 @@ exports.default = new Promise((resolve) => {
                 }
             }
 
-            var testDelete = async function (assert, useTransaction) {
+            var testDelete = async function (assert, trash, useTransaction) {
                 const testFile = "test-file"
                 const testContent = new TextEncoder().encode("test-content")
+                const trashFolder = ".trash"
 
                 try {
                     var c = new common(assert, dtos)
@@ -291,7 +292,7 @@ exports.default = new Promise((resolve) => {
                     await c.login(facade)
 
                     var ownerPermId = (await c.createSample(facade)).getPermId()
-                    await c.deleteFile(facade, ownerPermId, "")
+                    await c.deleteFile(facade, ownerPermId, "", false)
 
                     await facade.getAfsServerFacade().write(ownerPermId, testFile, 0, testContent)
 
@@ -303,13 +304,106 @@ exports.default = new Promise((resolve) => {
                         await facade.beginTransaction()
                     }
 
-                    await facade.getAfsServerFacade().delete(ownerPermId, testFile)
+                    await facade.getAfsServerFacade().delete(ownerPermId, testFile, trash)
 
                     if (useTransaction) {
                         await facade.commitTransaction()
                     }
 
                     await c.assertFileDoesNotExist(facade, ownerPermId, testFile)
+
+                    if(trash){
+                        await c.assertFileExists(facade, ownerPermId, trashFolder + "/" + testFile);
+                    }else{
+                        await c.assertFileDoesNotExist(facade, ownerPermId, trashFolder + "/" + testFile);
+                    }
+
+                    c.finish()
+                } catch (error) {
+                    c.fail(error)
+                    c.finish()
+                }
+            }
+
+            var testTruncate = async function (assert, useTransaction) {
+                const testFile = "test-file"
+                const testContent = new TextEncoder().encode("test-content")
+
+                try {
+                    var c = new common(assert, dtos)
+                    c.start()
+
+                    await c.login(facade)
+
+                    var ownerPermId = (await c.createSample(facade)).getPermId()
+                    await c.deleteFile(facade, ownerPermId, "", false)
+
+                    await facade.getAfsServerFacade().write(ownerPermId, testFile, 0, testContent)
+
+                    var content = await facade.getAfsServerFacade().read(ownerPermId, testFile, 0, testContent.length)
+                    c.assertEqual(await content.text(), "test-content")
+
+                    if (useTransaction) {
+                        facade.setInteractiveSessionKey(testInteractiveSessionKey)
+                        await facade.beginTransaction()
+                    }
+
+                    await facade.getAfsServerFacade().truncate(ownerPermId, testFile, 0)
+
+                    if (useTransaction) {
+                        await facade.commitTransaction()
+                    }
+
+                    var list = await facade.getAfsServerFacade().list(ownerPermId, testFile, false)
+
+                    c.assertEqual(list.length, 1, "Number of files")
+                    c.assertEqual(list[0].getOwner(), ownerPermId, "Owner");
+                    c.assertEqual(list[0].getSize(), 0, "Size");
+                    c.assertEqual(list[0].getDirectory(), false, "Directory");
+
+                    c.finish()
+                } catch (error) {
+                    c.fail(error)
+                    c.finish()
+                }
+            }
+
+            var testSnapshot = async function (assert, useTransaction) {
+                const testFile = "test-file"
+                const testContent = new TextEncoder().encode("test-content")
+                const snapshotsFolder = ".snapshots"
+
+                try {
+                    var c = new common(assert, dtos)
+                    c.start()
+
+                    await c.login(facade)
+
+                    var ownerPermId = (await c.createSample(facade)).getPermId()
+                    await c.deleteFile(facade, ownerPermId, "", false)
+
+                    await facade.getAfsServerFacade().write(ownerPermId, testFile, 0, testContent)
+
+                    var content = await facade.getAfsServerFacade().read(ownerPermId, testFile, 0, testContent.length)
+                    c.assertEqual(await content.text(), "test-content")
+
+                    if (useTransaction) {
+                        facade.setInteractiveSessionKey(testInteractiveSessionKey)
+                        await facade.beginTransaction()
+                    }
+
+                    await facade.getAfsServerFacade().snapshot(ownerPermId, testFile)
+
+                    if (useTransaction) {
+                        await facade.commitTransaction()
+                    }
+
+                    var list = await facade.getAfsServerFacade().list(ownerPermId, snapshotsFolder + "/" + testFile, true)
+
+                    c.assertEqual(list.length, 1, "Number of files")
+                    c.assertEqual(list[0].getOwner(), ownerPermId, "Owner");
+                    c.assertEqual(list[0].getSize(), testContent.length, "Size");
+                    c.assertEqual(list[0].getDirectory(), false, "Directory");
 
                     c.finish()
                 } catch (error) {
@@ -330,7 +424,7 @@ exports.default = new Promise((resolve) => {
                     await c.login(facade)
 
                     var ownerPermId = (await c.createSample(facade)).getPermId()
-                    await c.deleteFile(facade, ownerPermId, "")
+                    await c.deleteFile(facade, ownerPermId, "", false)
 
                     await facade.getAfsServerFacade().write(ownerPermId, testFileToCopy, 0, testContent)
 
@@ -370,7 +464,7 @@ exports.default = new Promise((resolve) => {
                     await c.login(facade)
 
                     var ownerPermId = (await c.createSample(facade)).getPermId()
-                    await c.deleteFile(facade, ownerPermId, "")
+                    await c.deleteFile(facade, ownerPermId, "", false)
 
                     await facade.getAfsServerFacade().write(ownerPermId, testFileToMove, 0, testContent)
 
@@ -407,7 +501,7 @@ exports.default = new Promise((resolve) => {
                     await c.login(facade)
 
                     var ownerPermId = (await c.createSample(facade)).getPermId()
-                    await c.deleteFile(facade, ownerPermId, "")
+                    await c.deleteFile(facade, ownerPermId, "", false)
                     await c.assertFileDoesNotExist(facade, ownerPermId, testFile)
 
                     if (useTransaction) {
@@ -441,7 +535,7 @@ exports.default = new Promise((resolve) => {
                     await c.login(facade)
 
                     var ownerPermId = (await c.createSample(facade)).getPermId()
-                    await c.deleteFile(facade, ownerPermId, "")
+                    await c.deleteFile(facade, ownerPermId, "", false)
 
                     await facade.getAfsServerFacade().write(ownerPermId, testFile, 0, testContent)
 
@@ -479,7 +573,7 @@ exports.default = new Promise((resolve) => {
                     await c.login(facade)
 
                     var ownerPermId = (await c.createSample(facade)).getPermId()
-                    await c.deleteFile(facade, ownerPermId, "")
+                    await c.deleteFile(facade, ownerPermId, "", false)
 
                     await facade.getAfsServerFacade().write(ownerPermId, testFile, 0, testContent)
 
@@ -491,7 +585,7 @@ exports.default = new Promise((resolve) => {
                     var md5Checksum = await facade.getAfsServerFacade().hash(ownerPermId, testFile)
                     c.assertEqual("9749fad13d6e7092a6337c4af9d83764", md5Checksum)
 
-                    await facade.getAfsServerFacade().delete(ownerPermId, testFile)
+                    await facade.getAfsServerFacade().delete(ownerPermId, testFile, false)
 
                     if (useTransaction) {
                         await facade.commitTransaction()
@@ -516,7 +610,7 @@ exports.default = new Promise((resolve) => {
                     await c.login(facade)
 
                     var ownerPermId = (await c.createSample(facade)).getPermId()
-                    await c.deleteFile(facade, ownerPermId, "")
+                    await c.deleteFile(facade, ownerPermId, "", false)
 
                     await facade.getAfsServerFacade().write(ownerPermId, testFile, 0, testContent)
 
@@ -531,7 +625,7 @@ exports.default = new Promise((resolve) => {
 
                     c.assertTrue(bytes.length > 0)
 
-                    await facade.getAfsServerFacade().delete(ownerPermId, testFile)
+                    await facade.getAfsServerFacade().delete(ownerPermId, testFile, false)
 
                     if (useTransaction) {
                         await facade.commitTransaction()
@@ -613,12 +707,36 @@ exports.default = new Promise((resolve) => {
                 await testWrite(assert, true)
             })
 
-            QUnit.test("delete() without transaction", async function (assert) {
-                await testDelete(assert, false)
+            QUnit.test("delete() permanently without transaction", async function (assert) {
+                await testDelete(assert, false, false)
             })
 
-            QUnit.test("delete() with transaction", async function (assert) {
-                await testDelete(assert, true)
+            QUnit.test("delete() permanently with transaction", async function (assert) {
+                await testDelete(assert, false, true)
+            })
+
+            QUnit.test("delete() to trash without transaction", async function (assert) {
+                await testDelete(assert, true, false)
+            })
+
+            QUnit.test("delete() to trash with transaction", async function (assert) {
+                await testDelete(assert, true, true)
+            })
+
+            QUnit.test("truncate() without transaction", async function (assert) {
+                await testTruncate(assert, false)
+            })
+
+            QUnit.test("truncate() with transaction", async function (assert) {
+                await testTruncate(assert, true)
+            })
+
+            QUnit.test("snapshot() without transaction", async function (assert) {
+                await testSnapshot(assert, false)
+            })
+
+            QUnit.test("snapshot() with transaction", async function (assert) {
+                await testSnapshot(assert, true)
             })
 
             QUnit.test("copy() without transaction", async function (assert) {

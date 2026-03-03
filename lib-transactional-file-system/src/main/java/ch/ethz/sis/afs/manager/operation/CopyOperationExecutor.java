@@ -52,9 +52,6 @@ public class CopyOperationExecutor implements OperationExecutor<CopyOperation, V
         if (!IOUtils.exists(operation.getSource())) {
             AFSExceptions.throwInstance(PathNotInStore, OperationName.Copy.name(), operation.getSource());
         }
-        if (IOUtils.exists(operation.getTarget())) {
-            AFSExceptions.throwInstance(PathInStore, OperationName.Copy.name(), operation.getTarget());
-        }
         String tempFileParent = IOUtils.getParentPath(OperationExecutor.getTempPath(transaction, operation.getTarget()));
         if (!IOUtils.exists(tempFileParent)) {
             IOUtils.createDirectories(tempFileParent);

@@ -15,7 +15,12 @@
  */
 package ch.ethz.sis.afs.manager.operation;
 
+import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Iterator;
+import java.util.stream.Stream;
 
 import ch.ethz.sis.afs.api.dto.File;
 import ch.ethz.sis.afs.dto.Transaction;
@@ -29,6 +34,7 @@ public interface OperationExecutor<OPERATION extends Operation, RESULT>
     String HIDDEN_AFS_DIRECTORY = ".afs";
     String CACHED_MD5_SUFFIX = "-hash.md5";
     String CACHED_PREVIEW_SUFFIX = "-preview.jpg";
+    String SNAPSHOTS_DIRECTORY = ".snapshots";
 
     static @NonNull
     String getTransactionLogDir(Transaction transaction)
@@ -103,6 +109,79 @@ public interface OperationExecutor<OPERATION extends Operation, RESULT>
     {
         Path hiddenFolderPath = getHiddenAfsDirectoryForSource(sourcePath);
         return hiddenFolderPath.resolve(sourcePath.getFileName().toString() + CACHED_MD5_SUFFIX).toAbsolutePath();
+    }
+
+    static @NonNull Path getSnapshotsDirectoryForSource(@NonNull Path sourcePath) throws Exception
+    {
+        Path snapshotsFolderPath = sourcePath.getParent().resolve(SNAPSHOTS_DIRECTORY);
+        return snapshotsFolderPath.resolve(sourcePath.getFileName().toString());
+    }
+
+    static void moveSnapshotsDirectory(@NonNull Path sourceSnapshotDirectoryPath, @NonNull Path targetSnapshotDirectoryPath) throws Exception
+    {
+        if (IOUtils.exists(sourceSnapshotDirectoryPath.toString()))
+        {
+            if (IOUtils.exists(targetSnapshotDirectoryPath.toString()))
+            {
+                try (Stream<Path> paths = Files.list(sourceSnapshotDirectoryPath))
+                {
+                    Iterator<Path> iterator = paths.iterator();
+
+                    while (iterator.hasNext())
+                    {
+                        Path snapshotFileForSource = iterator.next();
+                        Path snapshotFileForTarget = targetSnapshotDirectoryPath.resolve(snapshotFileForSource.getFileName().toString());
+
+                        Path uniqueSnapshotFileForTarget = getUniqueSnapshotFile(snapshotFileForTarget);
+                        IOUtils.move(snapshotFileForSource.toString(), uniqueSnapshotFileForTarget.toString());
+                    }
+                }
+            } else
+            {
+                if (!IOUtils.exists(targetSnapshotDirectoryPath.getParent().toString()))
+                {
+                    IOUtils.createDirectories(targetSnapshotDirectoryPath.getParent().toString());
+                }
+                IOUtils.move(sourceSnapshotDirectoryPath.toString(), targetSnapshotDirectoryPath.toString());
+            }
+        }
+
+        clearSnapshotsDirectory(sourceSnapshotDirectoryPath);
+    }
+
+    static void clearSnapshotsDirectory(@NonNull Path sourceSnapshotDirectoryPath) throws Exception
+    {
+        if (IOUtils.exists(sourceSnapshotDirectoryPath.toString()))
+        {
+            IOUtils.delete(sourceSnapshotDirectoryPath.toString());
+        }
+
+        if (IOUtils.exists(sourceSnapshotDirectoryPath.getParent().toString()))
+        {
+            boolean mainSnapshotsDirectoryEmpty;
+
+            try (DirectoryStream<Path> mainSnapshotsDirectoryStream = Files.newDirectoryStream(sourceSnapshotDirectoryPath.getParent()))
+            {
+                mainSnapshotsDirectoryEmpty = !mainSnapshotsDirectoryStream.iterator().hasNext();
+            }
+
+            if (mainSnapshotsDirectoryEmpty)
+            {
+                IOUtils.delete(sourceSnapshotDirectoryPath.getParent().toString());
+            }
+        }
+    }
+
+    static Path getUniqueSnapshotFile(Path snapshotPath) throws IOException
+    {
+        Path uniqueSnapshotPath = snapshotPath;
+        int counter = 2;
+        while (Files.exists(uniqueSnapshotPath))
+        {
+            uniqueSnapshotPath = Path.of(snapshotPath.getParent().toString(), snapshotPath.getFileName().toString() + "_" + counter);
+            counter++;
+        }
+        return uniqueSnapshotPath;
     }
 
     static void clearCaches(@NonNull String safeSourcePath) throws Exception

@@ -30,9 +30,11 @@ public class DeleteOperation implements Operation {
     private UUID owner;
     private List<Lock<UUID, String>> locks;
     private String source;
+    private boolean trash;
+    private String trashRoot;
     private OperationName name;
 
-    public DeleteOperation(UUID owner, String source) throws IOException {
+    public DeleteOperation(UUID owner, String source, boolean trash, String trashRoot) throws IOException {
         this.owner = owner;
 
         LockType sourceLockType = null;
@@ -44,6 +46,8 @@ public class DeleteOperation implements Operation {
 
         this.locks = List.of(new Lock<>(owner, source, sourceLockType));
         this.source = source;
+        this.trash = trash;
+        this.trashRoot = trashRoot;
         this.name = OperationName.Delete;
     }
 

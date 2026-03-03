@@ -18,6 +18,7 @@ package ch.ethz.sis.afs.manager;
 import static ch.ethz.sis.shared.collection.List.safe;
 
 import java.io.Serializable;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -41,6 +42,8 @@ import ch.ethz.sis.afs.dto.operation.Operation;
 import ch.ethz.sis.afs.dto.operation.OperationName;
 import ch.ethz.sis.afs.dto.operation.PreviewOperation;
 import ch.ethz.sis.afs.dto.operation.ReadOperation;
+import ch.ethz.sis.afs.dto.operation.SnapshotOperation;
+import ch.ethz.sis.afs.dto.operation.TruncateOperation;
 import ch.ethz.sis.afs.dto.operation.WriteOperation;
 import ch.ethz.sis.afs.exception.AFSExceptions;
 import ch.ethz.sis.afs.manager.operation.CopyOperationExecutor;
@@ -53,6 +56,8 @@ import ch.ethz.sis.afs.manager.operation.NonModifyingOperationExecutor;
 import ch.ethz.sis.afs.manager.operation.OperationExecutor;
 import ch.ethz.sis.afs.manager.operation.PreviewOperationExecutor;
 import ch.ethz.sis.afs.manager.operation.ReadOperationExecutor;
+import ch.ethz.sis.afs.manager.operation.SnapshotOperationExecutor;
+import ch.ethz.sis.afs.manager.operation.TruncateOperationExecutor;
 import ch.ethz.sis.afs.manager.operation.WriteOperationExecutor;
 import ch.ethz.sis.afsjson.JsonObjectMapper;
 import ch.ethz.sis.shared.io.IOUtils;
@@ -77,6 +82,8 @@ public class TransactionConnection implements TransactionalFileSystem {
                 OperationName.Move, MoveOperationExecutor.getInstance(),
                 OperationName.Write, WriteOperationExecutor.getInstance(),
                 OperationName.Create, CreateOperationExecutor.getInstance(),
+                OperationName.Truncate, TruncateOperationExecutor.getInstance(),
+                OperationName.Snapshot, SnapshotOperationExecutor.getInstance(),
                 OperationName.Hash, HashOperationExecutor.getInstance(),
                 OperationName.Preview, PreviewOperationExecutor.getInstance());
     }
@@ -87,6 +94,7 @@ public class TransactionConnection implements TransactionalFileSystem {
     private State state;
     private String writeAheadLogRoot;
     private String storageRoot;
+    private TrashRootProvider trashRootProvider;
     private Set<String> enabledPreviewFileTypes;
     private long enablePreviewSizeInBytes;
     private RecoveredTransactions recoveredTransactions;
@@ -98,10 +106,11 @@ public class TransactionConnection implements TransactionalFileSystem {
                           JsonObjectMapper jsonObjectMapper,
                           String writeAheadLogRoot,
                           String storageRoot,
+                          TrashRootProvider trashRootProvider,
                           RecoveredTransactions recoveredTransactions,
                           Set<String> enabledPreviewFileTypes,
                           long enablePreviewSizeInBytes) {
-        this(lockManager, jsonObjectMapper, null, enabledPreviewFileTypes, enablePreviewSizeInBytes);
+        this(lockManager, jsonObjectMapper, trashRootProvider, null, enabledPreviewFileTypes, enablePreviewSizeInBytes);
         this.writeAheadLogRoot = writeAheadLogRoot;
         this.storageRoot = storageRoot;
         this.recoveredTransactions = recoveredTransactions;
@@ -112,11 +121,13 @@ public class TransactionConnection implements TransactionalFileSystem {
      */
     TransactionConnection(LockManager<UUID, String> lockManager,
                           JsonObjectMapper jsonObjectMapper,
+                          TrashRootProvider trashRootProvider,
                           Transaction transaction,
                           Set<String> enabledPreviewFileTypes,
                           long enablePreviewSizeInBytes) {
         this.lockManager = lockManager;
         this.jsonObjectMapper = jsonObjectMapper;
+        this.trashRootProvider = trashRootProvider;
         this.transaction = transaction;
 
         if (transaction != null) {
@@ -323,15 +334,16 @@ public class TransactionConnection implements TransactionalFileSystem {
     public boolean write(String source, long offset, byte[] data) throws Exception {
         String tempSource = OperationExecutor.getTempPath(transaction, source) + "." + UUID.randomUUID();
         source = getSafePath(OperationName.Write, source);
+        validateNotInTrashOrSnapshots(OperationName.Write, source);
         WriteOperation operation = new WriteOperation(transaction.getUuid(), source, tempSource, offset, data);
         prepare(operation, source, null);
         return Boolean.TRUE;
     }
 
     @Override
-    public boolean delete(String source) throws Exception {
+    public boolean delete(String source, boolean trash) throws Exception {
         source = getSafePath(OperationName.Delete, source);
-        DeleteOperation operation = new DeleteOperation(transaction.getUuid(), source);
+        DeleteOperation operation = new DeleteOperation(transaction.getUuid(), source, trash, trash ? trashRootProvider.getTrashRoot(source) : null);
         prepare(operation, source, null);
         return Boolean.TRUE;
     }
@@ -343,6 +355,7 @@ public class TransactionConnection implements TransactionalFileSystem {
     public boolean copy(String source, String target) throws Exception {
         source = getSafePath(OperationName.Copy, source);
         target = getSafePath(OperationName.Copy, target);
+        validateNotInTrashOrSnapshots(OperationName.Copy, target);
         CopyOperation operation = new CopyOperation(transaction.getUuid(), source, target);
         prepare(operation, source, target);
         copiedSourceToTarget.put(source, target);
@@ -357,6 +370,7 @@ public class TransactionConnection implements TransactionalFileSystem {
     public boolean move(String source, String target) throws Exception {
         source = getSafePath(OperationName.Move, source);
         target = getSafePath(OperationName.Move, target);
+        validateNotInTrashOrSnapshots(OperationName.Move, target);
         MoveOperation operation = new MoveOperation(transaction.getUuid(), source, target);
         prepare(operation, source, target);
         movedSourceToTarget.put(source, target);
@@ -368,7 +382,28 @@ public class TransactionConnection implements TransactionalFileSystem {
     public boolean create(@NonNull String source, final boolean directory) throws Exception
     {
         source = getSafePath(OperationName.Create, source);
+        validateNotInTrashOrSnapshots(OperationName.Create, source);
         final CreateOperation operation = new CreateOperation(transaction.getUuid(), source, directory);
+        prepare(operation, source, null);
+        return Boolean.TRUE;
+    }
+
+    @Override
+    public boolean truncate(@NonNull String source, long size) throws Exception
+    {
+        source = getSafePath(OperationName.Truncate, source);
+        validateNotInTrashOrSnapshots(OperationName.Truncate, source);
+        final TruncateOperation operation = new TruncateOperation(transaction.getUuid(), source, size);
+        prepare(operation, source, null);
+        return Boolean.TRUE;
+    }
+
+    @Override
+    public boolean snapshot(@NonNull String source) throws Exception
+    {
+        source = getSafePath(OperationName.Snapshot, source);
+        validateNotInTrashOrSnapshots(OperationName.Snapshot, source);
+        final SnapshotOperation operation = new SnapshotOperation(transaction.getUuid(), source);
         prepare(operation, source, null);
         return Boolean.TRUE;
     }
@@ -509,6 +544,25 @@ public class TransactionConnection implements TransactionalFileSystem {
         for (String source:safe(sourceSubPaths)) {
             if (copiedTargetToSource.containsKey(source)) {
                 AFSExceptions.throwInstance(AFSExceptions.PathCantBeOperatedAfterCopied, operationName.name(), source);
+            }
+        }
+    }
+
+    private void validateNotInTrashOrSnapshots(OperationName operationName, String path) {
+        if (path != null) {
+            Path pathObject = Path.of(path);
+
+            String trashRoot = trashRootProvider.getTrashRoot(path);
+            if (trashRoot != null) {
+                boolean pathInTrash = pathObject.toAbsolutePath().normalize().startsWith(Path.of(trashRoot).toAbsolutePath().normalize());
+                if (pathInTrash) {
+                    AFSExceptions.throwInstance(AFSExceptions.PathCantBeOperatedInTrash, operationName.name(), pathObject);
+                }
+            }
+
+            boolean pathInSnapshots = pathObject.toAbsolutePath().toString().contains(OperationExecutor.SNAPSHOTS_DIRECTORY);
+            if (pathInSnapshots) {
+                AFSExceptions.throwInstance(AFSExceptions.PathCantBeOperatedInSnapshots, operationName.name(), pathObject);
             }
         }
     }

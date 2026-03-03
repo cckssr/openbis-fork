@@ -255,17 +255,17 @@ public final class AfsClient implements PublicAPI, ClientAPI
     }
 
     @Override
-    public @NonNull Boolean delete(@NonNull final String owner, @NonNull final String source)
+    public @NonNull Boolean delete(@NonNull final String owner, @NonNull final String source, @NonNull final Boolean trash)
             throws Exception
     {
         validateSessionToken();
 
         if (serverApi != null)
         {
-            return serverApi.delete(owner, source);
+            return serverApi.delete(owner, source, trash);
         } else
         {
-            return request("DELETE", "delete", Boolean.class, Map.of("owner", owner, "source", source));
+            return request("DELETE", "delete", Boolean.class, Map.of("owner", owner, "source", source, "trash", String.valueOf(trash)));
         }
     }
 
@@ -319,6 +319,36 @@ public final class AfsClient implements PublicAPI, ClientAPI
         } else
         {
             return request("POST", "create", Boolean.class, Map.of("owner", owner, "source", source, "directory", String.valueOf(directory)));
+        }
+    }
+
+    @Override
+    public @NonNull Boolean truncate(@NonNull final String owner, @NonNull final String source, @NonNull final Long size)
+            throws Exception
+    {
+        validateSessionToken();
+
+        if (serverApi != null)
+        {
+            return serverApi.truncate(owner, source, size);
+        } else
+        {
+            return request("POST", "truncate", Boolean.class, Map.of("owner", owner, "source", source, "size", String.valueOf(size)));
+        }
+    }
+
+    @Override
+    public @NonNull Boolean snapshot(@NonNull final String owner, @NonNull final String source)
+            throws Exception
+    {
+        validateSessionToken();
+
+        if (serverApi != null)
+        {
+            return serverApi.snapshot(owner, source);
+        } else
+        {
+            return request("POST", "snapshot", Boolean.class, Map.of("owner", owner, "source", source));
         }
     }
 

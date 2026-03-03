@@ -93,7 +93,7 @@ export namespace common {
         deleteQuery(facade: openbis.openbis, id): Promise<void>
         deletePersonalAccessToken(facade: openbis.openbis, id): Promise<void>
         deletePerson(facade: openbis.openbis, id): Promise<void>
-        deleteFile(facade: openbis.openbis, owner: string, source: string): Promise<void>
+        deleteFile(facade: openbis.openbis, owner: string, source: string, trash: boolean): Promise<void>
         getObjectProperty(object: any, propertyName: string): any
         login(facade: openbis.openbis): jquery.JQueryPromise<unknown>
         createSpaceFetchOptions(): openbis.SpaceFetchOptions

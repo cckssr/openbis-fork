@@ -15,13 +15,16 @@
  */
 package ch.ethz.sis.afs.manager.operation;
 
+import java.nio.file.Path;
+
 import ch.ethz.sis.afs.dto.Transaction;
 import ch.ethz.sis.afs.dto.operation.MoveOperation;
 import ch.ethz.sis.afs.dto.operation.OperationName;
 import ch.ethz.sis.afs.exception.AFSExceptions;
 import ch.ethz.sis.shared.io.IOUtils;
 
-public class MoveOperationExecutor implements OperationExecutor<MoveOperation, Void> {
+public class MoveOperationExecutor implements OperationExecutor<MoveOperation, Void>
+{
 
     //
     // Singleton
@@ -29,14 +32,17 @@ public class MoveOperationExecutor implements OperationExecutor<MoveOperation, V
 
     private static final MoveOperationExecutor instance;
 
-    static {
+    static
+    {
         instance = new MoveOperationExecutor();
     }
 
-    private MoveOperationExecutor() {
+    private MoveOperationExecutor()
+    {
     }
 
-    public static MoveOperationExecutor getInstance() {
+    public static MoveOperationExecutor getInstance()
+    {
         return instance;
     }
 
@@ -45,24 +51,32 @@ public class MoveOperationExecutor implements OperationExecutor<MoveOperation, V
     //
 
     @Override
-    public Void prepare(Transaction transaction, MoveOperation operation) throws Exception {
-        if (!IOUtils.exists(operation.getSource())) {
+    public Void prepare(Transaction transaction, MoveOperation operation) throws Exception
+    {
+        if (!IOUtils.exists(operation.getSource()))
+        {
             AFSExceptions.throwInstance(AFSExceptions.PathNotInStore, OperationName.Move.name(), operation.getSource());
         }
-        if (IOUtils.exists(operation.getTarget())) {
+        if (IOUtils.exists(operation.getTarget()))
+        {
             AFSExceptions.throwInstance(AFSExceptions.PathInStore, OperationName.Move.name(), operation.getTarget());
         }
         return null;
     }
 
     @Override
-    public boolean commit(Transaction transaction, MoveOperation operation) throws Exception {
-        if (IOUtils.exists(operation.getSource())) {
-            if (!IOUtils.exists(operation.getTarget())) {
+    public boolean commit(Transaction transaction, MoveOperation operation) throws Exception
+    {
+        if (IOUtils.exists(operation.getSource()))
+        {
+            if (!IOUtils.exists(operation.getTarget()))
+            {
                 IOUtils.createDirectories(IOUtils.getParentPath(operation.getTarget()));
             }
             IOUtils.move(operation.getSource(), operation.getTarget());
             OperationExecutor.moveCaches(operation.getSource(), operation.getTarget());
+            OperationExecutor.moveSnapshotsDirectory(OperationExecutor.getSnapshotsDirectoryForSource(Path.of(operation.getSource())),
+                    OperationExecutor.getSnapshotsDirectoryForSource(Path.of(operation.getTarget())));
         }
         return false;
     }

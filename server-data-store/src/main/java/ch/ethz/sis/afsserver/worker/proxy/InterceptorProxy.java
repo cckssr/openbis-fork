@@ -82,7 +82,7 @@ public class InterceptorProxy extends AbstractProxy
     }
 
     @Override
-    public Boolean delete(@NonNull String sourceOwner, @NonNull String source) throws Exception
+    public Boolean delete(@NonNull String sourceOwner, @NonNull String source, @NonNull Boolean trash) throws Exception
     {
         if (apiServerObserver != null)
         {
@@ -91,12 +91,12 @@ public class InterceptorProxy extends AbstractProxy
                     {
                         @Override public Object executeDefault() throws Exception
                         {
-                            return nextProxy.delete(sourceOwner, source);
+                            return nextProxy.delete(sourceOwner, source, trash);
                         }
                     });
         } else
         {
-            return nextProxy.delete(sourceOwner, source);
+            return nextProxy.delete(sourceOwner, source, trash);
         }
     }
 
@@ -154,6 +154,44 @@ public class InterceptorProxy extends AbstractProxy
         } else
         {
             return nextProxy.create(owner, source, directory);
+        }
+    }
+
+    @Override public @NonNull Boolean truncate(@NonNull final String owner, @NonNull final String source, @NonNull final Long size)
+            throws Exception
+    {
+        if (apiServerObserver != null)
+        {
+            return (Boolean) apiServerObserver.duringAPICall(nextProxy,
+                    new APICallImpl("truncate", Map.of("owner", owner, "source", source, "size", size))
+                    {
+                        @Override public Object executeDefault() throws Exception
+                        {
+                            return nextProxy.truncate(owner, source, size);
+                        }
+                    });
+        } else
+        {
+            return nextProxy.truncate(owner, source, size);
+        }
+    }
+
+    @Override public @NonNull Boolean snapshot(@NonNull final String owner, @NonNull final String source)
+            throws Exception
+    {
+        if (apiServerObserver != null)
+        {
+            return (Boolean) apiServerObserver.duringAPICall(nextProxy,
+                    new APICallImpl("snapshot", Map.of("owner", owner, "source", source))
+                    {
+                        @Override public Object executeDefault() throws Exception
+                        {
+                            return nextProxy.snapshot(owner, source);
+                        }
+                    });
+        } else
+        {
+            return nextProxy.snapshot(owner, source);
         }
     }
 

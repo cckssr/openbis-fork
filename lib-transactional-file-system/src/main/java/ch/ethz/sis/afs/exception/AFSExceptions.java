@@ -48,7 +48,10 @@ public enum AFSExceptions implements ExceptionTemplateHolder {
     PathInvalid(                    RuntimeException.class,         List.of(ClientDeveloperCodingError),10023,"Path %s contains invalid characters"),
     PathLocksCannotBeObtained(      RuntimeException.class,         List.of(RecoverableSystemStateError), 10024,"Path can't be operated by: %s - %s locks cannot be obtained"),
     StoreRootDoesNotExist(          RuntimeException.class,         List.of(AdminConfigError),          10025,"Store root does not exist"),
-    StoreRootNotDirectory(          RuntimeException.class,         List.of(AdminConfigError),          10026,"Store root is not a directory");
+    StoreRootNotDirectory(          RuntimeException.class,         List.of(AdminConfigError),          10026,"Store root is not a directory"),
+    PathCantBeOperatedInTrash(      RuntimeException.class,         List.of(ClientDeveloperCodingError),10027,"Path can't be operated by: %s - %s is in trash directory"),
+    PathCantBeOperatedInSnapshots(  RuntimeException.class,         List.of(ClientDeveloperCodingError),10028,"Path can't be operated by: %s - %s is in snapshots directory"),
+    OperationParameterInvalid(      RuntimeException.class,         List.of(ClientDeveloperCodingError),10029,"Parameter of operation %s is invalid. %s");
 
     private RuntimeExceptionTemplate template;
 

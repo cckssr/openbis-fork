@@ -43,6 +43,7 @@ public class ConnectionFactory extends AbstractFactory<Configuration, Configurat
                 configuration.getSharableInstance(AtomicFileSystemServerParameter.jsonObjectMapperClass),
                 configuration.getStringProperty(AtomicFileSystemServerParameter.writeAheadLogRoot),
                 configuration.getStringProperty(AtomicFileSystemServerParameter.storageRoot),
+                configuration.getSharableInstance(AtomicFileSystemServerParameter.trashRootProviderClass),
                 enabledPreviewTypes, enablePreviewSizeInBytes);
         transactionManager.reCommitTransactionsAfterCrash();
     }

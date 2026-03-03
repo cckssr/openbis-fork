@@ -456,7 +456,7 @@ public class SyncOperation {
 
     void deleteRemoteFile(@NonNull Path remotePath) throws Exception {
         try {
-            getAfsClient().delete(syncJob.getEntityPermId(), toServerPathString(remotePath));
+            getAfsClient().delete(syncJob.getEntityPermId(), toServerPathString(remotePath), true);
         } catch (Exception e) {
             if ( !AfsClientUploadHelper.isPathNotInStoreError(e) ) {
                 throw e;
@@ -606,7 +606,7 @@ public class SyncOperation {
 
         //Check if conflict notification is present and .openbis-conflict file has been deleted, that means: conflict resolution has been performed
         if (alreadyPresentConflictNotification != null && !Files.exists(localSuffixedConflictFile)) {
-            afsClientProxy.delete(syncJob.getEntityPermId(), toServerPathString(remoteFile));
+            afsClientProxy.delete(syncJob.getEntityPermId(), toServerPathString(remoteFile), true);
             FileTime localLastModification = Files.getLastModifiedTime(localFile);
             ClientAPI.DefaultTransferMonitorLister transferMonitorListener = new ClientAPI.DefaultTransferMonitorLister();
             transferMonitorListener.addFileTransferredListener(new ClientAPI.FileTransferredListener() {
@@ -776,8 +776,8 @@ public class SyncOperation {
             return AfsClientDownloadHelper.download(afsClient, sourceOwner, sourcePath, destinationPath, fileCollisionListener, transferMonitorListener);
         }
 
-        public void delete(@NonNull String sourceOwner, @NonNull String sourcePath) throws Exception {
-            afsClient.delete(sourceOwner, sourcePath);
+        public void delete(@NonNull String sourceOwner, @NonNull String sourcePath, @NonNull Boolean trash) throws Exception {
+            afsClient.delete(sourceOwner, sourcePath, trash);
         }
 
         public void create(@NonNull String sourceOwner, @NonNull String sourcePath, boolean directory) throws Exception {

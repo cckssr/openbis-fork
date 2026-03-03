@@ -162,8 +162,8 @@ public abstract class AbstractProxy implements Worker<TransactionalFileSystem> {
     }
 
     @Override
-    public Boolean delete(@NonNull String sourceOwner, @NonNull String source) throws Exception {
-        return nextProxy.delete(sourceOwner, source);
+    public Boolean delete(@NonNull String sourceOwner, @NonNull String source, @NonNull Boolean trash) throws Exception {
+        return nextProxy.delete(sourceOwner, source, trash);
     }
 
     @Override

@@ -31,6 +31,7 @@ import java.util.regex.Pattern;
 import ch.ethz.sis.afs.dto.Lock;
 import ch.ethz.sis.afs.exception.AFSExceptions;
 import ch.ethz.sis.afs.manager.LockMapper;
+import ch.ethz.sis.afs.manager.TrashRootProvider;
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameterUtil;
 import ch.ethz.sis.afsserver.worker.WorkerContext;
 import ch.ethz.sis.afsserver.worker.providers.AuthorizationInfoProvider;
@@ -65,7 +66,7 @@ import ch.ethz.sis.shared.io.IOUtils;
 import ch.ethz.sis.shared.startup.Configuration;
 import lombok.Data;
 
-public class OpenBISAuthorizationInfoProvider implements AuthorizationInfoProvider, LockMapper<UUID, String>
+public class OpenBISAuthorizationInfoProvider implements AuthorizationInfoProvider, TrashRootProvider, LockMapper<UUID, String>
 {
 
     private String storageRoot;
@@ -92,7 +93,7 @@ public class OpenBISAuthorizationInfoProvider implements AuthorizationInfoProvid
         storageIncomingShareId = AtomicFileSystemServerParameterUtil.getStorageIncomingShareId(configuration);
         interactiveSessionKey = AtomicFileSystemServerParameterUtil.getInteractiveSessionKey(configuration);
         openBISConfiguration = OpenBISConfiguration.getInstance(configuration);
-        ownerPathPattern = Pattern.compile("\\d/.+/../../../(.+)");
+        ownerPathPattern = Pattern.compile("(\\d/[^/]+/[^/]{2}/[^/]{2}/[^/]{2}/)([^/]*)(.*)");
     }
 
     @Override
@@ -139,18 +140,15 @@ public class OpenBISAuthorizationInfoProvider implements AuthorizationInfoProvid
 
     @Override public Lock<UUID, String> mapLock(final Lock<UUID, String> lock)
     {
-        Path storageRootPath = Paths.get(storageRoot);
-        Path lockPath = Paths.get(lock.getResource());
-        Path relativeLockPath = storageRootPath.relativize(lockPath);
+        OwnerPath ownerPath = parseOwnerPath(lock.getResource());
+        return new Lock<>(lock.getOwner(), Path.of(IOUtils.RELATIVE_PATH_ROOT, ownerPath.getOwner(), ownerPath.getPathBelowOwner()).toString(),
+                lock.getType());
+    }
 
-        Matcher matcher = ownerPathPattern.matcher(relativeLockPath.toString());
-        if (matcher.matches())
-        {
-            return new Lock<>(lock.getOwner(), IOUtils.RELATIVE_PATH_ROOT + matcher.group(1), lock.getType());
-        } else
-        {
-            throw new IllegalArgumentException("Lock relative path: " + lockPath + " does not match the expected format: " + ownerPathPattern);
-        }
+    @Override public String getTrashRoot(final String source)
+    {
+        OwnerPath ownerPath = parseOwnerPath(source);
+        return Path.of(storageRoot, ownerPath.getPathAboveOwner(), ownerPath.getOwner(), TRASH_FOLDER_NAME).toString();
     }
 
     private boolean hasPermissions(OpenBIS openBIS, ObjectPermId ownerPermId,
@@ -318,6 +316,22 @@ public class OpenBISAuthorizationInfoProvider implements AuthorizationInfoProvid
         return IOUtils.getPath("", elements.toArray(new String[] {}));
     }
 
+    private OwnerPath parseOwnerPath(String path)
+    {
+        Path storageRootPath = Paths.get(storageRoot);
+        Path relativePath = storageRootPath.relativize(Paths.get(path));
+
+        Matcher matcher = ownerPathPattern.matcher(relativePath.toString());
+
+        if (matcher.matches())
+        {
+            return new OwnerPath(matcher.group(1), matcher.group(2), matcher.group(3));
+        } else
+        {
+            throw new IllegalArgumentException("Path: " + path + " does not match the expected format: " + ownerPathPattern);
+        }
+    }
+
     @Data
     private static class OwnerEntity
     {
@@ -326,6 +340,16 @@ public class OpenBISAuthorizationInfoProvider implements AuthorizationInfoProvid
         private final String share;
 
         private final Set<FilePermission> supportedPermissions;
+    }
+
+    @Data
+    private static class OwnerPath
+    {
+        private final String pathAboveOwner;
+
+        private final String owner;
+
+        private final String pathBelowOwner;
     }
 
 }

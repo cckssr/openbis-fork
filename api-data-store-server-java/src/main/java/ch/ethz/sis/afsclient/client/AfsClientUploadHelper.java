@@ -146,7 +146,7 @@ public class AfsClientUploadHelper
                                             destinationPath,
                                             transferMonitorListener,
                                             maxThreadLimitSemaphore,
-                                            asyncTransferRunnables, transactional);
+                                            asyncTransferRunnables, cache, transactional);
                                     Thread threadHandle = new Thread(readAndUploadRunnable);
                                     threadHandle.start();
                                     asyncTransferRunnables.add(readAndUploadRunnable);
@@ -238,7 +238,6 @@ public class AfsClientUploadHelper
 
         if (collisionAction.equals(ClientAPI.CollisionAction.Override))
         {
-
             if (serverFile.isPresent())
             {
                 File presentServerFile = serverFile.get();
@@ -249,29 +248,23 @@ public class AfsClientUploadHelper
                 }
             }
 
-            if (localFileSize > 0)
-            {
-                String serverAbsolutePath = transactional ?
-                        toServerPathString(Path.of(absoluteServerPath)) :
-                        toServerPathString(TemporaryPathUtil.getTwinTemporaryPath(Path.of(absoluteServerPath)));
-
-                deleteAndRecreateServerRegularFile(afsClient, destinationOwner, serverAbsolutePath);
-            } else
-            {
-                String serverAbsolutePath = transactional ? toServerPathString(Path.of(absoluteServerPath)) :
-                        toServerPathString(TemporaryPathUtil.getTwinTemporaryPath(Path.of(absoluteServerPath)));
-
-                deleteServerRegularFile(afsClient, destinationOwner, serverAbsolutePath);
-
-                if (serverFile.isPresent())
-                {
-                    if (serverFile.get().getSize() > 0)
-                    {
-                        deleteAndRecreateServerRegularFile(afsClient, destinationOwner, absoluteServerPath);
+            if (localFileSize == 0) {
+                if (serverFile.isEmpty()) {
+                    // explicitly create an empty file as no data will be uploaded to create it (local file size == 0)
+                    afsClient.create(destinationOwner, absoluteServerPath, false);
+                }
+            } else {
+                if (transactional) {
+                    if (serverFile.isPresent()) {
+                        // inside a transaction we can write directly to the file without a risk of destroying it
+                        afsClient.snapshot(destinationOwner, absoluteServerPath);
+                        afsClient.truncate(destinationOwner, absoluteServerPath, 0L);
                     }
                 } else
                 {
-                    afsClient.create(destinationOwner, absoluteServerPath, false);
+                    // outside a transaction we write to a temp file and then rename it, first we need to delete an old temp file if exists
+                    String twinAbsoluteServerPath = toServerPathString(TemporaryPathUtil.getTwinTemporaryPath(Path.of(absoluteServerPath)));
+                    deleteServerRegularFile(afsClient, destinationOwner, twinAbsoluteServerPath, false);
                 }
             }
 
@@ -294,11 +287,11 @@ public class AfsClientUploadHelper
         }
     }
 
-    private static void deleteServerRegularFile(AfsClient afsClient, String destinationOwner, String absoluteServerPath) throws Exception
+    private static void deleteServerRegularFile(AfsClient afsClient, String destinationOwner, String absoluteServerPath, boolean trash) throws Exception
     {
         try
         {
-            afsClient.delete(destinationOwner, absoluteServerPath);
+            afsClient.delete(destinationOwner, absoluteServerPath, trash);
         } catch (Exception e)
         {
             if (!isPathNotInStoreError(e))
@@ -306,20 +299,6 @@ public class AfsClientUploadHelper
                 throw e;
             }
         }
-    }
-
-    private static void deleteAndRecreateServerRegularFile(@NonNull AfsClient afsClient, @NonNull String destinationOwner,
-            @NonNull String serverAbsolutePath) throws Exception
-    {
-        deleteServerRegularFile(afsClient, destinationOwner, serverAbsolutePath);
-        afsClient.create(destinationOwner, serverAbsolutePath, false);
-    }
-
-    private static void moveServerRegularFile(@NonNull AfsClient afsClient, @NonNull String destinationOwner, @NonNull String serverAbsolutePathSrc,
-            @NonNull String serverAbsolutePathDest) throws Exception
-    {
-        deleteServerRegularFile(afsClient, destinationOwner, serverAbsolutePathDest);
-        afsClient.move(destinationOwner, serverAbsolutePathSrc, destinationOwner, serverAbsolutePathDest);
     }
 
     public static Optional<File> getServerFilePresence(@NonNull AfsClient afsClient,
@@ -416,6 +395,8 @@ public class AfsClientUploadHelper
 
         private final List<ReadAndUploadRunnable> asyncTransferRunnables;
 
+        private final Cache cache;
+
         private final boolean transactional;
 
         private ReadAndUploadRunnable(AfsClient afsClient,
@@ -426,7 +407,7 @@ public class AfsClientUploadHelper
                 Path destinationPath,
                 TransferMonitorListener transferMonitorListener,
                 Semaphore maxThreadLimitSemaphore,
-                List<ReadAndUploadRunnable> asyncTransferRunnables, boolean transactional)
+                List<ReadAndUploadRunnable> asyncTransferRunnables, Cache cache, boolean transactional)
         {
             this.afsClient = afsClient;
             this.currentsAndTotals = currentsAndTotals;
@@ -437,6 +418,7 @@ public class AfsClientUploadHelper
             this.transferMonitorListener = transferMonitorListener;
             this.maxThreadLimitSemaphore = maxThreadLimitSemaphore;
             this.asyncTransferRunnables = asyncTransferRunnables;
+            this.cache = cache;
             this.transactional = transactional;
         }
 
@@ -479,10 +461,10 @@ public class AfsClientUploadHelper
                                     new Chunk(chunk.getOwner(), toServerPathString(chunkServerPath), chunk.getOffset(), chunk.getLimit(), bytes);
                         } else
                         {
-                            requestChunks[i] =
-                                    new Chunk(chunk.getOwner(), toServerPathString(TemporaryPathUtil.getTwinTemporaryPath(chunkServerPath)),
-                                            chunk.getOffset(),
-                                            chunk.getLimit(), bytes);
+                        requestChunks[i] =
+                                new Chunk(chunk.getOwner(), toServerPathString(TemporaryPathUtil.getTwinTemporaryPath(chunkServerPath)),
+                                        chunk.getOffset(),
+                                        chunk.getLimit(), bytes);
                         }
                     }
                     i++;
@@ -510,9 +492,19 @@ public class AfsClientUploadHelper
                                     chunk.getLimit(), transactional);
                     if (completed && !transactional)
                     {
-                        moveServerRegularFile(afsClient, chunk.getOwner(),
-                                toServerPathString(TemporaryPathUtil.getTwinTemporaryPath(chunkServerPath)),
-                                chunk.getSource());
+                        // create a snapshot of the file before updating it
+                        Optional<File> serverFile = getServerFilePresence(afsClient, chunk.getOwner(), chunk.getSource(), cache);
+                        if(serverFile.isPresent())
+                        {
+                            afsClient.snapshot(chunk.getOwner(), chunk.getSource());
+                        }
+
+                        // copy data from the twin file to the updated file
+                        String twinAbsoluteServerPath = toServerPathString(TemporaryPathUtil.getTwinTemporaryPath(chunkServerPath));
+                        afsClient.copy(chunk.getOwner(), twinAbsoluteServerPath, chunk.getOwner(), chunk.getSource());
+
+                        // delete the twin file
+                        deleteServerRegularFile(afsClient, chunk.getOwner(), twinAbsoluteServerPath, false);
                     }
                     transferMonitorListener.add(localPath, chunkServerPath, chunk.getLimit(), completed);
                 }

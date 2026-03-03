@@ -67,7 +67,9 @@ public abstract class AbstractTransactionConnectionTest extends AbstractTest {
         String storageRoot = AFSEnvironment.getDefaultAFSConfig().getStringProperty(AtomicFileSystemParameter.storageRoot);
         jsonObjectMapper = AFSEnvironment.getDefaultAFSConfig().getSharableInstance(AtomicFileSystemParameter.jsonObjectMapperClass);
         lockManager = new LockManager<>(new NopLockMapper<>(), new PathLockFinder());
-        transaction = new TransactionConnection(lockManager, jsonObjectMapper, writeAheadLogRoot, storageRoot, new RecoveredTransactions(), Set.of("jpeg", "jpg", "png", "bmp"), 100_000_000);
+        TrashRootInOwnerProvider trashRootProvider = new TrashRootInOwnerProvider();
+        trashRootProvider.init(AFSEnvironment.getDefaultAFSConfig());
+        transaction = new TransactionConnection(lockManager, jsonObjectMapper, writeAheadLogRoot, storageRoot, trashRootProvider, new RecoveredTransactions(), Set.of("jpeg", "jpg", "png", "bmp"), 100_000_000);
     }
 
     @Before
@@ -153,8 +155,8 @@ public abstract class AbstractTransactionConnectionTest extends AbstractTest {
         return transaction.write(source, offset, data);
     }
 
-    public boolean delete(String source) throws Exception {
-        return transaction.delete(source);
+    public boolean delete(String source, boolean trash) throws Exception {
+        return transaction.delete(source, trash);
     }
 
     public boolean copy(String source, String target) throws Exception {
@@ -167,6 +169,14 @@ public abstract class AbstractTransactionConnectionTest extends AbstractTest {
 
     public boolean create(final String source, final boolean directory) throws Exception {
         return transaction.create(source, directory);
+    }
+
+    public boolean truncate(String source, long size) throws Exception {
+        return transaction.truncate(source, size);
+    }
+
+    public boolean snapshot(String source) throws Exception {
+        return transaction.snapshot(source);
     }
 
     public void assertError(Throwable throwable, String expectedError){

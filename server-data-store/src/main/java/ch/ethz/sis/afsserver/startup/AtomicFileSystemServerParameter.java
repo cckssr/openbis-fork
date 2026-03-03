@@ -29,6 +29,7 @@ public enum AtomicFileSystemServerParameter
     //
     lockMapperClass,
     jsonObjectMapperClass,
+    trashRootProviderClass,
     writeAheadLogRoot,
     storageRoot,
     storageUuid,

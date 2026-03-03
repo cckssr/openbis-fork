@@ -151,7 +151,7 @@ public class AfsClientTest
         login();
 
         httpServer.setNextResponse("{\"result\": true}");
-        Boolean result = afsClient.delete("", "");
+        Boolean result = afsClient.delete("", "", false);
 
         assertEquals("DELETE", httpServer.getHttpExchange().getRequestMethod());
         assertTrue(result);

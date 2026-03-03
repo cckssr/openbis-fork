@@ -1672,11 +1672,11 @@ public class OpenBIS
             }
         }
 
-        public Boolean delete(String owner, String source)
+        public Boolean delete(String owner, String source, Boolean trash)
         {
             try
             {
-                return afsClientWithTransactions.delete(owner, source);
+                return afsClientWithTransactions.delete(owner, source, trash);
             } catch (RuntimeException e)
             {
                 throw e;
@@ -1719,6 +1719,34 @@ public class OpenBIS
             try
             {
                 return afsClientWithTransactions.create(owner, source, directory);
+            } catch (RuntimeException e)
+            {
+                throw e;
+            } catch (Exception e)
+            {
+                throw new RuntimeException(e);
+            }
+        }
+
+        public Boolean truncate(String owner, String source, Long size)
+        {
+            try
+            {
+                return afsClientWithTransactions.truncate(owner, source, size);
+            } catch (RuntimeException e)
+            {
+                throw e;
+            } catch (Exception e)
+            {
+                throw new RuntimeException(e);
+            }
+        }
+
+        public Boolean snapshot(String owner, String source)
+        {
+            try
+            {
+                return afsClientWithTransactions.snapshot(owner, source);
             } catch (RuntimeException e)
             {
                 throw e;

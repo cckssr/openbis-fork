@@ -490,7 +490,7 @@ export default class FileUploadManager {
         if(resolution == Resolution.REPLACE){
           offset = 0
           if(fileTempExists){           
-            await this.controller.deleteAndUpdateProgress(existingTempFile,this.updateProgress)
+            await this.controller.deleteAndUpdateProgress(existingTempFile.path, this.updateProgress)
           }
         } else {
           offset = existingTempFile.size
@@ -510,15 +510,15 @@ export default class FileUploadManager {
       }
       
       if(fileExists){
-        await this.controller.deleteAndUpdateProgress(existingFile, this.updateProgress)
+        await this.controller.snapshotAndUpdateProgress(existingFile.path, this.updateProgress)
       }
 
-      await this.controller.moveFileByPath(tempTargetFilePath, targetFilePath, this.updateProgress)
+      await this.controller.copyFileByPath(tempTargetFilePath, targetFilePath, this.updateProgress)
+      await this.controller.deleteAndUpdateProgress(tempTargetFilePath, this.updateProgress)
     }
         
     await this.controller?.gridController?.load()
-    
-  }   
+  }  
 
   async checkFilesAndTempExistOnServer(fileName, tmpFileName, targetFilePath) {
     const parentFolderPath = this.getParentFolder(targetFilePath);

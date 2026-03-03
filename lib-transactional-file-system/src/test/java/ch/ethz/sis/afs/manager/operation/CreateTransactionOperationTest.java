@@ -91,7 +91,7 @@ public class CreateTransactionOperationTest extends AbstractTransactionOperation
     {
         begin();
         final String realPathA = OperationExecutor.getRealPath(getTransaction(), FILE_A_PATH);
-        delete(FILE_A_PATH);
+        delete(FILE_A_PATH, false);
         create(FILE_A_PATH, false);
         prepare();
         commit();
@@ -112,7 +112,7 @@ public class CreateTransactionOperationTest extends AbstractTransactionOperation
         assertTrue(Files.isDirectory(folder));
 
         begin();
-        delete(IOUtils.PATH_SEPARATOR + DIR_C);
+        delete(IOUtils.PATH_SEPARATOR + DIR_C, false);
         create(IOUtils.PATH_SEPARATOR + DIR_C, false);
         prepare();
         commit();
@@ -173,7 +173,7 @@ public class CreateTransactionOperationTest extends AbstractTransactionOperation
     {
         begin();
         final String realPathA = OperationExecutor.getRealPath(getTransaction(), DIR_A_PATH);
-        delete(DIR_A_PATH);
+        delete(DIR_A_PATH, false);
         create(DIR_A_PATH, true);
         prepare();
         commit();
@@ -194,7 +194,7 @@ public class CreateTransactionOperationTest extends AbstractTransactionOperation
         assertFalse(Files.isDirectory(file));
 
         begin();
-        delete(IOUtils.PATH_SEPARATOR + FILE_C);
+        delete(IOUtils.PATH_SEPARATOR + FILE_C, false);
         create(IOUtils.PATH_SEPARATOR + FILE_C, true);
         prepare();
         commit();

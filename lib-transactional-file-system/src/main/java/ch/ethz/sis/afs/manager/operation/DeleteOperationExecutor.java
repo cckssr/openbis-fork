@@ -18,7 +18,15 @@ package ch.ethz.sis.afs.manager.operation;
 import static ch.ethz.sis.afs.dto.Transaction.PathState;
 import static ch.ethz.sis.afs.exception.AFSExceptions.PathNotInStore;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import ch.ethz.sis.afs.dto.Transaction;
 import ch.ethz.sis.afs.dto.operation.DeleteOperation;
@@ -53,6 +61,8 @@ public class DeleteOperationExecutor implements OperationExecutor<DeleteOperatio
     // Operation
     //
 
+    public static final DateTimeFormatter TIMESTAMP_SUFFIX_FORMAT = DateTimeFormatter.ofPattern("yyyy_MM_dd_HH_mm_ss_SSS");
+
     @Override
     public Void prepare(Transaction transaction, DeleteOperation operation) throws Exception
     {
@@ -79,11 +89,102 @@ public class DeleteOperationExecutor implements OperationExecutor<DeleteOperatio
     @Override
     public boolean commit(Transaction transaction, DeleteOperation operation) throws Exception
     {
+        Path sourcePath = Path.of(operation.getSource());
+
         if (IOUtils.exists(operation.getSource()))
         {
+            if (operation.isTrash())
+            {
+                Path trashRootPath = Path.of(operation.getTrashRoot());
+
+                boolean sourceInTrash = sourcePath.toAbsolutePath().normalize().startsWith(trashRootPath.toAbsolutePath().normalize());
+
+                if (!sourceInTrash)
+                {
+                    moveToTrash(trashRootPath, sourcePath);
+                    return true;
+                }
+            }
+
             IOUtils.delete(operation.getSource());
             OperationExecutor.clearCaches(operation.getSource());
+            OperationExecutor.clearSnapshotsDirectory(OperationExecutor.getSnapshotsDirectoryForSource(sourcePath));
         }
+
         return true;
+    }
+
+    private void moveToTrash(Path trashRootPath, Path sourcePath) throws Exception
+    {
+        if (!Files.exists(sourcePath))
+        {
+            return;
+        }
+
+        Path relativePathInTrash = trashRootPath.getParent().relativize(sourcePath);
+        Path pathInTrash = trashRootPath.resolve(relativePathInTrash);
+
+        if (Files.exists(pathInTrash))
+        {
+            if (Files.isDirectory(sourcePath) && Files.isDirectory(pathInTrash))
+            {
+                // merge folders
+                try (Stream<Path> paths = Files.list(sourcePath))
+                {
+                    Iterator<Path> iterator = paths.iterator();
+                    while (iterator.hasNext())
+                    {
+                        moveToTrash(trashRootPath, iterator.next());
+                    }
+                }
+                IOUtils.delete(sourcePath.toString());
+            } else
+            {
+                // rename the existing file/folder, its cache and its snapshots in the trash
+                // to safely move the just deleted file/folder, its cache and its snapshots to the trash
+
+                Path uniquePathInTrash = getUniqueTrashPath(pathInTrash);
+
+                IOUtils.move(pathInTrash.toString(), uniquePathInTrash.toString());
+                OperationExecutor.moveCaches(pathInTrash.toString(), uniquePathInTrash.toString());
+                OperationExecutor.moveSnapshotsDirectory(OperationExecutor.getSnapshotsDirectoryForSource(pathInTrash),
+                        OperationExecutor.getSnapshotsDirectoryForSource(uniquePathInTrash));
+
+                IOUtils.move(sourcePath.toString(), pathInTrash.toString());
+                OperationExecutor.moveCaches(sourcePath.toString(), pathInTrash.toString());
+                OperationExecutor.moveSnapshotsDirectory(OperationExecutor.getSnapshotsDirectoryForSource(sourcePath),
+                        OperationExecutor.getSnapshotsDirectoryForSource(pathInTrash));
+            }
+        } else
+        {
+            IOUtils.createDirectories(pathInTrash.getParent().toString());
+            IOUtils.move(sourcePath.toString(), pathInTrash.toString());
+            OperationExecutor.moveCaches(sourcePath.toString(), pathInTrash.toString());
+            OperationExecutor.moveSnapshotsDirectory(OperationExecutor.getSnapshotsDirectoryForSource(sourcePath),
+                    OperationExecutor.getSnapshotsDirectoryForSource(pathInTrash));
+        }
+    }
+
+    private static Path getUniqueTrashPath(final Path trashPath) throws IOException
+    {
+        Path uniqueTrashPath;
+        int counter = 1;
+        do
+        {
+            ZonedDateTime lastModificationTime = Files.getLastModifiedTime(trashPath).toInstant().atZone(ZoneId.systemDefault());
+
+            StringBuilder fileName = new StringBuilder(trashPath.getFileName().toString());
+            fileName.append("#");
+            fileName.append(lastModificationTime.format(TIMESTAMP_SUFFIX_FORMAT));
+            if (counter > 1)
+            {
+                fileName.append("_");
+                fileName.append(counter);
+            }
+
+            uniqueTrashPath = trashPath.getParent().resolve(fileName.toString());
+            counter++;
+        } while (Files.exists(uniqueTrashPath));
+        return uniqueTrashPath;
     }
 }

@@ -17,8 +17,6 @@
 
 package ch.ethz.sis.afsapi.api;
 
-import java.util.List;
-
 import ch.ethz.sis.afsapi.dto.Chunk;
 import ch.ethz.sis.afsapi.dto.File;
 import ch.ethz.sis.afsapi.dto.FreeSpace;
@@ -38,7 +36,7 @@ public interface OperationsAPI
     Boolean write(@NonNull Chunk[] chunks) throws Exception;
 
     @NonNull
-    Boolean delete(@NonNull String owner, @NonNull String source) throws Exception;
+    Boolean delete(@NonNull String owner, @NonNull String source, @NonNull Boolean trash) throws Exception;
 
     @NonNull
     Boolean copy(@NonNull String sourceOwner, @NonNull String source, @NonNull String targetOwner,
@@ -50,6 +48,12 @@ public interface OperationsAPI
 
     @NonNull
     Boolean create(@NonNull String owner, @NonNull String source, @NonNull Boolean directory) throws Exception;
+
+    @NonNull
+    Boolean truncate(@NonNull String owner, @NonNull String source, @NonNull Long size) throws Exception;
+
+    @NonNull
+    Boolean snapshot(@NonNull String owner, @NonNull String source) throws Exception;
 
     @NonNull
     FreeSpace free(@NonNull String owner, @NonNull String source) throws Exception;

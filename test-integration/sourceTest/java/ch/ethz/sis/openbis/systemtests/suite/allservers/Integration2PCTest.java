@@ -16,19 +16,18 @@ import static org.testng.Assert.fail;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import javax.sql.DataSource;
 
@@ -1087,25 +1086,26 @@ public class Integration2PCTest
         Space space = facade.createSpace(openBISWithTr, ENTITY_CODE_PREFIX + UUID.randomUUID());
         Sample sample = facade.createSample(openBISWithTr, space.getPermId(), ENTITY_CODE_PREFIX + UUID.randomUUID());
 
-        // upload "upload-before"
-        Path sourceBefore = Path.of("sourceTest/resource/" + getClass().getSimpleName() + "/upload-before/");
+        // upload "upload-1"
+        Path upload1 = Path.of("sourceTest/resource/" + getClass().getSimpleName() + "/upload-1/");
         openBISWithTr.getAfsServerFacade()
-                .upload(sourceBefore, sample.getPermId().getPermId(), Path.of("/"), AfsClient.overrideCollisionListener,
+                .upload(upload1, sample.getPermId().getPermId(), Path.of("/"), AfsClient.overrideCollisionListener,
                         new ClientAPI.DefaultTransferMonitorLister());
         openBISWithTr.commitTransaction();
 
-        assertAFSDirectoryEquals(openBISWithTr, sample.getPermId().getPermId(), Path.of("/"), sourceBefore);
+        assertAFSDirectoryEquals(openBISWithTr, sample.getPermId().getPermId(), Path.of("/"), upload1);
 
         openBISWithTr.beginTransaction();
 
-        // upload "upload-before"
-        Path sourceAfter = Path.of("sourceTest/resource/" + getClass().getSimpleName() + "/upload-after/");
+        // upload "upload-2"
+        Path upload2 = Path.of("sourceTest/resource/" + getClass().getSimpleName() + "/upload-2/");
         openBISWithTr.getAfsServerFacade()
-                .upload(sourceAfter, sample.getPermId().getPermId(), Path.of("/"), AfsClient.overrideCollisionListener,
+                .upload(upload2, sample.getPermId().getPermId(), Path.of("/"), AfsClient.overrideCollisionListener,
                         new ClientAPI.DefaultTransferMonitorLister());
         openBISWithTr.commitTransaction();
 
-        assertAFSDirectoryEquals(openBISWithTr, sample.getPermId().getPermId(), Path.of("/"), sourceAfter);
+        Path afterUpload2 = Path.of("sourceTest/resource/" + getClass().getSimpleName() + "/after-upload-2/");
+        assertAFSDirectoryEquals(openBISWithTr, sample.getPermId().getPermId(), Path.of("/"), afterUpload2);
     }
 
     @Test
@@ -1136,7 +1136,7 @@ public class Integration2PCTest
 
         // delete the file and write only one data chunk
         WriteData writeData3 = createWriteData(sample.getPermId().getPermId());
-        openBIS.getAfsServerFacade().delete(writeData.owner, writeData.source);
+        openBIS.getAfsServerFacade().delete(writeData.owner, writeData.source, false);
         openBIS.getAfsServerFacade().write(writeData.owner, writeData.source, 0L, writeData3.bytes);
 
         // commit transaction 2
@@ -1183,7 +1183,7 @@ public class Integration2PCTest
         openBIS.beginTransaction();
 
         // delete the folder and create a file with the same name
-        openBIS.getAfsServerFacade().delete(writeData.owner, writeData.source);
+        openBIS.getAfsServerFacade().delete(writeData.owner, writeData.source, false);
         openBIS.getAfsServerFacade().write(writeData.owner, writeData.source, 0L, writeData.bytes);
 
         // commit transaction 2
@@ -1228,7 +1228,7 @@ public class Integration2PCTest
         openBIS.beginTransaction();
 
         // delete the file and create a folder with the same names
-        openBIS.getAfsServerFacade().delete(writeData.owner, writeData.source);
+        openBIS.getAfsServerFacade().delete(writeData.owner, writeData.source, false);
         openBIS.getAfsServerFacade().create(writeData.owner, writeData.source, true);
 
         // commit transaction 2
@@ -1481,60 +1481,49 @@ public class Integration2PCTest
         Path tempDirectory = Files.createTempDirectory("upload-test");
         openBIS.getAfsServerFacade()
                 .download(owner, serverDirectory, tempDirectory, ClientAPI.overrideCollisionListener, new ClientAPI.DefaultTransferMonitorLister());
-        Files.walkFileTree(tempDirectory, new CheckFilesEqualVisitor(tempDirectory, localDirectory));
-        Files.walkFileTree(localDirectory, new CheckFilesEqualVisitor(localDirectory, tempDirectory));
+        assertAFSDirectoryEquals(tempDirectory, localDirectory);
     }
 
-    private static class CheckFilesEqualVisitor extends SimpleFileVisitor<Path>
+    private static void assertAFSDirectoryEquals(Path dir1, Path dir2) throws IOException
     {
-        private final Path root1;
-
-        private final Path root2;
-
-        public CheckFilesEqualVisitor(Path root1, Path root2)
+        try (Stream<Path> dir1Stream = Files.walk(dir1); Stream<Path> dir2Stream = Files.walk(dir2))
         {
-            this.root1 = root1;
-            this.root2 = root2;
-        }
+            final Path[] paths1 =
+                    dir1Stream.sorted(Comparator.comparing(f -> f.toAbsolutePath().toString())).toArray(Path[]::new);
+            final Path[] paths2 =
+                    dir2Stream.sorted(Comparator.comparing(f -> f.toAbsolutePath().toString())).toArray(Path[]::new);
 
-        @Override public FileVisitResult preVisitDirectory(final Path dir1, final BasicFileAttributes attrs) throws IOException
-        {
-            FileVisitResult result = super.preVisitDirectory(dir1, attrs);
+            assertEquals(paths1.length, paths2.length);
 
-            Path relativePath = root1.relativize(dir1);
-            Path subfolder2 = root2.resolve(relativePath);
-
-            if (!Files.exists(subfolder2))
+            for (int i = 0; i < paths1.length; i++)
             {
-                throw new AssertionError(subfolder2 + " does not exist");
-            }
+                Path path1 = paths1[i];
+                Path path2 = paths2[i];
+                assertEquals(Files.isRegularFile(path1), Files.isRegularFile(path2));
 
-            return result;
+                Path relativePath1 = dir1.relativize(path1);
+                Path relativePath2 = dir2.relativize(path2);
+
+                if (relativePath1.toString().contains(".snapshots") || relativePath2.toString().contains(".snapshots"))
+                {
+                    assertEquals(relativePath1.getParent(), relativePath2.getParent());
+                } else
+                {
+                    assertEquals(relativePath1, relativePath2);
+                }
+
+                if (Files.isRegularFile(path1) && Files.isRegularFile(path2))
+                {
+                    byte[] bytes1 = Files.readAllBytes(path1);
+                    byte[] bytes2 = Files.readAllBytes(path2);
+
+                    if (!Arrays.equals(bytes1, bytes2))
+                    {
+                        throw new AssertionError(path1 + " is not equal to " + path2);
+                    }
+                }
+            }
         }
-
-        @Override public FileVisitResult visitFile(final Path file1, final BasicFileAttributes attrs) throws IOException
-        {
-            FileVisitResult result = super.visitFile(file1, attrs);
-
-            Path relativePath = root1.relativize(file1);
-            Path file2 = root2.resolve(relativePath);
-
-            if (!Files.exists(file2))
-            {
-                throw new AssertionError(file2 + " does not exist");
-            }
-
-            byte[] file1Bytes = Files.readAllBytes(file1);
-            byte[] file2Bytes = Files.readAllBytes(file2);
-
-            if (!Arrays.equals(file1Bytes, file2Bytes))
-            {
-                throw new AssertionError(file1 + " is not equal to " + file2);
-            }
-
-            return result;
-        }
-
     }
 
     private static WriteData createWriteData(String owner)

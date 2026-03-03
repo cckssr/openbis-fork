@@ -725,9 +725,9 @@ define([ 'jquery', 'underscore'], function($, _) {
 			return facade.deletePersons([ id ], options);
 		}.bind(this);
 
-        this.deleteFile = async function(facade, owner, source) {
+        this.deleteFile = async function(facade, owner, source, trash) {
             try {
-                await facade.getAfsServerFacade().delete(owner, source)
+                await facade.getAfsServerFacade().delete(owner, source, trash)
             } catch (error) {
                 if (error && error.message && error.message.includes("NoSuchFileException")) {
                     // do nothing

@@ -16,6 +16,8 @@ import org.jmock.Mockery;
 import org.junit.Test;
 
 import ch.ethz.sis.afs.manager.TransactionManager;
+import ch.ethz.sis.afs.manager.TrashRootInOwnerProvider;
+import ch.ethz.sis.afs.manager.TrashRootProvider;
 import ch.ethz.sis.afsjson.JsonObjectMapper;
 import ch.ethz.sis.afsserver.AbstractTest;
 import ch.ethz.sis.afsserver.ServerClientEnvironmentFS;
@@ -613,8 +615,11 @@ public class ShareIdManagerTest extends AbstractTest
         OpenBISAuthorizationInfoProvider openBISAuthorizationInfoProvider = new OpenBISAuthorizationInfoProvider();
         openBISAuthorizationInfoProvider.init(configuration);
 
+        TrashRootProvider trashRootProvider = new TrashRootInOwnerProvider();
+        trashRootProvider.init(configuration);
+
         TransactionManager transactionManager =
-                new TransactionManager(openBISAuthorizationInfoProvider, jsonObjectMapper, writeAheadLogRoot, storageRoot, List.of("png", "jpeg", "jpg", "gif", "bmp", "tiff"), 100000000);
+                new TransactionManager(openBISAuthorizationInfoProvider, jsonObjectMapper, writeAheadLogRoot, storageRoot, trashRootProvider, List.of("png", "jpeg", "jpg", "gif", "bmp", "tiff"), 100000000);
         return new ShareIdManager(openBISFacade, transactionManager, storageRoot, LOCKING_TIMEOUT_IN_SECONDS,
                 LOCKING_LOCKING_WAITING_INTERVAL_IN_MILLIS);
     }

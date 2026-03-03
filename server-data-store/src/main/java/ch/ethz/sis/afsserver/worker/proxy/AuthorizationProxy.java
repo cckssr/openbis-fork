@@ -87,9 +87,9 @@ public class AuthorizationProxy extends AbstractProxy {
     }
 
     @Override
-    public Boolean delete(String owner, String source) throws Exception {
+    public Boolean delete(String owner, String source, Boolean trash) throws Exception {
         validateUserRights(owner, source, IOUtils.writePermissions, OperationName.Delete);
-        return nextProxy.delete(owner, source);
+        return nextProxy.delete(owner, source, trash);
     }
 
     @Override
@@ -112,6 +112,22 @@ public class AuthorizationProxy extends AbstractProxy {
     {
         validateUserRights(owner, source, IOUtils.writePermissions, OperationName.Create);
         return nextProxy.create(owner, source, directory);
+    }
+
+    @Override
+    public @NonNull Boolean truncate(@NonNull final String owner, @NonNull final String source, @NonNull final Long size)
+            throws Exception
+    {
+        validateUserRights(owner, source, IOUtils.writePermissions, OperationName.Truncate);
+        return nextProxy.truncate(owner, source, size);
+    }
+
+    @Override
+    public @NonNull Boolean snapshot(@NonNull final String owner, @NonNull final String source)
+            throws Exception
+    {
+        validateUserRights(owner, source, IOUtils.writePermissions, OperationName.Snapshot);
+        return nextProxy.snapshot(owner, source);
     }
 
     @Override

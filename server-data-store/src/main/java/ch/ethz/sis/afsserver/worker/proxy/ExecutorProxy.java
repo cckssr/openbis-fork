@@ -149,9 +149,9 @@ public class ExecutorProxy extends AbstractProxy
     }
 
     @Override
-    public Boolean delete(String owner, String source) throws Exception
+    public Boolean delete(String owner, String source, Boolean trash) throws Exception
     {
-        return workerContext.getConnection().delete(getSourcePath(owner, source));
+        return workerContext.getConnection().delete(getSourcePath(owner, source), trash);
     }
 
     @Override
@@ -171,6 +171,20 @@ public class ExecutorProxy extends AbstractProxy
             throws Exception
     {
         return workerContext.getConnection().create(getSourcePath(owner, source), directory);
+    }
+
+    @Override
+    public @NonNull Boolean truncate(@NonNull final String owner, @NonNull final String source, @NonNull final Long size)
+            throws Exception
+    {
+        return workerContext.getConnection().truncate(getSourcePath(owner, source), size);
+    }
+
+    @Override
+    public @NonNull Boolean snapshot(@NonNull final String owner, @NonNull final String source)
+            throws Exception
+    {
+        return workerContext.getConnection().snapshot(getSourcePath(owner, source));
     }
 
     @Override
