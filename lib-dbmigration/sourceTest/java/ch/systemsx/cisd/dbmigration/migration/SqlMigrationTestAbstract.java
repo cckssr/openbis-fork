@@ -177,6 +177,25 @@ public abstract class SqlMigrationTestAbstract
             List<String> m = normalizedSchema(migrated);
             List<String> s = normalizedSchema(scratch);
 
+            List<String> onlyInScratch = new ArrayList<>(s);
+            onlyInScratch.removeAll(m);
+
+            List<String> onlyInMigrated = new ArrayList<>(m);
+            onlyInMigrated.removeAll(s);
+
+            if (!onlyInScratch.isEmpty() || !onlyInMigrated.isEmpty())
+            {
+                StringBuilder diff = new StringBuilder();
+
+                diff.append("\n--- Only in SCRATCH ---\n");
+                onlyInScratch.forEach(l -> diff.append(l).append("\n"));
+
+                diff.append("\n--- Only in MIGRATED ---\n");
+                onlyInMigrated.forEach(l -> diff.append(l).append("\n"));
+
+                AssertJUnit.fail("Schema mismatch between migrated and scratch database:\n" + diff);
+            }
+
             AssertJUnit.assertEquals(
                     "Schema mismatch between migrated and scratch database",
                     s,
@@ -188,6 +207,25 @@ public abstract class SqlMigrationTestAbstract
             throw new RuntimeException(e);
         }
     }
+
+//    private void assertDatabaseSchemasEqual(File migrated, File scratch)
+//    {
+//        try
+//        {
+//            List<String> m = normalizedSchema(migrated);
+//            List<String> s = normalizedSchema(scratch);
+//
+//            AssertJUnit.assertEquals(
+//                    "Schema mismatch between migrated and scratch database",
+//                    s,
+//                    m
+//            );
+//        }
+//        catch (Exception e)
+//        {
+//            throw new RuntimeException(e);
+//        }
+//    }
     private List<String> normalizedSchema(File f) throws Exception
     {
         List<String> lines = FileUtils.readLines(f, "UTF-8");
