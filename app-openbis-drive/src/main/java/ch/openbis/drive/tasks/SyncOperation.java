@@ -11,6 +11,7 @@ import ch.openbis.drive.db.SyncJobEventDAO;
 import ch.openbis.drive.model.*;
 import ch.openbis.drive.notifications.NotificationManager;
 import ch.openbis.drive.util.GlobUtil;
+import ch.openbis.drive.util.SystemTrayUtil;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.Value;
@@ -48,13 +49,14 @@ public class SyncOperation {
 
     final @NonNull NotificationManager notificationManager;
     final @NonNull Settings settings;
-
+    final @NonNull SystemTrayUtil systemTrayUtil;
 
     public SyncOperation(@NonNull SyncJob syncJob,
                          @NonNull SyncJobEventDAO syncJobEventDAO,
                          @NonNull NotificationManager notificationManager,
                          @NonNull Configuration configuration,
-                         @NonNull Settings settings) throws SQLException, IOException {
+                         @NonNull Settings settings,
+                         @NonNull SystemTrayUtil systemTrayUtil) throws SQLException, IOException {
         AfsClient afsClient = new AfsClient(URI.create(syncJob.getOpenBisUrl() + AFS_SERVER_PATH), MAX_READ_SIZE_BYTES, AFS_CLIENT_TIMEOUT);
         afsClient.setSessionToken(syncJob.getOpenBisPersonalAccessToken());
 
@@ -71,6 +73,7 @@ public class SyncOperation {
         this.localOpenBisHiddenStateDirectory = configuration.getLocalAppStateDirectory();
         this.notificationManager = notificationManager;
         this.settings = settings;
+        this.systemTrayUtil = systemTrayUtil;
 
         initializeHiddenPathPatterns();
     }
@@ -82,7 +85,8 @@ public class SyncOperation {
                   @NonNull SyncJobEventDAO syncJobEventDAO,
                   @NonNull Path localOpenBisHiddenStateDirectory,
                   @NonNull NotificationManager notificationManager,
-                  @NonNull Settings settings
+                  @NonNull Settings settings,
+                  @NonNull SystemTrayUtil systemTrayUtil
     ) {
         this.syncJob = syncJob;
         this.afsClientProxy = afsClient;
@@ -92,6 +96,7 @@ public class SyncOperation {
         this.localOpenBisHiddenStateDirectory = localOpenBisHiddenStateDirectory;
         this.notificationManager = notificationManager;
         this.settings = settings;
+        this.systemTrayUtil = systemTrayUtil;
 
         initializeHiddenPathPatterns();
     }
@@ -685,6 +690,7 @@ public class SyncOperation {
                 Instant.now().toEpochMilli()
         );
 
+        systemTrayUtil.raiseNotification(notification);
         notificationManager.addNotifications(Collections.singletonList(notification));
     }
 
@@ -701,6 +707,7 @@ public class SyncOperation {
                 Instant.now().toEpochMilli()
         );
 
+        systemTrayUtil.raiseNotification(notification);
         notificationManager.removeNotifications(Collections.singletonList(notification));
     }
 
@@ -736,6 +743,7 @@ public class SyncOperation {
                 Instant.now().toEpochMilli()
         );
 
+        systemTrayUtil.raiseNotification(notification);
         notificationManager.addNotifications(Collections.singletonList(notification));
     }
 
@@ -749,6 +757,7 @@ public class SyncOperation {
                 Instant.now().toEpochMilli()
         );
 
+        systemTrayUtil.raiseNotification(notification);
         notificationManager.addNotifications(Collections.singletonList(notification));
     }
 

@@ -9,6 +9,7 @@ import ch.openbis.drive.notifications.NotificationManagerSqliteImpl;
 import ch.openbis.drive.settings.SettingsManager;
 import ch.openbis.drive.tasks.TaskManager;
 import ch.openbis.drive.tasks.TaskManagerImpl;
+import ch.openbis.drive.util.SystemTrayUtil;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,6 +31,7 @@ public class DriveAPIServerImplTest {
     private final SettingsManager settingsManager;
     private final TaskManager taskManager;
     private final DriveAPIServerImpl driveAPIServerImpl;
+    private final SystemTrayUtil systemTrayUtil = Mockito.mock(SystemTrayUtil.class);
 
     public DriveAPIServerImplTest() throws Exception {
         configuration = new Configuration(Path.of(this.getClass().getClassLoader().getResource("placeholder.txt").getPath()).getParent().resolve("drive-api-server-impl-test"));
@@ -37,8 +39,8 @@ public class DriveAPIServerImplTest {
         syncJobEventDAO = new SyncJobEventDAOImp(configuration);
         notificationManager = new NotificationManagerSqliteImpl(configuration);
         settingsManager = Mockito.mock(SettingsManager.class);
-        taskManager = Mockito.spy(new TaskManagerImpl(syncJobEventDAO, notificationManager, settingsManager, configuration));
-        driveAPIServerImpl = Mockito.spy(new DriveAPIServerImpl(settingsManager, notificationManager, taskManager, syncJobEventDAO));
+        taskManager = Mockito.spy(new TaskManagerImpl(syncJobEventDAO, notificationManager, settingsManager, configuration, systemTrayUtil));
+        driveAPIServerImpl = Mockito.spy(new DriveAPIServerImpl(settingsManager, notificationManager, taskManager, syncJobEventDAO, systemTrayUtil));
     }
 
     @Before
@@ -110,7 +112,7 @@ public class DriveAPIServerImplTest {
 
     @Test(expected = IllegalArgumentException.class)
     synchronized public void addSyncJobWithDuplicatelocalDirTest() {
-        DriveAPIServerImpl driveAPIServerWithRealSettingsManager = new DriveAPIServerImpl(new SettingsManager(configuration, syncJobEventDAO, notificationManager), notificationManager, taskManager, syncJobEventDAO);
+        DriveAPIServerImpl driveAPIServerWithRealSettingsManager = new DriveAPIServerImpl(new SettingsManager(configuration, syncJobEventDAO, notificationManager), notificationManager, taskManager, syncJobEventDAO, systemTrayUtil);
         driveAPIServerWithRealSettingsManager.setSettings(Settings.defaultSettings());
 
         SyncJob syncJob1 = new SyncJob(SyncJob.Type.Bidirectional, "url1", "token1", "id1", "title", "/remotedir1", "/localdir1", false);
@@ -244,7 +246,7 @@ public class DriveAPIServerImplTest {
 
     @Test
     synchronized public void removeNotificationsTest() {
-        DriveAPIServerImpl openBISSyncClient = new DriveAPIServerImpl(configuration);
+        DriveAPIServerImpl openBISSyncClient = new DriveAPIServerImpl(configuration, systemTrayUtil);
         openBISSyncClient.clearNotifications();
 
         List<Notification> notifications = new LinkedList<>();
@@ -279,7 +281,7 @@ public class DriveAPIServerImplTest {
 
     @Test
     synchronized public void testGetEvents() throws Exception {
-        DriveAPIServerImpl openBISSyncClient = new DriveAPIServerImpl(configuration);
+        DriveAPIServerImpl openBISSyncClient = new DriveAPIServerImpl(configuration, systemTrayUtil);
         openBISSyncClient.syncJobEventDAO.clearAll();
 
         long now = System.currentTimeMillis();

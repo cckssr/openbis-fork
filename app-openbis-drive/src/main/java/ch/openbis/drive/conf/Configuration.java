@@ -153,6 +153,10 @@ public class Configuration {
         return openbisDrivePort;
     }
 
+    public int getOpenbisDriveGuiPort() {
+        return  openbisDrivePort + 1;
+    }
+
     public boolean isManualInstallation() {
         return  "true".equalsIgnoreCase(System.getProperty(OPENBIS_DRIVE_MANUAL_INSTALLATION_PROPERTY));
     }

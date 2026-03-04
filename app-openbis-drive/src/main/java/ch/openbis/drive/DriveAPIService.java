@@ -1,9 +1,11 @@
 package ch.openbis.drive;
 
 import ch.openbis.drive.conf.Configuration;
+import ch.openbis.drive.gui.i18n.I18n;
 import ch.openbis.drive.model.Settings;
 import ch.openbis.drive.protobuf.DriveAPIGrpcImpl;
 import ch.openbis.drive.util.OsDetectionUtil;
+import ch.openbis.drive.util.SystemTrayUtil;
 import io.grpc.*;
 import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder;
 import io.grpc.netty.shaded.io.netty.channel.epoll.EpollEventLoopGroup;
@@ -11,11 +13,13 @@ import io.grpc.netty.shaded.io.netty.channel.epoll.EpollServerDomainSocketChanne
 import io.grpc.netty.shaded.io.netty.channel.unix.DomainSocketAddress;
 import lombok.SneakyThrows;
 
+import java.awt.*;
 import java.net.InetSocketAddress;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
+import java.util.Locale;
 import java.util.Optional;
 
 public class DriveAPIService {
@@ -42,6 +46,7 @@ public class DriveAPIService {
     final Configuration configuration;
     final FileLock applicationFileLock;
     final DriveAPIServerImpl driveAPIServer;
+    final SystemTrayUtil systemTrayUtil;
     Server server;
 
     boolean started;
@@ -50,7 +55,11 @@ public class DriveAPIService {
         this.configuration = new Configuration();
         configuration.readOpenbisDriveProperties();
         applicationFileLock = FileChannel.open(configuration.getLocalAppStateDirectory().resolve(LOCK_FILE_NAME), StandardOpenOption.CREATE, StandardOpenOption.WRITE).tryLock();
-        driveAPIServer = new DriveAPIServerImpl(configuration);
+        systemTrayUtil = new SystemTrayUtil(
+                new I18n(Locale.getDefault().getLanguage()),
+                (_void) -> { this.stop(); return null; }
+        );
+        driveAPIServer = new DriveAPIServerImpl(configuration, systemTrayUtil);
 
         if(applicationFileLock == null) {
             throw new IllegalStateException("DriveAPIService instance already running");
@@ -59,7 +68,11 @@ public class DriveAPIService {
 
     public synchronized void start() throws Exception {
         if (!started) {
-            driveAPIServer.setSettings(Optional.ofNullable(driveAPIServer.getSettings()).orElse(Settings.defaultSettings()));
+
+            Settings settings = driveAPIServer.getSettings();
+            driveAPIServer.setSettings(Optional.ofNullable(settings).orElse(Settings.defaultSettings()));
+
+            systemTrayUtil.addAppToTray();
 
             try {
 
@@ -96,9 +109,16 @@ public class DriveAPIService {
         server.awaitTermination();
     }
 
-    public synchronized void stop() throws Exception {
-        if (server != null) {
-            server.shutdown();
+    public void stop() {
+        try {
+            if (server != null) {
+                this.server.shutdownNow();
+                this.server.awaitTermination();
+            }
+            System.exit(0);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(1);
         }
     }
 
