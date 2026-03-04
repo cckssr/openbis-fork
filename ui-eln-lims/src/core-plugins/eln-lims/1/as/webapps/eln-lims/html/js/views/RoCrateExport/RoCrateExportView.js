@@ -143,8 +143,11 @@ function RoCrateExportView(exportController, exportModel) {
             }
             _refreshableFields.push($formColumn);
 
+            var iconType = IconUtil.getToolbarIconType("RO-CRATE_EXPORT")
+            iconType.css = { "height": "33px", "width": "33px", "margin-top": "-8px"}
+            var icon = IconUtil.getIcon(iconType);
 
-            var $formTitle = $('<h2>').append('RO-Crate Export Builder');
+            var $formTitle = $('<h2>').append(icon).append('RO-Crate Export Builder');
             $header.append($formTitle);
 
             var $exportButton = $('<input>', { 'type': 'submit', 'class': 'btn btn-primary', 'value': 'Initialize export',
