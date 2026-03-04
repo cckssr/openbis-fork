@@ -1,5 +1,5 @@
 #
-# Copyright 2016 ETH Zuerich, Scientific IT Services
+# Copyright 2016-2026 ETH Zuerich, Scientific IT Services
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import ch.ethz.sis.shared.log.classic.impl.LogFactory as LogFactory
 import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider as CommonServiceProvider
 
 
-from exportsApi import getDownloadUrlFromASService, sendMail
+from util import getDownloadUrlFromASService, sendMail
 
 
 OPERATION_LOG = LogFactory.getLogger(LogCategory.OPERATION, LogFactory)

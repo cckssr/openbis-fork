@@ -51,19 +51,13 @@ import ch.ethz.sis.shared.log.classic.impl.LogFactory as LogFactory
 
 import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider as CommonServiceProvider
 
-from exportsApi import checkResponseStatus, getDownloadUrlFromASService
+from util import checkResponseStatus, getDownloadUrlFromASService
 
 OPERATION_LOG = LogFactory.getLogger(LogCategory.OPERATION, LogFactory)
 
-
-def process(context, params):
-    method = params.get('method')
-
-    if method == 'exportZenodo':
-        resultUrl = exportZenodo(context, params)
-        return {
-            "url": resultUrl
-        }
+ZENODO_URL_PROPERTY_KEY = 'exports-api.zenodo.url'
+ZENODO_PROXY_URL_PROPERTY_KEY = 'exports-api.zenodo.http.proxy.url'
+ZENODO_PROXY_PORT_PROPERTY_KEY = 'exports-api.zenodo.http.proxy.port'
 
 def exportZenodo(context, params):
     sessionToken = params.get('sessionToken')
@@ -73,13 +67,17 @@ def exportZenodo(context, params):
     downloadResultMap = getDownloadUrlFromASService(sessionToken, exportModel, v3)
 
     resultUrl = sendToZenodo(context=context, params=params, tempZipFilePath=downloadResultMap.get('canonicalPath'), entities=exportModel.get('nodeExportList'))
-    return resultUrl
+
+    result = {
+        "url": resultUrl,
+    }
+    return result
 
 
 def sendToZenodo(context, params, tempZipFilePath, entities):
-    depositRootUrl = CommonServiceProvider.tryToGetProperty('zenodo-exports-api.zenodoUrl') + '/api/deposit/depositions'
-    httpProxyURL = CommonServiceProvider.tryToGetProperty('zenodo-exports-api.httpProxyURL')
-    httpProxyPort = CommonServiceProvider.tryToGetProperty('zenodo-exports-api.httpProxyPort')
+    depositRootUrl = CommonServiceProvider.tryToGetProperty(ZENODO_URL_PROPERTY_KEY) + '/api/deposit/depositions'
+    httpProxyURL = CommonServiceProvider.tryToGetProperty(ZENODO_PROXY_URL_PROPERTY_KEY)
+    httpProxyPort = CommonServiceProvider.tryToGetProperty(ZENODO_PROXY_PORT_PROPERTY_KEY)
 
     accessToken = params.get('accessToken')
 
@@ -96,6 +94,7 @@ def sendToZenodo(context, params, tempZipFilePath, entities):
         selfUrl = depositionLinks.get('self')
         OPERATION_LOG.info('Submitting file to: ' + str(depositUrl))
         if Jetty.VERSION.startswith('12.'):
+        # if False:
             submitFileJettyLess(depositUrl, accessToken, tempZipFilePath, params.get('fileName'), httpProxyURL, httpProxyPort)
         else:
             submitFile(httpClient, httpClient.newRequest(depositUrl), accessToken, tempZipFilePath, params.get('fileName'),)

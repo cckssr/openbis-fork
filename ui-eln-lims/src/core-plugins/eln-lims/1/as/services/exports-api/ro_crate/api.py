@@ -1,4 +1,18 @@
-
+#
+# Copyright 2026 ETH Zuerich, Scientific IT Services
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
 import ch.ethz.sis.shared.log.classic.core.LogCategory as LogCategory
 import ch.ethz.sis.shared.log.classic.impl.LogFactory as LogFactory
 
@@ -17,7 +31,7 @@ import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider as CommonSe
 
 OPERATION_LOG = LogFactory.getLogger(LogCategory.OPERATION, LogFactory)
 
-RO_CRATE_URL_PROPERTY_KEY = 'ro-crate.server.url'
+RO_CRATE_URL_PROPERTY_KEY = 'exports-api.ro-crate.url'
 
 def exportRoCrate(context, params):
     try:
@@ -121,6 +135,75 @@ def checkStatues(context, params):
 def getRoCrateUrl(context, params):
     ro_crate_url = CommonServiceProvider.tryToGetProperty(RO_CRATE_URL_PROPERTY_KEY)
     return ro_crate_url
+
+def downloadRoCrate(context, params):
+    sessionWorkspaceProvider = CommonServiceProvider.getSessionWorkspaceProvider()
+    sessionToken = context.getSessionToken()
+
+
+    ro_crate_url = CommonServiceProvider.tryToGetProperty(RO_CRATE_URL_PROPERTY_KEY)
+    download_url = ro_crate_url + "/download"
+    headers = {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'api-key': sessionToken,
+        'jobid': params.get("jobId")
+    }
+
+    conn = None
+    try:
+        url = URL(download_url)
+        conn = url.openConnection()
+        conn.setRequestMethod("GET")
+        conn.setDoOutput(True)
+        # conn.setConnectTimeout(connect_timeout)
+        # conn.setReadTimeout(read_timeout)
+
+        # --- Default headers ---
+        conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
+        conn.setRequestProperty("Accept", "*/*")  # accept any type (for file)
+
+        # --- Add custom headers ---
+        if headers:
+            for key, value in headers.items():
+                conn.setRequestProperty(key, value)
+
+        # --- Get HTTP response code ---
+        code = conn.getResponseCode()
+        print("Response Code:", code)
+
+        if code < 300:
+            print("Saving response to session workspace")
+            input_stream = BufferedInputStream(conn.getInputStream())
+            sessionWorkspaceProvider.write(sessionToken, 'ro_crate_result.zip', input_stream)
+
+            download_url = CommonServiceProvider.tryToGetProperty("download-url")
+            return {
+                "result": download_url + "/openbis/openbis/download?sessionID=" + sessionToken + "&filePath=ro_crate_result.zip",
+                "error": None
+            }
+        else:
+            return {
+                "result": None,
+                "error": "RO-CRATE server returned error: " +str(code) + ": " + conn.getResponseMessage()
+            }
+
+    except SocketTimeoutException as e:
+        print("Request timed out:", e)
+    except Exception as e:
+        print("Error during request:", e)
+        return {
+            "result": None,
+            "error": e
+        }
+    finally:
+
+        try:
+            if conn:
+                conn.disconnect()
+        except:
+            pass
+
 
 
 def https_post(url_str, data, headers=None):
