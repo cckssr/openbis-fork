@@ -251,7 +251,7 @@ var LayoutManager = {
         if (view.content) {
             view.content.css({
                 display : "block",
-                height : height - view.header.height() - LayoutManager.HEADER_PADDING - LayoutManager.TAB_TOP_BAR_HEIGHT
+                height : height - Math.max(view.header.height(), LayoutManager.MIN_HEADER_HEIGHT) - LayoutManager.HEADER_PADDING - LayoutManager.TAB_TOP_BAR_HEIGHT
             });
 
         } else {
@@ -313,7 +313,7 @@ var LayoutManager = {
 			}
 			view.content.css({
                 display : "block",
-                height : height - view.header.height() - LayoutManager.HEADER_PADDING - LayoutManager.TAB_TOP_BAR_HEIGHT
+                height : height - Math.max(view.header.height(), LayoutManager.MIN_HEADER_HEIGHT) - LayoutManager.HEADER_PADDING - LayoutManager.TAB_TOP_BAR_HEIGHT
             });
 		}
 
