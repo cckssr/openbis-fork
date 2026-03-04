@@ -606,7 +606,7 @@ function ServerFacade(openbisServer) {
             "userLastName": userInformation["lastName"],
             "userEmail": userInformation["email"],
             "userId": userInformation["id"],
-            }, callbackFunction, "zenodo-exports-api", null, true);
+            }, callbackFunction, "exports-api", null, true);
     };
 
 	//
