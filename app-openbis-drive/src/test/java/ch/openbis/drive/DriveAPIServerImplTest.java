@@ -11,7 +11,6 @@ import ch.openbis.drive.tasks.TaskManager;
 import ch.openbis.drive.tasks.TaskManagerImpl;
 import ch.openbis.drive.util.SystemTrayUtil;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -25,32 +24,18 @@ import java.util.concurrent.ThreadLocalRandom;
 @RunWith(JUnit4.class)
 public class DriveAPIServerImplTest {
 
-    private final Configuration configuration;
-    private final SyncJobEventDAO syncJobEventDAO;
-    private final NotificationManager notificationManager;
-    private final SettingsManager settingsManager;
-    private final TaskManager taskManager;
-    private final DriveAPIServerImpl driveAPIServerImpl;
     private final SystemTrayUtil systemTrayUtil = Mockito.mock(SystemTrayUtil.class);
 
-    public DriveAPIServerImplTest() throws Exception {
-        configuration = new Configuration(Path.of(this.getClass().getClassLoader().getResource("placeholder.txt").getPath()).getParent().resolve("drive-api-server-impl-test"));
-        Files.createDirectories(configuration.getLocalAppStateDirectory());
-        syncJobEventDAO = new SyncJobEventDAOImp(configuration);
-        notificationManager = new NotificationManagerSqliteImpl(configuration);
-        settingsManager = Mockito.mock(SettingsManager.class);
-        taskManager = Mockito.spy(new TaskManagerImpl(syncJobEventDAO, notificationManager, settingsManager, configuration, systemTrayUtil));
-        driveAPIServerImpl = Mockito.spy(new DriveAPIServerImpl(settingsManager, notificationManager, taskManager, syncJobEventDAO, systemTrayUtil));
-    }
-
-    @Before
-    synchronized public void before() {
-        Mockito.reset(settingsManager);
-        Mockito.reset(taskManager);
-    }
-
     @Test
-    synchronized public void setAndGetSettingsTest() {
+    synchronized public void setAndGetSettingsTest() throws Exception {
+        Configuration configuration = new Configuration(Path.of(this.getClass().getClassLoader().getResource("placeholder.txt").getPath()).getParent().resolve("drive-api-server-impl-test-001"));
+        Files.createDirectories(configuration.getLocalAppStateDirectory());
+        SyncJobEventDAO syncJobEventDAO = new SyncJobEventDAOImp(configuration);
+        NotificationManager notificationManager = new NotificationManagerSqliteImpl(configuration);
+        SettingsManager settingsManager = Mockito.mock(SettingsManager.class);
+        TaskManager taskManager = Mockito.spy(new TaskManagerImpl(syncJobEventDAO, notificationManager, settingsManager, configuration, systemTrayUtil));
+        DriveAPIServerImpl driveAPIServerImpl = Mockito.spy(new DriveAPIServerImpl(settingsManager, notificationManager, taskManager, syncJobEventDAO, systemTrayUtil));
+
         Settings settings1 = Settings.defaultSettings();
 
         SyncJob syncJob1 = new SyncJob(SyncJob.Type.Bidirectional, "url1", "token1", "id1", "title", "/remotedir1", "/localdir1", false);
@@ -76,7 +61,15 @@ public class DriveAPIServerImplTest {
     }
 
     @Test
-    synchronized public void getSyncJobsTest() {
+    synchronized public void getSyncJobsTest() throws Exception {
+        Configuration configuration = new Configuration(Path.of(this.getClass().getClassLoader().getResource("placeholder.txt").getPath()).getParent().resolve("drive-api-server-impl-test-002"));
+        Files.createDirectories(configuration.getLocalAppStateDirectory());
+        SyncJobEventDAO syncJobEventDAO = new SyncJobEventDAOImp(configuration);
+        NotificationManager notificationManager = new NotificationManagerSqliteImpl(configuration);
+        SettingsManager settingsManager = Mockito.mock(SettingsManager.class);
+        TaskManager taskManager = Mockito.spy(new TaskManagerImpl(syncJobEventDAO, notificationManager, settingsManager, configuration, systemTrayUtil));
+        DriveAPIServerImpl driveAPIServerImpl = Mockito.spy(new DriveAPIServerImpl(settingsManager, notificationManager, taskManager, syncJobEventDAO, systemTrayUtil));
+
         Settings settings1 = Settings.defaultSettings();
 
         SyncJob syncJob1 = new SyncJob(SyncJob.Type.Bidirectional, "url1", "token1", "id1", "title", "remotedir1", "/localdir1", true);
@@ -91,7 +84,15 @@ public class DriveAPIServerImplTest {
     }
 
     @Test
-    synchronized public void addSyncJobTest() {
+    synchronized public void addSyncJobTest() throws Exception {
+        Configuration configuration = new Configuration(Path.of(this.getClass().getClassLoader().getResource("placeholder.txt").getPath()).getParent().resolve("drive-api-server-impl-test-003"));
+        Files.createDirectories(configuration.getLocalAppStateDirectory());
+        SyncJobEventDAO syncJobEventDAO = new SyncJobEventDAOImp(configuration);
+        NotificationManager notificationManager = new NotificationManagerSqliteImpl(configuration);
+        SettingsManager settingsManager = Mockito.mock(SettingsManager.class);
+        TaskManager taskManager = Mockito.spy(new TaskManagerImpl(syncJobEventDAO, notificationManager, settingsManager, configuration, systemTrayUtil));
+        DriveAPIServerImpl driveAPIServerImpl = Mockito.spy(new DriveAPIServerImpl(settingsManager, notificationManager, taskManager, syncJobEventDAO, systemTrayUtil));
+
         Settings settings = new Settings(true, "it", 15, new ArrayList<>(), new ArrayList<>(List.of("aaa", "bbb")));
         Mockito.doReturn(settings).when(settingsManager).getSettings();
 
@@ -111,7 +112,14 @@ public class DriveAPIServerImplTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    synchronized public void addSyncJobWithDuplicatelocalDirTest() {
+    synchronized public void addSyncJobWithDuplicatelocalDirTest() throws Exception {
+        Configuration configuration = new Configuration(Path.of(this.getClass().getClassLoader().getResource("placeholder.txt").getPath()).getParent().resolve("drive-api-server-impl-test-004"));
+        Files.createDirectories(configuration.getLocalAppStateDirectory());
+        SyncJobEventDAO syncJobEventDAO = new SyncJobEventDAOImp(configuration);
+        NotificationManager notificationManager = new NotificationManagerSqliteImpl(configuration);
+        SettingsManager settingsManager = Mockito.mock(SettingsManager.class);
+        TaskManager taskManager = Mockito.spy(new TaskManagerImpl(syncJobEventDAO, notificationManager, settingsManager, configuration, systemTrayUtil));
+
         DriveAPIServerImpl driveAPIServerWithRealSettingsManager = new DriveAPIServerImpl(new SettingsManager(configuration, syncJobEventDAO, notificationManager), notificationManager, taskManager, syncJobEventDAO, systemTrayUtil);
         driveAPIServerWithRealSettingsManager.setSettings(Settings.defaultSettings());
 
@@ -125,7 +133,14 @@ public class DriveAPIServerImplTest {
     }
 
     @Test
-    synchronized public void removeSyncJobTest() {
+    synchronized public void removeSyncJobTest() throws Exception {
+        Configuration configuration = new Configuration(Path.of(this.getClass().getClassLoader().getResource("placeholder.txt").getPath()).getParent().resolve("drive-api-server-impl-test-005"));
+        Files.createDirectories(configuration.getLocalAppStateDirectory());
+        SyncJobEventDAO syncJobEventDAO = new SyncJobEventDAOImp(configuration);
+        NotificationManager notificationManager = new NotificationManagerSqliteImpl(configuration);
+        SettingsManager settingsManager = Mockito.mock(SettingsManager.class);
+        TaskManager taskManager = Mockito.spy(new TaskManagerImpl(syncJobEventDAO, notificationManager, settingsManager, configuration, systemTrayUtil));
+        DriveAPIServerImpl driveAPIServerImpl = Mockito.spy(new DriveAPIServerImpl(settingsManager, notificationManager, taskManager, syncJobEventDAO, systemTrayUtil));
 
         SyncJob syncJob1 = new SyncJob(SyncJob.Type.Bidirectional, "url1", "token1", "id1", "title", "/remotedir1", "/localdir1", true);
         SyncJob syncJob2 = new SyncJob(SyncJob.Type.Bidirectional, "url2", "token2", "id2", "title", "/remotedir2", "/localdir2", false);
@@ -145,7 +160,15 @@ public class DriveAPIServerImplTest {
     }
 
     @Test
-    synchronized public void startSyncJobTest() {
+    synchronized public void startSyncJobTest() throws Exception {
+        Configuration configuration = new Configuration(Path.of(this.getClass().getClassLoader().getResource("placeholder.txt").getPath()).getParent().resolve("drive-api-server-impl-test-006"));
+        Files.createDirectories(configuration.getLocalAppStateDirectory());
+        SyncJobEventDAO syncJobEventDAO = new SyncJobEventDAOImp(configuration);
+        NotificationManager notificationManager = new NotificationManagerSqliteImpl(configuration);
+        SettingsManager settingsManager = Mockito.mock(SettingsManager.class);
+        TaskManager taskManager = Mockito.spy(new TaskManagerImpl(syncJobEventDAO, notificationManager, settingsManager, configuration, systemTrayUtil));
+        DriveAPIServerImpl driveAPIServerImpl = Mockito.spy(new DriveAPIServerImpl(settingsManager, notificationManager, taskManager, syncJobEventDAO, systemTrayUtil));
+
         SyncJob syncJob1 = new SyncJob(SyncJob.Type.Bidirectional, "url1", "token1", "id1", "title", "/remotedir1", "/localdir1", true);
         SyncJob syncJob2 = new SyncJob(SyncJob.Type.Bidirectional, "url2", "token2", "id2", "title", "/remotedir2", "/localdir2", false);
         SyncJob syncJob3 = new SyncJob(SyncJob.Type.Bidirectional, "url3", "token3", "id3", "title", "/remotedir3", "/localdir3", false);
@@ -177,7 +200,15 @@ public class DriveAPIServerImplTest {
     }
 
     @Test
-    synchronized public void stopSyncJobTest() {
+    synchronized public void stopSyncJobTest() throws Exception {
+        Configuration configuration = new Configuration(Path.of(this.getClass().getClassLoader().getResource("placeholder.txt").getPath()).getParent().resolve("drive-api-server-impl-test-007"));
+        Files.createDirectories(configuration.getLocalAppStateDirectory());
+        SyncJobEventDAO syncJobEventDAO = new SyncJobEventDAOImp(configuration);
+        NotificationManager notificationManager = new NotificationManagerSqliteImpl(configuration);
+        SettingsManager settingsManager = Mockito.mock(SettingsManager.class);
+        TaskManager taskManager = Mockito.spy(new TaskManagerImpl(syncJobEventDAO, notificationManager, settingsManager, configuration, systemTrayUtil));
+        DriveAPIServerImpl driveAPIServerImpl = Mockito.spy(new DriveAPIServerImpl(settingsManager, notificationManager, taskManager, syncJobEventDAO, systemTrayUtil));
+
         SyncJob syncJob1 = new SyncJob(SyncJob.Type.Bidirectional, "url1", "token1", "id1", "title", "/remotedir1", "/localdir1", true);
         SyncJob syncJob2 = new SyncJob(SyncJob.Type.Bidirectional, "url2", "token2", "id2", "title", "/remotedir2", "/localdir2", false);
         SyncJob syncJob3 = new SyncJob(SyncJob.Type.Bidirectional, "url3", "token3", "id3", "title", "/remotedir3", "/localdir3", false);
@@ -209,7 +240,15 @@ public class DriveAPIServerImplTest {
     }
 
     @Test
-    synchronized public void addAndGetNotificationsTest() {
+    synchronized public void addAndGetNotificationsTest() throws Exception {
+        Configuration configuration = new Configuration(Path.of(this.getClass().getClassLoader().getResource("placeholder.txt").getPath()).getParent().resolve("drive-api-server-impl-test-008"));
+        Files.createDirectories(configuration.getLocalAppStateDirectory());
+        SyncJobEventDAO syncJobEventDAO = new SyncJobEventDAOImp(configuration);
+        NotificationManager notificationManager = new NotificationManagerSqliteImpl(configuration);
+        SettingsManager settingsManager = Mockito.mock(SettingsManager.class);
+        TaskManager taskManager = Mockito.spy(new TaskManagerImpl(syncJobEventDAO, notificationManager, settingsManager, configuration, systemTrayUtil));
+        DriveAPIServerImpl driveAPIServerImpl = Mockito.spy(new DriveAPIServerImpl(settingsManager, notificationManager, taskManager, syncJobEventDAO, systemTrayUtil));
+
         driveAPIServerImpl.clearNotifications();
 
         List<Notification> notifications = new LinkedList<>();
@@ -245,7 +284,10 @@ public class DriveAPIServerImplTest {
     }
 
     @Test
-    synchronized public void removeNotificationsTest() {
+    synchronized public void removeNotificationsTest() throws Exception {
+        Configuration configuration = new Configuration(Path.of(this.getClass().getClassLoader().getResource("placeholder.txt").getPath()).getParent().resolve("drive-api-server-impl-test-009"));
+        Files.createDirectories(configuration.getLocalAppStateDirectory());
+
         DriveAPIServerImpl openBISSyncClient = new DriveAPIServerImpl(configuration, systemTrayUtil);
         openBISSyncClient.clearNotifications();
 
@@ -281,6 +323,9 @@ public class DriveAPIServerImplTest {
 
     @Test
     synchronized public void testGetEvents() throws Exception {
+        Configuration configuration = new Configuration(Path.of(this.getClass().getClassLoader().getResource("placeholder.txt").getPath()).getParent().resolve("drive-api-server-impl-test-010"));
+        Files.createDirectories(configuration.getLocalAppStateDirectory());
+
         DriveAPIServerImpl openBISSyncClient = new DriveAPIServerImpl(configuration, systemTrayUtil);
         openBISSyncClient.syncJobEventDAO.clearAll();
 
