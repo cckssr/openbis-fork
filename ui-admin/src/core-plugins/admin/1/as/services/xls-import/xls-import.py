@@ -4,6 +4,13 @@ from ch.ethz.sis.openbis.generic.server.xls.importer.enums import ImportModes
 from ch.systemsx.cisd.common.exceptions import UserFailureException
 from java.util import ArrayList
 
+import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider as CommonServiceProvider
+
+import ch.ethz.sis.shared.log.classic.core.LogCategory as LogCategory
+import ch.ethz.sis.shared.log.classic.impl.LogFactory as LogFactory
+
+OPERATION_LOG = LogFactory.getLogger(LogCategory.OPERATION, LogFactory)
+
 def getMode(parameters):
     update_mode = parameters.get("mode", "FAIL_IF_EXISTS")
     if update_mode == "IGNORE_EXISTING":
@@ -46,12 +53,10 @@ def _import(context, parameters):
         raise UserFailureException("fileName parameter is mandatory.")
 
     session_token = context.sessionToken
-    api = context.applicationService
     mode = getMode(parameters)
     options = getImportOptions(parameters)
 
-    importXLS = XLSImport(session_token, api, mode, options, [fileName], False)
+    importExecutor = CommonServiceProvider.tryToGetBean("importExecutor")
+    result = importExecutor.executeImport(session_token, mode, options, [fileName])
 
-    ids = ArrayList()
-    ids.addAll(importXLS.start())
-    return ids
+    return result.getObjectIds()
