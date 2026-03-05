@@ -27,7 +27,14 @@ public class DriveAPIService {
     public static final String SOCKET_FILE_NAME = ".openbis-drive.socket";
 
     public static void main(String[] args) throws Exception {
-        DriveAPIService driveAPIService = new DriveAPIService();
+        DriveAPIService driveAPIService;
+        try {
+            driveAPIService = new DriveAPIService();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return;
+        }
+
         driveAPIService.start();
 
         Runtime.getRuntime().addShutdownHook( new Thread(
