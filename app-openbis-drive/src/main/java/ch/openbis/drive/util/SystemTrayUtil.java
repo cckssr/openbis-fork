@@ -178,7 +178,7 @@ public class SystemTrayUtil {
 
     private JPopupMenu createPopupMenu(@NonNull Function<Void, Void> stopCallback) {
         final JPopupMenu popup = new RoundedPopupMenu();
-        popup.setPopupSize(220, 120);
+        popup.setPopupSize(getPopupMenuWidthByLanguage(i18n.getLanguage()), 120);
         popup.setLayout(new GridLayout(4, 1));
 
         // Try to wake the GUI up
@@ -212,11 +212,17 @@ public class SystemTrayUtil {
         separatorLine.setForeground(popup.getBackground().darker());
         separatorSection.add(separatorLine);
 
-        // Shut the background-service down
+        // Shut the background-service down, together with the graphical interface
         JButton exitItem = new RoundedMenuItem(i18n.get("system_tray.menu_item.stop_service"));
         exitItem.setBackground(popup.getBackground());
         exitItem.addActionListener(event -> {
-            stopCallback.apply(null);
+            try {
+                OpenBISDriveUtil.tryToStopGraphicalInterface();
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                stopCallback.apply(null);
+            }
         });
 
         popup.add(openItem);
@@ -329,6 +335,19 @@ public class SystemTrayUtil {
         g2d.dispose();
 
         return img;
+    }
+
+    static int getPopupMenuWidthByLanguage( String languageTwoLetterCode ) {
+        if (languageTwoLetterCode != null) {
+            return switch (languageTwoLetterCode) {
+                case "en" -> 170;
+                case "it", "fr", "es" -> 190;
+                case "de" -> 210;
+                default -> 210;
+            };
+        } else {
+            return 210;
+        }
     }
 
     static void initFonts() {

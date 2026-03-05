@@ -98,11 +98,15 @@ public class OpenDriveApplication extends Application {
 
                         String message = new String(socket.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
 
-                        Platform.runLater( () -> {
-                            stage.show();
-                            stage.toFront();
-                            activateSpecificSectionAccordingToLaunchArguments(Arrays.stream(message.split(" ")).toList());
-                        });
+                        if ( message.contains(OpenBISDriveUtil.SHUTDOWN_MESSAGE) ) {
+                            Platform.exit();
+                        } else {
+                            Platform.runLater( () -> {
+                                stage.show();
+                                stage.toFront();
+                                activateSpecificSectionAccordingToLaunchArguments(Arrays.stream(message.split(" ")).toList());
+                            });
+                        }
 
                     } catch (Exception e) {
                         e.printStackTrace();

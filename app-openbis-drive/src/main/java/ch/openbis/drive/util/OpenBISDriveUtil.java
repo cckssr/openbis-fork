@@ -4,6 +4,7 @@ import ch.openbis.drive.conf.Configuration;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
@@ -86,6 +87,7 @@ public class OpenBISDriveUtil {
         }
     }
 
+    public static final String SHUTDOWN_MESSAGE = "shutdown";
     public enum GUISection {
         SYNC_TASKS, SETTINGS, EVENTS, NOTIFICATIONS;
 
@@ -96,6 +98,24 @@ public class OpenBISDriveUtil {
                 case EVENTS -> "events";
                 case NOTIFICATIONS -> "notifications";
             };
+        }
+    }
+
+    public static boolean tryToStopGraphicalInterface() throws Exception {
+        Configuration configuration = new Configuration();
+        try ( Socket guiSocket = new Socket() ) {
+            guiSocket.connect(
+                    new InetSocketAddress("localhost", configuration.getOpenbisDriveGuiPort()),
+                    2000
+            );
+
+            guiSocket.getOutputStream().write(
+                    SHUTDOWN_MESSAGE.getBytes(StandardCharsets.UTF_8));
+            return true;
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            return false;
         }
     }
 
@@ -111,7 +131,12 @@ public class OpenBISDriveUtil {
 
     public static boolean tryToAwakeGraphicalInterface(@Nullable GUISection section) throws Exception {
         Configuration configuration = new Configuration();
-        try ( Socket guiSocket = new Socket("localhost", configuration.getOpenbisDriveGuiPort()) ) {
+        try ( Socket guiSocket = new Socket()) {
+            guiSocket.connect(
+                    new InetSocketAddress("localhost", configuration.getOpenbisDriveGuiPort()),
+                    2000
+            );
+
             guiSocket.getOutputStream().write(
                     Optional.ofNullable(section).map(GUISection::toLabel).orElse("")
                             .getBytes(StandardCharsets.UTF_8));
