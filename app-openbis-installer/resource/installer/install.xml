@@ -145,6 +145,14 @@
         </panel>
 
         <panel classname="com.izforge.izpack.panels.userinput.UserInputPanel"
+               id="UserInputPanel.MISC">
+            <actions>
+                <action stage="postvalidate"
+                        classname="ch.systemsx.cisd.openbis.installer.izpack.SetHostnameVariableAction"/>
+            </actions>
+        </panel>
+
+        <panel classname="com.izforge.izpack.panels.userinput.UserInputPanel"
                id="UserInputPanel.MISC" condition="isFirstTimeInstallation">
             <actions>
                 <action stage="postvalidate"
