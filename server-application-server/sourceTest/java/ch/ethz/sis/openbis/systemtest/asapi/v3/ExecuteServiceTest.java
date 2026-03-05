@@ -88,4 +88,46 @@ public class ExecuteServiceTest extends AbstractTest
 
     }
 
+    @Test
+    public void testExecuteEntityCollectorExtendedService()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+
+        final SampleCreation creation = new SampleCreation();
+        creation.setCode("SAMPLE_FOR_ENTITY_COLLECTOR");
+        creation.setTypeId(new EntityTypePermId("CELL_PLATE"));
+        creation.setSpaceId(new SpacePermId("CISD"));
+        creation.setExperimentId(new ExperimentIdentifier("/CISD/NEMO/EXP1"));
+
+        List<SamplePermId> permIds = v3api.createSamples(sessionToken, Collections.singletonList(creation));
+
+        assertSamplesExists(permIds.get(0).getPermId());
+
+        CustomASServiceCode code = new CustomASServiceCode("entity-collector-extended");
+        CustomASServiceExecutionOptions options = new CustomASServiceExecutionOptions();
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("kind", "SAMPLE");
+        params.put("permId", permIds.get(0).getPermId());
+        params.put("withLevelsAbove", false);
+        params.put("withLevelsBelow", false);
+        params.put("withObjectsAndDataSetsParents", false);
+        params.put("withObjectsAndDataSetsChildren", false);
+        params.put("withObjectsAndDataSetsOtherSpaces", false);
+        List<Map<String, Object>> nodeExportMaps = new ArrayList<>();
+        nodeExportMaps.add(params);
+
+        options.withParameter("nodeExportList", nodeExportMaps);
+        Object serviceResult = v3api.executeCustomASService(sessionToken, code, options);
+
+        assertTrue(serviceResult instanceof HashSet);
+        Set<ExportablePermId> result = (Set<ExportablePermId>) serviceResult;
+        AssertJUnit.assertEquals(1, result.size());
+        ExportablePermId permId = result.iterator().next();
+        AssertJUnit.assertEquals(ExportableKind.SAMPLE, permId.getExportableKind());
+        AssertJUnit.assertEquals(permIds.get(0).getPermId(), permId.getPermId());
+
+    }
+
 }
