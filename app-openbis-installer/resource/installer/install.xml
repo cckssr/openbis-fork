@@ -148,7 +148,7 @@
                id="UserInputPanel.MISC">
             <actions>
                 <action stage="postvalidate"
-                        classname="ch.systemsx.cisd.openbis.installer.izpack.SetHostnameVariableAction"/>
+                        classname="ch.systemsx.cisd.openbis.installer.izpack.SetServicePropertiesVariableAction"/>
             </actions>
         </panel>
 
