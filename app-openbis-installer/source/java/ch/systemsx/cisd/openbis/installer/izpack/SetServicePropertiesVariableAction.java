@@ -37,6 +37,7 @@ public class SetServicePropertiesVariableAction implements PanelAction
         Properties properties = Utils.tryToGetProperties(asServicePropertiesFile);
 
         UUID testUUID = UUID.randomUUID();
+        System.out.println("||> TEMP LOG:" + isFirstTimeInstallation);
         if(isFirstTimeInstallation) {
             Utils.updateOrAppendProperty(asServicePropertiesFile, "test-dummy-property",
                     "FIRST-" +testUUID);
