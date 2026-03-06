@@ -6,4 +6,5 @@ Application Server Extensions
 
    core-plugins
    as-services
+   as-imaging
    as-api-listener
