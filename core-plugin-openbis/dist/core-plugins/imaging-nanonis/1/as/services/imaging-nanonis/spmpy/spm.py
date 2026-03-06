@@ -955,8 +955,8 @@ class Spm:
             else:
                 fig.axes[0].set_axis_off()
 
-            if show:
-                plt.show()
+            # if show:
+            #     plt.show()
             # else:
             #     plt.close(fig)
 
