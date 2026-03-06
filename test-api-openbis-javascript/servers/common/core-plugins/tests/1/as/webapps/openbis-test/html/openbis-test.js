@@ -1463,7 +1463,7 @@ test("createReportFromDataSets()", function() {
 test("listAggregationServices()", function() {
 	createFacadeAndLogin(function(facade) {
 		facade.listAggregationServices(function(response) {
-			assertObjectsCount(response.result, 18);
+			assertObjectsCount(response.result, 16);
 			facade.close();
 		});
 	});
@@ -1482,16 +1482,6 @@ test("createReportFromAggregationService()", function() {
 	});
 });
 
-// removed with GWT removed
-// was initialized by core-ui login and no longer available
-//test("getSessionTokenFromServer()", function() {
-//	createFacadeAndLogin(function(facade) {
-//		facade.getSessionTokenFromServer(function(response) {
-//			ok(response.result, "Got session token");
-//			facade.close();
-//		});
-//	});
-//});
 
 test("listFilesForDataSetFile()", function() {
 	createFacadeAndLogin(function(facade) {
