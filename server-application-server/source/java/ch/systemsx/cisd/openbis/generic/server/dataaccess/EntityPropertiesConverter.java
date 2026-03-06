@@ -16,7 +16,6 @@
 package ch.systemsx.cisd.openbis.generic.server.dataaccess;
 
 import java.io.Serializable;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -32,6 +31,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import ch.systemsx.cisd.openbis.generic.server.dataaccess.validators.PropertyValidator;
 import org.hibernate.Session;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -61,14 +61,12 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PropertyTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.VocabularyPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.VocabularyTermPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
 import ch.systemsx.cisd.openbis.generic.shared.managed_property.IManagedPropertyEvaluatorFactory;
 import ch.systemsx.cisd.openbis.generic.shared.managed_property.api.IEntityInformationProvider;
 import ch.systemsx.cisd.openbis.generic.shared.managed_property.api.IManagedPropertyEvaluator;
 import ch.systemsx.cisd.openbis.generic.shared.translator.PersonTranslator;
-import ch.systemsx.cisd.openbis.generic.shared.util.SupportedDateTimePattern;
 
 /**
  * The unique {@link IEntityPropertiesConverter} implementation.
@@ -634,20 +632,20 @@ public final class EntityPropertiesConverter implements IEntityPropertiesConvert
 
         {
             final VocabularyTermPE vocabularyTerm =
-                    complexPropertyValueHelper.tryGetVocabularyTerm(validatedValue, propertyType);
+                    ComplexPropertyValueUtils.tryGetVocabularyTerm(validatedValue, propertyType);
             final MaterialPE material =
                     complexPropertyValueHelper.tryGetMaterial(validatedValue, propertyType);
             SamplePE sample = complexPropertyValueHelper.tryGetSample(validatedValue, propertyType);
             final Long[] integerArray =
-                    complexPropertyValueHelper.tryGetIntegerArray(validatedValue, propertyType);
+                    ComplexPropertyValueUtils.tryGetIntegerArray(validatedValue, propertyType.getType().getCode());
             final Double[] realArray =
-                    complexPropertyValueHelper.tryGetRealArray(validatedValue, propertyType);
+                    ComplexPropertyValueUtils.tryGetRealArray(validatedValue, propertyType.getType().getCode());
             final String[] stringArray =
-                    complexPropertyValueHelper.tryGetStringArray(validatedValue, propertyType);
+                    ComplexPropertyValueUtils.tryGetStringArray(validatedValue, propertyType.getType().getCode());
             final Date[] timestampArray =
-                    complexPropertyValueHelper.tryGetTimestampArray(validatedValue, propertyType);
+                    ComplexPropertyValueUtils.tryGetTimestampArray(validatedValue, propertyType.getType().getCode());
             final String jsonValue =
-                    complexPropertyValueHelper.tryGetJsonValue(validatedValue, propertyType);
+                    ComplexPropertyValueUtils.tryGetJsonValue(validatedValue, propertyType.getType().getCode());
             entityProperty.setUntypedValue(validatedValue.toString(), vocabularyTerm, material, sample,
                     integerArray, realArray, stringArray, timestampArray, jsonValue);
         }
@@ -1050,120 +1048,6 @@ public final class EntityPropertiesConverter implements IEntityPropertiesConvert
                         "No material could be found for identifier '%s'.", materialIdentifier);
             }
             return material;
-        }
-
-        public VocabularyTermPE tryGetVocabularyTerm(final Serializable value,
-                final PropertyTypePE propertyType)
-        {
-            if (propertyType.getType().getCode() != DataTypeCode.CONTROLLEDVOCABULARY)
-            {
-                return null; // this is not a property of CONTROLLED VOCABULARY type
-            }
-
-            final VocabularyPE vocabulary = propertyType.getVocabulary();
-            if (vocabulary == null)
-            {
-                return null;
-            }
-            final VocabularyTermPE term = vocabulary.tryGetVocabularyTerm((String) value);
-            if (term != null)
-            {
-                return term;
-            }
-            throw UserFailureException.fromTemplate(
-                    "Incorrect value '%s' for a controlled vocabulary set '%s'.", value,
-                    vocabulary.getCode());
-        }
-
-        public Long[] tryGetIntegerArray(final Serializable value, final PropertyTypePE propertyType)
-        {
-            DataTypeCode code = propertyType.getType().getCode();
-            if (code != DataTypeCode.ARRAY_INTEGER)
-            {
-                return null;
-            }
-            if (value == null || !value.getClass().isArray() || ((Serializable[]) value).length == 0)
-            {
-                return null;
-            }
-            return Arrays.stream((Serializable[]) value)
-                    .map(x -> Long.parseLong(x.toString().trim()))
-                    .toArray(Long[]::new);
-        }
-
-        public Double[] tryGetRealArray(final Serializable value, final PropertyTypePE propertyType)
-        {
-            DataTypeCode code = propertyType.getType().getCode();
-            if (code != DataTypeCode.ARRAY_REAL)
-            {
-                return null;
-            }
-            if (value == null || !value.getClass().isArray() || ((Serializable[]) value).length == 0)
-            {
-                return null;
-            }
-            return Arrays.stream((Serializable[]) value)
-                    .map(x -> Double.parseDouble(x.toString().trim()))
-                    .toArray(Double[]::new);
-        }
-
-        public String[] tryGetStringArray(final Serializable value, final PropertyTypePE propertyType)
-        {
-            DataTypeCode code = propertyType.getType().getCode();
-            if (code != DataTypeCode.ARRAY_STRING)
-            {
-                return null;
-            }
-            if (value == null || !value.getClass().isArray() || ((Serializable[]) value).length == 0)
-            {
-                return null;
-            }
-            return Arrays.stream((Serializable[]) value)
-                    .map(Serializable::toString)
-                    .toArray(String[]::new);
-        }
-
-        public Date[] tryGetTimestampArray(final Serializable value, final PropertyTypePE propertyType)
-        {
-            DataTypeCode code = propertyType.getType().getCode();
-            if (code != DataTypeCode.ARRAY_TIMESTAMP)
-            {
-                return null;
-            }
-            if (value == null || !value.getClass().isArray() || ((Serializable[]) value).length == 0)
-            {
-                return null;
-            }
-            return Arrays.stream((Serializable[]) value)
-                    .map(x -> parseDateFromString((String) x))
-                    .toArray(Date[]::new);
-        }
-
-        private Date parseDateFromString(String dateTime)
-        {
-            for (SupportedDateTimePattern format : SupportedDateTimePattern.values())
-            {
-                try
-                {
-                    SimpleDateFormat simpleDateFormat =
-                            new SimpleDateFormat(format.getPattern());
-                    return simpleDateFormat.parse(dateTime);
-                } catch (Exception e)
-                {
-                    //ignore
-                }
-            }
-            throw new IllegalArgumentException("Wrong date format:" + dateTime);
-        }
-
-        public String tryGetJsonValue(final Serializable value, final PropertyTypePE propertyType)
-        {
-            DataTypeCode code = propertyType.getType().getCode();
-            if (code != DataTypeCode.JSON || value == null)
-            {
-                return null;
-            }
-            return value.toString();
         }
 
     }

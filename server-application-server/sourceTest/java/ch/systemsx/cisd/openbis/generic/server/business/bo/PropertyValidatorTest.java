@@ -15,9 +15,8 @@
  */
 package ch.systemsx.cisd.openbis.generic.server.business.bo;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.io.Serializable;
+import java.util.*;
 
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.testng.annotations.DataProvider;
@@ -25,7 +24,7 @@ import org.testng.annotations.Test;
 
 import ch.rinn.restrictions.Friend;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.PropertyValidator;
+import ch.systemsx.cisd.openbis.generic.server.dataaccess.validators.PropertyValidator;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataTypeCode;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialTypePE;
@@ -89,6 +88,30 @@ public final class PropertyValidatorTest extends AbstractBOTest
         return propertyType;
     }
 
+    private final static PropertyTypePE createArrayStringPropertyType()
+    {
+        final PropertyTypePE propertyType = createPropertyType(DataTypeCode.ARRAY_STRING);
+        return propertyType;
+    }
+
+    private final static PropertyTypePE createArrayRealPropertyType()
+    {
+        final PropertyTypePE propertyType = createPropertyType(DataTypeCode.ARRAY_REAL);
+        return propertyType;
+    }
+
+    private final static PropertyTypePE createArrayIntegerPropertyType()
+    {
+        final PropertyTypePE propertyType = createPropertyType(DataTypeCode.ARRAY_INTEGER);
+        return propertyType;
+    }
+
+    private final static PropertyTypePE createArrayTimestampPropertyType()
+    {
+        final PropertyTypePE propertyType = createPropertyType(DataTypeCode.ARRAY_TIMESTAMP);
+        return propertyType;
+    }
+
     private final static PropertyTypePE createVarcharPropertyType()
     {
         final PropertyTypePE propertyType = createPropertyType(DataTypeCode.VARCHAR);
@@ -108,18 +131,36 @@ public final class PropertyValidatorTest extends AbstractBOTest
     {
         return new Object[][]
         {
+                // Single values
+                { createTimestampPropertyType(), "not a timestamp" },
                 { createTimestampPropertyType(), DateFormatUtils.format(new Date(), "yyyy") },
                 { createIntegerPropertyType(), "a" },
                 { createIntegerPropertyType(), "1.1" },
                 { createRealPropertyType(), "b" },
-                { createBooleanPropertyType(), "BOB" }, };
+                { createBooleanPropertyType(), "BOB" },
+
+                // Arrays
+                { createArrayStringPropertyType(), "BOB" },
+                { createArrayTimestampPropertyType(), DateFormatUtils.format(new Date(),
+                        SupportedDateTimePattern.CANONICAL_DATE_PATTERN.getPattern()) },
+                { createArrayTimestampPropertyType(), new String[] { "2026" } },
+                { createArrayIntegerPropertyType(), "1" },
+                { createArrayIntegerPropertyType(), new String[] { "1", "1.1" } },
+                { createArrayRealPropertyType(), "1.1" },
+                { createArrayRealPropertyType(), new String[] { "1", "1.1", "ABC" } },
+        };
     }
 
     @DataProvider
     private final static Object[][] getWorkingValues()
     {
+        // Calendar for fixed date value.
+        final Calendar calendar = GregorianCalendar.getInstance();
+        calendar.set(2026, Calendar.MARCH, 6);
+
         return new Object[][]
         {
+                // Single values
                 { createVarcharPropertyType(), "" },
                 { createVarcharPropertyType(), "varchar" },
                 {
@@ -135,7 +176,26 @@ public final class PropertyValidatorTest extends AbstractBOTest
                 { createRealPropertyType(), "1.1" },
                 { createBooleanPropertyType(), "yes" },
                 { createBooleanPropertyType(), "1" },
-                { createBooleanPropertyType(), "true" } };
+                { createBooleanPropertyType(), "true" },
+
+                // Empty arrays
+                { createArrayStringPropertyType(), new String[] {} },
+                { createArrayIntegerPropertyType(), new String[] {} },
+                { createArrayRealPropertyType(), new String[] {} },
+                { createArrayTimestampPropertyType(), new String[] {} },
+
+                // Not empty arrays
+                { createArrayStringPropertyType(), new String[] { "string 1", "string 2" } },
+                { createArrayIntegerPropertyType(), new String[] { "1", "2" } },
+                { createArrayRealPropertyType(), new String[] { "0.1", "0.2" } },
+                {
+                    createArrayTimestampPropertyType(), new String[] {
+                            DateFormatUtils.format(new Date(),
+                                    SupportedDateTimePattern.CANONICAL_DATE_PATTERN.getPattern()),
+                            DateFormatUtils.format(calendar,
+                                    SupportedDateTimePattern.CANONICAL_DATE_PATTERN.getPattern()) }
+                },
+        };
     }
 
     @Test
@@ -153,16 +213,14 @@ public final class PropertyValidatorTest extends AbstractBOTest
     }
 
     @Test(dataProvider = "getWorkingValues")
-    public final void testValidatePropertyValue(final PropertyTypePE propertyType,
-            final String value)
+    public final void testValidatePropertyValue(final PropertyTypePE propertyType, final Serializable value)
     {
         final PropertyValidator propertyValidator = createPropertyValidator();
         propertyValidator.validatePropertyValue(propertyType, value);
     }
 
     @Test(dataProvider = "getNonWorkingValues")
-    public final void testValidatePropertyValueFailed(final PropertyTypePE propertyType,
-            final String value)
+    public final void testValidatePropertyValueFailed(final PropertyTypePE propertyType, final Serializable value)
     {
         final PropertyValidator propertyValidator = createPropertyValidator();
         try
@@ -323,4 +381,6 @@ public final class PropertyValidatorTest extends AbstractBOTest
                             + materialType.getCode() + "'.", ex.getMessage());
         }
     }
+
+    // TODO: Add tests for array validation!!!! Array validation should work properly.
 }

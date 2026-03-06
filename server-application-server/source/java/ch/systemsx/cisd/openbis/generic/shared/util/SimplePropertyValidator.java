@@ -23,6 +23,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
+import ch.systemsx.cisd.openbis.generic.server.dataaccess.validators.PropertyValidator;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.commons.lang3.time.DateUtils;
@@ -35,7 +36,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.ValidationUtilities.Hyperli
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataTypeCode;
 
 /**
- * This is a refactoring of {@link ch.systemsx.cisd.openbis.generic.server.dataaccess.PropertyValidator} that takes some simple validations that do
+ * This is a refactoring of {@link PropertyValidator} that takes some simple validations that do
  * not require access to the PEs to a more accessible place.
  * 
  * @author Chandrasekhar Ramakrishnan

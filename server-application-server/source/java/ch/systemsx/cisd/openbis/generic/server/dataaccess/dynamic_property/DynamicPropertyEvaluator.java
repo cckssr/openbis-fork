@@ -19,18 +19,14 @@ import java.io.Serializable;
 import java.util.*;
 
 import ch.ethz.sis.shared.log.classic.impl.Logger;
+import ch.systemsx.cisd.openbis.generic.server.dataaccess.*;
 import org.hibernate.query.Query;
 import org.hibernate.Session;
 
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.EntityPropertiesConverter;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.EntityPropertiesConverter.ComplexPropertyValueHelper;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.EntityPropertiesConverter.IHibernateSessionProvider;
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.IEntityPropertiesConverter;
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.IRelationshipTypeDAO;
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.RelationshipUtils;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.dynamic_property.calculator.EntityAdaptorFactory;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.dynamic_property.calculator.api.IDynamicPropertyCalculator;
 import ch.systemsx.cisd.openbis.generic.shared.basic.BasicConstant;
@@ -425,32 +421,32 @@ public class DynamicPropertyEvaluator implements IDynamicPropertyEvaluator
 
         public VocabularyTermPE tryGetVocabularyTerm(String value, PropertyTypePE propertyType)
         {
-            return complexPropertyValueHelper.tryGetVocabularyTerm(value, propertyType);
+            return ComplexPropertyValueUtils.tryGetVocabularyTerm(value, propertyType);
         }
 
         public Long[] tryGetIntegerArray(String value, PropertyTypePE propertyType)
         {
-            return complexPropertyValueHelper.tryGetIntegerArray(value, propertyType);
+            return ComplexPropertyValueUtils.tryGetIntegerArray(value, propertyType.getType().getCode());
         }
 
         public Double[] tryGetRealArray(String value, PropertyTypePE propertyType)
         {
-            return complexPropertyValueHelper.tryGetRealArray(value, propertyType);
+            return ComplexPropertyValueUtils.tryGetRealArray(value, propertyType.getType().getCode());
         }
 
         public String[] tryGetStringArray(String value, PropertyTypePE propertyType)
         {
-            return complexPropertyValueHelper.tryGetStringArray(value, propertyType);
+            return ComplexPropertyValueUtils.tryGetStringArray(value, propertyType.getType().getCode());
         }
 
         public Date[] tryGetTimestampArray(String value, PropertyTypePE propertyType)
         {
-            return complexPropertyValueHelper.tryGetTimestampArray(value, propertyType);
+            return ComplexPropertyValueUtils.tryGetTimestampArray(value, propertyType.getType().getCode());
         }
 
         public String tryGetJsonValue(String value, PropertyTypePE propertyType)
         {
-            return complexPropertyValueHelper.tryGetJsonValue(value, propertyType);
+            return ComplexPropertyValueUtils.tryGetJsonValue(value, propertyType.getType().getCode());
         }
     }
 }
