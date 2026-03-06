@@ -14,7 +14,10 @@ const styles = theme => ({
     marginRight: 0
   },
   endAdornment: {
-    marginLeft: 0
+    marginLeft: 0,
+    '&.MuiInputAdornment-positionEnd:not(.MuiInputAdornment-hiddenLabel)': {
+      marginTop: 16
+    }
   },
   textField: {
     margin: 0,
@@ -43,7 +46,7 @@ class TextFormField extends React.PureComponent {
       case FormFieldDataType.ARRAY_REAL:
         return `[${array.join(', ')}]`
       case FormFieldDataType.ARRAY_STRING:
-        return `["${array.join('", "')}"]`
+        return `${JSON.stringify(array)}`
       case FormFieldDataType.ARRAY_TIMESTAMP:
         return `["${array.map(v => date.format(new Date(v), true)).join('", "')}"]`
       default:
@@ -106,9 +109,9 @@ class TextFormField extends React.PureComponent {
       label,
       description,
       value,
+      dataType,
       mandatory,
       disabled,
-      hyperlink,
       autoComplete,
       error,
       multiline,
