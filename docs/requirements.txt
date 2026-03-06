@@ -2,4 +2,3 @@ sphinx<7
 sphinx_rtd_theme
 docutils
 myst-parser
-sphinx-copybutton
