@@ -21,12 +21,15 @@ public class NewExportFileReader
         String fileName = parts[parts.length - 1];
 
         List<String> identifierParts = new ArrayList<>();
-        for (int i = 1; i < parts.length - 3; i++)
+        for (int i = 1; i < parts.length - 2; i++)
         {
-            identifierParts.add(parts[i]);
+            identifierParts.add(getObjectCode(parts[i]));
 
         }
-        identifierParts.add(getObjectCode(parts[parts.length - 3]));
+        if (identifierParts.size() == 4)
+        {
+            identifierParts.remove(2); // These would be the collection code
+        }
 
         String identifier = "/" + identifierParts.stream().collect(Collectors.joining("/"));
         byte[] content = fileMode != ExcelReader.FileMode.DUMMY ?
