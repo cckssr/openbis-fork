@@ -47,6 +47,8 @@ class Utils
 
     static final String DSS_PATH = SERVERS_PATH + "datastore_server/";
 
+    static final String AFS_PATH = SERVERS_PATH + "afs-server/";
+
     static final String SERVICE_PROPERTIES_PATH = "etc/service.properties";
 
     static final String CORE_PLUGINS_PROPERTIES_PATH = CORE_PLUGINS_PATH + "core-plugins.properties";
