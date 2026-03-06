@@ -1323,8 +1323,6 @@ public class SyncOperationTest extends TestCase {
                         } catch (Exception e) {
                             exception = e;
                         }
-                        Mockito.verify(afsClient, Mockito.times(1)).delete(syncJob1.getEntityPermId(), remoteFile.toString(), true);
-
                         Mockito.verify(afsClient, Mockito.times(1)).upload(
                                 Mockito.eq(localFile),
                                 Mockito.eq(syncJob1.getEntityPermId()),

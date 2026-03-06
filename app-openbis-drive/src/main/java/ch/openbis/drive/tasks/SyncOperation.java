@@ -611,7 +611,6 @@ public class SyncOperation {
 
         //Check if conflict notification is present and .openbis-conflict file has been deleted, that means: conflict resolution has been performed
         if (alreadyPresentConflictNotification != null && !Files.exists(localSuffixedConflictFile)) {
-            afsClientProxy.delete(syncJob.getEntityPermId(), toServerPathString(remoteFile), true);
             FileTime localLastModification = Files.getLastModifiedTime(localFile);
             ClientAPI.DefaultTransferMonitorLister transferMonitorListener = new ClientAPI.DefaultTransferMonitorLister();
             transferMonitorListener.addFileTransferredListener(new ClientAPI.FileTransferredListener() {
