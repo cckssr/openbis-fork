@@ -317,7 +317,7 @@
     {
       "@id": "DEFAULT_EXPERIMENT",
       "@type": "rdfs:Class",
-      "owl:Restriction": [
+      "owl:restriction": [
         {
           "@id": "9f19a93f-547f-4069-a35c-f9320a9f8315"
         },
@@ -557,7 +557,7 @@
     {
       "@id": "ENTRY",
       "@type": "rdfs:Class",
-      "owl:Restriction": [
+      "owl:restriction": [
         {
           "@id": "1d9e83d9-29cf-4547-9c0f-35669c855c84"
         },

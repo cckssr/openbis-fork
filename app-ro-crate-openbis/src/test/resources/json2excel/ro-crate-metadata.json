@@ -357,7 +357,7 @@
     {
       "@id": "COLLECTION",
       "@type": "rdfs:Class",
-      "owl:Restriction": [
+      "owl:restriction": [
         {
           "@id": "2f9d92e7-2e90-47c0-949b-a50c2ab147e7"
         },
@@ -465,7 +465,7 @@
     {
       "@id": "PUBLICATION_PUBLISHER",
       "@type": "rdfs:Class",
-      "owl:Restriction": [
+      "owl:restriction": [
         {
           "@id": "b0b6618c-f548-458f-bb0a-a6589614c250"
         },
@@ -519,7 +519,7 @@
     {
       "@id": "PUBLICATION_CREATOR",
       "@type": "rdfs:Class",
-      "owl:Restriction": [
+      "owl:restriction": [
         {
           "@id": "52a8af1f-32c7-409e-b915-f037363e9536"
         },
@@ -1122,7 +1122,7 @@
     {
       "@id": "PUBLICATION",
       "@type": "rdfs:Class",
-      "owl:Restriction": [
+      "owl:restriction": [
         {
           "@id": "0ba94db4-fcbe-4d60-90b2-500890764b59"
         },

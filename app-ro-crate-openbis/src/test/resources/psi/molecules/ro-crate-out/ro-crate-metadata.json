@@ -203,7 +203,7 @@
     {
       "@id": "COLLECTION",
       "@type": "rdfs:Class",
-      "owl:Restriction": [
+      "owl:restriction": [
         {
           "@id": "de7fb4a4-7fed-4a80-a645-ed11a79fd18b"
         },
@@ -360,7 +360,7 @@
     {
       "@id": "MOLECULE",
       "@type": "rdfs:Class",
-      "owl:Restriction": [
+      "owl:restriction": [
         {
           "@id": "46e796b6-1ac4-4cfe-93b2-6bbab42588ba"
         },

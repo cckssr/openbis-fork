@@ -231,7 +231,7 @@
     {
       "@id": "ENTRY",
       "@type": "rdfs:Class",
-      "owl:Restriction": [
+      "owl:restriction": [
         {
           "@id": "984e3501-fa35-41b8-a18e-84c8b9cee09c"
         },
