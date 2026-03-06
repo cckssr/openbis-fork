@@ -15,7 +15,9 @@ The repository contains these kind of modules used to build the openBIS distribu
 # Software Requirements
 
 - JDK 21
-- Postgres 18
+- Postgres 18 with prepared transaction enabled
+
+more information: [here](./docs/software-developer-documentation/development-environment/system-requirements.md)
 
 # Change log
 Change log is available [here](CHANGELOG.md) 
