@@ -49,6 +49,9 @@ public class SchemaFacade implements ISchemaFacade
 
     public static final String OWL_RESTRICTION = "owl:Restriction";
 
+    public static final String OWL_RESTRICTION_PROPERTY = "owl:restriction";
+
+
     public static final String ON_PROPERTY = "owl:onProperty";
 
     public static final String RDFS_LABEL = "rdfs:label";
@@ -144,7 +147,7 @@ public class SchemaFacade implements ISchemaFacade
             restrictionBuilder.addIdProperty(ON_PROPERTY, restriction.getPropertyType().getId());
             restrictionBuilder.addProperty(OWL_MIN_CARDINALITY, restriction.getMinCardinality());
             restrictionBuilder.addProperty(OWL_MAX_CARDINALITY, restriction.getMaxCardinality());
-            builder.addIdProperty(OWL_RESTRICTION, restriction.getId());
+            builder.addIdProperty(OWL_RESTRICTION_PROPERTY, restriction.getId());
             crate.addDataEntity(restrictionBuilder.build());
         }
 
@@ -359,7 +362,7 @@ public class SchemaFacade implements ISchemaFacade
                             parseMultiValued(entity, EQUIVALENT_CLASS));
                     myType.setId(resolvePrefixSingleValue(id));
                     idsToTypes.put(resolvePrefixSingleValue(id), myType);
-                    parseMultiValued(entity, OWL_RESTRICTION).forEach(
+                    parseMultiValued(entity, OWL_RESTRICTION_PROPERTY).forEach(
                             x -> restrictionToTypeId.put(x, myType));
 
                 }
