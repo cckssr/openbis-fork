@@ -145,14 +145,6 @@
         </panel>
 
         <panel classname="com.izforge.izpack.panels.userinput.UserInputPanel"
-               id="UserInputPanel.MISC">
-            <actions>
-                <action stage="postvalidate"
-                        classname="ch.systemsx.cisd.openbis.installer.izpack.SetServicePropertiesVariableAction"/>
-            </actions>
-        </panel>
-
-        <panel classname="com.izforge.izpack.panels.userinput.UserInputPanel"
                id="UserInputPanel.MISC" condition="isFirstTimeInstallation">
             <actions>
                 <action stage="postvalidate"
@@ -185,6 +177,8 @@
             <actions>
                 <action stage="postvalidate"
                         classname="ch.systemsx.cisd.openbis.installer.izpack.ExecuteSetupScriptsAction"/>
+                <action stage="postvalidate"
+                        classname="ch.systemsx.cisd.openbis.installer.izpack.SetServicePropertiesVariableAction"/>
                 <action stage="postvalidate"
                         classname="ch.systemsx.cisd.openbis.installer.izpack.OpenGettingStartedPageAction"/>
             </actions>

@@ -76,6 +76,15 @@ public class SetServicePropertiesVariableAction implements PanelAction
             Utils.updateOrAppendProperty(afsServicePropertiesFile, "apiServerInteractiveSessionKey", uuid.toString());
         }
 
+        if(!isFirstTimeInstallation) {
+            final String afsUrlProperty = "api.v3.transaction.participant.afs-server.url";
+            String afsUrl = asProperties.getProperty(afsUrlProperty);
+            if(afsUrl == null || afsUrl.isBlank()) {
+                Utils.updateOrAppendProperty(asServicePropertiesFile, afsUrlProperty, "http://localhost:8085/afs-server");
+            }
+
+        }
+
     }
 
 
