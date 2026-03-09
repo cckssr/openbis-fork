@@ -31,32 +31,27 @@ from ch.ethz.sis.shared.log.classic.impl import Logger
 
 from org.eclipse.jetty.client import HttpClient
 from org.eclipse.jetty.client import HttpProxy
-from org.eclipse.jetty.client.transport import HttpClientTransportOverHTTP
+
 from org.eclipse.jetty.util import Jetty
 from org.eclipse.jetty.util.ssl import SslContextFactory
-from org.eclipse.jetty.client import BasicAuthentication
 from org.eclipse.jetty.http import HttpMethod
 
-# import org.eclipse.jetty.client.BasicAuthentication;
-import org.eclipse.jetty.client.HttpClient;
-import org.eclipse.jetty.client.HttpProxy;
-import org.eclipse.jetty.client.ProxyConfiguration;
-import org.eclipse.jetty.client.transport.HttpClientTransportOverHTTP;
-import org.eclipse.jetty.io.ClientConnector;
-import org.eclipse.jetty.util.ssl.SslContextFactory;
-import org.eclipse.jetty.util.thread.QueuedThreadPool;
-import org.eclipse.jetty.util.thread.ScheduledExecutorScheduler;
+if Jetty.VERSION.startswith('12.'):
+    from org.eclipse.jetty.client.transport import HttpClientTransportOverHTTP
+    from org.eclipse.jetty.http import HttpFields
+    from org.eclipse.jetty.http import MultiPart
+    from org.eclipse.jetty.client import StringRequestContent
+    from org.eclipse.jetty.client import MultiPartRequestContent
+    from org.eclipse.jetty.io import ByteBufferPool
+    from org.eclipse.jetty.client import BasicAuthentication
+    from org.eclipse.jetty.client import PathRequestContent
+else:
+    from org.eclipse.jetty.client.http import HttpClientTransportOverHTTP
+    from org.eclipse.jetty.client.util import MultiPartContentProvider
+    from org.eclipse.jetty.client.util import PathContentProvider
+    from org.eclipse.jetty.client.util import StringContentProvider
+    from org.eclipse.jetty.client.util import BasicAuthentication
 
-import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
-
-# from org.eclipse.jetty.client.http import HttpClientTransportOverHTTP
-# from org.eclipse.jetty.client.util import MultiPartContentProvider
-# from org.eclipse.jetty.client.util import PathContentProvider
-# from org.eclipse.jetty.client.util import StringContentProvider
-# from org.eclipse.jetty.http import HttpMethod
-# from org.eclipse.jetty.util import Jetty
-# from org.eclipse.jetty.util.ssl import SslContextFactory
-# from org.eclipse.jetty.client.util import BasicAuthentication
 
 import ch.ethz.sis.shared.log.classic.core.LogCategory as LogCategory
 import ch.ethz.sis.shared.log.classic.impl.LogFactory as LogFactory
@@ -65,23 +60,20 @@ import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider as CommonSe
 
 
 
-# from exportsApi import displayResult, getConfigurationProperty, addToZipFile, checkResponseStatus, cleanUp, getDownloadUrlFromASService, isNonEmptyString
-from exportsApi import addToZipFile, checkResponseStatus, cleanUp, getDownloadUrlFromASService, isNonEmptyString
+from util import addToZipFile, checkResponseStatus, cleanUp, getDownloadUrlFromASService, isNonEmptyString
 
 OPERATION_LOG = LogFactory.getLogger(LogCategory.OPERATION, LogFactory)
 
-# TODO Migrate to newest jetty
 
 def process(executionContext, params):
     method = params.get('method')
 
     if method == 'exportResearchCollection':
-
         resultUrl = exportResearchCollection(executionContext, params)
-        #resultUrl = expandAndExport(tr, params)
-        return resultUrl
-        # displayResult(resultUrl is not None, tableBuilder, '{"url": "' + resultUrl + '"}' if resultUrl is not None else None,
-        #               errorMessage=None if resultUrl is not None else 'Archives are not allowed if indefinite retention period is selected.')
+        result = {
+            "url": resultUrl,
+        }
+        return result
 
 def exportResearchCollection(context, params):
     if params.get('retentionPeriod') == 'indefinite': # ?? and containsArchives(entitiesToExport) :
@@ -154,9 +146,7 @@ def isArchive(path):
 
 def sendToDSpace(params, tempZipFileName, tempZipFilePath):
 
-    # sp = CommonServiceProvider.tryToGetProperty('service-document-url')
     serviceDocumentUrl = CommonServiceProvider.tryToGetProperty('rc-exports-api.service-document-url')
-    # serviceDocumentUrl = getConfigurationProperty(tr, 'service-document-url')
     depositUrl = getBaseUrl(serviceDocumentUrl) + str(params.get('submissionUrl'))
 
     headers = {
@@ -168,8 +158,6 @@ def sendToDSpace(params, tempZipFileName, tempZipFilePath):
         'Packaging': 'http://purl.org/net/sword/package/METSDSpaceSIP',
         'On-Behalf-Of': str(params.get('userId')),
     }
-    print("||> HEADERS:" + str(headers))
-    print("||> PARAMS:" + str(params))
     httpClient = None
     try:
 
@@ -183,7 +171,7 @@ def sendToDSpace(params, tempZipFileName, tempZipFilePath):
             request.getHeaders().add(key, str(value))
 
         OPERATION_LOG.info('Performing call to RC instance: ' + str(depositUrl))
-        response = request.method(HttpMethod.POST).file(Paths.get(tempZipFilePath), 'application/zip').send()
+        response = request.method(HttpMethod.POST).body(PathRequestContent('application/zip', Paths.get(tempZipFilePath))).send()
 
         checkResponseStatus(response)
 
@@ -225,19 +213,20 @@ def authenticateUserJava(url):
 
     httpProxyURL = CommonServiceProvider.tryToGetProperty('rc-exports-api.httpProxyURL')
     httpProxyPort = CommonServiceProvider.tryToGetProperty('rc-exports-api.httpProxyPort')
-    # httpProxyURL = str(getConfigurationProperty(tr, 'httpProxyURL'))
-    # httpProxyPort = str(getConfigurationProperty(tr, 'httpProxyPort'))
+
     if isNonEmptyString(httpProxyURL) and isNonEmptyString(httpProxyPort):
-        proxyConfig = httpClient.getProxyConfiguration()
-        proxyConfig.addProxy(HttpProxy(httpProxyURL, int(httpProxyPort)))
+        if jettyVersion.startswith('12.'):
+            proxyConfig = httpClient.getProxyConfiguration()
+            proxyConfig.addProxy(HttpProxy(httpProxyURL, int(httpProxyPort)))
+        else:
+            proxyConfig = httpClient.getProxyConfiguration()
+            proxyConfig.getProxies().add(HttpProxy(httpProxyURL, int(httpProxyPort)))
 
     uri = URI(url)
     user = CommonServiceProvider.tryToGetProperty('rc-exports-api.user')
     password = CommonServiceProvider.tryToGetProperty('rc-exports-api.password')
     realm = CommonServiceProvider.tryToGetProperty('rc-exports-api.realm')
-    # user = getConfigurationProperty(tr, 'user')
-    # password = getConfigurationProperty(tr, 'password')
-    # realm = getConfigurationProperty(tr, 'realm')
+
     auth = httpClient.getAuthenticationStore()
     auth.addAuthentication(BasicAuthentication(uri, realm, user, password))
     return httpClient

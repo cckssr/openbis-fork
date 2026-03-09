@@ -125,21 +125,18 @@ function ResearchCollectionExportController(parentController) {
                 toExportModel.nodeExportList.push({type: 'GROUP', permId: 'GROUP:' + group, expand: null});
             }
 
-            this.getUserInformation(function(userInformation) {
-                mainController.serverFacade.exportRc(toExportModel, submissionUrl, submissionType, retentionPeriod, userInformation,
-                        function(operationExecutionPermId) {
-                            _this.waitForOpExecutionResponse(operationExecutionPermId, function(error, result) {
-                                Util.unblockUI();
-                                if (result && result.data && result.data.url) {
-                                    var win = window.open(result.data.url, '_blank');
-                                    win.focus();
-                                    mainController.refreshView();
-                                } else {
-                                    Util.showError(error ? error : 'Returned result format is not correct.');
-                                }
-                            });
-                        });
-            });
+            this.getUserInformation((function(userInformation) {
+                mainController.serverFacade.exportRcAs(toExportModel, submissionUrl, submissionType, retentionPeriod, userInformation,
+                    function(serviceResult) {
+                        Util.unblockUI();
+                        var rcResultUrl = serviceResult.result.url;
+                        if(rcResultUrl) {
+                            var win = window.open(rcResultUrl, '_blank');
+                            win.focus();
+                            mainController.refreshView();
+                        }
+                    });
+            }).bind(this));
         }
     };
 
