@@ -2,7 +2,7 @@
 
 Mandatory:
 
-- JDK 21 (JDK is necessary for the development, for running the system JRE 21 headless is sufficient)
+- OpenJDK 21 (JDK is necessary for the development, for running the system OpenJRE 21 headless is sufficient)
 - Postgres 18 with prepared transactions functionality enabled
 
 ## Postgres required configuration
