@@ -81,7 +81,7 @@ public class SetServicePropertiesVariableAction implements PanelAction
             final String transactionsEnabledProperty = "api.v3.transaction.enabled";
             String transactionsEnabled = asProperties.getProperty(transactionsEnabledProperty);
             if(transactionsEnabled == null || transactionsEnabled.isBlank()) {
-                Utils.updateOrAppendProperty(asServicePropertiesFile, transactionsEnabled, "true");
+                Utils.updateOrAppendProperty(asServicePropertiesFile, transactionsEnabledProperty, "true");
             }
 
             final String afsUrlProperty = "api.v3.transaction.participant.afs-server.url";
