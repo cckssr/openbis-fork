@@ -62,27 +62,45 @@ public class SetServicePropertiesVariableAction implements PanelAction
         File afsServicePropertiesFile =
                 new File(installDir, Utils.AFS_PATH + Utils.SERVICE_PROPERTIES_PATH);
 
-        String property = asProperties.getProperty(asTransactionCoordinatorKeyProperty);
-        if(property == null || property.isBlank()) {
+        String transactionCoordinatorKey = asProperties.getProperty(asTransactionCoordinatorKeyProperty);
+        if(transactionCoordinatorKey == null || transactionCoordinatorKey.isBlank()) {
             UUID uuid = UUID.randomUUID();
             Utils.updateOrAppendProperty(asServicePropertiesFile, asTransactionCoordinatorKeyProperty, uuid.toString());
             Utils.updateOrAppendProperty(afsServicePropertiesFile, "apiServerTransactionManagerKey", uuid.toString());
         }
 
-        asProperties.getProperty(asTransactionInteractiveSessionKeyProperty);
-        if(property == null || property.isBlank()) {
+        String transactionInteractiveSessionKey = asProperties.getProperty(asTransactionInteractiveSessionKeyProperty);
+        if(transactionInteractiveSessionKey == null || transactionInteractiveSessionKey.isBlank()) {
             UUID uuid = UUID.randomUUID();
             Utils.updateOrAppendProperty(asServicePropertiesFile, asTransactionInteractiveSessionKeyProperty, uuid.toString());
             Utils.updateOrAppendProperty(afsServicePropertiesFile, "apiServerInteractiveSessionKey", uuid.toString());
         }
 
         if(!isFirstTimeInstallation) {
+            //Flow during upgrade if transactions were not setup
+            final String transactionsEnabledProperty = "api.v3.transaction.enabled";
+            String transactionsEnabled = asProperties.getProperty(transactionsEnabledProperty);
+            if(transactionsEnabled == null || transactionsEnabled.isBlank()) {
+                Utils.updateOrAppendProperty(asServicePropertiesFile, transactionsEnabled, "true");
+            }
+
             final String afsUrlProperty = "api.v3.transaction.participant.afs-server.url";
             String afsUrl = asProperties.getProperty(afsUrlProperty);
             if(afsUrl == null || afsUrl.isBlank()) {
                 Utils.updateOrAppendProperty(asServicePropertiesFile, afsUrlProperty, "http://localhost:8085/afs-server");
             }
 
+            final String logPathProperty = "api.v3.transaction.transaction-log-folder-path";
+            String logFolderPath = asProperties.getProperty(logPathProperty);
+            if(logFolderPath == null || logFolderPath.isBlank()) {
+                Utils.updateOrAppendProperty(asServicePropertiesFile, logPathProperty, "logs/transaction-logs");
+            }
+
+            final String asParticipantUrlProperty = "api.v3.transaction.participant.application-server.url";
+            String asParticipantUrl = asProperties.getProperty(asParticipantUrlProperty);
+            if(asParticipantUrl == null || asParticipantUrl.isBlank()) {
+                Utils.updateOrAppendProperty(asServicePropertiesFile, asParticipantUrlProperty, "https://localhost:8443");
+            }
         }
 
     }
