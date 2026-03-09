@@ -37,7 +37,7 @@ public class SchemaFacade implements ISchemaFacade
 
     public static final String EQUIVALENT_CONCEPT = "owl:equivalentProperty";
 
-    public static final String TYPE_RESTRICTION = "owl:restriction";
+
 
     String rangeIdentifier = "schema:rangeIncludes";
 
@@ -143,7 +143,7 @@ public class SchemaFacade implements ISchemaFacade
         {
             DataEntity.DataEntityBuilder restrictionBuilder = new DataEntity.DataEntityBuilder();
             restrictionBuilder.addProperty("@id", restriction.getId());
-            restrictionBuilder.addProperty("@type", TYPE_RESTRICTION);
+            restrictionBuilder.addProperty("@type", OWL_RESTRICTION);
             restrictionBuilder.addIdProperty(ON_PROPERTY, restriction.getPropertyType().getId());
             restrictionBuilder.addProperty(OWL_MIN_CARDINALITY, restriction.getMinCardinality());
             restrictionBuilder.addProperty(OWL_MAX_CARDINALITY, restriction.getMaxCardinality());
