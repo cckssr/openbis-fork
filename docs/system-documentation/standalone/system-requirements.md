@@ -12,7 +12,7 @@ The following software packages are required:
 
 - The binaries `bash`, `awk`, `sed` and `unzip` need to be installed and in the `PATH` of the openBIS user.
 - Java Runtime Environment: OpenJDK 21
-- PostgreSQL 18
+- PostgreSQL 18 with prepared transactions functionality enabled
 
 ## Microservices memory settings
 
