@@ -146,7 +146,7 @@ def isArchive(path):
 
 def sendToDSpace(params, tempZipFileName, tempZipFilePath):
 
-    serviceDocumentUrl = CommonServiceProvider.tryToGetProperty('rc-exports-api.service-document-url')
+    serviceDocumentUrl = CommonServiceProvider.tryToGetProperty('exports-api.research_collection.service-document-url')
     depositUrl = getBaseUrl(serviceDocumentUrl) + str(params.get('submissionUrl'))
 
     headers = {
@@ -211,8 +211,8 @@ def authenticateUserJava(url):
     else:
         raise ValueError('Unsupported Jetty version: %s. Only [9.x, 10.x, 12.x] are handled for HttpClient creation.' % jettyVersion)
 
-    httpProxyURL = CommonServiceProvider.tryToGetProperty('rc-exports-api.httpProxyURL')
-    httpProxyPort = CommonServiceProvider.tryToGetProperty('rc-exports-api.httpProxyPort')
+    httpProxyURL = CommonServiceProvider.tryToGetProperty('exports-api.research_collection.http.proxy.url')
+    httpProxyPort = CommonServiceProvider.tryToGetProperty('exports-api.research_collection.http.proxy.port')
 
     if isNonEmptyString(httpProxyURL) and isNonEmptyString(httpProxyPort):
         if jettyVersion.startswith('12.'):
@@ -223,9 +223,9 @@ def authenticateUserJava(url):
             proxyConfig.getProxies().add(HttpProxy(httpProxyURL, int(httpProxyPort)))
 
     uri = URI(url)
-    user = CommonServiceProvider.tryToGetProperty('rc-exports-api.user')
-    password = CommonServiceProvider.tryToGetProperty('rc-exports-api.password')
-    realm = CommonServiceProvider.tryToGetProperty('rc-exports-api.realm')
+    user = CommonServiceProvider.tryToGetProperty('exports-api.research_collection.user')
+    password = CommonServiceProvider.tryToGetProperty('exports-api.research_collection.password')
+    realm = CommonServiceProvider.tryToGetProperty('exports-api.research_collection.realm')
 
     auth = httpClient.getAuthenticationStore()
     auth.addAuthentication(BasicAuthentication(uri, realm, user, password))
