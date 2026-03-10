@@ -1,6 +1,7 @@
 package ch.ethz.sis.openbis.generic.excel.v3.from.utils;
 
 import ch.ethz.sis.openbis.generic.excel.v3.from.ExcelReader;
+import ch.ethz.sis.openbis.generic.excel.v3.model.IFileInfo;
 import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
 import com.google.common.annotations.VisibleForTesting;
 
@@ -13,7 +14,7 @@ import java.util.zip.ZipInputStream;
 
 public class NewExportFileReader
 {
-    public static OpenBisModel.FileInfo readFiles(ZipEntry zipEntry, ZipInputStream zipInputStream,
+    public static IFileInfo readFiles(ZipEntry zipEntry, ZipInputStream zipInputStream,
             ExcelReader.FileMode fileMode)
             throws IOException
     {
@@ -37,7 +38,8 @@ public class NewExportFileReader
                 new byte[] { 0x00 };
         String fileIdentifier = makeFileIdentifierRoCrateCompatible(identifier + "/" + fileName);
 
-        return new OpenBisModel.FileInfo(identifier, fileIdentifier, content, zipEntry.getName());
+        return new OpenBisModel.FileInfoContents(identifier, fileIdentifier, content,
+                zipEntry.getName());
 
     }
 

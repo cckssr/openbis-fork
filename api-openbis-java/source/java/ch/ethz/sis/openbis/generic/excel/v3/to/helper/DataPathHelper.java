@@ -2,7 +2,7 @@ package ch.ethz.sis.openbis.generic.excel.v3.to.helper;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.entity.AbstractEntityPropertyHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
-import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
+import ch.ethz.sis.openbis.generic.excel.v3.model.IFileInfo;
 import ch.ethz.sis.openbis.generic.excel.v3.to.ExcelWriter;
 
 import java.util.ArrayList;
@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 public class DataPathHelper
 {
 
-    public static String getPath(OpenBisModel.FileInfo fileInfo,
+    public static String getPath(IFileInfo fileInfo,
             AbstractEntityPropertyHolder entity)
     {
 

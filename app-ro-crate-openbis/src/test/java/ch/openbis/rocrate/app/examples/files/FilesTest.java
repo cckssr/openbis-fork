@@ -6,6 +6,7 @@ import ch.eth.sis.rocrate.facade.IType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
 import ch.ethz.sis.openbis.generic.excel.v3.from.ExcelReader;
+import ch.ethz.sis.openbis.generic.excel.v3.model.IFileInfo;
 import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
 import ch.ethz.sis.openbis.generic.excel.v3.to.ExcelWriter;
 import ch.openbis.rocrate.app.reader.RdfToModel;
@@ -48,7 +49,7 @@ public class FilesTest
                 ExcelReader.FileMode.DUMMY);
         Assert.assertEquals(1, excelModel.getFiles().size());
 
-        List<OpenBisModel.FileInfo> fileInfos =
+        List<IFileInfo> fileInfos =
                 excelModel.getFiles().values().stream().findFirst().orElseThrow();
         Assert.assertEquals(1, fileInfos.size());
 
@@ -67,7 +68,7 @@ public class FilesTest
         OpenBisModel excelModel = ExcelReader.convert(ExcelReader.Format.ZIP_EXPORT, path);
         Assert.assertEquals(1, excelModel.getFiles().size());
 
-        List<OpenBisModel.FileInfo> fileInfos =
+        List<IFileInfo> fileInfos =
                 excelModel.getFiles().values().stream().findFirst().orElseThrow();
         Assert.assertEquals(3, fileInfos.size());
 
@@ -115,7 +116,7 @@ public class FilesTest
 
         Assert.assertEquals(1, openBisModel.getFiles().size());
 
-        List<OpenBisModel.FileInfo> fileInfos =
+        List<IFileInfo> fileInfos =
                 openBisModel.getFiles().values().stream().findFirst().orElseThrow();
         Assert.assertEquals(1, fileInfos.size());
 
@@ -154,7 +155,7 @@ public class FilesTest
 
         Assert.assertEquals(1, openBisModel.getFiles().size());
 
-        List<OpenBisModel.FileInfo> fileInfos =
+        List<IFileInfo> fileInfos =
                 openBisModel.getFiles().values().stream().findFirst().orElseThrow();
         Assert.assertEquals(1, fileInfos.size());
 

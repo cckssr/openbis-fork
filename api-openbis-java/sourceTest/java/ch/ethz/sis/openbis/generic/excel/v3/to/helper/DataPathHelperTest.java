@@ -4,6 +4,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.Project;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
+import ch.ethz.sis.openbis.generic.excel.v3.model.IFileInfo;
 import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
 import org.junit.Assert;
 import org.testng.annotations.Test;
@@ -36,8 +37,8 @@ public class DataPathHelperTest
         sample.setProject(project);
 
         String filePath = "/stuff/more/out.txt";
-        OpenBisModel.FileInfo fileInfo =
-                new OpenBisModel.FileInfo("a", filePath, new byte[] {}, filePath);
+        IFileInfo fileInfo =
+                new OpenBisModel.FileInfoContents("a", filePath, new byte[] {}, filePath);
 
         String path = DataPathHelper.getPath(fileInfo, sample);
         Assert.assertEquals("hierarchy/SPACE1/PROJECT1/Testentry (ENTRY1)/data/out.txt", path);
