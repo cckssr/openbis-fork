@@ -14,10 +14,7 @@ const styles = theme => ({
     marginRight: 0
   },
   endAdornment: {
-    marginLeft: 0,
-    '&.MuiInputAdornment-positionEnd:not(.MuiInputAdornment-hiddenLabel)': {
-      marginTop: 16
-    }
+    marginLeft: 0
   },
   textField: {
     margin: 0,
@@ -44,7 +41,6 @@ class TextFormField extends React.PureComponent {
     switch (dataType) {
       case FormFieldDataType.ARRAY_INTEGER:
       case FormFieldDataType.ARRAY_REAL:
-        return `[${array.join(', ')}]`
       case FormFieldDataType.ARRAY_STRING:
         return `${JSON.stringify(array)}`
       case FormFieldDataType.ARRAY_TIMESTAMP:
@@ -128,6 +124,18 @@ class TextFormField extends React.PureComponent {
       onBlur
     } = this.props
 
+    let finalValue;
+    if (globalThis.Array.isArray(value)) {
+      finalValue = JSON.stringify(value)
+      // if (dataType === FormFieldDataType.ARRAY_STRING || dataType === FormFieldDataType.ARRAY_TIMESTAMP) {
+      //   finalValue = JSON.stringify(value)
+      // } else {
+      //   finalValue = JSON.stringify(value)
+      // }
+    } else {
+      finalValue = value || '';
+    }
+
     return (
       <FormFieldContainer
         description={description}
@@ -149,7 +157,7 @@ class TextFormField extends React.PureComponent {
             />
           }
           name={name}
-          value={value || ''}
+          value={finalValue}
           error={!!error}
           disabled={disabled}
           multiline={multiline}

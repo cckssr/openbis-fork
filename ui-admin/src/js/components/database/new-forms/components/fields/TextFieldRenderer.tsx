@@ -9,10 +9,9 @@ export const TextFieldRenderer: React.FC<FieldRendererProps> = ({
   mode
 }) => {
   const isEditing = mode === FormMode.EDIT || mode === FormMode.CREATE
-  const isArrayField = (field.dataType === FormFieldDataType.ARRAY_TIMESTAMP ||
-          field.dataType === FormFieldDataType.ARRAY_STRING ||
-          field.dataType === FormFieldDataType.ARRAY_INTEGER ||
-          field.dataType === FormFieldDataType.ARRAY_REAL)
+  const value: string | string[] | number[] | null = field.value && field.value.map &&
+      (field.dataType === FormFieldDataType.ARRAY_INTEGER || field.dataType === FormFieldDataType.ARRAY_REAL)
+      ? field.value.map(Number) : field.value
 
   return (
     <TextField
@@ -21,9 +20,7 @@ export const TextFieldRenderer: React.FC<FieldRendererProps> = ({
       mode={isEditing && !field.readOnly ? FormMode.EDIT : FormMode.VIEW}
       disabled={isEditing && field.readOnly}
       dataType={field.dataType}
-      value={field.value}
-      startAdornment={isArrayField ? "[" : null}
-      endAdornment={isArrayField ? "]" : null}
+      value={value}
       onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
         onFieldChange(field.id, e.target.value)
       }

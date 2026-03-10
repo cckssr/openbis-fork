@@ -1,6 +1,6 @@
-import { FormField } from '@src/js/components/database/new-forms/types/formITypes.ts';
-import { FormFieldDataType, FormMode, FormSection, Widget } from '@src/js/components/database/new-forms/types/formEnums.ts';
-import { getFormatedDate } from '@src/js/components/database/new-forms/utils/dateUtil.ts';
+import {FormField} from '@src/js/components/database/new-forms/types/formITypes.ts';
+import {FormFieldDataType, FormSection, Widget} from '@src/js/components/database/new-forms/types/formEnums.ts';
+import {getFormatedDate} from '@src/js/components/database/new-forms/utils/dateUtil.ts';
 
 // Helper type for overrides
 export type FieldOverrides<T = any> = Partial<Omit<FormField<T>, 'value'>> & { value?: T };
@@ -444,6 +444,28 @@ export function setPropertyValue(
       // Fallback to generic setProperty for unknown types
       dto.setProperty?.(propertyCode, value);
       return;
+  }
+}
+
+function normalizeArrayPropertyValue(value: any, dataType: FormFieldDataType): any[] {
+  let parsedValue = value;
+
+  if (typeof parsedValue === 'string') {
+    const trimmedValue = parsedValue.trim();
+    parsedValue = trimmedValue === '' ? [] : JSON.parse(trimmedValue);
+  }
+
+  if (!Array.isArray(parsedValue)) {
+    throw new Error(`Property value for ${dataType} must be an array.`);
+  }
+
+  switch (dataType) {
+    case FormFieldDataType.ARRAY_INTEGER:
+      return parsedValue.map(item => Number.parseInt(item, 10));
+    case FormFieldDataType.ARRAY_REAL:
+      return parsedValue.map(item => Number(item));
+    default:
+      return parsedValue;
   }
 }
 
