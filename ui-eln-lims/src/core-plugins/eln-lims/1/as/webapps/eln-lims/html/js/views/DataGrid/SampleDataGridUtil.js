@@ -39,7 +39,7 @@ var SampleDataGridUtil = new function() {
 				return (isLinksDisabled)?data.code:FormUtil.getFormLink(data.code, "Sample", data.permId, paginationInfo, codeId);
 			},
 			filter : function(data, filter) {
-				return data.identifier.toLowerCase().indexOf(filter) !== -1;
+				return data.code.toLowerCase().indexOf(filter.toLowerCase()) !== -1;
 			},
 			sort : function(data1, data2, asc) {
 				var value1 = data1.identifier;
@@ -101,7 +101,7 @@ var SampleDataGridUtil = new function() {
                     return (isLinksDisabled)?data.code:FormUtil.getFormLink(data.permId, "Sample", data.permId, paginationInfo, codeId);
                 },
                 filter : function(data, filter) {
-                    return data.permId.toLowerCase().indexOf(filter) !== -1;
+                    return data.permId.toLowerCase().indexOf(filter.toLowerCase()) !== -1;
                 },
                 sort : function(data1, data2, asc) {
                     var value1 = data1.permId;
@@ -142,7 +142,7 @@ var SampleDataGridUtil = new function() {
 				return (isLinksDisabled)?data.identifier:FormUtil.getFormLink(data.identifier, "Sample", data.permId, paginationInfo);
 			},
 			filter : function(data, filter) {
-				return data.identifier.toLowerCase().indexOf(filter) !== -1;
+				return data.identifier.toLowerCase().indexOf(filter.toLowerCase()) !== -1;
 			},
 			sort : function(data1, data2, asc) {
 				var value1 = data1.identifier;
