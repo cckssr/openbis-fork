@@ -17,7 +17,9 @@ package ch.systemsx.cisd.openbis.generic.server;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.ITransactionCoordinatorApi;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.TransactionCoordinatorApi;
+import ch.ethz.sis.openbis.generic.server.sharedapi.v3.json.ObjectMapperResource;
 import ch.systemsx.cisd.common.spring.ExposablePropertyPlaceholderConfigurer;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.ApplicationContext;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.plugin.service.IImportService;
@@ -50,6 +52,11 @@ public class CommonServiceProvider
 
     private CommonServiceProvider()
     {
+    }
+
+    public static ObjectMapper getObjectMapper()
+    {
+        return ((ObjectMapper) applicationContext.getBean(ObjectMapperResource.NAME));
     }
 
     public static void setApplicationContext(ApplicationContext context)

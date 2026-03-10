@@ -28,10 +28,11 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.validators.PropertyValidator;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.hibernate.Session;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -335,7 +336,6 @@ public final class EntityPropertiesConverter implements IEntityPropertiesConvert
 
     private Serializable translateProperty(PropertyTypePE propertyType, Serializable value)
     {
-        final String regex = "(?<!\\\\)" + Pattern.quote(SEPARATOR);
         if (value == null || !value.getClass().equals(String.class))
         {
             if (propertyType.isMultiValue() && ARRAY_TYPES.contains(propertyType.getType().getCode()))
@@ -346,7 +346,7 @@ public final class EntityPropertiesConverter implements IEntityPropertiesConvert
                 {
                     if (element.getClass().equals(String.class))
                     {
-                        values.add(stripBracketsIfPresent((String) element).split(regex));
+                        values.add(readValue((String) element, String[].class));
                     } else
                     {
                         // value is properly serialized already, nothing to do here
@@ -370,7 +370,6 @@ public final class EntityPropertiesConverter implements IEntityPropertiesConvert
         if (propertyType.isMultiValue())
         {
             propertyValue = propertyValue.trim();
-            propertyValue = stripBracketsIfPresent(propertyValue);
             if (propertyValue.isEmpty())
             {
                 return null;
@@ -378,29 +377,16 @@ public final class EntityPropertiesConverter implements IEntityPropertiesConvert
             if (ARRAY_TYPES.contains(propertyType.getType().getCode()))
             {
                 // Multi-value array properties
-                String multiArrayRegex = "\\],\\s*\\[";
-                propertyValue = stripBracketsIfPresent(propertyValue);
-                return Arrays.stream(propertyValue.split(multiArrayRegex))
-                        .map(String::trim)
-                        .map(x -> Arrays.stream(x.split(regex))
-                                .map(String::trim)
-                                .toArray(String[]::new))
-                        .toArray(String[][]::new);
+                return readValue(propertyValue, String[][].class);
             } else
             {
-                return Arrays.stream(propertyValue.split(regex))
-                        .map(String::trim)
-                        .toArray(String[]::new);
+                return readValue(propertyValue, String[].class);
             }
         } else
         {
             if (ARRAY_TYPES.contains(propertyType.getType().getCode()))
             {
-                propertyValue = propertyValue.trim();
-                propertyValue = stripBracketsIfPresent(propertyValue);
-                return Arrays.stream(propertyValue.split(regex))
-                        .map(String::trim)
-                        .toArray(String[]::new);
+                return readValue(propertyValue, String[].class);
             } else
             {
                 return propertyValue;
@@ -408,13 +394,12 @@ public final class EntityPropertiesConverter implements IEntityPropertiesConvert
         }
     }
 
-    private String stripBracketsIfPresent(String value)
-    {
-        if (value.startsWith("["))
-        {
-            value = value.substring(1, value.length() - 1).trim();
+    private <T extends Serializable> Serializable readValue(String propertyValue, Class<T> valueType) {
+        try {
+            return CommonServiceProvider.getObjectMapper().readValue(propertyValue, valueType);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
         }
-        return value;
     }
 
     private Serializable getPropertyValue(final IEntityProperty property)
