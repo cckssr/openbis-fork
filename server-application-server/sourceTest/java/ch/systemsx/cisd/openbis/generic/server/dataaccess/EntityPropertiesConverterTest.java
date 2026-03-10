@@ -15,24 +15,34 @@
  */
 package ch.systemsx.cisd.openbis.generic.server.dataaccess;
 
+import java.lang.reflect.Method;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.jmock.Expectations;
+import org.springframework.context.ApplicationContext;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import ch.ethz.sis.openbis.generic.server.sharedapi.v3.json.ObjectMapperResource;
 import ch.rinn.restrictions.Friend;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.common.test.RecordingMatcher;
+import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider;
 import ch.systemsx.cisd.openbis.generic.server.business.ManagerTestTool;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.AbstractBOTest;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.CollectionMatcher;
+import ch.systemsx.cisd.openbis.generic.server.dataaccess.validators.PropertyValidator;
 import ch.systemsx.cisd.openbis.generic.shared.basic.BasicConstant;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataTypeCode;
@@ -73,6 +83,8 @@ public final class EntityPropertiesConverterTest extends AbstractBOTest
 
     private IPropertyPlaceholderCreator placeholderCreator;
 
+    private ApplicationContext applicationContext;
+
     @Override
     @BeforeMethod
     public final void beforeMethod()
@@ -80,7 +92,21 @@ public final class EntityPropertiesConverterTest extends AbstractBOTest
         super.beforeMethod();
         propertyValueValidator = context.mock(IPropertyValueValidator.class);
         placeholderCreator = context.mock(IPropertyPlaceholderCreator.class);
+        applicationContext = context.mock(ApplicationContext.class);
+        CommonServiceProvider.setApplicationContext(applicationContext);
+    }
 
+    @Override
+    @AfterMethod
+    public void afterMethod(Method m)
+    {
+        try
+        {
+            super.afterMethod(m);
+        } finally
+        {
+            CommonServiceProvider.setApplicationContext(null);
+        }
     }
 
     private final IEntityPropertiesConverter createEntityPropertiesConverter(
@@ -353,6 +379,102 @@ public final class EntityPropertiesConverterTest extends AbstractBOTest
         context.assertIsSatisfied();
     }
 
+    @Test
+    public void testConvertArrayProperties() throws Exception
+    {
+        final IEntityPropertiesConverter entityPropertiesConverter =
+                new EntityPropertiesConverter(EntityKind.SAMPLE, daoFactory,
+                        new PropertyValidator(), placeholderCreator, null,
+                        managedPropertyEvaluatorFactory);
+
+        final SampleTypePE sampleType = createSampleType(SAMPLE_TYPE_CODE);
+        final PropertyTypePE stringArrayPropertyType =
+                createPropertyType("STRING_ARRAY", DataTypeCode.ARRAY_STRING);
+        final PropertyTypePE integerArrayPropertyType =
+                createPropertyType("INTEGER_ARRAY", DataTypeCode.ARRAY_INTEGER);
+        final PropertyTypePE realArrayPropertyType =
+                createPropertyType("REAL_ARRAY", DataTypeCode.ARRAY_REAL);
+        final PropertyTypePE timestampArrayPropertyType =
+                createPropertyType("TIMESTAMP_ARRAY", DataTypeCode.ARRAY_TIMESTAMP);
+
+        final IEntityProperty[] properties = new IEntityProperty[]
+        {
+                createSampleProperty("STRING_ARRAY", DataTypeCode.ARRAY_STRING,
+                        "[\"alpha\", \"beta\"]"),
+                createSampleProperty("INTEGER_ARRAY", DataTypeCode.ARRAY_INTEGER,
+                        "[\"1\", \"2\", \"3\"]"),
+                createSampleProperty("REAL_ARRAY", DataTypeCode.ARRAY_REAL,
+                        "[\"1.5\", \"2.5\"]"),
+                createSampleProperty("TIMESTAMP_ARRAY", DataTypeCode.ARRAY_TIMESTAMP,
+                        "[\"2026-01-30 10:18:30\", \"2026-01-31 11:19:31\"]")
+        };
+
+        final RecordingMatcher<Set<IEntityProperty>> definedPropertiesMatcher =
+                RecordingMatcher.create();
+        context.checking(new Expectations()
+            {
+                {
+                    allowing(daoFactory).getEntityPropertyTypeDAO(EntityKind.SAMPLE);
+                    will(returnValue(entityPropertyTypeDAO));
+
+                    allowing(daoFactory).getEntityTypeDAO(EntityKind.SAMPLE);
+                    will(returnValue(entityTypeDAO));
+
+                    allowing(daoFactory).getPropertyTypeDAO();
+                    will(returnValue(propertyTypeDAO));
+
+                    allowing(applicationContext).getBean(ObjectMapperResource.NAME);
+                    will(returnValue(new ObjectMapper()));
+
+                    atLeast(1).of(entityTypeDAO).listEntityTypes();
+                    will(returnValue(Collections.singletonList(sampleType)));
+
+                    allowing(entityPropertyTypeDAO).listEntityPropertyTypes(sampleType);
+                    will(returnValue(Arrays.asList(
+                            createETPT(stringArrayPropertyType, sampleType),
+                            createETPT(integerArrayPropertyType, sampleType),
+                            createETPT(realArrayPropertyType, sampleType),
+                            createETPT(timestampArrayPropertyType, sampleType))));
+
+                    one(propertyTypeDAO).tryFindPropertyTypeByCode("STRING_ARRAY");
+                    will(returnValue(stringArrayPropertyType));
+                    one(propertyTypeDAO).tryFindPropertyTypeByCode("INTEGER_ARRAY");
+                    will(returnValue(integerArrayPropertyType));
+                    one(propertyTypeDAO).tryFindPropertyTypeByCode("REAL_ARRAY");
+                    will(returnValue(realArrayPropertyType));
+                    one(propertyTypeDAO).tryFindPropertyTypeByCode("TIMESTAMP_ARRAY");
+                    will(returnValue(timestampArrayPropertyType));
+
+                    CollectionMatcher<Set<String>> dynamicPropertiesMatcher =
+                            new CollectionMatcher<Set<String>>(new HashSet<String>(
+                                    new ArrayList<String>()));
+                    one(placeholderCreator).addDynamicPropertiesPlaceholders(
+                            with(definedPropertiesMatcher), with(dynamicPropertiesMatcher));
+                    one(placeholderCreator).addManagedPropertiesPlaceholders(
+                            with(definedPropertiesMatcher), with(dynamicPropertiesMatcher));
+                }
+            });
+
+        final List<EntityPropertyPE> convertedProperties =
+                entityPropertiesConverter.convertProperties(properties, SAMPLE_TYPE_CODE,
+                        ManagerTestTool.EXAMPLE_PERSON);
+
+        assertEquals(4, convertedProperties.size());
+        assertArrayEquals(convertedProperties.get(0).getStringArrayValue(),
+                new String[] { "alpha", "beta" });
+        assertArrayEquals(convertedProperties.get(1).getIntegerArrayValue(),
+                new Long[] { 1L, 2L, 3L });
+        assertArrayEquals(convertedProperties.get(2).getRealArrayValue(),
+                new Double[] { 1.5, 2.5 });
+        assertArrayEquals(convertedProperties.get(3).getTimestampArrayValue(),
+                new Date[]
+                {
+                        parseTimestamp("2026-01-30 10:18:30"),
+                        parseTimestamp("2026-01-31 11:19:31")
+                });
+        context.assertIsSatisfied();
+    }
+
     // @Test
     public void testUpdateProperties()
     {
@@ -471,6 +593,46 @@ public final class EntityPropertiesConverterTest extends AbstractBOTest
         type.setCode(DataTypeCode.VARCHAR);
         propertyTypePE.setType(type);
         return propertyTypePE;
+    }
+
+    private PropertyTypePE createPropertyType(String code, DataTypeCode dataTypeCode)
+    {
+        final PropertyTypePE propertyTypePE = new PropertyTypePE();
+        propertyTypePE.setCode(code);
+        final DataTypePE type = new DataTypePE();
+        type.setCode(dataTypeCode);
+        propertyTypePE.setType(type);
+        return propertyTypePE;
+    }
+
+    private IEntityProperty createSampleProperty(String code, DataTypeCode dataTypeCode,
+            String value)
+    {
+        final IEntityProperty sampleProperty = new EntityProperty();
+        sampleProperty.setValue(value);
+        final PropertyType propertyType = new PropertyType();
+        propertyType.setLabel(code);
+        propertyType.setCode(code);
+        final DataType dataType = new DataType();
+        dataType.setCode(dataTypeCode);
+        propertyType.setDataType(dataType);
+        sampleProperty.setPropertyType(propertyType);
+        return sampleProperty;
+    }
+
+    private SampleTypePropertyTypePE createETPT(PropertyTypePE propertyType,
+            final SampleTypePE sampleType)
+    {
+        final SampleTypePropertyTypePE sampleTypePropertyTypePE = new SampleTypePropertyTypePE();
+        sampleTypePropertyTypePE.setEntityType(sampleType);
+        sampleTypePropertyTypePE.setPropertyType(propertyType);
+        sampleTypePropertyTypePE.setMandatory(false);
+        return sampleTypePropertyTypePE;
+    }
+
+    private Date parseTimestamp(String value) throws Exception
+    {
+        return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(value);
     }
 
     @Test
