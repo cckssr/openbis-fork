@@ -129,11 +129,15 @@ function ResearchCollectionExportController(parentController) {
                 mainController.serverFacade.exportRcAs(toExportModel, submissionUrl, submissionType, retentionPeriod, userInformation,
                     function(serviceResult) {
                         Util.unblockUI();
-                        var rcResultUrl = serviceResult.result.url;
-                        if(rcResultUrl) {
-                            var win = window.open(rcResultUrl, '_blank');
-                            win.focus();
-                            mainController.refreshView();
+                        if(serviceResult.result.error) {
+                            Util.showError(serviceResult.result);
+                        } else {
+                            var rcResultUrl = serviceResult.result.url;
+                            if(rcResultUrl) {
+                                var win = window.open(rcResultUrl, '_blank');
+                                win.focus();
+                                mainController.refreshView();
+                            }
                         }
                     });
             }).bind(this));

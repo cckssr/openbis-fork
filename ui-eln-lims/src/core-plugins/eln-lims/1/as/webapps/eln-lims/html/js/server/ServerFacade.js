@@ -520,9 +520,23 @@ function ServerFacade(openbisServer) {
 
     this.getRoCrateUrl = function(callbackFunction) {
         this.customASService({
-                 "method" : "getRoCrateUrl"
+             "method" : "getRoCrateUrl"
         }, callbackFunction, "exports-api", null);
     };
+
+    this.exportSciCat = function(exportData, callbackFunction) {
+        this.customASService({
+             "method" : "exportSciCat",
+             "exportData" : exportData,
+         }, callbackFunction, "exports-api", null);
+    };
+
+    this.collectIdsForSciCatExport = function(nodeExportList, callbackFunction) {
+        this.customASService({
+             "nodeExportList" : exportData,
+         }, callbackFunction, "entity-collector-extended", null);
+    };
+
 
 	//
 	// Research collection export
@@ -542,7 +556,7 @@ function ServerFacade(openbisServer) {
                          "originUrl": window.location.origin,
                          "pathNameUrl": window.location.pathname,
                          "sessionToken": this.openbisServer.getSession(),
-                     }, callbackFunction, "rc-exports-api", null, true);
+                     }, callbackFunction, "exports-api", null, true);
     };
 
 	this.exportRc = function(entities, submissionUrl, submissionType, retentionPeriod, userInformation, callbackFunction) {

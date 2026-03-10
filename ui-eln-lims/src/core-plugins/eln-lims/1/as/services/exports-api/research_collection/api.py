@@ -27,7 +27,6 @@ from java.nio.file import Paths
 from java.text import SimpleDateFormat
 from java.util import UUID
 from java.util.zip import ZipOutputStream, Deflater
-from ch.ethz.sis.shared.log.classic.impl import Logger
 
 from org.eclipse.jetty.client import HttpClient
 from org.eclipse.jetty.client import HttpProxy
@@ -65,17 +64,15 @@ from util import addToZipFile, checkResponseStatus, cleanUp, getDownloadUrlFromA
 OPERATION_LOG = LogFactory.getLogger(LogCategory.OPERATION, LogFactory)
 
 
-def process(executionContext, params):
-    method = params.get('method')
-
-    if method == 'exportResearchCollection':
-        resultUrl = exportResearchCollection(executionContext, params)
-        result = {
-            "url": resultUrl,
-        }
-        return result
-
 def exportResearchCollection(context, params):
+    resultUrl = sendToResearchCollection(context, params)
+
+    result = {
+        "url": resultUrl,
+    }
+    return result
+
+def sendToResearchCollection(context, params):
     if params.get('retentionPeriod') == 'indefinite': # ?? and containsArchives(entitiesToExport) :
         return None
 

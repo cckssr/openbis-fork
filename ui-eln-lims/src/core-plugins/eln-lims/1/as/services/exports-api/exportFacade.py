@@ -28,6 +28,7 @@ from general.api import exportAll
 from ro_crate.api import exportRoCrate, checkStatues, getRoCrateUrl
 from sci_cat.api import exportSciCat
 from zenodo.api import exportZenodo
+from research_collection.api import exportResearchCollection
 
 
 
@@ -54,6 +55,9 @@ def process(context, params):
 
     elif method == "exportZenodo":
         return exportZenodo(context, params)
+
+    elif method == "exportResearchCollection":
+        return exportResearchCollection(context, params)
     else:
         OPERATION_LOG.error("No such method '%s'" % method)
         return {
