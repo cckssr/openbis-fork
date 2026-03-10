@@ -54,13 +54,17 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ScriptType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.builders.PropertyBuilder;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EntityPropertyPE;
+import ch.systemsx.cisd.openbis.generic.shared.dto.EntityPropertyWithSampleDataTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePropertyTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PropertyTypePE;
+import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePropertyPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SampleTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SampleTypePropertyTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ScriptPE;
+import ch.systemsx.cisd.openbis.generic.shared.dto.VocabularyPE;
+import ch.systemsx.cisd.openbis.generic.shared.dto.VocabularyTermPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.builders.SamplePEBuilder;
 import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
 
@@ -475,6 +479,171 @@ public final class EntityPropertiesConverterTest extends AbstractBOTest
         context.assertIsSatisfied();
     }
 
+    @Test
+    public void testConvertMultiValueProperties() throws Exception
+    {
+        final IEntityPropertiesConverter entityPropertiesConverter =
+                new EntityPropertiesConverter(EntityKind.SAMPLE, daoFactory,
+                        new PropertyValidator(), placeholderCreator, null,
+                        managedPropertyEvaluatorFactory);
+
+        final SampleTypePE sampleType = createSampleType(SAMPLE_TYPE_CODE);
+        final PropertyTypePE varcharPropertyType =
+                createPropertyType("MV_VARCHAR", DataTypeCode.VARCHAR, true);
+        final PropertyTypePE multilinePropertyType =
+                createPropertyType("MV_MULTILINE", DataTypeCode.MULTILINE_VARCHAR, true);
+        final PropertyTypePE integerPropertyType =
+                createPropertyType("MV_INTEGER", DataTypeCode.INTEGER, true);
+        final PropertyTypePE realPropertyType =
+                createPropertyType("MV_REAL", DataTypeCode.REAL, true);
+        final PropertyTypePE timestampPropertyType =
+                createPropertyType("MV_TIMESTAMP", DataTypeCode.TIMESTAMP, true);
+        final PropertyTypePE booleanPropertyType =
+                createPropertyType("MV_BOOLEAN", DataTypeCode.BOOLEAN, true);
+        final PropertyTypePE hyperlinkPropertyType =
+                createPropertyType("MV_HYPERLINK", DataTypeCode.HYPERLINK, true);
+        final PropertyTypePE datePropertyType =
+                createPropertyType("MV_DATE", DataTypeCode.DATE, true);
+        final PropertyTypePE xmlPropertyType =
+                createPropertyType("MV_XML", DataTypeCode.XML, true);
+        final PropertyTypePE jsonPropertyType =
+                createPropertyType("MV_JSON", DataTypeCode.JSON, true);
+        final PropertyTypePE vocabularyPropertyType =
+                createPropertyType("MV_VOCABULARY", DataTypeCode.CONTROLLEDVOCABULARY, true);
+        vocabularyPropertyType.setVocabulary(createVocabulary("TEST_VOCAB", "DOG", "HUMAN"));
+        final PropertyTypePE samplePropertyType =
+                createPropertyType("MV_SAMPLE", DataTypeCode.SAMPLE, true);
+
+        final SamplePE sample1 = createSample("200811050919915-1");
+        final SamplePE sample2 = createSample("200811050919915-2");
+
+        final IEntityProperty[] properties = new IEntityProperty[]
+        {
+                createSampleProperty("MV_VARCHAR", DataTypeCode.VARCHAR,
+                        toJsonArray("alpha", "beta")),
+                createSampleProperty("MV_MULTILINE", DataTypeCode.MULTILINE_VARCHAR,
+                        toJsonArray("line1\nline2", "line3\nline4")),
+                createSampleProperty("MV_INTEGER", DataTypeCode.INTEGER,
+                        toJsonArray("001", "2")),
+                createSampleProperty("MV_REAL", DataTypeCode.REAL,
+                        toJsonArray("1.50", "2.0")),
+                createSampleProperty("MV_TIMESTAMP", DataTypeCode.TIMESTAMP,
+                        toJsonArray("2026-01-30 10:18:30", "2026-01-31 11:19:31")),
+                createSampleProperty("MV_BOOLEAN", DataTypeCode.BOOLEAN,
+                        toJsonArray("TRUE", "false")),
+                createSampleProperty("MV_HYPERLINK", DataTypeCode.HYPERLINK,
+                        toJsonArray("https://openbis.ch", "https://ethz.ch")),
+                createSampleProperty("MV_DATE", DataTypeCode.DATE,
+                        toJsonArray("2026-01-30", "2026-01-31")),
+                createSampleProperty("MV_XML", DataTypeCode.XML,
+                        toJsonArray("<value>one</value>", "<value>two</value>")),
+                createSampleProperty("MV_JSON", DataTypeCode.JSON,
+                        toJsonArray("{\"key\":\"value1\"}", "{\"key\":\"value2\"}")),
+                createSampleProperty("MV_VOCABULARY", DataTypeCode.CONTROLLEDVOCABULARY,
+                        toJsonArray("dog", "human")),
+                createSampleProperty("MV_SAMPLE", DataTypeCode.SAMPLE,
+                        toJsonArray(sample1.getPermId(), sample2.getPermId()))
+        };
+
+        final RecordingMatcher<Set<IEntityProperty>> definedPropertiesMatcher =
+                RecordingMatcher.create();
+        context.checking(new Expectations()
+            {
+                {
+                    allowing(daoFactory).getEntityPropertyTypeDAO(EntityKind.SAMPLE);
+                    will(returnValue(entityPropertyTypeDAO));
+
+                    allowing(daoFactory).getEntityTypeDAO(EntityKind.SAMPLE);
+                    will(returnValue(entityTypeDAO));
+
+                    allowing(daoFactory).getPropertyTypeDAO();
+                    will(returnValue(propertyTypeDAO));
+
+                    allowing(applicationContext).getBean(ObjectMapperResource.NAME);
+                    will(returnValue(new ObjectMapper()));
+
+                    atLeast(1).of(entityTypeDAO).listEntityTypes();
+                    will(returnValue(Collections.singletonList(sampleType)));
+
+                    allowing(entityPropertyTypeDAO).listEntityPropertyTypes(sampleType);
+                    will(returnValue(Arrays.asList(
+                            createETPT(varcharPropertyType, sampleType),
+                            createETPT(multilinePropertyType, sampleType),
+                            createETPT(integerPropertyType, sampleType),
+                            createETPT(realPropertyType, sampleType),
+                            createETPT(timestampPropertyType, sampleType),
+                            createETPT(booleanPropertyType, sampleType),
+                            createETPT(hyperlinkPropertyType, sampleType),
+                            createETPT(datePropertyType, sampleType),
+                            createETPT(xmlPropertyType, sampleType),
+                            createETPT(jsonPropertyType, sampleType),
+                            createETPT(vocabularyPropertyType, sampleType),
+                            createETPT(samplePropertyType, sampleType))));
+
+                    one(propertyTypeDAO).tryFindPropertyTypeByCode("MV_VARCHAR");
+                    will(returnValue(varcharPropertyType));
+                    one(propertyTypeDAO).tryFindPropertyTypeByCode("MV_MULTILINE");
+                    will(returnValue(multilinePropertyType));
+                    one(propertyTypeDAO).tryFindPropertyTypeByCode("MV_INTEGER");
+                    will(returnValue(integerPropertyType));
+                    one(propertyTypeDAO).tryFindPropertyTypeByCode("MV_REAL");
+                    will(returnValue(realPropertyType));
+                    one(propertyTypeDAO).tryFindPropertyTypeByCode("MV_TIMESTAMP");
+                    will(returnValue(timestampPropertyType));
+                    one(propertyTypeDAO).tryFindPropertyTypeByCode("MV_BOOLEAN");
+                    will(returnValue(booleanPropertyType));
+                    one(propertyTypeDAO).tryFindPropertyTypeByCode("MV_HYPERLINK");
+                    will(returnValue(hyperlinkPropertyType));
+                    one(propertyTypeDAO).tryFindPropertyTypeByCode("MV_DATE");
+                    will(returnValue(datePropertyType));
+                    one(propertyTypeDAO).tryFindPropertyTypeByCode("MV_XML");
+                    will(returnValue(xmlPropertyType));
+                    one(propertyTypeDAO).tryFindPropertyTypeByCode("MV_JSON");
+                    will(returnValue(jsonPropertyType));
+                    one(propertyTypeDAO).tryFindPropertyTypeByCode("MV_VOCABULARY");
+                    will(returnValue(vocabularyPropertyType));
+                    one(propertyTypeDAO).tryFindPropertyTypeByCode("MV_SAMPLE");
+                    will(returnValue(samplePropertyType));
+
+                    one(sampleDAO).listByPermID(Collections.singleton(sample1.getPermId()));
+                    will(returnValue(Collections.singletonList(sample1)));
+                    one(sampleDAO).listByPermID(Collections.singleton(sample2.getPermId()));
+                    will(returnValue(Collections.singletonList(sample2)));
+
+                    CollectionMatcher<Set<String>> dynamicPropertiesMatcher =
+                            new CollectionMatcher<Set<String>>(new HashSet<String>(
+                                    new ArrayList<String>()));
+                    one(placeholderCreator).addDynamicPropertiesPlaceholders(
+                            with(definedPropertiesMatcher), with(dynamicPropertiesMatcher));
+                    one(placeholderCreator).addManagedPropertiesPlaceholders(
+                            with(definedPropertiesMatcher), with(dynamicPropertiesMatcher));
+                }
+            });
+
+        final List<EntityPropertyPE> convertedProperties =
+                entityPropertiesConverter.convertProperties(properties, SAMPLE_TYPE_CODE,
+                        ManagerTestTool.EXAMPLE_PERSON);
+
+        assertEquals(24, convertedProperties.size());
+        assertPropertyValues(convertedProperties, "MV_VARCHAR", "alpha", "beta");
+        assertPropertyValues(convertedProperties, "MV_MULTILINE", "line1\nline2", "line3\nline4");
+        assertPropertyValues(convertedProperties, "MV_INTEGER", "1", "2");
+        assertPropertyValues(convertedProperties, "MV_REAL", "1.5", "2.0");
+        assertPropertyValues(convertedProperties, "MV_TIMESTAMP", "2026-01-30 10:18:30 +0100",
+                "2026-01-31 11:19:31 +0100");
+        assertPropertyValues(convertedProperties, "MV_BOOLEAN", "true", "false");
+        assertPropertyValues(convertedProperties, "MV_HYPERLINK", "https://openbis.ch",
+                "https://ethz.ch");
+        assertPropertyValues(convertedProperties, "MV_DATE", "2026-01-30", "2026-01-31");
+        assertPropertyValues(convertedProperties, "MV_XML", "<value>one</value>",
+                "<value>two</value>");
+        assertPropertyValues(convertedProperties, "MV_JSON", "{\"key\":\"value1\"}",
+                "{\"key\":\"value2\"}");
+        assertVocabularyPropertyValues(convertedProperties, "MV_VOCABULARY", "DOG", "HUMAN");
+        assertSamplePropertyValues(convertedProperties, "MV_SAMPLE", sample1, sample2);
+        context.assertIsSatisfied();
+    }
+
     // @Test
     public void testUpdateProperties()
     {
@@ -605,6 +774,14 @@ public final class EntityPropertiesConverterTest extends AbstractBOTest
         return propertyTypePE;
     }
 
+    private PropertyTypePE createPropertyType(String code, DataTypeCode dataTypeCode,
+            boolean multiValue)
+    {
+        final PropertyTypePE propertyTypePE = createPropertyType(code, dataTypeCode);
+        propertyTypePE.setMultiValue(multiValue);
+        return propertyTypePE;
+    }
+
     private IEntityProperty createSampleProperty(String code, DataTypeCode dataTypeCode,
             String value)
     {
@@ -633,6 +810,81 @@ public final class EntityPropertiesConverterTest extends AbstractBOTest
     private Date parseTimestamp(String value) throws Exception
     {
         return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(value);
+    }
+
+    private String toJsonArray(String... values) throws Exception
+    {
+        return new ObjectMapper().writeValueAsString(values);
+    }
+
+    private VocabularyPE createVocabulary(String code, String... termCodes)
+    {
+        final VocabularyPE vocabulary = new VocabularyPE();
+        vocabulary.setCode(code);
+        vocabulary.setChosenFromList(true);
+        for (int i = 0; i < termCodes.length; i++)
+        {
+            final VocabularyTermPE term = new VocabularyTermPE();
+            term.setCode(termCodes[i]);
+            term.setOrdinal((long) i);
+            vocabulary.addTerm(term);
+        }
+        return vocabulary;
+    }
+
+    private SamplePE createSample(String permId)
+    {
+        final SamplePE sample = new SamplePE();
+        sample.setPermId(permId);
+        return sample;
+    }
+
+    private void assertPropertyValues(List<EntityPropertyPE> properties, String code,
+            String... expectedValues)
+    {
+        final List<EntityPropertyPE> matchingProperties = findPropertiesByCode(properties, code);
+        assertEquals(expectedValues.length, matchingProperties.size());
+        for (int i = 0; i < expectedValues.length; i++)
+        {
+            assertEquals(expectedValues[i], matchingProperties.get(i).tryGetUntypedValue());
+        }
+    }
+
+    private void assertVocabularyPropertyValues(List<EntityPropertyPE> properties, String code,
+            String... expectedValues)
+    {
+        final List<EntityPropertyPE> matchingProperties = findPropertiesByCode(properties, code);
+        assertEquals(expectedValues.length, matchingProperties.size());
+        for (int i = 0; i < expectedValues.length; i++)
+        {
+            assertEquals(expectedValues[i], matchingProperties.get(i).getVocabularyTerm().getCode());
+        }
+    }
+
+    private void assertSamplePropertyValues(List<EntityPropertyPE> properties, String code,
+            SamplePE... expectedValues)
+    {
+        final List<EntityPropertyPE> matchingProperties = findPropertiesByCode(properties, code);
+        assertEquals(expectedValues.length, matchingProperties.size());
+        for (int i = 0; i < expectedValues.length; i++)
+        {
+            assertSame(expectedValues[i], ((EntityPropertyWithSampleDataTypePE) matchingProperties.get(i))
+                    .getSampleValue());
+        }
+    }
+
+    private List<EntityPropertyPE> findPropertiesByCode(List<EntityPropertyPE> properties,
+            String code)
+    {
+        final List<EntityPropertyPE> matchingProperties = new ArrayList<EntityPropertyPE>();
+        for (EntityPropertyPE property : properties)
+        {
+            if (code.equals(property.getEntityTypePropertyType().getPropertyType().getCode()))
+            {
+                matchingProperties.add(property);
+            }
+        }
+        return matchingProperties;
     }
 
     @Test
