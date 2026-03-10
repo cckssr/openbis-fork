@@ -644,6 +644,106 @@ public final class EntityPropertiesConverterTest extends AbstractBOTest
         context.assertIsSatisfied();
     }
 
+    @Test
+    public void testConvertMultiValueArrayProperties() throws Exception
+    {
+        final IEntityPropertiesConverter entityPropertiesConverter =
+                new EntityPropertiesConverter(EntityKind.SAMPLE, daoFactory,
+                        new PropertyValidator(), placeholderCreator, null,
+                        managedPropertyEvaluatorFactory);
+
+        final SampleTypePE sampleType = createSampleType(SAMPLE_TYPE_CODE);
+        final PropertyTypePE stringArrayPropertyType =
+                createPropertyType("MV_ARRAY_STRING", DataTypeCode.ARRAY_STRING, true);
+        final PropertyTypePE integerArrayPropertyType =
+                createPropertyType("MV_ARRAY_INTEGER", DataTypeCode.ARRAY_INTEGER, true);
+        final PropertyTypePE realArrayPropertyType =
+                createPropertyType("MV_ARRAY_REAL", DataTypeCode.ARRAY_REAL, true);
+        final PropertyTypePE timestampArrayPropertyType =
+                createPropertyType("MV_ARRAY_TIMESTAMP", DataTypeCode.ARRAY_TIMESTAMP, true);
+
+        final IEntityProperty[] properties = new IEntityProperty[]
+        {
+                createSampleProperty("MV_ARRAY_STRING", DataTypeCode.ARRAY_STRING,
+                        toJsonArrayMatrix(new String[] { "alpha", "beta" },
+                                new String[] { "gamma", "delta" })),
+                createSampleProperty("MV_ARRAY_INTEGER", DataTypeCode.ARRAY_INTEGER,
+                        toJsonArrayMatrix(new String[] { "1", "2" },
+                                new String[] { "3", "4" })),
+                createSampleProperty("MV_ARRAY_REAL", DataTypeCode.ARRAY_REAL,
+                        toJsonArrayMatrix(new String[] { "1.5", "2.5" },
+                                new String[] { "3.5", "4.5" })),
+                createSampleProperty("MV_ARRAY_TIMESTAMP", DataTypeCode.ARRAY_TIMESTAMP,
+                        toJsonArrayMatrix(
+                                new String[] { "2026-01-30 10:18:30", "2026-01-31 11:19:31" },
+                                new String[] { "2026-02-01 12:20:32", "2026-02-02 13:21:33" }))
+        };
+
+        final RecordingMatcher<Set<IEntityProperty>> definedPropertiesMatcher =
+                RecordingMatcher.create();
+        context.checking(new Expectations()
+            {
+                {
+                    allowing(daoFactory).getEntityPropertyTypeDAO(EntityKind.SAMPLE);
+                    will(returnValue(entityPropertyTypeDAO));
+
+                    allowing(daoFactory).getEntityTypeDAO(EntityKind.SAMPLE);
+                    will(returnValue(entityTypeDAO));
+
+                    allowing(daoFactory).getPropertyTypeDAO();
+                    will(returnValue(propertyTypeDAO));
+
+                    allowing(applicationContext).getBean(ObjectMapperResource.NAME);
+                    will(returnValue(new ObjectMapper()));
+
+                    atLeast(1).of(entityTypeDAO).listEntityTypes();
+                    will(returnValue(Collections.singletonList(sampleType)));
+
+                    allowing(entityPropertyTypeDAO).listEntityPropertyTypes(sampleType);
+                    will(returnValue(Arrays.asList(
+                            createETPT(stringArrayPropertyType, sampleType),
+                            createETPT(integerArrayPropertyType, sampleType),
+                            createETPT(realArrayPropertyType, sampleType),
+                            createETPT(timestampArrayPropertyType, sampleType))));
+
+                    one(propertyTypeDAO).tryFindPropertyTypeByCode("MV_ARRAY_STRING");
+                    will(returnValue(stringArrayPropertyType));
+                    one(propertyTypeDAO).tryFindPropertyTypeByCode("MV_ARRAY_INTEGER");
+                    will(returnValue(integerArrayPropertyType));
+                    one(propertyTypeDAO).tryFindPropertyTypeByCode("MV_ARRAY_REAL");
+                    will(returnValue(realArrayPropertyType));
+                    one(propertyTypeDAO).tryFindPropertyTypeByCode("MV_ARRAY_TIMESTAMP");
+                    will(returnValue(timestampArrayPropertyType));
+
+                    CollectionMatcher<Set<String>> dynamicPropertiesMatcher =
+                            new CollectionMatcher<Set<String>>(new HashSet<String>(
+                                    new ArrayList<String>()));
+                    one(placeholderCreator).addDynamicPropertiesPlaceholders(
+                            with(definedPropertiesMatcher), with(dynamicPropertiesMatcher));
+                    one(placeholderCreator).addManagedPropertiesPlaceholders(
+                            with(definedPropertiesMatcher), with(dynamicPropertiesMatcher));
+                }
+            });
+
+        final List<EntityPropertyPE> convertedProperties =
+                entityPropertiesConverter.convertProperties(properties, SAMPLE_TYPE_CODE,
+                        ManagerTestTool.EXAMPLE_PERSON);
+
+        assertEquals(8, convertedProperties.size());
+        assertStringArrayPropertyValues(convertedProperties, "MV_ARRAY_STRING",
+                new String[] { "alpha", "beta" }, new String[] { "gamma", "delta" });
+        assertIntegerArrayPropertyValues(convertedProperties, "MV_ARRAY_INTEGER",
+                new Long[] { 1L, 2L }, new Long[] { 3L, 4L });
+        assertRealArrayPropertyValues(convertedProperties, "MV_ARRAY_REAL",
+                new Double[] { 1.5, 2.5 }, new Double[] { 3.5, 4.5 });
+        assertTimestampArrayPropertyValues(convertedProperties, "MV_ARRAY_TIMESTAMP",
+                new Date[] { parseTimestamp("2026-01-30 10:18:30"),
+                        parseTimestamp("2026-01-31 11:19:31") },
+                new Date[] { parseTimestamp("2026-02-01 12:20:32"),
+                        parseTimestamp("2026-02-02 13:21:33") });
+        context.assertIsSatisfied();
+    }
+
     // @Test
     public void testUpdateProperties()
     {
@@ -817,6 +917,11 @@ public final class EntityPropertiesConverterTest extends AbstractBOTest
         return new ObjectMapper().writeValueAsString(values);
     }
 
+    private String toJsonArrayMatrix(String[]... values) throws Exception
+    {
+        return new ObjectMapper().writeValueAsString(values);
+    }
+
     private VocabularyPE createVocabulary(String code, String... termCodes)
     {
         final VocabularyPE vocabulary = new VocabularyPE();
@@ -870,6 +975,50 @@ public final class EntityPropertiesConverterTest extends AbstractBOTest
         {
             assertSame(expectedValues[i], ((EntityPropertyWithSampleDataTypePE) matchingProperties.get(i))
                     .getSampleValue());
+        }
+    }
+
+    private void assertStringArrayPropertyValues(List<EntityPropertyPE> properties, String code,
+            String[]... expectedValues)
+    {
+        final List<EntityPropertyPE> matchingProperties = findPropertiesByCode(properties, code);
+        assertEquals(expectedValues.length, matchingProperties.size());
+        for (int i = 0; i < expectedValues.length; i++)
+        {
+            assertArrayEquals(expectedValues[i], matchingProperties.get(i).getStringArrayValue());
+        }
+    }
+
+    private void assertIntegerArrayPropertyValues(List<EntityPropertyPE> properties, String code,
+            Long[]... expectedValues)
+    {
+        final List<EntityPropertyPE> matchingProperties = findPropertiesByCode(properties, code);
+        assertEquals(expectedValues.length, matchingProperties.size());
+        for (int i = 0; i < expectedValues.length; i++)
+        {
+            assertArrayEquals(expectedValues[i], matchingProperties.get(i).getIntegerArrayValue());
+        }
+    }
+
+    private void assertRealArrayPropertyValues(List<EntityPropertyPE> properties, String code,
+            Double[]... expectedValues)
+    {
+        final List<EntityPropertyPE> matchingProperties = findPropertiesByCode(properties, code);
+        assertEquals(expectedValues.length, matchingProperties.size());
+        for (int i = 0; i < expectedValues.length; i++)
+        {
+            assertArrayEquals(expectedValues[i], matchingProperties.get(i).getRealArrayValue());
+        }
+    }
+
+    private void assertTimestampArrayPropertyValues(List<EntityPropertyPE> properties, String code,
+            Date[]... expectedValues)
+    {
+        final List<EntityPropertyPE> matchingProperties = findPropertiesByCode(properties, code);
+        assertEquals(expectedValues.length, matchingProperties.size());
+        for (int i = 0; i < expectedValues.length; i++)
+        {
+            assertArrayEquals(expectedValues[i], matchingProperties.get(i).getTimestampArrayValue());
         }
     }
 
