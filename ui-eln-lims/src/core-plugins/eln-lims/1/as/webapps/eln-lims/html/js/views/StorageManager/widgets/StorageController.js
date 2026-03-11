@@ -233,10 +233,11 @@ function StorageController(configOverride, spaceCode) {
 			//
 			// Obtain Storage Boxes
 			//
+			_this._storageModel.storageSpaceCode = profile.getSettingsSpacePrefix(storageConfig.spaceCode) + "STORAGE";
 			var propertyTypeCodes = [_this._storageModel.storagePropertyGroup.nameProperty];
 			var propertyValues = [selectedStorageCode];
 			
-			mainController.serverFacade.searchWithProperties(propertyTypeCodes, propertyValues,
+			mainController.serverFacade.searchWithSpaceAndProperties(_this._storageModel.storageSpaceCode, propertyTypeCodes, propertyValues,
 					function(samples) {
 						var boxes = [];
 						var userIds = [];
@@ -422,7 +423,7 @@ function StorageController(configOverride, spaceCode) {
 		validationFunc = function() {
 			if(boxPositionsCalls.length > 0) {
 				var validationParams = boxPositionsCalls.shift();
-				mainController.serverFacade.searchWithProperties(validationParams.propertyTypeCodes, validationParams.propertyValues, function(samples) {
+				mainController.serverFacade.searchWithSpaceAndProperties(_this._storageModel.storageSpaceCode, validationParams.propertyTypeCodes, validationParams.propertyValues, function(samples) {
 					var sampleCodes = [];
 					var isBinded = false;
 					for(var sIdx = 0; sIdx < samples.length; sIdx++) {
@@ -458,7 +459,7 @@ function StorageController(configOverride, spaceCode) {
 		if(this._storageView.isNewBoxName()) {
 			var propertyTypeCodes = [this._storageModel.storagePropertyGroup.boxProperty];
 			var propertyValues = [this._storageModel.boxName];
-			mainController.serverFacade.searchWithProperties(propertyTypeCodes, propertyValues, function(samples) {
+			mainController.serverFacade.searchWithSpaceAndProperties(_this._storageModel.storageSpaceCode, propertyTypeCodes, propertyValues, function(samples) {
 				if(samples.length > 0) { //Box already exists with same name
 					if(samples[0].properties[_this._storageModel.storagePropertyGroup.nameProperty] === _this._storageModel.storageCode) {
 						callback("You entered the name of an already existing box. Please click on the box itself to view the available positions, or select another box name.");

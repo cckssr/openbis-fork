@@ -547,6 +547,7 @@ def isValidStoragePositionToInsertUpdate(context, parameters, sessionToken):
         # OPERATION_LOG.info("isValidStoragePositionToInsertUpdate - 4.1")
         searchCriteriaOtherBox = SampleSearchCriteria()
         searchCriteriaOtherBox.withType().withCode().thatEquals("STORAGE_POSITION")
+        searchCriteriaOtherBox.withStringProperty(getInternalNamespacePropertyCode("STORAGE_POSITION.STORAGE_CODE")).thatEquals(storageCode)
         searchCriteriaOtherBox.withStringProperty(getInternalNamespacePropertyCode("STORAGE_POSITION.STORAGE_BOX_NAME")).thatEquals(storageBoxName)
         searchCriteriaOtherBoxOptions = SampleFetchOptions()
         searchCriteriaOtherBoxOptions.withProperties()
@@ -556,7 +557,7 @@ def isValidStoragePositionToInsertUpdate(context, parameters, sessionToken):
         OPERATION_LOG.debug("-----------------> " + str(sampleSearchResultsRes) + " ----- " + str(sampleSearchResults))
         OPERATION_LOG.info("isValidStoragePositionToInsertUpdate - 4.1 - LEN: " + str(len(sampleSearchResults)))
         for result in sampleSearchResults:
-            if (result.getProperty(getInternalNamespacePropertyCode("STORAGE_POSITION.STORAGE_CODE")) != storageCode) or (result.getProperty(getInternalNamespacePropertyCode("STORAGE_POSITION.STORAGE_RACK_ROW")) != storageRackRow) or (result.getProperty(getInternalNamespacePropertyCode("STORAGE_POSITION.STORAGE_RACK_COLUMN")) != storageRackColumn):
+            if (result.getProperty(getInternalNamespacePropertyCode("STORAGE_POSITION.STORAGE_RACK_ROW")) != storageRackRow) or (result.getProperty(getInternalNamespacePropertyCode("STORAGE_POSITION.STORAGE_RACK_COLUMN")) != storageRackColumn):
                 raise UserFailureException("You entered the name of an already existing box in a different place - Box Name: " + str(storageBoxName) + " Given -> Storage Code: " + str(storageCode) + " Rack Row: " + str(storageRackRow) + " Rack Column: " + str(storageRackColumn) + " - Found -> Storage Code: " + result.getProperty(getInternalNamespacePropertyCode("STORAGE_POSITION.STORAGE_CODE")) + " Rack Row: " + result.getProperty(getInternalNamespacePropertyCode("STORAGE_POSITION.STORAGE_RACK_ROW")) + " Rack Column: " + result.getProperty(getInternalNamespacePropertyCode("STORAGE_POSITION.STORAGE_RACK_COLUMN")))
 
     if storageValidationLevel == "BOX" or storageValidationLevel == "BOX_POSITION":
