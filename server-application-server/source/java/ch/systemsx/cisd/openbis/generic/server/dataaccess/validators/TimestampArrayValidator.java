@@ -1,8 +1,10 @@
 package ch.systemsx.cisd.openbis.generic.server.dataaccess.validators;
 
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
+import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.ComplexPropertyValueUtils;
 import ch.systemsx.cisd.openbis.generic.shared.util.SupportedDateTimePattern;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.commons.lang3.time.DateFormatUtils;
 
 import java.io.Serializable;
@@ -16,14 +18,23 @@ public final class TimestampArrayValidator extends ArrayValidator {
         super.validate(value);
 
         try {
-            final Date[] dates = ComplexPropertyValueUtils.tryGetTimestampArray(value, getArrayType());
-            return Arrays.stream(dates)
-                    .map(date -> DateFormatUtils.format(date,
-                            SupportedDateTimePattern.CANONICAL_DATE_PATTERN.getPattern()))
-                    .toArray(String[]::new);
+            // A special check if the value is an array in a string form, e.g. "[\"2026-01-30 10:18:30\"]".
+            final Serializable finalValue = value instanceof String
+                    ? CommonServiceProvider.getObjectMapper().readValue((String) value, String[].class) : value;
+
+            final Date[] dates = ComplexPropertyValueUtils.tryGetTimestampArray(finalValue, getArrayType());
+            if (dates == null) {
+                return null;
+            } else {
+                return Arrays.stream(dates)
+                        .map(date -> DateFormatUtils.format(date,
+                                SupportedDateTimePattern.CANONICAL_DATE_PATTERN.getPattern()))
+                        .toArray(String[]::new);
+            }
         } catch (final IllegalArgumentException e) {
-            throw UserFailureException.fromTemplate(e,
-                    "Array value '%s' is not valid. At least one element is not a valid timestamp value.", value);
+            throw UserFailureException.fromTemplate(e, e.getMessage(), value);
+        } catch (final JsonProcessingException e) {
+            throw new RuntimeException(e);
         }
     }
 

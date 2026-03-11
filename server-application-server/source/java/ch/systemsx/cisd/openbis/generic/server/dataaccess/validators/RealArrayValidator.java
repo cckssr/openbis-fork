@@ -9,7 +9,7 @@ public final class RealArrayValidator extends ArrayValidator {
 
     @Override
     public Serializable validate(final Serializable value) throws UserFailureException {
-        final String[] valueArray = (String[]) super.validate(value);
+        final Serializable[] valueArray = (Serializable[]) super.validate(value);
 
         try {
             ComplexPropertyValueUtils.tryGetRealArray(value, getArrayType());
