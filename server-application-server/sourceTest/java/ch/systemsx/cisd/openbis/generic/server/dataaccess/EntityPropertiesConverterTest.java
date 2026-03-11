@@ -87,8 +87,6 @@ public final class EntityPropertiesConverterTest extends AbstractBOTest
 
     private IPropertyPlaceholderCreator placeholderCreator;
 
-    private ApplicationContext applicationContext;
-
     @Override
     @BeforeMethod
     public final void beforeMethod()
@@ -96,21 +94,6 @@ public final class EntityPropertiesConverterTest extends AbstractBOTest
         super.beforeMethod();
         propertyValueValidator = context.mock(IPropertyValueValidator.class);
         placeholderCreator = context.mock(IPropertyPlaceholderCreator.class);
-        applicationContext = context.mock(ApplicationContext.class);
-        CommonServiceProvider.setApplicationContext(applicationContext);
-    }
-
-    @Override
-    @AfterMethod
-    public void afterMethod(Method m)
-    {
-        try
-        {
-            super.afterMethod(m);
-        } finally
-        {
-            CommonServiceProvider.setApplicationContext(null);
-        }
     }
 
     private final IEntityPropertiesConverter createEntityPropertiesConverter(
@@ -427,9 +410,6 @@ public final class EntityPropertiesConverterTest extends AbstractBOTest
                     allowing(daoFactory).getPropertyTypeDAO();
                     will(returnValue(propertyTypeDAO));
 
-                    allowing(applicationContext).getBean(ObjectMapperResource.NAME);
-                    will(returnValue(new ObjectMapper()));
-
                     atLeast(1).of(entityTypeDAO).listEntityTypes();
                     will(returnValue(Collections.singletonList(sampleType)));
 
@@ -558,9 +538,6 @@ public final class EntityPropertiesConverterTest extends AbstractBOTest
 
                     allowing(daoFactory).getPropertyTypeDAO();
                     will(returnValue(propertyTypeDAO));
-
-                    allowing(applicationContext).getBean(ObjectMapperResource.NAME);
-                    will(returnValue(new ObjectMapper()));
 
                     atLeast(1).of(entityTypeDAO).listEntityTypes();
                     will(returnValue(Collections.singletonList(sampleType)));
@@ -692,9 +669,6 @@ public final class EntityPropertiesConverterTest extends AbstractBOTest
 
                     allowing(daoFactory).getPropertyTypeDAO();
                     will(returnValue(propertyTypeDAO));
-
-                    allowing(applicationContext).getBean(ObjectMapperResource.NAME);
-                    will(returnValue(new ObjectMapper()));
 
                     atLeast(1).of(entityTypeDAO).listEntityTypes();
                     will(returnValue(Collections.singletonList(sampleType)));
