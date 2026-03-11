@@ -15,41 +15,16 @@ export default class EntityTypeFormFacade {
     fo.withValidationPlugin()
     fo.withPropertyAssignments().withPlugin()
     fo.withPropertyAssignments().withRegistrator()
+    fo.withPropertyAssignments().withSemanticAnnotations()
     fo.withPropertyAssignments().withPropertyType().withRegistrator()
     fo.withPropertyAssignments().withPropertyType().withMaterialType()
     fo.withPropertyAssignments().withPropertyType().withSampleType()
     fo.withPropertyAssignments().withPropertyType().withVocabulary()
+    fo.withPropertyAssignments().withPropertyType().withSemanticAnnotations()
     fo.withPropertyAssignments().sortBy().ordinal()
 
     return strategy.getTypes([id], fo).then(map => {
       return map[object.id]
-    })
-  }
-
-  async loadPropertyTypeSemanticAnnotations(propertyTypePermId) {
-    const sasc = new openbis.SemanticAnnotationSearchCriteria();
-    sasc.withPropertyType().withId().thatEquals(propertyTypePermId);
-
-    const safo = new openbis.SemanticAnnotationFetchOptions();
-    safo.withPropertyType()
-    safo.withPropertyType().withSemanticAnnotations()
-
-    return openbis.searchSemanticAnnotations(sasc, safo).then(result => {
-      return result.getObjects()
-    })
-  }
-
-  async loadPropertyAssignmentsSemanticAnnotations(assignmentPermId) {
-    const sasc = new openbis.SemanticAnnotationSearchCriteria();
-    sasc.withPropertyAssignment().withId().thatEquals(assignmentPermId);
-
-    const safo = new openbis.SemanticAnnotationFetchOptions();
-    safo.withPropertyType()
-    safo.withPropertyAssignment()
-    safo.withPropertyAssignment().withSemanticAnnotations()
-
-    return openbis.searchSemanticAnnotations(sasc, safo).then(result => {
-      return result.getObjects()
     })
   }
 

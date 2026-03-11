@@ -1,20 +1,20 @@
-import _ from 'lodash'
-import React from 'react'
-import { Draggable } from "@atlaskit/pragmatic-drag-and-drop-react-beautiful-dnd-migration"
+import { Draggable } from "@atlaskit/pragmatic-drag-and-drop-react-beautiful-dnd-migration";
 import withStyles from '@mui/styles/withStyles';
-import PageMode from '@src/js/components/common/page/PageMode.js'
-import Message from '@src/js/components/common/form/Message.jsx'
-import CheckboxField from '@src/js/components/common/form/CheckboxField.jsx'
-import TextField from '@src/js/components/common/form/TextField.jsx'
-import SelectField from '@src/js/components/common/form/SelectField.jsx'
-import EntityTypeFormSelectionType from '@src/js/components/types/form/entitytype/EntityTypeFormSelectionType.js'
-import DataType from '@src/js/components/common/dto/DataType.js'
-import AppController from '@src/js/components/AppController.js'
-import openbis from '@src/js/services/openbis.js'
-import messages from '@src/js/common/messages.js'
-import logger from '@src/js/common/logger.js'
-import util from '@src/js/common/util.js'
-import LockLabel from '@src/js/components/common/form/LockLabel.jsx'
+import logger from '@src/js/common/logger.js';
+import messages from '@src/js/common/messages.js';
+import util from '@src/js/common/util.js';
+import AppController from '@src/js/components/AppController.js';
+import DataType from '@src/js/components/common/dto/DataType.js';
+import CheckboxField from '@src/js/components/common/form/CheckboxField.jsx';
+import LockLabel from '@src/js/components/common/form/LockLabel.jsx';
+import Message from '@src/js/components/common/form/Message.jsx';
+import SelectField from '@src/js/components/common/form/SelectField.jsx';
+import TextField from '@src/js/components/common/form/TextField.jsx';
+import PageMode from '@src/js/components/common/page/PageMode.js';
+import EntityTypeFormSelectionType from '@src/js/components/types/form/entitytype/EntityTypeFormSelectionType.js';
+import openbis from '@src/js/services/openbis.js';
+import _ from 'lodash';
+import React from 'react';
 
 const EMPTY = 'empty'
 
@@ -86,6 +86,9 @@ class EntityTypeFormPreviewProperty extends React.PureComponent {
     }
     this.handleDraggableClick = this.handleDraggableClick.bind(this)
     this.handlePropertyClick = this.handlePropertyClick.bind(this)
+    this.handleMaterialPropertyOpen = this.handleMaterialPropertyOpen.bind(this)
+    this.handleSamplePropertyOpen = this.handleSamplePropertyOpen.bind(this)
+    this.handleVocabularyPropertyOpen = this.handleVocabularyPropertyOpen.bind(this)
     this.handleChange = this.handleChange.bind(this)
   }
 
@@ -102,13 +105,22 @@ class EntityTypeFormPreviewProperty extends React.PureComponent {
     const property = props ? props.property : null
 
     if (this.shouldLoadMaterials(prevProperty, property)) {
-      this.loadMaterials()
+      this.setState({
+        materialType: undefined,
+        materials: undefined
+      })
     }
     if (this.shouldLoadSamples(prevProperty, property)) {
-      this.loadSamples()
+      this.setState({
+        sampleType: undefined,
+        samples: undefined
+      })
     }
     if (this.shouldLoadVocabularyTerms(prevProperty, property)) {
-      this.loadVocabularyTerms()
+      this.setState({
+        vocabularyType: undefined,
+        vocabularyTerms: undefined
+      })
     }
   }
 
@@ -153,12 +165,13 @@ class EntityTypeFormPreviewProperty extends React.PureComponent {
 
   loadMaterials() {
     const { controller, property } = this.props
-
+    const materialType = property.materialType.value
     return controller
       .getFacade()
-      .loadMaterials(property.materialType.value)
+      .loadMaterials(materialType)
       .then(materials => {
         this.setState(() => ({
+          materialType,
           materials
         }))
       })
@@ -169,12 +182,13 @@ class EntityTypeFormPreviewProperty extends React.PureComponent {
 
   loadSamples() {
     const { controller, property } = this.props
-
+    const sampleType = property.sampleType.value
     return controller
       .getFacade()
-      .loadSamples(property.sampleType.value)
+      .loadSamples(sampleType)
       .then(samples => {
         this.setState(() => ({
+          sampleType,
           samples
         }))
       })
@@ -185,14 +199,15 @@ class EntityTypeFormPreviewProperty extends React.PureComponent {
 
   loadVocabularyTerms() {
     const { controller, property } = this.props
-
-    if (property.vocabulary.value) {
+    const vocabularyType = property.vocabulary.value
+    if (vocabularyType) {
       return controller
         .getFacade()
-        .loadVocabularyTerms(property.vocabulary.value)
-        .then(terms => {
+        .loadVocabularyTerms(vocabularyType)
+        .then(vocabularyTerms => {
           this.setState(() => ({
-            terms
+            vocabularyType,
+            vocabularyTerms
           }))
         })
         .catch(error => {
@@ -200,7 +215,8 @@ class EntityTypeFormPreviewProperty extends React.PureComponent {
         })
     } else {
       this.setState(() => ({
-        terms: null
+        vocabularyType: null,
+        vocabularyTerms: null
       }))
     }
   }
@@ -397,14 +413,20 @@ class EntityTypeFormPreviewProperty extends React.PureComponent {
     )
   }
 
+  handleVocabularyPropertyOpen() {
+    if (this.state.vocabularyType !== _.get(this.props.property, 'vocabulary.value')) {
+      this.loadVocabularyTerms();
+    }
+  }
+
   renderVocabularyProperty() {
     const { property, value, mode, classes } = this.props
-    const { terms } = this.state
+    const { vocabularyTerms } = this.state
 
     let options = []
 
-    if (terms) {
-      options = terms.map(term => ({
+    if (vocabularyTerms) {
+      options = vocabularyTerms.map(term => ({
         value: term.code,
         label: term.label
       }))
@@ -429,10 +451,17 @@ class EntityTypeFormPreviewProperty extends React.PureComponent {
           mode={PageMode.EDIT}
           disabled={mode !== PageMode.EDIT}
           onClick={this.handlePropertyClick}
+          onOpen={this.handleVocabularyPropertyOpen}
           onChange={this.handleChange}
         />
       </div>
     )
+  }
+
+  handleMaterialPropertyOpen() {
+    if (this.state.materialType !== _.get(this.props.property, 'materialType.value')) {
+      this.loadMaterials();
+    }
   }
 
   renderMaterialProperty() {
@@ -466,10 +495,17 @@ class EntityTypeFormPreviewProperty extends React.PureComponent {
           mode={PageMode.EDIT}
           disabled={mode !== PageMode.EDIT}
           onClick={this.handlePropertyClick}
+          onOpen={this.handleMaterialPropertyOpen}
           onChange={this.handleChange}
         />
       </div>
     )
+  }
+
+  handleSamplePropertyOpen() {
+    if (this.state.sampleType !== _.get(this.props.property, 'sampleType.value')) {
+      this.loadSamples();
+    }
   }
 
   renderSampleProperty() {
@@ -503,6 +539,7 @@ class EntityTypeFormPreviewProperty extends React.PureComponent {
           mode={PageMode.EDIT}
           disabled={mode !== PageMode.EDIT}
           onClick={this.handlePropertyClick}
+          onOpen={this.handleSamplePropertyOpen}
           onChange={this.handleChange}
         />
       </div>
@@ -532,21 +569,21 @@ class EntityTypeFormPreviewProperty extends React.PureComponent {
   getMultiline() {
     return (
       this.props.property.dataType.value ===
-        openbis.DataType.MULTILINE_VARCHAR ||
+      openbis.DataType.MULTILINE_VARCHAR ||
       this.props.property.dataType.value === openbis.DataType.XML
     )
   }
 
   renderInternalIcon(internal) {
-    if(internal) {
-        return <LockLabel fontSize='inherit'/>
+    if (internal) {
+      return <LockLabel fontSize='inherit' />
     }
     return null;
   }
 
   renderInternalAssignmentIcon(internalAssignment) {
-    if(internalAssignment) {
-        return <LockLabel fontSize='inherit' color='black'/>
+    if (internalAssignment) {
+      return <LockLabel fontSize='inherit' color='black' />
     }
     return null;
   }
@@ -562,8 +599,8 @@ class EntityTypeFormPreviewProperty extends React.PureComponent {
           className={styles.code}
           onClick={this.handlePropertyClick}
         >
-         {this.renderInternalIcon(this.props.property.internal.value)}
-         {this.renderInternalAssignmentIcon(this.props.property.assignmentInternal.value)}
+          {this.renderInternalIcon(this.props.property.internal.value)}
+          {this.renderInternalAssignmentIcon(this.props.property.assignmentInternal.value)}
           {this.getCode()}
         </span>
         ][
