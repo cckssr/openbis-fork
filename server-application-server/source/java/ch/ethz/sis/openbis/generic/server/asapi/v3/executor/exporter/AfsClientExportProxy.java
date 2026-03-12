@@ -3,6 +3,9 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.exporter;
 import ch.ethz.sis.afsapi.api.ClientAPI;
 import ch.ethz.sis.afsapi.dto.File;
 import ch.ethz.sis.afsclient.client.AfsClient;
+import ch.ethz.sis.shared.log.classic.core.LogCategory;
+import ch.ethz.sis.shared.log.classic.impl.LogFactory;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider;
 
@@ -20,6 +23,10 @@ final class AfsClientExportProxy
 
     private final AfsClient client;
 
+    private static final Logger
+            OPERATION_LOG = LogFactory.getLogger(LogCategory.OPERATION, AfsClientExportProxy.class);
+
+
     private final ClientAPI.FileCollisionListener overrideCollisionListener = new ClientAPI.FileCollisionListener() {
         @Override
         public ClientAPI.CollisionAction precheck(Path sourcePath,Path destinationPath, boolean collision) {
@@ -35,6 +42,7 @@ final class AfsClientExportProxy
     public static AfsClientExportProxy getAfsClient(String sessionToken) {
         String url = CommonServiceProvider.tryToGetProperty(AFS_SERVER_URL_PROPERTY_NAME);
         if(url != null && !url.isBlank()) {
+            OPERATION_LOG.info("Using AFS Server URL: " + url);
             String timeoutStr = CommonServiceProvider.tryToGetProperty(AFS_SERVER_TIMEOUT_PROPERTY_NAME, AFS_SERVER_TIMEOUT_DEFAULT);
             final int timeout = Integer.parseInt(timeoutStr);
             AfsClient client = getAfsClient(sessionToken, url, timeout);
@@ -80,6 +88,7 @@ final class AfsClientExportProxy
             return client.isSessionValid();
         } catch (Exception e)
         {
+            OPERATION_LOG.warn("Could not check session validity, defaulting to false!", e);
             return false;
         }
     }
