@@ -185,7 +185,7 @@ public class MainViewController {
         });
     }
 
-    public synchronized void activateSynchronizationTasksPanel() {
+    private synchronized void activateSynchronizationTasksPanel() {
         AnchorPane mainContentPanel = (AnchorPane) this.root.getChildren().filtered(it -> it instanceof AnchorPane && MAIN_CONTENT_PANEL_ID.equals(it.getId()))
                 .stream().findFirst().orElse(null);
 
@@ -194,7 +194,7 @@ public class MainViewController {
         markButtonAsActiveById(SYNC_TASKS_BUTTON_ID);
     }
 
-    public synchronized void activateLogsPanel() {
+    private synchronized void activateLogsPanel() {
         AnchorPane mainContentPanel = (AnchorPane) this.root.getChildren().filtered(it -> it instanceof AnchorPane && MAIN_CONTENT_PANEL_ID.equals(it.getId()))
                 .stream().findFirst().orElse(null);
 
@@ -203,7 +203,7 @@ public class MainViewController {
         markButtonAsActiveById(LOGS_ID);
     }
 
-    public synchronized void activateNotificationsPanel() {
+    private synchronized void activateNotificationsPanel() {
         AnchorPane mainContentPanel = (AnchorPane) this.root.getChildren().filtered(it -> it instanceof AnchorPane && MAIN_CONTENT_PANEL_ID.equals(it.getId()))
                 .stream().findFirst().orElse(null);
 
@@ -212,13 +212,17 @@ public class MainViewController {
         markButtonAsActiveById(NOTIFICATIONS_ID);
     }
 
-    public synchronized void activateSettingsPanel() {
+    private synchronized void activateSettingsPanel() {
         AnchorPane mainContentPanel = (AnchorPane) this.root.getChildren().filtered(it -> it instanceof AnchorPane && MAIN_CONTENT_PANEL_ID.equals(it.getId()))
                 .stream().findFirst().orElse(null);
 
         closeAndClearChildNodes(mainContentPanel);
         mainContentPanel.getChildren().add(new SettingsPanel(mainContentPanel));
         markButtonAsActiveById(SETTINGS_ID);
+    }
+
+    public synchronized void setActiveSectionId(@NonNull String sectionId) {
+        this.activeSectionId.setValue(sectionId);
     }
 
     synchronized List<Button> getSideMenuButtons() {

@@ -214,6 +214,7 @@ public class ImagingFixes
             fullOutput =
                     new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
             int exitCode = process.waitFor();
+            logOutput(fullOutput);
             if (exitCode != 0)
             {
                 String error =
@@ -225,4 +226,16 @@ public class ImagingFixes
             throw new RuntimeException(e);
         }
     }
+
+    private static void logOutput(String output) {
+        if(output != null && !output.trim().isEmpty()) {
+            String[] lines = output.split("\n");
+            for(String line : lines) {
+                operationLog.info(String.format("Importer output: '%s'", line));
+            }
+        } else {
+            operationLog.info("Importer output: EMPTY");
+        }
+    }
+
 }

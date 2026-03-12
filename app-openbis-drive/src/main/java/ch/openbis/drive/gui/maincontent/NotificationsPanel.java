@@ -4,9 +4,11 @@ import ch.openbis.drive.gui.i18n.I18n;
 import ch.openbis.drive.gui.util.*;
 import ch.openbis.drive.model.Notification;
 import ch.openbis.drive.tasks.SyncOperation;
+import javafx.application.Platform;
 import javafx.beans.property.*;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.ListChangeListener;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
@@ -32,6 +34,11 @@ public class NotificationsPanel extends ResizablePanel {
 
     private final VBox mainVBox;
     private final TableView<NotificationRow> tableView;
+    private TableColumn<NotificationRow, String> typeColumn;
+    private TableColumn<NotificationRow, String> messageColumn;
+    private TableColumn<NotificationRow, String> localDirColumn;
+    private TableColumn<NotificationRow, String> fileColumn;
+    private TableColumn<NotificationRow, String> dateAndTimeColumn;
     private final Pagination pagination;
 
     private final ErrorLabel errorLabel = new ErrorLabel();
@@ -58,6 +65,7 @@ public class NotificationsPanel extends ResizablePanel {
 
         refreshNotificationList();
         refreshNotificationTableAtPage(0, pagination);
+        applyAndLinkToTableState();
         resize();
     }
 
@@ -133,32 +141,33 @@ public class NotificationsPanel extends ResizablePanel {
             );
         });
         iconColumn.setPrefWidth(40);
+        iconColumn.setSortable(false);
 
-        TableColumn<NotificationRow, String> typeColumn = new TableColumn<>();
+        typeColumn = new TableColumn<>();
         typeColumn.textProperty().bind(i18n.createStringBinding("notification_panel.notification_table.column_title.type"));
         typeColumn.setCellValueFactory(eventData -> new ReadOnlyObjectWrapper<>(eventData.getValue().getTypeColumn()));
         typeColumn.setCellFactory(WRAPPING_CELL_FACTORY);
         typeColumn.setPrefWidth(150);
 
-        TableColumn<NotificationRow, String> messageColumn = new TableColumn<>();
+        messageColumn = new TableColumn<>();
         messageColumn.textProperty().bind(i18n.createStringBinding("notification_panel.notification_table.column_title.notification"));
         messageColumn.setCellValueFactory(eventData -> new ReadOnlyObjectWrapper<>(eventData.getValue().getMessageColumn()));
         messageColumn.setCellFactory(WRAPPING_CELL_FACTORY);
         messageColumn.setPrefWidth(300);
 
-        TableColumn<NotificationRow, String> localDirColumn = new TableColumn<>();
+        localDirColumn = new TableColumn<>();
         localDirColumn.textProperty().bind(i18n.createStringBinding("notification_panel.notification_table.column_title.local_directory"));
         localDirColumn.setCellValueFactory(eventData -> new ReadOnlyObjectWrapper<>(eventData.getValue().getLocalDirColumn()));
         localDirColumn.setCellFactory(WRAPPING_CELL_FACTORY);
         localDirColumn.setPrefWidth(250);
 
-        TableColumn<NotificationRow, String> fileColumn = new TableColumn<>();
+        fileColumn = new TableColumn<>();
         fileColumn.textProperty().bind(i18n.createStringBinding("notification_panel.notification_table.column_title.file"));
         fileColumn.setCellValueFactory(eventData -> new ReadOnlyObjectWrapper<>(eventData.getValue().getFileColumn()));
         fileColumn.setCellFactory(WRAPPING_CELL_FACTORY);
         fileColumn.setPrefWidth(200);
 
-        TableColumn<NotificationRow, String> dateAndTimeColumn = new TableColumn<>();
+        dateAndTimeColumn = new TableColumn<>();
         dateAndTimeColumn.textProperty().bind(i18n.createStringBinding("notification_panel.notification_table.column_title.date_and_time"));
         dateAndTimeColumn.setCellValueFactory(eventData -> new ReadOnlyObjectWrapper<>(eventData.getValue().getDateAndTimeColumn()));
         dateAndTimeColumn.setCellFactory(WRAPPING_CELL_FACTORY);
@@ -166,6 +175,121 @@ public class NotificationsPanel extends ResizablePanel {
 
         tableView.getColumns().addAll(List.of(iconColumn, typeColumn, messageColumn, localDirColumn, fileColumn, dateAndTimeColumn));
         return tableView;
+    }
+
+    private void applyTableState() {
+        SharedContext sharedContext = SharedContext.getContext();
+        Optional.ofNullable(sharedContext.getColumSize(SharedContext.NotificationTableColumn.TYPE)).ifPresent(
+                typeColumn::setPrefWidth
+        );
+        Optional.ofNullable(sharedContext.getColumSize(SharedContext.NotificationTableColumn.NOTIFICATION)).ifPresent(
+                messageColumn::setPrefWidth
+        );
+        Optional.ofNullable(sharedContext.getColumSize(SharedContext.NotificationTableColumn.LOCAL_DIRECTORY)).ifPresent(
+                localDirColumn::setPrefWidth
+        );
+        Optional.ofNullable(sharedContext.getColumSize(SharedContext.NotificationTableColumn.FILE)).ifPresent(
+                fileColumn::setPrefWidth
+        );
+        Optional.ofNullable(sharedContext.getColumSize(SharedContext.NotificationTableColumn.DATE_TIME)).ifPresent(
+                dateAndTimeColumn::setPrefWidth
+        );
+        Optional.ofNullable(sharedContext.getNotificationTableSorting()).ifPresent( sortingPair -> {
+            switch (sortingPair.getKey()) {
+                case TYPE -> {
+                    typeColumn.setSortType(sortingPair.getValue());
+                    tableView.getSortOrder().clear();
+                    tableView.getSortOrder().add(typeColumn);
+                }
+                case NOTIFICATION -> {
+                    messageColumn.setSortType(sortingPair.getValue());
+                    tableView.getSortOrder().clear();
+                    tableView.getSortOrder().add(messageColumn);
+                }
+                case LOCAL_DIRECTORY -> {
+                    localDirColumn.setSortType(sortingPair.getValue());
+                    tableView.getSortOrder().clear();
+                    tableView.getSortOrder().add(localDirColumn);
+                }
+                case FILE -> {
+                    fileColumn.setSortType(sortingPair.getValue());
+                    tableView.getSortOrder().clear();
+                    tableView.getSortOrder().add(fileColumn);
+                }
+                case DATE_TIME -> {
+                    dateAndTimeColumn.setSortType(sortingPair.getValue());
+                    tableView.getSortOrder().clear();
+                    tableView.getSortOrder().add(dateAndTimeColumn);
+                }
+            }
+            tableView.sort();
+        });
+    }
+
+    private void applyAndLinkToTableState() {
+        SharedContext sharedContext = SharedContext.getContext();
+        applyTableState();
+
+        typeColumn.widthProperty().addListener((obs, oldValue, newValue) -> {
+            if (newValue != null) {
+                sharedContext.setColumSize(SharedContext.NotificationTableColumn.TYPE, newValue.intValue());
+            }
+        });
+        messageColumn.widthProperty().addListener((obs, oldValue, newValue) -> {
+            if (newValue != null) {
+                sharedContext.setColumSize(SharedContext.NotificationTableColumn.NOTIFICATION, newValue.intValue());
+            }
+        });
+        localDirColumn.widthProperty().addListener((obs, oldValue, newValue) -> {
+            if (newValue != null) {
+                sharedContext.setColumSize(SharedContext.NotificationTableColumn.LOCAL_DIRECTORY, newValue.intValue());
+            }
+        });
+        fileColumn.widthProperty().addListener((obs, oldValue, newValue) -> {
+            if (newValue != null) {
+                sharedContext.setColumSize(SharedContext.NotificationTableColumn.FILE, newValue.intValue());
+            }
+        });
+        dateAndTimeColumn.widthProperty().addListener((obs, oldValue, newValue) -> {
+            if (newValue != null) {
+                sharedContext.setColumSize(SharedContext.NotificationTableColumn.DATE_TIME, newValue.intValue());
+            }
+        });
+
+        tableView.getSortOrder().addListener(new ListChangeListener<TableColumn<NotificationRow, ?>>() {
+            @Override
+            public void onChanged(Change<? extends TableColumn<NotificationRow, ?>> c) {
+                if (tableView.getSortOrder().contains(typeColumn)) {
+                    sharedContext.setSortedColumn(SharedContext.NotificationTableColumn.TYPE, typeColumn.getSortType());
+                } else if (tableView.getSortOrder().contains(messageColumn)) {
+                    sharedContext.setSortedColumn(SharedContext.NotificationTableColumn.NOTIFICATION, messageColumn.getSortType());
+                } else if (tableView.getSortOrder().contains(localDirColumn)) {
+                    sharedContext.setSortedColumn(SharedContext.NotificationTableColumn.LOCAL_DIRECTORY, localDirColumn.getSortType());
+                } else if (tableView.getSortOrder().contains(fileColumn)) {
+                    sharedContext.setSortedColumn(SharedContext.NotificationTableColumn.FILE, fileColumn.getSortType());
+                } else if (tableView.getSortOrder().contains(dateAndTimeColumn)) {
+                    sharedContext.setSortedColumn(SharedContext.NotificationTableColumn.DATE_TIME, dateAndTimeColumn.getSortType());
+                } else {
+                    sharedContext.setNotificationTableUnsorted();
+                    Platform.runLater( () -> refreshNotificationTableAtPage(pagination.getCurrentPageIndex(), pagination) );
+                }
+            }
+        });
+        typeColumn.sortTypeProperty().addListener((obs, oldValue, newValue) -> {
+            sharedContext.setSortedColumn(SharedContext.NotificationTableColumn.TYPE, newValue);
+        });
+        messageColumn.sortTypeProperty().addListener((obs, oldValue, newValue) -> {
+            sharedContext.setSortedColumn(SharedContext.NotificationTableColumn.NOTIFICATION, newValue);
+        });
+        localDirColumn.sortTypeProperty().addListener((obs, oldValue, newValue) -> {
+            sharedContext.setSortedColumn(SharedContext.NotificationTableColumn.LOCAL_DIRECTORY, newValue);
+        });
+        fileColumn.sortTypeProperty().addListener((obs, oldValue, newValue) -> {
+            sharedContext.setSortedColumn(SharedContext.NotificationTableColumn.FILE, newValue);
+        });
+        dateAndTimeColumn.sortTypeProperty().addListener((obs, oldValue, newValue) -> {
+            sharedContext.setSortedColumn(SharedContext.NotificationTableColumn.DATE_TIME, newValue);
+        });
     }
 
     private Pagination initializePagination() {
@@ -191,6 +315,7 @@ public class NotificationsPanel extends ResizablePanel {
             tableView.getItems().setAll(Collections.emptyList());
         }
         pagination.setPageCount((refreshedNotificationList.size() / NOTIFICATIONS_PER_PAGE) + 1);
+        applyTableState();
     }
 
     @Override
