@@ -121,19 +121,19 @@ public class OpenDriveApplication extends Application {
     }
 
     void activateNotificationsPanel() {
-        MainViewController.MAIN_INSTANCE.get().activateNotificationsPanel();
+        MainViewController.MAIN_INSTANCE.get().setActiveSectionId(MainViewController.NOTIFICATIONS_ID);
     }
 
     void activateSynchronizationTasksPanel() {
-        MainViewController.MAIN_INSTANCE.get().activateSynchronizationTasksPanel();
+        MainViewController.MAIN_INSTANCE.get().setActiveSectionId(MainViewController.MAIN_CONTENT_PANEL_ID);
     }
 
     void activateSettingssPanel() {
-        MainViewController.MAIN_INSTANCE.get().activateSettingsPanel();
+        MainViewController.MAIN_INSTANCE.get().setActiveSectionId(MainViewController.SETTINGS_ID);
     }
 
     void activateLogsPanel() {
-        MainViewController.MAIN_INSTANCE.get().activateLogsPanel();
+        MainViewController.MAIN_INSTANCE.get().setActiveSectionId(MainViewController.LOGS_ID);
     }
 
     void activateSpecificSectionAccordingToLaunchArguments(@NonNull List<String> parameters) {

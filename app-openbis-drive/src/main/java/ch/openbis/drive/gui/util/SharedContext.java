@@ -4,9 +4,14 @@ import ch.openbis.drive.gui.i18n.I18n;
 import ch.openbis.drive.protobuf.client.DriveAPIClientProtobufImpl;
 import javafx.application.HostServices;
 import javafx.scene.Node;
+import javafx.scene.control.TableColumn;
 import javafx.stage.Stage;
+import javafx.util.Pair;
+import lombok.Data;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class SharedContext {
@@ -73,5 +78,71 @@ public class SharedContext {
     public HostServices getHostServices() {
         return hostServices;
     }
+
+    //// Log and notification table state
+    public enum LogTableColumn { LOCAL_FILE, REMOTE_FILE, FILE_TYPE, DATE_TIME, EVENT }
+    public enum NotificationTableColumn { TYPE, NOTIFICATION, LOCAL_DIRECTORY, FILE, DATE_TIME }
+
+    @Data
+    public static class LogTableState {
+        private @NonNull HashMap<@NonNull LogTableColumn, @NonNull Integer> columnSizes = new HashMap<>();
+        private @Nullable Pair<@NonNull LogTableColumn, TableColumn.SortType> sorting;
+    }
+    @Data
+    public static class NotificationTableState {
+        private @NonNull HashMap<@NonNull NotificationTableColumn, @NonNull Integer> columnSizes = new HashMap<>();
+        private @Nullable Pair<@NonNull NotificationTableColumn, TableColumn.SortType> sorting;
+    }
+
+    private final LogTableState logTableState = new LogTableState();
+    private final NotificationTableState notificationTableState = new NotificationTableState();
+
+    public synchronized Integer getColumSize(@NonNull LogTableColumn logTableColumn) {
+        return logTableState.getColumnSizes().get(logTableColumn);
+    }
+    public synchronized Integer getColumSize(@NonNull NotificationTableColumn notificationTableColumn) {
+        return notificationTableState.getColumnSizes().get(notificationTableColumn);
+    }
+    public synchronized void setColumSize(@NonNull LogTableColumn logTableColumn, @Nullable Integer size) {
+        if (size != null) {
+            logTableState.getColumnSizes().put(logTableColumn, size);
+        } else {
+            logTableState.getColumnSizes().remove(logTableColumn);
+        }
+    }
+    public synchronized void setColumSize(@NonNull NotificationTableColumn notificationTableColumn, @Nullable Integer size) {
+        if (size != null) {
+            notificationTableState.getColumnSizes().put(notificationTableColumn, size);
+        } else {
+            notificationTableState.getColumnSizes().remove(notificationTableColumn);
+        }
+    }
+    public synchronized @Nullable Pair<LogTableColumn, TableColumn.SortType> getLogTableSorting() {
+        return logTableState.getSorting();
+    }
+    public synchronized @Nullable Pair<NotificationTableColumn, TableColumn.SortType> getNotificationTableSorting() {
+        return notificationTableState.getSorting();
+    }
+    public synchronized void setSortedColumn(@Nullable LogTableColumn logTableColumn, @Nullable TableColumn.SortType sorting) {
+        if (logTableColumn != null && sorting != null) {
+            logTableState.setSorting(new Pair<>(logTableColumn, sorting));
+        } else {
+            logTableState.setSorting(null);
+        }
+    }
+    public synchronized void setSortedColumn(@Nullable NotificationTableColumn notificationTableColumn, @Nullable TableColumn.SortType sorting) {
+        if (notificationTableColumn != null && sorting != null) {
+            notificationTableState.setSorting(new Pair<>(notificationTableColumn, sorting));
+        } else {
+            notificationTableState.setSorting(null);
+        }
+    }
+    public synchronized void setLogTableUnsorted() {
+        logTableState.setSorting(null);
+    }
+    public synchronized void setNotificationTableUnsorted() {
+        notificationTableState.setSorting(null);
+    }
+    ////
 }
 
