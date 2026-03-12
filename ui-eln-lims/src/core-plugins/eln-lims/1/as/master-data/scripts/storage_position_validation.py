@@ -23,6 +23,7 @@ def validate(entity, isNew):
             .withParameter("method", "isValidStoragePositionToInsertUpdate") \
             .withParameter("samplePermId", entity.samplePE().getPermId()) \
             .withParameter("sampleCode", entity.samplePE().getCode()) \
+            .withParameter("sampleSpaceCode", entity.samplePE().getSpace().getCode()) \
             .withParameter("sampleProperties", properties);
         v3.executeCustomASService(sessionToken, id, options);
     finally:

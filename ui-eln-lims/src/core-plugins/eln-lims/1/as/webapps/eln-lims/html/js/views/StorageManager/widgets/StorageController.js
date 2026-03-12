@@ -213,6 +213,9 @@ function StorageController(configOverride, spaceCode) {
 	}
 	
 	this.setSelectStorage = function(selectedStorageCode) {
+		this._storageModel.storageSpaceCode = SettingsManagerUtils.getStoragesSpaceCode(this._storageModel.spaceCode);
+		this._storageModel.storagePositionsSpaceCode = SettingsManagerUtils.getStoragePositionsSpaceCode(this._storageModel.spaceCode);
+
 		//
 		// Delete old state in model and view
 		//
@@ -222,7 +225,7 @@ function StorageController(configOverride, spaceCode) {
 		// Obtain Storage Configuration
 		//
 		this._storageModel.storageCode = selectedStorageCode;
-		profile.getStorageConfiguation(selectedStorageCode, function(storageConfig) {
+		profile.getStorageConfiguation(this._storageModel.storageSpaceCode, selectedStorageCode, function(storageConfig) {
 			_this._storageModel.storageConfig = storageConfig;
 			if(storageConfig) {
 				_this._gridController.getModel().reset(storageConfig.rowNum, storageConfig.colNum);
@@ -233,11 +236,10 @@ function StorageController(configOverride, spaceCode) {
 			//
 			// Obtain Storage Boxes
 			//
-			_this._storageModel.storageSpaceCode = profile.getSettingsSpacePrefix(storageConfig.spaceCode) + "STORAGE";
 			var propertyTypeCodes = [_this._storageModel.storagePropertyGroup.nameProperty];
 			var propertyValues = [selectedStorageCode];
 			
-			mainController.serverFacade.searchWithSpaceAndProperties(_this._storageModel.storageSpaceCode, propertyTypeCodes, propertyValues,
+			mainController.serverFacade.searchWithSpaceAndProperties(_this._storageModel.storagePositionsSpaceCode, propertyTypeCodes, propertyValues,
 					function(samples) {
 						var boxes = [];
 						var userIds = [];
@@ -351,7 +353,7 @@ function StorageController(configOverride, spaceCode) {
 	//
 	this.isValid = function(callback) {
 		var _this = this;
-		profile.getStorageConfiguation(this._storageModel.storageCode, function(storageConfig) {
+		profile.getStorageConfiguation(this._storageModel.storageSpaceCode, this._storageModel.storageCode, function(storageConfig) {
 			var validationLevel = (storageConfig)?storageConfig.validationLevel:ValidationLevel.BOX_POSITION;
 			_this._isValidState(validationLevel, function(error0) {
 				if(error0) {
@@ -414,8 +416,8 @@ function StorageController(configOverride, spaceCode) {
 		var boxPositionsCalls = [];
 		for(var bpIdx = 0; bpIdx < boxPositions.length; bpIdx++) {
 			boxPositionsCalls.push({
-				propertyTypeCodes : [this._storageModel.storagePropertyGroup.boxProperty, this._storageModel.storagePropertyGroup.positionProperty],
-				propertyValues : [this._storageModel.boxName,boxPositions[bpIdx]]
+				propertyTypeCodes : [this._storageModel.storagePropertyGroup.nameProperty, this._storageModel.storagePropertyGroup.boxProperty, this._storageModel.storagePropertyGroup.positionProperty],
+				propertyValues : [this._storageModel.storageCode, this._storageModel.boxName, boxPositions[bpIdx]]
 			});
 		}
 		
@@ -423,7 +425,8 @@ function StorageController(configOverride, spaceCode) {
 		validationFunc = function() {
 			if(boxPositionsCalls.length > 0) {
 				var validationParams = boxPositionsCalls.shift();
-				mainController.serverFacade.searchWithSpaceAndProperties(_this._storageModel.storageSpaceCode, validationParams.propertyTypeCodes, validationParams.propertyValues, function(samples) {
+
+				mainController.serverFacade.searchWithSpaceAndProperties(_this._storageModel.storagePositionsSpaceCode, validationParams.propertyTypeCodes, validationParams.propertyValues, function(samples) {
 					var sampleCodes = [];
 					var isBinded = false;
 					for(var sIdx = 0; sIdx < samples.length; sIdx++) {
@@ -457,9 +460,10 @@ function StorageController(configOverride, spaceCode) {
 		// Check user don't types by hand an existing box
 		// ERROR: You typed by hand an already exiting box <BOX_CODE>, please click on it to auto fill correct size and available positions.
 		if(this._storageView.isNewBoxName()) {
-			var propertyTypeCodes = [this._storageModel.storagePropertyGroup.boxProperty];
-			var propertyValues = [this._storageModel.boxName];
-			mainController.serverFacade.searchWithSpaceAndProperties(_this._storageModel.storageSpaceCode, propertyTypeCodes, propertyValues, function(samples) {
+			var propertyTypeCodes = [this._storageModel.storagePropertyGroup.nameProperty, this._storageModel.storagePropertyGroup.boxProperty];
+			var propertyValues = [this._storageModel.storageCode, this._storageModel.boxName];
+
+			mainController.serverFacade.searchWithSpaceAndProperties(_this._storageModel.storagePositionsSpaceCode, propertyTypeCodes, propertyValues, function(samples) {
 				if(samples.length > 0) { //Box already exists with same name
 					if(samples[0].properties[_this._storageModel.storagePropertyGroup.nameProperty] === _this._storageModel.storageCode) {
 						callback("You entered the name of an already existing box. Please click on the box itself to view the available positions, or select another box name.");

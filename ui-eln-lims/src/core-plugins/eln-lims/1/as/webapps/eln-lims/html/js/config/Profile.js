@@ -457,9 +457,8 @@ $.extend(DefaultProfile.prototype, {
             return spaceCode.substring(0, indexOfSettingsCode);
         }
 
-		this.getSampleConfigSpacePrefix = function(sample) {
+		this.getSpaceCodeConfigSpacePrefix = function(spaceCode) {
 			var prefix = null;
-			var spaceCode = sample.spaceCode;
 			for(var ssIdx = 0; ssIdx < this.settingsSpaces.length; ssIdx++) {
 				var settingsSpaceCode = this.settingsSpaces[ssIdx];
 				var spacePrefixIndexOf = settingsSpaceCode.indexOf(this.settingsSpacesPostFix);
@@ -472,6 +471,11 @@ $.extend(DefaultProfile.prototype, {
 			}
 
 			return prefix;
+		}
+
+		this.getSampleConfigSpacePrefix = function(sample) {
+			var spaceCode = sample.spaceCode;
+			return this.getSpaceCodeConfigSpacePrefix(spaceCode);
 		}
 
 		this.getStorageConfigCollectionForConfigSample = function(sample) {
@@ -769,13 +773,15 @@ $.extend(DefaultProfile.prototype, {
 			});
 		}
 
-		this.getStorageConfiguation = function(storageCode, callbackFunction) {
+		this.getStorageConfiguation = function(storageSpaceCode, storageCode, callbackFunction) {
 			var _this = this;
 			if(!this.storagesConfiguration["isEnabled"]) {
 				callbackFunction(null);
 			}
-
-			mainController.serverFacade.searchWithType("STORAGE", storageCode, null, function(results) {
+            if(!storageCode) {
+                callbackFunction(null);
+            }
+			mainController.serverFacade.searchWithTypeAndSpace("STORAGE", storageSpaceCode, storageCode, function(results) {
 				callbackFunction(_this.getStorageConfigFromSample(results[0]));
 			});
 		}

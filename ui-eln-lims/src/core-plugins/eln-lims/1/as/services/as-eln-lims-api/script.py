@@ -488,6 +488,8 @@ def isValidStoragePositionToInsertUpdate(context, parameters, sessionToken):
 
     samplePermId = parameters.get("samplePermId")
     sampleProperties = parameters.get("sampleProperties")
+    sampleSpaceCode = parameters.get("sampleSpaceCode")
+    storageSpaceCode = "ELN_SETTINGS".join(sampleSpaceCode.rsplit("STORAGE", 1))
     storageCode = sampleProperties.get(getInternalNamespacePropertyCode("STORAGE_POSITION.STORAGE_CODE"))
     storageRackRow = sampleProperties.get(getInternalNamespacePropertyCode("STORAGE_POSITION.STORAGE_RACK_ROW"))
     storageRackColumn = sampleProperties.get(getInternalNamespacePropertyCode("STORAGE_POSITION.STORAGE_RACK_COLUMN"))
@@ -502,6 +504,7 @@ def isValidStoragePositionToInsertUpdate(context, parameters, sessionToken):
         raise UserFailureException("Storage code missing")
 
     searchCriteria = SampleSearchCriteria()
+    searchCriteria.withSpace().withCode().thatEquals(storageSpaceCode)
     searchCriteria.withCode().thatEquals(storageCode)
     searchCriteria.withType().withCode().thatEquals("STORAGE")
 
@@ -546,6 +549,7 @@ def isValidStoragePositionToInsertUpdate(context, parameters, sessionToken):
         # 4.1 Check that a box with the same name only exist on the given storage and rack position
         # OPERATION_LOG.info("isValidStoragePositionToInsertUpdate - 4.1")
         searchCriteriaOtherBox = SampleSearchCriteria()
+        searchCriteriaOtherBox.withSpace().withCode().thatEquals(storageSpaceCode)
         searchCriteriaOtherBox.withType().withCode().thatEquals("STORAGE_POSITION")
         searchCriteriaOtherBox.withStringProperty(getInternalNamespacePropertyCode("STORAGE_POSITION.STORAGE_CODE")).thatEquals(storageCode)
         searchCriteriaOtherBox.withStringProperty(getInternalNamespacePropertyCode("STORAGE_POSITION.STORAGE_BOX_NAME")).thatEquals(storageBoxName)
@@ -564,6 +568,7 @@ def isValidStoragePositionToInsertUpdate(context, parameters, sessionToken):
         # 4.2 The number of total different box names on the rack including the given one should be below $STORAGE.BOX_NUM
         # OPERATION_LOG.info("isValidStoragePositionToInsertUpdate - 4.2")
         searchCriteriaStorageRack = SampleSearchCriteria()
+        searchCriteriaStorageRack.withSpace().withCode().thatEquals(storageSpaceCode)
         searchCriteriaStorageRack.withType().withCode().thatEquals("STORAGE_POSITION")
         searchCriteriaStorageRack.withStringProperty(getInternalNamespacePropertyCode("STORAGE_POSITION.STORAGE_CODE")).thatEquals(storageCode)
         searchCriteriaStorageRack.withNumberProperty(getInternalNamespacePropertyCode("STORAGE_POSITION.STORAGE_RACK_ROW")).thatEquals(int(storageRackRow))
@@ -608,6 +613,7 @@ def isValidStoragePositionToInsertUpdate(context, parameters, sessionToken):
 
         for storageBoxSubPosition in storageBoxPosition.split(" "):
             searchCriteriaStorageBoxPosition = SampleSearchCriteria()
+            searchCriteriaStorageBoxPosition.withSpace().withCode().thatEquals(storageSpaceCode)
             searchCriteriaStorageBoxPosition.withType().withCode().thatEquals("STORAGE_POSITION")
             searchCriteriaStorageBoxPosition.withStringProperty(getInternalNamespacePropertyCode("STORAGE_POSITION.STORAGE_CODE")).thatEquals(storageCode)
             searchCriteriaStorageBoxPosition.withNumberProperty(getInternalNamespacePropertyCode("STORAGE_POSITION.STORAGE_RACK_ROW")).thatEquals(int(storageRackRow))

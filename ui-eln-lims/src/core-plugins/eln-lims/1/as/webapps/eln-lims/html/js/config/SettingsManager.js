@@ -25,6 +25,18 @@ var SettingsManagerUtils = new function() {
         return prefix;
     }
 
+    this.getSettingsSpaceCode = function(spaceCode) {
+        return profile.getSpaceCodeConfigSpacePrefix(spaceCode) + "ELN_SETTINGS";
+    }
+
+    this.getStoragesSpaceCode = function(spaceCode) {
+        return this.getSettingsSpaceCode(spaceCode);
+    }
+
+    this.getStoragePositionsSpaceCode = function(spaceCode) {
+        return profile.getSpaceCodeConfigSpacePrefix(spaceCode) + "STORAGE";
+    }
+
     this._getSpaceSettingsObject = function(spaceCode) {
         return this._instanceSettings[this.getSpaceGroupPrefix(spaceCode)];
     }

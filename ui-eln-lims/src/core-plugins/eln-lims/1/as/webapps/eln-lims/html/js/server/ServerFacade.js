@@ -1883,8 +1883,14 @@ function ServerFacade(openbisServer) {
 
                         if(fieldName) {
                             var firstDotIndex = fieldName.indexOf(".");
-                            fieldNameType = fieldName.substring(0, firstDotIndex);
-                            fieldName = fieldName.substring(firstDotIndex + 1, fieldName.length);
+                            var fieldNameTypeCandidate = fieldName.substring(0, firstDotIndex);
+                            // fieldNameType is optional and as such it should not be set always
+                            // This check ensures is not set unintentionally leading to incorrect queries
+                            const validFieldNameTypes = ["ATTR", "PROP", "NULL", "NOT_NULL"];
+                            if(validFieldNameTypes.includes(fieldNameTypeCandidate)) {
+                                fieldNameType = fieldNameTypeCandidate;
+                                fieldName = fieldName.substring(firstDotIndex + 1, fieldName.length);
+                            }
                         }
 
                         if(!fieldValue) {
@@ -2935,6 +2941,44 @@ function ServerFacade(openbisServer) {
 			"withParents" : true,
 			"properyKeyValueList" : properyKeyValueList
 		}, callbackFunction);
+	}
+
+	this.searchWithTypeAndSpace = function(sampleTypeCode, sampleSpaceCode, sampleCode, callbackFunction)
+	{
+		var advancedSearchCriteria = { rules : {} };
+		if(sampleTypeCode) {
+            advancedSearchCriteria.rules[Util.guid()] = {
+                type : "Attribute",
+                name : "ATTR.TYPE",
+                value : sampleTypeCode,
+                operator : "thatEquals"
+            }
+		}
+        if(sampleSpaceCode) {
+            advancedSearchCriteria.rules[Util.guid()] = {
+                type : "Attribute",
+                name : "ATTR.SPACE",
+                value : sampleSpaceCode,
+                operator : "thatEquals"
+            }
+		}
+		if(sampleCode) {
+            advancedSearchCriteria.rules[Util.guid()] = {
+                type : "Attribute",
+                name : "ATTR.CODE",
+                value : sampleCode,
+                operator : "thatEquals"
+            }
+		}
+		var advancedFetchOptions = {
+		    "escapeWildcards" : true,
+			"withProperties" : true
+		}
+
+		var _this = this;
+		this.searchForSamplesAdvanced(advancedSearchCriteria, advancedFetchOptions, function(results) {
+			callbackFunction(_this.getV3SamplesAsV1(results.objects));
+		});
 	}
 
 	this.searchWithSpaceAndProperties = function(spaceCode, propertyTypeCodes, propertyValues, callbackFunction, isComplete, withParents)
