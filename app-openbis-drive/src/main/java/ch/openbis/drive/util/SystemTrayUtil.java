@@ -269,7 +269,13 @@ public class SystemTrayUtil {
         // Shut the background-service down
         MenuItem exitItem = new MenuItem(i18n.get("system_tray.menu_item.stop_service"));
         exitItem.addActionListener(event -> {
-            stopCallback.apply(null);
+            try {
+                OpenBISDriveUtil.tryToStopGraphicalInterface();
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                stopCallback.apply(null);
+            }
         });
 
         popup.add(openItem);
