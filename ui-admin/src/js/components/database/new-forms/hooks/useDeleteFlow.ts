@@ -183,7 +183,7 @@ export const useDeleteFlow = ({
             // Entity was deleted, show success and close form
             actionToastContext?.raiseSuccess('Entity moved to trashcan successfully');
             externalAppController?.objectDelete({
-              type: entityKind == EntityKind.SAMPLE ? EntityKind.OBJECT : context.form.entityKind,
+              type: entityKind == EntityKind.SAMPLE ? EntityKind.OBJECT : entityKind,
               id: context.form.entityPermId,
             });
           }
