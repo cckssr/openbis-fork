@@ -262,7 +262,7 @@ public class LogsPanel extends ResizablePanel {
     }
 
     private synchronized void refreshEventList() {
-        tableView.getSortOrder().clear();
+        //tableView.getSortOrder().clear(); //Uncomment this, to clear sorting upon table-data-refreshing
         ServiceCallHandler.ServiceCallResult<List<? extends Event>> eventListResult = SharedContext.getContext().getServiceCallHandler(parent).getEvents(2000);
         if (eventListResult.isOk()) {
             eventRows.setValue(eventListResult.getOk().stream().map(EventRow::new).toList());

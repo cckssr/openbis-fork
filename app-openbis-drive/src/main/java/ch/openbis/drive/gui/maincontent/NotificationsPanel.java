@@ -120,26 +120,9 @@ public class NotificationsPanel extends ResizablePanel {
         TableColumn<NotificationRow, Label> iconColumn = new TableColumn<>();
         iconColumn.setText("");
         iconColumn.getStyleClass().add(DisplaySettings.NOTIFICATION_TABLE_ICON_COLUMN_CLASS);
-        iconColumn.setCellValueFactory(eventData -> {
-            Label label = new Label();
-            switch (eventData.getValue().getNotification().getType()) {
-                case Conflict -> {
-                    label.setText(DisplaySettings.FONT_AWESOME_7_FREE_SOLID_CIRCLE_QUESTION_MARK);
-                    label.setTextFill(Paint.valueOf("red"));
-                }
-                case JobStopped -> {
-                    label.setText(DisplaySettings.FONT_AWESOME_7_FREE_SOLID_SQUARE_WITH_X);
-                    label.setTextFill(Paint.valueOf("grey"));
-                }
-                case JobException -> {
-                    label.setText(DisplaySettings.FONT_AWESOME_7_FREE_SOLID_WARNING_TRIANGLE);
-                    label.setTextFill(Paint.valueOf("orange"));
-                }
-            }
-            return new ReadOnlyObjectWrapper<>(
-                label
-            );
-        });
+        iconColumn.setCellValueFactory(eventData -> new ReadOnlyObjectWrapper<>(
+                eventData.getValue().getIconLabel()
+        ));
         iconColumn.setPrefWidth(40);
         iconColumn.setSortable(false);
 
@@ -403,7 +386,7 @@ public class NotificationsPanel extends ResizablePanel {
     }
 
     private synchronized void refreshFilteredNotificationList() {
-        tableView.getSortOrder().clear();
+        //tableView.getSortOrder().clear(); //Uncomment this, to clear sorting upon table-data-refreshing
         filteredNotifications.setValue(notificationRows.getValue().stream().filter( notificationRow -> {
             Notification.Type typeFilterValue = notificationTypeFilter.getValue();
             if (typeFilterValue != null) {
@@ -451,6 +434,7 @@ public class NotificationsPanel extends ResizablePanel {
     @Value
     public static class NotificationRow {
         Notification notification;
+        Label iconLabel;
 
         String typeColumn;
         String messageColumn;
@@ -475,6 +459,22 @@ public class NotificationsPanel extends ResizablePanel {
             this.localDirColumn = notification.getLocalDirectory();
             this.fileColumn = getNormalizedLocalFile(notification);
             this.dateAndTimeColumn = Instant.ofEpochMilli(notification.getTimestamp()).atZone(ZoneId.systemDefault()).format(DATE_TIME_FORMATTER);
+            Label label = new Label();
+            switch (notification.getType()) {
+                case Conflict -> {
+                    label.setText(DisplaySettings.FONT_AWESOME_7_FREE_SOLID_CIRCLE_QUESTION_MARK);
+                    label.setTextFill(Paint.valueOf("red"));
+                }
+                case JobStopped -> {
+                    label.setText(DisplaySettings.FONT_AWESOME_7_FREE_SOLID_SQUARE_WITH_X);
+                    label.setTextFill(Paint.valueOf("grey"));
+                }
+                case JobException -> {
+                    label.setText(DisplaySettings.FONT_AWESOME_7_FREE_SOLID_WARNING_TRIANGLE);
+                    label.setTextFill(Paint.valueOf("orange"));
+                }
+            }
+            this.iconLabel = label;
         }
     }
 }
