@@ -63,11 +63,12 @@ public abstract class AbstractPublicAPIWrapper implements PublicAPI
     }
 
     @Override
-    public Boolean delete(@NonNull String owner, @NonNull String source) throws Exception
+    public Boolean delete(@NonNull String owner, @NonNull String source, @NonNull Boolean trash) throws Exception
     {
         Map<String, Object> args = Map.of(
                 "owner", owner,
-                "source", source);
+                "source", source,
+                "trash", trash);
         return process(Boolean.class, "delete", args);
     }
 
@@ -104,6 +105,27 @@ public abstract class AbstractPublicAPIWrapper implements PublicAPI
                 "source", source,
                 "directory", directory);
         return process(Boolean.class, "create", args);
+    }
+
+    @Override
+    public @NonNull Boolean truncate(@NonNull final String owner, @NonNull final String source, @NonNull final Long size)
+            throws Exception
+    {
+        final Map<String, Object> args = Map.of(
+                "owner", owner,
+                "source", source,
+                "size", size);
+        return process(Boolean.class, "truncate", args);
+    }
+
+    @Override
+    public @NonNull Boolean snapshot(@NonNull final String owner, @NonNull final String source)
+            throws Exception
+    {
+        final Map<String, Object> args = Map.of(
+                "owner", owner,
+                "source", source);
+        return process(Boolean.class, "snapshot", args);
     }
 
     @Override

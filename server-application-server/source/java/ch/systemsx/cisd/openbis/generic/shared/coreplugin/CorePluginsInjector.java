@@ -496,7 +496,10 @@ public class CorePluginsInjector
                 value = resolver.resolvePropertyValue(value);
                 for (File script : scripts)
                 {
-                    value = value.replace(script.getName(), script.getPath());
+                    if(value.equals(script.getName())) {
+                        value = script.getPath();
+                        break;
+                    }
                 }
                 keyValuePair.setValue(value);
             }

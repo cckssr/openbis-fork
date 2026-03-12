@@ -9,6 +9,7 @@ import ch.openbis.drive.notifications.NotificationManagerSqliteImpl;
 import ch.openbis.drive.settings.SettingsManager;
 import ch.openbis.drive.tasks.TaskManager;
 import ch.openbis.drive.tasks.TaskManagerImpl;
+import ch.openbis.drive.util.SystemTrayUtil;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 
@@ -21,20 +22,26 @@ public class DriveAPIServerImpl implements DriveAPI {
     private final NotificationManager notificationManager;
     private final TaskManager taskManager;
     final SyncJobEventDAO syncJobEventDAO;
+    final SystemTrayUtil systemTrayUtil;
 
     @SneakyThrows
-    public DriveAPIServerImpl(Configuration configuration) {
+    public DriveAPIServerImpl(Configuration configuration, SystemTrayUtil systemTrayUtil) {
         syncJobEventDAO = new SyncJobEventDAOImp(configuration);
         notificationManager = new NotificationManagerSqliteImpl(configuration);
         settingsManager = new SettingsManager(configuration, syncJobEventDAO, notificationManager);
-        taskManager = new TaskManagerImpl(syncJobEventDAO, notificationManager, settingsManager, configuration);
+        this.systemTrayUtil = systemTrayUtil;
+        taskManager = new TaskManagerImpl(syncJobEventDAO, notificationManager, settingsManager, configuration, systemTrayUtil);
     }
 
-    public DriveAPIServerImpl(SettingsManager settingsManager, NotificationManager notificationManager, TaskManager taskManager, SyncJobEventDAO syncJobEventDAO) {
+    public DriveAPIServerImpl(SettingsManager settingsManager,
+                              NotificationManager notificationManager,
+                              TaskManager taskManager, SyncJobEventDAO syncJobEventDAO,
+                              SystemTrayUtil systemTrayUtil) {
         this.settingsManager = settingsManager;
         this.notificationManager = notificationManager;
         this.taskManager = taskManager;
         this.syncJobEventDAO = syncJobEventDAO;
+        this.systemTrayUtil = systemTrayUtil;
     }
 
     synchronized public void setSettings(@NonNull Settings settings) {

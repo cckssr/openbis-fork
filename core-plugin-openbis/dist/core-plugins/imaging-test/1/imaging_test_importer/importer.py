@@ -81,14 +81,16 @@ o = get_instance(openbis_url, token)
 files = [f for f in os.listdir(data_folder) if f.endswith('.json')]
 print(f'Found {len(files)} JSON files in {data_folder}')
 
-
-client = AfsClient(afs_url, o.token, False)
+if afs_url is not None:
+    client = AfsClient(afs_url, o.token, False)
+else:
+    client = None
 
 for file in files:
     file_path = os.path.join(data_folder, file)
     f = open(file_path, 'r')
     data_set = None
-    if client.is_session_valid():
+    if client is not None and client.is_session_valid():
         props = {
             'imaging_data_config': f.read(),
             'default_object_view': 'IMAGING_DATASET_VIEWER',

@@ -71,5 +71,23 @@ public class RoCrateSchemaValidationRegressionCasesTest
 
     }
 
+    @Test
+    void testRequiredNameIsFound() throws IOException
+    {
+        String location = "validation/alice.zip";
+        ValidationResult validationResult = getValidationResult(location);
+        Assert.assertTrue(validationResult.isOkay());
+
+    }
+
+    @Test
+    void testRequiredMissingPropertyIsReported() throws IOException
+    {
+        String location = "validation/alice2.zip";
+        ValidationResult validationResult = getValidationResult(location);
+        Assert.assertFalse(validationResult.isOkay());
+
+    }
+
 
 }

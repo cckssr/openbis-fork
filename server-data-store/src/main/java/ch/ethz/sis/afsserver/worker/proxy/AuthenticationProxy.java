@@ -145,9 +145,9 @@ public class AuthenticationProxy extends AbstractProxy {
     }
 
     @Override
-    public Boolean delete(@NonNull String owner, @NonNull String source) throws Exception {
+    public Boolean delete(@NonNull String owner, @NonNull String source, @NonNull Boolean trash) throws Exception {
         validateSessionAvailable();
-        return nextProxy.delete(owner, source);
+        return nextProxy.delete(owner, source, trash);
     }
 
     @Override
@@ -167,6 +167,20 @@ public class AuthenticationProxy extends AbstractProxy {
     {
         validateSessionAvailable();
         return nextProxy.create(owner, source, directory);
+    }
+
+    @Override
+    public @NonNull Boolean truncate(@NonNull final String owner, @NonNull final String source, @NonNull final Long size) throws Exception
+    {
+        validateSessionAvailable();
+        return nextProxy.truncate(owner, source, size);
+    }
+
+    @Override
+    public @NonNull Boolean snapshot(@NonNull final String owner, @NonNull final String source) throws Exception
+    {
+        validateSessionAvailable();
+        return nextProxy.snapshot(owner, source);
     }
 
     @Override

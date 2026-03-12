@@ -224,6 +224,9 @@ var IconUtil = new function() {
         } else if(type === "CLOSE") {
              icon.class = "material-icons";
              icon.text = "close";
+        } else if(type === "TYPE_EXPORT_TO_RO_CRATE" || type === 'RO-CRATE_EXPORT') {
+              icon.type = "img";
+              icon.url = "./img/ro-crate.svg";
         }
         return icon;
     }
@@ -298,7 +301,8 @@ var IconUtil = new function() {
         } else if(type === "EXPORT_TO_ZENODO" || type === 'ZENODO_EXPORT') {
             icon.class = "glyphicon glyphicon-export";
         } else if(type === "TYPE_EXPORT_TO_RO_CRATE" || type === 'RO-CRATE_EXPORT') {
-            icon.class = "glyphicon glyphicon-export";
+            icon.type = "img";
+            icon.url = "./img/ro-crate.svg";
         } else if(type === "ABOUT") {
             icon.class = "glyphicon glyphicon-info-sign";
         } else if(type === "DATASET") {

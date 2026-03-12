@@ -101,9 +101,9 @@ public class AuditorProxy extends AbstractProxy {
     }
 
     @Override
-    public Boolean delete(@NonNull String owner, @NonNull String source) throws Exception {
+    public Boolean delete(@NonNull String owner, @NonNull String source, @NonNull Boolean trash) throws Exception {
         auditBefore();
-        return auditAfter(nextProxy.delete(owner, source));
+        return auditAfter(nextProxy.delete(owner, source, trash));
     }
 
     @Override
@@ -123,6 +123,20 @@ public class AuditorProxy extends AbstractProxy {
     {
         auditBefore();
         return auditAfter(nextProxy.create(owner, source, directory));
+    }
+
+    @Override
+    public @NonNull Boolean truncate(@NonNull final String owner, @NonNull final String source, @NonNull final Long size) throws Exception
+    {
+        auditBefore();
+        return auditAfter(nextProxy.truncate(owner, source, size));
+    }
+
+    @Override
+    public @NonNull Boolean snapshot(@NonNull final String owner, @NonNull final String source) throws Exception
+    {
+        auditBefore();
+        return auditAfter(nextProxy.snapshot(owner, source));
     }
 
     @Override

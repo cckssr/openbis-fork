@@ -140,6 +140,21 @@ BEGIN
 END
 $$ LANGUAGE plpgsql;
 
+CREATE OR REPLACE FUNCTION materials_tsvector_document_trigger() RETURNS trigger AS $$
+DECLARE material_type_code VARCHAR;
+        registrator_user_id VARCHAR;
+BEGIN
+    SELECT code INTO STRICT material_type_code FROM material_types WHERE id = NEW.maty_id;
+    SELECT user_id INTO registrator_user_id FROM persons WHERE id = NEW.pers_id_registerer;
+    NEW.tsvector_document := setweight((escape_tsvector_string(
+            NEW.code || ' (' || material_type_code || ')') || ':1')::tsvector, 'A') ||
+            setweight((escape_tsvector_string(NEW.code) || ':1')::tsvector, 'B') ||
+            coalesce(setweight((escape_tsvector_string(material_type_code) || ':1')::tsvector, 'D'), ''::tsvector) ||
+            coalesce(setweight((escape_tsvector_string(registrator_user_id) || ':1')::tsvector, 'D'), ''::tsvector);
+    RETURN NEW;
+END
+$$ LANGUAGE plpgsql;
+
 DROP TRIGGER IF EXISTS samples_all_tsvector_document ON samples_all;
 CREATE TRIGGER samples_all_tsvector_document BEFORE INSERT OR UPDATE
     ON samples_all FOR EACH ROW EXECUTE PROCEDURE

@@ -54,14 +54,6 @@ jar {
     archiveFileName = imagingTechnologyName
     includeEmptyDirs false
     from sourceSets.main.allSource
-//    from(configurations.apiDependenciesIncluded.collect { zipTree(it) }) {
-//        include '**/ch/ethz/sis/openbis/**'
-//        include '**/ch/systemsx/cisd/openbis/**'
-//        include '**/ch/systemsx/cisd/common/exceptions/**'
-//        include '**/ch/ethz/sis/shared/log/classic/**'
-//        include '**/ch/systemsx/cisd/openbis/dss/generic/shared/**'
-//
-//    }
 }
 
 tasks.register('releaseImagingTechnology', Copy) {

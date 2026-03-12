@@ -206,6 +206,8 @@ public class ExportExecutor implements IExportExecutor
     /** All characters except the ones we consider safe as a directory name. */
     private static final String UNSAFE_CHARACTERS_REGEXP = "[^\\w $!#%'()+,\\-.;=@\\[\\]^{}_~]";
 
+    private static final List<String> AFS_PATHS_TO_FILTER = List.of("/.trash", "/.snapshots");
+
 
     @Resource(name = ObjectMapperResource.NAME)
     private ObjectMapper objectMapper;
@@ -508,6 +510,23 @@ public class ExportExecutor implements IExportExecutor
         exportDataSetsData(sessionToken, exportWorkspaceDirectory, dataSets, compatibleWithImport);
     }
 
+    private ch.ethz.sis.afsapi.dto.File[] filterFiles(ch.ethz.sis.afsapi.dto.File[] input, List<String> filteredPaths) {
+        List<ch.ethz.sis.afsapi.dto.File> filteredFiles = new ArrayList<>();
+        for(ch.ethz.sis.afsapi.dto.File file : input) {
+            boolean found = false;
+            for(String filteredName : AFS_PATHS_TO_FILTER) {
+                if(file.getPath().contains(filteredName)) {
+                    found = true;
+                    break;
+                }
+            }
+            if(!found) {
+                filteredFiles.add(file);
+            }
+        }
+        return filteredFiles.toArray(new ch.ethz.sis.afsapi.dto.File[0]);
+    }
+
     private List<Consumer<ZipArchiveOutputStream>> exportAfsData(final String sessionToken, final File exportWorkspaceDirectory, final EntitiesVo entitiesVo
             )
     {
@@ -522,6 +541,7 @@ public class ExportExecutor implements IExportExecutor
         for(Sample s : samples) {
             ch.ethz.sis.afsapi.dto.File[] files = afs.listFiles(s.getPermId().getPermId());
             if(files != null && files.length > 0) {
+                files = filterFiles(files, AFS_PATHS_TO_FILTER);
                 sampleFileMap.put(s, files);
                 totalSize += Stream.of(files)
                         .filter(Predicate.not(ch.ethz.sis.afsapi.dto.File::getDirectory))
@@ -535,6 +555,7 @@ public class ExportExecutor implements IExportExecutor
         for(Experiment e : experiments) {
             ch.ethz.sis.afsapi.dto.File[] files = afs.listFiles(e.getPermId().getPermId());
             if(files != null && files.length > 0) {
+                files = filterFiles(files, AFS_PATHS_TO_FILTER);
                 experimentFileMap.put(e, files);
                 totalSize += Stream.of(files)
                         .filter(Predicate.not(ch.ethz.sis.afsapi.dto.File::getDirectory))

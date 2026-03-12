@@ -37,7 +37,7 @@ public class SchemaFacade implements ISchemaFacade
 
     public static final String EQUIVALENT_CONCEPT = "owl:equivalentProperty";
 
-    public static final String TYPE_RESTRICTION = "owl:restriction";
+
 
     String rangeIdentifier = "schema:rangeIncludes";
 
@@ -47,7 +47,10 @@ public class SchemaFacade implements ISchemaFacade
 
     public static final String OWL_MAX_CARDINALITY = "owl:maxCardinality";
 
-    public static final String OWL_RESTRICTION = "owl:restriction";
+    public static final String OWL_RESTRICTION = "owl:Restriction";
+
+    public static final String OWL_RESTRICTION_PROPERTY = "owl:restriction";
+
 
     public static final String ON_PROPERTY = "owl:onProperty";
 
@@ -140,11 +143,11 @@ public class SchemaFacade implements ISchemaFacade
         {
             DataEntity.DataEntityBuilder restrictionBuilder = new DataEntity.DataEntityBuilder();
             restrictionBuilder.addProperty("@id", restriction.getId());
-            restrictionBuilder.addProperty("@type", TYPE_RESTRICTION);
+            restrictionBuilder.addProperty("@type", OWL_RESTRICTION);
             restrictionBuilder.addIdProperty(ON_PROPERTY, restriction.getPropertyType().getId());
             restrictionBuilder.addProperty(OWL_MIN_CARDINALITY, restriction.getMinCardinality());
             restrictionBuilder.addProperty(OWL_MAX_CARDINALITY, restriction.getMaxCardinality());
-            builder.addIdProperty(OWL_RESTRICTION, restriction.getId());
+            builder.addIdProperty(OWL_RESTRICTION_PROPERTY, restriction.getId());
             crate.addDataEntity(restrictionBuilder.build());
         }
 
@@ -338,7 +341,10 @@ public class SchemaFacade implements ISchemaFacade
 
         Map<String, Type> restrictionToTypeId = new LinkedHashMap<>();
 
-        for (DataEntity entity : crate.getAllDataEntities())
+        List<AbstractEntity> abstractEntities = new ArrayList<>();
+        abstractEntities.addAll(crate.getAllContextualEntities());
+        abstractEntities.addAll(crate.getAllDataEntities());
+        for (AbstractEntity entity : abstractEntities)
         {
             String type = entity
                     .getProperty("@type").asText();
@@ -356,7 +362,7 @@ public class SchemaFacade implements ISchemaFacade
                             parseMultiValued(entity, EQUIVALENT_CLASS));
                     myType.setId(resolvePrefixSingleValue(id));
                     idsToTypes.put(resolvePrefixSingleValue(id), myType);
-                    parseMultiValued(entity, OWL_RESTRICTION).forEach(
+                    parseMultiValued(entity, OWL_RESTRICTION_PROPERTY).forEach(
                             x -> restrictionToTypeId.put(x, myType));
 
                 }
@@ -365,7 +371,7 @@ public class SchemaFacade implements ISchemaFacade
 
         }
 
-        for (DataEntity entity : crate.getAllDataEntities())
+        for (AbstractEntity entity : abstractEntities)
         {
             String type = entity
                     .getProperty("@type").asText();
@@ -419,14 +425,14 @@ public class SchemaFacade implements ISchemaFacade
 
         }
 
-        for (DataEntity entity : crate.getAllDataEntities())
+        for (AbstractEntity entity : abstractEntities)
         {
             String type = entity.getProperty("@type").asText();
             String id =
                     entity.getProperty("@id")
                             .asText();
 
-            if (type.equals(OWL_RESTRICTION))
+            if (type.equalsIgnoreCase(OWL_RESTRICTION))
             {
                 String onProperty = parseMultiValued(entity, ON_PROPERTY).get(0);
                 int minCardinality =
@@ -567,6 +573,8 @@ public class SchemaFacade implements ISchemaFacade
 
         Map<String, DataEntity> idToFileEntity =
                 fileEntities.stream().collect(Collectors.toMap(x -> x.getId(), x -> x));
+
+        abstractEntity.getProperty("schema:hasPart");
 
         List<DataEntity> collect =
                 abstractEntity.getLinkedTo().stream().map(x -> idToFileEntity.get(x))

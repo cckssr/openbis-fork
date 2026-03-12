@@ -8,6 +8,7 @@ import ch.openbis.drive.model.SyncJobLive;
 import ch.openbis.drive.notifications.NotificationManager;
 import ch.openbis.drive.settings.SettingsManager;
 import ch.openbis.drive.util.DirectoryWatch;
+import ch.openbis.drive.util.SystemTrayUtil;
 import lombok.NonNull;
 
 import java.util.*;
@@ -22,15 +23,18 @@ public class TaskManagerImpl implements TaskManager {
     private final @NonNull NotificationManager notificationManager;
     private final @NonNull SettingsManager settingsManager;
     private final @NonNull Configuration configuration;
+    private final @NonNull SystemTrayUtil systemTrayUtil;
 
     public TaskManagerImpl(@NonNull SyncJobEventDAO syncJobEventDAO,
                            @NonNull NotificationManager notificationManager,
                            @NonNull SettingsManager settingsManager,
-                           @NonNull Configuration configuration) {
+                           @NonNull Configuration configuration,
+                           @NonNull SystemTrayUtil systemTrayUtil) {
         this.syncJobEventDAO = syncJobEventDAO;
         this.notificationManager = notificationManager;
         this.settingsManager = settingsManager;
         this.configuration = configuration;
+        this.systemTrayUtil = systemTrayUtil;
     }
 
     public synchronized void clear() {
@@ -106,7 +110,14 @@ public class TaskManagerImpl implements TaskManager {
 
             SyncOperation syncTaskOperation;
             try {
-                syncTaskOperation = new SyncOperation(syncJob, syncJobEventDAO, notificationManager, configuration, settingsManager.getSettings());
+                syncTaskOperation = new SyncOperation(
+                        syncJob,
+                        syncJobEventDAO,
+                        notificationManager,
+                        configuration,
+                        settingsManager.getSettings(),
+                        systemTrayUtil
+                );
             } catch (Exception e) {
                 e.printStackTrace();
                 return null;

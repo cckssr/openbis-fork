@@ -178,6 +178,8 @@
                 <action stage="postvalidate"
                         classname="ch.systemsx.cisd.openbis.installer.izpack.ExecuteSetupScriptsAction"/>
                 <action stage="postvalidate"
+                        classname="ch.systemsx.cisd.openbis.installer.izpack.SetServicePropertiesVariableAction"/>
+                <action stage="postvalidate"
                         classname="ch.systemsx.cisd.openbis.installer.izpack.OpenGettingStartedPageAction"/>
             </actions>
         </panel>

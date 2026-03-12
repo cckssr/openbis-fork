@@ -58,6 +58,7 @@ function RoCrateExportController(parentController) {
                             if(_this.exportModel.jobs[i].jobId === result.jobs[j].jobId) {
                                 found = true;
                                 _this.exportModel.jobs[i].status = result.jobs[j].status;
+                                _this.exportModel.jobs[i].errors = result.jobs[j].errors;
                                 break;
                             }
                         }

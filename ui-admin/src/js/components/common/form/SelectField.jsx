@@ -110,6 +110,7 @@ class SelectFormField extends React.PureComponent {
       styles,
       onChange,
       onClick,
+      onOpen,
       classes,
       variant,
       fullWidth
@@ -167,7 +168,8 @@ class SelectFormField extends React.PureComponent {
               classes: {
                 root: classes.select,
                 disabled: classes.selectDisabled
-              }
+              },
+              onOpen: onOpen
             },
             inputLabel: {
               shrink:

@@ -16,6 +16,7 @@
 package ch.ethz.sis.afsserver;
 
 import ch.ethz.sis.afs.manager.NopLockMapper;
+import ch.ethz.sis.afs.manager.TrashRootInOwnerProvider;
 import ch.ethz.sis.afsapi.api.PublicAPI;
 import ch.ethz.sis.afsclient.client.AfsClient;
 import ch.ethz.sis.afsjson.jackson.JacksonObjectMapper;
@@ -82,6 +83,7 @@ public class ServerClientEnvironmentFS
         configuration.put(AtomicFileSystemServerParameter.writeAheadLogRoot, "./targets/tests/transactions");
         configuration.put(AtomicFileSystemServerParameter.storageRoot, "./targets/tests/storage");
         configuration.put(AtomicFileSystemServerParameter.storageUuid, "test-storage-uuid");
+        configuration.put(AtomicFileSystemServerParameter.trashRootProviderClass, TrashRootInOwnerProvider.class.getName());
 
         configuration.put(AtomicFileSystemServerParameter.enablePreview, "png,jpeg,jpg,gif,bmp,tiff");
         configuration.put(AtomicFileSystemServerParameter.enablePreviewSizeInBytes, "100000000");

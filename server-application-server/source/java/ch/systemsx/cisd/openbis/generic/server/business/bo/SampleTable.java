@@ -346,7 +346,6 @@ public final class SampleTable extends AbstractSampleBusinessObject implements I
         ExperimentPE oldExperiment = sample.getExperiment();
         ProjectPE oldProject = sample.getProject();
 
-        operationLog.info("||> prepareBatchUpdate for:"+sample);
         updateProperties(sample, updates.getProperties());
         checkPropertiesBusinessRules(sample, propertiesCache);
 

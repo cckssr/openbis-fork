@@ -15,8 +15,6 @@
  */
 package ch.ethz.sis.afs.api;
 
-import java.util.List;
-
 import ch.ethz.sis.afs.api.dto.File;
 import ch.ethz.sis.afs.api.dto.FreeSpace;
 import lombok.NonNull;
@@ -31,13 +29,17 @@ public interface OperationsAPI {
 
     boolean write(@NonNull String source, @NonNull long offset, @NonNull byte[] data) throws Exception;
 
-    boolean delete(@NonNull String source) throws Exception;
+    boolean delete(@NonNull String source, boolean trash) throws Exception;
 
     boolean copy(@NonNull String source, @NonNull String target) throws Exception;
 
     boolean move(@NonNull String source, @NonNull String target) throws Exception;
 
     boolean create(@NonNull String source, boolean directory) throws Exception;
+
+    boolean truncate(@NonNull String source, long size) throws Exception;
+
+    boolean snapshot(@NonNull String source) throws Exception;
 
     FreeSpace free(@NonNull String source) throws Exception;
 

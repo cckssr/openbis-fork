@@ -7,6 +7,7 @@ import ch.openbis.drive.db.SyncJobEventDAO;
 import ch.openbis.drive.db.SyncJobEventDAOImp;
 import ch.openbis.drive.model.*;
 import ch.openbis.drive.notifications.NotificationManager;
+import ch.openbis.drive.util.SystemTrayUtil;
 import junit.framework.TestCase;
 import lombok.SneakyThrows;
 import org.junit.Assert;
@@ -34,6 +35,7 @@ import static ch.ethz.sis.afsclient.client.AfsClientUploadHelper.toServerPathStr
 public class SyncOperationTest extends TestCase {
     
     private final Configuration configuration = new Configuration(Path.of("/fake-local-app-directory"));
+    private final SystemTrayUtil systemTrayUtil = Mockito.mock(SystemTrayUtil.class);
 
     @Test
     public void testPublicContructor() throws Exception {
@@ -41,7 +43,7 @@ public class SyncOperationTest extends TestCase {
         SyncJob syncJob = new SyncJob(SyncJob.Type.Bidirectional, "url", "uuid", "token", "title", "/remotedir1", localDirPath, true);
         NotificationManager notificationManager = Mockito.mock(NotificationManager.class);
         SyncJobEventDAO syncJobEventDAO = Mockito.mock(SyncJobEventDAOImp.class);
-        SyncOperation syncOperation = new SyncOperation(syncJob, syncJobEventDAO, notificationManager, configuration, Settings.defaultSettings());
+        SyncOperation syncOperation = new SyncOperation(syncJob, syncJobEventDAO, notificationManager, configuration, Settings.defaultSettings(), systemTrayUtil);
 
         Assert.assertEquals(syncJobEventDAO, syncOperation.syncJobEventDAO);
         Assert.assertEquals(syncOperation.afsClientProxy.afsClient, syncOperation.getAfsClient());
@@ -62,7 +64,7 @@ public class SyncOperationTest extends TestCase {
         NotificationManager notificationManager = Mockito.mock(NotificationManager.class);
         SyncJobEventDAO syncJobEventDAO = Mockito.mock(SyncJobEventDAOImp.class);
         try {
-            new SyncOperation(syncJob, syncJobEventDAO, notificationManager, configuration, Settings.defaultSettings());
+            new SyncOperation(syncJob, syncJobEventDAO, notificationManager, configuration, Settings.defaultSettings(), systemTrayUtil);
         } catch (Exception e) {
             ArgumentCaptor<List<Notification>> notificationArgumentCaptor = ArgumentCaptor.forClass(List.class);
             Mockito.verify(notificationManager, Mockito.times(1)).addNotifications(notificationArgumentCaptor.capture());
@@ -81,7 +83,7 @@ public class SyncOperationTest extends TestCase {
         NotificationManager notificationManager = Mockito.mock(NotificationManager.class);
 
         SyncJob syncJob1 = new SyncJob(SyncJob.Type.Upload, "url", "uuid", "token", "title", "/remotedir1", "/localdir1", true);
-        SyncOperation syncOperation1 = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings()));
+        SyncOperation syncOperation1 = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings(), systemTrayUtil));
         Mockito.doReturn(Optional.empty()).when(syncOperation1).getRemoteFilePresence(Mockito.any());
         syncOperation1.start();
 
@@ -91,7 +93,7 @@ public class SyncOperationTest extends TestCase {
 
         SyncJob syncJob2 = new SyncJob(SyncJob.Type.Download, "url", "uuid", "token", "title", "/remotedir1", "/localdir1", true);
 
-        SyncOperation syncOperation2 = Mockito.spy(new SyncOperation(syncJob2, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings()));
+        SyncOperation syncOperation2 = Mockito.spy(new SyncOperation(syncJob2, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings(), systemTrayUtil));
         Mockito.doReturn(Optional.empty()).when(syncOperation2).getRemoteFilePresence(Mockito.any());
         syncOperation2.start();
 
@@ -101,7 +103,7 @@ public class SyncOperationTest extends TestCase {
 
         SyncJob syncJob3 = new SyncJob(SyncJob.Type.Bidirectional, "url", "uuid", "token", "title", "/remotedir1", "/localdir1", true);
 
-        SyncOperation syncOperation3 = Mockito.spy(new SyncOperation(syncJob3, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings()));
+        SyncOperation syncOperation3 = Mockito.spy(new SyncOperation(syncJob3, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings(), systemTrayUtil));
         Mockito.doReturn(Optional.empty()).when(syncOperation3).getRemoteFilePresence(Mockito.any());
         syncOperation3.start();
 
@@ -120,7 +122,7 @@ public class SyncOperationTest extends TestCase {
         NotificationManager notificationManager = Mockito.mock(NotificationManager.class);
 
         SyncJob syncJob1 = new SyncJob(SyncJob.Type.Upload, "url", "uuid", "token", "title", "/remotedir1", "/localdir1", true);
-        SyncOperation syncOperation1 = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings()));
+        SyncOperation syncOperation1 = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings(), systemTrayUtil));
         syncOperation1.stop();
 
         Mockito.verify(syncOperation1.uploadMonitor, Mockito.times(1)).stop();
@@ -133,7 +135,7 @@ public class SyncOperationTest extends TestCase {
         SyncJob syncJob2 = new SyncJob(SyncJob.Type.Download, "url", "uuid", "token", "title", "/remotedir1", "/localdir1", true);
         notificationManager = Mockito.mock(NotificationManager.class);
 
-        SyncOperation syncOperation2 = Mockito.spy(new SyncOperation(syncJob2, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings()));
+        SyncOperation syncOperation2 = Mockito.spy(new SyncOperation(syncJob2, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings(), systemTrayUtil));
         syncOperation2.stop();
 
         Mockito.verify(syncOperation2.uploadMonitor, Mockito.times(1)).stop();
@@ -145,7 +147,7 @@ public class SyncOperationTest extends TestCase {
         SyncJob syncJob3 = new SyncJob(SyncJob.Type.Bidirectional, "url", "uuid", "token", "title", "/remotedir1", "/localdir1", true);
         notificationManager = Mockito.mock(NotificationManager.class);
 
-        SyncOperation syncOperation3 = Mockito.spy(new SyncOperation(syncJob3, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings()));
+        SyncOperation syncOperation3 = Mockito.spy(new SyncOperation(syncJob3, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings(), systemTrayUtil));
         syncOperation3.stop();
 
         Mockito.verify(syncOperation3.uploadMonitor, Mockito.times(1)).stop();
@@ -162,7 +164,7 @@ public class SyncOperationTest extends TestCase {
         NotificationManager notificationManager = Mockito.mock(NotificationManager.class);
 
         SyncJob syncJob1 = new SyncJob(SyncJob.Type.Upload, "url", "uuid", "token", "title", "/remotedir1", "/localdir1", true);
-        SyncOperation syncOperation1 = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings()));
+        SyncOperation syncOperation1 = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings(), systemTrayUtil));
         Assert.assertEquals(uploadMonitor, syncOperation1.getUploadTransferMonitor());
 
 
@@ -171,7 +173,7 @@ public class SyncOperationTest extends TestCase {
         SyncJob syncJob2 = new SyncJob(SyncJob.Type.Download, "url", "uuid", "token", "title", "/remotedir1", "/localdir1", true);
         notificationManager = Mockito.mock(NotificationManager.class);
 
-        SyncOperation syncOperation2 = Mockito.spy(new SyncOperation(syncJob2, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings()));
+        SyncOperation syncOperation2 = Mockito.spy(new SyncOperation(syncJob2, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings(), systemTrayUtil));
         Assert.assertEquals(downloadMonitor, syncOperation2.getDownloadTransferMonitor());
 
         uploadMonitor = Mockito.mock(ClientAPI.TransferMonitorListener.class);
@@ -179,7 +181,7 @@ public class SyncOperationTest extends TestCase {
         SyncJob syncJob3 = new SyncJob(SyncJob.Type.Bidirectional, "url", "uuid", "token", "title", "/remotedir1", "/localdir1", true);
         notificationManager = Mockito.mock(NotificationManager.class);
 
-        SyncOperation syncOperation3 = Mockito.spy(new SyncOperation(syncJob3, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings()));
+        SyncOperation syncOperation3 = Mockito.spy(new SyncOperation(syncJob3, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings(), systemTrayUtil));
         Assert.assertEquals(uploadMonitor, syncOperation3.getUploadTransferMonitor());
         Assert.assertEquals(downloadMonitor, syncOperation3.getDownloadTransferMonitor());
     }
@@ -394,7 +396,7 @@ public class SyncOperationTest extends TestCase {
         NotificationManager notificationManager = Mockito.mock(NotificationManager.class);
 
         SyncJob syncJob1 = new SyncJob(SyncJob.Type.Upload, "url", "uuid", "token", "title", "/remotedir1", "/localdir1", true);
-        SyncOperation syncOperation = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings()));
+        SyncOperation syncOperation = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings(), systemTrayUtil));
 
         Path sourcePath = Path.of("source");
         Optional<SyncOperation.FileInfo> info1 = Optional.of(new SyncOperation.FileInfo(false, Instant.now()));
@@ -416,7 +418,7 @@ public class SyncOperationTest extends TestCase {
         NotificationManager notificationManager = Mockito.mock(NotificationManager.class);
 
         SyncJob syncJob1 = new SyncJob(SyncJob.Type.Upload, "url", "uuid", "token", "title", "/remotedir1", "/localdir1", true);
-        SyncOperation syncOperation = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings()));
+        SyncOperation syncOperation = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings(), systemTrayUtil));
 
         Path sourcePath = Path.of("source");
         Optional<SyncOperation.FileInfo> info1 = Optional.of(new SyncOperation.FileInfo(false, Instant.now()));
@@ -438,7 +440,7 @@ public class SyncOperationTest extends TestCase {
         NotificationManager notificationManager = Mockito.mock(NotificationManager.class);
 
         SyncJob syncJob1 = new SyncJob(SyncJob.Type.Upload, "url", "uuid", "token", "title", "/remotedir1", "/localdir1", true);
-        SyncOperation syncOperation = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings()));
+        SyncOperation syncOperation = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings(), systemTrayUtil));
 
         String localDirPath = Path.of(this.getClass().getClassLoader().getResource("placeholder.txt").getPath()).getParent().toString();
         Path localFile = Path.of(localDirPath, UUID.randomUUID().toString());
@@ -471,7 +473,7 @@ public class SyncOperationTest extends TestCase {
         NotificationManager notificationManager = Mockito.mock(NotificationManager.class);
 
         SyncJob syncJob1 = new SyncJob(SyncJob.Type.Upload, "url", "uuid", "token", "title", "/remotedir1", "/localdir1", true);
-        SyncOperation syncOperation = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings()));
+        SyncOperation syncOperation = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings(), systemTrayUtil));
 
         Mockito.doReturn(Optional.of(new File("owner", "/", "", true, null, null))).when(syncOperation).getRemoteFilePresence(Mockito.any());
 
@@ -498,7 +500,7 @@ public class SyncOperationTest extends TestCase {
         NotificationManager notificationManager = Mockito.mock(NotificationManager.class);
 
         SyncJob syncJob1 = new SyncJob(SyncJob.Type.Upload, "url", "uuid", "token", "title", "/remotedir1", "/localdir1", true);
-        SyncOperation syncOperation = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings()));
+        SyncOperation syncOperation = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings(), systemTrayUtil));
 
         Path remotePath = Path.of("/remoteroot/path");
         Instant remoteLastModified = Instant.now();
@@ -526,7 +528,7 @@ public class SyncOperationTest extends TestCase {
 
         SyncJobEventDAO syncJobEventDAO1 = Mockito.mock(SyncJobEventDAO.class);
         SyncJob syncJob1 = new SyncJob(SyncJob.Type.Upload, "url", "uuid", "token", "title", "/remotedir1", "/localdir1", true);
-        SyncOperation syncOperation1 = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO1, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings()));
+        SyncOperation syncOperation1 = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO1, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings(), systemTrayUtil));
         SyncJobEvent syncJobEvent1Up = new SyncJobEvent(Event.SyncDirection.UP, "local", "remote", false, false, "...", "...", ThreadLocalRandom.current().nextLong(), ThreadLocalRandom.current().nextLong(), ThreadLocalRandom.current().nextLong());
         SyncJobEvent syncJobEvent1Down = new SyncJobEvent(Event.SyncDirection.DOWN, "local", "remote", false, false, "...", "...", ThreadLocalRandom.current().nextLong(), ThreadLocalRandom.current().nextLong(), ThreadLocalRandom.current().nextLong());
         Mockito.doReturn(syncJobEvent1Up).when(syncJobEventDAO1).selectByPrimaryKey(Mockito.eq(Event.SyncDirection.UP), Mockito.anyString(), Mockito.anyString());
@@ -534,15 +536,15 @@ public class SyncOperationTest extends TestCase {
 
         SyncJobEventDAO syncJobEventDAO2 = Mockito.mock(SyncJobEventDAO.class);
         SyncJob syncJob2 = new SyncJob(SyncJob.Type.Upload, "url", "uuid", "token", "title", "/remotedir1", "/localdir1", true);
-        SyncOperation syncOperation2 = Mockito.spy(new SyncOperation(syncJob2, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO2, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings()));
+        SyncOperation syncOperation2 = Mockito.spy(new SyncOperation(syncJob2, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO2, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings(), systemTrayUtil));
 
         SyncJobEventDAO syncJobEventDAO3 = Mockito.mock(SyncJobEventDAO.class);
         SyncJob syncJob3 = new SyncJob(SyncJob.Type.Download, "url", "uuid", "token", "title", "/remotedir1", "/localdir1", true);
-        SyncOperation syncOperation3 = Mockito.spy(new SyncOperation(syncJob3, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO3, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings()));
+        SyncOperation syncOperation3 = Mockito.spy(new SyncOperation(syncJob3, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO3, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings(), systemTrayUtil));
 
         SyncJobEventDAO syncJobEventDAO4 = Mockito.mock(SyncJobEventDAO.class);
         SyncJob syncJob4 = new SyncJob(SyncJob.Type.Download, "url", "uuid", "token", "title", "/remotedir1", "/localdir1", true);
-        SyncOperation syncOperation4 = Mockito.spy(new SyncOperation(syncJob4, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO4, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings()));
+        SyncOperation syncOperation4 = Mockito.spy(new SyncOperation(syncJob4, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO4, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings(), systemTrayUtil));
         SyncJobEvent syncJobEvent4Up = new SyncJobEvent(Event.SyncDirection.UP, "local", "remote", false, false, "...", "...", ThreadLocalRandom.current().nextLong(), ThreadLocalRandom.current().nextLong(), ThreadLocalRandom.current().nextLong());
         SyncJobEvent syncJobEvent4Down = new SyncJobEvent(Event.SyncDirection.DOWN, "local", "remote", false, false, "...", "...", ThreadLocalRandom.current().nextLong(), ThreadLocalRandom.current().nextLong(), ThreadLocalRandom.current().nextLong());
         Mockito.doReturn(syncJobEvent4Up).when(syncJobEventDAO4).selectByPrimaryKey(Mockito.eq(Event.SyncDirection.UP), Mockito.anyString(), Mockito.anyString());
@@ -550,7 +552,7 @@ public class SyncOperationTest extends TestCase {
 
         SyncJobEventDAO syncJobEventDAO5 = Mockito.mock(SyncJobEventDAO.class);
         SyncJob syncJob5 = new SyncJob(SyncJob.Type.Bidirectional, "url", "uuid", "token", "title", "/remotedir1", "/localdir1", true);
-        SyncOperation syncOperation5 = Mockito.spy(new SyncOperation(syncJob5, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO5, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings()));
+        SyncOperation syncOperation5 = Mockito.spy(new SyncOperation(syncJob5, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO5, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings(), systemTrayUtil));
         SyncJobEvent syncJobEvent5Up = new SyncJobEvent(Event.SyncDirection.UP, "local", "remote", false, false, "...", "...", ThreadLocalRandom.current().nextLong(), ThreadLocalRandom.current().nextLong(), ThreadLocalRandom.current().nextLong());
         SyncJobEvent syncJobEvent5Down = new SyncJobEvent(Event.SyncDirection.DOWN, "local", "remote", false, false, "...", "...", ThreadLocalRandom.current().nextLong(), ThreadLocalRandom.current().nextLong(), ThreadLocalRandom.current().nextLong());
         Mockito.doReturn(syncJobEvent5Up).when(syncJobEventDAO5).selectByPrimaryKey(Mockito.eq(Event.SyncDirection.UP), Mockito.anyString(), Mockito.anyString());
@@ -558,7 +560,7 @@ public class SyncOperationTest extends TestCase {
 
         SyncJobEventDAO syncJobEventDAO6 = Mockito.mock(SyncJobEventDAO.class);
         SyncJob syncJob6 = new SyncJob(SyncJob.Type.Bidirectional, "url", "uuid", "token", "title", "/remotedir1", "/localdir1", true);
-        SyncOperation syncOperation6 = Mockito.spy(new SyncOperation(syncJob6, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO6, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings()));
+        SyncOperation syncOperation6 = Mockito.spy(new SyncOperation(syncJob6, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO6, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings(), systemTrayUtil));
         SyncJobEvent syncJobEvent6Up = new SyncJobEvent(Event.SyncDirection.UP, "local", "remote", false, false, "...", "...", ThreadLocalRandom.current().nextLong(), ThreadLocalRandom.current().nextLong(), ThreadLocalRandom.current().nextLong());
         SyncJobEvent syncJobEvent6Down = new SyncJobEvent(Event.SyncDirection.DOWN, "local", "remote", false, false, "...", "...", ThreadLocalRandom.current().nextLong(), ThreadLocalRandom.current().nextLong(), ThreadLocalRandom.current().nextLong());
         Mockito.doReturn(syncJobEvent6Up).when(syncJobEventDAO6).selectByPrimaryKey(Mockito.eq(Event.SyncDirection.UP), Mockito.anyString(), Mockito.anyString());
@@ -608,7 +610,7 @@ public class SyncOperationTest extends TestCase {
 
         SyncJobEventDAO syncJobEventDAO1 = Mockito.mock(SyncJobEventDAO.class);
         SyncJob syncJob1 = new SyncJob(SyncJob.Type.Upload, "url", "uuid", "token", "title", "/remotedir1", "/localdir1", true);
-        SyncOperation syncOperation1 = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO1, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings()));
+        SyncOperation syncOperation1 = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO1, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings(), systemTrayUtil));
 
         Path sourcePath = Path.of("source");
         Path destinationPath = Path.of("destination");
@@ -643,7 +645,7 @@ public class SyncOperationTest extends TestCase {
 
         SyncJobEventDAO syncJobEventDAO1 = Mockito.mock(SyncJobEventDAO.class);
         SyncJob syncJob1 = new SyncJob(SyncJob.Type.Upload, "url", "uuid", "token", "title", "/remotedir1", "/localdir1", true);
-        SyncOperation syncOperation1 = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO1, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings()));
+        SyncOperation syncOperation1 = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO1, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings(), systemTrayUtil));
 
         Path sourcePath = Path.of("source");
         Path destinationPath = Path.of("destination");
@@ -683,7 +685,7 @@ public class SyncOperationTest extends TestCase {
 
             SyncJobEventDAO syncJobEventDAO1 = Mockito.mock(SyncJobEventDAO.class);
             SyncJob syncJob1 = new SyncJob(SyncJob.Type.Upload, "url", "uuid", "token", "title", "/remotedir1", "/localdir1", true);
-            SyncOperation syncOperation1 = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO1, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings()));
+            SyncOperation syncOperation1 = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO1, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings(), systemTrayUtil));
 
             Path sourcePath = Path.of("source");
             Path destinationPath = Path.of("destination");
@@ -724,7 +726,7 @@ public class SyncOperationTest extends TestCase {
 
         SyncJobEventDAO syncJobEventDAO1 = Mockito.mock(SyncJobEventDAO.class);
         SyncJob syncJob1 = new SyncJob(SyncJob.Type.Upload, "url", "uuid", "token", "title", "/remotedir1", "/localdir1", true);
-        SyncOperation syncOperation1 = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO1, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings()));
+        SyncOperation syncOperation1 = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO1, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings(), systemTrayUtil));
 
         Assert.assertTrue(syncOperation1.skipAppPrivateFilesPrecheck(SyncJobEvent.SyncDirection.UP, Path.of("/hidden-dir"), Path.of("/remote")));
         Assert.assertTrue(syncOperation1.skipAppPrivateFilesPrecheck(SyncJobEvent.SyncDirection.DOWN, Path.of("/remote"), Path.of("/hidden-dir")));
@@ -762,7 +764,7 @@ public class SyncOperationTest extends TestCase {
                 SyncJobEventDAO syncJobEventDAO = Mockito.mock(SyncJobEventDAO.class);
                 SyncJob syncJob = new SyncJob(type, "url", "uuid", "token", SyncJob.EntityType.Sample, false, "title", "/remotedir1", "/localdir1", true, ignoreFiles, new ArrayList<>(List.of("hidden-dir?", "ignored-dir/aaa/**")));
                 syncJob.getIgnoredPathPatterns().add("hidden-dir?");
-                SyncOperation syncOperation = Mockito.spy(new SyncOperation(syncJob, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO, Path.of("/private-dir"), notificationManager, Settings.defaultSettings()));
+                SyncOperation syncOperation = Mockito.spy(new SyncOperation(syncJob, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO, Path.of("/private-dir"), notificationManager, Settings.defaultSettings(), systemTrayUtil));
 
                 Assert.assertEquals(ignoreFiles == SyncJob.IgnoredFilesMode.SpecificList, syncOperation.skipIgnoredFilesPrecheck(SyncJobEvent.SyncDirection.UP, Path.of("/localdir1/hidden-dirb"), Path.of("/remote")));
                 Assert.assertEquals(ignoreFiles == SyncJob.IgnoredFilesMode.SpecificList, syncOperation.skipIgnoredFilesPrecheck(SyncJobEvent.SyncDirection.UP, Path.of("/localdir1/hidden-dirb/aaa"), Path.of("/remote")));
@@ -802,7 +804,7 @@ public class SyncOperationTest extends TestCase {
 
         SyncJobEventDAO syncJobEventDAO1 = Mockito.mock(SyncJobEventDAO.class);
         SyncJob syncJob1 = new SyncJob(SyncJob.Type.Upload, "url", "uuid", "token", "title", "/remotedir1", "/localdir1", true);
-        SyncOperation syncOperation1 = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO1, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings()));
+        SyncOperation syncOperation1 = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO1, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings(), systemTrayUtil));
 
         Assert.assertTrue(syncOperation1.skipAppPrivateFilesPrecheck(SyncJobEvent.SyncDirection.UP, Path.of("/local/test.openbis-conflict"), Path.of("/remote/test.openbis-conflict")));
         Assert.assertTrue(syncOperation1.skipAppPrivateFilesPrecheck(SyncJobEvent.SyncDirection.UP, Path.of("/local/test.openbis-conflict"), Path.of("/remote/test")));
@@ -862,7 +864,7 @@ public class SyncOperationTest extends TestCase {
 
         SyncJobEventDAO syncJobEventDAO1 = Mockito.mock(SyncJobEventDAO.class);
         SyncJob syncJob1 = new SyncJob(SyncJob.Type.Bidirectional, "url", "uuid", "token", "title", "/remotedir1", "/localdir1", true);
-        SyncOperation syncOperation1 = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO1, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings()));
+        SyncOperation syncOperation1 = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO1, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings(), systemTrayUtil));
 
         SyncOperation.SyncTaskFileTransferredListener syncTaskFileDownloadListener = syncOperation1.new SyncTaskFileTransferredListener(SyncJobEvent.SyncDirection.UP);
 
@@ -886,7 +888,7 @@ public class SyncOperationTest extends TestCase {
 
         SyncJobEventDAO syncJobEventDAO1 = Mockito.mock(SyncJobEventDAO.class);
         SyncJob syncJob1 = new SyncJob(SyncJob.Type.Bidirectional, "url", "uuid", "token", "title", "/remotedir1", "/localdir1", true);
-        SyncOperation syncOperation1 = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO1, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings()));
+        SyncOperation syncOperation1 = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO1, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings(), systemTrayUtil));
 
         SyncOperation.SyncTaskFileTransferredListener syncTaskFileDownloadListener = syncOperation1.new SyncTaskFileTransferredListener(SyncJobEvent.SyncDirection.UP);
 
@@ -918,7 +920,7 @@ public class SyncOperationTest extends TestCase {
 
         SyncJobEventDAO syncJobEventDAO1 = Mockito.mock(SyncJobEventDAO.class);
         SyncJob syncJob1 = new SyncJob(SyncJob.Type.Bidirectional, "url", "uuid", "token", "title", "/remotedir1", "/localdir1", true);
-        SyncOperation syncOperation1 = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO1, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings()));
+        SyncOperation syncOperation1 = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO1, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings(), systemTrayUtil));
 
         SyncOperation.SyncTaskFileTransferredListener syncTaskFileDownloadListener = syncOperation1.new SyncTaskFileTransferredListener(SyncJobEvent.SyncDirection.DOWN);
 
@@ -950,7 +952,7 @@ public class SyncOperationTest extends TestCase {
 
             SyncJobEventDAO syncJobEventDAO1 = Mockito.mock(SyncJobEventDAO.class);
             SyncJob syncJob1 = new SyncJob(SyncJob.Type.Bidirectional, "url", "uuid", "token", "title", "/remotedir1", "/localdir1", true);
-            SyncOperation syncOperation1 = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO1, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings()));
+            SyncOperation syncOperation1 = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO1, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings(), systemTrayUtil));
 
             SyncOperation.FileSyncCollisionListener fileSyncCollisionListener = syncOperation1.new FileSyncCollisionListener(syncDirection);
 
@@ -982,7 +984,7 @@ public class SyncOperationTest extends TestCase {
 
             SyncJobEventDAO syncJobEventDAO1 = Mockito.mock(SyncJobEventDAO.class);
             SyncJob syncJob1 = new SyncJob(SyncJob.Type.Bidirectional, "url", "uuid", "token", "title", "/remotedir1", "/localdir1", true);
-            SyncOperation syncOperation1 = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO1, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings()));
+            SyncOperation syncOperation1 = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO1, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings(), systemTrayUtil));
 
             SyncOperation.FileSyncCollisionListener fileSyncCollisionListener = syncOperation1.new FileSyncCollisionListener(syncDirection);
 
@@ -1018,7 +1020,7 @@ public class SyncOperationTest extends TestCase {
 
                 SyncJobEventDAO syncJobEventDAO1 = Mockito.mock(SyncJobEventDAO.class);
                 SyncJob syncJob1 = new SyncJob(syncJobType, "url", "uuid", "token", "title", "/remotedir1", "/localdir1", true);
-                SyncOperation syncOperation1 = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO1, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings()));
+                SyncOperation syncOperation1 = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO1, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings(), systemTrayUtil));
 
                 SyncOperation.FileSyncCollisionListener fileSyncCollisionListener = Mockito.spy(syncOperation1.new FileSyncCollisionListener(syncDirection));
 
@@ -1050,7 +1052,7 @@ public class SyncOperationTest extends TestCase {
 
                 SyncJobEventDAO syncJobEventDAO1 = Mockito.mock(SyncJobEventDAO.class);
                 SyncJob syncJob1 = new SyncJob(syncJobType, "url", "uuid", "token", "title", "/remotedir1", "/localdir1", true);
-                SyncOperation syncOperation1 = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO1, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings()));
+                SyncOperation syncOperation1 = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO1, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings(), systemTrayUtil));
 
                 SyncOperation.FileSyncCollisionListener fileSyncCollisionListener = Mockito.spy(syncOperation1.new FileSyncCollisionListener(syncDirection));
 
@@ -1083,7 +1085,7 @@ public class SyncOperationTest extends TestCase {
 
                     SyncJobEventDAO syncJobEventDAO1 = Mockito.mock(SyncJobEventDAO.class);
                     SyncJob syncJob1 = new SyncJob(syncJobType, "url", "uuid", "token", "title", "/remotedir1", "/localdir1", true);
-                    SyncOperation syncOperation1 = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO1, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings()));
+                    SyncOperation syncOperation1 = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO1, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings(), systemTrayUtil));
 
                     SyncOperation.FileSyncCollisionListener fileSyncCollisionListener = Mockito.spy(syncOperation1.new FileSyncCollisionListener(syncDirection));
 
@@ -1129,7 +1131,7 @@ public class SyncOperationTest extends TestCase {
                             Path destinationPath = Path.of("/dir1/destination");
 
                             for(SyncJobEvent fakeSyncEntry : getDifferentFakeSyncJobEntries(syncDirection, sourcePath, destinationPath, syncJob1)) {
-                                SyncOperation syncOperation1 = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO1, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings()));
+                                SyncOperation syncOperation1 = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO1, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings(), systemTrayUtil));
                                 SyncOperation.FileSyncCollisionListener fileSyncCollisionListener = Mockito.spy(syncOperation1.new FileSyncCollisionListener(syncDirection));
 
                                 Mockito.doReturn(false).when(syncOperation1).skipAppPrivateFilesPrecheck(syncDirection, sourcePath, destinationPath);
@@ -1195,7 +1197,7 @@ public class SyncOperationTest extends TestCase {
 
                             SyncJobEventDAO syncJobEventDAO1 = Mockito.mock(SyncJobEventDAO.class);
                             SyncJob syncJob1 = new SyncJob(syncJobType, "url", "uuid", "token", "title", "/remotedir1", "/localdir1", true);
-                            SyncOperation syncOperation1 = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO1, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings()));
+                            SyncOperation syncOperation1 = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO1, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings(), systemTrayUtil));
 
                             SyncOperation.FileSyncCollisionListener fileSyncCollisionListener = Mockito.spy(syncOperation1.new FileSyncCollisionListener(syncDirection));
 
@@ -1267,7 +1269,7 @@ public class SyncOperationTest extends TestCase {
 
         SyncJobEventDAO syncJobEventDAO1 = Mockito.mock(SyncJobEventDAO.class);
         SyncJob syncJob1 = new SyncJob(SyncJob.Type.Bidirectional, "url", "uuid", "token", "title", "/remotedir1", "/localdir1", true);
-        SyncOperation syncOperation1 = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO1, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings()));
+        SyncOperation syncOperation1 = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO1, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings(), systemTrayUtil));
 
         for( SyncJobEvent.SyncDirection syncDirection : List.of(Event.SyncDirection.UP, Event.SyncDirection.DOWN)) {
             Path source = Path.of(this.getClass().getClassLoader().getResource("placeholder.txt").getPath()).getParent().resolve("source");
@@ -1321,8 +1323,6 @@ public class SyncOperationTest extends TestCase {
                         } catch (Exception e) {
                             exception = e;
                         }
-                        Mockito.verify(afsClient, Mockito.times(1)).delete(syncJob1.getEntityPermId(), remoteFile.toString());
-
                         Mockito.verify(afsClient, Mockito.times(1)).upload(
                                 Mockito.eq(localFile),
                                 Mockito.eq(syncJob1.getEntityPermId()),
@@ -1369,7 +1369,7 @@ public class SyncOperationTest extends TestCase {
 
         SyncJobEventDAO syncJobEventDAO1 = Mockito.mock(SyncJobEventDAO.class);
         SyncJob syncJob1 = new SyncJob(SyncJob.Type.Bidirectional, "url", "uuid", "token", "title", "/remotedir1", "/localdir1", true);
-        SyncOperation syncOperation1 = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO1, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings()));
+        SyncOperation syncOperation1 = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO1, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings(), systemTrayUtil));
 
         for( SyncJobEvent.SyncDirection syncDirection : List.of(Event.SyncDirection.UP, Event.SyncDirection.DOWN)) {
             Path source = Path.of(this.getClass().getClassLoader().getResource("placeholder.txt").getPath()).getParent().resolve("source");
@@ -1449,6 +1449,7 @@ public class SyncOperationTest extends TestCase {
 
     @Test
     public void testRaiseConflictNotification() {
+        Mockito.clearInvocations(systemTrayUtil);
         SyncOperation.AfsClientProxy afsClient = Mockito.mock(SyncOperation.AfsClientProxy.class);
         ClientAPI.TransferMonitorListener uploadMonitor = Mockito.mock(ClientAPI.TransferMonitorListener.class);
         ClientAPI.TransferMonitorListener downloadMonitor = Mockito.mock(ClientAPI.TransferMonitorListener.class);
@@ -1456,7 +1457,7 @@ public class SyncOperationTest extends TestCase {
 
         SyncJobEventDAO syncJobEventDAO1 = Mockito.mock(SyncJobEventDAO.class);
         SyncJob syncJob1 = new SyncJob(SyncJob.Type.Bidirectional, "url", "uuid", "token", "title", "/remotedir1", "/localdir1", true);
-        SyncOperation syncOperation1 = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO1, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings()));
+        SyncOperation syncOperation1 = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO1, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings(), systemTrayUtil));
 
         Path source = Path.of("source");
         Path destination = Path.of("destination");
@@ -1468,6 +1469,7 @@ public class SyncOperationTest extends TestCase {
 
         ArgumentCaptor<List<Notification>> notificationArgumentCaptor = ArgumentCaptor.forClass(List.class);
         Mockito.verify(syncOperation1.notificationManager, Mockito.times(1)).addNotifications(notificationArgumentCaptor.capture());
+        Mockito.verify(systemTrayUtil, Mockito.times(1)).raiseNotification(notificationArgumentCaptor.getValue().get(0));
         Assert.assertEquals(1, notificationArgumentCaptor.getValue().size());
         Assert.assertEquals(Notification.Type.Conflict, notificationArgumentCaptor.getValue().get(0).getType());
         Assert.assertEquals(syncJob1.getLocalDirectoryRoot(), notificationArgumentCaptor.getValue().get(0).getLocalDirectory());
@@ -1488,7 +1490,7 @@ public class SyncOperationTest extends TestCase {
 
         SyncJobEventDAO syncJobEventDAO1 = Mockito.mock(SyncJobEventDAO.class);
         SyncJob syncJob1 = new SyncJob(SyncJob.Type.Bidirectional, "url", "uuid", "token", "title", "/remotedir1", "/localdir1", true);
-        SyncOperation syncOperation1 = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO1, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings()));
+        SyncOperation syncOperation1 = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO1, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings(), systemTrayUtil));
 
         Path source = Path.of("source");
         Path destination = Path.of("destination");
@@ -1512,6 +1514,7 @@ public class SyncOperationTest extends TestCase {
 
     @Test
     public void testRaiseJobStoppedNotification() {
+        Mockito.clearInvocations(systemTrayUtil);
         SyncOperation.AfsClientProxy afsClient = Mockito.mock(SyncOperation.AfsClientProxy.class);
         ClientAPI.TransferMonitorListener uploadMonitor = Mockito.mock(ClientAPI.TransferMonitorListener.class);
         ClientAPI.TransferMonitorListener downloadMonitor = Mockito.mock(ClientAPI.TransferMonitorListener.class);
@@ -1519,7 +1522,7 @@ public class SyncOperationTest extends TestCase {
 
         SyncJobEventDAO syncJobEventDAO1 = Mockito.mock(SyncJobEventDAO.class);
         SyncJob syncJob1 = new SyncJob(SyncJob.Type.Bidirectional, "url", "uuid", "token", "title", "/remotedir1", "/localdir1", true);
-        SyncOperation syncOperation1 = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO1, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings()));
+        SyncOperation syncOperation1 = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO1, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings(), systemTrayUtil));
 
         Path source = Path.of("source");
         Path destination = Path.of("destination");
@@ -1531,6 +1534,7 @@ public class SyncOperationTest extends TestCase {
 
         ArgumentCaptor<List<Notification>> notificationArgumentCaptor = ArgumentCaptor.forClass(List.class);
         Mockito.verify(syncOperation1.notificationManager, Mockito.times(1)).addNotifications(notificationArgumentCaptor.capture());
+        Mockito.verify(systemTrayUtil, Mockito.times(1)).raiseNotification(notificationArgumentCaptor.getValue().get(0));
         Assert.assertEquals(1, notificationArgumentCaptor.getValue().size());
         Assert.assertEquals(Notification.Type.JobStopped, notificationArgumentCaptor.getValue().get(0).getType());
         Assert.assertEquals(syncJob1.getLocalDirectoryRoot(), notificationArgumentCaptor.getValue().get(0).getLocalDirectory());
@@ -1543,6 +1547,7 @@ public class SyncOperationTest extends TestCase {
 
     @Test
     public void testRaiseJobExceptionNotification() {
+        Mockito.clearInvocations(systemTrayUtil);
         SyncOperation.AfsClientProxy afsClient = Mockito.mock(SyncOperation.AfsClientProxy.class);
         ClientAPI.TransferMonitorListener uploadMonitor = Mockito.mock(ClientAPI.TransferMonitorListener.class);
         ClientAPI.TransferMonitorListener downloadMonitor = Mockito.mock(ClientAPI.TransferMonitorListener.class);
@@ -1550,7 +1555,7 @@ public class SyncOperationTest extends TestCase {
 
         SyncJobEventDAO syncJobEventDAO1 = Mockito.mock(SyncJobEventDAO.class);
         SyncJob syncJob1 = new SyncJob(SyncJob.Type.Bidirectional, "url", "uuid", "token", "title", "/remotedir1", "/localdir1", true);
-        SyncOperation syncOperation1 = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO1, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings()));
+        SyncOperation syncOperation1 = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO1, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings(), systemTrayUtil));
 
         Path source = Path.of("source");
         Path destination = Path.of("destination");
@@ -1563,6 +1568,7 @@ public class SyncOperationTest extends TestCase {
 
         ArgumentCaptor<List<Notification>> notificationArgumentCaptor = ArgumentCaptor.forClass(List.class);
         Mockito.verify(syncOperation1.notificationManager, Mockito.times(1)).addNotifications(notificationArgumentCaptor.capture());
+        Mockito.verify(systemTrayUtil, Mockito.times(1)).raiseNotification(notificationArgumentCaptor.getValue().get(0));
         Assert.assertEquals(1, notificationArgumentCaptor.getValue().size());
         Assert.assertEquals(Notification.Type.JobException, notificationArgumentCaptor.getValue().get(0).getType());
         Assert.assertEquals(syncJob1.getLocalDirectoryRoot(), notificationArgumentCaptor.getValue().get(0).getLocalDirectory());
@@ -1589,7 +1595,7 @@ public class SyncOperationTest extends TestCase {
 
         SyncJobEventDAO syncJobEventDAO1 = Mockito.mock(SyncJobEventDAO.class);
         SyncJob syncJob1 = new SyncJob(SyncJob.Type.Bidirectional, "url", "uuid", "token", "title", "/remotedir1", "/localdir1", true);
-        SyncOperation syncOperation1 = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO1, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings()));
+        SyncOperation syncOperation1 = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO1, Path.of("/hidden-dir"), notificationManager, Settings.defaultSettings(), systemTrayUtil));
 
         List<Notification> conflictNotifications = List.of(
                 Notification.builder().type(Notification.Type.Conflict).localDirectory(localDirPath.toString())

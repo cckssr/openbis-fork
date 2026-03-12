@@ -575,17 +575,17 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
             }
 		}
 
-		this.delete = function(owner, source){
+		this.delete = function(owner, source, trash){
 		    if(asFacade._private.transactionId){
                 return asFacade._private.ajaxRequestTransactional(afsServerTransactionParticipantId, {
                     data : {
                         "method" : "delete",
-                        "params" : [ owner, source ]
+                        "params" : [ owner, source, trash ]
                     }
                 })
             }else{
                 afsServer.setSession(asFacade._private.sessionToken)
-				const {promise} = afsServer.delete(owner, source);
+				const {promise} = afsServer.delete(owner, source, trash);
 				return promise;                
             }
 		}
@@ -632,6 +632,36 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
                 afsServer.setSession(asFacade._private.sessionToken)
 				const {promise} = afsServer.create(owner, source, directory);
 				return promise; 
+            }
+		}
+
+		this.truncate = function(owner, source, size){
+		    if(asFacade._private.transactionId){
+                return asFacade._private.ajaxRequestTransactional(afsServerTransactionParticipantId, {
+                    data : {
+                        "method" : "truncate",
+                        "params" : [ owner, source, size ]
+                    }
+                })
+            }else{
+                afsServer.setSession(asFacade._private.sessionToken)
+				const {promise} = afsServer.truncate(owner, source, size);
+				return promise;
+            }
+		}
+
+		this.snapshot = function(owner, source){
+		    if(asFacade._private.transactionId){
+                return asFacade._private.ajaxRequestTransactional(afsServerTransactionParticipantId, {
+                    data : {
+                        "method" : "snapshot",
+                        "params" : [ owner, source ]
+                    }
+                })
+            }else{
+                afsServer.setSession(asFacade._private.sessionToken)
+				const {promise} = afsServer.snapshot(owner, source);
+				return promise;
             }
 		}
 

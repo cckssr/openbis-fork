@@ -423,8 +423,8 @@ class Facade {
     )
   }
 
-  delete(owner, source) {
-    return this.promise(this._getAfsServerFacade().delete(owner, source))
+  delete(owner, source, trash) {
+    return this.promise(this._getAfsServerFacade().delete(owner, source, trash))
   }
 
   copy(sourceOwner, source, targetOwner, target) {
@@ -455,6 +455,12 @@ class Facade {
 
   free(owner, source) {
     return this.promise(this._getAfsServerFacade().free(owner, source))
+  }
+
+  snapshot(owner, source) {
+    return this.promise(
+      this._getAfsServerFacade().snapshot(owner, source)
+    )
   }
 
   getRightsByIds(ids, fo) {

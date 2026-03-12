@@ -75,7 +75,7 @@ public class WriteTransactionOperationTest extends AbstractTransactionOperationT
         assertTrue(Files.isDirectory(folder));
 
         begin();
-        delete(DIR_B_PATH);
+        delete(DIR_B_PATH, false);
         write(DIR_B_PATH, 0, DATA);
         prepare();
         commit();
@@ -96,7 +96,7 @@ public class WriteTransactionOperationTest extends AbstractTransactionOperationT
         assertFalse(Files.isDirectory(file));
 
         begin();
-        delete(FILE_B_PATH);
+        delete(FILE_B_PATH, false);
         create(FILE_B_PATH, true);
 
         try
@@ -119,7 +119,7 @@ public class WriteTransactionOperationTest extends AbstractTransactionOperationT
         assertFalse(Files.isDirectory(file));
 
         begin();
-        delete(FILE_B_PATH);
+        delete(FILE_B_PATH, false);
         create(FILE_B_PATH, false);
         write(FILE_B_PATH, 0, DATA);
         write(FILE_B_PATH, DATA.length, DATA);
@@ -141,7 +141,7 @@ public class WriteTransactionOperationTest extends AbstractTransactionOperationT
         assertFalse(Files.isDirectory(file));
 
         begin();
-        delete(FILE_B_PATH);
+        delete(FILE_B_PATH, false);
         write(FILE_B_PATH, 0, DATA);
         write(FILE_B_PATH, DATA.length, DATA);
         prepare();

@@ -22,8 +22,14 @@ import ch.ethz.sis.shared.log.classic.core.LogCategory as LogCategory
 import ch.ethz.sis.shared.log.classic.impl.LogFactory as LogFactory
 
 
-from generalExports import exportAll
-from roCrateExports import exportRoCrate, checkStatues, getRoCrateUrl
+
+
+from general.api import exportAll
+from ro_crate.api import exportRoCrate, checkStatues, getRoCrateUrl
+from sci_cat.api import exportSciCat
+from zenodo.api import exportZenodo
+from research_collection.api import exportResearchCollection
+
 
 
 
@@ -31,17 +37,27 @@ OPERATION_LOG = LogFactory.getLogger(LogCategory.OPERATION, LogFactory)
 
 
 
-def process(executionContext, params):
+def process(context, params):
     method = params.get("method")
 
     if method == "exportAll":
-        return exportAll(executionContext, params)
+        return exportAll(context, params)
+
     elif method == "exportRoCrate":
-        return exportRoCrate(executionContext, params)
+        return exportRoCrate(context, params)
     elif method == "statusRoCrateJobs":
-        return checkStatues(executionContext, params)
+        return checkStatues(context, params)
     elif method == "getRoCrateUrl":
-        return getRoCrateUrl(executionContext, params)
+        return getRoCrateUrl(context, params)
+
+    elif method == "exportSciCat":
+        return exportSciCat(context, params)
+
+    elif method == "exportZenodo":
+        return exportZenodo(context, params)
+
+    elif method == "exportResearchCollection":
+        return exportResearchCollection(context, params)
     else:
         OPERATION_LOG.error("No such method '%s'" % method)
         return {

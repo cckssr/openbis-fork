@@ -6,7 +6,8 @@ var LayoutManager = {
 	DESKTOP_SIZE : 1024,
 	TABLET_SIZE : 768,
 	MOBILE_SIZE : 0,
-	MIN_HEADER_HEIGHT : 120,
+	MIN_HEADER_HEIGHT : 100,
+	HEADER_PADDING : 20,
 	MAX_FIRST_COLUMN_WIDTH : 350,
 	body : null,
 	mainContainer : null,
@@ -237,7 +238,7 @@ var LayoutManager = {
         });
 
         if (view.header) {
-            headerHeight = _this.MIN_HEADER_HEIGHT;
+            headerHeight = _this.MIN_HEADER_HEIGHT + _this.HEADER_PADDING;
              view.header.css({
                 display : "block",
                 "min-height" : headerHeight,
@@ -250,7 +251,7 @@ var LayoutManager = {
         if (view.content) {
             view.content.css({
                 display : "block",
-                height : height - headerHeight - LayoutManager.TAB_TOP_BAR_HEIGHT
+                height : height - Math.max(view.header.height(), LayoutManager.MIN_HEADER_HEIGHT) - LayoutManager.HEADER_PADDING - LayoutManager.TAB_TOP_BAR_HEIGHT
             });
 
         } else {
@@ -297,7 +298,7 @@ var LayoutManager = {
 
 		if (view.header) {
 			view.header.css({
-				"min-height" : this.MIN_HEADER_HEIGHT,
+				"min-height" : this.MIN_HEADER_HEIGHT + this.HEADER_PADDING,
 				"height" : "auto"
 			});
 
@@ -310,6 +311,10 @@ var LayoutManager = {
 			if(isFirstTime) {
 				this.firstColumn.append(view.content);
 			}
+			view.content.css({
+                display : "block",
+                height : height - Math.max(view.header.height(), LayoutManager.MIN_HEADER_HEIGHT) - LayoutManager.HEADER_PADDING - LayoutManager.TAB_TOP_BAR_HEIGHT
+            });
 		}
 
 		if (view.auxContent) {

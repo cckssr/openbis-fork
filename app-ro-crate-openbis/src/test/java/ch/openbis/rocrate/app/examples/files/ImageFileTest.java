@@ -4,6 +4,7 @@ import ch.eth.sis.rocrate.SchemaFacade;
 import ch.eth.sis.rocrate.facade.IMetadataEntry;
 import ch.eth.sis.rocrate.facade.IType;
 import ch.ethz.sis.openbis.generic.excel.v3.from.ExcelReader;
+import ch.ethz.sis.openbis.generic.excel.v3.model.IFileInfo;
 import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
 import ch.ethz.sis.openbis.generic.excel.v3.to.ExcelWriter;
 import ch.openbis.rocrate.app.reader.RdfToModel;
@@ -47,10 +48,10 @@ public class ImageFileTest
         Assert.assertEquals(1, excelModel.getImageFiles().size());
         Assert.assertEquals(0, excelModel.getFiles().size());
 
-        List<OpenBisModel.FileInfo> fileInfos =
+        List<IFileInfo> fileInfos =
                 excelModel.getImageFiles().values().stream().findFirst().orElseThrow();
         Assert.assertEquals(1, fileInfos.size());
-        OpenBisModel.FileInfo fileInfo = fileInfos.get(0);
+        IFileInfo fileInfo = fileInfos.get(0);
         Assert.assertTrue(fileInfo.filePath()
                 .equals("xlsx/miscellaneous/file-service/eln-lims/5c/37/0f/5c370fb6-e2be-4472-ae2a-640e13b2d763/87d28f0c-7f83-449c-a20e-fb445cf968f1.png"));
 
@@ -80,9 +81,9 @@ public class ImageFileTest
                         entryList.stream().toList(), "DEFAULT",
                         "DEFAULT", schemaFacade);
 
-        Assert.assertEquals(1, openBisModel.getFiles().size());
+        Assert.assertEquals(2, openBisModel.getFiles().size());
 
-        List<OpenBisModel.FileInfo> fileInfos =
+        List<IFileInfo> fileInfos =
                 openBisModel.getImageFiles().values().stream().findFirst().orElseThrow();
         Assert.assertEquals(1, fileInfos.size());
         Assert.assertEquals(
@@ -111,7 +112,7 @@ public class ImageFileTest
         Assert.assertEquals(1, excelModel.getImageFiles().size());
         Assert.assertEquals(1, excelModel.getFiles().size());
 
-        List<OpenBisModel.FileInfo> fileInfos =
+        List<IFileInfo> fileInfos =
                 excelModel.getImageFiles().values().stream().findFirst().orElseThrow();
         Assert.assertEquals(1, fileInfos.size());
         Assert.assertEquals(

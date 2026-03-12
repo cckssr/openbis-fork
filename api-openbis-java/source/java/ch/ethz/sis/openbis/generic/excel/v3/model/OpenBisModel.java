@@ -16,6 +16,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.Vocabulary;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.id.VocabularyPermId;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
@@ -42,13 +44,26 @@ public class OpenBisModel
 
     public static final String CODE_SPECIAL_CHARACTER_REPLACEMENT = "_";
 
-    private final Map<ObjectIdentifier, List<FileInfo>> files;
+    private final Map<ObjectIdentifier, List<IFileInfo>> files;
 
-    private final Map<ObjectIdentifier, List<FileInfo>> imageFiles;
+    private final Map<ObjectIdentifier, List<IFileInfo>> imageFiles;
 
-    public record FileInfo(String objectIdentifier, String filePath, byte[] contents,
-                           String originalPath)
+    public record FileInfoContents(String objectIdentifier, String filePath, byte[] contents,
+                                   String originalPath) implements
+            IFileInfo
     {
+    }
+
+    public record FileInfoPath(String objectIdentifier, String filePath, Path readPath,
+                               String originalPath) implements
+            IFileInfo
+    {
+
+        @Override
+        public byte[] contents() throws IOException
+        {
+            return Files.readAllBytes(readPath);
+        }
     }
 
     public record MiscFile()
@@ -62,8 +77,8 @@ public class OpenBisModel
             Map<ObjectIdentifier, AbstractEntityPropertyHolder> entities,
             Map<PluginPermId, Plugin> plugins,
             Map<String, List<Path>> miscellaneous, Map<String, String> externalToOpenBisIdentifiers,
-            Map<ObjectIdentifier, List<FileInfo>> files,
-            Map<ObjectIdentifier, List<FileInfo>> imageFiles)
+            Map<ObjectIdentifier, List<IFileInfo>> files,
+            Map<ObjectIdentifier, List<IFileInfo>> imageFiles)
     {
         this.vocabularyTypes = vocabularyTypes;
         this.entityTypes = entityTypes;
@@ -124,7 +139,7 @@ public class OpenBisModel
         return externalToOpenBisIdentifiers;
     }
 
-    public Map<ObjectIdentifier, List<FileInfo>> getFiles()
+    public Map<ObjectIdentifier, List<IFileInfo>> getFiles()
     {
         return files;
     }
@@ -137,7 +152,7 @@ public class OpenBisModel
                 .replaceAll("\\\\u([0-9A-Fa-f]{2}){3}", CODE_SPECIAL_CHARACTER_REPLACEMENT);
     }
 
-    public Map<ObjectIdentifier, List<FileInfo>> getImageFiles()
+    public Map<ObjectIdentifier, List<IFileInfo>> getImageFiles()
     {
         return imageFiles;
     }

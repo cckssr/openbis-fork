@@ -6,4 +6,3 @@ Datastore Server Extensions
 
    dss-dropboxes
    dss-services
-   dss-imaging

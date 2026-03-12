@@ -17,6 +17,7 @@ package ch.ethz.sis.afsserver.server;
 
 import ch.ethz.sis.afs.exception.AFSExceptions;
 import ch.ethz.sis.afs.manager.LockMapper;
+import ch.ethz.sis.afs.manager.TrashRootProvider;
 import ch.ethz.sis.afsjson.jackson.JacksonObjectMapper;
 import ch.ethz.sis.afsserver.server.impl.ApiServerAdapter;
 import ch.ethz.sis.afsserver.server.impl.HttpDownloadAdapter;
@@ -104,6 +105,9 @@ public final class Server<CONNECTION, API>
         }
 
         logger.info("Incoming share id: " + incomingShareIdPath.toFile().getCanonicalPath());
+
+        TrashRootProvider trashRootProvider = configuration.getSharableInstance(AtomicFileSystemServerParameter.trashRootProviderClass);
+        trashRootProvider.init(configuration);
 
         // 2.1 Lock mapper
         LockMapper<UUID, String> lockMapper = configuration.getSharableInstance(AtomicFileSystemServerParameter.lockMapperClass);

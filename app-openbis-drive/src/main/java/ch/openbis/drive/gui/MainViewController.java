@@ -8,6 +8,7 @@ import ch.openbis.drive.gui.maincontent.SynchronizationTasksPanel;
 import ch.openbis.drive.gui.util.AboutDialog;
 import ch.openbis.drive.gui.util.DisplaySettings;
 import ch.openbis.drive.gui.util.SharedContext;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
@@ -50,9 +51,11 @@ public class MainViewController {
     AnchorPane root;
 
     final SimpleStringProperty activeSectionId = new SimpleStringProperty();
+    public final static SimpleObjectProperty<MainViewController> MAIN_INSTANCE = new SimpleObjectProperty<>(null);
 
     @FXML()
     public void initialize() {
+        MAIN_INSTANCE.set(this);
         I18n i18n = SharedContext.getContext().getI18n();
 
         root.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
@@ -182,7 +185,7 @@ public class MainViewController {
         });
     }
 
-    synchronized void activateSynchronizationTasksPanel() {
+    public synchronized void activateSynchronizationTasksPanel() {
         AnchorPane mainContentPanel = (AnchorPane) this.root.getChildren().filtered(it -> it instanceof AnchorPane && MAIN_CONTENT_PANEL_ID.equals(it.getId()))
                 .stream().findFirst().orElse(null);
 
@@ -191,7 +194,7 @@ public class MainViewController {
         markButtonAsActiveById(SYNC_TASKS_BUTTON_ID);
     }
 
-    synchronized void activateLogsPanel() {
+    public synchronized void activateLogsPanel() {
         AnchorPane mainContentPanel = (AnchorPane) this.root.getChildren().filtered(it -> it instanceof AnchorPane && MAIN_CONTENT_PANEL_ID.equals(it.getId()))
                 .stream().findFirst().orElse(null);
 
@@ -200,7 +203,7 @@ public class MainViewController {
         markButtonAsActiveById(LOGS_ID);
     }
 
-    synchronized void activateNotificationsPanel() {
+    public synchronized void activateNotificationsPanel() {
         AnchorPane mainContentPanel = (AnchorPane) this.root.getChildren().filtered(it -> it instanceof AnchorPane && MAIN_CONTENT_PANEL_ID.equals(it.getId()))
                 .stream().findFirst().orElse(null);
 
@@ -209,7 +212,7 @@ public class MainViewController {
         markButtonAsActiveById(NOTIFICATIONS_ID);
     }
 
-    synchronized void activateSettingsPanel() {
+    public synchronized void activateSettingsPanel() {
         AnchorPane mainContentPanel = (AnchorPane) this.root.getChildren().filtered(it -> it instanceof AnchorPane && MAIN_CONTENT_PANEL_ID.equals(it.getId()))
                 .stream().findFirst().orElse(null);
 

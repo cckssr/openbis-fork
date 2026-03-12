@@ -15,9 +15,12 @@
  */
 package ch.ethz.sis.afsserver.impl;
 
+import java.util.UUID;
+
 import ch.ethz.sis.afs.manager.TransactionConnection;
-import ch.ethz.sis.afsserver.ServerClientEnvironmentFS;
+import ch.ethz.sis.afs.manager.TrashRootProvider;
 import ch.ethz.sis.afsapi.api.PublicAPI;
+import ch.ethz.sis.afsserver.ServerClientEnvironmentFS;
 import ch.ethz.sis.afsserver.core.PublicApiTest;
 import ch.ethz.sis.afsserver.server.APIServer;
 import ch.ethz.sis.afsserver.server.Worker;
@@ -27,8 +30,6 @@ import ch.ethz.sis.afsserver.worker.ConnectionFactory;
 import ch.ethz.sis.afsserver.worker.WorkerFactory;
 import ch.ethz.sis.shared.pool.Pool;
 import ch.ethz.sis.shared.startup.Configuration;
-
-import java.util.UUID;
 
 public class ApiServerTest extends PublicApiTest {
 
@@ -47,6 +48,9 @@ public class ApiServerTest extends PublicApiTest {
         String interactiveSessionKey = configuration.getStringProperty(AtomicFileSystemServerParameter.apiServerInteractiveSessionKey);
         String transactionManagerKey = configuration.getStringProperty(AtomicFileSystemServerParameter.apiServerTransactionManagerKey);
         int apiServerWorkerTimeout = configuration.getIntegerProperty(AtomicFileSystemServerParameter.apiServerWorkerTimeout);
+        TrashRootProvider trashRootProvider = configuration.getSharableInstance(AtomicFileSystemServerParameter.trashRootProviderClass);
+        trashRootProvider.init(configuration);
+
         DummyServerObserver observer = new DummyServerObserver();
         observer.init(configuration);
         APIServer apiServer = new APIServer(connectionsPool, workersPool, PublicAPI.class, interactiveSessionKey, transactionManagerKey, apiServerWorkerTimeout, observer);

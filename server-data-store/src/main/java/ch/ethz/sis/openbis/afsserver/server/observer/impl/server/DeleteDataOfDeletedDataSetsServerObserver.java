@@ -201,7 +201,7 @@ public class DeleteDataOfDeletedDataSetsServerObserver implements ServerObserver
         try
         {
             ApiRequest apiRequest =
-                    new ApiRequest("1", "delete", Map.of("owner", event.getIdentifier(), "source", ""), sessionToken,
+                    new ApiRequest("1", "delete", Map.of("owner", event.getIdentifier(), "source", "", "trash", false), sessionToken,
                             null, null);
 
             apiServer.processOperation(apiRequest, new ApiResponseBuilder(), new PerformanceAuditor());

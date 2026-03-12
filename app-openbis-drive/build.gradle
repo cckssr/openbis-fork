@@ -268,7 +268,10 @@ tasks.register('releaseOnWindows', Tar) {
     compression = Compression.GZIP
 }
 
+// Note: in development mode, the system-tray menu cannot start the graphical interface: use Gradle task
+// 'openBISDevelopmentEnvironmentDriveGUIStart' instead
 tasks.register('openBISDevelopmentEnvironmentDriveServerStart', JavaExec) {
+    environment('OPENBIS_DRIVE_DEV_MODE','true')
     mainClass = 'ch.openbis.drive.DriveAPIService'
     classpath = sourceSets.main.runtimeClasspath
 }

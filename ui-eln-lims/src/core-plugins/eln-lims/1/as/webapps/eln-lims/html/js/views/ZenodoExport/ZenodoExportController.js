@@ -113,11 +113,15 @@ function ZenodoExportController(parentController) {
                 mainController.serverFacade.exportZenodoAs(toExportModel, userInformation, title, fileName, this.exportModel.accessToken,
                         function(serviceResult) {
                             Util.unblockUI();
-                            var zenodoResultUrl = serviceResult.result.url;
-                            if(zenodoResultUrl) {
-                                var win = window.open(zenodoResultUrl, '_blank');
-                                win.focus();
-                                mainController.refreshView();
+                            if(serviceResult.result.error) {
+                                Util.showError(serviceResult.result);
+                            } else {
+                                var zenodoResultUrl = serviceResult.result.url;
+                                if(zenodoResultUrl) {
+                                    var win = window.open(zenodoResultUrl, '_blank');
+                                    win.focus();
+                                    mainController.refreshView();
+                                }
                             }
                         });
             }).bind(this));

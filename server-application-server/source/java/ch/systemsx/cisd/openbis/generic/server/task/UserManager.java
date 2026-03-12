@@ -1573,6 +1573,8 @@ public class UserManager
                     ISpaceId spaceId = roleAssignmentCreationToCheck.getSpaceId();
                     RoleAssignmentSearchCriteria roleAssignmentSearchCriteria =
                             new RoleAssignmentSearchCriteria();
+                    RoleAssignmentFetchOptions roleAssignmentFetchOptions = new RoleAssignmentFetchOptions();
+                    roleAssignmentFetchOptions.withSpace();
                     if (userId != null)
                     {
                         roleAssignmentSearchCriteria.withUser().withId()
@@ -1591,7 +1593,7 @@ public class UserManager
 
                     SearchResult<RoleAssignment> roleAssignmentSearchResult =
                             service.searchRoleAssignments(sessionToken,
-                                    roleAssignmentSearchCriteria, new RoleAssignmentFetchOptions());
+                                    roleAssignmentSearchCriteria, roleAssignmentFetchOptions);
 
                     boolean found = false;
                     if (!roleAssignmentSearchResult.getObjects().isEmpty())
@@ -1601,7 +1603,14 @@ public class UserManager
                         {
                             if (roleAssignment.getRole().equals(role))
                             {
-                                found = true;
+                                boolean isValidNullSpace = spaceId == null && roleAssignment.getSpace() == null;
+                                boolean isValidFoundSpace = spaceId != null
+                                        && roleAssignment.getSpace() != null
+                                        && spaceId instanceof SpacePermId
+                                        && roleAssignment.getSpace().getCode().equals(((SpacePermId)spaceId).getPermId());
+                                if (isValidNullSpace || isValidFoundSpace) {
+                                    found = true;
+                                }
                             }
                         }
                     }

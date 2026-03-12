@@ -90,6 +90,12 @@ Stop:
 - by using the command-line-application stop command: `openbis-drive-cmd-line.bat stop`
 - directly with the stop-script: `openbis-drive-service-stop.bat`
 
+### System-tray icon
+
+As an indicator that the background-process is running, a related icon should be shown in the system-tray
+(whose position varies according to platform): from that, a menu is reachable, with shortcuts to the graphical interface and
+a button to stop the service.
+
 ### Command-line (Linux and MAC OS)
 
 The command-line can be invoked by entering into the [launch-scripts directory](#launch-scripts-directory)

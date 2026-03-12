@@ -88,7 +88,7 @@ final class AfsClientImportProxy
     public void remove(String permId, String path) {
         try
         {
-            client.delete(permId, path);
+            client.delete(permId, path, true);
         } catch (Exception e)
         {
             throw new RuntimeException(e);

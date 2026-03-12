@@ -88,7 +88,7 @@ public class ListTransactionOperationTest extends AbstractTransactionOperationTe
     public void operation_list_directory_after_delete_exception() throws Exception
     {
         begin();
-        delete(DIR_B_PATH);
+        delete(DIR_B_PATH, false);
         try
         {
             list(DIR_BC_PATH, true);
@@ -133,7 +133,7 @@ public class ListTransactionOperationTest extends AbstractTransactionOperationTe
     public void operation_list_file_after_delete_exception() throws Exception
     {
         begin();
-        delete(FILE_A_PATH);
+        delete(FILE_A_PATH, false);
         try
         {
             list(FILE_A_PATH, false);

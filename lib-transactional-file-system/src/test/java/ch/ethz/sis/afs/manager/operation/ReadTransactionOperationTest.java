@@ -120,7 +120,7 @@ public class ReadTransactionOperationTest extends AbstractTransactionOperationTe
     public void operation_read_after_delete_exception() throws Exception
     {
         begin();
-        delete(FILE_A_PATH);
+        delete(FILE_A_PATH, false);
         try
         {
             read(FILE_A_PATH, 0, DATA.length);

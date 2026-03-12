@@ -50,6 +50,12 @@ Stop with the command-line:
 
 See [Command-line](#command-line) section below.
 
+### System-tray icon
+
+As an indicator that the background-process is running, a related icon should be shown in the system-tray
+(whose position varies according to platform): from that, a menu is reachable, with shortcuts to the graphical interface and
+a button to stop the service.
+
 ### Command-line
 
 The command-line can be invoked by entering into the [launcher and command-line directory](#launcher-and-command-line-directory)

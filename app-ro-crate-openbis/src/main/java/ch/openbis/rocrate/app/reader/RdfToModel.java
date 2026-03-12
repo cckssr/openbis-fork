@@ -29,6 +29,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.SemanticAnnotation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
+import ch.ethz.sis.openbis.generic.excel.v3.model.IFileInfo;
 import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
 import ch.openbis.rocrate.app.Constants;
 import ch.openbis.rocrate.app.reader.helper.DataTypeMatcher;
@@ -42,7 +43,6 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.nio.file.Files;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
@@ -67,7 +67,6 @@ public class RdfToModel
     {
 
         Set<SampleType> openBisDerivedTypes = new LinkedHashSet<>();
-        Map<ObjectIdentifier, List<OpenBisModel.FileInfo>> samplesToFiles = new LinkedHashMap<>();
 
 
         Map<String, IType> IdsToTypes =
@@ -89,11 +88,11 @@ public class RdfToModel
 
         Map<String, ExperimentType> identifierToCollectionType = new LinkedHashMap<>();
 
-        Map<ObjectIdentifier, List<OpenBisModel.FileInfo>> objectIdentifiersTOImageFiles =
+        Map<ObjectIdentifier, List<IFileInfo>> objectIdentifiersTOImageFiles =
                 new LinkedHashMap<>();
 
         Map<ExperimentIdentifier, Experiment> idsToCollections = new LinkedHashMap<>();
-        Map<ObjectIdentifier, List<OpenBisModel.FileInfo>> objectIdentifiersToFiles =
+        Map<ObjectIdentifier, List<IFileInfo>> objectIdentifiersToFiles =
                 new LinkedHashMap<>();
 
         Map<EntityTypePermId, IEntityType> schema = new LinkedHashMap<>();
@@ -413,8 +412,8 @@ public class RdfToModel
             Map<String, IMetadataEntry> idToEntities, Map<String, Sample> roCrateIdsToObjects,
             List<Pair<Sample, ReferencesToResolve>> samplesWithSpaceAndProjectCodes,
             Map<SpacePermId, Space> spaces, Map<ProjectIdentifier, Project> projects,
-            Map<ObjectIdentifier, List<OpenBisModel.FileInfo>> objectIdentifiersToFiles,
-            Map<ObjectIdentifier, List<OpenBisModel.FileInfo>> images,
+            Map<ObjectIdentifier, List<IFileInfo>> objectIdentifiersToFiles,
+            Map<ObjectIdentifier, List<IFileInfo>> images,
             Map<ObjectIdentifier, AbstractEntityPropertyHolder> metadata)
             throws IOException
     {
@@ -498,7 +497,7 @@ public class RdfToModel
                             sample.getCode()); // We need a name to construct certain paths inside the zip
                 }
                 sample.setProperties(properties);
-                handleFiles(entry, objectIdentifier, sample, objectIdentifiersToFiles, images);
+                handleFiles(entry, objectIdentifier, objectIdentifiersToFiles, images, sample);
 
                 properties.get("SPACE");
                 ReferencesToResolve referencesToResolve =
@@ -532,42 +531,39 @@ public class RdfToModel
 
                 projects.put(identifier, project);
 
+            } else if (entry.getTypes().contains(GRAPH_ID_Collection))
+            {
+                objectIdentifier = new ExperimentIdentifier(entry.getId());
+                handleFilesExperiment(entry, objectIdentifier, objectIdentifiersToFiles);
+
             }
 
         }
     }
 
     private static void handleFiles(IMetadataEntry metadataEntry, ObjectIdentifier objectIdentifier,
-            Sample sample,
-            Map<ObjectIdentifier, List<OpenBisModel.FileInfo>> res,
-            Map<ObjectIdentifier, List<OpenBisModel.FileInfo>> richTextImageFiles)
+            Map<ObjectIdentifier, List<IFileInfo>> res,
+            Map<ObjectIdentifier, List<IFileInfo>> richTextImageFiles, Sample sample)
             throws IOException
     {
 
-        List<OpenBisModel.FileInfo> myRes = new ArrayList<>();
+        List<OpenBisModel.FileInfoPath> myRes = new ArrayList<>();
 
-        List<OpenBisModel.FileInfo> finalMyRes = myRes;
+        List<OpenBisModel.FileInfoPath> finalMyRes = myRes;
         metadataEntry.getFileOrDirectory().ifPresent(x -> {
-            try
-            {
-                OpenBisModel.FileInfo fileInfo =
-                        new OpenBisModel.FileInfo(objectIdentifier.getIdentifier(), x.toString(),
-                                Files.readAllBytes(x), metadataEntry.getId());
+            OpenBisModel.FileInfoPath fileInfo =
+                    new OpenBisModel.FileInfoPath(objectIdentifier.getIdentifier(), x.toString(),
+                            x, metadataEntry.getId());
                 finalMyRes.add(fileInfo);
-
-            } catch (IOException e)
-            {
-                throw new RuntimeException(e);
-            }
 
         });
         for (var a : metadataEntry.getDataEntitiesReferenced())
         {
             if (a.getPath() != null)
             {
-                OpenBisModel.FileInfo fileInfo =
-                        new OpenBisModel.FileInfo(objectIdentifier.getIdentifier(),
-                                a.getPath().toString(), Files.readAllBytes(a.getPath()), a.getId());
+                OpenBisModel.FileInfoPath fileInfo =
+                        new OpenBisModel.FileInfoPath(objectIdentifier.getIdentifier(),
+                                a.getPath().toString(), a.getPath(), a.getId());
                 myRes.add(fileInfo);
             }
 
@@ -599,7 +595,8 @@ public class RdfToModel
                 Serializable writeVal = vals[0];
                 for (Serializable value : vals)
                 {
-                    var imageRes = ImageExtractor.findImageAndUpdatePaths(value);
+                    ImageExtractor.ValueAndImages imageRes =
+                            ImageExtractor.findImageAndUpdatePaths(value);
                     images = Stream.concat(images.entrySet().stream(),
                             imageRes.images().entrySet().stream()).collect(
                             Collectors.toMap(x -> x.getKey(), x -> x.getValue()));
@@ -611,12 +608,14 @@ public class RdfToModel
 
         }
         myRes.addAll(finalMyRes);
-        var compareMap = new HashMap<>(images);
-        var fileRes = myRes.stream().distinct().filter(x -> !isImageMatch(x, compareMap))
+        HashMap<String, String> compareMap = new HashMap<>(images);
+        List<IFileInfo> fileRes =
+                myRes.stream().distinct().filter(x -> !isImageMatch(x, compareMap))
                 .collect(Collectors.toList());
-        var imageRes = myRes.stream().distinct().filter(x -> isImageMatch(x, compareMap))
-                .map(x -> new OpenBisModel.FileInfo(x.objectIdentifier(), x.filePath(),
-                        x.contents(), compareMap.get(x.originalPath())))
+        List<IFileInfo> imageRes =
+                myRes.stream().distinct().filter(x -> isImageMatch(x, compareMap))
+                        .map(x -> new OpenBisModel.FileInfoPath(x.objectIdentifier(), x.filePath(),
+                                x.readPath(), compareMap.get(x.originalPath())))
                 .collect(Collectors.toList());
         ;
 
@@ -625,7 +624,44 @@ public class RdfToModel
         richTextImageFiles.put(objectIdentifier, imageRes);
     }
 
-    private static boolean isImageMatch(OpenBisModel.FileInfo x, Map<String, String> images)
+    private static void handleFilesExperiment(IMetadataEntry metadataEntry,
+            ObjectIdentifier objectIdentifier,
+            Map<ObjectIdentifier, List<IFileInfo>> res)
+            throws IOException
+    {
+
+        List<IFileInfo> myRes = new ArrayList<>();
+
+        metadataEntry.getFileOrDirectory().ifPresent(x -> {
+
+            IFileInfo fileInfo =
+                    new OpenBisModel.FileInfoPath(objectIdentifier.getIdentifier(), x.toString(), x,
+                            metadataEntry.getId());
+            myRes.add(fileInfo);
+
+
+
+        });
+        for (var a : metadataEntry.getDataEntitiesReferenced())
+        {
+            if (a.getPath() != null)
+            {
+                IFileInfo fileInfo =
+                        new OpenBisModel.FileInfoPath(objectIdentifier.getIdentifier(),
+                                a.getPath().toString(), a.getPath(), a.getId());
+                myRes.add(fileInfo);
+            }
+
+        }
+        var compareMap = new LinkedHashMap<>();
+        var fileRes = myRes;
+        ;
+
+        res.put(objectIdentifier, fileRes);
+
+    }
+
+    private static boolean isImageMatch(IFileInfo x, Map<String, String> images)
     {
         return images.keySet().stream()
                 .anyMatch(y -> x.filePath().endsWith(y.replace("file-service/eln-lims", "")));
@@ -1260,7 +1296,7 @@ public class RdfToModel
 
     }
 
-    private static Map<ObjectIdentifier, List<OpenBisModel.FileInfo>> findRichTextImages()
+    private static Map<ObjectIdentifier, List<IFileInfo>> findRichTextImages()
     {
         return null;
 

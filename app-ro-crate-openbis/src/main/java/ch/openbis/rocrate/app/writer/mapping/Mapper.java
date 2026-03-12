@@ -14,11 +14,13 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
+import ch.ethz.sis.openbis.generic.excel.v3.model.IFileInfo;
 import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
 import ch.openbis.rocrate.app.Constants;
 import ch.openbis.rocrate.app.writer.mapping.types.MapResult;
 import ch.openbis.rocrate.app.writer.mapping.types.RdfsSchema;
 import ch.openbis.rocrate.app.writer.mappinginfo.MappingInfo;
+import com.google.common.net.PercentEscaper;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -295,17 +297,16 @@ public class Mapper
                 references.put("parents", ((Sample) val).getChildren().stream()
                         .map(x -> x.getIdentifier().getIdentifier()).collect(Collectors.toList()));
 
-                List<OpenBisModel.FileInfo> files =
+                List<IFileInfo> files =
                         openBisModel.getFiles().getOrDefault(metaData.getKey(), new ArrayList<>());
-                List<OpenBisModel.FileInfo> imageFiles =
+                List<IFileInfo> imageFiles =
                         openBisModel.getImageFiles()
                                 .getOrDefault(metaData.getKey(), new ArrayList<>());
-                List<OpenBisModel.FileInfo> allFiles = new ArrayList<>();
+                List<IFileInfo> allFiles = new ArrayList<>();
                 allFiles.addAll(files);
                 allFiles.addAll(imageFiles);
 
-
-                for (OpenBisModel.FileInfo file : allFiles)
+                for (IFileInfo file : allFiles)
                 {
                     file.filePath();
                     file.objectIdentifier();
@@ -347,7 +348,7 @@ public class Mapper
                 metaDataEntries.add(
                         new MetadataEntry(experiment.getIdentifier().toString(), Set.of(type),
                                 props,
-                                Map.of()));
+                                new LinkedHashMap<>()));
 
             }
 
@@ -378,25 +379,27 @@ public class Mapper
 
         List<MapResult.RoCrateFile> files = new ArrayList<>();
 
-        for (Map.Entry<ObjectIdentifier, List<OpenBisModel.FileInfo>> a : openBisModel.getFiles()
+        for (Map.Entry<ObjectIdentifier, List<IFileInfo>> a : openBisModel.getFiles()
                 .entrySet())
         {
 
             List<String> identifiersToWrite = new ArrayList<>();
 
-            Stream<OpenBisModel.FileInfo> fileInfoStream = Stream.concat(a.getValue().stream(),
+            Stream<IFileInfo> fileInfoStream = Stream.concat(a.getValue().stream(),
                     openBisModel.getImageFiles().getOrDefault(a.getKey(), new ArrayList<>())
                             .stream());
-            for (OpenBisModel.FileInfo b : fileInfoStream.collect(Collectors.toList()))
+            for (IFileInfo b : fileInfoStream.collect(Collectors.toList()))
             {
 
                 UUID uuid = UUID.randomUUID();
                 Path path = Path.of("/tmp/ro-crate/" + uuid);
                 Files.createDirectories(Path.of("/tmp/ro-crate/"));
                 Files.write(path, b.contents());
-                MapResult.RoCrateFile roCrateFile = new MapResult.RoCrateFile(path, b.filePath());
+                MapResult.RoCrateFile roCrateFile =
+                        new MapResult.RoCrateFile(path, b.originalPath());
                 files.add(roCrateFile);
-                identifiersToWrite.add(b.filePath());
+                PercentEscaper percentEscaper = new PercentEscaper("-_/().", false);
+                identifiersToWrite.add(percentEscaper.escape(b.originalPath()));
             }
 
             Map<String, MetadataEntry> idToEntities =

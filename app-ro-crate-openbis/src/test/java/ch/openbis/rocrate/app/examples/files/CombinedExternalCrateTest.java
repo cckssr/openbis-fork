@@ -5,6 +5,7 @@ import ch.eth.sis.rocrate.facade.IMetadataEntry;
 import ch.eth.sis.rocrate.facade.IType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.ObjectIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
+import ch.ethz.sis.openbis.generic.excel.v3.model.IFileInfo;
 import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
 import ch.ethz.sis.openbis.generic.excel.v3.to.ExcelWriter;
 import ch.openbis.rocrate.app.reader.RdfToModel;
@@ -49,12 +50,12 @@ public class CombinedExternalCrateTest
                         entryList.stream().toList(), "DEFAULT",
                         "DEFAULT", schemaFacade);
 
-        List<OpenBisModel.FileInfo> fileInfos =
+        List<IFileInfo> fileInfos =
                 openBisModel.getImageFiles().values().stream().filter(x -> !x.isEmpty()).findFirst()
                         .orElseThrow();
         Assert.assertEquals(1, fileInfos.size());
 
-        List<OpenBisModel.FileInfo> fileInfosData =
+        List<IFileInfo> fileInfosData =
                 openBisModel.getFiles().values().stream().filter(x -> !x.isEmpty()).findFirst()
                         .orElse(null);
         Assert.assertNotNull(fileInfosData);

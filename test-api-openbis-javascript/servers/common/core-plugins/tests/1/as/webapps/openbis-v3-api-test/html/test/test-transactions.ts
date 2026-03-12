@@ -170,7 +170,7 @@ exports.default = new Promise((resolve) => {
                     await c.login(facade)
 
                     var ownerPermId = (await c.createSample(facade)).getPermId()
-                    await c.deleteFile(facade, ownerPermId, "")
+                    await c.deleteFile(facade, ownerPermId, "", false)
 
                     facade.setInteractiveSessionKey(testInteractiveSessionKey)
 
@@ -226,7 +226,7 @@ exports.default = new Promise((resolve) => {
                     await c.login(facade)
 
                     var ownerPermId = (await c.createSample(facade)).getPermId()
-                    await c.deleteFile(facade, ownerPermId, "")
+                    await c.deleteFile(facade, ownerPermId, "", false)
 
                     facade.setInteractiveSessionKey(testInteractiveSessionKey)
 
@@ -382,7 +382,7 @@ exports.default = new Promise((resolve) => {
                     await c.login(facade)
 
                     var ownerPermId = (await c.createSample(facade)).getPermId()
-                    await c.deleteFile(facade, ownerPermId, "")
+                    await c.deleteFile(facade, ownerPermId, "", false)
 
                     facade.setInteractiveSessionKey(testInteractiveSessionKey)
 

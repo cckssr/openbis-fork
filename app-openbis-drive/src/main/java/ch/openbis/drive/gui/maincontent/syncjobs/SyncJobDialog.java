@@ -1121,9 +1121,9 @@ public class SyncJobDialog extends Dialog<SyncJob> {
         afsSearchUnit.setOpenBISUrl(openbisServerUrlValue.getText());
         afsSearchUnit.setPersonalAccessToken(personalAccessTokenValue.getText().trim());
         afsSearchUnit.setEntityId(
-                Optional.ofNullable(entityChosen)
-                        .map( entityChosen -> entityChosen.getValue().getEntityId())
-                        .orElse(null));
+            Optional.ofNullable(entityChosen)
+                .map( entityChosen -> entityChosen.getValue() ).map(ChosenEntity::getEntityId)
+                .orElse(null));
         return afsSearchUnit;
     }
 

@@ -17,6 +17,7 @@ package ch.ethz.sis.afs.startup;
 
 import ch.ethz.sis.afs.manager.LockMapper;
 import ch.ethz.sis.afs.manager.TransactionManager;
+import ch.ethz.sis.afs.manager.TrashRootProvider;
 import ch.ethz.sis.afsjson.JsonObjectMapper;
 import ch.ethz.sis.shared.log.standard.LogFactory;
 import ch.ethz.sis.shared.log.standard.LogFactoryFactory;
@@ -56,15 +57,17 @@ public class Main
         String writeAheadLogRoot =
                 configuration.getStringProperty(AtomicFileSystemParameter.writeAheadLogRoot);
         String storageRoot = configuration.getStringProperty(AtomicFileSystemParameter.storageRoot);
+        TrashRootProvider trashRootProvider = configuration.getSharableInstance(AtomicFileSystemParameter.trashRootProviderClass);
 
         String enabledPreviewTypeList = configuration.getStringProperty(AtomicFileSystemParameter.enablePreview);
         Collection<String> enabledPreviewTypes = enabledPreviewTypeList != null ? Arrays.asList(enabledPreviewTypeList.split(",")) : Collections.emptyList();
         long enablePreviewSizeInBytes = configuration.getIntegerProperty(AtomicFileSystemParameter.enablePreviewSizeInBytes);
 
         lockMapper.init(configuration);
+        trashRootProvider.init(configuration);
 
         TransactionManager transactionManager =
-                new TransactionManager(lockMapper, jsonObjectMapper, writeAheadLogRoot, storageRoot, enabledPreviewTypes, enablePreviewSizeInBytes);
+                new TransactionManager(lockMapper, jsonObjectMapper, writeAheadLogRoot, storageRoot, trashRootProvider, enabledPreviewTypes, enablePreviewSizeInBytes);
         transactionManager.reCommitTransactionsAfterCrash();
     }
 }

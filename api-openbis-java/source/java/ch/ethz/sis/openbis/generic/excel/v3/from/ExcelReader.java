@@ -18,6 +18,7 @@ import ch.ethz.sis.openbis.generic.excel.v3.from.enums.ScriptTypes;
 import ch.ethz.sis.openbis.generic.excel.v3.from.helper.*;
 import ch.ethz.sis.openbis.generic.excel.v3.from.utils.ExcelParser;
 import ch.ethz.sis.openbis.generic.excel.v3.from.utils.NewExportFileReader;
+import ch.ethz.sis.openbis.generic.excel.v3.model.IFileInfo;
 import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 
@@ -107,10 +108,9 @@ public class ExcelReader
 
     Map<Path, Path> externalToZipPath = new LinkedHashMap<>();
 
+    private final Map<ObjectIdentifier, List<IFileInfo>> files = new LinkedHashMap<>();
 
-    private final Map<ObjectIdentifier, List<OpenBisModel.FileInfo>> files = new LinkedHashMap<>();
-
-    private final Map<ObjectIdentifier, List<OpenBisModel.FileInfo>> imageFiles =
+    private final Map<ObjectIdentifier, List<IFileInfo>> imageFiles =
             new LinkedHashMap<>();
 
     public static OpenBisModel convert(Format inputFormat, Path inputFile) throws IOException
@@ -220,11 +220,11 @@ public class ExcelReader
                                     .contains("data"))
                             {
                                 validateEntrySize(entry.getSize(), EMBEDDED_DOCUMENT_LIMIT);
-                                OpenBisModel.FileInfo fileInfo =
+                                IFileInfo fileInfo =
                                         NewExportFileReader.readFiles(entry, zip, fileMode);
                                 SampleIdentifier key =
                                         new SampleIdentifier(fileInfo.objectIdentifier());
-                                List<OpenBisModel.FileInfo> vals =
+                                List<IFileInfo> vals =
                                         files.getOrDefault(key, new ArrayList<>());
                                 vals.add(fileInfo);
                                 files.put(key, vals);
@@ -478,7 +478,7 @@ public class ExcelReader
                 imageFiles.put(mapKey, new ArrayList<>());
             }
 
-            List<OpenBisModel.FileInfo> fileInfos =
+            List<IFileInfo> fileInfos =
                     imageFiles.getOrDefault(mapKey, new ArrayList<>());
 
             for (Path myPath : samplesWithPaths.getValue())
@@ -488,8 +488,8 @@ public class ExcelReader
                 byte[] contents =
                         fileMode != FileMode.DUMMY ? Files.readAllBytes(filePath) : new byte[] {};
 
-                OpenBisModel.FileInfo fileInfo =
-                        new OpenBisModel.FileInfo(mapKey.getIdentifier(), myPath.toString(),
+                IFileInfo fileInfo =
+                        new OpenBisModel.FileInfoContents(mapKey.getIdentifier(), myPath.toString(),
                                 contents, myPath.toString());
                 fileInfos.add(fileInfo);
 

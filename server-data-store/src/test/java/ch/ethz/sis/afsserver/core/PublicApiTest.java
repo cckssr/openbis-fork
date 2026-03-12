@@ -116,7 +116,7 @@ public abstract class PublicApiTest extends AbstractTest
     @Test
     public void delete() throws Exception
     {
-        Boolean deleted = getPublicAPI().delete(owner, FILE_A);
+        Boolean deleted = getPublicAPI().delete(owner, FILE_A, false);
         assertTrue(deleted);
         File[] list = getPublicAPI().list(owner, ROOT, Boolean.TRUE);
         assertEquals(0, list.length);

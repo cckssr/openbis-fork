@@ -20,6 +20,7 @@ public enum AtomicFileSystemParameter {
     logConfigFile,
     lockMapperClass,
     jsonObjectMapperClass,
+    trashRootProviderClass,
     writeAheadLogRoot,
     storageRoot,
     enablePreview,

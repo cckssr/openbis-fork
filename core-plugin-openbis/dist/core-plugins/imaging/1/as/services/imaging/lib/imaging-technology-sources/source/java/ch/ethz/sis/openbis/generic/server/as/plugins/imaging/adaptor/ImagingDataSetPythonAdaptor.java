@@ -17,31 +17,71 @@
 
 package ch.ethz.sis.openbis.generic.server.as.plugins.imaging.adaptor;
 
+import ch.ethz.sis.openbis.generic.imagingapi.v3.dto.ImagingDataSetFilter;
+import ch.ethz.sis.openbis.generic.server.as.plugins.imaging.ImagingServiceContext;
+import ch.ethz.sis.shared.log.classic.core.LogCategory;
+import ch.ethz.sis.shared.log.classic.impl.LogFactory;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
+
+import java.io.File;
+import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 public class ImagingDataSetPythonAdaptor extends ImagingDataSetAbstractPythonAdaptor
 {
-    private static final String SCRIPT_PROPERTY = "script-path";
-    private static final String PYTHON3_PROPERTY = "python3-path";
+    private static final Logger
+            operationLog = LogFactory.getLogger(LogCategory.OPERATION, ImagingDataSetPythonAdaptor.class);
+
+    private static final String SCRIPT_PROPERTY = "python-adapter.script-path";
+    private static final String PYTHON3_PROPERTY = "python-adapter.python3-path";
 
 
     public ImagingDataSetPythonAdaptor(Properties properties)
     {
-        String scriptProperty = properties.getProperty(SCRIPT_PROPERTY, "");
-        if (scriptProperty.trim().isEmpty())
+        String scriptPath = properties.getProperty(SCRIPT_PROPERTY, "");
+        if (scriptPath.trim().isEmpty())
+        {
+            operationLog.error(
+                    "There is no script path property called '" + SCRIPT_PROPERTY + "' defined for this adaptor!");
+        }
+        Path script = Paths.get(this.scriptPath);
+        if (!Files.exists(script))
+        {
+            operationLog.error("Script file " + script + " does not exists!");
+        }
+        this.scriptPath = scriptPath;
+        String pythonPath = properties.getProperty(PYTHON3_PROPERTY, "python3");
+        if (scriptPath.trim().isEmpty())
+        {
+            operationLog.warn(
+                    "There is no python path property called '" + PYTHON3_PROPERTY + "' defined for this adaptor! Defaulting to `python3`!");
+        }
+        this.pythonPath = pythonPath;
+    }
+
+    @Override
+    public Map<String, Serializable> process(ImagingServiceContext context, File rootFile, String format,
+            Map<String, Serializable> imageConfig,
+            Map<String, Serializable> imageMetadata,
+            Map<String, Serializable> previewConfig,
+            Map<String, Serializable> previewMetadata,
+            List<ImagingDataSetFilter> filterConfig)
+    {
+        if (this.scriptPath.trim().isEmpty())
         {
             throw new IllegalArgumentException(
                     "There is no script path property called '" + SCRIPT_PROPERTY + "' defined for this adaptor!");
         }
-        Path script = Paths.get(scriptProperty);
+        Path script = Paths.get(this.scriptPath);
         if (!Files.exists(script))
         {
             throw new IllegalArgumentException("Script file " + script + " does not exists!");
         }
-        this.scriptPath = script.toString();
-        this.pythonPath = properties.getProperty(PYTHON3_PROPERTY, "python3");
+        return super.process(context, rootFile, format, imageConfig, imageMetadata, previewConfig, previewMetadata, filterConfig);
     }
 }

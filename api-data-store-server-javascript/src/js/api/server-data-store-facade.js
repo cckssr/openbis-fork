@@ -481,11 +481,12 @@ DataStoreServer.prototype.write = function(owner, source, offset, data){
  * @param {str} owner owner of the file
  * @param {str} source path to file
  */
-DataStoreServer.prototype.delete = function(owner, source){
+DataStoreServer.prototype.delete = function(owner, source, trash){
 	const data =  this.fillCommonParameters({
 		"method": "delete",
 		"owner" : owner,
-		"source": source
+		"source": source,
+		"trash" : trash
 	});
 	return this._internal.sendHttpRequestAbortable(
 		"DELETE",
@@ -542,6 +543,41 @@ DataStoreServer.prototype.create = function(owner, source, directory){
 		"owner" : owner,
 		"source": source,
 		"directory": directory
+	});
+	return this._internal.sendHttpRequestAbortable(
+		"POST",
+		"application/octet-stream",
+		this._internal.datastoreUrl,
+		encodeParams(data)
+	);
+}
+
+/**
+ * Truncate a file within DSS
+ */
+DataStoreServer.prototype.truncate = function(owner, source, size){
+	const data =  this.fillCommonParameters({
+		"method": "truncate",
+		"owner" : owner,
+		"source": source,
+		"size": size,
+	});
+	return this._internal.sendHttpRequestAbortable(
+		"POST",
+		"application/octet-stream",
+		this._internal.datastoreUrl,
+		encodeParams(data)
+	);
+}
+
+/**
+ * Create a snapshot of a file within DSS
+ */
+DataStoreServer.prototype.snapshot = function(owner, source){
+	const data =  this.fillCommonParameters({
+		"method": "snapshot",
+		"owner" : owner,
+		"source": source
 	});
 	return this._internal.sendHttpRequestAbortable(
 		"POST",

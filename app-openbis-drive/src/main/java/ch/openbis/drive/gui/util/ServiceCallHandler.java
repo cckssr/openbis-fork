@@ -115,7 +115,7 @@ public class ServiceCallHandler {
                 } catch (Exception e) {
                     ServiceExceptionAction serviceExceptionAction = handleServiceException(e);
                     if (serviceExceptionAction == ServiceExceptionAction.RETRY) {
-                        Thread.sleep(3000);
+                        Thread.sleep(5000);
                     } else if (serviceExceptionAction == ServiceExceptionAction.SHUTDOWN){
                         Platform.exit();
                         return null;

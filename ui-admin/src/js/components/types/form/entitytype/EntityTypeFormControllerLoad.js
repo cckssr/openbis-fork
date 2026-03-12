@@ -84,16 +84,13 @@ export default class EntityTypeFormControllerLoad extends PageControllerLoad {
     if (loadedType && loadedType.propertyAssignments) {
       for (const loadedAssignment of loadedType.propertyAssignments) {
 
-        const assignmentSemanticAnnotations = await this.facade.loadPropertyAssignmentsSemanticAnnotations(loadedAssignment.permId);
-        const propertySemanticAnnotations = await this.facade.loadPropertyTypeSemanticAnnotations(loadedAssignment.propertyType.permId);
-
         property = this._createProperty(
           'property-' + propertiesCounter++,
           loadedAssignment,
           assignments,
           loadedType,
-          propertySemanticAnnotations,
-          assignmentSemanticAnnotations
+          loadedAssignment.propertyType.semanticAnnotations,
+          loadedAssignment.semanticAnnotations
         );
         properties.push(property);
 

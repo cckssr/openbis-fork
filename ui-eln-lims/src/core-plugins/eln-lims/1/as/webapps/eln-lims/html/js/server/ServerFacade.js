@@ -520,9 +520,23 @@ function ServerFacade(openbisServer) {
 
     this.getRoCrateUrl = function(callbackFunction) {
         this.customASService({
-                 "method" : "getRoCrateUrl"
+             "method" : "getRoCrateUrl"
         }, callbackFunction, "exports-api", null);
     };
+
+    this.exportSciCat = function(exportData, callbackFunction) {
+        this.customASService({
+             "method" : "exportSciCat",
+             "exportData" : exportData,
+         }, callbackFunction, "exports-api", null);
+    };
+
+    this.collectIdsForSciCatExport = function(nodeExportList, callbackFunction) {
+        this.customASService({
+             "nodeExportList" : exportData,
+         }, callbackFunction, "entity-collector-extended", null);
+    };
+
 
 	//
 	// Research collection export
@@ -542,7 +556,7 @@ function ServerFacade(openbisServer) {
                          "originUrl": window.location.origin,
                          "pathNameUrl": window.location.pathname,
                          "sessionToken": this.openbisServer.getSession(),
-                     }, callbackFunction, "rc-exports-api", null, true);
+                     }, callbackFunction, "exports-api", null, true);
     };
 
 	this.exportRc = function(entities, submissionUrl, submissionType, retentionPeriod, userInformation, callbackFunction) {
@@ -606,7 +620,7 @@ function ServerFacade(openbisServer) {
             "userLastName": userInformation["lastName"],
             "userEmail": userInformation["email"],
             "userId": userInformation["id"],
-            }, callbackFunction, "zenodo-exports-api", null, true);
+            }, callbackFunction, "exports-api", null, true);
     };
 
 	//
@@ -2044,9 +2058,6 @@ function ServerFacade(openbisServer) {
                                 case "PERM_ID":
                                     criteria.withPermId().thatEquals(attributeValue);
                                     break;
-                                case "IDENTIFIER":
-                                    criteria.withIdentifier().thatEquals(attributeValue);
-                                    break;
                                 case "METAPROJECT":
                                     criteria.withTag().withCode().thatEquals(attributeValue); //TO-DO To Test, currently not supported by ELN UI
                                     break;
@@ -2924,6 +2935,41 @@ function ServerFacade(openbisServer) {
 			"withParents" : true,
 			"properyKeyValueList" : properyKeyValueList
 		}, callbackFunction);
+	}
+
+	this.searchWithSpaceAndProperties = function(spaceCode, propertyTypeCodes, propertyValues, callbackFunction, isComplete, withParents)
+	{
+		var advancedSearchCriteria = { rules : {} };
+		advancedSearchCriteria.rules[Util.guid()] = {
+            type : "Attribute",
+            name : "ATTR.SPACE",
+            value : spaceCode,
+            operator : "thatEquals"
+		}
+		for(var i = 0; i < propertyTypeCodes.length ;i++) {
+			var propertyTypeCode = propertyTypeCodes[i];
+			var propertyTypeValue = propertyValues[i];
+			advancedSearchCriteria.rules[Util.guid()] = {
+                type : "Property",
+                name : "PROP." + propertyTypeCode,
+                value : propertyTypeValue,
+                operator : "thatEqualsString"
+			}
+		}
+
+		var advancedFetchOptions = {
+		    "escapeWildcards" : true,
+			"withProperties" : true,
+			"withAncestors" : isComplete === true,
+			"withDescendants" : isComplete === true,
+			"withParents" : withParents === true,
+			"withChildren" : false
+		}
+
+		var _this = this;
+		this.searchForSamplesAdvanced(advancedSearchCriteria, advancedFetchOptions, function(results) {
+			callbackFunction(_this.getV3SamplesAsV1(results.objects));
+		});
 	}
 
 	this.searchWithProperties = function(propertyTypeCodes, propertyValues, callbackFunction, isComplete, withParents)

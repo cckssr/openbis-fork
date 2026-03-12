@@ -120,7 +120,7 @@
     },
     {
       "@id": "7db2532b-46ef-438c-a525-488f2f1fe2ba",
-      "@type": "owl:restriction",
+      "@type": "owl:Restriction",
       "owl:onProperty": {
         "@id": "openBIS:hasNAME"
       },
@@ -129,7 +129,7 @@
     },
     {
       "@id": "862d196d-be81-4eec-a043-6fbcb1b8e133",
-      "@type": "owl:restriction",
+      "@type": "owl:Restriction",
       "owl:onProperty": {
         "@id": "openBIS:hasDOCUMENT"
       },
@@ -177,7 +177,7 @@
     },
     {
       "@id": "984e3501-fa35-41b8-a18e-84c8b9cee09c",
-      "@type": "owl:restriction",
+      "@type": "owl:Restriction",
       "owl:onProperty": {
         "@id": "openBIS:isSHOW_IN_PROJECT_OVERVIEW"
       },

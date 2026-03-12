@@ -291,7 +291,7 @@ function StorageView(storageController, storageModel, gridViewRack, gridViewPosi
 			if(this._storageModel.config.positionSelector === "on") {
 				var propertyTypeCodes = [this._storageModel.storagePropertyGroup.boxProperty];
 				var propertyValues = [this._storageModel.boxName];
-				mainController.serverFacade.searchWithProperties(propertyTypeCodes, propertyValues, function(samples) {
+				mainController.serverFacade.searchWithSpaceAndProperties(this._storageModel.storageSpaceCode, propertyTypeCodes, propertyValues, function(samples) {
 					//Labels
 					var labels = [];
 					samples.forEach(function(element, index, array) {

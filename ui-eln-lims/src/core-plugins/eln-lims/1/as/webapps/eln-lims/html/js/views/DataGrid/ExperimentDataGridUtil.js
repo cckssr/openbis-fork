@@ -12,7 +12,7 @@ var ExperimentDataGridUtil = new function() {
 				return FormUtil.getFormLink(data.code, "Experiment", data.identifier);
 			},
 			filter : function(data, filter) {
-				return data.code.toLowerCase().indexOf(filter) !== -1;
+				return data.code.toLowerCase().indexOf(filter.toLowerCase()) !== -1;
 			},
 			sort : function(data1, data2, asc) {
 				var value1 = data1.code;
@@ -44,7 +44,7 @@ var ExperimentDataGridUtil = new function() {
 				return FormUtil.getFormLink(data.identifier, "Experiment", data.identifier);
 			},
 			filter : function(data, filter) {
-				return data.identifier.toLowerCase().indexOf(filter) !== -1;
+				return data.identifier.toLowerCase().indexOf(filter.toLowerCase()) !== -1;
 			},
 			sort : function(data1, data2, asc) {
 				var value1 = data1.identifier;
@@ -62,7 +62,7 @@ var ExperimentDataGridUtil = new function() {
 				return FormUtil.getFormLink(data.permId, "Experiment", data.identifier);
 			},
 			filter : function(data, filter) {
-				return data.identifier.toLowerCase().indexOf(filter) !== -1;
+				return data.identifier.toLowerCase().indexOf(filter.toLowerCase()) !== -1;
 			},
 			sort : function(data1, data2, asc) {
 				var value1 = data1.identifier;

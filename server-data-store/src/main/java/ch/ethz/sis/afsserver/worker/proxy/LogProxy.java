@@ -88,9 +88,9 @@ public class LogProxy extends AbstractProxy {
     }
 
     @Override
-    public Boolean delete(@NonNull String owner, @NonNull String source) throws Exception {
-        logger.traceAccess(null, owner, source);
-        return logger.traceExit(nextProxy.delete(owner, source));
+    public Boolean delete(@NonNull String owner, @NonNull String source, @NonNull Boolean trash) throws Exception {
+        logger.traceAccess(null, owner, source, trash);
+        return logger.traceExit(nextProxy.delete(owner, source, trash));
     }
 
     @Override
@@ -111,6 +111,22 @@ public class LogProxy extends AbstractProxy {
     {
         logger.traceAccess(null, owner, source, directory);
         return logger.traceExit(nextProxy.create(owner, source, directory));
+    }
+
+    @Override
+    public @NonNull Boolean truncate(@NonNull final String owner, @NonNull final String source, @NonNull final Long size)
+            throws Exception
+    {
+        logger.traceAccess(null, owner, source);
+        return logger.traceExit(nextProxy.truncate(owner, source, size));
+    }
+
+    @Override
+    public @NonNull Boolean snapshot(@NonNull final String owner, @NonNull final String source)
+            throws Exception
+    {
+        logger.traceAccess(null, owner, source);
+        return logger.traceExit(nextProxy.snapshot(owner, source));
     }
 
     @Override

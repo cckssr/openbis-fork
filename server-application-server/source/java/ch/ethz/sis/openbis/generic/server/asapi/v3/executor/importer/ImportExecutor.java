@@ -62,13 +62,25 @@ public class ImportExecutor implements IImportExecutor
 
     private UUID transactionId;
 
-
     @Override
     public ImportResult doImport(final IOperationContext context, final ImportOperation operation)
     {
-        transactionId = TransactionId.getCurrent();
-        final ImportData importData = operation.getImportData();
         final String sessionToken = context.getSession().getSessionToken();
+        final ImportData importData = operation.getImportData();
+        final ImportOptions importOptions = operation.getImportOptions();
+
+        final ch.ethz.sis.openbis.generic.server.xls.importer.ImportOptions importerImportOptions =
+                new ch.ethz.sis.openbis.generic.server.xls.importer.ImportOptions();
+
+        final boolean projectSamplesEnabled = Boolean.parseBoolean(CommonServiceProvider.getApplicationServerApi().getServerInformation(sessionToken)
+                .get("project-samples-enabled"));
+        importerImportOptions.setAllowProjectSamples(projectSamplesEnabled);
+        return executeImport(sessionToken, ImportModes.valueOf(importOptions.getMode().name()), importerImportOptions, importData.getSessionWorkspaceFiles());
+    }
+
+    //needs to be public for xls-import jython script
+    public ImportResult executeImport(final String sessionToken, ImportModes importModes, final ch.ethz.sis.openbis.generic.server.xls.importer.ImportOptions importerImportOptions, String[] files) {
+        transactionId = TransactionId.getCurrent();
         final String transactionEnabledProperty = CommonServiceProvider.tryToGetProperty(TWO_PHASE_TRANSACTIONS_ENABLED_PROPERTY_NAME);
         boolean transactionEnabled = true;
         if (transactionEnabledProperty == null || !transactionEnabledProperty.trim().equalsIgnoreCase("true")) {
@@ -77,7 +89,6 @@ public class ImportExecutor implements IImportExecutor
         }
         final String interactiveSessionKey = CommonServiceProvider.tryToGetProperty(TWO_PHASE_TRANSACTIONS_SESSION_KEY_PROPERTY_NAME);
         final String afsUrl = CommonServiceProvider.tryToGetProperty(AFS_SERVER_URL_PROPERTY_NAME);
-//        String asUrl = CommonServiceProvider.tryToGetProperty("api.v3.transaction.participant.application-server.url");
 
         final ITransactionCoordinatorApi transactionCoordinatorApi = CommonServiceProvider.getTransactionCoordinatorApi();
 
@@ -102,21 +113,11 @@ public class ImportExecutor implements IImportExecutor
             operationLog.info("AFS url configuration not found.");
         }
 
-
-        final ImportOptions importOptions = operation.getImportOptions();
-
-        final ch.ethz.sis.openbis.generic.server.xls.importer.ImportOptions importerImportOptions =
-                new ch.ethz.sis.openbis.generic.server.xls.importer.ImportOptions();
-
-        final boolean projectSamplesEnabled = Boolean.parseBoolean(applicationServerApi.getServerInformation(sessionToken)
-                .get("project-samples-enabled"));
-        importerImportOptions.setAllowProjectSamples(projectSamplesEnabled);
-
         try
         {
 
             final XLSImport xlsImport = new XLSImport(sessionToken, applicationServerApi,
-                    ImportModes.valueOf(importOptions.getMode().name()), importerImportOptions, importData.getSessionWorkspaceFiles(), false, afsClient);
+                    importModes, importerImportOptions, files, false, afsClient);
 
             ImportResult result = new ImportResult();
             if(xlsImport.importContainsAfsData())
