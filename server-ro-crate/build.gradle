@@ -56,6 +56,7 @@ dependencies {
     testImplementation 'testng:testng:6.8-CISD',
             'junit:junit:4.13.2',
                         'io.rest-assured:rest-assured:5.5.5'
+    testImplementation project(':app-ro-crate-openbis')
 }
 
 test {
@@ -77,6 +78,7 @@ compileQuarkusGeneratedSourcesJava.dependsOn(compileJava)
 task openBISDevelopmentEnvironmentROSStart(type: JavaExec) {
     mainClass = mainClassName
     classpath = sourceSets.main.runtimeClasspath
+    environment "RO_CRATE_SERVER_LOCAL_DOWNLOAD_PORT", "8100"
     args(["../server-ro-crate/src/main/resources/service.properties"])
     jvmArgs(['--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED',
              '--add-opens=java.base/java.nio=ALL-UNNAMED',

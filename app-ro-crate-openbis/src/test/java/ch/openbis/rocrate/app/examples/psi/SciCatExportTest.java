@@ -16,10 +16,7 @@ import edu.kit.datamanager.ro_crate.reader.RoCrateReader;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -57,7 +54,7 @@ public class SciCatExportTest
                 openBisModel =
                 RdfToModel.convert(types, schemaFacade.getPropertyTypes(),
                         entryList.stream().toList(), "DEFAULT",
-                        "DEFAULT", schemaFacade);
+                        "DEFAULT", schemaFacade, Map.of());
         Optional<IEntityType>
                 maybePublicatioNType =
                 openBisModel.getEntityTypes().values().stream().filter(x -> x.getPermId().equals(

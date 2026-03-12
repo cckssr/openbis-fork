@@ -27,23 +27,25 @@ import ch.ethz.sis.rocrateserver.openapi.v1.service.delegates.ImportDelegate;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.helper.SessionWorkSpaceManager;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.helper.validation.RoCrateSchemaValidation;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.helper.validation.ValidationResult;
+import ch.ethz.sis.rocrateserver.openapi.v1.service.jobs.importjob.download.SessionWorkSpacveSaving;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.params.ImportParams;
 import ch.openbis.rocrate.app.reader.RdfToModel;
+import ch.openbis.rocrate.app.reader.externalfile.FileDownloader;
+import ch.openbis.rocrate.app.reader.externalfile.IFileDownloader;
 import edu.kit.datamanager.ro_crate.RoCrate;
+import edu.kit.datamanager.ro_crate.entities.AbstractEntity;
 import edu.kit.datamanager.ro_crate.reader.FolderReader;
 import edu.kit.datamanager.ro_crate.reader.RoCrateReader;
 import io.quarkus.logging.Log;
 import org.jboss.logging.Logger;
 
 import java.io.*;
+import java.net.URL;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
+import java.util.function.Function;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-
 
 public final class ImportJob implements IAsyncJob
 {
@@ -156,16 +158,25 @@ public final class ImportJob implements IAsyncJob
                 entryList.addAll(schemaFacade.getEntries(type.getId()));
             }
 
+            Function<URL, URL> mapUrl =
+                    Optional.ofNullable(System.getenv().get("RO_CRATE_SERVER_LOCAL_DOWNLOAD_PORT"))
+                            .map(Integer::parseInt)
+                            .map(FileDownloader::getLocalMapping)
+                            .orElse(FileDownloader.getRealMapping());
+            IFileDownloader fileDownloader = new FileDownloader(
+                    mapUrl, new SessionWorkSpacveSaving(importParams.getApiKey()));
+            Map<AbstractEntity, Path> stringPathMap = fileDownloader.handleDownloads(crate);
+
             // Converting ro-crate model to openBIS model
             OpenBisModel conversion =
                     RdfToModel.convert(types, propertyTypes, entryList, "DEFAULT", "DEFAULT",
-                            schemaFacade);
+                            schemaFacade, stringPathMap);
             ValidationResult validationResult =
                     RoCrateSchemaValidation.validate(conversion);
 
             // Convert openbis model to openbis excel format for import
-            byte[] importExcel = ExcelWriter.convert(ExcelWriter.Format.EXCEL, conversion);
-            java.nio.file.Path modelAsExcel = java.nio.file.Path.of(UUID.randomUUID() + ".xlsx");
+            byte[] importExcel = ExcelWriter.convert(ExcelWriter.Format.ZIP_EXPORT, conversion);
+            java.nio.file.Path modelAsExcel = java.nio.file.Path.of(UUID.randomUUID() + ".zip");
 
             if (validateOnly)
             {

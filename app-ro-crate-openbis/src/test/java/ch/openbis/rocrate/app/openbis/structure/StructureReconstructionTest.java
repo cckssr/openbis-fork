@@ -17,6 +17,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class StructureReconstructionTest extends TestCase
@@ -42,7 +43,7 @@ public class StructureReconstructionTest extends TestCase
                 openBisModel =
                 RdfToModel.convert(types, schemaFacade.getPropertyTypes(),
                         entryList.stream().toList(), "DEFAULT",
-                        "DEFAULT", schemaFacade);
+                        "DEFAULT", schemaFacade, Map.of());
         AbstractEntityPropertyHolder abstractEntityPropertyHolder =
                 openBisModel.getEntities().values().stream().findFirst().orElseThrow();
         Sample sample = (Sample) abstractEntityPropertyHolder;
@@ -72,7 +73,7 @@ public class StructureReconstructionTest extends TestCase
                 openBisModel =
                 RdfToModel.convert(types, schemaFacade.getPropertyTypes(),
                         entryList.stream().toList(), "DEFAULT",
-                        "DEFAULT", schemaFacade);
+                        "DEFAULT", schemaFacade, Map.of());
         AbstractEntityPropertyHolder abstractEntityPropertyHolder =
                 openBisModel.getEntities().values().stream().findFirst().orElseThrow();
         Sample sample = (Sample) abstractEntityPropertyHolder;
@@ -103,7 +104,7 @@ public class StructureReconstructionTest extends TestCase
                 openBisModel =
                 RdfToModel.convert(types, schemaFacade.getPropertyTypes(),
                         entryList.stream().toList(), "DEFAULT",
-                        "DEFAULT", schemaFacade);
+                        "DEFAULT", schemaFacade, Map.of());
         AbstractEntityPropertyHolder abstractEntityPropertyHolder =
                 openBisModel.getEntities().values().stream().findFirst().orElseThrow();
         Sample sample = (Sample) abstractEntityPropertyHolder;

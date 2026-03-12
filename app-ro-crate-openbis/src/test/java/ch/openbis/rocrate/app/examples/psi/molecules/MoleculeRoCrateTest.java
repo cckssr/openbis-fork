@@ -16,6 +16,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static org.junit.Assert.*;
@@ -47,7 +48,7 @@ public class MoleculeRoCrateTest
                 openBisModel =
                 RdfToModel.convert(types, schemaFacade.getPropertyTypes(),
                         entryList.stream().toList(), "DEFAULT",
-                        "DEFAULT", schemaFacade);
+                        "DEFAULT", schemaFacade, Map.of());
 
         assertEquals(2, openBisModel.getEntityTypes().size());
         assertTrue(openBisModel.getEntities()

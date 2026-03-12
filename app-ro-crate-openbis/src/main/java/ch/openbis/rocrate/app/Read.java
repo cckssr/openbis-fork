@@ -5,7 +5,11 @@ import ch.eth.sis.rocrate.facade.IMetadataEntry;
 import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
 import ch.ethz.sis.openbis.generic.excel.v3.to.ExcelWriter;
 import ch.openbis.rocrate.app.reader.RdfToModel;
+import ch.openbis.rocrate.app.reader.externalfile.FileDownloader;
+import ch.openbis.rocrate.app.reader.externalfile.IFileDownloader;
+import ch.openbis.rocrate.app.reader.externalfile.saving.TempDirSaving;
 import edu.kit.datamanager.ro_crate.RoCrate;
+import edu.kit.datamanager.ro_crate.entities.AbstractEntity;
 import edu.kit.datamanager.ro_crate.entities.data.DataEntity;
 import edu.kit.datamanager.ro_crate.reader.FolderReader;
 import edu.kit.datamanager.ro_crate.reader.RoCrateReader;
@@ -13,10 +17,8 @@ import edu.kit.datamanager.ro_crate.reader.ZipReader;
 import org.apache.commons.cli.*;
 
 import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.nio.file.Path;
+import java.util.*;
 
 public class Read
 {
@@ -24,7 +26,10 @@ public class Read
     private final static String TEST_DIR =
             "/home/meiandr/Documents/sissource/openbis/build/ro_out_3";
 
-    public static void main(String[] args) throws IOException, ParseException
+    public static final String ARG_LOCA_DOWN_LOAD = "local-download";
+
+    public static void main(String[] args)
+            throws Exception
     {
 
         Options options = createOptions();
@@ -32,8 +37,11 @@ public class Read
         HelpFormatter formatter = new HelpFormatter();
         CommandLine cmd = null;
         cmd = parser.parse(options, args);
+        boolean test = false;
 
         String path = cmd.getOptionValue('i');
+        Optional<LocalDownloadConfig> localDownloadConfig = LocalDownloadConfig.from(cmd);
+
         RoCrateReader roCrateReader;
         if (path.endsWith(".zip"))
         {
@@ -64,11 +72,15 @@ public class Read
         }
         Set<DataEntity> allDataEntities = crate.getAllDataEntities();
 
-
+        IFileDownloader fileDownloader =
+                new FileDownloader(localDownloadConfig.map(
+                                x -> FileDownloader.getLocalMapping(x.protocol, x.host, x.port))
+                        .orElse(FileDownloader.getLocalMapping(8100)), new TempDirSaving());
+        Map<AbstractEntity, Path> abstractEntityPathMap = fileDownloader.handleDownloads(crate);
         OpenBisModel
                 openBisModel =
                 RdfToModel.convert(types, schemaFacade.getPropertyTypes(), entryList, "DEFAULT",
-                        "DEFAULT", schemaFacade);
+                        "DEFAULT", schemaFacade, abstractEntityPathMap);
         byte[] writtenStuff = ExcelWriter.convert(ExcelWriter.Format.ZIP_EXPORT, openBisModel);
         String outPath = cmd.getOptionValue('o');
         try (FileOutputStream byteArrayOutputStream = new FileOutputStream(
@@ -78,6 +90,31 @@ public class Read
         }
 
     }
+
+    public record Config(boolean test)
+    {
+    }
+
+    record LocalDownloadConfig(String protocol, String host, int port)
+    {
+
+        static Optional<LocalDownloadConfig> from(CommandLine cmd)
+        {
+            String raw = cmd.getOptionValue(ARG_LOCA_DOWN_LOAD);
+            if (raw == null)
+            {
+                return Optional.empty();
+            }
+
+            String[] a = raw.split("://");
+            String[] b = a[1].split(":");
+
+            return Optional.of(new LocalDownloadConfig(a[0], b[0], Integer.parseInt(b[1])));
+
+        }
+
+    }
+
 
     private static Options createOptions()
     {
@@ -99,6 +136,15 @@ public class Read
                     .numberOfArgs(1)
                     .required()
                     .desc("Provide output path")
+                    .build();
+            options.addOption(option);
+
+        }
+        {
+            Option option = Option.builder("l")
+                    .longOpt(ARG_LOCA_DOWN_LOAD)
+                    .numberOfArgs(1)
+                    .desc("provide the local download url as protocol://host:port")
                     .build();
             options.addOption(option);
 

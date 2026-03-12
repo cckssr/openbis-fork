@@ -16,10 +16,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.FileOutputStream;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 public class CombinedExternalCrateTest
 {
@@ -48,7 +45,7 @@ public class CombinedExternalCrateTest
                 openBisModel =
                 RdfToModel.convert(types, schemaFacade.getPropertyTypes(),
                         entryList.stream().toList(), "DEFAULT",
-                        "DEFAULT", schemaFacade);
+                        "DEFAULT", schemaFacade, Map.of());
 
         List<IFileInfo> fileInfos =
                 openBisModel.getImageFiles().values().stream().filter(x -> !x.isEmpty()).findFirst()

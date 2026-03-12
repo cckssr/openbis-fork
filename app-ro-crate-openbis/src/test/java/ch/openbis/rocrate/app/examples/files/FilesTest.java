@@ -20,10 +20,7 @@ import org.junit.Test;
 import java.io.FileOutputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 public class FilesTest
 {
@@ -87,7 +84,7 @@ public class FilesTest
         }
 
         OpenBisModel openBisModel = RdfToModel.convert(types, schemaFacade.getPropertyTypes(),
-                entryList.stream().toList(), "DEFAULT", "DEFAULT", schemaFacade);
+                entryList.stream().toList(), "DEFAULT", "DEFAULT", schemaFacade, Map.of());
         Assert.assertTrue(true);
 
     }
@@ -112,7 +109,7 @@ public class FilesTest
                 openBisModel =
                 RdfToModel.convert(types, schemaFacade.getPropertyTypes(),
                         entryList.stream().toList(), "DEFAULT",
-                        "DEFAULT", schemaFacade);
+                        "DEFAULT", schemaFacade, Map.of());
 
         Assert.assertEquals(1, openBisModel.getFiles().size());
 
@@ -151,7 +148,7 @@ public class FilesTest
                 openBisModel =
                 RdfToModel.convert(types, schemaFacade.getPropertyTypes(),
                         entryList.stream().toList(), "DEFAULT",
-                        "DEFAULT", schemaFacade);
+                        "DEFAULT", schemaFacade, Map.of());
 
         Assert.assertEquals(1, openBisModel.getFiles().size());
 
@@ -203,7 +200,7 @@ public class FilesTest
                 openBisModel =
                 RdfToModel.convert(types, schemaFacade.getPropertyTypes(),
                         entryList.stream().toList(), "DEFAULT",
-                        "DEFAULT", schemaFacade);
+                        "DEFAULT", schemaFacade, Map.of());
         Assert.assertEquals(1, openBisModel.getFiles()
                 .get(new SampleIdentifier("/PUBLICATIONS/PUBLIC_REPOSITORIES/PUB30")).size());
         Assert.assertEquals(1, openBisModel.getFiles().get(new ExperimentIdentifier(

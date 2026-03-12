@@ -1,18 +1,17 @@
 package ch.ethz.sis.rocrateserver.startup;
 
+import io.quarkus.runtime.LaunchMode;
+import io.quarkus.runtime.Quarkus;
+import io.quarkus.runtime.QuarkusApplication;
+import io.quarkus.runtime.annotations.QuarkusMain;
+import org.apache.commons.io.FileUtils;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Stream;
-
-import org.apache.commons.io.FileUtils;
-
-import io.quarkus.runtime.LaunchMode;
-import io.quarkus.runtime.Quarkus;
-import io.quarkus.runtime.QuarkusApplication;
-import io.quarkus.runtime.annotations.QuarkusMain;
 
 @QuarkusMain
 public class StartupMain implements QuarkusApplication
@@ -27,6 +26,7 @@ public class StartupMain implements QuarkusApplication
     public static void setConfiguration(Configuration configuration)
     {
         StartupMain.configuration = configuration;
+
     }
 
     public static void main(String[] args) throws IOException

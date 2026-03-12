@@ -14,6 +14,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class PsiZippedCrateTest
@@ -40,7 +41,7 @@ public class PsiZippedCrateTest
                 openBisModel =
                 RdfToModel.convert(types, schemaFacade.getPropertyTypes(),
                         entryList.stream().toList(), "DEFAULT",
-                        "DEFAULT", schemaFacade);
+                        "DEFAULT", schemaFacade, Map.of());
         Assert.assertTrue(openBisModel.getFiles().values().stream().allMatch(List::isEmpty));
 
     }
