@@ -65,11 +65,11 @@ afs_url = None
 if len(sys.argv) >= 4:
     openbis_url = sys.argv[1]
     data_folder = sys.argv[2]
-    afs_url = sys.argv[3]
+    token = sys.argv[3]
     if len(sys.argv) > 4:
-        token = sys.argv[4]
+        afs_url = sys.argv[4]
 else:
-    print(f'Usage: python3 importer.py <OPENBIS_URL> <PATH_TO_DATA_FOLDER> <AFS_URL>')
+    print(f'Usage: python3 importer.py <OPENBIS_URL> <PATH_TO_DATA_FOLDER> <TOKEN> <OPTIONAL: AFS_URL> ')
     print(f'Using default parameters')
     print(f'URL: {DEFAULT_URL}')
     print(f'Data folder: {data_folder}')
