@@ -21,12 +21,12 @@
  * @this {SideMenuWidgetModel}
  */
 function SideMenuWidgetModel() {
-    this.menuDOMBody = null;
+    this.menuDOMBody = {};
     this.isHidden = false;
     this.$container = null;
     this.tree = null;
     this.selectedNodeData = null;
     this.sortField = null;
     this.percentageOfUsage = 1;
-    this.subSideMenu = null;
+    this.subSideMenu = {};
 }

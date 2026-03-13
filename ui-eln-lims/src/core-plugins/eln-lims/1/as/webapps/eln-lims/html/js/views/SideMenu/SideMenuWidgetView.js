@@ -20,7 +20,10 @@
  * @constructor
  * @this {SideMenuWidgetView}
  */
-function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
+function SideMenuWidgetView(id, sideMenuWidgetController, browserController, sideMenuWidgetModel) {
+    var _this = this;
+    this.id = id;
+    this._browserController = browserController;
     this._sideMenuWidgetController = sideMenuWidgetController
     this._sideMenuWidgetModel = sideMenuWidgetModel
     this.subSideMenuViewer = null;
@@ -54,7 +57,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
         if(isCollapsed && !LayoutManager.isMobile()) {
             mainController.sideMenu.isCollapsed = true;
             var width = $(window).width();
-            this._collapsedSideMenu($container);
+            this._collapsedSideMenu(this.id, $container);
             LayoutManager.setColumnSize(55, $(window).width() - 55, null);
 
         } else {
@@ -62,13 +65,12 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
 
 
             if(this._expandedMenu) {
-                var $widget = $("<div>", { id: "sideMenuTopContainer" })
-                var _this = this;
+                var $widget = $("<div>", { id: _this.id + "-sideMenuTopContainer" })
                 $widget.css("height", "100%")
                 $widget.css("display", "flex")
                 $widget.css("flex-direction", "column")
 
-                $("#sideMenuFooter").remove()
+                $("#"+_this.id +"-sideMenuFooter").remove()
                 $widget.append(this._expandedMenu);
 
                 $container.empty()
@@ -81,25 +83,25 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
                     LayoutManager.setColumnSize(firstColumnWidth, width - firstColumnWidth, null);
                 }
 
-                if(this._sideMenuWidgetModel.subSideMenu) {
-                    var subSideMenu = this._sideMenuWidgetModel.subSideMenu;
+                if(this._sideMenuWidgetModel.subSideMenu[this.id]) {
+                    var subSideMenu = this._sideMenuWidgetModel.subSideMenu[this.id];
                     subSideMenu.css("margin-left", "3px")
                     this._sideMenuWidgetModel.percentageOfUsage = 0.5
                     this._expandedMenu.append(subSideMenu)
-                    var $body = $("#sideMenuBody")
+                    var $body = $("#"+_this.id +"-sideMenuBody")
                     this._sideMenuWidgetController.resizeElement($body, 0.5)
                     this._sideMenuWidgetController.resizeElement(subSideMenu, 0.5)
-                    if(this.subSideMenuViewer && this.subSideMenuViewer.init) {
-                        this.subSideMenuViewer.init();
+                    if(this.subSideMenuViewer && this.subSideMenuViewer.refresh) {
+                        this.subSideMenuViewer.refresh();
                     }
                 }
 
                 if(!LayoutManager.isMobile()) {
-                    this._expandedMenu.find("#sideMenuFooter").remove()
+                    this._expandedMenu.find("#"+_this.id +"-sideMenuFooter").remove()
                     this._expandedMenu.append(this._expandedFooter())
                 }
 
-                var body = $("#sideMenuBody");
+                var body = $("#"+_this.id +"-sideMenuBody");
                 if(body.children().length < 1 || body.children().first().children().length < 1) {
                     this.repaintTreeMenu = true;
                 }
@@ -119,8 +121,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
             //
             // Fix Header
             //
-            var $widget = $("<div>", { id: "sideMenuTopContainer" })
-            var _this = this;
+            var $widget = $("<div>", { id: _this.id + "-sideMenuTopContainer" })
             $widget.css("height", "100%")
             $widget.css("display", "flex")
             $widget.css("flex-direction", "column")
@@ -132,10 +133,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
             }
 
 
-
-
-            var $header = $("<div>", { id: "sideMenuHeader" })
-
+            var $header = $("<div>", { id: _this.id + "-sideMenuHeader" })
             //TODO search bar
             if(LayoutManager.isMobile()) {
             $header.css("background-color", "rgb(248, 248, 248)")
@@ -143,7 +141,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
             var searchDomains = profile.getSearchDomains()
 
             var searchFunction = function () {
-                var searchText = $("#search").val()
+                var searchText = $("#"+_this.id +"-search").val()
                 if (searchText.length < MIN_LENGTH) {
                     Util.showInfo(
                         "The minimum length for a global text search is " + MIN_LENGTH + " characters.",
@@ -153,7 +151,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
                     return false
                 }
 
-                var domainIndex = $("#search").attr("domain-index")
+                var domainIndex = $("#"+_this.id +"-search").attr("domain-index")
                 var searchDomain = null
                 var searchDomainLabel = null
 
@@ -180,7 +178,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
                 //Prefix function
                 var selectedFunction = function (selectedSearchDomain, domainIndex) {
                     return function () {
-                        var $search = $("#search")
+                        var $search = $("#"+_this.id +"-search")
                         $search.attr("placeholder", selectedSearchDomain.label + " Search")
                         $search.attr("domain-index", domainIndex)
                     }
@@ -206,7 +204,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
             }
 
             var searchElement = $("<input>", {
-                id: "search",
+                id: _this.id +"-search",
                 type: "text",
                 class: "form-control search-query",
                 placeholder: "Global Search",
@@ -261,7 +259,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
             $header.append($searchForm)
             }
 
-            var $body = $("<div>", { id: "sideMenuBody" })
+            var $body = $("<div>", { id: _this.id + "-sideMenuBody" })
             $body.css("overflow-y", "auto")
             $body.css("flex", "1 1 auto")
 
@@ -274,18 +272,17 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
             })
 
 
-            this._expandedMenu = $("<div>", { id: "expandedSideMenuTree" })
+            this._expandedMenu = $("<div>", { id: _this.id + "-expandedSideMenuTree" })
             this._expandedMenu.css("height", "100%")
             this._expandedMenu.css("display", "flex")
             this._expandedMenu.css("flex-direction", "column")
             this._expandedMenu.css('visibility','visible');
 
-//            $widget.append($header).append($body)
             this._expandedMenu.append($header).append($body)
             $widget.append(this._expandedMenu);
 
-            if(this._sideMenuWidgetModel.subSideMenu) {
-                var subSideMenu = this._sideMenuWidgetModel.subSideMenu;
+            if(this._sideMenuWidgetModel.subSideMenu[this.id]) {
+                var subSideMenu = this._sideMenuWidgetModel.subSideMenu[this.id];
                 subSideMenu.css("margin-left", "3px")
                 this._sideMenuWidgetModel.percentageOfUsage = 0.5
                 $widget.append(subSideMenu)
@@ -307,7 +304,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
             //
             // Print Menu
             //
-            this._sideMenuWidgetModel.menuDOMBody = $body
+            this._sideMenuWidgetModel.menuDOMBody[this.id] = $body
             this.repaintTreeMenuDinamic()
 
             if(this._resizeObserver && !LayoutManager.isMobile()) {
@@ -317,8 +314,8 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
     }
 
     this._refreshSubSideMenu = function() {
-        if(this._sideMenuWidgetModel.subSideMenu) {
-            var subSideMenu = this._sideMenuWidgetModel.subSideMenu;
+        if(this._sideMenuWidgetModel.subSideMenu[this.id]) {
+            var subSideMenu = this._sideMenuWidgetModel.subSideMenu[this.id];
             subSideMenu.css("margin-left", "3px")
             this._sideMenuWidgetModel.percentageOfUsage = 0.5
             $widget.append(subSideMenu)
@@ -333,7 +330,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
 
     this._expandedFooter = function() {
         // Footer
-        var $footer = $("<div>", { id: "sideMenuFooter"})
+        var $footer = $("<div>", { id: _this.id + "-sideMenuFooter"})
         $footer.css("background-color", "rgb(248, 248, 248)");
         $footer.css("height", "40px");
         $footer.css("align-content", "center");
@@ -347,21 +344,19 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
         $btn.css("align-content", "end");
 
         var tooltip = "Hide menu"
-        var id = "show-hide-menu-id"
         var iconType = IconUtil.getToolbarIconType("HIDE");
         var icon = IconUtil.getIcon(iconType);
         $btn.append(icon);
         $btn.attr("title", "Collapse sidebar")
-        $btn.attr("id", "show-hide-menu-id");
+        $btn.attr("id", _this.id + "-show-hide-menu-id");
 
-        var _this = this;
         $btn.click(function() {
             _this._resizeObserver.disconnect();
             LayoutManager.setColumnSize(55, $(window).width() - 55, null);
             mainController.sideMenu.isCollapsed = true;
             LayoutManager._saveSettings();
-            _this._sideMenuWidgetController._browserController._saveSettings();
-            _this._collapsedSideMenu(_this._$container)
+            _this._browserController._saveSettings();
+            _this._collapsedSideMenu(_this.id, _this._$container)
             mainController.tabContent.refreshCurrentPage();
         });
 
@@ -370,22 +365,21 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
         return $footer;
     }
 
-    this._collapsedSideMenu = function($container) {
-        var $widget = $("<div>", { id: "sideMenuTopContainer" })
+    this._collapsedSideMenu = function(id, $container) {
+        var $widget = $("<div>", { id: id + "-sideMenuTopContainer" })
         $widget.css("height", "100%")
         $widget.css("display", "flex")
         $widget.css("flex-direction", "column")
 
         if(this._collapsedMenu) {
-            var $widget = $("<div>", { id: "sideMenuTopContainer" })
-            var _this = this;
+            var $widget = $("<div>", { id: id + "-sideMenuTopContainer" })
             $widget.css("height", "100%")
             $widget.css("display", "flex")
             $widget.css("flex-direction", "column")
 
-            $("#sideMenuFooter").remove()
+            $("#"+id+"-sideMenuFooter").remove()
 
-             var $footer = $("<div>", { id: "sideMenuFooter"})
+             var $footer = $("<div>", { id: id + "-sideMenuFooter"})
             $footer.css("background-color", "rgb(248, 248, 248)");
             $footer.css("height", "40px");
             $footer.css("align-content", "center");
@@ -402,7 +396,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
             var icon = IconUtil.getIcon(iconType);
             $btn.append(icon);
             $btn.attr("title", "Show sidebar")
-            $btn.attr("id", "show-hide-menu-id");
+            $btn.attr("id", id + "-show-hide-menu-id");
 
             var _this = this;
             $btn.click(function() {
@@ -411,14 +405,14 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
                     LayoutManager.restoreStandardSize();
                     _this.repaint(_this._$container, false);
                     LayoutManager._saveSettings();
-                    _this._sideMenuWidgetController._browserController._saveSettings();
+                    _this._browserController._saveSettings();
                     mainController.tabContent.refreshCurrentPage();
             });
 
             var $toolbarContainer = $("<span>").append($btn);
             $footer.append($toolbarContainer.css("float", "right"));
 
-            this._collapsedMenu.find("#sideMenuFooter").remove()
+            this._collapsedMenu.find("#"+id+"-sideMenuFooter").remove()
             this._collapsedMenu.append($footer);
             $widget.append(this._collapsedMenu);
 
@@ -436,18 +430,18 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
         //
         // Fix Header
         //
-        var $header = $("<div>", { id: "sideMenuHeader" })
+        var $header = $("<div>", { id: id+"-sideMenuHeader" })
         $header.css("background-color", "rgb(248, 248, 248)")
         $header.css("padding", "10px")
 
 
-        var $body = $("<div>", { id: "sideMenuBody" })
+        var $body = $("<div>", { id: id+"-sideMenuBody" })
         $body.css("overflow-y", "auto")
         $body.css("flex", "1 1 auto")
         $body.css("background-color", "rgb(248, 248, 248)")
 
 
-        var $footer = $("<div>", { id: "sideMenuFooter"})
+        var $footer = $("<div>", { id: id+"-sideMenuFooter"})
         $footer.css("background-color", "rgb(248, 248, 248)");
         $footer.css("height", "40px");
         $footer.css("align-content", "center");
@@ -464,7 +458,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
         var icon = IconUtil.getIcon(iconType);
         $btn.append(icon);
         $btn.attr("title", "Show sidebar")
-        $btn.attr("id", "show-hide-menu-id");
+        $btn.attr("id", id + "-show-hide-menu-id");
 
         var _this = this;
         $btn.click(function() {
@@ -473,13 +467,13 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
                 LayoutManager.restoreStandardSize();
                 _this.repaint(_this._$container, false);
                  LayoutManager._saveSettings();
-                _this._sideMenuWidgetController._browserController._saveSettings();
+                _this._browserController._saveSettings();
         });
 
         var $toolbarContainer = $("<span>").append($btn);
         $footer.append($toolbarContainer.css("float", "right"));
 
-        this._collapsedMenu = $("<div>", { id: "collapsedSideMenuTree" })
+        this._collapsedMenu = $("<div>", { id: id+"-collapsedSideMenuTree" })
         this._collapsedMenu.css("height", "100%")
         this._collapsedMenu.css("display", "flex")
         this._collapsedMenu.css("flex-direction", "column")
@@ -497,6 +491,19 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
             this._resizeObserver.observe($widget[0]);
         }
 
+    }
+
+    this.connectObserver = function() {
+        if(this._resizeObserver && !LayoutManager.isMobile()) {
+            var $widget = $("#"+this.id+"-sideMenuTopContainer")
+            this._resizeObserver.observe($widget[0]);
+        }
+    }
+
+    this.disconnectObserver = function() {
+        if(this._resizeObserver && !LayoutManager.isMobile()) {
+            this._resizeObserver.disconnect();
+        }
     }
 
     this._logoutButton = function() {
@@ -545,13 +552,13 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
             },
             null,
             "Toggle menu",
-            "collapseMenuBtn"
+            _this.id+"-collapseMenuBtn"
         )
         return collapseMenuBtn;
     }
 
     this.repaintCollapseButton = function($container) {
-        var btn = $container.find("#collapseMenuBtn");
+        var btn = $container.find("#"+_this.id+"-collapseMenuBtn");
         if(LayoutManager.fullScreenFlag) {
             btn[0].children[0].textContent = 'keyboard_double_arrow_down'
         } else {
@@ -593,17 +600,17 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
     this.repaintTreeMenuDinamic = function () {
         var _this = this
 
-        this._sideMenuWidgetModel.menuDOMBody.empty().css("border-top", "1px solid #dbdbdb")
+        this._sideMenuWidgetModel.menuDOMBody[this.id].empty().css("border-top", "1px solid #dbdbdb")
 
         var BrowserElement = React.createElement(window.NgComponents.default.Browser, {
-                controller: _this._sideMenuWidgetController._browserController,
+                controller: _this._browserController,
                 renderDOMNode: _this._renderDOMNode,
                 styles: {
                     nodes: "sideMenuNodes",
                 },
             })
 
-        NgComponentsManager.renderComponent(BrowserElement, this._sideMenuWidgetModel.menuDOMBody.get(0));
+        NgComponentsManager.renderComponent(BrowserElement, this._sideMenuWidgetModel.menuDOMBody[this.id].get(0), true);
     }
 }
 

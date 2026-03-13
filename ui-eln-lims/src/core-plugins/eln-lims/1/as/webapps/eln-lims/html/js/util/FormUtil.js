@@ -1601,6 +1601,9 @@ var FormUtil = new function() {
 		// InlineEditor is not working with textarea that is why $component was changed on div
 	    var placeholder = propertyType ? propertyType.description : "";
 		var $component = this._getDiv($component.attr('id'), $component.attr('alt'), $component.attr('isRequired'));
+		if(!$component.attr('id')) {
+		    $component.attr('id', 'ckEditor-' + mainController.getNextId());
+		}
 		FormUtil.createCkeditor($component, componentOnChange, value, placeholder, isReadOnly, toolbarContainer);
 
 		if (propertyType && propertyType.mandatory) {
@@ -1755,6 +1758,9 @@ var FormUtil = new function() {
 						}
 						$(window).trigger('resize'); // HACK: Fixes table rendering issues when refreshing the grid on fuelux 3.1.0 for all browsers
 						mainController.serverFacade.setSetting(settingsKey, JSON.stringify(sectionsSettings));
+						if(option.refresh) {
+						    option.refresh();
+						}
 					});
 				};
 				$("body").off("click", "[id='"+id+"']");

@@ -11,6 +11,10 @@ function MainHeaderView(controller) {
             LayoutManager.showMainHeader();
         }
 
+        if(!$container.attr('id')) {
+            $container.attr('id', 'mainHeader-' + mainController.getNextId())
+        }
+
         $container.css('background-color', 'rgb(248, 248, 248)');
         $container.css('display', 'flex');
         $container.css('width', 'flex');

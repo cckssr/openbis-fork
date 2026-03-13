@@ -20,69 +20,87 @@ function DataSetViewerView(dataSetViewerController, dataSetViewerModel) {
 	this._level = 3;
 	this._imagePreviewIconLoader = new ImagePreviewIconLoader();
 
+    var _this = this;
+    var _refreshableFields = [];
+
 	this.setViewId = function(viewId) {
 	    this.viewId = viewId;
 	}
+
+	this.refresh = function() {
+        this.repaintViewer();
+        for(var field of _refreshableFields) {
+            field.refresh();
+        }
+    }
 
 	this.repaintDatasets = function() {
         if (this._dataSetViewerModel.formMode == FormMode.VIEW) {
             this._paintDataSetTable();
         }
-		var _this = this;
-		
-		// Container
-		var $mainContainer = $("#"+this._dataSetViewerModel.containerId);
-		
-		// Title / Upload Button
-		var $containerTitle = $("<div>", {"id" : this._dataSetViewerModel.containerIdTitle });
-		var $uploadButton = "";
-		if(this._dataSetViewerModel.enableUpload) {
-			$uploadButton = $("<a>", { class: "btn btn-default" }).append($("<span>", { class: "glyphicon glyphicon-upload" })).append(" Upload New Dataset");
-			$uploadButton.click(function() {
-			    Util.blockUI();
-				if(_this._dataSetViewerModel.isExperiment()) {
-					mainController.changeView('showCreateDataSetPageFromExpPermId',_this._dataSetViewerModel.entity.permId.permId);
-				} else {
-					mainController.changeView('showCreateDataSetPageFromPermId',_this._dataSetViewerModel.entity.permId);
-				}
-			});
-		}
-		
-		$containerTitle.append($("<div>").append($uploadButton));
-		
-		// Container Content
-		var $containerContent = $("<div>", {"id" : this._dataSetViewerModel.containerIdContent });
-		$mainContainer.empty();
-		$mainContainer.append($containerTitle).append($containerContent);
-		
-		var $filesContainer = $("<div>");
-		$containerContent.append($filesContainer);
-		if (this._dataSetViewerModel.enableDeepUnfolding) {
-			var expandCollapseAll = FormUtil.getButtonWithIcon("glyphicon-chevron-down", function() {
-				var icon = $($(this).children()[0]);
-				
-				if(icon.hasClass("glyphicon-chevron-down")) {
-					_this._expandAll();
-					icon.removeClass("glyphicon-chevron-down");
-					icon.addClass("glyphicon-chevron-up");
-				} else if(icon.hasClass("glyphicon-chevron-up")) {
-					
-					$("#" + _this._dataSetViewerModel.containerId + "-filestree").fancytree(_this.fancyTreeOptions).fancytree("getRootNode").visit(function(node) {
-					    node.setExpanded(false);
-					});
-					
-					icon.removeClass("glyphicon-chevron-up");
-					icon.addClass("glyphicon-chevron-down");
-				}
-				
-			}, null, "Expand/Collapse all", this._dataSetViewerModel.containerId + "-expand-collapse-view-btn");
-			$filesContainer.append(expandCollapseAll);
-			
-			var $treeContainer = $("<div>");
-			$filesContainer.append($treeContainer);
-			$filesContainer = $treeContainer;
-		}
-		this.repaintFilesAsTree($filesContainer);
+        this.repaintViewer();
+	}
+
+	this.repaintViewer = function() {
+            var _this = this;
+
+            // Container
+            var $mainContainer = $("#"+this._dataSetViewerModel.containerId);
+
+            // Title / Upload Button
+            var $containerTitle = $("<div>", {"id" : this._dataSetViewerModel.containerIdTitle });
+            var $uploadButton = "";
+            if(this._dataSetViewerModel.enableUpload) {
+                $uploadButton = $("<a>", { class: "btn btn-default" }).append($("<span>", { class: "glyphicon glyphicon-upload" })).append(" Upload New Dataset");
+                $uploadButton.click(function() {
+                    Util.blockUI();
+                    if(_this._dataSetViewerModel.isExperiment()) {
+                        mainController.changeView('showCreateDataSetPageFromExpPermId',_this._dataSetViewerModel.entity.permId.permId);
+                    } else {
+                        mainController.changeView('showCreateDataSetPageFromPermId',_this._dataSetViewerModel.entity.permId);
+                    }
+                });
+            }
+
+            $containerTitle.append($("<div>").append($uploadButton));
+
+            // Container Content
+            var $containerContent = $("<div>", {"id" : this._dataSetViewerModel.containerIdContent });
+            $mainContainer.empty();
+            $mainContainer.append($containerTitle).append($containerContent);
+
+            var $filesContainer = $("<div>");
+            $containerContent.append($filesContainer);
+            if (this._dataSetViewerModel.enableDeepUnfolding) {
+                var expandCollapseAll = FormUtil.getButtonWithIcon("glyphicon-chevron-down", function() {
+                    var icon = $($(this).children()[0]);
+
+                    if(icon.hasClass("glyphicon-chevron-down")) {
+                        _this._expandAll();
+                        icon.removeClass("glyphicon-chevron-down");
+                        icon.addClass("glyphicon-chevron-up");
+                    } else if(icon.hasClass("glyphicon-chevron-up")) {
+
+                        $("#" + _this._dataSetViewerModel.containerId + "-filestree").fancytree(_this.fancyTreeOptions).fancytree("getRootNode").visit(function(node) {
+                            node.setExpanded(false);
+                        });
+
+                        icon.removeClass("glyphicon-chevron-up");
+                        icon.addClass("glyphicon-chevron-down");
+                    }
+
+                }, null, "Expand/Collapse all", this._dataSetViewerModel.containerId + "-expand-collapse-view-btn");
+                $filesContainer.append(expandCollapseAll);
+
+                var $treeContainer = $("<div>");
+                $filesContainer.append($treeContainer);
+                $filesContainer = $treeContainer;
+            }
+            this.repaintFilesAsTree($filesContainer);
+            $filesContainer.refresh = function() {
+                _this.repaintFilesAsTree($filesContainer);
+            }
+            _refreshableFields.push($filesContainer);
 	}
 
     this._paintDataSetTable = function() {
@@ -325,6 +343,7 @@ function DataSetViewerView(dataSetViewerController, dataSetViewerModel) {
                     filePrefix: 'data-sets'
                 },
                 90);
+        _refreshableFields.push(dataGrid);
         dataGrid.init($dataSetContainer);
     }
 

@@ -37,7 +37,7 @@ function DataSetViewerController(containerId, profile, entity, serverFacade, dat
 	}
 
 	this.refresh = function() {
-	    this._datasetViewerView.repaintDatasets();
+	    this._datasetViewerView.refresh();
 	}
 	
 	this.init = function() {

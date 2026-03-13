@@ -253,7 +253,8 @@
 	<script type="text/javascript" src="./js/views/SideMenu/SideMenuWidgetBrowserController.js"></script>
 	<script type="text/javascript" src="./js/views/SideMenu/SideMenuWidgetModel.js"></script>
 	<script type="text/javascript" src="./js/views/SideMenu/SideMenuWidgetView.js"></script>
-	
+	<script type="text/javascript" src="./js/views/SideMenu/SideMenuWidgetViewController.js"></script>
+
 	<script type="text/javascript" src="./js/views/VocabularyManager/VocabularyManagerController.js"></script>
 	<script type="text/javascript" src="./js/views/VocabularyManager/VocabularyManagerModel.js"></script>
 	<script type="text/javascript" src="./js/views/VocabularyManager/VocabularyManagerView.js"></script>
@@ -345,6 +346,7 @@
 	<script type="text/javascript" src="./js/views/RoCrateExport/RoCrateExportModel.js"></script>
 	<script type="text/javascript" src="./js/views/RoCrateExport/RoCrateExportView.js"></script>
 
+
 	<script type="text/javascript" src="./plugins/generic/plugin.js"></script>
 
 	<script type="text/javascript" src="./js/util/EventUtil.js"></script>
@@ -382,6 +384,11 @@
 			var foundComponent = this.components.find(function(component){
 				return component.domContainer === domContainer
 			});
+
+			if(foundComponent && foundComponent.isNotRemovable && !foundComponent.dedicatedDomContainer.isConnected) {
+				foundComponent.isNotRemovable = false;
+				foundComponent = null;
+			}
 
 			if(foundComponent && foundComponent.isNotRemovable){
 				foundComponent.reactRoot.render(reactComponentWithProviders)

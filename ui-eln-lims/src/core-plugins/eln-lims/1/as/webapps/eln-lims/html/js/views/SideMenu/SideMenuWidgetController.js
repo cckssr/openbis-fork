@@ -25,8 +25,15 @@
 function SideMenuWidgetController(mainController) {
     this._mainController = mainController
     this._sideMenuWidgetModel = new SideMenuWidgetModel()
-    this._sideMenuWidgetView = new SideMenuWidgetView(this, this._sideMenuWidgetModel)
-    this._browserController = new SideMenuWidgetBrowserController()
+    this._browserControllerMap = {
+            "lab_notebook": new SideMenuWidgetBrowserController('lab_notebook'),
+            "lims": new SideMenuWidgetBrowserController('lims'),
+            "tools": new SideMenuWidgetBrowserController('tools')
+    }
+
+    this._sideMenuWidgetView = new SideMenuWidgetViewController(this, this._sideMenuWidgetModel);
+
+    this._browserController = this._browserControllerMap['lab_notebook'];
 
     //
     // External API for real time updates
@@ -47,30 +54,15 @@ function SideMenuWidgetController(mainController) {
     }
 
     this.getCurrentTree = function() {
-        return this._browserController.CURRENT_TREE;
+        return mainController.mainHeader.getCurrentPage();
     }
 
     this.changeCurrentTree = function(treeName, optionalNode) {
-        var _this = this;
-        var counter = 200;
-        var repeatUntilSet = function() {
-            if(counter <= 0) {
-                return;
-            }
-           if(!_this._browserController.isLoading()) {
-            _this._browserController.changeCurrentTree(treeName);
-            setTimeout(() => {
-                  if(optionalNode) {
-                      _this.moveToNodeIdAfterLoad(optionalNode)
-                  }
-                }, 100)
-
-           } else {
-                counter--;
-               setTimeout(repeatUntilSet, 50);
-           }
-        }
-        repeatUntilSet();
+        this._browserController = this._browserControllerMap[treeName];
+        this._sideMenuWidgetView.changeSideMenuView(treeName);
+//        if(optionalNode) {
+////            this.moveToNodeIdAfterLoad(optionalNode)
+//        }
     }
 
     this.deleteNodeByEntityPermId = async function (entityType, entityPermId, isMoveToParent) {
@@ -266,11 +258,12 @@ function SideMenuWidgetController(mainController) {
     }
 
     this.resizeElement = function ($elementBody, percentageOfUsage) {
-        var $elementHead = $("#sideMenuHeader")
+        var currentTree = this.getCurrentTree();
+        var $elementHead = $("#"+currentTree+"-sideMenuHeader")
         var sideMenuHeaderHeight = $elementHead.outerHeight()
-        var $elementSortField = $("#sideMenuSortBar")
+        var $elementSortField = $("#"+currentTree+"-sideMenuSortBar")
         var sideMenuSortFieldHeight = $elementSortField.outerHeight()
-        var $sideMenuFooter = $("#sideMenuFooter")
+        var $sideMenuFooter = $("#"+currentTree+"-sideMenuFooter")
         var sideMenuFooterHeight = $sideMenuFooter.outerHeight()
         var height = $(window).height()
         var availableHeight = height - sideMenuHeaderHeight - sideMenuSortFieldHeight  - LayoutManager.MAIN_HEADER_HEIGHT - sideMenuFooterHeight;
@@ -280,43 +273,47 @@ function SideMenuWidgetController(mainController) {
     this.resizeSideMenuBody = function () {
         var _this = this
         return function () {
-            var $elementBody = $("#sideMenuBody")
+            var currentTree = _this.getCurrentTree();
+            var $elementBody = $("#"+currentTree+"-sideMenuBody")
             var percentageOfUsage = _this._sideMenuWidgetModel.percentageOfUsage
             _this.resizeElement($elementBody, percentageOfUsage)
         }
     }
 
     this.addSubSideMenu = function (subSideMenu, subSideMenuViewer) {
+        var _this = this
+        var sideMenuId = mainController.mainHeader.getCurrentPage();
         // Remove old from DOM if present
-        if(this._sideMenuWidgetModel.subSideMenu) {
+        if(this._sideMenuWidgetModel.subSideMenu[sideMenuId]) {
             this.removeSubSideMenu();
         }
         var elementId = subSideMenu.attr("id")
         $("#" + elementId).remove()
         // Add new
-        this._sideMenuWidgetModel.subSideMenu = subSideMenu
-        this._sideMenuWidgetView.subSideMenuViewer = subSideMenuViewer;
+        this._sideMenuWidgetModel.subSideMenu[sideMenuId] = subSideMenu
+        this._sideMenuWidgetView.currentView.subSideMenuViewer = subSideMenuViewer;
         if(!this.isCollapsed) {
             subSideMenu.css("margin-left", "3px")
             this._sideMenuWidgetModel.percentageOfUsage = 0.5
-            $("#sideMenuFooter").remove()
-            $("#sideMenuTopContainer").append(subSideMenu)
+            $("[id='"+sideMenuId+"-sideMenuFooter']").remove()
+            $("[id='"+sideMenuId+"-sideMenuTopContainer']").append(subSideMenu)
             if(!LayoutManager.isMobile()) {
-                $("#sideMenuTopContainer").append(this._sideMenuWidgetView._expandedFooter())
+                $("[id='"+sideMenuId+"-sideMenuTopContainer']").append(this._sideMenuWidgetView._expandedFooter())
             }
-            this.resizeElement($("#sideMenuBody"), 0.5)
+            this.resizeElement($("#"+sideMenuId+"-sideMenuBody"), 0.5)
             this.resizeElement(subSideMenu, 0.5)
         }
     }
 
     this.removeSubSideMenu = function () {
-        if (this._sideMenuWidgetModel.subSideMenu) {
-            this._sideMenuWidgetModel.subSideMenu.remove()
-            this._sideMenuWidgetModel.subSideMenu = null;
+        var currentTree = this.getCurrentTree()
+        if (this._sideMenuWidgetModel.subSideMenu[currentTree]) {
+            this._sideMenuWidgetModel.subSideMenu[currentTree].remove()
+            this._sideMenuWidgetModel.subSideMenu[currentTree] = null;
             this._sideMenuWidgetModel.percentageOfUsage = 1
-            this.resizeElement($("#sideMenuBody"), 1)
+            this.resizeElement($("#"+currentTree+"-sideMenuBody"), 1)
         }
-        this._sideMenuWidgetModel.subSideMenu = null;
+        this._sideMenuWidgetModel.subSideMenu[currentTree] = null;
         this._sideMenuWidgetView.subSideMenuViewer = null;
     }
 }

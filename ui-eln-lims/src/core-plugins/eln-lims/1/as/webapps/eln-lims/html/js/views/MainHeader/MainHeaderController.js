@@ -4,6 +4,8 @@ function MainHeaderController() {
     this._mainHeaderView = new MainHeaderView(this)
     var _this = this;
 
+    var MOBILE_MODE = $(window).width < LayoutManager.TABLET_SIZE;
+
     var MIN_LENGTH = 3
 
     //
@@ -23,21 +25,24 @@ function MainHeaderController() {
     }
 
     this.handlePageChange = function(event, value) {
-        _this._mainHeaderModel.currentPage = value;
-        mainController.sideMenu.removeSubSideMenu();
-        mainController.tabContent.changePage(value);
-        var tabInfo = mainController.tabContent.getCurrentTabInfo();
-        if(tabInfo) {
-            var node = JSON.parse(tabInfo.node);
-            mainController.sideMenu.changeCurrentTree(value, node);
-        } else {
-            mainController.sideMenu.changeCurrentTree(value);
-        }
-        if(mainController.sideMenu.isCollapsed) {
-            mainController.sideMenu.expandSideMenu();
-        }
+        if(MOBILE_MODE) {
+            _this._mainHeaderView.repaint(_this._mainHeaderModel.$container);
 
-        _this._mainHeaderView.repaint(_this._mainHeaderModel.$container);
+        } else {
+            _this._mainHeaderModel.currentPage = value;
+            mainController.tabContent.changePage(value);
+            var tabInfo = mainController.tabContent.getCurrentTabInfo();
+            if(tabInfo) {
+                var node = JSON.parse(tabInfo.node);
+                mainController.sideMenu.changeCurrentTree(value, node);
+            } else {
+                mainController.sideMenu.changeCurrentTree(value);
+            }
+            if(mainController.sideMenu.isCollapsed) {
+                mainController.sideMenu.expandSideMenu();
+            }
+            _this._mainHeaderView.repaint(_this._mainHeaderModel.$container);
+        }
     }
 
     this.setSearchDomains = function(searchDomains) {

@@ -32,7 +32,13 @@ function TabContentController(controller) {
             this._model.currentTab = openTabs.filter(state.selectedTab)[0]
             if(this._model.currentTab) {
                 this._updateView(this._model.currentTab)
+            } else {
+                mainController.currentView = null;
+                this._model.currentTab = null;
             }
+        } else {
+            mainController.currentView = null;
+            this._model.currentTab = null;
         }
     }
 

@@ -251,7 +251,7 @@ var LayoutManager = {
         if (view.content) {
             view.content.css({
                 display : "block",
-                height : height - Math.max(view.header.height(), LayoutManager.MIN_HEADER_HEIGHT) - LayoutManager.HEADER_PADDING - LayoutManager.TAB_TOP_BAR_HEIGHT
+                height : height - Math.max(view.header ? view.header.height() : 0, LayoutManager.MIN_HEADER_HEIGHT) - LayoutManager.HEADER_PADDING - LayoutManager.TAB_TOP_BAR_HEIGHT
             });
 
         } else {
@@ -313,7 +313,7 @@ var LayoutManager = {
 			}
 			view.content.css({
                 display : "block",
-                height : height - Math.max(view.header.height(), LayoutManager.MIN_HEADER_HEIGHT) - LayoutManager.HEADER_PADDING - LayoutManager.TAB_TOP_BAR_HEIGHT
+                height : height - Math.max(view.header ? view.header.height() : 0, LayoutManager.MIN_HEADER_HEIGHT) - LayoutManager.HEADER_PADDING - LayoutManager.TAB_TOP_BAR_HEIGHT
             });
 		}
 
@@ -362,8 +362,8 @@ var LayoutManager = {
 			this.secondColumn.width(width);
 		} else if (width > this.MOBILE_SIZE) {
 			// No columns to hide, remove menu instead.
-			$("#sideMenuTopContainer").parent().css({ "height" : "" });
-			$("#sideMenuBody").css({ "display" : "none" });
+			$("[id$='-sideMenuTopContainer']").parent().css({ "height" : "" });
+            $("[id$='-sideMenuBody']").css({ "display" : "none" });
 			//
 		} else {
 			alert("Layout manager unable to go fullScreen, this should never happen.");
@@ -373,8 +373,8 @@ var LayoutManager = {
 	restoreStandardSize : function() {
 	    // Restore changes of mobile layout
 	    if(this.isMobile()) {
-            $("#sideMenuTopContainer").parent().css({ "height" : "100%" });
-            $("#sideMenuBody").css({ "display" : "" });
+	        $("[id$='-sideMenuTopContainer']").parent().css({ "height" : "100%" });
+	        $("[id$='-sideMenuBody']").css({ "display" : "" });
         }
         //
 		LayoutManager.resize(mainController.views, true);

@@ -48,6 +48,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
     TYPE_EXPORT_TO_RESEARCH_COLLECTION = "EXPORT_TO_RESEARCH_COLLECTION"
     TYPE_EXPORT_TO_ZENODO = "EXPORT_TO_ZENODO"
     TYPE_EXPORT_TO_RO_CRATE = "TYPE_EXPORT_TO_RO_CRATE"
+    TYPE_EXPORT_TO_SCI_CAT = "TYPE_EXPORT_TO_SCI_CAT"
     TYPE_ABOUT = "ABOUT"
 
     SORTINGS_BY_NAME = [
@@ -142,7 +143,6 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
     TREE_TOOLS = "tools"
 
     TREES_INITIALIZED = false
-    CURRENT_TREE = this.TREE_LAB_NOTEBOOK
     TREES_BY_TYPE = {
         "lab_notebook": [],
         "lims": [],
@@ -154,24 +154,9 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
         "tools": null
     }
 
-    changeCurrentTree(treeName) {
-        var oldRootNode = this.getNodeSetAsRoot();
-        this.ROOTS[this.CURRENT_TREE] = oldRootNode;
-        this.setState({
-          loaded: false,
-          loading: true,
-        })
-        this.CURRENT_TREE = treeName;
-        var rootNode = this.ROOTS[treeName];
-        var _this = this;
-
-        if(oldRootNode || rootNode) {
-            _this.setNodeAsRoot(null)
-                .then(() => _this.load())
-                .then(() => _this.setNodeAsRoot(rootNode ? rootNode.id : null));
-        } else {
-            this.load();
-        }
+    constructor(id) {
+        super()
+        this.id = id;
     }
 
     SORTINGS_BY_NAME_AND_REGISTRATION_DATE = [].concat(this.SORTINGS_BY_NAME).concat(this.SORTINGS_BY_REGISTRATION_DATE)
@@ -797,15 +782,15 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
                 this._createFilteredStockNode(entities),
             ])
 
-            if (labNotebookNode && _this.CURRENT_TREE === _this.TREE_LAB_NOTEBOOK) {
+            if (labNotebookNode && _this.id === _this.TREE_LAB_NOTEBOOK) {
                 results.nodes.push(labNotebookNode)
             }
 
-            if (inventoryNode && _this.CURRENT_TREE === _this.TREE_LIMS) {
+            if (inventoryNode && _this.id === _this.TREE_LIMS) {
                 results.nodes.push(inventoryNode)
             }
 
-            if (stockNode && _this.CURRENT_TREE === _this.TREE_LIMS) {
+            if (stockNode && _this.id === _this.TREE_LIMS) {
                 results.nodes.push(stockNode)
             }
         } else if (node.object.type === this.TYPE_SPACE) {
@@ -1692,7 +1677,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
                 this.TREES_BY_TYPE[this.TREE_TOOLS].push(about);
                 this.TREES_INITIALIZED = true
             }
-            results.nodes = this.TREES_BY_TYPE[this.CURRENT_TREE];
+            results.nodes = this.TREES_BY_TYPE[this.id];
         }
 
         results.nodes = results.nodes.filter((node) => !!node)

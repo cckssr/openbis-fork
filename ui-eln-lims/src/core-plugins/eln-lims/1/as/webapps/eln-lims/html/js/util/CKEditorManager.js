@@ -2,9 +2,24 @@ var CKEditorManager = new function() {
 
     var editors = new Map();
 
+    this.getEditors = function() {
+        return editors;
+    }
+
     this.addEditor = function(id, editor) {
         this.SpecialCharactersGreekExtended(editor);
+        this.releaseResources();
         editors.set(id, editor);
+    }
+
+    this.releaseResources = function() {
+        for (let key of editors.keys()) {
+            let editor = editors.get(key);
+            if(!editor.sourceElement.isConnected) {
+                editor.destroy().catch( error => {console.log( error );});
+                editors.delete(key);
+            }
+        }
     }
 
     this.getEditorById = function(id) {
