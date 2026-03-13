@@ -1,6 +1,7 @@
 package ch.systemsx.cisd.openbis.generic.server.dataaccess.validators;
 
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
+import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataTypeCode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -8,7 +9,7 @@ import java.io.Serializable;
 
 public abstract class ArrayValidator implements IDataTypeValidator {
 
-    private ObjectMapper mapper = new ObjectMapper();
+    private ObjectMapper mapper = CommonServiceProvider.getObjectMapper();
 
     private DataTypeCode arrayType;
 

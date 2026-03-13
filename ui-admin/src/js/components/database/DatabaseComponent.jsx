@@ -270,7 +270,6 @@ class DatabaseComponent extends React.PureComponent {
       oldId,
       newType,
       newId)
-      this.closeForm(oldType, oldId);
   }
 
   createNewObject(newObjectType, fromObjectType, fromId, selectedEntityType) {
