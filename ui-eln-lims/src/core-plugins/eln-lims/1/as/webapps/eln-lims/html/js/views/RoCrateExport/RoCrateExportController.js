@@ -27,56 +27,12 @@ function RoCrateExportController(parentController) {
 
     this.init = function(views) {
 
-        this.getSettingValue("ro-crate-job-ids", (function(jobsStr) {
-            _this.exportModel = new RoCrateExportModel();
-            _this.exportView = new RoCrateExportView(this, _this.exportModel);
-            if(jobsStr) {
-                var jobs = JSON.parse(jobsStr);
-                _this.exportModel.jobs = jobs;
-                _this.checkStatues();
-            }
-            _this.exportView.repaint(views);
-        }).bind(this));
+        _this.exportModel = new RoCrateExportModel();
+        _this.exportView = new RoCrateExportView(this, _this.exportModel);
 
+        _this.exportView.repaint(views);
 
     };
-
-    this.checkStatues = function() {
-        mainController.serverFacade.statusRoCrateJobs(function(output) {
-            if(output.error) {
-                if(output.error.message) {
-                    Util.showError(output.error.message);
-                } else {
-                    Util.showError(output.error);
-                }
-            } else {
-                var result = output.result;
-                if(result.jobs) {
-                    for(var i = 0; i < _this.exportModel.jobs.length; i++) {
-                        var found = false;
-                        for(var j = 0; j < result.jobs.length; j++) {
-                            if(_this.exportModel.jobs[i].jobId === result.jobs[j].jobId) {
-                                found = true;
-                                _this.exportModel.jobs[i].status = result.jobs[j].status;
-                                _this.exportModel.jobs[i].errors = result.jobs[j].errors;
-                                break;
-                            }
-                        }
-                        if(!found) {
-                            _this.exportModel.jobs[i].status = "DELETED";
-                        }
-                    }
-                    _this.updateJobs();
-                    _this.exportView.dataGrid.refresh();
-                }
-            }
-        });
-    }
-
-    this.updateJobs = function() {
-        var stringy = JSON.stringify(_this.exportModel.jobs)
-        _this.setSettingValue("ro-crate-job-ids", stringy);
-    }
 
     this._addNodeToList = function(node, list) {
         list.push({
@@ -136,15 +92,7 @@ function RoCrateExportController(parentController) {
                         Util.showError(result.error);
                     }
                 } else {
-                    var data = result.result;
-                    _this.exportModel.jobs.push({
-                        jobId: data.jobId,
-                        status: "SCHEDULED",
-                        time: Date.now()
-                    });
-                    _this.updateJobs();
-                    Util.showSuccess("Export is being processed.", function () { Util.unblockUI(); });
-
+                    Util.showSuccess("Export is being processed, you will receive an email when it is finished.", function () { Util.unblockUI(); });
                     mainController.refreshView();
                 }
             });
@@ -152,12 +100,6 @@ function RoCrateExportController(parentController) {
 
     }
 
-    this.getSettingValue = function (key, callback) {
-        parentController.serverFacade.getSetting(key, callback);
-    };
 
-    this.setSettingValue = function (key, value) {
-        parentController.serverFacade.setSetting(key, value);
-    };
 
 }

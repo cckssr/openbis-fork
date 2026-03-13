@@ -75,7 +75,8 @@ def exportRoCrate(context, params):
             'openbis.with-objects-and-dataSets-children': str(withObjectsAndDataSetsChildren),
             'openbis.with-objects-and-dataSets-parents': str(withObjectsAndDataSetsParents),
             'openbis.with-objects-and-dataSets-other-spaces': str(withObjectsAndDataSetsOtherSpaces),
-            'openbis.input-body-format' : "JSON"
+            'openbis.input-body-format' : "JSON",
+            'openbis.send-email' : "True",
         }
 
         error = None
