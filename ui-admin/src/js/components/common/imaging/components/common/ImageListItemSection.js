@@ -67,14 +67,14 @@ const ImageListItemSection = ({ title, cols, rowHeight, type, items, activeImage
                     </ImageListItem>
                 ))
             case constants.PREVIEW_TYPE:
-                return items.map(preview => (
-                    <ImageListItem key={`imageListItem-preview-${activeImageIdx}-${preview.index}`}
-                        className={activePreviewIdx === preview.index ? classes.elevation : classes.trasparency}
-                        onClick={() => onActiveItemChange(preview.index)}>
+                return items.map((preview, previewIdx) => (
+                    <ImageListItem key={`imageListItem-preview-${activeImageIdx}-${previewIdx}`}
+                                   className={activePreviewIdx === previewIdx ? classes.elevation : classes.trasparency}
+                                   onClick={() => onActiveItemChange(previewIdx)}>
                         {preview.bytes ?
                             <img alt={""} className={classes.imgFullWidth} src={`data:image/${preview.format};base64,${preview.bytes}`} />
                             : <BlankImage className={classes.imgFullWidth} />}
-                        {activePreviewIdx === preview.index && moveArrowCompList(activePreviewIdx)}
+                        {activePreviewIdx === previewIdx && moveArrowCompList(previewIdx)}
                     </ImageListItem>
                 ))
             default:
