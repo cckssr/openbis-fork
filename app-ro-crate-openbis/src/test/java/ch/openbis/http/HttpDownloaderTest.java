@@ -33,7 +33,7 @@ public class HttpDownloaderTest {
         AtomicReference<Exception> expected = new AtomicReference<>();
 
         HttpDownloader httpDownloader = new HttpDownloader();
-        httpDownloader.add("http://google.com", tempFile);
+        httpDownloader.add("https://www.google.com/", tempFile);
 
         httpDownloader.error((url, path, exception) -> {
             expected.set(exception);

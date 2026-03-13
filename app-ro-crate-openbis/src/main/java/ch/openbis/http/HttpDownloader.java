@@ -1,6 +1,7 @@
 package ch.openbis.http;
 
 import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -111,6 +112,9 @@ public class HttpDownloader {
                 HttpResponse<InputStream> response = null;
 
                 response = client.send(request, HttpResponse.BodyHandlers.ofInputStream());
+                if (response.statusCode() != HttpURLConnection.HTTP_OK) {
+                    throw new RuntimeException("Http status: " + response.statusCode());
+                }
                 InputStream in = response.body();
 
                 if (!Files.exists(download.path) || httpDownloaderOverride.override(download.url, download.path)) {
