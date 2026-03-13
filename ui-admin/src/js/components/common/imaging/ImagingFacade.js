@@ -448,12 +448,12 @@ export default class ImagingFacade {
 
             let previewIndexInDataset = 0;
             for (const image of loadedImgDS.images) {
-                for (const preview of image.previews) {
+                for (const [index, preview] of image.previews.entries()) {
                     if (previewIndexInDataset === sortingId) {
                         previewContainerList.push({
                             datasetId,
                             preview,
-                            previewIdx: previewIndexInDataset,
+                            previewIdx: index,
                             imageIdx: loadedImgDS.images.indexOf(image), // Get image index
                             imageMetadata: image.metadata,
                             select: false,
