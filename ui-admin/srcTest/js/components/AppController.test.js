@@ -3,6 +3,7 @@ import ComponentContext from '@srcTest/js/components/common/ComponentContext.js'
 import openbis from '@srcTest/js/services/openbis.js'
 import pages from '@src/js/common/consts/pages.js'
 import objectType from '@src/js/common/consts/objectType.js'
+import routes from '@src/js/common/consts/routes.js'
 import fixture from '@srcTest/js/common/fixture.js'
 
 const SUITE = 'AppController'
@@ -157,6 +158,62 @@ describe(SUITE, () => {
 
     expectSelectedObject(pages.USERS, null)
     expectOpenObjects(pages.USERS, [])
+  })
+
+  test('closing a non-selected tab keeps the selected database object route', async () => {
+    const object1 = {
+      type: objectType.OBJECT,
+      id: '20260204173616434-62'
+    }
+    const object2 = {
+      type: objectType.OBJECT,
+      id: '20260204173616434-63'
+    }
+
+    await controller.objectOpen(pages.DATABASE, object1.type, object1.id)
+    await update()
+    await controller.objectOpen(pages.DATABASE, object2.type, object2.id)
+    await update()
+    await controller.objectOpen(pages.DATABASE, object1.type, object1.id)
+    await update()
+
+    await controller.objectClose(pages.DATABASE, object2.type, object2.id)
+    await update()
+
+    expectSelectedObject(pages.DATABASE, object1)
+    expectOpenObjects(pages.DATABASE, [object1])
+    expect(controller.getCurrentRoute(pages.DATABASE)).toEqual(
+      routes.format({ page: pages.DATABASE, type: object1.type, id: object1.id })
+    )
+  })
+
+  test('creating a database object replaces the draft tab with the saved object route', async () => {
+    await controller.objectNew(pages.DATABASE, objectType.NEW_OBJECT, {
+      entityType: fixture.TEST_SAMPLE_TYPE_DTO.code,
+      parentType: objectType.SPACE,
+      parentId: 'TEST_SPACE'
+    })
+    await update()
+
+    await controller.objectCreate(
+      pages.DATABASE,
+      objectType.NEW_OBJECT,
+      '1',
+      objectType.OBJECT,
+      '20260204173616434-62'
+    )
+    await update()
+
+    const savedObject = {
+      type: objectType.OBJECT,
+      id: '20260204173616434-62'
+    }
+
+    expectSelectedObject(pages.DATABASE, savedObject)
+    expectOpenObjects(pages.DATABASE, [savedObject])
+    expect(controller.getCurrentRoute(pages.DATABASE)).toEqual(
+      routes.format({ page: pages.DATABASE, type: savedObject.type, id: savedObject.id })
+    )
   })
 })
 
