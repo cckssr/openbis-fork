@@ -554,6 +554,7 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 			// isProtocol
 			// isStorage
 			var miscellaneousSettingsTableModel = this._getSampleTypesDefinitionMiscellaneousSettingsTableModel(sampleType.code, sampleTypeSettings);
+
 			var miscellaneousSettingsTable = this._getTable(miscellaneousSettingsTableModel);
 			miscellaneousSettingsTable.css( { "margin-left" : "30px" } );
 			$sampleTypeFieldset.append(miscellaneousSettingsTable);

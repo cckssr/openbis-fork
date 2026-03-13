@@ -118,6 +118,7 @@ function MainController(profile) {
 	this.loggedInAnonymously = false;
 
 	this.zenodoApiTokenKey = "personal-zenodo-api-token";
+	this.sciCatApiTokenKey = "personal-sci-cat-api-token";
 	
 	//
 	// Validates and enters the app
@@ -533,7 +534,7 @@ function MainController(profile) {
 			this.currentView.finalize(false);
 		}
 		
-		CKEditorManager.destroy();
+		CKEditorManager.releaseResources();
 		this.sideMenu.removeSubSideMenu();
 
 		//
@@ -690,6 +691,16 @@ function MainController(profile) {
                     newRoCrateExportView.init(roCrateExportViews);
                     newRoCrateExportView.tabId = tabInfo.id;
                     this.currentView = newRoCrateExportView;
+                    break;
+				case "showSciCatExportPage":
+                    document.title = "SciCat Export Builder";
+                    this.mainHeader.navigateToTab("TOOLS");
+                    var newSciCatExportView = new SciCatExportController(this);
+                    var tabInfo = TabContentUtil.getToolTabInfo('SCI-CAT_EXPORT');
+                    var sciCatExportViews = this._getNewViewModel(true, true, false, tabInfo);
+                    newSciCatExportView.init(sciCatExportViews);
+                    newSciCatExportView.tabId = tabInfo.id;
+                    this.currentView = newSciCatExportView;
                     break;
 				case "showLabNotebookPage":
 					document.title = "Lab Notebook";

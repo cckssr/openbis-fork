@@ -225,8 +225,11 @@ var IconUtil = new function() {
              icon.class = "material-icons";
              icon.text = "close";
         } else if(type === "TYPE_EXPORT_TO_RO_CRATE" || type === 'RO-CRATE_EXPORT') {
-              icon.type = "img";
-              icon.url = "./img/ro-crate.svg";
+             icon.type = "img";
+             icon.url = "./img/ro-crate.svg";
+        } else if(type === "TYPE_EXPORT_TO_SCI_CAT" || type === 'SCI-CAT_EXPORT') {
+            icon.class = "material-icons";
+             icon.text = "delete_forever";
         }
         return icon;
     }
@@ -303,6 +306,9 @@ var IconUtil = new function() {
         } else if(type === "TYPE_EXPORT_TO_RO_CRATE" || type === 'RO-CRATE_EXPORT') {
             icon.type = "img";
             icon.url = "./img/ro-crate.svg";
+        } else if(type === "TYPE_EXPORT_TO_SCI_CAT" || type === 'SCI-CAT_EXPORT') {
+            icon.type = "img";
+            icon.url = "./img/scicat-logo-icon.svg";
         } else if(type === "ABOUT") {
             icon.class = "glyphicon glyphicon-info-sign";
         } else if(type === "DATASET") {

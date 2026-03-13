@@ -464,6 +464,10 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
             path.push(this._createUtilitiesNode())
             path.push(this._createExportsNode())
             path.push(this._createExportToRoCrateNode())
+        } else if (object.type === this.TYPE_EXPORT_TO_SCI_CAT) {
+            path.push(this._createUtilitiesNode())
+            path.push(this._createExportsNode())
+            path.push(this._createExportToSciCatNode())
         }
 
         if (path.some((pathItem) => !pathItem)) {
@@ -2739,6 +2743,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
         results.nodes.push(this._createExportToResearchCollectionNode())
         results.nodes.push(this._createExportToZenodoNode())
         results.nodes.push(this._createExportToRoCrateNode())
+        results.nodes.push(this._createExportToSciCatNode())
 
         results.nodes = results.nodes.filter((node) => !!node)
 
@@ -3229,6 +3234,22 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
                 },
                 view: "showRoCrateExportPage",
                 icon: IconUtil.getNavigationIcon(this.TYPE_EXPORT_TO_RO_CRATE)
+            }
+        } else {
+            return null
+        }
+    }
+
+    _createExportToSciCatNode() {
+        if (profile.mainMenu.showExports) {
+            return {
+                text: "Export to SciCat",
+                object: {
+                    type: this.TYPE_EXPORT_TO_SCI_CAT,
+                    id: this.TYPE_EXPORT_TO_SCI_CAT,
+                },
+                view: "showSciCatExportPage",
+                icon: IconUtil.getNavigationIcon(this.TYPE_EXPORT_TO_SCI_CAT)
             }
         } else {
             return null

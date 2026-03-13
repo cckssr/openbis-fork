@@ -23,6 +23,7 @@ function UserProfileView(userProfileController, userProfileModel) {
     this._$lastNameInput = null;
     this._$emailInput = null;
     this._$zenodoToken = null;
+    this._$sciCatToken = null;
 
 	this.repaint = function(views) {
 
@@ -88,6 +89,15 @@ function UserProfileView(userProfileController, userProfileModel) {
             }).bind(this));
             $formColumn.append(this._getFormGroup(this._$zenodoToken, "Zenodo API Token:"));
 
+            this._$sciCatToken = $("<input>", { type : "text", class : "form-control" });
+
+            this._userProfileController.getSettingValue(this._userProfileController._sciCatApiTokenKey, (function (settingsValue) {
+                if (settingsValue) {
+                    this._$sciCatToken.val(settingsValue.trim());
+                }
+            }).bind(this));
+            $formColumn.append(this._getFormGroup(this._$sciCatToken, "SciCat API Token:"));
+
             // disable in view mode
             if (this._userProfileModel.mode === FormMode.VIEW ||
                     !this._userProfileController.isFileAuthentication()) {
@@ -98,6 +108,7 @@ function UserProfileView(userProfileController, userProfileModel) {
 
             if (this._userProfileModel.mode === FormMode.VIEW) {
                 this._$zenodoToken.prop("disabled", true);
+                this._$sciCatToken.prop("disabled", true);
             }
         }).bind(this));
     }
@@ -119,7 +130,8 @@ function UserProfileView(userProfileController, userProfileModel) {
             firstName : this._$firstNameInput.val(),
             lastName : this._$lastNameInput.val(),
             email : this._$emailInput.val(),
-            zenodoToken : this._$zenodoToken.val()
+            zenodoToken : this._$zenodoToken.val(),
+            sciCatToken : this._$sciCatToken.val()
         };
     }
 

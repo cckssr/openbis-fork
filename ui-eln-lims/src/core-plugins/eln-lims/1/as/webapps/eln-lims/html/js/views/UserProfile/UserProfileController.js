@@ -19,6 +19,7 @@ function UserProfileController(mainController, mode) {
 	this._userProfileModel = new UserProfileModel(mode);
 	this._userProfileView = new UserProfileView(this, this._userProfileModel);
     this._zenodoApiTokenKey = this._mainController.zenodoApiTokenKey;
+    this._sciCatApiTokenKey = this._mainController.sciCatApiTokenKey;
 
 	this.init = function(views) {
         this._userProfileView.repaint(views);
@@ -52,6 +53,7 @@ function UserProfileController(mainController, mode) {
 		var userId = this._mainController.serverFacade.getUserId();
 
 		this.setSettingValue(this._zenodoApiTokenKey, userInformation.zenodoToken);
+		this.setSettingValue(this._sciCatApiTokenKey, userInformation.sciCatToken);
 		this._mainController.serverFacade.updateUserInformation(userId, userInformation, (function(ok) {
 			if (ok) {
 				if(this.isFileAuthentication()) {
