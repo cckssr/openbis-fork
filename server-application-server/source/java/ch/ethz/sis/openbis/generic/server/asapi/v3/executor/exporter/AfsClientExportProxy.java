@@ -15,9 +15,9 @@ import java.nio.file.Path;
 final class AfsClientExportProxy
 {
 
-    public static final String AFS_SERVER_URL_PROPERTY_NAME = "server-public-information.afs-server.url";
+    public static final String AFS_SERVER_URL_PROPERTY_NAME = "api.v3.transaction.participant.afs-server.url";
 
-    public static final String AFS_SERVER_TIMEOUT_PROPERTY_NAME = "server-public-information.afs-server.timeout";
+    public static final String AFS_SERVER_TIMEOUT_PROPERTY_NAME = "api.v3.transaction.participant.afs-server.timeout";
 
     public static final String AFS_SERVER_TIMEOUT_DEFAULT = "3600";
 
