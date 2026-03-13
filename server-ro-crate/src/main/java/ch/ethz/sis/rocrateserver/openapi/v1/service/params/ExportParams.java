@@ -60,6 +60,9 @@ public class ExportParams {
     @HeaderParam("openbis.input-body-format")
     private String inputBodyFormat;
 
+    @HeaderParam("openbis.send-email")
+    private String sendEmail;
+
     public String getApiKey() {
         return apiKey;
     }
@@ -187,6 +190,16 @@ public class ExportParams {
     public void setInputBodyFormat(String inputBodyFormat)
     {
         this.inputBodyFormat = inputBodyFormat;
+    }
+
+    public boolean getSendEmail()
+    {
+        return sendEmail != null && Boolean.parseBoolean(sendEmail);
+    }
+
+    public void setSendEmail(String sendEmail)
+    {
+        this.sendEmail = sendEmail;
     }
 
     //
