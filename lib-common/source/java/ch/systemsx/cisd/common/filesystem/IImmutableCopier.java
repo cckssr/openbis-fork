@@ -45,7 +45,7 @@ public interface IImmutableCopier
      *            directory.
      * @param nameOrNull The link name in the destination file or directory. If it is <code>null</code>, the name of <var>source</var> will be used
      *            instead.
-     * @return <code>true</code>, if the source file or directory was copied successfully, <code>false</code> otherwise.
+     * @return Status object that indicates whether the source file or directory was copied successfully.
      */
     Status copyImmutably(final File source, final File destinationDirectory, final String nameOrNull);
 
@@ -65,7 +65,7 @@ public interface IImmutableCopier
      * @param nameOrNull The link name in the destination file or directory. If it is <code>null</code>, the name of <var>source</var> will be used
      *            instead.
      * @param mode Determines how to deal with target files that do already exist.
-     * @return <code>true</code>, if the source file or directory was copied successfully, <code>false</code> otherwise.
+     * @return Status object that indicates whether  the source file or directory was copied successfully.
      */
     Status copyImmutably(final File source, final File destinationDirectory,
             final String nameOrNull, final CopyModeExisting mode);
