@@ -138,8 +138,8 @@ insert into data_types
  ,description)
  values
  (nextval('DATA_TYPE_ID_SEQ')
- ,'MATERIAL'
- ,'Reference to a material'
+ ,'UNUSED'
+ ,'Deprecated - do not use'
 );
 
 insert into data_types

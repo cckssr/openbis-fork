@@ -342,3 +342,6 @@ CREATE OR REPLACE RULE data_set_properties_delete AS
          OLD.TIMESTAMP_ARRAY_VALUE,
          OLD.JSON_VALUE
        );
+
+-- Rename the MATERIAL data type to UNUSED so it no longer conflicts with the removed DataTypeCode enum value.
+UPDATE data_types SET code = 'UNUSED', description = 'Deprecated - do not use' WHERE code = 'MATERIAL';

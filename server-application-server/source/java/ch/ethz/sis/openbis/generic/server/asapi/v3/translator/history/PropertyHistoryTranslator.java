@@ -160,11 +160,7 @@ public abstract class PropertyHistoryTranslator extends AbstractCachingTranslato
                 entriesMap.put(record.objectId, entries);
             }
 
-            PropertyHistoryEntry entry = createPropertyEntry(record, authorMap, fetchOptions);
-            if (entry != null)
-            {
-                entries.add(entry);
-            }
+            entries.add(createPropertyEntry(record, authorMap, fetchOptions));
         }
     }
 
@@ -203,8 +199,7 @@ public abstract class PropertyHistoryTranslator extends AbstractCachingTranslato
             entry.setPropertyValue(record.jsonPropertyValue);
         } else
         {
-            // Legacy history rows can carry no representable value and should be ignored.
-            return null;
+            throw new IllegalArgumentException("Unexpected property history entry with all values null");
         }
 
         if (fetchOptions.hasAuthor())
