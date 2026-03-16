@@ -24,7 +24,6 @@ import org.testng.annotations.Test;
 import ch.systemsx.cisd.common.jython.evaluator.EvaluatorException;
 import ch.systemsx.cisd.openbis.generic.server.TestJythonEvaluatorPool;
 import ch.systemsx.cisd.openbis.generic.shared.IJythonEvaluatorPool;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.hotdeploy_plugins.api.IEntityAdaptor;
 import ch.systemsx.cisd.openbis.generic.shared.hotdeploy_plugins.api.IEntityPropertyAdaptor;
 import ch.systemsx.cisd.openbis.generic.shared.util.XmlUtilsTest;
@@ -134,17 +133,6 @@ public class DynamicPropertyCalculatorTest extends AssertJUnit
         }
     }
 
-    @Test
-    public void testMaterialFunction()
-    {
-        final String code = "CODE";
-        final String typeCode = "TYPE";
-
-        final JythonDynamicPropertyCalculator calculator =
-                JythonDynamicPropertyCalculator.create("material('" + code + "', '" + typeCode
-                        + "')", getPool());
-        assertEquals(MaterialIdentifier.print(code, typeCode), calculator.eval(null));
-    }
 
     private static IEntityAdaptor createEntity(final String code,
             final Collection<IEntityPropertyAdaptor> properties)

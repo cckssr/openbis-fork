@@ -112,8 +112,6 @@ import ch.systemsx.cisd.openbis.generic.server.business.bo.IEntityTypePropertyTy
 import ch.systemsx.cisd.openbis.generic.server.business.bo.IExperimentBO;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.IExperimentTable;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.IGridCustomFilterOrColumnBO;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.IMaterialBO;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.IMaterialTable;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.IMetaprojectBO;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.IProjectBO;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.IPropertyTypeBO;
@@ -129,7 +127,6 @@ import ch.systemsx.cisd.openbis.generic.server.business.bo.IVocabularyBO;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.IVocabularyTermBO;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.common.DatabaseContextUtils;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.datasetlister.IDatasetLister;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.materiallister.IMaterialLister;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.samplelister.ISampleLister;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDataDAO;
@@ -195,9 +192,6 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.FileFormatTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.GridCustomFilterPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.IEntityInformationHolderDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.IEntityInformationWithPropertiesHolder;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialPE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialTypePE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialUpdateDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.MetaprojectAssignmentPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.MetaprojectPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.NewRoleAssignment;
@@ -237,8 +231,6 @@ import ch.systemsx.cisd.openbis.generic.shared.translator.EntityTypeTranslator;
 import ch.systemsx.cisd.openbis.generic.shared.translator.ExperimentTranslator;
 import ch.systemsx.cisd.openbis.generic.shared.translator.ExternalDataManagementSystemTranslator;
 import ch.systemsx.cisd.openbis.generic.shared.translator.GridCustomExpressionTranslator.GridCustomFilterTranslator;
-import ch.systemsx.cisd.openbis.generic.shared.translator.MaterialTranslator;
-import ch.systemsx.cisd.openbis.generic.shared.translator.MaterialTypeTranslator;
 import ch.systemsx.cisd.openbis.generic.shared.translator.MetaprojectTranslator;
 import ch.systemsx.cisd.openbis.generic.shared.translator.PersonTranslator;
 import ch.systemsx.cisd.openbis.generic.shared.translator.ProjectTranslator;
@@ -612,7 +604,7 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
         final List<SampleTypePE> sampleTypes = getDAOFactory().getSampleTypeDAO().listSampleTypes();
         Collections.sort(sampleTypes);
         List<SampleType> translateSampleTypes =
-                SampleTypeTranslator.translate(sampleTypes, new HashMap<MaterialTypePE, MaterialType>(),
+                SampleTypeTranslator.translate(sampleTypes,
                         new HashMap<PropertyTypePE, PropertyType>());
 
         return translateSampleTypes;
@@ -731,18 +723,6 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
         }
 
         return validSamples;
-    }
-
-    @Override
-    @RolesAllowed(RoleWithHierarchy.PROJECT_OBSERVER)
-    @ReturnValueFilter(validatorClass = SampleValidator.class)
-    public List<Sample> listSamplesByMaterialProperties(String sessionToken, Collection<TechId> materialIds)
-    {
-        final Session session = getSession(sessionToken);
-
-        ISampleLister lister = businessObjectFactory.createSampleLister(session);
-        Collection<TechId> ids = lister.listSamplesByMaterialProperties(materialIds);
-        return lister.list(new ListOrSearchSampleCriteria(TechId.asLongs(ids)));
     }
 
     @Override
@@ -869,7 +849,7 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
         }
         final List<PropertyTypePE> propertyTypes = propertyTypeTable.getPropertyTypes();
         Collections.sort(propertyTypes);
-        return PropertyTypeTranslator.translate(propertyTypes, new HashMap<MaterialTypePE, MaterialType>(),
+        return PropertyTypeTranslator.translate(propertyTypes,
                 new HashMap<PropertyTypePE, PropertyType>());
     }
 
@@ -933,10 +913,6 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
             allTypes.add(etpt);
         }
         for (SampleTypePropertyType etpt : propertyType.getSampleTypePropertyTypes())
-        {
-            allTypes.add(etpt);
-        }
-        for (MaterialTypePropertyType etpt : propertyType.getMaterialTypePropertyTypes())
         {
             allTypes.add(etpt);
         }
@@ -1155,23 +1131,6 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
         return ExperimentTranslator.translate(experimentTypes);
     }
 
-    @Override
-    @RolesAllowed(RoleWithHierarchy.PROJECT_OBSERVER)
-    public List<MaterialType> listMaterialTypes(String sessionToken)
-    {
-        final List<MaterialTypePE> materialTypes =
-                listEntityTypes(sessionToken, EntityKind.MATERIAL);
-        return MaterialTypeTranslator.translate(materialTypes, new HashMap<MaterialTypePE, MaterialType>(),
-                new HashMap<PropertyTypePE, PropertyType>());
-    }
-
-    @Override
-    @RolesAllowed(RoleWithHierarchy.PROJECT_OBSERVER)
-    public MaterialType getMaterialType(String sessionToken, String code)
-    {
-        final EntityTypePE materialType = findEntityType(EntityKind.MATERIAL, code);
-        return MaterialTypeTranslator.translateSimple(materialType);
-    }
 
     private <T extends EntityTypePE> List<T> listEntityTypes(String sessionToken,
             EntityKind entityKind)
@@ -1267,9 +1226,6 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
             case EXPERIMENT:
                 registerExperimentType(sessionToken, (ExperimentType) newETNewPTAssigments.getEntity());
                 break;
-            case MATERIAL:
-                registerMaterialType(sessionToken, (MaterialType) newETNewPTAssigments.getEntity());
-                break;
         }
         // Property Types Registration/Assigments
         for (NewPTNewAssigment assigment : newETNewPTAssigments.getAssigments())
@@ -1331,9 +1287,6 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
                 break;
             case EXPERIMENT:
                 updateExperimentType(sessionToken, (ExperimentType) newETNewPTAssigments.getEntity());
-                break;
-            case MATERIAL:
-                updateMaterialType(sessionToken, (MaterialType) newETNewPTAssigments.getEntity());
                 break;
         }
 
@@ -1942,35 +1895,6 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
     }
 
     @Override
-    @RolesAllowed(RoleWithHierarchy.PROJECT_OBSERVER)
-    public List<Material> listMaterials(String sessionToken, ListMaterialCriteria criteria,
-            boolean withProperties)
-    {
-        final Session session = getSession(sessionToken);
-        final IMaterialLister materialLister = businessObjectFactory.createMaterialLister(session);
-        return materialLister.list(criteria, withProperties);
-    }
-
-    @Override
-    @RolesAllowed(RoleWithHierarchy.PROJECT_OBSERVER)
-    public Collection<TechId> listMaterialIdsByMaterialProperties(String sessionToken, Collection<TechId> materialIds)
-    {
-        final Session session = getSession(sessionToken);
-        final IMaterialLister materialLister = businessObjectFactory.createMaterialLister(session);
-        return materialLister.listMaterialsByMaterialProperties(materialIds);
-    }
-
-    @Override
-    @RolesAllowed(RoleWithHierarchy.PROJECT_OBSERVER)
-    public List<Material> listMetaprojectMaterials(String sessionToken, IMetaprojectId metaprojectId)
-    {
-        final Session session = getSession(sessionToken);
-        final Metaproject metaproject = getMetaproject(sessionToken, metaprojectId);
-        final IMaterialLister materialLister = businessObjectFactory.createMaterialLister(session);
-        return materialLister.list(new MetaprojectCriteria(metaproject.getId()), true);
-    }
-
-    @Override
     @RolesAllowed(RoleWithHierarchy.INSTANCE_ADMIN)
     public void registerSampleType(String sessionToken, SampleType entityType)
     {
@@ -1996,23 +1920,6 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
             }
             throw e;
         }
-    }
-
-    @Override
-    @RolesAllowed(RoleWithHierarchy.INSTANCE_ADMIN)
-    public void registerMaterialType(String sessionToken, MaterialType entityType)
-    {
-        final Session session = getSession(sessionToken);
-        IEntityTypeBO entityTypeBO = businessObjectFactory.createEntityTypeBO(session);
-        entityTypeBO.define(entityType);
-        entityTypeBO.save();
-    }
-
-    @Override
-    @RolesAllowed(RoleWithHierarchy.INSTANCE_ADMIN)
-    public void updateMaterialType(String sessionToken, EntityType entityType)
-    {
-        updateEntityType(sessionToken, EntityKind.MATERIAL, entityType);
     }
 
     @Override
@@ -2512,7 +2419,7 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
     public List<DataSetType> listDataSetTypes(String sessionToken)
     {
         final List<DataSetTypePE> dataSetTypes = listEntityTypes(sessionToken, EntityKind.DATA_SET);
-        return DataSetTypeTranslator.translate(dataSetTypes, new HashMap<MaterialTypePE, MaterialType>(),
+        return DataSetTypeTranslator.translate(dataSetTypes,
                 new HashMap<PropertyTypePE, PropertyType>());
     }
 
@@ -2673,63 +2580,6 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
         return new TechId(project.getId());
     }
 
-    @Override
-    @RolesAllowed(RoleWithHierarchy.PROJECT_OBSERVER)
-    public Material getMaterialInfo(String sessionToken, MaterialIdentifier identifier)
-    {
-        Session session = getSession(sessionToken);
-        IMaterialBO materialBO = getBusinessObjectFactory().createMaterialBO(session);
-        materialBO.loadByMaterialIdentifier(identifier);
-        materialBO.enrichWithProperties();
-        MaterialPE materialPE = materialBO.getMaterial();
-        Collection<MetaprojectPE> metaprojectPEs =
-                getDAOFactory().getMetaprojectDAO().listMetaprojectsForEntity(
-                        session.tryGetPerson(), materialPE);
-
-        return MaterialTranslator.translate(materialPE,
-                MetaprojectTranslator.translate(metaprojectPEs), managedPropertyEvaluatorFactory,
-                new SamplePropertyAccessValidator(session, getDAOFactory()));
-    }
-
-    @Override
-    @RolesAllowed(RoleWithHierarchy.PROJECT_OBSERVER)
-    public Material getMaterialInfo(String sessionToken, TechId materialId)
-    {
-        final Session session = getSession(sessionToken);
-        final IMaterialBO materialBO = businessObjectFactory.createMaterialBO(session);
-        materialBO.loadDataByTechId(materialId);
-        materialBO.enrichWithProperties();
-        final MaterialPE material = materialBO.getMaterial();
-        Collection<MetaprojectPE> metaprojectPEs =
-                getDAOFactory().getMetaprojectDAO().listMetaprojectsForEntity(
-                        session.tryGetPerson(), material);
-        return MaterialTranslator.translate(material, true,
-                MetaprojectTranslator.translate(metaprojectPEs), managedPropertyEvaluatorFactory,
-                new SamplePropertyAccessValidator(session, getDAOFactory()));
-    }
-
-    @Override
-    @RolesAllowed(RoleWithHierarchy.PROJECT_OBSERVER)
-    public IEntityInformationHolderWithPermId getMaterialInformationHolder(String sessionToken,
-            MaterialIdentifier identifier)
-    {
-        return getMaterialInfo(sessionToken, identifier);
-    }
-
-    @Override
-    @RolesAllowed(RoleWithHierarchy.INSTANCE_ADMIN)
-    @Capability("WRITE_MATERIAL")
-    public Date updateMaterial(String sessionToken, TechId materialId,
-            List<IEntityProperty> properties, String[] metaprojects, Date version)
-    {
-        final Session session = getSession(sessionToken);
-        final IMaterialBO materialBO = businessObjectFactory.createMaterialBO(session);
-        MaterialUpdateDTO updates = new MaterialUpdateDTO(materialId, properties, version);
-        updates.setMetaprojectsOrNull(metaprojects);
-        materialBO.update(updates);
-        materialBO.save();
-        return materialBO.getMaterial().getModificationDate();
-    }
 
     @Override
     @RolesAllowed(RoleWithHierarchy.PROJECT_OBSERVER)
@@ -2751,9 +2601,6 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
             case EXPERIMENT:
                 return createInformationHolder(entityKind, permId, getDAOFactory().getPermIdDAO()
                         .tryToFindByPermId(permId, DtoConverters.convertEntityKind(entityKind)));
-            case MATERIAL:
-                MaterialIdentifier identifier = MaterialIdentifier.tryParseIdentifier(permId);
-                return getMaterialInformationHolder(sessionToken, identifier);
         }
         throw UserFailureException.fromTemplate("Operation not available for "
                 + entityKind.getDescription() + "s");
@@ -2831,14 +2678,6 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
     public void deleteExperimentTypes(String sessionToken, List<String> entityTypesCodes)
     {
         deleteEntityTypes(sessionToken, EntityKind.EXPERIMENT, entityTypesCodes);
-
-    }
-
-    @Override
-    @RolesAllowed(RoleWithHierarchy.INSTANCE_ADMIN)
-    public void deleteMaterialTypes(String sessionToken, List<String> entityTypesCodes)
-    {
-        deleteEntityTypes(sessionToken, EntityKind.MATERIAL, entityTypesCodes);
 
     }
 
@@ -2924,8 +2763,8 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
             BatchOperationKind operationKind)
     {
         List<EntityTypePE> types = new ArrayList<EntityTypePE>();
-        if ((entityKind.equals(EntityKind.SAMPLE) || entityKind.equals(EntityKind.DATA_SET) || entityKind
-                .equals(EntityKind.MATERIAL)) && EntityType.isDefinedInFileEntityTypeCode(type))
+        if ((entityKind.equals(EntityKind.SAMPLE) || entityKind.equals(EntityKind.DATA_SET))
+                && EntityType.isDefinedInFileEntityTypeCode(type))
         {
             types.addAll(getDAOFactory().getEntityTypeDAO(
                     DtoConverters.convertEntityKind(entityKind)).listEntityTypes());
@@ -2958,9 +2797,6 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
                     break;
                 case DATA_SET:
                     propertyTypes = ((DataSetTypePE) entityType).getDataSetTypePropertyTypes();
-                    break;
-                case MATERIAL:
-                    propertyTypes = ((MaterialTypePE) entityType).getMaterialTypePropertyTypes();
                     break;
                 case EXPERIMENT:
                     propertyTypes = ((ExperimentTypePE) entityType).getExperimentTypePropertyTypes();
@@ -3051,11 +2887,6 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
                 columns.add(NewDataSet.FILE_FORMAT);
                 addPropertiesToTemplateColumns(columns,
                         ((DataSetTypePE) entityType).getDataSetTypePropertyTypes());
-                break;
-            case MATERIAL:
-                columns.add(Code.CODE);
-                addPropertiesToTemplateColumns(columns,
-                        ((MaterialTypePE) entityType).getMaterialTypePropertyTypes());
                 break;
             case EXPERIMENT:
                 columns.add(Identifier.IDENTIFIER_COLUMN);
@@ -3642,16 +3473,6 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
     }
 
     @Override
-    @RolesAllowed(RoleWithHierarchy.INSTANCE_ADMIN)
-    @Capability("DELETE_MATERIAL")
-    public void deleteMaterials(String sessionToken, List<TechId> materialIds, String reason)
-    {
-        Session session = getSession(sessionToken);
-        IMaterialTable materialTable = businessObjectFactory.createMaterialTable(session);
-        materialTable.deleteByTechIds(materialIds, reason);
-    }
-
-    @Override
     @RolesAllowed(RoleWithHierarchy.PROJECT_ADMIN)
     @Capability("LOCK_DATA_SETS")
     public int lockDatasets(String sessionToken,
@@ -3816,11 +3637,6 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
                         .parse(entityIdentifier));
                 entity = sampleBO.tryToGetSample();
                 break;
-            case MATERIAL:
-                entity =
-                        getDAOFactory().getMaterialDAO().tryFindMaterial(
-                                MaterialIdentifier.tryParseIdentifier(entityIdentifier));
-                break;
         }
         if (entity == null)
         {
@@ -3897,28 +3713,6 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
 
         dataSetBO.updateManagedProperty(managedProperty);
         dataSetBO.save();
-    }
-
-    @Override
-    @RolesAllowed(RoleWithHierarchy.PROJECT_USER)
-    public void updateManagedPropertyOnMaterial(String sessionToken, TechId materialId,
-            IManagedProperty managedProperty, IManagedUiAction updateAction)
-    {
-        Session session = getSession(sessionToken);
-        IMaterialBO materialBO = businessObjectFactory.createMaterialBO(session);
-        materialBO.loadDataByTechId(materialId);
-
-        // Evaluate the script
-        materialBO.enrichWithProperties();
-        Set<? extends EntityPropertyPE> properties = materialBO.getMaterial().getProperties();
-        IManagedPropertyEvaluator evaluator =
-                tryManagedPropertyEvaluator(managedProperty, properties);
-        extendWithPerson(updateAction, session.tryGetPerson());
-        evaluator.updateFromUI(managedProperty,
-                PersonTranslator.translateToIPerson(session.tryGetPerson()), updateAction);
-
-        materialBO.updateManagedProperty(managedProperty);
-        materialBO.save();
     }
 
     private static void extendWithPerson(IManagedUiAction updateAction, PersonPE personOrNull)
@@ -4081,20 +3875,6 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
         }
     }
 
-    @Override
-    @RolesAllowed(RoleWithHierarchy.INSTANCE_ADMIN)
-    @Capability("WRITE_MATERIAL_PROPERTIES")
-    public void updateMaterialProperties(String sessionToken, TechId entityId,
-            List<PropertyUpdates> modifiedProperties)
-    {
-        checkSession(sessionToken);
-        Date modificationDate =
-                getDAOFactory().getMaterialDAO().tryGetById(entityId).getModificationDate();
-        Map<String, String> properties = createPropertiesMap(modifiedProperties);
-        updateMaterial(sessionToken, entityId,
-                EntityHelper.translatePropertiesMapToList(properties), null, modificationDate);
-    }
-
     private Map<String, String> createPropertiesMap(List<PropertyUpdates> updates)
     {
         Map<String, String> properties = new HashMap<String, String>();
@@ -4202,24 +3982,6 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
         IDataStoreDAO dataStoreDAO = getDAOFactory().getDataStoreDAO();
         List<DataStorePE> dataStorePEs = dataStoreDAO.listDataStores();
         return DataStoreTranslator.translate(dataStorePEs);
-    }
-
-    @Override
-    @RolesAllowed(RoleWithHierarchy.PROJECT_OBSERVER)
-    public List<Material> searchForMaterials(String sessionToken, DetailedSearchCriteria criteria)
-    {
-        final Session session = getSession(sessionToken);
-
-        return operationLimiter.executeLimitedWithTimeout(ConcurrentOperation.SEARCH_MATERIALS, new ConcurrentOperation<List<Material>>()
-        {
-            @Override
-            public List<Material> execute()
-            {
-                SearchHelper searchHelper =
-                        new SearchHelper(session, businessObjectFactory, getDAOFactory());
-                return searchHelper.searchForMaterials(session.getUserName(), criteria);
-            }
-        });
     }
 
     @Override
@@ -4468,7 +4230,6 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
         metaprojectBO.addExperiments(assignmentsToAdd.getExperiments());
         metaprojectBO.addSamples(assignmentsToAdd.getSamples());
         metaprojectBO.addDataSets(assignmentsToAdd.getDataSets());
-        metaprojectBO.addMaterials(assignmentsToAdd.getMaterials());
 
         metaprojectBO.save();
     }
@@ -4497,7 +4258,6 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
         metaprojectBO.removeExperiments(assignmentsToRemove.getExperiments());
         metaprojectBO.removeSamples(assignmentsToRemove.getSamples());
         metaprojectBO.removeDataSets(assignmentsToRemove.getDataSets());
-        metaprojectBO.removeMaterials(assignmentsToRemove.getMaterials());
 
         metaprojectBO.save();
     }
@@ -4627,8 +4387,6 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
                 ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind.SAMPLE));
         count.setDataSetCount(metaprojectDAO.getMetaprojectAssignmentsCount(metaproject.getId(),
                 ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind.DATA_SET));
-        count.setMaterialCount(metaprojectDAO.getMetaprojectAssignmentsCount(metaproject.getId(),
-                ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind.MATERIAL));
         return count;
     }
 

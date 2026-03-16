@@ -73,7 +73,7 @@ public class ScreeningServerTest extends AbstractServerTestCase
                         screeningBOFactory, sampleTypeSlaveServerPlugin,
                         dataSetTypeSlaveServerPlugin, dssMultiplexer);
         PropertyTypePE propertyType =
-                CommonTestUtils.createPropertyType("A", DataTypeCode.VARCHAR, null, null);
+                CommonTestUtils.createPropertyType("A", DataTypeCode.VARCHAR, null);
         SampleTypePEBuilder typeBuilder = new SampleTypePEBuilder().id(1).code("ABC");
         EntityTypePropertyTypePE etpt =
                 typeBuilder.assign(propertyType).getEntityTypePropertyType();

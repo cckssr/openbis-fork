@@ -64,14 +64,6 @@ public class QueryDAOTest extends AbstractDAOTest
                 createQuery("qet", "experiment query for SIRNA_HCS", "select * from blabla", true,
                         getSystemPerson(), QueryType.EXPERIMENT, "SIRNA_HCS", DATABASE_KEY);
         queryDAO.createQuery(qet);
-        QueryPE qm =
-                createQuery("qm", "material query", "select * from blabla", true,
-                        getSystemPerson(), QueryType.MATERIAL, null, DATABASE_KEY);
-        queryDAO.createQuery(qm);
-        QueryPE qmt =
-                createQuery("qmt", "material query for BACTERIUM", "select * from blabla", true,
-                        getSystemPerson(), QueryType.MATERIAL, "BACTERIUM", DATABASE_KEY);
-        queryDAO.createQuery(qmt);
         QueryPE qd =
                 createQuery("qd", "data_set query", "select * from blabla", true,
                         getSystemPerson(), QueryType.DATA_SET, null, DATABASE_KEY);
@@ -100,11 +92,6 @@ public class QueryDAOTest extends AbstractDAOTest
         assertEquals(2, queries.size());
         assertQueryEquality(qd, queries.get(0));
         assertQueryEquality(qdt, queries.get(1));
-
-        queries = queryDAO.listQueries(QueryType.MATERIAL);
-        assertEquals(2, queries.size());
-        assertQueryEquality(qm, queries.get(0));
-        assertQueryEquality(qmt, queries.get(1));
     }
 
     private void assertQueryEquality(QueryPE expectedQuery, QueryPE actualQuery)

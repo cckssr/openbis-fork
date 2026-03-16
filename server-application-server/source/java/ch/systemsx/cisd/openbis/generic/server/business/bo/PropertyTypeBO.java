@@ -31,7 +31,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.TechId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataTypeCode;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IPropertyTypeUpdates;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PropertyType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SampleType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Vocabulary;
@@ -40,7 +39,6 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EventPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EventPE.EntityType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EventType;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PropertyTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SampleTypePE;
@@ -81,8 +79,6 @@ public final class PropertyTypeBO extends VocabularyBO implements IPropertyTypeB
         propertyTypePE.setDescription(propertyType.getDescription());
         DataTypePE dataTypePE = getDataTypeCode(propertyType.getDataType());
         propertyTypePE.setType(dataTypePE);
-        MaterialTypePE materialType = tryGetMaterialType(propertyType.getMaterialType());
-        propertyTypePE.setMaterialType(materialType);
         propertyTypePE.setSampleType(tryGetSampleType(propertyType.getSampleType()));
         propertyTypePE.setRegistrator(findPerson());
         propertyTypePE.setManagedInternally(propertyType.isManagedInternally());
@@ -124,20 +120,6 @@ public final class PropertyTypeBO extends VocabularyBO implements IPropertyTypeB
     {
         XmlUtils.validateXML(propertyTypePE.getSchema(), "XML Schema", XmlUtils.XML_SCHEMA_XSD_FILE_RESOURCE);
         XmlUtils.validateXML(propertyTypePE.getTransformation(), "XSLT", XmlUtils.XSLT_XSD_FILE_RESOURCE);
-    }
-
-    private MaterialTypePE tryGetMaterialType(MaterialType materialType)
-    {
-        if (materialType != null)
-        {
-            EntityTypePE entityType =
-                    getEntityTypeDAO(EntityKind.MATERIAL).tryToFindEntityTypeByCode(
-                            materialType.getCode());
-            return (MaterialTypePE) entityType;
-        } else
-        {
-            return null;
-        }
     }
 
     private SampleTypePE tryGetSampleType(SampleType sampleType)

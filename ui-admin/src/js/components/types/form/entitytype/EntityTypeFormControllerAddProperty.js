@@ -61,9 +61,6 @@ export default class EntityTypeFormControllerAddProperty {
       vocabulary: FormUtil.createField({
         visible: false
       }),
-      materialType: FormUtil.createField({
-        visible: false
-      }),
       sampleType: FormUtil.createField({
         visible: false
       }),

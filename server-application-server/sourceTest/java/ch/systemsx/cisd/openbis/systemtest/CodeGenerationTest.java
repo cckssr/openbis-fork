@@ -91,11 +91,6 @@ public class CodeGenerationTest extends SystemTestCase
         assertEquals("A23", commonClientService.generateCode("A", EntityKind.SAMPLE));
         assertEquals("A24", commonClientService.generateCode("A", EntityKind.SAMPLE));
 
-        // Materials AD3 and AD5 already exist
-        setCodeSequence(3);
-        assertEquals("AD4", commonClientService.generateCode("AD", EntityKind.MATERIAL));
-        assertEquals("AD6", commonClientService.generateCode("AD", EntityKind.MATERIAL));
-
         // Data sets 20120628092259000-22 .. 20120628092259000-25 already exist
         setCodeSequence(22);
         assertEquals("20120628092259000-26",
@@ -115,9 +110,6 @@ public class CodeGenerationTest extends SystemTestCase
                         .toString());
         assertEquals("[DS-9, DS-10]",
                 genericServer.generateCodes(systemSessionToken, "DS-", EntityKind.DATA_SET, 2)
-                        .toString());
-        assertEquals("[M-11, M-12]",
-                genericServer.generateCodes(systemSessionToken, "M-", EntityKind.MATERIAL, 2)
                         .toString());
     }
 

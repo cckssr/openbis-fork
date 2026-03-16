@@ -37,7 +37,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.TableModelColumnHeader;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.TableModelRowWithObject;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.TypedTableModel;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.VocabularyTerm;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.builders.MaterialBuilder;
 
 /**
  * @author Franz-Josef Elmer
@@ -151,22 +150,20 @@ public class TypedTableModelBuilderTest extends AssertJUnit
         TypedTableModelBuilder<Serializable> builder = new TypedTableModelBuilder<Serializable>();
         builder.addRow(new MockSerializable());
         IEntityProperty p1 = property("beta", "3.25", true, DataTypeCode.REAL);
-        IEntityProperty p2 = property("alpha", "hello", false, DataTypeCode.MATERIAL);
         IEntityProperty p3 = property("gamma", "hello world", false, DataTypeCode.VARCHAR);
         IEntityProperty p4 = property("delta", "hi", false, DataTypeCode.CONTROLLEDVOCABULARY);
         IEntityProperty p5 =
                 property("kappa", "2012-08-14 15:11:12", false, DataTypeCode.TIMESTAMP);
-        builder.columnGroup("g").addPropertiesForUpdate(Arrays.asList(p1, p2, p3, p4, p5));
+        builder.columnGroup("g").addPropertiesForUpdate(Arrays.asList(p1, p3, p4, p5));
 
         TypedTableModel<Serializable> model = builder.getModel();
         List<TableModelColumnHeader> headers = model.getHeader();
-        assertHeadersOrder(headers, "ALPHA", "BETA", "DELTA", "GAMMA", "KAPPA");
+        assertHeadersOrder(headers, "BETA", "DELTA", "GAMMA", "KAPPA");
         List<TableModelRowWithObject<Serializable>> rows = model.getRows();
-        assertEquals(new StringTableCell("HELLO (TEST)"), rows.get(0).getValues().get(0));
-        assertEquals(new StringTableCell("3.25"), rows.get(0).getValues().get(1));
-        assertEquals(new StringTableCell("HI"), rows.get(0).getValues().get(2));
-        assertEquals(new StringTableCell("hello world"), rows.get(0).getValues().get(3));
-        assertEquals(new StringTableCell("2012-08-14 15:11:12"), rows.get(0).getValues().get(4));
+        assertEquals(new StringTableCell("3.25"), rows.get(0).getValues().get(0));
+        assertEquals(new StringTableCell("HI"), rows.get(0).getValues().get(1));
+        assertEquals(new StringTableCell("hello world"), rows.get(0).getValues().get(2));
+        assertEquals(new StringTableCell("2012-08-14 15:11:12"), rows.get(0).getValues().get(3));
         assertEquals(1, rows.size());
     }
 
@@ -188,10 +185,6 @@ public class TypedTableModelBuilderTest extends AssertJUnit
             vocabularyTerm.setCode(value.toUpperCase());
             vocabularyTerm.setLabel(value);
             property.setVocabularyTerm(vocabularyTerm);
-        } else if (type == DataTypeCode.MATERIAL)
-        {
-            property.setMaterial(new MaterialBuilder().code(value.toUpperCase()).type("TEST")
-                    .getMaterial());
         } else
         {
             property.setValue(value);

@@ -280,30 +280,6 @@ exports.default = new Promise((resolve) => {
                 testGet(c, fCreate, fGet, fGetEmptyFetchOptions, fechOptionsTestConfig)
             })
 
-            QUnit.test("getMaterials()", function (assert) {
-                var c = new common(assert, dtos)
-                var fo = new dtos.MaterialFetchOptions()
-                var fechOptionsTestConfig = getConfigForFetchOptions(fo)
-                fechOptionsTestConfig.SortBy = null
-
-                var fCreate = function (facade: openbis.openbis) {
-                    return $.when(c.createMaterial(facade), c.createMaterial(facade)).then(function (permId1, permId2) {
-                        return [permId1, permId2]
-                    })
-                }
-
-                var fGet = function (facade: openbis.openbis, permIds: openbis.MaterialPermId[]) {
-                    testFetchOptionsAssignation(c, fo, fechOptionsTestConfig)
-                    return facade.getMaterials(permIds, fo)
-                }
-
-                var fGetEmptyFetchOptions = function (facade: openbis.openbis, permIds: openbis.MaterialPermId[]) {
-                    return facade.getMaterials(permIds, new dtos.MaterialFetchOptions())
-                }
-
-                testGet(c, fCreate, fGet, fGetEmptyFetchOptions, fechOptionsTestConfig)
-            })
-
             QUnit.test("getPropertyTypes()", function (assert) {
                 var c = new common(assert, dtos)
                 var fo = new dtos.PropertyTypeFetchOptions()
@@ -822,29 +798,6 @@ exports.default = new Promise((resolve) => {
 
                 var fGetEmptyFetchOptions = function (facade: openbis.openbis, permIds: openbis.EntityTypePermId[]) {
                     return facade.getDataSetTypes(permIds, new dtos.DataSetTypeFetchOptions())
-                }
-
-                testGet(c, fCreate, fGet, fGetEmptyFetchOptions, fechOptionsTestConfig)
-            })
-
-            QUnit.test("getMaterialTypes()", function (assert) {
-                var c = new common(assert, dtos)
-                var fo = new dtos.MaterialTypeFetchOptions()
-                var fechOptionsTestConfig = getConfigForFetchOptions(fo)
-
-                var fCreate = function (facade: openbis.openbis) {
-                    return $.when(c.createMaterialType(facade), c.createMaterialType(facade)).then(function (permId1, permId2) {
-                        return [permId1, permId2]
-                    })
-                }
-
-                var fGet = function (facade: openbis.openbis, permIds: openbis.EntityTypePermId[]) {
-                    testFetchOptionsAssignation(c, fo, fechOptionsTestConfig)
-                    return facade.getMaterialTypes(permIds, fo)
-                }
-
-                var fGetEmptyFetchOptions = function (facade: openbis.openbis, permIds: openbis.EntityTypePermId[]) {
-                    return facade.getMaterialTypes(permIds, new dtos.MaterialTypeFetchOptions())
                 }
 
                 testGet(c, fCreate, fGet, fGetEmptyFetchOptions, fechOptionsTestConfig)

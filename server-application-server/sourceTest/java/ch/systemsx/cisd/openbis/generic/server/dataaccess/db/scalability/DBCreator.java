@@ -363,7 +363,7 @@ public final class DBCreator extends AbstractDAOTest
 
     private enum CreatedEntityKind
     {
-        DATA_SET, EXPERIMENT, SAMPLE, MATERIAL, DATA_SET_TYPE, EXPERIMENT_TYPE, SAMPLE_TYPE, GROUP,
+        DATA_SET, EXPERIMENT, SAMPLE, DATA_SET_TYPE, EXPERIMENT_TYPE, SAMPLE_TYPE, GROUP,
         PROJECT;
     }
 
@@ -431,74 +431,4 @@ public final class DBCreator extends AbstractDAOTest
 
     }
 
-    /**
-     * A helper class which creates a temporary TSV file for Materials.
-     * 
-     * @author Piotr Buczek
-     */
-    public static class MaterialHelper
-    {
-
-        private static final String TSV_FILENAME = "new=materials.tsv";
-
-        //
-
-        private static final Integer MATERIAL_TYPE_ID = 1;
-
-        private static final Integer REGISTRATOR_ID = 1;
-
-        private static final String REGISTRATION_TIMESTAMP = "2007-12-04 15:50:54.111";
-
-        private static final Integer DB_INSTANCE = 1;
-
-        private static final String MODIFICATION_TIMESTAMP = "2008-12-04 15:50:54.111";
-
-        /**
-         * Creates a temporary TSV file with given number of materials in given directory. The file is deleted automatically on JVM exit.
-         */
-        public static void createMaterialsTSVFile(String directory, int size)
-        {
-            PrintWriter pw = null;
-            try
-            {
-                File file = new File(directory, TSV_FILENAME);
-                file.deleteOnExit();
-                pw = new PrintWriter(file);
-
-                int id = 10000000;
-                for (int i = 0; i < size; i++)
-                {
-                    pw.println(createMaterialString(id++));
-                }
-            } catch (Exception e)
-            {
-                e.printStackTrace();
-            } finally
-            {
-                if (pw != null)
-                {
-                    pw.close();
-                }
-            }
-        }
-
-        private static String createMaterialString(int id)
-        {
-            StringBuilder sb = new StringBuilder();
-            appendColumn(sb, id);
-            appendColumn(sb, CodeGenerator.generateCode(CreatedEntityKind.MATERIAL));
-            appendColumn(sb, MATERIAL_TYPE_ID);
-            appendColumn(sb, REGISTRATOR_ID);
-            appendColumn(sb, REGISTRATION_TIMESTAMP);
-            appendColumn(sb, DB_INSTANCE);
-            sb.append(MODIFICATION_TIMESTAMP);
-            return sb.toString();
-        }
-
-        private static void appendColumn(StringBuilder sb, Object value)
-        {
-            sb.append((value == null) ? "\\N" : value);
-            sb.append("\t");
-        }
-    }
 }

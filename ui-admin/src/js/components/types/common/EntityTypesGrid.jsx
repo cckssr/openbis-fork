@@ -48,8 +48,6 @@ class EntityTypesGrid extends React.PureComponent {
       return messages.get(messages.OBJECT_TYPES)
     } else if (kind === openbis.EntityKind.DATA_SET) {
       return messages.get(messages.DATA_SET_TYPES)
-    } else if (kind === openbis.EntityKind.MATERIAL) {
-      return messages.get(messages.MATERIAL_TYPES)
     }
   }
 

@@ -40,14 +40,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.id.DataStorePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.id.IDeletionId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.IEntityTypeId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.Material;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.create.CreateMaterialsOperation;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.create.MaterialCreation;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.delete.DeleteMaterialsOperation;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.delete.MaterialDeletionOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.fetchoptions.MaterialFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.id.IMaterialId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.id.MaterialPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.SynchronousOperationExecutionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.SynchronousOperationExecutionResults;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.fetchoptions.OperationExecutionFetchOptions;
@@ -85,59 +77,7 @@ public class MixedExecuteOperationsTest extends AbstractOperationExecutionTest
 {
     private static final String PROPERTY_TYPE = "ORGANISM";
 
-    private static final String MATERIAL_TYPE = "BACTERIUM";
-
-    private static final EntityTypePermId MATERIAL_TYPE_ID = new EntityTypePermId(MATERIAL_TYPE);
-
     private static final VocabularyPermId VOCABULARY_ID = new VocabularyPermId(PROPERTY_TYPE);
-
-    @Test
-    public void testReplaceVocabularyTermForMaterialProperty()
-    {
-        String sessionToken = v3api.login(TEST_USER, PASSWORD);
-        long time = System.currentTimeMillis();
-        List<IOperation> operations = new ArrayList<IOperation>();
-
-        // create new material and two new vocabulary terms, one is a property value of the created material
-        VocabularyTermCreation vt1 = new VocabularyTermCreation();
-        vt1.setCode("ORG-" + time);
-        vt1.setVocabularyId(VOCABULARY_ID);
-        IVocabularyTermId id1 = getId(vt1);
-        VocabularyTermCreation vt2 = new VocabularyTermCreation();
-        vt2.setCode("ORG-" + time + "_2");
-        vt2.setVocabularyId(VOCABULARY_ID);
-        IVocabularyTermId id2 = getId(vt2);
-        operations.add(new CreateVocabularyTermsOperation(vt1, vt2));
-        MaterialCreation materialCreation = new MaterialCreation();
-        materialCreation.setCode("BAC-" + time);
-        materialCreation.setTypeId(MATERIAL_TYPE_ID);
-        materialCreation.setProperty(PROPERTY_TYPE, vt1.getCode());
-        materialCreation.setProperty("description", "test");
-        IMaterialId materialId = getId(materialCreation);
-        operations.add(new CreateMaterialsOperation(materialCreation));
-        execute(sessionToken, operations);
-        assertEquals(getMaterial(sessionToken, materialId).getProperty(PROPERTY_TYPE), vt1.getCode());
-
-        // Delete first vocabulary term and replace it by the second one
-        operations.clear();
-        VocabularyTermDeletionOptions termDeletionOptions = createVocabularyTermDeletionOptions();
-        termDeletionOptions.replace(id1, id2);
-        operations.add(new DeleteVocabularyTermsOperation(Arrays.asList(id1), termDeletionOptions));
-        execute(sessionToken, operations);
-        assertEquals(getMaterial(sessionToken, materialId).getProperty(PROPERTY_TYPE), vt2.getCode());
-
-        // Delete both vocabulary terms and the material
-        operations.clear();
-        operations.add(new DeleteVocabularyTermsOperation(Arrays.asList(id1, id2), createVocabularyTermDeletionOptions()));
-        MaterialDeletionOptions materialDeletionOptions = new MaterialDeletionOptions();
-        materialDeletionOptions.setReason("test material deletion");
-        operations.add(new DeleteMaterialsOperation(Arrays.asList(materialId), materialDeletionOptions));
-        execute(sessionToken, operations);
-        assertEquals(v3api.getVocabularyTerms(sessionToken, Arrays.asList(id1, id2), new VocabularyTermFetchOptions()).size(), 0);
-        assertEquals(v3api.getMaterials(sessionToken, Arrays.asList(materialId), new MaterialFetchOptions()).size(), 0);
-
-        v3api.logout(sessionToken);
-    }
 
     @Test
     public void testDeleteSampleWithDataSet()
@@ -266,12 +206,6 @@ public class MixedExecuteOperationsTest extends AbstractOperationExecutionTest
         return new SampleIdentifier("/" + ((SpacePermId) spaceId).getPermId() + "/" + sampleCreation.getCode());
     }
 
-    private IMaterialId getId(MaterialCreation materialCreation)
-    {
-        IEntityTypeId typeId = materialCreation.getTypeId();
-        return new MaterialPermId(materialCreation.getCode(), ((EntityTypePermId) typeId).getPermId());
-    }
-
     private IVocabularyTermId getId(VocabularyTermCreation vt)
     {
         IVocabularyId vocabularyId = vt.getVocabularyId();
@@ -301,12 +235,6 @@ public class MixedExecuteOperationsTest extends AbstractOperationExecutionTest
         return termDeletionOptions;
     }
 
-    private Material getMaterial(String sessionToken, IMaterialId materialId)
-    {
-        MaterialFetchOptions materialFetchOptions = new MaterialFetchOptions();
-        materialFetchOptions.withProperties();
-        return v3api.getMaterials(sessionToken, Arrays.asList(materialId), materialFetchOptions).get(materialId);
-    }
 
     private Sample getSample(String sessionToken, ISampleId sampleId)
     {

@@ -57,7 +57,6 @@ import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Vocabulary;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.WebAppSettings;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.id.dataset.DataSetCodeId;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.id.experiment.ExperimentIdentifierId;
-import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.id.material.MaterialCodeAndTypeCodeId;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.id.metaproject.IMetaprojectId;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.id.metaproject.MetaprojectIdentifierId;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.id.metaproject.MetaprojectTechIdId;
@@ -118,12 +117,10 @@ public class GeneralInformationChangingServiceTest extends SystemTestCase
                         null, 1L, false, false, null, true, false));
         localCommonServer.assignPropertyType(sessionToken, new NewETPTAssignment(EntityKind.SAMPLE,
                 "GENDER", "CELL_PLATE", false, null, null, 1L, false, false, null, true, false));
-        assertProperties("[ANY_MATERIAL: 2 (GENE), BACTERIUM: BACTERIUM-Y (BACTERIUM), "
-                        + "COMMENT: extremely simple stuff, ORGANISM: GORILLA, SIZE: 321]",
+        assertProperties("[COMMENT: extremely simple stuff, ORGANISM: GORILLA, SIZE: 321]",
                 localCommonServer.getSampleInfo(sessionToken, id).getParent());
         HashMap<String, String> properties = new HashMap<String, String>();
         properties.put("SIZE", "42");
-        properties.put("any_material", "1 (GENE)");
         properties.put("Organism", "DOG");
         properties.put("DESCRIPTION", "hello example");
         properties.put("gender", "FEMALE");
@@ -131,14 +128,13 @@ public class GeneralInformationChangingServiceTest extends SystemTestCase
         generalInformationChangingService.updateSampleProperties(sessionToken, id.getId(),
                 properties);
 
-        assertProperties("[ANY_MATERIAL: 1 (GENE), BACTERIUM: BACTERIUM-Y (BACTERIUM), "
-                + "COMMENT: extremely simple stuff, DESCRIPTION: hello example, GENDER: FEMALE, "
+        assertProperties("[COMMENT: extremely simple stuff, DESCRIPTION: hello example, GENDER: FEMALE, "
                 + "ORGANISM: DOG, SIZE: 42]", localCommonServer.getSampleInfo(sessionToken, id)
                 .getParent());
 
         List<PropertyHistory> history = getSamplePropertiesHistory(id.getId());
         assertEquals(
-                "[ANY_MATERIAL: material:2 [GENE]<a:1>, ORGANISM: term:GORILLA [ORGANISM]<a:1>, SIZE: 321<a:1>]",
+                "[ORGANISM: term:GORILLA [ORGANISM]<a:1>, SIZE: 321<a:1>]",
                 history.toString());
     }
 
@@ -148,8 +144,7 @@ public class GeneralInformationChangingServiceTest extends SystemTestCase
     {
         TechId id = new TechId(1043L);
         ch.systemsx.cisd.openbis.generic.shared.basic.dto.Sample sampleBefore = localCommonServer.getSampleInfo(sessionToken, id).getParent();
-        assertProperties("[ANY_MATERIAL: 2 (GENE), BACTERIUM: BACTERIUM-Y (BACTERIUM), "
-                        + "COMMENT: extremely simple stuff, ORGANISM: GORILLA, SIZE: 321]",
+        assertProperties("[COMMENT: extremely simple stuff, ORGANISM: GORILLA, SIZE: 321]",
                 sampleBefore);
         NewETPTAssignment newETPTAssignment = new NewETPTAssignment();
         newETPTAssignment.setEntityKind(EntityKind.SAMPLE);
@@ -165,8 +160,7 @@ public class GeneralInformationChangingServiceTest extends SystemTestCase
 
         Session hibernateSession = getHibernateSession();
         hibernateSession.clear();
-        assertProperties("[ANY_MATERIAL: 2 (GENE), BACTERIUM: BACTERIUM-Y (BACTERIUM), "
-                        + "COMMENT: extremely simple stuff, GENDER: FEMALE, ORGANISM: GORILLA, SIZE: 321]",
+        assertProperties("[COMMENT: extremely simple stuff, GENDER: FEMALE, ORGANISM: GORILLA, SIZE: 321]",
                 localCommonServer.getSampleInfo(sessionToken, id).getParent());
 
         List<Vocabulary> listVocabularies = generalInformationService.listVocabularies(sessionToken);
@@ -193,8 +187,7 @@ public class GeneralInformationChangingServiceTest extends SystemTestCase
 
         ch.systemsx.cisd.openbis.generic.shared.basic.dto.Sample sampleAfter = localCommonServer.getSampleInfo(sessionToken, id)
                 .getParent();
-        assertProperties("[ANY_MATERIAL: 2 (GENE), BACTERIUM: BACTERIUM-Y (BACTERIUM), "
-                + "COMMENT: extremely simple stuff, GENDER: MALE, ORGANISM: GORILLA, SIZE: 321]", sampleAfter);
+        assertProperties("[COMMENT: extremely simple stuff, GENDER: MALE, ORGANISM: GORILLA, SIZE: 321]", sampleAfter);
 
         hibernateSession.clear();
 
@@ -206,8 +199,7 @@ public class GeneralInformationChangingServiceTest extends SystemTestCase
     {
         TechId id = new TechId(1043L);
         ch.systemsx.cisd.openbis.generic.shared.basic.dto.Sample sampleBefore = localCommonServer.getSampleInfo(sessionToken, id).getParent();
-        assertProperties("[ANY_MATERIAL: 2 (GENE), BACTERIUM: BACTERIUM-Y (BACTERIUM), "
-                        + "COMMENT: extremely simple stuff, ORGANISM: GORILLA, SIZE: 321]",
+        assertProperties("[COMMENT: extremely simple stuff, ORGANISM: GORILLA, SIZE: 321]",
                 sampleBefore);
         NewETPTAssignment newETPTAssignment = new NewETPTAssignment();
         newETPTAssignment.setEntityKind(EntityKind.SAMPLE);
@@ -228,8 +220,7 @@ public class GeneralInformationChangingServiceTest extends SystemTestCase
 
         ch.systemsx.cisd.openbis.generic.shared.basic.dto.Sample sampleAfter = localCommonServer.getSampleInfo(sessionToken, id).getParent();
 
-        assertProperties("[ANY_MATERIAL: 2 (GENE), BACTERIUM: BACTERIUM-Y (BACTERIUM), "
-                + "COMMENT: extremely simple stuff, GENE_SYMBOL: BMP_15, "
+        assertProperties("[COMMENT: extremely simple stuff, GENE_SYMBOL: BMP_15, "
                 + "ORGANISM: GORILLA, SIZE: 321]", sampleAfter);
         assertFalse(sampleBefore.getModificationDate().equals(sampleAfter.getModificationDate()));
     }
@@ -239,8 +230,7 @@ public class GeneralInformationChangingServiceTest extends SystemTestCase
     {
         TechId id = new TechId(1043L);
         ch.systemsx.cisd.openbis.generic.shared.basic.dto.Sample sampleBefore = localCommonServer.getSampleInfo(sessionToken, id).getParent();
-        assertProperties("[ANY_MATERIAL: 2 (GENE), BACTERIUM: BACTERIUM-Y (BACTERIUM), "
-                        + "COMMENT: extremely simple stuff, ORGANISM: GORILLA, SIZE: 321]",
+        assertProperties("[COMMENT: extremely simple stuff, ORGANISM: GORILLA, SIZE: 321]",
                 sampleBefore);
         localCommonServer.unassignPropertyType(sessionToken, EntityKind.SAMPLE, "COMMENT", "CELL_PLATE");
         getHibernateSession().clear();
@@ -483,11 +473,6 @@ public class GeneralInformationChangingServiceTest extends SystemTestCase
         assertEquals(2, dataSetIds.size());
         assertTrue(dataSetIds.contains(8L));
         assertTrue(dataSetIds.contains(12L));
-
-        List<Long> materialIds = getUtil().getObjectIds(assignments.getMaterials());
-        assertEquals(2, materialIds.size());
-        assertTrue(materialIds.contains(18L));
-        assertTrue(materialIds.contains(8L));
     }
 
     @Test(expectedExceptions = AuthorizationFailureException.class)
@@ -558,7 +543,6 @@ public class GeneralInformationChangingServiceTest extends SystemTestCase
         assignmentsToRemove.addExperiment(new ExperimentIdentifierId("/CISD/NEMO/EXP1"));
         assignmentsToRemove.addSample(new SampleIdentifierId("/A03"));
         assignmentsToRemove.addDataSet(new DataSetCodeId("20081105092259000-8"));
-        assignmentsToRemove.addMaterial(new MaterialCodeAndTypeCodeId("GFP", "CONTROL"));
 
         generalInformationChangingService.removeFromMetaproject(sessionToken,
                 new MetaprojectIdentifierId(metaproject.getIdentifier()), assignmentsToRemove);
@@ -582,9 +566,6 @@ public class GeneralInformationChangingServiceTest extends SystemTestCase
         assertEquals(1, dataSetIds.size());
         assertTrue(dataSetIds.contains(12L));
 
-        List<Long> materialIds = getUtil().getObjectIds(assignments.getMaterials());
-        assertEquals(1, materialIds.size());
-        assertTrue(materialIds.contains(8L));
     }
 
     @Test(expectedExceptions = UserFailureException.class)
@@ -731,12 +712,12 @@ public class GeneralInformationChangingServiceTest extends SystemTestCase
         if (user.isInstanceUserOrTestSpaceUserOrEnabledTestProjectUser())
         {
             SampleParentWithDerived sample = commonServer.getSampleInfo(session, new TechId(sampleId));
-            assertEquals(sample.getParent().getProperties().size(), 1);
+            assertEquals(sample.getParent().getProperties().size(), 0);
 
             generalInformationChangingService.updateSampleProperties(session, sampleId, Collections.singletonMap(propertyCode, propertyValue));
 
             sample = commonServer.getSampleInfo(session, new TechId(sampleId));
-            assertEquals(sample.getParent().getProperties().size(), 2);
+            assertEquals(sample.getParent().getProperties().size(), 1);
         } else
         {
             try

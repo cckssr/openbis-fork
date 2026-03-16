@@ -100,13 +100,6 @@ public interface ISearchService
     public List<IExperimentImmutable> searchForExperiments(SearchCriteria searchCriteria);
 
     /**
-     * @param identifierCollection a collection containing the identifiers of the matching materials. Identifiers that do not exist in the openBIS
-     *            database are ignored.
-     * @return a list of materials matching the specified collection.
-     */
-    public List<IMaterialImmutable> listMaterials(MaterialIdentifierCollection identifierCollection);
-
-    /**
      * @return a controlled vocabulary with the given code. Returns null if the vocabulary with given code is not found.
      * @deprecated use {@link #getVocabulary(String)} instead
      */
@@ -132,11 +125,6 @@ public interface ISearchService
      * @return the list of property definitions for an experiment type.
      */
     public List<IPropertyAssignmentImmutable> listPropertiesDefinitionsForExperimentType(String code);
-
-    /**
-     * @return the list of property definitions for a material type.
-     */
-    public List<IPropertyAssignmentImmutable> listPropertiesDefinitionsForMaterialType(String code);
 
     /**
      * @return the list of metaprojects for the current user.
@@ -229,25 +217,6 @@ public interface ISearchService
      * @return A space or null
      */
     ISpaceImmutable getSpace(String spaceCode);
-
-    /**
-     * Get a material from the openBIS AS. Returns null if the material does not exist.
-     * 
-     * @return A material or null
-     */
-    IMaterialImmutable getMaterial(String materialCode, String materialType);
-
-    /**
-     * Get a material from the openBIS AS. Returns null if the material does not exist.
-     * 
-     * @return A material or null
-     */
-    IMaterialImmutable getMaterial(String identifier);
-
-    /**
-     * Return all materials of a given type.
-     */
-    List<IMaterialImmutable> listAllMaterials(String materialTypeCode);
 
     /**
      * Get a sample from the openBIS AS by its perm id. Returns null if the sample does not exist.

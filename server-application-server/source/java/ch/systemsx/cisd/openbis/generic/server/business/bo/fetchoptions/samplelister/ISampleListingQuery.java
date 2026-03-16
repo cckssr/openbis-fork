@@ -85,13 +85,11 @@ public interface ISampleListingQuery extends BaseQuery
     public List<SampleRelationshipRecord> getAncestors(Long relationshipID, LongSet sampleIDs);
 
     @Select(sql = "select p.samp_id as entity_id, pt.code as code, dt.code as data_type, p.value, "
-            + "m.code as material, mt.code as material_type, vt.code as voca_term "
+            + "vt.code as voca_term "
             + "from sample_properties as p "
             + "join sample_type_property_types as stpt on p.stpt_id = stpt.id "
             + "join property_types as pt on stpt.prty_id = pt.id "
             + "join data_types as dt on pt.daty_id = dt.id "
-            + "left join materials as m on p.mate_prop_id = m.id "
-            + "left join material_types as mt on m.maty_id = mt.id "
             + "left join controlled_vocabulary_terms as vt on p.cvte_id = vt.id "
             + "where p.samp_id = any(?{1})", parameterBindings =
     { LongSetMapper.class }, fetchSize = FETCH_SIZE)

@@ -42,7 +42,6 @@ public final class PropertyValidator implements IPropertyValueValidator
         final Map<DataTypeCode, IDataTypeValidator> map =
                 new EnumMap<DataTypeCode, IDataTypeValidator>(DataTypeCode.class);
         map.put(DataTypeCode.CONTROLLEDVOCABULARY, new ControlledVocabularyValidator());
-        map.put(DataTypeCode.MATERIAL, new MaterialValidator());
         map.put(DataTypeCode.XML, new XmlValidator());
         map.put(DataTypeCode.SAMPLE, new SampleValidator());
         map.put(DataTypeCode.JSON, new JsonValidator());
@@ -78,10 +77,6 @@ public final class PropertyValidator implements IPropertyValueValidator
         {
             case CONTROLLEDVOCABULARY:
                 ((ControlledVocabularyValidator) dataTypeValidator).setVocabulary(propertyType);
-                break;
-            case MATERIAL:
-                ((MaterialValidator) dataTypeValidator).setMaterialType(propertyType
-                        .getMaterialType());
                 break;
             case XML:
                 ((XmlValidator) dataTypeValidator).setXmlSchema(propertyType.getSchema());

@@ -69,15 +69,12 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExperimentType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExperimentUpdateResult;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExperimentUpdates;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IEntityProperty;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialBatchUpdateResultMessage;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewAttachment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewBasicExperiment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewDataSetsWithTypes;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewEntitiesWithTypes;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewExperiment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewExperimentsWithType;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewMaterialsWithTypes;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewSample;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewSamplesWithTypes;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Sample;
@@ -101,8 +98,6 @@ import ch.systemsx.cisd.openbis.generic.shared.parser.SampleUploadSectionsParser
 import ch.systemsx.cisd.openbis.generic.shared.parser.SampleUploadSectionsParser.BatchSamplesOperation;
 import ch.systemsx.cisd.openbis.generic.shared.parser.SampleUploadSectionsParser.SampleCodeGenerator;
 import ch.systemsx.cisd.openbis.plugin.generic.client.web.client.IGenericClientService;
-import ch.systemsx.cisd.openbis.plugin.generic.client.web.server.parser.MaterialUploadSectionsParser;
-import ch.systemsx.cisd.openbis.plugin.generic.client.web.server.parser.MaterialUploadSectionsParser.BatchMaterialsOperation;
 import ch.systemsx.cisd.openbis.plugin.generic.shared.IGenericServerInternal;
 import ch.systemsx.cisd.openbis.plugin.generic.shared.ResourceNames;
 
@@ -438,7 +433,7 @@ public class GenericClientService extends AbstractClientService implements IGene
     }
 
     @Override
-    public final List<BatchRegistrationResult> registerOrUpdateSamplesAndMaterials(
+    public final List<BatchRegistrationResult> registerOrUpdateSamples(
             final String sessionKey,
             final String defaultGroupIdentifier,
             final boolean updateExisting,
@@ -461,10 +456,6 @@ public class GenericClientService extends AbstractClientService implements IGene
                     parseSamples(sampleType, null, null, uploadedFiles, defaultGroupIdentifier, defaultGroupIdentifier != null, true, "SAMPLES",
                             operationKind,
                             sessionToken);
-
-            final MaterialType materialType = new MaterialType();
-            materialType.setCode(EntityType.DEFINED_IN_FILE);
-            BatchMaterialsOperation materialsInfo = parseMaterials(session, uploadedFiles, materialType, "MATERIALS", updateExisting);
 
             if (async)
             {
@@ -491,11 +482,6 @@ public class GenericClientService extends AbstractClientService implements IGene
                                             defaultGroupIdentifier != null,
                                             true,
                                             "SAMPLES", operationKind, sessionToken);
-                            BatchMaterialsOperation asyncMaterialsInfo =
-                                    parseMaterials(session, this.getFilesForTask(), materialType, "MATERIALS", updateExisting);
-                            // Execute task
-                            genericServer.registerOrUpdateSamplesAndMaterials(sessionToken, asyncSamplesInfo.getSamples(),
-                                    asyncMaterialsInfo.getMaterials());
                         }
                     };
 
@@ -503,9 +489,8 @@ public class GenericClientService extends AbstractClientService implements IGene
                 return AsyncBatchRegistrationResult.singletonList(fileName);
             } else
             {
-                genericServer.registerOrUpdateSamplesAndMaterials(sessionToken, samplesInfo.getSamples(), materialsInfo.getMaterials());
+                genericServer.registerOrUpdateSamples(sessionToken, samplesInfo.getSamples());
                 List<BatchRegistrationResult> results = new ArrayList<BatchRegistrationResult>();
-                results.addAll(materialsInfo.getResultList());
                 results.addAll(samplesInfo.getResultList());
                 return results;
             }
@@ -708,147 +693,6 @@ public class GenericClientService extends AbstractClientService implements IGene
         }
     }
 
-    @Override
-    public final List<BatchRegistrationResult> registerMaterials(
-            final MaterialType materialType,
-            final boolean updateExisting,
-            final String sessionKey,
-            final boolean async,
-            final String userEmail)
-    {
-        final String sessionToken = getSessionToken();
-        final HttpSession session = getHttpSession();
-        UploadedFilesBean uploadedFiles = null;
-        ConsumerTask asyncMaterialTask = null;
-        try
-        {
-            uploadedFiles = getUploadedFiles(sessionKey, session);
-            BatchMaterialsOperation results = parseMaterials(session, uploadedFiles, materialType, null, updateExisting);
-
-            String fileName = results.getResultList().get(0).getFileName();
-            List<NewMaterialsWithTypes> materials = results.getMaterials();
-
-            if (async)
-            {
-                asyncMaterialTask = new ConsumerTask(uploadedFiles)
-                    {
-                        @Override
-                        public String getName()
-                        {
-                            return "Material Batch Registration";
-                        }
-
-                        @Override
-                        public String getUserEmail()
-                        {
-                            return userEmail;
-                        }
-
-                        @Override
-                        public void doActionOrThrowException(Writer writer)
-                        {
-                            // Some stuff is repeated on the async executor, this is expected
-                            BatchMaterialsOperation asyncResults =
-                                    parseMaterials(session, this.getFilesForTask(), materialType, null, updateExisting);
-                            List<NewMaterialsWithTypes> asyncMaterials = asyncResults.getMaterials();
-                            // Execute task
-                            genericServer.registerOrUpdateMaterials(sessionToken, asyncMaterials);
-                        }
-                    };
-
-                return AsyncBatchRegistrationResult.singletonList(fileName);
-            } else
-            {
-                genericServer.registerOrUpdateMaterials(sessionToken, materials);
-                return results.getResultList();
-            }
-        } finally
-        {
-            if (async && (asyncMaterialTask != null))
-            {
-                asyncRegistrationQueue.addTaskAsLast(asyncMaterialTask);
-            } else
-            {
-                cleanUploadedFiles(sessionKey, session, uploadedFiles);
-            }
-        }
-    }
-
-    @Override
-    public List<BatchRegistrationResult> updateMaterials(
-            final MaterialType materialType,
-            final String sessionKey,
-            final boolean ignoreUnregisteredMaterials,
-            final boolean async,
-            final String userEmail)
-    {
-        final String sessionToken = getSessionToken();
-        final HttpSession session = getHttpSession();
-        UploadedFilesBean uploadedFiles = null;
-        ConsumerTask asyncMaterialTask = null;
-
-        try
-        {
-            uploadedFiles = getUploadedFiles(sessionKey, session);
-            BatchMaterialsOperation results = parseMaterials(session, uploadedFiles, materialType, null, true);
-            String fileName = results.getResultList().get(0).getFileName();
-
-            if (async)
-            {
-                asyncMaterialTask = new ConsumerTask(uploadedFiles)
-                    {
-                        @Override
-                        public String getName()
-                        {
-                            return "Material Batch Update";
-                        }
-
-                        @Override
-                        public String getUserEmail()
-                        {
-                            return userEmail;
-                        }
-
-                        @Override
-                        public void doActionOrThrowException(Writer writer)
-                        {
-                            try
-                            {
-                                // Some stuff is repeated on the async executor, this is expected
-                                BatchMaterialsOperation asyncResults = parseMaterials(session, this.getFilesForTask(), materialType, null, true);
-                                // Execute task
-                                int updateCount =
-                                        genericServer.updateMaterials(sessionToken, asyncResults.getMaterials(), ignoreUnregisteredMaterials);
-                                MaterialBatchUpdateResultMessage message =
-                                        new MaterialBatchUpdateResultMessage(asyncResults.getMaterials(), updateCount, ignoreUnregisteredMaterials);
-                                writer.write(message.toString());
-                            } catch (IOException e)
-                            {
-                                CheckedExceptionTunnel.wrapIfNecessary(e);
-                            }
-                        }
-                    };
-
-                return AsyncBatchRegistrationResult.singletonList(fileName);
-            } else
-            {
-                int updateCount = genericServer.updateMaterials(sessionToken, results.getMaterials(), ignoreUnregisteredMaterials);
-                MaterialBatchUpdateResultMessage message =
-                        new MaterialBatchUpdateResultMessage(results.getMaterials(), updateCount, ignoreUnregisteredMaterials);
-                return Arrays.asList(new BatchRegistrationResult(fileName, message.toString()));
-            }
-        } finally
-        {
-            if (async && (asyncMaterialTask != null))
-            {
-                asyncRegistrationQueue.addTaskAsLast(asyncMaterialTask);
-            } else
-            {
-                cleanUploadedFiles(sessionKey, session, uploadedFiles);
-            }
-        }
-
-    }
 
     @Override
     public List<BatchRegistrationResult> updateExperiments(final ExperimentType experimentType,
@@ -1099,22 +943,6 @@ public class GenericClientService extends AbstractClientService implements IGene
         }
     }
 
-    private BatchMaterialsOperation parseMaterials(HttpSession session,
-            UploadedFilesBean uploadedFiles, MaterialType materialType, String excelSheetName,
-            boolean updateExisting)
-    {
-        Collection<NamedInputStream> files = new ArrayList<NamedInputStream>(uploadedFiles.size());
-        for (IUncheckedMultipartFile f : uploadedFiles.iterable())
-        {
-            files.add(new NamedInputStream(f.getInputStream(), f.getOriginalFilename()));
-        }
-
-        BatchMaterialsOperation batchMaterialsOperation =
-                MaterialUploadSectionsParser.prepareMaterials(materialType, files, excelSheetName);
-        setUpdatePossibility(batchMaterialsOperation.getMaterials(), updateExisting);
-        return batchMaterialsOperation;
-    }
-
     @Override
     public SampleUpdateResult updateSample(final SampleUpdates updates)
     {
@@ -1174,21 +1002,6 @@ public class GenericClientService extends AbstractClientService implements IGene
             return null;
         }
         return new ProjectIdentifierFactory(identifier).createIdentifier();
-    }
-
-    @Override
-    public Date updateMaterial(TechId materialId, List<IEntityProperty> properties,
-            String[] metaprojects, Date version)
-    {
-        try
-        {
-            final String sessionToken = getSessionToken();
-            return genericServer.updateMaterial(sessionToken, materialId, properties, metaprojects,
-                    version);
-        } catch (final ch.systemsx.cisd.common.exceptions.UserFailureException e)
-        {
-            throw UserFailureExceptionTranslator.translate(e);
-        }
     }
 
     @Override

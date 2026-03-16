@@ -96,19 +96,14 @@ import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.ImageDatasetR
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.ImageRepresentationFormat;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.ImageSize;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.LoadImageConfiguration;
-import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.MaterialIdentifier;
-import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.MaterialTypeIdentifier;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.Plate;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.PlateIdentifier;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.PlateImageReference;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.PlateMetadata;
-import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.PlateWellMaterialMapping;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.PlateWellReferenceWithDatasets;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.WellIdentifier;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.WellPosition;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.ScreeningConstants;
-
-import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Material;
 
 /**
  * A client side facade of openBIS and Datastore Server API.
@@ -260,15 +255,6 @@ public class ScreeningOpenbisServiceFacade implements IScreeningOpenbisServiceFa
     }
 
     /**
-     * Searchs for Material given a search criteria. This functions purpose is mainly to expose this functionality to ScreeningML.
-     */
-    @Override
-    public List<Material> searchForMaterials(SearchCriteria searchCriteria)
-    {
-        return this.generalInformationService.searchForMaterials(this.sessionToken, searchCriteria);
-    }
-
-    /**
      * Searchs for Samples given a search criteria. This functions purpose is mainly to expose this functionality to ScreeningML.
      */
     @Override
@@ -387,12 +373,7 @@ public class ScreeningOpenbisServiceFacade implements IScreeningOpenbisServiceFa
         return openbisScreeningServer.listPlates(sessionToken);
     }
 
-    @Override
-    public List<PlateMetadata> getPlateMetadataList(List<? extends PlateIdentifier> plateIdentifiers)
-    {
-        checkASMinimalMinorVersion("getPlateMetadataList", List.class);
-        return openbisScreeningServer.getPlateMetadataList(sessionToken, plateIdentifiers);
-    }
+
 
     /**
      * Return the list of all plates for the given <var>experiment</var>.
@@ -569,34 +550,6 @@ public class ScreeningOpenbisServiceFacade implements IScreeningOpenbisServiceFa
     {
         List<ImageDatasetReference> dataSets = listSegmentationImageDatasets(plates);
         return filterByAnalysisProcedure(dataSets, analysisProcedureOrNull);
-    }
-
-    /**
-     * For the given <var>experimentIdentifier</var> find all plate locations that are connected to the specified <var>materialIdentifier</var>. If
-     * <code>findDatasets == true</code>, find also the connected image and image analysis data sets for the relevant plates.
-     */
-    @Override
-    public List<PlateWellReferenceWithDatasets> listPlateWells(
-            ExperimentIdentifier experimentIdentifer, MaterialIdentifier materialIdentifier,
-            boolean findDatasets)
-    {
-        checkASMinimalMinorVersion("listPlateWells", ExperimentIdentifier.class,
-                MaterialIdentifier.class, boolean.class);
-        return openbisScreeningServer.listPlateWells(sessionToken, experimentIdentifer,
-                materialIdentifier, findDatasets);
-    }
-
-    /**
-     * For the given <var>materialIdentifier</var> find all plate locations that are connected to it. If <code>findDatasets == true</code>, find also
-     * the connected image and image analysis data sets for the relevant plates.
-     */
-    @Override
-    public List<PlateWellReferenceWithDatasets> listPlateWells(
-            MaterialIdentifier materialIdentifier, boolean findDatasets)
-    {
-        checkASMinimalMinorVersion("listPlateWells", MaterialIdentifier.class, boolean.class);
-        return openbisScreeningServer
-                .listPlateWells(sessionToken, materialIdentifier, findDatasets);
     }
 
     /**
@@ -1164,42 +1117,6 @@ public class ScreeningOpenbisServiceFacade implements IScreeningOpenbisServiceFa
     private boolean isEmpty(final List<String> featureCodeOrNull)
     {
         return featureCodeOrNull == null || featureCodeOrNull.isEmpty();
-    }
-
-    @Override
-    public List<FeatureVectorWithDescription> loadFeaturesForPlateWells(
-            ExperimentIdentifier experimentIdentifer, MaterialIdentifier materialIdentifier,
-            List<String> featureCodesOrNull)
-    {
-        return loadFeaturesForPlateWells(experimentIdentifer, materialIdentifier, null,
-                featureCodesOrNull);
-    }
-
-    @Override
-    public List<FeatureVectorWithDescription> loadFeaturesForPlateWells(
-            ExperimentIdentifier experimentIdentifer, MaterialIdentifier materialIdentifier,
-            String analysisProcedureOrNull, List<String> featureCodesOrNull)
-    {
-        final List<PlateWellReferenceWithDatasets> plateWellRefs =
-                listPlateWells(experimentIdentifer, materialIdentifier, true);
-        return loadFeatureVectors(featureCodesOrNull, analysisProcedureOrNull, plateWellRefs);
-    }
-
-    @Override
-    public List<FeatureVectorWithDescription> loadFeaturesForPlateWells(
-            MaterialIdentifier materialIdentifier, List<String> featureCodesOrNull)
-    {
-        return loadFeaturesForPlateWells(materialIdentifier, null, featureCodesOrNull);
-    }
-
-    @Override
-    public List<FeatureVectorWithDescription> loadFeaturesForPlateWells(
-            MaterialIdentifier materialIdentifier, String analysisProcedureOrNull,
-            List<String> featureCodesOrNull)
-    {
-        final List<PlateWellReferenceWithDatasets> plateWellRefs =
-                listPlateWells(materialIdentifier, true);
-        return loadFeatureVectors(featureCodesOrNull, analysisProcedureOrNull, plateWellRefs);
     }
 
     private List<FeatureVectorWithDescription> loadFeatureVectors(List<String> featureCodesOrNull,
@@ -1897,15 +1814,6 @@ public class ScreeningOpenbisServiceFacade implements IScreeningOpenbisServiceFa
                     };
 
         return dssMultiplexer.process(imageDatasets, handler).getMergedBatchResultsWithDuplicates();
-    }
-
-    @Override
-    public List<PlateWellMaterialMapping> listPlateMaterialMapping(
-            List<? extends PlateIdentifier> plates,
-            MaterialTypeIdentifier materialTypeIdentifierOrNull)
-    {
-        return openbisScreeningServer.listPlateMaterialMapping(sessionToken, plates,
-                materialTypeIdentifierOrNull);
     }
 
     @Override

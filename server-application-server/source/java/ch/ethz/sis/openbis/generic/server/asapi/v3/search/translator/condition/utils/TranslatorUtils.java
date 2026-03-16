@@ -64,7 +64,6 @@ import static ch.systemsx.cisd.openbis.generic.shared.basic.BasicConstant.DYNAMI
 import static ch.systemsx.cisd.openbis.generic.shared.basic.BasicConstant.ERROR_PROPERTY_PREFIX;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.CODE_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.MATERIAL_PROP_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PART_OF_SAMPLE_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PERM_ID_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PERSON_MODIFIER_COLUMN;
@@ -79,7 +78,6 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.VALUE_COLU
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.VOCABULARY_TERM_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.CONTROLLED_VOCABULARY_TERM_TABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.DATA_TYPES_TABLE;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.MATERIALS_TABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.PERSONS_TABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.PROJECTS_TABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.RELATIONSHIP_TYPES_TABLE;
@@ -396,16 +394,6 @@ public class TranslatorUtils
         joinInformation1.setSubTableAlias(aliasFactory.createAlias());
         joinInformation1.setSubTableIdField(ColumnNames.ID_COLUMN);
         result.put(CONTROLLED_VOCABULARY_TERM_TABLE, joinInformation1);
-
-        final JoinInformation joinInformation2 = new JoinInformation();
-        joinInformation2.setJoinType(JoinType.LEFT);
-        joinInformation2.setMainTable(tableMapper.getValuesTable());
-        joinInformation2.setMainTableAlias(SearchCriteriaTranslator.MAIN_TABLE_ALIAS);
-        joinInformation2.setMainTableIdField(MATERIAL_PROP_COLUMN);
-        joinInformation2.setSubTable(TableMapper.MATERIAL.getEntitiesTable());
-        joinInformation2.setSubTableAlias(aliasFactory.createAlias());
-        joinInformation2.setSubTableIdField(ColumnNames.ID_COLUMN);
-        result.put(TableMapper.MATERIAL.getEntitiesTable(), joinInformation2);
 
         if (tableMapper == TableMapper.SAMPLE || tableMapper == TableMapper.EXPERIMENT
                 || tableMapper == TableMapper.DATA_SET)
@@ -860,9 +848,6 @@ public class TranslatorUtils
         sqlBuilder.append(COMMA).append(SP);
         sqlBuilder.append(joinInformationMap.get(CONTROLLED_VOCABULARY_TERM_TABLE).getSubTableAlias()).append(PERIOD)
                 .append(CODE_COLUMN);
-        sqlBuilder.append(COMMA).append(SP);
-        sqlBuilder.append(joinInformationMap.get(MATERIALS_TABLE).getSubTableAlias()).append(PERIOD)
-                .append(CODE_COLUMN);
         if (tableMapper == SAMPLE || tableMapper == EXPERIMENT || tableMapper == DATA_SET)
         {
             sqlBuilder.append(COMMA).append(SP);
@@ -901,32 +886,6 @@ public class TranslatorUtils
         sqlBuilder.append(LP);
         sqlBuilder.append(SELECT).append(SP).append(ID_COLUMN).append(SP)
                 .append(FROM).append(SP).append(SAMPLES_VIEW);
-        sqlBuilder.append(RP);
-    }
-
-    public static void appendMaterialSubselectConstraint(final List<Object> args, final StringBuilder sqlBuilder,
-            final AbstractStringValue value, final boolean useWildcards, final String propertyTableAlias)
-    {
-        sqlBuilder.append(propertyTableAlias).append(PERIOD)
-                .append(MATERIAL_PROP_COLUMN).append(SP).append(IN).append(SP);
-        sqlBuilder.append(LP);
-
-        sqlBuilder.append(SELECT).append(SP).append(ID_COLUMN).append(SP)
-                .append(FROM).append(SP).append(MATERIALS_TABLE).append(SP)
-                .append(WHERE).append(SP);
-        translateStringComparison(null, CODE_COLUMN, value, useWildcards, null, sqlBuilder, args);
-
-        sqlBuilder.append(RP);
-    }
-
-    public static void appendMaterialSubselectConstraint(final StringBuilder sqlBuilder,
-            final String propertyTableAlias)
-    {
-        sqlBuilder.append(propertyTableAlias).append(PERIOD)
-                .append(MATERIAL_PROP_COLUMN).append(SP).append(IN).append(SP);
-        sqlBuilder.append(LP);
-        sqlBuilder.append(SELECT).append(SP).append(ID_COLUMN).append(SP)
-                .append(FROM).append(SP).append(MATERIALS_TABLE);
         sqlBuilder.append(RP);
     }
 

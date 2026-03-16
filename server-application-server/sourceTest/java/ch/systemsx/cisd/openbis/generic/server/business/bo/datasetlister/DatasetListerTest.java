@@ -423,8 +423,6 @@ public class DatasetListerTest extends AbstractDAOTest
         assertEquals("CISD", dataSet.getSample().getSpace().getCode());
         assertProperty(dataSet, "COMMENT", "no comment");
         assertProperty(dataSet, "GENDER", "FEMALE");
-        assertProperty(dataSet, "BACTERIUM", "BACTERIUM1 (BACTERIUM)");
-        assertProperty(dataSet, "ANY_MATERIAL", "1000_C (SIRNA)");
         assertEquals("a/1", ((PhysicalDataSet) dataSet).getLocation());
         assertEquals("42", ((PhysicalDataSet) dataSet).getShareId());
         assertEquals(4711L, ((PhysicalDataSet) dataSet).getSize().longValue());

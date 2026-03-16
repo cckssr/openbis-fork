@@ -27,7 +27,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.Deletion;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.fetchoptions.DeletionFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.id.DeletionTechId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.id.MaterialPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.entity.EntityKindConverter;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.AbstractCachingTranslator;
@@ -104,9 +103,6 @@ public class DeletionTranslator extends
                             break;
                         case DATA_SET:
                             deletedObject.setId(new DataSetPermId(deletedEntity.getPermId()));
-                            break;
-                        case MATERIAL:
-                            deletedObject.setId(new MaterialPermId(deletedEntity.getCode(), deletedEntity.getEntityType().getCode()));
                             break;
                         default:
                             throw new IllegalArgumentException("Unknown entity kind: " + entityKind);

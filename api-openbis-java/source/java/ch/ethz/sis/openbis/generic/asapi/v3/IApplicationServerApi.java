@@ -92,20 +92,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchCriter
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.ImportResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.data.ImportData;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.options.ImportOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.Material;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.MaterialType;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.create.MaterialCreation;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.create.MaterialTypeCreation;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.delete.MaterialDeletionOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.delete.MaterialTypeDeletionOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.fetchoptions.MaterialFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.fetchoptions.MaterialTypeFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.id.IMaterialId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.id.MaterialPermId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.MaterialSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.MaterialTypeSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.update.MaterialTypeUpdate;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.update.MaterialUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.objectkindmodification.ObjectKindModification;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.objectkindmodification.fetchoptions.ObjectKindModificationFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.objectkindmodification.search.ObjectKindModificationSearchCriteria;
@@ -446,28 +432,6 @@ public interface IApplicationServerApi extends IRpcService
     public List<EntityTypePermId> createDataSetTypes(String sessionToken, List<DataSetTypeCreation> newDataSetTypes);
 
     /**
-     * Creates materials basing on the provided {@code MaterialCreation} objects. Returns ids of the newly created materials where nth id corresponds
-     * to nth creation object.
-     * <p>
-     * Required access rights: {@code INSTANCE_ADMIN}
-     * </p>
-     *
-     * @throws UserFailureException in case of any problems, e.g. incorrect {@code MaterialCreation} objects, insufficient access rights etc.
-     */
-    public List<MaterialPermId> createMaterials(String sessionToken, List<MaterialCreation> newMaterials);
-
-    /**
-     * Creates material types basing on the provided {@code MaterialTypeCreation} objects. Returns ids of the newly created material types where nth
-     * id corresponds to nth creation object.
-     * <p>
-     * Required access rights: {@code INSTANCE_ADMIN}
-     * </p>
-     *
-     * @throws UserFailureException in case of any problems, e.g. incorrect {@code MaterialTypeCreation} objects, insufficient access rights etc.
-     */
-    public List<EntityTypePermId> createMaterialTypes(String sessionToken, List<MaterialTypeCreation> newMaterialTypes);
-
-    /**
      * Creates property types basing on the provided {@code PropertyTypeCreation} objects. Returns ids of the newly created property types where nth
      * id corresponds to nth creation object.
      * <p>
@@ -700,26 +664,6 @@ public interface IApplicationServerApi extends IRpcService
      * @throws UserFailureException in case of any problems, e.g. incorrect {@code DataSetTypeUpdate} objects, insufficient access rights etc.
      */
     public void updateDataSetTypes(String sessionToken, List<DataSetTypeUpdate> dataSetTypeUpdates);
-
-    /**
-     * Updates materials basing on the provided {@code MaterialUpdate} objects.
-     * <p>
-     * Required access rights: {@code INSTANCE_ADMIN}
-     * </p>
-     *
-     * @throws UserFailureException in case of any problems, e.g. incorrect {@code MaterialUpdate} objects, insufficient access rights etc.
-     */
-    public void updateMaterials(String sessionToken, List<MaterialUpdate> materialUpdates);
-
-    /**
-     * Updates material types basing on the provided {@code MaterialTypeUpdate} objects.
-     * <p>
-     * Required access rights: {@code INSTANCE_ADMIN}
-     * </p>
-     *
-     * @throws UserFailureException in case of any problems, e.g. incorrect {@code MaterialTypeUpdate} objects, insufficient access rights etc.
-     */
-    public void updateMaterialTypes(String sessionToken, List<MaterialTypeUpdate> materialTypeUpdates);
 
     /**
      * Updates external data management systems basing on the provided {@code ExternalDmsUpdate} objects.
@@ -987,37 +931,6 @@ public interface IApplicationServerApi extends IRpcService
      */
     public Map<IEntityTypeId, DataSetType> getDataSetTypes(String sessionToken, List<? extends IEntityTypeId> dataSetTypeIds,
             DataSetTypeFetchOptions fetchOptions);
-
-    /**
-     * Gets materials for the provided {@code IMaterialId} ids. A result map contains an entry for a given id only if a material for that id has been
-     * found and that material can be accessed by the user.
-     * <p>
-     * By default the returned materials contain only basic information. Any additional information to be fetched has to be explicitly requested via
-     * {@code MaterialFetchOptions}.
-     * </p>
-     * <p>
-     * Required access rights: {@code PROJECT_OBSERVER} or stronger
-     * </p>
-     *
-     * @throws UserFailureException in case of any problems
-     */
-    public Map<IMaterialId, Material> getMaterials(String sessionToken, List<? extends IMaterialId> materialIds, MaterialFetchOptions fetchOptions);
-
-    /**
-     * Gets material types for the provided {@code IEntityTypeId} ids. A result map contains an entry for a given id only if a material type for that
-     * id has been found and that material type can be accessed by the user.
-     * <p>
-     * By default the returned material types contain only basic information. Any additional information to be fetched has to be explicitly requested
-     * via {@code MaterialTypeFetchOptions}.
-     * </p>
-     * <p>
-     * Required access rights: {@code PROJECT_OBSERVER} or stronger
-     * </p>
-     *
-     * @throws UserFailureException in case of any problems
-     */
-    public Map<IEntityTypeId, MaterialType> getMaterialTypes(String sessionToken, List<? extends IEntityTypeId> materialTypeIds,
-            MaterialTypeFetchOptions fetchOptions);
 
     /**
      * Gets property types for the provided {@code IPropertyTypeId} ids. A result map contains an entry for a given id only if a property type for
@@ -1394,20 +1307,6 @@ public interface IApplicationServerApi extends IRpcService
             DataSetTypeFetchOptions fetchOptions);
 
     /**
-     * Searches for materials basing on the provided {@code MaterialSearchCriteria}.
-     * <p>
-     * By default the returned materials contain only basic information. Any additional information to be fetched has to be explicitly requested via
-     * {@code MaterialFetchOptions}.
-     * </p>
-     * <p>
-     * Required access rights: {@code PROJECT_OBSERVER} or stronger
-     * </p>
-     *
-     * @throws UserFailureException in case of any problems
-     */
-    public SearchResult<Material> searchMaterials(String sessionToken, MaterialSearchCriteria searchCriteria, MaterialFetchOptions fetchOptions);
-
-    /**
      * Searches for external data management systems basing on the provided {@code ExternalDmsSearchCriteria}.
      * <p>
      * By default the returned external data management systems contain only basic information. Any additional information to be fetched has to be
@@ -1421,21 +1320,6 @@ public interface IApplicationServerApi extends IRpcService
      */
     public SearchResult<ExternalDms> searchExternalDataManagementSystems(String sessionToken, ExternalDmsSearchCriteria searchCriteria,
             ExternalDmsFetchOptions fetchOptions);
-
-    /**
-     * Searches for material types basing on the provided {@code MaterialTypeSearchCriteria}.
-     * <p>
-     * By default the returned material types contain only basic information. Any additional information to be fetched has to be explicitly requested
-     * via {@code MaterialTypeFetchOptions}.
-     * </p>
-     * <p>
-     * Required access rights: {@code PROJECT_OBSERVER} or stronger
-     * </p>
-     *
-     * @throws UserFailureException in case of any problems
-     */
-    public SearchResult<MaterialType> searchMaterialTypes(String sessionToken, MaterialTypeSearchCriteria searchCriteria,
-            MaterialTypeFetchOptions fetchOptions);
 
     /**
      * Searches for plugins (i.e. dynamic property evaluators, managed property handlers, entity validators) basing on the provided
@@ -1639,7 +1523,7 @@ public interface IApplicationServerApi extends IRpcService
             ObjectKindModificationSearchCriteria searchCriteria, ObjectKindModificationFetchOptions fetchOptions);
 
     /**
-     * Searches for experiments, samples, data sets and materials at once basing on the provided {@code GlobalSearchCriteria}.
+     * Searches for experiments, samples and data sets at once basing on the provided {@code GlobalSearchCriteria}.
      * <p>
      * By default the returned objects contain only basic information. Any additional information to be fetched has to be explicitly requested via
      * {@code GlobalSearchObjectFetchOptions}.
@@ -1851,17 +1735,6 @@ public interface IApplicationServerApi extends IRpcService
     public IDeletionId deleteDataSets(String sessionToken, List<? extends IDataSetId> dataSetIds, DataSetDeletionOptions deletionOptions);
 
     /**
-     * Permanently deletes materials with the provided {@code IMaterialId} ids. Additional deletion options (e.g. deletion reason) can be set via
-     * {@code MaterialDeletionOptions}.
-     * <p>
-     * Required access rights: {@code INSTANCE_ADMIN}
-     * </p>
-     *
-     * @throws UserFailureException in case of any problems
-     */
-    public void deleteMaterials(String sessionToken, List<? extends IMaterialId> materialIds, MaterialDeletionOptions deletionOptions);
-
-    /**
      * Permanently deletes plugins (i.e. dynamic property evaluators, managed property handlers, entity validators) with the provided
      * {@code IPluginId} ids. Additional deletion options (e.g. deletion reason) can be set via {@code PluginDeletionOptions}.
      * <p>
@@ -1941,17 +1814,6 @@ public interface IApplicationServerApi extends IRpcService
      * @throws UserFailureException in case of any problems
      */
     public void deleteDataSetTypes(String sessionToken, List<? extends IEntityTypeId> dataSetTypeIds, DataSetTypeDeletionOptions deletionOptions);
-
-    /**
-     * Permanently deletes material types with the provided {@code IEntityTypeId} ids. Additional deletion options (e.g. deletion reason) can be set
-     * via {@code MaterialTypeDeletionOptions}.
-     * <p>
-     * Required access rights: {@code INSTANCE_ADMIN}
-     * </p>
-     *
-     * @throws UserFailureException in case of any problems
-     */
-    public void deleteMaterialTypes(String sessionToken, List<? extends IEntityTypeId> materialTypeIds, MaterialTypeDeletionOptions deletionOptions);
 
     /**
      * Permanently deletes external data management systems with the provided {@code IExternalDmsId} ids. Additional deletion options (e.g. deletion

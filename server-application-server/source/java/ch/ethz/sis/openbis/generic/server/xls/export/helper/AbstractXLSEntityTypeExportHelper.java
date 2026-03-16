@@ -238,12 +238,6 @@ public abstract class AbstractXLSEntityTypeExportHelper<ENTITY_TYPE extends IEnt
                 return dataTypeString +
                         ((propertyType.getSampleType() != null) ? ':' + propertyType.getSampleType().getCode() : "");
             }
-            case MATERIAL:
-            {
-                return dataTypeString +
-                        ((propertyType.getMaterialType() != null)
-                                ? ':' + propertyType.getMaterialType().getCode() : "");
-            }
             default:
             {
                 return dataTypeString;

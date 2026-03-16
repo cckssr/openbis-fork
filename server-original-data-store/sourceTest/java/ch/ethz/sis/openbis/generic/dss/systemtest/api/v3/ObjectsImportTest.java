@@ -42,8 +42,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetc
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.IDataSetId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.IExperimentId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.fetchoptions.MaterialFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.id.IMaterialId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.ISampleId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.CustomASServiceExecutionOptions;
@@ -225,11 +223,6 @@ public class ObjectsImportTest extends AbstractFileTest
             DataSetFetchOptions fo = new DataSetFetchOptions();
             fo.withProperties();
             return (Map<K, V>) as.getDataSets(sessionToken, Arrays.asList((IDataSetId) objectId), (DataSetFetchOptions) fo);
-        } else if (objectId instanceof IMaterialId)
-        {
-            MaterialFetchOptions fo = new MaterialFetchOptions();
-            fo.withProperties();
-            return (Map<K, V>) as.getMaterials(sessionToken, Arrays.asList((IMaterialId) objectId), (MaterialFetchOptions) fo);
         } else
         {
             throw new IllegalArgumentException("Unsupported object id " + objectId);

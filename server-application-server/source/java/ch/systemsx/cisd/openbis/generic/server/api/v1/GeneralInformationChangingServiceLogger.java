@@ -113,10 +113,9 @@ class GeneralInformationChangingServiceLogger extends AbstractServerLogger imple
                 assignmentsToAdd != null ? assignmentsToAdd : new MetaprojectAssignmentsIds();
 
         logAccess(sessionToken, "addToMetaproject",
-                "METAPROJECT_ID(%s), EXPERIMENTS(%s), SAMPLES(%s), DATA_SETS(%s), MATERIALS(%s)",
+                "METAPROJECT_ID(%s), EXPERIMENTS(%s), SAMPLES(%s), DATA_SETS(%s)",
                 metaprojectId, abbreviate(assignments.getExperiments()),
-                abbreviate(assignments.getSamples()), abbreviate(assignments.getDataSets()),
-                abbreviate(assignments.getMaterials()));
+                abbreviate(assignments.getSamples()), abbreviate(assignments.getDataSets()));
     }
 
     @Override
@@ -127,10 +126,9 @@ class GeneralInformationChangingServiceLogger extends AbstractServerLogger imple
                 assignmentsToRemove != null ? assignmentsToRemove : new MetaprojectAssignmentsIds();
 
         logAccess(sessionToken, "removeFromMetaproject",
-                "METAPROJECT_ID(%s), EXPERIMENTS(%s), SAMPLES(%s), DATA_SETS(%s), MATERIALS(%s)",
+                "METAPROJECT_ID(%s), EXPERIMENTS(%s), SAMPLES(%s), DATA_SETS(%s)",
                 metaprojectId, abbreviate(assignments.getExperiments()),
-                abbreviate(assignments.getSamples()), abbreviate(assignments.getDataSets()),
-                abbreviate(assignments.getMaterials()));
+                abbreviate(assignments.getSamples()), abbreviate(assignments.getDataSets()));
     }
 
     @Override

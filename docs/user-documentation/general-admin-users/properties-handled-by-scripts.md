@@ -657,9 +657,7 @@ def configureUI():
     """ for links to samples, experiments and datasets provide the permId """
     row.setCell("sample", factory.createSampleLink("samplePermId"))
     row.setCell("experiment", factory.createExperimentLink("experimentPermId"))
-    row.setCell("data set", factory.createDataSetLink("dataSetPermId"))
-    """ for material links material code and material type code are needed """
-    row.setCell("material", factory.createMaterialLink("materialCode", "materialTypeCode"))
+    row.setCell("data set", factory.createDataSetLink("dataSetPermId"))    
 
     """specify that the property should be shown in a tab and set the table output"""
     property.setOwnTab(True)
@@ -1048,8 +1046,7 @@ def initialCreationOfPropertyValue():
     3) An application specific element "testElement"
     """
     elements = [
-        factory.createSampleLink("samplePermId"),
-        factory.createMaterialLink("type", "typeCode"),
+        factory.createSampleLink("samplePermId"),        
         factory.createElement("testElement").addAttribute("key1", "value1").addAttribute("key2", "value2")
     ]
     

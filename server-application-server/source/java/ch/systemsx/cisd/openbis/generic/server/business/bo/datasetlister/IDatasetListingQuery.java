@@ -345,7 +345,7 @@ public interface IDatasetListingQuery extends BaseQuery, IPropertyListingQuery
      * @param entityIds The set of sample ids to get the property values for.
      */
     @Select(sql = "SELECT pr.ds_id as entity_id, etpt.prty_id, etpt.script_id, pr.value, "
-            + "           pr.cvte_id, pr.mate_prop_id, pr.samp_prop_id, sc.script_type "
+            + "           pr.cvte_id, pr.samp_prop_id, sc.script_type "
             + "      FROM data_set_properties pr"
             + "      JOIN data_set_type_property_types etpt ON pr.dstpt_id=etpt.id"
             + "      LEFT OUTER JOIN scripts sc ON etpt.script_id = sc.id"

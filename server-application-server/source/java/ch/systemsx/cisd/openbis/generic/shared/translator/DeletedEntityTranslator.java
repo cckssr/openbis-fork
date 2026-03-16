@@ -21,13 +21,11 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.IEntityInformationHolderWit
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.BasicEntityType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DeletedEntity;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityKind;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PropertyType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataSetTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.IDeletablePE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PropertyTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SampleTypePE;
 
@@ -55,19 +53,18 @@ public class DeletedEntityTranslator
 
     private static BasicEntityType translateType(EntityKind entityKind, EntityTypePE entityType)
     {
-        HashMap<MaterialTypePE, MaterialType> materialTypeCache = new HashMap<MaterialTypePE, MaterialType>();
         HashMap<PropertyTypePE, PropertyType> propertyMap =
                 new HashMap<PropertyTypePE, PropertyType>();
         switch (entityKind)
         {
             case EXPERIMENT:
-                return ExperimentTranslator.translate((ExperimentTypePE) entityType, materialTypeCache, propertyMap);
+                return ExperimentTranslator.translate((ExperimentTypePE) entityType, propertyMap);
 
             case SAMPLE:
-                return SampleTypeTranslator.translate((SampleTypePE) entityType, materialTypeCache, propertyMap);
+                return SampleTypeTranslator.translate((SampleTypePE) entityType, propertyMap);
 
             case DATA_SET:
-                return DataSetTypeTranslator.translate((DataSetTypePE) entityType, materialTypeCache, propertyMap);
+                return DataSetTypeTranslator.translate((DataSetTypePE) entityType, propertyMap);
 
             default:
                 throw new IllegalArgumentException("Invalid deleted entity" + entityKind);

@@ -115,18 +115,6 @@ public class ManagedEntityProperty implements IEntityProperty, IManagedProperty
         return entityProperty.tryGetOriginalValue();
     }
 
-    @Override
-    public Material getMaterial()
-    {
-        return entityProperty.getMaterial();
-    }
-
-    @Override
-    public void setMaterial(Material material)
-    {
-        entityProperty.setMaterial(material);
-    }
-
     public Sample getSample()
     {
         return entityProperty.getSample();

@@ -36,8 +36,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.GlobalSearchObject;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.fetchoptions.GlobalSearchObjectFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchObjectKind;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.Material;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.id.MaterialPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
@@ -46,7 +44,6 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.TranslationCache.C
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.TranslationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.dataset.IDataSetTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.experiment.IExperimentTranslator;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.material.IMaterialTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.sample.ISampleTranslator;
 import ch.systemsx.cisd.openbis.generic.server.authorization.AuthorizationDataProvider;
 import ch.systemsx.cisd.openbis.generic.server.authorization.validator.MatchingEntityValidator;
@@ -75,9 +72,6 @@ public class GlobalSearchObjectTranslator extends AbstractCachingTranslator<Matc
     @Autowired
     private IDataSetTranslator dataSetTranslator;
 
-    @Autowired
-    private IMaterialTranslator materialTranslator;
-
     @Override
     protected Set<MatchingEntity> shouldTranslate(TranslationContext context, Collection<MatchingEntity> inputs,
             GlobalSearchObjectFetchOptions fetchOptions)
@@ -96,8 +90,7 @@ public class GlobalSearchObjectTranslator extends AbstractCachingTranslator<Matc
     @Override
     protected Object getObjectsRelations(TranslationContext context, Collection<MatchingEntity> inputs, GlobalSearchObjectFetchOptions fetchOptions)
     {
-        if (fetchOptions.hasExperiment() == false && fetchOptions.hasSample() == false && fetchOptions.hasDataSet() == false
-                && fetchOptions.hasMaterial() == false)
+        if (fetchOptions.hasExperiment() == false && fetchOptions.hasSample() == false && fetchOptions.hasDataSet() == false)
         {
             return Collections.emptyMap();
         }
@@ -105,8 +98,6 @@ public class GlobalSearchObjectTranslator extends AbstractCachingTranslator<Matc
         List<Long> experimentIds = new LinkedList<Long>();
         List<Long> sampleIds = new LinkedList<Long>();
         List<Long> dataSetIds = new LinkedList<Long>();
-        List<Long> materialIds = new LinkedList<Long>();
-
         for (MatchingEntity input : inputs)
         {
             switch (input.getEntityKind())
@@ -119,9 +110,6 @@ public class GlobalSearchObjectTranslator extends AbstractCachingTranslator<Matc
                     break;
                 case DATA_SET:
                     dataSetIds.add(input.getId());
-                    break;
-                case MATERIAL:
-                    materialIds.add(input.getId());
                     break;
                 default:
                     throw new UnsupportedOperationException("Unsupported entity kind " + input.getEntityKind());
@@ -143,11 +131,6 @@ public class GlobalSearchObjectTranslator extends AbstractCachingTranslator<Matc
         if (fetchOptions.hasDataSet())
         {
             relations.put(IDataSetTranslator.class, dataSetTranslator.translate(context, dataSetIds, fetchOptions.withDataSet()));
-        }
-
-        if (fetchOptions.hasMaterial())
-        {
-            relations.put(IMaterialTranslator.class, materialTranslator.translate(context, materialIds, fetchOptions.withMaterial()));
         }
 
         return relations;
@@ -226,19 +209,6 @@ public class GlobalSearchObjectTranslator extends AbstractCachingTranslator<Matc
             }
         }
 
-        if (fetchOptions.hasMaterial())
-        {
-            output.getFetchOptions().withMaterialUsing(fetchOptions.withMaterial());
-
-            if (EntityKind.MATERIAL.equals(input.getEntityKind()))
-            {
-                Map<Long, Material> materials = (Map<Long, Material>) relations.get(IMaterialTranslator.class);
-                if (materials != null)
-                {
-                    output.setMaterial(materials.get(input.getId()));
-                }
-            }
-        }
     }
 
     private IObjectId getObjectPermId(MatchingEntity input)
@@ -251,8 +221,6 @@ public class GlobalSearchObjectTranslator extends AbstractCachingTranslator<Matc
                 return new SamplePermId(input.getPermId());
             case DATA_SET:
                 return new DataSetPermId(input.getCode());
-            case MATERIAL:
-                return new MaterialPermId(input.getCode(), input.getEntityType().getCode());
             default:
                 throw new UnsupportedOperationException("Unsupported entity kind " + input.getEntityKind());
         }
@@ -268,8 +236,6 @@ public class GlobalSearchObjectTranslator extends AbstractCachingTranslator<Matc
                 return new SampleIdentifier(input.getIdentifier());
             case DATA_SET:
                 return new DataSetPermId(input.getCode());
-            case MATERIAL:
-                return new MaterialPermId(input.getCode(), input.getEntityType().getCode());
             default:
                 throw new UnsupportedOperationException("Unsupported entity kind " + input.getEntityKind());
         }
@@ -285,8 +251,6 @@ public class GlobalSearchObjectTranslator extends AbstractCachingTranslator<Matc
                 return GlobalSearchObjectKind.SAMPLE;
             case DATA_SET:
                 return GlobalSearchObjectKind.DATA_SET;
-            case MATERIAL:
-                return GlobalSearchObjectKind.MATERIAL;
             default:
                 throw new UnsupportedOperationException("Unsupported entity kind " + input.getEntityKind());
         }

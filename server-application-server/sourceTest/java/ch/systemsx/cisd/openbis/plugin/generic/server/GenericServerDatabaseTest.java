@@ -537,30 +537,6 @@ public class GenericServerDatabaseTest extends AbstractDAOTest
     }
 
     @Test(dataProviderClass = ProjectAuthorizationUser.class, dataProvider = ProjectAuthorizationUser.PROVIDER)
-    public void testRegisterOrUpdateSamplesAndMaterialsWithProjectAuthorization(ProjectAuthorizationUser user)
-    {
-        SessionContextDTO sessionDTO = server.tryAuthenticate(user.getUserId(), PASSWORD);
-
-        NewSample newSample = createNewSample("/TEST-SPACE/TEST-PROJECT/EV-TEST2", "/TEST-SPACE/TEST-PROJECT/EXP-SPACE-TEST");
-        NewSamplesWithTypes newSamples = new NewSamplesWithTypes(newSample.getSampleType(), Arrays.asList(newSample));
-
-        if (user.isInstanceUser())
-        {
-            server.registerOrUpdateSamplesAndMaterials(sessionDTO.getSessionToken(), Arrays.asList(newSamples), Collections.emptyList());
-        } else
-        {
-            try
-            {
-                server.registerOrUpdateSamplesAndMaterials(sessionDTO.getSessionToken(), Arrays.asList(newSamples), Collections.emptyList());
-                Assert.fail();
-            } catch (AuthorizationFailureException e)
-            {
-                // expected
-            }
-        }
-    }
-
-    @Test(dataProviderClass = ProjectAuthorizationUser.class, dataProvider = ProjectAuthorizationUser.PROVIDER)
     public void testUpdateSamplesWithProjectAuthorization(ProjectAuthorizationUser user)
     {
         SessionContextDTO sessionDTO = server.tryAuthenticate(user.getUserId(), PASSWORD);

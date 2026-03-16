@@ -77,7 +77,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DisplaySettings;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityVisit;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.GridCustomColumn;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewSample;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewSamplesWithTypes;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.RoleWithHierarchy;
@@ -728,11 +727,6 @@ public abstract class AbstractServer<T> extends AbstractServiceWithLogger<T> imp
                     break;
                 case EXPERIMENT:
                     entity = daoFactory.getExperimentDAO().tryGetByPermID(visit.getPermID());
-                    break;
-                case MATERIAL:
-                    entity =
-                            daoFactory.getMaterialDAO().tryFindMaterial(
-                                    MaterialIdentifier.tryParseIdentifier(visit.getIdentifier()));
                     break;
                 case SAMPLE:
                     entity = daoFactory.getSampleDAO().tryToFindByPermID(visit.getPermID());

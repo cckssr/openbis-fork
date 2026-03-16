@@ -311,16 +311,16 @@ public class SampleDeletionTest extends DeletionTest
         SpacePermId space = createSpace("SPACE");
 
         SamplePermId sample = createSample(null, space, "SAMPLE",
-                "DESCRIPTION", "desc", "ORGANISM", "FLY", "BACTERIUM", "BACTERIUM-X");
+                "DESCRIPTION", "desc", "ORGANISM", "FLY");
 
         newTx();
-        setProperties(sample, "DESCRIPTION", "desc2", "ORGANISM", "GORILLA", "BACTERIUM", "BACTERIUM-Y");
+        setProperties(sample, "DESCRIPTION", "desc2", "ORGANISM", "GORILLA");
 
         newTx();
-        setProperties(sample, "DESCRIPTION", null, "ORGANISM", null, "BACTERIUM", null);
+        setProperties(sample, "DESCRIPTION", null, "ORGANISM", null);
 
         newTx();
-        setProperties(sample, "DESCRIPTION", "desc3", "ORGANISM", "DOG", "BACTERIUM", "BACTERIUM2");
+        setProperties(sample, "DESCRIPTION", "desc3", "ORGANISM", "DOG");
 
         newTx();
         delete(sample);
@@ -328,7 +328,6 @@ public class SampleDeletionTest extends DeletionTest
 
         assertPropertiesHistory(sample.getPermId(), "DESCRIPTION", "desc", "desc2", "", "desc3");
         assertPropertiesHistory(sample.getPermId(), "ORGANISM", "FLY [ORGANISM]", "GORILLA [ORGANISM]", "", "DOG [ORGANISM]");
-        assertPropertiesHistory(sample.getPermId(), "BACTERIUM", "BACTERIUM-X [BACTERIUM]", "BACTERIUM-Y [BACTERIUM]", "", "BACTERIUM2 [BACTERIUM]");
     }
 
 }

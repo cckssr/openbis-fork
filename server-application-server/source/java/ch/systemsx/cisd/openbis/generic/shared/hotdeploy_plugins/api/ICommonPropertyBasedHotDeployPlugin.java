@@ -29,7 +29,7 @@ public interface ICommonPropertyBasedHotDeployPlugin extends Plugin
 {
     public enum EntityKind implements Serializable
     {
-        EXPERIMENT, SAMPLE, DATA_SET, MATERIAL;
+        EXPERIMENT, SAMPLE, DATA_SET;
     }
 
     /**

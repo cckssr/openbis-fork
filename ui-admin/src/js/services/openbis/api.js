@@ -185,10 +185,6 @@ class Facade {
     return this.promise(this.v3.searchQueryDatabases(criteria, fo))
   }
 
-  searchMaterials(criteria, fo) {
-    return this.promise(this.v3.searchMaterials(criteria, fo))
-  }
-
   searchSamples(criteria, fo) {
     return this.promise(this.v3.searchSamples(criteria, fo))
   }
@@ -249,10 +245,6 @@ class Facade {
     return this.promise(this.v3.getDataSetTypes(ids, fo))
   }
 
-  getMaterialTypes(ids, fo) {
-    return this.promise(this.v3.getMaterialTypes(ids, fo))
-  }
-
   getVocabularies(ids, fo) {
     return this.promise(this.v3.getVocabularies(ids, fo))
   }
@@ -301,10 +293,6 @@ class Facade {
     return this.promise(this.v3.updateDataSetTypes(updates))
   }
 
-  updateMaterialTypes(updates) {
-    return this.promise(this.v3.updateMaterialTypes(updates))
-  }
-
   searchSampleTypes(criteria, fo) {
     return this.promise(this.v3.searchSampleTypes(criteria, fo))
   }
@@ -319,10 +307,6 @@ class Facade {
 
   searchDataSetTypes(criteria, fo) {
     return this.promise(this.v3.searchDataSetTypes(criteria, fo))
-  }
-
-  searchMaterialTypes(criteria, fo) {
-    return this.promise(this.v3.searchMaterialTypes(criteria, fo))
   }
 
   searchSemanticAnnotations(criteria, fo) {
@@ -359,10 +343,6 @@ class Facade {
 
   deleteDataSetTypes(ids, options) {
     return this.promise(this.v3.deleteDataSetTypes(ids, options))
-  }
-
-  deleteMaterialTypes(ids, options) {
-    return this.promise(this.v3.deleteMaterialTypes(ids, options))
   }
 
   deleteSpaces(ids, options) {

@@ -20,7 +20,6 @@ import java.util.List;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.BatchRegistrationResult;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExperimentType;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SampleType;
 
 /**
@@ -42,13 +41,7 @@ public interface IEntityImportService
 
     public List<BatchRegistrationResult> updateDataSets(DataSetType dataSetType, String sessionKey, boolean async, String userEmail);
 
-    public List<BatchRegistrationResult> registerMaterials(MaterialType materialType, boolean updateExisting, final String sessionKey, boolean async,
-            String userEmail);
-
-    public List<BatchRegistrationResult> updateMaterials(MaterialType materialType, String sessionKey, boolean ignoreUnregistered,
-            boolean async, String userEmail);
-
-    public List<BatchRegistrationResult> registerOrUpdateSamplesAndMaterials(String sessionKey, String defaultGroupIdentifier, boolean updateExisting,
+    public List<BatchRegistrationResult> registerOrUpdateSamples(String sessionKey, String defaultGroupIdentifier, boolean updateExisting,
             boolean async, String userEmail);
 
 }

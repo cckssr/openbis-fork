@@ -23,13 +23,11 @@ import org.apache.commons.collections4.Transformer;
 
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetTypePropertyType;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PropertyType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataSetTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataSetTypePropertyTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePropertyTypePE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PropertyTypePE;
 
 /**
@@ -45,10 +43,10 @@ public class DataSetTypePropertyTypeTranslator
             AbstractEntityTypePropertyTypeTranslator<DataSetType, DataSetTypePropertyType, DataSetTypePropertyTypePE>
     {
         @Override
-        DataSetType translate(EntityTypePE entityTypePE, Map<MaterialTypePE, MaterialType> materialTypeCache, 
+        DataSetType translate(EntityTypePE entityTypePE,
                 Map<PropertyTypePE, PropertyType> cacheOrNull)
         {
-            return DataSetTypeTranslator.translate((DataSetTypePE) entityTypePE, materialTypeCache, cacheOrNull);
+            return DataSetTypeTranslator.translate((DataSetTypePE) entityTypePE, cacheOrNull);
         }
 
         @Override
@@ -60,24 +58,24 @@ public class DataSetTypePropertyTypeTranslator
 
     public static List<DataSetTypePropertyType> translate(
             Set<DataSetTypePropertyTypePE> DataSetTypePropertyTypes, PropertyType result,
-            Map<MaterialTypePE, MaterialType> materialTypeCache, Map<PropertyTypePE, PropertyType> cacheOrNull)
+            Map<PropertyTypePE, PropertyType> cacheOrNull)
     {
         return new DataSetTypePropertyTypeTranslatorHelper().translate(DataSetTypePropertyTypes,
-                result, materialTypeCache, cacheOrNull);
+                result, cacheOrNull);
     }
 
     public static DataSetTypePropertyType translate(DataSetTypePropertyTypePE entityTypePropertyType)
     {
         return new DataSetTypePropertyTypeTranslatorHelper()
-                .translate(entityTypePropertyType, null, null);
+                .translate(entityTypePropertyType, null);
     }
 
     public static List<DataSetTypePropertyType> translate(
             Set<DataSetTypePropertyTypePE> DataSetTypePropertyTypes, DataSetType result,
-            Map<MaterialTypePE, MaterialType> materialTypeCache, Map<PropertyTypePE, PropertyType> cacheOrNull)
+            Map<PropertyTypePE, PropertyType> cacheOrNull)
     {
         return new DataSetTypePropertyTypeTranslatorHelper().translate(DataSetTypePropertyTypes,
-                result, materialTypeCache, cacheOrNull);
+                result, cacheOrNull);
     }
 
     public static final Transformer<EntityTypePropertyTypePE, DataSetTypePropertyType> TRANSFORMER =

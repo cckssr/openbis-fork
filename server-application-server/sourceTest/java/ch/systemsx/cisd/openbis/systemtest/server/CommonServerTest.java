@@ -32,7 +32,6 @@ import ch.ethz.sis.shared.log.standard.handlers.BufferedAppender;
 import ch.systemsx.cisd.common.utilities.TestResources;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.dynamic_property.calculator.ExperimentAdaptor;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.dynamic_property.calculator.ExternalDataAdaptor;
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.dynamic_property.calculator.MaterialAdaptor;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.dynamic_property.calculator.SampleAdaptor;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityValidationEvaluationInfo;
@@ -226,12 +225,6 @@ public class CommonServerTest extends SystemTestCase
         assertScrollableResultsReleased(2);
     }
 
-    @Test
-    public void testMaterialAdaptor()
-    {
-        testAdaptorCommon(EntityKind.MATERIAL, "C-NO-TIME (CONTROL)", "material_adaptor_test.py");
-        assertEntitiesReleased(EntityKind.MATERIAL, 1);
-    }
 
     private void testAdaptorCommon(EntityKind entityKind, String entityIdentifier, String scriptName)
     {
@@ -261,9 +254,6 @@ public class CommonServerTest extends SystemTestCase
         } else if (EntityKind.DATA_SET.equals(kind))
         {
             adaptorClass = ExternalDataAdaptor.class;
-        } else if (EntityKind.MATERIAL.equals(kind))
-        {
-            adaptorClass = MaterialAdaptor.class;
         } else
         {
             throw new RuntimeException("Unsupported entity kind: " + kind);

@@ -39,7 +39,6 @@ import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.common.spring.IInvocationLoggerContext;
 import ch.systemsx.cisd.openbis.generic.server.AbstractServer;
 import ch.systemsx.cisd.openbis.generic.server.ComponentNames;
-import ch.systemsx.cisd.openbis.generic.server.MaterialHelper;
 import ch.systemsx.cisd.openbis.generic.server.authorization.annotation.AuthorizationGuard;
 import ch.systemsx.cisd.openbis.generic.server.authorization.annotation.Capability;
 import ch.systemsx.cisd.openbis.generic.server.authorization.annotation.RolesAllowed;
@@ -91,7 +90,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewDataSet;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewDataSetsWithTypes;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewExperiment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewExperimentsWithType;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewMaterialsWithTypes;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewSample;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewSamplesWithTypes;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.RoleWithHierarchy;
@@ -315,17 +313,6 @@ public final class GenericServer extends AbstractServer<IGenericServerInternal> 
         experimentBO.loadDataByTechId(experimentId);
         return AttachmentTranslator.translateWithContent(experimentBO.getExperimentFileAttachment(
                 filename, versionOrNull));
-    }
-
-    @Override
-    @RolesAllowed(RoleWithHierarchy.PROJECT_USER)
-    @Capability("WRITE_SAMPLE")
-    public void registerOrUpdateSamples(final String sessionToken,
-            @AuthorizationGuard(guardClass = NewSamplesWithTypePredicate.class)
-            final List<NewSamplesWithTypes> newSamplesWithType) throws UserFailureException
-    {
-        registerOrUpdateSamplesAndMaterials(sessionToken, newSamplesWithType,
-                Collections.<NewMaterialsWithTypes> emptyList());
     }
 
     private void privateRegisterOrUpdateSamples(final String sessionToken,
@@ -706,47 +693,6 @@ public final class GenericServer extends AbstractServer<IGenericServerInternal> 
     }
 
     @Override
-    @RolesAllowed(RoleWithHierarchy.INSTANCE_ADMIN)
-    @Capability("WRITE_MATERIAL")
-    public void registerMaterials(String sessionToken, List<NewMaterialsWithTypes> newMaterials)
-            throws UserFailureException
-    {
-        assert sessionToken != null : "Unspecified session token.";
-        Session session = getSession(sessionToken);
-        MaterialHelper materialHelper = getMaterialHelper(session);
-
-        for (NewMaterialsWithTypes m : newMaterials)
-        {
-            registerMaterials(materialHelper, m);
-        }
-    }
-
-    private void registerMaterials(MaterialHelper materialHelper, NewMaterialsWithTypes materials)
-    {
-        materialHelper.registerMaterials(materials.getEntityType().getCode(),
-                materials.getNewEntities());
-    }
-
-    @Override
-    @RolesAllowed(RoleWithHierarchy.INSTANCE_ADMIN)
-    @Capability("WRITE_MATERIAL")
-    public int updateMaterials(String sessionToken, List<NewMaterialsWithTypes> newMaterials,
-            boolean ignoreUnregisteredMaterials) throws UserFailureException
-    {
-        assert sessionToken != null : "Unspecified session token.";
-        Session session = getSession(sessionToken);
-
-        int count = 0;
-        for (NewMaterialsWithTypes m : newMaterials)
-        {
-            count +=
-                    getMaterialHelper(session).updateMaterials(m.getEntityType().getCode(),
-                            m.getNewEntities(), ignoreUnregisteredMaterials);
-        }
-        return count;
-    }
-
-    @Override
     @RolesAllowed(RoleWithHierarchy.PROJECT_OBSERVER)
     public AttachmentWithContent getProjectFileAttachment(String sessionToken,
             @AuthorizationGuard(guardClass = ProjectTechIdPredicate.class) TechId projectId, String fileName, Integer versionOrNull)
@@ -810,16 +756,6 @@ public final class GenericServer extends AbstractServer<IGenericServerInternal> 
     }
 
     @Override
-    @RolesAllowed(RoleWithHierarchy.INSTANCE_ADMIN)
-    @Capability("WRITE_MATERIAL")
-    public Date updateMaterial(String sessionToken, TechId materialId,
-            List<IEntityProperty> properties, String[] metaprojects, Date version)
-    {
-        return commonServer.updateMaterial(sessionToken, materialId, properties, metaprojects,
-                version);
-    }
-
-    @Override
     @RolesAllowed(RoleWithHierarchy.PROJECT_USER)
     public SampleUpdateResult updateSample(String sessionToken,
             @AuthorizationGuard(guardClass = SampleUpdatesPredicate.class) SampleUpdatesDTO updates)
@@ -834,29 +770,6 @@ public final class GenericServer extends AbstractServer<IGenericServerInternal> 
             @AuthorizationGuard(guardClass = DataSetUpdatesPredicate.class) DataSetUpdatesDTO updates)
     {
         return commonServer.updateDataSet(sessionToken, updates);
-    }
-
-    @Override
-    @RolesAllowed(RoleWithHierarchy.INSTANCE_ADMIN)
-    @Capability("WRITE_MATERIAL")
-    public void registerOrUpdateMaterials(String sessionToken, List<NewMaterialsWithTypes> materials)
-            throws UserFailureException
-    {
-        assert sessionToken != null : "Unspecified session token.";
-        final Session session = getSession(sessionToken);
-        MaterialHelper materialHelper = getMaterialHelper(session);
-        for (NewMaterialsWithTypes materialsWithTypes : materials)
-        {
-            String materialTypeCode = materialsWithTypes.getEntityType().getCode();
-            if (materialsWithTypes.isAllowUpdateIfExist())
-            {
-                materialHelper.registerOrUpdateMaterials(materialTypeCode,
-                        materialsWithTypes.getNewEntities());
-            } else
-            {
-                registerMaterials(materialHelper, materialsWithTypes);
-            }
-        }
     }
 
     @Override
@@ -979,27 +892,19 @@ public final class GenericServer extends AbstractServer<IGenericServerInternal> 
         return experiments;
     }
 
-    private MaterialHelper getMaterialHelper(final Session session)
-    {
-        final MaterialHelper materialHelper =
-                new MaterialHelper(session, businessObjectFactory, getDAOFactory(),
-                        getPropertiesBatchManager(), managedPropertyEvaluatorFactory);
-        return materialHelper;
-    }
 
     @Override
-    @RolesAllowed(RoleWithHierarchy.INSTANCE_ADMIN)
-    @Capability("WRITE_EXPERIMENT_SAMPLE_MATERIAL")
-    public void registerOrUpdateSamplesAndMaterials(final String sessionToken,
-            final List<NewSamplesWithTypes> newSamplesWithType,
-            List<NewMaterialsWithTypes> newMaterialsWithType) throws UserFailureException
+    @RolesAllowed(RoleWithHierarchy.PROJECT_USER)
+    @Capability("WRITE_SAMPLE")
+    public void registerOrUpdateSamples(final String sessionToken,
+            @AuthorizationGuard(guardClass = NewSamplesWithTypePredicate.class)
+            final List<NewSamplesWithTypes> newSamplesWithType) throws UserFailureException
     {
         if (isProjectSamplesEnabled(sessionToken))
         {
             injectProjectIdentifiers(newSamplesWithType);
         }
         EntityExistenceChecker entityExistenceChecker = new EntityExistenceChecker(getDAOFactory());
-        entityExistenceChecker.checkNewMaterials(newMaterialsWithType);
         entityExistenceChecker.checkNewSamples(newSamplesWithType);
 
         List<String> errors = entityExistenceChecker.getErrors();
@@ -1014,7 +919,6 @@ public final class GenericServer extends AbstractServer<IGenericServerInternal> 
             throw new UserFailureException(errorString);
         }
 
-        registerOrUpdateMaterials(sessionToken, newMaterialsWithType);
         privateRegisterOrUpdateSamples(sessionToken, newSamplesWithType);
     }
 

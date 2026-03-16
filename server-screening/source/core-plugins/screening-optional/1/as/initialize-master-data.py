@@ -60,15 +60,6 @@ data_set_type_HCS_ANALYSIS_CONTAINER_CELL_FEATURES.setDescription('Container for
 data_set_type_HCS_ANALYSIS_CONTAINER_WELL_FEATURES = tr.getOrCreateNewDataSetType('HCS_ANALYSIS_CONTAINER_WELL_FEATURES')
 data_set_type_HCS_ANALYSIS_CONTAINER_WELL_FEATURES.setDescription('Container for HCS image analysis well feature vectors.')
 
-material_type_BACTERIUM = tr.getOrCreateNewMaterialType('BACTERIUM')
-material_type_BACTERIUM.setDescription('Bacterium')
-
-material_type_CELL_LINE = tr.getOrCreateNewMaterialType('CELL_LINE')
-material_type_CELL_LINE.setDescription('Cell Line or Cell Culture. The growing of cells under controlled conditions.')
-
-material_type_VIRUS = tr.getOrCreateNewMaterialType('VIRUS')
-material_type_VIRUS.setDescription('Virus')
-
 # Already exists in the database
 prop_type_DESCRIPTION = tr.getPropertyType('DESCRIPTION')
 prop_type_ANALYSIS_PROCEDURE = tr.getPropertyType('ANALYSIS_PROCEDURE')
@@ -90,10 +81,6 @@ prop_type_REFSEQ.setLabel('RefSeq')
 prop_type_REFSEQ.setManagedInternally(False)
 prop_type_REFSEQ.setInternalNamespace(False)
 
-assignment_MATERIAL_BACTERIUM_DESCRIPTION = tr.assignPropertyType(material_type_BACTERIUM, prop_type_DESCRIPTION)
-assignment_MATERIAL_BACTERIUM_DESCRIPTION.setMandatory(False)
-assignment_MATERIAL_BACTERIUM_DESCRIPTION.setSection(None)
-assignment_MATERIAL_BACTERIUM_DESCRIPTION.setPositionInForms(1)
 
 assignment_EXPERIMENT_COMPOUND_HCS_DESCRIPTION = tr.assignPropertyType(exp_type_COMPOUND_HCS, prop_type_DESCRIPTION)
 assignment_EXPERIMENT_COMPOUND_HCS_DESCRIPTION.setMandatory(True)
@@ -124,8 +111,3 @@ assignment_EXPERIMENT_SIRNA_HCS_MICROSCOPE = tr.assignPropertyType(exp_type_SIRN
 assignment_EXPERIMENT_SIRNA_HCS_MICROSCOPE.setMandatory(False)
 assignment_EXPERIMENT_SIRNA_HCS_MICROSCOPE.setSection(None)
 assignment_EXPERIMENT_SIRNA_HCS_MICROSCOPE.setPositionInForms(2)
-
-assignment_MATERIAL_VIRUS_DESCRIPTION = tr.assignPropertyType(material_type_VIRUS, prop_type_DESCRIPTION)
-assignment_MATERIAL_VIRUS_DESCRIPTION.setMandatory(False)
-assignment_MATERIAL_VIRUS_DESCRIPTION.setSection(None)
-assignment_MATERIAL_VIRUS_DESCRIPTION.setPositionInForms(1)

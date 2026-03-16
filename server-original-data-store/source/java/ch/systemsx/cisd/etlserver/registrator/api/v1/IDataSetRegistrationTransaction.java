@@ -25,7 +25,6 @@ import ch.systemsx.cisd.etlserver.registrator.DataSetRegistrationContext;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.v1.IDataSetImmutable;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.v1.IExperimentImmutable;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.v1.IExternalDataManagementSystemImmutable;
-import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.v1.IMaterialImmutable;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.v1.IProjectImmutable;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.v1.ISampleImmutable;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.v1.ISearchService;
@@ -191,49 +190,6 @@ public interface IDataSetRegistrationTransaction
      * @return A space or null
      */
     ISpaceImmutable getSpace(String spaceCode);
-
-    /**
-     * Get a material from the openBIS AS. Returns null if the material does not exist.
-     * 
-     * @return A material or null
-     */
-    IMaterialImmutable getMaterial(String materialCode, String materialType);
-
-    /**
-     * Get a material from the openBIS AS. Returns null if the material does not exist.
-     * 
-     * @return A material or null
-     */
-    IMaterialImmutable getMaterial(String identifier);
-
-    /**
-     * Get a material from the openBIS AS for the purpose of modifying it. Returns null if the material does not exist.
-     * 
-     * @return A material or null
-     */
-    IMaterial getMaterialForUpdate(String materialCode, String materialType);
-
-    /**
-     * Get a material from the openBIS AS for the purpose of modifying it. Returns null if the material does not exist.
-     * 
-     * @return A material or null
-     */
-    IMaterial getMaterialForUpdate(String identifier);
-
-    /**
-     * Given an immutable material, make it mutable.
-     * 
-     * @return A material
-     */
-    IMaterial makeMaterialMutable(IMaterialImmutable material);
-
-    /**
-     * Create a new material to register with the openBIS AS.
-     * 
-     * @param materialCode the code of the material
-     * @param materialType the type of the material
-     */
-    IMaterial createNewMaterial(String materialCode, String materialType);
 
     /**
      * Get an external data management system from the openBIS AS. Returns null if the object does not exist.

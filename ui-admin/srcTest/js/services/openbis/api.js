@@ -5,7 +5,6 @@ const login = jest.fn()
 const logout = jest.fn()
 const deleteDataSetTypes = jest.fn()
 const deleteExperimentTypes = jest.fn()
-const deleteMaterialTypes = jest.fn()
 const deleteSampleTypes = jest.fn()
 const executeOperations = jest.fn()
 const executeQuery = jest.fn()
@@ -14,7 +13,6 @@ const evaluatePlugin = jest.fn()
 const getAuthorizationGroups = jest.fn()
 const getDataSetTypes = jest.fn()
 const getExperimentTypes = jest.fn()
-const getMaterialTypes = jest.fn()
 const getPersons = jest.fn()
 const getPropertyTypes = jest.fn()
 const getSampleTypes = jest.fn()
@@ -27,8 +25,6 @@ const getQueries = jest.fn()
 const searchAuthorizationGroups = jest.fn()
 const searchDataSetTypes = jest.fn()
 const searchExperimentTypes = jest.fn()
-const searchMaterialTypes = jest.fn()
-const searchMaterials = jest.fn()
 const searchPersons = jest.fn()
 const searchPlugins = jest.fn()
 const searchQueries = jest.fn()
@@ -44,7 +40,6 @@ const searchVocabularyTerms = jest.fn()
 const searchPersonalAccessTokens = jest.fn()
 const updateDataSetTypes = jest.fn()
 const updateExperimentTypes = jest.fn()
-const updateMaterialTypes = jest.fn()
 const updatePersons = jest.fn()
 const updateSampleTypes = jest.fn()
 
@@ -91,12 +86,6 @@ const mockSearchDataSetTypes = dataSetTypes => {
   const searchResult = new dto.SearchResult()
   searchResult.setObjects(dataSetTypes)
   searchDataSetTypes.mockReturnValue(Promise.resolve(searchResult))
-}
-
-const mockSearchMaterialTypes = materialTypes => {
-  const searchResult = new dto.SearchResult()
-  searchResult.setObjects(materialTypes)
-  searchMaterialTypes.mockReturnValue(Promise.resolve(searchResult))
 }
 
 const mockSearchPropertyTypes = propertyTypes => {
@@ -175,7 +164,6 @@ export default {
   logout,
   deleteDataSetTypes,
   deleteExperimentTypes,
-  deleteMaterialTypes,
   deleteSampleTypes,
   executeOperations,
   executeQuery,
@@ -184,7 +172,6 @@ export default {
   getAuthorizationGroups,
   getDataSetTypes,
   getExperimentTypes,
-  getMaterialTypes,
   getPersons,
   getPropertyTypes,
   getSampleTypes,
@@ -197,8 +184,6 @@ export default {
   searchAuthorizationGroups,
   searchDataSetTypes,
   searchExperimentTypes,
-  searchMaterialTypes,
-  searchMaterials,
   searchPersons,
   searchPlugins,
   searchQueries,
@@ -214,14 +199,12 @@ export default {
   searchPersonalAccessTokens,
   updateDataSetTypes,
   updateExperimentTypes,
-  updateMaterialTypes,
   updatePersons,
   updateSampleTypes,
   mockGetMe,
   mockSearchDataSetTypes,
   mockSearchExperimentTypes,
   mockSearchGroups,
-  mockSearchMaterialTypes,
   mockSearchPersons,
   mockSearchSampleTypes,
   mockSearchPropertyTypes,

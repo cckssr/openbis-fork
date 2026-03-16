@@ -134,9 +134,9 @@ public class BiozentrumMatLabApiTest
         System.out.println("one per plate feature -------------------------------");
         print3DArray(featureMatrix);
 
-        featureMatrix = OpenBISScreeningML.getFeatureMatrix(experiment, "149420", featureNames);
-        System.out.println("one per gene feature -------------------------------");
-        print3DArray(featureMatrix);
+//        featureMatrix = OpenBISScreeningML.getFeatureMatrix(experiment, "149420", featureNames);
+//        System.out.println("one per gene feature -------------------------------");
+//        print3DArray(featureMatrix);
     }
 
     private static void print3DArray(Object[][][] array)

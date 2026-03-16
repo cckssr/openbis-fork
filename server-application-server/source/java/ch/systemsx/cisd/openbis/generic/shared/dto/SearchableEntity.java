@@ -28,9 +28,7 @@ public enum SearchableEntity
 
     SAMPLE("Sample", EntityKind.SAMPLE),
 
-    DATA_SET("Data Set", EntityKind.DATA_SET),
-
-    MATERIAL("Material", EntityKind.MATERIAL);
+    DATA_SET("Data Set", EntityKind.DATA_SET);
 
     private final String description;
 

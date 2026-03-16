@@ -23,8 +23,6 @@ import ch.systemsx.cisd.openbis.generic.server.business.IServiceConversationClie
 import ch.systemsx.cisd.openbis.generic.server.business.bo.*;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.datasetlister.DatasetLister;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.datasetlister.IDatasetLister;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.materiallister.IMaterialLister;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.materiallister.MaterialLister;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.samplelister.ISampleLister;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.samplelister.SampleLister;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
@@ -132,13 +130,6 @@ public final class CommonBusinessObjectFactory extends AbstractBusinessObjectFac
     }
 
     @Override
-    public IMaterialLister createMaterialLister(Session session)
-    {
-        return MaterialLister.create(getDaoFactory(), session.getBaseIndexURL(), session
-                .tryGetPerson().getId());
-    }
-
-    @Override
     public final ISampleBO createSampleBO(final Session session)
     {
         return new SampleBO(getDaoFactory(), session, getRelationshipService(),
@@ -184,13 +175,6 @@ public final class CommonBusinessObjectFactory extends AbstractBusinessObjectFac
         return new ExperimentTable(getDaoFactory(), session, getRelationshipService(),
                 entityInformationProvider, getManagedPropertyEvaluatorFactory(),
                 dataSetTypeWithoutExperimentChecker);
-    }
-
-    @Override
-    public IMaterialTable createMaterialTable(final Session session)
-    {
-        return new MaterialTable(getDaoFactory(), session, entityInformationProvider, getManagedPropertyEvaluatorFactory(),
-                dataSetTypeWithoutExperimentChecker, relationshipService);
     }
 
     @Override
@@ -255,13 +239,6 @@ public final class CommonBusinessObjectFactory extends AbstractBusinessObjectFac
     }
 
     @Override
-    public IMaterialBO createMaterialBO(Session session)
-    {
-        return new MaterialBO(getDaoFactory(), session, entityInformationProvider, getManagedPropertyEvaluatorFactory(),
-                dataSetTypeWithoutExperimentChecker, relationshipService, historyCreator);
-    }
-
-    @Override
     public IAuthorizationGroupBO createAuthorizationGroupBO(Session session)
     {
         return new AuthorizationGroupBO(getDaoFactory(), session,
@@ -318,7 +295,7 @@ public final class CommonBusinessObjectFactory extends AbstractBusinessObjectFac
     public IMetaprojectBO createMetaprojectBO(Session session)
     {
         return new MetaprojectBO(getDaoFactory(), createExperimentBO(session),
-                createSampleBO(session), createDataBO(session), createMaterialBO(session), session,
+                createSampleBO(session), createDataBO(session), session,
                 getManagedPropertyEvaluatorFactory(),
                 dataSetTypeWithoutExperimentChecker, relationshipService);
     }

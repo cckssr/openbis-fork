@@ -8,7 +8,6 @@ import AuthorizationGroupUpdate from 'as/dto/authorizationgroup/update/Authoriza
 import CreateAuthorizationGroupsOperation from 'as/dto/authorizationgroup/create/CreateAuthorizationGroupsOperation'
 import CreateDataSetTypesOperation from 'as/dto/dataset/create/CreateDataSetTypesOperation'
 import CreateExperimentTypesOperation from 'as/dto/experiment/create/CreateExperimentTypesOperation'
-import CreateMaterialTypesOperation from 'as/dto/material/create/CreateMaterialTypesOperation'
 import CreatePersonsOperation from 'as/dto/person/create/CreatePersonsOperation'
 import CreatePluginsOperation from 'as/dto/plugin/create/CreatePluginsOperation'
 import CreatePropertyTypesOperation from 'as/dto/property/create/CreatePropertyTypesOperation'
@@ -32,7 +31,6 @@ import DataType from 'as/dto/property/DataType'
 import DeleteAuthorizationGroupsOperation from 'as/dto/authorizationgroup/delete/DeleteAuthorizationGroupsOperation'
 import DeleteDataSetTypesOperation from 'as/dto/dataset/delete/DeleteDataSetTypesOperation'
 import DeleteExperimentTypesOperation from 'as/dto/experiment/delete/DeleteExperimentTypesOperation'
-import DeleteMaterialTypesOperation from 'as/dto/material/delete/DeleteMaterialTypesOperation'
 import DeletePersonsOperation from 'as/dto/person/delete/DeletePersonsOperation'
 import DeletePluginsOperation from 'as/dto/plugin/delete/DeletePluginsOperation'
 import DeletePropertyTypesOperation from 'as/dto/property/delete/DeletePropertyTypesOperation'
@@ -55,15 +53,6 @@ import ExperimentTypeDeletionOptions from 'as/dto/experiment/delete/ExperimentTy
 import ExperimentTypeFetchOptions from 'as/dto/experiment/fetchoptions/ExperimentTypeFetchOptions'
 import ExperimentTypeSearchCriteria from 'as/dto/experiment/search/ExperimentTypeSearchCriteria'
 import ExperimentTypeUpdate from 'as/dto/experiment/update/ExperimentTypeUpdate'
-import MaterialFetchOptions from 'as/dto/material/fetchoptions/MaterialFetchOptions'
-import MaterialPermId from 'as/dto/material/id/MaterialPermId'
-import MaterialSearchCriteria from 'as/dto/material/search/MaterialSearchCriteria'
-import MaterialType from 'as/dto/material/MaterialType'
-import MaterialTypeCreation from 'as/dto/material/create/MaterialTypeCreation'
-import MaterialTypeDeletionOptions from 'as/dto/material/delete/MaterialTypeDeletionOptions'
-import MaterialTypeFetchOptions from 'as/dto/material/fetchoptions/MaterialTypeFetchOptions'
-import MaterialTypeSearchCriteria from 'as/dto/material/search/MaterialTypeSearchCriteria'
-import MaterialTypeUpdate from 'as/dto/material/update/MaterialTypeUpdate'
 import Me from 'as/dto/person/id/Me'
 import Person from 'as/dto/person/Person'
 import PersonCreation from 'as/dto/person/create/PersonCreation'
@@ -134,7 +123,6 @@ import SampleTypeSearchCriteria from 'as/dto/sample/search/SampleTypeSearchCrite
 import SampleTypeUpdate from 'as/dto/sample/update/SampleTypeUpdate'
 import SearchDataSetsOperation from 'as/dto/dataset/search/SearchDataSetsOperation'
 import SearchExperimentsOperation from 'as/dto/experiment/search/SearchExperimentsOperation'
-import SearchMaterialsOperation from 'as/dto/material/search/SearchMaterialsOperation'
 import SearchResult from 'as/dto/common/search/SearchResult'
 import SearchSamplesOperation from 'as/dto/sample/search/SearchSamplesOperation'
 import Space from 'as/dto/space/Space'
@@ -148,7 +136,6 @@ import TableStringCell from 'as/dto/common/TableStringCell'
 import UpdateAuthorizationGroupsOperation from 'as/dto/authorizationgroup/update/UpdateAuthorizationGroupsOperation'
 import UpdateDataSetTypesOperation from 'as/dto/dataset/update/UpdateDataSetTypesOperation'
 import UpdateExperimentTypesOperation from 'as/dto/experiment/update/UpdateExperimentTypesOperation'
-import UpdateMaterialTypesOperation from 'as/dto/material/update/UpdateMaterialTypesOperation'
 import UpdatePersonsOperation from 'as/dto/person/update/UpdatePersonsOperation'
 import UpdatePluginsOperation from 'as/dto/plugin/update/UpdatePluginsOperation'
 import UpdatePropertyTypesOperation from 'as/dto/property/update/UpdatePropertyTypesOperation'
@@ -184,7 +171,6 @@ const dto = {
   CreateAuthorizationGroupsOperation,
   CreateDataSetTypesOperation,
   CreateExperimentTypesOperation,
-  CreateMaterialTypesOperation,
   CreatePersonsOperation,
   CreatePluginsOperation,
   CreatePropertyTypesOperation,
@@ -208,7 +194,6 @@ const dto = {
   DeleteAuthorizationGroupsOperation,
   DeleteDataSetTypesOperation,
   DeleteExperimentTypesOperation,
-  DeleteMaterialTypesOperation,
   DeletePersonsOperation,
   DeletePluginsOperation,
   DeletePropertyTypesOperation,
@@ -231,15 +216,6 @@ const dto = {
   ExperimentTypeFetchOptions,
   ExperimentTypeSearchCriteria,
   ExperimentTypeUpdate,
-  MaterialFetchOptions,
-  MaterialPermId,
-  MaterialSearchCriteria,
-  MaterialType,
-  MaterialTypeCreation,
-  MaterialTypeDeletionOptions,
-  MaterialTypeFetchOptions,
-  MaterialTypeSearchCriteria,
-  MaterialTypeUpdate,
   Me,
   Person,
   PersonCreation,
@@ -310,7 +286,6 @@ const dto = {
   SampleTypeUpdate,
   SearchDataSetsOperation,
   SearchExperimentsOperation,
-  SearchMaterialsOperation,
   SearchResult,
   SearchSamplesOperation,
   Space,
@@ -324,7 +299,6 @@ const dto = {
   UpdateAuthorizationGroupsOperation,
   UpdateDataSetTypesOperation,
   UpdateExperimentTypesOperation,
-  UpdateMaterialTypesOperation,
   UpdatePersonsOperation,
   UpdatePluginsOperation,
   UpdatePropertyTypesOperation,

@@ -35,9 +35,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Experiment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IEntityPropertiesHolder;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IEntityProperty;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.LinkDataSet;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ListMaterialCriteria;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Material;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Project;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.ExperimentIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.ProjectIdentifier;
@@ -87,15 +84,15 @@ public class FeatureRichDataSetImportSystemTest extends SystemTestCase
 
         assertLinkedDataSetImported();
 
-        assertMaterialsCreated();
+
 
         assertEmailHasBeenSentFromHook();
 
-        assertMaterialUpdated();
+
 
         assertExperimentUpdated();
 
-        assertVocabularyMaterialsCreated();
+
 
         assertSampleWithAttachmentCreated();
     }
@@ -165,91 +162,6 @@ public class FeatureRichDataSetImportSystemTest extends SystemTestCase
         assertEquals(1, attachments.size());
 
         assertEquals("RICH_EXPERIMENT", experiment.getCode());
-    }
-
-    private void assertMaterialsCreated()
-    {
-        LinkedList<MaterialIdentifier> ids = new LinkedList<MaterialIdentifier>();
-
-        int N = 60;
-        for (int i = 0; i < N; i++)
-        {
-            MaterialIdentifier ident = new MaterialIdentifier("RM_" + i, "SLOW_GENE");
-            ids.add(ident);
-        }
-
-        ListMaterialCriteria criteria = ListMaterialCriteria.createFromMaterialIdentifiers(ids);
-        List<Material> materials = openBISService.listMaterials(criteria, true);
-
-        assertEquals(N, materials.size());
-
-        for (Material m : materials)
-        {
-            String code = m.getCode();
-            String expectedGeneSymbol = code + "_S";
-            assertEquals(expectedGeneSymbol, getProperty(m, "GENE_SYMBOL").getValue());
-        }
-
-    }
-
-    private void assertVocabularyMaterialsCreated()
-    {
-        String[] items = new String[] { "RAT", "DOG", "HUMAN", "GORILLA", "FLY" };
-
-        LinkedList<MaterialIdentifier> ids = new LinkedList<MaterialIdentifier>();
-
-        for (String item : items)
-        {
-            MaterialIdentifier ident = new MaterialIdentifier("BC_" + item, "BACTERIUM");
-            ids.add(ident);
-        }
-
-        ListMaterialCriteria criteria = ListMaterialCriteria.createFromMaterialIdentifiers(ids);
-        List<Material> materials = openBISService.listMaterials(criteria, true);
-
-        assertEquals(items.length, materials.size());
-
-        for (Material m : materials)
-        {
-            String code = m.getCode();
-
-            HashMap<String, IEntityProperty> properties = new HashMap<String, IEntityProperty>();
-
-            for (IEntityProperty property : m.getProperties())
-            {
-                properties.put(property.getPropertyType().getCode(), property);
-            }
-
-            IEntityProperty descriptionProperty = properties.get("DESCRIPTION");
-            IEntityProperty organismProperty = properties.get("ORGANISM");
-
-            assertNotNull(descriptionProperty);
-            assertEquals(code.substring(3), organismProperty.getVocabularyTerm().getCode());
-
-            assertEquals(descriptionProperty.getValue(), organismProperty.getVocabularyTerm()
-                    .getDescription());
-
-        }
-    }
-
-    private void assertMaterialUpdated()
-    {
-        LinkedList<MaterialIdentifier> ids = new LinkedList<MaterialIdentifier>();
-        MaterialIdentifier ident = MaterialIdentifier.tryParseIdentifier("AD3 (VIRUS)");
-        ids.add(ident);
-
-        ListMaterialCriteria criteria = ListMaterialCriteria.createFromMaterialIdentifiers(ids);
-
-        List<Material> materials = openBISService.listMaterials(criteria, true);
-
-        assertEquals(1, materials.size());
-
-        for (Material m : materials)
-        {
-            IEntityProperty property = m.getProperties().get(0);
-            assertEquals("DESCRIPTION", property.getPropertyType().getCode());
-            assertEquals("modified description", property.getValue());
-        }
     }
 
     private void assertLinkedDataSetImported()

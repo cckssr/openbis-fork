@@ -23,5 +23,5 @@ import ch.systemsx.cisd.base.annotation.JsonObject;
 @JsonObject("as.dto.global.search.GlobalSearchObjectKind")
 public enum GlobalSearchObjectKind
 {
-    EXPERIMENT, SAMPLE, DATA_SET, MATERIAL
+    EXPERIMENT, SAMPLE, DATA_SET
 }

@@ -1101,8 +1101,6 @@ var FormUtil = new function() {
 			$component = this._getInputField("url", propertyType.code + idSuffix, propertyType.description, null, propertyType.mandatory);
 		} else if (propertyType.dataType === "INTEGER") {
 			$component = this._getNumberInputField(propertyType.code + idSuffix, propertyType.description, '1', propertyType.mandatory);
-		} else if (propertyType.dataType === "MATERIAL") {
-			$component = this._getInputField("text", propertyType.code + idSuffix, propertyType.description, null, propertyType.mandatory);
 		} else if (["MULTILINE_VARCHAR", "JSON"].includes(propertyType.dataType)) {
 			$component = this._getTextBox(propertyType.code + idSuffix, propertyType.description, propertyType.mandatory);
 			if(profile.isForcedMonospaceFont(propertyType)) {

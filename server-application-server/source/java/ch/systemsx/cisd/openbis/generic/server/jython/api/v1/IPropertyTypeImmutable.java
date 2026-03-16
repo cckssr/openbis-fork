@@ -33,11 +33,6 @@ public interface IPropertyTypeImmutable extends IAbstractType
     DataType getDataType();
 
     /**
-     * Returns the material type for properties with data type {@link DataType#MATERIAL}
-     */
-    IMaterialTypeImmutable getMaterialType();
-
-    /**
      * Returns the vocabulary for properties with data type {@link DataType#CONTROLLEDVOCABULARY}
      */
     IVocabularyImmutable getVocabulary();

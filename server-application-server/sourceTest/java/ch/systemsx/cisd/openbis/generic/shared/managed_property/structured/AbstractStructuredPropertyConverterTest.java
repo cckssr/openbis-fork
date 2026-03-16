@@ -121,9 +121,7 @@ public abstract class AbstractStructuredPropertyConverterTest extends AssertJUni
                         factory.createElement("testname").addAttribute("attr1", "value1")
                                 .addAttribute("attr2", "value2").setData("dummy&<>data"),
                         factory.createSampleLink("permIdSample").addAttribute("sampleAttrKey",
-                                "sampleAttrVal"),
-                        factory.createMaterialLink("materialCode", "typeCode").addAttribute(
-                                "materialAttrKey", "materialAttrVal")
+                                "sampleAttrVal")
                         );
         return elements;
     }
@@ -148,11 +146,8 @@ public abstract class AbstractStructuredPropertyConverterTest extends AssertJUni
                         factory.createElement("name1")
                                 .addAttribute("attr1", "value1")
                                 .addChildren(factory.createSampleLink("nestedPermId1"),
-                                        factory.createMaterialLink("code1", "typeCode1")),
                         factory.createSampleLink("permIdSample").addChildren(
-                                factory.createElement("nested1").addAttribute("na1", "nav2")),
-                        factory.createMaterialLink("materialCode", "typeCode").addChildren(
-                                factory.createElement("nested2").addAttribute("na2", "nav2")));
+                                factory.createElement("nested1").addAttribute("na1", "nav2"))));
         return elements;
     }
 }

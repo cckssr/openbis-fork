@@ -21,7 +21,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.id.MaterialPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyTypePermId;
@@ -52,13 +51,7 @@ public class IdSearchConditionTranslator implements IConditionTranslator<IdSearc
     @Override
     public Map<String, JoinInformation> getJoinInformationMap(final IdSearchCriteria<?> criterion, final TableMapper tableMapper,
             final IAliasFactory aliasFactory) {
-        if (criterion.getId().getClass() == MaterialPermId.class)
-        {
-            return TranslatorUtils.getTypeJoinInformationMap(tableMapper, aliasFactory);
-        } else
-        {
-            return null;
-        }
+        return null;
     }
 
     @Override
@@ -166,14 +159,6 @@ public class IdSearchConditionTranslator implements IConditionTranslator<IdSearc
         {
             sqlBuilder.append(SearchCriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(PERM_ID_COLUMN).append(EQ).append(QU);
             args.add(((SemanticAnnotationPermId) entityId).getPermId());
-        } else if (entityId.getClass() == MaterialPermId.class)
-        {
-            final String materialTypeTableAlias = aliases.get(tableMapper.getEntityTypesTable()).getSubTableAlias();
-            sqlBuilder.append(SearchCriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN).append(EQ).append(QU)
-                    .append(SP).append(AND).append(SP).append(materialTypeTableAlias).append(PERIOD).append(CODE_COLUMN).append(EQ).append(QU);
-            final MaterialPermId materialPermId = (MaterialPermId) entityId;
-            args.add(materialPermId.getCode());
-            args.add(materialPermId.getTypeCode());
         } else if (entityId.getClass() == PropertyTypePermId.class)
         {
             sqlBuilder.append(SearchCriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN).append(EQ).append(QU);

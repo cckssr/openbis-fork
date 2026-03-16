@@ -32,7 +32,6 @@ import ch.systemsx.cisd.openbis.generic.server.business.bo.IDataBO;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.IDataSetTable;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.ISampleBO;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.common.GenericEntityPropertyRecord;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.materiallister.IMaterialLister;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.samplelister.ISampleLister;
 import ch.systemsx.cisd.openbis.generic.shared.basic.TechId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.CodeAndLabel;
@@ -40,7 +39,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IEntityPropertiesHolder
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IEntityProperty;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ListOrSearchSampleCriteria;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ListSampleCriteria;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Material;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Sample;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.TableModel;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.TableModelRow;
@@ -83,18 +81,6 @@ public class PlateContentLoader
     private final static Logger operationLog = LogFactory.getLogger(LogCategory.OPERATION,
             PlateContentLoader.class);
 
-    /**
-     * Loads data about the plate for a specified sample id. Attaches information about images and image analysis datasets.
-     * 
-     * @param hibernateSession
-     */
-    public static PlateContent loadImagesAndMetadata(Session session,
-            org.hibernate.Session hibernateSession, IScreeningBusinessObjectFactory businessObjectFactory,
-            IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory, TechId plateId)
-    {
-        return new PlateContentLoader(session, hibernateSession, businessObjectFactory,
-                managedPropertyEvaluatorFactory).getPlateContent(plateId);
-    }
 
     /**
      * Loads feature vector of specified dataset with one feature specified by name.
@@ -109,17 +95,6 @@ public class PlateContentLoader
                 managedPropertyEvaluatorFactory).fetchFeatureVector(dataset, featureName);
     }
 
-    /**
-     * Loads data about the plate for a specified dataset, which is supposed to contain images.
-     */
-    public static PlateImages loadImagesAndMetadataForDataset(Session session,
-            org.hibernate.Session hibernateSession,
-            IScreeningBusinessObjectFactory businessObjectFactory,
-            IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory, TechId datasetId)
-    {
-        return new PlateContentLoader(session, hibernateSession, businessObjectFactory,
-                managedPropertyEvaluatorFactory).getPlateContentForDataset(datasetId);
-    }
 
     /**
      * Loads information about datasets connected to specified sample (microscopy) or a container sample (HCS). In particular loads the logical images
@@ -136,14 +111,6 @@ public class PlateContentLoader
                 wellLocationOrNull);
     }
 
-    public static List<PlateMetadata> loadPlateMetadata(Session session,
-            org.hibernate.Session hibernateSession,
-            IScreeningBusinessObjectFactory businessObjectFactory,
-            IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory, List<TechId> plateIds)
-    {
-        return new PlateContentLoader(session, hibernateSession, businessObjectFactory,
-                managedPropertyEvaluatorFactory).getPlateMetadatas(plateIds);
-    }
 
     private final Session session;
 
@@ -166,34 +133,10 @@ public class PlateContentLoader
         this.managedPropertyEvaluatorFactory = managedPropertyEvaluatorFactory;
     }
 
-    private PlateImages getPlateContentForDataset(TechId datasetId)
-    {
-        DataPE dataSet = loadDataset(datasetId);
-        SamplePE plate = dataSet.tryGetSample();
-        if (plate == null)
-        {
-            throw UserFailureException.fromTemplate("Dataset '%s' has no sample connected.",
-                    dataSet.getCode());
-        }
-        List<WellMetadata> wells = loadWells(new TechId(HibernateUtils.getId(plate)));
-        DatasetImagesReference datasetImagesReference =
-                imageLoader.tryLoadImageDatasetReference(dataSet);
-        if (datasetImagesReference == null)
-        {
-            throw UserFailureException.fromTemplate("Dataset '%s' is not an image dataset.",
-                    dataSet.getCode());
-        }
-        Geometry plateGeometry = getPlateGeometry(plate);
-        PlateMetadata plateMetadata =
-                new PlateMetadata(translate(plate), wells, plateGeometry.getNumberOfRows(),
-                        plateGeometry.getNumberOfColumns());
-        return new PlateImages(plateMetadata, datasetImagesReference);
-    }
-
     private Geometry getPlateGeometry(SamplePE plate)
     {
         List<IEntityProperty> properties =
-                EntityPropertyTranslator.translate(plate.getProperties(), null, null,
+                EntityPropertyTranslator.translate(plate.getProperties(), null,
                         managedPropertyEvaluatorFactory,
                         new SamplePropertyAccessValidator(session, businessObjectFactory.getDAOFactory()));
         return PlateDimensionParser.getPlateGeometry(properties);
@@ -207,28 +150,6 @@ public class PlateContentLoader
         return dataSet;
     }
 
-    private PlateContent getPlateContent(TechId plateId)
-    {
-        IDataSetTable dataSetTable = createDataSetTable();
-
-        Sample plate = loadPlate(plateId);
-        List<DataPE> datasets = loadDatasets(plateId, dataSetTable);
-        List<WellMetadata> wells = loadWells(plateId);
-
-        List<ImageDatasetEnrichedReference> imageDatasetReferences =
-                imageLoader.loadImageDatasets(datasets);
-
-        List<DatasetReference> featureVectorDatasets = filterAndFetchFeatureVectors(datasets);
-
-        List<DatasetReference> unknownDatasetReferences = extractUnknownDatasets(datasets);
-
-        Geometry plateGeometry = PlateDimensionParser.getPlateGeometry(plate.getProperties());
-        int rows = plateGeometry.getNumberOfRows();
-        int cols = plateGeometry.getNumberOfColumns();
-        PlateMetadata plateMetadata = new PlateMetadata(plate, wells, rows, cols);
-        return new PlateContent(plateMetadata, imageDatasetReferences, featureVectorDatasets,
-                unknownDatasetReferences);
-    }
 
     private List<DatasetReference> extractUnknownDatasets(List<DataPE> datasets)
     {
@@ -395,35 +316,6 @@ public class PlateContentLoader
                 new SamplePropertyAccessValidator(session, businessObjectFactory.getDAOFactory()));
     }
 
-    private List<WellMetadata> loadWells(TechId plateId)
-    {
-        ISampleLister sampleLister = businessObjectFactory.createSampleLister(session);
-        List<Sample> wells = sampleLister.list(createSamplesForContainerCriteria(plateId));
-        List<Material> containedMaterials = getReferencedMaterials(wells);
-        IMaterialLister materialLister = businessObjectFactory.createMaterialLister(session);
-        materialLister.enrichWithProperties(containedMaterials);
-        return createWells(wells);
-    }
-
-    private static List<Material> getReferencedMaterials(
-            List<? extends IEntityPropertiesHolder> entities)
-    {
-        List<Material> materials = new ArrayList<Material>();
-        for (IEntityPropertiesHolder entity : entities)
-        {
-            List<IEntityProperty> properties = entity.getProperties();
-            for (IEntityProperty prop : properties)
-            {
-                Material material = prop.getMaterial();
-                if (material != null)
-                {
-                    materials.add(material);
-                }
-            }
-        }
-        return materials;
-    }
-
     protected static List<DataPE> loadDatasets(TechId plateId, IDataSetTable dataSetTable)
     {
         dataSetTable.loadBySampleTechIdWithoutRelationships(plateId);
@@ -496,21 +388,5 @@ public class PlateContentLoader
         return new ImageSampleContent(logicalImages, unknownDatasetReferences);
     }
 
-    private List<PlateMetadata> getPlateMetadatas(List<TechId> plateIds)
-    {
-        ArrayList<PlateMetadata> result = new ArrayList<PlateMetadata>();
-        for (TechId plateId : plateIds)
-        {
-            Sample plate = loadPlate(plateId);
-            List<WellMetadata> wells = loadWells(plateId);
-            Geometry plateGeometry = PlateDimensionParser.getPlateGeometry(plate.getProperties());
-            int rows = plateGeometry.getNumberOfRows();
-            int cols = plateGeometry.getNumberOfColumns();
-            PlateMetadata plateMetadata = new PlateMetadata(plate, wells, rows, cols);
-            result.add(plateMetadata);
-        }
-
-        return result;
-    }
 
 }

@@ -41,7 +41,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DetailedSearchField;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DetailedSearchSubCriteria;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExperimentAttributeSearchFieldKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IAttributeSearchFieldKind;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialAttributeSearchFieldKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SampleAttributeSearchFieldKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SearchCriteriaConnection;
 import ch.systemsx.cisd.openbis.generic.shared.translator.DtoConverters;
@@ -73,7 +72,6 @@ public class SearchCriteriaToDetailedSearchCriteriaTranslator
         translators.put(SearchableEntityKind.SAMPLE_PARENT, new SampleAttributeTranslator());
         translators.put(SearchableEntityKind.SAMPLE_CHILD, new SampleAttributeTranslator());
         translators.put(SearchableEntityKind.SAMPLE_CONTAINER, new SampleAttributeTranslator());
-        translators.put(SearchableEntityKind.MATERIAL, new MaterialAttributeTranslator());
     }
 
     private static IMatchClauseAttributeTranslator translatorFor(SearchableEntityKind entityKind)
@@ -118,8 +116,6 @@ public class SearchCriteriaToDetailedSearchCriteriaTranslator
                 return AssociatedEntityKind.SAMPLE_PARENT;
             case SAMPLE_CHILD:
                 return AssociatedEntityKind.SAMPLE_CHILD;
-            case MATERIAL:
-                return AssociatedEntityKind.MATERIAL;
         }
         return null; // can't happen
     }
@@ -306,73 +302,6 @@ public class SearchCriteriaToDetailedSearchCriteriaTranslator
 
     }
 
-    public static class MaterialAttributeTranslator implements IMatchClauseAttributeTranslator
-    {
-        @Override
-        public IAttributeSearchFieldKind convertMatchClauseAttributeToAttributeSearchFieldKind(
-                MatchClauseAttribute attribute)
-        {
-            IAttributeSearchFieldKind ans = null;
-            switch (attribute)
-            {
-                case CODE:
-                    ans = MaterialAttributeSearchFieldKind.CODE;
-                    break;
-                case TYPE:
-                    ans = MaterialAttributeSearchFieldKind.MATERIAL_TYPE;
-                    break;
-                case METAPROJECT:
-                    ans = MaterialAttributeSearchFieldKind.METAPROJECT;
-                    break;
-                case REGISTRATOR_USER_ID:
-                    ans = MaterialAttributeSearchFieldKind.REGISTRATOR_USER_ID;
-                    break;
-                case REGISTRATOR_FIRST_NAME:
-                    ans = MaterialAttributeSearchFieldKind.REGISTRATOR_FIRST_NAME;
-                    break;
-                case REGISTRATOR_LAST_NAME:
-                    ans = MaterialAttributeSearchFieldKind.REGISTRATOR_LAST_NAME;
-                    break;
-                case REGISTRATOR_EMAIL:
-                    ans = MaterialAttributeSearchFieldKind.REGISTRATOR_EMAIL;
-                    break;
-                case MODIFIER_USER_ID:
-                    ans = MaterialAttributeSearchFieldKind.MODIFIER_USER_ID;
-                    break;
-                case MODIFIER_FIRST_NAME:
-                    ans = MaterialAttributeSearchFieldKind.MODIFIER_FIRST_NAME;
-                    break;
-                case MODIFIER_LAST_NAME:
-                    ans = MaterialAttributeSearchFieldKind.MODIFIER_LAST_NAME;
-                    break;
-                case MODIFIER_EMAIL:
-                    ans = MaterialAttributeSearchFieldKind.MODIFIER_EMAIL;
-                    break;
-                default:
-                    throwInvalidSearchAttributeException(attribute, SearchableEntityKind.MATERIAL);
-            }
-            return ans;
-        }
-
-        @Override
-        public IAttributeSearchFieldKind convertMatchClauseAttributeToAttributeSearchFieldKind(
-                MatchClauseTimeAttribute attribute)
-        {
-            IAttributeSearchFieldKind ans = null;
-            switch (attribute)
-            {
-                case REGISTRATION_DATE:
-                    ans = MaterialAttributeSearchFieldKind.REGISTRATION_DATE;
-                    break;
-                case MODIFICATION_DATE:
-                    ans = MaterialAttributeSearchFieldKind.MODIFICATION_DATE;
-                    break;
-                default:
-                    throwInvalidSearchAttributeException(attribute, SearchableEntityKind.MATERIAL);
-            }
-            return ans;
-        }
-    }
 
     public static class DataSetAttributeTranslator implements IMatchClauseAttributeTranslator
     {

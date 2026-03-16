@@ -20,10 +20,8 @@ import java.util.List;
 import java.util.Map;
 
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityType;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PropertyType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SampleType;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PropertyTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SampleTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.util.HibernateUtils;
@@ -41,7 +39,7 @@ public class SampleTypeTranslator
     }
 
     public static SampleType translate(final SampleTypePE sampleTypePE,
-            Map<MaterialTypePE, MaterialType> materialTypeCache, Map<PropertyTypePE, PropertyType> cacheOrNull)
+            Map<PropertyTypePE, PropertyType> cacheOrNull)
     {
         if (sampleTypePE == null)
         {
@@ -61,7 +59,7 @@ public class SampleTypeTranslator
 
         result.setSampleTypePropertyTypes(EntityType
                 .sortedInternally(SampleTypePropertyTypeTranslator.translate(
-                        sampleTypePE.getSampleTypePropertyTypes(), result, materialTypeCache, cacheOrNull)));
+                        sampleTypePE.getSampleTypePropertyTypes(), result, cacheOrNull)));
 
         result.setModificationDate(sampleTypePE.getModificationDate());
         result.setValidationScript(ScriptTranslator.translate(sampleTypePE.getValidationScript()));
@@ -72,12 +70,12 @@ public class SampleTypeTranslator
     }
 
     public static List<SampleType> translate(final List<SampleTypePE> sampleTypes,
-            Map<MaterialTypePE, MaterialType> materialTypeCache, Map<PropertyTypePE, PropertyType> cacheOrNull)
+            Map<PropertyTypePE, PropertyType> cacheOrNull)
     {
         final List<SampleType> result = new ArrayList<SampleType>();
         for (final SampleTypePE sampleTypePE : sampleTypes)
         {
-            result.add(SampleTypeTranslator.translate(sampleTypePE, materialTypeCache, cacheOrNull));
+            result.add(SampleTypeTranslator.translate(sampleTypePE, cacheOrNull));
         }
         return result;
     }

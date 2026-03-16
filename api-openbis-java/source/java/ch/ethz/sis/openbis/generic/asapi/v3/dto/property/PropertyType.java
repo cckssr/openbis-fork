@@ -29,7 +29,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IPermIdHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IRegistrationDateHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IRegistratorHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.ISemanticAnnotationsHolder;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.MaterialType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.Person;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.fetchoptions.PropertyTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyTypePermId;
@@ -71,9 +70,6 @@ public class PropertyType implements Serializable, ICodeHolder, IDescriptionHold
 
     @JsonProperty
     private Vocabulary vocabulary;
-
-    @JsonProperty
-    private MaterialType materialType;
 
     @JsonProperty
     private SampleType sampleType;
@@ -231,25 +227,6 @@ public class PropertyType implements Serializable, ICodeHolder, IDescriptionHold
     public void setVocabulary(Vocabulary vocabulary)
     {
         this.vocabulary = vocabulary;
-    }
-
-    // Method automatically generated with DtoGenerator
-    @JsonIgnore
-    public MaterialType getMaterialType()
-    {
-        if (getFetchOptions() != null && getFetchOptions().hasMaterialType())
-        {
-            return materialType;
-        } else
-        {
-            throw new NotFetchedException("Material type has not been fetched.");
-        }
-    }
-
-    // Method automatically generated with DtoGenerator
-    public void setMaterialType(MaterialType materialType)
-    {
-        this.materialType = materialType;
     }
 
     @JsonIgnore

@@ -23,7 +23,6 @@ import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetAttributeSearchFieldKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExperimentAttributeSearchFieldKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IAttributeSearchFieldKind;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialAttributeSearchFieldKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SampleAttributeSearchFieldKind;
 
 /**
@@ -54,8 +53,6 @@ public class ModifierSearchCriteriaTranslator extends PersonSearchCriteriaTransl
                 return SampleAttributeSearchFieldKind.MODIFIER_USER_ID;
             case DATA_SET:
                 return DataSetAttributeSearchFieldKind.MODIFIER_USER_ID;
-            case MATERIAL:
-                return MaterialAttributeSearchFieldKind.MODIFIER_USER_ID;
             default:
                 throw new IllegalArgumentException("Unknown object kind: " + objectKind);
         }

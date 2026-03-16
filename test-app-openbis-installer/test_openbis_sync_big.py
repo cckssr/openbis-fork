@@ -188,36 +188,21 @@ class TestCase(systemtest.testcase.TestCase):
                                + "where (not is_managed_internally or pers_id_registerer <> 1) and code like '{1}%' order by code")
         self._compareDataBases("Internal property types", openbis_data_source, openbis_harvester, "openbis", 
                                "select t.code as code, dt.code as data_type, v.code as vocabulary, "
-                               + "mt.code as material, t.label, t.description, "
+                               + "t.label, t.description, "
                                + "t.is_managed_internally, t.schema, t.transformation "
                                + "from property_types t join data_types dt on t.daty_id = dt.id "
                                + "left join controlled_vocabularies v on t.covo_id = v.id "
-                               + "left join material_types mt on t.maty_prop_id = mt.id "
                                + "where t.is_managed_internally and t.pers_id_registerer = 1 order by t.code, t.is_managed_internally")
         self._compareDataBases("Non internal property types", openbis_data_source, openbis_harvester, "openbis", 
                                "select '{0}' || t.code as code,dt.code as data_type, "
                                + "case when v.is_managed_internally then v.code else '{0}' || v.code end as vocabulary, "
-                               + "'{0}' || mt.code as material, t.label, t.description, "
+                               + "t.label, t.description, "
                                + "t.schema, t.transformation "
                                + "from property_types t join data_types dt on t.daty_id = dt.id "
                                + "left join controlled_vocabularies v on t.covo_id = v.id "
-                               + "left join material_types mt on t.maty_prop_id = mt.id "
                                + "where (not t.is_managed_internally or t.pers_id_registerer <> 1) "
                                + "and t.code like '{1}%' and not v.code like '%PLATE_GEOMETRY'"
                                + "order by t.code, t.is_managed_internally")
-        self._compareDataBases("Material types", openbis_data_source, openbis_harvester, "openbis", 
-                               "select '{0}' || t.code as code, t.description, '{0}' || s.name as validation_script "
-                               + "from material_types t left join scripts s on t.validation_script_id = s.id "
-                               + "where t.code like '{1}%' order by t.code")
-        self._compareDataBases("Material type property assignments", openbis_data_source, openbis_harvester, "openbis",
-                                "select '{0}' || et.code as material_type, '{0}' || pt.code as property_type, "
-                                + "etpt.is_mandatory, etpt.is_managed_internally, etpt.ordinal, etpt.section, "
-                                + "etpt.is_shown_edit, etpt.show_raw_value, '{0}' || s.name as script "
-                                + "from material_type_property_types etpt "
-                                + "join material_types et on etpt.maty_id = et.id "
-                                + "join property_types pt on etpt.prty_id = pt.id "
-                                + "left join scripts s on etpt.script_id = s.id "
-                                + "where et.code like '{1}%' order by et.code, pt.code, pt.is_managed_internally")
         self._compareDataBases("Experiment types", openbis_data_source, openbis_harvester, "openbis", 
                                "select '{0}' || t.code as code, t.description, '{0}' || s.name as validation_script "
                                + "from experiment_types t left join scripts s on t.validation_script_id = s.id "
@@ -290,28 +275,11 @@ class TestCase(systemtest.testcase.TestCase):
                                + "join persons ur on p.pers_id_registerer = ur.id "
                                + "join persons um on p.pers_id_modifier = um.id "
                                + "where s.code like '{1}%' order by s.code, p.code")
-        self._compareDataBases("Material properties", openbis_data_source, openbis_harvester, "openbis", 
-                               "select '{0}' || m.code as material, '{0}' || t.code as type, "
-                               + "case when pt.is_managed_internally and pt.code not similar to "
-                               + "'(ANALYSIS_PROCEDURE|PLATE_GEOMETRY|CONTROL|GENE|GENE_SYMBOLS|INHIBITOR_OF|LIBRARY_ID|NUCLEOTIDE_SEQUENCE|SIRNA)' "
-                               + "then pt.code else '{0}' || pt.code end as property, "
-                               + "concat(mp.value, cvt.code, '{0}' || m2.code) as value, "
-                               + "ur.user_id as registrator, "
-                               + "to_char(m.registration_timestamp, 'YYYY-MM-DD HH24:MI:SS') as registration_timestamp, "
-                               + "to_char(m.modification_timestamp, 'YYYY-MM-DD HH24:MI:SS') as modification_timestamp "
-                               + "from materials m join material_properties mp on mp.mate_id = m.id "
-                               + "left join controlled_vocabulary_terms cvt on mp.cvte_id = cvt.id "
-                               + "left join materials m2 on mp.mate_prop_id = m2.id "
-                               + "join material_type_property_types etpt on mp.mtpt_id = etpt.id "
-                               + "join material_types t on etpt.maty_id = t.id "
-                               + "join property_types pt on etpt.prty_id = pt.id "
-                               + "join persons ur on m.pers_id_registerer = ur.id "
-                               + "order by m.code, property")
         self._compareDataBases("Experiment properties", openbis_data_source, openbis_harvester, "openbis", 
                                "select '/' || '{0}' || sp.code || '/' || p.code || '/' || e.code as experiment, "
                                + "'{0}' || t.code as type, "
                                + "case when pt.is_managed_internally then pt.code else '{0}' || pt.code end as property, "
-                               + "concat(ep.value, cvt.code, m.code) as value, "
+                               + "concat(ep.value, cvt.code) as value, "
                                + "ur.user_id as registrator, "
                                + "to_char(e.registration_timestamp, 'YYYY-MM-DD HH24:MI:SS') as registration_timestamp, "
                                + "um.user_id as modifier, "
@@ -321,7 +289,6 @@ class TestCase(systemtest.testcase.TestCase):
                                + "join projects p on e.proj_id = p.id "
                                + "join spaces sp on p.space_id = sp.id "
                                + "left join controlled_vocabulary_terms cvt on ep.cvte_id = cvt.id "
-                               + "left join materials m on ep.mate_prop_id = m.id "
                                + "join experiment_type_property_types etpt on ep.etpt_id = etpt.id "
                                + "join experiment_types t on etpt.exty_id = t.id "
                                + "join property_types pt on etpt.prty_id = pt.id "
@@ -363,12 +330,11 @@ class TestCase(systemtest.testcase.TestCase):
         self._compareDataBases("Sample properties", openbis_data_source, openbis_harvester, "openbis",
                                "select s.code as sample, '{0}' || t.code as type, "
                                + "case when pt.is_managed_internally then pt.code else '{0}' || pt.code end as property, "
-                               + "concat(sp.value, cvt.code, m.code) as value, "
+                               + "concat(sp.value, cvt.code) as value, "
                                + "s.frozen, s.frozen_for_data, s.frozen_for_children, s.frozen_for_parents, s.frozen_for_comp, "
                                + "s.space_frozen, s.proj_frozen, s.expe_frozen, s.cont_frozen "
                                + "from samples s join sample_properties sp on sp.samp_id = s.id "
                                + "left join controlled_vocabulary_terms cvt on sp.cvte_id = cvt.id "
-                               + "left join materials m on sp.mate_prop_id = m.id "
                                + "join sample_type_property_types stpt on sp.stpt_id = stpt.id "
                                + "join sample_types t on stpt.saty_id = t.id "
                                + "join property_types pt on stpt.prty_id = pt.id "
@@ -387,7 +353,7 @@ class TestCase(systemtest.testcase.TestCase):
         self._compareDataBases("Data set properties", openbis_data_source, openbis_harvester, "openbis", 
                                "select d.code as data_set, '{0}' || t.code as type, "
                                + "case when pt.is_managed_internally then pt.code else '{0}' || pt.code end as property, "
-                               + "concat(dp.value, cvt.code, m.code) as value, "
+                               + "concat(dp.value, cvt.code) as value, "
                                + "ur.user_id as registrator, "
                                + "to_char(d.registration_timestamp, 'YYYY-MM-DD HH24:MI:SS') as registration_timestamp, "
                                + "um.user_id as modifier, "
@@ -396,7 +362,6 @@ class TestCase(systemtest.testcase.TestCase):
                                + "d.expe_frozen, d.samp_frozen "
                                + "from data d join data_set_properties dp on dp.ds_id = d.id "
                                + "left join controlled_vocabulary_terms cvt on dp.cvte_id = cvt.id "
-                               + "left join materials m on dp.mate_prop_id = m.id "
                                + "join data_set_type_property_types dtpt on dp.dstpt_id = dtpt.id "
                                + "join data_set_types t on dtpt.dsty_id = t.id "
                                + "join property_types pt on dtpt.prty_id = pt.id "
@@ -436,7 +401,6 @@ class TestCase(systemtest.testcase.TestCase):
         self._gatherFilePathsOfTable(paths, openbis, "value", "experiment_properties")
         self._gatherFilePathsOfTable(paths, openbis, "value", "sample_properties")
         self._gatherFilePathsOfTable(paths, openbis, "value", "data_set_properties")
-        self._gatherFilePathsOfTable(paths, openbis, "value", "material_properties")
         self._gatherFilePathsOfTable(paths, openbis, "description", "projects")
         self._gatherFilePathsOfTable(paths, openbis, "description", "spaces")
         paths.sort()
@@ -466,6 +430,7 @@ class TestCase(systemtest.testcase.TestCase):
         openbis_data_source.asProperties['max-number-of-sessions-per-user'] = '0'
         openbis_data_source.dssProperties['database.kind'] = openbis_data_source.databaseKind
         openbis_data_source.createTestDatabase('openbis')
+        self._remove_materials(openbis_data_source)
         openbis_data_source.createTestDatabase('pathinfo')
         openbis_data_source.createTestDatabase('imaging')
         openbis_data_source.enableCorePlugin('openbis-sync')
@@ -483,9 +448,39 @@ class TestCase(systemtest.testcase.TestCase):
         openbis_harvester.asProperties['code-plugins.allowed-editing-users'] = '.*'
         openbis_harvester.dssProperties['database.kind'] = openbis_harvester.databaseKind
         openbis_harvester.createTestDatabase('openbis')
+        self._remove_materials(openbis_harvester)
         openbis_harvester.enableCorePlugin("openbis-sync")
         util.copyFromTo(self.getTemplatesFolder(), openbis_harvester.installPath, "harvester-config.txt")
         return openbis_harvester
+
+    def _remove_materials(self, openbis):
+        statements = [
+            "DELETE FROM data_set_properties WHERE mate_prop_id IS NOT NULL",
+            "DELETE FROM experiment_properties WHERE mate_prop_id IS NOT NULL",
+            "DELETE FROM sample_properties WHERE mate_prop_id IS NOT NULL",
+            "DELETE FROM material_properties WHERE mate_prop_id IS NOT NULL",
+            "DELETE FROM material_properties",
+            "DELETE FROM material_properties_history",
+            # Nullify maty_prop_id references before deleting material_types to avoid
+            # TRUNCATE CASCADE cascading into property_types and breaking ELN-LIMS initialization
+            "UPDATE property_types SET maty_prop_id = NULL WHERE maty_prop_id IS NOT NULL",
+            "DELETE FROM material_type_property_types",
+            "DELETE FROM materials",
+            "DELETE FROM material_types",
+            # Remove property type assignments for MATERIAL-typed property types (CONTROL, GENE, INHIBITOR_OF, SIRNA)
+            # These cause DataType.MATERIAL enum lookup failures in PropertyTypeTranslator
+            "DELETE FROM sample_type_property_types WHERE prty_id IN (SELECT id FROM property_types WHERE daty_id = (SELECT id FROM data_types WHERE code = 'MATERIAL'))",
+            "DELETE FROM experiment_type_property_types WHERE prty_id IN (SELECT id FROM property_types WHERE daty_id = (SELECT id FROM data_types WHERE code = 'MATERIAL'))",
+            "DELETE FROM data_set_type_property_types WHERE prty_id IN (SELECT id FROM property_types WHERE daty_id = (SELECT id FROM data_types WHERE code = 'MATERIAL'))",
+            "DELETE FROM property_types WHERE daty_id = (SELECT id FROM data_types WHERE code = 'MATERIAL')",
+            "DELETE FROM data_types WHERE code = 'MATERIAL'",
+            # Clear display settings only for persons whose settings reference MATERIAL entity visits
+            # which cause EntityKind.MATERIAL enum lookup failures on authentication
+            "UPDATE persons SET display_settings = NULL WHERE position('MATERIAL'::bytea IN display_settings) > 0",
+        ]
+
+        for statement in statements:
+            openbis.queryDatabase("openbis", statement)
 
     def _waitUntilSyncIsFinished(self, openbis_harvester):
         timeoutPeriod = 5 * 60

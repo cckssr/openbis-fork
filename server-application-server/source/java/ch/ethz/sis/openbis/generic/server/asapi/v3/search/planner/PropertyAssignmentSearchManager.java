@@ -19,7 +19,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentTypeSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.MaterialTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyAssignment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.search.PropertyAssignmentSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleTypeSearchCriteria;
@@ -52,8 +51,7 @@ public class PropertyAssignmentSearchManager extends
     private static final Map<Class<? extends AbstractCompositeSearchCriteria>, TableMapper> TABLE_MAPPER_BY_CRITERIA = Map.of(
             SampleTypeSearchCriteria.class, TableMapper.SAMPLE_PROPERTY_ASSIGNMENT,
             ExperimentTypeSearchCriteria.class, TableMapper.EXPERIMENT_PROPERTY_ASSIGNMENT,
-            DataSetTypeSearchCriteria.class, TableMapper.DATA_SET_PROPERTY_ASSIGNMENT,
-            MaterialTypeSearchCriteria.class, TableMapper.MATERIAL_PROPERTY_ASSIGNMENT
+            DataSetTypeSearchCriteria.class, TableMapper.DATA_SET_PROPERTY_ASSIGNMENT
     );
 
     private final IPropertyAssignmentSearchDAO assignmentsSearchDAO;

@@ -178,16 +178,6 @@ define([ 'jquery', 'underscore'], function($, _) {
 			}).then(callback);
 		}.bind(this);
 
-		this.createMaterial = function(facade) {
-			var c = this;
-			var creation = new dtos.MaterialCreation();
-			creation.setCode(c.generateId("MATERIAL"));
-			creation.setTypeId(new dtos.EntityTypePermId("COMPOUND"));
-			return facade.createMaterials([ creation ]).then(function(permIds) {
-				return permIds[0];
-			});
-		}.bind(this);
-
 		this.createPropertyType = function(facade) {
 			var c = this;
 			var creation = new dtos.PropertyTypeCreation();
@@ -255,15 +245,6 @@ define([ 'jquery', 'underscore'], function($, _) {
 			var creation = new dtos.DataSetTypeCreation();
 			creation.setCode(c.generateId("DATA_SET_TYPE"));
 			return facade.createDataSetTypes([ creation ]).then(function(permIds) {
-				return permIds[0];
-			});
-		}.bind(this);
-
-		this.createMaterialType = function(facade) {
-			var c = this;
-			var creation = new dtos.MaterialTypeCreation();
-			creation.setCode(c.generateId("MATERIAL_TYPE"));
-			return facade.createMaterialTypes([ creation ]).then(function(permIds) {
 				return permIds[0];
 			});
 		}.bind(this);
@@ -447,22 +428,6 @@ define([ 'jquery', 'underscore'], function($, _) {
 			});
 		}.bind(this);
 
-		this.findMaterial = function(facade, id) {
-			var c = this;
-			return facade.getMaterials([ id ], c.createMaterialFetchOptions()).then(function(materials) {
-				return materials[id];
-			});
-		}.bind(this);
-
-		this.findMaterialType = function(facade, id) {
-			var c = this;
-			var criteria = new dtos.MaterialTypeSearchCriteria();
-			criteria.withId().thatEquals(id);
-			return facade.searchMaterialTypes(criteria, c.createMaterialTypeFetchOptions()).then(function(results) {
-				return results.getObjects()[0];
-			});
-		}.bind(this);
-
 		this.findPropertyType = function(facade, id) {
 			var c = this;
 			var criteria = new dtos.PropertyTypeSearchCriteria();
@@ -591,13 +556,6 @@ define([ 'jquery', 'underscore'], function($, _) {
 			return facade.deleteDataSets([ id ], options);
 		}.bind(this);
 
-		this.deleteMaterial = function(facade, id) {
-			var c = this;
-			var options = new dtos.MaterialDeletionOptions();
-			options.setReason("test reason");
-			return facade.deleteMaterials([ id ], options);
-		}.bind(this);
-
 		this.deleteExternalDms = function(facade, id) {
 			var c = this;
 			var options = new dtos.ExternalDmsDeletionOptions();
@@ -624,13 +582,6 @@ define([ 'jquery', 'underscore'], function($, _) {
 			var options = new dtos.DataSetTypeDeletionOptions();
 			options.setReason("test reason");
 			return facade.deleteDataSetTypes([ id ], options);
-		}.bind(this);
-
-		this.deleteMaterialType = function(facade, id) {
-			var c = this;
-			var options = new dtos.MaterialTypeDeletionOptions();
-			options.setReason("test reason");
-			return facade.deleteMaterialTypes([ id ], options);
 		}.bind(this);
 
 		this.deletePlugin = function(facade, id) {
@@ -784,7 +735,6 @@ define([ 'jquery', 'underscore'], function($, _) {
 			fo.withSamples();
 			fo.withHistory();
 			fo.withProperties();
-			fo.withMaterialProperties();
 			fo.withSampleProperties();
 			fo.withTags();
 			fo.withRegistrator();
@@ -808,7 +758,6 @@ define([ 'jquery', 'underscore'], function($, _) {
 			fo.withSpace();
 			fo.withProject();
 			fo.withProperties();
-			fo.withMaterialProperties();
 			fo.withSampleProperties();
 			fo.withParents();
 			fo.withChildren();
@@ -838,7 +787,6 @@ define([ 'jquery', 'underscore'], function($, _) {
 			fo.withExperiment().withProject().withSpace();
 			fo.withSample();
 			fo.withProperties();
-			fo.withMaterialProperties();
 			fo.withSampleProperties();
 			fo.withParents();
 			fo.withChildren();
@@ -857,25 +805,6 @@ define([ 'jquery', 'underscore'], function($, _) {
 
 		this.createDataSetTypeFetchOptions = function() {
 			var fo = new dtos.DataSetTypeFetchOptions();
-			fo.withPropertyAssignments().withPropertyType();
-			fo.withPropertyAssignments().withRegistrator();
-			fo.withPropertyAssignments().withPlugin();
-			return fo;
-		};
-
-		this.createMaterialFetchOptions = function() {
-			var fo = new dtos.MaterialFetchOptions();
-			fo.withType();
-			fo.withHistory();
-			fo.withRegistrator();
-			fo.withProperties();
-			fo.withMaterialProperties();
-			fo.withTags();
-			return fo;
-		};
-
-		this.createMaterialTypeFetchOptions = function() {
-			var fo = new dtos.MaterialTypeFetchOptions();
 			fo.withPropertyAssignments().withPropertyType();
 			fo.withPropertyAssignments().withRegistrator();
 			fo.withPropertyAssignments().withPlugin();
@@ -908,7 +837,6 @@ define([ 'jquery', 'underscore'], function($, _) {
 			fo.withExperiment();
 			fo.withSample();
 			fo.withDataSet();
-			fo.withMaterial();
 			return fo;
 		};
 
@@ -922,7 +850,6 @@ define([ 'jquery', 'underscore'], function($, _) {
 			fo.withExperiments();
 			fo.withSamples();
 			fo.withDataSets();
-			fo.withMaterials();
 			return fo;
 		};
 
@@ -958,7 +885,6 @@ define([ 'jquery', 'underscore'], function($, _) {
 		this.createPropertyTypeFetchOptions = function() {
 			var fo = new dtos.PropertyTypeFetchOptions();
 			fo.withVocabulary();
-			fo.withMaterialType();
 			fo.withSampleType();
 			fo.withSemanticAnnotations();
 			fo.withRegistrator();

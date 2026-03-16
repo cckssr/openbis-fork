@@ -16,19 +16,13 @@
 package ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.AbstractEntityFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.FetchOptions;
+
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.FetchOptionsToStringBuilder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetTypeFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.LinkedDataFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.PhysicalDataFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.fetchoptions.DataStoreFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.history.fetchoptions.HistoryEntryFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.fetchoptions.MaterialFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.fetchoptions.PersonFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.fetchoptions.PropertyFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.fetchoptions.TagFetchOptions;
 import ch.systemsx.cisd.base.annotation.JsonObject;
@@ -60,9 +54,6 @@ public class DataSetFetchOptions extends AbstractEntityFetchOptions<DataSet> imp
 
     @JsonProperty
     private SampleFetchOptions sample;
-
-    @JsonProperty
-    private MaterialFetchOptions materialProperties;
 
     @JsonProperty
     private SampleFetchOptions sampleProperties;
@@ -251,28 +242,6 @@ public class DataSetFetchOptions extends AbstractEntityFetchOptions<DataSet> imp
     public boolean hasSample()
     {
         return sample != null;
-    }
-
-    // Method automatically generated with DtoGenerator
-    public MaterialFetchOptions withMaterialProperties()
-    {
-        if (materialProperties == null)
-        {
-            materialProperties = new MaterialFetchOptions();
-        }
-        return materialProperties;
-    }
-
-    // Method automatically generated with DtoGenerator
-    public MaterialFetchOptions withMaterialPropertiesUsing(MaterialFetchOptions fetchOptions)
-    {
-        return materialProperties = fetchOptions;
-    }
-
-    // Method automatically generated with DtoGenerator
-    public boolean hasMaterialProperties()
-    {
-        return materialProperties != null;
     }
 
     // Method automatically generated with DtoGenerator
@@ -699,7 +668,6 @@ public class DataSetFetchOptions extends AbstractEntityFetchOptions<DataSet> imp
         f.addFetchOption("Experiment", experiment);
         f.addFetchOption("Sample", sample);
         f.addFetchOption("Properties", properties);
-        f.addFetchOption("MaterialProperties", materialProperties);
         f.addFetchOption("SampleProperties", sampleProperties);
         f.addFetchOption("Parents", parents);
         f.addFetchOption("Children", children);

@@ -133,8 +133,6 @@ public final class DataAccessExceptionTranslator
                 return "";
             case EXPERIMENT:
                 return "(data sets, samples)";
-            case MATERIAL:
-                return "";
             case SAMPLE:
                 return "(data sets, contained and generated samples)";
         }

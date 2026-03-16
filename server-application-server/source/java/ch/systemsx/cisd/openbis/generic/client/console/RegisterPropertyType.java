@@ -20,7 +20,6 @@ import java.util.List;
 import ch.systemsx.cisd.openbis.generic.shared.ICommonServer;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataTypeCode;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PropertyType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Vocabulary;
 
@@ -64,19 +63,7 @@ public class RegisterPropertyType implements ICommand
         propertyType.setDescription(" ");
 
         String dataType = tokens.get(4);
-        if (dataType.startsWith(DataTypeCode.MATERIAL.name()))
-        {
-            propertyType.setDataType(new DataType(DataTypeCode.MATERIAL));
-
-            if (DataTypeCode.MATERIAL.name().length() < dataType.length())
-            {
-                String materialCode =
-                        dataType.replaceAll(DataTypeCode.MATERIAL.name() + "\\((.*)\\)", "$1");
-                MaterialType materialType = server.getMaterialType(sessionToken, materialCode);
-                propertyType.setMaterialType(materialType);
-
-            }
-        } else if (dataType.startsWith(DataTypeCode.CONTROLLEDVOCABULARY.name()))
+        if (dataType.startsWith(DataTypeCode.CONTROLLEDVOCABULARY.name()))
         {
             propertyType.setDataType(new DataType(DataTypeCode.CONTROLLEDVOCABULARY));
 

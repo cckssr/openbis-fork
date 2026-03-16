@@ -25,7 +25,7 @@ public enum WebAppProperty
 
     LABEL("label"), SORTING("sorting"), CONTEXTS("openbisui-contexts"), EXPERIMENT_TYPES(
             "experiment-entity-types"), SAMPLE_TYPES("sample-entity-types"), DATA_SET_TYPES(
-            "data-set-entity-types"), MATERIAL_TYPES("material-entity-types");
+            "data-set-entity-types");
 
     private final String name;
 

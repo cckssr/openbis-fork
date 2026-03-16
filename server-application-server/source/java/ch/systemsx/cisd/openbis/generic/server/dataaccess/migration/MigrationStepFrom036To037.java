@@ -112,11 +112,6 @@ public final class MigrationStepFrom036To037 extends MigrationStepAdapter
                         TableNames.EXPERIMENT_PROPERTIES_TABLE, "etpt_id",
                         TableNames.EXPERIMENT_TYPE_PROPERTY_TYPE_TABLE);
                 break;
-            case MATERIAL:
-                migrateEntityProperties(simpleJdbcTemplate, entityName,
-                        TableNames.MATERIAL_PROPERTIES_TABLE, "mtpt_id",
-                        TableNames.MATERIAL_TYPE_PROPERTY_TYPE_TABLE);
-                break;
         }
     }
 

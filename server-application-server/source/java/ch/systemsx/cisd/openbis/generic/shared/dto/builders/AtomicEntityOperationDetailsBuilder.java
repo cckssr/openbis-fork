@@ -22,8 +22,6 @@ import java.util.Map;
 
 import ch.systemsx.cisd.openbis.generic.shared.basic.TechId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewExperiment;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewMaterial;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewMaterialWithType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewMetaproject;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewProject;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewSample;
@@ -31,7 +29,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewSpace;
 import ch.systemsx.cisd.openbis.generic.shared.dto.AtomicEntityOperationDetails;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataSetBatchUpdatesDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentUpdatesDTO;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialUpdateDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.MetaprojectUpdatesDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.NewExternalData;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ProjectUpdatesDTO;
@@ -57,11 +54,6 @@ public class AtomicEntityOperationDetailsBuilder
     private final List<SampleUpdatesDTO> sampleUpdates = new ArrayList<SampleUpdatesDTO>();
 
     private final List<NewSample> sampleRegistrations = new ArrayList<NewSample>();
-
-    private final Map<String /* material type */, List<NewMaterial>> materialRegistrations =
-            new HashMap<String, List<NewMaterial>>();
-
-    private final List<MaterialUpdateDTO> materialUpdates = new ArrayList<MaterialUpdateDTO>();
 
     private final List<NewExternalData> dataSetRegistrations = new ArrayList<NewExternalData>();
 
@@ -150,12 +142,6 @@ public class AtomicEntityOperationDetailsBuilder
         return this;
     }
 
-    public AtomicEntityOperationDetailsBuilder materialUpdate(MaterialUpdateDTO materialUpdate)
-    {
-        materialUpdates.add(materialUpdate);
-        return this;
-    }
-
     public AtomicEntityOperationDetailsBuilder metaProjectUpdate(
             MetaprojectUpdatesDTO metaProjectUpdate)
     {
@@ -167,22 +153,9 @@ public class AtomicEntityOperationDetailsBuilder
     {
         return new AtomicEntityOperationDetails(registrationIdOrNull, userIdOrNull,
                 spaceRegistrations, projectRegistrations, projectUpdates, experimentRegistrations,
-                experimentUpdates, sampleUpdates, sampleRegistrations, materialRegistrations,
-                materialUpdates, dataSetRegistrations, dataSetUpdates, metaprojectRegistrations,
+                experimentUpdates, sampleUpdates, sampleRegistrations,
+                dataSetRegistrations, dataSetUpdates, metaprojectRegistrations,
                 metaprojectUpdates, vocabularyUpdates, batchSizeOrNull);
-    }
-
-    public AtomicEntityOperationDetailsBuilder material(NewMaterialWithType newMaterial)
-    {
-        String type = newMaterial.getType();
-        List<NewMaterial> list = materialRegistrations.get(type);
-        if (list == null)
-        {
-            list = new ArrayList<NewMaterial>();
-            materialRegistrations.put(type, list);
-        }
-        list.add(newMaterial.getMaterial());
-        return this;
     }
 
     public AtomicEntityOperationDetailsBuilder space(NewSpace newSpace)

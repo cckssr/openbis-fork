@@ -51,8 +51,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifi
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.IExperimentId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.history.HistoryEntry;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.Material;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.id.MaterialPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.id.PersonPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.create.ProjectCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectIdentifier;
@@ -776,10 +774,6 @@ public class UpdateSampleTest extends AbstractSampleTest
         update.setProperty("COMMENT", "comment 2");
         // remove existing property
         update.setProperty("ORGANISM", null);
-        // remove non existing property
-        update.setProperty("ANY_MATERIAL", null);
-        // set new property
-        update.setProperty("BACTERIUM", "BACTERIUM1 (BACTERIUM)");
 
         v3api.updateSamples(sessionToken, Arrays.asList(update));
 
@@ -796,7 +790,6 @@ public class UpdateSampleTest extends AbstractSampleTest
         Map<String, String> expectedProperties = new HashMap<String, String>();
         expectedProperties.put("COMMENT", "comment 2");
         expectedProperties.put("SIZE", "1");
-        expectedProperties.put("BACTERIUM", "BACTERIUM1 (BACTERIUM)");
         assertEquals(sample.getProperties(), expectedProperties);
     }
 
@@ -2079,36 +2072,6 @@ public class UpdateSampleTest extends AbstractSampleTest
 
         assertSampleIdentifier(sample2, "/CISD/SAMPLE_2_WITH_TAGS");
         assertTags(sample2.getTags(), "/test/TEST_TAG_2", "/test/TEST_TAG_3");
-    }
-
-    @Test
-    public void testUpdateWithMaterialProperties()
-    {
-        String sessionToken = v3api.login(TEST_USER, PASSWORD);
-
-        SampleFetchOptions fetchOptions = new SampleFetchOptions();
-        fetchOptions.withMaterialProperties().withRegistrator();
-        fetchOptions.withProperties();
-
-        SamplePermId permId = new SamplePermId("200902091219327-1025");
-
-        SampleUpdate update1 = new SampleUpdate();
-        update1.setSampleId(permId);
-        update1.setProperty("ANY_MATERIAL", "BACTERIUM-X (BACTERIUM)");
-
-        v3api.updateSamples(sessionToken, Arrays.asList(update1));
-
-        Map<ISampleId, Sample> map = v3api.getSamples(sessionToken, Arrays.asList(permId), fetchOptions);
-
-        Sample sample = map.get(permId);
-
-        assertEquals(sample.getProperties().get("BACTERIUM"), "BACTERIUM-X (BACTERIUM)");
-        assertEquals(sample.getProperties().get("ANY_MATERIAL"), "BACTERIUM-X (BACTERIUM)");
-
-        Map<String, Material> materialProperties = sample.getMaterialProperties();
-
-        Material updatedBacterium = materialProperties.get("ANY_MATERIAL");
-        assertEquals(updatedBacterium.getPermId(), new MaterialPermId("BACTERIUM-X", "BACTERIUM"));
     }
 
     @Test(dataProviderClass = ProjectAuthorizationUser.class, dataProvider = ProjectAuthorizationUser.PROVIDER_WITH_ETL)

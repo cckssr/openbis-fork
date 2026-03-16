@@ -192,15 +192,12 @@ public class DeletionDAOTest extends AbstractDAOTest
 
         MetaprojectPE metaproject = daoFactory.getMetaprojectDAO().getById(new TechId(1));
         Set<MetaprojectAssignmentPE> assignments = metaproject.getAssignments();
-        assertEquals(2, assignments.size());
+        assertEquals(1, assignments.size());
         for (MetaprojectAssignmentPE assignment : assignments)
         {
             if (assignment.getExperiment() != null)
             {
                 assertEquals(23, assignment.getExperiment().getId().longValue());
-            } else if (assignment.getMaterial() != null)
-            {
-                assertEquals(1, assignment.getMaterial().getId().longValue());
             } else
             {
                 fail();
@@ -228,7 +225,7 @@ public class DeletionDAOTest extends AbstractDAOTest
 
         MetaprojectPE metaproject = daoFactory.getMetaprojectDAO().getById(new TechId(1));
         Set<MetaprojectAssignmentPE> assignments = metaproject.getAssignments();
-        assertEquals(5, assignments.size());
+        assertEquals(4, assignments.size());
     }
 
     private void testRevertDeletion(IDeletionDAO deletionDAO, DeletionPE deletion)

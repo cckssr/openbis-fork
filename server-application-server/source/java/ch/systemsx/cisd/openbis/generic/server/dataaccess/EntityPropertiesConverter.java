@@ -16,6 +16,7 @@
 package ch.systemsx.cisd.openbis.generic.server.dataaccess;
 
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -49,7 +50,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.IIdHolder;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataTypeCode;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IEntityProperty;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ManagedProperty;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Sample;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.api.IManagedInputWidgetDescription;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.api.IManagedProperty;
@@ -58,7 +58,6 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.EntityPropertyPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EntityPropertyWithSampleDataTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePropertyTypePE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PropertyTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePE;
@@ -419,11 +418,6 @@ public final class EntityPropertiesConverter implements IEntityPropertiesConvert
         {
             return result;
         }
-        result = property.getMaterial();
-        if (result != null)
-        {
-            return result;
-        }
         return property.tryGetAsString();
     }
 
@@ -610,7 +604,7 @@ public final class EntityPropertiesConverter implements IEntityPropertiesConvert
             if (value.startsWith(BasicConstant.ERROR_PROPERTY_PREFIX))
             {
                 // save errors as strings
-                entityProperty.setUntypedValue(value, null, null, null, null, null, null, null,
+                entityProperty.setUntypedValue(value, null, null, null, null, null, null,
                         null);
             }
         }
@@ -618,8 +612,6 @@ public final class EntityPropertiesConverter implements IEntityPropertiesConvert
         {
             final VocabularyTermPE vocabularyTerm =
                     ComplexPropertyValueUtils.tryGetVocabularyTerm(validatedValue, propertyType);
-            final MaterialPE material =
-                    complexPropertyValueHelper.tryGetMaterial(validatedValue, propertyType);
             SamplePE sample = complexPropertyValueHelper.tryGetSample(validatedValue, propertyType);
             final Long[] integerArray =
                     ComplexPropertyValueUtils.tryGetIntegerArray(validatedValue, propertyType.getType().getCode());
@@ -631,7 +623,7 @@ public final class EntityPropertiesConverter implements IEntityPropertiesConvert
                     ComplexPropertyValueUtils.tryGetTimestampArray(validatedValue, propertyType.getType().getCode());
             final String jsonValue =
                     ComplexPropertyValueUtils.tryGetJsonValue(validatedValue, propertyType.getType().getCode());
-            entityProperty.setUntypedValue(validatedValue.toString(), vocabularyTerm, material, sample,
+            entityProperty.setUntypedValue(validatedValue.toString(), vocabularyTerm, sample,
                     integerArray, realArray, stringArray, timestampArray, jsonValue);
         }
     }
@@ -684,7 +676,7 @@ public final class EntityPropertiesConverter implements IEntityPropertiesConvert
                         ? ((EntityPropertyWithSampleDataTypePE) newProperty).getSampleValue()
                         : null;
                 existingProperty.setUntypedValue(newProperty.getValue(),
-                        newProperty.getVocabularyTerm(), newProperty.getMaterialValue(), sample,
+                        newProperty.getVocabularyTerm(), sample,
                         newProperty.getIntegerArrayValue(), newProperty.getRealArrayValue(),
                         newProperty.getStringArrayValue(),
                         newProperty.getTimestampArrayValue(), newProperty.getJsonValue());
@@ -773,7 +765,7 @@ public final class EntityPropertiesConverter implements IEntityPropertiesConvert
         T existingProperty = tryFind(oldProperties, managedProperty.getPropertyTypeCode());
         if (existingProperty != null)
         {
-            existingProperty.setUntypedValue((String) managedProperty.getValue(), null, null, null,
+            existingProperty.setUntypedValue((String) managedProperty.getValue(), null, null,
                     null,
                     null, null, null, null);
             existingProperty.setAuthor(author);
@@ -1003,37 +995,6 @@ public final class EntityPropertiesConverter implements IEntityPropertiesConvert
             return samples.get(0);
         }
 
-        public MaterialPE tryGetMaterial(Serializable value, PropertyTypePE propertyType)
-        {
-            if (propertyType.getType().getCode() != DataTypeCode.MATERIAL)
-            {
-                return null; // this is not a property of MATERIAL type
-            }
-            MaterialIdentifier materialIdentifier =
-                    MaterialIdentifier.tryCreate((String) value, propertyType.getMaterialType());
-            if (materialIdentifier == null)
-            {
-                return null;
-            }
-
-            final MaterialPE material;
-            if (customSessionProviderOrNull != null)
-            {
-                material =
-                        daoFactory.getMaterialDAO().tryFindMaterial(
-                                customSessionProviderOrNull.getSession(), materialIdentifier);
-            } else
-            {
-                material = daoFactory.getMaterialDAO().tryFindMaterial(materialIdentifier);
-            }
-
-            if (material == null)
-            {
-                throw UserFailureException.fromTemplate(
-                        "No material could be found for identifier '%s'.", materialIdentifier);
-            }
-            return material;
-        }
 
     }
 

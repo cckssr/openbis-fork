@@ -46,7 +46,6 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePropertyTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.IEntityInformationWithPropertiesHolder;
 import ch.systemsx.cisd.openbis.generic.shared.dto.IEntityPropertiesHolder;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PropertyTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePE;
@@ -516,11 +515,6 @@ public class UpdateEntityPropertyExecutor implements IUpdateEntityPropertyExecut
         if (value != null)
         {
             return value;
-        }
-        MaterialPE materialValue = property.getMaterialValue();
-        if (materialValue != null)
-        {
-            return materialValue;
         }
         return property.getVocabularyTerm();
     }

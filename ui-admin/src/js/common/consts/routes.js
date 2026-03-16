@@ -153,19 +153,6 @@ const routes = {
     type: objectTypes.OVERVIEW,
     id: objectTypes.DATA_SET_TYPE
   }),
-  NEW_MATERIAL_TYPE: new Route('/new-material-type/:id', {
-    page: pages.TYPES,
-    type: objectTypes.NEW_MATERIAL_TYPE
-  }),
-  MATERIAL_TYPE: new Route('/material-type/:id', {
-    page: pages.TYPES,
-    type: objectTypes.MATERIAL_TYPE
-  }),
-  MATERIAL_TYPE_OVERVIEW: new Route('/material-type-overview', {
-    page: pages.TYPES,
-    type: objectTypes.OVERVIEW,
-    id: objectTypes.MATERIAL_TYPE
-  }),
   NEW_VOCABULARY_TYPE: new Route('/new-vocabulary-type/:id', {
     page: pages.TYPES,
     type: objectTypes.NEW_VOCABULARY_TYPE

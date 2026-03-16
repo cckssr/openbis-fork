@@ -27,7 +27,6 @@ import org.apache.commons.collections4.comparators.NullComparator;
 
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IEntityPropertiesHolder;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IEntityProperty;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Material;
 import ch.systemsx.cisd.openbis.generic.shared.basic.utils.GroupByMap;
 import ch.systemsx.cisd.openbis.generic.shared.basic.utils.IGroupKeyExtractor;
 
@@ -147,16 +146,9 @@ class ReplicateSequenceProvider
         }
         IEntityProperty subgroupProperty = tryFindSubgroupProperty(well);
         assert subgroupProperty != null : "cannot fnd the subgroup property";
-        boolean isMaterialProperty = (subgroupProperty.getMaterial() != null);
 
         String propertyLabel = subgroupProperty.getPropertyType().getLabel();
-        if (isMaterialProperty)
-        {
-            return propertyLabel + " " + biologicalReplicateSeq;
-        } else
-        {
-            return propertyLabel + " " + subgroupProperty.tryGetAsString();
-        }
+        return propertyLabel + " " + subgroupProperty.tryGetAsString();
     }
 
     private Double tryFindSubgroup(IEntityPropertiesHolder well)
@@ -180,11 +172,6 @@ class ReplicateSequenceProvider
 
     private static Double tryExtractSubgroupValue(IEntityProperty subgroupProperty)
     {
-        Material subgroupMaterial = subgroupProperty.getMaterial();
-        if (subgroupMaterial != null)
-        {
-            return Double.valueOf(subgroupMaterial.getId());
-        }
         try
         {
             return Double.valueOf(subgroupProperty.tryGetAsString());

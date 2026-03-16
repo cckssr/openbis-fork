@@ -48,8 +48,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.history.HistoryEntry;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.history.PropertyHistoryEntry;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.history.RelationHistoryEntry;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.Material;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.id.MaterialPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.create.PersonCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.fetchoptions.PersonFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.id.IPersonId;
@@ -1344,37 +1342,6 @@ public class GetSampleTest extends AbstractSampleTest
         AssertionUtil.assertCollectionContainsOnly(experimentCodes, "EXP-SPACE-TEST", "EXP-TEST-2", "EXPERIMENT-TO-DELETE");
 
         v3api.logout(sessionToken);
-    }
-
-    @Test
-    public void testGetWithMaterialProperties()
-    {
-        String sessionToken = v3api.login(TEST_USER, PASSWORD);
-
-        SampleFetchOptions fetchOptions = new SampleFetchOptions();
-        fetchOptions.withMaterialProperties().withRegistrator();
-        fetchOptions.withProperties();
-
-        SamplePermId permId = new SamplePermId("200902091219327-1025");
-
-        Map<ISampleId, Sample> map = v3api.getSamples(sessionToken, Arrays.asList(permId), fetchOptions);
-
-        Sample sample = map.get(permId);
-
-        assertEquals(sample.getProperties().get("BACTERIUM"), "BACTERIUM-X (BACTERIUM)");
-        assertEquals(sample.getProperties().get("ANY_MATERIAL"), "1 (GENE)");
-
-        Map<String, Material> materialProperties = sample.getMaterialProperties();
-
-        Material bacterium = materialProperties.get("BACTERIUM");
-        assertEquals(bacterium.getPermId(), new MaterialPermId("BACTERIUM-X", "BACTERIUM"));
-        assertEquals(bacterium.getRegistrator().getUserId(), "test");
-        assertTagsNotFetched(bacterium);
-
-        Material gene = materialProperties.get("ANY_MATERIAL");
-        assertEquals(gene.getPermId(), new MaterialPermId("1", "GENE"));
-        assertEquals(gene.getRegistrator().getUserId(), "test");
-        assertTagsNotFetched(gene);
     }
 
     @Test

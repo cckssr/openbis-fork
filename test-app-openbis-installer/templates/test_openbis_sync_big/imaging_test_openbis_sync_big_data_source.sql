@@ -1664,3 +1664,31 @@ ALTER TABLE ONLY public.spots
 -- PostgreSQL database dump complete
 --
 
+
+SELECT 'before removing materials' AS debug_msg;
+SELECT count(*) AS materials_before FROM materials;
+
+DELETE FROM data_set_properties
+WHERE mate_prop_id IS NOT NULL;
+
+DELETE FROM experiment_properties
+WHERE mate_prop_id IS NOT NULL;
+
+DELETE FROM sample_properties
+WHERE mate_prop_id IS NOT NULL;
+
+DELETE FROM material_properties
+WHERE mate_prop_id IS NOT NULL;
+
+DELETE FROM material_properties;
+
+UPDATE experiments_all
+SET mate_id_study_object = NULL
+WHERE mate_id_study_object IS NOT NULL;
+
+DELETE FROM materials;
+DELETE FROM material_type_property_types;
+DELETE FROM material_types;
+
+SELECT 'after removing materials' AS debug_msg;
+SELECT count(*) AS materials_after FROM materials;

@@ -23,13 +23,11 @@ import org.apache.commons.collections4.Transformer;
 
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExperimentType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExperimentTypePropertyType;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PropertyType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePropertyTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentTypePropertyTypePE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PropertyTypePE;
 
 /**
@@ -50,10 +48,9 @@ public final class ExperimentTypePropertyTypeTranslator
     {
         @Override
         ExperimentType translate(EntityTypePE entityTypePE,
-                Map<MaterialTypePE, MaterialType> materialTypeCache, 
                 Map<PropertyTypePE, PropertyType> cacheOrNull)
         {
-            return ExperimentTranslator.translate((ExperimentTypePE) entityTypePE, materialTypeCache, cacheOrNull);
+            return ExperimentTranslator.translate((ExperimentTypePE) entityTypePE, cacheOrNull);
         }
 
         @Override
@@ -65,27 +62,26 @@ public final class ExperimentTypePropertyTypeTranslator
 
     public static List<ExperimentTypePropertyType> translate(
             Set<ExperimentTypePropertyTypePE> experimentTypePropertyTypes, ExperimentType result,
-            Map<MaterialTypePE, MaterialType> materialTypeCache, 
             Map<PropertyTypePE, PropertyType> cachedOrNull)
     {
         return new ExperimentTypePropertyTypeTranslatorHelper().translate(
-                experimentTypePropertyTypes, result, materialTypeCache, cachedOrNull);
+                experimentTypePropertyTypes, result, cachedOrNull);
     }
 
     public static List<ExperimentTypePropertyType> translate(
             Set<ExperimentTypePropertyTypePE> experimentTypePropertyTypes, PropertyType result,
-            Map<MaterialTypePE, MaterialType> materialTypeCache, Map<PropertyTypePE, PropertyType> cacheOrNull)
+            Map<PropertyTypePE, PropertyType> cacheOrNull)
     {
         ExperimentTypePropertyTypeTranslatorHelper helper =
                 new ExperimentTypePropertyTypeTranslatorHelper();
-        return helper.translate(experimentTypePropertyTypes, result, materialTypeCache, cacheOrNull);
+        return helper.translate(experimentTypePropertyTypes, result, cacheOrNull);
     }
 
     public static ExperimentTypePropertyType translate(
             ExperimentTypePropertyTypePE entityTypePropertyType)
     {
         return new ExperimentTypePropertyTypeTranslatorHelper().translate(entityTypePropertyType,
-                null, null);
+                null);
     }
 
     public static final Transformer<EntityTypePropertyTypePE, ExperimentTypePropertyType> TRANSFORMER =

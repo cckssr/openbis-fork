@@ -60,7 +60,6 @@ async function testChange(plugin) {
             ? plugin.getEntityKinds()[0]
             : null,
         options: [
-          { value: 'MATERIAL' },
           { value: 'EXPERIMENT' },
           { value: 'SAMPLE' },
           { value: 'DATA_SET' }

@@ -26,7 +26,6 @@ import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Experiment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Material;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Metaproject;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MetaprojectAssignments;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MetaprojectAssignmentsFetchOption;
@@ -38,7 +37,6 @@ import ch.systemsx.cisd.openbis.generic.shared.translator.DataSetTranslator;
 import ch.systemsx.cisd.openbis.generic.shared.translator.DtoConverters;
 import ch.systemsx.cisd.openbis.generic.shared.translator.ExperimentTranslator;
 import ch.systemsx.cisd.openbis.generic.shared.translator.ExperimentTranslator.LoadableFields;
-import ch.systemsx.cisd.openbis.generic.shared.translator.MaterialTranslator;
 import ch.systemsx.cisd.openbis.generic.shared.translator.SampleTranslator;
 
 /**
@@ -80,7 +78,6 @@ public class MetaprojectAssignmentsHelper
         List<Experiment> experiments = new ArrayList<Experiment>();
         List<Sample> samples = new ArrayList<Sample>();
         List<AbstractExternalData> dataSets = new ArrayList<AbstractExternalData>();
-        List<Material> materials = new ArrayList<Material>();
 
         if (fetchOptions.contains(MetaprojectAssignmentsFetchOption.EXPERIMENTS))
         {
@@ -137,21 +134,9 @@ public class MetaprojectAssignmentsHelper
             }
         }
 
-        if (fetchOptions.contains(MetaprojectAssignmentsFetchOption.MATERIALS))
-        {
-            for (MetaprojectAssignmentPE metaprojectAssignmentPE : getMetaprojectAssignments(
-                    metaproject.getId(), EntityKind.MATERIAL))
-            {
-                materials.add(MaterialTranslator.translate(metaprojectAssignmentPE.getMaterial(),
-                        null, managedPropertyEvaluatorFactory,
-                        new SamplePropertyAccessValidator(session, daoFactory)));
-            }
-        }
-
         metaprojectAssignments.setExperiments(experiments);
         metaprojectAssignments.setSamples(samples);
         metaprojectAssignments.setDataSets(dataSets);
-        metaprojectAssignments.setMaterials(materials);
 
         return metaprojectAssignments;
     }

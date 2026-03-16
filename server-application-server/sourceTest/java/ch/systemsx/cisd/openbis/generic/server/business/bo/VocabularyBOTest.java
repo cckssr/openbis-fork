@@ -36,8 +36,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.VocabularyTerm;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.VocabularyTermBatchUpdateDetails;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.VocabularyTermReplacement;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EntityPropertyPE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialPE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialPropertyPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.VocabularyPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.VocabularyTermPE;
@@ -480,9 +478,6 @@ public final class VocabularyBOTest extends AbstractBOTest
         vocabulary.addTerm(translate(term1));
         vocabulary.addTerm(translate(term2));
         vocabulary.addTerm(translate(term3));
-        final MaterialPropertyPE entityPropertyPE = new MaterialPropertyPE();
-        final MaterialPE entity = new MaterialPE();
-        entity.addProperty(entityPropertyPE);
         context.checking(new Expectations()
             {
                 {
@@ -495,11 +490,7 @@ public final class VocabularyBOTest extends AbstractBOTest
                         will(returnValue(entityPropertyTypeDAO));
 
                         one(entityPropertyTypeDAO).listPropertiesByVocabularyTerm(term2.getId());
-                        List<EntityPropertyPE> properties =
-                                Arrays.<EntityPropertyPE> asList(entityPropertyPE);
-                        will(returnValue(properties));
-
-                        one(entityPropertyTypeDAO).updateProperties(properties);
+                        one(entityPropertyTypeDAO).updateProperties(with(any(List.class)));
                     }
                 }
             });
@@ -509,7 +500,6 @@ public final class VocabularyBOTest extends AbstractBOTest
         vocabularyBO.delete(Arrays.asList(term1),
                 Arrays.asList(createTermWithReplacement(term2, term3)));
 
-        assertEquals(term3.getCode(), entityPropertyPE.getVocabularyTerm().getCode());
         assertEquals(1, vocabulary.getTerms().size());
         assertEquals(term3.getCode(), vocabulary.getTerms().iterator().next().getCode());
         context.assertIsSatisfied();

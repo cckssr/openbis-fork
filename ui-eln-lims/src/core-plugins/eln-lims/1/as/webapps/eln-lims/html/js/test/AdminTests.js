@@ -20,20 +20,6 @@ var AdminTests = new function() {
             var ids = ["tree",
                        "LAB_NOTEBOOK",
                        "INVENTORY",
-                       "MATERIALS",
-                       "_MATERIALS_BACTERIA_BACTERIA_COLLECTION",
-                       "_MATERIALS_CELL_LINES_CELL_LINE_COLLECTION",
-                       "_MATERIALS_FLIES_FLY_COLLECTION",
-                       "_MATERIALS_PLANTS_PLANT_COLLECTION",
-                       "_MATERIALS_PLASMIDS_PLASMID_COLLECTION",
-                       "_MATERIALS_POLYNUCLEOTIDES_OLIGO_COLLECTION",
-                       "_MATERIALS_POLYNUCLEOTIDES_RNA_COLLECTION",
-                       "_MATERIALS_REAGENTS_ANTIBODY_COLLECTION",
-                       "_MATERIALS_REAGENTS_CHEMICAL_COLLECTION",
-                       "_MATERIALS_REAGENTS_ENZYME_COLLECTION",
-                       "_MATERIALS_REAGENTS_MEDIA_COLLECTION",
-                       "_MATERIALS_REAGENTS_SOLUTION_BUFFER_COLLECTION",
-                       "_MATERIALS_YEASTS_YEAST_COLLECTION",
                        "METHODS",
                        "_METHODS_PROTOCOLS_GENERAL_PROTOCOLS",
                        "_METHODS_PROTOCOLS_PCR_PROTOCOLS",
@@ -253,29 +239,10 @@ var AdminTests = new function() {
 
             testChain = Promise.resolve();
 
-            testChain.then(() => e.waitForId("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
-                     .then(() => e.click("_MATERIALS_BACTERIA_BACTERIA_COLLECTION"))
-                     .then(() => e.waitForId("bac1-column-id"))
-                     .then(() => e.click("bac1-column-id"))
-                     .then(() => e.waitForId("edit-btn")) // wait for page reload
-                     //delete BAC1
-                     .then(() => e.waitForId("options-menu-btn-sample-view-bacteria"))
-                     .then(() => e.click("options-menu-btn-sample-view-bacteria"))
-                     .then(() => e.waitForId("delete"))
-                     .then(() => e.click("delete"))
-                     // fill Confirm form
-                     .then(() => e.waitForId("reason-to-delete-id"))
-                     .then(() => e.write("reason-to-delete-id", "test"))
-                     .then(() => e.waitForId("accept-btn"))
-                     .then(() => e.click("accept-btn"))
-                     .then(() => e.waitForId("create-btn")) // wait for page reload
-                     .then(() => e.sleep(1000)) // wait for delete
-                     // go to TRASHCAN
-                     .then(() => e.waitForId("TRASHCAN"))
+            testChain.then(() => e.waitForId("TRASHCAN"))
                      .then(() => e.click("TRASHCAN"))
                      .then(() => e.waitForId("empty-trash-btn"))
-                     // The Objects BAC1 and the deleted request should be there.
-                     .then(() => e.waitForId($("[id^=deleted--materials-bacteria-bac]").attr("id")))
+                     // The deleted request should be there.
                      .then(() => e.waitForId($("[id^=deleted--stock_catalog-requests-req]").attr("id")))
                      // clear Trash
                      .then(() => e.waitForId("empty-trash-btn"))

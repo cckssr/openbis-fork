@@ -73,8 +73,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExperimentType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.FileFormatType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Grantee;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.LastModificationState;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ListMaterialCriteria;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewETPTAssignment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewVocabulary;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Person;
@@ -101,7 +99,6 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExternalDataPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.FileFormatTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.LocatorTypePE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.MetaprojectPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.NewRoleAssignment;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
@@ -125,7 +122,6 @@ import ch.systemsx.cisd.openbis.generic.shared.managed_property.api.IManagedProp
 import ch.systemsx.cisd.openbis.generic.shared.translator.DataSetTranslator;
 import ch.systemsx.cisd.openbis.generic.shared.translator.DtoConverters;
 import ch.systemsx.cisd.openbis.generic.shared.translator.ExperimentTranslator;
-import ch.systemsx.cisd.openbis.generic.shared.translator.MaterialTypeTranslator;
 import ch.systemsx.cisd.openbis.generic.shared.translator.PersonTranslator;
 import ch.systemsx.cisd.openbis.generic.shared.translator.SpaceTranslator;
 
@@ -866,7 +862,7 @@ public final class CommonServerTest extends AbstractServerTestCase
         final ProjectIdentifier projectIdentifier = CommonTestUtils.createProjectIdentifier();
         final ExperimentType experimentType =
                 ExperimentTranslator.translate(CommonTestUtils.createExperimentType(),
-                        new HashMap<MaterialTypePE, MaterialType>(), new HashMap<PropertyTypePE, PropertyType>());
+                        new HashMap<PropertyTypePE, PropertyType>());
         prepareGetSession();
         context.checking(new Expectations()
             {
@@ -898,7 +894,7 @@ public final class CommonServerTest extends AbstractServerTestCase
         final List<EntityTypePE> types = new ArrayList<EntityTypePE>();
         final ExperimentTypePE experimentTypePE = CommonTestUtils.createExperimentType();
         final ExperimentType experimentType =
-                ExperimentTranslator.translate(experimentTypePE, new HashMap<MaterialTypePE, MaterialType>(),
+                ExperimentTranslator.translate(experimentTypePE,
                         new HashMap<PropertyTypePE, PropertyType>());
         types.add(experimentTypePE);
         context.checking(new Expectations()
@@ -1088,27 +1084,6 @@ public final class CommonServerTest extends AbstractServerTestCase
         context.assertIsSatisfied();
     }
 
-    @Test
-    public void testDeleteMaterials()
-    {
-        final List<TechId> materialIds = Arrays.asList(new TechId(1L), new TechId(2L));
-        final String reason = EXAMPLE_REASON;
-
-        prepareGetSession();
-        context.checking(new Expectations()
-            {
-                {
-                    one(commonBusinessObjectFactory).createMaterialTable(session);
-                    will(returnValue(materialTable));
-
-                    one(materialTable).deleteByTechIds(materialIds, reason);
-                }
-            });
-
-        createServer().deleteMaterials(SESSION_TOKEN, materialIds, reason);
-
-        context.assertIsSatisfied();
-    }
 
     @Test
     public void testRegisterFileFormatType()
@@ -1180,8 +1155,7 @@ public final class CommonServerTest extends AbstractServerTestCase
 
                     one(managedPropertyHotDeployEvaluator).getSupportedEntityKinds();
                     will(returnValue(EnumSet.of(
-                            ICommonPropertyBasedHotDeployPlugin.EntityKind.DATA_SET,
-                            ICommonPropertyBasedHotDeployPlugin.EntityKind.MATERIAL)));
+                            ICommonPropertyBasedHotDeployPlugin.EntityKind.DATA_SET)));
                 }
             });
 
@@ -1204,7 +1178,7 @@ public final class CommonServerTest extends AbstractServerTestCase
         assertEquals("s3", scripts.get(2).getName());
         assertEquals(ScriptType.MANAGED_PROPERTY, scripts.get(2).getScriptType());
         assertEquals(PluginType.PREDEPLOYED, scripts.get(2).getPluginType());
-        assertEquals("[DATA_SET, MATERIAL]", Arrays.asList(scripts.get(2).getEntityKind())
+        assertEquals("[DATA_SET]", Arrays.asList(scripts.get(2).getEntityKind())
                 .toString());
         assertEquals(3, scripts.size());
         context.assertIsSatisfied();
@@ -1426,58 +1400,6 @@ public final class CommonServerTest extends AbstractServerTestCase
         context.assertIsSatisfied();
     }
 
-    @Test
-    public void testRegisterMaterialType()
-    {
-        final MaterialType type = new MaterialType();
-        prepareGetSession();
-        context.checking(new Expectations()
-            {
-                {
-                    one(commonBusinessObjectFactory).createEntityTypeBO(session);
-                    will(returnValue(entityTypeBO));
-
-                    one(entityTypeBO).define(type);
-                    one(entityTypeBO).save();
-                }
-            });
-
-        createServer().registerMaterialType(SESSION_TOKEN, type);
-
-        context.assertIsSatisfied();
-    }
-
-    @Test
-    public void testUpdateMaterialType()
-    {
-        final MaterialType type = new MaterialType();
-        type.setCode("my-type");
-        type.setDescription("my description");
-        type.setModificationDate(new Date(42));
-        final MaterialTypePE typePE = new MaterialTypePE();
-        typePE.setCode(type.getCode());
-        typePE.setModificationDate(type.getModificationDate());
-        prepareGetSession();
-        context.checking(new Expectations()
-            {
-                {
-                    one(daoFactory)
-                            .getEntityTypeDAO(
-                                    ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind.MATERIAL);
-                    will(returnValue(entityTypeDAO));
-
-                    one(entityTypeDAO).tryToFindEntityTypeByCode(type.getCode());
-                    will(returnValue(typePE));
-
-                    one(entityTypeDAO).createOrUpdateEntityType(typePE);
-                }
-            });
-
-        createServer().updateMaterialType(SESSION_TOKEN, type);
-
-        assertEquals(type.getDescription(), typePE.getDescription());
-        context.assertIsSatisfied();
-    }
 
     @Test
     public void testRegisterSampleType()
@@ -1723,52 +1645,6 @@ public final class CommonServerTest extends AbstractServerTestCase
         context.assertIsSatisfied();
     }
 
-    @Test
-    public void testListMaterials()
-    {
-        prepareGetSession();
-        final MaterialType materialType =
-                MaterialTypeTranslator.translate(CommonTestUtils.createMaterialType(), null, null);
-        final ListMaterialCriteria criteria =
-                ListMaterialCriteria.createFromMaterialType(materialType);
-        context.checking(new Expectations()
-            {
-                {
-                    one(commonBusinessObjectFactory).createMaterialLister(session);
-                    will(returnValue(materialLister));
-
-                    one(materialLister).list(criteria, true);
-                    will(returnValue(new ArrayList<MaterialTypePE>()));
-                }
-            });
-        createServer().listMaterials(SESSION_TOKEN, criteria, true);
-        context.assertIsSatisfied();
-    }
-
-    @Test
-    public void testListMaterialTypes()
-    {
-        prepareGetSession();
-        final List<EntityTypePE> types = new ArrayList<EntityTypePE>();
-        types.add(CommonTestUtils.createMaterialType());
-        context.checking(new Expectations()
-            {
-                {
-                    one(daoFactory)
-                            .getEntityTypeDAO(
-                                    ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind.MATERIAL);
-                    will(returnValue(entityTypeDAO));
-
-                    one(entityTypeDAO).listEntityTypes();
-                    will(returnValue(types));
-                }
-            });
-        final List<MaterialType> materialTypes = createServer().listMaterialTypes(SESSION_TOKEN);
-        assertEquals(1, materialTypes.size());
-        assertEquals(types.get(0).getCode(), materialTypes.get(0).getCode());
-        context.assertIsSatisfied();
-    }
-
     @SuppressWarnings("deprecation")
     @Test
     public void testPermanentlyDeleteDataSetsWithTrashDisabled()
@@ -1950,9 +1826,8 @@ public final class CommonServerTest extends AbstractServerTestCase
     {
         final PersonPE person = new PersonPE();
         person.setId(123L);
-        EntityVisit v0 = visit(EntityKind.MATERIAL, 0);
         EntityVisit v1 = visit(EntityKind.SAMPLE, 2);
-        DisplaySettings currentDisplaySettings = displaySettingsWithVisits(v0, v1);
+        DisplaySettings currentDisplaySettings = displaySettingsWithVisits(v1);
         person.setDisplaySettings(currentDisplaySettings);
         context.checking(new Expectations()
             {
@@ -1978,7 +1853,7 @@ public final class CommonServerTest extends AbstractServerTestCase
         EntityVisit v2 = visit(EntityKind.EXPERIMENT, 1);
         EntityVisit v3 = visit(EntityKind.DATA_SET, 3);
         EntityVisit v4 = visit(EntityKind.SAMPLE, 2);
-        DisplaySettings displaySettings = displaySettingsWithVisits(v0, v1, v2, v3, v4);
+        DisplaySettings displaySettings = displaySettingsWithVisits(v1, v2, v3, v4);
 
         createServer().saveDisplaySettings(SESSION_TOKEN, displaySettings, 3);
 

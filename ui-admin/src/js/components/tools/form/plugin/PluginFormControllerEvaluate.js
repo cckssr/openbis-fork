@@ -71,11 +71,6 @@ export default class PluginFormControllerEvaluate {
         objectId = new openbis.SampleIdentifier(entity.entityId)
       } else if (entity.entityKind === openbis.EntityKind.DATA_SET) {
         objectId = new openbis.DataSetPermId(entity.entityId)
-      } else if (entity.entityKind === openbis.EntityKind.MATERIAL) {
-        objectId = new openbis.MaterialPermId(
-          entity.entityId.code,
-          entity.entityId.typeCode
-        )
       }
 
       options.setObjectId(objectId)

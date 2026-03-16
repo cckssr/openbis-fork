@@ -45,8 +45,6 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.DataSetPropertyPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EntityPropertyPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExternalDataPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.IEntityPropertiesHolder;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialPE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialPropertyPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PropertyTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SearchableEntity;
 import ch.systemsx.cisd.openbis.generic.shared.translator.DtoConverters;
@@ -87,16 +85,6 @@ public final class HibernateSearchDAOTest extends AbstractDAOTest
         {
             hibernateSearchDAO.searchEntitiesByTerm(USER_ID, null, null, createDataProvider(),
                     true, 0, Integer.MAX_VALUE);
-        } catch (final AssertionError ex)
-        {
-            fail = false;
-        }
-        assertFalse(fail);
-        fail = true;
-        try
-        {
-            hibernateSearchDAO.searchEntitiesByTerm(USER_ID, SearchableEntity.MATERIAL, "",
-                    createDataProvider(), true, 0, Integer.MAX_VALUE);
         } catch (final AssertionError ex)
         {
             fail = false;
@@ -160,38 +148,6 @@ public final class HibernateSearchDAOTest extends AbstractDAOTest
 //            assertEquals("Code", matchingEntity.getMatches().get(0).getCode());
 //        }
 //    }
-
-    @Test
-    public final void testSearchEntitiesByTermForMaterial()
-    {
-        final IHibernateSearchDAO hibernateSearchDAO = daoFactory.getHibernateSearchDAO();
-        String propertyValue = "adenovirus";
-        final List<MatchingEntity> hits =
-                hibernateSearchDAO.searchEntitiesByTerm(USER_ID, SearchableEntity.MATERIAL,
-                        propertyValue, createDataProvider(), false, 0, Integer.MAX_VALUE);
-        assertEquals(2, hits.size());
-        for (MatchingEntity matchingEntity : hits)
-        {
-            MaterialPE material =
-                    daoFactory.getMaterialDAO().getById(new TechId(matchingEntity.getId()));
-            ensureContains(material.getProperties(), propertyValue);
-        }
-    }
-
-    private static void ensureContains(Set<MaterialPropertyPE> properties, String propertyValue)
-    {
-        boolean ok = false;
-        for (MaterialPropertyPE prop : properties)
-        {
-            ok = ok || containsInsensitve(prop.tryGetUntypedValue(), propertyValue);
-        }
-        assertTrue("No property contains text " + propertyValue, ok);
-    }
-
-    private static boolean containsInsensitve(String text, String substring)
-    {
-        return text.toUpperCase().contains(substring.toUpperCase());
-    }
 
     // ----------------- test serach for datasets
 

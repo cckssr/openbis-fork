@@ -52,9 +52,6 @@ public class DataSetTranslator extends AbstractCachingTranslator<Long, DataSet, 
     private IDataSetPropertyTranslator propertyTranslator;
 
     @Autowired
-    private IDataSetMaterialPropertyTranslator materialPropertyTranslator;
-
-    @Autowired
     private IDataSetSamplePropertyTranslator samplePropertyTranslator;
 
     @Autowired
@@ -156,12 +153,6 @@ public class DataSetTranslator extends AbstractCachingTranslator<Long, DataSet, 
         if (fetchOptions.hasProperties())
         {
             relations.put(IDataSetPropertyTranslator.class, propertyTranslator.translate(context, dataSetIds, fetchOptions.withProperties()));
-        }
-
-        if (fetchOptions.hasMaterialProperties())
-        {
-            relations.put(IDataSetMaterialPropertyTranslator.class,
-                    materialPropertyTranslator.translate(context, dataSetIds, fetchOptions.withMaterialProperties()));
         }
 
         if (fetchOptions.hasSampleProperties())
@@ -328,12 +319,6 @@ public class DataSetTranslator extends AbstractCachingTranslator<Long, DataSet, 
         {
             result.setProperties(relations.get(IDataSetPropertyTranslator.class, dataSetId));
             result.getFetchOptions().withPropertiesUsing(fetchOptions.withProperties());
-        }
-
-        if (fetchOptions.hasMaterialProperties())
-        {
-            result.setMaterialProperties(relations.get(IDataSetMaterialPropertyTranslator.class, dataSetId));
-            result.getFetchOptions().withMaterialPropertiesUsing(fetchOptions.withMaterialProperties());
         }
 
         if (fetchOptions.hasSampleProperties())

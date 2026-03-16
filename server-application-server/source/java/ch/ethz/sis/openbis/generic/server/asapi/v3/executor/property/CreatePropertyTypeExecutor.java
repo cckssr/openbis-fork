@@ -66,9 +66,6 @@ public class CreatePropertyTypeExecutor
     private ISetPropertyTypeVocabularyExecutor setPropertyTypeVocabularyExecutor;
 
     @Autowired
-    private ISetPropertyTypeMaterialTypeExecutor setPropertyTypeMaterialTypeExecutor;
-
-    @Autowired
     private ISetPropertyTypeSampleTypeExecutor setPropertyTypeSampleTypeExecutor;
 
     @Autowired
@@ -120,31 +117,10 @@ public class CreatePropertyTypeExecutor
         {
             throw new UserFailureException("Vocabulary id has been specified but data type is " + dataType + ".");
         }
-        validateMaterialType(creation, dataType);
+
         validateSampleType(creation, dataType);
         validateSchemaAndDataType(dataType.name(), creation.getSchema());
         validateTransformationAndDataType(dataType.name(), creation.getTransformation());
-    }
-
-    private void validateMaterialType(PropertyTypeCreation creation, DataType dataType)
-    {
-        IEntityTypeId materialTypeId = creation.getMaterialTypeId();
-        if (materialTypeId != null)
-        {
-            if (dataType != DataType.MATERIAL)
-            {
-                throw new UserFailureException("Material type id has been specified but data type is " + dataType + ".");
-            }
-            if (materialTypeId instanceof EntityTypePermId)
-            {
-                EntityTypePermId permId = (EntityTypePermId) materialTypeId;
-                if (permId.getEntityKind() != EntityKind.MATERIAL)
-                {
-                    throw new UserFailureException("Specified entity type id (" + materialTypeId + ") is not a "
-                            + EntityKind.MATERIAL + " type.");
-                }
-            }
-        }
     }
 
     private void validateSampleType(PropertyTypeCreation creation, DataType dataType)
@@ -220,7 +196,6 @@ public class CreatePropertyTypeExecutor
     protected void updateBatch(IOperationContext context, MapBatch<PropertyTypeCreation, PropertyTypePE> batch)
     {
         setPropertyTypeVocabularyExecutor.set(context, batch);
-        setPropertyTypeMaterialTypeExecutor.set(context, batch);
         setPropertyTypeSampleTypeExecutor.set(context, batch);
     }
 

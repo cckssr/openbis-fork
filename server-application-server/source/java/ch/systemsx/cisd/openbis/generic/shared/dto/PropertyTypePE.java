@@ -80,15 +80,8 @@ public final class PropertyTypePE extends HibernateAbstractRegistrationHolder im
 
     private Map<String, String> metaData;
 
-    /** can be null. Is always null when {@link #materialType} or {@link #sampleType} is not null. */
+    /** can be null. Is always null when {@link #sampleType} is not null. */
     private VocabularyPE vocabulary;
-
-    /**
-     * If this field is set, then it specifies the type of the materials, which are values of this property type.<br>
-     * Note that this field can be null and the data type can be still MATERIAL, it means that, that material of any type can be a valid property
-     * value.
-     */
-    private MaterialTypePE materialType;
 
     /**
      * If this field is set, then it specifies the type of the samples, which are values of this property type.<br>
@@ -99,9 +92,6 @@ public final class PropertyTypePE extends HibernateAbstractRegistrationHolder im
     private boolean managedInternally;
 
     private transient Long id;
-
-    private Set<MaterialTypePropertyTypePE> materialTypePropertyTypes =
-            new HashSet<MaterialTypePropertyTypePE>();
 
     private Set<ExperimentTypePropertyTypePE> experimentTypePropertyTypes =
             new HashSet<ExperimentTypePropertyTypePE>();
@@ -135,21 +125,8 @@ public final class PropertyTypePE extends HibernateAbstractRegistrationHolder im
 
     public void setVocabulary(final VocabularyPE vocabulary)
     {
-        assertOnlyOneNotNull(vocabulary, materialType, sampleType);
+        assertOnlyOneNotNull(vocabulary, sampleType);
         this.vocabulary = vocabulary;
-    }
-
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = ColumnNames.PROPERTY_MATERIAL_TYPE_COLUMN, updatable = false)
-    public MaterialTypePE getMaterialType()
-    {
-        return materialType;
-    }
-
-    public void setMaterialType(MaterialTypePE materialType)
-    {
-        assertOnlyOneNotNull(vocabulary, materialType, sampleType);
-        this.materialType = materialType;
     }
 
     @ManyToOne(fetch = FetchType.EAGER)
@@ -161,15 +138,13 @@ public final class PropertyTypePE extends HibernateAbstractRegistrationHolder im
 
     public void setSampleType(SampleTypePE sampleType)
     {
-        assertOnlyOneNotNull(vocabulary, materialType, sampleType);
+        assertOnlyOneNotNull(vocabulary, sampleType);
         this.sampleType = sampleType;
     }
 
-    private void assertOnlyOneNotNull(VocabularyPE vocabulary, MaterialTypePE materialType, SampleTypePE sampleType)
+    private void assertOnlyOneNotNull(VocabularyPE vocabulary, SampleTypePE sampleType)
     {
-        assert materialType == null || vocabulary == null : "Property cannot be of controlled vocabulary and material type at the same time";
         assert vocabulary == null || sampleType == null : "Property cannot be of controlled vocabulary and sample type at the same time";
-        assert sampleType == null || materialType == null : "Property cannot be of sample type and material type at the same time";
     }
 
     /**
@@ -476,20 +451,6 @@ public final class PropertyTypePE extends HibernateAbstractRegistrationHolder im
     }
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "propertyTypeInternal")
-    private Set<MaterialTypePropertyTypePE> getMaterialTypePropertyTypesInternal()
-    {
-        return materialTypePropertyTypes;
-    }
-
-    // Required by Hibernate.
-    @SuppressWarnings("unused")
-    private void setMaterialTypePropertyTypesInternal(
-            Set<MaterialTypePropertyTypePE> materialTypePropertyTypes)
-    {
-        this.materialTypePropertyTypes = materialTypePropertyTypes;
-    }
-
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "propertyTypeInternal")
     private Set<DataSetTypePropertyTypePE> getDataSetTypePropertyTypesInternal()
     {
         return dataSetTypePropertyTypes;
@@ -501,33 +462,6 @@ public final class PropertyTypePE extends HibernateAbstractRegistrationHolder im
             Set<DataSetTypePropertyTypePE> dataSetTypePropertyTypes)
     {
         this.dataSetTypePropertyTypes = dataSetTypePropertyTypes;
-    }
-
-    @Transient
-    public Set<MaterialTypePropertyTypePE> getMaterialTypePropertyTypes()
-    {
-        return new UnmodifiableSetDecorator<MaterialTypePropertyTypePE>(
-                getMaterialTypePropertyTypesInternal());
-    }
-
-    public final void setMaterialTypePropertyTypes(final Iterable<MaterialTypePropertyTypePE> childs)
-    {
-        getMaterialTypePropertyTypesInternal().clear();
-        for (final MaterialTypePropertyTypePE child : childs)
-        {
-            addMaterialTypePropertyType(child);
-        }
-    }
-
-    public void addMaterialTypePropertyType(final MaterialTypePropertyTypePE child)
-    {
-        final PropertyTypePE parent = child.getPropertyType();
-        if (parent != null)
-        {
-            parent.getMaterialTypePropertyTypesInternal().remove(child);
-        }
-        child.setPropertyTypeInternal(this);
-        getMaterialTypePropertyTypesInternal().add(child);
     }
 
     public void addDataSetTypePropertyType(DataSetTypePropertyTypePE child)

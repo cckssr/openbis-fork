@@ -27,9 +27,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetBatchUpdateDetai
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Experiment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Grantee;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IEntityProperty;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Material;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewExperiment;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewMaterial;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewMetaproject;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewProject;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewSample;
@@ -40,7 +38,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.RoleWithHierarchy.RoleC
 import ch.systemsx.cisd.openbis.generic.shared.dto.AtomicEntityOperationDetails;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataSetBatchUpdatesDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentUpdatesDTO;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialUpdateDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.MetaprojectUpdatesDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.NewExternalData;
 import ch.systemsx.cisd.openbis.generic.shared.dto.NewProperty;
@@ -55,7 +52,6 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.ProjectIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.SampleIdentifierFactory;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.SpaceIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.SpaceIdentifierFactory;
-import ch.systemsx.cisd.openbis.generic.shared.translator.MaterialTranslator;
 
 public final class EntityOperationBuilder
 {
@@ -80,11 +76,6 @@ public final class EntityOperationBuilder
 
     private final List<DataSetBatchUpdatesDTO> dataSetUpdates =
             new ArrayList<DataSetBatchUpdatesDTO>();
-
-    private final Map<String, List<NewMaterial>> materials =
-            new HashMap<String, List<NewMaterial>>();
-
-    private final List<MaterialUpdateDTO> materialUpdates = new ArrayList<MaterialUpdateDTO>();
 
     private final List<NewMetaproject> metaprojectRegistrations =
             new ArrayList<NewMetaproject>();
@@ -125,17 +116,6 @@ public final class EntityOperationBuilder
         return this;
     }
 
-    EntityOperationBuilder material(String materialTypeCode, Material material)
-    {
-        List<NewMaterial> list = materials.get(materialTypeCode);
-        if (list == null)
-        {
-            list = new ArrayList<NewMaterial>();
-            materials.put(materialTypeCode, list);
-        }
-        list.add(MaterialTranslator.translateToNewMaterial(material));
-        return this;
-    }
 
     EntityOperationBuilder project(SpaceIdentifier spaceIdentifier, String projectCode)
     {
@@ -321,7 +301,7 @@ public final class EntityOperationBuilder
     {
         return new AtomicEntityOperationDetails(registrationID, userID, spaces, projects,
                 projectUpdates, experiments, experimentUpdates, sampleUpdates, samples,
-                materials, materialUpdates, dataSets, dataSetUpdates, metaprojectRegistrations,
+                dataSets, dataSetUpdates, metaprojectRegistrations,
                 metaprojectUpdates, vocabularyUpdates, spaceRoleAssignments, spaceRoleRevocations);
     }
 

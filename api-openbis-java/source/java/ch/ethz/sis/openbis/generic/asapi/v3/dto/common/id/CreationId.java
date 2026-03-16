@@ -17,7 +17,6 @@ package ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.IDataSetId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.IExperimentId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.id.IMaterialId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.IProjectId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.ISampleId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.ISpaceId;
@@ -27,7 +26,7 @@ import ch.systemsx.cisd.base.annotation.JsonObject;
  * @author Jakub Straszewski
  */
 @JsonObject("as.dto.common.id.CreationId")
-public class CreationId implements ISampleId, IDataSetId, IExperimentId, IProjectId, ISpaceId, IMaterialId
+public class CreationId implements ISampleId, IDataSetId, IExperimentId, IProjectId, ISpaceId
 {
     private static final long serialVersionUID = 1L;
 

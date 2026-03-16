@@ -34,7 +34,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.exceptions.UnsupportedObjectIdExcept
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.dataset.IDataSetTypeAuthorizationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.experiment.IExperimentTypeAuthorizationExecutor;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.material.IMaterialTypeAuthorizationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.sample.ISampleTypeAuthorizationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.IListObjectById;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.MapObjectById;
@@ -63,9 +62,6 @@ public class MapEntityTypeByIdExecutor implements IMapEntityTypeByIdExecutor
 
     @Autowired
     private IDataSetTypeAuthorizationExecutor dataSetTypeAuthorizationExecutor;
-
-    @Autowired
-    private IMaterialTypeAuthorizationExecutor materialTypeAuthorizationExecutor;
 
     @SuppressWarnings("unused")
     private MapEntityTypeByIdExecutor()
@@ -175,10 +171,6 @@ public class MapEntityTypeByIdExecutor implements IMapEntityTypeByIdExecutor
             dataSetTypeAuthorizationExecutor.canGet(context);
         }
 
-        if (entityKinds.contains(ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind.MATERIAL))
-        {
-            materialTypeAuthorizationExecutor.canGet(context);
-        }
     }
 
 }

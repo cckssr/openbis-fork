@@ -26,7 +26,6 @@ import com.csvreader.CsvReader;
 import ch.systemsx.cisd.common.exceptions.Status;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.common.string.UnicodeUtils;
-import ch.systemsx.cisd.openbis.generic.shared.util.MaterialConfigurationProvider;
 
 /**
  * Transforms a screening library file and produces files which can be uploaded to openBIS: genes, oligos and plates with wells.
@@ -90,8 +89,7 @@ public class ScreeningLibraryTransformer
             }
             String[] headers = csvReader.getValues();
             QiagenScreeningLibraryColumnExtractor extractor =
-                    new QiagenScreeningLibraryColumnExtractor(headers,
-                            MaterialConfigurationProvider.getInstance());
+                    new QiagenScreeningLibraryColumnExtractor(headers);
             LibraryEntityRegistrator registrator =
                     new LibraryEntityRegistrator(extractor, experimentIdentifier, plateGeometry,
                             spaceCode, sampleProjectOrNull, genesFile, oligosFile, platesFile);

@@ -453,7 +453,7 @@ public class SearchSampleTypeTest extends AbstractTest
         assertEquals(codes.toString(), "[DELETION_TEST, DILUTION_PLATE, DYNAMIC_PLATE]");
         assertEquals(types.get(0).getFetchOptions().hasPropertyAssignments(), true);
         List<PropertyAssignment> propertyAssignments = types.get(0).getPropertyAssignments();
-        assertOrder(propertyAssignments, "BACTERIUM", "ORGANISM", "DESCRIPTION");
+        assertOrder(propertyAssignments, "ORGANISM", "DESCRIPTION");
         v3api.logout(sessionToken);
     }
 

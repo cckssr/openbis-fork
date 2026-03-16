@@ -29,8 +29,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.IDataSetId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.IExperimentId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.id.IMaterialId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.id.MaterialPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.evaluate.DynamicPropertyPluginEvaluationOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.evaluate.DynamicPropertyPluginEvaluationResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.evaluate.EntityValidationPluginEvaluationOptions;
@@ -44,7 +42,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.exceptions.ObjectNotFoundException;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.dataset.IMapDataSetByIdExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.experiment.IMapExperimentByIdExecutor;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.material.IMapMaterialByIdExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.sample.IMapSampleByIdExecutor;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
@@ -60,7 +57,6 @@ import ch.systemsx.cisd.openbis.generic.server.dataaccess.entity_validation.api.
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.IEntityInformationWithPropertiesHolder;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ScriptPE;
 import ch.systemsx.cisd.openbis.generic.shared.hotdeploy_plugins.api.IEntityAdaptor;
@@ -87,9 +83,6 @@ public class EvaluatePluginExecutor implements IEvaluatePluginExecutor
 
     @Autowired
     private IMapDataSetByIdExecutor mapDataSetByIdExecutor;
-
-    @Autowired
-    private IMapMaterialByIdExecutor mapMaterialByIdExecutor;
 
     @Autowired
     private IDynamicPropertyCalculatorFactory dynamicPropertyCalculatorFactory;
@@ -248,9 +241,6 @@ public class EvaluatePluginExecutor implements IEvaluatePluginExecutor
                         } else if (entity instanceof DataPE)
                         {
                             id = new DataSetPermId(((DataPE) entity).getCode());
-                        } else if (entity instanceof MaterialPE)
-                        {
-                            id = new MaterialPermId(((MaterialPE) entity).getCode(), ((MaterialPE) entity).getEntityType().getCode());
                         }
 
                         requestedValidations.add(id);
@@ -302,10 +292,6 @@ public class EvaluatePluginExecutor implements IEvaluatePluginExecutor
         {
             objectMap = mapDataSetByIdExecutor.map(context, Arrays.asList((IDataSetId) objectId));
             objectEntityKind = ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityKind.DATA_SET;
-        } else if (objectId instanceof IMaterialId)
-        {
-            objectMap = mapMaterialByIdExecutor.map(context, Arrays.asList((IMaterialId) objectId));
-            objectEntityKind = ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityKind.MATERIAL;
         } else
         {
             throw new UserFailureException("Unsupported objectId: " + objectId);

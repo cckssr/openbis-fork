@@ -70,11 +70,6 @@ public abstract class PropertyTranslator extends
             if (record.propertyValue != null)
             {
                 updateObjectProperty(objectProperties, record.propertyCode, record.propertyValue);
-            } else if (record.materialPropertyValueCode != null)
-            {
-                updateObjectProperty(objectProperties, record.propertyCode,
-                        record.materialPropertyValueCode + " (" + record.materialPropertyValueTypeCode
-                                + ")");
             } else if (record.vocabularyPropertyValue != null)
             {
                 updateObjectProperty(objectProperties, record.propertyCode,

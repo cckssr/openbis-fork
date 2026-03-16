@@ -60,9 +60,6 @@ public class UpdateTagExecutor extends AbstractUpdateEntityExecutor<TagUpdate, M
     @Autowired
     private IUpdateTagDataSetsExecutor updateTagDataSetsExecutor;
 
-    @Autowired
-    private IUpdateTagMaterialsExecutor updateTagMaterialsExecutor;
-
     @Override
     protected ITagId getId(TagUpdate update)
     {
@@ -111,7 +108,6 @@ public class UpdateTagExecutor extends AbstractUpdateEntityExecutor<TagUpdate, M
         updateTagExperimentsExecutor.update(context, batch);
         updateTagSamplesExecutor.update(context, batch);
         updateTagDataSetsExecutor.update(context, batch);
-        updateTagMaterialsExecutor.update(context, batch);
     }
 
     @Override

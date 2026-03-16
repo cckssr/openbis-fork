@@ -127,33 +127,6 @@ public interface IMasterDataRegistrationTransaction
     List<IScriptImmutable> listScripts();
 
     /**
-     * Create a new material type to register with the openBIS AS.
-     * 
-     * @param code the material type's code.
-     */
-    IMaterialType createNewMaterialType(String code);
-
-    /**
-     * Get a material type from the openBIS AS. Returns null if the material type does not exist.
-     * 
-     * @return A material type or null
-     */
-    IMaterialTypeImmutable getMaterialType(String code);
-
-    /**
-     * Gets or creates material type from the openBIS AS.
-     * 
-     * @return the already existing type or a freshly created one if it doesn't exist. Setter methods on the returned type are ignored if the type
-     *         already exists.
-     */
-    IMaterialType getOrCreateNewMaterialType(String code);
-
-    /**
-     * Return all material types existing in the openBIS AS.
-     */
-    List<IMaterialTypeImmutable> listMaterialTypes();
-
-    /**
      * Create a new property type to register with the openBIS AS.
      * 
      * @param code the property type's code.

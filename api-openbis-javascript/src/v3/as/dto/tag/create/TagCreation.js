@@ -12,7 +12,6 @@ define([ "stjs" ], function(stjs) {
 		prototype.experimentIds = null;
 		prototype.sampleIds = null;
 		prototype.dataSetIds = null;
-		prototype.materialIds = null;
 
 		prototype.getCode = function() {
 			return this.code;
@@ -44,12 +43,6 @@ define([ "stjs" ], function(stjs) {
 		prototype.setDataSetIds = function(dataSetIds) {
 			this.dataSetIds = dataSetIds;
 		};
-		prototype.getMaterialIds = function() {
-			return this.materialIds;
-		};
-		prototype.setMaterialIds = function(materialIds) {
-			this.materialIds = materialIds;
-		};
 	}, {
 		experimentIds : {
 			name : "List",
@@ -60,10 +53,6 @@ define([ "stjs" ], function(stjs) {
 			arguments : [ "Object" ]
 		},
 		dataSetIds : {
-			name : "List",
-			arguments : [ "Object" ]
-		},
-		materialIds : {
 			name : "List",
 			arguments : [ "Object" ]
 		}

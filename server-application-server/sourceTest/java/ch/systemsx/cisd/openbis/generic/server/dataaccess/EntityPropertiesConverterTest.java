@@ -171,7 +171,7 @@ public final class EntityPropertiesConverterTest extends AbstractBOTest
     public final void testConvertPropertiesFailed()
     {
         final IEntityPropertiesConverter entityPropertiesConverter =
-                createEntityPropertiesConverter(EntityKind.MATERIAL);
+                createEntityPropertiesConverter(EntityKind.SAMPLE);
         boolean fail = true;
         try
         {

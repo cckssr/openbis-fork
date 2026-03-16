@@ -10,10 +10,6 @@ var IdentifierUtil = new function() {
 		return ('/' + spaceCode);
 	}
 	
-	this.getMaterialIdentifier = function(materialTypeCode, materialCode) {
-		return ('/' + materialTypeCode + '/' + materialCode);
-	}
-	
 	this.getProjectIdentifier = function(spaceCode, projectCode) {
 		return ('/' + spaceCode + '/' + projectCode);
 	}

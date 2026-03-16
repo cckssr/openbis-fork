@@ -237,8 +237,7 @@ class QueryFormParameters extends React.PureComponent {
     const options = [
       openbis.QueryType.EXPERIMENT,
       openbis.QueryType.SAMPLE,
-      openbis.QueryType.DATA_SET,
-      openbis.QueryType.MATERIAL
+      openbis.QueryType.DATA_SET
     ]
       .map(value => ({
         value,
@@ -290,8 +289,6 @@ class QueryFormParameters extends React.PureComponent {
       types.push(...dictionaries.sampleTypes)
     } else if (query.queryType.value === openbis.QueryType.DATA_SET) {
       types.push(...dictionaries.dataSetTypes)
-    } else if (query.queryType.value === openbis.QueryType.MATERIAL) {
-      types.push(...dictionaries.materialTypes)
     }
 
     const options = types.map(type => {

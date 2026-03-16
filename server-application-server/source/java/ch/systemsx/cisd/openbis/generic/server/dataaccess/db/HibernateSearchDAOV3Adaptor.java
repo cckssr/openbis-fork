@@ -41,7 +41,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.ExternalDmsAddressTy
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.search.ExternalDmsTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchObjectKind;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.MaterialSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.AbstractSampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
@@ -50,7 +49,6 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ExperimentSear
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.GlobalSearchManager;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.IGlobalSearchManager;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ILocalSearchManager;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.MaterialSearchManager;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SampleSearchManager;
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
@@ -198,9 +196,6 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
     private GlobalSearchCriteria getCriteria(SearchableEntity entityKind) {
         GlobalSearchCriteria globalSearchCriteria = new GlobalSearchCriteria();
         switch (entityKind) {
-            case MATERIAL:
-                globalSearchCriteria.withObjectKind().thatIn(GlobalSearchObjectKind.MATERIAL);
-                break;
             case EXPERIMENT:
                 globalSearchCriteria.withObjectKind().thatIn(GlobalSearchObjectKind.EXPERIMENT);
                 break;
@@ -217,11 +212,6 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
     private GlobalSearchObjectKind getObjectKind(final SearchableEntity entityKind) {
         final GlobalSearchObjectKind objectKind;
         switch (entityKind) {
-            case MATERIAL:
-            {
-                objectKind = GlobalSearchObjectKind.MATERIAL;
-                break;
-            }
             case EXPERIMENT:
             {
                 objectKind = GlobalSearchObjectKind.EXPERIMENT;
@@ -340,9 +330,6 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
                     if (mainV3Criteria instanceof SampleSearchCriteria) {
                         subV3Criteria = ((SampleSearchCriteria) mainV3Criteria).withParents();
                     }
-                    break;
-                case MATERIAL:
-                    // TODO: V3 doesn't support withMaterial criteria
                     break;
             }
 
@@ -583,9 +570,6 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
                     EntityKind entityKind = getEntityKind(v3Criteria);
 
                     switch (entityKind) {
-                        case MATERIAL:
-                            criterionV3Criteria = withAttribute((MaterialSearchCriteria) v3Criteria, v1Criterion.getField().getAttributeCode());
-                            break;
                         case EXPERIMENT:
                             criterionV3Criteria = withAttribute((ExperimentSearchCriteria) v3Criteria, v1Criterion.getField().getAttributeCode());
                             break;
@@ -1049,86 +1033,12 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
         return criterionV3Criteria;
     }
 
-    private ISearchCriteria withAttribute(MaterialSearchCriteria v3Criteria, String attributeCode) {
-        ISearchCriteria criterionV3Criteria = null;
-        switch (MaterialAttributeSearchFieldKind.valueOf(attributeCode)) {
-            case ID:
-                // Not supported
-                break;
-            case CODE:
-                criterionV3Criteria = v3Criteria.withCode();
-                break;
-            case PERM_ID:
-                criterionV3Criteria = v3Criteria.withPermId();
-                break;
-            case MATERIAL_TYPE:
-                criterionV3Criteria = v3Criteria.withType().withCode();
-                break;
-            case METAPROJECT:
-                criterionV3Criteria = v3Criteria;
-                final MaterialSearchCriteria subcriteria = v3Criteria.withSubcriteria().withOrOperator();
-                subcriteria.withTag().withCode();
-                subcriteria.withTag().withPermId();
-                break;
-            case REGISTRATION_DATE:
-                criterionV3Criteria = v3Criteria.withRegistrationDate();
-                break;
-            case MODIFICATION_DATE:
-                criterionV3Criteria = v3Criteria.withModificationDate();
-                break;
-            case REGISTRATION_DATE_FROM:
-                // For this to work, the search Criteria should set CompareType.MORE_THAN_OR_EQUAL, this was found at SearchFieldDateCriterionFactory
-                criterionV3Criteria = v3Criteria.withRegistrationDate();
-                break;
-            case MODIFICATION_DATE_FROM:
-                // For this to work, the search Criteria should set CompareType.MORE_THAN_OR_EQUAL, this was found at SearchFieldDateCriterionFactory
-                criterionV3Criteria = v3Criteria.withModificationDate();
-                break;
-            case REGISTRATION_DATE_UNTIL:
-                // For this to work, the search Criteria should set CompareType.LESS_THAN_OR_EQUAL, this was found at SearchFieldDateCriterionFactory
-                criterionV3Criteria = v3Criteria.withRegistrationDate();
-                break;
-            case MODIFICATION_DATE_UNTIL:
-                // For this to work, the search Criteria should set CompareType.LESS_THAN_OR_EQUAL, this was found at SearchFieldDateCriterionFactory
-                criterionV3Criteria = v3Criteria.withModificationDate();
-                break;
-            case REGISTRATOR_USER_ID:
-                criterionV3Criteria = v3Criteria.withRegistrator().withUserId();
-                break;
-            case REGISTRATOR_FIRST_NAME:
-                criterionV3Criteria = v3Criteria.withRegistrator().withFirstName();
-                break;
-            case REGISTRATOR_LAST_NAME:
-                criterionV3Criteria = v3Criteria.withRegistrator().withLastName();
-                break;
-            case REGISTRATOR_EMAIL:
-                criterionV3Criteria = v3Criteria.withRegistrator().withEmail();
-                break;
-            case MODIFIER_USER_ID:
-                criterionV3Criteria = v3Criteria.withModifier().withUserId();
-                break;
-            case MODIFIER_FIRST_NAME:
-                criterionV3Criteria = v3Criteria.withModifier().withFirstName();
-                break;
-            case MODIFIER_LAST_NAME:
-                criterionV3Criteria = v3Criteria.withModifier().withLastName();
-                break;
-            case MODIFIER_EMAIL:
-                criterionV3Criteria = v3Criteria.withModifier().withEmail();
-                break;
-        }
-        return criterionV3Criteria;
-    }
-
     //
     // Helper Methods - Criteria build
     //
 
     private EntityKind getEntityKind(AbstractEntitySearchCriteria<?> criteria) {
         EntityKind entityKind = null;
-        if (criteria instanceof MaterialSearchCriteria) {
-            entityKind = EntityKind.MATERIAL;
-        }
         if (criteria instanceof ExperimentSearchCriteria) {
             entityKind = EntityKind.EXPERIMENT;
         }
@@ -1144,9 +1054,6 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
     private AbstractEntitySearchCriteria<?> getCriteria(EntityKind entityKind) {
         AbstractEntitySearchCriteria<?> criteria = null;
         switch (entityKind) {
-            case MATERIAL:
-                criteria = new MaterialSearchCriteria();
-                break;
             case EXPERIMENT:
                 criteria = new ExperimentSearchCriteria();
                 break;
@@ -1158,15 +1065,6 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
                 break;
         }
         return criteria;
-    }
-
-    private MaterialSearchManager materialSearchManager;
-
-    private MaterialSearchManager getMaterialSearchManager() {
-        if (materialSearchManager == null) {
-            materialSearchManager = (MaterialSearchManager) CommonServiceProvider.getApplicationContext().getBean("material-search-manager");
-        }
-        return materialSearchManager;
     }
 
     private ExperimentSearchManager experimentSearchManager;
@@ -1200,9 +1098,6 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
     private ILocalSearchManager<AbstractEntitySearchCriteria<?>, ?, Long> getSearchManager(EntityKind entityKind) {
         ILocalSearchManager<? extends AbstractEntitySearchCriteria<?>, ?, Long> manager = null;
         switch (entityKind) {
-            case MATERIAL:
-                manager = getMaterialSearchManager();
-                break;
             case EXPERIMENT:
                 manager = getExperimentSearchManager();
                 break;

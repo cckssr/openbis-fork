@@ -52,7 +52,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IEntityProperty;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ListSampleCriteria;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewAttachment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewExperiment;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewMaterial;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewMetaproject;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewProject;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewSample;
@@ -61,7 +60,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Sample;
 import ch.systemsx.cisd.openbis.generic.shared.dto.AtomicEntityOperationDetails;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataSetBatchUpdatesDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentUpdatesDTO;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialUpdateDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.MetaprojectUpdatesDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.NewExternalData;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ProjectUpdatesDTO;
@@ -330,8 +328,6 @@ public class ETLServiceDatabaseTest extends AbstractDAOTest
                 Collections.<ExperimentUpdatesDTO> emptyList();
         List<SampleUpdatesDTO> sampleUpdates = Collections.emptyList();
         List<NewSample> sampleRegistrations = Collections.emptyList();
-        Map<String, List<NewMaterial>> materialRegistrations = Collections.emptyMap();
-        List<MaterialUpdateDTO> materialUpdates = Collections.emptyList();
         List<? extends NewExternalData> dataSetRegistrations = Collections.emptyList();
         List<NewMetaproject> metaprojectRegistrations = Collections.emptyList();
         List<MetaprojectUpdatesDTO> metaprojectUpdates = Collections.emptyList();
@@ -341,7 +337,7 @@ public class ETLServiceDatabaseTest extends AbstractDAOTest
                 new AtomicEntityOperationDetails(registrationid, null, spaceRegistrations,
                         projectRegistrations, projectUpdates, experimentRegistrations,
                         experimentUpdates, sampleUpdates, sampleRegistrations,
-                        materialRegistrations, materialUpdates, dataSetRegistrations,
+                        dataSetRegistrations,
                         dataSetUpdates, metaprojectRegistrations,
                         metaprojectUpdates, vocabularyUpdates, batchSizeOrNull);
         service.performEntityOperations(sessionToken, details);
@@ -358,8 +354,6 @@ public class ETLServiceDatabaseTest extends AbstractDAOTest
                 Collections.<ExperimentUpdatesDTO> emptyList();
 
         List<NewSample> sampleRegistrations = Collections.emptyList();
-        Map<String, List<NewMaterial>> materialRegistrations = Collections.emptyMap();
-        List<MaterialUpdateDTO> materialUpdates = Collections.emptyList();
         List<? extends NewExternalData> dataSetRegistrations = Collections.emptyList();
         List<DataSetBatchUpdatesDTO> dataSetUpdates = Collections.emptyList();
         List<NewMetaproject> metaprojectRegistrations = Collections.emptyList();
@@ -370,7 +364,6 @@ public class ETLServiceDatabaseTest extends AbstractDAOTest
                 new AtomicEntityOperationDetails(registrationid, null, spaceRegistrations,
                         projectRegistrations, projectUpdates, experimentRegistrations,
                         experimentUpdates, sampleUpdates, sampleRegistrations,
-                        materialRegistrations, materialUpdates,
                         dataSetRegistrations, dataSetUpdates, metaprojectRegistrations,
                         metaprojectUpdates, vocabularyUpdates, batchSizeOrNull);
         service.performEntityOperations(sessionToken, details);
@@ -440,8 +433,6 @@ public class ETLServiceDatabaseTest extends AbstractDAOTest
                 Collections.<ExperimentUpdatesDTO> emptyList();
         List<SampleUpdatesDTO> sampleUpdates = Collections.emptyList();
         List<NewSample> sampleRegistrations = Arrays.asList(sampleToCreate);
-        Map<String, List<NewMaterial>> materialRegistrations = Collections.emptyMap();
-        List<MaterialUpdateDTO> materialUpdates = Collections.emptyList();
         List<? extends NewExternalData> dataSetRegistrations = Collections.emptyList();
         List<DataSetBatchUpdatesDTO> dataSetUpdates = Collections.emptyList();
         List<NewMetaproject> metaprojectRegistrations = Collections.emptyList();
@@ -452,7 +443,6 @@ public class ETLServiceDatabaseTest extends AbstractDAOTest
                 new AtomicEntityOperationDetails(registrationid, null, spaceRegistrations,
                         projectRegistrations, projectUpdates, experimentRegistrations,
                         experimentUpdates, sampleUpdates, sampleRegistrations,
-                        materialRegistrations, materialUpdates,
                         dataSetRegistrations, dataSetUpdates, metaprojectRegistrations,
                         metaprojectUpdates, vocabularyUpdates);
         service.performEntityOperations(sessionToken, details);

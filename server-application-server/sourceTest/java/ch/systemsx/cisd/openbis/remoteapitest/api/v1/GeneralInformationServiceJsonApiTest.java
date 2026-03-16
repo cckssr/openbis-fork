@@ -553,8 +553,7 @@ public class GeneralInformationServiceJsonApiTest extends RemoteApiTestCase
 
         assertEquals("ExperimentType[COMPOUND_HCS,Compound High Content Screening," +
                         "[PropertyTypeGroup[<null>,[PropertyType[VARCHAR,DESCRIPTION,Description," +
-                        "A Description,mandatory], PropertyType[VARCHAR,COMMENT,Comment,Any other comments,optional], " +
-                        "PropertyType[MATERIAL,ANY_MATERIAL,any_material,any_material,optional]]]]]",
+                        "A Description,mandatory], PropertyType[VARCHAR,COMMENT,Comment,Any other comments,optional]]]]]",
                 experimentTypes.get(0).toString());
         assertEquals(3, experimentTypes.size());
     }
@@ -576,7 +575,7 @@ public class GeneralInformationServiceJsonApiTest extends RemoteApiTestCase
         assertEquals(null, propertyTypeGroup.getName());
 
         List<PropertyType> propertyTypes = propertyTypeGroup.getPropertyTypes();
-        assertEquals(4, propertyTypes.size());
+        assertEquals(3, propertyTypes.size());
 
         PropertyType propertyType;
         propertyType = propertyTypes.get(0);
@@ -585,9 +584,9 @@ public class GeneralInformationServiceJsonApiTest extends RemoteApiTestCase
         assertEquals("Any other comments", propertyType.getDescription());
 
         propertyType = propertyTypes.get(1);
-        assertEquals("ANY_MATERIAL", propertyType.getCode());
-        assertEquals("any_material", propertyType.getLabel());
-        assertEquals("any_material", propertyType.getDescription());
+        assertEquals("SIZE", propertyType.getCode());
+        assertEquals("Size", propertyType.getLabel());
+        assertEquals("The size of the object", propertyType.getDescription());
     }
 
     @Test
@@ -737,7 +736,7 @@ public class GeneralInformationServiceJsonApiTest extends RemoteApiTestCase
                 generalInformationService.searchForDataSets(sessionToken, searchCriteria);
         assertEquals(3, result.size());
         assertEquals(
-                "[DataSet[20081105092159111-1,/CISD/NEMO/EXP-TEST-1,/CISD/NEMO/CP-TEST-1,HCS_IMAGE,{ANY_MATERIAL=1000_C (SIRNA), BACTERIUM=BACTERIUM1 (BACTERIUM), COMMENT=no comment, GENDER=FEMALE}], "
+                "[DataSet[20081105092159111-1,/CISD/NEMO/EXP-TEST-1,/CISD/NEMO/CP-TEST-1,HCS_IMAGE,{COMMENT=no comment, GENDER=FEMALE}], "
                         + "DataSet[20081105092159222-2,/CISD/NOE/EXP-TEST-2,/CISD/NOE/CP-TEST-2,HCS_IMAGE,{COMMENT=no comment}], "
                         + "DataSet[20081105092159333-3,/CISD/NEMO/EXP-TEST-2,/CISD/NEMO/CP-TEST-3,HCS_IMAGE,{COMMENT=no comment}]]",
                 result.toString());

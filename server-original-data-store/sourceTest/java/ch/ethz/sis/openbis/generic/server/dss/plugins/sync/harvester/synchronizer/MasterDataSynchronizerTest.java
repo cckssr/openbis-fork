@@ -46,7 +46,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.TechId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataTypeCode;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.FileFormatType;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewVocabulary;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Person;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PropertyType;
@@ -401,10 +400,6 @@ public class MasterDataSynchronizerTest
 
         private List<PropertyType> incomingPropertyTypes = Collections.emptyList();
 
-        private List<MaterialType> existingMaterialTypes = Collections.emptyList();
-
-        private List<MaterialType> incomingMaterialTypes = Collections.emptyList();
-
         private List<ExternalDms> existingExternalDmss = Collections.emptyList();
 
         private List<ExternalDms> incomingExternalDmss = Collections.emptyList();
@@ -465,8 +460,6 @@ public class MasterDataSynchronizerTest
                         will(returnValue(existingVocabularies));
                         allowing(server).listPropertyTypes(SESSION_TOKEN, false);
                         will(returnValue(existingPropertyTypes));
-                        allowing(server).listMaterialTypes(SESSION_TOKEN);
-                        will(returnValue(existingMaterialTypes));
                         allowing(v3api).getExternalDataManagementSystems(with(SESSION_TOKEN),
                                 with(existingExternalDmssIds),
                                 with(any(ExternalDmsFetchOptions.class)));

@@ -90,13 +90,6 @@ public interface ISearchService
     public List<ISampleImmutable> searchForSamples(SearchCriteria searchCriteria);
 
     /**
-     * @param identifierCollection a collection containing the identifiers of the matching materials. Identifiers that do not exist in the openBIS
-     *            database are ignored.
-     * @return a list of materials matching the specified collection.
-     */
-    public List<IMaterialImmutable> listMaterials(MaterialIdentifierCollection identifierCollection);
-
-    /**
      * @return a controlled vocabulary with the given code. Returns null if the vocabulary with given code is not found.
      * @deprecated use {@link #getVocabulary(String)} instead
      */
@@ -122,11 +115,6 @@ public interface ISearchService
      * @return the list of property definitions for an experiment type.
      */
     public List<IPropertyAssignmentImmutable> listPropertiesDefinitionsForExperimentType(String code);
-
-    /**
-     * @return the list of property definitions for a material type.
-     */
-    public List<IPropertyAssignmentImmutable> listPropertiesDefinitionsForMaterialType(String code);
 
     /**
      * @return the list of metaprojects for the current user.

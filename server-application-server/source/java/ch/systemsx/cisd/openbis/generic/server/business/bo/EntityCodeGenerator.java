@@ -52,9 +52,6 @@ public class EntityCodeGenerator
 
         @Select(sql = PREFIX + TableNames.DATA_ALL_TABLE + SUFFIX)
         public int getDataSetCount(String code);
-
-        @Select(sql = PREFIX + TableNames.MATERIALS_TABLE + SUFFIX)
-        public int getMaterialsCount(String code);
     }
 
     public EntityCodeGenerator(IDAOFactory daoFactory)
@@ -109,9 +106,6 @@ public class EntityCodeGenerator
         } else if (EntityKind.DATA_SET.equals(entityKind))
         {
             count = countQuery.getDataSetCount(code);
-        } else if (EntityKind.MATERIAL.equals(entityKind))
-        {
-            count = countQuery.getMaterialsCount(code);
         } else
         {
             throw new IllegalArgumentException("Unsupported entity kind: " + entityKind);

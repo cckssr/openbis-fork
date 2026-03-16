@@ -53,9 +53,6 @@ import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Experiment;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Experiment.ExperimentInitializer;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.ExperimentType;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.ExperimentType.ExperimentTypeInitializer;
-import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Material;
-import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Material.MaterialInitializer;
-import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.MaterialTypeIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.MetaprojectAssignmentsIds;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Project;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.PropertyType;
@@ -80,9 +77,6 @@ import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.id.experiment.Experime
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.id.experiment.ExperimentPermIdId;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.id.experiment.ExperimentTechIdId;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.id.experiment.IExperimentId;
-import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.id.material.IMaterialId;
-import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.id.material.MaterialCodeAndTypeCodeId;
-import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.id.material.MaterialTechIdId;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.id.metaproject.IMetaprojectId;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.id.metaproject.MetaprojectIdentifierId;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.id.metaproject.MetaprojectTechIdId;
@@ -368,9 +362,6 @@ public class Translator
             ptInitializer.setDataType(propertyType.getDataType().getCode());
             if (propertyType.getSampleType() != null) {
                 ptInitializer.setSampleTypeCode(propertyType.getSampleType().getCode());
-            }
-            if (propertyType.getMaterialType() != null) {
-                ptInitializer.setMaterialTypeCode(propertyType.getMaterialType().getCode());
             }
             ptInitializer.setCode(propertyType.getCode());
             ptInitializer.setLabel(propertyType.getLabel());
@@ -688,83 +679,6 @@ public class Translator
         return new Vocabulary(initializer);
     }
 
-    public static Material translate(
-            ch.systemsx.cisd.openbis.generic.shared.basic.dto.Material material,
-            Map<Long, Material> materialsCache)
-    {
-        MaterialInitializer mi = new MaterialInitializer();
-
-        mi.setId(material.getId());
-        mi.setMaterialCode(material.getCode());
-
-        MaterialTypeIdentifier typeIdentifier =
-                new MaterialTypeIdentifier(material.getMaterialType().getCode());
-
-        mi.setMaterialTypeIdentifier(typeIdentifier);
-
-        material.getProperties();
-
-        List<IEntityProperty> originalProperties = material.getProperties();
-        Map<String, String> properties = EntityHelper.convertToStringMap(originalProperties);
-        Map<String, Material> materialProperties =
-                convertMaterialProperties(originalProperties, materialsCache);
-
-        mi.setMaterialProperties(materialProperties);
-
-        mi.setProperties(properties);
-
-        mi.setRegistrationDetails(translateRegistrationDetails(material));
-
-        if (material.getMetaprojects() != null)
-        {
-            for (Metaproject mp : material.getMetaprojects())
-            {
-                mi.addMetaproject(mp);
-            }
-        }
-
-        return new Material(mi);
-    }
-
-    private static Map<String, Material> convertMaterialProperties(
-            List<IEntityProperty> properties, Map<Long, Material> materialsCache)
-    {
-        HashMap<String, Material> result = new HashMap<String, Material>();
-        if (properties != null)
-        {
-            for (IEntityProperty property : properties)
-            {
-                ch.systemsx.cisd.openbis.generic.shared.basic.dto.Material material =
-                        property.getMaterial();
-                if (material != null)
-                {
-                    Material apiMaterial = materialsCache.get(material.getId());
-                    if (apiMaterial == null)
-                    {
-                        apiMaterial = translate(material, materialsCache);
-                        // FIXME: Caching disabled because a not fully filled Material could be
-                        // cached
-                        // materialsCache.put(material.getId(), apiMaterial);
-                    }
-                    String propCode = property.getPropertyType().getCode();
-                    result.put(propCode, apiMaterial);
-                }
-            }
-        }
-        return result;
-    }
-
-    public static List<Material> translateMaterials(
-            Collection<ch.systemsx.cisd.openbis.generic.shared.basic.dto.Material> materials)
-    {
-        Map<Long, Material> materialsCache = new HashMap<Long, Material>();
-        List<Material> list = new LinkedList<Material>();
-        for (ch.systemsx.cisd.openbis.generic.shared.basic.dto.Material material : materials)
-        {
-            list.add(translate(material, materialsCache));
-        }
-        return list;
-    }
 
     public static List<Attachment> translateAttachments(String sessionToken,
             IObjectId attachmentHolderId, AttachmentHolderPE attachmentHolderPE,
@@ -859,9 +773,6 @@ public class Translator
         if (propertyType.getSampleType() != null) {
             ptInitializer.setSampleTypeCode(propertyType.getSampleType().getCode());
         }
-        if (propertyType.getMaterialType() != null) {
-            ptInitializer.setMaterialTypeCode(propertyType.getMaterialType().getCode());
-        }
         ptInitializer.setCode(propertyType.getCode());
         ptInitializer.setLabel(propertyType.getLabel());
         ptInitializer.setDescription(propertyType.getDescription());
@@ -911,9 +822,6 @@ public class Translator
         } else if (id instanceof IDataSetId)
         {
             return translate((IDataSetId) id);
-        } else if (id instanceof IMaterialId)
-        {
-            return translate((IMaterialId) id);
         } else if (id instanceof IMetaprojectId)
         {
             return translate((IMetaprojectId) id);
@@ -1015,27 +923,6 @@ public class Translator
         }
     }
 
-    public static ch.systemsx.cisd.openbis.generic.shared.basic.dto.id.material.IMaterialId translate(IMaterialId id)
-    {
-        if (id == null)
-        {
-            return null;
-        }
-        if (id instanceof MaterialTechIdId)
-        {
-            MaterialTechIdId techIdId = (MaterialTechIdId) id;
-            return new ch.systemsx.cisd.openbis.generic.shared.basic.dto.id.material.MaterialTechIdId(techIdId.getTechId());
-        } else if (id instanceof MaterialCodeAndTypeCodeId)
-        {
-            MaterialCodeAndTypeCodeId codeAndTypeCodeId = (MaterialCodeAndTypeCodeId) id;
-            return new ch.systemsx.cisd.openbis.generic.shared.basic.dto.id.material.MaterialCodeAndTypeCodeId(codeAndTypeCodeId.getCode(),
-                    codeAndTypeCodeId.getTypeCode());
-        } else
-        {
-            throw new IllegalArgumentException("Unsupported material id: " + id.getClass());
-        }
-    }
-
     public static ch.systemsx.cisd.openbis.generic.shared.basic.dto.id.metaproject.IMetaprojectId translate(IMetaprojectId id)
     {
         if (id == null)
@@ -1077,10 +964,6 @@ public class Translator
         for (IDataSetId dataSet : assignments.getDataSets())
         {
             result.addDataSet(translate(dataSet));
-        }
-        for (IMaterialId material : assignments.getMaterials())
-        {
-            result.addMaterial(translate(material));
         }
 
         return result;
@@ -1155,8 +1038,6 @@ public class Translator
                 return EntityKind.SAMPLE;
             case DATA_SET:
                 return EntityKind.DATA_SET;
-            case MATERIAL:
-                return EntityKind.MATERIAL;
             default:
                 throw new IllegalArgumentException("Unknown entity kind: " + kind);
         }

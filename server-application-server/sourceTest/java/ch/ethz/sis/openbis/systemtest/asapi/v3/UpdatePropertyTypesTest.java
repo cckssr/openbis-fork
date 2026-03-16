@@ -239,8 +239,6 @@ public class UpdatePropertyTypesTest extends AbstractTest
                 new Object[] { DataType.TIMESTAMP, "2020-01-03 14:23:56", DataType.MULTILINE_VARCHAR, "2020-01-03 14:23:56 +0100" },
                 new Object[] { DataType.CONTROLLEDVOCABULARY, "FLY", DataType.VARCHAR, "FLY" },
                 new Object[] { DataType.CONTROLLEDVOCABULARY, "FLY", DataType.MULTILINE_VARCHAR, "FLY" },
-                new Object[] { DataType.MATERIAL, "FLU (VIRUS)", DataType.VARCHAR, "FLU (VIRUS)" },
-                new Object[] { DataType.MATERIAL, "FLU (VIRUS)", DataType.MULTILINE_VARCHAR, "FLU (VIRUS)" },
                 new Object[] { DataType.SAMPLE, "200811050919915-8", DataType.VARCHAR, "200811050919915-8" },
                 new Object[] { DataType.SAMPLE, "200811050919915-8", DataType.MULTILINE_VARCHAR, "200811050919915-8" },
 
@@ -489,7 +487,7 @@ public class UpdatePropertyTypesTest extends AbstractTest
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
 
         PropertyTypeUpdate update = new PropertyTypeUpdate();
-        update.setTypeId(new PropertyTypePermId("BACTERIUM"));
+        update.setTypeId(new PropertyTypePermId("COMMENT"));
 
         PropertyTypeUpdate update2 = new PropertyTypeUpdate();
         update2.setTypeId(new PropertyTypePermId("ORGANISM"));
@@ -497,7 +495,7 @@ public class UpdatePropertyTypesTest extends AbstractTest
         v3api.updatePropertyTypes(sessionToken, Arrays.asList(update, update2));
 
         assertAccessLog(
-                "update-property-types  PROPERTY_TYPE_UPDATES('[PropertyTypeUpdate[typeId=BACTERIUM], PropertyTypeUpdate[typeId=ORGANISM]]')");
+                "update-property-types  PROPERTY_TYPE_UPDATES('[PropertyTypeUpdate[typeId=COMMENT], PropertyTypeUpdate[typeId=ORGANISM]]')");
     }
 
     @DataProvider

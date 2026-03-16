@@ -25,7 +25,6 @@ import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifier;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.id.MaterialPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.Tag;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.create.TagCreation;
@@ -392,78 +391,9 @@ public class UpdateTagTest extends AbstractTest
     }
 
     @Test
-    public void testUpdateWithMaterialsAdd()
-    {
-        Tag before = getTag(TEST_USER, PASSWORD, new TagPermId(TEST_USER, "TEST_METAPROJECTS"));
-        assertMaterialPermIds(before.getMaterials(), new MaterialPermId("AD3", "VIRUS"));
-
-        TagUpdate update = new TagUpdate();
-        update.setTagId(before.getPermId());
-        update.getMaterialIds().add(new MaterialPermId("AD5", "VIRUS"));
-
-        Tag after = updateTag(TEST_USER, PASSWORD, update);
-
-        assertMaterialPermIds(after.getMaterials(), new MaterialPermId("AD3", "VIRUS"), new MaterialPermId("AD5", "VIRUS"));
-        assertMaterialsExists(new MaterialPermId("AD5", "VIRUS"));
-    }
-
-    @Test
-    public void testUpdateWithMaterialsRemove()
-    {
-        Tag before = getTag(TEST_USER, PASSWORD, new TagPermId(TEST_USER, "TEST_METAPROJECTS"));
-        assertMaterialPermIds(before.getMaterials(), new MaterialPermId("AD3", "VIRUS"));
-
-        TagUpdate update = new TagUpdate();
-        update.setTagId(before.getPermId());
-        update.getMaterialIds().remove(new MaterialPermId("AD3", "VIRUS"));
-
-        Tag after = updateTag(TEST_USER, PASSWORD, update);
-
-        assertEquals(after.getMaterials().size(), 0);
-        assertMaterialsExists(new MaterialPermId("AD3", "VIRUS"));
-    }
-
-    @Test
-    public void testUpdateWithMaterialsSet()
-    {
-        Tag before = getTag(TEST_USER, PASSWORD, new TagPermId(TEST_USER, "TEST_METAPROJECTS"));
-        assertMaterialPermIds(before.getMaterials(), new MaterialPermId("AD3", "VIRUS"));
-
-        TagUpdate update = new TagUpdate();
-        update.setTagId(before.getPermId());
-        update.getMaterialIds().set(new MaterialPermId("AD5", "VIRUS"));
-
-        Tag after = updateTag(TEST_USER, PASSWORD, update);
-
-        assertMaterialPermIds(after.getMaterials(), new MaterialPermId("AD5", "VIRUS"));
-        assertMaterialsExists(new MaterialPermId("AD3", "VIRUS"), new MaterialPermId("AD5", "VIRUS"));
-    }
-
-    @Test
     public void testUpdateWithMaterialsUnauthorized()
     {
         // nothing to test as the materials can be accessed by every user
-    }
-
-    @Test
-    public void testUpdateWithMaterialsNonexistent()
-    {
-        final MaterialPermId materialId = new MaterialPermId("IDONTEXIST", "MENEITHER");
-
-        assertObjectNotFoundException(new IDelegatedAction()
-            {
-                @Override
-                public void execute()
-                {
-                    Tag before = getTag(TEST_USER, PASSWORD, new TagPermId(TEST_USER, "TEST_METAPROJECTS"));
-
-                    TagUpdate update = new TagUpdate();
-                    update.setTagId(before.getPermId());
-                    update.getMaterialIds().add(materialId);
-
-                    updateTag(TEST_USER, PASSWORD, update);
-                }
-            }, materialId);
     }
 
     @Test(dataProviderClass = ProjectAuthorizationUser.class, dataProvider = ProjectAuthorizationUser.PROVIDER_WITH_ETL)
@@ -519,7 +449,6 @@ public class UpdateTagTest extends AbstractTest
         fetchOptions.withExperiments();
         fetchOptions.withSamples();
         fetchOptions.withDataSets();
-        fetchOptions.withMaterials();
         fetchOptions.withOwner();
 
         String sessionToken = v3api.login(user, password);

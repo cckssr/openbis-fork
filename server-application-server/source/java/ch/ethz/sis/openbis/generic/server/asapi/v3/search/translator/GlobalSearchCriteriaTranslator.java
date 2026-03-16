@@ -74,8 +74,6 @@ public class GlobalSearchCriteriaTranslator
 
     public static final String SAMPLE_IDENTIFIER_MATCH_ALIAS = "sample_identifier_match";
 
-    public static final String MATERIAL_MATCH_ALIAS = "material_match";
-
     public static final String SAMPLE_MATCH_ALIAS = "sample_match";
 
     public static final String ENTITY_TYPE_MATCH_ALIAS = "entity_type_match";
@@ -109,8 +107,6 @@ public class GlobalSearchCriteriaTranslator
     private static final String CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS = "cvte";
 
     private static final String SAMPLES_TABLE_ALIAS = "samp";
-
-    private static final String MATERIALS_TABLE_ALIAS = "mat";
 
     private static final String SPACE_TABLE_ALIAS = "space";
 
@@ -302,7 +298,6 @@ public class GlobalSearchCriteriaTranslator
             final boolean containsSample = objectKinds.contains(GlobalSearchObjectKind.SAMPLE);
             final boolean containsExperiment = objectKinds.contains(GlobalSearchObjectKind.EXPERIMENT);
             final boolean containsDataSet = objectKinds.contains(GlobalSearchObjectKind.DATA_SET);
-            final boolean containsMaterial = objectKinds.contains(GlobalSearchObjectKind.MATERIAL);
 
             if (containsSample)
             {
@@ -325,15 +320,6 @@ public class GlobalSearchCriteriaTranslator
                     sqlBuilder.append(UNION_ALL).append(NL);
                 }
                 buildShortSubquery(sqlBuilder, translationContext, useWildcards, globalSearchTextCriterion, DATA_SET);
-            }
-
-            if (containsMaterial)
-            {
-                if (containsSample || containsExperiment || containsDataSet)
-                {
-                    sqlBuilder.append(UNION_ALL).append(NL);
-                }
-                buildShortSubquery(sqlBuilder, translationContext, useWildcards, globalSearchTextCriterion, MATERIAL);
             }
         }
     }
@@ -471,10 +457,7 @@ public class GlobalSearchCriteriaTranslator
         final List<Object> args = translationContext.getArgs();
         if (!authorisationInformation.isInstanceRole())
         {
-            if (tableMapper != MATERIAL)
-            {
-                sqlBuilder.append(SP).append(AND).append(SP).append(LP).append(NL);
-            }
+            sqlBuilder.append(SP).append(AND).append(SP).append(LP).append(NL);
             switch (tableMapper)
             {
                 case SAMPLE:
@@ -573,22 +556,13 @@ public class GlobalSearchCriteriaTranslator
                     break;
                 }
 
-                case MATERIAL:
-                {
-                    // No filtering is needed in this case.
-                    break;
-                }
-
                 default:
                 {
                     throw new IllegalArgumentException("Full text search does not support this table mapper: "
                             + tableMapper);
                 }
             }
-            if (tableMapper != MATERIAL)
-            {
-                sqlBuilder.append(RP);
-            }
+            sqlBuilder.append(RP);
         }
     }
 
@@ -632,7 +606,6 @@ public class GlobalSearchCriteriaTranslator
             final boolean containsSample = objectKinds.contains(GlobalSearchObjectKind.SAMPLE);
             final boolean containsExperiment = objectKinds.contains(GlobalSearchObjectKind.EXPERIMENT);
             final boolean containsDataSet = objectKinds.contains(GlobalSearchObjectKind.DATA_SET);
-            final boolean containsMaterial = objectKinds.contains(GlobalSearchObjectKind.MATERIAL);
 
             if (containsSample)
             {
@@ -655,15 +628,6 @@ public class GlobalSearchCriteriaTranslator
                     sqlBuilder.append(UNION_ALL).append(NL);
                 }
                 buildShortSubquery(sqlBuilder, translationContext, globalSearchTextCriterion, DATA_SET);
-            }
-
-            if (containsMaterial)
-            {
-                if (containsSample || containsExperiment || containsDataSet)
-                {
-                    sqlBuilder.append(UNION_ALL).append(NL);
-                }
-                buildShortSubquery(sqlBuilder, translationContext, globalSearchTextCriterion, MATERIAL);
             }
         }
     }
@@ -695,11 +659,9 @@ public class GlobalSearchCriteriaTranslator
             final Set<Long> sampleIdSet = idSetByObjectKindMap.get(GlobalSearchObjectKind.SAMPLE);
             final Set<Long> experimentIdSet = idSetByObjectKindMap.get(GlobalSearchObjectKind.EXPERIMENT);
             final Set<Long> dataSetIdSet = idSetByObjectKindMap.get(GlobalSearchObjectKind.DATA_SET);
-            final Set<Long> materialIdSet = idSetByObjectKindMap.get(GlobalSearchObjectKind.MATERIAL);
             final boolean containsSample = sampleIdSet != null;
             final boolean containsExperiment = experimentIdSet != null;
             final boolean containsDataSet = dataSetIdSet != null;
-            final boolean containsMaterial = materialIdSet != null;
 
             if (containsSample)
             {
@@ -724,16 +686,6 @@ public class GlobalSearchCriteriaTranslator
                 }
                 buildDetailsSubquery(sqlBuilder, translationContext, globalSearchTextCriterion, DATA_SET,
                         dataSetIdSet);
-            }
-
-            if (containsMaterial)
-            {
-                if (containsSample || containsExperiment || containsDataSet)
-                {
-                    sqlBuilder.append(UNION_ALL).append(NL);
-                }
-                buildDetailsSubquery(sqlBuilder, translationContext, globalSearchTextCriterion, MATERIAL,
-                        materialIdSet);
             }
         }
     }
@@ -820,13 +772,13 @@ public class GlobalSearchCriteriaTranslator
         }
 
         appendRankCalculation(sqlBuilder, tableMapper, forAttributes, stringValue, args,
-                PROPERTIES_TABLE_ALIAS, MATERIALS_TABLE_ALIAS, SAMPLES_TABLE_ALIAS);
+                PROPERTIES_TABLE_ALIAS, SAMPLES_TABLE_ALIAS);
         sqlBuilder.append(SP).append(RANK_ALIAS).append(NL);
     }
 
     public static void appendRankCalculation(final StringBuilder sqlBuilder, final TableMapper tableMapper,
             final boolean forAttributes, final AbstractStringValue stringValue, final List<Object> args,
-            final String propertiesTableAlias, final String materialsTableAlias,
+            final String propertiesTableAlias,
             final String samplesTableAlias)
     {
         if (forAttributes)
@@ -835,11 +787,6 @@ public class GlobalSearchCriteriaTranslator
         } else
         {
             buildTsRank(sqlBuilder, propertiesTableAlias, () -> buildTsQueryPart(sqlBuilder, stringValue, args));
-
-            sqlBuilder.append(SP).append(PLUS).append(SP);
-            sqlBuilder.append(COALESCE).append(LP);
-            buildTsRank(sqlBuilder, materialsTableAlias, () -> buildCastingTsQueryPart(sqlBuilder, stringValue, args));
-            sqlBuilder.append(COMMA).append(SP).append(0).append(RP);
 
             if (tableMapper == TableMapper.SAMPLE || tableMapper == TableMapper.EXPERIMENT
                     || tableMapper == TableMapper.DATA_SET)
@@ -881,11 +828,6 @@ public class GlobalSearchCriteriaTranslator
                     .append(ON).append(SP).append(MAIN_TABLE_ALIAS).append(PERIOD).append(ID_COLUMN).append(SP)
                     .append(EQ).append(SP).append(PROPERTIES_TABLE_ALIAS).append(PERIOD)
                     .append(tableMapper.getValuesTableEntityIdField()).append(NL);
-            sqlBuilder.append(LEFT_JOIN).append(SP).append(MATERIAL.getEntitiesTable()).append(SP)
-                    .append(MATERIALS_TABLE_ALIAS).append(SP)
-                    .append(ON).append(SP).append(PROPERTIES_TABLE_ALIAS).append(PERIOD).append(MATERIAL_PROP_COLUMN)
-                    .append(SP).append(EQ).append(SP).append(MATERIALS_TABLE_ALIAS).append(PERIOD).append(ID_COLUMN)
-                    .append(NL);
 
             if (tableMapper == SAMPLE || tableMapper == EXPERIMENT || tableMapper == DATA_SET)
             {
@@ -902,10 +844,6 @@ public class GlobalSearchCriteriaTranslator
             buildProjectAndSpacesJoin(sqlBuilder, tableMapper);
         }
 
-        if (tableMapper == MATERIAL)
-        {
-            buildEntityTypesJoin(sqlBuilder, tableMapper);
-        }
     }
 
     private static void buildShortWhere(final StringBuilder sqlBuilder, final TranslationContext translationContext,
@@ -1043,7 +981,6 @@ public class GlobalSearchCriteriaTranslator
             }
             sqlBuilder.append(SP).append(SPACE_MATCH_ALIAS).append(COMMA).append(NL);
 
-            sqlBuilder.append(NULL).append(SP).append(MATERIAL_MATCH_ALIAS).append(COMMA).append(NL);
             sqlBuilder.append(NULL).append(SP).append(SAMPLE_MATCH_ALIAS).append(COMMA).append(NL);
             sqlBuilder.append(NULL).append(SP).append(PROPERTY_TYPE_LABEL_ALIAS).append(COMMA).append(NL);
             sqlBuilder.append(NULL).append(SP).append(PROPERTY_VALUE_ALIAS).append(COMMA).append(NL);
@@ -1060,9 +997,6 @@ public class GlobalSearchCriteriaTranslator
             sqlBuilder.append(NULL).append(SP).append(ENTITY_TYPE_MATCH_ALIAS).append(COMMA).append(NL);
             sqlBuilder.append(NULL).append(SP).append(PROJECT_MATCH_ALIAS).append(COMMA).append(NL);
             sqlBuilder.append(NULL).append(SP).append(SPACE_MATCH_ALIAS).append(COMMA).append(NL);
-
-            buildMaterialMatch(sqlBuilder, criterionValues, args);
-            sqlBuilder.append(COMMA).append(NL);
 
             if (tableMapper == SAMPLE || tableMapper == EXPERIMENT || tableMapper == DATA_SET)
             {
@@ -1104,11 +1038,6 @@ public class GlobalSearchCriteriaTranslator
     {
         switch (tableMapper)
         {
-            case MATERIAL:
-            {
-                buildTypeCodeIdentifierConcatenationString(sqlBuilder, entityTypesTableAlias);
-                break;
-            }
             case SAMPLE:
             {
                 sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(SAMPLE_IDENTIFIER_COLUMN);
@@ -1136,9 +1065,7 @@ public class GlobalSearchCriteriaTranslator
                 || tableMapper == TableMapper.DATA_SET))
         {
             sqlBuilder.append(COMMA).append(SP);
-            sqlBuilder.append(SAMPLES_TABLE_ALIAS).append(PERIOD).append(SAMPLE_IDENTIFIER_COLUMN).append(COMMA)
-                    .append(SP);
-            sqlBuilder.append(MATERIALS_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN);
+            sqlBuilder.append(SAMPLES_TABLE_ALIAS).append(PERIOD).append(SAMPLE_IDENTIFIER_COLUMN);
         }
 
         sqlBuilder.append(RP);
@@ -1153,15 +1080,6 @@ public class GlobalSearchCriteriaTranslator
         appendWhenThen(sqlBuilder, SAMPLES_TABLE_ALIAS, SAMPLE_IDENTIFIER_COLUMN, values, args);
         sqlBuilder.append('\t').append(ELSE).append(SP).append(NULL).append(NL);
         sqlBuilder.append(END).append(SP).append(SAMPLE_MATCH_ALIAS);
-    }
-
-    private static void buildMaterialMatch(final StringBuilder sqlBuilder, final String[] values,
-            final List<Object> args)
-    {
-        sqlBuilder.append(CASE).append(NL);
-        appendWhenThen(sqlBuilder, MATERIALS_TABLE_ALIAS, CODE_COLUMN, values, args);
-        sqlBuilder.append('\t').append(ELSE).append(SP).append(NULL).append(NL);
-        sqlBuilder.append(END).append(SP).append(MATERIAL_MATCH_ALIAS);
     }
 
     private static void appendWhenThen(final StringBuilder sqlBuilder, final String tableAlias, final String column,
@@ -1485,11 +1403,6 @@ public class GlobalSearchCriteriaTranslator
                     .append(CONTROLLED_VOCABULARY_TERMS_TABLE_ALIAS).append(PERIOD)
                     .append(ID_COLUMN).append(NL);
 
-            sqlBuilder.append(LEFT_JOIN).append(SP).append(MATERIAL.getEntitiesTable()).append(SP)
-                    .append(MATERIALS_TABLE_ALIAS).append(SP).append(ON).append(SP).append(PROPERTIES_TABLE_ALIAS)
-                    .append(PERIOD).append(MATERIAL_PROP_COLUMN).append(SP).append(EQ).append(SP)
-                    .append(MATERIALS_TABLE_ALIAS).append(PERIOD).append(ID_COLUMN).append(NL);
-
             if (tableMapper == TableMapper.SAMPLE || tableMapper == TableMapper.EXPERIMENT
                     || tableMapper == TableMapper.DATA_SET)
             {
@@ -1649,18 +1562,13 @@ public class GlobalSearchCriteriaTranslator
                 .append(DOUBLE_AT).append(SP);
         buildTsQueryPart(sqlBuilder, stringValue, args);
 
-        sqlBuilder.append(SP).append(OR).append(SP);
-
-        final String tsQuerySuffix = StringStartsWithValue.class.isAssignableFrom(stringValue.getClass())
-                ? PREFIX_MATCH_SUFFIX : "";
-        sqlBuilder.append(MATERIALS_TABLE_ALIAS).append(PERIOD).append(TS_VECTOR_COLUMN).append(SP)
-                .append(DOUBLE_AT).append(SP).append(LP).append(QU).append(tsQuerySuffix).append(RP)
-                .append(DOUBLE_COLON).append(TSQUERY);
-        args.add(toTsQueryText(stringValue));
 
         if (tableMapper == TableMapper.SAMPLE || tableMapper == TableMapper.EXPERIMENT
                 || tableMapper == TableMapper.DATA_SET)
         {
+            final String tsQuerySuffix = StringStartsWithValue.class.isAssignableFrom(stringValue.getClass())
+                    ? PREFIX_MATCH_SUFFIX : "";
+
             sqlBuilder.append(SP).append(OR).append(SP);
 
             sqlBuilder.append(SAMPLES_TABLE_ALIAS).append(PERIOD).append(TS_VECTOR_COLUMN).append(SP)

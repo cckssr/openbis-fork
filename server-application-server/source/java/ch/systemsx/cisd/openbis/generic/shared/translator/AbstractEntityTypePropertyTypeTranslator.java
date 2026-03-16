@@ -23,12 +23,10 @@ import java.util.Set;
 
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityTypePropertyType;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PropertyType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Script;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePropertyTypePE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PropertyTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.util.HibernateUtils;
 
@@ -40,14 +38,14 @@ import ch.systemsx.cisd.openbis.generic.shared.util.HibernateUtils;
 abstract public class AbstractEntityTypePropertyTypeTranslator<ET extends EntityType, ETPT extends EntityTypePropertyType<ET>, ETPTPE extends EntityTypePropertyTypePE>
 {
 
-    public ETPT translate(ETPTPE entityTypePropertyType, Map<MaterialTypePE, MaterialType> materialTypeCache, 
+    public ETPT translate(ETPTPE entityTypePropertyType,
             Map<PropertyTypePE, PropertyType> cacheOrNull)
     {
-        return translate(entityTypePropertyType, null, null, materialTypeCache, cacheOrNull);
+        return translate(entityTypePropertyType, null, null, cacheOrNull);
     }
 
     protected final List<ETPT> translate(final Set<ETPTPE> sampleTypePropertyTypes,
-            final ET sampleType, Map<MaterialTypePE, MaterialType> materialTypeCache, 
+            final ET sampleType,
             Map<PropertyTypePE, PropertyType> cacheOrNull)
     {
         if (HibernateUtils.isInitialized(sampleTypePropertyTypes) == false)
@@ -57,14 +55,14 @@ abstract public class AbstractEntityTypePropertyTypeTranslator<ET extends Entity
         final List<ETPT> result = new ArrayList<ETPT>();
         for (final ETPTPE sampleTypePropertyType : sampleTypePropertyTypes)
         {
-            result.add(translate(sampleTypePropertyType, sampleType, null, materialTypeCache, cacheOrNull));
+            result.add(translate(sampleTypePropertyType, sampleType, null, cacheOrNull));
         }
         Collections.sort(result);
         return result;
     }
 
     private final ETPT translate(final ETPTPE etptPE, final ET entityType,
-            final PropertyType propertyType, Map<MaterialTypePE, MaterialType> materialTypeCache, 
+            final PropertyType propertyType,
             Map<PropertyTypePE, PropertyType> cacheOrNull)
     {
         ETPT result = create();
@@ -73,22 +71,15 @@ abstract public class AbstractEntityTypePropertyTypeTranslator<ET extends Entity
             result.setPropertyType(propertyType);
         } else
         {
-            if (entityType != null && (entityType instanceof MaterialType))
-            {
-                result.setPropertyType(PropertyTypeTranslator.translate(etptPE.getPropertyType(),
-                        (MaterialType) entityType, materialTypeCache, cacheOrNull));
-            } else
-            {
-                result.setPropertyType(PropertyTypeTranslator.translate(etptPE.getPropertyType(),
-                        null, materialTypeCache, cacheOrNull));
-            }
+            result.setPropertyType(PropertyTypeTranslator.translate(etptPE.getPropertyType(),
+                        cacheOrNull));
         }
         if (entityType != null)
         {
             result.setEntityType(entityType);
         } else
         {
-            result.setEntityType(translate(etptPE.getEntityType(), materialTypeCache, cacheOrNull));
+            result.setEntityType(translate(etptPE.getEntityType(), cacheOrNull));
         }
         result.setModificationDate(etptPE.getModificationDate());
         result.setManagedInternally(etptPE.isManagedInternally());
@@ -114,7 +105,7 @@ abstract public class AbstractEntityTypePropertyTypeTranslator<ET extends Entity
     }
 
     protected final List<ETPT> translate(final Set<ETPTPE> sampleTypePropertyTypes,
-            final PropertyType propertyType, Map<MaterialTypePE, MaterialType> materialTypeCache, 
+            final PropertyType propertyType,
             Map<PropertyTypePE, PropertyType> cacheOrNull)
     {
         if (HibernateUtils.isInitialized(sampleTypePropertyTypes) == false)
@@ -124,7 +115,7 @@ abstract public class AbstractEntityTypePropertyTypeTranslator<ET extends Entity
         final List<ETPT> result = new ArrayList<ETPT>();
         for (final ETPTPE sampleTypePropertyType : sampleTypePropertyTypes)
         {
-            result.add(translate(sampleTypePropertyType, null, propertyType, materialTypeCache, cacheOrNull));
+            result.add(translate(sampleTypePropertyType, null, propertyType, cacheOrNull));
         }
         Collections.sort(result);
         return result;
@@ -132,7 +123,7 @@ abstract public class AbstractEntityTypePropertyTypeTranslator<ET extends Entity
 
     abstract ETPT create();
 
-    abstract ET translate(EntityTypePE entityTypePE, Map<MaterialTypePE, MaterialType> materialTypeCache, 
+    abstract ET translate(EntityTypePE entityTypePE,
             Map<PropertyTypePE, PropertyType> cacheOrNull);
 
 }

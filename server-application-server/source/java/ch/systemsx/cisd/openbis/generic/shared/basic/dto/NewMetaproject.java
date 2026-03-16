@@ -26,7 +26,6 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.id.IObjectId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.id.dataset.IDataSetId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.id.experiment.IExperimentId;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.id.material.IMaterialId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.id.sample.ISampleId;
 
 /**
@@ -49,8 +48,6 @@ public class NewMetaproject implements Serializable
     private List<IExperimentId> experiments;
 
     private List<IDataSetId> datasets;
-
-    private List<IMaterialId> materials;
 
     public NewMetaproject(String name, String descriptionOrNull, String ownerId)
     {
@@ -104,18 +101,12 @@ public class NewMetaproject implements Serializable
         return datasets;
     }
 
-    public List<IMaterialId> getMaterials()
-    {
-        return materials;
-    }
-
     public void setEntities(Collection<IObjectId> entities)
     {
         samples = Collections.unmodifiableList(BasicMetaprojectUpdates.filterSamples(entities));
         experiments =
                 Collections.unmodifiableList(BasicMetaprojectUpdates.filterExperiments(entities));
         datasets = Collections.unmodifiableList(BasicMetaprojectUpdates.filterDataSets(entities));
-        materials = Collections.unmodifiableList(BasicMetaprojectUpdates.filterMaterials(entities));
     }
 
     @Override

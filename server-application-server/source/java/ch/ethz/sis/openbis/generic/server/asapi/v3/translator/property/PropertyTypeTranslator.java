@@ -47,9 +47,6 @@ public class PropertyTypeTranslator extends AbstractCachingTranslator<Long, Prop
     private IPropertyTypeVocabularyTranslator vocabularyTranslator;
 
     @Autowired
-    private IPropertyTypeMaterialTypeTranslator materialTypeTranslator;
-
-    @Autowired
     private IPropertyTypeSampleTypeTranslator sampleTypeTranslator;
 
     @Autowired
@@ -78,12 +75,6 @@ public class PropertyTypeTranslator extends AbstractCachingTranslator<Long, Prop
         {
             relations.put(IPropertyTypeVocabularyTranslator.class,
                     vocabularyTranslator.translate(context, typeIds, fetchOptions.withVocabulary()));
-        }
-
-        if (fetchOptions.hasMaterialType())
-        {
-            relations.put(IPropertyTypeMaterialTypeTranslator.class,
-                    materialTypeTranslator.translate(context, typeIds, fetchOptions.withMaterialType()));
         }
 
         if (fetchOptions.hasSampleType())
@@ -132,11 +123,6 @@ public class PropertyTypeTranslator extends AbstractCachingTranslator<Long, Prop
             result.getFetchOptions().withVocabularyUsing(fetchOptions.withVocabulary());
         }
 
-        if (fetchOptions.hasMaterialType())
-        {
-            result.setMaterialType(relations.get(IPropertyTypeMaterialTypeTranslator.class, typeId));
-            result.getFetchOptions().withMaterialTypeUsing(fetchOptions.withMaterialType());
-        }
 
         if (fetchOptions.hasSampleType())
         {

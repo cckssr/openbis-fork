@@ -56,8 +56,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.id.ExternalDmsPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.history.ContentCopyHistoryEntry;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.history.HistoryEntry;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.Material;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.id.MaterialPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyAssignment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
@@ -300,16 +298,14 @@ public class GetDataSetTest extends AbstractDataSetTest
         DataSetType type = dataSet.getType();
         assertEquals(type.getFetchOptions().hasPropertyAssignments(), true);
         List<PropertyAssignment> propertyAssignments = type.getPropertyAssignments();
-        assertEquals(propertyAssignments.get(0).getPropertyType().getCode(), "GENDER");
-        assertEquals(propertyAssignments.get(0).getPropertyType().getLabel(), "Gender");
-        assertEquals(propertyAssignments.get(0).getPropertyType().getDescription(), "The gender of the living organism");
+        assertEquals(propertyAssignments.get(0).getPropertyType().getCode(), "SIZE");
+        assertEquals(propertyAssignments.get(0).getPropertyType().getLabel(), "Size");
+        assertEquals(propertyAssignments.get(0).getPropertyType().getDescription(), "The size of the object");
         assertEquals(propertyAssignments.get(0).getPropertyType().isManagedInternally(), Boolean.FALSE);
-        assertEquals(propertyAssignments.get(0).getPropertyType().getDataType(), DataType.CONTROLLEDVOCABULARY);
+        assertEquals(propertyAssignments.get(0).getPropertyType().getDataType(), DataType.INTEGER);
         assertEquals(propertyAssignments.get(0).isMandatory(), Boolean.FALSE);
-        assertEquals(propertyAssignments.get(1).getPropertyType().getCode(), "COMMENT");
-        assertEquals(propertyAssignments.get(2).getPropertyType().getCode(), "BACTERIUM");
-        assertEquals(propertyAssignments.get(3).getPropertyType().getCode(), "ANY_MATERIAL");
-        assertEquals(propertyAssignments.size(), 4);
+        assertEquals(propertyAssignments.get(1).getPropertyType().getCode(), "GENDER");
+        assertEquals(propertyAssignments.size(), 3);
         v3api.logout(sessionToken);
     }
 
@@ -402,8 +398,6 @@ public class GetDataSetTest extends AbstractDataSetTest
         Map<String, Serializable> properties = dataSet.getProperties();
         assertEquals(properties.get("COMMENT"), "no comment");
         assertEquals(properties.get("GENDER"), "FEMALE");
-        assertEquals(properties.get("BACTERIUM"), "BACTERIUM1 (BACTERIUM)");
-        assertEquals(properties.get("ANY_MATERIAL"), "1000_C (SIRNA)");
 
         assertTypeNotFetched(dataSet);
         assertPhysicalDataNotFetched(dataSet);
@@ -808,37 +802,6 @@ public class GetDataSetTest extends AbstractDataSetTest
         assertRegistratorNotFetched(dataSet);
 
         v3api.logout(sessionToken);
-    }
-
-    @Test
-    public void testGetWithMaterialProperties()
-    {
-        String sessionToken = v3api.login(TEST_USER, PASSWORD);
-
-        DataSetFetchOptions fetchOptions = new DataSetFetchOptions();
-        fetchOptions.withMaterialProperties().withRegistrator();
-        fetchOptions.withProperties();
-
-        DataSetPermId permId = new DataSetPermId("20081105092159111-1");
-
-        Map<IDataSetId, DataSet> map = v3api.getDataSets(sessionToken, Arrays.asList(permId), fetchOptions);
-
-        DataSet data = map.get(permId);
-
-        assertEquals(data.getProperties().get("ANY_MATERIAL"), "1000_C (SIRNA)");
-        assertEquals(data.getProperties().get("BACTERIUM"), "BACTERIUM1 (BACTERIUM)");
-
-        Map<String, Material> materialProperties = data.getMaterialProperties();
-
-        Material gene = materialProperties.get("ANY_MATERIAL");
-        assertEquals(gene.getPermId(), new MaterialPermId("1000_C", "SIRNA"));
-        assertEquals(gene.getRegistrator().getUserId(), "test");
-        assertTagsNotFetched(gene);
-
-        Material bacterium = materialProperties.get("BACTERIUM");
-        assertEquals(bacterium.getPermId(), new MaterialPermId("BACTERIUM1", "BACTERIUM"));
-        assertEquals(bacterium.getRegistrator().getUserId(), "etlserver");
-        assertTagsNotFetched(bacterium);
     }
 
     @Test

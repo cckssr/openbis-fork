@@ -27,7 +27,6 @@ import ch.systemsx.cisd.etlserver.registrator.api.v2.IDataSet;
 import ch.systemsx.cisd.etlserver.registrator.api.v2.IDataSetUpdatable;
 import ch.systemsx.cisd.etlserver.registrator.api.v2.IExperiment;
 import ch.systemsx.cisd.etlserver.registrator.api.v2.IExperimentUpdatable;
-import ch.systemsx.cisd.etlserver.registrator.api.v2.IMaterial;
 import ch.systemsx.cisd.etlserver.registrator.api.v2.IMetaproject;
 import ch.systemsx.cisd.etlserver.registrator.api.v2.IProject;
 import ch.systemsx.cisd.etlserver.registrator.api.v2.ISample;
@@ -44,7 +43,6 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.v2.IAttachmentIm
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.v2.IDataSetImmutable;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.v2.IExperimentImmutable;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.v2.IExternalDataManagementSystemImmutable;
-import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.v2.IMaterialImmutable;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.v2.IProjectImmutable;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.v2.ISampleImmutable;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.v2.ISearchService;
@@ -251,42 +249,6 @@ public class ImagingDataSetRegistrationTransactionV2Delegate implements
     public ISpaceImmutable getSpace(String spaceCode)
     {
         return transaction.getSpace(spaceCode);
-    }
-
-    @Override
-    public IMaterialImmutable getMaterial(String materialCode, String materialType)
-    {
-        return transaction.getMaterial(materialCode, materialType);
-    }
-
-    @Override
-    public IMaterialImmutable getMaterial(String identifier)
-    {
-        return transaction.getMaterial(identifier);
-    }
-
-    @Override
-    public IMaterial getMaterialForUpdate(String materialCode, String materialType)
-    {
-        return transaction.getMaterialForUpdate(materialCode, materialType);
-    }
-
-    @Override
-    public IMaterial getMaterialForUpdate(String identifier)
-    {
-        return transaction.getMaterialForUpdate(identifier);
-    }
-
-    @Override
-    public IMaterial makeMaterialMutable(IMaterialImmutable material)
-    {
-        return transaction.makeMaterialMutable(material);
-    }
-
-    @Override
-    public IMaterial createNewMaterial(String materialCode, String materialType)
-    {
-        return transaction.createNewMaterial(materialCode, materialType);
     }
 
     @Override

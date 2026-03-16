@@ -137,10 +137,7 @@ final class DeletionDAO extends AbstractGenericEntityDAO<DeletionPE> implements 
         for (EntityKind entityKind : EntityKind.values())
         {
             // NOTE: material deletion are always permanent and therefore can't be reverted
-            if (entityKind != EntityKind.MATERIAL)
-            {
-                revertDeletionOfEntities(deletion, entityKind, modifier);
-            }
+            revertDeletionOfEntities(deletion, entityKind, modifier);
         }
         super.flush();
         super.clear();
@@ -214,8 +211,6 @@ final class DeletionDAO extends AbstractGenericEntityDAO<DeletionPE> implements 
                 revertDeletionOfRelationships(deletion, TableNames.DATA_SET_RELATIONSHIPS_ALL_TABLE);
                 break;
             case EXPERIMENT:
-                break;
-            case MATERIAL:
                 break;
         }
 
@@ -385,8 +380,6 @@ final class DeletionDAO extends AbstractGenericEntityDAO<DeletionPE> implements 
                 trashDataSetRelationships(entityIds, deletion);
                 break;
             case EXPERIMENT:
-                break;
-            case MATERIAL:
                 break;
         }
 

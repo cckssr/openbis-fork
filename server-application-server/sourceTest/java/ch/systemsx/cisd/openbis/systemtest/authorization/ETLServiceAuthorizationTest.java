@@ -31,7 +31,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.TechId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Experiment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ListSampleCriteria;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewExperiment;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewMaterial;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewMetaproject;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewProject;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewSample;
@@ -45,7 +44,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Space;
 import ch.systemsx.cisd.openbis.generic.shared.dto.AtomicEntityOperationDetails;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataSetBatchUpdatesDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentUpdatesDTO;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialUpdateDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.MetaprojectUpdatesDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.NewExternalData;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ProjectUpdatesDTO;
@@ -164,8 +162,6 @@ public class ETLServiceAuthorizationTest extends BaseTest
         newSample.setIdentifier(anotherSpace.getIdentifier() + "/SAMPLE-1");
         newSample.setSampleType(sample.getSampleType());
         List<NewSample> sampleRegistrations = Arrays.asList(newSample);
-        Map<String, List<NewMaterial>> materialRegistrations = Collections.emptyMap();
-        List<MaterialUpdateDTO> materialUpdates = Collections.emptyList();
         List<? extends NewExternalData> dataSetRegistrations = Collections.emptyList();
         List<DataSetBatchUpdatesDTO> dataSetUpdates = Collections.emptyList();
         List<NewMetaproject> metaprojectRegistrations = Collections.emptyList();
@@ -177,7 +173,7 @@ public class ETLServiceAuthorizationTest extends BaseTest
         etlService.performEntityOperations(sessionToken, new AtomicEntityOperationDetails(
                 registrationid, userID, spaceRegistrations, projectRegistrations, projectUpdates,
                 experimentRegistrations, experimentUpdates, sampleUpdates, sampleRegistrations,
-                materialRegistrations, materialUpdates, dataSetRegistrations, dataSetUpdates,
+                dataSetRegistrations, dataSetUpdates,
                 metaprojectRegistrations, metaprojectUpdates, vocabularyUpdates));
     }
 

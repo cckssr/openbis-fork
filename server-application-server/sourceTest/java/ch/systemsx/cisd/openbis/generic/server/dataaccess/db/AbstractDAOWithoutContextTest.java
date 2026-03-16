@@ -55,8 +55,6 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePropertyTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExternalDataPE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialPE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ProjectPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PropertyTypePE;
@@ -284,15 +282,6 @@ public abstract class AbstractDAOWithoutContextTest extends
         return result;
     }
 
-    protected MaterialPE createMaterial(MaterialTypePE type, String code)
-    {
-        final MaterialPE material = new MaterialPE();
-        material.setCode(code);
-        material.setMaterialType(type);
-        material.setRegistrationDate(new Date());
-        material.setRegistrator(getSystemPerson());
-        return material;
-    }
 
     protected EntityTypePropertyTypePE createAssignment(EntityKind entityKind,
             EntityTypePE entityType, PropertyTypePE propertyType)
@@ -309,7 +298,7 @@ public abstract class AbstractDAOWithoutContextTest extends
     }
 
     protected final PropertyTypePE createPropertyType(final DataTypePE dataType, final String code,
-            final VocabularyPE vocabularyOrNull, final MaterialTypePE materialTypeOrNull)
+            final VocabularyPE vocabularyOrNull)
     {
         final PropertyTypePE propertyTypePE = new PropertyTypePE();
         propertyTypePE.setCode(code);
@@ -321,10 +310,6 @@ public abstract class AbstractDAOWithoutContextTest extends
         {
             assertNotNull(vocabularyOrNull);
             propertyTypePE.setVocabulary(vocabularyOrNull);
-        }
-        if (DataTypeCode.MATERIAL.equals(dataType.getCode()))
-        {
-            propertyTypePE.setMaterialType(materialTypeOrNull);
         }
         return propertyTypePE;
     }

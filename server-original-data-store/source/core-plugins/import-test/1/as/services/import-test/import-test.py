@@ -24,10 +24,6 @@ def process(context, parameters):
         return context.getImportService().updateSamples(sessionToken, uploadKey, typeCode, defaultSpaceIdentifier, spaceIdentifierOverride, experimentIdentifierOverride, asynchrounous, userEmail);
     elif operation == "updateDataSets":
         return context.getImportService().updateDataSets(sessionToken, uploadKey, typeCode, asynchrounous, userEmail);
-    elif operation == "createMaterials":
-        return context.getImportService().createMaterials(sessionToken, uploadKey, typeCode, updateExisting, asynchrounous, userEmail);
-    elif operation == "updateMaterials":
-        return context.getImportService().updateMaterials(sessionToken, uploadKey, typeCode, ignoreUnregistered, asynchrounous, userEmail);
     elif operation == "generalImport":
         return context.getImportService().generalImport(sessionToken, uploadKey, defaultSpaceIdentifier, updateExisting, asynchrounous, userEmail);
     elif operation == "customImport":

@@ -72,7 +72,6 @@ public class SearchPropertyAssignmentExecutor extends AbstractSearchObjectManual
     protected List<EntityTypePropertyTypePE> listAll()
     {
         List<EntityTypePropertyTypePE> propertyAssignments = new ArrayList<EntityTypePropertyTypePE>();
-        propertyAssignments.addAll(daoFactory.getEntityPropertyTypeDAO(EntityKind.MATERIAL).listEntityPropertyTypes());
         propertyAssignments.addAll(daoFactory.getEntityPropertyTypeDAO(EntityKind.EXPERIMENT).listEntityPropertyTypes());
         propertyAssignments.addAll(daoFactory.getEntityPropertyTypeDAO(EntityKind.SAMPLE).listEntityPropertyTypes());
         propertyAssignments.addAll(daoFactory.getEntityPropertyTypeDAO(EntityKind.DATA_SET).listEntityPropertyTypes());

@@ -147,9 +147,6 @@ public class GlobalSearchExecutor implements IGlobalSearchExecutor
                     case DATA_SET:
                         entityKind = SearchableEntity.DATA_SET;
                         break;
-                    case MATERIAL:
-                        entityKind = SearchableEntity.MATERIAL;
-                        break;
                     default:
                         throw new UnsupportedOperationException("Unsupported object kind " + objectKind);
                 }

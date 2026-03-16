@@ -29,7 +29,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.ITableModelTransformation;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityTableCell;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ISerializableComparable;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.TableModel;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.TableModelColumnHeader;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.TableModelRow;
@@ -51,46 +50,6 @@ public class EntityLinksDecorator implements ITableModelTransformation
 
     private enum EntityTableCellTranslationFactory
     {
-        MATERIAL()
-        {
-            private static final String MATERIAL_TYPE_KEY = "material-type";
-
-            @Override
-            void assertValidProperties(Properties properties)
-            {
-                getMaterialType(properties);
-            }
-
-            @Override
-            IEntityTableCellTranslation create(Properties properties)
-            {
-                final String materialType = getMaterialType(properties);
-                return new IEntityTableCellTranslation()
-                    {
-                        @Override
-                        public ISerializableComparable translation(ISerializableComparable value)
-                        {
-                            String materialCode = value.toString();
-                            EntityTableCell entityTableCell =
-                                    new EntityTableCell(EntityKind.MATERIAL,
-                                            MaterialIdentifier.print(materialCode, materialType));
-                            entityTableCell.setLinkText(materialCode);
-                            return entityTableCell;
-                        }
-
-                        @Override
-                        public EntityKind getEntityKind()
-                        {
-                            return EntityKind.MATERIAL;
-                        }
-                    };
-            }
-
-            String getMaterialType(Properties properties)
-            {
-                return PropertyUtils.getMandatoryProperty(properties, MATERIAL_TYPE_KEY).trim();
-            }
-        },
         SAMPLE()
         {
             private static final String DEFAULT_SPACE_KEY = "default-space";

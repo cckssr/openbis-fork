@@ -20,12 +20,10 @@ import org.hibernate.Session;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.dynamic_property.IDynamicPropertyEvaluator;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.dynamic_property.calculator.api.IDataAdaptor;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.dynamic_property.calculator.api.IExperimentAdaptor;
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.dynamic_property.calculator.api.IMaterialAdaptor;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.dynamic_property.calculator.api.ISampleAdaptor;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.IEntityInformationWithPropertiesHolder;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePE;
 import ch.systemsx.cisd.openbis.generic.shared.hotdeploy_plugins.api.IEntityAdaptor;
 
@@ -53,8 +51,6 @@ public class EntityAdaptorFactory
                 return new ExperimentAdaptor((ExperimentPE) entity, evaluator, session);
             case DATA_SET:
                 return new ExternalDataAdaptor((DataPE) entity, evaluator, session);
-            case MATERIAL:
-                return new MaterialAdaptor((MaterialPE) entity, evaluator);
             default:
                 throw new UnsupportedOperationException(""); // can't happen
         }
@@ -76,10 +72,5 @@ public class EntityAdaptorFactory
             Session session)
     {
         return new ExternalDataAdaptor(entity, evaluator, session);
-    }
-
-    public static IMaterialAdaptor create(MaterialPE entity, IDynamicPropertyEvaluator evaluator)
-    {
-        return new MaterialAdaptor(entity, evaluator);
     }
 }

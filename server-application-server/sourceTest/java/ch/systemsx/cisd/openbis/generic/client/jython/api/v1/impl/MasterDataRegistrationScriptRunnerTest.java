@@ -36,7 +36,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExperimentType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.FileFormatType;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewETPTAssignment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewVocabulary;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PropertyType;
@@ -77,8 +76,6 @@ public class MasterDataRegistrationScriptRunnerTest extends AssertJUnit
         final RecordingMatcher<SampleType> sampleTypeMatcher = new RecordingMatcher<SampleType>();
         final RecordingMatcher<DataSetType> dataSetTypeMatcher =
                 new RecordingMatcher<DataSetType>();
-        final RecordingMatcher<MaterialType> materialTypeMatcher =
-                new RecordingMatcher<MaterialType>();
         final RecordingMatcher<PropertyType> propertyTypeMatcher =
                 new RecordingMatcher<PropertyType>();
         final RecordingMatcher<NewETPTAssignment> assignmentMatcher =
@@ -100,12 +97,10 @@ public class MasterDataRegistrationScriptRunnerTest extends AssertJUnit
                             with(sampleTypeMatcher));
                     one(commonServer).registerDataSetType(with(equal(SESSION_TOKEN)),
                             with(dataSetTypeMatcher));
-                    one(commonServer).registerMaterialType(with(equal(SESSION_TOKEN)),
-                            with(materialTypeMatcher));
-                    exactly(2).of(commonServer).listEntityTypePropertyTypes(SESSION_TOKEN);
-                    exactly(2).of(commonServer).registerPropertyType(with(equal(SESSION_TOKEN)),
+                    exactly(1).of(commonServer).listEntityTypePropertyTypes(SESSION_TOKEN);
+                    exactly(1).of(commonServer).registerPropertyType(with(equal(SESSION_TOKEN)),
                             with(propertyTypeMatcher));
-                    exactly(2).of(commonServer).assignPropertyType(with(equal(SESSION_TOKEN)),
+                    exactly(1).of(commonServer).assignPropertyType(with(equal(SESSION_TOKEN)),
                             with(assignmentMatcher));
                 }
             });
@@ -148,31 +143,13 @@ public class MasterDataRegistrationScriptRunnerTest extends AssertJUnit
         assertEquals("DATA-SET-TYPE", dataSetType.getCode());
         assertEquals("Data set type description.", dataSetType.getDescription());
 
-        assertEquals(1, materialTypeMatcher.getRecordedObjects().size());
-        MaterialType materialType = materialTypeMatcher.recordedObject();
-        assertEquals("MATERIAL-TYPE", materialType.getCode());
-        assertEquals("Material type description.", materialType.getDescription());
-
-        assertEquals(2, propertyTypeMatcher.getRecordedObjects().size());
+        assertEquals(1, propertyTypeMatcher.getRecordedObjects().size());
         PropertyType p1 = propertyTypeMatcher.getRecordedObjects().get(0);
         assertEquals("VARCHAR-PROPERTY-TYPE", p1.getCode());
         assertEquals("Varchar property type description.", p1.getDescription());
         assertEquals("STRING", p1.getLabel());
 
-        PropertyType p2 = propertyTypeMatcher.getRecordedObjects().get(1);
-        assertEquals("MATERIAL-PROPERTY-TYPE", p2.getCode());
-        assertEquals("Material property type description.", p2.getDescription());
-        assertEquals("MATERIAL", p2.getLabel());
-        assertEquals("MATERIAL-TYPE", p2.getMaterialType().getCode());
-
-        assertEquals(2, assignmentMatcher.getRecordedObjects().size());
-        NewETPTAssignment a1 = assignmentMatcher.getRecordedObjects().get(0);
-        assertEquals(EntityKind.SAMPLE, a1.getEntityKind());
-        assertEquals("SAMPLE-TYPE", a1.getEntityTypeCode());
-        assertEquals("MATERIAL-PROPERTY-TYPE", a1.getPropertyTypeCode());
-        assertEquals(true, a1.isMandatory());
-
-        NewETPTAssignment a2 = assignmentMatcher.getRecordedObjects().get(1);
+        NewETPTAssignment a2 = assignmentMatcher.getRecordedObjects().get(0);
         assertEquals(EntityKind.EXPERIMENT, a2.getEntityKind());
         assertEquals("EXPERIMENT-TYPE", a2.getEntityTypeCode());
         assertEquals("VARCHAR-PROPERTY-TYPE", a2.getPropertyTypeCode());
@@ -203,9 +180,6 @@ public class MasterDataRegistrationScriptRunnerTest extends AssertJUnit
                     one(commonServer).registerDataSetType(with(any(String.class)),
                             with(any(DataSetType.class)));
                     will(throwException(new RuntimeException("FAILED DATA SET TYPE")));
-                    one(commonServer).registerMaterialType(with(any(String.class)),
-                            with(any(MaterialType.class)));
-                    will(throwException(new RuntimeException("FAILED MATERIAL TYPE")));
                     exactly(2).of(commonServer).listEntityTypePropertyTypes(SESSION_TOKEN);
                     exactly(2).of(commonServer).registerPropertyType(with(any(String.class)),
                             with(any(PropertyType.class)));
@@ -225,10 +199,7 @@ public class MasterDataRegistrationScriptRunnerTest extends AssertJUnit
                         "Failed to register type 'EXPERIMENT-TYPE': FAILED EXPERIMENT TYPE",
                         "Failed to register type 'SAMPLE-TYPE': FAILED SAMPLE TYPE",
                         "Failed to register type 'DATA-SET-TYPE': FAILED DATA SET TYPE",
-                        "Failed to register type 'MATERIAL-TYPE': FAILED MATERIAL TYPE",
                         "Failed to register type 'VARCHAR-PROPERTY-TYPE': FAILED PROPERTY TYPE",
-                        "Failed to register type 'MATERIAL-PROPERTY-TYPE': FAILED PROPERTY TYPE",
-                        "Failed to assign property 'SAMPLE-TYPE' <-> 'MATERIAL-PROPERTY-TYPE': FAILED ASSIGNMENT",
                         "Failed to assign property 'EXPERIMENT-TYPE' <-> 'VARCHAR-PROPERTY-TYPE': FAILED ASSIGNMENT");
 
         try

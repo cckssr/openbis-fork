@@ -23,8 +23,6 @@ import static ch.systemsx.cisd.openbis.generic.client.web.client.dto.PropertyTyp
 import static ch.systemsx.cisd.openbis.generic.client.web.client.dto.PropertyTypeGridColumnIDs.DESCRIPTION;
 import static ch.systemsx.cisd.openbis.generic.client.web.client.dto.PropertyTypeGridColumnIDs.EXPERIMENT_TYPES;
 import static ch.systemsx.cisd.openbis.generic.client.web.client.dto.PropertyTypeGridColumnIDs.LABEL;
-import static ch.systemsx.cisd.openbis.generic.client.web.client.dto.PropertyTypeGridColumnIDs.MATERIAL_TYPE;
-import static ch.systemsx.cisd.openbis.generic.client.web.client.dto.PropertyTypeGridColumnIDs.MATERIAL_TYPES;
 import static ch.systemsx.cisd.openbis.generic.client.web.client.dto.PropertyTypeGridColumnIDs.SAMPLE_TYPES;
 import static ch.systemsx.cisd.openbis.generic.client.web.client.dto.PropertyTypeGridColumnIDs.VOCABULARY;
 import static ch.systemsx.cisd.openbis.generic.client.web.client.dto.PropertyTypeGridColumnIDs.XML_SCHEMA;
@@ -44,7 +42,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.SemanticAnnot
 import ch.systemsx.cisd.openbis.generic.shared.ICommonServer;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataTypeCode;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityTypePropertyType;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PropertyType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SampleType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.TypedTableModel;
@@ -79,14 +76,12 @@ public class PropertyTypeProvider extends AbstractCommonTableModelProvider<Prope
         builder.addColumn(DATA_TYPE).withDefaultWidth(200);
         builder.addColumn(DATA_TYPE_CODE).hideByDefault();
         builder.addColumn(VOCABULARY).hideByDefault();
-        builder.addColumn(MATERIAL_TYPE).hideByDefault();
         builder.addColumn(XML_SCHEMA).hideByDefault();
         builder.addColumn(XSLT).hideByDefault();
         builder.addColumn(DESCRIPTION);
         builder.addColumn(MODIFICATION_DATE).withDefaultWidth(300).hideByDefault();
         builder.addColumn(SAMPLE_TYPES);
         builder.addColumn(EXPERIMENT_TYPES);
-        builder.addColumn(MATERIAL_TYPES);
         builder.addColumn(DATA_SET_TYPES);
 
         annotationProvider.addMoreColumns(builder, false);
@@ -100,9 +95,6 @@ public class PropertyTypeProvider extends AbstractCommonTableModelProvider<Prope
             builder.column(DATA_TYPE_CODE).addString(propertyType.getDataType().getCode().name());
             Vocabulary vocabulary = propertyType.getVocabulary();
             builder.column(VOCABULARY).addString(vocabulary != null ? vocabulary.getCode() : null);
-            MaterialType materialType = propertyType.getMaterialType();
-            builder.column(MATERIAL_TYPE).addString(
-                    materialType != null ? materialType.getCode() : null);
             builder.column(XML_SCHEMA).addString(propertyType.getSchema());
             builder.column(XSLT).addString(propertyType.getTransformation());
             builder.column(DESCRIPTION).addString(propertyType.getDescription());
@@ -111,8 +103,6 @@ public class PropertyTypeProvider extends AbstractCommonTableModelProvider<Prope
                     render(propertyType.getSampleTypePropertyTypes()));
             builder.column(EXPERIMENT_TYPES).addString(
                     render(propertyType.getExperimentTypePropertyTypes()));
-            builder.column(MATERIAL_TYPES).addString(
-                    render(propertyType.getMaterialTypePropertyTypes()));
             builder.column(DATA_SET_TYPES).addString(
                     render(propertyType.getDataSetTypePropertyTypes()));
 
@@ -164,15 +154,6 @@ public class PropertyTypeProvider extends AbstractCommonTableModelProvider<Prope
                 return "Vocabulary: " + tryGetVocabularyCode(entity);
             case INTEGER:
                 return "Integer Number";
-            case MATERIAL:
-                String materialTypeCode = tryGetMaterialTypeCode(entity);
-                if (materialTypeCode == null)
-                {
-                    return "Material of Any Type";
-                } else
-                {
-                    return "Material of Type: " + materialTypeCode;
-                }
             case SAMPLE:
                 String sampleTypeCode = tryGetSampleTypeCode(entity);
                 return sampleTypeCode == null ? "Sample of Any Type" : "Sample of Type: " + sampleTypeCode;
@@ -195,12 +176,6 @@ public class PropertyTypeProvider extends AbstractCommonTableModelProvider<Prope
         return vocabulary != null ? vocabulary.getCode() : null;
     }
 
-    private static String tryGetMaterialTypeCode(PropertyType entity)
-    {
-        MaterialType materialType = entity.getMaterialType();
-        return materialType != null ? materialType.getCode() : null;
-    }
-    
     private static String tryGetSampleTypeCode(PropertyType entity)
     {
         SampleType sampleType = entity.getSampleType();

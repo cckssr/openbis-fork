@@ -17,14 +17,12 @@ export default class QueryFormControllerLoad extends PageControllerLoad {
       queryDatabases,
       experimentTypes,
       sampleTypes,
-      dataSetTypes,
-      materialTypes
+      dataSetTypes
     ] = await Promise.all([
       this.facade.loadQueryDatabases(),
       this.facade.loadExperimentTypes(),
       this.facade.loadSampleTypes(),
-      this.facade.loadDataSetTypes(),
-      this.facade.loadMaterialTypes()
+      this.facade.loadDataSetTypes()
     ])
 
     await this.context.setState(() => ({
@@ -32,8 +30,7 @@ export default class QueryFormControllerLoad extends PageControllerLoad {
         queryDatabases,
         experimentTypes,
         sampleTypes,
-        dataSetTypes,
-        materialTypes
+        dataSetTypes
       }
     }))
   }

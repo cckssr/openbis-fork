@@ -100,8 +100,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentType
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.NoExperimentSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.search.LabelSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.MaterialSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.MaterialTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.search.EmailSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.search.FirstNameSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.search.LastNameSearchCriteria;
@@ -301,7 +299,6 @@ public class CriteriaMapper
         CRITERIA_TO_IN_COLUMN_MAP.put(ExperimentSearchCriteria.class, EXPERIMENT_COLUMN);
         CRITERIA_TO_IN_COLUMN_MAP.put(ExperimentTypeSearchCriteria.class, EXPERIMENT_TYPE_COLUMN);
         CRITERIA_TO_IN_COLUMN_MAP.put(ExternalDmsSearchCriteria.class, EXTERNAL_DATA_MANAGEMENT_SYSTEM_ID_COLUMN);
-        CRITERIA_TO_IN_COLUMN_MAP.put(MaterialTypeSearchCriteria.class, MATERIAL_TYPE_COLUMN);
         CRITERIA_TO_IN_COLUMN_MAP.put(ModifierSearchCriteria.class, PERSON_MODIFIER_COLUMN);
         CRITERIA_TO_IN_COLUMN_MAP.put(ProjectSearchCriteria.class, PROJECT_COLUMN);
         CRITERIA_TO_IN_COLUMN_MAP.put(PropertyTypeSearchCriteria.class, PROPERTY_TYPE_COLUMN);
@@ -316,7 +313,6 @@ public class CriteriaMapper
 
         CRITERIA_TO_IN_COLUMN_MAP.put(ContentCopySearchCriteria.class, ID_COLUMN);
         CRITERIA_TO_IN_COLUMN_MAP.put(LinkedDataSearchCriteria.class, ID_COLUMN);
-        CRITERIA_TO_IN_COLUMN_MAP.put(MaterialSearchCriteria.class, ID_COLUMN);
         CRITERIA_TO_IN_COLUMN_MAP.put(PhysicalDataSearchCriteria.class, ID_COLUMN);
         CRITERIA_TO_IN_COLUMN_MAP.put(PropertyAssignmentSearchCriteria.class, ID_COLUMN);
         CRITERIA_TO_IN_COLUMN_MAP.put(SemanticAnnotationSearchCriteria.class, ID_COLUMN);
@@ -347,15 +343,12 @@ public class CriteriaMapper
                 ILocalSearchManager.class);
         final ILocalSearchManager<ISearchCriteria, ?, ?> experimentTypeSearchManager = applicationContext.getBean("experiment-type-search-manager",
                 ILocalSearchManager.class);
-        final ILocalSearchManager<ISearchCriteria, ?, ?> materialTypeSearchManager = applicationContext.getBean("material-type-search-manager",
-                ILocalSearchManager.class);
         final ILocalSearchManager<ISearchCriteria, ?, ?> dataSetTypeSearchManager = applicationContext.getBean("data-set-type-search-manager",
                 ILocalSearchManager.class);
 
         ENTITY_KIND_TO_MANAGER_MAP.put(EntityKind.SAMPLE, sampleTypeSearchManager);
         ENTITY_KIND_TO_MANAGER_MAP.put(EntityKind.EXPERIMENT, experimentTypeSearchManager);
         ENTITY_KIND_TO_MANAGER_MAP.put(EntityKind.DATA_SET, dataSetTypeSearchManager);
-        ENTITY_KIND_TO_MANAGER_MAP.put(EntityKind.MATERIAL, materialTypeSearchManager);
 
         CRITERIA_TO_MANAGER_MAP.put(ContentCopySearchCriteria.class,
                 applicationContext.getBean("content-copy-search-manager", ILocalSearchManager.class));
@@ -400,9 +393,6 @@ public class CriteriaMapper
                 applicationContext.getBean("locator-type-search-manager", ILocalSearchManager.class));
         CRITERIA_TO_MANAGER_MAP.put(StorageFormatSearchCriteria.class,
                 applicationContext.getBean("storage-format-search-manager", ILocalSearchManager.class));
-        CRITERIA_TO_MANAGER_MAP.put(MaterialSearchCriteria.class,
-                applicationContext.getBean("material-search-manager", ILocalSearchManager.class));
-        CRITERIA_TO_MANAGER_MAP.put(MaterialTypeSearchCriteria.class, materialTypeSearchManager);
         CRITERIA_TO_MANAGER_MAP.put(TypeGroupSearchCriteria.class,
                 applicationContext.getBean("type-group-search-manager", ILocalSearchManager.class));
         CRITERIA_TO_MANAGER_MAP.put(GlobalSearchCriteria.class,

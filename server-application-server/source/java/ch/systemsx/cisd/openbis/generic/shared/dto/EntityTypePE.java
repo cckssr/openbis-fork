@@ -42,7 +42,7 @@ import org.hibernate.validator.constraints.Length;
 /**
  * Persistence Entity representing entity type.
  * <p>
- * Entity is one of: material, sample, experiment
+ * Entity is one of: sample, experiment
  * </p>
  * 
  * @author Franz-Josef Elmer

@@ -51,8 +51,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.IEntityTypeId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.create.MaterialCreation;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.id.MaterialPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyAssignment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyType;
@@ -170,7 +168,6 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
                 { DataType.CONTROLLEDVOCABULARY },
                 { DataType.DATE },
                 { DataType.INTEGER },
-                { DataType.MATERIAL },
                 { DataType.REAL },
                 { DataType.SAMPLE },
                 { DataType.TIMESTAMP },
@@ -257,7 +254,6 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
                 { DataType.HYPERLINK },
                 { DataType.CONTROLLEDVOCABULARY },
                 { DataType.SAMPLE },
-                { DataType.MATERIAL },
         };
     }
 
@@ -335,7 +331,6 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
                 { DataType.DATE },
                 { DataType.HYPERLINK },
                 { DataType.INTEGER },
-                { DataType.MATERIAL },
                 { DataType.MULTILINE_VARCHAR },
                 { DataType.REAL },
                 { DataType.SAMPLE },
@@ -373,7 +368,6 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
                 { DataType.HYPERLINK },
                 { DataType.CONTROLLEDVOCABULARY },
                 { DataType.SAMPLE },
-                { DataType.MATERIAL },
         };
     }
 
@@ -1077,34 +1071,6 @@ public abstract class AbstractSearchPropertyTest extends AbstractTest
             deletePropertyTypes(sessionToken, vocabularyPropertyType1, vocabularyPropertyType2);
             deleteSampleTypes(sessionToken, propertySampleType);
         }
-    }
-
-    @Test
-    public void testSearchWithPropertyMatchingMaterialProperty()
-    {
-        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
-        final EntityTypePermId materialType = createAMaterialType(sessionToken, false);
-
-        final MaterialCreation materialCreation = new MaterialCreation();
-        materialCreation.setCode("MATERIAL_PROPERTY_TEST");
-        materialCreation.setTypeId(materialType);
-
-        final MaterialPermId materialPermId = v3api.createMaterials(sessionToken,
-                Collections.singletonList(materialCreation)).get(0);
-
-        final String materialTypePermId = materialType.getPermId();
-        final PropertyTypePermId propertyTypeId = createAMaterialPropertyType(sessionToken,
-                new EntityTypePermId(materialTypePermId, EntityKind.MATERIAL));
-
-        final ObjectPermId entityPermId = createEntity(sessionToken, propertyTypeId, materialPermId.toString());
-
-        final AbstractEntitySearchCriteria<?> searchCriteria = createSearchCriteria();
-        searchCriteria.withOrOperator();
-        searchCriteria.withProperty(propertyTypeId.getPermId()).thatEquals(materialPermId.getCode());
-
-        final List<? extends IPermIdHolder> entities = search(sessionToken, searchCriteria);
-        assertEquals(entities.size(), 1);
-        assertEquals(entities.get(0).getPermId(), entityPermId);
     }
 
     @DataProvider

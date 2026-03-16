@@ -24,7 +24,6 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.FetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.fetchoptions.MaterialFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.fetchoptions.PersonFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
 import ch.ethz.sis.openbis.generic.sharedapi.v3.ApiClassesProvider;
@@ -274,54 +273,6 @@ public class FetchOptionsMatcherTest
         fo2.withChildren().withDataSets();
 
         Assert.assertFalse(new FetchOptionsMatcher().areMatching(fo1, fo2));
-    }
-
-    @Test
-    public void testMatchObjectsWithSameTopLevelPaging()
-    {
-        MaterialFetchOptions fo1 = new MaterialFetchOptions();
-        fo1.from(10).count(5);
-
-        MaterialFetchOptions fo2 = new MaterialFetchOptions();
-        fo2.count(5).from(10);
-
-        Assert.assertTrue(new FetchOptionsMatcher().areMatching(fo1, fo2));
-    }
-
-    @Test
-    public void testMatchObjectsWithDifferentTopLevelPaging()
-    {
-        MaterialFetchOptions fo1 = new MaterialFetchOptions();
-        fo1.from(10).count(5);
-
-        MaterialFetchOptions fo2 = new MaterialFetchOptions();
-        fo2.from(3).count(7);
-
-        Assert.assertTrue(new FetchOptionsMatcher().areMatching(fo1, fo2));
-    }
-
-    @Test
-    public void testMatchObjectsWithSameSubLevelPaging()
-    {
-        MaterialFetchOptions fo1 = new MaterialFetchOptions();
-        fo1.withTags().from(1).count(5);
-
-        MaterialFetchOptions fo2 = new MaterialFetchOptions();
-        fo2.withTags().from(1).count(5);
-
-        Assert.assertTrue(new FetchOptionsMatcher().areMatching(fo1, fo2));
-    }
-
-    @Test
-    public void testMatchObjectsWithDifferentSubLevelPaging()
-    {
-        MaterialFetchOptions fo1 = new MaterialFetchOptions();
-        fo1.withTags().from(1).count(5);
-
-        MaterialFetchOptions fo2 = new MaterialFetchOptions();
-        fo2.withTags().from(2).count(6);
-
-        Assert.assertTrue(new FetchOptionsMatcher().areMatching(fo1, fo2));
     }
 
 }

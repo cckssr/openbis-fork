@@ -15,8 +15,6 @@ export default class TypeBrowserControllerLoadNodePath {
         return [TypeBrowserCommon.collectionTypesFolderNode()]
       } else if (object.id === objectType.DATA_SET_TYPE) {
         return [TypeBrowserCommon.dataSetTypesFolderNode()]
-      } else if (object.id === objectType.MATERIAL_TYPE) {
-        return [TypeBrowserCommon.materialTypesFolderNode()]
       } else if (object.id === objectType.VOCABULARY_TYPE) {
         return [TypeBrowserCommon.vocabularyTypesFolderNode()]
       } else if (object.id === objectType.PROPERTY_TYPE) {
@@ -48,13 +46,6 @@ export default class TypeBrowserControllerLoadNodePath {
       if (type) {
         const folderNode = TypeBrowserCommon.dataSetTypesFolderNode()
         const typeNode = TypeBrowserCommon.dataSetTypeNode(object.id)
-        return [folderNode, typeNode]
-      }
-    } else if (object.type === objectType.MATERIAL_TYPE) {
-      const type = await this.searchMaterialType(object.id)
-      if (type) {
-        const folderNode = TypeBrowserCommon.materialTypesFolderNode()
-        const typeNode = TypeBrowserCommon.materialTypeNode(object.id)
         return [folderNode, typeNode]
       }
     } else if (object.type === objectType.VOCABULARY_TYPE) {
@@ -94,13 +85,6 @@ export default class TypeBrowserControllerLoadNodePath {
     const id = new openbis.EntityTypePermId(typeCode)
     const fetchOptions = new openbis.DataSetTypeFetchOptions()
     const types = await openbis.getDataSetTypes([id], fetchOptions)
-    return types[typeCode]
-  }
-
-  async searchMaterialType(typeCode) {
-    const id = new openbis.EntityTypePermId(typeCode)
-    const fetchOptions = new openbis.MaterialTypeFetchOptions()
-    const types = await openbis.getMaterialTypes([id], fetchOptions)
     return types[typeCode]
   }
 

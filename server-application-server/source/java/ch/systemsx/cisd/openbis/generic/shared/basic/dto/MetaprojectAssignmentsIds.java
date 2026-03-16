@@ -21,7 +21,6 @@ import java.util.List;
 
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.id.dataset.IDataSetId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.id.experiment.IExperimentId;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.id.material.IMaterialId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.id.sample.ISampleId;
 
 /**
@@ -37,8 +36,6 @@ public class MetaprojectAssignmentsIds implements Serializable
     private List<ISampleId> samples = new ArrayList<ISampleId>();
 
     private List<IDataSetId> dataSets = new ArrayList<IDataSetId>();
-
-    private List<IMaterialId> materials = new ArrayList<IMaterialId>();
 
     public void addExperiment(IExperimentId experimentId)
     {
@@ -67,14 +64,6 @@ public class MetaprojectAssignmentsIds implements Serializable
         dataSets.add(dataSetId);
     }
 
-    public void addMaterial(IMaterialId materialId)
-    {
-        if (materialId == null)
-        {
-            throw new IllegalArgumentException("Material id cannot be null");
-        }
-        materials.add(materialId);
-    }
 
     public List<IExperimentId> getExperiments()
     {
@@ -89,11 +78,6 @@ public class MetaprojectAssignmentsIds implements Serializable
     public List<IDataSetId> getDataSets()
     {
         return dataSets;
-    }
-
-    public List<IMaterialId> getMaterials()
-    {
-        return materials;
     }
 
 }

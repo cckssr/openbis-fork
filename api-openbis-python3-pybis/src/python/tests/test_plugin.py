@@ -26,7 +26,7 @@ def test_create_delete_plugin(openbis_instance):
     plugin = openbis_instance.new_plugin(
 	name= pl_name,
 	pluginType='ENTITY_VALIDATION',   # or 'DYNAMIC_PROPERTY' or 'MANAGED_PROPERTY',
-	entityKind = None,                # or 'SAMPLE', 'MATERIAL', 'EXPERIMENT', 'DATA_SET'
+	entityKind = None,                # or 'SAMPLE', 'EXPERIMENT', 'DATA_SET'
 	script = 'def calculate(): pass'  # JYTHON script
     )
 
@@ -123,7 +123,7 @@ def test_update_plugin(openbis_instance):
     plugin = openbis_instance.new_plugin(
         name=pl_name,
         pluginType='ENTITY_VALIDATION',  # or 'DYNAMIC_PROPERTY' or 'MANAGED_PROPERTY',
-        entityKind=None,  # or 'SAMPLE', 'MATERIAL', 'EXPERIMENT', 'DATA_SET'
+        entityKind=None,  # or 'SAMPLE', 'EXPERIMENT', 'DATA_SET'
         script='def calculate(): pass'  # JYTHON script
     )
     plugin.save()
@@ -140,4 +140,3 @@ def test_update_plugin(openbis_instance):
     assert pl_exists.description == 'some boring description'
     assert pl_exists.script == 'def calculate(): fail'
     assert pl_exists.available is True
-

@@ -45,8 +45,6 @@ public class EntityHistory implements Serializable
 
     private String vocabularyTerm;
 
-    private String material;
-
     private Date validFromDate;
 
     private Date validUntilDate;
@@ -91,16 +89,6 @@ public class EntityHistory implements Serializable
     public void setVocabularyTerm(String vocabularyTerm)
     {
         this.vocabularyTerm = vocabularyTerm;
-    }
-
-    public String getMaterial()
-    {
-        return material;
-    }
-
-    public void setMaterial(String material)
-    {
-        this.material = material;
     }
 
     public Date getValidFromDate()

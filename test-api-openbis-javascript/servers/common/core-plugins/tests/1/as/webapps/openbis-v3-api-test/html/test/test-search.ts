@@ -1129,7 +1129,6 @@ exports.default = new Promise((resolve) => {
 
                     var propertyTypeFetchOptions = assignmentFetchOptions.withPropertyType()
                     propertyTypeFetchOptions.withVocabulary()
-                    propertyTypeFetchOptions.withMaterialType()
                     propertyTypeFetchOptions.withRegistrator()
 
                     return facade.searchSampleTypes(criteria, fetchOptions)
@@ -1160,7 +1159,6 @@ exports.default = new Promise((resolve) => {
                     c.assertEqual(propertyType.isManagedInternally(), false, "Property type managed internally?")
                     c.assertEqual(propertyType.isManagedInternally(), false, "Property type managed internally?")
                     c.assertEqual(propertyType.getVocabulary().getCode(), "SAMPLE_TYPE", "Property type vocabulary code")
-                    c.assertEqual(propertyType.getMaterialType(), null, "Property type vocabulary code")
                     c.assertEqual(propertyType.getSchema(), null, "Property type schema")
                     c.assertEqual(propertyType.getTransformation(), null, "Property type transformation")
                     c.assertEqual(propertyType.getRegistrator().getUserId(), "system", "Registrator user id")
@@ -1740,228 +1738,6 @@ exports.default = new Promise((resolve) => {
                 testSearch(c, fSearch, fCheck)
             })
 
-            QUnit.test("searchMaterials()", function (assert) {
-                var c = new common(assert, dtos)
-
-                var fSearch = function (facade: openbis.openbis) {
-                    var criteria = new dtos.MaterialSearchCriteria()
-                    criteria.withCode().thatEquals("H2O")
-                    return facade.searchMaterials(criteria, c.createMaterialFetchOptions())
-                }
-
-                var fCheck = function (facade: openbis.openbis, materials: openbis.Material[]) {
-                    c.assertEqual(materials.length, 1)
-                    var material = materials[0]
-                    c.assertEqual(material.getCode(), "H2O", "Code")
-                    c.assertEqual(material.getType().getCode(), "COMPOUND", "Type code")
-                    var properties = material.getProperties()
-                    c.assertEqual(Object.keys(properties), "DESCRIPTION", "Water")
-                }
-
-                testSearch(c, fSearch, fCheck)
-            })
-
-            QUnit.test("searchMaterials() with codes", function (assert) {
-                var c = new common(assert, dtos)
-
-                var fSearch = function (facade: openbis.openbis) {
-                    var criteria = new dtos.MaterialSearchCriteria()
-                    criteria.withCodes().thatIn(["H2O"])
-                    return facade.searchMaterials(criteria, c.createMaterialFetchOptions())
-                }
-
-                var fCheck = function (facade: openbis.openbis, materials: openbis.Material[]) {
-                    c.assertEqual(materials.length, 1)
-                    var material = materials[0]
-                    c.assertEqual(material.getCode(), "H2O", "Code")
-                }
-
-                testSearch(c, fSearch, fCheck)
-            })
-
-            QUnit.test("searchMaterials() with paging and sorting", function (assert) {
-                var c = new common(assert, dtos)
-
-                var criteria = new dtos.MaterialSearchCriteria()
-                criteria.withOrOperator()
-                criteria.withCode().thatEquals("ABC")
-                criteria.withCode().thatEquals("SIRNA-2")
-
-                var fo = c.createMaterialFetchOptions()
-
-                testSearchWithPagingAndSortingByAll(
-                    c,
-                    function (facade: openbis.openbis) {
-                        return facade.searchMaterials(criteria, fo)
-                    },
-                    fo
-                )
-            })
-
-            QUnit.test("searchMaterials() with paging and sorting by code", function (assert) {
-                var c = new common(assert, dtos)
-
-                var criteria = new dtos.MaterialSearchCriteria()
-                criteria.withOrOperator()
-                criteria.withCode().thatContains("SIRNA")
-                criteria.withCode().thatContains("A-2")
-
-                var fo = c.createMaterialFetchOptions()
-
-                testSearchWithPagingAndSorting(
-                    c,
-                    function (facade: openbis.openbis) {
-                        return facade.searchMaterials(criteria, fo)
-                    },
-                    fo,
-                    "code",
-                    null,
-                    true,
-                    "SIRNA-1"
-                )
-            })
-
-            QUnit.test("searchMaterials() with sorting by type", function (assert) {
-                var c = new common(assert, dtos)
-
-                var criteria = new dtos.MaterialSearchCriteria()
-                criteria.withOrOperator()
-                criteria.withCode().thatEquals("ABC")
-                criteria.withCode().thatEquals("SIRNA-2")
-
-                var fo = c.createMaterialFetchOptions()
-
-                testSearchWithPagingAndSorting(
-                    c,
-                    function (facade: openbis.openbis) {
-                        return facade.searchMaterials(criteria, fo)
-                    },
-                    fo,
-                    "type"
-                )
-            })
-
-            QUnit.test("searchMaterials() withRegistrator withUserId", function (assert) {
-                var c = new common(assert, dtos)
-
-                var fSearch = function (facade: openbis.openbis) {
-                    var criteria = new dtos.MaterialSearchCriteria()
-                    criteria.withRegistrator().withUserId().thatEquals("etlserver")
-                    return facade.searchMaterials(criteria, c.createMaterialFetchOptions())
-                }
-
-                var fCheck = function (facade: openbis.openbis, materials: openbis.Material[]) {
-                    c.assertObjectsWithValues(materials, "code", ["SIRNA-3", "SIRNA-4"])
-                }
-
-                testSearch(c, fSearch, fCheck)
-            })
-
-            QUnit.test("searchMaterials() withRegistrator withUserId negated", function (assert) {
-                var c = new common(assert, dtos)
-
-                var fSearch = function (facade: openbis.openbis) {
-                    var criteria = new dtos.MaterialSearchCriteria().withAndOperator()
-                    criteria.withRegistrator().withUserId().thatEquals("etlserver")
-                    criteria.withSubcriteria().negate().withCode().thatEndsWith("4")
-                    return facade.searchMaterials(criteria, c.createMaterialFetchOptions())
-                }
-
-                var fCheck = function (facade: openbis.openbis, materials: openbis.Material[]) {
-                    c.assertObjectsWithValues(materials, "code", ["SIRNA-3"])
-                }
-
-                testSearch(c, fSearch, fCheck)
-            })
-
-            QUnit.test("searchMaterials() withModifier withUserId", function (assert) {
-                var c = new common(assert, dtos)
-
-                var fSearch = function (facade: openbis.openbis) {
-                    var criteria = new dtos.MaterialSearchCriteria()
-                    criteria.withModifier().withUserId().thatEquals("etlserver")
-                    return facade.searchMaterials(criteria, c.createMaterialFetchOptions())
-                }
-
-                var fCheck = function (facade: openbis.openbis, materials: openbis.Material[]) {
-                    // search by a modifier not supported yet
-                    c.assertObjectsWithValues(materials, "code", [])
-                }
-
-                testSearch(c, fSearch, fCheck)
-            })
-
-            QUnit.test("searchMaterialTypes()", function (assert) {
-                var c = new common(assert, dtos)
-
-                var fSearch = function (facade: openbis.openbis) {
-                    var criteria = new dtos.MaterialTypeSearchCriteria()
-                    criteria.withCode().thatStartsWith("G")
-                    var fetchOptions = new dtos.MaterialTypeFetchOptions()
-                    fetchOptions.withPropertyAssignments().sortBy().code().desc()
-                    return facade.searchMaterialTypes(criteria, fetchOptions)
-                }
-
-                var fCheck = function (facade: openbis.openbis, materialTypes: openbis.MaterialType[]) {
-                    c.assertEqual(materialTypes.length, 1, "Number of material types")
-                    var type = materialTypes[0]
-                    c.assertEqual(type.getCode(), "GENE", "Material type code")
-                    c.assertEqual(type.getFetchOptions().hasPropertyAssignments(), true)
-                    var assignments = type.getPropertyAssignments()
-                    c.assertEqual(assignments.length, 2, "Number of property assignments")
-                    c.assertEqual(assignments[0].isMandatory(), false, "Mandatory property assignment?")
-                    var propertyType = assignments[0].getPropertyType()
-                    c.assertEqual(propertyType.getCode(), "GENE_SYMBOLS", "Property type code")
-                    c.assertEqual(propertyType.getLabel(), "Gene symbols", "Property type label")
-                    c.assertEqual(propertyType.getDescription(), "", "Property type description")
-                    c.assertEqual(propertyType.getDataType(), "VARCHAR", "Property data type")
-                    c.assertEqual(propertyType.isManagedInternally(), false, "Property type managed internally?")
-                    c.assertEqual(assignments[1].getPropertyType().getCode(), "DESCRIPTION", "Second property type code")
-                    c.assertEqual(assignments[1].getPropertyType().getDescription(), "A Description", "Second property type description")
-                }
-
-                testSearch(c, fSearch, fCheck)
-            })
-
-            QUnit.test("searchMaterialTypes() with and operator", function (assert) {
-                var c = new common(assert, dtos)
-
-                var fSearch = function (facade: openbis.openbis) {
-                    var criteria = new dtos.MaterialTypeSearchCriteria()
-                    criteria.withAndOperator()
-                    criteria.withCode().thatStartsWith("C")
-                    criteria.withCode().thatContains("R")
-                    var fetchOptions = new dtos.MaterialTypeFetchOptions()
-                    return facade.searchMaterialTypes(criteria, fetchOptions)
-                }
-
-                var fCheck = function (facade: openbis.openbis, materialTypes: openbis.MaterialType[]) {
-                    c.assertEqual(materialTypes.toString(), "CONTROL", "Material types")
-                }
-
-                testSearch(c, fSearch, fCheck)
-            })
-
-            QUnit.test("searchMaterialTypes() with or operator", function (assert) {
-                var c = new common(assert, dtos)
-
-                var fSearch = function (facade: openbis.openbis) {
-                    var criteria = new dtos.MaterialTypeSearchCriteria()
-                    criteria.withOrOperator()
-                    criteria.withCode().thatStartsWith("C")
-                    criteria.withCode().thatContains("IR")
-                    var fetchOptions = new dtos.MaterialTypeFetchOptions()
-                    return facade.searchMaterialTypes(criteria, fetchOptions)
-                }
-
-                var fCheck = function (facade: openbis.openbis, materialTypes: openbis.MaterialType[]) {
-                    materialTypes.sort()
-                    c.assertEqual(materialTypes.toString(), "COMPOUND,CONTROL,SIRNA", "Material types")
-                }
-
-                testSearch(c, fSearch, fCheck)
-            })
-
             QUnit.test("searchGlobally() withText thatContains", function (assert) {
                 var c = new common(assert, dtos)
 
@@ -1976,7 +1752,7 @@ exports.default = new Promise((resolve) => {
 
                 var fCheck = function (facade: openbis.openbis, objects: openbis.GlobalSearchObject[]) {
                     objects = objects.filter((o) => o.getObjectIdentifier().toString().search("V3") < 0)
-                    c.assertEqual(objects.length, 4)
+                    c.assertEqual(objects.length, 3)
                     var prepopulatedExperimentsCount = 0
                     var prepopulatedSamplesCount = 0
                     for (var oIdx = 0; oIdx < objects.length; oIdx++) {
@@ -2000,7 +1776,6 @@ exports.default = new Promise((resolve) => {
                                 c.assertNull(result.getExperiment(), "Experiment (case DATA_SET)")
                                 c.assertNull(result.getSample(), "Sample (case DATA_SET)")
                                 c.assertEqual(result.getDataSet().getCode(), dataSetPermId, "DataSet (case DATA_SET)")
-                                c.assertNull(result.getMaterial(), "Material (case DATA_SET)")
                                 break
                             case "EXPERIMENT":
                                 var experimentPermId = (<openbis.ExperimentPermId>result.getObjectPermId()).getPermId()
@@ -2027,7 +1802,6 @@ exports.default = new Promise((resolve) => {
                                 )
                                 c.assertNull(result.getSample(), "Sample (case EXPERIMENT)")
                                 c.assertNull(result.getDataSet(), "DataSet (case EXPERIMENT)")
-                                c.assertNull(result.getMaterial(), "Material (case EXPERIMENT)")
                                 break
                             case "SAMPLE":
                                 var samplePermId = (<openbis.SamplePermId>result.getObjectPermId()).getPermId()
@@ -2053,22 +1827,6 @@ exports.default = new Promise((resolve) => {
                                     "Sample (case SAMPLE)"
                                 )
                                 c.assertNull(result.getDataSet(), "DataSet (case SAMPLE)")
-                                c.assertNull(result.getMaterial(), "Material (case SAMPLE)")
-                                break
-                            case "MATERIAL":
-                                var materialPermId = <openbis.MaterialPermId>result.getObjectPermId()
-                                var materialIdentifier = <openbis.MaterialPermId>result.getObjectIdentifier()
-
-                                c.assertEqual(materialPermId.getCode(), "H2O", "ObjectPermId 1 (case MATERIAL)")
-                                c.assertEqual(materialPermId.getTypeCode(), "COMPOUND", "ObjectPermId 2 (case MATERIAL)")
-                                c.assertEqual(materialIdentifier.getCode(), "H2O", "ObjectIdentifier 1 (case MATERIAL)")
-                                c.assertEqual(materialIdentifier.getTypeCode(), "COMPOUND", "ObjectIdentifier 2 (case MATERIAL)")
-                                c.assertEqual(match, "Identifier: H2O (COMPOUND)", "Match (case MATERIAL)")
-                                c.assertNotNull(result.getScore(), "Score (case MATERIAL)")
-                                c.assertNull(result.getExperiment(), "Experiment (case MATERIAL)")
-                                c.assertNull(result.getSample(), "Sample (case MATERIAL)")
-                                c.assertNull(result.getDataSet(), "DataSet (case MATERIAL)")
-                                c.assertEqual(result.getMaterial().getCode(), "H2O", "Material (case MATERIAL)")
                                 break
                         }
                     }
@@ -2107,7 +1865,6 @@ exports.default = new Promise((resolve) => {
                     c.assertNull(object0.getExperiment(), "Experiment")
                     c.assertNull(object0.getSample(), "Sample")
                     c.assertEqual(object0.getDataSet().getCode(), "20130415100158230-407", "DataSet")
-                    c.assertNull(object0.getMaterial(), "Material")
                 }
 
                 testSearch(c, fSearch, fCheck)
@@ -2163,7 +1920,6 @@ exports.default = new Promise((resolve) => {
                         )
                         c.assertNull(objectExperiment.getSample(), "Sample")
                         c.assertNull(objectExperiment.getDataSet(), "DataSet")
-                        c.assertNull(objectExperiment.getMaterial(), "Material")
                     }
                 }
 

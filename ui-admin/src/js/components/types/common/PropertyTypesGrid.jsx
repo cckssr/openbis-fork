@@ -67,17 +67,6 @@ class PropertyTypesGrid extends React.PureComponent {
             )
           },
           {
-            name: 'materialType',
-            label: messages.get(messages.MATERIAL_TYPE),
-            getValue: ({ row }) => row.materialType,
-            renderValue: ({ row }) => (
-              <EntityTypeLink
-                typeKind={openbis.EntityKind.MATERIAL}
-                typeCode={row.materialType}
-              />
-            )
-          },
-          {
             name: 'sampleType',
             label: messages.get(messages.OBJECT_TYPE),
             getValue: ({ row }) => row.sampleType,

@@ -37,7 +37,6 @@ public class HistoryPropertyRecordDataObjectBinding extends NonUpdateCapableData
         into.authorId = row.getLong("authorId");
         into.propertyCode = row.getString("propertyCode");
         into.propertyValue = row.getString("propertyValue");
-        into.materialPropertyValue = row.getString("materialPropertyValue");
         into.samplePropertyValue = row.getString("samplePropertyValue");
         into.vocabularyPropertyValue = row.getString("vocabularyPropertyValue");
         into.validFrom = row.getTimestamp("validFrom");

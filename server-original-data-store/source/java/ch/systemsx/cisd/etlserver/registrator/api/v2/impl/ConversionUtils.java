@@ -38,7 +38,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IEntityProperty;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.LinkDataSet;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewAttachment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewExperiment;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewMaterial;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewMetaproject;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewProject;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewSample;
@@ -46,7 +45,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewSpace;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataSetBatchUpdatesDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataSetUpdatesDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentUpdatesDTO;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialUpdateDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.MetaprojectUpdatesDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.NewContainerDataSet;
 import ch.systemsx.cisd.openbis.generic.shared.dto.NewDataSet;
@@ -410,21 +408,6 @@ public class ConversionUtils
         dataSetUpdate.setModifiedParentDatasetCodesOrNull(parentCodes);
 
         return dataSetUpdate;
-    }
-
-    public static NewMaterial convertToNewMaterial(Material material)
-    {
-        NewMaterial newMaterial = new NewMaterial(material.getCode());
-        IEntityProperty[] properties =
-                material.getMaterial().getProperties().toArray(new IEntityProperty[0]);
-        newMaterial.setProperties(properties);
-        return newMaterial;
-    }
-
-    public static MaterialUpdateDTO convertToMaterialUpdateDTO(Material material)
-    {
-        return new MaterialUpdateDTO(new TechId(material.getMaterial().getId()), material
-                .getMaterial().getProperties(), material.getMaterial().getModificationDate());
     }
 
     public static NewMetaproject convertToNewMetaproject(Metaproject metaproject)

@@ -22,7 +22,6 @@ class Tag(OpenBisObject, entity="tag", single_item_method_name="get_tag"):
         return [
             "get_samples()",
             "get_experiments()",
-            "get_materials()",
             "get_owner()",
         ] + super().__dir__()
 
@@ -35,6 +34,3 @@ class Tag(OpenBisObject, entity="tag", single_item_method_name="get_tag"):
 
     def get_experiments(self):
         return self.openbis.get_experiments(tags=[self.code])
-
-    def get_materials(self):
-        raise ValueError("not yet implemented")

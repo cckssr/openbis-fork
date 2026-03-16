@@ -92,28 +92,6 @@ function dataSetTypeNode(typeCode) {
   }
 }
 
-function materialTypesFolderNode() {
-  return {
-    text: messages.get(messages.MATERIAL_TYPES),
-    object: {
-      type: objectType.OVERVIEW,
-      id: objectType.MATERIAL_TYPE
-    },
-    canHaveChildren: true,
-    childrenLoadLimit: LOAD_LIMIT
-  }
-}
-
-function materialTypeNode(typeCode) {
-  return {
-    text: typeCode,
-    object: {
-      type: objectType.MATERIAL_TYPE,
-      id: typeCode
-    }
-  }
-}
-
 function vocabularyTypesFolderNode() {
   return {
     text: messages.get(messages.VOCABULARY_TYPES),
@@ -157,8 +135,6 @@ export default {
   collectionTypeNode,
   dataSetTypesFolderNode,
   dataSetTypeNode,
-  materialTypesFolderNode,
-  materialTypeNode,
   vocabularyTypesFolderNode,
   vocabularyTypeNode,
   propertyTypesFolderNode

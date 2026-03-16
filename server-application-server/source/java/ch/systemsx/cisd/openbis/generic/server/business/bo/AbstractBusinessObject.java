@@ -444,12 +444,6 @@ abstract class AbstractBusinessObject implements IDAOFactory
     }
 
     @Override
-    public IMaterialDAO getMaterialDAO()
-    {
-        return daoFactory.getMaterialDAO();
-    }
-
-    @Override
     public ICodeSequenceDAO getCodeSequenceDAO()
     {
         return daoFactory.getCodeSequenceDAO();
@@ -709,11 +703,6 @@ abstract class AbstractBusinessObject implements IDAOFactory
         if (value != null)
         {
             return value;
-        }
-        MaterialPE materialValue = property.getMaterialValue();
-        if (materialValue != null)
-        {
-            return materialValue;
         }
         Long[] integerArrayValue = property.getIntegerArrayValue();
         if (integerArrayValue != null)

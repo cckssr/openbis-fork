@@ -29,7 +29,6 @@ final class HistoryRowMapper implements RowMapper<PropertyHistory>
         propertyHistory.setPropertyTypeCode(rs.getString("code"));
         propertyHistory.setValue(rs.getString("value"));
         propertyHistory.setTerm(rs.getString("vocabulary_term"));
-        propertyHistory.setMaterial(rs.getString("material"));
         propertyHistory.setValidFromTimeStamp(rs.getTimestamp("valid_from_timestamp"));
         propertyHistory.setValidUntilTimeStamp(rs.getTimestamp("valid_until_timestamp"));
         propertyHistory.setPersIdAuthor(rs.getLong("pers_id_author"));

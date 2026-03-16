@@ -21,7 +21,6 @@ export default class EntityTypeFormControllerLoad extends PageControllerLoad {
       validationPlugins,
       dynamicPlugins,
       vocabularies,
-      materialTypes,
       sampleTypes,
       propertyTypes,
       typeGroups
@@ -29,7 +28,6 @@ export default class EntityTypeFormControllerLoad extends PageControllerLoad {
       this.facade.loadValidationPlugins(object.type),
       this.facade.loadDynamicPlugins(object.type),
       this.facade.loadVocabularies(),
-      this.facade.loadMaterialTypes(),
       this.facade.loadSampleTypes(),
       this.facade.loadPropertyTypes(),
       this.facade.loadTypeGroups()
@@ -40,7 +38,6 @@ export default class EntityTypeFormControllerLoad extends PageControllerLoad {
         validationPlugins,
         dynamicPlugins,
         vocabularies,
-        materialTypes,
         sampleTypes,
         propertyTypes,
         typeGroups
@@ -282,11 +279,6 @@ export default class EntityTypeFormControllerLoad extends PageControllerLoad {
         visible: dataType === openbis.DataType.CONTROLLEDVOCABULARY,
         enabled: false
       }),
-      materialType: FormUtil.createField({
-        value: _.get(propertyType, 'materialType.code', null),
-        visible: dataType === openbis.DataType.MATERIAL,
-        enabled: false
-      }),
       sampleType: FormUtil.createField({
         value: _.get(propertyType, 'sampleType.code', null),
         visible: dataType === openbis.DataType.SAMPLE,
@@ -422,7 +414,6 @@ export default class EntityTypeFormControllerLoad extends PageControllerLoad {
     strategies.extendObjectTypeStrategy(new ObjectTypeStrategy())
     strategies.extendCollectionTypeStrategy(new CollectionTypeStrategy())
     strategies.extendDataSetTypeStrategy(new DataSetTypeStrategy())
-    strategies.extendMaterialTypeStrategy(new MaterialTypeStrategy())
     return strategies.getStrategy(this.object.type)
   }
 }
@@ -485,8 +476,4 @@ class DataSetTypeStrategy {
       })
     })
   }
-}
-
-class MaterialTypeStrategy {
-  setTypeAttributes() { }
 }

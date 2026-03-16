@@ -35,8 +35,6 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.EntityPropertyPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePropertyTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentPropertyPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.IEntityInformationWithPropertiesHolder;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialPE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialPropertyPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PropertyTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePropertyPE;
@@ -163,27 +161,6 @@ public class DynamicPropertyEvaluator implements IDynamicPropertyEvaluator
                 }
 
                 break;
-            case MATERIAL:
-                propertyTypeQuery =
-                        session.createQuery(
-                                        "SELECT material.materialType.materialTypePropertyTypesInternal FROM MaterialPE material WHERE material = :material")
-                                .setParameter("material", entity);
-                allPropertyTypes = propertyTypeQuery.list();
-
-                if (allPropertyTypes.size() > 0)
-                {
-                    propertyQuery =
-                            session.createQuery(
-                                            "SELECT property FROM MaterialPropertyPE property WHERE " +
-                                                    "property.entity = :material AND property.entityTypePropertyType IN (:types)")
-                                    .setParameter("material", entity)
-                                    .setParameterList("types", allPropertyTypes);
-                    existingProperties = propertyQuery.list();
-                } else
-                {
-                    existingProperties = new ArrayList<EntityPropertyPE>();
-                }
-                break;
             default:
                 throw new IllegalArgumentException(entity.getEntityKind().toString());
         }
@@ -209,9 +186,6 @@ public class DynamicPropertyEvaluator implements IDynamicPropertyEvaluator
                     case EXPERIMENT:
                         prop = new ExperimentPropertyPE();
                         break;
-                    case MATERIAL:
-                        prop = new MaterialPropertyPE();
-                        break;
                     default:
                         throw new IllegalArgumentException(
                                 etpt.getEntityType().getEntityKind().toString());
@@ -234,7 +208,6 @@ public class DynamicPropertyEvaluator implements IDynamicPropertyEvaluator
             {
                 final String dynamicValue = evaluateProperty(entityAdaptor, etpt, true);
                 String valueOrNull = null;
-                MaterialPE materialOrNull = null;
                 SamplePE sampleOrNull = null;
                 VocabularyTermPE termOrNull = null;
                 Long[] integerArrayOrNull = null;
@@ -247,7 +220,7 @@ public class DynamicPropertyEvaluator implements IDynamicPropertyEvaluator
                     propertiesToRemove.add(property);
                 } else if (dynamicValue.startsWith(BasicConstant.ERROR_PROPERTY_PREFIX))
                 {
-                    property.setUntypedValue(dynamicValue, null, null, null, null, null, null, null,
+                    property.setUntypedValue(dynamicValue, null, null, null, null, null, null,
                             null);
                 } else
                 {
@@ -259,11 +232,6 @@ public class DynamicPropertyEvaluator implements IDynamicPropertyEvaluator
                                 termOrNull =
                                         entityPropertiesConverter.tryGetVocabularyTerm(
                                                 dynamicValue, etpt.getPropertyType());
-                                break;
-                            case MATERIAL:
-                                materialOrNull =
-                                        entityPropertiesConverter.tryGetMaterial(dynamicValue,
-                                                etpt.getPropertyType());
                                 break;
                             case SAMPLE:
                                 sampleOrNull =
@@ -302,7 +270,7 @@ public class DynamicPropertyEvaluator implements IDynamicPropertyEvaluator
                     {
                         valueOrNull = errorPropertyValue(ex.getMessage());
                     }
-                    property.setUntypedValue(valueOrNull, termOrNull, materialOrNull, sampleOrNull,
+                    property.setUntypedValue(valueOrNull, termOrNull, sampleOrNull,
                             integerArrayOrNull, realArrayOrNull, stringArrayOrNull,
                             timestampArrayOrNull, jsonValueOrNull);
                     if (session.contains(property) == false)
@@ -407,11 +375,6 @@ public class DynamicPropertyEvaluator implements IDynamicPropertyEvaluator
             Serializable serializable = convertersByEntityKind.get(entityKind).tryCreateValidatedPropertyValue(
                     propertyType, entityTypePropertyType, value);
             return serializable != null ? serializable.toString() : null;
-        }
-
-        public MaterialPE tryGetMaterial(String value, PropertyTypePE propertyType)
-        {
-            return complexPropertyValueHelper.tryGetMaterial(value, propertyType);
         }
 
         public SamplePE tryGetSample(String value, PropertyTypePE propertyType)

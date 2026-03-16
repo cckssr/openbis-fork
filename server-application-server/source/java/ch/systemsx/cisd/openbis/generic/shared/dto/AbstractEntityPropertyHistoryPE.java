@@ -45,8 +45,6 @@ public abstract class AbstractEntityPropertyHistoryPE implements Serializable
 
     private String vocabularyTerm;
 
-    private String material;
-
     private Date validFromDate;
 
     private Date validUntilDate;
@@ -91,18 +89,6 @@ public abstract class AbstractEntityPropertyHistoryPE implements Serializable
     private void setVocabularyTerm(String vocabularyTerm)
     {
         this.vocabularyTerm = vocabularyTerm;
-    }
-
-    @Column(name = ColumnNames.MATERIAL_IDENTIFIER_COLUMN)
-    public String getMaterial()
-    {
-        return material;
-    }
-
-    @SuppressWarnings("unused")
-    private void setMaterial(String material)
-    {
-        this.material = material;
     }
 
     @Column(name = ColumnNames.VALID_FROM_TIMESTAMP_COLUMN, nullable = false, insertable = false, updatable = false)

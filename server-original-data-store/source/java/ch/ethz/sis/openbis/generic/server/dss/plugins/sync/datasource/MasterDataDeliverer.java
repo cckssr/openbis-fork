@@ -36,9 +36,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentType
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.ExternalDms;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.fetchoptions.ExternalDmsFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.search.ExternalDmsSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.MaterialType;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.fetchoptions.MaterialTypeFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.MaterialTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.Plugin;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.fetchoptions.PluginFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.search.PluginSearchCriteria;
@@ -76,8 +73,6 @@ public class MasterDataDeliverer extends AbstractEntityDeliverer<Object>
 
     private static final ExperimentTypeSearchCriteria EXPERIMENT_TYPE_SEARCH_CRITERIA = new ExperimentTypeSearchCriteria();
 
-    private static final MaterialTypeSearchCriteria MATERIAL_TYPE_SEARCH_CRITERIA = new MaterialTypeSearchCriteria();
-
     private static final SampleTypeSearchCriteria SAMPLE_TYPE_SEARCH_CRITERIA = new SampleTypeSearchCriteria();
 
     private static final DataSetTypeSearchCriteria DATA_SET_TYPE_SEARCH_CRITERIA = new DataSetTypeSearchCriteria();
@@ -103,7 +98,6 @@ public class MasterDataDeliverer extends AbstractEntityDeliverer<Object>
         addSampleTypes(context, writer, sessionToken);
         addExperimentTypes(context, writer, sessionToken);
         addDataSetTypes(context, writer, sessionToken);
-        addMaterialTypes(context, writer, sessionToken);
         addExternalDataManagementSystems(context, writer, sessionToken);
         writer.writeEndElement();
         writer.writeEndElement();
@@ -226,7 +220,6 @@ public class MasterDataDeliverer extends AbstractEntityDeliverer<Object>
             String sessionToken) throws XMLStreamException
     {
         PropertyTypeFetchOptions fetchOptions = new PropertyTypeFetchOptions();
-        fetchOptions.withMaterialType();
         fetchOptions.withVocabulary();
         fetchOptions.withRegistrator();
         List<PropertyType> propertyTypes =
@@ -255,16 +248,6 @@ public class MasterDataDeliverer extends AbstractEntityDeliverer<Object>
             if (propertyType.getDataType().name().equals(DataType.CONTROLLEDVOCABULARY.name()))
             {
                 addAttribute(writer, "vocabulary", propertyType.getVocabulary(), v -> v.getCode());
-            } else if (propertyType.getDataType().name().equals(DataType.MATERIAL.name()))
-            {
-                if (propertyType.getMaterialType() != null)
-                {
-                    addAttribute(writer, "material", propertyType.getMaterialType(), t -> t.getCode());
-                } else
-                {
-                    // for properties like "inhibitor_of" where it is of Material of Any Type
-                    addAttribute(writer, "material", "");
-                }
             }
             writer.writeEndElement();
         }
@@ -346,30 +329,6 @@ public class MasterDataDeliverer extends AbstractEntityDeliverer<Object>
             addAttribute(writer, "deletionDisallowed", type.isDisallowDeletion());
             addAttribute(writer, "mainDataSetPath", type.getMainDataSetPath());
             addAttribute(writer, "mainDataSetPattern", type.getMainDataSetPattern());
-            addAttribute(writer, "validationPlugin", type.getValidationPlugin(), p -> p.getName());
-            addAttribute(writer, "modification-timestamp", type.getModificationDate(), h -> DataSourceUtils.convertToW3CDate(h));
-            addPropertyAssignments(writer, type.getPropertyAssignments());
-            writer.writeEndElement();
-        }
-        writer.writeEndElement();
-    }
-
-    private void addMaterialTypes(DeliveryExecutionContext executionContext, XMLStreamWriter writer, 
-            String sessionToken) throws XMLStreamException
-    {
-        MaterialTypeFetchOptions fetchOptions = new MaterialTypeFetchOptions();
-        fetchOptions.withPropertyAssignments().withPropertyType();
-        fetchOptions.withPropertyAssignments().withPlugin();
-        fetchOptions.withValidationPlugin();
-        List<MaterialType> types = context.getV3api().searchMaterialTypes(sessionToken, MATERIAL_TYPE_SEARCH_CRITERIA, fetchOptions).getObjects();
-        if (types.isEmpty())
-        {
-            return;
-        }
-        writer.writeStartElement("xmd:materialTypes");
-        for (MaterialType type : types)
-        {
-            writeTypeElement(executionContext, writer, "xmd:materialType", type);
             addAttribute(writer, "validationPlugin", type.getValidationPlugin(), p -> p.getName());
             addAttribute(writer, "modification-timestamp", type.getModificationDate(), h -> DataSourceUtils.convertToW3CDate(h));
             addPropertyAssignments(writer, type.getPropertyAssignments());

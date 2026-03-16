@@ -130,7 +130,7 @@ public class EntityPropertyTypeDAOTest extends AbstractDAOTest
     public void testListPropertiesByVocabularyTerm()
     {
         IEntityPropertyTypeDAO entityPropertyTypeDAO =
-                daoFactory.getEntityPropertyTypeDAO(EntityKind.MATERIAL);
+                daoFactory.getEntityPropertyTypeDAO(EntityKind.SAMPLE);
         List<EntityPropertyPE> properties =
                 entityPropertyTypeDAO.listPropertiesByVocabularyTerm(10);
 
@@ -173,8 +173,7 @@ public class EntityPropertyTypeDAOTest extends AbstractDAOTest
         return new Object[][]
         {
                 { EntityKind.EXPERIMENT, "SIRNA_HCS", "DESCRIPTION" },
-                { EntityKind.SAMPLE, "CONTROL_LAYOUT", "$PLATE_GEOMETRY" },
-                { EntityKind.MATERIAL, "BACTERIUM", "DESCRIPTION" } };
+                { EntityKind.SAMPLE, "CONTROL_LAYOUT", "$PLATE_GEOMETRY" },};
     }
 
     @DataProvider
@@ -183,7 +182,6 @@ public class EntityPropertyTypeDAOTest extends AbstractDAOTest
         return new Object[][]
         {
                 { EntityKind.EXPERIMENT, "SIRNA_HCS", "IS_VALID" },
-                { EntityKind.SAMPLE, "CONTROL_LAYOUT", "IS_VALID" },
-                { EntityKind.MATERIAL, "BACTERIUM", "IS_VALID" }, };
+                { EntityKind.SAMPLE, "CONTROL_LAYOUT", "IS_VALID" },};
     }
 }

@@ -55,8 +55,4 @@ public interface TagQuery extends ObjectQuery
             LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public List<ObjectRelationRecord> getDataSetIds(LongSet tagIds);
 
-    @Select(sql = "select ma.mepr_id as objectId, ma.mate_id as relatedId from metaproject_assignments ma where ma.mepr_id = any(?{1}) and ma.mate_id is not null", parameterBindings = {
-            LongSetMapper.class }, fetchSize = FETCH_SIZE)
-    public List<ObjectRelationRecord> getMaterialIds(LongSet tagIds);
-
 }

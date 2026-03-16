@@ -54,8 +54,7 @@ testEntityValidationPredeployedPlugin.setPluginType(
 testEntityValidationPredeployedPlugin.setEntityKinds([
   openbis.EntityKind.SAMPLE,
   openbis.EntityKind.EXPERIMENT,
-  openbis.EntityKind.DATA_SET,
-  openbis.EntityKind.MATERIAL
+  openbis.EntityKind.DATA_SET
 ])
 testEntityValidationPredeployedPlugin.setDescription(
   'Description of TEST_ENTITY_VALIDATION_PREDEPLOYED'

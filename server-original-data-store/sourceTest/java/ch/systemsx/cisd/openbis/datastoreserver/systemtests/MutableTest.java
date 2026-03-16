@@ -33,9 +33,6 @@ import ch.systemsx.cisd.common.spring.HttpInvokerUtils;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.IGeneralInformationService;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Attachment;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.DataSet;
-import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Material;
-import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.MaterialIdentifier;
-import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.MaterialTypeIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.id.experiment.ExperimentIdentifierId;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.id.project.ProjectIdentifierId;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.id.sample.SampleIdentifierId;
@@ -120,7 +117,6 @@ public abstract class MutableTest extends SystemTestCase
         Assert.assertEquals(getProjectAttachments().size(), beforeProjectAttachmentCount + 3, "Number of project attachments");
         Assert.assertEquals(getExperimentAttachments().size(), beforeExperimentAttachmentCount + 3, "Number of experiment attachments");
         Assert.assertEquals(getSampleAttachments().size(), beforeSampleAttachmentCount + 3, "Number of sample attachments");
-        Assert.assertEquals(getMaterialProperty(), "mutable material description 2");
         Assert.assertEquals(getDataSetProperty(), "mutable data set comment 2");
     }
 
@@ -139,12 +135,6 @@ public abstract class MutableTest extends SystemTestCase
         return generalInformationService.listAttachmentsForSample(sessionToken, new SampleIdentifierId("/TEST-SPACE/TEST-PROJECT/FV-TEST"), true);
     }
 
-    private String getMaterialProperty()
-    {
-        MaterialIdentifier identifier = new MaterialIdentifier(new MaterialTypeIdentifier("BACTERIUM"), "BACTERIUM1");
-        List<Material> materials = generalInformationService.getMaterialByCodes(sessionToken, Collections.singletonList(identifier));
-        return materials.get(0).getProperties().get("DESCRIPTION");
-    }
 
     private String getDataSetProperty()
     {

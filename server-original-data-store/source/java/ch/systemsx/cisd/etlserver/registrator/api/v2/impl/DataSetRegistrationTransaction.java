@@ -52,7 +52,6 @@ import ch.systemsx.cisd.etlserver.registrator.api.v2.IDataSetRegistrationTransac
 import ch.systemsx.cisd.etlserver.registrator.api.v2.IDataSetUpdatable;
 import ch.systemsx.cisd.etlserver.registrator.api.v2.IExperiment;
 import ch.systemsx.cisd.etlserver.registrator.api.v2.IExperimentUpdatable;
-import ch.systemsx.cisd.etlserver.registrator.api.v2.IMaterial;
 import ch.systemsx.cisd.etlserver.registrator.api.v2.IMetaproject;
 import ch.systemsx.cisd.etlserver.registrator.api.v2.IProject;
 import ch.systemsx.cisd.etlserver.registrator.api.v2.ISample;
@@ -73,7 +72,6 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.v2.IAttachmentIm
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.v2.IDataSetImmutable;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.v2.IExperimentImmutable;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.v2.IExternalDataManagementSystemImmutable;
-import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.v2.IMaterialImmutable;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.v2.IProjectImmutable;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.v2.ISampleImmutable;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.v2.ISearchService;
@@ -88,7 +86,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.TechId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Attachment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AttachmentHolderKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetKind;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.RoleWithHierarchy.RoleCode;
 import ch.systemsx.cisd.openbis.generic.shared.dto.AtomicEntityOperationResult;
 
@@ -399,48 +396,6 @@ public class DataSetRegistrationTransaction<T extends DataSetInformation> implem
     public ISpaceImmutable getSpace(String spaceCode)
     {
         return getSearchServiceUnfiltered().getSpace(spaceCode);
-    }
-
-    @Override
-    public IMaterialImmutable getMaterial(String materialCode, String materialType)
-    {
-        return getSearchServiceUnfiltered().getMaterial(materialCode, materialType);
-    }
-
-    @Override
-    public IMaterialImmutable getMaterial(String identifier)
-    {
-        return getSearchServiceUnfiltered().getMaterial(identifier);
-    }
-
-    @Override
-    public IMaterial getMaterialForUpdate(String materialCode, String materialType)
-    {
-        return getStateAsLiveState().getMaterialForUpdate(materialCode, materialType);
-    }
-
-    @Override
-    public IMaterial getMaterialForUpdate(String identifier)
-    {
-        MaterialIdentifier materialId = MaterialIdentifier.tryParseIdentifier(identifier);
-        if (materialId == null)
-        {
-            throw new IllegalArgumentException("Incorrect material identifier format " + identifier
-                    + ". Expected code (type)");
-        }
-        return getMaterialForUpdate(materialId.getCode(), materialId.getTypeCode());
-    }
-
-    @Override
-    public IMaterial makeMaterialMutable(IMaterialImmutable material)
-    {
-        return getStateAsLiveState().makeMaterialMutable(material);
-    }
-
-    @Override
-    public IMaterial createNewMaterial(String materialCode, String materialType)
-    {
-        return getStateAsLiveState().createNewMaterial(materialCode, materialType);
     }
 
     @Override

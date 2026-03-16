@@ -44,7 +44,6 @@ import ch.systemsx.cisd.etlserver.registrator.api.v1.IDataSetRegistrationTransac
 import ch.systemsx.cisd.etlserver.registrator.api.v1.IDataSetUpdatable;
 import ch.systemsx.cisd.etlserver.registrator.api.v1.IExperiment;
 import ch.systemsx.cisd.etlserver.registrator.api.v1.IExperimentUpdatable;
-import ch.systemsx.cisd.etlserver.registrator.api.v1.IMaterial;
 import ch.systemsx.cisd.etlserver.registrator.api.v1.IMetaproject;
 import ch.systemsx.cisd.etlserver.registrator.api.v1.IProject;
 import ch.systemsx.cisd.etlserver.registrator.api.v1.ISample;
@@ -63,7 +62,6 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.IEncapsulatedOpenBISService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.v1.IDataSetImmutable;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.v1.IExperimentImmutable;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.v1.IExternalDataManagementSystemImmutable;
-import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.v1.IMaterialImmutable;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.v1.IProjectImmutable;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.v1.ISampleImmutable;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.v1.ISearchService;
@@ -76,7 +74,6 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.dto.DataSetRegistrationInform
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.DataSetKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.EntityOperationsState;
 import ch.systemsx.cisd.openbis.generic.shared.basic.TechId;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.ExperimentIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.ExperimentIdentifierFactory;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.ProjectIdentifier;
@@ -385,57 +382,6 @@ public class DataSetRegistrationTransaction<T extends DataSetInformation> implem
         ch.systemsx.cisd.openbis.generic.shared.basic.dto.Space spaceOrNull =
                 openBisService.tryGetSpace(spaceIdentifier);
         return (null == spaceOrNull) ? null : new SpaceImmutable(spaceOrNull);
-    }
-
-    @Override
-    public IMaterialImmutable getMaterial(String materialCode, String materialType)
-    {
-        MaterialIdentifier materialIdentifier = new MaterialIdentifier(materialCode, materialType);
-        ch.systemsx.cisd.openbis.generic.shared.basic.dto.Material materialOrNull =
-                openBisService.tryGetMaterial(materialIdentifier);
-        return (null == materialOrNull) ? null : new MaterialImmutable(materialOrNull);
-    }
-
-    @Override
-    public IMaterialImmutable getMaterial(String identifier)
-    {
-        MaterialIdentifier materialId = MaterialIdentifier.tryParseIdentifier(identifier);
-        if (materialId == null)
-        {
-            throw new IllegalArgumentException("Incorrect material identifier format " + identifier
-                    + ". Expected code (type)");
-        }
-        return getMaterial(materialId.getCode(), materialId.getTypeCode());
-    }
-
-    @Override
-    public IMaterial getMaterialForUpdate(String materialCode, String materialType)
-    {
-        return getStateAsLiveState().getMaterialForUpdate(materialCode, materialType);
-    }
-
-    @Override
-    public IMaterial getMaterialForUpdate(String identifier)
-    {
-        MaterialIdentifier materialId = MaterialIdentifier.tryParseIdentifier(identifier);
-        if (materialId == null)
-        {
-            throw new IllegalArgumentException("Incorrect material identifier format " + identifier
-                    + ". Expected code (type)");
-        }
-        return getMaterialForUpdate(materialId.getCode(), materialId.getTypeCode());
-    }
-
-    @Override
-    public IMaterial makeMaterialMutable(IMaterialImmutable material)
-    {
-        return getStateAsLiveState().makeMaterialMutable(material);
-    }
-
-    @Override
-    public IMaterial createNewMaterial(String materialCode, String materialType)
-    {
-        return getStateAsLiveState().createNewMaterial(materialCode, materialType);
     }
 
     @Override

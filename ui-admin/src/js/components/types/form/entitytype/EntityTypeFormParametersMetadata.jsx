@@ -129,11 +129,9 @@ class EntityTypeFormParametersMetadata extends React.PureComponent {
 			[objectTypes.OBJECT_TYPE]: messages.OBJECT_TYPE,
 			[objectTypes.COLLECTION_TYPE]: messages.COLLECTION_TYPE,
 			[objectTypes.DATA_SET_TYPE]: messages.DATA_SET_TYPE,
-			[objectTypes.MATERIAL_TYPE]: messages.MATERIAL_TYPE,
 			[objectTypes.NEW_OBJECT_TYPE]: messages.NEW_OBJECT_TYPE,
 			[objectTypes.NEW_COLLECTION_TYPE]: messages.NEW_COLLECTION_TYPE,
-			[objectTypes.NEW_DATA_SET_TYPE]: messages.NEW_DATA_SET_TYPE,
-			[objectTypes.NEW_MATERIAL_TYPE]: messages.NEW_MATERIAL_TYPE
+			[objectTypes.NEW_DATA_SET_TYPE]: messages.NEW_DATA_SET_TYPE
 		}
 
 		return `${messages.get(map[objectTypeValue])} Metadata`

@@ -42,13 +42,10 @@ import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.ImageResoluti
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.ImageSize;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.LoadImageConfiguration;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.LogicalImageInfo;
-import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.MaterialIdentifier;
-import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.MaterialTypeIdentifier;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.Plate;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.PlateIdentifier;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.PlateImageReference;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.PlateMetadata;
-import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.PlateWellMaterialMapping;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.PlateWellReferenceWithDatasets;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.WellIdentifier;
 
@@ -107,12 +104,7 @@ public class ScreeningServerJson implements IScreeningApiServer
         return new PlateList(server.listPlates(sessionToken, experiment));
     }
 
-    @Override
-    public List<PlateMetadata> getPlateMetadataList(String sessionToken,
-            List<? extends PlateIdentifier> plates) throws IllegalArgumentException
-    {
-        return new PlateMetadataList(server.getPlateMetadataList(sessionToken, plates));
-    }
+
 
     @Override
     public List<ExperimentIdentifier> listExperiments(String sessionToken)
@@ -164,23 +156,6 @@ public class ScreeningServerJson implements IScreeningApiServer
     }
 
     @Override
-    public List<PlateWellReferenceWithDatasets> listPlateWells(String sessionToken,
-            ExperimentIdentifier experimentIdentifer, MaterialIdentifier materialIdentifier,
-            boolean findDatasets)
-    {
-        return new PlateWellReferenceWithDatasetsList(server.listPlateWells(sessionToken,
-                experimentIdentifer, materialIdentifier, findDatasets));
-    }
-
-    @Override
-    public List<PlateWellReferenceWithDatasets> listPlateWells(String sessionToken,
-            MaterialIdentifier materialIdentifier, boolean findDatasets)
-    {
-        return new PlateWellReferenceWithDatasetsList(server.listPlateWells(sessionToken,
-                materialIdentifier, findDatasets));
-    }
-
-    @Override
     public List<WellIdentifier> listPlateWells(String sessionToken, PlateIdentifier plateIdentifier)
     {
         return new WellIdentifierList(server.listPlateWells(sessionToken, plateIdentifier));
@@ -196,15 +171,6 @@ public class ScreeningServerJson implements IScreeningApiServer
     public Sample getPlateSample(String sessionToken, PlateIdentifier plateIdentifier)
     {
         return server.getPlateSample(sessionToken, plateIdentifier);
-    }
-
-    @Override
-    public List<PlateWellMaterialMapping> listPlateMaterialMapping(String sessionToken,
-            List<? extends PlateIdentifier> plates,
-            MaterialTypeIdentifier materialTypeIdentifierOrNull)
-    {
-        return new PlateWellMaterialMappingList(server.listPlateMaterialMapping(sessionToken,
-                plates, materialTypeIdentifierOrNull));
     }
 
     @Override
@@ -423,17 +389,6 @@ public class ScreeningServerJson implements IScreeningApiServer
         private static final long serialVersionUID = 1L;
 
         public WellIdentifierList(Collection<? extends WellIdentifier> c)
-        {
-            super(c);
-        }
-    }
-
-    private static class PlateWellMaterialMappingList extends ArrayList<PlateWellMaterialMapping>
-            implements IModifiable
-    {
-        private static final long serialVersionUID = 1L;
-
-        public PlateWellMaterialMappingList(Collection<? extends PlateWellMaterialMapping> c)
         {
             super(c);
         }

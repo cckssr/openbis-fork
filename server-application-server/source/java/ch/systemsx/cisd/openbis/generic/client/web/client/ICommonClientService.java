@@ -29,7 +29,6 @@ import ch.systemsx.cisd.openbis.generic.client.web.client.dto.IResultSetConfig;
 import ch.systemsx.cisd.openbis.generic.client.web.client.dto.IUpdateResult;
 import ch.systemsx.cisd.openbis.generic.client.web.client.dto.ListEntityHistoryCriteria;
 import ch.systemsx.cisd.openbis.generic.client.web.client.dto.ListExperimentsCriteria;
-import ch.systemsx.cisd.openbis.generic.client.web.client.dto.ListMaterialDisplayCriteria;
 import ch.systemsx.cisd.openbis.generic.client.web.client.dto.ListMetaprojectsCriteria;
 import ch.systemsx.cisd.openbis.generic.client.web.client.dto.ListPersonsCriteria;
 import ch.systemsx.cisd.openbis.generic.client.web.client.dto.ListSampleDisplayCriteria;
@@ -88,9 +87,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IVocabularyUpdates;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.LastModificationState;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.LinkModel;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MatchingEntity;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Material;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialIdentifier;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Metaproject;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MetaprojectAssignmentsCount;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewAttachment;
@@ -367,18 +363,6 @@ public interface ICommonClientService extends IClientService
             throws UserFailureException;
 
     /**
-     * Returns a list of materials.
-     */
-    public TypedTableResultSet<Material> listMaterials(final ListMaterialDisplayCriteria criteria)
-            throws UserFailureException;
-
-    /**
-     * Returns a list of metaproject materials.
-     */
-    public List<Material> listMetaprojectMaterials(final Long metaprojectId)
-            throws UserFailureException;
-
-    /**
      * Like {@link #prepareExportSamples(TableExportCriteria)}, but for experiments.
      */
 
@@ -526,17 +510,6 @@ public interface ICommonClientService extends IClientService
      */
     public String prepareExportVocabularyTerms(
             TableExportCriteria<TableModelRowWithObject<VocabularyTermWithStats>> criteria)
-            throws UserFailureException;
-
-    public TypedTableResultSet<MaterialType> listMaterialTypes(
-            DefaultResultSetConfig<String, TableModelRowWithObject<MaterialType>> criteria)
-            throws ch.systemsx.cisd.openbis.generic.client.web.client.exception.UserFailureException;
-
-    /**
-     * Like {@link #prepareExportSamples(TableExportCriteria)}, but for MaterialType.
-     */
-    public String prepareExportMaterialTypes(
-            final TableExportCriteria<TableModelRowWithObject<MaterialType>> criteria)
             throws UserFailureException;
 
     public TypedTableResultSet<SampleType> listSampleTypes(
@@ -780,21 +753,6 @@ public interface ICommonClientService extends IClientService
             final IResultSetConfig<String, TableModelRowWithObject<AbstractExternalData>> resultSetConfig)
             throws UserFailureException;
 
-    /**
-     * Returns a list of all material types.
-     */
-    public List<MaterialType> listMaterialTypes() throws UserFailureException;
-
-    /**
-     * Like {@link #prepareExportSamples(TableExportCriteria)}, but for materials.
-     */
-    public String prepareExportMaterials(
-            final TableExportCriteria<TableModelRowWithObject<Material>> criteria)
-            throws UserFailureException;
-
-    /** Registers a new material type */
-    public void registerMaterialType(MaterialType entityType) throws UserFailureException;
-
     /** Registers a new data set type */
     public void registerDataSetType(DataSetType entityType) throws UserFailureException;
 
@@ -964,22 +922,6 @@ public interface ICommonClientService extends IClientService
      */
     public IEntityInformationHolderWithPermId getEntityInformationHolder(BasicEntityDescription info)
             throws UserFailureException;
-
-    /**
-     * For given {@link MaterialIdentifier} returns the corresponding {@link Material}.
-     */
-    public Material getMaterialInfo(MaterialIdentifier identifier) throws UserFailureException;
-
-    /**
-     * For given {@link MaterialIdentifier} returns the corresponding {@link Material}.
-     */
-    public Material getMaterialInfo(TechId techId) throws UserFailureException;
-
-    /**
-     * For given {@link MaterialIdentifier} returns the corresponding {@link IEntityInformationHolderWithPermId}.
-     */
-    public IEntityInformationHolderWithPermId getMaterialInformationHolder(
-            MaterialIdentifier identifier) throws UserFailureException;
 
     /**
      * Returns example file format for batch operation on entities.
@@ -1210,11 +1152,6 @@ public interface ICommonClientService extends IClientService
      * Updates grid custom column.
      */
     public void updateColumn(IExpressionUpdates updates) throws UserFailureException;
-
-    /** Deletes the specified materials. */
-    public void deleteMaterials(
-            DisplayedOrSelectedIdHolderCriteria<TableModelRowWithObject<Material>> criteria,
-            String reason) throws UserFailureException;
 
     /**
      * Locks the specified datasets.

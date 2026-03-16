@@ -31,7 +31,6 @@ class EntityTypeFormParametersProperty extends React.PureComponent {
       internal: React.createRef(),
       dataType: React.createRef(),
       vocabulary: React.createRef(),
-      materialType: React.createRef(),
       sampleType: React.createRef(),
       schema: React.createRef(),
       transformation: React.createRef(),
@@ -113,7 +112,6 @@ class EntityTypeFormParametersProperty extends React.PureComponent {
         {this.renderCode(property)}
         {this.renderDataType(property)}
         {this.renderVocabulary(property)}
-        {this.renderMaterialType(property)}
         {this.renderSampleType(property)}
         {this.renderSchema(property)}
         {this.renderTransformation(property)}
@@ -344,27 +342,12 @@ class EntityTypeFormParametersProperty extends React.PureComponent {
         })
       }
     } else {
-      const objectType = this.getType().objectType.value;
-      if (objectType == 'materialType' || objectType == 'newMaterialType') {
-        //Filter out new data types for materials
-        const filtered = [openbis.DataType.ARRAY_STRING, openbis.DataType.ARRAY_INTEGER,
-        openbis.DataType.ARRAY_REAL, openbis.DataType.ARRAY_TIMESTAMP, openbis.DataType.JSON];
-        openbis.DataType.values.map(dataType => {
-          if (!filtered.includes(dataType)) {
-            options.push({
-              label: new DataType(dataType).getLabel(),
-              value: dataType
-            })
-          }
+      openbis.DataType.values.map(dataType => {
+        options.push({
+          label: new DataType(dataType).getLabel(),
+          value: dataType
         })
-      } else {
-        openbis.DataType.values.map(dataType => {
-          options.push({
-            label: new DataType(dataType).getLabel(),
-            value: dataType
-          })
-        })
-      }
+      })
     }
 
     const { mode, classes } = this.props
@@ -420,50 +403,6 @@ class EntityTypeFormParametersProperty extends React.PureComponent {
           disabled={!enabled}
           value={value}
           options={options}
-          mode={mode}
-          onChange={this.handleChange}
-          onFocus={this.handleFocus}
-          onBlur={this.handleBlur}
-        />
-      </div>
-    )
-  }
-
-  renderMaterialType(property) {
-    const { visible, enabled, error, value } = { ...property.materialType }
-
-    if (!visible) {
-      return null
-    }
-
-    const { mode, classes, controller } = this.props
-    const { materialTypes } = controller.getDictionaries()
-
-    let options = []
-
-    if (materialTypes) {
-      options = materialTypes.map(materialType => {
-        return {
-          label: materialType.code,
-          value: materialType.code
-        }
-      })
-    }
-
-    return (
-      <div className={classes.field}>
-        <SelectField
-          reference={this.references.materialType}
-          label={messages.get(messages.MATERIAL_TYPE)}
-          name='materialType'
-          error={error}
-          disabled={!enabled}
-          value={value}
-          options={options}
-          emptyOption={{
-            label: '(' + messages.get(messages.ALL) + ')',
-            selectable: true
-          }}
           mode={mode}
           onChange={this.handleChange}
           onFocus={this.handleFocus}
@@ -798,7 +737,7 @@ class EntityTypeFormParametersProperty extends React.PureComponent {
     if (!visible || [openbis.DataType.ARRAY_STRING, openbis.DataType.ARRAY_INTEGER,
     openbis.DataType.ARRAY_REAL, openbis.DataType.ARRAY_TIMESTAMP,
     openbis.DataType.JSON, openbis.DataType.XML, openbis.DataType.BOOLEAN,
-    openbis.DataType.CONTROLLEDVOCABULARY, openbis.DataType.MATERIAL,
+    openbis.DataType.CONTROLLEDVOCABULARY,
     openbis.DataType.SAMPLE, null].includes(property.dataType.value)) {
       return null
     }
@@ -828,7 +767,7 @@ class EntityTypeFormParametersProperty extends React.PureComponent {
     if (!visible || [openbis.DataType.ARRAY_STRING, openbis.DataType.ARRAY_INTEGER,
     openbis.DataType.ARRAY_REAL, openbis.DataType.ARRAY_TIMESTAMP,
     openbis.DataType.JSON, openbis.DataType.XML, openbis.DataType.BOOLEAN,
-    openbis.DataType.CONTROLLEDVOCABULARY, openbis.DataType.MATERIAL,
+    openbis.DataType.CONTROLLEDVOCABULARY,
     openbis.DataType.SAMPLE,
       null].includes(property.dataType.value)) {
       return null;
@@ -864,7 +803,7 @@ class EntityTypeFormParametersProperty extends React.PureComponent {
     if (!visible || [openbis.DataType.ARRAY_STRING, openbis.DataType.ARRAY_INTEGER,
     openbis.DataType.ARRAY_REAL, openbis.DataType.ARRAY_TIMESTAMP,
     openbis.DataType.JSON, openbis.DataType.XML, openbis.DataType.BOOLEAN,
-    openbis.DataType.CONTROLLEDVOCABULARY, openbis.DataType.MATERIAL,
+    openbis.DataType.CONTROLLEDVOCABULARY,
     openbis.DataType.SAMPLE,
       null].includes(property.dataType.value)) {
       return null

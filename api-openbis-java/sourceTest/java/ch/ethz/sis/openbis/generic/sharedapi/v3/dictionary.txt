@@ -209,12 +209,6 @@ CreateExperimentTypesOperationResult
 createExternalDataManagementSystems
 CreateExternalDmsOperation
 CreateExternalDmsOperationResult
-createMaterials
-CreateMaterialsOperation
-CreateMaterialsOperationResult
-createMaterialTypes
-CreateMaterialTypesOperation
-CreateMaterialTypesOperationResult
 CreateObjectsOperation
 CreateObjectsOperationResult
 createPermIdStrings
@@ -335,9 +329,6 @@ Delete Data Set Types Operation Result
 delete Experiment Types
 Delete Experiment Types Operation
 Delete Experiment Types Operation Result
-delete Material Types
-Delete Material Types Operation
-Delete Material Types Operation Result
 delete Persons
 Delete Persons Operation
 Delete Persons Operation Result
@@ -375,9 +366,6 @@ DeleteExperimentsOperationResult
 deleteExternalDataManagementSystems
 DeleteExternalDmsOperation
 DeleteExternalDmsOperationResult
-deleteMaterials
-DeleteMaterialsOperation
-DeleteMaterialsOperationResult
 DeleteObjectsOperation
 DeleteObjectsOperationResult
 DeleteObjectsWithoutTrashOperationResult
@@ -673,14 +661,6 @@ get Internal NameSpace
 get Last Modification Time Stamp
 get Managed Internally
 get Match
-get Material Ids
-get Material Property
-get Material Type
-get Material Type Id
-get Material Types
-Get Material Types Operation
-Get Material Types Operation Result
-get Materials
 get Meta Data
 get Method Name
 get Name
@@ -964,12 +944,6 @@ getMainDataSetPattern
 getManagedPersonalAccessToken
 getMatchingField
 getMatchingText
-getMaterial
-getMaterialId
-getMaterialProperties
-getMaterials
-GetMaterialsOperation
-GetMaterialsOperationResult
 getMessage
 getMeta
 getMetaData
@@ -1178,8 +1152,6 @@ has Data Sets History
 has Entity Registrator
 has Experiment History
 has Experiments History
-has Material Type
-has Materials
 has Parents History
 has Plugin
 has Project History
@@ -1226,8 +1198,6 @@ hasLeader
 hasLinkedData
 hasLocatorType
 hasMatch
-hasMaterial
-hasMaterialProperties
 hasModifier
 hasNotification
 hasOperations
@@ -1274,8 +1244,6 @@ I Fetch Options Matcher
 I Fetch Property Handler
 I Import Service
 I Label Holder
-I Material Properties Holder
-I Materials Holder
 I Name Holder
 I Owner Holder
 I Project Holder
@@ -1338,7 +1306,6 @@ ImagingDataSetExport
 ImagingDataSetImage
 ImagingDataSetPreview
 IManagedInternallyHolder
-IMaterialId
 IMetaDataUpdateHolder
 IModificationDateHolder
 IModifierHolder
@@ -1516,23 +1483,6 @@ MANAGED_PROPERTY
 mangleToplevel
 MATCH_VALUE
 MatchFetchOptions
-Material
-MATERIAL
-Material Type Deletion Options
-Material Type Search Criteria
-Material Type Update
-MATERIAL_TYPE
-MaterialCreation
-MaterialDeletionOptions
-MaterialFetchOptions
-MaterialPermId
-MaterialSearchCriteria
-MaterialSortOptions
-MaterialType
-MaterialTypeCreation
-MaterialTypeFetchOptions
-MaterialTypeSortOptions
-MaterialUpdate
 maxLineLen
 Me
 METAPROJECT
@@ -1855,7 +1805,6 @@ search Events
 Search Events Operation Result
 Search EventsOperation
 search Experiment Types
-search Material Types
 search Object Kind Modifications
 search Persons
 Search Persons Operation
@@ -1915,11 +1864,6 @@ searchFiles
 searchGlobally
 SearchGloballyOperation
 SearchGloballyOperationResult
-searchMaterials
-SearchMaterialsOperation
-SearchMaterialsOperationResult
-SearchMaterialTypesOperation
-SearchMaterialTypesOperationResult
 SearchObjectKindModificationsOperation
 SearchObjectKindModificationsOperationResult
 SearchObjectsOperation
@@ -2050,12 +1994,6 @@ set Listable
 set Managed Internally
 set Mandatory
 set Match
-set Material Actions
-set Material Ids
-set Material Property
-set Material Type
-set Material Type Id
-set Materials
 set Meta Data
 set Meta Data Actions
 set Negated
@@ -2273,9 +2211,6 @@ setMainDataSetPath
 setMainDataSetPattern
 setMatchingField
 setMatchingText
-setMaterial
-setMaterialId
-setMaterialProperties
 setMeasured
 setMeta
 setMetaData
@@ -2617,9 +2552,6 @@ Update Data Set Types Operation Result
 update Experiment Types
 Update Experiment Types Operation
 Update Experiment Types Operation Result
-update Material Types
-Update Material Types Operation
-Update Material Types Operation Result
 update Persons
 Update Persons Operation
 Update Persons Operation Result
@@ -2650,9 +2582,6 @@ UpdateExperimentsOperationResult
 updateExternalDataManagementSystems
 UpdateExternalDmsOperation
 UpdateExternalDmsOperationResult
-updateMaterials
-UpdateMaterialsOperation
-UpdateMaterialsOperationResult
 UpdateObjectsOperation
 UpdateObjectsOperationResult
 updateOperationExecutions
@@ -2770,10 +2699,6 @@ with Listable
 with Listener
 with Location
 with Logger
-with Material Type
-with Material Type Using
-with Materials
-with Materials Using
 with Name
 with Object Kind
 with Operation Kind
@@ -2913,10 +2838,6 @@ withLocatorType
 withLocatorTypeUsing
 withMatch
 withMatchUsing
-withMaterial
-withMaterialProperties
-withMaterialPropertiesUsing
-withMaterialUsing
 withModificationDate
 withModifier
 withModifierUsing

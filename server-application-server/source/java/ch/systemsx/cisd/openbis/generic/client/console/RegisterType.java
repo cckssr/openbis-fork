@@ -33,7 +33,6 @@ class RegisterType implements ICommand
         commands.put("EXPERIMENT", new RegisterExperimentType());
         commands.put("SAMPLE", new RegisterSampleType());
         commands.put("DATA_SET", new RegisterDataSetType());
-        commands.put("MATERIAL", new RegisterMaterialType());
     }
 
     @Override

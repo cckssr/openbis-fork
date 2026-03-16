@@ -51,10 +51,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExperimentType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExternalDataManagementSystem;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IDatasetLocationNode;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IEntityProperty;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ListMaterialCriteria;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ListSampleCriteria;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Material;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Metaproject;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MetaprojectAssignments;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MetaprojectAssignmentsFetchOption;
@@ -695,22 +692,6 @@ public class ServiceForDataStoreServerLogger extends AbstractServerLogger implem
             SearchCriteria searchCriteria)
     {
         logAccess(sessionToken, "searchForDataSets", "%s", searchCriteria);
-        return null;
-    }
-
-    @Override
-    public Material tryGetMaterial(String sessionToken, MaterialIdentifier materialIdentifier)
-    {
-        logAccess(sessionToken, "tryGetMaterial", "%s", materialIdentifier);
-        return null;
-    }
-
-    @Override
-    public List<Material> listMaterials(String sessionToken, ListMaterialCriteria criteria,
-            boolean withProperties)
-    {
-        logAccess(sessionToken, "listMaterials", "CRITERIA(%s), WITH_PROPERTIES(%s)", criteria,
-                withProperties);
         return null;
     }
 

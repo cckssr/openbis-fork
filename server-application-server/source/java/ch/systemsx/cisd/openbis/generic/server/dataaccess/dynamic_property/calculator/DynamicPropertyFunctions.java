@@ -15,8 +15,6 @@
  */
 package ch.systemsx.cisd.openbis.generic.server.dataaccess.dynamic_property.calculator;
 
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialIdentifier;
-
 /**
  * Set of specific dynamic property related functions for functions used in jython expressions.
  * <p>
@@ -26,31 +24,5 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialIdentifier;
  */
 public final class DynamicPropertyFunctions
 {
-    /**
-     * @return String representation of material identifier for given material code and material type code.
-     */
-    public static String material(String code, String typeCode)
-    {
-        return MaterialIdentifier.print(code, typeCode);
-    }
 
-    /**
-     * @return code of material with given identifier or null if the identifier is not a valid material identifier
-     */
-    public static String materialCode(String materialIdentifier)
-    {
-        final MaterialIdentifier identifierOrNull =
-                MaterialIdentifier.tryParseIdentifier(materialIdentifier);
-        return identifierOrNull == null ? null : identifierOrNull.getCode();
-    }
-
-    /**
-     * @return type of material with given identifier or null if the identifier is not a valid material identifier
-     */
-    public static String materialTypeCode(String materialIdentifier)
-    {
-        final MaterialIdentifier identifierOrNull =
-                MaterialIdentifier.tryParseIdentifier(materialIdentifier);
-        return identifierOrNull == null ? null : identifierOrNull.getTypeCode();
-    }
 }

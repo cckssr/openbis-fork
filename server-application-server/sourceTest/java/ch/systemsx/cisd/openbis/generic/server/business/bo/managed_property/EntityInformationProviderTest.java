@@ -22,10 +22,8 @@ import org.testng.annotations.Test;
 import ch.ethz.sis.shared.log.standard.utils.LogInitializer;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.AbstractBOTest;
 import ch.systemsx.cisd.openbis.generic.shared.CommonTestUtils;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentPE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ProjectPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SpacePE;
@@ -60,13 +58,11 @@ public class EntityInformationProviderTest extends AbstractBOTest
         final String dPermId = "dPermId";
         IEntityLinkElement sampleLink = elementFactory.createSampleLink(sPermId);
         IEntityLinkElement experimentLink = elementFactory.createExperimentLink(ePermId);
-        IEntityLinkElement materialLink = elementFactory.createMaterialLink(mCode, mTypeCode);
         IEntityLinkElement datasetLink = elementFactory.createDataSetLink(dPermId);
 
         final SamplePE sample = CommonTestUtils.createSample();
         final ExperimentPE experiment = CommonTestUtils.createExperiment();
         final DataPE dataSet = CommonTestUtils.createDataSet();
-        final MaterialPE material = CommonTestUtils.createMaterial(mCode, mTypeCode);
         context.checking(new Expectations()
             {
                 {
@@ -76,8 +72,6 @@ public class EntityInformationProviderTest extends AbstractBOTest
                     will(returnValue(experiment));
                     one(dataDAO).tryToFindDataSetByCode(dPermId);
                     will(returnValue(dataSet));
-                    one(materialDAO).tryFindMaterial(new MaterialIdentifier(mCode, mTypeCode));
-                    will(returnValue(material));
                 }
             });
 
@@ -89,9 +83,6 @@ public class EntityInformationProviderTest extends AbstractBOTest
 
         String dIdentifier = provider.getIdentifier(datasetLink);
         assertEquals(dataSet.getIdentifier(), dIdentifier);
-
-        String mIdentifier = provider.getIdentifier(materialLink);
-        assertEquals(MaterialIdentifier.print(mCode, mTypeCode.toUpperCase()), mIdentifier);
 
         // get identifiers of missing entities
         final String fakePermId = "fakePermId";
@@ -106,16 +97,11 @@ public class EntityInformationProviderTest extends AbstractBOTest
                     will(returnValue(null));
                     one(dataDAO).tryToFindDataSetByCode(fakePermId);
                     will(returnValue(null));
-                    one(materialDAO).tryFindMaterial(
-                            new MaterialIdentifier(fakeMCode, fakeMTypeCode));
-                    will(returnValue(null));
                 }
             });
         assertNull(provider.getIdentifier(elementFactory.createSampleLink(fakePermId)));
         assertNull(provider.getIdentifier(elementFactory.createExperimentLink(fakePermId)));
         assertNull(provider.getIdentifier(elementFactory.createDataSetLink(fakePermId)));
-        assertNull(provider.getIdentifier(elementFactory.createMaterialLink(fakeMCode,
-                fakeMTypeCode)));
 
         context.assertIsSatisfied();
     }

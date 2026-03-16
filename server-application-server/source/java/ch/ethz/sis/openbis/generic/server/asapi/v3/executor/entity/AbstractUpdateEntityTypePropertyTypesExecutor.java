@@ -30,10 +30,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.Experime
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.SearchExperimentsOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.SearchExperimentsOperationResult;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.fetchoptions.MaterialFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.MaterialSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.SearchMaterialsOperation;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.SearchMaterialsOperationResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyAssignmentPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
@@ -41,7 +37,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SearchSamplesOpera
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SearchSamplesOperationResult;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.dataset.ISearchDataSetsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.experiment.ISearchExperimentsOperationExecutor;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.material.ISearchMaterialsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.sample.ISearchSamplesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.entity.EntityKindConverter;
 import ch.systemsx.cisd.common.exceptions.AuthorizationFailureException;
@@ -98,9 +93,6 @@ public abstract class AbstractUpdateEntityTypePropertyTypesExecutor<UPDATE exten
 
     @Autowired
     private ISearchDataSetsOperationExecutor searchDataSetExecutor;
-
-    @Autowired
-    private ISearchMaterialsOperationExecutor searchMaterialExecutor;
 
     protected abstract EntityKind getEntityKind();
 
@@ -299,16 +291,6 @@ public abstract class AbstractUpdateEntityTypePropertyTypesExecutor<UPDATE exten
                 Map<IOperation, IOperationResult> results =
                         searchDataSetExecutor.execute(context, List.of(new SearchDataSetsOperation(criteria, fetchOptions)));
                 totalCount = ((SearchDataSetsOperationResult) results.values().iterator().next()).getSearchResult().getTotalCount();
-            } else if (entityTypePE instanceof MaterialTypePE)
-            {
-                MaterialSearchCriteria criteria = new MaterialSearchCriteria();
-                criteria.withType().withCode().thatEquals(entityTypePE.getCode());
-                criteria.withProperty(entityTypePropertyType.getPropertyType().getCode());
-                MaterialFetchOptions fetchOptions = new MaterialFetchOptions();
-                fetchOptions.count(0);
-                Map<IOperation, IOperationResult> results =
-                        searchMaterialExecutor.execute(context, List.of(new SearchMaterialsOperation(criteria, fetchOptions)));
-                totalCount = ((SearchMaterialsOperationResult) results.values().iterator().next()).getSearchResult().getTotalCount();
             } else
             {
                 throw new IllegalStateException("This should never happen! entityTypePE=" + entityTypePE.getClass());

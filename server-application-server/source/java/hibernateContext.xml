@@ -36,27 +36,20 @@
 
                 <value>ch.systemsx.cisd.openbis.generic.shared.dto.PropertyTypePE</value>
 
-                <value>ch.systemsx.cisd.openbis.generic.shared.dto.MaterialTypePE</value>
                 <value>ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentTypePE</value>
                 <value>ch.systemsx.cisd.openbis.generic.shared.dto.SampleTypePE</value>
 
                 <value>ch.systemsx.cisd.openbis.generic.shared.dto.SampleTypePropertyTypePE</value>
                 <value>
-                    ch.systemsx.cisd.openbis.generic.shared.dto.MaterialTypePropertyTypePE
-                </value>
-                <value>
                     ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentTypePropertyTypePE
                 </value>
 
-                <value>ch.systemsx.cisd.openbis.generic.shared.dto.MaterialPropertyPE</value>
-                <value>ch.systemsx.cisd.openbis.generic.shared.dto.MaterialPropertyHistoryPE</value>
                 <value>ch.systemsx.cisd.openbis.generic.shared.dto.SamplePropertyPE</value>
                 <value>ch.systemsx.cisd.openbis.generic.shared.dto.SampleHistoryPE</value>
 
                 <value>ch.systemsx.cisd.openbis.generic.shared.dto.AttachmentPE</value>
                 <value>ch.systemsx.cisd.openbis.generic.shared.dto.AttachmentContentPE</value>
 
-                <value>ch.systemsx.cisd.openbis.generic.shared.dto.MaterialPE</value>
                 <value>ch.systemsx.cisd.openbis.generic.shared.dto.DataStorePE</value>
                 <value>ch.systemsx.cisd.openbis.generic.shared.dto.DataStoreServicePE</value>
                 <value>ch.systemsx.cisd.openbis.generic.shared.dto.SamplePE</value>

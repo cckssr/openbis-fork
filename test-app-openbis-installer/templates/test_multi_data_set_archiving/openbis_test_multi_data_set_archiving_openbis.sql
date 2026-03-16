@@ -2379,9 +2379,10 @@ COPY sample_properties (id, samp_id, stpt_id, value, cvte_id, mate_prop_id, pers
 --
 
 COPY sample_type_property_types (id, saty_id, prty_id, is_mandatory, is_managed_internally, pers_id_registerer, registration_timestamp, is_displayed, ordinal, section) FROM stdin;
-8	7	11	f	f	1	2009-11-29 23:57:38.268212+01	t	1	\N
+8	7	11	f	f	1	2009-11-29 23:57:38.268212+01	t	2	\N
 9	8	12	f	f	1	2009-11-29 23:57:49.098187+01	t	1	\N
 10	3	6	f	f	1	2009-11-30 01:28:20.972263+01	t	1	\N
+11	7	1	f	f	1	2009-11-29 23:57:38.268212+01	t	1	\N
 \.
 
 
@@ -4646,3 +4647,30 @@ ALTER TABLE ONLY sample_type_property_types
 -- PostgreSQL database dump complete
 --
 
+SELECT 'before removing materials' AS debug_msg;
+SELECT count(*) AS materials_before FROM materials;
+
+DELETE FROM data_set_properties
+WHERE mate_prop_id IS NOT NULL;
+
+DELETE FROM experiment_properties
+WHERE mate_prop_id IS NOT NULL;
+
+DELETE FROM sample_properties
+WHERE mate_prop_id IS NOT NULL;
+
+DELETE FROM material_properties
+WHERE mate_prop_id IS NOT NULL;
+
+DELETE FROM material_properties;
+
+UPDATE experiments
+SET mate_id_study_object = NULL
+WHERE mate_id_study_object IS NOT NULL;
+
+DELETE FROM materials;
+DELETE FROM material_type_property_types;
+DELETE FROM material_types;
+
+SELECT 'after removing materials' AS debug_msg;
+SELECT count(*) AS materials_after FROM materials;

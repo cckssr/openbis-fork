@@ -22,9 +22,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.BasicConstant;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractEntityProperty;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.GenericEntityProperty;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IEntityPropertiesHolder;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Material;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialEntityProperty;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PropertyType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Sample;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SampleEntityProperty;
@@ -90,7 +87,6 @@ public final class EntityPropertiesEnricher implements IEntityPropertiesEnricher
     {
         List<GenericEntityPropertyRecord> records = new ArrayList<>();
         LongSet vocaTermIds = new LongOpenHashSet();
-        LongSet materialIds = new LongOpenHashSet();
         LongSet sampleIds = new LongOpenHashSet();
         for (GenericEntityPropertyRecord record : propertySetQuery.getEntityPropertyGenericValues(entityIDs))
         {
@@ -99,10 +95,6 @@ public final class EntityPropertiesEnricher implements IEntityPropertiesEnricher
             {
                 vocaTermIds.add(record.cvte_id);
             }
-            if (record.mate_prop_id != null)
-            {
-                materialIds.add(record.mate_prop_id);
-            }
             if (record.samp_prop_id != null)
             {
                 sampleIds.add(record.samp_prop_id);
@@ -110,7 +102,6 @@ public final class EntityPropertiesEnricher implements IEntityPropertiesEnricher
         }
 
         Long2ObjectMap<VocabularyTerm> vocabularyTerms = getVocabularyTerms(vocaTermIds);
-        Long2ObjectMap<Material> materials = getMaterials(materialIds);
         Long2ObjectMap<Sample> samples = getSamples(sampleIds);
         Long2ObjectMap<PropertyType> propertyTypes = getPropertyTypes();
         for (GenericEntityPropertyRecord val : records)
@@ -120,10 +111,6 @@ public final class EntityPropertiesEnricher implements IEntityPropertiesEnricher
             {
                 property = new VocabularyTermEntityProperty();
                 property.setVocabularyTerm(vocabularyTerms.get(val.cvte_id));
-            } else if (val.mate_prop_id != null)
-            {
-                property = new MaterialEntityProperty();
-                property.setMaterial(materials.get(val.mate_prop_id));
             } else if (val.samp_prop_id != null)
             {
                 property = new SampleEntityProperty();
@@ -166,21 +153,6 @@ public final class EntityPropertiesEnricher implements IEntityPropertiesEnricher
         }
         vocabularyURLMap.trim();
         return vocabularyURLMap;
-    }
-
-    private Long2ObjectMap<MaterialType> getMaterialTypes()
-    {
-        final CodeRecord[] typeCodes = query.getMaterialTypes();
-        final Long2ObjectOpenHashMap<MaterialType> materialTypeMap =
-                new Long2ObjectOpenHashMap<MaterialType>(typeCodes.length);
-        for (CodeRecord t : typeCodes)
-        {
-            final MaterialType type = new MaterialType();
-            type.setCode(t.code);
-            materialTypeMap.put(t.id, type);
-        }
-        materialTypeMap.trim();
-        return materialTypeMap;
     }
 
     private Long2ObjectMap<SampleType> getSampleTypes()
@@ -229,29 +201,7 @@ public final class EntityPropertiesEnricher implements IEntityPropertiesEnricher
         }
         return map;
     }
-    
-    private Long2ObjectMap<Material> getMaterials(LongSet materialIds)
-    {
-        Long2ObjectMap<MaterialType> materialTypes = null;
-        Long2ObjectOpenHashMap<Material> map = new Long2ObjectOpenHashMap<Material>();
-        if (materialIds.isEmpty() == false)
-        {
-            for (MaterialEntityPropertyRecord record : query.getMaterials(materialIds))
-            {
-                if (materialTypes == null)
-                {
-                    materialTypes = getMaterialTypes();
-                }
-                Material material = new Material();
-                material.setCode(record.code);
-                material.setMaterialType(materialTypes.get(record.maty_id));
-                material.setId(record.id);
-                map.put(record.id, material);
-            }
-        }
-        return map;
-    }
-    
+
     private Long2ObjectMap<Sample> getSamples(LongSet sampleIds)
     {
         Long2ObjectMap<SampleType> sampleTypes = null;

@@ -27,7 +27,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataTypeCode;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityHistory;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityKind;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PropertyType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.AbstractEntityHistoryPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.AbstractEntityPropertyHistoryPE;
@@ -38,7 +37,6 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.ExternalDataManagementSystemP
 import ch.systemsx.cisd.openbis.generic.shared.dto.IRelatedEntity;
 import ch.systemsx.cisd.openbis.generic.shared.dto.IRelatedEntityFinder;
 import ch.systemsx.cisd.openbis.generic.shared.dto.MatchingContentCopy;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ProjectPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PropertyTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.RelatedDataSet;
@@ -76,17 +74,15 @@ public class EntityHistoryTranslator
     {
         List<EntityHistory> result = new ArrayList<EntityHistory>();
         HashMap<PropertyTypePE, PropertyType> cache = new HashMap<PropertyTypePE, PropertyType>();
-        HashMap<MaterialTypePE, MaterialType> materialTypesCache = new HashMap<MaterialTypePE, MaterialType>();
         for (AbstractEntityPropertyHistoryPE entityPropertyHistory : history)
         {
-            result.add(translate(entityPropertyHistory, materialTypesCache, cache, baseIndexURL,
+            result.add(translate(entityPropertyHistory, cache, baseIndexURL,
                     managedPropertyEvaluatorFactory, samplePropertyAccessValidator, finder));
         }
         return result;
     }
 
     private static EntityHistory translate(AbstractEntityPropertyHistoryPE entityPropertyHistory,
-            Map<MaterialTypePE, MaterialType> materialTypeCache,
             Map<PropertyTypePE, PropertyType> cache, String baseIndexURL,
             IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory,
             IValidator<IIdentifierHolder> samplePropertyAccessValidator, IRelatedEntityFinder finder)
@@ -96,12 +92,11 @@ public class EntityHistoryTranslator
         result.setValidFromDate(entityPropertyHistory.getValidFromDate());
         result.setValidUntilDate(entityPropertyHistory.getValidUntilDate());
         result.setValue(entityPropertyHistory.getValue());
-        result.setMaterial(entityPropertyHistory.getMaterial());
         result.setVocabularyTerm(entityPropertyHistory.getVocabularyTerm());
         if (entityPropertyHistory.getEntityTypePropertyType() != null)
         {
             result.setPropertyType(PropertyTypeTranslator.translate(entityPropertyHistory
-                    .getEntityTypePropertyType().getPropertyType(), materialTypeCache, cache));
+                    .getEntityTypePropertyType().getPropertyType(), cache));
         }
 
         if (entityPropertyHistory instanceof AbstractEntityHistoryPE)

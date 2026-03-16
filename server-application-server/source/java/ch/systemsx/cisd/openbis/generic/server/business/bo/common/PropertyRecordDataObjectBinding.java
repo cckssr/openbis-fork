@@ -40,8 +40,6 @@ public class PropertyRecordDataObjectBinding
         into.authorId = row.getLong("authorId");
         into.propertyCode = row.getString("propertyCode");
         into.propertyValue = row.getString("propertyValue");
-        into.materialPropertyValueCode = row.getString("materialPropertyValueCode");
-        into.materialPropertyValueTypeCode = row.getString("materialPropertyValueTypeCode");
         into.vocabularyPropertyValue = row.getString("vocabularyPropertyValue");
         into.vocabularyPropertyValueTypeCode = row.getString("vocabularyPropertyValueTypeCode");
         into.sample_id = row.getLong("sample_id");

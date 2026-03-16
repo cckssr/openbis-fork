@@ -101,13 +101,8 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExperimentUpdateResult;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.FileFormatType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.GridCustomFilter;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IEntityProperty;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ListMaterialCriteria;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ListSampleCriteria;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MatchingEntity;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Material;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialAttributeSearchFieldKind;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialIdentifier;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Metaproject;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MetaprojectAssignments;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MetaprojectAssignmentsCount;
@@ -1080,7 +1075,7 @@ public class CommonServerTest extends SystemTestCase
         assertEquals("20110509092359990-11", dataSet.getCode());
         DataSetType dataSetType = dataSet.getDataSetType();
         assertEquals("HCS_IMAGE", dataSetType.getCode());
-        assertAssignedPropertyTypes("[ANY_MATERIAL, BACTERIUM, COMMENT*, GENDER]", dataSetType);
+        assertAssignedPropertyTypes("[COMMENT*, GENDER, SIZE]", dataSetType);
         assertEquals("[COMMENT: non-virtual comment]", dataSet.getProperties().toString());
         assertEquals("/CISD/DEFAULT/EXP-REUSE", dataSet.getExperiment().getIdentifier());
     }
@@ -1116,31 +1111,6 @@ public class CommonServerTest extends SystemTestCase
 
         assertEquals("20081105092159111-1", dataSet.getCode());
         assertEquals("/CISD/NEMO/CP-TEST-1", dataSet.getSampleIdentifier());
-    }
-
-    @Test
-    public void testGetMaterialInfo()
-    {
-        Material materialInfo = commonServer.getMaterialInfo(systemSessionToken, new TechId(1));
-
-        assertEquals("AD3", materialInfo.getCode());
-        assertEquals(EntityKind.MATERIAL, materialInfo.getEntityKind());
-        EntityType entityType = materialInfo.getEntityType();
-        assertEquals("VIRUS", entityType.getCode());
-        List<? extends EntityTypePropertyType<?>> assignedPropertyTypes = entityType.getAssignedPropertyTypes();
-        assertEquals("VIRUS", assignedPropertyTypes.get(0).getEntityType().getCode());
-        assertEquals("DESCRIPTION", assignedPropertyTypes.get(0).getPropertyType().getCode());
-        assertEquals("VARCHAR", assignedPropertyTypes.get(0).getPropertyType().getDataType().getCode().toString());
-        assertEquals(1, assignedPropertyTypes.size());
-        assertEquals("[DESCRIPTION: Adenovirus 3]", materialInfo.getProperties().toString());
-    }
-
-    @Test
-    public void testListMaterialIdsByMaterialProperties()
-    {
-        Collection<TechId> ids = commonServer.listMaterialIdsByMaterialProperties(systemSessionToken, Arrays.asList(new TechId(3736)));
-
-        assertEquals("[3735]", ids.toString());
     }
 
     @Test(dataProviderClass = ProjectAuthorizationUser.class, dataProvider = ProjectAuthorizationUser.PROVIDER)
@@ -1308,60 +1278,6 @@ public class CommonServerTest extends SystemTestCase
             } else
             {
                 assertEquals(spaces.toString(), "[]");
-            }
-        }
-    }
-
-    @Test
-    public void testListSamplesByMaterialProperties()
-    {
-        List<TechId> materialIds = Arrays.asList(new TechId(34));
-        List<Sample> samples = commonServer.listSamplesByMaterialProperties(systemSessionToken, materialIds);
-
-        assertEntities("[/CISD/DEFAULT/PLATE_WELLSEARCH:WELL-A01, /CISD/NEMO/CP-TEST-1, /TEST-SPACE/TEST-PROJECT/FV-TEST]", samples);
-
-        String observerSessionToken = commonServer.tryAuthenticate("observer", "a").getSessionToken();
-        samples = commonServer.listSamplesByMaterialProperties(observerSessionToken, materialIds);
-
-        assertEntities("[]", samples);
-
-        // delete a sample
-        commonServer.deleteSamples(systemSessionToken, Arrays.asList(new TechId(1051)), "test", DeletionType.TRASH);
-        samples = commonServer.listSamplesByMaterialProperties(systemSessionToken, materialIds);
-
-        assertEntities("[/CISD/NEMO/CP-TEST-1, /TEST-SPACE/TEST-PROJECT/FV-TEST]", samples);
-    }
-
-    @Test(dataProviderClass = ProjectAuthorizationUser.class, dataProvider = ProjectAuthorizationUser.PROVIDER)
-    public void testListSamplesByMaterialPropertiesWithProjectAuthorization(ProjectAuthorizationUser user)
-    {
-        SessionContextDTO session = commonServer.tryAuthenticate(user.getUserId(), PASSWORD);
-
-        List<TechId> materialIds = Arrays.asList(new TechId(34L)); // BACTERIUM-X
-
-        if (user.isDisabledProjectUser())
-        {
-            try
-            {
-                commonServer.listSamplesByMaterialProperties(session.getSessionToken(), materialIds);
-                fail();
-            } catch (AuthorizationFailureException e)
-            {
-                // expected
-            }
-        } else
-        {
-            List<Sample> samples = commonServer.listSamplesByMaterialProperties(session.getSessionToken(), materialIds);
-
-            if (user.isInstanceUser())
-            {
-                assertEntities("[/CISD/DEFAULT/PLATE_WELLSEARCH:WELL-A01, /CISD/NEMO/CP-TEST-1, /TEST-SPACE/TEST-PROJECT/FV-TEST]", samples);
-            } else if (user.isTestSpaceUser() || user.isTestProjectUser())
-            {
-                assertEntities("[/TEST-SPACE/TEST-PROJECT/FV-TEST]", samples);
-            } else
-            {
-                assertEntities("[]", samples);
             }
         }
     }
@@ -2713,12 +2629,12 @@ public class CommonServerTest extends SystemTestCase
         if (user.isInstanceUserOrTestSpaceUserOrEnabledTestProjectUser())
         {
             SampleParentWithDerived sample = commonServer.getSampleInfo(session.getSessionToken(), sampleId);
-            assertEquals(sample.getParent().getProperties().size(), 1);
+            assertEquals(sample.getParent().getProperties().size(), 0);
 
             commonServer.updateSampleProperties(session.getSessionToken(), sampleId, Arrays.asList(property));
 
             sample = commonServer.getSampleInfo(session.getSessionToken(), sampleId);
-            assertEquals(sample.getParent().getProperties().size(), 2);
+            assertEquals(sample.getParent().getProperties().size(), 1);
         } else
         {
             try
@@ -3191,7 +3107,7 @@ public class CommonServerTest extends SystemTestCase
         if (user.isInstanceUserOrSpaceUserOrEnabledProjectUser())
         {
             List<PropertyType> types = commonServer.listPropertyTypes(session.getSessionToken(), false);
-            assertEquals(types.size(), 20);
+            assertEquals(types.size(), 18);
         } else
         {
             try
@@ -3246,57 +3162,12 @@ public class CommonServerTest extends SystemTestCase
         if (user.isInstanceUserOrSpaceUserOrEnabledProjectUser())
         {
             List<EntityTypePropertyType<?>> types = commonServer.listEntityTypePropertyTypes(session.getSessionToken(), experimentType);
-            assertEquals(types.size(), 3);
+            assertEquals(types.size(), 2);
         } else
         {
             try
             {
                 commonServer.listEntityTypePropertyTypes(session.getSessionToken(), experimentType);
-                fail();
-            } catch (AuthorizationFailureException e)
-            {
-                // expected
-            }
-        }
-    }
-
-    @Test(dataProviderClass = ProjectAuthorizationUser.class, dataProvider = ProjectAuthorizationUser.PROVIDER)
-    public void testListMaterialTypesWithProjectAuthorization(ProjectAuthorizationUser user)
-    {
-        SessionContextDTO session = commonServer.tryAuthenticate(user.getUserId(), PASSWORD);
-
-        if (user.isInstanceUserOrSpaceUserOrEnabledProjectUser())
-        {
-            List<MaterialType> types = commonServer.listMaterialTypes(session.getSessionToken());
-            assertEquals(types.size(), 11);
-        } else
-        {
-            try
-            {
-                commonServer.listMaterialTypes(session.getSessionToken());
-                fail();
-            } catch (AuthorizationFailureException e)
-            {
-                // expected
-            }
-        }
-    }
-
-    @Test(dataProviderClass = ProjectAuthorizationUser.class, dataProvider = ProjectAuthorizationUser.PROVIDER)
-    public void testGetMaterialTypeWithProjectAuthorization(ProjectAuthorizationUser user)
-    {
-        SessionContextDTO session = commonServer.tryAuthenticate(user.getUserId(), PASSWORD);
-        String code = "BACTERIUM";
-
-        if (user.isInstanceUserOrSpaceUserOrEnabledProjectUser())
-        {
-            MaterialType type = commonServer.getMaterialType(session.getSessionToken(), code);
-            assertEquals(type.getCode(), code);
-        } else
-        {
-            try
-            {
-                commonServer.getMaterialType(session.getSessionToken(), code);
                 fail();
             } catch (AuthorizationFailureException e)
             {
@@ -3313,7 +3184,7 @@ public class CommonServerTest extends SystemTestCase
         if (user.isInstanceUserOrSpaceUserOrEnabledProjectUser())
         {
             List<DataType> types = commonServer.listDataTypes(session.getSessionToken());
-            assertEquals(types.size(), DataTypeCode.values().length);
+            assertEquals(types.size(), DataTypeCode.values().length -1);
         } else
         {
             try
@@ -3371,29 +3242,6 @@ public class CommonServerTest extends SystemTestCase
         }
     }
 
-    @Test(dataProviderClass = ProjectAuthorizationUser.class, dataProvider = ProjectAuthorizationUser.PROVIDER)
-    public void testListMaterialsWithProjectAuthorization(ProjectAuthorizationUser user)
-    {
-        SessionContextDTO session = commonServer.tryAuthenticate(user.getUserId(), PASSWORD);
-
-        ListMaterialCriteria criteria = ListMaterialCriteria.createFromMaterialIds(Arrays.asList(1L, 2L, 3L));
-
-        if (user.isInstanceUserOrSpaceUserOrEnabledProjectUser())
-        {
-            List<Material> materials = commonServer.listMaterials(session.getSessionToken(), criteria, false);
-            assertEquals(materials.size(), 3);
-        } else
-        {
-            try
-            {
-                commonServer.listMaterials(session.getSessionToken(), criteria, false);
-                fail();
-            } catch (AuthorizationFailureException e)
-            {
-                // expected
-            }
-        }
-    }
 
     @Test(dataProviderClass = ProjectAuthorizationUser.class, dataProvider = ProjectAuthorizationUser.PROVIDER)
     public void testListVocabularyTermsWithProjectAuthorization(ProjectAuthorizationUser user)
@@ -3434,78 +3282,6 @@ public class CommonServerTest extends SystemTestCase
             try
             {
                 commonServer.listDataSetTypes(session.getSessionToken());
-                fail();
-            } catch (AuthorizationFailureException e)
-            {
-                // expected
-            }
-        }
-    }
-
-    @Test(dataProviderClass = ProjectAuthorizationUser.class, dataProvider = ProjectAuthorizationUser.PROVIDER)
-    public void testGetMaterialInfoWithMaterialIdentifierWithProjectAuthorization(ProjectAuthorizationUser user)
-    {
-        SessionContextDTO session = commonServer.tryAuthenticate(user.getUserId(), PASSWORD);
-
-        MaterialIdentifier identifier = new MaterialIdentifier("BACTERIUM1", "BACTERIUM");
-
-        if (user.isInstanceUserOrSpaceUserOrEnabledProjectUser())
-        {
-            Material material = commonServer.getMaterialInfo(session.getSessionToken(), identifier);
-            assertEquals(material.getCode(), "BACTERIUM1");
-        } else
-        {
-            try
-            {
-                commonServer.getMaterialInfo(session.getSessionToken(), identifier);
-                fail();
-            } catch (AuthorizationFailureException e)
-            {
-                // expected
-            }
-        }
-    }
-
-    @Test(dataProviderClass = ProjectAuthorizationUser.class, dataProvider = ProjectAuthorizationUser.PROVIDER)
-    public void testGetMaterialInfoWithMaterialIdWithProjectAuthorization(ProjectAuthorizationUser user)
-    {
-        SessionContextDTO session = commonServer.tryAuthenticate(user.getUserId(), PASSWORD);
-
-        TechId materialId = new TechId(22L);
-
-        if (user.isInstanceUserOrSpaceUserOrEnabledProjectUser())
-        {
-            Material material = commonServer.getMaterialInfo(session.getSessionToken(), materialId);
-            assertEquals(material.getCode(), "BACTERIUM1");
-        } else
-        {
-            try
-            {
-                commonServer.getMaterialInfo(session.getSessionToken(), materialId);
-                fail();
-            } catch (AuthorizationFailureException e)
-            {
-                // expected
-            }
-        }
-    }
-
-    @Test(dataProviderClass = ProjectAuthorizationUser.class, dataProvider = ProjectAuthorizationUser.PROVIDER)
-    public void testGetMaterialInformationHolderWithProjectAuthorization(ProjectAuthorizationUser user)
-    {
-        SessionContextDTO session = commonServer.tryAuthenticate(user.getUserId(), PASSWORD);
-
-        MaterialIdentifier identifier = new MaterialIdentifier("BACTERIUM1", "BACTERIUM");
-
-        if (user.isInstanceUserOrSpaceUserOrEnabledProjectUser())
-        {
-            IEntityInformationHolderWithPermId holder = commonServer.getMaterialInformationHolder(session.getSessionToken(), identifier);
-            assertEquals(holder.getCode(), "BACTERIUM1");
-        } else
-        {
-            try
-            {
-                commonServer.getMaterialInformationHolder(session.getSessionToken(), identifier);
                 fail();
             } catch (AuthorizationFailureException e)
             {
@@ -3655,36 +3431,6 @@ public class CommonServerTest extends SystemTestCase
         }
     }
 
-    @Test(dataProviderClass = ProjectAuthorizationUser.class, dataProvider = ProjectAuthorizationUser.PROVIDER)
-    public void testSearchForMaterialsWithProjectAuthorization(ProjectAuthorizationUser user)
-    {
-        SessionContextDTO session = commonServer.tryAuthenticate(user.getUserId(), PASSWORD);
-
-        DetailedSearchCriterion criterion = new DetailedSearchCriterion();
-        criterion.setField(DetailedSearchField.createAttributeField(MaterialAttributeSearchFieldKind.CODE));
-        criterion.setValue("BACTERIUM1");
-
-        DetailedSearchCriteria criteria = new DetailedSearchCriteria();
-        criteria.setCriteria(Arrays.asList(criterion));
-        criteria.setConnection(SearchCriteriaConnection.MATCH_ANY);
-
-        if (user.isInstanceUserOrSpaceUserOrEnabledProjectUser())
-        {
-            List<Material> materials = commonServer.searchForMaterials(session.getSessionToken(), criteria);
-            assertEquals(materials.size(), 1);
-            assertEquals(materials.get(0).getCode(), "BACTERIUM1");
-        } else
-        {
-            try
-            {
-                commonServer.searchForMaterials(session.getSessionToken(), criteria);
-                fail();
-            } catch (AuthorizationFailureException e)
-            {
-                // expected
-            }
-        }
-    }
 
     @Test(dataProviderClass = ProjectAuthorizationUser.class, dataProvider = ProjectAuthorizationUser.PROVIDER)
     public void testGetMetaprojectWithProjectAuthorization(ProjectAuthorizationUser user)
@@ -4040,30 +3786,6 @@ public class CommonServerTest extends SystemTestCase
         }
     }
 
-    @Test(dataProviderClass = ProjectAuthorizationUser.class, dataProvider = ProjectAuthorizationUser.PROVIDER)
-    public void testGetEntityInformationHolderByMaterialPermIdWithProjectAuthorization(ProjectAuthorizationUser user)
-    {
-        SessionContextDTO session = commonServer.tryAuthenticate(user.getUserId(), PASSWORD);
-
-        EntityKind entityKind = EntityKind.MATERIAL;
-        String permId = new MaterialIdentifier("BACTERIUM1", "BACTERIUM").toString();
-
-        if (user.isInstanceUserOrSpaceUserOrEnabledProjectUser())
-        {
-            IEntityInformationHolderWithPermId entity = commonServer.getEntityInformationHolder(session.getSessionToken(), entityKind, permId);
-            assertEquals(entity.getCode(), "BACTERIUM1");
-        } else
-        {
-            try
-            {
-                commonServer.getEntityInformationHolder(session.getSessionToken(), entityKind, permId);
-                fail();
-            } catch (AuthorizationFailureException e)
-            {
-                // expected
-            }
-        }
-    }
 
     @Test(dataProviderClass = ProjectAuthorizationUser.class, dataProvider = ProjectAuthorizationUser.PROVIDER)
     public void testGetEntityInformationHolderByDescriptionWithProjectAuthorization(ProjectAuthorizationUser user)

@@ -62,8 +62,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update.LinkedDataUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.id.IDeletionId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.delete.ExperimentDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.delete.MaterialDeletionOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.id.MaterialPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.create.PersonCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.fetchoptions.PersonFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.id.PersonPermId;
@@ -117,12 +115,8 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Experiment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.GenericEntityProperty;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IEntityProperty;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Material;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewAttachment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewExperiment;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewMaterial;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewMaterialWithType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewProject;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewSample;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PhysicalDataSet;
@@ -134,7 +128,6 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.AtomicEntityOperationDetails;
 import ch.systemsx.cisd.openbis.generic.shared.dto.AtomicEntityOperationResult;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataSetBatchUpdatesDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentUpdatesDTO;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialUpdateDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.NewContainerDataSet;
 import ch.systemsx.cisd.openbis.generic.shared.dto.NewExternalData;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ProjectUpdatesDTO;
@@ -236,7 +229,6 @@ public class EntitySynchronizer
         updateExperiments(data.getExperimentsToProcess().values(), query, userTechIdsByUserId, monitor);
         updateSamples(data.getSamplesToProcess().values(), query, userTechIdsByUserId, monitor);
         updateDataSets(data.getDataSetsToProcess().values(), query, userTechIdsByUserId, monitor);
-        updateMaterials(data.getMaterialsToProcess().values(), query, userTechIdsByUserId, monitor);
         SummaryUtils.printShortSummaryFooter(operationLog);
     }
 
@@ -254,7 +246,6 @@ public class EntitySynchronizer
     private void createMissingUsers(ResourceListParserData data, Monitor monitor)
     {
         Set<String> users = new HashSet<>();
-        addUsers(users, data.getMaterialsToProcess().values());
         addUsers(users, data.getProjectsToProcess().values());
         addUsers(users, data.getExperimentsToProcess().values());
         addUsers(users, data.getSamplesToProcess().values());
@@ -277,29 +268,6 @@ public class EntitySynchronizer
         {
             v3Api.createPersons(service.getSessionToken(), personCreations);
         }
-    }
-
-    private void updateMaterials(Collection<IncomingMaterial> materials, IHarvesterQuery query,
-            Map<String, Long> userTechIdsByUserId, Monitor monitor)
-    {
-        if (config.isDryRun() == false)
-        {
-            List<MaterialTypeRecord> listAllMaterialTypes = query.listAllMaterialTypes();
-            Map<String, Long> materialTypeIdsByCode = new HashMap<>();
-            for (MaterialTypeRecord materialTypeRecord : listAllMaterialTypes)
-            {
-                materialTypeIdsByCode.put(materialTypeRecord.code, materialTypeRecord.id);
-            }
-            List<RegistrationDTO> registrations = new ArrayList<>();
-            for (IncomingMaterial incomingMaterial : materials)
-            {
-                NewMaterialWithType material = incomingMaterial.getMaterial();
-                Long typeId = materialTypeIdsByCode.get(material.getType());
-                addRegistration(registrations, material.getCode(), typeId, incomingMaterial, userTechIdsByUserId);
-            }
-            query.updateMaterialRegistrations(registrations);
-        }
-        SummaryUtils.printShortUpdatedSummary(operationLog, materials.size(), "materials");
     }
 
     private void updateSpaces(Collection<IncomingSpace> spaces, IHarvesterQuery query,
@@ -785,7 +753,6 @@ public class EntitySynchronizer
         processProjects(data, builder);
         processExperiments(data, builder);
         processSamples(data, builder, monitor);
-        processMaterials(data, builder);
 
         return builder.getDetails();
     }
@@ -864,8 +831,6 @@ public class EntitySynchronizer
         SummaryUtils.printShortUpdatedSummary(operationLog, details.getExperimentUpdates().size(), "EXPERIMENTS");
         SummaryUtils.printShortAddedSummary(operationLog, details.getSampleRegistrations().size(), "SAMPLES");
         SummaryUtils.printShortUpdatedSummary(operationLog, details.getSampleUpdates().size(), "SAMPLE");
-        SummaryUtils.printShortAddedSummary(operationLog, details.getMaterialRegistrations().size(), "MATERIALS");
-        SummaryUtils.printShortUpdatedSummary(operationLog, details.getMaterialUpdates().size(), "MATERIALS");
         SummaryUtils.printShortSummaryFooter(operationLog);
     }
 
@@ -878,8 +843,6 @@ public class EntitySynchronizer
         printExperimentUpdatesSummary(details.getExperimentUpdates());
         printSummary(details.getSampleRegistrations(), "SAMPLES");
         printSampleUpdatesSummary(details.getSampleUpdates());
-        printMaterialsSummary(details.getMaterialRegistrations());
-        printMaterialUpdatesSummary(details.getMaterialUpdates());
     }
 
     private void printSummary(List<?> items, String type)
@@ -922,29 +885,6 @@ public class EntitySynchronizer
         List<String> identifiers = updates.stream().map(u -> u.getDataSetId().toString()).collect(Collectors.toList());
         Collections.sort(identifiers);
         SummaryUtils.printUpdatedSummary(operationLog, identifiers, "LINK DATA SETS");
-    }
-
-    private void printMaterialsSummary(Map<String, List<NewMaterial>> materials)
-    {
-        List<String> details = new ArrayList<>();
-        for (Entry<String, List<NewMaterial>> entry : materials.entrySet())
-        {
-            String typeCode = entry.getKey();
-            for (NewMaterial material : entry.getValue())
-            {
-                details.add(MaterialIdentifier.print(material.getCode(), typeCode));
-            }
-        }
-        Collections.sort(details);
-        SummaryUtils.printAddedSummary(operationLog, details, "MATERIALS");
-    }
-
-    private void printMaterialUpdatesSummary(List<MaterialUpdateDTO> materialUpdates)
-    {
-        if (materialUpdates.isEmpty() == false)
-        {
-            SummaryUtils.printUpdatedSummary(operationLog, Arrays.asList(materialUpdates.size() + " materials"), "MATERIALS");
-        }
     }
 
     private AttachmentSynchronizationSummary processAttachments(List<IncomingEntity<?>> attachmentHoldersToProcess,
@@ -1221,7 +1161,6 @@ public class EntitySynchronizer
         Set<String> incomingExperimentPermIds = data.getExperimentsToProcess().keySet();
         Set<String> incomingSamplePermIds = data.getSamplesToProcess().keySet();
         Set<String> incomingDataSetCodes = data.getDataSetsToProcess().keySet();
-        MultiKeyMap<String, IncomingMaterial> incomingMaterials = data.getMaterialsToProcess();
 
         // find projects, experiments, samples and data sets to be deleted
         Map<ProjectPermId, String> projectsToDelete = new HashMap<ProjectPermId, String>();
@@ -1229,7 +1168,6 @@ public class EntitySynchronizer
         Map<SamplePermId, String> samplesToDelete = new HashMap<SamplePermId, String>();
         // for data sets and materials permId and identifier(code) are the same but still we keep a map
         Map<DataSetPermId, String> dataSetsToDelete = new HashMap<DataSetPermId, String>();
-        Map<MaterialPermId, String> materialsToDelete = new HashMap<MaterialPermId, String>();
 
         Set<PhysicalDataSet> physicalDataSetsDelete = new HashSet<PhysicalDataSet>();
         // first find out the entities to be deleted
@@ -1312,16 +1250,6 @@ public class EntitySynchronizer
             }
         }
 
-        List<ch.ethz.sis.openbis.generic.asapi.v3.dto.material.Material> materials = entityRetriever.fetchMaterials();
-
-        for (ch.ethz.sis.openbis.generic.asapi.v3.dto.material.Material material : materials)
-        {
-            if (incomingMaterials.containsKey(material.getCode(), material.getType().getCode()) == false)
-            {
-                MaterialPermId materialPermId = new MaterialPermId(material.getCode(), material.getType().getCode());
-                materialsToDelete.put(materialPermId, materialPermId.getCode());
-            }
-        }
 
         operationLog.info("-------Processing deletions-------");
         if (config.isVerbose() == true)
@@ -1329,8 +1257,7 @@ public class EntitySynchronizer
             if (dataSetsToDelete.isEmpty() == false
                     || samplesToDelete.isEmpty() == false
                     || experimentsToDelete.isEmpty() == false
-                    || projectsToDelete.isEmpty() == false
-                    || materialsToDelete.isEmpty() == false)
+                    || projectsToDelete.isEmpty() == false)
             {
                 operationLog.info("!!!!!!!!!!!!!The following will be PERMAMENTLY removed from openbis!!!!!!!!!!!!!");
             }
@@ -1338,7 +1265,6 @@ public class EntitySynchronizer
             verboseLogDeletions(samplesToDelete.values(), "samples");
             verboseLogDeletions(experimentsToDelete.values(), "experiments");
             verboseLogDeletions(projectsToDelete.values(), "projects");
-            verboseLogDeletions(materialsToDelete.values(), "materials");
         }
 
         if (config.isDryRun())
@@ -1376,27 +1302,12 @@ public class EntitySynchronizer
         prjDeletionOpts.setReason("Sync projects" + reasonDetail);
         v3Api.deleteProjects(sessionToken, new ArrayList<ProjectPermId>(projectsToDelete.keySet()), prjDeletionOpts);
 
-        // delete materials
-        MaterialDeletionOptions matDeletionOptions = new MaterialDeletionOptions();
-        matDeletionOptions.setReason("sync materials" + reasonDetail);
-
-        try
-        {
-            v3Api.deleteMaterials(sessionToken, new ArrayList<MaterialPermId>(materialsToDelete.keySet()), matDeletionOptions);
-        } catch (Exception e)
-        {
-            operationLog.warn("One or more materials could not be deleted due to: " + e.getMessage());
-        }
 
         // The following summary is not accurate if an error occurs in material deletions
         StringBuffer summary = new StringBuffer();
         if (projectsToDelete.size() > 0)
         {
             summary.append(projectsToDelete.size() + " projects,");
-        }
-        if (materialsToDelete.size() > 0)
-        {
-            summary.append(materialsToDelete.size() + " materials,");
         }
         if (expDeletionId != null)
         {
@@ -1489,32 +1400,6 @@ public class EntitySynchronizer
         // attachments are synched later separately but we need to have a non-null value for attachment list.
         expUpdate.setAttachments(Collections.<NewAttachment> emptyList());
         return expUpdate;
-    }
-
-    private void processMaterials(ResourceListParserData data, AtomicEntityOperationDetailsBuilder builder)
-    {
-        // process materials
-        MultiKeyMap<String, IncomingMaterial> materialsToProcess = data.getMaterialsToProcess();
-        for (IncomingMaterial newMaterialWithType : materialsToProcess.values())
-        {
-            NewMaterialWithType incomingMaterial = newMaterialWithType.getMaterial();
-            if (newMaterialWithType.getLastModificationDate().after(lastSyncTimestamp))
-            {
-                Material material = service.tryGetMaterial(new MaterialIdentifier(incomingMaterial.getCode(), incomingMaterial.getType()));
-                if (material == null)
-                {
-                    builder.material(incomingMaterial);
-                } else
-                {
-                    List<IEntityProperty> newPropList =
-                            prepareUpdatedPropertyList(incomingMaterial.getProperties(), material.getProperties());
-                    MaterialUpdateDTO update =
-                            new MaterialUpdateDTO(TechId.create(material), newPropList,
-                                    material.getModificationDate());
-                    builder.materialUpdate(update);
-                }
-            }
-        }
     }
 
     private void processProjects(ResourceListParserData data, AtomicEntityOperationDetailsBuilder builder)

@@ -46,7 +46,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ISerializableComparable
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IntegerTableCell;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MatchingEntity;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MatchingEntityTableCell;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Material;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Person;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PropertyType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.StringTableCell;
@@ -250,21 +249,6 @@ public class TypedTableModelBuilder<T extends Serializable>
                 ISerializableComparable value;
                 switch (dataType)
                 {
-                    case MATERIAL:
-                        Material material = property.getMaterial();
-                        if (material == null) // if not yet calculated dynamic property
-                        {
-                            value = new StringTableCell("");
-                        } else if (forUpdate)
-                        {
-                            value = new StringTableCell(material.getIdentifier());
-                        } else
-                        {
-                            value =
-                                    new EntityTableCell(EntityKind.MATERIAL,
-                                            material.getIdentifier());
-                        }
-                        break;
                     case CONTROLLEDVOCABULARY:
                         VocabularyTerm vocabularyTerm = property.getVocabularyTerm();
                         if (vocabularyTerm == null) // if not yet calculated dynamic property

@@ -41,14 +41,6 @@ export default class QueryFormFacade {
     return result.getObjects()
   }
 
-  async loadMaterialTypes() {
-    const result = await openbis.searchMaterialTypes(
-      new openbis.MaterialTypeSearchCriteria(),
-      new openbis.MaterialTypeFetchOptions()
-    )
-    return result.getObjects()
-  }
-
   async executeQuery(id, options) {
     return openbis.executeQuery(id, options)
   }

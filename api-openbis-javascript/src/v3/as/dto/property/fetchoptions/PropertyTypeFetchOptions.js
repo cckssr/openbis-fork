@@ -1,4 +1,4 @@
-define([ "stjs", "as/dto/common/fetchoptions/FetchOptions", "as/dto/vocabulary/fetchoptions/VocabularyFetchOptions", "as/dto/material/fetchoptions/MaterialTypeFetchOptions", 
+define([ "stjs", "as/dto/common/fetchoptions/FetchOptions", "as/dto/vocabulary/fetchoptions/VocabularyFetchOptions",
 		"as/dto/sample/fetchoptions/SampleTypeFetchOptions",
 		"as/dto/semanticannotation/fetchoptions/SemanticAnnotationFetchOptions", "as/dto/person/fetchoptions/PersonFetchOptions", "as/dto/property/fetchoptions/PropertyTypeSortOptions" ], function(
 		stjs, FetchOptions) {
@@ -8,7 +8,6 @@ define([ "stjs", "as/dto/common/fetchoptions/FetchOptions", "as/dto/vocabulary/f
 		prototype['@type'] = 'as.dto.property.fetchoptions.PropertyTypeFetchOptions';
 		constructor.serialVersionUID = 1;
 		prototype.vocabulary = null;
-		prototype.materialType = null;
 		prototype.sampleType = null;
 		prototype.semanticAnnotations = null;
 		prototype.registrator = null;
@@ -25,19 +24,6 @@ define([ "stjs", "as/dto/common/fetchoptions/FetchOptions", "as/dto/vocabulary/f
 		};
 		prototype.hasVocabulary = function() {
 			return this.vocabulary != null;
-		};
-		prototype.withMaterialType = function() {
-			if (this.materialType == null) {
-				var MaterialTypeFetchOptions = require("as/dto/material/fetchoptions/MaterialTypeFetchOptions");
-				this.materialType = new MaterialTypeFetchOptions();
-			}
-			return this.materialType;
-		};
-		prototype.withMaterialTypeUsing = function(fetchOptions) {
-			return this.materialType = fetchOptions;
-		};
-		prototype.hasMaterialType = function() {
-			return this.materialType != null;
 		};
 		prototype.withSampleType = function() {
 			if (this.sampleType == null) {
@@ -90,7 +76,6 @@ define([ "stjs", "as/dto/common/fetchoptions/FetchOptions", "as/dto/vocabulary/f
 		};
 	}, {
 		vocabulary : "VocabularyFetchOptions",
-		materialType : "MaterialTypeFetchOptions",
 		sampleType : "SampleTypeFetchOptions",
 		semanticAnnotations : "SemanticAnnotationFetchOptions",
 		registrator : "PersonFetchOptions",

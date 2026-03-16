@@ -30,12 +30,10 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.delete.DataSetTypeDeleti
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.AbstractObjectDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.IEntityTypeId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.delete.ExperimentTypeDeletionOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.delete.MaterialTypeDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.delete.SampleTypeDeletionOptions;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.dataset.IDataSetTypeAuthorizationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.experiment.IExperimentTypeAuthorizationExecutor;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.material.IMaterialTypeAuthorizationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.sample.ISampleTypeAuthorizationExecutor;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.IEntityTypeBO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePE;
@@ -58,9 +56,6 @@ public class DeleteEntityTypeExecutor extends AbstractDeleteEntityExecutor<Void,
     private IExperimentTypeAuthorizationExecutor experimentTypeAuthorizationExecutor;
 
     @Autowired
-    private IMaterialTypeAuthorizationExecutor materialTypeAuthorizationExecutor;
-
-    @Autowired
     private ISampleTypeAuthorizationExecutor sampleTypeAuthorizationExecutor;
 
     @Override
@@ -78,9 +73,6 @@ public class DeleteEntityTypeExecutor extends AbstractDeleteEntityExecutor<Void,
         } else if (deletionOptions instanceof DataSetTypeDeletionOptions)
         {
             entityKind = EntityKind.DATA_SET;
-        } else if (deletionOptions instanceof MaterialTypeDeletionOptions)
-        {
-            entityKind = EntityKind.MATERIAL;
         } else
         {
             throw new IllegalArgumentException("Unsupported deletion options: " + (deletionOptions != null ? deletionOptions.getClass() : null));
@@ -100,9 +92,6 @@ public class DeleteEntityTypeExecutor extends AbstractDeleteEntityExecutor<Void,
                 break;
             case EXPERIMENT:
                 experimentTypeAuthorizationExecutor.canDelete(context, entity);
-                break;
-            case MATERIAL:
-                materialTypeAuthorizationExecutor.canDelete(context);
                 break;
             case SAMPLE:
                 sampleTypeAuthorizationExecutor.canDelete(context, entity);

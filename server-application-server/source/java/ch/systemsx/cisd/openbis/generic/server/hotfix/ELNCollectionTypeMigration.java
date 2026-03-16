@@ -108,7 +108,6 @@ public class ELNCollectionTypeMigration
                     new AbstractMap.SimpleEntry<>("PROTOCOL_TYPE", "GENERAL_PROTOCOL.PROTOCOL_TYPE"),
                     new AbstractMap.SimpleEntry<>("PROTOCOL_EVALUATION", "GENERAL_PROTOCOL.PROTOCOL_EVALUATION"),
                     new AbstractMap.SimpleEntry<>("TIME_REQUIREMENT", "GENERAL_PROTOCOL.TIME_REQUIREMENT"),
-                    new AbstractMap.SimpleEntry<>("MATERIALS", "GENERAL_PROTOCOL.MATERIALS"),
 
                     new AbstractMap.SimpleEntry<>("GRANT", "DEFAULT_EXPERIMENT.GRANT"),
 

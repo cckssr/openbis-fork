@@ -20,7 +20,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.fetchoptions.GlobalSearchObjectFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchObjectKind;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.Material;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.exceptions.NotFetchedException;
 import ch.systemsx.cisd.base.annotation.JsonObject;
@@ -62,9 +61,6 @@ public class GlobalSearchObject implements Serializable
 
     @JsonProperty
     private DataSet dataSet;
-
-    @JsonProperty
-    private Material material;
 
     // Method automatically generated with DtoGenerator
     @JsonIgnore
@@ -202,26 +198,6 @@ public class GlobalSearchObject implements Serializable
     public void setDataSet(DataSet dataSet)
     {
         this.dataSet = dataSet;
-    }
-
-    // Method automatically generated with DtoGenerator
-    @JsonIgnore
-    public Material getMaterial()
-    {
-        if (getFetchOptions() != null && getFetchOptions().hasMaterial())
-        {
-            return material;
-        }
-        else
-        {
-            throw new NotFetchedException("Material has not been fetched.");
-        }
-    }
-
-    // Method automatically generated with DtoGenerator
-    public void setMaterial(Material material)
-    {
-        this.material = material;
     }
 
     // Method automatically generated with DtoGenerator

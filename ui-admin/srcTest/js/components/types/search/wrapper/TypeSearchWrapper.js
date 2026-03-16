@@ -38,14 +38,6 @@ export default class TypeSearchWrapper extends BaseWrapper {
     )
   }
 
-  getMaterialTypes() {
-    return new GridWrapper(
-      this.findComponent(Grid).filter({
-        id: ids.MATERIAL_TYPES_GRID_ID
-      })
-    )
-  }
-
   getVocabularyTypes() {
     return new GridWrapper(
       this.findComponent(Grid).filter({
@@ -68,7 +60,6 @@ export default class TypeSearchWrapper extends BaseWrapper {
       objectTypes: this.getObjectTypes().toJSON(),
       collectionTypes: this.getCollectionTypes().toJSON(),
       dataSetTypes: this.getDataSetTypes().toJSON(),
-      materialTypes: this.getMaterialTypes().toJSON(),
       vocabularyTypes: this.getVocabularyTypes().toJSON(),
       propertyTypes: this.getPropertyTypes().toJSON()
     }

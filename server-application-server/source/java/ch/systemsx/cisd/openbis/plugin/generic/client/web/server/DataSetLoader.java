@@ -65,12 +65,12 @@ public class DataSetLoader
         {
             final Reader reader = file.getUnicodeReader();
             final Map<String, String> defaults = Collections.emptyMap();
-            final List<NewDataSet> loadedMaterials =
+            final List<NewDataSet> loadedDataSets =
                     tabFileLoader.load(new DelegatedReader(reader, file.getOriginalFilename()),
                             defaults);
-            newObjects.addAll(loadedMaterials);
+            newObjects.addAll(loadedDataSets);
             results.add(new BatchRegistrationResult(file.getOriginalFilename(), String.format(
-                    "%d data set(s) found and registered.", loadedMaterials.size())));
+                    "%d data set(s) found and registered.", loadedDataSets.size())));
         }
     }
 

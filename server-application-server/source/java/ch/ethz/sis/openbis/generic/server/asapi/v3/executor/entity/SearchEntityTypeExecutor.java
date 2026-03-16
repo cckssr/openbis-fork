@@ -36,7 +36,6 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.Matche
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.SimpleFieldMatcher;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.dataset.IDataSetTypeAuthorizationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.experiment.IExperimentTypeAuthorizationExecutor;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.material.IMaterialTypeAuthorizationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.sample.ISampleTypeAuthorizationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.entity.EntityKindConverter;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
@@ -52,9 +51,6 @@ public class SearchEntityTypeExecutor extends AbstractSearchObjectManuallyExecut
 {
 
     @Autowired
-    private IMaterialTypeAuthorizationExecutor materialTypeAuthorizationExecutor;
-
-    @Autowired
     private IExperimentTypeAuthorizationExecutor experimentTypeAuthorizationExecutor;
 
     @Autowired
@@ -66,7 +62,6 @@ public class SearchEntityTypeExecutor extends AbstractSearchObjectManuallyExecut
     @Override
     public List<EntityTypePE> search(IOperationContext context, EntityTypeSearchCriteria criteria)
     {
-        materialTypeAuthorizationExecutor.canSearch(context);
         experimentTypeAuthorizationExecutor.canSearch(context);
         sampleTypeAuthorizationExecutor.canSearch(context);
         dataSetTypeAuthorizationExecutor.canSearch(context);
@@ -77,7 +72,6 @@ public class SearchEntityTypeExecutor extends AbstractSearchObjectManuallyExecut
     protected List<EntityTypePE> listAll()
     {
         List<EntityTypePE> entityTypes = new ArrayList<EntityTypePE>();
-        entityTypes.addAll(daoFactory.getEntityTypeDAO(EntityKind.MATERIAL).listAllEntities());
         entityTypes.addAll(daoFactory.getEntityTypeDAO(EntityKind.EXPERIMENT).listAllEntities());
         entityTypes.addAll(daoFactory.getEntityTypeDAO(EntityKind.SAMPLE).listAllEntities());
         entityTypes.addAll(daoFactory.getEntityTypeDAO(EntityKind.DATA_SET).listAllEntities());

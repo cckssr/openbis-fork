@@ -7,7 +7,6 @@ const NEW_OBJECT_TYPES = {
   [objectType.OBJECT_TYPE_GROUP]: objectType.NEW_OBJECT_TYPE_GROUP,
   [objectType.COLLECTION_TYPE]: objectType.NEW_COLLECTION_TYPE,
   [objectType.DATA_SET_TYPE]: objectType.NEW_DATA_SET_TYPE,
-  [objectType.MATERIAL_TYPE]: objectType.NEW_MATERIAL_TYPE,
   [objectType.VOCABULARY_TYPE]: objectType.NEW_VOCABULARY_TYPE
 }
 

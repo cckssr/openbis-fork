@@ -134,8 +134,6 @@ function LinksController(title, sampleTypeHints, isDisabled, samplesToEdit, show
 										case "INTEGER":
 											isValid = FormUtil.isInteger(propertyValue);
 											break;
-										case "MATERIAL":
-											break;
 										case "MULTILINE_VARCHAR":
 											break;
 										case "REAL":

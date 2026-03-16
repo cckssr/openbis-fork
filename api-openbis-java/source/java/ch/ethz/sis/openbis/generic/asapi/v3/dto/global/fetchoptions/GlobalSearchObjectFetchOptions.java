@@ -20,7 +20,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.FetchOptions
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.GlobalSearchObject;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.fetchoptions.MaterialFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.fetchoptions.PropertyFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
 import ch.systemsx.cisd.base.annotation.JsonObject;
@@ -43,9 +42,6 @@ public class GlobalSearchObjectFetchOptions extends FetchOptions<GlobalSearchObj
 
     @JsonProperty
     private DataSetFetchOptions dataSet;
-
-    @JsonProperty
-    private MaterialFetchOptions material;
 
     @JsonProperty
     private GlobalSearchObjectSortOptions sort;
@@ -119,28 +115,6 @@ public class GlobalSearchObjectFetchOptions extends FetchOptions<GlobalSearchObj
         return dataSet != null;
     }
 
-    // Method automatically generated with DtoGenerator
-    public MaterialFetchOptions withMaterial()
-    {
-        if (material == null)
-        {
-            material = new MaterialFetchOptions();
-        }
-        return material;
-    }
-
-    // Method automatically generated with DtoGenerator
-    public MaterialFetchOptions withMaterialUsing(MaterialFetchOptions fetchOptions)
-    {
-        return material = fetchOptions;
-    }
-
-    // Method automatically generated with DtoGenerator
-    public boolean hasMaterial()
-    {
-        return material != null;
-    }
-
     public MatchFetchOptions withMatch()
     {
         if (match == null)
@@ -185,7 +159,6 @@ public class GlobalSearchObjectFetchOptions extends FetchOptions<GlobalSearchObj
         f.addFetchOption("Experiment", experiment);
         f.addFetchOption("Sample", sample);
         f.addFetchOption("DataSet", dataSet);
-        f.addFetchOption("Material", material);
         return f;
     }
 

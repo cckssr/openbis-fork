@@ -180,14 +180,6 @@ public class AtomicOperationsPredicate extends AbstractPredicate<AtomicEntityOpe
             {
                 result = evaluateProjectUpdates();
             }
-            if (result.equals(Status.OK))
-            {
-                result = evaluateMaterialRegistrations();
-            }
-            if (result.equals(Status.OK))
-            {
-                result = evaluateMaterialUpdates();
-            }
 
             return result;
         }
@@ -257,28 +249,6 @@ public class AtomicOperationsPredicate extends AbstractPredicate<AtomicEntityOpe
             }
         }
 
-        private Status evaluateMaterialRegistrations()
-        {
-            if (value.getMaterialRegistrations() != null
-                    && value.getMaterialRegistrations().size() > 0)
-            {
-                return instanceWriteStatus;
-            } else
-            {
-                return Status.OK;
-            }
-        }
-
-        private Status evaluateMaterialUpdates()
-        {
-            if (value.getMaterialUpdates() != null && value.getMaterialUpdates().size() > 0)
-            {
-                return instanceWriteStatus;
-            } else
-            {
-                return Status.OK;
-            }
-        }
 
         private Status evaluateExperimentUpdatePredicate()
         {

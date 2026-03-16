@@ -10,7 +10,6 @@ define([ "stjs" ], function(stjs) {
 		prototype.managedInternally = null;
 		prototype.dataType = null;
 		prototype.vocabularyId = null;
-		prototype.materialTypeId = null;
 		prototype.sampleTypeId = null;
 		prototype.schema = null;
 		prototype.transformation = null;
@@ -60,12 +59,6 @@ define([ "stjs" ], function(stjs) {
 		prototype.setVocabularyId = function(vocabularyId) {
 			this.vocabularyId = vocabularyId;
 		};
-		prototype.getMaterialTypeId = function() {
-			return this.materialTypeId;
-		};
-		prototype.setMaterialTypeId = function(materialTypeId) {
-			this.materialTypeId = materialTypeId;
-		};
 		prototype.getSampleTypeId = function() {
 			return this.sampleTypeId;
 		};
@@ -100,7 +93,6 @@ define([ "stjs" ], function(stjs) {
 	}, {
 		dataType : "DataType",
 		vocabularyId : "IVocabularyId",
-		materialTypeId : "IEntityTypeId",
 		sampleTypeId : "IEntityTypeId",
 		metaData: {
 			name: "Map",

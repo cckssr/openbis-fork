@@ -46,7 +46,7 @@ public class EntityReference implements Serializable, IEntityInformationHolderWi
     public EntityReference(long id, String code, String typeCode, EntityKind kind,
             String permIdOrNull)
     {
-        assert permIdOrNull != null || kind == EntityKind.MATERIAL : "perm id can be null only for a material";
+        assert permIdOrNull != null : "perm id can not be null";
         this.id = id;
         this.code = code;
         this.typeCode = typeCode;

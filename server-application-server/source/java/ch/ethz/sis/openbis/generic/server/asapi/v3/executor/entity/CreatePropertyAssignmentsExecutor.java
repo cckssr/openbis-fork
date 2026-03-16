@@ -57,7 +57,7 @@ public class CreatePropertyAssignmentsExecutor
 {
     private static final List<DataTypeCode> NOT_ALLOWED_PATTERN_VALIDATION_DATA_TYPES =
             List.of(DataTypeCode.ARRAY_INTEGER, DataTypeCode.ARRAY_REAL, DataTypeCode.ARRAY_STRING,
-                    DataTypeCode.ARRAY_TIMESTAMP, DataTypeCode.SAMPLE, DataTypeCode.MATERIAL,
+                    DataTypeCode.ARRAY_TIMESTAMP, DataTypeCode.SAMPLE,
                     DataTypeCode.BOOLEAN, DataTypeCode.CONTROLLEDVOCABULARY, DataTypeCode.JSON,
                     DataTypeCode.XML);
 

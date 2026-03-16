@@ -593,7 +593,7 @@ public class ExperimentDAO extends AbstractGenericEntityWithPropertiesDAO<Experi
     private static String createQueryPropertyHistorySQL()
     {
 
-        return "(SELECT e.perm_id, pt.code, coalesce(h.value, h.vocabulary_term, h.material) as value, "
+        return "(SELECT e.perm_id, pt.code, coalesce(h.value, h.vocabulary_term) as value, "
                 + "p.user_id, h.valid_from_timestamp, h.valid_until_timestamp "
                 + "FROM experiments_all e, experiment_properties_history h, "
                 + "experiment_type_property_types etpt, property_types pt, persons p "
@@ -606,10 +606,7 @@ public class ExperimentDAO extends AbstractGenericEntityWithPropertiesDAO<Experi
                 + "SELECT e.perm_id, pt.code, coalesce(value, "
                 + "(SELECT (t.code || ' [' || v.code || ']') "
                 + "FROM controlled_vocabulary_terms as t JOIN controlled_vocabularies as v ON t.covo_id = v.id "
-                + "WHERE t.id = pr.cvte_id), "
-                + "(SELECT (m.code || ' [' || mt.code || ']') "
-                + "FROM materials AS m JOIN material_types AS mt ON m.maty_id = mt.id "
-                + "WHERE m.id = pr.mate_prop_id)) as value, "
+                + "WHERE t.id = pr.cvte_id)) as value, "
                 + "author.user_id, pr.modification_timestamp, null "
                 + "FROM experiments_all e, experiment_properties pr, experiment_type_property_types etpt, "
                 + "property_types pt, persons author "

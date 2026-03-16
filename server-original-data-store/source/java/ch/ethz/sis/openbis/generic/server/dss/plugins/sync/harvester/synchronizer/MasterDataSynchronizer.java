@@ -56,7 +56,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityTypePropertyType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExperimentType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.FileFormatType;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewETPTAssignment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewVocabulary;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PropertyType;
@@ -114,9 +113,6 @@ public class MasterDataSynchronizer
         processValidationPlugins(masterData.getValidationPluginsToProcess());
         monitor.log("process vocabularies");
         processVocabularies(masterData.getVocabulariesToProcess(), masterData.getNameTranslator());
-        // materials are registered but their property assignments are deferred until after property types are processed
-        monitor.log("process material types");
-        processEntityTypes(masterData.getMaterialTypesToProcess(), propertyAssignmentsToProcess);
         monitor.log("process property types");
         processPropertyTypes(masterData.getPropertyTypesToProcess(), masterData.getNameTranslator());
         monitor.log("process sample types");
@@ -125,8 +121,6 @@ public class MasterDataSynchronizer
         processEntityTypes(masterData.getDataSetTypesToProcess(), propertyAssignmentsToProcess);
         monitor.log("process experiment types");
         processEntityTypes(masterData.getExperimentTypesToProcess(), propertyAssignmentsToProcess);
-        monitor.log("process material type property assignments");
-        processDeferredMaterialTypePropertyAssignments(propertyAssignmentsToProcess);
         monitor.log("process external data management systems");
         processExternalDataManagementSystems(masterData.getExternalDataManagementSystemsToProcess());
 
@@ -135,19 +129,6 @@ public class MasterDataSynchronizer
         {
             throw new RuntimeException("Master data can not be synchronization because of the following reasons:\n"
                     + errors);
-        }
-    }
-
-    private void processDeferredMaterialTypePropertyAssignments(MultiKeyMap<String, List<NewETPTAssignment>> propertyAssignmentsToProcess)
-    {
-        List<? extends EntityType> existingEntityTypes = getExistingEntityTypes(EntityKind.MATERIAL);
-        for (EntityType entityType : existingEntityTypes)
-        {
-            List<NewETPTAssignment> list = propertyAssignmentsToProcess.get(EntityKind.MATERIAL.name(), entityType.getCode());
-            if (list != null)
-            {
-                processPropertyAssignments(entityType, list);
-            }
         }
     }
 
@@ -409,14 +390,14 @@ public class MasterDataSynchronizer
                     incomingEntityType.setModificationDate(existingEntityType.getModificationDate());
                     updateEntityType(entityKind, incomingEntityType, diff);
                 }
-                if (list != null && entityKind != EntityKind.MATERIAL) // defer material property assignments until after property types are processed
+                if (list != null)
                 {
                     processPropertyAssignments(existingEntityType, list);
                 }
             } else
             {
                 registerEntityType(entityKind, incomingEntityType);
-                if (list != null && entityKind != EntityKind.MATERIAL) // defer material property assignments until after property types are processed
+                if (list != null)
                 {
                     assignProperties(list);
                 }
@@ -531,9 +512,6 @@ public class MasterDataSynchronizer
             case EXPERIMENT:
                 synchronizerFacade.registerExperimentType((ExperimentType) incomingEntityType);
                 break;
-            case MATERIAL:
-                synchronizerFacade.registerMaterialType((MaterialType) incomingEntityType);
-                break;
             default:
                 throw new UserFailureException("register not implemented for entity kind: " + entityKind.name());
         }
@@ -551,9 +529,6 @@ public class MasterDataSynchronizer
                 break;
             case EXPERIMENT:
                 synchronizerFacade.updateExperimentType(incomingEntityType, diff);
-                break;
-            case MATERIAL:
-                synchronizerFacade.updateMaterialType(incomingEntityType, diff);
                 break;
             default:
                 throw new UserFailureException("update not implemented for entity kind: " + entityKind.name());
@@ -576,9 +551,6 @@ public class MasterDataSynchronizer
                 break;
             case EXPERIMENT:
                 appendToDiffBuilder(diffBuilder, (ExperimentType) existingEntityType, (ExperimentType) incomingEntityType);
-                break;
-            case MATERIAL:
-                appendToDiffBuilder(diffBuilder, (MaterialType) existingEntityType, (MaterialType) incomingEntityType);
                 break;
             default:
                 throw new UserFailureException("update not implemented for entity kind: " + entityKind.name());
@@ -635,9 +607,6 @@ public class MasterDataSynchronizer
     {
     }
 
-    private void appendToDiffBuilder(DiffBuilder<?> diffBuilder, MaterialType existingType, MaterialType incomingType)
-    {
-    }
 
     private List<? extends EntityType> getExistingEntityTypes(EntityKind entityKind)
     {
@@ -649,8 +618,6 @@ public class MasterDataSynchronizer
                 return commonServer.listDataSetTypes(sessionToken);
             case EXPERIMENT:
                 return commonServer.listExperimentTypes(sessionToken);
-            case MATERIAL:
-                return commonServer.listMaterialTypes(sessionToken);
             default:
                 return null;
         }
@@ -731,9 +698,7 @@ public class MasterDataSynchronizer
                         .append("managedInternally", existingPropertyType.isManagedInternally(),
                                 incomingPropertyType.isManagedInternally())
                         .append("vocabulary", getCode(existingPropertyType.getVocabulary()),
-                                getCode(incomingPropertyType.getVocabulary()))
-                        .append("material", getCode(existingPropertyType.getMaterialType()),
-                                getCode(incomingPropertyType.getMaterialType()));
+                                getCode(incomingPropertyType.getVocabulary()));
         DiffResult<?> diffResult = diffBuilder.build();
         return render(diffResult, existingPropertyType, incomingPropertyType);
     }

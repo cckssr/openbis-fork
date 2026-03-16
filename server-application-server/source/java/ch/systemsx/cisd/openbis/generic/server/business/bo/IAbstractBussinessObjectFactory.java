@@ -15,9 +15,6 @@
  */
 package ch.systemsx.cisd.openbis.generic.server.business.bo;
 
-import ch.systemsx.cisd.openbis.generic.server.business.bo.materiallister.IMaterialLister;
-import ch.systemsx.cisd.openbis.generic.shared.dto.Session;
-
 /**
  * An abstract bussiness object factory.
  * 
@@ -25,10 +22,5 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.Session;
  */
 public interface IAbstractBussinessObjectFactory
 {
-    public IMaterialTable createMaterialTable(Session session);
-
-    public IMaterialBO createMaterialBO(Session session);
-
-    public IMaterialLister createMaterialLister(Session session);
 
 }

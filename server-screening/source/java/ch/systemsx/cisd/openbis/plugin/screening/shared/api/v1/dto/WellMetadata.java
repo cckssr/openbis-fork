@@ -22,9 +22,8 @@ import java.util.Map;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
 /**
- * {@link WellMetadata} holds a complete set of metadata for an openBIS well. Material properties of wells are given a special treatment - API users
- * can retrieve {@link Material} property values via the method {@link #getMaterialProperties()}. All other property values are available via
- * {@link #getProperties()}.
+ * {@link WellMetadata} holds a complete set of metadata for an openBIS well.
+ * All property values are available via {@link #getProperties()}.
  * 
  * @since 1.8
  * @author Kaloyan Enimanev
@@ -41,17 +40,13 @@ public class WellMetadata extends WellIdentifier
 
     private Map<String, String> properties;
 
-    private Map<String, Material> materialProperties;
-
     public WellMetadata(PlateIdentifier plateIdentifier, String code, String permId, String type,
-            WellPosition wellPosition, Map<String, String> properties,
-            Map<String, Material> materialProperties)
+            WellPosition wellPosition, Map<String, String> properties)
     {
         super(plateIdentifier, wellPosition, permId);
         this.code = code;
         this.type = type;
         this.properties = new HashMap<String, String>(properties);
-        this.materialProperties = new HashMap<String, Material>(materialProperties);
     }
 
     public String getCode()
@@ -64,10 +59,6 @@ public class WellMetadata extends WellIdentifier
         return Collections.unmodifiableMap(properties);
     }
 
-    public Map<String, Material> getMaterialProperties()
-    {
-        return Collections.unmodifiableMap(materialProperties);
-    }
 
     @Override
     public int hashCode()
@@ -141,11 +132,6 @@ public class WellMetadata extends WellIdentifier
     private void setProperties(Map<String, String> properties)
     {
         this.properties = properties;
-    }
-
-    private void setMaterialProperties(Map<String, Material> materialProperties)
-    {
-        this.materialProperties = materialProperties;
     }
 
 }

@@ -31,7 +31,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.TechId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExperimentType;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SampleType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
 import ch.systemsx.cisd.openbis.generic.shared.managed_property.IManagedPropertyEvaluatorFactory;
@@ -143,13 +142,6 @@ public final class EntityTypeBO extends AbstractBusinessObject implements IEntit
 
         this.entityKind = EntityKind.SAMPLE;
         this.entityTypePE = sampleTypePE;
-    }
-
-    @Override
-    public void define(MaterialType entityType)
-    {
-        this.entityKind = EntityKind.MATERIAL;
-        this.entityTypePE = convertGeneric(entityType, entityKind);
     }
 
     @Override

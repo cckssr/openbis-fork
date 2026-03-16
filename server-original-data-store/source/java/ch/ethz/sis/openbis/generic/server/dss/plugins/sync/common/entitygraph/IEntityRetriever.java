@@ -15,10 +15,6 @@
  */
 package ch.ethz.sis.openbis.generic.server.dss.plugins.sync.common.entitygraph;
 
-import java.util.List;
-
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.Material;
-
 /**
  * 
  *
@@ -27,6 +23,4 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.Material;
 public interface IEntityRetriever
 {
     public EntityGraph<INode> getEntityGraph(String spaceId);
-
-    public List<Material> fetchMaterials();
 }

@@ -23,7 +23,6 @@ import java.util.List;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.id.dataset.IDataSetId;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.id.experiment.IExperimentId;
-import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.id.material.IMaterialId;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.id.sample.ISampleId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ServiceVersionHolder;
 
@@ -41,8 +40,6 @@ public class MetaprojectAssignmentsIds implements Serializable
     private List<ISampleId> samples = new ArrayList<ISampleId>();
 
     private List<IDataSetId> dataSets = new ArrayList<IDataSetId>();
-
-    private List<IMaterialId> materials = new ArrayList<IMaterialId>();
 
     public void addExperiment(IExperimentId experimentId)
     {
@@ -71,15 +68,6 @@ public class MetaprojectAssignmentsIds implements Serializable
         dataSets.add(dataSetId);
     }
 
-    public void addMaterial(IMaterialId materialId)
-    {
-        if (materialId == null)
-        {
-            throw new IllegalArgumentException("Material id cannot be null");
-        }
-        materials.add(materialId);
-    }
-
     public List<IExperimentId> getExperiments()
     {
         return experiments;
@@ -93,11 +81,6 @@ public class MetaprojectAssignmentsIds implements Serializable
     public List<IDataSetId> getDataSets()
     {
         return dataSets;
-    }
-
-    public List<IMaterialId> getMaterials()
-    {
-        return materials;
     }
 
     //
@@ -137,18 +120,6 @@ public class MetaprojectAssignmentsIds implements Serializable
         } else
         {
             this.dataSets = dataSets;
-        }
-    }
-
-    @SuppressWarnings("unused")
-    private void setMaterials(List<IMaterialId> materials)
-    {
-        if (materials == null)
-        {
-            this.materials = Collections.emptyList();
-        } else
-        {
-            this.materials = materials;
         }
     }
 

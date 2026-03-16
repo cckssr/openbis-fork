@@ -26,11 +26,6 @@ export default class TypeBrowserComponentTest extends ComponentTest {
     openbis.mockSearchExperimentTypes([fixture.TEST_EXPERIMENT_TYPE_DTO])
     openbis.mockSearchDataSetTypes([fixture.TEST_DATA_SET_TYPE_DTO])
 
-    openbis.mockSearchMaterialTypes([
-      fixture.TEST_MATERIAL_TYPE_DTO,
-      fixture.ANOTHER_MATERIAL_TYPE_DTO
-    ])
-
     openbis.mockSearchVocabularies([
       fixture.TEST_VOCABULARY_DTO,
       fixture.ANOTHER_VOCABULARY_DTO

@@ -1,5 +1,5 @@
 define([ "require", "stjs", "as/dto/common/fetchoptions/FetchOptions", "as/dto/experiment/fetchoptions/ExperimentFetchOptions", "as/dto/sample/fetchoptions/SampleFetchOptions",
-		"as/dto/dataset/fetchoptions/DataSetFetchOptions", "as/dto/material/fetchoptions/MaterialFetchOptions", "as/dto/global/fetchoptions/GlobalSearchObjectSortOptions",
+		"as/dto/dataset/fetchoptions/DataSetFetchOptions", "as/dto/global/fetchoptions/GlobalSearchObjectSortOptions",
 		"as/dto/global/fetchoptions/MatchFetchOptions" ], function(require, stjs,
 		FetchOptions) {
 	var GlobalSearchObjectFetchOptions = function() {
@@ -10,7 +10,6 @@ define([ "require", "stjs", "as/dto/common/fetchoptions/FetchOptions", "as/dto/e
 		prototype.experiment = null;
 		prototype.sample = null;
 		prototype.dataSet = null;
-		prototype.material = null;
 		prototype.sort = null;
 		prototype.match = null;
 
@@ -56,20 +55,6 @@ define([ "require", "stjs", "as/dto/common/fetchoptions/FetchOptions", "as/dto/e
 			return this.dataSet != null;
 		};
 
-		prototype.withMaterial = function() {
-			if (this.material == null) {
-				var MaterialFetchOptions = require("as/dto/material/fetchoptions/MaterialFetchOptions");
-				this.material = new MaterialFetchOptions();
-			}
-			return this.material;
-		};
-		prototype.withMaterialUsing = function(fetchOptions) {
-			return this.material = fetchOptions;
-		};
-		prototype.hasMaterial = function() {
-			return this.material != null;
-		};
-
 		prototype.sortBy = function() {
 			if (this.sort == null) {
 				var GlobalSearchObjectSortOptions = require("as/dto/global/fetchoptions/GlobalSearchObjectSortOptions");
@@ -97,7 +82,6 @@ define([ "require", "stjs", "as/dto/common/fetchoptions/FetchOptions", "as/dto/e
 		experiment : "ExperimentFetchOptions",
 		sample : "SampleFetchOptions",
 		dataSet : "DataSetFetchOptions",
-		material : "MaterialFetchOptions",
 		match : "MatchFetchOptions",
 		sort : "GlobalSearchObjectSortOptions"
 	});

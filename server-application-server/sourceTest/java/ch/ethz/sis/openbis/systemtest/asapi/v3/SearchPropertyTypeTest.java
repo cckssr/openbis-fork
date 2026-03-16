@@ -36,7 +36,7 @@ public class SearchPropertyTypeTest extends AbstractTest
     @Test
     public void testSearchWithEmptyCriteria()
     {
-        testSearch(TEST_SPACE_USER, new PropertyTypeSearchCriteria(), 20);
+        testSearch(TEST_SPACE_USER, new PropertyTypeSearchCriteria(), 18);
     }
 
     @Test

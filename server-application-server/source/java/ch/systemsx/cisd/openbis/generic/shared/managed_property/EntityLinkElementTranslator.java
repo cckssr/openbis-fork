@@ -31,8 +31,6 @@ public class EntityLinkElementTranslator
                 return EntityKind.DATA_SET;
             case EXPERIMENT:
                 return EntityKind.EXPERIMENT;
-            case MATERIAL:
-                return EntityKind.MATERIAL;
             case SAMPLE:
                 return EntityKind.SAMPLE;
         }

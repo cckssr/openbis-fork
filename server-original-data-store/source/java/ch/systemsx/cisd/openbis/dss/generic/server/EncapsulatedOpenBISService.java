@@ -79,10 +79,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExperimentType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExternalDataManagementSystem;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IDatasetLocationNode;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IEntityProperty;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ListMaterialCriteria;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ListSampleCriteria;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Material;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Metaproject;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MetaprojectAssignments;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewExperiment;
@@ -938,18 +935,6 @@ public final class EncapsulatedOpenBISService implements IEncapsulatedOpenBISSer
     public List<Experiment> listExperiments(ProjectIdentifier projectIdentifier)
     {
         return service.listExperiments(session.getSessionToken(), projectIdentifier);
-    }
-
-    @Override
-    public Material tryGetMaterial(MaterialIdentifier materialIdentifier)
-    {
-        return service.tryGetMaterial(session.getSessionToken(), materialIdentifier);
-    }
-
-    @Override
-    public List<Material> listMaterials(ListMaterialCriteria criteria, boolean withProperties)
-    {
-        return service.listMaterials(session.getSessionToken(), criteria, withProperties);
     }
 
     @Override

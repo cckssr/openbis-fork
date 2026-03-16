@@ -37,8 +37,8 @@ from .utils import (
 
 class EntityType:
     """EntityTypes define a variety of an entity, eg. sample, dataSet, experiment
-    This is the parent class of the SampleType, DataSetType, ExperimentType and
-    MaterialType classes.
+    This is the parent class of the SampleType, DataSetType and
+    ExperimentType classes.
     """
 
     def __init__(self, openbis_obj, data=None, method=None, **kwargs):
@@ -403,32 +403,6 @@ class DataSetType(
     EntityType,
     entity="dataSetType",
     single_item_method_name="get_dataset_type",
-):
-    def __init__(
-        self, openbis_obj, type=None, data=None, props=None, method=None, **kwargs
-    ):
-        OpenBisObject.__init__(
-            self, openbis_obj, type=type, data=data, props=props, **kwargs
-        )
-        EntityType.__init__(
-            self,
-            openbis_obj,
-            type=type,
-            data=data,
-            props=props,
-            method=method,
-            **kwargs,
-        )
-
-    def __dir__(self):
-        return [] + EntityType.__dir__(self) + OpenBisObject.__dir__(self)
-
-
-class MaterialType(
-    OpenBisObject,
-    EntityType,
-    entity="materialType",
-    single_item_method_name="get_material_type",
 ):
     def __init__(
         self, openbis_obj, type=None, data=None, props=None, method=None, **kwargs

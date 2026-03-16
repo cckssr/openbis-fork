@@ -22,7 +22,6 @@ export default class AppComponentTest extends ComponentTest {
     openbis.mockSearchSampleTypes([])
     openbis.mockSearchExperimentTypes([])
     openbis.mockSearchDataSetTypes([])
-    openbis.mockSearchMaterialTypes([])
     openbis.mockSearchVocabularies([])
     openbis.mockSearchPropertyTypes([])
     openbis.mockSearchPersons([])

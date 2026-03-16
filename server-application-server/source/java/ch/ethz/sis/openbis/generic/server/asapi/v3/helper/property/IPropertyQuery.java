@@ -28,18 +28,15 @@ import net.lemnik.eodsql.Update;
 public interface IPropertyQuery extends ObjectQuery
 {
     public static final String SELECT = "select p.id as objectId, p.value as propertyValue, "
-            + "s.perm_id as sample_perm_id, cvt.code as vocabularyPropertyValue, "
-            + "m.code as materialPropertyValueCode, mt.code as materialPropertyValueTypeCode ";
+            + "s.perm_id as sample_perm_id, cvt.code as vocabularyPropertyValue ";
 
     public static final String JOIN_WHERE = "left join samples s on p.samp_prop_id = s.id "
-            + "left join materials m on p.mate_prop_id = m.id "
-            + "left join material_types mt on m.maty_id = mt.id "
             + "left join controlled_vocabulary_terms cvt on p.cvte_id = cvt.id "
             + "join property_types pt on etpt.prty_id = pt.id "
             + "where pt.code = ?{1}";
 
     public static final String SET_WHERE = "set value = ?{1.propertyValue}, cvte_id = null, "
-            + "samp_prop_id = null, mate_prop_id = null where id = ?{1.objectId}";
+            + "samp_prop_id = null where id = ?{1.objectId}";
 
     @Select(sql = SELECT
             + "from experiment_properties p "

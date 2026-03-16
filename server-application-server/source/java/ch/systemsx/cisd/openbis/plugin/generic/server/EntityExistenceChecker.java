@@ -28,17 +28,11 @@ import ch.systemsx.cisd.openbis.generic.server.dataaccess.ISampleDAO;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataTypeCode;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IEntityProperty;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialIdentifier;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialType;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewMaterial;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewMaterialsWithTypes;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewSample;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewSamplesWithTypes;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SampleType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePropertyTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentPE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialPE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ProjectPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PropertyTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePE;
@@ -123,8 +117,6 @@ class EntityExistenceChecker
 
     private final AbstractExistenceManager<ExperimentIdentifier, ExperimentPE> experimentExistenceManager;
 
-    private final AbstractExistenceManager<MaterialIdentifier, MaterialPE> materialExistenceManager;
-
     private final AbstractExistenceManager<SampleIdentifier, SamplePE> sampleExistenceManager;
 
     private final AbstractExistenceManager<SpaceIdentifier, SpacePE> spaceExistenceManager;
@@ -161,15 +153,6 @@ class EntityExistenceChecker
                                     daoFactory.getExperimentDAO().tryFindByCodeAndProject(project,
                                             identifier.getExperimentCode());
                             return experiment;
-                        }
-                    };
-        materialExistenceManager =
-                new AbstractExistenceManager<MaterialIdentifier, MaterialPE>(errors, "material")
-                    {
-                        @Override
-                        protected MaterialPE tryGetEntity(MaterialIdentifier identifier)
-                        {
-                            return daoFactory.getMaterialDAO().tryFindMaterial(identifier);
                         }
                     };
         sampleExistenceManager =
@@ -223,47 +206,6 @@ class EntityExistenceChecker
         return new ArrayList<String>(errors);
     }
 
-    /**
-     * Checks specified materials. An error is added if
-     * <ul>
-     * <li>specified material type is not known
-     * <li>materials have a property which is not assigned to specified material type.
-     * </ul>
-     */
-    void checkNewMaterials(List<NewMaterialsWithTypes> newMaterialsWithType)
-    {
-        for (NewMaterialsWithTypes newMaterialsWithTypes : newMaterialsWithType)
-        {
-            MaterialType materialType = newMaterialsWithTypes.getEntityType();
-            assertMaterialTypeExists(materialType);
-            List<NewMaterial> newMaterials = newMaterialsWithTypes.getNewEntities();
-            for (NewMaterial newMaterial : newMaterials)
-            {
-                IEntityProperty[] properties = newMaterial.getProperties();
-                assertValidPropertyTypes(materialType, materialTypeToPropertyTypesMap, properties);
-                String code = newMaterial.getCode();
-                materialExistenceManager.add(new MaterialIdentifier(code, materialType.getCode()));
-            }
-        }
-    }
-
-    private void assertMaterialTypeExists(MaterialType materialType)
-    {
-        String materialTypeCode = materialType.getCode();
-        if (materialTypeToPropertyTypesMap.containsKey(materialTypeCode) == false)
-        {
-            MaterialTypePE type =
-                    (MaterialTypePE) daoFactory.getEntityTypeDAO(EntityKind.MATERIAL)
-                            .tryToFindEntityTypeByCode(materialTypeCode);
-            if (type == null)
-            {
-                errors.add("Unknown material type: " + materialTypeCode);
-                return;
-            }
-            addPropertyTypesTo(materialTypeToPropertyTypesMap, materialTypeCode,
-                    type.getMaterialTypePropertyTypes());
-        }
-    }
 
     /**
      * Checks specified samples. An error is added if
@@ -359,26 +301,6 @@ class EntityExistenceChecker
                 String typeName = entityType instanceof SampleType ? "Sample" : "Material";
                 errors.add(typeName + " type " + entityTypeCode + " has no property type "
                         + propertyTypeCode + " assigned.");
-            } else if (propertyTypePE.getType().getCode().equals(DataTypeCode.MATERIAL))
-            {
-                String value = property.getStringValue();
-                MaterialTypePE materialType = propertyTypePE.getMaterialType();
-                try
-                {
-                    MaterialIdentifier materialIdentifier =
-                            MaterialIdentifier.tryCreate(value, materialType);
-                    if (materialIdentifier == null)
-                    {
-                        errors.add("Material identifier not in the form '<material code> (<material type code>)': "
-                                + value);
-                    } else
-                    {
-                        materialExistenceManager.exists(materialIdentifier);
-                    }
-                } catch (Exception ex)
-                {
-                    errors.add(ex.getMessage());
-                }
             }
         }
     }

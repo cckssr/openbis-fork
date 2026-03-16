@@ -21,10 +21,8 @@ import java.util.Map;
 
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityType;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PropertyType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataSetTypePE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PropertyTypePE;
 
 /**
@@ -40,7 +38,7 @@ public class DataSetTypeTranslator
     }
 
     public static DataSetType translate(DataSetTypePE entityTypeOrNull,
-            Map<MaterialTypePE, MaterialType> materialTypeCache, Map<PropertyTypePE, PropertyType> cacheOrNull)
+            Map<PropertyTypePE, PropertyType> cacheOrNull)
     {
         if (entityTypeOrNull == null)
         {
@@ -53,7 +51,7 @@ public class DataSetTypeTranslator
         result.setDataSetTypePropertyTypes(EntityType
                 .sortedInternally(DataSetTypePropertyTypeTranslator.translate(
                         entityTypeOrNull.getDataSetTypePropertyTypes(), result, 
-                        materialTypeCache, cacheOrNull)));
+                        cacheOrNull)));
 
         result.setMainDataSetPath(entityTypeOrNull.getMainDataSetPath());
         result.setMainDataSetPattern(entityTypeOrNull.getMainDataSetPattern());
@@ -67,12 +65,12 @@ public class DataSetTypeTranslator
     }
 
     public static List<DataSetType> translate(List<DataSetTypePE> dataSetTypes,
-            Map<MaterialTypePE, MaterialType> materialTypeCache, Map<PropertyTypePE, PropertyType> cacheOrNull)
+            Map<PropertyTypePE, PropertyType> cacheOrNull)
     {
         final List<DataSetType> result = new ArrayList<DataSetType>();
         for (final DataSetTypePE dataSetType : dataSetTypes)
         {
-            result.add(DataSetTypeTranslator.translate(dataSetType, materialTypeCache, cacheOrNull));
+            result.add(DataSetTypeTranslator.translate(dataSetType, cacheOrNull));
         }
         return result;
     }

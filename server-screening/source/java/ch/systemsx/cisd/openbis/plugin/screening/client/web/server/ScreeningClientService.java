@@ -27,17 +27,14 @@ import ch.rinn.restrictions.Private;
 import ch.systemsx.cisd.common.servlet.IRequestContextProvider;
 import ch.systemsx.cisd.openbis.common.spring.IUncheckedMultipartFile;
 import ch.systemsx.cisd.openbis.generic.client.web.client.dto.IResultSetConfig;
-import ch.systemsx.cisd.openbis.generic.client.web.client.dto.ListMaterialDisplayCriteria;
 import ch.systemsx.cisd.openbis.generic.client.web.client.dto.ResultSet;
 import ch.systemsx.cisd.openbis.generic.client.web.client.dto.TableExportCriteria;
 import ch.systemsx.cisd.openbis.generic.client.web.client.dto.TypedTableResultSet;
 import ch.systemsx.cisd.openbis.generic.client.web.client.exception.UserFailureException;
 import ch.systemsx.cisd.openbis.generic.client.web.server.AbstractClientService;
 import ch.systemsx.cisd.openbis.generic.client.web.server.UploadedFilesBean;
-import ch.systemsx.cisd.openbis.generic.client.web.server.resultset.AbstractMaterialProvider;
 import ch.systemsx.cisd.openbis.generic.client.web.server.resultset.DataProviderAdapter;
 import ch.systemsx.cisd.openbis.generic.client.web.server.resultset.ITableModelProvider;
-import ch.systemsx.cisd.openbis.generic.client.web.server.resultset.MaterialDisambiguationProvider;
 import ch.systemsx.cisd.openbis.generic.shared.ICommonServer;
 import ch.systemsx.cisd.openbis.generic.shared.IServer;
 import ch.systemsx.cisd.openbis.generic.shared.basic.TechId;
@@ -45,7 +42,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AsyncBatchRegistrationResult;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.BatchRegistrationResult;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.CodeAndLabel;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Material;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SampleParentWithDerived;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.TableModelRowWithObject;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Vocabulary;
@@ -53,11 +49,6 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.ExperimentIdentifi
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.ExperimentIdentifierFactory;
 import ch.systemsx.cisd.openbis.plugin.screening.BuildAndEnvironmentInfo;
 import ch.systemsx.cisd.openbis.plugin.screening.client.web.client.IScreeningClientService;
-import ch.systemsx.cisd.openbis.plugin.screening.client.web.server.resultset.FeatureVectorSummaryProvider;
-import ch.systemsx.cisd.openbis.plugin.screening.client.web.server.resultset.MaterialFeatureVectorsFromAllExperimentsProvider;
-import ch.systemsx.cisd.openbis.plugin.screening.client.web.server.resultset.MaterialReplicaFeatureSummaryProvider;
-import ch.systemsx.cisd.openbis.plugin.screening.client.web.server.resultset.PlateMetadataProvider;
-import ch.systemsx.cisd.openbis.plugin.screening.client.web.server.resultset.WellContentProvider;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.IScreeningServer;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.ResourceNames;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.AnalysisProcedures;
@@ -69,9 +60,6 @@ import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.ImageResolutio
 import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.ImageSampleContent;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.LibraryRegistrationInfo;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.LogicalImageInfo;
-import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.MaterialFeatureVectorSummary;
-import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.MaterialReplicaFeatureSummary;
-import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.MaterialSimpleFeatureVectorSummary;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.NewLibrary;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.PlateContent;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.PlateImages;
@@ -83,8 +71,6 @@ import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.WellReplicaIma
 import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.WellSearchCriteria;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.WellSearchCriteria.AnalysisProcedureCriteria;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.WellSearchCriteria.ExperimentSearchCriteria;
-import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.WellSearchCriteria.MaterialFeaturesManyExpCriteria;
-import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.WellSearchCriteria.MaterialFeaturesOneExpCriteria;
 
 /**
  * The {@link IScreeningClientService} implementation.
@@ -146,17 +132,6 @@ public final class ScreeningClientService extends AbstractClientService implemen
         return server.getDataSetInfo(getSessionToken(), datasetTechId);
     }
 
-    @Override
-    public Material getMaterialInfo(TechId materialTechId) throws UserFailureException
-    {
-        return server.getMaterialInfo(getSessionToken(), materialTechId);
-    }
-
-    @Override
-    public PlateContent getPlateContent(TechId plateId) throws UserFailureException
-    {
-        return server.getPlateContent(getSessionToken(), plateId);
-    }
 
     @Override
     public FeatureVectorDataset getFeatureVectorDataset(DatasetReference dataset,
@@ -174,69 +149,10 @@ public final class ScreeningClientService extends AbstractClientService implemen
     }
 
     @Override
-    public PlateImages getPlateContentForDataset(TechId datasetId)
-    {
-        return server.getPlateContentForDataset(getSessionToken(), datasetId);
-    }
-
-    @Override
-    public TypedTableResultSet<WellContent> listPlateWells(
-            IResultSetConfig<String, TableModelRowWithObject<WellContent>> gridCriteria,
-            WellSearchCriteria materialCriteria)
-    {
-        final ITableModelProvider<WellContent> provider =
-                new WellContentProvider(server, getSessionToken(), materialCriteria);
-        ResultSet<TableModelRowWithObject<WellContent>> resultSet =
-                listEntities(gridCriteria, new DataProviderAdapter<WellContent>(provider));
-        return new TypedTableResultSet<WellContent>(resultSet);
-    }
-
-    @Override
     public String prepareExportPlateWells(
             TableExportCriteria<TableModelRowWithObject<WellContent>> criteria)
     {
         return prepareExportEntities(criteria);
-    }
-
-    @Override
-    public List<WellReplicaImage> listWellImages(TechId materialId, TechId experimentId)
-            throws UserFailureException
-    {
-        return server.listWellImages(getSessionToken(), materialId, experimentId);
-    }
-
-    @Override
-    public TypedTableResultSet<Material> listMaterials(
-            IResultSetConfig<String, TableModelRowWithObject<Material>> gridCriteria,
-            WellSearchCriteria materialCriteria)
-    {
-        List<Material> materials = server.listMaterials(getSessionToken(), materialCriteria);
-        final ITableModelProvider<Material> provider =
-                new MaterialDisambiguationProvider(materials);
-        ResultSet<TableModelRowWithObject<Material>> resultSet =
-                listEntities(gridCriteria, new DataProviderAdapter<Material>(provider));
-        return new TypedTableResultSet<Material>(resultSet);
-    }
-
-    @Override
-    public String prepareExportMaterials(
-            TableExportCriteria<TableModelRowWithObject<Material>> criteria)
-    {
-        return prepareExportEntities(criteria);
-    }
-
-    @Override
-    public TypedTableResultSet<WellMetadata> listPlateMetadata(
-            IResultSetConfig<String, TableModelRowWithObject<WellMetadata>> criteria,
-            TechId sampleId)
-    {
-        PlateMetadataProvider metaDataProvider =
-                new PlateMetadataProvider(server, getSessionToken(), sampleId);
-        DataProviderAdapter<WellMetadata> dataProvider =
-                new DataProviderAdapter<WellMetadata>(metaDataProvider);
-        ResultSet<TableModelRowWithObject<WellMetadata>> resultSet =
-                listEntities(criteria, dataProvider);
-        return new TypedTableResultSet<WellMetadata>(resultSet);
     }
 
     @Override
@@ -347,78 +263,7 @@ public final class ScreeningClientService extends AbstractClientService implemen
         return server.getImageDatasetInfosForSample(sessionToken, sampleId, wellLocationOrNull);
     }
 
-    @Override
-    public TypedTableResultSet<Material> listExperimentMaterials(final TechId experimentId,
-            final ListMaterialDisplayCriteria displayCriteria)
-    {
-        return listEntities(new AbstractMaterialProvider()
-            {
-                @Override
-                protected List<Material> getMaterials()
-                {
-                    return server.listExperimentMaterials(getSessionToken(), experimentId,
-                            displayCriteria.getListCriteria().tryGetMaterialType());
-                }
-            }, displayCriteria);
-    }
 
-    @Override
-    public TypedTableResultSet<MaterialFeatureVectorSummary> listExperimentFeatureVectorSummary(
-            IResultSetConfig<String, TableModelRowWithObject<MaterialFeatureVectorSummary>> criteria,
-            TechId experimentId, AnalysisProcedureCriteria analysisProcedureCriteria)
-    {
-        FeatureVectorSummaryProvider provider =
-                new FeatureVectorSummaryProvider(commonServer, server, getSessionToken(), experimentId,
-                        analysisProcedureCriteria);
-        return listEntities(provider, criteria);
-
-    }
-
-    @Override
-    public TypedTableResultSet<MaterialReplicaFeatureSummary> listMaterialReplicaFeatureSummary(
-            IResultSetConfig<String, TableModelRowWithObject<MaterialReplicaFeatureSummary>> resultSetConfig,
-            MaterialFeaturesOneExpCriteria criteria)
-    {
-        MaterialReplicaFeatureSummaryProvider provider =
-                new MaterialReplicaFeatureSummaryProvider(server, getSessionToken(), criteria);
-        return listEntities(provider, resultSetConfig);
-    }
-
-    @Override
-    public String prepareExportFeatureVectorSummary(
-            TableExportCriteria<TableModelRowWithObject<MaterialFeatureVectorSummary>> criteria)
-            throws UserFailureException
-    {
-        return prepareExportEntities(criteria);
-    }
-
-    @Override
-    public String prepareExportMaterialReplicaFeatureSummary(
-            TableExportCriteria<TableModelRowWithObject<MaterialReplicaFeatureSummary>> criteria)
-            throws UserFailureException
-    {
-        return prepareExportEntities(criteria);
-    }
-
-    @Override
-    public TypedTableResultSet<MaterialSimpleFeatureVectorSummary> listMaterialFeaturesFromAllExperiments(
-            IResultSetConfig<String, TableModelRowWithObject<MaterialSimpleFeatureVectorSummary>> resultSetConfig,
-            MaterialFeaturesManyExpCriteria criteria) throws UserFailureException
-    {
-
-        MaterialFeatureVectorsFromAllExperimentsProvider provider =
-                new MaterialFeatureVectorsFromAllExperimentsProvider(server, getSessionToken(),
-                        criteria);
-        return listEntities(provider, resultSetConfig);
-    }
-
-    @Override
-    public String prepareExportMaterialFeaturesFromAllExperiments(
-            TableExportCriteria<TableModelRowWithObject<MaterialSimpleFeatureVectorSummary>> criteria)
-            throws UserFailureException
-    {
-        return prepareExportEntities(criteria);
-    }
 
     @Override
     public AnalysisProcedures listNumericalDatasetsAnalysisProcedures(

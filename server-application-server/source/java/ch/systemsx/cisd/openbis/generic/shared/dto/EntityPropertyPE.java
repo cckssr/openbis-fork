@@ -37,7 +37,6 @@ import org.hibernate.type.SqlTypes;
 import ch.systemsx.cisd.common.reflection.ClassUtils;
 import ch.systemsx.cisd.common.reflection.ModifiedShortPrefixToStringStyle;
 import ch.systemsx.cisd.openbis.generic.shared.IServer;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
 import ch.systemsx.cisd.openbis.generic.shared.util.EqualsHashUtils;
 import ch.systemsx.cisd.openbis.generic.shared.hibernate.type.DoubleArrayJavaType;
@@ -85,13 +84,6 @@ public abstract class EntityPropertyPE extends HibernateAbstractRegistrationHold
      * </p>
      */
     private VocabularyTermPE vocabularyTerm;
-
-    /**
-     * If the property is of MATERIAL, this field is not <code>null</code> and {@link #value} and
-     * {@link #vocabularyTerm} fields are set to
-     * <code>null</code>.
-     */
-    private MaterialPE material;
 
     protected transient Long id;
 
@@ -149,7 +141,6 @@ public abstract class EntityPropertyPE extends HibernateAbstractRegistrationHold
 
     private void clearValues() {
         this.value = null;
-        this.material = null;
         this.vocabularyTerm = null;
         this.integerArrayValue = null;
         this.stringArrayValue = null;
@@ -192,18 +183,6 @@ public abstract class EntityPropertyPE extends HibernateAbstractRegistrationHold
     public VocabularyTermPE getVocabularyTerm()
     {
         return vocabularyTerm;
-    }
-
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = ColumnNames.MATERIAL_PROP_COLUMN)
-    public MaterialPE getMaterialValue()
-    {
-        return material;
-    }
-
-    public void setMaterialValue(MaterialPE material)
-    {
-        this.material = material;
     }
 
     @JavaType(LongArrayJavaType.class)
@@ -277,23 +256,19 @@ public abstract class EntityPropertyPE extends HibernateAbstractRegistrationHold
 
     @Override
     public void setUntypedValue(final String valueOrNull,
-            final VocabularyTermPE vocabularyTermOrNull, MaterialPE materialOrNull,
+            final VocabularyTermPE vocabularyTermOrNull,
             SamplePE sampleOrNull, Long[] integerArrayOrNull, Double[] realArrayOrNull,
             String[] stringArrayOrNull, Date[] timestampArrayOrNull, String jsonOrNull)
     {
-        assert valueOrNull != null || vocabularyTermOrNull != null || materialOrNull != null
+        assert valueOrNull != null || vocabularyTermOrNull != null
                 || integerArrayOrNull != null || realArrayOrNull != null
                 || stringArrayOrNull != null || timestampArrayOrNull != null
                 || jsonOrNull != null : "Either value, array value, json, vocabulary term or material should not be null.";
         clearValues();
         if (vocabularyTermOrNull != null)
         {
-            assert materialOrNull == null;
             setVocabularyTerm(vocabularyTermOrNull);
-        } else if (materialOrNull != null)
-        {
-            setMaterialValue(materialOrNull);
-        }else if (integerArrayOrNull != null) {
+        } else if (integerArrayOrNull != null) {
             setIntegerArrayValue(integerArrayOrNull);
         } else if (realArrayOrNull != null) {
             setRealArrayValue(realArrayOrNull);
@@ -373,9 +348,6 @@ public abstract class EntityPropertyPE extends HibernateAbstractRegistrationHold
             final String labelOrNull = getVocabularyTerm().getLabel();
             return getVocabularyTerm().getCode()
                     + (labelOrNull != null ? " " + getVocabularyTerm().getLabel() : "");
-        } else if (getMaterialValue() != null)
-        {
-            return createMaterialIdentifier(getMaterialValue()).print();
         } else
         {
             if (this.integerArrayValue != null)
@@ -411,11 +383,6 @@ public abstract class EntityPropertyPE extends HibernateAbstractRegistrationHold
                 .map(String::valueOf)
                 .reduce((x, y) -> x + ", " + y)
                 .get();
-    }
-
-    private static MaterialIdentifier createMaterialIdentifier(MaterialPE material)
-    {
-        return new MaterialIdentifier(material.getCode(), material.getMaterialType().getCode());
     }
 
     /**

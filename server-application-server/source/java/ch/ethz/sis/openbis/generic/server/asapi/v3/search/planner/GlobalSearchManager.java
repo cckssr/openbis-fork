@@ -355,12 +355,6 @@ public class GlobalSearchManager implements IGlobalSearchManager
         mapAttributeMatch(fieldsMap, matches, SPACE_MATCH_ALIAS, SPACE_FIELD_NAME);
         switch (entityKind)
         {
-            case MATERIAL:
-            {
-                mapAttributeMatch(fieldsMap, matches, IDENTIFIER_ALIAS, IDENTIFIER_FIELD_NAME);
-                break;
-            }
-
             case SAMPLE:
             {
                 mapAttributeMatch(fieldsMap, matches, SAMPLE_IDENTIFIER_MATCH_ALIAS, IDENTIFIER_FIELD_NAME);
@@ -400,12 +394,6 @@ public class GlobalSearchManager implements IGlobalSearchManager
         if (cvCodeMatch != null)
         {
             addPropertyMatch(cvCodeMatch, fieldsMap, matches);
-        }
-
-        final String materialMatch = (String) fieldsMap.get(MATERIAL_MATCH_ALIAS);
-        if (materialMatch != null)
-        {
-            addPropertyMatch(materialMatch, fieldsMap, matches);
         }
 
         final String sampleMatch = (String) fieldsMap.get(SAMPLE_MATCH_ALIAS);

@@ -24,7 +24,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.TechId;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.WellSearchCriteria;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.WellSearchCriteria.AnalysisProcedureCriteria;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.WellSearchCriteria.ExperimentSearchCriteria;
-import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.WellSearchCriteria.MaterialSearchCriteria;
 import ch.systemsx.cisd.openbis.screening.systemtests.authorization.predicate.experiment.ExperimentSearchCriteriaPredicateWithExperimentTechIdSystemTest;
 
 /**
@@ -37,7 +36,7 @@ public class WellSearchCriteriaPredicateWithExperimentTechIdSystemTest extends E
     protected void evaluateObjects(ProjectAuthorizationUser user, List<ExperimentSearchCriteria> objects, Object param)
     {
         WellSearchCriteria criteria =
-                new WellSearchCriteria(objects.get(0), MaterialSearchCriteria.createIdCriteria(new TechId()),
+                new WellSearchCriteria(objects.get(0),
                         AnalysisProcedureCriteria.createAllProcedures());
         getBean(SamplePredicateScreeningTestService.class).testWellSearchCriteriaPredicate(user.getSessionProvider(), criteria);
     }

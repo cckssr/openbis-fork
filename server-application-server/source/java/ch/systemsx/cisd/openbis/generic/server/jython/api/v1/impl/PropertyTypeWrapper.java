@@ -15,7 +15,6 @@
  */
 package ch.systemsx.cisd.openbis.generic.server.jython.api.v1.impl;
 
-import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IMaterialTypeImmutable;
 import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IPropertyType;
 import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IVocabularyImmutable;
 
@@ -39,11 +38,6 @@ class PropertyTypeWrapper extends PropertyTypeImmutable implements IPropertyType
 
     @Override
     public void setLabel(String label)
-    {
-    }
-
-    @Override
-    public void setMaterialType(IMaterialTypeImmutable materialType)
     {
     }
 

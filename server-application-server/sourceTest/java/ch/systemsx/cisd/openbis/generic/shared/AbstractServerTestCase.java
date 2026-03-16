@@ -40,8 +40,6 @@ import ch.systemsx.cisd.openbis.generic.server.business.bo.IEntityTypeBO;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.IEntityTypePropertyTypeBO;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.IExperimentBO;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.IExperimentTable;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.IMaterialBO;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.IMaterialTable;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.IMetaprojectBO;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.IPropertyTypeBO;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.IPropertyTypeTable;
@@ -53,7 +51,6 @@ import ch.systemsx.cisd.openbis.generic.server.business.bo.ISpaceBO;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.ITrashBO;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.IVocabularyBO;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.datasetlister.IDatasetLister;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.materiallister.IMaterialLister;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.samplelister.ISampleLister;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IAttachmentDAO;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
@@ -92,7 +89,6 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ProjectPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.Session;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SpacePE;
-import ch.systemsx.cisd.openbis.generic.shared.util.MaterialConfigurationProvider;
 import ch.ethz.sis.shared.log.classic.utils.LogRecordingUtils;
 
 /**
@@ -139,17 +135,11 @@ public abstract class AbstractServerTestCase extends AssertJUnit
 
     protected ISampleTable sampleTable;
 
-    protected IMaterialBO materialBO;
-
     protected IDataSetTable dataSetTable;
 
     protected IDeletedDataSetTable deletedDataSetTable;
 
     protected IExperimentTable experimentTable;
-
-    protected IMaterialTable materialTable;
-
-    protected IMaterialLister materialLister;
 
     protected IEntityTypeDAO entityTypeDAO;
 
@@ -215,8 +205,6 @@ public abstract class AbstractServerTestCase extends AssertJUnit
 
     protected IRoleAssignmentTable roleAssignmentTable;
 
-    private MaterialConfigurationProvider oldProvider;
-
     protected IEntityPropertyTypeDAO entityPropertyTypeDAO;
 
     protected IRelationshipTypeDAO relationshipTypeDAO;
@@ -264,7 +252,6 @@ public abstract class AbstractServerTestCase extends AssertJUnit
         spaceBO = context.mock(ISpaceBO.class);
         entityTypeBO = context.mock(IEntityTypeBO.class);
         sampleBO = context.mock(ISampleBO.class);
-        materialBO = context.mock(IMaterialBO.class);
         experimentBO = context.mock(IExperimentBO.class);
         propertyTypeBO = context.mock(IPropertyTypeBO.class);
         vocabularyBO = context.mock(IVocabularyBO.class);
@@ -282,8 +269,6 @@ public abstract class AbstractServerTestCase extends AssertJUnit
         datasetLister = context.mock(IDatasetLister.class);
         experimentTable = context.mock(IExperimentTable.class);
         propertyTypeTable = context.mock(IPropertyTypeTable.class);
-        materialTable = context.mock(IMaterialTable.class);
-        materialLister = context.mock(IMaterialLister.class);
         roleAssignmentTable = context.mock(IRoleAssignmentTable.class);
 
         context.checking(new Expectations()
@@ -331,13 +316,11 @@ public abstract class AbstractServerTestCase extends AssertJUnit
                     will(returnValue(relationshipTypeDAO));
                 }
             });
-        oldProvider = MaterialConfigurationProvider.initializeForTesting(false);
     }
 
     @AfterMethod
     public void tearDown()
     {
-        MaterialConfigurationProvider.restoreFromTesting(oldProvider);
         logRecorder.reset();
         // To following line of code should also be called at the end of each test method.
         // Otherwise one do not known which test failed.

@@ -255,9 +255,6 @@ public class AuthorizationServiceUtils
             DataPE dataSet = daoFactory.getDataDAO().getById(entityId);
             checkEntityNotNull(dataSet, entityKind, entityId);
             canAccess = canAccessDataSet(dataSet);
-        } else if (EntityKind.MATERIAL.equals(entityKind))
-        {
-            canAccess = true;
         } else
         {
             throw new IllegalArgumentException("Unknown entity kind: " + entityKind);
@@ -298,9 +295,6 @@ public class AuthorizationServiceUtils
             DataPE dataSet = daoFactory.getDataDAO().tryToFindDataSetByCode(entityPermId);
             checkEntityNotNull(dataSet, entityKind, entityPermId);
             canAccess = canAccessDataSet(dataSet);
-        } else if (EntityKind.MATERIAL.equals(entityKind))
-        {
-            canAccess = true;
         } else
         {
             throw new IllegalArgumentException("Unknown entity kind: " + entityKind);

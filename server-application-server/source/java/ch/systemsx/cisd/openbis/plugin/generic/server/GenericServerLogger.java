@@ -38,7 +38,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewAttachment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewDataSetsWithTypes;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewExperiment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewExperimentsWithType;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewMaterialsWithTypes;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewSample;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewSamplesWithTypes;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Sample;
@@ -115,22 +114,6 @@ final class GenericServerLogger extends AbstractServerLogger implements IGeneric
     }
 
     @Override
-    public void registerMaterials(String sessionToken, List<NewMaterialsWithTypes> newMaterials)
-    {
-        logTracking(sessionToken, "register_materials", getMaterials(newMaterials));
-    }
-
-    @Override
-    public int updateMaterials(String sessionToken, List<NewMaterialsWithTypes> newMaterials,
-            boolean ignoreUnregisteredMaterials) throws UserFailureException
-    {
-        logTracking(sessionToken, "update_materials",
-                "MATERIALS(%S) IGNORE_UNREGISTERED_MATERIALS(%S)", getMaterials(newMaterials),
-                ignoreUnregisteredMaterials);
-        return 0;
-    }
-
-    @Override
     public AttachmentWithContent getExperimentFileAttachment(final String sessionToken,
             final TechId experimentId, final String filename, final Integer versionOrNull)
             throws UserFailureException
@@ -186,14 +169,6 @@ final class GenericServerLogger extends AbstractServerLogger implements IGeneric
     }
 
     @Override
-    public Date updateMaterial(String sessionToken, TechId materialId,
-            List<IEntityProperty> properties, String[] metaprojects, Date version)
-    {
-        logTracking(sessionToken, "edit_material", "MATERIAL(%s)", materialId);
-        return null;
-    }
-
-    @Override
     public SampleUpdateResult updateSample(String sessionToken, SampleUpdatesDTO updates)
     {
         logTracking(sessionToken, "edit_sample",
@@ -227,17 +202,6 @@ final class GenericServerLogger extends AbstractServerLogger implements IGeneric
     }
 
     @Override
-    public void registerOrUpdateMaterials(String sessionToken, List<NewMaterialsWithTypes> materials)
-    {
-        for (NewMaterialsWithTypes materialsWithType : materials)
-        {
-            logTracking(sessionToken, "registerOrUpdateMaterials",
-                    "type(%s) numberOfMaterials(%s)", materialsWithType.getEntityType().getCode(),
-                    materialsWithType.getNewEntities().size());
-        }
-    }
-
-    @Override
     public void registerOrUpdateSamples(String sessionToken,
             List<NewSamplesWithTypes> newSamplesWithType) throws UserFailureException
     {
@@ -268,17 +232,6 @@ final class GenericServerLogger extends AbstractServerLogger implements IGeneric
                 .getExperimentType().getCode(), experiments.getUpdatedExperiments().size());
     }
 
-    @Override
-    public void registerOrUpdateSamplesAndMaterials(final String sessionToken,
-            final List<NewSamplesWithTypes> newSamplesWithType,
-            final List<NewMaterialsWithTypes> newMaterialsWithType) throws UserFailureException
-    {
-
-        logTracking(sessionToken, "register_or_update_samples_and_materials",
-                "SAMPLES(%s) MATERIALS(%s)", getSamples(newSamplesWithType),
-                getMaterials(newMaterialsWithType));
-    }
-
     private static String getSamples(final List<NewSamplesWithTypes> newSamplesWithType)
     {
         StringBuilder samples = new StringBuilder();
@@ -292,21 +245,6 @@ final class GenericServerLogger extends AbstractServerLogger implements IGeneric
         }
 
         return samples.toString();
-    }
-
-    private static String getMaterials(final List<NewMaterialsWithTypes> newMaterialsWithType)
-    {
-        StringBuilder materials = new StringBuilder();
-        for (NewMaterialsWithTypes s : newMaterialsWithType)
-        {
-            if (materials.length() > 0)
-            {
-                materials.append(",");
-            }
-            materials.append(s.getEntityType().getCode() + ":" + s.getNewEntities().size());
-        }
-
-        return materials.toString();
     }
 
     @Override

@@ -21,6 +21,6 @@ package ch.systemsx.cisd.openbis.generic.shared.basic.dto;
 public enum MetaprojectAssignmentsFetchOption implements FetchOption
 {
 
-    EXPERIMENTS, SAMPLES, DATA_SETS, MATERIALS;
+    EXPERIMENTS, SAMPLES, DATA_SETS;
 
 }

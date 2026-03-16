@@ -19,8 +19,6 @@ import org.testng.AssertJUnit;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.Test;
 
-import ch.systemsx.cisd.openbis.generic.shared.util.MaterialConfigurationProvider;
-
 /**
  * @author Chandrasekhar Ramakrishnan
  */
@@ -37,20 +35,10 @@ public class QiagenScreeningLibraryColumnExtractorTest extends AssertJUnit
 
     private QiagenScreeningLibraryColumnExtractor extractor;
 
-    private MaterialConfigurationProvider oldProvider;
+    public void setUp(boolean isRelaxedMaterialCodes)    {
 
-    public void setUp(boolean isRelaxedMaterialCodes)
-    {
-        oldProvider = MaterialConfigurationProvider.initializeForTesting(isRelaxedMaterialCodes);
         extractor =
-                new QiagenScreeningLibraryColumnExtractor(HEADER_TOKENS,
-                        MaterialConfigurationProvider.getInstance());
-    }
-
-    @AfterMethod
-    public void tearDown()
-    {
-        MaterialConfigurationProvider.restoreFromTesting(oldProvider);
+                new QiagenScreeningLibraryColumnExtractor(HEADER_TOKENS);
     }
 
     @Test
@@ -64,14 +52,6 @@ public class QiagenScreeningLibraryColumnExtractorTest extends AssertJUnit
         String[] row = getRow();
         row[2] = "01";
         assertEquals("A1", extractor.getWellCode(row));
-    }
-
-    @Test
-    public void testStrictMaterialCodes()
-    {
-        setUp(STRICT_MATERIAL_CODES);
-        assertEquals("BMP15", extractor.getGeneId(getRow()));
-        assertEquals("A-a_5.B_c_C__D_d", extractor.getGeneId(getRowWithGeneId("A-a_5.B(c:C)/D%d")));
     }
 
     @Test

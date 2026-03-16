@@ -17,10 +17,8 @@ package ch.systemsx.cisd.openbis.generic.server.jython.api.v1.impl;
 
 import ch.systemsx.cisd.common.shared.basic.string.StringUtils;
 import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.DataType;
-import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IMaterialTypeImmutable;
 import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IPropertyType;
 import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IVocabularyImmutable;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialType;
 
 /**
  * @author Kaloyan Enimanev
@@ -46,13 +44,6 @@ public class PropertyType extends PropertyTypeImmutable implements IPropertyType
     public void setLabel(String label)
     {
         getPropertyType().setLabel(label);
-    }
-
-    @Override
-    public void setMaterialType(IMaterialTypeImmutable materialType)
-    {
-        MaterialType wrappedMaterialType = ((MaterialTypeImmutable) materialType).getMaterialType();
-        getPropertyType().setMaterialType(wrappedMaterialType);
     }
 
     @Override

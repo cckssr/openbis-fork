@@ -25,11 +25,9 @@ import ch.systemsx.cisd.common.reflection.ModifiedShortPrefixToStringStyle;
 import ch.systemsx.cisd.common.resource.IReleasable;
 import ch.systemsx.cisd.common.resource.Resources;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.dynamic_property.IDynamicPropertyEvaluator;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EntityPropertyPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePropertyTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.IEntityPropertiesHolder;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PropertyTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.hibernate.SearchFieldConstants;
 import ch.systemsx.cisd.openbis.generic.shared.hotdeploy_plugins.api.IEntityAdaptor;
@@ -107,13 +105,7 @@ public class AbstractEntityAdaptor implements IEntityAdaptor, IReleasable
         } else
         {
             final String value;
-            if (property.getMaterialValue() != null)
-            {
-                final MaterialPE material = property.getMaterialValue();
-                value =
-                        MaterialIdentifier.print(material.getCode(), material.getEntityType()
-                                .getCode());
-            } else if (property.getVocabularyTerm() != null)
+            if (property.getVocabularyTerm() != null)
             {
                 value = property.getVocabularyTerm().getCode();
             } else

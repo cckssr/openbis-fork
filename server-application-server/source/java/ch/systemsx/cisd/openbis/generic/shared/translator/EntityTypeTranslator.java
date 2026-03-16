@@ -19,12 +19,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityType;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PropertyType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataSetTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentTypePE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PropertyTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SampleTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.util.HibernateUtils;
@@ -42,7 +40,6 @@ public class EntityTypeTranslator
             return null;
         }
 
-        HashMap<MaterialTypePE, MaterialType> materialTypeCache = new HashMap<MaterialTypePE, MaterialType>();
         Map<PropertyTypePE, PropertyType> cache = new HashMap<PropertyTypePE, PropertyType>();
 
         switch (entityTypePE.getEntityKind())
@@ -50,19 +47,15 @@ public class EntityTypeTranslator
             case EXPERIMENT:
                 ExperimentTypePE experimentTypePE = (ExperimentTypePE) entityTypePE;
                 HibernateUtils.initialize(experimentTypePE.getExperimentTypePropertyTypes());
-                return ExperimentTypeTranslator.translate(experimentTypePE, materialTypeCache, cache);
+                return ExperimentTypeTranslator.translate(experimentTypePE, cache);
             case SAMPLE:
                 SampleTypePE sampleTypePE = (SampleTypePE) entityTypePE;
                 HibernateUtils.initialize(sampleTypePE.getSampleTypePropertyTypes());
-                return SampleTypeTranslator.translate(sampleTypePE, materialTypeCache, cache);
+                return SampleTypeTranslator.translate(sampleTypePE, cache);
             case DATA_SET:
                 DataSetTypePE dataSetTypePE = (DataSetTypePE) entityTypePE;
                 HibernateUtils.initialize(dataSetTypePE.getDataSetTypePropertyTypes());
-                return DataSetTypeTranslator.translate(dataSetTypePE, materialTypeCache, cache);
-            case MATERIAL:
-                MaterialTypePE materialTypePE = (MaterialTypePE) entityTypePE;
-                HibernateUtils.initialize(materialTypePE.getMaterialTypePropertyTypes());
-                return MaterialTypeTranslator.translate(materialTypePE, materialTypeCache, cache);
+                return DataSetTypeTranslator.translate(dataSetTypePE, cache);
             default:
                 throw new IllegalArgumentException("Unsupported entity kind: "
                         + entityTypePE.getEntityKind());

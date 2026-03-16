@@ -24,8 +24,7 @@ package ch.systemsx.cisd.openbis.generic.shared.managed_property.api;
 public enum EntityLinkElementKind
 {
 
-    EXPERIMENT("Experiment"), SAMPLE("Sample"), DATA_SET("Dataset", "Data Set"), MATERIAL(
-            "Material");
+    EXPERIMENT("Experiment"), SAMPLE("Sample"), DATA_SET("Dataset", "Data Set");
 
     private final String elementName;
 

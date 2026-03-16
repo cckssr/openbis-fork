@@ -20,7 +20,6 @@ import java.util.List;
 import ch.systemsx.cisd.openbis.generic.client.web.client.IClientService;
 import ch.systemsx.cisd.openbis.generic.client.web.client.ICommonClientService;
 import ch.systemsx.cisd.openbis.generic.client.web.client.dto.IResultSetConfig;
-import ch.systemsx.cisd.openbis.generic.client.web.client.dto.ListMaterialDisplayCriteria;
 import ch.systemsx.cisd.openbis.generic.client.web.client.dto.TableExportCriteria;
 import ch.systemsx.cisd.openbis.generic.client.web.client.dto.TypedTableResultSet;
 import ch.systemsx.cisd.openbis.generic.client.web.client.exception.UserFailureException;
@@ -28,7 +27,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.TechId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.BatchRegistrationResult;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.CodeAndLabel;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Material;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SampleParentWithDerived;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.TableModelRowWithObject;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Vocabulary;
@@ -41,9 +39,6 @@ import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.ImageResolutio
 import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.ImageSampleContent;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.LibraryRegistrationInfo;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.LogicalImageInfo;
-import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.MaterialFeatureVectorSummary;
-import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.MaterialReplicaFeatureSummary;
-import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.MaterialSimpleFeatureVectorSummary;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.PlateContent;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.PlateImages;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.WellContent;
@@ -53,8 +48,6 @@ import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.WellReplicaIma
 import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.WellSearchCriteria;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.WellSearchCriteria.AnalysisProcedureCriteria;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.WellSearchCriteria.ExperimentSearchCriteria;
-import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.WellSearchCriteria.MaterialFeaturesManyExpCriteria;
-import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.WellSearchCriteria.MaterialFeaturesOneExpCriteria;
 
 /**
  * Service interface for the <i>screening</i> <i>GWT</i> client.
@@ -80,16 +73,6 @@ public interface IScreeningClientService extends IClientService
     public AbstractExternalData getDataSetInfo(TechId datasetTechId) throws UserFailureException;
 
     /**
-     * For given {@link TechId} returns corresponding {@link Material}.
-     */
-    public Material getMaterialInfo(TechId materialTechId) throws UserFailureException;
-
-    /**
-     * Fetches information about wells on a plate and their content.
-     */
-    public PlateContent getPlateContent(TechId sampleId) throws UserFailureException;
-
-    /**
      * Fetches feature vector of specified dataset with one feature specified by name.
      */
     public FeatureVectorDataset getFeatureVectorDataset(DatasetReference dataset,
@@ -101,54 +84,9 @@ public interface IScreeningClientService extends IClientService
     public FeatureVectorValues getWellFeatureVectorValues(String datasetCode, String datastoreCode,
             WellLocation location);
 
-    /**
-     * Fetches information about a plate: metadata and images for wells. The specified dataset is supposed to be in BDS-HCS format.
-     */
-    public PlateImages getPlateContentForDataset(TechId datasetId) throws UserFailureException;
-
-    /**
-     * @return well locations which belong to a parent plate connected to a specified experiment(s) and have specified material(s) inside.
-     */
-    public TypedTableResultSet<WellContent> listPlateWells(
-            IResultSetConfig<String, TableModelRowWithObject<WellContent>> gridCriteria,
-            WellSearchCriteria materialCriteria) throws UserFailureException;
-
     public String prepareExportPlateWells(
             TableExportCriteria<TableModelRowWithObject<WellContent>> criteria)
             throws UserFailureException;
-
-    /**
-     * Finds wells containing the specified material and belonging to the specified experiment. Loads wells metadata and single image dataset for each
-     * well. If there are many image datasets for the well, all but the first one are ignored. If there is no image dataset for the well, the whole
-     * well is ignored.
-     */
-    public List<WellReplicaImage> listWellImages(TechId materialId, TechId experimentId)
-            throws UserFailureException;
-
-    /**
-     * @return materials with codes or properties matching to the query. If the experiment is specified, only materials inside well locations
-     *         connected through the plate to this specified experiment(s) will be returned.
-     */
-    public TypedTableResultSet<Material> listMaterials(
-            IResultSetConfig<String, TableModelRowWithObject<Material>> gridCriteria,
-            WellSearchCriteria materialCriteria) throws UserFailureException;
-
-    public String prepareExportMaterials(
-            TableExportCriteria<TableModelRowWithObject<Material>> criteria)
-            throws UserFailureException;
-
-    /**
-     * Returns {@link TypedTableResultSet} containing plate metadata.
-     */
-    public TypedTableResultSet<WellMetadata> listPlateMetadata(
-            IResultSetConfig<String, TableModelRowWithObject<WellMetadata>> resultSetConfig,
-            TechId sampleId) throws UserFailureException;
-
-    /**
-     * Lists {@link Material}s of specified type in experiment with specified id.
-     */
-    public TypedTableResultSet<Material> listExperimentMaterials(TechId experimentId,
-            ListMaterialDisplayCriteria criteria) throws UserFailureException;
 
     /**
      * Like {@link ICommonClientService#prepareExportSamples(TableExportCriteria)}, but for TypedTableResultSet.
@@ -192,39 +130,6 @@ public interface IScreeningClientService extends IClientService
      */
     public Vocabulary getPlateGeometryVocabulary() throws UserFailureException;
 
-    /**
-     * Return the selected {@link MaterialFeatureVectorSummary}-s for a given experiment.
-     */
-    public TypedTableResultSet<MaterialFeatureVectorSummary> listExperimentFeatureVectorSummary(
-            IResultSetConfig<String, TableModelRowWithObject<MaterialFeatureVectorSummary>> resultSetConfig,
-            TechId experimentId, AnalysisProcedureCriteria analysisProcedureCriteria)
-            throws UserFailureException;
-
-    public String prepareExportFeatureVectorSummary(
-            TableExportCriteria<TableModelRowWithObject<MaterialFeatureVectorSummary>> criteria)
-            throws UserFailureException;
-
-    /**
-     * Return the selected {@link MaterialReplicaFeatureSummary}-s for a given experiment and material.
-     */
-    public TypedTableResultSet<MaterialReplicaFeatureSummary> listMaterialReplicaFeatureSummary(
-            IResultSetConfig<String, TableModelRowWithObject<MaterialReplicaFeatureSummary>> resultSetConfig,
-            MaterialFeaturesOneExpCriteria criteria) throws UserFailureException;
-
-    public String prepareExportMaterialReplicaFeatureSummary(
-            TableExportCriteria<TableModelRowWithObject<MaterialReplicaFeatureSummary>> criteria)
-            throws UserFailureException;
-
-    /**
-     * Return material feature vector summaries from all experiments for a give material tech id.
-     */
-    public TypedTableResultSet<MaterialSimpleFeatureVectorSummary> listMaterialFeaturesFromAllExperiments(
-            IResultSetConfig<String, TableModelRowWithObject<MaterialSimpleFeatureVectorSummary>> resultSetConfig,
-            MaterialFeaturesManyExpCriteria criteria) throws UserFailureException;
-
-    public String prepareExportMaterialFeaturesFromAllExperiments(
-            TableExportCriteria<TableModelRowWithObject<MaterialSimpleFeatureVectorSummary>> criteria)
-            throws UserFailureException;
 
     /**
      * Return all analysis procedures for an experiment criteria.

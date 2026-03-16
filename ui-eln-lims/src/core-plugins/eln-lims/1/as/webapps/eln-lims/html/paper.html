@@ -125,12 +125,12 @@ p {
 				<h3 id="Motivation">Motivation</h3>
 
 				<p>Reproducibility across different “generations” of students in an academic lab is harder to achieve than most people wish. One of the main reasons for this is poor documentation of previous
-					work. Nowadays most data is in electronic format, but the associated experimental details are still reported in paper notebooks. Moreover, used material and methods are spread over several
+					work. Nowadays most data is in electronic format, but the associated experimental details are still reported in paper notebooks. Moreover, protocols and related records are spread over several
 					different spreadsheets, text documents or databases and it is difficult to put all this information together.</p>
 
 				<h3 id="Goal">Goal</h3>
 				<p>The aim of openBIS ELN-LIMS was to create a stable database with an intuitive and simple-to-use graphical user interface (GUI) where all relevant lab data can be collected. To this end, we
-					built upon openBIS, a database aimed for long lasting storage of large amount of data. We introduced a LIMS (where the data associated with the material and methods are stored) and an ELN (where
+					built upon openBIS, a database aimed for long lasting storage of large amount of data. We introduced a LIMS (where protocol and inventory data are stored) and an ELN (where
 					the experimental observations are stored) part. openBIS ELN-LIMS supports everyday work in the laboratory by making the data immediately accessible and easy to find.</p>
 
 				<h3 id="Development">Development</h3>
@@ -156,9 +156,8 @@ p {
 					some of our recently published data on inducible transcription factors in yeast (Ottoz et al., Nucleic Acids Research, 2014).</p>
 
 				<h3 id="LIMS">LIMS</h3>
-				<p>The materials and methods used for this work were entered in the Inventory section as Samples. This section contains two Data Spaces: MATERIALS and METHODS. The hierarchical structure of
-					openBIS allows us to organize the materials in several categories: PLASMIDS, POLYNUCLEOTIDES, REAGENTS (including ANTIBODIES, CHEMICALS, SOLUTIONS_BUFFERS etc.), and YEASTS. Similarly, we
-					organized the methods in two groups: GENERAL_PROTOCOLS and WESTERN_BLOTTING_PROTOCOLS.</p>
+				<p>The methods used for this work were entered in the Inventory section as Samples. This section contains the METHODS Data Space, where protocols are organized into groups such as
+					GENERAL_PROTOCOLS and WESTERN_BLOTTING_PROTOCOLS.</p>
 				<p>All information stored in a Sample, including the attached Datasets, can be visualized by clicking on it. Parent-child relationships illustrate the Sample’s context in the database. For
 					example, the parents of the SOLUTIONS_BUFFERS Samples are the CHEMICALS or SOLUTIONS_BUFFERS to be mixed together. To specify the nature of these relationships, we annotate the links with the
 					needed quantities.</p>
@@ -173,7 +172,7 @@ p {
 					standard growth conditions with synthetic complete medium containing 2% of glucose" contains three Experimental steps: "Detection of LexA-ER-B42 induction by flow cytometry", "Detection of
 					LexA-ER-B42 induction by western blotting", and "Detection of LexA-ER-B112 induction by western blotting".</p>
 				<p>The Sample "Detection of LexA-ER-B42 induction by western blotting" describes a western blotting performed to assess the induction levels of the transcription factor variant called
-					LexA-ER-B42. Materials and methods Samples used to obtain these data are listed as Parents. The annotation of each of these relationships gives practical information about how the particular
+					LexA-ER-B42. Related method Samples used to obtain these data are listed as Parents. The annotation of each of these relationships gives practical information about how the particular
 					experiment was performed, and is necessary to reproduce the results. Additional information, like the readout details and the general comments on the outcome of the experiment, is also contained
 					in the Sample. The actual results, the western blot images, are uploaded as Datasets. A table describes the order of the protein extracts loaded on each lane of the gel, allowing one to fully
 					understand the western blot images.</p>

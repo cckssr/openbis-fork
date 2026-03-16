@@ -255,42 +255,6 @@ public class CreatePropertyTypeTest extends AbstractTest
     }
 
     @Test
-    public void testCreateMaterialPropertyType()
-    {
-        // Given
-        String sessionToken = v3api.login(TEST_USER, PASSWORD);
-        PropertyTypeCreation creation = new PropertyTypeCreation();
-        creation.setCode("test-material-property");
-        creation.setDataType(DataType.MATERIAL);
-        creation.setDescription("only for testing");
-        creation.setLabel("Test Material Property");
-        creation.setMaterialTypeId(new EntityTypePermId("SIRNA", EntityKind.MATERIAL));
-        creation.setMultiValue(false);
-        // When
-        List<PropertyTypePermId> ids = v3api.createPropertyTypes(sessionToken, Arrays.asList(creation));
-
-        // Then
-        assertEquals(ids.toString(), "[TEST-MATERIAL-PROPERTY]");
-        PropertyTypeSearchCriteria searchCriteria = new PropertyTypeSearchCriteria();
-        searchCriteria.withCode().thatEquals(creation.getCode().toUpperCase());
-        PropertyTypeFetchOptions fetchOptions = new PropertyTypeFetchOptions();
-        fetchOptions.withMaterialType();
-        Map<IPropertyTypeId, PropertyType> types = v3api.getPropertyTypes(sessionToken, ids, fetchOptions);
-        PropertyType propertyType = types.get(ids.get(0));
-        assertEquals(propertyType.getCode(), creation.getCode().toUpperCase());
-        assertEquals(propertyType.getPermId(), ids.get(0));
-        assertEquals(propertyType.getDataType(), creation.getDataType());
-        assertEquals(propertyType.getDescription(), creation.getDescription());
-        assertEquals(propertyType.getLabel(), creation.getLabel());
-        assertEquals(propertyType.isManagedInternally().booleanValue(), false);
-        assertEquals(propertyType.getMaterialType().getCode(), "SIRNA");
-        assertEquals(propertyType.getMaterialType().getDescription(), "Oligo nucleotide");
-        assertEquals(types.size(), 1);
-
-        v3api.logout(sessionToken);
-    }
-
-    @Test
     public void testCreateSamplePropertyType()
     {
         // Given
@@ -452,57 +416,6 @@ public class CreatePropertyTypeTest extends AbstractTest
         assertUserFailureException(creation, "Vocabulary id has been specified but data type is REAL.");
     }
 
-    @Test
-    public void testMaterialTypeIdButWrongDataType()
-    {
-        PropertyTypeCreation creation = createBasic();
-        creation.setDataType(DataType.REAL);
-        creation.setMaterialTypeId(new EntityTypePermId("SIRNA", EntityKind.MATERIAL));
-
-        assertUserFailureException(creation, "Material type id has been specified but data type is REAL.");
-    }
-
-    @Test
-    public void testEntityTypeIdButWrongEntityKind()
-    {
-        PropertyTypeCreation creation = createBasic();
-        creation.setDataType(DataType.MATERIAL);
-        creation.setMaterialTypeId(new EntityTypePermId("UNKNOWN", EntityKind.DATA_SET));
-
-        assertUserFailureException(creation, "Specified entity type id (UNKNOWN (DATA_SET)) is not a MATERIAL type.");
-    }
-
-    @Test
-    public void testUnknownMaterialType()
-    {
-        PropertyTypeCreation creation = createBasic();
-        creation.setDataType(DataType.MATERIAL);
-        creation.setMaterialTypeId(new EntityTypePermId("UNKNOWN", EntityKind.MATERIAL));
-
-        assertUserFailureException(creation, "EntityTypePermId = [UNKNOWN (MATERIAL)] has not been found.");
-    }
-
-    @Test
-    public void testVocabularyTypeWithVocabularyIdAndMaterialTypeId()
-    {
-        PropertyTypeCreation creation = createBasic();
-        creation.setDataType(DataType.CONTROLLEDVOCABULARY);
-        creation.setVocabularyId(new VocabularyPermId("GENDER"));
-        creation.setMaterialTypeId(new EntityTypePermId("SIRNA", EntityKind.MATERIAL));
-
-        assertUserFailureException(creation, "Material type id has been specified but data type is CONTROLLEDVOCABULARY.");
-    }
-
-    @Test
-    public void testMaterialTypeWithVocabularyIdAndMaterialTypeId()
-    {
-        PropertyTypeCreation creation = createBasic();
-        creation.setDataType(DataType.MATERIAL);
-        creation.setVocabularyId(new VocabularyPermId("GENDER"));
-        creation.setMaterialTypeId(new EntityTypePermId("SIRNA", EntityKind.MATERIAL));
-
-        assertUserFailureException(creation, "Vocabulary id has been specified but data type is MATERIAL.");
-    }
 
     @Test
     public void testInvalidSchema()

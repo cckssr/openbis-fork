@@ -72,9 +72,6 @@ public class EntityHelper
             case EXPERIMENT:
                 type = new ExperimentType();
                 break;
-            case MATERIAL:
-                type = new MaterialType();
-                break;
             case SAMPLE:
                 type = new SampleType();
                 break;

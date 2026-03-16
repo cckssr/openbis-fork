@@ -20,7 +20,6 @@ import java.util.List;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.common.ObjectQuery;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.common.ObjectRelationRecord;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.history.HistoryPropertyRecord;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.property.MaterialPropertyRecord;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.property.PropertyAssignmentRecord;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.property.PropertyRecord;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.property.SamplePropertyRecord;
@@ -66,7 +65,7 @@ public interface SampleQuery extends ObjectQuery
     // PropertyQueryGenerator was used to generate this query
     @Select(sql =
             "select p.id as id, p.samp_id as objectId, p.pers_id_author AS authorId, p.modification_timestamp AS modificationTimestamp, pt.code as propertyCode, "
-                    + "p.value as propertyValue, m.code as materialPropertyValueCode, mt.code as materialPropertyValueTypeCode, "
+                    + "p.value as propertyValue, "
                     + "s.perm_id as sample_perm_id, p.samp_prop_id as sample_id, "
                     + "cvt.code as vocabularyPropertyValue, "
                     + "cv.code as vocabularyPropertyValueTypeCode, "
@@ -77,25 +76,13 @@ public interface SampleQuery extends ObjectQuery
                     + "p.json_value as jsonPropertyValue "
                     + "from sample_properties p "
                     + "left join samples s on p.samp_prop_id = s.id "
-                    + "left join materials m on p.mate_prop_id = m.id "
                     + "left join controlled_vocabulary_terms cvt on p.cvte_id = cvt.id "
                     + "left join controlled_vocabularies cv on cvt.covo_id = cv.id "
-                    + "left join material_types mt on m.maty_id = mt.id "
                     + "join sample_type_property_types etpt on p.stpt_id = etpt.id "
                     + "join property_types pt on etpt.prty_id = pt.id "
                     + "where p.samp_id = any(?{1}) order by id asc", parameterBindings = { LongSetMapper.class },
             resultSetBinding = PropertyRecordDataObjectBinding.class,  fetchSize = FETCH_SIZE)
     public List<PropertyRecord> getProperties(LongSet sampleIds);
-
-    // PropertyQueryGenerator was used to generate this query
-    @Select(sql =
-            "select p.samp_id as objectId, pt.code as propertyCode, p.mate_prop_id as propertyValue "
-                    + "from sample_properties p "
-                    + "join sample_type_property_types etpt on p.stpt_id = etpt.id "
-                    + "join property_types pt on etpt.prty_id = pt.id "
-                    + "where p.mate_prop_id is not null and p.samp_id = any(?{1})", parameterBindings = {
-            LongSetMapper.class }, fetchSize = FETCH_SIZE)
-    public List<MaterialPropertyRecord> getMaterialProperties(LongSet sampleIds);
 
     @Select(sql =
             "select p.samp_id as objectId, pt.code as propertyCode, p.samp_prop_id as propertyValue "
@@ -109,7 +96,7 @@ public interface SampleQuery extends ObjectQuery
 
     // PropertyQueryGenerator was used to generate this query
     @Select(sql =
-            "select ph.id as id, ph.samp_id as objectId, ph.pers_id_author as authorId, pt.code as propertyCode, ph.value as propertyValue, ph.material as materialPropertyValue, ph.sample as samplePropertyValue, ph.vocabulary_term as vocabularyPropertyValue, ph.valid_from_timestamp as validFrom, ph.valid_until_timestamp as validTo, "
+            "select ph.id as id, ph.samp_id as objectId, ph.pers_id_author as authorId, pt.code as propertyCode, ph.value as propertyValue, ph.sample as samplePropertyValue, ph.vocabulary_term as vocabularyPropertyValue, ph.valid_from_timestamp as validFrom, ph.valid_until_timestamp as validTo, "
                     + "ph.integer_array_value as integerArrayPropertyValue, "
                     + "ph.real_array_value as realArrayPropertyValue, "
                     + "ph.string_array_value as stringArrayPropertyValue, "

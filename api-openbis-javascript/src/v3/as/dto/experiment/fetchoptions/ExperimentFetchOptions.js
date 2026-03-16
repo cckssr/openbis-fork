@@ -5,7 +5,7 @@
 define([ "require", "stjs", "as/dto/common/fetchoptions/AbstractEntityFetchOptions", 'as/dto/experiment/fetchoptions/ExperimentTypeFetchOptions', 'as/dto/project/fetchoptions/ProjectFetchOptions',
 		'as/dto/tag/fetchoptions/TagFetchOptions', 'as/dto/person/fetchoptions/PersonFetchOptions', 'as/dto/attachment/fetchoptions/AttachmentFetchOptions',
 		'as/dto/dataset/fetchoptions/DataSetFetchOptions', 'as/dto/sample/fetchoptions/SampleFetchOptions', 'as/dto/history/fetchoptions/HistoryEntryFetchOptions',
-		'as/dto/material/fetchoptions/MaterialFetchOptions', 'as/dto/sample/fetchoptions/SampleFetchOptions', 'as/dto/experiment/fetchoptions/ExperimentSortOptions' ], function(require, stjs, AbstractEntityFetchOptions) {
+		'as/dto/sample/fetchoptions/SampleFetchOptions', 'as/dto/experiment/fetchoptions/ExperimentSortOptions' ], function(require, stjs, AbstractEntityFetchOptions) {
 	var ExperimentFetchOptions = function() {
 	    AbstractEntityFetchOptions.call(this);
 	};
@@ -22,7 +22,6 @@ define([ "require", "stjs", "as/dto/common/fetchoptions/AbstractEntityFetchOptio
         prototype.samplesHistory = null;
         prototype.dataSetsHistory = null;
         prototype.unknownHistory = null;
-		prototype.materialProperties = null;
 		prototype.sampleProperties = null;
 		prototype.tags = null;
 		prototype.registrator = null;
@@ -165,19 +164,6 @@ define([ "require", "stjs", "as/dto/common/fetchoptions/AbstractEntityFetchOptio
 			return this.unknownHistory != null;
 		};
 
-		prototype.withMaterialProperties = function() {
-			if (this.materialProperties == null) {
-				var MaterialFetchOptions = require("as/dto/material/fetchoptions/MaterialFetchOptions");
-				this.materialProperties = new MaterialFetchOptions();
-			}
-			return this.materialProperties;
-		};
-		prototype.withMaterialPropertiesUsing = function(fetchOptions) {
-			return this.materialProperties = fetchOptions;
-		};
-		prototype.hasMaterialProperties = function() {
-			return this.materialProperties != null;
-		};
 		prototype.withSampleProperties = function() {
 			if (this.sampleProperties == null) {
 				var SampleFetchOptions = require("as/dto/sample/fetchoptions/SampleFetchOptions");
@@ -264,7 +250,6 @@ define([ "require", "stjs", "as/dto/common/fetchoptions/AbstractEntityFetchOptio
 		samplesHistory : "HistoryEntryFetchOptions",
 		dataSetsHistory : "HistoryEntryFetchOptions",
 		unknownHistory : "HistoryEntryFetchOptions",
-		materialProperties : "MaterialFetchOptions",
 		sampleProperties : "SampleFetchOptions",
 		tags : "TagFetchOptions",
 		registrator : "PersonFetchOptions",

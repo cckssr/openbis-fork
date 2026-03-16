@@ -15,9 +15,6 @@
  */
 package ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer;
 
-import static ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialIdentifier.TYPE_SEPARATOR_PREFIX;
-import static ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialIdentifier.TYPE_SEPARATOR_SUFFIX;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -62,9 +59,7 @@ import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronize
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataTypeCode;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityProperty;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewExperiment;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewMaterialWithType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewProject;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewSample;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewSpace;
@@ -252,7 +247,6 @@ public class ResourceListParser
         masterData.setSampleTypesToProcess(mdParser.getSampleTypes());
         masterData.setDataSetTypesToProcess(mdParser.getDataSetTypes());
         masterData.setExperimentTypesToProcess(mdParser.getExperimentTypes());
-        masterData.setMaterialTypesToProcess(mdParser.getMaterialTypes());
         masterData.setPropertyAssignmentsToProcess(mdParser.getEntityPropertyAssignments());
         masterData.setExternalDataManagementSystemsToProcess(mdParser.getExternalDataManagementSystems());
         masterData.setVocabularyNameMapper(mdParser.getVocabularyNameMapper());
@@ -278,9 +272,6 @@ public class ResourceListParser
         } else if (SyncEntityKind.DATA_SET.toString().equals(entityKind))
         {
             parseDataSetMetaData(extractDataSetCodeFromURI(uri), xdNode, lastModificationDate);
-        } else if (SyncEntityKind.MATERIAL.toString().equals(entityKind))
-        {
-            parseMaterialMetaData(extractMaterialCodeFromURI(uri), xdNode, lastModificationDate);
         } else if (SyncEntityKind.FILE.toString().equals(entityKind))
         {
             parseFileData(xdNode, lastModificationDate);
@@ -590,17 +581,6 @@ public class ResourceListParser
         return new SpaceIdentifier(translatedSpaceId);
     }
 
-    private void parseMaterialMetaData(String permId, Node xdNode, Date lastModificationDate)
-    {
-        String code = nameTranslator.translate(extractCode(xdNode));
-        String type = extractType(xdNode);
-        NewMaterialWithType newMaterial = new NewMaterialWithType(code, type);
-        IncomingMaterial incomingMaterial = new IncomingMaterial(newMaterial, lastModificationDate);
-        setTimestampsAndUsers(xdNode, incomingMaterial);
-        data.getMaterialsToProcess().put(code, type, incomingMaterial);
-        newMaterial.setProperties(parseProperties(xdNode));
-    }
-
     private List<Connection> parseConnections(Node xdNode)
     {
         List<Connection> conns = new ArrayList<Connection>();
@@ -668,40 +648,10 @@ public class ResourceListParser
         PropertyType propertyType = new PropertyType();
         String translatedCode = nameTranslator.translate(code);
         MasterData masterData = data.getMasterData();
-        PropertyType pt = masterData.getPropertyTypesToProcess().get(translatedCode);
-        if (pt.getDataType().getCode().equals(DataTypeCode.MATERIAL))
-        {
-            if (val != null)
-            {
-                val = nameTranslator.translate(val);
-                val = translateMaterialIdentifier(val);
-            }
-        }
         propertyType.setCode(masterData.getPropertyTypeNameMapper().getHarvesterName(code));
         property.setPropertyType(propertyType);
         property.setValue(val);
         return property;
-    }
-
-    private String translateMaterialIdentifier(String value)
-    {
-        if (StringUtils.isBlank(value))
-        {
-            return null;
-        }
-        int typePrefix = value.indexOf(TYPE_SEPARATOR_PREFIX);
-        if (typePrefix == -1)
-        {
-            return null;
-        }
-        String code = value.substring(0, typePrefix);
-        String typeCode = nameTranslator.translate(value.substring(typePrefix + TYPE_SEPARATOR_PREFIX.length()));
-        // we allow to omit the closing brace
-        if (typeCode.endsWith(TYPE_SEPARATOR_SUFFIX))
-        {
-            typeCode = typeCode.substring(0, typeCode.length() - TYPE_SEPARATOR_SUFFIX.length());
-        }
-        return new MaterialIdentifier(code, typeCode).toString();
     }
 
     private void parseExperimentMetaData(String permId, Node xdNode, Date lastModificationDate)
@@ -810,13 +760,6 @@ public class ResourceListParser
             return matcher.group(1);
         }
         throw new XPathExpressionException("Malformed resource url");
-    }
-
-    private String extractMaterialCodeFromURI(String uri) throws XPathExpressionException
-    {
-        // TODO malformed uri handling
-        String[] parts = uri.split("/");
-        return parts[parts.length - 2];
     }
 }
 // expr = xpath.compile("//s:loc[normalize-space(.) ='" + uri + "']/../x:xd/x:properties/x:property"); //

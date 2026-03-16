@@ -19,7 +19,6 @@ import java.util.List;
 
 import ch.systemsx.cisd.common.geometry.ConversionUtils;
 import ch.systemsx.cisd.common.geometry.Point;
-import ch.systemsx.cisd.openbis.generic.shared.util.MaterialConfigurationProvider;
 
 /**
  * Provides structured information from one row of the QIAGEN library.
@@ -53,15 +52,11 @@ public class QiagenScreeningLibraryColumnExtractor extends AbstractColumnExtract
     private final static String[] EXPECTED_COLUMNS = new String[]
     { PLATE_NAME, WELL_ROW, WELL_COL, RNA_SEQUENCE, GENE_ID, GENE_SYMBOL, GENE_DESC, SIRNA_ID };
 
-    private final MaterialConfigurationProvider materialConfig;
-
     // -------------
 
-    public QiagenScreeningLibraryColumnExtractor(String[] headerTokens,
-            MaterialConfigurationProvider materialConfig)
+    public QiagenScreeningLibraryColumnExtractor(String[] headerTokens)
     {
         super(headerTokens, EXPECTED_COLUMNS);
-        this.materialConfig = materialConfig;
     }
 
     public List<String> getAdditionalOligoPropertyNames()
@@ -113,13 +108,7 @@ public class QiagenScreeningLibraryColumnExtractor extends AbstractColumnExtract
 
     private String getMaterialCodeValue(String[] row, String columnName)
     {
-        if (materialConfig.isStrictCodeConstraints())
-        {
-            return getCodeValue(row, columnName);
-        } else
-        {
-            return getValue(row, columnName);
-        }
+        return getValue(row, columnName);
     }
 
     public String getGeneSymbol(String[] row)

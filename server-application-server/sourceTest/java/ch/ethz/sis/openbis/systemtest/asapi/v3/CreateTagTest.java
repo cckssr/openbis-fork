@@ -25,7 +25,6 @@ import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifier;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.id.MaterialPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.Tag;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.create.TagCreation;
@@ -273,20 +272,6 @@ public class CreateTagTest extends AbstractTest
             }, dataSetId);
     }
 
-    @Test
-    public void testCreateWithMaterials()
-    {
-        MaterialPermId materialId = new MaterialPermId("AD3", "VIRUS");
-
-        TagCreation creation = new TagCreation();
-        creation.setCode("TEST_TAG");
-        creation.setMaterialIds(Arrays.asList(materialId));
-
-        Tag tag = createTag(TEST_USER, PASSWORD, creation);
-
-        assertMaterialPermIds(tag.getMaterials(), materialId);
-        assertMaterialsExists(materialId);
-    }
 
     @Test
     public void testCreateWithMaterialsUnauthorized()
@@ -294,24 +279,6 @@ public class CreateTagTest extends AbstractTest
         // nothing to test as the materials can be accessed by every user
     }
 
-    @Test
-    public void testCreateWithMaterialsNonexistent()
-    {
-        final MaterialPermId materialId = new MaterialPermId("IDONTEXIST", "VIRUS");
-
-        assertObjectNotFoundException(new IDelegatedAction()
-            {
-                @Override
-                public void execute()
-                {
-                    TagCreation creation = new TagCreation();
-                    creation.setCode("TEST_TAG");
-                    creation.setMaterialIds(Arrays.asList(materialId));
-
-                    createTag(TEST_USER, PASSWORD, creation);
-                }
-            }, materialId);
-    }
 
     @Test(dataProviderClass = ProjectAuthorizationUser.class, dataProvider = ProjectAuthorizationUser.PROVIDER_WITH_ETL)
     public void testCreateWithProjectAuthorization(ProjectAuthorizationUser user)
@@ -365,7 +332,6 @@ public class CreateTagTest extends AbstractTest
         fetchOptions.withExperiments();
         fetchOptions.withSamples();
         fetchOptions.withDataSets();
-        fetchOptions.withMaterials();
 
         Map<ITagId, Tag> map = v3api.getTags(sessionToken, ids, fetchOptions);
 

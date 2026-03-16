@@ -15,8 +15,6 @@
  */
 package ch.systemsx.cisd.openbis.generic.server.business.bo.fetchoptions.common;
 
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialIdentifier;
-
 /**
  * Database record for property
  * 
@@ -32,10 +30,6 @@ public class PropertyRecord
 
     public String value;
 
-    public String material;
-
-    public String material_type;
-
     public String voca_term;
 
     public String getValue()
@@ -43,10 +37,6 @@ public class PropertyRecord
         if (value != null)
         {
             return value;
-        }
-        if (material != null)
-        {
-            return MaterialIdentifier.print(material, material_type);
         }
         return voca_term;
     }

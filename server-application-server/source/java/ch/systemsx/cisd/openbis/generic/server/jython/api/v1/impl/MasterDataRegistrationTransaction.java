@@ -34,8 +34,6 @@ import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IExternalDataManage
 import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IFileFormatType;
 import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IFileFormatTypeImmutable;
 import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IMasterDataRegistrationTransaction;
-import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IMaterialType;
-import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IMaterialTypeImmutable;
 import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IPropertyAssignment;
 import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IPropertyAssignmentImmutable;
 import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IPropertyType;
@@ -65,8 +63,6 @@ public class MasterDataRegistrationTransaction implements IMasterDataRegistratio
     private final List<DataSetType> createdDataSetTypes = new ArrayList<DataSetType>();
 
     private final List<Script> createdScripts = new ArrayList<Script>();
-
-    private final List<MaterialType> createdMaterialTypes = new ArrayList<MaterialType>();
 
     private final List<PropertyType> createdPropertyTypes = new ArrayList<PropertyType>();
 
@@ -223,37 +219,6 @@ public class MasterDataRegistrationTransaction implements IMasterDataRegistratio
     public List<IScriptImmutable> listScripts()
     {
         return commonServer.listScripts();
-    }
-
-    @Override
-    public IMaterialType createNewMaterialType(String code)
-    {
-        MaterialType materialType = new MaterialType(code);
-        createdMaterialTypes.add(materialType);
-        return materialType;
-    }
-
-    @Override
-    public IMaterialTypeImmutable getMaterialType(String code)
-    {
-        return findTypeForCode(commonServer.listMaterialTypes(), code);
-    }
-
-    @Override
-    public IMaterialType getOrCreateNewMaterialType(String code)
-    {
-        IMaterialTypeImmutable materialType = getMaterialType(code);
-        if (materialType != null)
-        {
-            return new MaterialTypeWrapper((MaterialTypeImmutable) materialType);
-        }
-        return createNewMaterialType(code);
-    }
-
-    @Override
-    public List<IMaterialTypeImmutable> listMaterialTypes()
-    {
-        return commonServer.listMaterialTypes();
     }
 
     @Override
@@ -503,7 +468,6 @@ public class MasterDataRegistrationTransaction implements IMasterDataRegistratio
         registerExperimentTypes(createdExperimentTypes);
         registerSampleTypes(createdSampleTypes);
         registerDataSetTypes(createdDataSetTypes);
-        registerMaterialTypes(createdMaterialTypes);
         registerPropertyTypes(createdPropertyTypes);
         registerPropertyAssignments(createdAssignments);
         registerExternalDataManagementSystems(createdExternalDataManagementSystems);
@@ -575,20 +539,6 @@ public class MasterDataRegistrationTransaction implements IMasterDataRegistratio
             } catch (Exception ex)
             {
                 transactionErrors.addTypeRegistrationError(ex, script);
-            }
-        }
-    }
-
-    private void registerMaterialTypes(List<MaterialType> materialTypes)
-    {
-        for (MaterialType materialType : materialTypes)
-        {
-            try
-            {
-                commonServer.registerMaterialType(materialType);
-            } catch (Exception ex)
-            {
-                transactionErrors.addTypeRegistrationError(ex, materialType);
             }
         }
     }

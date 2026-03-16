@@ -89,8 +89,6 @@ public final class DAOFactory extends AuthorizationDAOFactory implements IDAOFac
 
     private final LocatorTypeDAO locatorTypeDAO;
 
-    private final IMaterialDAO materialDAO;
-
     private final ICodeSequenceDAO codeSequenceDAO;
 
     private final IDataStoreDAO dataStoreDAO;
@@ -144,7 +142,6 @@ public final class DAOFactory extends AuthorizationDAOFactory implements IDAOFac
         dataSetTypeDAO = new DataSetTypeDAO(sessionFactory, historyCreator);
         fileFormatTypeDAO = new FileFormatTypeDAO(sessionFactory, historyCreator);
         locatorTypeDAO = new LocatorTypeDAO(sessionFactory, historyCreator);
-        materialDAO = new MaterialDAO(getPersistencyResources(), historyCreator);
         codeSequenceDAO = new CodeSequenceDAO(sessionFactory);
         dataStoreDAO = new DataStoreDAO(sessionFactory);
         permIdDAO = new PermIdDAO(sessionFactory);
@@ -256,12 +253,6 @@ public final class DAOFactory extends AuthorizationDAOFactory implements IDAOFac
     public ILocatorTypeDAO getLocatorTypeDAO()
     {
         return locatorTypeDAO;
-    }
-
-    @Override
-    public IMaterialDAO getMaterialDAO()
-    {
-        return materialDAO;
     }
 
     @Override

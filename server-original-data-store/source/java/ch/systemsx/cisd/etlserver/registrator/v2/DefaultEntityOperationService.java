@@ -26,7 +26,6 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.dto.AtomicEntityOperationDeta
 import ch.systemsx.cisd.openbis.dss.generic.shared.dto.DataSetInformation;
 import ch.systemsx.cisd.openbis.dss.generic.shared.dto.DataSetRegistrationInformation;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewExperiment;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewMaterial;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewMetaproject;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewProject;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewSample;
@@ -34,7 +33,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewSpace;
 import ch.systemsx.cisd.openbis.generic.shared.dto.AtomicEntityOperationResult;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataSetBatchUpdatesDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentUpdatesDTO;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialUpdateDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.MetaprojectUpdatesDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.NewExternalData;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ProjectUpdatesDTO;
@@ -89,8 +87,6 @@ public class DefaultEntityOperationService<T extends DataSetInformation> impleme
         List<ExperimentUpdatesDTO> experimentUpdates = details.getExperimentUpdates();
         List<SampleUpdatesDTO> sampleUpdates = details.getSampleUpdates();
         List<NewSample> sampleRegistrations = details.getSampleRegistrations();
-        Map<String, List<NewMaterial>> materialRegistrations = details.getMaterialRegistrations();
-        List<MaterialUpdateDTO> materialUpdates = details.getMaterialUpdates();
         List<DataSetBatchUpdatesDTO> dataSetUpdates = details.getDataSetUpdates();
         List<NewMetaproject> metaprojectRegistrations = details.getMetaprojectRegistrations();
         List<MetaprojectUpdatesDTO> metaprojectUpdates = details.getMetaprojectUpdates();
@@ -112,7 +108,7 @@ public class DefaultEntityOperationService<T extends DataSetInformation> impleme
         return new ch.systemsx.cisd.openbis.generic.shared.dto.AtomicEntityOperationDetails(
                 details.getRegistrationId(), details.tryUserIdOrNull(), spaceRegistrations,
                 projectRegistrations, projectUpdates, experimentRegistrations, experimentUpdates,
-                sampleUpdates, sampleRegistrations, materialRegistrations, materialUpdates,
+                sampleUpdates, sampleRegistrations,
                 dataSetRegistrations, dataSetUpdates, metaprojectRegistrations, metaprojectUpdates,
                 vocabularyUpdates, spaceRoleAssignments, spaceRoleRevocations);
     }

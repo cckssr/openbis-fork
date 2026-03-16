@@ -31,7 +31,6 @@ import ch.systemsx.cisd.openbis.generic.server.authorization.predicate.ProjectUp
 import ch.systemsx.cisd.openbis.generic.server.authorization.predicate.SampleUpdatesCollectionPredicate;
 import ch.systemsx.cisd.openbis.generic.server.authorization.predicate.SpaceIdentifierPredicate;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewExperiment;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewMaterial;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewProject;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewSample;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewSpace;
@@ -39,7 +38,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.RoleWithHierarchy;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataSetBatchUpdatesDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentUpdatesDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.IAuthSession;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialUpdateDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.NewExternalData;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ProjectUpdatesDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SampleUpdatesDTO;
@@ -57,14 +55,6 @@ public interface IETLEntityOperationChecker
     @Capability("CREATE_SPACES_VIA_DSS")
     public void assertSpaceCreationAllowed(IAuthSession session, List<NewSpace> newSpaces);
 
-    @RolesAllowed(RoleWithHierarchy.INSTANCE_ETL_SERVER)
-    @Capability("CREATE_MATERIALS_VIA_DSS")
-    public void assertMaterialCreationAllowed(IAuthSession session,
-            Map<String, List<NewMaterial>> materials);
-
-    @RolesAllowed(RoleWithHierarchy.INSTANCE_ETL_SERVER)
-    @Capability("UPDATE_MATERIALS_VIA_DSS")
-    public void assertMaterialUpdateAllowed(IAuthSession session, List<MaterialUpdateDTO> materials);
 
     @RolesAllowed({ RoleWithHierarchy.SPACE_POWER_USER, RoleWithHierarchy.SPACE_ETL_SERVER })
     @Capability("CREATE_PROJECTS_VIA_DSS")

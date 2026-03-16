@@ -343,7 +343,7 @@ public class OpenbisServiceFacadeTest extends SystemTestCase
 
         Sample sample = samples.get(0);
         Map<String, String> properties = sample.getProperties();
-        assertEquals(5, properties.size());
+        assertEquals(3, properties.size());
     }
 
     @Test

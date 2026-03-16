@@ -68,7 +68,6 @@ class Types extends React.PureComponent {
         [objectType.OBJECT_TYPE_GROUP]: messages.get(messages.OBJECT_TYPE_GROUPS),
         [objectType.COLLECTION_TYPE]: messages.get(messages.COLLECTION_TYPES),
         [objectType.DATA_SET_TYPE]: messages.get(messages.DATA_SET_TYPES),
-        [objectType.MATERIAL_TYPE]: messages.get(messages.MATERIAL_TYPES),
         [objectType.VOCABULARY_TYPE]: messages.get(messages.VOCABULARY_TYPES),
         [objectType.PROPERTY_TYPE]: messages.get(messages.PROPERTY_TYPES)
       }
@@ -79,13 +78,11 @@ class Types extends React.PureComponent {
         [objectType.NEW_OBJECT_TYPE_GROUP]: messages.get(messages.NEW_OBJECT_TYPE_GROUP) + ' ',
         [objectType.NEW_COLLECTION_TYPE]: messages.get(messages.NEW_COLLECTION_TYPE) + ' ',
         [objectType.NEW_DATA_SET_TYPE]: messages.get(messages.NEW_DATA_SET_TYPE) + ' ',
-        [objectType.NEW_MATERIAL_TYPE]: messages.get(messages.NEW_MATERIAL_TYPE) + ' ',
         [objectType.NEW_VOCABULARY_TYPE]: messages.get(messages.NEW_VOCABULARY_TYPE) + ' ',
         [objectType.OBJECT_TYPE]: messages.get(messages.OBJECT_TYPE) + ': ',
         [objectType.OBJECT_TYPE_GROUP]: messages.get(messages.OBJECT_TYPE_GROUP) + ': ',
         [objectType.COLLECTION_TYPE]: messages.get(messages.COLLECTION_TYPE) + ': ',
         [objectType.DATA_SET_TYPE]: messages.get(messages.DATA_SET_TYPE) + ': ',
-        [objectType.MATERIAL_TYPE]: messages.get(messages.MATERIAL_TYPE) + ': ',
         [objectType.VOCABULARY_TYPE]: messages.get(messages.VOCABULARY_TYPE) + ': ',
         [objectType.SEARCH]: messages.get(messages.SEARCH) + ': '
       }

@@ -35,7 +35,6 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.EventPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EventPE.EntityType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EventType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentPE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.MetaprojectAssignmentPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.MetaprojectPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePE;
@@ -81,7 +80,6 @@ public class DeleteTagExecutor extends AbstractDeleteEntityExecutor<Void, ITagId
         Collection<ExperimentPE> experiments = new HashSet<ExperimentPE>();
         Collection<SamplePE> samples = new HashSet<SamplePE>();
         Collection<DataPE> dataSets = new HashSet<DataPE>();
-        Collection<MaterialPE> materials = new HashSet<MaterialPE>();
 
         for (MetaprojectPE tag : tags)
         {
@@ -100,9 +98,6 @@ public class DeleteTagExecutor extends AbstractDeleteEntityExecutor<Void, ITagId
                     } else if (assignment.getDataSet() != null)
                     {
                         dataSets.add(assignment.getDataSet());
-                    } else if (assignment.getMaterial() != null)
-                    {
-                        materials.add(assignment.getMaterial());
                     }
                 }
             }
@@ -123,7 +118,6 @@ public class DeleteTagExecutor extends AbstractDeleteEntityExecutor<Void, ITagId
         reindexObjectExecutor.reindex(context, ExperimentPE.class, experiments);
         reindexObjectExecutor.reindex(context, SamplePE.class, samples);
         reindexObjectExecutor.reindex(context, DataPE.class, dataSets);
-        reindexObjectExecutor.reindex(context, MaterialPE.class, materials);
 
         return null;
     }

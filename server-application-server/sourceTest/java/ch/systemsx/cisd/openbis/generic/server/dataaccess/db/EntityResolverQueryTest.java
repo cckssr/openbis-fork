@@ -84,12 +84,6 @@ public class EntityResolverQueryTest extends AbstractDAOTest
         assertEquals(Long.valueOf(1019), query.tryResolveSampleIdByPermId("200811050929035-1014"));
     }
 
-    @Test
-    public void testResolveMaterialByCode()
-    {
-        assertEquals(Long.valueOf(36),
-                query.tryResolveMaterialIdByCode("GENE", "MYGENE1"));
-    }
 
     @Test
     public void testResolveDatasetByCode()

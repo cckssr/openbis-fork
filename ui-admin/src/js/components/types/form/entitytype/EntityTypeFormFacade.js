@@ -17,7 +17,6 @@ export default class EntityTypeFormFacade {
     fo.withPropertyAssignments().withRegistrator()
     fo.withPropertyAssignments().withSemanticAnnotations()
     fo.withPropertyAssignments().withPropertyType().withRegistrator()
-    fo.withPropertyAssignments().withPropertyType().withMaterialType()
     fo.withPropertyAssignments().withPropertyType().withSampleType()
     fo.withPropertyAssignments().withPropertyType().withVocabulary()
     fo.withPropertyAssignments().withPropertyType().withSemanticAnnotations()
@@ -108,7 +107,6 @@ export default class EntityTypeFormFacade {
   async loadPropertyTypes() {
     const criteria = new openbis.PropertyTypeSearchCriteria()
     const fo = new openbis.PropertyTypeFetchOptions()
-    fo.withMaterialType()
     fo.withVocabulary()
     fo.withRegistrator()
     return openbis.searchPropertyTypes(criteria, fo).then(results => {
@@ -176,33 +174,12 @@ export default class EntityTypeFormFacade {
       .then(result => result.objects)
   }
 
-  async loadMaterialTypes() {
-    let criteria = new openbis.MaterialTypeSearchCriteria()
-    let fo = new openbis.MaterialTypeFetchOptions()
-    return openbis
-      .searchMaterialTypes(criteria, fo)
-      .then(result => result.objects)
-  }
-
   async loadSampleTypes() {
     let criteria = new openbis.SampleTypeSearchCriteria()
     let fo = new openbis.SampleTypeFetchOptions()
     return openbis
       .searchSampleTypes(criteria, fo)
       .then(result => result.objects)
-  }
-
-  async loadMaterials(materialType) {
-    const criteria = new openbis.MaterialSearchCriteria()
-    if (materialType) {
-      criteria.withType().withCode().thatEquals(materialType)
-    }
-
-    const fo = new openbis.MaterialFetchOptions()
-    fo.sortBy().code().asc()
-    fo.from(0).count(10)
-
-    return openbis.searchMaterials(criteria, fo).then(result => result.objects)
   }
 
   async loadSamples(sampleType) {
@@ -236,7 +213,6 @@ export default class EntityTypeFormFacade {
     strategies.extendObjectTypeStrategy(new ObjectTypeStrategy())
     strategies.extendCollectionTypeStrategy(new CollectionTypeStrategy())
     strategies.extendDataSetTypeStrategy(new DataSetTypeStrategy())
-    strategies.extendMaterialTypeStrategy(new MaterialTypeStrategy())
     return strategies.getStrategy(type)
   }
 }
@@ -292,23 +268,5 @@ class DataSetTypeStrategy {
   }
   getTypes(ids, fo) {
     return openbis.getDataSetTypes(ids, fo)
-  }
-}
-
-class MaterialTypeStrategy {
-  createTypeFetchOptions() {
-    return new openbis.MaterialTypeFetchOptions()
-  }
-  createEntityFetchOptions() {
-    return new openbis.MaterialFetchOptions()
-  }
-  createEntitySearchCriteria() {
-    return new openbis.MaterialSearchCriteria()
-  }
-  createEntitySearchOperation(criteria, fo) {
-    return new openbis.SearchMaterialsOperation(criteria, fo)
-  }
-  getTypes(ids, fo) {
-    return openbis.getMaterialTypes(ids, fo)
   }
 }

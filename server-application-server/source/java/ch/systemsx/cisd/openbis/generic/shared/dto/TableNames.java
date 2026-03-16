@@ -105,18 +105,6 @@ public final class TableNames
 
     public static final String LOCATOR_TYPES_TABLE = "locator_types";
 
-    public static final String MATERIAL_BATCHES_TABLE = "material_batches";
-
-    public static final String MATERIAL_PROPERTIES_TABLE = "material_properties";
-
-    public static final String MATERIAL_PROPERTIES_HISTORY_TABLE = "material_properties_history";
-
-    public static final String MATERIAL_TYPE_PROPERTY_TYPE_TABLE = "material_type_property_types";
-
-    public static final String MATERIAL_TYPES_TABLE = "material_types";
-
-    public static final String MATERIALS_TABLE = "materials";
-
     public static final String PERSONS_TABLE = "persons";
 
     public static final String PROJECTS_TABLE = "projects";
@@ -126,8 +114,6 @@ public final class TableNames
     public static final String ROLE_ASSIGNMENTS_TABLE = "role_assignments";
 
     public static final String SAMPLE_INPUTS_TABLE = "sample_inputs";
-
-    public static final String SAMPLE_MATERIAL_BATCHES_TABLE = "sample_material_batches";
 
     public static final String SAMPLE_PROPERTIES_TABLE = "sample_properties";
 

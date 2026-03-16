@@ -950,7 +950,7 @@ final class DataDAO extends AbstractGenericEntityWithPropertiesDAO<DataPE> imple
     {
         return " (" +
                 " select d.code as data_set_code, pt.code as property_code, "
-                + "coalesce(value, vocabulary_term, material) as value, p.user_id, "
+                + "coalesce(value, vocabulary_term) as value, p.user_id, "
                 + "h.valid_from_timestamp, h.valid_until_timestamp "
                 + " from " + TableNames.DATA_ALL_TABLE + " d, " + TableNames.DATA_SET_PROPERTIES_HISTORY_TABLE + " h, "
                 + TableNames.DATA_SET_TYPE_PROPERTY_TYPE_TABLE + " dspt, "
@@ -962,9 +962,7 @@ final class DataDAO extends AbstractGenericEntityWithPropertiesDAO<DataPE> imple
                 " (" +
                 " select d.code as data_set_code, pt.code as property_code, coalesce(value, " +
                 " (select (t.code || ' [' || v.code || ']') from " + TableNames.CONTROLLED_VOCABULARY_TERM_TABLE + " as t join "
-                + TableNames.CONTROLLED_VOCABULARY_TABLE + " as v on t.covo_id = v.id where t.id = pr.CVTE_ID)," +
-                " (select (m.code || ' [' || mt.code || ']') from " + TableNames.MATERIALS_TABLE + " as m join " + TableNames.MATERIAL_TYPES_TABLE
-                + " as mt on m.maty_id = mt.id where m.id = pr.MATE_PROP_ID)) as value," +
+                + TableNames.CONTROLLED_VOCABULARY_TABLE + " as v on t.covo_id = v.id where t.id = pr.CVTE_ID)) as value," +
                 " author.user_id, pr.modification_timestamp, null" +
                 " from " + TableNames.DATA_ALL_TABLE + " d, " + TableNames.DATA_SET_PROPERTIES_TABLE + " pr, "
                 + TableNames.DATA_SET_TYPE_PROPERTY_TYPE_TABLE + " dtpt, "

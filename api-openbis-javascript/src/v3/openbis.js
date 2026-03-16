@@ -1038,36 +1038,6 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 			});
 		}
 
-		this.createMaterials = function(creations) {
-			var thisFacade = this;
-			return thisFacade._private.ajaxRequestTransactional(transactionParticipantId, {
-				url : openbisUrl,
-				data : {
-					"method" : "createMaterials",
-					"params" : [ thisFacade._private.sessionToken, creations ]
-				},
-				returnType : {
-					name : "List",
-					arguments : [ "MaterialPermId" ]
-				}
-			});
-		}
-
-		this.createMaterialTypes = function(creations) {
-			var thisFacade = this;
-			return thisFacade._private.ajaxRequestTransactional(transactionParticipantId, {
-				url : openbisUrl,
-				data : {
-					"method" : "createMaterialTypes",
-					"params" : [ thisFacade._private.sessionToken, creations ]
-				},
-				returnType : {
-					name : "List",
-					arguments : [ "EntityTypePermId" ]
-				}
-			});
-		}
-
 		this.createPropertyTypes = function(creations) {
 			var thisFacade = this;
 			return thisFacade._private.ajaxRequestTransactional(transactionParticipantId, {
@@ -1331,28 +1301,6 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 				url : openbisUrl,
 				data : {
 					"method" : "updateDataSetTypes",
-					"params" : [ thisFacade._private.sessionToken, updates ]
-				}
-			});
-		}
-
-		this.updateMaterials = function(updates) {
-			var thisFacade = this;
-			return thisFacade._private.ajaxRequestTransactional(transactionParticipantId, {
-				url : openbisUrl,
-				data : {
-					"method" : "updateMaterials",
-					"params" : [ thisFacade._private.sessionToken, updates ]
-				}
-			});
-		}
-
-		this.updateMaterialTypes = function(updates) {
-			var thisFacade = this;
-			return thisFacade._private.ajaxRequestTransactional(transactionParticipantId, {
-				url : openbisUrl,
-				data : {
-					"method" : "updateMaterialTypes",
 					"params" : [ thisFacade._private.sessionToken, updates ]
 				}
 			});
@@ -1647,36 +1595,6 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 				returnType : {
 					name : "Map",
 					arguments : [ "IEntityTypeId", "DataSetType" ]
-				}
-			});
-		}
-
-		this.getMaterials = function(ids, fetchOptions) {
-			var thisFacade = this;
-			return thisFacade._private.ajaxRequestTransactional(transactionParticipantId, {
-				url : openbisUrl,
-				data : {
-					"method" : "getMaterials",
-					"params" : [ thisFacade._private.sessionToken, ids, fetchOptions ]
-				},
-				returnType : {
-					name : "Map",
-					arguments : [ "IMaterialId", "Material" ]
-				}
-			});
-		}
-
-		this.getMaterialTypes = function(ids, fetchOptions) {
-			var thisFacade = this;
-			return thisFacade._private.ajaxRequestTransactional(transactionParticipantId, {
-				url : openbisUrl,
-				data : {
-					"method" : "getMaterialTypes",
-					"params" : [ thisFacade._private.sessionToken, ids, fetchOptions ]
-				},
-				returnType : {
-					name : "Map",
-					arguments : [ "IEntityTypeId", "MaterialType" ]
 				}
 			});
 		}
@@ -1993,30 +1911,6 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 				url : openbisUrl,
 				data : {
 					"method" : "searchDataSetTypes",
-					"params" : [ thisFacade._private.sessionToken, criteria, fetchOptions ]
-				},
-				returnType : "SearchResult"
-			});
-		}
-
-		this.searchMaterials = function(criteria, fetchOptions) {
-			var thisFacade = this;
-			return thisFacade._private.ajaxRequestTransactional(transactionParticipantId, {
-				url : openbisUrl,
-				data : {
-					"method" : "searchMaterials",
-					"params" : [ thisFacade._private.sessionToken, criteria, fetchOptions ]
-				},
-				returnType : "SearchResult"
-			});
-		}
-
-		this.searchMaterialTypes = function(criteria, fetchOptions) {
-			var thisFacade = this;
-			return thisFacade._private.ajaxRequestTransactional(transactionParticipantId, {
-				url : openbisUrl,
-				data : {
-					"method" : "searchMaterialTypes",
 					"params" : [ thisFacade._private.sessionToken, criteria, fetchOptions ]
 				},
 				returnType : "SearchResult"
@@ -2369,17 +2263,6 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 			});
 		}
 
-		this.deleteMaterials = function(ids, deletionOptions) {
-			var thisFacade = this;
-			return thisFacade._private.ajaxRequestTransactional(transactionParticipantId, {
-				url : openbisUrl,
-				data : {
-					"method" : "deleteMaterials",
-					"params" : [ thisFacade._private.sessionToken, ids, deletionOptions ]
-				}
-			});
-		}
-
 		this.deleteExternalDataManagementSystems = function(ids, deletionOptions) {
 			var thisFacade = this;
 			return thisFacade._private.ajaxRequestTransactional(transactionParticipantId, {
@@ -2474,17 +2357,6 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 				url : openbisUrl,
 				data : {
 					"method" : "deleteDataSetTypes",
-					"params" : [ thisFacade._private.sessionToken, ids, deletionOptions ]
-				}
-			});
-		}
-
-		this.deleteMaterialTypes = function(ids, deletionOptions) {
-			var thisFacade = this;
-			return thisFacade._private.ajaxRequestTransactional(transactionParticipantId, {
-				url : openbisUrl,
-				data : {
-					"method" : "deleteMaterialTypes",
 					"params" : [ thisFacade._private.sessionToken, ids, deletionOptions ]
 				}
 			});

@@ -178,20 +178,6 @@ public class SampleLister implements ISampleLister
         return map;
     }
 
-    @Override
-    public Collection<TechId> listSamplesByMaterialProperties(Collection<TechId> materialIds)
-    {
-        ISampleListingQuery query = dao.getQuery();
-        LongOpenHashSet ids = new LongOpenHashSet(TechId.asLongs(materialIds));
-        DataIterator<Long> result = query.getSampleIdsByMaterialProperties(ids);
-        Set<TechId> sampleIds = new HashSet<TechId>();
-        for (Long sampleId : result)
-        {
-            sampleIds.add(new TechId(sampleId));
-        }
-        return sampleIds;
-    }
-
     public Set<Long> listChildrenIdsSet(Collection<Long> parentIds)
     {
         LongOpenHashSet ids = new LongOpenHashSet();

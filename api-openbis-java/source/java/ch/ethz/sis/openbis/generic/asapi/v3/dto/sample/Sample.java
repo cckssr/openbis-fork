@@ -24,7 +24,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IDataSetsHolde
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IEntityTypeHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IExperimentHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IIdentifierHolder;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IMaterialPropertiesHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IModificationDateHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IModifierHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IParentChildrenHolder;
@@ -38,7 +37,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.ITagsHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.history.HistoryEntry;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.Material;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.Person;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.Project;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
@@ -65,7 +63,7 @@ import java.util.Set;
 @JsonObject("as.dto.sample.Sample")
 public class Sample extends AbstractEntity<Sample>
         implements Serializable, IAttachmentsHolder, ICodeHolder, IDataSetsHolder,
-        IEntityTypeHolder, IExperimentHolder, IIdentifierHolder, IMaterialPropertiesHolder,
+        IEntityTypeHolder, IExperimentHolder, IIdentifierHolder,
         IModificationDateHolder, IModifierHolder, IParentChildrenHolder<Sample>, IPermIdHolder,
         IProjectHolder, IPropertiesHolder, IRegistrationDateHolder, IRegistratorHolder,
         ISpaceHolder, ITagsHolder
@@ -113,9 +111,6 @@ public class Sample extends AbstractEntity<Sample>
 
     @JsonProperty
     private Experiment experiment;
-
-    @JsonProperty
-    private Map<String, Material> materialProperties;
 
     @JsonProperty
     private Map<String, Sample[]> sampleProperties;
@@ -421,26 +416,6 @@ public class Sample extends AbstractEntity<Sample>
         this.experiment = experiment;
     }
 
-    // Method automatically generated with DtoGenerator
-    @JsonIgnore
-    @Override
-    public Map<String, Material> getMaterialProperties()
-    {
-        if (getFetchOptions() != null && getFetchOptions().hasMaterialProperties())
-        {
-            return materialProperties;
-        } else
-        {
-            throw new NotFetchedException("Material Properties have not been fetched.");
-        }
-    }
-
-    // Method automatically generated with DtoGenerator
-    @Override
-    public void setMaterialProperties(Map<String, Material> materialProperties)
-    {
-        this.materialProperties = materialProperties;
-    }
 
     // Method automatically generated with DtoGenerator
     @JsonIgnore
@@ -884,22 +859,6 @@ public class Sample extends AbstractEntity<Sample>
     public void setAttachments(List<Attachment> attachments)
     {
         this.attachments = attachments;
-    }
-
-    @Override
-    public Material getMaterialProperty(String propertyName)
-    {
-        return getMaterialProperties() != null ? getMaterialProperties().get(propertyName) : null;
-    }
-
-    @Override
-    public void setMaterialProperty(String propertyName, Material propertyValue)
-    {
-        if (materialProperties == null)
-        {
-            materialProperties = new HashMap<String, Material>();
-        }
-        materialProperties.put(propertyName, propertyValue);
     }
 
     @JsonIgnore

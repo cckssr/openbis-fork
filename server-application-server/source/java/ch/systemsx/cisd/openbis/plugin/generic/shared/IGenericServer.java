@@ -38,7 +38,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewAttachment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewDataSetsWithTypes;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewExperiment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewExperimentsWithType;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewMaterialsWithTypes;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewSample;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewSamplesWithTypes;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Sample;
@@ -52,7 +51,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.SampleUpdatesDTO;
 /**
  * Definition of the client-server interface.
  * <p>
- * Provides backend support for the "default" rendering of detail views (e.g. for samples, materials, datasets) of the openBIS presentation layer.
+ * Provides backend support for the "default" rendering of detail views (e.g. for samples and datasets) of the openBIS presentation layer.
  * Plugins have the choice to either use this "generic" functionality, or to implement/extend it on their own. {@link IGenericServer} can be thought
  * of as an optional convenience/utility service that goes together with the central entity-type unspecific <code>ICommonServer</code>.
  * 
@@ -110,16 +109,6 @@ public interface IGenericServer extends IServer
             final List<NewSamplesWithTypes> newSamplesWithType) throws UserFailureException;
 
     /**
-     * Registers or updates samples and materials of different types in batches.
-     */
-    @Transactional
-    @DatabaseCreateOrDeleteModification(value =
-    { ObjectKind.SAMPLE, ObjectKind.MATERIAL })
-    public void registerOrUpdateSamplesAndMaterials(final String sessionToken,
-            final List<NewSamplesWithTypes> newSamplesWithType,
-            List<NewMaterialsWithTypes> newMaterialsWithType) throws UserFailureException;
-
-    /**
      * Updates samples of different types in batches.
      */
     @Transactional
@@ -154,32 +143,6 @@ public interface IGenericServer extends IServer
             throws UserFailureException;
 
     /**
-     * Registers materials in batch.
-     */
-    @Transactional
-    @DatabaseCreateOrDeleteModification(value = ObjectKind.MATERIAL)
-    public void registerMaterials(String sessionToken, List<NewMaterialsWithTypes> newMaterials)
-            throws UserFailureException;
-
-    /**
-     * Updates materials in batch.
-     * 
-     * @return number of actually updated materials
-     */
-    @Transactional
-    @DatabaseCreateOrDeleteModification(value = ObjectKind.MATERIAL)
-    public int updateMaterials(String sessionToken, List<NewMaterialsWithTypes> newMaterials,
-            boolean ignoreUnregisteredMaterials) throws UserFailureException;
-
-    /**
-     * Registers new materials or if they exist updates in batch their properties (properties which are not mentioned stay unchanged).
-     */
-    @Transactional
-    @DatabaseCreateOrDeleteModification(value = ObjectKind.MATERIAL)
-    public void registerOrUpdateMaterials(String sessionToken, List<NewMaterialsWithTypes> materials)
-            throws UserFailureException;
-
-    /**
      * Returns attachment described by given sample identifier, filename and version.
      */
     @Transactional
@@ -211,14 +174,6 @@ public interface IGenericServer extends IServer
     @DatabaseUpdateModification(value =
     { ObjectKind.EXPERIMENT, ObjectKind.SAMPLE })
     public ExperimentUpdateResult updateExperiment(String sessionToken, ExperimentUpdatesDTO updates);
-
-    /**
-     * Saves changed material.
-     */
-    @Transactional
-    @DatabaseUpdateModification(value = ObjectKind.MATERIAL)
-    public Date updateMaterial(String sessionToken, TechId materialId,
-            List<IEntityProperty> properties, String[] metaprojects, Date version);
 
     /**
      * Saves changed sample.

@@ -33,10 +33,6 @@ public class PropertyRecord
 
     public String propertyValue;
 
-    public String materialPropertyValueCode;
-
-    public String materialPropertyValueTypeCode;
-
     public String vocabularyPropertyValue;
 
     public String vocabularyPropertyValueTypeCode;

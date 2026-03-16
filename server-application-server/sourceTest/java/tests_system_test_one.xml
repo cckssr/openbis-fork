@@ -1,15 +1,85 @@
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
 <suite name="Single Test Suite" verbose="2">
-    <test name="Sample Freezing Test" annotations="JDK">
-
-
-            <classes>
-                <class name="ch.ethz.sis.openbis.systemtest.asapi.v3.ExportTest"/>
-                <class name="ch.ethz.sis.openbis.systemtest.asapi.v3.SearchExternalDmsTest"/>
-                <class name="ch.ethz.sis.openbis.systemtest.asapi.v3.UpdateLinkDataSetTest"/>
-            </classes>
 
 
 
-    </test>
+
+            <test name="Export Tests">
+                <classes>
+                    <class name="ch.ethz.sis.openbis.systemtest.asapi.v3.ExportTest"/>
+                </classes>
+            </test>
+
+            <test name="Search Tests">
+                <classes>
+                    <class name="ch.ethz.sis.openbis.systemtest.asapi.v3.SearchDataSetTypeTest"/>
+                    <class name="ch.ethz.sis.openbis.systemtest.asapi.v3.SearchPropertyAssignmentTest"/>
+                    <class name="ch.ethz.sis.openbis.systemtest.asapi.v3.SearchPropertyTypeTest"/>
+                    <class name="ch.ethz.sis.openbis.systemtest.asapi.v3.SearchSampleTypeTest"/>
+                </classes>
+            </test>
+
+            <test name="Update Tests">
+                <classes>
+                    <class name="ch.ethz.sis.openbis.systemtest.asapi.v3.UpdatePropertyTypesTest"/>
+                    <class name="ch.ethz.sis.openbis.systemtest.asapi.v3.UpdateSampleTest"/>
+                </classes>
+            </test>
+
+            <test name="Global Search Tests">
+                <classes>
+                    <class name="ch.ethz.sis.openbis.systemtest.asapi.v3.GlobalSearchTest"/>
+                </classes>
+            </test>
+
+            <test name="Metadata Tests">
+                <classes>
+                    <class name="ch.systemsx.cisd.openbis.systemtest.ANewMetadataUITest"/>
+                </classes>
+            </test>
+
+            <test name="Properties History Tests">
+                <classes>
+                    <class name="ch.systemsx.cisd.openbis.systemtest.PropertiesHistoryTest"/>
+                </classes>
+            </test>
+
+            <test name="Common Server Tests">
+                <classes>
+                    <class name="ch.systemsx.cisd.openbis.systemtest.CommonServerTest"/>
+                </classes>
+            </test>
+
+            <test name="API v1 Tests">
+                <classes>
+                    <class name="ch.systemsx.cisd.openbis.systemtest.api.v1.GeneralInformationServiceTest"/>
+                    <class name="ch.systemsx.cisd.openbis.systemtest.api.v1.GeneralInformationChangingServiceTest"/>
+                </classes>
+            </test>
+
+            <test name="Remote API Tests">
+                <classes>
+                    <class name="ch.systemsx.cisd.openbis.remoteapitest.api.v1.GeneralInformationServiceHttpInvokerApiTest"/>
+                    <class name="ch.systemsx.cisd.openbis.remoteapitest.api.v1.GeneralInformationServiceJsonApiTest"/>
+                </classes>
+            </test>
+
+            <test name="DAO Tests">
+                <classes>
+                    <class name="ch.systemsx.cisd.openbis.generic.server.dataaccess.db.PropertyTypeDAOTest"/>
+                    <class name="ch.systemsx.cisd.openbis.generic.server.dataaccess.db.DeletionDAOTest"/>
+                    <class name="ch.systemsx.cisd.openbis.generic.server.dataaccess.db.SqlMigrationTest"/>
+                </classes>
+            </test>
+
+            <test name="Client and Utility Tests">
+                <classes>
+                    <class name="ch.systemsx.cisd.openbis.generic.client.jython.api.v1.impl.MasterDataRegistrationScriptRunnerTest"/>
+                    <class name="ch.systemsx.cisd.openbis.generic.client.web.server.resultset.SampleProviderTest"/>
+                    <class name="ch.systemsx.cisd.openbis.generic.client.web.server.resultset.TableForUpdateExporterTest"/>
+                </classes>
+            </test>
+
+
+
 </suite>

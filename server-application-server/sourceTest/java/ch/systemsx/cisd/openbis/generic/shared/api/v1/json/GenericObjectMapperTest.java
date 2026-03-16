@@ -22,7 +22,6 @@ import org.testng.annotations.Test;
 import com.fasterxml.jackson.databind.JsonMappingException;
 
 import ch.systemsx.cisd.openbis.generic.shared.api.common.json.AbstractGenericObjectMapperTest;
-import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.MaterialIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.id.sample.SamplePermIdId;
 
 /**
@@ -48,14 +47,6 @@ public class GenericObjectMapperTest extends AbstractGenericObjectMapperTest
     public void testObjectWithNameThatExistsOnlyInV3IsNotDeserialized() throws Exception
     {
         deserialize("objectWithNameThatExistsOnlyInV3.json");
-    }
-
-    @Test
-    public void testObjectWithLegacyClassAttributeThatIsSupportedOnlyInV1IsDeserialized() throws Exception
-    {
-        MaterialIdentifier materialIdentifier = deserialize("objectWithLegacyClassAttributeThatIsSupportedOnlyInV1.json");
-        Assert.assertEquals("ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.MaterialIdentifier", materialIdentifier.getClass().getName());
-        Assert.assertEquals("TEST_MATERIAL_IDENTIFIER", materialIdentifier.getMaterialCode());
     }
 
 }

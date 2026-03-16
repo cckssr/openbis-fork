@@ -44,18 +44,6 @@ public class WellContentQueryResult extends ExperimentReferenceQueryResult imple
 
     private String plate_perm_id;
 
-    // a pointer to a material which was being searched for inside a well
-
-    // NOTE: this information is filled just in few queries.
-    @Deprecated
-    public long material_content_id;
-
-    @Deprecated
-    public String material_content_code;
-
-    @Deprecated
-    public String material_content_type_code;
-
     @Override
     public String getPlatePermId()
     {

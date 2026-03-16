@@ -30,5 +30,4 @@ public interface IMetaprojectAssignments
 
     List<IDataSetImmutable> getDataSets();
 
-    List<IMaterialImmutable> getMaterials();
 }

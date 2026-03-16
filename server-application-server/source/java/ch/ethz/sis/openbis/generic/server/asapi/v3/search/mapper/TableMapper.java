@@ -26,20 +26,12 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.*;
 /**
  * Extension of enum {@link EntityKind} to contain extra information about tables related to the entities which can
  * have parent-child relationships.<p/>
- * This enum also contains table information for non-entity search criteria (not related to MATERIAL, EXPERIMENT, SAMPLE, DATA_SET).
+ * This enum also contains table information for non-entity search criteria (not related to EXPERIMENT, SAMPLE, DATA_SET).
  *
  * @author Viktor Kovtun
  */
 public enum TableMapper
 {
-
-    MATERIAL(MATERIALS_TABLE, MATERIALS_TABLE, MATERIAL_TYPE_COLUMN, PROPERTY_TYPES_TABLE, DATA_TYPE_COLUMN, MATERIAL_TYPES_TABLE,
-            MATERIAL_TYPE_PROPERTY_TYPE_TABLE, MATERIAL_TYPE_COLUMN, PROPERTY_TYPE_COLUMN, MATERIAL_PROPERTIES_TABLE,
-            MATERIAL_COLUMN, MATERIAL_TYPE_PROPERTY_TYPE_COLUMN, null, null, null, DATA_ALL_TABLE, MATERIAL_COLUMN,
-            MATERIAL_COLUMN, EntityKind.MATERIAL, true, false, false),
-
-    MATERIAL_TYPE(MATERIAL_TYPES_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
-            null, null, null, EntityKind.MATERIAL, false, false, false),
 
     EXPERIMENT(EXPERIMENTS_VIEW, EXPERIMENTS_VIEW, EXPERIMENT_TYPE_COLUMN, PROPERTY_TYPES_TABLE, DATA_TYPE_COLUMN, EXPERIMENT_TYPES_TABLE,
             EXPERIMENT_TYPE_PROPERTY_TYPE_TABLE, EXPERIMENT_TYPE_COLUMN, PROPERTY_TYPE_COLUMN,
@@ -95,9 +87,6 @@ public enum TableMapper
     DATA_SET_PROPERTY_ASSIGNMENT(DATA_SET_TYPE_PROPERTY_TYPE_TABLE, null, null, null, null, null, null, DATA_SET_TYPE_COLUMN, null,
             null, null, null, null, null, null, null, null, null, EntityKind.DATA_SET, true, false, false),
 
-    MATERIAL_PROPERTY_ASSIGNMENT(MATERIAL_TYPE_PROPERTY_TYPE_TABLE, null, null, null, null, null, null, MATERIAL_TYPE_COLUMN, null,
-            null, null, null, null, null, null, null, null, null, EntityKind.MATERIAL, true, false, false),
-
     CONTENT_COPIES(CONTENT_COPIES_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
             null, null, null, null, true, false, false),
 
@@ -147,9 +136,6 @@ public enum TableMapper
 
         initDataSetFieldToSQLTypeMap();
         initDataSetSQLTypeToFieldsMap();
-
-        initMaterialsFieldToSQLTypeMap();
-        initMaterialsSQLTypeToFieldsMap();
 
         initDataSetTypeFieldToSQLTypeMap();
         initDataSetTypeSQLTypeToFieldsMap();
@@ -491,20 +477,6 @@ public enum TableMapper
     private static void initDataSetSQLTypeToFieldsMap()
     {
         final Map<PSQLTypes, Set<String>> map = DATA_SET.sqlTypeToFieldsMap;
-        map.put(PSQLTypes.VARCHAR, new HashSet<>(Arrays.asList(CODE_COLUMN)));
-        map.put(PSQLTypes.TIMESTAMP_WITH_TZ, new HashSet<>(Arrays.asList(REGISTRATION_TIMESTAMP_COLUMN)));
-    }
-
-    private static void initMaterialsFieldToSQLTypeMap()
-    {
-        final Map<String, PSQLTypes> fields = MATERIAL.fieldToSQLTypeMap;
-        fields.put(CODE_COLUMN, PSQLTypes.VARCHAR);
-        fields.put(REGISTRATION_TIMESTAMP_COLUMN, PSQLTypes.TIMESTAMP_WITH_TZ);
-    }
-
-    private static void initMaterialsSQLTypeToFieldsMap()
-    {
-        final Map<PSQLTypes, Set<String>> map = MATERIAL.sqlTypeToFieldsMap;
         map.put(PSQLTypes.VARCHAR, new HashSet<>(Arrays.asList(CODE_COLUMN)));
         map.put(PSQLTypes.TIMESTAMP_WITH_TZ, new HashSet<>(Arrays.asList(REGISTRATION_TIMESTAMP_COLUMN)));
     }

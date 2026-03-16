@@ -35,9 +35,6 @@ public class ExperimentFeatureVectorSummary implements Serializable
 
     private TableModel tableModelOrNull;
 
-    // summaries without computed deviation
-    private List<MaterialFeatureVectorSummary> materialsSummary;
-
     // has the same length as feature vectors in all material summaries
     private List<CodeAndLabel> featureDescriptions;
 
@@ -48,11 +45,9 @@ public class ExperimentFeatureVectorSummary implements Serializable
     }
 
     public ExperimentFeatureVectorSummary(ExperimentReference experiment,
-            List<MaterialFeatureVectorSummary> materialsSummary,
             List<CodeAndLabel> featureDescriptions, TableModel tableModelOrNull)
     {
         this.experiment = experiment;
-        this.materialsSummary = materialsSummary;
         this.featureDescriptions = featureDescriptions;
         this.tableModelOrNull = tableModelOrNull;
     }
@@ -60,11 +55,6 @@ public class ExperimentFeatureVectorSummary implements Serializable
     public ExperimentReference getExperiment()
     {
         return experiment;
-    }
-
-    public List<MaterialFeatureVectorSummary> getMaterialsSummary()
-    {
-        return materialsSummary;
     }
 
     public List<CodeAndLabel> getFeatureDescriptions()

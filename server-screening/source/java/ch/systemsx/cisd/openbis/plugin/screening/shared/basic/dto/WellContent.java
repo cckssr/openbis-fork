@@ -20,11 +20,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataTypeCode;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityReference;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IEntityPropertiesHolder;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IEntityProperty;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Material;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ServiceVersionHolder;
 
 /**
@@ -43,11 +41,6 @@ public class WellContent extends WellImage implements Serializable, IEntityPrope
      * well properties also contain the referenced materials (if any) enriched with material properties.
      */
     private List<IEntityProperty> wellProperties = new ArrayList<IEntityProperty>(0);
-
-    /**
-     * this is a lazy-initialized sublist of ({@link #wellProperties}), containing only the well properties which refer to a material.
-     */
-    private List<IEntityProperty> wellPropertiesOfMaterialType;
 
     private EntityReference plate;
 
@@ -88,43 +81,6 @@ public class WellContent extends WellImage implements Serializable, IEntityPrope
     public EntityReference getPlate()
     {
         return plate;
-    }
-
-    public List<IEntityProperty> getMaterialTypeProperties()
-    {
-        if (wellPropertiesOfMaterialType == null)
-        {
-            wellPropertiesOfMaterialType = filterWellPropertiesOfMaterialType();
-        }
-        return Collections.unmodifiableList(wellPropertiesOfMaterialType);
-    }
-
-    private List<IEntityProperty> filterWellPropertiesOfMaterialType()
-    {
-        ArrayList<IEntityProperty> materialProps = new ArrayList<IEntityProperty>();
-        for (IEntityProperty property : getWellProperties())
-        {
-            DataTypeCode propertyDataTypeCode = property.getPropertyType().getDataType().getCode();
-            if (propertyDataTypeCode == DataTypeCode.MATERIAL)
-            {
-                materialProps.add(property);
-            }
-        }
-        return materialProps;
-    }
-
-    public List<Material> getMaterialContents()
-    {
-        ArrayList<Material> materials = new ArrayList<Material>();
-        for (IEntityProperty property : getMaterialTypeProperties())
-        {
-            Material materialOrNull = property.getMaterial();
-            if (materialOrNull != null)
-            {
-                materials.add(materialOrNull);
-            }
-        }
-        return materials;
     }
 
     public DatasetReference tryGetFeatureVectorDataset()

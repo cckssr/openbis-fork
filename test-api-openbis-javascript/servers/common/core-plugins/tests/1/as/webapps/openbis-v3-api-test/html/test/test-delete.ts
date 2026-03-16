@@ -357,11 +357,6 @@ exports.default = new Promise((resolve) => {
                     })
             })
 
-            QUnit.test("deleteMaterials()", function (assert) {
-                var c = new common(assert, dtos)
-                testDeleteWithoutTrash(c, c.createMaterial, c.findMaterial, c.deleteMaterial)
-            })
-
             QUnit.test("deletePlugins()", function (assert) {
                 var c = new common(assert, dtos)
                 testDeleteWithoutTrash(c, c.createPlugin, c.findPlugin, c.deletePlugin)
@@ -395,11 +390,6 @@ exports.default = new Promise((resolve) => {
             QUnit.test("deleteDataSetTypes()", function (assert) {
                 var c = new common(assert, dtos)
                 testDeleteWithoutTrash(c, c.createDataSetType, c.findDataSetType, c.deleteDataSetType)
-            })
-
-            QUnit.test("deleteMaterialTypes()", function (assert) {
-                var c = new common(assert, dtos)
-                testDeleteWithoutTrash(c, c.createMaterialType, c.findMaterialType, c.deleteMaterialType)
             })
 
             QUnit.test("deleteExternalDms()", function (assert) {

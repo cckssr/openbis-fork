@@ -7,7 +7,6 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue", "as/dto/common/update/
 		this.experimentIds = new IdListUpdateValue();
 		this.sampleIds = new IdListUpdateValue();
 		this.dataSetIds = new IdListUpdateValue();
-		this.materialIds = new IdListUpdateValue();
 	};
 	stjs.extend(TagUpdate, null, [], function(constructor, prototype) {
 		prototype['@type'] = 'as.dto.tag.update.TagUpdate';
@@ -17,7 +16,6 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue", "as/dto/common/update/
 		prototype.experimentIds = null;
 		prototype.sampleIds = null;
 		prototype.dataSetIds = null;
-		prototype.materialIds = null;
 
 		prototype.getObjectId = function() {
 			return this.getTagId();
@@ -43,9 +41,6 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue", "as/dto/common/update/
 		prototype.getDataSetIds = function() {
 			return this.dataSetIds;
 		};
-		prototype.getMaterialIds = function() {
-			return this.materialIds;
-		};
 	}, {
 		tagId : "ITagId",
 		description : {
@@ -63,10 +58,6 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue", "as/dto/common/update/
 		dataSetIds : {
 			name : "IdListUpdateValue",
 			arguments : [ "IDataSetId" ]
-		},
-		materialIds : {
-			name : "IdListUpdateValue",
-			arguments : [ "IMaterialId" ]
 		}
 	});
 	return TagUpdate;

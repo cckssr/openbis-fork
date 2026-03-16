@@ -109,9 +109,6 @@ public class MetaprojectTranslator
         } else if (assignment.getDataSet() != null)
         {
             return assignment.getDataSet().getId();
-        } else if (assignment.getMaterial() != null)
-        {
-            return assignment.getMaterial().getId();
         }
 
         return null;

@@ -5,7 +5,7 @@
 define([ "require", "stjs", "as/dto/common/fetchoptions/AbstractEntityFetchOptions", "as/dto/tag/fetchoptions/TagFetchOptions", "as/dto/dataset/fetchoptions/DataSetTypeFetchOptions",
 		"as/dto/person/fetchoptions/PersonFetchOptions", "as/dto/experiment/fetchoptions/ExperimentFetchOptions", "as/dto/sample/fetchoptions/SampleFetchOptions",
 		"as/dto/dataset/fetchoptions/PhysicalDataFetchOptions", "as/dto/dataset/fetchoptions/LinkedDataFetchOptions",
-		"as/dto/history/fetchoptions/HistoryEntryFetchOptions", "as/dto/material/fetchoptions/MaterialFetchOptions", "as/dto/sample/fetchoptions/SampleFetchOptions", "as/dto/datastore/fetchoptions/DataStoreFetchOptions",
+		"as/dto/history/fetchoptions/HistoryEntryFetchOptions", "as/dto/sample/fetchoptions/SampleFetchOptions", "as/dto/datastore/fetchoptions/DataStoreFetchOptions",
 		"as/dto/dataset/fetchoptions/DataSetSortOptions" ], function(require, stjs, AbstractEntityFetchOptions) {
 	var DataSetFetchOptions = function() {
 	    AbstractEntityFetchOptions.call(this);
@@ -36,7 +36,6 @@ define([ "require", "stjs", "as/dto/common/fetchoptions/AbstractEntityFetchOptio
 		prototype.registrator = null;
 		prototype.experiment = null;
 		prototype.sample = null;
-		prototype.materialProperties = null;
 		prototype.sampleProperties = null;
 		prototype.sort = null;
 		prototype.withParents = function() {
@@ -344,19 +343,6 @@ define([ "require", "stjs", "as/dto/common/fetchoptions/AbstractEntityFetchOptio
 		prototype.hasSample = function() {
 			return this.sample != null;
 		};
-		prototype.withMaterialProperties = function() {
-			if (this.materialProperties == null) {
-				var MaterialFetchOptions = require("as/dto/material/fetchoptions/MaterialFetchOptions");
-				this.materialProperties = new MaterialFetchOptions();
-			}
-			return this.materialProperties;
-		};
-		prototype.withMaterialPropertiesUsing = function(fetchOptions) {
-			return this.materialProperties = fetchOptions;
-		};
-		prototype.hasMaterialProperties = function() {
-			return this.materialProperties != null;
-		};
 		prototype.withSampleProperties = function() {
 			if (this.sampleProperties == null) {
 				var SampleFetchOptions = require("as/dto/sample/fetchoptions/SampleFetchOptions");
@@ -404,7 +390,6 @@ define([ "require", "stjs", "as/dto/common/fetchoptions/AbstractEntityFetchOptio
 		registrator : "PersonFetchOptions",
 		experiment : "ExperimentFetchOptions",
 		sample : "SampleFetchOptions",
-		materialProperties : "MaterialFetchOptions",
 		sampleProperties : "SampleFetchOptions",
 		sort : "DataSetSortOptions"
 	});

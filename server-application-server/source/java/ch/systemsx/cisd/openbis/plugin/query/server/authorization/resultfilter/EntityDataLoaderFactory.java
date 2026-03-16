@@ -43,8 +43,6 @@ class EntityDataLoaderFactory implements IEntityDataLoaderFactory
                 return new SampleDataLoader(factory.getSampleDAO());
             case DATA_SET:
                 return new DataSetDataLoader(factory.getDataDAO());
-            case MATERIAL:
-                throw new UnsupportedOperationException();
         }
         throw new IllegalArgumentException();
     }

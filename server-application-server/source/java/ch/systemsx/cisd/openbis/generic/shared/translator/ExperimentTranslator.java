@@ -29,12 +29,10 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Experiment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExperimentType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IEntityProperty;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Metaproject;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PropertyType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentTypePE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PropertyTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.managed_property.IManagedPropertyEvaluatorFactory;
 import ch.systemsx.cisd.openbis.generic.shared.util.HibernateUtils;
@@ -64,17 +62,16 @@ public final class ExperimentTranslator
     {
         if (experiment.isPropertiesInitialized())
         {
-            HashMap<MaterialTypePE, MaterialType> materialTypeCache = new HashMap<MaterialTypePE, MaterialType>();
             HashMap<PropertyTypePE, PropertyType> cache = new HashMap<PropertyTypePE, PropertyType>();
             if (rawManagedProperties)
             {
                 result.setProperties(EntityPropertyTranslator.translateRaw(
-                        experiment.getProperties(), materialTypeCache, cache,
+                        experiment.getProperties(), cache,
                         managedPropertyEvaluatorFactory, samplePropertyAccessValidator));
             } else
             {
                 result.setProperties(EntityPropertyTranslator.translate(experiment.getProperties(),
-                        materialTypeCache, cache,
+                        cache,
                         managedPropertyEvaluatorFactory, samplePropertyAccessValidator));
             }
         } else
@@ -136,7 +133,7 @@ public final class ExperimentTranslator
         result.setPermlink(PermlinkUtilities.createPermlinkURL(baseIndexURL, EntityKind.EXPERIMENT,
                 experiment.getPermId()));
         result.setExperimentType(translate(experiment.getExperimentType(),
-                new HashMap<MaterialTypePE, MaterialType>(), new HashMap<PropertyTypePE, PropertyType>()));
+                new HashMap<PropertyTypePE, PropertyType>()));
         result.setIdentifier(experiment.getIdentifier());
         result.setProject(ProjectTranslator.translate(experiment.getProject()));
         result.setRegistrationDate(experiment.getRegistrationDate());
@@ -188,7 +185,7 @@ public final class ExperimentTranslator
     }
 
     public final static ExperimentType translate(final ExperimentTypePE experimentType,
-            Map<MaterialTypePE, MaterialType> materialTypeCache, Map<PropertyTypePE, PropertyType> cacheOrNull)
+            Map<PropertyTypePE, PropertyType> cacheOrNull)
     {
         final ExperimentType result = new ExperimentType();
         result.setCode(experimentType.getCode());
@@ -197,7 +194,7 @@ public final class ExperimentTranslator
         result.setValidationScript(ScriptTranslator.translate(experimentType.getValidationScript()));
 
         result.setExperimentTypePropertyTypes(ExperimentTypePropertyTypeTranslator.translate(
-                experimentType.getExperimentTypePropertyTypes(), result, materialTypeCache, cacheOrNull));
+                experimentType.getExperimentTypePropertyTypes(), result, cacheOrNull));
 
         return result;
     }
@@ -216,7 +213,7 @@ public final class ExperimentTranslator
         final List<ExperimentType> result = new ArrayList<ExperimentType>(experimentTypes.size());
         for (final ExperimentTypePE experimentType : experimentTypes)
         {
-            result.add(translate(experimentType, new HashMap<MaterialTypePE, MaterialType>(), 
+            result.add(translate(experimentType,
                     new HashMap<PropertyTypePE, PropertyType>()));
         }
         return result;

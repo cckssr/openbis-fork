@@ -48,12 +48,8 @@ def aggregate(parameters, tableBuilder):
     for experimentType in experimentTypes:
         properties = searchService.listPropertiesDefinitionsForExperimentType(experimentType)
         buildResult(properties, "Experiment", experimentType)
-        
-    materialTypes = parameters.get("materialTypes") 
-    for materialType in materialTypes:
-        properties = searchService.listPropertiesDefinitionsForMaterialType(materialType)
-        buildResult(properties, "Material", materialType)
-        
+
+
         
         
         

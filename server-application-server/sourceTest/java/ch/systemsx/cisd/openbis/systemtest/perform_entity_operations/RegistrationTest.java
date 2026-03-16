@@ -43,7 +43,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityProperty;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Experiment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IEntityProperty;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ListSampleCriteria;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Material;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Metaproject;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewAttachment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewExperiment;
@@ -56,7 +55,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SampleType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.id.IObjectId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.id.dataset.DataSetCodeId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.id.experiment.ExperimentIdentifierId;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.id.material.MaterialCodeAndTypeCodeId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.id.metaproject.MetaprojectTechIdId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.id.sample.SampleIdentifierId;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataSetBatchUpdatesDTO;
@@ -242,10 +240,8 @@ public class RegistrationTest extends SystemTestCase
         ExperimentIdentifierId experimentIdentifier = new ExperimentIdentifierId("/CISD/NEMO/EXP1");
         SampleIdentifierId sampleIdentifier = new SampleIdentifierId("/CISD/CL1");
         DataSetCodeId dataSetIdentifier = new DataSetCodeId("20081105092159188-3");
-        MaterialCodeAndTypeCodeId materialIdentifier =
-                new MaterialCodeAndTypeCodeId("AD3", "VIRUS");
         metaProject.setEntities(Arrays.<IObjectId> asList(experimentIdentifier, sampleIdentifier,
-                dataSetIdentifier, materialIdentifier));
+                dataSetIdentifier));
         builder.metaProject(metaProject);
 
         etlService.performEntityOperations(systemSessionToken, builder.getDetails());
@@ -269,11 +265,6 @@ public class RegistrationTest extends SystemTestCase
                         metaproject.getId()));
         assertIdentifiers("[20081105092159188-3]", dataSets);
         assertContainsMetaproject(dataSets.get(0).getMetaprojects(), name);
-        List<Material> materials =
-                commonServer.listMetaprojectMaterials(sessionToken, new MetaprojectTechIdId(
-                        metaproject.getId()));
-        assertIdentifiers("[AD3 (VIRUS)]", materials);
-        assertContainsMetaproject(materials.get(0).getMetaprojects(), name);
     }
 
     private void assertContainsMetaproject(Collection<Metaproject> metaprojects,

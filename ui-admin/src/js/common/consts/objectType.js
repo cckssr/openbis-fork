@@ -2,7 +2,6 @@ const NEW_OBJECT_TYPE = 'newObjectType'
 const NEW_OBJECT_TYPE_GROUP = 'newObjectTypeGroup'
 const NEW_COLLECTION_TYPE = 'newCollectionType'
 const NEW_DATA_SET_TYPE = 'newDataSetType'
-const NEW_MATERIAL_TYPE = 'newMaterialType'
 const NEW_VOCABULARY_TYPE = 'newVocabularyType'
 const NEW_USER = 'newUser'
 const NEW_USER_GROUP = 'newUserGroup'
@@ -24,7 +23,6 @@ const COLLECTION = 'collection'
 const COLLECTION_TYPE = 'collectionType'
 const DATA_SET = 'dataSet'
 const DATA_SET_TYPE = 'dataSetType'
-const MATERIAL_TYPE = 'materialType'
 const VOCABULARY_TYPE = 'vocabularyType'
 const PROPERTY_TYPE = 'propertyType'
 const USER = 'user'
@@ -48,7 +46,6 @@ export default {
   NEW_OBJECT_TYPE_GROUP,
   NEW_COLLECTION_TYPE,
   NEW_DATA_SET_TYPE,
-  NEW_MATERIAL_TYPE,
   NEW_VOCABULARY_TYPE,
   NEW_USER,
   NEW_USER_GROUP,
@@ -69,7 +66,6 @@ export default {
   COLLECTION_TYPE,
   DATA_SET,
   DATA_SET_TYPE,
-  MATERIAL_TYPE,
   VOCABULARY_TYPE,
   PROPERTY_TYPE,
   USER,

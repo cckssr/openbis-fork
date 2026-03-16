@@ -387,18 +387,6 @@
 		<constructor-arg ref="identity-translator"/>
 	</bean>
 
-	<bean id="material-search-manager" class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.MaterialSearchManager" lazy-init="true">
-		<constructor-arg ref="postgres-search-dao"/>
-		<constructor-arg ref="information-provider-dao"/>
-		<constructor-arg ref="identity-translator"/>
-	</bean>
-
-	<bean id="material-type-search-manager" class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.MaterialTypeSearchManager" lazy-init="true">
-		<constructor-arg ref="postgres-search-dao"/>
-		<constructor-arg ref="information-provider-dao"/>
-		<constructor-arg ref="identity-translator"/>
-	</bean>
-
 	<bean id="entity-type-search-manager" class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.EntityTypeSearchManager" lazy-init="true">
 		<constructor-arg ref="postgres-search-dao"/>
 		<constructor-arg ref="information-provider-dao"/>
@@ -599,23 +587,6 @@
 		<property name="pluginsFolderName" value="${core-plugins-folder}" />
 		<property name="enabledTechnologies" value="${enabled-modules}" />
 		<property name="disabledMasterDataInitialization" value="${disabled-master-data-initialization}" />
-	</bean>
-
-	<!-- Material-specific configuration -->
-	<bean
-		class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
-		<property name="targetClass">
-			<value>ch.systemsx.cisd.openbis.generic.shared.util.MaterialConfigurationProvider
-			</value>
-		</property>
-		<property name="targetMethod">
-			<value>initialize</value>
-		</property>
-		<property name="arguments">
-			<list>
-				<value>${material-relax-code-constraints}</value>
-			</list>
-		</property>
 	</bean>
 
 	<bean id="trusted-origin-domain-provider"

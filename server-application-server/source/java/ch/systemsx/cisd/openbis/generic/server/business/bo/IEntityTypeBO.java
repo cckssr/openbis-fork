@@ -17,7 +17,6 @@ package ch.systemsx.cisd.openbis.generic.server.business.bo;
 
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExperimentType;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SampleType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
@@ -31,9 +30,6 @@ public interface IEntityTypeBO extends IBusinessObject
 {
     /** defines a new sample type, it can be saved later in the database */
     public void define(final SampleType entityType);
-
-    /** defines a new material type, it can be saved later in the database */
-    public void define(final MaterialType entityType);
 
     /** defines a new experiment type, it can be saved later in the database */
     public void define(final ExperimentType entityType);

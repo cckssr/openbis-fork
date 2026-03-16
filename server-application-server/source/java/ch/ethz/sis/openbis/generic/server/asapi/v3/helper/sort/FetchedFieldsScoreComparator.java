@@ -44,8 +44,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetTypeSearch
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.search.AbstractEntityTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentTypeSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.Material;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.MaterialTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleTypeSearchCriteria;
 
@@ -183,7 +181,6 @@ public class FetchedFieldsScoreComparator<OBJECT extends IEntityTypeHolder & IPr
         criteriaParsers.put(SampleTypeSearchCriteria.class, new AbstractEntityTypeSearchCriteriaParser());
         criteriaParsers.put(ExperimentTypeSearchCriteria.class, new AbstractEntityTypeSearchCriteriaParser());
         criteriaParsers.put(DataSetTypeSearchCriteria.class, new AbstractEntityTypeSearchCriteriaParser());
-        criteriaParsers.put(MaterialTypeSearchCriteria.class, new AbstractEntityTypeSearchCriteriaParser());
     }
 
     private static interface ISearchCriteriaParser<ISearchCriteria>
@@ -351,13 +348,7 @@ public class FetchedFieldsScoreComparator<OBJECT extends IEntityTypeHolder & IPr
         {
             return ((DataSet) o).getFetchOptions().hasType();
         }
-        if (o instanceof Material)
-        {
-            return ((Material) o).getFetchOptions().hasType();
-        } else
-        {
-            return false;
-        }
+        return false;
     }
 
     private boolean hasProperties(OBJECT o)
@@ -373,13 +364,7 @@ public class FetchedFieldsScoreComparator<OBJECT extends IEntityTypeHolder & IPr
         {
             return ((DataSet) o).getFetchOptions().hasProperties();
         }
-        if (o instanceof Material)
-        {
-            return ((Material) o).getFetchOptions().hasProperties();
-        } else
-        {
-            return false;
-        }
+        return false;
     }
 
     private Integer calculateScore(OBJECT o)

@@ -76,12 +76,6 @@ public interface IDAOFactory extends IAuthorizationDAOFactory
 
     /** Returns an implementation of {@link ILocatorTypeDAO}. */
     public ILocatorTypeDAO getLocatorTypeDAO();
-
-    /**
-     * Returns the {@link IMaterialDAO} implementation.
-     */
-    public IMaterialDAO getMaterialDAO();
-
     /**
      * Returns the {@link IScriptDAO} implementation.
      */

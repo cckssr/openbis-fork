@@ -32,7 +32,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.IEntityTypeId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentTypeFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.fetchoptions.MaterialTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.Person;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.Plugin;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyAssignment;
@@ -48,7 +47,6 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.TranslationContext
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.common.ObjectRelationRecord;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.dataset.IDataSetTypeTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.experiment.IExperimentTypeTranslator;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.material.IMaterialTypeTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.person.IPersonTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.plugin.IPluginTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.sample.ISampleTypeTranslator;
@@ -67,9 +65,6 @@ public class PropertyAssignmentTranslator implements IPropertyAssignmentTranslat
 
     @Autowired
     private IPropertyTypeTranslator propertyTypeTranslator;
-
-    @Autowired
-    private IMaterialTypeTranslator materialTypeTranslator;
 
     @Autowired
     private IExperimentTypeTranslator experimentTypeTranslator;
@@ -145,7 +140,6 @@ public class PropertyAssignmentTranslator implements IPropertyAssignmentTranslat
 
         if (assignmentFetchOptions.hasEntityType())
         {
-            setEntityTypes(context, assignments, assignmentRecords, assignmentFetchOptions, EntityKind.MATERIAL);
             setEntityTypes(context, assignments, assignmentRecords, assignmentFetchOptions, EntityKind.EXPERIMENT);
             setEntityTypes(context, assignments, assignmentRecords, assignmentFetchOptions, EntityKind.SAMPLE);
             setEntityTypes(context, assignments, assignmentRecords, assignmentFetchOptions, EntityKind.DATA_SET);
@@ -261,15 +255,7 @@ public class PropertyAssignmentTranslator implements IPropertyAssignmentTranslat
 
         Map<Long, ? extends IEntityType> entityTypeMap = null;
 
-        if (entityKind.equals(EntityKind.MATERIAL))
-        {
-            MaterialTypeFetchOptions materialTypeFetchOptions = new MaterialTypeFetchOptions();
-            if (assignmentFetchOptions.withEntityType().hasPropertyAssignments())
-            {
-                materialTypeFetchOptions.withPropertyAssignments();
-            }
-            entityTypeMap = materialTypeTranslator.translate(context, assignmentsByEntityTypeId.keySet(), materialTypeFetchOptions);
-        } else if (entityKind.equals(EntityKind.EXPERIMENT))
+        if (entityKind.equals(EntityKind.EXPERIMENT))
         {
             ExperimentTypeFetchOptions experimentTypeFetchOptions = new ExperimentTypeFetchOptions();
             if (assignmentFetchOptions.withEntityType().hasPropertyAssignments())

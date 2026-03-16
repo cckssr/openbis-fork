@@ -26,9 +26,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetTypeWithVocabularyTerms;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityTypePropertyType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Experiment;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ListMaterialCriteria;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Material;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Metaproject;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MetaprojectAssignments;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Project;
@@ -141,20 +138,6 @@ public interface IEncapsulatedBasicOpenBISService
      */
     @ManagedAuthentication
     public Vocabulary tryGetVocabulary(String code);
-
-    /**
-     * Lists materials using given criteria.
-     * 
-     * @return a sorted list of {@link Material}.
-     */
-    @ManagedAuthentication
-    public List<Material> listMaterials(ListMaterialCriteria criteria, boolean withProperties);
-
-    /**
-     * For given {@link MaterialIdentifier} returns the corresponding {@link Material}.
-     */
-    @ManagedAuthentication
-    public Material tryGetMaterial(MaterialIdentifier materialIdentifier);
 
     /**
      * List property definitions for the given entity type

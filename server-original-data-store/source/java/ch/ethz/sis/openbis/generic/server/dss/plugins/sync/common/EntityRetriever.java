@@ -37,9 +37,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.Material;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.fetchoptions.MaterialFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.MaterialSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.Project;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.fetchoptions.ProjectFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.search.ProjectSearchCriteria;
@@ -400,29 +397,6 @@ public class EntityRetriever implements IEntityRetriever
         }
     }
 
-    @Override
-    public List<Material> fetchMaterials()
-    {
-        long t0 = System.currentTimeMillis();
-        try
-        {
-            MaterialSearchCriteria criteria = new MaterialSearchCriteria();
-            
-            final MaterialFetchOptions fetchOptions = new MaterialFetchOptions();
-            fetchOptions.withRegistrator();
-            fetchOptions.withType();
-            fetchOptions.withProperties();
-            
-            SearchResult<Material> searchResult =
-                    v3Api.searchMaterials(sessionToken, criteria, fetchOptions);
-            
-            return searchResult.getObjects();
-        } finally
-        {
-            logTime(t0, "fetchMaterials");
-        }
-    }
-    
     private void logTime(long t0, String method)
     {
         long duration = System.currentTimeMillis() - t0;

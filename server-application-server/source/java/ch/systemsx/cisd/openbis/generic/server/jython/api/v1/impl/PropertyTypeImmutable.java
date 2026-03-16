@@ -16,11 +16,9 @@
 package ch.systemsx.cisd.openbis.generic.server.jython.api.v1.impl;
 
 import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.DataType;
-import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IMaterialTypeImmutable;
 import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IPropertyTypeImmutable;
 import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IVocabularyImmutable;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataTypeCode;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Vocabulary;
 
 /**
@@ -74,17 +72,6 @@ public class PropertyTypeImmutable implements IPropertyTypeImmutable
     {
         final String typeName = getPropertyType().getDataType().getCode().name();
         return DataType.valueOf(typeName);
-    }
-
-    @Override
-    public IMaterialTypeImmutable getMaterialType()
-    {
-        MaterialType materialType = getPropertyType().getMaterialType();
-        if (materialType != null)
-        {
-            return new MaterialTypeImmutable(materialType);
-        }
-        return null;
     }
 
     @Override

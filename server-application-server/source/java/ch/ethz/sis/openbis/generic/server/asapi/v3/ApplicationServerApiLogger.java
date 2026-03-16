@@ -92,20 +92,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchCriter
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.ImportResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.data.ImportData;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.options.ImportOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.Material;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.MaterialType;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.create.MaterialCreation;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.create.MaterialTypeCreation;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.delete.MaterialDeletionOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.delete.MaterialTypeDeletionOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.fetchoptions.MaterialFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.fetchoptions.MaterialTypeFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.id.IMaterialId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.id.MaterialPermId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.MaterialSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.MaterialTypeSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.update.MaterialTypeUpdate;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.update.MaterialUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.objectkindmodification.ObjectKindModification;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.objectkindmodification.fetchoptions.ObjectKindModificationFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.objectkindmodification.search.ObjectKindModificationSearchCriteria;
@@ -353,20 +339,6 @@ public class ApplicationServerApiLogger extends AbstractServerLogger implements
     }
 
     @Override
-    public List<MaterialPermId> createMaterials(String sessionToken, List<MaterialCreation> newMaterials)
-    {
-        logAccess(sessionToken, "create-materials", "NEW_MATERIALS(%s)", abbreviate(newMaterials));
-        return null;
-    }
-
-    @Override
-    public List<EntityTypePermId> createMaterialTypes(String sessionToken, List<MaterialTypeCreation> newMaterialTypes)
-    {
-        logAccess(sessionToken, "create-material-types", "NEW_MATERIAL_TYPES(%s)", abbreviate(newMaterialTypes));
-        return null;
-    }
-
-    @Override
     public List<ExperimentPermId> createExperiments(String sessionToken, List<ExperimentCreation> newExperiments)
     {
         logAccess(sessionToken, "create-experiments", "NEW_EXPERIMENTS(%s)", abbreviate(newExperiments));
@@ -557,18 +529,6 @@ public class ApplicationServerApiLogger extends AbstractServerLogger implements
     }
 
     @Override
-    public void updateMaterials(String sessionToken, List<MaterialUpdate> materialUpdates)
-    {
-        logAccess(sessionToken, "update-materials", "MATERIAL_UPDATES(%s)", abbreviate(materialUpdates));
-    }
-
-    @Override
-    public void updateMaterialTypes(String sessionToken, List<MaterialTypeUpdate> materialTypeUpdates)
-    {
-        logAccess(sessionToken, "update-material-types", "MATERIAL_TYPE_UPDATES(%s)", abbreviate(materialTypeUpdates));
-    }
-
-    @Override
     public void updatePropertyTypes(String sessionToken, List<PropertyTypeUpdate> propertyTypeUpdates)
     {
         logAccess(sessionToken, "update-property-types", "PROPERTY_TYPE_UPDATES(%s)", abbreviate(propertyTypeUpdates));
@@ -678,21 +638,6 @@ public class ApplicationServerApiLogger extends AbstractServerLogger implements
             SampleTypeFetchOptions fetchOptions)
     {
         logAccess(sessionToken, "get-sample-types", "SAMPLE_TYPE_IDS(%s) FETCH_OPTIONS(%s)", abbreviate(sampleTypeIds), fetchOptions);
-        return null;
-    }
-
-    @Override
-    public Map<IMaterialId, Material> getMaterials(String sessionToken, List<? extends IMaterialId> materialIds, MaterialFetchOptions fetchOptions)
-    {
-        logAccess(sessionToken, "get-materials", "MATERIAL_IDS(%s) FETCH_OPTIONS(%s)", abbreviate(materialIds), fetchOptions);
-        return null;
-    }
-
-    @Override
-    public Map<IEntityTypeId, MaterialType> getMaterialTypes(String sessionToken, List<? extends IEntityTypeId> materialTypeIds,
-            MaterialTypeFetchOptions fetchOptions)
-    {
-        logAccess(sessionToken, "get-material-types", "MATERIAL_TYPE_IDS(%s) FETCH_OPTIONS(%s)", abbreviate(materialTypeIds), fetchOptions);
         return null;
     }
 
@@ -892,21 +837,6 @@ public class ApplicationServerApiLogger extends AbstractServerLogger implements
     }
 
     @Override
-    public SearchResult<Material> searchMaterials(String sessionToken, MaterialSearchCriteria searchCriteria, MaterialFetchOptions fetchOptions)
-    {
-        logAccess(sessionToken, "search-materials", "SEARCH_CRITERIA:\n%s\nFETCH_OPTIONS:\n%s\n", searchCriteria, fetchOptions);
-        return null;
-    }
-
-    @Override
-    public SearchResult<MaterialType> searchMaterialTypes(String sessionToken, MaterialTypeSearchCriteria searchCriteria,
-            MaterialTypeFetchOptions fetchOptions)
-    {
-        logAccess(sessionToken, "search-material-types", "SEARCH_CRITERIA:\n%s\nFETCH_OPTIONS:\n%s\n", searchCriteria, fetchOptions);
-        return null;
-    }
-
-    @Override
     public SearchResult<Plugin> searchPlugins(String sessionToken, PluginSearchCriteria searchCriteria, PluginFetchOptions fetchOptions)
     {
         logAccess(sessionToken, "search-plugins", "SEARCH_CRITERIA:\n%s\nFETCH_OPTIONS:\n%s\n", searchCriteria, fetchOptions);
@@ -1031,12 +961,6 @@ public class ApplicationServerApiLogger extends AbstractServerLogger implements
     }
 
     @Override
-    public void deleteMaterials(String sessionToken, List<? extends IMaterialId> materialIds, MaterialDeletionOptions deletionOptions)
-    {
-        logAccess(sessionToken, "delete-materials", "MATERIAL_IDS(%s) DELETION_OPTIONS(%s)", abbreviate(materialIds), deletionOptions);
-    }
-
-    @Override
     public void deletePlugins(String sessionToken, List<? extends IPluginId> pluginIds, PluginDeletionOptions deletionOptions)
     {
         logAccess(sessionToken, "delete-plugins", "PLUGIN_IDS(%s) DELETION_OPTIONS(%s)", abbreviate(pluginIds), deletionOptions);
@@ -1079,13 +1003,6 @@ public class ApplicationServerApiLogger extends AbstractServerLogger implements
     public void deleteDataSetTypes(String sessionToken, List<? extends IEntityTypeId> dataSetTypeIds, DataSetTypeDeletionOptions deletionOptions)
     {
         logAccess(sessionToken, "delete-data-set-types", "DATA_SET_TYPE_IDS(%s) DELETION_OPTIONS(%s)", abbreviate(dataSetTypeIds),
-                deletionOptions);
-    }
-
-    @Override
-    public void deleteMaterialTypes(String sessionToken, List<? extends IEntityTypeId> materialTypeIds, MaterialTypeDeletionOptions deletionOptions)
-    {
-        logAccess(sessionToken, "delete-material-types", "MATERIAL_TYPE_IDS(%s) DELETION_OPTIONS(%s)", abbreviate(materialTypeIds),
                 deletionOptions);
     }
 
