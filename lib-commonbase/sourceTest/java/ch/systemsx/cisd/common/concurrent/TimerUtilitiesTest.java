@@ -130,6 +130,17 @@ public class TimerUtilitiesTest
                     } catch (InterruptedException ex)
                     {
                         // That is expected, signal success.
+
+                        try
+                        {
+                            // This is an attempt to avoid too quick thread exit after
+                            // TimerUtilities.tryInterruptTimerThread() and before TimerUtilities.tryJoinTimerThread()
+                            // in this test.
+                            Thread.sleep(50L);
+                        } catch (InterruptedException e)
+                        {
+                            throw new RuntimeException(e);
+                        }
                         sem.release();
                     }
                 }
