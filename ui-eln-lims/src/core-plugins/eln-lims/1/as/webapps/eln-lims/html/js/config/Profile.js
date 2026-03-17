@@ -458,6 +458,9 @@ $.extend(DefaultProfile.prototype, {
         }
 
 		this.getSpaceCodeConfigSpacePrefix = function(spaceCode) {
+		    if(spaceCode === null) {
+		        return "";
+		    }
 			var prefix = null;
 			for(var ssIdx = 0; ssIdx < this.settingsSpaces.length; ssIdx++) {
 				var settingsSpaceCode = this.settingsSpaces[ssIdx];

@@ -53,7 +53,7 @@ function StorageView(storageController, storageModel, gridViewRack, gridViewPosi
 
 	this.repaint = function($container, callbackFunction) {
 		var _this = this;
-		var elnSettingsSpace = this._storageModel.storagePositionsSpaceCode = profile.getSpaceCodeConfigSpacePrefix(_this._storageModel.spaceCode) + "ELN_SETTINGS";
+		var elnSettingsSpace = profile.getSpaceCodeConfigSpacePrefix(_this._storageModel.spaceCode) + "ELN_SETTINGS";
 		FormUtil.getDefaultStoragesDropDown(elnSettingsSpace, _this._storageModel.config.storageId, false, function($storagesDropdownComponent) {
 			_this._defaultStoragesDropDown = $storagesDropdownComponent;
 			_this._defaultStoragesDropDown.refresh = function() {
@@ -289,9 +289,9 @@ function StorageView(storageController, storageModel, gridViewRack, gridViewPosi
 			}, 100);
 		} else {
 			if(this._storageModel.config.positionSelector === "on") {
-				var propertyTypeCodes = [this._storageModel.storagePropertyGroup.nameProperty, this._storageModel.storagePropertyGroup.boxProperty];
-                var propertyValues = [this._storageModel.storageCode, this._storageModel.boxName];
-				mainController.serverFacade.searchWithSpaceAndProperties(this._storageModel.storagePositionsSpaceCode, propertyTypeCodes, propertyValues, function(samples) {
+				var propertyTypeCodes = [this._storageModel.storagePropertyGroup.boxProperty];
+				var propertyValues = [this._storageModel.boxName];
+				mainController.serverFacade.searchWithProperties(propertyTypeCodes, propertyValues, function(samples) {
 					//Labels
 					var labels = [];
 					samples.forEach(function(element, index, array) {
