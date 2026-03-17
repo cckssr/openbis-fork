@@ -106,6 +106,12 @@ function GridView(gridModel) {
 			for(var j = 0; j < this._gridModel.numColumns; j++) {
 			    var id = this._gridModel.gridId + "-" + rowLabel + "-" + (j+1);
 				var $newColumn = $("<td id = '" + id + "'>");
+				if(this._gridModel.gridType === GridType.RACK) {
+                    $newColumn.addClass("gridTypeRack");
+                }
+				if(this._gridModel.gridType === GridType.BOX) {
+                    $newColumn.addClass("gridTypeBox");
+                }
 
 				if(this._gridModel.isDragable) {
 					$newColumn.on({
@@ -201,7 +207,13 @@ function GridView(gridModel) {
                     }
                     var storageBoxId = this._gridModel.gridId + "-" + rowLabel + "-" + posY + "-storage-box-" + i;
 
-					var labelContainer = $("<div>", { class: "storageBox", id : storageBoxId }).text(labels[i].displayName);
+					var labelContainer = $("<div>", { class: "storageLabel", id : storageBoxId }).text(labels[i].displayName);
+                    if(this._gridModel.gridType === GridType.RACK) {
+                        labelContainer.addClass("gridTypeRackLabel");
+                    }
+                    if(this._gridModel.gridType === GridType.BOX) {
+                        labelContainer.addClass("gridTypeBoxLabel");
+                    }
 					if (sample) {
 						var tooltip = PrintUtil.getTable(sample, false, optSampleTitle, 'inspectorWhiteFont', 
 								'colorEncodedWellAnnotations-holder-' + sample.permId, null, null);

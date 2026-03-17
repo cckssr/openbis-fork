@@ -23,8 +23,8 @@ function StorageController(configOverride, spaceCode) {
 	
 	//Dependent widgets
 	
-	this._gridController = new GridController(this._storageModel.config.rackPositionMultiple === "on", this._storageModel.config.rackBoxDragAndDropEnabled === "on", this._storageModel.config.storageId);
-	this._gridControllerPosition = new GridController(this._storageModel.config.boxPositionMultiple === "on", this._storageModel.config.positionDragAndDropEnabled === "on", this._storageModel.config.storageId);
+	this._gridController = new GridController(this._storageModel.config.rackPositionMultiple === "on", this._storageModel.config.rackBoxDragAndDropEnabled === "on", GridType.BACK, this._storageModel.config.storageId);
+	this._gridControllerPosition = new GridController(this._storageModel.config.boxPositionMultiple === "on", this._storageModel.config.positionDragAndDropEnabled === "on", GridType.BOX, this._storageModel.config.storageId);
 	
 	this._storageView = new StorageView(this, this._storageModel, this._gridController.getView(), this._gridControllerPosition.getView());
 	

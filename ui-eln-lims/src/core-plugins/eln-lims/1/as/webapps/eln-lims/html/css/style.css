@@ -734,7 +734,12 @@ table.downloads {
  */
 .gridTable {
 	border : none !important;
+	/* This is the secret sauce: it allows cells to have their own borders */
+    border-collapse: separate;
+    /* Adjust this to control the gap between your "pillboxes" */
+    border-spacing: 10px;
 }
+
 .gridTable th {
 	border : none !important;
 }
@@ -750,6 +755,29 @@ table.downloads {
 	border-color: #CCCCCC;
 }
 
+.gridTypeRack {
+    background-color: #edf2f7;
+    border-color: #718096;
+    border-radius: 5px;
+}
+.gridTypeRackLabel {
+    border: 2px solid #9c4221;
+    border-radius: 5px;
+    background-color: #ed8936;
+    color: white;
+}
+.gridTypeBox {
+    background-color: #edf2f7;
+    border-color: #718096;
+    border-radius: 10px;
+}
+
+.gridTypeBoxLabel {
+    border: 2px solid #2b6cb0;
+    border-radius: 10px;
+    background-color: #4299e1;
+    color: white;
+}
 /*
  * Plate Widget
  */
@@ -782,18 +810,13 @@ table.downloads {
 	background-color: #CCCCCC;
 }
 
-.storageBox {
+.storageLabel {
 	float : left;
-	background-color : #CCCCCC;
 	margin : 4px;
-	padding : 2px 4px;
-	
-	-webkit-border-radius: 5px;
-	-moz-border-radius: 5px;
-	border-radius: 5px;
+	padding : 4px 4px;
 }
 
-.storageSelectedRack .storageBox {
+.storageSelectedRack .storageLabel {
 	background-color : #FFFFFF;
 }
 

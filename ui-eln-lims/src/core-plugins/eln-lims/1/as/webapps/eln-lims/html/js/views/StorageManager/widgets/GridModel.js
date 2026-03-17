@@ -14,7 +14,12 @@
  * limitations under the License.
  */
 
-function GridModel(isSelectMultiple, isDragable, gridId) {
+const GridType = Object.freeze({
+  RACK: "RACK",
+  BOX: "BOX"
+});
+
+function GridModel(isSelectMultiple, isDragable, gridType, gridId) {
 	this.isDisabled = false;
 	this.isSelectMultiple = false;
 	if(isSelectMultiple) {
@@ -24,7 +29,10 @@ function GridModel(isSelectMultiple, isDragable, gridId) {
 	if(isDragable) {
 		this.isDragable = true;
 	}
-	
+	this.gridType = GridType.RACK;
+	if(gridType) {
+		this.gridType = gridType;
+	}
 	this.numRows = null;
 	this.numColumns = null;
 	this.labels = null;
