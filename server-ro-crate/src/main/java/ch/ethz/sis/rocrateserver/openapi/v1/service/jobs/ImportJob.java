@@ -50,6 +50,7 @@ public final class ImportJob implements IAsyncJob
 
     private static final Logger LOG = Logger.getLogger(ImportJob.class);
 
+    private final UUID jobId;
 
     ImportParams importParams;
 
@@ -68,11 +69,19 @@ public final class ImportJob implements IAsyncJob
     public ImportJob(String username, ImportParams importParams, InputStream body, OpenBIS openBIS,
             boolean validateOnly)
     {
+        this.jobId =  UUID.randomUUID();
         this.username = username;
         this.importParams = importParams;
         this.body = body;
         this.openBIS = openBIS;
         this.validateOnly = validateOnly;
+    }
+
+
+    @Override
+    public UUID getJobId()
+    {
+        return this.jobId;
     }
 
     // keep reference to result

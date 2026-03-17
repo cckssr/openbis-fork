@@ -85,7 +85,7 @@ public class AsyncJobRegistry
 
     public String register(IAsyncJob job)
     {
-        UUID uuid = UUID.randomUUID();
+        UUID uuid = job.getJobId();
         Future<?> submit = executor.submit(job);
         JobKey jobKey = new JobKey(job.getUserId(), uuid.toString());
         jobs.put(jobKey, job);
