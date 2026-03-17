@@ -760,6 +760,9 @@ table.downloads {
     border-color: #718096;
     border-radius: 5px;
 }
+.gridTypeRackSelected {
+    background-color: #ed8936;
+}
 .gridTypeRackLabel {
     border: 2px solid #9c4221;
     border-radius: 5px;
@@ -771,7 +774,9 @@ table.downloads {
     border-color: #718096;
     border-radius: 10px;
 }
-
+.gridTypeBoxSelected {
+    background-color: #4299e1;
+}
 .gridTypeBoxLabel {
     border: 2px solid #2b6cb0;
     border-radius: 10px;
@@ -819,11 +824,6 @@ table.downloads {
 .storageSelectedRack .storageLabel {
 	background-color : #FFFFFF;
 }
-
-.rackSelected {
-	background-color : #DDDDDD;
-}
-
 .storageSelectedCorner {
 	background-color : #EEEEEE;
 }

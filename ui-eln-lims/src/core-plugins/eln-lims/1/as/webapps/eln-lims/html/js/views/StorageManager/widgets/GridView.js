@@ -307,7 +307,12 @@ function GridView(gridModel) {
 	this._selectPosition = function(posX, posY, label) { //To give user feedback so he knows what he have selected
 		if(this._gridTable && posX > 0 && posY > 0) {//API only available if the table is loaded and 0 positions are labels that can't be selected
 			if(!this._gridModel.isSelectMultiple) {
-				this._gridTable.find("td").removeClass("rackSelected");
+                    if(this._gridModel.gridType === GridType.RACK) {
+                        this._gridTable.find("td").removeClass("gridTypeRackSelected");
+                    }
+                    if(this._gridModel.gridType === GridType.BOX) {
+                        this._gridTable.find("td").removeClass("gridTypeBoxSelected");
+                    }
 			}
 			
 			var rows = this._gridTable.find("tr");
@@ -315,11 +320,23 @@ function GridView(gridModel) {
 			var cell = $(columns[posY-1]); //-1 because the th tag is skipped by the selector
 			var cellClasses = cell.attr("class");
 			
-			if(this._gridModel.isSelectMultiple && cellClasses && cellClasses.indexOf("rackSelected") !== -1) {
-				cell.removeClass("rackSelected");
+			if(this._gridModel.isSelectMultiple && cellClasses &&
+			    (cellClasses.indexOf("gridTypeRackSelected") !== -1 || cellClasses.indexOf("gridTypeBoxSelected") !== -1)
+			) {
+				                    if(this._gridModel.gridType === GridType.RACK) {
+                                        cell.removeClass("gridTypeRackSelected");
+                                    }
+                                    if(this._gridModel.gridType === GridType.BOX) {
+                                        cell.removeClass("gridTypeBoxSelected");
+                                    }
 				return false;
 			} else {
-				cell.addClass("rackSelected");
+				                    if(this._gridModel.gridType === GridType.RACK) {
+                                        cell.addClass("gridTypeRackSelected");
+                                    }
+                                    if(this._gridModel.gridType === GridType.BOX) {
+                                        cell.addClass("gridTypeBoxSelected");
+                                    }
 				return true;
 			}
 			
