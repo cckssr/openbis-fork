@@ -727,7 +727,10 @@ public class IntegrationRoCrateServerTest
             Thread.sleep(2000);
         }
 
-        File emailFolder = new File("targets/mail");
+        File currentFile = new File(".");
+        System.out.println("Current file: " + currentFile.getAbsolutePath());
+
+        File emailFolder = new File("targets/ro-crate-email");
         File[] files = emailFolder.listFiles();
         assertEquals(1, files.length);
         assertTrue(files[0].getName().matches("email.*"));
