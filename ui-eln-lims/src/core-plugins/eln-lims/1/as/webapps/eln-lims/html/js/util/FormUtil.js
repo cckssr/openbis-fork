@@ -1394,7 +1394,7 @@ var FormUtil = new function() {
         return buffer;
     }
 
-    this.createCkeditor = function($component, componentOnChange, value, placeholder, isReadOnly, toolbarContainer) {
+    this.createCkeditor = function($component, componentOnChange, value, placeholder, isReadOnly, toolbarContainer, _refreshableFields) {
         // CKEditor 4 to 5 Image style Migration
         if( value &&
             value.indexOf("<img")  !== -1 &&
@@ -1474,12 +1474,23 @@ var FormUtil = new function() {
 
                                     var root = editor.editing.view.getDomRoot();
                                     for(let l in checkedLinks){
-                                         $(root).find('a[href]')
-                                                .filter((x, y) => y.text === checkedLinks[l].name)
-                                                .attr('href', "javascript:void(0)")
+                                         let links = $(root).find('a[href]')
+                                                .filter((x, y) => y.text === checkedLinks[l].name);
+
+                                         links.attr('href', "javascript:void(0)")
                                                 .click(function() {
                                                     checkedLinks[l].link.click();
                                                 });
+                                         links.refresh = function() {
+                                            this.unbind();
+                                            this.click(function() {
+                                                checkedLinks[l].link.click();
+                                            });
+                                         }
+                                         if(_refreshableFields) {
+                                            _refreshableFields.push(links);
+                                         }
+
                                     }
                                     editor.preprocessingFinished = true;
                                     editor.isReadOnly = true;
@@ -1595,14 +1606,14 @@ var FormUtil = new function() {
 	    return value;
 	}
 
-	this.activateRichTextProperties = function($component, componentOnChange, propertyType, value, isReadOnly, toolbarContainer) {
+	this.activateRichTextProperties = function($component, componentOnChange, propertyType, value, isReadOnly, toolbarContainer, _refreshableFields) {
 		// InlineEditor is not working with textarea that is why $component was changed on div
 	    var placeholder = propertyType ? propertyType.description : "";
 		var $component = this._getDiv($component.attr('id'), $component.attr('alt'), $component.attr('isRequired'));
 		if(!$component.attr('id')) {
 		    $component.attr('id', 'ckEditor-' + mainController.getNextId());
 		}
-		FormUtil.createCkeditor($component, componentOnChange, value, placeholder, isReadOnly, toolbarContainer);
+		FormUtil.createCkeditor($component, componentOnChange, value, placeholder, isReadOnly, toolbarContainer, _refreshableFields);
 
 		if (propertyType && propertyType.mandatory) {
 			$component.attr('required', '');
@@ -1970,8 +1981,6 @@ var FormUtil = new function() {
 		}
 
 		var link = $("<a>", { "href" : href, "class" : "browser-compatible-javascript-link", "id" : id }).text(displayName);
-		$("body").off("click", "[id='"+id+"']");
-        $("body").on("click", "[id='"+id+"']", clickFunction);
 
         //this is workaround for links in DataGrids to work in tabs
         link.click(clickFunction)
