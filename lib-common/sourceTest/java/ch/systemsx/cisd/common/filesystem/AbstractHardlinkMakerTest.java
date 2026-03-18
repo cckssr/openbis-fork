@@ -23,6 +23,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -47,6 +49,7 @@ public abstract class AbstractHardlinkMakerTest
 {
     protected static final File unitTestRootDirectory = new File("targets" + File.separator
             + "unit-test-wd");
+    private static final long TIMEOUT_SECONDS = 10;
 
     protected File workingDirectory;
 
@@ -184,30 +187,6 @@ public abstract class AbstractHardlinkMakerTest
         super();
     }
 
-    @Test(groups =
-    { "requires_unix" }, retryAnalyzer = RetryTen.class)
-    public void testDeleteWhileCopying() throws IOException
-    {
-        TestBigStructureCreator creator =
-                createBigStructureCreator(new File(workingDirectory, "big-structure"));
-        final File src = creator.createBigStructure();
-        assertTrue(creator.verifyStructure());
-        MessageChannel channel = new MessageChannel();
-        
-        creator.deleteBigStructureAsync(channel);
-        IImmutableCopier copier =
-                new AssertionCatchingImmutableCopierWrapper(createHardLinkCopier());
-        creator.waitUntilDeletionStarted(channel);
-        Status status = copier.copyImmutably(src, outputDir, null);
-        assertFalse(status.isOK());
-        File dest = new File(outputDir, src.getName());
-
-        TestBigStructureCreator structureCopy = new TestBigStructureCreator(dest);
-        assertFalse("Big structure was partially copied", structureCopy.verifyStructure());
-        assertFalse("Original was not partially deleted", creator.verifyStructure());
-
-    }
-
     /**
      * Construct a TestBigStructureCreator. Subclasses may override.
      */
@@ -217,4 +196,116 @@ public abstract class AbstractHardlinkMakerTest
     }
 
     protected abstract IImmutableCopier createHardLinkCopier();
+
+    @Test(groups =
+    { "requires_unix" }, retryAnalyzer = RetryTen.class)
+    public void testDeleteWhileCopying() throws IOException
+    {
+        TestBigStructureCreator creator =
+                createBigStructureCreator(new File(workingDirectory, "big-structure"));
+        final File src = creator.createBigStructure();
+        assertTrue(creator.verifyStructure());
+
+        BlockingFileImmutableCopier blockingFileCopier =
+                new BlockingFileImmutableCopier(HardLinkMaker.tryCreate());
+        IImmutableCopier copier =
+                new AssertionCatchingImmutableCopierWrapper(
+                        RecursiveHardLinkMaker.tryCreate(blockingFileCopier));
+
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        try
+        {
+            Future<Status> copyFuture = executor.submit(() -> copier.copyImmutably(src, outputDir, null));
+
+            blockingFileCopier.awaitUntilBlocked();
+            FileUtilities.deleteRecursively(src);
+            Status status = unblockAndAwait(copyFuture, blockingFileCopier);
+
+            assertFalse(status.isOK());
+            File dest = new File(outputDir, src.getName());
+
+            TestBigStructureCreator structureCopy = new TestBigStructureCreator(dest);
+            assertFalse("Big structure was partially copied", structureCopy.verifyStructure());
+            assertFalse("Original was not partially deleted", creator.verifyStructure());
+        } finally
+        {
+            blockingFileCopier.unblock();
+            executor.shutdownNow();
+        }
+    }
+
+    private Status unblockAndAwait(Future<Status> copyFuture,
+            BlockingFileImmutableCopier blockingFileCopier)
+    {
+        try
+        {
+            blockingFileCopier.unblock();
+            return copyFuture.get(TIMEOUT_SECONDS, TimeUnit.SECONDS);
+        } catch (Exception e)
+        {
+            throw new AssertionError("Failed to finish copy after deleting the source.", e);
+        }
+    }
+
+    private static final class BlockingFileImmutableCopier implements IFileImmutableCopier
+    {
+        private final IFileImmutableCopier delegate;
+
+        private final AtomicBoolean blocked = new AtomicBoolean();
+
+        private final CountDownLatch reachedFirstFile = new CountDownLatch(1);
+
+        private final CountDownLatch continueCopy = new CountDownLatch(1);
+
+        private BlockingFileImmutableCopier(IFileImmutableCopier delegate)
+        {
+            assert delegate != null;
+            this.delegate = delegate;
+        }
+
+        private void awaitUntilBlocked()
+        {
+            try
+            {
+                assertTrue("Timed out waiting for the recursive copy to reach its first file.",
+                        reachedFirstFile.await(TIMEOUT_SECONDS, TimeUnit.SECONDS));
+            } catch (InterruptedException e)
+            {
+                Thread.currentThread().interrupt();
+                throw new AssertionError("Interrupted while waiting for the copy to block.", e);
+            }
+        }
+
+        private void unblock()
+        {
+            continueCopy.countDown();
+        }
+
+        @Override
+        public Status copyFileImmutably(File source, File destinationDirectory, String nameOrNull)
+        {
+            return copyFileImmutably(source, destinationDirectory, nameOrNull,
+                    CopyModeExisting.ERROR);
+        }
+
+        @Override
+        public Status copyFileImmutably(File source, File destinationDirectory, String nameOrNull,
+                CopyModeExisting mode)
+        {
+            if (blocked.compareAndSet(false, true))
+            {
+                reachedFirstFile.countDown();
+                try
+                {
+                    assertTrue("Timed out waiting for deletion to finish before continuing copy.",
+                            continueCopy.await(TIMEOUT_SECONDS, TimeUnit.SECONDS));
+                } catch (InterruptedException e)
+                {
+                    Thread.currentThread().interrupt();
+                    throw new AssertionError("Interrupted while waiting to continue copying.", e);
+                }
+            }
+            return delegate.copyFileImmutably(source, destinationDirectory, nameOrNull, mode);
+        }
+    }
 }
