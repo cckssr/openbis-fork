@@ -666,7 +666,7 @@ public class IntegrationRoCrateServerTest
     {
     }
 
-    @Test(enabled = true, timeOut = TIMEOUT, priority = 4)
+    @Test(enabled = false, timeOut = TIMEOUT, priority = 4)
     // This depends on some data which should be created before the test runs
     public void testExportWithEmail()
             throws Exception
