@@ -37,6 +37,7 @@ public class AbstractTest
 
             Configuration configuration = new Configuration(vals);
             StartupMain.setConfiguration(configuration);
+            configuration.logLoadedProperties();
         }
 
         return StartupMain.getConfiguration();
