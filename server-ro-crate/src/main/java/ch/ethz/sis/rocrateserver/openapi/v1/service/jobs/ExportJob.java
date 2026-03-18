@@ -371,6 +371,7 @@ public final class ExportJob implements IAsyncJob
                         }
                         this.result = resultZipPath;
                         if(this.email != null && !this.email.isBlank()) {
+                            LOG.info("Export successful, preparing to send email");
                             sendMailSuccess();
                         }
                     }
@@ -381,6 +382,7 @@ public final class ExportJob implements IAsyncJob
         } catch (Exception e)
         {
             if(this.email != null && !this.email.isBlank()) {
+                LOG.info("Export failed, preparing to send email");
                 sendMailFailure(e);
             }
             Log.error("Exception during export", e);

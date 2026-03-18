@@ -728,7 +728,7 @@ public class IntegrationRoCrateServerTest
         }
 
 
-        File emailFolder = new File("../test-integration/targets/ro-crate-email");
+        File emailFolder = new File("../test-integration/targets/ro-crate/server-ro-crate/ro-crate-email");
         File[] files = emailFolder.listFiles();
         assertEquals(1, files.length);
         assertTrue(files[0].getName().matches("email.*"));
