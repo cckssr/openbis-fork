@@ -35,7 +35,7 @@ public class HttpDownloaderTest {
         AtomicReference<Exception> expected = new AtomicReference<>();
 
         HttpDownloader httpDownloader = new HttpDownloader();
-        httpDownloader.add("https://www.openbis.ch/", tempFile);
+        httpDownloader.add("https://openbis.ch/", tempFile);
 
         httpDownloader.error((url, path, exception) -> {
             expected.set(exception);
