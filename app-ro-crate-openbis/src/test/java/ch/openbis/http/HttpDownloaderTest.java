@@ -1,10 +1,12 @@
 package ch.openbis.http;
 
-import static org.junit.Assert.*;
 import org.junit.Test;
 
-import java.nio.file.Files;import java.nio.file.Path;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicReference;
+
+import static org.junit.Assert.*;
 
 public class HttpDownloaderTest {
     @Test
@@ -33,7 +35,7 @@ public class HttpDownloaderTest {
         AtomicReference<Exception> expected = new AtomicReference<>();
 
         HttpDownloader httpDownloader = new HttpDownloader();
-        httpDownloader.add("https://www.google.com/", tempFile);
+        httpDownloader.add("https://www.openbis.ch/", tempFile);
 
         httpDownloader.error((url, path, exception) -> {
             expected.set(exception);
