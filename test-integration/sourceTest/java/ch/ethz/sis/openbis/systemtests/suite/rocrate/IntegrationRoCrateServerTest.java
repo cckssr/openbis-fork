@@ -688,6 +688,7 @@ public class IntegrationRoCrateServerTest
             headers.add("Export", export_type);
             headers.add("openbis.with-levels-above", "true");
             headers.add("openbis.import-compatible", "true");
+            headers.add("openbis.send-email", "true");
         });
         request.body(new BytesRequestContent(payload.getBytes()));
         request.idleTimeout(TIMEOUT, TimeUnit.MILLISECONDS);
