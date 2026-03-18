@@ -68,9 +68,10 @@ mainClassName = "ch.ethz.sis.rocrateserver.startup.StartupMain"
 
 compileQuarkusGeneratedSourcesJava.dependsOn(compileJava)
 
-["quarkusAppPartsBuild", "quarkusGenerateCode"].each { taskName ->
+["quarkusAppPartsBuild", "quarkusGenerateCode", "quarkusDependenciesBuild"].each { taskName ->
     tasks.named(taskName) {
         dependsOn(":lib-logging:jar")
+        inputs.files(project(':lib-logging').tasks.named('jar'))
     }
 }
 
