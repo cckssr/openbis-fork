@@ -21,10 +21,8 @@ import java.util.Map;
 
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExperimentType;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PropertyType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentTypePE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PropertyTypePE;
 
 /**
@@ -33,7 +31,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.PropertyTypePE;
 public class ExperimentTypeTranslator
 {
     public static ExperimentType translate(final ExperimentTypePE experimentTypePE,
-            Map<MaterialTypePE, MaterialType> materialTypeCache, Map<PropertyTypePE, PropertyType> cachedOrNull)
+            Map<PropertyTypePE, PropertyType> cachedOrNull)
     {
         final ExperimentType result = new ExperimentType();
         result.setCode(experimentTypePE.getCode());
@@ -41,8 +39,7 @@ public class ExperimentTypeTranslator
 
         result.setExperimentTypePropertyTypes(EntityType
                 .sortedInternally(ExperimentTypePropertyTypeTranslator.translate(
-                        experimentTypePE.getExperimentTypePropertyTypes(), result, 
-                        materialTypeCache, cachedOrNull)));
+                        experimentTypePE.getExperimentTypePropertyTypes(), result, cachedOrNull)));
 
         result.setModificationDate(experimentTypePE.getModificationDate());
         result.setValidationScript(ScriptTranslator.translate(experimentTypePE
@@ -53,12 +50,12 @@ public class ExperimentTypeTranslator
     }
 
     public static List<ExperimentType> translate(final List<ExperimentTypePE> experimentTypes,
-            Map<MaterialTypePE, MaterialType> materialTypeCache, Map<PropertyTypePE, PropertyType> cachedOrNull)
+            Map<PropertyTypePE, PropertyType> cachedOrNull)
     {
         final List<ExperimentType> result = new ArrayList<ExperimentType>();
         for (final ExperimentTypePE ExperimentTypePE : experimentTypes)
         {
-            result.add(ExperimentTypeTranslator.translate(ExperimentTypePE, materialTypeCache, cachedOrNull));
+            result.add(ExperimentTypeTranslator.translate(ExperimentTypePE, cachedOrNull));
         }
         return result;
     }

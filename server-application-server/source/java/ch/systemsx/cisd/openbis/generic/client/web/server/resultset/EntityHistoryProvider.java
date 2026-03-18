@@ -85,11 +85,7 @@ public class EntityHistoryProvider extends
             String value = entry.getValue();
             if (value == null)
             {
-                value = entry.getMaterial();
-                if (value == null)
-                {
-                    value = entry.getVocabularyTerm();
-                }
+               value = entry.getVocabularyTerm();
             }
 
             if (value == null && entry.tryGetRelatedProject() != null)

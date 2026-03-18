@@ -108,7 +108,6 @@ export default class EntityTypeFormControllerValidate extends PageControllerVali
     strategies.extendObjectTypeStrategy(new ObjectTypeStrategy())
     strategies.extendCollectionTypeStrategy(new CollectionTypeStrategy())
     strategies.extendDataSetTypeStrategy(new DataSetTypeStrategy())
-    strategies.extendMaterialTypeStrategy(new MaterialTypeStrategy())
     return strategies.getStrategy(this.object.type)
   }
 }
@@ -128,9 +127,5 @@ class CollectionTypeStrategy {
 }
 
 class DataSetTypeStrategy {
-  validateTypeAttributes() {}
-}
-
-class MaterialTypeStrategy {
   validateTypeAttributes() {}
 }

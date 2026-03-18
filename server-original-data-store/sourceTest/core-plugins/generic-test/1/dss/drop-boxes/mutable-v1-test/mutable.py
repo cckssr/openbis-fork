@@ -62,19 +62,6 @@ def test(tr):
     if(mutableSample3 is not mutableSample1):
         raise Exception('More than object for the same sample in the DB was returned')
     
-    # MATERIAL
-
-    material = tr.getMaterial("BACTERIUM1", "BACTERIUM")
-    
-    mutableMaterial1 = tr.getMaterialForUpdate("BACTERIUM1", "BACTERIUM")
-    mutableMaterial1.setPropertyValue("DESCRIPTION", "mutable material description 1");
-
-    mutableMaterial2 = tr.makeMaterialMutable(material)
-    mutableMaterial2.setPropertyValue("DESCRIPTION", "mutable material description 2");
-    
-    if(mutableMaterial2 is not mutableMaterial1):
-        raise Exception('More than object for the same material in the DB was returned')
-    
     # DATA SET
     
     dataSet = tr.getDataSet("20081105092159188-3")

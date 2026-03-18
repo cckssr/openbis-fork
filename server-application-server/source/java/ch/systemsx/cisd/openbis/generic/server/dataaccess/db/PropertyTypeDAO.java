@@ -109,7 +109,6 @@ final class PropertyTypeDAO extends AbstractGenericEntityDAO<PropertyTypePE> imp
                 .createQuery(
                         "select distinct p " +
                                 "from PropertyTypePE p " +
-                                "left join fetch p.materialTypePropertyTypesInternal " +
                                 "left join fetch p.sampleTypePropertyTypesInternal " +
                                 "left join fetch p.experimentTypePropertyTypesInternal " +
                                 "left join fetch p.dataSetTypePropertyTypesInternal",
@@ -198,7 +197,6 @@ final class PropertyTypeDAO extends AbstractGenericEntityDAO<PropertyTypePE> imp
         int assignmentsSize =
                 entity.getDataSetTypePropertyTypes().size()
                         + entity.getExperimentTypePropertyTypes().size()
-                        + entity.getMaterialTypePropertyTypes().size()
                         + entity.getSampleTypePropertyTypes().size();
         if (assignmentsSize > 0)
         {

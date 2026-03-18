@@ -68,7 +68,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.GridCustomColumn;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IEntityProperty;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ISerializableComparable;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ListSampleCriteria;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Material;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewVocabulary;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PhysicalDataSet;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Project;
@@ -588,31 +587,6 @@ public final class CommonClientServiceTest extends AbstractClientServiceTest
 
         commonClientService.changeUserHomeSpace(groupId);
 
-        context.assertIsSatisfied();
-    }
-
-    @Test
-    public void testGetMaterialInfo()
-    {
-        final TechId id = new TechId(4711L);
-        context.checking(new Expectations()
-            {
-                {
-                    prepareGetSessionToken(this);
-
-                    one(commonServer).getMaterialInfo(SESSION_TOKEN, id);
-                    Material material = new Material();
-                    material.setProperties(Arrays.asList(createXmlProperty()));
-                    will(returnValue(material));
-                }
-            });
-
-        Material info = commonClientService.getMaterialInfo(id);
-
-        IEntityProperty transformedXMLProperty = info.getProperties().get(0);
-        assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?><b>hello</b>",
-                transformedXMLProperty.tryGetAsString());
-        assertEquals("<root>hello</root>", transformedXMLProperty.tryGetOriginalValue());
         context.assertIsSatisfied();
     }
 

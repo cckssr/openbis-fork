@@ -508,11 +508,12 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 	}
 
 	this._createIdentificationInfoSection = function(hideShowOptionsModel) {
-		hideShowOptionsModel.push({
-		    forceToShow : this._experimentFormModel.mode === FormMode.CREATE,
-			label : "Identification Info",
-			section : "#experiment-identification-info-"+this._viewId
-		});
+		var option = {
+            forceToShow : this._experimentFormModel.mode === FormMode.CREATE,
+            label : "Identification Info",
+            section : "#experiment-identification-info-"+this._viewId
+        };
+		hideShowOptionsModel.push(option);
 
 		var _this = this;
 		var $identificationInfo = $("<div>", { id : "experiment-identification-info-"+_this._viewId });
@@ -550,25 +551,26 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		} else if(this._experimentFormModel.mode === FormMode.CREATE) {
 			var $codeField = FormUtil._getInputField("text", "codeId-"+_this._viewId, "code", null, true);
 			var keyupFunction = function() {
-            				_this._experimentFormModel.isFormDirty = true;
-            				var caretPosition = this.selectionStart;
-            				$(this).val($(this).val().toUpperCase());
-            				this.selectionStart = caretPosition;
-            				this.selectionEnd = caretPosition;
-            				_this._experimentFormModel.experiment.code = $(this).val();
+                _this._experimentFormModel.isFormDirty = true;
+                var caretPosition = this.selectionStart;
+                $(this).val($(this).val().toUpperCase());
+                this.selectionStart = caretPosition;
+                this.selectionEnd = caretPosition;
+                _this._experimentFormModel.experiment.code = $(this).val();
 
-            				//Full Identifier
-            				var currentIdentifierSpace = IdentifierUtil.getSpaceCodeFromIdentifier(_this._experimentFormModel.experiment.identifier);
-            				var currentIdentifierProject = IdentifierUtil.getProjectCodeFromExperimentIdentifier(_this._experimentFormModel.experiment.identifier);
-            				var experimentIdentifier = IdentifierUtil.getExperimentIdentifier(currentIdentifierSpace, currentIdentifierProject, _this._experimentFormModel.experiment.code);
-            				_this._experimentFormModel.experiment.identifier = experimentIdentifier;
-            			}
+                //Full Identifier
+                var currentIdentifierSpace = IdentifierUtil.getSpaceCodeFromIdentifier(_this._experimentFormModel.experiment.identifier);
+                var currentIdentifierProject = IdentifierUtil.getProjectCodeFromExperimentIdentifier(_this._experimentFormModel.experiment.identifier);
+                var experimentIdentifier = IdentifierUtil.getExperimentIdentifier(currentIdentifierSpace, currentIdentifierProject, _this._experimentFormModel.experiment.code);
+                _this._experimentFormModel.experiment.identifier = experimentIdentifier;
+            }
 			$codeField.keyup(keyupFunction)
 			$codeField.refresh = function() {
-                                this.unbind();
-                                this.keyup(keyupFunction);
-                            }
+                $codeField.unbind();
+                $codeField.keyup(keyupFunction);
+            }
             _refreshableFields.push($codeField);
+            option.refresh = $codeField.refresh;
 			var $codeFieldRow = FormUtil.getFieldForComponentWithLabel($codeField, "Code");
 			$identificationInfo.append($codeFieldRow);
 

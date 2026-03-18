@@ -34,10 +34,6 @@ public interface IEntityProperty extends Serializable, Comparable<IEntityPropert
 
     public String tryGetOriginalValue();
 
-    public Material getMaterial();
-
-    public void setMaterial(Material material);
-
     public Sample getSample();
     
     public void setSample(Sample sample);

@@ -28,7 +28,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.TechId;
 import ch.systemsx.cisd.openbis.generic.shared.dto.AtomicEntityOperationDetails;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataSetBatchUpdatesDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentUpdatesDTO;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialUpdateDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.MetaprojectUpdatesDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.NewExternalData;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ProjectUpdatesDTO;
@@ -51,18 +50,6 @@ public class AtomicEntityOperationDetailsTest extends AssertJUnit
         {
             spaceRegistrations.add(new NewSpace("S" + i, "description", "adminUser" + i));
         }
-
-        Map<String, List<NewMaterial>> materialRegistrations =
-                new HashMap<String, List<NewMaterial>>();
-        List<NewMaterial> newMaterials1 = new ArrayList<NewMaterial>();
-        newMaterials1.add(new NewMaterial("material-one"));
-        newMaterials1.add(new NewMaterial("material-two"));
-        List<NewMaterial> newMaterials2 = new ArrayList<NewMaterial>();
-        newMaterials2.add(new NewMaterial("material-three"));
-        materialRegistrations.put("material-type-1", newMaterials1);
-        materialRegistrations.put("material-type-2", newMaterials2);
-
-        List<MaterialUpdateDTO> materialUpdates = new ArrayList<MaterialUpdateDTO>();
 
         ArrayList<NewProject> projectRegistrations = new ArrayList<NewProject>();
         projectRegistrations.add(new NewProject("/SPACE/P1", "description"));
@@ -109,7 +96,6 @@ public class AtomicEntityOperationDetailsTest extends AssertJUnit
                 new AtomicEntityOperationDetails(new TechId(42), null, spaceRegistrations,
                         projectRegistrations, projectUpdates, experimentRegistrations,
                         experimentUpdates, sampleUpdates, sampleRegistrations,
-                        materialRegistrations, materialUpdates,
                         dataSetRegistrations, dataSetUpdates, metaprojectRegistrations,
                         metaprojectUpdates, vocabularyUpdates);
 
@@ -128,7 +114,6 @@ public class AtomicEntityOperationDetailsTest extends AssertJUnit
                         + ",projectRegistrations=[/SPACE/P1, /SPACE/P2]"
                         + ",experimentRegistrations=[/SPACE/PROJECT/EXP-ID1, /SPACE/PROJECT/EXP-ID2]"
                         + ",sampleRegistrations=[/SPACE/SAMPLE-ID1, /SPACE/SAMPLE-ID2]"
-                        + ",materialRegistrations=[material-type-1=[material-one, material-two], material-type-2=[material-three]]"
                         + ",dataSetRegistrations=[NewExternalData[code=DATA-SET-CODE,type=<null>,kind=<null>,fileFormat=<null>,properties=[]]]"
                         + ",dataSetUpdates=[1]"
                         + ",metaprojectRegistrations=[NewMetaproject[name=TEST-AEOD-TAG,description=short description,ownerId=test]]]",

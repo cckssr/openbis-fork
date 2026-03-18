@@ -78,35 +78,6 @@ public class MiscellaneousDropBoxApiV2FeaturesTest extends AbstractScreeningSyst
         assertEquals(1, samples.size());
     }
 
-    @Test
-    public void testImageResolutions()
-    {
-        Experiment experiment =
-                commonServer.getExperimentInfo(sessionToken,
-                        ExperimentIdentifierFactory.parse("/TEST/TEST-PROJECT/TEST-EXP-HCS"));
-        List<Sample> samples =
-                commonServer.listSamples(sessionToken,
-                        ListSampleCriteria.createForExperiment(new TechId(experiment.getId())));
-        Sample sample = samples.get(0);
-
-        PlateContent plateContent =
-                screeningServer.getPlateContent(sessionToken, new TechId(sample.getId()));
-
-        PlateMetadata plateMetadata = plateContent.getPlateMetadata();
-        assertEquals(4, plateMetadata.getRowsNum());
-        assertEquals(6, plateMetadata.getColsNum());
-        assertEquals(0, plateMetadata.getWells().size());
-        List<ImageDatasetEnrichedReference> imageDatasets = plateContent.getImageDatasets();
-        DatasetImagesReference imageDataset = imageDatasets.get(0).getImageDataset();
-        assertEquals("/TEST/TEST-PROJECT/TEST-EXP-HCS",
-                imageDataset.getDatasetReference().getExperimentIdentifier());
-        assertEquals(1, imageDatasets.size());
-        List<ImageResolution> imageDatasetResolutions =
-                screeningServer.getImageDatasetResolutions(sessionToken,
-                        imageDataset.getDatasetCode(), imageDataset.getDatastoreCode());
-        Collections.sort(imageDatasetResolutions);
-        assertEquals("[256x191, 1392x1040]", imageDatasetResolutions.toString());
-    }
 
     private File createTestDataContents() throws IOException
     {

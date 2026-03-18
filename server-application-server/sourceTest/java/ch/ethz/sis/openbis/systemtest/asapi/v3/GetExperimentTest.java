@@ -51,8 +51,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.IExperimentId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.update.ExperimentUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.history.HistoryEntry;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.Material;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.id.MaterialPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.Project;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectPermId;
@@ -462,7 +460,7 @@ public class GetExperimentTest extends AbstractExperimentTest
         PropertyType propertyType1 = propertyAssignments.get(1).getPropertyType();
         assertEquals(propertyType1.getCode(), "PURCHASE_DATE");
         assertEquals(propertyType1.getLabel(), "Purchased");
-        assertEquals(propertyType1.getDescription(), "When material has been bought");
+        assertEquals(propertyType1.getDescription(), "When this has been bought");
         assertEquals(propertyType1.isManagedInternally(), Boolean.FALSE);
         assertEquals(propertyType1.getDataType(), DataType.TIMESTAMP);
         assertEqualsDate(propertyType1.getRegistrationDate(), "2008-11-05 09:18:16");
@@ -483,7 +481,6 @@ public class GetExperimentTest extends AbstractExperimentTest
         {
             PropertyType propertyType = propertyAssignment.getPropertyType();
             assertVocabularyNotFetched(propertyType);
-            assertMaterialTypeNotFetched(propertyType);
             assertRegistratorNotFetched(propertyType);
         }
 
@@ -498,7 +495,6 @@ public class GetExperimentTest extends AbstractExperimentTest
         ExperimentFetchOptions fetchOptions = new ExperimentFetchOptions();
         PropertyTypeFetchOptions propertyTypeFetchOptions = fetchOptions.withType().withPropertyAssignments().withPropertyType();
         propertyTypeFetchOptions.withVocabulary();
-        propertyTypeFetchOptions.withMaterialType();
         propertyTypeFetchOptions.withRegistrator();
 
         ExperimentPermId permId = new ExperimentPermId("200811050951882-1028");
@@ -519,7 +515,6 @@ public class GetExperimentTest extends AbstractExperimentTest
 
         PropertyType propertyType = propertyAssignments.get(2).getPropertyType();
         assertEquals(propertyType.getVocabulary().getCode(), "GENDER");
-        assertNull(propertyType.getMaterialType());
         assertEquals(propertyType.getRegistrator().getUserId(), "test");
 
         v3api.logout(sessionToken);
@@ -944,30 +939,6 @@ public class GetExperimentTest extends AbstractExperimentTest
         v3api.logout(sessionToken);
     }
 
-    @Test
-    public void testGetWithMaterialProperties()
-    {
-        String sessionToken = v3api.login(TEST_USER, PASSWORD);
-
-        ExperimentFetchOptions fetchOptions = new ExperimentFetchOptions();
-        fetchOptions.withMaterialProperties().withRegistrator();
-        fetchOptions.withProperties();
-
-        ExperimentPermId permId = new ExperimentPermId("201108050937246-1031");
-
-        Map<IExperimentId, Experiment> map = v3api.getExperiments(sessionToken, Arrays.asList(permId), fetchOptions);
-
-        Experiment experiment = map.get(permId);
-
-        assertEquals(experiment.getProperties().get("ANY_MATERIAL"), "BACTERIUM-Y (BACTERIUM)");
-
-        Map<String, Material> materialProperties = experiment.getMaterialProperties();
-
-        Material bacterium = materialProperties.get("ANY_MATERIAL");
-        assertEquals(bacterium.getPermId(), new MaterialPermId("BACTERIUM-Y", "BACTERIUM"));
-        assertEquals(bacterium.getRegistrator().getUserId(), "test");
-        assertTagsNotFetched(bacterium);
-    }
 
     @Test
     public void testGetWithHistoryNoChanges()

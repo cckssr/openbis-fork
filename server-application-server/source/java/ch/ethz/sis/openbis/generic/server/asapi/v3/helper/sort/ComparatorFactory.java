@@ -26,7 +26,6 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.authorizationgroup.Aut
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.dataset.DataSetComparatorFactory;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.experiment.ExperimentComparatorFactory;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.globalsearch.GlobalSearchObjectComparatorFactory;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.material.MaterialComparatorFactory;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.plugin.PluginComparatorFactory;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.project.ProjectComparatorFactory;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.property.PropertyAssignmentComparatorFactory;
@@ -59,7 +58,6 @@ public abstract class ComparatorFactory
         factories.add(new ExperimentComparatorFactory());
         factories.add(new SampleComparatorFactory());
         factories.add(new DataSetComparatorFactory());
-        factories.add(new MaterialComparatorFactory());
         factories.add(new PropertyTypeComparatorFactory());
         factories.add(new PluginComparatorFactory());
         factories.add(new PropertyAssignmentComparatorFactory());

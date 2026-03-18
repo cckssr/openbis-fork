@@ -26,20 +26,6 @@ public class EntityProperty extends GenericEntityProperty
 
     private VocabularyTerm vocabularyTermOrNull;
 
-    private Material materialOrNull;
-
-    @Override
-    public Material getMaterial()
-    {
-        return materialOrNull;
-    }
-
-    @Override
-    public void setMaterial(Material material)
-    {
-        this.materialOrNull = material;
-    }
-
     @Override
     public VocabularyTerm getVocabularyTerm()
     {

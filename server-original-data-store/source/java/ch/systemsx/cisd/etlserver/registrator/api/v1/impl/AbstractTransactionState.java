@@ -44,7 +44,6 @@ import ch.systemsx.cisd.etlserver.registrator.api.v1.IDataSet;
 import ch.systemsx.cisd.etlserver.registrator.api.v1.IDataSetUpdatable;
 import ch.systemsx.cisd.etlserver.registrator.api.v1.IExperiment;
 import ch.systemsx.cisd.etlserver.registrator.api.v1.IExperimentUpdatable;
-import ch.systemsx.cisd.etlserver.registrator.api.v1.IMaterial;
 import ch.systemsx.cisd.etlserver.registrator.api.v1.IMetaproject;
 import ch.systemsx.cisd.etlserver.registrator.api.v1.IProject;
 import ch.systemsx.cisd.etlserver.registrator.api.v1.ISample;
@@ -57,7 +56,6 @@ import ch.systemsx.cisd.etlserver.registrator.v1.IDataSetRegistrationDetailsFact
 import ch.systemsx.cisd.openbis.dss.generic.shared.IEncapsulatedOpenBISService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.v1.IDataSetImmutable;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.v1.IExperimentImmutable;
-import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.v1.IMaterialImmutable;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.v1.IProjectImmutable;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.v1.ISampleImmutable;
 import ch.systemsx.cisd.openbis.dss.generic.shared.dto.AtomicEntityOperationDetails;
@@ -67,9 +65,7 @@ import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.DataSetKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.TechId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityKind;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewExperiment;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewMaterial;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewMetaproject;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewProject;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewSample;
@@ -77,7 +73,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewSpace;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SampleType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataSetBatchUpdatesDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentUpdatesDTO;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialUpdateDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.MetaprojectUpdatesDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.NewVocabularyTerm;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ProjectUpdatesDTO;
@@ -182,10 +177,6 @@ public abstract class AbstractTransactionState<T extends DataSetInformation>
         private final List<Sample> samplesToBeRegistered = new ArrayList<Sample>();
 
         private final List<Sample> samplesToBeUpdated = new ArrayList<Sample>();
-
-        private final List<Material> materialsToBeRegistered = new ArrayList<Material>();
-
-        private final List<Material> materialsToBeUpdated = new ArrayList<Material>();
 
         private final List<Metaproject> metaprojectsToBeRegistered = new ArrayList<Metaproject>();
 
@@ -786,87 +777,6 @@ public abstract class AbstractTransactionState<T extends DataSetInformation>
             return null;
         }
 
-        public IMaterial createNewMaterial(String materialCode, String materialType)
-        {
-            Material material = new Material(materialCode, materialType);
-            materialsToBeRegistered.add(material);
-            return material;
-        }
-
-        public IMaterial getMaterialForUpdate(String materialCode, String materialType)
-        {
-
-            MaterialIdentifier materialIdentifier =
-                    new MaterialIdentifier(materialCode, materialType);
-
-            // Check if we already have an updatable material for this one
-            Material result = findMaterialLocally(materialIdentifier);
-            if (result != null)
-            {
-                return result;
-            }
-
-            ch.systemsx.cisd.openbis.generic.shared.basic.dto.Material materialOrNull =
-                    openBisService.tryGetMaterial(materialIdentifier);
-
-            if (materialOrNull != null)
-            {
-                result = new Material(materialOrNull);
-                materialsToBeUpdated.add(result);
-            }
-
-            return result;
-        }
-
-        public IMaterial makeMaterialMutable(IMaterialImmutable material)
-        {
-            if (material == null)
-            {
-                return null;
-            }
-            // Check if we already have an updatable material for this one
-            Material result = findMaterialLocally(material);
-            if (result != null)
-            {
-                return result;
-            }
-
-            if (material instanceof MaterialImmutable)
-            {
-                result = new Material(((MaterialImmutable) material).getMaterial());
-                materialsToBeUpdated.add(result);
-                return result;
-            }
-
-            return null;
-        }
-
-        private Material findMaterialLocally(MaterialIdentifier materialIdentifier)
-        {
-            String materialIdentifierString = materialIdentifier.toString();
-            // This is a slow implementation. Could be sped up by using a hashmap in the future.
-            for (Material material : materialsToBeUpdated)
-            {
-                if (material.getMaterialIdentifier().equalsIgnoreCase(materialIdentifierString))
-                {
-                    return material;
-                }
-            }
-            return null;
-        }
-
-        private Material findMaterialLocally(IMaterialImmutable materialToFind)
-        {
-            for (Material material : materialsToBeUpdated)
-            {
-                if (material.equals(materialToFind))
-                {
-                    return material;
-                }
-            }
-            return null;
-        }
-
         public IMetaproject createNewMetaproject(String name, String description, String ownerId)
         {
             Metaproject metaproject = Metaproject.createMetaproject(name, description, ownerId);
@@ -1173,8 +1083,6 @@ public abstract class AbstractTransactionState<T extends DataSetInformation>
             List<ExperimentUpdatesDTO> experimentUpdates = convertExperimentsToBeUpdated();
             List<SampleUpdatesDTO> sampleUpdates = convertSamplesToBeUpdated();
             List<NewSample> sampleRegistrations = convertSamplesToBeRegistered();
-            Map<String, List<NewMaterial>> materialRegistrations = convertMaterialsToBeRegistered();
-            List<MaterialUpdateDTO> materialUpdates = convertMaterialsToBeUpdated();
             List<DataSetBatchUpdatesDTO> dataSetUpdates = convertDataSetsToBeUpdated();
             List<NewMetaproject> metaprojectRegistrations = convertMetaprojectsToBeRegistered();
             List<MetaprojectUpdatesDTO> metaprojectUpdates = convertMetaprojectsToBeUpdated();
@@ -1185,7 +1093,7 @@ public abstract class AbstractTransactionState<T extends DataSetInformation>
                     new AtomicEntityOperationDetails<T>(registrationId, getUserId(),
                             spaceRegistrations, projectUpdates, projectRegistrations,
                             experimentUpdates, experimentRegistrations, sampleUpdates,
-                            sampleRegistrations, materialRegistrations, materialUpdates,
+                            sampleRegistrations,
                             dataSetRegistrations, dataSetUpdates, metaprojectRegistrations,
                             metaprojectUpdates, vocabularyUpdates, emptyAssignments, emptyAssignments);
             return registrationDetails;
@@ -1268,35 +1176,6 @@ public abstract class AbstractTransactionState<T extends DataSetInformation>
             for (DataSetUpdatable dataSet : dataSetsToBeUpdated)
             {
                 result.add(ConversionUtils.convertToDataSetBatchUpdatesDTO(dataSet));
-            }
-            return result;
-        }
-
-        private Map<String, List<NewMaterial>> convertMaterialsToBeRegistered()
-        {
-            Map<String, List<NewMaterial>> result = new HashMap<String, List<NewMaterial>>();
-            for (Material material : materialsToBeRegistered)
-            {
-                NewMaterial converted = ConversionUtils.convertToNewMaterial(material);
-                String materialType = material.getMaterialType();
-                List<NewMaterial> materialsOfSameType = result.get(materialType);
-                if (materialsOfSameType == null)
-                {
-                    materialsOfSameType = new ArrayList<NewMaterial>();
-                    result.put(materialType, materialsOfSameType);
-                }
-                materialsOfSameType.add(converted);
-            }
-            return result;
-        }
-
-        private List<MaterialUpdateDTO> convertMaterialsToBeUpdated()
-        {
-            List<MaterialUpdateDTO> result = new ArrayList<MaterialUpdateDTO>();
-            for (Material material : materialsToBeUpdated)
-            {
-                MaterialUpdateDTO converted = ConversionUtils.convertToMaterialUpdateDTO(material);
-                result.add(converted);
             }
             return result;
         }

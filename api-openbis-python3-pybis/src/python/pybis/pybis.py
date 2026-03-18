@@ -53,7 +53,6 @@ from .entity_type import (
     DataSetType,
     EntityType,
     ExperimentType,
-    MaterialType,
     SampleType,
     PropertyType
 )
@@ -140,8 +139,6 @@ def get_search_type_for_entity(entity, operator=None):
         "dataset": "as.dto.dataset.search.DataSetSearchCriteria",
         "dataset_type": "as.dto.dataset.search.DataSetTypeSearchCriteria",
         "external_dms": "as.dto.externaldms.search.ExternalDmsSearchCriteria",
-        "material": "as.dto.material.search.MaterialSearchCriteria",
-        "material_type": "as.dto.material.search.MaterialTypeSearchCriteria",
         "vocabulary_term": "as.dto.vocabulary.search.VocabularyTermSearchCriteria",
         "tag": "as.dto.tag.search.TagSearchCriteria",
         "authorizationGroup": "as.dto.authorizationgroup.search.AuthorizationGroupSearchCriteria",
@@ -1082,8 +1079,6 @@ class Openbis:
             "get_collection_types()",
             "get_external_data_management_systems()",
             "get_external_data_management_system()",
-            "get_material_type()",
-            "get_material_types()",
             "get_project()",
             "get_projects()",
             "get_sample()",
@@ -1134,7 +1129,6 @@ class Openbis:
             "new_dataset_type()",
             "new_experiment_type()",
             "new_collection_type()",
-            "new_material_type()",
             "new_semantic_annotation()",
             "new_transaction()",
             "get_or_create_personal_access_token()",
@@ -1662,13 +1656,12 @@ class Openbis:
             "OBJECT": "SAMPLE",
             "SAMPLE": "SAMPLE",
             "EXPERIMENT": "EXPERIMENT",
-            "COLLECTION": "EXPERIMENT",
-            "MATERIAL": "MATERIAL",
+            "COLLECTION": "EXPERIMENT"
         }
 
         if entity not in entity2enum:
             raise ValueError(
-                "no such entity: {}. Allowed entities are: DATA_SET, SAMPLE, EXPERIMENT, MATERIAL"
+                "no such entity: {}. Allowed entities are: DATA_SET, SAMPLE, EXPERIMENT"
             )
 
         request = {
@@ -4002,7 +3995,7 @@ class Openbis:
         name        -- name of the plugin
         description --
         pluginType  -- DYNAMIC_PROPERTY, MANAGED_PROPERTY, ENTITY_VALIDATION
-        entityKind  -- MATERIAL, EXPERIMENT, SAMPLE, DATA_SET
+        entityKind  -- EXPERIMENT, SAMPLE, DATA_SET
         script      -- string of the script itself
         available   --
         """
@@ -4020,7 +4013,6 @@ class Openbis:
             dataType,
             managedInternally=False,
             vocabulary=None,
-            materialType=None,
             sampleType=None,
             schema=None,
             transformation=None,
@@ -4036,10 +4028,9 @@ class Openbis:
         dataType           -- must contain any of these values:
                               INTEGER VARCHAR MULTILINE_VARCHAR
                               REAL TIMESTAMP BOOLEAN HYPERLINK
-                              XML CONTROLLEDVOCABULARY MATERIAL
+                              XML CONTROLLEDVOCABULARY
         vocabulary         -- if dataType is CONTROLLEDVOCABULARY, this attribute
                               must contain the code of the vocabulary object.
-        materialType       --
         schema             --
         transformation     --
         metaData           -- used to create properties that contain either RichText or tabular, spreadsheet-like data.
@@ -4049,7 +4040,6 @@ class Openbis:
         - sampleTypes
         - dataSetTypes
         - experimentTypes
-        - materialTypes (deprecated)
         """
 
         if isinstance(vocabulary, Vocabulary):
@@ -4063,7 +4053,6 @@ class Openbis:
             dataType=dataType,
             managedInternally=managedInternally,
             vocabulary=vocabulary,
-            materialType=materialType,
             sampleType=sampleType,
             schema=schema,
             transformation=transformation,
@@ -4100,7 +4089,7 @@ class Openbis:
             )
 
         fetchopts = get_fetchoption_for_entity("propertyType")
-        options = ["vocabulary", "materialType", "semanticAnnotations", "registrator"]
+        options = ["vocabulary", "semanticAnnotations", "registrator"]
         for option in options:
             fetchopts[option] = get_fetchoption_for_entity(option)
 
@@ -4192,26 +4181,6 @@ class Openbis:
             totalCount=totalCount,
             response=objects,
             df_initializer=create_data_frame,
-        )
-
-    def get_material_types(self, type=None, start_with=None, count=None):
-        """Returns a list of all available material types"""
-        return self.get_entity_types(
-            entity="materialType",
-            cls=MaterialType,
-            type=type,
-            start_with=start_with,
-            count=count,
-        )
-
-    def get_material_type(self, type, only_data=False):
-        """Returns detailed information regarding particular material type, given its code"""
-        return self.get_entity_type(
-            entity="materialType",
-            cls=MaterialType,
-            identifier=type,
-            method=self.get_material_type,
-            only_data=only_data,
         )
 
     def get_experiment_types(self, type=None, start_with=None, count=None):
@@ -5361,21 +5330,6 @@ class Openbis:
         )
 
     new_collection_type = new_experiment_type
-
-    def new_material_type(
-            self,
-            code,
-            description=None,
-            validationPlugin=None,
-    ):
-        """Creates a new material type."""
-        return MaterialType(
-            self,
-            code=code,
-            description=description,
-            validationPlugin=validationPlugin,
-            method=self.get_material_type,
-        )
 
     def new_dataset(
             self,

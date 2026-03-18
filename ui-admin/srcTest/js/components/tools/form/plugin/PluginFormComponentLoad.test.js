@@ -62,7 +62,6 @@ async function testLoadNew(pluginType) {
         label: 'Entity Kind',
         value: null,
         options: [
-          { value: 'MATERIAL', label: 'MATERIAL' },
           { value: 'EXPERIMENT', label: 'COLLECTION' },
           { value: 'SAMPLE', label: 'OBJECT' },
           { value: 'DATA_SET', label: 'DATA_SET' }
@@ -83,7 +82,6 @@ async function testLoadNew(pluginType) {
         label: 'Entity Kind',
         value: null,
         options: [
-          { value: 'MATERIAL', label: 'MATERIAL' },
           { value: 'EXPERIMENT', label: 'COLLECTION' },
           { value: 'SAMPLE', label: 'OBJECT' },
           { value: 'DATA_SET', label: 'DATA_SET' }
@@ -139,7 +137,6 @@ async function testLoadExistingJython(plugin) {
         label: 'Entity Kind',
         value: plugin.getEntityKinds()[0],
         options: [
-          { value: 'MATERIAL', label: 'MATERIAL' },
           { value: 'EXPERIMENT', label: 'COLLECTION' },
           { value: 'SAMPLE', label: 'OBJECT' },
           { value: 'DATA_SET', label: 'DATA_SET' }
@@ -209,7 +206,6 @@ async function testLoadExistingJython(plugin) {
         label: 'Entity Kind',
         value: plugin.getEntityKinds()[0],
         options: [
-          { value: 'MATERIAL', label: 'MATERIAL' },
           { value: 'EXPERIMENT', label: 'COLLECTION' },
           { value: 'SAMPLE', label: 'OBJECT' },
           { value: 'DATA_SET', label: 'DATA_SET' }
@@ -289,7 +285,6 @@ async function testLoadExistingPredeployed(plugin) {
             ? plugin.getEntityKinds()[0]
             : null,
         options: [
-          { value: 'MATERIAL', label: 'MATERIAL' },
           { value: 'EXPERIMENT', label: 'COLLECTION' },
           { value: 'SAMPLE', label: 'OBJECT' },
           { value: 'DATA_SET', label: 'DATA_SET' }

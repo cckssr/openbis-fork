@@ -25,5 +25,10 @@ public enum RoCrateServerParameter
     maxReadSizeInBytes,
 
     openBISUrl,
-    openBISTimeout
+    openBISTimeout,
+
+    mailFrom,
+    mailSmtpHost,
+    mailSmtpUser,
+    mailSmtpPassword,
 }

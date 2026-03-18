@@ -33,8 +33,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityTypePropertyType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExperimentType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExperimentTypePropertyType;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialType;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialTypePropertyType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewETNewPTAssigments;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewETPTAssignment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewPTNewAssigment;
@@ -112,9 +110,6 @@ public class ANewMetadataUITest extends SystemTestCase
                 case DATA_SET:
                     types = commonServer.listDataSetTypes(systemSessionToken);
                     break;
-                case MATERIAL:
-                    types = commonServer.listMaterialTypes(systemSessionToken);
-                    break;
                 case SAMPLE:
                     types = commonServer.listSampleTypes(systemSessionToken);
                     break;
@@ -138,9 +133,6 @@ public class ANewMetadataUITest extends SystemTestCase
                     break;
                 case DATA_SET:
                     ((DataSetType) entityType).setDataSetTypePropertyTypes(listAssigmentsOldHack);
-                    break;
-                case MATERIAL:
-                    ((MaterialType) entityType).setMaterialTypePropertyTypes(listAssigmentsOldHack);
                     break;
                 case SAMPLE:
                     ((SampleType) entityType).setSampleTypePropertyTypes(listAssigmentsOldHack);
@@ -280,10 +272,6 @@ public class ANewMetadataUITest extends SystemTestCase
                 case DATA_SET:
                     entityType = new DataSetType();
                     ((DataSetType) entityType).setDataSetTypePropertyTypes(new ArrayList<DataSetTypePropertyType>());
-                    break;
-                case MATERIAL:
-                    entityType = new MaterialType();
-                    ((MaterialType) entityType).setMaterialTypePropertyTypes(new ArrayList<MaterialTypePropertyType>());
                     break;
                 case SAMPLE:
                     entityType = new SampleType();

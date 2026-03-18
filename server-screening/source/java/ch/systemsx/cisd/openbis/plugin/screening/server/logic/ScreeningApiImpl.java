@@ -51,7 +51,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SampleType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Space;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentPE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ProjectPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePE;
@@ -79,13 +78,9 @@ import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.IDatasetIdent
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.ImageChannel;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.ImageDatasetReference;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.ImageSize;
-import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.Material;
-import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.MaterialIdentifier;
-import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.MaterialTypeIdentifier;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.Plate;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.PlateIdentifier;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.PlateMetadata;
-import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.PlateWellMaterialMapping;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.PlateWellReferenceWithDatasets;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.WellIdentifier;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.WellMetadata;
@@ -225,7 +220,7 @@ public class ScreeningApiImpl
                     "The database has not been initialized properly for screening, sample type '"
                             + ScreeningConstants.DEFAULT_PLATE_SAMPLE_TYPE_CODE + "' not found.");
         }
-        return SampleTypeTranslator.translate(plateTypePE, null, null);
+        return SampleTypeTranslator.translate(plateTypePE, null);
     }
 
     public List<ExperimentIdentifier> listExperiments()
@@ -325,51 +320,6 @@ public class ScreeningApiImpl
                 new ArrayList<FeatureVectorDatasetReference>();
     }
 
-    public List<PlateWellReferenceWithDatasets> listPlateWells(
-            ExperimentIdentifier experimentIdentifier, MaterialIdentifier materialIdentifier,
-            boolean findDatasets)
-    {
-        final MaterialPE materialOrNull =
-                daoFactory.getMaterialDAO().tryFindMaterial(
-                        new ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialIdentifier(
-                                materialIdentifier.getMaterialCode(), materialIdentifier
-                                        .getMaterialTypeIdentifier().getMaterialTypeCode()));
-        if (materialOrNull == null)
-        {
-            throw UserFailureException.fromTemplate("Material '%s' does not exist",
-                    materialIdentifier.getAugmentedCode());
-        }
-        final List<WellContent> wellContents;
-        final ExperimentPE experiment = getExperimentFromDB(experimentIdentifier);
-        final ExperimentIdentifier fullExperimentIdentifier = asExperimentIdentifier(experiment);
-        wellContents = loadWellContentMetadata(materialOrNull, experiment);
-        if (findDatasets)
-        {
-            final Set<Plate> plates = extractPlates(wellContents, fullExperimentIdentifier);
-            final FeatureVectorDatasetLoader datasetRetriever =
-                    new FeatureVectorDatasetLoader(session, businessObjectFactory,
-                            session.tryGetHomeGroupCode(), plates);
-            final List<ImageDatasetReference> imageDatasets =
-                    datasetRetriever.getImageDatasetReferences();
-            final List<FeatureVectorDatasetReference> featureVectorDatasets =
-                    datasetRetriever.getFeatureVectorDatasetReferences();
-
-            return asPlateWellReferences(fullExperimentIdentifier, wellContents,
-                    createPlateToDatasetsMap(imageDatasets, featureVectorDatasets));
-        } else
-        {
-            return asPlateWellReferences(fullExperimentIdentifier, wellContents,
-                    Collections.<String, DatasetReferenceHolder> emptyMap());
-        }
-    }
-
-    private List<WellContent> loadWellContentMetadata(final MaterialPE materialOrNull,
-            final ExperimentPE experiment)
-    {
-        return WellContentLoader.loadOnlyMetadata(session, businessObjectFactory, daoFactory,
-                new TechId(materialOrNull.getId()), new TechId(experiment.getId()));
-    }
-
     private static Set<Plate> extractPlates(final List<WellContent> wellContents,
             final ExperimentIdentifier fullExperimentIdentifier)
     {
@@ -379,47 +329,6 @@ public class ScreeningApiImpl
             plates.add(asPlate(fullExperimentIdentifier, wellContent));
         }
         return plates;
-    }
-
-    public List<PlateWellReferenceWithDatasets> listPlateWells(
-            MaterialIdentifier materialIdentifier, boolean findDatasets)
-    {
-        final MaterialPE materialOrNull =
-                daoFactory.getMaterialDAO().tryFindMaterial(
-                        new ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialIdentifier(
-                                materialIdentifier.getMaterialCode(), materialIdentifier
-                                        .getMaterialTypeIdentifier().getMaterialTypeCode()));
-        if (materialOrNull == null)
-        {
-            throw UserFailureException.fromTemplate("Material '%s' does not exist",
-                    materialIdentifier.getAugmentedCode());
-        }
-        final List<WellContent> wellContent =
-                WellContentLoader.loadOnlyMetadata(session, businessObjectFactory, daoFactory,
-                        new TechId(materialOrNull.getId()));
-
-        if (findDatasets)
-        {
-            final Set<Plate> plates = new HashSet<Plate>(wellContent.size());
-            for (WellContent w : wellContent)
-            {
-                plates.add(asPlate(w));
-            }
-            final FeatureVectorDatasetLoader datasetRetriever =
-                    new FeatureVectorDatasetLoader(session, businessObjectFactory,
-                            session.tryGetHomeGroupCode(), plates);
-            final List<ImageDatasetReference> imageDatasets =
-                    datasetRetriever.getImageDatasetReferences();
-            final List<FeatureVectorDatasetReference> featureVectorDatasets =
-                    datasetRetriever.getFeatureVectorDatasetReferences();
-
-            return asPlateWellReferences(wellContent,
-                    createPlateToDatasetsMap(imageDatasets, featureVectorDatasets));
-        } else
-        {
-            return asPlateWellReferences(wellContent,
-                    Collections.<String, DatasetReferenceHolder> emptyMap());
-        }
     }
 
     public List<WellIdentifier> listPlateWells(PlateIdentifier plateIdentifier)
@@ -555,69 +464,7 @@ public class ScreeningApiImpl
         return new WellIdentifier(plateIdentifier, position, sample.getPermId());
     }
 
-    public List<PlateWellMaterialMapping> listPlateMaterialMapping(
-            List<? extends PlateIdentifier> plates,
-            MaterialTypeIdentifier materialTypeIdentifierOrNull)
-    {
-        final List<PlateWellMaterialMapping> result =
-                new ArrayList<PlateWellMaterialMapping>(plates.size());
-        final IScreeningQuery query = createScreeningQuery();
-        for (PlateIdentifier plate : plates)
-        {
-            result.add(toPlateWellMaterialMapping(plate, materialTypeIdentifierOrNull,
-                    getPlateGeometry(query, plate),
-                    getPlateMapping(query, plate, materialTypeIdentifierOrNull)));
-        }
-        return result;
-    }
 
-    @SuppressWarnings("deprecation")
-    // NOTE: this method will return duplicated wells if there are two materials connected to one
-    // well
-    private PlateWellMaterialMapping toPlateWellMaterialMapping(
-            PlateIdentifier plateIdentifier,
-            MaterialTypeIdentifier materialTypeIdentifierOrNull,
-            PlateGeometryContainer plateGeometryContainer,
-            DataIterator<ch.systemsx.cisd.openbis.plugin.screening.server.dataaccess.WellContentQueryResult> wellContentList)
-    {
-        final Geometry plateGeometry =
-                Geometry.createFromPlateGeometryString(plateGeometryContainer.plate_geometry);
-        final PlateIdentifier finalPlateIdentifier =
-                new PlateIdentifier(plateGeometryContainer.plate_code,
-                        plateGeometryContainer.space_code, plateGeometryContainer.perm_id);
-        final PlateWellMaterialMapping result =
-                new PlateWellMaterialMapping(finalPlateIdentifier, plateGeometry, 1);
-        if (materialTypeIdentifierOrNull != null)
-        {
-            for (ch.systemsx.cisd.openbis.plugin.screening.server.dataaccess.WellContentQueryResult wellContent : wellContentList)
-            {
-                final WellLocation location =
-                        ScreeningUtils.tryCreateLocationFromMatrixCoordinate(wellContent.well_code);
-                final String materialContentCode = wellContent.material_content_code;
-                result.getMaterialsForWell(location.getRow(), location.getColumn()).add(
-                        new MaterialIdentifier(materialTypeIdentifierOrNull, materialContentCode));
-            }
-        } else
-        {
-            final Map<String, MaterialTypeIdentifier> map =
-                    new HashMap<String, MaterialTypeIdentifier>();
-            for (ch.systemsx.cisd.openbis.plugin.screening.server.dataaccess.WellContentQueryResult wellContent : wellContentList)
-            {
-                MaterialTypeIdentifier typeId = map.get(wellContent.material_content_type_code);
-                if (typeId == null)
-                {
-                    typeId = new MaterialTypeIdentifier(wellContent.material_content_type_code);
-                    map.put(typeId.getMaterialTypeCode(), typeId);
-                }
-                final WellLocation location =
-                        ScreeningUtils.tryCreateLocationFromMatrixCoordinate(wellContent.well_code);
-                final String materialContentCode = wellContent.material_content_code;
-                result.getMaterialsForWell(location.getRow(), location.getColumn()).add(
-                        new MaterialIdentifier(typeId, materialContentCode));
-            }
-        }
-        return result;
-    }
 
     private PlateGeometryContainer getPlateGeometry(IScreeningQuery query, PlateIdentifier plate)
     {
@@ -644,34 +491,6 @@ public class ScreeningApiImpl
             plateGeometryContainer.perm_id = plate.getPermId();
         }
         return plateGeometryContainer;
-    }
-
-    private DataIterator<ch.systemsx.cisd.openbis.plugin.screening.server.dataaccess.WellContentQueryResult> getPlateMapping(
-            IScreeningQuery query, PlateIdentifier plate,
-            MaterialTypeIdentifier materialTypeIdentifierOrNull)
-    {
-        if (materialTypeIdentifierOrNull != null)
-        {
-            if (plate.getPermId() == null)
-            {
-                return query.getPlateMappingForMaterialType(plate.tryGetSpaceCode(),
-                        plate.getPlateCode(), materialTypeIdentifierOrNull.getMaterialTypeCode());
-            } else
-            {
-                return query.getPlateMappingForMaterialType(plate.getPermId(),
-                        materialTypeIdentifierOrNull.getMaterialTypeCode());
-            }
-        } else
-        {
-            if (plate.getPermId() == null)
-            {
-                return query.getPlateMapping(plate.tryGetSpaceCode(), plate.getPlateCode());
-            } else
-            {
-                return query.getPlateMapping(plate.getPermId());
-            }
-        }
-
     }
 
     private IScreeningQuery createScreeningQuery()
@@ -889,34 +708,9 @@ public class ScreeningApiImpl
         return plateWellReferences;
     }
 
-    public List<PlateMetadata> getPlateMetadata(List<? extends PlateIdentifier> plateIdentifiers)
-    {
-        List<TechId> techIds = new ArrayList<TechId>();
-        for (PlateIdentifier identifier : plateIdentifiers)
-        {
-            TechId techId = getSampleTechId(identifier);
-            if (techId != null)
-            {
-                techIds.add(techId);
-            }
-        }
-
-        List<ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.PlateMetadata> plateMetadatas =
-                PlateContentLoader.loadPlateMetadata(session, daoFactory.getSessionFactory().getCurrentSession(), businessObjectFactory,
-                        managedPropertyEvaluatorFactory, techIds);
-
-        List<PlateMetadata> result = new ArrayList<PlateMetadata>();
-        Map<Long, Material> materialsCache = new HashMap<Long, Material>();
-        for (ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.PlateMetadata plateMetaData : plateMetadatas)
-        {
-            result.add(asApiPlateMetadata(plateMetaData, materialsCache));
-        }
-        return result;
-    }
 
     private PlateMetadata asApiPlateMetadata(
-            ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.PlateMetadata plateMetadata,
-            Map<Long, Material> materialsCache)
+            ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.PlateMetadata plateMetadata)
     {
         Sample plate = plateMetadata.getPlate();
         PlateIdentifier plateIdentifier = ScreeningUtils.createPlateIdentifier(plate);
@@ -926,7 +720,7 @@ public class ScreeningApiImpl
             for (ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.WellMetadata wellMetadata : plateMetadata
                     .getWells())
             {
-                WellMetadata well = asApiWell(plateIdentifier, wellMetadata, materialsCache);
+                WellMetadata well = asApiWell(plateIdentifier, wellMetadata);
                 wells.add(well);
             }
         }
@@ -939,60 +733,14 @@ public class ScreeningApiImpl
     }
 
     private WellMetadata asApiWell(PlateIdentifier plateIdentifier,
-            ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.WellMetadata wellMetadata,
-            Map<Long, Material> materialsCache)
+            ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.WellMetadata wellMetadata)
     {
         Sample well = wellMetadata.getWellSample();
         WellLocation location = wellMetadata.tryGetLocation();
         WellPosition wellPosition = new WellPosition(location.getRow(), location.getColumn());
         Map<String, String> properties = EntityHelper.convertToStringMap(well.getProperties());
-        Map<String, Material> materialProperties =
-                convertMaterialProperties(well.getProperties(), materialsCache);
         return new WellMetadata(plateIdentifier, well.getCode(), well.getPermId(), well
-                .getSampleType().getCode(), wellPosition, properties, materialProperties);
-    }
-
-    private Map<String, Material> convertMaterialProperties(List<IEntityProperty> properties,
-            Map<Long, Material> materialsCache)
-    {
-        HashMap<String, Material> result = new HashMap<String, Material>();
-        if (properties != null)
-        {
-            for (IEntityProperty property : properties)
-            {
-                ch.systemsx.cisd.openbis.generic.shared.basic.dto.Material material =
-                        property.getMaterial();
-                if (material != null)
-                {
-                    Material apiMaterial = materialsCache.get(material.getId());
-                    if (apiMaterial == null)
-                    {
-                        apiMaterial = asApiMaterial(material, materialsCache);
-                        // FIXME: Caching disabled because a not fully filled Material could be
-                        // cached
-                        // materialsCache.put(material.getId(), apiMaterial);
-                    }
-                    String propCode = property.getPropertyType().getCode();
-                    result.put(propCode, apiMaterial);
-                }
-            }
-        }
-        return result;
-    }
-
-    private Material asApiMaterial(
-            ch.systemsx.cisd.openbis.generic.shared.basic.dto.Material materialDto,
-            Map<Long, Material> materialsCache)
-    {
-        MaterialTypeIdentifier typeIdentifier =
-                new MaterialTypeIdentifier(materialDto.getMaterialType().getCode());
-
-        List<IEntityProperty> originalProperties = materialDto.getProperties();
-        Map<String, String> properties = EntityHelper.convertToStringMap(originalProperties);
-        Map<String, Material> materialProperties =
-                convertMaterialProperties(originalProperties, materialsCache);
-
-        return new Material(typeIdentifier, materialDto.getCode(), properties, materialProperties);
+                .getSampleType().getCode(), wellPosition, properties);
     }
 
     public ExperimentImageMetadata getExperimentImageMetadata(

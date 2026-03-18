@@ -62,7 +62,7 @@ import ch.systemsx.cisd.base.annotation.JsonObject;
  */
 @SuppressWarnings("unused")
 @JsonObject("SearchCriteria")
-public class SearchCriteria implements Serializable
+public class  SearchCriteria implements Serializable
 {
     private static final long serialVersionUID = 1L;
 

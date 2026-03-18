@@ -129,7 +129,6 @@ public class XLSExperimentTypeExportHelper extends AbstractXLSEntityTypeExportHe
         final PropertyAssignmentFetchOptions propertyAssignmentFetchOptions = fetchOptions.withPropertyAssignments();
         propertyAssignmentFetchOptions.withPropertyType().withVocabulary();
         propertyAssignmentFetchOptions.withPropertyType().withSampleType();
-        propertyAssignmentFetchOptions.withPropertyType().withMaterialType();
         propertyAssignmentFetchOptions.withPlugin().withScript();
     }
 

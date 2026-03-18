@@ -19,7 +19,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.FetchOptions
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.FetchOptionsToStringBuilder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.fetchoptions.MaterialFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.fetchoptions.PersonFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.Tag;
@@ -43,9 +42,6 @@ public class TagFetchOptions extends FetchOptions<Tag> implements Serializable
 
     @JsonProperty
     private DataSetFetchOptions dataSets;
-
-    @JsonProperty
-    private MaterialFetchOptions materials;
 
     @JsonProperty
     private PersonFetchOptions owner;
@@ -120,28 +116,6 @@ public class TagFetchOptions extends FetchOptions<Tag> implements Serializable
     }
 
     // Method automatically generated with DtoGenerator
-    public MaterialFetchOptions withMaterials()
-    {
-        if (materials == null)
-        {
-            materials = new MaterialFetchOptions();
-        }
-        return materials;
-    }
-
-    // Method automatically generated with DtoGenerator
-    public MaterialFetchOptions withMaterialsUsing(MaterialFetchOptions fetchOptions)
-    {
-        return materials = fetchOptions;
-    }
-
-    // Method automatically generated with DtoGenerator
-    public boolean hasMaterials()
-    {
-        return materials != null;
-    }
-
-    // Method automatically generated with DtoGenerator
     public PersonFetchOptions withOwner()
     {
         if (owner == null)
@@ -187,7 +161,6 @@ public class TagFetchOptions extends FetchOptions<Tag> implements Serializable
         f.addFetchOption("Experiments", experiments);
         f.addFetchOption("Samples", samples);
         f.addFetchOption("DataSets", dataSets);
-        f.addFetchOption("Materials", materials);
         f.addFetchOption("Owner", owner);
         return f;
     }

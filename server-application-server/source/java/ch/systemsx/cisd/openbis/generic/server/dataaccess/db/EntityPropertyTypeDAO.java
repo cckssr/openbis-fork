@@ -235,12 +235,6 @@ final class EntityPropertyTypeDAO extends AbstractDAO implements IEntityProperty
                                 + "FROM DataPE data, DataSetTypePropertyTypePE dtpt "
                                 + "WHERE data.dataSetType = dtpt.entityTypeInternal AND dtpt = ?1");
                 break;
-            case MATERIAL:
-                query =
-                        String.format("SELECT DISTINCT material.id "
-                                + "FROM MaterialPE material, MaterialTypePropertyTypePE mtpt "
-                                + "WHERE material.materialType = mtpt.entityTypeInternal AND mtpt = ?1");
-                break;
             case EXPERIMENT:
                 query =
                         String.format("SELECT DISTINCT experiment.id "
@@ -283,9 +277,6 @@ final class EntityPropertyTypeDAO extends AbstractDAO implements IEntityProperty
                     break;
                 case DATA_SET:
                     entityTableName = TableNames.DATA_ALL_TABLE;
-                    break;
-                case MATERIAL:
-                    entityTableName = TableNames.MATERIALS_TABLE;
                     break;
                 case EXPERIMENT:
                     entityTableName = TableNames.EXPERIMENTS_VIEW;
@@ -380,10 +371,6 @@ final class EntityPropertyTypeDAO extends AbstractDAO implements IEntityProperty
         {
             valueColumn = "cvte_id";
             valueObject = property.getVocabularyTerm().getId();
-        } else if (property.getMaterialValue() != null)
-        {
-            valueColumn = "mate_prop_id";
-            valueObject = property.getMaterialValue().getId();
         } else if (property.getStringArrayValue() != null)
         {
             valueColumn = "string_array_value";
@@ -705,10 +692,6 @@ final class EntityPropertyTypeDAO extends AbstractDAO implements IEntityProperty
                         SequenceNames.EXPERIMENT_PROPERTY_SEQUENCE,
                         ColumnNames.EXPERIMENT_TYPE_PROPERTY_TYPE_COLUMN,
                         ColumnNames.EXPERIMENT_COLUMN);
-            case MATERIAL:
-                return new EntityKindPropertyTableNames(TableNames.MATERIAL_PROPERTIES_TABLE,
-                        SequenceNames.MATERIAL_PROPERTY_SEQUENCE,
-                        ColumnNames.MATERIAL_TYPE_PROPERTY_TYPE_COLUMN, ColumnNames.MATERIAL_COLUMN);
             case SAMPLE:
                 return new EntityKindPropertyTableNames(TableNames.SAMPLE_PROPERTIES_TABLE,
                         SequenceNames.SAMPLE_PROPERTY_SEQUENCE,

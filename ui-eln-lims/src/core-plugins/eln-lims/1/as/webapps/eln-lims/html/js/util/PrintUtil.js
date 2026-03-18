@@ -147,17 +147,6 @@ var PrintUtil = new function() {
 				var propertyType = profile.getPropertyType(propertyCode);
 				if(propertyType.dataType === "CONTROLLEDVOCABULARY") {
 					propertyContent = FormUtil.getVocabularyLabelForTermCode(propertyType, entity.properties[propertyCode]);
-				} else if(propertyType.dataType === "MATERIAL") {
-					var materialValue = entity.properties[propertyCode];
-					if(materialValue) {
-						var materialType = this._getMaterialTypeFromPropertyValue(materialValue);
-						if(materialType === "GENE" && entity.cachedMaterials) { //Specially supported materials from openBIS
-							var gene = this._getMaterialFromCode(entity.cachedMaterials, this._getMaterialCodeFromPropertyValue(materialValue));
-							propertyContent = $("<span>").append(gene.properties["GENE_SYMBOLS"]);
-						} else {
-							propertyContent = $("<span>").append(materialValue);
-						}
-					}
 				} else {
 					propertyContent = entity.properties[propertyCode];
 					propertyContent = Util.getEmptyIfNull(propertyContent);
@@ -270,31 +259,5 @@ var PrintUtil = new function() {
 		var char1 = (ord1 > 0) ? String.fromCharCode(aCharCode + ord1 - 1) : "";
 		return char1 + char0 + (row + 1).toString(10);
 	};
-	
-	this._getMaterialFromCode = function(materials, code) {
-		for(var mIdx = 0; mIdx < materials.length; mIdx++) {
-			if(materials[mIdx].materialCode === code) {
-				return materials[mIdx];
-			}
-		}
-		return null;
-	}
-	
-	this._getMaterialTypeFromPropertyValue = function(propertyValue) {
-		var materialIdentifierParts = propertyValue.split(" ");
-		var materialType = materialIdentifierParts[1].substring(1, materialIdentifierParts[1].length-1);
-		return materialType;
-	}
-	
-	this._getMaterialCodeFromPropertyValue = function(propertyValue) {
-		return propertyValue.split(" ")[0];
-	}
-	
-	this._getMaterialIdentifierFromPropertyValue = function(propertyValue) {
-		var materialIdentifierParts = propertyValue.split(" ");
-		var materialType = materialIdentifierParts[1].substring(1, materialIdentifierParts[1].length-1);
-		var materialIdentifier = IdentifierUtil.getMaterialIdentifier(materialType, materialIdentifierParts[0]);
-		return materialIdentifier;
-	}
 	
 }

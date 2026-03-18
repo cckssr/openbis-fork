@@ -67,10 +67,6 @@ public abstract class AbstractEntityProperty implements IEntityProperty
             case CONTROLLEDVOCABULARY:
                 VocabularyTerm vocabularyTerm = getVocabularyTerm();
                 return (vocabularyTerm != null) ? vocabularyTerm.getCode() : getArrayAsString();
-            case MATERIAL:
-                Material material = getMaterial();
-                return (material != null) ? MaterialIdentifier.print(material.getCode(), material
-                        .getMaterialType().getCode()) : getStringValue();
             case SAMPLE:
                 Sample sample = getSample();
                 return (sample != null) ? sample.getPermId() : getArrayAsString();
@@ -126,17 +122,6 @@ public abstract class AbstractEntityProperty implements IEntityProperty
     public Serializable getValue()
     {
         return null;
-    }
-
-    @Override
-    public Material getMaterial()
-    {
-        return null;
-    }
-
-    @Override
-    public void setMaterial(Material material)
-    {
     }
 
     @Override

@@ -26,7 +26,7 @@ public interface IUntypedValueSetter
 {
     /** Internally sets the untyped property value. */
     public void setUntypedValue(final String valueOrNull,
-            final VocabularyTermPE vocabularyTermOrNull, MaterialPE materialOrNull,
+            final VocabularyTermPE vocabularyTermOrNull,
             SamplePE sampleOrNull, Long[] integerArrayOrNull, Double[] realArrayOrNull,
             String[] stringArrayOrNull, Date[] timestampArrayOrNull, String jsonOrNull);
 }

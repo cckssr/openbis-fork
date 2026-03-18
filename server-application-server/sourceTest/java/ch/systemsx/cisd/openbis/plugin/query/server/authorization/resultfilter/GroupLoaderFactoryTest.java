@@ -102,9 +102,4 @@ public class GroupLoaderFactoryTest extends AssertJUnit
         context.assertIsSatisfied();
     }
 
-    @Test(expectedExceptions = UnsupportedOperationException.class)
-    public void testFailCreateMaterialLoader() throws Exception
-    {
-        new EntityDataLoaderFactory(daoFactory).create(EntityKind.MATERIAL);
-    }
 }

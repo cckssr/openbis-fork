@@ -139,20 +139,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchCriter
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.ImportResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.data.ImportData;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.options.ImportOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.Material;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.MaterialType;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.create.MaterialCreation;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.create.MaterialTypeCreation;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.delete.MaterialDeletionOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.delete.MaterialTypeDeletionOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.fetchoptions.MaterialFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.fetchoptions.MaterialTypeFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.id.IMaterialId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.id.MaterialPermId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.MaterialSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.MaterialTypeSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.update.MaterialTypeUpdate;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.update.MaterialUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.objectkindmodification.ObjectKindModification;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.objectkindmodification.fetchoptions.ObjectKindModificationFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.objectkindmodification.search.ObjectKindModificationSearchCriteria;
@@ -554,16 +540,6 @@ public class OpenBIS
         return asFacadeWithTransactions.createDataSetTypes(sessionToken, newDataSetTypes);
     }
 
-    public List<MaterialPermId> createMaterials(List<MaterialCreation> newMaterials)
-    {
-        return asFacadeWithTransactions.createMaterials(sessionToken, newMaterials);
-    }
-
-    public List<EntityTypePermId> createMaterialTypes(List<MaterialTypeCreation> newMaterialTypes)
-    {
-        return asFacadeWithTransactions.createMaterialTypes(sessionToken, newMaterialTypes);
-    }
-
     public List<PropertyTypePermId> createPropertyTypes(List<PropertyTypeCreation> newPropertyTypes)
     {
         return asFacadeWithTransactions.createPropertyTypes(sessionToken, newPropertyTypes);
@@ -671,16 +647,6 @@ public class OpenBIS
     public void updateDataSetTypes(List<DataSetTypeUpdate> dataSetTypeUpdates)
     {
         asFacadeWithTransactions.updateDataSetTypes(sessionToken, dataSetTypeUpdates);
-    }
-
-    public void updateMaterials(List<MaterialUpdate> materialUpdates)
-    {
-        asFacadeWithTransactions.updateMaterials(sessionToken, materialUpdates);
-    }
-
-    public void updateMaterialTypes(List<MaterialTypeUpdate> materialTypeUpdates)
-    {
-        asFacadeWithTransactions.updateMaterialTypes(sessionToken, materialTypeUpdates);
     }
 
     public void updateExternalDataManagementSystems(List<ExternalDmsUpdate> externalDmsUpdates)
@@ -791,16 +757,6 @@ public class OpenBIS
     public Map<IEntityTypeId, DataSetType> getDataSetTypes(List<? extends IEntityTypeId> dataSetTypeIds, DataSetTypeFetchOptions fetchOptions)
     {
         return asFacadeWithTransactions.getDataSetTypes(sessionToken, dataSetTypeIds, fetchOptions);
-    }
-
-    public Map<IMaterialId, Material> getMaterials(List<? extends IMaterialId> materialIds, MaterialFetchOptions fetchOptions)
-    {
-        return asFacadeWithTransactions.getMaterials(sessionToken, materialIds, fetchOptions);
-    }
-
-    public Map<IEntityTypeId, MaterialType> getMaterialTypes(List<? extends IEntityTypeId> materialTypeIds, MaterialTypeFetchOptions fetchOptions)
-    {
-        return asFacadeWithTransactions.getMaterialTypes(sessionToken, materialTypeIds, fetchOptions);
     }
 
     public Map<IPropertyTypeId, PropertyType> getPropertyTypes(List<? extends IPropertyTypeId> typeIds, PropertyTypeFetchOptions fetchOptions)
@@ -930,20 +886,10 @@ public class OpenBIS
         return asFacadeWithTransactions.searchDataSetTypes(sessionToken, searchCriteria, fetchOptions);
     }
 
-    public SearchResult<Material> searchMaterials(MaterialSearchCriteria searchCriteria, MaterialFetchOptions fetchOptions)
-    {
-        return asFacadeWithTransactions.searchMaterials(sessionToken, searchCriteria, fetchOptions);
-    }
-
     public SearchResult<ExternalDms> searchExternalDataManagementSystems(ExternalDmsSearchCriteria searchCriteria,
             ExternalDmsFetchOptions fetchOptions)
     {
         return asFacadeWithTransactions.searchExternalDataManagementSystems(sessionToken, searchCriteria, fetchOptions);
-    }
-
-    public SearchResult<MaterialType> searchMaterialTypes(MaterialTypeSearchCriteria searchCriteria, MaterialTypeFetchOptions fetchOptions)
-    {
-        return asFacadeWithTransactions.searchMaterialTypes(sessionToken, searchCriteria, fetchOptions);
     }
 
     public SearchResult<Plugin> searchPlugins(PluginSearchCriteria searchCriteria, PluginFetchOptions fetchOptions)
@@ -1091,11 +1037,6 @@ public class OpenBIS
         return asFacadeWithTransactions.deleteDataSets(sessionToken, dataSetIds, deletionOptions);
     }
 
-    public void deleteMaterials(List<? extends IMaterialId> materialIds, MaterialDeletionOptions deletionOptions)
-    {
-        asFacadeWithTransactions.deleteMaterials(sessionToken, materialIds, deletionOptions);
-    }
-
     public void deletePlugins(List<? extends IPluginId> pluginIds, PluginDeletionOptions deletionOptions)
     {
         asFacadeWithTransactions.deletePlugins(sessionToken, pluginIds, deletionOptions);
@@ -1129,11 +1070,6 @@ public class OpenBIS
     public void deleteDataSetTypes(List<? extends IEntityTypeId> dataSetTypeIds, DataSetTypeDeletionOptions deletionOptions)
     {
         asFacadeWithTransactions.deleteDataSetTypes(sessionToken, dataSetTypeIds, deletionOptions);
-    }
-
-    public void deleteMaterialTypes(List<? extends IEntityTypeId> materialTypeIds, MaterialTypeDeletionOptions deletionOptions)
-    {
-        asFacadeWithTransactions.deleteMaterialTypes(sessionToken, materialTypeIds, deletionOptions);
     }
 
     public void deleteExternalDataManagementSystems(List<? extends IExternalDmsId> externalDmsIds, ExternalDmsDeletionOptions deletionOptions)

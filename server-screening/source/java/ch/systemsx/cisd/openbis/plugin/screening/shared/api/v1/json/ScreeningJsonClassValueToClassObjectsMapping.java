@@ -40,9 +40,6 @@ public class ScreeningJsonClassValueToClassObjectsMapping extends
                 ".FeatureVectorWithDescription",
                 ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.FeatureVectorWithDescription.class);
         addClass(
-                ".MaterialIdentifier",
-                ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.MaterialIdentifier.class);
-        addClass(
                 ".PermanentIdentifier",
                 ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.PermanentIdentifier.class);
         addClass(

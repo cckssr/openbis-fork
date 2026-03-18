@@ -32,9 +32,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetTypeWithVocabularyTerms;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityTypePropertyType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Experiment;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ListMaterialCriteria;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Material;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Metaproject;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MetaprojectAssignments;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MetaprojectAssignmentsFetchOption;
@@ -195,19 +192,6 @@ public class EncapsulatedFilteredBasicOpenBISService implements IEncapsulatedBas
     public Vocabulary tryGetVocabulary(String code)
     {
         return etlService.tryGetVocabulary(systemSessionToken, code);
-    }
-
-    @Override
-    public List<Material> listMaterials(ListMaterialCriteria criteria, boolean withProperties)
-    {
-        return etlService.listMaterials(systemSessionToken, criteria, withProperties);
-    }
-
-    @Override
-    @ManagedAuthentication
-    public Material tryGetMaterial(MaterialIdentifier materialIdentifier)
-    {
-        return encapsulatedService.tryGetMaterial(materialIdentifier);
     }
 
     @Override

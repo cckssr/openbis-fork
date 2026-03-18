@@ -74,7 +74,6 @@ public final class PropertyTypeTable extends AbstractBusinessObject implements I
         for (final PropertyTypePE pt : propertyTypes)
         {
             // optimize?
-            HibernateUtils.initialize(pt.getMaterialTypePropertyTypes());
             HibernateUtils.initialize(pt.getSampleTypePropertyTypes());
             HibernateUtils.initialize(pt.getExperimentTypePropertyTypes());
             HibernateUtils.initialize(pt.getDataSetTypePropertyTypes());

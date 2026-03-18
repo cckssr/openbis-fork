@@ -31,21 +31,9 @@ sampleType.setGeneratedCodePrefix("G_");
 dataSetType = tr.createNewDataSetType('DATA-SET-TYPE')
 dataSetType.setDescription('Data set type description.')
 
-materialType = tr.createNewMaterialType('MATERIAL-TYPE')
-materialType.setDescription('Material type description.')
-
 stringPropertyType = tr.createNewPropertyType('VARCHAR-PROPERTY-TYPE', DataType.VARCHAR)
 stringPropertyType.setDescription('Varchar property type description.')
 stringPropertyType.setLabel('STRING')
-
-materialPropertyType = tr.createNewPropertyType('MATERIAL-PROPERTY-TYPE', DataType.MATERIAL)
-materialPropertyType.setDescription('Material property type description.')
-materialPropertyType.setLabel('MATERIAL')
-materialPropertyType.setMaterialType(materialType)
-materialPropertyType.setManagedInternally(False)
-
-assigment1 = tr.assignPropertyType(sampleType, materialPropertyType)
-assigment1.setMandatory(True)
 
 assigment2 = tr.assignPropertyType(expType, stringPropertyType)
 assigment2.setMandatory(False)

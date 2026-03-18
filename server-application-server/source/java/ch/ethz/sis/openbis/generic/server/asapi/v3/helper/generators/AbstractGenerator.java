@@ -26,7 +26,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IAttachmentsHo
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.ICodeHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IDescriptionHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IExperimentHolder;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IMaterialPropertiesHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IModificationDateHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IModifierHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IPermIdHolder;
@@ -40,8 +39,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.ISpaceHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.ITagsHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.Material;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.fetchoptions.MaterialFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.Person;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.fetchoptions.PersonFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyAssignment;
@@ -129,33 +126,12 @@ public class AbstractGenerator
     public static void addProperties(DtoGenerator gen)
     {
         gen.addClassForImport(Map.class);
-        gen.addPluralFetchedField("Map<String, Material>", Map.class.getName(),
-                "materialProperties", "Material Properties",
-                MaterialFetchOptions.class).withInterface(IMaterialPropertiesHolder.class);
         gen.addPluralFetchedField("Map<String, Sample[]>", Map.class.getName(), "sampleProperties",
                 "Sample Properties",
                 SampleFetchOptions.class);
         gen.addClassForImport(Map.class);
         gen.addClassForImport(HashMap.class);
-        gen.addClassForImport(Material.class);
         gen.addClassForImport(Sample.class);
-
-
-        gen.addAdditionalMethod("@Override\n"
-                + "    public Material getMaterialProperty(String propertyName)\n"
-                + "    {\n"
-                + "        return getMaterialProperties() != null ? getMaterialProperties().get(propertyName) : null;\n"
-                + "    }");
-
-        gen.addAdditionalMethod("@Override\n"
-                + "    public void setMaterialProperty(String propertyName, Material propertyValue)\n"
-                + "    {\n"
-                + "        if (materialProperties == null)\n"
-                + "        {\n"
-                + "            materialProperties = new HashMap<String, Material>();\n"
-                + "        }\n"
-                + "        materialProperties.put(propertyName, propertyValue);\n"
-                + "    }");
 
 
     }

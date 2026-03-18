@@ -199,36 +199,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.ImportOperationResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.ImportResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.data.ImportData;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.options.ImportOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.Material;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.MaterialType;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.create.CreateMaterialTypesOperation;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.create.CreateMaterialTypesOperationResult;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.create.CreateMaterialsOperation;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.create.CreateMaterialsOperationResult;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.create.MaterialCreation;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.create.MaterialTypeCreation;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.delete.DeleteMaterialTypesOperation;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.delete.DeleteMaterialsOperation;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.delete.MaterialDeletionOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.delete.MaterialTypeDeletionOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.fetchoptions.MaterialFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.fetchoptions.MaterialTypeFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.get.GetMaterialTypesOperation;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.get.GetMaterialTypesOperationResult;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.get.GetMaterialsOperation;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.get.GetMaterialsOperationResult;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.id.IMaterialId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.id.MaterialPermId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.MaterialSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.MaterialTypeSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.SearchMaterialTypesOperation;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.SearchMaterialTypesOperationResult;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.SearchMaterialsOperation;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.SearchMaterialsOperationResult;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.update.MaterialTypeUpdate;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.update.MaterialUpdate;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.update.UpdateMaterialTypesOperation;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.update.UpdateMaterialsOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.objectkindmodification.ObjectKindModification;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.objectkindmodification.fetchoptions.ObjectKindModificationFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.objectkindmodification.search.ObjectKindModificationSearchCriteria;
@@ -701,22 +671,6 @@ public class ApplicationServerApi extends AbstractServer<IApplicationServerApi> 
 
     @Override
     @Transactional
-    public List<MaterialPermId> createMaterials(String sessionToken, List<MaterialCreation> creations)
-    {
-        CreateMaterialsOperationResult result = executeOperation(sessionToken, new CreateMaterialsOperation(creations));
-        return result.getObjectIds();
-    }
-
-    @Override
-    @Transactional
-    public List<EntityTypePermId> createMaterialTypes(String sessionToken, List<MaterialTypeCreation> creations)
-    {
-        CreateMaterialTypesOperationResult result = executeOperation(sessionToken, new CreateMaterialTypesOperation(creations));
-        return result.getObjectIds();
-    }
-
-    @Override
-    @Transactional
     public List<PropertyTypePermId> createPropertyTypes(String sessionToken, List<PropertyTypeCreation> newPropertyTypes)
     {
         CreatePropertyTypesOperationResult result = executeOperation(sessionToken, new CreatePropertyTypesOperation(newPropertyTypes));
@@ -869,20 +823,6 @@ public class ApplicationServerApi extends AbstractServer<IApplicationServerApi> 
     public void updateSampleTypes(String sessionToken, List<SampleTypeUpdate> sampleTypeUpdates)
     {
         executeOperation(sessionToken, new UpdateSampleTypesOperation(sampleTypeUpdates));
-    }
-
-    @Override
-    @Transactional
-    public void updateMaterials(String sessionToken, List<MaterialUpdate> updates)
-    {
-        executeOperation(sessionToken, new UpdateMaterialsOperation(updates));
-    }
-
-    @Override
-    @Transactional
-    public void updateMaterialTypes(String sessionToken, List<MaterialTypeUpdate> materialTypeUpdates)
-    {
-        executeOperation(sessionToken, new UpdateMaterialTypesOperation(materialTypeUpdates));
     }
 
     @Override
@@ -1042,23 +982,6 @@ public class ApplicationServerApi extends AbstractServer<IApplicationServerApi> 
             DataSetTypeFetchOptions fetchOptions)
     {
         GetDataSetTypesOperationResult result = executeOperation(sessionToken, new GetDataSetTypesOperation(dataSetTypeIds, fetchOptions));
-        return result.getObjectMap();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public Map<IMaterialId, Material> getMaterials(String sessionToken, List<? extends IMaterialId> materialIds, MaterialFetchOptions fetchOptions)
-    {
-        GetMaterialsOperationResult result = executeOperation(sessionToken, new GetMaterialsOperation(materialIds, fetchOptions));
-        return result.getObjectMap();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public Map<IEntityTypeId, MaterialType> getMaterialTypes(String sessionToken, List<? extends IEntityTypeId> materialTypeIds,
-            MaterialTypeFetchOptions fetchOptions)
-    {
-        GetMaterialTypesOperationResult result = executeOperation(sessionToken, new GetMaterialTypesOperation(materialTypeIds, fetchOptions));
         return result.getObjectMap();
     }
 
@@ -1266,23 +1189,6 @@ public class ApplicationServerApi extends AbstractServer<IApplicationServerApi> 
 
     @Override
     @Transactional(readOnly = true)
-    public SearchResult<Material> searchMaterials(String sessionToken, MaterialSearchCriteria searchCriteria, MaterialFetchOptions fetchOptions)
-    {
-        SearchMaterialsOperationResult result = executeOperation(sessionToken, new SearchMaterialsOperation(searchCriteria, fetchOptions));
-        return result.getSearchResult();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public SearchResult<MaterialType> searchMaterialTypes(String sessionToken, MaterialTypeSearchCriteria searchCriteria,
-            MaterialTypeFetchOptions fetchOptions)
-    {
-        SearchMaterialTypesOperationResult result = executeOperation(sessionToken, new SearchMaterialTypesOperation(searchCriteria, fetchOptions));
-        return result.getSearchResult();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
     public SearchResult<Plugin> searchPlugins(String sessionToken, PluginSearchCriteria searchCriteria, PluginFetchOptions fetchOptions)
     {
         SearchPluginsOperationResult result = executeOperation(sessionToken, new SearchPluginsOperation(searchCriteria, fetchOptions));
@@ -1441,13 +1347,6 @@ public class ApplicationServerApi extends AbstractServer<IApplicationServerApi> 
 
     @Override
     @Transactional
-    public void deleteMaterials(String sessionToken, List<? extends IMaterialId> materialIds, MaterialDeletionOptions deletionOptions)
-    {
-        executeOperation(sessionToken, new DeleteMaterialsOperation(materialIds, deletionOptions));
-    }
-
-    @Override
-    @Transactional
     public void deletePlugins(String sessionToken, List<? extends IPluginId> pluginIds, PluginDeletionOptions deletionOptions)
     {
         executeOperation(sessionToken, new DeletePluginsOperation(pluginIds, deletionOptions));
@@ -1491,12 +1390,6 @@ public class ApplicationServerApi extends AbstractServer<IApplicationServerApi> 
     public void deleteDataSetTypes(String sessionToken, List<? extends IEntityTypeId> dataSetTypeIds, DataSetTypeDeletionOptions deletionOptions)
     {
         executeOperation(sessionToken, new DeleteDataSetTypesOperation(dataSetTypeIds, deletionOptions));
-    }
-
-    @Override
-    public void deleteMaterialTypes(String sessionToken, List<? extends IEntityTypeId> materialTypeIds, MaterialTypeDeletionOptions deletionOptions)
-    {
-        executeOperation(sessionToken, new DeleteMaterialTypesOperation(materialTypeIds, deletionOptions));
     }
 
     @Override

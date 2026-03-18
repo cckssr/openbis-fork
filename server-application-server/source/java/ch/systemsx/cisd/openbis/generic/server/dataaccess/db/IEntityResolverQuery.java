@@ -44,12 +44,6 @@ public interface IEntityResolverQuery extends BaseQuery
     public Long tryResolveSampleIdByCode(String spaceCodeOrNull, String sampleCode);
 
     /**
-     * Returns the tech id of a material by its code / perm id.
-     */
-    @Select(sql = "select m.id from materials m left join material_types mt on m.maty_id = mt.id where mt.code = ?{1} and m.code = ?{2}")
-    public Long tryResolveMaterialIdByCode(String materialTypeCode, String materialCode);
-
-    /**
      * Returns the tech id of an experiment by its perm id.
      */
     @Select(sql = "select e.id from experiments e where e.perm_id = ?{1}")

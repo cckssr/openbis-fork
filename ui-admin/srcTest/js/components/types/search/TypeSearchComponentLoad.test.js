@@ -29,8 +29,6 @@ async function testLoadWithSearchText(resultsFound) {
     anotherCollectionType,
     testDataSetType,
     anotherDataSetType,
-    testMaterialType,
-    anotherMaterialType,
     testVocabularyType,
     anotherVocabularyType,
     testPropertyType,
@@ -45,9 +43,6 @@ async function testLoadWithSearchText(resultsFound) {
   )
   openbis.mockSearchDataSetTypes(
     resultsFound ? [testDataSetType, anotherDataSetType] : []
-  )
-  openbis.mockSearchMaterialTypes(
-    resultsFound ? [testMaterialType, anotherMaterialType] : []
   )
   openbis.mockSearchVocabularies(
     resultsFound ? [testVocabularyType, anotherVocabularyType] : []
@@ -191,39 +186,6 @@ async function testLoadWithSearchText(resultsFound) {
           }
         ]
       },
-      materialTypes: {
-        columns: [
-          {
-            name: 'Internal',
-            label: ''
-          },
-          {
-            name: 'code',
-            label: 'Code'
-          },
-          {
-            name: 'description',
-            label: 'Description'
-          },
-          {
-            name: 'validationPlugin',
-            label: 'Validation Plugin'
-          },
-          {
-            name: 'modificationDate',
-            label: 'Modification Date'
-          }
-        ],
-        rows: [
-          {
-            values: {
-              code: testMaterialType.getCode(),
-              description: testMaterialType.getDescription(),
-              validationPlugin: testMaterialType.validationPlugin.name
-            }
-          }
-        ]
-      },
       vocabularyTypes: {
         columns: [
           {
@@ -292,10 +254,6 @@ async function testLoadWithSearchText(resultsFound) {
             label: 'Vocabulary Type'
           },
           {
-            name: 'materialType',
-            label: 'Material Type'
-          },
-          {
             name: 'sampleType',
             label: 'Object Type'
           },
@@ -342,7 +300,6 @@ async function testLoadWithSearchText(resultsFound) {
       objectTypes: null,
       collectionTypes: null,
       dataSetTypes: null,
-      materialTypes: null,
       vocabularyTypes: null,
       propertyTypes: null
     })
@@ -424,7 +381,6 @@ async function testLoadWithObjectType(resultsFound) {
     },
     collectionTypes: null,
     dataSetTypes: null,
-    materialTypes: null,
     vocabularyTypes: null,
     propertyTypes: null
   })

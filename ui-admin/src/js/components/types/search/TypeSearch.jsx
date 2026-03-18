@@ -47,7 +47,6 @@ class TypeSearch extends React.Component {
         this.loadObjectTypeGroups(),
         this.loadCollectionTypes(),
         this.loadDataSetTypes(),
-        this.loadMaterialTypes(),
         this.loadVocabularyTypes(),
         this.loadPropertyTypes()
       ])
@@ -198,35 +197,6 @@ class TypeSearch extends React.Component {
     })
   }
 
-  async loadMaterialTypes() {
-    if (!this.shouldLoad(objectTypes.MATERIAL_TYPE)) {
-      return
-    }
-
-    const fo = new openbis.MaterialTypeFetchOptions()
-    fo.withValidationPlugin()
-
-    const result = await openbis.searchMaterialTypes(
-      new openbis.MaterialTypeSearchCriteria(),
-      fo
-    )
-
-    const types = util
-      .filter(result.objects, this.props.searchText, ['code', 'description'])
-      .map(object => ({
-        id: _.get(object, 'code'),
-        code: _.get(object, 'code'),
-        description: _.get(object, 'description'),
-        internal: _.get(object, 'managedInternally'),
-        validationPlugin: _.get(object, 'validationPlugin.name'),
-        modificationDate: _.get(object, 'modificationDate')
-      }))
-
-    this.setState({
-      materialTypes: types
-    })
-  }
-
   async loadVocabularyTypes() {
     if (!this.shouldLoad(objectTypes.VOCABULARY_TYPE)) {
       return
@@ -285,7 +255,6 @@ class TypeSearch extends React.Component {
         description: _.get(object, 'description'),
         dataType: _.get(object, 'dataType'),
         vocabulary: _.get(object, 'vocabulary.code'),
-        materialType: _.get(object, 'materialType.code'),
         sampleType: _.get(object, 'sampleType.code'),
         schema: _.get(object, 'schema'),
         transformation: _.get(object, 'transformation'),
@@ -302,7 +271,6 @@ class TypeSearch extends React.Component {
   async loadPropertyTypesTypes() {
     const fo = new openbis.PropertyTypeFetchOptions()
     fo.withVocabulary()
-    fo.withMaterialType()
     fo.withSampleType()
     fo.withRegistrator()
 
@@ -332,8 +300,7 @@ class TypeSearch extends React.Component {
         propertyUsages = {
           sampleTypes: [],
           experimentTypes: [],
-          dataSetTypes: [],
-          materialTypes: []
+          dataSetTypes: []
         }
         usages[propertyAssignment.propertyType.code] = propertyUsages
       }
@@ -346,8 +313,6 @@ class TypeSearch extends React.Component {
         propertyUsages.experimentTypes.push(propertyAssignment.entityType.code)
       } else if (entityType === 'as.dto.dataset.DataSetType') {
         propertyUsages.dataSetTypes.push(propertyAssignment.entityType.code)
-      } else if (entityType === 'as.dto.material.MaterialType') {
-        propertyUsages.materialTypes.push(propertyAssignment.entityType.code)
       }
     })
 
@@ -356,12 +321,10 @@ class TypeSearch extends React.Component {
       propertyUsages.sampleTypes.sort()
       propertyUsages.experimentTypes.sort()
       propertyUsages.dataSetTypes.sort()
-      propertyUsages.materialTypes.sort()
       propertyUsages.count =
         propertyUsages.sampleTypes.length +
         propertyUsages.experimentTypes.length +
-        propertyUsages.dataSetTypes.length +
-        propertyUsages.materialTypes.length
+        propertyUsages.dataSetTypes.length
     })
 
     return usages
@@ -404,7 +367,6 @@ class TypeSearch extends React.Component {
         {this.renderObjectTypeGroups()}
         {this.renderCollectionTypes()}
         {this.renderDataSetTypes()}
-        {this.renderMaterialTypes()}
         {this.renderVocabularyTypes()}
         {this.renderPropertyTypes()}
       </GridContainer>
@@ -418,7 +380,6 @@ class TypeSearch extends React.Component {
       objectTypeGroups = [],
       collectionTypes = [],
       dataSetTypes = [],
-      materialTypes = [],
       vocabularyTypes = [],
       propertyTypes = []
     } = this.state
@@ -429,7 +390,6 @@ class TypeSearch extends React.Component {
       objectTypeGroups.length === 0 &&
       collectionTypes.length === 0 &&
       dataSetTypes.length === 0 &&
-      materialTypes.length === 0 &&
       vocabularyTypes.length === 0 &&
       propertyTypes.length === 0
     ) {
@@ -544,35 +504,6 @@ class TypeSearch extends React.Component {
             }}
             onSelectedRowChange={this.handleSelectedRowChange(
               objectTypes.DATA_SET_TYPE
-            )}
-          />
-        </div>
-      )
-    } else {
-      return null
-    }
-  }
-
-  renderMaterialTypes() {
-    if (
-      this.shouldRender(objectTypes.MATERIAL_TYPE, this.state.materialTypes)
-    ) {
-      const { classes } = this.props
-      return (
-        <div className={classes.grid}>
-          <EntityTypesGrid
-            id={ids.MATERIAL_TYPES_GRID_ID}
-            controllerRef={controller =>
-              (this.gridControllers[objectTypes.MATERIAL_TYPE] = controller)
-            }
-            kind={openbis.EntityKind.MATERIAL}
-            rows={this.state.materialTypes}
-            exportable={{
-              fileFormat: GridExportOptions.FILE_FORMAT.TSV,
-              filePrefix: 'material-types'
-            }}
-            onSelectedRowChange={this.handleSelectedRowChange(
-              objectTypes.MATERIAL_TYPE
             )}
           />
         </div>

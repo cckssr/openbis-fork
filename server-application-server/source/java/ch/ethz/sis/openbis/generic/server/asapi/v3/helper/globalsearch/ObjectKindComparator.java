@@ -38,8 +38,6 @@ public class ObjectKindComparator extends AbstractComparator<GlobalSearchObject,
                 return 1;
             case DATA_SET:
                 return 2;
-            case MATERIAL:
-                return 3;
             default:
                 throw new UnsupportedOperationException("Unsupported object kind " + kind);
         }

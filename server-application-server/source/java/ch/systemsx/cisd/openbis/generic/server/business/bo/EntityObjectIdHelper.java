@@ -18,12 +18,10 @@ package ch.systemsx.cisd.openbis.generic.server.business.bo;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.id.IObjectId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.id.dataset.IDataSetId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.id.experiment.IExperimentId;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.id.material.IMaterialId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.id.sample.ISampleId;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.IEntityInformationHolderDTO;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.Session;
 
@@ -53,19 +51,10 @@ public class EntityObjectIdHelper
         {
             return getDataSetById(session, (IDataSetId) id);
         }
-        if (id instanceof IMaterialId)
-        {
-            return getMaterialById(session, (IMaterialId) id);
-        }
         throw new IllegalArgumentException("The " + id.getClass()
                 + " is not recognized as correct argument");
     }
 
-    private MaterialPE getMaterialById(Session session, IMaterialId id)
-    {
-        IMaterialBO bo = businessObjectFactory.createMaterialBO(session);
-        return bo.tryFindByMaterialId(id);
-    }
 
     private DataPE getDataSetById(Session session, IDataSetId id)
     {

@@ -43,9 +43,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetTypeSearch
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.search.AbstractEntityTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.IExperimentId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentTypeSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.id.IMaterialId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.MaterialSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.MaterialTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.search.ModifierSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.search.PersonSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.search.RegistratorSearchCriteria;
@@ -59,8 +56,6 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.dataset.IMapDataSetB
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.dataset.ISearchDataSetTypeExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.experiment.IMapExperimentByIdExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.experiment.ISearchExperimentTypeExecutor;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.material.IMapMaterialByIdExecutor;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.material.ISearchMaterialTypeExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.person.ISearchPersonExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.project.IMapProjectByIdExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.sample.IMapSampleByIdExecutor;
@@ -79,7 +74,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DetailedSearchCriteria;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentPE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.MetaprojectPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ProjectPE;
@@ -109,13 +103,7 @@ public abstract class AbstractSearchObjectExecutor<CRITERIA extends AbstractObje
     private IMapDataSetByIdExecutor mapDataSetByIdExecutor;
 
     @Autowired
-    private IMapMaterialByIdExecutor mapMaterialByIdExecutor;
-
-    @Autowired
     private IMapTagByIdExecutor mapTagByIdExecutor;
-
-    @Autowired
-    private ISearchMaterialTypeExecutor searchMaterialTypeExecutor;
 
     @Autowired
     private ISearchExperimentTypeExecutor searchExperimentTypeExecutor;
@@ -171,9 +159,6 @@ public abstract class AbstractSearchObjectExecutor<CRITERIA extends AbstractObje
         replacers.add(new SampleTypeCriteriaReplacer());
         replacers.add(new DataSetIdCriteriaReplacer());
         replacers.add(new DataSetTypeCriteriaReplacer());
-        replacers.add(new MaterialIdCriteriaReplacer());
-        replacers.add(new MaterialPermIdCriteriaReplacer());
-        replacers.add(new MaterialTypeCriteriaReplacer());
         replacers.add(new RegistratorCriteriaReplacer());
         replacers.add(new ModifierCriteriaReplacer());
         replacers.add(new TagIdCriteriaReplacer());
@@ -480,54 +465,6 @@ public abstract class AbstractSearchObjectExecutor<CRITERIA extends AbstractObje
 
     }
 
-    private class MaterialIdCriteriaReplacer extends AbstractIdCriteriaReplacer<IMaterialId, MaterialPE>
-    {
-
-        @Override
-        protected Class<IMaterialId> getIdClass()
-        {
-            return IMaterialId.class;
-        }
-
-        @Override
-        protected Map<IMaterialId, MaterialPE> getObjectMap(IOperationContext context, Collection<IMaterialId> materialIds)
-        {
-            return mapMaterialByIdExecutor.map(context, materialIds);
-        }
-
-        @Override
-        protected ISearchCriteria createReplacement(IOperationContext context, ISearchCriteria criteria, MaterialPE material)
-        {
-            TechIdSearchCriteria replacement = new TechIdSearchCriteria();
-            if (material == null)
-            {
-                replacement.thatEquals(-1);
-            } else
-            {
-                replacement.thatEquals(material.getId());
-            }
-            return replacement;
-        }
-
-    }
-
-    private class MaterialPermIdCriteriaReplacer implements ICriteriaReplacer
-    {
-
-        @Override
-        public boolean canReplace(IOperationContext context, Stack<ISearchCriteria> parentCriteria, ISearchCriteria criteria)
-        {
-            return criteria instanceof PermIdSearchCriteria && parentCriteria.peek() instanceof MaterialSearchCriteria;
-        }
-
-        @Override
-        public Map<ISearchCriteria, ISearchCriteria> replace(IOperationContext context, Collection<ISearchCriteria> criteria)
-        {
-            throw new UnsupportedOperationException("Please use criteria.withId().thatEquals(new MaterialPermId('CODE','TYPE')) instead.");
-        }
-
-    }
-
     private class TagIdCriteriaReplacer extends AbstractIdCriteriaReplacer<ITagId, MetaprojectPE>
     {
 
@@ -679,31 +616,6 @@ public abstract class AbstractSearchObjectExecutor<CRITERIA extends AbstractObje
         protected AbstractEntityTypeSearchCriteria createNewEntityTypeCriteria(List<String> entityTypeCodes)
         {
             DataSetTypeSearchCriteria criteria = new DataSetTypeSearchCriteria();
-            criteria.withCodes().thatIn(entityTypeCodes);
-            return criteria;
-        }
-
-    }
-
-    private class MaterialTypeCriteriaReplacer extends AbstractEntityTypeCriteriaReplacer
-    {
-
-        @Override
-        protected Class<? extends AbstractEntityTypeSearchCriteria> getEntityTypeCriteriaClass()
-        {
-            return MaterialTypeSearchCriteria.class;
-        }
-
-        @Override
-        protected List<? extends EntityTypePE> searchEntityTypes(IOperationContext context, AbstractEntityTypeSearchCriteria criteria)
-        {
-            return searchMaterialTypeExecutor.search(context, (MaterialTypeSearchCriteria) criteria);
-        }
-
-        @Override
-        protected AbstractEntityTypeSearchCriteria createNewEntityTypeCriteria(List<String> entityTypeCodes)
-        {
-            MaterialTypeSearchCriteria criteria = new MaterialTypeSearchCriteria();
             criteria.withCodes().thatIn(entityTypeCodes);
             return criteria;
         }

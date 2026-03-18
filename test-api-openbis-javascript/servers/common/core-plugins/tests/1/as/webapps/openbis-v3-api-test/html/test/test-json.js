@@ -102,33 +102,6 @@ define([ 'jquery', 'underscore', 'test/common', 'test/dtos' ], function($, _, co
 					"@id" : 1,
 					"@type" : "as.dto.sample.Sample",
 					"code" : "sample_1",
-					"materialProperties" : {
-						"230" : {
-							"@id" : 2,
-							"@type" : "as.dto.material.Material",
-							"code" : "material_1",
-							"registrator" : {
-								"@id" : 3,
-								"@type" : "as.dto.person.Person",
-								"userId" : "person_2"
-							},
-							"fetchOptions" : {
-								"@id" : 4,
-								"@type" : "as.dto.material.fetchoptions.MaterialFetchOptions",
-								"registrator" : {
-									"@id" : 5,
-									"@type" : "as.dto.person.fetchoptions.PersonFetchOptions"
-								}
-							}
-						},
-						"220" : {
-							"@id" : 6,
-							"@type" : "as.dto.material.Material",
-							"code" : "material_2",
-							"registrator" : 3,
-							"fetchOptions" : 4
-						}
-					},
 					"registrator" : {
 						"@id" : 7,
 						"@type" : "as.dto.person.Person",
@@ -137,10 +110,6 @@ define([ 'jquery', 'underscore', 'test/common', 'test/dtos' ], function($, _, co
 					"fetchOptions" : {
 						"@id" : 8,
 						"@type" : "as.dto.sample.fetchoptions.SampleFetchOptions",
-						"materialProperties" : {
-							"@id" : 9,
-							"@type" : "as.dto.material.fetchoptions.MaterialFetchOptions"
-						},
 						"registrator" : {
 							"@id" : 10,
 							"@type" : "as.dto.person.fetchoptions.PersonFetchOptions"
@@ -151,10 +120,6 @@ define([ 'jquery', 'underscore', 'test/common', 'test/dtos' ], function($, _, co
 					"@id" : 11,
 					"@type" : "as.dto.sample.Sample",
 					"code" : "sample_2",
-					"materialProperties" : {
-						"230" : 2,
-						"220" : 6
-					},
 					"registrator" : 7,
 					"fetchOptions" : 8
 				}
@@ -168,14 +133,8 @@ define([ 'jquery', 'underscore', 'test/common', 'test/dtos' ], function($, _, co
 			try {
 				dtos.Json.fromJson(returnType, json).done(function(result) {
 					c.assertEqual(result[23].getCode(), "sample_1", "23.code");
-					c.assertEqual(result[23].getMaterialProperties()[230].getCode(), "material_1", "23.materialProperties.230.code");
-					c.assertEqual(result[23].getMaterialProperties()[230].getRegistrator().getUserId(), "person_2", "23.materialProperties.230.registrator.userId");
-					c.assertEqual(result[23].getMaterialProperties()[220].getCode(), "material_2", "23.materialProperties.220.code");
-					c.assertEqual(result[23].getMaterialProperties()[220].getRegistrator().getUserId(), "person_2", "23.materialProperties.220.registrator.userId");
 					c.assertEqual(result[23].getRegistrator().getUserId(), "person_1", "23.registrator.userId");
 					c.assertEqual(result[22].getCode(), "sample_2", "22.code");
-					c.assertEqual(result[22].getMaterialProperties()[230].getCode(), "material_1", "22.materialProperties.230.code");
-					c.assertEqual(result[22].getMaterialProperties()[220].getCode(), "material_2", "22.materialProperties.220.code");
 					c.assertEqual(result[22].getRegistrator().getUserId(), "person_1", "22.registrator.userId");
 					c.finish();
 				}).fail(function(error) {

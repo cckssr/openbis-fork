@@ -195,7 +195,7 @@ public class EventsSearchMaintenanceTaskTest
             expectLoadEvents(EventType.DELETION, EntityType.DATASET, dateTimeMillis("2000-01-01 00:26:00.000"), SMALL_BATCH_SIZE);
             expectLoadEvents(EventType.DELETION, EntityType.ATTACHMENT, dateTimeMillis("2000-01-01 00:25:00.000"), LARGE_BATCH_SIZE);
 
-            for (EntityType entityType : EnumSet.of(EntityType.MATERIAL, EntityType.PROPERTY_TYPE,
+            for (EntityType entityType : EnumSet.of(EntityType.PROPERTY_TYPE,
                     EntityType.VOCABULARY, EntityType.AUTHORIZATION_GROUP, EntityType.METAPROJECT))
             {
                 Date randomTimestamp = new Date((long) (Math.random() * 10000));
@@ -331,7 +331,7 @@ public class EventsSearchMaintenanceTaskTest
             expectLoadEvents(EventType.DELETION, EntityType.DATASET, dateTimeMillis("2021-03-29 00:26:00.000"), SMALL_BATCH_SIZE);
             expectLoadEvents(EventType.DELETION, EntityType.ATTACHMENT, dateTimeMillis("2021-03-29 00:25:00.000"), LARGE_BATCH_SIZE);
 
-            for (EntityType entityType : EnumSet.of(EntityType.MATERIAL, EntityType.PROPERTY_TYPE,
+            for (EntityType entityType : EnumSet.of(EntityType.PROPERTY_TYPE,
                     EntityType.VOCABULARY, EntityType.AUTHORIZATION_GROUP, EntityType.METAPROJECT))
             {
                 Date randomTimestamp = new Date((long) (Math.random() * 10000));
@@ -513,7 +513,7 @@ public class EventsSearchMaintenanceTaskTest
             expectLoadEvents(EventType.DELETION, EntityType.DATASET, dateTimeMillis("2021-03-29 00:26:00.000"), SMALL_BATCH_SIZE);
             expectLoadEvents(EventType.DELETION, EntityType.ATTACHMENT, dateTimeMillis("2021-03-29 00:25:00.000"), LARGE_BATCH_SIZE);
 
-            for (EntityType entityType : EnumSet.of(EntityType.MATERIAL, EntityType.PROPERTY_TYPE,
+            for (EntityType entityType : EnumSet.of(EntityType.PROPERTY_TYPE,
                     EntityType.VOCABULARY, EntityType.AUTHORIZATION_GROUP, EntityType.METAPROJECT))
             {
                 Date randomTimestamp = new Date((long) (Math.random() * 10000));
@@ -682,7 +682,7 @@ public class EventsSearchMaintenanceTaskTest
             expectLoadEvents(EventType.DELETION, EntityType.DATASET, null, FIRST_ONLY_BATCH_SIZE);
             expectLoadEvents(EventType.DELETION, EntityType.DATASET, null, SMALL_BATCH_SIZE);
 
-            for (EntityType entityType : EnumSet.of(EntityType.MATERIAL, EntityType.ATTACHMENT, EntityType.PROPERTY_TYPE, EntityType.VOCABULARY,
+            for (EntityType entityType : EnumSet.of(EntityType.ATTACHMENT, EntityType.PROPERTY_TYPE, EntityType.VOCABULARY,
                     EntityType.AUTHORIZATION_GROUP, EntityType.METAPROJECT))
             {
                 expectLoadEvents(EventType.DELETION, entityType, null, FIRST_ONLY_BATCH_SIZE);
@@ -904,7 +904,7 @@ public class EventsSearchMaintenanceTaskTest
             expectLoadEvents(EventType.DELETION, EntityType.DATASET, dateTimeMillis("2021-04-01 00:26:00.000"), SMALL_BATCH_SIZE);
             expectLoadEvents(EventType.DELETION, EntityType.ATTACHMENT, dateTimeMillis("2021-04-01 00:25:00.000"), LARGE_BATCH_SIZE);
 
-            for (EntityType entityType : EnumSet.of(EntityType.MATERIAL, EntityType.PROPERTY_TYPE,
+            for (EntityType entityType : EnumSet.of(EntityType.PROPERTY_TYPE,
                     EntityType.VOCABULARY, EntityType.AUTHORIZATION_GROUP, EntityType.METAPROJECT))
             {
                 Date randomTimestamp = new Date((long) (Math.random() * 10000));
@@ -1121,7 +1121,7 @@ public class EventsSearchMaintenanceTaskTest
             expectLoadEvents(EventType.DELETION, EntityType.SAMPLE, deletionSampleA.getRegistrationDateInternal(), SMALL_BATCH_SIZE);
 
             for (EntityType entityType : EnumSet
-                    .of(EntityType.DATASET, EntityType.MATERIAL,
+                    .of(EntityType.DATASET,
                             EntityType.ATTACHMENT, EntityType.PROPERTY_TYPE,
                             EntityType.VOCABULARY, EntityType.AUTHORIZATION_GROUP, EntityType.METAPROJECT))
             {
@@ -1312,7 +1312,7 @@ public class EventsSearchMaintenanceTaskTest
             expectLoadEvents(EventType.DELETION, EntityType.SAMPLE, deletionSampleA.getRegistrationDateInternal(), SMALL_BATCH_SIZE);
 
             for (EntityType entityType : EnumSet
-                    .of(EntityType.DATASET, EntityType.MATERIAL,
+                    .of(EntityType.DATASET,
                             EntityType.ATTACHMENT, EntityType.PROPERTY_TYPE,
                             EntityType.VOCABULARY, EntityType.AUTHORIZATION_GROUP, EntityType.METAPROJECT))
             {
@@ -1587,7 +1587,7 @@ public class EventsSearchMaintenanceTaskTest
             expectLoadEvents(EventType.DELETION, EntityType.DATASET, deletionDataSetC.getRegistrationDateInternal(), SMALL_BATCH_SIZE);
             expectLoadEvents(EventType.DELETION, EntityType.ATTACHMENT, dateTimeMillis("2021-04-07 00:25:00.000"), LARGE_BATCH_SIZE);
 
-            for (EntityType entityType : EnumSet.of(EntityType.MATERIAL, EntityType.PROPERTY_TYPE,
+            for (EntityType entityType : EnumSet.of( EntityType.PROPERTY_TYPE,
                     EntityType.VOCABULARY, EntityType.AUTHORIZATION_GROUP, EntityType.METAPROJECT))
             {
                 Date randomTimestamp = new Date((long) (Math.random() * 10000));
@@ -1804,7 +1804,7 @@ public class EventsSearchMaintenanceTaskTest
             expectLoadEvents(EventType.DELETION, EntityType.DATASET, deletionDataSetA.getRegistrationDateInternal(), SMALL_BATCH_SIZE);
 
             for (EntityType entityType : EnumSet
-                    .of(EntityType.ATTACHMENT, EntityType.MATERIAL, EntityType.PROPERTY_TYPE, EntityType.VOCABULARY, EntityType.AUTHORIZATION_GROUP,
+                    .of(EntityType.ATTACHMENT, EntityType.PROPERTY_TYPE, EntityType.VOCABULARY, EntityType.AUTHORIZATION_GROUP,
                             EntityType.METAPROJECT))
             {
                 expectLoadEvents(EventType.DELETION, entityType, null, FIRST_ONLY_BATCH_SIZE);
@@ -1990,7 +1990,7 @@ public class EventsSearchMaintenanceTaskTest
             expectLoadEvents(EventType.DELETION, EntityType.DATASET, dateTimeMillis("2021-04-20 13:18:23.605"), SMALL_BATCH_SIZE, deletionDataSetA);
             expectLoadEvents(EventType.DELETION, EntityType.DATASET, deletionDataSetA.getRegistrationDateInternal(), SMALL_BATCH_SIZE);
 
-            for (EntityType entityType : EnumSet.of(EntityType.MATERIAL,
+            for (EntityType entityType : EnumSet.of(
                     EntityType.ATTACHMENT, EntityType.PROPERTY_TYPE,
                     EntityType.VOCABULARY, EntityType.AUTHORIZATION_GROUP, EntityType.METAPROJECT))
             {
@@ -2250,7 +2250,7 @@ public class EventsSearchMaintenanceTaskTest
                     deletionAttachmentC1, deletionAttachmentC3, deletionAttachmentB1, deletionAttachmentB2, deletionAttachmentB3);
             expectLoadEvents(EventType.DELETION, EntityType.ATTACHMENT, deletionAttachmentB3.getRegistrationDateInternal(), LARGE_BATCH_SIZE);
 
-            for (EntityType entityType : EnumSet.of(EntityType.MATERIAL, EntityType.PROPERTY_TYPE,
+            for (EntityType entityType : EnumSet.of( EntityType.PROPERTY_TYPE,
                     EntityType.VOCABULARY, EntityType.AUTHORIZATION_GROUP, EntityType.METAPROJECT))
             {
                 Date randomTimestamp = new Date((long) (Math.random() * 10000));
@@ -2423,7 +2423,7 @@ public class EventsSearchMaintenanceTaskTest
     @DataProvider(name = PROVIDE_TEST_DELETION_GENERIC)
     private static Object[][] provideTestDeletionGeneric()
     {
-        return new Object[][] { { EntityType.MATERIAL }, { EntityType.METAPROJECT }, { EntityType.AUTHORIZATION_GROUP },
+        return new Object[][] { { EntityType.METAPROJECT }, { EntityType.AUTHORIZATION_GROUP },
                 { EntityType.VOCABULARY },
                 { EntityType.PROPERTY_TYPE } };
     }
@@ -2499,7 +2499,7 @@ public class EventsSearchMaintenanceTaskTest
                 }
             }
 
-            EnumSet<EntityType> otherGenericEntityTypes = EnumSet.of(EntityType.MATERIAL, EntityType.PROPERTY_TYPE,
+            EnumSet<EntityType> otherGenericEntityTypes = EnumSet.of(EntityType.PROPERTY_TYPE,
                     EntityType.VOCABULARY, EntityType.AUTHORIZATION_GROUP, EntityType.METAPROJECT);
 
             otherGenericEntityTypes.remove(entityType);

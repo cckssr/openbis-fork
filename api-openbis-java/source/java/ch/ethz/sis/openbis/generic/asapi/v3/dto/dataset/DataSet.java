@@ -20,7 +20,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.ObjectPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.ICodeHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IEntityTypeHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IExperimentHolder;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IMaterialPropertiesHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IModificationDateHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IModifierHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IParentChildrenHolder;
@@ -36,7 +35,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.DataStore;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.history.HistoryEntry;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.Material;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.Person;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
@@ -64,7 +62,7 @@ import java.util.stream.Stream;
  */
 @JsonObject("as.dto.dataset.DataSet")
 public class DataSet extends AbstractEntity<DataSet>
-        implements Serializable, ICodeHolder, IEntityTypeHolder, IExperimentHolder, IMaterialPropertiesHolder, IModificationDateHolder, IModifierHolder, IParentChildrenHolder<DataSet>, IPermIdHolder, IPropertiesHolder, IRegistrationDateHolder, IRegistratorHolder, ISampleHolder, ITagsHolder
+        implements Serializable, ICodeHolder, IEntityTypeHolder, IExperimentHolder, IModificationDateHolder, IModifierHolder, IParentChildrenHolder<DataSet>, IPermIdHolder, IPropertiesHolder, IRegistrationDateHolder, IRegistratorHolder, ISampleHolder, ITagsHolder
 {
     private static final long serialVersionUID = 1L;
 
@@ -115,9 +113,6 @@ public class DataSet extends AbstractEntity<DataSet>
 
     @JsonProperty
     private Sample sample;
-
-    @JsonProperty
-    private Map<String, Material> materialProperties;
 
     @JsonProperty
     private Map<String, Sample[]> sampleProperties;
@@ -457,28 +452,6 @@ public class DataSet extends AbstractEntity<DataSet>
     public void setSample(Sample sample)
     {
         this.sample = sample;
-    }
-
-    // Method automatically generated with DtoGenerator
-    @JsonIgnore
-    @Override
-    public Map<String, Material> getMaterialProperties()
-    {
-        if (getFetchOptions() != null && getFetchOptions().hasMaterialProperties())
-        {
-            return materialProperties;
-        }
-        else
-        {
-            throw new NotFetchedException("Material Properties have not been fetched.");
-        }
-    }
-
-    // Method automatically generated with DtoGenerator
-    @Override
-    public void setMaterialProperties(Map<String, Material> materialProperties)
-    {
-        this.materialProperties = materialProperties;
     }
 
     // Method automatically generated with DtoGenerator
@@ -911,22 +884,6 @@ public class DataSet extends AbstractEntity<DataSet>
     public void setAccessDate(Date accessDate)
     {
         this.accessDate = accessDate;
-    }
-
-    @Override
-    public Material getMaterialProperty(String propertyName)
-    {
-        return getMaterialProperties() != null ? getMaterialProperties().get(propertyName) : null;
-    }
-
-    @Override
-    public void setMaterialProperty(String propertyName, Material propertyValue)
-    {
-        if (materialProperties == null)
-        {
-            materialProperties = new HashMap<String, Material>();
-        }
-        materialProperties.put(propertyName, propertyValue);
     }
 
     @JsonIgnore

@@ -444,11 +444,27 @@ public class RoCrateService
     @Path("download")
     public Response download(
             @BeanParam DownloadParams headers,
+            @QueryParam(value = "jobId") String jobIdParam,
+            @QueryParam(value = "apiKey") String apiKeyParam,
             InputStream body) throws Exception
+    {
+        String jobId = jobIdParam;
+        String apiKey = apiKeyParam;
+        if(headers.getApiKey() != null && !headers.getApiKey().isBlank()) {
+            apiKey = headers.getApiKey();
+        }
+
+        if(headers.getJobId() != null && !headers.getJobId().isBlank()) {
+            jobId = headers.getJobId();
+        }
+        return downloadResponse(jobId, apiKey);
+    }
+
+    private Response downloadResponse(String jobId, String apiKey) throws Exception
     {
         OpenBIS openBIS = null;
         SessionInformation sessionInformation = null;
-        if (headers.getJobId() == null)
+        if (jobId == null || jobId.isBlank())
         {
             ErrorResponse errorResponse = new ErrorResponse("Header jobID is missing");
             return new ResponseBuilderImpl().entity(objectMapper.writeValueAsString(errorResponse))
@@ -456,7 +472,7 @@ public class RoCrateService
                     .type(MediaType.APPLICATION_JSON_TYPE)
                     .build();
         }
-        if (headers.getApiKey() == null)
+        if (apiKey == null || apiKey.isBlank())
         {
             ErrorResponse errorResponse = new ErrorResponse("Header api-key is missing");
             return new ResponseBuilderImpl().entity(objectMapper.writeValueAsString(errorResponse))
@@ -465,16 +481,17 @@ public class RoCrateService
                     .build();
         }
 
+
         try
         {
-            openBIS = OpeBISFactory.createOpenBIS(headers.getApiKey());
+            openBIS = OpeBISFactory.createOpenBIS(apiKey);
             sessionInformation = openBIS.getSessionInformation();
         } catch (Exception ex)
         {
             RoCrateExceptions.throwInstance(RoCrateExceptions.UNAVAILABLE_API_KEY);
         }
         AsyncJobRegistry.AsyncStatus status =
-                asyncJobRegistry.poll(sessionInformation.getUserName(), headers.getJobId());
+                asyncJobRegistry.poll(sessionInformation.getUserName(), jobId);
         Response.ResponseBuilder responseBuilder = new ResponseBuilderImpl();
 
         if (status == null)
@@ -494,8 +511,11 @@ public class RoCrateService
             {
                 java.nio.file.Path path = ((ExportJob) job).getResult();
 
+                String fileName = path.getFileName().toString();
+
                 responseBuilder = Response.ok(Files.readAllBytes(path),
                         ((ExportJob) job).getExportType());
+                responseBuilder.header("Content-Disposition",  "attachment; filename=\""+ fileName +"\"");
                 responseBuilder.type(((ExportJob) job).getExportType());
                 return responseBuilder.build();
             } else
@@ -514,7 +534,7 @@ public class RoCrateService
                     List.of(status.getJob().getException().getMessage() + "\n" + Arrays.stream(
                                     status.getJob().getException().getStackTrace()).toList().stream()
                             .map(x -> x.toString()).collect(
-                                    Collectors.joining(","))), null, headers.getJobId());
+                                    Collectors.joining(","))), null, jobId);
             statusCode = Response.Status.OK.getStatusCode();
 
         } else
@@ -527,6 +547,5 @@ public class RoCrateService
         responseBuilder.status(statusCode);
 
         return responseBuilder.build();
-
     }
 }

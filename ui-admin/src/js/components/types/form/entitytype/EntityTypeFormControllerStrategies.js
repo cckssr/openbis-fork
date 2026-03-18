@@ -36,17 +36,6 @@ export default class EntityTypeFormControllerStrategies {
         return objectTypes.DATA_SET_TYPE
       }
     }
-    this.materialTypeStrategy = {
-      getEntityKind: function () {
-        return openbis.EntityKind.MATERIAL
-      },
-      getNewObjectType: function () {
-        return objectTypes.NEW_MATERIAL_TYPE
-      },
-      getExistingObjectType: function () {
-        return objectTypes.MATERIAL_TYPE
-      }
-    }
   }
 
   extendObjectTypeStrategy(strategy) {
@@ -64,19 +53,11 @@ export default class EntityTypeFormControllerStrategies {
     this.dataSetTypeStrategy = Object.assign(strategy, this.dataSetTypeStrategy)
   }
 
-  extendMaterialTypeStrategy(strategy) {
-    this.materialTypeStrategy = Object.assign(
-      strategy,
-      this.materialTypeStrategy
-    )
-  }
-
   getStrategy(type) {
     const strategies = [
       this.objectTypeStrategy,
       this.collectionTypeStrategy,
-      this.dataSetTypeStrategy,
-      this.materialTypeStrategy
+      this.dataSetTypeStrategy
     ]
 
     const strategy = strategies.find(

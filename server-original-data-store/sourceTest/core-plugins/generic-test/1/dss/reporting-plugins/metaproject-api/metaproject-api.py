@@ -51,8 +51,6 @@ def process(transaction, parameters, tableBuilder):
     addRow("EXPERIMENT %s %s" % (e.getExperimentIdentifier(), e.getPermId()))
   for d in mas.getDataSets():
     addRow("DATASET %s" % d.getDataSetCode())
-  for m in mas.getMaterials():
-    addRow("MATERIAL %s" % m.getMaterialIdentifier())
   
   oldSample = transaction.getSample("/TEST-SPACE/TEST-PROJECT/EV-TEST")
   

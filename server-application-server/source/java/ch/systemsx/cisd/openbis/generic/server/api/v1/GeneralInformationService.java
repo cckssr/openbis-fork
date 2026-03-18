@@ -92,8 +92,6 @@ import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.DataStoreURLForDataSet
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Deletion;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.DeletionFetchOption;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Experiment;
-import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Material;
-import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.MaterialIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.MetaprojectAssignments;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Project;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Role;
@@ -119,7 +117,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DetailedSearchCriteria;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExperimentType;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ListMaterialCriteria;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ListSampleCriteria;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Metaproject;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Person;
@@ -1153,51 +1150,6 @@ public class GeneralInformationService extends AbstractServer<IGeneralInformatio
     @Override
     @Transactional(readOnly = true)
     @RolesAllowed(RoleWithHierarchy.PROJECT_OBSERVER)
-    public List<Material> getMaterialByCodes(String sessionToken,
-            List<MaterialIdentifier> materialIdentifier)
-    {
-        // convert api material indetifier into dto material identifier
-        Collection<ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialIdentifier> materialCodes =
-                CollectionUtils
-                        .collect(
-                                materialIdentifier,
-                                new Transformer<MaterialIdentifier, ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialIdentifier>()
-                                    {
-                                        @Override
-                                        public ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialIdentifier transform(
-                                                MaterialIdentifier arg0)
-                                        {
-                                            return new ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialIdentifier(
-                                                    arg0.getMaterialCode(), arg0
-                                                            .getMaterialTypeIdentifier()
-                                                            .getMaterialTypeCode());
-                                        }
-                                    });
-
-        ListMaterialCriteria criteria =
-                ListMaterialCriteria.createFromMaterialIdentifiers(materialCodes);
-
-        List<ch.systemsx.cisd.openbis.generic.shared.basic.dto.Material> materials =
-                commonServer.listMaterials(sessionToken, criteria, true);
-        return Translator.translateMaterials(materials);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    @RolesAllowed(RoleWithHierarchy.PROJECT_OBSERVER)
-    public List<Material> searchForMaterials(String sessionToken, SearchCriteria searchCriteria)
-    {
-        DetailedSearchCriteria detailedSearchCriteria =
-                SearchCriteriaToDetailedSearchCriteriaTranslator.convert(getDAOFactory(),
-                        SearchableEntityKind.MATERIAL, searchCriteria);
-        List<ch.systemsx.cisd.openbis.generic.shared.basic.dto.Material> materials =
-                commonServer.searchForMaterials(sessionToken, detailedSearchCriteria);
-        return Translator.translateMaterials(materials);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    @RolesAllowed(RoleWithHierarchy.PROJECT_OBSERVER)
     public List<Metaproject> listMetaprojects(String sessionToken)
     {
         return commonServer.listMetaprojects(sessionToken);
@@ -1242,7 +1194,6 @@ public class GeneralInformationService extends AbstractServer<IGeneralInformatio
         result.setSamples(Translator.translateSamples(assignments.getSamples()));
         result.setDataSets(Translator.translate(assignments.getDataSets(),
                 EnumSet.noneOf(Connections.class)));
-        result.setMaterials(Translator.translateMaterials(assignments.getMaterials()));
 
         return result;
     }

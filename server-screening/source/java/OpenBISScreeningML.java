@@ -26,6 +26,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
+import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SampleType;
 import org.apache.commons.io.FileUtils;
 
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
@@ -39,7 +41,6 @@ import ch.systemsx.cisd.openbis.dss.client.api.v1.OpenbisServiceFacadeFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.v1.FileInfoDssDTO;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.v1.NewDataSetMetadataDTO;
 import ch.systemsx.cisd.openbis.generic.client.cli.Login;
-import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Material;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SearchCriteria;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SearchCriteria.MatchClause;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SearchCriteria.MatchClauseAttribute;
@@ -60,13 +61,10 @@ import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.Geometry;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.IFeatureCodesProvider;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.ImageDatasetMetadata;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.ImageDatasetReference;
-import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.MaterialIdentifier;
-import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.MaterialTypeIdentifier;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.Plate;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.PlateIdentifier;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.PlateImageReference;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.PlateMetadata;
-import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.PlateWellMaterialMapping;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.WellIdentifier;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.WellPosition;
 
@@ -76,8 +74,7 @@ import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.WellPosition;
  * <p>
  * While written in Java, the API is idiomatic for Matlab, i.e. values are returned as multi-dimensional arrays. For the <code>get...</code> and
  * <code>load...</code> methods the first index will contain the actual data, while the second index will contain per-row annotations. For
- * <code>getFeatureMatrix</code>, the third index contains per-column annotations. This allows simple access with Matlab's slicing operator, see doc
- * of e.g. {@link #getFeatureMatrix(String, String, String[])}.
+ * <code>getFeatureMatrix</code>, the third index contains per-column annotations.
  * <p>
  * A typical Matlab session looks like:
  * 
@@ -553,83 +550,6 @@ public class OpenBISScreeningML
             result[i][0] = list.get(i);
         }
         return result;
-    }
-
-    /**
-     * List all material of a given type.
-     * <p>
-     * Matlab example:
-     * 
-     * <pre>
-     * % List all SIRNA material
-     * sirna = OpenBISScreeningML.listMaterials('SIRNA')
-     * % All material codes
-     * sirna(:,1,1)
-     * % All material ids
-     * sirna(:,2,1)
-     * % Properties of first material
-     * metadata(1,3,:)
-     * </pre>
-     * 
-     * @param materialType Material type as string.
-     * @return For each data set: <code>{{material code}, {material id}, { {key1, value1}, {key2, value2} ... } }</code>
-     */
-
-    public static Object[][][] listMaterials(String materialType)
-    {
-        checkLoggedIn();
-        SearchCriteria searchCriteria = new SearchCriteria();
-        searchCriteria.addMatchClause(MatchClause.createAttributeMatch(MatchClauseAttribute.TYPE, materialType));
-
-        List<Material> materialList = openbis.searchForMaterials(searchCriteria);
-
-        if (materialList.size() < 1)
-        {
-            return new Object[0][0][0];
-        }
-
-        Object[][][] result = new Object[materialList.size()][][];
-
-        for (int materialIdx = 0; materialIdx < materialList.size(); materialIdx++)
-        {
-            Material material = materialList.get(materialIdx);
-            result[materialIdx] = new Object[3][];
-            result[materialIdx][0] = new Object[]
-            { material.getMaterialCode() };
-            result[materialIdx][1] = new Object[]
-            { material.getId() };
-            result[materialIdx][2] = listProperties(material.getProperties());
-        }
-        return result;
-    }
-
-    /**
-     * Returns the properties of specified plate.
-     * <p>
-     * Matlab example:
-     * 
-     * <pre>
-     * % Get properties for plate P005 in space SPACE
-     * properties = OpenBISScreeningML.getPlateProperties('/SPACE/P005')
-     * % Get property type code of first property
-     * properties(1,1)
-     * % Get property value of first property
-     * properties(1,2)
-     * </pre>
-     * 
-     * @param augmentedPlateCode The augmented plate code
-     * @return A two dimensional array where the first column contains the property codes and the second column the corresponding property values.
-     */
-    public static Object[][] getPlateProperties(String augmentedPlateCode)
-    {
-        checkLoggedIn();
-        String[] plateArray = { augmentedPlateCode };
-        List<PlateMetadata> metadataList = openbis.getPlateMetadataList(toPlates(plateArray));
-        if (metadataList.size() < 1)
-        {
-            throw new RuntimeException("No metadata for that code found.");
-        }
-        return listProperties(metadataList.get(0).getProperties());
     }
 
     /**
@@ -1906,140 +1826,7 @@ public class OpenBISScreeningML
         return f;
     }
 
-    //
-    // Feature matrix
-    //
-
-    /**
-     * Returns the feature matrix of the specified features for all locations in <var>experiment</var> (a location is one well position in one feature
-     * vector data set) in <var>experiment</var> connected to <var>gene</var> in <code>[0]</code>, location annotations in <code>[1]</code> and
-     * feature annotation in <code>[2]</code>.
-     * <p>
-     * Matlab example:
-     * 
-     * <pre>
-     * % Get feature matrix for experiment /SPACE/PROJ/MYEXP for locations connected to GENENAME
-     * fmatrix = OpenBISScreeningML.getFeatureMatrix('/SPACE/PROJ/MYEXP', 'GENENAME', [], []);
-     * % Get feature matrix for features F1, F2 and F3 for 
-     * % experiment /SPACE/PROJ/MYEXP for locations connected to GENENAME
-     * fmatrix = OpenBISScreeningML.getFeatureMatrix('/SPACE/PROJ/MYEXP', 'GENENAME', [], {'F1' 'F2' 'F3'));
-     * % Get feature matrix for features F1 and F2 for experiment /SPACE/PROJ/MYEXP for locations 
-     * % connected to GENENAME calculated with analysis procedure AP-42.
-     * fmatrix = OpenBISScreeningML.getFeatureMatrix('/SPACE/PROJ/MYEXP', 'GENENAME', 'AP-42', {'F1' 'F2'));
-     * % Get the feature vector for the second location (assuming that there are at least two locations) 
-     * % of third data set (assuming that there are at least three data sets)
-     * fmatrix(1,:,2,3)
-     * % Get the values of the fourth feature for all locations (assuming that there are at least 4 features) 
-     * % of third data set (assuming that there are at least three data sets)
-     * fmatrix(1,4,:,3)
-     * % Get code of the fourth feature (assuming that there are at least 4 features)
-     * fmatrix(3,4)
-     * % Get the plate-well descriptions for the second location (assuming that there are at least two locations) 
-     * % of third data set (assuming that there are at least three data sets)
-     * fmatrix(2,2,3,:)
-     * </pre>
-     * 
-     * @param experiment The augmented experiment code
-     * @param gene The gene code (stored as material code in openBIS, usually it is gene id)
-     * @param analysisProcedureOrNull The code of the analysis procedure used to calculate requested features. That is, the result is restricted to
-     *            feature vector data sets with a value of property <code>ANALYSIS_PROCEDURE</code> as specified. If <code>null</code> (or
-     *            <code>[]</code> in MatLab) no restriction applies.
-     * @param featuresOrNull The codes of the features to contain the feature matrix. Unknown feature codes will be ignored. If <code>null</code> (or
-     *            <code>[]</code> in MatLab) all features are returned.
-     * @return a four dimensional matrix. The first dimension denotes the type in the following order:
-     *         <code>{feature matrix, annotations per location, feature codes}</code>. The other dimensions depend on the value of the first
-     *         dimension:
-     *         <ol>
-     *         <li>feature matrix: 2. dimension is feature vector, 3. dimension is location number, 4. dimension is data set number. If for a
-     *         particular location and a particular data set the corresponding feature value does not exists <code>NaN</code> will be returned. <li>
-     *         annotations: 2. dimension is location number, 3. dimension is data set number, 4. dimension is location annotations in the following
-     *         order: <code>{plate well description, plate augmented code, plate perm id, plate space code, plate code, row, column, experiment
-     *         augmented code, experiment perm id, experiment space code, experiment project code, experiment code, data set code, data set type}
-     *         </code> <li> feature codes: 2. dimension is feature codes in alphabetical order. 3. and 4. dimension are meaningless (i.e. they have
-     *         length one)
-     *         </ol>
-     */
-    public static Object[][][][] getFeatureMatrix(String experiment, String gene,
-            String analysisProcedureOrNull, String[] featuresOrNull)
-    {
-        checkLoggedIn();
-        final ExperimentIdentifier experimentId = experimentCodeToExperimentMap.get(experiment);
-        if (experimentId == null)
-        {
-            throw new RuntimeException("No experiment with that code found.");
-        }
-        final List<Plate> experimentPlates = experimentToPlateMap.get(experiment);
-        if (experimentPlates == null || experimentPlates.isEmpty())
-        {
-            return new Object[][][][]
-            { new Object[0][][], new Object[0][][], new Object[0][][] };
-        }
-        final List<FeatureVectorWithDescription> featureVectors =
-                openbis.loadFeaturesForPlateWells(experimentId, new MaterialIdentifier(
-                        MaterialTypeIdentifier.GENE, gene), analysisProcedureOrNull,
-                        (featuresOrNull == null) ? null : Arrays.asList(featuresOrNull));
-        return getFeatureMatrix(featureVectors);
-    }
-
-    /**
-     * Returns the feature matrix of the specified features for all locations (a location is one well position in one feature vector data set) in
-     * <var>experiment</var> connected to <var>gene</var> in <code>[0]</code>, location annotations in <code>[1]</code> and feature annotation in
-     * <code>[2]</code>.
-     * <p>
-     * Matlab example:
-     * 
-     * <pre>
-     * % Get feature matrix for GENENAME
-     * fmatrix = OpenBISScreeningML.getFeatureMatrix('GENENAME', [], []);
-     * % Get feature matrix for features FEATURE1, FEATURE2 and FEATURE3 for GENENAME
-     * fmatrix = OpenBISScreeningML.getFeatureMatrix('GENENAME', [], {'FEATURE1' 'FEATURE2' 'FEATURE3'});
-     * % Get feature matrix for features FEATURE1 and FEATURE2 for GENENAME 
-     * % computed with analysis procedure AP-42
-     * fmatrix = OpenBISScreeningML.getFeatureMatrix('GENENAME', 'AP-42', {'FEATURE1' 'FEATURE2'});
-     * % Get the feature vector for the second location (assuming that there are at least two locations) 
-     * % of third data set (assuming that there are at least three data sets)
-     * fmatrix(1,:,2,3)
-     * % Get the values of the fourth feature for all locations (assuming that there are at least 4 features) 
-     * % of third data set (assuming that there are at least three data sets)
-     * fmatrix(1,4,:,3)
-     * % Get code of the fourth feature (assuming that there are at least 4 features)
-     * fmatrix(3,4)
-     * % Get the plate-well descriptions for the second location (assuming that there are at least two locations) 
-     * % of third data set (assuming that there are at least three data sets)
-     * fmatrix(2,2,3,:)
-     * </pre>
-     * 
-     * @param gene The gene code (stored as material code in openBIS, usually it is gene id)
-     * @param analysisProcedureOrNull The code of the analysis procedure used to calculate requested features. That is, the result is restricted to
-     *            feature vector data sets with a value of property <code>ANALYSIS_PROCEDURE</code> as specified. If <code>null</code> (or
-     *            <code>[]</code> in MatLab) no restriction applies.
-     * @param featuresOrNull The codes of the features to contain the feature matrix. Unknown feature codes will be ignored. If <code>null</code> (or
-     *            <code>[]</code> in MatLab) all features are returned.
-     * @return a four dimensional matrix. The first dimension denotes the type in the following order:
-     *         <code>{feature matrix, annotations per location, feature codes}</code>. The other dimensions depend on the value of the first
-     *         dimension:
-     *         <ol>
-     *         <li>feature matrix: 2. dimension is feature vector, 3. dimension is location number, 4. dimension is data set number. If for a
-     *         particular location and a particular data set the corresponding feature value does not exists <code>NaN</code> will be returned. <li>
-     *         annotations: 2. dimension is location number, 3. dimension is data set number, 4. dimension is location annotations in the following
-     *         order: <code>{plate well description, plate augmented code, plate perm id, plate space code, plate code, row, column, experiment
-     *         augmented code, experiment perm id, experiment space code, experiment project code, experiment code, data set code, data set type}
-     *         </code> <li> feature codes: 2. dimension is feature codes in alphabetical order. 3. and 4. dimension are meaningless (i.e. they have
-     *         length one)
-     *         </ol>
-     */
-    public static Object[][][][] getFeatureMatrix(String gene, String analysisProcedureOrNull,
-            String[] featuresOrNull)
-    {
-        checkLoggedIn();
-        final List<FeatureVectorWithDescription> featureVectors =
-                openbis.loadFeaturesForPlateWells(new MaterialIdentifier(
-                        MaterialTypeIdentifier.GENE, gene), analysisProcedureOrNull,
-                        (featuresOrNull == null) ? null : Arrays.asList(featuresOrNull));
-        return getFeatureMatrix(featureVectors);
-    }
-
-    private static Object[][][][] getFeatureMatrix(
+    static Object[][][][] getFeatureMatrix(
             final List<FeatureVectorWithDescription> featureVectors)
     {
         final Object[][][][] result = new Object[3][][][];
@@ -2261,92 +2048,6 @@ public class OpenBISScreeningML
         List<String> result = new ArrayList<String>(codes);
         Collections.sort(result);
         return result;
-    }
-
-    /**
-     * Returns the gene mapping for the given <var>plateCodes</var> in <code>[0]</code> and location annotations in <code>[1]</code>.
-     * <p>
-     * One row in the matrix corresponds to one well.
-     * <p>
-     * Matlab example:
-     * 
-     * <pre>
-     * % Get feature matrix for features FEATURE1, FEATURE2 and FEATURE for PLATECODE
-     * genes = getGeneMappingForPlate('PLATECODE');
-     * % Get the plate well location description of the 10th wells
-     * loc2 = genes(2,10,1)
-     * % Get the gene ids that are in the 10th well
-     * geneIds = genes(1,10,:)
-     * </pre>
-     * 
-     * @param platesCodes The augmented codes of the plates to get the mapping for
-     * @return <code>{ gene ids, annotations per well }</code> where <code>gene ids</code> can be 0, 1 or more gene ids.
-     *         <code>annotations per location</code> contain:
-     *         <p>
-     *         <code>{ plate well description, plate augmented code, plate perm id,
-     *         plate space code, plate code, row, column }</code>
-     */
-    public static Object[][][] getGeneMappingForPlates(String[] platesCodes)
-    {
-        checkLoggedIn();
-        final List<PlateWellMaterialMapping> mappingList =
-                openbis.listPlateMaterialMapping(toPlates(platesCodes), MaterialTypeIdentifier.GENE);
-        int size = 0;
-        for (PlateWellMaterialMapping mapping : mappingList)
-        {
-            size +=
-                    mapping.getPlateGeometry().getNumberOfRows()
-                            * mapping.getPlateGeometry().getNumberOfColumns();
-        }
-        final Object[][][] result = new Object[2][size][];
-        int resultIdx = 0;
-        for (PlateWellMaterialMapping mapping : mappingList)
-        {
-            for (int row = 1; row <= mapping.getPlateGeometry().getNumberOfRows(); ++row)
-            {
-                for (int col = 1; col <= mapping.getPlateGeometry().getNumberOfColumns(); ++col)
-                {
-                    final List<MaterialIdentifier> genes = mapping.getMaterialsForWell(row, col);
-                    result[0][resultIdx] = new Object[genes.size()];
-                    for (int i = 0; i < genes.size(); ++i)
-                    {
-                        result[0][resultIdx][i] = genes.get(i).getMaterialCode();
-                    }
-                    final PlateIdentifier plate = mapping.getPlateIdentifier();
-                    result[1][resultIdx] =
-                            new Object[]
-                            { createPlateWellDescription(plate, row, col),
-                                    plate.getAugmentedCode(), plate.getPermId(),
-                                    plate.tryGetSpaceCode(), plate.getPlateCode(), row, col, };
-                    ++resultIdx;
-                }
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Experimental method that returns an array of {@link PlateMetadata} Java objects for a given list of plate codes.
-     * <p>
-     * 
-     * <pre>
-     * chosenPlates= { '/MY-SPACE/MY-PLATE1', '/MY-SPACE/MY-PLATE2' };
-     * metadata = OpenBISScreeningML.getPlateMetadataList(chosenPlates);
-     * % List all methods available on the result:
-     * methods(metadata(1),'-full');
-     * % Lists all wells of the first plate
-     * javaMethod('getWells',metadata(1))
-     * % Shows plate geometry of the first plate
-     * javaMethod('getPlateGeometry',metadata(1))
-     * </pre>
-     */
-    public static PlateMetadata[] getPlateMetadataList(String[] platesCodes)
-    {
-        checkLoggedIn();
-
-        List<PlateMetadata> metadataList = openbis.getPlateMetadataList(toPlates(platesCodes));
-
-        return metadataList.toArray(new PlateMetadata[0]);
     }
 
     public static String getContainerDataSetCode(String dataSetCode)

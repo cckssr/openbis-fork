@@ -27,7 +27,6 @@ define([ "stjs", "util/Exceptions", "as/dto/common/entity/AbstractEntity" ], fun
         prototype.samplesHistory = null;
         prototype.dataSetsHistory = null;
         prototype.unknownHistory = null;
-		prototype.materialProperties = null;
 		prototype.sampleProperties = null;
 		prototype.tags = null;
 		prototype.registrator = null;
@@ -195,26 +194,6 @@ define([ "stjs", "util/Exceptions", "as/dto/common/entity/AbstractEntity" ], fun
 			this.unknownHistory = unknownHistory;
 		};
 
-		prototype.getMaterialProperty = function(propertyName) {
-			var properties = this.getMaterialProperties();
-			return properties ? properties[propertyName] : null;
-		};
-		prototype.setMaterialProperty = function(propertyName, propertyValue) {
-			if (this.materialProperties == null) {
-				this.materialProperties = {};
-			}
-			this.materialProperties[propertyName] = propertyValue;
-		};
-		prototype.getMaterialProperties = function() {
-			if (this.getFetchOptions() && this.getFetchOptions().hasMaterialProperties()) {
-				return this.materialProperties;
-			} else {
-				throw new exceptions.NotFetchedException("Material properties have not been fetched.");
-			}
-		};
-		prototype.setMaterialProperties = function(materialProperties) {
-			this.materialProperties = materialProperties;
-		};
 		prototype.getSampleProperties = function() {
 			if (this.getFetchOptions() && this.getFetchOptions().hasSampleProperties()) {
 				return this.sampleProperties;
@@ -322,10 +301,6 @@ define([ "stjs", "util/Exceptions", "as/dto/common/entity/AbstractEntity" ], fun
 		unknownHistory : {
 			name : "List",
 			arguments : [ "HistoryEntry" ]
-		},
-		materialProperties : {
-			name : "Map",
-			arguments : [ "String", "Material" ]
 		},
 		sampleProperties : {
 			name : "Map",

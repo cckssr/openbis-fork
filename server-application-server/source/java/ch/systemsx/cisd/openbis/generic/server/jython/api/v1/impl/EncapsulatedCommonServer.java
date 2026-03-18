@@ -28,7 +28,6 @@ import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IDataSetTypeImmutab
 import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IExperimentTypeImmutable;
 import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IExternalDataManagementSystemImmutable;
 import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IFileFormatTypeImmutable;
-import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IMaterialTypeImmutable;
 import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IPropertyAssignmentImmutable;
 import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IPropertyTypeImmutable;
 import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.ISampleTypeImmutable;
@@ -115,17 +114,6 @@ public class EncapsulatedCommonServer
         return result;
     }
 
-    public List<IMaterialTypeImmutable> listMaterialTypes()
-    {
-        List<IMaterialTypeImmutable> result = new ArrayList<IMaterialTypeImmutable>();
-        for (ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialType type : commonServer
-                .listMaterialTypes(sessionToken))
-        {
-            result.add(new MaterialTypeImmutable(type));
-        }
-        return result;
-    }
-
     public List<IPropertyTypeImmutable> listPropertyTypes()
     {
         List<IPropertyTypeImmutable> result = new ArrayList<IPropertyTypeImmutable>();
@@ -177,11 +165,6 @@ public class EncapsulatedCommonServer
     public void registerScript(Script script)
     {
         commonServer.registerScript(sessionToken, script.script);
-    }
-
-    public void registerMaterialType(MaterialTypeImmutable materialType)
-    {
-        commonServer.registerMaterialType(sessionToken, materialType.getMaterialType());
     }
 
     public void registerPropertyType(PropertyTypeImmutable propertyType)

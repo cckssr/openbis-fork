@@ -26,6 +26,6 @@ import ch.systemsx.cisd.base.annotation.JsonObject;
 public enum EntityKind
 {
 
-    MATERIAL, EXPERIMENT, SAMPLE, DATA_SET
+    EXPERIMENT, SAMPLE, DATA_SET
 
 }

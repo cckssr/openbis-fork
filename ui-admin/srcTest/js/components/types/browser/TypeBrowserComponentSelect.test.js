@@ -24,7 +24,6 @@ async function testSelectEntityKind() {
       { level: 0, text: 'Object Types', selected: false },
       { level: 0, text: 'Collection Types', selected: false },
       { level: 0, text: 'Data Set Types', selected: false },
-      { level: 0, text: 'Material Types', selected: false },
       { level: 0, text: 'Vocabulary Types', selected: false },
       { level: 0, text: 'Property Types', selected: false }
     ],
@@ -46,7 +45,6 @@ async function testSelectEntityKind() {
       { level: 0, text: 'Object Types', selected: true },
       { level: 0, text: 'Collection Types', selected: false },
       { level: 0, text: 'Data Set Types', selected: false },
-      { level: 0, text: 'Material Types', selected: false },
       { level: 0, text: 'Vocabulary Types', selected: false },
       { level: 0, text: 'Property Types', selected: false }
     ],
@@ -77,7 +75,6 @@ async function testSelectEntityType() {
       { level: 1, text: fixture.TEST_SAMPLE_TYPE_DTO.code, selected: false },
       { level: 0, text: 'Collection Types', selected: false },
       { level: 0, text: 'Data Set Types', selected: false },
-      { level: 0, text: 'Material Types', selected: false },
       { level: 0, text: 'Vocabulary Types', selected: false },
       { level: 0, text: 'Property Types', selected: false }
     ],
@@ -101,7 +98,6 @@ async function testSelectEntityType() {
       { level: 1, text: fixture.TEST_SAMPLE_TYPE_DTO.code, selected: false },
       { level: 0, text: 'Collection Types', selected: false },
       { level: 0, text: 'Data Set Types', selected: false },
-      { level: 0, text: 'Material Types', selected: false },
       { level: 0, text: 'Vocabulary Types', selected: false },
       { level: 0, text: 'Property Types', selected: false }
     ],

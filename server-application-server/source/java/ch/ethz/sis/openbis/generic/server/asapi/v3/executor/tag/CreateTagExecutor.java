@@ -62,9 +62,6 @@ public class CreateTagExecutor extends AbstractCreateEntityExecutor<TagCreation,
     @Autowired
     private ISetTagDataSetsExecutor setTagDataSetsExecutor;
 
-    @Autowired
-    private ISetTagMaterialsExecutor setTagMaterialsExecutor;
-
     @Override
     protected List<MetaprojectPE> createEntities(final IOperationContext context, CollectionBatch<TagCreation> batch)
     {
@@ -132,7 +129,6 @@ public class CreateTagExecutor extends AbstractCreateEntityExecutor<TagCreation,
         setTagExperimentsExecutor.set(context, batch);
         setTagSamplesExecutor.set(context, batch);
         setTagDataSetsExecutor.set(context, batch);
-        setTagMaterialsExecutor.set(context, batch);
     }
 
     @Override

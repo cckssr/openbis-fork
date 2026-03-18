@@ -65,9 +65,6 @@ public class SampleTranslator extends AbstractCachingTranslator<Long, Sample, Sa
     private ISamplePropertyTranslator propertyTranslator;
 
     @Autowired
-    private ISampleMaterialPropertyTranslator materialPropertyTranslator;
-
-    @Autowired
     private ISampleSamplePropertyTranslator samplePropertyTranslator;
 
     @Autowired
@@ -172,12 +169,6 @@ public class SampleTranslator extends AbstractCachingTranslator<Long, Sample, Sa
         if (fetchOptions.hasProperties())
         {
             relations.put(ISamplePropertyTranslator.class, propertyTranslator.translate(context, sampleIds, fetchOptions.withProperties()));
-        }
-
-        if (fetchOptions.hasMaterialProperties())
-        {
-            relations.put(ISampleMaterialPropertyTranslator.class,
-                    materialPropertyTranslator.translate(context, sampleIds, fetchOptions.withMaterialProperties()));
         }
 
         if (fetchOptions.hasSampleProperties())
@@ -346,12 +337,6 @@ public class SampleTranslator extends AbstractCachingTranslator<Long, Sample, Sa
         {
             result.setProperties(relations.get(ISamplePropertyTranslator.class, sampleId));
             result.getFetchOptions().withPropertiesUsing(fetchOptions.withProperties());
-        }
-
-        if (fetchOptions.hasMaterialProperties())
-        {
-            result.setMaterialProperties(relations.get(ISampleMaterialPropertyTranslator.class, sampleId));
-            result.getFetchOptions().withMaterialPropertiesUsing(fetchOptions.withMaterialProperties());
         }
 
         if (fetchOptions.hasSampleProperties())

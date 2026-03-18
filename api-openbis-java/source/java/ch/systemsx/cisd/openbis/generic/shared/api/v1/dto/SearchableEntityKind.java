@@ -25,7 +25,7 @@ import ch.systemsx.cisd.base.annotation.JsonObject;
 @JsonObject("SearchableEntityKind")
 public enum SearchableEntityKind
 {
-    SAMPLE, EXPERIMENT, DATA_SET, MATERIAL,
+    SAMPLE, EXPERIMENT, DATA_SET,
     // sample subcriteria
     SAMPLE_CONTAINER, SAMPLE_PARENT, SAMPLE_CHILD,
     // data set subcriteria

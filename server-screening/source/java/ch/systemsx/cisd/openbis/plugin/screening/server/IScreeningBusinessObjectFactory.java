@@ -20,10 +20,8 @@ import java.util.List;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.IDataBO;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.IDataSetTable;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.IExperimentBO;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.IMaterialBO;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.ISampleBO;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.datasetlister.IDatasetLister;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.materiallister.IMaterialLister;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.samplelister.ISampleLister;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
 import ch.systemsx.cisd.openbis.generic.shared.dto.Session;
@@ -62,11 +60,7 @@ public interface IScreeningBusinessObjectFactory
 
     public IExperimentBO createExperimentBO(Session session);
 
-    public IMaterialBO createMaterialBO(Session session);
-
     public ISampleLister createSampleLister(Session session);
-
-    public IMaterialLister createMaterialLister(Session session);
 
     public IDataBO createDataBO(Session session);
 

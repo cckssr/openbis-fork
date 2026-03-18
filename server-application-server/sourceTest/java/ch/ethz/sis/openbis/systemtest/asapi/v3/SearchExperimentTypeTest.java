@@ -170,7 +170,7 @@ public class SearchExperimentTypeTest extends AbstractTest
         assertEquals(codes.toString(), "[DELETION_TEST]");
         assertEquals(types.get(0).getFetchOptions().hasPropertyAssignments(), true);
         List<PropertyAssignment> propertyAssignments = types.get(0).getPropertyAssignments();
-        assertOrder(propertyAssignments, "ORGANISM", "DESCRIPTION", "BACTERIUM");
+        assertOrder(propertyAssignments, "ORGANISM", "DESCRIPTION");
         v3api.logout(sessionToken);
     }
 

@@ -25,7 +25,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IdListUpdateValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.IDataSetId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.IExperimentId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.id.IMaterialId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.ISampleId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.ITagId;
 import ch.systemsx.cisd.base.annotation.JsonObject;
@@ -52,9 +51,6 @@ public class TagUpdate implements IUpdate, IObjectUpdate<ITagId>
 
     @JsonProperty
     private IdListUpdateValue<IDataSetId> dataSetIds = new IdListUpdateValue<IDataSetId>();
-
-    @JsonProperty
-    private IdListUpdateValue<IMaterialId> materialIds = new IdListUpdateValue<IMaterialId>();
 
     @Override
     @JsonIgnore
@@ -103,12 +99,6 @@ public class TagUpdate implements IUpdate, IObjectUpdate<ITagId>
     public IdListUpdateValue<IDataSetId> getDataSetIds()
     {
         return dataSetIds;
-    }
-
-    @JsonIgnore
-    public IdListUpdateValue<IMaterialId> getMaterialIds()
-    {
-        return materialIds;
     }
 
     @Override

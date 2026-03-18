@@ -27,11 +27,6 @@ import org.eclipse.jetty.client.MultiPartRequestContent;
 import org.eclipse.jetty.http.HttpFields;
 import org.eclipse.jetty.http.MultiPart;
 import org.testng.annotations.Test;
-
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.Material;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.delete.MaterialDeletionOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.id.IMaterialId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.id.MaterialPermId;
 import ch.systemsx.cisd.common.utilities.TestResources;
 
 /**
@@ -45,18 +40,6 @@ public class GeneralImportTest extends ObjectsImportTest
     {
         String sessionToken = as.login(TEST_USER, PASSWORD);
 
-        MaterialPermId materialPermId1 = new MaterialPermId("TEST-IMPORT-1", "VIRUS");
-        MaterialPermId materialPermId2 = new MaterialPermId("TEST-IMPORT-2", "VIRUS");
-
-        deleteMaterials(sessionToken, materialPermId1, materialPermId2);
-
-        try
-        {
-            Material material1 = getObject(sessionToken, materialPermId1);
-            assertNull(material1);
-
-            Material material2 = getObject(sessionToken, materialPermId2);
-            assertNull(material2);
 
             TestResources resources = new TestResources(getClass());
             File materialsFile = resources.getResourceFile("materials_excel_97_2003.xls");
@@ -90,11 +73,6 @@ public class GeneralImportTest extends ObjectsImportTest
             long timestamp = getTimestampAndWaitASecond();
             String message = executeImport(sessionToken, "generalImport", parameters);
 
-            material1 = getObject(sessionToken, materialPermId1, timestamp, DEFAULT_TIMEOUT);
-            assertEquals("imported description 1", material1.getProperty("DESCRIPTION"));
-
-            material2 = getObject(sessionToken, materialPermId2, timestamp, DEFAULT_TIMEOUT);
-            assertEquals("default imported description", material2.getProperty("DESCRIPTION"));
 
             if (async)
             {
@@ -102,23 +80,14 @@ public class GeneralImportTest extends ObjectsImportTest
                 assertEmail(timestamp, TEST_EMAIL, "General Batch Import successfully performed");
             } else
             {
-                assertEquals("Registration/update of 2 material(s) is complete.\nRegistration of 0 sample(s) is complete.", message);
+                assertEquals("Registration of 0 sample(s) is complete.", message);
                 assertNoEmails(timestamp);
             }
 
             assertUploadedFiles(sessionToken);
 
-        } finally
-        {
-            deleteMaterials(sessionToken, materialPermId1, materialPermId2);
-        }
+
     }
 
-    private void deleteMaterials(String sessionToken, IMaterialId... materialIds)
-    {
-        MaterialDeletionOptions options = new MaterialDeletionOptions();
-        options.setReason("cleanup");
-        as.deleteMaterials(sessionToken, Arrays.asList(materialIds), options);
-    }
 
 }

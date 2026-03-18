@@ -39,14 +39,11 @@ import ch.systemsx.cisd.openbis.generic.server.dataaccess.dynamic_property.calcu
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.dynamic_property.calculator.DynamicPropertyCalculatorFactory;
 import ch.systemsx.cisd.openbis.generic.shared.basic.BasicConstant;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataTypeCode;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PluginType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ScriptType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EntityPropertyPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePropertyTypePE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialPE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PropertyTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePropertyPE;
@@ -239,118 +236,6 @@ public class DynamicPropertyEvaluatorTest extends AbstractBOTest
     }
 
     @Test
-    public void testEvaluateMaterialProperties()
-    {
-        // check handling of material properties
-        Set<SamplePropertyPE> properties = new HashSet<SamplePropertyPE>();
-
-        PropertyTypePE materialPropertyType = createPropertyType("mp", DataTypeCode.MATERIAL);
-        final String materialTypeCode = "M_TYPE";
-        MaterialTypePE materialType = new MaterialTypePE();
-        materialType.setCode(materialTypeCode);
-        materialPropertyType.setMaterialType(materialType);
-
-        final MaterialPE material = new MaterialPE();
-        material.setCode("M_CODE");
-        material.setMaterialType(materialType);
-
-        SamplePropertyPE mp = createSampleMaterialProperty(materialPropertyType, material);
-        properties.add(mp);
-
-        // create dynamic properties
-        final ScriptPE script1 = createScript("s1", "entity.propertyValue('mp')");
-
-        final SamplePropertyPE dpVarchar = createDynamicSampleProperty("dpVarchar", script1);
-
-        final PropertyTypePE dynamicPropertyType =
-                createPropertyType("dpMaterial", DataTypeCode.MATERIAL);
-        dynamicPropertyType.setMaterialType(materialType);
-        final SamplePropertyPE dpMaterial =
-                createDynamicSampleProperty(dynamicPropertyType, script1);
-
-        final MaterialIdentifier fakeCodeIdentifier =
-                new MaterialIdentifier("fake_material", materialTypeCode);
-        final ScriptPE scriptError1 = createScript("se1", "'" + fakeCodeIdentifier.getCode() + "'");
-        final PropertyTypePE dynamicPropertyTypeError1 =
-                createPropertyType("dpMaterialError1", DataTypeCode.MATERIAL);
-        dynamicPropertyTypeError1.setMaterialType(materialType);
-        final SamplePropertyPE dpMaterialError1 =
-                createDynamicSampleProperty(dynamicPropertyTypeError1, scriptError1);
-
-        final MaterialIdentifier fakeTypeIdentifier = new MaterialIdentifier("fake", "fake_type");
-        final ScriptPE scriptError2 =
-                createScript("se2", "'" + fakeTypeIdentifier.toString() + "'");
-        final PropertyTypePE dynamicPropertyTypeError2 =
-                createPropertyType("dpMaterialError2", DataTypeCode.MATERIAL);
-        dynamicPropertyTypeError2.setMaterialType(materialType);
-        final SamplePropertyPE dpMaterialError2 =
-                createDynamicSampleProperty(dynamicPropertyTypeError2, scriptError2);
-
-        final MaterialIdentifier fakeMaterialIdentifier =
-                new MaterialIdentifier("fake", materialTypeCode);
-        final ScriptPE scriptError3 =
-                createScript("se3", "'" + fakeMaterialIdentifier.toString() + "'");
-        final PropertyTypePE dynamicPropertyTypeError3 =
-                createPropertyType("dpMaterialError3", DataTypeCode.MATERIAL);
-        dynamicPropertyTypeError3.setMaterialType(materialType);
-        final SamplePropertyPE dpMaterialError3 =
-                createDynamicSampleProperty(dynamicPropertyTypeError3, scriptError3);
-
-        properties.add(dpVarchar);
-        properties.add(dpMaterial);
-        properties.add(dpMaterialError1);
-        properties.add(dpMaterialError2);
-        properties.add(dpMaterialError3);
-
-        context.checking(new Expectations()
-            {
-                {
-                    one(materialDAO).tryFindMaterial(sessionProvider.getSession(),
-                            fakeCodeIdentifier);
-                    will(returnValue(null));
-
-                    one(materialDAO).tryFindMaterial(sessionProvider.getSession(),
-                            new MaterialIdentifier(material.getCode(), materialTypeCode));
-                    will(returnValue(material));
-
-                    one(materialDAO).tryFindMaterial(sessionProvider.getSession(),
-                            fakeMaterialIdentifier);
-                    will(returnValue(null));
-                }
-            });
-
-        // create sample with all properties created above and evaluate dynamic properties
-        final SamplePE sample = createSample("s1", properties);
-        evaluator.evaluateProperties(sample, sessionProvider.getSession());
-
-        // check if evaluated values are correct
-        final String materialIdentifier =
-                MaterialIdentifier.print(material.getCode(), materialTypeCode);
-        assertEquals(materialIdentifier, dpVarchar.getValue());
-        assertEquals(null, dpVarchar.getMaterialValue());
-
-        assertEquals(null, dpMaterial.getValue());
-        assertEquals(material, dpMaterial.getMaterialValue());
-
-        final String expectedDpMaterialError1Value =
-                expectedErrorMessage("No material could be found for identifier 'fake_material (M_TYPE)'.");
-        assertEquals(expectedDpMaterialError1Value, dpMaterialError1.getValue());
-        assertEquals(null, dpMaterialError1.getVocabularyTerm());
-
-        final String expectedDpMaterialError2Value =
-                expectedErrorMessage("Material '" + fakeTypeIdentifier.toString()
-                        + "' is of wrong type. Expected: '" + materialTypeCode + "'.");
-        assertEquals(expectedDpMaterialError2Value, dpMaterialError2.getValue());
-        assertEquals(null, dpMaterialError2.getVocabularyTerm());
-
-        final String expectedDpMaterialError3Value =
-                expectedErrorMessage("No material could be found for identifier '"
-                        + fakeMaterialIdentifier.toString() + "'.");
-        assertEquals(expectedDpMaterialError3Value, dpMaterialError3.getValue());
-        assertEquals(null, dpMaterialError3.getVocabularyTerm());
-    }
-
-    @Test
     public void testEvaluatePropertyDependingOnAnotherDynamicProperty()
     {
         // check evaluation of dynamic properties that depend on other dynamic properties
@@ -512,17 +397,6 @@ public class DynamicPropertyEvaluatorTest extends AbstractBOTest
         entityTypePropertyType.setPropertyType(propertyType);
         result.setEntityTypePropertyType(entityTypePropertyType);
         result.setVocabularyTerm(term);
-        return result;
-    }
-
-    private static SamplePropertyPE createSampleMaterialProperty(final PropertyTypePE propertyType,
-            final MaterialPE material)
-    {
-        final SamplePropertyPE result = new SamplePropertyPE();
-        final SampleTypePropertyTypePE entityTypePropertyType = new SampleTypePropertyTypePE();
-        entityTypePropertyType.setPropertyType(propertyType);
-        result.setEntityTypePropertyType(entityTypePropertyType);
-        result.setMaterialValue(material);
         return result;
     }
 

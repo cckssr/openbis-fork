@@ -52,8 +52,6 @@ public class ResourceListParserData
 
     private Map<String, IncomingDataSet> dataSetsToProcess = new HashMap<String, IncomingDataSet>();
 
-    private MultiKeyMap<String, IncomingMaterial> materialsToProcess = new MultiKeyMap<String, IncomingMaterial>();
-    
     private Map<String, byte[]> filesToProcess = new HashMap<>();
 
     public ResourceListParserData(INameTranslator nameTranslator)
@@ -122,11 +120,6 @@ public class ResourceListParserData
     public Map<String, IncomingDataSet> getDataSetsToProcess()
     {
         return dataSetsToProcess;
-    }
-
-    public MultiKeyMap<String, IncomingMaterial> getMaterialsToProcess()
-    {
-        return materialsToProcess;
     }
 
     public Map<String, IncomingDataSet> filterByDataSetKindAndLastModificationDate(DataSetKind dataSetKind, Date lastSyncDate,

@@ -78,20 +78,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchCriter
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.ImportResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.data.ImportData;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.options.ImportOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.Material;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.MaterialType;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.create.MaterialCreation;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.create.MaterialTypeCreation;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.delete.MaterialDeletionOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.delete.MaterialTypeDeletionOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.fetchoptions.MaterialFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.fetchoptions.MaterialTypeFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.id.IMaterialId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.id.MaterialPermId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.MaterialSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.MaterialTypeSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.update.MaterialTypeUpdate;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.update.MaterialUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.objectkindmodification.ObjectKindModification;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.objectkindmodification.fetchoptions.ObjectKindModificationFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.objectkindmodification.search.ObjectKindModificationSearchCriteria;
@@ -413,18 +399,6 @@ public class OpenBISJavaScriptFacade implements IApplicationServerApi
     }
 
     @TypeScriptMethod
-    @Override public List<MaterialPermId> createMaterials(final String sessionToken, final List<MaterialCreation> newMaterials)
-    {
-        return null;
-    }
-
-    @TypeScriptMethod
-    @Override public List<EntityTypePermId> createMaterialTypes(final String sessionToken, final List<MaterialTypeCreation> newMaterialTypes)
-    {
-        return null;
-    }
-
-    @TypeScriptMethod
     @Override public List<PropertyTypePermId> createPropertyTypes(final String sessionToken, final List<PropertyTypeCreation> newPropertyTypes)
     {
         return null;
@@ -552,18 +526,6 @@ public class OpenBISJavaScriptFacade implements IApplicationServerApi
 
     @TypeScriptMethod
     @Override public void updateDataSetTypes(final String sessionToken, final List<DataSetTypeUpdate> dataSetTypeUpdates)
-    {
-
-    }
-
-    @TypeScriptMethod
-    @Override public void updateMaterials(final String sessionToken, final List<MaterialUpdate> materialUpdates)
-    {
-
-    }
-
-    @TypeScriptMethod
-    @Override public void updateMaterialTypes(final String sessionToken, final List<MaterialTypeUpdate> materialTypeUpdates)
     {
 
     }
@@ -700,20 +662,6 @@ public class OpenBISJavaScriptFacade implements IApplicationServerApi
     @TypeScriptMethod
     @Override public Map<IEntityTypeId, DataSetType> getDataSetTypes(final String sessionToken, final List<? extends IEntityTypeId> dataSetTypeIds,
             final DataSetTypeFetchOptions fetchOptions)
-    {
-        return null;
-    }
-
-    @TypeScriptMethod
-    @Override public Map<IMaterialId, Material> getMaterials(final String sessionToken, final List<? extends IMaterialId> materialIds,
-            final MaterialFetchOptions fetchOptions)
-    {
-        return null;
-    }
-
-    @TypeScriptMethod
-    @Override public Map<IEntityTypeId, MaterialType> getMaterialTypes(final String sessionToken, final List<? extends IEntityTypeId> materialTypeIds,
-            final MaterialTypeFetchOptions fetchOptions)
     {
         return null;
     }
@@ -873,23 +821,9 @@ public class OpenBISJavaScriptFacade implements IApplicationServerApi
     }
 
     @TypeScriptMethod
-    @Override public SearchResult<Material> searchMaterials(final String sessionToken, final MaterialSearchCriteria searchCriteria,
-            final MaterialFetchOptions fetchOptions)
-    {
-        return null;
-    }
-
-    @TypeScriptMethod
     @Override public SearchResult<ExternalDms> searchExternalDataManagementSystems(final String sessionToken,
             final ExternalDmsSearchCriteria searchCriteria,
             final ExternalDmsFetchOptions fetchOptions)
-    {
-        return null;
-    }
-
-    @TypeScriptMethod
-    @Override public SearchResult<MaterialType> searchMaterialTypes(final String sessionToken, final MaterialTypeSearchCriteria searchCriteria,
-            final MaterialTypeFetchOptions fetchOptions)
     {
         return null;
     }
@@ -1084,13 +1018,6 @@ public class OpenBISJavaScriptFacade implements IApplicationServerApi
     }
 
     @TypeScriptMethod
-    @Override public void deleteMaterials(final String sessionToken, final List<? extends IMaterialId> materialIds,
-            final MaterialDeletionOptions deletionOptions)
-    {
-
-    }
-
-    @TypeScriptMethod
     @Override public void deletePlugins(final String sessionToken, final List<? extends IPluginId> pluginIds,
             final PluginDeletionOptions deletionOptions)
     {
@@ -1135,13 +1062,6 @@ public class OpenBISJavaScriptFacade implements IApplicationServerApi
     @TypeScriptMethod
     @Override public void deleteDataSetTypes(final String sessionToken, final List<? extends IEntityTypeId> dataSetTypeIds,
             final DataSetTypeDeletionOptions deletionOptions)
-    {
-
-    }
-
-    @TypeScriptMethod
-    @Override public void deleteMaterialTypes(final String sessionToken, final List<? extends IEntityTypeId> materialTypeIds,
-            final MaterialTypeDeletionOptions deletionOptions)
     {
 
     }

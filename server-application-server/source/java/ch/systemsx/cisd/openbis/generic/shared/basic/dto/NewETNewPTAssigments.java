@@ -126,10 +126,6 @@ public class NewETNewPTAssigments implements Serializable
                 DataSetType datasetType = (DataSetType) entity;
                 datasetType.getAssignedPropertyTypes().add(insertPos, (DataSetTypePropertyType) newEtpt);
                 break;
-            case MATERIAL:
-                MaterialType materialType = (MaterialType) entity;
-                materialType.getAssignedPropertyTypes().add(insertPos, (MaterialTypePropertyType) newEtpt);
-                break;
         }
 
         // External List
@@ -216,10 +212,6 @@ public class NewETNewPTAssigments implements Serializable
             case DATA_SET:
                 etpt = new DataSetTypePropertyType();
                 ((DataSetTypePropertyType) etpt).setEntityType((DataSetType) entityType);
-                break;
-            case MATERIAL:
-                etpt = new MaterialTypePropertyType();
-                ((MaterialTypePropertyType) etpt).setEntityType((MaterialType) entityType);
                 break;
         }
 

@@ -22,7 +22,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.create.ICreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.create.IObjectCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.IDataSetId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.IExperimentId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.id.IMaterialId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.ISampleId;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
@@ -43,8 +42,6 @@ public class TagCreation implements ICreation, IObjectCreation
     private List<? extends ISampleId> sampleIds;
 
     private List<? extends IDataSetId> dataSetIds;
-
-    private List<? extends IMaterialId> materialIds;
 
     public String getCode()
     {
@@ -94,16 +91,6 @@ public class TagCreation implements ICreation, IObjectCreation
     public void setDataSetIds(List<? extends IDataSetId> dataSetIds)
     {
         this.dataSetIds = dataSetIds;
-    }
-
-    public List<? extends IMaterialId> getMaterialIds()
-    {
-        return materialIds;
-    }
-
-    public void setMaterialIds(List<? extends IMaterialId> materialIds)
-    {
-        this.materialIds = materialIds;
     }
 
     @Override

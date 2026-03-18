@@ -62,7 +62,6 @@ public class GetPropertyTypeTest extends AbstractTest
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
         PropertyTypePermId permId = new PropertyTypePermId("PLATE_GEOMETRY");
         PropertyTypeFetchOptions fetchOptions = new PropertyTypeFetchOptions();
-        fetchOptions.withMaterialType();
         fetchOptions.withVocabulary().withTerms().sortBy().code().desc();
         ;
 
@@ -78,38 +77,12 @@ public class GetPropertyTypeTest extends AbstractTest
         assertEquals(propertyType.isManagedInternally().booleanValue(), true);
         assertEquals(propertyType.getSchema(), null);
         assertEquals(propertyType.getTransformation(), null);
-        assertEquals(propertyType.getMaterialType(), null);
         assertEquals(propertyType.getVocabulary().getTerms().toString(),
                 "[VocabularyTerm 1536_WELLS_32X48, VocabularyTerm 384_WELLS_16X24, VocabularyTerm 96_WELLS_8X12]");
 
         v3api.logout(sessionToken);
     }
 
-    @Test
-    public void testGetPropertyTypeWithMaterialType()
-    {
-        // Given
-        String sessionToken = v3api.login(TEST_USER, PASSWORD);
-        PropertyTypePermId permId = new PropertyTypePermId("BACTERIUM");
-        PropertyTypeFetchOptions fetchOptions = new PropertyTypeFetchOptions();
-        fetchOptions.withMaterialType();
-        fetchOptions.withVocabulary().withTerms().sortBy().code().desc();
-        ;
-
-        // When
-        PropertyType propertyType = v3api.getPropertyTypes(sessionToken, Arrays.asList(permId), fetchOptions).get(permId);
-
-        // Then
-        assertEquals(propertyType.getCode(), "BACTERIUM");
-        assertEquals(propertyType.getPermId(), permId);
-        assertEquals(propertyType.getDataType().toString(), DataType.MATERIAL.toString());
-        assertEquals(propertyType.getVocabulary(), null);
-        assertEquals(propertyType.getMaterialType().getCode(), "BACTERIUM");
-        assertEquals(propertyType.getMaterialType().getDescription(), "Bacterium");
-        assertEquals(propertyType.getMaterialType().getPermId().toString(), "BACTERIUM (MATERIAL)");
-
-        v3api.logout(sessionToken);
-    }
 
     @Test
     public void testLogging()
@@ -117,13 +90,12 @@ public class GetPropertyTypeTest extends AbstractTest
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
 
         PropertyTypeFetchOptions fo = new PropertyTypeFetchOptions();
-        fo.withMaterialType();
         fo.withVocabulary();
 
         v3api.getPropertyTypes(sessionToken, Arrays.asList(new PropertyTypePermId("DESCRIPTION"), new PropertyTypePermId("PLATE_GEOMETRY")), fo);
 
         assertAccessLog(
-                "get-property-types  PROPERTY_TYPE_IDS('[DESCRIPTION, PLATE_GEOMETRY]') FETCH_OPTIONS('PropertyType\n    with Vocabulary\n    with MaterialType\n')");
+                "get-property-types  PROPERTY_TYPE_IDS('[DESCRIPTION, PLATE_GEOMETRY]') FETCH_OPTIONS('PropertyType\n    with Vocabulary\n')");
     }
 
 }

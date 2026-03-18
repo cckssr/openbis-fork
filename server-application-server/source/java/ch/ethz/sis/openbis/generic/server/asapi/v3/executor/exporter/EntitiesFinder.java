@@ -123,7 +123,6 @@ class EntitiesFinder
         final PropertyAssignmentFetchOptions propertyAssignmentFetchOptions = fetchOptions.withPropertyAssignments();
         propertyAssignmentFetchOptions.withPropertyType().withVocabulary();
         propertyAssignmentFetchOptions.withPropertyType().withSampleType();
-        propertyAssignmentFetchOptions.withPropertyType().withMaterialType();
         propertyAssignmentFetchOptions.withPlugin().withScript();
         final Map<IEntityTypeId, DataSetType> dataSetTypes = api.getDataSetTypes(sessionToken,
                 permIds.stream().map(permId -> new EntityTypePermId(permId, EntityKind.DATA_SET)).collect(Collectors.toList()), fetchOptions);
@@ -192,7 +191,6 @@ class EntitiesFinder
         final PropertyAssignmentFetchOptions propertyAssignmentFetchOptions = fetchOptions.withPropertyAssignments();
         propertyAssignmentFetchOptions.withPropertyType().withVocabulary();
         propertyAssignmentFetchOptions.withPropertyType().withSampleType();
-        propertyAssignmentFetchOptions.withPropertyType().withMaterialType();
         propertyAssignmentFetchOptions.withPlugin().withScript();
         final Map<IEntityTypeId, ExperimentType> experimentTypes = api.getExperimentTypes(sessionToken,
                 permIds.stream().map(permId -> new EntityTypePermId(permId, EntityKind.EXPERIMENT)).collect(Collectors.toList()), fetchOptions);
@@ -267,7 +265,6 @@ class EntitiesFinder
         final PropertyAssignmentFetchOptions propertyAssignmentFetchOptions = fetchOptions.withPropertyAssignments();
         propertyAssignmentFetchOptions.withPropertyType().withVocabulary();
         propertyAssignmentFetchOptions.withPropertyType().withSampleType();
-        propertyAssignmentFetchOptions.withPropertyType().withMaterialType();
         propertyAssignmentFetchOptions.withPlugin().withScript();
         final Map<IEntityTypeId, SampleType> sampleTypes = api.getSampleTypes(sessionToken,
                 permIds.stream().map(permId -> new EntityTypePermId(permId, EntityKind.SAMPLE)).collect(Collectors.toList()), fetchOptions);

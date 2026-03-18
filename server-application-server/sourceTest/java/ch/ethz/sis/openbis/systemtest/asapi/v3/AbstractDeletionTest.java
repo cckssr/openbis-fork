@@ -35,9 +35,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.create.ExperimentCrea
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.IExperimentId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.Material;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.fetchoptions.MaterialFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.id.IMaterialId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.Project;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.create.ProjectCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.fetchoptions.ProjectFetchOptions;
@@ -177,23 +174,6 @@ public class AbstractDeletionTest extends AbstractTest
     {
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
         Map<ISampleId, Sample> map = v3api.getSamples(sessionToken, Collections.singletonList(sampleId), new SampleFetchOptions());
-        Assert.assertEquals(exists ? 1 : 0, map.size());
-    }
-
-    protected void assertMaterialExists(IMaterialId materialId)
-    {
-        assertMaterialExists(materialId, true);
-    }
-
-    protected void assertMaterialDoesNotExist(IMaterialId materialId)
-    {
-        assertMaterialExists(materialId, false);
-    }
-
-    private void assertMaterialExists(IMaterialId materialId, boolean exists)
-    {
-        String sessionToken = v3api.login(TEST_USER, PASSWORD);
-        Map<IMaterialId, Material> map = v3api.getMaterials(sessionToken, Collections.singletonList(materialId), new MaterialFetchOptions());
         Assert.assertEquals(exists ? 1 : 0, map.size());
     }
 

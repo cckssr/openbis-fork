@@ -638,7 +638,7 @@
 	
 				var documentEditorEditableContainer = $("<div>", { class : "document-editor__editable-container", style : "min-height: " + height + "px; overflow: hidden;" });
 	
-				var documentEditorEditable = $("<div>", { class : "document-editor__editable", id : profile.getInternalNamespacePrefix() + "DOCUMENT" });
+				var documentEditorEditable = $("<div>", { class : "document-editor__editable", id : profile.getInternalNamespacePrefix() + "DOCUMENT" + this._viewId });
 	
 				var value = Util.getEmptyIfNull(this._sampleFormModel.sample.properties[documentPropertyType.code]);
 				if(this._sampleFormModel.mode === FormMode.CREATE && !value) {
@@ -646,7 +646,7 @@
 				} else if(this._sampleFormModel.mode === FormMode.EDIT && value === "") {
 				    value = "<h2></h2><br><p></p>";
 				}
-				var documentEditorEditableFinal = FormUtil.activateRichTextProperties(documentEditorEditable, documentChangeEvent, documentPropertyType, value, isReadOnly, documentEditorEditableToolbar);
+				var documentEditorEditableFinal = FormUtil.activateRichTextProperties(documentEditorEditable, documentChangeEvent, documentPropertyType, value, isReadOnly, documentEditorEditableToolbar, _refreshableFields);
 	            _refreshableFields.push(documentEditorEditableFinal);
 
                 if(!isReadOnly) {
@@ -659,7 +659,7 @@
                     _refreshableFields.push(documentEditorEditableToolbar);
                 }
 				documentEditorEditableFinal.addClass("document-editor__editable");
-				documentEditorEditableFinal.attr("id", profile.getInternalNamespacePrefix() + "DOCUMENT");
+				documentEditorEditableFinal.attr("id", profile.getInternalNamespacePrefix() + "DOCUMENT" + this._viewId);
 				//  documentEditorEditableFinal.css("height", "100%");
 				//  Bugfix for Webkit Chrome/Safari
 				documentEditorEditableFinal.css("min-height", height + "px");
@@ -1250,10 +1250,11 @@
 		}
 	
 		this._createIdentificationInfoSection = function(hideShowOptionsModel, sampleType, entityPath) {
-			hideShowOptionsModel.push({
-				label : "Identification Info",
-				section : "#sample-identification-info-"  + this._viewId
-			});
+		    var option = {
+                label : "Identification Info",
+                section : "#sample-identification-info-"  + this._viewId,
+            };
+			hideShowOptionsModel.push(option);
 	
 			var _this = this;
 			var $identificationInfo = $("<div>", { id : "sample-identification-info-" + _this._viewId });
@@ -1281,18 +1282,19 @@
 			if(this._sampleFormModel.mode === FormMode.CREATE) {
 				var $textField = FormUtil._getInputField('text', 'codeId-'+_this._viewId, "Code", null, true);
 				var keyupFunction = function(event){
-                                        var textField = $(this);
-                                        var caretPosition = this.selectionStart;
-                                        textField.val(textField.val().toUpperCase());
-                                        this.selectionStart = caretPosition;
-                                        this.selectionEnd = caretPosition;
-                                        _this._sampleFormModel.sample.code = textField.val();
-                                    };
+                    var textField = $(this);
+                    var caretPosition = this.selectionStart;
+                    textField.val(textField.val().toUpperCase());
+                    this.selectionStart = caretPosition;
+                    this.selectionEnd = caretPosition;
+                    _this._sampleFormModel.sample.code = textField.val();
+                };
 				$textField.keyup(keyupFunction);
                 $textField.refresh = function() {
-                    this.unbind();
-                    this.keyup(keyupFunction);
+                    $textField.unbind();
+                    $textField.keyup(keyupFunction);
                 }
+                option.refresh = $textField.refresh;
                 _refreshableFields.push($textField);
 
 				$codeField = FormUtil.getFieldForComponentWithLabel($textField, "Code");

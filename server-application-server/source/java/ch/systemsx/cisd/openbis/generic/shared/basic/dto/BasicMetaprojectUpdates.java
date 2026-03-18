@@ -24,7 +24,6 @@ import java.util.List;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.id.IObjectId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.id.dataset.IDataSetId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.id.experiment.IExperimentId;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.id.material.IMaterialId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.id.sample.ISampleId;
 
 /**
@@ -48,10 +47,6 @@ public class BasicMetaprojectUpdates implements Serializable
 
     private List<IDataSetId> removedDataSets;
 
-    private List<IMaterialId> addedMaterials;
-
-    private List<IMaterialId> removedMaterials;
-
     public String getDescription()
     {
         return description;
@@ -67,7 +62,6 @@ public class BasicMetaprojectUpdates implements Serializable
         addedSamples = Collections.unmodifiableList(filterSamples(addedEntities));
         addedDataSets = Collections.unmodifiableList(filterDataSets(addedEntities));
         addedExperiments = Collections.unmodifiableList(filterExperiments(addedEntities));
-        addedMaterials = Collections.unmodifiableList(filterMaterials(addedEntities));
     }
 
     public void setRemovedEntities(Collection<? extends IObjectId> removedEntities)
@@ -75,7 +69,6 @@ public class BasicMetaprojectUpdates implements Serializable
         removedSamples = Collections.unmodifiableList(filterSamples(removedEntities));
         removedDataSets = Collections.unmodifiableList(filterDataSets(removedEntities));
         removedExperiments = Collections.unmodifiableList(filterExperiments(removedEntities));
-        removedMaterials = Collections.unmodifiableList(filterMaterials(removedEntities));
     }
 
     public List<ISampleId> getAddedSamples()
@@ -106,16 +99,6 @@ public class BasicMetaprojectUpdates implements Serializable
     public List<IDataSetId> getRemovedDataSets()
     {
         return removedDataSets;
-    }
-
-    public List<IMaterialId> getAddedMaterials()
-    {
-        return addedMaterials;
-    }
-
-    public List<IMaterialId> getRemovedMaterials()
-    {
-        return removedMaterials;
     }
 
     public static LinkedList<ISampleId> filterSamples(Collection<? extends IObjectId> entities)
@@ -156,20 +139,6 @@ public class BasicMetaprojectUpdates implements Serializable
             if (id instanceof IDataSetId)
             {
                 list.add((IDataSetId) id);
-            }
-        }
-        return list;
-    }
-
-    public static LinkedList<IMaterialId> filterMaterials(Collection<? extends IObjectId> entities)
-    {
-        LinkedList<IMaterialId> list = new LinkedList<IMaterialId>();
-
-        for (IObjectId id : entities)
-        {
-            if (id instanceof IMaterialId)
-            {
-                list.add((IMaterialId) id);
             }
         }
         return list;

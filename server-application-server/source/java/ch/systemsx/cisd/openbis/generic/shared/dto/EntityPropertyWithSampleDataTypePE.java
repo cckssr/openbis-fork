@@ -59,12 +59,12 @@ public abstract class EntityPropertyWithSampleDataTypePE extends EntityPropertyP
 
     @Override
     public final void setUntypedValue(final String valueOrNull,
-            final VocabularyTermPE vocabularyTermOrNull, MaterialPE materialOrNull,
+            final VocabularyTermPE vocabularyTermOrNull,
             SamplePE sampleOrNull, Long[] integerArrayOrNull, Double[] realArrayOrNull,
             String[] stringArrayOrNull, Date[] timestampArrayOrNull, String jsonOrNull)
     {
         assert valueOrNull != null || vocabularyTermOrNull != null
-                || materialOrNull != null || sampleOrNull != null || integerArrayOrNull != null
+                || sampleOrNull != null || integerArrayOrNull != null
                 || realArrayOrNull != null || stringArrayOrNull != null || timestampArrayOrNull != null
                 || jsonOrNull != null :
                 "Either value, array value, json vocabulary term, material or sample should not be null.";
@@ -74,7 +74,7 @@ public abstract class EntityPropertyWithSampleDataTypePE extends EntityPropertyP
         } else
         {
             setSampleValue(null);
-            super.setUntypedValue(valueOrNull, vocabularyTermOrNull, materialOrNull, sampleOrNull,
+            super.setUntypedValue(valueOrNull, vocabularyTermOrNull, sampleOrNull,
                     integerArrayOrNull, realArrayOrNull, stringArrayOrNull, timestampArrayOrNull,
                     jsonOrNull);
         }

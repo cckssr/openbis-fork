@@ -25,10 +25,8 @@ import org.springframework.stereotype.Component;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.IDataBO;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.IDataSetTable;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.IExperimentBO;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.IMaterialBO;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.ISampleBO;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.datasetlister.IDatasetLister;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.materiallister.IMaterialLister;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.samplelister.ISampleLister;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
 import ch.systemsx.cisd.openbis.generic.shared.dto.Session;
@@ -177,12 +175,6 @@ public final class ScreeningBusinessObjectFactory extends AbstractPluginBusiness
     }
 
     @Override
-    public IMaterialLister createMaterialLister(Session session)
-    {
-        return getCommonBusinessObjectFactory().createMaterialLister(session);
-    }
-
-    @Override
     public IDataSetTable createDataSetTable(Session session)
     {
         return getCommonBusinessObjectFactory().createDataSetTable(session);
@@ -192,12 +184,6 @@ public final class ScreeningBusinessObjectFactory extends AbstractPluginBusiness
     public IExperimentBO createExperimentBO(Session session)
     {
         return getCommonBusinessObjectFactory().createExperimentBO(session);
-    }
-
-    @Override
-    public IMaterialBO createMaterialBO(Session session)
-    {
-        return getCommonBusinessObjectFactory().createMaterialBO(session);
     }
 
     @Override

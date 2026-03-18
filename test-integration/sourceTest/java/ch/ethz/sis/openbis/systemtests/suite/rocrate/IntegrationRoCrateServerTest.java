@@ -6,6 +6,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.data.ImportFormat;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.options.ImportMode;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.options.ImportOptions;
 import ch.ethz.sis.openbis.systemtests.suite.rocrate.environment.RoCrateServerIntegrationTestEnvironment;
+import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import ch.systemsx.cisd.common.http.JettyHttpClientFactory;
 import ch.systemsx.cisd.openbis.generic.shared.util.TestInstanceHostUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -21,6 +22,7 @@ import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -34,6 +36,8 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static ch.ethz.sis.openbis.systemtests.suite.rocrate.environment.RoCrateServerIntegrationTestEnvironment.environment;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.testng.Assert.*;
 
 public class IntegrationRoCrateServerTest
@@ -660,6 +664,88 @@ public class IntegrationRoCrateServerTest
 
     record ExportCallerParams(String apiKey, String jobId, String mimeType, HttpClient client)
     {
+    }
+
+    @Test(enabled = false, timeOut = TIMEOUT, priority = 4)
+    // This depends on some data which should be created before the test runs
+    public void testExportWithEmail()
+            throws Exception
+    {
+        String payload = "[\"/PUBLICATIONS/PUBLIC_REPOSITORIES/PUB29\"]";
+        String mimeType = "application/zip";
+
+        OpenBIS openBIS = environment.createOpenBIS(TIMEOUT);
+        openBIS.login(username, password);
+
+        String export_type = mimeType;
+        HttpClient client = JettyHttpClientFactory.getHttpClient();
+        Request request = client.newRequest(
+                TestInstanceHostUtils.getRoCrateUrl() + "/openbis/open-api/ro-crate/export");
+        request.method(HttpMethod.POST);
+        request.headers(headers -> {
+            headers.add("api-key", openBIS.getSessionToken());
+            headers.add("Content-Type", "application/json");
+            headers.add("Export", export_type);
+            headers.add("openbis.with-levels-above", "true");
+            headers.add("openbis.import-compatible", "true");
+            headers.add("openbis.send-email", "true");
+        });
+        request.body(new BytesRequestContent(payload.getBytes()));
+        request.idleTimeout(TIMEOUT, TimeUnit.MILLISECONDS);
+
+        ContentResponse response = request.send();
+        LinkedHashMap asyncJob =
+                objectMapper.readValue(response.getContentAsString(), LinkedHashMap.class);
+        String jobId = asyncJob.get("jobId").toString();
+
+        assertEquals(response.getStatus(), 202);
+
+        boolean done = false;
+        while (!done)
+        {
+            Request pollRequest = client.newRequest(
+                    TestInstanceHostUtils.getRoCrateUrl() + "/openbis/open-api/ro-crate/status/" + jobId);
+            pollRequest.method(HttpMethod.GET);
+            pollRequest.headers(headers -> {
+                headers.add("api-key", openBIS.getSessionToken());
+                headers.add("jobId", jobId);
+            });
+            pollRequest.idleTimeout(TIMEOUT, TimeUnit.MILLISECONDS);
+            ContentResponse pollResponse = pollRequest.send();
+
+            LinkedHashMap resultJob =
+                    objectMapper.readValue(pollResponse.getContentAsString(),
+                            LinkedHashMap.class);
+            if (resultJob.get("status").toString().equals("COMPLETED"))
+            {
+                done = true;
+                break;
+            } else if (resultJob.get("status").toString().equals("FAILED")) {
+                List<String> errors = (List<String>) resultJob.get("errors");
+                Assert.fail(errors.stream().collect(Collectors.joining("")));
+            }
+
+            Thread.sleep(2000);
+        }
+
+
+        File emailFolder = new File("../test-integration/targets/ro-crate/server-ro-crate/ro-crate-email");
+        File[] files = emailFolder.listFiles();
+        assertEquals(1, files.length);
+        assertTrue(files[0].getName().matches("email.*"));
+        List<String> lines = FileUtilities.loadToStringList(files[0]);
+        assertEquals(6, lines.size());
+        assertTrue(lines.get(0).startsWith("Date: "));
+        assertEquals("From: rocrate_server@localhost", lines.get(1));
+        assertEquals("To: franz-josef.elmer@systemsx.ch", lines.get(2));
+        assertEquals("Subject: openBIS RoCrate Export Download Ready", lines.get(3));
+        assertEquals("Content:", lines.get(4));
+
+        String expectedUrl = "http://localhost:8086/openbis/open-api/ro-crate/download?jobId=" + jobId + "&apiKey=" + openBIS.getSessionToken();
+        assertEquals(expectedUrl, lines.get(5));
+
+
+
     }
 
     private static void testExport(String exportMimeType, String identifiersJsonString,

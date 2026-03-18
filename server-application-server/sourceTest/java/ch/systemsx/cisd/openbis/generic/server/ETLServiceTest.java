@@ -74,8 +74,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IMetaprojectUpdates;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ListOrSearchSampleCriteria;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewAttachment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewExperiment;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewMaterial;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewMaterialWithType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewMetaproject;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewProject;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewSample;
@@ -93,7 +91,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.id.IObjectId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.id.dataset.DataSetCodeId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.id.experiment.ExperimentIdentifierId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.id.experiment.ExperimentTechIdId;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.id.material.MaterialTechIdId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.id.sample.SampleTechIdId;
 import ch.systemsx.cisd.openbis.generic.shared.dto.AtomicEntityOperationDetails;
 import ch.systemsx.cisd.openbis.generic.shared.dto.AtomicEntityOperationResult;
@@ -110,9 +107,6 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentUpdatesDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExternalDataPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.IAuthSession;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialPE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialTypePE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialUpdateDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.MetaprojectPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.MetaprojectUpdatesDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.NewExternalData;
@@ -1061,17 +1055,6 @@ public class ETLServiceTest extends AbstractServerTestCase
                 new SampleUpdatesDTO(CommonTestUtils.TECH_ID, null, null, null, attachments, 0,
                         sampleIdentifier, null, null);
 
-        final MaterialPE material = new MaterialPE();
-        material.setCode("new-material");
-        final MaterialTypePE materialType = new MaterialTypePE();
-        materialType.setCode("new-material-type");
-        final NewMaterial newMaterial = new NewMaterial(material.getCode());
-        Map<String, List<NewMaterial>> materialRegistrations =
-                new HashMap<String, List<NewMaterial>>();
-        materialRegistrations.put(materialType.getCode(), Arrays.asList(newMaterial));
-
-        List<MaterialUpdateDTO> materialUpdates = new ArrayList<MaterialUpdateDTO>();
-
         final SamplePE newSamplePE = createSampleWithExperiment(experiment);
         newSamplePE.setCode("SAMPLE_CODE_NEW");
         final SampleIdentifier newSampleIdentifier = newSamplePE.getSampleIdentifier();
@@ -1102,7 +1085,6 @@ public class ETLServiceTest extends AbstractServerTestCase
         newMetaprojects.add(new DataSetCodeId("20120628092259000-25"));
         newMetaprojects.add(new ExperimentIdentifierId("/CISD/NEMO/EXP1"));
         newMetaprojects.add(new SampleTechIdId(326l));
-        newMetaprojects.add(new MaterialTechIdId(1l));
         mtu.setAddedEntities(newMetaprojects);
 
         mtu.setRemovedEntities(Collections.singletonList(new ExperimentTechIdId(4l)));
@@ -1112,8 +1094,8 @@ public class ETLServiceTest extends AbstractServerTestCase
         NewSpace space = new NewSpace(TEST_SPACE, TEST_SPACE_DESCRIPTION, TEST_SPACE_USER);
 
         RecordingMatcher<NewRoleAssignment> roleMatcher =
-                prepareEntityOperationsExpectations(samplePE, sampleUpdate, material, materialType,
-                        materialRegistrations, newSamplePE, newSampleIdentifier, newSample,
+                prepareEntityOperationsExpectations(samplePE, sampleUpdate,
+                        newSamplePE, newSampleIdentifier, newSample,
                         externalData, updatedDataSetCode, dataSetUpdate, newMetaproject,
                         metaprojectPE, mtu, space);
 
@@ -1122,8 +1104,7 @@ public class ETLServiceTest extends AbstractServerTestCase
                         Arrays.asList(space), new ArrayList<NewProject>(),
                         new ArrayList<ProjectUpdatesDTO>(), new ArrayList<NewExperiment>(),
                         experimentUpdates, Collections.singletonList(sampleUpdate),
-                        Collections.singletonList(newSample), materialRegistrations,
-                        materialUpdates, Collections.singletonList(externalData),
+                        Collections.singletonList(newSample), Collections.singletonList(externalData),
                         Collections.singletonList(dataSetUpdate),
                         Collections.singletonList(newMetaproject), Collections.singletonList(mtu),
                         vocabularyUpdates);
@@ -1142,8 +1123,7 @@ public class ETLServiceTest extends AbstractServerTestCase
 
     private RecordingMatcher<NewRoleAssignment> prepareEntityOperationsExpectations(
             final SamplePE samplePE, final SampleUpdatesDTO sampleUpdate,
-            final MaterialPE material, final MaterialTypePE materialType,
-            final Map<String, List<NewMaterial>> newMaterials, final SamplePE newSamplePE,
+            final SamplePE newSamplePE,
             final SampleIdentifier newSampleIdentifier, final NewSample newSample,
             final NewExternalData externalData, final String updatedDataSetCode,
             final DataSetBatchUpdatesDTO dataSetUpdate, final NewMetaproject newMetaproject,
@@ -1190,29 +1170,7 @@ public class ETLServiceTest extends AbstractServerTestCase
                     PersonPE user = createSystemUser();
                     will(returnValue(user));
 
-                    allowing(daoFactory).getEntityTypeDAO(EntityKind.MATERIAL);
-                    will(returnValue(entityTypeDAO));
-
                     allowing(daoFactory).getSessionFactory();
-
-                    allowing(entityTypeDAO).tryToFindEntityTypeByCode(materialType.getCode());
-                    will(returnValue(materialType));
-
-                    one(entityOperationChecker).assertMaterialCreationAllowed(userSession,
-                            newMaterials);
-                    List<NewMaterial> newMaterialsList = newMaterials.values().iterator().next();
-
-                    one(boFactory).createMaterialTable(userSession);
-                    will(returnValue(materialTable));
-
-                    NewMaterialWithType mats = new NewMaterialWithType(materialType.getCode(), newMaterialsList.get(0));
-                    HashMap<String, MaterialTypePE> map = new HashMap<String, MaterialTypePE>();
-                    map.put(materialType.getCode(), materialType);
-
-                    one(materialTable).add(Collections.singletonList(mats), map);
-                    one(materialTable).save();
-                    one(materialTable).getMaterials();
-                    will(returnValue(Arrays.asList(material)));
 
                     allowing(entityOperationChecker).assertExperimentCreationAllowed(userSession,
                             Collections.<NewExperiment> emptyList());
@@ -1257,7 +1215,6 @@ public class ETLServiceTest extends AbstractServerTestCase
                     one(metaprojectBO).addSamples(null);
                     one(metaprojectBO).addDataSets(null);
                     one(metaprojectBO).addExperiments(null);
-                    one(metaprojectBO).addMaterials(null);
                     one(metaprojectBO).save();
 
                     one(metaprojectBO).getMetaproject();
@@ -1276,8 +1233,6 @@ public class ETLServiceTest extends AbstractServerTestCase
                     one(metaprojectBO).addExperiments(metaprojectUpdates.getAddedExperiments());
                     one(metaprojectBO)
                             .removeExperiments(metaprojectUpdates.getRemovedExperiments());
-                    one(metaprojectBO).addMaterials(metaprojectUpdates.getAddedMaterials());
-                    one(metaprojectBO).removeMaterials(metaprojectUpdates.getRemovedMaterials());
                     one(metaprojectBO).save();
 
                     allowing(entityOperationChecker).assertInstanceSampleCreationAllowed(with(any(IAuthSession.class)), with(any(List.class)));
@@ -1305,17 +1260,6 @@ public class ETLServiceTest extends AbstractServerTestCase
         final SampleUpdatesDTO sampleUpdate =
                 new SampleUpdatesDTO(CommonTestUtils.TECH_ID, null, null, null, attachments, 0,
                         sampleIdentifier, null, null);
-
-        final MaterialPE material = new MaterialPE();
-        material.setCode("new-material");
-        final MaterialTypePE materialType = new MaterialTypePE();
-        materialType.setCode("new-material-type");
-        final NewMaterial newMaterial = new NewMaterial(material.getCode());
-        Map<String, List<NewMaterial>> materialRegistrations =
-                new HashMap<String, List<NewMaterial>>();
-        materialRegistrations.put(materialType.getCode(), Arrays.asList(newMaterial));
-
-        List<MaterialUpdateDTO> materialUpdates = new ArrayList<MaterialUpdateDTO>();
 
         final SamplePE newSamplePE = createSampleWithExperiment(experiment);
         newSamplePE.setCode("SAMPLE_CODE_NEW");
@@ -1348,7 +1292,6 @@ public class ETLServiceTest extends AbstractServerTestCase
         newMetaprojects.add(new DataSetCodeId("20120628092259000-25"));
         newMetaprojects.add(new ExperimentIdentifierId("/CISD/NEMO/EXP1"));
         newMetaprojects.add(new SampleTechIdId(326l));
-        newMetaprojects.add(new MaterialTechIdId(1l));
         mtu.setAddedEntities(newMetaprojects);
 
         mtu.setRemovedEntities(Collections.singletonList(new ExperimentTechIdId(4l)));
@@ -1358,8 +1301,7 @@ public class ETLServiceTest extends AbstractServerTestCase
         NewSpace space = new NewSpace(TEST_SPACE, TEST_SPACE_DESCRIPTION, TEST_SPACE_USER);
 
         RecordingMatcher<NewRoleAssignment> roleMatcher =
-                prepareEntityOperationsExpectations(samplePE, sampleUpdate, material, materialType,
-                        materialRegistrations, newSamplePE, newSampleIdentifier, newSample,
+                prepareEntityOperationsExpectations(samplePE, sampleUpdate,newSamplePE, newSampleIdentifier, newSample,
                         externalData, updatedDataSetCode, dataSetUpdate, newMetaproject,
                         metaprojectPE, mtu, space);
         context.checking(new Expectations()
@@ -1378,8 +1320,7 @@ public class ETLServiceTest extends AbstractServerTestCase
                         new ArrayList<ProjectUpdatesDTO>(), new ArrayList<NewExperiment>(),
                         new ArrayList<ExperimentUpdatesDTO>(),
                         Collections.singletonList(sampleUpdate),
-                        Collections.singletonList(newSample), materialRegistrations,
-                        materialUpdates, Collections.singletonList(externalData),
+                        Collections.singletonList(newSample), Collections.singletonList(externalData),
                         Collections.singletonList(dataSetUpdate),
                         Collections.singletonList(newMetaproject), Collections.singletonList(mtu),
                         vocabularyUpdates);

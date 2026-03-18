@@ -51,11 +51,8 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityProperty;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExperimentType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.GenericEntityProperty;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IEntityProperty;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewAttachment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewExperiment;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewMaterial;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewMaterialsWithTypes;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewSample;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewSamplesWithTypes;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PhysicalDataSet;
@@ -65,8 +62,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SampleParentWithDerived
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SampleType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.UpdatedBasicExperiment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.UpdatedExperimentsWithType;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialTypePE;
-import ch.systemsx.cisd.openbis.generic.shared.translator.MaterialTypeTranslator;
 import ch.systemsx.cisd.openbis.plugin.generic.shared.IGenericServerInternal;
 
 /**
@@ -77,9 +72,6 @@ import ch.systemsx.cisd.openbis.plugin.generic.shared.IGenericServerInternal;
 @Friend(toClasses = GenericClientService.class)
 public final class GenericClientServiceTest extends AbstractClientServiceTest
 {
-    private static final MaterialType MATERIAL_TYPE = MaterialTypeTranslator
-            .translateSimple(CommonTestUtils.createMaterialType());
-
     private MultipartFile multipartFile;
 
     private IGenericServerInternal genericServer;
@@ -588,96 +580,6 @@ public final class GenericClientServiceTest extends AbstractClientServiceTest
         context.assertIsSatisfied();
     }
 
-    @Test
-    public void testUpdateMaterials() throws IOException
-    {
-        final String sessionKey = "s-key";
-        final boolean ignoreUnregisteredMaterials = false;
-        final int updateCount = 1;
-        prepareMaterialsUpdate(sessionKey, ignoreUnregisteredMaterials, updateCount);
-
-        List<BatchRegistrationResult> results =
-                genericClientService.updateMaterials(MATERIAL_TYPE, sessionKey,
-                        ignoreUnregisteredMaterials, false, null);
-
-        assertEquals(1, results.size());
-        assertEquals(updateCount + " material(s) updated.", results.get(0).getMessage());
-        context.assertIsSatisfied();
-    }
-
-    @Test
-    public void testUpdateMaterialsIgnoringUnregisteredButNoUnregistered() throws IOException
-    {
-        final String sessionKey = "s-key";
-        final boolean ignoreUnregisteredMaterials = true;
-        final int updateCount = 1;
-        prepareMaterialsUpdate(sessionKey, ignoreUnregisteredMaterials, updateCount);
-
-        List<BatchRegistrationResult> results =
-                genericClientService.updateMaterials(MATERIAL_TYPE, sessionKey,
-                        ignoreUnregisteredMaterials, false, null);
-
-        assertEquals(1, results.size());
-        assertEquals(updateCount + " material(s) updated, non ignored.", results.get(0)
-                .getMessage());
-        context.assertIsSatisfied();
-    }
-
-    @Test
-    public void testUpdateMaterialsIgnoringUnregistered() throws IOException
-    {
-        final String sessionKey = "s-key";
-        final boolean ignoreUnregisteredMaterials = true;
-        final int updateCount = 0;
-        prepareMaterialsUpdate(sessionKey, ignoreUnregisteredMaterials, updateCount);
-
-        List<BatchRegistrationResult> results =
-                genericClientService.updateMaterials(MATERIAL_TYPE, sessionKey,
-                        ignoreUnregisteredMaterials, false, null);
-
-        assertEquals(1, results.size());
-        assertEquals(updateCount + " material(s) updated, 1 ignored.", results.get(0).getMessage());
-        context.assertIsSatisfied();
-    }
-
-    @SuppressWarnings("unchecked")
-    protected void prepareMaterialsUpdate(final String sessionKey,
-            final boolean ignoreUnregisteredMaterials, final int updateCount) throws IOException
-    {
-        final UploadedFilesBean uploadedFilesBean = new UploadedFilesBean();
-        final MaterialTypePE materialTypePE = CommonTestUtils.createMaterialType();
-        final MaterialType materialType = MaterialTypeTranslator.translateSimple(materialTypePE);
-        final List<NewMaterialsWithTypes> newMaterials =
-                Collections.singletonList(new NewMaterialsWithTypes(materialType, Arrays
-                        .asList(new NewMaterial("M1"))));
-        context.checking(new Expectations()
-            {
-                {
-                    prepareGetSessionToken(this);
-
-                    allowing(sessionWorkspaceProvider).getSessionWorkspace(SESSION_TOKEN);
-                    will(returnValue(getSessionWorkspaceDir()));
-
-                    allowing(httpSession).getAttribute(sessionKey);
-                    will(returnValue(uploadedFilesBean));
-
-                    allowing(multipartFile).getOriginalFilename();
-                    will(returnValue("file name"));
-
-                    one(multipartFile).getInputStream();
-                    will(returnValue(
-                            new ByteArrayInputStream("code\nM1".getBytes(StandardCharsets.UTF_8))));
-
-                    one(httpSession).removeAttribute(sessionKey);
-
-                    one(genericServer).updateMaterials(with(equal(SESSION_TOKEN)),
-                            with(any(newMaterials.getClass())),
-                            with(equal(ignoreUnregisteredMaterials)));
-                    will(returnValue(updateCount));
-                }
-            });
-        uploadedFilesBean.addMultipartFile(SESSION_TOKEN, multipartFile, sessionWorkspaceProvider);
-    }
 
     @Test
     public final void testRegisterExperiment()

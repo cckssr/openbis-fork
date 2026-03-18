@@ -24,6 +24,6 @@ import ch.systemsx.cisd.base.annotation.JsonObject;
 public enum QueryType
 {
 
-    GENERIC, EXPERIMENT, SAMPLE, DATA_SET, MATERIAL;
+    GENERIC, EXPERIMENT, SAMPLE, DATA_SET;
 
 }

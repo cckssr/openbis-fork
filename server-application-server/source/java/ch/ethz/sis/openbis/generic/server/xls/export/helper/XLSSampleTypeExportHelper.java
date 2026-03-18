@@ -68,7 +68,6 @@ public class XLSSampleTypeExportHelper extends AbstractXLSEntityTypeExportHelper
         final PropertyTypeFetchOptions propertyTypeFetchOptions = propertyAssignmentFetchOptions.withPropertyType();
         propertyTypeFetchOptions.withVocabulary();
         propertyTypeFetchOptions.withSampleType();
-        propertyTypeFetchOptions.withMaterialType();
         propertyAssignmentFetchOptions.withPlugin().withScript();
     }
 

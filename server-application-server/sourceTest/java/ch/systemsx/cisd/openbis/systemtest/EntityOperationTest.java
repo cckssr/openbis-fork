@@ -35,8 +35,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AuthorizationGroup;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Experiment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IEntityProperty;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Material;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Person;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Project;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.RoleAssignment;
@@ -46,7 +44,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Space;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.builders.DataSetBuilder;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.builders.DataStoreBuilder;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.builders.ExperimentBuilder;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.builders.MaterialBuilder;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.builders.SampleBuilder;
 import ch.systemsx.cisd.openbis.generic.shared.dto.AtomicEntityOperationDetails;
 import ch.systemsx.cisd.openbis.generic.shared.dto.AtomicEntityOperationResult;
@@ -239,54 +236,6 @@ public class EntityOperationTest extends SystemTestCase
                 "Authorization failure: ERROR: \"None of method roles "
                         + "'[INSTANCE_ETL_SERVER, INSTANCE_ADMIN]' "
                         + "could be found in roles of user '" + SPACE_ETL_SERVER_FOR_A + "'.\".");
-    }
-
-    @Test
-    public void testCreateMaterialAsInstanceETLServer()
-    {
-        String sessionToken = authenticateAs(INSTANCE_ETL_SERVER);
-        AtomicEntityOperationDetails eo =
-                new EntityOperationBuilder().material(
-                        "GENE",
-                        new MaterialBuilder().code("ALPHA").property("GENE_SYMBOL", "42")
-                                .getMaterial()).create();
-
-        AtomicEntityOperationResult result = etlService.performEntityOperations(sessionToken, eo);
-        assertEquals(1, result.getMaterialsCreatedCount());
-
-        Material material =
-                etlService.tryGetMaterial(sessionToken, new MaterialIdentifier("ALPHA", "GENE"));
-        assertEquals("ALPHA (GENE)", material.toString());
-        assertEquals("[GENE_SYMBOL: 42]", material.getProperties().toString());
-    }
-
-    @Test(expectedExceptions =
-    { AuthorizationFailureException.class })
-    public void testCreateMaterialAsInstanceAdminButLoginAsSpaceETLServerFails()
-    {
-        String sessionToken = authenticateAs(SPACE_ETL_SERVER_FOR_A);
-        AtomicEntityOperationDetails eo =
-                new EntityOperationBuilder()
-                        .user(INSTANCE_ADMIN)
-                        .material(
-                                "GENE",
-                                new MaterialBuilder().code("ALPHA").property("GENE_SYMBOL", "42")
-                                        .getMaterial()).create();
-
-        etlService.performEntityOperations(sessionToken, eo);
-    }
-
-    @Test
-    public void testCreateMaterialAsSpaceETLServerThrowsAuthorizationFailure()
-    {
-        String sessionToken = authenticateAs(SPACE_ETL_SERVER_FOR_A);
-        AtomicEntityOperationDetails eo =
-                new EntityOperationBuilder().material("GENE",
-                        new MaterialBuilder().code("ALPHA").getMaterial()).create();
-
-        performFailingEntityOperations(sessionToken, eo, "Authorization failure: "
-                + "ERROR: \"None of method roles '[INSTANCE_ETL_SERVER, INSTANCE_ADMIN]' "
-                + "could be found in roles of user '" + SPACE_ETL_SERVER_FOR_A + "'.\".");
     }
 
     @Test

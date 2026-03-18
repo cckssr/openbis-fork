@@ -32,7 +32,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IEntityType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IEntityTypeHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IExperimentsHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IIdentifierHolder;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IMaterialsHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IOwnerHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IParentChildrenHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IProjectHolder;
@@ -84,11 +83,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.fetchoptions.GlobalSearch
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.search.GlobalSearchObjectKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.history.HistoryEntry;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.history.fetchoptions.HistoryEntryFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.Material;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.MaterialType;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.fetchoptions.MaterialFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.fetchoptions.MaterialTypeFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.id.MaterialPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.objectkindmodification.ObjectKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.objectkindmodification.OperationKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.objectkindmodification.fetchoptions.ObjectKindModificationFetchOptions;
@@ -752,52 +746,11 @@ public class Generator extends AbstractGenerator
                 .withInterface(IDataSetsHolder.class);
         gen.addClassForImport(DataSet.class);
 
-        gen.addPluralFetchedField("List<Material>", List.class.getName(), "materials", "Materials", MaterialFetchOptions.class)
-                .withInterface(IMaterialsHolder.class);
-        gen.addClassForImport(Material.class);
 
         addRegistrationDate(gen);
         gen.addFetchedField(Person.class, "owner", "Owner", PersonFetchOptions.class).withInterface(IOwnerHolder.class);
 
         gen.setToStringMethod("\"Tag \" + code");
-
-        return gen;
-    }
-
-    private static DtoGenerator createMaterialGenerator()
-    {
-        DtoGenerator gen = new DtoGenerator("material", "Material", MaterialFetchOptions.class);
-
-        addPermId(gen, MaterialPermId.class);
-        addCode(gen);
-        gen.addFetchedField(MaterialType.class, "type", "Material type", MaterialTypeFetchOptions.class).withInterface(IEntityTypeHolder.class);
-
-        gen.addPluralFetchedField("List<HistoryEntry>", List.class.getName(), "history", "History", HistoryEntryFetchOptions.class);
-        gen.addClassForImport(HistoryEntry.class);
-
-        addRegistrationDate(gen);
-        addRegistrator(gen);
-        addModificationDate(gen);
-        addProperties(gen);
-        addTags(gen);
-
-        gen.setToStringMethod("\"Material \" + code");
-
-        return gen;
-    }
-
-    private static DtoGenerator createMaterialTypeGenerator()
-    {
-        DtoGenerator gen = new DtoGenerator("material", "MaterialType", MaterialTypeFetchOptions.class);
-        gen.addImplementedInterface(IEntityType.class);
-
-        addPermId(gen, EntityTypePermId.class);
-        addCode(gen);
-        addDescription(gen);
-        addModificationDate(gen);
-
-        gen.setToStringMethod("\"MaterialType \" + code");
-        addPropertyAssignments(gen);
 
         return gen;
     }
@@ -879,7 +832,6 @@ public class Generator extends AbstractGenerator
         gen.addFetchedField(Experiment.class, "experiment", "Experiment", ExperimentFetchOptions.class);
         gen.addFetchedField(Sample.class, "sample", "Sample", SampleFetchOptions.class);
         gen.addFetchedField(DataSet.class, "dataSet", "Data Set", DataSetFetchOptions.class);
-        gen.addFetchedField(Material.class, "material", "Material", MaterialFetchOptions.class);
         // gen.addFetchedField(Project.class, "project", "Project", ProjectFetchOptions.class);
         // gen.addFetchedField(Space.class, "space", "Space", SpaceFetchOptions.class);
 
@@ -924,7 +876,6 @@ public class Generator extends AbstractGenerator
         gen.addBooleanField("managedInternally");
         gen.addSimpleField(DataType.class, "dataType");
         gen.addFetchedField(Vocabulary.class, "vocabulary", "Vocabulary", VocabularyFetchOptions.class);
-        gen.addFetchedField(MaterialType.class, "materialType", "Material type", MaterialTypeFetchOptions.class);
         gen.addStringField("schema");
         gen.addStringField("transformation");
         addSemanticAnnotations(gen);
@@ -1108,8 +1059,6 @@ public class Generator extends AbstractGenerator
         list.add(createSampleTypeGenerator());
         list.add(createSpaceGenerator());
         list.add(createTagGenerator());
-        list.add(createMaterialGenerator());
-        list.add(createMaterialTypeGenerator());
         list.add(createVocabularyTerm());
         list.add(createVocabulary());
         list.add(createLocatorType());

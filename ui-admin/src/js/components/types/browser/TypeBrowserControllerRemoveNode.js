@@ -7,7 +7,6 @@ const REMOVABLE_OBJECT_TYPES = [
   objectType.OBJECT_TYPE,
   objectType.COLLECTION_TYPE,
   objectType.DATA_SET_TYPE,
-  objectType.MATERIAL_TYPE,
   objectType.VOCABULARY_TYPE,
   objectType.OBJECT_TYPE_GROUP
 ]
@@ -42,8 +41,7 @@ export default class TypeBrowserControllerRemoveNode {
     if (
       type === objectType.OBJECT_TYPE ||
       type === objectType.COLLECTION_TYPE ||
-      type === objectType.DATA_SET_TYPE ||
-      type === objectType.MATERIAL_TYPE
+      type === objectType.DATA_SET_TYPE
     ) {
       return await this._prepareRemoveEntityTypeOperations(type, id, reason)
     } else if (type === objectType.VOCABULARY_TYPE) {
@@ -79,15 +77,6 @@ export default class TypeBrowserControllerRemoveNode {
       options.setReason(reason)
       operations.push(
         new openbis.DeleteDataSetTypesOperation(
-          [new openbis.EntityTypePermId(id)],
-          options
-        )
-      )
-    } else if (type === objectType.MATERIAL_TYPE) {
-      const options = new openbis.MaterialTypeDeletionOptions()
-      options.setReason(reason)
-      operations.push(
-        new openbis.DeleteMaterialTypesOperation(
           [new openbis.EntityTypePermId(id)],
           options
         )
@@ -184,8 +173,6 @@ export default class TypeBrowserControllerRemoveNode {
       return openbis.EntityKind.EXPERIMENT
     } else if (type === objectType.DATA_SET_TYPE) {
       return openbis.EntityKind.DATA_SET
-    } else if (type === objectType.MATERIAL_TYPE) {
-      return openbis.EntityKind.MATERIAL
     }
   }
 }

@@ -33,8 +33,6 @@ public class MetaprojectAssignments implements Serializable
 
     private List<AbstractExternalData> dataSets;
 
-    private List<Material> materials;
-
     public Metaproject getMetaproject()
     {
         return metaproject;
@@ -73,15 +71,5 @@ public class MetaprojectAssignments implements Serializable
     public void setDataSets(List<AbstractExternalData> dataSets)
     {
         this.dataSets = dataSets;
-    }
-
-    public List<Material> getMaterials()
-    {
-        return materials;
-    }
-
-    public void setMaterials(List<Material> materials)
-    {
-        this.materials = materials;
     }
 }

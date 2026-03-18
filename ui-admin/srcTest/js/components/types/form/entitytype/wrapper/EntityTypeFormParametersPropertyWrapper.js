@@ -59,12 +59,6 @@ export default class EntityTypeFormParametersPropertyWrapper extends PageParamet
     )
   }
 
-  getMaterialType() {
-    return new SelectFieldWrapper(
-      this.findComponent(SelectField).filter({ name: 'materialType' })
-    )
-  }
-
   getSchema() {
     return new TextFieldWrapper(
       this.findComponent(TextField).filter({ name: 'schema' })
@@ -99,7 +93,6 @@ export default class EntityTypeFormParametersPropertyWrapper extends PageParamet
       description: this.getDescription().toJSON(),
       plugin: this.getPlugin().toJSON(),
       vocabulary: this.getVocabulary().toJSON(),
-      materialType: this.getMaterialType().toJSON(),
       schema: this.getSchema().toJSON(),
       transformation: this.getTransformation().toJSON(),
       mandatory: this.getMandatory().toJSON(),

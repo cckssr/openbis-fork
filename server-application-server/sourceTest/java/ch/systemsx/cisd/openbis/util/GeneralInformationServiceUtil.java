@@ -26,8 +26,6 @@ import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.id.dataset.DataSetTech
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.id.experiment.ExperimentIdentifierId;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.id.experiment.ExperimentPermIdId;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.id.experiment.ExperimentTechIdId;
-import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.id.material.MaterialCodeAndTypeCodeId;
-import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.id.material.MaterialTechIdId;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.id.metaproject.MetaprojectIdentifierId;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.id.sample.SampleIdentifierId;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.id.sample.SamplePermIdId;
@@ -83,9 +81,6 @@ public class GeneralInformationServiceUtil
 
         assignmentsToAdd.addDataSet(new DataSetCodeId("20081105092259000-8")); // id: 8
         assignmentsToAdd.addDataSet(new DataSetTechIdId(12L)); // id: 12
-
-        assignmentsToAdd.addMaterial(new MaterialCodeAndTypeCodeId("GFP", "CONTROL")); // id: 18
-        assignmentsToAdd.addMaterial(new MaterialTechIdId(8L)); // id: 8
 
         changingService.addToMetaproject(sessionToken,
                 new MetaprojectIdentifierId(metaproject.getIdentifier()), assignmentsToAdd);

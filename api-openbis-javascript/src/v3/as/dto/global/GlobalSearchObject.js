@@ -13,7 +13,6 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		prototype.experiment = null;
 		prototype.sample = null;
 		prototype.dataSet = null;
-		prototype.material = null;
 
 		prototype.getFetchOptions = function() {
 			return this.fetchOptions;
@@ -81,17 +80,6 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		prototype.setDataSet = function(dataSet) {
 			this.dataSet = dataSet;
 		};
-		prototype.getMaterial = function() {
-			if (this.getFetchOptions() && this.getFetchOptions().hasMaterial()) {
-				return this.material;
-			} else {
-				throw new exceptions.NotFetchedException("Material has not been fetched.");
-			}
-		};
-		prototype.setMaterial = function(material) {
-			this.material = material;
-		};
-
 	}, {
 		fetchOptions : "GlobalSearchObjectFetchOptions",
 		objectKind : "GlobalSearchObjectKind",
@@ -99,8 +87,7 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		objectIdentifier : "IObjectId",
 		experiment : "Experiment",
 		sample : "Sample",
-		dataSet : "DataSet",
-		material : "Material"
+		dataSet : "DataSet"
 	});
 	return GlobalSearchObject;
 })

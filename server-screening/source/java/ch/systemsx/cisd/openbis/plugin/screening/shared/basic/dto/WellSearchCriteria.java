@@ -28,7 +28,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ServiceVersionHolder;
 //import ch.systemsx.cisd.openbis.plugin.screening.client.web.client.application.detailviewers.WellSearchGrid;
 
 /**
- * Describes a list of materials for which we search in the {@link WellSearchGrid}.
+ * Describes a list of materials for which we search
  * 
  * @author Tomasz Pylak
  */
@@ -304,225 +304,6 @@ public class WellSearchCriteria implements Serializable
         }
     }
 
-    public static final class MaterialSearchCodesCriteria implements Serializable
-    {
-        private static final long serialVersionUID = ServiceVersionHolder.VERSION;
-
-        private String[] materialCodesOrProperties;
-
-        private String[] materialTypeCodes;
-
-        private boolean exactMatchOnly;
-
-        // GWT only
-        @SuppressWarnings("unused")
-        private MaterialSearchCodesCriteria()
-        {
-        }
-
-        public MaterialSearchCodesCriteria(String[] materialCodesOrProperties,
-                String[] materialTypeCodes, boolean exactMatchOnly)
-        {
-            this.exactMatchOnly = exactMatchOnly;
-            for (int i = 0; i < materialCodesOrProperties.length; i++)
-            {
-                assert StringUtils.isBlank(materialCodesOrProperties[i]) == false : "material search property is blank";
-                materialCodesOrProperties[i] = materialCodesOrProperties[i].toUpperCase();
-            }
-            this.materialCodesOrProperties = materialCodesOrProperties;
-            this.materialTypeCodes = materialTypeCodes;
-        }
-
-        public String[] getMaterialCodesOrProperties()
-        {
-            return materialCodesOrProperties;
-        }
-
-        public boolean isExactMatchOnly()
-        {
-            return exactMatchOnly;
-        }
-
-        public String[] getMaterialTypeCodes()
-        {
-            return materialTypeCodes;
-        }
-
-        @Override
-        public String toString()
-        {
-            return "Material codes (or properties) = " + Arrays.toString(materialCodesOrProperties)
-                    + ", types = " + Arrays.toString(materialTypeCodes) + ", exactMatchOnly = "
-                    + exactMatchOnly;
-        }
-    }
-
-    public static final class MaterialSearchCriteria implements Serializable
-    {
-        private static final long serialVersionUID = ServiceVersionHolder.VERSION;
-
-        // Only one criteria is present
-
-        // -- code or property criteria
-        private MaterialSearchCodesCriteria codesOrPropertiesCriteriaOrNull;
-
-        // -- technical id criteria
-        private TechId materialIdOrNull;
-
-        /**
-         * We look for wells containing materials which have a code contained in the specified list of codes and type contained in the specified list
-         * of types.
-         */
-        public static final MaterialSearchCriteria createCodesCriteria(String[] materialCodes,
-                String[] materialTypeCodes, boolean exactMatchOnly)
-        {
-            return create(new MaterialSearchCodesCriteria(materialCodes, materialTypeCodes,
-                    exactMatchOnly));
-        }
-
-        public static MaterialSearchCriteria create(
-                MaterialSearchCodesCriteria materialCodesCriteria)
-        {
-            return new MaterialSearchCriteria(materialCodesCriteria, null);
-        }
-
-        public static final MaterialSearchCriteria createIdCriteria(TechId materialId)
-        {
-            assert materialId != null;
-
-            return new MaterialSearchCriteria(null, materialId);
-        }
-
-        // GWT only
-        private MaterialSearchCriteria()
-        {
-        }
-
-        private MaterialSearchCriteria(MaterialSearchCodesCriteria codesOrPropertiesCriteriaOrNull,
-                TechId materialIdOrNull)
-        {
-            this.codesOrPropertiesCriteriaOrNull = codesOrPropertiesCriteriaOrNull;
-            this.materialIdOrNull = materialIdOrNull;
-        }
-
-        public MaterialSearchCodesCriteria tryGetMaterialCodesOrProperties()
-        {
-            return codesOrPropertiesCriteriaOrNull;
-        }
-
-        public TechId tryGetMaterialId()
-        {
-            return materialIdOrNull;
-        }
-
-        @Override
-        public String toString()
-        {
-            if (materialIdOrNull != null)
-            {
-                return "Material with id = " + materialIdOrNull;
-            } else if (codesOrPropertiesCriteriaOrNull != null)
-            {
-                return codesOrPropertiesCriteriaOrNull.toString();
-            } else
-            {
-                throw new IllegalStateException("unexpected material search criteria");
-            }
-        }
-    }
-
-    public static class AbstractMaterialFeaturesCriteria implements Serializable
-    {
-        private static final long serialVersionUID = ServiceVersionHolder.VERSION;
-
-        private TechId materialId;
-
-        private AnalysisProcedureCriteria analysisProcedureCriteria;
-
-        // GWT only
-        protected AbstractMaterialFeaturesCriteria()
-        {
-        }
-
-        public AbstractMaterialFeaturesCriteria(TechId materialId,
-                AnalysisProcedureCriteria analysisProcedureCriteria)
-        {
-            this.materialId = materialId;
-            this.analysisProcedureCriteria = analysisProcedureCriteria;
-        }
-
-        public TechId getMaterialId()
-        {
-            return materialId;
-        }
-
-        public AnalysisProcedureCriteria getAnalysisProcedureCriteria()
-        {
-            return analysisProcedureCriteria;
-        }
-    }
-
-    public static final class MaterialFeaturesOneExpCriteria extends
-            AbstractMaterialFeaturesCriteria implements Serializable
-    {
-        private static final long serialVersionUID = ServiceVersionHolder.VERSION;
-
-        private TechId experimentId;
-
-        // GWT only
-        @SuppressWarnings("unused")
-        private MaterialFeaturesOneExpCriteria()
-        {
-        }
-
-        public MaterialFeaturesOneExpCriteria(TechId materialId,
-                AnalysisProcedureCriteria analysisProcedureCriteria, TechId experimentId)
-        {
-            super(materialId, analysisProcedureCriteria);
-            this.experimentId = experimentId;
-        }
-
-        public TechId getExperimentId()
-        {
-            return experimentId;
-        }
-    }
-
-    public static final class MaterialFeaturesManyExpCriteria extends
-            AbstractMaterialFeaturesCriteria implements Serializable
-    {
-        private static final long serialVersionUID = ServiceVersionHolder.VERSION;
-
-        private ExperimentSearchByProjectCriteria experimentSearchCriteria;
-
-        private boolean computeRanks;
-
-        // GWT only
-        @SuppressWarnings("unused")
-        private MaterialFeaturesManyExpCriteria()
-        {
-        }
-
-        public MaterialFeaturesManyExpCriteria(TechId materialId,
-                AnalysisProcedureCriteria analysisProcedureCriteria,
-                ExperimentSearchByProjectCriteria experimentSearchCriteria, boolean computeRanks)
-        {
-            super(materialId, analysisProcedureCriteria);
-            this.experimentSearchCriteria = experimentSearchCriteria;
-            this.computeRanks = computeRanks;
-        }
-
-        public ExperimentSearchByProjectCriteria getExperimentSearchCriteria()
-        {
-            return experimentSearchCriteria;
-        }
-
-        public boolean isComputeRanks()
-        {
-            return computeRanks;
-        }
-    }
-
     public static final class AnalysisProcedureCriteria implements Serializable
     {
         private static final long serialVersionUID = ServiceVersionHolder.VERSION;
@@ -614,8 +395,6 @@ public class WellSearchCriteria implements Serializable
         }
     }
 
-    private MaterialSearchCriteria materialCriteria;
-
     private ExperimentSearchCriteria experimentCriteria;
 
     private AnalysisProcedureCriteria analysisProcedureCriteria;
@@ -627,14 +406,11 @@ public class WellSearchCriteria implements Serializable
     }
 
     public WellSearchCriteria(ExperimentSearchCriteria experimentCriteria,
-            MaterialSearchCriteria materialCriteria,
             AnalysisProcedureCriteria analysisProcedureCriteria)
     {
         assert experimentCriteria != null;
-        assert materialCriteria != null;
         assert analysisProcedureCriteria != null;
 
-        this.materialCriteria = materialCriteria;
         this.experimentCriteria = experimentCriteria;
         this.analysisProcedureCriteria = analysisProcedureCriteria;
     }
@@ -642,7 +418,7 @@ public class WellSearchCriteria implements Serializable
     @Override
     public String toString()
     {
-        return "Search criteria: " + experimentCriteria + ", " + materialCriteria + ", "
+        return "Search criteria: " + experimentCriteria + ", "
                 + analysisProcedureCriteria;
     }
 
@@ -650,11 +426,6 @@ public class WellSearchCriteria implements Serializable
     public ExperimentSearchCriteria getExperimentCriteria()
     {
         return experimentCriteria;
-    }
-
-    public MaterialSearchCriteria getMaterialSearchCriteria()
-    {
-        return materialCriteria;
     }
 
     public AnalysisProcedureCriteria getAnalysisProcedureCriteria()

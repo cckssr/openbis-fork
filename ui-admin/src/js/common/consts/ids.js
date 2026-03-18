@@ -10,7 +10,6 @@ const OBJECT_TYPE_GROUPS_GRID_ID = 'object_type_groups_grid'
 const TYPE_GROUP_OBJECT_TYPES_GRID_ID = 'type_group_object_types_grid'
 const COLLECTION_TYPES_GRID_ID = 'collection_types_grid'
 const DATA_SET_TYPES_GRID_ID = 'data_set_types_grid'
-const MATERIAL_TYPES_GRID_ID = 'material_types_grid'
 const VOCABULARY_TYPES_GRID_ID = 'vocabulary_types_grid'
 const PROPERTY_TYPES_GRID_ID = 'property_types_grid'
 const USERS_GRID_ID = 'users_grid'
@@ -64,7 +63,6 @@ export default {
   TYPE_GROUP_OBJECT_TYPES_GRID_ID,
   COLLECTION_TYPES_GRID_ID,
   DATA_SET_TYPES_GRID_ID,
-  MATERIAL_TYPES_GRID_ID,
   VOCABULARY_TYPES_GRID_ID,
   PROPERTY_TYPES_GRID_ID,
   USERS_GRID_ID,

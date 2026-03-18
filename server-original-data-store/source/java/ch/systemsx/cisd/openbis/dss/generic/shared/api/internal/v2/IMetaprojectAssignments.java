@@ -29,6 +29,4 @@ public interface IMetaprojectAssignments
     List<IExperimentImmutable> getExperiments();
 
     List<IDataSetImmutable> getDataSets();
-
-    List<IMaterialImmutable> getMaterials();
 }

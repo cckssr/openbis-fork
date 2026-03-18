@@ -50,15 +50,11 @@ public class PropertyType extends Code<PropertyType> implements IPropertyTypeUpd
 
     private Vocabulary vocabulary;
 
-    private MaterialType materialType;
-
     private SampleType sampleType;
 
     private String description;
 
     private List<SampleTypePropertyType> sampleTypePropertyTypes;
-
-    private List<MaterialTypePropertyType> materialTypePropertyTypes;
 
     private List<ExperimentTypePropertyType> experimentTypePropertyTypes;
 
@@ -192,17 +188,6 @@ public class PropertyType extends Code<PropertyType> implements IPropertyTypeUpd
         this.dataSetTypePropertyTypes = dataSetTypePropertyTypes;
     }
 
-    public List<MaterialTypePropertyType> getMaterialTypePropertyTypes()
-    {
-        return materialTypePropertyTypes;
-    }
-
-    public void setMaterialTypePropertyTypes(
-            final List<MaterialTypePropertyType> materialTypePropertyTypes)
-    {
-        this.materialTypePropertyTypes = materialTypePropertyTypes;
-    }
-
     public List<ExperimentTypePropertyType> getExperimentTypePropertyTypes()
     {
         return experimentTypePropertyTypes;
@@ -222,16 +207,6 @@ public class PropertyType extends Code<PropertyType> implements IPropertyTypeUpd
     public final void setManagedInternally(final boolean managedInternally)
     {
         this.managedInternally = managedInternally;
-    }
-
-    public MaterialType getMaterialType()
-    {
-        return materialType;
-    }
-
-    public void setMaterialType(MaterialType materialType)
-    {
-        this.materialType = materialType;
     }
 
     public SampleType getSampleType()

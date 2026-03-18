@@ -12,7 +12,6 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		prototype.managedInternally = null;
 		prototype.dataType = null;
 		prototype.vocabulary = null;
-		prototype.materialType = null;
 		prototype.sampleType = null;
 		prototype.schema = null;
 		prototype.transformation = null;
@@ -81,16 +80,6 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		prototype.setVocabulary = function(vocabulary) {
 			this.vocabulary = vocabulary;
 		};
-		prototype.getMaterialType = function() {
-			if (this.getFetchOptions() && this.getFetchOptions().hasMaterialType()) {
-				return this.materialType;
-			} else {
-				throw new exceptions.NotFetchedException("Material type has not been fetched.");
-			}
-		};
-		prototype.setMaterialType = function(materialType) {
-			this.materialType = materialType;
-		};
 		prototype.getSampleType = function() {
 			if (this.getFetchOptions() && this.getFetchOptions().hasSampleType()) {
 				return this.sampleType;
@@ -157,7 +146,6 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		permId : "PropertyTypePermId",
 		dataType : "DataType",
 		vocabulary : "Vocabulary",
-		materialType : "MaterialType",
 		sampleType : "SampleType",
 		semanticAnnotations: {
 			name: "List",

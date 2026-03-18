@@ -25,7 +25,6 @@ import java.util.Map;
 
 import org.testng.annotations.Test;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.id.MaterialPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.Tag;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.create.TagCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.fetchoptions.TagFetchOptions;
@@ -230,7 +229,6 @@ public class GetTagTest extends AbstractTest
         assertExperimentsNotFetched(tag);
         assertSamplesNotFetched(tag);
         assertDataSetsNotFetched(tag);
-        assertMaterialsNotFetched(tag);
     }
 
     @Test
@@ -255,7 +253,6 @@ public class GetTagTest extends AbstractTest
         assertExperimentsNotFetched(tag);
         assertSamplesNotFetched(tag);
         assertDataSetsNotFetched(tag);
-        assertMaterialsNotFetched(tag);
     }
 
     @Test
@@ -280,7 +277,6 @@ public class GetTagTest extends AbstractTest
         assertOwnerNotFetched(tag);
         assertSamplesNotFetched(tag);
         assertDataSetsNotFetched(tag);
-        assertMaterialsNotFetched(tag);
     }
 
     @Test
@@ -305,7 +301,6 @@ public class GetTagTest extends AbstractTest
         assertOwnerNotFetched(tag);
         assertExperimentsNotFetched(tag);
         assertDataSetsNotFetched(tag);
-        assertMaterialsNotFetched(tag);
     }
 
     @Test
@@ -330,7 +325,6 @@ public class GetTagTest extends AbstractTest
         assertOwnerNotFetched(tag);
         assertExperimentsNotFetched(tag);
         assertSamplesNotFetched(tag);
-        assertMaterialsNotFetched(tag);
     }
 
     @Test
@@ -339,7 +333,6 @@ public class GetTagTest extends AbstractTest
         TagPermId permId = new TagPermId(TEST_USER, "TEST_METAPROJECTS");
 
         TagFetchOptions fetchOptions = new TagFetchOptions();
-        fetchOptions.withMaterials();
 
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
         Map<ITagId, Tag> map = v3api.getTags(sessionToken, Arrays.asList(permId), fetchOptions);
@@ -350,7 +343,6 @@ public class GetTagTest extends AbstractTest
         assertEquals(tag.getCode(), "TEST_METAPROJECTS");
         assertEquals(tag.getDescription(), "Example metaproject no. 1");
         assertTrue(tag.isPrivate());
-        assertMaterialPermIds(tag.getMaterials(), new MaterialPermId("AD3", "VIRUS"));
 
         assertOwnerNotFetched(tag);
         assertExperimentsNotFetched(tag);

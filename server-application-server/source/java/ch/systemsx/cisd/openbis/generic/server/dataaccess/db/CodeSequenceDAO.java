@@ -39,7 +39,6 @@ public class CodeSequenceDAO extends AbstractDAO implements ICodeSequenceDAO
         entityKindSequenceMap.put(EntityKind.EXPERIMENT, SequenceNames.EXPERIMENT_CODE_SEQUENCE);
         entityKindSequenceMap.put(EntityKind.SAMPLE, SequenceNames.SAMPLE_CODE_SEQUENCE);
         entityKindSequenceMap.put(EntityKind.DATA_SET, SequenceNames.CODE_SEQUENCE);
-        entityKindSequenceMap.put(EntityKind.MATERIAL, SequenceNames.CODE_SEQUENCE);
     }
 
     @Override

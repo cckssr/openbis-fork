@@ -197,27 +197,23 @@ public class SimpleTableModelBuilderTest extends AssertJUnit
     public void testRowBuilderWithEntityLinks()
     {
         SimpleTableModelBuilder builder = new SimpleTableModelBuilder(true);
-        builder.addFullHeader("materialCol", "sampleCol", "experimentCol", "datasetCol");
+        builder.addFullHeader("firstCol", "sampleCol", "experimentCol", "datasetCol");
         IRowBuilder rowBuilder = builder.addRow();
-        rowBuilder.setCell("materialCol", createMaterialCell("m1"));
         rowBuilder.setCell("sampleCol", createSampleCell("s1"));
         rowBuilder.setCell("experimentCol", createExperimentCell("e1"));
         rowBuilder.setCell("datasetCol", createDataSetCell("d1"));
         rowBuilder = builder.addRow();
-        rowBuilder.setCell("materialCol", createMaterialCell("m2"));
         rowBuilder.setCell("sampleCol", createSampleCell("s2"));
         rowBuilder.setCell("experimentCol", createExperimentCell("e2"));
         rowBuilder.setCell("datasetCol", createDataSetCell("d2"));
         rowBuilder = builder.addRow();
-        rowBuilder.setCell("materialCol", SimpleTableModelBuilder.createNullCell());
+        rowBuilder.setCell("firstCol", SimpleTableModelBuilder.createNullCell());
         rowBuilder.setCell("sampleCol", createSampleCell("s3", null));
         rowBuilder.setCell("experimentCol", SimpleTableModelBuilder.createNullCell());
         rowBuilder.setCell("datasetCol", createDataSetCell("d3", "d3 id"));
 
         TableModel tableModel = builder.getTableModel();
 
-        assertLinkHeader("materialCol", "materialCol", 150, 0, DataTypeCode.VARCHAR,
-                EntityKind.MATERIAL, tableModel.getHeader().get(0));
         assertLinkHeader("sampleCol", "sampleCol", 150, 1, DataTypeCode.VARCHAR, EntityKind.SAMPLE,
                 tableModel.getHeader().get(1));
         assertLinkHeader("experimentCol", "experimentCol", 150, 2, DataTypeCode.VARCHAR,
@@ -228,12 +224,12 @@ public class SimpleTableModelBuilderTest extends AssertJUnit
         List<TableModelRow> rows = tableModel.getRows();
         assertEquals(3, rows.size());
         assertEquals(4, rows.get(0).getValues().size());
-        assertEquals("m1", rows.get(0).getValues().get(0).toString());
+        assertEquals("", rows.get(0).getValues().get(0).toString());
         assertEquals("s1", rows.get(0).getValues().get(1).toString());
         assertEquals("e1", rows.get(0).getValues().get(2).toString());
         assertEquals("d1", rows.get(0).getValues().get(3).toString());
         assertEquals(4, rows.get(1).getValues().size());
-        assertEquals("m2", rows.get(1).getValues().get(0).toString());
+        assertEquals("", rows.get(1).getValues().get(0).toString());
         assertEquals("s2", rows.get(1).getValues().get(1).toString());
         assertEquals("e2", rows.get(1).getValues().get(2).toString());
         assertEquals("d2", rows.get(1).getValues().get(3).toString());
@@ -246,11 +242,6 @@ public class SimpleTableModelBuilderTest extends AssertJUnit
         assertEquals("d3 id", rows.get(2).getValues().get(3).toString());
         assertEquals(false, ((EntityTableCell) rows.get(2).getValues().get(3)).isMissing());
         assertEquals("d3", ((EntityTableCell) rows.get(2).getValues().get(3)).getPermId());
-    }
-
-    private static EntityTableCell createMaterialCell(String permId)
-    {
-        return new EntityTableCell(EntityKind.MATERIAL, permId);
     }
 
     private static EntityTableCell createSampleCell(String permId)

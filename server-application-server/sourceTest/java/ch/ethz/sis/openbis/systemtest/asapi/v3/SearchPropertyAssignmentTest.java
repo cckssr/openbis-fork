@@ -70,10 +70,8 @@ public class SearchPropertyAssignmentTest extends AbstractTest
         PropertyAssignmentSearchCriteria criteria = new PropertyAssignmentSearchCriteria();
         criteria.withIds().thatIn(Arrays.asList(
                 new PropertyAssignmentPermId(new EntityTypePermId("CELL_PLATE", EntityKind.SAMPLE), new PropertyTypePermId("SIZE")),
-                new PropertyAssignmentPermId(new EntityTypePermId("COMPOUND_HCS", EntityKind.EXPERIMENT), new PropertyTypePermId("ANY_MATERIAL")),
-                new PropertyAssignmentPermId(new EntityTypePermId("HCS_IMAGE", EntityKind.DATA_SET), new PropertyTypePermId("COMMENT")),
-                new PropertyAssignmentPermId(new EntityTypePermId("SIRNA", EntityKind.MATERIAL), new PropertyTypePermId("OFFSET"))));
-        testSearch(TEST_USER, criteria, "CELL_PLATE.SIZE", "COMPOUND_HCS.ANY_MATERIAL", "HCS_IMAGE.COMMENT", "SIRNA.OFFSET");
+                new PropertyAssignmentPermId(new EntityTypePermId("HCS_IMAGE", EntityKind.DATA_SET), new PropertyTypePermId("COMMENT"))));
+        testSearch(TEST_USER, criteria, "CELL_PLATE.SIZE", "HCS_IMAGE.COMMENT");
     }
 
     @Test
@@ -100,8 +98,7 @@ public class SearchPropertyAssignmentTest extends AbstractTest
     {
         PropertyAssignmentSearchCriteria criteria = new PropertyAssignmentSearchCriteria();
         criteria.withEntityType().withId().thatEquals(new EntityTypePermId("CELL_PLATE", EntityKind.SAMPLE));
-        testSearch(TEST_USER, criteria, "CELL_PLATE.SIZE", "CELL_PLATE.COMMENT", "CELL_PLATE.ORGANISM", "CELL_PLATE.BACTERIUM",
-                "CELL_PLATE.ANY_MATERIAL");
+        testSearch(TEST_USER, criteria, "CELL_PLATE.SIZE", "CELL_PLATE.COMMENT", "CELL_PLATE.ORGANISM");
     }
 
     @Test
@@ -205,7 +202,7 @@ public class SearchPropertyAssignmentTest extends AbstractTest
         entityTypeSearchCriteria.withAndOperator();
         entityTypeSearchCriteria.withCode().thatStartsWith("CELL");
         entityTypeSearchCriteria.withCode().thatEndsWith("PLATE");
-        criteria.withPropertyType().withId().thatEquals(new PropertyTypePermId("BACTERIUM"));
+        criteria.withPropertyType().withId().thatEquals(new PropertyTypePermId("COMMENT"));
 
 
         SearchResult<PropertyAssignment> searchResult =
@@ -216,9 +213,9 @@ public class SearchPropertyAssignmentTest extends AbstractTest
         for (PropertyAssignment propertyAssignment : propertyAssignments)
         {
             Assert.assertTrue(propertyAssignment.getEntityType().getCode().equals("CELL_PLATE")
-                    || propertyAssignment.getPropertyType().getCode().equals("BACTERIUM"));
+                    || propertyAssignment.getPropertyType().getCode().equals("COMMENT"));
         }
-        assertEquals(propertyAssignments.size() >= 11, true);
+        assertEquals(propertyAssignments.size() >= 7, true);
     }
 
     @Test

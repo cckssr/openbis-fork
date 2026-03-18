@@ -3,8 +3,8 @@
  * {@link ch.ethz.sis.openbis.generic.shared.api.v3.dto.generators.DtoGenerator}
  */
 define([ "require", "stjs", "as/dto/common/fetchoptions/FetchOptions", "as/dto/person/fetchoptions/PersonFetchOptions", "as/dto/tag/fetchoptions/TagSortOptions",
-		"as/dto/experiment/fetchoptions/ExperimentFetchOptions", "as/dto/sample/fetchoptions/SampleFetchOptions", "as/dto/dataset/fetchoptions/DataSetFetchOptions",
-		"as/dto/material/fetchoptions/MaterialFetchOptions" ], function(require, stjs, FetchOptions) {
+		"as/dto/experiment/fetchoptions/ExperimentFetchOptions", "as/dto/sample/fetchoptions/SampleFetchOptions", "as/dto/dataset/fetchoptions/DataSetFetchOptions"
+		 ], function(require, stjs, FetchOptions) {
 	var TagFetchOptions = function() {
 	};
 	stjs.extend(TagFetchOptions, FetchOptions, [ FetchOptions ], function(constructor, prototype) {
@@ -13,7 +13,6 @@ define([ "require", "stjs", "as/dto/common/fetchoptions/FetchOptions", "as/dto/p
 		prototype.experiments = null;
 		prototype.samples = null;
 		prototype.dataSets = null;
-		prototype.materials = null;
 		prototype.owner = null;
 		prototype.sort = null;
 
@@ -59,20 +58,6 @@ define([ "require", "stjs", "as/dto/common/fetchoptions/FetchOptions", "as/dto/p
 			return this.dataSets != null;
 		};
 
-		prototype.withMaterials = function() {
-			if (this.materials == null) {
-				var MaterialFetchOptions = require("as/dto/material/fetchoptions/MaterialFetchOptions");
-				this.materials = new MaterialFetchOptions();
-			}
-			return this.materials;
-		};
-		prototype.withMaterialsUsing = function(fetchOptions) {
-			return this.materials = fetchOptions;
-		};
-		prototype.hasMaterials = function() {
-			return this.materials != null;
-		};
-
 		prototype.withOwner = function() {
 			if (this.owner == null) {
 				var PersonFetchOptions = require("as/dto/person/fetchoptions/PersonFetchOptions");
@@ -101,7 +86,6 @@ define([ "require", "stjs", "as/dto/common/fetchoptions/FetchOptions", "as/dto/p
 		experiments : "ExperimentFetchOptions",
 		samples : "SampleFetchOptions",
 		dataSets : "DataSetFetchOptions",
-		materials : "MaterialFetchOptions",
 		owner : "PersonFetchOptions",
 		sort : "TagSortOptions"
 	});

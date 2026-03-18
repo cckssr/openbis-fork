@@ -31,9 +31,7 @@ public enum QueryType implements Serializable
 
     SAMPLE,
 
-    DATA_SET,
-
-    MATERIAL;
+    DATA_SET;
 
     public static final QueryType UNSPECIFIED = null;
 

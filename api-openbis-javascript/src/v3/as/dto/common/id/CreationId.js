@@ -1,12 +1,12 @@
 /**
  * @author Jakub Straszewski
  */
-define([ "stjs", "as/dto/sample/id/ISampleId", "as/dto/dataset/id/IDataSetId", "as/dto/experiment/id/IExperimentId", "as/dto/project/id/IProjectId", "as/dto/space/id/ISpaceId", "as/dto/material/id/IMaterialId" ],
-		function(stjs, ISampleId, IDataSetId, IExperimentId, IProjectId, ISpaceId, IMaterialId) {
+define([ "stjs", "as/dto/sample/id/ISampleId", "as/dto/dataset/id/IDataSetId", "as/dto/experiment/id/IExperimentId", "as/dto/project/id/IProjectId", "as/dto/space/id/ISpaceId" ],
+		function(stjs, ISampleId, IDataSetId, IExperimentId, IProjectId, ISpaceId) {
 			var CreationId = function(creationId) {
 				this.creationId = creationId;
 			};
-			stjs.extend(CreationId, null, [ ISampleId, IDataSetId, IExperimentId, IProjectId, ISpaceId, IMaterialId ], function(constructor, prototype) {
+			stjs.extend(CreationId, null, [ ISampleId, IDataSetId, IExperimentId, IProjectId, ISpaceId ], function(constructor, prototype) {
 				prototype['@type'] = 'as.dto.common.id.CreationId';
 				constructor.serialVersionUID = 1;
 				prototype.creationId = null;

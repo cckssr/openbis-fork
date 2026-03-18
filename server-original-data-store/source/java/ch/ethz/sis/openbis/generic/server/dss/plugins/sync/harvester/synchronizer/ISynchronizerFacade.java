@@ -26,7 +26,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExperimentType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.FileFormatType;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewETPTAssignment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewVocabulary;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PropertyType;
@@ -69,8 +68,6 @@ public interface ISynchronizerFacade
 
     public void registerExperimentType(ExperimentType experimentType);
 
-    public void registerMaterialType(MaterialType materialType);
-
     public void updateVocabularyTerm(String vocabularyCode, VocabularyTerm term, String diff);
 
     public void updateSampleType(EntityType incomingEntityType, String diff);
@@ -78,8 +75,6 @@ public interface ISynchronizerFacade
     public void updateDataSetType(EntityType incomingEntityType, String diff);
 
     public void updateExperimentType(EntityType incomingEntityType, String diff);
-
-    public void updateMaterialType(EntityType incomingEntityType, String diff);
 
     public void addVocabularyTerms(String code, TechId techId, List<VocabularyTerm> termsToBeAdded);
 

@@ -75,12 +75,8 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IVocabularyTermUpdates;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IVocabularyUpdates;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.LastModificationState;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.LinkModel;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ListMaterialCriteria;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ListSampleCriteria;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MatchingEntity;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Material;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialIdentifier;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Metaproject;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MetaprojectAssignments;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MetaprojectAssignmentsCount;
@@ -325,12 +321,6 @@ public interface ICommonServer extends IServer
             final ListSampleCriteria criteria, String userId);
 
     /**
-     * Returns all samples which have at least one property of type MATERIAL referring to one of the specified materials.
-     */
-    @Transactional(readOnly = true)
-    public List<Sample> listSamplesByMaterialProperties(String sessionToken, Collection<TechId> materialIds);
-
-    /**
      * Lists experiments for metaproject.
      *
      * @return a sorted list of {@link Experiment}.
@@ -530,7 +520,7 @@ public interface ICommonServer extends IServer
      */
     @Transactional
     @DatabaseCreateOrDeleteModification(value = { ObjectKind.PROPERTY_TYPE, ObjectKind.PROPERTY_TYPE_ASSIGNMENT, ObjectKind.DATASET_TYPE,
-            ObjectKind.SAMPLE_TYPE, ObjectKind.EXPERIMENT_TYPE, ObjectKind.MATERIAL_TYPE })
+            ObjectKind.SAMPLE_TYPE, ObjectKind.EXPERIMENT_TYPE})
     public String registerEntitytypeAndAssignPropertyTypes(final String sessionToken, NewETNewPTAssigments newETNewPTAssigments);
 
     /**
@@ -538,7 +528,7 @@ public interface ICommonServer extends IServer
      */
     @Transactional
     @DatabaseCreateOrDeleteModification(value = { ObjectKind.PROPERTY_TYPE, ObjectKind.PROPERTY_TYPE_ASSIGNMENT, ObjectKind.DATASET_TYPE,
-            ObjectKind.SAMPLE_TYPE, ObjectKind.EXPERIMENT_TYPE, ObjectKind.MATERIAL_TYPE })
+            ObjectKind.SAMPLE_TYPE, ObjectKind.EXPERIMENT_TYPE })
     public String updateEntitytypeAndPropertyTypes(final String sessionToken, NewETNewPTAssigments newETNewPTAssigments);
 
     /**
@@ -734,59 +724,6 @@ public interface ICommonServer extends IServer
     @Transactional(readOnly = true)
     public List<AbstractExternalData> listRelatedDataSetsOnBehalfOfUser(String sessionToken,
             DataSetRelatedEntities entities, boolean withDetails, String userId);
-
-    /**
-     * List material types.
-     *
-     * @return a sorted list of {@link MaterialType}.
-     */
-    @Transactional(readOnly = true)
-    public List<MaterialType> listMaterialTypes(String sessionToken);
-
-    /**
-     * Returns material type for given code.
-     *
-     * @return {@link MaterialType} for given code.
-     */
-    @Transactional(readOnly = true)
-    public MaterialType getMaterialType(String sessionToken, String code);
-
-    /**
-     * Lists materials using given criteria.
-     *
-     * @return a sorted list of {@link Material}.
-     */
-    @Transactional(readOnly = true)
-    public List<Material> listMaterials(String sessionToken, ListMaterialCriteria criteria,
-            boolean withProperties);
-
-    /**
-     * Returns the technical ids of all materials which have at least one property of type MATERIAL referring to one of the specified materials.
-     */
-    @Transactional(readOnly = true)
-    public Collection<TechId> listMaterialIdsByMaterialProperties(String sessionToken, Collection<TechId> materialIds);
-
-    /**
-     * Lists materials for metaproject.
-     *
-     * @return a sorted list of {@link Material}.
-     */
-    @Transactional(readOnly = true)
-    public List<Material> listMetaprojectMaterials(String sessionToken, IMetaprojectId metaprojectId);
-
-    /**
-     * Creates a new material type.
-     */
-    @Transactional
-    @DatabaseCreateOrDeleteModification(value = ObjectKind.MATERIAL_TYPE)
-    public void registerMaterialType(String sessionToken, MaterialType entityType);
-
-    /**
-     * Updates a material type.
-     */
-    @Transactional
-    @DatabaseUpdateModification(value = ObjectKind.MATERIAL_TYPE)
-    public void updateMaterialType(String sessionToken, EntityType entityType);
 
     /**
      * Creates a new sample type.
@@ -1047,13 +984,6 @@ public interface ICommonServer extends IServer
     public void deleteFileFormatTypes(String sessionToken, List<String> codes);
 
     /**
-     * Deletes specified material types.
-     */
-    @Transactional
-    @DatabaseCreateOrDeleteModification(value = { ObjectKind.MATERIAL_TYPE, ObjectKind.PROPERTY_TYPE_ASSIGNMENT })
-    public void deleteMaterialTypes(String sessionToken, List<String> entityTypesCodes);
-
-    /**
      * For given {@link EntityKind} and permanent <var>identifier</var> returns the corresponding {@link IEntityInformationHolderWithPermId}.
      */
     @Transactional(readOnly = true)
@@ -1066,33 +996,6 @@ public interface ICommonServer extends IServer
     @Transactional(readOnly = true)
     public IEntityInformationHolderWithPermId getEntityInformationHolder(String sessionToken,
             BasicEntityDescription info);
-
-    /**
-     * For given {@link MaterialIdentifier} returns the corresponding {@link Material}.
-     */
-    @Transactional(readOnly = true)
-    public Material getMaterialInfo(String sessionToken, MaterialIdentifier identifier);
-
-    /**
-     * For given {@link TechId} returns the corresponding {@link Material}.
-     */
-    @Transactional(readOnly = true)
-    public Material getMaterialInfo(String sessionToken, TechId materialId);
-
-    /**
-     * For given {@link MaterialIdentifier} returns the corresponding {@link IEntityInformationHolder}.
-     */
-    @Transactional(readOnly = true)
-    public IEntityInformationHolderWithPermId getMaterialInformationHolder(String sessionToken,
-            MaterialIdentifier identifier);
-
-    /**
-     * Saves changed material.
-     */
-    @Transactional
-    @DatabaseUpdateModification(value = ObjectKind.MATERIAL)
-    public Date updateMaterial(String sessionToken, TechId materialId,
-            List<IEntityProperty> properties, String[] metaprojects, Date version);
 
     /**
      * Returns file template available during batch operation of entity of given type.
@@ -1313,12 +1216,6 @@ public interface ICommonServer extends IServer
     public void updateVocabularyTerms(String sessionToken, TechId vocabularyId,
             List<VocabularyTerm> terms);
 
-    /**
-     * Deletes specified materials.
-     */
-    @Transactional
-    @DatabaseCreateOrDeleteModification(value = ObjectKind.MATERIAL)
-    public void deleteMaterials(String sessionToken, List<TechId> materialIds, String reason);
 
     /**
      * Gets the link from a service that supports the IReportingPluginTask#createLink method.
@@ -1370,14 +1267,6 @@ public interface ICommonServer extends IServer
             IManagedProperty managedProperty, IManagedUiAction updateAction);
 
     /**
-     * Evaluates the managed property script and updates the entity.
-     */
-    @Transactional
-    @DatabaseUpdateModification(value = ObjectKind.MATERIAL)
-    public void updateManagedPropertyOnMaterial(String sessionToken, TechId experimentId,
-            IManagedProperty managedProperty, IManagedUiAction updateAction);
-
-    /**
      * Get the default url for data store put.
      */
     @Transactional(readOnly = true)
@@ -1408,14 +1297,6 @@ public interface ICommonServer extends IServer
             List<PropertyUpdates> modifiedProperties);
 
     /**
-     * Updates properties of a material with given id.
-     */
-    @Transactional
-    @DatabaseUpdateModification(value = ObjectKind.MATERIAL)
-    public void updateMaterialProperties(String sessionToken, TechId entityId,
-            List<PropertyUpdates> modifiedProperties);
-
-    /**
      * Returns all deletions.
      *
      * @return a sorted list of {@link Deletion}.
@@ -1441,7 +1322,7 @@ public interface ICommonServer extends IServer
 
     /**
      * Permanently deletes entities moved to trash in specified deletions. This method CANNOT delete data sets with deletion_disallow flag set to true
-     * in their type (compare with {@link #deletePermanentlyForced(String, List)})
+     * in their type (compare with {@link #deletePermanentlyForced(String, List, boolean)})
      */
     @Transactional
     @DatabaseCreateOrDeleteModification(value = { ObjectKind.DELETION, ObjectKind.EXPERIMENT, ObjectKind.SAMPLE, ObjectKind.DATA_SET })
@@ -1449,17 +1330,11 @@ public interface ICommonServer extends IServer
 
     /**
      * Permanently deletes entities moved to trash in specified deletions. It CAN delete data sets with deletion_disallow flag set to true in their
-     * type (compare with {@link #deletePermanently(String, List)}).
+     * type (compare with {@link #deletePermanently(String, List, boolean)}).
      */
     @Transactional
     @DatabaseCreateOrDeleteModification(value = { ObjectKind.DELETION, ObjectKind.EXPERIMENT, ObjectKind.SAMPLE, ObjectKind.DATA_SET })
     public void deletePermanentlyForced(final String sessionToken, final List<TechId> deletionIds, boolean forceToDeleteDependentDeletionSets);
-
-    /**
-     * Performs an <i>Hibernate Search</i> based on given parameters.
-     */
-    @Transactional(readOnly = true)
-    public List<Material> searchForMaterials(String sessionToken, DetailedSearchCriteria criteria);
 
     /**
      * Performs an import of file to the dss.

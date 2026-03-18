@@ -66,8 +66,6 @@ import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.Geometry;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.ImageChannel;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.ImageDatasetMetadata;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.ImageDatasetReference;
-import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.MaterialIdentifier;
-import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.MaterialTypeIdentifier;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.Plate;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.PlateIdentifier;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.PlateImageReference;
@@ -396,69 +394,6 @@ public class OpenBISScreeningMLTest extends AbstractFileSystemTestCase
         context.assertIsSatisfied();
     }
 
-    @Test
-    public void testGetFeatureMatrixForGene()
-    {
-        final MaterialIdentifier gene = new MaterialIdentifier(MaterialTypeIdentifier.GENE, "GEN1");
-        context.checking(new Expectations()
-            {
-                {
-                    one(openbis).loadFeaturesForPlateWells(gene, null, null);
-                    FeatureVectorDatasetReference fds1 =
-                            new FeatureVectorDatasetReference("ds1", "MY-TYPE", "", p1,
-                                    ExperimentIdentifier.createFromAugmentedCode("/S/P/E"),
-                                    Geometry.createFromCartesianDimensions(3, 2), new Date(4711),
-                                    null, null);
-                    FeatureVectorDatasetWellReference well1 =
-                            new FeatureVectorDatasetWellReference(fds1, new WellPosition(3, 4));
-                    FeatureVectorWithDescription f1 =
-                            new FeatureVectorWithDescription(well1, Arrays.asList("F1", "F3"),
-                                    new double[]
-                                    { 1.5, 42 });
-                    FeatureVectorDatasetReference fds2 =
-                            new FeatureVectorDatasetReference("ds2", "MY-TYPE", "", p2,
-                                    ExperimentIdentifier.createFromAugmentedCode("/S/P/E"),
-                                    Geometry.createFromCartesianDimensions(3, 2), new Date(4711),
-                                    null, null);
-                    FeatureVectorDatasetWellReference well2 =
-                            new FeatureVectorDatasetWellReference(fds2, new WellPosition(2, 7));
-                    FeatureVectorWithDescription f2 =
-                            new FeatureVectorWithDescription(well2, Arrays.asList("F1", "F2"),
-                                    new double[]
-                                    { -3, 7.125 });
-                    will(returnValue(Arrays.asList(f1, f2)));
-                }
-            });
-
-        Object[][][][] matrix = OpenBISScreeningML.getFeatureMatrix("GEN1", null, null);
-
-        assertEquals(Double.NaN, matrix[0][0][0][0]);
-        assertEquals(1.5, matrix[0][0][1][0]);
-        assertEquals(Double.NaN, matrix[0][1][0][0]);
-        assertEquals(Double.NaN, matrix[0][1][1][0]);
-        assertEquals(Double.NaN, matrix[0][2][0][0]);
-        assertEquals(42.0, matrix[0][2][1][0]);
-        assertEquals(-3.0, matrix[0][0][0][1]);
-        assertEquals(Double.NaN, matrix[0][0][1][1]);
-        assertEquals(7.125, matrix[0][1][0][1]);
-        assertEquals(Double.NaN, matrix[0][1][1][1]);
-        assertEquals(Double.NaN, matrix[0][2][0][1]);
-        assertEquals(Double.NaN, matrix[0][2][1][1]);
-        assertEquals(3, matrix[0].length);
-        assertEquals(
-                "[PLATE-2:B7, /S/PLATE-2, s-2, S, PLATE-2, 2, 7, /S/P/E, null, S, P, E, ds2, MY-TYPE]",
-                Arrays.asList(matrix[1][0][1]).toString());
-        assertEquals(
-                "[PLATE-1:C4, /S/PLATE-1, s-1, S, PLATE-1, 3, 4, /S/P/E, null, S, P, E, ds1, MY-TYPE]",
-                Arrays.asList(matrix[1][1][0]).toString());
-        assertEquals(2, matrix[1].length);
-        assertEquals("F1", matrix[2][0][0][0]);
-        assertEquals("F2", matrix[2][1][0][0]);
-        assertEquals("F3", matrix[2][2][0][0]);
-        assertEquals(3, matrix[2].length);
-        assertEquals(3, matrix.length);
-        context.assertIsSatisfied();
-    }
 
     @Test
     public void testGetEmptyFeatureMatrixForPlate()

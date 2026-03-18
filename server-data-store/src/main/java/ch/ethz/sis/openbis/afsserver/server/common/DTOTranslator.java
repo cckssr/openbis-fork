@@ -38,10 +38,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IContentCopy;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IEntityProperty;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.LinkDataSet;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.LocatorType;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Material;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialEntityProperty;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialIdentifier;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Metaproject;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Person;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PhysicalDataSet;
@@ -572,22 +568,6 @@ public class DTOTranslator
                         VocabularyTerm term = new VocabularyTerm();
                         term.setCode((String) propertyValue);
                         property.setVocabularyTerm(term);
-                    }
-                    break;
-                case MATERIAL:
-                    property = new MaterialEntityProperty();
-                    if (propertyValue instanceof String)
-                    {
-                        MaterialIdentifier identifier = MaterialIdentifier.tryParseIdentifier((String) propertyValue);
-                        if (identifier != null)
-                        {
-                            MaterialType materialType = new MaterialType();
-                            materialType.setCode(identifier.getTypeCode());
-                            Material material = new Material();
-                            material.setCode(identifier.getCode());
-                            material.setMaterialType(materialType);
-                            property.setMaterial(material);
-                        }
                     }
                     break;
                 case SAMPLE:

@@ -139,14 +139,6 @@ define([], function() {
 			return this._executeCreateOperation(new dtos.CreateDataSetsOperation(creations));
 		}
 
-		this.createMaterials = function(creations) {
-			return this._executeCreateOperation(new dtos.CreateMaterialsOperation(creations));
-		}
-
-		this.createMaterialTypes = function(creations) {
-			return this._executeCreateOperation(new dtos.CreateMaterialTypesOperation(creations));
-		}
-
 		this.createPropertyTypes = function(creations) {
 			return this._executeCreateOperation(new dtos.CreatePropertyTypesOperation(creations));
 		}
@@ -221,14 +213,6 @@ define([], function() {
 
 		this.updateDataSetTypes = function(updates) {
 			return this._executeUpdateOperation(new dtos.UpdateDataSetTypesOperation(updates));
-		}
-
-		this.updateMaterials = function(updates) {
-			return this._executeUpdateOperation(new dtos.UpdateMaterialsOperation(updates));
-		}
-
-		this.updateMaterialTypes = function(updates) {
-			return this._executeUpdateOperation(new dtos.UpdateMaterialTypesOperation(updates));
 		}
 
 		this.updateVocabularies = function(updates) {
@@ -309,14 +293,6 @@ define([], function() {
 
 		this.getDataSetTypes = function(ids, fetchOptions) {
 			return this._executeGetOperation(new dtos.GetDataSetTypesOperation(ids, fetchOptions));
-		}
-
-		this.getMaterials = function(ids, fetchOptions) {
-			return this._executeGetOperation(new dtos.GetMaterialsOperation(ids, fetchOptions));
-		}
-
-		this.getMaterialTypes = function(ids, fetchOptions) {
-			return this._executeGetOperation(new dtos.GetMaterialTypesOperation(ids, fetchOptions));
 		}
 
 		this.getPropertyTypes = function(ids, fetchOptions) {
@@ -409,14 +385,6 @@ define([], function() {
 
 		this.searchDataSetTypes = function(criteria, fetchOptions) {
 			return this._executeSearchOperation(new dtos.SearchDataSetTypesOperation(criteria, fetchOptions));
-		}
-
-		this.searchMaterials = function(criteria, fetchOptions) {
-			return this._executeSearchOperation(new dtos.SearchMaterialsOperation(criteria, fetchOptions));
-		}
-
-		this.searchMaterialTypes = function(criteria, fetchOptions) {
-			return this._executeSearchOperation(new dtos.SearchMaterialTypesOperation(criteria, fetchOptions));
 		}
 
 		this.searchPlugins = function(criteria, fetchOptions) {
@@ -535,10 +503,6 @@ define([], function() {
 			return this._executeDeleteOperation(new dtos.DeleteDataSetsOperation(ids, deletionOptions));
 		}
 
-		this.deleteMaterials = function(ids, deletionOptions) {
-			return this._executeDeleteOperation(new dtos.DeleteMaterialsOperation(ids, deletionOptions));
-		}
-
 		this.deleteExternalDataManagementSystems = function(ids, deletionOptions) {
 			return this._executeDeleteOperation(new dtos.DeleteExternalDmsOperation(ids, deletionOptions));
 		}
@@ -569,10 +533,6 @@ define([], function() {
 
 		this.deleteDataSetTypes = function(ids, deletionOptions) {
 			return this._executeDeleteOperation(new dtos.DeleteDataSetTypesOperation(ids, deletionOptions));
-		}
-
-		this.deleteMaterialTypes = function(ids, deletionOptions) {
-			return this._executeDeleteOperation(new dtos.DeleteMaterialTypesOperation(ids, deletionOptions));
 		}
 
 		this.deleteTags = function(ids, deletionOptions) {

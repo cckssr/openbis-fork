@@ -29,7 +29,6 @@ export default class QueryFormComponentTest extends ComponentTest {
     this.facade.loadExperimentTypes.mockReturnValue(Promise.resolve([]))
     this.facade.loadSampleTypes.mockReturnValue(Promise.resolve([]))
     this.facade.loadDataSetTypes.mockReturnValue(Promise.resolve([]))
-    this.facade.loadMaterialTypes.mockReturnValue(Promise.resolve([]))
   }
 
   async mountNew() {

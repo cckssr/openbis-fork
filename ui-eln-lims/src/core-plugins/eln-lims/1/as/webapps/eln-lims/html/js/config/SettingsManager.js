@@ -2,6 +2,14 @@ var SettingsManagerUtils = new function() {
     this._defaultProfile = null;
     this._instanceSettings = null;
 
+    this.isRemovedInventorySpace = function(space) {
+        var spaceCode = space;
+        if(space && space.getCode) {
+            spaceCode = space.getCode();
+        }
+        return typeof spaceCode === "string" && spaceCode.endsWith("MATERIALS");
+    }
+
 	this.getGroups = function() {
 		return Object.keys(this._instanceSettings);
 	}
@@ -287,11 +295,15 @@ function SettingsManager(serverFacade) {
 	}
 
 	this.getInventorySpacesOptions = function() {
-		return profile.allSpaces;
+		return profile.allSpaces.filter(function(spaceCode) {
+			return !SettingsManagerUtils.isRemovedInventorySpace(spaceCode);
+		});
 	}
 
     this.getInventorySpacesReadOnlyOptions = function() {
-		return profile.allSpaces;
+		return profile.allSpaces.filter(function(spaceCode) {
+			return !SettingsManagerUtils.isRemovedInventorySpace(spaceCode);
+		});
 	}
 
 	this.getSampleTypeOptions = function() {
@@ -363,8 +375,12 @@ function SettingsManager(serverFacade) {
                 targetProfile["inventorySpacesReadOnly"] = [];
             }
              // Inventory Spaces
-             var inventorySpaces = settings["inventorySpaces"];
-             var inventorySpacesReadOnly = settings["inventorySpacesReadOnly"];
+             var inventorySpaces = (settings["inventorySpaces"] || []).filter(function(spaceCode) {
+                return !SettingsManagerUtils.isRemovedInventorySpace(spaceCode);
+             });
+             var inventorySpacesReadOnly = (settings["inventorySpacesReadOnly"] || []).filter(function(spaceCode) {
+                return !SettingsManagerUtils.isRemovedInventorySpace(spaceCode);
+             });
              if(isMergeGroup) { // Merge found values
                 if (inventorySpaces) {
                     targetProfile["inventorySpaces"] = targetProfile["inventorySpaces"].concat(inventorySpaces).unique();

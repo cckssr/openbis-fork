@@ -56,7 +56,6 @@ public class ListEntityTypeByPermId extends AbstractListObjectById<EntityTypePer
     @Override
     public List<EntityTypePE> listByIds(IOperationContext context, List<EntityTypePermId> ids)
     {
-        List<EntityTypePermId> materialTypeIds = new ArrayList<>();
         List<EntityTypePermId> experimentTypeIds = new ArrayList<>();
         List<EntityTypePermId> sampleTypeIds = new ArrayList<>();
         List<EntityTypePermId> dataSetTypeIds = new ArrayList<>();
@@ -65,10 +64,7 @@ public class ListEntityTypeByPermId extends AbstractListObjectById<EntityTypePer
         {
             EntityKind entityKind = EntityKindConverter.convert(id.getEntityKind());
 
-            if (EntityKind.MATERIAL.equals(entityKind))
-            {
-                materialTypeIds.add(id);
-            } else if (EntityKind.EXPERIMENT.equals(entityKind))
+            if (EntityKind.EXPERIMENT.equals(entityKind))
             {
                 experimentTypeIds.add(id);
             } else if (EntityKind.SAMPLE.equals(entityKind))
@@ -81,7 +77,6 @@ public class ListEntityTypeByPermId extends AbstractListObjectById<EntityTypePer
         }
 
         List<EntityTypePE> results = new ArrayList<>();
-        results.addAll(listByIds(context, materialTypeIds, EntityKind.MATERIAL));
         results.addAll(listByIds(context, experimentTypeIds, EntityKind.EXPERIMENT));
         results.addAll(listByIds(context, sampleTypeIds, EntityKind.SAMPLE));
         results.addAll(listByIds(context, dataSetTypeIds, EntityKind.DATA_SET));

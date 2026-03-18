@@ -69,8 +69,6 @@ public class WebAppsPropertiesTest
         { "SAM1" }, webApp.getEntityTypes().get(EntityKind.SAMPLE)));
         Assert.assertTrue(Arrays.equals(new String[] {},
                 webApp.getEntityTypes().get(EntityKind.DATA_SET)));
-        Assert.assertTrue(Arrays.equals(new String[] {},
-                webApp.getEntityTypes().get(EntityKind.MATERIAL)));
     }
 
     @Test
@@ -91,8 +89,6 @@ public class WebAppsPropertiesTest
                 webApp1.getEntityTypes().get(EntityKind.SAMPLE)));
         Assert.assertTrue(Arrays.equals(new String[] {},
                 webApp1.getEntityTypes().get(EntityKind.DATA_SET)));
-        Assert.assertTrue(Arrays.equals(new String[] {},
-                webApp1.getEntityTypes().get(EntityKind.MATERIAL)));
 
         WebApp webApp2 = webApps.get(1);
         Assert.assertEquals("webapp2", webApp2.getCode());
@@ -105,8 +101,6 @@ public class WebAppsPropertiesTest
                 webApp2.getEntityTypes().get(EntityKind.SAMPLE)));
         Assert.assertTrue(Arrays.equals(new String[] {},
                 webApp2.getEntityTypes().get(EntityKind.DATA_SET)));
-        Assert.assertTrue(Arrays.equals(new String[] {},
-                webApp2.getEntityTypes().get(EntityKind.MATERIAL)));
     }
 
     @Test(expectedExceptions = ConfigurationFailureException.class)

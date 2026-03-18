@@ -28,8 +28,6 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.EXPERIMENT_
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.FILE_FORMAT_TYPES_TABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.GRID_CUSTOM_COLUMNS_TABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.LOCATOR_TYPES_TABLE;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.MATERIALS_TABLE;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.MATERIAL_TYPES_TABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.METAPROJECTS_TABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.OPERATION_EXECUTIONS_TABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.PROJECTS_TABLE;
@@ -106,8 +104,6 @@ public class AttributesMapper
         ENTITIES_TABLE_TO_PERM_ID_COLUMN_NAME.put(FILE_FORMAT_TYPES_TABLE, ColumnNames.CODE_COLUMN);
         ENTITIES_TABLE_TO_PERM_ID_COLUMN_NAME.put(SPACES_TABLE, ColumnNames.CODE_COLUMN);
         ENTITIES_TABLE_TO_PERM_ID_COLUMN_NAME.put(LOCATOR_TYPES_TABLE, ColumnNames.CODE_COLUMN);
-        ENTITIES_TABLE_TO_PERM_ID_COLUMN_NAME.put(MATERIAL_TYPES_TABLE, ColumnNames.CODE_COLUMN);
-        ENTITIES_TABLE_TO_PERM_ID_COLUMN_NAME.put(MATERIALS_TABLE, ColumnNames.CODE_COLUMN);
         ENTITIES_TABLE_TO_PERM_ID_COLUMN_NAME.put(OPERATION_EXECUTIONS_TABLE, ColumnNames.CODE_COLUMN);
         ENTITIES_TABLE_TO_PERM_ID_COLUMN_NAME.put(PROPERTY_TYPES_TABLE, ColumnNames.CODE_COLUMN);
         ENTITIES_TABLE_TO_PERM_ID_COLUMN_NAME.put(SAMPLE_TYPES_TABLE, ColumnNames.CODE_COLUMN);

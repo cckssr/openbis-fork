@@ -75,11 +75,6 @@ class PropertyTypesGridUsagesCell extends React.PureComponent {
                 messages.get(messages.DATA_SET_TYPES),
                 value.dataSetTypes
               )}
-              {this.renderUsages(
-                openbis.EntityKind.MATERIAL,
-                messages.get(messages.MATERIAL_TYPES),
-                value.materialTypes
-              )}
             </div>
           </Collapse>
         </div>

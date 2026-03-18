@@ -30,7 +30,6 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.DataPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExternalDataPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.IEntityInformationWithPropertiesHolder;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
 import ch.systemsx.cisd.openbis.generic.shared.managed_property.IManagedPropertyEvaluatorFactory;
@@ -57,7 +56,6 @@ final class DefaultBatchDynamicPropertyEvaluator implements IBatchDynamicPropert
         entityKindsByClass = new HashMap<>();
         entityKindsByClass.put(SamplePE.class, EntityKind.SAMPLE);
         entityKindsByClass.put(ExperimentPE.class, EntityKind.EXPERIMENT);
-        entityKindsByClass.put(MaterialPE.class, EntityKind.MATERIAL);
         entityKindsByClass.put(DataPE.class, EntityKind.DATA_SET);
         entityKindsByClass.put(ExternalDataPE.class, EntityKind.DATA_SET);
     }
@@ -265,13 +263,6 @@ final class DefaultBatchDynamicPropertyEvaluator implements IBatchDynamicPropert
                 query =
                         String.format("SELECT DISTINCT experiment.id "
                                 + "FROM ExperimentPE experiment JOIN experiment.experimentType.experimentTypePropertyTypesInternal pti "
-                                + "WHERE pti.script.scriptType = '%s'",
-                                ScriptType.DYNAMIC_PROPERTY.name());
-                break;
-            case MATERIAL:
-                query =
-                        String.format("SELECT DISTINCT material.id "
-                                + "FROM MaterialPE material JOIN material.materialType.materialTypePropertyTypesInternal pti "
                                 + "WHERE pti.script.scriptType = '%s'",
                                 ScriptType.DYNAMIC_PROPERTY.name());
                 break;

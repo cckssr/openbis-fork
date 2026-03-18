@@ -131,7 +131,6 @@ import ch.systemsx.cisd.openbis.generic.server.business.bo.IDataBO;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.IDataSetTable;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.IExperimentBO;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.IExperimentTable;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.IMaterialBO;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.IMetaprojectBO;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.IProjectBO;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.IRoleAssignmentTable;
@@ -142,7 +141,6 @@ import ch.systemsx.cisd.openbis.generic.server.business.bo.IVocabularyBO;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.SampleCodeGeneratorByType;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.datasetlister.IDatasetLister;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.fetchoptions.experimentlister.ExperimentLister;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.materiallister.IMaterialLister;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.samplelister.ISampleLister;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.util.DataSetRegistrationCache;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.DynamicPropertyEvaluationOperation;
@@ -193,19 +191,12 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExternalDataManagementS
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Grantee;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IDatasetLocationNode;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IEntityProperty;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ListMaterialCriteria;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ListOrSearchSampleCriteria;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ListSampleCriteria;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Material;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialIdentifier;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialType;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialTypePropertyType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Metaproject;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MetaprojectAssignments;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MetaprojectAssignmentsFetchOption;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewExperiment;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewMaterial;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewMaterialWithType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewMetaproject;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewProject;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewSample;
@@ -255,9 +246,6 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.ExternalDataManagementSystemP
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExternalDataPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.IEntityInformationHolderDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ListSamplesByPropertyCriteria;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialPE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialTypePE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialUpdateDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.MetaprojectAssignmentPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.MetaprojectPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.MetaprojectUpdatesDTO;
@@ -302,8 +290,6 @@ import ch.systemsx.cisd.openbis.generic.shared.translator.ExperimentTranslator.L
 import ch.systemsx.cisd.openbis.generic.shared.translator.ExperimentTypePropertyTypeTranslator;
 import ch.systemsx.cisd.openbis.generic.shared.translator.ExperimentTypeTranslator;
 import ch.systemsx.cisd.openbis.generic.shared.translator.ExternalDataManagementSystemTranslator;
-import ch.systemsx.cisd.openbis.generic.shared.translator.MaterialTranslator;
-import ch.systemsx.cisd.openbis.generic.shared.translator.MaterialTypePropertyTypeTranslator;
 import ch.systemsx.cisd.openbis.generic.shared.translator.MetaprojectTranslator;
 import ch.systemsx.cisd.openbis.generic.shared.translator.PersonTranslator;
 import ch.systemsx.cisd.openbis.generic.shared.translator.ProjectTranslator;
@@ -840,7 +826,7 @@ public class ServiceForDataStoreServer extends AbstractCommonServer<IServiceForD
         assert entityType instanceof ExperimentTypePE : "Not an ExperimentTypePE: " + entityType;
         ExperimentTypePE experimentType = (ExperimentTypePE) entityType;
         HibernateUtils.initialize(experimentType.getExperimentTypePropertyTypes());
-        return ExperimentTypeTranslator.translate(experimentType, null, null);
+        return ExperimentTypeTranslator.translate(experimentType, null);
     }
 
     @Override
@@ -858,7 +844,7 @@ public class ServiceForDataStoreServer extends AbstractCommonServer<IServiceForD
                     + "'.");
         }
         HibernateUtils.initialize(sampleType.getSampleTypePropertyTypes());
-        return SampleTypeTranslator.translate(sampleType, null, null);
+        return SampleTypeTranslator.translate(sampleType, null);
     }
 
     @Override
@@ -879,7 +865,7 @@ public class ServiceForDataStoreServer extends AbstractCommonServer<IServiceForD
                 dataSetType.getDataSetTypePropertyTypes();
         HibernateUtils.initialize(dataSetTypePropertyTypes);
         DataSetTypeWithVocabularyTerms result = new DataSetTypeWithVocabularyTerms();
-        result.setDataSetType(DataSetTypeTranslator.translate(dataSetType, null, null));
+        result.setDataSetType(DataSetTypeTranslator.translate(dataSetType, null));
         for (DataSetTypePropertyTypePE dataSetTypePropertyTypePE : dataSetTypePropertyTypes)
         {
             PropertyTypePE propertyTypePE = dataSetTypePropertyTypePE.getPropertyType();
@@ -994,7 +980,7 @@ public class ServiceForDataStoreServer extends AbstractCommonServer<IServiceForD
         Set<SamplePropertyPE> properties = top.getProperties();
         HibernateUtils.initialize(properties);
         return EntityPropertyTranslator.translate(properties.toArray(new SamplePropertyPE[0]),
-                new HashMap<MaterialTypePE, MaterialType>(), new HashMap<PropertyTypePE, PropertyType>(),
+                new HashMap<PropertyTypePE, PropertyType>(),
                 managedPropertyEvaluatorFactory,
                 new SamplePropertyAccessValidator(session, getDAOFactory()));
     }
@@ -1018,7 +1004,7 @@ public class ServiceForDataStoreServer extends AbstractCommonServer<IServiceForD
         Set<SamplePropertyPE> properties = sample.getProperties();
         HibernateUtils.initialize(properties);
         return EntityPropertyTranslator.translate(properties.toArray(new SamplePropertyPE[0]),
-                new HashMap<MaterialTypePE, MaterialType>(), new HashMap<PropertyTypePE, PropertyType>(),
+                new HashMap<PropertyTypePE, PropertyType>(),
                 managedPropertyEvaluatorFactory,
                 new SamplePropertyAccessValidator(session, getDAOFactory()));
     }
@@ -1810,35 +1796,6 @@ public class ServiceForDataStoreServer extends AbstractCommonServer<IServiceForD
 
     @Override
     @RolesAllowed(RoleWithHierarchy.SPACE_ETL_SERVER)
-    public Material tryGetMaterial(String sessionToken, MaterialIdentifier materialIdentifier)
-    {
-        final Session session = getSession(sessionToken);
-        final IMaterialBO bo = businessObjectFactory.createMaterialBO(session);
-        try
-        {
-            bo.loadByMaterialIdentifier(materialIdentifier);
-            bo.enrichWithProperties();
-            MaterialPE materialPE = bo.getMaterial();
-            Collection<MetaprojectPE> metaprojectPEs = Collections.emptySet();
-            if (materialPE != null)
-            {
-                metaprojectPEs =
-                        getDAOFactory().getMetaprojectDAO().listMetaprojectsForEntity(
-                                session.tryGetPerson(), materialPE);
-            }
-            return MaterialTranslator.translate(materialPE,
-                    MetaprojectTranslator.translate(metaprojectPEs),
-                    managedPropertyEvaluatorFactory,
-                    new SamplePropertyAccessValidator(session, getDAOFactory()));
-        } catch (UserFailureException ufe)
-        {
-            // material does not exist
-            return null;
-        }
-    }
-
-    @Override
-    @RolesAllowed(RoleWithHierarchy.SPACE_ETL_SERVER)
     public Metaproject tryGetMetaproject(String sessionToken, String name, String ownerId)
     {
         final Session session = getSession(sessionToken);
@@ -1888,10 +1845,6 @@ public class ServiceForDataStoreServer extends AbstractCommonServer<IServiceForD
                     createSpaces(sessionForEntityOperation, operationDetails, progressListener,
                             authorize);
 
-            long materialsCreated =
-                    createMaterials(sessionForEntityOperation, operationDetails, progressListener,
-                            authorize);
-
             long projectsCreated =
                     createProjects(sessionForEntityOperation, operationDetails, progressListener,
                             authorize);
@@ -1926,9 +1879,6 @@ public class ServiceForDataStoreServer extends AbstractCommonServer<IServiceForD
                     updateDataSets(sessionForEntityOperation, operationDetails, progressListener,
                             authorize);
 
-            long materialsUpdates =
-                    updateMaterials(sessionForEntityOperation, operationDetails, progressListener,
-                            authorize);
 
             long metaprojectsCreated =
                     createMetaprojects(sessionForEntityOperation, operationDetails,
@@ -1951,7 +1901,7 @@ public class ServiceForDataStoreServer extends AbstractCommonServer<IServiceForD
             }
 
             return new AtomicEntityOperationResult(spacesCreated, projectsCreated, projectsUpdated,
-                    materialsCreated, materialsUpdates, experimentsCreated, experimentsUpdates,
+                    experimentsCreated, experimentsUpdates,
                     samplesCreated, samplesUpdated, dataSetsCreated, dataSetsUpdated,
                     metaprojectsCreated, metaprojectsUpdates, vocabulariesUpdated, spaceRolesAssigned, spaceRolesRevoked);
         } catch (org.hibernate.StaleObjectStateException e)
@@ -2058,72 +2008,6 @@ public class ServiceForDataStoreServer extends AbstractCommonServer<IServiceForD
         vocabularyBO.update(updates);
     }
 
-    private long createMaterials(Session session, AtomicEntityOperationDetails operationDetails,
-            IServiceConversationProgressListener progress, boolean authorize)
-    {
-        MaterialHelper materialHelper =
-                new MaterialHelper(session, businessObjectFactory, getDAOFactory(),
-                        getPropertiesBatchManager(), managedPropertyEvaluatorFactory);
-        Map<String, List<NewMaterial>> materialRegs = operationDetails.getMaterialRegistrations();
-        if (authorize)
-        {
-            checkMaterialCreationAllowed(session, materialRegs);
-        }
-
-        List<NewMaterialWithType> materials = materialHelper.convertMaterialRegistrationIntoMaterialsWithType(materialRegs);
-
-        Map<String, Set<String>> materialTypesWithMateiralProperties = materialHelper.getPropertyTypesOfMaterialType(materialRegs.keySet());
-
-        List<List<NewMaterialWithType>> materialGroups = MaterialGroupingDAG.groupByDepencies(materials, materialTypesWithMateiralProperties);
-        int index = 0;
-
-        for (List<NewMaterialWithType> materialsGroup : materialGroups)
-        {
-            materialHelper.registerMaterials(materialsGroup);
-            progress.update("createMaterials", materialRegs.size(), ++index);
-        }
-        return index;
-    }
-
-    private long updateMaterials(Session session, AtomicEntityOperationDetails operationDetails,
-            IServiceConversationProgressListener progress, boolean authorize)
-    {
-        MaterialHelper materialHelper =
-                new MaterialHelper(session, businessObjectFactory, getDAOFactory(),
-                        getPropertiesBatchManager(), managedPropertyEvaluatorFactory);
-
-        List<MaterialUpdateDTO> allMaterialUpdates = operationDetails.getMaterialUpdates();
-
-        if (authorize)
-        {
-            checkMaterialUpdateAllowed(session, allMaterialUpdates);
-        }
-
-        materialHelper.updateMaterials(allMaterialUpdates);
-
-        // in material helper call the update of materials - but this has to wait fo change of the
-        // material updates to a map
-        return allMaterialUpdates.size();
-    }
-
-    protected void checkMaterialCreationAllowed(Session session,
-            Map<String, List<NewMaterial>> materials)
-    {
-        if (materials != null && materials.isEmpty() == false)
-        {
-            entityOperationChecker.assertMaterialCreationAllowed(session, materials);
-        }
-    }
-
-    protected void checkMaterialUpdateAllowed(Session session,
-            List<MaterialUpdateDTO> materialUpdates)
-    {
-        if (materialUpdates != null && materialUpdates.isEmpty() == false)
-        {
-            entityOperationChecker.assertMaterialUpdateAllowed(session, materialUpdates);
-        }
-    }
-
     private long updateMetaprojects(Session session, AtomicEntityOperationDetails operationDetails,
             IServiceConversationProgressListener progress, boolean authorize)
     {
@@ -2153,8 +2037,6 @@ public class ServiceForDataStoreServer extends AbstractCommonServer<IServiceForD
         metaprojectBO.removeDataSets(update.getRemovedDataSets());
         metaprojectBO.addExperiments(update.getAddedExperiments());
         metaprojectBO.removeExperiments(update.getRemovedExperiments());
-        metaprojectBO.addMaterials(update.getAddedMaterials());
-        metaprojectBO.removeMaterials(update.getRemovedMaterials());
 
         metaprojectBO.save();
     }
@@ -2286,7 +2168,6 @@ public class ServiceForDataStoreServer extends AbstractCommonServer<IServiceForD
 
         metaprojectBO.addSamples(metaproject.getSamples());
         metaprojectBO.addExperiments(metaproject.getExperiments());
-        metaprojectBO.addMaterials(metaproject.getMaterials());
         metaprojectBO.addDataSets(metaproject.getDatasets());
         metaprojectBO.save();
         return metaprojectBO.getMetaproject();
@@ -3068,43 +2949,6 @@ public class ServiceForDataStoreServer extends AbstractCommonServer<IServiceForD
     }
 
     @Override
-    @RolesAllowed(value = { RoleWithHierarchy.PROJECT_OBSERVER, RoleWithHierarchy.SPACE_ETL_SERVER })
-    public List<Material> listMaterials(String sessionToken, ListMaterialCriteria criteria,
-            boolean withProperties)
-    {
-        Session session = getSession(sessionToken);
-        IMaterialLister lister = businessObjectFactory.createMaterialLister(session);
-        ListMaterialCriteria criteriaWithIds = populateMissingTypeId(criteria);
-        return lister.list(criteriaWithIds, withProperties);
-    }
-
-    private ListMaterialCriteria populateMissingTypeId(ListMaterialCriteria criteria)
-    {
-        MaterialType materialTypeOrNull = criteria.tryGetMaterialType();
-        if (materialTypeOrNull != null && materialTypeOrNull.getId() == null)
-        {
-            String materialTypeCode = materialTypeOrNull.getCode();
-            EntityTypePE typeWithId =
-                    daoFactory.getEntityTypeDAO(EntityKind.MATERIAL).tryToFindEntityTypeByCode(
-                            materialTypeCode);
-            if (typeWithId == null)
-            {
-                throw UserFailureException.fromTemplate("Invalid material type '%s'",
-                        materialTypeCode);
-            } else
-            {
-                MaterialType materialTypeWithId = new MaterialType();
-                materialTypeWithId.setId(typeWithId.getId());
-                materialTypeWithId.setCode(materialTypeCode);
-                return ListMaterialCriteria.createFromMaterialType(materialTypeWithId);
-            }
-        }
-
-        return criteria;
-
-    }
-
-    @Override
     @SuppressWarnings("deprecation")
     @RolesAllowed(RoleWithHierarchy.SPACE_ETL_SERVER)
     public void removeDataSetsPermanently(String sessionToken,
@@ -3278,12 +3122,6 @@ public class ServiceForDataStoreServer extends AbstractCommonServer<IServiceForD
                     CollectionUtils.collect(propertiesPE,
                             ExperimentTypePropertyTypeTranslator.TRANSFORMER);
             return new LinkedList<ExperimentTypePropertyType>(collection);
-        } else if (entityKind == EntityKind.MATERIAL)
-        {
-            Collection<MaterialTypePropertyType> collection =
-                    CollectionUtils.collect(propertiesPE,
-                            MaterialTypePropertyTypeTranslator.TRANSFORMER);
-            return new LinkedList<MaterialTypePropertyType>(collection);
         } else
         {
             throw new IllegalArgumentException("Unsupported entity kind " + entityKind);

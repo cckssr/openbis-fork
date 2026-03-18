@@ -33,7 +33,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExperimentType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExperimentUpdateResult;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExperimentUpdates;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IEntityProperty;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewExperiment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewSample;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Sample;
@@ -149,38 +148,10 @@ public interface IGenericClientService extends IClientService
             throws UserFailureException;
 
     /**
-     * Registers new materials from files which have been previously uploaded.
-     * <p>
-     * Uploaded files can be found as session attribute under given <var>sessionKey</var>.
-     * </p>
-     * 
-     * @param updateExisting if true and some entities already exist, they will be updated (instead of throwing the exception and breaking the whole
-     *            operation).
-     */
-    public List<BatchRegistrationResult> registerMaterials(final MaterialType materialType,
-            boolean updateExisting, final String sessionKey, boolean async, String userEmail)
-            throws UserFailureException;
-
-    /**
-     * Updates materials from a file which has been previously uploaded.
-     * 
-     * @param ignoreUnregisteredMaterials If <code>true</code> materials in the uploaded file will be ignored if they are not already registered.
-     */
-    public List<BatchRegistrationResult> updateMaterials(MaterialType materialType,
-            String sessionKey, boolean ignoreUnregisteredMaterials, boolean async, String userEmail)
-            throws UserFailureException;
-
-    /**
      * Updates experiment.
      */
     public ExperimentUpdateResult updateExperiment(ExperimentUpdates experimentUpdates)
             throws UserFailureException;
-
-    /**
-     * Updates material.
-     */
-    public Date updateMaterial(final TechId materialId, List<IEntityProperty> properties,
-            String[] metaprojects, Date version) throws UserFailureException;
 
     /**
      * Updates sample.
@@ -202,16 +173,16 @@ public interface IGenericClientService extends IClientService
             String sessionKey, boolean async, String userEmail) throws UserFailureException;
 
     /**
-     * Updates samples and materials from excel files which have been previously uploaded.
+     * Registers or updates samples from excel files which have been previously uploaded.
      */
-    public List<BatchRegistrationResult> registerOrUpdateSamplesAndMaterials(
+    public List<BatchRegistrationResult> registerOrUpdateSamples(
             final String sessionKey, final String defaultGroupIdentifier, boolean updateExisting,
             boolean async, String userEmail) throws UserFailureException;
 
     /**
      * Returns information regarding the uploaded file without discarding it.
      * 
-     * @param SampleType Sample type to parse
+     * @param sampleType Sample type to parse
      * @param sessionKey key of the file stored on the HTTP Session
      */
     public Map<String, Object> uploadedSamplesInfo(

@@ -14,7 +14,7 @@ def configureUI():
   
   elements = [
       factory.createSampleLink("samplePermId"),
-      factory.createMaterialLink("type", "typeCode"),
+      factory.createElement("anotherElement").addAttribute("key2", "value2"),
       factory.createElement("testElement").addAttribute("key1", "value1").addAttribute("key2", "value2")
   ]
   
@@ -34,4 +34,3 @@ def configureUI():
   elements[2].addAttribute("key2", "modifiedvalue")
   property.setValue(converter.convertToString(elements))
   
-

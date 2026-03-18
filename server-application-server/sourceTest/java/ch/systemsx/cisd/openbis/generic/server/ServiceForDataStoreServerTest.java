@@ -611,7 +611,6 @@ public class ServiceForDataStoreServerTest extends SystemTestCase
         if (user.isInstanceUserOrTestSpaceUserOrEnabledTestProjectUser())
         {
             IEntityProperty[] properties = etlService.tryGetPropertiesOfTopSample(session.getSessionToken(), sampleIdentifier);
-            assertEquals(properties[0].getMaterial().getCode(), "BACTERIUM-X");
         } else
         {
             try
@@ -635,7 +634,6 @@ public class ServiceForDataStoreServerTest extends SystemTestCase
         if (user.isInstanceUserOrTestSpaceUserOrEnabledTestProjectUser())
         {
             IEntityProperty[] properties = etlService.tryGetPropertiesOfSample(session.getSessionToken(), sampleIdentifier);
-            assertEquals(properties[0].getMaterial().getCode(), "BACTERIUM-X");
         } else
         {
             try
@@ -982,7 +980,7 @@ public class ServiceForDataStoreServerTest extends SystemTestCase
 
         AtomicEntityOperationDetails operation =
                 new AtomicEntityOperationDetails(null, user.getUserId(), Collections.emptyList(), Arrays.asList(newProject), Collections.emptyList(),
-                        Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap(),
+                        Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
                         Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
                         Collections.emptyList());
 
@@ -1015,8 +1013,8 @@ public class ServiceForDataStoreServerTest extends SystemTestCase
         AtomicEntityOperationDetails operation =
                 new AtomicEntityOperationDetails(null, user.getUserId(), Collections.emptyList(), Collections.emptyList(),
                         Arrays.asList(projectUpdate), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
-                        Collections.emptyList(), Collections.emptyMap(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
-                        Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
+                        Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
+                        Collections.emptyList(), Collections.emptyList());
 
         if (user.isInstanceUserOrTestSpaceUserOrEnabledTestProjectUser())
         {
@@ -1046,7 +1044,7 @@ public class ServiceForDataStoreServerTest extends SystemTestCase
         AtomicEntityOperationDetails operation =
                 new AtomicEntityOperationDetails(null, user.getUserId(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
                         Arrays.asList(newExperiment), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
-                        Collections.emptyMap(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
+                        Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
                         Collections.emptyList(), Collections.emptyList());
 
         if (user.isInstanceUserOrTestSpaceUserOrEnabledTestProjectUser())
@@ -1079,7 +1077,7 @@ public class ServiceForDataStoreServerTest extends SystemTestCase
         AtomicEntityOperationDetails operation =
                 new AtomicEntityOperationDetails(null, user.getUserId(), Collections.emptyList(), Collections.emptyList(),
                         Collections.emptyList(), Collections.emptyList(), Arrays.asList(updates), Collections.emptyList(),
-                        Collections.emptyList(), Collections.emptyMap(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
+                        Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
                         Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
 
         if (user.isInstanceUserOrTestSpaceUserOrEnabledTestProjectUser())
@@ -1109,7 +1107,7 @@ public class ServiceForDataStoreServerTest extends SystemTestCase
         AtomicEntityOperationDetails operation =
                 new AtomicEntityOperationDetails(null, user.getUserId(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
                         Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Arrays.asList(newSample),
-                        Collections.emptyMap(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
+                        Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
                         Collections.emptyList(), Collections.emptyList());
 
         if (user.isInstanceUserOrTestSpaceUserOrEnabledTestProjectUser())
@@ -1139,7 +1137,7 @@ public class ServiceForDataStoreServerTest extends SystemTestCase
         AtomicEntityOperationDetails operation =
                 new AtomicEntityOperationDetails(null, user.getUserId(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
                         Collections.emptyList(), Collections.emptyList(), Arrays.asList(sampleUpdate), Collections.emptyList(),
-                        Collections.emptyMap(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
+                        Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
                         Collections.emptyList(), Collections.emptyList());
 
         if (user.isInstanceUserOrTestSpaceUserOrEnabledTestProjectUser())
@@ -1170,7 +1168,7 @@ public class ServiceForDataStoreServerTest extends SystemTestCase
         AtomicEntityOperationDetails operation =
                 new AtomicEntityOperationDetails(null, user.getUserId(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
                         Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
-                        Collections.emptyMap(), Collections.emptyList(), Arrays.asList(newDataSet), Collections.emptyList(), Collections.emptyList(),
+                        Arrays.asList(newDataSet), Collections.emptyList(), Collections.emptyList(),
                         Collections.emptyList(), Collections.emptyList());
 
         if (user.isInstanceUserOrTestSpaceUserOrEnabledTestProjectUser())
@@ -1200,7 +1198,7 @@ public class ServiceForDataStoreServerTest extends SystemTestCase
         AtomicEntityOperationDetails operation =
                 new AtomicEntityOperationDetails(null, user.getUserId(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
                         Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
-                        Collections.emptyMap(), Collections.emptyList(), Collections.emptyList(), Arrays.asList(dataSetUpdate),
+                        Collections.emptyList(), Arrays.asList(dataSetUpdate),
                         Collections.emptyList(),
                         Collections.emptyList(), Collections.emptyList());
 
@@ -1272,7 +1270,7 @@ public class ServiceForDataStoreServerTest extends SystemTestCase
         AtomicEntityOperationDetails operation =
                 new AtomicEntityOperationDetails(null, vocabularyUpdater, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
                         Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
-                        Collections.emptyMap(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
+                        Collections.emptyList(), Collections.emptyList(),
                         Collections.emptyList(),
                         Collections.emptyList(), Arrays.asList(updates));
 
@@ -1340,7 +1338,7 @@ public class ServiceForDataStoreServerTest extends SystemTestCase
         AtomicEntityOperationDetails operation =
                 new AtomicEntityOperationDetails(null, vocabularyUpdater, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
                         Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
-                        Collections.emptyMap(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
+                        Collections.emptyList(), Collections.emptyList(),
                         Collections.emptyList(),
                         Collections.emptyList(), Arrays.asList(updates));
 
@@ -1406,7 +1404,7 @@ public class ServiceForDataStoreServerTest extends SystemTestCase
         AtomicEntityOperationDetails operation =
                 new AtomicEntityOperationDetails(null, vocabularyUpdater, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
                         Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
-                        Collections.emptyMap(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
+                        Collections.emptyList(), Collections.emptyList(),
                         Collections.emptyList(),
                         Collections.emptyList(), Arrays.asList(updates));
 

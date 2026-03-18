@@ -35,8 +35,6 @@ import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Deletion;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.DeletionFetchOption;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Experiment;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.ExperimentType;
-import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Material;
-import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.MaterialIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.MetaprojectAssignments;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Project;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.PropertyType;
@@ -481,17 +479,6 @@ public interface IGeneralInformationService extends IRpcService
      * @since 1.18
      */
     public List<Project> listProjectsOnBehalfOfUser(String sessionToken, String userId);
-
-    /**
-     * Returns the materials with specified identifiers (i.e. code and type).
-     */
-    public List<Material> getMaterialByCodes(String sessionToken,
-            List<MaterialIdentifier> materialIdentifier);
-
-    /**
-     * Returns all material fulfilling specified search criteria.
-     */
-    public List<Material> searchForMaterials(String sessionToken, SearchCriteria searchCriteria);
 
     /**
      * Lists all metaprojects belonging to current user.

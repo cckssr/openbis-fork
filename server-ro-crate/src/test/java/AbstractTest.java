@@ -32,8 +32,12 @@ public class AbstractTest
             vals.put(openBISUrl, "http://localhost:8888");
             vals.put(openBISTimeout, Integer.toString(Integer.MAX_VALUE));
 
+            vals.put(mailFrom, "rocrate_server_test@localhost");
+            vals.put(mailSmtpHost, "file://build/mail");
+
             Configuration configuration = new Configuration(vals);
             StartupMain.setConfiguration(configuration);
+            configuration.logLoadedProperties();
         }
 
         return StartupMain.getConfiguration();

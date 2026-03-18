@@ -17,7 +17,6 @@ package ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto;
 
 import java.util.List;
 
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewMaterial;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewSamplesWithTypes;
 
 /**
@@ -25,42 +24,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewSamplesWithTypes;
  */
 public class NewLibrary
 {
-
-    private List<NewMaterial> newGenesOrNull;
-
-    private List<NewMaterial> newOligosOrNull;
-
     private List<NewSamplesWithTypes> newSamplesWithType;
-
-    public List<NewMaterial> getNewGenesOrNull()
-    {
-        return newGenesOrNull;
-    }
-
-    public void setNewGenesOrNull(List<NewMaterial> newGenesOrNull)
-    {
-        this.newGenesOrNull = newGenesOrNull;
-    }
-
-    public int getNewGenesCount()
-    {
-        return getNewGenesOrNull() != null ? getNewGenesOrNull().size() : 0;
-    }
-
-    public List<NewMaterial> getNewOligosOrNull()
-    {
-        return newOligosOrNull;
-    }
-
-    public void setNewOligosOrNull(List<NewMaterial> newOligosOrNull)
-    {
-        this.newOligosOrNull = newOligosOrNull;
-    }
-
-    public int getNewOligosCount()
-    {
-        return getNewOligosOrNull() != null ? getNewOligosOrNull().size() : 0;
-    }
 
     public List<NewSamplesWithTypes> getNewSamplesWithType()
     {

@@ -188,8 +188,6 @@ public final class ColumnNames
 
     public static final String MATERIAL_BATCH_COLUMN = "maba_id";
 
-    public static final String MATERIAL_COLUMN = "mate_id";
-
     public static final String MATERIAL_IDENTIFIER_COLUMN = "material";
 
     public static final String PARENT_SAMPLE_COLUMN = "sample_id_parent";
@@ -300,11 +298,7 @@ public final class ColumnNames
 
     public static final String IDENTIFIERS = "identifiers";
 
-    public static final String MATERIAL_PROP_COLUMN = "mate_prop_id";
-
     public static final String SAMPLE_PROP_COLUMN = "samp_prop_id";
-
-    public static final String PROPERTY_MATERIAL_TYPE_COLUMN = "maty_prop_id";
 
     public static final String PROPERTY_SAMPLE_TYPE_COLUMN = "saty_prop_id";
 

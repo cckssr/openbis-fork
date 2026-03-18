@@ -22,7 +22,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IMetaprojectRegistratio
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IMetaprojectUpdates;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.id.dataset.IDataSetId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.id.experiment.IExperimentId;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.id.material.IMaterialId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.id.metaproject.IMetaprojectId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.id.sample.ISampleId;
 import ch.systemsx.cisd.openbis.generic.shared.dto.MetaprojectPE;
@@ -46,15 +45,11 @@ public interface IMetaprojectBO extends IEntityBusinessObject
 
     void addDataSets(List<? extends IDataSetId> dataSets);
 
-    void addMaterials(List<? extends IMaterialId> materials);
-
     void removeExperiments(List<? extends IExperimentId> experiments);
 
     void removeSamples(List<? extends ISampleId> samples);
 
     void removeDataSets(List<? extends IDataSetId> dataSets);
-
-    void removeMaterials(List<? extends IMaterialId> materials);
 
     void deleteByMetaprojectId(IMetaprojectId metaprojectId, String reason)
             throws UserFailureException;

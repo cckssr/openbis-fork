@@ -24,7 +24,6 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.dataset.search.Phy
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.dataset.search.StorageFormatAttributeProvider;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.experiment.search.ExperimentAttributeProvider;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.externaldms.search.ExternalDmsAttributeProvider;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.material.search.MaterialAttributeProvider;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.sample.search.SampleAttributeProvider;
 
 /**
@@ -45,9 +44,6 @@ public class ObjectAttributeProviderFactory implements IObjectAttributeProviderF
         } else if (SearchObjectKind.DATA_SET.equals(objectKind))
         {
             return new DataSetAttributeProvider();
-        } else if (SearchObjectKind.MATERIAL.equals(objectKind))
-        {
-            return new MaterialAttributeProvider();
         } else if (SearchObjectKind.PHYSICAL_DATA.equals(objectKind))
         {
             return new PhysicalDataAttributeProvider();

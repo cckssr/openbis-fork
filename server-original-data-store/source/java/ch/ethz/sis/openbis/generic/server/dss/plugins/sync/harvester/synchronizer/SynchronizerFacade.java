@@ -40,7 +40,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExperimentType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.FileFormatType;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewETPTAssignment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewVocabulary;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PropertyType;
@@ -93,15 +92,11 @@ public class SynchronizerFacade implements ISynchronizerFacade
 
     private Set<String> dataSetTypesToAdd = new TreeSet<String>();
 
-    private Set<String> materialTypesToAdd = new TreeSet<String>();
-
     private Map<String, UpdateSummary> sampleTypesToUpdate = new TreeMap<>();
 
     private Map<String, UpdateSummary> experimentTypesToUpdate = new TreeMap<>();
 
     private Map<String, UpdateSummary> dataSetTypesToUpdate = new TreeMap<>();
-
-    private Map<String, UpdateSummary> materialTypesToUpdate = new HashMap<>();
 
     public SynchronizerFacade(String openBisServerUrl, String harvesterUser, String harvesterPassword, boolean dryRun, boolean verbose,
             Logger operationLog)
@@ -178,8 +173,6 @@ public class SynchronizerFacade implements ISynchronizerFacade
                 return experimentTypesToUpdate;
             case DATA_SET:
                 return dataSetTypesToUpdate;
-            case MATERIAL:
-                return materialTypesToUpdate;
             default:
                 throw new RuntimeException("Unknown entity kind: " + entityKind);
         }
@@ -287,15 +280,6 @@ public class SynchronizerFacade implements ISynchronizerFacade
         }
     }
 
-    @Override
-    public void registerMaterialType(MaterialType materialType)
-    {
-        materialTypesToAdd.add(materialType.getCode());
-        if (dryRun == false)
-        {
-            commonServer.registerMaterialType(sessionToken, materialType);
-        }
-    }
 
     @Override
     public void updateSampleType(EntityType entityType, String diff)
@@ -327,15 +311,6 @@ public class SynchronizerFacade implements ISynchronizerFacade
         }
     }
 
-    @Override
-    public void updateMaterialType(EntityType entityType, String diff)
-    {
-        getEntityTypeSummary(materialTypesToUpdate, entityType.getCode()).update(diff);
-        if (dryRun == false)
-        {
-            commonServer.updateMaterialType(sessionToken, entityType);
-        }
-    }
 
     @Override
     public void addVocabularyTerms(String vocabularyCode, TechId techId, List<VocabularyTerm> termsToBeAdded)
@@ -391,8 +366,6 @@ public class SynchronizerFacade implements ISynchronizerFacade
             printUpdateSummary(sampleTypesToAdd, sampleTypesToUpdate, "sample types");
             SummaryUtils.printAddedSummary(operationLog, dataSetTypesToAdd, "data set types");
             printUpdateSummary(dataSetTypesToAdd, dataSetTypesToUpdate, "data set types");
-            SummaryUtils.printAddedSummary(operationLog, materialTypesToAdd, "material types");
-            printUpdateSummary(materialTypesToAdd, materialTypesToUpdate, "material types");
         }
         SummaryUtils.printShortSummaryHeader(operationLog);
         SummaryUtils.printShortAddedSummary(operationLog, fileformatTypesToAdd.size(), "file format types");
@@ -409,8 +382,6 @@ public class SynchronizerFacade implements ISynchronizerFacade
         printShortSummary(sampleTypesToAdd, sampleTypesToUpdate, "sample types", "property assignments");
         SummaryUtils.printShortAddedSummary(operationLog, dataSetTypesToAdd.size(), "data set types");
         printShortSummary(dataSetTypesToAdd, dataSetTypesToUpdate, "data set types", "property assignments");
-        SummaryUtils.printShortAddedSummary(operationLog, materialTypesToAdd.size(), "material types");
-        printShortSummary(materialTypesToAdd, materialTypesToUpdate, "material types", "property assignments");
         SummaryUtils.printShortSummaryFooter(operationLog);
     }
 

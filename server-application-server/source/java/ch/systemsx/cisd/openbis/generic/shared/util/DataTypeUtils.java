@@ -110,7 +110,7 @@ public class DataTypeUtils
             }
         },
         STRING(DataTypeCode.VARCHAR, DataTypeCode.MULTILINE_VARCHAR, DataTypeCode.BOOLEAN,
-                DataTypeCode.XML, DataTypeCode.CONTROLLEDVOCABULARY, DataTypeCode.MATERIAL,
+                DataTypeCode.XML, DataTypeCode.CONTROLLEDVOCABULARY,
                 DataTypeCode.HYPERLINK, DataTypeCode.SAMPLE, DataTypeCode.DATE)
         {
             @Override

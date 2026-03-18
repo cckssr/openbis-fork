@@ -49,7 +49,7 @@ public class DataSetListingTest extends SystemTestCase
         List<AbstractExternalData> dataSets = asList(resultSet);
         assertEquals("20081105092159111-1", dataSets.get(0).getCode());
         assertProperties(
-                "[ANY_MATERIAL: 1000_C (SIRNA), BACTERIUM: BACTERIUM1 (BACTERIUM), COMMENT: no comment, GENDER: FEMALE]",
+                "[COMMENT: no comment, GENDER: FEMALE]",
                 dataSets.get(0));
         assertEquals(1, dataSets.size());
     }
@@ -76,7 +76,7 @@ public class DataSetListingTest extends SystemTestCase
         assertDataSets("20081105092159111-1, 20081105092159222-2, 20081105092259000-9, "
                 + "20081105092259900-0, 20081105092259900-1, 20081105092359990-2", dataSets);
         assertProperties(
-                "[ANY_MATERIAL: 1000_C (SIRNA), BACTERIUM: BACTERIUM1 (BACTERIUM), COMMENT: no comment, GENDER: FEMALE]",
+                "[COMMENT: no comment, GENDER: FEMALE]",
                 dataSets.get(0));
         assertEquals("/CISD/NEMO/CP-TEST-1", dataSets.get(0).getSampleIdentifier());
         assertEquals(18, dataSets.get(0).getExperiment().getId().intValue());

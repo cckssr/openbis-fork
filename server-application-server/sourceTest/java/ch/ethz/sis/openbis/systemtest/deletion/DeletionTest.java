@@ -66,11 +66,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.delete.ExperimentDele
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.IExperimentId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.update.ExperimentUpdate;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.create.MaterialCreation;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.delete.MaterialDeletionOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.id.IMaterialId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.id.MaterialPermId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.update.MaterialUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.create.ProjectCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.delete.ProjectDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.IProjectId;
@@ -244,14 +239,6 @@ public abstract class DeletionTest extends AbstractTest
         SpaceDeletionOptions deletionOptions = new SpaceDeletionOptions();
         deletionOptions.setReason("reason");
         v3api.deleteSpaces(sessionToken, Arrays.asList(ids), deletionOptions);
-    }
-
-    @SuppressWarnings("unchecked")
-    public <T extends IMaterialId> void delete(T... ids)
-    {
-        MaterialDeletionOptions deletionOptions = new MaterialDeletionOptions();
-        deletionOptions.setReason("reason");
-        v3api.deleteMaterials(sessionToken, Arrays.asList(ids), deletionOptions);
     }
 
     @SuppressWarnings("unchecked")
@@ -747,25 +734,6 @@ public abstract class DeletionTest extends AbstractTest
         v3api.updateSamples(sessionToken, Arrays.asList(sampleUpdate));
     }
 
-    protected MaterialPermId createMaterial(String code, Map<String, String> properties)
-    {
-        return createMaterial(code, "DELETION_TEST", properties);
-    }
-
-    protected MaterialPermId createMaterial(String code, String typeCode, Map<String, String> properties)
-    {
-        MaterialCreation material = new MaterialCreation();
-        material.setCode(code);
-        material.setTypeId(new EntityTypePermId(typeCode));
-
-        for (Map.Entry<String, String> entry : properties.entrySet())
-        {
-            material.setProperty(entry.getKey(), entry.getValue());
-        }
-
-        return v3api.createMaterials(sessionToken, Arrays.asList(material)).get(0);
-    }
-
     protected void updateChildren(SamplePermId sample, SamplePermId... children)
     {
         SampleUpdate update = new SampleUpdate();
@@ -839,16 +807,6 @@ public abstract class DeletionTest extends AbstractTest
         v3api.updateDataSets(sessionToken, Arrays.asList(update));
     }
 
-    protected void setProperties(IMaterialId material, String... properties)
-    {
-        MaterialUpdate update = new MaterialUpdate();
-        update.setMaterialId(material);
-        for (Map.Entry<String, String> entry : props(properties).entrySet())
-        {
-            update.setProperty(entry.getKey(), entry.getValue());
-        }
-        v3api.updateMaterials(sessionToken, Arrays.asList(update));
-    }
 
     protected void setProperties(IExperimentId experiment, String... properties)
     {

@@ -72,8 +72,7 @@ async function testLoadSuccessfulExisting() {
         code: { value: 'TEST_PROPERTY_TYPE_3' },
         label: { value: 'TEST_LABEL_3' },
         description: { value: 'TEST_DESCRIPTION_3' },
-        dataType: { value: 'MATERIAL' },
-        materialType: { value: 'TEST_MATERIAL_TYPE' },
+        dataType: { value: 'SAMPLE' },
         mandatory: { value: false },
         showInEditView: { value: true },
         showRawValueInForms: { value: false },
@@ -298,9 +297,6 @@ TEST_PLUGIN_2.setName('TEST_PLUGIN_2')
 const TEST_VOCABULARY = new openbis.Vocabulary()
 TEST_VOCABULARY.setCode('TEST_VOCABULARY')
 
-const TEST_MATERIAL_TYPE = new openbis.MaterialType()
-TEST_MATERIAL_TYPE.setCode('TEST_MATERIAL_TYPE')
-
 const TEST_PROPERTY_TYPE_1_DTO = new openbis.PropertyType()
 TEST_PROPERTY_TYPE_1_DTO.setCode('TEST_PROPERTY_TYPE_1')
 TEST_PROPERTY_TYPE_1_DTO.setLabel('TEST_LABEL_1')
@@ -320,8 +316,7 @@ const TEST_PROPERTY_TYPE_3_DTO = new openbis.PropertyType()
 TEST_PROPERTY_TYPE_3_DTO.setCode('TEST_PROPERTY_TYPE_3')
 TEST_PROPERTY_TYPE_3_DTO.setLabel('TEST_LABEL_3')
 TEST_PROPERTY_TYPE_3_DTO.setDescription('TEST_DESCRIPTION_3')
-TEST_PROPERTY_TYPE_3_DTO.setDataType(openbis.DataType.MATERIAL)
-TEST_PROPERTY_TYPE_3_DTO.setMaterialType(TEST_MATERIAL_TYPE)
+TEST_PROPERTY_TYPE_3_DTO.setDataType(openbis.DataType.SAMPLE)
 TEST_PROPERTY_TYPE_3_DTO.setMultiValue(false)
 
 const TEST_PROPERTY_ASSIGNMENT_1 = new openbis.PropertyAssignment()

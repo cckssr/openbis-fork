@@ -73,7 +73,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.search.EntityTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentTypeSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.MaterialTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleContainerSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.search.TagSearchCriteria;
@@ -180,9 +179,6 @@ public class SearchCriteriaTranslator
             resultSqlBuilder.append(SP).append(IS_NOT_NULL);
             resultSqlBuilder.append(SP).append(OR).append(SP);
             TranslatorUtils.appendControlledVocabularyTermSubselectConstraint(resultSqlBuilder,
-                    joinInformationMap.get(tableMapper.getValuesTable()).getSubTableAlias());
-            resultSqlBuilder.append(SP).append(OR).append(SP);
-            TranslatorUtils.appendMaterialSubselectConstraint(resultSqlBuilder,
                     joinInformationMap.get(tableMapper.getValuesTable()).getSubTableAlias());
             resultSqlBuilder.append(SP).append(OR).append(SP);
             TranslatorUtils.appendSampleSubselectConstraint(resultSqlBuilder,
@@ -306,25 +302,6 @@ public class SearchCriteriaTranslator
             final EntityTypeSearchCriteria entityTypeSearchCriterion = (EntityTypeSearchCriteria) criterion;
             switch (entityKind)
             {
-                case MATERIAL:
-                {
-                    final MaterialTypeSearchCriteria newCriterion = new MaterialTypeSearchCriteria();
-                    switch (entityTypeSearchCriterion.getOperator())
-                    {
-                        case AND:
-                        {
-                            newCriterion.withAndOperator();
-                            break;
-                        }
-                        case OR:
-                        {
-                            newCriterion.withOrOperator();
-                            break;
-                        }
-                    }
-                    newCriterion.setCriteria(entityTypeSearchCriterion.getCriteria());
-                    return newCriterion;
-                }
                 case EXPERIMENT:
                 {
                     final ExperimentTypeSearchCriteria newCriterion = new ExperimentTypeSearchCriteria();

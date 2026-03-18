@@ -20,8 +20,6 @@ class EntityTypeLink extends React.PureComponent {
         objectType = objectTypes.OBJECT_TYPE
       } else if (typeKind === openbis.EntityKind.DATA_SET) {
         objectType = objectTypes.DATA_SET_TYPE
-      } else if (typeKind === openbis.EntityKind.MATERIAL) {
-        objectType = objectTypes.MATERIAL_TYPE
       } else {
         throw new Error('Unsupported type kind: ' + typeKind)
       }

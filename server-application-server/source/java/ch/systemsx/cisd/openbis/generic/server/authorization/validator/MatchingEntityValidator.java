@@ -65,7 +65,6 @@ public final class MatchingEntityValidator extends AbstractCollectionValidator<M
 
         Set<String> spacesWithValidProjects = getSpacesWithValidProjects(person);
 
-        Set<Long> validMaterialIds = new HashSet<Long>();
         Set<Long> validExperimentIds = new HashSet<Long>();
         Set<Long> validSampleIds = new HashSet<Long>();
         Set<Long> validDataSetIds = new HashSet<Long>();
@@ -83,10 +82,7 @@ public final class MatchingEntityValidator extends AbstractCollectionValidator<M
 
             if (entity.tryGetSpace() == null)
             {
-                if (EntityKind.MATERIAL.equals(entity.getEntityKind()))
-                {
-                    validMaterialIds.add(entity.getId());
-                } else if (EntityKind.SAMPLE.equals(entity.getEntityKind()))
+                if (EntityKind.SAMPLE.equals(entity.getEntityKind()))
                 {
                     validSampleIds.add(entity.getId());
                 }
@@ -184,10 +180,7 @@ public final class MatchingEntityValidator extends AbstractCollectionValidator<M
             {
                 boolean valid = false;
 
-                if (EntityKind.MATERIAL.equals(entity.getEntityKind()))
-                {
-                    valid = validMaterialIds.contains(entity.getId());
-                } else if (EntityKind.EXPERIMENT.equals(entity.getEntityKind()))
+                if (EntityKind.EXPERIMENT.equals(entity.getEntityKind()))
                 {
                     valid = validExperimentIds.contains(entity.getId());
                 } else if (EntityKind.SAMPLE.equals(entity.getEntityKind()))

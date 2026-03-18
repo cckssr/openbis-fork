@@ -56,21 +56,6 @@ anotherDataSetType.setPermId(
 )
 anotherDataSetType.setDescription('Another Description')
 
-const testMaterialType = new openbis.MaterialType()
-testMaterialType.setCode('TEST_MATERIAL_TYPE')
-testMaterialType.setPermId(
-  new openbis.EntityTypePermId(testMaterialType.getCode())
-)
-testMaterialType.setDescription('Test Description')
-testMaterialType.setValidationPlugin(testValidationPlugin)
-
-const anotherMaterialType = new openbis.MaterialType()
-anotherMaterialType.setCode('ANOTHER_MATERIAL_TYPE')
-anotherMaterialType.setPermId(
-  new openbis.EntityTypePermId(anotherMaterialType.getCode())
-)
-anotherMaterialType.setDescription('Another Description')
-
 const testVocabularyType = new openbis.Vocabulary()
 testVocabularyType.setCode('TEST_VOCABULARY_TYPE')
 testVocabularyType.setDescription('Test Description')
@@ -96,8 +81,6 @@ export default {
   anotherCollectionType,
   testDataSetType,
   anotherDataSetType,
-  testMaterialType,
-  anotherMaterialType,
   testVocabularyType,
   anotherVocabularyType,
   testPropertyType,

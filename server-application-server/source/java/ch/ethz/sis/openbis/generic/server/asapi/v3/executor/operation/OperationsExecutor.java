@@ -79,17 +79,6 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.externaldms.ISearchE
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.externaldms.IUpdateExternalDmsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.globalsearch.ISearchGloballyOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.importer.ImportOperationExecutor;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.material.ICreateMaterialTypesOperationExecutor;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.material.ICreateMaterialsOperationExecutor;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.material.IDeleteMaterialTypesOperationExecutor;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.material.IDeleteMaterialsOperationExecutor;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.material.IGetMaterialTypesOperationExecutor;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.material.IGetMaterialsOperationExecutor;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.material.ISearchMaterialTypesOperationExecutor;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.material.ISearchMaterialsOperationExecutor;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.material.IUpdateMaterialTypesOperationExecutor;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.material.IUpdateMaterialsOperationExecutor;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.material.IVerifyMaterialsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.objectkindmodification.ISearchObjectKindModificationsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.operation.delete.IDeleteOperationExecutionsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.operation.get.IGetOperationExecutionsOperationExecutor;
@@ -214,9 +203,6 @@ public class OperationsExecutor implements IOperationsExecutor
     private IDeleteDataSetsOperationExecutor deleteDataSetsExecutor;
 
     @Autowired
-    private IDeleteMaterialsOperationExecutor deleteMaterialsExecutor;
-
-    @Autowired
     private IDeleteExternalDmsOperationExecutor deleteExternalDmsExecutor;
 
     @Autowired
@@ -236,9 +222,6 @@ public class OperationsExecutor implements IOperationsExecutor
 
     @Autowired
     private IDeleteDataSetTypesOperationExecutor deleteDataSetTypesExecutor;
-
-    @Autowired
-    private IDeleteMaterialTypesOperationExecutor deleteMaterialTypesExecutor;
 
     @Autowired
     private IDeletePluginsOperationExecutor deletePluginsExecutor;
@@ -289,9 +272,6 @@ public class OperationsExecutor implements IOperationsExecutor
     private ICreateDataSetsOperationExecutor createDataSetsExecutor;
 
     @Autowired
-    private ICreateMaterialsOperationExecutor createMaterialsExecutor;
-
-    @Autowired
     private ICreateTagsOperationExecutor createTagsExecutor;
 
     @Autowired
@@ -329,9 +309,6 @@ public class OperationsExecutor implements IOperationsExecutor
 
     @Autowired
     private ICreateDataSetTypesOperationExecutor createDataSetTypesExecutor;
-
-    @Autowired
-    private ICreateMaterialTypesOperationExecutor createMaterialTypesExecutor;
 
     @Autowired
     private ICreateQueriesOperationExecutor createQueriesExecutor;
@@ -374,12 +351,6 @@ public class OperationsExecutor implements IOperationsExecutor
 
     @Autowired
     private IUpdateDataSetTypesOperationExecutor updateDataSetTypesExecutor;
-
-    @Autowired
-    private IUpdateMaterialsOperationExecutor updateMaterialsExecutor;
-
-    @Autowired
-    private IUpdateMaterialTypesOperationExecutor updateMaterialTypesExecutor;
 
     @Autowired
     private IUpdateTagsOperationExecutor updateTagsExecutor;
@@ -430,9 +401,6 @@ public class OperationsExecutor implements IOperationsExecutor
     private IVerifyDataSetsOperationExecutor verifyDataSetsExecutor;
 
     @Autowired
-    private IVerifyMaterialsOperationExecutor verifyMaterialsExecutor;
-
-    @Autowired
     private IInternalOperationExecutor internalOperationExecutor;
 
     @Autowired
@@ -461,12 +429,6 @@ public class OperationsExecutor implements IOperationsExecutor
 
     @Autowired
     private IGetDataSetTypesOperationExecutor getDataSetTypesExecutor;
-
-    @Autowired
-    private IGetMaterialsOperationExecutor getMaterialsExecutor;
-
-    @Autowired
-    private IGetMaterialTypesOperationExecutor getMaterialTypesExecutor;
 
     @Autowired
     private IGetTagsOperationExecutor getTagsExecutor;
@@ -538,9 +500,6 @@ public class OperationsExecutor implements IOperationsExecutor
     private ISearchDataSetsOperationExecutor searchDataSetsExecutor;
 
     @Autowired
-    private ISearchMaterialsOperationExecutor searchMaterialsExecutor;
-
-    @Autowired
     private ISearchTagsOperationExecutor searchTagsExecutor;
 
     @Autowired
@@ -572,9 +531,6 @@ public class OperationsExecutor implements IOperationsExecutor
 
     @Autowired
     private ISearchDataSetTypesOperationExecutor searchDataSetTypesExecutor;
-
-    @Autowired
-    private ISearchMaterialTypesOperationExecutor searchMaterialTypesExecutor;
 
     @Autowired
     private ISearchCustomASServicesOperationExecutor searchCustomASServicesExecutor;
@@ -776,7 +732,6 @@ public class OperationsExecutor implements IOperationsExecutor
         resultMap.putAll(searchExperimentsExecutor.execute(context, operations));
         resultMap.putAll(searchSamplesExecutor.execute(context, operations));
         resultMap.putAll(searchDataSetsExecutor.execute(context, operations));
-        resultMap.putAll(searchMaterialsExecutor.execute(context, operations));
         resultMap.putAll(searchTagsExecutor.execute(context, operations));
         resultMap.putAll(searchAuthorizationGroupsExecutor.execute(context, operations));
         resultMap.putAll(searchRoleAssignmentsExecutor.execute(context, operations));
@@ -788,7 +743,6 @@ public class OperationsExecutor implements IOperationsExecutor
         resultMap.putAll(searchExperimentTypesExecutor.execute(context, operations));
         resultMap.putAll(searchSampleTypesExecutor.execute(context, operations));
         resultMap.putAll(searchDataSetTypesExecutor.execute(context, operations));
-        resultMap.putAll(searchMaterialTypesExecutor.execute(context, operations));
         resultMap.putAll(searchCustomASServicesExecutor.execute(context, operations));
         resultMap.putAll(searchAggregationServicesExecutor.execute(context, operations));
         resultMap.putAll(searchReportingServicesExecutor.execute(context, operations));
@@ -823,8 +777,6 @@ public class OperationsExecutor implements IOperationsExecutor
         resultMap.putAll(getSampleTypesExecutor.execute(context, operations));
         resultMap.putAll(getDataSetsExecutor.execute(context, operations));
         resultMap.putAll(getDataSetTypesExecutor.execute(context, operations));
-        resultMap.putAll(getMaterialsExecutor.execute(context, operations));
-        resultMap.putAll(getMaterialTypesExecutor.execute(context, operations));
         resultMap.putAll(getTagsExecutor.execute(context, operations));
         resultMap.putAll(getAuthorizationGroupsExecutor.execute(context, operations));
         resultMap.putAll(getRoleAssignmentsExecutor.execute(context, operations));
@@ -848,7 +800,6 @@ public class OperationsExecutor implements IOperationsExecutor
     private void verify(List<? extends IOperation> operations,
             Map<IOperation, IOperationResult> resultMap, IOperationContext context)
     {
-        verifyMaterialsExecutor.verify(context, operations, resultMap);
         verifyExperimentsExecutor.verify(context, operations, resultMap);
         verifySamplesExecutor.verify(context, operations, resultMap);
         verifyDataSetsExecutor.verify(context, operations, resultMap);
@@ -864,14 +815,12 @@ public class OperationsExecutor implements IOperationsExecutor
         resultMap.putAll(updateVocabulariesExecutor.execute(context, operations));
         resultMap.putAll(updatePropertyTypesExecutor.execute(context, operations));
         resultMap.putAll(updateVocabularyTermsExecutor.execute(context, operations));
-        resultMap.putAll(updateMaterialTypesExecutor.execute(context, operations));
         resultMap.putAll(updateExperimentTypesExecutor.execute(context, operations));
         resultMap.putAll(updateSampleTypesExecutor.execute(context, operations));
         resultMap.putAll(updateDataSetTypesExecutor.execute(context, operations));
         resultMap.putAll(updateTagsExecutor.execute(context, operations));
         resultMap.putAll(updatePersonsExecutor.execute(context, operations));
         resultMap.putAll(updateAuthorizationGroupsExecutor.execute(context, operations));
-        resultMap.putAll(updateMaterialsExecutor.execute(context, operations));
         resultMap.putAll(updateExternalDmsExecutor.execute(context, operations));
         resultMap.putAll(updateSpacesExecutor.execute(context, operations));
         resultMap.putAll(updateProjectsExecutor.execute(context, operations));
@@ -895,8 +844,6 @@ public class OperationsExecutor implements IOperationsExecutor
         resultMap.putAll(createSampleTypesExecutor.execute(context, operations));
         resultMap.putAll(createTypeGroupAssignmentsExecutor.execute(context, operations));
         resultMap.putAll(createDataSetTypesExecutor.execute(context, operations));
-        resultMap.putAll(createMaterialTypesExecutor.execute(context, operations));
-        resultMap.putAll(createMaterialsExecutor.execute(context, operations));
         resultMap.putAll(createSpacesExecutor.execute(context, operations));
         resultMap.putAll(createProjectsExecutor.execute(context, operations));
         resultMap.putAll(createExperimentsExecutor.execute(context, operations));
@@ -925,7 +872,6 @@ public class OperationsExecutor implements IOperationsExecutor
         resultMap.putAll(deleteDataSetsExecutor.execute(context, operations));
         resultMap.putAll(deleteProjectsExecutor.execute(context, operations));
         resultMap.putAll(deleteSpacesExecutor.execute(context, operations));
-        resultMap.putAll(deleteMaterialsExecutor.execute(context, operations));
         resultMap.putAll(deleteExternalDmsExecutor.execute(context, operations));
         resultMap.putAll(deleteTagsExecutor.execute(context, operations));
         resultMap.putAll(deleteRoleAssignmentsExecutor.execute(context, operations));
@@ -933,7 +879,6 @@ public class OperationsExecutor implements IOperationsExecutor
         resultMap.putAll(deleteExperimentTypesExecutor.execute(context, operations));
         resultMap.putAll(deleteSampleTypesExecutor.execute(context, operations));
         resultMap.putAll(deleteDataSetTypesExecutor.execute(context, operations));
-        resultMap.putAll(deleteMaterialTypesExecutor.execute(context, operations));
         resultMap.putAll(deletePropertyTypesExecutor.execute(context, operations));
         resultMap.putAll(deletePluginsExecutor.execute(context, operations));
         resultMap.putAll(deleteVocabularyTermsExecutor.execute(context, operations));

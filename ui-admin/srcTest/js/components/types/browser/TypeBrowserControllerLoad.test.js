@@ -37,11 +37,6 @@ async function testLoad() {
         selected: false
       },
       {
-        text: 'Material Types',
-        expanded: false,
-        selected: false
-      },
-      {
         text: 'Vocabulary Types',
         expanded: false,
         selected: false

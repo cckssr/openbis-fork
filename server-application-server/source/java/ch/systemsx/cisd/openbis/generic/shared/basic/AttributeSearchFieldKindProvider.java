@@ -19,7 +19,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetAttributeSearchF
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExperimentAttributeSearchFieldKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IAttributeSearchFieldKind;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialAttributeSearchFieldKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SampleAttributeSearchFieldKind;
 
 /**
@@ -38,8 +37,6 @@ public class AttributeSearchFieldKindProvider
                 return DataSetAttributeSearchFieldKind.values();
             case EXPERIMENT:
                 return ExperimentAttributeSearchFieldKind.values();
-            case MATERIAL:
-                return MaterialAttributeSearchFieldKind.values();
             case SAMPLE:
                 return SampleAttributeSearchFieldKind.values();
         }
@@ -57,8 +54,6 @@ public class AttributeSearchFieldKindProvider
                 return DataSetAttributeSearchFieldKind.valueOf(code);
             case EXPERIMENT:
                 return ExperimentAttributeSearchFieldKind.valueOf(code);
-            case MATERIAL:
-                return MaterialAttributeSearchFieldKind.valueOf(code);
             case SAMPLE:
                 return SampleAttributeSearchFieldKind.valueOf(code);
         }

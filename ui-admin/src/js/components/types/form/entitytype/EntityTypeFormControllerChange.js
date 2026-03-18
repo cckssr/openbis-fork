@@ -117,9 +117,6 @@ export default class EntityTypeFormControllerChange extends PageControllerChange
           vocabulary: {
             value: _.get(newExisting, 'vocabulary.code', null)
           },
-          materialType: {
-            value: _.get(newExisting, 'materialType.code', null)
-          },
           sampleType: {
             value: _.get(newExisting, 'sampleType.code', null)
           },
@@ -195,10 +192,6 @@ export default class EntityTypeFormControllerChange extends PageControllerChange
           ...newProperty.vocabulary,
           enabled: !newExisting
         },
-        materialType: {
-          ...newProperty.materialType,
-          enabled: !newExisting
-        },
         sampleType: {
           ...newProperty.sampleType,
           enabled: !newExisting
@@ -229,10 +222,6 @@ export default class EntityTypeFormControllerChange extends PageControllerChange
         vocabulary: {
           ...newProperty.vocabulary,
           visible: newDataType === openbis.DataType.CONTROLLEDVOCABULARY
-        },
-        materialType: {
-          ...newProperty.materialType,
-          visible: newDataType === openbis.DataType.MATERIAL
         },
         sampleType: {
           ...newProperty.sampleType,
@@ -355,10 +344,6 @@ export default class EntityTypeFormControllerChange extends PageControllerChange
       vocabulary: {
         ...dest.vocabulary,
         value: _.get(src, 'vocabulary.value', null)
-      },
-      materialType: {
-        ...dest.materialType,
-        value: _.get(src, 'materialType.value', null)
       },
       sampleType: {
         ...dest.sampleType,

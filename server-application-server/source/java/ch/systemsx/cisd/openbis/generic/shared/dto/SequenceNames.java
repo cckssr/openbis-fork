@@ -82,17 +82,7 @@ public final class SequenceNames
 
     public static final String LOCATOR_TYPE_SEQUENCE = "LOCATOR_TYPE_ID_SEQ";
 
-    public static final String MATERIAL_BATCH_SEQUENCE = "MATERIAL_BATCH_ID_SEQ";
-
-    public static final String MATERIAL_PROPERTY_SEQUENCE = "MATERIAL_PROPERTY_ID_SEQ";
-
     public static final String SAMPLE_RELATIONSHIPS_SEQUENCE = "SAMPLE_RELATIONSHIP_ID_SEQ";
-
-    public static final String MATERIAL_SEQUENCE = "MATERIAL_ID_SEQ";
-
-    public static final String MATERIAL_TYPE_PROPERTY_TYPE_SEQUENCE = "MTPT_ID_SEQ";
-
-    public static final String MATERIAL_TYPE_SEQUENCE = "MATERIAL_TYPE_ID_SEQ";
 
     public final static String PERSON_SEQUENCE = "PERSON_ID_SEQ";
 
@@ -103,8 +93,6 @@ public final class SequenceNames
     public static final String ROLE_ASSIGNMENT_SEQUENCE = "ROLE_ASSIGNMENT_ID_SEQ";
 
     public static final String SAMPLE_INPUT_SEQUENCE = "SAMPLE_INPUT_ID_SEQ";
-
-    public static final String SAMPLE_MATERIAL_BATCH_SEQUENCE = "SAMPLE_MATERIAL_BATCH_ID_SEQ";
 
     public static final String SAMPLE_PROPERTY_SEQUENCE = "SAMPLE_PROPERTY_ID_SEQ";
 

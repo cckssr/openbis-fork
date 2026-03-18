@@ -29,7 +29,6 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.dataset.search.Sta
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.dataset.search.StorageFormatSearchCriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.experiment.search.ExperimentSearchCriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.externaldms.search.ExternalDmsSearchCriteriaTranslator;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.material.search.MaterialSearchCriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.person.search.ModifierSearchCriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.person.search.RegistratorSearchCriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.project.search.ProjectSearchCriteriaTranslator;
@@ -74,7 +73,6 @@ public class SearchCriteriaTranslatorFactory extends AbstractSearchCriteriaTrans
         translators.add(new CompleteSearchCriteriaTranslator(getDaoFactory(), getEntityAttributeProviderFactory()));
         translators.add(new StatusSearchCriteriaTranslator(getDaoFactory(), getEntityAttributeProviderFactory()));
         translators.add(new ExternalDmsSearchCriteriaTranslator(getDaoFactory(), getEntityAttributeProviderFactory()));
-        translators.add(new MaterialSearchCriteriaTranslator(getDaoFactory(), getEntityAttributeProviderFactory()));
         translators.add(new StringFieldSearchCriteriaTranslator(getDaoFactory(), getEntityAttributeProviderFactory()));
         translators.add(new DateFieldSearchCriteriaTranslator(getDaoFactory(), getEntityAttributeProviderFactory()));
         translators.add(new NumberFieldSearchCriteriaTranslator(getDaoFactory(), getEntityAttributeProviderFactory()));

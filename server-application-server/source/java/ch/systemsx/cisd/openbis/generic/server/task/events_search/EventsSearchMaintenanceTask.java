@@ -79,7 +79,6 @@ public class EventsSearchMaintenanceTask implements IMaintenanceTask
                         new SampleDeletionProcessor(dataSource),
                         new DataSetDeletionProcessor(dataSource),
                         new AttachmentDeletionProcessor(dataSource),
-                        new GenericEventProcessor(dataSource, EventType.DELETION, EntityType.MATERIAL),
                         new GenericEventProcessor(dataSource, EventType.DELETION, EntityType.PROPERTY_TYPE),
                         new GenericEventProcessor(dataSource, EventType.DELETION, EntityType.VOCABULARY),
                         new GenericEventProcessor(dataSource, EventType.DELETION, EntityType.AUTHORIZATION_GROUP),

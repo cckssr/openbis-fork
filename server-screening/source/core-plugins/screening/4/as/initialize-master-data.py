@@ -94,17 +94,6 @@ data_set_type_HCS_IMAGE_CONTAINER_RAW.setDescription('Container for HCS images o
 data_set_type_HCS_ANALYSIS_FEATURES_LIST = tr.getOrCreateNewDataSetType('HCS_ANALYSIS_FEATURES_LIST')
 data_set_type_HCS_ANALYSIS_FEATURES_LIST.setDescription('The list (or group) of features. The subset of features from feature vectors.')
 
-material_type_COMPOUND = tr.getOrCreateNewMaterialType('COMPOUND')
-material_type_COMPOUND.setDescription('Compound')
-
-material_type_CONTROL = tr.getOrCreateNewMaterialType('CONTROL')
-material_type_CONTROL.setDescription('Control of a control layout')
-
-material_type_GENE = tr.getOrCreateNewMaterialType('GENE')
-material_type_GENE.setDescription('Gene')
-
-material_type_SIRNA = tr.getOrCreateNewMaterialType('SIRNA')
-material_type_SIRNA.setDescription('Oligo nucleotide')
 
 prop_type_ANALYSIS_PROCEDURE = tr.getOrCreateNewPropertyType('ANALYSIS_PROCEDURE', DataType.VARCHAR)
 prop_type_ANALYSIS_PROCEDURE.setLabel('Analysis procedure')
@@ -122,31 +111,13 @@ prop_type_PLATE_GEOMETRY.setManagedInternally(True)
 prop_type_PLATE_GEOMETRY.setInternalNamespace(True)
 prop_type_PLATE_GEOMETRY.setVocabulary(vocabulary_PLATE_GEOMETRY)
 
-prop_type_CONTROL = tr.getOrCreateNewPropertyType('CONTROL', DataType.MATERIAL)
-prop_type_CONTROL.setLabel('Control')
-prop_type_CONTROL.setManagedInternally(True)
-prop_type_CONTROL.setInternalNamespace(False)
-prop_type_CONTROL.setMaterialType(material_type_CONTROL)
-
 # Already exists in the database
 prop_type_DESCRIPTION = tr.getPropertyType('DESCRIPTION')
-
-prop_type_GENE = tr.getOrCreateNewPropertyType('GENE', DataType.MATERIAL)
-prop_type_GENE.setLabel('Gene')
-prop_type_GENE.setManagedInternally(True)
-prop_type_GENE.setInternalNamespace(False)
-prop_type_GENE.setMaterialType(material_type_GENE)
 
 prop_type_GENE_SYMBOLS = tr.getOrCreateNewPropertyType('GENE_SYMBOLS', DataType.VARCHAR)
 prop_type_GENE_SYMBOLS.setLabel('Gene symbols')
 prop_type_GENE_SYMBOLS.setManagedInternally(True)
 prop_type_GENE_SYMBOLS.setInternalNamespace(False)
-
-prop_type_INHIBITOR_OF = tr.getOrCreateNewPropertyType('INHIBITOR_OF', DataType.MATERIAL)
-prop_type_INHIBITOR_OF.setLabel('Inhibitor Of')
-prop_type_INHIBITOR_OF.setManagedInternally(True)
-prop_type_INHIBITOR_OF.setInternalNamespace(False)
-prop_type_INHIBITOR_OF.setMaterialType(material_type_GENE)
 
 prop_type_LIBRARY_ID = tr.getOrCreateNewPropertyType('LIBRARY_ID', DataType.VARCHAR)
 prop_type_LIBRARY_ID.setLabel('Library ID')
@@ -158,37 +129,6 @@ prop_type_NUCLEOTIDE_SEQUENCE.setLabel('Nucleotide Sequence')
 prop_type_NUCLEOTIDE_SEQUENCE.setManagedInternally(True)
 prop_type_NUCLEOTIDE_SEQUENCE.setInternalNamespace(False)
 
-prop_type_SIRNA = tr.getOrCreateNewPropertyType('SIRNA', DataType.MATERIAL)
-prop_type_SIRNA.setLabel('siRNA')
-prop_type_SIRNA.setManagedInternally(True)
-prop_type_SIRNA.setInternalNamespace(False)
-prop_type_SIRNA.setMaterialType(material_type_SIRNA)
-
-assignment_MATERIAL_COMPOUND_DESCRIPTION = tr.assignPropertyType(material_type_COMPOUND, prop_type_DESCRIPTION)
-assignment_MATERIAL_COMPOUND_DESCRIPTION.setMandatory(False)
-assignment_MATERIAL_COMPOUND_DESCRIPTION.setSection(None)
-assignment_MATERIAL_COMPOUND_DESCRIPTION.setPositionInForms(1)
-
-assignment_MATERIAL_CONTROL_DESCRIPTION = tr.assignPropertyType(material_type_CONTROL, prop_type_DESCRIPTION)
-assignment_MATERIAL_CONTROL_DESCRIPTION.setMandatory(False)
-assignment_MATERIAL_CONTROL_DESCRIPTION.setSection(None)
-assignment_MATERIAL_CONTROL_DESCRIPTION.setPositionInForms(1)
-
-assignment_SAMPLE_CONTROL_WELL_CONTROL = tr.assignPropertyType(samp_type_CONTROL_WELL, prop_type_CONTROL)
-assignment_SAMPLE_CONTROL_WELL_CONTROL.setMandatory(False)
-assignment_SAMPLE_CONTROL_WELL_CONTROL.setSection(None)
-assignment_SAMPLE_CONTROL_WELL_CONTROL.setPositionInForms(1)
-
-assignment_MATERIAL_GENE_DESCRIPTION = tr.assignPropertyType(material_type_GENE, prop_type_DESCRIPTION)
-assignment_MATERIAL_GENE_DESCRIPTION.setMandatory(False)
-assignment_MATERIAL_GENE_DESCRIPTION.setSection(None)
-assignment_MATERIAL_GENE_DESCRIPTION.setPositionInForms(2)
-
-assignment_MATERIAL_GENE_GENE_SYMBOLS = tr.assignPropertyType(material_type_GENE, prop_type_GENE_SYMBOLS)
-assignment_MATERIAL_GENE_GENE_SYMBOLS.setMandatory(False)
-assignment_MATERIAL_GENE_GENE_SYMBOLS.setSection(None)
-assignment_MATERIAL_GENE_GENE_SYMBOLS.setPositionInForms(4)
-
 assignment_DATA_SET_HCS_IMAGE_OVERVIEW_RESOLUTION = tr.assignPropertyType(data_set_type_HCS_IMAGE_OVERVIEW, prop_type_RESOLUTION)
 assignment_DATA_SET_HCS_IMAGE_OVERVIEW_RESOLUTION.setMandatory(False)
 assignment_DATA_SET_HCS_IMAGE_OVERVIEW_RESOLUTION.setSection(None)
@@ -198,34 +138,3 @@ assignment_SAMPLE_PLATE_PLATE_GEOMETRY = tr.assignPropertyType(samp_type_PLATE, 
 assignment_SAMPLE_PLATE_PLATE_GEOMETRY.setMandatory(True)
 assignment_SAMPLE_PLATE_PLATE_GEOMETRY.setSection(None)
 assignment_SAMPLE_PLATE_PLATE_GEOMETRY.setPositionInForms(1)
-
-assignment_MATERIAL_SIRNA_NUCLEOTIDE_SEQUENCE = tr.assignPropertyType(material_type_SIRNA, prop_type_NUCLEOTIDE_SEQUENCE)
-assignment_MATERIAL_SIRNA_NUCLEOTIDE_SEQUENCE.setMandatory(True)
-assignment_MATERIAL_SIRNA_NUCLEOTIDE_SEQUENCE.setSection(None)
-assignment_MATERIAL_SIRNA_NUCLEOTIDE_SEQUENCE.setPositionInForms(1)
-
-assignment_MATERIAL_SIRNA_DESCRIPTION = tr.assignPropertyType(material_type_SIRNA, prop_type_DESCRIPTION)
-assignment_MATERIAL_SIRNA_DESCRIPTION.setMandatory(False)
-assignment_MATERIAL_SIRNA_DESCRIPTION.setSection(None)
-assignment_MATERIAL_SIRNA_DESCRIPTION.setPositionInForms(3)
-
-assignment_MATERIAL_SIRNA_INHIBITOR_OF = tr.assignPropertyType(material_type_SIRNA, prop_type_INHIBITOR_OF)
-# Mandatory = False : This is to get around a weird bug running the test in Jenkins
-assignment_MATERIAL_SIRNA_INHIBITOR_OF.setMandatory(False)
-assignment_MATERIAL_SIRNA_INHIBITOR_OF.setSection(None)
-assignment_MATERIAL_SIRNA_INHIBITOR_OF.setPositionInForms(4)
-
-assignment_MATERIAL_SIRNA_LIBRARY_ID = tr.assignPropertyType(material_type_SIRNA, prop_type_LIBRARY_ID)
-assignment_MATERIAL_SIRNA_LIBRARY_ID.setMandatory(False)
-assignment_MATERIAL_SIRNA_LIBRARY_ID.setSection(None)
-assignment_MATERIAL_SIRNA_LIBRARY_ID.setPositionInForms(5)
-
-assignment_SAMPLE_SIRNA_WELL_SIRNA = tr.assignPropertyType(samp_type_SIRNA_WELL, prop_type_SIRNA)
-assignment_SAMPLE_SIRNA_WELL_SIRNA.setMandatory(False)
-assignment_SAMPLE_SIRNA_WELL_SIRNA.setSection(None)
-assignment_SAMPLE_SIRNA_WELL_SIRNA.setPositionInForms(1)
-
-assignment_SAMPLE_SIRNA_WELL_GENE = tr.assignPropertyType(samp_type_SIRNA_WELL, prop_type_GENE)
-assignment_SAMPLE_SIRNA_WELL_GENE.setMandatory(False)
-assignment_SAMPLE_SIRNA_WELL_GENE.setSection(None)
-assignment_SAMPLE_SIRNA_WELL_GENE.setPositionInForms(2)

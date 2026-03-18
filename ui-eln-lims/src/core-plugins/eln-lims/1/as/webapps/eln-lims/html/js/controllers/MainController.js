@@ -1012,7 +1012,7 @@ function MainController(profile) {
 						} else {
 							document.title = "" + Util.getDisplayNameFromCode(data[0].sampleTypeCode) + " " + data[0].code;
 							var isELNSubExperiment = $.inArray(data[0].spaceCode, _this.profile.inventorySpaces) === -1&& _this.profile.inventorySpaces.length > 0;
-							_this.mainHeader.navigateToTabByEntity("COLLECTION", data[0]);
+							_this.mainHeader.navigateToTabByEntity("COLLECTION", data[0].spaceCode);
 							_this._showViewSamplePage(data[0], isELNSubExperiment, paginationInfo);
 						}
 					});

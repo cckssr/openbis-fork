@@ -1361,27 +1361,6 @@ function ServerFacade(openbisServer) {
 	// Search Related Functions
 	//
 
-	this._createMaterialIdentifier = function(identifierString) {
-		var parts = identifierString.split("/");
-
-		return {
-			"@type" : "MaterialIdentifierGeneric",
-			"materialTypeIdentifier" : {
-				"@type" : "MaterialTypeIdentifierGeneric",
-				"materialTypeCode" : parts[1]
-			},
-			"materialCode" : parts[2]
-		};
-	}
-
-	this.getMaterialsForIdentifiers = function(materialIdentifiers, callback) {
-		var materialIdentifierObjects = [];
-		for(var i = 0; i < materialIdentifiers.length; i++) {
-			materialIdentifierObjects.push(this._createMaterialIdentifier(materialIdentifiers[i]));
-		}
-		this.openbisServer.getMaterialByCodes(materialIdentifierObjects, callback);
-	}
-
 	//
 	// Search DataSet
 	//

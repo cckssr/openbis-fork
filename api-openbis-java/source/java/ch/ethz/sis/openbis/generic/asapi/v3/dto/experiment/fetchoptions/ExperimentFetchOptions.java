@@ -22,7 +22,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetc
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.history.fetchoptions.HistoryEntryFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.fetchoptions.MaterialFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.fetchoptions.PersonFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.fetchoptions.ProjectFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
@@ -68,9 +67,6 @@ public class ExperimentFetchOptions extends AbstractEntityFetchOptions<Experimen
 
     @JsonProperty
     private HistoryEntryFetchOptions unknownHistory;
-
-    @JsonProperty
-    private MaterialFetchOptions materialProperties;
 
     @JsonProperty
     private SampleFetchOptions sampleProperties;
@@ -310,29 +306,6 @@ public class ExperimentFetchOptions extends AbstractEntityFetchOptions<Experimen
         return unknownHistory != null;
     }
 
-
-    // Method automatically generated with DtoGenerator
-    public MaterialFetchOptions withMaterialProperties()
-    {
-        if (materialProperties == null)
-        {
-            materialProperties = new MaterialFetchOptions();
-        }
-        return materialProperties;
-    }
-
-    // Method automatically generated with DtoGenerator
-    public MaterialFetchOptions withMaterialPropertiesUsing(MaterialFetchOptions fetchOptions)
-    {
-        return materialProperties = fetchOptions;
-    }
-
-    // Method automatically generated with DtoGenerator
-    public boolean hasMaterialProperties()
-    {
-        return materialProperties != null;
-    }
-
     // Method automatically generated with DtoGenerator
     public SampleFetchOptions withSampleProperties()
     {
@@ -475,7 +448,6 @@ public class ExperimentFetchOptions extends AbstractEntityFetchOptions<Experimen
         f.addFetchOption("DataSetsHistory", dataSetsHistory);
         f.addFetchOption("UnknownHistory", unknownHistory);
         f.addFetchOption("Properties", properties);
-        f.addFetchOption("MaterialProperties", materialProperties);
         f.addFetchOption("SampleProperties", sampleProperties);
         f.addFetchOption("Tags", tags);
         f.addFetchOption("Registrator", registrator);

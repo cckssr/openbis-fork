@@ -21,7 +21,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.IIdHolder;
 import ch.systemsx.cisd.openbis.generic.shared.dto.AuthorizationGroupPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentPE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PropertyTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePE;
@@ -51,9 +50,6 @@ public final class KeyExtractorFactory
 
     private static final IKeyExtractor<String, AuthorizationGroupPE> AUTHORIZATION_GROUP_BY_CODE_KEY_EXTRACTOR =
             new AuthorizationGroupByCodeKeyExtractor();
-
-    private static final IKeyExtractor<String, MaterialPE> MATERIAL_BY_CODE_KEY_EXTRACTOR =
-            createCodeKeyExtractor();
 
     private static final IKeyExtractor<String, EntityTypePE> ENTITY_TYPE_BY_CODE_KEY_EXTRACTOR =
             createCodeKeyExtractor();
@@ -129,14 +125,6 @@ public final class KeyExtractorFactory
     public final static IKeyExtractor<String, EntityTypePE> getEntityTypeByCodeKeyExtractor()
     {
         return ENTITY_TYPE_BY_CODE_KEY_EXTRACTOR;
-    }
-
-    /**
-     * Returns an <code>IKeyExtractor</code> for <i>MaterialPE</i> based on <code>code</code>.
-     */
-    public final static IKeyExtractor<String, MaterialPE> getMaterialByCodeKeyExtractor()
-    {
-        return MATERIAL_BY_CODE_KEY_EXTRACTOR;
     }
 
     //

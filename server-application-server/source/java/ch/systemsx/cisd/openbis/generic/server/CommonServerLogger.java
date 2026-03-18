@@ -75,12 +75,8 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IVocabularyTermUpdates;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IVocabularyUpdates;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.LastModificationState;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.LinkModel;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ListMaterialCriteria;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ListSampleCriteria;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MatchingEntity;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Material;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialIdentifier;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Metaproject;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MetaprojectAssignments;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MetaprojectAssignmentsCount;
@@ -356,12 +352,6 @@ final class CommonServerLogger extends AbstractServerLogger implements ICommonSe
         return null;
     }
 
-    @Override
-    public List<Sample> listSamplesByMaterialProperties(String sessionToken, Collection<TechId> materialIds)
-    {
-        logAccess(sessionToken, "list_samples_by_material_properties", "IDS(%s)", materialIds);
-        return null;
-    }
 
     public final List<SamplePropertyPE> listSamplesProperties(final String sessionToken,
             final ListSampleCriteriaDTO criteria, final List<PropertyTypePE> propertyCodes)
@@ -782,65 +772,6 @@ final class CommonServerLogger extends AbstractServerLogger implements ICommonSe
     }
 
     @Override
-    public List<MaterialType> listMaterialTypes(String sessionToken)
-    {
-        logAccess(sessionToken, "list_material_types");
-        return null;
-    }
-
-    @Override
-    public MaterialType getMaterialType(String sessionToken, String code)
-    {
-        logAccess(sessionToken, "get_material_type", "CODE(%s)", code);
-        return null;
-    }
-
-    public List<Material> listMaterials(String sessionToken, MaterialType materialType,
-            boolean withProperties)
-    {
-        logAccess(sessionToken, "list_materials", "TYPE(%s) withProperties(%s)", materialType,
-                withProperties);
-        return null;
-    }
-
-    @Override
-    public List<Material> listMaterials(String sessionToken, ListMaterialCriteria criteria,
-            boolean withProperties)
-    {
-        logAccess(sessionToken, "list_materials", "TYPE(%s) IDS(%s) withProperties(%s)",
-                criteria.tryGetMaterialType(), criteria.tryGetMaterialIds() == null ? "-"
-                        : abbreviate(criteria.tryGetMaterialIds()),
-                withProperties);
-        return null;
-    }
-
-    @Override
-    public Collection<TechId> listMaterialIdsByMaterialProperties(String sessionToken, Collection<TechId> materialIds)
-    {
-        logAccess(sessionToken, "list_material_ids_by_material_properties", "IDS(%s)", materialIds);
-        return null;
-    }
-
-    @Override
-    public List<Material> listMetaprojectMaterials(String sessionToken, IMetaprojectId metaprojectId)
-    {
-        logAccess(sessionToken, "list_metaproject_materials", "METAPROJECT_ID(%s)", metaprojectId);
-        return null;
-    }
-
-    @Override
-    public void registerMaterialType(String sessionToken, MaterialType entityType)
-    {
-        logTracking(sessionToken, "register_material_type", "CODE(%s)", entityType.getCode());
-    }
-
-    @Override
-    public void updateMaterialType(String sessionToken, EntityType entityType)
-    {
-        logTracking(sessionToken, "update_material_type", "CODE(%s)", entityType.getCode());
-    }
-
-    @Override
     public void registerSampleType(String sessionToken, SampleType entityType)
     {
         logTracking(sessionToken, "register_sample_type", "CODE(%s)", entityType.getCode());
@@ -1104,36 +1035,6 @@ final class CommonServerLogger extends AbstractServerLogger implements ICommonSe
     }
 
     @Override
-    public IEntityInformationHolderWithPermId getMaterialInformationHolder(String sessionToken,
-            MaterialIdentifier identifier)
-    {
-        logTracking(sessionToken, "get_material_information_holder", " IDENTIFIER(%S) ", identifier);
-        return null;
-    }
-
-    @Override
-    public Material getMaterialInfo(String sessionToken, MaterialIdentifier identifier)
-    {
-        logTracking(sessionToken, "getMaterialInfo", " IDENTIFIER(%S) ", identifier);
-        return null;
-    }
-
-    @Override
-    public Material getMaterialInfo(final String sessionToken, final TechId materialId)
-    {
-        logAccess(sessionToken, "get_material_info", "ID(%s)", materialId);
-        return null;
-    }
-
-    @Override
-    public Date updateMaterial(String sessionToken, TechId materialId,
-            List<IEntityProperty> properties, String[] metaprojects, Date version)
-    {
-        logTracking(sessionToken, "edit_material", "MATERIAL(%s)", materialId);
-        return null;
-    }
-
-    @Override
     public String generateCode(String sessionToken, String prefix, EntityKind entityKind)
     {
         logAccess(sessionToken, "generate_code", "PREFIX(%s) ENTITY_KIND(%s)", prefix, entityKind);
@@ -1159,13 +1060,6 @@ final class CommonServerLogger extends AbstractServerLogger implements ICommonSe
     public void deleteExperimentTypes(String sessionToken, List<String> entityTypesCodes)
     {
         logTracking(sessionToken, "delete_experiment_types", "CODES(%s)",
-                abbreviate(entityTypesCodes));
-    }
-
-    @Override
-    public void deleteMaterialTypes(String sessionToken, List<String> entityTypesCodes)
-    {
-        logTracking(sessionToken, "delete_material_types", "CODES(%s)",
                 abbreviate(entityTypesCodes));
     }
 
@@ -1412,13 +1306,6 @@ final class CommonServerLogger extends AbstractServerLogger implements ICommonSe
     }
 
     @Override
-    public void deleteMaterials(String sessionToken, List<TechId> materialIds, String reason)
-    {
-        logTracking(sessionToken, "delete_materials", "IDS(%s) REASON(%s)",
-                abbreviate(materialIds), reason);
-    }
-
-    @Override
     public int lockDatasets(String sessionToken, List<String> datasetCodes)
     {
         logTracking(sessionToken, "lockDatasets", "DATASETS(%s)", abbreviate(datasetCodes));
@@ -1503,15 +1390,6 @@ final class CommonServerLogger extends AbstractServerLogger implements ICommonSe
     }
 
     @Override
-    public void updateManagedPropertyOnMaterial(String sessionToken, TechId materialId,
-            IManagedProperty managedProperty, IManagedUiAction updateAction)
-    {
-        logTracking(sessionToken, "updateManagedPropertyOnMaterial",
-                "ID(%s) PROPERTY(%s) ACTION(%s)", materialId,
-                managedProperty.getPropertyTypeCode(), updateAction.getName());
-    }
-
-    @Override
     public String getDefaultPutDataStoreBaseURL(String sessionToken)
     {
         logAccess(sessionToken, "getDefaultPutDataStoreBaseURL");
@@ -1539,15 +1417,6 @@ final class CommonServerLogger extends AbstractServerLogger implements ICommonSe
             List<PropertyUpdates> modifiedProperties)
     {
         logTracking(sessionToken, "updateSampleProperty", "ID(%s) MODIFIED_PROPERTIES(%s)",
-                entityId, abbreviate(modifiedProperties));
-    }
-
-    @Override
-    public void updateMaterialProperties(String sessionToken, TechId entityId,
-            List<PropertyUpdates> modifiedProperties)
-
-    {
-        logTracking(sessionToken, "updateMaterialProperty", "ID(%s), MODIFIED_PROPERTIES(%s)",
                 entityId, abbreviate(modifiedProperties));
     }
 
@@ -1622,13 +1491,6 @@ final class CommonServerLogger extends AbstractServerLogger implements ICommonSe
     public List<DataStore> listDataStores()
     {
         logTracking("internal_call", "listDataStores", "");
-        return null;
-    }
-
-    @Override
-    public List<Material> searchForMaterials(String sessionToken, DetailedSearchCriteria criteria)
-    {
-        logAccess(sessionToken, "search_for_materials", "criteria(%s)", criteria);
         return null;
     }
 
@@ -1760,10 +1622,9 @@ final class CommonServerLogger extends AbstractServerLogger implements ICommonSe
                 assignmentsToAdd != null ? assignmentsToAdd : new MetaprojectAssignmentsIds();
 
         logAccess(sessionToken, "addToMetaproject",
-                "METAPROJECT_ID(%s), EXPERIMENTS(%s), SAMPLES(%s), DATA_SETS(%s), MATERIALS(%s)",
+                "METAPROJECT_ID(%s), EXPERIMENTS(%s), SAMPLES(%s), DATA_SETS(%s)",
                 metaprojectId, abbreviate(assignments.getExperiments()),
-                abbreviate(assignments.getSamples()), abbreviate(assignments.getDataSets()),
-                abbreviate(assignments.getMaterials()));
+                abbreviate(assignments.getSamples()), abbreviate(assignments.getDataSets()));
     }
 
     @Override
@@ -1774,10 +1635,9 @@ final class CommonServerLogger extends AbstractServerLogger implements ICommonSe
                 assignmentsToRemove != null ? assignmentsToRemove : new MetaprojectAssignmentsIds();
 
         logAccess(sessionToken, "removeFromMetaproject",
-                "METAPROJECT_ID(%s), EXPERIMENTS(%s), SAMPLES(%s), DATA_SETS(%s), MATERIALS(%s)",
+                "METAPROJECT_ID(%s), EXPERIMENTS(%s), SAMPLES(%s), DATA_SETS(%s)",
                 metaprojectId, abbreviate(assignments.getExperiments()),
-                abbreviate(assignments.getSamples()), abbreviate(assignments.getDataSets()),
-                abbreviate(assignments.getMaterials()));
+                abbreviate(assignments.getSamples()), abbreviate(assignments.getDataSets()));
     }
 
     @Override

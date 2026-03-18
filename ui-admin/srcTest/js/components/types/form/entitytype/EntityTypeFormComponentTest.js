@@ -29,7 +29,6 @@ export default class EntityTypeFormComponentTest extends ComponentTest {
     this.facade.loadType.mockReturnValue(Promise.resolve({}))
     this.facade.loadDynamicPlugins.mockReturnValue(Promise.resolve([]))
     this.facade.loadValidationPlugins.mockReturnValue(Promise.resolve([]))
-    this.facade.loadMaterials.mockReturnValue(Promise.resolve([]))
     this.facade.loadSamples.mockReturnValue(Promise.resolve([]))
     this.facade.loadVocabularies.mockReturnValue(Promise.resolve([]))
     this.facade.loadVocabularyTerms.mockReturnValue(Promise.resolve([]))

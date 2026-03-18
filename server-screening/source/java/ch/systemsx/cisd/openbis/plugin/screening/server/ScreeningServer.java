@@ -66,9 +66,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.TechId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.BasicProjectIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.CodeAndLabel;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ListMaterialCriteria;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Material;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Project;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.RoleWithHierarchy;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SampleParentWithDerived;
@@ -88,8 +85,6 @@ import ch.systemsx.cisd.openbis.plugin.generic.shared.IGenericServer;
 import ch.systemsx.cisd.openbis.plugin.screening.server.authorization.DatasetReferencePredicate;
 import ch.systemsx.cisd.openbis.plugin.screening.server.authorization.ExperimentIdentifierPredicate;
 import ch.systemsx.cisd.openbis.plugin.screening.server.authorization.ExperimentSearchCriteriaPredicate;
-import ch.systemsx.cisd.openbis.plugin.screening.server.authorization.MaterialExperimentFeatureVectorSummaryValidator;
-import ch.systemsx.cisd.openbis.plugin.screening.server.authorization.MaterialFeaturesOneExpPredicate;
 import ch.systemsx.cisd.openbis.plugin.screening.server.authorization.PlateIdentifierPredicate;
 import ch.systemsx.cisd.openbis.plugin.screening.server.authorization.PlateWellReferenceWithDatasetsValidator;
 import ch.systemsx.cisd.openbis.plugin.screening.server.authorization.ScreeningExperimentValidator;
@@ -104,8 +99,6 @@ import ch.systemsx.cisd.openbis.plugin.screening.server.logic.AnalysisSettings;
 import ch.systemsx.cisd.openbis.plugin.screening.server.logic.ExperimentFeatureVectorSummaryLoader;
 import ch.systemsx.cisd.openbis.plugin.screening.server.logic.FeatureVectorValuesLoader;
 import ch.systemsx.cisd.openbis.plugin.screening.server.logic.LogicalImageLoader;
-import ch.systemsx.cisd.openbis.plugin.screening.server.logic.MaterialFeatureVectorSummaryLoader;
-import ch.systemsx.cisd.openbis.plugin.screening.server.logic.MaterialFeaturesFromAllExperimentsLoader;
 import ch.systemsx.cisd.openbis.plugin.screening.server.logic.PlateContentLoader;
 import ch.systemsx.cisd.openbis.plugin.screening.server.logic.ScreeningApiImpl;
 import ch.systemsx.cisd.openbis.plugin.screening.server.logic.ScreeningUtils;
@@ -131,13 +124,10 @@ import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.ImageDatasetR
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.ImageRepresentationFormat;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.ImageSize;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.LoadImageConfiguration;
-import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.MaterialIdentifier;
-import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.MaterialTypeIdentifier;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.Plate;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.PlateIdentifier;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.PlateImageReference;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.PlateMetadata;
-import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.PlateWellMaterialMapping;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.PlateWellReferenceWithDatasets;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.WellIdentifier;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.AnalysisProcedures;
@@ -149,10 +139,6 @@ import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.ImageDatasetEn
 import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.ImageResolution;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.ImageSampleContent;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.LogicalImageInfo;
-import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.MaterialReplicaFeatureSummaryResult;
-import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.MaterialReplicaSummaryAggregationType;
-import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.MaterialSimpleFeatureVectorSummary;
-import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.MaterialSummarySettings;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.NewLibrary;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.PlateContent;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.PlateImages;
@@ -163,8 +149,6 @@ import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.WellReplicaIma
 import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.WellSearchCriteria;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.WellSearchCriteria.AnalysisProcedureCriteria;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.WellSearchCriteria.ExperimentSearchCriteria;
-import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.WellSearchCriteria.MaterialFeaturesManyExpCriteria;
-import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.WellSearchCriteria.MaterialFeaturesOneExpCriteria;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.WellSearchCriteria.SingleExperimentSearchCriteria;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.imaging.IImageResolutionLoader;
 
@@ -278,63 +262,12 @@ public final class ScreeningServer extends AbstractServer<IScreeningServer> impl
 
     @Override
     @RolesAllowed(RoleWithHierarchy.PROJECT_OBSERVER)
-    public PlateContent getPlateContent(String sessionToken,
-            @AuthorizationGuard(guardClass = SampleTechIdPredicate.class) TechId plateId)
-    {
-        Session session = getSession(sessionToken);
-        return PlateContentLoader.loadImagesAndMetadata(session, daoFactory.getSessionFactory().getCurrentSession(), businessObjectFactory,
-                managedPropertyEvaluatorFactory, plateId);
-    }
-
-    @Override
-    @RolesAllowed(RoleWithHierarchy.PROJECT_OBSERVER)
     public FeatureVectorDataset getFeatureVectorDataset(String sessionToken,
             @AuthorizationGuard(guardClass = DatasetReferencePredicate.class) DatasetReference dataset, CodeAndLabel featureName)
     {
         Session session = getSession(sessionToken);
         return PlateContentLoader.loadFeatureVectorDataset(session, daoFactory.getSessionFactory().getCurrentSession(), businessObjectFactory,
                 managedPropertyEvaluatorFactory, dataset, featureName);
-    }
-
-    @Override
-    @RolesAllowed(RoleWithHierarchy.PROJECT_OBSERVER)
-    public PlateImages getPlateContentForDataset(String sessionToken,
-            @AuthorizationGuard(guardClass = DataSetTechIdPredicate.class) TechId datasetId)
-    {
-        Session session = getSession(sessionToken);
-        return PlateContentLoader.loadImagesAndMetadataForDataset(session, daoFactory.getSessionFactory().getCurrentSession(), businessObjectFactory,
-                managedPropertyEvaluatorFactory, datasetId);
-    }
-
-    @Override
-    @RolesAllowed(RoleWithHierarchy.PROJECT_OBSERVER)
-    @ReturnValueFilter(validatorClass = WellContentValidator.class)
-    public List<WellContent> listPlateWells(String sessionToken,
-            @AuthorizationGuard(guardClass = WellSearchCriteriaPredicate.class) WellSearchCriteria materialCriteria)
-    {
-        Session session = getSession(sessionToken);
-        return WellContentLoader.load(session, businessObjectFactory, getDAOFactory(),
-                materialCriteria);
-    }
-
-    @Override
-    @RolesAllowed(RoleWithHierarchy.PROJECT_OBSERVER)
-    public List<WellReplicaImage> listWellImages(String sessionToken, TechId materialId,
-            @AuthorizationGuard(guardClass = ExperimentTechIdPredicate.class) TechId experimentId)
-    {
-        Session session = getSession(sessionToken);
-        return WellContentLoader.loadWithImages(session, businessObjectFactory, getDAOFactory(),
-                materialId, experimentId, createDefaultSettings());
-    }
-
-    @Override
-    @RolesAllowed(RoleWithHierarchy.PROJECT_OBSERVER)
-    public List<Material> listMaterials(String sessionToken,
-            @AuthorizationGuard(guardClass = WellSearchCriteriaPredicate.class) WellSearchCriteria materialCriteria)
-    {
-        Session session = getSession(sessionToken);
-        return WellContentLoader.loadMaterials(session, businessObjectFactory, getDAOFactory(),
-                materialCriteria);
     }
 
     @Override
@@ -398,13 +331,6 @@ public final class ScreeningServer extends AbstractServer<IScreeningServer> impl
 
     @Override
     @RolesAllowed(RoleWithHierarchy.PROJECT_OBSERVER)
-    public Material getMaterialInfo(String sessionToken, TechId materialId)
-    {
-        return commonServer.getMaterialInfo(sessionToken, materialId);
-    }
-
-    @Override
-    @RolesAllowed(RoleWithHierarchy.PROJECT_OBSERVER)
     public Vocabulary getVocabulary(String sessionToken, String code) throws UserFailureException
     {
         checkSession(sessionToken);
@@ -420,7 +346,7 @@ public final class ScreeningServer extends AbstractServer<IScreeningServer> impl
     {
         for (NewLibrary newLibrary : newLibraries)
         {
-            new LibraryRegistrationTask(sessionToken, newLibrary.getNewGenesOrNull(), newLibrary.getNewOligosOrNull(),
+            new LibraryRegistrationTask(sessionToken,
                     newLibrary.getNewSamplesWithType(), commonServer, genericServer, getDAOFactory()).doAction(new StringWriter());
         }
     }
@@ -443,63 +369,11 @@ public final class ScreeningServer extends AbstractServer<IScreeningServer> impl
                 {
                     for (NewLibrary newLibrary : newLibraries)
                     {
-                        new LibraryRegistrationTask(sessionToken, newLibrary.getNewGenesOrNull(), newLibrary.getNewOligosOrNull(),
+                        new LibraryRegistrationTask(sessionToken,
                                 newLibrary.getNewSamplesWithType(), commonServer, genericServer, getDAOFactory()).doAction(messageWriter);
                     }
                 }
             });
-    }
-
-    @Override
-    @RolesAllowed(RoleWithHierarchy.PROJECT_OBSERVER)
-    public List<Material> listExperimentMaterials(String sessionToken,
-            @AuthorizationGuard(guardClass = ExperimentTechIdPredicate.class) TechId experimentId, MaterialType materialType)
-    {
-        // TODO 2010-09-01, Piotr Buczek: move it to some BO when we have more queries like that
-        IScreeningQuery dao = createDAO(getDAOFactory());
-        DataIterator<Long> materialIdsIterator =
-                dao.getMaterialsForExperimentWells(experimentId.getId(), materialType.getId());
-        Collection<Long> materialIds = new ArrayList<Long>();
-        for (Long id : materialIdsIterator)
-        {
-            materialIds.add(id);
-        }
-        return commonServer.listMaterials(sessionToken,
-                ListMaterialCriteria.createFromMaterialIds(materialIds), true);
-    }
-
-    @Override
-    @RolesAllowed(RoleWithHierarchy.PROJECT_OBSERVER)
-    public ExperimentFeatureVectorSummary getExperimentFeatureVectorSummary(String sessionToken,
-            @AuthorizationGuard(guardClass = ExperimentTechIdPredicate.class) TechId experimentId,
-            AnalysisProcedureCriteria analysisProcedureCriteria)
-    {
-        Session session = getSession(sessionToken);
-        // NOTE: we want the settings to be passed form the client in future
-        MaterialSummarySettings settings = createDefaultSettings();
-        ExperimentFeatureVectorSummaryLoader experimentFeatureVectorSummaryLoader =
-                new ExperimentFeatureVectorSummaryLoader(session, businessObjectFactory,
-                        getDAOFactory(), null, settings);
-        return experimentFeatureVectorSummaryLoader.loadExperimentFeatureVectors(experimentId,
-                analysisProcedureCriteria, analysisSettings);
-    }
-
-    @Override
-    @RolesAllowed(RoleWithHierarchy.PROJECT_OBSERVER)
-    @ReturnValueFilter(validatorClass = MaterialExperimentFeatureVectorSummaryValidator.class)
-    public List<MaterialSimpleFeatureVectorSummary> getMaterialFeatureVectorsFromAllExperiments(
-            String sessionToken, MaterialFeaturesManyExpCriteria criteria)
-    {
-        Session session = getSession(sessionToken);
-        // NOTE: we want the settings to be passed form the client in future
-        MaterialSummarySettings settings = createDefaultSettings();
-
-        TechId projectTechIdOrNull =
-                tryFetchProjectId(sessionToken, criteria.getExperimentSearchCriteria());
-        return MaterialFeaturesFromAllExperimentsLoader.loadMaterialFeatureVectorsFromAllAssays(
-                session, businessObjectFactory, getDAOFactory(), criteria.getMaterialId(),
-                criteria.getAnalysisProcedureCriteria(), criteria.isComputeRanks(),
-                projectTechIdOrNull, settings);
     }
 
     private TechId tryFetchProjectId(String sessionToken,
@@ -519,29 +393,6 @@ public final class ScreeningServer extends AbstractServer<IScreeningServer> impl
         ProjectIdentifier projectIdentifier = new ProjectIdentifier(basicProjectIdentifier);
         Project project = commonServer.getProjectInfo(sessionToken, projectIdentifier);
         return new TechId(project);
-    }
-
-    public static MaterialSummarySettings createDefaultSettings()
-    {
-        MaterialSummarySettings settings = new MaterialSummarySettings();
-        settings.setAggregationType(MaterialReplicaSummaryAggregationType.MEDIAN);
-        settings.setFeatureCodes(new ArrayList<String>());
-        settings.setReplicaMatrialTypePatterns(new String[] { "GENE", "CONTROL", "COMPOUND" });
-        settings.setMaterialDetailsPropertyType(ScreeningConstants.GENE_SYMBOLS);
-        settings.setBiologicalReplicatePropertyTypeCodes("CONCENTRATION", "SIRNA");
-        return settings;
-    }
-
-    @Override
-    @RolesAllowed(RoleWithHierarchy.PROJECT_OBSERVER)
-    public MaterialReplicaFeatureSummaryResult getMaterialFeatureVectorSummary(String sessionToken,
-            @AuthorizationGuard(guardClass = MaterialFeaturesOneExpPredicate.class) MaterialFeaturesOneExpCriteria criteria)
-    {
-        Session session = getSession(sessionToken);
-        // NOTE: we want the settings to be passed form the client in future
-        MaterialSummarySettings settings = createDefaultSettings();
-        return MaterialFeatureVectorSummaryLoader.loadMaterialFeatureVectors(session,
-                businessObjectFactory, getDAOFactory(), criteria, settings);
     }
 
     // --------- IScreeningOpenbisServer - method signature should be changed with care
@@ -654,27 +505,6 @@ public final class ScreeningServer extends AbstractServer<IScreeningServer> impl
 
     @Override
     @RolesAllowed(RoleWithHierarchy.PROJECT_OBSERVER)
-    public List<PlateWellReferenceWithDatasets> listPlateWells(
-            String sessionToken,
-            @AuthorizationGuard(guardClass = ExperimentIdentifierPredicate.class) ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.ExperimentIdentifier experimentIdentifer,
-            MaterialIdentifier materialIdentifier, boolean findDatasets)
-    {
-        return createScreeningApiImpl(sessionToken).listPlateWells(experimentIdentifer,
-                materialIdentifier, findDatasets);
-    }
-
-    @Override
-    @RolesAllowed(RoleWithHierarchy.PROJECT_OBSERVER)
-    @ReturnValueFilter(validatorClass = PlateWellReferenceWithDatasetsValidator.class)
-    public List<PlateWellReferenceWithDatasets> listPlateWells(String sessionToken,
-            MaterialIdentifier materialIdentifier, boolean findDatasets)
-    {
-        return createScreeningApiImpl(sessionToken)
-                .listPlateWells(materialIdentifier, findDatasets);
-    }
-
-    @Override
-    @RolesAllowed(RoleWithHierarchy.PROJECT_OBSERVER)
     public List<WellIdentifier> listPlateWells(String sessionToken,
             @AuthorizationGuard(guardClass = PlateIdentifierPredicate.class) PlateIdentifier plateIdentifier)
     {
@@ -760,16 +590,6 @@ public final class ScreeningServer extends AbstractServer<IScreeningServer> impl
         return ScreeningUtils.filterNumericalDatasetsAnalysisProcedures(analysisProcedures);
     }
 
-    @Override
-    @RolesAllowed(RoleWithHierarchy.PROJECT_OBSERVER)
-    public List<PlateWellMaterialMapping> listPlateMaterialMapping(String sessionToken,
-            @AuthorizationGuard(guardClass = ScreeningPlateListReadOnlyPredicate.class) List<? extends PlateIdentifier> plates,
-            MaterialTypeIdentifier materialTypeIdentifierOrNull)
-    {
-        return createScreeningApiImpl(sessionToken).listPlateMaterialMapping(plates,
-                materialTypeIdentifierOrNull);
-    }
-
     private static IScreeningQuery createDAO(IDAOFactory daoFactory)
     {
         return QueryTool.getManagedQuery(IScreeningQuery.class);
@@ -813,14 +633,6 @@ public final class ScreeningServer extends AbstractServer<IScreeningServer> impl
         return MINOR_VERSION;
     }
 
-    @Override
-    @RolesAllowed(RoleWithHierarchy.PROJECT_OBSERVER)
-    public List<PlateMetadata> getPlateMetadataList(String sessionToken,
-            @AuthorizationGuard(guardClass = ScreeningPlateListReadOnlyPredicate.class) List<? extends PlateIdentifier> plateIdentifiers)
-            throws IllegalArgumentException
-    {
-        return createScreeningApiImpl(sessionToken).getPlateMetadata(plateIdentifiers);
-    }
 
     @Override
     @RolesAllowed(RoleWithHierarchy.PROJECT_OBSERVER)

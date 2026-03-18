@@ -14,15 +14,13 @@
  * limitations under the License.
  */
 package ch.systemsx.cisd.openbis.generic.shared.managed_property.structured;
-
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.managed_property.api.EntityLinkElementKind;
 import ch.systemsx.cisd.openbis.generic.shared.managed_property.api.IElement;
 import ch.systemsx.cisd.openbis.generic.shared.managed_property.api.IElementFactory;
 import ch.systemsx.cisd.openbis.generic.shared.managed_property.api.IEntityLinkElement;
 
 /**
- * For now we only expose methods for creation of Sample and Material links, but it is quite easy to add support for experiment and datasets links in
+ * For now we only expose methods for creation of Sample links, but it is quite easy to add support for experiment and datasets links in
  * the future.
  * 
  * @author Kaloyan Enimanev
@@ -57,13 +55,6 @@ public class ElementFactory implements IElementFactory
     public IEntityLinkElement createDataSetLink(String permId)
     {
         return new EntityLinkElement(EntityLinkElementKind.DATA_SET, permId);
-    }
-
-    @Override
-    public IEntityLinkElement createMaterialLink(String code, String typeCode)
-    {
-        String materialPermId = MaterialIdentifier.print(code, typeCode);
-        return new EntityLinkElement(EntityLinkElementKind.MATERIAL, materialPermId);
     }
 
     @Override

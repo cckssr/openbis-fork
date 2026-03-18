@@ -245,16 +245,6 @@ public class AbstractScreeningDAOWithoutContextTest extends
         return result;
     }
 
-    protected MaterialPE createMaterial(MaterialTypePE type, String code)
-    {
-        final MaterialPE material = new MaterialPE();
-        material.setCode(code);
-        material.setMaterialType(type);
-        material.setRegistrationDate(new Date());
-        material.setRegistrator(getSystemPerson());
-        return material;
-    }
-
     protected EntityTypePropertyTypePE createAssignment(EntityKind entityKind,
             EntityTypePE entityType, PropertyTypePE propertyType)
     {
@@ -270,7 +260,7 @@ public class AbstractScreeningDAOWithoutContextTest extends
     }
 
     protected final PropertyTypePE createPropertyType(final DataTypePE dataType, final String code,
-            final VocabularyPE vocabularyOrNull, final MaterialTypePE materialTypeOrNull)
+            final VocabularyPE vocabularyOrNull)
     {
         final PropertyTypePE propertyTypePE = new PropertyTypePE();
         propertyTypePE.setCode(code);
@@ -282,10 +272,6 @@ public class AbstractScreeningDAOWithoutContextTest extends
         {
             assertNotNull(vocabularyOrNull);
             propertyTypePE.setVocabulary(vocabularyOrNull);
-        }
-        if (DataTypeCode.MATERIAL.equals(dataType.getCode()))
-        {
-            propertyTypePE.setMaterialType(materialTypeOrNull);
         }
         return propertyTypePE;
     }

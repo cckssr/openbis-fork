@@ -43,13 +43,7 @@ public final class SequenceNameMapper extends StandardSequenceNameMapper
         map.put(TableNames.SAMPLE_RELATIONSHIPS_ALL_TABLE,
                 SequenceNames.SAMPLE_RELATIONSHIPS_SEQUENCE);
         map.put(TableNames.EXPERIMENTS_ALL_TABLE, SequenceNames.EXPERIMENT_SEQUENCE);
-        map.put(TableNames.MATERIAL_BATCHES_TABLE, SequenceNames.MATERIAL_BATCH_SEQUENCE);
         map.put(TableNames.DATA_STORES_TABLE, SequenceNames.DATA_STORE_SEQUENCE);
-        map.put(TableNames.MATERIAL_PROPERTIES_TABLE, SequenceNames.MATERIAL_PROPERTY_SEQUENCE);
-        map.put(TableNames.MATERIAL_PROPERTIES_HISTORY_TABLE,
-                SequenceNames.MATERIAL_PROPERTY_SEQUENCE);
-        map.put(TableNames.MATERIAL_TYPE_PROPERTY_TYPE_TABLE,
-                SequenceNames.MATERIAL_TYPE_PROPERTY_TYPE_SEQUENCE);
         map.put(TableNames.EXPERIMENT_TYPE_PROPERTY_TYPE_TABLE,
                 SequenceNames.EXPERIMENT_TYPE_PROPERTY_TYPE_SEQUENCE);
         map.put(TableNames.EXPERIMENT_PROPERTIES_TABLE, SequenceNames.EXPERIMENT_PROPERTY_SEQUENCE);
@@ -59,8 +53,6 @@ public final class SequenceNameMapper extends StandardSequenceNameMapper
                 SequenceNames.SAMPLE_TYPE_PROPERTY_TYPE_SEQUENCE);
         map.put(TableNames.DATA_SET_TYPE_PROPERTY_TYPE_TABLE,
                 SequenceNames.DATA_SET_TYPE_PROPERTY_TYPE_SEQUENCE);
-        map.put(TableNames.SAMPLE_MATERIAL_BATCHES_TABLE,
-                SequenceNames.SAMPLE_MATERIAL_BATCH_SEQUENCE);
         map.put(TableNames.SAMPLE_PROPERTIES_TABLE, SequenceNames.SAMPLE_PROPERTY_SEQUENCE);
         map.put(TableNames.SAMPLE_PROPERTIES_HISTORY_TABLE, SequenceNames.SAMPLE_PROPERTY_SEQUENCE);
         map.put(TableNames.CONTROLLED_VOCABULARY_TABLE,
@@ -90,7 +82,6 @@ public final class SequenceNameMapper extends StandardSequenceNameMapper
         add(set, DatabaseVersionLogDAO.DB_VERSION_LOG);
         add(set, TableNames.EXTERNAL_DATA_TABLE);
         add(set, TableNames.SAMPLE_INPUTS_TABLE);
-        add(set, TableNames.SAMPLE_MATERIAL_BATCHES_TABLE);
         add(set, TableNames.DATA_SET_RELATIONSHIPS_VIEW);
         add(set, TableNames.DATA_SET_RELATIONSHIPS_ALL_TABLE);
         add(set, TableNames.DATA_STORE_SERVICES_DATASET_TYPES_TABLE);

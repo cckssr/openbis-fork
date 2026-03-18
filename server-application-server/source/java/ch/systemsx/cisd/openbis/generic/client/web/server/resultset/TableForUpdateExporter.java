@@ -73,8 +73,6 @@ public class TableForUpdateExporter
                 return getDataSetTableForUpdate(
                         (GridRowModels<TableModelRowWithObject<AbstractExternalData>>) rows, lineSeparator,
                         commonServer, sessionToken);
-            case MATERIAL:
-                return "Export of materials for update is currently not supported.";
         }
         throw new IllegalArgumentException("Unspecified entity kind.");
     }

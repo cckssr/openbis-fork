@@ -40,9 +40,9 @@ public abstract class ObjectBaseTranslator<RECORD extends ObjectBaseRecord> exte
     }
 
     @Override
-    protected Object getObjectsRelations(TranslationContext context, Collection<Long> materialIds, EmptyFetchOptions fetchOptions)
+    protected Object getObjectsRelations(TranslationContext context, Collection<Long> objectIds, EmptyFetchOptions fetchOptions)
     {
-        List<RECORD> records = loadRecords(new LongOpenHashSet(materialIds));
+        List<RECORD> records = loadRecords(new LongOpenHashSet(objectIds));
 
         Map<Long, RECORD> recordMap = new HashMap<Long, RECORD>();
         for (RECORD record : records)
@@ -55,11 +55,11 @@ public abstract class ObjectBaseTranslator<RECORD extends ObjectBaseRecord> exte
 
     @SuppressWarnings("unchecked")
     @Override
-    protected void updateObject(TranslationContext context, Long materialId, ObjectHolder<RECORD> result, Object relations,
+    protected void updateObject(TranslationContext context, Long objectId, ObjectHolder<RECORD> result, Object relations,
             EmptyFetchOptions fetchOptions)
     {
         Map<Long, RECORD> recordMap = (Map<Long, RECORD>) relations;
-        RECORD record = recordMap.get(materialId);
+        RECORD record = recordMap.get(objectId);
         result.setObject(record);
     }
 

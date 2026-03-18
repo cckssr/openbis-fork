@@ -26,8 +26,6 @@ import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
 import ch.systemsx.cisd.openbis.generic.shared.ResourceNames;
 import ch.systemsx.cisd.openbis.generic.shared.basic.IIdentifierHolder;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityKind;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialIdentifier;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ProjectPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePropertyPE;
@@ -77,32 +75,6 @@ public class EntityInformationProvider implements IEntityInformationProvider
             case DATA_SET:
                 identifierHolderOrNull = daoFactory.getDataDAO().tryToFindDataSetByCode(permId);
                 break;
-            case MATERIAL:
-                MaterialIdentifier idOrNull = MaterialIdentifier.tryParseIdentifier(permId);
-                if (idOrNull == null)
-                {
-                    return null;
-                } else
-                {
-                    final MaterialPE materialOrNull =
-                            daoFactory.getMaterialDAO().tryFindMaterial(idOrNull);
-                    if (materialOrNull == null)
-                    {
-                        return null;
-                    } else
-                    {
-                        identifierHolderOrNull = new IIdentifierHolder()
-                            {
-
-                                @Override
-                                public String getIdentifier()
-                                {
-                                    return new MaterialIdentifier(materialOrNull.getCode(),
-                                            materialOrNull.getEntityType().getCode()).print();
-                                }
-                            };
-                    }
-                }
         }
         return identifierHolderOrNull == null ? null : identifierHolderOrNull.getIdentifier();
     }

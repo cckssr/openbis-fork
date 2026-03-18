@@ -38,7 +38,7 @@ public class SemanticAnnotationAuthorizationExecutor implements ISemanticAnnotat
     @RolesAllowed({ RoleWithHierarchy.INSTANCE_ADMIN, RoleWithHierarchy.INSTANCE_ETL_SERVER })
     @Capability("CREATE_SEMANTIC_ANNOTATION")
     @DatabaseCreateOrDeleteModification({ ObjectKind.SEMANTIC_ANNOTATION })
-    @DatabaseUpdateModification({ ObjectKind.PROPERTY_TYPE, ObjectKind.PROPERTY_TYPE_ASSIGNMENT, ObjectKind.MATERIAL_TYPE,
+    @DatabaseUpdateModification({ ObjectKind.PROPERTY_TYPE, ObjectKind.PROPERTY_TYPE_ASSIGNMENT,
             ObjectKind.EXPERIMENT_TYPE, ObjectKind.SAMPLE_TYPE, ObjectKind.DATASET_TYPE })
     public void canCreate(IOperationContext context, SemanticAnnotationPE annotation)
     {
@@ -56,7 +56,7 @@ public class SemanticAnnotationAuthorizationExecutor implements ISemanticAnnotat
     @RolesAllowed({ RoleWithHierarchy.INSTANCE_ADMIN, RoleWithHierarchy.INSTANCE_ETL_SERVER })
     @Capability("DELETE_SEMANTIC_ANNOTATION")
     @DatabaseCreateOrDeleteModification({ ObjectKind.SEMANTIC_ANNOTATION, ObjectKind.DELETION })
-    @DatabaseUpdateModification({ ObjectKind.PROPERTY_TYPE, ObjectKind.PROPERTY_TYPE_ASSIGNMENT, ObjectKind.MATERIAL_TYPE,
+    @DatabaseUpdateModification({ ObjectKind.PROPERTY_TYPE, ObjectKind.PROPERTY_TYPE_ASSIGNMENT,
             ObjectKind.EXPERIMENT_TYPE, ObjectKind.SAMPLE_TYPE, ObjectKind.DATASET_TYPE })
     public void canDelete(IOperationContext context, ISemanticAnnotationId id, SemanticAnnotationPE annotation)
     {

@@ -25,7 +25,7 @@ package ch.systemsx.cisd.openbis.generic.shared.dto.types;
  */
 public enum ExperimentTypeCode
 {
-    SIRNA_HCS("SIRNA_HCS"), COMPOUND_HCS("COMPOUND_HCS");
+    COMPOUND_HCS("COMPOUND_HCS");
 
     private final String code;
 

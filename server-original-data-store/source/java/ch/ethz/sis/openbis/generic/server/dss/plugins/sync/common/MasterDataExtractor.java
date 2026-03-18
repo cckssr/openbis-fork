@@ -41,9 +41,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentType
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.ExternalDms;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.fetchoptions.ExternalDmsFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.search.ExternalDmsSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.MaterialType;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.fetchoptions.MaterialTypeFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.MaterialTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.Plugin;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.fetchoptions.PluginFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.search.PluginSearchCriteria;
@@ -76,8 +73,6 @@ public class MasterDataExtractor
     private static final PropertyTypeSearchCriteria PROPERTY_TYPE_SEARCH_CRITERIA = new PropertyTypeSearchCriteria();
 
     private static final ExperimentTypeSearchCriteria EXPERIMENT_TYPE_SEARCH_CRITERIA = new ExperimentTypeSearchCriteria();
-
-    private static final MaterialTypeSearchCriteria MATERIAL_TYPE_SEARCH_CRITERIA = new MaterialTypeSearchCriteria();
 
     private static final SampleTypeSearchCriteria SAMPLE_TYPE_SEARCH_CRITERIA = new SampleTypeSearchCriteria();
 
@@ -119,7 +114,6 @@ public class MasterDataExtractor
             appendSampleTypes(xmlStreamWriter);
             appendExperimentTypes(xmlStreamWriter);
             appendDataSetTypes(xmlStreamWriter);
-            appendMaterialTypes(xmlStreamWriter);
             appendExternalDataManagementSystems(xmlStreamWriter);
             xmlStreamWriter.writeEndElement();
             return writer.toString();
@@ -222,7 +216,6 @@ public class MasterDataExtractor
     private void appendPropertyTypes(XMLStreamWriter out) throws XMLStreamException
     {
         PropertyTypeFetchOptions fetchOptions = new PropertyTypeFetchOptions();
-        fetchOptions.withMaterialType();
         fetchOptions.withVocabulary();
         List<PropertyType> propertyTypes = v3Api.searchPropertyTypes(sessionToken, PROPERTY_TYPE_SEARCH_CRITERIA, fetchOptions).getObjects();
         if (propertyTypes.isEmpty())
@@ -247,16 +240,6 @@ public class MasterDataExtractor
             if (propertyType.getDataType().name().equals(DataType.CONTROLLEDVOCABULARY.name()))
             {
                 writeAttributeIfNotNull(out, "vocabulary", propertyType.getVocabulary().getCode());
-            } else if (propertyType.getDataType().name().equals(DataType.MATERIAL.name()))
-            {
-                if (propertyType.getMaterialType() != null)
-                {
-                    writeAttributeIfNotNull(out, "material", propertyType.getMaterialType().getCode());
-                } else
-                {
-                    // for properties like "inhibitor_of" where it is of Material of Any Type
-                    writeAttributeIfNotNull(out, "material", "");
-                }
             }
             out.writeEndElement();
         }
@@ -309,28 +292,6 @@ public class MasterDataExtractor
         }
         String url = urlTemplate.replaceAll(BasicConstant.DEPRECATED_VOCABULARY_URL_TEMPLATE_TERM_PATTERN, code);
         return url.replaceAll(BasicConstant.VOCABULARY_URL_TEMPLATE_TERM_PATTERN, code);
-    }
-
-    private void appendMaterialTypes(XMLStreamWriter out) throws XMLStreamException
-    {
-        MaterialTypeFetchOptions fetchOptions = new MaterialTypeFetchOptions();
-        fetchOptions.withPropertyAssignments().withPropertyType();
-        fetchOptions.withPropertyAssignments().withPlugin();
-        fetchOptions.withValidationPlugin();
-        List<MaterialType> types = v3Api.searchMaterialTypes(sessionToken, MATERIAL_TYPE_SEARCH_CRITERIA, fetchOptions).getObjects();
-        if (types.isEmpty())
-        {
-            return;
-        }
-        out.writeStartElement("xmd:materialTypes");
-        for (MaterialType type : types)
-        {
-            writeTypeElement(out, "xmd:materialType", type);
-            writeAttributeIfNotNull(out, "validationPlugin", type.getValidationPlugin() != null ? type.getValidationPlugin().getName() : null);
-            appendPropertyAssignments(out, type.getPropertyAssignments());
-            out.writeEndElement();
-        }
-        out.writeEndElement();
     }
 
     private void appendExperimentTypes(XMLStreamWriter out) throws XMLStreamException

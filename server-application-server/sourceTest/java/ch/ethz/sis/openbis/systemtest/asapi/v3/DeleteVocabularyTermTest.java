@@ -27,8 +27,6 @@ import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.Material;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.id.MaterialPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
@@ -262,9 +260,6 @@ public class DeleteVocabularyTermTest extends AbstractVocabularyTest
         String materialPropertyName = "ORGANISM";
 
         VocabularyTermPermId termIdFly = new VocabularyTermPermId("FLY", vocabularyCode);
-
-        Material material = getMaterial(materialCode, materialTypeCode);
-        assertEquals(material.getProperty(materialPropertyName), termIdFly.getCode());
 
         VocabularyTermDeletionOptions options = new VocabularyTermDeletionOptions();
         options.setReason("Just for testing");
@@ -510,9 +505,6 @@ public class DeleteVocabularyTermTest extends AbstractVocabularyTest
         VocabularyTermPermId termIdGorilla = new VocabularyTermPermId("GORILLA", vocabularyCode);
         VocabularyTermPermId termIdFly = new VocabularyTermPermId("FLY", vocabularyCode);
 
-        Material material = getMaterial(materialCode, materialTypeCode);
-        assertEquals(material.getProperty(materialPropertyName), termIdFly.getCode());
-
         List<VocabularyTerm> terms = searchTerms(vocabularyCode);
         assertVocabularyTermPermIds(terms, termIdRat, termIdDog, termIdHuman, termIdGorilla, termIdFly);
 
@@ -522,13 +514,9 @@ public class DeleteVocabularyTermTest extends AbstractVocabularyTest
 
         v3api.deleteVocabularyTerms(sessionToken, Arrays.asList(termIdFly), options);
 
-        material = getMaterial(materialCode, materialTypeCode);
-        assertEquals(material.getProperty(materialPropertyName), termIdDog.getCode());
 
         terms = searchTerms(vocabularyCode);
         assertVocabularyTermPermIds(terms, termIdRat, termIdDog, termIdHuman, termIdGorilla);
-
-        assertMaterialsExists(new MaterialPermId(materialCode, materialTypeCode));
     }
 
     @Test

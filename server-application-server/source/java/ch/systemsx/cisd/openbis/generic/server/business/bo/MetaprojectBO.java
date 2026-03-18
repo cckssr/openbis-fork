@@ -41,7 +41,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MetaprojectIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.id.IObjectId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.id.dataset.IDataSetId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.id.experiment.IExperimentId;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.id.material.IMaterialId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.id.metaproject.IMetaprojectId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.id.metaproject.MetaprojectIdentifierId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.id.metaproject.MetaprojectTechIdId;
@@ -52,7 +51,6 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.EventPE.EntityType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EventType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.IEntityWithMetaprojects;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.MetaprojectPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePE;
@@ -72,8 +70,6 @@ public class MetaprojectBO extends AbstractBusinessObject implements IMetaprojec
 
     private IDataBO dataBO;
 
-    private IMaterialBO materialBO;
-
     private MetaprojectPE metaproject;
 
     private Map<Class<? extends IEntityWithMetaprojects>, List<Long>> changedEntitiesIds;
@@ -84,7 +80,7 @@ public class MetaprojectBO extends AbstractBusinessObject implements IMetaprojec
     private boolean dataChanged;
 
     public MetaprojectBO(final IDAOFactory daoFactory, IExperimentBO experimentBO,
-            ISampleBO sampleBO, IDataBO dataBO, IMaterialBO materialBO, final Session session,
+            ISampleBO sampleBO, IDataBO dataBO, final Session session,
             IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory,
             DataSetTypeWithoutExperimentChecker dataSetTypeChecker,
             IRelationshipService relationshipService)
@@ -94,7 +90,6 @@ public class MetaprojectBO extends AbstractBusinessObject implements IMetaprojec
         this.experimentBO = experimentBO;
         this.sampleBO = sampleBO;
         this.dataBO = dataBO;
-        this.materialBO = materialBO;
     }
 
     @Override
@@ -257,7 +252,6 @@ public class MetaprojectBO extends AbstractBusinessObject implements IMetaprojec
                 addToChangedEntities(ExperimentPE.class, listEntityIds(EntityKind.EXPERIMENT));
                 addToChangedEntities(SamplePE.class, listEntityIds(EntityKind.SAMPLE));
                 addToChangedEntities(DataPE.class, listEntityIds(EntityKind.DATA_SET));
-                addToChangedEntities(MaterialPE.class, listEntityIds(EntityKind.MATERIAL));
             }
             metaproject.setDescription(updates.getDescription());
             dataChanged = true;
@@ -286,12 +280,6 @@ public class MetaprojectBO extends AbstractBusinessObject implements IMetaprojec
     }
 
     @Override
-    public void addMaterials(List<? extends IMaterialId> materialIds)
-    {
-        addEntities(materialIds);
-    }
-
-    @Override
     public void removeExperiments(List<? extends IExperimentId> experimentIds)
     {
         removeEntities(experimentIds);
@@ -307,12 +295,6 @@ public class MetaprojectBO extends AbstractBusinessObject implements IMetaprojec
     public void removeDataSets(List<? extends IDataSetId> dataSetIds)
     {
         removeEntities(dataSetIds);
-    }
-
-    @Override
-    public void removeMaterials(List<? extends IMaterialId> materialIds)
-    {
-        removeEntities(materialIds);
     }
 
     private <T extends IObjectId> void addEntities(Collection<T> entityIds)
@@ -353,10 +335,7 @@ public class MetaprojectBO extends AbstractBusinessObject implements IMetaprojec
 
     private IEntityWithMetaprojects findById(IObjectId entityId)
     {
-        if (entityId instanceof IMaterialId)
-        {
-            return materialBO.tryFindByMaterialId((IMaterialId) entityId);
-        } else if (entityId instanceof ISampleId)
+        if (entityId instanceof ISampleId)
         {
             return sampleBO.tryFindBySampleId((ISampleId) entityId);
         } else if (entityId instanceof IDataSetId)
@@ -375,10 +354,7 @@ public class MetaprojectBO extends AbstractBusinessObject implements IMetaprojec
     {
         AuthorizationServiceUtils authorizationUtils = new AuthorizationServiceUtils(getDaoFactory(), findPerson());
 
-        if (entity instanceof MaterialPE)
-        {
-            return true;
-        } else if (entity instanceof ExperimentPE)
+        if (entity instanceof ExperimentPE)
         {
             return authorizationUtils.canAccessExperiment((ExperimentPE) entity);
         } else if (entity instanceof SamplePE)

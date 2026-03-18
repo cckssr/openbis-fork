@@ -33,7 +33,6 @@ import ch.systemsx.cisd.common.collection.CollectionUtils.ICollectionFilter;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IEncapsulatedBasicOpenBISService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.v2.IDataSetImmutable;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.v2.IExperimentImmutable;
-import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.v2.IMaterialImmutable;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.v2.IMetaprojectAssignments;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.v2.IMetaprojectContent;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.v2.IMetaprojectImmutable;
@@ -43,7 +42,6 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.v2.ISampleImmuta
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.v2.ISearchService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.v2.ISpaceImmutable;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.v2.IVocabularyImmutable;
-import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.v2.MaterialIdentifierCollection;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.Translator;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SampleFetchOption;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SearchCriteria;
@@ -52,10 +50,6 @@ import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SearchCriteria.MatchCl
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityTypePropertyType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Experiment;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ListMaterialCriteria;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Material;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialIdentifier;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Metaproject;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Sample;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Vocabulary;
@@ -213,80 +207,6 @@ public class SearchService implements ISearchService
     }
 
     @Override
-    public List<IMaterialImmutable> listMaterials(MaterialIdentifierCollection identifierCollection)
-    {
-        final Set<String> identifiers = new HashSet<String>(identifierCollection.getIdentifiers());
-        Set<String> searchedTypes = extractMaterialTypes(identifierCollection);
-
-        List<ch.systemsx.cisd.openbis.generic.shared.basic.dto.Material> accumulatedResults =
-                findAllMaterials(searchedTypes);
-
-        List<ch.systemsx.cisd.openbis.generic.shared.basic.dto.Material> filteredByIdentifier =
-                CollectionUtils
-                        .filter(accumulatedResults,
-                                new ICollectionFilter<ch.systemsx.cisd.openbis.generic.shared.basic.dto.Material>()
-                                    {
-
-                                        @Override
-                                        public boolean isPresent(Material element)
-                                        {
-                                            return identifiers.contains(element.getIdentifier());
-                                        }
-
-                                    });
-        return translate(filteredByIdentifier);
-    }
-
-    private Set<String> extractMaterialTypes(MaterialIdentifierCollection identifierCollection)
-    {
-        Set<String> searchedTypes = new HashSet<String>();
-        for (String stringIdentifier : identifierCollection.getIdentifiers())
-        {
-            MaterialIdentifier identifier = MaterialIdentifier.tryParseIdentifier(stringIdentifier);
-            searchedTypes.add(identifier.getTypeCode());
-        }
-        return searchedTypes;
-    }
-
-    private List<ch.systemsx.cisd.openbis.generic.shared.basic.dto.Material> findAllMaterials(
-            Set<String> searchedTypes)
-    {
-        List<ch.systemsx.cisd.openbis.generic.shared.basic.dto.Material> accumulatedResults =
-                new ArrayList<ch.systemsx.cisd.openbis.generic.shared.basic.dto.Material>();
-        for (String typeCode : searchedTypes)
-        {
-            MaterialType materialType = new MaterialType();
-            materialType.setCode(typeCode);
-            List<ch.systemsx.cisd.openbis.generic.shared.basic.dto.Material> materialsOfType =
-                    openBisService.listMaterials(
-                            ListMaterialCriteria.createFromMaterialType(materialType), true);
-            accumulatedResults.addAll(materialsOfType);
-        }
-        return accumulatedResults;
-    }
-
-    @Override
-    public List<IMaterialImmutable> listAllMaterials(String materialTypeCode)
-    {
-        MaterialType materialType = new MaterialType();
-        materialType.setCode(materialTypeCode);
-        List<ch.systemsx.cisd.openbis.generic.shared.basic.dto.Material> materialsOfType =
-                openBisService.listMaterials(
-                        ListMaterialCriteria.createFromMaterialType(materialType), true);
-        return translate(materialsOfType);
-    }
-
-    private List<IMaterialImmutable> translate(List<Material> materials)
-    {
-        List<IMaterialImmutable> result = new ArrayList<IMaterialImmutable>();
-        for (Material material : materials)
-        {
-            result.add(new MaterialImmutable(material));
-        }
-        return result;
-    }
-
-    @Override
     public IVocabularyImmutable searchForVocabulary(String code)
     {
         return getVocabulary(code);
@@ -311,13 +231,6 @@ public class SearchService implements ISearchService
     {
         return listPropertyDefinitions(code,
                 ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind.EXPERIMENT);
-    }
-
-    @Override
-    public List<IPropertyAssignmentImmutable> listPropertiesDefinitionsForMaterialType(String code)
-    {
-        return listPropertyDefinitions(code,
-                ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind.MATERIAL);
     }
 
     @Override
@@ -477,27 +390,6 @@ public class SearchService implements ISearchService
         ch.systemsx.cisd.openbis.generic.shared.basic.dto.Sample sampleOrNull =
                 openBisService.tryGetSampleByPermId(permId);
         return (null == sampleOrNull) ? null : new SampleImmutable(sampleOrNull);
-    }
-
-    @Override
-    public IMaterialImmutable getMaterial(String materialCode, String materialType)
-    {
-        MaterialIdentifier materialIdentifier = new MaterialIdentifier(materialCode, materialType);
-        ch.systemsx.cisd.openbis.generic.shared.basic.dto.Material materialOrNull =
-                openBisService.tryGetMaterial(materialIdentifier);
-        return (null == materialOrNull) ? null : new MaterialImmutable(materialOrNull);
-    }
-
-    @Override
-    public IMaterialImmutable getMaterial(String identifier)
-    {
-        MaterialIdentifier materialId = MaterialIdentifier.tryParseIdentifier(identifier);
-        if (materialId == null)
-        {
-            throw new IllegalArgumentException("Incorrect material identifier format " + identifier
-                    + ". Expected code (type)");
-        }
-        return getMaterial(materialId.getCode(), materialId.getTypeCode());
     }
 
     @Override

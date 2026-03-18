@@ -157,17 +157,4 @@ public class BasicEntityDescriptionPredicateTest extends AuthorizationTestCase
         context.assertIsSatisfied();
     }
 
-    @Test
-    public void testSuccessfulEvaluationForMaterial()
-    {
-        BasicEntityDescription entityDescription = new BasicEntityDescription(EntityKind.MATERIAL, "M1 (MT)");
-        BasicEntityDescriptionPredicate predicate = new BasicEntityDescriptionPredicate();
-        prepareProvider(createSpaces());
-        predicate.init(provider);
-
-        Status status = predicate.doEvaluation(createPerson(), createRoles(false), entityDescription);
-
-        assertEquals(Status.OK, status);
-        context.assertIsSatisfied();
-    }
 }

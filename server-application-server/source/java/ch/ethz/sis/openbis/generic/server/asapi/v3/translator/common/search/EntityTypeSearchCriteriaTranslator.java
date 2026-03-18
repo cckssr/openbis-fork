@@ -21,7 +21,6 @@ import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetAttributeSearchFieldKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DetailedSearchField;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExperimentAttributeSearchFieldKind;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialAttributeSearchFieldKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SampleAttributeSearchFieldKind;
 
 /**
@@ -53,9 +52,6 @@ public class EntityTypeSearchCriteriaTranslator extends AbstractFieldFromComposi
         } else if (SearchObjectKind.DATA_SET.equals(objectKind))
         {
             return DetailedSearchField.createAttributeField(DataSetAttributeSearchFieldKind.DATA_SET_TYPE);
-        } else if (SearchObjectKind.MATERIAL.equals(objectKind))
-        {
-            return DetailedSearchField.createAttributeField(MaterialAttributeSearchFieldKind.MATERIAL_TYPE);
         } else if (SearchObjectKind.SAMPLE.equals(objectKind))
         {
             return DetailedSearchField.createAttributeField(SampleAttributeSearchFieldKind.SAMPLE_TYPE);

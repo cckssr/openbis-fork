@@ -106,6 +106,12 @@ function GridView(gridModel) {
 			for(var j = 0; j < this._gridModel.numColumns; j++) {
 			    var id = this._gridModel.gridId + "-" + rowLabel + "-" + (j+1);
 				var $newColumn = $("<td id = '" + id + "'>");
+				if(this._gridModel.gridType === GridType.RACK) {
+                    $newColumn.addClass("gridTypeRack");
+                }
+				if(this._gridModel.gridType === GridType.BOX) {
+                    $newColumn.addClass("gridTypeBox");
+                }
 
 				if(this._gridModel.isDragable) {
 					$newColumn.on({
@@ -201,7 +207,13 @@ function GridView(gridModel) {
                     }
                     var storageBoxId = this._gridModel.gridId + "-" + rowLabel + "-" + posY + "-storage-box-" + i;
 
-					var labelContainer = $("<div>", { class: "storageBox", id : storageBoxId }).text(labels[i].displayName);
+					var labelContainer = $("<div>", { class: "storageLabel", id : storageBoxId }).text(labels[i].displayName);
+                    if(this._gridModel.gridType === GridType.RACK) {
+                        labelContainer.addClass("gridTypeRackLabel");
+                    }
+                    if(this._gridModel.gridType === GridType.BOX) {
+                        labelContainer.addClass("gridTypeBoxLabel");
+                    }
 					if (sample) {
 						var tooltip = PrintUtil.getTable(sample, false, optSampleTitle, 'inspectorWhiteFont', 
 								'colorEncodedWellAnnotations-holder-' + sample.permId, null, null);
@@ -295,7 +307,12 @@ function GridView(gridModel) {
 	this._selectPosition = function(posX, posY, label) { //To give user feedback so he knows what he have selected
 		if(this._gridTable && posX > 0 && posY > 0) {//API only available if the table is loaded and 0 positions are labels that can't be selected
 			if(!this._gridModel.isSelectMultiple) {
-				this._gridTable.find("td").removeClass("rackSelected");
+                    if(this._gridModel.gridType === GridType.RACK) {
+                        this._gridTable.find("td").removeClass("gridTypeRackSelected");
+                    }
+                    if(this._gridModel.gridType === GridType.BOX) {
+                        this._gridTable.find("td").removeClass("gridTypeBoxSelected");
+                    }
 			}
 			
 			var rows = this._gridTable.find("tr");
@@ -303,11 +320,23 @@ function GridView(gridModel) {
 			var cell = $(columns[posY-1]); //-1 because the th tag is skipped by the selector
 			var cellClasses = cell.attr("class");
 			
-			if(this._gridModel.isSelectMultiple && cellClasses && cellClasses.indexOf("rackSelected") !== -1) {
-				cell.removeClass("rackSelected");
+			if(this._gridModel.isSelectMultiple && cellClasses &&
+			    (cellClasses.indexOf("gridTypeRackSelected") !== -1 || cellClasses.indexOf("gridTypeBoxSelected") !== -1)
+			) {
+				                    if(this._gridModel.gridType === GridType.RACK) {
+                                        cell.removeClass("gridTypeRackSelected");
+                                    }
+                                    if(this._gridModel.gridType === GridType.BOX) {
+                                        cell.removeClass("gridTypeBoxSelected");
+                                    }
 				return false;
 			} else {
-				cell.addClass("rackSelected");
+				                    if(this._gridModel.gridType === GridType.RACK) {
+                                        cell.addClass("gridTypeRackSelected");
+                                    }
+                                    if(this._gridModel.gridType === GridType.BOX) {
+                                        cell.addClass("gridTypeBoxSelected");
+                                    }
 				return true;
 			}
 			

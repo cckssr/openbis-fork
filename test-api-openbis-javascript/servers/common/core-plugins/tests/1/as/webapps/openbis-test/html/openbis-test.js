@@ -16,19 +16,6 @@ var createFacadeAndLogin = function(action, urlOrNull, timeoutOrNull) {
 	createFacadeAndLoginForUserAndPassword(testUserId, testUserPassword, action, url, timeoutOrNull);
 }
 
-var createMaterialIdentifier = function(identifierString) {
-	var parts = identifierString.split("/");
-
-	return {
-		"@type" : "MaterialIdentifierGeneric",
-		"materialTypeIdentifier" : {
-			"@type" : "MaterialTypeIdentifierGeneric",
-			"materialTypeCode" : parts[1]
-		},
-		"materialCode" : parts[2]
-	};
-}
-
 var createMetaprojectIdentifierId = function(identifierString) {
 	return {
 		"@type" : "MetaprojectIdentifierId",
@@ -1079,75 +1066,6 @@ test("listProjectsOnBehalfOfUser()", function() {
 		facade.listProjectsOnBehalfOfUser(userId, function(response) {
 			assertObjectsCount(response.result, 1);
 			assertObjectsWithCodes(response.result, [ "TEST-PROJECT" ]);
-			facade.close();
-		});
-	});
-});
-
-test("getMaterialByCodes()", function() {
-	createFacadeAndLogin(function(facade) {
-		var materialIdentifiers = [ createMaterialIdentifier("/GENE/G1") ];
-
-		facade.getMaterialByCodes(materialIdentifiers, function(response) {
-			assertObjectsCount(response.result, 1);
-			assertObjectsWithValues(response.result, 'materialCode', [ "G1" ]);
-			facade.close();
-		});
-	});
-});
-
-test("searchForMaterials()", function() {
-	createFacadeAndLogin(function(facade) {
-		var materialCodes = [ "G1" ];
-		var searchCriteria = createSearchCriteriaForCodes(materialCodes);
-
-		facade.searchForMaterials(searchCriteria, function(response) {
-			assertObjectsCount(response.result, 1);
-			assertObjectsWithValues(response.result, 'materialCode', [ "G1" ]);
-			facade.close();
-		});
-	});
-});
-
-test("searchForMaterials() withRegistratorUserId", function() {
-	createFacadeAndLogin(function(facade) {
-
-		var searchCriteria = {
-			"@type" : "SearchCriteria",
-			matchClauses : [ {
-				"@type" : "AttributeMatchClause",
-				attribute : "REGISTRATOR_USER_ID",
-				fieldType : "ATTRIBUTE",
-				desiredValue : "etlserver"
-			} ],
-			operator : "MATCH_ANY_CLAUSES"
-		};
-
-		facade.searchForMaterials(searchCriteria, function(response) {
-			assertObjectsCount(response.result, 2);
-			assertObjectsWithValues(response.result, "materialCode", [ "SIRNA-3", "SIRNA-4" ]);
-			facade.close();
-		});
-	});
-});
-
-test("searchForMaterials() withModifierUserId", function() {
-	createFacadeAndLogin(function(facade) {
-
-		var searchCriteria = {
-			"@type" : "SearchCriteria",
-			matchClauses : [ {
-				"@type" : "AttributeMatchClause",
-				attribute : "MODIFIER_USER_ID",
-				fieldType : "ATTRIBUTE",
-				desiredValue : "etlserver"
-			} ],
-			operator : "MATCH_ANY_CLAUSES"
-		};
-
-		facade.searchForMaterials(searchCriteria, function(response) {
-			// search by a modifier not supported yet
-			assertObjectsCount(response.result, 0);
 			facade.close();
 		});
 	});

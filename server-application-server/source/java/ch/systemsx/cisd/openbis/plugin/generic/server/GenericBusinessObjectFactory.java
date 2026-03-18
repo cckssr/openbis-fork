@@ -21,14 +21,10 @@ import ch.systemsx.cisd.openbis.generic.server.business.bo.IDataBO;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.IDataSetTable;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.IExperimentBO;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.IExperimentTable;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.IMaterialBO;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.IMaterialTable;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.IProjectBO;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.ISampleBO;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.ISampleTable;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.ITrashBO;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.materiallister.IMaterialLister;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.materiallister.MaterialLister;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.samplelister.ISampleLister;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.samplelister.SampleLister;
 import ch.systemsx.cisd.openbis.generic.shared.dto.Session;
@@ -68,21 +64,9 @@ public final class GenericBusinessObjectFactory extends AbstractPluginBusinessOb
     }
 
     @Override
-    public IMaterialBO createMaterialBO(final Session session)
-    {
-        return getCommonBusinessObjectFactory().createMaterialBO(session);
-    }
-
-    @Override
     public final ISampleTable createSampleTable(final Session session)
     {
         return getCommonBusinessObjectFactory().createSampleTable(session);
-    }
-
-    @Override
-    public IMaterialTable createMaterialTable(Session session)
-    {
-        return getCommonBusinessObjectFactory().createMaterialTable(session);
     }
 
     @Override
@@ -113,13 +97,6 @@ public final class GenericBusinessObjectFactory extends AbstractPluginBusinessOb
     public ISampleLister createSampleLister(Session session)
     {
         return SampleLister.create(getDaoFactory(), session.getBaseIndexURL(), session
-                .tryGetPerson().getId());
-    }
-
-    @Override
-    public IMaterialLister createMaterialLister(Session session)
-    {
-        return MaterialLister.create(getDaoFactory(), session.getBaseIndexURL(), session
                 .tryGetPerson().getId());
     }
 

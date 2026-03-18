@@ -64,8 +64,6 @@ public class WebAppProperties
         entityTypes.put(EntityKind.SAMPLE, getPropertyStringValues(WebAppProperty.SAMPLE_TYPES));
         entityTypes
                 .put(EntityKind.DATA_SET, getPropertyStringValues(WebAppProperty.DATA_SET_TYPES));
-        entityTypes
-                .put(EntityKind.MATERIAL, getPropertyStringValues(WebAppProperty.MATERIAL_TYPES));
         return entityTypes;
     }
 

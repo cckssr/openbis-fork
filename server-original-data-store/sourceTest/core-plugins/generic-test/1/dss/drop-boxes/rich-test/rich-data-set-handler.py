@@ -40,30 +40,14 @@ def create_experiment(transaction):
     add_attachment(exp, transaction)
     return exp
 
-def createMaterials(transaction):
-    for x in range(0,60):
-        mat = transaction.createNewMaterial("RM_%d" % x, "SLOW_GENE")
-        mat.setPropertyValue("GENE_SYMBOL", "RM_%d_S" %x)
-
 def createSamples(transaction):
     sample = transaction.createNewSample('/RICH_SPACE/SAMPLE123', 'DYNAMIC_PLATE')
     add_attachment(sample, transaction)
-
-def updateMaterial(transaction):
-    ma = transaction.getMaterialForUpdate("AD3", "VIRUS");
-    ma.setPropertyValue("DESCRIPTION", "modified description");
 
 def updateExperiment(transaction):
     ex = transaction.getExperimentForUpdate("/CISD/NEMO/EXP1")
     ex.setPropertyValue("DESCRIPTION", "modified experiment description")
 
-def createBacterias(transaction):
-    vocabulary = transaction.getSearchService().searchForVocabulary("ORGANISM")
-    for term in vocabulary.getTerms():
-        mat = transaction.createNewMaterial("BC_%s" % term.getCode(), "BACTERIUM")
-        mat.setPropertyValue("DESCRIPTION", term.getDescription())
-        mat.setPropertyValue("ORGANISM", term.getCode())
-        
 def check_get_by_id_methods(transaction):
     ss = transaction.getSearchService()
     if ss.getSample("/CISD/CP-TEST-1") != ss.getSampleByIdentifier("/CISD/CP-TEST-1"):
@@ -105,19 +89,10 @@ def process(transaction):
     link.setExternalCode("EX_CODE")
     link.setExternalDataManagementSystem(transaction.getExternalDataManagementSystem("DMS_1"))
 
-    # register many materials
-    createMaterials(transaction)
-    
-    # update material
-    updateMaterial(transaction) 
-
     # update existing experiment
     updateExperiment(transaction)
 
     # register samples
     createSamples(transaction)
-    
-    # read controlled vocabularies and create materials
-    createBacterias(transaction)
     
     transaction.getRegistrationContext().getPersistentMap().put("email_text", "rich_email_text")

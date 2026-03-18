@@ -1,9 +1,15 @@
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import ch.ethz.sis.openbis.generic.OpenBIS;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.RoCrateService;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.params.ExportParams;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.response.AsyncJob;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.response.result.AsyncResult;
+import ch.ethz.sis.rocrateserver.openapi.v1.service.response.result.AsyncResults;
 import ch.ethz.sis.rocrateserver.startup.StartupMain;
+import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.ws.rs.core.MediaType;
@@ -11,12 +17,14 @@ import jakarta.ws.rs.core.Response;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -38,6 +46,18 @@ public class EndToEndTests extends AbstractTest
     @BeforeClass
     public void startQuarkus() throws IOException {
         StartupMain.main(new String[] { "src/main/resources/service.properties" });
+    }
+
+    @BeforeMethod
+    public void setUp() throws IOException
+    {
+        File emailFolder = new File("build/mail");
+        if(emailFolder.exists())
+        {
+            for(File f : emailFolder.listFiles()) {
+                f.delete();
+            }
+        }
     }
 
     @Test
@@ -501,6 +521,82 @@ public class EndToEndTests extends AbstractTest
     {
         testExport(RoCrateService.APPLICATION_LD_JSON,
                 "[\"/PUBLICATIONS/PUBLIC_REPOSITORIES/PUB29\"]");
+
+    }
+
+    @Test(enabled = false)
+    public void testExportWithEmail()
+            throws Exception
+    {
+        getConfiguration();
+
+        OpenBIS openBIS = new OpenBIS("http://localhost:8888", Integer.MAX_VALUE);
+        openBIS.login(username, password);
+
+        String export_type = RoCrateService.APPLICATION_ZIP;
+        io.restassured.response.Response response = given()
+                .header(HEADER_API_KEY, openBIS.getSessionToken())
+                .header("openbis.with-levels-below", "true")
+                .header("Content-Type", "application/json")
+                .header(ExportParams.EXPORT_MIME_TYPE_HEADER, export_type)
+                .header("openbis.send-email", "true")
+                .body("[\"/DEFAULT/DEFAULT/DEFAULT\"]")
+                .when().post("http://localhost:8086/openbis/open-api/ro-crate/export")
+                .then()
+                .header("Content-Type", "application/json")
+                .statusCode(Response.Status.ACCEPTED.getStatusCode())
+                .extract()
+                .response();
+
+        String bodyString = response.getBody().asString();
+        ObjectMapper objectMapper = new ObjectMapper();
+        AsyncJob asyncJob = objectMapper.readValue(bodyString, AsyncJob.class);
+
+        String jobId = asyncJob.getJobId();
+        boolean done = false;
+        AsyncResult asyncResult = null;
+        while (!done)
+        {
+            io.restassured.response.Response payLoadResponse =
+                    given().header(HEADER_API_KEY, openBIS.getSessionToken())
+                            .header("jobID", jobId)
+                            .when()
+                            .get("http://localhost:8086/openbis/open-api/ro-crate/status")
+                            .then()
+                            .extract()
+                            .response();
+
+            String resultString = payLoadResponse.getBody().asString();
+            AsyncResults results = objectMapper.readValue(resultString, AsyncResults.class);
+            assertEquals(1, results.getJobs().length);
+            asyncResult = results.getJobs()[0];
+
+            if (asyncResult.getStatus().equals("COMPLETED"))
+            {
+                done = true;
+            }
+            if (asyncResult.getStatus().equals("FAILED"))
+            {
+                fail(String.join(",", asyncResult.getErrors()));
+            }
+            TimeUnit.SECONDS.sleep(3);
+        }
+
+        File emailFolder = new File("build/mail");
+        File[] files = emailFolder.listFiles();
+        assertEquals(1, files.length);
+        assertTrue(files[0].getName().matches("email.*"));
+        List<String> lines = FileUtilities.loadToStringList(files[0]);
+        assertEquals(6, lines.size());
+        assertTrue(lines.get(0).startsWith("Date: "));
+        assertEquals("From: rocrate_server@localhost", lines.get(1));
+        assertEquals("To: franz-josef.elmer@systemsx.ch", lines.get(2));
+        assertEquals("Subject: openBIS RoCrate Export Download Ready", lines.get(3));
+        assertEquals("Content:", lines.get(4));
+
+        String expectedUrl = "http://localhost:8086/openbis/open-api/ro-crate/download?jobId=" + jobId + "&apiKey=" + openBIS.getSessionToken();
+        assertEquals(expectedUrl, lines.get(5));
+
 
     }
 

@@ -64,7 +64,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.ICodeHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IDataSetsHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IExperimentHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IExperimentsHolder;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IMaterialsHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IModifierHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IOwnerHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IParentChildrenHolder;
@@ -105,9 +104,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.history.HistoryEntry;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.history.IRelationType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.history.PropertyHistoryEntry;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.history.RelationHistoryEntry;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.Material;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.create.MaterialTypeCreation;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.id.MaterialPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.OperationExecution;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.pat.PersonalAccessToken;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.pat.create.PersonalAccessTokenCreation;
@@ -166,14 +162,12 @@ import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.ethz.sis.shared.log.standard.handlers.BufferedAppender;
 import ch.systemsx.cisd.common.test.AssertionUtil;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.IGeneralInformationService;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.RoleWithHierarchy;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EventPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EventPE.EntityType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EventType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentPE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.MetaprojectPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePE;
@@ -367,17 +361,6 @@ public class AbstractTest extends SystemTestCase
         });
     }
 
-    protected void assertMaterialsNotFetched(final IMaterialsHolder holder)
-    {
-        assertNotFetched(new IDelegatedAction()
-        {
-            @Override
-            public void execute()
-            {
-                holder.getMaterials();
-            }
-        });
-    }
 
     protected void assertPhysicalDataNotFetched(final DataSet dataSet)
     {
@@ -643,17 +626,6 @@ public class AbstractTest extends SystemTestCase
         });
     }
 
-    protected void assertMaterialTypeNotFetched(final PropertyType propertyType)
-    {
-        assertNotFetched(new IDelegatedAction()
-        {
-            @Override
-            public void execute()
-            {
-                propertyType.getMaterialType();
-            }
-        });
-    }
 
     protected void assertSummaryNotFetched(final OperationExecution execution)
     {
@@ -1247,24 +1219,6 @@ public class AbstractTest extends SystemTestCase
         assertSamplePermIdsInOrder(Arrays.asList(samples), expectedPermIds);
     }
 
-    protected static void assertMaterialIdentifiersInOrder(final Collection<Material> materials,
-            final String... expectedIdentifiers)
-    {
-        assertEquals(materials.stream().map(material -> material.getPermId().toString())
-                .collect(Collectors.toList()), Arrays.asList(expectedIdentifiers));
-    }
-
-    protected static void assertMaterialPermIds(Collection<Material> materials, MaterialPermId... expectedPermIds)
-    {
-        Set<MaterialPermId> actualSet = new HashSet<MaterialPermId>();
-        for (Material material : materials)
-        {
-            actualSet.add(material.getPermId());
-        }
-
-        assertCollectionContainsOnly(actualSet, expectedPermIds);
-    }
-
     protected static void assertVocabularyTermPermIds(Collection<VocabularyTerm> terms, VocabularyTermPermId... expectedPermIds)
     {
         Set<VocabularyTermPermId> actualSet = new HashSet<VocabularyTermPermId>();
@@ -1321,16 +1275,6 @@ public class AbstractTest extends SystemTestCase
         assertEquals(dataSets.size(), permIds.length);
     }
 
-    protected void assertMaterialsExists(MaterialPermId... permIds)
-    {
-        Collection<MaterialIdentifier> identifiers = new HashSet<MaterialIdentifier>();
-        for (MaterialPermId permId : permIds)
-        {
-            identifiers.add(new MaterialIdentifier(permId.getCode(), permId.getTypeCode()));
-        }
-        List<MaterialPE> materials = daoFactory.getMaterialDAO().listMaterialsByMaterialIdentifier(identifiers);
-        assertEquals(materials.size(), permIds.length);
-    }
 
     protected void assertExperimentsRemoved(Long... ids)
     {
@@ -1455,7 +1399,6 @@ public class AbstractTest extends SystemTestCase
         fo.withAttachments();
         fo.withDataSets();
         fo.withHistory();
-        fo.withMaterialProperties();
         fo.withModifier();
         fo.withProject();
         fo.withProperties();
@@ -1573,18 +1516,6 @@ public class AbstractTest extends SystemTestCase
         v3api.deletePropertyTypes(sessionToken, List.of(propertyTypeIds), deletionOptions);
     }
 
-    protected PropertyTypePermId createAMaterialPropertyType(final String sessionToken,
-            final IEntityTypeId materialTypeId)
-    {
-        final PropertyTypeCreation creation = new PropertyTypeCreation();
-        creation.setCode("TYPE-" + System.currentTimeMillis());
-        creation.setDataType(DataType.MATERIAL);
-        creation.setMaterialTypeId(materialTypeId);
-        creation.setLabel("label");
-        creation.setDescription("description");
-        return v3api.createPropertyTypes(sessionToken, Collections.singletonList(creation)).get(0);
-    }
-
     protected EntityTypePermId createASampleType(String sessionToken, boolean mandatory,
             PropertyTypePermId... propertyTypes)
     {
@@ -1687,21 +1618,6 @@ public class AbstractTest extends SystemTestCase
         return v3api.createDataSetTypes(sessionToken, Arrays.asList(creation)).get(0);
     }
 
-    protected EntityTypePermId createAMaterialType(final String sessionToken, final boolean mandatory,
-            final PropertyTypePermId... propertyTypes)
-    {
-        final MaterialTypeCreation creation = new MaterialTypeCreation();
-        creation.setCode("MATERIAL-TYPE-" + System.currentTimeMillis());
-        final List<PropertyAssignmentCreation> assignments = Arrays.stream(propertyTypes).map(propertyTypeId ->
-        {
-            final PropertyAssignmentCreation propertyAssignmentCreation = new PropertyAssignmentCreation();
-            propertyAssignmentCreation.setPropertyTypeId(propertyTypeId);
-            propertyAssignmentCreation.setMandatory(mandatory);
-            return propertyAssignmentCreation;
-        }).collect(Collectors.toList());
-        creation.setPropertyAssignments(assignments);
-        return v3api.createMaterialTypes(sessionToken, Collections.singletonList(creation)).get(0);
-    }
 
     protected SamplePermId createSample(final String sessionToken, final String code, final ISpaceId spaceId, final IExperimentId experimentId,
             final EntityTypePermId sampleTypePermId)

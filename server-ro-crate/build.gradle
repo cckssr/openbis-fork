@@ -33,6 +33,7 @@ dependencies {
     implementation 'lombok:lombok:1.18.38',
             project(':lib-logging'),
             project(':lib-ro-crate'),
+            project(':lib-mail'),
             project(':api-openbis-java'),
             project(':app-ro-crate-openbis')
 
@@ -67,7 +68,7 @@ mainClassName = "ch.ethz.sis.rocrateserver.startup.StartupMain"
 
 compileQuarkusGeneratedSourcesJava.dependsOn(compileJava)
 
-["quarkusAppPartsBuild", "quarkusGenerateCode"].each { taskName ->
+["quarkusAppPartsBuild", "quarkusGenerateCode", "quarkusDependenciesBuild"].each { taskName ->
     tasks.named(taskName) {
         dependsOn(":lib-logging:jar")
     }

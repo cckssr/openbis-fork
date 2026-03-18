@@ -36,7 +36,6 @@ import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.WellContent;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.WellSearchCriteria;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.WellSearchCriteria.AnalysisProcedureCriteria;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.WellSearchCriteria.ExperimentSearchCriteria;
-import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.WellSearchCriteria.MaterialSearchCriteria;
 
 /**
  * @author Kaloyan Enimanev
@@ -52,69 +51,6 @@ public class WellContentLoaderTest extends AbstractScreeningDAOTest
     @Autowired
     IGenericServer server;
 
-    @Test
-    public void testLoadWellContentsWithProperties()
-    {
-        String[] materialCodes = new String[]
-        { "19*" };
-        String[] materialTypeCodes =
-        { "SIRNA" };
-
-        WellSearchCriteria searchCriteria =
-                new WellSearchCriteria(ExperimentSearchCriteria.createAllExperiments(),
-                        MaterialSearchCriteria.createCodesCriteria(materialCodes,
-                                materialTypeCodes, true),
-                        AnalysisProcedureCriteria.createAllProcedures());
-
-        Session session = createSession(getSystemPerson());
-        List<WellContent> wellContents =
-                WellContentLoader.load(session, businessObjectFactory, daoFactory, searchCriteria);
-
-        assertEquals(1, wellContents.size());
-        assertPropertiesPresent(wellContents.get(0));
-    }
-
-    /**
-     * Test that the same well is not displayed twice if the search query matches two different materials inside the well.
-     */
-    @Test
-    public void testDuplicateWellsFilteredOut()
-    {
-        String[] materialCodes = new String[]
-        { "BACTERIUM-X", "BACTERIUM-Y" };
-        String[] materialTypeCodes =
-        { "BACTERIUM" };
-
-        WellSearchCriteria searchCriteria =
-                new WellSearchCriteria(ExperimentSearchCriteria.createAllExperiments(),
-                        MaterialSearchCriteria.createCodesCriteria(materialCodes,
-                                materialTypeCodes, false),
-                        AnalysisProcedureCriteria.createAllProcedures());
-
-        Session session = createSession(getSystemPerson());
-        List<WellContent> wellContents =
-                WellContentLoader.load(session, businessObjectFactory, daoFactory, searchCriteria);
-
-        assertEquals(1, wellContents.size());
-        assertPropertiesPresent(wellContents.get(0));
-    }
-
-    private void assertPropertiesPresent(WellContent wellContent)
-    {
-        List<IEntityProperty> props = wellContent.getWellProperties();
-        assertTrue("At least one property per well is expected", props.size() > 0);
-        for (IEntityProperty prop : props)
-        {
-            assertNotNull(prop.getPropertyType().getCode());
-            assertNotNull(prop.getMaterial());
-            assertTrue("Material properties should be populated", prop.getMaterial()
-                    .getProperties().size() > 0);
-            // assert the string representation actually has contents
-            String stringValue = prop.tryGetAsString();
-            assertEquals(false, StringUtils.isBlank(stringValue));
-
-        }
-    }
 
     /**
      * Create session for the specified person.

@@ -211,8 +211,6 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
             sqlBuilder.append(SP).append(OR).append(SP);
             TranslatorUtils.appendControlledVocabularyTermSubselectConstraint(sqlBuilder, propertyTableAlias);
             sqlBuilder.append(SP).append(OR).append(SP);
-            TranslatorUtils.appendMaterialSubselectConstraint(sqlBuilder, propertyTableAlias);
-            sqlBuilder.append(SP).append(OR).append(SP);
             TranslatorUtils.appendSampleSubselectConstraint(sqlBuilder, propertyTableAlias);
         }
 
@@ -248,10 +246,6 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
                     TranslatorUtils.appendControlledVocabularyTermIdSubselectConstraint(args, sqlBuilder, value, useWildcards,
                             propertyTableAlias);
                 }
-
-                sqlBuilder.append(NL).append(WHEN).append(SP).append(propertyTableAlias).append(PERIOD)
-                        .append(MATERIAL_PROP_COLUMN).append(SP).append(IS_NOT_NULL).append(SP).append(THEN).append(SP);
-                TranslatorUtils.appendMaterialSubselectConstraint(args, sqlBuilder, value, useWildcards, propertyTableAlias);
 
                 if (tableMapper == TableMapper.SAMPLE || tableMapper == TableMapper.EXPERIMENT
                         || tableMapper == TableMapper.DATA_SET)

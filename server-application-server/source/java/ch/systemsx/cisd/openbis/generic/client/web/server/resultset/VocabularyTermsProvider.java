@@ -24,7 +24,6 @@ import static ch.systemsx.cisd.openbis.generic.shared.basic.dto.CommonGridIDs.RE
 import static ch.systemsx.cisd.openbis.generic.shared.basic.dto.VocabularyTermGridIDs.IS_OFFICIAL;
 import static ch.systemsx.cisd.openbis.generic.shared.basic.dto.VocabularyTermGridIDs.TERM_FOR_DATA_SET_USAGE;
 import static ch.systemsx.cisd.openbis.generic.shared.basic.dto.VocabularyTermGridIDs.TERM_FOR_EXPERIMENTS_USAGE;
-import static ch.systemsx.cisd.openbis.generic.shared.basic.dto.VocabularyTermGridIDs.TERM_FOR_MATERIALS_USAGE;
 import static ch.systemsx.cisd.openbis.generic.shared.basic.dto.VocabularyTermGridIDs.TERM_FOR_SAMPLES_USAGE;
 import static ch.systemsx.cisd.openbis.generic.shared.basic.dto.VocabularyTermGridIDs.TERM_TOTAL_USAGE;
 import static ch.systemsx.cisd.openbis.generic.shared.basic.dto.VocabularyTermGridIDs.URL;
@@ -74,7 +73,6 @@ public class VocabularyTermsProvider extends
         builder.addColumn(TERM_TOTAL_USAGE).withDefaultWidth(100);
         builder.addColumn(TERM_FOR_DATA_SET_USAGE).withDefaultWidth(100).hideByDefault();
         builder.addColumn(TERM_FOR_EXPERIMENTS_USAGE).withDefaultWidth(100).hideByDefault();
-        builder.addColumn(TERM_FOR_MATERIALS_USAGE).withDefaultWidth(100).hideByDefault();
         builder.addColumn(TERM_FOR_SAMPLES_USAGE).withDefaultWidth(100).hideByDefault();
         for (VocabularyTermWithStats termWithStats : VocabularyTermTranslator.translate(terms))
         {
@@ -96,8 +94,6 @@ public class VocabularyTermsProvider extends
                     termWithStats.getUsageCounter(EntityKind.DATA_SET));
             builder.column(TERM_FOR_EXPERIMENTS_USAGE).addInteger(
                     termWithStats.getUsageCounter(EntityKind.EXPERIMENT));
-            builder.column(TERM_FOR_MATERIALS_USAGE).addInteger(
-                    termWithStats.getUsageCounter(EntityKind.MATERIAL));
             builder.column(TERM_FOR_SAMPLES_USAGE).addInteger(
                     termWithStats.getUsageCounter(EntityKind.SAMPLE));
         }

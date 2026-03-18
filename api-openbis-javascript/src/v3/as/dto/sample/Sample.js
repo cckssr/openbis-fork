@@ -23,7 +23,6 @@ define([ "stjs", "util/Exceptions", "as/dto/common/Relationship", "as/dto/common
 		prototype.project = null;		
 		prototype.space = null;
 		prototype.experiment = null;
-		prototype.materialProperties = null;
 		prototype.sampleProperties = null;
 		prototype.parents = null;
 		prototype.parentsRelationships = null;
@@ -154,26 +153,6 @@ define([ "stjs", "util/Exceptions", "as/dto/common/Relationship", "as/dto/common
 		};
 		prototype.setExperiment = function(experiment) {
 			this.experiment = experiment;
-		};
-		prototype.getMaterialProperty = function(propertyName) {
-			var properties = this.getMaterialProperties();
-			return properties ? properties[propertyName] : null;
-		};
-		prototype.setMaterialProperty = function(propertyName, propertyValue) {
-			if (this.materialProperties == null) {
-				this.materialProperties = {};
-			}
-			this.materialProperties[propertyName] = propertyValue;
-		};
-		prototype.getMaterialProperties = function() {
-			if (this.getFetchOptions() && this.getFetchOptions().hasMaterialProperties()) {
-				return this.materialProperties;
-			} else {
-				throw new exceptions.NotFetchedException("Material properties have not been fetched.");
-			}
-		};
-		prototype.setMaterialProperties = function(materialProperties) {
-			this.materialProperties = materialProperties;
 		};
 		prototype.getSampleProperties = function() {
 			if (this.getFetchOptions() && this.getFetchOptions().hasSampleProperties()) {
@@ -459,10 +438,6 @@ define([ "stjs", "util/Exceptions", "as/dto/common/Relationship", "as/dto/common
 		project : "Project",		
 		space : "Space",
 		experiment : "Experiment",
-		materialProperties : {
-			name : "Map",
-			arguments : [ "String", "Material" ]
-		},
 		sampleProperties : {
 			name : "Map",
 			arguments : [ "String", "Sample[]" ]

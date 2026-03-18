@@ -44,7 +44,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.TableModelRowWithObject
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.builders.ContainerDataSetBuilder;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.builders.DataSetBuilder;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.builders.ExperimentBuilder;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.builders.MaterialBuilder;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.builders.SampleBuilder;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.builders.VocabularyTermBuilder;
 
@@ -62,8 +61,6 @@ public class TableForUpdateExporterTest extends AssertJUnit
                 new ExperimentBuilder().identifier("/S/P/E2").property("P1", "hello")
                         .getExperiment();
         ExperimentBuilder e3 = new ExperimentBuilder().identifier("/S/P/E3");
-        e3.property("P2").internal().label("Property 2")
-                .value(new MaterialBuilder().code("ALPHA").type("GENE"));
         e3.property("P3").managed().value("hello");
         e3.property("P3").dynamic().value("hello");
         GridRowModels<TableModelRowWithObject<Experiment>> rows =
@@ -83,8 +80,8 @@ public class TableForUpdateExporterTest extends AssertJUnit
                 TableForUpdateExporter.getExportTableForUpdate(rows, EntityKind.EXPERIMENT, "\n",
                         commonServer, "");
 
-        assertEquals("identifier\tproject\tP1\tP2\n" + "/S/P/E1\t\t\t\n" + "/S/P/E2\t\thello\t\n"
-                + "/S/P/E3\t\t\tALPHA (GENE)\n", fileContent);
+        assertEquals("identifier\tproject\tP1\n" + "/S/P/E1\t\t\n" + "/S/P/E2\t\thello\n"
+                + "/S/P/E3\t\t\n", fileContent);
     }
 
     @Test

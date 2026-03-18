@@ -56,9 +56,6 @@ import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.EntityRegistrationDeta
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Experiment;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Experiment.ExperimentInitializer;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.ExperimentType;
-import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Material;
-import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.MaterialIdentifier;
-import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.MaterialTypeIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.MetaprojectAssignments;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Project;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.PropertyType;
@@ -2018,8 +2015,7 @@ public class GeneralInformationServiceTest extends SystemTestCase
 
         assertEquals("ExperimentType[COMPOUND_HCS,Compound High Content Screening," +
                         "[PropertyTypeGroup[<null>,[PropertyType[VARCHAR,DESCRIPTION,Description,A Description,mandatory], " +
-                        "PropertyType[VARCHAR,COMMENT,Comment,Any other comments,optional], " +
-                        "PropertyType[MATERIAL,ANY_MATERIAL,any_material,any_material,optional]]]]]",
+                        "PropertyType[VARCHAR,COMMENT,Comment,Any other comments,optional]]]]]",
                 experimentTypes.get(0).toString());
         assertEquals(3, experimentTypes.size());
     }
@@ -2062,9 +2058,7 @@ public class GeneralInformationServiceTest extends SystemTestCase
         {
             propertyTypeCodes.add(propertyType.getCode());
         }
-        assertEquals("[ANY_MATERIAL, BACTERIUM, COMMENT, GENDER]", propertyTypeCodes.toString());
-        assertEquals("PropertyType[MATERIAL,ANY_MATERIAL,any_material,any_material,optional]",
-                propertyTypes.get(0).toString());
+        assertEquals("[COMMENT, GENDER, SIZE]", propertyTypeCodes.toString());
         assertEquals(1, groups.size());
         assertEquals("HCS_IMAGE_ANALYSIS_DATA", types.get(5).getCode());
         assertEquals("[]", types.get(5).getPropertyTypeGroups().toString());
@@ -2650,316 +2644,6 @@ public class GeneralInformationServiceTest extends SystemTestCase
         Collections.sort(codes);
         assertEquals(expectedDataSets, codes.toString());
     }
-
-    private void assertMaterials(String expectedMaterials, List<Material> materials)
-    {
-        List<String> codes = new ArrayList<String>();
-        for (Material material : materials)
-        {
-            codes.add(material.getAugmentedCode());
-        }
-        Collections.sort(codes);
-        assertEquals(expectedMaterials, codes.toString());
-    }
-
-    @Test
-    public void testSearchForMaterialsReferencing() throws java.text.ParseException
-    {
-        SearchCriteria searchCriteria = new SearchCriteria();
-        searchCriteria.addMatchClause(MatchClause.createAttributeMatch(MatchClauseAttribute.TYPE,
-                "SELF_REF"));
-
-        List<Material> materials =
-                generalInformationService.searchForMaterials(sessionToken, searchCriteria);
-
-        assertCollection("[SRM_1, SRM_1A]", materials, new IToStringDelegate<Material>()
-            {
-                @Override
-                public String toString(Material t)
-                {
-                    return t.getMaterialCode();
-                }
-            });
-
-        Material srm1 = materials.get(0);
-        Material srm1a = materials.get(1);
-
-        assertSelfReferencedMaterials(srm1, srm1a);
-    }
-
-    @Test
-    public void testSearchForMaterialsByCode() throws java.text.ParseException
-    {
-        List<MaterialIdentifier> materialIdentifiers = new LinkedList<MaterialIdentifier>();
-
-        MaterialTypeIdentifier mt = new MaterialTypeIdentifier("SELF_REF");
-        materialIdentifiers.add(new MaterialIdentifier(mt, "SRM_1"));
-        materialIdentifiers.add(new MaterialIdentifier(mt, "SRM_1A"));
-
-        List<Material> materials =
-                generalInformationService.getMaterialByCodes(sessionToken, materialIdentifiers);
-
-        assertCollection("[SRM_1, SRM_1A]", materials, new IToStringDelegate<Material>()
-            {
-                @Override
-                public String toString(Material t)
-                {
-                    return t.getMaterialCode();
-                }
-            });
-
-        Material srm1 = materials.get(0);
-        Material srm1a = materials.get(1);
-
-        assertSelfReferencedMaterials(srm1, srm1a);
-    }
-
-    private void assertSelfReferencedMaterials(Material srm1, Material srm1a) throws ParseException
-    {
-        assertEquals("SRM_1", srm1.getMaterialCode());
-        assertEquals("SRM_1A", srm1a.getMaterialCode());
-
-        assertEquals("Material with attached material", srm1.getProperties().get("DESCRIPTION"));
-        assertEquals("Material wich is attached material", srm1a.getProperties().get("DESCRIPTION"));
-
-        assertEquals("Referenced material should be srm_1a", srm1a.getMaterialCode(), srm1
-                .getMaterialProperties().get("ANY_MATERIAL").getMaterialCode());
-
-        assertEquals("Referenced material should be present in properties as code", String.format(
-                "%s (%s)", srm1a.getMaterialCode(), srm1a.getMaterialTypeIdentifier()
-                        .getMaterialTypeCode()),
-                srm1.getProperties().get("ANY_MATERIAL"));
-
-        Date date2012 = new SimpleDateFormat("yyyy-MM-dd").parse("2012-01-02");
-        Date date2013 = new SimpleDateFormat("yyyy-MM-dd").parse("2013-01-02");
-
-        assertEquals("The date should be after 2012", true, srm1.getRegistrationDetails()
-                .getRegistrationDate().after(date2012));
-        assertEquals("The date should be before 2013", true, srm1.getRegistrationDetails()
-                .getRegistrationDate().before(date2013));
-    }
-
-    @Test
-    public void testSearchForMaterials()
-    {
-        SearchCriteria searchCriteria = new SearchCriteria();
-        searchCriteria.addMatchClause(MatchClause.createAttributeMatch(MatchClauseAttribute.TYPE,
-                "BACTERIUM"));
-
-        List<Material> materials =
-                generalInformationService.searchForMaterials(sessionToken, searchCriteria);
-
-        assertCollection("[BACTERIUM-X, BACTERIUM-Y, BACTERIUM1, BACTERIUM2]", materials,
-                new MaterialToCode());
-    }
-
-    @Test
-    public void testSearchForMaterialsByMetaprojectName()
-    {
-        SearchCriteria searchCriteria = new SearchCriteria();
-        searchCriteria.addMatchClause(MatchClause.createAttributeMatch(
-                MatchClauseAttribute.METAPROJECT, "TEST_METAPROJECTS"));
-
-        List<Material> materials =
-                generalInformationService.searchForMaterials(sessionToken, searchCriteria);
-
-        assertCollection("[AD3]", materials, new MaterialToCode());
-    }
-
-    @Test
-    public void testSearchForMaterialsByMetaprojectNameOwnedBySomebodyElse()
-    {
-        SearchCriteria searchCriteria = new SearchCriteria();
-        searchCriteria.addMatchClause(MatchClause.createAttributeMatch(
-                MatchClauseAttribute.METAPROJECT, "TEST_METAPROJECTS_2"));
-
-        List<Material> materials =
-                generalInformationService.searchForMaterials(sessionToken, searchCriteria);
-
-        assertCollection("[]", materials, new MaterialToCode());
-    }
-
-    @Test
-    public void testSearchForMaterialsByMetaprojectIdentifier()
-    {
-        SearchCriteria searchCriteria = new SearchCriteria();
-        searchCriteria.addMatchClause(MatchClause.createAttributeMatch(
-                MatchClauseAttribute.METAPROJECT, "/test/TEST_METAPROJECTS"));
-
-        List<Material> materials =
-                generalInformationService.searchForMaterials(sessionToken, searchCriteria);
-
-        assertCollection("[AD3]", materials, new MaterialToCode());
-    }
-
-    @Test
-    public void testSearchForMaterialsByMetaprojectIdentifierOwnedBySomebodyElse()
-    {
-        SearchCriteria searchCriteria = new SearchCriteria();
-        searchCriteria.addMatchClause(MatchClause.createAttributeMatch(
-                MatchClauseAttribute.METAPROJECT, "/test_role/TEST_METAPROJECTS_2"));
-
-        List<Material> materials =
-                generalInformationService.searchForMaterials(sessionToken, searchCriteria);
-
-        assertCollection("[]", materials, new MaterialToCode());
-    }
-
-    @Test
-    public void testSearchForMaterialsByAnyFieldMatchingProperty()
-    {
-        SearchCriteria searchCriteria = new SearchCriteria();
-        searchCriteria.addMatchClause(MatchClause.createAnyFieldMatch("\"Influenza A virus\""));
-
-        List<Material> materials =
-                generalInformationService.searchForMaterials(sessionToken, searchCriteria);
-
-        assertCollection("[FLU]", materials, new MaterialToCode());
-    }
-
-    @Test
-    public void testSearchForMaterialsByAnyFieldMatchingAttribute()
-    {
-        SearchCriteria searchCriteria = new SearchCriteria();
-        searchCriteria.addMatchClause(MatchClause.createAnyFieldMatch("VIRUS1"));
-
-        List<Material> materials =
-                generalInformationService.searchForMaterials(sessionToken, searchCriteria);
-
-        assertCollection("[VIRUS1]", materials, new MaterialToCode());
-    }
-
-    @Test
-    public void testSearchForMaterialsByAnyProperty()
-    {
-        SearchCriteria searchCriteria = new SearchCriteria();
-        searchCriteria.addMatchClause(MatchClause.createAnyPropertyMatch("\"Influenza A virus\""));
-
-        List<Material> materials =
-                generalInformationService.searchForMaterials(sessionToken, searchCriteria);
-
-        assertCollection("[FLU]", materials, new MaterialToCode());
-    }
-
-    @Test
-    public void testSearchForMaterialsByModificationDate()
-    {
-        SearchCriteria searchCriteria = new SearchCriteria();
-        searchCriteria.addMatchClause(MatchClause.createTimeAttributeMatch(
-                MatchClauseTimeAttribute.MODIFICATION_DATE, CompareMode.LESS_THAN_OR_EQUAL,
-                "2009-03-19", "+1"));
-
-        List<Material> materials = filter(generalInformationService.searchForMaterials(sessionToken, searchCriteria));
-        assertEquals(2774, materials.size());
-
-        searchCriteria = new SearchCriteria();
-        searchCriteria.addMatchClause(MatchClause.createTimeAttributeMatch(
-                MatchClauseTimeAttribute.MODIFICATION_DATE, CompareMode.GREATER_THAN_OR_EQUAL,
-                "2009-03-19", "+1"));
-
-        materials = filter(generalInformationService.searchForMaterials(sessionToken, searchCriteria));
-        assertEquals(0, materials.size());
-    }
-
-    private List<Material> filter(List<Material> materials)
-    {
-        return materials
-                .stream().filter(m -> m.getMaterialTypeIdentifier().getMaterialTypeCode().equals("SIRNA"))
-                .collect(Collectors.toList());
-    }
-
-    @Test
-    public void testSearchForMaterialsByRegistratorUserId()
-    {
-        SearchCriteria searchCriteria = new SearchCriteria();
-        searchCriteria.addMatchClause(MatchClause.createAttributeMatch(MatchClauseAttribute.REGISTRATOR_USER_ID, "etlserver"));
-
-        List<Material> materials =
-                generalInformationService.searchForMaterials(sessionToken, searchCriteria);
-        assertMaterials("[BACTERIUM1 (BACTERIUM), BACTERIUM2 (BACTERIUM)]", materials);
-    }
-
-    @Test
-    public void testSearchForMaterialsByRegistratorFirstName()
-    {
-        SearchCriteria searchCriteria = new SearchCriteria();
-        searchCriteria.addMatchClause(MatchClause.createAttributeMatch(MatchClauseAttribute.REGISTRATOR_FIRST_NAME, "\"John 2\""));
-
-        List<Material> materials =
-                generalInformationService.searchForMaterials(sessionToken, searchCriteria);
-        assertMaterials("[BACTERIUM1 (BACTERIUM), BACTERIUM2 (BACTERIUM)]", materials);
-    }
-
-    @Test
-    public void testSearchForMaterialsByRegistratorLastName()
-    {
-        SearchCriteria searchCriteria = new SearchCriteria();
-        searchCriteria.addMatchClause(MatchClause.createAttributeMatch(MatchClauseAttribute.REGISTRATOR_LAST_NAME, "\"ETL Server\""));
-
-        List<Material> materials =
-                generalInformationService.searchForMaterials(sessionToken, searchCriteria);
-        assertMaterials("[BACTERIUM1 (BACTERIUM), BACTERIUM2 (BACTERIUM)]", materials);
-    }
-
-    @Test
-    public void testSearchForMaterialsByRegistratorEmail()
-    {
-        SearchCriteria searchCriteria = new SearchCriteria();
-        searchCriteria.addMatchClause(MatchClause.createAttributeMatch(MatchClauseAttribute.REGISTRATOR_EMAIL, "\"etlserver@systemsx.ch\""));
-
-        List<Material> materials =
-                generalInformationService.searchForMaterials(sessionToken, searchCriteria);
-        assertMaterials("[BACTERIUM1 (BACTERIUM), BACTERIUM2 (BACTERIUM)]", materials);
-    }
-
-    @Test
-    public void testSearchForMaterialsByModifierUserId()
-    {
-        // search by a modifier not supported yet
-        SearchCriteria searchCriteria = new SearchCriteria();
-        searchCriteria.addMatchClause(MatchClause.createAttributeMatch(MatchClauseAttribute.MODIFIER_USER_ID, "etlserver"));
-
-        List<Material> materials =
-                generalInformationService.searchForMaterials(sessionToken, searchCriteria);
-        assertMaterials("[]", materials);
-    }
-
-    @Test
-    public void testSearchForMaterialsByModifierFirstName()
-    {
-        // search by a modifier not supported yet
-        SearchCriteria searchCriteria = new SearchCriteria();
-        searchCriteria.addMatchClause(MatchClause.createAttributeMatch(MatchClauseAttribute.MODIFIER_FIRST_NAME, "\"John 2\""));
-
-        List<Material> materials =
-                generalInformationService.searchForMaterials(sessionToken, searchCriteria);
-        assertMaterials("[]", materials);
-    }
-
-    @Test
-    public void testSearchForMaterialsByModifierLastName()
-    {
-        // search by a modifier not supported yet
-        SearchCriteria searchCriteria = new SearchCriteria();
-        searchCriteria.addMatchClause(MatchClause.createAttributeMatch(MatchClauseAttribute.MODIFIER_LAST_NAME, "\"ETL Server\""));
-
-        List<Material> materials =
-                generalInformationService.searchForMaterials(sessionToken, searchCriteria);
-        assertMaterials("[]", materials);
-    }
-
-    @Test
-    public void testSearchForMaterialsByModifierEmail()
-    {
-        // search by a modifier not supported yet
-        SearchCriteria searchCriteria = new SearchCriteria();
-        searchCriteria.addMatchClause(MatchClause.createAttributeMatch(MatchClauseAttribute.MODIFIER_EMAIL, "\"etlserver@systemsx.ch\""));
-
-        List<Material> materials =
-                generalInformationService.searchForMaterials(sessionToken, searchCriteria);
-        assertMaterials("[]", materials);
-    }
-
     @Test
     public void testListMetaprojects()
     {
@@ -2983,7 +2667,6 @@ public class GeneralInformationServiceTest extends SystemTestCase
                         "/test/TEST_METAPROJECTS"));
 
         assertEquals(1, metaprojectAssignments.getDataSets().size());
-        assertEquals(1, metaprojectAssignments.getMaterials().size());
         assertEquals(1, metaprojectAssignments.getSamples().size());
         assertEquals(2, metaprojectAssignments.getExperiments().size());
 
@@ -2994,7 +2677,6 @@ public class GeneralInformationServiceTest extends SystemTestCase
                 generalInformationService.getMetaproject(sessionToken, new MetaprojectIdentifierId(
                         "/test_role/TEST_METAPROJECTS"));
 
-        assertEquals(1, metaprojectAssignments.getMaterials().size());
         assertEquals(1, metaprojectAssignments.getDataSets().size());
         assertTrue(metaprojectAssignments.getDataSets().get(0).isStub());
         assertTrue(metaprojectAssignments.getDataSets().get(0).toString().contains("STUB"));
@@ -3033,10 +2715,6 @@ public class GeneralInformationServiceTest extends SystemTestCase
         MetaprojectAssignments mas =
                 generalInformationService.getMetaprojectOnBehalfOfUser(sessionToken,
                         new MetaprojectTechIdId(metaProjects.get(1).getId()), "test");
-        assertEquals("[MaterialIdentifier [materialCode=AD3, "
-                + "materialTypeIdentifier=MaterialTypeIdentifier [materialTypeCode=VIRUS]]]",
-                mas
-                        .getMaterials().toString());
         assertEntities("[/CISD/NEMO/EXP11, /TEST-SPACE/TEST-PROJECT/EXP-SPACE-TEST]",
                 mas.getExperiments());
         assertEquals("[Sample[/TEST-SPACE/TEST-PROJECT/EV-TEST,VALIDATE_CHILDREN,{COMMENT=test comment},parents=?,children=?]]", mas
@@ -3557,14 +3235,6 @@ public class GeneralInformationServiceTest extends SystemTestCase
             });
     }
 
-    private static class MaterialToCode implements IToStringDelegate<Material>
-    {
-        @Override
-        public String toString(Material t)
-        {
-            return t.getMaterialCode();
-        }
-    }
 
     private static class DataSetToCode implements IToStringDelegate<DataSet>
     {

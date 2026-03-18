@@ -14499,8 +14499,48 @@ GRANT SELECT ON TABLE public.spaces TO openbis_readonly;
 
 GRANT SELECT ON SEQUENCE public.stpt_id_seq TO openbis_readonly;
 
+SET search_path = public, pg_catalog;
+
+SELECT 'before removing materials' AS debug_msg;
+SELECT count(*) AS materials_before FROM public.materials;
+
+DELETE FROM public.data_set_properties
+WHERE mate_prop_id IS NOT NULL;
+
+DELETE FROM public.experiment_properties
+WHERE mate_prop_id IS NOT NULL;
+
+DELETE FROM public.sample_properties
+WHERE mate_prop_id IS NOT NULL;
+
+DELETE FROM public.material_properties
+WHERE mate_prop_id IS NOT NULL;
+
+DELETE FROM public.material_properties;
+DELETE FROM public.material_properties_history;
+
+DO $$
+BEGIN
+    IF EXISTS (
+        SELECT 1
+        FROM information_schema.columns
+        WHERE table_schema = 'public'
+          AND table_name = 'experiments_all'
+          AND column_name = 'mate_id_study_object'
+    ) THEN
+        EXECUTE 'UPDATE public.experiments_all SET mate_id_study_object = NULL WHERE mate_id_study_object IS NOT NULL';
+    END IF;
+END
+$$;
+
+DELETE FROM public.materials;
+DELETE FROM public.material_type_property_types;
+DELETE FROM public.material_types;
+
+SELECT 'after removing materials' AS debug_msg;
+SELECT count(*) AS materials_after FROM public.materials;
+
 
 --
 -- PostgreSQL database dump complete
 --
-

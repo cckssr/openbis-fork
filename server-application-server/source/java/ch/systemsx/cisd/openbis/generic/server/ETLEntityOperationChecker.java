@@ -21,14 +21,12 @@ import java.util.Map;
 import ch.systemsx.cisd.openbis.generic.server.authorization.annotation.AuthorizationGuard;
 import ch.systemsx.cisd.openbis.generic.server.authorization.predicate.ProjectUpdatesPredicate;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewExperiment;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewMaterial;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewProject;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewSample;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewSpace;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataSetBatchUpdatesDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentUpdatesDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.IAuthSession;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialUpdateDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.NewExternalData;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ProjectUpdatesDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SampleUpdatesDTO;
@@ -47,16 +45,6 @@ public class ETLEntityOperationChecker implements IETLEntityOperationChecker
     {
     }
 
-    @Override
-    public void assertMaterialCreationAllowed(IAuthSession session,
-            Map<String, List<NewMaterial>> materials)
-    {
-    }
-
-    @Override
-    public void assertMaterialUpdateAllowed(IAuthSession session, List<MaterialUpdateDTO> materials)
-    {
-    }
 
     @Override
     public void assertProjectCreationAllowed(IAuthSession session, List<NewProject> newProjects)

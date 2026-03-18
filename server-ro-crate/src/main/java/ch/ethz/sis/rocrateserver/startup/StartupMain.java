@@ -51,7 +51,7 @@ public class StartupMain implements QuarkusApplication
             System.setProperty("quarkus.http.test-port", configuration.getStringProperty(RoCrateServerParameter.httpServerPort));
             System.setProperty("quarkus.http.test-timeout", configuration.getStringProperty(RoCrateServerParameter.httpServerTimeout));
         }
-
+        configuration.logLoadedProperties();
         Quarkus.run(StartupMain.class, args);
     }
 

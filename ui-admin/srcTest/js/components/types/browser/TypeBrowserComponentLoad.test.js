@@ -22,7 +22,6 @@ async function testLoad() {
       { level: 0, text: 'Object Types' },
       { level: 0, text: 'Collection Types' },
       { level: 0, text: 'Data Set Types' },
-      { level: 0, text: 'Material Types' },
       { level: 0, text: 'Vocabulary Types' },
       { level: 0, text: 'Property Types' }
     ]

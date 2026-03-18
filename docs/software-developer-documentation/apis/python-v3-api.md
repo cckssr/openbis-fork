@@ -249,7 +249,6 @@ OpenBIS stores quite a lot of meta-data along with your dataSets. The collection
 
 - sample types
 - dataSet types
-- material types
 - experiment types
 - property types
 - vocabularies
@@ -272,7 +271,6 @@ st.get_validationPlugin()            # returns a plugin object
 
 st.get_property_assignments()        # show the list of properties
                                      # for that sample type
-o.get_material_types()
 o.get_dataset_types()
 o.get_experiment_types()
 o.get_collection_types()
@@ -353,7 +351,6 @@ The `dataType` attribute can contain any of these values:
 - `HYPERLINK`
 - `XML`
 - `CONTROLLEDVOCABULARY`
-- `MATERIAL`
 - `SAMPLE`
 - `ARRAY_INTEGER`
 - `ARRAY_REAL`
@@ -361,7 +358,7 @@ The `dataType` attribute can contain any of these values:
 - `ARRAY_TIMESTAMP`
 - `JSON`
 
-When choosing `CONTROLLEDVOCABULARY`, you must specify a `vocabulary` attribute (see example). Likewise, when choosing `MATERIAL`, a `materialType` attribute must be provided.
+When choosing `CONTROLLEDVOCABULARY`, you must specify a `vocabulary` attribute (see example).
 
 When choosing `SAMPLE` type property, you may specify sampleType for this property to accept. Otherwise, all sample types will be accepted by this property. 
 Examples:
@@ -571,25 +568,6 @@ experiment_type.get_property_assignments()
 
 ***⚠️ Note:*** pattern, pattern type and unique functionalities apply for dataset type property assignment as well.
 
-### create material types
-
-Materials and material types are deprecated in newer versions of openBIS.
-
-```python
-material_type = o.new_material_type(
-    code,
-    description=None,
-    validationPlugin=None,
-)
-material_type.save()
-material_type.assign_property('property_name')
-material_type.revoke_property('property_name')
-material_type.get_property_assignments()
-
-```
-
-***⚠️ Note:*** pattern, pattern type and unique functionalities apply for dataset type property assignment as well.
-
 ### create plugins
 
 Plugins are Jython scripts that can accomplish more complex data-checks than ordinary types and vocabularies can achieve. They are assigned to entity types (dataset type, sample type etc). [Documentation and examples can be found here](../../user-documentation/general-admin-users/properties-handled-by-scripts.md)
@@ -598,7 +576,7 @@ Plugins are Jython scripts that can accomplish more complex data-checks than ord
 pl = o.new_plugin(
     name       ='my_new_entry_validation_plugin',
     pluginType ='ENTITY_VALIDATION',       # or 'DYNAMIC_PROPERTY' or 'MANAGED_PROPERTY',
-    entityKind = None,                     # or 'SAMPLE', 'MATERIAL', 'EXPERIMENT', 'DATA_SET'
+    entityKind = None,                     # or 'SAMPLE', 'EXPERIMENT', 'DATA_SET'
     script     = 'def calculate(): pass'   # a JYTHON script
 )
 pl.save()

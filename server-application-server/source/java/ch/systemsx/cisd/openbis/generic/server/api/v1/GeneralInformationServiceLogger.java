@@ -37,8 +37,6 @@ import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Deletion;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.DeletionFetchOption;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Experiment;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.ExperimentType;
-import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Material;
-import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.MaterialIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.MetaprojectAssignments;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Project;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.PropertyType;
@@ -401,23 +399,6 @@ class GeneralInformationServiceLogger extends AbstractServerLogger implements
         logAccess(sessionToken, "list-data-sets-for-experiments-on-behalf-of-user",
                 "EXPERIMENTS(%s) CONNECTIONS(%s) USER(%s)", abbreviate(experiments),
                 connectionsToGet, userId);
-        return null;
-    }
-
-    @Override
-    public List<Material> getMaterialByCodes(String sessionToken,
-            List<MaterialIdentifier> materialIdentifier)
-    {
-        logAccess(sessionToken, "get-material-by-codes", "MATERIAL_IDENTIFIERS(%s)",
-                abbreviate(materialIdentifier));
-
-        return null;
-    }
-
-    @Override
-    public List<Material> searchForMaterials(String sessionToken, SearchCriteria searchCriteria)
-    {
-        logAccess(sessionToken, "search-for-materials", "SEARCH_CRITERIA(%s)", searchCriteria);
         return null;
     }
 

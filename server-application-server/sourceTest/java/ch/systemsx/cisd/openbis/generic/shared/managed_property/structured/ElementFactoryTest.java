@@ -46,13 +46,6 @@ public class ElementFactoryTest extends AssertJUnit
     }
 
     @Test(expectedExceptions = IllegalArgumentException.class)
-    public void testDoNotAllowMaterialTagCreation()
-    {
-        factory.createElement("Material");
-
-    }
-
-    @Test(expectedExceptions = IllegalArgumentException.class)
     public void testGetNonExistentAttribute()
     {
         IElement element = factory.createElement("test");

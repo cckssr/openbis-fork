@@ -16,7 +16,6 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		prototype.experiments = null;
 		prototype.samples = null;
 		prototype.dataSets = null;
-		prototype.materials = null;
 		prototype.registrationDate = null;
 		prototype.owner = null;
 		prototype.getFetchOptions = function() {
@@ -79,16 +78,6 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		prototype.setDataSets = function(dataSets) {
 			this.dataSets = dataSets;
 		};
-		prototype.getMaterials = function() {
-			if (this.getFetchOptions() && this.getFetchOptions().hasMaterials()) {
-				return this.materials;
-			} else {
-				throw new exceptions.NotFetchedException("Materials have not been fetched.");
-			}
-		};
-		prototype.setMaterials = function(materials) {
-			this.materials = materials;
-		};
 		prototype.getRegistrationDate = function() {
 			return this.registrationDate;
 		};
@@ -119,10 +108,6 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		dataSets : {
 			name : "List",
 			arguments : [ "DataSet" ]
-		},
-		materials : {
-			name : "List",
-			arguments : [ "Material" ]
 		},
 		registrationDate : "Date",
 		owner : "Person"

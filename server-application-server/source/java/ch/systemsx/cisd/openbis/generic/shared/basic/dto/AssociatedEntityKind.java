@@ -45,9 +45,7 @@ public enum AssociatedEntityKind implements Serializable
 
     SAMPLE_CHILD("Child", EntityKind.SAMPLE, EnumSet.of(EntityKind.SAMPLE)),
 
-    SAMPLE_PARENT("Parent", EntityKind.SAMPLE, EnumSet.of(EntityKind.SAMPLE)),
-
-    MATERIAL("Material", EntityKind.MATERIAL, EnumSet.noneOf(EntityKind.class));
+    SAMPLE_PARENT("Parent", EntityKind.SAMPLE, EnumSet.of(EntityKind.SAMPLE));
 
     private final String description;
 

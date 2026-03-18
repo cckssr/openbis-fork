@@ -36,12 +36,6 @@ public interface IImportService
 
     public String updateDataSets(String sessionToken, String uploadKey, String dataSetTypeCode, boolean async, String userEmail);
 
-    public String createMaterials(String sessionToken, String uploadKey, String materialTypeCode, boolean updateExisting, boolean async,
-            String userEmail);
-
-    public String updateMaterials(String sessionToken, String uploadKey, String materialTypeCode, boolean ignoreUnregistered, boolean async,
-            String userEmail);
-
     public String generalImport(String sessionToken, String uploadKey, String defaultSpaceIdentifier, boolean updateExisting, boolean async,
             String userEmail);
 

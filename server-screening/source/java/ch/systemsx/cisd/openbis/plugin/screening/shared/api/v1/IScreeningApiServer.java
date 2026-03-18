@@ -45,14 +45,10 @@ import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.ImageResoluti
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.ImageSize;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.LoadImageConfiguration;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.LogicalImageInfo;
-import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.MaterialIdentifier;
-import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.MaterialTypeIdentifier;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.Plate;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.PlateIdentifier;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.PlateImageReference;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.PlateMetadata;
-import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.PlateWellMaterialMapping;
-import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.PlateWellReferenceWithDatasets;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.WellIdentifier;
 
 /**
@@ -110,16 +106,6 @@ public interface IScreeningApiServer extends IRpcService
     @MinimalMinorVersion(5)
     List<Plate> listPlates(String sessionToken, ExperimentIdentifier experiment)
             throws IllegalArgumentException;
-
-    /**
-     * Fetches the contents of a given list of plates. The result will contain well and material properties.
-     * 
-     * @since 1.8
-     */
-    @Transactional(readOnly = true)
-    @MinimalMinorVersion(8)
-    List<PlateMetadata> getPlateMetadataList(String sessionToken,
-            List<? extends PlateIdentifier> plates) throws IllegalArgumentException;
 
     /**
      * Return the list of all visible experiments, along with their hierarchical context (space, project).
@@ -195,29 +181,6 @@ public interface IScreeningApiServer extends IRpcService
     List<IDatasetIdentifier> getDatasetIdentifiers(String sessionToken, List<String> datasetCodes);
 
     /**
-     * For the given <var>experimentIdentifier</var>, find all plate locations that are connected to the specified <var>materialIdentifier</var>. If
-     * <code>findDatasets == true</code>, find also the connected image and image analysis data sets for the relevant plates.
-     * 
-     * @since 1.1
-     */
-    @Transactional(readOnly = true)
-    @MinimalMinorVersion(1)
-    List<PlateWellReferenceWithDatasets> listPlateWells(String sessionToken,
-            ExperimentIdentifier experimentIdentifer, MaterialIdentifier materialIdentifier,
-            boolean findDatasets);
-
-    /**
-     * For the given <var>materialIdentifier</var>, find all plate locations that are connected to it. If <code>findDatasets == true</code>, find also
-     * the connected image and image analysis data sets for the relevant plates.
-     * 
-     * @since 1.2
-     */
-    @Transactional(readOnly = true)
-    @MinimalMinorVersion(2)
-    List<PlateWellReferenceWithDatasets> listPlateWells(String sessionToken,
-            MaterialIdentifier materialIdentifier, boolean findDatasets);
-
-    /**
      * For the given <var>plateIdentifier</var> find all wells that are connected to it.
      * 
      * @since 1.3
@@ -243,20 +206,6 @@ public interface IScreeningApiServer extends IRpcService
     @Transactional(readOnly = true)
     @MinimalMinorVersion(7)
     public Sample getPlateSample(String sessionToken, PlateIdentifier plateIdentifier);
-
-    /**
-     * For a given list of <var>plates</var>, return the mapping of plate wells to materials contained in each well.
-     * 
-     * @param plates The list of plates to get the mapping for
-     * @param materialTypeIdentifierOrNull If not <code>null</code>, consider only materials of the given type for the mapping.
-     * @return A list of well to material mappings, one element for each plate.
-     * @since 1.2
-     */
-    @Transactional(readOnly = true)
-    @MinimalMinorVersion(2)
-    List<PlateWellMaterialMapping> listPlateMaterialMapping(String sessionToken,
-            List<? extends PlateIdentifier> plates,
-            MaterialTypeIdentifier materialTypeIdentifierOrNull);
 
     /**
      * Returns aggregated metadata for all images/plates within one experiment.

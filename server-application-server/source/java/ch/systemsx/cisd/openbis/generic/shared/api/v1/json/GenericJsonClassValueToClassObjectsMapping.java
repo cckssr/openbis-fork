@@ -28,9 +28,6 @@ public class GenericJsonClassValueToClassObjectsMapping extends
 
     private GenericJsonClassValueToClassObjectsMapping()
     {
-        addClass(".MaterialIdentifier",
-                ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.MaterialIdentifier.class);
-        addClass(".Material", ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Material.class);
         addClass(".PropertyType",
                 ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.PropertyType.class);
         addClass(

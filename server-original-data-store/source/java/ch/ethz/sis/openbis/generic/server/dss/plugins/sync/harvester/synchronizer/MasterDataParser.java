@@ -48,7 +48,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExperimentType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.FileFormatType;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewETPTAssignment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewVocabulary;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Person;
@@ -90,8 +89,6 @@ public class MasterDataParser
     private Map<String, DataSetType> dataSetTypes = new HashMap<String, DataSetType>();
 
     private Map<String, ExperimentType> experimentTypes = new HashMap<String, ExperimentType>();
-
-    private Map<String, MaterialType> materialTypes = new HashMap<String, MaterialType>();
 
     private Map<String, NewVocabulary> vocabularies = new HashMap<String, NewVocabulary>();
 
@@ -138,7 +135,6 @@ public class MasterDataParser
         parseValidationPlugins(docElement.getElementsByTagName("xmd:validationPlugins"));
         vocabularyNameMapper = parseVocabularies(docElement.getElementsByTagName("xmd:controlledVocabularies"));
         propertyTypeNameMapper = parsePropertyTypes(docElement.getElementsByTagName("xmd:propertyTypes"));
-        parseMaterialTypes(docElement.getElementsByTagName("xmd:materialTypes"));
         parseSampleTypes(docElement.getElementsByTagName("xmd:objectTypes"));
         parseDataSetTypes(docElement.getElementsByTagName("xmd:dataSetTypes"));
         parseExperimentTypes(docElement.getElementsByTagName("xmd:collectionTypes"));
@@ -183,11 +179,6 @@ public class MasterDataParser
     public Map<String, ExperimentType> getExperimentTypes()
     {
         return experimentTypes;
-    }
-
-    public Map<String, MaterialType> getMaterialTypes()
-    {
-        return materialTypes;
     }
 
     public Map<String, ExternalDms> getExternalDataManagementSystems()
@@ -356,30 +347,6 @@ public class MasterDataParser
     {
         Node node = termElement.getAttributes().getNamedItem(attr);
         return node != null ? node.getTextContent() : null;
-    }
-
-    private void parseMaterialTypes(NodeList matTypesNode) throws XPathExpressionException
-    {
-        if (matTypesNode.getLength() == 0)
-        {
-            return;
-        }
-        validateElementNode(matTypesNode, "materialTypes");
-
-        Element matTypesElement = (Element) matTypesNode.item(0);
-        NodeList matTypeNodes = matTypesElement.getElementsByTagName("xmd:materialType");
-        for (int i = 0; i < matTypeNodes.getLength(); i++)
-        {
-            Element materialTypeElement = (Element) matTypeNodes.item(i);
-            MaterialType materialType = new MaterialType();
-            materialType.setCode(nameTranslator.translate(getAttribute(materialTypeElement, "code")));
-            materialType.setDescription(getAttribute(materialTypeElement, "description"));
-            materialType.setValidationScript(getValidationPlugin(materialTypeElement));
-            materialType.setModificationDate(DSPropertyUtils.convertFromW3CDate(getAttribute(materialTypeElement, "modification-timestamp")));
-            materialTypes.put(materialType.getCode(), materialType);
-
-            parsePropertyAssignments(EntityKind.MATERIAL, materialType, materialTypeElement, propertyTypeNameMapper);
-        }
     }
 
     private void parseExperimentTypes(NodeList expTypesNode) throws XPathExpressionException
@@ -565,18 +532,6 @@ public class MasterDataParser
                 vocabulary.setInternalNamespace(CodeConverter.isInternalNamespace(vocabularyCode));
                 vocabulary.setCode(CodeConverter.tryToDatabase(vocabularyCode));
                 newPropertyType.setVocabulary(vocabulary);
-            } else if (dataTypeCode.equals(DataTypeCode.MATERIAL))
-            {
-                String materialCode = getAttribute(propertyTypeElement, "material");
-                if (StringUtils.isBlank(materialCode))
-                {
-                    newPropertyType.setMaterialType(null); // material of any type
-                } else
-                {
-                    MaterialType materialType = new MaterialType();
-                    materialType.setCode(nameTranslator.translate(materialCode));
-                    newPropertyType.setMaterialType(materialType);
-                }
             }
         }
         return nameMapper;

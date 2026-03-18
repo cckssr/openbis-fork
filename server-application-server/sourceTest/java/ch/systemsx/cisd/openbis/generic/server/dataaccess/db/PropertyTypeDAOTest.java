@@ -85,8 +85,8 @@ public final class PropertyTypeDAOTest extends AbstractDAOTest
     public final void testListDataTypesAndEnumeration()
     {
         final List<DataTypePE> list = daoFactory.getPropertyTypeDAO().listDataTypes();
-        assertEquals(DataTypeCode.values().length, list.size());
-        assertEquals(DataTypeCode.values().length, list.size());
+        assertEquals(DataTypeCode.values().length -1 , list.size());
+        assertEquals(DataTypeCode.values().length -1, list.size());
         for (final DataTypePE dataType : list)
         {
             DataTypeCode.valueOf(dataType.getCode().name()); // check enums identity
@@ -154,7 +154,7 @@ public final class PropertyTypeDAOTest extends AbstractDAOTest
     {
         final IPropertyTypeDAO propertyTypeDAO = daoFactory.getPropertyTypeDAO();
         propertyTypeDAO.createPropertyType(createPropertyType(
-                propertyTypeDAO.getDataTypeByCode(entityDataType), code, null, null));
+                propertyTypeDAO.getDataTypeByCode(entityDataType), code, null));
     }
 
     @Test
@@ -163,7 +163,7 @@ public final class PropertyTypeDAOTest extends AbstractDAOTest
         // Given 1: Creation
         IPropertyTypeDAO propertyTypeDAO = daoFactory.getPropertyTypeDAO();
         String code = "PT-" + System.currentTimeMillis();
-        PropertyTypePE propertyType = createPropertyType(propertyTypeDAO.getDataTypeByCode(DataTypeCode.VARCHAR), code, null, null);
+        PropertyTypePE propertyType = createPropertyType(propertyTypeDAO.getDataTypeByCode(DataTypeCode.VARCHAR), code, null);
         HashMap<String, String> metaData = new HashMap<String, String>();
         metaData.put("greetings", "hello");
         metaData.put("pi", Double.toString(Math.PI));
@@ -252,7 +252,6 @@ public final class PropertyTypeDAOTest extends AbstractDAOTest
         List<Object> result = new ArrayList<Object>();
         result.addAll(propertyType.getDataSetTypePropertyTypes());
         result.addAll(propertyType.getExperimentTypePropertyTypes());
-        result.addAll(propertyType.getMaterialTypePropertyTypes());
         result.addAll(propertyType.getSampleTypePropertyTypes());
         return result;
     }

@@ -30,9 +30,13 @@ import ch.ethz.sis.rocrateserver.exception.RoCrateExceptions;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.RoCrateService;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.helper.SessionWorkSpaceManager;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.params.ExportParams;
+import ch.ethz.sis.rocrateserver.startup.Configuration;
 import ch.ethz.sis.rocrateserver.startup.RoCrateServerParameter;
 import ch.ethz.sis.rocrateserver.startup.StartupMain;
 import ch.openbis.rocrate.app.writer.Writer;
+import ch.systemsx.cisd.common.mail.EMailAddress;
+import ch.systemsx.cisd.common.mail.MailClient;
+import ch.systemsx.cisd.common.mail.MailClientParameters;
 import io.quarkus.logging.Log;
 import jakarta.ws.rs.HttpMethod;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
@@ -45,10 +49,12 @@ import org.eclipse.jetty.io.ClientConnector;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.jboss.logging.Logger;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import javax.activation.DataHandler;
+import javax.activation.DataSource;
+import javax.mail.util.ByteArrayDataSource;
+import java.io.*;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.*;
@@ -72,17 +78,34 @@ public final class ExportJob implements IAsyncJob
 
     String username;
 
+    private final String email;
+
     int retry_count = 0;
+
+    private final UUID jobId;
 
     private static final int MAX_RETRIES = 3;
 
 
     public ExportJob(ExportParams exportParams, InputStream body, OpenBIS openBIS, String username)
     {
+        this.jobId = UUID.randomUUID();
         this.exportParams = exportParams;
         this.body = body;
         this.openBIS = openBIS;
+        if(exportParams.getSendEmail()) {
+            this.email = openBIS.getSessionInformation().getPerson().getEmail();
+        } else {
+            this.email = null;
+        }
+
         this.username = username;
+    }
+
+    @Override
+    public UUID getJobId()
+    {
+        return this.jobId;
     }
 
     @Override
@@ -125,9 +148,9 @@ public final class ExportJob implements IAsyncJob
     @Override
     public void run()
     {
-
         try
         {
+            LOG.info(String.format("Starting export job: %s", jobId.toString()));
             Map<String, String> identifiers[] = ExportParams.getIdentifiers(exportParams.getInputBodyFormat(), body);
             String[] identifierAnnotations = exportParams.getIdentifierAnnotations();
 
@@ -348,6 +371,10 @@ public final class ExportJob implements IAsyncJob
                             }
                         }
                         this.result = resultZipPath;
+                        if(this.email != null && !this.email.isBlank()) {
+                            LOG.info("Export successful, preparing to send email");
+                            sendMailSuccess();
+                        }
                     }
                 }
                 Thread.sleep(2000);
@@ -355,11 +382,63 @@ public final class ExportJob implements IAsyncJob
 
         } catch (Exception e)
         {
-
+            if(this.email != null && !this.email.isBlank()) {
+                LOG.info("Export failed, preparing to send email");
+                sendMailFailure(e);
+            }
             Log.error("Exception during export", e);
             this.exception = e;
         }
 
+    }
+
+    private MailClient createMailClient() {
+        Configuration configuration = StartupMain.getConfiguration();
+        final String mailFrom = configuration
+                .getStringProperty(RoCrateServerParameter.mailFrom);
+        final String mailSmtpHost = configuration
+                .getStringProperty(RoCrateServerParameter.mailSmtpHost);
+        final String mailSmtpUser = configuration
+                .getStringProperty(RoCrateServerParameter.mailSmtpUser);
+        final String mailSmtpPassword = configuration
+                .getStringProperty(RoCrateServerParameter.mailSmtpPassword);
+
+        MailClientParameters mailClientParameters = new MailClientParameters();
+        mailClientParameters.setFrom(mailFrom);
+        mailClientParameters.setSmtpHost(mailSmtpHost);
+        mailClientParameters.setSmtpUser(mailSmtpUser);
+        mailClientParameters.setSmtpPassword(mailSmtpPassword);
+
+        return new MailClient(mailClientParameters);
+    }
+
+    private void sendMailFailure(Exception exception) {
+        try {
+            MailClient mailClient = createMailClient();
+            EMailAddress recipient = new EMailAddress(this.email);
+            final String subject = "openBIS RoCrate Export failed!";
+            String content = String.format("Error during export: %s", exception.getMessage());
+
+            mailClient.sendEmailMessage(subject, content, null, null, recipient);
+        } catch (Exception e)
+        {
+            Log.error("Failed to send failure message", e);
+        }
+    }
+
+    private void sendMailSuccess() {
+        MailClient mailClient = createMailClient();
+        EMailAddress recipient = new EMailAddress(this.email);
+        final String subject = "openBIS RoCrate Export Download Ready";
+
+        String roCratePublicUrl = openBIS.getServerInformation().get("server-public-information.ro-crate-server.url");
+        String content = roCratePublicUrl + "/download?jobId=" + encode(this.jobId.toString()) + "&apiKey=" + encode(this.exportParams.getApiKey());
+
+        mailClient.sendEmailMessage(subject, content, null, null, recipient);
+    }
+
+    private static String encode(String value) {
+        return URLEncoder.encode(value, StandardCharsets.UTF_8);
     }
 
     private static void addFileToZip(ZipArchiveOutputStream zos, File fileToAdd, byte[] commonBuffer) throws IOException

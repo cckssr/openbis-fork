@@ -31,8 +31,6 @@ public class PropertyQueryGenerator
         createSamplePropertyHistoryQuery();
         createDataSetPropertyQuery();
         createDataSetPropertyHistoryQuery();
-        createMaterialPropertyQuery();
-        createMaterialPropertyHistoryQuery();
     }
 
     private static void createExperimentPropertyQuery()
@@ -43,7 +41,6 @@ public class PropertyQueryGenerator
         params.propertyTableEntityTypePropertyTypeIdColumn = "etpt_id";
         params.entityTypePropertyTypeTable = "experiment_type_property_types";
         System.out.println("Experiment property: \n" + createPropertyQuery(params));
-        System.out.println("Experiment material property: \n" + createMaterialPropertyQuery(params));
     }
 
     private static void createExperimentPropertyHistoryQuery()
@@ -64,7 +61,6 @@ public class PropertyQueryGenerator
         params.propertyTableEntityTypePropertyTypeIdColumn = "stpt_id";
         params.entityTypePropertyTypeTable = "sample_type_property_types";
         System.out.println("Sample property: \n" + createPropertyQuery(params));
-        System.out.println("Sample material property: \n" + createMaterialPropertyQuery(params));
     }
 
     private static void createSamplePropertyHistoryQuery()
@@ -85,7 +81,6 @@ public class PropertyQueryGenerator
         params.propertyTableEntityTypePropertyTypeIdColumn = "dstpt_id";
         params.entityTypePropertyTypeTable = "data_set_type_property_types";
         System.out.println("DataSet property: \n" + createPropertyQuery(params));
-        System.out.println("DataSet material property: \n" + createMaterialPropertyQuery(params));
     }
 
     private static void createDataSetPropertyHistoryQuery()
@@ -96,27 +91,6 @@ public class PropertyQueryGenerator
         params.propertyHistoryTableEntityTypePropertyTypeIdColumn = "dstpt_id";
         params.entityTypePropertyTypeTable = "data_set_type_property_types";
         System.out.println("DataSet property history: \n" + createPropertyHistoryQuery(params));
-    }
-
-    private static void createMaterialPropertyQuery()
-    {
-        PropertyQueryParams params = new PropertyQueryParams();
-        params.propertyTable = "material_properties";
-        params.propertyTableEntityIdColumn = "mate_id";
-        params.propertyTableEntityTypePropertyTypeIdColumn = "mtpt_id";
-        params.entityTypePropertyTypeTable = "material_type_property_types";
-        System.out.println("Material property: \n" + createPropertyQuery(params));
-        System.out.println("Material material property: \n" + createMaterialPropertyQuery(params));
-    }
-
-    private static void createMaterialPropertyHistoryQuery()
-    {
-        PropertyHistoryQueryParams params = new PropertyHistoryQueryParams();
-        params.propertyHistoryTable = "material_properties_history";
-        params.propertyHistoryTableEntityIdColumn = "mate_id";
-        params.propertyHistoryTableEntityTypePropertyTypeIdColumn = "mtpt_id";
-        params.entityTypePropertyTypeTable = "material_type_property_types";
-        System.out.println("Material property history: \n" + createPropertyHistoryQuery(params));
     }
 
     public static String javize(String query)
@@ -146,35 +120,15 @@ public class PropertyQueryGenerator
         sb.append("p." + params.propertyTableEntityIdColumn + " as objectId, ");
         sb.append("pt.code as propertyCode, ");
         sb.append("p.value as propertyValue, ");
-        sb.append("m.code as materialPropertyValueCode, ");
-        sb.append("mt.code as materialPropertyValueTypeCode, ");
         sb.append("cvt.code as vocabularyPropertyValue \n");
         sb.append("from ");
         sb.append(params.propertyTable + " p \n");
-        sb.append("left join materials m on p.mate_prop_id = m.id \n");
         sb.append("left join controlled_vocabulary_terms cvt on p.cvte_id = cvt.id \n");
-        sb.append("left join material_types mt on m.maty_id = mt.id \n");
         sb.append("join " + params.entityTypePropertyTypeTable + " etpt on p." + params.propertyTableEntityTypePropertyTypeIdColumn
                 + " = etpt.id \n");
         sb.append("join property_types pt on etpt.prty_id = pt.id \n");
         sb.append("where p." + params.propertyTableEntityIdColumn + " = any(?{1})\n");
 
-        return javize(sb.toString());
-    }
-
-    public static String createMaterialPropertyQuery(PropertyQueryParams params)
-    {
-        StringBuilder sb = new StringBuilder();
-        sb.append("select ");
-        sb.append("p." + params.propertyTableEntityIdColumn + " as objectId, ");
-        sb.append("pt.code as propertyCode, ");
-        sb.append("p.mate_prop_id as propertyValue \n");
-        sb.append("from ");
-        sb.append(params.propertyTable + " p \n");
-        sb.append("join " + params.entityTypePropertyTypeTable + " etpt on p." + params.propertyTableEntityTypePropertyTypeIdColumn
-                + " = etpt.id \n");
-        sb.append("join property_types pt on etpt.prty_id = pt.id \n");
-        sb.append("where p.mate_prop_id is not null and p." + params.propertyTableEntityIdColumn + " = any(?{1})\n");
         return javize(sb.toString());
     }
 
@@ -186,7 +140,6 @@ public class PropertyQueryGenerator
         sb.append("ph.pers_id_author as authorId, ");
         sb.append("pt.code as propertyCode, ");
         sb.append("ph.value as propertyValue, ");
-        sb.append("ph.material as materialPropertyValue, ");
         sb.append("ph.vocabulary_term as vocabularyPropertyValue, ");
         sb.append("ph.valid_from_timestamp as validFrom, ");
         sb.append("ph.valid_until_timestamp as validTo \n");

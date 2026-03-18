@@ -24,7 +24,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PropertyType;
 import it.unimi.dsi.fastutil.longs.LongSet;
 
 /**
- * Query methods for retrieving property types, material types, and vocabulary URL templates.
+ * Query methods for retrieving property types and vocabulary URL templates.
  * 
  * @author Bernd Rinn
  */
@@ -47,12 +47,6 @@ public interface IPropertyListingQuery
     @Select("select id, source_uri as code from controlled_vocabularies")
     public CodeRecord[] getVocabularyURLTemplates();
 
-    /**
-     * Returns id and code of all material types.
-     */
-    @Select("select id, code from material_types")
-    public CodeRecord[] getMaterialTypes();
-    
     @Select("select id, code from sample_types")
     public CodeRecord[] getSampleTypeIdsAndCode();
     
@@ -61,10 +55,7 @@ public interface IPropertyListingQuery
             parameterBindings = { LongSetMapper.class}, fetchSize = FETCH_SIZE)
     public DataIterator<VocabularyTermRecord> getVocabularyTerms(LongSet termIds);
 
-    @Select(sql = "SELECT id, code, maty_id FROM materials WHERE id = any(?{1})", 
-            parameterBindings = { LongSetMapper.class}, fetchSize = FETCH_SIZE)
-    public DataIterator<MaterialEntityPropertyRecord> getMaterials(LongSet materialIds);
-    
+
     @Select(sql = "SELECT id, code, perm_id, saty_id FROM samples WHERE id = any(?{1})", 
             parameterBindings = { LongSetMapper.class}, fetchSize = FETCH_SIZE)
     public DataIterator<SampleEntityPropertyRecord> getBasicSamples(LongSet sampleIds);

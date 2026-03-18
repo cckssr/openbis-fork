@@ -286,16 +286,16 @@ public class DataSetDeletionTest extends DeletionTest
         ProjectPermId project = createProject(space, "PROJECT");
         ExperimentPermId experiment = createExperiment(project, "EXPERIMENT");
         DataSetPermId dataset = createDataSet(experiment, "DATA_SET",
-                "DESCRIPTION", "desc", "ORGANISM", "FLY", "BACTERIUM", "BACTERIUM-X");
+                "DESCRIPTION", "desc", "ORGANISM", "FLY");
 
         newTx();
-        setProperties(dataset, "DESCRIPTION", "desc2", "ORGANISM", "GORILLA", "BACTERIUM", "BACTERIUM-Y");
+        setProperties(dataset, "DESCRIPTION", "desc2", "ORGANISM", "GORILLA");
 
         newTx();
-        setProperties(dataset, "DESCRIPTION", null, "ORGANISM", null, "BACTERIUM", null);
+        setProperties(dataset, "DESCRIPTION", null, "ORGANISM", null);
 
         newTx();
-        setProperties(dataset, "DESCRIPTION", "desc3", "ORGANISM", "DOG", "BACTERIUM", "BACTERIUM2");
+        setProperties(dataset, "DESCRIPTION", "desc3", "ORGANISM", "DOG");
 
         newTx();
         delete(dataset);
@@ -305,7 +305,6 @@ public class DataSetDeletionTest extends DeletionTest
 
         assertPropertiesHistory(dataset.getPermId(), "DESCRIPTION", "desc", "desc2", "", "desc3");
         assertPropertiesHistory(dataset.getPermId(), "ORGANISM", "FLY [ORGANISM]", "GORILLA [ORGANISM]", "", "DOG [ORGANISM]");
-        assertPropertiesHistory(dataset.getPermId(), "BACTERIUM", "BACTERIUM-X [BACTERIUM]", "BACTERIUM-Y [BACTERIUM]", "", "BACTERIUM2 [BACTERIUM]");
     }
 
 }

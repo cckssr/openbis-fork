@@ -21,7 +21,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.FetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.FetchOptionsToStringBuilder;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.fetchoptions.MaterialTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.fetchoptions.PersonFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleTypeFetchOptions;
@@ -39,9 +38,6 @@ public class PropertyTypeFetchOptions extends FetchOptions<PropertyType> impleme
 
     @JsonProperty
     private VocabularyFetchOptions vocabulary;
-
-    @JsonProperty
-    private MaterialTypeFetchOptions materialType;
 
     @JsonProperty
     private SampleTypeFetchOptions sampleType;
@@ -75,28 +71,6 @@ public class PropertyTypeFetchOptions extends FetchOptions<PropertyType> impleme
     public boolean hasVocabulary()
     {
         return vocabulary != null;
-    }
-
-    // Method automatically generated with DtoGenerator
-    public MaterialTypeFetchOptions withMaterialType()
-    {
-        if (materialType == null)
-        {
-            materialType = new MaterialTypeFetchOptions();
-        }
-        return materialType;
-    }
-
-    // Method automatically generated with DtoGenerator
-    public MaterialTypeFetchOptions withMaterialTypeUsing(MaterialTypeFetchOptions fetchOptions)
-    {
-        return materialType = fetchOptions;
-    }
-
-    // Method automatically generated with DtoGenerator
-    public boolean hasMaterialType()
-    {
-        return materialType != null;
     }
 
     public SampleTypeFetchOptions withSampleType()
@@ -185,7 +159,6 @@ public class PropertyTypeFetchOptions extends FetchOptions<PropertyType> impleme
     {
         FetchOptionsToStringBuilder f = new FetchOptionsToStringBuilder("PropertyType", this);
         f.addFetchOption("Vocabulary", vocabulary);
-        f.addFetchOption("MaterialType", materialType);
         f.addFetchOption("SampleType", sampleType);
         f.addFetchOption("SemanticAnnotations", semanticAnnotations);
         f.addFetchOption("Registrator", registrator);

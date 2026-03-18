@@ -21,7 +21,6 @@ import org.testng.annotations.Test;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.history.fetchoptions.HistoryEntryFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.fetchoptions.MaterialFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.fetchoptions.PersonFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.fetchoptions.ProjectFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
@@ -67,7 +66,6 @@ public class FetchOptionsToStringTest extends AssertJUnit
     {
         SampleFetchOptions fe = new SampleFetchOptions();
         fe.withHistory();
-        fe.withMaterialProperties();
         fe.withModifier();
         fe.withParents();
         fe.withProperties();
@@ -77,7 +75,6 @@ public class FetchOptionsToStringTest extends AssertJUnit
         assertEquals("Sample\n" +
                 "    with Type\n" +
                 "    with Properties\n" +
-                "    with MaterialProperties\n" +
                 "    with Parents\n" +
                 "    with History\n" +
                 "    with Tags\n" +
@@ -94,9 +91,7 @@ public class FetchOptionsToStringTest extends AssertJUnit
         fe.withDataSets().withComponents().withSample().withChildren();
         fe.withDataSets().withComponents().withExperiment().withSamples();
         fe.withDataSets().withComponents().withProperties();
-        fe.withDataSets().withComponents().withMaterialProperties();
         PersonFetchOptions author = fe.withHistory().withAuthor();
-        fe.withMaterialProperties().withProperties();
         fe.withModifierUsing(author);
         fe.withParents();
         fe.withProperties();
@@ -110,8 +105,6 @@ public class FetchOptionsToStringTest extends AssertJUnit
         assertEquals("Sample order by CODE ASC, order by MODIFICATION_DATE ASC\n" +
                 "    with Type\n" +
                 "    with Properties\n" +
-                "    with MaterialProperties\n" +
-                "        with Properties\n" +
                 "    with Parents\n" +
                 "    with DataSets\n" +
                 "        with Components\n" +
@@ -120,7 +113,6 @@ public class FetchOptionsToStringTest extends AssertJUnit
                 "            with Sample\n" +
                 "                with Children\n" +
                 "            with Properties\n" +
-                "            with MaterialProperties\n" +
                 "    with History\n" +
                 "        with Author\n" +
                 "            with Space\n" +
@@ -143,13 +135,11 @@ public class FetchOptionsToStringTest extends AssertJUnit
         fe.withLinkedData();
         fe.withExperiment();
         fe.withHistory();
-        fe.withMaterialProperties();
         fe.withModifier();
         assertEquals("DataSet\n" +
                 "    with DataStore\n" +
                 "    with LinkedData\n" +
                 "    with Experiment\n" +
-                "    with MaterialProperties\n" +
                 "    with Children\n" +
                 "    with Components\n" +
                 "    with History\n" +
@@ -189,10 +179,6 @@ public class FetchOptionsToStringTest extends AssertJUnit
         fe.withLinkedData().withExternalDms();
         fe.withExperiment().withDataSetsUsing(fe);
         fe.withHistory().withAuthor();
-        fe.withMaterialProperties().withHistory();
-        fe.withMaterialProperties().withProperties();
-        fe.withMaterialProperties().withRegistrator();
-        fe.withModifierUsing(fe.withMaterialProperties().withRegistrator());
         fe.withParents().sortBy().modificationDate().asc();
         fe.withParents().sortBy().code().desc();
         fe.withParents().sortBy().registrationDate().desc();
@@ -214,10 +200,6 @@ public class FetchOptionsToStringTest extends AssertJUnit
                 "        with Attachments\n" +
                 "            with Content\n" +
                 "    with Properties\n" +
-                "    with MaterialProperties\n" +
-                "        with History\n" +
-                "        with Registrator\n" +
-                "        with Properties\n" +
                 "    with Parents order by MODIFICATION_DATE ASC, order by CODE DESC, order by REGISTRATION_DATE DESC\n" +
                 "    with Children\n" +
                 "        with Properties\n" +
@@ -227,7 +209,6 @@ public class FetchOptionsToStringTest extends AssertJUnit
                 "        with Owner\n" +
                 "    with History\n" +
                 "        with Author\n" +
-                "    with Modifier(recursive)\n" +
                 "    with Registrator\n" +
                 "        with Registrator\n" +
                 "            with Registrator\n" +
@@ -241,7 +222,6 @@ public class FetchOptionsToStringTest extends AssertJUnit
         fe.withAttachments();
         fe.withDataSets();
         fe.withHistory();
-        fe.withMaterialProperties();
         fe.withModifier();
         fe.withProject();
         fe.withProperties();
@@ -256,7 +236,6 @@ public class FetchOptionsToStringTest extends AssertJUnit
                 "    with Samples\n" +
                 "    with History\n" +
                 "    with Properties\n" +
-                "    with MaterialProperties\n" +
                 "    with Tags\n" +
                 "    with Registrator\n" +
                 "    with Modifier\n" +
@@ -271,10 +250,8 @@ public class FetchOptionsToStringTest extends AssertJUnit
         fe.withAttachments().withContent();
         fe.withAttachments().withPreviousVersion().withPreviousVersionUsing(fe.withAttachments());
         fe.withDataSets().withProperties();
-        fe.withDataSets().withMaterialProperties();
         fe.withDataSets().withExperimentUsing(fe);
         fe.withHistory();
-        fe.withMaterialProperties();
         fe.withModifier();
         fe.withProject();
         fe.withProperties();
@@ -289,11 +266,9 @@ public class FetchOptionsToStringTest extends AssertJUnit
                 "    with DataSets\n" +
                 "        with Experiment(recursive)\n" +
                 "        with Properties\n" +
-                "        with MaterialProperties\n" +
                 "    with Samples\n" +
                 "    with History\n" +
                 "    with Properties\n" +
-                "    with MaterialProperties\n" +
                 "    with Tags\n" +
                 "    with Registrator\n" +
                 "        with Registrator\n" +
@@ -404,57 +379,6 @@ public class FetchOptionsToStringTest extends AssertJUnit
                 "            with Space\n" +
                 "                with Projects(recursive)\n" +
                 "        with Content\n" +
-                "", fe.toString());
-    }
-
-    @Test
-    public void testMaterial()
-    {
-        MaterialFetchOptions fe = new MaterialFetchOptions();
-        fe.withHistory();
-        fe.withMaterialProperties();
-        fe.withProperties();
-        fe.withRegistrator();
-        fe.withTags();
-        fe.withType();
-        assertEquals("Material\n" +
-                "    with Type\n" +
-                "    with History\n" +
-                "    with Registrator\n" +
-                "    with Properties\n" +
-                "    with MaterialProperties\n" +
-                "    with Tags\n" +
-                "", fe.toString());
-    }
-
-    @Test
-    public void testMaterialDeepAndRecursive()
-    {
-        MaterialFetchOptions fe = new MaterialFetchOptions();
-        fe.withHistory().withAuthor();
-        fe.withMaterialProperties().withMaterialProperties().withMaterialProperties().withMaterialPropertiesUsing(fe);
-        fe.withProperties();
-        fe.withRegistrator().withSpace().withProjects().withExperiments().withMaterialProperties().withMaterialPropertiesUsing(fe);
-        fe.withRegistrator().withSpace().withProjects().withExperiments().withRegistrator();
-        fe.withTags();
-        fe.withType();
-        assertEquals("Material\n" +
-                "    with Type\n" +
-                "    with History\n" +
-                "        with Author\n" +
-                "    with Registrator\n" +
-                "        with Space\n" +
-                "            with Projects\n" +
-                "                with Experiments\n" +
-                "                    with MaterialProperties\n" +
-                "                        with MaterialProperties(recursive)\n" +
-                "                    with Registrator\n" +
-                "    with Properties\n" +
-                "    with MaterialProperties\n" +
-                "        with MaterialProperties\n" +
-                "            with MaterialProperties\n" +
-                "                with MaterialProperties(recursive)\n" +
-                "    with Tags\n" +
                 "", fe.toString());
     }
 

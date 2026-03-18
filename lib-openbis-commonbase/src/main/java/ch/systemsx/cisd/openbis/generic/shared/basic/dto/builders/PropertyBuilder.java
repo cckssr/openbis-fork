@@ -23,7 +23,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.BasicConstant;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataTypeCode;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityProperty;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Material;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PropertyType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ServiceVersionHolder;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.VocabularyTerm;
@@ -134,18 +133,6 @@ public class PropertyBuilder
         type(DataTypeCode.TIMESTAMP);
         String formatedDate = new SimpleDateFormat(BasicConstant.CANONICAL_DATE_FORMAT_PATTERN).format(value);
         property.setValue(formatedDate);
-        return this;
-    }
-
-    public PropertyBuilder value(MaterialBuilder builder)
-    {
-        return value(builder.getMaterial());
-    }
-
-    public PropertyBuilder value(Material value)
-    {
-        type(DataTypeCode.MATERIAL);
-        property.setMaterial(value);
         return this;
     }
 

@@ -361,13 +361,6 @@ public class SampleListingQueryTest extends AbstractDAOTest
     }
 
     @Test
-    public void testMaterialTypes()
-    {
-        CodeRecord[] materialTypes = query.getMaterialTypes();
-        findCode(Arrays.asList(materialTypes), MATERIAL_TYPE_CODE);
-    }
-
-    @Test
     public void testPropertyTypes()
     {
         PropertyType[] propertyTypes = query.getPropertyTypes();

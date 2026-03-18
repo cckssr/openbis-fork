@@ -80,7 +80,6 @@ async function testLoadNew() {
           { value: 'GENERIC', label: 'GENERIC' },
           { value: 'EXPERIMENT', label: 'COLLECTION' },
           { value: 'DATA_SET', label: 'DATA_SET' },
-          { value: 'MATERIAL', label: 'MATERIAL' },
           { value: 'SAMPLE', label: 'OBJECT' }
         ],
         enabled: true,
@@ -231,7 +230,6 @@ async function testLoadExisting(query) {
           { value: 'GENERIC', label: 'GENERIC' },
           { value: 'EXPERIMENT', label: 'COLLECTION' },
           { value: 'DATA_SET', label: 'DATA_SET' },
-          { value: 'MATERIAL', label: 'MATERIAL' },
           { value: 'SAMPLE', label: 'OBJECT' }
         ],
         enabled: true,

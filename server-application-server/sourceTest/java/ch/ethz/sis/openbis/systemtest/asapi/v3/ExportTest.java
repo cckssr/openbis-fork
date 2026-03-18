@@ -631,9 +631,11 @@ public class ExportTest extends AbstractTest
             compareDirectories(expectedResultFile, actualResultFile);
         } else if (expectedResultFilePath.endsWith(XLSX_EXTENSION) && actualResultFilePath.endsWith(XLSX_EXTENSION))
         {
+            logComparedFiles("xlsx", expectedResultFilePath, actualResultFilePath);
             compareXlsxFiles(expectedResultFilePath, actualResultFilePath);
         } else if (expectedResultFilePath.endsWith(ZIP_EXTENSION) && actualResultFilePath.endsWith(ZIP_EXTENSION))
         {
+            logComparedFiles("zip", expectedResultFilePath, actualResultFilePath);
             compareZipFiles(expectedResultFilePath, actualResultFilePath);
         } else if (expectedResultFilePath.endsWith(HTML_EXTENSION) && actualResultFilePath.endsWith(HTML_EXTENSION))
         {
@@ -642,6 +644,7 @@ public class ExportTest extends AbstractTest
                     final FileInputStream actualResultInputStream = new FileInputStream(getActualFile(actualResultFilePath));
             )
             {
+                logComparedFiles("stream", expectedResultFilePath, actualResultFilePath);
                 compareStreams(expectedResultInputStream, actualResultInputStream);
             }
         } else
@@ -695,16 +698,21 @@ public class ExportTest extends AbstractTest
                             final InputStream actualInputStream = actualZipFile.getInputStream(actualZipFile.getEntry(expectedZipEntry));
                     )
                     {
+                        logComparedFiles("zip-xlsx-entry", expectedResultFilePath + "!" + expectedZipEntry,
+                                actualFile.getAbsolutePath() + "!" + expectedZipEntry);
                         compareXlsxStreams(expectedInputStream, actualInputStream);
                     }
                 } else if (!expectedZipEntry.endsWith(PDF_EXTENSION) && !expectedZipEntry.endsWith(JSON_EXTENSION))
                 {
                     // We ignore PDF and JSON files in comparison
+                    final ZipEntry actualEntry = findEntry(actualZipFile, expectedZipEntry);
                     try (
                             final InputStream expectedInputStream = extectedZipFile.getInputStream(extectedZipFile.getEntry(expectedZipEntry));
-                            final InputStream actualInputStream = actualZipFile.getInputStream(findEntry(actualZipFile, expectedZipEntry));
+                            final InputStream actualInputStream = actualZipFile.getInputStream(actualEntry);
                     )
                     {
+                        logComparedFiles("zip-entry", expectedResultFilePath + "!" + expectedZipEntry,
+                                actualResultFilePath + "!" + actualEntry.getName());
                         compareStreams(expectedInputStream, actualInputStream);
                     }
                 }
@@ -768,14 +776,23 @@ public class ExportTest extends AbstractTest
                 {
                     if (expectedFileName.equals(METADATA_FILE_NAME))
                     {
+                        logComparedFiles("directory-xlsx", expectedFile.getAbsolutePath(), actualFile.getAbsolutePath());
                         compareXlsxStreams(expectedInputStream, actualInputStream);
                     } else
                     {
+                        logComparedFiles("directory-stream", expectedFile.getAbsolutePath(), actualFile.getAbsolutePath());
                         compareStreams(expectedInputStream, actualInputStream);
                     }
                 }
             }
         }
+    }
+
+    private static void logComparedFiles(final String comparisonType, final String expectedPath, final String actualPath)
+    {
+        System.out.println("[ExportTest] Comparing " + comparisonType);
+        System.out.println("[ExportTest]   expected: " + expectedPath);
+        System.out.println("[ExportTest]   actual:   " + actualPath);
     }
 
     private static void compareXlsxStreams(final InputStream expectedResultInputStream, final InputStream actualResultInputStream) throws IOException

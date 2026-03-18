@@ -643,7 +643,7 @@ public class SampleDAO extends AbstractGenericEntityWithPropertiesDAO<SamplePE> 
     private static String createQueryPropertyHistorySQL()
     {
         return "("
-                + "SELECT s.perm_id, pt.code, coalesce(h.value, h.vocabulary_term, h.material) as value, "
+                + "SELECT s.perm_id, pt.code, coalesce(h.value, h.vocabulary_term) as value, "
                 + "p.user_id, h.valid_from_timestamp, h.valid_until_timestamp "
                 + "FROM samples_all s, sample_properties_history h, sample_type_property_types stpt, property_types pt, persons p "
                 + "WHERE h.samp_id " + SQLBuilder.inEntityIds() + " AND "
@@ -655,10 +655,7 @@ public class SampleDAO extends AbstractGenericEntityWithPropertiesDAO<SamplePE> 
                 + "SELECT s.perm_id, pt.code, coalesce(value, "
                 + "(SELECT (t.code || ' [' || v.code || ']') "
                 + "FROM controlled_vocabulary_terms as t JOIN controlled_vocabularies as v ON t.covo_id = v.id "
-                + "WHERE t.id = pr.cvte_id), "
-                + "(SELECT (m.code || ' [' || mt.code || ']') "
-                + "FROM materials AS m JOIN material_types AS mt ON m.maty_id = mt.id "
-                + "WHERE m.id = pr.mate_prop_id)) as value, "
+                + "WHERE t.id = pr.cvte_id)) as value, "
                 + "author.user_id, pr.modification_timestamp, null "
                 + "FROM samples_all s, sample_properties pr, sample_type_property_types stpt, property_types pt, persons author "
                 + "WHERE pr.samp_id " + SQLBuilder.inEntityIds() + " AND "

@@ -24,7 +24,6 @@ import org.springframework.stereotype.Component;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.Material;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.Tag;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.fetchoptions.TagFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.TagPermId;
@@ -57,9 +56,6 @@ public class TagTranslator extends AbstractCachingTranslator<Long, Tag, TagFetch
 
     @Autowired
     private ITagDataSetTranslator dataSetTranslator;
-
-    @Autowired
-    private ITagMaterialTranslator materialTranslator;
 
     @Override
     protected Set<Long> shouldTranslate(TranslationContext context, Collection<Long> tagIds, TagFetchOptions fetchOptions)
@@ -102,11 +98,6 @@ public class TagTranslator extends AbstractCachingTranslator<Long, Tag, TagFetch
             relations.put(ITagDataSetTranslator.class, dataSetTranslator.translate(context, tagIds, fetchOptions.withDataSets()));
         }
 
-        if (fetchOptions.hasMaterials())
-        {
-            relations.put(ITagMaterialTranslator.class, materialTranslator.translate(context, tagIds, fetchOptions.withMaterials()));
-        }
-
         return relations;
     }
 
@@ -146,11 +137,6 @@ public class TagTranslator extends AbstractCachingTranslator<Long, Tag, TagFetch
             result.getFetchOptions().withDataSetsUsing(fetchOptions.withDataSets());
         }
 
-        if (fetchOptions.hasMaterials())
-        {
-            result.setMaterials((List<Material>) relations.get(ITagMaterialTranslator.class, tagId));
-            result.getFetchOptions().withMaterialsUsing(fetchOptions.withMaterials());
-        }
     }
 
 }

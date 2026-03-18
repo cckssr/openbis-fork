@@ -444,8 +444,6 @@ public abstract class AbstractQueryFacadeTest extends SystemTestCase
 
         parameters.put("experimentTypes", Arrays.asList("COMPOUND_HCS"));
 
-        parameters.put("materialTypes", Arrays.asList("BACTERIUM"));
-
         QueryTableModel table =
                 createReportFromAggregationService("property-definitions-aggregation-service",
                         parameters);
@@ -456,18 +454,14 @@ public abstract class AbstractQueryFacadeTest extends SystemTestCase
         assertRowsContent(
                 table,
                 "[Data Set, HCS_IMAGE, COMMENT Any other comments Comment True 1 False False None True]",
-                "[Data Set, HCS_IMAGE, ANY_MATERIAL any_material any_material False 2 False False None True]",
-                "[Data Set, HCS_IMAGE, BACTERIUM bacterium bacterium False 3 False False None True]",
+                "[Data Set, HCS_IMAGE, SIZE The size of the object Size False 2 False False None True]",
                 "[Data Set, HCS_IMAGE, GENDER The gender of the living organism Gender False 4 False False None True]",
                 "[Data Set, UNKNOWN, N/A]",
                 "[Sample, MASTER_PLATE, PLATE_GEOMETRY Plate Geometry Plate Geometry True 1 False False None True]",
                 "[Sample, MASTER_PLATE, DESCRIPTION A Description Description False 2 False False None True]",
                 "[Sample, DILUTION_PLATE, OFFSET Offset from the start of the sequence Offset False 1 False False None True]",
                 "[Experiment, COMPOUND_HCS, DESCRIPTION A Description Description True 1 False False None True]",
-                "[Experiment, COMPOUND_HCS, COMMENT Any other comments Comment False 2 False False None True]",
-                "[Experiment, COMPOUND_HCS, ANY_MATERIAL any_material any_material False 3 False False None True]",
-                "[Material, BACTERIUM, DESCRIPTION A Description Description True 1 False False None True]",
-                "[Material, BACTERIUM, ORGANISM The organism from which cells come Organism False 2 False False None True]"
+                "[Experiment, COMPOUND_HCS, COMMENT Any other comments Comment False 2 False False None True]"
 
         );
 
@@ -512,7 +506,7 @@ public abstract class AbstractQueryFacadeTest extends SystemTestCase
                 "[TEST_METAPROJECTS Example metaproject no. 2 test_role]",
                 "[TEST_METAPROJECTS_2 Example metaproject no. 2 test_role]", "[ASSIGNMENTS]",
                 "[SAMPLE None 201206191219327-1055]", "[EXPERIMENT None 201206190940555-1032]",
-                "[DATASET 20120619092259000-22]", "[MATERIAL AD3 (VIRUS)]",
+                "[DATASET 20120619092259000-22]", 
                 "[OLD-SAMPLE TEST_METAPROJECTS Example metaproject no. 2 test_role]");
     }
 

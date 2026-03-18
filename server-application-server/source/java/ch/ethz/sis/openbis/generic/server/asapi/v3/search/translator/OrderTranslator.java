@@ -46,7 +46,6 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.REGISTRATION_TIMESTAMP_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.SAMPLE_IDENTIFIER_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.SAMPLE_PROP_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.MATERIALS_TABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.PROJECTS_TABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.SPACES_TABLE;
 
@@ -188,7 +187,6 @@ public class OrderTranslator
         final JoinInformation samplesTableJoinInformation = joinInformationMap.get(SAMPLE_PROP_COLUMN);
         GlobalSearchCriteriaTranslator.appendRankCalculation(sqlBuilder, tableMapper, false, stringValue,
                 translationContext.getArgs(), MAIN_TABLE_ALIAS,
-                joinInformationMap.get(MATERIALS_TABLE).getSubTableAlias(),
                 samplesTableJoinInformation != null ? samplesTableJoinInformation.getSubTableAlias() : null);
     }
 
@@ -347,8 +345,7 @@ public class OrderTranslator
             joinInformationMap = TranslatorUtils.getPropertyJoinInformationMapForOrder(tableMapper,
                     () -> getOrderingAlias(indexCounter));
             aliasesMapKey = ANY_PROPERTY_SCORE;
-        } else if (isTypeSearchCriterion(sortingCriterionFieldName) ||
-                isSortingByMaterialPermId(translationContext, sortingCriterionFieldName))
+        } else if (isTypeSearchCriterion(sortingCriterionFieldName))
         {
             joinInformationMap = TranslatorUtils.getTypeJoinInformationMap(tableMapper,
                     () -> getOrderingAlias(indexCounter));
@@ -453,13 +450,6 @@ public class OrderTranslator
             {
                 sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(SAMPLE_IDENTIFIER_COLUMN);
             }
-        } else if (isSortingByMaterialPermId(translationContext, sortingCriteriaFieldName))
-        {
-            final String materialTypeTableAlias = translationContext.getAliases()
-                    .get(EntityWithPropertiesSortOptions.TYPE)
-                    .get(tableMapper.getEntityTypesTable()).getSubTableAlias();
-            sqlBuilder.append(SearchCriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN);
-            sqlBuilder.append(COMMA).append(SP).append(materialTypeTableAlias).append(PERIOD).append(CODE_COLUMN);
         } else if (isSortingBySpaceModificationDate(translationContext, sortingCriteriaFieldName))
         {
             sqlBuilder.append(SearchCriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD)
@@ -476,11 +466,6 @@ public class OrderTranslator
     private static boolean isSortingBySpaceModificationDate(final TranslationContext translationContext, final String sortingCriteriaFieldName)
     {
         return EntitySortOptions.MODIFICATION_DATE.equals(sortingCriteriaFieldName) && translationContext.getTableMapper() == TableMapper.SPACE;
-    }
-
-    private static boolean isSortingByMaterialPermId(final TranslationContext translationContext, final String sortingCriteriaFieldName)
-    {
-        return EntitySortOptions.PERM_ID.equals(sortingCriteriaFieldName) && translationContext.getTableMapper() == TableMapper.MATERIAL;
     }
 
     private static String getOrderingAlias(final AtomicInteger num)

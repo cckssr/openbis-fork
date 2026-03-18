@@ -27,8 +27,6 @@ import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Sample;
 import ch.systemsx.cisd.openbis.generic.shared.basic.TechId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.CodeAndLabel;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Material;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewAttachment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewSample;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SampleParentWithDerived;
@@ -53,14 +51,10 @@ import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.ImageDatasetR
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.ImageRepresentationFormat;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.ImageSize;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.LoadImageConfiguration;
-import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.MaterialIdentifier;
-import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.MaterialTypeIdentifier;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.Plate;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.PlateIdentifier;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.PlateImageReference;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.PlateMetadata;
-import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.PlateWellMaterialMapping;
-import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.PlateWellReferenceWithDatasets;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.WellIdentifier;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.AnalysisProcedures;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.DatasetReference;
@@ -71,8 +65,6 @@ import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.ImageDatasetEn
 import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.ImageResolution;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.ImageSampleContent;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.LogicalImageInfo;
-import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.MaterialReplicaFeatureSummaryResult;
-import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.MaterialSimpleFeatureVectorSummary;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.NewLibrary;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.PlateContent;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.PlateImages;
@@ -82,8 +74,6 @@ import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.WellReplicaIma
 import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.WellSearchCriteria;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.WellSearchCriteria.AnalysisProcedureCriteria;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.WellSearchCriteria.ExperimentSearchCriteria;
-import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.WellSearchCriteria.MaterialFeaturesManyExpCriteria;
-import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.WellSearchCriteria.MaterialFeaturesOneExpCriteria;
 
 /**
  * The <i>screening</i> specific {@link AbstractServerLogger} extension.
@@ -115,13 +105,6 @@ final class ScreeningServerLogger extends AbstractServerLogger implements IScree
     }
 
     @Override
-    public PlateContent getPlateContent(String sessionToken, TechId plateId)
-    {
-        logAccess(sessionToken, "getPlateContent", "PLATE(%s)", plateId.getId());
-        return null;
-    }
-
-    @Override
     public FeatureVectorDataset getFeatureVectorDataset(String sessionToken,
             DatasetReference dataset, CodeAndLabel featureName)
     {
@@ -130,35 +113,7 @@ final class ScreeningServerLogger extends AbstractServerLogger implements IScree
         return null;
     }
 
-    @Override
-    public PlateImages getPlateContentForDataset(String sessionToken, TechId datasetId)
-    {
-        logAccess(sessionToken, "getPlateContentForDataset", "DATASET(%s)", datasetId.getId());
-        return null;
-    }
 
-    @Override
-    public List<WellContent> listPlateWells(String sessionToken, WellSearchCriteria materialCriteria)
-    {
-        logAccess(sessionToken, "listPlateWells", "criteria(%s)", materialCriteria);
-        return null;
-    }
-
-    @Override
-    public List<WellReplicaImage> listWellImages(String sessionToken, TechId materialId,
-            TechId experimentId)
-    {
-        logAccess(sessionToken, "listWellImages", "material(%s) experiment(%s)", materialId,
-                experimentId);
-        return null;
-    }
-
-    @Override
-    public List<Material> listMaterials(String sessionToken, WellSearchCriteria materialCriteria)
-    {
-        logAccess(sessionToken, "listMaterials", "criteria(%s)", materialCriteria);
-        return null;
-    }
 
     @Override
     public FeatureVectorValues getWellFeatureVectorValues(String sessionToken, String datasetCode,
@@ -228,12 +183,6 @@ final class ScreeningServerLogger extends AbstractServerLogger implements IScree
         return null;
     }
 
-    @Override
-    public Material getMaterialInfo(String sessionToken, TechId materialId)
-    {
-        logAccess(sessionToken, "getMaterialInfo", "datasetId(%s)", materialId.getId());
-        return null;
-    }
 
     public TableModel loadImageAnalysisForExperiment(String sessionToken, TechId experimentId)
     {
@@ -303,25 +252,6 @@ final class ScreeningServerLogger extends AbstractServerLogger implements IScree
     }
 
     @Override
-    public List<PlateWellReferenceWithDatasets> listPlateWells(
-            String sessionToken,
-            ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.ExperimentIdentifier experimentIdentifer,
-            MaterialIdentifier materialIdentifier, boolean findDatasets)
-    {
-        logAccess(sessionToken, "listPlateWells", "experiment: %s, material: %s",
-                experimentIdentifer, materialIdentifier);
-        return null;
-    }
-
-    @Override
-    public List<PlateWellReferenceWithDatasets> listPlateWells(String sessionToken,
-            MaterialIdentifier materialIdentifier, boolean findDatasets)
-    {
-        logAccess(sessionToken, "listPlateWells", "material: %s", materialIdentifier);
-        return null;
-    }
-
-    @Override
     public List<WellIdentifier> listPlateWells(String sessionToken, PlateIdentifier plateIdentifier)
     {
         logAccess(sessionToken, "listPlateWells", "plate: %s", plateIdentifier);
@@ -381,29 +311,6 @@ final class ScreeningServerLogger extends AbstractServerLogger implements IScree
     }
 
     @Override
-    public List<PlateWellMaterialMapping> listPlateMaterialMapping(String sessionToken,
-            List<? extends PlateIdentifier> plates,
-            MaterialTypeIdentifier materialTypeIdentifierOrNull)
-    {
-        if (materialTypeIdentifierOrNull != null)
-        {
-            logAccess(sessionToken, "listPlateMaterialMapping", "plates(%s), materialType(%s)",
-                    plates, materialTypeIdentifierOrNull);
-        } else
-        {
-            logAccess(sessionToken, "listPlateMaterialMapping", "plates(%s)", plates);
-        }
-        return null;
-    }
-
-    @Override
-    public List<Material> listExperimentMaterials(String sessionToken, TechId experimentId,
-            MaterialType materialType)
-    {
-        return null;
-    }
-
-    @Override
     public int getMajorVersion()
     {
         return MAJOR_VERSION;
@@ -428,38 +335,6 @@ final class ScreeningServerLogger extends AbstractServerLogger implements IScree
     }
 
     @Override
-    public ExperimentFeatureVectorSummary getExperimentFeatureVectorSummary(String sessionToken,
-            TechId experimentId, AnalysisProcedureCriteria analysisProcedureCriteria)
-    {
-        logAccess(sessionToken, "getExperimentFeatureVectorSummary",
-                "sessionToken(%s), experimentId(%s), analysisProcedureCriteria(%s)", sessionToken,
-                experimentId, analysisProcedureCriteria);
-        return null;
-    }
-
-    @Override
-    public MaterialReplicaFeatureSummaryResult getMaterialFeatureVectorSummary(String sessionToken,
-            MaterialFeaturesOneExpCriteria criteria)
-    {
-        logAccess(sessionToken, "getFeatureVectorReplicaSummary",
-                "sessionToken(%s), experimentId(%s), materialId(%s) analysisProcedure(%s)",
-                sessionToken, criteria.getExperimentId(), criteria.getMaterialId(),
-                criteria.getAnalysisProcedureCriteria());
-        return null;
-    }
-
-    @Override
-    public List<MaterialSimpleFeatureVectorSummary> getMaterialFeatureVectorsFromAllExperiments(
-            String sessionToken, MaterialFeaturesManyExpCriteria criteria)
-    {
-        logAccess(sessionToken, "getMaterialFeatureVectorsFromAllExperiments",
-                "sessionToken(%s), materialId(%s), experiments(%s) analysisProcedure(%s)",
-                sessionToken, criteria.getMaterialId(), criteria.getExperimentSearchCriteria(),
-                criteria.getAnalysisProcedureCriteria());
-        return null;
-    }
-
-    @Override
     public AnalysisProcedures listNumericalDatasetsAnalysisProcedures(String sessionToken,
             ExperimentSearchCriteria experimentSearchCriteria)
     {
@@ -469,13 +344,6 @@ final class ScreeningServerLogger extends AbstractServerLogger implements IScree
         return null;
     }
 
-    @Override
-    public List<PlateMetadata> getPlateMetadataList(String sessionToken,
-            List<? extends PlateIdentifier> plates) throws IllegalArgumentException
-    {
-        logAccess(sessionToken, "getPlateMetadataList", "#plates: %s", plates.size());
-        return null;
-    }
 
     @Override
     public ExperimentImageMetadata getExperimentImageMetadata(String sessionToken,

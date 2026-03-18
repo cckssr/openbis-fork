@@ -29,7 +29,6 @@ import ch.systemsx.cisd.openbis.generic.shared.ResourceNames;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.BatchRegistrationResult;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExperimentType;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SampleType;
 
 /**
@@ -110,39 +109,13 @@ public class ImportService implements IImportService
     }
 
     @Override
-    public String createMaterials(String sessionToken, String uploadKey, String materialTypeCode, boolean updateExisting, boolean async,
-            String userEmail)
-    {
-        check(sessionToken, uploadKey, materialTypeCode, async, userEmail);
-
-        MaterialType materialType = new MaterialType();
-        materialType.setCode(materialTypeCode);
-
-        List<BatchRegistrationResult> results = entityImportService.registerMaterials(materialType, updateExisting, uploadKey, async, userEmail);
-        return translateResults(results);
-    }
-
-    @Override
-    public String updateMaterials(String sessionToken, String uploadKey, String materialTypeCode, boolean ignoreUnregistered, boolean async,
-            String userEmail)
-    {
-        check(sessionToken, uploadKey, materialTypeCode, async, userEmail);
-
-        MaterialType materialType = new MaterialType();
-        materialType.setCode(materialTypeCode);
-
-        List<BatchRegistrationResult> results = entityImportService.updateMaterials(materialType, uploadKey, ignoreUnregistered, async, userEmail);
-        return translateResults(results);
-    }
-
-    @Override
     public String generalImport(String sessionToken, String uploadKey, String defaultSpaceIdentifier, boolean updateExisting, boolean async,
             String userEmail)
     {
         check(sessionToken, uploadKey, async, userEmail);
 
         List<BatchRegistrationResult> results =
-                entityImportService.registerOrUpdateSamplesAndMaterials(uploadKey, defaultSpaceIdentifier, updateExisting, async, userEmail);
+                entityImportService.registerOrUpdateSamples(uploadKey, defaultSpaceIdentifier, updateExisting, async, userEmail);
         return translateResults(results);
     }
 

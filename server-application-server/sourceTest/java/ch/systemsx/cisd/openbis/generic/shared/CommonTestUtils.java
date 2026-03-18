@@ -40,8 +40,6 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentPropertyPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentTypePropertyTypePE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialPE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ProjectPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PropertyTypePE;
@@ -98,8 +96,6 @@ public class CommonTestUtils
 
     private static final String MATERIAL_TYPE_VIRUS = "MATERIAL_TYPE_VIRUS";
 
-    public static final MaterialTypePE VIRUS = createMaterialType();
-
     public static int VERSION_22 = 22;
 
     public static String FILENAME = "oneCellOrganismData.txt";
@@ -111,19 +107,16 @@ public class CommonTestUtils
     {
 
         public static PropertyTypePE INFECTED_ORGAN = createPropertyType("USER.INFECTED_ORGAN",
-                DataTypeCode.CONTROLLEDVOCABULARY, ORGAN, null);
-
-        public static PropertyTypePE INFECTING_VIRUS = createPropertyType("USER.INFECTING_VIRUS",
-                DataTypeCode.MATERIAL, null, VIRUS);
+                DataTypeCode.CONTROLLEDVOCABULARY, ORGAN);
 
         public static PropertyTypePE DESCRIPTION = createPropertyType("USER.DESCRIPTION",
-                DataTypeCode.VARCHAR, null, null);
+                DataTypeCode.VARCHAR, null);
 
         public static PropertyTypePE NOTES = createPropertyType("USER.NOTES", DataTypeCode.VARCHAR,
-                null, null);
+                null);
 
         public static PropertyTypePE CATEGORY_DESCRIPTION = createPropertyType(
-                "USER.CATEGORY_DESCRIPTION", DataTypeCode.VARCHAR, null, null);
+                "USER.CATEGORY_DESCRIPTION", DataTypeCode.VARCHAR, null);
     }
 
     public static ExperimentPropertyPE createCategoryProperty(ExperimentTypePE experimentType)
@@ -166,21 +159,6 @@ public class CommonTestUtils
         changed.setEntityTypePropertyType(organAssignment);
         changed.setVocabularyTerm(term);
         return changed;
-    }
-
-    public static ExperimentPropertyPE createMaterialProperty(ExperimentTypePE experimentType)
-    {
-        return createMaterialProperty(experimentType, "ABCD");
-    }
-
-    public static ExperimentPropertyPE createMaterialProperty(ExperimentTypePE experimentType,
-            String materialCode)
-    {
-        ExperimentPropertyPE property = new ExperimentPropertyPE();
-        property.setEntityTypePropertyType(createAssignment(ExamplePropertyTypes.INFECTING_VIRUS,
-                experimentType));
-        property.setMaterialValue(createMaterial(VIRUS, materialCode));
-        return property;
     }
 
     public static ExperimentTypePropertyTypePE createAssignment(PropertyTypePE propertyType,
@@ -257,13 +235,12 @@ public class CommonTestUtils
     }
 
     public static final PropertyTypePE createPropertyType(String fullCode, DataTypeCode type,
-            VocabularyPE vocabularyOrNull, MaterialTypePE materialTypeOrNull)
+            VocabularyPE vocabularyOrNull)
     {
         PropertyTypePE result = new PropertyTypePE();
         result.setCode(fullCode);
         result.setType(createDataType(type));
         result.setVocabulary(vocabularyOrNull);
-        result.setMaterialType(materialTypeOrNull);
         result.setDescription("Description of " + fullCode);
         result.setLabel("Label of " + fullCode);
         return result;
@@ -324,14 +301,6 @@ public class CommonTestUtils
         return dataPE;
     }
 
-    public static final MaterialPE createMaterial(String materialCode, String typeCode)
-    {
-        final MaterialPE materialPE = new MaterialPE();
-        materialPE.setCode(materialCode);
-        final MaterialTypePE materialTypePE = createMaterialType(typeCode);
-        materialPE.setMaterialType(materialTypePE);
-        return materialPE;
-    }
 
     public static final ExperimentIdentifier createExperimentIdentifier()
     {
@@ -389,26 +358,6 @@ public class CommonTestUtils
         final AttachmentContentPE attachmentContentPE = new AttachmentContentPE();
         attachmentContentPE.setValue(content.getBytes());
         return attachmentContentPE;
-    }
-
-    public static MaterialPE createMaterial(MaterialTypePE materialType, String code)
-    {
-        final MaterialPE material = new MaterialPE();
-        material.setCode(code);
-        material.setMaterialType(materialType);
-        return material;
-    }
-
-    public static MaterialTypePE createMaterialType()
-    {
-        return createMaterialType(MATERIAL_TYPE_VIRUS);
-    }
-
-    public static MaterialTypePE createMaterialType(String typeCode)
-    {
-        final MaterialTypePE type = new MaterialTypePE();
-        type.setCode(typeCode);
-        return type;
     }
 
     public final static SamplePropertyPE createSamplePropertyPE(final String code,

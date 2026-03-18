@@ -30,10 +30,6 @@ public class AtomicEntityOperationResult implements Serializable
 
     private final long projectsUpdatedCount;
 
-    private final long materialsCreatedCount;
-
-    private final long materialsUpdatedCount;
-
     private final long experimentsCreatedCount;
 
     private final long experimentsUpdatedCount;
@@ -58,11 +54,11 @@ public class AtomicEntityOperationResult implements Serializable
 
     public AtomicEntityOperationResult()
     {
-        this(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+        this(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
     }
 
     public AtomicEntityOperationResult(long spacesCreated, long projectsCreated,
-            long projectsUpdated, long materialsCreated, long materialsUpdated,
+            long projectsUpdated,
             long experimentsCreated, long experimentsUpdated, long samplesCreated,
             long samplesUpdated, long dataSetsCreated, long dataSetsUpdated,
             long metaprojectsCreatedCount, long metaprojectsUpdatedCount,
@@ -71,8 +67,6 @@ public class AtomicEntityOperationResult implements Serializable
         this.spacesCreatedCount = spacesCreated;
         this.projectsCreatedCount = projectsCreated;
         this.projectsUpdatedCount = projectsUpdated;
-        this.materialsCreatedCount = materialsCreated;
-        this.materialsUpdatedCount = materialsUpdated;
         this.experimentsCreatedCount = experimentsCreated;
         this.experimentsUpdatedCount = experimentsUpdated;
         this.samplesCreatedCount = samplesCreated;
@@ -131,16 +125,6 @@ public class AtomicEntityOperationResult implements Serializable
         return projectsUpdatedCount;
     }
 
-    public long getMaterialsCreatedCount()
-    {
-        return materialsCreatedCount;
-    }
-
-    public long getMaterialsUpdatedCount()
-    {
-        return materialsUpdatedCount;
-    }
-
     public long getMetaprojectsCreatedCount()
     {
         return metaprojectsCreatedCount;
@@ -158,7 +142,7 @@ public class AtomicEntityOperationResult implements Serializable
 
     private long getAllOperationsCount()
     {
-        return spacesCreatedCount + projectsCreatedCount + projectsUpdatedCount + materialsCreatedCount + materialsUpdatedCount
+        return spacesCreatedCount + projectsCreatedCount + projectsUpdatedCount
                 + experimentsCreatedCount + experimentsUpdatedCount + samplesCreatedCount + samplesUpdatedCount + dataSetsCreatedCount
                 + dataSetsUpdatedCount + metaprojectsCreatedCount + metaprojectsUpdatedCount + vocabulariesUpdatedCount;
     }
@@ -188,8 +172,6 @@ public class AtomicEntityOperationResult implements Serializable
         updateMessage(message, spacesCreatedCount, "Spaces created");
         updateMessage(message, projectsCreatedCount, "Projects created");
         updateMessage(message, projectsUpdatedCount, "Projects updated");
-        updateMessage(message, materialsCreatedCount, "Materials created");
-        updateMessage(message, materialsUpdatedCount, "Materials updated");
         updateMessage(message, experimentsCreatedCount, "Experiments created");
         updateMessage(message, experimentsUpdatedCount, "Experiments updated");
         updateMessage(message, samplesCreatedCount, "Samples created");

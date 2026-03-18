@@ -21,10 +21,6 @@ export default class TypeBrowserControllerReload extends BrowserControllerReload
         objectOperation.CREATE,
         objectOperation.DELETE
       ],
-      [objectType.MATERIAL_TYPE]: [
-        objectOperation.CREATE,
-        objectOperation.DELETE
-      ],
       [objectType.VOCABULARY_TYPE]: [
         objectOperation.CREATE,
         objectOperation.DELETE

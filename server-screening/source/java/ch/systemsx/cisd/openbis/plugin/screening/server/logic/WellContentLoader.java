@@ -34,7 +34,6 @@ import ch.systemsx.cisd.common.collection.IKeyExtractor;
 import ch.systemsx.cisd.common.collection.TableMap;
 import ch.systemsx.cisd.common.collection.TableMap.UniqueKeyViolationStrategy;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.materiallister.IMaterialLister;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.samplelister.ISampleLister;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
 import ch.systemsx.cisd.openbis.generic.shared.basic.TechId;
@@ -45,16 +44,11 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DetailedSearchCriterion
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DetailedSearchField;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityReference;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ListMaterialCriteria;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ListOrSearchSampleCriteria;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Material;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialAttributeSearchFieldKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Sample;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SearchCriteriaConnection;
 import ch.systemsx.cisd.openbis.generic.shared.basic.utils.GroupByMap;
 import ch.systemsx.cisd.openbis.generic.shared.basic.utils.IGroupKeyExtractor;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialTypePE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialTypePropertyTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.Session;
 import ch.systemsx.cisd.openbis.plugin.screening.server.IScreeningBusinessObjectFactory;
 import ch.systemsx.cisd.openbis.plugin.screening.server.dataaccess.IScreeningQuery;
@@ -65,7 +59,6 @@ import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.DatasetReferen
 import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.ExperimentReference;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.FeatureVectorValues;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.ImageDatasetParameters;
-import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.MaterialSummarySettings;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.NamedFeatureVector;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.WellContent;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.WellFeatureVectorReference;
@@ -74,8 +67,6 @@ import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.WellReplicaIma
 import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.WellSearchCriteria;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.WellSearchCriteria.AnalysisProcedureCriteria;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.WellSearchCriteria.ExperimentSearchCriteria;
-import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.WellSearchCriteria.MaterialSearchCodesCriteria;
-import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.WellSearchCriteria.MaterialSearchCriteria;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.WellSearchCriteria.SingleExperimentSearchCriteria;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.imaging.FeatureVectorLoader.WellFeatureCollection;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.imaging.IHCSFeatureVectorLoader;
@@ -90,94 +81,6 @@ public class WellContentLoader extends AbstractContentLoader
 {
     private static final int MAX_NUMBERS_OF_MATERIALS = 1000;
 
-    /**
-     * Finds wells containing the specified material and belonging to the specified experiment. Loads wells metadata, but no information about
-     * connected datasets.
-     */
-    public static List<WellContent> loadOnlyMetadata(Session session,
-            IScreeningBusinessObjectFactory businessObjectFactory, IDAOFactory daoFactory,
-            TechId materialId, TechId experimentId)
-    {
-        WellContentLoader loader =
-                new WellContentLoader(session, businessObjectFactory, daoFactory, null);
-        return loader.loadLocations(materialId, experimentId);
-    }
-
-    /** loads wells metadata, but no information about image or image analysis datasets */
-    public static List<WellContent> loadOnlyMetadata(Session session,
-            IScreeningBusinessObjectFactory businessObjectFactory, IDAOFactory daoFactory,
-            TechId materialId)
-    {
-        final WellContentLoader loader =
-                new WellContentLoader(session, businessObjectFactory, daoFactory, null);
-        return loader.loadLocations(materialId);
-    }
-
-    /** loads wells metadata, but no information about image or image analysis datasets */
-    public static List<WellContent> loadOnlyMetadataForProject(Session session,
-            IScreeningBusinessObjectFactory businessObjectFactory, IDAOFactory daoFactory,
-            TechId materialId, TechId projectId)
-    {
-        final WellContentLoader loader =
-                new WellContentLoader(session, businessObjectFactory, daoFactory, null);
-        return loader.loadLocationsForProject(materialId, projectId);
-    }
-
-    /**
-     * Finds wells matching the specified criteria. containing the specified materials and belonging to the specified experiment. Loads wells content:
-     * metadata and (if available) image dataset and feature vectors.
-     */
-    public static List<WellContent> load(Session session,
-            IScreeningBusinessObjectFactory businessObjectFactory, IDAOFactory daoFactory,
-            WellSearchCriteria materialCriteria)
-    {
-        long start = System.currentTimeMillis();
-        WellContentLoader loader =
-                new WellContentLoader(session, businessObjectFactory, daoFactory, null);
-        List<WellContent> locations = loader.loadLocations(materialCriteria);
-
-        operationLog.info(String.format("[%d msec] Load %d locations.",
-                (System.currentTimeMillis() - start), locations.size()));
-
-        List<WellContent> withPropsAndDataSets =
-                loader.enrichWithDatasets(locations,
-                        materialCriteria.getAnalysisProcedureCriteria());
-        List<WellContent> byAnalysisProcedure =
-                loader.filterByAnalysisProcedure(withPropsAndDataSets,
-                        materialCriteria.getAnalysisProcedureCriteria());
-        List<WellContent> withFeatureVectors = loader.enrichWithFeatureVectors(byAnalysisProcedure);
-        return withFeatureVectors;
-    }
-
-    /**
-     * Finds wells containing the specified material and belonging to the specified experiment. Loads wells metadata and single image dataset for each
-     * well. If there are many image datasets for the well, all but the first one are ignored. If there is no image dataset for the well, the whole
-     * well is ignored.
-     */
-    public static List<WellReplicaImage> loadWithImages(Session session,
-            IScreeningBusinessObjectFactory businessObjectFactory, IDAOFactory daoFactory,
-            TechId materialId, TechId experimentId, MaterialSummarySettings settings)
-    {
-        WellContentLoader loader =
-                new WellContentLoader(session, businessObjectFactory, daoFactory, null);
-        List<WellContent> locations = loader.loadLocations(materialId, experimentId);
-        locations = loader.enrichWithSingleImageDatasets(locations);
-        return annotateWithReplicaLabels(locations, settings);
-    }
-
-    private static List<WellReplicaImage> annotateWithReplicaLabels(
-            List<WellContent> wellsWithImages, MaterialSummarySettings settings)
-    {
-        ReplicateSequenceProvider replicaSequences =
-                new ReplicateSequenceProvider(wellsWithImages,
-                        settings.getBiologicalReplicatePropertyTypeCodes());
-        List<WellReplicaImage> wellReplicaImages = new ArrayList<WellReplicaImage>();
-        for (WellContent wellContent : wellsWithImages)
-        {
-            wellReplicaImages.add(annotateWithReplicaLabels(wellContent, replicaSequences));
-        }
-        return wellReplicaImages;
-    }
 
     private static WellReplicaImage annotateWithReplicaLabels(WellContent wellContent,
             ReplicateSequenceProvider replicaSequences)
@@ -264,33 +167,6 @@ public class WellContentLoader extends AbstractContentLoader
             plateToDatasetReferenceMap.put(plateId, imaageDatasetReference);
         }
         return plateToDatasetReferenceMap;
-    }
-
-    /**
-     * @return list of unique materials with codes or properties matching to the query. If the experiment is specified, only materials inside well
-     *         locations connected through the plate to this specified experiment(s) will be returned.
-     */
-    public static List<Material> loadMaterials(Session session,
-            IScreeningBusinessObjectFactory businessObjectFactory, IDAOFactory daoFactory,
-            WellSearchCriteria materialCriteria)
-    {
-        Iterable<WellContentQueryResult> locations =
-                new WellContentLoader(session, businessObjectFactory, daoFactory, null)
-                        .loadRawLocations(materialCriteria);
-        Collection<Long> materialIds = extractMaterialIds(locations);
-        return businessObjectFactory.createMaterialLister(session).list(
-                ListMaterialCriteria.createFromMaterialIds(materialIds), true);
-    }
-
-    @SuppressWarnings("deprecation")
-    private static Collection<Long> extractMaterialIds(Iterable<WellContentQueryResult> locations)
-    {
-        List<Long> materialIds = new ArrayList<Long>();
-        for (WellContentQueryResult location : locations)
-        {
-            materialIds.add(location.material_content_id);
-        }
-        return materialIds;
     }
 
     private WellContentLoader(Session session,
@@ -777,85 +653,6 @@ public class WellContentLoader extends AbstractContentLoader
         return map;
     }
 
-    private List<WellContent> loadLocations(WellSearchCriteria materialCriteria)
-    {
-        Iterable<WellContentQueryResult> locations = loadRawLocations(materialCriteria);
-        return convert(locations);
-    }
-
-    private Iterable<WellContentQueryResult> loadRawLocations(WellSearchCriteria materialCriteria)
-    {
-        Iterable<WellContentQueryResult> locations;
-        MaterialSearchCriteria materialSearchCriteria =
-                materialCriteria.getMaterialSearchCriteria();
-
-        ExperimentSearchCriteria experimentCriteria = materialCriteria.getExperimentCriteria();
-        SingleExperimentSearchCriteria experimentOrNull = experimentCriteria.tryGetExperiment();
-        BasicProjectIdentifier projectOrNull = experimentCriteria.tryGetProjectIdentifier();
-
-        IScreeningQuery dao = getScreeningDAO();
-        if (materialSearchCriteria.tryGetMaterialCodesOrProperties() != null)
-        {
-            MaterialSearchCodesCriteria codesCriteria =
-                    materialSearchCriteria.tryGetMaterialCodesOrProperties();
-
-            long start = System.currentTimeMillis();
-            long[] materialIds = findMaterialIds(codesCriteria);
-
-            operationLog.info(String.format(
-                    "[%d msec] Finding %d materials for criteria '%s'. Result: %s",
-                    (System.currentTimeMillis() - start), materialIds.length, codesCriteria,
-                    abbreviate(materialIds, 100)));
-            if (materialIds.length > MAX_NUMBERS_OF_MATERIALS)
-            {
-                throw new UserFailureException("More than " + MAX_NUMBERS_OF_MATERIALS
-                        + " materials for criteria '" + codesCriteria + "' are found. "
-                        + "Please restrict your search criteria.");
-            }
-            start = System.currentTimeMillis();
-
-            if (experimentOrNull != null)
-            {
-                locations =
-                        dao.getPlateLocationsForMaterialCodes(materialIds, codesCriteria
-                                .getMaterialTypeCodes(), experimentOrNull.getExperimentId().getId());
-            } else if (projectOrNull != null)
-            {
-                locations =
-                        dao.getPlateLocationsForMaterialCodesInProject(materialIds,
-                                codesCriteria.getMaterialTypeCodes(), projectOrNull.getSpaceCode(),
-                                projectOrNull.getProjectCode());
-            } else
-            {
-                locations =
-                        dao.getPlateLocationsForMaterialCodes(materialIds,
-                                codesCriteria.getMaterialTypeCodes());
-            }
-        } else if (materialSearchCriteria.tryGetMaterialId() != null)
-        {
-            long materialId = materialSearchCriteria.tryGetMaterialId().getId();
-            if (experimentOrNull != null)
-            {
-                locations =
-                        dao.getPlateLocationsForMaterialId(materialId, experimentOrNull
-                                .getExperimentId().getId());
-            } else if (projectOrNull != null)
-            {
-                locations =
-                        dao.getPlateLocationsForMaterialId(materialId,
-                                projectOrNull.getSpaceCode(), projectOrNull.getProjectCode());
-            } else
-            {
-                locations = dao.getPlateLocationsForMaterialId(materialId);
-            }
-        } else
-        {
-            throw new IllegalStateException("unhandled materia search criteria: "
-                    + materialSearchCriteria);
-        }
-        return locations;
-    }
-
     private static String abbreviate(long[] values, int limit)
     {
         int realLimit;
@@ -876,112 +673,6 @@ public class WellContentLoader extends AbstractContentLoader
             sb.append(i);
         }
         return sb.toString();
-    }
-
-    // NOET: this ignores material types, it has to be filtered later
-    private long[] findMaterialIds(MaterialSearchCodesCriteria codesCriteria)
-    {
-        List<String> materialTypeCodes = Arrays.asList(codesCriteria.getMaterialTypeCodes());
-        List<MaterialTypePE> types =
-                daoFactory.getEntityTypeDAO(
-                        ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind.MATERIAL)
-                        .listEntityTypes();
-        Set<String> propertyCodes = new HashSet<String>();
-        for (MaterialTypePE mt : types)
-        {
-            if (materialTypeCodes.contains(mt.getCode()))
-            {
-                for (MaterialTypePropertyTypePE mtpt : mt.getMaterialTypePropertyTypes())
-                {
-                    propertyCodes.add(mtpt.getPropertyType().getCode());
-                }
-            }
-        }
-        DetailedSearchCriteria criteria = new DetailedSearchCriteria();
-        ArrayList<DetailedSearchCriterion> listOfCriteria =
-                new ArrayList<DetailedSearchCriterion>();
-        for (String value : codesCriteria.getMaterialCodesOrProperties())
-        {
-            listOfCriteria.add(createCodeCriterion(value));
-            listOfCriteria.add(createPropertyCriterion(value, propertyCodes));
-        }
-        criteria.setCriteria(listOfCriteria);
-        criteria.setConnection(SearchCriteriaConnection.MATCH_ANY);
-        criteria.setUseWildcardSearchMode(codesCriteria.isExactMatchOnly());
-        return ArrayUtils.toPrimitive(daoFactory
-                .getHibernateSearchDAO()
-                .searchForEntityIds(session.getUserName(), criteria,
-                        ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind.MATERIAL)
-                .toArray(new Long[0]));
-    }
-
-    private DetailedSearchCriterion createPropertyCriterion(String value,
-            Set<String> allEntityPropertyCodes)
-    {
-        DetailedSearchCriterion criterion = new DetailedSearchCriterion();
-        criterion.setField(DetailedSearchField.createAnyPropertyField(new ArrayList<String>(
-                allEntityPropertyCodes)));
-        criterion.setValue(value);
-        return criterion;
-    }
-
-    private DetailedSearchCriterion createCodeCriterion(String code)
-    {
-        DetailedSearchCriterion criterion = new DetailedSearchCriterion();
-        criterion.setField(DetailedSearchField
-                .createAttributeField(MaterialAttributeSearchFieldKind.CODE));
-        criterion.setValue(code);
-        return criterion;
-    }
-
-    private List<WellContent> loadLocations(TechId geneMaterialId, TechId experimentId)
-    {
-        DataIterator<WellContentQueryResult> locations =
-                getScreeningDAO().getPlateLocationsForMaterialId(geneMaterialId.getId(),
-                        experimentId.getId());
-
-        return convert(locations);
-    }
-
-    private List<WellContent> loadLocations(TechId geneMaterialId)
-    {
-        DataIterator<WellContentQueryResult> locations =
-                getScreeningDAO().getPlateLocationsForMaterialId(geneMaterialId.getId());
-        return convert(locations);
-    }
-
-    private List<WellContent> loadLocationsForProject(TechId geneMaterialId, TechId projectId)
-    {
-        DataIterator<WellContentQueryResult> locations =
-                getScreeningDAO().getPlateLocationsForMaterialAndProjectIds(geneMaterialId.getId(),
-                        projectId.getId());
-        return convert(locations);
-    }
-
-    private List<WellContent> convert(Iterable<WellContentQueryResult> queryResults)
-    {
-        List<WellContent> wellContents = convertAndRemoveDuplicateWells(queryResults);
-
-        List<WellContent> withProperties = enrichWithWellProperties(wellContents);
-        IMaterialLister materialLister = businessObjectFactory.createMaterialLister(session);
-        List<Material> containedMaterials = getMaterialsWithDuplicates(withProperties);
-        materialLister.enrichWithProperties(containedMaterials);
-
-        return wellContents;
-    }
-
-    /**
-     * Return *all* material objects contained in the wells as list. The list can contained different objects representing the same entity in the
-     * database, but we need the duplication to be able to populate an object graph with wells correctly.
-     */
-    private static List<Material> getMaterialsWithDuplicates(List<WellContent> wellLocations)
-    {
-        List<Material> materials = new ArrayList<Material>();
-        for (WellContent wc : wellLocations)
-        {
-            materials.addAll(wc.getMaterialContents());
-        }
-        return materials;
     }
 
     private List<WellContent> convertAndRemoveDuplicateWells(

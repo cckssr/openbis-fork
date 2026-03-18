@@ -19,9 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PropertyType;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PropertyTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.util.HibernateUtils;
 
@@ -39,18 +37,17 @@ public final class PropertyTypeTranslator
     }
 
     public final static List<PropertyType> translate(final List<PropertyTypePE> propertyTypes,
-            Map<MaterialTypePE, MaterialType> materialTypeCache, Map<PropertyTypePE, PropertyType> cacheOrNull)
+            Map<PropertyTypePE, PropertyType> cacheOrNull)
     {
         final List<PropertyType> result = new ArrayList<PropertyType>();
         for (final PropertyTypePE propType : propertyTypes)
         {
-            result.add(PropertyTypeTranslator.translate(propType, materialTypeCache, cacheOrNull));
+            result.add(PropertyTypeTranslator.translate(propType, cacheOrNull));
         }
         return result;
     }
 
     public final static PropertyType translate(final PropertyTypePE propertyType,
-            MaterialType materialType, Map<MaterialTypePE, MaterialType> materialTypeCache, 
             Map<PropertyTypePE, PropertyType> cacheOrNull)
     {
         final PropertyType cachedOrNull =
@@ -73,29 +70,19 @@ public final class PropertyTypeTranslator
         result.setLabel(propertyType.getLabel());
         result.setDataType(DataTypeTranslator.translate(propertyType.getType()));
         result.setVocabulary(VocabularyTranslator.translate(propertyType.getVocabulary()));
-        result.setMaterialType(MaterialTypeTranslator.translate(propertyType.getMaterialType(),
-                false, materialTypeCache, cacheOrNull));
         result.setSampleType(SampleTypeTranslator.translate(
-                propertyType.getSampleType(), materialTypeCache, cacheOrNull));
+                propertyType.getSampleType(), cacheOrNull));
         result.setDescription(propertyType.getDescription());
         result.setSampleTypePropertyTypes(SampleTypePropertyTypeTranslator.translate(
-                propertyType.getSampleTypePropertyTypes(), result, materialTypeCache, cacheOrNull));
-        result.setMaterialTypePropertyTypes(MaterialTypePropertyTypeTranslator.translate(
-                propertyType.getMaterialTypePropertyTypes(), result, materialTypeCache, cacheOrNull));
+                propertyType.getSampleTypePropertyTypes(), result, cacheOrNull));
         result.setExperimentTypePropertyTypes(ExperimentTypePropertyTypeTranslator.translate(
-                propertyType.getExperimentTypePropertyTypes(), result, materialTypeCache, cacheOrNull));
+                propertyType.getExperimentTypePropertyTypes(), result, cacheOrNull));
         result.setDataSetTypePropertyTypes(DataSetTypePropertyTypeTranslator.translate(
-                propertyType.getDataSetTypePropertyTypes(), result, materialTypeCache, cacheOrNull));
+                propertyType.getDataSetTypePropertyTypes(), result, cacheOrNull));
         result.setSchema(propertyType.getSchema());
         result.setTransformation(propertyType.getTransformation());
         result.setMultiValue(propertyType.isMultiValue());
 
         return result;
-    }
-
-    public final static PropertyType translate(final PropertyTypePE propertyType,
-            Map<MaterialTypePE, MaterialType> materialTypeCache, Map<PropertyTypePE, PropertyType> cacheOrNull)
-    {
-        return translate(propertyType, null, materialTypeCache, cacheOrNull);
     }
 }

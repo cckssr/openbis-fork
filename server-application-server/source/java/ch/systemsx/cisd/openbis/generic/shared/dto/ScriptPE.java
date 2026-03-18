@@ -87,9 +87,6 @@ public class ScriptPE extends HibernateAbstractRegistrationHolder implements IId
     private List<ExperimentTypePropertyTypePE> experimentAssignments =
             new ArrayList<ExperimentTypePropertyTypePE>();
 
-    private List<MaterialTypePropertyTypePE> materialAssignments =
-            new ArrayList<MaterialTypePropertyTypePE>();
-
     private List<DataSetTypePropertyTypePE> dataSetAssignments =
             new ArrayList<DataSetTypePropertyTypePE>();
 
@@ -230,7 +227,6 @@ public class ScriptPE extends HibernateAbstractRegistrationHolder implements IId
         List<EntityTypePropertyTypePE> assignments = new ArrayList<EntityTypePropertyTypePE>();
         assignments.addAll(getDataSetAssignments());
         assignments.addAll(getExperimentAssignments());
-        assignments.addAll(getMaterialAssignments());
         assignments.addAll(getSampleAssignments());
         return new UnmodifiableListDecorator<EntityTypePropertyTypePE>(assignments);
     }
@@ -260,18 +256,6 @@ public class ScriptPE extends HibernateAbstractRegistrationHolder implements IId
     private void setExperimentAssignments(List<ExperimentTypePropertyTypePE> experimentAssignments)
     {
         this.experimentAssignments = experimentAssignments;
-    }
-
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "script")
-    private List<MaterialTypePropertyTypePE> getMaterialAssignments()
-    {
-        return materialAssignments;
-    }
-
-    @SuppressWarnings("unused")
-    private void setMaterialAssignments(List<MaterialTypePropertyTypePE> materialAssignments)
-    {
-        this.materialAssignments = materialAssignments;
     }
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "script")

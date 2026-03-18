@@ -45,9 +45,6 @@ import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.IDatasetIdent
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.IImageDatasetIdentifier;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.ImageDatasetMetadata;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.ImageDatasetReference;
-import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.Material;
-import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.MaterialIdentifier;
-import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.MaterialTypeIdentifier;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.Plate;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.PlateImageReference;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.PlateMetadata;
@@ -92,18 +89,12 @@ public class ScreeningClientApiTest
         List<ExperimentIdentifier> experiments = facade.listExperiments();
         print("Experiments: " + experiments);
 
-        MaterialIdentifier gene = new MaterialIdentifier(MaterialTypeIdentifier.GENE, "1111");
         ExperimentIdentifier experimentIdentifer = experiments.get(0);
         List<PlateWellReferenceWithDatasets> plateWells = null;
         List<FeatureVectorWithDescription> featuresForPlateWells = null;
         List<FeatureVectorWithDescription> featuresForPlateWellsCheck = null;
         try
         {
-            plateWells = facade.listPlateWells(experimentIdentifer, gene, true);
-            print(String.format("Wells with gene '%s' in experiment '%s': %s", gene,
-                    experimentIdentifer, plateWells));
-            featuresForPlateWells =
-                    facade.loadFeaturesForPlateWells(experimentIdentifer, gene, null, null);
             print("Features for wells: " + featuresForPlateWells);
             featuresForPlateWellsCheck =
                     facade.loadFeaturesForDatasetWellReferences(
@@ -194,47 +185,19 @@ public class ScreeningClientApiTest
         loadImages(facade, getFirstTwo(facade, imageDatasets));
         // loadImagesFromFeatureVectors(facade, getFirstTwo(facade, featureVectorDatasets));
 
-        List<PlateMetadata> plateMetadata =
-                facade.getPlateMetadataList(Arrays.asList(plates.get(0), plates.get(1), plates.get(2)));
-        for (PlateMetadata metadata : plateMetadata)
-        {
-            WellMetadata well = metadata.getWell(1, 1);
-            if (well != null)
-            {
-                System.out.println(metadata.getAugmentedCode() + ": well:" + well.getCode()
-                        + " well properties:" + well.getProperties());
-                Map<String, Material> materialProperties = well.getMaterialProperties();
-                System.out.println(renderMaterialProperties(materialProperties));
-            }
-        }
+//        List<PlateMetadata> plateMetadata =
+//                facade.getPlateMetadataList(Arrays.asList(plates.get(0), plates.get(1), plates.get(2)));
+//        for (PlateMetadata metadata : plateMetadata)
+//        {
+//            WellMetadata well = metadata.getWell(1, 1);
+//            if (well != null)
+//            {
+//                System.out.println(metadata.getAugmentedCode() + ": well:" + well.getCode()
+//                        + " well properties:" + well.getProperties());
+//            }
+//        }
         facade.logout();
         System.out.println("Test finished");
-    }
-
-    private static String renderMaterialProperties(Map<String, Material> materialProperties)
-    {
-        StringBuilder builder = new StringBuilder();
-        renderMaterials(materialProperties, builder, "  ");
-        return builder.toString();
-    }
-
-    private static void renderMaterials(Map<String, Material> materialProperties, StringBuilder builder,
-            String indent)
-    {
-        Set<Entry<String, Material>> entrySet = materialProperties.entrySet();
-        for (Entry<String, Material> entry : entrySet)
-        {
-            builder.append(indent).append("material property of type ").append(entry.getKey()).append(":\n");
-            renderMaterial(entry.getValue(), builder, indent + "  ");
-        }
-    }
-
-    private static void renderMaterial(Material material, StringBuilder builder, String indent)
-    {
-        builder.append(indent).append(material.getAugmentedCode()).append(" properties: ");
-        builder.append(material.getProperties()).append("\n");
-        Map<String, Material> materialProperties = material.getMaterialProperties();
-        renderMaterials(materialProperties, builder, indent);
     }
 
     private static <T extends DatasetIdentifier> List<T> getFirstTwo(

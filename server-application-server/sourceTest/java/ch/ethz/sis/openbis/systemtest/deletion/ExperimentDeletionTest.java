@@ -127,16 +127,16 @@ public class ExperimentDeletionTest extends DeletionTest
         SpacePermId space = createSpace("SPACE");
         ProjectPermId project = createProject(space, "PROJECT");
         ExperimentPermId experiment = createExperiment(project, "EXPERIMENT",
-                "DESCRIPTION", "desc", "ORGANISM", "FLY", "BACTERIUM", "BACTERIUM-X");
+                "DESCRIPTION", "desc", "ORGANISM", "FLY");
 
         newTx();
-        setProperties(experiment, "DESCRIPTION", "desc2", "ORGANISM", "GORILLA", "BACTERIUM", "BACTERIUM-Y");
+        setProperties(experiment, "DESCRIPTION", "desc2", "ORGANISM", "GORILLA");
 
         newTx();
         setProperties(experiment);
 
         newTx();
-        setProperties(experiment, "DESCRIPTION", "desc3", "ORGANISM", "DOG", "BACTERIUM", "BACTERIUM2");
+        setProperties(experiment, "DESCRIPTION", "desc3", "ORGANISM", "DOG");
 
         delete(experiment);
         delete(project);
@@ -144,7 +144,6 @@ public class ExperimentDeletionTest extends DeletionTest
 
         assertPropertiesHistory(experiment.getPermId(), "DESCRIPTION", "desc", "desc2", "desc3");
         assertPropertiesHistory(experiment.getPermId(), "ORGANISM", "FLY [ORGANISM]", "GORILLA [ORGANISM]", "DOG [ORGANISM]");
-        assertPropertiesHistory(experiment.getPermId(), "BACTERIUM", "BACTERIUM-X [BACTERIUM]", "BACTERIUM-Y [BACTERIUM]", "BACTERIUM2 [BACTERIUM]");
     }
 
     @Test

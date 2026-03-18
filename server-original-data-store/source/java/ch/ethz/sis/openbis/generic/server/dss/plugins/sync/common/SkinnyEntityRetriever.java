@@ -39,9 +39,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.Experime
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.Material;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.fetchoptions.MaterialFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.MaterialSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.Project;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.fetchoptions.ProjectFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.search.ProjectSearchCriteria;
@@ -408,20 +405,6 @@ public class SkinnyEntityRetriever implements IEntityRetriever
 
             findChildAndContainedDataSets(childDsNode);
         }
-    }
-
-    @Override
-    public List<Material> fetchMaterials()
-    {
-        MaterialSearchCriteria criteria = new MaterialSearchCriteria();
-
-        final MaterialFetchOptions fetchOptions = new MaterialFetchOptions();
-        fetchOptions.withType();
-        
-        SearchResult<Material> searchResult =
-                v3Api.searchMaterials(sessionToken, criteria, fetchOptions);
-
-        return searchResult.getObjects();
     }
 
     public String fetchMasterDataAsXML() throws ParserConfigurationException, TransformerException

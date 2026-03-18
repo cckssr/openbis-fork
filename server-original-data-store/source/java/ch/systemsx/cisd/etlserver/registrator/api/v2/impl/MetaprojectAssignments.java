@@ -21,7 +21,6 @@ import java.util.List;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IEncapsulatedBasicOpenBISService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.v2.IDataSetImmutable;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.v2.IExperimentImmutable;
-import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.v2.IMaterialImmutable;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.v2.IMetaprojectAssignments;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.v2.IMetaprojectImmutable;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.v2.ISampleImmutable;
@@ -83,18 +82,6 @@ public class MetaprojectAssignments implements IMetaprojectAssignments
             datasets.add(new DataSetImmutable(dataSet, service));
         }
         return datasets;
-    }
-
-    @Override
-    public List<IMaterialImmutable> getMaterials()
-    {
-        LinkedList<IMaterialImmutable> materials = new LinkedList<IMaterialImmutable>();
-        for (ch.systemsx.cisd.openbis.generic.shared.basic.dto.Material material : metaprojectAssignments
-                .getMaterials())
-        {
-            materials.add(new MaterialImmutable(material));
-        }
-        return materials;
     }
 
 }

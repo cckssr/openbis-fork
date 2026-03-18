@@ -27,7 +27,6 @@ export namespace common {
         waitUntilEmailWith(facade: openbis.openbis, textSnippet, timeout): jquery.JQueryPromise<any>
         waitUntilIndexed(facade: openbis.openbis, dataSetCode, timeout): jquery.JQueryPromise<unknown>
         getResponseFromJSTestAggregationService(facade: openbis.openbis, params, callback): jquery.JQueryPromise<any>
-        createMaterial(facade: openbis.openbis): Promise<openbis.MaterialPermId>
         createPropertyType(facade: openbis.openbis): Promise<openbis.PropertyTypePermId>
         createPlugin(facade: openbis.openbis): Promise<openbis.PluginPermId>
         createVocabulary(facade: openbis.openbis): Promise<openbis.VocabularyPermId>
@@ -35,7 +34,6 @@ export namespace common {
         createExperimentType(facade: openbis.openbis): Promise<openbis.EntityTypePermId>
         createSampleType(facade: openbis.openbis): Promise<openbis.EntityTypePermId>
         createDataSetType(facade: openbis.openbis): Promise<openbis.EntityTypePermId>
-        createMaterialType(facade: openbis.openbis): Promise<openbis.EntityTypePermId>
         createExternalDms(facade: openbis.openbis): Promise<openbis.ExternalDmsPermId>
         createFileExternalDms(facade: openbis.openbis): Promise<openbis.ExternalDmsPermId>
         createTag(facade: openbis.openbis): Promise<openbis.TagPermId>
@@ -54,8 +52,6 @@ export namespace common {
         findSampleType(facade: openbis.openbis, id): Promise<openbis.SampleType>
         findDataSet(facade: openbis.openbis, id): Promise<openbis.DatSet>
         findDataSetType(facade: openbis.openbis, id): Promise<openbis.DataSetType>
-        findMaterial(facade: openbis.openbis, id): Promise<openbis.Material>
-        findMaterialType(facade: openbis.openbis, id): Promise<openbis.MaterialType>
         findPropertyType(facade: openbis.openbis, id): Promise<openbis.PropertyType>
         findPlugin(facade: openbis.openbis, id): Promise<openbis.Plugin>
         findVocabulary(facade: openbis.openbis, id): Promise<openbis.Vocabulary>
@@ -74,12 +70,10 @@ export namespace common {
         deleteExperiment(facade: openbis.openbis, id): Promise<openbis.IDeletionId>
         deleteSample(facade: openbis.openbis, id): Promise<openbis.IDeletionId>
         deleteDataSet(facade: openbis.openbis, id): Promise<openbis.IDeletionId>
-        deleteMaterial(facade: openbis.openbis, id): Promise<void>
         deleteExternalDms(facade: openbis.openbis, id): Promise<void>
         deleteExperimentType(facade: openbis.openbis, id): Promise<void>
         deleteSampleType(facade: openbis.openbis, id): Promise<void>
         deleteDataSetType(facade: openbis.openbis, id): Promise<void>
-        deleteMaterialType(facade: openbis.openbis, id): Promise<void>
         deletePlugin(facade: openbis.openbis, id): Promise<void>
         deletePropertyType(facade: openbis.openbis, id): Promise<void>
         deleteVocabulary(facade: openbis.openbis, id): Promise<void>
@@ -104,8 +98,6 @@ export namespace common {
         createSampleTypeFetchOptions(): openbis.SampleTypeFetchOptions
         createDataSetFetchOptions(): openbis.DataSetFetchOptions
         createDataSetTypeFetchOptions(): openbis.DataSetTypeFetchOptions
-        createMaterialFetchOptions(): openbis.MaterialFetchOptions
-        createMaterialTypeFetchOptions(): openbis.MaterialTypeFetchOptions
         createPluginFetchOptions(): openbis.PluginFetchOptions
         createVocabularyFetchOptions(): openbis.VocabularyFetchOptions
         createVocabularyTermFetchOptions(): openbis.VocabularyTermFetchOptions

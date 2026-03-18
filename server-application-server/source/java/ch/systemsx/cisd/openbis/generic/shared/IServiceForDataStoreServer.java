@@ -48,10 +48,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExperimentType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExternalDataManagementSystem;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IDatasetLocationNode;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IEntityProperty;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ListMaterialCriteria;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ListSampleCriteria;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Material;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Metaproject;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MetaprojectAssignments;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MetaprojectAssignmentsFetchOption;
@@ -114,12 +111,6 @@ public interface IServiceForDataStoreServer extends IServer, ISessionProvider
     @Transactional(readOnly = true)
     public Experiment tryGetExperiment(String sessionToken,
             ExperimentIdentifier experimentIdentifier) throws UserFailureException;
-
-    /**
-     * For given {@link MaterialIdentifier} returns the corresponding {@link Material}.
-     */
-    @Transactional(readOnly = true)
-    public Material tryGetMaterial(String sessionToken, MaterialIdentifier materialIdentifier);
 
     /**
      * For given {@code name} and {@code ownerId} returns the corresponding {@link Metaproject}.
@@ -503,15 +494,6 @@ public interface IServiceForDataStoreServer extends IServer, ISessionProvider
      */
     @Transactional(readOnly = true)
     public List<Project> listProjects(String sessionToken);
-
-    /**
-     * Lists materials using given criteria.
-     * 
-     * @return a sorted list of {@link Material}.
-     */
-    @Transactional(readOnly = true)
-    public List<Material> listMaterials(String sessionToken, ListMaterialCriteria criteria,
-            boolean withProperties);
 
     /**
      * Adds specified properties of given data set. Properties defined before will not be updated.

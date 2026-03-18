@@ -99,7 +99,7 @@ public class SamplePEBuilder
     {
         SampleTypePEBuilder sampleTypeBuilder = new SampleTypePEBuilder().code("my-type");
         PropertyTypePE propertyType =
-                CommonTestUtils.createPropertyType(code, dataType, null, null);
+                CommonTestUtils.createPropertyType(code, dataType, null);
         EntityTypePropertyTypePE etpt =
                 sampleTypeBuilder.assign(propertyType).getEntityTypePropertyType();
         return property(etpt, value);

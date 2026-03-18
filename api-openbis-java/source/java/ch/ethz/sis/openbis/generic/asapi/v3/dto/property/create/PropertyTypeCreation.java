@@ -55,9 +55,6 @@ public class PropertyTypeCreation implements ICreation, IObjectCreation
     private IVocabularyId vocabularyId;
 
     @JsonProperty
-    private IEntityTypeId materialTypeId;
-
-    @JsonProperty
     private IEntityTypeId sampleTypeId;
 
     @JsonProperty
@@ -155,17 +152,6 @@ public class PropertyTypeCreation implements ICreation, IObjectCreation
     public void setVocabularyId(IVocabularyId vocabularyId)
     {
         this.vocabularyId = vocabularyId;
-    }
-
-    @JsonIgnore
-    public IEntityTypeId getMaterialTypeId()
-    {
-        return materialTypeId;
-    }
-
-    public void setMaterialTypeId(IEntityTypeId materialTypeId)
-    {
-        this.materialTypeId = materialTypeId;
     }
 
     @JsonIgnore

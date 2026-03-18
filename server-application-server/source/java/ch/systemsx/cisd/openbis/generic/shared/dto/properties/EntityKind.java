@@ -34,11 +34,6 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentTypePropertyTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.IDeletablePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.IEntityInformationWithPropertiesHolder;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialPE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialPropertyHistoryPE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialPropertyPE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialTypePE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialTypePropertyTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SampleHistoryPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePropertyPE;
@@ -53,10 +48,6 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.TableNames;
  */
 public enum EntityKind
 {
-    MATERIAL(TableNames.MATERIALS_TABLE, null, "material", MaterialPE.class, null,
-            MaterialTypePE.class, MaterialTypePropertyTypePE.class,
-            MaterialPropertyHistoryPE.class, MaterialPropertyPE.class),
-
     EXPERIMENT(TableNames.EXPERIMENTS_VIEW, TableNames.EXPERIMENTS_ALL_TABLE, "experiment",
             ExperimentPE.class, DeletedExperimentPE.class, ExperimentTypePE.class,
             ExperimentTypePropertyTypePE.class, ExperimentHistoryPE.class,

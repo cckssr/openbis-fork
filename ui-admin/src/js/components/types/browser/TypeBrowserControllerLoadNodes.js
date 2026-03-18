@@ -22,7 +22,6 @@ export default class TypeBrowserControllerLoadNodes {
           objectTypeGroups,
           collectionTypes,
           dataSetTypes,
-          materialTypes,
           vocabularyTypes
         ] = await Promise.all([
           this.searchObjectTypes({
@@ -41,10 +40,6 @@ export default class TypeBrowserControllerLoadNodes {
             ...params,
             limit: TypeBrowserCommon.LOAD_LIMIT
           }),
-          this.searchMaterialTypes({
-            ...params,
-            limit: TypeBrowserCommon.LOAD_LIMIT
-          }),
           this.searchVocabularyTypes({
             ...params,
             limit: TypeBrowserCommon.LOAD_LIMIT
@@ -56,7 +51,6 @@ export default class TypeBrowserControllerLoadNodes {
           objectTypeGroups.totalCount +
           collectionTypes.totalCount +
           dataSetTypes.totalCount +
-          materialTypes.totalCount +
           vocabularyTypes.totalCount
 
         if (totalCount > TypeBrowserCommon.TOTAL_LOAD_LIMIT) {
@@ -112,17 +106,6 @@ export default class TypeBrowserControllerLoadNodes {
           nodes.push(folderNode)
         }
 
-        if (!_.isEmpty(materialTypes.objects)) {
-          const folderNode = TypeBrowserCommon.materialTypesFolderNode()
-          const typesNodes = this.createNodes(
-            materialTypes,
-            objectType.MATERIAL_TYPE
-          )
-          folderNode.children = typesNodes
-          folderNode.expanded = true
-          nodes.push(folderNode)
-        }
-
         if (!_.isEmpty(vocabularyTypes.objects)) {
           const folderNode = TypeBrowserCommon.vocabularyTypesFolderNode()
           const typesNodes = this.createNodes(
@@ -144,7 +127,6 @@ export default class TypeBrowserControllerLoadNodes {
             TypeBrowserCommon.objectTypeGroupsFolderNode(),
             TypeBrowserCommon.collectionTypesFolderNode(),
             TypeBrowserCommon.dataSetTypesFolderNode(),
-            TypeBrowserCommon.materialTypesFolderNode(),
             TypeBrowserCommon.vocabularyTypesFolderNode(),
             TypeBrowserCommon.propertyTypesFolderNode()
           ]
@@ -161,8 +143,6 @@ export default class TypeBrowserControllerLoadNodes {
         types = await this.searchCollectionTypes(params)
       } else if (node.object.id === objectType.DATA_SET_TYPE) {
         types = await this.searchDataSetTypes(params)
-      } else if (node.object.id === objectType.MATERIAL_TYPE) {
-        types = await this.searchMaterialTypes(params)
       } else if (node.object.id === objectType.VOCABULARY_TYPE) {
         types = await this.searchVocabularyTypes(params)
       }
@@ -315,48 +295,6 @@ export default class TypeBrowserControllerLoadNodes {
     const fetchOptions = new openbis.DataSetTypeFetchOptions()
 
     const result = await openbis.searchDataSetTypes(criteria, fetchOptions)
-
-    if (!_.isEmpty(childrenNotIn)) {
-      const childrenNotInMap = {}
-      childrenNotIn.forEach(child => {
-        childrenNotInMap[child.object.id] = child
-      })
-      result.objects = result.objects.filter(object =>
-        _.isNil(childrenNotInMap[object.getCode()])
-      )
-      result.totalCount = result.objects.length
-    }
-
-    let objects = result.objects.map(o => ({
-      id: o.getCode(),
-      text: o.getCode()
-    }))
-
-    objects.sort((o1, o2) => compare(o1.text, o2.text))
-
-    if (!_.isNil(offset) && !_.isNil(limit)) {
-      objects = objects.slice(offset, offset + limit)
-    }
-
-    return {
-      objects: objects,
-      totalCount: result.totalCount
-    }
-  }
-
-  async searchMaterialTypes(params) {
-    const { filter, offset, limit, childrenIn, childrenNotIn } = params
-
-    const criteria = new openbis.MaterialTypeSearchCriteria()
-    if (!_.isNil(filter)) {
-      criteria.withCode().thatContains(filter)
-    }
-    if (!_.isEmpty(childrenIn)) {
-      criteria.withCodes().thatIn(childrenIn.map(child => child.object.id))
-    }
-    const fetchOptions = new openbis.MaterialTypeFetchOptions()
-
-    const result = await openbis.searchMaterialTypes(criteria, fetchOptions)
 
     if (!_.isEmpty(childrenNotIn)) {
       const childrenNotInMap = {}

@@ -33,10 +33,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.IExperimentId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.Material;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.fetchoptions.MaterialFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.id.IMaterialId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.id.MaterialPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.ISampleId;
@@ -203,19 +199,5 @@ public class AbstractVocabularyTest extends AbstractTest
         return map.get(id);
     }
 
-    protected Material getMaterial(String materialCode, String materialTypeCode)
-    {
-        String sessionToken = v3api.login(TEST_USER, PASSWORD);
-
-        MaterialPermId id = new MaterialPermId(materialCode, materialTypeCode);
-
-        MaterialFetchOptions fetchOptions = new MaterialFetchOptions();
-        fetchOptions.withProperties();
-
-        Map<IMaterialId, Material> map = v3api.getMaterials(sessionToken, Arrays.asList(id), fetchOptions);
-        assertEquals(map.size(), 1);
-
-        return map.get(id);
-    }
 
 }

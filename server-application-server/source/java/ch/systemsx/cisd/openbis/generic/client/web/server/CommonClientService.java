@@ -64,7 +64,6 @@ import ch.systemsx.cisd.openbis.generic.client.web.client.dto.GridRowModels;
 import ch.systemsx.cisd.openbis.generic.client.web.client.dto.IResultSetConfig;
 import ch.systemsx.cisd.openbis.generic.client.web.client.dto.ListEntityHistoryCriteria;
 import ch.systemsx.cisd.openbis.generic.client.web.client.dto.ListExperimentsCriteria;
-import ch.systemsx.cisd.openbis.generic.client.web.client.dto.ListMaterialDisplayCriteria;
 import ch.systemsx.cisd.openbis.generic.client.web.client.dto.ListMetaprojectsCriteria;
 import ch.systemsx.cisd.openbis.generic.client.web.client.dto.ListPersonsCriteria;
 import ch.systemsx.cisd.openbis.generic.client.web.client.dto.ListSampleDisplayCriteria;
@@ -86,7 +85,6 @@ import ch.systemsx.cisd.openbis.generic.client.web.server.calculator.ITableDataP
 import ch.systemsx.cisd.openbis.generic.client.web.server.queue.ConsumerQueue;
 import ch.systemsx.cisd.openbis.generic.client.web.server.queue.ConsumerTask;
 import ch.systemsx.cisd.openbis.generic.client.web.server.resultset.AbstractExternalDataProvider;
-import ch.systemsx.cisd.openbis.generic.client.web.server.resultset.AbstractMaterialProvider;
 import ch.systemsx.cisd.openbis.generic.client.web.server.resultset.AttachmentVersionsProvider;
 import ch.systemsx.cisd.openbis.generic.client.web.server.resultset.AuthorizationGroupProvider;
 import ch.systemsx.cisd.openbis.generic.client.web.server.resultset.CacheManager;
@@ -179,9 +177,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.LastModificationState;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.LinkModel;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ListSampleCriteria;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MatchingEntity;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Material;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialIdentifier;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Metaproject;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MetaprojectAssignmentsCount;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MetaprojectAssignmentsIds;
@@ -221,7 +216,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.api.IManagedUiAction;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.api.ValidationException;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.id.dataset.DataSetTechIdId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.id.experiment.ExperimentTechIdId;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.id.material.MaterialTechIdId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.id.metaproject.IMetaprojectId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.id.metaproject.MetaprojectIdentifierId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.id.metaproject.MetaprojectTechIdId;
@@ -535,13 +529,6 @@ public final class CommonClientService extends AbstractClientService implements
     @Override
     public String prepareExportVocabularyTerms(
             TableExportCriteria<TableModelRowWithObject<VocabularyTermWithStats>> criteria)
-    {
-        return prepareExportEntities(criteria);
-    }
-
-    @Override
-    public String prepareExportMaterialTypes(
-            final TableExportCriteria<TableModelRowWithObject<MaterialType>> criteria)
     {
         return prepareExportEntities(criteria);
     }
@@ -932,21 +919,6 @@ public final class CommonClientService extends AbstractClientService implements
         VocabularyTermsProvider vocabularyTermsProvider =
                 new VocabularyTermsProvider(commonServer, getSessionToken(), vocabulary);
         return listEntities(vocabularyTermsProvider, criteria);
-    }
-
-    @Override
-    public TypedTableResultSet<MaterialType> listMaterialTypes(
-            DefaultResultSetConfig<String, TableModelRowWithObject<MaterialType>> criteria)
-            throws ch.systemsx.cisd.openbis.generic.client.web.client.exception.UserFailureException
-    {
-        return listEntities(new EntityTypeProvider<MaterialType>(commonServer, getSessionToken())
-            {
-                @Override
-                protected List<MaterialType> listTypes()
-                {
-                    return commonServer.listMaterialTypes(sessionToken);
-                }
-            }, criteria);
     }
 
     @Override
@@ -1543,71 +1515,12 @@ public final class CommonClientService extends AbstractClientService implements
     }
 
     @Override
-    public List<MaterialType> listMaterialTypes()
-            throws ch.systemsx.cisd.openbis.generic.client.web.client.exception.UserFailureException
-    {
-        final String sessionToken = getSessionToken();
-        final List<MaterialType> materialTypes = commonServer.listMaterialTypes(sessionToken);
-        return materialTypes;
-    }
-
-    @Override
     public List<DataSetType> listDataSetTypes()
             throws ch.systemsx.cisd.openbis.generic.client.web.client.exception.UserFailureException
     {
         final String sessionToken = getSessionToken();
         final List<DataSetType> types = commonServer.listDataSetTypes(sessionToken);
         return types;
-    }
-
-    @Override
-    public TypedTableResultSet<Material> listMaterials(final ListMaterialDisplayCriteria criteria)
-            throws ch.systemsx.cisd.openbis.generic.client.web.client.exception.UserFailureException
-    {
-        return listEntities(new AbstractMaterialProvider()
-            {
-
-                @Override
-                protected List<Material> getMaterials()
-                {
-                    if (criteria.getListCriteria() != null)
-                    {
-                        return commonServer.listMaterials(getSessionToken(),
-                                criteria.getListCriteria(), true);
-                    } else if (criteria.getMetaprojectCriteria() != null)
-                    {
-                        return commonServer.listMetaprojectMaterials(getSessionToken(),
-                                new MetaprojectTechIdId(criteria.getMetaprojectCriteria()
-                                        .getMetaprojectId()));
-                    } else
-                    {
-                        throw new IllegalArgumentException("Unsupported criteria: " + criteria);
-                    }
-                }
-            }, criteria);
-    }
-
-    @Override
-    public List<Material> listMetaprojectMaterials(Long metaprojectId)
-    {
-        return commonServer.listMetaprojectMaterials(getSessionToken(), new MetaprojectTechIdId(
-                metaprojectId));
-    }
-
-    @Override
-    public String prepareExportMaterials(
-            TableExportCriteria<TableModelRowWithObject<Material>> criteria)
-            throws ch.systemsx.cisd.openbis.generic.client.web.client.exception.UserFailureException
-    {
-        return prepareExportEntities(criteria);
-    }
-
-    @Override
-    public void registerMaterialType(MaterialType entityType)
-            throws ch.systemsx.cisd.openbis.generic.client.web.client.exception.UserFailureException
-    {
-        final String sessionToken = getSessionToken();
-        commonServer.registerMaterialType(sessionToken, entityType);
     }
 
     @Override
@@ -1649,9 +1562,6 @@ public final class CommonClientService extends AbstractClientService implements
         final String sessionToken = getSessionToken();
         switch (entityKind)
         {
-            case MATERIAL:
-                commonServer.updateMaterialType(sessionToken, entityType);
-                break;
             case SAMPLE:
                 commonServer.updateSampleType(sessionToken, entityType);
                 break;
@@ -1981,9 +1891,6 @@ public final class CommonClientService extends AbstractClientService implements
             case EXPERIMENT:
                 commonServer.deleteExperimentTypes(sessionToken, entityTypesCodes);
                 break;
-            case MATERIAL:
-                commonServer.deleteMaterialTypes(sessionToken, entityTypesCodes);
-                break;
         }
     }
 
@@ -1994,33 +1901,6 @@ public final class CommonClientService extends AbstractClientService implements
     {
         final String sessionToken = getSessionToken();
         return commonServer.getEntityInformationHolder(sessionToken, entityKind, permId);
-    }
-
-    @Override
-    public IEntityInformationHolderWithPermId getMaterialInformationHolder(
-            MaterialIdentifier identifier)
-            throws ch.systemsx.cisd.openbis.generic.client.web.client.exception.UserFailureException
-    {
-        final String sessionToken = getSessionToken();
-        return commonServer.getMaterialInformationHolder(sessionToken, identifier);
-    }
-
-    @Override
-    public Material getMaterialInfo(MaterialIdentifier identifier)
-            throws ch.systemsx.cisd.openbis.generic.client.web.client.exception.UserFailureException
-    {
-        final String sessionToken = getSessionToken();
-        return commonServer.getMaterialInfo(sessionToken, identifier);
-    }
-
-    @Override
-    public Material getMaterialInfo(TechId techId)
-            throws ch.systemsx.cisd.openbis.generic.client.web.client.exception.UserFailureException
-    {
-        final String sessionToken = getSessionToken();
-        final Material material = commonServer.getMaterialInfo(sessionToken, techId);
-        transformXML(material);
-        return material;
     }
 
     @Override
@@ -2127,10 +2007,6 @@ public final class CommonClientService extends AbstractClientService implements
                     break;
                 case DATA_SET:
                     commonServer.updateManagedPropertyOnDataSet(sessionToken, entityId,
-                            managedProperty, updateAction);
-                    break;
-                case MATERIAL:
-                    commonServer.updateManagedPropertyOnMaterial(sessionToken, entityId,
                             managedProperty, updateAction);
                     break;
             }
@@ -2601,17 +2477,6 @@ public final class CommonClientService extends AbstractClientService implements
     }
 
     @Override
-    public void deleteMaterials(
-            DisplayedOrSelectedIdHolderCriteria<TableModelRowWithObject<Material>> criteria,
-            String reason)
-            throws ch.systemsx.cisd.openbis.generic.client.web.client.exception.UserFailureException
-    {
-        final String sessionToken = getSessionToken();
-        List<TechId> materialIds = extractTechIds(criteria);
-        commonServer.deleteMaterials(sessionToken, materialIds, reason);
-    }
-
-    @Override
     public ArchivingResult lockDatasets(DisplayedOrSelectedDatasetCriteria criteria)
             throws ch.systemsx.cisd.openbis.generic.client.web.client.exception.UserFailureException
     {
@@ -2755,10 +2620,6 @@ public final class CommonClientService extends AbstractClientService implements
                     break;
                 case EXPERIMENT:
                     commonServer.updateExperimentProperties(sessionToken, entityId,
-                            modifiedProperties);
-                    break;
-                case MATERIAL:
-                    commonServer.updateMaterialProperties(sessionToken, entityId,
                             modifiedProperties);
                     break;
                 case SAMPLE:
@@ -3003,10 +2864,7 @@ public final class CommonClientService extends AbstractClientService implements
 
     private void addId(EntityKind entityKind, Long id, MetaprojectAssignmentsIds assignments)
     {
-        if (EntityKind.MATERIAL.equals(entityKind))
-        {
-            assignments.addMaterial(new MaterialTechIdId(id));
-        } else if (EntityKind.DATA_SET.equals(entityKind))
+        if (EntityKind.DATA_SET.equals(entityKind))
         {
             assignments.addDataSet(new DataSetTechIdId(id));
         } else if (EntityKind.SAMPLE.equals(entityKind))

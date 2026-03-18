@@ -94,12 +94,6 @@ public abstract class PropertyHistoryTranslator extends AbstractCachingTranslato
                             currentProperty.vocabularyPropertyValue + " [" + currentProperty.vocabularyPropertyValueTypeCode + "]";
                 }
 
-                if (currentProperty.materialPropertyValueCode != null && currentProperty.materialPropertyValueTypeCode != null)
-                {
-                    currentPropertyRecord.materialPropertyValue =
-                            currentProperty.materialPropertyValueCode + " [" + currentProperty.materialPropertyValueTypeCode + "]";
-                }
-
                 properties.add(currentPropertyRecord);
             }
         }
@@ -185,9 +179,6 @@ public abstract class PropertyHistoryTranslator extends AbstractCachingTranslato
         } else if (record.vocabularyPropertyValue != null)
         {
             entry.setPropertyValue(record.vocabularyPropertyValue);
-        } else if (record.materialPropertyValue != null)
-        {
-            entry.setPropertyValue(record.materialPropertyValue);
         } else if (record.samplePropertyValue != null)
         {
             entry.setPropertyValue(record.samplePropertyValue);

@@ -54,7 +54,6 @@ async function testChangeProperty() {
           mode: 'edit'
         },
         vocabulary: null,
-        materialType: null,
         schema: null,
         transformation: null
       }
@@ -104,7 +103,6 @@ async function testChangeProperty() {
           enabled: true,
           mode: 'edit'
         },
-        materialType: null,
         schema: null,
         transformation: null
       }
@@ -117,51 +115,6 @@ async function testChangeProperty() {
     }
   })
 
-  form.getParameters().getProperty().getDataType().change('MATERIAL')
-  await form.update()
-
-  form.expectJSON({
-    preview: {
-      sections: [
-        {
-          name: null,
-          properties: [{ code: 'TEST_CODE', dataType: 'MATERIAL' }]
-        }
-      ]
-    },
-    parameters: {
-      property: {
-        title: 'Property',
-        code: {
-          label: 'Code',
-          value: 'TEST_CODE',
-          enabled: true,
-          mode: 'edit'
-        },
-        dataType: {
-          label: 'Data Type',
-          value: 'MATERIAL',
-          enabled: true,
-          mode: 'edit'
-        },
-        vocabulary: null,
-        materialType: {
-          label: 'Material Type',
-          value: null,
-          enabled: true,
-          mode: 'edit'
-        },
-        schema: null,
-        transformation: null
-      }
-    },
-    buttons: {
-      message: {
-        text: 'You have unsaved changes',
-        type: 'warning'
-      }
-    }
-  })
 
   form.getParameters().getProperty().getDataType().change('XML')
   await form.update()
@@ -191,7 +144,6 @@ async function testChangeProperty() {
           mode: 'edit'
         },
         vocabulary: null,
-        materialType: null,
         schema: {
           label: 'XML Schema',
           value: null,
@@ -227,7 +179,6 @@ async function testConvertProperty() {
     openbis.DataType.DATE,
     openbis.DataType.BOOLEAN,
     openbis.DataType.CONTROLLEDVOCABULARY,
-    openbis.DataType.MATERIAL,
     openbis.DataType.SAMPLE
   ].map(dataType => {
     const propertyType = new openbis.PropertyType()
@@ -437,25 +388,6 @@ async function testConvertProperty() {
           enabled: true,
           options: [
             { label: openbis.DataType.CONTROLLEDVOCABULARY },
-            { label: openbis.DataType.VARCHAR + suffix },
-            { label: openbis.DataType.MULTILINE_VARCHAR + suffix }
-          ]
-        }
-      }
-    }
-  })
-
-  form.getPreview().getSections()[0].getProperties()[index++].click()
-  await form.update()
-
-  form.expectJSON({
-    parameters: {
-      property: {
-        dataType: {
-          value: 'MATERIAL',
-          enabled: true,
-          options: [
-            { label: openbis.DataType.MATERIAL },
             { label: openbis.DataType.VARCHAR + suffix },
             { label: openbis.DataType.MULTILINE_VARCHAR + suffix }
           ]

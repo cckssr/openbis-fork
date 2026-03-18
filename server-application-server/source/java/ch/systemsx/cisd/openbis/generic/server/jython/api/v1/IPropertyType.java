@@ -31,11 +31,6 @@ public interface IPropertyType extends IPropertyTypeImmutable
     void setLabel(String label);
 
     /**
-     * Set the material type. Mandatory when {@link DataType} is MATERIAL.
-     */
-    void setMaterialType(IMaterialTypeImmutable materialType);
-
-    /**
      * Set the associated vocabulary. Mandatory when {@link DataType} is CONTROLLEDVOCABULARY.
      */
     void setVocabulary(IVocabularyImmutable vocabulary);

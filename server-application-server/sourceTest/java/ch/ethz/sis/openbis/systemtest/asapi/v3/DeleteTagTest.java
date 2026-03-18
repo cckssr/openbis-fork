@@ -27,7 +27,6 @@ import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.id.MaterialPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.Tag;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.create.TagCreation;
@@ -110,14 +109,12 @@ public class DeleteTagTest extends AbstractDeletionTest
         ExperimentPermId experimentId = new ExperimentPermId("200811050952663-1029");
         SamplePermId sampleId = new SamplePermId("200902091219327-1025");
         DataSetPermId dataSetId = new DataSetPermId("20120619092259000-22");
-        MaterialPermId materialId = new MaterialPermId("AD3", "VIRUS");
 
         TagCreation creation = new TagCreation();
         creation.setCode("TAG_TO_DELETE");
         creation.setExperimentIds(Arrays.asList(experimentId));
         creation.setSampleIds(Arrays.asList(sampleId));
         creation.setDataSetIds(Arrays.asList(dataSetId));
-        creation.setMaterialIds(Arrays.asList(materialId));
 
         Tag before = createTag(TEST_USER, PASSWORD, creation);
 
@@ -130,7 +127,6 @@ public class DeleteTagTest extends AbstractDeletionTest
         assertExperimentsExists(experimentId.getPermId());
         assertSamplesExists(sampleId.getPermId());
         assertDataSetsExists(dataSetId.getPermId());
-        assertMaterialsExists(materialId);
     }
 
     @Test

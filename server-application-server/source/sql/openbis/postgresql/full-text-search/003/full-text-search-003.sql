@@ -229,33 +229,6 @@ CREATE TRIGGER data_set_properties_tsvector_document BEFORE INSERT OR UPDATE
     ON data_set_properties FOR EACH ROW EXECUTE PROCEDURE
     properties_tsvector_document_trigger();
 
--- Materials
-
-CREATE OR REPLACE FUNCTION materials_tsvector_document_trigger() RETURNS trigger AS $$
-DECLARE material_type_code VARCHAR;
-        registrator_user_id VARCHAR;
-BEGIN
-    SELECT code INTO STRICT material_type_code FROM material_types WHERE id = NEW.maty_id;
-    SELECT user_id INTO registrator_user_id FROM persons WHERE id = NEW.pers_id_registerer;
-    NEW.tsvector_document := setweight((escape_tsvector_string(
-            NEW.code || ' (' || material_type_code || ')') || ':1')::tsvector, 'A') ||
-            setweight((escape_tsvector_string(NEW.code) || ':1')::tsvector, 'B') ||
-            coalesce(setweight((escape_tsvector_string(material_type_code) || ':1')::tsvector, 'D'), ''::tsvector) ||
-            coalesce(setweight((escape_tsvector_string(registrator_user_id) || ':1')::tsvector, 'D'), ''::tsvector);
-    RETURN NEW;
-END
-$$ LANGUAGE plpgsql;
-
-DROP TRIGGER IF EXISTS materials_tsvector_document ON materials;
-CREATE TRIGGER materials_tsvector_document BEFORE INSERT OR UPDATE
-    ON materials FOR EACH ROW EXECUTE PROCEDURE
-    materials_tsvector_document_trigger();
-
-DROP TRIGGER IF EXISTS material_properties_tsvector_document ON material_properties;
-CREATE TRIGGER material_properties_tsvector_document BEFORE INSERT OR UPDATE
-    ON material_properties FOR EACH ROW EXECUTE PROCEDURE
-    properties_tsvector_document_trigger();
-
 -- Updating tables
 
 UPDATE samples_all SET id = id;
@@ -264,8 +237,6 @@ UPDATE experiments_all SET id = id;
 UPDATE experiment_properties SET id = id;
 UPDATE data_all SET id = id;
 UPDATE data_set_properties SET id = id;
-UPDATE materials SET id = id;
-UPDATE material_properties SET id = id;
 UPDATE projects SET id = id;
 
 -- Non full text search related functions

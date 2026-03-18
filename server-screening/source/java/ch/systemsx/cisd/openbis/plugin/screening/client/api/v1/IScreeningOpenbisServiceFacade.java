@@ -47,18 +47,14 @@ import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.ImageDatasetR
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.ImageRepresentationFormat;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.ImageSize;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.LoadImageConfiguration;
-import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.MaterialIdentifier;
-import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.MaterialTypeIdentifier;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.Plate;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.PlateIdentifier;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.PlateImageReference;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.PlateMetadata;
-import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.PlateWellMaterialMapping;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.PlateWellReferenceWithDatasets;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.WellIdentifier;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.WellPosition;
 
-import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Material;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.Sample;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SearchCriteria;
 
@@ -89,12 +85,6 @@ public interface IScreeningOpenbisServiceFacade
      * Exposes material search functionaliy (used for ScreeningML)
      */
     @Retry
-    public List<Material> searchForMaterials(SearchCriteria searchCriteria);
-
-    /**
-     * Exposes material search functionaliy (used for ScreeningML)
-     */
-    @Retry
     public List<Sample> searchForSamples(SearchCriteria searchCriteria);
 
     /**
@@ -102,13 +92,6 @@ public interface IScreeningOpenbisServiceFacade
      */
     @Retry
     public List<Plate> listPlates();
-
-    /**
-     * Return full metadata for each specified plate, including wells and their properties. If a well contains a material, its properties are also
-     * available.
-     */
-    @Retry
-    public List<PlateMetadata> getPlateMetadataList(List<? extends PlateIdentifier> plateIdentifiers);
 
     /**
      * Return the list of all plates for the given <var>experiment</var>.
@@ -187,25 +170,6 @@ public interface IScreeningOpenbisServiceFacade
     @Retry
     public List<ImageDatasetReference> listSegmentationImageDatasets(
             List<? extends PlateIdentifier> plates, String analysisProcedureOrNull);
-
-    /**
-     * For the given <var>experimentIdentifier</var> find all plate locations that are connected to the specified <var>materialIdentifier</var>. If
-     * <code>findDatasets == true</code>, find also the connected image and image analysis data sets for the relevant plates.
-     * <p>
-     * For how to get the feature vectors, see {@link #convertToFeatureVectorDatasetWellIdentifier(List)}.
-     */
-    @Retry
-    public List<PlateWellReferenceWithDatasets> listPlateWells(
-            ExperimentIdentifier experimentIdentifer, MaterialIdentifier materialIdentifier,
-            boolean findDatasets);
-
-    /**
-     * For the given <var>materialIdentifier</var> find all plate locations that are connected to it. If <code>findDatasets == true</code>, find also
-     * the connected image and image analysis data sets for the relevant plates.
-     */
-    @Retry
-    public List<PlateWellReferenceWithDatasets> listPlateWells(
-            MaterialIdentifier materialIdentifier, boolean findDatasets);
 
     /**
      * For the given <var>plateIdentifier</var> find all wells that are connected to it.
@@ -379,8 +343,7 @@ public interface IScreeningOpenbisServiceFacade
 
     /**
      * Converts the given list of {@link PlateWellReferenceWithDatasets} into a list of {@link FeatureVectorDatasetWellReference}.
-     * 
-     * @see #listPlateWells(ExperimentIdentifier, MaterialIdentifier, boolean)
+     *
      * @see #loadFeaturesForDatasetWellReferences(List, List)
      */
     @Retry
@@ -488,77 +451,7 @@ public interface IScreeningOpenbisServiceFacade
             List<FeatureVectorDatasetWellReference> datasetWellReferences,
             List<String> featureCodesOrNull);
 
-    /**
-     * For the given <var>experimentIdentifier</var> find all plate locations that are connected to the specified <var>materialIdentifier</var> and
-     * load the feature vectors for the given feature code if not <code>null</code>, or all available features otherwise.
-     * 
-     * @deprecated use {@link #loadFeaturesForPlateWells(ExperimentIdentifier, MaterialIdentifier, String, List)} with third argument set to
-     *             <code>null</code>.
-     * @param experimentIdentifer The identifier of the experiment to get the feature vectors for
-     * @param materialIdentifier The identifier of the material contained in the wells to get the feature vectors for.
-     * @param featureCodesOrNull The codes of the features to build the feature vectors from, or <code>null</code>, if all available features should
-     *            be included. Note that for an empty list as well all features will be included.
-     * @return The list of {@link FeatureVectorWithDescription}s found in the given <var>experimentIdentifer</var> and connected with the given
-     *         <var>materialIdentifier</var>.
-     */
-    @Deprecated
-    @Retry
-    public List<FeatureVectorWithDescription> loadFeaturesForPlateWells(
-            ExperimentIdentifier experimentIdentifer, MaterialIdentifier materialIdentifier,
-            List<String> featureCodesOrNull);
 
-    /**
-     * For the given <var>experimentIdentifier</var> find all plate locations that are connected to the specified <var>materialIdentifier</var> and
-     * load the feature vectors for the given feature code if not <code>null</code>, or all available features otherwise. Do this only for data sets
-     * with specified value of property <code>ANALYSIS_PROCEDURE</code>, if not <code>null</code>.
-     * 
-     * @param experimentIdentifer The identifier of the experiment to get the feature vectors for
-     * @param materialIdentifier The identifier of the material contained in the wells to get the feature vectors for.
-     * @param analysisProcedureOrNull If not <code>null</code> result is restricted to data sets with property <code>ANALYSIS_PROCEDURE</code> set to
-     *            this value.
-     * @param featureCodesOrNull The codes of the features to build the feature vectors from, or <code>null</code>, if all available features should
-     *            be included. Note that for an empty list as well all features will be included.
-     * @return The list of {@link FeatureVectorWithDescription}s found in the given <var>experimentIdentifer</var> and connected with the given
-     *         <var>materialIdentifier</var>.
-     */
-    @Retry
-    public List<FeatureVectorWithDescription> loadFeaturesForPlateWells(
-            ExperimentIdentifier experimentIdentifer, MaterialIdentifier materialIdentifier,
-            String analysisProcedureOrNull, List<String> featureCodesOrNull);
-
-    /**
-     * For the given <var>materialIdentifier</var> find all plate locations that are connected to it and load the feature vectors for the given
-     * feature code if not <code>null</code>, or all available features otherwise.
-     * 
-     * @deprecated use {@link #loadFeaturesForPlateWells(MaterialIdentifier, String, List)} with second argument set to <code>null</code>.
-     * @param materialIdentifier The identifier of the material contained in the wells to get the feature vectors for.
-     * @param featureCodesOrNull The codes of the features to build the feature vectors from, or <code>null</code>, if all available features should
-     *            be included. Note that for an empty list as well all features will be included.
-     * @return The list of {@link FeatureVectorWithDescription}s found in the given <var>experimentIdentifer</var> and connected with the given
-     *         <var>materialIdentifier</var>.
-     */
-    @Deprecated
-    @Retry
-    public List<FeatureVectorWithDescription> loadFeaturesForPlateWells(
-            MaterialIdentifier materialIdentifier, List<String> featureCodesOrNull);
-
-    /**
-     * For the given <var>materialIdentifier</var> find all plate locations that are connected to it and load the feature vectors for the given
-     * feature code if not <code>null</code>, or all available features otherwise. Do this only for data sets with specified value of property
-     * <code>ANALYSIS_PROCEDURE</code>, if not <code>null</code>.
-     * 
-     * @param materialIdentifier The identifier of the material contained in the wells to get the feature vectors for.
-     * @param analysisProcedureOrNull If not <code>null</code> result is restricted to data sets with property <code>ANALYSIS_PROCEDURE</code> set to
-     *            this value.
-     * @param featureCodesOrNull The codes of the features to build the feature vectors from, or <code>null</code>, if all available features should
-     *            be included. Note that for an empty list as well all features will be included.
-     * @return The list of {@link FeatureVectorWithDescription}s found in the given <var>experimentIdentifer</var> and connected with the given
-     *         <var>materialIdentifier</var>.
-     */
-    @Retry
-    public List<FeatureVectorWithDescription> loadFeaturesForPlateWells(
-            MaterialIdentifier materialIdentifier, String analysisProcedureOrNull,
-            List<String> featureCodesOrNull);
 
     /**
      * Converts the given <var>WellIdentifiers</var> to <var>WellPositions</var>
@@ -802,18 +695,6 @@ public interface IScreeningOpenbisServiceFacade
     @Retry
     public List<ImageDatasetMetadata> listImageMetadata(
             List<? extends IImageDatasetIdentifier> imageDatasets);
-
-    /**
-     * For a given list of <var>plates</var>, return the mapping of plate wells to materials contained in each well.
-     * 
-     * @param plates The list of plates to get the mapping for
-     * @param materialTypeIdentifierOrNull If not <code>null</code>, consider only materials of the given type for the mapping.
-     * @return A list of well to material mappings, one element for each plate.
-     */
-    @Retry
-    public List<PlateWellMaterialMapping> listPlateMaterialMapping(
-            List<? extends PlateIdentifier> plates,
-            MaterialTypeIdentifier materialTypeIdentifierOrNull);
 
     /**
      * Returns an alphabetically sorted list of analysis procedure codes of all data sets of the specified experiment.

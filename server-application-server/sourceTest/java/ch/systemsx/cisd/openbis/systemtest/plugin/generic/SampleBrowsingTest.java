@@ -87,7 +87,7 @@ public class SampleBrowsingTest extends GenericSystemTestCase
         // 'ORGANISM' is assigned only to 'CELL_PLATE' sample type
         Sample s1 = getSample(list, createSampleIdentifier("NEMO/CP-TEST-1"));
         assertEquals("CELL_PLATE", s1.getSampleType().getCode());
-        assertEquals(5, s1.getProperties().size());
+        assertEquals(3, s1.getProperties().size());
         checkUserProperty(s1.getProperties(), "ORGANISM", "HUMAN");
 
         // 'PLATE_GEOMETRY' is assigned only to 'CONTROL_LAYOUT' and 'MASTER PLATE' sample types

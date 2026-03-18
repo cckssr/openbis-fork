@@ -32,7 +32,6 @@ import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IDataSetType;
 import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IExperimentType;
 import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IExternalDataManagementSystem;
 import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IFileFormatType;
-import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IMaterialType;
 import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IPropertyAssignment;
 import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IPropertyType;
 import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.ISampleType;
@@ -47,7 +46,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExternalDataManagementS
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExternalDataManagementSystemType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.FileFormatType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IVocabularyTermUpdates;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewVocabulary;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PropertyType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SampleType;
@@ -56,7 +54,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Vocabulary;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.VocabularyTerm;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.builders.DataSetTypeBuilder;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.builders.ExperimentTypeBuilder;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.builders.MaterialTypeBuilder;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.builders.SampleTypeBuilder;
 
 /**
@@ -209,45 +206,6 @@ public class MasterDataRegistrationTransactionTest extends AssertJUnit
 
                     DataSetType type = new DataSetTypeBuilder().code(KNOWN).getDataSetType();
                     one(server).listDataSetTypes(SESSION_TOKEN);
-                    will(returnValue(Arrays.asList(type)));
-                }
-            });
-    }
-
-    @Test
-    public void testGetOrCreateMaterialTypeOfKnownType()
-    {
-        prepareListMaterialTypes();
-
-        IMaterialType type = transaction.getOrCreateNewMaterialType(KNOWN);
-        type.setDescription("description");
-
-        assertEquals(KNOWN, type.getCode());
-        assertEquals(null, type.getDescription());
-        context.assertIsSatisfied();
-    }
-
-    @Test
-    public void testGetOrCreateMaterialTypeOfUnknownType()
-    {
-        prepareListMaterialTypes();
-
-        IMaterialType type = transaction.getOrCreateNewMaterialType(UNKNOWN);
-        type.setDescription("description");
-
-        assertEquals(UNKNOWN, type.getCode());
-        assertEquals("description", type.getDescription());
-        context.assertIsSatisfied();
-    }
-
-    private void prepareListMaterialTypes()
-    {
-        context.checking(new Expectations()
-            {
-                {
-
-                    MaterialType type = new MaterialTypeBuilder().code(KNOWN).getMaterialType();
-                    one(server).listMaterialTypes(SESSION_TOKEN);
                     will(returnValue(Arrays.asList(type)));
                 }
             });

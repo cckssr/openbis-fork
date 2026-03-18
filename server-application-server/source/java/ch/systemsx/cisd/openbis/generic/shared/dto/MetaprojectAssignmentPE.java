@@ -55,8 +55,6 @@ public class MetaprojectAssignmentPE implements Serializable, IIdHolder
 
     private DataPE dataSet;
 
-    private MaterialPE material;
-
     /**
      * Deletion information.
      * <p>
@@ -128,27 +126,12 @@ public class MetaprojectAssignmentPE implements Serializable, IIdHolder
         this.dataSet = dataSet;
     }
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = ColumnNames.MATERIAL_COLUMN, updatable = false)
-    public MaterialPE getMaterial()
-    {
-        return material;
-    }
-
-    public void setMaterial(MaterialPE material)
-    {
-        this.material = material;
-    }
-
     /**
      * Checks the type of entity and calls the appropriate setter (e.g. {@code setMaterial} )
      */
     public void setEntity(IEntityWithMetaprojects entity)
     {
-        if (entity instanceof MaterialPE)
-        {
-            setMaterial((MaterialPE) entity);
-        } else if (entity instanceof DataPE)
+        if (entity instanceof DataPE)
         {
             setDataSet((DataPE) entity);
         } else if (entity instanceof ExperimentPE)
@@ -193,7 +176,6 @@ public class MetaprojectAssignmentPE implements Serializable, IIdHolder
         builder.append(getExperiment(), that.getExperiment());
         builder.append(getSample(), that.getSample());
         builder.append(getDataSet(), that.getDataSet());
-        builder.append(getMaterial(), that.getMaterial());
         return builder.isEquals();
     }
 
@@ -205,7 +187,6 @@ public class MetaprojectAssignmentPE implements Serializable, IIdHolder
         builder.append(getExperiment());
         builder.append(getSample());
         builder.append(getDataSet());
-        builder.append(getMaterial());
         return builder.toHashCode();
     }
 }

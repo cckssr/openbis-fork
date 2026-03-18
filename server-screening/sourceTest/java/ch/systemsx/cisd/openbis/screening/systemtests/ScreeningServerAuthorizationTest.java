@@ -24,7 +24,6 @@ import org.testng.annotations.Test;
 import ch.systemsx.cisd.common.exceptions.AuthorizationFailureException;
 import ch.systemsx.cisd.openbis.generic.server.ICommonServerForInternalUse;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Grantee;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewMaterial;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewSamplesWithTypes;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Person;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.RoleWithHierarchy.RoleCode;
@@ -108,8 +107,6 @@ public class ScreeningServerAuthorizationTest extends AbstractScreeningSystemTes
     public void testRegisterLibraryFailsBecauseOfNonAuthorized()
     {
         NewLibrary newLibrary = new NewLibrary();
-        newLibrary.setNewGenesOrNull(Collections.<NewMaterial> emptyList());
-        newLibrary.setNewOligosOrNull(Collections.<NewMaterial> emptyList());
         newLibrary.setNewSamplesWithType(Collections.<NewSamplesWithTypes> emptyList());
 
         screeningServer.registerLibraries(userSessionToken, Collections.singletonList(newLibrary));

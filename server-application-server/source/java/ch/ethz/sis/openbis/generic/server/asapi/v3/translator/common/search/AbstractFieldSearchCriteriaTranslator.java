@@ -95,8 +95,6 @@ public abstract class AbstractFieldSearchCriteriaTranslator extends AbstractSear
                 return EntityKind.SAMPLE;
             case DATA_SET:
                 return EntityKind.DATA_SET;
-            case MATERIAL:
-                return EntityKind.MATERIAL;
             default:
                 throw new IllegalArgumentException("Unknown object kind: " + objectKind);
         }

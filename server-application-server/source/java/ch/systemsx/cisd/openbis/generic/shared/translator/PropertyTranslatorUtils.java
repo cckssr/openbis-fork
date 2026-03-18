@@ -23,7 +23,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataTypeCode;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.GenericEntityProperty;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IEntityProperty;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ManagedEntityProperty;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialEntityProperty;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PropertyType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SampleEntityProperty;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.VocabularyTermEntityProperty;
@@ -112,8 +111,6 @@ final class PropertyTranslatorUtils
         {
             case CONTROLLEDVOCABULARY:
                 return new VocabularyTermEntityProperty();
-            case MATERIAL:
-                return new MaterialEntityProperty();
             case SAMPLE:
                 return new SampleEntityProperty();
             default:

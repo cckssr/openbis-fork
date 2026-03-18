@@ -23,14 +23,12 @@ import java.util.Map;
 
 import ch.systemsx.cisd.openbis.generic.shared.basic.TechId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewExperiment;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewMaterial;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewMetaproject;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewProject;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewSample;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewSpace;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataSetBatchUpdatesDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentUpdatesDTO;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialUpdateDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.MetaprojectUpdatesDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ProjectUpdatesDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SampleUpdatesDTO;
@@ -66,10 +64,6 @@ public class AtomicEntityOperationDetails<T extends DataSetInformation> implemen
 
     private final List<NewSample> sampleRegistrations;
 
-    private final Map<String /* material type */, List<NewMaterial>> materialRegistrations;
-
-    private final List<MaterialUpdateDTO> materialUpdates;
-
     private final List<DataSetRegistrationInformation<T>> dataSetRegistrations;
 
     private final List<DataSetBatchUpdatesDTO> dataSetUpdates;
@@ -89,8 +83,6 @@ public class AtomicEntityOperationDetails<T extends DataSetInformation> implemen
             List<NewProject> projectRegistrations, List<ExperimentUpdatesDTO> experimentUpdates,
             List<NewExperiment> experimentRegistrations, List<SampleUpdatesDTO> sampleUpdates,
             List<NewSample> sampleRegistrations,
-            Map<String, List<NewMaterial>> materialRegistrations,
-            List<MaterialUpdateDTO> materialUpdates,
             List<DataSetRegistrationInformation<T>> dataSetRegistrations,
             List<DataSetBatchUpdatesDTO> dataSetUpdates,
             List<NewMetaproject> metaprojectRegistrations,
@@ -108,11 +100,9 @@ public class AtomicEntityOperationDetails<T extends DataSetInformation> implemen
         this.experimentRegistrations = new ArrayList<NewExperiment>(experimentRegistrations);
         this.sampleUpdates = new ArrayList<SampleUpdatesDTO>(sampleUpdates);
         this.sampleRegistrations = new ArrayList<NewSample>(sampleRegistrations);
-        this.materialRegistrations = new HashMap<String, List<NewMaterial>>(materialRegistrations);
         this.dataSetRegistrations =
                 new ArrayList<DataSetRegistrationInformation<T>>(dataSetRegistrations);
         this.dataSetUpdates = new ArrayList<DataSetBatchUpdatesDTO>(dataSetUpdates);
-        this.materialUpdates = new ArrayList<MaterialUpdateDTO>(materialUpdates);
         this.metaprojectRegistrations = new ArrayList<NewMetaproject>(metaprojectRegistrations);
         this.metaprojectUpdates = new ArrayList<MetaprojectUpdatesDTO>(metaprojectUpdates);
         this.vocabularyUpdates = new ArrayList<VocabularyUpdatesDTO>(vocabularyUpdates);
@@ -173,16 +163,6 @@ public class AtomicEntityOperationDetails<T extends DataSetInformation> implemen
     public List<ProjectUpdatesDTO> getProjectUpdates()
     {
         return projectUpdates;
-    }
-
-    public Map<String, List<NewMaterial>> getMaterialRegistrations()
-    {
-        return materialRegistrations;
-    }
-
-    public List<MaterialUpdateDTO> getMaterialUpdates()
-    {
-        return materialUpdates;
     }
 
     public List<NewMetaproject> getMetaprojectRegistrations()

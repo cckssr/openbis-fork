@@ -48,7 +48,7 @@ public class MutableV2Test extends MutableTest
         List<ParsedLogEntry> logEntries = getLogEntries();
         for (ParsedLogEntry logEntry : logEntries)
         {
-            if (logEntry.getLogMessage().contains("Projects updated: 1\nMaterials updated: 1\n"
+            if (logEntry.getLogMessage().contains("Projects updated: 1\n"
                     + "Experiments updated: 1\nSamples updated: 1\nData sets updated: 1"))
             {
                 return;

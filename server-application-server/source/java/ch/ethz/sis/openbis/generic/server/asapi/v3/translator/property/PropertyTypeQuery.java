@@ -38,10 +38,6 @@ public interface PropertyTypeQuery extends ObjectQuery
             LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public List<ObjectRelationRecord> getVocabularyIds(LongSet propertyTypeIds);
 
-    @Select(sql = "select id as objectId, maty_prop_id as relatedId from property_types where id = any(?{1})", parameterBindings = {
-            LongSetMapper.class }, fetchSize = FETCH_SIZE)
-    public List<ObjectRelationRecord> getMaterialTypeIds(LongSet objectIds);
-
     @Select(sql = "select id as objectId, saty_prop_id as relatedId from property_types where id = any(?{1})", parameterBindings = {
             LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public List<ObjectRelationRecord> getSampleTypeIds(LongSet objectIds);

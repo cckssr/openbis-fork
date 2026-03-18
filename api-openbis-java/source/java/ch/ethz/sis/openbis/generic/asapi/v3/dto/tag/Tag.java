@@ -19,14 +19,12 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.ICodeHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IDataSetsHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IDescriptionHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IExperimentsHolder;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IMaterialsHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IOwnerHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IPermIdHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IRegistrationDateHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.ISamplesHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.Material;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.Person;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.fetchoptions.TagFetchOptions;
@@ -43,7 +41,7 @@ import java.util.List;
  * Class automatically generated with DtoGenerator
  */
 @JsonObject("as.dto.tag.Tag")
-public class Tag implements Serializable, ICodeHolder, IDataSetsHolder, IDescriptionHolder, IExperimentsHolder, IMaterialsHolder, IOwnerHolder, IPermIdHolder, IRegistrationDateHolder, ISamplesHolder
+public class Tag implements Serializable, ICodeHolder, IDataSetsHolder, IDescriptionHolder, IExperimentsHolder, IOwnerHolder, IPermIdHolder, IRegistrationDateHolder, ISamplesHolder
 {
     private static final long serialVersionUID = 1L;
 
@@ -70,9 +68,6 @@ public class Tag implements Serializable, ICodeHolder, IDataSetsHolder, IDescrip
 
     @JsonProperty
     private List<DataSet> dataSets;
-
-    @JsonProperty
-    private List<Material> materials;
 
     @JsonProperty
     private Date registrationDate;
@@ -209,27 +204,6 @@ public class Tag implements Serializable, ICodeHolder, IDataSetsHolder, IDescrip
     public void setDataSets(List<DataSet> dataSets)
     {
         this.dataSets = dataSets;
-    }
-
-    // Method automatically generated with DtoGenerator
-    @JsonIgnore
-    @Override
-    public List<Material> getMaterials()
-    {
-        if (getFetchOptions() != null && getFetchOptions().hasMaterials())
-        {
-            return materials;
-        }
-        else
-        {
-            throw new NotFetchedException("Materials have not been fetched.");
-        }
-    }
-
-    // Method automatically generated with DtoGenerator
-    public void setMaterials(List<Material> materials)
-    {
-        this.materials = materials;
     }
 
     // Method automatically generated with DtoGenerator

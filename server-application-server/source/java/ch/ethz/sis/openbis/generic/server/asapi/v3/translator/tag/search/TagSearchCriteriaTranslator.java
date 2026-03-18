@@ -25,7 +25,6 @@ import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetAttributeSearchFieldKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DetailedSearchField;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExperimentAttributeSearchFieldKind;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialAttributeSearchFieldKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SampleAttributeSearchFieldKind;
 
 /**
@@ -59,9 +58,6 @@ public class TagSearchCriteriaTranslator extends AbstractFieldFromCompositeSearc
         } else if (SearchObjectKind.DATA_SET.equals(objectKind))
         {
             return DetailedSearchField.createAttributeField(DataSetAttributeSearchFieldKind.METAPROJECT);
-        } else if (SearchObjectKind.MATERIAL.equals(objectKind))
-        {
-            return DetailedSearchField.createAttributeField(MaterialAttributeSearchFieldKind.METAPROJECT);
         } else
         {
             throw new IllegalArgumentException("Unknown object kind: " + objectKind);

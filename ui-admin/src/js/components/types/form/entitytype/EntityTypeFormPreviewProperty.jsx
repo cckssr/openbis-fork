@@ -86,7 +86,6 @@ class EntityTypeFormPreviewProperty extends React.PureComponent {
     }
     this.handleDraggableClick = this.handleDraggableClick.bind(this)
     this.handlePropertyClick = this.handlePropertyClick.bind(this)
-    this.handleMaterialPropertyOpen = this.handleMaterialPropertyOpen.bind(this)
     this.handleSamplePropertyOpen = this.handleSamplePropertyOpen.bind(this)
     this.handleVocabularyPropertyOpen = this.handleVocabularyPropertyOpen.bind(this)
     this.handleChange = this.handleChange.bind(this)
@@ -104,12 +103,6 @@ class EntityTypeFormPreviewProperty extends React.PureComponent {
     const prevProperty = prevProps ? prevProps.property : null
     const property = props ? props.property : null
 
-    if (this.shouldLoadMaterials(prevProperty, property)) {
-      this.setState({
-        materialType: undefined,
-        materials: undefined
-      })
-    }
     if (this.shouldLoadSamples(prevProperty, property)) {
       this.setState({
         sampleType: undefined,
@@ -122,19 +115,6 @@ class EntityTypeFormPreviewProperty extends React.PureComponent {
         vocabularyTerms: undefined
       })
     }
-  }
-
-  shouldLoadMaterials(prevProperty, property) {
-    const dataType = _.get(property, 'dataType.value')
-    const prevDataType = _.get(prevProperty, 'dataType.value')
-    const materialType = _.get(property, 'materialType.value')
-    const prevMaterialType = _.get(prevProperty, 'materialType.value')
-
-    return (
-      dataType === openbis.DataType.MATERIAL &&
-      (prevDataType !== openbis.DataType.MATERIAL ||
-        prevMaterialType !== materialType)
-    )
   }
 
   shouldLoadSamples(prevProperty, property) {
@@ -161,23 +141,6 @@ class EntityTypeFormPreviewProperty extends React.PureComponent {
       (prevDataType !== openbis.DataType.CONTROLLEDVOCABULARY ||
         prevVocabulary !== vocabulary)
     )
-  }
-
-  loadMaterials() {
-    const { controller, property } = this.props
-    const materialType = property.materialType.value
-    return controller
-      .getFacade()
-      .loadMaterials(materialType)
-      .then(materials => {
-        this.setState(() => ({
-          materialType,
-          materials
-        }))
-      })
-      .catch(error => {
-        AppController.getInstance().errorChange(error)
-      })
   }
 
   loadSamples() {
@@ -452,50 +415,6 @@ class EntityTypeFormPreviewProperty extends React.PureComponent {
           disabled={mode !== PageMode.EDIT}
           onClick={this.handlePropertyClick}
           onOpen={this.handleVocabularyPropertyOpen}
-          onChange={this.handleChange}
-        />
-      </div>
-    )
-  }
-
-  handleMaterialPropertyOpen() {
-    if (this.state.materialType !== _.get(this.props.property, 'materialType.value')) {
-      this.loadMaterials();
-    }
-  }
-
-  renderMaterialProperty() {
-    const { property, value, mode, classes } = this.props
-    const { materials } = this.state
-
-    let options = []
-
-    if (materials) {
-      options = materials.map(material => ({
-        value: material.code
-      }))
-    }
-
-    return (
-      <div className={classes.property}>
-        <SelectField
-          name={property.id}
-          label={this.getLabel()}
-          description={this.getDescription()}
-          value={value}
-          mandatory={this.getMandatory()}
-          options={options}
-          emptyOption={{
-            label: '(' + messages.get(messages.PREVIEW) + ')',
-            selectable: false
-          }}
-          metadata={this.getMetadata()}
-          error={this.getError()}
-          styles={this.getStyles()}
-          mode={PageMode.EDIT}
-          disabled={mode !== PageMode.EDIT}
-          onClick={this.handlePropertyClick}
-          onOpen={this.handleMaterialPropertyOpen}
           onChange={this.handleChange}
         />
       </div>

@@ -52,7 +52,6 @@ import ch.systemsx.cisd.openbis.generic.server.dataaccess.IExternalDataManagemen
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IFileFormatTypeDAO;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IGridCustomFilterDAO;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.ILocatorTypeDAO;
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.IMaterialDAO;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IPersonDAO;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IProjectDAO;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IPropertyTypeDAO;
@@ -92,8 +91,6 @@ public abstract class AbstractBOTest extends AssertJUnit
     protected IProjectDAO projectDAO;
 
     protected IEntityTypeDAO entityTypeDAO;
-
-    protected IMaterialDAO materialDAO;
 
     protected IDataDAO dataDAO;
 
@@ -176,7 +173,6 @@ public abstract class AbstractBOTest extends AssertJUnit
         entityPropertyTypeDAO = context.mock(IEntityPropertyTypeDAO.class);
         vocabularyDAO = context.mock(IVocabularyDAO.class);
         vocabularyTermDAO = context.mock(IVocabularyTermDAO.class);
-        materialDAO = context.mock(IMaterialDAO.class);
         dataSetTypeDAO = context.mock(IDataSetTypeDAO.class);
         fileFormatTypeDAO = context.mock(IFileFormatTypeDAO.class);
         locatorTypeDAO = context.mock(ILocatorTypeDAO.class);
@@ -231,8 +227,6 @@ public abstract class AbstractBOTest extends AssertJUnit
                     will(returnValue(personDAO));
                     allowing(daoFactory).getScriptDAO();
                     will(returnValue(scriptDAO));
-                    allowing(daoFactory).getMaterialDAO();
-                    will(returnValue(materialDAO));
                     allowing(daoFactory).getExperimentDAO();
                     will(returnValue(experimentDAO));
                     allowing(daoFactory).getPropertyTypeDAO();

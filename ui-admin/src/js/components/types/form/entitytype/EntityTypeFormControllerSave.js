@@ -325,17 +325,6 @@ export default class EntityTypeFormControllerSave extends PageControllerSave {
       )
     }
     if (
-      property.dataType.value === openbis.DataType.MATERIAL &&
-      property.materialType.value
-    ) {
-      creation.setMaterialTypeId(
-        new openbis.EntityTypePermId(
-          property.materialType.value,
-          openbis.EntityKind.MATERIAL
-        )
-      )
-    }
-    if (
       property.dataType.value === openbis.DataType.SAMPLE &&
       property.sampleType.value
     ) {
@@ -505,7 +494,6 @@ export default class EntityTypeFormControllerSave extends PageControllerSave {
     strategies.extendObjectTypeStrategy(new ObjectTypeStrategy())
     strategies.extendCollectionTypeStrategy(new CollectionTypeStrategy())
     strategies.extendDataSetTypeStrategy(new DataSetTypeStrategy())
-    strategies.extendMaterialTypeStrategy(new MaterialTypeStrategy())
     return strategies.getStrategy(this.object.type)
   }
 }
@@ -580,24 +568,4 @@ class DataSetTypeStrategy {
     object.setMainDataSetPath(type.mainDataSetPath.value)
     object.setDisallowDeletion(type.disallowDeletion.value)
   }
-}
-
-class MaterialTypeStrategy {
-  createTypeCreation() {
-    return new openbis.MaterialTypeCreation()
-  }
-
-  createTypeCreateOperation(creations) {
-    return new openbis.CreateMaterialTypesOperation(creations)
-  }
-
-  createTypeUpdate() {
-    return new openbis.MaterialTypeUpdate()
-  }
-
-  createTypeUpdateOperation(updates) {
-    return new openbis.UpdateMaterialTypesOperation(updates)
-  }
-
-  setTypeAttributes() { }
 }

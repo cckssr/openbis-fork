@@ -32,7 +32,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataTypeCode;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IEntityProperty;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SampleParentWithDerived;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.builders.ExperimentBuilder;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.builders.MaterialBuilder;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.builders.SampleBuilder;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.builders.VocabularyTermBuilder;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SampleUpdatesDTO;
@@ -79,8 +78,6 @@ public class GeneralInformationChangingServiceTest extends AbstractServerTestCas
                                                     .getExperiment())
                                     .partOf(new SampleBuilder("/P/S1").getSample()).version(4711)
                                     .property("name", "Albert").property("age", "42");
-                    sample.property("material").type(DataTypeCode.MATERIAL)
-                            .value(new MaterialBuilder().code("A").type("Fluid"));
                     sample.property("level").type(DataTypeCode.CONTROLLEDVOCABULARY)
                             .value(new VocabularyTermBuilder("LOW").getTerm());
                     SampleParentWithDerived sampleParentWithDerived = new SampleParentWithDerived();

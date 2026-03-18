@@ -117,8 +117,6 @@ class EntityAutocompleterField extends React.PureComponent {
       return await this.loadSamples(value, count)
     } else if (entityKind === openbis.EntityKind.DATA_SET) {
       return await this.loadDataSets(value, count)
-    } else if (entityKind === openbis.EntityKind.MATERIAL) {
-      return await this.loadMaterials(value, count)
     } else {
       return []
     }
@@ -190,41 +188,6 @@ class EntityAutocompleterField extends React.PureComponent {
     }
   }
 
-  async loadMaterials(value, count) {
-    const criteria = new openbis.MaterialSearchCriteria()
-    criteria.withOrOperator()
-
-    if (value && value.trim().length > 0) {
-      criteria.withCode().thatContains(value)
-      criteria.withProperty(ENTITY_NAME_PROPERTY).thatContains(value)
-    }
-
-    const fo = new openbis.MaterialFetchOptions()
-    fo.withProperties()
-    fo.from(0).count(count)
-    fo.sortBy().code().asc()
-
-    const results = await openbis.searchMaterials(criteria, fo)
-
-    return {
-      options: results.getObjects().map(object => {
-        return {
-          label: this.createOptionLabel(openbis.EntityKind.MATERIAL, object),
-          fullLabel: this.createOptionFullLabel(
-            openbis.EntityKind.MATERIAL,
-            object
-          ),
-          entityKind: openbis.EntityKind.MATERIAL,
-          entityId: {
-            code: object.permId.code,
-            typeCode: object.permId.typeCode
-          }
-        }
-      }),
-      totalCount: results.totalCount
-    }
-  }
-
   async loadDataSets(value, count) {
     const criteria = new openbis.DataSetSearchCriteria()
     criteria.withOrOperator()
@@ -277,10 +240,7 @@ class EntityAutocompleterField extends React.PureComponent {
       entityKind === openbis.EntityKind.SAMPLE
     ) {
       return object.identifier.identifier
-    } else if (
-      entityKind === openbis.EntityKind.MATERIAL ||
-      entityKind === openbis.EntityKind.DATA_SET
-    ) {
+    } else if (entityKind === openbis.EntityKind.DATA_SET) {
       return object.code
     }
   }
@@ -296,8 +256,7 @@ class EntityAutocompleterField extends React.PureComponent {
 
     if (
       entityKind === openbis.EntityKind.EXPERIMENT ||
-      entityKind === openbis.EntityKind.SAMPLE ||
-      entityKind === openbis.EntityKind.MATERIAL
+      entityKind === openbis.EntityKind.SAMPLE
     ) {
       return this.createOptionLabel(entityKind, object) + name
     } else if (entityKind === openbis.EntityKind.DATA_SET) {

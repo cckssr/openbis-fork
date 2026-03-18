@@ -480,15 +480,14 @@ public final class ExperimentBOTest extends AbstractBOTest
     public void testUpdatePropertiesWithSameProperties()
     {
         ExperimentTypePE entityType = CommonTestUtils.createExperimentType();
-        ExperimentPropertyPE materialProp = CommonTestUtils.createMaterialProperty(entityType);
         ExperimentPropertyPE stringProp = CommonTestUtils.createNotesProperty(entityType);
         ExperimentPropertyPE termProp = CommonTestUtils.createOrganProperty(entityType);
         final Set<ExperimentPropertyPE> existingProperties =
-                new HashSet<ExperimentPropertyPE>(Arrays.asList(materialProp, stringProp, termProp));
+                new HashSet<ExperimentPropertyPE>(Arrays.asList(stringProp, termProp));
         List<IEntityProperty> newProperties = createDummyProperties();
         prepareUpdateProperties(existingProperties, newProperties, entityType,
                 ManagerTestTool.EXAMPLE_SESSION.tryGetPerson(),
-                Arrays.asList(materialProp, stringProp, termProp));
+                Arrays.asList(stringProp, termProp));
         prepareEntity(existingProperties, null);
         ExperimentBO bo =
                 new ExperimentBO(daoFactory, ManagerTestTool.EXAMPLE_SESSION, propertiesConverter,
@@ -504,18 +503,16 @@ public final class ExperimentBOTest extends AbstractBOTest
     public void testUpdatePropertiesOfUnchangedProperties()
     {
         ExperimentTypePE entityType = CommonTestUtils.createExperimentType();
-        ExperimentPropertyPE materialProp = CommonTestUtils.createMaterialProperty(entityType);
-        ExperimentPropertyPE materialProp2 = CommonTestUtils.createMaterialProperty(entityType);
         ExperimentPropertyPE stringProp = CommonTestUtils.createNotesProperty(entityType);
         ExperimentPropertyPE stringProp2 = CommonTestUtils.createNotesProperty(entityType);
         ExperimentPropertyPE termProp = CommonTestUtils.createOrganProperty(entityType);
         ExperimentPropertyPE termProp2 = CommonTestUtils.createOrganProperty(entityType);
         final Set<ExperimentPropertyPE> existingProperties =
-                new HashSet<ExperimentPropertyPE>(Arrays.asList(materialProp, stringProp, termProp));
+                new HashSet<ExperimentPropertyPE>(Arrays.asList(stringProp, termProp));
         List<IEntityProperty> newProperties = createDummyProperties();
         prepareUpdateProperties(existingProperties, newProperties, entityType,
                 ManagerTestTool.EXAMPLE_SESSION.tryGetPerson(),
-                Arrays.asList(stringProp2, materialProp2, termProp2));
+                Arrays.asList(stringProp2, termProp2));
         prepareEntity(existingProperties, null);
         ExperimentBO bo =
                 new ExperimentBO(daoFactory, ManagerTestTool.EXAMPLE_SESSION, propertiesConverter,
@@ -531,16 +528,15 @@ public final class ExperimentBOTest extends AbstractBOTest
     public void testUpdatePropertiesOfChangedStringProperty()
     {
         ExperimentTypePE entityType = CommonTestUtils.createExperimentType();
-        ExperimentPropertyPE materialProp = CommonTestUtils.createMaterialProperty(entityType);
         ExperimentPropertyPE stringProp = CommonTestUtils.createStringProperty(entityType, "alpha");
         ExperimentPropertyPE changedStringProp =
                 CommonTestUtils.createStringProperty(entityType, "beta");
         ExperimentPropertyPE termProp = CommonTestUtils.createOrganProperty(entityType);
         final Set<ExperimentPropertyPE> existingProperties =
-                new HashSet<ExperimentPropertyPE>(Arrays.asList(materialProp, stringProp, termProp));
+                new HashSet<ExperimentPropertyPE>(Arrays.asList(stringProp, termProp));
         List<IEntityProperty> newProperties = createDummyProperties();
         final Set<ExperimentPropertyPE> newConvertedProperties =
-                new HashSet<ExperimentPropertyPE>(Arrays.asList(materialProp, changedStringProp,
+                new HashSet<ExperimentPropertyPE>(Arrays.asList(changedStringProp,
                         termProp));
         prepareUpdateProperties(existingProperties, newProperties, entityType,
                 ManagerTestTool.EXAMPLE_SESSION.tryGetPerson(), newConvertedProperties);
@@ -559,20 +555,18 @@ public final class ExperimentBOTest extends AbstractBOTest
     public void testUpdatePropertiesOfChangedMaterialProperty()
     {
         ExperimentTypePE entityType = CommonTestUtils.createExperimentType();
-        ExperimentPropertyPE materialProp = CommonTestUtils.createMaterialProperty(entityType);
-        ExperimentPropertyPE changedMaterialProp =
-                CommonTestUtils.createMaterialProperty(entityType, "BETA");
+
         ExperimentPropertyPE stringProp = CommonTestUtils.createStringProperty(entityType, "alpha");
         ExperimentPropertyPE termProp = CommonTestUtils.createOrganProperty(entityType);
         final Set<ExperimentPropertyPE> existingProperties =
-                new HashSet<ExperimentPropertyPE>(Arrays.asList(materialProp, stringProp, termProp));
+                new HashSet<ExperimentPropertyPE>(Arrays.asList(stringProp, termProp));
         List<IEntityProperty> newProperties = createDummyProperties();
         final Set<ExperimentPropertyPE> newConvertedProperties =
-                new HashSet<ExperimentPropertyPE>(Arrays.asList(changedMaterialProp, stringProp,
+                new HashSet<ExperimentPropertyPE>(Arrays.asList(stringProp,
                         termProp));
         prepareUpdateProperties(existingProperties, newProperties, entityType,
                 ManagerTestTool.EXAMPLE_SESSION.tryGetPerson(), newConvertedProperties);
-        prepareEntity(existingProperties, newConvertedProperties);
+        prepareEntity(existingProperties, null);
         ExperimentBO bo =
                 new ExperimentBO(daoFactory, ManagerTestTool.EXAMPLE_SESSION, propertiesConverter,
                         managedPropertyEvaluatorFactory, null, null);
@@ -587,17 +581,16 @@ public final class ExperimentBOTest extends AbstractBOTest
     public void testUpdatePropertiesOfChangedTermProperty()
     {
         ExperimentTypePE entityType = CommonTestUtils.createExperimentType();
-        ExperimentPropertyPE materialProp = CommonTestUtils.createMaterialProperty(entityType);
         ExperimentPropertyPE stringProp = CommonTestUtils.createStringProperty(entityType, "alpha");
         ExperimentPropertyPE termProp =
                 CommonTestUtils.createTermProperty(entityType, CommonTestUtils.BRAIN);
         ExperimentPropertyPE changedTermProp =
                 CommonTestUtils.createTermProperty(entityType, CommonTestUtils.LEG);
         final Set<ExperimentPropertyPE> existingProperties =
-                new HashSet<ExperimentPropertyPE>(Arrays.asList(materialProp, stringProp, termProp));
+                new HashSet<ExperimentPropertyPE>(Arrays.asList(stringProp, termProp));
         List<IEntityProperty> newProperties = createDummyProperties();
         final Set<ExperimentPropertyPE> newConvertedProperties =
-                new HashSet<ExperimentPropertyPE>(Arrays.asList(materialProp, stringProp,
+                new HashSet<ExperimentPropertyPE>(Arrays.asList(stringProp,
                         changedTermProp));
         prepareUpdateProperties(existingProperties, newProperties, entityType,
                 ManagerTestTool.EXAMPLE_SESSION.tryGetPerson(), newConvertedProperties);
@@ -616,14 +609,13 @@ public final class ExperimentBOTest extends AbstractBOTest
     public void testUpdatePropertiesOfWithAddedTermProperty()
     {
         ExperimentTypePE entityType = CommonTestUtils.createExperimentType();
-        ExperimentPropertyPE materialProp = CommonTestUtils.createMaterialProperty(entityType);
         ExperimentPropertyPE stringProp = CommonTestUtils.createStringProperty(entityType, "alpha");
         ExperimentPropertyPE termProp = CommonTestUtils.createOrganProperty(entityType);
         final Set<ExperimentPropertyPE> existingProperties =
-                new HashSet<ExperimentPropertyPE>(Arrays.asList(materialProp, stringProp));
+                new HashSet<ExperimentPropertyPE>(Arrays.asList(stringProp));
         List<IEntityProperty> newProperties = createDummyProperties();
         final Set<ExperimentPropertyPE> newConvertedProperties =
-                new HashSet<ExperimentPropertyPE>(Arrays.asList(materialProp, stringProp, termProp));
+                new HashSet<ExperimentPropertyPE>(Arrays.asList(stringProp, termProp));
         prepareUpdateProperties(existingProperties, newProperties, entityType,
                 ManagerTestTool.EXAMPLE_SESSION.tryGetPerson(), newConvertedProperties);
         prepareEntity(existingProperties, newConvertedProperties);
@@ -641,17 +633,16 @@ public final class ExperimentBOTest extends AbstractBOTest
     public void testUpdatePropertiesOfWithRemovedMaterialProperty()
     {
         ExperimentTypePE entityType = CommonTestUtils.createExperimentType();
-        ExperimentPropertyPE materialProp = CommonTestUtils.createMaterialProperty(entityType);
         ExperimentPropertyPE stringProp = CommonTestUtils.createStringProperty(entityType, "alpha");
         ExperimentPropertyPE termProp = CommonTestUtils.createOrganProperty(entityType);
         final Set<ExperimentPropertyPE> existingProperties =
-                new HashSet<ExperimentPropertyPE>(Arrays.asList(materialProp, stringProp, termProp));
+                new HashSet<ExperimentPropertyPE>(Arrays.asList(stringProp, termProp));
         List<IEntityProperty> newProperties = createDummyProperties();
         final Set<ExperimentPropertyPE> newConvertedProperties =
                 new HashSet<ExperimentPropertyPE>(Arrays.asList(stringProp, termProp));
         prepareUpdateProperties(existingProperties, newProperties, entityType,
                 ManagerTestTool.EXAMPLE_SESSION.tryGetPerson(), newConvertedProperties);
-        prepareEntity(existingProperties, newConvertedProperties);
+        prepareEntity(existingProperties, null);
         ExperimentBO bo =
                 new ExperimentBO(daoFactory, ManagerTestTool.EXAMPLE_SESSION, propertiesConverter,
                         managedPropertyEvaluatorFactory, null, null);

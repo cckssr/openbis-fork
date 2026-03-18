@@ -60,7 +60,6 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.EventType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.IEntityInformationWithPropertiesHolder;
 import ch.systemsx.cisd.openbis.generic.shared.dto.IEntityPropertiesHolder;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.NewVocabularyTerm;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePE;
@@ -629,9 +628,6 @@ public class VocabularyBO extends AbstractBusinessObject implements IVocabularyB
         } else if (entity instanceof DataPE)
         {
             entityClass = DataPE.class;
-        } else if (entity instanceof MaterialPE)
-        {
-            entityClass = MaterialPE.class;
         } else
         {
             throw new IllegalArgumentException("Unsupported entity class: " + entity.getClass());
@@ -675,9 +671,6 @@ public class VocabularyBO extends AbstractBusinessObject implements IVocabularyB
         {
             return EntityKind.SAMPLE;
         } else if (clazz.isInstance(DataPE.class))
-        {
-            return EntityKind.DATA_SET;
-        } else if (clazz.isInstance(MaterialPE.class))
         {
             return EntityKind.DATA_SET;
         } else
