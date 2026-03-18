@@ -150,6 +150,7 @@ public final class ExportJob implements IAsyncJob
     {
         try
         {
+            LOG.info(String.format("Starting export job: %s", jobId.toString()));
             Map<String, String> identifiers[] = ExportParams.getIdentifiers(exportParams.getInputBodyFormat(), body);
             String[] identifierAnnotations = exportParams.getIdentifierAnnotations();
 
