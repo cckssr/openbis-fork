@@ -57,30 +57,30 @@ public class RecursiveHardLinkMakerTest extends AbstractHardlinkMakerTest
     { "requires_unix" }, retryAnalyzer = RetryTen.class)
     public void testDeleteWhileCopying() throws IOException
     {
-        TestBigStructureCreator creator =
+        final TestBigStructureCreator creator =
                 createBigStructureCreator(new File(workingDirectory, "big-structure"));
         final File src = creator.createBigStructure();
         assertTrue(creator.verifyStructure());
 
-        BlockingFileImmutableCopier blockingFileCopier =
+        final BlockingFileImmutableCopier blockingFileCopier =
                 new BlockingFileImmutableCopier(HardLinkMaker.tryCreate());
-        IImmutableCopier copier =
+        final IImmutableCopier copier =
                 new AssertionCatchingImmutableCopierWrapper(
                         RecursiveHardLinkMaker.tryCreate(blockingFileCopier));
 
-        ExecutorService executor = Executors.newSingleThreadExecutor();
+        final ExecutorService executor = Executors.newSingleThreadExecutor();
         try
         {
-            Future<Status> copyFuture = executor.submit(() -> copier.copyImmutably(src, outputDir, null));
+            final Future<Status> copyFuture = executor.submit(() -> copier.copyImmutably(src, outputDir, null));
 
             blockingFileCopier.awaitUntilBlocked();
             FileUtilities.deleteRecursively(src);
-            Status status = unblockAndAwait(copyFuture, blockingFileCopier);
+            final Status status = unblockAndAwait(copyFuture, blockingFileCopier);
 
             assertFalse(status.isOK());
-            File dest = new File(outputDir, src.getName());
+            final File dest = new File(outputDir, src.getName());
 
-            TestBigStructureCreator structureCopy = new TestBigStructureCreator(dest);
+            final TestBigStructureCreator structureCopy = new TestBigStructureCreator(dest);
             assertFalse("Big structure was partially copied", structureCopy.verifyStructure());
             assertFalse("Original was not partially deleted", creator.verifyStructure());
         } finally

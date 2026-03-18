@@ -92,25 +92,22 @@ public class FastRecursiveHardLinkMaker implements IImmutableCopier
                 neverUseNative, additionalCmdLineFlagsOrNull);
     }
 
-    private FastRecursiveHardLinkMaker(final File rsyncExcutable, final File lnExecutable,
+    private FastRecursiveHardLinkMaker(final File rsyncExecutable, final File lnExecutable,
             final TimingParameters timingParameters, final boolean neverUseNative,
             final List<String> additionalCmdLineFlagsOrNull)
+    {
+        this(createCopierComponents(rsyncExecutable, lnExecutable, timingParameters, neverUseNative,
+                additionalCmdLineFlagsOrNull), timingParameters);
+    }
+
+    FastRecursiveHardLinkMaker(final IFileImmutableCopier internFileCopierOrNull,
+            final IDirectoryImmutableCopier rsyncBasedDirectoryCopierOrNull,
+            final IImmutableCopier fallbackCopierOrNull, final TimingParameters timingParameters)
             throws ConfigurationFailureException
     {
-        this.internFileCopierOrNull =
-                neverUseNative ? null : FastHardLinkMaker.tryCreate(timingParameters);
-        this.rsyncBasedDirectoryCopierOrNull =
-                (rsyncExcutable == null) ? null : new RsyncBasedRecursiveHardLinkMaker(rsyncExcutable, timingParameters,
-                        DEFAULT_MAX_ERRORS_TO_IGNORE, additionalCmdLineFlagsOrNull);
-        if (internFileCopierOrNull == null)
-        {
-            this.fallbackCopierOrNull =
-                    RecursiveHardLinkMaker.tryCreate(HardLinkMaker.create(lnExecutable,
-                            timingParameters));
-        } else
-        {
-            this.fallbackCopierOrNull = RecursiveHardLinkMaker.tryCreate(internFileCopierOrNull);
-        }
+        this.internFileCopierOrNull = internFileCopierOrNull;
+        this.rsyncBasedDirectoryCopierOrNull = rsyncBasedDirectoryCopierOrNull;
+        this.fallbackCopierOrNull = fallbackCopierOrNull;
         if ((internFileCopierOrNull == null && fallbackCopierOrNull == null)
                 || (rsyncBasedDirectoryCopierOrNull == null && fallbackCopierOrNull == null))
         {
@@ -135,6 +132,56 @@ public class FastRecursiveHardLinkMaker implements IImmutableCopier
                 operationLog.info("Using Java to traverse directories when making recursive hard "
                         + "link copies");
             }
+        }
+    }
+
+    private FastRecursiveHardLinkMaker(final CopierComponents copierComponents,
+            final TimingParameters timingParameters)
+    {
+        this(copierComponents.internFileCopierOrNull, copierComponents.rsyncBasedDirectoryCopierOrNull,
+                copierComponents.fallbackCopierOrNull, timingParameters);
+    }
+
+    private static CopierComponents createCopierComponents(final File rsyncExecutable,
+            final File lnExecutable, final TimingParameters timingParameters,
+            final boolean neverUseNative, final List<String> additionalCmdLineFlagsOrNull)
+    {
+        final IFileImmutableCopier internFileCopierOrNull =
+                neverUseNative ? null : FastHardLinkMaker.tryCreate(timingParameters);
+        final IDirectoryImmutableCopier rsyncBasedDirectoryCopierOrNull =
+                (rsyncExecutable == null) ? null : new RsyncBasedRecursiveHardLinkMaker(
+                        rsyncExecutable, timingParameters, DEFAULT_MAX_ERRORS_TO_IGNORE,
+                        additionalCmdLineFlagsOrNull);
+        final IImmutableCopier fallbackCopierOrNull =
+                createFallbackCopier(internFileCopierOrNull, lnExecutable, timingParameters);
+        return new CopierComponents(internFileCopierOrNull, rsyncBasedDirectoryCopierOrNull,
+                fallbackCopierOrNull);
+    }
+
+    private static IImmutableCopier createFallbackCopier(
+            final IFileImmutableCopier internFileCopierOrNull, final File lnExecutable,
+            final TimingParameters timingParameters)
+    {
+        final IFileImmutableCopier fileCopier = internFileCopierOrNull == null
+                ? HardLinkMaker.create(lnExecutable, timingParameters) : internFileCopierOrNull;
+        return RecursiveHardLinkMaker.tryCreate(fileCopier);
+    }
+
+    private static final class CopierComponents
+    {
+        private final IFileImmutableCopier internFileCopierOrNull;
+
+        private final IDirectoryImmutableCopier rsyncBasedDirectoryCopierOrNull;
+
+        private final IImmutableCopier fallbackCopierOrNull;
+
+        private CopierComponents(final IFileImmutableCopier internFileCopierOrNull,
+                final IDirectoryImmutableCopier rsyncBasedDirectoryCopierOrNull,
+                final IImmutableCopier fallbackCopierOrNull)
+        {
+            this.internFileCopierOrNull = internFileCopierOrNull;
+            this.rsyncBasedDirectoryCopierOrNull = rsyncBasedDirectoryCopierOrNull;
+            this.fallbackCopierOrNull = fallbackCopierOrNull;
         }
     }
 

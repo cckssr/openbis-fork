@@ -186,27 +186,7 @@ public abstract class AbstractHardlinkMakerTest
 
     @Test(groups =
     { "requires_unix" }, retryAnalyzer = RetryTen.class)
-    public void testDeleteWhileCopying() throws IOException
-    {
-        TestBigStructureCreator creator =
-                createBigStructureCreator(new File(workingDirectory, "big-structure"));
-        final File src = creator.createBigStructure();
-        assertTrue(creator.verifyStructure());
-        MessageChannel channel = new MessageChannel();
-        
-        creator.deleteBigStructureAsync(channel);
-        IImmutableCopier copier =
-                new AssertionCatchingImmutableCopierWrapper(createHardLinkCopier());
-        creator.waitUntilDeletionStarted(channel);
-        Status status = copier.copyImmutably(src, outputDir, null);
-        assertFalse(status.isOK());
-        File dest = new File(outputDir, src.getName());
-
-        TestBigStructureCreator structureCopy = new TestBigStructureCreator(dest);
-        assertFalse("Big structure was partially copied", structureCopy.verifyStructure());
-        assertFalse("Original was not partially deleted", creator.verifyStructure());
-
-    }
+    public abstract void testDeleteWhileCopying() throws IOException;
 
     /**
      * Construct a TestBigStructureCreator. Subclasses may override.
