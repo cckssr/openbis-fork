@@ -1,8 +1,16 @@
-## Changes with pybis-6.8.1.0
+## Changes with pybis-6.9.0.0
 
 - Changed versioning scheme
 - Added Imaging technology beta functionalities
 - Added AFS data handling
+- Added simple RO-Crate server client
+
+## Changes with pybis-1.37.5
+
+- Fixes to parents/children addition/deletion
+- Fixed execute_custom_as_service method
+- Fixed metaData attribute for internal types
+
 
 ## Changes with pybis-1.37.4
 
