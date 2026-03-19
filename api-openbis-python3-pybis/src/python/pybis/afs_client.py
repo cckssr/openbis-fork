@@ -49,6 +49,9 @@ class File:
     def __str__(self):
         return f'File[{self.owner},{self.path},{self.name},{self.directory},{self.size},{self.lastModifiedTime}]'
 
+    def __repr__(self):
+        return self.__str__()
+
 
 class AfsClient:
 

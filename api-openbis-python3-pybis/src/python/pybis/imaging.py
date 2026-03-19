@@ -165,8 +165,9 @@ class ImagingDataSetExportConfig(AbstractImagingClass):
     imageFormat: str
     resolution: str
     include: list
+    customOptions: dict
 
-    def __init__(self, archive_format, image_format, resolution, include=None):
+    def __init__(self, archive_format, image_format, resolution, include=None, custom_options=None):
         if include is None:
             include = ["IMAGE", "RAW_DATA"]
         self.__dict__["@type"] = "imaging.dto.ImagingDataSetExportConfig"
@@ -176,6 +177,7 @@ class ImagingDataSetExportConfig(AbstractImagingClass):
             resolution = "original"
         self.resolution = resolution
         self.include = include
+        self.customOptions = custom_options if custom_options is not None else dict()
         self._validate_data()
 
     def _validate_data(self):
