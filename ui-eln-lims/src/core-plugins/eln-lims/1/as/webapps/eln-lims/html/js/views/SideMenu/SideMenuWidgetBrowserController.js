@@ -3241,7 +3241,8 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
     }
 
     _createExportToSciCatNode() {
-        if (profile.mainMenu.showExports) {
+        //disabled SciCat export page until it is finished
+        if (false && profile.mainMenu.showExports) {
             return {
                 text: "Export to SciCat",
                 object: {
