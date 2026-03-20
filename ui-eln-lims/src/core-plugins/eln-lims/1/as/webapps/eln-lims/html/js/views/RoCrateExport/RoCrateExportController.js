@@ -76,7 +76,6 @@ function RoCrateExportController(parentController) {
                 data: $("#DATASET-EXPORT-"+_viewId).is(":checked"), //DATA-EXPORT
                 afsData: $("#FILES-EXPORT-"+_viewId).is(":checked") //DATA-EXPORT
             }
-//                withImportCompatibility: $("#COMPATIBLE-IMPORT").is(":checked"), //COMPATIBLE-IMPORT
         }
 
         if (nodeExportList.length === 0) {
@@ -92,7 +91,7 @@ function RoCrateExportController(parentController) {
                         Util.showError(result.error);
                     }
                 } else {
-                    Util.showSuccess("Export is being processed, you will receive an email when it is finished.", function () { Util.unblockUI(); });
+                    Util.showSuccess("Export is being processed, you will receive an email when it is finished. If you logout the process will stop.", function () { Util.unblockUI(); });
                     mainController.refreshView();
                 }
             });
