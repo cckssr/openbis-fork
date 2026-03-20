@@ -144,11 +144,7 @@ function SciCatExportView(exportController, exportModel) {
             }
             _refreshableFields.push($formColumn);
 
-            var iconType = IconUtil.getToolbarIconType("SCI-CAT_EXPORT")
-            iconType.css = { "height": "33px", "width": "33px", "margin-top": "-9px"}
-            var icon = IconUtil.getIcon(iconType);
-
-            var $formTitle = $('<h2>').append(icon).append('Sci Cat Export Builder');
+            var $formTitle = $('<h2>').append('Sci Cat Export Builder');
             $header.append($formTitle);
 
             var $exportButton = $('<input>', { 'type': 'submit', 'class': 'btn btn-primary', 'value': 'Initialize export',

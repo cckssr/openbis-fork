@@ -524,10 +524,11 @@ function ServerFacade(openbisServer) {
         }, callbackFunction, "exports-api", null);
     };
 
-    this.exportSciCat = function(exportData, callbackFunction) {
+    this.exportSciCat = function(exportData, accessToken, callbackFunction) {
         this.customASService({
              "method" : "exportSciCat",
              "exportData" : exportData,
+             "accessToken": accessToken,
          }, callbackFunction, "exports-api", null);
     };
 

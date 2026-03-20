@@ -94,7 +94,7 @@ function SciCatExportController(parentController) {
         } else {
             Util.blockUI();
 
-            mainController.serverFacade.exportSciCat(exportModel, function (result) {
+            mainController.serverFacade.exportSciCat(exportModel, _this.exportModel.accessToken, function (result) {
                 if (result.error) {
                     if(result.error.message) {
                         Util.showError(result.error.message);
