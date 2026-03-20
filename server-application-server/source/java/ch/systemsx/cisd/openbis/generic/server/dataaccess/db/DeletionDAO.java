@@ -136,7 +136,6 @@ final class DeletionDAO extends AbstractGenericEntityDAO<DeletionPE> implements 
         operationLog.info(String.format("REVERT: deletion %s.", deletion));
         for (EntityKind entityKind : EntityKind.values())
         {
-            // NOTE: material deletion are always permanent and therefore can't be reverted
             revertDeletionOfEntities(deletion, entityKind, modifier);
         }
         super.flush();

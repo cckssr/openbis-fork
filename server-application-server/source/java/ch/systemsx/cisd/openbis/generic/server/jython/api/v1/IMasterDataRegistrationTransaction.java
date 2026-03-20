@@ -159,7 +159,7 @@ public interface IMasterDataRegistrationTransaction
      * Assigns a property type to an entity type. If the assignment is already established an object is returned where all setter method invocations
      * are silently be ignored.
      * 
-     * @param entityType One of IExperimentTypeImmutable, ISampleTypeImmutable, IDataSetTypeImmutable, or IMaterialTypeImmutable.
+     * @param entityType One of IExperimentTypeImmutable, ISampleTypeImmutable, or IDataSetTypeImmutable.
      * @param propertyType The property type to assign to the entity type.
      * @return An object representing the assignment.
      */

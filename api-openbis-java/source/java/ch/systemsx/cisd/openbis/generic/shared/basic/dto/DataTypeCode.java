@@ -28,6 +28,6 @@ import ch.systemsx.cisd.base.annotation.JsonObject;
 public enum DataTypeCode implements Serializable
 {
     // Do not refactor names - they are stored in database.
-    INTEGER, VARCHAR, MULTILINE_VARCHAR, REAL, TIMESTAMP, BOOLEAN, CONTROLLEDVOCABULARY, UNUSED,
+    INTEGER, VARCHAR, MULTILINE_VARCHAR, REAL, TIMESTAMP, BOOLEAN, CONTROLLEDVOCABULARY,
     HYPERLINK, XML, SAMPLE, DATE, JSON, ARRAY_INTEGER, ARRAY_REAL, ARRAY_STRING, ARRAY_TIMESTAMP;
 }

@@ -1643,7 +1643,7 @@ class Openbis:
             return datastores[attrs]
 
     def gen_codes(self, entity: str, prefix: str = "", count: int = 1) -> List[str]:
-        """Get multiple next sequence numbers for a Sample, Experiment, DataSet and Material. Other entities are currently not supported.
+        """Get multiple next sequence numbers for a Sample, Experiment and DataSet. Other entities are currently not supported.
         Usage::
             gen_code('sample', 'SAM-')
             gen_code('collection', 'COL-')
@@ -1674,7 +1674,7 @@ class Openbis:
             raise ValueError(f"Could not generate a code(s) for {entity}: {e}")
 
     def gen_code(self, entity, prefix="") -> str:
-        """Get the next sequence number for a Sample, Experiment, DataSet and Material. Other entities are currently not supported.
+        """Get the next sequence number for a Sample, Experiment and DataSet. Other entities are currently not supported.
         Usage::
             gen_code('sample', 'SAM-')
             gen_code('collection', 'COL-')

@@ -21,7 +21,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Sample;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ServiceVersionHolder;
 
 /**
- * Well's metadata: sample, the connected material and optionally the gene inhibited by this material.
+ * Well's metadata: sample.
  * 
  * @author Tomasz Pylak
  */

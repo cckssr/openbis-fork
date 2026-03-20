@@ -51,15 +51,12 @@ import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.WellSearchCrit
 public class ExperimentFeatureVectorSummaryLoader extends AbstractContentLoader
 {
 
-    private final WellDataLoader wellDataLoader;
 
     public ExperimentFeatureVectorSummaryLoader(Session session,
             IScreeningBusinessObjectFactory businessObjectFactory, IDAOFactory daoFactory,
             IScreeningQuery screeningQuery)
     {
         super(session, businessObjectFactory, daoFactory, screeningQuery);
-        this.wellDataLoader =
-                new WellDataLoader(session, businessObjectFactory, daoFactory, screeningQuery);
     }
 
     private UserFailureException decorateException(Exception ex, AbstractExternalData dataSet,

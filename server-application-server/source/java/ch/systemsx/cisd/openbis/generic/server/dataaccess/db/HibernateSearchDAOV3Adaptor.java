@@ -508,9 +508,6 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
 //                            }
 //                        }
 //                        break;
-//                    case MATERIAL:
-//                        // TODO: V3 doesn't support withMaterial criteria
-//                        break;
 //                }
 //
 //                if (subAssV3Criteria == null) {
@@ -1187,9 +1184,6 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
 //        NativeQuery nativeQuery = null;
 //
 //        switch (entityKind) {
-//            case MATERIAL:
-//                throwUnsupportedOperationException("getPermIds for " + entityKind + "not implemented");
-//                break;
 //            case EXPERIMENT:
 //                nativeQuery = currentSession.createNativeQuery(GET_EXPERIMENT_PERM_IDS);
 //                break;

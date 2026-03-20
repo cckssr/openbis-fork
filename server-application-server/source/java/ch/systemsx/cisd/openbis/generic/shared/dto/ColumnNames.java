@@ -186,19 +186,11 @@ public final class ColumnNames
 
     public static final String LOCATOR_TYPE_COLUMN = "loty_id";
 
-    public static final String MATERIAL_BATCH_COLUMN = "maba_id";
-
-    public static final String MATERIAL_IDENTIFIER_COLUMN = "material";
-
     public static final String PARENT_SAMPLE_COLUMN = "sample_id_parent";
 
     public static final String CHILD_SAMPLE_COLUMN = "sample_id_child";
 
     public static final String RELATIONSHIP_COLUMN = "relationship_id";
-
-    public static final String MATERIAL_TYPE_COLUMN = "maty_id";
-
-    public static final String MATERIAL_TYPE_PROPERTY_TYPE_COLUMN = "mtpt_id";
 
     public static final String SECTION_COLUMN = "section";
 

@@ -17,7 +17,7 @@ package ch.systemsx.cisd.openbis.plugin.screening.server.logic.dto;
 
 
 /**
- * Interface to access well feature vector and the material replica id, used by {@link WellReplicaSummaryCalculator}.
+ * Interface to access well feature vector and replica id, used by {@link WellReplicaSummaryCalculator}.
  * 
  * @author Tomasz Pylak
  */
@@ -25,7 +25,4 @@ public interface IWellData
 {
     /** @return feature vector for the well */
     float[] getFeatureVector();
-
-    /** @return id which allows to group all wells which contain replicates */
-    long getReplicaMaterialId();
 }

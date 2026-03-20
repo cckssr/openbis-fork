@@ -34,7 +34,5 @@ public class EntityHistoryGridColumnIDs
 
     public static final String RELATION_TYPE = "RELATION_TYPE";
 
-    public static final String MATERIAL = "MATERIAL";
-
     public static final String VOCABULARY_TERM = "VOCABULARY_TERM";
 }

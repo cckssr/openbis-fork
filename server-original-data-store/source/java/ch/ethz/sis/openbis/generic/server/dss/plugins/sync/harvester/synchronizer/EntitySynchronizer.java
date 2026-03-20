@@ -1166,7 +1166,7 @@ public class EntitySynchronizer
         Map<ProjectPermId, String> projectsToDelete = new HashMap<ProjectPermId, String>();
         Map<ExperimentPermId, String> experimentsToDelete = new HashMap<ExperimentPermId, String>();
         Map<SamplePermId, String> samplesToDelete = new HashMap<SamplePermId, String>();
-        // for data sets and materials permId and identifier(code) are the same but still we keep a map
+        // for data sets permId and identifier(code) are the same but still we keep a map
         Map<DataSetPermId, String> dataSetsToDelete = new HashMap<DataSetPermId, String>();
 
         Set<PhysicalDataSet> physicalDataSetsDelete = new HashSet<PhysicalDataSet>();
@@ -1303,7 +1303,6 @@ public class EntitySynchronizer
         v3Api.deleteProjects(sessionToken, new ArrayList<ProjectPermId>(projectsToDelete.keySet()), prjDeletionOpts);
 
 
-        // The following summary is not accurate if an error occurs in material deletions
         StringBuffer summary = new StringBuffer();
         if (projectsToDelete.size() > 0)
         {

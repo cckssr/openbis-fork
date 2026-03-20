@@ -41,12 +41,6 @@ public class WellData implements IWellData
     }
 
     @Override
-    public long getReplicaMaterialId()
-    {
-        return replicaId;
-    }
-
-    @Override
     public float[] getFeatureVector()
     {
         return featureVector;

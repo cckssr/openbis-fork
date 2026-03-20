@@ -52,8 +52,7 @@ public class DSPropertyUtils
     {
         ArrayList<IEntityProperty> list = new ArrayList<IEntityProperty>();
         for (NewProperty prop : dataSetProperties)
-        { // if value is a material it will have been properly parsed in the ResourceListParser so we do not need to
-          // do anything special about it here.
+        {
             String propertyCode = prop.getPropertyCode();
             String value = prop.getValue();
             list.add(new PropertyBuilder(propertyCode).value(value).getProperty());

@@ -44,8 +44,8 @@ public class PrefixBasedNameTranslator implements INameTranslator
     }
     
     /**
-     * INTERNAL_NAMESPACE_PREFIX is checked because of the following cases following cases: 1. While parsing master data, for property types with dataType = CONTROLLEDVOCABULARY or
-     * MATERIAL in which case the vocabulary or material attribute might start with $ (INTERNAL_NAMESPACE_PREFIX) 2. While parsing master data, for
+     * INTERNAL_NAMESPACE_PREFIX is checked because of the following cases: 1. While parsing master data, for property types with dataType = CONTROLLEDVOCABULARY
+     * in which case the vocabulary attribute might start with $ (INTERNAL_NAMESPACE_PREFIX) 2. While parsing master data, for
      * property assignments where property type code might start with $ (INTERNAL_NAMESPACE_PREFIX) the prop. assignment element in the incoming xml
      * will start with $ if propertyTypeCode is managedInternally. 3. While parsing meta data, the property code will will start with $ if
      * propertyTypeCode is internalNamespac

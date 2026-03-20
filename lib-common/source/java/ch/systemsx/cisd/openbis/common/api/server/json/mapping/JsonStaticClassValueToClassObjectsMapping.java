@@ -21,9 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Stores a mapping between legacy @class field values and classes that used to correspond to these values when @class annotation was used (for
- * instance ".MaterialIdentifier" @class value used to represent ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.MaterialIdentifier and
- * ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.MaterialIdentifier classes).
+ * Stores a mapping between legacy @class field values and classes that used to correspond to these values when @class annotation was used.
  * 
  * @author pkupczyk
  */

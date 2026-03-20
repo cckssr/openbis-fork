@@ -85,8 +85,8 @@ public final class PropertyTypeDAOTest extends AbstractDAOTest
     public final void testListDataTypesAndEnumeration()
     {
         final List<DataTypePE> list = daoFactory.getPropertyTypeDAO().listDataTypes();
-        assertEquals(DataTypeCode.values().length -1 , list.size());
-        assertEquals(DataTypeCode.values().length -1, list.size());
+        assertEquals(DataTypeCode.values().length, list.size());
+        assertEquals(DataTypeCode.values().length, list.size());
         for (final DataTypePE dataType : list)
         {
             DataTypeCode.valueOf(dataType.getCode().name()); // check enums identity
