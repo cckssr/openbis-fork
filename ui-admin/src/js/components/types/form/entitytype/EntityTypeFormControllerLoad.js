@@ -87,7 +87,7 @@ export default class EntityTypeFormControllerLoad extends PageControllerLoad {
           assignments,
           loadedType,
           loadedAssignment.propertyType.semanticAnnotations,
-          loadedAssignment.semanticAnnotations
+          loadedAssignment.semanticAnnotationsInherited ? [] : loadedAssignment.semanticAnnotations
         );
         properties.push(property);
 
