@@ -63,6 +63,10 @@ from util import addToZipFile, checkResponseStatus, cleanUp, getDownloadUrlFromA
 
 OPERATION_LOG = LogFactory.getLogger(LogCategory.OPERATION, LogFactory)
 
+def isResearchCollectionEnabled(context, params):
+    is_enabled = CommonServiceProvider.tryToGetProperty('exports-api.research_collection.enabled')
+    return is_enabled
+
 
 def exportResearchCollection(context, params):
     resultUrl = sendToResearchCollection(context, params)

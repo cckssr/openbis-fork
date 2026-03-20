@@ -34,11 +34,15 @@ from java.net import SocketTimeoutException
 
 OPERATION_LOG = LogFactory.getLogger(LogCategory.OPERATION, LogFactory)
 
+def isSciCatEnabled(context, params):
+    is_enabled = CommonServiceProvider.tryToGetProperty('exports-api.sci-cat.enabled')
+    return is_enabled
+
 def exportSciCat(context, params):
 
-    sciCatUrl = CommonServiceProvider.tryToGetProperty('sci-cat-exports-api.sci-cat-url')
-    httpProxyURL = CommonServiceProvider.tryToGetProperty('sci-cat-exports-api.httpProxyURL')
-    httpProxyPort = CommonServiceProvider.tryToGetProperty('sci-cat-exports-api.httpProxyPort')
+    sciCatUrl = CommonServiceProvider.tryToGetProperty('exports-api.sci-cat.url')
+    httpProxyURL = CommonServiceProvider.tryToGetProperty('exports-api.sci-cat.http.proxy.url')
+    httpProxyPort = CommonServiceProvider.tryToGetProperty('exports-api.sci-cat.http.proxy.port')
 
     accessToken = params.get('accessToken')
 

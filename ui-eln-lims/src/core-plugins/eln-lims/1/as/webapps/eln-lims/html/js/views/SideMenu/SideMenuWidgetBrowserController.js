@@ -2739,13 +2739,38 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
     async _loadNodesExports(params) {
         var results = { nodes: [] }
 
+        var rcEnabledPromise = new Promise((resolve) => {
+            mainController.serverFacade.isResearchCollectionEnabled((isEnabled) => {
+                if(isEnabled && isEnabled === "true") {
+                    results.nodes.push(this._createExportToResearchCollectionNode())
+                }
+                resolve(results);
+            }, (error) => {
+                console.log(error);
+                resolve(results);
+            })
+        });
+
+
+        var sciCatEnabledPromise = new Promise((resolve) => {
+            mainController.serverFacade.isSciCatEnabled((isEnabled) => {
+                if(isEnabled && isEnabled === "true") {
+                    results.nodes.push(this._createExportToSciCatNode())
+                }
+                resolve(results);
+            }, (error) => {
+                console.log(error);
+                resolve(results);
+            })
+        });
+
         results.nodes.push(this._createExportToZipNode())
-        results.nodes.push(this._createExportToResearchCollectionNode())
         results.nodes.push(this._createExportToZenodoNode())
         results.nodes.push(this._createExportToRoCrateNode())
-        results.nodes.push(this._createExportToSciCatNode())
 
-        results.nodes = results.nodes.filter((node) => !!node)
+        await Promise.all([rcEnabledPromise, sciCatEnabledPromise])
+
+        results.nodes = results.nodes.filter((node) => !!node).sort((a,b) => a.text.compareToIgnoreCase(b.text))
 
         return results
     }
@@ -3193,7 +3218,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
     }
 
     _createExportToResearchCollectionNode() {
-        if (options.showResearchCollectionExportBuilder) {
+        if (profile.mainMenu.showExports) {
             return {
                 text: "Export to Research Collection",
                 object: {
@@ -3241,8 +3266,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
     }
 
     _createExportToSciCatNode() {
-        //disabled SciCat export page until it is finished
-        if (false && profile.mainMenu.showExports) {
+        if (profile.mainMenu.showExports) {
             return {
                 text: "Export to SciCat",
                 object: {

@@ -532,6 +532,12 @@ function ServerFacade(openbisServer) {
          }, callbackFunction, "exports-api", null);
     };
 
+    this.isSciCatEnabled = function(callbackFunction, failureHandler) {
+        this.customASService({
+             "method" : "isSciCatEnabled",
+         }, callbackFunction, "exports-api", failureHandler);
+    };
+
     this.collectIdsForSciCatExport = function(nodeExportList, callbackFunction) {
         this.customASService({
              "nodeExportList" : exportData,
@@ -542,6 +548,12 @@ function ServerFacade(openbisServer) {
 	//
 	// Research collection export
 	//
+    this.isResearchCollectionEnabled = function(callbackFunction, failureHandler) {
+        this.customASService({
+             "method" : "isResearchCollectionEnabled",
+         }, callbackFunction, "exports-api", failureHandler);
+    };
+
 	this.exportRcAs = function(entities, submissionUrl, submissionType, retentionPeriod, userInformation, callbackFunction) {
 	    this.customASService({
                          "method" : "exportResearchCollection",

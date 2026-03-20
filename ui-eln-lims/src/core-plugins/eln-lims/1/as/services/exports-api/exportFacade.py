@@ -26,9 +26,9 @@ import ch.ethz.sis.shared.log.classic.impl.LogFactory as LogFactory
 
 from general.api import exportAll
 from ro_crate.api import exportRoCrate, checkStatues, getRoCrateUrl
-from sci_cat.api import exportSciCat
+from sci_cat.api import exportSciCat, isSciCatEnabled
 from zenodo.api import exportZenodo
-from research_collection.api import exportResearchCollection
+from research_collection.api import exportResearchCollection, isResearchCollectionEnabled
 
 
 
@@ -52,12 +52,16 @@ def process(context, params):
 
     elif method == "exportSciCat":
         return exportSciCat(context, params)
+    elif method == "isSciCatEnabled":
+        return isSciCatEnabled(context, params)
 
     elif method == "exportZenodo":
         return exportZenodo(context, params)
 
     elif method == "exportResearchCollection":
         return exportResearchCollection(context, params)
+    elif method == "isResearchCollectionEnabled":
+        return isResearchCollectionEnabled(context, params)
     else:
         OPERATION_LOG.error("No such method '%s'" % method)
         return {
