@@ -15,7 +15,7 @@ public class PropertyTypeSpecialHandling
             return true;
         }
 
-        propertyType.getDomain().stream().anyMatch(x -> x.getId().equals("File"));
+        propertyType.getDomain().stream().anyMatch(x -> x.getId().equals("Dataset"));
 
         return false;
     }

@@ -61,7 +61,7 @@ public class Writer
         {
             FileEntity.FileEntityBuilder fileEntityBuilder = new FileEntity.FileEntityBuilder();
 
-            fileEntityBuilder.addType("File");
+            fileEntityBuilder.addType("Dataset");
             fileEntityBuilder.setId(file.id());
             fileEntityBuilder.setLocation(file.path());
             schemaFacade.getCrate().addDataEntity(fileEntityBuilder.build());
@@ -123,7 +123,7 @@ public class Writer
             propertyType.setId(Constants.PROPERTY_ID_FILES);
             {
                 Type roCrateFileType = new Type();
-                roCrateFileType.setId("File");
+                roCrateFileType.setId("Dataset");
                 propertyType.addType(roCrateFileType);
                 for (IType fileType : fileTypes)
                 {

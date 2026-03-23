@@ -643,9 +643,10 @@ public class RdfToModel
                 {
                     ImageExtractor.ValueAndImages imageRes =
                             ImageExtractor.findImageAndUpdatePaths(value);
-                    images = Stream.concat(images.entrySet().stream(),
+                    Map<String, String> collect = Stream.concat(images.entrySet().stream(),
                             imageRes.images().entrySet().stream()).collect(
                             Collectors.toMap(x -> x.getKey(), x -> x.getValue()));
+                    images.putAll(collect);
                     writeVal = imageRes.value();
                 }
                 sample.getProperties().put(entry.getKey(), writeVal);

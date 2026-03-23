@@ -171,7 +171,7 @@
       "@type": "rdfs:Property",
       "@id": "schema:hasPart",
       "schema:rangeIncludes": {
-        "@id": "File"
+        "@id": "Dataset"
       },
       "schema:domainIncludes": {
         "@id": "openBIS:Object"
@@ -179,7 +179,7 @@
     },
     {
       "@id": "MATERIALS/ENTRY1/Mosaic_doves_Musei_Capitolini_MC402.jpg",
-      "@type": "File"
+      "@type": "Dataset"
     },
     {
       "@id": "dce394db-b900-4621-8a23-f00b7744d933",

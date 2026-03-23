@@ -284,7 +284,7 @@ public class SchemaFacade implements ISchemaFacade
     public List<DataEntity> getFiles()
     {
         return crate.getAllDataEntities().stream()
-                .filter(x -> this.parseMultiValued(x, "@type").contains("File"))
+                .filter(x -> this.parseMultiValued(x, "@type").contains("Dataset"))
                 .collect(Collectors.toList());
     }
 
