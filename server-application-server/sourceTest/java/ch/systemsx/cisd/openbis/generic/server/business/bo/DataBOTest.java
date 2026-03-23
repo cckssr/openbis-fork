@@ -47,7 +47,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetArchivingStatus;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExternalDataManagementSystemType;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.FileFormatType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IEntityProperty;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.LocatorType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SourceType;
@@ -61,7 +60,6 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.DataStorePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExternalDataManagementSystemPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExternalDataPE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.FileFormatTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.IAuthSession;
 import ch.systemsx.cisd.openbis.generic.shared.dto.LocatorTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.NewContainerDataSet;
@@ -118,8 +116,6 @@ public class DataBOTest extends AbstractBOTest
 
     private static final LocatorType LOCATOR_TYPE = new LocatorType("LT");
 
-    private static final FileFormatType FILE_FORMAT_TYPE = new FileFormatType("FFT");
-
     private static final DataSetType DATA_SET_TYPE = new DataSetType("DST");
 
     private static final DataSetKind DATA_SET_KIND = DataSetKind.PHYSICAL;
@@ -148,7 +144,6 @@ public class DataBOTest extends AbstractBOTest
     public void testDefineWithDirectSampleConnection()
     {
         final DataSetTypePE dataSetType = createDataSetType();
-        final FileFormatTypePE fileFormatType = new FileFormatTypePE();
         final VocabularyPE vocabulary = new VocabularyPE();
         vocabulary.addTerm(new VocabularyTermPE());
         VocabularyTermPE vocabularyTerm = new VocabularyTermPE();
@@ -159,7 +154,7 @@ public class DataBOTest extends AbstractBOTest
         ExperimentPE experimentPE = new ExperimentPE();
         experimentPE.setId(1L);
         sample.setExperiment(experimentPE);
-        prepareDefineExternalData(dataSetType, fileFormatType, vocabulary, locatorType,
+        prepareDefineExternalData(dataSetType, vocabulary, locatorType,
                 new DataStorePE());
 
         IDataBO dataBO = createDataBO();
@@ -171,7 +166,6 @@ public class DataBOTest extends AbstractBOTest
         assertEquals(BooleanOrUnknown.U, externalData.getComplete());
         assertEquals(DATA_PRODUCER_CODE, externalData.getDataProducerCode());
         assertSame(dataSetType, externalData.getDataSetType());
-        assertSame(fileFormatType, externalData.getFileFormatType());
         assertSame(locatorType, externalData.getLocatorType());
         assertEquals(LOCATION, externalData.getLocation());
         assertEquals(0, externalData.getParents().size());
@@ -190,7 +184,6 @@ public class DataBOTest extends AbstractBOTest
     public void testDefineWithUserID()
     {
         final DataSetTypePE dataSetType = createDataSetType();
-        final FileFormatTypePE fileFormatType = new FileFormatTypePE();
         final VocabularyPE vocabulary = new VocabularyPE();
         vocabulary.addTerm(new VocabularyTermPE());
         VocabularyTermPE vocabularyTerm = new VocabularyTermPE();
@@ -201,7 +194,7 @@ public class DataBOTest extends AbstractBOTest
         ExperimentPE experimentPE = new ExperimentPE();
         experimentPE.setId(1L);
         sample.setExperiment(experimentPE);
-        prepareDefineExternalData(dataSetType, fileFormatType, vocabulary, locatorType,
+        prepareDefineExternalData(dataSetType, vocabulary, locatorType,
                 new DataStorePE());
         final NewExternalData data = createDataSet(null);
         data.setUserId("my-id");
@@ -223,7 +216,6 @@ public class DataBOTest extends AbstractBOTest
         assertEquals(BooleanOrUnknown.U, externalData.getComplete());
         assertEquals(DATA_PRODUCER_CODE, externalData.getDataProducerCode());
         assertSame(dataSetType, externalData.getDataSetType());
-        assertSame(fileFormatType, externalData.getFileFormatType());
         assertSame(locatorType, externalData.getLocatorType());
         assertEquals(LOCATION, externalData.getLocation());
         assertEquals(0, externalData.getParents().size());
@@ -241,7 +233,6 @@ public class DataBOTest extends AbstractBOTest
     public void testDefineWithUserEMail()
     {
         final DataSetTypePE dataSetType = createDataSetType();
-        final FileFormatTypePE fileFormatType = new FileFormatTypePE();
         final VocabularyPE vocabulary = new VocabularyPE();
         vocabulary.addTerm(new VocabularyTermPE());
         VocabularyTermPE vocabularyTerm = new VocabularyTermPE();
@@ -252,7 +243,7 @@ public class DataBOTest extends AbstractBOTest
         ExperimentPE experimentPE = new ExperimentPE();
         experimentPE.setId(1L);
         sample.setExperiment(experimentPE);
-        prepareDefineExternalData(dataSetType, fileFormatType, vocabulary, locatorType,
+        prepareDefineExternalData(dataSetType, vocabulary, locatorType,
                 new DataStorePE());
         final NewExternalData data = createDataSet(null);
         data.setUserEMail("my-email");
@@ -275,7 +266,6 @@ public class DataBOTest extends AbstractBOTest
         assertEquals(BooleanOrUnknown.U, externalData.getComplete());
         assertEquals(DATA_PRODUCER_CODE, externalData.getDataProducerCode());
         assertSame(dataSetType, externalData.getDataSetType());
-        assertSame(fileFormatType, externalData.getFileFormatType());
         assertSame(locatorType, externalData.getLocatorType());
         assertEquals(LOCATION, externalData.getLocation());
         assertEquals(0, externalData.getParents().size());
@@ -293,7 +283,6 @@ public class DataBOTest extends AbstractBOTest
     public void testDefineWithExistingParentDataSet()
     {
         final DataSetTypePE dataSetType = createDataSetType();
-        final FileFormatTypePE fileFormatType = new FileFormatTypePE();
         final VocabularyPE vocabulary = new VocabularyPE();
         vocabulary.addTerm(new VocabularyTermPE());
         VocabularyTermPE vocabularyTerm = new VocabularyTermPE();
@@ -303,7 +292,7 @@ public class DataBOTest extends AbstractBOTest
         ExperimentPE experimentPE = new ExperimentPE();
         experimentPE.setId(1L);
         DataStorePE dataStore = new DataStorePE();
-        prepareDefineExternalData(dataSetType, fileFormatType, vocabulary, locatorType, dataStore);
+        prepareDefineExternalData(dataSetType, vocabulary, locatorType, dataStore);
         final DataPE data = new DataPE();
         data.setCode(PARENT_CODE);
         context.checking(new Expectations()
@@ -332,7 +321,6 @@ public class DataBOTest extends AbstractBOTest
     public void testDefineWithNonExistingParentDataSetFails()
     {
         final DataSetTypePE dataSetType = createDataSetType();
-        final FileFormatTypePE fileFormatType = new FileFormatTypePE();
         final VocabularyPE vocabulary = new VocabularyPE();
         vocabulary.addTerm(new VocabularyTermPE());
         VocabularyTermPE vocabularyTerm = new VocabularyTermPE();
@@ -341,7 +329,7 @@ public class DataBOTest extends AbstractBOTest
         final LocatorTypePE locatorType = new LocatorTypePE();
         final ExperimentPE experiment = new ExperimentPE();
         final DataStorePE dataStore = new DataStorePE();
-        prepareDefineExternalData(dataSetType, fileFormatType, vocabulary, locatorType, dataStore);
+        prepareDefineExternalData(dataSetType, vocabulary, locatorType, dataStore);
         final DataSetTypePE dataSetTypeUnknown = createDataSetType();
         final DataPE parentData = new DataPE();
         parentData.setCode(PARENT_CODE);
@@ -372,7 +360,6 @@ public class DataBOTest extends AbstractBOTest
     public void testDefineWithNonExistingParentDataSetAndNonExistingExperimentFails()
     {
         final DataSetTypePE dataSetType = createDataSetTypeWithCode();
-        final FileFormatTypePE fileFormatType = new FileFormatTypePE();
         final VocabularyPE vocabulary = new VocabularyPE();
         vocabulary.addTerm(new VocabularyTermPE());
         VocabularyTermPE vocabularyTerm = new VocabularyTermPE();
@@ -380,7 +367,7 @@ public class DataBOTest extends AbstractBOTest
         vocabulary.addTerm(vocabularyTerm);
         final LocatorTypePE locatorType = new LocatorTypePE();
         final DataStorePE dataStore = new DataStorePE();
-        prepareDefineExternalData(dataSetType, fileFormatType, vocabulary, locatorType, dataStore);
+        prepareDefineExternalData(dataSetType, vocabulary, locatorType, dataStore);
         final DataSetTypePE dataSetTypeUnknown = createDataSetType();
         final DataPE parentData = new DataPE();
         parentData.setCode(PARENT_CODE);
@@ -605,11 +592,6 @@ public class DataBOTest extends AbstractBOTest
         context.checking(new Expectations()
             {
                 {
-                    one(fileFormatTypeDAO)
-                            .tryToFindFileFormatTypeByCode(FILE_FORMAT_TYPE.getCode());
-                    FileFormatTypePE fileFormatTypePE = new FileFormatTypePE();
-                    fileFormatTypePE.setCode(FILE_FORMAT_TYPE.getCode());
-                    will(returnValue(fileFormatTypePE));
 
                     expectMandatoryPropertiesCheck(this, dataSet.getDataSetType());
 
@@ -931,7 +913,6 @@ public class DataBOTest extends AbstractBOTest
         dataSetUpdatesDTO.setExperimentIdentifierOrNull(experimentIdentifierOrNull);
         if (dataSet.isExternalData())
         {
-            dataSetUpdatesDTO.setFileFormatTypeCode(FILE_FORMAT_TYPE.getCode());
         }
         return dataSetUpdatesDTO;
     }
@@ -985,7 +966,6 @@ public class DataBOTest extends AbstractBOTest
     public void testSaveNewDataSet()
     {
         final DataSetTypePE dataSetType = createDataSetTypeWithCode();
-        final FileFormatTypePE fileFormatType = new FileFormatTypePE();
         final VocabularyPE vocabulary = new VocabularyPE();
         vocabulary.addTerm(new VocabularyTermPE());
         VocabularyTermPE vocabularyTerm = new VocabularyTermPE();
@@ -995,7 +975,7 @@ public class DataBOTest extends AbstractBOTest
         SamplePE sample = new SamplePE();
         sample.setExperiment(new ExperimentPE());
         final DataStorePE dataStore = new DataStorePE();
-        prepareDefineExternalData(dataSetType, fileFormatType, vocabulary, locatorType, dataStore);
+        prepareDefineExternalData(dataSetType, vocabulary, locatorType, dataStore);
         context.checking(new Expectations()
             {
                 {
@@ -1016,7 +996,6 @@ public class DataBOTest extends AbstractBOTest
     public void testStorageConfirmed()
     {
         final DataSetTypePE dataSetType = createDataSetTypeWithCode();
-        final FileFormatTypePE fileFormatType = new FileFormatTypePE();
         final VocabularyPE vocabulary = new VocabularyPE();
         vocabulary.addTerm(new VocabularyTermPE());
         VocabularyTermPE vocabularyTerm = new VocabularyTermPE();
@@ -1026,7 +1005,7 @@ public class DataBOTest extends AbstractBOTest
         SamplePE sample = new SamplePE();
         sample.setExperiment(new ExperimentPE());
         final DataStorePE dataStore = new DataStorePE();
-        prepareDefineExternalData(dataSetType, fileFormatType, vocabulary, locatorType, dataStore);
+        prepareDefineExternalData(dataSetType, vocabulary, locatorType, dataStore);
 
         final DataPE data = new ExternalDataPE();
         data.setId(4711L);
@@ -1112,16 +1091,13 @@ public class DataBOTest extends AbstractBOTest
     }
 
     private void prepareDefineExternalData(final DataSetTypePE dataSetType,
-            final FileFormatTypePE fileFormatType, final VocabularyPE vocabulary,
+            final VocabularyPE vocabulary,
             final LocatorTypePE locatorType, final DataStorePE dataStore)
     {
         prepareDefineData(dataSetType, dataStore);
         context.checking(new Expectations()
             {
                 {
-                    one(fileFormatTypeDAO)
-                            .tryToFindFileFormatTypeByCode(FILE_FORMAT_TYPE.getCode());
-                    will(returnValue(fileFormatType));
                     one(vocabularyDAO).tryFindVocabularyByCode(StorageFormat.VOCABULARY_CODE);
                     will(returnValue(vocabulary));
                     one(locatorTypeDAO).tryToFindLocatorTypeByCode(LOCATOR_TYPE.getCode());
@@ -1144,7 +1120,6 @@ public class DataBOTest extends AbstractBOTest
         data.setStorageFormat(StorageFormat.PROPRIETARY);
         data.setDataSetType(DATA_SET_TYPE);
         data.setDataSetKind(DATA_SET_KIND);
-        data.setFileFormatType(FILE_FORMAT_TYPE);
         data.setLocatorType(LOCATOR_TYPE);
         data.setLocation(LOCATION);
         data.setDataStoreCode(DATA_STORE_CODE);

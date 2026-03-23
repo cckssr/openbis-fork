@@ -68,7 +68,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataStore;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Experiment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExternalDataLocationNode;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.FileFormatType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.LocatorType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PhysicalDataSet;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Project;
@@ -914,7 +913,6 @@ public class DatasetDownloadServletTest
         final PhysicalDataSet dataSet = new PhysicalDataSet();
         dataSet.setExperiment(experiment);
         dataSet.setCode(EXAMPLE_DATA_SET_CODE);
-        dataSet.setFileFormatType(new FileFormatType("DATA"));
         LocatorType locatorType = new LocatorType();
         locatorType.setCode(LocatorType.DEFAULT_LOCATOR_TYPE_CODE);
         dataSet.setLocatorType(locatorType);

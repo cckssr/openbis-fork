@@ -28,7 +28,6 @@ import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import ch.systemsx.cisd.etlserver.IStorageProcessorTransactional.IStorageProcessorTransaction;
 import ch.systemsx.cisd.etlserver.IStorageProcessorTransactional.StorageProcessorTransactionParameters;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetType;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.FileFormatType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.LocatorType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.NewProperty;
 
@@ -144,20 +143,11 @@ public final class DefaultStorageProcessorTest extends AbstractFileSystemTestCas
         static final String DATA_SET_TYPE = "dataSetType";
 
         static final String LOCATOR_TYPE = "locatorType";
-
-        static final String FILE_FORMAT_TYPE = "fileFormatType";
-
         public static final String DATA_SET_PROPERTIES_FILE_KEY = "dataSetProperties";
 
         //
         // IProcedureAndDataTypeExtractor
         //
-
-        @Override
-        public final FileFormatType getFileFormatType(final File incomingDataSetPath)
-        {
-            return new FileFormatType(FILE_FORMAT_TYPE);
-        }
 
         @Override
         public final LocatorType getLocatorType(final File incomingDataSetPath)

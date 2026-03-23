@@ -18,7 +18,6 @@ package ch.systemsx.cisd.openbis.generic.shared.basic.dto.builders;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ContainerDataSet;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PhysicalDataSet;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetArchivingStatus;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.FileFormatType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.LocatorType;
 
 /**
@@ -50,12 +49,6 @@ public class DataSetBuilder extends AbstractDataSetBuilder<DataSetBuilder>
     public DataSetBuilder shareID(String shareID)
     {
         dataSet.tryGetAsDataSet().setShareId(shareID);
-        return this;
-    }
-
-    public DataSetBuilder fileFormat(String fileFormatType)
-    {
-        dataSet.tryGetAsDataSet().setFileFormatType(new FileFormatType(fileFormatType));
         return this;
     }
 

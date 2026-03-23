@@ -2,12 +2,6 @@ import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.DataType as DataTyp
 
 tr = service.transaction()
 
-file_type_PNG = tr.getOrCreateNewFileFormatType('PNG')
-file_type_PNG.setDescription(None)
-
-file_type_UNKNOWN = tr.getOrCreateNewFileFormatType('UNKNOWN')
-file_type_UNKNOWN.setDescription('Unknown file format')
-
 vocabulary_PLATE_GEOMETRY = tr.getOrCreateNewVocabulary('PLATE_GEOMETRY')
 vocabulary_PLATE_GEOMETRY.setDescription('The geometry or dimensions of a plate')
 vocabulary_PLATE_GEOMETRY.setUrlTemplate(None)

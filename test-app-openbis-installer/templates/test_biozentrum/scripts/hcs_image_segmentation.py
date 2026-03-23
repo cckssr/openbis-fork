@@ -44,7 +44,6 @@ def register(incomingPath):
     imageDataset = commonImageDropbox.IBrain2SegmentationImageDataSetConfig()
     imageDataset.setSegmentationImageDatasetType()
     imageDataset.setPlate(space, plate)
-    imageDataset.setFileFormatType("TIFF")
     imageDataset.setRecognizedImageExtensions(["tif", "tiff"])
     imageDataset.setGenerateThumbnails(True)
     imageDataset.setMaxThumbnailWidthAndHeight(imageDataset.THUMBANAIL_SIZE)

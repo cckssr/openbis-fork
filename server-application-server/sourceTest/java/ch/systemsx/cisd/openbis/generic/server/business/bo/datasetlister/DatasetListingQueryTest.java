@@ -294,12 +294,4 @@ public class DatasetListingQueryTest extends AbstractDAOTest
         findCode(Arrays.asList(codes), "RELATIVE_LOCATION");
     }
 
-    @Test
-    public void testFileFormatTypes()
-    {
-        CodeRecord[] codes = query.getFileFormatTypes();
-        assertEqualsOrGreater(8, codes.length);
-        findCode(Arrays.asList(codes), "XML");
-    }
-
 }

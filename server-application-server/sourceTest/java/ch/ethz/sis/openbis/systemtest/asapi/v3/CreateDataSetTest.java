@@ -52,9 +52,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.PhysicalDataCreat
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.BdsDirectoryStorageFormatPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.FileFormatTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.IDataSetId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.IFileFormatTypeId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.ILocatorTypeId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.IStorageFormatId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.LocatorTypePermId;
@@ -191,7 +189,6 @@ public class CreateDataSetTest extends AbstractDataSetTest
 
                 PhysicalDataCreation physicalCreation = new PhysicalDataCreation();
                 physicalCreation.setLocation("test/location/" + permId.getPermId());
-                physicalCreation.setFileFormatTypeId(new FileFormatTypePermId("TIFF"));
                 physicalCreation.setLocatorTypeId(new RelativeLocationLocatorTypePermId());
                 physicalCreation.setStorageFormatId(new ProprietaryStorageFormatPermId());
 
@@ -222,7 +219,6 @@ public class CreateDataSetTest extends AbstractDataSetTest
 
                 PhysicalDataCreation physicalCreation = new PhysicalDataCreation();
                 physicalCreation.setLocation("test/location/" + permId.getPermId());
-                physicalCreation.setFileFormatTypeId(new FileFormatTypePermId("TIFF"));
                 physicalCreation.setLocatorTypeId(new RelativeLocationLocatorTypePermId());
                 physicalCreation.setStorageFormatId(new ProprietaryStorageFormatPermId());
 
@@ -1230,7 +1226,6 @@ public class CreateDataSetTest extends AbstractDataSetTest
 
         PhysicalDataCreation physicalCreation = new PhysicalDataCreation();
         physicalCreation.setLocation("a/b/c");
-        physicalCreation.setFileFormatTypeId(new FileFormatTypePermId("TIFF"));
         physicalCreation.setLocatorTypeId(new RelativeLocationLocatorTypePermId());
         physicalCreation.setStorageFormatId(new ProprietaryStorageFormatPermId());
 
@@ -1246,7 +1241,6 @@ public class CreateDataSetTest extends AbstractDataSetTest
         fetchOptions.withType();
         fetchOptions.withExperiment();
         fetchOptions.withDataStore();
-        fetchOptions.withPhysicalData().withFileFormatType();
         fetchOptions.withPhysicalData().withLocatorType();
         fetchOptions.withPhysicalData().withStorageFormat();
         fetchOptions.withLinkedData();
@@ -1257,7 +1251,6 @@ public class CreateDataSetTest extends AbstractDataSetTest
         assertEquals(dataSet.getExperiment().getPermId().getPermId(), "200811050951882-1028");
         assertEquals(dataSet.getDataStore().getCode(), "STANDARD");
         assertEquals(dataSet.getPhysicalData().getLocation(), "a/b/c");
-        assertEquals(dataSet.getPhysicalData().getFileFormatType().getCode(), "TIFF");
         assertEquals(dataSet.getPhysicalData().getLocatorType().getCode(), "RELATIVE_LOCATION");
         assertEquals(dataSet.getPhysicalData().getStorageFormat().getCode(), "PROPRIETARY");
         assertNull(dataSet.getLinkedData());
@@ -1515,58 +1508,7 @@ public class CreateDataSetTest extends AbstractDataSetTest
         }, storageFormatId);
     }
 
-    @Test
-    public void testCreatePhysicalDataSetWithFileFormatTypeNull()
-    {
-        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
 
-        final DataSetCreation creation = physicalDataSetCreation();
-        creation.getPhysicalData().setFileFormatTypeId(null);
-
-        assertUserFailureException(new IDelegatedAction()
-        {
-            @Override
-            public void execute()
-            {
-                createDataSet(sessionToken, creation, new DataSetFetchOptions());
-            }
-        }, "File format type id cannot be null for a physical data set.");
-    }
-
-    @Test
-    public void testCreatePhysicalDataSetWithFileFormatTypeNotNull()
-    {
-        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
-
-        final DataSetCreation creation = physicalDataSetCreation();
-        creation.getPhysicalData().setFileFormatTypeId(new FileFormatTypePermId("XML"));
-
-        DataSetFetchOptions fo = new DataSetFetchOptions();
-        fo.withPhysicalData().withFileFormatType();
-
-        DataSet dataSet = createDataSet(sessionToken, creation, fo);
-
-        assertEquals(dataSet.getPhysicalData().getFileFormatType().getCode(), "XML");
-    }
-
-    @Test
-    public void testCreatePhysicalDataSetWithFileFormatTypeNonexistent()
-    {
-        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
-
-        final IFileFormatTypeId formatId = new FileFormatTypePermId("IDONTEXIST");
-        final DataSetCreation creation = physicalDataSetCreation();
-        creation.getPhysicalData().setFileFormatTypeId(formatId);
-
-        assertObjectNotFoundException(new IDelegatedAction()
-        {
-            @Override
-            public void execute()
-            {
-                createDataSet(sessionToken, creation, new DataSetFetchOptions());
-            }
-        }, formatId);
-    }
 
     @Test
     public void testCreatePhysicalDataSetWithLocatorTypeNull()

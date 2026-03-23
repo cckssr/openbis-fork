@@ -47,7 +47,6 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.IEncapsulatedOpenBISService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.dto.DataSetInformation;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Experiment;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.FileFormatType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.LocatorType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Person;
 import ch.systemsx.cisd.openbis.generic.shared.dto.NewExternalData;
@@ -73,8 +72,6 @@ public class DataSetRegistrationAlgorithmTest extends AbstractFileSystemTestCase
     private static final LocatorType LOCATOR_TYPE = new LocatorType("L1");
 
     private static final DataSetType DATA_SET_TYPE = new DataSetType("O1");
-
-    private static final FileFormatType FILE_FORMAT_TYPE = new FileFormatType("FF1");
 
     private static final String EXAMPLE_PROCESSOR_ID = "DATA_ACQUISITION";
 
@@ -307,9 +304,6 @@ public class DataSetRegistrationAlgorithmTest extends AbstractFileSystemTestCase
                 {
                     one(typeExtractor).getLocatorType(incomingDataSetFile);
                     will(returnValue(LOCATOR_TYPE));
-
-                    one(typeExtractor).getFileFormatType(incomingDataSetFile);
-                    will(returnValue(FILE_FORMAT_TYPE));
 
                     one(typeExtractor).getProcessorType(incomingDataSetFile);
                     will(returnValue(EXAMPLE_PROCESSOR_ID));

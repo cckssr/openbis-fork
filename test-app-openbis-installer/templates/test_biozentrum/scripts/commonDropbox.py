@@ -306,7 +306,7 @@ def setImageDatasetPropertiesAndRegister(imageDataset, metadataParser, incoming,
 param ensureSingleChild - if true, then it will be ensured that the parent dataset 
 					had no children of 'datasetType' and if it is not the case an exception will be thrown.
 """
-def registerDerivedBlackBoxDataset(state, aService, factory, incoming, metadataParser, datasetType, fileFormatType, ensureSingleChild=False):
+def registerDerivedBlackBoxDataset(state, aService, factory, incoming, metadataParser, datasetType, ensureSingleChild=False):
 		global service
 		service = aService
 		transaction = service.transaction(incoming, factory)
@@ -316,7 +316,6 @@ def registerDerivedBlackBoxDataset(state, aService, factory, incoming, metadataP
 			
 		dataset = transaction.createNewDataSet()
 		dataset.setDataSetType(datasetType)
-		dataset.setFileFormatType(fileFormatType)
 		registerDerivedDataset(state, service, transaction, dataset, incoming, metadataParser)
 		
 def registerDerivedDataset(state, aService, transaction, dataset, incoming, metadataParser):
@@ -474,7 +473,6 @@ def registerFeaturesFromCsvMatrix(aService, factory, state, incoming, datasetMet
 		analysisRegistrationDetails.getDataSetInformation().setAnalysisProcedure(analysisProcedure)
 		dataset = transaction.createNewDataSet(analysisRegistrationDetails)
 		dataset.setDataSetType(datasetTypeCode)
-		dataset.setFileFormatType('CSV')
 		registerDerivedDataset(state, service, transaction, dataset, incoming, datasetMetadataParser)
 		
 # -------------- TODO: remove tests

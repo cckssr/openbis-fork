@@ -1087,7 +1087,6 @@ public class GenericClientService extends AbstractClientService implements IGene
         String experimentIdentifierOrNull = updates.getExperimentIdentifierOrNull();
         updatesDTO.setExperimentIdentifierOrNull(experimentIdentifierOrNull == null ? null
                 : new ExperimentIdentifierFactory(experimentIdentifierOrNull).createIdentifier());
-        updatesDTO.setFileFormatTypeCode(updates.getFileFormatTypeCode());
         updatesDTO.setExternalCode(updates.getExternalCode());
         updatesDTO.setExternalDataManagementSystemCode(updates
                 .getExternalDataManagementSystemCode());

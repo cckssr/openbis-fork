@@ -190,7 +190,7 @@ public class SecondCopyPostRegistrationTaskTest extends AbstractFileSystemTestCa
                 PhysicalDataSet ds1 =
                         new DataSetBuilder(42).code(DATA_SET1)
                                 .store(new DataStoreBuilder(DATA_STORE_CODE).getStore())
-                                .fileFormat("TXT").location(DATA_SET1_LOCATION).getDataSet();
+                                .location(DATA_SET1_LOCATION).getDataSet();
                 will(returnValue(Arrays.asList(ds1)));
 
                 one(service).tryGetDataSetLocation(DATA_SET1);
@@ -252,7 +252,7 @@ public class SecondCopyPostRegistrationTaskTest extends AbstractFileSystemTestCa
                 PhysicalDataSet ds1 =
                         new DataSetBuilder(42).code(DATA_SET1)
                                 .store(new DataStoreBuilder(DATA_STORE_CODE).getStore())
-                                .fileFormat("TXT").location(DATA_SET1_LOCATION).getDataSet();
+                                .location(DATA_SET1_LOCATION).getDataSet();
                 will(returnValue(Arrays.asList(ds1)));
 
                 allowing(shareIdManager).getShareId(DATA_SET1);

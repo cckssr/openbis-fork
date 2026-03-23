@@ -31,7 +31,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Experiment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExperimentType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExternalDataManagementSystem;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExternalDataManagementSystemType;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.FileFormatType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.FileSystemContentCopy;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.GenericEntityProperty;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IContentCopy;
@@ -83,10 +82,6 @@ public class DTOTranslator
             physicalData.setLocation(dataSet.getPhysicalData().getLocation());
             physicalData.setShareId(dataSet.getPhysicalData().getShareId());
             physicalData.setArchivingRequested(dataSet.getPhysicalData().isArchivingRequested());
-            if (dataSet.getPhysicalData().getFetchOptions().hasFileFormatType())
-            {
-                physicalData.setFileFormatType(translate(dataSet.getPhysicalData().getFileFormatType()));
-            }
             if (dataSet.getPhysicalData().getFetchOptions().hasLocatorType())
             {
                 physicalData.setLocatorType(translate(dataSet.getPhysicalData().getLocatorType()));
@@ -245,7 +240,6 @@ public class DTOTranslator
             description.setDataSetShareId(dataSet.getPhysicalData().getShareId());
             description.setDataSetSize(dataSet.getPhysicalData().getSize());
             description.setSpeedHint(dataSet.getPhysicalData().getSpeedHint());
-            description.setFileFormatType(dataSet.getPhysicalData().getFileFormatType().getCode());
             description.setStorageConfirmed(dataSet.getPhysicalData().isStorageConfirmation());
             description.setH5Folders(dataSet.getPhysicalData().isH5Folders());
             description.setH5arFolders(dataSet.getPhysicalData().isH5arFolders());
@@ -627,17 +621,6 @@ public class DTOTranslator
         }
         LocatorType result = new LocatorType(locatorType.getCode());
         result.setDescription(locatorType.getDescription());
-        return result;
-    }
-
-    public static FileFormatType translate(final ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.FileFormatType fileFormatType)
-    {
-        if (fileFormatType == null)
-        {
-            return null;
-        }
-        FileFormatType result = new FileFormatType(fileFormatType.getCode());
-        result.setDescription(fileFormatType.getDescription());
         return result;
     }
 

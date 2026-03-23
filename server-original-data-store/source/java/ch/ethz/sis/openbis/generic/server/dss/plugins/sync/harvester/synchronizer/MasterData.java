@@ -25,7 +25,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.ExternalDms;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.translator.INameTranslator;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExperimentType;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.FileFormatType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewETPTAssignment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewVocabulary;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PropertyType;
@@ -35,8 +34,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Script;
 class MasterData
 {
     private final INameTranslator nameTranslator;
-
-    private Map<String, FileFormatType> fileFormatTypesToProcess = new HashMap<String, FileFormatType>();
 
     private Map<String, ExternalDms> externalDataManagementSystemsToProcess = new HashMap<>();
 
@@ -108,11 +105,6 @@ class MasterData
         return vocabulariesToProcess;
     }
 
-    public Map<String, FileFormatType> getFileFormatTypesToProcess()
-    {
-        return fileFormatTypesToProcess;
-    }
-
     public NameMapper getVocabularyNameMapper()
     {
         return vocabularyNameMapper;
@@ -121,11 +113,6 @@ class MasterData
     public NameMapper getPropertyTypeNameMapper()
     {
         return propertyTypeNameMapper;
-    }
-
-    public void setFileFormatTypesToProcess(Map<String, FileFormatType> fileFormatTypesToProcess)
-    {
-        this.fileFormatTypesToProcess = fileFormatTypesToProcess;
     }
 
     public Map<String, ExternalDms> getExternalDataManagementSystemsToProcess()

@@ -17,7 +17,6 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.translator.common.search;
 
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.dataset.search.ContentCopyAttributeProvider;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.dataset.search.DataSetAttributeProvider;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.dataset.search.FileFormatTypeAttributeProvider;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.dataset.search.LinkedDataAttributeProvider;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.dataset.search.LocatorTypeAttributeProvider;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.dataset.search.PhysicalDataAttributeProvider;
@@ -56,9 +55,6 @@ public class ObjectAttributeProviderFactory implements IObjectAttributeProviderF
         } else if (SearchObjectKind.LOCATOR_TYPE.equals(objectKind))
         {
             return new LocatorTypeAttributeProvider();
-        } else if (SearchObjectKind.FILE_FORMAT_TYPE.equals(objectKind))
-        {
-            return new FileFormatTypeAttributeProvider();
         } else if (SearchObjectKind.EXTERNAL_DMS.equals(objectKind))
         {
             return new ExternalDmsAttributeProvider();

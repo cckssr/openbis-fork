@@ -233,7 +233,6 @@ public class PropertiesHistoryTest extends SystemTestCase
         updates.setDatasetId(id);
         updates.setVersion(dataSet.getVersion());
         updates.setExperimentIdentifierOrNull(dataSet.getExperiment().getIdentifier());
-        updates.setFileFormatTypeCode(((PhysicalDataSet) dataSet).getFileFormatType().getCode());
         IEntityProperty p1 = new PropertyBuilder("COMMENT").value("hello world").getProperty();
         IEntityProperty p2 =
                 new PropertyBuilder("GENDER").value(new VocabularyTermBuilder("male").getTerm())
@@ -283,7 +282,6 @@ public class PropertiesHistoryTest extends SystemTestCase
         updates.setDatasetId(id);
         updates.setVersion(dataSet.getVersion());
         updates.setExperimentIdentifierOrNull(dataSet.getExperiment().getIdentifier());
-        updates.setFileFormatTypeCode(((PhysicalDataSet) dataSet).getFileFormatType().getCode());
         IEntityProperty p1 = new PropertyBuilder("COMMENT").value((String) null).getProperty();
         IEntityProperty p2 =
                 new PropertyBuilder("GENDER").value((VocabularyTerm) null).getProperty();

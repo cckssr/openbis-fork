@@ -27,7 +27,6 @@
                 <value>ch.systemsx.cisd.openbis.generic.shared.dto.RoleAssignmentPE</value>
                 <value>ch.systemsx.cisd.openbis.generic.shared.dto.DeletionPE</value>
 
-                <value>ch.systemsx.cisd.openbis.generic.shared.dto.FileFormatTypePE</value>
                 <value>ch.systemsx.cisd.openbis.generic.shared.dto.LocatorTypePE</value>
                 <value>ch.systemsx.cisd.openbis.generic.shared.dto.DataSetTypePE</value>
 

@@ -32,8 +32,6 @@ public class NewDataSet extends NewExternalData
     //
     // private int speedHint;
     //
-    // private FileFormatType fileFormatType;
-    //
     // private LocatorType locatorType;
     //
     // private BooleanOrUnknown complete = BooleanOrUnknown.U;
@@ -68,18 +66,6 @@ public class NewDataSet extends NewExternalData
     // public final void setLocation(final String locator)
     // {
     // this.location = locator;
-    // }
-    //
-    // /** Returns <code>fileFormatType</code>. */
-    // public final FileFormatType getFileFormatType()
-    // {
-    // return fileFormatType;
-    // }
-    //
-    // /** Sets <code>fileFormatType</code>. */
-    // public final void setFileFormatType(final FileFormatType fileFormatType)
-    // {
-    // this.fileFormatType = fileFormatType;
     // }
     //
     // /** Returns <code>locatorType</code>. */
@@ -146,7 +132,6 @@ public class NewDataSet extends NewExternalData
     // ToStringBuilder builder = new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE);
     // builder.append("code", getCode());
     // builder.append("type", getDataSetType());
-    // builder.append("fileFormat", getFileFormatType());
     // builder.append("properties", getDataSetProperties());
     // return builder.toString();
     // }

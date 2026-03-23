@@ -31,7 +31,6 @@ import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.EntityKind;
 import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IDataSetType;
 import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IExperimentType;
 import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IExternalDataManagementSystem;
-import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IFileFormatType;
 import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IPropertyAssignment;
 import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IPropertyType;
 import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.ISampleType;
@@ -44,7 +43,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataTypeCode;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExperimentType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExternalDataManagementSystem;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExternalDataManagementSystemType;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.FileFormatType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IVocabularyTermUpdates;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewVocabulary;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PropertyType;
@@ -206,44 +204,6 @@ public class MasterDataRegistrationTransactionTest extends AssertJUnit
 
                     DataSetType type = new DataSetTypeBuilder().code(KNOWN).getDataSetType();
                     one(server).listDataSetTypes(SESSION_TOKEN);
-                    will(returnValue(Arrays.asList(type)));
-                }
-            });
-    }
-
-    @Test
-    public void testGetOrCreateFileFormatTypeOfKnownType()
-    {
-        prepareListFileFormatTypes();
-
-        IFileFormatType type = transaction.getOrCreateNewFileFormatType(KNOWN);
-        type.setDescription("description");
-
-        assertEquals(KNOWN, type.getCode());
-        assertEquals(null, type.getDescription());
-        context.assertIsSatisfied();
-    }
-
-    @Test
-    public void testGetOrCreateFileFormatTypeOfUnknownType()
-    {
-        prepareListFileFormatTypes();
-
-        IFileFormatType type = transaction.getOrCreateNewFileFormatType(UNKNOWN);
-        type.setDescription("description");
-
-        assertEquals(UNKNOWN, type.getCode());
-        assertEquals("description", type.getDescription());
-        context.assertIsSatisfied();
-    }
-
-    private void prepareListFileFormatTypes()
-    {
-        context.checking(new Expectations()
-            {
-                {
-                    FileFormatType type = new FileFormatType(KNOWN);
-                    one(server).listFileFormatTypes(SESSION_TOKEN);
                     will(returnValue(Arrays.asList(type)));
                 }
             });

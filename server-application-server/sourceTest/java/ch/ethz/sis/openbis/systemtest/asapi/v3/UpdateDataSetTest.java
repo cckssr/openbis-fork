@@ -39,7 +39,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.delete.DataSetDeletionOp
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.history.DataSetRelationType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.FileFormatTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.IDataSetId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update.DataSetUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update.PhysicalDataUpdate;
@@ -413,7 +412,6 @@ public class UpdateDataSetTest extends AbstractDataSetTest
         DataSetUpdate update = new DataSetUpdate();
         update.setDataSetId(dataSetId);
         PhysicalDataUpdate pdupt = new PhysicalDataUpdate();
-        pdupt.setFileFormatTypeId(new FileFormatTypePermId("PLKPROPRIETARY"));
         pdupt.setArchivingRequested(true);
         pdupt.setPresentInArchive(true);
         pdupt.setStatus(ArchivingStatus.BACKUP_PENDING);
@@ -423,11 +421,10 @@ public class UpdateDataSetTest extends AbstractDataSetTest
 
         DataSetFetchOptions fe = new DataSetFetchOptions();
         fe.withProperties();
-        fe.withPhysicalData().withFileFormatType();
+        fe.withPhysicalData();
         DataSet result = v3api.getDataSets(sessionToken, Collections.singletonList(dataSetId), fe).get(dataSetId);
 
         PhysicalData physicalData = result.getPhysicalData();
-        assertEquals(physicalData.getFileFormatType().getCode(), "PLKPROPRIETARY");
         assertEquals(physicalData.isArchivingRequested(), Boolean.TRUE);
         assertEquals(physicalData.isPresentInArchive(), Boolean.TRUE);
         assertEquals(physicalData.getStatus(), ArchivingStatus.BACKUP_PENDING);

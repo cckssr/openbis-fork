@@ -21,13 +21,11 @@ VARNAME_PREFIXES = {
   "MATERIAL" : "material_type_",
   "PROPERTY" : "prop_type_",
   "ASSIGNMENT" : "assignment_",
-  "FILE_FORMAT" : "file_type_",
   "VOCABULARY" : "vocabulary_",
   "VOCABULARY_TERM" : "vocabulary_term_",
   "EXTERNAL_DATA_MANAGEMENT_SYSTEM" : "external_data_management_system_"
 }
 
-EXISTING_FILE_TYPES = ['HDF5', 'PROPRIETARY', 'SRF', 'TIFF', 'TSV', 'XML']
 EXISTING_DATASET_TYPES = ['UNKNOWN']
 EXISTING_VOCABULARY = {'$STORAGE_FORMAT' : ['PROPRIETARY', 'BDS_DIRECTORY']}
 
@@ -88,19 +86,6 @@ def createValidationScriptAssigment(entityType, var):
     else:
         script = getVarName("SCRIPT", replaceSpace(validationScript.getName()))
         return "%s.setValidationScript(%s)" % (var, script)
-
-
-def exportFileFormatType(fileType):
-    var = getVarName("FILE_FORMAT", fileType.getCode())
-    code = codeLiteral(fileType.getCode())
-    description = strLiteral(fileType.getDescription())
-    if (fileType.getCode() in EXISTING_FILE_TYPES):
-        return ""
-    else:
-        return """
-%(var)s = tr.getOrCreateNewFileFormatType(%(code)s)
-%(var)s.setDescription(%(description)s)
-   """ % vars()
 
 
 def exportVocabulary(vocabulary):
@@ -338,8 +323,6 @@ print "Exporting master data to ", outDir, "..."
 tr = service.transaction()
 
 exportedContent = (
-  [exportFileFormatType(fileType) for fileType in tr.listFileFormatTypes()] +
-  ["""\nprint "Imported """ + str(len(tr.listFileFormatTypes())) + """ File Formats" """] +
   [exportVocabulary(vocabulary)   for vocabulary in tr.listVocabularies()] +
   ["""\nprint "Imported """ + str(len(tr.listVocabularies())) + """ Vocabularies" """] +
   [exportScripts(scripts) for scripts in tr.listScripts()] +

@@ -73,7 +73,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityTypePropertyType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityValidationEvaluationInfo;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Experiment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExperimentType;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.FileFormatType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Grantee;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.GridCustomColumn;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.GridCustomFilter;
@@ -545,18 +544,6 @@ public interface ICommonClientService extends IClientService
             final TableExportCriteria<TableModelRowWithObject<DataSetType>> criteria)
             throws UserFailureException;
 
-    public TypedTableResultSet<FileFormatType> listFileTypes(
-            DefaultResultSetConfig<String, TableModelRowWithObject<FileFormatType>> criteria)
-            throws UserFailureException;
-
-    public List<FileFormatType> listFileTypes() throws UserFailureException;
-
-    /**
-     * Like {@link #prepareExportSamples(TableExportCriteria)}, but for FileType.
-     */
-    public String prepareExportFileTypes(TableExportCriteria<FileFormatType> criteria)
-            throws UserFailureException;
-
     /**
      * Like {@link #prepareExportSamples(TableExportCriteria)}, but for AttachmentVersions.
      */
@@ -756,9 +743,6 @@ public interface ICommonClientService extends IClientService
     /** Registers a new data set type */
     public void registerDataSetType(DataSetType entityType) throws UserFailureException;
 
-    /** Registers a new file type */
-    public void registerFileType(FileFormatType type) throws UserFailureException;
-
     /** Registers a new sample type */
     public void registerSampleType(SampleType entityType) throws UserFailureException;
 
@@ -907,11 +891,6 @@ public interface ICommonClientService extends IClientService
             throws UserFailureException;
 
     /**
-     * Delete file format types.
-     */
-    public void deleteFileFormatTypes(List<String> fileFormatTypeCodes) throws UserFailureException;
-
-    /**
      * For given {@link EntityKind} and <var>permId</var> returns the corresponding {@link IEntityInformationHolderWithPermId}.
      */
     public IEntityInformationHolderWithPermId getEntityInformationHolder(EntityKind entityKind,
@@ -929,11 +908,6 @@ public interface ICommonClientService extends IClientService
     public String getTemplate(EntityKind kind, String type, final String format, boolean autoGenerate,
             boolean withExperiments, boolean withSpace, BatchOperationKind operationKind)
             throws UserFailureException;
-
-    /**
-     * Updates the file format.
-     */
-    public void updateFileFormatType(AbstractType type) throws UserFailureException;
 
     /**
      * Updates the attachment.

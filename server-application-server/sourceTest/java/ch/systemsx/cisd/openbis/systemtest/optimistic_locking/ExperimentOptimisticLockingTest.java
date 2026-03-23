@@ -329,7 +329,6 @@ public class ExperimentOptimisticLockingTest extends OptimisticLockingTestCase
         update.setVersion(loadedDataSet.getVersion());
         update.setExperimentIdentifierOrNull(ExperimentIdentifierFactory.parse(exp2.getIdentifier()));
         update.setProperties(ToolBox.NO_PROPERTIES);
-        update.setFileFormatTypeCode(dataSet.getFileFormatType().getCode());
         String sessionToken = logIntoCommonClientService().getSessionID();
         TimeIntervalChecker timeIntervalChecker = toolBox.createTimeIntervalChecker();
 

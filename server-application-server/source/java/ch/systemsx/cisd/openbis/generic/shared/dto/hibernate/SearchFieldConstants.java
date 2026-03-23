@@ -49,8 +49,6 @@ public final class SearchFieldConstants
 
     public static final String PREFIX_METAPROJECT = "metaproject" + SEPARATOR;
 
-    public static final String PREFIX_FILE_FORMAT_TYPE = "file format type" + SEPARATOR;
-
     public static final String PREFIX_LOCATOR_TYPE = "locator type" + SEPARATOR;
 
     public static final String PREFIX_STORAGE_FORMAT = "storage format" + SEPARATOR;

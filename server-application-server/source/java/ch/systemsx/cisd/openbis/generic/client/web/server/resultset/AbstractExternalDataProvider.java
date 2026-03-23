@@ -32,7 +32,6 @@ import static ch.systemsx.cisd.openbis.generic.client.web.client.dto.ExternalDat
 import static ch.systemsx.cisd.openbis.generic.client.web.client.dto.ExternalDataGridColumnIDs.EXTERNAL_DMS_ADDRESS;
 import static ch.systemsx.cisd.openbis.generic.client.web.client.dto.ExternalDataGridColumnIDs.EXTERNAL_DMS_CODE;
 import static ch.systemsx.cisd.openbis.generic.client.web.client.dto.ExternalDataGridColumnIDs.EXTERNAL_DMS_LABEL;
-import static ch.systemsx.cisd.openbis.generic.client.web.client.dto.ExternalDataGridColumnIDs.FILE_FORMAT_TYPE;
 import static ch.systemsx.cisd.openbis.generic.client.web.client.dto.ExternalDataGridColumnIDs.IS_COMPLETE;
 import static ch.systemsx.cisd.openbis.generic.client.web.client.dto.ExternalDataGridColumnIDs.IS_DELETED;
 import static ch.systemsx.cisd.openbis.generic.client.web.client.dto.ExternalDataGridColumnIDs.LINK_HASH;
@@ -69,7 +68,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ContainerDataSet;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Experiment;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.FileFormatType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IContentCopy;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.LinkDataSet;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PhysicalDataSet;
@@ -122,7 +120,6 @@ public abstract class AbstractExternalDataProvider extends
         builder.addColumn(LOCATION).hideByDefault();
         builder.addColumn(SIZE).hideByDefault();
         builder.addColumn(ARCHIVING_STATUS).withDefaultWidth(200).hideByDefault();
-        builder.addColumn(FILE_FORMAT_TYPE).hideByDefault();
         builder.addColumn(PRODUCTION_DATE).withDefaultWidth(200).hideByDefault();
         builder.addColumn(DATA_PRODUCER_CODE).hideByDefault();
         builder.addColumn(DATA_STORE_CODE).hideByDefault();
@@ -206,9 +203,6 @@ public abstract class AbstractExternalDataProvider extends
                             realDataSet.getStatus().getDescription());
                     builder.column(PRESENT_IN_ARCHIVE).addString(
                             SimpleYesNoRenderer.render(realDataSet.isPresentInArchive()));
-                    FileFormatType fileFormatType = realDataSet.getFileFormatType();
-                    builder.column(FILE_FORMAT_TYPE).addString(
-                            fileFormatType == null ? "" : fileFormatType.getCode());
                     builder.column(STORAGE_CONFIRMATION).addString(
                             SimpleYesNoRenderer.render(dataSet.isStorageConfirmation()));
                 }

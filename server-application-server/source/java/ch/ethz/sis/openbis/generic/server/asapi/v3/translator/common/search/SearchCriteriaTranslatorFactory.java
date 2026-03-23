@@ -21,7 +21,6 @@ import java.util.List;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.dataset.search.CompleteSearchCriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.dataset.search.ContentCopySearchCriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.dataset.search.DataSetSearchCriteriaTranslator;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.dataset.search.FileFormatTypeSearchCriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.dataset.search.LinkedDataSearchCriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.dataset.search.LocatorTypeSearchCriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.dataset.search.PhysicalDataSearchCriteriaTranslator;
@@ -69,7 +68,6 @@ public class SearchCriteriaTranslatorFactory extends AbstractSearchCriteriaTrans
         translators.add(new LinkedDataSearchCriteriaTranslator(getDaoFactory(), getEntityAttributeProviderFactory()));
         translators.add(new StorageFormatSearchCriteriaTranslator(getDaoFactory(), getEntityAttributeProviderFactory()));
         translators.add(new LocatorTypeSearchCriteriaTranslator(getDaoFactory(), getEntityAttributeProviderFactory()));
-        translators.add(new FileFormatTypeSearchCriteriaTranslator(getDaoFactory(), getEntityAttributeProviderFactory()));
         translators.add(new CompleteSearchCriteriaTranslator(getDaoFactory(), getEntityAttributeProviderFactory()));
         translators.add(new StatusSearchCriteriaTranslator(getDaoFactory(), getEntityAttributeProviderFactory()));
         translators.add(new ExternalDmsSearchCriteriaTranslator(getDaoFactory(), getEntityAttributeProviderFactory()));

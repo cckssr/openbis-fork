@@ -19,7 +19,6 @@ import java.io.File;
 import java.util.Properties;
 
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetType;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.FileFormatType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.LocatorType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.types.DataSetTypeCode;
 
@@ -30,8 +29,6 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.types.DataSetTypeCode;
  */
 public class SimpleTypeExtractor implements ITypeExtractor
 {
-    public static final String FILE_FORMAT_TYPE_KEY = "file-format-type";
-
     public static final String LOCATOR_TYPE_KEY = "locator-type";
 
     public static final String DATA_SET_TYPE_KEY = "data-set-type";
@@ -39,8 +36,6 @@ public class SimpleTypeExtractor implements ITypeExtractor
     public static final String PROCESSOR_TYPE_KEY = "processor-type";
 
     public static final String IS_MEASURED_KEY = "is-measured";
-
-    private FileFormatType fileFormatType;
 
     private LocatorType locatorType;
 
@@ -52,11 +47,7 @@ public class SimpleTypeExtractor implements ITypeExtractor
 
     public SimpleTypeExtractor(final Properties properties)
     {
-        String code =
-                properties.getProperty(FILE_FORMAT_TYPE_KEY,
-                        FileFormatType.DEFAULT_FILE_FORMAT_TYPE_CODE);
-        fileFormatType = new FileFormatType(code);
-        code = properties.getProperty(LOCATOR_TYPE_KEY, LocatorType.DEFAULT_LOCATOR_TYPE_CODE);
+        String code = properties.getProperty(LOCATOR_TYPE_KEY, LocatorType.DEFAULT_LOCATOR_TYPE_CODE);
         locatorType = new LocatorType(code);
         code = properties.getProperty(DATA_SET_TYPE_KEY, DataSetTypeCode.UNKNOWN.getCode());
         dataSetType = new DataSetType(code);
@@ -68,12 +59,6 @@ public class SimpleTypeExtractor implements ITypeExtractor
     //
     // IProcedureAndDataTypeExtractor
     //
-
-    @Override
-    public final FileFormatType getFileFormatType(final File incomingDataSetPath)
-    {
-        return fileFormatType;
-    }
 
     @Override
     public final LocatorType getLocatorType(final File incomingDataSetPath)

@@ -565,13 +565,7 @@ FetchOptions
 FetchOptionsMatcher
 FetchOptionsMatcherTest
 FieldUpdateValue
-File Format Type Search Criteria
-FILE_FORMAT_TYPE
 FILE_SYSTEM
-FileFormatType
-FileFormatTypeFetchOptions
-FileFormatTypePermId
-FileFormatTypeSortOptions
 FINISH_DOWNLOAD_SESSION_METHOD
 FINISHED
 FirstNameSearchCriteria
@@ -893,8 +887,6 @@ getFields
 getFieldType
 getFieldValue
 getFile
-getFileFormatType
-getFileFormatTypeId
 getFileLength
 getFileMetadata
 getFileName
@@ -1191,7 +1183,6 @@ hasError
 hasExperiment
 hasExperiments
 hasExternalDms
-hasFileFormatType
 hashCode
 hasHistory
 hasLeader
@@ -1296,7 +1287,6 @@ IEventId
 IExperimentId
 IExportableFields
 IExternalDmsId
-IFileFormatTypeId
 IGNORE_EXISTING
 IIdentifierHolder
 ILocatorTypeId
@@ -2162,8 +2152,6 @@ setFieldName
 setFields
 setFieldValue
 setFile
-setFileFormatType
-setFileFormatTypeId
 setFileLength
 setFileMetadata
 setFileName
@@ -2818,8 +2806,6 @@ withExperimentsUsing
 withExperimentUsing
 withExternalDms
 withExternalDmsUsing
-withFileFormatType
-withFileFormatTypeUsing
 withFirstName
 withGitCommitHash
 withGitRepositoryId

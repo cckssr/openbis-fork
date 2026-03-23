@@ -130,9 +130,6 @@ public final class ValidationMessages
     public static final String EXPERIMENT_TYPE_PROPERTY_TYPE_NOT_NULL_MESSAGE =
             "Experiment type - property type" + CAN_NOT_BE_NULL;
 
-    public static final String FILE_FORMAT_TYPE_NOT_NULL_MESSAGE = "File format type"
-            + CAN_NOT_BE_NULL;
-
     public static final String EXTERNAL_DATA_MANAGEMENT_SYSTEM_NOT_NULL_MESSAGE =
             "External data management system" + CAN_NOT_BE_NULL;
 

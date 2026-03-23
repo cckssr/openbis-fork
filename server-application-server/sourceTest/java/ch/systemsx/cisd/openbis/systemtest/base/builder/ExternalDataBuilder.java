@@ -36,7 +36,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetTypePropertyType
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataTypeCode;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Experiment;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.FileFormatType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.LocatorType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewETPTAssignment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PropertyType;
@@ -190,7 +189,6 @@ public class ExternalDataBuilder extends Builder<AbstractExternalData>
         data.setCode(this.code);
         data.setDataSetType(dataSetType);
         data.setDataSetKind(dataSetKind);
-        data.setFileFormatType(new FileFormatType(FileFormatType.DEFAULT_FILE_FORMAT_TYPE_CODE));
         data.setSampleIdentifierOrNull(this.sampleIdentifier);
         data.setLocatorType(new LocatorType(LocatorType.DEFAULT_LOCATOR_TYPE_CODE));
         data.setLocation(UUID.randomUUID().toString());

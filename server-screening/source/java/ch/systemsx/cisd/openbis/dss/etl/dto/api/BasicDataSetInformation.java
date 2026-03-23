@@ -30,8 +30,6 @@ public class BasicDataSetInformation extends DataSetInformation
 {
     private static final long serialVersionUID = IServer.VERSION;
 
-    private String fileFormatTypeCode;
-
     // marks if a dataset is measured or derived from measured data
     private boolean isMeasured = true;
 
@@ -41,12 +39,6 @@ public class BasicDataSetInformation extends DataSetInformation
         DataSetType dataSetType = new DataSetType();
         dataSetType.setCode(datasetTypeCode);
         super.setDataSetType(dataSetType);
-    }
-
-    /** Mandatory: sets file format code. */
-    public void setFileFormatCode(String fileFormatCode)
-    {
-        this.fileFormatTypeCode = fileFormatCode;
     }
 
     /**
@@ -73,11 +65,6 @@ public class BasicDataSetInformation extends DataSetInformation
     public void setMeasured(boolean isMeasured)
     {
         this.isMeasured = isMeasured;
-    }
-
-    public String getFileFormatTypeCode()
-    {
-        return fileFormatTypeCode;
     }
 
     public boolean isMeasured()

@@ -81,7 +81,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.displaysettings.ColumnD
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.displaysettings.IDisplaySettingsUpdate;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataSetTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataStorePE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.FileFormatTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.LocatorTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.VocabularyPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.VocabularyTermPE;
@@ -504,15 +503,12 @@ public final class CommonClientServiceTest extends AbstractClientServiceTest
         dataStorePE.setDownloadUrl(DATA_STORE_BASE_URL);
         final DataSetTypePE dataSetType = new DataSetTypePE();
         dataSetType.setCode("my-type");
-        FileFormatTypePE fileFormatTypePE = new FileFormatTypePE();
-        fileFormatTypePE.setCode("PNG");
-        fileFormatTypePE.setDescription("Portable Network Graphics");
         LocatorTypePE locatorTypePE = new LocatorTypePE();
         locatorTypePE.setCode("LOCATOR");
         DataStore dataStore = new DataStore();
         dataStore.setCode("S");
         final PhysicalDataSet ds =
-                new DataSetBuilder().code("DS").type("MT").fileFormat("PNG")
+                new DataSetBuilder().code("DS").type("MT")
                         .status(DataSetArchivingStatus.AVAILABLE).store(dataStore).getDataSet();
         context.checking(new Expectations()
             {
@@ -547,7 +543,6 @@ public final class CommonClientServiceTest extends AbstractClientServiceTest
                 resultSet.getResultSet().getList().extractOriginalObjects();
         assertEquals(1, list.size());
         PhysicalDataSet data = list.get(0).getObjectOrNull().tryGetAsDataSet();
-        assertEquals("PNG", data.getFileFormatType().getCode());
 
         context.assertIsSatisfied();
     }

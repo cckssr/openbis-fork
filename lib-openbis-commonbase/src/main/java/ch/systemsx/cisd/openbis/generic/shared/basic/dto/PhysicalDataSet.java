@@ -38,8 +38,6 @@ public class PhysicalDataSet extends AbstractExternalData implements IDatasetLoc
 
     private LocatorType locatorType;
 
-    private FileFormatType fileFormatType;
-
     private boolean h5Folders;
 
     private boolean h5arFolders;
@@ -147,16 +145,6 @@ public class PhysicalDataSet extends AbstractExternalData implements IDatasetLoc
     public void setLocatorType(LocatorType locatorType)
     {
         this.locatorType = locatorType;
-    }
-
-    public FileFormatType getFileFormatType()
-    {
-        return fileFormatType;
-    }
-
-    public void setFileFormatType(FileFormatType fileFormatType)
-    {
-        this.fileFormatType = fileFormatType;
     }
 
     @Override

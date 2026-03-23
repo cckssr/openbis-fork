@@ -2,7 +2,7 @@
  * @author pkupczyk
  */
 define([ "require", "stjs", "as/dto/common/search/AbstractCompositeSearchCriteria", "as/dto/dataset/search/ShareIdSearchCriteria", "as/dto/dataset/search/LocationSearchCriteria",
-		"as/dto/dataset/search/SizeSearchCriteria", "as/dto/dataset/search/StorageFormatSearchCriteria", "as/dto/dataset/search/FileFormatTypeSearchCriteria",
+		"as/dto/dataset/search/SizeSearchCriteria", "as/dto/dataset/search/StorageFormatSearchCriteria",
 		"as/dto/dataset/search/LocatorTypeSearchCriteria", "as/dto/dataset/search/CompleteSearchCriteria", "as/dto/dataset/search/StatusSearchCriteria",
 		"as/dto/dataset/search/ArchivingRequestedSearchCriteria", "as/dto/dataset/search/PresentInArchiveSearchCriteria", "as/dto/dataset/search/StorageConfirmationSearchCriteria", "as/dto/dataset/search/SpeedHintSearchCriteria" ], function(require, stjs,
 		AbstractCompositeSearchCriteria) {
@@ -27,13 +27,6 @@ define([ "require", "stjs", "as/dto/common/search/AbstractCompositeSearchCriteri
 		prototype.withStorageFormat = function() {
 			var StorageFormatSearchCriteria = require("as/dto/dataset/search/StorageFormatSearchCriteria");
 			return this.addCriteria(new StorageFormatSearchCriteria());
-		};
-		/*
-		 * @Deprecated
-		 */
-		prototype.withFileFormatType = function() {
-			var FileFormatTypeSearchCriteria = require("as/dto/dataset/search/FileFormatTypeSearchCriteria");
-			return this.addCriteria(new FileFormatTypeSearchCriteria());
 		};
 		prototype.withLocatorType = function() {
 			var LocatorTypeSearchCriteria = require("as/dto/dataset/search/LocatorTypeSearchCriteria");

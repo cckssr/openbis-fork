@@ -624,7 +624,6 @@ public class GenericServerDatabaseTest extends AbstractDAOTest
         DataSetUpdatesDTO updates = new DataSetUpdatesDTO();
         updates.setDatasetId(new TechId(22L)); // 20120619092259000-22
         updates.setProperties(Arrays.asList(new IEntityProperty[] { property }));
-        updates.setFileFormatTypeCode("XML");
 
         if (user.isInstanceUserOrTestSpaceUserOrEnabledTestProjectUser())
         {

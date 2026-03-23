@@ -39,7 +39,6 @@ import org.testng.annotations.Test;
 import ch.systemsx.cisd.openbis.common.types.BooleanOrUnknown;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDataDAO;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDataSetTypeDAO;
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.IFileFormatTypeDAO;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.ILocatorTypeDAO;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.ISampleDAO;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.RelationshipUtils;
@@ -55,7 +54,6 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.DataStorePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExternalDataManagementSystemPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExternalDataPE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.FileFormatTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.LinkDataPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.LocationType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.LocatorTypePE;
@@ -222,7 +220,6 @@ public final class DataDAOTest extends AbstractDAOTest
         {
             externalData.setDerived(true);
         }
-        externalData.setFileFormatType(pickAFileFormatType());
         externalData.setLocatorType(pickALocatorType());
         externalData.setLocation("abcd");
         externalData.setComplete(BooleanOrUnknown.U);
@@ -279,7 +276,6 @@ public final class DataDAOTest extends AbstractDAOTest
         {
             ExternalDataPE expectedExternalData = expectedDataSet.tryAsExternalData();
             ExternalDataPE externalData = dataSet.tryAsExternalData();
-            assertEquals(expectedExternalData.getFileFormatType(), externalData.getFileFormatType());
             assertEquals(expectedExternalData.getLocatorType(), externalData.getLocatorType());
             assertEquals(expectedExternalData.getLocation(), externalData.getLocation());
             assertEquals(expectedExternalData.getComplete(), externalData.getComplete());
@@ -317,7 +313,6 @@ public final class DataDAOTest extends AbstractDAOTest
         data.setSampleAcquiredFrom(pickASample());
         data.setDataStore(pickADataStore());
         data.setModificationDate(new Date());
-        data.setFileFormatType(pickAFileFormatType());
         data.setLocatorType(pickALocatorType());
         data.setLocation("abcd");
         data.setShareId("share-42");
@@ -338,7 +333,6 @@ public final class DataDAOTest extends AbstractDAOTest
         assertEquals(externalData.getCode(), dataSet.getCode());
         assertEquals(externalData.getDataSetType(), dataSet.getDataSetType());
         assertEquals(externalData.getExperiment(), dataSet.getExperiment());
-        assertEquals(externalData.getFileFormatType(), dataSet.getFileFormatType());
         assertEquals(externalData.getLocatorType(), dataSet.getLocatorType());
         assertEquals(externalData.getShareId(), dataSet.getShareId());
         assertEquals(externalData.getLocation(), dataSet.getLocation());
@@ -456,14 +450,6 @@ public final class DataDAOTest extends AbstractDAOTest
         VocabularyPE vocabulary = daoFactory.getVocabularyDAO().tryFindVocabularyByCode(code);
         assertNotNull(vocabulary);
         return vocabulary.getTerms().iterator().next();
-    }
-
-    protected FileFormatTypePE pickAFileFormatType()
-    {
-        IFileFormatTypeDAO fileFormatTypeDAO = daoFactory.getFileFormatTypeDAO();
-        FileFormatTypePE fileFormatType = fileFormatTypeDAO.tryToFindFileFormatTypeByCode("TIFF");
-        assertNotNull(fileFormatType);
-        return fileFormatType;
     }
 
     protected LocatorTypePE pickALocatorType()

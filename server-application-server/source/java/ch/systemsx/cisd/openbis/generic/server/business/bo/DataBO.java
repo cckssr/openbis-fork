@@ -44,7 +44,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityProperty;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExternalDataManagementSystemType;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.FileFormatType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IEntityProperty;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.LocatorType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PropertyType;
@@ -62,7 +61,6 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.DataStorePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExternalDataManagementSystemPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExternalDataPE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.FileFormatTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.LinkDataPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.LocationType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.LocatorTypePE;
@@ -328,8 +326,6 @@ public class DataBO extends AbstractDataSetBusinessObject implements IDataBO
         assert newData != null : "Undefined data.";
         final DataSetType dataSetType = newData.getDataSetType();
         assert dataSetType != null : "Undefined data set type.";
-        final FileFormatType fileFormatType = newData.getFileFormatType();
-        assert fileFormatType != null : "Undefined file format type.";
         final String location = newData.getLocation();
         assert location != null : "Undefined location.";
         final LocatorType locatorType = newData.getLocatorType();
@@ -343,7 +339,6 @@ public class DataBO extends AbstractDataSetBusinessObject implements IDataBO
         externalData.setCode(newData.getCode());
         externalData.setDataSetType(getDataSetType(dataSetType));
         externalData.setDataSetKind(DataSetKind.PHYSICAL.name());
-        externalData.setFileFormatType(getFileFomatType(fileFormatType));
         externalData.setComplete(newData.getComplete());
         externalData.setShareId(newData.getShareId());
         externalData.setLocation(location);
@@ -521,26 +516,6 @@ public class DataBO extends AbstractDataSetBusinessObject implements IDataBO
         return dataSetTypeOrNull;
     }
 
-    private final FileFormatTypePE getFileFomatType(final FileFormatType fileFormatType)
-    {
-        final String fileFormatTypeCode = fileFormatType.getCode();
-
-        FileFormatTypePE fileFormatTypeOrNull = this.getCache().getFileFormatTypes().get(fileFormatTypeCode);
-
-        if (fileFormatTypeOrNull == null)
-        {
-            fileFormatTypeOrNull =
-                    getFileFormatTypeDAO().tryToFindFileFormatTypeByCode(fileFormatTypeCode);
-            this.getCache().getFileFormatTypes().put(fileFormatTypeCode, fileFormatTypeOrNull);
-        }
-        if (fileFormatTypeOrNull == null)
-        {
-            throw UserFailureException.fromTemplate("There is no file format type with code '%s'",
-                    fileFormatTypeCode);
-        }
-        return fileFormatTypeOrNull;
-    }
-
     private final DataPE getData(final String dataSetCode, ExperimentPE experiment, SamplePE sample)
     {
         assert dataSetCode != null : "Unspecified parent data set code.";
@@ -656,7 +631,6 @@ public class DataBO extends AbstractDataSetBusinessObject implements IDataBO
         setMetaprojects(data, updates.getMetaprojectsOrNull());
         updateContainer(updates.getModifiedContainerDatasetCodeOrNull());
         updateComponents(updates.getModifiedContainedDatasetCodesOrNull());
-        updateFileFormatType(data, updates.getFileFormatTypeCode());
         updateProperties(data.getEntityType(), updates.getProperties(), extractPropertiesCodes(updates.getProperties()), data, data);
 
         entityPropertiesConverter.checkMandatoryProperties(data.getProperties(),

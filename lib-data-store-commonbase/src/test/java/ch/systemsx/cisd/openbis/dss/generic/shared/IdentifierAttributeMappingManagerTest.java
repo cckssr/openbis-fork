@@ -80,7 +80,7 @@ public class IdentifierAttributeMappingManagerTest extends AbstractFileSystemTes
     private PhysicalDataSet createDataSet(String experimentIdentifier, long dataSetSize)
     {
         return new DataSetBuilder()
-                .code("DS1").store(new DataStoreBuilder("DSS").getStore()).type("MY-TYPE").fileFormat("ABC").size(dataSetSize)
+                .code("DS1").store(new DataStoreBuilder("DSS").getStore()).type("MY-TYPE").size(dataSetSize)
                 .experiment(new ExperimentBuilder().identifier(experimentIdentifier).getExperiment())
                 .getDataSet();
     }

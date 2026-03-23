@@ -114,8 +114,6 @@ public final class ColumnNames
 
     public static final String EXTERNAL_CODE_COLUMN = "external_code";
 
-    public static final String FILE_FORMAT_TYPE = "ffty_id";
-
     public static final String FILE_NAME_COLUMN = "file_name";
 
     public static final String TITLE_COLUMN = "title";

@@ -814,9 +814,6 @@ public class HibernateSearchDAOV3Adaptor implements IHibernateSearchDAO {
             case STORAGE_FORMAT:
                 criterionV3Criteria = v3Criteria.withPhysicalData().withStorageFormat().withCode();
                 break;
-            case FILE_TYPE:
-                criterionV3Criteria = v3Criteria.withPhysicalData().withFileFormatType().withCode();
-                break;
             case COMPLETE:
                 criterionV3Criteria = v3Criteria.withPhysicalData().withComplete(); // Enum
                 break;

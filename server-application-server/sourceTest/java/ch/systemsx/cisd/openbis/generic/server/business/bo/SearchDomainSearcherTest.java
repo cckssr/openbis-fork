@@ -46,7 +46,6 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.DataStorePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExternalDataPE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.FileFormatTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ProjectPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SampleTypePE;
@@ -349,9 +348,6 @@ public class SearchDomainSearcherTest extends AbstractBOTest
         type.setCode("UNKNOWN");
         data.setDataSetType(type);
         data.setDataSetKind(DataSetKind.PHYSICAL.name());
-        FileFormatTypePE fileFormatType = new FileFormatTypePE();
-        fileFormatType.setCode("fileFormat");
-        data.setFileFormatType(fileFormatType);
         return data;
     }
 

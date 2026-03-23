@@ -35,7 +35,6 @@ import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.id.IObjectId;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.id.dataset.DataSetCodeId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Experiment;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.FileFormatType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Sample;
 import ch.systemsx.cisd.openbis.generic.shared.dto.NewProperty;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.ExperimentIdentifier;
@@ -172,18 +171,6 @@ public class DataSet<T extends DataSetInformation> extends AbstractDataSetImmuta
                 setExperiment(sampleDTO.getExperiment());
             }
         }
-    }
-
-    @Override
-    public String getFileFormatType()
-    {
-        return registrationDetails.getFileFormatType().getCode();
-    }
-
-    @Override
-    public void setFileFormatType(String fileFormatTypeCode)
-    {
-        registrationDetails.setFileFormatType(new FileFormatType(fileFormatTypeCode));
     }
 
     @Override

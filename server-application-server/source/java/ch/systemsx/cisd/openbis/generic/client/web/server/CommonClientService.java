@@ -96,7 +96,6 @@ import ch.systemsx.cisd.openbis.generic.client.web.server.resultset.EntityTypePr
 import ch.systemsx.cisd.openbis.generic.client.web.server.resultset.EntityTypePropertyTypeProvider;
 import ch.systemsx.cisd.openbis.generic.client.web.server.resultset.EntityTypeProvider;
 import ch.systemsx.cisd.openbis.generic.client.web.server.resultset.ExperimentProvider;
-import ch.systemsx.cisd.openbis.generic.client.web.server.resultset.FileFormatTypesProvider;
 import ch.systemsx.cisd.openbis.generic.client.web.server.resultset.GridCustomFilterProvider;
 import ch.systemsx.cisd.openbis.generic.client.web.server.resultset.IOriginalDataProvider;
 import ch.systemsx.cisd.openbis.generic.client.web.server.resultset.IResultSet;
@@ -162,7 +161,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityTypePropertyType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityValidationEvaluationInfo;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Experiment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExperimentType;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.FileFormatType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Grantee;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.GridCustomColumn;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.GridCustomFilter;
@@ -550,12 +548,6 @@ public final class CommonClientService extends AbstractClientService implements
     @Override
     public String prepareExportDataSetTypes(
             final TableExportCriteria<TableModelRowWithObject<DataSetType>> criteria)
-    {
-        return prepareExportEntities(criteria);
-    }
-
-    @Override
-    public String prepareExportFileTypes(TableExportCriteria<FileFormatType> criteria)
     {
         return prepareExportEntities(criteria);
     }
@@ -950,16 +942,6 @@ public final class CommonClientService extends AbstractClientService implements
             throws ch.systemsx.cisd.openbis.generic.client.web.client.exception.UserFailureException
     {
         return listEntities(new DataSetTypeProvider(commonServer, getSessionToken()), criteria);
-    }
-
-    @Override
-    public TypedTableResultSet<FileFormatType> listFileTypes(
-            DefaultResultSetConfig<String, TableModelRowWithObject<FileFormatType>> criteria)
-            throws ch.systemsx.cisd.openbis.generic.client.web.client.exception.UserFailureException
-    {
-        FileFormatTypesProvider provider =
-                new FileFormatTypesProvider(commonServer, getSessionToken());
-        return listEntities(provider, criteria);
     }
 
     @Override
@@ -1548,14 +1530,6 @@ public final class CommonClientService extends AbstractClientService implements
     }
 
     @Override
-    public void registerFileType(FileFormatType type)
-            throws ch.systemsx.cisd.openbis.generic.client.web.client.exception.UserFailureException
-    {
-        final String sessionToken = getSessionToken();
-        commonServer.registerFileFormatType(sessionToken, type);
-    }
-
-    @Override
     public void updateEntityType(EntityKind entityKind, EntityType entityType)
             throws ch.systemsx.cisd.openbis.generic.client.web.client.exception.UserFailureException
     {
@@ -1910,29 +1884,6 @@ public final class CommonClientService extends AbstractClientService implements
         String sessionToken = getSessionToken();
         return commonServer.getTemplateColumns(sessionToken, entityKind, type, format, autoGenerate,
                 withExperiments, withSpace, operationKind);
-    }
-
-    @Override
-    public List<FileFormatType> listFileTypes()
-    {
-        final String sessionToken = getSessionToken();
-        final List<FileFormatType> types = commonServer.listFileFormatTypes(sessionToken);
-        return types;
-    }
-
-    @Override
-    public void deleteFileFormatTypes(List<String> fileFormatTypeCodes)
-            throws ch.systemsx.cisd.openbis.generic.client.web.client.exception.UserFailureException
-    {
-        final String sessionToken = getSessionToken();
-        commonServer.deleteFileFormatTypes(sessionToken, fileFormatTypeCodes);
-    }
-
-    @Override
-    public void updateFileFormatType(AbstractType type)
-    {
-        final String sessionToken = getSessionToken();
-        commonServer.updateFileFormatType(sessionToken, type);
     }
 
     @Override

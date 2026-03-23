@@ -30,7 +30,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.TechId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetBatchUpdateDetails;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExternalDataManagementSystem;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.FileFormatType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IEntityProperty;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PlaceholderDataSet;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataSetBatchUpdatesDTO;
@@ -116,23 +115,6 @@ public class DataSetUpdatable extends DataSetImmutable implements IDataSetUpdata
             String identifierString = dataSet.getSampleIdentifier();
             SampleIdentifier sampleIdentifier = SampleIdentifierFactory.parse(identifierString);
             updates.setSampleIdentifierOrNull(sampleIdentifier);
-        }
-    }
-
-    @Override
-    public void setFileFormatType(String fileFormatTypeCode)
-    {
-        if (isContainerDataSet())
-        {
-            // ignore
-        } else
-        {
-            FileFormatType fileFormatType = new FileFormatType();
-            fileFormatType.setCode(fileFormatTypeCode);
-            dataSet.tryGetAsDataSet().setFileFormatType(fileFormatType);
-
-            updateDetails.setFileFormatUpdateRequested(true);
-            updates.setFileFormatTypeCode(fileFormatTypeCode);
         }
     }
 

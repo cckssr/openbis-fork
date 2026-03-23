@@ -219,7 +219,6 @@ public class ConversionUtils
             data.setLocatorType(registrationDetails.getLocatorType());
             data.setShareId(dataSetInformation.getShareId());
             data.setLocation(dataFileRelativePath.substring(data.getShareId().length() + 1));
-            data.setFileFormatType(registrationDetails.getFileFormatType());
         }
         data.setUserId(dataSetInformation.getUploadingUserIdOrNull());
         data.setUserEMail(dataSetInformation.tryGetUploadingUserEmail());
@@ -326,7 +325,6 @@ public class ConversionUtils
         DataSetUpdatesDTO dataSetUpdate = new DataSetUpdatesDTO();
         dataSetUpdate.setDatasetId(new TechId(externalData));
         dataSetUpdate.setVersion(externalData.getVersion());
-        dataSetUpdate.setFileFormatTypeCode(dataSet.getFileFormatType());
         dataSetUpdate.setProperties(externalData.getProperties());
 
         if (externalData.getExperiment() != null)
@@ -374,10 +372,6 @@ public class ConversionUtils
 
         dataSetUpdate.setDatasetId(new TechId(externalData));
         dataSetUpdate.setVersion(externalData.getVersion());
-        if (dataSet.isLinkDataSet() == false && dataSet.isContainerDataSet() == false)
-        {
-            dataSetUpdate.setFileFormatTypeCode(dataSet.getFileFormatType());
-        }
         dataSetUpdate.setProperties(externalData.getProperties());
 
         if (externalData.getExperiment() != null)

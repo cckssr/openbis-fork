@@ -40,9 +40,6 @@ public class PhysicalDataTranslator extends AbstractCachingTranslator<Long, Phys
     private IPhysicalDataBaseTranslator baseTranslator;
 
     @Autowired
-    private IPhysicalDataFileFormatTypeTranslator fileFormatTypeTranslator;
-
-    @Autowired
     private IPhysicalDataLocatorTypeTranslator locatorTypeTranslator;
 
     @Autowired
@@ -62,12 +59,6 @@ public class PhysicalDataTranslator extends AbstractCachingTranslator<Long, Phys
         TranslationResults relations = new TranslationResults();
 
         relations.put(IPhysicalDataBaseTranslator.class, baseTranslator.translate(context, dataSetIds, null));
-
-        if (fetchOptions.hasFileFormatType())
-        {
-            relations.put(IPhysicalDataFileFormatTypeTranslator.class,
-                    fileFormatTypeTranslator.translate(context, dataSetIds, fetchOptions.withFileFormatType()));
-        }
 
         if (fetchOptions.hasLocatorType())
         {
@@ -103,12 +94,6 @@ public class PhysicalDataTranslator extends AbstractCachingTranslator<Long, Phys
         result.setUnarchivingRequested(baseRecord.isUnarchivingRequested);
         result.setH5Folders(baseRecord.isH5Folders);
         result.setH5arFolders(baseRecord.isH5arFolders);
-
-        if (fetchOptions.hasFileFormatType())
-        {
-            result.setFileFormatType(relations.get(IPhysicalDataFileFormatTypeTranslator.class, dataSetId));
-            result.getFetchOptions().withFileFormatTypeUsing(fetchOptions.withFileFormatType());
-        }
 
         if (fetchOptions.hasLocatorType())
         {

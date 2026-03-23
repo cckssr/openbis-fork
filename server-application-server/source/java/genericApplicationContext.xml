@@ -366,13 +366,6 @@
 		<constructor-arg ref="identity-translator"/>
 	</bean>
 
-	<bean id="ffty-search-manager" class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.FileFormatTypeSearchManager"
-		  lazy-init="true">
-		<constructor-arg ref="postgres-search-dao"/>
-		<constructor-arg ref="information-provider-dao"/>
-		<constructor-arg ref="identity-translator"/>
-	</bean>
-
 	<bean id="locator-type-search-manager" class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.LocatorTypeSearchManager"
 		  lazy-init="true">
 		<constructor-arg ref="postgres-search-dao"/>

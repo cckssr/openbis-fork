@@ -22,7 +22,6 @@ import ch.systemsx.cisd.etlserver.ITypeExtractor;
 import ch.systemsx.cisd.openbis.dss.generic.shared.dto.DataSetInformation;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetType;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.FileFormatType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.LocatorType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExtractableData;
 import ch.systemsx.cisd.openbis.generic.shared.dto.NewProperty;
@@ -33,8 +32,6 @@ import ch.systemsx.cisd.openbis.generic.shared.util.EntityHelper;
  */
 public class DataSetRegistrationDetails<T extends DataSetInformation> implements ITypeExtractor
 {
-    private FileFormatType fileFormatType;
-
     private boolean measuredData;
 
     private String processorType;
@@ -43,14 +40,7 @@ public class DataSetRegistrationDetails<T extends DataSetInformation> implements
 
     public DataSetRegistrationDetails()
     {
-        fileFormatType = new FileFormatType(FileFormatType.DEFAULT_FILE_FORMAT_TYPE_CODE);
         measuredData = true;
-    }
-
-    @Override
-    public FileFormatType getFileFormatType(File incomingDataSetPath)
-    {
-        return fileFormatType;
     }
 
     @Override
@@ -80,22 +70,6 @@ public class DataSetRegistrationDetails<T extends DataSetInformation> implements
     public LocatorType getLocatorType()
     {
         return new LocatorType(LocatorType.DEFAULT_LOCATOR_TYPE_CODE);
-    }
-
-    public FileFormatType getFileFormatType()
-    {
-        return fileFormatType;
-    }
-
-    public void setFileFormatType(FileFormatType fileFormatType)
-    {
-        this.fileFormatType = fileFormatType;
-    }
-
-    public void setFileFormatType(String fileFormatTypeCode)
-    {
-        this.fileFormatType = new FileFormatType();
-        this.fileFormatType.setCode(fileFormatTypeCode);
     }
 
     public boolean isMeasuredData()

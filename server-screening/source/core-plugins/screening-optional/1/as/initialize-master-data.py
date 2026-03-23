@@ -2,12 +2,6 @@ import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.DataType as DataTyp
 
 tr = service.transaction()
 
-file_type_CSV = tr.getOrCreateNewFileFormatType('CSV')
-file_type_CSV.setDescription('files with values separated by comma or semicolon')
-
-file_type_JPG = tr.getOrCreateNewFileFormatType('JPG')
-file_type_JPG.setDescription(None)
-
 vocabulary_MICROSCOPE = tr.getOrCreateNewVocabulary('MICROSCOPE')
 vocabulary_MICROSCOPE.setDescription('Microscope used in an experiment.')
 vocabulary_MICROSCOPE.setUrlTemplate(None)

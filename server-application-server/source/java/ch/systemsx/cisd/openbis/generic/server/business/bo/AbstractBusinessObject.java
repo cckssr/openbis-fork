@@ -432,12 +432,6 @@ abstract class AbstractBusinessObject implements IDAOFactory
     }
 
     @Override
-    public IFileFormatTypeDAO getFileFormatTypeDAO()
-    {
-        return daoFactory.getFileFormatTypeDAO();
-    }
-
-    @Override
     public ILocatorTypeDAO getLocatorTypeDAO()
     {
         return daoFactory.getLocatorTypeDAO();

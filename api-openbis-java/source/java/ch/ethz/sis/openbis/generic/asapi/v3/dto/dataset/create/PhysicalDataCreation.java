@@ -20,7 +20,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.create.ICreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.Complete;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.IFileFormatTypeId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.ILocatorTypeId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.IStorageFormatId;
 import ch.systemsx.cisd.base.annotation.JsonObject;
@@ -44,10 +43,6 @@ public class PhysicalDataCreation implements ICreation
 
     @JsonProperty
     private IStorageFormatId storageFormatId;
-
-    @JsonProperty
-    @Deprecated
-    private IFileFormatTypeId fileFormatTypeId;
 
     @JsonProperty
     private ILocatorTypeId locatorTypeId;
@@ -104,18 +99,6 @@ public class PhysicalDataCreation implements ICreation
     public void setStorageFormatId(IStorageFormatId storageFormatId)
     {
         this.storageFormatId = storageFormatId;
-    }
-
-    @Deprecated
-    public IFileFormatTypeId getFileFormatTypeId()
-    {
-        return fileFormatTypeId;
-    }
-
-    @Deprecated
-    public void setFileFormatTypeId(IFileFormatTypeId fileFormatTypeId)
-    {
-        this.fileFormatTypeId = fileFormatTypeId;
     }
 
     public ILocatorTypeId getLocatorTypeId()

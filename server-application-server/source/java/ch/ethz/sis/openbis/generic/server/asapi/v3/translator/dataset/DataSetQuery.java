@@ -68,14 +68,6 @@ public interface DataSetQuery extends ObjectQuery
             LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public List<ObjectRelationRecord> getExternalDmsIds(LongSet dataSetIds);
 
-    @Select(sql = "select ed.id as objectId, ed.ffty_id as relatedId from external_data ed where ed.id = any(?{1})", parameterBindings = {
-            LongSetMapper.class }, fetchSize = FETCH_SIZE)
-    public List<ObjectRelationRecord> getFileFormatTypeIds(LongSet dataSetIds);
-
-    @Select(sql = "select fft.id, fft.code, fft.description from file_format_types fft where fft.id = any(?{1})", parameterBindings = {
-            LongSetMapper.class }, fetchSize = FETCH_SIZE)
-    public List<FileFormatTypeBaseRecord> getFileFormatTypes(LongSet fileFormatTypeIds);
-
     @Select(sql = "select ed.id as objectId, ed.loty_id as relatedId from external_data ed where ed.id = any(?{1})", parameterBindings = {
             LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public List<ObjectRelationRecord> getLocatorTypeIds(LongSet dataSetIds);

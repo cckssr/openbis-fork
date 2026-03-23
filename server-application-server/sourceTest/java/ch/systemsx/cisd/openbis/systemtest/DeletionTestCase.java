@@ -234,7 +234,6 @@ public class DeletionTestCase extends SystemTestCase
         DataSetUpdatesDTO updatesDTO = new DataSetUpdatesDTO();
         updatesDTO.setDatasetId(dataSetId);
         updatesDTO.setExperimentIdentifierOrNull(new ExperimentIdentifier(e1));
-        updatesDTO.setFileFormatTypeCode("XML");
         updatesDTO.setProperties(Arrays.<IEntityProperty> asList(new PropertyBuilder("COMMENT").value("hello").getProperty()));
         genericServer.updateDataSet(sessionToken, updatesDTO);
 
@@ -251,7 +250,6 @@ public class DeletionTestCase extends SystemTestCase
         updatesDTO = new DataSetUpdatesDTO();
         updatesDTO.setDatasetId(dataSetId);
         updatesDTO.setExperimentIdentifierOrNull(new ExperimentIdentifier(originalDataSet.getExperiment()));
-        updatesDTO.setFileFormatTypeCode(originalDataSet.getFileFormatType().getCode());
         updatesDTO.setProperties(originalDataSet.getProperties());
         updatesDTO.setVersion(genericServer.getDataSetInfo(sessionToken, dataSetId).getVersion());
         sessionFactory.getCurrentSession().flush();

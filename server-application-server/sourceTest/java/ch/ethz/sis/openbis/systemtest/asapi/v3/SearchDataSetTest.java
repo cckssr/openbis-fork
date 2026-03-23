@@ -611,22 +611,6 @@ public class SearchDataSetTest extends AbstractDataSetTest
     }
 
     @Test
-    public void testSearchWithPhysicalDataWithFileFormatTypeWithCodeThatEquals()
-    {
-        DataSetSearchCriteria criteria = new DataSetSearchCriteria();
-        criteria.withPhysicalData().withFileFormatType().withCode().thatEquals("TIFF");
-        testSearch(TEST_USER, criteria, "20081105092159111-1");
-
-        criteria = new DataSetSearchCriteria();
-        criteria.withPhysicalData().withFileFormatType().withCode().thatEquals("TIF");
-        testSearch(TEST_USER, criteria);
-
-        criteria = new DataSetSearchCriteria();
-        criteria.withPhysicalData().withFileFormatType().withCode().thatEquals("IFF");
-        testSearch(TEST_USER, criteria);
-    }
-
-    @Test
     public void testSearchWithPhysicalDataWithLocatorTypeWithCodeThatEquals()
     {
         DataSetSearchCriteria criteria = new DataSetSearchCriteria();

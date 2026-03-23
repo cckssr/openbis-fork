@@ -287,7 +287,7 @@ public interface IServiceForDataStoreServer extends IServer, ISessionProvider
      * 
      * @param sessionToken The user authentication token. Must not be <code>null</code>.
      * @param sampleIdentifier an identifier which uniquely identifies the sample.
-     * @param externalData Data set to be registered. It is assumed that the attributes <code>location</code>, <code>fileFormatType</code>,
+     * @param externalData Data set to be registered. It is assumed that the attributes <code>location</code>,
      *            <code>dataSetType</code>, and <code>locatorType</code> are not-<code>null</code>.
      * @throws UserFailureException if given data set code could not be found in the persistence layer.
      */
@@ -301,7 +301,7 @@ public interface IServiceForDataStoreServer extends IServer, ISessionProvider
      * 
      * @param sessionToken The user authentication token. Must not be <code>null</code>.
      * @param experimentIdentifier an identifier which uniquely identifies the experiment.
-     * @param externalData Data set to be registered. It is assumed that the attributes <code>location</code>, <code>fileFormatType</code>,
+     * @param externalData Data set to be registered. It is assumed that the attributes <code>location</code>,
      *            <code>dataSetType</code>, and <code>locatorType</code> are not-<code>null</code>.
      * @throws UserFailureException if given data set code could not be found in the persistence layer.
      */
@@ -610,7 +610,7 @@ public interface IServiceForDataStoreServer extends IServer, ISessionProvider
      * 
      * @param sessionToken The user authentication token. Must not be <code>null</code>.
      * @param newSample The new sample to register.
-     * @param externalData Data set to be registered. It is assumed that the attributes <code>location</code>, <code>fileFormatType</code>,
+     * @param externalData Data set to be registered. It is assumed that the attributes <code>location</code>,
      *            <code>dataSetType</code>, and <code>locatorType</code> are not-<code>null</code>.
      * @param userIdOrNull The user id on whose behalf we are registering the sample
      * @throws UserFailureException if given data set code could not be found in the persistence layer.
@@ -625,7 +625,7 @@ public interface IServiceForDataStoreServer extends IServer, ISessionProvider
      * 
      * @param sessionToken The user authentication token. Must not be <code>null</code>.
      * @param updates The sample updates to apply
-     * @param externalData Data set to be registered. It is assumed that the attributes <code>location</code>, <code>fileFormatType</code>,
+     * @param externalData Data set to be registered. It is assumed that the attributes <code>location</code>,
      *            <code>dataSetType</code>, and <code>locatorType</code> are not-<code>null</code>.
      * @throws UserFailureException if given data set code could not be found in the persistence layer.
      */

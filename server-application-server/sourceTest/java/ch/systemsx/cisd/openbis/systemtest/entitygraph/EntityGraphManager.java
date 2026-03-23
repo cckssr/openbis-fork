@@ -52,7 +52,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Experiment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExperimentType;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.FileFormatType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IEntityProperty;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ListSampleCriteria;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.LocatorType;
@@ -545,7 +544,6 @@ public class EntityGraphManager
             }
             dataSet.setDataSetType(createDataSetType(dataSetTypeCode));
             dataSet.setDataSetKind(DataSetKind.PHYSICAL);
-            dataSet.setFileFormatType(new FileFormatType(FileFormatType.DEFAULT_FILE_FORMAT_TYPE_CODE));
             dataSet.setLocatorType(new LocatorType(LocatorType.DEFAULT_LOCATOR_TYPE_CODE));
             dataSet.setLocation(UUID.randomUUID().toString());
             dataSet.setStorageFormat(StorageFormat.PROPRIETARY);

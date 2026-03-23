@@ -126,18 +126,6 @@ public class DataSetImmutable extends AbstractDataSetImmutable
     }
 
     @Override
-    public String getFileFormatType()
-    {
-        if (isContainerDataSet())
-        {
-            return null;
-        } else
-        {
-            return dataSet.tryGetAsDataSet().getFileFormatType().getCode();
-        }
-    }
-
-    @Override
     public boolean isMeasuredData()
     {
         return dataSet.isDerived() == false;

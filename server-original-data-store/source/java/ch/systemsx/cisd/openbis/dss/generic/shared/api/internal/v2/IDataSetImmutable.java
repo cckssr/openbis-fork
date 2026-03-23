@@ -20,7 +20,6 @@ import java.util.List;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.DataSetType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetKind;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.FileFormatType;
 
 /**
  * A data set that has already been stored in openBIS.
@@ -49,15 +48,6 @@ public interface IDataSetImmutable extends IMetaprojectContent
      * @return A sample or null.
      */
     ISampleImmutable getSample();
-
-    /**
-     * The file format type of the data set. Defaults to the default specified in {@link FileFormatType}.
-     * <p>
-     * This property is undefined for container data sets.
-     * 
-     * @return The code of the {@link FileFormatType} for this data set.
-     */
-    public String getFileFormatType();
 
     /**
      * Return true if the data set is measured data. Defaults to true.

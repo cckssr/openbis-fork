@@ -59,7 +59,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DatabaseInstance;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.FileFormatType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.LocatorType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PhysicalDataSet;
 import ch.systemsx.cisd.openbis.generic.shared.dto.NewProperty;
@@ -522,12 +521,6 @@ class PutDataSetExecutor implements IDataSetHandlerRpc
                 }
             }
             return pluginTypeExtractor.getDataSetType(incomingDataSetPath);
-        }
-
-        @Override
-        public FileFormatType getFileFormatType(File incomingDataSetPath)
-        {
-            return pluginTypeExtractor.getFileFormatType(incomingDataSetPath);
         }
 
         @Override

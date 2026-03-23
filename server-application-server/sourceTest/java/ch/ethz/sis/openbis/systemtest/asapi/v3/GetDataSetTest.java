@@ -33,7 +33,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.Complete;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetType;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.FileFormatType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.LinkedData;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.LocatorType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.PhysicalData;
@@ -576,7 +575,6 @@ public class GetDataSetTest extends AbstractDataSetTest
         DataSetFetchOptions fetchOptions = new DataSetFetchOptions();
 
         PhysicalDataFetchOptions physicalDataFetchOptions = fetchOptions.withPhysicalData();
-        physicalDataFetchOptions.withFileFormatType();
         physicalDataFetchOptions.withLocatorType();
         physicalDataFetchOptions.withStorageFormat();
 
@@ -596,9 +594,6 @@ public class GetDataSetTest extends AbstractDataSetTest
         assertFalse(physicalData.isPresentInArchive());
         assertFalse(physicalData.isStorageConfirmation());
 
-        FileFormatType fileFormatType = physicalData.getFileFormatType();
-        assertEquals(fileFormatType.getCode(), "TIFF");
-        assertEquals(fileFormatType.getDescription(), "TIFF File");
 
         LocatorType locatorType = physicalData.getLocatorType();
         assertEquals(locatorType.getCode(), "RELATIVE_LOCATION");

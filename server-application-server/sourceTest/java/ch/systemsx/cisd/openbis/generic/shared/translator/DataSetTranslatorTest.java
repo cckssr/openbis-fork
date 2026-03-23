@@ -43,7 +43,6 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExternalDataManagementSystemPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExternalDataPE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.FileFormatTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.LinkDataPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.LocationType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.LocatorTypePE;
@@ -96,10 +95,6 @@ public class DataSetTranslatorTest extends AssertJUnit
         dataSetTypePE.setDescription("dataSetTypeDescription");
         externalDataPE.setDataSetType(dataSetTypePE);
         externalDataPE.setDataSetKind(DataSetKind.PHYSICAL.name());
-        FileFormatTypePE fileFormatTypePE = new FileFormatTypePE();
-        fileFormatTypePE.setCode("fileFormatTypeCode");
-        fileFormatTypePE.setDescription("fileFormatTypeDescription");
-        externalDataPE.setFileFormatType(fileFormatTypePE);
         externalDataPE.setShareId("share id");
         externalDataPE.setLocation("location");
         externalDataPE.setSize(4711L);
@@ -147,8 +142,6 @@ public class DataSetTranslatorTest extends AssertJUnit
         assertEquals("dataProducerCode", translated.getDataProducerCode());
         assertEquals("DATASETTYPECODE", translated.getDataSetType().getCode());
         assertEquals("dataSetTypeDescription", translated.getDataSetType().getDescription());
-        assertEquals("FILEFORMATTYPECODE", translated.getFileFormatType().getCode());
-        assertEquals("fileFormatTypeDescription", translated.getFileFormatType().getDescription());
         assertEquals("location", translated.getLocation());
         assertEquals(4711L, translated.getSize().longValue());
         assertEquals("LOCATORTYPECODE", translated.getLocatorType().getCode());

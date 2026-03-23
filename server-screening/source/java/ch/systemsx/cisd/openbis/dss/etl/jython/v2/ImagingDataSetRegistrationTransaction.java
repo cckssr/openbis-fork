@@ -475,8 +475,6 @@ public class ImagingDataSetRegistrationTransaction extends DataSetRegistrationTr
                     if (isFirst)
                     {
                         thumbnailDataset = super.createNewDataSet(imageRegistrationDetails);
-                        thumbnailDataset.setFileFormatType(thumbnailsStorageFormat.getFileFormat()
-                                .getOpenBISFileType());
                         thumbnailDataset.setMeasuredData(false);
                         isFirst = false;
                     } else
@@ -504,7 +502,6 @@ public class ImagingDataSetRegistrationTransaction extends DataSetRegistrationTr
             DataSet<ImageDataSetInformation> thumbnailDataset =
                     (DataSet<ImageDataSetInformation>) super
                             .createNewDataSet(imageRegistrationDetails);
-            thumbnailDataset.setFileFormatType(imageDataSetInformation.getFileFormatTypeCode());
             thumbnailDataset.setMeasuredData(false);
             thumbnailDatasets.add(thumbnailDataset);
 
@@ -530,7 +527,6 @@ public class ImagingDataSetRegistrationTransaction extends DataSetRegistrationTr
     {
         ThumbnailsStorageFormat thumbnailsStorageFormat = new ThumbnailsStorageFormat();
 
-        thumbnailsStorageFormat.setFileFormat(imageDataSetInformation.getFileFormatTypeCode());
         thumbnailsStorageFormat.setThumbnailsFileName(String.format("thumbnails_%dx%d.h5ar",
                 imageDataSetInformation.getMaximumImageWidth(),
                 imageDataSetInformation.getMaximumImageHeight()));
@@ -648,8 +644,6 @@ public class ImagingDataSetRegistrationTransaction extends DataSetRegistrationTr
     {
         String thumbnailsDatasetTypeCode = findThumbnailsDatasetTypeCode(imageDataSetInformation);
         IDataSet thumbnailDataset = createNewDataSet(thumbnailsDatasetTypeCode,  DataSetKind.PHYSICAL);
-        thumbnailDataset.setFileFormatType(thumbnailsStorageFormat.getFileFormat()
-                .getOpenBISFileType());
         thumbnailDataset.setMeasuredData(false);
 
         return thumbnailDataset;

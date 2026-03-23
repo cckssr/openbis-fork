@@ -35,7 +35,6 @@ public class DataSetCommonEntityTest extends AbstractCommonEntityTest<DataSetTyp
     {
         PhysicalDataCreation physicalCreation = new PhysicalDataCreation();
         physicalCreation.setLocation("test/location/" + code);
-        physicalCreation.setFileFormatTypeId(new FileFormatTypePermId("TIFF"));
         physicalCreation.setLocatorTypeId(new RelativeLocationLocatorTypePermId());
         physicalCreation.setStorageFormatId(new ProprietaryStorageFormatPermId());
 

@@ -43,8 +43,6 @@ public class DataSetUpdateBuilder extends UpdateBuilder<DataSetUpdatesDTO>
 
     private SampleIdentifier sampleIdentifier;
 
-    private String fileFormatTypeCode;
-
     private List<AbstractExternalData> parents;
 
     private String containerCode;
@@ -57,10 +55,6 @@ public class DataSetUpdateBuilder extends UpdateBuilder<DataSetUpdatesDTO>
         super(commonServer, genericServer);
         this.datasetId = new TechId(data.getId());
         this.version = data.getVersion();
-        if (data instanceof PhysicalDataSet)
-        {
-            this.fileFormatTypeCode = ((PhysicalDataSet) data).getFileFormatType().getCode();
-        }
         this.parents = null;
         Experiment experiment = data.getExperiment();
         if (experiment != null)
@@ -142,7 +136,6 @@ public class DataSetUpdateBuilder extends UpdateBuilder<DataSetUpdatesDTO>
         DataSetUpdatesDTO updates = new DataSetUpdatesDTO();
         updates.setDatasetId(this.datasetId);
         updates.setVersion(this.version);
-        updates.setFileFormatTypeCode(this.fileFormatTypeCode);
         updates.setProperties(new ArrayList<IEntityProperty>());
 
         updates.setExperimentIdentifierOrNull(this.experimentIdentifier);

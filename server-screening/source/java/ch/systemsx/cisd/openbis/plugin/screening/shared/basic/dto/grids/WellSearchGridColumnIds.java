@@ -34,8 +34,6 @@ public class WellSearchGridColumnIds
 
     public static final String IMAGE_ANALYSIS_DATA_SET = "IMAGE_ANALYSIS_DATA_SET";
 
-    public static final String FILE_FORMAT_TYPE = "file_format_type";
-
     public static final String WELL_IMAGES = "WELL_IMAGES";
 
     public static final String ANALYSIS_PROCEDURE = "ANALYSIS_PROCEDURE";

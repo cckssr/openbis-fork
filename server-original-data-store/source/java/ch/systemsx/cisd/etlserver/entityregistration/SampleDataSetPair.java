@@ -68,8 +68,6 @@ public class SampleDataSetPair
 
     private final static String DATA_SET_CODE = "D_code";
 
-    private final static String DATA_SET_FILE_TYPE = "D_file_type";
-
     private final static String FOLDER = "FOLDER";
 
     private final NewSample newSample;
@@ -79,8 +77,6 @@ public class SampleDataSetPair
     private String[] tokens;
 
     private String folderName;
-
-    private String fileFormatTypeCode;
 
     private SampleDataSetPairProcessing processingState = SampleDataSetPairProcessing.PENDING;
 
@@ -140,17 +136,6 @@ public class SampleDataSetPair
     public void setDataSetCode(String code)
     {
         dataSetInformation.setDataSetCode(code);
-    }
-
-    public String getFileFormatTypeCode()
-    {
-        return fileFormatTypeCode;
-    }
-
-    @BeanProperty(label = DATA_SET_FILE_TYPE, optional = true)
-    public void setFileFormatTypeCode(String fileFormatType)
-    {
-        this.fileFormatTypeCode = fileFormatType;
     }
 
     public String getFolderName()

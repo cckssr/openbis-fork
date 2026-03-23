@@ -62,7 +62,6 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.EventPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExternalDataPE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.FileFormatTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ProjectPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePE;
@@ -522,9 +521,6 @@ public final class DataSetTableTest extends AbstractBOTest
         DataSetTypePE type = new DataSetTypePE();
         data.setDataSetType(type);
         data.setDataSetKind(DataSetKind.PHYSICAL.name());
-        FileFormatTypePE fileFormatType = new FileFormatTypePE();
-        fileFormatType.setCode("fileFormat");
-        data.setFileFormatType(fileFormatType);
         return data;
     }
 

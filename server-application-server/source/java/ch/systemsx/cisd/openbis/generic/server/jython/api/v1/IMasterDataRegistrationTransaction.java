@@ -172,33 +172,6 @@ public interface IMasterDataRegistrationTransaction
     List<IPropertyAssignmentImmutable> listPropertyAssignments();
 
     /**
-     * Create a new file format type to register with the openBIS AS.
-     * 
-     * @param code the file format type's code.
-     */
-    IFileFormatType createNewFileFormatType(String code);
-
-    /**
-     * Get a file format type from the openBIS AS. Returns null if the file format type does not exist.
-     * 
-     * @return A file format type or null
-     */
-    IFileFormatTypeImmutable getFileFormatType(String code);
-
-    /**
-     * Gets or creates file format type from the openBIS AS.
-     * 
-     * @return the already existing type or a freshly created one if it doesn't exist. Setter methods on the returned type are ignored if the type
-     *         already exists.
-     */
-    IFileFormatType getOrCreateNewFileFormatType(String code);
-
-    /**
-     * Return all file format types existing in the openBIS AS.
-     */
-    List<IFileFormatTypeImmutable> listFileFormatTypes();
-
-    /**
      * Create a new sample type to register with the openBIS AS.
      * 
      * @param code the sample type's code.

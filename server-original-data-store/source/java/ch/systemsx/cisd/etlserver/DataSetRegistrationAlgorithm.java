@@ -469,7 +469,6 @@ public class DataSetRegistrationAlgorithm
         data.setLocatorType(getTypeExtractor().getLocatorType(incomingDataSetFile));
         data.setDataSetType(getTypeExtractor().getDataSetType(incomingDataSetFile));
         data.setDataSetKind(dataSetInformation.getDataSetKind());
-        data.setFileFormatType(getTypeExtractor().getFileFormatType(incomingDataSetFile));
         data.setMeasured(getTypeExtractor().isMeasuredData(incomingDataSetFile));
         data.setDataStoreCode(state.dataStoreCode);
         return data;

@@ -49,7 +49,6 @@ import ch.systemsx.cisd.openbis.generic.server.dataaccess.IEntityTypeDAO;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IEventDAO;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IExperimentDAO;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IExternalDataManagementSystemDAO;
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.IFileFormatTypeDAO;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IGridCustomFilterDAO;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.ILocatorTypeDAO;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IPersonDAO;
@@ -112,8 +111,6 @@ public abstract class AbstractBOTest extends AssertJUnit
 
     protected IDataSetTypeDAO dataSetTypeDAO;
 
-    protected IFileFormatTypeDAO fileFormatTypeDAO;
-
     protected ILocatorTypeDAO locatorTypeDAO;
 
     protected IDataStoreDAO dataStoreDAO;
@@ -174,7 +171,6 @@ public abstract class AbstractBOTest extends AssertJUnit
         vocabularyDAO = context.mock(IVocabularyDAO.class);
         vocabularyTermDAO = context.mock(IVocabularyTermDAO.class);
         dataSetTypeDAO = context.mock(IDataSetTypeDAO.class);
-        fileFormatTypeDAO = context.mock(IFileFormatTypeDAO.class);
         locatorTypeDAO = context.mock(ILocatorTypeDAO.class);
         dataStoreDAO = context.mock(IDataStoreDAO.class);
         permIdDAO = context.mock(IPermIdDAO.class);
@@ -205,8 +201,6 @@ public abstract class AbstractBOTest extends AssertJUnit
                     will(returnValue(sampleTypeDAO));
                     allowing(daoFactory).getDataSetTypeDAO();
                     will(returnValue(dataSetTypeDAO));
-                    allowing(daoFactory).getFileFormatTypeDAO();
-                    will(returnValue(fileFormatTypeDAO));
                     allowing(daoFactory).getLocatorTypeDAO();
                     will(returnValue(locatorTypeDAO));
                     allowing(daoFactory).getDataDAO();

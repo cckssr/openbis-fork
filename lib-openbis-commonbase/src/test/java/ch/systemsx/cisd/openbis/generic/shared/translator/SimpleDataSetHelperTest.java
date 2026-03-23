@@ -28,7 +28,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataStore;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Experiment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExperimentType;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.FileFormatType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PhysicalDataSet;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Project;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Sample;
@@ -93,9 +92,6 @@ public class SimpleDataSetHelperTest extends AssertJUnit
         project.setSpace(space);
         experiment.setProject(project);
         dataSet.setExperiment(experiment);
-        FileFormatType fileFormatType = new FileFormatType();
-        fileFormatType.setCode("MY_FILE_FORMAT");
-        dataSet.setFileFormatType(fileFormatType);
         dataSet.setLocation("my-location");
         Sample sample = new Sample();
         sample.setCode("MY-SAMPLE");

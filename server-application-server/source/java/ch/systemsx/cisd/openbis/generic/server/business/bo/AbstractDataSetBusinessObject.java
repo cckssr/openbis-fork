@@ -38,7 +38,6 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.DataPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataSetRelationshipPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExternalDataPE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.FileFormatTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ProjectPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.Session;
@@ -393,35 +392,6 @@ public abstract class AbstractDataSetBusinessObject extends AbstractSampleIdenti
         {
             validateContainerContainedRelationshipGraph(relationship.getParentDataSet(), contained);
         }
-    }
-
-    protected void updateFileFormatType(DataPE data, String fileFormatTypeCode)
-    {
-        if (data.isExternalData())
-        {
-            if (fileFormatTypeCode == null)
-            {
-                throw new UserFailureException("Data set '" + data.getCode()
-                        + "' cannot have empty file format.");
-            }
-            ExternalDataPE externalData = data.tryAsExternalData();
-            FileFormatTypePE fileFormatTypeOrNull =
-                    getFileFormatTypeDAO().tryToFindFileFormatTypeByCode(fileFormatTypeCode);
-            if (fileFormatTypeOrNull == null)
-            {
-                throw new UserFailureException(String.format("File type '%s' does not exist.",
-                        fileFormatTypeCode));
-            } else if (equalFileFormatTypes(externalData.getFileFormatType(), fileFormatTypeOrNull) == false)
-            {
-                externalData.setFileFormatType(fileFormatTypeOrNull);
-                RelationshipUtils.updateModificationDateAndModifier(data, session, getTransactionTimeStamp());
-            }
-        }
-    }
-
-    private boolean equalFileFormatTypes(FileFormatTypePE type1, FileFormatTypePE type2)
-    {
-        return type1 == null ? type1 == type2 : type1.equals(type2);
     }
 
     protected static Set<String> extractCodes(Collection<DataPE> parents)

@@ -71,7 +71,6 @@ if incoming.isDirectory():
 
     imageDataset = commonImageDropbox.IBrain2ImageDataSetConfig()
     imageDataset.setRawImageDatasetType()
-    imageDataset.setFileFormatType("TIFF")
     imageDataset.setRecognizedImageExtensions(["tif", "tiff"])    
     imageDataset.setStoreChannelsOnExperimentLevel(False)
     imageDataset.setGenerateThumbnails(True)

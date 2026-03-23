@@ -61,7 +61,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Experiment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExperimentType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExperimentUpdateResult;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExternalDataManagementSystem;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.FileFormatType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Grantee;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.GridCustomFilter;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IEntityProperty;
@@ -516,13 +515,6 @@ final class CommonServerLogger extends AbstractServerLogger implements ICommonSe
     }
 
     @Override
-    public List<FileFormatType> listFileFormatTypes(String sessionToken)
-    {
-        logAccess(sessionToken, "list_file_format_types");
-        return null;
-    }
-
-    @Override
     public final List<Vocabulary> listVocabularies(final String sessionToken, boolean withTerms,
             boolean excludeInternal)
     {
@@ -794,12 +786,6 @@ final class CommonServerLogger extends AbstractServerLogger implements ICommonSe
     public void updateExperimentType(String sessionToken, EntityType entityType)
     {
         logTracking(sessionToken, "update_experiment_type", "CODE(%s)", entityType.getCode());
-    }
-
-    @Override
-    public void registerFileFormatType(String sessionToken, FileFormatType type)
-    {
-        logTracking(sessionToken, "register_file_format_type", "CODE(%s)", type.getCode());
     }
 
     @Override
@@ -1080,19 +1066,6 @@ final class CommonServerLogger extends AbstractServerLogger implements ICommonSe
                 entityKind, type, format, autoGenerate,
                 withExperiments, withSpace, operationKind.getDescription());
         return null;
-    }
-
-    @Override
-    public void deleteFileFormatTypes(String sessionToken, List<String> codes)
-    {
-        logTracking(sessionToken, "delete_file_format_types", "CODES(%s)", abbreviate(codes));
-    }
-
-    @Override
-    public void updateFileFormatType(String sessionToken, AbstractType type)
-    {
-        logTracking(sessionToken, "update_file_format_type", "CODE(%s)", type.getCode());
-
     }
 
     @Override

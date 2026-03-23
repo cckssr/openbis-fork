@@ -31,8 +31,6 @@ import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IExperimentType;
 import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IExperimentTypeImmutable;
 import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IExternalDataManagementSystem;
 import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IExternalDataManagementSystemImmutable;
-import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IFileFormatType;
-import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IFileFormatTypeImmutable;
 import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IMasterDataRegistrationTransaction;
 import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IPropertyAssignment;
 import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IPropertyAssignmentImmutable;
@@ -65,8 +63,6 @@ public class MasterDataRegistrationTransaction implements IMasterDataRegistratio
     private final List<Script> createdScripts = new ArrayList<Script>();
 
     private final List<PropertyType> createdPropertyTypes = new ArrayList<PropertyType>();
-
-    private final List<FileFormatType> createdFileTypes = new ArrayList<FileFormatType>();
 
     private final List<Vocabulary> createdVocabularies = new ArrayList<Vocabulary>();
 
@@ -219,37 +215,6 @@ public class MasterDataRegistrationTransaction implements IMasterDataRegistratio
     public List<IScriptImmutable> listScripts()
     {
         return commonServer.listScripts();
-    }
-
-    @Override
-    public IFileFormatType createNewFileFormatType(String code)
-    {
-        FileFormatType fileFormatType = new FileFormatType(code);
-        createdFileTypes.add(fileFormatType);
-        return fileFormatType;
-    }
-
-    @Override
-    public IFileFormatTypeImmutable getFileFormatType(String code)
-    {
-        return findTypeForCode(commonServer.listFileFormatTypes(), code);
-    }
-
-    @Override
-    public IFileFormatType getOrCreateNewFileFormatType(String code)
-    {
-        IFileFormatTypeImmutable fileFormatType = getFileFormatType(code);
-        if (fileFormatType != null)
-        {
-            return new FileFormatTypeWrapper((FileFormatTypeImmutable) fileFormatType);
-        }
-        return createNewFileFormatType(code);
-    }
-
-    @Override
-    public List<IFileFormatTypeImmutable> listFileFormatTypes()
-    {
-        return commonServer.listFileFormatTypes();
     }
 
     @Override
@@ -460,7 +425,6 @@ public class MasterDataRegistrationTransaction implements IMasterDataRegistratio
 
     public void commit()
     {
-        registerFileFormatTypes(createdFileTypes);
         registerVocabularies(createdVocabularies);
         addVocabularyTerms(createdVocabularyTerms);
         updateVocabularyTerms(updatedVocabularyTerms);
@@ -471,20 +435,6 @@ public class MasterDataRegistrationTransaction implements IMasterDataRegistratio
         registerPropertyTypes(createdPropertyTypes);
         registerPropertyAssignments(createdAssignments);
         registerExternalDataManagementSystems(createdExternalDataManagementSystems);
-    }
-
-    private void registerFileFormatTypes(List<FileFormatType> fileFormatTypes)
-    {
-        for (FileFormatType fileFormatType : fileFormatTypes)
-        {
-            try
-            {
-                commonServer.registerFileFormatType(fileFormatType);
-            } catch (Exception ex)
-            {
-                transactionErrors.addTypeRegistrationError(ex, fileFormatType);
-            }
-        }
     }
 
     private void registerExperimentTypes(List<ExperimentType> experimentTypes)

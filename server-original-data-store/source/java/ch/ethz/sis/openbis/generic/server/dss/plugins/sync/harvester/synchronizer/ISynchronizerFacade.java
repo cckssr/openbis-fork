@@ -20,12 +20,10 @@ import java.util.List;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.create.ExternalDmsCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.update.ExternalDmsUpdate;
 import ch.systemsx.cisd.openbis.generic.shared.basic.TechId;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExperimentType;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.FileFormatType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewETPTAssignment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewVocabulary;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PropertyType;
@@ -40,10 +38,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.VocabularyTerm;
 
 public interface ISynchronizerFacade
 {
-    public void updateFileFormatType(AbstractType type);
-
-    public void registerFileFormatType(FileFormatType type);
-
     public void updatePropertyTypeAssignment(NewETPTAssignment newETPTAssignment, String diff);
 
     public void assignPropertyType(NewETPTAssignment newETPTAssignment);

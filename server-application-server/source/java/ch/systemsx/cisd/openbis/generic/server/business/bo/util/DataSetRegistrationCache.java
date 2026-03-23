@@ -26,7 +26,6 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.DataStorePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePropertyTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentPE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.FileFormatTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.LocatorTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.VocabularyPE;
@@ -48,8 +47,6 @@ public class DataSetRegistrationCache
 
     private HashMap<String, LocatorTypePE> locatorTypeByCode = new HashMap<>();
 
-    private HashMap<String, FileFormatTypePE> fileFormatTypeByCode = new HashMap<>();
-
     private HashMap<String, DataStorePE> dataStores = new HashMap<>();
 
     private Map<EntityTypePE, List<EntityTypePropertyTypePE>> entityTypePropertyTypes = new HashMap<>();
@@ -69,11 +66,6 @@ public class DataSetRegistrationCache
     public HashMap<String, DataStorePE> getDataStores()
     {
         return dataStores;
-    }
-
-    public HashMap<String, FileFormatTypePE> getFileFormatTypes()
-    {
-        return fileFormatTypeByCode;
     }
 
     public HashMap<String, LocatorTypePE> getLocatorTypes()

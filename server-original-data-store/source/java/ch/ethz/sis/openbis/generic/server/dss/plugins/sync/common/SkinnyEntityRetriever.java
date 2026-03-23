@@ -69,26 +69,22 @@ public class SkinnyEntityRetriever implements IEntityRetriever
 
     private final IApplicationServerApi v3Api;
 
-    private final IMasterDataRegistrationTransaction masterDataRegistrationTransaction;
-
     private final String sessionToken;
 
-    private SkinnyEntityRetriever(IApplicationServerApi v3Api, String sessionToken, IMasterDataRegistrationTransaction masterDataRegistrationTransaction)
+    private SkinnyEntityRetriever(IApplicationServerApi v3Api, String sessionToken)
     {
         this.v3Api = v3Api;
         this.sessionToken = sessionToken;
-        this.masterDataRegistrationTransaction = masterDataRegistrationTransaction;
     }
     
-    public static SkinnyEntityRetriever createWithMasterDataRegistationTransaction(IApplicationServerApi v3Api, String sessionToken,
-            IMasterDataRegistrationTransaction masterDataRegistrationTransaction)
+    public static SkinnyEntityRetriever createWithMasterDataRegistationTransaction(IApplicationServerApi v3Api, String sessionToken)
     {
-        return new SkinnyEntityRetriever(v3Api, sessionToken, masterDataRegistrationTransaction);
+        return new SkinnyEntityRetriever(v3Api, sessionToken);
     }
 
     public static SkinnyEntityRetriever createWithSessionToken(IApplicationServerApi v3Api, String sessionToken)
     {
-        return new SkinnyEntityRetriever(v3Api, sessionToken, null);
+        return new SkinnyEntityRetriever(v3Api, sessionToken);
     }
 
     @Override
@@ -409,7 +405,7 @@ public class SkinnyEntityRetriever implements IEntityRetriever
 
     public String fetchMasterDataAsXML() throws ParserConfigurationException, TransformerException
     {
-        MasterDataExtractor masterDataExtractor = new MasterDataExtractor(v3Api, sessionToken, masterDataRegistrationTransaction);
+        MasterDataExtractor masterDataExtractor = new MasterDataExtractor(v3Api, sessionToken);
         return masterDataExtractor.fetchAsXmlString();
     }
 

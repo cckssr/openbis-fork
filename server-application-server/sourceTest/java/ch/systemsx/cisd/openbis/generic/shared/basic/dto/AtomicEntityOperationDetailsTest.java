@@ -114,7 +114,7 @@ public class AtomicEntityOperationDetailsTest extends AssertJUnit
                         + ",projectRegistrations=[/SPACE/P1, /SPACE/P2]"
                         + ",experimentRegistrations=[/SPACE/PROJECT/EXP-ID1, /SPACE/PROJECT/EXP-ID2]"
                         + ",sampleRegistrations=[/SPACE/SAMPLE-ID1, /SPACE/SAMPLE-ID2]"
-                        + ",dataSetRegistrations=[NewExternalData[code=DATA-SET-CODE,type=<null>,kind=<null>,fileFormat=<null>,properties=[]]]"
+                        + ",dataSetRegistrations=[NewExternalData[code=DATA-SET-CODE,type=<null>,kind=<null>,properties=[]]]"
                         + ",dataSetUpdates=[1]"
                         + ",metaprojectRegistrations=[NewMetaproject[name=TEST-AEOD-TAG,description=short description,ownerId=test]]]",
                 detailsAsString);
