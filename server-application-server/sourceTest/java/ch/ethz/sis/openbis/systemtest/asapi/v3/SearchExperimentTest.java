@@ -30,6 +30,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyTypePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.SampleCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.TagCode;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.TagPermId;
@@ -1732,6 +1734,96 @@ public class SearchExperimentTest extends AbstractExperimentTest
 
         testSearch(TEST_USER, criteria, "/CISD/NEMO/EXP1", "/CISD/DEFAULT/EXP-REUSE", "/CISD/NEMO/EXP-TEST-1",
                 "/CISD/NEMO/EXP11");
+    }
+
+    @Test
+    public void testSearchWithXmlPropertyThatContains()
+    {
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        final PropertyTypePermId propertyType = createAPropertyType(sessionToken, DataType.XML);
+        final EntityTypePermId sampleType = createAnExperimentType(sessionToken, false, propertyType);
+        final ExperimentCreation experimentCreation = new ExperimentCreation();
+        experimentCreation.setCode("XML_TEST");
+        experimentCreation.setProjectId(new ProjectIdentifier("/CISD/DEFAULT"));
+        experimentCreation.setTypeId(sampleType);
+        experimentCreation.setProperty(propertyType.getPermId(), "<catalog>\n" +
+                "  <book id=\"bk101\">\n" +
+                "    <author>Gambardella, Matthew</author>\n" +
+                "    <title>XML Developer's Guide</title>\n" +
+                "    <genre>Computer</genre>\n" +
+                "    <price>44.95</price>\n" +
+                "    <publish_date>2000-10-01</publish_date>\n" +
+                "    <description>An in-depth look at creating applications with XML.</description>\n" +
+                "  </book>\n" +
+                "</catalog>");
+        v3api.createExperiments(sessionToken, Collections.singletonList(experimentCreation));
+
+        // Specific property criterion
+        final ExperimentSearchCriteria criteria = new ExperimentSearchCriteria();
+        criteria.withOrOperator();
+        criteria.withStringProperty(propertyType.getPermId()).thatContains("XML Developer's");
+
+        testSearch(TEST_USER, criteria, 1);
+
+        // Any string property criterion
+        final ExperimentSearchCriteria anyCriteria = new ExperimentSearchCriteria();
+        anyCriteria.withOrOperator();
+        anyCriteria.withAnyStringProperty().thatContains("XML Developer's");
+
+        testSearch(TEST_USER, anyCriteria, 1);
+
+        // Any field criterion
+        final ExperimentSearchCriteria anyFieldCriteria = new ExperimentSearchCriteria();
+        anyFieldCriteria.withOrOperator();
+        anyFieldCriteria.withAnyField().thatContains("XML Developer's");
+
+        testSearch(TEST_USER, anyFieldCriteria, 1);
+
+        v3api.logout(sessionToken);
+    }
+
+    @Test
+    public void testSearchWithJsonPropertyThatContains()
+    {
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        final PropertyTypePermId propertyType = createAPropertyType(sessionToken, DataType.JSON);
+        final EntityTypePermId experimentType = createAnExperimentType(sessionToken, false, propertyType);
+        final ExperimentCreation experimentCreation = new ExperimentCreation();
+        experimentCreation.setCode("XML_TEST");
+        experimentCreation.setProjectId(new ProjectIdentifier("/CISD/DEFAULT"));
+        experimentCreation.setTypeId(experimentType);
+        experimentCreation.setProperty(propertyType.getPermId(), "{\n" +
+                "  \"author\": \"Gambardella, Matthew\",\n" +
+                "  \"title\": \"JSON Developer's Guide\",\n" +
+                "  \"genre\": \"Computer\",\n" +
+                "  \"price\": 44.95,\n" +
+                "  \"publishDate\": \"2000-10-01\",\n" +
+                "  \"description\": \"An in-depth look at creating applications with JSON.\"\n" +
+                "}");
+        v3api.createExperiments(sessionToken, Collections.singletonList(experimentCreation));
+
+        // Specific property criterion
+        final ExperimentSearchCriteria criteria = new ExperimentSearchCriteria();
+        criteria.withOrOperator();
+        criteria.withStringProperty(propertyType.getPermId()).thatEquals("JSON Developer's");
+
+        testSearch(TEST_USER, criteria, 1);
+
+        // Any string property criterion
+        final ExperimentSearchCriteria anyCriteria = new ExperimentSearchCriteria();
+        anyCriteria.withOrOperator();
+        anyCriteria.withAnyStringProperty().thatEquals("JSON Developer's");
+
+        testSearch(TEST_USER, anyCriteria, 1);
+
+        // Any field criterion
+        final ExperimentSearchCriteria anyFieldCriteria = new ExperimentSearchCriteria();
+        anyFieldCriteria.withOrOperator();
+        anyFieldCriteria.withAnyField().thatEquals("JSON Developer's");
+
+        testSearch(TEST_USER, anyFieldCriteria, 1);
+
+        v3api.logout(sessionToken);
     }
 
     @Test
