@@ -34,7 +34,6 @@ public class HibernateSQLExecutor extends AbstractSQLExecutor
     public Connection getConnection() {
         DAOFactory daoFactory = (DAOFactory) CommonServiceProvider.getApplicationContext().getBean(ComponentNames.DAO_FACTORY);
         SessionImpl currentSession = (SessionImpl) daoFactory.getSessionFactory().getCurrentSession();
-//        DelegatingConnection delegatingConnection = (DelegatingConnection) currentSession.connection();
 
         Connection connection = currentSession.doReturningWork(c -> c);
 
