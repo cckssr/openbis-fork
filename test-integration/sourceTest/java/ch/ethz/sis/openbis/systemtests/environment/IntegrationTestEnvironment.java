@@ -139,9 +139,9 @@ public class IntegrationTestEnvironment
         return createRoCrateServer(loadProperties(Path.of("etc/default/ro-crate/service.properties")));
     }
 
-    public FakeHttpServer createFakeHttpServer() throws IOException
+    public FakeHttpServer createFakeHttpServer(int port) throws IOException
     {
-        FakeHttpServer localhost = FakeHttpServer.build("localhost", 8100);
+        FakeHttpServer localhost = FakeHttpServer.build("localhost", port);
         this.fakeHttpServer = fakeHttpServer;
         return fakeHttpServer;
     }
