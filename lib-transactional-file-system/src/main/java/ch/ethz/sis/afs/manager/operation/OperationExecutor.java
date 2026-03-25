@@ -34,7 +34,7 @@ public interface OperationExecutor<OPERATION extends Operation, RESULT>
     String HIDDEN_AFS_DIRECTORY = ".afs";
     String CACHED_MD5_SUFFIX = "-hash.md5";
     String CACHED_PREVIEW_SUFFIX = "-preview.jpg";
-    String SNAPSHOTS_DIRECTORY = ".snapshots";
+    String SNAPSHOTS_DIRECTORY = ".afs.snapshots";
 
     static @NonNull
     String getTransactionLogDir(Transaction transaction)
