@@ -21,7 +21,8 @@ public final class RoCrateServerIntegrationTestEnvironment
             System.setProperty("RO_CRATE_SERVER_LOCAL_DOWNLOAD_PORT", Integer.toString(randomNum));
             environment = new IntegrationTestEnvironment();
             environment.createApplicationServer();
-            environment.createRoCrateServer();
+            environment.createRoCrateServer(
+                    new IntegrationTestEnvironment.RoCrateServerArgs(randomNum));
             environment.enableSystemUser();
             environment.createFakeHttpServer(randomNum);
             environment.start();

@@ -134,9 +134,15 @@ public class IntegrationTestEnvironment
         return afsServer;
     }
 
-    public RoCrateServer createRoCrateServer()
+    public record RoCrateServerArgs(int port)
     {
-        return createRoCrateServer(loadProperties(Path.of("etc/default/ro-crate/service.properties")));
+    }
+
+    public RoCrateServer createRoCrateServer(RoCrateServerArgs roCrateServerArgs)
+    {
+        return createRoCrateServer(
+                loadProperties(Path.of("etc/default/ro-crate/service.properties")),
+                roCrateServerArgs);
     }
 
     public FakeHttpServer createFakeHttpServer(int port) throws IOException
@@ -146,8 +152,8 @@ public class IntegrationTestEnvironment
         return fakeHttpServer;
     }
 
-
-    public RoCrateServer createRoCrateServer(Properties serviceProperties)
+    public RoCrateServer createRoCrateServer(Properties serviceProperties,
+            RoCrateServerArgs roCrateServerArgs)
     {
         if (serviceProperties != null)
         {
@@ -157,6 +163,7 @@ public class IntegrationTestEnvironment
 
         roCrateServer = new RoCrateServer();
         roCrateServer.configure(serviceProperties);
+        roCrateServer.setRoCrateServerArgs(roCrateServerArgs);
         return roCrateServer;
     }
 
