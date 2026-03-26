@@ -283,7 +283,7 @@ exports.default = new Promise((resolve) => {
             var testDelete = async function (assert, trash, useTransaction) {
                 const testFile = "test-file"
                 const testContent = new TextEncoder().encode("test-content")
-                const trashFolder = ".trash"
+                const trashFolder = ".afs.trash"
 
                 try {
                     var c = new common(assert, dtos)
@@ -371,7 +371,7 @@ exports.default = new Promise((resolve) => {
             var testSnapshot = async function (assert, useTransaction) {
                 const testFile = "test-file"
                 const testContent = new TextEncoder().encode("test-content")
-                const snapshotsFolder = ".snapshots"
+                const snapshotsFolder = ".afs.snapshots"
 
                 try {
                     var c = new common(assert, dtos)

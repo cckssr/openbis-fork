@@ -1504,7 +1504,7 @@ public class Integration2PCTest
                 Path relativePath1 = dir1.relativize(path1);
                 Path relativePath2 = dir2.relativize(path2);
 
-                if (relativePath1.toString().contains(".snapshots") || relativePath2.toString().contains(".snapshots"))
+                if (relativePath1.toString().contains(".afs.snapshots") || relativePath2.toString().contains(".afs.snapshots"))
                 {
                     assertEquals(relativePath1.getParent(), relativePath2.getParent());
                 } else
