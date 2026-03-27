@@ -73,9 +73,7 @@ def process(transaction):
                     if len(datasetInfo) >= 4:
                         datasetType = datasetInfo[3];
                     if len(datasetInfo) >= 5:
-                        name = datasetInfo[4];
-                    if len(datasetInfo) > 5:
-                        reportIssue(INVALID_FORMAT_ERROR_MESSAGE + ":" + FAILED_TO_PARSE_SAMPLE_ERROR_MESSAGE)
+                        name = folderName.split("+", 4)[4]
                 else:
                     raise UserFailureException(INVALID_FORMAT_ERROR_MESSAGE + ":" + FAILED_TO_PARSE_SAMPLE_ERROR_MESSAGE);
             if entityKind == "O":
@@ -92,9 +90,7 @@ def process(transaction):
                     if len(datasetInfo) >= 5:
                         datasetType = datasetInfo[4];
                     if len(datasetInfo) >= 6:
-                        name = datasetInfo[5];
-                    if len(datasetInfo) > 6:
-                        reportIssue(INVALID_FORMAT_ERROR_MESSAGE + ":" + FAILED_TO_PARSE_SAMPLE_ERROR_MESSAGE)
+                        name = folderName.split("+", 5)[5]
                 else:
                     raise UserFailureException(INVALID_FORMAT_ERROR_MESSAGE + ":" + FAILED_TO_PARSE_SAMPLE_ERROR_MESSAGE);
 
@@ -116,9 +112,7 @@ def process(transaction):
                     if len(datasetInfo) >= 5:
                         datasetType = datasetInfo[4];
                     if len(datasetInfo) >= 6:
-                        name = datasetInfo[5];
-                    if len(datasetInfo) > 6:
-                        reportIssue(INVALID_FORMAT_ERROR_MESSAGE + ":" + FAILED_TO_PARSE_EXPERIMENT_ERROR_MESSAGE);
+                        name = folderName.split("+", 5)[5]
                 else:
                     raise UserFailureException(INVALID_FORMAT_ERROR_MESSAGE + ":" + FAILED_TO_PARSE_EXPERIMENT_ERROR_MESSAGE);
 
