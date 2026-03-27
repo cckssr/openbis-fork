@@ -15,30 +15,36 @@
  */
 package ch.ethz.sis.shared.pool;
 
-import lombok.Value;
-
 import java.util.Deque;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.Semaphore;
 
-public class Pool<I, E> {
+import lombok.Value;
+
+public class Pool<I, E>
+{
     private final Deque<E> availableElements;
+
     private final Map<E, Status> inUseElements;
+
     private final Semaphore available;
-    private final int maxSize;
+
     private final I factoryParameters;
+
     private final Factory<I, I, E> factory;
 
     @Value
-    public static class Status {
+    public static class Status
+    {
         long acquisitionTime;
+
         Thread owner;
     }
 
-    public Pool(int maxSize, I factoryParameters, Factory<I, I, E> factory) throws Exception {
-        this.maxSize = maxSize;
+    public Pool(int maxSize, I factoryParameters, Factory<I, I, E> factory) throws Exception
+    {
         this.factoryParameters = factoryParameters;
         this.factory = factory;
         this.available = new Semaphore(maxSize, true);
@@ -46,14 +52,15 @@ public class Pool<I, E> {
         this.inUseElements = new ConcurrentHashMap<>();
     }
 
-    public E checkOut() throws Exception {
+    public E checkOut() throws Exception
+    {
         available.acquire();
 
-        if (availableElements.isEmpty() && inUseElements.size() < maxSize) {
-            availableElements.add(factory.create(factoryParameters));
-        }
-
         E element = availableElements.pollFirst();
+        if (element == null)
+        {
+            element = factory.create(factoryParameters);
+        }
 
         Status stats = new Status(System.currentTimeMillis(), Thread.currentThread());
         inUseElements.put(element, stats);
@@ -61,17 +68,21 @@ public class Pool<I, E> {
         return element;
     }
 
-    public void checkIn(E element) {
+    public void checkIn(E element)
+    {
         inUseElements.remove(element);
         availableElements.addLast(element);
         available.release();
     }
 
-    public void shutdown() throws Exception {
-        for (E e:inUseElements.keySet()) {
+    public void shutdown() throws Exception
+    {
+        for (E e : inUseElements.keySet())
+        {
             factory.destroy(e);
         }
-        for (E e:availableElements) {
+        for (E e : availableElements)
+        {
             factory.destroy(e);
         }
     }
