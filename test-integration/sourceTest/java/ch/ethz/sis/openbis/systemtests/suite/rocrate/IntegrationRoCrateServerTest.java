@@ -227,6 +227,64 @@ public class IntegrationRoCrateServerTest
 
     }
 
+    @Test(enabled = true, timeOut = TIMEOUT, priority = 4)
+    public void testImportWithExternalFile() throws Exception
+    {
+        OpenBIS openBIS = environment.createOpenBIS(TIMEOUT);
+        openBIS.login(username, password);
+
+        Path file =
+                Path.of("sourceTest/resource/" + getClass().getSimpleName() + "/OkayExampleWithFile.json");
+
+        HttpClient client = JettyHttpClientFactory.getHttpClient();
+        Request request = client.newRequest(
+                TestInstanceHostUtils.getRoCrateUrl() + "/openbis/open-api/ro-crate/import");
+        request.method(HttpMethod.POST);
+        request.headers(headers -> {
+            headers.add("api-key", openBIS.getSessionToken());
+            headers.add("Content-Type", "application/ld+json");
+        });
+        request.body(new BytesRequestContent(Files.readAllBytes(file)));
+        request.idleTimeout(TIMEOUT, TimeUnit.MILLISECONDS);
+
+        ContentResponse response = request.send();
+        LinkedHashMap asyncJob =
+                objectMapper.readValue(response.getContentAsString(), LinkedHashMap.class);
+        String jobId = asyncJob.get("jobId").toString();
+
+        assertEquals(response.getStatus(), 202);
+
+        boolean done = false;
+        while (!done)
+        {
+            Request pollRequest = client.newRequest(
+                    TestInstanceHostUtils.getRoCrateUrl() + "/openbis/open-api/ro-crate/status/" + jobId);
+            pollRequest.method(HttpMethod.GET);
+            pollRequest.headers(headers -> {
+                headers.add("api-key", openBIS.getSessionToken());
+                headers.add("jobId", jobId);
+            });
+            pollRequest.idleTimeout(TIMEOUT, TimeUnit.MILLISECONDS);
+            ContentResponse pollResponse = pollRequest.send();
+            LinkedHashMap asyncResult =
+                    objectMapper.readValue(pollResponse.getContentAsString(), LinkedHashMap.class);
+
+            if (asyncResult.get("status").equals("COMPLETED"))
+            {
+                done = true;
+            }
+
+            if (asyncResult.get("status").equals("FAILED"))
+            {
+                List<String> errors = (List<String>) asyncResult.get("errors");
+                Assert.fail(errors.stream().collect(Collectors.joining(",")));
+                done = true;
+            }
+
+            Thread.sleep(2000);
+        }
+    }
+
     @Test(priority = 4)
     public void testValidate()
             throws Exception
