@@ -19,6 +19,8 @@ if __name__ == '__main__':
     parser.add_argument('-m', '--maxcalls', type=int)  # option that takes a value
     parser.add_argument('-i', '--identifier', type=str, required=True, action='append')# option that takes a value
     parser.add_argument('-o', '--output', type=str, required=True)# option that takes a value
+    parser.add_argument('-a', '--afs_data', action='store_true')# option that takes a value
+
 
     args = vars( parser.parse_args())
     base_url = args['url']
@@ -26,6 +28,7 @@ if __name__ == '__main__':
     max_calls = None
     if 'maxcalls' in args and args['maxcalls']:
         max_calls = int(args['maxcalls'])
+    with_afs_data = args['afs_data']
 
     url = f'{base_url}/export'
     identifiers = args['identifier']
@@ -46,8 +49,12 @@ if __name__ == '__main__':
         'api-key': os.environ['OPENBIS_KEY'],
         'Export': export_type,
         'openbis.with-levels-above': 'true',
-        'openbis.import-compatible': 'true'
+        'openbis.import-compatible': 'true',
+
     }
+    if with_afs_data:
+        headers['openbis.afs-data'] = 'true'
+
 
     response = requests.post(url, json.dumps(identifiers), headers=headers, verify=False)
     if response.status_code != 202:
@@ -82,7 +89,7 @@ if __name__ == '__main__':
             print(response_json["errors"])
             raise Exception("Something failed")
         if not done:
-            time.sleep(20.0)
+            time.sleep(4)
             output = f"Call {count} of {max_calls}" if max_calls else f"Call {count}"
             print(output)
     url = f'{base_url}/download'
