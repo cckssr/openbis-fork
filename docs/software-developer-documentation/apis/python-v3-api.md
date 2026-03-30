@@ -170,6 +170,16 @@ o.set_token(pat.permId, save_token=True)
 If there is an existing PAT with the same _sessionName_ which is still valid and the validity is within the warning period (defined by the server), then this existing PAT is returned instead. However, you can enforce creating a new PAT by passing the argument `force=True`.
 ```
 
+You may create a new personal access token with specific validity period:
+
+```python
+# validFrom (datetime): begin of the validity period (default: now)
+# validTo   (datetime): end of the validity period (default: validFrom + maximum validity period, as configured in openBIS)
+import datetime
+# it will create token from 01-04-2026 08:00:00 to 10-04-2026 23:59:59
+pat = o.get_or_create_personal_access_token(sessionName="Short Access: Project A", validFrom=datetime.datetime(2026, 4, 1, 8, 0, 0), validTo=datetime.datetime(2026, 4, 10, 23, 59, 59))
+```
+
 ```{note}
 Most operations are permitted using the PAT, _except_:
 ```
