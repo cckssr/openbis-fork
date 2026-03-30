@@ -1,11 +1,11 @@
 # AFS SFTP Server Specification
 
 # Current Status - Original Data Store FTP/FTPS/SFTP
-- FTP <- Original Unencripted protocol
+- FTP <- Original Unencrypted protocol
 - FTPS <- FTP Secure, it tries to do a handshake to provide encryption, if the handshake fails defaults to FTP
   These 2 protocols are today deprecated and disabled even if the source code has not been removed.
 - SFTP <- SSH File transfer protocol, always encrypted
-  All protocols on the original data story are `READ ONLY`
+  All protocols on the original data store are `READ ONLY`
 
 # Development proposal - AFS SFTP (server-sftp)
 ## Features
@@ -28,7 +28,7 @@ Will support both upload and download files under data
 The endpoint provides the typical SFTP commands and the server translates them using `api-openbis-java` to `server-application-server` commands to list entities and `server-data-store` to upload and download files.
 
 ### SFTP endpoint plugin system
-The plugin receives a path and operation and returns the result from that operation and path, this is to allow to represent the entity and data try in custom ways. The default implementation is an implementation of this plugin system.
+The plugin receives a path and operation and returns the result from that operation and path, this is to allow to represent the entity and data tree in custom ways. The default implementation is an implementation of this plugin system.
 
 **Example 1:**
 LIST /spaces/MY_SPACE/
@@ -64,7 +64,7 @@ Important: This new project uses ONLY the AFS API to do operations with files. T
 ## Other design choices
 ## Login
 SFTP login with user and password that is the same as their openBIS user and password.
-Login requests and handed over to the AS V3 Login API, if successful the SFTP returns a successful login and returns an SFTP session.
+Login requests are handed over to the AS V3 Login API, if successful the SFTP returns a successful login and returns an SFTP session.
 NOTE: Historically the users should have needed to login previously to the Web UI before login to the SFTP session, don't know if this is still true.
 Under any case we should manage the login similarly to the current SFTP server.
 
@@ -84,9 +84,9 @@ We currently agree on implementing option 2
 **Example creation:**
 /spaces/MY_SPACE/projects/MY_PROJECT/experiments/MY_EXPERIMENT (Experiment Type Code) -> /spaces/MY_SPACE/projects/MY_PROJECT/experiments/MY_EXPERIMENT
 
-- (PRO) This convention is as lot easier to use for creating new entities, because the entity kind don't need to be indicated, since is already the directory name.
+- (PRO) This convention is a lot easier to use for creating new entities, because the entity kind don't need to be indicated, since is already the directory name.
 - (PRO) Listing and Sorting goes one to one with the openBIS API.
-- 
+
 ## openBIS graph unfolding challenges
 We currently agree on implementing option 2
 
