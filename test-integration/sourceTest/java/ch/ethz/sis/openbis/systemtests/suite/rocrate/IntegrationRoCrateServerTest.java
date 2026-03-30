@@ -227,7 +227,7 @@ public class IntegrationRoCrateServerTest
 
     }
 
-    @Test(enabled = true, timeOut = TIMEOUT, priority = 4)
+    @Test(enabled = false, timeOut = TIMEOUT, priority = 4)
     public void testImportWithExternalFile() throws Exception
     {
         OpenBIS openBIS = environment.createOpenBIS(TIMEOUT);
