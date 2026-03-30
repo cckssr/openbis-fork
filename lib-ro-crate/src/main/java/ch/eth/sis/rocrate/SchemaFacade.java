@@ -31,7 +31,7 @@ public class SchemaFacade implements ISchemaFacade
 
     private final static String RDFS_CLASS = "rdfs:Class";
 
-    private final static String RDFS_PROPERTY = "rdfs:Property";
+    private final static String RDF_PROPERTY = "rdf:Property";
 
     public static final String EQUIVALENT_CLASS = "owl:equivalentClass";
 
@@ -177,7 +177,7 @@ public class SchemaFacade implements ISchemaFacade
         DataEntity.DataEntityBuilder builder = new DataEntity.DataEntityBuilder();
 
         builder.setId(rdfsProperty.getId());
-        builder.addProperty("@type", RDFS_PROPERTY);
+        builder.addProperty("@type", RDF_PROPERTY);
         builder.addProperty(RDFS_LABEL, rdfsProperty.getLabel());
         builder.addProperty(RDFS_COMMENT, rdfsProperty.getComment());
 
@@ -379,50 +379,47 @@ public class SchemaFacade implements ISchemaFacade
                     entity.getProperty("@id")
                             .asText();
 
-            switch (type)
+            if (type.equals(RDF_PROPERTY) || type.equals("rdfs:Property"))
             {
-                case "rdfs:Property" ->
-                {
-                    PropertyType rdfsProperty = new PropertyType();
-                    rdfsProperty.setId(resolvePrefixSingleValue(id));
 
-                    rdfsProperty.setOntologicalAnnotations(
-                            parseMultiValued(entity, EQUIVALENT_CONCEPT));
+                PropertyType rdfsProperty = new PropertyType();
+                rdfsProperty.setId(resolvePrefixSingleValue(id));
 
-                    List<String> rawRange =
-                            Stream.concat(parseMultiValued(entity, rangeIdentifier).stream(),
-                                    parseMultiValued(entity, "rangeIncludes").stream()).collect(
-                                    Collectors.toList());
+                rdfsProperty.setOntologicalAnnotations(
+                        parseMultiValued(entity, EQUIVALENT_CONCEPT));
 
-                    List<IDataType> dataTypes = rawRange.stream()
-                            .filter(LiteralType::isLiteralType)
-                            .map(LiteralType::getByTypeName)
-                            .filter(Objects::nonNull)
-                            .collect(Collectors.toList());
-                    List<IType> types = rawRange.stream()
-                            .filter(x -> !LiteralType.isLiteralType(x))
-                            .map(this::resolvePrefixSingleValue)
-                            .map(idsToTypes::get)
-                            .collect(Collectors.toList());
+                List<String> rawRange =
+                        Stream.concat(parseMultiValued(entity, rangeIdentifier).stream(),
+                                parseMultiValued(entity, "rangeIncludes").stream()).collect(
+                                Collectors.toList());
 
-                    dataTypes.stream().forEach(rdfsProperty::addDataType);
-                    types.forEach(rdfsProperty::addType);
+                List<IDataType> dataTypes = rawRange.stream()
+                        .filter(LiteralType::isLiteralType)
+                        .map(LiteralType::getByTypeName)
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toList());
+                List<IType> types = rawRange.stream()
+                        .filter(x -> !LiteralType.isLiteralType(x))
+                        .map(this::resolvePrefixSingleValue)
+                        .map(idsToTypes::get)
+                        .collect(Collectors.toList());
 
-                    Stream<String> domain =
-                            Stream.concat(parseMultiValued(entity, domainIdentifier).stream(),
-                                    parseMultiValued(entity, "domainIncludes").stream());
+                dataTypes.stream().forEach(rdfsProperty::addDataType);
+                types.forEach(rdfsProperty::addType);
 
-                    rdfsProperty.setDomainIncludes(
+                Stream<String> domain =
+                        Stream.concat(parseMultiValued(entity, domainIdentifier).stream(),
+                                parseMultiValued(entity, "domainIncludes").stream());
 
-                            domain
-                                    .map(x -> resolvePrefixSingleValue(x))
-                                    .map(idsToTypes::get).collect(
-                                            Collectors.toList()));
-                    properties.put(resolvePrefixSingleValue(id), rdfsProperty);
+                rdfsProperty.setDomainIncludes(
 
-                }
+                        domain
+                                .map(x -> resolvePrefixSingleValue(x))
+                                .map(idsToTypes::get).collect(
+                                        Collectors.toList()));
+                properties.put(resolvePrefixSingleValue(id), rdfsProperty);
+
             }
-
         }
 
         for (AbstractEntity entity : abstractEntities)
