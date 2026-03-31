@@ -95,10 +95,10 @@ public final class ExportJob implements IAsyncJob
         this.openBIS = openBIS;
         if(exportParams.getSendEmail()) {
             this.email = openBIS.getSessionInformation().getPerson().getEmail();
+            LOG.debug(String.format("Send email flag is true, configured email: %s", this.email));
         } else {
             this.email = null;
         }
-
         this.username = username;
     }
 
@@ -370,10 +370,13 @@ public final class ExportJob implements IAsyncJob
                                 addFileToZip(zos, roCrateFile, buffer);
                             }
                         }
+                        LOG.info(String.format("Export successful for export job: %s", jobId.toString()));
                         this.result = resultZipPath;
                         if(this.email != null && !this.email.isBlank()) {
-                            LOG.info("Export successful, preparing to send email");
+                            LOG.info(String.format("Preparing to send email to: %s", this.email));
                             sendMailSuccess();
+                        } else {
+                            LOG.info("No email has been found, skipping email sending.");
                         }
                     }
                 }
@@ -418,7 +421,7 @@ public final class ExportJob implements IAsyncJob
             EMailAddress recipient = new EMailAddress(this.email);
             final String subject = "openBIS RoCrate Export failed!";
             String content = String.format("Error during export: %s", exception.getMessage());
-
+            Log.debug("Sending email to: " + recipient + "\nContent:" + content);
             mailClient.sendEmailMessage(subject, content, null, null, recipient);
         } catch (Exception e)
         {
@@ -433,7 +436,7 @@ public final class ExportJob implements IAsyncJob
 
         String roCratePublicUrl = openBIS.getServerInformation().get("server-public-information.ro-crate-server.url");
         String content = roCratePublicUrl + "/download?jobId=" + encode(this.jobId.toString()) + "&apiKey=" + encode(this.exportParams.getApiKey());
-
+        Log.debug("Sending email to: " + recipient + "\nContent:" + content);
         mailClient.sendEmailMessage(subject, content, null, null, recipient);
     }
 
