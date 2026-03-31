@@ -162,6 +162,7 @@ public class ImagingService implements ICustomASServiceExecutor
         }
         File file = path.toFile();
         if(!file.exists()) {
+            operationLog.error("Could not find root file under path: " + file.getAbsolutePath());
             throw new UserFailureException("Could not find configured root file!");
         }
         return file;
