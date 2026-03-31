@@ -114,7 +114,7 @@
       }
     },
     {
-      "@type": "rdfs:Property",
+      "@type": "rdf:Property",
       "rdfs:label": "Name",
       "rdfs:comment": "Name",
       "@id": "openBIS:hasNAME",
@@ -126,7 +126,7 @@
       }
     },
     {
-      "@type": "rdfs:Property",
+      "@type": "rdf:Property",
       "@id": "openBIS:hasCOLLECTION",
       "schema:rangeIncludes": {
         "@id": "openBIS:Collection"
@@ -158,7 +158,7 @@
       "@type": "openBIS:Space"
     },
     {
-      "@type": "rdfs:Property",
+      "@type": "rdf:Property",
       "@id": "openBIS:hasSPACE",
       "schema:rangeIncludes": {
         "@id": "openBIS:Space"
@@ -168,7 +168,7 @@
       }
     },
     {
-      "@type": "rdfs:Property",
+      "@type": "rdf:Property",
       "@id": "schema:hasPart",
       "schema:rangeIncludes": {
         "@id": "Dataset"
@@ -212,7 +212,7 @@
       "@type": "rdfs:Class"
     },
     {
-      "@type": "rdfs:Property",
+      "@type": "rdf:Property",
       "rdfs:label": "Show in project overview",
       "rdfs:comment": "Show in project overview page",
       "@id": "openBIS:isSHOW_IN_PROJECT_OVERVIEW",
@@ -241,7 +241,7 @@
       "owl:maxCardinality": 1
     },
     {
-      "@type": "rdfs:Property",
+      "@type": "rdf:Property",
       "rdfs:label": "Document",
       "rdfs:comment": "Document",
       "@id": "openBIS:hasDOCUMENT",
@@ -253,7 +253,7 @@
       }
     },
     {
-      "@type": "rdfs:Property",
+      "@type": "rdf:Property",
       "@id": "openBIS:hasPROJECT",
       "schema:rangeIncludes": {
         "@id": "openBIS:Project"

@@ -139,7 +139,7 @@
       "@type": "CreativeWork"
     },
     {
-      "@type": "rdfs:Property",
+      "@type": "rdf:Property",
       "rdfs:label": "Name",
       "rdfs:comment": "Name",
       "@id": "openBIS:hasNAME",
@@ -169,7 +169,7 @@
       "@type": "rdfs:Class"
     },
     {
-      "@type": "rdfs:Property",
+      "@type": "rdf:Property",
       "rdfs:label": "COMMENTS",
       "rdfs:comment": "COMMENTS: COMMENTS",
       "@id": "openBIS:hasCOMMENTS",
@@ -185,7 +185,7 @@
       "@type": "rdfs:Class"
     },
     {
-      "@type": "rdfs:Property",
+      "@type": "rdf:Property",
       "rdfs:label": "Default collection view",
       "rdfs:comment": "Default view for experiments of the type collection",
       "@id": "openBIS:hasDEFAULT_COLLECTION_VIEW",
@@ -241,7 +241,7 @@
       "owl:maxCardinality": 1
     },
     {
-      "@type": "rdfs:Property",
+      "@type": "rdf:Property",
       "rdfs:label": "EMPA_NUMBER",
       "rdfs:comment": "EMPA_NUMBER: EMPA_NUMBER",
       "@id": "openBIS:hasEMPA_NUMBER",
@@ -270,7 +270,7 @@
       "@type": "MOLECULE"
     },
     {
-      "@type": "rdfs:Property",
+      "@type": "rdf:Property",
       "rdfs:label": "Default object type",
       "rdfs:comment": "Enter the code of the object type for which the collection is used",
       "@id": "openBIS:hasDEFAULT_OBJECT_TYPE",
@@ -282,7 +282,7 @@
       }
     },
     {
-      "@type": "rdfs:Property",
+      "@type": "rdf:Property",
       "@id": "openBIS:hasSPACE",
       "schema:rangeIncludes": {
         "@id": "openBIS:Space"
@@ -315,7 +315,7 @@
       "owl:maxCardinality": 1
     },
     {
-      "@type": "rdfs:Property",
+      "@type": "rdf:Property",
       "rdfs:label": "CAS_NUMBER",
       "rdfs:comment": "CAS_NUMBER: CAS_NUMBER",
       "@id": "openBIS:hasCAS_NUMBER",
@@ -391,7 +391,7 @@
       }
     },
     {
-      "@type": "rdfs:Property",
+      "@type": "rdf:Property",
       "rdfs:label": "DESCRIPTION",
       "rdfs:comment": "DESCRIPTION: DESCRIPTION",
       "@id": "openBIS:hasDESCRIPTION",
@@ -426,7 +426,7 @@
       "owl:maxCardinality": 1
     },
     {
-      "@type": "rdfs:Property",
+      "@type": "rdf:Property",
       "rdfs:label": "IUPAC_NAME",
       "rdfs:comment": "IUPAC_NAME: IUPAC_NAME",
       "@id": "openBIS:hasIUPAC_NAME",
@@ -438,7 +438,7 @@
       }
     },
     {
-      "@type": "rdfs:Property",
+      "@type": "rdf:Property",
       "rdfs:label": "SUM_FORMULA",
       "rdfs:comment": "SUM_FORMULA: SUM_FORMULA",
       "@id": "openBIS:hasSUM_FORMULA",
@@ -450,7 +450,7 @@
       }
     },
     {
-      "@type": "rdfs:Property",
+      "@type": "rdf:Property",
       "rdfs:label": "SMILES",
       "rdfs:comment": "SMILES: SMILES",
       "@id": "openBIS:hasSMILES",
@@ -485,7 +485,7 @@
       "owl:maxCardinality": 1
     },
     {
-      "@type": "rdfs:Property",
+      "@type": "rdf:Property",
       "@id": "openBIS:hasCOLLECTION",
       "schema:rangeIncludes": {
         "@id": "openBIS:Collection"
@@ -500,7 +500,7 @@
       ]
     },
     {
-      "@type": "rdfs:Property",
+      "@type": "rdf:Property",
       "@id": "openBIS:hasPROJECT",
       "schema:rangeIncludes": {
         "@id": "openBIS:Project"
