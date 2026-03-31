@@ -138,7 +138,7 @@
     },
     {
       "@id": "file-service/eln-lims/5c/37/0f/5c370fb6-e2be-4472-ae2a-640e13b2d763/87d28f0c-7f83-449c-a20e-fb445cf968f1.png",
-      "@type": "Dataset"
+      "@type": "File"
     },
     {
       "@id": "DEFAULT",

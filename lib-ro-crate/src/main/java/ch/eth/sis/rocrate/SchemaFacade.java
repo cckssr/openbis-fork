@@ -4,11 +4,11 @@ import ch.eth.sis.rocrate.facade.*;
 import ch.eth.sis.rocrate.schemaorg.SchemaOrgInformation;
 import ch.eth.sis.rocrate.schemaorg.SchemaOrgPropertyResolver;
 import ch.eth.sis.rocrate.schemaorg.SchemaOrgReader;
+import ch.eth.sis.rocrate.util.RoCrateValueUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import edu.kit.datamanager.ro_crate.RoCrate;
 import edu.kit.datamanager.ro_crate.entities.AbstractEntity;
 import edu.kit.datamanager.ro_crate.entities.data.DataEntity;
@@ -119,7 +119,7 @@ public class SchemaFacade implements ISchemaFacade
         schemaFacade.parseEntities();
 
         List<DataEntity> fileEntities = crate.getAllDataEntities().stream()
-                .filter(x -> schemaFacade.parseMultiValued(x, "@type").contains("File"))
+                .filter(x -> RoCrateValueUtil.parseMultiValued(x, "@type").contains("File"))
                 .toList();
 
         Map<String, DataEntity> idToFileNode =
@@ -284,7 +284,7 @@ public class SchemaFacade implements ISchemaFacade
     public List<DataEntity> getFiles()
     {
         return crate.getAllDataEntities().stream()
-                .filter(x -> this.parseMultiValued(x, "@type").contains("Dataset"))
+                .filter(x -> RoCrateValueUtil.parseMultiValued(x, "@type").contains("Dataset"))
                 .collect(Collectors.toList());
     }
 
@@ -357,12 +357,13 @@ public class SchemaFacade implements ISchemaFacade
                 case "rdfs:Class" ->
                 {
                     Type myType = new Type();
-                    myType.setSubClassOf(parseMultiValued(entity, "rdfs:subClassOf"));
+                    myType.setSubClassOf(
+                            RoCrateValueUtil.parseMultiValued(entity, "rdfs:subClassOf"));
                     myType.setOntologicalAnnotations(
-                            parseMultiValued(entity, EQUIVALENT_CLASS));
+                            RoCrateValueUtil.parseMultiValued(entity, EQUIVALENT_CLASS));
                     myType.setId(resolvePrefixSingleValue(id));
                     idsToTypes.put(resolvePrefixSingleValue(id), myType);
-                    parseMultiValued(entity, OWL_RESTRICTION_PROPERTY).forEach(
+                    RoCrateValueUtil.parseMultiValued(entity, OWL_RESTRICTION_PROPERTY).forEach(
                             x -> restrictionToTypeId.put(x, myType));
 
                 }
@@ -386,11 +387,13 @@ public class SchemaFacade implements ISchemaFacade
                 rdfsProperty.setId(resolvePrefixSingleValue(id));
 
                 rdfsProperty.setOntologicalAnnotations(
-                        parseMultiValued(entity, EQUIVALENT_PROPERTY));
+                        RoCrateValueUtil.parseMultiValued(entity, EQUIVALENT_PROPERTY));
 
                 List<String> rawRange =
-                        Stream.concat(parseMultiValued(entity, rangeIdentifier).stream(),
-                                parseMultiValued(entity, "rangeIncludes").stream()).collect(
+                        Stream.concat(
+                                        RoCrateValueUtil.parseMultiValued(entity, rangeIdentifier).stream(),
+                                        RoCrateValueUtil.parseMultiValued(entity, "rangeIncludes").stream())
+                                .collect(
                                 Collectors.toList());
 
                 List<IDataType> dataTypes = rawRange.stream()
@@ -408,8 +411,10 @@ public class SchemaFacade implements ISchemaFacade
                 types.forEach(rdfsProperty::addType);
 
                 Stream<String> domain =
-                        Stream.concat(parseMultiValued(entity, domainIdentifier).stream(),
-                                parseMultiValued(entity, "domainIncludes").stream());
+                        Stream.concat(RoCrateValueUtil.parseMultiValued(entity, domainIdentifier)
+                                        .stream(),
+                                RoCrateValueUtil.parseMultiValued(entity, "domainIncludes")
+                                        .stream());
 
                 rdfsProperty.setDomainIncludes(
 
@@ -431,7 +436,7 @@ public class SchemaFacade implements ISchemaFacade
 
             if (type.equalsIgnoreCase(OWL_RESTRICTION))
             {
-                String onProperty = parseMultiValued(entity, ON_PROPERTY).get(0);
+                String onProperty = RoCrateValueUtil.parseMultiValued(entity, ON_PROPERTY).get(0);
                 int minCardinality =
                         entity.getProperty(OWL_MIN_CARDINALITY).numberValue().intValue();
 
@@ -535,7 +540,8 @@ public class SchemaFacade implements ISchemaFacade
                         if (a.getValue() instanceof HashMap<?, ?>)
                         {
                             HashMap<?, ?> hashMap = (HashMap<?, ?>) a.getValue();
-                            List<String> refs = parseMultiValued(entity, a.getKey());
+                            List<String> refs =
+                                    RoCrateValueUtil.parseMultiValued(entity, a.getKey());
                             references.put(a.getKey(), refs);
                         } else
                         {
@@ -545,7 +551,7 @@ public class SchemaFacade implements ISchemaFacade
                         }
                     } else
                     {
-                        List<String> refs = parseMultiValued(entity, a.getKey());
+                        List<String> refs = RoCrateValueUtil.parseMultiValued(entity, a.getKey());
                         references.put(a.getKey(), refs);
                     }
                 }
@@ -622,43 +628,6 @@ public class SchemaFacade implements ISchemaFacade
         Pattern placeholderPattern = Pattern.compile("^_:");
 
         return placeholderPattern.matcher(type).replaceAll(localPrefix);
-    }
-
-    private List<String> parseMultiValued(AbstractEntity dataEntity, String key)
-    {
-        JsonNode node = dataEntity.getProperty(key);
-        if (node == null)
-        {
-            return List.of();
-        }
-
-        if (node.isTextual())
-        {
-            return List.of(node.asText());
-        }
-
-        if (node instanceof ObjectNode)
-        {
-            return List.of(node.get("@id").textValue());
-        }
-        if (node instanceof ArrayNode arrayNode)
-        {
-            List<String> accumulator = new ArrayList<>();
-            arrayNode.elements().forEachRemaining(
-                    x -> {
-                        if (x.isTextual())
-                        {
-                            accumulator.add(x.asText());
-                        } else
-                        {
-                            accumulator.add(x.get("@id").textValue());
-                        }
-                    }
-            );
-            return accumulator;
-        }
-        return List.of();
-
     }
 
     private Set<String> parseTypes(AbstractEntity entity)

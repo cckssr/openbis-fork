@@ -16,7 +16,7 @@ public class FileDownloader implements IFileDownloader
 
     IFileDownloadStrategy iFileDownloadStrategy;
 
-    private final static Set<String> TYPES = Set.of("Dataset");
+    private final static Set<String> TYPES = Set.of("File");
 
     public static Function<URL, URL> getLocalMapping(int port)
     {

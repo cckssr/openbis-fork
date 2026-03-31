@@ -78,6 +78,9 @@
         ,
         {
           "@id": "openBIS:hasPROJECT"
+        },
+        {
+          "@id": "/DEFAULT/DEFAULT"
         }
       ]
     },
@@ -258,6 +261,10 @@
       "schema:rangeIncludes": {
         "@id": "openBIS:Project"
       }
+    },
+    {
+      "@id": "/DEFAULT/DEFAULT",
+      "@type": "openBIS:Project"
     }
   ]
 }

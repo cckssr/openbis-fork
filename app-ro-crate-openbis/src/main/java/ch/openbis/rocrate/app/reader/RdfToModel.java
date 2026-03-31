@@ -31,12 +31,10 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import ch.ethz.sis.openbis.generic.excel.v3.model.IFileInfo;
 import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
 import ch.openbis.rocrate.app.Constants;
-import ch.openbis.rocrate.app.reader.helper.DataTypeMatcher;
-import ch.openbis.rocrate.app.reader.helper.OpenBisStructureHelper;
-import ch.openbis.rocrate.app.reader.helper.PropertyTypeSpecialHandling;
-import ch.openbis.rocrate.app.reader.helper.SampleCodeHelper;
+import ch.openbis.rocrate.app.reader.helper.*;
 import ch.openbis.rocrate.app.writer.mapping.images.ImageExtractor;
 import edu.kit.datamanager.ro_crate.entities.AbstractEntity;
+import edu.kit.datamanager.ro_crate.entities.data.DataEntity;
 import jakarta.annotation.Nullable;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -176,7 +174,7 @@ public class RdfToModel
             }
 
             handleFiles(entry, objectIdentifiersToFiles, objectIdentifiersTOImageFiles, sample,
-                    identifiersToExternalFiles);
+                    identifiersToExternalFiles, schemaFacade);
         }
 
         Map<String, String> collect = externalIdentifierToSample.entrySet().stream()
@@ -312,7 +310,7 @@ public class RdfToModel
 
                 propertyType.setCode(code);
                 propertyType.setDescription(propertyType.getCode());
-                propertyType.setLabel(propertyType.getCode());
+                propertyType.setLabel(a.getId());
 
                 propertyType.setPermId(new PropertyTypePermId(baseCode));
                 propertyType.setDataType(dataType);
@@ -580,7 +578,7 @@ public class RdfToModel
     private static void handleFiles(IMetadataEntry metadataEntry,
             Map<ObjectIdentifier, List<IFileInfo>> res,
             Map<ObjectIdentifier, List<IFileInfo>> richTextImageFiles, Sample sample,
-            Map<AbstractEntity, Path> identifiersToExternalFiles)
+            Map<AbstractEntity, Path> identifiersToExternalFiles, SchemaFacade schemaFacade)
             throws IOException
     {
 
@@ -594,13 +592,22 @@ public class RdfToModel
                 finalMyRes.add(fileInfo);
 
         });
-        for (var a : metadataEntry.getDataEntitiesReferenced())
+
+        DirectoryTraversal directoryTraversal =
+                new DirectoryTraversal();
+        List<AbstractEntity> allFiles =
+                directoryTraversal.findAllFiles(metadataEntry.getId(),
+                        schemaFacade.getCrate(), sample).files();
+
+        for (var a : allFiles)
         {
-            if (a.getPath() != null)
+
+            if (a instanceof DataEntity && ((DataEntity) a).getPath() != null)
             {
+                DataEntity dataEntity = (DataEntity) a;
                 OpenBisModel.FileInfoPath fileInfo =
                         new OpenBisModel.FileInfoPath(sample.getIdentifier().toString(),
-                                a.getPath().toString(), a.getPath(), a.getId());
+                                dataEntity.getPath().toString(), dataEntity.getPath(), a.getId());
                 myRes.add(fileInfo);
             }
             Path downloadedPath = identifiersToExternalFiles.get(a);

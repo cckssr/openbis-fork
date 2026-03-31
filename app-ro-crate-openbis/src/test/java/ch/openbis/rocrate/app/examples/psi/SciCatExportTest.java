@@ -96,4 +96,28 @@ public class SciCatExportTest
 
     }
 
+    @Test
+    public void testSciCatCrate20250815WithMissingFiles() throws IOException
+    {
+
+        RoCrateReader roCrateFolderReader = new RoCrateReader(new FolderReader());
+        RoCrate crate = roCrateFolderReader.readCrate(INPUT);
+        SchemaFacade schemaFacade = SchemaFacade.of(crate);
+
+        List<IType> types = schemaFacade.getTypes();
+
+        Set<IMetadataEntry> entryList = new LinkedHashSet<>();
+        for (var type : types)
+        {
+            entryList.addAll(schemaFacade.getEntries(type.getId()));
+
+        }
+
+        OpenBisModel
+                openBisModel =
+                RdfToModel.convert(types, schemaFacade.getPropertyTypes(),
+                        entryList.stream().toList(), "DEFAULT",
+                        "DEFAULT", schemaFacade, Map.of());
+    }
+
 }

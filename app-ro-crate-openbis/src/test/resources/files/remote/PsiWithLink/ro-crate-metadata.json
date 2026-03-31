@@ -75,13 +75,13 @@
       "@id": "https://dacat.psi.ch/api/v3/datasets/20.500.11935%2F7f8adb54-6abe-4c02-a1ad-c9b4a6d60f97",
       "name": "PSI-2018-R2-6_segmented_cropped_volume",
       "description": "Full-volume high-resolution x-ray tomographic microscopy reconstruction of a juvenile rat lung in fresh post mortem conditions; cropped to the maximum extent of the lung structure and segmented to separate air spaces from lung tissue",
-      "@type": "Dataset"
+      "@type": "File"
     },
     {
       "@id": "https://dacat.psi.ch/api/v3/datasets/20.500.11935%2F07f633c1-7b3d-4e0e-bdce-491d57defce3",
       "name": "data_final_volume_fullresolution/PSI-2018-R2-6_full_volume",
       "description": "Full-volume high-resolution x-ray tomographic microscopy reconstruction of a juvenile rat lung in fresh post mortem conditions",
-      "@type": "Dataset"
+      "@type": "File"
     },
     {
       "@id": "_:scicatUser",
@@ -157,7 +157,7 @@
       "@id": "https://dacat.psi.ch/api/v3/datasets/20.500.11935%2F904aa555-ac63-488e-9250-0fbeb6d9267c",
       "name": "PSI-2018-R2-6_cropped_volume",
       "description": "Full-volume high-resolution x-ray tomographic microscopy reconstruction of a juvenile rat lung in fresh post mortem conditions; cropped to the maximum extent of the lung structure",
-      "@type": "Dataset"
+      "@type": "File"
     },
     {
       "@id": "_:sizeOfArchive",

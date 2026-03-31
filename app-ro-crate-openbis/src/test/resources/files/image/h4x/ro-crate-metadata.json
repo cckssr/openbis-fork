@@ -262,11 +262,11 @@
     },
     {
       "@id": "data/stuff.csv",
-      "@type": "Dataset"
+      "@type": "File"
     },
     {
       "@id": "image/test.png",
-      "@type": "Dataset"
+      "@type": "File"
     }
   ]
 }
