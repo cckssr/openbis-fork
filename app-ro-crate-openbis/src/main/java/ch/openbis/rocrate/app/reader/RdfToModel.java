@@ -198,7 +198,6 @@ public class RdfToModel
         {
             if (isProject(type) || isSpace(type))
             {
-                System.out.println("Type " + type.getId() + " is space or project, skipping");
                 continue;
             }
 
