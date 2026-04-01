@@ -35,7 +35,7 @@ public class SchemaFacade implements ISchemaFacade
 
     public static final String EQUIVALENT_CLASS = "owl:equivalentClass";
 
-    public static final String EQUIVALENT_CONCEPT = "owl:equivalentProperty";
+    public static final String EQUIVALENT_PROPERTY = "owl:equivalentProperty";
 
 
 
@@ -191,7 +191,7 @@ public class SchemaFacade implements ISchemaFacade
 
         builtProperty.addIdListProperties("schema:domainIncludes",
                 rdfsProperty.getDomain().stream().map(x -> x.getId()).collect(Collectors.toList()));
-        builtProperty.addIdListProperties(EQUIVALENT_CONCEPT,
+        builtProperty.addIdListProperties(EQUIVALENT_PROPERTY,
                 rdfsProperty.getOntologicalAnnotations());
         crate.addDataEntity(builtProperty);
         propertyTypes.put(rdfsProperty.getId(), rdfsProperty);
@@ -386,7 +386,7 @@ public class SchemaFacade implements ISchemaFacade
                 rdfsProperty.setId(resolvePrefixSingleValue(id));
 
                 rdfsProperty.setOntologicalAnnotations(
-                        parseMultiValued(entity, EQUIVALENT_CONCEPT));
+                        parseMultiValued(entity, EQUIVALENT_PROPERTY));
 
                 List<String> rawRange =
                         Stream.concat(parseMultiValued(entity, rangeIdentifier).stream(),

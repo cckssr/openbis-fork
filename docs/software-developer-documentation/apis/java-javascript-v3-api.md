@@ -4824,14 +4824,18 @@ Possible operations are:
 
     Boolean write(@NonNull Chunk[] chunks) throws Exception;
 
-    Boolean delete(@NonNull String owner, @NonNull String source) throws Exception;
+    Boolean delete(@NonNull String owner, @NonNull String source, @NotNull Boolean trash) throws Exception;
 
     Boolean copy(@NonNull String sourceOwner, @NonNull String source, @NonNull String targetOwner, @NonNull String target) throws Exception;
 
     Boolean move(@NonNull String sourceOwner, @NonNull String source, @NonNull String targetOwner, @NonNull String target) throws Exception;
 
     Boolean create(@NonNull String owner, @NonNull String source, @NonNull Boolean directory) throws Exception;
+    
+    Boolean truncate(@NonNull String owner, @NonNull String source, @NonNull Long size) throws Exception;
 
+    Boolean snapshot(@NonNull String owner, @NonNull String source) throws Exception;
+    
     FreeSpace free(@NonNull String owner, @NonNull String source) throws Exception;
 
     String hash(@NonNull String owner, @NonNull String source) throws Exception;

@@ -440,10 +440,6 @@ public class Mapper
 
     private List<String> extractSerializableList(Serializable a)
     {
-        if (a instanceof Serializable[])
-        {
-            return Arrays.stream(((Serializable[]) a)).map(x -> x.toString()).toList();
-        }
         if (a instanceof Object[])
         {
             return Arrays.stream((Object[]) a).map(x -> x.toString()).collect(Collectors.toList());
@@ -470,7 +466,7 @@ public class Mapper
             }
             case BOOLEAN ->
             {
-                return LiteralType.STRING;
+                return LiteralType.BOOLEAN;
             }
             case CONTROLLEDVOCABULARY ->
             {
