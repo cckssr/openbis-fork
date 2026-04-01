@@ -54,6 +54,7 @@ public class GetServerInformationTest extends AbstractTest
         assertEquals(result.get("openbis-version"), BuildAndEnvironmentInfo.INSTANCE.getVersion());
         assertEquals(result.get("openbis.support.email"), "openbis-support@id.ethz.ch");
         assertEquals(result.get("server-public-information.afs-server.url"), "http://localhost:8085/afs-server");
+        assertEquals(result.get("server-public-information.ro-crate-server.url"), "https://localhost:8086/openbis/open-api/ro-crate");
 
         v3api.logout(sessionToken);
     }
