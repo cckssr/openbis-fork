@@ -52,7 +52,7 @@ public class ScriptHelper extends BasicImportHelper
     private PluginPermId getScriptId(Map<String, Integer> header, List<String> values)
     {
         String script = getValueByColumnName(header, values, scriptType.getColumnName());
-        return getScriptId(header, values);
+        return new PluginPermId(script);
     }
 
     @Override
