@@ -41,6 +41,7 @@ public class SetServicePropertiesVariableAction implements PanelAction
         File installDir = GlobalInstallationContext.installDir;
 
         initialize2PT(data, isFirstTimeInstallation, installDir);
+        initializeImaging(data, isFirstTimeInstallation, installDir);
     }
 
     /**
@@ -103,6 +104,26 @@ public class SetServicePropertiesVariableAction implements PanelAction
             }
         }
 
+    }
+
+    void initializeImaging(AutomatedInstallData data,
+            boolean isFirstTimeInstallation, File installDir) {
+        if(isFirstTimeInstallation) {
+            for (String technology : GlobalInstallationContext.TECHNOLOGIES) {
+                String lowerCasedTechnology = technology.toLowerCase();
+                String technologyFlag = data.getVariable(technology);
+                if (lowerCasedTechnology.equalsIgnoreCase("imaging") && Boolean.TRUE.toString().equalsIgnoreCase(technologyFlag)) {
+                    File asServicePropertiesFile =
+                            new File(installDir, Utils.AS_PATH + Utils.SERVICE_PROPERTIES_PATH);
+                    if(asServicePropertiesFile.exists()) {
+                        String dataDir = GlobalInstallationContext.getDataDir(data);
+                        Utils.updateOrAppendProperty(asServicePropertiesFile, "debug.imaging.as.services.imaging.storageRoot.dss", dataDir + "/store");
+                        Utils.updateOrAppendProperty(asServicePropertiesFile, "debug.imaging.as.services.imaging.storageRoot.afs", dataDir + "/store");
+                    }
+                    break;
+                }
+            }
+        }
     }
 
 
