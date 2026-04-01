@@ -470,7 +470,7 @@ public class Mapper
             }
             case BOOLEAN ->
             {
-                return LiteralType.STRING;
+                return LiteralType.BOOLEAN;
             }
             case CONTROLLEDVOCABULARY ->
             {
