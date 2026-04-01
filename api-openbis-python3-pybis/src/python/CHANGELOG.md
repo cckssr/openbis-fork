@@ -1,9 +1,8 @@
-## Changes with pybis-6.9.0.0
+## Changes with pybis-6.9.1.0
 
 - Changed versioning scheme
 - Added Imaging technology beta functionalities
 - Added AFS data handling
-- Added simple RO-Crate server client
 
 ## Changes with pybis-1.37.5
 

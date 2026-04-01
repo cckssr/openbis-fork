@@ -2143,6 +2143,56 @@ unique                           False
 
 ```
 
+## AFS client
+
+**Atomic File System (AFS):** Manages the file store and File API calls (API can be found [here](java-javascript-v3-api.md#vii-afs-methods)) 
+
+Pybis implements a simple interface based on this API for communications with AFS. It can be used in following way:
+
+### Operations
+
+#### instance creation
+```python
+from pybis import Openbis, AfsClient
+
+base_url = "https://my-openbis-instance.ch/"
+openbis_instance = Openbis(base_url)
+token = openbis_instance.login('my_user', 'password')
+
+afs_url = openbis_instance.url + "/afs-server"
+
+# For self-signed certificates, use optional parameter verify=False
+afs_client = AfsClient(afs_url, token, verify=True)
+
+# checks with AFS server whether session is valid
+afs_client.is_session_valid()
+```
+
+#### basic operations
+```python
+permId = "20260122075705644-32"
+
+# list files for given entity at the root level
+file_list = afs_client.list(owner=permId, source="", recursively=False)
+
+# Write to a file
+text = "hello world!".encode("utf-8")
+file_write = afs_client.write(permId, '/test.txt', 0, len(text), text)
+
+# read file content
+file_content = afs_client.read(permId, '/test.txt', 0, 825049)
+
+# create directory
+create = afs_client.create(permId, '/test_pybis', True)
+    
+# upload files
+afs_client.upload_files(permId, '/test_pybis', ['/home/testdirUpload'])
+
+# download files
+afs_client.download_files(permId, '/', '/home/testDirDownload')
+```
+
+
 ## Best practices
 
 ### Logout

@@ -28,6 +28,7 @@ import os
 import re
 import subprocess
 import time
+import uuid
 import zlib
 from datetime import datetime
 from pathlib import Path
@@ -6010,15 +6011,16 @@ class ImagingControl:
         else:
             raise ValueError(service_response['error'])
 
-    def export_image(self, perm_id:str, image_id:int, path_to_download:str,
-                     include=None, image_format='original', archive_format="zip", resolution='original'):
+    def export_image(self, perm_id: str, image_id: int, path_to_download: str,
+                     include=None, image_format='original', archive_format="zip", resolution='original',
+                     custom_options=None):
         """Export particular image  with all its previews of imaging dataset"""
         if include is None:
             include = ['IMAGE', 'RAW_DATA']
         else:
             include = [x.upper() for x  in include]
 
-        export_config = ImagingDataSetExportConfig(archive_format, image_format, resolution, include)
+        export_config = ImagingDataSetExportConfig(archive_format, image_format, resolution, include, custom_options)
         self._export_image(perm_id, image_id, path_to_download, export_config)
 
 

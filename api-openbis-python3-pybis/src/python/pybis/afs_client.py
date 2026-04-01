@@ -145,6 +145,22 @@ class AfsClient:
             decoded = decode_chunks(content)[0]
             return decoded['data']
 
+    def delete(self, owner, source, trash=True):
+        request = {
+            "sessionToken": self._sessionToken,
+            # "interactiveSessionKey": None,
+            # "transactionManagerKey": None,
+            "method": "delete",
+            "owner": owner,
+            "source": source,
+            "trash": str(trash).lower()
+        }
+
+        with self.session.delete(self._afs_url, params=request, verify=self._verify, stream=True) as r:
+            content = r.text
+            # decoded = decode_chunks(content)[0]
+            return content
+
     def write(self, owner, source, offset, limit, data):
         params= {
             "sessionToken": self._sessionToken,
