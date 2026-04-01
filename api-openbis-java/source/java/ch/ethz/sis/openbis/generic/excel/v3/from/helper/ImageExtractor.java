@@ -102,7 +102,6 @@ public class ImageExtractor
                     "src"); // Were the image is stored, this is what should go into the HasPart
             String shortened = shorten(imageSrc).toString();
             imageElement.attr("src", shortened);
-            //TODO: Update the image source to be relative to the export zip structure instead of an openBIS ELN-LIMS URL
             images.add(shortened);
         }
         return new UpdatedDocAndReferences(doc.toString(), images);
