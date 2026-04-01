@@ -120,7 +120,7 @@
           2000,
           5000
         ],
-        "adaptor": "ch.ethz.sis.openbis.generic.server.as.plugins.imaging.adaptor.ImagingDataSetPythonAdaptor",
+        "adaptor": "ch.ethz.sis.openbis.generic.server.as.plugins.imaging.adaptor.ImagingTestAdaptor",
         "exports": [
           {
             "@id": 6,
@@ -205,7 +205,6 @@
         ],
         "metadata": { "meta_comment":  "this is an image config metadata comment"}
       },
-      "image_config": {},
       "metadata": { "meta_comment":  "this is an image metadata comment"},
       "previews": [
         {
@@ -332,7 +331,7 @@
           }
         ],
         "speeds": null,
-        "adaptor": "ch.ethz.sis.openbis.generic.server.as.plugins.imaging.adaptor.ImagingDataSetPythonAdaptor",
+        "adaptor": "ch.ethz.sis.openbis.generic.server.as.plugins.imaging.adaptor.ImagingTestAdaptor",
         "exports": [
           {
             "@id": 17,
@@ -417,7 +416,6 @@
         ],
         "metadata": { "meta_comment":  "this is an image config metadata comment"}
       },
-      "image_config": {},
       "metadata": { "meta_comment":  "this is an image metadata comment"},
       "previews": [
         {
