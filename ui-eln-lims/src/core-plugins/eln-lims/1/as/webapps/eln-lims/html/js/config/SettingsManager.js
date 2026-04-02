@@ -354,14 +354,14 @@ function SettingsManager(serverFacade) {
             }
 
              // Forced Disable RTF
-             if(isMergeGroup) { // Merge found values
+             if(isMergeGroup && targetProfile["forcedDisableRTF"]) { // Merge found values
                 targetProfile["forcedDisableRTF"] = targetProfile["forcedDisableRTF"].concat(settings["forcedDisableRTF"]).unique();
              } else { // Replaces or sets values
                 targetProfile["forcedDisableRTF"] = settings["forcedDisableRTF"];
              }
 
              // Forced Monospace Font
-             if(isMergeGroup) { // Merge found values
+             if(isMergeGroup && targetProfile["forceMonospaceFont"]) { // Merge found values
                 targetProfile["forceMonospaceFont"] = targetProfile["forceMonospaceFont"].concat(settings["forceMonospaceFont"]).unique();
              } else { // Replaces or sets values
                 targetProfile["forceMonospaceFont"] = settings["forceMonospaceFont"];
