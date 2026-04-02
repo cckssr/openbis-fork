@@ -2147,7 +2147,7 @@ unique                           False
 
 **Atomic File System (AFS):** Manages the file store and File API calls (API can be found [here](java-javascript-v3-api.md#vii-afs-methods)) 
 
-Pybis implements a simple interface based on this API for communications with AFS. It can be used in following way:
+PyBIS implements a simple interface based on this API for communications with AFS. It can be used in following way:
 
 ### Operations
 
@@ -2165,31 +2165,191 @@ afs_url = openbis_instance.url + "/afs-server"
 afs_client = AfsClient(afs_url, token, verify=True)
 
 # checks with AFS server whether session is valid
-afs_client.is_session_valid()
+is_valid = afs_client.is_session_valid()
 ```
 
-#### basic operations
+#### currently implemented functionalities
 ```python
 permId = "20260122075705644-32"
 
-# list files for given entity at the root level
+# list files for given entity at the level provided in 'source'
 file_list = afs_client.list(owner=permId, source="", recursively=False)
 
 # Write to a file
 text = "hello world!".encode("utf-8")
-file_write = afs_client.write(permId, '/test.txt', 0, len(text), text)
+file_write = afs_client.write(permId, '/test.txt', offset=0, limit=len(text), data=text)
 
 # read file content
-file_content = afs_client.read(permId, '/test.txt', 0, 825049)
+file_content = afs_client.read(permId, '/test.txt', offset=0, limit=825049)
 
 # create directory
-create = afs_client.create(permId, '/test_pybis', True)
+create = afs_client.create(permId, '/test_pybis', is_directory=True)
+
+# delete file
+delete = afs_client.delete(permId, '/test.txt', trash=True)
     
 # upload files
 afs_client.upload_files(permId, '/test_pybis', ['/home/testdirUpload'])
 
 # download files
 afs_client.download_files(permId, '/', '/home/testDirDownload')
+```
+
+## Imaging technology
+
+PyBIS implements a set of helper methods designed to interact with [OpenBIS Imaging Technology](../as-server-side-extensions/as-imaging.md)
+
+### Operations
+
+#### instance creation
+
+```python
+from pybis import Openbis, ImagingControl
+
+base_url = "https://my-openbis-instance.ch/"
+openbis_instance = Openbis(base_url)
+token = openbis_instance.login('my_user', 'password')
+
+imaging_control = ImagingControl(openbis_instance)
+
+# openbis_instance, service_name=DEFAULT_SERVICE_NAME, service_type='AS', afs_url=None
+```
+
+#### creating imaging dataset
+```python
+from pybis import ImagingDataSetPropertyConfig, ImagingDataSetImage, ImagingDataSetConfig, ImagingDataSetControl, ImagingDataSetPreview
+
+# parameters needed for data export. Required: [include, image-format, archive-format, resolution]
+exports = [ImagingDataSetControl('include', "Dropdown", values=['image', 'raw data'], multiselect=True),
+               ImagingDataSetControl('image-format', "Dropdown", values=['png', 'svg']),
+               ImagingDataSetControl('archive-format', "Dropdown", values=['zip', 'tar']),
+               ImagingDataSetControl('resolution', "Dropdown", values=['original', '150dpi', '300dpi'])
+               ]
+
+# parameters needed to generate UI, these parameters need to be handled by adapter
+inputs = [
+    ImagingDataSetControl('Channel', "Dropdown", values=['alpha', 'beta', 'gamma'], section="Data"),
+    ImagingDataSetControl('X-axis', "Range", section="Data", values_range=["0", "10", "0.01"]),
+    ImagingDataSetControl('Y-axis', "Range", section="Data", values_range=["0", "10", "0.01"]),
+    ImagingDataSetControl('Colormap', "Colormap", values=['gray', 'YlOrBr', 'viridis', 'cividis', 'inferno', 'rainbow', 'Spectral', 'RdBu', 'RdGy'])
+]
+
+
+imaging_config = ImagingDataSetConfig(
+        adaptor="my.custom.adaptor",
+        version=1.0,
+        resolutions=['original', '200x200', '2000x2000'],
+        playable=False,
+        exports=exports,
+        inputs=inputs,
+        metadata={}
+        )
+
+# Imaging dataset must contain at least one image entity, each image entity must contain at least one preview entity
+images = [ImagingDataSetImage(imaging_config,
+            previews=[ImagingDataSetPreview(preview_format="png")],
+            metadata={}
+            )]
+
+imaging_property_config = ImagingDataSetPropertyConfig(images)
+
+# create_imaging_dataset(self, dataset_type: str, config: ImagingDataSetPropertyConfig,
+#                                experiment: str, sample: str,
+#                                files: list, other_properties=None)
+imaging_control.create_imaging_dataset(
+    dataset_type="IMAGING_DATA",
+    config=imaging_property_config,
+    experiment=experiment_permId,
+    sample=sample_permId,
+    files=[path_to_file_for_upload],
+)
+
+```
+
+#### getting config
+```python
+# get_property_config(self, perm_id: str) -> ImagingDataSetPropertyConfig
+property_config = imaging_control.get_property_config("20260122075705644-32")
+
+print(len(property_config.images))
+```
+
+#### updating config
+```python
+# update_property_config(self, perm_id: str, config: ImagingDataSetPropertyConfig)
+imaging_control.update_property_config("20260122075705644-32", property_config)
+
+```
+
+#### generating preview
+
+```python
+from pybis import ImagingDataSetPreview
+
+permId = "20260122075705644-32"
+
+# config contains values for adapter to use for actual image creation
+config = {
+  "Channel": "alpha",
+  "X-axis": "5.5",
+  "Y-axis": "10",
+  "Colormap": "YlOrBr"
+}
+
+# format of generated preview
+preview_format = 'png'
+
+# index of image in the ImagingDataSetPropertyConfig of a dataset.
+# IMPORTANT: each image in this config may have different adapter configured!
+index_of_image_in_dataset_config = 0
+
+#ImagingDataSetPreview(preview_format: str, config:dict=None, metadata:dict=None, index:int=0, comment:str="", tags:list=[])
+preview = ImagingDataSetPreview(preview_format, config=config, tags=['MY_TAG'])
+
+#make_preview(perm_id: str, index: int, preview: ImagingDataSetPreview) -> ImagingDataSetPreview
+preview = imaging_control.make_preview(permId, index_of_image_in_dataset_config, preview)
+
+# After OpenBIS generates preview, its bytes will be stored in the preview.bytes as base64 encoded string
+image_data = preview.bytes
+
+import base64
+bytes = base64.b64decode(image_data)
+      
+
+# After preview has been generated, it can be updated in the OpenBIS
+property_config.images[index_of_image_in_dataset_config].add_preview(preview)
+
+imaging_control.update_property_config(permId, property_config)
+
+```
+
+#### export
+```python
+
+# export_image(perm_id: str, image_id: int, path_to_download: str,
+#                      include=None, image_format='original', archive_format="zip", resolution='original',
+#                      custom_options=None):
+imaging_control.export_image(permId, index_of_image_in_dataset, '/path/to/local/folder',
+                    include=None, image_format='original', archive_format="zip", resolution='original')
+  
+
+
+# indices of images you want to export
+img_index1 = 0
+img_index2 = 0
+img_index3 = 0
+
+# indices of previews of corresponding images you want to export
+preview_index1 = 1
+preview_index2 = 2
+preview_index3 = 1
+
+# export_previews(perm_ids:list, image_ids:list, preview_ids:list,
+#                             path_to_download:str, include=None, image_format='original',
+#                             archive_format="zip", resolution='original'):
+imaging_control.export_previews([permId1, permId2, permId3], [img_index1, img_index2, img_index3], [preview_index1, preview_index2, preview_index3], 
+                                '/path/to/local/folder', include=None, image_format='original', archive_format="zip", resolution='original')
+
 ```
 
 
