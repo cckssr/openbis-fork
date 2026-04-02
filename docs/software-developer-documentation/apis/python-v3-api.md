@@ -2212,7 +2212,6 @@ token = openbis_instance.login('my_user', 'password')
 
 imaging_control = ImagingControl(openbis_instance)
 
-# openbis_instance, service_name=DEFAULT_SERVICE_NAME, service_type='AS', afs_url=None
 ```
 
 #### creating imaging dataset
