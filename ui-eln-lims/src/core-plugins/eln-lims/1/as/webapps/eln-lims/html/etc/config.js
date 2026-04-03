@@ -67,7 +67,3 @@ setFavicons({
 var PLUGINS_CONFIGURATION = {
     extraPlugins : ["life-sciences", "flow", "microscopy", "imaging"]
 };
-
-var options = {
-    showResearchCollectionExportBuilder: false
-};

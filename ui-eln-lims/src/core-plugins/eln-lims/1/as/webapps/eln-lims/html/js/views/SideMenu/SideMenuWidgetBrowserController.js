@@ -3146,7 +3146,6 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
     _createExportsNode() {
         if (
             profile.mainMenu.showExports ||
-            options.showResearchCollectionExportBuilder ||
             profile.mainMenu.showZenodoExportBuilder
         ) {
             return {

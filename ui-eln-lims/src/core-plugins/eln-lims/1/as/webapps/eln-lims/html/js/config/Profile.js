@@ -76,7 +76,7 @@ $.extend(DefaultProfile.prototype, {
 				showVocabularyViewer : true,
 				showUserManager : true,
 				showUserProfile : true,
-				showZenodoExportBuilder : false,
+				showZenodoExportBuilder : true,
 				showBarcodes : false,
 				showChatAgent : false,
 				showDatasets : true
