@@ -483,6 +483,7 @@ def test_create_sample_type_assign_property(space):
     st.save()
 
     if st is None:
+        print("test_create_sample_type_assign_property")
         print(space.openbis.get_sample_types())
         st = space.openbis.get_sample_type(stc)
         st.save()
