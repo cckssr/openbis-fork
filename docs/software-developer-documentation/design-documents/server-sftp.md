@@ -90,6 +90,8 @@ We currently agree on implementing option 2
 ## openBIS graph unfolding challenges
 We currently agree on implementing option 2
 
+IMPORTANT !!!: `Under any case, in both options folders under parents and children folders are symlinks to the folder where an object is given its identifier.`
+
 ### Option 1: Try to show entities that could appear in different places in ONE of them
 ELN-LIMS try to follow the next rule:
 - Children Samples and DataSets ALWAYS are shown under their children folder if they belong to the same space, if not, they are shown on the space they belong to.
