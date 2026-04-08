@@ -403,7 +403,7 @@ function SettingsManager(serverFacade) {
 
 
              // Dataset Types from File Extension
-             if(isMergeGroup && targetProfile.dataSetTypeForFileNameMap) { // Merge found values
+             if(isMergeGroup && targetProfile.dataSetTypeForFileNameMap && settings.dataSetTypeForFileNameMap) { // Merge found values
                 for(var idxTp = 0; idxTp < settings.dataSetTypeForFileNameMap.length; idxTp++) {
                      targetProfile.dataSetTypeForFileNameMap.push(settings.dataSetTypeForFileNameMap[idxTp]);
                 }
