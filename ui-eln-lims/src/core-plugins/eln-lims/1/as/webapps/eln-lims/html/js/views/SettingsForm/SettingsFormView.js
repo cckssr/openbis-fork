@@ -360,7 +360,7 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 			columnName : "Property Type",
 			placeholder : "select property type",
 			options : this._settingsFormController.getForcedDisableRTFOptions(),
-			initialValues : (this._profileToEdit.forcedDisableRTF  === undefined?profile.forcedDisableRTF:this._profileToEdit.forcedDisableRTF),
+			initialValues : (this._profileToEdit.forcedDisableRTF  === undefined?[]:this._profileToEdit.forcedDisableRTF),
 		});
 	}
 
@@ -422,7 +422,7 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 			columnName : "Property Type",
 			placeholder : "select property type",
 			options : this._settingsFormController.getForcedMonospaceFontOptions(),
-			initialValues : (this._profileToEdit.forceMonospaceFont === undefined?profile.forceMonospaceFont:this._profileToEdit.forceMonospaceFont),
+			initialValues : (this._profileToEdit.forceMonospaceFont === undefined?[]:this._profileToEdit.forceMonospaceFont),
 		});
 	}
 
@@ -514,7 +514,7 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 		};
 		// add data
 		if(this._profileToEdit.dataSetTypeForFileNameMap === undefined) {
-		    this._profileToEdit.dataSetTypeForFileNameMap = profile.dataSetTypeForFileNameMap;
+		    this._profileToEdit.dataSetTypeForFileNameMap = [];
 		}
 		for (var dataSetTypeForFileName of this._profileToEdit.dataSetTypeForFileNameMap) {
 			tableModel.addRow(dataSetTypeForFileName);
