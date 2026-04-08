@@ -30,7 +30,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class RoCrateSchemaValidationTest
+public class RoCrateSchemaValidationTestFiles
 {
 
     @Test
@@ -108,7 +108,6 @@ public class RoCrateSchemaValidationTest
         propertyAssignment.setPropertyType(propertyType);
         propertyAssignment.setMandatory(false);
         entityType.setPropertyAssignments(List.of(propertyAssignment));
-
 
         OpenBisModel openBisModel =
                 new OpenBisModel(Map.of(), entityTypes, Map.of(), Map.of(), entities, Map.of(),
@@ -430,7 +429,6 @@ public class RoCrateSchemaValidationTest
         }
         entityType.setPropertyAssignments(propertyAssignments);
 
-
         OpenBisModel openBisModel =
                 new OpenBisModel(Map.of(), entityTypes, Map.of(), Map.of(), entities, Map.of(),
                         Map.of(), Map.of(), Map.of(), Map.of());
@@ -451,7 +449,6 @@ public class RoCrateSchemaValidationTest
                                     x -> x.getProperty().equals(propertyAssignmentCase.baseName + "WRONG")),
                     "Data type " + propertyAssignmentCase.dataType.name() + " with property name \"" + propertyAssignmentCase.baseName + "WRONG\" does not recognize incorrect value " + propertyAssignmentCase.incorrectValue);
         }
-
 
     }
 

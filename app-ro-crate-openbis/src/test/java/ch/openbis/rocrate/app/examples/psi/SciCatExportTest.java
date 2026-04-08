@@ -13,6 +13,7 @@ import ch.openbis.rocrate.app.reader.RdfToModel;
 import edu.kit.datamanager.ro_crate.RoCrate;
 import edu.kit.datamanager.ro_crate.reader.FolderReader;
 import edu.kit.datamanager.ro_crate.reader.RoCrateReader;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -54,7 +55,7 @@ public class SciCatExportTest
                 openBisModel =
                 RdfToModel.convert(types, schemaFacade.getPropertyTypes(),
                         entryList.stream().toList(), "DEFAULT",
-                        "DEFAULT", schemaFacade, Map.of());
+                        "DEFAULT", schemaFacade, Map.of()).openBisModel();
         Optional<IEntityType>
                 maybePublicatioNType =
                 openBisModel.getEntityTypes().values().stream().filter(x -> x.getPermId().equals(
@@ -101,7 +102,7 @@ public class SciCatExportTest
     {
 
         RoCrateReader roCrateFolderReader = new RoCrateReader(new FolderReader());
-        RoCrate crate = roCrateFolderReader.readCrate(INPUT);
+        RoCrate crate = roCrateFolderReader.readCrate(INPUT + "-missing-files");
         SchemaFacade schemaFacade = SchemaFacade.of(crate);
 
         List<IType> types = schemaFacade.getTypes();
@@ -113,11 +114,15 @@ public class SciCatExportTest
 
         }
 
-        OpenBisModel
-                openBisModel =
+        RdfToModel.ConversionResult convert =
                 RdfToModel.convert(types, schemaFacade.getPropertyTypes(),
                         entryList.stream().toList(), "DEFAULT",
                         "DEFAULT", schemaFacade, Map.of());
+
+        Assert.assertEquals(2,
+                convert.identfiersOfMissingFiles().values().stream().filter(x -> x.size() > 0)
+                        .count());
+        ;
     }
 
 }

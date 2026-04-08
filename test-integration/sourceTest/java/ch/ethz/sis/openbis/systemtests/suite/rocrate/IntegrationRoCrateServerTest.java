@@ -335,10 +335,10 @@ public class IntegrationRoCrateServerTest
         {
             LinkedHashMap<String, Object> validationResult =
                     (LinkedHashMap<String, Object>) x.get("validationResult");
-            LinkedHashMap<String, Object> entitiesToUndefinedProperties =
-                    (LinkedHashMap<String, Object>) validationResult.get(
-                            "entititesToUndefinedProperties");
-            assertEquals(2, entitiesToUndefinedProperties.size());
+            List<LinkedHashMap<String, Object>> entitiesToUndefinedProperties =
+                    (List<LinkedHashMap<String, Object>>) validationResult.get(
+                            "errors");
+            assertEquals(3, entitiesToUndefinedProperties.size());
 
             boolean isValid = (boolean) (validationResult.get("isValid"));
             assertFalse(isValid);
@@ -357,10 +357,10 @@ public class IntegrationRoCrateServerTest
         {
             LinkedHashMap<String, Object> validationResult =
                     (LinkedHashMap<String, Object>) x.get("validationResult");
-            LinkedHashMap<String, Object> wrongDataTypes =
-                    (LinkedHashMap<String, Object>) validationResult.get(
-                            "wrongDataTypes");
-            assertEquals(1, wrongDataTypes.size());
+            List<LinkedHashMap<String, Object>> wrongTypes =
+                    (List<LinkedHashMap<String, Object>>) validationResult.get(
+                            "errors");
+            assertEquals(1, wrongTypes.size());
 
             boolean isValid = (boolean) (validationResult.get("isValid"));
             assertFalse(isValid);
@@ -534,6 +534,52 @@ public class IntegrationRoCrateServerTest
         assertTrue(res.containsKey("message"));
 
     }
+
+    @Test(priority = 4)
+    public void testValidateMissingFiles()
+            throws Exception
+    {
+        Consumer<LinkedHashMap<String, Object>> assertions = x ->
+        {
+            LinkedHashMap<String, Object> validationResult =
+                    (LinkedHashMap<String, Object>) x.get("validationResult");
+
+            boolean isValid = (boolean) (validationResult.get("isValid"));
+            assertFalse(isValid);
+
+            List<LinkedHashMap<String, Object>> errors =
+                    (List<LinkedHashMap<String, Object>>) validationResult.get("errors");
+            assertEquals(1, errors.size());
+            assertEquals("MissingDataError", errors.get(0).get("errorType"));
+            assertEquals("MATERIALS/ENTRY1/Mosaic_doves_Musei_Capitolini_MC402.jpg",
+                    errors.get(0).get("path"));
+
+
+        };
+
+        testValidateAstract("entity_file_crate.zip", "application/zip", assertions);
+
+
+    }
+
+    @Test(priority = 4)
+    public void testValidateWithFile()
+            throws Exception
+    {
+        Consumer<LinkedHashMap<String, Object>> assertions = x ->
+        {
+            LinkedHashMap<String, Object> validationResult =
+                    (LinkedHashMap<String, Object>) x.get("validationResult");
+
+            boolean isValid = (boolean) (validationResult.get("isValid"));
+            assertTrue(isValid);
+        };
+
+        testValidateAstract("entity_file_crate.zip", "application/zip", assertions);
+
+    }
+
+
 
     @Test(priority = 4)
     public void testImportMalformedCrate()
@@ -1070,11 +1116,12 @@ public class IntegrationRoCrateServerTest
         request.body(new BytesRequestContent(Files.readAllBytes(file)));
 
         ContentResponse response = request.send();
+        assertEquals(202, response.getStatus());
+
         LinkedHashMap asyncJob =
                 objectMapper.readValue(response.getContentAsString(), LinkedHashMap.class);
         String jobId = asyncJob.get("jobId").toString();
 
-        assertEquals(response.getStatus(), 202);
 
         boolean done = false;
         while (!done)

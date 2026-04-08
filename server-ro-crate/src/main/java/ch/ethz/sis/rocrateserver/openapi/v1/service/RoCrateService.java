@@ -15,6 +15,7 @@ import ch.ethz.sis.rocrateserver.openapi.v1.service.params.ResultParams;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.response.AsyncJob;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.response.ErrorResponse;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.response.ImportResponse;
+import ch.ethz.sis.rocrateserver.openapi.v1.service.response.Validation.ValidationReport;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.response.result.AsyncResult;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.response.result.StatusResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -295,8 +296,10 @@ public class RoCrateService
 
             if (((ImportJob) job).isValidateOnly())
             {
+                ValidationResult validationResult =
+                        ((ImportJob) job).getResult().getValidationResult();
                 asyncResult.setValidationResult(
-                        ((ImportJob) job).getResult().getValidationResult());
+                        ValidationReport.from(validationResult));
 
             } else
             {
@@ -378,7 +381,7 @@ public class RoCrateService
                 ValidationResult result1 = ((ValidateJob) job).getResult();
                 AsyncResult asyncResult =
                         new AsyncResult(status.getStatus().toString(), List.of(), null, jobId);
-                asyncResult.setValidationResult(result1);
+                asyncResult.setValidationResult(ValidationReport.from(result1));
                 responseBuilder.entity(objectMapper.writeValueAsString(asyncResult));
                 return responseBuilder.build();
             }
@@ -394,8 +397,10 @@ public class RoCrateService
                             new AsyncResult(status.getStatus().toString(), List.of(), null,
                                     jobId
                             );
+                    ValidationResult validationResult =
+                            ((ImportJob) job).getResult().getValidationResult();
                     asyncResult.setValidationResult(
-                            ((ImportJob) job).getResult().getValidationResult());
+                            ValidationReport.from(validationResult));
                     responseBuilder.entity(objectMapper.writeValueAsString(asyncResult));
 
                 } else

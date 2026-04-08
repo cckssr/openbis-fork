@@ -7,6 +7,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyAssignment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType;
 import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
+import ch.ethz.sis.rocrateserver.openapi.v1.service.response.Validation.MissingDataError;
+import ch.openbis.rocrate.app.reader.RdfToModel;
 import ch.openbis.rocrate.app.reader.helper.DataTypeMatcher;
 
 import java.io.Serializable;
@@ -24,11 +26,15 @@ public class RoCrateSchemaValidation
     {
     }
 
-    public static ValidationResult validate(OpenBisModel openBisModel)
+    public static ValidationResult validate(RdfToModel.ConversionResult conversionResult)
+
     {
+        OpenBisModel openBisModel = conversionResult.openBisModel();
+
         Map<String, List<PropertyProblem>> entitiesToMissingProperties = new LinkedHashMap<>();
         Map<String, List<PropertyProblem>> entititesToUndefinedProperties = new LinkedHashMap<>();
         Map<String, List<PropertyProblem>> wrongDataTypes = new LinkedHashMap<>();
+        Map<String, List<MissingDataError>> missingFiles = new LinkedHashMap<>();
 
 
         for (AbstractEntityPropertyHolder entity : openBisModel.getEntities().values())
@@ -110,9 +116,25 @@ public class RoCrateSchemaValidation
 
         }
 
+        for (Map.Entry<String, List<RdfToModel.FileProblem>> keyVal : conversionResult.identfiersOfMissingFiles()
+                .entrySet())
+        {
+            List<MissingDataError> newVals = keyVal.getValue().stream()
+                    .map(x -> new MissingDataError(x.type(), x.path()))
+                    .toList();
+
+            List<MissingDataError> mapVals =
+                    missingFiles.getOrDefault(keyVal.getKey(), new ArrayList<>());
+            mapVals.addAll(newVals);
+            missingFiles.put(keyVal.getKey(), mapVals);
+
+        }
+
+
         return new ValidationResult(entitiesToMissingProperties, entititesToUndefinedProperties,
                 wrongDataTypes,
-                new ArrayList<>(openBisModel.getExternalToOpenBisIdentifiers().keySet()));
+                new ArrayList<>(openBisModel.getExternalToOpenBisIdentifiers().keySet()),
+                missingFiles);
 
     }
 

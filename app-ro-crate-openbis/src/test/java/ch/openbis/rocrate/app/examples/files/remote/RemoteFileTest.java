@@ -255,7 +255,7 @@ public class RemoteFileTest
                 openBisModel =
                 RdfToModel.convert(types, schemaFacade.getPropertyTypes(),
                         entryList.stream().toList(), "DEFAULT",
-                        "DEFAULT", schemaFacade, abstractEntityPathMap);
+                        "DEFAULT", schemaFacade, abstractEntityPathMap).openBisModel();
         List<IFileInfo> iFileInfos = openBisModel.getFiles().get(new SampleIdentifier(
                 "/DEFAULT/DEFAULT/SCHEMA_CREATIVEWORK_SCICAT_PUBLISHEDDATA_7EB141D3-11F1-47A6-9D0E-76F8832ED1B2"));
         Assert.assertFalse(iFileInfos.isEmpty());

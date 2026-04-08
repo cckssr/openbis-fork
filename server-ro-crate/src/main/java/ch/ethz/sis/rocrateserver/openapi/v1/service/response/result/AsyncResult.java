@@ -1,7 +1,7 @@
 package ch.ethz.sis.rocrateserver.openapi.v1.service.response.result;
 
-import ch.ethz.sis.rocrateserver.openapi.v1.service.helper.validation.ValidationResult;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.response.ImportResponse;
+import ch.ethz.sis.rocrateserver.openapi.v1.service.response.Validation.ValidationReport;
 import jakarta.annotation.Nullable;
 
 import java.util.List;
@@ -15,7 +15,7 @@ public class AsyncResult
 
     List<String> errors;
 
-    ValidationResult validationResult;
+    ValidationReport validationResult;
 
     ImportResponse importResponse;
 
@@ -54,13 +54,13 @@ public class AsyncResult
         this.jobId = jobId;
     }
 
-    public ValidationResult getValidationResult()
+    public ValidationReport getValidationResult()
     {
         return validationResult;
     }
 
     public void setValidationResult(
-            ValidationResult validationResult)
+            ValidationReport validationResult)
     {
         this.validationResult = validationResult;
     }

@@ -59,7 +59,17 @@ import static ch.openbis.rocrate.app.Constants.*;
 public class RdfToModel
 {
 
-    public static OpenBisModel convert(List<IType> types, List<IPropertyType> typeProperties,
+    public record ConversionResult(OpenBisModel openBisModel,
+                                   Map<String, List<FileProblem>> identfiersOfMissingFiles)
+    {
+    }
+
+    public record FileProblem(String type, String path)
+    {
+
+    }
+
+    public static ConversionResult convert(List<IType> types, List<IPropertyType> typeProperties,
             List<IMetadataEntry> entries, String fallbackSpaceCode, String fallbackProjectCode,
             SchemaFacade schemaFacade, Map<AbstractEntity, Path> identifiersToExternalFiles)
             throws IOException
@@ -165,6 +175,7 @@ public class RdfToModel
 
                         , x -> x, (x, y) -> y, LinkedHashMap::new));
 
+        Map<String, List<FileProblem>> identifierToMissingFile = new LinkedHashMap<>();
         for (IMetadataEntry entry : entries)
         {
             Sample sample = externalIdentifierToSample.get(entry.getId());
@@ -173,16 +184,22 @@ public class RdfToModel
                 continue;
             }
 
-            handleFiles(entry, objectIdentifiersToFiles, objectIdentifiersTOImageFiles, sample,
-                    identifiersToExternalFiles, schemaFacade);
+            List<FileProblem> missingFileIdentifiers =
+                    handleFiles(entry, objectIdentifiersToFiles, objectIdentifiersTOImageFiles,
+                            sample,
+                            identifiersToExternalFiles, schemaFacade);
+            identifierToMissingFile.put(entry.getId(), missingFileIdentifiers);
         }
 
         Map<String, String> collect = externalIdentifierToSample.entrySet().stream()
                 .collect(Collectors.toMap(x -> x.getKey(), x -> x.getValue().getCode()));
 
-        return new OpenBisModel(Map.of(), schema, spaces, projects, metadata, Map.of(), Map.of(),
-                collect,
-                objectIdentifiersToFiles, objectIdentifiersTOImageFiles);
+        OpenBisModel openBisModel =
+                new OpenBisModel(Map.of(), schema, spaces, projects, metadata, Map.of(), Map.of(),
+                        collect,
+                        objectIdentifiersToFiles, objectIdentifiersTOImageFiles);
+
+        return new ConversionResult(openBisModel, identifierToMissingFile);
     }
 
     private static void handleTypes(List<IType> types, Map<String, IType> IdsToTypes,
@@ -575,13 +592,14 @@ public class RdfToModel
         return res;
     }
 
-    private static void handleFiles(IMetadataEntry metadataEntry,
+    private static List<FileProblem> handleFiles(IMetadataEntry metadataEntry,
             Map<ObjectIdentifier, List<IFileInfo>> res,
             Map<ObjectIdentifier, List<IFileInfo>> richTextImageFiles, Sample sample,
             Map<AbstractEntity, Path> identifiersToExternalFiles, SchemaFacade schemaFacade)
             throws IOException
     {
 
+        List<FileProblem> identifiersWithMissingFiles = new ArrayList<>();
         List<OpenBisModel.FileInfoPath> myRes = new ArrayList<>();
 
         List<OpenBisModel.FileInfoPath> finalMyRes = myRes;
@@ -595,12 +613,16 @@ public class RdfToModel
 
         DirectoryTraversal directoryTraversal =
                 new DirectoryTraversal();
-        List<AbstractEntity> allFiles =
+        DirectoryTraversal.TraversalResult traversalResult =
                 directoryTraversal.findAllFiles(metadataEntry.getId(),
-                        schemaFacade.getCrate(), sample).files();
+                        schemaFacade.getCrate(), sample);
+        List<AbstractEntity> allFiles =
+                traversalResult.files();
+        identifiersWithMissingFiles.addAll(traversalResult.missingEntitites());
 
         for (var a : allFiles)
         {
+            Path downloadedPath = identifiersToExternalFiles.get(a);
 
             if (a instanceof DataEntity && ((DataEntity) a).getPath() != null)
             {
@@ -609,14 +631,15 @@ public class RdfToModel
                         new OpenBisModel.FileInfoPath(sample.getIdentifier().toString(),
                                 dataEntity.getPath().toString(), dataEntity.getPath(), a.getId());
                 myRes.add(fileInfo);
-            }
-            Path downloadedPath = identifiersToExternalFiles.get(a);
-            if (downloadedPath != null)
+            } else if (downloadedPath != null)
             {
                 OpenBisModel.FileInfoPath fileInfoPath =
                         new OpenBisModel.FileInfoPath(sample.getIdentifier().toString(), a.getId(),
                                 downloadedPath, a.getId());
                 myRes.add(fileInfoPath);
+            } else
+            {
+                identifiersWithMissingFiles.add(new FileProblem("File", a.getId()));
             }
 
         }
@@ -675,6 +698,7 @@ public class RdfToModel
         res.put(sample.getIdentifier(), fileRes);
 
         richTextImageFiles.put(sample.getIdentifier(), imageRes);
+        return identifiersWithMissingFiles;
     }
 
     private static void handleFilesExperiment(IMetadataEntry metadataEntry,

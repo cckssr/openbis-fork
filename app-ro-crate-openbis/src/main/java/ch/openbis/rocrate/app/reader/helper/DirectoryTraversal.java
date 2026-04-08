@@ -4,6 +4,7 @@ import ch.eth.sis.rocrate.util.RoCrateValueUtil;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyAssignment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.SemanticAnnotation;
+import ch.openbis.rocrate.app.reader.RdfToModel;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import edu.kit.datamanager.ro_crate.RoCrate;
@@ -27,7 +28,7 @@ public class DirectoryTraversal
     }
 
     public record TraversalResult(
-            List<String> missingEntitites,
+            List<RdfToModel.FileProblem> missingEntitites,
             List<AbstractEntity> files
     )
     {
@@ -41,7 +42,7 @@ public class DirectoryTraversal
         List<PropertyAssignment> hasPartProperties =
                 sample.getType().getPropertyAssignments().stream().filter(this::isPartProperty)
                         .toList(); // we only do this once. If the result is not a Dataset or a File, it's considered a metadata entity
-        List<String> missingEntityIdentifiers = new ArrayList<>();
+        List<RdfToModel.FileProblem> missingEntityIdentifiers = new ArrayList<>();
 
         List<AbstractEntity> result = new ArrayList<>();
 
@@ -62,7 +63,7 @@ public class DirectoryTraversal
             AbstractEntity entityById = crate.getEntityById(a);
             if (entityById == null)
             {
-                missingEntityIdentifiers.add(a);
+                missingEntityIdentifiers.add(new RdfToModel.FileProblem("File", a));
             } else
             {
                 open.add(entityById);
@@ -101,7 +102,7 @@ public class DirectoryTraversal
                 AbstractEntity curEntity = crate.getEntityById(linkedId);
                 if (curEntity == null)
                 {
-                    missingEntityIdentifiers.add(linkedId);
+                    missingEntityIdentifiers.add(new RdfToModel.FileProblem("File", linkedId));
                     continue;
                 }
 

@@ -80,7 +80,7 @@ public class Read
         OpenBisModel
                 openBisModel =
                 RdfToModel.convert(types, schemaFacade.getPropertyTypes(), entryList, "DEFAULT",
-                        "DEFAULT", schemaFacade, abstractEntityPathMap);
+                        "DEFAULT", schemaFacade, abstractEntityPathMap).openBisModel();
         byte[] writtenStuff = ExcelWriter.convert(ExcelWriter.Format.ZIP_EXPORT, openBisModel);
         String outPath = cmd.getOptionValue('o');
         try (FileOutputStream byteArrayOutputStream = new FileOutputStream(

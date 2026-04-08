@@ -45,7 +45,7 @@ public class CombinedExternalCrateTest
                 openBisModel =
                 RdfToModel.convert(types, schemaFacade.getPropertyTypes(),
                         entryList.stream().toList(), "DEFAULT",
-                        "DEFAULT", schemaFacade, Map.of());
+                        "DEFAULT", schemaFacade, Map.of()).openBisModel();
 
         List<IFileInfo> fileInfos =
                 openBisModel.getImageFiles().values().stream().filter(x -> !x.isEmpty()).findFirst()
