@@ -256,21 +256,21 @@ def downloadCorePlugin(url, pluginname) {
 }
 
 def sanitizeDownloadedCorePlugin(pluginname) {
-    if (pluginname != 'microscopy') {
+    if (pluginname != 'microscopy' && pluginname != 'flow') {
         return
     }
 
-    def microscopyRoot = project(':server-application-server')
-            .file("../core-plugin-openbis/targets/downloads/obit_microscopy_core_technology-release-20.x/core-plugins/microscopy")
+    def pluginRoot = project(':server-application-server')
+            .file("../core-plugin-openbis/targets/downloads/obit_${pluginname}_core_technology-release-20.x/core-plugins/${pluginname}")
 
-    if (microscopyRoot.exists() == false) {
+    if (pluginRoot.exists() == false) {
         return
     }
 
-    fileTree(dir: microscopyRoot, includes: ['*/as/initialize-master-data.py']).files.each { scriptFile ->
+    fileTree(dir: pluginRoot, includes: ['*/as/initialize-master-data.py']).files.each { scriptFile ->
         def script = scriptFile.getText('UTF-8')
         def sanitizedScript = script.replaceFirst(
-                /(?ms)# ==============================================================================\s*#\s*# FILE FORMATS\s*#\s*# ==============================================================================\s*# JPG file format\s*file_type_JPG = tr\.getOrCreateNewFileFormatType\('JPG'\)\s*file_type_JPG\.setDescription\(None\)\s*# PNG file format\s*file_type_PNG = tr\.getOrCreateNewFileFormatType\('PNG'\)\s*file_type_PNG\.setDescription\(None\)\s*# UNKNOWN file format\s*file_type_UNKNOWN = tr\.getOrCreateNewFileFormatType\('UNKNOWN'\)\s*file_type_UNKNOWN\.setDescription\('Unknown file format'\)\s*/,
+                /(?ms)# ==============================================================================\s*#\s*# FILE FORMATS\s*#\s*# ==============================================================================\s*.*?(?=\n# ======================================================================)/,
                 '')
         if (sanitizedScript != script) {
             println "Sanitized obsolete file-format API calls in ${scriptFile}"
