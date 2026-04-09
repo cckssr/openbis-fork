@@ -4459,6 +4459,14 @@ WHERE mate_prop_id IS NOT NULL;
 DELETE FROM material_properties
 WHERE mate_prop_id IS NOT NULL;
 
+UPDATE property_types
+SET maty_prop_id = NULL
+WHERE maty_prop_id IS NOT NULL;
+
+DELETE FROM events WHERE entity_type = 'MATERIAL';
+
+DELETE FROM property_types WHERE daty_id IN (SELECT id FROM data_types WHERE code = 'MATERIAL');
+
 DELETE FROM material_properties;
 
 UPDATE experiments

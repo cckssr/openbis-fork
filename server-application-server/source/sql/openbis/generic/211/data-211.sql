@@ -136,16 +136,6 @@ insert into data_types
 (id
  ,code
  ,description)
- values
- (nextval('DATA_TYPE_ID_SEQ')
- ,'UNUSED'
- ,'Deprecated - do not use'
-);
-
-insert into data_types
-(id
- ,code
- ,description)
  values 
  (nextval('DATA_TYPE_ID_SEQ')
  ,'HYPERLINK'

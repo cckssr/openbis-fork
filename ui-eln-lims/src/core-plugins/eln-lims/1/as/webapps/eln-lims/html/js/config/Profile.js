@@ -326,8 +326,8 @@ $.extend(DefaultProfile.prototype, {
 
 		this.searchDomains = [ { "@id" : -1, "@type" : "GobalSearch", label : "Global", name : "global"}];
 
-		//Ending in "METHODS", "STORAGE", "STOCK_CATALOG"
-		this.inventorySpacesPostFixes = ["METHODS", "STORAGE", "STOCK_CATALOG"];
+		//Ending in "MATERIALS", "METHODS", "STORAGE", "STOCK_CATALOG"
+		this.inventorySpacesPostFixes = ["MATERIALS", "METHODS", "STORAGE", "STOCK_CATALOG"];
 		this.inventorySpaces = [];
 		//Ending in "ELN_SETTINGS", "STOCK_ORDERS"
 		this.inventorySpacesReadOnlyPostFixes = ["ELN_SETTINGS", "STOCK_ORDERS", "PUBLICATIONS"];

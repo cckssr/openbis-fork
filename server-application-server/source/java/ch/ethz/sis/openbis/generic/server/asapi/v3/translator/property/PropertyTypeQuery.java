@@ -30,7 +30,7 @@ import net.lemnik.eodsql.Select;
  */
 public interface PropertyTypeQuery extends ObjectQuery
 {
-    @Select(sql = "select pt.*, dt.code as data_type from property_types pt, data_types dt where pt.daty_id = dt.id and pt.id = any(?{1}) and dt.code != 'UNUSED'", parameterBindings = {
+    @Select(sql = "select pt.*, dt.code as data_type from property_types pt, data_types dt where pt.daty_id = dt.id and pt.id = any(?{1})", parameterBindings = {
             LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public List<PropertyTypeRecord> getPropertyTypes(LongSet propertyTypeIds);
 

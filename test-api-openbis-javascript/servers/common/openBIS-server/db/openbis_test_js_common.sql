@@ -14657,26 +14657,57 @@ WHERE mate_prop_id IS NOT NULL;
 DELETE FROM public.material_properties
 WHERE mate_prop_id IS NOT NULL;
 
+UPDATE public.property_types
+SET maty_prop_id = NULL
+WHERE maty_prop_id IS NOT NULL;
+
+UPDATE public.data_set_properties_history
+SET material = NULL
+WHERE material IS NOT NULL;
+
+UPDATE public.experiment_properties_history
+SET material = NULL
+WHERE material IS NOT NULL;
+
+UPDATE public.sample_properties_history
+SET material = NULL
+WHERE material IS NOT NULL;
+
 DELETE FROM public.material_properties;
 DELETE FROM public.material_properties_history;
 
-DO $$
-BEGIN
-    IF EXISTS (
-        SELECT 1
-        FROM information_schema.columns
-        WHERE table_schema = 'public'
-          AND table_name = 'experiments_all'
-          AND column_name = 'mate_id_study_object'
-    ) THEN
-        EXECUTE 'UPDATE public.experiments_all SET mate_id_study_object = NULL WHERE mate_id_study_object IS NOT NULL';
-    END IF;
-END
-$$;
+UPDATE public.experiments_all
+SET mate_id_study_object = NULL
+WHERE mate_id_study_object IS NOT NULL;
+
+DELETE FROM public.metaproject_assignments_all
+WHERE mate_id IS NOT NULL;
+
+DELETE FROM public.events
+WHERE entity_type = 'MATERIAL';
+
+DELETE FROM public.events_search
+WHERE entity_type = 'MATERIAL';
+
+DELETE FROM public.queries
+WHERE query_type = 'MATERIAL';
+
+DELETE FROM public.scripts
+WHERE entity_kind = 'MATERIAL';
+
+DELETE FROM public.semantic_annotations
+WHERE prty_id IN (
+    SELECT id
+    FROM public.property_types
+    WHERE daty_id = (SELECT id FROM public.data_types WHERE code = 'MATERIAL')
+);
 
 DELETE FROM public.materials;
 DELETE FROM public.material_type_property_types;
 DELETE FROM public.material_types;
+
+DELETE FROM public.property_types
+WHERE daty_id IN (SELECT id FROM public.data_types WHERE code = 'MATERIAL');
 
 SELECT 'after removing materials' AS debug_msg;
 SELECT count(*) AS materials_after FROM public.materials;
