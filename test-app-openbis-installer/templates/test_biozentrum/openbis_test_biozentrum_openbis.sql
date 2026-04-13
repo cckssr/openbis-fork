@@ -5898,13 +5898,9 @@ WHERE mate_prop_id IS NOT NULL;
 DELETE FROM material_properties
 WHERE mate_prop_id IS NOT NULL;
 
-DELETE FROM material_properties_history;
-
 UPDATE property_types
 SET maty_prop_id = NULL
 WHERE maty_prop_id IS NOT NULL;
-
-DELETE FROM events WHERE entity_type = 'MATERIAL';
 
 DELETE FROM queries WHERE query_type = 'MATERIAL';
 

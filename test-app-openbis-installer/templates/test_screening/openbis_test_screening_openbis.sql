@@ -4663,6 +4663,4 @@ DELETE FROM material_types;
 SELECT 'after removing materials' AS debug_msg;
 SELECT count(*) AS materials_after FROM materials;
 
-
-DELETE FROM events WHERE entity_type = 'MATERIAL';
 DELETE FROM property_types WHERE daty_id IN (SELECT id FROM data_types WHERE code = 'MATERIAL');
