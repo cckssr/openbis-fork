@@ -1,10 +1,12 @@
 package ch.ethz.sis.openbis.generic.excel.v3.to;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.entity.AbstractEntityPropertyHolder;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.ObjectIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.Vocabulary;
+import ch.ethz.sis.openbis.generic.excel.v3.model.IFileInfo;
 import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
 import ch.ethz.sis.openbis.generic.excel.v3.to.helper.*;
 import ch.ethz.sis.openbis.generic.excel.v3.to.helper.longvals.RowWriteResult;
@@ -142,9 +144,10 @@ public class ExcelWriter
                             final BufferedOutputStream bos = new BufferedOutputStream(zos);
                     )
                     {
-                        for (var objectAndFileInfo : openBisModel.getFiles().entrySet())
+                        for (Map.Entry<ObjectIdentifier, List<IFileInfo>> objectAndFileInfo : openBisModel.getFiles()
+                                .entrySet())
                         {
-                            for (var file : objectAndFileInfo.getValue())
+                            for (IFileInfo file : objectAndFileInfo.getValue())
                             {
                                 AbstractEntityPropertyHolder entity =
                                         openBisModel.getEntities().get(objectAndFileInfo.getKey());
@@ -156,9 +159,10 @@ public class ExcelWriter
 
                             }
                         }
-                        for (var objectAndFileInfo : openBisModel.getImageFiles().entrySet())
+                        for (Map.Entry<ObjectIdentifier, List<IFileInfo>> objectAndFileInfo : openBisModel.getImageFiles()
+                                .entrySet())
                         {
-                            for (var file : objectAndFileInfo.getValue())
+                            for (IFileInfo file : objectAndFileInfo.getValue())
                             {
                                 ZipEntry zipEntry = new ZipEntry(file.originalPath());
                                 zos.putNextEntry(zipEntry);

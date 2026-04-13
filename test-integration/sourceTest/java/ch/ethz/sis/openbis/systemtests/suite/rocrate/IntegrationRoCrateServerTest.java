@@ -575,7 +575,7 @@ public class IntegrationRoCrateServerTest
             assertTrue(isValid);
         };
 
-        testValidateAstract("entity_file_crate.zip", "application/zip", assertions);
+        testValidateAstract("collection_file_crate.zip", "application/zip", assertions);
 
     }
 

@@ -9,6 +9,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.ExperimentType;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.Project;
@@ -583,8 +584,19 @@ public class RdfToModel
 
             } else if (entry.getTypes().contains(GRAPH_ID_Collection))
             {
-                objectIdentifier = new ExperimentIdentifier(entry.getId());
+                ExperimentIdentifier identifier = new ExperimentIdentifier(entry.getId());
+                objectIdentifier = identifier;
                 handleFilesExperiment(entry, objectIdentifier, objectIdentifiersToFiles);
+                Experiment experiment = new Experiment();
+                {
+                    ExperimentFetchOptions experimentFetchOptions = new ExperimentFetchOptions();
+                    experimentFetchOptions.withProject();
+                    experiment.setFetchOptions(experimentFetchOptions);
+                }
+
+                experiment.setIdentifier(identifier);
+
+                res.add(experiment);
 
             }
 
