@@ -46,13 +46,13 @@ public class DataStoreServerApiLogger extends AbstractServerLogger implements
     @Override
     public int getMajorVersion()
     {
-        return 0;
+        return MAJOR_VERSION;
     }
 
     @Override
     public int getMinorVersion()
     {
-        return 0;
+        return MINOR_VERSION;
     }
 
     @Override

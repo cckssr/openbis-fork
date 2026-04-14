@@ -54,6 +54,10 @@ public interface IDataStoreServerApi extends IRpcService
 
     public static final String JSON_SERVICE_URL = SERVICE_URL + ".json";
 
+    public static final int MAJOR_VERSION = 7;
+
+    public static final int MINOR_VERSION = 0;
+
     /**
      * Searches for metadata of data set files basing on the provided {@code DataSetFileSearchCriteria}.
      * <p>

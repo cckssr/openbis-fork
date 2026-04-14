@@ -292,6 +292,10 @@ public interface IApplicationServerApi extends IRpcService
 
     public static final String JSON_SERVICE_URL = SERVICE_URL + ".json";
 
+    public static final int MAJOR_VERSION = 7;
+
+    public static final int MINOR_VERSION = 0;
+
     /**
      * Authenticates a user basing on the provided user id and password. If the authentication is successful, then returns a session token. Otherwise
      * returns null.
