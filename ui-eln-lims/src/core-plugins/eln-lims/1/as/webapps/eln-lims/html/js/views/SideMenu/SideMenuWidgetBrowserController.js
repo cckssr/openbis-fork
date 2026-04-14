@@ -3379,7 +3379,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
             rootable: true,
             view: "showSpacePage",
             viewData: space.getCode(),
-            sortings: this.SORTINGS_BY_NAME_AND_REGISTRATION_DATE,
+            sortings: this.SORTINGS_BY_CODE_AND_REGISTRATION_DATE,
             icon: IconUtil.getNavigationIcon(this.TYPE_SPACE, { isHomeSpace: isHomeSpace })
         }
     }
