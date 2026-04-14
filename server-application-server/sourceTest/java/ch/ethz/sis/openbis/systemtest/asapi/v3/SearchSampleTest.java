@@ -3503,27 +3503,38 @@ public class SearchSampleTest extends AbstractSampleTest
         // Specific property criterion
         final SampleSearchCriteria criteria = new SampleSearchCriteria();
         criteria.withOrOperator();
-        criteria.withStringProperty(propertyType.getPermId()).thatContains("XML Developer's");
-
+        criteria.withProperty(propertyType.getPermId()).thatContains("XML Developer's");
         testSearch(TEST_USER, criteria, 1);
 
-        // Any string property criterion
-        final SampleSearchCriteria anyCriteria = new SampleSearchCriteria();
-        anyCriteria.withOrOperator();
-        anyCriteria.withAnyStringProperty().thatContains("XML Developer's");
+        // Specific string property criterion, should throw an exception.
+        final SampleSearchCriteria stringPropertyCriteria = new SampleSearchCriteria();
+        stringPropertyCriteria.withOrOperator();
+        stringPropertyCriteria.withStringProperty(propertyType.getPermId())
+                .thatContains("XML Developer's");
+        testSearchWithExpectedException(TEST_USER, stringPropertyCriteria);
 
-        testSearch(TEST_USER, anyCriteria, 1);
+        // Any string property criterion
+        final SampleSearchCriteria anyStringPropertyCriteria = new SampleSearchCriteria();
+        anyStringPropertyCriteria.withOrOperator();
+        anyStringPropertyCriteria.withAnyStringProperty().thatContains("XML Developer's");
+        testSearch(TEST_USER, anyStringPropertyCriteria, 0);
+
+        // Any property criterion
+        final SampleSearchCriteria anyPropertyCriteria = new SampleSearchCriteria();
+        anyPropertyCriteria.withOrOperator();
+        anyPropertyCriteria.withAnyProperty().thatContains("XML Developer's");
+        testSearch(TEST_USER, anyPropertyCriteria, 0);
 
         // Any field criterion
         final SampleSearchCriteria anyFieldCriteria = new SampleSearchCriteria();
         anyFieldCriteria.withOrOperator();
         anyFieldCriteria.withAnyField().thatContains("XML Developer's");
-
-        testSearch(TEST_USER, anyFieldCriteria, 1);
+        testSearch(TEST_USER, anyFieldCriteria, 0);
 
         v3api.logout(sessionToken);
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testSearchWithJsonPropertyThatContains()
     {
@@ -3546,23 +3557,33 @@ public class SearchSampleTest extends AbstractSampleTest
         // Specific property criterion
         final SampleSearchCriteria criteria = new SampleSearchCriteria();
         criteria.withOrOperator();
-        criteria.withStringProperty(propertyType.getPermId()).thatEquals("JSON Developer's");
-
+        criteria.withProperty(propertyType.getPermId()).thatContains("JSON Developer's");
         testSearch(TEST_USER, criteria, 1);
 
-        // Any string property criterion
-        final SampleSearchCriteria anyCriteria = new SampleSearchCriteria();
-        anyCriteria.withOrOperator();
-        anyCriteria.withAnyStringProperty().thatEquals("JSON Developer's");
+        // Specific string property criterion, should throw an exception.
+        final SampleSearchCriteria stringPropertyCriteria = new SampleSearchCriteria();
+        stringPropertyCriteria.withOrOperator();
+        stringPropertyCriteria.withStringProperty(propertyType.getPermId())
+                .thatContains("JSON Developer's");
+        testSearchWithExpectedException(TEST_USER, stringPropertyCriteria);
 
-        testSearch(TEST_USER, anyCriteria, 1);
+        // Any string property criterion
+        final SampleSearchCriteria anyStringPropertyCriteria = new SampleSearchCriteria();
+        anyStringPropertyCriteria.withOrOperator();
+        anyStringPropertyCriteria.withAnyStringProperty().thatContains("JSON Developer's");
+        testSearch(TEST_USER, anyStringPropertyCriteria, 0);
+
+        // Any property criterion
+        final SampleSearchCriteria anyPropertyCriteria = new SampleSearchCriteria();
+        anyPropertyCriteria.withOrOperator();
+        anyPropertyCriteria.withAnyProperty().thatContains("JSON Developer's");
+        testSearch(TEST_USER, anyPropertyCriteria, 0);
 
         // Any field criterion
         final SampleSearchCriteria anyFieldCriteria = new SampleSearchCriteria();
         anyFieldCriteria.withOrOperator();
-        anyFieldCriteria.withAnyField().thatEquals("JSON Developer's");
-
-        testSearch(TEST_USER, anyFieldCriteria, 1);
+        anyFieldCriteria.withAnyField().thatContains("JSON Developer's");
+        testSearch(TEST_USER, anyFieldCriteria, 0);
 
         v3api.logout(sessionToken);
     }
@@ -3952,6 +3973,23 @@ public class SearchSampleTest extends AbstractSampleTest
         List<Sample> samples = searchSamples(sessionToken, criteria, new SampleFetchOptions());
         assertEquals(samples.size(), expectedCount);
         v3api.logout(sessionToken);
+    }
+
+    private void testSearchWithExpectedException(final String user,
+            final SampleSearchCriteria criteria)
+    {
+        final String sessionToken = v3api.login(user, PASSWORD);
+        try
+        {
+            searchSamples(sessionToken, criteria, new SampleFetchOptions());
+            fail();
+        } catch (Exception e)
+        {
+            // Exception expected.
+        } finally
+        {
+            v3api.logout(sessionToken);
+        }
     }
 
     private List<Sample> searchSamples(String sessionToken, SampleSearchCriteria criteria, SampleFetchOptions fetchOptions)
