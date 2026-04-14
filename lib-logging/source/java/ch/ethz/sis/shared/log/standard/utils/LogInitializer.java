@@ -186,7 +186,7 @@ public class LogInitializer
         LoggerDiagnostics.info("No external config found. Initialization complete with defaults.");
     }
 
-    public static void configureFromURL(final URL url)
+    public static synchronized void configureFromURL(final URL url)
     {
         LoggerDiagnostics.info("configureFromURL(" + url + ")");
         try
@@ -206,7 +206,7 @@ public class LogInitializer
         System.out.printf("Configured from URL '%s' (no watching)%n", url);
     }
 
-    public static void configureFromFile(File logFile)
+    public static synchronized void configureFromFile(File logFile)
     {
         if (!logFile.getName().endsWith(".properties")) {
             String msg = String.format(
@@ -225,7 +225,7 @@ public class LogInitializer
         configureFromFile(logFile, null);
     }
 
-    public static void configureFromFile(File logFileParam, List<String> loggersToInitialize)
+    public static synchronized void configureFromFile(File logFileParam, List<String> loggersToInitialize)
     {
         LoggerDiagnostics.info("configureFromFile(loggers override) called.");
         File logFile = logFileParam;
@@ -686,7 +686,7 @@ public class LogInitializer
      * May be needed for some circumstances where an external
      * lib may reset the JUL
      */
-    public static void forceReinit() {
+    public static synchronized void forceReinit() {
         initialized = false;
         reInitCalled = true;
         LoggerDiagnostics.info("forceReinit() called.");
