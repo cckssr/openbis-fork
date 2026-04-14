@@ -115,7 +115,7 @@
         "@id": "scicat:PublishedData"
       },
       "@id": "scicat:scicatUser",
-      "@type": "rdfs:Property"
+      "@type": "rdf:Property"
     },
     {
       "identifier": "10.16907/4b55cbae-ac98-445a-a15e-1534b2a8b01f",
@@ -153,7 +153,7 @@
         "@id": "scicat:PublishedData"
       },
       "@id": "scicat:sizeOfArchive",
-      "@type": "rdfs:Property"
+      "@type": "rdf:Property"
     },
     {
       "rangeIncludes": {
@@ -166,7 +166,7 @@
         "@id": "https://schema.datacite.org/meta/kernel-4/metadata.xsd#relatedIdentifer"
       },
       "@id": "scicat:relatedPublications",
-      "@type": "rdfs:Property"
+      "@type": "rdf:Property"
     },
     {
       "rangeIncludes": {
@@ -176,7 +176,7 @@
         "@id": "scicat:PublishedData"
       },
       "@id": "scicat:numberOfFiles",
-      "@type": "rdfs:Property"
+      "@type": "rdf:Property"
     },
     {
       "name": "Oleksandr Yefanov",
