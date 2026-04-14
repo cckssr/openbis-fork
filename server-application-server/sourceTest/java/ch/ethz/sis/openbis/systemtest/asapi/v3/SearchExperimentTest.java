@@ -31,6 +31,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.SampleCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.TagCode;
@@ -1737,6 +1738,54 @@ public class SearchExperimentTest extends AbstractExperimentTest
     }
 
     @Test
+    public void testSearchWithHyperlinkPropertyThatContains()
+    {
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        final PropertyTypePermId propertyType = createAPropertyType(sessionToken, DataType.HYPERLINK);
+        final EntityTypePermId sampleType = createAnExperimentType(sessionToken, false, 
+                propertyType);
+        final ExperimentCreation experimentCreation = new ExperimentCreation();
+        experimentCreation.setCode("XML_TEST");
+        experimentCreation.setProjectId(new ProjectIdentifier("/CISD/DEFAULT"));
+        experimentCreation.setTypeId(sampleType);
+        experimentCreation.setProperty(propertyType.getPermId(), "http://example.com/test");
+        v3api.createExperiments(sessionToken, Collections.singletonList(experimentCreation));
+
+        // Specific property criterion
+        final ExperimentSearchCriteria criteria = new ExperimentSearchCriteria();
+        criteria.withOrOperator();
+        criteria.withProperty(propertyType.getPermId()).thatContains("example.com");
+        testSearch(TEST_USER, criteria, 1);
+
+        // Specific string property criterion, should throw an exception.
+        final ExperimentSearchCriteria stringPropertyCriteria = new ExperimentSearchCriteria();
+        stringPropertyCriteria.withOrOperator();
+        stringPropertyCriteria.withStringProperty(propertyType.getPermId())
+                .thatContains("example.com");
+        testSearchWithExpectedException(TEST_USER, stringPropertyCriteria);
+
+        // Any string property criterion
+        final ExperimentSearchCriteria anyStringPropertyCriteria = new ExperimentSearchCriteria();
+        anyStringPropertyCriteria.withOrOperator();
+        anyStringPropertyCriteria.withAnyStringProperty().thatContains("example.com");
+        testSearch(TEST_USER, anyStringPropertyCriteria, 0);
+
+        // Any property criterion
+        final ExperimentSearchCriteria anyPropertyCriteria = new ExperimentSearchCriteria();
+        anyPropertyCriteria.withOrOperator();
+        anyPropertyCriteria.withAnyProperty().thatContains("example.com");
+        testSearch(TEST_USER, anyPropertyCriteria, 0);
+
+        // Any field criterion
+        final ExperimentSearchCriteria anyFieldCriteria = new ExperimentSearchCriteria();
+        anyFieldCriteria.withOrOperator();
+        anyFieldCriteria.withAnyField().thatContains("example.com");
+        testSearch(TEST_USER, anyFieldCriteria, 0);
+
+        v3api.logout(sessionToken);
+    }
+    
+    @Test
     public void testSearchWithXmlPropertyThatContains()
     {
         final String sessionToken = v3api.login(TEST_USER, PASSWORD);
@@ -1761,23 +1810,33 @@ public class SearchExperimentTest extends AbstractExperimentTest
         // Specific property criterion
         final ExperimentSearchCriteria criteria = new ExperimentSearchCriteria();
         criteria.withOrOperator();
-        criteria.withStringProperty(propertyType.getPermId()).thatContains("XML Developer's");
-
+        criteria.withProperty(propertyType.getPermId()).thatContains("XML Developer's");
         testSearch(TEST_USER, criteria, 1);
 
-        // Any string property criterion
-        final ExperimentSearchCriteria anyCriteria = new ExperimentSearchCriteria();
-        anyCriteria.withOrOperator();
-        anyCriteria.withAnyStringProperty().thatContains("XML Developer's");
+        // Specific string property criterion, should throw an exception.
+        final ExperimentSearchCriteria stringPropertyCriteria = new ExperimentSearchCriteria();
+        stringPropertyCriteria.withOrOperator();
+        stringPropertyCriteria.withStringProperty(propertyType.getPermId())
+                .thatContains("XML Developer's");
+        testSearchWithExpectedException(TEST_USER, stringPropertyCriteria);
 
-        testSearch(TEST_USER, anyCriteria, 1);
+        // Any string property criterion
+        final ExperimentSearchCriteria anyStringPropertyCriteria = new ExperimentSearchCriteria();
+        anyStringPropertyCriteria.withOrOperator();
+        anyStringPropertyCriteria.withAnyStringProperty().thatContains("XML Developer's");
+        testSearch(TEST_USER, anyStringPropertyCriteria, 0);
+
+        // Any property criterion
+        final ExperimentSearchCriteria anyPropertyCriteria = new ExperimentSearchCriteria();
+        anyPropertyCriteria.withOrOperator();
+        anyPropertyCriteria.withAnyProperty().thatContains("XML Developer's");
+        testSearch(TEST_USER, anyPropertyCriteria, 0);
 
         // Any field criterion
         final ExperimentSearchCriteria anyFieldCriteria = new ExperimentSearchCriteria();
         anyFieldCriteria.withOrOperator();
         anyFieldCriteria.withAnyField().thatContains("XML Developer's");
-
-        testSearch(TEST_USER, anyFieldCriteria, 1);
+        testSearch(TEST_USER, anyFieldCriteria, 0);
 
         v3api.logout(sessionToken);
     }
@@ -1805,23 +1864,33 @@ public class SearchExperimentTest extends AbstractExperimentTest
         // Specific property criterion
         final ExperimentSearchCriteria criteria = new ExperimentSearchCriteria();
         criteria.withOrOperator();
-        criteria.withStringProperty(propertyType.getPermId()).thatEquals("JSON Developer's");
-
+        criteria.withProperty(propertyType.getPermId()).thatContains("JSON Developer's");
         testSearch(TEST_USER, criteria, 1);
 
-        // Any string property criterion
-        final ExperimentSearchCriteria anyCriteria = new ExperimentSearchCriteria();
-        anyCriteria.withOrOperator();
-        anyCriteria.withAnyStringProperty().thatEquals("JSON Developer's");
+        // Specific string property criterion, should throw an exception.
+        final ExperimentSearchCriteria stringPropertyCriteria = new ExperimentSearchCriteria();
+        stringPropertyCriteria.withOrOperator();
+        stringPropertyCriteria.withStringProperty(propertyType.getPermId())
+                .thatContains("JSON Developer's");
+        testSearchWithExpectedException(TEST_USER, stringPropertyCriteria);
 
-        testSearch(TEST_USER, anyCriteria, 1);
+        // Any string property criterion
+        final ExperimentSearchCriteria anyStringPropertyCriteria = new ExperimentSearchCriteria();
+        anyStringPropertyCriteria.withOrOperator();
+        anyStringPropertyCriteria.withAnyStringProperty().thatContains("JSON Developer's");
+        testSearch(TEST_USER, anyStringPropertyCriteria, 0);
+
+        // Any property criterion
+        final ExperimentSearchCriteria anyPropertyCriteria = new ExperimentSearchCriteria();
+        anyPropertyCriteria.withOrOperator();
+        anyPropertyCriteria.withAnyProperty().thatContains("JSON Developer's");
+        testSearch(TEST_USER, anyPropertyCriteria, 0);
 
         // Any field criterion
         final ExperimentSearchCriteria anyFieldCriteria = new ExperimentSearchCriteria();
         anyFieldCriteria.withOrOperator();
-        anyFieldCriteria.withAnyField().thatEquals("JSON Developer's");
-
-        testSearch(TEST_USER, anyFieldCriteria, 1);
+        anyFieldCriteria.withAnyField().thatContains("JSON Developer's");
+        testSearch(TEST_USER, anyFieldCriteria, 0);
 
         v3api.logout(sessionToken);
     }
@@ -1950,6 +2019,23 @@ public class SearchExperimentTest extends AbstractExperimentTest
         List<Experiment> experiments = searchExperiments(sessionToken, criteria, new ExperimentFetchOptions());
 
         assertEquals(experiments.size(), expectedCount);
+    }
+
+    private void testSearchWithExpectedException(final String user,
+            final ExperimentSearchCriteria criteria)
+    {
+        final String sessionToken = v3api.login(user, PASSWORD);
+        try
+        {
+            searchExperiments(sessionToken, criteria, new ExperimentFetchOptions());
+            fail();
+        } catch (Exception e)
+        {
+            // Exception expected.
+        } finally
+        {
+            v3api.logout(sessionToken);
+        }
     }
 
     private List<Experiment> searchExperiments(String sessionToken, ExperimentSearchCriteria criteria,

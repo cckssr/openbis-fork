@@ -99,7 +99,9 @@ public class AnyPropertySearchConditionTranslator implements IConditionTranslato
                             valuesTableAlias);
                 }
 
-                sqlBuilder.append(RP);
+                sqlBuilder.append(RP).append(SP).append(AND).append(SP);
+
+                TranslatorUtils.appendDataTypesExclusionFilter(tableMapper, sqlBuilder, valuesTableAlias);
             } else
             {
                 appendTsVectorMatch(sqlBuilder, criterion.getFieldValue(),
