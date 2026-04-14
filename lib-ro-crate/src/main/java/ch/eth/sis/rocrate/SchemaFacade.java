@@ -280,13 +280,6 @@ public class SchemaFacade implements ISchemaFacade
         return null;
     }
 
-    @Override
-    public List<DataEntity> getFiles()
-    {
-        return crate.getAllDataEntities().stream()
-                .filter(x -> RoCrateValueUtil.parseMultiValued(x, "@type").contains("Dataset"))
-                .collect(Collectors.toList());
-    }
 
     private boolean matchClasses(String queryClassId, IMetadataEntry entry)
     {
@@ -471,7 +464,8 @@ public class SchemaFacade implements ISchemaFacade
         List<AbstractEntity> entities = new ArrayList<>();
         entities.addAll(crate.getAllDataEntities());
         entities.addAll(crate.getAllContextualEntities());
-        List<DataEntity> allDataEntities = getFiles();
+        List<DataEntity> allDataEntities =
+                crate.getAllDataEntities().stream().collect(Collectors.toList());
         for (AbstractEntity entity : entities)
         {
 
