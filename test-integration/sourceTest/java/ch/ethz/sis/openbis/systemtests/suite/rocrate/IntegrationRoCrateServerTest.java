@@ -553,11 +553,9 @@ public class IntegrationRoCrateServerTest
             assertEquals("MissingDataError", errors.get(0).get("errorType"));
             assertEquals("MATERIALS/ENTRY1/Mosaic_doves_Musei_Capitolini_MC402.jpg",
                     errors.get(0).get("path"));
-
-
         };
 
-        testValidateAstract("entity_file_crate.zip", "application/zip", assertions);
+        testValidateAstract("entity_file_crate_missing.zip", "application/zip", assertions);
 
 
     }

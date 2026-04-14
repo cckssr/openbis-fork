@@ -176,10 +176,17 @@ public final class ImportJob implements IAsyncJob
             ValidationResult validationResult =
                     RoCrateSchemaValidation.validate(conversion);
 
+            if (!validationResult.isOkay())
+            {
+                importResult = new ImportDelegate.OpenBisImportResult(List.of(), Map.of(),
+                        validationResult);
+                return;
+            }
+
             // Convert openbis model to openbis excel format for import
             byte[] importExcel = ExcelWriter.convert(ExcelWriter.Format.ZIP_EXPORT, model);
-            java.nio.file.Path modelAsExcel = java.nio.file.Path.of(UUID.randomUUID() + ".zip");
-
+            java.nio.file.Path modelAsExcel;
+            modelAsExcel = Path.of(UUID.randomUUID() + ".zip");
             if (validateOnly)
             {
                 importResult = new ImportDelegate.OpenBisImportResult(List.of(), Map.of(),
