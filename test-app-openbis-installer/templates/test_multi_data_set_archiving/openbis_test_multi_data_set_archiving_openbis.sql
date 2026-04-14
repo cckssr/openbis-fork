@@ -4662,6 +4662,15 @@ WHERE mate_prop_id IS NOT NULL;
 DELETE FROM material_properties
 WHERE mate_prop_id IS NOT NULL;
 
+DELETE FROM sample_types
+WHERE code = 'OLIGO_WELL';
+
+UPDATE property_types
+SET maty_prop_id = NULL
+WHERE maty_prop_id IS NOT NULL;
+
+DELETE FROM events WHERE entity_type = 'MATERIAL';
+
 DELETE FROM material_properties;
 
 UPDATE experiments
@@ -4671,6 +4680,9 @@ WHERE mate_id_study_object IS NOT NULL;
 DELETE FROM materials;
 DELETE FROM material_type_property_types;
 DELETE FROM material_types;
+
+DELETE FROM property_types
+WHERE daty_id IN (SELECT id FROM data_types WHERE code = 'MATERIAL');
 
 SELECT 'after removing materials' AS debug_msg;
 SELECT count(*) AS materials_after FROM materials;

@@ -136,16 +136,6 @@ insert into data_types
 (id
  ,code
  ,description)
- values
- (nextval('DATA_TYPE_ID_SEQ')
- ,'UNUSED'
- ,'Deprecated - do not use'
-);
-
-insert into data_types
-(id
- ,code
- ,description)
  values 
  (nextval('DATA_TYPE_ID_SEQ')
  ,'HYPERLINK'
@@ -528,4 +518,3 @@ to_char(now(), 'YYYYMMDDHH24MISSMS')||'-'||nextval('PERM_ID_SEQ'),
 (to_char(now(), 'YYYYMMDDHH24MISSMS')||'-'||currval('SAMPLE_ID_SEQ') || ':1')::tsvector ||
   'DEFAULT:1'::tsvector || '/DEFAULT/DEFAULT:1'::tsvector
 );
-

@@ -32,7 +32,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.PhysicalDataCreat
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.delete.DataSetTypeDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.FileFormatTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.ProprietaryStorageFormatPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.RelativeLocationLocatorTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetTypeSearchCriteria;
@@ -65,7 +64,6 @@ public class DeleteDataSetTypeTest extends AbstractDeleteEntityTypeTest
 
         PhysicalDataCreation physicalCreation = new PhysicalDataCreation();
         physicalCreation.setLocation("test/location/" + code);
-        physicalCreation.setFileFormatTypeId(new FileFormatTypePermId("TIFF"));
         physicalCreation.setLocatorTypeId(new RelativeLocationLocatorTypePermId());
         physicalCreation.setStorageFormatId(new ProprietaryStorageFormatPermId());
 

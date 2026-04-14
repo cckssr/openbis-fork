@@ -148,7 +148,7 @@ public class ZipDataSetPackagerTest extends AbstractFileSystemTestCase
                         .property("B", "beta").property("A", "alpha").getSample())
                 .registrationDate(new Date(3141592653L)).getContainerDataSet();
         PhysicalDataSet dataSet = new DataSetBuilder().store(new DataStoreBuilder(DSS_CODE).getStore())
-                .code(DATA_SET_CODE).type("MY-DATASET").fileFormat("XML").location(DATA_SET_CODE).property("AGE", "42")
+                .code(DATA_SET_CODE).type("MY-DATASET").location(DATA_SET_CODE).property("AGE", "42")
                 .experiment(new ExperimentBuilder().identifier("/S/P/E3").type("MY-EXPERIMENT").getExperiment())
                 .container(containerDataSet1).container(containerDataSet2)
                 .getDataSet();
@@ -223,7 +223,7 @@ public class ZipDataSetPackagerTest extends AbstractFileSystemTestCase
     public void testCreateUncompressed() throws Exception
     {
         PhysicalDataSet dataSet = new DataSetBuilder().store(new DataStoreBuilder(DSS_CODE).getStore())
-                .code(DATA_SET_CODE).type("MY-DATASET").fileFormat("XML").location(DATA_SET_CODE).property("AGE", "24")
+                .code(DATA_SET_CODE).type("MY-DATASET").location(DATA_SET_CODE).property("AGE", "24")
                 .experiment(new ExperimentBuilder().identifier("/S/P/E1").type("MY-EXPERIMENT").getExperiment())
                 .sample(new SampleBuilder().identifier("/S/S1").type("MY-SAMPLE").property("GREETINGS", "Hi").getSample())
                 .parent(new DataSetBuilder().code("P1").getDataSet())

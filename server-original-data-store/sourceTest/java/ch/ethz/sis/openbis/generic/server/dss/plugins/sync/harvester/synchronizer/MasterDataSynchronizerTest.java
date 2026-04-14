@@ -45,7 +45,6 @@ import ch.systemsx.cisd.openbis.generic.shared.ICommonServer;
 import ch.systemsx.cisd.openbis.generic.shared.basic.TechId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataTypeCode;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.FileFormatType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewVocabulary;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Person;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PropertyType;
@@ -94,8 +93,6 @@ public class MasterDataSynchronizerTest
                     session.setSessionToken(SESSION_TOKEN);
                     will(returnValue(session));
 
-                    allowing(server).listFileFormatTypes(SESSION_TOKEN);
-                    will(returnValue(Arrays.asList()));
                 }
             });
         config = new SyncConfig();
@@ -384,10 +381,6 @@ public class MasterDataSynchronizerTest
     {
         private final INameTranslator nameTranslator;
 
-        private List<FileFormatType> existingFileFormatTypes = Collections.emptyList();
-
-        private List<FileFormatType> incomingFileFormatTypes = Collections.emptyList();
-
         private List<Script> existingScripts = Collections.emptyList();
 
         private List<Script> incomingScripts = Collections.emptyList();
@@ -452,8 +445,6 @@ public class MasterDataSynchronizerTest
             context.checking(new Expectations()
                 {
                     {
-                        allowing(server).listFileFormatTypes(SESSION_TOKEN);
-                        will(returnValue(existingFileFormatTypes));
                         allowing(server).listScripts(SESSION_TOKEN, null, null);
                         will(returnValue(existingScripts));
                         allowing(server).listVocabularies(SESSION_TOKEN, true, false);

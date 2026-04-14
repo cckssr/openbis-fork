@@ -50,15 +50,9 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.Vocabulary;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.VocabularyTerm;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.fetchoptions.VocabularyFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.search.VocabularySearchCriteria;
-import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.common.ServiceFinderUtils;
 import ch.systemsx.cisd.common.shared.basic.string.CommaSeparatedListBuilder;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
-import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.IDataSourceQueryService;
 import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.DataType;
-import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IFileFormatTypeImmutable;
-import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IMasterDataRegistrationTransaction;
-import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.impl.EncapsulatedCommonServer;
-import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.impl.MasterDataRegistrationService;
 import ch.systemsx.cisd.openbis.generic.shared.basic.BasicConstant;
 import ch.systemsx.cisd.openbis.generic.shared.basic.CodeConverter;
 
@@ -91,7 +85,6 @@ public class MasterDataDeliverer extends AbstractEntityDeliverer<Object>
         addLastModificationDate(writer, context.getRequestTimestamp());
         writer.writeStartElement("xmd:masterData");
         String sessionToken = context.getSessionToken();
-        addFileFormatTypes(writer, context.getQueryService(), sessionToken);
         addValidationPlugins(context, writer, sessionToken);
         addVocabularies(context, writer, sessionToken);
         addPropertyTypes(context, writer, sessionToken);
@@ -101,27 +94,6 @@ public class MasterDataDeliverer extends AbstractEntityDeliverer<Object>
         addExternalDataManagementSystems(context, writer, sessionToken);
         writer.writeEndElement();
         writer.writeEndElement();
-    }
-
-    private void addFileFormatTypes(XMLStreamWriter writer, IDataSourceQueryService queryService, String sessionToken) throws XMLStreamException
-    {
-        String openBisServerUrl = ServiceProvider.getConfigProvider().getOpenBisServerUrl();
-        EncapsulatedCommonServer encapsulatedServer = ServiceFinderUtils.getEncapsulatedCommonServer(sessionToken, openBisServerUrl);
-        MasterDataRegistrationService service = new MasterDataRegistrationService(encapsulatedServer);
-        IMasterDataRegistrationTransaction masterDataRegistrationTransaction = service.transaction();
-        List<IFileFormatTypeImmutable> fileFormatTypes = masterDataRegistrationTransaction.listFileFormatTypes();
-        if (fileFormatTypes.size() > 0)
-        {
-            writer.writeStartElement("xmd:fileFormatTypes");
-            for (IFileFormatTypeImmutable fileFormatType : fileFormatTypes)
-            {
-                writer.writeStartElement("xmd:fileFormatType");
-                addAttribute(writer, "code", fileFormatType.getCode());
-                addAttribute(writer, "description", fileFormatType.getDescription());
-                writer.writeEndElement();
-            }
-            writer.writeEndElement();
-        }
     }
 
     private void addValidationPlugins(DeliveryExecutionContext executionContext, XMLStreamWriter writer, 

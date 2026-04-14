@@ -129,7 +129,7 @@ public class ArchiveDataSetMessageHandler implements IMessageHandler
         DataSetFetchOptions dataSetFetchOptions = new DataSetFetchOptions();
         dataSetFetchOptions.withType();
         dataSetFetchOptions.withDataStore();
-        dataSetFetchOptions.withPhysicalData().withFileFormatType();
+        dataSetFetchOptions.withPhysicalData();
         dataSetFetchOptions.withContainers();
 
         SampleFetchOptions sampleFetchOptions = dataSetFetchOptions.withSample();

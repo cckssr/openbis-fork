@@ -56,7 +56,7 @@ public class MappingBasedShareFinderTest extends AbstractFileSystemTestCase
         mappingFile = new File(workingDirectory, "mapping.tsv");
         properties = new Properties();
         PhysicalDataSet dataSet = new DataSetBuilder().size(10 * FileUtils.ONE_KB)
-                .code("DS1").store(new DataStoreBuilder("DSS").getStore()).type("MY-TYPE").fileFormat("ABC")
+                .code("DS1").store(new DataStoreBuilder("DSS").getStore()).type("MY-TYPE")
                 .experiment(new ExperimentBuilder().identifier("/S1/P1/E1").getExperiment())
                 .getDataSet();
         dataSetInfo = SimpleDataSetHelper.filterAndTranslate(Arrays.<AbstractExternalData> asList(dataSet)).get(0);

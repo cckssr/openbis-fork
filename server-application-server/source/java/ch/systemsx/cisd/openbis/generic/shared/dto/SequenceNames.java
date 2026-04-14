@@ -64,8 +64,6 @@ public final class SequenceNames
 
     public static final String EXPERIMENT_TYPE_SEQUENCE = "EXPERIMENT_TYPE_ID_SEQ";
 
-    public static final String FILE_FORMAT_TYPE_SEQUENCE = "FILE_FORMAT_TYPE_ID_SEQ";
-
     public static final String RELATIONSHIP_TYPE_SEQUENCE = "RELATIONSHIP_TYPE_ID_SEQ";
 
     public static final String SPACE_SEQUENCE = "SPACE_ID_SEQ";

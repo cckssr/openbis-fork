@@ -312,7 +312,6 @@ public class DataSetTranslator
         dataSet.setPresentInArchive(externalDataPE.isPresentInArchive());
         dataSet.setStorageConfirmation(externalDataPE.isStorageConfirmation());
         dataSet.setSpeedHint(externalDataPE.getSpeedHint());
-        dataSet.setFileFormatType(TypeTranslator.translate(externalDataPE.getFileFormatType()));
         dataSet.setLocation(externalDataPE.getLocation());
         dataSet.setAccessTimestamp(externalDataPE.getAccessDate());
         dataSet.setShareId(externalDataPE.getShareId());
@@ -450,7 +449,6 @@ public class DataSetTranslator
             description.setDataSetShareId(externalData.getShareId());
             description.setDataSetSize(externalData.getSize());
             description.setSpeedHint(externalData.getSpeedHint());
-            description.setFileFormatType(externalData.getFileFormatType().getCode());
             description.setStorageConfirmed(externalData.isStorageConfirmation());
             description.setH5Folders(externalData.isH5Folders());
             description.setH5arFolders(externalData.isH5arFolders());

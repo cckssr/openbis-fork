@@ -391,6 +391,7 @@ class ImagingDataSetImage(AbstractImagingClass):
         assert isinstance(self.previews, list), "Previews must be a list!"
 
     def add_preview(self, preview):
+        assert preview is not None, "Preview must not be None!"
         self.previews += [preview]
 
     @classmethod
@@ -432,4 +433,5 @@ class ImagingDataSetPropertyConfig(AbstractImagingClass):
     def add_image(self, image: ImagingDataSetImage):
         if self.images is None:
             self.images = []
+        assert image is not None, "Image must not be None!"
         self.images += [image]

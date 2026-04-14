@@ -1235,11 +1235,6 @@ public final class DataSetTable extends AbstractDataSetBusinessObject implements
         {
             setParents(dataSet, Arrays.asList(dataSetUpdates.getModifiedParentDatasetCodesOrNull()));
         }
-        if (details.isFileFormatUpdateRequested())
-        {
-            updateFileFormatType(dataSet, dataSetUpdates.getFileFormatTypeCode());
-        }
-
         return dataSet;
     }
 

@@ -14561,6 +14561,10 @@ WHERE mate_prop_id IS NOT NULL;
 
 DELETE FROM material_properties;
 
+UPDATE property_types
+SET maty_prop_id = NULL
+WHERE maty_prop_id IS NOT NULL;
+
 UPDATE experiments_all
 SET mate_id_study_object = NULL
 WHERE mate_id_study_object IS NOT NULL;
@@ -14571,3 +14575,6 @@ DELETE FROM material_types;
 
 SELECT 'after removing materials' AS debug_msg;
 SELECT count(*) AS materials_after FROM materials;
+
+DELETE FROM events WHERE entity_type = 'MATERIAL';
+DELETE FROM property_types WHERE daty_id IN (SELECT id FROM data_types WHERE code = 'MATERIAL');

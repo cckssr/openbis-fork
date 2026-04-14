@@ -21,7 +21,6 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.v2.IDataSetImmut
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.v2.IExperimentImmutable;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.v2.IExternalDataManagementSystemImmutable;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.v2.ISampleImmutable;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.FileFormatType;
 
 /**
  * @author Chandrasekhar Ramakrishnan
@@ -42,15 +41,6 @@ public interface IDataSetUpdatable extends IDataSetImmutable
      * @param sampleOrNull The sample to use. Need not actually be immutable, but the immutable one is the supertype.
      */
     void setSample(ISampleImmutable sampleOrNull);
-
-    /**
-     * Set the file format type.
-     * <p>
-     * This property is undefined for container data sets.
-     * 
-     * @param fileFormatTypeCode The code of the desired {@link FileFormatType}.
-     */
-    public void setFileFormatType(String fileFormatTypeCode);
 
     /**
      * Set the value for a property.

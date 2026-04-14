@@ -1656,7 +1656,6 @@ class PhysicalData:
             "complete",
             "shareId",
             "size",
-            "fileFormatType",
             "storageFormat",
             "location",
             "presentInArchive",

@@ -24,7 +24,6 @@ import ch.systemsx.cisd.etlserver.entityregistration.SampleAndDataSetControlFile
 import ch.systemsx.cisd.etlserver.entityregistration.SampleDataSetPair.SampleDataSetPairProcessing;
 import ch.systemsx.cisd.openbis.dss.generic.shared.dto.DataSetInformation;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Experiment;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.FileFormatType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Sample;
 import ch.systemsx.cisd.openbis.generic.shared.dto.NewExternalData;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.ExperimentIdentifier;
@@ -252,13 +251,6 @@ class SampleAndDataSetRegistrator extends AbstractSampleAndDataSetProcessor impl
     private void syncDataToDataSetProperties(NewExternalData data)
     {
         data.setDataSetType(properties.getDataSetType());
-        if (null != sampleDataSetPair.getFileFormatTypeCode())
-        {
-            FileFormatType fileFormatType =
-                    new FileFormatType(sampleDataSetPair.getFileFormatTypeCode());
-
-            data.setFileFormatType(fileFormatType);
-        }
         if (null != data.getDataSetKind())
         {
             data.setDataSetKind(data.getDataSetKind());

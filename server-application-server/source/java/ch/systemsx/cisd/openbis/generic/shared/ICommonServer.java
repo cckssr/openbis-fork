@@ -61,7 +61,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Experiment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExperimentType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExperimentUpdateResult;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExternalDataManagementSystem;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.FileFormatType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Grantee;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.GridCustomFilter;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IEntityProperty;
@@ -478,14 +477,6 @@ public interface ICommonServer extends IServer
     public List<DataType> listDataTypes(final String sessionToken);
 
     /**
-     * Lists file format types.
-     *
-     * @return a sorted list of {@link FileFormatType}.
-     */
-    @Transactional(readOnly = true)
-    public List<FileFormatType> listFileFormatTypes(String sessionToken);
-
-    /**
      * Lists vocabularies.
      *
      * @return a sorted list of {@link Vocabulary}.
@@ -756,13 +747,6 @@ public interface ICommonServer extends IServer
     public void updateExperimentType(String sessionToken, EntityType entityType);
 
     /**
-     * Creates a new file format type.
-     */
-    @Transactional
-    @DatabaseCreateOrDeleteModification(value = ObjectKind.FILE_FORMAT_TYPE)
-    public void registerFileFormatType(String sessionToken, FileFormatType type);
-
-    /**
      * Creates a new data set type.
      */
     @Transactional
@@ -977,12 +961,6 @@ public interface ICommonServer extends IServer
     public void deleteExperimentTypes(String sessionToken, List<String> entityTypesCodes);
 
     /**
-     * Deletes specified file format types.
-     */
-    @Transactional
-    @DatabaseCreateOrDeleteModification(value = { ObjectKind.FILE_FORMAT_TYPE })
-    public void deleteFileFormatTypes(String sessionToken, List<String> codes);
-
     /**
      * For given {@link EntityKind} and permanent <var>identifier</var> returns the corresponding {@link IEntityInformationHolderWithPermId}.
      */
@@ -1004,13 +982,6 @@ public interface ICommonServer extends IServer
     public String getTemplateColumns(String sessionToken, EntityKind kind, String type,
             final String format, boolean autoGenerate, boolean withExperiments, boolean withSpace,
             BatchOperationKind operationKind);
-
-    /**
-     * Updates file format type.
-     */
-    @Transactional
-    @DatabaseUpdateModification(value = ObjectKind.FILE_FORMAT_TYPE)
-    public void updateFileFormatType(String sessionToken, AbstractType type);
 
     /**
      * Updates the experiment attachment.

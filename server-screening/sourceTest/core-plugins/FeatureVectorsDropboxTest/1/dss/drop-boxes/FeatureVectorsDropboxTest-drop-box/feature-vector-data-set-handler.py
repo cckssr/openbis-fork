@@ -59,7 +59,6 @@ def process(transaction):
   
   featuresPath = os.path.join(transaction.getIncoming().getAbsolutePath(), "features.csv")
   featureDataSet = transaction.createNewFeatureVectorDataSet(config, File(featuresPath))
-  featureDataSet.setFileFormatType('CSV')
 
   featureDataSet.setSample(plate)
   transaction.moveFile(featuresPath, featureDataSet)

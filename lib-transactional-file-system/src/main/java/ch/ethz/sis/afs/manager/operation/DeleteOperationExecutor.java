@@ -128,8 +128,16 @@ public class DeleteOperationExecutor implements OperationExecutor<DeleteOperatio
         {
             if (Files.isDirectory(sourcePath) && Files.isDirectory(pathInTrash))
             {
-                // merge folders
-                try (Stream<Path> paths = Files.list(sourcePath))
+                // merge folders (start with regular files to potentially rename existing conflicting snapshot folders first)
+                try (Stream<Path> paths = Files.list(sourcePath).filter(Files::isRegularFile))
+                {
+                    Iterator<Path> iterator = paths.iterator();
+                    while (iterator.hasNext())
+                    {
+                        moveToTrash(trashRootPath, iterator.next());
+                    }
+                }
+                try (Stream<Path> paths = Files.list(sourcePath).filter(Files::isDirectory))
                 {
                     Iterator<Path> iterator = paths.iterator();
                     while (iterator.hasNext())

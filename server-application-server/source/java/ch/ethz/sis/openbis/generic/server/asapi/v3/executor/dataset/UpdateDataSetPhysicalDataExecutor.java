@@ -38,9 +38,6 @@ public class UpdateDataSetPhysicalDataExecutor implements IUpdateDataSetPhysical
 {
 
     @Autowired
-    private IUpdateDataSetFileFormatTypeExecutor updateDataSetFileFormatTypeExecutor;
-
-    @Autowired
     private IDataSetAuthorizationExecutor authorizationExecutor;
 
     @Override
@@ -56,8 +53,6 @@ public class UpdateDataSetPhysicalDataExecutor implements IUpdateDataSetPhysical
                 authorizationExecutor.canUpdateSystemFields(context, dataSetUpdate.getDataSetId(), dataSet);
             }
         }
-
-        updateDataSetFileFormatTypeExecutor.update(context, batch);
 
         for (Entry<DataSetUpdate, DataPE> entry : batch.getObjects().entrySet())
         {

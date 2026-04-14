@@ -6,10 +6,6 @@ print ("Importing Master Data...")
 tr = service.transaction()
 
 
-file_type_FASTQ_PHRED_64 = tr.getOrCreateNewFileFormatType('FASTQ_PHRED_64')
-file_type_FASTQ_PHRED_64.setDescription('FastQ Format with PHRED+64 quality values (as deliverd by Illumina GA Pipeline >= 1.3)')
-   
-print "Imported 7 File Formats"     
 vocabulary_AGILENT_KIT = tr.getOrCreateNewVocabulary('AGILENT_KIT')
 vocabulary_AGILENT_KIT.setDescription(None)
 vocabulary_AGILENT_KIT.setUrlTemplate(None)

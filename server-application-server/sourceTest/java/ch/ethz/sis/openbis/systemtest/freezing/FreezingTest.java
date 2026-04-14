@@ -30,7 +30,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.DataSetCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.PhysicalDataCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.FileFormatTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.IDataSetId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.LocatorTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.StorageFormatPermId;
@@ -335,7 +334,6 @@ public abstract class FreezingTest extends AbstractTest
         PhysicalDataCreation physicalData = new PhysicalDataCreation();
         physicalData.setLocation("a/b/" + code);
         physicalData.setLocatorTypeId(new LocatorTypePermId("RELATIVE_LOCATION"));
-        physicalData.setFileFormatTypeId(new FileFormatTypePermId("PROPRIETARY"));
         physicalData.setStorageFormatId(new StorageFormatPermId("PROPRIETARY"));
         dataSet.setPhysicalData(physicalData);
         return dataSet;

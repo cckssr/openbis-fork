@@ -219,7 +219,6 @@ Parameters:
 """
 def set_dataset_details(dataset, registration_details):
     registration_details.setDataSetInformation(dataset)
-    registration_details.setFileFormatType(dataset.getFileFormatTypeCode())
     registration_details.setDataSetType(dataset.getDataSetType())
     registration_details.setMeasuredData(dataset.isMeasured())
 

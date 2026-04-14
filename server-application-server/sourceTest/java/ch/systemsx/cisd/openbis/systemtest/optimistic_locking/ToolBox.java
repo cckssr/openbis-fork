@@ -44,7 +44,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Deletion;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DeletionType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Experiment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExperimentType;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.FileFormatType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Grantee;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IEntityProperty;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ListSampleCriteria;
@@ -106,8 +105,6 @@ public class ToolBox
 
     private static final LocatorType LOCATOR_TYPE = new LocatorType(
             LocatorType.DEFAULT_LOCATOR_TYPE_CODE);
-
-    private static final FileFormatType FILE_FORMAT_TYPE = new FileFormatType("XML");
 
     private static final DataSetType DATA_SET_TYPE = new DataSetType("UNKNOWN");
 
@@ -477,7 +474,6 @@ public class ToolBox
         dataSet.setCode(code);
         dataSet.setDataSetType(DATA_SET_TYPE);
         dataSet.setDataSetKind(DATA_SET_KIND);
-        dataSet.setFileFormatType(FILE_FORMAT_TYPE);
         dataSet.setDataSetProperties(Collections.<NewProperty> emptyList());
         dataSet.setLocation("a/b/c/" + code);
         dataSet.setLocatorType(LOCATOR_TYPE);

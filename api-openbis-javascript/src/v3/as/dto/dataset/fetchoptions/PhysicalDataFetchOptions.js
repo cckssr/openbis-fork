@@ -2,7 +2,7 @@
  * Class automatically generated with
  * {@link ch.ethz.sis.openbis.generic.shared.api.v3.dto.generators.DtoGenerator}
  */
-define([ "require", "stjs", "as/dto/common/fetchoptions/FetchOptions", "as/dto/dataset/fetchoptions/StorageFormatFetchOptions", "as/dto/dataset/fetchoptions/FileFormatTypeFetchOptions",
+define([ "require", "stjs", "as/dto/common/fetchoptions/FetchOptions", "as/dto/dataset/fetchoptions/StorageFormatFetchOptions",
 		"as/dto/dataset/fetchoptions/LocatorTypeFetchOptions", "as/dto/dataset/fetchoptions/PhysicalDataSortOptions" ], function(require, stjs, FetchOptions) {
 	var PhysicalDataFetchOptions = function() {
 	};
@@ -10,10 +10,6 @@ define([ "require", "stjs", "as/dto/common/fetchoptions/FetchOptions", "as/dto/d
 		prototype['@type'] = 'as.dto.dataset.fetchoptions.PhysicalDataFetchOptions';
 		constructor.serialVersionUID = 1;
 		prototype.storageFormat = null;
-		/*
-		 * @Deprecated
-		 */
-		prototype.fileFormatType = null;
 		prototype.locatorType = null;
 		prototype.sort = null;
 		prototype.withStorageFormat = function() {
@@ -28,28 +24,6 @@ define([ "require", "stjs", "as/dto/common/fetchoptions/FetchOptions", "as/dto/d
 		};
 		prototype.hasStorageFormat = function() {
 			return this.storageFormat != null;
-		};
-		/*
-		 * @Deprecated
-		 */
-		prototype.withFileFormatType = function() {
-			if (this.fileFormatType == null) {
-				var FileFormatTypeFetchOptions = require("as/dto/dataset/fetchoptions/FileFormatTypeFetchOptions");
-				this.fileFormatType = new FileFormatTypeFetchOptions();
-			}
-			return this.fileFormatType;
-		};
-		/*
-		 * @Deprecated
-		 */
-		prototype.withFileFormatTypeUsing = function(fetchOptions) {
-			return this.fileFormatType = fetchOptions;
-		};
-		/*
-		 * @Deprecated
-		 */
-		prototype.hasFileFormatType = function() {
-			return this.fileFormatType != null;
 		};
 		prototype.withLocatorType = function() {
 			if (this.locatorType == null) {
@@ -76,7 +50,6 @@ define([ "require", "stjs", "as/dto/common/fetchoptions/FetchOptions", "as/dto/d
 		};
 	}, {
 		storageFormat : "StorageFormatFetchOptions",
-		fileFormatType : "FileFormatTypeFetchOptions",
 		locatorType : "LocatorTypeFetchOptions",
 		sort : "PhysicalDataSortOptions"
 	});

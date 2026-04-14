@@ -240,7 +240,6 @@ public class ResourceListParser
         MasterDataParser mdParser = MasterDataParser.create(nameTranslator);
         mdParser.parseMasterData(doc, xpath, uri);
         MasterData masterData = data.getMasterData();
-        masterData.setFileFormatTypesToProcess(mdParser.getFileFormatTypes());
         masterData.setValidationPluginsToProcess(mdParser.getValidationPlugins());
         masterData.setVocabulariesToProcess(mdParser.getVocabularies());
         masterData.setPropertyTypesToProcess(mdParser.getPropertyTypes());

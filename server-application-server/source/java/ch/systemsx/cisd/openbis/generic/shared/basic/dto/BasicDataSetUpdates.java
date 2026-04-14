@@ -44,8 +44,6 @@ public class BasicDataSetUpdates implements Serializable
 
     // 1. external data (non-virtual)
 
-    private String fileFormatTypeCode;
-
     private String modifiedContainerDatasetCodeOrNull;
 
     // 2. container (virtual)
@@ -104,16 +102,6 @@ public class BasicDataSetUpdates implements Serializable
     public void setModifiedParentDatasetCodesOrNull(String[] modifiedParentDatasetCodesOrNull)
     {
         this.modifiedParentDatasetCodesOrNull = modifiedParentDatasetCodesOrNull;
-    }
-
-    public String getFileFormatTypeCode()
-    {
-        return fileFormatTypeCode;
-    }
-
-    public void setFileFormatTypeCode(String fileFormatTypeCode)
-    {
-        this.fileFormatTypeCode = fileFormatTypeCode;
     }
 
     public String[] getModifiedContainedDatasetCodesOrNull()

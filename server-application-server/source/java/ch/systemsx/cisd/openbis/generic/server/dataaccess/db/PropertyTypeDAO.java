@@ -144,7 +144,7 @@ final class PropertyTypeDAO extends AbstractGenericEntityDAO<PropertyTypePE> imp
     {
         final List<DataTypePE> list =
                 find(DataTypePE.class,
-                        String.format("from %s dt where dt.code != 'UNUSED'", DataTypePE.class.getSimpleName()));
+                        String.format("from %s dt", DataTypePE.class.getSimpleName()));
         if (operationLog.isDebugEnabled())
         {
             operationLog.debug(String.format("%s(): %d data types(s) have been found.", MethodUtils

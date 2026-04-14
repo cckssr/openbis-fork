@@ -1,17 +1,5 @@
 package ch.ethz.sis.openbis.systemtests.environment;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Properties;
-
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameter;
 import ch.ethz.sis.openbis.afsserver.server.archiving.ArchiverDatabaseConfiguration;
 import ch.ethz.sis.openbis.afsserver.server.common.DatabaseConfiguration;
@@ -25,6 +13,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.create.RoleAssign
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.update.SampleUpdate;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.TransactionConfiguration;
+import ch.ethz.sis.openbis.systemtests.suite.rocrate.environment.FakeHttpServer;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 import ch.ethz.sis.shared.log.classic.impl.Logger;
 import ch.ethz.sis.shared.startup.Configuration;
@@ -37,6 +26,15 @@ import ch.systemsx.cisd.dbmigration.DatabaseConfigurationContext;
 import ch.systemsx.cisd.dbmigration.SQLUtils;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.DssPropertyParameters;
 import ch.systemsx.cisd.openbis.generic.shared.util.TestInstanceHostUtils;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.sql.SQLException;
+import java.util.*;
 
 public class IntegrationTestEnvironment
 {
@@ -56,6 +54,8 @@ public class IntegrationTestEnvironment
     private AfsServer afsServer;
 
     private RoCrateServer roCrateServer;
+
+    private FakeHttpServer fakeHttpServer;
 
     private List<Share> shares = new ArrayList<>();
 
@@ -134,12 +134,26 @@ public class IntegrationTestEnvironment
         return afsServer;
     }
 
-    public RoCrateServer createRoCrateServer()
+    public record RoCrateServerArgs(int port)
     {
-        return createRoCrateServer(loadProperties(Path.of("etc/default/ro-crate/service.properties")));
     }
 
-    public RoCrateServer createRoCrateServer(Properties serviceProperties)
+    public RoCrateServer createRoCrateServer(RoCrateServerArgs roCrateServerArgs)
+    {
+        return createRoCrateServer(
+                loadProperties(Path.of("etc/default/ro-crate/service.properties")),
+                roCrateServerArgs);
+    }
+
+    public FakeHttpServer createFakeHttpServer(int port) throws IOException
+    {
+        FakeHttpServer localhost = FakeHttpServer.build("localhost", port);
+        this.fakeHttpServer = fakeHttpServer;
+        return fakeHttpServer;
+    }
+
+    public RoCrateServer createRoCrateServer(Properties serviceProperties,
+            RoCrateServerArgs roCrateServerArgs)
     {
         if (serviceProperties != null)
         {
@@ -149,6 +163,7 @@ public class IntegrationTestEnvironment
 
         roCrateServer = new RoCrateServer();
         roCrateServer.configure(serviceProperties);
+        roCrateServer.setRoCrateServerArgs(roCrateServerArgs);
         return roCrateServer;
     }
 
@@ -215,6 +230,16 @@ public class IntegrationTestEnvironment
         if (applicationServer != null)
         {
             applicationServer.stop();
+        }
+        if (fakeHttpServer != null)
+        {
+            try
+            {
+                fakeHttpServer.stop();
+            } catch (InterruptedException e)
+            {
+                throw new RuntimeException(e);
+            }
         }
     }
 

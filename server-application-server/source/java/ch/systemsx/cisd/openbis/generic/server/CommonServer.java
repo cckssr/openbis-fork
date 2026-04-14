@@ -134,7 +134,6 @@ import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDataStoreDAO;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IEntityHistoryDAO;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IEntityTypeDAO;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IExternalDataManagementSystemDAO;
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.IFileFormatTypeDAO;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IMetaprojectDAO;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IRoleAssignmentDAO;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.RelatedEntityFinder;
@@ -188,7 +187,6 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentUpdatesDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExternalDataManagementSystemPE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.FileFormatTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.GridCustomFilterPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.IEntityInformationHolderDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.IEntityInformationWithPropertiesHolder;
@@ -1163,26 +1161,6 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
     }
 
     @Override
-    @RolesAllowed(RoleWithHierarchy.PROJECT_OBSERVER)
-    public List<FileFormatType> listFileFormatTypes(String sessionToken)
-    {
-        assert sessionToken != null : "Unspecified session token";
-        checkSession(sessionToken);
-        final List<FileFormatTypePE> fileFormatTypePEs =
-                getDAOFactory().getFileFormatTypeDAO().listFileFormatTypes();
-        final List<FileFormatType> fileFormatTypes = TypeTranslator.translate(fileFormatTypePEs);
-        Collections.sort(fileFormatTypes, new Comparator<FileFormatType>()
-        {
-            @Override
-            public int compare(FileFormatType o1, FileFormatType o2)
-            {
-                return o1.getCode().compareTo(o2.getCode());
-            }
-        });
-        return fileFormatTypes;
-    }
-
-    @Override
     @RolesAllowed({ RoleWithHierarchy.PROJECT_OBSERVER, RoleWithHierarchy.SPACE_ETL_SERVER })
     public List<Vocabulary> listVocabularies(final String sessionToken, final boolean withTerms,
             boolean excludeInternal)
@@ -1937,24 +1915,6 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
     public void updateExperimentType(String sessionToken, EntityType entityType)
     {
         updateEntityType(sessionToken, EntityKind.EXPERIMENT, entityType);
-    }
-
-    @Override
-    @RolesAllowed(RoleWithHierarchy.INSTANCE_ADMIN)
-    public void registerFileFormatType(String sessionToken, FileFormatType type)
-    {
-        checkSession(sessionToken);
-        FileFormatTypePE fileFormatType = new FileFormatTypePE();
-        try
-        {
-            fileFormatType.setCode(type.getCode());
-            fileFormatType.setDescription(type.getDescription());
-            getDAOFactory().getFileFormatTypeDAO().createOrUpdate(fileFormatType);
-        } catch (final DataAccessException ex)
-        {
-            DataAccessExceptionTranslator.throwException(ex,
-                    String.format("File format type '%s' ", fileFormatType.getCode()), null);
-        }
     }
 
     @Override
@@ -2727,36 +2687,6 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
     }
 
     @Override
-    @RolesAllowed(RoleWithHierarchy.INSTANCE_ADMIN)
-    public void deleteFileFormatTypes(String sessionToken, List<String> codes)
-    {
-        assert sessionToken != null : "Unspecified session token";
-        checkSession(sessionToken);
-        IFileFormatTypeDAO dao = getDAOFactory().getFileFormatTypeDAO();
-        for (String code : codes)
-        {
-            FileFormatTypePE type = dao.tryToFindFileFormatTypeByCode(code);
-            if (type == null)
-            {
-                throw new UserFailureException(String.format("File format type '%s' not found.",
-                        code));
-            } else
-            {
-                try
-                {
-                    dao.delete(type);
-                } catch (DataIntegrityViolationException ex)
-                {
-                    throw new UserFailureException(
-                            String.format(
-                                    "File format type '%s' is being used. Use 'Data Set Search' to find all connected data sets.",
-                                    code));
-                }
-            }
-        }
-    }
-
-    @Override
     @RolesAllowed(RoleWithHierarchy.PROJECT_OBSERVER)
     public String getTemplateColumns(String sessionToken, EntityKind entityKind, String type,
             String format, boolean autoGenerate, boolean withExperiments, boolean withSpace,
@@ -2997,18 +2927,6 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
             throw new UserFailureException("Unknown " + entityKind.name() + " type '" + type + "'");
         }
         return typeOrNull;
-    }
-
-    @Override
-    @RolesAllowed(RoleWithHierarchy.INSTANCE_ADMIN)
-    public void updateFileFormatType(String sessionToken, AbstractType type)
-    {
-        checkSession(sessionToken);
-        IFileFormatTypeDAO dao = getDAOFactory().getFileFormatTypeDAO();
-        FileFormatTypePE typePE = dao.tryToFindFileFormatTypeByCode(type.getCode());
-        typePE.setDescription(type.getDescription());
-        dao.createOrUpdate(typePE);
-
     }
 
     @Override
@@ -3819,11 +3737,6 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
             if (sampleIdentifier != null)
             {
                 updates.setSampleIdentifierOrNull(SampleIdentifierFactory.parse(sampleIdentifier));
-            }
-            if (dataSet instanceof PhysicalDataSet)
-            {
-                updates.setFileFormatTypeCode(((PhysicalDataSet) dataSet).getFileFormatType()
-                        .getCode());
             }
             updateDataSet(sessionToken, updates);
         } catch (UserFailureException e)

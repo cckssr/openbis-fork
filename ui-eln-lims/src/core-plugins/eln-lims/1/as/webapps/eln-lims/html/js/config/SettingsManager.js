@@ -2,14 +2,6 @@ var SettingsManagerUtils = new function() {
     this._defaultProfile = null;
     this._instanceSettings = null;
 
-    this.isRemovedInventorySpace = function(space) {
-        var spaceCode = space;
-        if(space && space.getCode) {
-            spaceCode = space.getCode();
-        }
-        return typeof spaceCode === "string" && spaceCode.endsWith("MATERIALS");
-    }
-
 	this.getGroups = function() {
 		return Object.keys(this._instanceSettings);
 	}
@@ -295,15 +287,11 @@ function SettingsManager(serverFacade) {
 	}
 
 	this.getInventorySpacesOptions = function() {
-		return profile.allSpaces.filter(function(spaceCode) {
-			return !SettingsManagerUtils.isRemovedInventorySpace(spaceCode);
-		});
+		return profile.allSpaces;
 	}
 
     this.getInventorySpacesReadOnlyOptions = function() {
-		return profile.allSpaces.filter(function(spaceCode) {
-			return !SettingsManagerUtils.isRemovedInventorySpace(spaceCode);
-		});
+		return profile.allSpaces;
 	}
 
 	this.getSampleTypeOptions = function() {
@@ -354,17 +342,21 @@ function SettingsManager(serverFacade) {
             }
 
              // Forced Disable RTF
-             if(isMergeGroup) { // Merge found values
+             if(isMergeGroup && targetProfile["forcedDisableRTF"]) { // Merge found values
                 targetProfile["forcedDisableRTF"] = targetProfile["forcedDisableRTF"].concat(settings["forcedDisableRTF"]).unique();
-             } else { // Replaces or sets values
+             } else if(settings["forcedDisableRTF"]) { // Replaces or sets values
                 targetProfile["forcedDisableRTF"] = settings["forcedDisableRTF"];
+             } else if(!targetProfile["forcedDisableRTF"]) {
+                targetProfile["forcedDisableRTF"] = [];
              }
 
              // Forced Monospace Font
-             if(isMergeGroup) { // Merge found values
+             if(isMergeGroup && targetProfile["forceMonospaceFont"]) { // Merge found values
                 targetProfile["forceMonospaceFont"] = targetProfile["forceMonospaceFont"].concat(settings["forceMonospaceFont"]).unique();
-             } else { // Replaces or sets values
+             } else if(settings["forceMonospaceFont"]) { // Replaces or sets values
                 targetProfile["forceMonospaceFont"] = settings["forceMonospaceFont"];
+             } else if(!targetProfile["forceMonospaceFont"]) {
+                targetProfile["forceMonospaceFont"] = [];
              }
 
 
@@ -375,12 +367,8 @@ function SettingsManager(serverFacade) {
                 targetProfile["inventorySpacesReadOnly"] = [];
             }
              // Inventory Spaces
-             var inventorySpaces = (settings["inventorySpaces"] || []).filter(function(spaceCode) {
-                return !SettingsManagerUtils.isRemovedInventorySpace(spaceCode);
-             });
-             var inventorySpacesReadOnly = (settings["inventorySpacesReadOnly"] || []).filter(function(spaceCode) {
-                return !SettingsManagerUtils.isRemovedInventorySpace(spaceCode);
-             });
+             var inventorySpaces = settings["inventorySpaces"];
+             var inventorySpacesReadOnly = settings["inventorySpacesReadOnly"];
              if(isMergeGroup) { // Merge found values
                 if (inventorySpaces) {
                     targetProfile["inventorySpaces"] = targetProfile["inventorySpaces"].concat(inventorySpaces).unique();
@@ -399,14 +387,14 @@ function SettingsManager(serverFacade) {
 
 
              // Dataset Types from File Extension
-             if(isMergeGroup) { // Merge found values
-                if(settings.dataSetTypeForFileNameMap) {
-                    for(var idxTp = 0; idxTp < settings.dataSetTypeForFileNameMap.length; idxTp++) {
+             if(isMergeGroup && targetProfile.dataSetTypeForFileNameMap && settings.dataSetTypeForFileNameMap) { // Merge found values
+                for(var idxTp = 0; idxTp < settings.dataSetTypeForFileNameMap.length; idxTp++) {
                      targetProfile.dataSetTypeForFileNameMap.push(settings.dataSetTypeForFileNameMap[idxTp]);
-                    }
                 }
-             } else { // Replaces or sets values
+             } else if(settings.dataSetTypeForFileNameMap) { // Replaces or sets values
                 targetProfile.dataSetTypeForFileNameMap = settings.dataSetTypeForFileNameMap;
+             } else if(!targetProfile.dataSetTypeForFileNameMap) {
+                targetProfile.dataSetTypeForFileNameMap = [];
              }
 
 

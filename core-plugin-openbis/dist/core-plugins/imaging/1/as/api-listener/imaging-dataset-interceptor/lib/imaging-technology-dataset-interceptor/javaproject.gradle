@@ -29,8 +29,8 @@ configurations.all {
 //    gradleVersion = '4.10.3'
 //    distributionUrl = "https://services.gradle.org/distributions/gradle-4.10.3-bin.zip"
 //}
-sourceCompatibility = JavaVersion.VERSION_17
-targetCompatibility = JavaVersion.VERSION_17
+sourceCompatibility = JavaVersion.VERSION_21
+targetCompatibility = JavaVersion.VERSION_21
 
 sourceSets { 
     main {
@@ -264,26 +264,14 @@ dependencies {
     ecj "eclipse:ecj:4.6.1"
 }
 
-if(System.getProperty("java.version").startsWith("1.8.")) {
-    tasks.withType(JavaCompile) {
-        options.headerOutputDirectory.convention(null)
-    }
-}
-
 compileJava {
     options.encoding = 'utf-8'
     options.fork = true
     doFirst {
-        // Use the legacy Java 8 compiler from eclipse for Java 8
-        if(System.getProperty("java.version").startsWith("1.8.")) {
-            options.forkOptions.with {
-                executable = 'java'
-                jvmArgs = createEclipseJDK8Args()
-            }
-        } else if(System.getProperty("java.version").startsWith("11.") || System.getProperty("java.version").startsWith("17.")) {
-            // Use modern openJDK 11 or 17 Compiler
+        if(System.getProperty("java.version").startsWith("21.")) {
+            // Use modern openJDK 21 Compiler
         } else {
-            throw new Exception("Unsupported Java version found: '" + System.getProperty("java.version") + "', please use JDK8, JDK11 or JDK17");
+            throw new Exception("Unsupported Java version found: '" + System.getProperty("java.version") + "', please use JDK21");
         }
     }
 }
@@ -292,16 +280,10 @@ compileTestJava {
     options.encoding = 'utf-8'
     options.fork = true
     doFirst {
-        // Use the legacy Java 8 compiler from eclipse for Java 8
-        if(System.getProperty("java.version").startsWith("1.8.")) {
-            options.forkOptions.with {
-                executable = 'java'
-                jvmArgs = createEclipseJDK8Args()
-            }
-        } else if(System.getProperty("java.version").startsWith("11.") || System.getProperty("java.version").startsWith("17.")) {
-            // Use modern openJDK 11 or 17 Compiler
+        if(System.getProperty("java.version").startsWith("21.")) {
+            // Use modern openJDK 21 Compiler
         } else {
-            throw new Exception("Unsupported Java version found: '" + System.getProperty("java.version") + "', please use JDK8, JDK11 or JDK17");
+            throw new Exception("Unsupported Java version found: '" + System.getProperty("java.version") + "', please use JDK21");
         }
     }
 }

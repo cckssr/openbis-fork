@@ -46,7 +46,6 @@ public class DataSetOwnerRelationshipsHistoryTest extends AbstractRelationshipsH
 
         DataSetUpdates updates = new DataSetUpdates();
         updates.setDatasetId(dataId);
-        updates.setFileFormatTypeCode("PROPRIETARY");
         updates.setVersion(dataSet.getVersion());
         updates.setProperties(dataSet.getProperties());
         updates.setSampleIdentifierOrNull(sample.getIdentifier());
@@ -75,7 +74,6 @@ public class DataSetOwnerRelationshipsHistoryTest extends AbstractRelationshipsH
 
         updates = new DataSetUpdates();
         updates.setDatasetId(dataId);
-        updates.setFileFormatTypeCode("PROPRIETARY");
         updates.setVersion(dataSet.getVersion());
         updates.setProperties(dataSet.getProperties());
         updates.setSampleIdentifierOrNull(newSample.getIdentifier());
@@ -120,7 +118,6 @@ public class DataSetOwnerRelationshipsHistoryTest extends AbstractRelationshipsH
 
         DataSetUpdates updates = new DataSetUpdates();
         updates.setDatasetId(dataId);
-        updates.setFileFormatTypeCode("PROPRIETARY");
         updates.setVersion(dataSet.getVersion());
         updates.setProperties(dataSet.getProperties());
         updates.setExperimentIdentifierOrNull(experiment.getIdentifier());
@@ -147,7 +144,6 @@ public class DataSetOwnerRelationshipsHistoryTest extends AbstractRelationshipsH
 
         updates = new DataSetUpdates();
         updates.setDatasetId(dataId);
-        updates.setFileFormatTypeCode("PROPRIETARY");
         updates.setVersion(dataSet.getVersion());
         updates.setProperties(dataSet.getProperties());
         updates.setExperimentIdentifierOrNull(newExperiment.getIdentifier());
@@ -191,7 +187,6 @@ public class DataSetOwnerRelationshipsHistoryTest extends AbstractRelationshipsH
 
         DataSetUpdates updates = new DataSetUpdates();
         updates.setDatasetId(dataId);
-        updates.setFileFormatTypeCode("PROPRIETARY");
         updates.setVersion(dataSet.getVersion());
         updates.setProperties(dataSet.getProperties());
         updates.setExperimentIdentifierOrNull(experiment.getIdentifier());
@@ -218,7 +213,6 @@ public class DataSetOwnerRelationshipsHistoryTest extends AbstractRelationshipsH
 
         updates = new DataSetUpdates();
         updates.setDatasetId(dataId);
-        updates.setFileFormatTypeCode("PROPRIETARY");
         updates.setVersion(dataSet.getVersion());
         updates.setProperties(dataSet.getProperties());
         updates.setSampleIdentifierOrNull(sample.getIdentifier());
@@ -255,7 +249,6 @@ public class DataSetOwnerRelationshipsHistoryTest extends AbstractRelationshipsH
 
         updates = new DataSetUpdates();
         updates.setDatasetId(dataId);
-        updates.setFileFormatTypeCode("PROPRIETARY");
         updates.setVersion(dataSet.getVersion());
         updates.setProperties(dataSet.getProperties());
         updates.setExperimentIdentifierOrNull(newExperiment.getIdentifier());

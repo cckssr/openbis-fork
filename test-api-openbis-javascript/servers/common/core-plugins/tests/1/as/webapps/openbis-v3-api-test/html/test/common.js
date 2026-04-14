@@ -792,7 +792,6 @@ define([ 'jquery', 'underscore'], function($, _) {
 			fo.withChildren();
 			fo.withContainers();
 			fo.withComponents();
-			fo.withPhysicalData().withFileFormatType();
 			fo.withPhysicalData().withLocatorType();
 			fo.withPhysicalData().withStorageFormat();
 			fo.withLinkedData().withExternalDms();

@@ -5898,6 +5898,20 @@ WHERE mate_prop_id IS NOT NULL;
 DELETE FROM material_properties
 WHERE mate_prop_id IS NOT NULL;
 
+DELETE FROM material_properties_history;
+
+UPDATE property_types
+SET maty_prop_id = NULL
+WHERE maty_prop_id IS NOT NULL;
+
+DELETE FROM events WHERE entity_type = 'MATERIAL';
+
+DELETE FROM queries WHERE query_type = 'MATERIAL';
+
+DELETE FROM scripts WHERE entity_kind = 'MATERIAL';
+
+DELETE FROM property_types WHERE daty_id IN (SELECT id FROM data_types WHERE code = 'MATERIAL');
+
 DELETE FROM material_properties;
 
 UPDATE experiments_all

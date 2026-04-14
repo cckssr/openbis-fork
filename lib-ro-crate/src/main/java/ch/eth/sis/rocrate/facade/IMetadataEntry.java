@@ -17,9 +17,6 @@ public interface IMetadataEntry
      */
     String getId();
 
-    /* Returns the type ID of this entry */
-    String getClassId();
-
     /* Returns the types of the entry */
     Set<String> getTypes();
 

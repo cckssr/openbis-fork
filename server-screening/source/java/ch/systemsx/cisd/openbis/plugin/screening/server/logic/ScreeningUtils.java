@@ -121,16 +121,6 @@ public class ScreeningUtils
 
     private static String tryGetFileTypeCode(AbstractExternalData abstractDataSet)
     {
-        ch.systemsx.cisd.openbis.generic.shared.basic.dto.PhysicalDataSet dataSet =
-                abstractDataSet.tryGetAsDataSet();
-        if (dataSet != null && dataSet.getFileFormatType() != null)
-        {
-            String fileTypeCode = dataSet.getFileFormatType().getCode();
-            if (false == ScreeningConstants.UNKNOWN_FILE_FORMAT.equalsIgnoreCase(fileTypeCode))
-            {
-                return fileTypeCode;
-            }
-        }
         return null;
     }
 

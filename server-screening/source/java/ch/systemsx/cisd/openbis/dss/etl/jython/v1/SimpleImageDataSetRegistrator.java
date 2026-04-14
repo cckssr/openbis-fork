@@ -67,7 +67,7 @@ import ch.systemsx.cisd.openbis.dss.shared.DssScreeningUtils;
 import ch.systemsx.cisd.openbis.generic.shared.basic.CodeNormalizer;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetType;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.FileFormatType;
+
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.Geometry;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.imaging.dataaccess.IImagingReadonlyQueryDAO;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.imaging.dataaccess.ImgAcquiredImageEnrichedDTO;
@@ -626,7 +626,6 @@ public class SimpleImageDataSetRegistrator
     {
         dataset.setDatasetTypeCode(simpleImageConfig.getDataSetType());
         dataset.setDataSetKind(DataSetKind.PHYSICAL);
-        dataset.setFileFormatCode(simpleImageConfig.getFileFormatType());
         dataset.setMeasured(simpleImageConfig.isMeasuredData());
 
         dataset.setSample(simpleImageConfig.getPlateSpace(), simpleImageConfig.getProjectCode(), simpleImageConfig.getPlateCode());
@@ -764,8 +763,6 @@ public class SimpleImageDataSetRegistrator
             DataSetRegistrationDetails<T> registrationDetails, T dataset)
     {
         registrationDetails.setDataSetInformation(dataset);
-        registrationDetails.setFileFormatType(new FileFormatType(simpleImageConfig
-                .getFileFormatType()));
         registrationDetails.setDataSetType(new DataSetType(simpleImageConfig.getDataSetType()));
         registrationDetails.setMeasuredData(simpleImageConfig.isMeasuredData());
         registrationDetails.setDataSetKind(dataset.getDataSetKind());

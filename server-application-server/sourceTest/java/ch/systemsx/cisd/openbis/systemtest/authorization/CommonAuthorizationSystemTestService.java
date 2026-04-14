@@ -38,7 +38,6 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.DataPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataStorePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentPE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.FileFormatTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.LocatorTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ProjectPE;
@@ -220,12 +219,6 @@ public class CommonAuthorizationSystemTestService
             }
         }
         return null;
-    }
-
-    @Transactional
-    public FileFormatTypePE tryFileFormatType(String code)
-    {
-        return daoFactory.getFileFormatTypeDAO().tryToFindFileFormatTypeByCode(code);
     }
 
     @Transactional

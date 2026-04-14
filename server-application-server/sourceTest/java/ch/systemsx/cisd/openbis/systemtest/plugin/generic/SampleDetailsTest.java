@@ -199,7 +199,7 @@ public class SampleDetailsTest extends GenericSystemTestCase
                 .hasCode(DIRECTLY_CONNECTED_DATA_SET_CODE)
                 .hasSampleWithIdentifier("/CISD/NOE/CP-TEST-2")
                 .hasExperimentWithIdentifier(CELL_PLATE_WITH_DATA_EXAMPLE_EXPERIMENT_ID)
-                .hasFileFormatType("3VPROPRIETARY").hasLocation("a/2");
+                .hasLocation("a/2");
 
         // indirectly connected
         showOnlyDirectlyConnected = false;
@@ -221,7 +221,6 @@ public class SampleDetailsTest extends GenericSystemTestCase
                 .hasSampleWithIdentifier(directlyConnectedDataSet.getSample().getIdentifier())
                 .hasExperimentWithIdentifier(
                         directlyConnectedDataSet.getExperiment().getIdentifier())
-                .hasFileFormatType(directlyConnectedDataSet.getFileFormatType().getCode())
                 .hasLocation(directlyConnectedDataSet.getDataSetLocation());
 
         final String indirectlyConnectedDataSetCode1 = "20081105092159111-1";
@@ -231,7 +230,7 @@ public class SampleDetailsTest extends GenericSystemTestCase
         DataSetExpectations.checkThat(indirectlyConnectedDataSetThroughChildSample)
                 .hasCode(indirectlyConnectedDataSetCode1)
                 .hasSampleWithIdentifier(CISD_ID_PREFIX + "NEMO/CP-TEST-1")
-                .hasExperimentWithIdentifier("/CISD/NEMO/EXP-TEST-1").hasFileFormatType("TIFF")
+                .hasExperimentWithIdentifier("/CISD/NEMO/EXP-TEST-1")
                 .hasLocation("a/1");
 
         final String indirectlyConnectedDataSetCode2 = "20081105092259000-9";
@@ -240,7 +239,7 @@ public class SampleDetailsTest extends GenericSystemTestCase
                         indirectlyConnectedDataSetCode2).tryGetAsDataSet();
         DataSetExpectations.checkThat(indirectlyConnectedDataSetThroughChildDataSet)
                 .hasCode(indirectlyConnectedDataSetCode2).hasNoSample()
-                .hasExperimentWithIdentifier("/CISD/DEFAULT/EXP-REUSE").hasFileFormatType("XML")
+                .hasExperimentWithIdentifier("/CISD/DEFAULT/EXP-REUSE")
                 .hasLocation("xml/result-9");
     }
 
@@ -279,12 +278,6 @@ public class SampleDetailsTest extends GenericSystemTestCase
         public DataSetExpectations hasExperimentWithIdentifier(String expectedExperimentIdentifier)
         {
             assertEquals(expectedExperimentIdentifier, dataSet.getExperiment().getIdentifier());
-            return this;
-        }
-
-        public DataSetExpectations hasFileFormatType(String expectedFileFormatTypeCode)
-        {
-            assertEquals(expectedFileFormatTypeCode, dataSet.getFileFormatType().getCode());
             return this;
         }
 

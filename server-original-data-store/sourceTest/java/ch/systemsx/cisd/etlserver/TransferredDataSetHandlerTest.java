@@ -66,7 +66,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DatabaseInstance;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Experiment;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.FileFormatType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IEntityProperty;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.LocatorType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Person;
@@ -115,8 +114,6 @@ public final class TransferredDataSetHandlerTest extends AbstractFileSystemTestC
 
     private static final DataSetKind DATA_SET_KIND = DataSetKind.PHYSICAL;
 
-    private static final FileFormatType FILE_FORMAT_TYPE = new FileFormatType("FF1");
-
     private static final String DATA_PRODUCER_CODE = "microscope";
 
     private static final Date DATA_PRODUCTION_DATE = new Date(2001);
@@ -151,7 +148,6 @@ public final class TransferredDataSetHandlerTest extends AbstractFileSystemTestC
             assertEquals(expectedData.getLocation(), data.getLocation());
             assertEquals(expectedData.getShareId(), data.getShareId());
             assertEquals(expectedData.getLocatorType(), data.getLocatorType());
-            assertEquals(expectedData.getFileFormatType(), data.getFileFormatType());
             assertEquals(expectedData.getDataSetType(), data.getDataSetType());
             assertEquals(expectedData.getDataSetKind(), data.getDataSetKind());
             assertEquals(expectedData.getParentDataSetCodes(), data.getParentDataSetCodes());
@@ -369,7 +365,6 @@ public final class TransferredDataSetHandlerTest extends AbstractFileSystemTestC
         data.setLocatorType(LOCATOR_TYPE);
         data.setDataSetType(DATA_SET_TYPE);
         data.setDataSetKind(DATA_SET_KIND);
-        data.setFileFormatType(FILE_FORMAT_TYPE);
         data.setStorageFormat(StorageFormat.BDS_DIRECTORY);
         data.setDataProducerCode(DATA_PRODUCER_CODE);
         data.setProductionDate(DATA_PRODUCTION_DATE);
@@ -467,9 +462,6 @@ public final class TransferredDataSetHandlerTest extends AbstractFileSystemTestC
 
                 one(typeExtractor).getLocatorType(dataSet);
                 will(returnValue(LOCATOR_TYPE));
-
-                one(typeExtractor).getFileFormatType(dataSet);
-                will(returnValue(FILE_FORMAT_TYPE));
 
                 one(typeExtractor).getProcessorType(dataSet);
                 will(returnValue(EXAMPLE_PROCESSOR_ID));
@@ -728,7 +720,6 @@ public final class TransferredDataSetHandlerTest extends AbstractFileSystemTestC
 
                 allowing(typeExtractor).getLocatorType(folder);
                 allowing(typeExtractor).getDataSetType(folder);
-                allowing(typeExtractor).getFileFormatType(folder);
                 allowing(typeExtractor).isMeasuredData(folder);
             }
         });

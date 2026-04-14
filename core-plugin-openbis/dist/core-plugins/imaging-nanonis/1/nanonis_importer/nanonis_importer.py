@@ -42,6 +42,7 @@ if SERVICE_TYPE == "AS":
 AFS_URL = None
 
 def get_instance(url, token):
+    openbis_token = token
     if url is None:
         url = DEFAULT_URL
     openbis_instance = Openbis(
@@ -49,10 +50,10 @@ def get_instance(url, token):
         verify_certificates=False
     )
     if token is None:
-        token = openbis_instance.login('admin', 'changeit')
+        openbis_token = openbis_instance.login('admin', 'changeit')
 
-    openbis_instance.token = token
-    print(f'Connected to {url} -> token: {token}')
+    openbis_instance.token = openbis_token
+    print(f'Connected to {url} -> token: {openbis_token}')
     return openbis_instance
 
 
@@ -870,7 +871,6 @@ def upload_measurements_into_openbis(openbis_url, data_folder, collection_permid
 
                         shutil.rmtree(dat_files_directory)
 
-        o.logout()
 ########## END TODO
 
 
@@ -993,5 +993,6 @@ for group in grouped_measurement_files:
 #                     [image1_preview_index, image2_preview_index],
 #                     export_path)
 
-o.logout()
+if token is None:
+    o.logout()
 print("DONE")

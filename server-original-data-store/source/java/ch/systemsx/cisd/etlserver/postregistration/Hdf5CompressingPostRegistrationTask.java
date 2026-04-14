@@ -386,7 +386,6 @@ public class Hdf5CompressingPostRegistrationTask extends AbstractPostRegistratio
             externalData.setProductionDate(protoDataSet.getProductionDate());
             externalData.setRegistrationDate(protoDataSet.getRegistrationDate());
             externalData.setSampleIdentifierOrNull(extractSampleIdentifier(protoDataSet));
-            externalData.setFileFormatType(protoDataSet.getFileFormatType());
             externalData.setLocation(protoDataSet.getLocation());
             externalData.setLocatorType(protoDataSet.getLocatorType());
             externalData.setShareId(protoDataSet.getShareId());

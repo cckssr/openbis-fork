@@ -7663,7 +7663,28 @@ WHERE mate_prop_id IS NOT NULL;
 DELETE FROM material_properties
 WHERE mate_prop_id IS NOT NULL;
 
+UPDATE data_set_properties_history
+SET material = NULL
+WHERE material IS NOT NULL;
+
+UPDATE experiment_properties_history
+SET material = NULL
+WHERE material IS NOT NULL;
+
+UPDATE sample_properties_history
+SET material = NULL
+WHERE material IS NOT NULL;
+
 DELETE FROM material_properties;
+
+DELETE FROM material_properties_history;
+
+DELETE FROM metaproject_assignments_all
+WHERE mate_id IS NOT NULL;
+
+UPDATE property_types
+SET maty_prop_id = NULL
+WHERE maty_prop_id IS NOT NULL;
 
 UPDATE experiments_all
 SET mate_id_study_object = NULL
@@ -7675,3 +7696,9 @@ DELETE FROM material_types;
 
 SELECT 'after removing materials' AS debug_msg;
 SELECT count(*) AS materials_after FROM materials;
+
+
+DELETE FROM events WHERE entity_type = 'MATERIAL';
+DELETE FROM queries WHERE query_type = 'MATERIAL';
+DELETE FROM scripts WHERE entity_kind = 'MATERIAL';
+DELETE FROM property_types WHERE daty_id IN (SELECT id FROM data_types WHERE code = 'MATERIAL');

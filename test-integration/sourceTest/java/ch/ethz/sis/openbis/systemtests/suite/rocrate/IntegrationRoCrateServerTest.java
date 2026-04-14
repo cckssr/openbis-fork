@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
 import static ch.ethz.sis.openbis.systemtests.suite.rocrate.environment.RoCrateServerIntegrationTestEnvironment.environment;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.testng.Assert.*;
+import static org.testng.Assert.assertFalse;
 
 public class IntegrationRoCrateServerTest
 {
@@ -56,7 +56,13 @@ public class IntegrationRoCrateServerTest
     @BeforeSuite
     public void beforeSuite()
     {
-        RoCrateServerIntegrationTestEnvironment.start();
+        try
+        {
+            RoCrateServerIntegrationTestEnvironment.start();
+        } catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
 
         Path file =
                 Path.of("sourceTest/resource/" + getClass().getSimpleName() + "/metadata_setup.xlsx");
@@ -162,6 +168,7 @@ public class IntegrationRoCrateServerTest
         }
     }
 
+
     @Test(enabled = false, priority = 4)
     // This takes over 30 seconds, should be converted to async implementation
     public void testImportZip()
@@ -218,6 +225,64 @@ public class IntegrationRoCrateServerTest
         }
 
 
+    }
+
+    @Test(enabled = false, timeOut = TIMEOUT, priority = 4)
+    public void testImportWithExternalFile() throws Exception
+    {
+        OpenBIS openBIS = environment.createOpenBIS(TIMEOUT);
+        openBIS.login(username, password);
+
+        Path file =
+                Path.of("sourceTest/resource/" + getClass().getSimpleName() + "/OkayExampleWithFile.json");
+
+        HttpClient client = JettyHttpClientFactory.getHttpClient();
+        Request request = client.newRequest(
+                TestInstanceHostUtils.getRoCrateUrl() + "/openbis/open-api/ro-crate/import");
+        request.method(HttpMethod.POST);
+        request.headers(headers -> {
+            headers.add("api-key", openBIS.getSessionToken());
+            headers.add("Content-Type", "application/ld+json");
+        });
+        request.body(new BytesRequestContent(Files.readAllBytes(file)));
+        request.idleTimeout(TIMEOUT, TimeUnit.MILLISECONDS);
+
+        ContentResponse response = request.send();
+        LinkedHashMap asyncJob =
+                objectMapper.readValue(response.getContentAsString(), LinkedHashMap.class);
+        String jobId = asyncJob.get("jobId").toString();
+
+        assertEquals(response.getStatus(), 202);
+
+        boolean done = false;
+        while (!done)
+        {
+            Request pollRequest = client.newRequest(
+                    TestInstanceHostUtils.getRoCrateUrl() + "/openbis/open-api/ro-crate/status/" + jobId);
+            pollRequest.method(HttpMethod.GET);
+            pollRequest.headers(headers -> {
+                headers.add("api-key", openBIS.getSessionToken());
+                headers.add("jobId", jobId);
+            });
+            pollRequest.idleTimeout(TIMEOUT, TimeUnit.MILLISECONDS);
+            ContentResponse pollResponse = pollRequest.send();
+            LinkedHashMap asyncResult =
+                    objectMapper.readValue(pollResponse.getContentAsString(), LinkedHashMap.class);
+
+            if (asyncResult.get("status").equals("COMPLETED"))
+            {
+                done = true;
+            }
+
+            if (asyncResult.get("status").equals("FAILED"))
+            {
+                List<String> errors = (List<String>) asyncResult.get("errors");
+                Assert.fail(errors.stream().collect(Collectors.joining(",")));
+                done = true;
+            }
+
+            Thread.sleep(2000);
+        }
     }
 
     @Test(priority = 4)

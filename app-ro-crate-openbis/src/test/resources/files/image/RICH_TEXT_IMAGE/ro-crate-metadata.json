@@ -104,7 +104,7 @@
       "@type": "rdfs:Class"
     },
     {
-      "@type": "rdfs:Property",
+      "@type": "rdf:Property",
       "@id": "openBIS:hasCOLLECTION",
       "schema:rangeIncludes": {
         "@id": "openBIS:Collection"
@@ -145,7 +145,7 @@
       "@type": "openBIS:Space"
     },
     {
-      "@type": "rdfs:Property",
+      "@type": "rdf:Property",
       "rdfs:label": "DOCUMENT",
       "rdfs:comment": "DOCUMENT: DOCUMENT",
       "@id": "openBIS:hasDOCUMENT",
@@ -157,7 +157,7 @@
       }
     },
     {
-      "@type": "rdfs:Property",
+      "@type": "rdf:Property",
       "@id": "openBIS:hasSPACE",
       "schema:rangeIncludes": {
         "@id": "openBIS:Space"
@@ -207,7 +207,7 @@
       "@type": "ENTRY"
     },
     {
-      "@type": "rdfs:Property",
+      "@type": "rdf:Property",
       "@id": "openBIS:hasPROJECT",
       "schema:rangeIncludes": {
         "@id": "openBIS:Project"
@@ -251,17 +251,17 @@
       "@type": "rdfs:Class"
     },
     {
-      "@type": "rdfs:Property",
+      "@type": "rdf:Property",
       "@id": "schema:hasPart",
       "schema:rangeIncludes": {
-        "@id": "File"
+        "@id": "Dataset"
       },
       "schema:domainIncludes": {
         "@id": "openBIS:Object"
       }
     },
     {
-      "@type": "rdfs:Property",
+      "@type": "rdf:Property",
       "rdfs:label": "SHOW_IN_PROJECT_OVERVIEW",
       "rdfs:comment": "SHOW_IN_PROJECT_OVERVIEW: SHOW_IN_PROJECT_OVERVIEW",
       "@id": "openBIS:isSHOW_IN_PROJECT_OVERVIEW",
@@ -289,7 +289,7 @@
       "@type": "rdfs:Class"
     },
     {
-      "@type": "rdfs:Property",
+      "@type": "rdf:Property",
       "rdfs:label": "Name",
       "rdfs:comment": "Name",
       "@id": "openBIS:hasNAME",

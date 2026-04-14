@@ -47,14 +47,12 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.Complete;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetType;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.FileFormatType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.LinkedData;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.LocatorType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.PhysicalData;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.StorageFormat;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetTypeFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.FileFormatTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.LinkedDataFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.LocatorTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.PhysicalDataFetchOptions;
@@ -509,7 +507,6 @@ public class Generator extends AbstractGenerator
         gen.addStringField("location");
         gen.addSimpleField(Long.class, "size");
         gen.addFetchedField(StorageFormat.class, "storageFormat", "Storage format", StorageFormatFetchOptions.class);
-        gen.addFetchedField(FileFormatType.class, "fileFormatType", "File Format Type", FileFormatTypeFetchOptions.class).deprecated();
         gen.addFetchedField(LocatorType.class, "locatorType", "Locator Type", LocatorTypeFetchOptions.class);
         gen.addSimpleField(Complete.class, "complete");
         gen.addSimpleField(ArchivingStatus.class, "status");
@@ -531,17 +528,6 @@ public class Generator extends AbstractGenerator
         gen.addFetchedField(ExternalDms.class, "externalDms", "External data management system", ExternalDmsFetchOptions.class);
 
         gen.setToStringMethod("\"LinkedData \" + externalCode");
-
-        return gen;
-    }
-
-    private static DtoGenerator createFileFormatType()
-    {
-        DtoGenerator gen = new DtoGenerator("dataset", "FileFormatType", FileFormatTypeFetchOptions.class).deprecated();
-        addCode(gen);
-        gen.addStringField("description");
-
-        gen.setToStringMethod("\"FileFormatType \" + code");
 
         return gen;
     }
@@ -1062,7 +1048,6 @@ public class Generator extends AbstractGenerator
         list.add(createVocabularyTerm());
         list.add(createVocabulary());
         list.add(createLocatorType());
-        list.add(createFileFormatType());
         list.add(createStorageFormat());
         list.add(createPhysicalDataGenerator());
         list.add(createLinkedDataGenerator());

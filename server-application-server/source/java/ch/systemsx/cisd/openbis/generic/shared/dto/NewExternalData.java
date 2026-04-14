@@ -28,7 +28,6 @@ import ch.systemsx.cisd.openbis.common.types.BooleanOrUnknown;
 import ch.systemsx.cisd.openbis.generic.shared.IServer;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetType;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.FileFormatType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.LocatorType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.ExperimentIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.SampleIdentifier;
@@ -59,8 +58,6 @@ public class NewExternalData implements Serializable
     private String userId;
 
     private String userEMail;
-
-    private FileFormatType fileFormatType;
 
     private DataSetType dataSetType;
 
@@ -224,18 +221,6 @@ public class NewExternalData implements Serializable
     public String getUserEMail()
     {
         return userEMail;
-    }
-
-    /** Returns <code>fileFormatType</code>. */
-    public final FileFormatType getFileFormatType()
-    {
-        return fileFormatType;
-    }
-
-    /** Sets <code>fileFormatType</code>. */
-    public final void setFileFormatType(final FileFormatType fileFormatType)
-    {
-        this.fileFormatType = fileFormatType;
     }
 
     /** Returns <code>locatorType</code>. */
@@ -415,7 +400,6 @@ public class NewExternalData implements Serializable
         builder.append("code", getCode());
         builder.append("type", getDataSetType());
         builder.append("kind", getDataSetKind());
-        builder.append("fileFormat", getFileFormatType());
         builder.append("properties", getDataSetProperties());
         appendMore(builder);
         return builder.toString();

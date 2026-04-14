@@ -21,7 +21,6 @@ import java.util.Properties;
 
 import org.testng.annotations.Test;
 
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.FileFormatType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.LocatorType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.types.DataSetTypeCode;
 
@@ -36,7 +35,6 @@ public class SimpleTypeExtractorTest
     private final static Properties createProperties()
     {
         Properties props = new Properties();
-        props.put(SimpleTypeExtractor.FILE_FORMAT_TYPE_KEY, "F");
         props.put(SimpleTypeExtractor.LOCATOR_TYPE_KEY, "L");
         props.put(SimpleTypeExtractor.DATA_SET_TYPE_KEY, "O");
         props.put(SimpleTypeExtractor.PROCESSOR_TYPE_KEY, "P");
@@ -48,8 +46,6 @@ public class SimpleTypeExtractorTest
     public final void testConstructor()
     {
         SimpleTypeExtractor extractor = new SimpleTypeExtractor(new Properties());
-        assertEquals(FileFormatType.DEFAULT_FILE_FORMAT_TYPE_CODE, extractor
-                .getFileFormatType(null).getCode());
         assertEquals(LocatorType.DEFAULT_LOCATOR_TYPE_CODE, extractor.getLocatorType(null)
                 .getCode());
         assertEquals(DataSetTypeCode.UNKNOWN.getCode(), extractor.getDataSetType(null).getCode());
@@ -57,7 +53,6 @@ public class SimpleTypeExtractorTest
         assertEquals(true, extractor.isMeasuredData(null));
 
         extractor = new SimpleTypeExtractor(createProperties());
-        assertEquals("F", extractor.getFileFormatType(null).getCode());
         assertEquals("L", extractor.getLocatorType(null).getCode());
         assertEquals("O", extractor.getDataSetType(null).getCode());
         assertEquals("P", extractor.getProcessorType(null));

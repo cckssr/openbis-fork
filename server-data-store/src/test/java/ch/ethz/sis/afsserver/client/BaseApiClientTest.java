@@ -133,9 +133,9 @@ public abstract class BaseApiClientTest
 
     public static final String UPLOAD_TEST_RESOURCE_DIRECTORY = TEST_RESOURCE_DIRECTORY + "/" + UPLOAD_TEST_RESOURCE_DIRECTORY_NAME;
 
-    public static final String TRASH_FOLDER_NAME = ".trash";
+    public static final String TRASH_FOLDER_NAME = ".afs.trash";
 
-    public static final String SNAPSHOTS_FOLDER_NAME = ".snapshots";
+    public static final String SNAPSHOTS_FOLDER_NAME = ".afs.snapshots";
 
     protected static String owner = UUID.randomUUID().toString();
 
@@ -313,9 +313,9 @@ public abstract class BaseApiClientTest
 
         File[] afterSnapshot = listFilesFromAFS(afsClient, owner, "/");
         assertEquals("""
-                /.snapshots, FOLDER, null
-                /.snapshots/A.txt, FOLDER, null
-                /.snapshots/A.txt/<SNAPSHOT>, FILE, 4
+                /.afs.snapshots, FOLDER, null
+                /.afs.snapshots/A.txt, FOLDER, null
+                /.afs.snapshots/A.txt/<SNAPSHOT>, FILE, 4
                 /A.txt, FILE, 4
                 /test-folder, FOLDER, null
                 /test-folder/test-subfolder, FOLDER, null
@@ -326,9 +326,9 @@ public abstract class BaseApiClientTest
 
         File[] afterUpdate = listFilesFromAFS(afsClient, owner, "/");
         assertEquals("""
-                /.snapshots, FOLDER, null
-                /.snapshots/A.txt, FOLDER, null
-                /.snapshots/A.txt/<SNAPSHOT>, FILE, 4
+                /.afs.snapshots, FOLDER, null
+                /.afs.snapshots/A.txt, FOLDER, null
+                /.afs.snapshots/A.txt/<SNAPSHOT>, FILE, 4
                 /A.txt, FILE, 5
                 /test-folder, FOLDER, null
                 /test-folder/test-subfolder, FOLDER, null
@@ -340,10 +340,10 @@ public abstract class BaseApiClientTest
 
         File[] afterSnapshot2 = listFilesFromAFS(afsClient, owner, "/");
         assertEquals("""
-                /.snapshots, FOLDER, null
-                /.snapshots/A.txt, FOLDER, null
-                /.snapshots/A.txt/<SNAPSHOT>, FILE, 4
-                /.snapshots/A.txt/<SNAPSHOT>, FILE, 5
+                /.afs.snapshots, FOLDER, null
+                /.afs.snapshots/A.txt, FOLDER, null
+                /.afs.snapshots/A.txt/<SNAPSHOT>, FILE, 4
+                /.afs.snapshots/A.txt/<SNAPSHOT>, FILE, 5
                 /A.txt, FILE, 5
                 /test-folder, FOLDER, null
                 /test-folder/test-subfolder, FOLDER, null
@@ -424,35 +424,35 @@ public abstract class BaseApiClientTest
 
         File[] beforeFirstDeletionAFS = listFilesFromAFS(afsClient, owner, "/");
         assertEquals("""
-                /.snapshots, FOLDER, null
-                /.snapshots/A.txt, FOLDER, null
-                /.snapshots/A.txt/<SNAPSHOT>, FILE, 4
-                /.snapshots/A.txt/<SNAPSHOT>, FILE, 5
+                /.afs.snapshots, FOLDER, null
+                /.afs.snapshots/A.txt, FOLDER, null
+                /.afs.snapshots/A.txt/<SNAPSHOT>, FILE, 4
+                /.afs.snapshots/A.txt/<SNAPSHOT>, FILE, 5
                 /A.txt, FILE, 5
                 /test-folder, FOLDER, null
                 /test-folder/test-subfolder, FOLDER, null
-                /test-folder/test-subfolder/.snapshots, FOLDER, null
-                /test-folder/test-subfolder/.snapshots/test.png, FOLDER, null
-                /test-folder/test-subfolder/.snapshots/test.png/<SNAPSHOT>, FILE, 19951
+                /test-folder/test-subfolder/.afs.snapshots, FOLDER, null
+                /test-folder/test-subfolder/.afs.snapshots/test.png, FOLDER, null
+                /test-folder/test-subfolder/.afs.snapshots/test.png/<SNAPSHOT>, FILE, 19951
                 /test-folder/test-subfolder/test.png, FILE, 19951
                 """, replaceSnapshots(printFiles(beforeFirstDeletionAFS)));
 
         ch.ethz.sis.afs.api.dto.File[] beforeFirstDeletionFS = listFilesFromFS(testDataRoot);
         assertEquals("""
                 /.afs, FOLDER, null
+                /.afs.snapshots, FOLDER, null
+                /.afs.snapshots/A.txt, FOLDER, null
+                /.afs.snapshots/A.txt/<SNAPSHOT>, FILE, 4
+                /.afs.snapshots/A.txt/<SNAPSHOT>, FILE, 5
                 /.afs/A.txt-hash.md5, FILE, 32
-                /.snapshots, FOLDER, null
-                /.snapshots/A.txt, FOLDER, null
-                /.snapshots/A.txt/<SNAPSHOT>, FILE, 4
-                /.snapshots/A.txt/<SNAPSHOT>, FILE, 5
                 /A.txt, FILE, 5
                 /test-folder, FOLDER, null
                 /test-folder/test-subfolder, FOLDER, null
                 /test-folder/test-subfolder/.afs, FOLDER, null
+                /test-folder/test-subfolder/.afs.snapshots, FOLDER, null
+                /test-folder/test-subfolder/.afs.snapshots/test.png, FOLDER, null
+                /test-folder/test-subfolder/.afs.snapshots/test.png/<SNAPSHOT>, FILE, 19951
                 /test-folder/test-subfolder/.afs/test.png-preview.jpg, FILE, 8607
-                /test-folder/test-subfolder/.snapshots, FOLDER, null
-                /test-folder/test-subfolder/.snapshots/test.png, FOLDER, null
-                /test-folder/test-subfolder/.snapshots/test.png/<SNAPSHOT>, FILE, 19951
                 /test-folder/test-subfolder/test.png, FILE, 19951
                 """, replaceSnapshots(printFiles(beforeFirstDeletionFS)));
 
@@ -462,38 +462,38 @@ public abstract class BaseApiClientTest
 
         File[] afterFirstDeletionAFS = listFilesFromAFS(afsClient, owner, "/");
         assertEquals("""
-                /.trash, FOLDER, null
-                /.trash/.snapshots, FOLDER, null
-                /.trash/.snapshots/A.txt, FOLDER, null
-                /.trash/.snapshots/A.txt/<SNAPSHOT>, FILE, 4
-                /.trash/.snapshots/A.txt/<SNAPSHOT>, FILE, 5
-                /.trash/A.txt, FILE, 5
+                /.afs.trash, FOLDER, null
+                /.afs.trash/.afs.snapshots, FOLDER, null
+                /.afs.trash/.afs.snapshots/A.txt, FOLDER, null
+                /.afs.trash/.afs.snapshots/A.txt/<SNAPSHOT>, FILE, 4
+                /.afs.trash/.afs.snapshots/A.txt/<SNAPSHOT>, FILE, 5
+                /.afs.trash/A.txt, FILE, 5
                 /test-folder, FOLDER, null
                 /test-folder/test-subfolder, FOLDER, null
-                /test-folder/test-subfolder/.snapshots, FOLDER, null
-                /test-folder/test-subfolder/.snapshots/test.png, FOLDER, null
-                /test-folder/test-subfolder/.snapshots/test.png/<SNAPSHOT>, FILE, 19951
+                /test-folder/test-subfolder/.afs.snapshots, FOLDER, null
+                /test-folder/test-subfolder/.afs.snapshots/test.png, FOLDER, null
+                /test-folder/test-subfolder/.afs.snapshots/test.png/<SNAPSHOT>, FILE, 19951
                 /test-folder/test-subfolder/test.png, FILE, 19951
                 """, replaceSnapshots(printFiles(afterFirstDeletionAFS)));
 
         ch.ethz.sis.afs.api.dto.File[] afterFirstDeletionFS = listFilesFromFS(testDataRoot);
         assertEquals("""
                 /.afs, FOLDER, null
-                /.trash, FOLDER, null
-                /.trash/.afs, FOLDER, null
-                /.trash/.afs/A.txt-hash.md5, FILE, 32
-                /.trash/.snapshots, FOLDER, null
-                /.trash/.snapshots/A.txt, FOLDER, null
-                /.trash/.snapshots/A.txt/<SNAPSHOT>, FILE, 4
-                /.trash/.snapshots/A.txt/<SNAPSHOT>, FILE, 5
-                /.trash/A.txt, FILE, 5
+                /.afs.trash, FOLDER, null
+                /.afs.trash/.afs, FOLDER, null
+                /.afs.trash/.afs.snapshots, FOLDER, null
+                /.afs.trash/.afs.snapshots/A.txt, FOLDER, null
+                /.afs.trash/.afs.snapshots/A.txt/<SNAPSHOT>, FILE, 4
+                /.afs.trash/.afs.snapshots/A.txt/<SNAPSHOT>, FILE, 5
+                /.afs.trash/.afs/A.txt-hash.md5, FILE, 32
+                /.afs.trash/A.txt, FILE, 5
                 /test-folder, FOLDER, null
                 /test-folder/test-subfolder, FOLDER, null
                 /test-folder/test-subfolder/.afs, FOLDER, null
+                /test-folder/test-subfolder/.afs.snapshots, FOLDER, null
+                /test-folder/test-subfolder/.afs.snapshots/test.png, FOLDER, null
+                /test-folder/test-subfolder/.afs.snapshots/test.png/<SNAPSHOT>, FILE, 19951
                 /test-folder/test-subfolder/.afs/test.png-preview.jpg, FILE, 8607
-                /test-folder/test-subfolder/.snapshots, FOLDER, null
-                /test-folder/test-subfolder/.snapshots/test.png, FOLDER, null
-                /test-folder/test-subfolder/.snapshots/test.png/<SNAPSHOT>, FILE, 19951
                 /test-folder/test-subfolder/test.png, FILE, 19951
                 """, replaceSnapshots(printFiles(afterFirstDeletionFS)));
 
@@ -511,18 +511,18 @@ public abstract class BaseApiClientTest
         // check the new "A.txt" file is in the trash and the previously trashed "A.txt" file and its hash got renamed
         File[] afterSecondDeletionAFS = listFilesFromAFS(afsClient, owner, "/");
         assertEquals("""
-                        /.trash, FOLDER, null
-                        /.trash/.snapshots, FOLDER, null
-                        /.trash/.snapshots/A.txt#%s, FOLDER, null
-                        /.trash/.snapshots/A.txt#%s/<SNAPSHOT>, FILE, 4
-                        /.trash/.snapshots/A.txt#%s/<SNAPSHOT>, FILE, 5
-                        /.trash/A.txt, FILE, 6
-                        /.trash/A.txt#%s, FILE, 5
+                        /.afs.trash, FOLDER, null
+                        /.afs.trash/.afs.snapshots, FOLDER, null
+                        /.afs.trash/.afs.snapshots/A.txt#%s, FOLDER, null
+                        /.afs.trash/.afs.snapshots/A.txt#%s/<SNAPSHOT>, FILE, 4
+                        /.afs.trash/.afs.snapshots/A.txt#%s/<SNAPSHOT>, FILE, 5
+                        /.afs.trash/A.txt, FILE, 6
+                        /.afs.trash/A.txt#%s, FILE, 5
                         /test-folder, FOLDER, null
                         /test-folder/test-subfolder, FOLDER, null
-                        /test-folder/test-subfolder/.snapshots, FOLDER, null
-                        /test-folder/test-subfolder/.snapshots/test.png, FOLDER, null
-                        /test-folder/test-subfolder/.snapshots/test.png/<SNAPSHOT>, FILE, 19951
+                        /test-folder/test-subfolder/.afs.snapshots, FOLDER, null
+                        /test-folder/test-subfolder/.afs.snapshots/test.png, FOLDER, null
+                        /test-folder/test-subfolder/.afs.snapshots/test.png/<SNAPSHOT>, FILE, 19951
                         /test-folder/test-subfolder/test.png, FILE, 19951
                         """.formatted(firstDeletedFileALastModifiedTimeFormatted, firstDeletedFileALastModifiedTimeFormatted,
                         firstDeletedFileALastModifiedTimeFormatted, firstDeletedFileALastModifiedTimeFormatted),
@@ -531,22 +531,22 @@ public abstract class BaseApiClientTest
         ch.ethz.sis.afs.api.dto.File[] afterSecondDeletionFS = listFilesFromFS(testDataRoot);
         assertEquals("""
                         /.afs, FOLDER, null
-                        /.trash, FOLDER, null
-                        /.trash/.afs, FOLDER, null
-                        /.trash/.afs/A.txt#%s-hash.md5, FILE, 32
-                        /.trash/.snapshots, FOLDER, null
-                        /.trash/.snapshots/A.txt#%s, FOLDER, null
-                        /.trash/.snapshots/A.txt#%s/<SNAPSHOT>, FILE, 4
-                        /.trash/.snapshots/A.txt#%s/<SNAPSHOT>, FILE, 5
-                        /.trash/A.txt, FILE, 6
-                        /.trash/A.txt#%s, FILE, 5
+                        /.afs.trash, FOLDER, null
+                        /.afs.trash/.afs, FOLDER, null
+                        /.afs.trash/.afs.snapshots, FOLDER, null
+                        /.afs.trash/.afs.snapshots/A.txt#%s, FOLDER, null
+                        /.afs.trash/.afs.snapshots/A.txt#%s/<SNAPSHOT>, FILE, 4
+                        /.afs.trash/.afs.snapshots/A.txt#%s/<SNAPSHOT>, FILE, 5
+                        /.afs.trash/.afs/A.txt#%s-hash.md5, FILE, 32
+                        /.afs.trash/A.txt, FILE, 6
+                        /.afs.trash/A.txt#%s, FILE, 5
                         /test-folder, FOLDER, null
                         /test-folder/test-subfolder, FOLDER, null
                         /test-folder/test-subfolder/.afs, FOLDER, null
+                        /test-folder/test-subfolder/.afs.snapshots, FOLDER, null
+                        /test-folder/test-subfolder/.afs.snapshots/test.png, FOLDER, null
+                        /test-folder/test-subfolder/.afs.snapshots/test.png/<SNAPSHOT>, FILE, 19951
                         /test-folder/test-subfolder/.afs/test.png-preview.jpg, FILE, 8607
-                        /test-folder/test-subfolder/.snapshots, FOLDER, null
-                        /test-folder/test-subfolder/.snapshots/test.png, FOLDER, null
-                        /test-folder/test-subfolder/.snapshots/test.png/<SNAPSHOT>, FILE, 19951
                         /test-folder/test-subfolder/test.png, FILE, 19951
                         """.formatted(firstDeletedFileALastModifiedTimeFormatted, firstDeletedFileALastModifiedTimeFormatted,
                         firstDeletedFileALastModifiedTimeFormatted, firstDeletedFileALastModifiedTimeFormatted, firstDeletedFileALastModifiedTimeFormatted),
@@ -559,13 +559,13 @@ public abstract class BaseApiClientTest
 
         File[] afterPermanentDeletionAFS = listFilesFromAFS(afsClient, owner, "/");
         assertEquals("""
-                        /.trash, FOLDER, null
-                        /.trash/A.txt, FILE, 6
+                        /.afs.trash, FOLDER, null
+                        /.afs.trash/A.txt, FILE, 6
                         /test-folder, FOLDER, null
                         /test-folder/test-subfolder, FOLDER, null
-                        /test-folder/test-subfolder/.snapshots, FOLDER, null
-                        /test-folder/test-subfolder/.snapshots/test.png, FOLDER, null
-                        /test-folder/test-subfolder/.snapshots/test.png/<SNAPSHOT>, FILE, 19951
+                        /test-folder/test-subfolder/.afs.snapshots, FOLDER, null
+                        /test-folder/test-subfolder/.afs.snapshots/test.png, FOLDER, null
+                        /test-folder/test-subfolder/.afs.snapshots/test.png/<SNAPSHOT>, FILE, 19951
                         /test-folder/test-subfolder/test.png, FILE, 19951
                         """,
                 replaceSnapshots(printFiles(afterPermanentDeletionAFS)));
@@ -573,16 +573,16 @@ public abstract class BaseApiClientTest
         ch.ethz.sis.afs.api.dto.File[] afterPermanentDeletionFS = listFilesFromFS(testDataRoot);
         assertEquals("""
                         /.afs, FOLDER, null
-                        /.trash, FOLDER, null
-                        /.trash/.afs, FOLDER, null
-                        /.trash/A.txt, FILE, 6
+                        /.afs.trash, FOLDER, null
+                        /.afs.trash/.afs, FOLDER, null
+                        /.afs.trash/A.txt, FILE, 6
                         /test-folder, FOLDER, null
                         /test-folder/test-subfolder, FOLDER, null
                         /test-folder/test-subfolder/.afs, FOLDER, null
+                        /test-folder/test-subfolder/.afs.snapshots, FOLDER, null
+                        /test-folder/test-subfolder/.afs.snapshots/test.png, FOLDER, null
+                        /test-folder/test-subfolder/.afs.snapshots/test.png/<SNAPSHOT>, FILE, 19951
                         /test-folder/test-subfolder/.afs/test.png-preview.jpg, FILE, 8607
-                        /test-folder/test-subfolder/.snapshots, FOLDER, null
-                        /test-folder/test-subfolder/.snapshots/test.png, FOLDER, null
-                        /test-folder/test-subfolder/.snapshots/test.png/<SNAPSHOT>, FILE, 19951
                         /test-folder/test-subfolder/test.png, FILE, 19951
                         """,
                 replaceSnapshots(printFiles(afterPermanentDeletionFS)));
@@ -595,9 +595,9 @@ public abstract class BaseApiClientTest
         assertEquals("""
                 /test-folder, FOLDER, null
                 /test-folder/test-subfolder, FOLDER, null
-                /test-folder/test-subfolder/.snapshots, FOLDER, null
-                /test-folder/test-subfolder/.snapshots/test.png, FOLDER, null
-                /test-folder/test-subfolder/.snapshots/test.png/<SNAPSHOT>, FILE, 19951
+                /test-folder/test-subfolder/.afs.snapshots, FOLDER, null
+                /test-folder/test-subfolder/.afs.snapshots/test.png, FOLDER, null
+                /test-folder/test-subfolder/.afs.snapshots/test.png/<SNAPSHOT>, FILE, 19951
                 /test-folder/test-subfolder/test.png, FILE, 19951
                 """, replaceSnapshots(printFiles(afterWholeTrashDeletionAFS)));
 
@@ -607,10 +607,10 @@ public abstract class BaseApiClientTest
                 /test-folder, FOLDER, null
                 /test-folder/test-subfolder, FOLDER, null
                 /test-folder/test-subfolder/.afs, FOLDER, null
+                /test-folder/test-subfolder/.afs.snapshots, FOLDER, null
+                /test-folder/test-subfolder/.afs.snapshots/test.png, FOLDER, null
+                /test-folder/test-subfolder/.afs.snapshots/test.png/<SNAPSHOT>, FILE, 19951
                 /test-folder/test-subfolder/.afs/test.png-preview.jpg, FILE, 8607
-                /test-folder/test-subfolder/.snapshots, FOLDER, null
-                /test-folder/test-subfolder/.snapshots/test.png, FOLDER, null
-                /test-folder/test-subfolder/.snapshots/test.png/<SNAPSHOT>, FILE, 19951
                 /test-folder/test-subfolder/test.png, FILE, 19951
                 """, replaceSnapshots(printFiles(afterWholeTrashDeletionFS)));
     }
@@ -636,8 +636,8 @@ public abstract class BaseApiClientTest
 
         File[] afterFileDeletionAFS = listFilesFromAFS(afsClient, testOwner, "/");
         assertEquals("""
-                /.trash, FOLDER, null
-                /.trash/A.txt, FILE, 4
+                /.afs.trash, FOLDER, null
+                /.afs.trash/A.txt, FILE, 4
                 """, printFiles(afterFileDeletionAFS));
 
         // create "A.txt" folder with "A.txt" file inside
@@ -645,8 +645,8 @@ public abstract class BaseApiClientTest
 
         File[] beforeFolderDeletionAFS = listFilesFromAFS(afsClient, testOwner, "/");
         assertEquals("""
-                /.trash, FOLDER, null
-                /.trash/A.txt, FILE, 4
+                /.afs.trash, FOLDER, null
+                /.afs.trash/A.txt, FILE, 4
                 /A.txt, FOLDER, null
                 /A.txt/A.txt, FILE, 5
                 """, printFiles(beforeFolderDeletionAFS));
@@ -663,10 +663,10 @@ public abstract class BaseApiClientTest
         // check "A.txt" folder is in the trash and the previously trashed "A.txt" file gets renamed
         File[] afterFolderDeletionAFS = listFilesFromAFS(afsClient, testOwner, "/");
         assertEquals("""
-                /.trash, FOLDER, null
-                /.trash/A.txt, FOLDER, null
-                /.trash/A.txt#%s, FILE, 4
-                /.trash/A.txt/A.txt, FILE, 5
+                /.afs.trash, FOLDER, null
+                /.afs.trash/A.txt, FOLDER, null
+                /.afs.trash/A.txt#%s, FILE, 4
+                /.afs.trash/A.txt/A.txt, FILE, 5
                 """.formatted(deletedFileALastModifiedTimeFormatted), printFiles(afterFolderDeletionAFS));
     }
 
@@ -683,9 +683,9 @@ public abstract class BaseApiClientTest
                 /A.txt, FILE, 4
                 /test-folder, FOLDER, null
                 /test-folder/test-subfolder, FOLDER, null
-                /test-folder/test-subfolder/.snapshots, FOLDER, null
-                /test-folder/test-subfolder/.snapshots/test.png, FOLDER, null
-                /test-folder/test-subfolder/.snapshots/test.png/<SNAPSHOT>, FILE, 19951
+                /test-folder/test-subfolder/.afs.snapshots, FOLDER, null
+                /test-folder/test-subfolder/.afs.snapshots/test.png, FOLDER, null
+                /test-folder/test-subfolder/.afs.snapshots/test.png/<SNAPSHOT>, FILE, 19951
                 /test-folder/test-subfolder/test.png, FILE, 19951
                 """, replaceSnapshots(printFiles(beforeFirstDeletionAFS)));
 
@@ -695,13 +695,13 @@ public abstract class BaseApiClientTest
 
         File[] afterFirstDeletionAFS = listFilesFromAFS(afsClient, owner, "/");
         assertEquals("""
-                /.trash, FOLDER, null
-                /.trash/test-folder, FOLDER, null
-                /.trash/test-folder/test-subfolder, FOLDER, null
-                /.trash/test-folder/test-subfolder/.snapshots, FOLDER, null
-                /.trash/test-folder/test-subfolder/.snapshots/test.png, FOLDER, null
-                /.trash/test-folder/test-subfolder/.snapshots/test.png/<SNAPSHOT>, FILE, 19951
-                /.trash/test-folder/test-subfolder/test.png, FILE, 19951
+                /.afs.trash, FOLDER, null
+                /.afs.trash/test-folder, FOLDER, null
+                /.afs.trash/test-folder/test-subfolder, FOLDER, null
+                /.afs.trash/test-folder/test-subfolder/.afs.snapshots, FOLDER, null
+                /.afs.trash/test-folder/test-subfolder/.afs.snapshots/test.png, FOLDER, null
+                /.afs.trash/test-folder/test-subfolder/.afs.snapshots/test.png/<SNAPSHOT>, FILE, 19951
+                /.afs.trash/test-folder/test-subfolder/test.png, FILE, 19951
                 /A.txt, FILE, 4
                 /test-folder, FOLDER, null
                 """, replaceSnapshots(printFiles(afterFirstDeletionAFS)));
@@ -714,19 +714,19 @@ public abstract class BaseApiClientTest
 
         File[] beforeSecondDeletionAFS = listFilesFromAFS(afsClient, owner, "/");
         assertEquals("""
-                /.trash, FOLDER, null
-                /.trash/test-folder, FOLDER, null
-                /.trash/test-folder/test-subfolder, FOLDER, null
-                /.trash/test-folder/test-subfolder/.snapshots, FOLDER, null
-                /.trash/test-folder/test-subfolder/.snapshots/test.png, FOLDER, null
-                /.trash/test-folder/test-subfolder/.snapshots/test.png/<SNAPSHOT>, FILE, 19951
-                /.trash/test-folder/test-subfolder/test.png, FILE, 19951
+                /.afs.trash, FOLDER, null
+                /.afs.trash/test-folder, FOLDER, null
+                /.afs.trash/test-folder/test-subfolder, FOLDER, null
+                /.afs.trash/test-folder/test-subfolder/.afs.snapshots, FOLDER, null
+                /.afs.trash/test-folder/test-subfolder/.afs.snapshots/test.png, FOLDER, null
+                /.afs.trash/test-folder/test-subfolder/.afs.snapshots/test.png/<SNAPSHOT>, FILE, 19951
+                /.afs.trash/test-folder/test-subfolder/test.png, FILE, 19951
                 /A.txt, FILE, 4
                 /test-folder, FOLDER, null
                 /test-folder/test-subfolder, FOLDER, null
-                /test-folder/test-subfolder/.snapshots, FOLDER, null
-                /test-folder/test-subfolder/.snapshots/test.png, FOLDER, null
-                /test-folder/test-subfolder/.snapshots/test.png/<SNAPSHOT>, FILE, 5
+                /test-folder/test-subfolder/.afs.snapshots, FOLDER, null
+                /test-folder/test-subfolder/.afs.snapshots/test.png, FOLDER, null
+                /test-folder/test-subfolder/.afs.snapshots/test.png/<SNAPSHOT>, FILE, 5
                 /test-folder/test-subfolder/test.png, FILE, 5
                 """, replaceSnapshots(printFiles(beforeSecondDeletionAFS)));
 
@@ -741,16 +741,16 @@ public abstract class BaseApiClientTest
 
         File[] afterSecondDeletionAFS = listFilesFromAFS(afsClient, owner, "/");
         assertEquals("""
-                        /.trash, FOLDER, null
-                        /.trash/test-folder, FOLDER, null
-                        /.trash/test-folder/test-subfolder, FOLDER, null
-                        /.trash/test-folder/test-subfolder/.snapshots, FOLDER, null
-                        /.trash/test-folder/test-subfolder/.snapshots/test.png, FOLDER, null
-                        /.trash/test-folder/test-subfolder/.snapshots/test.png#%s, FOLDER, null
-                        /.trash/test-folder/test-subfolder/.snapshots/test.png#%s/<SNAPSHOT>, FILE, 19951
-                        /.trash/test-folder/test-subfolder/.snapshots/test.png/<SNAPSHOT>, FILE, 5
-                        /.trash/test-folder/test-subfolder/test.png, FILE, 5
-                        /.trash/test-folder/test-subfolder/test.png#%s, FILE, 19951
+                        /.afs.trash, FOLDER, null
+                        /.afs.trash/test-folder, FOLDER, null
+                        /.afs.trash/test-folder/test-subfolder, FOLDER, null
+                        /.afs.trash/test-folder/test-subfolder/.afs.snapshots, FOLDER, null
+                        /.afs.trash/test-folder/test-subfolder/.afs.snapshots/test.png, FOLDER, null
+                        /.afs.trash/test-folder/test-subfolder/.afs.snapshots/test.png#%s, FOLDER, null
+                        /.afs.trash/test-folder/test-subfolder/.afs.snapshots/test.png#%s/<SNAPSHOT>, FILE, 19951
+                        /.afs.trash/test-folder/test-subfolder/.afs.snapshots/test.png/<SNAPSHOT>, FILE, 5
+                        /.afs.trash/test-folder/test-subfolder/test.png, FILE, 5
+                        /.afs.trash/test-folder/test-subfolder/test.png#%s, FILE, 19951
                         /A.txt, FILE, 4
                         /test-folder, FOLDER, null
                         """.formatted(firstDeletedFileALastModifiedTimeFormatted, firstDeletedFileALastModifiedTimeFormatted,
@@ -763,8 +763,8 @@ public abstract class BaseApiClientTest
 
         File[] afterPermanentDeletionAFS = listFilesFromAFS(afsClient, owner, "/");
         assertEquals("""
-                /.trash, FOLDER, null
-                /.trash/test-folder, FOLDER, null
+                /.afs.trash, FOLDER, null
+                /.afs.trash/test-folder, FOLDER, null
                 /A.txt, FILE, 4
                 /test-folder, FOLDER, null
                 """, printFiles(afterPermanentDeletionAFS));
@@ -802,9 +802,9 @@ public abstract class BaseApiClientTest
 
         File[] afterFolderDeletionAFS = listFilesFromAFS(afsClient, testOwner, "/");
         assertEquals("""
-                /.trash, FOLDER, null
-                /.trash/A.txt, FOLDER, null
-                /.trash/A.txt/A.txt, FILE, 4
+                /.afs.trash, FOLDER, null
+                /.afs.trash/A.txt, FOLDER, null
+                /.afs.trash/A.txt/A.txt, FILE, 4
                 """, printFiles(afterFolderDeletionAFS));
 
         // create "A.txt" file
@@ -812,9 +812,9 @@ public abstract class BaseApiClientTest
 
         File[] beforeFileDeletionAFS = listFilesFromAFS(afsClient, testOwner, "/");
         assertEquals("""
-                /.trash, FOLDER, null
-                /.trash/A.txt, FOLDER, null
-                /.trash/A.txt/A.txt, FILE, 4
+                /.afs.trash, FOLDER, null
+                /.afs.trash/A.txt, FOLDER, null
+                /.afs.trash/A.txt/A.txt, FILE, 4
                 /A.txt, FILE, 5
                 """, printFiles(beforeFileDeletionAFS));
 
@@ -830,10 +830,10 @@ public abstract class BaseApiClientTest
         // check "A.txt" file is in the trash and the previously trashed "A.txt" folder gets renamed
         File[] afterFileDeletionAFS = listFilesFromAFS(afsClient, testOwner, "/");
         assertEquals("""
-                /.trash, FOLDER, null
-                /.trash/A.txt, FILE, 5
-                /.trash/A.txt#%s, FOLDER, null
-                /.trash/A.txt#%s/A.txt, FILE, 4
+                /.afs.trash, FOLDER, null
+                /.afs.trash/A.txt, FILE, 5
+                /.afs.trash/A.txt#%s, FOLDER, null
+                /.afs.trash/A.txt#%s/A.txt, FILE, 4
                 """.formatted(deletedFileALastModifiedTimeFormatted, deletedFileALastModifiedTimeFormatted), printFiles(afterFileDeletionAFS));
     }
 
@@ -1140,11 +1140,11 @@ public abstract class BaseApiClientTest
 
         File[] filesBefore = listFilesFromAFS(afsClient, owner, "/");
         assertEquals("""
-                /.snapshots, FOLDER, null
-                /.snapshots/A.txt, FOLDER, null
-                /.snapshots/A.txt/<SNAPSHOT>, FILE, 4
-                /.snapshots/B.txt, FOLDER, null
-                /.snapshots/B.txt/<SNAPSHOT>, FILE, 5
+                /.afs.snapshots, FOLDER, null
+                /.afs.snapshots/A.txt, FOLDER, null
+                /.afs.snapshots/A.txt/<SNAPSHOT>, FILE, 4
+                /.afs.snapshots/B.txt, FOLDER, null
+                /.afs.snapshots/B.txt/<SNAPSHOT>, FILE, 5
                 /A.txt, FILE, 4
                 /B.txt, FILE, 5
                 /test-folder, FOLDER, null
@@ -1160,11 +1160,11 @@ public abstract class BaseApiClientTest
 
         File[] filesAfter = listFilesFromAFS(afsClient, owner, "/");
         assertEquals("""
-                /.snapshots, FOLDER, null
-                /.snapshots/A.txt, FOLDER, null
-                /.snapshots/A.txt/<SNAPSHOT>, FILE, 4
-                /.snapshots/B.txt, FOLDER, null
-                /.snapshots/B.txt/<SNAPSHOT>, FILE, 5
+                /.afs.snapshots, FOLDER, null
+                /.afs.snapshots/A.txt, FOLDER, null
+                /.afs.snapshots/A.txt/<SNAPSHOT>, FILE, 4
+                /.afs.snapshots/B.txt, FOLDER, null
+                /.afs.snapshots/B.txt/<SNAPSHOT>, FILE, 5
                 /A.txt, FILE, 4
                 /B.txt, FILE, 4
                 /C.txt, FILE, 4
@@ -1239,9 +1239,9 @@ public abstract class BaseApiClientTest
 
         File[] filesBefore = listFilesFromAFS(afsClient, owner, "/");
         assertEquals("""
-                /.snapshots, FOLDER, null
-                /.snapshots/A.txt, FOLDER, null
-                /.snapshots/A.txt/<SNAPSHOT>, FILE, 4
+                /.afs.snapshots, FOLDER, null
+                /.afs.snapshots/A.txt, FOLDER, null
+                /.afs.snapshots/A.txt/<SNAPSHOT>, FILE, 4
                 /A.txt, FILE, 4
                 /test-folder, FOLDER, null
                 /test-folder/test-subfolder, FOLDER, null
@@ -1253,9 +1253,9 @@ public abstract class BaseApiClientTest
 
         File[] filesAfter = listFilesFromAFS(afsClient, owner, "/");
         assertEquals("""
-                /.snapshots, FOLDER, null
-                /.snapshots/B.txt, FOLDER, null
-                /.snapshots/B.txt/<SNAPSHOT>, FILE, 4
+                /.afs.snapshots, FOLDER, null
+                /.afs.snapshots/B.txt, FOLDER, null
+                /.afs.snapshots/B.txt/<SNAPSHOT>, FILE, 4
                 /B.txt, FILE, 4
                 /test-folder, FOLDER, null
                 /test-folder/test-subfolder, FOLDER, null
@@ -3439,7 +3439,7 @@ public abstract class BaseApiClientTest
 
     private String replaceSnapshots(String str)
     {
-        return str.replaceAll("(.*\\.snapshots/[^/]+/)\\d{4}_\\d{2}_\\d{2}_\\d{2}_\\d{2}_\\d{2}_\\d{3}", "$1<SNAPSHOT>");
+        return str.replaceAll("(.*\\.afs\\.snapshots/[^/]+/)\\d{4}_\\d{2}_\\d{2}_\\d{2}_\\d{2}_\\d{2}_\\d{3}", "$1<SNAPSHOT>");
     }
 
     protected abstract Configuration getServerConfiguration();

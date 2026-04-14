@@ -187,8 +187,6 @@ abstract public class SimpleImageDataConfig
 
     private String mainDatasetTypeCode;
 
-    private String fileFormatCode = ScreeningConstants.UNKNOWN_FILE_FORMAT;
-
     private String plateCode;
 
     private String spaceCode;
@@ -892,12 +890,6 @@ abstract public class SimpleImageDataConfig
         this.mainDatasetTypeCode = datasetTypeCode;
     }
 
-    /** Sets the file type of the dataset. */
-    public void setFileFormatType(String fileFormatCode)
-    {
-        this.fileFormatCode = fileFormatCode;
-    }
-
     /**
      * Set whether the data is measured or not. By default false.
      */
@@ -918,11 +910,6 @@ abstract public class SimpleImageDataConfig
     public String getDataSetType()
     {
         return mainDatasetTypeCode;
-    }
-
-    public String getFileFormatType()
-    {
-        return fileFormatCode;
     }
 
     public boolean isMeasuredData()

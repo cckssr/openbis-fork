@@ -51,12 +51,6 @@ public class MetadataEntry implements IMetadataEntry
     }
 
     @Override
-    public String getClassId()
-    {
-        return null;
-    }
-
-    @Override
     public Map<String, Serializable> getValues()
     {
         return props;

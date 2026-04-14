@@ -186,7 +186,6 @@ public final class EntityOperationBuilder
         if (dataSet instanceof PhysicalDataSet)
         {
             PhysicalDataSet realDataSet = (PhysicalDataSet) dataSet;
-            newExternalData.setFileFormatType(realDataSet.getFileFormatType());
             newExternalData.setLocation(realDataSet.getLocation());
             newExternalData.setLocatorType(realDataSet.getLocatorType());
         }
@@ -227,11 +226,6 @@ public final class EntityOperationBuilder
         dataSetUpdate.setDatasetId(new TechId(dataSet));
         dataSetUpdate.setDatasetCode(dataSet.getCode());
         dataSetUpdate.setVersion(dataSet.getVersion());
-        if (dataSet instanceof PhysicalDataSet)
-        {
-            PhysicalDataSet realDataSet = (PhysicalDataSet) dataSet;
-            dataSetUpdate.setFileFormatTypeCode(realDataSet.getFileFormatType().getCode());
-        }
         dataSetUpdate.setProperties(dataSet.getProperties());
 
         // Request an update of all properties

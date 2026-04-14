@@ -1668,7 +1668,7 @@ public class MultiDataSetArchiverTest extends AbstractFileSystemTestCase
 
                 allowing(openBISService).tryGetDataSet(code);
                 PhysicalDataSet physicalDataSet = new DataSetBuilder(0).code(code).type("MDT")
-                        .store(new DataStoreBuilder(DSS_CODE).getStore()).fileFormat("TXT")
+                        .store(new DataStoreBuilder(DSS_CODE).getStore())
                         .experiment(experiment).location(code).getDataSet();
                 will(returnValue(physicalDataSet));
             }

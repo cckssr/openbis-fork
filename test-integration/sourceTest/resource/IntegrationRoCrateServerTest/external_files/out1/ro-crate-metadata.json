@@ -1,0 +1,274 @@
+{
+  "@context": [
+    "https://w3id.org/ro/crate/1.1/context",
+    {
+      "schema": "https://schema.org",
+      "owl": "http://www.w3.org/2002/07/owl#",
+      "openBIS": "www.openbis.ch"
+    }
+  ],
+  "@graph": [
+    {
+      "name": "name",
+      "description": "description",
+      "@id": "./",
+      "@type": "Dataset",
+      "license": {
+        "@id": "licenseIdentifier"
+      },
+      "datePublished": "2024-12-04T07:53:11Z",
+      "hasPart": [
+        {
+          "@id": "openBIS:isSHOW_IN_PROJECT_OVERVIEW"
+        },
+        {
+          "@id": "ENTRY"
+        },
+        {
+          "@id": "ffe4d051-a51d-42cb-8175-ee6accdf2b03"
+        },
+        {
+          "@id": "schema:hasPart"
+        },
+        {
+          "@id": "2acaaa6a-3dc4-4ac9-b69b-f8b6a592185e"
+        },
+        {
+          "@id": "https://hierarchy.com/MATERIALS/TESTPROJECT/NewASDASD%20Title%20(ENTRY5)/data/pikaole_crab_smashing_laptop.gif"
+        },
+        {
+          "@id": "openBIS:Dataset"
+        },
+        {
+          "@id": "openBIS:Object"
+        },
+        {
+          "@id": "openBIS:hasSPACE"
+        },
+        {
+          "@id": "e31f9570-1a7f-4aec-8bbb-f61fe654ee7a"
+        },
+        {
+          "@id": "openBIS:hasDOCUMENT"
+        },
+        {
+          "@id": "openBIS:hasCOLLECTION"
+        },
+        {
+          "@id": "/MATERIALS/TESTPROJECT/ENTRY5"
+        },
+        {
+          "@id": "openBIS:hasPROJECT"
+        },
+        {
+          "@id": "openBIS:Collection"
+        },
+        {
+          "@id": "openBIS:Project"
+        },
+        {
+          "@id": "openBIS:hasNAME"
+        },
+        {
+          "@id": "/MATERIALS/TESTPROJECT"
+        },
+        {
+          "@id": "MATERIALS"
+        },
+        {
+          "@id": "openBIS:Space"
+        },
+        {
+          "@id": "openBIS:Vocabulary"
+        }
+      ]
+    },
+    {
+      "about": {
+        "@id": "./"
+      },
+      "conformsTo": {
+        "@id": "https://w3id.org/ro/crate/1.1"
+      },
+      "@id": "ro-crate-metadata.json",
+      "@type": "CreativeWork"
+    },
+    {
+      "@id": "ffe4d051-a51d-42cb-8175-ee6accdf2b03",
+      "@type": "owl:Restriction",
+      "owl:onProperty": {
+        "@id": "openBIS:hasNAME"
+      },
+      "owl:minCardinality": 0,
+      "owl:maxCardinality": 1
+    },
+    {
+      "@type": "rdfs:Property",
+      "@id": "openBIS:hasPROJECT",
+      "schema:rangeIncludes": {
+        "@id": "openBIS:Project"
+      },
+      "schema:domainIncludes": {
+        "@id": "ENTRY"
+      }
+    },
+    {
+      "@type": "rdfs:Property",
+      "@id": "schema:hasPart",
+      "schema:rangeIncludes": {
+        "@id": "File"
+      },
+      "schema:domainIncludes": [
+        {
+          "@id": "openBIS:Object"
+        },
+        {
+          "@id": "openBIS:Collection"
+        }
+      ]
+    },
+    {
+      "@type": "rdfs:Property",
+      "rdfs:label": "Show in project overview",
+      "rdfs:comment": "Show in project overview page",
+      "@id": "openBIS:isSHOW_IN_PROJECT_OVERVIEW",
+      "schema:rangeIncludes": {
+        "@id": "xsd:string"
+      },
+      "schema:domainIncludes": {
+        "@id": "ENTRY"
+      }
+    },
+    {
+      "@id": "MATERIALS",
+      "@type": "openBIS:Space"
+    },
+    {
+      "@id": "e31f9570-1a7f-4aec-8bbb-f61fe654ee7a",
+      "@type": "owl:Restriction",
+      "owl:onProperty": {
+        "@id": "openBIS:isSHOW_IN_PROJECT_OVERVIEW"
+      },
+      "owl:minCardinality": 0,
+      "owl:maxCardinality": 1
+    },
+    {
+      "@id": "/MATERIALS/TESTPROJECT",
+      "@type": "openBIS:Project"
+    },
+    {
+      "@type": "rdfs:Property",
+      "rdfs:label": "Name",
+      "rdfs:comment": "Name",
+      "@id": "openBIS:hasNAME",
+      "schema:rangeIncludes": {
+        "@id": "xsd:string"
+      },
+      "schema:domainIncludes": {
+        "@id": "ENTRY"
+      }
+    },
+    {
+      "@id": "https://hierarchy/MATERIALS/TESTPROJECT/NewASDASD%20Title%20(ENTRY5)/data/pikaole_crab_smashing_laptop.gif",
+      "@type": "File"
+    },
+    {
+      "@type": "rdfs:Property",
+      "@id": "openBIS:hasSPACE",
+      "schema:rangeIncludes": {
+        "@id": "openBIS:Space"
+      },
+      "schema:domainIncludes": {
+        "@id": "ENTRY"
+      }
+    },
+    {
+      "@id": "openBIS:Vocabulary",
+      "@type": "rdfs:Class"
+    },
+    {
+      "@id": "2acaaa6a-3dc4-4ac9-b69b-f8b6a592185e",
+      "@type": "owl:Restriction",
+      "owl:onProperty": {
+        "@id": "openBIS:hasDOCUMENT"
+      },
+      "owl:minCardinality": 0,
+      "owl:maxCardinality": 1
+    },
+    {
+      "@id": "openBIS:Dataset",
+      "@type": "rdfs:Class"
+    },
+    {
+      "@id": "ENTRY",
+      "@type": "rdfs:Class",
+      "owl:restriction": [
+        {
+          "@id": "e31f9570-1a7f-4aec-8bbb-f61fe654ee7a"
+        },
+        {
+          "@id": "2acaaa6a-3dc4-4ac9-b69b-f8b6a592185e"
+        },
+        {
+          "@id": "ffe4d051-a51d-42cb-8175-ee6accdf2b03"
+        }
+      ],
+      "rdfs:subClassOf": {
+        "@id": "openBIS:Object"
+      }
+    },
+    {
+      "@type": "rdfs:Property",
+      "@id": "openBIS:hasCOLLECTION",
+      "schema:rangeIncludes": {
+        "@id": "openBIS:Collection"
+      },
+      "schema:domainIncludes": {
+        "@id": "ENTRY"
+      }
+    },
+    {
+      "@type": "rdfs:Property",
+      "rdfs:label": "Document",
+      "rdfs:comment": "Document",
+      "@id": "openBIS:hasDOCUMENT",
+      "schema:rangeIncludes": {
+        "@id": "xsd:string"
+      },
+      "schema:domainIncludes": {
+        "@id": "ENTRY"
+      }
+    },
+    {
+      "@id": "openBIS:Project",
+      "@type": "rdfs:Class"
+    },
+    {
+      "@id": "openBIS:Object",
+      "@type": "rdfs:Class"
+    },
+    {
+      "openBIS:hasDOCUMENT": "<html>\n <head></head>\n <body>\n  <h2>NewASDASD Title</h2>\n  <p>new content</p>\n </body>\n</html>",
+      "openBIS:hasNAME": "NewASDASD Title",
+      "@id": "/MATERIALS/TESTPROJECT/ENTRY5",
+      "openBIS:hasSPACE": {
+        "@id": "MATERIALS"
+      },
+      "openBIS:hasPROJECT": {
+        "@id": "/MATERIALS/TESTPROJECT"
+      },
+      "schema:hasPart": {
+        "@id": "https://hierarchy/MATERIALS/TESTPROJECT/NewASDASD%20Title%20(ENTRY5)/data/pikaole_crab_smashing_laptop.gif"
+      },
+      "@type": "ENTRY"
+    },
+    {
+      "@id": "openBIS:Collection",
+      "@type": "rdfs:Class"
+    },
+    {
+      "@id": "openBIS:Space",
+      "@type": "rdfs:Class"
+    }
+  ]
+}

@@ -55,8 +55,6 @@ public interface IDataSet
 
     String getExperimentTypeCode();
 
-    String getFileFormatType();
-
     Date getRegistrationTimestamp();
 
     String getDataStoreCode();

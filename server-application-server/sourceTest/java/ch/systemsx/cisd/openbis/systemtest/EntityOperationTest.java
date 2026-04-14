@@ -601,7 +601,7 @@ public class EntityOperationTest extends SystemTestCase
                 new EntityOperationBuilder().dataSet(
                         new DataSetBuilder().code(dataSetCode).type("HCS_IMAGE")
                                 .store(new DataStoreBuilder("STANDARD").getStore())
-                                .fileFormat("XML").location("a/b/c").property("COMMENT", "my data")
+                                .location("a/b/c").property("COMMENT", "my data")
                                 .sample(new SampleBuilder().identifier("/CISD/DEFAULT/WELL-A01").getSample())
                                 .getDataSet()).create();
 
@@ -624,7 +624,7 @@ public class EntityOperationTest extends SystemTestCase
                 new EntityOperationBuilder().dataSet(
                         new DataSetBuilder().code(dataSetCode).type("HCS_IMAGE")
                                 .store(new DataStoreBuilder("STANDARD").getStore())
-                                .fileFormat("XML").location("a/b/c").property("COMMENT", "my data")
+                                .location("a/b/c").property("COMMENT", "my data")
                                 .sample(new SampleBuilder().identifier("/CISD/A01").getSample())
                                 .getDataSet()).create();
 
@@ -653,7 +653,6 @@ public class EntityOperationTest extends SystemTestCase
                                         .code(dataSetCode)
                                         .type("HCS_IMAGE")
                                         .store(new DataStoreBuilder("STANDARD").getStore())
-                                        .fileFormat("XML")
                                         .location("a/b/c")
                                         .property("COMMENT", "my data")
                                         .sample(new SampleBuilder().identifier("/CISD/DEFAULT/CP1-A1")
@@ -681,7 +680,6 @@ public class EntityOperationTest extends SystemTestCase
                         .code(dataSetCode)
                         .type("HCS_IMAGE")
                         .store(new DataStoreBuilder("STANDARD").getStore())
-                        .fileFormat("XML")
                         .location("a/b/c")
                         .property("COMMENT", "my data")
                         .experiment(new ExperimentBuilder().identifier("/CISD/NEMO/EXP1").getExperiment())
@@ -710,7 +708,6 @@ public class EntityOperationTest extends SystemTestCase
                         .code(dataSetCode)
                         .type("UNKNOWN")
                         .store(new DataStoreBuilder("STANDARD").getStore())
-                        .fileFormat("XML")
                         .location("a/b/c")
                         .experiment(new ExperimentBuilder().identifier("/CISD/NEMO/EXP1").getExperiment())
                         .getDataSet()).create();
@@ -732,7 +729,6 @@ public class EntityOperationTest extends SystemTestCase
                                         .code("DS-1")
                                         .type("UNKNOWN")
                                         .store(new DataStoreBuilder("STANDARD").getStore())
-                                        .fileFormat("XML")
                                         .location("a/b/c")
                                         .experiment(
                                                 new ExperimentBuilder().identifier(

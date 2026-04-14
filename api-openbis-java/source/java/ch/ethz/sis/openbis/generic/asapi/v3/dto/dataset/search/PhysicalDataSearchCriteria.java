@@ -48,12 +48,6 @@ public class PhysicalDataSearchCriteria extends AbstractCompositeSearchCriteria
         return with(new StorageFormatSearchCriteria());
     }
 
-    @Deprecated
-    public FileFormatTypeSearchCriteria withFileFormatType()
-    {
-        return with(new FileFormatTypeSearchCriteria());
-    }
-
     public LocatorTypeSearchCriteria withLocatorType()
     {
         return with(new LocatorTypeSearchCriteria());

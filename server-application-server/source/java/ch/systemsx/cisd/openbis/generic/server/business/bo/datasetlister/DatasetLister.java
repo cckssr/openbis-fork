@@ -72,7 +72,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Experiment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExternalDataManagementSystem;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExternalDataManagementSystemType;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.FileFormatType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.FileSystemContentCopy;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IContentCopy;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IDatasetLocationNode;
@@ -141,8 +140,6 @@ public class DatasetLister extends AbstractLister implements IDatasetLister
             new Long2ObjectOpenHashMap<DataSetType>();
 
     private final Long2ObjectMap<DataStore> dataStores = new Long2ObjectOpenHashMap<DataStore>();
-
-    private final Map<Long, FileFormatType> fileFormatTypes = new HashMap<Long, FileFormatType>();
 
     private final Map<Long, LocatorType> locatorTypes = new HashMap<Long, LocatorType>();
 
@@ -1181,8 +1178,6 @@ public class DatasetLister extends AbstractLister implements IDatasetLister
         dataSet.setSpeedHint(record.speed_hint == null ? Constants.DEFAULT_SPEED_HINT
                 : record.speed_hint);
         dataSet.setShareId(record.share_id);
-        dataSet.setFileFormatType(record.ffty_id == null ? null : fileFormatTypes
-                .get(record.ffty_id));
         dataSet.setStorageConfirmation(record.storage_confirmation == null ? false
                 : record.storage_confirmation);
         dataSet.setLocation(record.location);
@@ -1288,12 +1283,6 @@ public class DatasetLister extends AbstractLister implements IDatasetLister
             dataSetTypes.put(code.id, createDataSetType(code));
         }
 
-        fileFormatTypes.clear();
-        for (CodeRecord code : query.getFileFormatTypes())
-        {
-            fileFormatTypes.put(code.id, createFileFormatType(code));
-        }
-
         locatorTypes.clear();
         for (CodeRecord code : query.getLocatorTypes())
         {
@@ -1348,13 +1337,6 @@ public class DatasetLister extends AbstractLister implements IDatasetLister
     private static LocatorType createLocatorType(CodeRecord codeRecord)
     {
         LocatorType result = new LocatorType();
-        setCode(result, codeRecord);
-        return result;
-    }
-
-    private static FileFormatType createFileFormatType(CodeRecord codeRecord)
-    {
-        FileFormatType result = new FileFormatType();
         setCode(result, codeRecord);
         return result;
     }

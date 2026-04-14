@@ -64,8 +64,6 @@ public final class ExternalDataPE extends DataPE
 
     private VocabularyTermPE storageFormatVocabularyTerm;
 
-    private FileFormatTypePE fileFormatType;
-
     private LocatorTypePE locatorType;
 
     private BooleanOrUnknown complete = BooleanOrUnknown.U;
@@ -163,21 +161,6 @@ public final class ExternalDataPE extends DataPE
     public StorageFormat getStorageFormat()
     {
         return StorageFormat.tryGetFromCode(storageFormatVocabularyTerm.getCode());
-    }
-
-    /** Returns <code>fileFormatType</code>. */
-    @ManyToOne(fetch = FetchType.LAZY)
-    @NotNull(message = ValidationMessages.FILE_FORMAT_TYPE_NOT_NULL_MESSAGE)
-    @JoinColumn(name = ColumnNames.FILE_FORMAT_TYPE, updatable = true)
-    public FileFormatTypePE getFileFormatType()
-    {
-        return fileFormatType;
-    }
-
-    /** Sets <code>fileFormatType</code>. */
-    public void setFileFormatType(final FileFormatTypePE fileFormatType)
-    {
-        this.fileFormatType = fileFormatType;
     }
 
     @NotNull(message = ValidationMessages.IS_COMPLETE_NOT_NULL_MESSAGE)

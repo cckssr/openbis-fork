@@ -2,9 +2,6 @@ import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.DataType as DataTyp
 
 tr = service.transaction()
 
-fileFormatType = tr.createNewFileFormatType('FILE-FORMAT-TYPE')
-fileFormatType.setDescription('File format type description.')
-
 animalsVocabulary = tr.createNewVocabulary('ANIMALS')
 animalsVocabulary.setDescription("Vocabulary description")
 animalsVocabulary.setUrlTemplate("http://ask.com/%s")

@@ -5,7 +5,7 @@ import ch.ethz.sis.shared.startup.Configuration;
 public interface TrashRootProvider
 {
 
-    String TRASH_FOLDER_NAME = ".trash";
+    String TRASH_FOLDER_NAME = ".afs.trash";
 
     void init(Configuration configuration) throws Exception;
 

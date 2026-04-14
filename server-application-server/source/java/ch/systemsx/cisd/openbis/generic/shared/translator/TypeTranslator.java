@@ -15,15 +15,10 @@
  */
 package ch.systemsx.cisd.openbis.generic.shared.translator;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractType;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.FileFormatType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.LocatorType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SampleType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.AbstractTypePE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.FileFormatTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.LocatorTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SampleTypePE;
 
@@ -34,23 +29,6 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.SampleTypePE;
  */
 public class TypeTranslator
 {
-    public static FileFormatType translate(FileFormatTypePE fileFormatType)
-    {
-        FileFormatType result = new FileFormatType();
-        fill(result, fileFormatType);
-        return result;
-    }
-
-    public static List<FileFormatType> translate(List<FileFormatTypePE> fileFormatTypes)
-    {
-        final List<FileFormatType> result = new ArrayList<FileFormatType>();
-        for (final FileFormatTypePE type : fileFormatTypes)
-        {
-            result.add(TypeTranslator.translate(type));
-        }
-        return result;
-    }
-
     public static LocatorType translate(LocatorTypePE locatorType)
     {
         LocatorType result = new LocatorType();

@@ -27,7 +27,6 @@ import ch.systemsx.cisd.common.ssl.SslCertificateHelper;
 import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IDataSetTypeImmutable;
 import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IExperimentTypeImmutable;
 import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IExternalDataManagementSystemImmutable;
-import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IFileFormatTypeImmutable;
 import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IPropertyAssignmentImmutable;
 import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IPropertyTypeImmutable;
 import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.ISampleTypeImmutable;
@@ -125,17 +124,6 @@ public class EncapsulatedCommonServer
         return result;
     }
 
-    public List<IFileFormatTypeImmutable> listFileFormatTypes()
-    {
-        List<IFileFormatTypeImmutable> result = new ArrayList<IFileFormatTypeImmutable>();
-        for (ch.systemsx.cisd.openbis.generic.shared.basic.dto.FileFormatType type : commonServer
-                .listFileFormatTypes(sessionToken))
-        {
-            result.add(new FileFormatTypeImmutable(type));
-        }
-        return result;
-    }
-
     public List<IScriptImmutable> listScripts()
     {
         List<IScriptImmutable> result = new ArrayList<IScriptImmutable>();
@@ -175,11 +163,6 @@ public class EncapsulatedCommonServer
     public void registerPropertyAssignment(PropertyAssignment assignment)
     {
         commonServer.assignPropertyType(sessionToken, assignment.getAssignment());
-    }
-
-    public void registerFileFormatType(FileFormatTypeImmutable fileFormatType)
-    {
-        commonServer.registerFileFormatType(sessionToken, fileFormatType.getFileFormatType());
     }
 
     public void logout()

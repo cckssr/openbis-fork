@@ -65,7 +65,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetSearchCrit
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.ExternalCodeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.ExternalDmsSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.FileFormatTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.GitCommitHashSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.GitRepositoryIdSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.LinkedDataSearchCriteria;
@@ -307,7 +306,6 @@ public class CriteriaMapper
         CRITERIA_TO_IN_COLUMN_MAP.put(SampleSearchCriteria.class, SAMPLE_COLUMN);
         CRITERIA_TO_IN_COLUMN_MAP.put(SampleTypeSearchCriteria.class, SAMPLE_TYPE_COLUMN);
         CRITERIA_TO_IN_COLUMN_MAP.put(SpaceSearchCriteria.class, SPACE_COLUMN);
-        CRITERIA_TO_IN_COLUMN_MAP.put(FileFormatTypeSearchCriteria.class, FILE_FORMAT_TYPE);
         CRITERIA_TO_IN_COLUMN_MAP.put(LocatorTypeSearchCriteria.class, LOCATOR_TYPE_COLUMN);
         CRITERIA_TO_IN_COLUMN_MAP.put(StorageFormatSearchCriteria.class, STORAGE_FORMAT_COLUMN);
 
@@ -387,8 +385,6 @@ public class CriteriaMapper
                 applicationContext.getBean("physical-data-set-kind-search-manager", ILocalSearchManager.class));
         CRITERIA_TO_MANAGER_MAP.put(ExternalDmsSearchCriteria.class,
                 applicationContext.getBean("external-dms-search-manager", ILocalSearchManager.class));
-        CRITERIA_TO_MANAGER_MAP.put(FileFormatTypeSearchCriteria.class,
-                applicationContext.getBean("ffty-search-manager", ILocalSearchManager.class));
         CRITERIA_TO_MANAGER_MAP.put(LocatorTypeSearchCriteria.class,
                 applicationContext.getBean("locator-type-search-manager", ILocalSearchManager.class));
         CRITERIA_TO_MANAGER_MAP.put(StorageFormatSearchCriteria.class,

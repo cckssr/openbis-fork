@@ -42,9 +42,6 @@ public class SetDataSetPhysicalDataExecutor implements ISetDataSetPhysicalDataEx
     private ISetDataSetStorageFormatExecutor setDataSetStorageFormatExecutor;
 
     @Autowired
-    private ISetDataSetFileFormatTypeExecutor setDataSetFileFormatTypeExecutor;
-
-    @Autowired
     private ISetDataSetLocatorTypeExecutor setDataSetLocatorTypeExecutor;
 
     @Override
@@ -81,7 +78,6 @@ public class SetDataSetPhysicalDataExecutor implements ISetDataSetPhysicalDataEx
         };
 
         setDataSetStorageFormatExecutor.set(context, batch);
-        setDataSetFileFormatTypeExecutor.set(context, batch);
         setDataSetLocatorTypeExecutor.set(context, batch);
     }
 

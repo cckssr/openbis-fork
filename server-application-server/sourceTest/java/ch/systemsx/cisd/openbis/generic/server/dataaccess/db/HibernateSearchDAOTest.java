@@ -15,7 +15,6 @@
  */
 package ch.systemsx.cisd.openbis.generic.server.dataaccess.db;
 
-import static ch.systemsx.cisd.openbis.generic.server.dataaccess.db.DAOFactory.USE_NEW_SQL_ENGINE;
 import static org.testng.AssertJUnit.assertEquals;
 import static org.testng.AssertJUnit.assertFalse;
 import static org.testng.AssertJUnit.assertTrue;
@@ -34,7 +33,6 @@ import org.testng.annotations.Test;
 import ch.rinn.restrictions.Friend;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IHibernateSearchDAO;
 import ch.systemsx.cisd.openbis.generic.shared.basic.TechId;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetAttributeSearchFieldKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DetailedSearchCriteria;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DetailedSearchCriterion;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DetailedSearchField;
@@ -60,12 +58,6 @@ public final class HibernateSearchDAOTest extends AbstractDAOTest
 {
 
     private static final String USER_ID = "test";
-
-    private static final String FILE_TYPE_TIFF = "TIFF";
-
-    private static final String FILE_TYPE_3VPROPRIETARY = "3VPROPRIETARY";
-
-    private static final String FILE_TYPE_XML = "XML";
 
     @DataProvider(name = "registratorTerm")
     private final static Object[][] getRegistratorTerm()
@@ -342,13 +334,6 @@ public final class HibernateSearchDAOTest extends AbstractDAOTest
         return mkCriterion(createAnySearchField(propertyTypes), queryText);
     }
 
-    private DetailedSearchCriterion createFieldTypeCriterion(String fieldType)
-    {
-        return mkCriterion(
-                DetailedSearchField.createAttributeField(DataSetAttributeSearchFieldKind.FILE_TYPE),
-                fieldType);
-    }
-
 //  NOTE - NEW SEARCH ENGINE: "any field" don't include location attribute
 //    @Test
 //    public final void testSearchForDataSetsAnyField()
@@ -359,21 +344,23 @@ public final class HibernateSearchDAOTest extends AbstractDAOTest
 //                DSLoc.XML_RESULT_18, DSLoc.CONTAINED_1, DSLoc.CONTAINED_2);
 //    }
 
-    @Test
-    public final void testSearchForDataSetsSimpleField()
-    {
-        DetailedSearchCriterion criterion = createFieldTypeCriterion(FILE_TYPE_3VPROPRIETARY);
-        DetailedSearchCriteria criteria = createAndDatasetQuery(criterion);
-        assertCorrectDatasetsFound(criteria, DSLoc.A_2, DSLoc.ANALYSIS_RESULT);
-    }
+//    NOTE - FILE_TYPE attribute has been removed from dataset search.
+//    @Test
+//    public final void testSearchForDataSetsSimpleField()
+//    {
+//        DetailedSearchCriterion criterion = createFieldTypeCriterion(FILE_TYPE_3VPROPRIETARY);
+//        DetailedSearchCriteria criteria = createAndDatasetQuery(criterion);
+//        assertCorrectDatasetsFound(criteria, DSLoc.A_2, DSLoc.ANALYSIS_RESULT);
+//    }
 
-    @Test
-    public final void testSearchForDataSetsSimpleFieldWithDeletedFilteredOut()
-    {
-        DetailedSearchCriterion criterion = createFieldTypeCriterion(FILE_TYPE_TIFF);
-        DetailedSearchCriteria criteria = createAndDatasetQuery(criterion);
-        assertCorrectDatasetsFound(criteria, DSLoc.A_1); // without deleted DSLoc.XXX_YYY_ZZZ
-    }
+//    NOTE - FILE_TYPE attribute has been removed from dataset search.
+//    @Test
+//    public final void testSearchForDataSetsSimpleFieldWithDeletedFilteredOut()
+//    {
+//        DetailedSearchCriterion criterion = createFieldTypeCriterion(FILE_TYPE_TIFF);
+//        DetailedSearchCriteria criteria = createAndDatasetQuery(criterion);
+//        assertCorrectDatasetsFound(criteria, DSLoc.A_1); // without deleted DSLoc.XXX_YYY_ZZZ
+//    }
 
 //    NOTE - NEW SEARCH ENGINE: This test check Associations without including the rules on the sub criteria, something the core doesn't do and is not implemented on the adaptor.
 //    @Test(dependsOnMethods = "testSearchForDataSetsSimpleField")
@@ -400,19 +387,20 @@ public final class HibernateSearchDAOTest extends AbstractDAOTest
 //                DSLoc.CONTAINED_2);
 //    }
 
-    @Test
-    public final void testSearchForDataSetsComplexOrQuery()
-    {
-        DetailedSearchCriterion criterion1 = createAnyFieldCriterion("*-1*");
-        DetailedSearchCriterion criterion2 = createFieldTypeCriterion(FILE_TYPE_XML);
-        DetailedSearchCriteria criteria = createOrDatasetQuery(criterion1, criterion2);
-        criteria.setUseWildcardSearchMode(true);
-        assertAtLeastDatasetsFound(criteria, 22, DSLoc.A_1, DSLoc.A_4, DSLoc.XML_RESULT_8,
-                DSLoc.XML_RESULT_9, DSLoc.XML_RESULT_10, DSLoc.XML_RESULT_11, DSLoc.XML_RESULT_12,
-                DSLoc.XML_RESULT_18, DSLoc.XML_RESULT_20, DSLoc.XML_RESULT_21, DSLoc.XML_RESULT_22,
-                DSLoc.XML_RESULT_27, DSLoc.XML_RESULT_28, DSLoc.CONTAINED_1, DSLoc.CONTAINED_2,
-                DSLoc.COMPONENT_1A, DSLoc.COMPONENT_1B, DSLoc.COMPONENT_2A);
-    }
+//    NOTE - FILE_TYPE attribute has been removed from dataset search.
+//    @Test
+//    public final void testSearchForDataSetsComplexOrQuery()
+//    {
+//        DetailedSearchCriterion criterion1 = createAnyFieldCriterion("*-1*");
+//        DetailedSearchCriterion criterion2 = createFieldTypeCriterion(FILE_TYPE_XML);
+//        DetailedSearchCriteria criteria = createOrDatasetQuery(criterion1, criterion2);
+//        criteria.setUseWildcardSearchMode(true);
+//        assertAtLeastDatasetsFound(criteria, 22, DSLoc.A_1, DSLoc.A_4, DSLoc.XML_RESULT_8,
+//                DSLoc.XML_RESULT_9, DSLoc.XML_RESULT_10, DSLoc.XML_RESULT_11, DSLoc.XML_RESULT_12,
+//                DSLoc.XML_RESULT_18, DSLoc.XML_RESULT_20, DSLoc.XML_RESULT_21, DSLoc.XML_RESULT_22,
+//                DSLoc.XML_RESULT_27, DSLoc.XML_RESULT_28, DSLoc.CONTAINED_1, DSLoc.CONTAINED_2,
+//                DSLoc.COMPONENT_1A, DSLoc.COMPONENT_1B, DSLoc.COMPONENT_2A);
+//    }
 
     // @Test
     // public final void testSearchForDataSetsComplexGeneric()
@@ -517,31 +505,32 @@ public final class HibernateSearchDAOTest extends AbstractDAOTest
     // }
 
     // TODO 2010-10-22, Piotr Buczek: write a different test (auto update is switched off)
-    @Test(groups = "broken")
-    /*
-     * Checks if the dataset search index is properly updated after properties of a dataset have changed.
-     */
-    public final void testSearchForDataSetsAfterPropertiesUpdate() throws InterruptedException
-    {
-        String propertyCode = "COMMENT";
-        DetailedSearchCriterion criterion1 =
-                mkCriterion(DetailedSearchField.createPropertyField(propertyCode), "no comment");
-        DetailedSearchCriterion criterion2 = createFieldTypeCriterion(FILE_TYPE_TIFF);
-
-        DetailedSearchCriteria criteria = createAndDatasetQuery(criterion1, criterion2);
-        if (USE_NEW_SQL_ENGINE) {
-            assertCorrectDatasetsFound(criteria, DSLoc.A_1);
-        } else {
-            assertCorrectDatasetsFound(criteria, DSLoc.A_1, DSLoc.XXX_YYY_ZZZ); // The old search engine returns a deleted dataset
-        }
-
-        // This data set has "no comment" value as a COMMENT property and TIFF file type.
-        // We change it and check if it is removed from results.
-        ExternalDataPE externalData = findExternalData("20081105092159111-1"); // LOC3
-        String newValue = "sth";
-        changeExternalDataProperty(externalData, propertyCode, newValue);
-        assertCorrectDatasetsFound(criteria, DSLoc.XXX_YYY_ZZZ);
-    }
+//    NOTE - FILE_TYPE attribute has been removed from dataset search.
+//    @Test(groups = "broken")
+//    /*
+//     * Checks if the dataset search index is properly updated after properties of a dataset have changed.
+//     */
+//    public final void testSearchForDataSetsAfterPropertiesUpdate() throws InterruptedException
+//    {
+//        String propertyCode = "COMMENT";
+//        DetailedSearchCriterion criterion1 =
+//                mkCriterion(DetailedSearchField.createPropertyField(propertyCode), "no comment");
+//        DetailedSearchCriterion criterion2 = createFieldTypeCriterion(FILE_TYPE_TIFF);
+//
+//        DetailedSearchCriteria criteria = createAndDatasetQuery(criterion1, criterion2);
+//        if (USE_NEW_SQL_ENGINE) {
+//            assertCorrectDatasetsFound(criteria, DSLoc.A_1);
+//        } else {
+//            assertCorrectDatasetsFound(criteria, DSLoc.A_1, DSLoc.XXX_YYY_ZZZ); // The old search engine returns a deleted dataset
+//        }
+//
+//        // This data set has "no comment" value as a COMMENT property and TIFF file type.
+//        // We change it and check if it is removed from results.
+//        ExternalDataPE externalData = findExternalData("20081105092159111-1"); // LOC3
+//        String newValue = "sth";
+//        changeExternalDataProperty(externalData, propertyCode, newValue);
+//        assertCorrectDatasetsFound(criteria, DSLoc.XXX_YYY_ZZZ);
+//    }
 
     private void flushSession()
     {

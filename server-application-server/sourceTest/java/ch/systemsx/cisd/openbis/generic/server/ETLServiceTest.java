@@ -1069,7 +1069,6 @@ public class ETLServiceTest extends AbstractServerTestCase
         final String updatedDataSetCode = "updateDataSetCode";
         final DataSetBatchUpdatesDTO dataSetUpdate = new DataSetBatchUpdatesDTO();
         dataSetUpdate.setDatasetId(CommonTestUtils.TECH_ID);
-        dataSetUpdate.setFileFormatTypeCode("new-file-format");
         dataSetUpdate.setModifiedContainedDatasetCodesOrNull(new String[] { "c1", "c2" });
 
         final MetaprojectPE metaprojectPE = new MetaprojectPE();
@@ -1275,7 +1274,6 @@ public class ETLServiceTest extends AbstractServerTestCase
         final String updatedDataSetCode = "updateDataSetCode";
         final DataSetBatchUpdatesDTO dataSetUpdate = new DataSetBatchUpdatesDTO();
         dataSetUpdate.setDatasetId(CommonTestUtils.TECH_ID);
-        dataSetUpdate.setFileFormatTypeCode("new-file-format");
         dataSetUpdate.setModifiedContainedDatasetCodesOrNull(new String[] { "c1", "c2" });
 
         final MetaprojectPE metaprojectPE = new MetaprojectPE();

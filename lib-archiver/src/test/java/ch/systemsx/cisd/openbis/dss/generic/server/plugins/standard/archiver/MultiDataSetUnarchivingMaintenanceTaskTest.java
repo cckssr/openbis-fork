@@ -256,7 +256,7 @@ public class MultiDataSetUnarchivingMaintenanceTaskTest extends AssertJUnit
                 {
                     dataSetCodes.add(dataSet.getCode());
                     DataSetBuilder builder = new DataSetBuilder(dataSet.getId()).code(dataSet.getCode())
-                            .store(dataStore).fileFormat("UNKNOWN");
+                            .store(dataStore);
                     dataSets2.add(builder.getDataSet());
                 }
                 one(service).listDataSetsByCode(dataSetCodes);

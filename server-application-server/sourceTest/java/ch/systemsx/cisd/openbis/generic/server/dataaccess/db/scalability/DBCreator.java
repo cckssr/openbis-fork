@@ -29,7 +29,6 @@ import org.testng.annotations.Test;
 
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDataDAO;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IEntityTypeDAO;
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.IFileFormatTypeDAO;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.ILocatorTypeDAO;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.db.AbstractDAOTest;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.db.SampleDAO;
@@ -39,7 +38,6 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExternalDataPE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.FileFormatTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.LocatorTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ProjectPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePE;
@@ -318,7 +316,6 @@ public final class DBCreator extends AbstractDAOTest
         externalData.setDataSetType(defaultDataSetType);
         externalData.setExperiment(sample.getExperiment());
         externalData.setSampleAcquiredFrom(sample);
-        externalData.setFileFormatType(pickAFileFormatType());
         externalData.setLocatorType(pickALocatorType());
         String location = CodeGenerator.generateCode(CreatedEntityKind.DATA_SET);
         externalData.setLocation(location);
@@ -341,14 +338,6 @@ public final class DBCreator extends AbstractDAOTest
         LocatorTypePE locatorType = locatorTypeDAO.tryToFindLocatorTypeByCode("RELATIVE_LOCATION");
         assertNotNull(locatorType);
         return locatorType;
-    }
-
-    protected FileFormatTypePE pickAFileFormatType()
-    {
-        IFileFormatTypeDAO fileFormatTypeDAO = daoFactory.getFileFormatTypeDAO();
-        FileFormatTypePE fileFormatType = fileFormatTypeDAO.tryToFindFileFormatTypeByCode("TIFF");
-        assertNotNull(fileFormatType);
-        return fileFormatType;
     }
 
     protected VocabularyTermPE pickAStorageFormatVocabularyTerm()

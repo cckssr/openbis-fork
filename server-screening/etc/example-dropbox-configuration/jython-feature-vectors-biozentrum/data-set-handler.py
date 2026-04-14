@@ -91,7 +91,6 @@ analysisDataset.setSample(plate)
 tr.moveFile(incoming.getPath(), analysisDataset)
 
 # --- optional: other standard operations on analysisDataset can be performed (see IDataSet interface)
-#analysisDataset.setFileFormatType("CSV")
 #analysisDataset.setDataSetType("HCS_ANALYSIS_WELL_FEATURES")
 #analysisDataset.setPropertyValue("DESCRIPTION", incoming.getName())
 #analysisDataset.setParentDatasets(["20110302085840150-90"])

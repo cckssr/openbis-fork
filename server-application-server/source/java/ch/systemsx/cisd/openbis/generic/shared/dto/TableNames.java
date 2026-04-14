@@ -97,8 +97,6 @@ public final class TableNames
 
     public static final String LINK_DATA_TABLE = "link_data";
 
-    public static final String FILE_FORMAT_TYPES_TABLE = "file_format_types";
-
     public static final String SPACES_TABLE = "spaces";
 
     public static final String DELETIONS_TABLE = "deletions";

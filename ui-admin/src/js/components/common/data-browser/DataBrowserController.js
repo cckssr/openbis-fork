@@ -119,7 +119,7 @@ export default class DataBrowserController extends ComponentController {
   }
 
   async delete(files) {
-    const TRASH = "/.trash"
+    const TRASH = "/.afs.trash"
 
     await this.handleError(async () => {
       // delete non-trash files/folders first

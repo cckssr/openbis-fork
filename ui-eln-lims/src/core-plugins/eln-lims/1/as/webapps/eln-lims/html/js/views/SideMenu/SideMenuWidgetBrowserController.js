@@ -1819,6 +1819,33 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
             }
         var sampleSubcriteria = []
 
+        if (params.childrenIn) {
+            sampleSubcriteria.push({
+                logicalOperator: "OR",
+                rules: params.childrenIn.map((childIn) => {
+                    return {
+                        type: "Attribute",
+                        name: "PERM_ID",
+                        value: childIn.object.id,
+                    }
+                }),
+            })
+        }
+
+        if (params.childrenNotIn) {
+            sampleSubcriteria.push({
+                negate: true,
+                logicalOperator: "OR",
+                rules: params.childrenNotIn.map((childNotIn) => {
+                    return {
+                        type: "Attribute",
+                        name: "PERM_ID",
+                        value: childNotIn.object.id,
+                    }
+                }),
+            })
+        }
+
         var sampleFetchOptions = {
             only: true,
             withProperties: true,
@@ -1932,6 +1959,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
             offset: params.offset || 0,
             limit: params.limit || this.LOAD_LIMIT,
             sortings: this.SORTINGS_BY_NAME_AND_REGISTRATION_DATE,
+            childrenIn: params.childrenIn
         })
 
         var projectsFolderNode =this._createSpaceProjectsNode();
@@ -1953,6 +1981,15 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
 
         if (samplesResults.totalCount > 0) {
             var promises = []
+             if(params.childrenIn) {
+                samplesResults.nodes = samplesResults.nodes
+                       .filter(x => params.childrenIn.some(y => y.object.id === x.object.id));
+            }
+            if(params.childrenNotIn) {
+                samplesResults.nodes = samplesResults.nodes
+                       .filter(x => !params.childrenNotIn.some(y => y.object.id === x.object.id));
+            }
+
             samplesResults.nodes.forEach((sampleNode) => {
                   promises.push(this._loadNodesSample({
                           node: sampleNode,
@@ -1993,6 +2030,33 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
                 [Util.guid()]: { type: "Experiment", name: "NULL.NULL", value: "NULL" },
             }
         var sampleSubcriteria = []
+
+        if (params.childrenIn) {
+            sampleSubcriteria.push({
+                logicalOperator: "OR",
+                rules: params.childrenIn.map((childIn) => {
+                    return {
+                        type: "Attribute",
+                        name: "PERM_ID",
+                        value: childIn.object.id,
+                    }
+                }),
+            })
+        }
+
+        if (params.childrenNotIn) {
+            sampleSubcriteria.push({
+                negate: true,
+                logicalOperator: "OR",
+                rules: params.childrenNotIn.map((childNotIn) => {
+                    return {
+                        type: "Attribute",
+                        name: "PERM_ID",
+                        value: childNotIn.object.id,
+                    }
+                }),
+            })
+        }
 
 
         var sampleFetchOptions = {
@@ -2079,6 +2143,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
             offset: params.offset || 0,
             limit: params.limit || this.LOAD_LIMIT,
             sortings: this.SORTINGS_BY_CODE_AND_REGISTRATION_DATE,
+            childrenIn: params.childrenIn
         })
 
         var experimentFolderNode = this._createProjectExperimentsNode()
@@ -2100,6 +2165,14 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
 
         if (samplesResults.totalCount > 0) {
             var promises = []
+            if(params.childrenIn) {
+                samplesResults.nodes = samplesResults.nodes
+                       .filter(x => params.childrenIn.some(y => y.object.id === x.object.id));
+            }
+            if(params.childrenNotIn) {
+                samplesResults.nodes = samplesResults.nodes
+                       .filter(x => !params.childrenNotIn.some(y => y.object.id === x.object.id));
+            }
             samplesResults.nodes.forEach((sampleNode) => {
                   promises.push(this._loadNodesSample({
                           node: sampleNode,
@@ -3073,7 +3146,6 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
     _createExportsNode() {
         if (
             profile.mainMenu.showExports ||
-            options.showResearchCollectionExportBuilder ||
             profile.mainMenu.showZenodoExportBuilder
         ) {
             return {
@@ -3307,7 +3379,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
             rootable: true,
             view: "showSpacePage",
             viewData: space.getCode(),
-            sortings: this.SORTINGS_BY_CODE_AND_REGISTRATION_DATE,
+            sortings: this.SORTINGS_BY_NAME_AND_REGISTRATION_DATE,
             icon: IconUtil.getNavigationIcon(this.TYPE_SPACE, { isHomeSpace: isHomeSpace })
         }
     }

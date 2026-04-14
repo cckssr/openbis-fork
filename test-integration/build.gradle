@@ -1,7 +1,7 @@
 apply from: '../build/javaproject.gradle'
 
-sourceCompatibility = null
-targetCompatibility = null
+sourceCompatibility = JavaVersion.VERSION_21
+targetCompatibility = JavaVersion.VERSION_21
 
 sourceSets {
     main {

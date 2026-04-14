@@ -5,11 +5,6 @@ print ("Importing Master Data...")
 
 tr = service.transaction()
 
-# File Formats
-file_type_UNKNOWN = tr.getOrCreateNewFileFormatType('UNKNOWN')
-file_type_UNKNOWN.setDescription('Unknown file format')
-   
-
 # Experiment Types
 exp_type_5HT_EXP = tr.getOrCreateNewExperimentType('EXCEL_EXAMPLE')
 exp_type_5HT_EXP.setDescription('An example of an experiment defined in Excel.')

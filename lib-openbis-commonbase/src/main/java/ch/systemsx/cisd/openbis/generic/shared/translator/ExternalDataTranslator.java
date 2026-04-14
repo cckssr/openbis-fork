@@ -37,7 +37,6 @@ public class ExternalDataTranslator
             description.setDataSetLocation(dataSet.getLocation());
             description.setDataSetShareId(dataSet.getShareId());
             description.setSpeedHint(dataSet.getSpeedHint());
-            description.setFileFormatType(dataSet.getFileFormatType().getCode());
             description.setH5Folders(dataSet.isH5Folders());
             description.setH5arFolders(dataSet.isH5arFolders());
             description.setArchivingRequested(dataSet.isArchivingRequested());

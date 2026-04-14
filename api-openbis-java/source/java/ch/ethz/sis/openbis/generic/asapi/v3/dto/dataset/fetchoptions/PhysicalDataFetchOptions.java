@@ -18,7 +18,6 @@ package ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.FetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.FetchOptionsToStringBuilder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.PhysicalData;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.FileFormatTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.LocatorTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.StorageFormatFetchOptions;
 import ch.systemsx.cisd.base.annotation.JsonObject;
@@ -35,10 +34,6 @@ public class PhysicalDataFetchOptions extends FetchOptions<PhysicalData> impleme
 
     @JsonProperty
     private StorageFormatFetchOptions storageFormat;
-
-    @JsonProperty
-    @Deprecated
-    private FileFormatTypeFetchOptions fileFormatType;
 
     @JsonProperty
     private LocatorTypeFetchOptions locatorType;
@@ -66,31 +61,6 @@ public class PhysicalDataFetchOptions extends FetchOptions<PhysicalData> impleme
     public boolean hasStorageFormat()
     {
         return storageFormat != null;
-    }
-
-    // Method automatically generated with DtoGenerator
-    @Deprecated
-    public FileFormatTypeFetchOptions withFileFormatType()
-    {
-        if (fileFormatType == null)
-        {
-            fileFormatType = new FileFormatTypeFetchOptions();
-        }
-        return fileFormatType;
-    }
-
-    // Method automatically generated with DtoGenerator
-    @Deprecated
-    public FileFormatTypeFetchOptions withFileFormatTypeUsing(FileFormatTypeFetchOptions fetchOptions)
-    {
-        return fileFormatType = fetchOptions;
-    }
-
-    // Method automatically generated with DtoGenerator
-    @Deprecated
-    public boolean hasFileFormatType()
-    {
-        return fileFormatType != null;
     }
 
     // Method automatically generated with DtoGenerator
@@ -137,7 +107,6 @@ public class PhysicalDataFetchOptions extends FetchOptions<PhysicalData> impleme
     {
         FetchOptionsToStringBuilder f = new FetchOptionsToStringBuilder("PhysicalData", this);
         f.addFetchOption("StorageFormat", storageFormat);
-        f.addFetchOption("FileFormatType", fileFormatType);
         f.addFetchOption("LocatorType", locatorType);
         return f;
     }

@@ -34,12 +34,10 @@ import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronize
 import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
 import ch.systemsx.cisd.openbis.generic.shared.ICommonServer;
 import ch.systemsx.cisd.openbis.generic.shared.basic.TechId;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExperimentType;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.FileFormatType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewETPTAssignment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewVocabulary;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PropertyType;
@@ -61,10 +59,6 @@ public class SynchronizerFacade implements ISynchronizerFacade
     private final IApplicationServerApi v3api;
     
     private final Logger operationLog;
-
-    private Map<String, String> fileformatTypesToUpdate = new TreeMap<String, String>();
-
-    private Set<String> fileformatTypesToAdd = new TreeSet<String>();
 
     private Map<String, String> propertyTypesToUpdate = new TreeMap<String, String>();
 
@@ -107,26 +101,6 @@ public class SynchronizerFacade implements ISynchronizerFacade
         this.dryRun = dryRun;
         this.verbose = verbose || dryRun;
         this.operationLog = operationLog;
-    }
-
-    @Override
-    public void updateFileFormatType(AbstractType type)
-    {
-        fileformatTypesToUpdate.put(type.getCode(), "Description: " + type.getDescription());
-        if (dryRun == false)
-        {
-            commonServer.updateFileFormatType(sessionToken, type);
-        }
-    }
-
-    @Override
-    public void registerFileFormatType(FileFormatType type)
-    {
-        fileformatTypesToAdd.add(type.getCode());
-        if (dryRun == false)
-        {
-            commonServer.registerFileFormatType(sessionToken, type);
-        }
     }
 
     @Override
@@ -348,9 +322,6 @@ public class SynchronizerFacade implements ISynchronizerFacade
     {
         if (verbose)
         {
-            SummaryUtils.printAddedSummary(operationLog, fileformatTypesToAdd, "file format types");
-            printUpdatedSummary(fileformatTypesToUpdate, "file format types");
-
             SummaryUtils.printAddedSummary(operationLog, validationPluginsToAdd, "validation plugins");
             printUpdatedSummary(validationPluginsToUpdate, "validation plugins");
 
@@ -368,8 +339,6 @@ public class SynchronizerFacade implements ISynchronizerFacade
             printUpdateSummary(dataSetTypesToAdd, dataSetTypesToUpdate, "data set types");
         }
         SummaryUtils.printShortSummaryHeader(operationLog);
-        SummaryUtils.printShortAddedSummary(operationLog, fileformatTypesToAdd.size(), "file format types");
-        SummaryUtils.printShortUpdatedSummary(operationLog, fileformatTypesToUpdate.size(), "file format types");
         SummaryUtils.printShortAddedSummary(operationLog, validationPluginsToAdd.size(), "validation plugins");
         SummaryUtils.printShortUpdatedSummary(operationLog, validationPluginsToUpdate.size(), "validation plugins");
         SummaryUtils.printShortAddedSummary(operationLog, vocabulariesToAdd.size(), "vocabularies");

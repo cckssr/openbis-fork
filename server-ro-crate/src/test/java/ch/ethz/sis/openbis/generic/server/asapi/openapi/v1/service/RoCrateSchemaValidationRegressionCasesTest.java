@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class RoCrateSchemaValidationRegressionCasesTest
 {
@@ -39,7 +40,7 @@ public class RoCrateSchemaValidationRegressionCasesTest
         List<IPropertyType> propertyTypes = schemaFacade.getPropertyTypes();
         OpenBisModel openBisModel =
                 RdfToModel.convert(types, propertyTypes, metadataEntries, "DEFAULT", "DEFAULT",
-                        schemaFacade);
+                        schemaFacade, Map.of());
         return RoCrateSchemaValidation.validate(openBisModel);
 
     }

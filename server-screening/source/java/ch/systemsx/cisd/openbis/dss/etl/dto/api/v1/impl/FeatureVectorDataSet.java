@@ -88,12 +88,6 @@ public class FeatureVectorDataSet extends DataSet<FeatureVectorDataSetInformatio
     }
 
     @Override
-    public String getFileFormatType()
-    {
-        return dataSet.getFileFormatType();
-    }
-
-    @Override
     public int getSpeedHint()
     {
         return dataSet.getSpeedHint();
@@ -175,12 +169,6 @@ public class FeatureVectorDataSet extends DataSet<FeatureVectorDataSetInformatio
     public void setSample(ISampleImmutable sampleOrNull)
     {
         dataSet.setSample(sampleOrNull);
-    }
-
-    @Override
-    public void setFileFormatType(String fileFormatTypeCode)
-    {
-        dataSet.setFileFormatType(fileFormatTypeCode);
     }
 
     @Override

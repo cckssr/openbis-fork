@@ -96,9 +96,6 @@ public enum TableMapper
     EXTERNAL_DMS(EXTERNAL_DATA_MANAGEMENT_SYSTEMS_TABLE, null, null, null, null, null, null, null, null, null, null, null,
             null, null, null, null, null, null, null, false, false, false),
 
-    FILE_FORMAT_TYPES(FILE_FORMAT_TYPES_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null,
-            null, null, null, null, null, false, false, false),
-
     LOCATOR_TYPES(LOCATOR_TYPES_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
             null, null, null, null, false, false, false),
 

@@ -58,7 +58,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.search.VocabularySear
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
 import ch.systemsx.cisd.common.shared.basic.string.CommaSeparatedListBuilder;
 import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.DataType;
-import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IFileFormatTypeImmutable;
 import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IMasterDataRegistrationTransaction;
 import ch.systemsx.cisd.openbis.generic.shared.basic.BasicConstant;
 import ch.systemsx.cisd.openbis.generic.shared.basic.CodeConverter;
@@ -78,8 +77,6 @@ public class MasterDataExtractor
 
     private static final DataSetTypeSearchCriteria DATA_SET_TYPE_SEARCH_CRITERIA = new DataSetTypeSearchCriteria();
 
-    private final IMasterDataRegistrationTransaction masterDataRegistrationTransaction;
-
     private final IApplicationServerApi v3Api;
 
     private final String sessionToken;
@@ -87,14 +84,11 @@ public class MasterDataExtractor
     /**
      * @param v3Api
      * @param sessionToken
-     * @param masterDataRegistrationTransaction
      */
-    public MasterDataExtractor(IApplicationServerApi v3Api, String sessionToken,
-            IMasterDataRegistrationTransaction masterDataRegistrationTransaction)
+    public MasterDataExtractor(IApplicationServerApi v3Api, String sessionToken)
     {
         this.v3Api = v3Api;
         this.sessionToken = sessionToken;
-        this.masterDataRegistrationTransaction = masterDataRegistrationTransaction;
     }
 
     public String fetchAsXmlString() throws ParserConfigurationException, TransformerException
@@ -107,7 +101,6 @@ public class MasterDataExtractor
             // xmlStreamWriter.writeStartDocument();
             xmlStreamWriter.writeStartElement("xmd:masterData");
             xmlStreamWriter.writeAttribute("xmlns:xmd", "https://sis.id.ethz.ch/software/#openbis/xmdterms/");
-            appendFileFormatTypes(xmlStreamWriter);
             appendValidationPlugins(xmlStreamWriter);
             appendVocabularies(xmlStreamWriter);
             appendPropertyTypes(xmlStreamWriter);
@@ -194,23 +187,6 @@ public class MasterDataExtractor
             entityKind = builder.toString();
         }
         return entityKind;
-    }
-
-    private void appendFileFormatTypes(XMLStreamWriter out) throws XMLStreamException
-    {
-        List<IFileFormatTypeImmutable> fileFormatTypes = masterDataRegistrationTransaction.listFileFormatTypes();
-        if (fileFormatTypes.size() > 0)
-        {
-            out.writeStartElement("xmd:fileFormatTypes");
-            for (IFileFormatTypeImmutable fileFormatType : fileFormatTypes)
-            {
-                out.writeStartElement("xmd:fileFormatType");
-                writeAttributeIfNotNull(out, "code", fileFormatType.getCode());
-                writeAttributeIfNotNull(out, "description", fileFormatType.getDescription());
-                out.writeEndElement();
-            }
-            out.writeEndElement();
-        }
     }
 
     private void appendPropertyTypes(XMLStreamWriter out) throws XMLStreamException

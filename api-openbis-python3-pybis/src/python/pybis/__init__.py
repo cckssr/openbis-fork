@@ -15,7 +15,7 @@
 name = "pybis"
 __author__ = "ID SIS • ETH Zürich"
 __email__ = "openbis-support@id.ethz.ch"
-__version__ = "6.9.0.0-rc0"
+__version__ = "6.9.1.0-rc1"
 
 from . import pybis
 from .pybis import DataSet
@@ -24,3 +24,4 @@ from .pybis import ImagingControl
 from .pybis import Spreadsheet
 from .imaging import *
 from .afs_client import File, AfsClient
+# from .ro_crate_client import RoCrateClient

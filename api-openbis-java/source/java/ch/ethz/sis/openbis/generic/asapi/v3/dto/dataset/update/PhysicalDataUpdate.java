@@ -22,7 +22,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.FieldUpdateValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.ArchivingStatus;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.IFileFormatTypeId;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
 /**
@@ -32,10 +31,6 @@ import ch.systemsx.cisd.base.annotation.JsonObject;
 public class PhysicalDataUpdate implements IUpdate
 {
     private static final long serialVersionUID = 1L;
-
-    @JsonProperty
-    @Deprecated
-    private FieldUpdateValue<IFileFormatTypeId> fileFormatTypeId = new FieldUpdateValue<IFileFormatTypeId>();
 
     @JsonProperty
     private FieldUpdateValue<Boolean> archivingRequested = new FieldUpdateValue<Boolean>();
@@ -54,20 +49,6 @@ public class PhysicalDataUpdate implements IUpdate
 
     @JsonProperty
     private FieldUpdateValue<Long> size = new FieldUpdateValue<Long>();
-
-    @JsonIgnore
-    @Deprecated
-    public FieldUpdateValue<IFileFormatTypeId> getFileFormatTypeId()
-    {
-        return fileFormatTypeId;
-    }
-
-    @JsonIgnore
-    @Deprecated
-    public void setFileFormatTypeId(IFileFormatTypeId fileFormatTypeId)
-    {
-        this.fileFormatTypeId.setValue(fileFormatTypeId);
-    }
 
     @JsonIgnore
     public FieldUpdateValue<Boolean> isArchivingRequested()

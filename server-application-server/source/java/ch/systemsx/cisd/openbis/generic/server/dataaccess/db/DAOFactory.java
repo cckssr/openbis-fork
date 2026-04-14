@@ -85,8 +85,6 @@ public final class DAOFactory extends AuthorizationDAOFactory implements IDAOFac
 
     private final DataSetTypeDAO dataSetTypeDAO;
 
-    private final FileFormatTypeDAO fileFormatTypeDAO;
-
     private final LocatorTypeDAO locatorTypeDAO;
 
     private final ICodeSequenceDAO codeSequenceDAO;
@@ -140,7 +138,6 @@ public final class DAOFactory extends AuthorizationDAOFactory implements IDAOFac
         vocabularyDAO = new VocabularyDAO(sessionFactory, historyCreator);
         vocabularyTermDAO = new VocabularyTermDAO(sessionFactory, historyCreator);
         dataSetTypeDAO = new DataSetTypeDAO(sessionFactory, historyCreator);
-        fileFormatTypeDAO = new FileFormatTypeDAO(sessionFactory, historyCreator);
         locatorTypeDAO = new LocatorTypeDAO(sessionFactory, historyCreator);
         codeSequenceDAO = new CodeSequenceDAO(sessionFactory);
         dataStoreDAO = new DataStoreDAO(sessionFactory);
@@ -241,12 +238,6 @@ public final class DAOFactory extends AuthorizationDAOFactory implements IDAOFac
     public IDataSetTypeDAO getDataSetTypeDAO()
     {
         return dataSetTypeDAO;
-    }
-
-    @Override
-    public IFileFormatTypeDAO getFileFormatTypeDAO()
-    {
-        return fileFormatTypeDAO;
     }
 
     @Override

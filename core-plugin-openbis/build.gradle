@@ -252,6 +252,31 @@ def downloadCorePlugin(url, pluginname) {
             ext.executeFunction('unzip', ['-uqo', file.getAbsolutePath(), '-d', '../core-plugin-openbis/targets/downloads/'])
         }
     }
+    sanitizeDownloadedCorePlugin(pluginname)
+}
+
+def sanitizeDownloadedCorePlugin(pluginname) {
+    if (pluginname != 'microscopy' && pluginname != 'flow') {
+        return
+    }
+
+    def pluginRoot = project(':server-application-server')
+            .file("../core-plugin-openbis/targets/downloads/obit_${pluginname}_core_technology-release-20.x/core-plugins/${pluginname}")
+
+    if (pluginRoot.exists() == false) {
+        return
+    }
+
+    fileTree(dir: pluginRoot, includes: ['*/as/initialize-master-data.py']).files.each { scriptFile ->
+        def script = scriptFile.getText('UTF-8')
+        def sanitizedScript = script.replaceFirst(
+                /(?ms)# ==============================================================================\s*#\s*# FILE FORMATS\s*#\s*# ==============================================================================\s*.*?(?=\n# ======================================================================)/,
+                '')
+        if (sanitizedScript != script) {
+            println "Sanitized obsolete file-format API calls in ${scriptFile}"
+            scriptFile.write(sanitizedScript, 'UTF-8')
+        }
+    }
 }
 
 import org.paleozogt.gradle.zip.SymZip;

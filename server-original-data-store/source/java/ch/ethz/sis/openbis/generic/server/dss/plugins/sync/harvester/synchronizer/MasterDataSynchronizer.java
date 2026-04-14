@@ -55,7 +55,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityTypePropertyType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExperimentType;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.FileFormatType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewETPTAssignment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewVocabulary;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PropertyType;
@@ -107,8 +106,6 @@ public class MasterDataSynchronizer
     public void synchronizeMasterData(MasterData masterData, Monitor monitor)
     {
         MultiKeyMap<String, List<NewETPTAssignment>> propertyAssignmentsToProcess = masterData.getPropertyAssignmentsToProcess();
-        monitor.log("process file format types");
-        processFileFormatTypes(masterData.getFileFormatTypesToProcess());
         monitor.log("process validation plugins");
         processValidationPlugins(masterData.getValidationPluginsToProcess());
         monitor.log("process vocabularies");
@@ -212,33 +209,6 @@ public class MasterDataSynchronizer
         if (updates.isEmpty() == false)
         {
             synchronizerFacade.updateExternalDataManagementSystems(updates);
-        }
-    }
-
-    private void processFileFormatTypes(Map<String, FileFormatType> fileFormatTypesToProcess)
-    {
-        List<FileFormatType> fileFormatTypes = commonServer.listFileFormatTypes(sessionToken);
-        Map<String, FileFormatType> typeMap = new HashMap<String, FileFormatType>();
-        for (FileFormatType type : fileFormatTypes)
-        {
-            typeMap.put(type.getCode(), type);
-        }
-
-        for (String typeCode : fileFormatTypesToProcess.keySet())
-        {
-            FileFormatType incomingType = fileFormatTypesToProcess.get(typeCode);
-            FileFormatType existingTypeOrNull = typeMap.get(typeCode);
-            if (existingTypeOrNull != null)
-            {
-                if (StringUtils.equals(existingTypeOrNull.getDescription(), incomingType.getDescription()) == false)
-                {
-                    existingTypeOrNull.setDescription(incomingType.getDescription());
-                    synchronizerFacade.updateFileFormatType(existingTypeOrNull);
-                }
-            } else
-            {
-                synchronizerFacade.registerFileFormatType(incomingType);
-            }
         }
     }
 

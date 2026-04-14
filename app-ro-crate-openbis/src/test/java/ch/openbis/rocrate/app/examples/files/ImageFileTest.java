@@ -22,6 +22,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class ImageFileTest
@@ -79,7 +80,7 @@ public class ImageFileTest
                 openBisModel =
                 RdfToModel.convert(types, schemaFacade.getPropertyTypes(),
                         entryList.stream().toList(), "DEFAULT",
-                        "DEFAULT", schemaFacade);
+                        "DEFAULT", schemaFacade, Map.of());
 
         Assert.assertEquals(2, openBisModel.getFiles().size());
 

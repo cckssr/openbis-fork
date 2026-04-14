@@ -13,10 +13,6 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		prototype.location = null;
 		prototype.size = null;
 		prototype.storageFormat = null;
-		/*
-		 * @Deprecated
-		 */
-		prototype.fileFormatType = null;
 		prototype.locatorType = null;
 		prototype.complete = null;
 		prototype.status = null;
@@ -61,22 +57,6 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		};
 		prototype.setStorageFormat = function(storageFormat) {
 			this.storageFormat = storageFormat;
-		};
-		/*
-		 * @Deprecated
-		 */
-		prototype.getFileFormatType = function() {
-			if (this.getFetchOptions() && this.getFetchOptions().hasFileFormatType()) {
-				return this.fileFormatType;
-			} else {
-				throw new exceptions.NotFetchedException("File format type has not been fetched.");
-			}
-		};
-		/*
-		 * @Deprecated
-		 */
-		prototype.setFileFormatType = function(fileFormatType) {
-			this.fileFormatType = fileFormatType;
 		};
 		prototype.getLocatorType = function() {
 			if (this.getFetchOptions() && this.getFetchOptions().hasLocatorType()) {
@@ -145,7 +125,6 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 	}, {
 		fetchOptions : "PhysicalDataFetchOptions",
 		storageFormat : "StorageFormat",
-		fileFormatType : "FileFormatType",
 		locatorType : "LocatorType",
 		complete : "Complete",
 		status : "ArchivingStatus"

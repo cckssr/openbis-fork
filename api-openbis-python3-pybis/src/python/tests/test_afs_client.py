@@ -7,15 +7,16 @@ import pytest
 import tempfile
 import filecmp
 
-from pybis.things import Things
-from pybis import AfsClient
 
 
 def test_afs_client(afs):
 
     (space, client) = afs
 
+    # assert client.is_session_valid()
+
     if client.is_session_valid():
+        print("AFS IS AVAILABLE")
 
         o = space.openbis
 

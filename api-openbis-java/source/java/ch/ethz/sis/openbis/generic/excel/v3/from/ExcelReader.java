@@ -7,6 +7,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.Project;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectIdentifier;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyAssignment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
@@ -469,7 +470,7 @@ public class ExcelReader
                 .map(Sample.class::cast)
                         .collect(Collectors.toMap(x -> x,
                                 x -> ImageExtractor.findAndUpdateImages(x)));
-        for (var samplesWithPaths : samplesToPaths.entrySet())
+        for (Map.Entry<Sample, List<Path>> samplesWithPaths : samplesToPaths.entrySet())
         {
 
             SampleIdentifier mapKey = samplesWithPaths.getKey().getIdentifier();
@@ -521,7 +522,7 @@ public class ExcelReader
                     .orElse(List.of());
             SampleType sampleType = (SampleType) entry.getValue();
             sampleType.setSemanticAnnotations(semanticAnnotations);
-            for (var property : sampleType.getPropertyAssignments())
+            for (PropertyAssignment property : sampleType.getPropertyAssignments())
             {
                 List<SemanticAnnotation> propertySemanticAnnotations = Optional.ofNullable(
                                 semanticAnnotationByKind

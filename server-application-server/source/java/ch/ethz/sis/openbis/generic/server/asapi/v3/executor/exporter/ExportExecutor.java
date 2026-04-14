@@ -206,7 +206,7 @@ public class ExportExecutor implements IExportExecutor
     /** All characters except the ones we consider safe as a directory name. */
     private static final String UNSAFE_CHARACTERS_REGEXP = "[^\\w $!#%'()+,\\-.;=@\\[\\]^{}_~]";
 
-    private static final List<String> AFS_PATHS_TO_FILTER = List.of("/.trash", "/.snapshots");
+    private static final List<String> AFS_PATHS_TO_FILTER = List.of("/.afs.trash", "/.afs.snapshots");
 
 
     @Resource(name = ObjectMapperResource.NAME)

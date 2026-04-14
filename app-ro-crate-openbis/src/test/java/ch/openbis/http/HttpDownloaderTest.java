@@ -1,5 +1,6 @@
 package ch.openbis.http;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.nio.file.Files;
@@ -24,6 +25,24 @@ public class HttpDownloaderTest {
 
         assertNotNull(expected.get());
     }
+
+    @Test
+    public void apiErrorTestCanThrow() throws Exception
+    {
+
+        HttpDownloader httpDownloader = new HttpDownloader();
+        httpDownloader.add("non sense url to test the error handler",
+                Path.of("non sense path to test the error handler"));
+
+        HttpDownloader downloader = httpDownloader.error((url, path, exception) -> {
+            throw new RuntimeException(exception);
+        }).override((url, path) -> {
+            return true;
+        });
+        Assert.assertThrows(RuntimeException.class, downloader::start);
+
+    }
+
 
     @Test
     public void apiDownloadTest() throws Exception {

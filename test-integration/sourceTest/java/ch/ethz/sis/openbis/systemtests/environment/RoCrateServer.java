@@ -1,14 +1,10 @@
 package ch.ethz.sis.openbis.systemtests.environment;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.Properties;
-
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 import ch.ethz.sis.shared.log.classic.impl.Logger;
+
+import java.io.*;
+import java.util.Properties;
 
 public class RoCrateServer
 {
@@ -16,6 +12,19 @@ public class RoCrateServer
     private static final Logger log = LogFactory.getLogger(RoCrateServer.class);
 
     private Properties serviceProperties;
+
+    private IntegrationTestEnvironment.RoCrateServerArgs roCrateServerArgs;
+
+    public IntegrationTestEnvironment.RoCrateServerArgs getRoCrateServerArgs()
+    {
+        return roCrateServerArgs;
+    }
+
+    public void setRoCrateServerArgs(
+            IntegrationTestEnvironment.RoCrateServerArgs roCrateServerArgs)
+    {
+        this.roCrateServerArgs = roCrateServerArgs;
+    }
 
     public void configure(final Properties serviceProperties)
     {
@@ -42,8 +51,16 @@ public class RoCrateServer
 
             serviceProperties.store(new FileWriter(tempConfigurationFile), null);
 
-            Process process = Runtime.getRuntime()
-                    .exec(new String[] { "../test-integration/etc/default/ro-crate/start.sh", tempConfigurationFile.getAbsolutePath() });
+            ProcessBuilder processBuilder = new ProcessBuilder();
+            processBuilder.command(
+                    new String[] { "../test-integration/etc/default/ro-crate/start.sh",
+                            tempConfigurationFile.getAbsolutePath() });
+            if (roCrateServerArgs != null)
+            {
+                processBuilder.environment().put("RO_CRATE_SERVER_LOCAL_DOWNLOAD_PORT",
+                        Integer.toString(roCrateServerArgs.port()));
+            }
+            Process process = processBuilder.start();
 
             InputStream in = process.getInputStream();
             BufferedReader reader = new BufferedReader(new InputStreamReader(in));

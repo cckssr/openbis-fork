@@ -396,7 +396,6 @@ var common = {
   sample_types: entityTypes.sample + " Types",
   material_types: "Material Types",
   data_set_types: "Data Set Types",
-  file_format_types: "File Types",
   experiment_types: entityTypes.experiment + " Types",
   mandatory: "Mandatory",
   is_mandatory: "Mandatory?",
@@ -495,7 +494,6 @@ var common = {
 
   DATA_SET_MENU_SEARCH: "Data Set Search",
   DATA_SET_MENU_TYPES: "Data Set Types",
-  DATA_SET_MENU_FILE_FORMATS: "File Types",
   DATA_SET_MENU_UPLOAD: "Data Set Registration (via CIFEX)",
   DATA_SET_MENU_MASS_UPDATE: "Data Set Metadata Update",
   data_set_batch_update: "Data Set Metadata Batch Update",

@@ -138,12 +138,6 @@ public class JythonBasedPluginUtils
                 }
 
                 @Override
-                public String getFileFormatType()
-                {
-                    return description.getFileFormatType();
-                }
-
-                @Override
                 public Date getRegistrationTimestamp()
                 {
                     return description.getRegistrationTimestamp();

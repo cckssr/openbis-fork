@@ -49,7 +49,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.CreationId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.DataSetCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.PhysicalDataCreation;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.FileFormatTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.ProprietaryStorageFormatPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.RelativeLocationLocatorTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.id.DataStorePermId;
@@ -98,7 +97,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Experiment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExperimentAttributeSearchFieldKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExperimentType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExperimentUpdateResult;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.FileFormatType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.GridCustomFilter;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IEntityProperty;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ListSampleCriteria;
@@ -2563,7 +2561,6 @@ public class CommonServerTest extends SystemTestCase
         DataSetUpdatesDTO updates = new DataSetUpdatesDTO();
         updates.setDatasetId(new TechId(22L)); // 20120619092259000-22
         updates.setProperties(Arrays.asList(new IEntityProperty[] { property }));
-        updates.setFileFormatTypeCode("XML");
 
         if (user.isInstanceUserOrTestSpaceUserOrEnabledTestProjectUser())
         {
@@ -3190,28 +3187,6 @@ public class CommonServerTest extends SystemTestCase
             try
             {
                 commonServer.listDataTypes(session.getSessionToken());
-                fail();
-            } catch (AuthorizationFailureException e)
-            {
-                // expected
-            }
-        }
-    }
-
-    @Test(dataProviderClass = ProjectAuthorizationUser.class, dataProvider = ProjectAuthorizationUser.PROVIDER)
-    public void testListFileFormatTypesWithProjectAuthorization(ProjectAuthorizationUser user)
-    {
-        SessionContextDTO session = commonServer.tryAuthenticate(user.getUserId(), PASSWORD);
-
-        if (user.isInstanceUserOrSpaceUserOrEnabledProjectUser())
-        {
-            List<FileFormatType> types = commonServer.listFileFormatTypes(session.getSessionToken());
-            assertEquals(types.size(), 8);
-        } else
-        {
-            try
-            {
-                commonServer.listFileFormatTypes(session.getSessionToken());
                 fail();
             } catch (AuthorizationFailureException e)
             {
@@ -4330,7 +4305,6 @@ public class CommonServerTest extends SystemTestCase
 
         PhysicalDataCreation physicalCreation = new PhysicalDataCreation();
         physicalCreation.setLocation("test/location/" + code);
-        physicalCreation.setFileFormatTypeId(new FileFormatTypePermId("TIFF"));
         physicalCreation.setLocatorTypeId(new RelativeLocationLocatorTypePermId());
         physicalCreation.setStorageFormatId(new ProprietaryStorageFormatPermId());
 

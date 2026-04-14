@@ -25,7 +25,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.LocatorType;
  * 
  * @author Franz-Josef Elmer
  */
-public interface ITypeExtractor extends IFileFormatTypeExtractor
+public interface ITypeExtractor
 {
     /** Properties key prefix for the type extractor. */
     public static final String TYPE_EXTRACTOR_KEY = "type-extractor";

@@ -48,7 +48,6 @@ public interface IDatasetListingQuery extends BaseQuery, IPropertyListingQuery
 
     public final static String EXTERNAL_DATA_COLUMNS =
             "external_data.location, "
-                    + "external_data.ffty_id, "
                     + "external_data.loty_id, "
                     + "external_data.cvte_id_stor_fmt, "
                     + "external_data.is_complete, "
@@ -99,7 +98,6 @@ public interface IDatasetListingQuery extends BaseQuery, IPropertyListingQuery
 
     public final static String ED_COLUMNS =
             "ed.id as external_data_id, ed.location, "
-                    + "ed.ffty_id, "
                     + "ed.loty_id, "
                     + "ed.cvte_id_stor_fmt, "
                     + "ed.is_complete, "
@@ -252,9 +250,6 @@ public interface IDatasetListingQuery extends BaseQuery, IPropertyListingQuery
 
     @Select(sql = "select id, code, download_url from data_stores")
     public DataStoreRecord[] getDataStores();
-
-    @Select(sql = "select id, code from file_format_types")
-    public CodeRecord[] getFileFormatTypes();
 
     @Select(sql = "select id, code from locator_types")
     public CodeRecord[] getLocatorTypes();

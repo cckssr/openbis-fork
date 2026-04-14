@@ -69,8 +69,6 @@ public class DatasetRecord extends CodeRecord
 
     public Long size;
 
-    public Long ffty_id;
-
     public Long loty_id;
 
     public String is_complete; // maps to BooleanOrUnknown

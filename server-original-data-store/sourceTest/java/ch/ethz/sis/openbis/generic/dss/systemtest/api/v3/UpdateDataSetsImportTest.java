@@ -28,7 +28,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.DataSetCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.PhysicalDataCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.delete.DataSetDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.FileFormatTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.ProprietaryStorageFormatPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.RelativeLocationLocatorTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.id.DataStorePermId;
@@ -53,7 +52,6 @@ public class UpdateDataSetsImportTest extends ObjectsImportTest
         {
             PhysicalDataCreation physicalCreation = new PhysicalDataCreation();
             physicalCreation.setLocation("test/location/" + dataSetPermId.getPermId());
-            physicalCreation.setFileFormatTypeId(new FileFormatTypePermId("TIFF"));
             physicalCreation.setLocatorTypeId(new RelativeLocationLocatorTypePermId());
             physicalCreation.setStorageFormatId(new ProprietaryStorageFormatPermId());
 

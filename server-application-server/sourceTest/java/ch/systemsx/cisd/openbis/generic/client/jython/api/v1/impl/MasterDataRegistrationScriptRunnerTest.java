@@ -35,7 +35,6 @@ import ch.systemsx.cisd.openbis.generic.shared.ICommonServer;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExperimentType;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.FileFormatType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewETPTAssignment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewVocabulary;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PropertyType;
@@ -80,15 +79,11 @@ public class MasterDataRegistrationScriptRunnerTest extends AssertJUnit
                 new RecordingMatcher<PropertyType>();
         final RecordingMatcher<NewETPTAssignment> assignmentMatcher =
                 new RecordingMatcher<NewETPTAssignment>();
-        final RecordingMatcher<FileFormatType> fileFormatMatcher =
-                new RecordingMatcher<FileFormatType>();
         final RecordingMatcher<NewVocabulary> vocabularyMatcher =
                 new RecordingMatcher<NewVocabulary>();
         context.checking(new Expectations()
             {
                 {
-                    one(commonServer).registerFileFormatType(with(equal(SESSION_TOKEN)),
-                            with(fileFormatMatcher));
                     one(commonServer).registerVocabulary(with(equal(SESSION_TOKEN)),
                             with(vocabularyMatcher));
                     one(commonServer).registerExperimentType(with(equal(SESSION_TOKEN)),
@@ -107,11 +102,6 @@ public class MasterDataRegistrationScriptRunnerTest extends AssertJUnit
 
         File scriptFile = getScriptFile("simple-transaction.py");
         pluginScriptRunner.executeScript(scriptFile);
-
-        assertEquals(1, fileFormatMatcher.getRecordedObjects().size());
-        FileFormatType fileFormatType = fileFormatMatcher.recordedObject();
-        assertEquals("FILE-FORMAT-TYPE", fileFormatType.getCode());
-        assertEquals("File format type description.", fileFormatType.getDescription());
 
         assertEquals(1, vocabularyMatcher.getRecordedObjects().size());
         NewVocabulary vocabulary = vocabularyMatcher.recordedObject();
@@ -165,9 +155,6 @@ public class MasterDataRegistrationScriptRunnerTest extends AssertJUnit
         context.checking(new Expectations()
             {
                 {
-                    one(commonServer).registerFileFormatType(with(any(String.class)),
-                            with(any(FileFormatType.class)));
-                    will(throwException(new RuntimeException("FAILED FILE FORMAT")));
                     one(commonServer).registerVocabulary(with(any(String.class)),
                             with(any(NewVocabulary.class)));
                     will(throwException(new RuntimeException("FAILED VOCABULARY")));
@@ -194,7 +181,6 @@ public class MasterDataRegistrationScriptRunnerTest extends AssertJUnit
 
         List<String> errorLines =
                 Arrays.asList(
-                        "Failed to register type 'FILE-FORMAT-TYPE': FAILED FILE FORMAT",
                         "Failed to register vocabulary 'ANIMALS': FAILED VOCABULARY",
                         "Failed to register type 'EXPERIMENT-TYPE': FAILED EXPERIMENT TYPE",
                         "Failed to register type 'SAMPLE-TYPE': FAILED SAMPLE TYPE",

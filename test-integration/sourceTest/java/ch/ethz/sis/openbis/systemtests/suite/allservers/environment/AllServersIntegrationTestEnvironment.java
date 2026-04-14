@@ -15,12 +15,12 @@
  */
 package ch.ethz.sis.openbis.systemtests.suite.allservers.environment;
 
-import java.nio.file.Path;
-
 import ch.ethz.sis.openbis.generic.OpenBIS;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.Role;
 import ch.ethz.sis.openbis.systemtests.environment.IntegrationTestEnvironment;
 import ch.ethz.sis.openbis.systemtests.environment.IntegrationTestFacade;
+
+import java.nio.file.Path;
 
 /**
  * @author pkupczyk
@@ -55,7 +55,7 @@ public final class AllServersIntegrationTestEnvironment
             environment.createApplicationServer();
             environment.createDataStoreServer();
             environment.createAfsServer(IntegrationTestEnvironment.loadProperties(Path.of("etc/suite/allservers/afs/service.properties")));
-            environment.createRoCrateServer();
+            environment.createRoCrateServer(new IntegrationTestEnvironment.RoCrateServerArgs(8100));
             environment.enableELN();
             environment.start();
             createTestData();

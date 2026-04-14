@@ -81,8 +81,6 @@ class AfsClient:
     def list(self, owner, source, recursively=False):
         request = {
             "sessionToken": self._sessionToken,
-            # "interactiveSessionKey": None,
-            # "transactionManagerKey": None,
             "method": "list",
             "owner": owner,
             "source": source,
@@ -110,8 +108,6 @@ class AfsClient:
     def preview(self, owner, source):
         request = {
             "sessionToken": self._sessionToken,
-            # "interactiveSessionKey": None,
-            # "transactionManagerKey": None,
             "method": "preview",
             "owner": owner,
             "source": source,
@@ -144,6 +140,19 @@ class AfsClient:
             content = r.content
             decoded = decode_chunks(content)[0]
             return decoded['data']
+
+    def delete(self, owner, source, trash=True):
+        request = {
+            "sessionToken": self._sessionToken,
+            "method": "delete",
+            "owner": owner,
+            "source": source,
+            "trash": str(trash).lower()
+        }
+
+        with self.session.delete(self._afs_url, data=request, params=request, verify=self._verify, stream=True) as r:
+            content = r.text
+            return content
 
     def write(self, owner, source, offset, limit, data):
         params= {

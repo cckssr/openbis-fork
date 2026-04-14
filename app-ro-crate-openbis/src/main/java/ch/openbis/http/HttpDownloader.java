@@ -11,6 +11,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
 
 public class HttpDownloader {
@@ -35,6 +36,21 @@ public class HttpDownloader {
         }
     };
 
+    public interface HttpDownloaderRedirectPolicy
+    {
+        HttpClient.Redirect getRedirect(String target);
+    }
+
+    HttpDownloaderRedirectPolicy
+            defaultHttpDownloaderRedirectPolicy = new HttpDownloaderRedirectPolicy()
+    {
+        @Override
+        public HttpClient.Redirect getRedirect(String target)
+        {
+            return HttpClient.Redirect.ALWAYS;
+        }
+    };
+
     private record Download(String url, Path path) {
 
     }
@@ -44,9 +60,14 @@ public class HttpDownloader {
     private boolean started;
     private final Queue<Download> downloads;
 
+    private HttpDownloaderRedirectPolicy httpDownloaderRedirectPolicy;
+
+    private final ConcurrentHashMap<Downloader, Exception> exceptions = new ConcurrentHashMap<>();
+
     public HttpDownloader() {
         this.httpDownloaderError = DefaultHttpDownloaderError;
         this.httpDownloaderOverride = DefaultHttpDownloaderOverride;
+        this.httpDownloaderRedirectPolicy = defaultHttpDownloaderRedirectPolicy;
         this.started = false;
         this.downloads = new LinkedList<>();
     }
@@ -58,6 +79,12 @@ public class HttpDownloader {
 
     public HttpDownloader override(HttpDownloaderOverride httpDownloaderOverride) {
         this.httpDownloaderOverride = httpDownloaderOverride;
+        return this;
+    }
+
+    public HttpDownloader redirect(HttpDownloaderRedirectPolicy httpDownloaderRedirectPolicy)
+    {
+        this.httpDownloaderRedirectPolicy = httpDownloaderRedirectPolicy;
         return this;
     }
 
@@ -76,11 +103,21 @@ public class HttpDownloader {
         while (!downloads.isEmpty()) {
             maxThreadLimitSemaphore.acquire();
             Download download = downloads.remove();
-            Downloader downloader = new Downloader(download, maxThreadLimitSemaphore, httpDownloaderError, httpDownloaderOverride);
+            Downloader downloader =
+                    new Downloader(download, maxThreadLimitSemaphore, httpDownloaderError,
+                            httpDownloaderOverride, this.httpDownloaderRedirectPolicy,
+                            this.exceptions);
             Thread downloaderThread = new Thread(downloader);
             downloaderThread.start();
         }
         maxThreadLimitSemaphore.acquire(MAX_DOWNLOAD_THREADS);
+        for (var keyVal : exceptions.entrySet())
+        {
+            httpDownloaderError.error(keyVal.getKey().download.url, keyVal.getKey().download.path,
+                    keyVal.getValue());
+        }
+
+
     }
 
     private static class Downloader implements Runnable {
@@ -90,11 +127,22 @@ public class HttpDownloader {
         private final HttpDownloaderError httpDownloaderError;
         private final HttpDownloaderOverride httpDownloaderOverride;
 
-        public Downloader(Download download, Semaphore maxThreadLimitSemaphore, HttpDownloaderError httpDownloaderError, HttpDownloaderOverride httpDownloaderOverride) {
+        private final HttpDownloaderRedirectPolicy redirectPolicy;
+
+        private final ConcurrentHashMap exceptions;
+
+        public Downloader(Download download, Semaphore maxThreadLimitSemaphore,
+                HttpDownloaderError httpDownloaderError,
+                HttpDownloaderOverride httpDownloaderOverride,
+                HttpDownloaderRedirectPolicy redirectPolicy,
+                ConcurrentHashMap exceptions)
+        {
             this.download = download;
             this.maxThreadLimitSemaphore = maxThreadLimitSemaphore;
             this.httpDownloaderError = httpDownloaderError;
             this.httpDownloaderOverride = httpDownloaderOverride;
+            this.exceptions = exceptions;
+            this.redirectPolicy = redirectPolicy;
         }
 
         @Override
@@ -102,7 +150,11 @@ public class HttpDownloader {
             Path tempFile;
             try {
                 // download
-                HttpClient client = HttpClient.newHttpClient();
+
+                HttpClient.Redirect redirect = redirectPolicy.getRedirect(download.url);
+                HttpClient client =
+                        HttpClient.newBuilder().followRedirects(redirect)
+                                .build();
 
                 HttpRequest request = HttpRequest.newBuilder()
                         .uri(URI.create(download.url))
@@ -125,7 +177,7 @@ public class HttpDownloader {
                     Files.move(tempFile, download.path, StandardCopyOption.ATOMIC_MOVE);
                 }
             } catch (Exception exception) {
-                httpDownloaderError.error(download.url, download.path, exception);
+                exceptions.put(this, exception);
             } finally {
                 // release
                 maxThreadLimitSemaphore.release();

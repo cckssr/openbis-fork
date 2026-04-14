@@ -47,11 +47,6 @@
     },
     {
       "type": "ATTRIBUTE",
-      "value": "PROPRIETARY",
-      "key": "FILE_FORMAT_TYPE"
-    },
-    {
-      "type": "ATTRIBUTE",
       "value": "true",
       "key": "STORAGE_CONFIRMATION"
     },

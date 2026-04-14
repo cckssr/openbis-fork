@@ -30,6 +30,7 @@ import ch.ethz.sis.afs.manager.operation.ListTransactionOperationTest;
 import ch.ethz.sis.afs.manager.operation.MoveTransactionOperationTest;
 import ch.ethz.sis.afs.manager.operation.ReadTransactionOperationTest;
 import ch.ethz.sis.afs.manager.operation.WriteTransactionOperationTest;
+import ch.ethz.sis.shared.pool.PoolTest;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
@@ -44,9 +45,10 @@ import ch.ethz.sis.afs.manager.operation.WriteTransactionOperationTest;
         CopyTransactionOperationTest.class,
         CreateTransactionOperationTest.class,
         PathLockFinderTest.class,
-        HierarchicalLockManagerTest.class
+        HierarchicalLockManagerTest.class,
+        PoolTest.class
 })
-
-public class TestSuite {
+public class TestSuite
+{
 
 }

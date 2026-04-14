@@ -69,26 +69,23 @@ public class EntityRetriever implements IEntityRetriever
 
     private final IApplicationServerApi v3Api;
 
-    private final IMasterDataRegistrationTransaction masterDataRegistrationTransaction;
-
     private final String sessionToken;
 
-    private EntityRetriever(IApplicationServerApi v3Api, String sessionToken, IMasterDataRegistrationTransaction masterDataRegistrationTransaction)
+    private EntityRetriever(IApplicationServerApi v3Api, String sessionToken)
     {
         this.v3Api = v3Api;
         this.sessionToken = sessionToken;
-        this.masterDataRegistrationTransaction = masterDataRegistrationTransaction;
     }
 
     public static EntityRetriever createWithMasterDataRegistationTransaction(IApplicationServerApi v3Api, String sessionToken,
             IMasterDataRegistrationTransaction masterDataRegistrationTransaction)
     {
-        return new EntityRetriever(v3Api, sessionToken, masterDataRegistrationTransaction);
+        return new EntityRetriever(v3Api, sessionToken);
     }
 
     public static EntityRetriever createWithSessionToken(IApplicationServerApi v3Api, String sessionToken)
     {
-        return new EntityRetriever(v3Api, sessionToken, null);
+        return new EntityRetriever(v3Api, sessionToken);
     }
     
     private boolean ponging;
@@ -408,7 +405,7 @@ public class EntityRetriever implements IEntityRetriever
         long t0 = System.currentTimeMillis();
         try
         {
-            MasterDataExtractor masterDataExtractor = new MasterDataExtractor(v3Api, sessionToken, masterDataRegistrationTransaction);
+            MasterDataExtractor masterDataExtractor = new MasterDataExtractor(v3Api, sessionToken);
             return masterDataExtractor.fetchAsXmlString();
         } finally
         {

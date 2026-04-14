@@ -47,7 +47,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataTypeCode;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExperimentType;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.FileFormatType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewETPTAssignment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewVocabulary;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Person;
@@ -79,8 +78,6 @@ public class MasterDataParser
     private Map<String, Script> validationPlugins = new HashMap<String, Script>();
 
     private Map<String, ExternalDms> externalDataManagementSystems = new HashMap<>();
-
-    private Map<String, FileFormatType> fileFormatTypes = new HashMap<String, FileFormatType>();
 
     private Map<String, PropertyType> propertyTypes = new HashMap<String, PropertyType>();
 
@@ -131,7 +128,6 @@ public class MasterDataParser
 
     private void parseMasterDataElements(Element docElement) throws XPathExpressionException
     {
-        parseFileFormatTypes(docElement.getElementsByTagName("xmd:fileFormatTypes"));
         parseValidationPlugins(docElement.getElementsByTagName("xmd:validationPlugins"));
         vocabularyNameMapper = parseVocabularies(docElement.getElementsByTagName("xmd:controlledVocabularies"));
         propertyTypeNameMapper = parsePropertyTypes(docElement.getElementsByTagName("xmd:propertyTypes"));
@@ -139,11 +135,6 @@ public class MasterDataParser
         parseDataSetTypes(docElement.getElementsByTagName("xmd:dataSetTypes"));
         parseExperimentTypes(docElement.getElementsByTagName("xmd:collectionTypes"));
         parseExternalDataManagementSystems(docElement.getElementsByTagName("xmd:externalDataManagementSystems"));
-    }
-
-    public Map<String, FileFormatType> getFileFormatTypes()
-    {
-        return fileFormatTypes;
     }
 
     public Map<String, Script> getValidationPlugins()
@@ -254,30 +245,6 @@ public class MasterDataParser
             edms.setAddressType(ExternalDmsAddressType.valueOf(getAttribute(element, "addressType")));
             edms.setAddress(getAttribute(element, "address"));
             externalDataManagementSystems.put(code, edms);
-        }
-    }
-
-    private void parseFileFormatTypes(NodeList fileFormatTypesNode) throws XPathExpressionException
-    {
-        if (fileFormatTypesNode.getLength() == 0)
-        {
-            return;
-        }
-        validateElementNode(fileFormatTypesNode, "fileFormatTypes");
-
-        Element fileFormatTypesElement = (Element) fileFormatTypesNode.item(0);
-        NodeList fileFormatTypeNodes = fileFormatTypesElement.getElementsByTagName("xmd:fileFormatType");
-
-        for (int i = 0; i < fileFormatTypeNodes.getLength(); i++)
-        {
-            Element typeElement = (Element) fileFormatTypeNodes.item(i);
-
-            FileFormatType type = new FileFormatType();
-            String code = getAttribute(typeElement, "code");
-            type.setCode(code);
-            type.setDescription(getAttribute(typeElement, "description"));
-
-            fileFormatTypes.put(code, type);
         }
     }
 

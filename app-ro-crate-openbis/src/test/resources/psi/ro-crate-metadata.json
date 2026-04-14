@@ -94,7 +94,7 @@
       "schema:domainIncludes": {
         "@id": "scicat:PublishedData"
       },
-      "@type": "rdfs:Property"
+      "@type": "rdf:Property"
     },
     {
       "identifier": "10.16907/7eb141d3-11f1-47a6-9d0e-76f8832ed1b2",
@@ -171,7 +171,7 @@
       "schema:domainIncludes": {
         "@id": "scicat:PublishedData"
       },
-      "@type": "rdfs:Property"
+      "@type": "rdf:Property"
     },
     {
       "@id": "_:relatedPublications",
@@ -184,7 +184,7 @@
       "schema:domainIncludes": {
         "@id": "scicat:PublishedData"
       },
-      "@type": "rdfs:Property"
+      "@type": "rdf:Property"
     },
     {
       "@id": "_:PublishedData",
@@ -201,7 +201,7 @@
       "schema:domainIncludes": {
         "@id": "scicat:PublishedData"
       },
-      "@type": "rdfs:Property"
+      "@type": "rdf:Property"
     },
     {
       "name": "Goran Lovric",

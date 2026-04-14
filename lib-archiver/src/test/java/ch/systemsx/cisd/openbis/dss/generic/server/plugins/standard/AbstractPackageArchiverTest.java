@@ -133,7 +133,6 @@ public abstract class AbstractPackageArchiverTest extends AbstractArchiverTestCa
         experiment.setRegistrationDate(new Date(98765));
         PhysicalDataSet ds1 =
                 new DataSetBuilder().code(DATA_SET_CODE).type("MY-TYPE").location(LOCATION)
-                        .fileFormat("ABC")
                         .registrationDate(new Date(12345))
                         .store(new DataStoreBuilder(DATA_STORE_CODE).getStore())
                         .experiment(experiment).getDataSet();
@@ -205,7 +204,7 @@ public abstract class AbstractPackageArchiverTest extends AbstractArchiverTestCa
                 new SampleBuilder("/S/S1").type("MY-S").property("ANSWER", "42").getSample();
         PhysicalDataSet ds1 =
                 new DataSetBuilder().code(DATA_SET_CODE).type("MY-TYPE").location(LOCATION)
-                        .store(new DataStoreBuilder(DATA_STORE_CODE).getStore()).fileFormat("ABC")
+                        .store(new DataStoreBuilder(DATA_STORE_CODE).getStore())
                         .experiment(experiment).sample(sample).getDataSet();
         DatasetDescription dsd1 = ExternalDataTranslator.translateToDescription(ds1);
         dsd1.setH5Folders(true);
@@ -300,7 +299,7 @@ public abstract class AbstractPackageArchiverTest extends AbstractArchiverTestCa
                 new SampleBuilder("/S/S1").type("MY-S").property("ANSWER", "42").getSample();
         PhysicalDataSet ds1 =
                 new DataSetBuilder().code(DATA_SET_CODE).type("MY-TYPE").location(LOCATION)
-                        .store(new DataStoreBuilder(DATA_STORE_CODE).getStore()).fileFormat("ABC")
+                        .store(new DataStoreBuilder(DATA_STORE_CODE).getStore())
                         .experiment(experiment).sample(sample).getDataSet();
         DatasetDescription dsd1 = ExternalDataTranslator.translateToDescription(ds1);
         dsd1.setH5Folders(true);
@@ -355,7 +354,7 @@ public abstract class AbstractPackageArchiverTest extends AbstractArchiverTestCa
                 new ExperimentBuilder().identifier("/S/P/E1").type("MY-E").getExperiment();
         PhysicalDataSet ds1 =
                 new DataSetBuilder().code(DATA_SET_CODE).type("MY-TYPE").location(LOCATION).size(28)
-                        .store(new DataStoreBuilder(DATA_STORE_CODE).getStore()).fileFormat("ABC")
+                        .store(new DataStoreBuilder(DATA_STORE_CODE).getStore())
                         .experiment(experiment).getDataSet();
         final DatasetDescription dsd1 = ExternalDataTranslator.translateToDescription(ds1);
         dsd1.setH5Folders(true);
@@ -439,7 +438,7 @@ public abstract class AbstractPackageArchiverTest extends AbstractArchiverTestCa
                         .getExperiment();
         PhysicalDataSet ds1 =
                 new DataSetBuilder().code(DATA_SET_CODE).type("MY-TYPE").location(LOCATION)
-                        .store(new DataStoreBuilder(DATA_STORE_CODE).getStore()).fileFormat("ABC")
+                        .store(new DataStoreBuilder(DATA_STORE_CODE).getStore())
                         .experiment(experiment).getDataSet();
         DatasetDescription dsd1 = ExternalDataTranslator.translateToDescription(ds1);
         dsd1.setH5Folders(true);
@@ -521,7 +520,7 @@ public abstract class AbstractPackageArchiverTest extends AbstractArchiverTestCa
                         .getExperiment();
         PhysicalDataSet ds1 =
                 new DataSetBuilder().code(DATA_SET_CODE).type("MY-TYPE").location(LOCATION)
-                        .store(new DataStoreBuilder(DATA_STORE_CODE).getStore()).fileFormat("ABC")
+                        .store(new DataStoreBuilder(DATA_STORE_CODE).getStore())
                         .experiment(experiment).getDataSet();
         DatasetDescription dsd1 = ExternalDataTranslator.translateToDescription(ds1);
         dsd1.setH5Folders(true);
@@ -601,7 +600,7 @@ public abstract class AbstractPackageArchiverTest extends AbstractArchiverTestCa
                         .getExperiment();
         PhysicalDataSet ds1 =
                 new DataSetBuilder().code(DATA_SET_CODE).type("MY-TYPE").location(LOCATION)
-                        .store(new DataStoreBuilder(DATA_STORE_CODE).getStore()).fileFormat("ABC")
+                        .store(new DataStoreBuilder(DATA_STORE_CODE).getStore())
                         .experiment(experiment).getDataSet();
         DatasetDescription dsd1 = ExternalDataTranslator.translateToDescription(ds1);
         dsd1.setH5Folders(true);
@@ -643,7 +642,7 @@ public abstract class AbstractPackageArchiverTest extends AbstractArchiverTestCa
                         .getExperiment();
         PhysicalDataSet ds1 =
                 new DataSetBuilder().code(DATA_SET_CODE).type("MY-TYPE").location(LOCATION)
-                        .store(new DataStoreBuilder(DATA_STORE_CODE).getStore()).fileFormat("ABC")
+                        .store(new DataStoreBuilder(DATA_STORE_CODE).getStore())
                         .experiment(experiment).getDataSet();
         DatasetDescription dsd1 = ExternalDataTranslator.translateToDescription(ds1);
         dsd1.setH5Folders(true);
@@ -691,7 +690,7 @@ public abstract class AbstractPackageArchiverTest extends AbstractArchiverTestCa
                         .getExperiment();
         PhysicalDataSet ds1 =
                 new DataSetBuilder().code(DATA_SET_CODE).type("MY-TYPE").location(LOCATION)
-                        .store(new DataStoreBuilder(DATA_STORE_CODE).getStore()).fileFormat("ABC")
+                        .store(new DataStoreBuilder(DATA_STORE_CODE).getStore())
                         .experiment(experiment).getDataSet();
         DatasetDescription dsd1 = ExternalDataTranslator.translateToDescription(ds1);
         dsd1.setH5Folders(true);
@@ -747,7 +746,7 @@ public abstract class AbstractPackageArchiverTest extends AbstractArchiverTestCa
                         .getExperiment();
         PhysicalDataSet ds1 =
                 new DataSetBuilder().code(DATA_SET_CODE).type("MY-TYPE").location(LOCATION)
-                        .store(new DataStoreBuilder(DATA_STORE_CODE).getStore()).fileFormat("ABC")
+                        .store(new DataStoreBuilder(DATA_STORE_CODE).getStore())
                         .experiment(experiment).getDataSet();
         DatasetDescription dsd1 = ExternalDataTranslator.translateToDescription(ds1);
         dsd1.setH5Folders(true);
@@ -797,7 +796,7 @@ public abstract class AbstractPackageArchiverTest extends AbstractArchiverTestCa
                 new ExperimentBuilder().identifier("/S/P/E1").type("MY-E").getExperiment();
         PhysicalDataSet ds1 =
                 new DataSetBuilder().code(DATA_SET_CODE).type("MY-TYPE").location(LOCATION)
-                        .store(new DataStoreBuilder(DATA_STORE_CODE).getStore()).fileFormat("ABC")
+                        .store(new DataStoreBuilder(DATA_STORE_CODE).getStore())
                         .property("ANSWER", "42")
                         .experiment(experiment).getDataSet();
         DatasetDescription dsd1 = ExternalDataTranslator.translateToDescription(ds1);
@@ -869,7 +868,7 @@ public abstract class AbstractPackageArchiverTest extends AbstractArchiverTestCa
                 new ExperimentBuilder().identifier("/S/P/E1").type("MY-E").getExperiment();
         PhysicalDataSet ds1 =
                 new DataSetBuilder().code(DATA_SET_CODE).type("MY-TYPE").location(LOCATION).size(28)
-                        .store(new DataStoreBuilder(DATA_STORE_CODE).getStore()).fileFormat("ABC")
+                        .store(new DataStoreBuilder(DATA_STORE_CODE).getStore())
                         .experiment(experiment).getDataSet();
         final DatasetDescription dsd1 = ExternalDataTranslator.translateToDescription(ds1);
         dsd1.setH5Folders(true);

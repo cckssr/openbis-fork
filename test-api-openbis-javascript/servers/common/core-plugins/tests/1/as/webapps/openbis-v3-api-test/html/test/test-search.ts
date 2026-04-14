@@ -1286,7 +1286,7 @@ exports.default = new Promise((resolve) => {
                     c.assertEqual(physicalData.getShareId(), "1", "Share id")
                     c.assertEqual(physicalData.getLocation(), "1FD3FF61-1576-4908-AE3D-296E60B4CE06/06/e5/ad/20130415093804724-403", "Location")
                     c.assertEqual(physicalData.getStatus(), "AVAILABLE", "Status")
-                    c.assertEqual(physicalData.getFileFormatType().getCode(), "PROPRIETARY", "File format type")
+                    c.assertEqual(physicalData.getStorageFormat().getCode(), "PROPRIETARY", "Storage format")
                     c.assertEqual(physicalData.getLocatorType().getCode(), "RELATIVE_LOCATION", "Locator type")
 
                     c.assertObjectsWithValues(dataSet.getParents(), "code", ["20130415100158230-407"])
@@ -1551,7 +1551,6 @@ exports.default = new Promise((resolve) => {
                     var pdCriteria = criteria.withPhysicalData()
                     pdCriteria.withLocation().thatEquals('"1FD3FF61-1576-4908-AE3D-296E60B4CE06/2e/ac/5a/20130412153118625-384"')
                     pdCriteria.withStorageFormat().withCode().thatContains("PROPRIETARY")
-                    pdCriteria.withFileFormatType().withCode().thatContains("UNKNOWN")
                     pdCriteria.withLocatorType().withCode().thatContains("RELATIVE_LOCATION")
                     pdCriteria.withComplete().thatEquals("YES")
                     pdCriteria.withStatus().thatEquals("AVAILABLE")

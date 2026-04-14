@@ -25,24 +25,23 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleTypeFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.SemanticAnnotation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import ch.ethz.sis.openbis.generic.excel.v3.model.IFileInfo;
 import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
 import ch.openbis.rocrate.app.Constants;
-import ch.openbis.rocrate.app.reader.helper.DataTypeMatcher;
-import ch.openbis.rocrate.app.reader.helper.OpenBisStructureHelper;
-import ch.openbis.rocrate.app.reader.helper.PropertyTypeSpecialHandling;
-import ch.openbis.rocrate.app.reader.helper.SampleCodeHelper;
+import ch.openbis.rocrate.app.reader.helper.*;
 import ch.openbis.rocrate.app.writer.mapping.images.ImageExtractor;
+import edu.kit.datamanager.ro_crate.entities.AbstractEntity;
+import edu.kit.datamanager.ro_crate.entities.data.DataEntity;
 import jakarta.annotation.Nullable;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.nio.file.Path;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
@@ -62,7 +61,7 @@ public class RdfToModel
 
     public static OpenBisModel convert(List<IType> types, List<IPropertyType> typeProperties,
             List<IMetadataEntry> entries, String fallbackSpaceCode, String fallbackProjectCode,
-            SchemaFacade schemaFacade)
+            SchemaFacade schemaFacade, Map<AbstractEntity, Path> identifiersToExternalFiles)
             throws IOException
     {
 
@@ -123,13 +122,15 @@ public class RdfToModel
         Map<ObjectIdentifier, AbstractEntityPropertyHolder> metadata = new LinkedHashMap<>();
         Map<String, IMetadataEntry> idToEntities =
                 entries.stream().collect(Collectors.toMap(x -> x.getId(), x -> x, (x, y) -> y));
-        processEntities(entries, fallbackSpaceCode, fallbackProjectCode, typeToInheritanceChain,
-                codeToSampleType,
-                externalIdentifierToSample, baseCodeToPossibleDataTypes, idToEntities,
-                roCrateIdsToObjects,
-                samplesWithSpaceAndProjectCodes, spaces, projects, objectIdentifiersToFiles,
-                objectIdentifiersTOImageFiles,
-                metadata);
+        List<AbstractEntityPropertyHolder> abstractEntityPropertyHolders =
+                processEntities(entries, fallbackSpaceCode, fallbackProjectCode,
+                        typeToInheritanceChain,
+                        codeToSampleType,
+                        externalIdentifierToSample, baseCodeToPossibleDataTypes, idToEntities,
+                        roCrateIdsToObjects,
+                        samplesWithSpaceAndProjectCodes, spaces, projects, objectIdentifiersToFiles,
+                        objectIdentifiersTOImageFiles,
+                        identifiersToExternalFiles);
 
         mapSpaces(fallbackSpaceCode, fallbackProjectCode, spaces, projects);
         mapProjects(projects, spaces);
@@ -138,13 +139,43 @@ public class RdfToModel
                 idsToCollections);
 
         resolveSpaceProjectAndCollections(samplesWithSpaceAndProjectCodes, spaces, projects,
-                idsToCollections, metadata, fallbackProjectCode, fallbackSpaceCode);
+                idsToCollections, fallbackProjectCode, fallbackSpaceCode);
 
         resolveOpenBisStructure(entries, fallbackSpaceCode, fallbackProjectCode,
                 typeToInheritanceChain,
                 roCrateIdsToObjects, spaces, projects);
 
         resolveSamples(samplesWithSpaceAndProjectCodes, externalIdentifierToSample);
+
+        metadata =
+                abstractEntityPropertyHolders.stream().collect(Collectors.toMap(x ->
+                        {
+                            if (x instanceof Sample)
+                            {
+                                return (((Sample) x).getIdentifier());
+
+                            }
+                            if (x instanceof Experiment)
+                            {
+                                return (((Experiment) x).getIdentifier());
+
+                            }
+                            throw new RuntimeException();
+                        }
+
+                        , x -> x, (x, y) -> y, LinkedHashMap::new));
+
+        for (IMetadataEntry entry : entries)
+        {
+            Sample sample = externalIdentifierToSample.get(entry.getId());
+            if (sample == null)
+            {
+                continue;
+            }
+
+            handleFiles(entry, objectIdentifiersToFiles, objectIdentifiersTOImageFiles, sample,
+                    identifiersToExternalFiles, schemaFacade);
+        }
 
         Map<String, String> collect = externalIdentifierToSample.entrySet().stream()
                 .collect(Collectors.toMap(x -> x.getKey(), x -> x.getValue().getCode()));
@@ -165,7 +196,6 @@ public class RdfToModel
         {
             if (isProject(type) || isSpace(type))
             {
-                System.out.println("Type " + type.getId() + " is space or project, skipping");
                 continue;
             }
 
@@ -280,7 +310,7 @@ public class RdfToModel
 
                 propertyType.setCode(code);
                 propertyType.setDescription(propertyType.getCode());
-                propertyType.setLabel(propertyType.getCode());
+                propertyType.setLabel(a.getId());
 
                 propertyType.setPermId(new PropertyTypePermId(baseCode));
                 propertyType.setDataType(dataType);
@@ -404,7 +434,8 @@ public class RdfToModel
         }
     }
 
-    private static void processEntities(List<IMetadataEntry> entries, String fallbackSpaceCode,
+    private static List<AbstractEntityPropertyHolder> processEntities(List<IMetadataEntry> entries,
+            String fallbackSpaceCode,
             String fallbackProjectCode, Map<String, List<String>> typeToInheritanceChain,
             Map<String, SampleType> codeToSampleType,
             Map<String, Sample> externalIdentifierToSample,
@@ -414,9 +445,11 @@ public class RdfToModel
             Map<SpacePermId, Space> spaces, Map<ProjectIdentifier, Project> projects,
             Map<ObjectIdentifier, List<IFileInfo>> objectIdentifiersToFiles,
             Map<ObjectIdentifier, List<IFileInfo>> images,
-            Map<ObjectIdentifier, AbstractEntityPropertyHolder> metadata)
+            Map<AbstractEntity, Path> identifiersToExternalFiles)
             throws IOException
     {
+        List<AbstractEntityPropertyHolder> res = new ArrayList<>();
+
         for (IMetadataEntry entry : entries)
         {
             AbstractEntityPropertyHolder entity;
@@ -448,7 +481,8 @@ public class RdfToModel
                 sample.setCode(code);
                 externalIdentifierToSample.put(entry.getId(), sample);
 
-                objectIdentifier = new SampleIdentifier(entry.getId());
+                externalIdentifierToSample.get(entry.getId());
+                objectIdentifier = sample.getIdentifier();
                 entity = sample;
                 Map<String, Serializable> properties = new LinkedHashMap<>();
                 for (Map.Entry<String, Serializable> property : entry.getValues().entrySet())
@@ -497,14 +531,13 @@ public class RdfToModel
                             sample.getCode()); // We need a name to construct certain paths inside the zip
                 }
                 sample.setProperties(properties);
-                handleFiles(entry, objectIdentifier, objectIdentifiersToFiles, images, sample);
 
                 properties.get("SPACE");
                 ReferencesToResolve referencesToResolve =
                         buildEntryWithSpaceAndProjectToResolve(entry);
                 samplesWithSpaceAndProjectCodes.add(
                         new ImmutablePair<>(sample, referencesToResolve));
-                metadata.put(objectIdentifier, entity);
+                res.add(entity);
 
             } else if (entry.getTypes().stream().anyMatch(x -> x.equals(GRAPH_ID_SPACE)))
             {
@@ -539,11 +572,13 @@ public class RdfToModel
             }
 
         }
+        return res;
     }
 
-    private static void handleFiles(IMetadataEntry metadataEntry, ObjectIdentifier objectIdentifier,
+    private static void handleFiles(IMetadataEntry metadataEntry,
             Map<ObjectIdentifier, List<IFileInfo>> res,
-            Map<ObjectIdentifier, List<IFileInfo>> richTextImageFiles, Sample sample)
+            Map<ObjectIdentifier, List<IFileInfo>> richTextImageFiles, Sample sample,
+            Map<AbstractEntity, Path> identifiersToExternalFiles, SchemaFacade schemaFacade)
             throws IOException
     {
 
@@ -552,19 +587,36 @@ public class RdfToModel
         List<OpenBisModel.FileInfoPath> finalMyRes = myRes;
         metadataEntry.getFileOrDirectory().ifPresent(x -> {
             OpenBisModel.FileInfoPath fileInfo =
-                    new OpenBisModel.FileInfoPath(objectIdentifier.getIdentifier(), x.toString(),
+                    new OpenBisModel.FileInfoPath(sample.getIdentifier().toString(), x.toString(),
                             x, metadataEntry.getId());
                 finalMyRes.add(fileInfo);
 
         });
-        for (var a : metadataEntry.getDataEntitiesReferenced())
+
+        DirectoryTraversal directoryTraversal =
+                new DirectoryTraversal();
+        List<AbstractEntity> allFiles =
+                directoryTraversal.findAllFiles(metadataEntry.getId(),
+                        schemaFacade.getCrate(), sample).files();
+
+        for (var a : allFiles)
         {
-            if (a.getPath() != null)
+
+            if (a instanceof DataEntity && ((DataEntity) a).getPath() != null)
             {
+                DataEntity dataEntity = (DataEntity) a;
                 OpenBisModel.FileInfoPath fileInfo =
-                        new OpenBisModel.FileInfoPath(objectIdentifier.getIdentifier(),
-                                a.getPath().toString(), a.getPath(), a.getId());
+                        new OpenBisModel.FileInfoPath(sample.getIdentifier().toString(),
+                                dataEntity.getPath().toString(), dataEntity.getPath(), a.getId());
                 myRes.add(fileInfo);
+            }
+            Path downloadedPath = identifiersToExternalFiles.get(a);
+            if (downloadedPath != null)
+            {
+                OpenBisModel.FileInfoPath fileInfoPath =
+                        new OpenBisModel.FileInfoPath(sample.getIdentifier().toString(), a.getId(),
+                                downloadedPath, a.getId());
+                myRes.add(fileInfoPath);
             }
 
         }
@@ -597,9 +649,10 @@ public class RdfToModel
                 {
                     ImageExtractor.ValueAndImages imageRes =
                             ImageExtractor.findImageAndUpdatePaths(value);
-                    images = Stream.concat(images.entrySet().stream(),
+                    Map<String, String> collect = Stream.concat(images.entrySet().stream(),
                             imageRes.images().entrySet().stream()).collect(
                             Collectors.toMap(x -> x.getKey(), x -> x.getValue()));
+                    images.putAll(collect);
                     writeVal = imageRes.value();
                 }
                 sample.getProperties().put(entry.getKey(), writeVal);
@@ -619,9 +672,9 @@ public class RdfToModel
                 .collect(Collectors.toList());
         ;
 
-        res.put(objectIdentifier, fileRes);
+        res.put(sample.getIdentifier(), fileRes);
 
-        richTextImageFiles.put(objectIdentifier, imageRes);
+        richTextImageFiles.put(sample.getIdentifier(), imageRes);
     }
 
     private static void handleFilesExperiment(IMetadataEntry metadataEntry,
@@ -739,7 +792,7 @@ public class RdfToModel
             List<Pair<Sample, ReferencesToResolve>> samplesWithSpaceAndProjectCodes,
             Map<SpacePermId, Space> spaces, Map<ProjectIdentifier, Project> projects,
             Map<ExperimentIdentifier, Experiment> idsToCollections,
-            Map<ObjectIdentifier, AbstractEntityPropertyHolder> metadata,
+
             String fallbacbProjectCode, String fallbackSpaceCode)
     {
         for (Pair<Sample, ReferencesToResolve> sampleToResolve : samplesWithSpaceAndProjectCodes)

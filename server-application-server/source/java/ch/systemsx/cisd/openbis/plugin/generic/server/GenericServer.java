@@ -580,7 +580,6 @@ public final class GenericServer extends AbstractServer<IGenericServerInternal> 
                     .getContainerIdentifierOrNull());
             dataSet.setModifiedParentDatasetCodesOrNull(updatedDataSet
                     .getParentsIdentifiersOrNull());
-            dataSet.setFileFormatTypeCode(updatedDataSet.getFileFormatOrNull());
             dataSet.setDetails(createBatchUpdateDetails(updatedDataSet));
             // it looks like this goes through GUI only, so for now no need to set the external
             // system information

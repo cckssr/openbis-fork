@@ -18,7 +18,6 @@ import os
 
 from pybis import Openbis, ImagingControl, AfsClient
 from pybis import *
-import pybis.imaging as imaging
 
 TEST_ADAPTOR = "ch.ethz.sis.openbis.generic.server.as.plugins.imaging.adaptor.ImagingTestAdaptor"
 VERBOSE = False

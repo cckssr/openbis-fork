@@ -45,7 +45,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.DataSetCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.LinkedDataCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.PhysicalDataCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.FileFormatTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.IDataSetId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.LocatorTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.StorageFormatPermId;
@@ -2607,12 +2606,6 @@ public class ServiceForDataStoreServer extends AbstractCommonServer<IServiceForD
                             throw new IllegalArgumentException("Unsupported complete value: " + newData.getComplete());
                     }
                     physicalCreation.setComplete(complete);
-                }
-
-                // file format type
-                if (newData.getFileFormatType() != null)
-                {
-                    physicalCreation.setFileFormatTypeId(new FileFormatTypePermId(newData.getFileFormatType().getCode()));
                 }
 
                 // locator type

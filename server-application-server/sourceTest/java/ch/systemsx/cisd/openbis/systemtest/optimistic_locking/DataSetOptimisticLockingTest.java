@@ -59,75 +59,6 @@ import ch.systemsx.cisd.openbis.systemtest.base.builder.DataSetUpdateBuilder;
 public class DataSetOptimisticLockingTest extends OptimisticLockingTestCase
 {
     @Test
-    public void testChangeFileFormatTypeViaPerformEntityOperation()
-    {
-        Experiment experiment = toolBox.createAndLoadExperiment(1);
-        AbstractExternalData dataSet = toolBox.createAndLoadDataSet(toolBox.dataSet("DS-1", experiment));
-        assertEquals("XML", ((PhysicalDataSet) dataSet).getFileFormatType().getCode());
-        DataSetBatchUpdatesDTO dataSetBatchUpdates = new DataSetBatchUpdatesDTO();
-        dataSetBatchUpdates.setVersion(dataSet.getVersion());
-        dataSetBatchUpdates.setDatasetCode(dataSet.getCode());
-        dataSetBatchUpdates.setDatasetId(new TechId(dataSet));
-        dataSetBatchUpdates.setFileFormatTypeCode("HDF5");
-        dataSetBatchUpdates.setProperties(Arrays.<IEntityProperty> asList());
-        DataSetBatchUpdateDetails updateDetails = new DataSetBatchUpdateDetails();
-        updateDetails.setFileFormatUpdateRequested(true);
-        dataSetBatchUpdates.setDetails(updateDetails);
-        AtomicEntityOperationDetailsBuilder builder =
-                new AtomicEntityOperationDetailsBuilder().dataSetUpdate(dataSetBatchUpdates).user(
-                        "test");
-        TimeIntervalChecker timeIntervalChecker = toolBox.createTimeIntervalChecker();
-
-        etlService.performEntityOperations(systemSessionToken, builder.getDetails());
-
-        AbstractExternalData loadedDataSet = toolBox.loadDataSet(systemSessionToken, dataSet.getCode());
-        assertEquals("HDF5", ((PhysicalDataSet) loadedDataSet).getFileFormatType().getCode());
-        toolBox.checkModifierAndModificationDateOfBean(timeIntervalChecker, loadedDataSet, "test");
-    }
-
-    @Test
-    public void testChangeFileFormatTypeViaUpdateDataSet()
-    {
-        Experiment experiment = toolBox.createAndLoadExperiment(1);
-        AbstractExternalData dataSet = toolBox.createAndLoadDataSet(toolBox.dataSet("DS-1", experiment));
-        assertEquals("XML", ((PhysicalDataSet) dataSet).getFileFormatType().getCode());
-        DataSetUpdatesDTO dataSetUpdates =
-                new DataSetUpdateBuilder(commonServer, genericServer, dataSet).create();
-        dataSetUpdates.setFileFormatTypeCode("HDF5");
-        String sessionToken = logIntoCommonClientService().getSessionID();
-        TimeIntervalChecker timeIntervalChecker = toolBox.createTimeIntervalChecker();
-
-        etlService.updateDataSet(sessionToken, dataSetUpdates);
-
-        AbstractExternalData loadedDataSet = toolBox.loadDataSet(systemSessionToken, dataSet.getCode());
-        assertEquals("HDF5", ((PhysicalDataSet) loadedDataSet).getFileFormatType().getCode());
-        toolBox.checkModifierAndModificationDateOfBean(timeIntervalChecker, loadedDataSet, "test");
-    }
-
-    @Test
-    public void testChangeFileFormatTypeOfAStaleDataSetViaUpdateDataSet()
-    {
-        Experiment experiment = toolBox.createAndLoadExperiment(1);
-        AbstractExternalData dataSet = toolBox.createAndLoadDataSet(toolBox.dataSet("DS-1", experiment));
-        assertEquals("XML", ((PhysicalDataSet) dataSet).getFileFormatType().getCode());
-        DataSetUpdatesDTO dataSetUpdates =
-                new DataSetUpdateBuilder(commonServer, genericServer, dataSet).create();
-        dataSetUpdates.setFileFormatTypeCode("HDF5");
-        String sessionToken = logIntoCommonClientService().getSessionID();
-        etlService.updateDataSet(sessionToken, dataSetUpdates);
-
-        try
-        {
-            etlService.updateDataSet(sessionToken, dataSetUpdates);
-            fail("UserFailureException expected");
-        } catch (UserFailureException ex)
-        {
-            assertEquals("Data set has been modified in the meantime. Reopen tab to be able "
-                    + "to continue with refreshed data.", ex.getMessage());
-        }
-    }
-
-    @Test
     public void testChangePropertyViaPerformEntityOperation()
     {
         Experiment experiment = toolBox.createAndLoadExperiment(1);
@@ -576,7 +507,6 @@ public class DataSetOptimisticLockingTest extends OptimisticLockingTestCase
         dataSetBatchUpdates.setProperties(Arrays.<IEntityProperty> asList());
         dataSetBatchUpdates.setExperimentIdentifierOrNull(new ExperimentIdentifier(experiment));
         dataSetBatchUpdates.setModifiedContainerDatasetCodeOrNull(containerDataSet2.getCode());
-        dataSetBatchUpdates.setFileFormatTypeCode("XML");
         DataSetBatchUpdateDetails updateDetails = new DataSetBatchUpdateDetails();
         updateDetails.setContainerUpdateRequested(true);
         dataSetBatchUpdates.setDetails(updateDetails);
@@ -620,7 +550,6 @@ public class DataSetOptimisticLockingTest extends OptimisticLockingTestCase
         dataSetBatchUpdates.setDatasetCode(dataSet.getCode());
         dataSetBatchUpdates.setDatasetId(new TechId(dataSet));
         dataSetBatchUpdates.setProperties(Arrays.<IEntityProperty> asList());
-        dataSetBatchUpdates.setFileFormatTypeCode("XML");
         dataSetBatchUpdates.setModifiedContainerDatasetCodeOrNull(containerDataSet2.getCode());
         DataSetBatchUpdateDetails updateDetails = new DataSetBatchUpdateDetails();
         updateDetails.setContainerUpdateRequested(true);

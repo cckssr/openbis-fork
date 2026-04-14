@@ -70,7 +70,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityVisit;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Experiment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExperimentType;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.FileFormatType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Grantee;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.LastModificationState;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewETPTAssignment;
@@ -97,7 +96,6 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExternalDataPE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.FileFormatTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.LocatorTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.MetaprojectPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.NewRoleAssignment;
@@ -778,9 +776,6 @@ public final class CommonServerTest extends AbstractServerTestCase
     {
         final TechId sampleId = CommonTestUtils.TECH_ID;
         final ExternalDataPE externalDataPE = new ExternalDataPE();
-        final FileFormatTypePE fileFormatType = new FileFormatTypePE();
-        fileFormatType.setCode("FFT");
-        externalDataPE.setFileFormatType(fileFormatType);
         final LocatorTypePE locatorType = new LocatorTypePE();
         locatorType.setCode("LT");
         externalDataPE.setLocatorType(locatorType);
@@ -818,9 +813,6 @@ public final class CommonServerTest extends AbstractServerTestCase
     {
         final TechId experimentId = CommonTestUtils.TECH_ID;
         final ExternalDataPE externalDataPE = new ExternalDataPE();
-        final FileFormatTypePE fileFormatType = new FileFormatTypePE();
-        fileFormatType.setCode("FFT");
-        externalDataPE.setFileFormatType(fileFormatType);
         final LocatorTypePE locatorType = new LocatorTypePE();
         locatorType.setCode("LT");
         externalDataPE.setLocatorType(locatorType);
@@ -970,142 +962,6 @@ public final class CommonServerTest extends AbstractServerTestCase
         context.assertIsSatisfied();
     }
 
-    @Test
-    public final void testFileFormatTypes()
-    {
-        prepareGetSession();
-        final FileFormatTypePE fileFormatTypePE = new FileFormatTypePE();
-        fileFormatTypePE.setCode("FFT");
-        final List<FileFormatTypePE> list = Collections.singletonList(fileFormatTypePE);
-        context.checking(new Expectations()
-            {
-                {
-
-                    one(fileFormatDAO).listFileFormatTypes();
-                    will(returnValue(list));
-                }
-            });
-
-        List<FileFormatType> types = createServer().listFileFormatTypes(SESSION_TOKEN);
-
-        assertEquals(1, types.size());
-        assertEquals(fileFormatTypePE.getCode(), types.get(0).getCode());
-        context.assertIsSatisfied();
-    }
-
-    @Test
-    public void testDeleteFileFormatsWithNoCodesSpecified() throws Exception
-    {
-        List<String> codes = new ArrayList<String>();
-        prepareGetSession();
-        createServer().deleteFileFormatTypes(SESSION_TOKEN, codes);
-        context.assertIsSatisfied();
-    }
-
-    @Test
-    public void testDeleteFileFormatsWithCodesSpecified() throws Exception
-    {
-        final List<String> codes = Arrays.asList("code1", "code2");
-        prepareGetSession();
-        context.checking(new Expectations()
-            {
-                {
-                    for (String code : codes)
-                    {
-                        one(fileFormatDAO).tryToFindFileFormatTypeByCode(code);
-                        FileFormatTypePE type = createFileFormatType(code);
-                        will(returnValue(type));
-                        one(fileFormatDAO).delete(type);
-                    }
-                }
-            });
-        createServer().deleteFileFormatTypes(SESSION_TOKEN, codes);
-        context.assertIsSatisfied();
-    }
-
-    private static final FileFormatTypePE createFileFormatType(String code)
-    {
-        FileFormatTypePE result = new FileFormatTypePE();
-        result.setCode(code);
-        return result;
-    }
-
-    @Test
-    public void testDeleteUnknownFileFormat() throws Exception
-    {
-        final String code = "unknown-type";
-        final List<String> codes = Arrays.asList(code);
-        prepareGetSession();
-        context.checking(new Expectations()
-            {
-                {
-                    one(fileFormatDAO).tryToFindFileFormatTypeByCode(code);
-                    will(returnValue(null));
-                }
-            });
-        boolean exceptionThrown = false;
-        try
-        {
-            createServer().deleteFileFormatTypes(SESSION_TOKEN, codes);
-        } catch (UserFailureException ex)
-        {
-            exceptionThrown = true;
-        }
-        assertTrue(exceptionThrown);
-        context.assertIsSatisfied();
-    }
-
-    @Test
-    public void testDeleteFileFormatWithDataSets() throws Exception
-    {
-        final String code = "used-type";
-        final List<String> codes = Arrays.asList(code);
-        prepareGetSession();
-        context.checking(new Expectations()
-            {
-                {
-                    one(fileFormatDAO).tryToFindFileFormatTypeByCode(code);
-                    FileFormatTypePE type = createFileFormatType(code);
-                    will(returnValue(type));
-
-                    one(fileFormatDAO).delete(type);
-                    will(throwException(new DataIntegrityViolationException("")));
-                }
-            });
-        boolean exceptionThrown = false;
-        try
-        {
-            createServer().deleteFileFormatTypes(SESSION_TOKEN, codes);
-        } catch (UserFailureException ex)
-        {
-            exceptionThrown = true;
-        }
-        assertTrue(exceptionThrown);
-        context.assertIsSatisfied();
-    }
-
-
-    @Test
-    public void testRegisterFileFormatType()
-    {
-        prepareGetSession();
-        final FileFormatTypePE fileFormatTypePE = new FileFormatTypePE();
-        fileFormatTypePE.setCode("my-type");
-        fileFormatTypePE.setDescription("my description");
-        context.checking(new Expectations()
-            {
-                {
-                    one(fileFormatDAO).createOrUpdate(fileFormatTypePE);
-                }
-            });
-        FileFormatType fileFormatType = new FileFormatType();
-        fileFormatType.setCode(fileFormatTypePE.getCode());
-        fileFormatType.setDescription(fileFormatTypePE.getDescription());
-
-        createServer().registerFileFormatType(SESSION_TOKEN, fileFormatType);
-
-        context.assertIsSatisfied();
-    }
 
     @Test
     public final void testListVocabularies()

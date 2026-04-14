@@ -1000,7 +1000,6 @@ exports.default = new Promise((resolve) => {
 
                 var fUpdate = function (facade: openbis.openbis, permId) {
                     var physicalUpdate = new dtos.PhysicalDataUpdate()
-                    physicalUpdate.setFileFormatTypeId(new dtos.FileFormatTypePermId("TIFF"))
                     physicalUpdate.setArchivingRequested(true)
 
                     var update = new dtos.DataSetUpdate()
@@ -1014,7 +1013,6 @@ exports.default = new Promise((resolve) => {
                 var fCheck = function (dataSet: openbis.DataSet) {
                     c.assertEqual(dataSet.getCode(), code, "Code")
                     c.assertEqual(dataSet.getProperties()["NOTES"], "new 409 description", "Property NOTES")
-                    c.assertEqual(dataSet.getPhysicalData().getFileFormatType().getCode(), "TIFF", "File format type")
                     c.assertEqual(dataSet.getPhysicalData().isArchivingRequested(), true, "Archiving requested")
                 }
 

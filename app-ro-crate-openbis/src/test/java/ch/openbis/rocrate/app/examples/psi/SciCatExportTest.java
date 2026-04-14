@@ -16,10 +16,7 @@ import edu.kit.datamanager.ro_crate.reader.RoCrateReader;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -57,7 +54,7 @@ public class SciCatExportTest
                 openBisModel =
                 RdfToModel.convert(types, schemaFacade.getPropertyTypes(),
                         entryList.stream().toList(), "DEFAULT",
-                        "DEFAULT", schemaFacade);
+                        "DEFAULT", schemaFacade, Map.of());
         Optional<IEntityType>
                 maybePublicatioNType =
                 openBisModel.getEntityTypes().values().stream().filter(x -> x.getPermId().equals(
@@ -97,6 +94,30 @@ public class SciCatExportTest
                 .map(x -> x.getPropertyType())
                 .filter(x -> x.getCode().contains("abstract")).findFirst().isPresent());
 
+    }
+
+    @Test
+    public void testSciCatCrate20250815WithMissingFiles() throws IOException
+    {
+
+        RoCrateReader roCrateFolderReader = new RoCrateReader(new FolderReader());
+        RoCrate crate = roCrateFolderReader.readCrate(INPUT);
+        SchemaFacade schemaFacade = SchemaFacade.of(crate);
+
+        List<IType> types = schemaFacade.getTypes();
+
+        Set<IMetadataEntry> entryList = new LinkedHashSet<>();
+        for (var type : types)
+        {
+            entryList.addAll(schemaFacade.getEntries(type.getId()));
+
+        }
+
+        OpenBisModel
+                openBisModel =
+                RdfToModel.convert(types, schemaFacade.getPropertyTypes(),
+                        entryList.stream().toList(), "DEFAULT",
+                        "DEFAULT", schemaFacade, Map.of());
     }
 
 }
