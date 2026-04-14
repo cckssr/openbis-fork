@@ -984,11 +984,6 @@ public class TranslatorUtils
                 .append(SP).append(EQ).append(SP).append(QU);
         args.add(normalisePropertyName(propertyTypeCode));
 
-//        sqlBuilder.append(SP).append(AND).append(SP);
-//        sqlBuilder.append(PROPERTY_TYPE_ALIAS).append(PERIOD).append(IS_MANAGED_INTERNALLY).append(SP).append(EQ)
-//                .append(SP).append(QU);
-//        args.add(isPropertyInternal(propertyTypeCode));
-
         sqlBuilder.append(RP);
     }
 

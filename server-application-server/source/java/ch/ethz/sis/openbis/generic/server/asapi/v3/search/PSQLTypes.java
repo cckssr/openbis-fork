@@ -49,7 +49,9 @@ public enum PSQLTypes
 
     INT8("int8"),
 
-    NUMERIC("numeric");
+    NUMERIC("numeric"),
+
+    TEXT("text");
 
     private static final Map<Class<?>, PSQLTypes> JAVA_TO_SQL_TYPE_MAP = new HashMap<>();
 

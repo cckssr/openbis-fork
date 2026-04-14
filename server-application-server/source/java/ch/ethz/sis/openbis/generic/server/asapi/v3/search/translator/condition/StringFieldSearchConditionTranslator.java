@@ -29,7 +29,9 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.u
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataTypeCode;
+import org.springframework.lang.NonNull;
 
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes.TEXT;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes.VARCHAR;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.*;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.TranslatorUtils.appendTsVectorMatch;
@@ -132,8 +134,8 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
             TranslatorUtils.appendDataTypesSubselect(tableMapper, sqlBuilder, propertyTableAlias);
             sqlBuilder.append(RP).append(SP).append(IN).append(SP).append(LP)
                     .append(SQ).append(String.join(SQ + COMMA + SP + SQ,
-                            Arrays.asList(DataTypeCode.VARCHAR.toString(), DataTypeCode.MULTILINE_VARCHAR.toString(),
-                                    DataTypeCode.HYPERLINK.toString(), DataTypeCode.XML.toString())
+                            Arrays.asList(DataTypeCode.VARCHAR.toString(),
+                                            DataTypeCode.MULTILINE_VARCHAR.toString())
                                     .toArray(new String[0])))
                     .append(SQ).append(RP);
         }
@@ -221,21 +223,29 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
 
             if (value.getClass() != StringMatchesValue.class)
             {
-                sqlBuilder.append(CASE);
+                // We use a different value column for certain data types (such as JSON)
+                final String valueColumn = getValueColumn(casting);
 
+                sqlBuilder.append(CASE);
                 sqlBuilder.append(NL).append(WHEN).append(SP).append(propertyTableAlias).append(PERIOD)
-                        .append(VALUE_COLUMN).append(SP).append(IS_NOT_NULL).append(SP).append(THEN).append(SP);
+                        .append(valueColumn).append(SP).append(IS_NOT_NULL).append(SP).append(THEN).append(SP);
 
                 if (casting != null)
                 {
-                    sqlBuilder.append(propertyTableAlias).append(PERIOD).append(VALUE_COLUMN);
+                    sqlBuilder.append(propertyTableAlias).append(PERIOD).append(valueColumn);
+
+                    if (!valueColumn.equals(VALUE_COLUMN))
+                    {
+                        // If the value is not in the default VALUE_COLUMN, cast the value to text
+                        sqlBuilder.append(DOUBLE_COLON).append(TEXT);
+                    }
 
                     TranslatorUtils.appendStringComparatorOp(value.getClass(),
                             TranslatorUtils.stripQuotationMarks(value.getValue()), useWildcards, sqlBuilder, args);
                 } else
                 {
                     TranslatorUtils.translateStringComparison(propertyTableAlias,
-                            VALUE_COLUMN, value, useWildcards, null, sqlBuilder, args);
+                            valueColumn, value, useWildcards, null, sqlBuilder, args);
                 }
 
                 if (fullPropertyName != null)
@@ -269,6 +279,13 @@ public class StringFieldSearchConditionTranslator implements IConditionTranslato
             sqlBuilder.append(NL);
         }
         sqlBuilder.append(RP);
+    }
+
+    @NonNull
+    private static String getValueColumn(String casting)
+    {
+        return casting != null && casting.equals(DataTypeCode.JSON.toString()) ?
+                JSON_VALUE_COLUMN : VALUE_COLUMN;
     }
 
     private static void verifyCriterionValidity(final StringFieldSearchCriteria criterion,
