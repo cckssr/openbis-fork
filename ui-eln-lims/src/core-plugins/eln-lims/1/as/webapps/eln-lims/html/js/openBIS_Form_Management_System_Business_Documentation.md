@@ -65,7 +65,7 @@ The system consists of four interconnected form components that manage the hiera
 ### Key Differentiators
 
 - **Hierarchical Data Organization**: Natural tree structure that mirrors laboratory organization
-- **Dual-Mode Operation**: Supports both ELN (research-focused) and Inventory workflows
+- **Dual-Mode Operation**: Supports both ELN (research-focused) and Inventory (materials-focused) workflows
 - **Advanced Relationship Management**: Complex parent-child relationships with annotation support
 - **Comprehensive Integration**: Native support for Jupyter notebooks, PDF generation, and data export
 - **Enterprise Security**: Multi-level access control with freezing and immutability features
@@ -133,7 +133,7 @@ Space (Organizational Unit)
 
 **Space Level (Top-Level Organization)**
 - **Purpose**: Represents departments, research groups, or organizational units
-- **Types**: ELN Spaces (research-focused) and Inventory Spaces
+- **Types**: ELN Spaces (research-focused) and Inventory Spaces (materials-focused)
 - **Contains**: Multiple projects
 - **Permissions**: Space-level access control and administration
 - **Features**: Group management, naming conventions, read-only configurations
@@ -151,7 +151,7 @@ Space (Organizational Unit)
 - **Features**: Experiment types, protocol management, dataset organization
 
 **Sample Level (Physical/Digital Entities)**
-- **Purpose**: Represents actual laboratory samples, specimens, or digital entities
+- **Purpose**: Represents actual laboratory samples, materials, or digital entities
 - **Contains**: Associated datasets and metadata
 - **Relationships**: Complex parent-child relationships, can belong to experiments or projects
 - **Features**: Sample types, storage tracking, relationship management, annotations
@@ -222,8 +222,8 @@ SpaceForm manages the highest level of organization in the openBIS system, repre
 - **Permissions**: Standard user access with role-based restrictions
 
 **Inventory Spaces**
-- **Purpose**: Inventory management
-- **Features**: Specialized for tracking reagents, equipment, and related assets
+- **Purpose**: Materials and inventory management
+- **Features**: Specialized for tracking materials, reagents, and equipment
 - **Use Cases**: Chemical storage, equipment tracking, supply management
 - **Permissions**: Optional read-only mode for non-admin users
 
@@ -776,7 +776,7 @@ mpleForm
 
 #### Purpose and Business Value
 
-SampleForm is the most sophisticated component of the openBIS system, managing physical and digital samples with complex relationships, metadata, and associated datasets. Samples represent the actual specimens or digital entities that are the subject of research activities.
+SampleForm is the most sophisticated component of the openBIS system, managing physical and digital samples with complex relationships, metadata, and associated datasets. Samples represent the actual materials, specimens, or digital entities that are the subject of research activities.
 
 **Business Benefits:**
 - **Sample Tracking**: Complete lifecycle management of laboratory samples
@@ -793,11 +793,11 @@ SampleForm is the most sophisticated component of the openBIS system, managing p
 **ELN Samples (Electronic Lab Notebook)**
 - **Purpose**: Research-focused samples for experimental work
 - **Features**: Full relationship management, experimental integration
-- **Use Cases**: Biological specimens, chemical compounds, experimental assets
+- **Use Cases**: Biological specimens, chemical compounds, experimental materials
 - **Workflow**: Integrated with experimental protocols and analysis
 
 **Inventory Samples**
-- **Purpose**: Inventory management
+- **Purpose**: Materials and inventory management
 - **Features**: Storage tracking, quantity management, procurement integration
 - **Use Cases**: Reagents, consumables, equipment tracking
 - **Workflow**: Focused on availability and location tracking
@@ -1031,7 +1031,7 @@ _allowedToRegisterDataSet() // Dataset upload permissions
 6. **Archival**: Long-term preservation and compliance procedures
 
 ##### Complex Relationship Scenarios
-- **Sample Derivation**: Track samples derived from parent samples
+- **Sample Derivation**: Track samples derived from parent materials
 - **Pooling Operations**: Combine multiple samples into pools
 - **Aliquoting**: Create multiple aliquots from parent samples
 - **Experimental Series**: Manage samples across experimental time series
@@ -1632,7 +1632,7 @@ kflows and Use Cases
 **Phase 1: Organizational Structure Setup**
 1. **System Administrator** creates organizational spaces
    - Create ELN spaces for research departments
-   - Create Inventory spaces for structured sample management
+   - Create Inventory spaces for materials management
    - Configure group prefixes and naming conventions
    - Set up initial access permissions
 
@@ -1650,12 +1650,12 @@ kflows and Use Cases
 
 **Phase 2: Daily Operations**
 1. **Researchers** conduct experimental work
-   - Create samples for experimental assets
+   - Create samples for experimental materials
    - Document experimental procedures and protocols
    - Upload datasets and associate with samples
    - Collaborate through comments and annotations
 
-2. **Laboratory Technicians** manage inventory assets
+2. **Laboratory Technicians** manage materials
    - Track sample locations and storage
    - Manage inventory and procurement
    - Perform quality control procedures
@@ -1778,7 +1778,7 @@ Quality Control   Project Manager   Admin    Research Team
 
 #### Use Case 3: Quality Control Laboratory
 
-**Scenario**: An industrial quality control laboratory managing incoming inventory, testing procedures, and compliance reporting.
+**Scenario**: An industrial quality control laboratory managing incoming materials, testing procedures, and compliance reporting.
 
 **Participants**:
 - QC Manager (QCM)
@@ -1789,20 +1789,20 @@ Quality Control   Project Manager   Admin    Research Team
 **Workflow Steps**:
 
 1. **QC System Setup** (QCM)
-   - Create inventory space "QC_INVENTORY" for incoming inventory
+   - Create inventory space "QC_MATERIALS" for incoming materials
    - Set up projects for different product lines
-   - Configure sample types for incoming goods and finished products
+   - Configure sample types for raw materials and finished products
    - Establish testing protocols and acceptance criteria
 
-2. **Inventory Receipt and Tracking** (LT)
-   - Create samples for incoming inventory with batch information
+2. **Material Receipt and Tracking** (LT)
+   - Create samples for incoming materials with batch information
    - Assign storage locations and track inventory levels
    - Generate barcode labels for sample identification
    - Update sample status throughout testing process
 
 3. **Testing and Analysis** (QCA)
    - Create experiments for different testing procedures
-   - Link inventory samples to appropriate test experiments
+   - Link material samples to appropriate test experiments
    - Record test results and instrument data
    - Upload certificates of analysis and supporting documentation
 
