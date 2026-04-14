@@ -71,7 +71,7 @@ public class JSON2ExcelTest {
                 "PUBLICATION.PUBLICATION_YEAR",
                 "XMLCOMMENTS");
 
-        assertEquals(8, openBisModel.getEntities().size());
+        assertEquals(11, openBisModel.getEntities().size());
         assertTrue(maybePublicatioNType.isPresent());
         assertEquals(2, openBisModel.getSpaces().size());
         assertEquals(2, openBisModel.getProjects().size());

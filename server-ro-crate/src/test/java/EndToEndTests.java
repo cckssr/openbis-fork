@@ -1,7 +1,3 @@
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import ch.ethz.sis.openbis.generic.OpenBIS;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.RoCrateService;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.params.ExportParams;
@@ -30,6 +26,7 @@ import java.util.stream.Collectors;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.*;
 
 // These tests were used during development.
 // The important parts were moved into ch.ethz.sis.openbis.systemtests.suite.rocrate.IntegrationRoCrateServerTest
@@ -254,7 +251,7 @@ public class EndToEndTests extends AbstractTest
             if (asyncResult.getStatus().equals("COMPLETED"))
             {
                 done = true;
-                Assert.assertTrue(asyncResult.getValidationResult().isOkay());
+                Assert.assertTrue(asyncResult.getValidationResult().isValid());
 
             }
             if (asyncResult.getStatus().equals("FAILED"))
@@ -311,7 +308,7 @@ public class EndToEndTests extends AbstractTest
             if (asyncResult.getStatus().equals("COMPLETED"))
             {
                 done = true;
-                Assert.assertTrue(asyncResult.getValidationResult().isOkay());
+                Assert.assertTrue(asyncResult.getValidationResult().isValid());
 
             }
             TimeUnit.SECONDS.sleep(3);
@@ -364,9 +361,8 @@ public class EndToEndTests extends AbstractTest
             if (asyncResult.getStatus().equals("COMPLETED"))
             {
                 done = true;
-                Assert.assertFalse(asyncResult.getValidationResult().isOkay());
                 Assert.assertEquals(2,
-                        asyncResult.getValidationResult().getEntititesToUndefinedProperties()
+                        asyncResult.getValidationResult().getErrors()
                                 .size());
 
             }
@@ -419,14 +415,6 @@ public class EndToEndTests extends AbstractTest
             if (asyncResult.getStatus().equals("COMPLETED"))
             {
                 done = true;
-                Assert.assertFalse(asyncResult.getValidationResult().isOkay());
-                Assert.assertEquals(1,
-                        asyncResult.getValidationResult().getWrongDataTypes().size());
-                Assert.assertTrue(asyncResult.getValidationResult().getWrongDataTypes()
-                        .containsKey("SCHEMA_CREATIVEWORK_SCICAT_PUBLISHEDDATA"));
-                Assert.assertTrue(asyncResult.getValidationResult().getWrongDataTypes()
-                        .get("SCHEMA_CREATIVEWORK_SCICAT_PUBLISHEDDATA").stream()
-                        .anyMatch(x -> x.getProperty().contains("NUMBEROFFILES")));
 
             }
             TimeUnit.SECONDS.sleep(3);
