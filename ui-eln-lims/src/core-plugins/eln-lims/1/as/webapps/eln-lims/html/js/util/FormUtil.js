@@ -955,6 +955,12 @@ var FormUtil = new function() {
     }
 
     this.createPropertyField = function(propertyType, propertyValue, $info) {
+		var numberFormat = new Intl.NumberFormat('en-US', { notation : "standard",
+			minimumSignificantDigits :  "1",
+			maximumSignificantDigits : "21",
+			minimumFractionDigits : "0",
+			maximumFractionDigits : "20" });
+
 	    var isLink = propertyType.dataType === "HYPERLINK";
 	    var hyperlinkLabel = null;
 		if (propertyType.dataType === "CONTROLLEDVOCABULARY") {
@@ -981,12 +987,11 @@ var FormUtil = new function() {
                 }
 			}
 		} else if (propertyType.dataType === "INTEGER" || propertyType.dataType === "REAL") {
-		    var numberFormat = new Intl.NumberFormat('en-US', { notation : "standard",
-		                                                        minimumSignificantDigits :  "1",
-		                                                        maximumSignificantDigits : "21",
-		                                                        minimumFractionDigits : "0",
-		                                                        maximumFractionDigits : "20" });
 		    propertyValue = numberFormat.format(propertyValue);
+		} else if (propertyType.dataType === "ARRAY_INTEGER" || propertyType.dataType === "ARRAY_REAL") {
+			propertyValue = "[" + propertyValue.map((value) => numberFormat.format(value)).join(", ") + "]";
+		} else if (propertyType.dataType === "ARRAY_STRING" || propertyType.dataType === "ARRAY_TIMESTAMP") {
+			propertyValue = "[" + propertyValue.map((value) => '"' + value + '"').join(", ") + "]";
 		}
         return this._createField(isLink, propertyType.label, propertyValue, propertyType.code, null, null, hyperlinkLabel, $info);
 	}
