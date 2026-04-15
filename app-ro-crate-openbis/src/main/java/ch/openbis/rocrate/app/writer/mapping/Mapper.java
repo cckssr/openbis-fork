@@ -1,6 +1,7 @@
 package ch.openbis.rocrate.app.writer.mapping;
 
 import ch.eth.sis.rocrate.facade.*;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.entity.AbstractEntityPropertyHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.ObjectIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IEntityType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
@@ -226,9 +227,10 @@ public class Mapper
                             new LinkedHashMap<>()));
         });
 
-        for (var metaData : openBisModel.getEntities().entrySet())
+        for (Map.Entry<ObjectIdentifier, AbstractEntityPropertyHolder> metaData : openBisModel.getEntities()
+                .entrySet())
         {
-            var val = metaData.getValue();
+            AbstractEntityPropertyHolder val = metaData.getValue();
             Map<String, Serializable> props = new LinkedHashMap<>();
             Map<String, List<String>> references = new LinkedHashMap<>();
 
@@ -394,7 +396,7 @@ public class Mapper
                 UUID uuid = UUID.randomUUID();
                 Path path = Path.of("/tmp/ro-crate/" + uuid);
                 Files.createDirectories(Path.of("/tmp/ro-crate/"));
-                Files.write(path, b.contents());
+                Files.write(path, b.getInputStream().readAllBytes());
                 MapResult.RoCrateFile roCrateFile =
                         new MapResult.RoCrateFile(path, b.originalPath());
                 files.add(roCrateFile);

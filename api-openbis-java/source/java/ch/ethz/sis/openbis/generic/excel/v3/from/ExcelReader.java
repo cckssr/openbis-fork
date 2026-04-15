@@ -101,6 +101,11 @@ public class ExcelReader
 
     public static enum Format { ZIP_EXPORT, EXCEL }
 
+    /**
+     * This specifies whether files are written using their actual contents or some dummy bytes.
+     * RO-Crate conversion uses dummy files because they are needed for the API, the manifest is
+     * reused for the actual data. For debug purposes, FULL is available.
+     */
     public static enum FileMode
     {FULL, DUMMY}
 

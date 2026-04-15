@@ -17,14 +17,8 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.io.*;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -32,6 +26,8 @@ import java.util.zip.ZipOutputStream;
 
 public class ExcelWriter
 {
+
+    private static final int BUFFER_SIZE = 1024;
 
     Format format;
     private static final String XLSX_EXTENSION = "." + "xlsx";
@@ -154,8 +150,8 @@ public class ExcelWriter
                                 String zipPath = DataPathHelper.getPath(file, entity);
                                 ZipEntry zipEntry = new ZipEntry(zipPath);
                                 zos.putNextEntry(zipEntry);
-                                bos.write(file.contents());
-                                bos.flush();
+
+                                writeFile(file, bos);
 
                             }
                         }
@@ -166,9 +162,7 @@ public class ExcelWriter
                             {
                                 ZipEntry zipEntry = new ZipEntry(file.originalPath());
                                 zos.putNextEntry(zipEntry);
-                                bos.write(file.contents());
-                                bos.flush();
-
+                                writeFile(file, bos);
                             }
                         }
 
@@ -200,6 +194,30 @@ public class ExcelWriter
             throw new RuntimeException(e);
         }
         throw new RuntimeException("Unknown format, how did this happen?");
+    }
+
+    private static void writeFile(IFileInfo file, BufferedOutputStream bos) throws IOException
+    {
+        try (InputStream inputStream = file.getInputStream())
+        {
+            byte[] buffer = new byte[BUFFER_SIZE];
+            int read = 0;
+
+            while ((read = inputStream.read(buffer)) > 0)
+            {
+
+                byte[] writeBuf = buffer;
+                if (read != BUFFER_SIZE)
+                {
+                    writeBuf = Arrays.copyOfRange(buffer, 0, read);
+                }
+
+                bos.write(writeBuf);
+
+            }
+
+        }
+        bos.flush();
     }
 
     public void checkWriteResult(List<RowWriteResult> writeResults)

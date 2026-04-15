@@ -1,6 +1,7 @@
 package ch.ethz.sis.openbis.generic.excel.v3.model;
 
 import java.io.IOException;
+import java.io.InputStream;
 
 public interface IFileInfo
 {
@@ -8,7 +9,7 @@ public interface IFileInfo
 
     String filePath();
 
-    byte[] contents() throws IOException;
+    InputStream getInputStream() throws IOException;
 
     String originalPath();
 
