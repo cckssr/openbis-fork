@@ -8,11 +8,9 @@ import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -75,11 +73,9 @@ public class DataTypeMatcher
             case TIMESTAMP:
                 try
                 {
-                    SimpleDateFormat ISO8601DATEFORMAT =
-                            new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ", Locale.ROOT);
-                    ISO8601DATEFORMAT.parse(value.toString());
+                    DateTimeFormatter.ISO_DATE_TIME.parse(value.toString());
                     return true;
-                } catch (ParseException e)
+                } catch (DateTimeParseException e)
                 {
                     return false;
                 }
@@ -121,7 +117,7 @@ public class DataTypeMatcher
                     {
 
                         String[] parts = identifier.toString().split("/");
-                        if (parts.length != 4 && parts.length != 3)
+                        if (parts.length < 2 || parts.length > 4)
                         {
                             return false;
                         }

@@ -41,7 +41,7 @@ public class PsiZippedCrateTest
                 openBisModel =
                 RdfToModel.convert(types, schemaFacade.getPropertyTypes(),
                         entryList.stream().toList(), "DEFAULT",
-                        "DEFAULT", schemaFacade, Map.of());
+                        "DEFAULT", schemaFacade, Map.of()).openBisModel();
         Assert.assertTrue(openBisModel.getFiles().values().stream().allMatch(List::isEmpty));
 
     }

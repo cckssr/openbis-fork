@@ -289,7 +289,7 @@ public class ApplicationServerApiLogger extends AbstractServerLogger implements
     @Override
     public int getMajorVersion()
     {
-        return 3;
+        return MAJOR_VERSION;
     }
 
     /**
@@ -298,7 +298,7 @@ public class ApplicationServerApiLogger extends AbstractServerLogger implements
     @Override
     public int getMinorVersion()
     {
-        return 0;
+        return MINOR_VERSION;
     }
 
     @Override

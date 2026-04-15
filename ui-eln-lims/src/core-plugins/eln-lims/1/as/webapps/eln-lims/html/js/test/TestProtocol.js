@@ -26,30 +26,30 @@ var TestProtocol = new function () {
         testChain = Promise.resolve();
                  //5. User Manager (end of test)
         testChain.then(() => UserTests.userManager(5))
-                 //6. obsolete test
-                 .then(() => TestUtil.testNotExist(6))
-                 //7. obsolete test
-                 .then(() => TestUtil.testNotExist(7))
-                 //8. obsolete test
-                 .then(() => TestUtil.testNotExist(8))
-                 //9. obsolete test
-                 .then(() => TestUtil.testNotExist(9))
-                 //10. obsolete test
-                 .then(() => TestUtil.testNotExist(10))
-                 //11. obsolete test
-                 .then(() => TestUtil.testNotExist(11))
-                 //12. obsolete test
-                 .then(() => TestUtil.testNotExist(12))
-                 //13. obsolete test
-                 .then(() => TestUtil.testNotExist(13))
-                 //14. obsolete test
-                 .then(() => TestUtil.testNotExist(14))
-                 //15. obsolete test
-                 .then(() => TestUtil.testNotExist(15))
-                 //16. obsolete test
-                 .then(() => TestUtil.testNotExist(16))
-                 //17. obsolete test
-                 .then(() => TestUtil.testNotExist(17))
+                 //6. Sample Form - Creation
+                 .then(() => UserTests.creationSampleForm())
+                 //7. Sample Form - Edit: Add a Photo and Parents/Children
+                 .then(() => UserTests.editSampleForm())
+                 //8. Sample Hierarchy as Graph
+                 .then(() => UserTests.sampleHierarchyAsGraph())
+                 //9. Sample Hierarchy as Table
+                 .then(() => UserTests.sampleHierarchyAsTable())
+                 //10. Sample Form - Copy
+                 .then(() => UserTests.copySampleForm())
+                 //11. Sample Form - Delete
+                 .then(() => UserTests.deleteSampleForm())
+                 //12. Inventory Table - Exports/Imports for Update
+                 .then(() => UserTests.exportsImportsUpdate())
+                 //13. Inventory Table - Imports for Create - Automatic Codes
+                 .then(() => UserTests.importsAutomaticCodes())
+                 //14. Inventory Table - Imports for Create - Given Codes
+                 .then(() => UserTests.importsGivenCodes())
+                 //15. Sample Form - Storage
+                 .then(() => UserTests.storageTest())
+                 //16. Storage Manager - Moving Box
+                 .then(() => UserTests.movingBoxTest())
+                 //17. Storage Manager - Moving Sample
+                 .then(() => UserTests.movingSampleTest())
                  //18. Create Protocol
                  .then(() => UserTests.createProtocol())
                  //19. Project Form - Create/Update
@@ -66,8 +66,8 @@ var TestProtocol = new function () {
                  .then(() => TestUtil.testNotExist(24))
                  //25. Project  Form - Show in project overview
                  .then(() => UserTests.showInProjectOverview())
-                 //26. obsolete test
-                 .then(() => TestUtil.testNotExist(26))
+                 //26. Search
+                 .then(() => UserTests.search())
                  //27. Supplier Form
                  .then(() => UserTests.supplierForm())
                  //28. Product Form

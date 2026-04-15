@@ -48,7 +48,7 @@ public class MoleculeRoCrateTest
                 openBisModel =
                 RdfToModel.convert(types, schemaFacade.getPropertyTypes(),
                         entryList.stream().toList(), "DEFAULT",
-                        "DEFAULT", schemaFacade, Map.of());
+                        "DEFAULT", schemaFacade, Map.of()).openBisModel();
 
         assertEquals(2, openBisModel.getEntityTypes().size());
         assertTrue(openBisModel.getEntities()

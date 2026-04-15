@@ -19,6 +19,12 @@ function SideMenuWidgetViewController(sideMenuWidgetController, sideMenuWidgetMo
     this._$inv = $("<div>", { id: "side-menu-inventory"})
     this._$tools = $("<div>", { id: "side-menu-tools"})
 
+    this.finalize = function() {
+        for(let key of Object.keys(this._sideMenuMap)) {
+            this._sideMenuMap[key].finalize();
+        }
+    }
+
     this.repaint = function ($container, isCollapsed) {
 
         if(MOBILE_MODE) {

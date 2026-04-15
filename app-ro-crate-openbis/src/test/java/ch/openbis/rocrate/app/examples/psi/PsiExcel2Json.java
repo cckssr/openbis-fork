@@ -52,7 +52,7 @@ public class PsiExcel2Json
                 openBisModel =
                 RdfToModel.convert(types, schemaFacade.getPropertyTypes(),
                         entryList.stream().toList(), "DEFAULT",
-                        "DEFAULT", schemaFacade, Map.of());
+                        "DEFAULT", schemaFacade, Map.of()).openBisModel();
         Optional<IEntityType>
                 maybePublicatioNType =
                 openBisModel.getEntityTypes().values().stream().filter(x -> x.getPermId().equals(

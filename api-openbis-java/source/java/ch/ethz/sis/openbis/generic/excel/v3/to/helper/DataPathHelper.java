@@ -1,7 +1,9 @@
 package ch.ethz.sis.openbis.generic.excel.v3.to.helper;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.entity.AbstractEntityPropertyHolder;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
+import ch.ethz.sis.openbis.generic.excel.v3.from.ExcelReader;
 import ch.ethz.sis.openbis.generic.excel.v3.model.IFileInfo;
 import ch.ethz.sis.openbis.generic.excel.v3.to.ExcelWriter;
 
@@ -11,6 +13,8 @@ import java.util.stream.Collectors;
 
 public class DataPathHelper
 {
+
+    public static final String HIERARCHY = ExcelReader.FOLDER_NAME_NEW_DATA;
 
     public static String getPath(IFileInfo fileInfo,
             AbstractEntityPropertyHolder entity)
@@ -22,7 +26,7 @@ public class DataPathHelper
 
             List<String> parts = new ArrayList<>();
 
-            parts.add("hierarchy");
+            parts.add(HIERARCHY.replace("/", ""));
 
             if (sample.getSpace() != null)
             {
@@ -50,6 +54,14 @@ public class DataPathHelper
 
             return parts.stream().collect(Collectors.joining("/"));
         }
+        if (entity instanceof Experiment)
+        {
+            Experiment collection = (Experiment) entity;
+            return HIERARCHY + "/" + collection.getIdentifier()
+                    .toString() + "/" + ExcelWriter.DATA_DIRECTORY;
+        }
+
+
         throw new RuntimeException(entity.getClass().toString() + " not implemented yet");
 
     }

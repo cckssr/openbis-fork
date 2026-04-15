@@ -58,7 +58,7 @@ public class JSON2ExcelTest {
                 openBisModel =
                 RdfToModel.convert(types, schemaFacade.getPropertyTypes(),
                         entryList.stream().toList(), "DEFAULT",
-                        "DEFAULT", schemaFacade, Map.of());
+                        "DEFAULT", schemaFacade, Map.of()).openBisModel();
 
         // assertions on model because the Excel files might have different orders of stuff
         // ordering comes from the RO-Crate library and is outside our control
@@ -71,7 +71,7 @@ public class JSON2ExcelTest {
                 "PUBLICATION.PUBLICATION_YEAR",
                 "XMLCOMMENTS");
 
-        assertEquals(8, openBisModel.getEntities().size());
+        assertEquals(11, openBisModel.getEntities().size());
         assertTrue(maybePublicatioNType.isPresent());
         assertEquals(2, openBisModel.getSpaces().size());
         assertEquals(2, openBisModel.getProjects().size());

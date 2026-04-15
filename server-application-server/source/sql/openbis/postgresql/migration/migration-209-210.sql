@@ -56,18 +56,6 @@ BEGIN
         END IF;
     END IF;
 
-    IF EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'material_properties_history') THEN
-        check_query := 'SELECT COUNT(*) FROM material_properties_history';
-        SELECT COUNT(*) INTO rows_count FROM material_properties_history;
-        IF rows_count > 0 THEN
-            SELECT string_agg(format('id=%s, mate_id=%s, mtpt_id=%s', id, mate_id, mtpt_id), '; ')
-              INTO detected_rows
-              FROM (SELECT id, mate_id, mtpt_id FROM material_properties_history ORDER BY id LIMIT 10) t;
-            RAISE EXCEPTION 'Migration 209->210 blocked. Check: "%". Detected % row(s). Example rows: %',
-                check_query, rows_count, COALESCE(detected_rows, '<none>');
-        END IF;
-    END IF;
-
     IF EXISTS (SELECT FROM information_schema.columns WHERE table_name = 'property_types' AND column_name = 'maty_prop_id') THEN
         check_query := 'SELECT COUNT(*) FROM property_types WHERE maty_prop_id IS NOT NULL';
         SELECT COUNT(*) INTO rows_count FROM property_types WHERE maty_prop_id IS NOT NULL;
@@ -116,42 +104,6 @@ BEGIN
         END IF;
     END IF;
 
-    IF EXISTS (SELECT FROM information_schema.columns WHERE table_name = 'experiment_properties_history' AND column_name = 'material') THEN
-        check_query := 'SELECT COUNT(*) FROM experiment_properties_history WHERE material IS NOT NULL';
-        SELECT COUNT(*) INTO rows_count FROM experiment_properties_history WHERE material IS NOT NULL;
-        IF rows_count > 0 THEN
-            SELECT string_agg(format('id=%s, expe_id=%s, etpt_id=%s, material=%s', id, expe_id, etpt_id, material), '; ')
-              INTO detected_rows
-              FROM (SELECT id, expe_id, etpt_id, material FROM experiment_properties_history WHERE material IS NOT NULL ORDER BY id LIMIT 10) t;
-            RAISE EXCEPTION 'Migration 209->210 blocked. Check: "%". Detected % row(s). Example rows: %',
-                check_query, rows_count, COALESCE(detected_rows, '<none>');
-        END IF;
-    END IF;
-
-    IF EXISTS (SELECT FROM information_schema.columns WHERE table_name = 'sample_properties_history' AND column_name = 'material') THEN
-        check_query := 'SELECT COUNT(*) FROM sample_properties_history WHERE material IS NOT NULL';
-        SELECT COUNT(*) INTO rows_count FROM sample_properties_history WHERE material IS NOT NULL;
-        IF rows_count > 0 THEN
-            SELECT string_agg(format('id=%s, samp_id=%s, stpt_id=%s, material=%s', id, samp_id, stpt_id, material), '; ')
-              INTO detected_rows
-              FROM (SELECT id, samp_id, stpt_id, material FROM sample_properties_history WHERE material IS NOT NULL ORDER BY id LIMIT 10) t;
-            RAISE EXCEPTION 'Migration 209->210 blocked. Check: "%". Detected % row(s). Example rows: %',
-                check_query, rows_count, COALESCE(detected_rows, '<none>');
-        END IF;
-    END IF;
-
-    IF EXISTS (SELECT FROM information_schema.columns WHERE table_name = 'data_set_properties_history' AND column_name = 'material') THEN
-        check_query := 'SELECT COUNT(*) FROM data_set_properties_history WHERE material IS NOT NULL';
-        SELECT COUNT(*) INTO rows_count FROM data_set_properties_history WHERE material IS NOT NULL;
-        IF rows_count > 0 THEN
-            SELECT string_agg(format('id=%s, ds_id=%s, dstpt_id=%s, material=%s', id, ds_id, dstpt_id, material), '; ')
-              INTO detected_rows
-              FROM (SELECT id, ds_id, dstpt_id, material FROM data_set_properties_history WHERE material IS NOT NULL ORDER BY id LIMIT 10) t;
-            RAISE EXCEPTION 'Migration 209->210 blocked. Check: "%". Detected % row(s). Example rows: %',
-                check_query, rows_count, COALESCE(detected_rows, '<none>');
-        END IF;
-    END IF;
-
     IF EXISTS (SELECT FROM information_schema.columns WHERE table_name = 'metaproject_assignments_all' AND column_name = 'mate_id') THEN
         check_query := 'SELECT COUNT(*) FROM metaproject_assignments_all WHERE mate_id IS NOT NULL';
         SELECT COUNT(*) INTO rows_count FROM metaproject_assignments_all WHERE mate_id IS NOT NULL;
@@ -185,30 +137,6 @@ BEGIN
         END IF;
     END IF;
 
-    IF EXISTS (SELECT FROM information_schema.columns WHERE table_name = 'events' AND column_name = 'entity_type') THEN
-        check_query := 'SELECT COUNT(*) FROM events WHERE entity_type = ''MATERIAL''';
-        SELECT COUNT(*) INTO rows_count FROM events WHERE entity_type = 'MATERIAL';
-        IF rows_count > 0 THEN
-            SELECT string_agg(format('id=%s, event_type=%s, entity_type=%s, identifiers=%s', id, event_type, entity_type, identifiers), '; ')
-              INTO detected_rows
-              FROM (SELECT id, event_type, entity_type, identifiers FROM events WHERE entity_type = 'MATERIAL' ORDER BY id LIMIT 10) t;
-            RAISE EXCEPTION 'Migration 209->210 blocked. Check: "%". Detected % row(s). Example rows: %',
-                check_query, rows_count, COALESCE(detected_rows, '<none>');
-        END IF;
-    END IF;
-
-    IF EXISTS (SELECT FROM information_schema.columns WHERE table_name = 'events_search' AND column_name = 'entity_type') THEN
-        check_query := 'SELECT COUNT(*) FROM events_search WHERE entity_type = ''MATERIAL''';
-        SELECT COUNT(*) INTO rows_count FROM events_search WHERE entity_type = 'MATERIAL';
-        IF rows_count > 0 THEN
-            SELECT string_agg(format('id=%s, event_type=%s, entity_type=%s, identifier=%s', id, event_type, entity_type, identifier), '; ')
-              INTO detected_rows
-              FROM (SELECT id, event_type, entity_type, identifier FROM events_search WHERE entity_type = 'MATERIAL' ORDER BY id LIMIT 10) t;
-            RAISE EXCEPTION 'Migration 209->210 blocked. Check: "%". Detected % row(s). Example rows: %',
-                check_query, rows_count, COALESCE(detected_rows, '<none>');
-        END IF;
-    END IF;
-
     IF EXISTS (SELECT FROM information_schema.columns WHERE table_name = 'queries' AND column_name = 'query_type') THEN
         check_query := 'SELECT COUNT(*) FROM queries WHERE query_type = ''MATERIAL''';
         SELECT COUNT(*) INTO rows_count FROM queries WHERE query_type = 'MATERIAL';
@@ -233,53 +161,6 @@ BEGIN
         END IF;
     END IF;
 
-    IF EXISTS (SELECT FROM information_schema.columns WHERE table_name = 'project_relationships_history' AND column_name = 'entity_kind') THEN
-        check_query := 'SELECT COUNT(*) FROM project_relationships_history WHERE entity_kind = ''MATERIAL''';
-        SELECT COUNT(*) INTO rows_count FROM project_relationships_history WHERE entity_kind = 'MATERIAL';
-        IF rows_count > 0 THEN
-            SELECT string_agg(format('id=%s, main_proj_id=%s, entity_kind=%s, entity_perm_id=%s', id, main_proj_id, entity_kind, entity_perm_id), '; ')
-              INTO detected_rows
-              FROM (SELECT id, main_proj_id, entity_kind, entity_perm_id FROM project_relationships_history WHERE entity_kind = 'MATERIAL' ORDER BY id LIMIT 10) t;
-            RAISE EXCEPTION 'Migration 209->210 blocked. Check: "%". Detected % row(s). Example rows: %',
-                check_query, rows_count, COALESCE(detected_rows, '<none>');
-        END IF;
-    END IF;
-
-    IF EXISTS (SELECT FROM information_schema.columns WHERE table_name = 'experiment_relationships_history' AND column_name = 'entity_kind') THEN
-        check_query := 'SELECT COUNT(*) FROM experiment_relationships_history WHERE entity_kind = ''MATERIAL''';
-        SELECT COUNT(*) INTO rows_count FROM experiment_relationships_history WHERE entity_kind = 'MATERIAL';
-        IF rows_count > 0 THEN
-            SELECT string_agg(format('id=%s, main_expe_id=%s, entity_kind=%s, entity_perm_id=%s', id, main_expe_id, entity_kind, entity_perm_id), '; ')
-              INTO detected_rows
-              FROM (SELECT id, main_expe_id, entity_kind, entity_perm_id FROM experiment_relationships_history WHERE entity_kind = 'MATERIAL' ORDER BY id LIMIT 10) t;
-            RAISE EXCEPTION 'Migration 209->210 blocked. Check: "%". Detected % row(s). Example rows: %',
-                check_query, rows_count, COALESCE(detected_rows, '<none>');
-        END IF;
-    END IF;
-
-    IF EXISTS (SELECT FROM information_schema.columns WHERE table_name = 'sample_relationships_history' AND column_name = 'entity_kind') THEN
-        check_query := 'SELECT COUNT(*) FROM sample_relationships_history WHERE entity_kind = ''MATERIAL''';
-        SELECT COUNT(*) INTO rows_count FROM sample_relationships_history WHERE entity_kind = 'MATERIAL';
-        IF rows_count > 0 THEN
-            SELECT string_agg(format('id=%s, main_samp_id=%s, entity_kind=%s, entity_perm_id=%s', id, main_samp_id, entity_kind, entity_perm_id), '; ')
-              INTO detected_rows
-              FROM (SELECT id, main_samp_id, entity_kind, entity_perm_id FROM sample_relationships_history WHERE entity_kind = 'MATERIAL' ORDER BY id LIMIT 10) t;
-            RAISE EXCEPTION 'Migration 209->210 blocked. Check: "%". Detected % row(s). Example rows: %',
-                check_query, rows_count, COALESCE(detected_rows, '<none>');
-        END IF;
-    END IF;
-
-    IF EXISTS (SELECT FROM information_schema.columns WHERE table_name = 'data_set_relationships_history' AND column_name = 'entity_kind') THEN
-        check_query := 'SELECT COUNT(*) FROM data_set_relationships_history WHERE entity_kind = ''MATERIAL''';
-        SELECT COUNT(*) INTO rows_count FROM data_set_relationships_history WHERE entity_kind = 'MATERIAL';
-        IF rows_count > 0 THEN
-            SELECT string_agg(format('id=%s, main_data_id=%s, entity_kind=%s, entity_perm_id=%s', id, main_data_id, entity_kind, entity_perm_id), '; ')
-              INTO detected_rows
-              FROM (SELECT id, main_data_id, entity_kind, entity_perm_id FROM data_set_relationships_history WHERE entity_kind = 'MATERIAL' ORDER BY id LIMIT 10) t;
-            RAISE EXCEPTION 'Migration 209->210 blocked. Check: "%". Detected % row(s). Example rows: %',
-                check_query, rows_count, COALESCE(detected_rows, '<none>');
-        END IF;
-    END IF;
 END
 $$;
 
@@ -297,6 +178,13 @@ DROP FUNCTION IF EXISTS experiment_property_with_material_data_type_check();
 DROP FUNCTION IF EXISTS material_property_with_material_data_type_check();
 DROP FUNCTION IF EXISTS materials_tsvector_document_trigger();
 DROP FUNCTION IF EXISTS sample_property_with_material_data_type_check();
+
+DO $$
+BEGIN
+    IF EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'material_properties_history') THEN
+        DELETE FROM material_properties_history;
+    END IF;
+END $$;
 
 DROP TABLE IF EXISTS material_properties_history CASCADE;
 DROP TABLE IF EXISTS material_properties CASCADE;
@@ -587,6 +475,18 @@ ALTER TABLE events_search DROP CONSTRAINT IF EXISTS events_search_entity_type_ck
 ALTER TABLE metaproject_assignments_all DROP CONSTRAINT IF EXISTS metaproject_assignments_all_check_nn;
 ALTER TABLE metaproject_assignments_all DROP CONSTRAINT IF EXISTS metaproject_assignments_all_mepr_id_mate_id_uk;
 
+DELETE FROM events WHERE entity_type = 'MATERIAL';
+DELETE FROM events_search WHERE entity_type = 'MATERIAL';
+DELETE FROM project_relationships_history WHERE entity_kind = 'MATERIAL';
+DELETE FROM experiment_relationships_history WHERE entity_kind = 'MATERIAL';
+DELETE FROM sample_relationships_history WHERE entity_kind = 'MATERIAL';
+DELETE FROM data_set_relationships_history WHERE entity_kind = 'MATERIAL';
+/**
+  Clear display settings only for persons whose settings reference MATERIAL entity visits
+  which cause EntityKind.MATERIAL enum lookup failures on authentication
+  */
+UPDATE persons SET display_settings = NULL WHERE position('MATERIAL'::bytea IN display_settings) > 0;
+
 ALTER TABLE experiment_properties DROP CONSTRAINT IF EXISTS expr_mapr_fk;
 ALTER TABLE sample_properties DROP CONSTRAINT IF EXISTS sapr_mapr_fk;
 ALTER TABLE data_set_properties DROP CONSTRAINT IF EXISTS dspr_mapr_fk;
@@ -606,6 +506,9 @@ ALTER TABLE sample_properties DROP COLUMN IF EXISTS mate_prop_id;
 ALTER TABLE data_set_properties DROP COLUMN IF EXISTS mate_prop_id;
 ALTER TABLE property_types DROP COLUMN IF EXISTS maty_prop_id;
 ALTER TABLE metaproject_assignments_all DROP COLUMN IF EXISTS mate_id;
+DELETE FROM experiment_properties_history WHERE material IS NOT NULL;
+DELETE FROM sample_properties_history WHERE material IS NOT NULL;
+DELETE FROM data_set_properties_history WHERE material IS NOT NULL;
 ALTER TABLE experiment_properties_history DROP COLUMN IF EXISTS material;
 ALTER TABLE sample_properties_history DROP COLUMN IF EXISTS material;
 ALTER TABLE data_set_properties_history DROP COLUMN IF EXISTS material;

@@ -168,16 +168,25 @@ public final class ImportJob implements IAsyncJob
             Map<AbstractEntity, Path> stringPathMap = fileDownloader.handleDownloads(crate);
 
             // Converting ro-crate model to openBIS model
-            OpenBisModel conversion =
+            RdfToModel.ConversionResult conversion =
                     RdfToModel.convert(types, propertyTypes, entryList, "DEFAULT", "DEFAULT",
                             schemaFacade, stringPathMap);
+            OpenBisModel model =
+                    conversion.openBisModel();
             ValidationResult validationResult =
                     RoCrateSchemaValidation.validate(conversion);
 
-            // Convert openbis model to openbis excel format for import
-            byte[] importExcel = ExcelWriter.convert(ExcelWriter.Format.ZIP_EXPORT, conversion);
-            java.nio.file.Path modelAsExcel = java.nio.file.Path.of(UUID.randomUUID() + ".zip");
+            if (!validationResult.isOkay())
+            {
+                importResult = new ImportDelegate.OpenBisImportResult(List.of(), Map.of(),
+                        validationResult);
+                return;
+            }
 
+            // Convert openbis model to openbis excel format for import
+            byte[] importExcel = ExcelWriter.convert(ExcelWriter.Format.ZIP_EXPORT, model);
+            java.nio.file.Path modelAsExcel;
+            modelAsExcel = Path.of(UUID.randomUUID() + ".zip");
             if (validateOnly)
             {
                 importResult = new ImportDelegate.OpenBisImportResult(List.of(), Map.of(),
@@ -260,7 +269,7 @@ public final class ImportJob implements IAsyncJob
             this.importResult = new ImportDelegate.OpenBisImportResult(
                     importOperationResult.getImportResult().getObjectIds().stream()
                             .map(id -> id.toString()).toList(),
-                    conversion.getExternalToOpenBisIdentifiers(), validationResult);
+                    model.getExternalToOpenBisIdentifiers(), validationResult);
         } catch (Exception e)
         {
             LOG.error("Import did not work", e);

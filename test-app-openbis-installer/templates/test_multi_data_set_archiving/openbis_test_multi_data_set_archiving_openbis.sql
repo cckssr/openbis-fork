@@ -4669,8 +4669,6 @@ UPDATE property_types
 SET maty_prop_id = NULL
 WHERE maty_prop_id IS NOT NULL;
 
-DELETE FROM events WHERE entity_type = 'MATERIAL';
-
 DELETE FROM material_properties;
 
 UPDATE experiments

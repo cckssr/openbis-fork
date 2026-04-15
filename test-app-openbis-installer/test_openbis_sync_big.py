@@ -460,7 +460,6 @@ class TestCase(systemtest.testcase.TestCase):
             "DELETE FROM sample_properties WHERE mate_prop_id IS NOT NULL",
             "DELETE FROM material_properties WHERE mate_prop_id IS NOT NULL",
             "DELETE FROM material_properties",
-            "DELETE FROM material_properties_history",
             # Nullify maty_prop_id references before deleting material_types to avoid
             # TRUNCATE CASCADE cascading into property_types and breaking ELN-LIMS initialization
             "UPDATE property_types SET maty_prop_id = NULL WHERE maty_prop_id IS NOT NULL",
@@ -473,10 +472,6 @@ class TestCase(systemtest.testcase.TestCase):
             "DELETE FROM experiment_type_property_types WHERE prty_id IN (SELECT id FROM property_types WHERE daty_id = (SELECT id FROM data_types WHERE code = 'MATERIAL'))",
             "DELETE FROM data_set_type_property_types WHERE prty_id IN (SELECT id FROM property_types WHERE daty_id = (SELECT id FROM data_types WHERE code = 'MATERIAL'))",
             "DELETE FROM property_types WHERE daty_id = (SELECT id FROM data_types WHERE code = 'MATERIAL')",
-            "DELETE FROM data_types WHERE code = 'MATERIAL'",
-            # Clear display settings only for persons whose settings reference MATERIAL entity visits
-            # which cause EntityKind.MATERIAL enum lookup failures on authentication
-            "UPDATE persons SET display_settings = NULL WHERE position('MATERIAL'::bytea IN display_settings) > 0",
         ]
 
         for statement in statements:

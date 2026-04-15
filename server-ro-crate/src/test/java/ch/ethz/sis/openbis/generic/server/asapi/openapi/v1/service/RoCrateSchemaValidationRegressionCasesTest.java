@@ -4,7 +4,6 @@ import ch.eth.sis.rocrate.SchemaFacade;
 import ch.eth.sis.rocrate.facade.IMetadataEntry;
 import ch.eth.sis.rocrate.facade.IPropertyType;
 import ch.eth.sis.rocrate.facade.IType;
-import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.helper.validation.RoCrateSchemaValidation;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.helper.validation.ValidationResult;
 import ch.openbis.rocrate.app.reader.RdfToModel;
@@ -38,7 +37,7 @@ public class RoCrateSchemaValidationRegressionCasesTest
             metadataEntries.addAll(entries);
         }
         List<IPropertyType> propertyTypes = schemaFacade.getPropertyTypes();
-        OpenBisModel openBisModel =
+        RdfToModel.ConversionResult openBisModel =
                 RdfToModel.convert(types, propertyTypes, metadataEntries, "DEFAULT", "DEFAULT",
                         schemaFacade, Map.of());
         return RoCrateSchemaValidation.validate(openBisModel);

@@ -14661,18 +14661,6 @@ UPDATE public.property_types
 SET maty_prop_id = NULL
 WHERE maty_prop_id IS NOT NULL;
 
-UPDATE public.data_set_properties_history
-SET material = NULL
-WHERE material IS NOT NULL;
-
-UPDATE public.experiment_properties_history
-SET material = NULL
-WHERE material IS NOT NULL;
-
-UPDATE public.sample_properties_history
-SET material = NULL
-WHERE material IS NOT NULL;
-
 DELETE FROM public.material_properties;
 DELETE FROM public.material_properties_history;
 
@@ -14682,12 +14670,6 @@ WHERE mate_id_study_object IS NOT NULL;
 
 DELETE FROM public.metaproject_assignments_all
 WHERE mate_id IS NOT NULL;
-
-DELETE FROM public.events
-WHERE entity_type = 'MATERIAL';
-
-DELETE FROM public.events_search
-WHERE entity_type = 'MATERIAL';
 
 DELETE FROM public.queries
 WHERE query_type = 'MATERIAL';

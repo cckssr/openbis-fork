@@ -2945,3 +2945,5 @@ isWithObjectsAndDataSetsChildren
 setWithObjectsAndDataSetsChildren
 isUnarchivingRequested
 setUnarchivingRequested
+MAJOR_VERSION
+MINOR_VERSION

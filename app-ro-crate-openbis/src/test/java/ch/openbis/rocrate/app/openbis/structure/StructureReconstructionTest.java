@@ -43,7 +43,7 @@ public class StructureReconstructionTest extends TestCase
                 openBisModel =
                 RdfToModel.convert(types, schemaFacade.getPropertyTypes(),
                         entryList.stream().toList(), "DEFAULT",
-                        "DEFAULT", schemaFacade, Map.of());
+                        "DEFAULT", schemaFacade, Map.of()).openBisModel();
         AbstractEntityPropertyHolder abstractEntityPropertyHolder =
                 openBisModel.getEntities().values().stream().findFirst().orElseThrow();
         Sample sample = (Sample) abstractEntityPropertyHolder;
@@ -73,9 +73,10 @@ public class StructureReconstructionTest extends TestCase
                 openBisModel =
                 RdfToModel.convert(types, schemaFacade.getPropertyTypes(),
                         entryList.stream().toList(), "DEFAULT",
-                        "DEFAULT", schemaFacade, Map.of());
+                        "DEFAULT", schemaFacade, Map.of()).openBisModel();
         AbstractEntityPropertyHolder abstractEntityPropertyHolder =
-                openBisModel.getEntities().values().stream().findFirst().orElseThrow();
+                openBisModel.getEntities().values().stream().filter(x -> x instanceof Sample)
+                        .findFirst().orElseThrow();
         Sample sample = (Sample) abstractEntityPropertyHolder;
         Assert.assertEquals("SPACE", sample.getSpace().getCode());
         Assert.assertEquals("PROJECT", sample.getProject().getCode());
@@ -104,7 +105,7 @@ public class StructureReconstructionTest extends TestCase
                 openBisModel =
                 RdfToModel.convert(types, schemaFacade.getPropertyTypes(),
                         entryList.stream().toList(), "DEFAULT",
-                        "DEFAULT", schemaFacade, Map.of());
+                        "DEFAULT", schemaFacade, Map.of()).openBisModel();
         AbstractEntityPropertyHolder abstractEntityPropertyHolder =
                 openBisModel.getEntities().values().stream().findFirst().orElseThrow();
         Sample sample = (Sample) abstractEntityPropertyHolder;

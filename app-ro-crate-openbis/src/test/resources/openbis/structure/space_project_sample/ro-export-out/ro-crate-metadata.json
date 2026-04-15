@@ -91,7 +91,7 @@
       "@type": "CreativeWork"
     },
     {
-      "@type": "rdfs:Property",
+      "@type": "rdf:Property",
       "@id": "schema:hasPart",
       "schema:rangeIncludes": {
         "@id": "File"
@@ -101,7 +101,7 @@
       }
     },
     {
-      "@type": "rdfs:Property",
+      "@type": "rdf:Property",
       "rdfs:label": "Name",
       "rdfs:comment": "Name",
       "@id": "openBIS:hasNAME",
@@ -117,7 +117,7 @@
       "@type": "rdfs:Class"
     },
     {
-      "@type": "rdfs:Property",
+      "@type": "rdf:Property",
       "rdfs:label": "Document",
       "rdfs:comment": "Document",
       "@id": "openBIS:hasDOCUMENT",
@@ -145,7 +145,7 @@
       "@type": "openBIS:Project"
     },
     {
-      "@type": "rdfs:Property",
+      "@type": "rdf:Property",
       "@id": "openBIS:hasCOLLECTION",
       "schema:rangeIncludes": {
         "@id": "openBIS:Collection"
@@ -176,7 +176,7 @@
       "owl:maxCardinality": 1
     },
     {
-      "@type": "rdfs:Property",
+      "@type": "rdf:Property",
       "rdfs:label": "Show in project overview",
       "rdfs:comment": "Show in project overview page",
       "@id": "openBIS:isSHOW_IN_PROJECT_OVERVIEW",
@@ -188,7 +188,7 @@
       }
     },
     {
-      "@type": "rdfs:Property",
+      "@type": "rdf:Property",
       "@id": "openBIS:hasSPACE",
       "schema:rangeIncludes": {
         "@id": "openBIS:Space"
