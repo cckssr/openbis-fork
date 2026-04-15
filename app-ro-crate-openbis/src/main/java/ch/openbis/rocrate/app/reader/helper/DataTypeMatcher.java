@@ -117,7 +117,7 @@ public class DataTypeMatcher
                     {
 
                         String[] parts = identifier.toString().split("/");
-                        if (parts.length != 4 && parts.length != 3)
+                        if (parts.length < 2 || parts.length > 4)
                         {
                             return false;
                         }
