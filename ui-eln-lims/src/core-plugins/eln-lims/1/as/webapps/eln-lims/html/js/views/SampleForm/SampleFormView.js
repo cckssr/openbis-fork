@@ -952,6 +952,12 @@
 		}
 	
 		this._paintPropertiesForSection = function($formColumn, propertyTypeGroup, i, loadFromTemplate) {
+			var numberFormat = new Intl.NumberFormat('en-US', { notation : "standard",
+				minimumSignificantDigits :  "1",
+				maximumSignificantDigits : "21",
+				minimumFractionDigits : "0",
+				maximumFractionDigits : "20" });
+
 			var _this = this;
 			var sampleTypeCode = this._sampleFormModel.sample.sampleTypeCode;
 			var sampleType = mainController.profile.getSampleTypeForSampleTypeCode(sampleTypeCode);
@@ -1050,6 +1056,10 @@
 							if(propertyType.dataType === "BOOLEAN") {
 								FormUtil.setFieldValue(propertyType, $component, value);
 							} else if(propertyType.dataType === "TIMESTAMP" || propertyType.dataType === "DATE") {
+							} else if (propertyType.dataType === "ARRAY_INTEGER" || propertyType.dataType === "ARRAY_REAL") {
+								$component.val("[" + value.map((value) => numberFormat.format(value)).join(", ") + "]");
+							} else if (propertyType.dataType === "ARRAY_STRING" || propertyType.dataType === "ARRAY_TIMESTAMP") {
+								$component.val("[" + value.map((value) => '"' + value + '"').join(", ") + "]");
 							} else if(isMultiValue) {
 								var valueV3 = null;
 								if(this._sampleFormModel.v3_sample) {
