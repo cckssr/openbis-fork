@@ -1,7 +1,6 @@
 package ch.eth.sis.rocrate.facade;
 
 import edu.kit.datamanager.ro_crate.RoCrate;
-import edu.kit.datamanager.ro_crate.entities.data.DataEntity;
 
 import java.util.List;
 
@@ -41,8 +40,6 @@ public interface ISchemaFacade
     List<IMetadataEntry> getEntries(String rdfsClassId);
 
     List<IRestriction> getRestrictions();
-
-    List<DataEntity> getFiles();
 
 
 }
