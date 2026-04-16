@@ -22,7 +22,7 @@ protobuf {
 }
 
 def baseName =  'app-openbis-drive'
-def implementationVersion = '1.0.0'
+def implementationVersion = '7.0.0'
 
 java {
     sourceCompatibility = JavaVersion.VERSION_21
