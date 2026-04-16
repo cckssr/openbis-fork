@@ -831,7 +831,7 @@ exports.default = new Promise((resolve) => {
                     .then(function () {
                         return facade.getServerInformation().then(function (serverInformation) {
                             c.assertTrue(serverInformation != null)
-                            c.assertEqual(serverInformation["api-version"], "3.7", "api-version")
+                            c.assertEqual(serverInformation["api-version"], "7.0", "api-version")
                             c.assertEqual(serverInformation["project-samples-enabled"], "true", "project-samples-enabled")
                             c.finish()
                         })
