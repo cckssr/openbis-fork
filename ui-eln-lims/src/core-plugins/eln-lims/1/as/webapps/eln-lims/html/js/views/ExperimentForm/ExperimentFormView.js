@@ -641,6 +641,12 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 	}
 
 	this._paintPropertiesForSection = function($formColumn, propertyTypeGroup, i) {
+        var numberFormat = new Intl.NumberFormat('en-US', { notation : "standard",
+            minimumSignificantDigits :  "1",
+            maximumSignificantDigits : "21",
+            minimumFractionDigits : "0",
+            maximumFractionDigits : "20" });
+
 		var _this = this;
 		var experimentType = mainController.profile.getExperimentTypeForExperimentTypeCode(this._experimentFormModel.experiment.experimentTypeCode);
 
@@ -738,7 +744,11 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 						if(propertyType.dataType === "BOOLEAN") {
 							FormUtil.setFieldValue(propertyType, $component, value);
 						} else if(propertyType.dataType === "TIMESTAMP" || propertyType.dataType === "DATE") {
-						} else if(isMultiValue) {
+						} else if (propertyType.dataType === "ARRAY_INTEGER" || propertyType.dataType === "ARRAY_REAL") {
+                            $component.val("[" + value.map((value) => numberFormat.format(value)).join(", ") + "]");
+                        } else if (propertyType.dataType === "ARRAY_STRING" || propertyType.dataType === "ARRAY_TIMESTAMP") {
+                            $component.val("[" + value.map((value) => '"' + value + '"').join(", ") + "]");
+                        } else if(isMultiValue) {
 						    var valueV3 = this._experimentFormModel.v3_experiment.properties[propertyType.code];
 						    if(valueV3) {
                                 var valueArray;
