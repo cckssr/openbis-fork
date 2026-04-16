@@ -3362,7 +3362,7 @@ var FormUtil = new function() {
         }
     }
 
-    this.renderArrayGridValue = function(params) {
+    this.renderGridValue = function(params) {
         if(!params.value || params.value === null){
             return ""
         }else{
@@ -3371,6 +3371,24 @@ var FormUtil = new function() {
             }
             return String(params.value)
         }
+    }
+
+	this.renderArrayGridValue = function(row, params, propertyType) {
+		var value = row[propertyType.code]
+		if (!value) {
+			return ""
+		}
+
+		if (!Array.isArray(params.value)) {
+			return value.toString();
+		}
+
+        if (propertyType.dataType === "ARRAY_STRING"
+				|| propertyType.dataType === "ARRAY_TIMESTAMP") {
+            return '["' + value.join('", "') + '"]';
+        } else {
+			return "[" + value.join(", ") + "]";
+		}
     }
 
     this.renderMultilineVarcharGridValue = function(row, params, propertyType){

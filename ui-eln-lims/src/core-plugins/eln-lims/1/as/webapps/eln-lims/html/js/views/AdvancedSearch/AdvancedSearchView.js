@@ -1370,11 +1370,11 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
                             }
                         })(propertyType);
                         renderValue = function(row, params){
-                            return FormUtil.renderArrayGridValue(params);
+                            return FormUtil.renderGridValue(params);
                         };
                     } else if(propertyType.dataType === "SAMPLE"){
                         renderValue = function(row, params){
-                            return FormUtil.renderArrayGridValue(params);
+                            return FormUtil.renderGridValue(params);
                         };
                     } else if (propertyType.dataType === "DATE" || propertyType.dataType === "TIMESTAMP") {
                         renderFilter = (function(propertyType){
@@ -1392,6 +1392,12 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
                         renderValue = (function(propertyType){
                             return function(row, params){
                                 return FormUtil.renderMultilineVarcharGridValue(row, params, propertyType)
+                            }
+                        })(propertyType)
+                    } else if (propertyType.dataType.startsWith("ARRAY_")) {
+                        renderValue = (function(propertyType){
+                            return function(row, params) {
+                                return FormUtil.renderArrayGridValue(row, params, propertyType)
                             }
                         })(propertyType)
                     }
