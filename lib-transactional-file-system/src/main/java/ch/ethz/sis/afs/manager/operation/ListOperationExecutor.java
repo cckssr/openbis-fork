@@ -15,45 +15,64 @@
  */
 package ch.ethz.sis.afs.manager.operation;
 
-import ch.ethz.sis.afs.api.dto.File;
-import ch.ethz.sis.afs.dto.Transaction;
-import ch.ethz.sis.afs.dto.operation.ListOperation;
-import ch.ethz.sis.shared.io.IOUtils;
-import lombok.NonNull;
-
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class ListOperationExecutor implements NonModifyingOperationExecutor<ListOperation> {
+import ch.ethz.sis.afs.api.dto.File;
+import ch.ethz.sis.afs.dto.Transaction;
+import ch.ethz.sis.afs.dto.operation.ListOperation;
+import ch.ethz.sis.afs.dto.operation.OperationName;
+import ch.ethz.sis.afs.manager.TransactionFileSystemIO;
+import ch.ethz.sis.shared.io.IOUtils;
+import lombok.NonNull;
+
+public class ListOperationExecutor implements NonModifyingOperationExecutor<ListOperation>
+{
     //
     // Singleton
     //
 
     private static final ListOperationExecutor instance;
 
-    static {
+    static
+    {
         instance = new ListOperationExecutor();
     }
 
-    private ListOperationExecutor() {
+    private ListOperationExecutor()
+    {
     }
 
-    public static ListOperationExecutor getInstance() {
+    public static ListOperationExecutor getInstance()
+    {
         return instance;
     }
 
     @Override
-    public File[] executeOperation(@NonNull Transaction transaction, @NonNull ListOperation operation) throws Exception {
-        List<File> files = IOUtils.list(operation.getSource(), operation.isRecursively())
-                .stream().filter( file -> !IOUtils.isAfsHiddenFile(file.getPath()) ).collect(Collectors.toList());
+    public File[] executeOperation(@NonNull Transaction transaction, @NonNull TransactionFileSystemIO transactionFileSystemIO,
+            @NonNull ListOperation operation) throws Exception
+    {
+        OperationExecutor.checkNotWritten(transactionFileSystemIO, OperationName.List, operation.getSource());
+        OperationExecutor.checkNotMoved(transactionFileSystemIO, OperationName.List, operation.getSource());
+        OperationExecutor.checkNotCopied(transactionFileSystemIO, OperationName.List, operation.getSource());
+        OperationExecutor.checkNotDeleted(transactionFileSystemIO, OperationName.List, operation.getSource());
 
-        File[] filesFromRoot = new File[files.size()];
-        int index = 0;
-        for (File file : files) {
-            filesFromRoot[index] = file.toBuilder().path(OperationExecutor.getStoragePath(transaction, file.getPath())).build();
-            index++;
+        if (!IOUtils.isDirectory(operation.getSource())) // Is a file and exists
+        {
+            return new File[] { IOUtils.getFile(operation.getSource()) };
+        } else
+        {
+            List<File> files = IOUtils.list(operation.getSource(), operation.isRecursively())
+                    .stream().filter(file -> !IOUtils.isAfsHiddenFile(file.getPath())).collect(Collectors.toList());
+
+            File[] filesFromRoot = new File[files.size()];
+            int index = 0;
+            for (File file : files)
+            {
+                filesFromRoot[index] = file.toBuilder().path(OperationExecutor.getStoragePath(transaction, file.getPath())).build();
+                index++;
+            }
+            return filesFromRoot;
         }
-        return filesFromRoot;
     }
 }

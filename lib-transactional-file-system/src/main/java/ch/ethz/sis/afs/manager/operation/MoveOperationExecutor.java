@@ -15,13 +15,21 @@
  */
 package ch.ethz.sis.afs.manager.operation;
 
+import static ch.ethz.sis.afs.manager.operation.OperationExecutor.checkDoesntExist;
+import static ch.ethz.sis.afs.manager.operation.OperationExecutor.checkExists;
+import static ch.ethz.sis.afs.manager.operation.OperationExecutor.checkNotCopied;
+import static ch.ethz.sis.afs.manager.operation.OperationExecutor.checkNotDeleted;
+import static ch.ethz.sis.afs.manager.operation.OperationExecutor.checkNotInTrashOrSnapshots;
+import static ch.ethz.sis.afs.manager.operation.OperationExecutor.checkNotMoved;
+
 import java.nio.file.Path;
 
 import ch.ethz.sis.afs.dto.Transaction;
 import ch.ethz.sis.afs.dto.operation.MoveOperation;
 import ch.ethz.sis.afs.dto.operation.OperationName;
-import ch.ethz.sis.afs.exception.AFSExceptions;
+import ch.ethz.sis.afs.manager.TransactionFileSystemIO;
 import ch.ethz.sis.shared.io.IOUtils;
+import lombok.NonNull;
 
 public class MoveOperationExecutor implements OperationExecutor<MoveOperation, Void>
 {
@@ -51,21 +59,28 @@ public class MoveOperationExecutor implements OperationExecutor<MoveOperation, V
     //
 
     @Override
-    public Void prepare(Transaction transaction, MoveOperation operation) throws Exception
+    public Void prepare(final @NonNull Transaction transaction, final @NonNull TransactionFileSystemIO transactionFileSystemIO,
+            final @NonNull MoveOperation operation) throws Exception
     {
-        if (!IOUtils.exists(operation.getSource()))
-        {
-            AFSExceptions.throwInstance(AFSExceptions.PathNotInStore, OperationName.Move.name(), operation.getSource());
-        }
-        if (IOUtils.exists(operation.getTarget()))
-        {
-            AFSExceptions.throwInstance(AFSExceptions.PathInStore, OperationName.Move.name(), operation.getTarget());
-        }
+        checkNotMoved(transactionFileSystemIO, OperationName.Move, operation.getSource());
+        checkNotCopied(transactionFileSystemIO, OperationName.Move, operation.getSource());
+        checkNotDeleted(transactionFileSystemIO, OperationName.Move, operation.getSource());
+        checkExists(transactionFileSystemIO, OperationName.Move, operation.getSource());
+
+        checkNotMoved(transactionFileSystemIO, OperationName.Move, operation.getTarget());
+        checkNotCopied(transactionFileSystemIO, OperationName.Move, operation.getTarget());
+        checkNotDeleted(transactionFileSystemIO, OperationName.Move, operation.getTarget());
+        checkNotInTrashOrSnapshots(transactionFileSystemIO, OperationName.Move, operation.getTarget());
+        checkDoesntExist(transactionFileSystemIO, OperationName.Move, operation.getTarget());
+
+        transactionFileSystemIO.setMoved(operation.getSource());
+        transactionFileSystemIO.setMoved(operation.getTarget());
+
         return null;
     }
 
     @Override
-    public boolean commit(Transaction transaction, MoveOperation operation) throws Exception
+    public boolean commit(final @NonNull Transaction transaction, final @NonNull MoveOperation operation) throws Exception
     {
         if (IOUtils.exists(operation.getSource()))
         {

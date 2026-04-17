@@ -15,17 +15,17 @@
  */
 package ch.ethz.sis.afs.manager.operation;
 
-import static ch.ethz.sis.afs.exception.AFSExceptions.PathIsDirectory;
-
-import java.util.List;
+import static ch.ethz.sis.afs.manager.operation.OperationExecutor.checkNotCopied;
+import static ch.ethz.sis.afs.manager.operation.OperationExecutor.checkNotInTrashOrSnapshots;
+import static ch.ethz.sis.afs.manager.operation.OperationExecutor.checkNotMoved;
+import static ch.ethz.sis.afs.manager.operation.OperationExecutor.checkRegularFile;
 
 import ch.ethz.sis.afs.dto.Transaction;
-import ch.ethz.sis.afs.dto.Transaction.PathState;
 import ch.ethz.sis.afs.dto.operation.OperationName;
 import ch.ethz.sis.afs.dto.operation.WriteOperation;
-import ch.ethz.sis.afs.exception.AFSExceptions;
-import ch.ethz.sis.afs.manager.PathLockFinder;
+import ch.ethz.sis.afs.manager.TransactionFileSystemIO;
 import ch.ethz.sis.shared.io.IOUtils;
+import lombok.NonNull;
 
 public class WriteOperationExecutor implements OperationExecutor<WriteOperation, Void>
 {
@@ -55,35 +55,16 @@ public class WriteOperationExecutor implements OperationExecutor<WriteOperation,
     //
 
     @Override
-    public Void prepare(Transaction transaction, WriteOperation operation) throws Exception
+    public Void prepare(final @NonNull Transaction transaction, final @NonNull TransactionFileSystemIO transactionFileSystemIO,
+            final @NonNull WriteOperation operation) throws Exception
     {
-        // 1. Check that if the file exists, is not a directory
-        PathState pathState = OperationExecutor.getCachedPathState(transaction, operation.getSource());
-        if (pathState.isExists() && pathState.isDirectory())
-        {
-            AFSExceptions.throwInstance(PathIsDirectory, OperationName.Write.name(), operation.getSource());
-        }
+        checkNotMoved(transactionFileSystemIO, OperationName.Write, operation.getSource());
+        checkNotCopied(transactionFileSystemIO, OperationName.Write, operation.getSource());
+        checkNotInTrashOrSnapshots(transactionFileSystemIO, OperationName.Write, operation.getSource());
+        checkRegularFile(transactionFileSystemIO, OperationName.Write, operation.getSource());
 
-        // 2. Update state of the path and its parents
-        List<String> parentSubPaths = PathLockFinder.getParentSubPaths(operation.getSource());
-        for (String parentSubPath : parentSubPaths)
-        {
-            PathState parentSubPathState = OperationExecutor.getCachedPathState(transaction, parentSubPath);
-            parentSubPathState.setExists(true);
-            parentSubPathState.setDeleted(false);
-            if (parentSubPathState == pathState)
-            {
-                parentSubPathState.setWritten(true);
-                parentSubPathState.setDirectory(false);
-            } else
-            {
-                parentSubPathState.setDirectory(true);
-            }
-        }
+        transactionFileSystemIO.setWritten(operation.getSource());
 
-        //byte md5Hash = IOUtils.getMD5(operation.getData());
-
-        // 3. Create temporary file if it has not been created already
         boolean tempSourceExists = IOUtils.exists(operation.getTempSource());
         if (!tempSourceExists)
         {
@@ -91,13 +72,12 @@ public class WriteOperationExecutor implements OperationExecutor<WriteOperation,
             IOUtils.createFile(operation.getTempSource());
         }
 
-        // 4. Flush bytes
         IOUtils.write(operation.getTempSource(), 0, operation.getData());
         return null;
     }
 
     @Override
-    public boolean commit(Transaction transaction, WriteOperation operation) throws Exception
+    public boolean commit(final @NonNull Transaction transaction, final @NonNull WriteOperation operation) throws Exception
     {
         if (!IOUtils.exists(operation.getSource()))
         {

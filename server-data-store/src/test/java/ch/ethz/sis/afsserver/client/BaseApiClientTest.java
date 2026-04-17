@@ -21,6 +21,7 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -62,6 +63,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import ch.ethz.sis.afs.dto.operation.OperationName;
 import ch.ethz.sis.afs.manager.TransactionConnection;
 import ch.ethz.sis.afs.manager.operation.DeleteOperationExecutor;
 import ch.ethz.sis.afsapi.api.ClientAPI;
@@ -92,6 +94,10 @@ public abstract class BaseApiClientTest
     protected static String storageRoot;
 
     protected static String storageUuid;
+
+    protected static final String FILE_NON_EXISTENT = "idontexist";
+
+    protected static final String FILE_NON_EXISTENT_2 = "idontexist2";
 
     protected static final String FILE_A = "A.txt";
 
@@ -137,11 +143,15 @@ public abstract class BaseApiClientTest
 
     public static final String SNAPSHOTS_FOLDER_NAME = ".afs.snapshots";
 
+    public static final String INTERACTIVE_SESSION_KEY = "1234";
+
     protected static String owner = UUID.randomUUID().toString();
 
     protected int binarySize = -1;
 
     protected byte[] binaryData = null;
+
+    protected String testDataFolder;
 
     protected String testDataRoot;
 
@@ -154,7 +164,8 @@ public abstract class BaseApiClientTest
     @Before
     public void setUp() throws Exception
     {
-        testDataRoot = IOUtils.getPath(storageRoot, getTestDataFolder(owner));
+        testDataFolder = getTestDataFolder(owner);
+        testDataRoot = IOUtils.getPath(storageRoot, testDataFolder);
 
         final URL resource = getClass().getClassLoader().getResource("ch/ethz/sis/afsserver/client/test.png");
         final java.io.File file = new java.io.File(resource.toURI());
@@ -225,10 +236,68 @@ public abstract class BaseApiClientTest
         {
             assertTrue(e.getMessage(),
                     e.getMessage().contains(
-                            "Path can't be operated by: Truncate - " + testDataRoot + "/" + FILE_BINARY_FOLDER
+                            "Path can't be operated by: Truncate - " + testDataFolder + "/" + FILE_BINARY_FOLDER
                                     + " is not a regular file"));
 
         }
+    }
+
+    @Test
+    public void truncate_fileNotInTheStoreIsNotAllowed() throws Exception
+    {
+        testOperationOnAFileNotInTheStoreIsNotAllowed(OperationName.Truncate, (owner, source) -> afsClient.truncate(owner, source, 0L));
+    }
+
+    @Test
+    public void truncate_fileAlreadyWrittenIsAllowed() throws Exception
+    {
+        login();
+
+        UUID transactionId = UUID.randomUUID();
+        afsClient.setInteractiveSessionKey(INTERACTIVE_SESSION_KEY);
+        afsClient.begin(transactionId);
+        afsClient.write(owner, FILE_A, 0L, DATA_2);
+        afsClient.truncate(owner, FILE_A, 0L);
+        afsClient.commit();
+
+        byte[] testDataFile = IOUtils.readFully(IOUtils.getPath(testDataRoot, FILE_A));
+        assertArrayEquals(new byte[] {}, testDataFile);
+    }
+
+    @Test
+    public void truncate_fileAlreadyDeletedIsNotAllowed() throws Exception
+    {
+        testOperationOnAFileAlreadyDeletedIsNotAllowed(OperationName.Truncate, (owner, source) -> afsClient.truncate(owner, source, 0L));
+    }
+
+    @Test
+    public void truncate_fileAlreadyMovedIsNotAllowed() throws Exception
+    {
+        testOperationOnAFileAlreadyMovedIsNotAllowed(OperationName.Truncate, (owner, source) -> afsClient.truncate(owner, source, 0L));
+    }
+
+    @Test
+    public void truncate_fileAlreadyCopiedIsNotAllowed() throws Exception
+    {
+        testOperationOnAFileAlreadyCopiedIsNotAllowed(OperationName.Truncate, (owner, source) -> afsClient.truncate(owner, source, 0L));
+    }
+
+    @Test
+    public void truncate_folderIsNotAllowed() throws Exception
+    {
+        testOperationOnAFolderIsNotAllowed(OperationName.Truncate, (owner, source) -> afsClient.truncate(owner, source, 0L));
+    }
+
+    @Test
+    public void truncate_fileInTrashDirectoryIsNotAllowed() throws Exception
+    {
+        testOperationOnAFileInTrashIsNotAllowed(OperationName.Truncate, (owner, source) -> afsClient.truncate(owner, source, 0L));
+    }
+
+    @Test
+    public void truncate_fileInSnapshotsDirectoryIsNotAllowed() throws Exception
+    {
+        testOperationOnAFileInSnapshotsIsNotAllowed(OperationName.Truncate, (owner, source) -> afsClient.truncate(owner, source, 0L));
     }
 
     @Test
@@ -261,38 +330,45 @@ public abstract class BaseApiClientTest
     }
 
     @Test
-    public void truncate_inTrashDirectoryIsNotAllowed() throws Exception
+    public void snapshot_fileNotInTheStoreIsNotAllowed() throws Exception
     {
-        login();
-
-        try
-        {
-            afsClient.truncate(owner, TRASH_FOLDER_NAME + "/" + FILE_A, 0L);
-            fail();
-        } catch (Exception e)
-        {
-            assertTrue(e.getMessage(),
-                    e.getMessage().contains(
-                            "Path can't be operated by: Truncate - " + testDataRoot + "/" + TRASH_FOLDER_NAME + "/" + FILE_A
-                                    + " is in trash directory"));
-        }
+        testOperationOnAFileNotInTheStoreIsNotAllowed(OperationName.Snapshot, (owner, source) -> afsClient.snapshot(owner, source));
     }
 
     @Test
-    public void truncate_inSnapshotsDirectoryIsNotAllowed() throws Exception
+    public void snapshot_fileAlreadyWrittenIsNotAllowed() throws Exception
     {
-        login();
+        testOperationOnAFileAlreadyWrittenIsNotAllowed(OperationName.Snapshot, (owner, source) -> afsClient.snapshot(owner, source));
+    }
 
-        try
-        {
-            afsClient.truncate(owner, SNAPSHOTS_FOLDER_NAME + "/" + FILE_A, 0L);
-            fail();
-        } catch (Exception e)
-        {
-            assertTrue(e.getMessage(),
-                    e.getMessage().contains("Path can't be operated by: Truncate - " + testDataRoot + "/" + SNAPSHOTS_FOLDER_NAME + "/" + FILE_A
-                            + " is in snapshots directory"));
-        }
+    @Test
+    public void snapshot_fileAlreadyDeletedIsNotAllowed() throws Exception
+    {
+        testOperationOnAFileAlreadyDeletedIsNotAllowed(OperationName.Snapshot, (owner, source) -> afsClient.snapshot(owner, source));
+    }
+
+    @Test
+    public void snapshot_fileAlreadyMovedIsNotAllowed() throws Exception
+    {
+        testOperationOnAFileAlreadyMovedIsNotAllowed(OperationName.Snapshot, (owner, source) -> afsClient.snapshot(owner, source));
+    }
+
+    @Test
+    public void snapshot_fileAlreadyCopiedIsNotAllowed() throws Exception
+    {
+        testOperationOnAFileAlreadyCopiedIsNotAllowed(OperationName.Snapshot, (owner, source) -> afsClient.snapshot(owner, source));
+    }
+
+    @Test
+    public void snapshot_fileInTrashDirectoryIsNotAllowed() throws Exception
+    {
+        testOperationOnAFileInTrashIsNotAllowed(OperationName.Snapshot, (owner, source) -> afsClient.snapshot(owner, source));
+    }
+
+    @Test
+    public void snapshot_fileInSnapshotsDirectoryIsNotAllowed() throws Exception
+    {
+        testOperationOnAFileInSnapshotsIsNotAllowed(OperationName.Snapshot, (owner, source) -> afsClient.snapshot(owner, source));
     }
 
     @Test
@@ -364,42 +440,72 @@ public abstract class BaseApiClientTest
         {
             assertTrue(e.getMessage(),
                     e.getMessage()
-                            .contains("Path can't be operated by: Snapshot - " + testDataRoot + "/" + FILE_BINARY_FOLDER + " is not a regular file"));
+                            .contains(
+                                    "Path can't be operated by: Snapshot - " + testDataFolder + "/" + FILE_BINARY_FOLDER + " is not a regular file"));
         }
     }
 
     @Test
-    public void snapshot_inTrashDirectoryIsNotAllowed() throws Exception
+    public void delete_fileNotInTheStoreIsNotAllowed() throws Exception
     {
         login();
 
         try
         {
-            afsClient.snapshot(owner, TRASH_FOLDER_NAME + "/" + FILE_A);
+            afsClient.delete(owner, FILE_NON_EXISTENT, false);
             fail();
         } catch (Exception e)
         {
-            assertTrue(e.getMessage(),
-                    e.getMessage().contains(
-                            "Path can't be operated by: Snapshot - " + testDataRoot + "/" + TRASH_FOLDER_NAME + "/" + FILE_A
-                                    + " is in trash directory"));
+            assertTrue(e.getMessage(), e.getMessage().contains("NoSuchFileException"));
         }
     }
 
     @Test
-    public void snapshot_inSnapshotsDirectoryIsNotAllowed() throws Exception
+    public void delete_fileAlreadyWrittenIsAllowed() throws Exception
+    {
+        login();
+
+        UUID transactionId = UUID.randomUUID();
+        afsClient.setInteractiveSessionKey(INTERACTIVE_SESSION_KEY);
+        afsClient.begin(transactionId);
+        afsClient.write(owner, FILE_A, 0L, DATA_2);
+        afsClient.delete(owner, FILE_A, true);
+        afsClient.commit();
+
+        assertFalse(IOUtils.exists(IOUtils.getPath(testDataRoot, FILE_A)));
+    }
+
+    @Test
+    public void delete_fileAlreadyDeletedIsNotAllowed() throws Exception
+    {
+        testOperationOnAFileAlreadyDeletedIsNotAllowed(OperationName.Delete, (owner, source) -> afsClient.delete(owner, source, true));
+    }
+
+    @Test
+    public void delete_fileAlreadyMovedIsNotAllowed() throws Exception
+    {
+        testOperationOnAFileAlreadyMovedIsNotAllowed(OperationName.Delete, (owner, source) -> afsClient.delete(owner, source, true));
+    }
+
+    @Test
+    public void delete_fileAlreadyCopiedIsNotAllowed() throws Exception
     {
         login();
 
         try
         {
-            afsClient.snapshot(owner, SNAPSHOTS_FOLDER_NAME + "/" + FILE_A);
+            UUID transactionId = UUID.randomUUID();
+            afsClient.setInteractiveSessionKey(INTERACTIVE_SESSION_KEY);
+            afsClient.begin(transactionId);
+            afsClient.copy(owner, FILE_A, owner, FILE_B);
+            afsClient.delete(owner, FILE_B, false);
             fail();
         } catch (Exception e)
         {
-            assertTrue(e.getMessage(),
-                    e.getMessage().contains("Path can't be operated by: Snapshot - " + testDataRoot + "/" + SNAPSHOTS_FOLDER_NAME + "/" + FILE_A
-                            + " is in snapshots directory"));
+            assertTrue(e.getMessage(), e.getMessage().contains("NoSuchFileException"));
+        } finally
+        {
+            afsClient.rollback();
         }
     }
 
@@ -890,6 +996,45 @@ public abstract class BaseApiClientTest
     }
 
     @Test
+    public void list_fileNotInTheStoreIsAllowed() throws Exception
+    {
+        login();
+
+        try
+        {
+            afsClient.list(owner, FILE_NON_EXISTENT, false);
+            fail();
+        } catch (Exception e)
+        {
+            assertTrue(e.getMessage(), e.getMessage().contains("NoSuchFileException"));
+        }
+    }
+
+    @Test
+    public void list_fileAlreadyWrittenIsNotAllowed() throws Exception
+    {
+        testOperationOnAFileAlreadyWrittenIsNotAllowed(OperationName.List, (owner, source) -> afsClient.list(owner, source, false));
+    }
+
+    @Test
+    public void list_fileAlreadyDeletedIsNotAllowed() throws Exception
+    {
+        testOperationOnAFileAlreadyDeletedIsNotAllowed(OperationName.List, (owner, source) -> afsClient.list(owner, source, false));
+    }
+
+    @Test
+    public void list_fileAlreadyMovedIsNotAllowed() throws Exception
+    {
+        testOperationOnAFileAlreadyMovedIsNotAllowed(OperationName.List, (owner, source) -> afsClient.list(owner, source, false));
+    }
+
+    @Test
+    public void list_fileAlreadyCopiedIsNotAllowed() throws Exception
+    {
+        testOperationOnAFileAlreadyCopiedIsNotAllowed(OperationName.List, (owner, source) -> afsClient.list(owner, source, false));
+    }
+
+    @Test
     public void list_rootRecursive() throws Exception
     {
         login();
@@ -1009,38 +1154,111 @@ public abstract class BaseApiClientTest
     }
 
     @Test
-    public void create_inTrashDirectoryIsNotAllowed() throws Exception
+    public void read_fileNotInTheStoreIsNotAllowed() throws Exception
     {
         login();
 
         try
         {
-            afsClient.create(owner, TRASH_FOLDER_NAME + "/" + FILE_A, false);
+            afsClient.read(owner, FILE_NON_EXISTENT, 0L, 1);
             fail();
         } catch (Exception e)
         {
-            assertTrue(e.getMessage(),
-                    e.getMessage().contains(
-                            "Path can't be operated by: Create - " + testDataRoot + "/" + TRASH_FOLDER_NAME + "/" + FILE_A
-                                    + " is in trash directory"));
+            assertTrue(e.getMessage(), e.getMessage().contains("NoSuchFileException"));
         }
     }
 
     @Test
-    public void create_inSnapshotsDirectoryIsNotAllowed() throws Exception
+    public void read_fileAlreadyWrittenIsNotAllowed() throws Exception
+    {
+        testOperationOnAFileAlreadyWrittenIsNotAllowed(OperationName.Read, (owner, source) -> afsClient.read(owner, source, 0L, 1));
+    }
+
+    @Test
+    public void read_fileAlreadyDeletedIsNotAllowed() throws Exception
+    {
+        testOperationOnAFileAlreadyDeletedIsNotAllowed(OperationName.Read, (owner, source) -> afsClient.read(owner, source, 0L, 1));
+    }
+
+    @Test
+    public void read_fileAlreadyMovedIsNotAllowed() throws Exception
+    {
+        testOperationOnAFileAlreadyMovedIsNotAllowed(OperationName.Read, (owner, source) -> afsClient.read(owner, source, 0L, 1));
+    }
+
+    @Test
+    public void read_fileAlreadyCopiedIsNotAllowed() throws Exception
+    {
+        testOperationOnAFileAlreadyCopiedIsNotAllowed(OperationName.Read, (owner, source) -> afsClient.read(owner, source, 0L, 1));
+    }
+
+    @Test
+    public void create_fileAlreadyInTheStoreIsNotAllowed() throws Exception
     {
         login();
 
-        try
-        {
-            afsClient.create(owner, SNAPSHOTS_FOLDER_NAME + "/" + FILE_A, false);
-            fail();
-        } catch (Exception e)
-        {
-            assertTrue(e.getMessage(),
-                    e.getMessage().contains("Path can't be operated by: Create - " + testDataRoot + "/" + SNAPSHOTS_FOLDER_NAME + "/" + FILE_A
-                            + " is in snapshots directory"));
-        }
+        testOperationOnAFileAlreadyInTheStoreIsNotAllowed(OperationName.Create, (owner, source) -> afsClient.create(owner, source, false));
+    }
+
+    @Test
+    public void create_fileNotInTheStoreIsAllowed() throws Exception
+    {
+        login();
+
+        afsClient.create(owner, FILE_NON_EXISTENT, false);
+
+        byte[] testDataFile = IOUtils.readFully(IOUtils.getPath(testDataRoot, FILE_NON_EXISTENT));
+        assertArrayEquals(new byte[] {}, testDataFile);
+    }
+
+    @Test
+    public void create_folderNotInTheStoreIsAllowed() throws Exception
+    {
+        login();
+
+        afsClient.create(owner, FILE_NON_EXISTENT, true);
+
+        assertTrue(IOUtils.isDirectory(IOUtils.getPath(testDataRoot, FILE_NON_EXISTENT)));
+    }
+
+    @Test
+    public void create_fileAlreadyDeletedIsAllowed() throws Exception
+    {
+        login();
+
+        UUID transactionId = UUID.randomUUID();
+        afsClient.setInteractiveSessionKey(INTERACTIVE_SESSION_KEY);
+        afsClient.begin(transactionId);
+        afsClient.delete(owner, FILE_A, true);
+        afsClient.create(owner, FILE_A, false);
+        afsClient.commit();
+
+        byte[] testDataFile = IOUtils.readFully(IOUtils.getPath(testDataRoot, FILE_A));
+        assertArrayEquals(new byte[] {}, testDataFile);
+    }
+
+    @Test
+    public void create_fileAlreadyMovedIsNotAllowed() throws Exception
+    {
+        testOperationOnAFileAlreadyMovedIsNotAllowed(OperationName.Create, (owner, source) -> afsClient.create(owner, source, false));
+    }
+
+    @Test
+    public void create_fileAlreadyCopiedIsNotAllowed() throws Exception
+    {
+        testOperationOnAFileAlreadyCopiedIsNotAllowed(OperationName.Create, (owner, source) -> afsClient.create(owner, source, false));
+    }
+
+    @Test
+    public void create_fileInTrashDirectoryIsNotAllowed() throws Exception
+    {
+        testOperationOnAFileInTrashIsNotAllowed(OperationName.Create, (owner, source) -> afsClient.create(owner, source, false));
+    }
+
+    @Test
+    public void create_fileInSnapshotsDirectoryIsNotAllowed() throws Exception
+    {
+        testOperationOnAFileInSnapshotsIsNotAllowed(OperationName.Create, (owner, source) -> afsClient.create(owner, source, false));
     }
 
     @Test
@@ -1069,38 +1287,70 @@ public abstract class BaseApiClientTest
     }
 
     @Test
-    public void write_toTrashDirectoryIsNotAllowed() throws Exception
+    public void write_fileNotInTheStoreIsAllowed() throws Exception
     {
         login();
 
-        try
-        {
-            afsClient.write(owner, TRASH_FOLDER_NAME + "/" + FILE_A, 0L, DATA);
-            fail();
-        } catch (Exception e)
-        {
-            assertTrue(e.getMessage(),
-                    e.getMessage().contains(
-                            "Path can't be operated by: Write - " + testDataRoot + "/" + TRASH_FOLDER_NAME + "/" + FILE_A
-                                    + " is in trash directory"));
-        }
+        afsClient.write(owner, FILE_NON_EXISTENT, 0L, DATA);
+
+        byte[] testDataFile = IOUtils.readFully(IOUtils.getPath(testDataRoot, FILE_NON_EXISTENT));
+        assertArrayEquals(DATA, testDataFile);
     }
 
     @Test
-    public void write_toSnapshotsDirectoryIsNotAllowed() throws Exception
+    public void write_fileAlreadyWrittenIsAllowed() throws Exception
     {
         login();
 
-        try
-        {
-            afsClient.write(owner, SNAPSHOTS_FOLDER_NAME + "/" + FILE_A, 0L, DATA);
-            fail();
-        } catch (Exception e)
-        {
-            assertTrue(e.getMessage(),
-                    e.getMessage().contains("Path can't be operated by: Write - " + testDataRoot + "/" + SNAPSHOTS_FOLDER_NAME + "/" + FILE_A
-                            + " is in snapshots directory"));
-        }
+        UUID transactionId = UUID.randomUUID();
+        afsClient.setInteractiveSessionKey(INTERACTIVE_SESSION_KEY);
+        afsClient.begin(transactionId);
+        afsClient.write(owner, FILE_NON_EXISTENT, 0L, DATA);
+        afsClient.write(owner, FILE_NON_EXISTENT, 0L, DATA_2);
+        afsClient.commit();
+
+        byte[] testDataFile = IOUtils.readFully(IOUtils.getPath(testDataRoot, FILE_NON_EXISTENT));
+        assertArrayEquals(DATA_2, testDataFile);
+    }
+
+    @Test
+    public void write_fileAlreadyDeletedIsAllowed() throws Exception
+    {
+        login();
+
+        UUID transactionId = UUID.randomUUID();
+        afsClient.setInteractiveSessionKey(INTERACTIVE_SESSION_KEY);
+        afsClient.begin(transactionId);
+        afsClient.delete(owner, FILE_A, true);
+        afsClient.write(owner, FILE_A, 0L, DATA_2);
+        afsClient.commit();
+
+        byte[] testDataFile = IOUtils.readFully(IOUtils.getPath(testDataRoot, FILE_A));
+        assertArrayEquals(DATA_2, testDataFile);
+    }
+
+    @Test
+    public void write_fileAlreadyMovedIsNotAllowed() throws Exception
+    {
+        testOperationOnAFileAlreadyMovedIsNotAllowed(OperationName.Write, (owner, source) -> afsClient.write(owner, source, 0L, DATA));
+    }
+
+    @Test
+    public void write_fileAlreadyCopiedIsNotAllowed() throws Exception
+    {
+        testOperationOnAFileAlreadyCopiedIsNotAllowed(OperationName.Write, (owner, source) -> afsClient.write(owner, source, 0L, DATA));
+    }
+
+    @Test
+    public void write_fileInTrashDirectoryIsNotAllowed() throws Exception
+    {
+        testOperationOnAFileInTrashIsNotAllowed(OperationName.Write, (owner, source) -> afsClient.write(owner, source, 0L, DATA));
+    }
+
+    @Test
+    public void write_fileInSnapshotsDirectoryIsNotAllowed() throws Exception
+    {
+        testOperationOnAFileInSnapshotsIsNotAllowed(OperationName.Write, (owner, source) -> afsClient.write(owner, source, 0L, DATA));
     }
 
     @Test
@@ -1178,21 +1428,33 @@ public abstract class BaseApiClientTest
     }
 
     @Test
-    public void copy_toTrashDirectoryIsNotAllowed() throws Exception
+    public void copy_fromFileNotInTheStoreIsNotAllowed() throws Exception
     {
-        login();
+        testOperationOnAFileNotInTheStoreIsNotAllowed(OperationName.Copy, (owner, source) -> afsClient.copy(owner, source, owner, FILE_BINARY));
+    }
 
-        try
-        {
-            afsClient.copy(owner, FILE_A, owner, TRASH_FOLDER_NAME + "/" + FILE_A);
-            fail();
-        } catch (Exception e)
-        {
-            assertTrue(e.getMessage(),
-                    e.getMessage().contains(
-                            "Path can't be operated by: Copy - " + testDataRoot + "/" + TRASH_FOLDER_NAME + "/" + FILE_A
-                                    + " is in trash directory"));
-        }
+    @Test
+    public void copy_fromFileAlreadyWrittenIsNotAllowed() throws Exception
+    {
+        testOperationOnAFileAlreadyWrittenIsNotAllowed(OperationName.Copy, (owner, source) -> afsClient.copy(owner, source, owner, FILE_BINARY));
+    }
+
+    @Test
+    public void copy_fromFileAlreadyDeletedIsNotAllowed() throws Exception
+    {
+        testOperationOnAFileAlreadyDeletedIsNotAllowed(OperationName.Copy, (owner, source) -> afsClient.copy(owner, source, owner, FILE_BINARY));
+    }
+
+    @Test
+    public void copy_fromFileAlreadyMovedIsNotAllowed() throws Exception
+    {
+        testOperationOnAFileAlreadyMovedIsNotAllowed(OperationName.Copy, (owner, source) -> afsClient.copy(owner, source, owner, FILE_BINARY));
+    }
+
+    @Test
+    public void copy_fromFileAlreadyCopiedIsNotAllowed() throws Exception
+    {
+        testOperationOnAFileAlreadyCopiedIsNotAllowed(OperationName.Copy, (owner, source) -> afsClient.copy(owner, source, owner, FILE_BINARY));
     }
 
     @Test
@@ -1205,29 +1467,174 @@ public abstract class BaseApiClientTest
     }
 
     @Test
-    public void copy_toSnapshotsDirectoryIsNotAllowed() throws Exception
-    {
-        login();
-
-        try
-        {
-            afsClient.copy(owner, FILE_A, owner, SNAPSHOTS_FOLDER_NAME + "/" + FILE_A);
-            fail();
-        } catch (Exception e)
-        {
-            assertTrue(e.getMessage(),
-                    e.getMessage().contains("Path can't be operated by: Copy - " + testDataRoot + "/" + SNAPSHOTS_FOLDER_NAME + "/" + FILE_A
-                            + " is in snapshots directory"));
-        }
-    }
-
-    @Test
     public void copy_fromSnapshotsDirectoryIsAllowed() throws Exception
     {
         login();
 
         afsClient.snapshot(owner, FILE_A);
         afsClient.copy(owner, SNAPSHOTS_FOLDER_NAME + "/" + FILE_A, owner, FILE_A + ".copy");
+    }
+
+    @Test
+    public void copy_toFileNotInTheStoreIsAllowed() throws Exception
+    {
+        login();
+
+        afsClient.copy(owner, FILE_A, owner, FILE_NON_EXISTENT);
+
+        byte[] data = IOUtils.readFully(IOUtils.getPath(testDataRoot, FILE_NON_EXISTENT));
+        assertArrayEquals(DATA, data);
+    }
+
+    @Test
+    public void copy_toFileAlreadyWrittenIsAllowed() throws Exception
+    {
+        login();
+
+        UUID transactionId = UUID.randomUUID();
+        afsClient.setInteractiveSessionKey(INTERACTIVE_SESSION_KEY);
+        afsClient.begin(transactionId);
+        afsClient.write(owner, FILE_BINARY, 0L, DATA_2);
+        afsClient.copy(owner, FILE_A, owner, FILE_BINARY);
+        afsClient.commit();
+
+        byte[] data = IOUtils.readFully(IOUtils.getPath(testDataRoot, FILE_BINARY));
+        assertArrayEquals(DATA, data);
+    }
+
+    @Test
+    public void copy_toFileAlreadyDeletedIsNotAllowed() throws Exception
+    {
+        testOperationOnAFileAlreadyDeletedIsNotAllowed(OperationName.Copy, (owner, source) -> afsClient.copy(owner, FILE_BINARY, owner, source));
+    }
+
+    @Test
+    public void copy_toFileAlreadyMovedIsNotAllowed() throws Exception
+    {
+        testOperationOnAFileAlreadyMovedIsNotAllowed(OperationName.Copy, (owner, source) -> afsClient.copy(owner, FILE_BINARY, owner, source));
+    }
+
+    @Test
+    public void copy_toFileAlreadyCopiedIsNotAllowed() throws Exception
+    {
+        testOperationOnAFileAlreadyCopiedIsNotAllowed(OperationName.Copy, (owner, source) -> afsClient.copy(owner, FILE_BINARY, owner, source));
+    }
+
+    @Test
+    public void copy_toTrashDirectoryIsNotAllowed() throws Exception
+    {
+        testOperationOnAFileInTrashIsNotAllowed(OperationName.Copy, (owner, source) -> afsClient.copy(owner, FILE_A, owner, source));
+    }
+
+    @Test
+    public void copy_toSnapshotsDirectoryIsNotAllowed() throws Exception
+    {
+        testOperationOnAFileInSnapshotsIsNotAllowed(OperationName.Copy, (owner, source) -> afsClient.copy(owner, FILE_A, owner, source));
+    }
+
+    @Test
+    public void move_fromFileNotInTheStoreIsNotAllowed() throws Exception
+    {
+        testOperationOnAFileNotInTheStoreIsNotAllowed(OperationName.Move, (owner, source) -> afsClient.move(owner, source, owner, FILE_BINARY));
+    }
+
+    @Test
+    public void move_fromFileAlreadyWrittenIsAllowed() throws Exception
+    {
+        login();
+
+        UUID transactionId = UUID.randomUUID();
+        afsClient.setInteractiveSessionKey(INTERACTIVE_SESSION_KEY);
+        afsClient.begin(transactionId);
+        afsClient.write(owner, FILE_NON_EXISTENT, 0L, DATA);
+        afsClient.move(owner, FILE_NON_EXISTENT, owner, FILE_NON_EXISTENT_2);
+        afsClient.commit();
+
+        byte[] testDataFile = IOUtils.readFully(IOUtils.getPath(testDataRoot, FILE_NON_EXISTENT_2));
+        assertArrayEquals(DATA, testDataFile);
+    }
+
+    @Test
+    public void move_fromFileAlreadyDeletedIsNotAllowed() throws Exception
+    {
+        testOperationOnAFileAlreadyDeletedIsNotAllowed(OperationName.Move, (owner, source) -> afsClient.move(owner, source, owner, FILE_BINARY));
+    }
+
+    @Test
+    public void move_fromFileAlreadyMovedIsNotAllowed() throws Exception
+    {
+        testOperationOnAFileAlreadyMovedIsNotAllowed(OperationName.Move, (owner, source) -> afsClient.move(owner, source, owner, FILE_BINARY));
+    }
+
+    @Test
+    public void move_fromFileAlreadyCopiedIsNotAllowed() throws Exception
+    {
+        testOperationOnAFileAlreadyCopiedIsNotAllowed(OperationName.Move, (owner, source) -> afsClient.move(owner, source, owner, FILE_BINARY));
+    }
+
+    @Test
+    public void move_fromTrashDirectoryIsAllowed() throws Exception
+    {
+        login();
+
+        afsClient.delete(owner, FILE_A, true);
+        afsClient.move(owner, TRASH_FOLDER_NAME + "/" + FILE_A, owner, FILE_A);
+    }
+
+    @Test
+    public void move_fromSnapshotsDirectoryIsAllowed() throws Exception
+    {
+        login();
+
+        afsClient.snapshot(owner, FILE_A);
+        afsClient.move(owner, SNAPSHOTS_FOLDER_NAME + "/" + FILE_A, owner, FILE_A + ".copy");
+    }
+
+    @Test
+    public void move_toFileNotInTheStoreIsAllowed() throws Exception
+    {
+        login();
+
+        afsClient.move(owner, FILE_A, owner, FILE_NON_EXISTENT);
+
+        byte[] testDataFile = IOUtils.readFully(IOUtils.getPath(testDataRoot, FILE_NON_EXISTENT));
+        assertArrayEquals(DATA, testDataFile);
+    }
+
+    @Test
+    public void move_toFileAlreadyInTheStoreIsNotAllowed() throws Exception
+    {
+        testOperationOnAFileAlreadyInTheStoreIsNotAllowed(OperationName.Move, (owner, source) -> afsClient.move(owner, FILE_BINARY, owner, source));
+    }
+
+    @Test
+    public void move_toFileAlreadyDeletedIsNotAllowed() throws Exception
+    {
+        testOperationOnAFileAlreadyDeletedIsNotAllowed(OperationName.Move, (owner, source) -> afsClient.move(owner, FILE_BINARY, owner, source));
+    }
+
+    @Test
+    public void move_toFileAlreadyMovedIsNotAllowed() throws Exception
+    {
+        testOperationOnAFileAlreadyMovedIsNotAllowed(OperationName.Move, (owner, source) -> afsClient.move(owner, FILE_BINARY, owner, source));
+    }
+
+    @Test
+    public void move_toFileAlreadyCopiedIsNotAllowed() throws Exception
+    {
+        testOperationOnAFileAlreadyCopiedIsNotAllowed(OperationName.Move, (owner, source) -> afsClient.move(owner, FILE_BINARY, owner, source));
+    }
+
+    @Test
+    public void move_toTrashDirectoryIsNotAllowed() throws Exception
+    {
+        testOperationOnAFileInTrashIsNotAllowed(OperationName.Move, (owner, source) -> afsClient.move(owner, FILE_A, owner, source));
+    }
+
+    @Test
+    public void move_toSnapshotsDirectoryIsNotAllowed() throws Exception
+    {
+        testOperationOnAFileInSnapshotsIsNotAllowed(OperationName.Move, (owner, source) -> afsClient.move(owner, FILE_A, owner, source));
     }
 
     @Test
@@ -1267,56 +1674,28 @@ public abstract class BaseApiClientTest
     }
 
     @Test
-    public void move_toTrashDirectoryIsNotAllowed() throws Exception
+    public void move_folder() throws Exception
     {
         login();
 
-        try
-        {
-            afsClient.move(owner, FILE_A, owner, TRASH_FOLDER_NAME + "/" + FILE_A);
-            fail();
-        } catch (Exception e)
-        {
-            assertTrue(e.getMessage(),
-                    e.getMessage().contains(
-                            "Path can't be operated by: Move - " + testDataRoot + "/" + TRASH_FOLDER_NAME + "/" + FILE_A
-                                    + " is in trash directory"));
-        }
-    }
+        File[] filesBefore = listFilesFromAFS(afsClient, owner, "/");
+        assertEquals("""
+                /A.txt, FILE, 4
+                /test-folder, FOLDER, null
+                /test-folder/test-subfolder, FOLDER, null
+                /test-folder/test-subfolder/test.png, FILE, 19951
+                """, printFiles(filesBefore));
 
-    @Test
-    public void move_fromTrashDirectoryIsAllowed() throws Exception
-    {
-        login();
+        Boolean result = afsClient.move(owner, FILE_BINARY_SUBFOLDER, owner, FILE_BINARY_SUBFOLDER_NAME);
+        assertTrue(result);
 
-        afsClient.delete(owner, FILE_A, true);
-        afsClient.move(owner, TRASH_FOLDER_NAME + "/" + FILE_A, owner, FILE_A);
-    }
-
-    @Test
-    public void move_toSnapshotsDirectoryIsNotAllowed() throws Exception
-    {
-        login();
-
-        try
-        {
-            afsClient.move(owner, FILE_A, owner, SNAPSHOTS_FOLDER_NAME + "/" + FILE_A);
-            fail();
-        } catch (Exception e)
-        {
-            assertTrue(e.getMessage(),
-                    e.getMessage().contains("Path can't be operated by: Move - " + testDataRoot + "/" + SNAPSHOTS_FOLDER_NAME + "/" + FILE_A
-                            + " is in snapshots directory"));
-        }
-    }
-
-    @Test
-    public void move_fromSnapshotsDirectoryIsAllowed() throws Exception
-    {
-        login();
-
-        afsClient.snapshot(owner, FILE_A);
-        afsClient.move(owner, SNAPSHOTS_FOLDER_NAME + "/" + FILE_A, owner, FILE_A + ".copy");
+        File[] filesAfter = listFilesFromAFS(afsClient, owner, "/");
+        assertEquals("""
+                /A.txt, FILE, 4
+                /test-folder, FOLDER, null
+                /test-subfolder, FOLDER, null
+                /test-subfolder/test.png, FILE, 19951
+                """, printFiles(filesAfter));
     }
 
     @Test
@@ -1674,7 +2053,7 @@ public abstract class BaseApiClientTest
                         assertArrayEquals(testFileContent, Files.readAllBytes(filePath));
                     } else
                     {
-                        Assert.assertFalse(IOUtils.exists(testFileName));
+                        assertFalse(IOUtils.exists(testFileName));
                     }
                 }
             }
@@ -2004,7 +2383,7 @@ public abstract class BaseApiClientTest
         };
         boolean result =
                 afsClient.download(owner, Path.of("/"), resourceDirectoryPath, ClientAPI.overrideCollisionListener, sneakyContentChangingMonitor);
-        Assert.assertFalse(result);
+        assertFalse(result);
         Assert.assertTrue(sneakyContentChangingMonitor.getException() instanceof IllegalStateException);
         Assert.assertEquals("Incomplete download", sneakyContentChangingMonitor.getException().getMessage());
     }
@@ -2765,7 +3144,7 @@ public abstract class BaseApiClientTest
         };
         boolean result = afsClient.upload(resourceDirectoryPath, owner, Path.of(serverUploadDirectory), ClientAPI.overrideCollisionListener,
                 sneakyContentChangingMonitor);
-        Assert.assertFalse(result);
+        assertFalse(result);
         Assert.assertTrue(sneakyContentChangingMonitor.getException() instanceof IllegalStateException);
         Assert.assertEquals("Incomplete upload", sneakyContentChangingMonitor.getException().getMessage());
     }
@@ -3122,9 +3501,39 @@ public abstract class BaseApiClientTest
             serverRecomputedNewChecksums.add(afsClient.hash(owner, testFileName));
         }
 
-        Assert.assertFalse(locallyComputedChecksums.equals(locallyComputedNewChecksums));
+        assertFalse(locallyComputedChecksums.equals(locallyComputedNewChecksums));
         Assert.assertEquals(locallyComputedNewChecksums, serverComputedNewChecksums);
         Assert.assertEquals(serverComputedNewChecksums, serverRecomputedNewChecksums);
+    }
+
+    @Test
+    public void hash_fileNotInTheStoreIsNotAllowed() throws Exception
+    {
+        testOperationOnAFileNotInTheStoreIsNotAllowed(OperationName.Hash, (owner, source) -> afsClient.hash(owner, source));
+    }
+
+    @Test
+    public void hash_fileAlreadyWrittenIsNotAllowed() throws Exception
+    {
+        testOperationOnAFileAlreadyWrittenIsNotAllowed(OperationName.Hash, (owner, source) -> afsClient.hash(owner, source));
+    }
+
+    @Test
+    public void hash_fileAlreadyDeletedIsNotAllowed() throws Exception
+    {
+        testOperationOnAFileAlreadyDeletedIsNotAllowed(OperationName.Hash, (owner, source) -> afsClient.hash(owner, source));
+    }
+
+    @Test
+    public void hash_fileAlreadyMovedIsNotAllowed() throws Exception
+    {
+        testOperationOnAFileAlreadyMovedIsNotAllowed(OperationName.Hash, (owner, source) -> afsClient.hash(owner, source));
+    }
+
+    @Test
+    public void hash_fileAlreadyCopiedIsNotAllowed() throws Exception
+    {
+        testOperationOnAFileAlreadyCopiedIsNotAllowed(OperationName.Hash, (owner, source) -> afsClient.hash(owner, source));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -3147,6 +3556,36 @@ public abstract class BaseApiClientTest
         afsClient.create(owner, serverMainDirectory, true);
 
         afsClient.hash(owner, serverMainDirectory + "/non-existent-file");
+    }
+
+    @Test
+    public void preview_fileNotInTheStoreIsNotAllowed() throws Exception
+    {
+        testOperationOnAFileNotInTheStoreIsNotAllowed(OperationName.Preview, (owner, source) -> afsClient.preview(owner, source));
+    }
+
+    @Test
+    public void preview_fileAlreadyWrittenIsNotAllowed() throws Exception
+    {
+        testOperationOnAFileAlreadyWrittenIsNotAllowed(OperationName.Preview, (owner, source) -> afsClient.preview(owner, source));
+    }
+
+    @Test
+    public void preview_fileAlreadyDeletedIsNotAllowed() throws Exception
+    {
+        testOperationOnAFileAlreadyDeletedIsNotAllowed(OperationName.Preview, (owner, source) -> afsClient.preview(owner, source));
+    }
+
+    @Test
+    public void preview_fileAlreadyMovedIsNotAllowed() throws Exception
+    {
+        testOperationOnAFileAlreadyMovedIsNotAllowed(OperationName.Preview, (owner, source) -> afsClient.preview(owner, source));
+    }
+
+    @Test
+    public void preview_fileAlreadyCopiedIsNotAllowed() throws Exception
+    {
+        testOperationOnAFileAlreadyCopiedIsNotAllowed(OperationName.Preview, (owner, source) -> afsClient.preview(owner, source));
     }
 
     @Test()
@@ -3296,7 +3735,7 @@ public abstract class BaseApiClientTest
 
         byte[] newPreviewBytes = afsClient.preview(owner, imageServerFileName);
 
-        Assert.assertFalse(Arrays.equals(previewBytes, newPreviewBytes));
+        assertFalse(Arrays.equals(previewBytes, newPreviewBytes));
     }
 
     @Test()
@@ -3478,6 +3917,192 @@ public abstract class BaseApiClientTest
                             file.getLastModifiedTime(), file.getCreationTime(), file.getLastAccessTime());
                 })
                 .toArray(ch.ethz.sis.afs.api.dto.File[]::new);
+    }
+
+    private void testOperationOnAFileNotInTheStoreIsNotAllowed(OperationName operationName, Operation operationAction) throws Exception
+    {
+        login();
+
+        try
+        {
+            operationAction.execute(owner, FILE_NON_EXISTENT);
+            fail();
+        } catch (Exception e)
+        {
+            assertTrue(e.getMessage(),
+                    e.getMessage().contains(
+                            "Path given to: " + operationName + " - Not in store: " + testDataFolder + "/" + FILE_NON_EXISTENT));
+        }
+    }
+
+    private void testOperationOnAFileAlreadyInTheStoreIsNotAllowed(OperationName operationName, Operation operationAction) throws Exception
+    {
+        login();
+
+        try
+        {
+            operationAction.execute(owner, FILE_A);
+            fail();
+        } catch (Exception e)
+        {
+            assertTrue(e.getMessage(),
+                    e.getMessage().contains(
+                            "Path given to: " + operationName + " - In store: " + testDataFolder + "/" + FILE_A));
+        }
+    }
+
+    private void testOperationOnAFolderIsNotAllowed(OperationName operationName, Operation operationAction) throws Exception
+    {
+        login();
+
+        try
+        {
+            operationAction.execute(owner, FILE_BINARY_FOLDER);
+            fail();
+        } catch (Exception e)
+        {
+            assertTrue(e.getMessage(),
+                    e.getMessage().contains(
+                            "Path can't be operated by: " + operationName + " - " + testDataFolder + "/" + FILE_BINARY_FOLDER
+                                    + " is not a regular file"));
+        }
+    }
+
+    private void testOperationOnAFileInTrashIsNotAllowed(OperationName operationName, Operation operationAction) throws Exception
+    {
+        login();
+
+        try
+        {
+            operationAction.execute(owner, TRASH_FOLDER_NAME + "/" + FILE_A);
+            fail();
+        } catch (Exception e)
+        {
+            assertTrue(e.getMessage(),
+                    e.getMessage().contains(
+                            "Path can't be operated by: " + operationName + " - " + testDataFolder + "/" + TRASH_FOLDER_NAME + "/" + FILE_A
+                                    + " is in trash directory"));
+        }
+    }
+
+    private void testOperationOnAFileInSnapshotsIsNotAllowed(OperationName operationName, Operation operationAction) throws Exception
+    {
+        login();
+
+        try
+        {
+            operationAction.execute(owner, SNAPSHOTS_FOLDER_NAME + "/" + FILE_A);
+            fail();
+        } catch (Exception e)
+        {
+            assertTrue(e.getMessage(),
+                    e.getMessage().contains(
+                            "Path can't be operated by: " + operationName + " - " + testDataFolder + "/" + SNAPSHOTS_FOLDER_NAME + "/" + FILE_A
+                                    + " is in snapshots directory"));
+        }
+    }
+
+    private void testOperationOnAFileAlreadyDeletedIsNotAllowed(OperationName operationName, Operation operationAction)
+            throws Exception
+    {
+        login();
+
+        try
+        {
+            UUID transactionId = UUID.randomUUID();
+            afsClient.setInteractiveSessionKey(INTERACTIVE_SESSION_KEY);
+            afsClient.begin(transactionId);
+            afsClient.delete(owner, FILE_A, true);
+            operationAction.execute(owner, FILE_A);
+            fail();
+        } catch (Exception e)
+        {
+            assertTrue(e.getMessage(),
+                    e.getMessage().contains(
+                            "Path can't be operated by: " + operationName + " - After been deleted: " + testDataFolder + "/" + FILE_A));
+        } finally
+        {
+            afsClient.rollback();
+        }
+    }
+
+    private void testOperationOnAFileAlreadyWrittenIsNotAllowed(OperationName operationName, Operation operationAction)
+            throws Exception
+    {
+        login();
+
+        try
+        {
+            UUID transactionId = UUID.randomUUID();
+            afsClient.setInteractiveSessionKey(INTERACTIVE_SESSION_KEY);
+            afsClient.begin(transactionId);
+            afsClient.write(owner, FILE_A, 0L, DATA_2);
+            operationAction.execute(owner, FILE_A);
+            fail();
+        } catch (Exception e)
+        {
+            assertTrue(e.getMessage(),
+                    e.getMessage().contains(
+                            "Path can't be read by: " + operationName + " - After been written: " + testDataFolder + "/" + FILE_A));
+        } finally
+        {
+            afsClient.rollback();
+        }
+    }
+
+    private void testOperationOnAFileAlreadyMovedIsNotAllowed(OperationName operationName, Operation operationAction)
+            throws Exception
+    {
+        login();
+
+        try
+        {
+            UUID transactionId = UUID.randomUUID();
+            afsClient.setInteractiveSessionKey(INTERACTIVE_SESSION_KEY);
+            afsClient.begin(transactionId);
+            afsClient.move(owner, FILE_A, owner, FILE_NON_EXISTENT);
+            operationAction.execute(owner, FILE_A);
+            fail();
+        } catch (Exception e)
+        {
+            assertTrue(e.getMessage(),
+                    e.getMessage().contains(
+                            "Path can't be operated by: " + operationName + " - After been moved: " + testDataFolder + "/" + FILE_A));
+        } finally
+        {
+            afsClient.rollback();
+        }
+    }
+
+    private void testOperationOnAFileAlreadyCopiedIsNotAllowed(OperationName operationName, Operation operationAction)
+            throws Exception
+    {
+        login();
+
+        try
+        {
+            UUID transactionId = UUID.randomUUID();
+            afsClient.setInteractiveSessionKey(INTERACTIVE_SESSION_KEY);
+            afsClient.begin(transactionId);
+            afsClient.copy(owner, FILE_A, owner, FILE_B);
+            operationAction.execute(owner, FILE_B);
+            fail();
+        } catch (Exception e)
+        {
+            assertTrue(e.getMessage(),
+                    e.getMessage().contains(
+                            "Path can't be operated by: " + operationName + " - After been copied: " + testDataFolder + "/" + FILE_B));
+        } finally
+        {
+            afsClient.rollback();
+        }
+    }
+
+    private interface Operation
+    {
+
+        void execute(String owner, String source) throws Exception;
+
     }
 
 }

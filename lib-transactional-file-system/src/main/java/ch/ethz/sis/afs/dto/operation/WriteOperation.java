@@ -49,4 +49,9 @@ public class WriteOperation implements Operation {
         this.data = data;
         this.name = OperationName.Write;
     }
+
+    @Override public Operation toLog()
+    {
+        return this.toBuilder().data(null).build();
+    }
 }

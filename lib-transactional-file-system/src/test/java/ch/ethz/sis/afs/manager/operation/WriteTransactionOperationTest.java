@@ -105,7 +105,7 @@ public class WriteTransactionOperationTest extends AbstractTransactionOperationT
             fail();
         } catch (Exception e)
         {
-            assertError(e, "Path can't be operated by: Write - ./target/tests/storage/B/B.txt is a directory");
+            assertError(e, "Path can't be operated by: Write - B/B.txt is not a regular file");
         }
     }
 

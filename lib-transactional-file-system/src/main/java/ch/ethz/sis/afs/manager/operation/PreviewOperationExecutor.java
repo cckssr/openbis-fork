@@ -19,6 +19,7 @@ import ch.ethz.sis.afs.dto.Transaction;
 import ch.ethz.sis.afs.dto.operation.OperationName;
 import ch.ethz.sis.afs.dto.operation.PreviewOperation;
 import ch.ethz.sis.afs.exception.AFSExceptions;
+import ch.ethz.sis.afs.manager.TransactionFileSystemIO;
 import ch.ethz.sis.shared.io.IOUtils;
 import lombok.NonNull;
 
@@ -34,6 +35,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static ch.ethz.sis.afs.exception.AFSExceptions.*;
+import static ch.ethz.sis.afs.manager.operation.OperationExecutor.checkNotCopied;
+import static ch.ethz.sis.afs.manager.operation.OperationExecutor.checkNotDeleted;
+import static ch.ethz.sis.afs.manager.operation.OperationExecutor.checkNotMoved;
+import static ch.ethz.sis.afs.manager.operation.OperationExecutor.checkNotWritten;
 
 public class PreviewOperationExecutor implements OperationExecutor<PreviewOperation, byte[]> {
     //
@@ -54,7 +59,11 @@ public class PreviewOperationExecutor implements OperationExecutor<PreviewOperat
     }
 
     @Override
-    public byte[] prepare(@NonNull Transaction transaction, @NonNull PreviewOperation operation) throws Exception {
+    public byte[] prepare(final @NonNull Transaction transaction, final @NonNull TransactionFileSystemIO transactionFileSystemIO, final @NonNull PreviewOperation operation) throws Exception {
+        checkNotWritten(transactionFileSystemIO, OperationName.Preview, operation.getSource());
+        checkNotMoved(transactionFileSystemIO, OperationName.Preview, operation.getSource());
+        checkNotCopied(transactionFileSystemIO, OperationName.Preview, operation.getSource());
+        checkNotDeleted(transactionFileSystemIO, OperationName.Preview, operation.getSource());
 
         if(IOUtils.exists(operation.getSource())) {
             if(IOUtils.isRegularFile(operation.getSource())) {
@@ -129,17 +138,17 @@ public class PreviewOperationExecutor implements OperationExecutor<PreviewOperat
                     }
                 }
             } else {
-                AFSExceptions.throwInstance(PathNotRegularFile, OperationName.Preview.name(), operation.getSource());
+                AFSExceptions.throwInstance(PathNotRegularFile, OperationName.Preview.name(), IOUtils.getRelativePath(transaction.getStorageRoot(), operation.getSource()));
                 return null;
             }
         } else {
-            AFSExceptions.throwInstance(PathNotInStore, OperationName.Preview.name(), operation.getSource());
+            AFSExceptions.throwInstance(PathNotInStore, OperationName.Preview.name(), IOUtils.getRelativePath(transaction.getStorageRoot(), operation.getSource()));
             return null;
         }
     }
 
     @Override
-    public boolean commit(@NonNull Transaction transaction, @NonNull PreviewOperation operation) throws Exception {
+    public boolean commit(final @NonNull Transaction transaction, final @NonNull PreviewOperation operation) throws Exception {
         Path sourcePath = Path.of(operation.getSource());
         String cachePath = OperationExecutor.getCachedPreviewPathForSource(sourcePath).toString();
         String temporaryNewCachePath = Path.of(OperationExecutor.getTempPath(transaction, cachePath)).toAbsolutePath().normalize().toString();

@@ -33,7 +33,7 @@ public class SnapshotTransactionOperationTest extends AbstractTransactionOperati
             fail();
         } catch (Exception e)
         {
-            assertError(e, "Path can't be operated by: Snapshot - ./target/tests/storage/A is not a regular file");
+            assertError(e, "Path can't be operated by: Snapshot - A is not a regular file");
         }
     }
 

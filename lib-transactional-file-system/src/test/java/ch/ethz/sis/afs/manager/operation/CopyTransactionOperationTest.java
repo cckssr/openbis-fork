@@ -72,10 +72,4 @@ public class CopyTransactionOperationTest extends AbstractTransactionOperationTe
         assertTrue(IOUtils.exists(realPathC));
     }
 
-    @Test
-    public void operation_copyTwice_exception() throws Exception {
-        begin();
-        copy(FILE_A_PATH, FILE_C_PATH);
-        copy(FILE_A_PATH, FILE_C_PATH);
-    }
 }

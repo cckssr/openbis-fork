@@ -80,7 +80,7 @@ public class ListTransactionOperationTest extends AbstractTransactionOperationTe
             fail();
         } catch (Exception e)
         {
-            assertError(e, "Path can't be read by: List - After been written: ./target/tests/storage/C");
+            assertError(e, "Path can't be read by: List - After been written: C");
         }
     }
 
@@ -95,7 +95,7 @@ public class ListTransactionOperationTest extends AbstractTransactionOperationTe
             fail();
         } catch (Exception e)
         {
-            assertError(e, "Path can't be operated by: List - After been deleted: ./target/tests/storage/B");
+            assertError(e, "Path can't be operated by: List - After been deleted: B");
         }
     }
 
@@ -110,7 +110,7 @@ public class ListTransactionOperationTest extends AbstractTransactionOperationTe
             fail();
         } catch (Exception e)
         {
-            assertError(e, "Path can't be read by: List - After been written: ./target/tests/storage/C/C.txt");
+            assertError(e, "Path can't be read by: List - After been written: C/C.txt");
         }
     }
 
@@ -125,7 +125,7 @@ public class ListTransactionOperationTest extends AbstractTransactionOperationTe
             fail();
         } catch (Exception e)
         {
-            assertError(e, "Path can't be read by: List - After been written: ./target/tests/storage/A/A.txt");
+            assertError(e, "Path can't be read by: List - After been written: A/A.txt");
         }
     }
 
@@ -140,7 +140,7 @@ public class ListTransactionOperationTest extends AbstractTransactionOperationTe
             fail();
         } catch (Exception e)
         {
-            assertError(e, "Path can't be operated by: List - After been deleted: ./target/tests/storage/A/A.txt");
+            assertError(e, "Path can't be operated by: List - After been deleted: A/A.txt");
         }
     }
 

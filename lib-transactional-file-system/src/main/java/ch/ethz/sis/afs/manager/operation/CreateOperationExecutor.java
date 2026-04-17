@@ -15,16 +15,15 @@
  */
 package ch.ethz.sis.afs.manager.operation;
 
-import static ch.ethz.sis.afs.dto.Transaction.PathState;
-import static ch.ethz.sis.afs.exception.AFSExceptions.PathInStore;
-
-import java.util.List;
+import static ch.ethz.sis.afs.manager.operation.OperationExecutor.checkDoesntExist;
+import static ch.ethz.sis.afs.manager.operation.OperationExecutor.checkNotCopied;
+import static ch.ethz.sis.afs.manager.operation.OperationExecutor.checkNotInTrashOrSnapshots;
+import static ch.ethz.sis.afs.manager.operation.OperationExecutor.checkNotMoved;
 
 import ch.ethz.sis.afs.dto.Transaction;
 import ch.ethz.sis.afs.dto.operation.CreateOperation;
 import ch.ethz.sis.afs.dto.operation.OperationName;
-import ch.ethz.sis.afs.exception.AFSExceptions;
-import ch.ethz.sis.afs.manager.PathLockFinder;
+import ch.ethz.sis.afs.manager.TransactionFileSystemIO;
 import ch.ethz.sis.shared.io.IOUtils;
 import lombok.NonNull;
 
@@ -56,37 +55,21 @@ public class CreateOperationExecutor implements OperationExecutor<CreateOperatio
     //
 
     @Override
-    public Void prepare(final @NonNull Transaction transaction, final CreateOperation operation) throws Exception
+    public Void prepare(final @NonNull Transaction transaction, final @NonNull TransactionFileSystemIO transactionFileSystemIO,
+            final CreateOperation operation) throws Exception
     {
-        // Check that file/directory does not exist
-        PathState pathState = OperationExecutor.getCachedPathState(transaction, operation.getSource());
-        if (pathState.isExists())
-        {
-            AFSExceptions.throwInstance(PathInStore, OperationName.Create.name(), operation.getSource());
-        }
+        checkNotMoved(transactionFileSystemIO, OperationName.Create, operation.getSource());
+        checkNotCopied(transactionFileSystemIO, OperationName.Create, operation.getSource());
+        checkNotInTrashOrSnapshots(transactionFileSystemIO, OperationName.Create, operation.getSource());
+        checkDoesntExist(transactionFileSystemIO, OperationName.Create, operation.getSource());
 
-        // Update state of the path and its parents
-        List<String> parentSubPaths = PathLockFinder.getParentSubPaths(operation.getSource());
-        for (String parentSubPath : parentSubPaths)
-        {
-            PathState parentSubPathState = OperationExecutor.getCachedPathState(transaction, parentSubPath);
-            parentSubPathState.setExists(true);
-            parentSubPathState.setDeleted(false);
-            if (parentSubPathState == pathState)
-            {
-                parentSubPathState.setWritten(true);
-                parentSubPathState.setDirectory(operation.isDirectory());
-            } else
-            {
-                parentSubPathState.setDirectory(true);
-            }
-        }
+        transactionFileSystemIO.setCreated(operation.getSource(), operation.isDirectory());
 
         return null;
     }
 
     @Override
-    public boolean commit(final @NonNull Transaction transaction, final CreateOperation operation) throws Exception
+    public boolean commit(final @NonNull Transaction transaction, final @NonNull CreateOperation operation) throws Exception
     {
         final String directoriesToCreate = operation.isDirectory() ? operation.getSource() : IOUtils.getParentPath(operation.getSource());
         IOUtils.createDirectories(directoriesToCreate);

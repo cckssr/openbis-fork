@@ -15,14 +15,19 @@
  */
 package ch.ethz.sis.afs.manager.operation;
 
-import ch.ethz.sis.shared.io.IOUtils;
+import static ch.ethz.sis.afs.manager.operation.OperationExecutor.checkExists;
+import static ch.ethz.sis.afs.manager.operation.OperationExecutor.checkNotCopied;
+import static ch.ethz.sis.afs.manager.operation.OperationExecutor.checkNotDeleted;
+import static ch.ethz.sis.afs.manager.operation.OperationExecutor.checkNotInTrashOrSnapshots;
+import static ch.ethz.sis.afs.manager.operation.OperationExecutor.checkNotMoved;
+import static ch.ethz.sis.afs.manager.operation.OperationExecutor.checkNotWritten;
+
 import ch.ethz.sis.afs.dto.Transaction;
 import ch.ethz.sis.afs.dto.operation.CopyOperation;
 import ch.ethz.sis.afs.dto.operation.OperationName;
-import ch.ethz.sis.afs.exception.AFSExceptions;
-
-import static ch.ethz.sis.afs.exception.AFSExceptions.PathInStore;
-import static ch.ethz.sis.afs.exception.AFSExceptions.PathNotInStore;
+import ch.ethz.sis.afs.manager.TransactionFileSystemIO;
+import ch.ethz.sis.shared.io.IOUtils;
+import lombok.NonNull;
 
 public class CopyOperationExecutor implements OperationExecutor<CopyOperation, Void> {
 
@@ -48,20 +53,31 @@ public class CopyOperationExecutor implements OperationExecutor<CopyOperation, V
     //
 
     @Override
-    public Void prepare(Transaction transaction, CopyOperation operation) throws Exception {
-        if (!IOUtils.exists(operation.getSource())) {
-            AFSExceptions.throwInstance(PathNotInStore, OperationName.Copy.name(), operation.getSource());
-        }
+    public Void prepare(final @NonNull Transaction transaction, final @NonNull TransactionFileSystemIO transactionFileSystemIO, final @NonNull CopyOperation operation) throws Exception {
+        checkNotWritten(transactionFileSystemIO, OperationName.Copy, operation.getSource());
+        checkNotMoved(transactionFileSystemIO, OperationName.Copy, operation.getSource());
+        checkNotCopied(transactionFileSystemIO, OperationName.Copy, operation.getSource());
+        checkNotDeleted(transactionFileSystemIO, OperationName.Copy, operation.getSource());
+        checkExists(transactionFileSystemIO, OperationName.Copy, operation.getSource());
+
+        checkNotMoved(transactionFileSystemIO, OperationName.Copy, operation.getTarget());
+        checkNotCopied(transactionFileSystemIO, OperationName.Copy, operation.getTarget());
+        checkNotDeleted(transactionFileSystemIO, OperationName.Copy, operation.getTarget());
+        checkNotInTrashOrSnapshots(transactionFileSystemIO, OperationName.Copy, operation.getTarget());
+
         String tempFileParent = IOUtils.getParentPath(OperationExecutor.getTempPath(transaction, operation.getTarget()));
         if (!IOUtils.exists(tempFileParent)) {
             IOUtils.createDirectories(tempFileParent);
         }
         IOUtils.copy(operation.getSource(), OperationExecutor.getTempPath(transaction, operation.getTarget()));
+
+        transactionFileSystemIO.setCopied(operation.getTarget());
+
         return null;
     }
 
     @Override
-    public boolean commit(Transaction transaction, CopyOperation operation) throws Exception {
+    public boolean commit(final @NonNull Transaction transaction, final @NonNull CopyOperation operation) throws Exception {
         String tempFilePath = OperationExecutor.getTempPath(transaction, operation.getTarget());
         if (IOUtils.exists(tempFilePath)) {
             String targetFileParent = IOUtils.getParentPath(operation.getTarget());
