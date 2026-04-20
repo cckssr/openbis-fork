@@ -309,24 +309,35 @@ public final class EntityPropertiesConverter implements IEntityPropertiesConvert
             {
                 for (Serializable value : (Serializable[]) parsedValue)
                 {
-                    Serializable translatedValue =
+                    final Serializable translatedValue =
                             extendedETPT.translate(registrator, value);
+
+                    if (translatedValue != null || value == null)
+                    {
+                        // This if branch is to eliminate values which translate to null, however
+                        // if the original value is null we want this case to be handled by
+                        // the validator
+                        final Serializable validatedValue =
+                                propertyValueValidator.validatePropertyValue(propertyType,
+                                        translatedValue);
+                        results.addAll(createEntityProperty(registrator, propertyType,
+                                entityTypePropertyTypePE,
+                                validatedValue));
+                    }
+                }
+            } else
+            {
+                Serializable translatedValue = extendedETPT.translate(registrator, parsedValue);
+
+                if (translatedValue != null || parsedValue == null)
+                {
                     final Serializable validatedValue =
                             propertyValueValidator.validatePropertyValue(propertyType,
                                     translatedValue);
                     results.addAll(createEntityProperty(registrator, propertyType,
                             entityTypePropertyTypePE,
                             validatedValue));
-
                 }
-            } else
-            {
-                Serializable translatedValue = extendedETPT.translate(registrator, parsedValue);
-
-                final Serializable validatedValue =
-                        propertyValueValidator.validatePropertyValue(propertyType, translatedValue);
-                results.addAll(createEntityProperty(registrator, propertyType, entityTypePropertyTypePE,
-                        validatedValue));
             }
             return results;
         }
