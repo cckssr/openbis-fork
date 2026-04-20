@@ -880,7 +880,12 @@ public final class EntityPropertiesConverter implements IEntityPropertiesConvert
         @SuppressWarnings("unchecked")
         Serializable translate(PersonPE personPE, Serializable value)
         {
-            if (value == null || !value.getClass().equals(String.class))
+            if (value != null && value.getClass().isArray()
+                    && java.lang.reflect.Array.getLength(value) == 0)
+            {
+                // Treating empty arrays as nulls
+                return null;
+            } else if (value == null || !value.getClass().equals(String.class))
             {
                 return value;
             } else
