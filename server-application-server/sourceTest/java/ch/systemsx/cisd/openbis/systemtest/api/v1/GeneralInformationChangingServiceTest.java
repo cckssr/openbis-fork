@@ -101,6 +101,7 @@ public class GeneralInformationChangingServiceTest extends SystemTestCase
     public void beforeMethod()
     {
         sessionToken = generalInformationService.tryToAuthenticateForAllServices("test", "a");
+        setRequestContextProvider(contextProvider);
     }
 
     @Test
