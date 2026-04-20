@@ -34,6 +34,7 @@ import ch.ethz.sis.rocrateserver.startup.Configuration;
 import ch.ethz.sis.rocrateserver.startup.RoCrateServerParameter;
 import ch.ethz.sis.rocrateserver.startup.StartupMain;
 import ch.openbis.rocrate.app.writer.Writer;
+import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.common.mail.EMailAddress;
 import ch.systemsx.cisd.common.mail.MailClient;
 import ch.systemsx.cisd.common.mail.MailClientParameters;
@@ -151,6 +152,7 @@ public final class ExportJob implements IAsyncJob
         try
         {
             LOG.info(String.format("Starting export job: %s", jobId.toString()));
+            LOG.info(String.format("Received parameters: %s", exportParams.toString()));
             Map<String, String> identifiers[] = ExportParams.getIdentifiers(exportParams.getInputBodyFormat(), body);
             String[] identifierAnnotations = exportParams.getIdentifierAnnotations();
 
@@ -294,6 +296,7 @@ public final class ExportJob implements IAsyncJob
                             downloadOpenBISExport(openBIS, exportParams, downloadURL);
 
                     final String downloadedFileName = downloadPath.toFile().getName();
+                    LOG.info(String.format("Downloaded OpenBIS export file: %s", downloadedFileName));
 
                     OpenBisModel openBisModel =
                             ExcelReader.convert(ExcelReader.Format.ZIP_EXPORT, downloadPath,
@@ -305,6 +308,8 @@ public final class ExportJob implements IAsyncJob
                     File zipOut = resultZipPath.toFile();
                     Path roCrateFolderPath = SessionWorkSpaceManager.getRealPath(exportParams.getApiKey(),
                             Path.of("ro-crate-metadata"));
+
+                    LOG.debug(String.format("Converted export to RO-Crate, about to store result in: %s", roCrateFolderPath));
                     Writer writer = new Writer();
                     writer.write(openBisModel, roCrateFolderPath);
 
@@ -312,11 +317,12 @@ public final class ExportJob implements IAsyncJob
                             Path.of("ro-crate-metadata", "ro-crate-metadata.json"));
                     File roCrateFile = roCrateJsonPath.toFile();
 
+                    LOG.info(String.format("RO-Crate file path: %s", roCrateFile));
 
-                    if (exportParams.getExportMimeType().equals(RoCrateService.APPLICATION_LD_JSON))
+                    if (exportParams.getExportMimeType().equalsIgnoreCase(RoCrateService.APPLICATION_LD_JSON))
                     {
                         this.result = roCrateJsonPath;
-                    } else if (exportParams.getExportMimeType().equals(RoCrateService.APPLICATION_ZIP))
+                    } else if (exportParams.getExportMimeType().equalsIgnoreCase(RoCrateService.APPLICATION_ZIP))
                     {
                         byte[] buffer = new byte[8192];
                         if(downloadedFileName.endsWith(".xlsx")) {
@@ -378,6 +384,8 @@ public final class ExportJob implements IAsyncJob
                         } else {
                             LOG.info("No email has been found, skipping email sending.");
                         }
+                    } else {
+                      throw new UserFailureException(String.format("Unsupported mime type: %s", exportParams.getExportMimeType()));
                     }
                 }
                 Thread.sleep(2000);

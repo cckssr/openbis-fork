@@ -242,5 +242,32 @@ public class ExportParams {
         return exportMimeTyp;
     }
 
+    @Override
+    public String toString() {
+
+        final StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+
+        sb.append("[");
+        sb.append("api-key=").append(apiKey).append(", ");
+        sb.append("Accept=").append(accept).append(", ");
+        sb.append(EXPORT_MIME_TYPE_HEADER).append("=").append(exportMimeTyp).append(", ");
+        sb.append("openbis.identifier-annotations=").append(identifierAnnotations).append(", ");
+        sb.append("openbis.import-compatible=").append(importCompatible).append(", ");
+        sb.append("openbis.metadata-pdf=").append(formatPDF).append(", ");
+        sb.append("openbis.metadata-xlsx=").append(formatXLSX).append(", ");
+        sb.append("openbis.dataset-data=").append(importDatasetData).append(", ");
+        sb.append("openbis.afs-data=").append(importAfsData).append(", ");
+        sb.append("openbis.with-levels-above=").append(withLevelsAbove).append(", ");
+        sb.append("openbis.with-levels-below=").append(withLevelsBelow).append(", ");
+        sb.append("openbis.with-objects-and-dataSets-children=").append(withObjectsAndDataSetsChildren).append(", ");
+        sb.append("openbis.with-objects-and-dataSets-parents=").append(withObjectsAndDataSetsParents).append(", ");
+        sb.append("openbis.with-objects-and-dataSets-other-spaces=").append(withObjectsAndDataSetsOtherSpaces).append(", ");
+        sb.append("openbis.input-body-format=").append(inputBodyFormat).append(", ");
+        sb.append("openbis.send-email=").append(sendEmail);
+        sb.append("]");
+
+        return sb.toString();
+    }
+
 
 }
