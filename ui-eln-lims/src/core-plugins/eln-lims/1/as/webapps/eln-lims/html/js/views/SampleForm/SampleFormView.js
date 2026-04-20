@@ -1016,6 +1016,13 @@
 					}
 					var $controlGroup =  null;
 					var value = this._sampleFormModel.sample.properties[propertyType.code];
+					if (propertyType.dataType === "TIMESTAMP") {
+						value = FormUtil.toUserTimeZoneTimestamp(value);
+					} else if (propertyType.dataType === "ARRAY_TIMESTAMP" && value) {
+						value = value.map(function(v) {
+							return FormUtil.toUserTimeZoneTimestamp(v);
+						});
+					}
 	
 					if(!value && propertyType.code.charAt(0) === '$') {
 						value = this._sampleFormModel.sample.properties[propertyType.code.substr(1)];
@@ -1057,9 +1064,15 @@
 								FormUtil.setFieldValue(propertyType, $component, value);
 							} else if(propertyType.dataType === "TIMESTAMP" || propertyType.dataType === "DATE") {
 							} else if (propertyType.dataType === "ARRAY_INTEGER" || propertyType.dataType === "ARRAY_REAL") {
-								$component.val("[" + value.map((value) => numberFormat.format(value)).join(", ") + "]");
+								const valueToRender = value != null
+									? "[" + value.map((v) => numberFormat.format(v)).join(", ") + "]"
+									: "";
+								$component.val(valueToRender);
 							} else if (propertyType.dataType === "ARRAY_STRING" || propertyType.dataType === "ARRAY_TIMESTAMP") {
-								$component.val("[" + value.map((value) => '"' + value + '"').join(", ") + "]");
+								const valueToRender = value != null
+									? "[" + value.map((v) => '"' + v + '"').join(", ") + "]"
+									: "";
+								$component.val(valueToRender);
 							} else if(isMultiValue) {
 								var valueV3 = null;
 								if(this._sampleFormModel.v3_sample) {

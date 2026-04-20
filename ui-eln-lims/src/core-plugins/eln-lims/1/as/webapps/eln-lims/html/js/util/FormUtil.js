@@ -42,6 +42,17 @@ var FormUtil = new function() {
 		sampleAnnotations["sampleType"] =  sample.sampleTypeCode; //Adds sampleType code to the annotations if not present
 		return sampleAnnotations;
 	}
+
+	this.toUserTimeZoneTimestamp = function(value) {
+		if (!value) {
+			return value;
+		}
+		const parsed = moment.parseZone(value, ["YYYY-MM-DD HH:mm:ss Z", "YYYY-MM-DD HH:mm:ss"], true);
+		if (!parsed.isValid()) {
+			return value;
+		}
+		return parsed.local().format("YYYY-MM-DD HH:mm:ss ZZ");
+	}
 	
 	this.writeAnnotationForSample = function(stateObj, sample, propertyTypeCode, propertyValue) {
 		var sampleAnnotations = this.addAnnotationSlotForSample(stateObj, sample);

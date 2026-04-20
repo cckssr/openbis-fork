@@ -706,6 +706,14 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 					delete this._experimentFormModel.experiment.properties[propertyType.code.substr(1)];
 				}
 
+                if (propertyType.dataType === "TIMESTAMP") {
+                    value = FormUtil.toUserTimeZoneTimestamp(value);
+                } else if (propertyType.dataType === "ARRAY_TIMESTAMP" && value) {
+                    value = value.map(function(v) {
+                        return FormUtil.toUserTimeZoneTimestamp(v);
+                    });
+                }
+
 				if(this._experimentFormModel.mode === FormMode.VIEW) { //Show values without input boxes if the form is in view mode
 		            if(Util.getEmptyIfNull(value) !== "") { //Don't show empty fields, whole empty sections will show the title
                         var customWidget = profile.customWidgetSettings[propertyType.code];
@@ -745,9 +753,15 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 							FormUtil.setFieldValue(propertyType, $component, value);
 						} else if(propertyType.dataType === "TIMESTAMP" || propertyType.dataType === "DATE") {
 						} else if (propertyType.dataType === "ARRAY_INTEGER" || propertyType.dataType === "ARRAY_REAL") {
-                            $component.val("[" + value.map((value) => numberFormat.format(value)).join(", ") + "]");
+                            const valueToRender = value != null
+                                ? "[" + value.map((v) => numberFormat.format(v)).join(", ") + "]"
+                                : "";
+                            $component.val(valueToRender);
                         } else if (propertyType.dataType === "ARRAY_STRING" || propertyType.dataType === "ARRAY_TIMESTAMP") {
-                            $component.val("[" + value.map((value) => '"' + value + '"').join(", ") + "]");
+                            const valueToRender = value != null
+                                ? "[" + value.map((v) => '"' + v + '"').join(", ") + "]"
+                                : "";
+                            $component.val(valueToRender);
                         } else if(isMultiValue) {
 						    var valueV3 = this._experimentFormModel.v3_experiment.properties[propertyType.code];
 						    if(valueV3) {
