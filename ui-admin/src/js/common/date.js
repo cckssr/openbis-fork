@@ -7,6 +7,16 @@ const MILLIS_PER_HOUR = 60 * MILLIS_PER_MINUTE
 const MILLIS_PER_DAY = 24 * MILLIS_PER_HOUR
 const MILLIS_PER_YEAR = 365 * MILLIS_PER_DAY
 
+function formatTimeZoneOffset(date) {
+  const offsetMinutes = -date.getTimezoneOffset()
+  const sign = offsetMinutes >= 0 ? "+" : "-"
+  const absoluteOffsetMinutes = Math.abs(offsetMinutes)
+  const hours = String(Math.floor(absoluteOffsetMinutes / 60)).padStart(2, "0")
+  const minutes = String(absoluteOffsetMinutes % 60).padStart(2, "0")
+
+  return sign + hours + minutes
+}
+
 function format(value, includeTime = true) {
   if (_.isNil(value)) {
     return ''
@@ -30,8 +40,9 @@ function format(value, includeTime = true) {
     const hours = String(date.getHours()).padStart(2, '0')
     const minutes = String(date.getMinutes()).padStart(2, '0')
     const seconds = String(date.getSeconds()).padStart(2, '0')
+    const timeZone = formatTimeZoneOffset(date)
 
-    return (year + '-' + month + '-' + day + ' ' + hours + ':' + minutes + ':' + seconds)
+    return (year + '-' + month + '-' + day + ' ' + hours + ':' + minutes + ':' + seconds + ' ' + timeZone)
   } else {
     return (year + '-' + month + '-' + day)
   }

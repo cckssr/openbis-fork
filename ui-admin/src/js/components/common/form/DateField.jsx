@@ -12,6 +12,10 @@ import format from 'date-fns/format';
 import date from '@src/js/common/date.js'
 import logger from '@src/js/common/logger.js'
 
+const DATE_FORMAT = "yyyy-MM-dd"
+const DATE_TIME_PICKER_FORMAT = "yyyy-MM-dd HH:mm:ss"
+const DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss XX"
+
 const styles = theme => ({
   container: {
     minWidth: '200px'
@@ -46,9 +50,9 @@ class DateField extends React.PureComponent {
     if (onChange) {
         let dateObject = date && false === Number.isNaN(date.getTime()) ? date : null;
         if(dateTime) {
-            dateString = dateObject ? format(date, 'yyyy-MM-dd HH:mm:ss').toString() : '';
+            dateString = dateObject ? format(date, DATE_TIME_FORMAT).toString() : '';
         } else {
-            dateString = dateObject ? format(date, 'yyyy-MM-dd').toString() : '';
+            dateString = dateObject ? format(date, DATE_FORMAT).toString() : '';
         }
 
       onChange({
@@ -85,8 +89,7 @@ class DateField extends React.PureComponent {
             const second = match[6] === '__' ? '00' : match[6]
 
             string = `${year}-${month}-${day} ${hour}:${minute}:${second}`
-            //date = new DateFnsUtils().parse(string, 'yyyy-MM-dd HH:mm:ss')
-            date = format(new Date(), 'yyyy-MM-dd HH:mm:ss').toString()
+            date = format(new Date(), DATE_TIME_FORMAT).toString()
           }
         } else {
           const match = event.target.value
@@ -99,8 +102,8 @@ class DateField extends React.PureComponent {
             const day = match[3] === '__' ? '01' : match[3]
 
             string = `${year}-${month}-${day}`
-            //date = new DateFnsUtils().parse(string, 'yyyy-MM-dd')
-            date = format(new Date(), 'yyyy-MM-dd').toString()
+            //date = new DateFnsUtils().parse(string, DATE_FORMAT)
+            date = format(new Date(), DATE_FORMAT).toString()
           }
         }
       }
@@ -176,7 +179,7 @@ class DateField extends React.PureComponent {
               inputValue={dateString}
               onChange={this.handleChange}
               onBlur={this.handleBlur}
-              format={'yyyy-MM-dd HH:mm:ss'}
+              format={DATE_TIME_PICKER_FORMAT}
               fullWidth={true}
               slots={{
                 textField: this.renderEditInput
@@ -202,7 +205,7 @@ class DateField extends React.PureComponent {
               inputValue={dateString}
               onChange={this.handleChange}
               onBlur={this.handleBlur}
-              format={'yyyy-MM-dd'}
+              format={DATE_FORMAT}
               fullWidth={true}
               slots={{
                 textField: this.renderEditInput,
