@@ -14,8 +14,13 @@ import java.util.*;
 public class StandardPathLister implements FtpPathLister {
     private final OpenBISListUtil listUtil;
 
-    public StandardPathLister(OpenBISUser user) {
+    public StandardPathLister(@NonNull OpenBISUser user) {
         this.listUtil = new OpenBISListUtil(user);
+    }
+
+    //For unit-tests
+    StandardPathLister(OpenBISListUtil listUtil) {
+        this.listUtil = listUtil;
     }
 
     @Override

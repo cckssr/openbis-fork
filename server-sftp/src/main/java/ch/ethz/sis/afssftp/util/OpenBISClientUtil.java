@@ -12,21 +12,27 @@ public class OpenBISClientUtil {
     public static final AtomicReference<String> applicationServerUrl = new AtomicReference<>(null);
     public static final AtomicReference<String> afsUrl = new AtomicReference<>(null);
 
-    public static final OpenBIS getOpenBISClient() {
-        return new OpenBIS(applicationServerUrl.get());
+    public OpenBIS getOpenBISClient() {
+        return new OpenBIS(getApplicationServerUrl());
     }
 
-    public static final OpenBIS getOpenBISClient(@NonNull OpenBISUser openBISUser) {
+    public OpenBIS getOpenBISClient(@NonNull OpenBISUser openBISUser) {
         OpenBIS openBIS = getOpenBISClient();
-        openBIS.setSessionToken(openBIS.getSessionToken());
         openBISUser.checkAndRenewSessionIfNecessary(openBIS);
         return openBIS;
     }
 
-    public static final AfsClient getAfsClient(@NonNull OpenBISUser openBISUser) {
-        AfsClient afsClient = new AfsClient(URI.create(afsUrl.get()));
-        afsClient.setSessionToken(afsClient.getSessionToken());
+    public AfsClient getAfsClient(@NonNull OpenBISUser openBISUser) {
+        AfsClient afsClient = new AfsClient(URI.create(getAfsUrl()));
         openBISUser.checkAndRenewSessionIfNecessary(afsClient);
         return afsClient;
+    }
+
+    String getApplicationServerUrl() {
+        return applicationServerUrl.get();
+    }
+
+    String getAfsUrl() {
+        return afsUrl.get();
     }
 }

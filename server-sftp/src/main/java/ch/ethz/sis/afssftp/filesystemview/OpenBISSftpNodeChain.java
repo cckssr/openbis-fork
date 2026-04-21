@@ -6,14 +6,27 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.Project;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-public record OpenBISSftpNodeChain(@NonNull List<@NonNull OpenBISSftpNode> nodes) {
+@ToString
+@EqualsAndHashCode
+public class OpenBISSftpNodeChain {
+    private final @NonNull List<@NonNull OpenBISSftpNode> nodes;
+
+    public OpenBISSftpNodeChain(@NonNull List<@NonNull OpenBISSftpNode> nodes) {
+        this.nodes = nodes;
+    }
+
+    public @NonNull List<@NonNull OpenBISSftpNode> nodes() {
+        return nodes;
+    }
 
     public @NonNull Optional<OpenBISSftpNode> getLast() {
         return !nodes.isEmpty() ? Optional.of(nodes.getLast()) : Optional.empty();

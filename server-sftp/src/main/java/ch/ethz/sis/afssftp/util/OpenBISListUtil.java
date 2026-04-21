@@ -46,13 +46,23 @@ public class OpenBISListUtil {
     );
 
     private final OpenBISUser user;
+    private final OpenBISClientUtil openBISClientUtil;
 
     public OpenBISListUtil(OpenBISUser user) {
         this.user = user;
+        this.openBISClientUtil = new OpenBISClientUtil();
+    }
+
+    //For unit-tests
+    OpenBISListUtil(
+            OpenBISUser user,
+            OpenBISClientUtil openBISClientUtil) {
+        this.user = user;
+        this.openBISClientUtil = openBISClientUtil;
     }
 
     public @NonNull List<Space> getSpaces() {
-        OpenBIS openBIS = OpenBISClientUtil.getOpenBISClient(user);
+        OpenBIS openBIS = openBISClientUtil.getOpenBISClient(user);
 
         SearchResult<Space> spaces = openBIS.searchSpaces(new SpaceSearchCriteria(), new SpaceFetchOptions());
 
@@ -60,7 +70,7 @@ public class OpenBISListUtil {
     }
 
     public @NonNull List<Project> getProjects(@NonNull String spacePermId) {
-        OpenBIS openBIS = OpenBISClientUtil.getOpenBISClient(user);
+        OpenBIS openBIS = openBISClientUtil.getOpenBISClient(user);
 
         SpaceFetchOptions fetchOptions = new SpaceFetchOptions();
         fetchOptions.withProjects();
@@ -71,7 +81,7 @@ public class OpenBISListUtil {
     }
 
     public @NonNull List<Experiment> getExperiments(@NonNull String spaceCode, @NonNull String projectCode) {
-        OpenBIS openBIS = OpenBISClientUtil.getOpenBISClient(user);
+        OpenBIS openBIS = openBISClientUtil.getOpenBISClient(user);
 
         ProjectFetchOptions fetchOptions = new ProjectFetchOptions();
         fetchOptions.withExperiments();
@@ -91,7 +101,7 @@ public class OpenBISListUtil {
      * @return samples directly attached to space-entity
      */
     public @NonNull List<Sample> getSpaceSamples(@NonNull String spacePermId) {
-        OpenBIS openBIS = OpenBISClientUtil.getOpenBISClient(user);
+        OpenBIS openBIS = openBISClientUtil.getOpenBISClient(user);
 
         SpaceFetchOptions fetchOptions = new SpaceFetchOptions();
         fetchOptions.withSamples().withType();
@@ -119,7 +129,7 @@ public class OpenBISListUtil {
      * @return samples directly attached to project-entity
      */
     public @NonNull List<Sample> getProjectSamples(@NonNull String spaceCode, @NonNull String projectCode) {
-        OpenBIS openBIS = OpenBISClientUtil.getOpenBISClient(user);
+        OpenBIS openBIS = openBISClientUtil.getOpenBISClient(user);
 
         ProjectFetchOptions fetchOptions = new ProjectFetchOptions();
         fetchOptions.withSamples().withType();
@@ -145,7 +155,7 @@ public class OpenBISListUtil {
      */
     public @NonNull List<Sample> getExperimentSamples(
             @NonNull String spaceCode, @NonNull String projectCode, @NonNull String experimentCode) {
-        OpenBIS openBIS = OpenBISClientUtil.getOpenBISClient(user);
+        OpenBIS openBIS = openBISClientUtil.getOpenBISClient(user);
 
         ExperimentFetchOptions fetchOptions = new ExperimentFetchOptions();
         fetchOptions.withSamples().withType();
@@ -168,7 +178,7 @@ public class OpenBISListUtil {
      * @return samples directly attached to sample-entity
      */
     public @NonNull List<Sample> getSampleChildren(String spaceCode, String projectCode, @NonNull String sampleCode) {
-        OpenBIS openBIS = OpenBISClientUtil.getOpenBISClient(user);
+        OpenBIS openBIS = openBISClientUtil.getOpenBISClient(user);
 
         SampleFetchOptions fetchOptions = new SampleFetchOptions();
         fetchOptions.withChildren().withType();
@@ -186,7 +196,7 @@ public class OpenBISListUtil {
      * @return datasets directly attached to sample-entity
      */
     public @NonNull List<DataSet> getSampleDatasets(String spaceCode, String projectCode, @NonNull String sampleCode) {
-        OpenBIS openBIS = OpenBISClientUtil.getOpenBISClient(user);
+        OpenBIS openBIS = openBISClientUtil.getOpenBISClient(user);
 
         SampleFetchOptions fetchOptions = new SampleFetchOptions();
         fetchOptions.withDataSets();
@@ -199,7 +209,7 @@ public class OpenBISListUtil {
     public String getAfsEntityPermId(@NonNull OpenBISSftpNode afsEntityNode, String spaceCode, String projectCode) {
         return switch (afsEntityNode.getType()) {
             case SAMPLE, FOLDER -> {
-                OpenBIS openBIS = OpenBISClientUtil.getOpenBISClient(user);
+                OpenBIS openBIS = openBISClientUtil.getOpenBISClient(user);
 
                 SampleIdentifier sampleId = new SampleIdentifier(
                         spaceCode, projectCode, null, afsEntityNode.getIdentifier().orElseThrow()
@@ -210,7 +220,7 @@ public class OpenBISListUtil {
                     .orElse(null);
             }
             case DATA_SET -> {
-                OpenBIS openBIS = OpenBISClientUtil.getOpenBISClient(user);
+                OpenBIS openBIS = openBISClientUtil.getOpenBISClient(user);
 
                 DataSetPermId dataSetPermId = new DataSetPermId(
                         afsEntityNode.getIdentifier().orElseThrow()
@@ -222,7 +232,7 @@ public class OpenBISListUtil {
                     .orElse(null);
             }
             case EXPERIMENT -> {
-                OpenBIS openBIS = OpenBISClientUtil.getOpenBISClient(user);
+                OpenBIS openBIS = openBISClientUtil.getOpenBISClient(user);
 
                 ExperimentIdentifier experimentId = new ExperimentIdentifier(
                         spaceCode, projectCode,
@@ -240,7 +250,7 @@ public class OpenBISListUtil {
 
     public @NonNull File[] listAfsFiles(@NonNull String afsEntityId, @NonNull String absoluteAfsFilePath) {
         try {
-            return OpenBISClientUtil.getAfsClient(user).list(afsEntityId, absoluteAfsFilePath, false);
+            return openBISClientUtil.getAfsClient(user).list(afsEntityId, absoluteAfsFilePath, false);
         } catch (Exception e) {
             if (isPathNotInStoreError(e)) {
                 return new File[0];
@@ -253,7 +263,7 @@ public class OpenBISListUtil {
     @SneakyThrows
     public Optional<File> getAfsFilePresence(@NonNull String afsEntityId, @NonNull String absoluteAfsFilePath) {
         return AfsClientUploadHelper.getServerFilePresence(
-                OpenBISClientUtil.getAfsClient(user),
+                openBISClientUtil.getAfsClient(user),
                 afsEntityId,
                 absoluteAfsFilePath
         );
