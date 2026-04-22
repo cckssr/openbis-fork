@@ -8,7 +8,7 @@ def includes = ['lib-logging', 'lib-commonbase', 'lib-common', 'api-openbis-java
                 'lib-json', 'api-data-store-server-java', 'api-data-store-server-javascript', 'api-openbis-typescript',
                 'test-integration', 'lib-rdf', 'docs', 'lib-ro-crate', 'app-ro-crate-openbis', 'app-migration',
                 'app-openbis-drive', 'app-openbis-command-line' , 'test-app-openbis-installer', 'api-openbis-python3-pybis', 'release',
-                'lib-http', 'owasp', 'server-ro-crate'
+                'lib-http', 'owasp', 'server-ro-crate', 'server-sftp'
 ]
 
 includes.forEach { name ->

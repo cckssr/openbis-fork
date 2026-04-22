@@ -16,30 +16,50 @@
 package ch.ethz.sis.afs.manager.operation;
 
 import ch.ethz.sis.afs.dto.Transaction;
+import ch.ethz.sis.afs.dto.operation.OperationName;
 import ch.ethz.sis.afs.dto.operation.ReadOperation;
+import ch.ethz.sis.afs.exception.AFSExceptions;
+import ch.ethz.sis.afs.manager.TransactionFileSystemIO;
 import ch.ethz.sis.shared.io.IOUtils;
 import lombok.NonNull;
 
-public class ReadOperationExecutor implements NonModifyingOperationExecutor<ReadOperation> {
+public class ReadOperationExecutor implements NonModifyingOperationExecutor<ReadOperation>
+{
     //
     // Singleton
     //
 
     private static final ReadOperationExecutor instance;
 
-    static {
+    static
+    {
         instance = new ReadOperationExecutor();
     }
 
-    private ReadOperationExecutor() {
+    private ReadOperationExecutor()
+    {
     }
 
-    public static ReadOperationExecutor getInstance() {
+    public static ReadOperationExecutor getInstance()
+    {
         return instance;
     }
 
     @Override
-    public byte[] executeOperation(@NonNull Transaction transaction, @NonNull ReadOperation operation) throws Exception {
+    public byte[] executeOperation(final @NonNull Transaction transaction, @NonNull TransactionFileSystemIO transactionFileSystemIO,
+            final @NonNull ReadOperation operation) throws Exception
+    {
+        OperationExecutor.checkNotWritten(transactionFileSystemIO, OperationName.Read, operation.getSource());
+        OperationExecutor.checkNotMoved(transactionFileSystemIO, OperationName.Read, operation.getSource());
+        OperationExecutor.checkNotCopied(transactionFileSystemIO, OperationName.Read, operation.getSource());
+        OperationExecutor.checkNotDeleted(transactionFileSystemIO, OperationName.Read, operation.getSource());
+
+        if (IOUtils.getFile(operation.getSource()).getDirectory())
+        {
+            AFSExceptions.throwInstance(AFSExceptions.PathIsDirectory, OperationName.Read,
+                    IOUtils.getRelativePath(transaction.getStorageRoot(), operation.getSource()));
+        }
+
         return IOUtils.read(operation.getSource(), operation.getOffset(), operation.getLimit());
     }
 }

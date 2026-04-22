@@ -153,6 +153,13 @@ public class IOUtils
         }
     }
 
+    public static String getRelativePath(String root, String source)
+    {
+        final Path rootPath = Path.of(root);
+        final Path sourcePath = Path.of(source);
+        return rootPath.toAbsolutePath().normalize().relativize(sourcePath.toAbsolutePath().normalize()).toString();
+    }
+
     public static String getPath(String source, String... more)
     {
         StringBuilder buffer = new StringBuilder(source);

@@ -18,6 +18,11 @@ package ch.ethz.sis.afs.manager.operation;
 import static ch.ethz.sis.afs.exception.AFSExceptions.PathNotDirectory;
 import static ch.ethz.sis.afs.exception.AFSExceptions.PathNotInStore;
 import static ch.ethz.sis.afs.exception.AFSExceptions.PathNotRegularFile;
+import static ch.ethz.sis.afs.manager.operation.OperationExecutor.checkNotCopied;
+import static ch.ethz.sis.afs.manager.operation.OperationExecutor.checkNotDeleted;
+import static ch.ethz.sis.afs.manager.operation.OperationExecutor.checkNotInTrashOrSnapshots;
+import static ch.ethz.sis.afs.manager.operation.OperationExecutor.checkNotMoved;
+import static ch.ethz.sis.afs.manager.operation.OperationExecutor.checkNotWritten;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -29,6 +34,7 @@ import ch.ethz.sis.afs.dto.Transaction;
 import ch.ethz.sis.afs.dto.operation.OperationName;
 import ch.ethz.sis.afs.dto.operation.SnapshotOperation;
 import ch.ethz.sis.afs.exception.AFSExceptions;
+import ch.ethz.sis.afs.manager.TransactionFileSystemIO;
 import ch.ethz.sis.shared.io.IOUtils;
 import lombok.NonNull;
 
@@ -62,8 +68,15 @@ public class SnapshotOperationExecutor implements OperationExecutor<SnapshotOper
     public static final DateTimeFormatter TIMESTAMP_FORMAT = DateTimeFormatter.ofPattern("yyyy_MM_dd_HH_mm_ss_SSS");
 
     @Override
-    public Void prepare(final @NonNull Transaction transaction, final SnapshotOperation operation) throws Exception
+    public Void prepare(final @NonNull Transaction transaction, final @NonNull TransactionFileSystemIO transactionFileSystemIO,
+            final @NonNull SnapshotOperation operation) throws Exception
     {
+        checkNotWritten(transactionFileSystemIO, OperationName.Snapshot, operation.getSource());
+        checkNotMoved(transactionFileSystemIO, OperationName.Snapshot, operation.getSource());
+        checkNotCopied(transactionFileSystemIO, OperationName.Snapshot, operation.getSource());
+        checkNotDeleted(transactionFileSystemIO, OperationName.Snapshot, operation.getSource());
+        checkNotInTrashOrSnapshots(transactionFileSystemIO, OperationName.Snapshot, operation.getSource());
+
         if (IOUtils.exists(operation.getSource()))
         {
             if (IOUtils.isRegularFile(operation.getSource()))
@@ -73,7 +86,7 @@ public class SnapshotOperationExecutor implements OperationExecutor<SnapshotOper
 
                 if (IOUtils.exists(snapshotsFolderInStorage.toString()) && !IOUtils.isDirectory(snapshotsFolderInStorage.toString()))
                 {
-                    AFSExceptions.throwInstance(PathNotDirectory, OperationName.Snapshot.name(), snapshotsFolderInStorage);
+                    AFSExceptions.throwInstance(PathNotDirectory, OperationName.Snapshot.name(), IOUtils.getRelativePath(transaction.getStorageRoot(), snapshotsFolderInStorage.toString()));
                 }
 
                 String snapshotsFolderInTransaction =
@@ -84,7 +97,7 @@ public class SnapshotOperationExecutor implements OperationExecutor<SnapshotOper
                     IOUtils.createDirectories(snapshotsFolderInTransaction);
                 } else if (!IOUtils.isDirectory(snapshotsFolderInTransaction))
                 {
-                    AFSExceptions.throwInstance(PathNotDirectory, OperationName.Snapshot.name(), snapshotsFolderInTransaction);
+                    AFSExceptions.throwInstance(PathNotDirectory, OperationName.Snapshot.name(), IOUtils.getRelativePath(transaction.getWriteAheadLogRoot(), snapshotsFolderInTransaction));
                 }
 
                 String snapshotFileName = LocalDateTime.now().atZone(ZoneId.systemDefault()).format(TIMESTAMP_FORMAT);
@@ -95,18 +108,18 @@ public class SnapshotOperationExecutor implements OperationExecutor<SnapshotOper
 
             } else
             {
-                AFSExceptions.throwInstance(PathNotRegularFile, OperationName.Snapshot.name(), operation.getSource());
+                AFSExceptions.throwInstance(PathNotRegularFile, OperationName.Snapshot.name(), IOUtils.getRelativePath(transaction.getStorageRoot(), operation.getSource()));
             }
         } else
         {
-            AFSExceptions.throwInstance(PathNotInStore, OperationName.Snapshot.name(), operation.getSource());
+            AFSExceptions.throwInstance(PathNotInStore, OperationName.Snapshot.name(), IOUtils.getRelativePath(transaction.getStorageRoot(), operation.getSource()));
         }
 
         return null;
     }
 
     @Override
-    public boolean commit(final @NonNull Transaction transaction, final SnapshotOperation operation) throws Exception
+    public boolean commit(final @NonNull Transaction transaction, final @NonNull SnapshotOperation operation) throws Exception
     {
         Path snapshotsFolderInStorage = OperationExecutor.getSnapshotsDirectoryForSource(Path.of(operation.getSource()));
         Path snapshotsFolderInTransaction = Path.of(OperationExecutor.getTempPath(transaction, snapshotsFolderInStorage.toString()));

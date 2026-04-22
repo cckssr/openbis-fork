@@ -82,7 +82,7 @@ public class CreateTransactionOperationTest extends AbstractTransactionOperation
             fail();
         } catch (Exception e)
         {
-            assertError(e, "Path given to: Create - In store: ./target/tests/storage/A/A.txt");
+            assertError(e, "Path given to: Create - In store: A/A.txt");
         }
     }
 
@@ -134,7 +134,7 @@ public class CreateTransactionOperationTest extends AbstractTransactionOperation
             fail();
         } catch (Exception e)
         {
-            assertError(e, "Path given to: Create - In store: ./target/tests/storage/C/C.txt");
+            assertError(e, "Path given to: Create - In store: C/C.txt");
         }
     }
 
@@ -164,7 +164,7 @@ public class CreateTransactionOperationTest extends AbstractTransactionOperation
             fail();
         } catch (Exception e)
         {
-            assertError(e, "Path given to: Create - In store: ./target/tests/storage/A");
+            assertError(e, "Path given to: Create - In store: A");
         }
     }
 
@@ -216,7 +216,7 @@ public class CreateTransactionOperationTest extends AbstractTransactionOperation
             fail();
         } catch (Exception e)
         {
-            assertError(e, "Path given to: Create - In store: ./target/tests/storage/C");
+            assertError(e, "Path given to: Create - In store: C");
         }
     }
 

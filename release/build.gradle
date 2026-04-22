@@ -81,7 +81,7 @@ tasks.register('release', Tar) {
                ':server-original-data-store:dropboxJavadocTar'
     ])
 
-    def version = project.ext.versionNumber
+    def version = project.ext.versionNumber + '+r' + project.ext.revisionNumber
 
     archiveFileName = 'openbis-release-' + version + '.tar.gz'
     destinationDirectory = layout.buildDirectory.dir(".")

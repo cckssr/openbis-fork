@@ -38,7 +38,7 @@ public class MoveOperation implements Operation {
 
         LockType sourceLockType = null;
         LockType targetLockType = null;
-        if (IOUtils.getFile(source).getDirectory()) {
+        if (IOUtils.exists(source) && IOUtils.getFile(source).getDirectory()) {
             sourceLockType = LockType.HierarchicallyExclusive;
             targetLockType = LockType.HierarchicallyExclusive;
         } else {

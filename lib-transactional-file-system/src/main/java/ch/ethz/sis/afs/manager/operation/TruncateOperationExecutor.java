@@ -15,10 +15,13 @@
  */
 package ch.ethz.sis.afs.manager.operation;
 
-import static ch.ethz.sis.afs.dto.Transaction.PathState;
 import static ch.ethz.sis.afs.exception.AFSExceptions.OperationParameterInvalid;
-import static ch.ethz.sis.afs.exception.AFSExceptions.PathNotInStore;
-import static ch.ethz.sis.afs.exception.AFSExceptions.PathNotRegularFile;
+import static ch.ethz.sis.afs.manager.operation.OperationExecutor.checkExists;
+import static ch.ethz.sis.afs.manager.operation.OperationExecutor.checkNotCopied;
+import static ch.ethz.sis.afs.manager.operation.OperationExecutor.checkNotDeleted;
+import static ch.ethz.sis.afs.manager.operation.OperationExecutor.checkNotInTrashOrSnapshots;
+import static ch.ethz.sis.afs.manager.operation.OperationExecutor.checkNotMoved;
+import static ch.ethz.sis.afs.manager.operation.OperationExecutor.checkRegularFile;
 
 import java.nio.channels.FileChannel;
 import java.nio.file.Path;
@@ -28,6 +31,7 @@ import ch.ethz.sis.afs.dto.Transaction;
 import ch.ethz.sis.afs.dto.operation.OperationName;
 import ch.ethz.sis.afs.dto.operation.TruncateOperation;
 import ch.ethz.sis.afs.exception.AFSExceptions;
+import ch.ethz.sis.afs.manager.TransactionFileSystemIO;
 import ch.ethz.sis.shared.io.IOUtils;
 import lombok.NonNull;
 
@@ -59,32 +63,28 @@ public class TruncateOperationExecutor implements OperationExecutor<TruncateOper
     //
 
     @Override
-    public Void prepare(final @NonNull Transaction transaction, final TruncateOperation operation) throws Exception
+    public Void prepare(final @NonNull Transaction transaction, final @NonNull TransactionFileSystemIO transactionFileSystemIO,
+            final @NonNull TruncateOperation operation) throws Exception
     {
-        PathState pathState = OperationExecutor.getCachedPathState(transaction, operation.getSource());
-
-        if (!pathState.isExists())
-        {
-            AFSExceptions.throwInstance(PathNotInStore, OperationName.Truncate.name(), operation.getSource());
-        }
-
-        if (pathState.isDirectory())
-        {
-            AFSExceptions.throwInstance(PathNotRegularFile, OperationName.Truncate.name(), operation.getSource());
-        }
+        checkNotMoved(transactionFileSystemIO, OperationName.Truncate, operation.getSource());
+        checkNotCopied(transactionFileSystemIO, OperationName.Truncate, operation.getSource());
+        checkNotDeleted(transactionFileSystemIO, OperationName.Truncate, operation.getSource());
+        checkNotInTrashOrSnapshots(transactionFileSystemIO, OperationName.Truncate, operation.getSource());
+        checkExists(transactionFileSystemIO, OperationName.Truncate, operation.getSource());
+        checkRegularFile(transactionFileSystemIO, OperationName.Truncate, operation.getSource());
 
         if (operation.getSize() < 0)
         {
             AFSExceptions.throwInstance(OperationParameterInvalid, OperationName.Truncate.name(), "Size cannot be < 0");
         }
 
-        pathState.setWritten(true);
+        transactionFileSystemIO.setWritten(operation.getSource());
 
         return null;
     }
 
     @Override
-    public boolean commit(final @NonNull Transaction transaction, final TruncateOperation operation) throws Exception
+    public boolean commit(final @NonNull Transaction transaction, final @NonNull TruncateOperation operation) throws Exception
     {
         if (IOUtils.exists(operation.getSource()))
         {

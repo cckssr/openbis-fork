@@ -15,10 +15,10 @@
  */
 package ch.ethz.sis.afs.dto.operation;
 
-import ch.ethz.sis.afs.dto.Lock;
-
 import java.util.List;
 import java.util.UUID;
+
+import ch.ethz.sis.afs.dto.Lock;
 
 public interface Operation {
     /*
@@ -32,4 +32,8 @@ public interface Operation {
     UUID getOwner();
 
     OperationName getName();
+
+    default Operation toLog(){
+        return this;
+    }
 }

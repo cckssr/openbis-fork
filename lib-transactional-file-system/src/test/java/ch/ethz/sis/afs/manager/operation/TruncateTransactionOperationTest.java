@@ -50,7 +50,7 @@ public class TruncateTransactionOperationTest extends AbstractTransactionOperati
             fail();
         } catch (Exception e)
         {
-            assertError(e, "Path can't be operated by: Truncate - ./target/tests/storage/A is not a regular file");
+            assertError(e, "Path can't be operated by: Truncate - A is not a regular file");
         }
     }
 

@@ -14,6 +14,6 @@
 #
 __author__ = "ID SIS • ETH Zürich"
 __email__ = "openbis-support@id.ethz.ch"
-__version__ = "0.4.7"
+__version__ = "7.0.0"
 
 from .dm import *

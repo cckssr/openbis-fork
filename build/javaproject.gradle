@@ -181,7 +181,7 @@ def calculateBuildInfo() {
                         + "${childProject.name} at version ${childProject.versionNumber}.") 
         } 
     }
-    version = "${project.ext.versionNumber}-r${project.ext.revisionNumber}"
+    version = "${project.ext.versionNumber}+r${project.ext.revisionNumber}"
     project.ext.revisionForPublication = project.ext.versionNumber.startsWith('SNAPSHOT') ? "r${project.ext.revisionNumber}" : project.ext.versionNumber
     project.ext.cleanFlag = calculateCleanFlag()
 

@@ -31,8 +31,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
-import jakarta.servlet.http.HttpSession;
-
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -42,7 +40,11 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.testng.AbstractTransactionalTestNGSpringContextTests;
 import org.springframework.transaction.annotation.Transactional;
 import org.testng.AssertJUnit;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterSuite;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.BeforeSuite;
+import org.testng.annotations.DataProvider;
 
 import ch.systemsx.cisd.common.action.IDelegatedAction;
 import ch.systemsx.cisd.common.servlet.SpringRequestContextProvider;
@@ -81,6 +83,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.SessionContextDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.SpaceIdentifier;
 import ch.systemsx.cisd.openbis.plugin.generic.client.web.client.IGenericClientService;
 import ch.systemsx.cisd.openbis.plugin.generic.shared.IGenericServer;
+import jakarta.servlet.http.HttpSession;
 
 /**
  * Abstract super class of head-less system tests.
@@ -162,6 +165,8 @@ public abstract class SystemTestCase extends AbstractTransactionalTestNGSpringCo
 
     protected IServiceForDataStoreServer etlService;
 
+    protected SpringRequestContextProvider contextProvider;
+
     protected MockHttpServletRequest request;
 
     protected String systemSessionToken;
@@ -202,7 +207,8 @@ public abstract class SystemTestCase extends AbstractTransactionalTestNGSpringCo
     @Autowired
     public final void setRequestContextProvider(final SpringRequestContextProvider contextProvider)
     {
-        request = new MockHttpServletRequest();
+        this.contextProvider = contextProvider;
+        this.request = new MockHttpServletRequest();
         contextProvider.setRequest(request);
     }
 

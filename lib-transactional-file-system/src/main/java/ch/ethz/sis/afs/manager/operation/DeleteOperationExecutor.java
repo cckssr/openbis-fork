@@ -15,8 +15,10 @@
  */
 package ch.ethz.sis.afs.manager.operation;
 
-import static ch.ethz.sis.afs.dto.Transaction.PathState;
-import static ch.ethz.sis.afs.exception.AFSExceptions.PathNotInStore;
+import static ch.ethz.sis.afs.manager.operation.OperationExecutor.checkExists;
+import static ch.ethz.sis.afs.manager.operation.OperationExecutor.checkNotCopied;
+import static ch.ethz.sis.afs.manager.operation.OperationExecutor.checkNotDeleted;
+import static ch.ethz.sis.afs.manager.operation.OperationExecutor.checkNotMoved;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -25,14 +27,14 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.stream.Stream;
 
 import ch.ethz.sis.afs.dto.Transaction;
 import ch.ethz.sis.afs.dto.operation.DeleteOperation;
 import ch.ethz.sis.afs.dto.operation.OperationName;
-import ch.ethz.sis.afs.exception.AFSExceptions;
+import ch.ethz.sis.afs.manager.TransactionFileSystemIO;
 import ch.ethz.sis.shared.io.IOUtils;
+import lombok.NonNull;
 
 public class DeleteOperationExecutor implements OperationExecutor<DeleteOperation, Void>
 {
@@ -64,30 +66,21 @@ public class DeleteOperationExecutor implements OperationExecutor<DeleteOperatio
     public static final DateTimeFormatter TIMESTAMP_SUFFIX_FORMAT = DateTimeFormatter.ofPattern("yyyy_MM_dd_HH_mm_ss_SSS");
 
     @Override
-    public Void prepare(Transaction transaction, DeleteOperation operation) throws Exception
+    public Void prepare(final @NonNull Transaction transaction, final @NonNull TransactionFileSystemIO transactionFileSystemIO,
+            DeleteOperation operation) throws Exception
     {
-        // Check that file/directory exist
-        PathState pathState = OperationExecutor.getCachedPathState(transaction, operation.getSource());
-        if (!pathState.isExists())
-        {
-            AFSExceptions.throwInstance(PathNotInStore, OperationName.Delete.name(), operation.getSource());
-        }
+        checkNotMoved(transactionFileSystemIO, OperationName.Delete, operation.getSource());
+        checkNotCopied(transactionFileSystemIO, OperationName.Delete, operation.getSource());
+        checkNotDeleted(transactionFileSystemIO, OperationName.Delete, operation.getSource());
+        checkExists(transactionFileSystemIO, OperationName.Delete, operation.getSource());
 
-        // Update state of the path and its children
-        for (Map.Entry<String, PathState> pathStateEntry : transaction.getPathStateCache().entrySet())
-        {
-            if (pathStateEntry.getKey().startsWith(operation.getSource()))
-            {
-                pathStateEntry.getValue().setExists(false);
-                pathStateEntry.getValue().setDeleted(true);
-            }
-        }
+        transactionFileSystemIO.setDeleted(operation.getSource());
 
         return null;
     }
 
     @Override
-    public boolean commit(Transaction transaction, DeleteOperation operation) throws Exception
+    public boolean commit(final @NonNull Transaction transaction, final @NonNull DeleteOperation operation) throws Exception
     {
         Path sourcePath = Path.of(operation.getSource());
 

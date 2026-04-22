@@ -1,0 +1,92 @@
+evaluationDependsOn(':lib-logging')
+
+apply plugin: 'java'
+apply plugin: 'application'
+
+compileJava {
+    options.compilerArgs << '-parameters'
+}
+
+sourceCompatibility = JavaVersion.VERSION_21
+targetCompatibility = JavaVersion.VERSION_21
+
+repositories {
+    ivy {
+        ivyPattern "https://sissource.ethz.ch/openbis/openbis-public/openbis-ivy/-/raw/main/[organisation]/[module]/[revision]/ivy.xml"
+        artifactPattern "https://sissource.ethz.ch/openbis/openbis-public/openbis-ivy/-/raw/main/[organisation]/[module]/[revision]/[artifact]-[revision](-[classifier]).[ext]"
+    }
+    mavenCentral()
+}
+
+configurations {
+    tests.extendsFrom testImplementation
+    tests.canBeResolved true
+}
+
+dependencies {
+    annotationProcessor 'lombok:lombok:1.18.38'
+    implementation project(':lib-logging'),
+            project(':api-openbis-java'),
+            'lombok:lombok:1.18.38',
+            'slf4j:slf4j-api:1.7.24',
+            'slf4j:slf4j-jdk14:1.7.24',
+            'org.apache.ftpserver:ftpserver-core:1.2.1',
+            'org.apache.sshd:sshd-core:2.17.1',
+            'org.apache.sshd:sshd-sftp:2.17.1',
+            'org.apache.sshd:sshd-netty:2.17.1',
+            'io.netty:netty-all:4.1.110.Final'
+    testImplementation 'junit:junit:4.10',
+            'org.mockito:mockito-core:4.4.0',
+            'hamcrest:hamcrest-core:1.3',
+            'hamcrest:hamcrest-library:1.3'
+}
+
+task openBISDevelopmentEnvironmentAfsSftpStart(type: JavaExec) {
+    mainClass = 'ch.ethz.sis.afssftp.startup.Main'
+    classpath = sourceSets.main.runtimeClasspath
+    args(['../server-sftp/src/main/resources/service.properties'])
+    jvmArgs(['--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED',
+             '--add-opens=java.base/java.nio=ALL-UNNAMED',
+             '-Dafs.logging.configuration=src/main/resources/logging.properties',
+             '-Dio.netty.tryReflectionSetAccessible=true',
+             '-Xmx512M', '-ea'])
+}
+
+task AFSServerZip(type: Zip, dependsOn: compileJava) {
+    archiveBaseName = 'server-sftp'
+    from(jar) {
+        into('server-sftp/lib/')
+    }
+    from(configurations.runtimeClasspath) {
+        into('server-sftp/lib/')
+    }
+    from('dist') {
+        into 'server-sftp/'
+    }
+}
+
+tasks.named('distTar') {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+tasks.named('distZip') {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+task testJar(type: Jar, dependsOn: testClasses) {
+    archiveBaseName = "test-${project.name}"
+    from sourceSets.test.output
+}
+
+jar {
+    from('src/main') {
+        into 'server-sftp'
+    }
+}
+
+artifacts {
+    tests testJar
+}
+
+test {
+    systemProperty 'java.awt.headless', 'true'
+}

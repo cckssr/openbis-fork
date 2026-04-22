@@ -97,7 +97,7 @@ public class ReadTransactionOperationTest extends AbstractTransactionOperationTe
             fail();
         } catch (Exception e)
         {
-            assertError(e, "Path can't be read by: Read - After been written: ./target/tests/storage/C/C.txt");
+            assertError(e, "Path can't be read by: Read - After been written: C/C.txt");
         }
     }
 
@@ -112,7 +112,7 @@ public class ReadTransactionOperationTest extends AbstractTransactionOperationTe
             fail();
         } catch (Exception e)
         {
-            assertError(e, "Path can't be read by: Read - After been written: ./target/tests/storage/A/A.txt");
+            assertError(e, "Path can't be read by: Read - After been written: A/A.txt");
         }
     }
 
@@ -127,7 +127,7 @@ public class ReadTransactionOperationTest extends AbstractTransactionOperationTe
             fail();
         } catch (Exception e)
         {
-            assertError(e, "Path can't be operated by: Read - After been deleted: ./target/tests/storage/A/A.txt");
+            assertError(e, "Path can't be operated by: Read - After been deleted: A/A.txt");
         }
     }
 }

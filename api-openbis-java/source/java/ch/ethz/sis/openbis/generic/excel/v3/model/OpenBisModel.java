@@ -16,7 +16,10 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.Vocabulary;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.id.VocabularyPermId;
 
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -52,6 +55,13 @@ public class OpenBisModel
                                    String originalPath) implements
             IFileInfo
     {
+        @Override
+        public InputStream getInputStream() throws IOException
+        {
+
+            return new ByteArrayInputStream(contents);
+
+        }
     }
 
     public record FileInfoPath(String objectIdentifier, String filePath, Path readPath,
@@ -60,9 +70,9 @@ public class OpenBisModel
     {
 
         @Override
-        public byte[] contents() throws IOException
+        public InputStream getInputStream() throws IOException
         {
-            return Files.readAllBytes(readPath);
+            return new BufferedInputStream(Files.newInputStream(readPath));
         }
     }
 

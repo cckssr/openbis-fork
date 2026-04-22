@@ -132,10 +132,13 @@ $.extend(MicroscopyTechnology.prototype, ELNLIMSPlugin.prototype, {
                             // Show the series name instead of the dataset code
                             view.getDataSetText = function (dataSetCode) {
                                 var displayName = dataSetCode;
+                                var dataSet = model.dataSetV3;
                                 // Return the series name
-                                if (model.dataSet.code === dataSetCode &&
-                                    model.dataSet.properties[profile.propertyReplacingCode]) {
-                                    displayName = model.dataSet.properties[profile.propertyReplacingCode];
+                                if (dataSet &&
+                                    dataSet.code === dataSetCode &&
+                                    dataSet.properties &&
+                                    dataSet.properties[profile.propertyReplacingCode]) {
+                                    displayName = dataSet.properties[profile.propertyReplacingCode];
                                 }
                                 return displayName;
                             };

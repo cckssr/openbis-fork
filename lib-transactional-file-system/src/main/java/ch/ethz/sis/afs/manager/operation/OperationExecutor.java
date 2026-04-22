@@ -15,17 +15,24 @@
  */
 package ch.ethz.sis.afs.manager.operation;
 
+import static ch.ethz.sis.afs.exception.AFSExceptions.PathNotRegularFile;
+import static ch.ethz.sis.shared.collection.List.safe;
+
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Iterator;
+import java.util.List;
 import java.util.stream.Stream;
 
 import ch.ethz.sis.afs.api.dto.File;
 import ch.ethz.sis.afs.dto.Transaction;
-import ch.ethz.sis.afs.dto.Transaction.PathState;
 import ch.ethz.sis.afs.dto.operation.Operation;
+import ch.ethz.sis.afs.dto.operation.OperationName;
+import ch.ethz.sis.afs.exception.AFSExceptions;
+import ch.ethz.sis.afs.manager.PathLockFinder;
+import ch.ethz.sis.afs.manager.TransactionFileSystemIO;
 import ch.ethz.sis.shared.io.IOUtils;
 import lombok.NonNull;
 
@@ -35,6 +42,127 @@ public interface OperationExecutor<OPERATION extends Operation, RESULT>
     String CACHED_MD5_SUFFIX = "-hash.md5";
     String CACHED_PREVIEW_SUFFIX = "-preview.jpg";
     String SNAPSHOTS_DIRECTORY = ".afs.snapshots";
+
+    static void checkExists(TransactionFileSystemIO transactionFileSystemIO, OperationName operationName, String source) throws Exception
+    {
+        if (!transactionFileSystemIO.exists(source))
+        {
+            AFSExceptions.throwInstance(AFSExceptions.PathNotInStore, operationName.name(),
+                    IOUtils.getRelativePath(transactionFileSystemIO.getStorageRoot(), source));
+        }
+    }
+
+    static void checkDoesntExist(TransactionFileSystemIO transactionFileSystemIO, OperationName operationName, String source) throws Exception
+    {
+        if (transactionFileSystemIO.exists(source))
+        {
+            AFSExceptions.throwInstance(AFSExceptions.PathInStore, operationName.name(),
+                    IOUtils.getRelativePath(transactionFileSystemIO.getStorageRoot(), source));
+        }
+    }
+
+    static void checkRegularFile(TransactionFileSystemIO transactionFileSystemIO, OperationName operationName, String source) throws Exception
+    {
+        if (transactionFileSystemIO.isDirectory(source))
+        {
+            AFSExceptions.throwInstance(PathNotRegularFile, operationName.name(),
+                    IOUtils.getRelativePath(transactionFileSystemIO.getStorageRoot(), source));
+        }
+    }
+
+    static void checkNotWritten(TransactionFileSystemIO transactionFileSystemIO, OperationName operationName, String source) throws Exception
+    {
+        List<String> sourceSubPaths = null;
+        if (source != null)
+        {
+            sourceSubPaths = PathLockFinder.getParentSubPaths(source);
+        }
+        for (String sourceSubPath : safe(sourceSubPaths))
+        {
+            if (transactionFileSystemIO.isWritten(sourceSubPath))
+            {
+                AFSExceptions.throwInstance(AFSExceptions.PathCantBeReadAfterWritten, operationName.name(),
+                        IOUtils.getRelativePath(transactionFileSystemIO.getStorageRoot(), sourceSubPath));
+            }
+        }
+    }
+
+    static void checkNotMoved(TransactionFileSystemIO transactionFileSystemIO, OperationName operationName, String source) throws Exception
+    {
+        List<String> sourceSubPaths = null;
+        if (source != null)
+        {
+            sourceSubPaths = PathLockFinder.getParentSubPaths(source);
+        }
+        for (String sourceSubPath : safe(sourceSubPaths))
+        {
+            if (transactionFileSystemIO.isMoved(sourceSubPath))
+            {
+                AFSExceptions.throwInstance(AFSExceptions.PathCantBeOperatedAfterMoved, operationName.name(),
+                        IOUtils.getRelativePath(transactionFileSystemIO.getStorageRoot(), sourceSubPath));
+            }
+        }
+    }
+
+    static void checkNotCopied(TransactionFileSystemIO transactionFileSystemIO, OperationName operationName, String source) throws Exception
+    {
+        List<String> sourceSubPaths = null;
+        if (source != null)
+        {
+            sourceSubPaths = PathLockFinder.getParentSubPaths(source);
+        }
+        for (String sourceSubPath : safe(sourceSubPaths))
+        {
+            if (transactionFileSystemIO.isCopied(sourceSubPath))
+            {
+                AFSExceptions.throwInstance(AFSExceptions.PathCantBeOperatedAfterCopied, operationName.name(),
+                        IOUtils.getRelativePath(transactionFileSystemIO.getStorageRoot(), sourceSubPath));
+            }
+        }
+    }
+
+    static void checkNotDeleted(TransactionFileSystemIO transactionFileSystemIO, OperationName operationName, String source) throws Exception
+    {
+        List<String> sourceSubPaths = null;
+        if (source != null)
+        {
+            sourceSubPaths = PathLockFinder.getParentSubPaths(source);
+        }
+        for (String sourceSubPath : safe(sourceSubPaths))
+        {
+            if (transactionFileSystemIO.isDeleted(sourceSubPath))
+            {
+                AFSExceptions.throwInstance(AFSExceptions.PathCantBeOperatedAfterDeleted, operationName.name(),
+                        IOUtils.getRelativePath(transactionFileSystemIO.getStorageRoot(), sourceSubPath));
+            }
+        }
+    }
+
+    static void checkNotInTrashOrSnapshots(TransactionFileSystemIO transactionFileSystemIO, OperationName operationName, String source)
+    {
+        if (source != null)
+        {
+            Path sourcePath = Path.of(source);
+
+            String trashRoot = transactionFileSystemIO.getTrashRoot(source);
+            if (trashRoot != null)
+            {
+                boolean pathInTrash = sourcePath.toAbsolutePath().normalize().startsWith(Path.of(trashRoot).toAbsolutePath().normalize());
+                if (pathInTrash)
+                {
+                    AFSExceptions.throwInstance(AFSExceptions.PathCantBeOperatedInTrash, operationName.name(),
+                            IOUtils.getRelativePath(transactionFileSystemIO.getStorageRoot(), sourcePath.toString()));
+                }
+            }
+
+            boolean pathInSnapshots = sourcePath.toAbsolutePath().toString().contains(OperationExecutor.SNAPSHOTS_DIRECTORY);
+            if (pathInSnapshots)
+            {
+                AFSExceptions.throwInstance(AFSExceptions.PathCantBeOperatedInSnapshots, operationName.name(),
+                        IOUtils.getRelativePath(transactionFileSystemIO.getStorageRoot(), sourcePath.toString()));
+            }
+        }
+    }
 
     static @NonNull
     String getTransactionLogDir(Transaction transaction)
@@ -232,31 +360,14 @@ public interface OperationExecutor<OPERATION extends Operation, RESULT>
         }
     }
 
-    static PathState getCachedPathState(Transaction transaction, String source) throws Exception
-    {
-        PathState pathState = transaction.getPathStateCache().get(source);
-
-        if (pathState != null)
-        {
-            return pathState;
-        }
-
-        pathState = new PathState();
-        pathState.setExists(IOUtils.exists(source));
-        pathState.setDirectory(IOUtils.exists(source) ? IOUtils.getFile(source).getDirectory() : false);
-
-        transaction.getPathStateCache().put(source, pathState);
-
-        return pathState;
-    }
-
     /*
      * The first step
      * If the operation is a write operation is pre written to the transaction commit log directory.
      *
      * The idea is to reduce the commit operation to an atomic move or delete
      */
-    RESULT prepare(@NonNull Transaction transaction, @NonNull OPERATION operation) throws Exception;
+    RESULT prepare(@NonNull Transaction transaction, @NonNull TransactionFileSystemIO transactionFileSystemIO, @NonNull OPERATION operation)
+            throws Exception;
 
     /*
      * Commit operation should be reduced to atomic move and delete operation to avoid

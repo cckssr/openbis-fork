@@ -30,7 +30,7 @@ Change log is available [here](CHANGELOG.md)
 git clone https://sissource.ethz.ch/sispub/openbis.git
 cd release/
 ./gradlew clean
-./gradlew release "-Dorg.gradle.jvmargs=--add-opens=java.base/java.text=ALL-UNNAMED --add-opens=java.desktop/java.awt.font=ALL-UNNAMED"
+./gradlew release -x test "-Dorg.gradle.jvmargs=--add-opens=java.base/java.text=ALL-UNNAMED --add-opens=java.desktop/java.awt.font=ALL-UNNAMED"
 ```
 
 ## Where the build is found?

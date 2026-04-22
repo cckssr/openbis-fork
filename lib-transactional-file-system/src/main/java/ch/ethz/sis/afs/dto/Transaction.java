@@ -16,11 +16,9 @@
 package ch.ethz.sis.afs.dto;
 
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import ch.ethz.sis.afs.dto.operation.Operation;
-import lombok.Data;
 import lombok.Value;
 
 /*
@@ -48,17 +46,4 @@ public class Transaction
 
     private List<Operation> operations;
 
-    private Map<String, PathState> pathStateCache;
-
-    @Data
-    public static class PathState
-    {
-        boolean exists;
-
-        boolean isDirectory;
-
-        boolean written;
-
-        boolean deleted;
-    }
 }

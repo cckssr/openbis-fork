@@ -941,6 +941,9 @@ public class OpenBisAuthApiClientTest extends BaseApiClientTest
                     return new SearchResult<>(List.of(), 0);
                 case "getSessionInformation":
                     return null;
+                case "createDataSets":
+                    List<?> creations = ((List<?>) methodArguments[1]);
+                    return creations.stream().map(c -> new DataSetPermId(UUID.randomUUID().toString())).toList();
             }
 
             throw new UnsupportedOperationException(methodName, methodArguments);

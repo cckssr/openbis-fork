@@ -15,15 +15,10 @@
  */
 package ch.ethz.sis.afs.manager;
 
-import static ch.ethz.sis.shared.collection.List.safe;
-
 import java.io.Serializable;
-import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -31,10 +26,10 @@ import ch.ethz.sis.afs.api.TransactionalFileSystem;
 import ch.ethz.sis.afs.api.dto.File;
 import ch.ethz.sis.afs.api.dto.FreeSpace;
 import ch.ethz.sis.afs.dto.Transaction;
-import ch.ethz.sis.afs.dto.Transaction.PathState;
 import ch.ethz.sis.afs.dto.operation.CopyOperation;
 import ch.ethz.sis.afs.dto.operation.CreateOperation;
 import ch.ethz.sis.afs.dto.operation.DeleteOperation;
+import ch.ethz.sis.afs.dto.operation.FreeOperation;
 import ch.ethz.sis.afs.dto.operation.HashOperation;
 import ch.ethz.sis.afs.dto.operation.ListOperation;
 import ch.ethz.sis.afs.dto.operation.MoveOperation;
@@ -49,6 +44,7 @@ import ch.ethz.sis.afs.exception.AFSExceptions;
 import ch.ethz.sis.afs.manager.operation.CopyOperationExecutor;
 import ch.ethz.sis.afs.manager.operation.CreateOperationExecutor;
 import ch.ethz.sis.afs.manager.operation.DeleteOperationExecutor;
+import ch.ethz.sis.afs.manager.operation.FreeOperationExecutor;
 import ch.ethz.sis.afs.manager.operation.HashOperationExecutor;
 import ch.ethz.sis.afs.manager.operation.ListOperationExecutor;
 import ch.ethz.sis.afs.manager.operation.MoveOperationExecutor;
@@ -63,7 +59,8 @@ import ch.ethz.sis.afsjson.JsonObjectMapper;
 import ch.ethz.sis.shared.io.IOUtils;
 import lombok.NonNull;
 
-public class TransactionConnection implements TransactionalFileSystem {
+public class TransactionConnection implements TransactionalFileSystem
+{
 
     private static final String RELATIVE = "/../";
 
@@ -73,9 +70,11 @@ public class TransactionConnection implements TransactionalFileSystem {
 
     private static final Map<OperationName, OperationExecutor> operationExecutors;
 
-    static {
+    static
+    {
         nonModifyingOperationExecutor = Map.of(OperationName.Read, ReadOperationExecutor.getInstance(),
-                OperationName.List, ListOperationExecutor.getInstance());
+                OperationName.List, ListOperationExecutor.getInstance(),
+                OperationName.Free, FreeOperationExecutor.getInstance());
 
         operationExecutors = Map.of(OperationName.Copy, CopyOperationExecutor.getInstance(),
                 OperationName.Delete, DeleteOperationExecutor.getInstance(),
@@ -89,27 +88,39 @@ public class TransactionConnection implements TransactionalFileSystem {
     }
 
     private LockManager<UUID, String> lockManager;
+
     private JsonObjectMapper jsonObjectMapper;
+
     private Transaction transaction;
+
+    private TransactionFileSystemIO transactionFileSystemIO;
+
     private State state;
+
     private String writeAheadLogRoot;
+
     private String storageRoot;
+
     private TrashRootProvider trashRootProvider;
+
     private Set<String> enabledPreviewFileTypes;
+
     private long enablePreviewSizeInBytes;
+
     private RecoveredTransactions recoveredTransactions;
 
     /*
      * Used only to create new transactions
      */
     TransactionConnection(LockManager<UUID, String> lockManager,
-                          JsonObjectMapper jsonObjectMapper,
-                          String writeAheadLogRoot,
-                          String storageRoot,
-                          TrashRootProvider trashRootProvider,
-                          RecoveredTransactions recoveredTransactions,
-                          Set<String> enabledPreviewFileTypes,
-                          long enablePreviewSizeInBytes) {
+            JsonObjectMapper jsonObjectMapper,
+            String writeAheadLogRoot,
+            String storageRoot,
+            TrashRootProvider trashRootProvider,
+            RecoveredTransactions recoveredTransactions,
+            Set<String> enabledPreviewFileTypes,
+            long enablePreviewSizeInBytes)
+    {
         this(lockManager, jsonObjectMapper, trashRootProvider, null, enabledPreviewFileTypes, enablePreviewSizeInBytes);
         this.writeAheadLogRoot = writeAheadLogRoot;
         this.storageRoot = storageRoot;
@@ -120,25 +131,31 @@ public class TransactionConnection implements TransactionalFileSystem {
      * Can be used to recover a committed transactions after a crash
      */
     TransactionConnection(LockManager<UUID, String> lockManager,
-                          JsonObjectMapper jsonObjectMapper,
-                          TrashRootProvider trashRootProvider,
-                          Transaction transaction,
-                          Set<String> enabledPreviewFileTypes,
-                          long enablePreviewSizeInBytes) {
+            JsonObjectMapper jsonObjectMapper,
+            TrashRootProvider trashRootProvider,
+            Transaction transaction,
+            Set<String> enabledPreviewFileTypes,
+            long enablePreviewSizeInBytes)
+    {
         this.lockManager = lockManager;
         this.jsonObjectMapper = jsonObjectMapper;
         this.trashRootProvider = trashRootProvider;
         this.transaction = transaction;
 
-        if (transaction != null) {
+        if (transaction != null)
+        {
             state = State.Prepare;
-            for (Operation operation : transaction.getOperations()) {
+            for (Operation operation : transaction.getOperations())
+            {
                 boolean locksObtained = lockManager.add(operation.getLocks());
-                if (!locksObtained) {
-                    AFSExceptions.throwInstance(AFSExceptions.OperationCantBeRecovered, transaction.getUuid().toString(), operation.getName().toString());
+                if (!locksObtained)
+                {
+                    AFSExceptions.throwInstance(AFSExceptions.OperationCantBeRecovered, transaction.getUuid().toString(),
+                            operation.getName().toString());
                 }
             }
-        } else {
+        } else
+        {
             state = State.New;
         }
 
@@ -150,92 +167,89 @@ public class TransactionConnection implements TransactionalFileSystem {
     // Transaction control
     //
 
-    public Transaction getTransaction() {
+    public Transaction getTransaction()
+    {
         return transaction;
     }
 
-    public State getState() {
+    public State getState()
+    {
         return state;
     }
 
     @Override
-    public void begin(UUID transactionId) throws Exception {
+    public void begin(UUID transactionId) throws Exception
+    {
         /*
          * This resets the transaction, in practice to make the connection reusable across workers
          */
-        if (state == State.New) {
+        if (state == State.New)
+        {
             // New just created transaction
-        } else if (state == State.Executed || state == State.Rollback || state == State.Prepare) {
+        } else if (state == State.Executed || state == State.Rollback || state == State.Prepare)
+        {
             // Clean transaction, can ve reused
             transaction = null;
+            transactionFileSystemIO = null;
             state = State.New;
-            copiedSourceToTarget.clear();
-            copiedTargetToSource.clear();
-            movedSourceToTarget.clear();
-            movedTargetToSource.clear();
-        } else {
+        } else
+        {
             AFSExceptions.throwInstance(AFSExceptions.TransactionReuse, transaction.getUuid(), state.name());
         }
 
-        if (recoveredTransactions.contains(transactionId)) {
+        if (recoveredTransactions.contains(transactionId))
+        {
             transaction = recoveredTransactions.getRecovered(transactionId);
             state = State.Prepare;
-        } else if (state == State.New) {
-            transaction = new Transaction(writeAheadLogRoot, storageRoot, transactionId, new ArrayList<>(), new HashMap<>());
+        } else if (state == State.New)
+        {
+            transaction = new Transaction(writeAheadLogRoot, storageRoot, transactionId, new ArrayList<>());
+            transactionFileSystemIO = new TransactionFileSystemIO(storageRoot, trashRootProvider);
             String transactionLogDir = OperationExecutor.getTransactionLogDir(transaction);
             IOUtils.createDirectories(transactionLogDir);
             state = State.Begin;
         }
     }
 
-    private void writeTransactionLog(boolean isCommitted) throws Exception {
-        // Clone transaction and Removing data from write operations,
-        // then writing the clone without data as transaction log leaving original unchanged.
-        Transaction transactionForLog = new Transaction(
-                transaction.getWriteAheadLogRoot(),
-                transaction.getStorageRoot(),
-                transaction.getUuid(),
-                new ArrayList<>(), new HashMap<>());
-
-        transaction.getOperations().forEach(operation ->{
-            OperationName operationName = operation.getName();
-            if (Objects.requireNonNull(operationName) == OperationName.Write) {
-                transactionForLog.getOperations()
-                        .add(((WriteOperation) operation).toBuilder().data(null).build());
-            } else {
-                transactionForLog.getOperations().add(operation);
-            }
-        });
-
-        byte[] bytes = jsonObjectMapper.writeValue(transactionForLog);
-        String transactionLog = OperationExecutor.getTransactionLog(transactionForLog, isCommitted);
+    private void writeTransactionLog(boolean isCommitted) throws Exception
+    {
+        byte[] bytes = jsonObjectMapper.writeValue(transaction);
+        String transactionLog = OperationExecutor.getTransactionLog(transaction, isCommitted);
         IOUtils.createFile(transactionLog);
         IOUtils.write(transactionLog, 0, bytes);
     }
 
     @Override
-    public Boolean prepare() throws Exception {
-        if (state == State.Begin) {
+    public Boolean prepare() throws Exception
+    {
+        if (state == State.Begin)
+        {
             writeTransactionLog(false);
             state = State.Prepare;
-            if (!recoveredTransactions.contains(transaction.getUuid())) {
+            if (!recoveredTransactions.contains(transaction.getUuid()))
+            {
                 recoveredTransactions.addRecovered(transaction);
             }
             return Boolean.TRUE;
-        } else {
+        } else
+        {
             return Boolean.FALSE;
         }
     }
 
     @Override
-    public void commit() throws Exception {
-        if (state == State.Begin || state == State.Prepare) {
+    public void commit() throws Exception
+    {
+        if (state == State.Begin || state == State.Prepare)
+        {
             writeTransactionLog(true);
             state = State.Commit;
         }
 
-        if (state == State.Commit) {
-            for (Operation operation : transaction.getOperations()) {
+        if (state == State.Commit)
+        {
+            for (Operation operation : transaction.getOperations())
+            {
                 operationExecutors.get(operation.getName()).commit(transaction, operation);
             }
 
@@ -253,31 +267,39 @@ public class TransactionConnection implements TransactionalFileSystem {
     }
 
     @Override
-    public void rollback() throws Exception {
-        if (state == State.Begin || state == State.Prepare) {
+    public void rollback() throws Exception
+    {
+        if (state == State.Begin || state == State.Prepare)
+        {
             cleanTransaction();
             state = State.Rollback;
         }
     }
 
     @Override
-    public List<UUID> recover() throws Exception {
-        if (recoveredTransactions == null) {
+    public List<UUID> recover() throws Exception
+    {
+        if (recoveredTransactions == null)
+        {
             return List.of();
-        } else {
+        } else
+        {
             Set<UUID> recovered = recoveredTransactions.getRecovered();
             return new ArrayList<>(recovered);
         }
     }
 
-    private void cleanTransaction() throws Exception {
+    private void cleanTransaction() throws Exception
+    {
         String transactionLogDir = OperationExecutor.getTransactionLogDir(transaction);
         IOUtils.delete(transactionLogDir);
 
-        for (Operation operation : transaction.getOperations()) {
+        for (Operation operation : transaction.getOperations())
+        {
             lockManager.remove(operation.getLocks());
         }
-        if (recoveredTransactions.contains(transaction.getUuid())) {
+        if (recoveredTransactions.contains(transaction.getUuid()))
+        {
             recoveredTransactions.removeCommitted(transaction.getUuid());
         }
     }
@@ -287,94 +309,81 @@ public class TransactionConnection implements TransactionalFileSystem {
     //
 
     @Override
-    public File[] list(String source, boolean recursively) throws Exception {
+    public File[] list(String source, boolean recursively) throws Exception
+    {
         String safePath = getSafePath(OperationName.List, source);
-        validateOperationAndPaths(OperationName.List, safePath, null);
-        validateWritten(OperationName.List, safePath);
-        if (!IOUtils.isDirectory(safePath)) // Is a file and exists
-        {
-            return new File[]{ IOUtils.getFile(safePath) };
-        } else
-        {
-            ListOperation operation = new ListOperation(transaction.getUuid(), safePath, recursively);
-            return executeNonModifyingOperation(operation, safePath);
-        }
+        ListOperation operation = new ListOperation(transaction.getUuid(), safePath, recursively);
+        return executeNonModifyingOperation(operation, safePath);
     }
 
     @Override
-    public byte[] read(String source, long offset, int limit) throws Exception {
+    public byte[] read(String source, long offset, int limit) throws Exception
+    {
         String safePath = getSafePath(OperationName.Read, source);
-        validateOperationAndPaths(OperationName.Read, safePath, null);
-        validateWritten(OperationName.Read, safePath);
-        if (IOUtils.getFile(safePath).getDirectory()) {
-            AFSExceptions.throwInstance(AFSExceptions.PathIsDirectory, OperationName.Read, source);
-        }
         Operation operation = new ReadOperation(transaction.getUuid(), safePath, offset, limit);
         return executeNonModifyingOperation(operation, safePath);
     }
 
-    public <RESULT> RESULT executeNonModifyingOperation(Operation operation, String source) throws Exception {
+    public <RESULT> RESULT executeNonModifyingOperation(Operation operation, String source) throws Exception
+    {
+        checkTransactionStarted(operation.getName());
         boolean locksObtained = lockManager.add(operation.getLocks());
-        if (locksObtained) {
-            try {
+        if (locksObtained)
+        {
+            try
+            {
                 NonModifyingOperationExecutor<Operation> operationExecutor = nonModifyingOperationExecutor.get(operation.getName());
-                return operationExecutor.executeOperation(transaction, operation);
-            } finally {
+                return operationExecutor.executeOperation(transaction, transactionFileSystemIO, operation);
+            } finally
+            {
                 lockManager.remove(operation.getLocks());
             }
-        } else {
-            if (source != null) {
-                AFSExceptions.throwInstance(AFSExceptions.PathBusy, operation.getName(), source);
+        } else
+        {
+            if (source != null)
+            {
+                AFSExceptions.throwInstance(AFSExceptions.PathBusy, operation.getName(), IOUtils.getRelativePath(storageRoot, source));
             }
         }
         throw AFSExceptions.Unknown.getInstance(IllegalStateException.class.getSimpleName(), "Statement should be unreachable.");
     }
 
     @Override
-    public boolean write(String source, long offset, byte[] data) throws Exception {
+    public boolean write(String source, long offset, byte[] data) throws Exception
+    {
         String tempSource = OperationExecutor.getTempPath(transaction, source) + "." + UUID.randomUUID();
         source = getSafePath(OperationName.Write, source);
-        validateNotInTrashOrSnapshots(OperationName.Write, source);
         WriteOperation operation = new WriteOperation(transaction.getUuid(), source, tempSource, offset, data);
         prepare(operation, source, null);
         return Boolean.TRUE;
     }
 
     @Override
-    public boolean delete(String source, boolean trash) throws Exception {
+    public boolean delete(String source, boolean trash) throws Exception
+    {
         source = getSafePath(OperationName.Delete, source);
         DeleteOperation operation = new DeleteOperation(transaction.getUuid(), source, trash, trash ? trashRootProvider.getTrashRoot(source) : null);
         prepare(operation, source, null);
         return Boolean.TRUE;
     }
 
-    private final Map<String, String> copiedSourceToTarget = new HashMap<>();
-    private final Map<String, String> copiedTargetToSource = new HashMap<>();
-
     @Override
-    public boolean copy(String source, String target) throws Exception {
+    public boolean copy(String source, String target) throws Exception
+    {
         source = getSafePath(OperationName.Copy, source);
         target = getSafePath(OperationName.Copy, target);
-        validateNotInTrashOrSnapshots(OperationName.Copy, target);
         CopyOperation operation = new CopyOperation(transaction.getUuid(), source, target);
         prepare(operation, source, target);
-        copiedSourceToTarget.put(source, target);
-        copiedTargetToSource.put(target, source);
         return Boolean.TRUE;
     }
 
-    private final Map<String, String> movedSourceToTarget = new HashMap<>();
-    private final Map<String, String> movedTargetToSource = new HashMap<>();
-
     @Override
-    public boolean move(String source, String target) throws Exception {
+    public boolean move(String source, String target) throws Exception
+    {
         source = getSafePath(OperationName.Move, source);
         target = getSafePath(OperationName.Move, target);
-        validateNotInTrashOrSnapshots(OperationName.Move, target);
         MoveOperation operation = new MoveOperation(transaction.getUuid(), source, target);
         prepare(operation, source, target);
-        movedSourceToTarget.put(source, target);
-        movedTargetToSource.put(target, source);
         return Boolean.TRUE;
     }
 
@@ -382,7 +391,6 @@ public class TransactionConnection implements TransactionalFileSystem {
     public boolean create(@NonNull String source, final boolean directory) throws Exception
     {
         source = getSafePath(OperationName.Create, source);
-        validateNotInTrashOrSnapshots(OperationName.Create, source);
         final CreateOperation operation = new CreateOperation(transaction.getUuid(), source, directory);
         prepare(operation, source, null);
         return Boolean.TRUE;
@@ -392,7 +400,6 @@ public class TransactionConnection implements TransactionalFileSystem {
     public boolean truncate(@NonNull String source, long size) throws Exception
     {
         source = getSafePath(OperationName.Truncate, source);
-        validateNotInTrashOrSnapshots(OperationName.Truncate, source);
         final TruncateOperation operation = new TruncateOperation(transaction.getUuid(), source, size);
         prepare(operation, source, null);
         return Boolean.TRUE;
@@ -402,7 +409,6 @@ public class TransactionConnection implements TransactionalFileSystem {
     public boolean snapshot(@NonNull String source) throws Exception
     {
         source = getSafePath(OperationName.Snapshot, source);
-        validateNotInTrashOrSnapshots(OperationName.Snapshot, source);
         final SnapshotOperation operation = new SnapshotOperation(transaction.getUuid(), source);
         prepare(operation, source, null);
         return Boolean.TRUE;
@@ -411,52 +417,54 @@ public class TransactionConnection implements TransactionalFileSystem {
     @Override
     public FreeSpace free(@NonNull String source) throws Exception
     {
-        source = getSafePath(OperationName.Free, source);
-        validateOperationAndPaths(OperationName.Free, source, null);
-        String safeExistingSource = source;
-        while (safeExistingSource != null && !safeExistingSource.isEmpty()
-                && !IOUtils.exists(safeExistingSource))
-        {
-            safeExistingSource = IOUtils.getParentPath(safeExistingSource);
-        }
-        return IOUtils.getSpace(safeExistingSource);
+        String safePath = getSafePath(OperationName.Free, source);
+        FreeOperation operation = new FreeOperation(transaction.getUuid(), safePath);
+        return executeNonModifyingOperation(operation, safePath);
     }
 
     @Override
-    public @NonNull String hash(@NonNull String source) throws Exception {
+    public @NonNull String hash(@NonNull String source) throws Exception
+    {
         source = getSafePath(OperationName.Hash, source);
         HashOperation operation = new HashOperation(transaction.getUuid(), source);
         return prepare(operation, source, null);
     }
 
     @Override
-    public @NonNull byte[] preview(@NonNull String source) throws Exception {
+    public @NonNull byte[] preview(@NonNull String source) throws Exception
+    {
         source = getSafePath(OperationName.Preview, source);
         PreviewOperation operation = new PreviewOperation(transaction.getUuid(), source, enabledPreviewFileTypes, enablePreviewSizeInBytes);
         return prepare(operation, source, null);
     }
-
 
     /*
      * Prepare prepares the operation to not fail con COMMIT
      * AS FAR AS an exception is not thrown is supposed to be PREPARED
      */
     @SuppressWarnings("unchecked")
-    private <RESULT extends Serializable> RESULT prepare(Operation operation, String source, String target) throws Exception {
-        validateOperationAndPaths(operation.getName(), source, target);
+    private <RESULT extends Serializable> RESULT prepare(Operation operation, String source, String target) throws Exception
+    {
+        checkTransactionStarted(operation.getName());
         boolean locksObtained = false;
         RESULT result = null;
-        try {
+        try
+        {
             locksObtained = lockManager.add(operation.getLocks());
             final OperationName operationName = operation.getName();
-            if (locksObtained) {
-                result = (RESULT) operationExecutors.get(operationName).prepare(transaction, operation);
-                transaction.getOperations().add(operation);
-            } else {
-                AFSExceptions.throwInstance(AFSExceptions.PathLocksCannotBeObtained, operationName.name(), source);
+            if (locksObtained)
+            {
+                result = (RESULT) operationExecutors.get(operationName).prepare(transaction, transactionFileSystemIO, operation);
+                transaction.getOperations().add(operation.toLog()); // This clears any attributes that are not to be kept in memory
+            } else
+            {
+                AFSExceptions.throwInstance(AFSExceptions.PathLocksCannotBeObtained, operationName.name(),
+                        IOUtils.getRelativePath(storageRoot, source));
             }
-        } catch (Exception ex) {
-            if (locksObtained) {
+        } catch (Exception ex)
+        {
+            if (locksObtained)
+            {
                 lockManager.remove(operation.getLocks());
                 throw ex;
             }
@@ -464,111 +472,34 @@ public class TransactionConnection implements TransactionalFileSystem {
         return result;
     }
 
-    private String getSafePath(OperationName operationName, String source) {
-        if (source.contains(RELATIVE)) {
-            AFSExceptions.throwInstance(AFSExceptions.PathInStoreCantBeRelative, operationName.name(), source);
+    private String getSafePath(OperationName operationName, String source)
+    {
+        if (source.contains(RELATIVE))
+        {
+            AFSExceptions.throwInstance(AFSExceptions.PathInStoreCantBeRelative, operationName.name(), IOUtils.getRelativePath(storageRoot, source));
         }
-        if (!source.startsWith(ROOT)) {
-            AFSExceptions.throwInstance(AFSExceptions.PathNotStartWithRoot, operationName.name(), source);
+        if (!source.startsWith(ROOT))
+        {
+            AFSExceptions.throwInstance(AFSExceptions.PathNotStartWithRoot, operationName.name(), IOUtils.getRelativePath(storageRoot, source));
         }
-        if(!source.equals(ROOT) && !IOUtils.isValidFilename(source)){
-            AFSExceptions.throwInstance(AFSExceptions.PathInvalid, source);
+        if (!source.equals(ROOT) && !IOUtils.isValidFilename(source))
+        {
+            AFSExceptions.throwInstance(AFSExceptions.PathInvalid, IOUtils.getRelativePath(storageRoot, source));
         }
         return OperationExecutor.getRealPath(transaction, source);
     }
 
-    private void validateWritten(OperationName operationName, String finalSource) throws Exception {
-        List<String> sourceSubPaths = null;
-        if (finalSource != null) {
-            sourceSubPaths = PathLockFinder.getParentSubPaths(finalSource);
-        }
-        for (String source:safe(sourceSubPaths)) {
-            PathState pathState = OperationExecutor.getCachedPathState(transaction, source);
-            if (pathState.isWritten()) {
-                AFSExceptions.throwInstance(AFSExceptions.PathCantBeReadAfterWritten, operationName.name(), source);
-            }
-        }
-    }
-
-    private void validateOperationAndPaths(OperationName operationName, String finalSource, String finalTarget) throws Exception {
-        List<String> sourceSubPaths = null;
-        if (finalSource != null) {
-            sourceSubPaths = PathLockFinder.getParentSubPaths(finalSource);
-        }
-        List<String> targetSubPaths = null;
-        if (finalTarget != null) {
-            targetSubPaths = PathLockFinder.getParentSubPaths(finalTarget);
-        }
-        if (state != State.Begin) {
-            AFSExceptions.throwInstance(AFSExceptions.OperationNotAddedDueToState, operationName.name(), state, State.Begin);
-        }
-        if(OperationName.Create != operationName && OperationName.Write != operationName)
+    private void checkTransactionStarted(OperationName operationName) throws Exception
+    {
+        if (state != State.Begin)
         {
-            for (String source : safe(sourceSubPaths))
-            {
-                PathState pathState = OperationExecutor.getCachedPathState(transaction, source);
-                if (pathState.isDeleted())
-                {
-                    AFSExceptions.throwInstance(AFSExceptions.PathCantBeOperatedAfterDeleted, operationName.name(), source);
-                }
-            }
-            for (String target : safe(targetSubPaths))
-            {
-                PathState pathState = OperationExecutor.getCachedPathState(transaction, target);
-                if (pathState.isDeleted())
-                {
-                    AFSExceptions.throwInstance(AFSExceptions.PathCantBeOperatedAfterDeleted, operationName.name(), target);
-                }
-            }
-        }
-        for (String source:safe(sourceSubPaths)) {
-            if (movedSourceToTarget.containsKey(source)) {
-                AFSExceptions.throwInstance(AFSExceptions.PathCantBeOperatedAfterMoved, operationName.name(), source);
-            }
-        }
-        for (String target:safe(targetSubPaths)) {
-            if (movedSourceToTarget.containsKey(target)) {
-                AFSExceptions.throwInstance(AFSExceptions.PathCantBeOperatedAfterMoved, operationName.name(), target);
-            }
-        }
-        for (String source:safe(sourceSubPaths)) {
-            if (movedTargetToSource.containsKey(source)) {
-                AFSExceptions.throwInstance(AFSExceptions.PathCantBeOperatedAfterMoved, operationName.name(), source);
-            }
-        }
-        for (String target:safe(targetSubPaths)) {
-            if (movedTargetToSource.containsKey(target)) {
-                AFSExceptions.throwInstance(AFSExceptions.PathCantBeOperatedAfterMoved, operationName.name(), target);
-            }
-        }
-        for (String source:safe(sourceSubPaths)) {
-            if (copiedTargetToSource.containsKey(source)) {
-                AFSExceptions.throwInstance(AFSExceptions.PathCantBeOperatedAfterCopied, operationName.name(), source);
-            }
-        }
-    }
-
-    private void validateNotInTrashOrSnapshots(OperationName operationName, String path) {
-        if (path != null) {
-            Path pathObject = Path.of(path);
-
-            String trashRoot = trashRootProvider.getTrashRoot(path);
-            if (trashRoot != null) {
-                boolean pathInTrash = pathObject.toAbsolutePath().normalize().startsWith(Path.of(trashRoot).toAbsolutePath().normalize());
-                if (pathInTrash) {
-                    AFSExceptions.throwInstance(AFSExceptions.PathCantBeOperatedInTrash, operationName.name(), pathObject);
-                }
-            }
-
-            boolean pathInSnapshots = pathObject.toAbsolutePath().toString().contains(OperationExecutor.SNAPSHOTS_DIRECTORY);
-            if (pathInSnapshots) {
-                AFSExceptions.throwInstance(AFSExceptions.PathCantBeOperatedInSnapshots, operationName.name(), pathObject);
-            }
+            AFSExceptions.throwInstance(AFSExceptions.OperationNotAddedDueToState, operationName.name(), state, State.Begin);
         }
     }
 
     @Override
-    public boolean isTwoPhaseCommit() {
+    public boolean isTwoPhaseCommit()
+    {
         return state == State.Prepare;
     }
 }

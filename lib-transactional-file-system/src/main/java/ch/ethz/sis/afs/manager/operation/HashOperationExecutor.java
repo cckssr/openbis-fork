@@ -19,6 +19,7 @@ import ch.ethz.sis.afs.dto.Transaction;
 import ch.ethz.sis.afs.dto.operation.HashOperation;
 import ch.ethz.sis.afs.dto.operation.OperationName;
 import ch.ethz.sis.afs.exception.AFSExceptions;
+import ch.ethz.sis.afs.manager.TransactionFileSystemIO;
 import ch.ethz.sis.shared.io.IOUtils;
 import lombok.NonNull;
 
@@ -27,6 +28,10 @@ import java.nio.file.Path;
 
 import static ch.ethz.sis.afs.exception.AFSExceptions.PathNotInStore;
 import static ch.ethz.sis.afs.exception.AFSExceptions.PathNotRegularFile;
+import static ch.ethz.sis.afs.manager.operation.OperationExecutor.checkNotCopied;
+import static ch.ethz.sis.afs.manager.operation.OperationExecutor.checkNotDeleted;
+import static ch.ethz.sis.afs.manager.operation.OperationExecutor.checkNotMoved;
+import static ch.ethz.sis.afs.manager.operation.OperationExecutor.checkNotWritten;
 
 public class HashOperationExecutor implements OperationExecutor<HashOperation, String> {
     //
@@ -47,7 +52,11 @@ public class HashOperationExecutor implements OperationExecutor<HashOperation, S
     }
 
     @Override
-    public String prepare(@NonNull Transaction transaction, @NonNull HashOperation operation) throws Exception {
+    public String prepare(final @NonNull Transaction transaction, final @NonNull TransactionFileSystemIO transactionFileSystemIO, final @NonNull HashOperation operation) throws Exception {
+        checkNotWritten(transactionFileSystemIO, OperationName.Hash, operation.getSource());
+        checkNotMoved(transactionFileSystemIO, OperationName.Hash, operation.getSource());
+        checkNotCopied(transactionFileSystemIO, OperationName.Hash, operation.getSource());
+        checkNotDeleted(transactionFileSystemIO, OperationName.Hash, operation.getSource());
 
         if(IOUtils.exists(operation.getSource())) {
             if(IOUtils.isRegularFile(operation.getSource())) {
@@ -69,17 +78,17 @@ public class HashOperationExecutor implements OperationExecutor<HashOperation, S
                     return md5Value;
                 }
             } else {
-                AFSExceptions.throwInstance(PathNotRegularFile, OperationName.Hash.name(), operation.getSource());
+                AFSExceptions.throwInstance(PathNotRegularFile, OperationName.Hash.name(), IOUtils.getRelativePath(transaction.getStorageRoot(), operation.getSource()));
                 return null;
             }
         } else {
-            AFSExceptions.throwInstance(PathNotInStore, OperationName.Hash.name(), operation.getSource());
+            AFSExceptions.throwInstance(PathNotInStore, OperationName.Hash.name(), IOUtils.getRelativePath(transaction.getStorageRoot(), operation.getSource()));
             return null;
         }
     }
 
     @Override
-    public boolean commit(@NonNull Transaction transaction, @NonNull HashOperation operation) throws Exception {
+    public boolean commit(final @NonNull Transaction transaction, final @NonNull HashOperation operation) throws Exception {
         Path sourcePath = Path.of(operation.getSource());
         String cachePath = OperationExecutor.getCachedHashPathForSource(sourcePath).toString();
         String temporaryNewCachePath = Path.of(OperationExecutor.getTempPath(transaction, cachePath)).toAbsolutePath().normalize().toString();
