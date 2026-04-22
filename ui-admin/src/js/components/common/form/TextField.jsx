@@ -126,12 +126,7 @@ class TextFormField extends React.PureComponent {
 
     let finalValue;
     if (globalThis.Array.isArray(value)) {
-      finalValue = JSON.stringify(value)
-      // if (dataType === FormFieldDataType.ARRAY_STRING || dataType === FormFieldDataType.ARRAY_TIMESTAMP) {
-      //   finalValue = JSON.stringify(value)
-      // } else {
-      //   finalValue = JSON.stringify(value)
-      // }
+      finalValue = this.arrayToString(value, dataType);
     } else {
       finalValue = value || '';
     }
