@@ -8,6 +8,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.VocabularyTermPE;
 import ch.systemsx.cisd.openbis.generic.shared.util.SupportedDateTimePattern;
 
 import java.io.Serializable;
+import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
@@ -90,7 +91,16 @@ public class ComplexPropertyValueUtils {
             try {
                 final SimpleDateFormat simpleDateFormat =
                         new SimpleDateFormat(format.getPattern());
-                return simpleDateFormat.parse(dateTime);
+                simpleDateFormat.setLenient(false);
+
+                final ParsePosition pos = new ParsePosition(0);
+                final Date date = simpleDateFormat.parse(dateTime, pos);
+
+                if (date == null || pos.getIndex() != dateTime.length()) {
+                    continue;
+                }
+
+                return date;
             } catch (final Exception e) {
                 // If no format is suitable, the exception will be thrown at the end of this method.
             }
