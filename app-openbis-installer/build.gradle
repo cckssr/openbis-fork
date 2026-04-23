@@ -198,6 +198,7 @@ task createInstallerZip(type: Tar, dependsOn: createInstallerJar) {
 }
 
 tasks.register('release', Tar) {
+    System.out.println("RELEASE DEBUG: " + version)
     dependsOn createInstallerJar
     compression = Compression.GZIP
     archiveFileName = "${archiveNamePrefix}-${version}.tar.gz"

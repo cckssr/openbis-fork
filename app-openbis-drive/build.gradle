@@ -21,8 +21,55 @@ protobuf {
     }
 }
 
+//
+// Version Management
+//
+
+def execute_working_dir(command, arguments, working_dir) {
+    new ByteArrayOutputStream().withStream { os ->
+        print "execute: ${command}"
+        arguments.collect({print " ${it}"})
+        println ''
+        def result = exec {
+            executable = command
+            args = arguments
+            standardOutput = os
+        }
+        return os.toString().split('\n')
+    }
+}
+
+def isGitProject() {
+    return new java.io.File(projectDir, ".git").isDirectory() || new java.io.File(projectDir, "../.git").isDirectory()
+}
+
+def calculateBuildInfo() {
+    if (isGitProject()) {
+        def gitlogoutput = execute_working_dir('git', ['log', '-1', '--format=%at'],  "../.git")
+        project.ext.revisionNumber = Integer.parseInt(gitlogoutput[0])
+    } else {
+        project.ext.revisionNumber = 1
+    }
+    System.setProperty("revision", "" + project.ext.revisionNumber);
+
+    if(System.getProperty("version") != null) {
+        project.ext.versionNumber = System.getProperty("version");
+    } else {
+        project.ext.versionNumber = 'SNAPSHOT'
+    }
+    System.setProperty("version", project.ext.versionNumber)
+
+    project.version =  project.ext.versionNumber + '+' + project.ext.revisionNumber
+    System.setProperty("version+revision", project.version)
+}
+
+calculateBuildInfo()
+//
+//
+//
+
 def baseName =  'app-openbis-drive'
-def implementationVersion = '7.0.0'
+def implementationVersion = version
 
 java {
     sourceCompatibility = JavaVersion.VERSION_21

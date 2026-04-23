@@ -22,15 +22,90 @@ tasks.register('clean', Delete) {
 
 tasks.register('release', Tar) {
     compression = Compression.GZIP
-    dependsOn(tasks.clean)
+    dependsOn tasks.clean
+    dependsOn tasks.named('versionUpdate')
     destinationDirectory = layout.buildDirectory.dir(".")
-    def contentOfSetUpFile = file('src/python/setup.py').text
-    def version = (contentOfSetUpFile =~ /version.*=.*(.*)"/)[0][0]
-    def obisVersion = (version =~ /\d.*/)[0]
-    int end = obisVersion.indexOf("\"")
-    obisVersion = obisVersion.substring(0, end)
-    archiveFileName = 'openbis-command-line-tool-' + obisVersion + '.tar.gz'
+
+    doFirst {
+        def version = project.ext.versionNumber
+        archiveFileName = "openbis-command-line-tool-${version}.tar.gz"
+    }
+
     from 'src'
 }
 
 
+tasks.register('versionUpdate') {
+    doLast {
+        def version = project.ext.versionNumber
+        if (version == null) {
+            throw new IllegalArgumentException("version property missing")
+        }
+
+        def setupPy = file('src/python/setup.py').text
+        def setupPyUpdate = setupPy.replaceAll(
+                '(?m)^\\s*version\\s*=\\s*[\'"][^\'"]*[\'"],?',
+                '    version="' + version + '",'
+        )
+        file('src/python/setup.py').write(setupPyUpdate)
+
+        def setupPyUpdate2 = setupPyUpdate.replaceAll(
+                'pybis>=\\d+\\.\\d+\\.\\d+',
+                "pybis>=${version}"
+        )
+        file('src/python/setup.py').write(setupPyUpdate2)
+
+        def __init__Py = file('src/python/obis/__init__.py').text
+        def __init__PyUpdate = __init__Py.replaceAll(
+                '(?m)^\\s*__version__\\s*=\\s*[\'"][^\'"]*[\'"]',
+                '__version__ = "' + version + '"'
+        )
+        file('src/python/obis/__init__.py').write(__init__PyUpdate)
+    }
+}
+
+clean.dependsOn 'versionUpdate'
+
+//
+// Version Management
+//
+
+def execute_working_dir(command, arguments, working_dir) {
+    new ByteArrayOutputStream().withStream { os ->
+        print "execute: ${command}"
+        arguments.collect({print " ${it}"})
+        println ''
+        def result = exec {
+            executable = command
+            args = arguments
+            standardOutput = os
+        }
+        return os.toString().split('\n')
+    }
+}
+
+def isGitProject() {
+    return new java.io.File(projectDir, ".git").isDirectory() || new java.io.File(projectDir, "../.git").isDirectory()
+}
+
+def calculateBuildInfo() {
+    if (isGitProject()) {
+        def gitlogoutput = execute_working_dir('git', ['log', '-1', '--format=%at'],  "../.git")
+        project.ext.revisionNumber = Integer.parseInt(gitlogoutput[0])
+    } else {
+        project.ext.revisionNumber = 1
+    }
+    System.setProperty("revision", "" + project.ext.revisionNumber);
+
+    if(System.getProperty("version") != null) {
+        project.ext.versionNumber = System.getProperty("version");
+    } else {
+        project.ext.versionNumber = '99.99.99.dev0'
+    }
+    System.setProperty("version", project.ext.versionNumber)
+
+    project.version =  project.ext.versionNumber + '+' + project.ext.revisionNumber
+    System.setProperty("version+revision", project.version)
+}
+
+calculateBuildInfo()

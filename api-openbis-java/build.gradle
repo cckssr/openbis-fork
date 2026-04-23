@@ -178,7 +178,8 @@ tasks.register('jarWithDependencies', Jar) {
 tasks.register('release', Tar) {
     compression = Compression.GZIP
     dependsOn jar
-    archiveFileName = "${baseName}-${version}.tar.gz"
+    dependsOn versionUpdate
+    archiveFileName = "${baseName}-${versionNumber}.tar.gz"
     from jar.archiveFile
     from sourcesJar.archiveFile
     from javadocTar.archiveFile
@@ -190,10 +191,107 @@ tasks.register('release', Tar) {
 tasks.register('releaseDependenciesIncluded', Tar) {
     compression = Compression.GZIP
     dependsOn([jarWithDependencies, sourcesJar, javadocTar])
-    archiveFileName = "${baseName}-${version}-dependencies-included.tar.gz"
+    archiveFileName = "${baseName}-${versionNumber}-dependencies-included.tar.gz"
     from jarWithDependencies.archiveFile
     from sourcesJar.archiveFile
     from javadocTar.archiveFile
     from configurations.apiDependenciesIncluded
     into baseName + '-dependencies-included'
 }
+
+tasks.register('versionUpdate') {
+    def major = null
+    def minor = null
+
+    if (version != null && !version.equals("SNAPSHOT")) {
+        def matcher = java.util.regex.Pattern
+                .compile("^(\\d+)\\.(\\d+)")
+                .matcher(version);
+
+        if (matcher.find()) {
+            major = Integer.parseInt(matcher.group(1))
+            minor = Integer.parseInt(matcher.group(2))
+        }
+    }
+
+    if(major != null && minor != null) {
+        // Update AS API
+
+        def asAPI = file('source/java/ch/ethz/sis/openbis/generic/asapi/v3/IApplicationServerApi.java').text
+
+
+        asAPI = asAPI.replaceAll(
+                /(?m)^(\s*public\s+static\s+final\s+int\s+MAJOR_VERSION\s*=\s*)\d+;/,
+                "\$1${major};"
+        )
+
+        asAPI = asAPI.replaceAll(
+                /(?m)^(\s*public\s+static\s+final\s+int\s+MINOR_VERSION\s*=\s*)\d+;/,
+                "\$1${minor};"
+        )
+
+        file('source/java/ch/ethz/sis/openbis/generic/asapi/v3/IApplicationServerApi.java').write(asAPI)
+
+        // Update DSS API
+
+        def dssAPI = file('source/java/ch/ethz/sis/openbis/generic/dssapi/v3/IDataStoreServerApi.java').text
+
+        dssAPI = dssAPI.replaceAll(
+                /(?m)^(\s*public\s+static\s+final\s+int\s+MAJOR_VERSION\s*=\s*)\d+;/,
+                "\$1${major};"
+        )
+
+        dssAPI = dssAPI.replaceAll(
+                /(?m)^(\s*public\s+static\s+final\s+int\s+MINOR_VERSION\s*=\s*)\d+;/,
+                "\$1${minor};"
+        )
+
+        file('source/java/ch/ethz/sis/openbis/generic/dssapi/v3/IDataStoreServerApi.java').write(dssAPI)
+    }
+}
+
+clean.dependsOn 'versionUpdate'
+
+//
+// Version Management
+//
+
+def execute_working_dir(command, arguments, working_dir) {
+    new ByteArrayOutputStream().withStream { os ->
+        print "execute: ${command}"
+        arguments.collect({print " ${it}"})
+        println ''
+        def result = exec {
+            executable = command
+            args = arguments
+            standardOutput = os
+        }
+        return os.toString().split('\n')
+    }
+}
+
+def isGitProject() {
+    return new java.io.File(projectDir, ".git").isDirectory() || new java.io.File(projectDir, "../.git").isDirectory()
+}
+
+def calculateBuildInfo() {
+    if (isGitProject()) {
+        def gitlogoutput = execute_working_dir('git', ['log', '-1', '--format=%at'],  "../.git")
+        project.ext.revisionNumber = Integer.parseInt(gitlogoutput[0])
+    } else {
+        project.ext.revisionNumber = 1
+    }
+    System.setProperty("revision", "" + project.ext.revisionNumber);
+
+    if(System.getProperty("version") != null) {
+        project.ext.versionNumber = System.getProperty("version");
+    } else {
+        project.ext.versionNumber = 'SNAPSHOT'
+    }
+    System.setProperty("version", project.ext.versionNumber)
+
+    project.version =  project.ext.versionNumber + '+' + project.ext.revisionNumber
+    System.setProperty("version+revision", project.version)
+}
+
+calculateBuildInfo()
