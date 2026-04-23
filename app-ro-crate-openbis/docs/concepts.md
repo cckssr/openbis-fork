@@ -1,3 +1,5 @@
+# Overview
+
 | openBIS concept        | RO-Crate concept                                                                                       |
 |------------------------|--------------------------------------------------------------------------------------------------------|
 | Object Type            | `rdfs:Type` inheriting from `openBIS` object                                                           |
@@ -13,11 +15,6 @@
 | parent/child           | [TBD](https://en.wikipedia.org/wiki/Douglas_TBD_Devastator)                                            |
 | File                   | `File` entities, referenced via `schema:hasPart`                                                       |
 
-
-
-https://ethsis.atlassian.net/browse/BIS-2637
-
-2026-04-17
 
 # Space
 
