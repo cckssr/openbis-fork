@@ -10,7 +10,7 @@
 | Object                 | Entity that is defined as object type                                                                  |
 | Dataset                | N/A                                                                                                    |
 | Rich Text Image        | File that is referenced in one of the rich text properties, this is separate from the data directories |
-| parent/child           | [TBD]((https://en.wikipedia.org/wiki/Douglas_TBD_Devastator))                                          |
+| parent/child           | [TBD](https://en.wikipedia.org/wiki/Douglas_TBD_Devastator)                                            |
 | File                   | `File` entities, referenced via `schema:hasPart`                                                       |
 
 
