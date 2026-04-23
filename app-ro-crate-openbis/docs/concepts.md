@@ -18,14 +18,16 @@
 
 # Space
 
-These are nothing special in the crate.
+These are nothing special in the crate, one entity per space, of type `openBIS:Space`.
 
 # Project
 
+These are of type `openBIS:Project`
 These are also straightforward, nothing huge in the crate.
 
 # Collection
 
+These are of type `openBIS:Collection`
 Collections may have files, see Files.
 
 # OpenBIS Dataset
