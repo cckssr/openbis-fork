@@ -254,7 +254,7 @@ tasks.register('serverApplicationServerJavadocZip', Zip) {
 tasks.register('javadocTar', Tar) {
     compression = Compression.GZIP
     dependsOn serverApplicationServerJavadoc
-    archiveFileName = "openbis-application-server-javadoc-${version}.tar.gz"
+    archiveFileName = "openbis-application-server-javadoc-" + System.getProperty("version") + ".tar.gz"
     from serverApplicationServerJavadoc.destinationDir
 }
 
@@ -281,7 +281,7 @@ tasks.register('dynamicApiJavadocZip', Zip) {
 tasks.register('dynamicApiJavadocTar', Tar) {
     compression = Compression.GZIP
     dependsOn dynamicApiJavadoc
-    archiveFileName = "dynamic-api-javadoc-${version}.tar.gz"
+    archiveFileName = "dynamic-api-javadoc-" + System.getProperty("version") + ".tar.gz"
     from dynamicApiJavadoc.destinationDir
 }
 
@@ -319,3 +319,48 @@ task runOnlyOneTestSuite(type: Test) {
 }
 
 apply from: 'elndev.gradle'
+
+//
+// Version Management
+//
+
+def execute_working_dir(command, arguments, working_dir) {
+    new ByteArrayOutputStream().withStream { os ->
+        print "execute: ${command}"
+        arguments.collect({print " ${it}"})
+        println ''
+        def result = exec {
+            executable = command
+            args = arguments
+            standardOutput = os
+        }
+        return os.toString().split('\n')
+    }
+}
+
+def isGitProject() {
+    return new java.io.File(projectDir, ".git").isDirectory() || new java.io.File(projectDir, "../.git").isDirectory()
+}
+
+def calculateBuildInfo() {
+    if (isGitProject()) {
+        def gitlogoutput = execute_working_dir('git', ['log', '-1', '--format=%at'],  "../.git")
+        project.ext.revisionNumber = Integer.parseInt(gitlogoutput[0])
+    } else {
+        project.ext.revisionNumber = 1
+    }
+    System.setProperty("revision", "" + project.ext.revisionNumber);
+
+    def version = System.getProperty("version")
+    if(version == null || version.isEmpty()) {
+        project.ext.versionNumber = 'SNAPSHOT'
+    } else {
+        project.ext.versionNumber = version
+    }
+    System.setProperty("version", project.ext.versionNumber);
+
+    def versionPlusRevision = project.ext.versionNumber + '+' + project.ext.revisionNumber
+    System.setProperty("version+revision", versionPlusRevision);
+}
+
+calculateBuildInfo()

@@ -75,7 +75,6 @@ public class GetServerInformationOperationExecutor
         Map<String, String> info = new TreeMap<>();
         info.putAll(getPublicInformation(context));
 
-        info.put("api-version", server.getMajorVersion() + "." + server.getMinorVersion());
         info.put("project-samples-enabled", Boolean.toString(CommonServiceProvider.getCommonServer().isProjectSamplesEnabled(null)));
         info.put("archiving-configured", Boolean.toString(CommonServiceProvider.getCommonServer().isArchivingConfigured(null)));
         info.put("enabled-technologies", configurer.getPropertyValue(Constants.ENABLED_MODULES_KEY));
@@ -87,6 +86,7 @@ public class GetServerInformationOperationExecutor
         info.put(PersonalAccessTokenConstants.PERSONAL_ACCESS_TOKENS_VALIDITY_WARNING_PERIOD,
                 Long.toString(personalAccessTokenConfig.getPersonalAccessTokensValidityWarningPeriod()));
         info.put("openbis-version", BuildAndEnvironmentInfo.INSTANCE.getVersion());
+        info.put("api-version", server.getMajorVersion() + "." + server.getMinorVersion());
 
         if(isInstanceAdmin(context)) {
             long currentTimeMillis = System.currentTimeMillis();

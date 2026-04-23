@@ -61,6 +61,25 @@ tasks.register('javadoc', Copy) {
     into file('build/javadoc')
 }
 
+/*
+ * Versions that are written to files, it might be useful to use this task before starting development
+ * ./gradlew versionUpdate -x test "-Dorg.gradle.jvmargs=--add-opens=java.base/java.text=ALL-UNNAMED --add-opens=java.desktop/java.awt.font=ALL-UNNAMED" -Dversion=7.0.0
+ */
+tasks.register('versionUpdate') {
+    // Update API
+    dependsOn([project(':api-openbis-python3-pybis').tasks.versionUpdate,
+               project(':api-openbis-java').tasks.versionUpdate
+    ])
+    // Update APP
+    dependsOn([project(':app-openbis-command-line').tasks.versionUpdate
+    ])
+    // Update UI ELN-LIMS version
+    dependsOn([project(':ui-eln-lims').tasks.versionUpdate
+    ])
+}
+
+clean.dependsOn 'versionUpdate'
+
 tasks.register('release', Tar) {
     compression = Compression.GZIP
     // API
@@ -81,9 +100,7 @@ tasks.register('release', Tar) {
                ':server-original-data-store:dropboxJavadocTar'
     ])
 
-    def version = project.ext.versionNumber + '+r' + project.ext.revisionNumber
-
-    archiveFileName = 'openbis-release-' + version + '.tar.gz'
+    archiveFileName = "openbis-release-${version}.tar.gz"
     destinationDirectory = layout.buildDirectory.dir(".")
 
 
@@ -111,7 +128,9 @@ tasks.register('release', Tar) {
     }
 }
 
-
+//
+// Version Management
+//
 
 def execute_working_dir(command, arguments, working_dir) {
     new ByteArrayOutputStream().withStream { os ->
@@ -127,16 +146,28 @@ def execute_working_dir(command, arguments, working_dir) {
     }
 }
 
-def calculateBuildInfo() {
+def isGitProject() {
+    return new java.io.File(projectDir, ".git").isDirectory() || new java.io.File(projectDir, "../.git").isDirectory()
+}
 
-    def gitlogoutput = execute_working_dir('git', ['log', '-1', '--format=%at'], '../' + project.name)
-    project.ext.revisionNumber = Integer.parseInt(gitlogoutput[0])
-    def tag = 'git tag -l --points-at HEAD'.execute().text.trim()
-    if (tag == null || tag.isEmpty() || tag.contains('pybis')) {
-        project.ext.versionNumber = 'SNAPSHOT'
+def calculateBuildInfo() {
+    if (isGitProject()) {
+        def gitlogoutput = execute_working_dir('git', ['log', '-1', '--format=%at'],  "../.git")
+        project.ext.revisionNumber = Integer.parseInt(gitlogoutput[0])
     } else {
-        project.ext.versionNumber = tag
+        project.ext.revisionNumber = 1
     }
+    System.setProperty("revision", "" + project.ext.revisionNumber);
+
+    if(System.getProperty("version") != null) {
+        project.ext.versionNumber = System.getProperty("version");
+    } else {
+        project.ext.versionNumber = 'SNAPSHOT'
+    }
+    System.setProperty("version", project.ext.versionNumber)
+
+    project.version =  project.ext.versionNumber + '+' + project.ext.revisionNumber
+    System.setProperty("version+revision", project.version)
 }
 
 calculateBuildInfo()
