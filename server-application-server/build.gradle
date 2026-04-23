@@ -254,7 +254,7 @@ tasks.register('serverApplicationServerJavadocZip', Zip) {
 tasks.register('javadocTar', Tar) {
     compression = Compression.GZIP
     dependsOn serverApplicationServerJavadoc
-    archiveFileName = "openbis-application-server-javadoc-" + System.getProperty("version") + ".tar.gz"
+    archiveFileName = "openbis-original-data-store-javadoc-${version}.tar.gz"
     from serverApplicationServerJavadoc.destinationDir
 }
 
@@ -281,7 +281,7 @@ tasks.register('dynamicApiJavadocZip', Zip) {
 tasks.register('dynamicApiJavadocTar', Tar) {
     compression = Compression.GZIP
     dependsOn dynamicApiJavadoc
-    archiveFileName = "dynamic-api-javadoc-" + System.getProperty("version") + ".tar.gz"
+    archiveFileName = "dynamic-api-javadoc-${version}.tar.gz"
     from dynamicApiJavadoc.destinationDir
 }
 

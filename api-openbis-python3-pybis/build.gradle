@@ -27,8 +27,7 @@ tasks.register('release', Tar) {
     destinationDirectory = layout.buildDirectory.dir(".")
 
     doFirst {
-        def version = project.ext.versionNumber
-        archiveFileName = "openbis-python3-api-${version}.tar.gz"
+        archiveFileName = "openbis-python3-api-${project.ext.pep440VersionNumber}.tar.gz"
     }
 
     from 'src'
@@ -36,29 +35,28 @@ tasks.register('release', Tar) {
 
 tasks.register('versionUpdate') {
     doLast {
-        def version = project.ext.versionNumber
-        if (version == null) {
+        if (project.ext.pep440VersionNumber == null) {
             throw new IllegalArgumentException("version property missing")
         }
 
         def setupCfg = file('src/python/setup.cfg').text
         def setupCfgUpdate = setupCfg.replaceAll(
                 '(?m)^version\\s*=\\s*.*$',
-                "version = ${version}"
+                "version = ${project.ext.pep440VersionNumber}"
         )
         file('src/python/setup.cfg').write(setupCfgUpdate)
 
         def setupPy = file('src/python/setup.py').text
         def setupPyUpdate = setupPy.replaceAll(
                 '(?m)^\\s*version\\s*=\\s*[\'"][^\'"]*[\'"],?',
-                '    version="' + version + '",'
+                '    version="' + project.ext.pep440VersionNumber + '",'
         )
         file('src/python/setup.py').write(setupPyUpdate)
 
         def __init__Py = file('src/python/pybis/__init__.py').text
         def __init__PyUpdate = __init__Py.replaceAll(
                 '(?m)^\\s*__version__\\s*=\\s*[\'"][^\'"]*[\'"]',
-                '__version__ = "' + version + '"'
+                '__version__ = "' + project.ext.pep440VersionNumber + '"'
         )
         file('src/python/pybis/__init__.py').write(__init__PyUpdate)
     }
@@ -69,6 +67,64 @@ clean.dependsOn 'versionUpdate'
 //
 // Version Management
 //
+
+def semverToPep440(String version) {
+    if (!version) return null
+
+    def v = version.trim()
+
+    // Split build metadata (+...)
+    def parts = v.split('\\+', 2)
+    def main = parts[0]
+    def build = parts.length > 1 ? parts[1] : null
+
+    // Split pre-release (-...)
+    def mainParts = main.split('-', 2)
+    def base = mainParts[0]
+    def pre = mainParts.length > 1 ? mainParts[1] : null
+
+    def pep = base
+
+    if (pre) {
+        def lower = pre.toLowerCase()
+
+        // SNAPSHOT → dev0
+        if (lower == 'snapshot') {
+            pep = "${base}.dev0"
+        }
+        // dev.X → .devX
+        else if (lower.startsWith('dev.')) {
+            def n = lower.replace('dev.', '')
+            pep = "${base}.dev${n}"
+        }
+        // alpha.X → aX
+        else if (lower.startsWith('alpha.')) {
+            def n = lower.replace('alpha.', '')
+            pep = "${base}a${n}"
+        }
+        // beta.X → bX
+        else if (lower.startsWith('beta.')) {
+            def n = lower.replace('beta.', '')
+            pep = "${base}b${n}"
+        }
+        // rc.X → rcX
+        else if (lower.startsWith('rc.')) {
+            def n = lower.replace('rc.', '')
+            pep = "${base}rc${n}"
+        }
+        // fallback: treat unknown as dev
+        else {
+            pep = "${base}.dev0"
+        }
+    }
+
+    // Append build metadata (PEP 440 local version)
+    if (build) {
+        pep = "${pep}+${build}"
+    }
+
+    return pep
+}
 
 def execute_working_dir(command, arguments, working_dir) {
     new ByteArrayOutputStream().withStream { os ->
@@ -100,8 +156,9 @@ def calculateBuildInfo() {
     if(System.getProperty("version") != null) {
         project.ext.versionNumber = System.getProperty("version");
     } else {
-        project.ext.versionNumber = '99.99.99.dev0'
+        project.ext.versionNumber = '99.99.99-SNAPSHOT'
     }
+    project.ext.pep440VersionNumber = semverToPep440(project.ext.versionNumber);
     System.setProperty("version", project.ext.versionNumber)
 
     project.version =  project.ext.versionNumber + '+' + project.ext.revisionNumber
