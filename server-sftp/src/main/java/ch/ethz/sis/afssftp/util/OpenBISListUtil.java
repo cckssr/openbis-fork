@@ -48,7 +48,7 @@ public class OpenBISListUtil {
     private final OpenBISUser user;
     private final OpenBISClientUtil openBISClientUtil;
 
-    public OpenBISListUtil(OpenBISUser user) {
+    public OpenBISListUtil(@NonNull OpenBISUser user) {
         this.user = user;
         this.openBISClientUtil = new OpenBISClientUtil();
     }
@@ -263,7 +263,7 @@ public class OpenBISListUtil {
     @SneakyThrows
     public Optional<File> getAfsFilePresence(@NonNull String afsEntityId, @NonNull String absoluteAfsFilePath) {
         return AfsClientUploadHelper.getServerFilePresence(
-                openBISClientUtil.getAfsClient(user),
+                openBISClientUtil.getAfsClient(user).getInnerClient(),
                 afsEntityId,
                 absoluteAfsFilePath
         );

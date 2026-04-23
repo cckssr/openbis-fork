@@ -1,6 +1,5 @@
 package ch.ethz.sis.afssftp.util;
 
-import ch.ethz.sis.afsclient.client.AfsClient;
 import ch.ethz.sis.afssftp.authentication.OpenBISUser;
 import ch.ethz.sis.openbis.generic.OpenBIS;
 import junit.framework.TestCase;
@@ -29,13 +28,13 @@ public class OpenBISClientUtilTest extends TestCase {
                         .password("pWD1")
                         .sessionToken("sess1on")
                         .build());
-        Mockito.doNothing().when(user).checkAndRenewSessionIfNecessary(Mockito.any(AfsClient.class));
+        Mockito.doNothing().when(user).checkAndRenewSessionIfNecessary(Mockito.any(AfsClientProxy.class));
         OpenBISClientUtil openBISClientUtil = Mockito.spy(new OpenBISClientUtil());
         Mockito.doReturn("http://test.com:8080/afs-server")
                 .when(openBISClientUtil).getAfsUrl();
         openBISClientUtil.getAfsClient(user);
         Mockito.verify(user, Mockito.times(1)).checkAndRenewSessionIfNecessary(
-                Mockito.any(AfsClient.class)
+                Mockito.any(AfsClientProxy.class)
         );
     }
 }

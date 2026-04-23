@@ -22,10 +22,11 @@ public class OpenBISClientUtil {
         return openBIS;
     }
 
-    public AfsClient getAfsClient(@NonNull OpenBISUser openBISUser) {
+    public AfsClientProxy getAfsClient(@NonNull OpenBISUser openBISUser) {
         AfsClient afsClient = new AfsClient(URI.create(getAfsUrl()));
-        openBISUser.checkAndRenewSessionIfNecessary(afsClient);
-        return afsClient;
+        AfsClientProxy afsClientProxy = new AfsClientProxy(afsClient);
+        openBISUser.checkAndRenewSessionIfNecessary(afsClientProxy);
+        return afsClientProxy;
     }
 
     String getApplicationServerUrl() {

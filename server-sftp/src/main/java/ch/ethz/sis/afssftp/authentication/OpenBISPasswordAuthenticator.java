@@ -12,7 +12,7 @@ import org.apache.sshd.server.session.ServerSession;
 public class OpenBISPasswordAuthenticator implements PasswordAuthenticator {
     public static final AttributeRepository.AttributeKey<OpenBISUser> USER_ATTRIBUTE =
             new AttributeRepository.AttributeKey<OpenBISUser>();
-    public static final OpenBISClientUtil openBISClientUtil = new OpenBISClientUtil();
+    private final OpenBISClientUtil openBISClientUtil = new OpenBISClientUtil();
 
     @Override
     public boolean authenticate(String username, String password, ServerSession session) throws PasswordChangeRequiredException, AsyncAuthException {

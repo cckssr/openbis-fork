@@ -1,6 +1,6 @@
 package ch.ethz.sis.afssftp.authentication;
 
-import ch.ethz.sis.afsclient.client.AfsClient;
+import ch.ethz.sis.afssftp.util.AfsClientProxy;
 import ch.ethz.sis.openbis.generic.OpenBIS;
 import lombok.Builder;
 import lombok.Data;
@@ -22,7 +22,7 @@ public class OpenBISUser {
     }
 
     @SneakyThrows
-    public synchronized void checkAndRenewSessionIfNecessary(@NonNull AfsClient afsClient) {
+    public synchronized void checkAndRenewSessionIfNecessary(@NonNull AfsClientProxy afsClient) {
         afsClient.setSessionToken(sessionToken);
         if ( !afsClient.isSessionValid() ) {
             afsClient.login(username, password);

@@ -316,20 +316,22 @@ public class OpenBISListUtilTest extends TestCase {
         Mockito.clearInvocations(openBIS);
     }
 
-    public void testListAfsFiles() {
+    public void testListAfsFiles() throws Exception {
         OpenBISClientUtil openBISClientUtil = Mockito.mock(OpenBISClientUtil.class);
         OpenBISUser openBISUser = OpenBISUser.builder()
                 .username("u5er")
                 .password("pWd")
                 .sessionToken("53551on")
                 .build();
-        Mockito.doReturn(new AfsClient(URI.create("http://example.com:8080/afs-server")))
-                .when(openBISClientUtil).getAfsClient(openBISUser);
+        AfsClientProxy afsClientProxyMock = Mockito.spy(
+                new AfsClientProxy(new AfsClient(URI.create("http://example.com:8080/afs-server")))
+        );
+        Mockito.doReturn(afsClientProxyMock).when(openBISClientUtil).getAfsClient(openBISUser);
         OpenBISListUtil openBISListUtil = new OpenBISListUtil(openBISUser, openBISClientUtil);
-        try {
-            openBISListUtil.listAfsFiles("entity-id", "/dir/file");
-        } catch (Exception e) {}
+        Mockito.doReturn(new File[0]).when(afsClientProxyMock).list("entity-id", "/dir/file", false);
+        openBISListUtil.listAfsFiles("entity-id", "/dir/file");
         Mockito.verify(openBISClientUtil, Mockito.times(1)).getAfsClient(openBISUser);
+        Mockito.verify(afsClientProxyMock, Mockito.times(1)).list("entity-id", "/dir/file", false);
     }
 
     public void testGetAfsFilePresence() {
@@ -339,8 +341,10 @@ public class OpenBISListUtilTest extends TestCase {
                 .password("pWd")
                 .sessionToken("53551on")
                 .build();
-        Mockito.doReturn(new AfsClient(URI.create("http://example.com:8080/afs-server")))
-                .when(openBISClientUtil).getAfsClient(openBISUser);
+        AfsClientProxy afsClientProxyMock = Mockito.spy(
+                new AfsClientProxy(new AfsClient(URI.create("http://example.com:8080/afs-server")))
+        );
+        Mockito.doReturn(afsClientProxyMock).when(openBISClientUtil).getAfsClient(openBISUser);
         OpenBISListUtil openBISListUtil = new OpenBISListUtil(openBISUser, openBISClientUtil);
         try {
             openBISListUtil.getAfsFilePresence("entity-id", "/dir/file");
@@ -355,7 +359,7 @@ public class OpenBISListUtilTest extends TestCase {
                 .password("pWd")
                 .sessionToken("53551on")
                 .build();
-        Mockito.doReturn(new AfsClient(URI.create("http://example.com:8080/afs-server")))
+        Mockito.doReturn(new AfsClientProxy(new AfsClient(URI.create("http://example.com:8080/afs-server"))))
                 .when(openBISClientUtil).getAfsClient(openBISUser);
         OpenBISListUtil openBISListUtil = Mockito.spy(new OpenBISListUtil(openBISUser, openBISClientUtil));
         File returnedFile = File.builder()

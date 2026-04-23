@@ -3,6 +3,8 @@ package ch.ethz.sis.afssftp.filesystemview;
 import ch.ethz.sis.afssftp.authentication.OpenBISUser;
 import ch.ethz.sis.afssftp.filesystemview.impl.standard.StandardPathLister;
 import ch.ethz.sis.afssftp.filesystemview.impl.standard.StandardPathTranslator;
+import ch.ethz.sis.afssftp.util.OpenBISFileUtil;
+import ch.ethz.sis.afssftp.util.OpenBISListUtil;
 import ch.ethz.sis.shared.log.standard.LogManager;
 import ch.ethz.sis.shared.log.standard.Logger;
 import jakarta.annotation.Nonnull;
@@ -10,7 +12,7 @@ import lombok.NonNull;
 
 import java.io.IOException;
 import java.net.URI;
-import java.nio.channels.SeekableByteChannel;
+import java.nio.channels.*;
 import java.nio.file.*;
 import java.nio.file.attribute.*;
 import java.nio.file.spi.FileSystemProvider;
@@ -23,6 +25,8 @@ public class OpenBISFileSystemProvider extends FileSystemProvider {
     private OpenBISFileSystem createdFileSystem;
     private final FtpPathTranslator ftpPathTranslator;
     private final FtpPathLister ftpPathLister;
+    private final OpenBISListUtil openBISListUtil;
+    private final OpenBISFileUtil openBISFileUtil;
 
     public OpenBISFileSystemProvider(
             @NonNull OpenBISUser openBISUser
@@ -31,6 +35,8 @@ public class OpenBISFileSystemProvider extends FileSystemProvider {
         this.openBISUser = openBISUser;
         this.ftpPathTranslator = new StandardPathTranslator();
         this.ftpPathLister = new StandardPathLister(openBISUser);
+        this.openBISListUtil = new OpenBISListUtil(openBISUser);
+        this.openBISFileUtil = new OpenBISFileUtil(openBISUser);
     }
 
     void acceptCreatedFileSystem(@NonNull OpenBISFileSystem createdFileSystem) {
@@ -61,9 +67,32 @@ public class OpenBISFileSystemProvider extends FileSystemProvider {
     }
 
     @Override
+    public FileChannel newFileChannel(Path path, Set<? extends OpenOption> options, FileAttribute<?>... attrs) throws IOException {
+        OpenBISSftpNodeChain openBISSftpNodeChain = getNodeChainFromPath(path);
+        if (openBISSftpNodeChain.getLast()
+                .map( node -> node.getType() == OpenBISSftpNode.Type.AFS_FILE)
+                .orElse(false)
+        ) {
+            String entityId = openBISListUtil.getAfsEntityPermId(
+                    openBISSftpNodeChain.get(openBISSftpNodeChain.size() - 3),
+                    openBISSftpNodeChain.lookUpSpaceCode(),
+                    openBISSftpNodeChain.lookUpProjectCode()
+            );
+            String afsPath = openBISSftpNodeChain.getLast().get().getJoinedAfsFilePath();
+
+            if ( entityId != null && afsPath != null ) {
+                return openBISFileUtil.createAfsFileChannel(entityId, afsPath, openBISUser, options);
+            } else {
+                throw new IllegalArgumentException("Missing AFS-file coordinates");
+            }
+        } else {
+            throw new UnsupportedOperationException("Not AFS-file");
+        }
+    }
+
+    @Override
     public SeekableByteChannel newByteChannel(Path path, Set<? extends OpenOption> set, FileAttribute<?>... fileAttributes) throws IOException {
-        //TODO decode path into AS or AFS object and produce byte-channel accordingly
-        return null;
+        return newFileChannel(path, set, fileAttributes);
     }
 
     @Override
