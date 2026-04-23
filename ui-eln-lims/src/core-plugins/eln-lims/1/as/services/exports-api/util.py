@@ -41,12 +41,24 @@ from java.lang import Throwable
 OPERATION_LOG = LogFactory.getLogger(LogCategory.OPERATION, LogFactory)
 
 
-def sendMail(mailClient, userEmail, downloadURL):
+def sendMail(mailClient, userEmail, link, custom_message=None):
     replyTo = None
     fromAddress = None
     recipient1 = EMailAddress(userEmail)
     topic = "Export Ready"
-    message = "Download a zip file with your exported data at: " + downloadURL
+    if custom_message is not None:
+        message = custom_message
+    else:
+        message = "Download a zip file with your exported data at: "
+    message = message + link
+    mailClient.sendEmailMessage(topic, message, replyTo, fromAddress, recipient1)
+    OPERATION_LOG.info("--- MAIL ---" + " Recipient: " + userEmail + " Topic: " + topic + " Message: " + message)
+
+def sendMailFailure(mailClient, userEmail, message):
+    replyTo = None
+    fromAddress = None
+    recipient1 = EMailAddress(userEmail)
+    topic = "Export Failed"
     mailClient.sendEmailMessage(topic, message, replyTo, fromAddress, recipient1)
     OPERATION_LOG.info("--- MAIL ---" + " Recipient: " + userEmail + " Topic: " + topic + " Message: " + message)
 

@@ -1398,7 +1398,7 @@
 		}
 	
 		this._asHyperLinkOrText = function(text) {
-			return text.startsWith("http") ? FormUtil.asHyperlink(text) : text;
+			return (text && text.startsWith("http")) ? FormUtil.asHyperlink(text) : text;
 		}
 	
 		this._createParentsSection = function(hideShowOptionsModel, sampleTypeDefinitionsExtension, sampleTypeCode, loadFromTemplate) {

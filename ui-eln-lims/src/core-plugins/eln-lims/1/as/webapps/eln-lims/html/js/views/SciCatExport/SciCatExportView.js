@@ -123,10 +123,15 @@ function SciCatExportView(exportController, exportModel) {
 
             var $tree = $('<div>', { 'id' : 'exportsTree-'+_this._viewId });
             $formColumn.append(FormUtil.getBox().append($tree));
-//            $form.css('width', '89%');
 
             var $entityTree = $("<legend>").append("Inclusion tree");
             $container.append($entityTree);
+
+            var $infoBox1 = FormUtil.getInfoBox('Publication time constraint', [
+                'Process of exporting data to SciCat is time consuming. After the resource has been exported you will receive email with detail link.',
+            ]);
+            $infoBox1.css('border', 'none');
+            $container.append($infoBox1);
 
             $container.append($form);
 
@@ -151,274 +156,235 @@ function SciCatExportView(exportController, exportModel) {
                 'onClick': '$("form[name=\'sciCatExportForm\']").submit()'});
             $header.append($exportButton);
 
+            var sampleType = mainController.profile.getSampleTypeForSampleTypeCode("PUBLICATION");
 
-            $container.append($("<legend>").append("Sci Cat Metadata"));
-            this.paintDerivedBox($container);
-            this.paintScientificMetadata($container)
+            var propertyTypes = sampleType.propertyTypeGroups.flatMap(x => x.propertyTypes)
+
+            this._paintPublicationProperties($container, propertyTypes);
 
 
             $container.append($('<br>'));
         };
 
-        this.paintDerivedBox = function ($container) {
-            this.$derivedBox = FormUtil.getTextInputField('sci-cat-derived', 'SciCat identifier', false);
-            var derivedFormGroup = FormUtil.getFieldForComponentWithLabel(this.$derivedBox, 'Derived', null, true);
-            derivedFormGroup.css('width', '89%');
-            $container.append(derivedFormGroup);
-        };
+    this._paintPublicationProperties = function($formColumn, propertyTypes) {
+        var _this = this;
+        var sampleTypeCode = "PUBLICATION";
+        var sampleType = mainController.profile.getSampleTypeForSampleTypeCode(sampleTypeCode);
 
-        this.paintScientificMetadata = function ($container) {
+        var $fieldsetOwner = $('<div>');
+        var $fieldsetRequired = $('<div>');
 
-            var tableModel = this._getScientificMetadataTableModel();
-            this.tableModel = tableModel;
-            this.table = this._getTable(tableModel);
-//            this.table.css( { "margin-left" : "30px" } );
+        var $fieldsetOptional = $('<div>');
+        var $legendRequired = $('<legend>');
+        var $legendOptional = $('<legend>');
 
-            var scientificMetadataFormGroup = FormUtil.getFieldForComponentWithLabel(this.table, 'Scientific Metadata', null, true);
-            scientificMetadataFormGroup.css('width', '90%');
-            $container.append(scientificMetadataFormGroup);
-        };
+        var requiredProperties = ["NAME", "PUBLICATION.DESCRIPTION", "PUBLICATION.ABSTRACT", "PUBLICATION.CREATOR", "PUBLICATION.PUBLISHER"];
 
-        this._getScientificMetadataTableModel = function() {
-            var tableModel = this._getTableModel();
-            tableModel.dynamicRows = true;
-            // define columns
-            tableModel.columns = [{ label : "Key" }, { label : "Value" }];
-            tableModel.rowBuilders = {
-                "Key" : function(rowData) {
-                    return $("<input>", { type : "text", class : "form-control", placeholder : 'Key' }).val(rowData.key);
-                },
-                "Value" :  function(rowData) {
-                     return $("<input>", { type : "text", class : "form-control", placeholder : 'Value' }).val(rowData.value);
-                 },
-            };
-            // transform output
-            tableModel.valuesTransformer = function(values) {
-                return values.map(function(value) {
-                    return {
-                        key : value["Key"],
-                        value : value["Value"],
-                    };
-                });
+        var $legend = null;
+        var $fieldset = null;
+
+        $fieldsetOwner.append($legendRequired).append($fieldsetRequired).append($legendOptional).append($fieldsetOptional);
+
+
+        $legendRequired.text("Publication")
+        $legendOptional.text("Optional publication parameters");
+
+
+
+        var propertyGroupPropertiesOnForm = 0;
+        for(var j = 0; j < propertyTypes.length; j++) {
+            var propertyType = $.extend({}, propertyTypes[j]);
+
+            if(requiredProperties.includes(propertyType.code)) {
+                $legend = $legendRequired;
+                $fieldset = $fieldsetRequired;
+                propertyType.mandatory = true;
+            } else {
+                $legend = $legendOptional;
+                $fieldset = $fieldsetOptional;
+                propertyType.mandatory = false;
             }
-            return tableModel;
-        }
 
-        this._getWidgetValue = function($widget) {
-        		if ($widget.is("span")) {
-        			return $widget.text();
-        		} else if ($widget.is("input") && $widget.attr("type") === "checkbox") {
-        			return $widget.is(":checked");
-        		} else {
-        			return $widget.val();
-        		}
-        	}
+            var propertyTypeV3 = profile.getPropertyTypeFromSampleTypeV3(this.exportModel.type, propertyType.code);
+            var isMultiValue = false;
+            if(propertyTypeV3.isMultiValue) {
+                isMultiValue = propertyTypeV3.isMultiValue();
+            }
 
-        this._getTableModel = function() {
-            var tableModel = {};
-            tableModel.columns = []; // array of elements with label and optional width
-            tableModel.rowBuilders = {}; // key (column name); value (function to build widget)
-            tableModel.rows = []; // array of maps with key (column name); value (widget)
-            tableModel.rowExtraBuilder = null; // optional builder for expandable component per row
-            tableModel.rowExtras = []; // array of extras corresponding to the rows
-            tableModel.rowExtraModels = [] // row extra models can be placed here. models need getValues() function
-            tableModel.dynamicRows = false; // allows adding / removing rows
-            tableModel.fullWidth = true; // table is drawn using the full width if true
-            tableModel.valuesTransformer = function(values) { return values }; // optional transformer
-            tableModel.getValues = (function() {
-                var values = [];
-                for (var i of Object.keys(tableModel.rows)) {
-                    var row = tableModel.rows[i];
-                    var rowValues = {};
-                    for (var column of tableModel.columns) {
-                        var $widget = row[column.label];
-                        var value = this._getWidgetValue($widget);
-                        rowValues[column.label] = value;
-                    }
-                    if (tableModel.rowExtraModels.length === tableModel.rows.length) {
-                        rowValues.extraValues = tableModel.rowExtraModels[i].getValues();
-                    }
-                    values.push(rowValues);
-                }
-                return tableModel.valuesTransformer(values);
-            }).bind(this);
-            tableModel.addRow = function(rowData) {
-                var rowWidgets = {};
-                for (var column of tableModel.columns) {
-                    var rowBuilder = tableModel.rowBuilders[column.label];
-                    rowWidgets[column.label] = rowBuilder(rowData);
-                }
-                tableModel.rows.push(rowWidgets);
-                if (tableModel.rowExtraBuilder) {
-                    tableModel.rowExtras.push(tableModel.rowExtraBuilder(rowData));
-                }
-                return rowWidgets;
-            };
-            return tableModel;
-        }
 
-        this._getTable = function(tableModel, canRemoveFunction) {
-            var $table = $("<table>", { class : "table borderless table-compact" });
-            if (tableModel.fullWidth != true) {
-                $table.css("width", "initial");
+            var semanticAnnotations = this._renderPropertyTypeSemanticAnnotations(propertyType.code);
+
+            if(propertyType.code === profile.getInternalNamespacePrefix() + "ANNOTATIONS_STATE" || propertyType.code === "FREEFORM_TABLE_STATE" || propertyType.code === profile.getInternalNamespacePrefix() + "ORDER.ORDER_STATE" || propertyType.code === profile.getInternalNamespacePrefix() + "BARCODE" ) {
+                continue;
             }
-            // head
-            var $thead = $("<thead>");
-            var $trHead = $("<tr>");
-            if (tableModel.rowExtraBuilder) {
-                $trHead.append($("<th>").css("width", "30px"));
+
+            var $controlGroup =  null;
+            var value = null;
+
+            var $component = FormUtil.getFieldForPropertyType(propertyType, value, isMultiValue);
+            if(['SAMPLE', 'DATE', 'TIMESTAMP', "BOOLEAN", "CONTROLLEDVOCABULARY"].includes(propertyType.dataType)) {
+                _refreshableFields.push($component);
             }
-            for (var column of tableModel.columns) {
-                var $th = $("<th>").css("vertical-align", "middle").text(column.label);
-                if (column.width) {
-                    $th.css("width", column.width);
-                }
-                $trHead.append($th);
-            }
-            // add row button
-            if (tableModel.dynamicRows) {
-                var _this = this;
-                var $addButton = FormUtil.getToolbarButton("PLUS");
-                $addButton.children().css("font-size", '22px')
-                    $addButton.on("click", (function() {
-                        var rowWidgets = tableModel.addRow({});
-                        if (tableModel.rowExtraBuilder) {
-                            var $extra = tableModel.rowExtras[tableModel.rowExtras.length-1];
-                            _this._addRow($tbody, tableModel, rowWidgets, $extra);
+
+            $component.val(value);
+
+            var changeEvent = function(propertyType, isMultiValueProperty) {
+                return function(jsEvent, newValue) {
+                    var propertyTypeCode = null;
+                    propertyTypeCode = propertyType.code;
+                    var field = $(this);
+                    if(propertyType.dataType === "BOOLEAN") {
+                        _this.exportModel.properties[propertyTypeCode] = FormUtil.getBooleanValue(field);
+                    } else if (propertyType.dataType === "TIMESTAMP" || propertyType.dataType === "DATE") {
+                        var timeValue = $($(field.children()[0]).children()[0]).val();
+                        var isValidValue = Util.isDateValid(timeValue, propertyType.dataType === "DATE");
+                        if(!isValidValue.isValid) {
+                            Util.showUserError(isValidValue.error);
                         } else {
-                            _this._addRow($tbody, tableModel, rowWidgets);
+                            _this.exportModel.properties[propertyTypeCode] = timeValue;
                         }
-                    }).bind(_this))
-                $addButton.refresh = function() {
-                    this.off("click");
-                    this.on("click", (function() {
-                        var rowWidgets = tableModel.addRow({});
-                        if (tableModel.rowExtraBuilder) {
-                            var $extra = tableModel.rowExtras[tableModel.rowExtras.length-1];
-                            _this._addRow($tbody, tableModel, rowWidgets, $extra);
-                        } else {
-                            _this._addRow($tbody, tableModel, rowWidgets);
-                        }
-                    }).bind(_this))
-                }
-                _refreshableFields.push($addButton);
-                $trHead.append($("<th>").css("width", "80px").append($addButton));
-            }
-            $thead.append($trHead);
-            $table.append($thead);
-            // body
-            var $tbody = $("<tbody>");
-            // keys in reverse order because we are adding rows on top
-            for (var i of Object.keys(tableModel.rows).reverse()) {
-                var row = tableModel.rows[i];
-
-                if (tableModel.rowExtraBuilder) {
-                    // add extra as row after actual row
-                    var $extra = tableModel.rowExtras[i];
-                    this._addRow($tbody, tableModel, row, $extra, canRemoveFunction);
-                } else {
-                    this._addRow($tbody, tableModel, row, null, canRemoveFunction);
-                }
-            }
-            $table.append($tbody);
-            return $table
-        }
-
-        this._addRow = function($tbody, tableModel, tableModelRow, $extra, canRemoveFunction) {
-            var $tr = $("<tr>");
-            $tbody.prepend($tr);
-            var $extraRow = null;
-            var rowIndex = tableModel.rows.indexOf(tableModelRow);
-
-            // add expand / collapse for extra
-            if ($extra) {
-                // create extra row
-                var colspan = tableModel.columns.length + 1;
-                if (tableModel.dynamicRows) {
-                    colspan++;
-                }
-                $extraRow = $("<tr>")
-                    .append($("<td>").css({"padding-left" : "50px", "padding-right" : "50px"}).attr("colspan", colspan)
-                        .append($extra));
-                // hiding / showing extra row
-                $extraRow.hide();
-                var $td = $("<td>");
-                var $expandCollapse = $("<div>", { class : "glyphicon glyphicon-plus-sign" }).css("vertical-align", "middle");
-                $expandCollapse.on("click", (function($extraRow, $expandCollapse) {
-                    $extraRow.toggle();
-                    if ($extraRow.is(":visible")) {
-                        $expandCollapse.removeClass("glyphicon-plus-sign").addClass("glyphicon-minus-sign");
                     } else {
-                        $expandCollapse.removeClass("glyphicon-minus-sign").addClass("glyphicon-plus-sign");
-                    }
-                }).bind(this, $extraRow, $expandCollapse));
-                var _this = this;
-                $expandCollapse.refresh = function() {
-                    this.off("click");
-                    this.on("click", (function($extraRow, $expandCollapse) {
-                        $extraRow.toggle();
-                        if ($extraRow.is(":visible")) {
-                            $expandCollapse.removeClass("glyphicon-plus-sign").addClass("glyphicon-minus-sign");
+                        if(newValue !== undefined && newValue !== null) {
+                            _this.exportModel.properties[propertyTypeCode] = Util.getEmptyIfNull(newValue);
                         } else {
-                            $expandCollapse.removeClass("glyphicon-minus-sign").addClass("glyphicon-plus-sign");
-                        }
-                    }).bind(_this, $extraRow, $expandCollapse))
-                }
-                _refreshableFields.push($expandCollapse);
-
-                $tr.append($td);
-                $td.append($expandCollapse);
-            }
-
-            for (var column of tableModel.columns) {
-                var $td = $("<td>");
-                $tr.append($td);
-                var $widget = tableModelRow[column.label];
-                $td.append($widget);
-
-            }
-            // remove row button if in edit mode
-            if (tableModel.dynamicRows) {
-                $removeButton = FormUtil.getToolbarButton("MINUS");
-                $removeButton.children().css("font-size", '22px')
-                    if(!canRemoveFunction || canRemoveFunction(tableModel.rows[rowIndex])) {
-                        var _this = this;
-                        $removeButton.on("click", function() {
-                            $tr.remove();
-                            if ($extraRow) {
-                                $extraRow.remove();
-                            }
-                            var rowIndex = tableModel.rows.indexOf(tableModelRow);
-                            tableModel.rows.splice(rowIndex, 1);
-                            if (tableModel.rowExtraModels) {
-                                tableModel.rowExtraModels.splice(rowIndex, 1);
-                            }
-                        });
-                        $removeButton.refresh = function() {
-                            this.off("click");
-                            this.on("click", (function() {
-                                $tr.remove();
-                                if ($extraRow) {
-                                    $extraRow.remove();
+                            var lastSelected = Util.getEmptyIfNull($('option', this).filter(':selected:last').val());
+                            var dataLast = field.data('last');
+                            if(propertyType.dataType === "CONTROLLEDVOCABULARY" && isMultiValueProperty) {
+                                var props = _this.exportModel.properties[propertyTypeCode];
+                                if (field.val()) {
+                                    if(props !== undefined) {
+                                        if(props != '' && field.val().includes('')) {
+                                            _this.exportModel.properties[propertyTypeCode] = '';
+                                            field.val([]);
+                                        } else {
+                                            if(props == '' && field.val().includes('')) {
+                                                var removedEmpty = field.val().filter(x => x != '');
+                                                _this.exportModel.properties[propertyTypeCode] = removedEmpty;
+                                                field.val(removedEmpty);
+                                            } else {
+                                                _this.exportModel.properties[propertyTypeCode] = Util.getEmptyIfNull(field.val());
+                                            }
+                                        }
+                                    } else {
+                                        if(field.val().includes('')) {
+                                            if(dataLast == undefined) {
+                                                var val = field.val().filter(x => x != '');
+                                                _this.exportModel.properties[propertyTypeCode] = val;
+                                                field.val(val);
+                                            } else {
+                                                _this.exportModel.properties[propertyTypeCode] = '';
+                                                field.val([]);
+                                            }
+                                        } else {
+                                            _this.exportModel.properties[propertyTypeCode] = field.val();
+                                        }
+                                    }
+                                } else {
+                                    _this.exportModel.properties[propertyTypeCode] = Util.getEmptyIfNull(field.val());
                                 }
-                                var rowIndex = tableModel.rows.indexOf(tableModelRow);
-                                tableModel.rows.splice(rowIndex, 1);
-                                if (tableModel.rowExtraModels) {
-                                    tableModel.rowExtraModels.splice(rowIndex, 1);
-                                }
-                            }))
+                            } else {
+                                var value = Util.getEmptyIfNull(field.val());
+                                _this.exportModel.properties[propertyTypeCode] = value;
+                            }
+                            field.data('last', field.val());
                         }
-                        _refreshableFields.push($removeButton);
-                    } else {
-                        $removeButton.addClass("disabled");
                     }
-                $tr.append($("<td>").append($removeButton));
+                }
             }
-            // add extra row
-            if ($extraRow) {
-                $tbody.append($extraRow);
+
+            if(propertyType.dataType === "TIMESTAMP" || propertyType.dataType === "DATE") {
+                $("body").on("dp.change", "#"+FormUtil.escapeIdForSelectors($component.attr("id")), changeEvent(propertyType));
+            } else {
+                $("body").on("change", "#"+FormUtil.escapeIdForSelectors($component.attr("id")), changeEvent(propertyType, isMultiValue));
+            }
+
+            $controlGroup = FormUtil.getFieldForComponentWithLabel($component, propertyType.label, null, null, semanticAnnotations);
+
+            $fieldset.append($controlGroup);
+
+            if(propertyType.code !== profile.getInternalNamespacePrefix() + "ANNOTATIONS_STATE") {
+                propertyGroupPropertiesOnForm++;
             }
         }
+
+        if(propertyGroupPropertiesOnForm === 0) {
+            $legendRequired.remove();
+            $legendOptional.remove();
+        }
+
+        $legendRequired.prepend(FormUtil.getShowHideButton($fieldsetRequired, "SCICAT_EXPORT" + "-REQUIRED-" + _this._viewId));
+        var showHideOptional = FormUtil.getShowHideButton($fieldsetOptional, "SCICAT_EXPORT" + "-OPTIONAL-" + _this._viewId, true);
+        $legendOptional.prepend(showHideOptional);
+        $formColumn.append($fieldsetOwner);
+
+        return false;
+    }
+
+
+    this._renderPropertyTypeSemanticAnnotations = function(propertyTypeCode) {
+        var annotations = this._getAllSemanticAnnotations(propertyTypeCode);
+        if (annotations && annotations.length > 0) {
+            var $group = $("<div>", {class : "form-group"});
+            $group.append($("<label>", {class : "control-label"}).text("Semantic Annotations:"));
+            var $lines = $("<div>", {class : "controls" });
+            var _this = this;
+            annotations.forEach(function(annotation) {
+                $lines.append(_this._renderSemanticAnnotation(annotation.getPredicateAccessionId(),
+                    annotation.getPredicateOntologyId(),
+                    annotation.getPredicateOntologyVersion()));
+            });
+            $group.append($lines);
+            return $group;
+        }
+        return null;
+    }
+
+    this._getAllSemanticAnnotations = function(propertyTypeCode) {
+        // Using a dict because the same property type annotations appear for the assignments if not
+        // overloaded
+        var semanticAnnotations = {};
+        var propertyAssignment = this._getPropertyAssignment(propertyTypeCode);
+        if (propertyAssignment) {
+            [propertyAssignment.semanticAnnotations, propertyAssignment.propertyType.semanticAnnotations].forEach(function(annotations) {
+                if (annotations) {
+                    annotations.forEach(function(annotation) {
+                        semanticAnnotations[annotation.permId.permId] = annotation;
+                    });
+                }
+            });
+        }
+        return Object.values(semanticAnnotations);
+    }
+
+    this._getPropertyAssignment = function(propertyTypeCode) {
+        if (this.exportModel.type && this.exportModel.type.propertyAssignments) {
+            var propertyAssignments = this.exportModel.type.propertyAssignments;
+            for (var i = 0; i < propertyAssignments.length; i++) {
+                var propertyAssignment = propertyAssignments[i];
+                if (propertyAssignment.propertyType.code === propertyTypeCode) {
+                    return propertyAssignment;
+                }
+            }
+        }
+        return null;
+    }
+
+    this._renderSemanticAnnotation = function(accessionId, ontologyId, ontologyVersion) {
+        var $line = $("<div>");
+        $line.append(this._asHyperLinkOrText(accessionId));
+        $line.append(" (Ontology: ");
+        $line.append(this._asHyperLinkOrText(ontologyId));
+        if (ontologyVersion && ontologyVersion.length > 0) {
+            $line.append(", Version: ");
+            $line.append(this._asHyperLinkOrText(ontologyVersion));
+        }
+        $line.append(")");
+        return $line;
+    }
+
+    this._asHyperLinkOrText = function(text) {
+        return (text && text.startsWith("http")) ? FormUtil.asHyperlink(text) : text;
+    }
 
 
 }

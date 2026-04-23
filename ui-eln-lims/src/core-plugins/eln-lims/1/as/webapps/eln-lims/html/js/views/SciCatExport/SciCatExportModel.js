@@ -15,5 +15,6 @@
  */
 function SciCatExportModel(accessToken) {
     this.accessToken = accessToken;
-
+    this.properties = {};
+    this.type = null;
 }

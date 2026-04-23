@@ -32,8 +32,9 @@ import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider as CommonSe
 OPERATION_LOG = LogFactory.getLogger(LogCategory.OPERATION, LogFactory)
 
 RO_CRATE_URL_PROPERTY_KEY = 'exports-api.ro-crate.url'
+RO_CRATE_EXPORT_ZIP_NAME = "ro_crate_result.zip"
 
-def exportRoCrate(context, params):
+def exportRoCrate(context, params, withEmail=True):
     try:
         sessionToken = context.getSessionToken()
 
@@ -76,7 +77,7 @@ def exportRoCrate(context, params):
             'openbis.with-objects-and-dataSets-parents': str(withObjectsAndDataSetsParents),
             'openbis.with-objects-and-dataSets-other-spaces': str(withObjectsAndDataSetsOtherSpaces),
             'openbis.input-body-format' : "JSON",
-            'openbis.send-email' : "True",
+            'openbis.send-email' : str(withEmail),
         }
 
         error = None
@@ -100,11 +101,14 @@ def exportRoCrate(context, params):
             "error": e
         }
 
-def checkStatues(context, params):
+def checkStatues(context, params, jobId=None):
     try:
         sessionToken = context.getSessionToken()
         ro_crate_url = CommonServiceProvider.tryToGetProperty(RO_CRATE_URL_PROPERTY_KEY)
-        status_url = ro_crate_url + "/status"
+        if jobId is not None:
+            status_url = ro_crate_url + "/status/" + jobId
+        else:
+            status_url = ro_crate_url + "/status"
         headers = {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
@@ -176,11 +180,11 @@ def downloadRoCrate(context, params):
         if code < 300:
             print("Saving response to session workspace")
             input_stream = BufferedInputStream(conn.getInputStream())
-            sessionWorkspaceProvider.write(sessionToken, 'ro_crate_result.zip', input_stream)
+            sessionWorkspaceProvider.write(sessionToken, RO_CRATE_EXPORT_ZIP_NAME, input_stream)
 
             download_url = CommonServiceProvider.tryToGetProperty("download-url")
             return {
-                "result": download_url + "/openbis/openbis/download?sessionID=" + sessionToken + "&filePath=ro_crate_result.zip",
+                "result": download_url + "/openbis/openbis/download?sessionID=" + sessionToken + "&filePath=" + RO_CRATE_EXPORT_ZIP_NAME,
                 "error": None
             }
         else:

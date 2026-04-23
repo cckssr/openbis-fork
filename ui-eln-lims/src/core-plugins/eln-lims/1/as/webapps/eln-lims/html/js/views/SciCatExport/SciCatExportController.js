@@ -28,13 +28,16 @@ function SciCatExportController(parentController) {
 
     this.init = function(views) {
         this.getSettingValue("personal-sci-cat-api-token", (function(accessToken) {
-            if (accessToken && accessToken !== '') {
-                _this.exportModel = new SciCatExportModel(accessToken);
-                _this.exportView = new SciCatExportView(this, _this.exportModel);
-                _this.exportView.repaint(views);
-            } else {
-                Util.showError('Personal Sci Cat API Token missing, please set it in your user profile.');
-            }
+            mainController.serverFacade.getSampleType("PUBLICATION", function(sampleType) {
+                if (accessToken && accessToken !== '') {
+                    _this.exportModel = new SciCatExportModel(accessToken);
+                    _this.exportModel.type = sampleType;
+                    _this.exportView = new SciCatExportView(this, _this.exportModel);
+                    _this.exportView.repaint(views);
+                } else {
+                    Util.showError('Personal Sci Cat API Token missing, please set it in your user profile.');
+                }
+            });
         }).bind(this));
     };
 
@@ -69,8 +72,24 @@ function SciCatExportController(parentController) {
             }
         }
 
-        var derived = _this.exportView.$derivedBox.val().trim();
-        var metaDataValues = _this.exportView.tableModel.getValues().filter(x => x.key !== '');
+        var props = _this.exportModel.properties;
+
+        var REQUIRED_PUBLICATION_PROPS = ["NAME", "PUBLICATION.DESCRIPTION", "PUBLICATION.ABSTRACT", "PUBLICATION.CREATOR", "PUBLICATION.PUBLISHER"];
+
+        var failedFields = [];
+        for(let requiredProp of REQUIRED_PUBLICATION_PROPS)
+        {
+            if(!props[requiredProp]) {
+                failedFields.push(requiredProp);
+            }
+        }
+
+        if(failedFields.length > 0) {
+            var errorMessage = failedFields.map(x => x.propertyType.label).join(', ');
+            Util.showError("Following fields are mandatory and can not be empty: " + errorMessage);
+            return;
+        }
+
 
         var exportModel = {
             nodeExportList: nodeExportList,
@@ -84,16 +103,13 @@ function SciCatExportController(parentController) {
                 data: $("#DATASET-EXPORT-"+_viewId).is(":checked"), //DATA-EXPORT
                 afsData: $("#FILES-EXPORT-"+_viewId).is(":checked") //DATA-EXPORT
             },
-            derived: derived,
-            metaData: metaDataValues
-//                withImportCompatibility: $("#COMPATIBLE-IMPORT").is(":checked"), //COMPATIBLE-IMPORT
+            publicationProps: props
         }
 
         if (nodeExportList.length === 0) {
             Util.showInfo("First select something to export.");
         } else {
             Util.blockUI();
-
             mainController.serverFacade.exportSciCat(exportModel, _this.exportModel.accessToken, function (result) {
                 if (result.error) {
                     if(result.error.message) {
@@ -102,7 +118,7 @@ function SciCatExportController(parentController) {
                         Util.showError(result.error);
                     }
                 } else {
-                    Util.showSuccess("Export is being processed." + result.result, function () { Util.unblockUI(); });
+                    Util.showSuccess("Export is being processed, you will receive an email when it is finished. If you logout the process will stop. ", function () { Util.unblockUI(); });
                     mainController.refreshView();
                 }
             });

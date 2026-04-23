@@ -119,7 +119,6 @@ function ResearchCollectionExportView(researchCollectionExportController, resear
         $container.append($entityTree);
 
         var $tree = $('<div>', { 'id' : 'exportsTree-'+_this._viewId });
-        $formColumn.append($('<br>'));
         $formColumn.append(FormUtil.getBox().append($tree));
 
         $formColumn.refresh = function() {
