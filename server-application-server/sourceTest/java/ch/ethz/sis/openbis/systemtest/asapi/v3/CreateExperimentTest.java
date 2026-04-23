@@ -18,6 +18,7 @@ package ch.ethz.sis.openbis.systemtest.asapi.v3;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertEqualsNoOrder;
 import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertTrue;
 
 import java.io.Serializable;
@@ -1106,6 +1107,35 @@ public class CreateExperimentTest extends AbstractExperimentTest
         assertEquals(experiment2.getProperties().size(), 2);
     }
 
+    @Test
+    public void testCreateWithPropertyOfTypeArrayIntegerEmptyArray()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypePermId propertyType = createAPropertyType(sessionToken, DataType.ARRAY_INTEGER);
+        EntityTypePermId experimentType = createAnExperimentType(sessionToken, false, propertyType, PLATE_GEOMETRY);
+
+        ExperimentCreation creation = new ExperimentCreation();
+        creation.setCode("EXPERIMENT_WITH_ARRAY_INTEGER_PROPERTY");
+        creation.setTypeId(experimentType);
+        creation.setProjectId(new ProjectIdentifier("/CISD/NEMO"));
+        creation.setProperty(PLATE_GEOMETRY.getPermId(), "384_WELLS_16X24");
+        creation.setIntegerArrayProperty(propertyType.getPermId(), new Long[]{});
+
+        // When
+        List<ExperimentPermId> experimentIds = v3api.createExperiments(sessionToken, Arrays.asList(creation));
+
+        // Then
+        assertEquals(experimentIds.size(), 1);
+        ExperimentFetchOptions fetchOptions = new ExperimentFetchOptions();
+        fetchOptions.withProperties();
+        fetchOptions.withSampleProperties();
+        Experiment experiment2 = v3api.getExperiments(sessionToken, experimentIds, fetchOptions).get(experimentIds.get(0));
+        assertEquals(experiment2.getProperties().get(PLATE_GEOMETRY.getPermId()), "384_WELLS_16X24");
+        assertNull(experiment2.getIntegerArrayProperty(propertyType.getPermId()));
+        assertEquals(experiment2.getProperties().size(), 1);
+    }
+
 
     @Test
     public void testCreateWithMultiValuePropertyOfTypeArrayInteger()
@@ -1212,6 +1242,35 @@ public class CreateExperimentTest extends AbstractExperimentTest
         assertEquals(experiment2.getProperties().get(PLATE_GEOMETRY.getPermId()), "384_WELLS_16X24");
         assertEquals(experiment2.getRealArrayProperty(propertyType.getPermId()), new Double[]{1.0, 2.0, 3.0});
         assertEquals(experiment2.getProperties().size(), 2);
+    }
+
+    @Test
+    public void testCreateWithPropertyOfTypeArrayRealEmptyArray()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypePermId propertyType = createAPropertyType(sessionToken, DataType.ARRAY_REAL);
+        EntityTypePermId experimentType = createAnExperimentType(sessionToken, false, propertyType, PLATE_GEOMETRY);
+
+        ExperimentCreation creation = new ExperimentCreation();
+        creation.setCode("EXPERIMENT_WITH_REAL_PROPERTY");
+        creation.setTypeId(experimentType);
+        creation.setProjectId(new ProjectIdentifier("/CISD/NEMO"));
+        creation.setProperty(PLATE_GEOMETRY.getPermId(), "384_WELLS_16X24");
+        creation.setRealArrayProperty(propertyType.getPermId(), new Double[]{});
+
+        // When
+        List<ExperimentPermId> experimentIds = v3api.createExperiments(sessionToken, Arrays.asList(creation));
+
+        // Then
+        assertEquals(experimentIds.size(), 1);
+        ExperimentFetchOptions fetchOptions = new ExperimentFetchOptions();
+        fetchOptions.withProperties();
+        fetchOptions.withSampleProperties();
+        Experiment experiment2 = v3api.getExperiments(sessionToken, experimentIds, fetchOptions).get(experimentIds.get(0));
+        assertEquals(experiment2.getProperties().get(PLATE_GEOMETRY.getPermId()), "384_WELLS_16X24");
+        assertNull(experiment2.getRealArrayProperty(propertyType.getPermId()));
+        assertEquals(experiment2.getProperties().size(), 1);
     }
 
     @Test
@@ -1322,6 +1381,35 @@ public class CreateExperimentTest extends AbstractExperimentTest
     }
 
     @Test
+    public void testCreateWithPropertyOfTypeArrayStringEmptyArray()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypePermId propertyType = createAPropertyType(sessionToken, DataType.ARRAY_STRING);
+        EntityTypePermId experimentType = createAnExperimentType(sessionToken, false, propertyType, PLATE_GEOMETRY);
+
+        ExperimentCreation creation = new ExperimentCreation();
+        creation.setCode("EXPERIMENT_WITH_ARRAY_STRING_PROPERTY");
+        creation.setTypeId(experimentType);
+        creation.setProjectId(new ProjectIdentifier("/CISD/NEMO"));
+        creation.setProperty(PLATE_GEOMETRY.getPermId(), "384_WELLS_16X24");
+        creation.setStringArrayProperty(propertyType.getPermId(), new String[]{});
+
+        // When
+        List<ExperimentPermId> experimentIds = v3api.createExperiments(sessionToken, Arrays.asList(creation));
+
+        // Then
+        assertEquals(experimentIds.size(), 1);
+        ExperimentFetchOptions fetchOptions = new ExperimentFetchOptions();
+        fetchOptions.withProperties();
+        fetchOptions.withSampleProperties();
+        Experiment experiment2 = v3api.getExperiments(sessionToken, experimentIds, fetchOptions).get(experimentIds.get(0));
+        assertEquals(experiment2.getProperties().get(PLATE_GEOMETRY.getPermId()), "384_WELLS_16X24");
+        assertNull(experiment2.getStringArrayProperty(propertyType.getPermId()));
+        assertEquals(experiment2.getProperties().size(), 1);
+    }
+
+    @Test
     public void testCreateWithMultiValuePropertyOfTypeArrayString()
     {
         // Given
@@ -1416,6 +1504,35 @@ public class CreateExperimentTest extends AbstractExperimentTest
         assertEquals(experiment2.getProperties().get(PLATE_GEOMETRY.getPermId()), "384_WELLS_16X24");
         assertEquals(experiment2.getTimestampArrayProperty(propertyType.getPermId()), new ZonedDateTime[] { time1, time2 });
         assertEquals(experiment2.getProperties().size(), 2);
+    }
+
+    @Test
+    public void testCreateWithPropertyOfTypeArrayTimestampEmptyArray()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypePermId propertyType = createAPropertyType(sessionToken, DataType.ARRAY_TIMESTAMP);
+        EntityTypePermId experimentType = createAnExperimentType(sessionToken, false, propertyType, PLATE_GEOMETRY);
+
+        ExperimentCreation creation = new ExperimentCreation();
+        creation.setCode("EXPERIMENT_WITH_ARRAY_TIMESTAMP_PROPERTY");
+        creation.setTypeId(experimentType);
+        creation.setProjectId(new ProjectIdentifier("/CISD/NEMO"));
+        creation.setProperty(PLATE_GEOMETRY.getPermId(), "384_WELLS_16X24");
+        creation.setTimestampArrayProperty(propertyType.getPermId(), new ZonedDateTime[]{});
+
+        // When
+        List<ExperimentPermId> experimentIds = v3api.createExperiments(sessionToken, Arrays.asList(creation));
+
+        // Then
+        assertEquals(experimentIds.size(), 1);
+        ExperimentFetchOptions fetchOptions = new ExperimentFetchOptions();
+        fetchOptions.withProperties();
+        fetchOptions.withSampleProperties();
+        Experiment experiment2 = v3api.getExperiments(sessionToken, experimentIds, fetchOptions).get(experimentIds.get(0));
+        assertEquals(experiment2.getProperties().get(PLATE_GEOMETRY.getPermId()), "384_WELLS_16X24");
+        assertNull(experiment2.getTimestampArrayProperty(propertyType.getPermId()));
+        assertEquals(experiment2.getProperties().size(), 1);
     }
 
     @Test
