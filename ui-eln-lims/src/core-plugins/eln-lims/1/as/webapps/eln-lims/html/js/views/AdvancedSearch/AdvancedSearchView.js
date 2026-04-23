@@ -1382,6 +1382,11 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
                                 return FormUtil.renderDateRangeGridFilter(params, propertyType.dataType)
                             }
                         })(propertyType)
+                        renderValue = (function(propertyType) {
+                            return function (row, params) {
+                                return FormUtil.renderDateTimeGridValue(row, params, propertyType);
+                            }
+                        })(propertyType)
                     } else if (propertyType.dataType === "XML"){
                         renderValue = (function(propertyType){
                             return function(row, params){

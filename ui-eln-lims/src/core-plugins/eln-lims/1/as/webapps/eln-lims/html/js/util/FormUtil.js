@@ -3384,8 +3384,21 @@ var FormUtil = new function() {
         }
     }
 
+	this.renderDateTimeGridValue = function(row, params, propertyType) {
+		const value = row[propertyType.code]
+		if (!value) {
+			return ""
+		}
+
+		if (propertyType.dataType === "TIMESTAMP") {
+			return this.toUserTimeZoneTimestamp(value);
+		} else {
+			return value;
+		}
+    }
+
 	this.renderArrayGridValue = function(row, params, propertyType) {
-		var value = row[propertyType.code]
+		const value = row[propertyType.code]
 		if (!value) {
 			return ""
 		}
@@ -3394,9 +3407,10 @@ var FormUtil = new function() {
 			return value.toString();
 		}
 
-        if (propertyType.dataType === "ARRAY_STRING"
-				|| propertyType.dataType === "ARRAY_TIMESTAMP") {
+        if (propertyType.dataType === "ARRAY_STRING") {
             return '["' + value.join('", "') + '"]';
+        } else if (propertyType.dataType === "ARRAY_TIMESTAMP") {
+            return '["' + value.map(this.toUserTimeZoneTimestamp).join('", "') + '"]';
         } else {
 			return "[" + value.join(", ") + "]";
 		}
