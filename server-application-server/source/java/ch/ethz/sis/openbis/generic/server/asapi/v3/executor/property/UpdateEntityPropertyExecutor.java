@@ -376,17 +376,30 @@ public class UpdateEntityPropertyExecutor implements IUpdateEntityPropertyExecut
                     {
                         Serializable value = properties.remove(code);
                         ISampleId[] samples;
-                        if (value != null && value.getClass().isArray())
-                        {
-                            List<ISampleId> tmp = new ArrayList<>();
-                            for (Serializable sample : (Serializable[]) value)
-                            {
-                                tmp.add(getSampleFromProperty(sample));
-                            }
-                            samples = tmp.toArray(new ISampleId[0]);
+                        if(value == null) {
+                            samples = new ISampleId[0];
                         } else
                         {
-                            samples = new ISampleId[] { getSampleFromProperty(value) };
+                            if (value.getClass().isArray())
+                            {
+                                List<ISampleId> tmp = new ArrayList<>();
+                                for (Serializable sample : (Serializable[]) value)
+                                {
+                                    tmp.add(getSampleFromProperty(sample));
+                                }
+                                samples = tmp.toArray(new ISampleId[0]);
+                            } else if (value instanceof List<?>)
+                            {
+                                //This is needed because jython can not create pure java arrays
+                                List<ISampleId> tmp = new ArrayList<>();
+                                for(Serializable sample : (List<Serializable>)value) {
+                                    tmp.add(getSampleFromProperty(sample));
+                                }
+                                samples = tmp.toArray(new ISampleId[0]);
+                            } else
+                            {
+                                samples = new ISampleId[] { getSampleFromProperty(value) };
+                            }
                         }
 
                         Map<String, ISampleId[]> props = map.get(entity);
