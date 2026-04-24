@@ -377,7 +377,7 @@ public class UpdateEntityPropertyExecutor implements IUpdateEntityPropertyExecut
                         Serializable value = properties.remove(code);
                         ISampleId[] samples;
                         if(value == null) {
-                            samples = new ISampleId[0];
+                            samples = new ISampleId[] { getSampleFromProperty(value) };
                         } else
                         {
                             if (value.getClass().isArray())
