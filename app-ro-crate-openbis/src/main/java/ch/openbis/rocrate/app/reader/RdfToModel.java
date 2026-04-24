@@ -424,7 +424,7 @@ public class RdfToModel
                 SampleType sampleType1 =
                         (SampleType) entityType;
 
-                for (var propertyAssignment : sampleType1.getPropertyAssignments())
+                for (PropertyAssignment propertyAssignment : sampleType1.getPropertyAssignments())
                 {
                     PropertyAssignment newAssignment = new PropertyAssignment();
                     newAssignment.setMandatory(propertyAssignment.isMandatory());
@@ -486,6 +486,8 @@ public class RdfToModel
                     fetchOptions.withSpace();
                     fetchOptions.withProperties();
                     fetchOptions.withExperiment();
+                    fetchOptions.withParents();
+                    fetchOptions.withChildren();
                     sample.setFetchOptions(fetchOptions);
                 }
                 String typeCode = entry.getTypes().size() == 1 ?
@@ -632,7 +634,7 @@ public class RdfToModel
                 traversalResult.files();
         identifiersWithMissingFiles.addAll(traversalResult.missingEntitites());
 
-        for (var a : allFiles)
+        for (AbstractEntity a : allFiles)
         {
             Path downloadedPath = identifiersToExternalFiles.get(a);
 
@@ -664,7 +666,7 @@ public class RdfToModel
         myRes.stream().collect(Collectors.toMap(x -> x.filePath(), x -> x));
         Map<String, String> images = new LinkedHashMap<>();
 
-            for (var entry : sample.getProperties().entrySet())
+        for (Map.Entry<String, Serializable> entry : sample.getProperties().entrySet())
             {
                 if (!multiLineVarcharProperties.contains(entry.getKey()))
                 {
@@ -731,7 +733,7 @@ public class RdfToModel
 
 
         });
-        for (var a : metadataEntry.getDataEntitiesReferenced())
+        for (DataEntity a : metadataEntry.getDataEntitiesReferenced())
         {
             if (a.getPath() != null)
             {
@@ -742,8 +744,8 @@ public class RdfToModel
             }
 
         }
-        var compareMap = new LinkedHashMap<>();
-        var fileRes = myRes;
+        LinkedHashMap<Object, Object> compareMap = new LinkedHashMap<>();
+        List<IFileInfo> fileRes = myRes;
         ;
 
         res.put(objectIdentifier, fileRes);
@@ -882,20 +884,32 @@ public class RdfToModel
 
             }
 
+
+            {
+            List<Sample> parents = sampleToResolve.getRight().hierarchyEntries.stream()
+                    .filter(x -> x.type() == HierarchyToResolve.Type.PARENT)
+                    .map(x -> externalIdentifierToSample.get(x.objectIdentifer))
+                    .collect(Collectors.toList());
+                sample.setParents(parents);
+                for (Sample parent : parents)
+                {
+                    List<Sample> children =
+                            Optional.ofNullable(parent.getChildren()).orElse(new ArrayList<>());
+                    children.add(sampleToResolve.getLeft());
+                    parent.setChildren(children);
+
+                }
+
+            }
+
+            List<Sample> children =
+                    Optional.ofNullable(sample.getChildren()).orElse(new ArrayList<>());
+            sample.setChildren(children); // prevent NPEs for empty lists
+
+
+
         }
     }
-
-    private void addFiles(OpenBisModel openBisModel, Map<String, Sample> externalIdentifierToSample)
-    {
-        for (var a : openBisModel.getFiles().entrySet())
-        {
-
-        }
-
-    }
-
-
-
 
     private static void resolveOpenBisStructure(List<IMetadataEntry> entries,
             String fallbackSpaceCode,
@@ -973,8 +987,8 @@ public class RdfToModel
             IMetadataEntry entry)
     {
 
-        var properties = entry.getReferences();
-        var parts = entry.getId().split("/");
+        Map<String, List<String>> properties = entry.getReferences();
+        String[] parts = entry.getId().split("/");
 
         String identifierSpaceCode = parts[0];
 
@@ -1015,12 +1029,20 @@ public class RdfToModel
             myProject = s;
 
         }
-        Set<String> filterSet = Set.of(PROPERTY_SPACE, PROPERTY_PROJECT, PROPERTY_COLLECTION);
+        Set<String> filterSet =
+                Set.of(PROPERTY_SPACE, PROPERTY_PROJECT, PROPERTY_COLLECTION,
+                        PROPERTY_ID_PARENTS);
         Map<String, List<String>> samplesToResolve =
                 properties.entrySet().stream().filter(x -> !filterSet.contains(x.getKey()))
                         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        List<HierarchyToResolve> hierarchyInfo = new ArrayList<>();
 
-        return new ReferencesToResolve(mySpace, myProject, myExperiment, samplesToResolve);
+        properties.getOrDefault(PROPERTY_ID_PARENTS, List.of())
+                .stream().map(x -> new HierarchyToResolve(HierarchyToResolve.Type.PARENT, x))
+                .forEach(hierarchyInfo::add);
+
+        return new ReferencesToResolve(mySpace, myProject, myExperiment, samplesToResolve,
+                hierarchyInfo);
     }
 
     private static void resolveFile()
@@ -1229,6 +1251,11 @@ public class RdfToModel
         {
             return true;
         }
+        if (typeProperty.getId().equals(PROPERTY_ID_PARENTS))
+        {
+            return true;
+        }
+
         return false;
 
     }
@@ -1274,6 +1301,16 @@ public class RdfToModel
         }
     }
 
+    record HierarchyToResolve(HierarchyToResolve.Type type, String objectIdentifer)
+    {
+        enum Type
+        {
+            PARENT,
+            CHILD
+        }
+
+    }
+
     public static class ReferencesToResolve
     {
         String spaceCode;
@@ -1284,14 +1321,18 @@ public class RdfToModel
 
         Map<String, List<String>> sampleIdentifiers;
 
+        List<HierarchyToResolve> hierarchyEntries;
+
         public ReferencesToResolve(@Nullable String spaceCode, @Nullable String projectCode,
                 @Nullable String collectionCode,
-                Map<String, List<String>> sampleIdentifiers)
+                Map<String, List<String>> sampleIdentifiers,
+                List<HierarchyToResolve> hierarchyEntries)
         {
             this.spaceCode = spaceCode;
             this.projectCode = projectCode;
             this.collectionCode = collectionCode;
             this.sampleIdentifiers = sampleIdentifiers;
+            this.hierarchyEntries = hierarchyEntries;
         }
 
         public String getSpaceCode()
@@ -1307,6 +1348,16 @@ public class RdfToModel
         public String getCollectionCode()
         {
             return collectionCode;
+        }
+
+        public Map<String, List<String>> getSampleIdentifiers()
+        {
+            return sampleIdentifiers;
+        }
+
+        public List<HierarchyToResolve> getHierarchyEntries()
+        {
+            return hierarchyEntries;
         }
     }
 
