@@ -205,10 +205,24 @@ tasks.register('copyFullJarToInstallerResources', Copy) {
     dependsOn('copyInstallerResources')
     dependsOn('appOpenbisDriveFullJar')
 
-    from('build/libs/' + baseName + '-full.jar')
+    from('build/libs/') {
+        rename(
+                filename -> filename.replace(
+                            baseName + '-full-' + version + '.jar',
+                            baseName + '-full.jar')
+        )
+    }
     into('build/release/installer-resources/include')
+    include(baseName + '-full-' + version + '.jar')
 }
 
+//NB: VERY IMPORTANT NOTE ABOUT implementationVersion !!!
+//If the value of implementationVersion is of the form: SNAPSHOT+1777017722
+//jpackage fails.
+//Accepted formats are for example:
+//- 1.0.0
+//- 1.0.0-SNAPSHOT
+//- 1.0.0-SNAPSHOT+1777017722
 tasks.register('jpackageOnLinux', Exec) {
     dependsOn('copyFullJarToInstallerResources')
 
@@ -244,6 +258,13 @@ tasks.register('releaseOnLinux', Tar) {
     compression = Compression.GZIP
 }
 
+//NB: VERY IMPORTANT NOTE ABOUT implementationVersion !!!
+//If the value of implementationVersion is of the form: SNAPSHOT+1777017722
+//jpackage fails.
+//Accepted formats are for example:
+//- 1.0.0
+//- 1.0.0-SNAPSHOT
+//- 1.0.0-SNAPSHOT+1777017722
 tasks.register('jpackageOnMacOS', Exec) {
     dependsOn('copyFullJarToInstallerResources')
 
@@ -278,6 +299,13 @@ tasks.register('releaseOnMacOS', Tar) {
     compression = Compression.GZIP
 }
 
+//NB: VERY IMPORTANT NOTE ABOUT implementationVersion !!!
+//If the value of implementationVersion is of the form: SNAPSHOT+1777017722
+//jpackage fails.
+//Accepted formats are for example:
+//- 1.0.0
+//- 1.0.0-SNAPSHOT
+//- 1.0.0-SNAPSHOT+1777017722
 tasks.register('jpackageOnWindows', Exec) {
     dependsOn('copyFullJarToInstallerResources')
 
@@ -354,8 +382,15 @@ tasks.register('release', Tar) {
 
     doFirst {
         copy {
-            from('build/libs/' + baseName + '-full.jar')
+            from('build/libs/') {
+                rename(
+                        filename -> filename.replace(
+                                baseName + '-full-' + version + '.jar',
+                                baseName + '-full.jar')
+                )
+            }
             into('build/manual-release/launch-scripts')
+            include(baseName + '-full-' + version + '.jar')
         }
     }
 
