@@ -78,7 +78,7 @@ public class AfsFileChannel extends FileChannel {
                         throw new IOException("Error reading from AFS");
                     }
                     dst.put(bytes);
-                    position.addAndGet(bytes.length);
+                    position.set(pos + bytes.length);
                     return bytes.length;
                 }
             } else {
@@ -126,7 +126,7 @@ public class AfsFileChannel extends FileChannel {
                         src.put(bytes, bytesOffset, transferredBytes);
                         bytesOffset += transferredBytes;
                     }
-                    position.addAndGet(bytes.length);
+                    position.set(pos + bytes.length);
                     return bytes.length;
                 }
             } else {
@@ -139,14 +139,89 @@ public class AfsFileChannel extends FileChannel {
 
     @Override
     public int write(ByteBuffer src) throws IOException {
-        //TODO
-        throw new UnsupportedOperationException();
+        if (writeOpenOption) {
+            if (src.remaining() > 0) {
+                long size = size();
+                long pos = position.get();
+
+                if (pos > size) {
+                    fillWithZero(size, pos);
+                }
+                int bytesToWrite = (int) Long.min(
+                        AfsClient.DEFAULT_PACKAGE_SIZE_IN_BYTES,
+                        src.remaining()
+                );
+
+                byte[] bytes = new byte[bytesToWrite];
+                src.get(bytes);
+
+                try {
+                    if ( !clientUtil.getAfsClient(openBISUser).write(
+                            entityId,
+                            afsPath,
+                            pos,
+                            bytes) ) {
+                        throw new IOException("Error writing to AFS");
+                    }
+                } catch (Exception e) {
+                    throw new IOException("Error writing to AFS");
+                }
+                position.set(pos + bytesToWrite);
+                return bytes.length;
+            } else {
+                return 0;
+            }
+        } else {
+            throw new UnsupportedOperationException();
+        }
     }
 
     @Override
     public long write(ByteBuffer[] srcs, int srcsOffset, int srcsCount) throws IOException {
-        //TODO
-        throw new UnsupportedOperationException();
+        if (writeOpenOption) {
+            long remaining = IntStream.range(srcsOffset, srcsOffset + srcsCount)
+                    .mapToLong( index -> srcs[index].remaining() ).sum();
+            if (remaining > 0) {
+                long size = size();
+                long pos = position.get();
+
+                if (pos > size) {
+                    fillWithZero(size, pos);
+                }
+                int bytesToWrite = (int) Long.min(
+                        AfsClient.DEFAULT_PACKAGE_SIZE_IN_BYTES,
+                        remaining
+                );
+
+                byte[] bytes = new byte[bytesToWrite];
+
+                for(int index = srcsOffset, bytesOffset = 0;
+                    index < srcsOffset + srcsCount && bytesOffset < bytes.length;
+                    index++) {
+                    int movedBytes = Integer.min(srcs[index].remaining(), bytes.length - bytesOffset);
+                    srcs[index].get(bytes, bytesOffset, movedBytes);
+                    bytesOffset = bytesOffset + movedBytes;
+                }
+
+                try {
+                    if ( !clientUtil.getAfsClient(openBISUser).write(
+                            entityId,
+                            afsPath,
+                            pos,
+                            bytes) ) {
+                        throw new IOException("Error writing to AFS");
+                    }
+                } catch (Exception e) {
+                    throw new IOException("Error writing to AFS");
+                }
+                position.set(pos + bytesToWrite);
+                return bytes.length;
+            } else {
+                return 0;
+            }
+        } else {
+            throw new UnsupportedOperationException();
+        }
     }
 
     @Override
@@ -171,9 +246,11 @@ public class AfsFileChannel extends FileChannel {
     public FileChannel truncate(long size) throws IOException {
         if (writeOpenOption) {
             try {
-                clientUtil.getAfsClient(openBISUser).truncate(entityId, afsPath, size);
+                if ( !clientUtil.getAfsClient(openBISUser).truncate(entityId, afsPath, size) ) {
+                    throw new IOException("Error truncating AFS-file");
+                }
             } catch (Exception e) {
-                throw new IOException(e);
+                throw new IOException("Error truncating AFS-file");
             }
             if (position.get() > size) {
                 position.set(size);
@@ -186,7 +263,7 @@ public class AfsFileChannel extends FileChannel {
 
     @Override
     public void force(boolean force) throws IOException {
-        throw new UnsupportedOperationException();
+        //No necessary action
     }
 
     @Override
@@ -211,8 +288,22 @@ public class AfsFileChannel extends FileChannel {
 
     @Override
     public long transferFrom(ReadableByteChannel src, long position, long count) throws IOException {
-        //TODO
-        throw new UnsupportedOperationException();
+        if (writeOpenOption) {
+            int maxBytesToBeWrite = IntStream.of(
+                    (int) Long.min(count, Integer.MAX_VALUE),
+                    AfsClient.DEFAULT_PACKAGE_SIZE_IN_BYTES).min().getAsInt();
+
+            ByteBuffer byteBuffer = ByteBuffer.allocate(maxBytesToBeWrite);
+
+            int ret = write(byteBuffer, position);
+            byteBuffer.flip();
+            while (byteBuffer.remaining() > 0) {
+                src.read(byteBuffer);
+            }
+            return ret;
+        } else {
+            throw new UnsupportedOperationException();
+        }
     }
 
     @Override
@@ -252,8 +343,39 @@ public class AfsFileChannel extends FileChannel {
 
     @Override
     public int write(ByteBuffer src, long position) throws IOException {
-        //TODO
-        throw new UnsupportedOperationException();
+        if (writeOpenOption) {
+            if (src.remaining() > 0) {
+                long size = size();
+
+                if (position > size) {
+                    fillWithZero(size, position);
+                }
+                int bytesToWrite = (int) Long.min(
+                        AfsClient.DEFAULT_PACKAGE_SIZE_IN_BYTES,
+                        src.remaining()
+                );
+
+                byte[] bytes = new byte[bytesToWrite];
+                src.get(bytes);
+
+                try {
+                    if ( !clientUtil.getAfsClient(openBISUser).write(
+                            entityId,
+                            afsPath,
+                            position,
+                            bytes) ) {
+                        throw new IOException("Error writing to AFS");
+                    }
+                } catch (Exception e) {
+                    throw new IOException("Error writing to AFS");
+                }
+                return bytes.length;
+            } else {
+                return 0;
+            }
+        } else {
+            throw new UnsupportedOperationException();
+        }
     }
 
     @Override
@@ -269,5 +391,27 @@ public class AfsFileChannel extends FileChannel {
     @Override
     public FileLock tryLock(long position, long size, boolean shared) throws IOException {
         throw new UnsupportedOperationException();
+    }
+
+    void fillWithZero(long beginInclusive, long endExclusive) throws IOException {
+        long index = beginInclusive;
+        while ( index < endExclusive ) {
+            int bytesToWrite = (int) Long.min(
+                    AfsClient.DEFAULT_PACKAGE_SIZE_IN_BYTES,
+                    endExclusive - index
+            );
+            try {
+                if ( !clientUtil.getAfsClient(openBISUser).write(
+                        entityId,
+                        afsPath,
+                        index,
+                        new byte[bytesToWrite]) ) {
+                    throw new IOException("Error writing to AFS");
+                }
+            } catch (Exception e) {
+                throw new IOException("Error writing to AFS");
+            }
+            index = index + bytesToWrite;
+        }
     }
 }

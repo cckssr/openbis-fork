@@ -114,7 +114,26 @@ public class OpenBISFileSystemProvider extends FileSystemProvider {
 
     @Override
     public void delete(Path path) throws IOException {
-        //TODO decode path into AS or AFS object and try to delete it, if applicable
+        OpenBISSftpNodeChain openBISSftpNodeChain = getNodeChainFromPath(path);
+        if (openBISSftpNodeChain.getLast()
+                .map( node -> node.getType() == OpenBISSftpNode.Type.AFS_FILE)
+                .orElse(false)
+        ) {
+            String entityId = openBISListUtil.getAfsEntityPermId(
+                    openBISSftpNodeChain.get(openBISSftpNodeChain.size() - 3),
+                    openBISSftpNodeChain.lookUpSpaceCode(),
+                    openBISSftpNodeChain.lookUpProjectCode()
+            );
+            String afsPath = openBISSftpNodeChain.getLast().get().getJoinedAfsFilePath();
+
+            if ( entityId != null && afsPath != null ) {
+                openBISFileUtil.deleteAfsFile(entityId, afsPath, openBISUser);
+            } else {
+                throw new IllegalArgumentException("Missing AFS-file coordinates");
+            }
+        } else {
+            throw new UnsupportedOperationException("Not AFS-file");
+        }
     }
 
     @Override

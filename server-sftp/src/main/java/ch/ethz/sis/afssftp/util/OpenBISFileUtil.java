@@ -101,4 +101,26 @@ public class OpenBISFileUtil {
             throw new UnsupportedOperationException("AFS-file does not exist or is not a regular file");
         }
     }
+
+    public void deleteAfsFile(
+            @NonNull String entityId,
+            @NonNull String afsPath,
+            @NonNull OpenBISUser openBISUser
+    ) throws IOException {
+        File afsFile = Optional.of(entityId)
+                .flatMap( entId -> openBISListUtil.getAfsFilePresence(entId, afsPath))
+                .orElse(null);
+
+        if (afsFile != null) {
+            AfsClientProxy afsClient = openBISClientUtil.getAfsClient(openBISUser);
+
+            try {
+                if ( !afsClient.delete(entityId, afsPath, true) ) {
+                    throw new IOException("Error deleting AFS-file");
+                }
+            } catch (Exception e) {
+                throw new IOException("Error deleting AFS-file");
+            }
+        }
+    }
 }
