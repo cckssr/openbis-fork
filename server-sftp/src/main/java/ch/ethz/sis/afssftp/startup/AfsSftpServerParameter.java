@@ -15,7 +15,7 @@
  */
 package ch.ethz.sis.afssftp.startup;
 
-public enum AtomicFileSystemServerParameter
+public enum AfsSftpServerParameter
 {
     //
     // Logging
@@ -34,12 +34,12 @@ public enum AtomicFileSystemServerParameter
 
     private final String parameterName;
 
-    private AtomicFileSystemServerParameter()
+    private AfsSftpServerParameter()
     {
         this.parameterName = name();
     }
 
-    private AtomicFileSystemServerParameter(String parameterName)
+    private AfsSftpServerParameter(String parameterName)
     {
         this.parameterName = parameterName;
     }

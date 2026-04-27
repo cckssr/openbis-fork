@@ -31,7 +31,7 @@ public class Main
         try
         {
             Configuration configuration =
-                    new Configuration(List.of(AtomicFileSystemServerParameter.class), args[0]);
+                    new Configuration(List.of(AfsSftpServerParameter.class), args[0]);
 
             Server server = new Server(configuration);
             Thread.currentThread().join();

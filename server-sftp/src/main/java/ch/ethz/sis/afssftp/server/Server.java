@@ -17,7 +17,7 @@ package ch.ethz.sis.afssftp.server;
 
 import ch.ethz.sis.afssftp.authentication.OpenBISPasswordAuthenticator;
 import ch.ethz.sis.afssftp.filesystemview.OpenBISFileSystemFactory;
-import ch.ethz.sis.afssftp.startup.AtomicFileSystemServerParameter;
+import ch.ethz.sis.afssftp.startup.AfsSftpServerParameter;
 import ch.ethz.sis.afssftp.util.OpenBISClientUtil;
 import ch.ethz.sis.shared.log.standard.LogFactory;
 import ch.ethz.sis.shared.log.standard.LogFactoryFactory;
@@ -53,8 +53,8 @@ public final class Server {
         shutdown = false;
 
         LogFactoryFactory logFactoryFactory = new LogFactoryFactory();
-        LogFactory logFactory = logFactoryFactory.create(configuration.getStringProperty(AtomicFileSystemServerParameter.logFactoryClass));
-        logFactory.configure(configuration.getStringProperty(AtomicFileSystemServerParameter.logConfigFile));
+        LogFactory logFactory = logFactoryFactory.create(configuration.getStringProperty(AfsSftpServerParameter.logFactoryClass));
+        logFactory.configure(configuration.getStringProperty(AfsSftpServerParameter.logConfigFile));
         LogManager.setLogFactory(logFactory);
         logger = LogManager.getLogger(Server.class);
 
@@ -65,10 +65,10 @@ public final class Server {
 
         // Startup
         OpenBISClientUtil.applicationServerUrl.set(
-                configuration.getStringProperty(AtomicFileSystemServerParameter.applicationServerUrl)
+                configuration.getStringProperty(AfsSftpServerParameter.applicationServerUrl)
         );
         OpenBISClientUtil.afsUrl.set(
-                configuration.getStringProperty(AtomicFileSystemServerParameter.afsUrl)
+                configuration.getStringProperty(AfsSftpServerParameter.afsUrl)
         );
         sftpServer = SshServer.setUpDefaultServer();
 
@@ -80,14 +80,14 @@ public final class Server {
         sftpServer.setFileSystemFactory(new OpenBISFileSystemFactory());
 
         // 3. Configure port and start
-        int serverPort = configuration.getIntegerProperty(AtomicFileSystemServerParameter.serverPort);
+        int serverPort = configuration.getIntegerProperty(AfsSftpServerParameter.serverPort);
         sftpServer.setPort(serverPort);
 
         // 4. Set key pair provider
-        Path ksPath = Paths.get(configuration.getStringProperty(AtomicFileSystemServerParameter.keyStorePath));
+        Path ksPath = Paths.get(configuration.getStringProperty(AfsSftpServerParameter.keyStorePath));
         String type = "JKS";
-        String password = configuration.getStringProperty(AtomicFileSystemServerParameter.keyStorePassword);
-        String alias = configuration.getStringProperty(AtomicFileSystemServerParameter.keyStoreKeyAlias);
+        String password = configuration.getStringProperty(AfsSftpServerParameter.keyStorePassword);
+        String alias = configuration.getStringProperty(AfsSftpServerParameter.keyStoreKeyAlias);
 
         KeyStore ks = loadKeyStore(ksPath.toString(), password, type);
         KeyPair kp = loadKeyPair(ks, alias, password);
