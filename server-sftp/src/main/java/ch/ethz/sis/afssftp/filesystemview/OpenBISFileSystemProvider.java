@@ -107,9 +107,26 @@ public class OpenBISFileSystemProvider extends FileSystemProvider {
 
     @Override
     public void createDirectory(Path path, FileAttribute<?>... fileAttributes) throws IOException {
-        /*TODO decode path into AS or AFS object and try to create it as a directory, if applicable:
-            this should be possible only for real AFS directories
-        */
+        OpenBISSftpNodeChain openBISSftpNodeChain = getNodeChainFromPath(path);
+        if (openBISSftpNodeChain.getLast()
+                .map( node -> node.getType() == OpenBISSftpNode.Type.AFS_FILE)
+                .orElse(false)
+        ) {
+            String entityId = openBISListUtil.getAfsEntityPermId(
+                    openBISSftpNodeChain.get(openBISSftpNodeChain.size() - 3),
+                    openBISSftpNodeChain.lookUpSpaceCode(),
+                    openBISSftpNodeChain.lookUpProjectCode()
+            );
+            String afsPath = openBISSftpNodeChain.getLast().get().getJoinedAfsFilePath();
+
+            if ( entityId != null && afsPath != null ) {
+                openBISFileUtil.createAfsDirectory(entityId, afsPath, openBISUser);
+            } else {
+                throw new IllegalArgumentException("Missing AFS-file coordinates");
+            }
+        } else {
+            throw new UnsupportedOperationException("Not AFS-file");
+        }
     }
 
     @Override
@@ -137,13 +154,81 @@ public class OpenBISFileSystemProvider extends FileSystemProvider {
     }
 
     @Override
-    public void copy(Path path, Path path1, CopyOption... copyOptions) throws IOException {
-        //TODO decode paths into AS or AFS objects (or object positions) and try to copy the former onto the latter, if applicable
+    public void copy(Path source, Path destination, CopyOption... copyOptions) throws IOException {
+        OpenBISSftpNodeChain openBISSftpNodeChain1 = getNodeChainFromPath(source);
+        OpenBISSftpNodeChain openBISSftpNodeChain2 = getNodeChainFromPath(destination);
+        if (openBISSftpNodeChain1.getLast()
+                .map( node -> node.getType() == OpenBISSftpNode.Type.AFS_FILE)
+                .orElse(false) &&
+            openBISSftpNodeChain2.getLast()
+                .map( node -> node.getType() == OpenBISSftpNode.Type.AFS_FILE)
+                .orElse(false)
+        ) {
+            String entityId1 = openBISListUtil.getAfsEntityPermId(
+                    openBISSftpNodeChain1.get(openBISSftpNodeChain1.size() - 3),
+                    openBISSftpNodeChain1.lookUpSpaceCode(),
+                    openBISSftpNodeChain1.lookUpProjectCode()
+            );
+            String afsPath1 = openBISSftpNodeChain1.getLast().get().getJoinedAfsFilePath();
+
+            String entityId2 = openBISListUtil.getAfsEntityPermId(
+                    openBISSftpNodeChain2.get(openBISSftpNodeChain2.size() - 3),
+                    openBISSftpNodeChain2.lookUpSpaceCode(),
+                    openBISSftpNodeChain2.lookUpProjectCode()
+            );
+            String afsPath2 = openBISSftpNodeChain2.getLast().get().getJoinedAfsFilePath();
+
+            if ( entityId1 != null && afsPath1 != null && entityId2 != null && afsPath2 != null ) {
+                openBISFileUtil.copyAfsFile(
+                        entityId1, afsPath1,
+                        entityId2, afsPath2,
+                        openBISUser,
+                        Arrays.asList(copyOptions).contains(StandardCopyOption.REPLACE_EXISTING));
+            } else {
+                throw new IllegalArgumentException("Missing AFS-file coordinates");
+            }
+        } else {
+            throw new UnsupportedOperationException("Not AFS-files");
+        }
     }
 
     @Override
-    public void move(Path path, Path path1, CopyOption... copyOptions) throws IOException {
-        //TODO decode paths into AS or AFS objects (or object positions) and try to move the former onto the latter, if applicable
+    public void move(Path source, Path destination, CopyOption... copyOptions) throws IOException {
+        OpenBISSftpNodeChain openBISSftpNodeChain1 = getNodeChainFromPath(source);
+        OpenBISSftpNodeChain openBISSftpNodeChain2 = getNodeChainFromPath(destination);
+        if (openBISSftpNodeChain1.getLast()
+                .map( node -> node.getType() == OpenBISSftpNode.Type.AFS_FILE)
+                .orElse(false) &&
+            openBISSftpNodeChain2.getLast()
+                        .map( node -> node.getType() == OpenBISSftpNode.Type.AFS_FILE)
+                        .orElse(false)
+        ) {
+            String entityId1 = openBISListUtil.getAfsEntityPermId(
+                    openBISSftpNodeChain1.get(openBISSftpNodeChain1.size() - 3),
+                    openBISSftpNodeChain1.lookUpSpaceCode(),
+                    openBISSftpNodeChain1.lookUpProjectCode()
+            );
+            String afsPath1 = openBISSftpNodeChain1.getLast().get().getJoinedAfsFilePath();
+
+            String entityId2 = openBISListUtil.getAfsEntityPermId(
+                    openBISSftpNodeChain2.get(openBISSftpNodeChain2.size() - 3),
+                    openBISSftpNodeChain2.lookUpSpaceCode(),
+                    openBISSftpNodeChain2.lookUpProjectCode()
+            );
+            String afsPath2 = openBISSftpNodeChain2.getLast().get().getJoinedAfsFilePath();
+
+            if ( entityId1 != null && afsPath1 != null && entityId2 != null && afsPath2 != null ) {
+                openBISFileUtil.moveAfsFile(
+                        entityId1, afsPath1,
+                        entityId2, afsPath2,
+                        openBISUser,
+                        Arrays.asList(copyOptions).contains(StandardCopyOption.REPLACE_EXISTING));
+            } else {
+                throw new IllegalArgumentException("Missing AFS-file coordinates");
+            }
+        } else {
+            throw new UnsupportedOperationException("Not AFS-files");
+        }
     }
 
     @Override

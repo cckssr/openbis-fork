@@ -123,4 +123,101 @@ public class OpenBISFileUtil {
             }
         }
     }
+
+    public void createAfsDirectory(
+            @NonNull String entityId,
+            @NonNull String afsPath,
+            @NonNull OpenBISUser openBISUser
+    ) throws IOException {
+        File afsFile = Optional.of(entityId)
+                .flatMap( entId -> openBISListUtil.getAfsFilePresence(entId, afsPath))
+                .orElse(null);
+
+        if (afsFile == null) {
+            AfsClientProxy afsClient = openBISClientUtil.getAfsClient(openBISUser);
+
+            try {
+                if ( !afsClient.create(entityId, afsPath, true) ) {
+                    throw new IOException("Error creating AFS-directory");
+                }
+            } catch (Exception e) {
+                throw new IOException("Error creating AFS-directory");
+            }
+        } else {
+            throw new IOException("Error creating AFS-directory: file already exists");
+        }
+    }
+
+    public void copyAfsFile(
+            @NonNull String entityIdSrc,
+            @NonNull String afsPathSrc,
+            @NonNull String entityIdDest,
+            @NonNull String afsPathDest,
+            @NonNull OpenBISUser openBISUser,
+            boolean replaceExisting
+    ) throws IOException {
+        File srcFile = Optional.of(entityIdSrc)
+                .flatMap( entId -> openBISListUtil.getAfsFilePresence(entId, afsPathSrc))
+                .orElse(null);
+
+        File destFile = Optional.of(entityIdDest)
+                .flatMap( entId -> openBISListUtil.getAfsFilePresence(entId, afsPathDest))
+                .orElse(null);
+
+        if (srcFile != null) {
+            AfsClientProxy afsClient = openBISClientUtil.getAfsClient(openBISUser);
+
+            if (destFile == null || replaceExisting) {
+                try {
+                    if ( !afsClient.copy(entityIdSrc, afsPathSrc,
+                            entityIdDest, afsPathDest) ) {
+                        throw new IOException("Error copying AFS-file");
+                    }
+                } catch (Exception e) {
+                    throw new IOException("Error copying AFS-file");
+                }
+            }
+        } else {
+            throw new IOException("Error copying AFS-file: file does not exist");
+        }
+    }
+
+    public void moveAfsFile(
+            @NonNull String entityIdSrc,
+            @NonNull String afsPathSrc,
+            @NonNull String entityIdDest,
+            @NonNull String afsPathDest,
+            @NonNull OpenBISUser openBISUser,
+            boolean replaceExisting
+    ) throws IOException {
+        File srcFile = Optional.of(entityIdSrc)
+                .flatMap( entId -> openBISListUtil.getAfsFilePresence(entId, afsPathSrc))
+                .orElse(null);
+
+        File destFile = Optional.of(entityIdDest)
+                .flatMap( entId -> openBISListUtil.getAfsFilePresence(entId, afsPathDest))
+                .orElse(null);
+
+        if (srcFile != null) {
+            AfsClientProxy afsClient = openBISClientUtil.getAfsClient(openBISUser);
+            if (destFile == null) {
+                try {
+                    if ( !afsClient.move(entityIdSrc, afsPathSrc,
+                            entityIdDest, afsPathDest) ) {
+                        throw new IOException("Error moving AFS-file");
+                    }
+                } catch (Exception e) {
+                    throw new IOException("Error moving AFS-file");
+                }
+            } else {
+                if (replaceExisting) {
+                    throw new IOException("Error moving AFS-file: unsupported overwriting already existing destination-file");
+                } else {
+                    throw new IOException("Error moving AFS-file: already existing destination-file");
+                }
+            }
+        } else {
+            throw new IOException("Error moving AFS-file: file does not exist");
+        }
+    }
 }
