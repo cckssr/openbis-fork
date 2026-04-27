@@ -48,8 +48,11 @@ class OpenBisObject:
             self._set_data(data)
 
         if props is not None:
-            for key in props:
-                setattr(self.p, key, props[key])
+            actual_props = props
+            if isinstance(props, PropertyHolder):
+                actual_props = props.all()
+            for key in actual_props:
+                setattr(self.p, key, actual_props[key])
 
         if kwargs is not None:
             for key in kwargs:

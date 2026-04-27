@@ -38,6 +38,7 @@ from .definitions import (
     openbis_definitions,
     get_type_for_entity,
     get_fetchoption_for_entity,
+    get_method_for_entity,
 )
 from .fast_download import FastDownload
 from .openbis_object import OpenBisObject
@@ -363,34 +364,88 @@ class DataSet(
     )
     is_physical = partialmethod(_is_symlink_or_physical, what="physical")
 
-    def archive(self, remove_from_data_store=True):
-        fetchopts = {
-            "removeFromDataStore": remove_from_data_store,
-            "@type": "as.dto.dataset.archive.DataSetArchiveOptions",
+    def request_archiving(self):
+        return self._request_archiving(value=True)
+
+    def revoke_request_archiving(self):
+        return self._request_archiving(value=False)
+
+    def _request_archiving(self, value=True):
+        up_obj = get_type_for_entity(self.entity, "update")
+
+        identifier_name = self._defs["identifier"]
+        up_obj[identifier_name] = self._permId
+
+        physicalDataUpdate = {"@type": "as.dto.dataset.update.PhysicalDataUpdate"}
+        up_obj["physicalData"] = {
+            "@type": "as.dto.common.update.FieldUpdateValue",
+            "isModified": True,
+            "value": physicalDataUpdate,
         }
-        self.archive_unarchive("archiveDataSets", fetchopts)
+
+        physicalDataUpdate["archivingRequested"] = {
+            "value": value,
+            "isModified": True,
+            "@type": "as.dto.common.update.FieldUpdateValue",
+        }
+
+        method_name = get_method_for_entity(self.entity, "update")
+        request = {"method": method_name, "params": [self.openbis.token, [up_obj]]}
+
+        self.openbis._post_request(self.openbis.as_v3, request)
+
+        new_dataset_data = self.openbis.get_dataset(
+            self.permId, only_data=True
+        )
+        self._set_data(new_dataset_data)
+        return self
+
+
+    def request_unarchiving(self):
+        return self._request_archiving(value=True)
+
+    def revoke_request_unarchiving(self):
+        return self._request_archiving(value=False)
+
+    def _request_unarchiving(self, value=True):
+        up_obj = get_type_for_entity(self.entity, "update")
+
+        identifier_name = self._defs["identifier"]
+        up_obj[identifier_name] = self._permId
+
+        physicalDataUpdate = {"@type": "as.dto.dataset.update.PhysicalDataUpdate"}
+        up_obj["physicalData"] = {
+            "@type": "as.dto.common.update.FieldUpdateValue",
+            "isModified": True,
+            "value": physicalDataUpdate,
+        }
+
+        physicalDataUpdate["unarchivingRequested"] = {
+            "value": value,
+            "isModified": True,
+            "@type": "as.dto.common.update.FieldUpdateValue",
+        }
+
+        method_name = get_method_for_entity(self.entity, "update")
+        request = {"method": method_name, "params": [self.openbis.token, [up_obj]]}
+
+        self.openbis._post_request(self.openbis.as_v3, request)
+
+        new_dataset_data = self.openbis.get_dataset(
+            self.permId, only_data=True
+        )
+        self._set_data(new_dataset_data)
+        return self
+
+    def archive(self, remove_from_data_store=True):
+        self.openbis.archive(self.permId, remove_from_data_store=remove_from_data_store)
         if VERBOSE:
             print(f"DataSet {self.permId} archived")
 
     def unarchive(self):
-        fetchopts = {"@type": "as.dto.dataset.unarchive.DataSetUnarchiveOptions"}
-        self.archive_unarchive("unarchiveDataSets", fetchopts)
+        self.openbis.unarchive(self.permId)
         if VERBOSE:
             print(f"DataSet {self.permId} unarchived")
-
-    def archive_unarchive(self, method, fetchopts):
-        payload = {}
-
-        request = {
-            "method": method,
-            "params": [
-                self.openbis.token,
-                [{"permId": self.permId, "@type": "as.dto.dataset.id.DataSetPermId"}],
-                dict(fetchopts),
-            ],
-        }
-        resp = self.openbis._post_request(self._openbis.as_v3, request)
-        return
 
     def set_properties(self, properties):
         """expects a dictionary of property names and their values.
@@ -1661,6 +1716,8 @@ class PhysicalData:
             "presentInArchive",
             "storageConfirmation",
             "locatorType",
+            "archivingRequested",
+            "unarchivingRequested",
             "status",
         ]
 

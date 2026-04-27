@@ -5351,10 +5351,8 @@ class Openbis:
         file         -- path to a single file or a directory
         files        -- list of paths to files. Instead of a file, a directory (or many directories)
                         can be provided, the structure is kept intact in openBIS
-        zipfile      -- path to a zipfile, which is unzipped in openBIS
         kind         -- if set to CONTAINER, no files should be provided.
                         Instead, the dataset acts as a container for other datasets.
-
         props        -- a dictionary containing the properties
         """
 
@@ -5712,51 +5710,135 @@ class Openbis:
             print(resp)
             return resp
 
+    def request_archiving(self, permIds):
+        if permIds is None:
+            raise ValueError("You must provide at least one permId")
+        if not isinstance(permIds, list):
+            permIds = [permIds]
+        return self._request_archiving(permIds, value=True)
 
-    def get_sample_type_new(self, sample_type):
-        """
-                """
-        attrs = {
-                "@type": "as.dto.entitytype.id.EntityTypePermId",
-                "entityKind": "SAMPLE",
-                "permId": sample_type,
-            }
+    def revoke_request_archiving(self, permIds):
+        if permIds is None:
+            raise ValueError("You must provide at least one permId")
+        if not isinstance(permIds, list):
+            permIds = [permIds]
+        return self._request_archiving(permIds, value=False)
 
-        fetch_options = {
-            "@type": "as.dto.sample.fetchoptions.SampleTypeFetchOptions",
+    def _request_archiving(self, permIds, value=True):
 
-            "typeGroupAssignments" : {
-                '@type': "as.dto.typegroup.fetchoptions.TypeGroupAssignmentFetchOptions",
-                'typeGroup': {
-                    '@type': "as.dto.typegroup.fetchoptions.TypeGroupFetchOptions",
-                    'registrator': {
-                        '@type': 'as.dto.person.fetchoptions.PersonFetchOptions'
-                    }
-                },
-                'sampleType': {
-                    "@type": "as.dto.sample.fetchoptions.SampleTypeFetchOptions",
-                    'registrator': {
-                        '@type': 'as.dto.person.fetchoptions.PersonFetchOptions'
-                    }
-                },
-                'registrator' : {
-                    '@type': 'as.dto.person.fetchoptions.PersonFetchOptions'
-                }
+        updates = [{
+            "@type": 'as.dto.dataset.update.DataSetUpdate',
+            'dataSetId': {
+                '@type': 'as.dto.dataset.id.DataSetPermId',
+                'permId': permId
             },
-            "propertyAssignments": {
-                "@type" : "as.dto.property.fetchoptions.PropertyAssignmentFetchOptions"
+            "physicalData": {
+                "@type": "as.dto.common.update.FieldUpdateValue",
+                "isModified": True,
+                "value": {
+                    "@type": "as.dto.dataset.update.PhysicalDataUpdate",
+                    "archivingRequested": {
+                        "value": value,
+                        "isModified": True,
+                        "@type": "as.dto.common.update.FieldUpdateValue",
+                    }
+                }
             }
+        } for permId in permIds]
+
+        request = {"method": 'updateDataSets', "params": [self.token, updates]}
+
+        resp = self._post_request(self.as_v3, request)
+
+        new_dataset_data = self.get_datasets(permIds)
+        return new_dataset_data
+
+
+    def request_unarchiving(self, permIds):
+        if permIds is None:
+            raise ValueError("You must provide at least one permId")
+        if not isinstance(permIds, list):
+            permIds = [permIds]
+        return self._request_archiving(permIds, value=True)
+
+    def revoke_request_unarchiving(self, permIds):
+        if permIds is None:
+            raise ValueError("You must provide at least one permId")
+        if not isinstance(permIds, list):
+            permIds = [permIds]
+        return self._request_archiving(permIds, value=False)
+
+    def _request_unarchiving(self, permIds, value=True):
+        updates = [{
+            "@type": 'as.dto.dataset.update.DataSetUpdate',
+            'dataSetId': {
+                '@type': 'as.dto.dataset.id.DataSetPermId',
+                'permId': permId
+            },
+            "physicalData": {
+                "@type": "as.dto.common.update.FieldUpdateValue",
+                "isModified": True,
+                "value": {
+                    "@type": "as.dto.dataset.update.PhysicalDataUpdate",
+                    "unarchivingRequested": {
+                        "value": value,
+                        "isModified": True,
+                        "@type": "as.dto.common.update.FieldUpdateValue",
+                    }
+                }
+            }
+        } for permId in permIds]
+
+        request = {"method": 'updateDataSets', "params": [self.token, updates]}
+
+        resp = self._post_request(self.as_v3, request)
+
+        new_dataset_data = self.get_datasets(permIds)
+        return new_dataset_data
+
+    def archive_datasets(self, permIds, remove_from_data_store=True, options:dict=None):
+        if permIds is None:
+            raise ValueError("You must provide at least one permId")
+        if not isinstance(permIds, list):
+            permIds = [permIds]
+
+        archive_options = {
+            "removeFromDataStore": remove_from_data_store,
+            "@type": "as.dto.dataset.archive.DataSetArchiveOptions",
+        }
+        if options is not None:
+            archive_options["options"] = options
+
+        request = {
+            "method": "archiveDataSets",
+            "params": [
+                self.token,
+                [{"permId": x, "@type": "as.dto.dataset.id.DataSetPermId"} for x in permIds],
+                dict(archive_options),
+            ],
+        }
+        self._post_request(self.as_v3, request)
+
+    def unarchive_datasets(self, permIds):
+        if permIds is None:
+            raise ValueError("You must provide at least one permId")
+        if not isinstance(permIds, list):
+            permIds = [permIds]
+
+        fetchopts = {
+            "@type": "as.dto.dataset.archive.DataSetUnarchiveOptions",
         }
 
         request = {
-            "method": "getSampleTypes",
-            "params": [self.token, [attrs], fetch_options],
+            "method": "unarchiveDataSets",
+            "params": [
+                self.token,
+                [{"permId": x, "@type": "as.dto.dataset.id.DataSetPermId"} for x in permIds],
+                dict(fetchopts),
+            ],
         }
+        self._post_request(self.as_v3, request)
 
-        resp = self._post_request(self.as_v3, request)
-        if resp is not None:
-            print(resp)
-            return resp
 
 class ExternalDMS:
     """managing openBIS external data management systems"""

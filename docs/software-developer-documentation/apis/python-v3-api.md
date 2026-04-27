@@ -1415,12 +1415,21 @@ ds.physicalData
 ds.status                         # AVAILABLE   LOCKED   ARCHIVED
                                   # ARCHIVE_PENDING   UNARCHIVE_PENDING
                                   # BACKUP_PENDING
-ds.archive()                      # archives a dataset, i.e. moves it to a slower but cheaper diskspace (tape).
+ds.archive()                      # trigger dataset archiving, i.e. moving it to a slower but cheaper diskspace (tape).
                                   # archived datasets cannot be downloaded, they need to be unarchived first.
                                   # This is an asynchronous process,
                                   # check ds.status regularly until the dataset becomes 'ARCHIVED'
+                                  # depending on system configuration, archiving may be aborted if minimal space requirement is not met 
 ds.unarchive()                    # this starts an asynchronous process which gets the dataset from the tape.
                                   # Check ds.status regularly until it becomes 'AVAILABLE'
+                                  
+ds.request_archiving()            # request dataset to be archived, once 
+
+ds.revoke_request_archiving()
+
+ds.request_unarchiving()
+
+ds.revoke_request_unarchiving()
 
 ds.attrs.all()                    # returns all attributes as a dict
 ds.props.all()                    # returns all properties as a dict
@@ -1573,7 +1582,7 @@ ds.freezeForContainers = True
 ds.save()
 ```
 
-#### create a new dataSet
+#### create a new dataset
 
 ```python
 ds_new = o.new_dataset(
@@ -1586,20 +1595,8 @@ ds_new = o.new_dataset(
 ds_new.save()
 ```
 
-#### create dataSet with zipfile
 
-DataSet containing one zipfile which will be unzipped in openBIS:
-
-```python
-ds_new = o.new_dataset(
-    type       = 'RAW_DATA',
-    sample     = '/SPACE/SAMP1',
-    zipfile    = 'my_zipped_folder.zip',
-)
-ds_new.save()
-```
-
-#### create dataSet with mixed content
+#### create dataset with mixed content
 
 - mixed content means: folders and files are provided
 - a relative specified folder (and all its content) will end up in the root, while keeping its structure
@@ -1628,7 +1625,7 @@ ds_new = o.new_dataset(
 ds_new.save()
 ```
 
-#### create dataSet container
+#### create dataset container
 
 A DataSet of kind=CONTAINER contains other DataSets, but no files:
 
@@ -1661,7 +1658,7 @@ dataset.add_children(['20170115220259155-412'])
 dataset.del_children(['20170115220259155-412'])
 ```
 
-#### dataSet containers
+#### dataset containers
 
 - A DataSet may belong to other DataSets, which must be of kind=CONTAINER
 - As opposed to Samples, DataSets may belong (contained) to more than one DataSet-container
@@ -1685,6 +1682,45 @@ dataset.set_components(['20170115220259155-412'])
 dataset.add_components(['20170115220259155-412'])
 dataset.del_components(['20170115220259155-412'])
 ```
+
+#### multi-dataset archiving
+- Dataset files can be moved to a separate container for a long-term storage.
+- Archived datasets are stored in packages of system-configurable size.
+- Archived datasets can not be downloaded, unless unarchive is performed.
+- OpenBIS will refuse archiving packages if the package size is less than minimal requirement.
+
+```python
+
+# Trigger archiving procedure for given dataset permIds. Note: archiving may be aborted by the system if requirements are not set.
+# Results of the archiving are received via email.
+o.archive_datasets(permIds=['20260415220259155-12', '20260415220259166-25', '20260415220259177-112'])
+
+# Trigger dataset unarchiving procedure for given datasets. 
+o.unarchive_datasets(permIds=['20260415220259155-12', '20260415220259166-25', '20260415220259177-112'])
+
+
+# Flag given datasets for archiving.
+o.request_archiving(permIds=['20260415220259155-12', '20260415220259166-25', '20260415220259177-112'])
+
+# Unflag given datasets for archiving.
+o.revoke_request_archiving(permIds=['20260415220259155-12', '20260415220259166-25', '20260415220259177-112'])
+
+# Flag given archived datasets to start unarchiving procedure.
+o.request_unarchiving(permIds=['20260415220259155-12', '20260415220259166-25', '20260415220259177-112'])
+
+# Unflag datasets to not be unarchived.
+o.revoke_request_unarchiving(permIds=['20260415220259155-12', '20260415220259166-25', '20260415220259177-112'])
+
+
+```
+##### archive vs request archiving
+`archive_datasets` method requests OpenBIS to directly create a package and archive all given datasets in it. 
+If datasets are not meeting archiving criteria (e.g because collective size is less than configured minimal archiving size), 
+the archiving procedure will fail.
+
+`request_archiving` sets an internal flag in dataset. OpenBIS periodically searches for datasets with such flag and bundles 
+them together in archiving package.
+
 
 ### Semantic Annotations
 
@@ -2185,9 +2221,18 @@ file_content = afs_client.read(permId, '/test.txt', offset=0, limit=825049)
 # create directory
 create = afs_client.create(permId, '/test_pybis', is_directory=True)
 
-# delete file
-delete = afs_client.delete(permId, '/test.txt', trash=True)
-    
+# copy file/folder
+afs_client.copy(permId, '/test.txt', permId, '/test_pybis/test.txt')
+
+# create snapshot
+afs_client.snapshot(permId,'/test.txt')
+
+# delete file by putting it into trash
+delete = afs_client.delete(permId, '/test_pybis/test.txt', trash=True)
+
+# move file/folder 
+afs_client.move(permId, '/test.txt', permId, '/test_pybis_move/test.txt')
+
 # upload files
 afs_client.upload_files(permId, '/test_pybis', ['/home/testdirUpload'])
 

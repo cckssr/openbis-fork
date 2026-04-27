@@ -301,6 +301,41 @@ def test_create_new_dataset_v3_single_file(space):
     assert dataset.permId is not None
     assert dataset.file_list == ["original/testfile"]
 
+def test_dataset_archiving_requests(space):
+    openbis_instance = space.openbis
+
+    testfile_path = os.path.join(os.path.dirname(__file__), "testdir/testfile")
+
+    dataset = openbis_instance.new_dataset(
+        type="RAW_DATA",
+        experiment="/DEFAULT/DEFAULT/DEFAULT",
+        files=[testfile_path],
+        props={"$name": "dataset archiving request"},
+    )
+    dataset.save()
+
+    permId = dataset.permId
+
+    assert dataset.permId is not None
+    assert dataset.file_list == ["original/testfile"]
+    assert dataset.physicalData.status == "AVAILABLE"
+    assert dataset.physicalData.archivingRequested == False
+    assert dataset.physicalData.presentInArchive == False
+
+    dataset.request_archiving()
+
+    assert dataset.permId == permId
+    assert dataset.physicalData.status == "AVAILABLE"
+    assert dataset.physicalData.archivingRequested == True
+    assert dataset.physicalData.presentInArchive == False
+
+    dataset.request_unarchiving()
+
+    assert dataset.permId == permId
+    assert dataset.physicalData.status == "AVAILABLE"
+    assert dataset.physicalData.archivingRequested == False
+    assert dataset.physicalData.presentInArchive == False
+
 
 def test_create_new_dataset_v3_directory(space):
     openbis_instance = space.openbis
