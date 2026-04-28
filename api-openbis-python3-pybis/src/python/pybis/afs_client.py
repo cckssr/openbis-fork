@@ -101,9 +101,13 @@ class AfsClient:
                 message = parsed_error['error'][1]['message']
                 if "NoSuchFileException" in message:
                     return []
-                raise ValueError(
-                    f"Error {message['error'][1]['exceptionCode']} during list: {message['error'][1]['message']}"
-                )
+
+                if isinstance(message, dict) and "error" in message:
+                    raise ValueError(
+                        f"Error {message['error'][1]['exceptionCode']} during list: {message['error'][1]['message']}"
+                    )
+                else:
+                    raise ValueError(message)
 
     def preview(self, owner, source):
         request = {
