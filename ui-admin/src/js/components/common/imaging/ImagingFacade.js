@@ -554,7 +554,7 @@ export default class ImagingFacade {
         }
 
         const datasetAndSampleCodeList = this.fetchDataSetsSortingInfo([...dataSets, ...samples]);
-        console.log('loadPaginatedGalleryDatasets - datasetCodeList: ', datasetAndSampleCodeList);
+        // console.log('loadPaginatedGalleryDatasets - datasetCodeList: ', datasetAndSampleCodeList);
         const totalCount = datasetAndSampleCodeList.length;
         const previewContainerList = await this.paginateImagingDatasets(datasetAndSampleCodeList, page, pageSize);
 
