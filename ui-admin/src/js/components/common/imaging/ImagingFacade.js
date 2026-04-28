@@ -158,7 +158,7 @@ export default class ImagingFacade {
         let skip = false;
         let dataset = null;
         const trySampleFirst = objType === ObjectType.OBJECT || objType === ObjectType.NEW_OBJECT;
-        if (this.openbis.hasAfsDataStore() && trySampleFirst) {
+        if (trySampleFirst && await this.openbis.hasAfsDataStore()) {
             const sampleFetchOptions = new this.openbis.SampleFetchOptions();
             sampleFetchOptions.withProperties();
             sampleFetchOptions.withType();
@@ -170,14 +170,14 @@ export default class ImagingFacade {
                 sampleFetchOptions
             )
             let sample = samples[objId];
-            if(sample) {
+            if (sample) {
                skip = true;
                this.isDataset = false;
                dataset = sample;
             }
         }
 
-        if(!skip) {
+        if (!skip) {
             const fetchOptions = new this.openbis.DataSetFetchOptions();
             fetchOptions.withProperties();
             fetchOptions.withType();
@@ -193,6 +193,7 @@ export default class ImagingFacade {
             )
             dataset = datasets[objId];
         }
+
         if (!dataset) return null;
 
         if (withProperties) return dataset.properties;
@@ -336,14 +337,69 @@ export default class ImagingFacade {
      * @param {string} objId - Experiment permanent ID
      * @returns {Promise<Array>} Array of dataset objects filtered to imaging types
      */
-    fetchExperimentDataSets = async (objId) => {
+    fetchExperimentImagingDataSets = async (objId) => {
         const fetchOptions = new this.openbis.ExperimentFetchOptions();
         fetchOptions.withProperties();
-        fetchOptions.withDataSets();
         fetchOptions.withDataSets().withType();
         const experiments = await this.openbis.getExperiments([new this.openbis.ExperimentPermId(objId)], fetchOptions);
-        const expDatasets = experiments[objId]?.dataSets?.filter(dataset => dataset.type.code === constants.IMAGING_DATA || dataset.type.code === constants.USER_DEFINED_IMAGING_DATA) || [];
-        return expDatasets;
+        return experiments[objId]?.dataSets?.filter(dataset => dataset.type.code === constants.IMAGING_DATA || dataset.type.code === constants.USER_DEFINED_IMAGING_DATA) || [];
+    };
+
+    /**
+     * Fetches samples for an experiment.
+     *
+     * @param {string} objId - Experiment permanent ID
+     * @returns {Promise<Array>} Array of sample objects filtered to imaging types
+     */
+    fetchExperimentImagingSamples = async (objId) => {
+        const fetchOptions = new this.openbis.ExperimentFetchOptions();
+        fetchOptions.withProperties();
+        fetchOptions.withSamples().withType();
+        const experiments = await this.openbis.getExperiments([new this.openbis.ExperimentPermId(objId)], fetchOptions);
+
+        const experimentSamples = experiments[objId]?.samples;
+        const experimentImagingSamples = experimentSamples.filter(sample => sample.type.code === constants.IMAGING_DATA);
+        const descendantImagingSamples = await this.fetchDescendantImagingSamples(
+            experimentSamples.map(sample => sample.getPermId().getPermId()));
+
+        return [...experimentImagingSamples, ...descendantImagingSamples];
+    };
+
+    /**
+     * Fetches descendant samples for a sample.
+     *
+     * @param {string} objIds - Sample permanent IDs
+     * @returns {Promise<Array>} Array of sample objects filtered to imaging types
+     */
+    fetchDescendantImagingSamples = async (objIds) => {
+        if (!objIds?.length) {
+            return [];
+        }
+
+        const fetchOptions = new this.openbis.SampleFetchOptions();
+        fetchOptions.withChildren().withType();
+
+        const samplesById = await this.openbis.getSamples(
+            objIds.map(objId => new this.openbis.SamplePermId(objId)),
+            fetchOptions
+        );
+        const samples = Array.isArray(samplesById) ? samplesById : Object.values(samplesById || {});
+        const children = samples.flatMap(sample => sample.children || []);
+
+        if (!children.length) {
+            return [];
+        }
+
+        const childPermIds = children.map(child => child.getPermId().getPermId());
+        const descendantImagingSamples = await this.fetchDescendantImagingSamples(childPermIds);
+        const imagingChildren = children.filter(child => child.type?.code === constants.IMAGING_DATA);
+        const imagingSamplesByPermId = new Map();
+
+        [...imagingChildren, ...descendantImagingSamples].forEach(sample => {
+            imagingSamplesByPermId.set(sample.getPermId().getPermId(), sample);
+        });
+
+        return Array.from(imagingSamplesByPermId.values());
     };
 
     /**
@@ -352,12 +408,12 @@ export default class ImagingFacade {
      * @param {Object} sample - Sample object
      * @returns {Array} Array of dataset objects
      */
-    getRecursiveDescendants = sample => {
+    getRecursiveDatasetDescendants = sample => {
         let children = sample.getChildren();
         let datasetList = [];
 
         children.forEach(child => {
-            let childDatasets = this.getRecursiveDescendants(child);
+            let childDatasets = this.getRecursiveDatasetDescendants(child);
             childDatasets.forEach(dataset => {
                 if (!datasetList.some(existing => existing.getCode() === dataset.getCode())) {
                     datasetList.push(dataset);
@@ -393,24 +449,29 @@ export default class ImagingFacade {
             fetchOptions
         );
 
-        const dataSets = this.getRecursiveDescendants(samples[objId]);
-        const sampleDatasets = dataSets.filter(dataset => dataset.type.code === constants.IMAGING_DATA || dataset.type.code === constants.USER_DEFINED_IMAGING_DATA) || [];
-        return sampleDatasets;
+        const dataSets = this.getRecursiveDatasetDescendants(samples[objId]);
+        return dataSets.filter(dataset => dataset.type.code === constants.IMAGING_DATA
+            || dataset.type.code === constants.USER_DEFINED_IMAGING_DATA);
     }
 
     /**
-     * Calculates preview sorting information for datasets without loading the dataset properties.
+     * Calculates preview sorting information for datasets/objects without loading the dataset properties.
      * Creates an array of preview entries with dataset ID and sorting index.
      *
-     * @param {Array<Object>} dataSets - Array of dataset objects with metadata
+     * @param {Array<Object>} objects - Array of dataset objects with metadata
      * @returns {Array<Object>} Array of {datasetId, sortingId, metadata} objects
      */
-    fetchDataSetsSortingInfo = (dataSets) => {
-        return dataSets.map(dataset => {
-            if (constants.METADATA_PREVIEW_COUNT in dataset.metaData) {
-                const nDatasets = parseInt(dataset.metaData[constants.METADATA_PREVIEW_COUNT])
+    fetchDataSetsSortingInfo = (objects) => {
+        return objects.map(object => {
+            if (constants.METADATA_PREVIEW_COUNT in object.metaData) {
+                const nDatasets = parseInt(object.metaData[constants.METADATA_PREVIEW_COUNT])
                 return Array.from(Array(nDatasets), (_, i) => {
-                    return { datasetId: dataset.code, sortingId: i, metadata: dataset.metaData }
+                    return {
+                        objId: object["@type"] === "as.dto.sample.Sample"
+                            ? object.permId.permId : object.code, sortingId: i,
+                        metadata: object.metaData,
+                        kind: object["@type"]
+                    }
                 });
             }
         }).flat();
@@ -432,16 +493,18 @@ export default class ImagingFacade {
         const endIdx = Math.min(startIdx + pageSize, datasetCodeList.length); // Calculate end index correctly
         const previewContainerList = [];
 
-        let currentDatasetId = null;
+        let currentObjId = null;
         let loadedImgDS = null;
         let datasetProperties = null;
 
         for (let i = startIdx; i < endIdx; i++) {
-            const { datasetId, sortingId } = datasetCodeList[i];
+            const { objId, sortingId, kind } = datasetCodeList[i];
 
-            if (datasetId !== currentDatasetId) {
-                currentDatasetId = datasetId;
-                datasetProperties = await this.loadImagingDataset(datasetId, true, false, false, ObjectType.DATA_SET);
+            if (objId !== currentObjId) {
+                currentObjId = objId;
+                const objType = kind === "as.dto.sample.Sample" ? ObjectType.OBJECT
+                    : ObjectType.DATA_SET;
+                datasetProperties = await this.loadImagingDataset(objId, true, false, false, objType);
                 loadedImgDS = await this.openbis.fromJson(null, JSON.parse(datasetProperties[constants.IMAGING_DATA_CONFIG]));
                 delete datasetProperties[constants.IMAGING_DATA_CONFIG];
             }
@@ -451,7 +514,7 @@ export default class ImagingFacade {
                 for (const [index, preview] of image.previews.entries()) {
                     if (previewIndexInDataset === sortingId) {
                         previewContainerList.push({
-                            datasetId,
+                            datasetId: objId,
                             preview,
                             previewIdx: index,
                             imageIdx: loadedImgDS.images.indexOf(image), // Get image index
@@ -480,16 +543,20 @@ export default class ImagingFacade {
      * @returns {Promise<Object>} Object with previewContainerList and totalCount
      */
     loadPaginatedGalleryDatasets = async (objId, objType, page, pageSize) => {
-        const dataSets = objType === ObjectType.COLLECTION
-            ? await this.fetchExperimentDataSets(objId)
-            : objType === ObjectType.OBJECT
-                ? await this.fetchSampleDataSets(objId)
-                : []; // Handle other object types or return empty array
+        let dataSets = [];
+        let samples = [];
+        if (objType === ObjectType.COLLECTION) {
+            dataSets = await this.fetchExperimentImagingDataSets(objId);
+            samples = await this.fetchExperimentImagingSamples(objId);
+        } else if (objType === ObjectType.OBJECT) {
+            dataSets = await this.fetchSampleDataSets(objId);
+            samples = await this.fetchDescendantImagingSamples([objId]);
+        }
 
-        const datasetCodeList = this.fetchDataSetsSortingInfo(dataSets);
-        //console.log('loadPaginatedGalleryDatasets - datasetCodeList: ', datasetCodeList);
-        const totalCount = datasetCodeList.length;
-        const previewContainerList = await this.paginateImagingDatasets(datasetCodeList, page, pageSize);
+        const datasetAndSampleCodeList = this.fetchDataSetsSortingInfo([...dataSets, ...samples]);
+        console.log('loadPaginatedGalleryDatasets - datasetCodeList: ', datasetAndSampleCodeList);
+        const totalCount = datasetAndSampleCodeList.length;
+        const previewContainerList = await this.paginateImagingDatasets(datasetAndSampleCodeList, page, pageSize);
 
         return { previewContainerList, totalCount };
     };
