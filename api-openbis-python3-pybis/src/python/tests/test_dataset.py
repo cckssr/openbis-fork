@@ -310,7 +310,7 @@ def test_dataset_archiving_requests(space):
         type="RAW_DATA",
         experiment="/DEFAULT/DEFAULT/DEFAULT",
         files=[testfile_path],
-        props={"$name": "dataset archiving request"},
+        props={"name": "dataset archiving request"},
     )
     dataset.save()
 
