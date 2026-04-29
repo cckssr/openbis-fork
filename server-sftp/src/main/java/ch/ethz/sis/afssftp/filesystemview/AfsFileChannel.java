@@ -1,9 +1,9 @@
 package ch.ethz.sis.afssftp.filesystemview;
 
 import ch.ethz.sis.afsclient.client.AfsClient;
-import ch.ethz.sis.afssftp.authentication.OpenBISUser;
+import ch.ethz.sis.afssftp.authentication.User;
 import ch.ethz.sis.afssftp.util.OpenBISClientUtil;
-import ch.ethz.sis.afssftp.util.OpenBISListUtil;
+import ch.ethz.sis.afssftp.util.SftpListUtil;
 import lombok.NonNull;
 
 import java.io.IOException;
@@ -20,9 +20,9 @@ public class AfsFileChannel extends FileChannel {
     private final @NonNull String entityId;
     private final @NonNull String afsPath;
 
-    private final @NonNull OpenBISUser openBISUser;
+    private final @NonNull User user;
     private final @NonNull OpenBISClientUtil clientUtil;
-    private final @NonNull OpenBISListUtil listUtil;
+    private final @NonNull SftpListUtil listUtil;
 
     private final @NonNull AtomicLong position;
     private final boolean readOpenOption;
@@ -31,16 +31,16 @@ public class AfsFileChannel extends FileChannel {
     public AfsFileChannel(
             @NonNull String entityId,
             @NonNull String afsPath,
-            @NonNull OpenBISUser openBISUser,
+            @NonNull User user,
             long initialPosition,
             boolean readOpenOption,
             boolean writeOpenOption) {
         this.entityId = entityId;
         this.afsPath = afsPath;
 
-        this.openBISUser = openBISUser;
+        this.user = user;
         this.clientUtil = new OpenBISClientUtil();
-        this.listUtil = new OpenBISListUtil(openBISUser);
+        this.listUtil = new SftpListUtil(user);
 
         this.position = new AtomicLong(initialPosition);
         this.readOpenOption = readOpenOption;
@@ -65,7 +65,7 @@ public class AfsFileChannel extends FileChannel {
                     long readableBytes = size - pos;
                     byte[] bytes;
                     try {
-                        bytes = clientUtil.getAfsClient(openBISUser).read(
+                        bytes = clientUtil.getAfsClient(user).read(
                                 entityId,
                                 afsPath,
                                 position.get(),
@@ -104,7 +104,7 @@ public class AfsFileChannel extends FileChannel {
                     long readableBytes = size - pos;
                     byte[] bytes;
                     try {
-                        bytes = clientUtil.getAfsClient(openBISUser).read(
+                        bytes = clientUtil.getAfsClient(user).read(
                                 entityId,
                                 afsPath,
                                 position.get(),
@@ -156,7 +156,7 @@ public class AfsFileChannel extends FileChannel {
                 src.get(bytes);
 
                 try {
-                    if ( !clientUtil.getAfsClient(openBISUser).write(
+                    if ( !clientUtil.getAfsClient(user).write(
                             entityId,
                             afsPath,
                             pos,
@@ -204,7 +204,7 @@ public class AfsFileChannel extends FileChannel {
                 }
 
                 try {
-                    if ( !clientUtil.getAfsClient(openBISUser).write(
+                    if ( !clientUtil.getAfsClient(user).write(
                             entityId,
                             afsPath,
                             pos,
@@ -237,7 +237,7 @@ public class AfsFileChannel extends FileChannel {
 
     @Override
     public long size() throws IOException {
-        return listUtil.getDefaultAfsFileAttributes(
+        return listUtil.getAfsFilePresence(
                 entityId, afsPath
         ).get().getSize();
     }
@@ -246,7 +246,7 @@ public class AfsFileChannel extends FileChannel {
     public FileChannel truncate(long size) throws IOException {
         if (writeOpenOption) {
             try {
-                if ( !clientUtil.getAfsClient(openBISUser).truncate(entityId, afsPath, size) ) {
+                if ( !clientUtil.getAfsClient(user).truncate(entityId, afsPath, size) ) {
                     throw new IOException("Error truncating AFS-file");
                 }
             } catch (Exception e) {
@@ -318,7 +318,7 @@ public class AfsFileChannel extends FileChannel {
                     long readableBytes = size - position;
                     byte[] bytes;
                     try {
-                        bytes = clientUtil.getAfsClient(openBISUser).read(
+                        bytes = clientUtil.getAfsClient(user).read(
                                 entityId,
                                 afsPath,
                                 position,
@@ -359,7 +359,7 @@ public class AfsFileChannel extends FileChannel {
                 src.get(bytes);
 
                 try {
-                    if ( !clientUtil.getAfsClient(openBISUser).write(
+                    if ( !clientUtil.getAfsClient(user).write(
                             entityId,
                             afsPath,
                             position,
@@ -401,7 +401,7 @@ public class AfsFileChannel extends FileChannel {
                     endExclusive - index
             );
             try {
-                if ( !clientUtil.getAfsClient(openBISUser).write(
+                if ( !clientUtil.getAfsClient(user).write(
                         entityId,
                         afsPath,
                         index,

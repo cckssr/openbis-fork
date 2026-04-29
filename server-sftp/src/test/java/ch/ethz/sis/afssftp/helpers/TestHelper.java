@@ -1,21 +1,21 @@
 package ch.ethz.sis.afssftp.helpers;
 
-import ch.ethz.sis.afssftp.filesystemview.OpenBISSftpNode;
+import ch.ethz.sis.afssftp.filesystemview.SftpNode;
 import lombok.NonNull;
 
 import java.util.*;
 
 public class TestHelper {
-    public static OpenBISSftpNode createRandomNode() {
+    public static SftpNode createRandomNode() {
         Random random = new Random();
-        OpenBISSftpNode.Type randomType = OpenBISSftpNode.Type.values()[
-                random.nextInt(OpenBISSftpNode.Type.values().length)
+        SftpNode.Type randomType = SftpNode.Type.values()[
+                random.nextInt(SftpNode.Type.values().length)
                 ];
         return createRandomNodeOfType(randomType);
     }
 
 
-    public static OpenBISSftpNode createRandomNodeOfType(@NonNull OpenBISSftpNode.Type type) {
+    public static SftpNode createRandomNodeOfType(@NonNull SftpNode.Type type) {
         Random random = new Random();
         String identifier = switch (type) {
             case ROOT, AFS_FILE -> null;
@@ -32,7 +32,7 @@ public class TestHelper {
             }
             case ROOT, SPACE, PROJECT, EXPERIMENT, SAMPLE, FOLDER, DATA_SET, SUBLEVEL -> Collections.emptyList();
         };
-        return OpenBISSftpNode.builder()
+        return SftpNode.builder()
                 .type(type)
                 .identifier(Optional.ofNullable(identifier))
                 .afsFilePath(afsPathSegments)

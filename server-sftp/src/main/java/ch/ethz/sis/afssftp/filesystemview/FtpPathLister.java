@@ -5,6 +5,6 @@ import lombok.NonNull;
 import java.util.List;
 
 public interface FtpPathLister {
-    @NonNull List<@NonNull OpenBISSftpNodeChain> list(@NonNull OpenBISSftpNodeChain directory);
-    OpenBISSftpFileAttributes readAttributes(@NonNull OpenBISSftpNodeChain nodeChain);
+    @NonNull List<@NonNull SftpNodeChain> list(@NonNull SftpNodeChain directory);
+    SftpFileAttributes readAttributes(@NonNull SftpNodeChain nodeChain);
 }

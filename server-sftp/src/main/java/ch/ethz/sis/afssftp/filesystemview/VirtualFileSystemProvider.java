@@ -1,10 +1,10 @@
 package ch.ethz.sis.afssftp.filesystemview;
 
-import ch.ethz.sis.afssftp.authentication.OpenBISUser;
+import ch.ethz.sis.afssftp.authentication.User;
 import ch.ethz.sis.afssftp.filesystemview.impl.standard.StandardPathLister;
 import ch.ethz.sis.afssftp.filesystemview.impl.standard.StandardPathTranslator;
-import ch.ethz.sis.afssftp.util.OpenBISFileUtil;
-import ch.ethz.sis.afssftp.util.OpenBISListUtil;
+import ch.ethz.sis.afssftp.util.SftpFileUtil;
+import ch.ethz.sis.afssftp.util.SftpListUtil;
 import ch.ethz.sis.shared.log.standard.LogManager;
 import ch.ethz.sis.shared.log.standard.Logger;
 import jakarta.annotation.Nonnull;
@@ -18,28 +18,28 @@ import java.nio.file.attribute.*;
 import java.nio.file.spi.FileSystemProvider;
 import java.util.*;
 
-public class OpenBISFileSystemProvider extends FileSystemProvider {
+public class VirtualFileSystemProvider extends FileSystemProvider {
     private final Logger logger;
     
-    @NonNull private final OpenBISUser openBISUser;
-    private OpenBISFileSystem createdFileSystem;
+    @NonNull private final User user;
+    private VirtualFileSystem createdFileSystem;
     private final FtpPathTranslator ftpPathTranslator;
     private final FtpPathLister ftpPathLister;
-    private final OpenBISListUtil openBISListUtil;
-    private final OpenBISFileUtil openBISFileUtil;
+    private final SftpListUtil sftpListUtil;
+    private final SftpFileUtil sftpFileUtil;
 
-    public OpenBISFileSystemProvider(
-            @NonNull OpenBISUser openBISUser
+    public VirtualFileSystemProvider(
+            @NonNull User user
     ) {
         this.logger = LogManager.getLogger(this.getClass());
-        this.openBISUser = openBISUser;
+        this.user = user;
         this.ftpPathTranslator = new StandardPathTranslator();
-        this.ftpPathLister = new StandardPathLister(openBISUser);
-        this.openBISListUtil = new OpenBISListUtil(openBISUser);
-        this.openBISFileUtil = new OpenBISFileUtil(openBISUser);
+        this.ftpPathLister = new StandardPathLister(user);
+        this.sftpListUtil = new SftpListUtil(user);
+        this.sftpFileUtil = new SftpFileUtil(user);
     }
 
-    void acceptCreatedFileSystem(@NonNull OpenBISFileSystem createdFileSystem) {
+    void acceptCreatedFileSystem(@NonNull VirtualFileSystem createdFileSystem) {
         this.createdFileSystem = createdFileSystem;
     }
 
@@ -68,20 +68,18 @@ public class OpenBISFileSystemProvider extends FileSystemProvider {
 
     @Override
     public FileChannel newFileChannel(Path path, Set<? extends OpenOption> options, FileAttribute<?>... attrs) throws IOException {
-        OpenBISSftpNodeChain openBISSftpNodeChain = getNodeChainFromPath(path);
-        if (openBISSftpNodeChain.getLast()
-                .map( node -> node.getType() == OpenBISSftpNode.Type.AFS_FILE)
+        SftpNodeChain sftpNodeChain = getNodeChainFromPath(path);
+        if (sftpNodeChain.getLast()
+                .map( node -> node.getType() == SftpNode.Type.AFS_FILE)
                 .orElse(false)
         ) {
-            String entityId = openBISListUtil.getAfsEntityPermId(
-                    openBISSftpNodeChain.get(openBISSftpNodeChain.size() - 3),
-                    openBISSftpNodeChain.lookUpSpaceCode(),
-                    openBISSftpNodeChain.lookUpProjectCode()
+            String entityId = sftpListUtil.getAfsEntityPermId(
+                    sftpNodeChain.get(sftpNodeChain.size() - 3)
             );
-            String afsPath = openBISSftpNodeChain.getLast().get().getJoinedAfsFilePath();
+            String afsPath = sftpNodeChain.getLast().get().getJoinedAfsFilePath();
 
             if ( entityId != null && afsPath != null ) {
-                return openBISFileUtil.createAfsFileChannel(entityId, afsPath, openBISUser, options);
+                return sftpFileUtil.createAfsFileChannel(entityId, afsPath, user, options);
             } else {
                 throw new IllegalArgumentException("Missing AFS-file coordinates");
             }
@@ -97,9 +95,9 @@ public class OpenBISFileSystemProvider extends FileSystemProvider {
 
     @Override
     public DirectoryStream<Path> newDirectoryStream(Path path, DirectoryStream.Filter<? super Path> filter) throws IOException {
-        OpenBISSftpNodeChain openBISSftpNodeChain = getNodeChainFromPath(path);
+        SftpNodeChain sftpNodeChain = getNodeChainFromPath(path);
 
-        List<Path> listedItems = ftpPathLister.list(openBISSftpNodeChain)
+        List<Path> listedItems = ftpPathLister.list(sftpNodeChain)
                 .stream().map(this::getPathFromNodeChain).toList();
 
         return toDirectoryStream(listedItems);
@@ -107,20 +105,18 @@ public class OpenBISFileSystemProvider extends FileSystemProvider {
 
     @Override
     public void createDirectory(Path path, FileAttribute<?>... fileAttributes) throws IOException {
-        OpenBISSftpNodeChain openBISSftpNodeChain = getNodeChainFromPath(path);
-        if (openBISSftpNodeChain.getLast()
-                .map( node -> node.getType() == OpenBISSftpNode.Type.AFS_FILE)
+        SftpNodeChain sftpNodeChain = getNodeChainFromPath(path);
+        if (sftpNodeChain.getLast()
+                .map( node -> node.getType() == SftpNode.Type.AFS_FILE)
                 .orElse(false)
         ) {
-            String entityId = openBISListUtil.getAfsEntityPermId(
-                    openBISSftpNodeChain.get(openBISSftpNodeChain.size() - 3),
-                    openBISSftpNodeChain.lookUpSpaceCode(),
-                    openBISSftpNodeChain.lookUpProjectCode()
+            String entityId = sftpListUtil.getAfsEntityPermId(
+                    sftpNodeChain.get(sftpNodeChain.size() - 3)
             );
-            String afsPath = openBISSftpNodeChain.getLast().get().getJoinedAfsFilePath();
+            String afsPath = sftpNodeChain.getLast().get().getJoinedAfsFilePath();
 
             if ( entityId != null && afsPath != null ) {
-                openBISFileUtil.createAfsDirectory(entityId, afsPath, openBISUser);
+                sftpFileUtil.createAfsDirectory(entityId, afsPath, user);
             } else {
                 throw new IllegalArgumentException("Missing AFS-file coordinates");
             }
@@ -131,20 +127,18 @@ public class OpenBISFileSystemProvider extends FileSystemProvider {
 
     @Override
     public void delete(Path path) throws IOException {
-        OpenBISSftpNodeChain openBISSftpNodeChain = getNodeChainFromPath(path);
-        if (openBISSftpNodeChain.getLast()
-                .map( node -> node.getType() == OpenBISSftpNode.Type.AFS_FILE)
+        SftpNodeChain sftpNodeChain = getNodeChainFromPath(path);
+        if (sftpNodeChain.getLast()
+                .map( node -> node.getType() == SftpNode.Type.AFS_FILE)
                 .orElse(false)
         ) {
-            String entityId = openBISListUtil.getAfsEntityPermId(
-                    openBISSftpNodeChain.get(openBISSftpNodeChain.size() - 3),
-                    openBISSftpNodeChain.lookUpSpaceCode(),
-                    openBISSftpNodeChain.lookUpProjectCode()
+            String entityId = sftpListUtil.getAfsEntityPermId(
+                    sftpNodeChain.get(sftpNodeChain.size() - 3)
             );
-            String afsPath = openBISSftpNodeChain.getLast().get().getJoinedAfsFilePath();
+            String afsPath = sftpNodeChain.getLast().get().getJoinedAfsFilePath();
 
             if ( entityId != null && afsPath != null ) {
-                openBISFileUtil.deleteAfsFile(entityId, afsPath, openBISUser);
+                sftpFileUtil.deleteAfsFile(entityId, afsPath, user);
             } else {
                 throw new IllegalArgumentException("Missing AFS-file coordinates");
             }
@@ -155,34 +149,30 @@ public class OpenBISFileSystemProvider extends FileSystemProvider {
 
     @Override
     public void copy(Path source, Path destination, CopyOption... copyOptions) throws IOException {
-        OpenBISSftpNodeChain openBISSftpNodeChain1 = getNodeChainFromPath(source);
-        OpenBISSftpNodeChain openBISSftpNodeChain2 = getNodeChainFromPath(destination);
-        if (openBISSftpNodeChain1.getLast()
-                .map( node -> node.getType() == OpenBISSftpNode.Type.AFS_FILE)
+        SftpNodeChain sftpNodeChain1 = getNodeChainFromPath(source);
+        SftpNodeChain sftpNodeChain2 = getNodeChainFromPath(destination);
+        if (sftpNodeChain1.getLast()
+                .map( node -> node.getType() == SftpNode.Type.AFS_FILE)
                 .orElse(false) &&
-            openBISSftpNodeChain2.getLast()
-                .map( node -> node.getType() == OpenBISSftpNode.Type.AFS_FILE)
+            sftpNodeChain2.getLast()
+                .map( node -> node.getType() == SftpNode.Type.AFS_FILE)
                 .orElse(false)
         ) {
-            String entityId1 = openBISListUtil.getAfsEntityPermId(
-                    openBISSftpNodeChain1.get(openBISSftpNodeChain1.size() - 3),
-                    openBISSftpNodeChain1.lookUpSpaceCode(),
-                    openBISSftpNodeChain1.lookUpProjectCode()
+            String entityId1 = sftpListUtil.getAfsEntityPermId(
+                    sftpNodeChain1.get(sftpNodeChain1.size() - 3)
             );
-            String afsPath1 = openBISSftpNodeChain1.getLast().get().getJoinedAfsFilePath();
+            String afsPath1 = sftpNodeChain1.getLast().get().getJoinedAfsFilePath();
 
-            String entityId2 = openBISListUtil.getAfsEntityPermId(
-                    openBISSftpNodeChain2.get(openBISSftpNodeChain2.size() - 3),
-                    openBISSftpNodeChain2.lookUpSpaceCode(),
-                    openBISSftpNodeChain2.lookUpProjectCode()
+            String entityId2 = sftpListUtil.getAfsEntityPermId(
+                    sftpNodeChain2.get(sftpNodeChain2.size() - 3)
             );
-            String afsPath2 = openBISSftpNodeChain2.getLast().get().getJoinedAfsFilePath();
+            String afsPath2 = sftpNodeChain2.getLast().get().getJoinedAfsFilePath();
 
             if ( entityId1 != null && afsPath1 != null && entityId2 != null && afsPath2 != null ) {
-                openBISFileUtil.copyAfsFile(
+                sftpFileUtil.copyAfsFile(
                         entityId1, afsPath1,
                         entityId2, afsPath2,
-                        openBISUser,
+                        user,
                         Arrays.asList(copyOptions).contains(StandardCopyOption.REPLACE_EXISTING));
             } else {
                 throw new IllegalArgumentException("Missing AFS-file coordinates");
@@ -194,34 +184,30 @@ public class OpenBISFileSystemProvider extends FileSystemProvider {
 
     @Override
     public void move(Path source, Path destination, CopyOption... copyOptions) throws IOException {
-        OpenBISSftpNodeChain openBISSftpNodeChain1 = getNodeChainFromPath(source);
-        OpenBISSftpNodeChain openBISSftpNodeChain2 = getNodeChainFromPath(destination);
-        if (openBISSftpNodeChain1.getLast()
-                .map( node -> node.getType() == OpenBISSftpNode.Type.AFS_FILE)
+        SftpNodeChain sftpNodeChain1 = getNodeChainFromPath(source);
+        SftpNodeChain sftpNodeChain2 = getNodeChainFromPath(destination);
+        if (sftpNodeChain1.getLast()
+                .map( node -> node.getType() == SftpNode.Type.AFS_FILE)
                 .orElse(false) &&
-            openBISSftpNodeChain2.getLast()
-                        .map( node -> node.getType() == OpenBISSftpNode.Type.AFS_FILE)
+            sftpNodeChain2.getLast()
+                        .map( node -> node.getType() == SftpNode.Type.AFS_FILE)
                         .orElse(false)
         ) {
-            String entityId1 = openBISListUtil.getAfsEntityPermId(
-                    openBISSftpNodeChain1.get(openBISSftpNodeChain1.size() - 3),
-                    openBISSftpNodeChain1.lookUpSpaceCode(),
-                    openBISSftpNodeChain1.lookUpProjectCode()
+            String entityId1 = sftpListUtil.getAfsEntityPermId(
+                    sftpNodeChain1.get(sftpNodeChain1.size() - 3)
             );
-            String afsPath1 = openBISSftpNodeChain1.getLast().get().getJoinedAfsFilePath();
+            String afsPath1 = sftpNodeChain1.getLast().get().getJoinedAfsFilePath();
 
-            String entityId2 = openBISListUtil.getAfsEntityPermId(
-                    openBISSftpNodeChain2.get(openBISSftpNodeChain2.size() - 3),
-                    openBISSftpNodeChain2.lookUpSpaceCode(),
-                    openBISSftpNodeChain2.lookUpProjectCode()
+            String entityId2 = sftpListUtil.getAfsEntityPermId(
+                    sftpNodeChain2.get(sftpNodeChain2.size() - 3)
             );
-            String afsPath2 = openBISSftpNodeChain2.getLast().get().getJoinedAfsFilePath();
+            String afsPath2 = sftpNodeChain2.getLast().get().getJoinedAfsFilePath();
 
             if ( entityId1 != null && afsPath1 != null && entityId2 != null && afsPath2 != null ) {
-                openBISFileUtil.moveAfsFile(
+                sftpFileUtil.moveAfsFile(
                         entityId1, afsPath1,
                         entityId2, afsPath2,
-                        openBISUser,
+                        user,
                         Arrays.asList(copyOptions).contains(StandardCopyOption.REPLACE_EXISTING));
             } else {
                 throw new IllegalArgumentException("Missing AFS-file coordinates");
@@ -265,14 +251,14 @@ public class OpenBISFileSystemProvider extends FileSystemProvider {
 
     @Override
     public <A extends BasicFileAttributes> A readAttributes(Path path, Class<A> aClass, LinkOption... linkOptions) throws IOException {
-        OpenBISSftpNodeChain openBISSftpNodeChain = getNodeChainFromPath(path);
-        return aClass.cast(ftpPathLister.readAttributes(openBISSftpNodeChain));
+        SftpNodeChain sftpNodeChain = getNodeChainFromPath(path);
+        return aClass.cast(ftpPathLister.readAttributes(sftpNodeChain));
     }
 
     @Override
     public Map<String, Object> readAttributes(Path path, String s, LinkOption... linkOptions) throws IOException {
-        OpenBISSftpNodeChain openBISSftpNodeChain = getNodeChainFromPath(path);
-        OpenBISSftpFileAttributes attributes = ftpPathLister.readAttributes(openBISSftpNodeChain);
+        SftpNodeChain sftpNodeChain = getNodeChainFromPath(path);
+        SftpFileAttributes attributes = ftpPathLister.readAttributes(sftpNodeChain);
         if ( attributes != null ) {
             return Map.of(
                     "isRegularFile", attributes.isRegularFile(),
@@ -297,23 +283,24 @@ public class OpenBISFileSystemProvider extends FileSystemProvider {
     
     /////// UTILITY METHOD SECTION ///////
 
-    @Nonnull OpenBISSftpNodeChain getNodeChainFromPath(Path path) {
+    @Nonnull
+    SftpNodeChain getNodeChainFromPath(Path path) {
         List<String> pathSegments = new ArrayList<>();
         path.forEach(item -> pathSegments.add(item.toString()));
-        OpenBISSftpNodeChain openBISSftpNodeChain;
+        SftpNodeChain sftpNodeChain;
         try {
-            openBISSftpNodeChain = ftpPathTranslator.fromPathSegments(pathSegments);
+            sftpNodeChain = ftpPathTranslator.fromPathSegments(pathSegments);
         } catch (FtpPathTranslator.MalformedPathException e) {
             logger.throwing(e);
             throw new RuntimeException(e);
         }
-        return openBISSftpNodeChain;
+        return sftpNodeChain;
     }
 
 
-    @Nonnull Path getPathFromNodeChain(OpenBISSftpNodeChain item) {
+    @Nonnull Path getPathFromNodeChain(SftpNodeChain item) {
         try {
-            return new OpenBISSftpPath(createdFileSystem, "/", ftpPathTranslator.toPathSegments(item));
+            return new SftpPath(createdFileSystem, "/", ftpPathTranslator.toPathSegments(item));
         } catch (FtpPathTranslator.MalformedPathException e) {
             logger.throwing(e);
             throw new RuntimeException(e);
