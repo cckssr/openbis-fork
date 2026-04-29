@@ -499,12 +499,12 @@ export default class ImagingFacade {
 
         for (let i = startIdx; i < endIdx; i++) {
             const { objId, sortingId, kind } = datasetCodeList[i];
+            const objectType = kind === "as.dto.sample.Sample" ? ObjectType.OBJECT
+                : ObjectType.DATA_SET;
 
             if (objId !== currentObjId) {
                 currentObjId = objId;
-                const objType = kind === "as.dto.sample.Sample" ? ObjectType.OBJECT
-                    : ObjectType.DATA_SET;
-                datasetProperties = await this.loadImagingDataset(objId, true, false, false, objType);
+                datasetProperties = await this.loadImagingDataset(objId, true, false, false, objectType);
                 loadedImgDS = await this.openbis.fromJson(null, JSON.parse(datasetProperties[constants.IMAGING_DATA_CONFIG]));
                 delete datasetProperties[constants.IMAGING_DATA_CONFIG];
             }
@@ -514,6 +514,7 @@ export default class ImagingFacade {
                 for (const [index, preview] of image.previews.entries()) {
                     if (previewIndexInDataset === sortingId) {
                         previewContainerList.push({
+                            objectType,
                             datasetId: objId,
                             preview,
                             previewIdx: index,
@@ -570,6 +571,7 @@ export default class ImagingFacade {
      * @param {string} operator - Filter operator ('AND' or 'OR')
      * @param {string} filterText - Text to filter by
      * @param {string} property - Property to filter on (IMAGING_TAGS or PREVIEW_COMMENT)
+     * @param {ObjectType} objType - Either SAMPLE or DATASET to indicatre which type we are working with.
      * @returns {Promise<Object>} Object with previewContainerList and totalCount
      */
     filterAndPaginateImagingDatasets = async (dataSets, page, pageSize, operator, filterText, property) => {
@@ -599,6 +601,7 @@ export default class ImagingFacade {
 
                     if (match) {
                         filteredDatasets.push({
+                            objectType: ObjectType.DATA_SET,
                             datasetId: dataSet.permId.permId,
                             preview,
                             previewIdx: previewIndexInDataset,
