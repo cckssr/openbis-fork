@@ -44,17 +44,15 @@ from java.nio.file import Path
 
 
 from ro_crate.api import exportRoCrate, checkStatues, downloadRoCrate, RO_CRATE_EXPORT_ZIP_NAME
-from util import sendMail, sendMailFailure
+from util import sendMail, sendMailFailure, resultDict
 
 
 OPERATION_LOG = LogFactory.getLogger(LogCategory.OPERATION, LogFactory)
 
 REQUIRED_PUBLICATION_PROPS = ["NAME", "PUBLICATION.DESCRIPTION", "PUBLICATION.ABSTRACT", "PUBLICATION.CREATOR", "PUBLICATION.PUBLISHER"]
 SEMI_REQUIRED_PROPS = {
-    "PUBLICATION.IDENTIFIER" : "--PLACEHOLDER--",
     "PUBLICATION.TYPE" : "--PLACEHOLDER--",
     "PUBLICATION.STATUS" : "--PLACEHOLDER--",
-    "PUBLICATION.URL" : "https://PLACEHOLDER",
     "PUBLICATION.PUBLICATION_YEAR" : datetime.date.today().strftime('%Y-%m-%d'),
 }
 
@@ -74,16 +72,13 @@ def exportSciCat(context, params):
 
         exportSciCat_withEmail(context, params)
 
-        print(f"SciCat export thread done. Starting time: {date} token: {sessionToken}")
+        print("SciCat export thread done. Starting time: "+ date+" token: "+sessionToken)
 
     t = threading.Thread(target=worker)
     t.start()
 
-    result = {
-        "result": "STARTED"
-    }
+    return resultDict("STARTED")
 
-    return result
 
 
 def createNewPublication(sessionToken, v3, properties):
@@ -108,9 +103,7 @@ def createNewPublication(sessionToken, v3, properties):
 
     for required_prop in REQUIRED_PUBLICATION_PROPS:
         if sampleCreation.getProperty(required_prop) is None:
-            return {
-                "error": "Missing required property:" + required_prop
-            }
+            return resultDict(None, "Missing required property:" + required_prop)
 
     for property in SEMI_REQUIRED_PROPS.keys():
         if sampleCreation.getProperty(property) is None:
@@ -119,14 +112,9 @@ def createNewPublication(sessionToken, v3, properties):
     try:
         id = v3.createSamples(sessionToken, [sampleCreation])
         print("ID:", id)
-        return {
-            "result": id.get(0).getPermId(),
-            "error": None
-        }
+        return resultDict(id.get(0).getPermId())
     except Throwable as e:
-        return {
-            "error": e
-        }
+        return resultDict(None, e)
 
 
 def exportSciCat_withEmail(context, params):
@@ -195,7 +183,7 @@ def exportSciCat_withEmail(context, params):
             sendMailFailure(mailClient, userEmail, "SciCat export failed while getting results with exception:\n" + pollResult["error"])
             return
 
-        #TODO get ids and prepare EMAIL
+        #TODO get ids and prepare EMAIL once SciCat implements this path
         sendMail(mailClient, userEmail, "", "SciCat export results:\n")
 
     else:
@@ -219,17 +207,13 @@ def getRoCrateExportToWorkspace(context, params):
         result = checkStatues(context, params, jobId)
         print(result)
         if result["error"] is not None:
-            return {
-                "error": result["error"]
-            }
+            return resultDict(None, result["error"])
         if result["result"]["status"] and result["result"]["status"] == "COMPLETED":
             OPERATION_LOG.info(result)
             flag = True
         elif result["result"]["status"] and result["result"]["status"] == "FAILED":
             OPERATION_LOG.error(result)
-            return {
-                "error": result["result"]["errors"][0]
-            }
+            return resultDict(None, result["result"]["errors"][0])
         count -= 1
 
         time.sleep(sleep)
@@ -238,9 +222,7 @@ def getRoCrateExportToWorkspace(context, params):
     download_result = downloadRoCrate(context, params)
 
     if download_result["error"] is not None:
-        return {
-            "error": download_result["error"]
-        }
+        return resultDict(None, download_result["error"])
 
     sessionWorkspaceProvider = CommonServiceProvider.getSessionWorkspaceProvider()
     sessionToken = context.getSessionToken()
@@ -250,14 +232,9 @@ def getRoCrateExportToWorkspace(context, params):
     file_path = Path.of(session_workspace.toPath().toString(), RO_CRATE_EXPORT_ZIP_NAME)
 
     if file_path.toFile().exists() == False:
-        return {
-            "error": "Could not find file: " + path
-        }
+        return resultDict(None, "Could not find file: " + path)
 
-    return {
-        "result": "COMPLETED",
-        "error": None
-    }
+    return resultDict("COMPLETED")
 
 def sendToSciCat(context, params):
 
@@ -304,16 +281,12 @@ def pollSciCatImport(context, params):
     result = {}
     while flag == False:
         if count < 0:
-            return {
-                "error": "timeout waiting for response"
-            }
+            return resultDict(None, "timeout waiting for response")
 
         result = checkStatusSciCat(sciCatUrl, accessToken, jobId)
         print("SciCat Result:", result)
         if result["error"] is not None:
-            return {
-                "error": result["error"]
-            }
+            return resultDict(None, result["error"])
         if result["result"]["status"] and result["result"]["status"] == "COMPLETED":
             OPERATION_LOG.info(result)
             flag = True
@@ -350,18 +323,10 @@ def checkStatusSciCat(url, accessToken, jobId):
             error = output
             output = None
 
-        result = {
-            "result": output,
-            "error": error
-        }
-
-        return result
+        return resultDict(output, error)
     except Throwable as e:
         OPERATION_LOG.error("Error occurred: %s" % e, e)
-        return {
-            "result": None,
-            "error": e
-        }
+        return resultDict(None, e)
 
 def upload_file_with_proxy(url, file_path, accessToken, proxy_host=None, proxy_port=None):
     '''
@@ -379,9 +344,7 @@ def upload_file_with_proxy(url, file_path, accessToken, proxy_host=None, proxy_p
     path = Path.of(file_path)
 
     if path.toFile().exists() == False:
-        return {
-            "error": "Could not find file: " + path
-        }
+        return resultDict(None, "Could not find file: " + path)
 
     if proxy_host is None or proxy_host == "":
         client = HttpClient.newHttpClient()

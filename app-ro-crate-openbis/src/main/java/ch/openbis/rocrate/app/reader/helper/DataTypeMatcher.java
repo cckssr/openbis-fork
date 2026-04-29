@@ -3,6 +3,7 @@ package ch.openbis.rocrate.app.reader.helper;
 import ch.eth.sis.rocrate.facade.IMetadataEntry;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyAssignment;
+import com.beust.jcommander.Strings;
 
 import java.io.Serializable;
 import java.net.MalformedURLException;
@@ -117,12 +118,13 @@ public class DataTypeMatcher
                     {
 
                         String[] parts = identifier.toString().split("/");
-                        if (parts.length < 2 || parts.length > 4)
+
+                        if ((parts.length == 3 || parts.length == 4) && Strings.isStringEmpty(parts[0]))
                         {
-                            return false;
+                            return true;
                         }
                     }
-                    return true;
+                    return false;
                 } catch (RuntimeException e)
                 {
                     return false;

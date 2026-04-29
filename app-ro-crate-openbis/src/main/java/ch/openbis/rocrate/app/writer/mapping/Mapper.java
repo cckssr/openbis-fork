@@ -25,9 +25,11 @@ import com.google.common.net.PercentEscaper;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.io.InputStream;
 import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
@@ -396,7 +398,9 @@ public class Mapper
                 UUID uuid = UUID.randomUUID();
                 Path path = Path.of("/tmp/ro-crate/" + uuid);
                 Files.createDirectories(Path.of("/tmp/ro-crate/"));
-                Files.write(path, b.getInputStream().readAllBytes());
+                try (InputStream input = b.getInputStream()) {
+                    Files.copy(input, path, StandardCopyOption.REPLACE_EXISTING);
+                }
                 MapResult.RoCrateFile roCrateFile =
                         new MapResult.RoCrateFile(path, b.originalPath());
                 files.add(roCrateFile);

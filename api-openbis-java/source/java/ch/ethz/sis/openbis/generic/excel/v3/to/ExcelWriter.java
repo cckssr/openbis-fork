@@ -198,26 +198,9 @@ public class ExcelWriter
 
     private static void writeFile(IFileInfo file, BufferedOutputStream bos) throws IOException
     {
-        try (InputStream inputStream = file.getInputStream())
-        {
-            byte[] buffer = new byte[BUFFER_SIZE];
-            int read = 0;
-
-            while ((read = inputStream.read(buffer)) > 0)
-            {
-
-                byte[] writeBuf = buffer;
-                if (read != BUFFER_SIZE)
-                {
-                    writeBuf = Arrays.copyOfRange(buffer, 0, read);
-                }
-
-                bos.write(writeBuf);
-
-            }
-
+        try (InputStream input = file.getInputStream()) {
+            input.transferTo(bos);
         }
-        bos.flush();
     }
 
     public void checkWriteResult(List<RowWriteResult> writeResults)

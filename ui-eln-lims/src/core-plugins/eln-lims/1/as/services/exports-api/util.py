@@ -40,6 +40,11 @@ from java.lang import Throwable
 
 OPERATION_LOG = LogFactory.getLogger(LogCategory.OPERATION, LogFactory)
 
+def resultDict(result=None, error=None):
+    return {
+        "result": result,
+        "error": error
+    }
 
 def sendMail(mailClient, userEmail, link, custom_message=None):
     replyTo = None

@@ -3902,7 +3902,9 @@ var FormUtil = new function() {
                                     action : function() {
                                         var $window = $('<form>', { 'action' : 'javascript:void(0);' });
                                         $window.append($('<legend>').append('Export'));
-                                        var $compatible = $("<span class='checkbox'><label><input type='checkbox' id='COMPATIBLE-IMPORT'>Make import compatible</label></span>");
+                                        var $useRoCrate = $("<span class='checkbox'><label><input type='checkbox' id='USE-ROCRATE'>Use RO-Crate</label></span>");
+										$window.append($useRoCrate);
+										var $compatible = $("<span class='checkbox'><label><input type='checkbox' id='COMPATIBLE-IMPORT'>Make import compatible</label></span>");
                                         $window.append($compatible);
 
                                         var $info_formats = $("<span>").append($("<b>").append("File formats"));
@@ -3963,62 +3965,115 @@ var FormUtil = new function() {
                                         $window.append($exportOptions);
 
                                         var $waitOrEmail = $('<div/>');
-                                        $waitOrEmail.append("<span class='checkbox'><label><input type='radio' name='wait-for-export' value='Wait' checked> Wait for download to complete in browser. <span class='glyphicon glyphicon-warning-sign'></span> For large data to export choose receive results by email.</label></span>");
-                                        $waitOrEmail.append("<span class='checkbox'><label><input type='radio' name='wait-for-export' value='Sent Email' id='EXPORT-EMAIL'> Receive results by email.</label></span>");
+                                        $waitOrEmail.append("<span class='checkbox' ><label><input type='radio' name='wait-for-export' value='Wait' id='EXPORT-WAIT' checked> Wait for download to complete in browser. <span class='glyphicon glyphicon-warning-sign'></span> For large data to export choose receive results by email.</label></span>");
+                                        $waitOrEmail.append("<span class='checkbox' ><label><input type='radio' name='wait-for-export' value='Sent Email' id='EXPORT-EMAIL'> Receive results by email.</label></span>");
                                         $window.append($waitOrEmail.contents());
 
-                                        var $btnAccept = $('<input>', { 'type': 'submit', 'class' : 'btn btn-primary', 'value' : 'Accept' , 'id' : 'accept-btn'});
+										$useRoCrate.change(function(event) {
+											if (event.target.checked) {
+												$("#COMPATIBLE-IMPORT")[0].checked = true;
+												$("#COMPATIBLE-IMPORT")[0].disabled = true;
+												$("#EXPORT-EMAIL")[0].checked = true;
+												$("[name='wait-for-export']").attr('disabled', 'disabled')
+											} else {
+												$("#COMPATIBLE-IMPORT")[0].disabled = false;
+												$("#EXPORT-WAIT")[0].checked = true;
+												$("[name='wait-for-export']").removeAttr('disabled')
+											}
+										});
+
+
+										var $btnAccept = $('<input>', { 'type': 'submit', 'class' : 'btn btn-primary', 'value' : 'Accept' , 'id' : 'accept-btn'});
                                         $btnAccept.click(function() {
-                                            var exportModel = {
-                                                nodeExportList: [{
-                                                    kind : entityKind,
-                                                    permId : entityPermId,
-                                                    withLevelsAbove: $("#LEVELS-ABOVE-EXPORT").is(":checked"), //LEVELS-ABOVE-EXPORT,
-                                                    withLevelsBelow : $("#LEVELS-BELOW-EXPORT").is(":checked"), //LEVELS-BELOW-EXPORT
-                                                    withObjectsAndDataSetsParents : $("#PARENTS-EXPORT").is(":checked"), //PARENTS-EXPORT
-                                                    withObjectsAndDataSetsChildren : $("#CHILDREN-EXPORT").is(":checked"), //CHILDREN-EXPORT
-                                                    withObjectsAndDataSetsOtherSpaces: $("#OTHER-SPACES-EXPORT").is(":checked") //OTHER-SPACES-EXPORT
-                                                }],
-                                                withEmail : $("#EXPORT-EMAIL").is(":checked"),
-                                                withImportCompatibility : $("#COMPATIBLE-IMPORT").is(":checked"), //COMPATIBLE-IMPORT
-                                                formats : {
-                                                    pdf : $("#PDF-EXPORT").is(":checked"), //PDF-EXPORT
-                                                    xlsx : $("#XLSX-EXPORT").is(":checked"), //XLSX-EXPORT
-                                                    data : $("#DATA-EXPORT").is(":checked"), //DATA-EXPORT
-                                                    afsData : $("#AFS-DATA-EXPORT").is(":checked") //AFS-DATA-EXPORT
-                                                }
-                                            }
-                                            var numberOfFormats = 0;
-                                            if(exportModel.formats.pdf) {
-                                                numberOfFormats++;
-                                            }
-                                            if(exportModel.formats.xlsx) {
-                                                numberOfFormats++;
-                                            }
-                                            if(exportModel.formats.data) {
-                                                numberOfFormats++;
-                                            }
-                                            if(exportModel.formats.afsData) {
-                                                numberOfFormats++;
-                                            }
-                                            if(numberOfFormats === 0) {
-                                                Util.showError("No format selected.", function() {}, true, true, false, true);
-                                            } else {
-                                                Util.blockUI();
-                                                mainController.serverFacade.customELNASAPI({
-                                                    "method" : "getExport",
-                                                    "export-model" : exportModel
-                                                }, function(result) {
-                                                    if(exportModel.withEmail) {
-                                                        Util.showSuccess("Export scheduled, you will receive export by email");
-                                                        Util.unblockUI();
-                                                    } else {
-                                                        window.open(result.result, "_blank");
-                                                        Util.showSuccess("Downloading File");
-                                                        Util.unblockUI();
-                                                    }
-                                                }, true);
-                                            }
+
+											var exportModel = null;
+											if($("#USE-ROCRATE").is(":checked")) {
+												exportModel = {
+													nodeExportList: [{
+														kind: entityKind,
+														permId: entityPermId
+													}],
+													withLevelsAbove: $("#LEVELS-ABOVE-EXPORT").is(":checked"), //LEVELS-ABOVE-EXPORT,
+													withLevelsBelow : $("#LEVELS-BELOW-EXPORT").is(":checked"), //LEVELS-BELOW-EXPORT
+													withObjectsAndDataSetsParents : $("#PARENTS-EXPORT").is(":checked"), //PARENTS-EXPORT
+													withObjectsAndDataSetsChildren : $("#CHILDREN-EXPORT").is(":checked"), //CHILDREN-EXPORT
+													withObjectsAndDataSetsOtherSpaces: $("#OTHER-SPACES-EXPORT").is(":checked"), //OTHER-SPACES-EXPORT
+													formats : {
+														pdf : $("#PDF-EXPORT").is(":checked"), //PDF-EXPORT
+														xlsx : $("#XLSX-EXPORT").is(":checked"), //XLSX-EXPORT
+														data : $("#DATA-EXPORT").is(":checked"), //DATA-EXPORT
+														afsData : $("#AFS-DATA-EXPORT").is(":checked") //AFS-DATA-EXPORT
+													}
+												}
+
+												Util.blockUI();
+												mainController.serverFacade.exportRoCrate(exportModel, function (result) {
+													if (result.error) {
+														if(result.error.message) {
+															Util.showError(result.error.message);
+														} else {
+															Util.showError(result.error);
+														}
+													} else {
+														Util.showSuccess("Export scheduled, you will receive export by email", function () { Util.unblockUI(); });
+													}
+												});
+
+											} else {
+												exportModel = {
+													nodeExportList: [{
+														kind : entityKind,
+														permId : entityPermId,
+														withLevelsAbove: $("#LEVELS-ABOVE-EXPORT").is(":checked"), //LEVELS-ABOVE-EXPORT,
+														withLevelsBelow : $("#LEVELS-BELOW-EXPORT").is(":checked"), //LEVELS-BELOW-EXPORT
+														withObjectsAndDataSetsParents : $("#PARENTS-EXPORT").is(":checked"), //PARENTS-EXPORT
+														withObjectsAndDataSetsChildren : $("#CHILDREN-EXPORT").is(":checked"), //CHILDREN-EXPORT
+														withObjectsAndDataSetsOtherSpaces: $("#OTHER-SPACES-EXPORT").is(":checked") //OTHER-SPACES-EXPORT
+													}],
+													withEmail : $("#EXPORT-EMAIL").is(":checked"),
+													withImportCompatibility : $("#COMPATIBLE-IMPORT").is(":checked"), //COMPATIBLE-IMPORT
+													formats : {
+														pdf : $("#PDF-EXPORT").is(":checked"), //PDF-EXPORT
+														xlsx : $("#XLSX-EXPORT").is(":checked"), //XLSX-EXPORT
+														data : $("#DATA-EXPORT").is(":checked"), //DATA-EXPORT
+														afsData : $("#AFS-DATA-EXPORT").is(":checked") //AFS-DATA-EXPORT
+													}
+												}
+
+												var numberOfFormats = 0;
+												if(exportModel.formats.pdf) {
+													numberOfFormats++;
+												}
+												if(exportModel.formats.xlsx) {
+													numberOfFormats++;
+												}
+												if(exportModel.formats.data) {
+													numberOfFormats++;
+												}
+												if(exportModel.formats.afsData) {
+													numberOfFormats++;
+												}
+												if(numberOfFormats === 0) {
+													Util.showError("No format selected.", function() {}, true, true, false, true);
+												} else {
+													Util.blockUI();
+													mainController.serverFacade.customELNASAPI({
+														"method" : "getExport",
+														"export-model" : exportModel
+													}, function(result) {
+														if(exportModel.withEmail) {
+															Util.showSuccess("Export scheduled, you will receive export by email");
+															Util.unblockUI();
+														} else {
+															window.open(result.result, "_blank");
+															Util.showSuccess("Downloading File");
+															Util.unblockUI();
+														}
+													}, true);
+												}
+
+											}
+
                                         });
                                         var $btnCancel = $('<a>', { 'class' : 'btn btn-default' }).append('Cancel');
                                         $btnCancel.click(function() {
