@@ -382,7 +382,7 @@ $.extend(ImagingTechnology.prototype, ELNLIMSPlugin.prototype, {
             if (isGalleryView) {
                 var _this = this;
                 this.displayImagingTechViewer($container, false, model.sample.permId, 'object',
-                    function (objId, imageIndex, previewIndex) {
+                    function (objId, imageIndex, previewIndex, objectType) {
                         var dataSets = model.v3_sample.dataSets;
                         var paginationInfo = null;
                         var indexFound = null;
@@ -406,7 +406,11 @@ $.extend(ImagingTechnology.prototype, ELNLIMSPlugin.prototype, {
                                 imageIndex: imageIndex,
                                 previewIndex: previewIndex
                         }
-                        mainController.changeView('showViewDataSetPageFromPermId', arg)
+                        if (objectType === 'object') {
+                            mainController.changeView('showViewSamplePageFromPermId', arg)
+                        } else {
+                            mainController.changeView('showViewDataSetPageFromPermId', arg)
+                        }
                     }, model.sampleType.code);
             }
             let isImagingDatasetView = model.sample &&
