@@ -329,6 +329,8 @@ def test_dataset_archiving_requests(space):
     assert dataset.physicalData.archivingRequested == True
     assert dataset.physicalData.presentInArchive == False
 
+    time.sleep(5)
+
     dataset.request_unarchiving()
 
     assert dataset.permId == permId
