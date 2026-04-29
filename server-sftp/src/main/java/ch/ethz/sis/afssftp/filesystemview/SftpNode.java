@@ -12,7 +12,7 @@ import java.util.Optional;
 @Value
 @Builder(toBuilder = true)
 @ToString
-public class OpenBISSftpNode {
+public class SftpNode {
     public enum Type {
         ROOT,   // Root of the AS hierarchy
         SPACE,  // Space entity in AS
@@ -39,7 +39,8 @@ public class OpenBISSftpNode {
     /**
      * Identifier of the AS entity:
      * - for type ROOT: empty
-     * - for types SPACE, PROJECT, FOLDER, SAMPLE, EXPERIMENT, DATA_SET: their "code"
+     * - for types SPACE, PROJECT, FOLDER, SAMPLE, EXPERIMENT, DATA_SET: something from which their "code" or "permId" can be obtained
+     *      -> Examples from standard implementations: "SPACE-CODE", "Sample name($SAMPLE_PERM_ID)"
      * - for type SUBLEVEL: the "label" of this sublevel
      * - for AFS_FILE: not applicable, so empty
      */

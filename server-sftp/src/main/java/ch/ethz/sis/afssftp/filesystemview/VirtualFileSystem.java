@@ -1,6 +1,6 @@
 package ch.ethz.sis.afssftp.filesystemview;
 
-import ch.ethz.sis.afssftp.authentication.OpenBISUser;
+import ch.ethz.sis.afssftp.authentication.User;
 import org.apache.sshd.common.file.util.BaseFileSystem;
 
 import java.io.IOException;
@@ -9,19 +9,19 @@ import java.nio.file.attribute.UserPrincipalLookupService;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class OpenBISFileSystem extends BaseFileSystem<OpenBISSftpPath> {
-    private final OpenBISUser openBISUser;
-    private final OpenBISFileSystemProvider openBISFileSystemProvider;
+public class VirtualFileSystem extends BaseFileSystem<SftpPath> {
+    private final User user;
+    private final VirtualFileSystemProvider virtualFileSystemProvider;
     private final AtomicBoolean closed = new AtomicBoolean(false);
 
-    public OpenBISFileSystem(
-            OpenBISUser openBISUser,
-            OpenBISFileSystemProvider openBISFileSystemProvider
+    public VirtualFileSystem(
+            User user,
+            VirtualFileSystemProvider virtualFileSystemProvider
     ) {
-        super(openBISFileSystemProvider);
-        this.openBISUser = openBISUser;
-        openBISFileSystemProvider.acceptCreatedFileSystem(this);
-        this.openBISFileSystemProvider = openBISFileSystemProvider;
+        super(virtualFileSystemProvider);
+        this.user = user;
+        virtualFileSystemProvider.acceptCreatedFileSystem(this);
+        this.virtualFileSystemProvider = virtualFileSystemProvider;
     }
 
     @Override
@@ -69,7 +69,7 @@ public class OpenBISFileSystem extends BaseFileSystem<OpenBISSftpPath> {
         throw new UnsupportedOperationException("Unsupported watch-services");
     }
 
-    protected OpenBISSftpPath create(String root, List<String> names) {
-        return new OpenBISSftpPath(this, root, names);
+    protected SftpPath create(String root, List<String> names) {
+        return new SftpPath(this, root, names);
     }
 }

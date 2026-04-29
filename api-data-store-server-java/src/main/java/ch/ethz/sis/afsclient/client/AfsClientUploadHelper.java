@@ -25,6 +25,7 @@ import java.util.stream.StreamSupport;
 import ch.ethz.sis.afsapi.api.ClientAPI;
 import ch.ethz.sis.afsapi.api.ClientAPI.FileCollisionListener;
 import ch.ethz.sis.afsapi.api.ClientAPI.TransferMonitorListener;
+import ch.ethz.sis.afsapi.api.OperationsAPI;
 import ch.ethz.sis.afsapi.dto.Chunk;
 import ch.ethz.sis.afsapi.dto.File;
 import ch.ethz.sis.afsclient.client.AfsClientDownloadHelper.ChunkIterable;
@@ -301,14 +302,14 @@ public class AfsClientUploadHelper
         }
     }
 
-    public static Optional<File> getServerFilePresence(@NonNull AfsClient afsClient,
+    public static Optional<File> getServerFilePresence(@NonNull OperationsAPI afsClient,
             @NonNull String destinationOwner,
             @NonNull String absoluteServerPath) throws Exception
     {
         return getServerFilePresence(afsClient, destinationOwner, absoluteServerPath, null);
     }
 
-    private static Optional<File> getServerFilePresence(@NonNull AfsClient afsClient,
+    private static Optional<File> getServerFilePresence(@NonNull OperationsAPI afsClient,
             @NonNull String destinationOwner,
             @NonNull String absoluteServerPath, Cache cache) throws Exception
     {

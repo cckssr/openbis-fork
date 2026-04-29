@@ -1,13 +1,14 @@
 package ch.ethz.sis.afssftp.filesystemview.impl.standard;
 
 import ch.ethz.sis.afsapi.dto.File;
-import ch.ethz.sis.afssftp.filesystemview.OpenBISSftpFileAttributes;
-import ch.ethz.sis.afssftp.filesystemview.OpenBISSftpNode;
-import ch.ethz.sis.afssftp.filesystemview.OpenBISSftpNodeChain;
-import ch.ethz.sis.afssftp.util.OpenBISListUtil;
+import ch.ethz.sis.afssftp.filesystemview.SftpFileAttributes;
+import ch.ethz.sis.afssftp.filesystemview.SftpNode;
+import ch.ethz.sis.afssftp.filesystemview.SftpNodeChain;
+import ch.ethz.sis.afssftp.util.SftpListUtil;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 import junit.framework.TestCase;
 import org.mockito.Mockito;
 
@@ -16,247 +17,247 @@ import java.util.List;
 import java.util.Optional;
 
 public class StandardPathListerTest extends TestCase {
-    private static final OpenBISSftpNodeChain exampleBaseChain = new OpenBISSftpNodeChain(List.of(
-            OpenBISSftpNode.builder().type(OpenBISSftpNode.Type.ROOT).build(),
-            OpenBISSftpNode.builder().type(OpenBISSftpNode.Type.SUBLEVEL)
+    private static final SftpNodeChain exampleBaseChain = new SftpNodeChain(List.of(
+            SftpNode.builder().type(SftpNode.Type.ROOT).build(),
+            SftpNode.builder().type(SftpNode.Type.SUBLEVEL)
                     .identifier(Optional.of(StandardPathTranslator.SPACE_TYPE_LABEL))
                     .build(),
-            OpenBISSftpNode.builder().type(OpenBISSftpNode.Type.SPACE)
+            SftpNode.builder().type(SftpNode.Type.SPACE)
                     .identifier(Optional.of("space_1")).build()
     ));
 
     public void testListWithRoot() {
-        OpenBISListUtil listUtil = Mockito.mock(OpenBISListUtil.class);
+        SftpListUtil listUtil = Mockito.mock(SftpListUtil.class);
         StandardPathLister standardPathLister = Mockito.spy(new StandardPathLister(listUtil));
 
 
-        OpenBISSftpNode lastNode = OpenBISSftpNode.builder().type(OpenBISSftpNode.Type.ROOT).build();
-        OpenBISSftpNodeChain directory = OpenBISSftpNodeChain.concat(exampleBaseChain, lastNode);
-        List<OpenBISSftpNodeChain> exampleListResult = List.of(
-                new OpenBISSftpNodeChain(List.of(
-                        OpenBISSftpNode.builder().type(OpenBISSftpNode.Type.ROOT).build(),
-                        OpenBISSftpNode.builder().type(OpenBISSftpNode.Type.SUBLEVEL)
+        SftpNode lastNode = SftpNode.builder().type(SftpNode.Type.ROOT).build();
+        SftpNodeChain directory = SftpNodeChain.concat(exampleBaseChain, lastNode);
+        List<SftpNodeChain> exampleListResult = List.of(
+                new SftpNodeChain(List.of(
+                        SftpNode.builder().type(SftpNode.Type.ROOT).build(),
+                        SftpNode.builder().type(SftpNode.Type.SUBLEVEL)
                                 .identifier(Optional.of(StandardPathTranslator.SPACE_TYPE_LABEL))
                                 .build()
                 )));
         Mockito.doReturn(exampleListResult).when(standardPathLister).listRoot(null, directory);
-        List<OpenBISSftpNodeChain> listResult = standardPathLister.list(directory);
+        List<SftpNodeChain> listResult = standardPathLister.list(directory);
         Mockito.verify(standardPathLister, Mockito.times(1)).listRoot(null, directory);
         assertEquals(exampleListResult, listResult);
     }
 
     public void testListWithSpace() {
-        OpenBISListUtil listUtil = Mockito.mock(OpenBISListUtil.class);
+        SftpListUtil listUtil = Mockito.mock(SftpListUtil.class);
         StandardPathLister standardPathLister = Mockito.spy(new StandardPathLister(listUtil));
 
 
-        OpenBISSftpNode lastNode = OpenBISSftpNode.builder().type(OpenBISSftpNode.Type.SPACE)
+        SftpNode lastNode = SftpNode.builder().type(SftpNode.Type.SPACE)
                 .identifier(Optional.of("space_1")).build();
-        OpenBISSftpNodeChain directory = OpenBISSftpNodeChain.concat(exampleBaseChain, lastNode);
-        List<OpenBISSftpNodeChain> exampleListResult = List.of(
-                new OpenBISSftpNodeChain(List.of(
-                        OpenBISSftpNode.builder().type(OpenBISSftpNode.Type.ROOT).build(),
-                        OpenBISSftpNode.builder().type(OpenBISSftpNode.Type.SUBLEVEL)
+        SftpNodeChain directory = SftpNodeChain.concat(exampleBaseChain, lastNode);
+        List<SftpNodeChain> exampleListResult = List.of(
+                new SftpNodeChain(List.of(
+                        SftpNode.builder().type(SftpNode.Type.ROOT).build(),
+                        SftpNode.builder().type(SftpNode.Type.SUBLEVEL)
                                 .identifier(Optional.of(StandardPathTranslator.SPACE_TYPE_LABEL))
                                 .build(),
-                        OpenBISSftpNode.builder().type(OpenBISSftpNode.Type.SPACE)
+                        SftpNode.builder().type(SftpNode.Type.SPACE)
                                 .identifier(Optional.of("space_1"))
                                 .build(),
-                        OpenBISSftpNode.builder().type(OpenBISSftpNode.Type.SUBLEVEL)
+                        SftpNode.builder().type(SftpNode.Type.SUBLEVEL)
                                 .identifier(Optional.of(StandardPathTranslator.PROJECT_TYPE_LABEL))
                                 .build()
                 )));
         Mockito.doReturn(exampleListResult).when(standardPathLister).listSpace(lastNode, null, directory);
-        List<OpenBISSftpNodeChain> listResult = standardPathLister.list(directory);
+        List<SftpNodeChain> listResult = standardPathLister.list(directory);
         Mockito.verify(standardPathLister, Mockito.times(1)).listSpace(lastNode, null, directory);
         assertEquals(exampleListResult, listResult);
     }
 
     public void testListWithSample() {
-        OpenBISListUtil listUtil = Mockito.mock(OpenBISListUtil.class);
+        SftpListUtil listUtil = Mockito.mock(SftpListUtil.class);
         StandardPathLister standardPathLister = Mockito.spy(new StandardPathLister(listUtil));
 
 
-        OpenBISSftpNode lastNode = OpenBISSftpNode.builder().type(OpenBISSftpNode.Type.SAMPLE)
+        SftpNode lastNode = SftpNode.builder().type(SftpNode.Type.SAMPLE)
                 .identifier(Optional.of("sample_1")).build();
-        OpenBISSftpNodeChain directory = OpenBISSftpNodeChain.concat(exampleBaseChain, lastNode);
-        List<OpenBISSftpNodeChain> exampleListResult = List.of(
-                new OpenBISSftpNodeChain(List.of(
-                        OpenBISSftpNode.builder().type(OpenBISSftpNode.Type.ROOT).build(),
-                        OpenBISSftpNode.builder().type(OpenBISSftpNode.Type.SUBLEVEL)
+        SftpNodeChain directory = SftpNodeChain.concat(exampleBaseChain, lastNode);
+        List<SftpNodeChain> exampleListResult = List.of(
+                new SftpNodeChain(List.of(
+                        SftpNode.builder().type(SftpNode.Type.ROOT).build(),
+                        SftpNode.builder().type(SftpNode.Type.SUBLEVEL)
                                 .identifier(Optional.of(StandardPathTranslator.SAMPLE_TYPE_LABEL))
                                 .build(),
-                        OpenBISSftpNode.builder().type(OpenBISSftpNode.Type.SAMPLE)
+                        SftpNode.builder().type(SftpNode.Type.SAMPLE)
                                 .identifier(Optional.of("sample_1"))
                                 .build(),
-                        OpenBISSftpNode.builder().type(OpenBISSftpNode.Type.SUBLEVEL)
+                        SftpNode.builder().type(SftpNode.Type.SUBLEVEL)
                                 .identifier(Optional.of(StandardPathTranslator.DATA_SET_TYPE_LABEL))
                                 .build()
                 )));
         Mockito.doReturn(exampleListResult).when(standardPathLister).listSample(lastNode, null, directory);
-        List<OpenBISSftpNodeChain> listResult = standardPathLister.list(directory);
+        List<SftpNodeChain> listResult = standardPathLister.list(directory);
         Mockito.verify(standardPathLister, Mockito.times(1)).listSample(lastNode, null, directory);
         assertEquals(exampleListResult, listResult);
     }
 
     public void testListWithFolder() {
-        OpenBISListUtil listUtil = Mockito.mock(OpenBISListUtil.class);
+        SftpListUtil listUtil = Mockito.mock(SftpListUtil.class);
         StandardPathLister standardPathLister = Mockito.spy(new StandardPathLister(listUtil));
 
 
-        OpenBISSftpNode lastNode = OpenBISSftpNode.builder().type(OpenBISSftpNode.Type.FOLDER)
+        SftpNode lastNode = SftpNode.builder().type(SftpNode.Type.FOLDER)
                 .identifier(Optional.of("folder_1")).build();
-        OpenBISSftpNodeChain directory = OpenBISSftpNodeChain.concat(exampleBaseChain, lastNode);
-        List<OpenBISSftpNodeChain> exampleListResult = List.of(
-                new OpenBISSftpNodeChain(List.of(
-                        OpenBISSftpNode.builder().type(OpenBISSftpNode.Type.ROOT).build(),
-                        OpenBISSftpNode.builder().type(OpenBISSftpNode.Type.SUBLEVEL)
+        SftpNodeChain directory = SftpNodeChain.concat(exampleBaseChain, lastNode);
+        List<SftpNodeChain> exampleListResult = List.of(
+                new SftpNodeChain(List.of(
+                        SftpNode.builder().type(SftpNode.Type.ROOT).build(),
+                        SftpNode.builder().type(SftpNode.Type.SUBLEVEL)
                                 .identifier(Optional.of(StandardPathTranslator.FOLDER_TYPE_LABEL))
                                 .build(),
-                        OpenBISSftpNode.builder().type(OpenBISSftpNode.Type.FOLDER)
+                        SftpNode.builder().type(SftpNode.Type.FOLDER)
                                 .identifier(Optional.of("folder_1"))
                                 .build(),
-                        OpenBISSftpNode.builder().type(OpenBISSftpNode.Type.SUBLEVEL)
+                        SftpNode.builder().type(SftpNode.Type.SUBLEVEL)
                                 .identifier(Optional.of(StandardPathTranslator.SAMPLE_TYPE_LABEL))
                                 .build()
                 )));
         Mockito.doReturn(exampleListResult).when(standardPathLister).listFolder(lastNode, null, directory);
-        List<OpenBISSftpNodeChain> listResult = standardPathLister.list(directory);
+        List<SftpNodeChain> listResult = standardPathLister.list(directory);
         Mockito.verify(standardPathLister, Mockito.times(1)).listFolder(lastNode, null, directory);
         assertEquals(exampleListResult, listResult);
     }
 
     public void testListWithDataset() {
-        OpenBISListUtil listUtil = Mockito.mock(OpenBISListUtil.class);
+        SftpListUtil listUtil = Mockito.mock(SftpListUtil.class);
         StandardPathLister standardPathLister = Mockito.spy(new StandardPathLister(listUtil));
 
 
-        OpenBISSftpNode lastNode = OpenBISSftpNode.builder().type(OpenBISSftpNode.Type.DATA_SET)
+        SftpNode lastNode = SftpNode.builder().type(SftpNode.Type.DATA_SET)
                 .identifier(Optional.of("dataset_1")).build();
-        OpenBISSftpNodeChain directory = OpenBISSftpNodeChain.concat(exampleBaseChain, lastNode);
-        List<OpenBISSftpNodeChain> exampleListResult = List.of(
-                new OpenBISSftpNodeChain(List.of(
-                        OpenBISSftpNode.builder().type(OpenBISSftpNode.Type.ROOT).build(),
-                        OpenBISSftpNode.builder().type(OpenBISSftpNode.Type.SUBLEVEL)
+        SftpNodeChain directory = SftpNodeChain.concat(exampleBaseChain, lastNode);
+        List<SftpNodeChain> exampleListResult = List.of(
+                new SftpNodeChain(List.of(
+                        SftpNode.builder().type(SftpNode.Type.ROOT).build(),
+                        SftpNode.builder().type(SftpNode.Type.SUBLEVEL)
                                 .identifier(Optional.of(StandardPathTranslator.DATA_SET_TYPE_LABEL))
                                 .build(),
-                        OpenBISSftpNode.builder().type(OpenBISSftpNode.Type.DATA_SET)
+                        SftpNode.builder().type(SftpNode.Type.DATA_SET)
                                 .identifier(Optional.of("dataset_1"))
                                 .build(),
-                        OpenBISSftpNode.builder().type(OpenBISSftpNode.Type.SUBLEVEL)
+                        SftpNode.builder().type(SftpNode.Type.SUBLEVEL)
                                 .identifier(Optional.of(StandardPathTranslator.FILE_TYPE_LABEL))
                                 .build()
                 )));
         Mockito.doReturn(exampleListResult).when(standardPathLister).listDataSet(lastNode, null, directory);
-        List<OpenBISSftpNodeChain> listResult = standardPathLister.list(directory);
+        List<SftpNodeChain> listResult = standardPathLister.list(directory);
         Mockito.verify(standardPathLister, Mockito.times(1)).listDataSet(lastNode, null, directory);
         assertEquals(exampleListResult, listResult);
     }
 
     public void testListWithProject() {
-        OpenBISListUtil listUtil = Mockito.mock(OpenBISListUtil.class);
+        SftpListUtil listUtil = Mockito.mock(SftpListUtil.class);
         StandardPathLister standardPathLister = Mockito.spy(new StandardPathLister(listUtil));
 
 
-        OpenBISSftpNode lastNode = OpenBISSftpNode.builder().type(OpenBISSftpNode.Type.PROJECT)
+        SftpNode lastNode = SftpNode.builder().type(SftpNode.Type.PROJECT)
                 .identifier(Optional.of("project_1")).build();
-        OpenBISSftpNodeChain directory = OpenBISSftpNodeChain.concat(exampleBaseChain, lastNode);
-        List<OpenBISSftpNodeChain> exampleListResult = List.of(
-                new OpenBISSftpNodeChain(List.of(
-                        OpenBISSftpNode.builder().type(OpenBISSftpNode.Type.ROOT).build(),
-                        OpenBISSftpNode.builder().type(OpenBISSftpNode.Type.SUBLEVEL)
+        SftpNodeChain directory = SftpNodeChain.concat(exampleBaseChain, lastNode);
+        List<SftpNodeChain> exampleListResult = List.of(
+                new SftpNodeChain(List.of(
+                        SftpNode.builder().type(SftpNode.Type.ROOT).build(),
+                        SftpNode.builder().type(SftpNode.Type.SUBLEVEL)
                                 .identifier(Optional.of(StandardPathTranslator.PROJECT_TYPE_LABEL))
                                 .build(),
-                        OpenBISSftpNode.builder().type(OpenBISSftpNode.Type.PROJECT)
+                        SftpNode.builder().type(SftpNode.Type.PROJECT)
                                 .identifier(Optional.of("project_1"))
                                 .build(),
-                        OpenBISSftpNode.builder().type(OpenBISSftpNode.Type.SUBLEVEL)
+                        SftpNode.builder().type(SftpNode.Type.SUBLEVEL)
                                 .identifier(Optional.of(StandardPathTranslator.EXPERIMENT_TYPE_LABEL))
                                 .build()
                 )));
         Mockito.doReturn(exampleListResult).when(standardPathLister).listProject(lastNode, null, directory);
-        List<OpenBISSftpNodeChain> listResult = standardPathLister.list(directory);
+        List<SftpNodeChain> listResult = standardPathLister.list(directory);
         Mockito.verify(standardPathLister, Mockito.times(1)).listProject(lastNode, null, directory);
         assertEquals(exampleListResult, listResult);
     }
 
     public void testListWithExperiment() {
-        OpenBISListUtil listUtil = Mockito.mock(OpenBISListUtil.class);
+        SftpListUtil listUtil = Mockito.mock(SftpListUtil.class);
         StandardPathLister standardPathLister = Mockito.spy(new StandardPathLister(listUtil));
 
 
-        OpenBISSftpNode lastNode = OpenBISSftpNode.builder().type(OpenBISSftpNode.Type.EXPERIMENT)
+        SftpNode lastNode = SftpNode.builder().type(SftpNode.Type.EXPERIMENT)
                 .identifier(Optional.of("experiment_1")).build();
-        OpenBISSftpNodeChain directory = OpenBISSftpNodeChain.concat(exampleBaseChain, lastNode);
-        List<OpenBISSftpNodeChain> exampleListResult = List.of(
-                new OpenBISSftpNodeChain(List.of(
-                        OpenBISSftpNode.builder().type(OpenBISSftpNode.Type.ROOT).build(),
-                        OpenBISSftpNode.builder().type(OpenBISSftpNode.Type.SUBLEVEL)
+        SftpNodeChain directory = SftpNodeChain.concat(exampleBaseChain, lastNode);
+        List<SftpNodeChain> exampleListResult = List.of(
+                new SftpNodeChain(List.of(
+                        SftpNode.builder().type(SftpNode.Type.ROOT).build(),
+                        SftpNode.builder().type(SftpNode.Type.SUBLEVEL)
                                 .identifier(Optional.of(StandardPathTranslator.EXPERIMENT_TYPE_LABEL))
                                 .build(),
-                        OpenBISSftpNode.builder().type(OpenBISSftpNode.Type.EXPERIMENT)
+                        SftpNode.builder().type(SftpNode.Type.EXPERIMENT)
                                 .identifier(Optional.of("experiment_1"))
                                 .build(),
-                        OpenBISSftpNode.builder().type(OpenBISSftpNode.Type.SUBLEVEL)
+                        SftpNode.builder().type(SftpNode.Type.SUBLEVEL)
                                 .identifier(Optional.of(StandardPathTranslator.SAMPLE_TYPE_LABEL))
                                 .build()
                 )));
         Mockito.doReturn(exampleListResult).when(standardPathLister).listExperiment(lastNode, null, directory);
-        List<OpenBISSftpNodeChain> listResult = standardPathLister.list(directory);
+        List<SftpNodeChain> listResult = standardPathLister.list(directory);
         Mockito.verify(standardPathLister, Mockito.times(1)).listExperiment(lastNode, null, directory);
         assertEquals(exampleListResult, listResult);
     }
 
     public void testListWithAfsFile() {
-        OpenBISListUtil listUtil = Mockito.mock(OpenBISListUtil.class);
+        SftpListUtil listUtil = Mockito.mock(SftpListUtil.class);
         StandardPathLister standardPathLister = Mockito.spy(new StandardPathLister(listUtil));
 
 
-        OpenBISSftpNode lastNode = OpenBISSftpNode.builder().type(OpenBISSftpNode.Type.AFS_FILE)
+        SftpNode lastNode = SftpNode.builder().type(SftpNode.Type.AFS_FILE)
                 .afsFilePath(List.of("dir1")).build();
-        OpenBISSftpNodeChain directory = OpenBISSftpNodeChain.concat(exampleBaseChain, lastNode);
-        List<OpenBISSftpNodeChain> exampleListResult = List.of(
-                new OpenBISSftpNodeChain(List.of(
-                        OpenBISSftpNode.builder().type(OpenBISSftpNode.Type.ROOT).build(),
-                        OpenBISSftpNode.builder().type(OpenBISSftpNode.Type.SUBLEVEL)
+        SftpNodeChain directory = SftpNodeChain.concat(exampleBaseChain, lastNode);
+        List<SftpNodeChain> exampleListResult = List.of(
+                new SftpNodeChain(List.of(
+                        SftpNode.builder().type(SftpNode.Type.ROOT).build(),
+                        SftpNode.builder().type(SftpNode.Type.SUBLEVEL)
                                 .identifier(Optional.of(StandardPathTranslator.FILE_TYPE_LABEL))
                                 .build(),
-                        OpenBISSftpNode.builder().type(OpenBISSftpNode.Type.AFS_FILE)
+                        SftpNode.builder().type(SftpNode.Type.AFS_FILE)
                                 .afsFilePath(List.of("dir1", "file2")).build()
                 )));
         Mockito.doReturn(exampleListResult).when(standardPathLister).listFilesInAfsFileNode(lastNode, directory);
-        List<OpenBISSftpNodeChain> listResult = standardPathLister.list(directory);
+        List<SftpNodeChain> listResult = standardPathLister.list(directory);
         Mockito.verify(standardPathLister, Mockito.times(1)).listFilesInAfsFileNode(lastNode, directory);
         assertEquals(exampleListResult, listResult);
     }
 
 
     public void testListWithSublevel() {
-        OpenBISListUtil listUtil = Mockito.mock(OpenBISListUtil.class);
+        SftpListUtil listUtil = Mockito.mock(SftpListUtil.class);
         StandardPathLister standardPathLister = Mockito.spy(new StandardPathLister(listUtil));
 
 
-        OpenBISSftpNode lastNode = OpenBISSftpNode.builder().type(OpenBISSftpNode.Type.SUBLEVEL)
+        SftpNode lastNode = SftpNode.builder().type(SftpNode.Type.SUBLEVEL)
                 .identifier(Optional.of("sublevel-label")).build();
-        OpenBISSftpNode secondLastNode;
-        OpenBISSftpNodeChain directory;
-        List<OpenBISSftpNodeChain> listResult;
+        SftpNode secondLastNode;
+        SftpNodeChain directory;
+        List<SftpNodeChain> listResult;
         Exception exception;
-        List<OpenBISSftpNodeChain> exampleListResult = List.of(
-                new OpenBISSftpNodeChain(List.of(
-                        OpenBISSftpNode.builder().type(OpenBISSftpNode.Type.ROOT).build(),
-                        OpenBISSftpNode.builder().type(OpenBISSftpNode.Type.SUBLEVEL)
+        List<SftpNodeChain> exampleListResult = List.of(
+                new SftpNodeChain(List.of(
+                        SftpNode.builder().type(SftpNode.Type.ROOT).build(),
+                        SftpNode.builder().type(SftpNode.Type.SUBLEVEL)
                                 .identifier(Optional.of(StandardPathTranslator.FILE_TYPE_LABEL))
                                 .build(),
-                        OpenBISSftpNode.builder().type(OpenBISSftpNode.Type.AFS_FILE)
+                        SftpNode.builder().type(SftpNode.Type.AFS_FILE)
                                 .afsFilePath(List.of("dir1", "file2")).build()
                 )));
 
         //Sublevel of ROOT
-        secondLastNode = OpenBISSftpNode.builder().type(OpenBISSftpNode.Type.ROOT).build();
-        directory = OpenBISSftpNodeChain.concat(
+        secondLastNode = SftpNode.builder().type(SftpNode.Type.ROOT).build();
+        directory = SftpNodeChain.concat(
                 exampleBaseChain,
-                new OpenBISSftpNodeChain(List.of(secondLastNode, lastNode))
+                new SftpNodeChain(List.of(secondLastNode, lastNode))
         );
         Mockito.doReturn(exampleListResult).when(standardPathLister).listRoot("sublevel-label", directory);
         listResult = standardPathLister.list(directory);
@@ -265,11 +266,11 @@ public class StandardPathListerTest extends TestCase {
         Mockito.clearInvocations(standardPathLister);
 
         //Sublevel of SPACE
-        secondLastNode = OpenBISSftpNode.builder().type(OpenBISSftpNode.Type.SPACE)
+        secondLastNode = SftpNode.builder().type(SftpNode.Type.SPACE)
                 .identifier(Optional.of("space_1")).build();
-        directory = OpenBISSftpNodeChain.concat(
+        directory = SftpNodeChain.concat(
                 exampleBaseChain,
-                new OpenBISSftpNodeChain(List.of(secondLastNode, lastNode))
+                new SftpNodeChain(List.of(secondLastNode, lastNode))
         );
         Mockito.doReturn(exampleListResult).when(standardPathLister).listSpace(secondLastNode, "sublevel-label", directory);
         listResult = standardPathLister.list(directory);
@@ -278,11 +279,11 @@ public class StandardPathListerTest extends TestCase {
         Mockito.clearInvocations(standardPathLister);
 
         //Sublevel of PROJECT
-        secondLastNode = OpenBISSftpNode.builder().type(OpenBISSftpNode.Type.PROJECT)
+        secondLastNode = SftpNode.builder().type(SftpNode.Type.PROJECT)
                 .identifier(Optional.of("project_1")).build();
-        directory = OpenBISSftpNodeChain.concat(
+        directory = SftpNodeChain.concat(
                 exampleBaseChain,
-                new OpenBISSftpNodeChain(List.of(secondLastNode, lastNode))
+                new SftpNodeChain(List.of(secondLastNode, lastNode))
         );
         Mockito.doReturn(exampleListResult).when(standardPathLister).listProject(secondLastNode, "sublevel-label", directory);
         listResult = standardPathLister.list(directory);
@@ -291,11 +292,11 @@ public class StandardPathListerTest extends TestCase {
         Mockito.clearInvocations(standardPathLister);
 
         //Sublevel of EXPERIMENT
-        secondLastNode = OpenBISSftpNode.builder().type(OpenBISSftpNode.Type.EXPERIMENT)
+        secondLastNode = SftpNode.builder().type(SftpNode.Type.EXPERIMENT)
                 .identifier(Optional.of("experiment_1")).build();
-        directory = OpenBISSftpNodeChain.concat(
+        directory = SftpNodeChain.concat(
                 exampleBaseChain,
-                new OpenBISSftpNodeChain(List.of(secondLastNode, lastNode))
+                new SftpNodeChain(List.of(secondLastNode, lastNode))
         );
         Mockito.doReturn(exampleListResult).when(standardPathLister).listExperiment(secondLastNode, "sublevel-label", directory);
         listResult = standardPathLister.list(directory);
@@ -304,11 +305,11 @@ public class StandardPathListerTest extends TestCase {
         Mockito.clearInvocations(standardPathLister);
 
         //Sublevel of FOLDER
-        secondLastNode = OpenBISSftpNode.builder().type(OpenBISSftpNode.Type.FOLDER)
+        secondLastNode = SftpNode.builder().type(SftpNode.Type.FOLDER)
                 .identifier(Optional.of("folder_1")).build();
-        directory = OpenBISSftpNodeChain.concat(
+        directory = SftpNodeChain.concat(
                 exampleBaseChain,
-                new OpenBISSftpNodeChain(List.of(secondLastNode, lastNode))
+                new SftpNodeChain(List.of(secondLastNode, lastNode))
         );
         Mockito.doReturn(exampleListResult).when(standardPathLister).listFolder(secondLastNode, "sublevel-label", directory);
         listResult = standardPathLister.list(directory);
@@ -317,11 +318,11 @@ public class StandardPathListerTest extends TestCase {
         Mockito.clearInvocations(standardPathLister);
 
         //Sublevel of SAMPLE
-        secondLastNode = OpenBISSftpNode.builder().type(OpenBISSftpNode.Type.SAMPLE)
+        secondLastNode = SftpNode.builder().type(SftpNode.Type.SAMPLE)
                 .identifier(Optional.of("sample_1")).build();
-        directory = OpenBISSftpNodeChain.concat(
+        directory = SftpNodeChain.concat(
                 exampleBaseChain,
-                new OpenBISSftpNodeChain(List.of(secondLastNode, lastNode))
+                new SftpNodeChain(List.of(secondLastNode, lastNode))
         );
         Mockito.doReturn(exampleListResult).when(standardPathLister).listSample(secondLastNode, "sublevel-label", directory);
         listResult = standardPathLister.list(directory);
@@ -330,11 +331,11 @@ public class StandardPathListerTest extends TestCase {
         Mockito.clearInvocations(standardPathLister);
 
         //Sublevel of DATASET
-        secondLastNode = OpenBISSftpNode.builder().type(OpenBISSftpNode.Type.DATA_SET)
+        secondLastNode = SftpNode.builder().type(SftpNode.Type.DATA_SET)
                 .identifier(Optional.of("dataset_1")).build();
-        directory = OpenBISSftpNodeChain.concat(
+        directory = SftpNodeChain.concat(
                 exampleBaseChain,
-                new OpenBISSftpNodeChain(List.of(secondLastNode, lastNode))
+                new SftpNodeChain(List.of(secondLastNode, lastNode))
         );
         Mockito.doReturn(exampleListResult).when(standardPathLister).listDataSet(secondLastNode, "sublevel-label", directory);
         listResult = standardPathLister.list(directory);
@@ -343,11 +344,11 @@ public class StandardPathListerTest extends TestCase {
         Mockito.clearInvocations(standardPathLister);
 
         //Sublevel of SUBLEVEL: not allowed
-        secondLastNode = OpenBISSftpNode.builder().type(OpenBISSftpNode.Type.SUBLEVEL)
+        secondLastNode = SftpNode.builder().type(SftpNode.Type.SUBLEVEL)
                 .identifier(Optional.of("other")).build();
-        directory = OpenBISSftpNodeChain.concat(
+        directory = SftpNodeChain.concat(
                 exampleBaseChain,
-                new OpenBISSftpNodeChain(List.of(secondLastNode, lastNode))
+                new SftpNodeChain(List.of(secondLastNode, lastNode))
         );
         exception = null;
         try {
@@ -359,11 +360,11 @@ public class StandardPathListerTest extends TestCase {
         Mockito.clearInvocations(standardPathLister);
 
         //Sublevel of AFS_FILE: not allowed
-        secondLastNode = OpenBISSftpNode.builder().type(OpenBISSftpNode.Type.AFS_FILE)
+        secondLastNode = SftpNode.builder().type(SftpNode.Type.AFS_FILE)
                 .afsFilePath(List.of("dir1", "file2")).build();
-        directory = OpenBISSftpNodeChain.concat(
+        directory = SftpNodeChain.concat(
                 exampleBaseChain,
-                new OpenBISSftpNodeChain(List.of(secondLastNode, lastNode))
+                new SftpNodeChain(List.of(secondLastNode, lastNode))
         );
         exception = null;
         try {
@@ -375,7 +376,7 @@ public class StandardPathListerTest extends TestCase {
         Mockito.clearInvocations(standardPathLister);
 
         //Sublevel of nothing: not allowed
-        directory = new OpenBISSftpNodeChain(Collections.singletonList(lastNode));
+        directory = new SftpNodeChain(Collections.singletonList(lastNode));
         exception = null;
         try {
             standardPathLister.list(directory);
@@ -387,86 +388,89 @@ public class StandardPathListerTest extends TestCase {
     }
 
     public void testReadAttributes() {
-        OpenBISListUtil listUtil = Mockito.mock(OpenBISListUtil.class);
+        SftpListUtil listUtil = Mockito.mock(SftpListUtil.class);
         StandardPathLister standardPathLister = Mockito.spy(new StandardPathLister(listUtil));
 
-        List<OpenBISSftpNode.Type> abstractDirectoryTypes = List.of(
-                OpenBISSftpNode.Type.ROOT,
-                OpenBISSftpNode.Type.SPACE,
-                OpenBISSftpNode.Type.PROJECT,
-                OpenBISSftpNode.Type.EXPERIMENT,
-                OpenBISSftpNode.Type.FOLDER,
-                OpenBISSftpNode.Type.SAMPLE,
-                OpenBISSftpNode.Type.DATA_SET,
-                OpenBISSftpNode.Type.SUBLEVEL
+        List<SftpNode.Type> abstractDirectoryTypes = List.of(
+                SftpNode.Type.ROOT,
+                SftpNode.Type.SPACE,
+                SftpNode.Type.PROJECT,
+                SftpNode.Type.EXPERIMENT,
+                SftpNode.Type.FOLDER,
+                SftpNode.Type.SAMPLE,
+                SftpNode.Type.DATA_SET,
+                SftpNode.Type.SUBLEVEL
         );
 
-        for (OpenBISSftpNode.Type type : abstractDirectoryTypes) {
-            OpenBISSftpNodeChain chain = OpenBISSftpNodeChain.concat(
+        for (SftpNode.Type type : abstractDirectoryTypes) {
+            SftpNodeChain chain = SftpNodeChain.concat(
                     exampleBaseChain,
-                    OpenBISSftpNode.builder()
+                    SftpNode.builder()
                         .type(type)
                         .identifier(Optional.of("id-fake"))
                         .build()
             );
 
-            OpenBISSftpFileAttributes readAttributes = standardPathLister.readAttributes(chain);
+            SftpFileAttributes readAttributes = standardPathLister.readAttributes(chain);
             assertTrue(readAttributes.isDirectory());
             assertFalse(readAttributes.isRegularFile());
             assertFalse(readAttributes.isSymbolicLink());
             assertFalse(readAttributes.isOther());
             assertEquals(
-                    OpenBISListUtil.getDefaultAbstractDirectoryAttributes().getPermissions(),
+                    SftpListUtil.getDefaultAbstractDirectoryAttributes().getPermissions(),
                     readAttributes.getPermissions()
             );
         }
 
-        OpenBISSftpNodeChain chain = Mockito.spy(OpenBISSftpNodeChain.concat(
+        SftpNodeChain chain = Mockito.spy(SftpNodeChain.concat(
                 exampleBaseChain,
-                OpenBISSftpNode.builder()
-                        .type(OpenBISSftpNode.Type.AFS_FILE)
+                SftpNode.builder()
+                        .type(SftpNode.Type.AFS_FILE)
                         .afsFilePath(List.of("dir-1", "dir-2", "file-3"))
                         .build()
         ));
-        OpenBISSftpNode afsEntityNode = OpenBISSftpNode.builder()
-                .type(OpenBISSftpNode.Type.DATA_SET)
-                .identifier(Optional.of("fake-id"))
-                .build();
 
-        Mockito.doReturn(afsEntityNode).when(standardPathLister)
-                .validateAndGetAfsEntityNodeFromAfsFileChain(chain);
-        Mockito.doReturn("space-1").when(chain).lookUpSpaceCode();
-        Mockito.doReturn("project-3").when(chain).lookUpProjectCode();
-        String permId = "12345-12345";
-        Mockito.doReturn(permId).when(listUtil).getAfsEntityPermId(
-                afsEntityNode, "space-1", "project-3"
-        );
-        OpenBISSftpFileAttributes sampleAttributes = OpenBISListUtil.getDefaultAbstractDirectoryAttributes();
-        Mockito.doReturn(Optional.of(sampleAttributes)).when(listUtil).getDefaultAfsFileAttributes(
-                permId, "/dir-1/dir-2/file-3"
-        );
+        for (boolean mutable : List.of(false, true)) {
+            SftpNode afsEntityNode = SftpNode.builder()
+                    .type(SftpNode.Type.DATA_SET)
+                    .identifier(Optional.of("fake-id"))
+                    .build();
 
-        assertEquals(sampleAttributes, standardPathLister.readAttributes(chain));
-        Mockito.verify(standardPathLister, Mockito.times(1))
-                .validateAndGetAfsEntityNodeFromAfsFileChain(chain);
-        Mockito.verify(chain, Mockito.times(1)).lookUpSpaceCode();
-        Mockito.verify(chain, Mockito.times(1)).lookUpProjectCode();
-        Mockito.verify(listUtil, Mockito.times(1)).getAfsEntityPermId(
-                afsEntityNode, "space-1", "project-3"
-        );
-        Mockito.verify(listUtil, Mockito.times(1)).getDefaultAfsFileAttributes(
-                permId, "/dir-1/dir-2/file-3"
-        );
+            Mockito.doReturn(afsEntityNode).when(standardPathLister)
+                    .validateAndGetAfsEntityNodeFromAfsFileChain(chain);
+
+            String permId = "12345-12345";
+            Mockito.doReturn(permId).when(listUtil).getAfsEntityPermId(
+                    afsEntityNode
+            );
+            Mockito.doReturn(mutable).when(listUtil).isAfsEntityMutable(afsEntityNode);
+            SftpFileAttributes sampleAttributes = SftpListUtil.getDefaultAbstractDirectoryAttributes();
+            Mockito.doReturn(Optional.of(sampleAttributes)).when(listUtil).getDefaultAfsFileAttributes(
+                    permId, "/dir-1/dir-2/file-3", mutable
+            );
+
+            assertEquals(sampleAttributes, standardPathLister.readAttributes(chain));
+            Mockito.verify(standardPathLister, Mockito.times(1))
+                    .validateAndGetAfsEntityNodeFromAfsFileChain(chain);
+            Mockito.verify(listUtil, Mockito.times(1)).getAfsEntityPermId(
+                    afsEntityNode
+            );
+            Mockito.verify(listUtil, Mockito.times(1)).getDefaultAfsFileAttributes(
+                    permId, "/dir-1/dir-2/file-3", mutable
+            );
+
+            Mockito.clearInvocations(standardPathLister, listUtil);
+        }
     }
 
     public void testListRoot() {
-        OpenBISListUtil listUtil = Mockito.mock(OpenBISListUtil.class);
+        SftpListUtil listUtil = Mockito.mock(SftpListUtil.class);
         StandardPathLister standardPathLister = Mockito.spy(new StandardPathLister(listUtil));
 
         assertEquals(List.of(
-                OpenBISSftpNodeChain.concat(
+                SftpNodeChain.concat(
                         exampleBaseChain,
-                        OpenBISSftpNodeChain.createSublevelNode(StandardPathTranslator.SPACE_TYPE_LABEL)
+                        SftpNodeChain.createSublevelNode(StandardPathTranslator.SPACE_TYPE_LABEL)
                 )), standardPathLister.listRoot(null, exampleBaseChain));
 
         standardPathLister.listRoot(StandardPathTranslator.SPACE_TYPE_LABEL, exampleBaseChain);
@@ -474,25 +478,25 @@ public class StandardPathListerTest extends TestCase {
     }
 
     public void testListSpace() {
-        OpenBISListUtil listUtil = Mockito.mock(OpenBISListUtil.class);
+        SftpListUtil listUtil = Mockito.mock(SftpListUtil.class);
         StandardPathLister standardPathLister = Mockito.spy(new StandardPathLister(listUtil));
 
-        OpenBISSftpNode spaceNode = OpenBISSftpNode.builder()
-                .type(OpenBISSftpNode.Type.SPACE)
+        SftpNode spaceNode = SftpNode.builder()
+                .type(SftpNode.Type.SPACE)
                 .identifier(Optional.of("space-1")).build();
 
         assertEquals(List.of(
-                OpenBISSftpNodeChain.concat(
+                SftpNodeChain.concat(
                         exampleBaseChain,
-                        OpenBISSftpNodeChain.createSublevelNode(StandardPathTranslator.FOLDER_TYPE_LABEL)
+                        SftpNodeChain.createSublevelNode(StandardPathTranslator.FOLDER_TYPE_LABEL)
                 ),
-                OpenBISSftpNodeChain.concat(
+                SftpNodeChain.concat(
                         exampleBaseChain,
-                        OpenBISSftpNodeChain.createSublevelNode(StandardPathTranslator.SAMPLE_TYPE_LABEL)
+                        SftpNodeChain.createSublevelNode(StandardPathTranslator.SAMPLE_TYPE_LABEL)
                 ),
-                OpenBISSftpNodeChain.concat(
+                SftpNodeChain.concat(
                         exampleBaseChain,
-                        OpenBISSftpNodeChain.createSublevelNode(StandardPathTranslator.PROJECT_TYPE_LABEL)
+                        SftpNodeChain.createSublevelNode(StandardPathTranslator.PROJECT_TYPE_LABEL)
                 )), standardPathLister.listSpace(spaceNode, null, exampleBaseChain));
 
         standardPathLister.listSpace(spaceNode, StandardPathTranslator.FOLDER_TYPE_LABEL, exampleBaseChain);
@@ -515,11 +519,11 @@ public class StandardPathListerTest extends TestCase {
     }
 
     public void testListProjectsInSpace() {
-        OpenBISListUtil listUtil = Mockito.mock(OpenBISListUtil.class);
+        SftpListUtil listUtil = Mockito.mock(SftpListUtil.class);
         StandardPathLister standardPathLister = Mockito.spy(new StandardPathLister(listUtil));
 
-        OpenBISSftpNode spaceNode = OpenBISSftpNode.builder()
-                .type(OpenBISSftpNode.Type.SPACE)
+        SftpNode spaceNode = SftpNode.builder()
+                .type(SftpNode.Type.SPACE)
                 .identifier(Optional.of("space-1")).build();
 
         standardPathLister.listProjectsInSpace(spaceNode, exampleBaseChain);
@@ -529,26 +533,29 @@ public class StandardPathListerTest extends TestCase {
     }
 
     public void testListSamplesOrFoldersInSpace() {
-        OpenBISListUtil listUtil = Mockito.mock(OpenBISListUtil.class);
+        SftpListUtil listUtil = Mockito.mock(SftpListUtil.class);
         StandardPathLister standardPathLister = Mockito.spy(new StandardPathLister(listUtil));
 
-        OpenBISSftpNode spaceNode = OpenBISSftpNode.builder()
-                .type(OpenBISSftpNode.Type.SPACE)
+        SftpNode spaceNode = SftpNode.builder()
+                .type(SftpNode.Type.SPACE)
                 .identifier(Optional.of("space-1")).build();
 
         SampleFetchOptions fetchOptions = new SampleFetchOptions();
         fetchOptions.withType();
+        fetchOptions.withProperties();
 
         Sample sample1 = new Sample();
         sample1.setFetchOptions(fetchOptions);
-        sample1.setCode("SAMPLE-1");
+        sample1.setPermId(new SamplePermId("SAMPLE-1"));
+        sample1.setStringProperty("NAME", "SaMpleName");
         SampleType sampleType1 = new SampleType();
         sampleType1.setCode("NONFOLDER");
         sample1.setType(sampleType1);
 
         Sample sample2 = new Sample();
         sample2.setFetchOptions(fetchOptions);
-        sample2.setCode("FOLDER-2");
+        sample2.setPermId(new SamplePermId("FOLDER-2"));
+        sample2.setStringProperty("NAME", "folderNAME");
         SampleType sampleType2 = new SampleType();
         sampleType2.setCode("FOLDER");
         sample2.setType(sampleType2);
@@ -560,64 +567,67 @@ public class StandardPathListerTest extends TestCase {
         Mockito.doReturn(returnedSamples).when(listUtil)
                         .getSpaceSamples("space-1");
 
-        List<OpenBISSftpNodeChain> openBISSftpNodeChainList;
+        List<SftpNodeChain> sftpNodeChainList;
 
-        openBISSftpNodeChainList =
+        sftpNodeChainList =
                 standardPathLister.listSamplesOrFoldersInSpace(spaceNode, exampleBaseChain, true);
         Mockito.verify(listUtil, Mockito.times(1)).getSpaceSamples(
                 spaceNode.getIdentifier().get()
         );
-        assertEquals(1, openBISSftpNodeChainList.size());
+        assertEquals(1, sftpNodeChainList.size());
         assertEquals(
-                OpenBISSftpNode.Type.FOLDER,
-                openBISSftpNodeChainList.getLast().getLast()
+                SftpNode.Type.FOLDER,
+                sftpNodeChainList.getLast().getLast()
                         .get().getType());
         assertEquals(
-                "FOLDER-2",
-                openBISSftpNodeChainList.getLast().getLast()
+                "folderNAME(FOLDER-2)",
+                sftpNodeChainList.getLast().getLast()
                         .get().getIdentifier().get());
         Mockito.clearInvocations(listUtil);
 
-        openBISSftpNodeChainList =
+        sftpNodeChainList =
                 standardPathLister.listSamplesOrFoldersInSpace(spaceNode, exampleBaseChain, false);
         Mockito.verify(listUtil, Mockito.times(1)).getSpaceSamples(
                 spaceNode.getIdentifier().get()
         );
-        assertEquals(1, openBISSftpNodeChainList.size());
+        assertEquals(1, sftpNodeChainList.size());
         assertEquals(
-                OpenBISSftpNode.Type.SAMPLE,
-                openBISSftpNodeChainList.getLast().getLast()
+                SftpNode.Type.SAMPLE,
+                sftpNodeChainList.getLast().getLast()
                         .get().getType());
         assertEquals(
-                "SAMPLE-1",
-                openBISSftpNodeChainList.getLast().getLast()
+                "SaMpleName(SAMPLE-1)",
+                sftpNodeChainList.getLast().getLast()
                         .get().getIdentifier().get());
         Mockito.clearInvocations(listUtil);
     }
 
     public void testListSamplesOrFoldersInProject() {
-        OpenBISListUtil listUtil = Mockito.mock(OpenBISListUtil.class);
+        SftpListUtil listUtil = Mockito.mock(SftpListUtil.class);
         StandardPathLister standardPathLister = Mockito.spy(new StandardPathLister(listUtil));
-        OpenBISSftpNodeChain baseChain = Mockito.spy(exampleBaseChain);
+        SftpNodeChain baseChain = Mockito.spy(exampleBaseChain);
         Mockito.doReturn("space-1").when(baseChain).lookUpSpaceCode();
 
-        OpenBISSftpNode projectNode = OpenBISSftpNode.builder()
-                .type(OpenBISSftpNode.Type.PROJECT)
+        SftpNode projectNode = SftpNode.builder()
+                .type(SftpNode.Type.PROJECT)
                 .identifier(Optional.of("project-1")).build();
 
         SampleFetchOptions fetchOptions = new SampleFetchOptions();
         fetchOptions.withType();
+        fetchOptions.withProperties();
 
         Sample sample1 = new Sample();
         sample1.setFetchOptions(fetchOptions);
-        sample1.setCode("SAMPLE-1");
+        sample1.setPermId(new SamplePermId("SAMPLE-1"));
+        sample1.setStringProperty("NAME", "SaMpleName");
         SampleType sampleType1 = new SampleType();
         sampleType1.setCode("NONFOLDER");
         sample1.setType(sampleType1);
 
         Sample sample2 = new Sample();
         sample2.setFetchOptions(fetchOptions);
-        sample2.setCode("FOLDER-2");
+        sample2.setPermId(new SamplePermId("FOLDER-2"));
+        sample2.setStringProperty("NAME", "folderNAME");
         SampleType sampleType2 = new SampleType();
         sampleType2.setCode("FOLDER");
         sample2.setType(sampleType2);
@@ -629,61 +639,61 @@ public class StandardPathListerTest extends TestCase {
         Mockito.doReturn(returnedSamples).when(listUtil)
                 .getProjectSamples("space-1", "project-1");
 
-        List<OpenBISSftpNodeChain> openBISSftpNodeChainList;
+        List<SftpNodeChain> sftpNodeChainList;
 
-        openBISSftpNodeChainList =
+        sftpNodeChainList =
                 standardPathLister.listSamplesOrFoldersInProject(projectNode, baseChain, true);
         Mockito.verify(listUtil, Mockito.times(1)).getProjectSamples("space-1", "project-1");
-        assertEquals(1, openBISSftpNodeChainList.size());
+        assertEquals(1, sftpNodeChainList.size());
         assertEquals(
-                OpenBISSftpNode.Type.FOLDER,
-                openBISSftpNodeChainList.getLast().getLast()
+                SftpNode.Type.FOLDER,
+                sftpNodeChainList.getLast().getLast()
                         .get().getType());
         assertEquals(
-                "FOLDER-2",
-                openBISSftpNodeChainList.getLast().getLast()
+                "folderNAME(FOLDER-2)",
+                sftpNodeChainList.getLast().getLast()
                         .get().getIdentifier().get());
         Mockito.clearInvocations(listUtil);
 
-        openBISSftpNodeChainList =
+        sftpNodeChainList =
                 standardPathLister.listSamplesOrFoldersInProject(projectNode, baseChain, false);
         Mockito.verify(listUtil, Mockito.times(1)).getProjectSamples("space-1", "project-1");
-        assertEquals(1, openBISSftpNodeChainList.size());
+        assertEquals(1, sftpNodeChainList.size());
         assertEquals(
-                OpenBISSftpNode.Type.SAMPLE,
-                openBISSftpNodeChainList.getLast().getLast()
+                SftpNode.Type.SAMPLE,
+                sftpNodeChainList.getLast().getLast()
                         .get().getType());
         assertEquals(
-                "SAMPLE-1",
-                openBISSftpNodeChainList.getLast().getLast()
+                "SaMpleName(SAMPLE-1)",
+                sftpNodeChainList.getLast().getLast()
                         .get().getIdentifier().get());
         Mockito.clearInvocations(listUtil);
     }
 
     public void testListSample() {
-        OpenBISListUtil listUtil = Mockito.mock(OpenBISListUtil.class);
+        SftpListUtil listUtil = Mockito.mock(SftpListUtil.class);
         StandardPathLister standardPathLister = Mockito.spy(new StandardPathLister(listUtil));
 
-        OpenBISSftpNode sampleNode = OpenBISSftpNode.builder()
-                .type(OpenBISSftpNode.Type.SAMPLE)
+        SftpNode sampleNode = SftpNode.builder()
+                .type(SftpNode.Type.SAMPLE)
                 .identifier(Optional.of("sample-1")).build();
 
         assertEquals(List.of(
-                OpenBISSftpNodeChain.concat(
+                SftpNodeChain.concat(
                         exampleBaseChain,
-                        OpenBISSftpNodeChain.createSublevelNode(StandardPathTranslator.FOLDER_TYPE_LABEL)
+                        SftpNodeChain.createSublevelNode(StandardPathTranslator.FOLDER_TYPE_LABEL)
                 ),
-                OpenBISSftpNodeChain.concat(
+                SftpNodeChain.concat(
                         exampleBaseChain,
-                        OpenBISSftpNodeChain.createSublevelNode(StandardPathTranslator.SAMPLE_TYPE_LABEL)
+                        SftpNodeChain.createSublevelNode(StandardPathTranslator.SAMPLE_TYPE_LABEL)
                 ),
-                OpenBISSftpNodeChain.concat(
+                SftpNodeChain.concat(
                         exampleBaseChain,
-                        OpenBISSftpNodeChain.createSublevelNode(StandardPathTranslator.DATA_SET_TYPE_LABEL)
+                        SftpNodeChain.createSublevelNode(StandardPathTranslator.DATA_SET_TYPE_LABEL)
                 ),
-                OpenBISSftpNodeChain.concat(
+                SftpNodeChain.concat(
                         exampleBaseChain,
-                        OpenBISSftpNodeChain.createSublevelNode(StandardPathTranslator.FILE_TYPE_LABEL)
+                        SftpNodeChain.createSublevelNode(StandardPathTranslator.FILE_TYPE_LABEL)
                 )), standardPathLister.listSample(sampleNode, null, exampleBaseChain));
 
         standardPathLister.listSample(sampleNode, StandardPathTranslator.FOLDER_TYPE_LABEL, exampleBaseChain);
@@ -711,25 +721,25 @@ public class StandardPathListerTest extends TestCase {
     }
 
     public void testListFolder() {
-        OpenBISListUtil listUtil = Mockito.mock(OpenBISListUtil.class);
+        SftpListUtil listUtil = Mockito.mock(SftpListUtil.class);
         StandardPathLister standardPathLister = Mockito.spy(new StandardPathLister(listUtil));
 
-        OpenBISSftpNode folderNode = OpenBISSftpNode.builder()
-                .type(OpenBISSftpNode.Type.FOLDER)
+        SftpNode folderNode = SftpNode.builder()
+                .type(SftpNode.Type.FOLDER)
                 .identifier(Optional.of("folder-1")).build();
 
         assertEquals(List.of(
-                OpenBISSftpNodeChain.concat(
+                SftpNodeChain.concat(
                         exampleBaseChain,
-                        OpenBISSftpNodeChain.createSublevelNode(StandardPathTranslator.FOLDER_TYPE_LABEL)
+                        SftpNodeChain.createSublevelNode(StandardPathTranslator.FOLDER_TYPE_LABEL)
                 ),
-                OpenBISSftpNodeChain.concat(
+                SftpNodeChain.concat(
                         exampleBaseChain,
-                        OpenBISSftpNodeChain.createSublevelNode(StandardPathTranslator.SAMPLE_TYPE_LABEL)
+                        SftpNodeChain.createSublevelNode(StandardPathTranslator.SAMPLE_TYPE_LABEL)
                 ),
-                OpenBISSftpNodeChain.concat(
+                SftpNodeChain.concat(
                         exampleBaseChain,
-                        OpenBISSftpNodeChain.createSublevelNode(StandardPathTranslator.FILE_TYPE_LABEL)
+                        SftpNodeChain.createSublevelNode(StandardPathTranslator.FILE_TYPE_LABEL)
                 )), standardPathLister.listFolder(folderNode, null, exampleBaseChain));
 
         standardPathLister.listFolder(folderNode, StandardPathTranslator.FOLDER_TYPE_LABEL, exampleBaseChain);
@@ -752,29 +762,30 @@ public class StandardPathListerTest extends TestCase {
     }
 
     public void testListSamplesOrFoldersInSample() {
-        OpenBISListUtil listUtil = Mockito.mock(OpenBISListUtil.class);
+        SftpListUtil listUtil = Mockito.mock(SftpListUtil.class);
         StandardPathLister standardPathLister = Mockito.spy(new StandardPathLister(listUtil));
-        OpenBISSftpNodeChain baseChain = Mockito.spy(exampleBaseChain);
-        Mockito.doReturn("space-1").when(baseChain).lookUpSpaceCode();
-        Mockito.doReturn("project-1").when(baseChain).lookUpProjectCode();
+        SftpNodeChain baseChain = Mockito.spy(exampleBaseChain);
 
-        OpenBISSftpNode sampleNode = OpenBISSftpNode.builder()
-                .type(OpenBISSftpNode.Type.SAMPLE)
-                .identifier(Optional.of("sample-1")).build();
+        SftpNode sampleNode = SftpNode.builder()
+                .type(SftpNode.Type.SAMPLE)
+                .identifier(Optional.of("SAMPLE NAME1(sample-perm-id-1)")).build();
 
         SampleFetchOptions fetchOptions = new SampleFetchOptions();
         fetchOptions.withType();
+        fetchOptions.withProperties();
 
         Sample sample1 = new Sample();
         sample1.setFetchOptions(fetchOptions);
-        sample1.setCode("SAMPLE-1");
+        sample1.setPermId(new SamplePermId("SAMPLE-1"));
+        sample1.setStringProperty("NAME", "SaMpleName");
         SampleType sampleType1 = new SampleType();
         sampleType1.setCode("NONFOLDER");
         sample1.setType(sampleType1);
 
         Sample sample2 = new Sample();
         sample2.setFetchOptions(fetchOptions);
-        sample2.setCode("FOLDER-2");
+        sample2.setPermId(new SamplePermId("FOLDER-2"));
+        sample2.setStringProperty("NAME", "folderNAME");
         SampleType sampleType2 = new SampleType();
         sampleType2.setCode("FOLDER");
         sample2.setType(sampleType2);
@@ -784,67 +795,63 @@ public class StandardPathListerTest extends TestCase {
                 sample2
         );
         Mockito.doReturn(returnedSamples).when(listUtil)
-                .getSampleChildren("space-1", "project-1", "sample-1");
+                .getSampleChildren("sample-perm-id-1");
 
-        List<OpenBISSftpNodeChain> openBISSftpNodeChainList;
+        List<SftpNodeChain> sftpNodeChainList;
 
-        openBISSftpNodeChainList =
+        sftpNodeChainList =
                 standardPathLister.listSamplesOrFoldersInSample(sampleNode, baseChain, true);
-        Mockito.verify(listUtil, Mockito.times(1)).getSampleChildren("space-1", "project-1", "sample-1");
-        assertEquals(1, openBISSftpNodeChainList.size());
+        Mockito.verify(listUtil, Mockito.times(1)).getSampleChildren("sample-perm-id-1");
+        assertEquals(1, sftpNodeChainList.size());
         assertEquals(
-                OpenBISSftpNode.Type.FOLDER,
-                openBISSftpNodeChainList.getLast().getLast()
+                SftpNode.Type.FOLDER,
+                sftpNodeChainList.getLast().getLast()
                         .get().getType());
         assertEquals(
-                "FOLDER-2",
-                openBISSftpNodeChainList.getLast().getLast()
+                "folderNAME(FOLDER-2)",
+                sftpNodeChainList.getLast().getLast()
                         .get().getIdentifier().get());
         Mockito.clearInvocations(listUtil);
 
-        openBISSftpNodeChainList =
+        sftpNodeChainList =
                 standardPathLister.listSamplesOrFoldersInSample(sampleNode, baseChain, false);
-        Mockito.verify(listUtil, Mockito.times(1)).getSampleChildren("space-1", "project-1", "sample-1");
-        assertEquals(1, openBISSftpNodeChainList.size());
+        Mockito.verify(listUtil, Mockito.times(1)).getSampleChildren("sample-perm-id-1");
+        assertEquals(1, sftpNodeChainList.size());
         assertEquals(
-                OpenBISSftpNode.Type.SAMPLE,
-                openBISSftpNodeChainList.getLast().getLast()
+                SftpNode.Type.SAMPLE,
+                sftpNodeChainList.getLast().getLast()
                         .get().getType());
         assertEquals(
-                "SAMPLE-1",
-                openBISSftpNodeChainList.getLast().getLast()
+                "SaMpleName(SAMPLE-1)",
+                sftpNodeChainList.getLast().getLast()
                         .get().getIdentifier().get());
         Mockito.clearInvocations(listUtil);
     }
 
     public void testListDataSetsInSample() {
-        OpenBISListUtil listUtil = Mockito.mock(OpenBISListUtil.class);
+        SftpListUtil listUtil = Mockito.mock(SftpListUtil.class);
         StandardPathLister standardPathLister = Mockito.spy(new StandardPathLister(listUtil));
-        OpenBISSftpNodeChain baseChain = Mockito.spy(exampleBaseChain);
-        Mockito.doReturn("space-1").when(baseChain).lookUpSpaceCode();
-        Mockito.doReturn("project-1").when(baseChain).lookUpProjectCode();
+        SftpNodeChain baseChain = Mockito.spy(exampleBaseChain);
 
-        OpenBISSftpNode sampleNode = OpenBISSftpNode.builder()
-                .type(OpenBISSftpNode.Type.SAMPLE)
-                .identifier(Optional.of("sample-1")).build();
+        SftpNode sampleNode = SftpNode.builder()
+                .type(SftpNode.Type.SAMPLE)
+                .identifier(Optional.of("Sample name(sample-perm-id-1)")).build();
 
         standardPathLister.listDataSetsInSample(sampleNode, baseChain);
-        Mockito.verify(listUtil, Mockito.times(1)).getSampleDatasets("space-1", "project-1", "sample-1");
+        Mockito.verify(listUtil, Mockito.times(1)).getSampleDatasets("sample-perm-id-1");
     }
 
     public void testListFilesInSampleOrFolder() {
-        OpenBISListUtil listUtil = Mockito.mock(OpenBISListUtil.class);
+        SftpListUtil listUtil = Mockito.mock(SftpListUtil.class);
         StandardPathLister standardPathLister = Mockito.spy(new StandardPathLister(listUtil));
-        OpenBISSftpNodeChain baseChain = Mockito.spy(exampleBaseChain);
-        Mockito.doReturn("space-1").when(baseChain).lookUpSpaceCode();
-        Mockito.doReturn("project-1").when(baseChain).lookUpProjectCode();
+        SftpNodeChain baseChain = Mockito.spy(exampleBaseChain);
 
-        OpenBISSftpNode sampleNode = OpenBISSftpNode.builder()
-                .type(OpenBISSftpNode.Type.SAMPLE)
-                .identifier(Optional.of("sample-1")).build();
+        SftpNode sampleNode = SftpNode.builder()
+                .type(SftpNode.Type.SAMPLE)
+                .identifier(Optional.of("Sample name(sample-perm-id-1)")).build();
 
         Mockito.doReturn("afs-perm-id-1").when(listUtil)
-                        .getAfsEntityPermId(sampleNode, "space-1", "project-1");
+                        .getAfsEntityPermId(sampleNode);
         Mockito.doReturn(new File[0]).when(listUtil).listAfsFiles(Mockito.anyString(), Mockito.anyString());
 
         standardPathLister.listFilesInSampleOrFolder(sampleNode, baseChain);
@@ -852,18 +859,16 @@ public class StandardPathListerTest extends TestCase {
     }
 
     public void testListFilesInDataSet() {
-        OpenBISListUtil listUtil = Mockito.mock(OpenBISListUtil.class);
+        SftpListUtil listUtil = Mockito.mock(SftpListUtil.class);
         StandardPathLister standardPathLister = Mockito.spy(new StandardPathLister(listUtil));
-        OpenBISSftpNodeChain baseChain = Mockito.spy(exampleBaseChain);
-        Mockito.doReturn("space-1").when(baseChain).lookUpSpaceCode();
-        Mockito.doReturn("project-1").when(baseChain).lookUpProjectCode();
+        SftpNodeChain baseChain = Mockito.spy(exampleBaseChain);
 
-        OpenBISSftpNode datasetNode = OpenBISSftpNode.builder()
-                .type(OpenBISSftpNode.Type.DATA_SET)
-                .identifier(Optional.of("sample-1")).build();
+        SftpNode datasetNode = SftpNode.builder()
+                .type(SftpNode.Type.DATA_SET)
+                .identifier(Optional.of("dataset-perm-id-1")).build();
 
         Mockito.doReturn("afs-perm-id-1").when(listUtil)
-                .getAfsEntityPermId(datasetNode, "space-1", "project-1");
+                .getAfsEntityPermId(datasetNode);
         Mockito.doReturn(new File[0]).when(listUtil).listAfsFiles(Mockito.anyString(), Mockito.anyString());
 
         standardPathLister.listFilesInDataSet(datasetNode, baseChain);
@@ -871,18 +876,16 @@ public class StandardPathListerTest extends TestCase {
     }
 
     public void testListFilesInExperiment() {
-        OpenBISListUtil listUtil = Mockito.mock(OpenBISListUtil.class);
+        SftpListUtil listUtil = Mockito.mock(SftpListUtil.class);
         StandardPathLister standardPathLister = Mockito.spy(new StandardPathLister(listUtil));
-        OpenBISSftpNodeChain baseChain = Mockito.spy(exampleBaseChain);
-        Mockito.doReturn("space-1").when(baseChain).lookUpSpaceCode();
-        Mockito.doReturn("project-1").when(baseChain).lookUpProjectCode();
+        SftpNodeChain baseChain = Mockito.spy(exampleBaseChain);
 
-        OpenBISSftpNode experimentNode = OpenBISSftpNode.builder()
-                .type(OpenBISSftpNode.Type.EXPERIMENT)
-                .identifier(Optional.of("experiment-1")).build();
+        SftpNode experimentNode = SftpNode.builder()
+                .type(SftpNode.Type.EXPERIMENT)
+                .identifier(Optional.of("Experiment name(experiment-1)")).build();
 
         Mockito.doReturn("afs-perm-id-1").when(listUtil)
-                .getAfsEntityPermId(experimentNode, "space-1", "project-1");
+                .getAfsEntityPermId(experimentNode);
         Mockito.doReturn(new File[0]).when(listUtil).listAfsFiles(Mockito.anyString(), Mockito.anyString());
 
         standardPathLister.listFilesInExperiment(experimentNode, baseChain);
@@ -890,17 +893,17 @@ public class StandardPathListerTest extends TestCase {
     }
 
     public void testListDataSet() {
-        OpenBISListUtil listUtil = Mockito.mock(OpenBISListUtil.class);
+        SftpListUtil listUtil = Mockito.mock(SftpListUtil.class);
         StandardPathLister standardPathLister = Mockito.spy(new StandardPathLister(listUtil));
 
-        OpenBISSftpNode datasetNode = OpenBISSftpNode.builder()
-                .type(OpenBISSftpNode.Type.DATA_SET)
-                .identifier(Optional.of("dataset-1")).build();
+        SftpNode datasetNode = SftpNode.builder()
+                .type(SftpNode.Type.DATA_SET)
+                .identifier(Optional.of("Dataset name(dataset-1)")).build();
 
         assertEquals(List.of(
-                OpenBISSftpNodeChain.concat(
+                SftpNodeChain.concat(
                         exampleBaseChain,
-                        OpenBISSftpNodeChain.createSublevelNode(StandardPathTranslator.FILE_TYPE_LABEL)
+                        SftpNodeChain.createSublevelNode(StandardPathTranslator.FILE_TYPE_LABEL)
                 )
         ), standardPathLister.listDataSet(datasetNode, null, exampleBaseChain));
 
@@ -911,25 +914,25 @@ public class StandardPathListerTest extends TestCase {
     }
 
     public void testListProject() {
-        OpenBISListUtil listUtil = Mockito.mock(OpenBISListUtil.class);
+        SftpListUtil listUtil = Mockito.mock(SftpListUtil.class);
         StandardPathLister standardPathLister = Mockito.spy(new StandardPathLister(listUtil));
 
-        OpenBISSftpNode projectNode = OpenBISSftpNode.builder()
-                .type(OpenBISSftpNode.Type.PROJECT)
+        SftpNode projectNode = SftpNode.builder()
+                .type(SftpNode.Type.PROJECT)
                 .identifier(Optional.of("project-1")).build();
 
         assertEquals(List.of(
-                OpenBISSftpNodeChain.concat(
+                SftpNodeChain.concat(
                         exampleBaseChain,
-                        OpenBISSftpNodeChain.createSublevelNode(StandardPathTranslator.FOLDER_TYPE_LABEL)
+                        SftpNodeChain.createSublevelNode(StandardPathTranslator.FOLDER_TYPE_LABEL)
                 ),
-                OpenBISSftpNodeChain.concat(
+                SftpNodeChain.concat(
                         exampleBaseChain,
-                        OpenBISSftpNodeChain.createSublevelNode(StandardPathTranslator.SAMPLE_TYPE_LABEL)
+                        SftpNodeChain.createSublevelNode(StandardPathTranslator.SAMPLE_TYPE_LABEL)
                 ),
-                OpenBISSftpNodeChain.concat(
+                SftpNodeChain.concat(
                         exampleBaseChain,
-                        OpenBISSftpNodeChain.createSublevelNode(StandardPathTranslator.EXPERIMENT_TYPE_LABEL)
+                        SftpNodeChain.createSublevelNode(StandardPathTranslator.EXPERIMENT_TYPE_LABEL)
                 )), standardPathLister.listProject(projectNode, null, exampleBaseChain));
 
         standardPathLister.listProject(projectNode, StandardPathTranslator.FOLDER_TYPE_LABEL, exampleBaseChain);
@@ -952,13 +955,13 @@ public class StandardPathListerTest extends TestCase {
     }
 
     public void testListExperimentsInProject() {
-        OpenBISListUtil listUtil = Mockito.mock(OpenBISListUtil.class);
+        SftpListUtil listUtil = Mockito.mock(SftpListUtil.class);
         StandardPathLister standardPathLister = Mockito.spy(new StandardPathLister(listUtil));
-        OpenBISSftpNodeChain baseChain = Mockito.spy(exampleBaseChain);
+        SftpNodeChain baseChain = Mockito.spy(exampleBaseChain);
         Mockito.doReturn("space-1").when(baseChain).lookUpSpaceCode();
 
-        OpenBISSftpNode projectNode = OpenBISSftpNode.builder()
-                .type(OpenBISSftpNode.Type.PROJECT)
+        SftpNode projectNode = SftpNode.builder()
+                .type(SftpNode.Type.PROJECT)
                 .identifier(Optional.of("project-1")).build();
 
         standardPathLister.listExperimentsInProject(projectNode, baseChain);
@@ -968,28 +971,26 @@ public class StandardPathListerTest extends TestCase {
     }
 
     public void testListExperiment() {
-        OpenBISListUtil listUtil = Mockito.mock(OpenBISListUtil.class);
+        SftpListUtil listUtil = Mockito.mock(SftpListUtil.class);
         StandardPathLister standardPathLister = Mockito.spy(new StandardPathLister(listUtil));
-        OpenBISSftpNodeChain baseChain = Mockito.spy(exampleBaseChain);
-        Mockito.doReturn("space-1").when(baseChain).lookUpSpaceCode();
-        Mockito.doReturn("project-1").when(baseChain).lookUpProjectCode();
+        SftpNodeChain baseChain = Mockito.spy(exampleBaseChain);
 
-        OpenBISSftpNode experimentNode = OpenBISSftpNode.builder()
-                .type(OpenBISSftpNode.Type.EXPERIMENT)
-                .identifier(Optional.of("experiment-1")).build();
+        SftpNode experimentNode = SftpNode.builder()
+                .type(SftpNode.Type.EXPERIMENT)
+                .identifier(Optional.of("Experiment name(experiment-1)")).build();
 
         assertEquals(List.of(
-                OpenBISSftpNodeChain.concat(
+                SftpNodeChain.concat(
                         baseChain,
-                        OpenBISSftpNodeChain.createSublevelNode(StandardPathTranslator.FOLDER_TYPE_LABEL)
+                        SftpNodeChain.createSublevelNode(StandardPathTranslator.FOLDER_TYPE_LABEL)
                 ),
-                OpenBISSftpNodeChain.concat(
+                SftpNodeChain.concat(
                         baseChain,
-                        OpenBISSftpNodeChain.createSublevelNode(StandardPathTranslator.SAMPLE_TYPE_LABEL)
+                        SftpNodeChain.createSublevelNode(StandardPathTranslator.SAMPLE_TYPE_LABEL)
                 ),
-                OpenBISSftpNodeChain.concat(
+                SftpNodeChain.concat(
                         baseChain,
-                        OpenBISSftpNodeChain.createSublevelNode(StandardPathTranslator.FILE_TYPE_LABEL)
+                        SftpNodeChain.createSublevelNode(StandardPathTranslator.FILE_TYPE_LABEL)
                 )), standardPathLister.listExperiment(experimentNode, null, baseChain));
 
         standardPathLister.listExperiment(experimentNode, StandardPathTranslator.FOLDER_TYPE_LABEL, baseChain);
@@ -1012,29 +1013,30 @@ public class StandardPathListerTest extends TestCase {
     }
 
     public void testListSamplesOrFoldersInExperiment() {
-        OpenBISListUtil listUtil = Mockito.mock(OpenBISListUtil.class);
+        SftpListUtil listUtil = Mockito.mock(SftpListUtil.class);
         StandardPathLister standardPathLister = Mockito.spy(new StandardPathLister(listUtil));
-        OpenBISSftpNodeChain baseChain = Mockito.spy(exampleBaseChain);
-        Mockito.doReturn("space-1").when(baseChain).lookUpSpaceCode();
-        Mockito.doReturn("project-1").when(baseChain).lookUpProjectCode();
+        SftpNodeChain baseChain = Mockito.spy(exampleBaseChain);
 
-        OpenBISSftpNode experimentNode = OpenBISSftpNode.builder()
-                .type(OpenBISSftpNode.Type.EXPERIMENT)
-                .identifier(Optional.of("experiment-1")).build();
+        SftpNode experimentNode = SftpNode.builder()
+                .type(SftpNode.Type.EXPERIMENT)
+                .identifier(Optional.of("exp NAME(experiment-perm-id-1)")).build();
 
         SampleFetchOptions fetchOptions = new SampleFetchOptions();
         fetchOptions.withType();
+        fetchOptions.withProperties();
 
         Sample sample1 = new Sample();
         sample1.setFetchOptions(fetchOptions);
-        sample1.setCode("SAMPLE-1");
+        sample1.setPermId(new SamplePermId("SAMPLE-1"));
+        sample1.setStringProperty("NAME", "SaMpleName");
         SampleType sampleType1 = new SampleType();
         sampleType1.setCode("NONFOLDER");
         sample1.setType(sampleType1);
 
         Sample sample2 = new Sample();
         sample2.setFetchOptions(fetchOptions);
-        sample2.setCode("FOLDER-2");
+        sample2.setPermId(new SamplePermId("FOLDER-2"));
+        sample2.setStringProperty("NAME", "folderNAME");
         SampleType sampleType2 = new SampleType();
         sampleType2.setCode("FOLDER");
         sample2.setType(sampleType2);
@@ -1044,57 +1046,55 @@ public class StandardPathListerTest extends TestCase {
                 sample2
         );
         Mockito.doReturn(returnedSamples).when(listUtil)
-                .getExperimentSamples("space-1", "project-1", "experiment-1");
+                .getExperimentSamples("experiment-perm-id-1");
 
-        List<OpenBISSftpNodeChain> openBISSftpNodeChainList;
+        List<SftpNodeChain> sftpNodeChainList;
 
-        openBISSftpNodeChainList =
+        sftpNodeChainList =
                 standardPathLister.listSamplesOrFoldersInExperiment(experimentNode, baseChain, true);
-        Mockito.verify(listUtil, Mockito.times(1)).getExperimentSamples("space-1", "project-1", "experiment-1");
-        assertEquals(1, openBISSftpNodeChainList.size());
+        Mockito.verify(listUtil, Mockito.times(1)).getExperimentSamples("experiment-perm-id-1");
+        assertEquals(1, sftpNodeChainList.size());
         assertEquals(
-                OpenBISSftpNode.Type.FOLDER,
-                openBISSftpNodeChainList.getLast().getLast()
+                SftpNode.Type.FOLDER,
+                sftpNodeChainList.getLast().getLast()
                         .get().getType());
         assertEquals(
-                "FOLDER-2",
-                openBISSftpNodeChainList.getLast().getLast()
+                "folderNAME(FOLDER-2)",
+                sftpNodeChainList.getLast().getLast()
                         .get().getIdentifier().get());
         Mockito.clearInvocations(listUtil);
 
-        openBISSftpNodeChainList =
+        sftpNodeChainList =
                 standardPathLister.listSamplesOrFoldersInExperiment(experimentNode, baseChain, false);
-        Mockito.verify(listUtil, Mockito.times(1)).getExperimentSamples("space-1", "project-1", "experiment-1");
-        assertEquals(1, openBISSftpNodeChainList.size());
+        Mockito.verify(listUtil, Mockito.times(1)).getExperimentSamples("experiment-perm-id-1");
+        assertEquals(1, sftpNodeChainList.size());
         assertEquals(
-                OpenBISSftpNode.Type.SAMPLE,
-                openBISSftpNodeChainList.getLast().getLast()
+                SftpNode.Type.SAMPLE,
+                sftpNodeChainList.getLast().getLast()
                         .get().getType());
         assertEquals(
-                "SAMPLE-1",
-                openBISSftpNodeChainList.getLast().getLast()
+                "SaMpleName(SAMPLE-1)",
+                sftpNodeChainList.getLast().getLast()
                         .get().getIdentifier().get());
         Mockito.clearInvocations(listUtil);
     }
 
     public void testListFilesInAfsFileNode() {
-        OpenBISListUtil listUtil = Mockito.mock(OpenBISListUtil.class);
+        SftpListUtil listUtil = Mockito.mock(SftpListUtil.class);
         StandardPathLister standardPathLister = Mockito.spy(new StandardPathLister(listUtil));
-        OpenBISSftpNodeChain baseChain = Mockito.spy(exampleBaseChain);
-        Mockito.doReturn("space-1").when(baseChain).lookUpSpaceCode();
-        Mockito.doReturn("project-1").when(baseChain).lookUpProjectCode();
+        SftpNodeChain baseChain = Mockito.spy(exampleBaseChain);
 
-        OpenBISSftpNode afsEntityNode = OpenBISSftpNode.builder()
-                .type(OpenBISSftpNode.Type.SAMPLE)
-                .identifier(Optional.of("sample-1")).build();
+        SftpNode afsEntityNode = SftpNode.builder()
+                .type(SftpNode.Type.SAMPLE)
+                .identifier(Optional.of("Sample name(sample-1)")).build();
 
         Mockito.doReturn(afsEntityNode).when(standardPathLister)
                 .validateAndGetAfsEntityNodeFromAfsFileChain(baseChain);
         Mockito.doReturn("afs-perm-id-1").when(listUtil)
-                .getAfsEntityPermId(afsEntityNode, "space-1", "project-1");
+                .getAfsEntityPermId(afsEntityNode);
 
-        OpenBISSftpNode afsFileNode = OpenBISSftpNode.builder()
-                .type(OpenBISSftpNode.Type.AFS_FILE)
+        SftpNode afsFileNode = SftpNode.builder()
+                .type(SftpNode.Type.AFS_FILE)
                 .afsFilePath(List.of("dir-1", "dir-2", "file-12")).build();
 
 
@@ -1105,16 +1105,16 @@ public class StandardPathListerTest extends TestCase {
     }
 
     public void testValidateAndGetAfsEntityNodeFromAfsFileChain() {
-        OpenBISListUtil listUtil = Mockito.mock(OpenBISListUtil.class);
+        SftpListUtil listUtil = Mockito.mock(SftpListUtil.class);
         StandardPathLister standardPathLister = Mockito.spy(new StandardPathLister(listUtil));
 
-        OpenBISSftpNodeChain shortChain = new OpenBISSftpNodeChain(
+        SftpNodeChain shortChain = new SftpNodeChain(
                 List.of(
-                        OpenBISSftpNode.builder()
-                                .type(OpenBISSftpNode.Type.SUBLEVEL)
+                        SftpNode.builder()
+                                .type(SftpNode.Type.SUBLEVEL)
                                 .identifier(Optional.of(StandardPathTranslator.FILE_TYPE_LABEL))
                                 .build(),
-                        OpenBISSftpNode.builder().type(OpenBISSftpNode.Type.AFS_FILE)
+                        SftpNode.builder().type(SftpNode.Type.AFS_FILE)
                                 .afsFilePath(List.of("dir1", "dir2", "file"))
                                 .build()
                 )
@@ -1127,24 +1127,24 @@ public class StandardPathListerTest extends TestCase {
         }
         assertEquals(IllegalArgumentException.class, shortChainException.getClass());
 
-        for (OpenBISSftpNode.Type notAdmittedTypeForAfsEntity : List.of(
-                OpenBISSftpNode.Type.ROOT,
-                OpenBISSftpNode.Type.SPACE,
-                OpenBISSftpNode.Type.PROJECT,
-                OpenBISSftpNode.Type.AFS_FILE,
-                OpenBISSftpNode.Type.SUBLEVEL
+        for (SftpNode.Type notAdmittedTypeForAfsEntity : List.of(
+                SftpNode.Type.ROOT,
+                SftpNode.Type.SPACE,
+                SftpNode.Type.PROJECT,
+                SftpNode.Type.AFS_FILE,
+                SftpNode.Type.SUBLEVEL
         )) {
-            OpenBISSftpNodeChain noAfsEntity = new OpenBISSftpNodeChain(
+            SftpNodeChain noAfsEntity = new SftpNodeChain(
                     List.of(
-                            OpenBISSftpNode.builder()
+                            SftpNode.builder()
                                     .type(notAdmittedTypeForAfsEntity)
                                     .identifier(Optional.of("id-fake"))
                                     .build(),
-                            OpenBISSftpNode.builder()
-                                    .type(OpenBISSftpNode.Type.SUBLEVEL)
+                            SftpNode.builder()
+                                    .type(SftpNode.Type.SUBLEVEL)
                                     .identifier(Optional.of(StandardPathTranslator.FILE_TYPE_LABEL))
                                     .build(),
-                            OpenBISSftpNode.builder().type(OpenBISSftpNode.Type.AFS_FILE)
+                            SftpNode.builder().type(SftpNode.Type.AFS_FILE)
                                     .afsFilePath(List.of("dir1", "dir2", "file"))
                                     .build()
                     )
@@ -1159,30 +1159,30 @@ public class StandardPathListerTest extends TestCase {
             assertEquals(IllegalArgumentException.class, noAfsEntityException.getClass());
         }
 
-        for (OpenBISSftpNode.Type admittedTypeForAfsEntity : List.of(
-                OpenBISSftpNode.Type.SAMPLE,
-                OpenBISSftpNode.Type.FOLDER,
-                OpenBISSftpNode.Type.EXPERIMENT,
-                OpenBISSftpNode.Type.DATA_SET
+        for (SftpNode.Type admittedTypeForAfsEntity : List.of(
+                SftpNode.Type.SAMPLE,
+                SftpNode.Type.FOLDER,
+                SftpNode.Type.EXPERIMENT,
+                SftpNode.Type.DATA_SET
         )) {
-            OpenBISSftpNodeChain goodAfsEntity = new OpenBISSftpNodeChain(
+            SftpNodeChain goodAfsEntity = new SftpNodeChain(
                     List.of(
-                            OpenBISSftpNode.builder()
+                            SftpNode.builder()
                                     .type(admittedTypeForAfsEntity)
                                     .identifier(Optional.of("id-fake"))
                                     .build(),
-                            OpenBISSftpNode.builder()
-                                    .type(OpenBISSftpNode.Type.SUBLEVEL)
+                            SftpNode.builder()
+                                    .type(SftpNode.Type.SUBLEVEL)
                                     .identifier(Optional.of(StandardPathTranslator.FILE_TYPE_LABEL))
                                     .build(),
-                            OpenBISSftpNode.builder().type(OpenBISSftpNode.Type.AFS_FILE)
+                            SftpNode.builder().type(SftpNode.Type.AFS_FILE)
                                     .afsFilePath(List.of("dir1", "dir2", "file"))
                                     .build()
                     )
             );
 
             assertEquals(
-                OpenBISSftpNode.builder()
+                SftpNode.builder()
                     .type(admittedTypeForAfsEntity)
                     .identifier(Optional.of("id-fake"))
                     .build(),

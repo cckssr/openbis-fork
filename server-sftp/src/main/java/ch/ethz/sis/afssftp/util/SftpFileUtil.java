@@ -1,8 +1,9 @@
 package ch.ethz.sis.afssftp.util;
 
 import ch.ethz.sis.afsapi.dto.File;
-import ch.ethz.sis.afssftp.authentication.OpenBISUser;
+import ch.ethz.sis.afssftp.authentication.User;
 import ch.ethz.sis.afssftp.filesystemview.AfsFileChannel;
+import ch.ethz.sis.openbis.generic.OpenBIS;
 import lombok.NonNull;
 
 import java.io.IOException;
@@ -11,39 +12,39 @@ import java.nio.file.StandardOpenOption;
 import java.util.Optional;
 import java.util.Set;
 
-public class OpenBISFileUtil {
-    private final OpenBISUser user;
+public class SftpFileUtil {
+    private final User user;
     private final OpenBISClientUtil openBISClientUtil;
-    private final OpenBISListUtil openBISListUtil;
+    private final SftpListUtil sftpListUtil;
 
-    public OpenBISFileUtil(@NonNull OpenBISUser user) {
+    public SftpFileUtil(@NonNull User user) {
         this.user = user;
         this.openBISClientUtil = new OpenBISClientUtil();
-        this.openBISListUtil = new OpenBISListUtil(user);
+        this.sftpListUtil = new SftpListUtil(user);
     }
 
     //For unit-tests
-    OpenBISFileUtil(
-            OpenBISUser user,
+    SftpFileUtil(
+            User user,
             OpenBISClientUtil openBISClientUtil,
-            OpenBISListUtil openBISListUtil
+            SftpListUtil sftpListUtil
     ) {
         this.user = user;
         this.openBISClientUtil = openBISClientUtil;
-        this.openBISListUtil = openBISListUtil;
+        this.sftpListUtil = sftpListUtil;
     }
 
     public AfsFileChannel createAfsFileChannel(
             @NonNull String entityId,
             @NonNull String afsPath,
-            @NonNull OpenBISUser openBISUser,
+            @NonNull User user,
             @NonNull Set<? extends OpenOption> options
     ) throws IOException {
         File afsFile = Optional.of(entityId)
-                .flatMap( entId -> openBISListUtil.getAfsFilePresence(entId, afsPath))
+                .flatMap( entId -> sftpListUtil.getAfsFilePresence(entId, afsPath))
                 .orElse(null);
 
-        AfsClientProxy afsClient = openBISClientUtil.getAfsClient(openBISUser);
+        OpenBIS.AfsServerFacade afsClient = openBISClientUtil.getAfsClient(user);
 
         //Create if AFS-file does not exist and CREATE or CREATE_NEW open-options are present
         boolean justCreated = false;
@@ -92,7 +93,7 @@ public class OpenBISFileUtil {
             return new AfsFileChannel(
                     entityId,
                     afsPath,
-                    openBISUser,
+                    user,
                     initialPosition,
                     readOpenOption,
                     writeOpenOption
@@ -105,14 +106,14 @@ public class OpenBISFileUtil {
     public void deleteAfsFile(
             @NonNull String entityId,
             @NonNull String afsPath,
-            @NonNull OpenBISUser openBISUser
+            @NonNull User user
     ) throws IOException {
         File afsFile = Optional.of(entityId)
-                .flatMap( entId -> openBISListUtil.getAfsFilePresence(entId, afsPath))
+                .flatMap( entId -> sftpListUtil.getAfsFilePresence(entId, afsPath))
                 .orElse(null);
 
         if (afsFile != null) {
-            AfsClientProxy afsClient = openBISClientUtil.getAfsClient(openBISUser);
+            OpenBIS.AfsServerFacade afsClient = openBISClientUtil.getAfsClient(user);
 
             try {
                 if ( !afsClient.delete(entityId, afsPath, true) ) {
@@ -127,14 +128,14 @@ public class OpenBISFileUtil {
     public void createAfsDirectory(
             @NonNull String entityId,
             @NonNull String afsPath,
-            @NonNull OpenBISUser openBISUser
+            @NonNull User user
     ) throws IOException {
         File afsFile = Optional.of(entityId)
-                .flatMap( entId -> openBISListUtil.getAfsFilePresence(entId, afsPath))
+                .flatMap( entId -> sftpListUtil.getAfsFilePresence(entId, afsPath))
                 .orElse(null);
 
         if (afsFile == null) {
-            AfsClientProxy afsClient = openBISClientUtil.getAfsClient(openBISUser);
+            OpenBIS.AfsServerFacade afsClient = openBISClientUtil.getAfsClient(user);
 
             try {
                 if ( !afsClient.create(entityId, afsPath, true) ) {
@@ -153,19 +154,19 @@ public class OpenBISFileUtil {
             @NonNull String afsPathSrc,
             @NonNull String entityIdDest,
             @NonNull String afsPathDest,
-            @NonNull OpenBISUser openBISUser,
+            @NonNull User user,
             boolean replaceExisting
     ) throws IOException {
         File srcFile = Optional.of(entityIdSrc)
-                .flatMap( entId -> openBISListUtil.getAfsFilePresence(entId, afsPathSrc))
+                .flatMap( entId -> sftpListUtil.getAfsFilePresence(entId, afsPathSrc))
                 .orElse(null);
 
         File destFile = Optional.of(entityIdDest)
-                .flatMap( entId -> openBISListUtil.getAfsFilePresence(entId, afsPathDest))
+                .flatMap( entId -> sftpListUtil.getAfsFilePresence(entId, afsPathDest))
                 .orElse(null);
 
         if (srcFile != null) {
-            AfsClientProxy afsClient = openBISClientUtil.getAfsClient(openBISUser);
+            OpenBIS.AfsServerFacade afsClient = openBISClientUtil.getAfsClient(user);
 
             if (destFile == null || replaceExisting) {
                 try {
@@ -187,19 +188,19 @@ public class OpenBISFileUtil {
             @NonNull String afsPathSrc,
             @NonNull String entityIdDest,
             @NonNull String afsPathDest,
-            @NonNull OpenBISUser openBISUser,
+            @NonNull User user,
             boolean replaceExisting
     ) throws IOException {
         File srcFile = Optional.of(entityIdSrc)
-                .flatMap( entId -> openBISListUtil.getAfsFilePresence(entId, afsPathSrc))
+                .flatMap( entId -> sftpListUtil.getAfsFilePresence(entId, afsPathSrc))
                 .orElse(null);
 
         File destFile = Optional.of(entityIdDest)
-                .flatMap( entId -> openBISListUtil.getAfsFilePresence(entId, afsPathDest))
+                .flatMap( entId -> sftpListUtil.getAfsFilePresence(entId, afsPathDest))
                 .orElse(null);
 
         if (srcFile != null) {
-            AfsClientProxy afsClient = openBISClientUtil.getAfsClient(openBISUser);
+            OpenBIS.AfsServerFacade afsClient = openBISClientUtil.getAfsClient(user);
             if (destFile == null) {
                 try {
                     if ( !afsClient.move(entityIdSrc, afsPathSrc,

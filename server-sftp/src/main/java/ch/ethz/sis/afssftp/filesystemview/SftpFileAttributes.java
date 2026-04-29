@@ -11,7 +11,7 @@ import java.util.Set;
 
 @Value
 @Builder(toBuilder = true)
-public class OpenBISSftpFileAttributes implements PosixFileAttributes
+public class SftpFileAttributes implements PosixFileAttributes
 {
     FileTime creationTime;
     FileTime modifiedTime;
@@ -26,7 +26,7 @@ public class OpenBISSftpFileAttributes implements PosixFileAttributes
     Set<PosixFilePermission> permissions = EnumSet.of(
             PosixFilePermission.OWNER_READ,
             PosixFilePermission.OWNER_EXECUTE
-    );;
+    );
 
     @Override
     public FileTime lastModifiedTime() {

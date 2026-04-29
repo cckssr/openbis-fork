@@ -1,32 +1,33 @@
 package ch.ethz.sis.afssftp.util;
 
-import ch.ethz.sis.afsclient.client.AfsClient;
-import ch.ethz.sis.afssftp.authentication.OpenBISUser;
+import ch.ethz.sis.afssftp.authentication.AuthenticationProvider;
+import ch.ethz.sis.afssftp.authentication.User;
 import ch.ethz.sis.openbis.generic.OpenBIS;
 import lombok.NonNull;
 
-import java.net.URI;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class OpenBISClientUtil {
+public class OpenBISClientUtil implements AuthenticationProvider
+{
     public static final AtomicReference<String> applicationServerUrl = new AtomicReference<>(null);
     public static final AtomicReference<String> afsUrl = new AtomicReference<>(null);
 
     public OpenBIS getOpenBISClient() {
-        return new OpenBIS(getApplicationServerUrl());
+        return new OpenBIS(
+                getApplicationServerUrl() + "/openbis/openbis",
+                getApplicationServerUrl() + "/datastore_server",
+                getAfsUrl()
+        );
     }
 
-    public OpenBIS getOpenBISClient(@NonNull OpenBISUser openBISUser) {
+    public OpenBIS getOpenBISClient(@NonNull User user) {
         OpenBIS openBIS = getOpenBISClient();
-        openBISUser.checkAndRenewSessionIfNecessary(openBIS);
+        user.checkAndRenewSessionIfNecessary(openBIS);
         return openBIS;
     }
 
-    public AfsClientProxy getAfsClient(@NonNull OpenBISUser openBISUser) {
-        AfsClient afsClient = new AfsClient(URI.create(getAfsUrl()));
-        AfsClientProxy afsClientProxy = new AfsClientProxy(afsClient);
-        openBISUser.checkAndRenewSessionIfNecessary(afsClientProxy);
-        return afsClientProxy;
+    public OpenBIS.AfsServerFacade getAfsClient(@NonNull User user) {
+        return getOpenBISClient(user).getAfsServerFacade();
     }
 
     String getApplicationServerUrl() {
@@ -35,5 +36,11 @@ public class OpenBISClientUtil {
 
     String getAfsUrl() {
         return afsUrl.get();
+    }
+
+    @Override
+    public String login(String userId, String password)
+    {
+        return getOpenBISClient().login(userId, password);
     }
 }
