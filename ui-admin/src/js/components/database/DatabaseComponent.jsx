@@ -119,10 +119,10 @@ class DatabaseComponent extends React.PureComponent {
     }
   }
 
-  datasetOpenTab(id) {
+  datasetOpenTab(id, imageIdx, previewIdx, objType) {
     AppController.getInstance().objectOpen(
       pages.DATABASE,
-      objectType.DATA_SET,
+      objType,
       id
     )
   }
