@@ -22,6 +22,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.fetchoptions.SpaceFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.search.SpaceSearchCriteria;
+import ch.ethz.sis.shared.log.standard.LogManager;
+import ch.ethz.sis.shared.log.standard.Logger;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 
@@ -40,6 +42,8 @@ public class SftpListUtil {
             SftpNode.Type.EXPERIMENT,
             SftpNode.Type.DATA_SET
     );
+
+    private final Logger logger = LogManager.getLogger(this.getClass());
 
     private final User user;
     private final OpenBISClientUtil openBISClientUtil;
@@ -207,10 +211,8 @@ public class SftpListUtil {
         };
     }
 
-    public boolean isAfsEntityMutable(@NonNull SftpNode afsEntityNode) {
-        String entityPermId = getAfsEntityPermId(afsEntityNode);
-
-        return switch (afsEntityNode.getType()) {
+    public boolean isAfsEntityMutable(@NonNull String entityPermId, @NonNull SftpNode.Type type) {
+        return switch (type) {
             case SAMPLE, FOLDER -> {
                 OpenBIS openBIS = openBISClientUtil.getOpenBISClient(user);
 
@@ -283,6 +285,21 @@ public class SftpListUtil {
                             ).build();
                 }
         );
+    }
+
+    public void createAfsFileRootIfNecessary(@NonNull String afsEntityId) {
+        if (getAfsFilePresence(afsEntityId, "/").isEmpty()) {
+            openBISClientUtil.getAfsClient(user).create(afsEntityId, "/", true);
+        }
+    }
+
+    public void tryToCreateAfsFileRootIfNecessary(
+            @NonNull String afsEntityId) {
+        try {
+            createAfsFileRootIfNecessary(afsEntityId);
+        } catch (Exception e) {
+            logger.catching(e);
+        }
     }
 
     public static @NonNull SftpFileAttributes getDefaultAbstractDirectoryAttributes() {

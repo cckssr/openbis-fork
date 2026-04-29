@@ -73,13 +73,24 @@ public class VirtualFileSystemProvider extends FileSystemProvider {
                 .map( node -> node.getType() == SftpNode.Type.AFS_FILE)
                 .orElse(false)
         ) {
+            SftpNode afsEntityNode = sftpNodeChain.get(sftpNodeChain.size() - 3);
             String entityId = sftpListUtil.getAfsEntityPermId(
-                    sftpNodeChain.get(sftpNodeChain.size() - 3)
+                    afsEntityNode
             );
-            String afsPath = sftpNodeChain.getLast().get().getJoinedAfsFilePath();
+            SftpNode afsFileNode = sftpNodeChain.getLast().get();
+            boolean isAfsEntityDataMutable = sftpListUtil.isAfsEntityMutable(
+                    entityId, afsEntityNode.getType()
+            );
+            String afsPath = afsFileNode.getJoinedAfsFilePath();
 
             if ( entityId != null && afsPath != null ) {
-                return sftpFileUtil.createAfsFileChannel(entityId, afsPath, user, options);
+                return sftpFileUtil.createAfsFileChannel(
+                        entityId,
+                        afsPath,
+                        user,
+                        options,
+                        isAfsEntityDataMutable
+                );
             } else {
                 throw new IllegalArgumentException("Missing AFS-file coordinates");
             }
@@ -110,15 +121,27 @@ public class VirtualFileSystemProvider extends FileSystemProvider {
                 .map( node -> node.getType() == SftpNode.Type.AFS_FILE)
                 .orElse(false)
         ) {
+            SftpNode afsEntityNode = sftpNodeChain.get(sftpNodeChain.size() - 3);
             String entityId = sftpListUtil.getAfsEntityPermId(
-                    sftpNodeChain.get(sftpNodeChain.size() - 3)
+                    afsEntityNode
             );
-            String afsPath = sftpNodeChain.getLast().get().getJoinedAfsFilePath();
+            SftpNode afsFileNode = sftpNodeChain.getLast().get();
+            boolean isAfsEntityDataMutable = sftpListUtil.isAfsEntityMutable(
+                    entityId, afsEntityNode.getType()
+            );
 
-            if ( entityId != null && afsPath != null ) {
-                sftpFileUtil.createAfsDirectory(entityId, afsPath, user);
+            if (isAfsEntityDataMutable) {
+                String afsPath = afsFileNode.getJoinedAfsFilePath();
+
+                sftpListUtil.tryToCreateAfsFileRootIfNecessary(entityId);
+
+                if ( entityId != null && afsPath != null ) {
+                    sftpFileUtil.createAfsDirectory(entityId, afsPath, user);
+                } else {
+                    throw new IllegalArgumentException("Missing AFS-file coordinates");
+                }
             } else {
-                throw new IllegalArgumentException("Missing AFS-file coordinates");
+                throw new UnsupportedOperationException("Cannot create AFS-directories in immutable entity");
             }
         } else {
             throw new UnsupportedOperationException("Not AFS-file");
@@ -132,15 +155,25 @@ public class VirtualFileSystemProvider extends FileSystemProvider {
                 .map( node -> node.getType() == SftpNode.Type.AFS_FILE)
                 .orElse(false)
         ) {
+            SftpNode afsEntityNode = sftpNodeChain.get(sftpNodeChain.size() - 3);
             String entityId = sftpListUtil.getAfsEntityPermId(
-                    sftpNodeChain.get(sftpNodeChain.size() - 3)
+                    afsEntityNode
             );
-            String afsPath = sftpNodeChain.getLast().get().getJoinedAfsFilePath();
+            SftpNode afsFileNode = sftpNodeChain.getLast().get();
+            boolean isAfsEntityDataMutable = sftpListUtil.isAfsEntityMutable(
+                    entityId, afsEntityNode.getType()
+            );
 
-            if ( entityId != null && afsPath != null ) {
-                sftpFileUtil.deleteAfsFile(entityId, afsPath, user);
+            if (isAfsEntityDataMutable) {
+                String afsPath = afsFileNode.getJoinedAfsFilePath();
+
+                if ( entityId != null && afsPath != null ) {
+                    sftpFileUtil.deleteAfsFile(entityId, afsPath, user);
+                } else {
+                    throw new IllegalArgumentException("Missing AFS-file coordinates");
+                }
             } else {
-                throw new IllegalArgumentException("Missing AFS-file coordinates");
+                throw new UnsupportedOperationException("Cannot delete AFS-files in immutable entity");
             }
         } else {
             throw new UnsupportedOperationException("Not AFS-file");
@@ -158,24 +191,33 @@ public class VirtualFileSystemProvider extends FileSystemProvider {
                 .map( node -> node.getType() == SftpNode.Type.AFS_FILE)
                 .orElse(false)
         ) {
+            SftpNode afsEntityNode1 = sftpNodeChain1.get(sftpNodeChain1.size() - 3);
             String entityId1 = sftpListUtil.getAfsEntityPermId(
-                    sftpNodeChain1.get(sftpNodeChain1.size() - 3)
+                    afsEntityNode1
             );
             String afsPath1 = sftpNodeChain1.getLast().get().getJoinedAfsFilePath();
 
+            SftpNode afsEntityNode2 = sftpNodeChain2.get(sftpNodeChain2.size() - 3);
             String entityId2 = sftpListUtil.getAfsEntityPermId(
-                    sftpNodeChain2.get(sftpNodeChain2.size() - 3)
+                    afsEntityNode2
             );
             String afsPath2 = sftpNodeChain2.getLast().get().getJoinedAfsFilePath();
+            boolean isAfsEntity2DataMutable = sftpListUtil.isAfsEntityMutable(
+                    entityId2, afsEntityNode2.getType()
+            );
 
-            if ( entityId1 != null && afsPath1 != null && entityId2 != null && afsPath2 != null ) {
-                sftpFileUtil.copyAfsFile(
-                        entityId1, afsPath1,
-                        entityId2, afsPath2,
-                        user,
-                        Arrays.asList(copyOptions).contains(StandardCopyOption.REPLACE_EXISTING));
+            if (isAfsEntity2DataMutable) {
+                if ( entityId1 != null && afsPath1 != null && entityId2 != null && afsPath2 != null ) {
+                    sftpFileUtil.copyAfsFile(
+                            entityId1, afsPath1,
+                            entityId2, afsPath2,
+                            user,
+                            Arrays.asList(copyOptions).contains(StandardCopyOption.REPLACE_EXISTING));
+                } else {
+                    throw new IllegalArgumentException("Missing AFS-file coordinates");
+                }
             } else {
-                throw new IllegalArgumentException("Missing AFS-file coordinates");
+                throw new UnsupportedOperationException("Cannot copy to AFS-files in immutable entity");
             }
         } else {
             throw new UnsupportedOperationException("Not AFS-files");
@@ -193,24 +235,37 @@ public class VirtualFileSystemProvider extends FileSystemProvider {
                         .map( node -> node.getType() == SftpNode.Type.AFS_FILE)
                         .orElse(false)
         ) {
+            SftpNode afsEntityNode1 = sftpNodeChain1.get(sftpNodeChain1.size() - 3);
             String entityId1 = sftpListUtil.getAfsEntityPermId(
-                    sftpNodeChain1.get(sftpNodeChain1.size() - 3)
+                    afsEntityNode1
             );
-            String afsPath1 = sftpNodeChain1.getLast().get().getJoinedAfsFilePath();
+            boolean isAfsEntity1DataMutable = sftpListUtil.isAfsEntityMutable(
+                    entityId1, afsEntityNode1.getType()
+            );
 
+            SftpNode afsEntityNode2 = sftpNodeChain2.get(sftpNodeChain2.size() - 3);
             String entityId2 = sftpListUtil.getAfsEntityPermId(
                     sftpNodeChain2.get(sftpNodeChain2.size() - 3)
             );
-            String afsPath2 = sftpNodeChain2.getLast().get().getJoinedAfsFilePath();
+            boolean isAfsEntity2DataMutable = sftpListUtil.isAfsEntityMutable(
+                    entityId2, afsEntityNode2.getType()
+            );
 
-            if ( entityId1 != null && afsPath1 != null && entityId2 != null && afsPath2 != null ) {
-                sftpFileUtil.moveAfsFile(
-                        entityId1, afsPath1,
-                        entityId2, afsPath2,
-                        user,
-                        Arrays.asList(copyOptions).contains(StandardCopyOption.REPLACE_EXISTING));
+            if (isAfsEntity1DataMutable && isAfsEntity2DataMutable) {
+                String afsPath1 = sftpNodeChain1.getLast().get().getJoinedAfsFilePath();
+                String afsPath2 = sftpNodeChain2.getLast().get().getJoinedAfsFilePath();
+
+                if ( entityId1 != null && afsPath1 != null && entityId2 != null && afsPath2 != null ) {
+                    sftpFileUtil.moveAfsFile(
+                            entityId1, afsPath1,
+                            entityId2, afsPath2,
+                            user,
+                            Arrays.asList(copyOptions).contains(StandardCopyOption.REPLACE_EXISTING));
+                } else {
+                    throw new IllegalArgumentException("Missing AFS-file coordinates");
+                }
             } else {
-                throw new IllegalArgumentException("Missing AFS-file coordinates");
+                throw new UnsupportedOperationException("Cannot move AFS-files between immutable entities");
             }
         } else {
             throw new UnsupportedOperationException("Not AFS-files");

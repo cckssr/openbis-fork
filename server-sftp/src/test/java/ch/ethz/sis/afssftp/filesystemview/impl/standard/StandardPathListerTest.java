@@ -4,6 +4,7 @@ import ch.ethz.sis.afsapi.dto.File;
 import ch.ethz.sis.afssftp.filesystemview.SftpFileAttributes;
 import ch.ethz.sis.afssftp.filesystemview.SftpNode;
 import ch.ethz.sis.afssftp.filesystemview.SftpNodeChain;
+import ch.ethz.sis.afssftp.helpers.TestHelper;
 import ch.ethz.sis.afssftp.util.SftpListUtil;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType;
@@ -12,6 +13,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 import junit.framework.TestCase;
 import org.mockito.Mockito;
 
+import java.nio.file.NoSuchFileException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -26,7 +28,7 @@ public class StandardPathListerTest extends TestCase {
                     .identifier(Optional.of("space_1")).build()
     ));
 
-    public void testListWithRoot() {
+    public void testListWithRoot() throws Exception {
         SftpListUtil listUtil = Mockito.mock(SftpListUtil.class);
         StandardPathLister standardPathLister = Mockito.spy(new StandardPathLister(listUtil));
 
@@ -46,7 +48,7 @@ public class StandardPathListerTest extends TestCase {
         assertEquals(exampleListResult, listResult);
     }
 
-    public void testListWithSpace() {
+    public void testListWithSpace() throws Exception {
         SftpListUtil listUtil = Mockito.mock(SftpListUtil.class);
         StandardPathLister standardPathLister = Mockito.spy(new StandardPathLister(listUtil));
 
@@ -73,7 +75,7 @@ public class StandardPathListerTest extends TestCase {
         assertEquals(exampleListResult, listResult);
     }
 
-    public void testListWithSample() {
+    public void testListWithSample() throws Exception {
         SftpListUtil listUtil = Mockito.mock(SftpListUtil.class);
         StandardPathLister standardPathLister = Mockito.spy(new StandardPathLister(listUtil));
 
@@ -100,7 +102,7 @@ public class StandardPathListerTest extends TestCase {
         assertEquals(exampleListResult, listResult);
     }
 
-    public void testListWithFolder() {
+    public void testListWithFolder() throws Exception {
         SftpListUtil listUtil = Mockito.mock(SftpListUtil.class);
         StandardPathLister standardPathLister = Mockito.spy(new StandardPathLister(listUtil));
 
@@ -127,7 +129,7 @@ public class StandardPathListerTest extends TestCase {
         assertEquals(exampleListResult, listResult);
     }
 
-    public void testListWithDataset() {
+    public void testListWithDataset() throws Exception {
         SftpListUtil listUtil = Mockito.mock(SftpListUtil.class);
         StandardPathLister standardPathLister = Mockito.spy(new StandardPathLister(listUtil));
 
@@ -154,7 +156,7 @@ public class StandardPathListerTest extends TestCase {
         assertEquals(exampleListResult, listResult);
     }
 
-    public void testListWithProject() {
+    public void testListWithProject() throws Exception {
         SftpListUtil listUtil = Mockito.mock(SftpListUtil.class);
         StandardPathLister standardPathLister = Mockito.spy(new StandardPathLister(listUtil));
 
@@ -181,7 +183,7 @@ public class StandardPathListerTest extends TestCase {
         assertEquals(exampleListResult, listResult);
     }
 
-    public void testListWithExperiment() {
+    public void testListWithExperiment() throws Exception {
         SftpListUtil listUtil = Mockito.mock(SftpListUtil.class);
         StandardPathLister standardPathLister = Mockito.spy(new StandardPathLister(listUtil));
 
@@ -208,7 +210,7 @@ public class StandardPathListerTest extends TestCase {
         assertEquals(exampleListResult, listResult);
     }
 
-    public void testListWithAfsFile() {
+    public void testListWithAfsFile() throws Exception {
         SftpListUtil listUtil = Mockito.mock(SftpListUtil.class);
         StandardPathLister standardPathLister = Mockito.spy(new StandardPathLister(listUtil));
 
@@ -232,7 +234,7 @@ public class StandardPathListerTest extends TestCase {
     }
 
 
-    public void testListWithSublevel() {
+    public void testListWithSublevel() throws Exception {
         SftpListUtil listUtil = Mockito.mock(SftpListUtil.class);
         StandardPathLister standardPathLister = Mockito.spy(new StandardPathLister(listUtil));
 
@@ -387,7 +389,7 @@ public class StandardPathListerTest extends TestCase {
         Mockito.clearInvocations(standardPathLister);
     }
 
-    public void testReadAttributes() {
+    public void testReadAttributes() throws Exception {
         SftpListUtil listUtil = Mockito.mock(SftpListUtil.class);
         StandardPathLister standardPathLister = Mockito.spy(new StandardPathLister(listUtil));
 
@@ -422,44 +424,80 @@ public class StandardPathListerTest extends TestCase {
             );
         }
 
-        SftpNodeChain chain = Mockito.spy(SftpNodeChain.concat(
+        SftpNodeChain chain1 = Mockito.spy(SftpNodeChain.concat(
                 exampleBaseChain,
                 SftpNode.builder()
                         .type(SftpNode.Type.AFS_FILE)
                         .afsFilePath(List.of("dir-1", "dir-2", "file-3"))
                         .build()
         ));
+        SftpNodeChain chain2 = Mockito.spy(SftpNodeChain.concat(
+                exampleBaseChain,
+                SftpNode.builder()
+                        .type(SftpNode.Type.SUBLEVEL)
+                        .identifier(Optional.of(StandardPathTranslator.FILE_TYPE_LABEL))
+                        .build()
+        ));
 
-        for (boolean mutable : List.of(false, true)) {
-            SftpNode afsEntityNode = SftpNode.builder()
-                    .type(SftpNode.Type.DATA_SET)
-                    .identifier(Optional.of("fake-id"))
-                    .build();
+        for (SftpNodeChain chain : List.of(chain1, chain2)) {
+            for (boolean mutable : List.of(false, true)) {
+                for (String afsFilePath : List.of("/", "/dir-1/dir-2/file-3")) {
+                    for (SftpFileAttributes sampleAttributes : new SftpFileAttributes[] { SftpListUtil.getDefaultAbstractDirectoryAttributes(), null }) {
+                        SftpNode afsEntityNode = SftpNode.builder()
+                                .type(SftpNode.Type.DATA_SET)
+                                .identifier(Optional.of("fake-id"))
+                                .build();
 
-            Mockito.doReturn(afsEntityNode).when(standardPathLister)
-                    .validateAndGetAfsEntityNodeFromAfsFileChain(chain);
+                        Mockito.doReturn(afsEntityNode).when(standardPathLister)
+                                .validateAndGetAfsEntityNodeFromAfsFileChain(chain);
+                        Mockito.doReturn(afsFilePath).when(standardPathLister)
+                                .validateAndGetAfsFilePathFromAfsFileChain(chain);
 
-            String permId = "12345-12345";
-            Mockito.doReturn(permId).when(listUtil).getAfsEntityPermId(
-                    afsEntityNode
-            );
-            Mockito.doReturn(mutable).when(listUtil).isAfsEntityMutable(afsEntityNode);
-            SftpFileAttributes sampleAttributes = SftpListUtil.getDefaultAbstractDirectoryAttributes();
-            Mockito.doReturn(Optional.of(sampleAttributes)).when(listUtil).getDefaultAfsFileAttributes(
-                    permId, "/dir-1/dir-2/file-3", mutable
-            );
+                        String permId = "12345-12345";
+                        Mockito.doReturn(permId).when(listUtil).getAfsEntityPermId(
+                                afsEntityNode
+                        );
+                        Mockito.doReturn(mutable).when(listUtil).isAfsEntityMutable(permId, afsEntityNode.getType());
+                        Mockito.doReturn(Optional.ofNullable(sampleAttributes)).when(listUtil).getDefaultAfsFileAttributes(
+                                permId, afsFilePath, mutable
+                        );
 
-            assertEquals(sampleAttributes, standardPathLister.readAttributes(chain));
-            Mockito.verify(standardPathLister, Mockito.times(1))
-                    .validateAndGetAfsEntityNodeFromAfsFileChain(chain);
-            Mockito.verify(listUtil, Mockito.times(1)).getAfsEntityPermId(
-                    afsEntityNode
-            );
-            Mockito.verify(listUtil, Mockito.times(1)).getDefaultAfsFileAttributes(
-                    permId, "/dir-1/dir-2/file-3", mutable
-            );
+                        Exception exception = null;
+                        SftpFileAttributes readAttributes = null;
+                        try {
+                            readAttributes = standardPathLister.readAttributes(chain);
+                        } catch (Exception e) {
+                            exception = e;
+                        }
 
-            Mockito.clearInvocations(standardPathLister, listUtil);
+                        if (sampleAttributes != null) {
+                            assertEquals(sampleAttributes, readAttributes);
+                        } else {
+                            if ("/".equals(afsFilePath) && !mutable) {
+
+                            } else {
+                                assertTrue(exception instanceof NoSuchFileException);
+                            }
+                        }
+
+                        Mockito.verify(listUtil, Mockito.times( "/".equals(afsFilePath) && mutable ? 1 : 0)).tryToCreateAfsFileRootIfNecessary(
+                                permId
+                        );
+                        Mockito.verify(standardPathLister, Mockito.times(1))
+                                .validateAndGetAfsEntityNodeFromAfsFileChain(chain);
+                        Mockito.verify(standardPathLister, Mockito.times(1))
+                                .validateAndGetAfsFilePathFromAfsFileChain(chain);
+                        Mockito.verify(listUtil, Mockito.times(1)).getAfsEntityPermId(
+                                afsEntityNode
+                        );
+                        Mockito.verify(listUtil, Mockito.times(1)).getDefaultAfsFileAttributes(
+                                permId, afsFilePath, mutable
+                        );
+
+                        Mockito.clearInvocations(standardPathLister, listUtil);
+                    }
+                }
+            }
         }
     }
 
@@ -1188,6 +1226,255 @@ public class StandardPathListerTest extends TestCase {
                     .build(),
                 standardPathLister.validateAndGetAfsEntityNodeFromAfsFileChain(goodAfsEntity)
             );
+        }
+
+        for (SftpNode.Type notAdmittedTypeForAfsEntity : List.of(
+                SftpNode.Type.ROOT,
+                SftpNode.Type.SPACE,
+                SftpNode.Type.PROJECT,
+                SftpNode.Type.AFS_FILE,
+                SftpNode.Type.SUBLEVEL
+        )) {
+            SftpNodeChain noAfsEntity = new SftpNodeChain(
+                    List.of(
+                            SftpNode.builder()
+                                    .type(notAdmittedTypeForAfsEntity)
+                                    .identifier(Optional.of("id-fake"))
+                                    .build(),
+                            SftpNode.builder()
+                                    .type(SftpNode.Type.SUBLEVEL)
+                                    .identifier(Optional.of(StandardPathTranslator.FILE_TYPE_LABEL))
+                                    .build()
+                    )
+            );
+
+            Exception noAfsEntityException = null;
+            try {
+                standardPathLister.validateAndGetAfsEntityNodeFromAfsFileChain(noAfsEntity);
+            } catch (Exception e) {
+                noAfsEntityException = e;
+            }
+            assertEquals(IllegalArgumentException.class, noAfsEntityException.getClass());
+        }
+
+        for (SftpNode.Type admittedTypeForAfsEntity : List.of(
+                SftpNode.Type.SAMPLE,
+                SftpNode.Type.FOLDER,
+                SftpNode.Type.EXPERIMENT,
+                SftpNode.Type.DATA_SET
+        )) {
+            SftpNodeChain goodAfsEntity = new SftpNodeChain(
+                    List.of(
+                            SftpNode.builder()
+                                    .type(admittedTypeForAfsEntity)
+                                    .identifier(Optional.of("id-fake"))
+                                    .build(),
+                            SftpNode.builder()
+                                    .type(SftpNode.Type.SUBLEVEL)
+                                    .identifier(Optional.of(StandardPathTranslator.FILE_TYPE_LABEL))
+                                    .build()
+                    )
+            );
+
+            assertEquals(
+                    SftpNode.builder()
+                            .type(admittedTypeForAfsEntity)
+                            .identifier(Optional.of("id-fake"))
+                            .build(),
+                    standardPathLister.validateAndGetAfsEntityNodeFromAfsFileChain(goodAfsEntity)
+            );
+        }
+    }
+
+    public void testValidateAndGetAfsFilePathFromAfsFileChain() {
+        SftpListUtil listUtil = Mockito.mock(SftpListUtil.class);
+        StandardPathLister standardPathLister = Mockito.spy(new StandardPathLister(listUtil));
+
+        SftpNodeChain shortChain = new SftpNodeChain(
+                List.of(
+                        SftpNode.builder()
+                                .type(SftpNode.Type.SUBLEVEL)
+                                .identifier(Optional.of(StandardPathTranslator.FILE_TYPE_LABEL))
+                                .build(),
+                        SftpNode.builder().type(SftpNode.Type.AFS_FILE)
+                                .afsFilePath(List.of("dir1", "dir2", "file"))
+                                .build()
+                )
+        );
+        Exception shortChainException = null;
+        try {
+            standardPathLister.validateAndGetAfsFilePathFromAfsFileChain(shortChain);
+        } catch (Exception e) {
+            shortChainException = e;
+        }
+        assertEquals(IllegalArgumentException.class, shortChainException.getClass());
+
+        for (SftpNode.Type notAdmittedTypeForAfsEntity : List.of(
+                SftpNode.Type.ROOT,
+                SftpNode.Type.SPACE,
+                SftpNode.Type.PROJECT,
+                SftpNode.Type.AFS_FILE,
+                SftpNode.Type.SUBLEVEL
+        )) {
+            SftpNodeChain noAfsEntity = new SftpNodeChain(
+                    List.of(
+                            SftpNode.builder()
+                                    .type(notAdmittedTypeForAfsEntity)
+                                    .identifier(Optional.of("id-fake"))
+                                    .build(),
+                            SftpNode.builder()
+                                    .type(SftpNode.Type.SUBLEVEL)
+                                    .identifier(Optional.of(StandardPathTranslator.FILE_TYPE_LABEL))
+                                    .build(),
+                            SftpNode.builder().type(SftpNode.Type.AFS_FILE)
+                                    .afsFilePath(List.of("dir1", "dir2", "file"))
+                                    .build()
+                    )
+            );
+
+            Exception noAfsEntityException = null;
+            try {
+                standardPathLister.validateAndGetAfsFilePathFromAfsFileChain(noAfsEntity);
+            } catch (Exception e) {
+                noAfsEntityException = e;
+            }
+            assertEquals(IllegalArgumentException.class, noAfsEntityException.getClass());
+        }
+
+        for (SftpNode.Type admittedTypeForAfsEntity : List.of(
+                SftpNode.Type.SAMPLE,
+                SftpNode.Type.FOLDER,
+                SftpNode.Type.EXPERIMENT,
+                SftpNode.Type.DATA_SET
+        )) {
+            SftpNodeChain goodAfsEntity = new SftpNodeChain(
+                    List.of(
+                            SftpNode.builder()
+                                    .type(admittedTypeForAfsEntity)
+                                    .identifier(Optional.of("id-fake"))
+                                    .build(),
+                            SftpNode.builder()
+                                    .type(SftpNode.Type.SUBLEVEL)
+                                    .identifier(Optional.of(StandardPathTranslator.FILE_TYPE_LABEL))
+                                    .build(),
+                            SftpNode.builder().type(SftpNode.Type.AFS_FILE)
+                                    .afsFilePath(List.of("dir1", "dir2", "file"))
+                                    .build()
+                    )
+            );
+
+            assertEquals(
+                    "/dir1/dir2/file",
+                    standardPathLister.validateAndGetAfsFilePathFromAfsFileChain(goodAfsEntity)
+            );
+        }
+
+        for (SftpNode.Type notAdmittedTypeForAfsEntity : List.of(
+                SftpNode.Type.ROOT,
+                SftpNode.Type.SPACE,
+                SftpNode.Type.PROJECT,
+                SftpNode.Type.AFS_FILE,
+                SftpNode.Type.SUBLEVEL
+        )) {
+            SftpNodeChain noAfsEntity = new SftpNodeChain(
+                    List.of(
+                            SftpNode.builder()
+                                    .type(notAdmittedTypeForAfsEntity)
+                                    .identifier(Optional.of("id-fake"))
+                                    .build(),
+                            SftpNode.builder()
+                                    .type(SftpNode.Type.SUBLEVEL)
+                                    .identifier(Optional.of(StandardPathTranslator.FILE_TYPE_LABEL))
+                                    .build()
+                    )
+            );
+
+            Exception noAfsEntityException = null;
+            try {
+                standardPathLister.validateAndGetAfsFilePathFromAfsFileChain(noAfsEntity);
+            } catch (Exception e) {
+                noAfsEntityException = e;
+            }
+            assertEquals(IllegalArgumentException.class, noAfsEntityException.getClass());
+        }
+
+        for (SftpNode.Type admittedTypeForAfsEntity : List.of(
+                SftpNode.Type.SAMPLE,
+                SftpNode.Type.FOLDER,
+                SftpNode.Type.EXPERIMENT,
+                SftpNode.Type.DATA_SET
+        )) {
+            SftpNodeChain goodAfsEntity = new SftpNodeChain(
+                    List.of(
+                            SftpNode.builder()
+                                    .type(admittedTypeForAfsEntity)
+                                    .identifier(Optional.of("id-fake"))
+                                    .build(),
+                            SftpNode.builder()
+                                    .type(SftpNode.Type.SUBLEVEL)
+                                    .identifier(Optional.of(StandardPathTranslator.FILE_TYPE_LABEL))
+                                    .build()
+                    )
+            );
+
+            assertEquals(
+                    "/",
+                    standardPathLister.validateAndGetAfsFilePathFromAfsFileChain(goodAfsEntity)
+            );
+        }
+    }
+
+    public void testPointsToAfsFile() {
+        SftpListUtil listUtil = Mockito.mock(SftpListUtil.class);
+        StandardPathLister standardPathLister = Mockito.spy(new StandardPathLister(listUtil));
+
+        assertFalse(standardPathLister.pointsToAfsFile(new SftpNodeChain(
+                Collections.emptyList()
+        )));
+        assertFalse(standardPathLister.pointsToAfsFile(new SftpNodeChain(
+                List.of(
+                        TestHelper.createRandomNode()
+                )
+        )));
+        assertTrue(standardPathLister.pointsToAfsFile(new SftpNodeChain(
+                List.of(
+                        TestHelper.createRandomNode(),
+                        TestHelper.createRandomNodeOfType(SftpNode.Type.AFS_FILE)
+                )
+        )));
+        assertTrue(standardPathLister.pointsToAfsFile(new SftpNodeChain(
+                List.of(
+                        TestHelper.createRandomNode(),
+                        TestHelper.createRandomNodeOfType(SftpNode.Type.SUBLEVEL)
+                                .toBuilder()
+                                .identifier(Optional.of(StandardPathTranslator.FILE_TYPE_LABEL))
+                                .build()
+                )
+        )));
+        assertFalse(standardPathLister.pointsToAfsFile(new SftpNodeChain(
+                List.of(
+                        TestHelper.createRandomNode(),
+                        TestHelper.createRandomNodeOfType(SftpNode.Type.SUBLEVEL)
+                                .toBuilder()
+                                .identifier(Optional.of("other"))
+                                .build()
+                )
+        )));
+        for (SftpNode.Type otherType : List.of(
+                SftpNode.Type.ROOT,
+                SftpNode.Type.PROJECT,
+                SftpNode.Type.EXPERIMENT,
+                SftpNode.Type.SAMPLE,
+                SftpNode.Type.FOLDER,
+                SftpNode.Type.DATA_SET
+            )
+        ) {
+            assertFalse(standardPathLister.pointsToAfsFile(new SftpNodeChain(
+                    List.of(
+                            TestHelper.createRandomNode(),
+                            TestHelper.createRandomNodeOfType(otherType)
+                    )
+            )));
         }
     }
 }

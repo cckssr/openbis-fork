@@ -38,7 +38,8 @@ public class SftpFileUtil {
             @NonNull String entityId,
             @NonNull String afsPath,
             @NonNull User user,
-            @NonNull Set<? extends OpenOption> options
+            @NonNull Set<? extends OpenOption> options,
+            boolean isAfsEntityMutable
     ) throws IOException {
         File afsFile = Optional.of(entityId)
                 .flatMap( entId -> sftpListUtil.getAfsFilePresence(entId, afsPath))
@@ -48,11 +49,15 @@ public class SftpFileUtil {
 
         //Create if AFS-file does not exist and CREATE or CREATE_NEW open-options are present
         boolean justCreated = false;
-        if (afsFile == null &&
+        if (afsFile == null && isAfsEntityMutable &&
                 (options.contains(StandardOpenOption.CREATE) ||
                         options.contains(StandardOpenOption.CREATE_NEW)
                 )
         ) {
+            sftpListUtil.tryToCreateAfsFileRootIfNecessary(
+                    entityId
+            );
+
             try {
                 afsClient.create(entityId, afsPath, false);
             } catch (Exception e) {
@@ -96,7 +101,7 @@ public class SftpFileUtil {
                     user,
                     initialPosition,
                     readOpenOption,
-                    writeOpenOption
+                    writeOpenOption && isAfsEntityMutable
             );
         } else {
             throw new UnsupportedOperationException("AFS-file does not exist or is not a regular file");
