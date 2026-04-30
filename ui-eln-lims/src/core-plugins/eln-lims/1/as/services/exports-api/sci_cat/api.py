@@ -69,10 +69,12 @@ def exportSciCat(context, params):
         sessionToken = context.getSessionToken()
         date = datetime.date.today().strftime('%Y-%m-%dT %H:%M:%S')
         print(date, "SciCat export thread started by", sessionToken)
+        OPERATION_LOG.info("SciCat export thread started by: " + sessionToken)
 
         exportSciCat_withEmail(context, params)
 
         print("SciCat export thread done. Starting time: "+ date+" token: "+sessionToken)
+        OPERATION_LOG.info("SciCat export thread done. Starting time: "+ date+" token: "+sessionToken)
 
     t = threading.Thread(target=worker)
     t.start()
@@ -126,14 +128,18 @@ def exportSciCat_withEmail(context, params):
 
     publicationProps = params.get('exportData')["publicationProps"]
     print("Received publication properties:", publicationProps)
+    OPERATION_LOG.info("Received publication properties:" + str(publicationProps))
     publicationResult = createNewPublication(sessionToken, v3, publicationProps)
     print("PUBLICATION_RESULT", publicationResult)
+    OPERATION_LOG.info("PUBLICATION_RESULT" + str(publicationResult))
     if publicationResult["error"] is not None:
         sendMailFailure(mailClient, userEmail, "SciCat export failed during creation of publication with exception:\n" + publicationResult["error"])
         return
 
     print("PUBLICATION_RESULT", publicationResult)
+
     publicationPermId = publicationResult["result"]
+    OPERATION_LOG.info("PUBLICATION_PERMID: " + publicationPermId)
 
     exportData = params.get("exportData")
     nodeExportList = exportData['nodeExportList']
@@ -141,6 +147,7 @@ def exportSciCat_withEmail(context, params):
     print("nodeExportList", nodeExportList)
 
     roCrateExport = exportRoCrate(context, params, False)
+    OPERATION_LOG.info("RO_CRATE_RESULT: " + str(roCrateExport))
 
     if roCrateExport["error"] is not None:
         sendMailFailure(mailClient, userEmail, "SciCat export failed during RO-Crate step with exception:\n" + roCrateExport["error"])
@@ -148,14 +155,17 @@ def exportSciCat_withEmail(context, params):
 
     jobId = roCrateExport["result"]["jobId"]
     download_result = getRoCrateExportToWorkspace(context, Map.of("jobId", jobId))
+    OPERATION_LOG.info("RO_CRATE_DOWNLOAD: " + str(download_result))
 
     if download_result["error"] is not None:
         sendMailFailure(mailClient, userEmail, "SciCat export failed while getting RO-Crate export with exception:\n" + download_result["error"])
         return
 
+    OPERATION_LOG.info("Sending Ro-Crate to SciCat.")
     sciCatOutput = sendToSciCat(context, Map.of("accessToken", params.get("accessToken")))
 
     print("SCI_CAT_OUTPUT", sciCatOutput)
+    OPERATION_LOG.info("SCI-CAT Output: " + str(sciCatOutput))
 
 
     if "error" in sciCatOutput:
@@ -206,10 +216,10 @@ def getRoCrateExportToWorkspace(context, params):
 
         result = checkStatues(context, params, jobId)
         print(result)
+        OPERATION_LOG.info("RO_CRATE_SATUS:" + str(result))
         if result["error"] is not None:
             return resultDict(None, result["error"])
         if result["result"]["status"] and result["result"]["status"] == "COMPLETED":
-            OPERATION_LOG.info(result)
             flag = True
         elif result["result"]["status"] and result["result"]["status"] == "FAILED":
             OPERATION_LOG.error(result)
@@ -218,11 +228,12 @@ def getRoCrateExportToWorkspace(context, params):
 
         time.sleep(sleep)
 
-
+    OPERATION_LOG.info("Starting crate download")
     download_result = downloadRoCrate(context, params)
 
     if download_result["error"] is not None:
         return resultDict(None, download_result["error"])
+    OPERATION_LOG.info("Ro-Crate downloaded")
 
     sessionWorkspaceProvider = CommonServiceProvider.getSessionWorkspaceProvider()
     sessionToken = context.getSessionToken()
@@ -232,6 +243,7 @@ def getRoCrateExportToWorkspace(context, params):
     file_path = Path.of(session_workspace.toPath().toString(), RO_CRATE_EXPORT_ZIP_NAME)
 
     if file_path.toFile().exists() == False:
+        OPERATION_LOG.error("Could not find file: " + path)
         return resultDict(None, "Could not find file: " + path)
 
     return resultDict("COMPLETED")
