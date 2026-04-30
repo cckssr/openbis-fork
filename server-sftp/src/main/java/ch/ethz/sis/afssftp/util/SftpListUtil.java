@@ -324,19 +324,19 @@ public class SftpListUtil {
     public static @NonNull String getDisplayName(@NonNull Experiment experiment) {
         String name = experiment.getStringProperty("NAME");
         String permId = experiment.getPermId().getPermId();
-        return ((name != null) ? name : "") + "(" + permId + ")";
+        return ((name != null) ? (name + " ") : "") + "(" + permId + ")";
     }
 
     public static @NonNull String getDisplayName(@NonNull Sample sample) {
         String name = sample.getStringProperty("NAME");
         String permId = sample.getPermId().getPermId();
-        return ((name != null) ? name : "") + "(" + permId + ")";
+        return ((name != null) ? (name + " ") : "") + "(" + permId + ")";
     }
 
     public static @NonNull String getDisplayName(@NonNull DataSet dataSet) {
         String name = dataSet.getStringProperty("NAME");
         String permId = dataSet.getPermId().getPermId();
-        return ((name != null) ? name : "") + "(" + permId + ")";
+        return ((name != null) ? (name + " ") : "") + "(" + permId + ")";
     }
 
     public static @NonNull String getSpaceCodeFromDisplayName(@NonNull String displayName) {
