@@ -18,6 +18,7 @@ import ch.ethz.sis.rocrateserver.openapi.v1.service.response.ImportResponse;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.response.Validation.ValidationReport;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.response.result.AsyncResult;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.response.result.StatusResponse;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.logging.Log;
@@ -26,7 +27,6 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import lombok.SneakyThrows;
-import org.jboss.logging.Logger;
 import org.jboss.resteasy.specimpl.ResponseBuilderImpl;
 
 import java.io.IOException;
@@ -62,6 +62,7 @@ public class RoCrateService
     @Path("test-echo")
     public String testEcho(@QueryParam(value = "message") String message)
     {
+        LOG.info(String.format("Received echo message '%s'", message));
         return message;
     }
 

@@ -48,7 +48,7 @@ import org.eclipse.jetty.client.Request;
 import org.eclipse.jetty.client.transport.HttpClientTransportOverHTTP;
 import org.eclipse.jetty.io.ClientConnector;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
-import org.jboss.logging.Logger;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 
 import java.io.File;
 import java.io.FileInputStream;

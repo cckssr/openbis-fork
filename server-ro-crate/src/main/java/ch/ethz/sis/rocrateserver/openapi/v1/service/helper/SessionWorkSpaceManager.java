@@ -2,7 +2,7 @@ package ch.ethz.sis.rocrateserver.openapi.v1.service.helper;
 
 import ch.ethz.sis.rocrateserver.startup.RoCrateServerParameter;
 import ch.ethz.sis.rocrateserver.startup.StartupMain;
-import org.jboss.logging.Logger;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
