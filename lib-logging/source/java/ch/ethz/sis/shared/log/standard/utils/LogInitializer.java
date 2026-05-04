@@ -70,6 +70,13 @@ public class LogInitializer
     private static boolean reInitCalled = false;
     private static String propertyPrefix = "";
 
+    // Keeps strong references to loggers so they are not garbage collected
+    // (JUL's LogManager holds named loggers with WeakReferences, so without a strong
+    // reference the logger can be collected before configureSpecificLoggerLevels runs,
+    // causing a fresh handler-less logger to be returned by Logger.getLogger()).
+    //https://stackoverflow.com/questions/11948612/changes-to-logger-could-be-lost
+    private static final List<Logger> configuredNamedLoggers = new ArrayList<>();
+
     private static URL createURL(final String configurationOrNull)
     {
         LoggerDiagnostics.info("createURL(config=" + configurationOrNull + ")");
@@ -298,6 +305,7 @@ public class LogInitializer
                 {
                     LoggerDiagnostics.error(logFile.getAbsolutePath() + " : " + loggerName);
                     logger = Logger.getLogger(loggerName);
+                    configuredNamedLoggers.add(logger);
                 } catch (Throwable e)
                 {
                     System.out.println(logFile.getAbsolutePath() + e);
@@ -348,6 +356,7 @@ public class LogInitializer
             LoggerDiagnostics.info("Removing handler: " + h);
             root.removeHandler(h);
         }
+        configuredNamedLoggers.clear();
 
         LoggerDiagnostics.info("also reset : LogManager.getLogManager().reset()");
         //LogManager.getLogManager().reset();
