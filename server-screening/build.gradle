@@ -12,12 +12,26 @@ apply from: '../build/javaproject.gradle'
 
 configurations.create('devRuntime')
 
+def dependencyCoordinates = { dependency ->
+    def module = dependency.get().module
+    def version = dependency.get().versionConstraint.requiredVersion
+    "${module.group}:${module.name}:${version}"
+}
+
+configurations.all {
+    resolutionStrategy.force(
+            dependencyCoordinates(libs.org.hamcrest.hamcrest.core),
+            dependencyCoordinates(libs.org.hamcrest.hamcrest.library),
+            dependencyCoordinates(libs.org.hamcrest.hamcrest.integration)
+    )
+}
+
 dependencies {
     api project(':lib-common'),
             project(':server-original-data-store'),
             project(':lib-pathinfo'),
-            'openhms:jackcess:1.2.2',
-            'imagej:ij:1.43u'
+            libs.com.healthmarketscience.jackcess.jackcess,
+            libs.imagej.ij
             //'bioformats:bioformats:6.5.2'
 //      api ('ome:formats-gpl:6.5.1') {
 //            exclude group: 'ch.qos.logback', module: 'logback‑classic'
@@ -36,11 +50,15 @@ dependencies {
             project(path: ':lib-openbis-common', configuration: 'tests'),
             project(path: ':lib-data-store-commonbase', configuration: 'tests'),
             project(path: ':server-original-data-store', configuration: 'tests'),
-            'fjelmer:classycle:1.4.2',
-            'testng:testng:6.8-CISD',
-            'junit:junit:4.13.2',
-            'org.springframework:spring-test:6.2.15',
-            'bioformats:bioformats:6.5.2'
+            libs.fjelmer.classycle,
+            libs.org.testng.testng,
+            libs.org.junit.junit,
+            libs.org.jmock.jmock,
+            libs.org.springframework.spring.test,
+            libs.org.hamcrest.hamcrest.core,
+            libs.org.hamcrest.hamcrest.library,
+            libs.org.hamcrest.hamcrest.integration,
+            libs.bioformats.bioformats
     testImplementation(project(path: ':server-application-server', configuration: 'tests'))
 }
 

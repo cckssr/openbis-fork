@@ -4,9 +4,9 @@ buildscript {
     repositories repositoryConfig
 
     dependencies {
-        classpath 'apache:commons-codec:1.10',
-                'org.apache.commons:commons-compress:1.8',
-                'paleozogt:symzip-plugin:0.10.1'
+        classpath libs.commons.codec.commons.codec,
+                libs.org.apache.commons.commons.compress,
+                libs.org.paleozogt.symzip.plugin
     }
 }
 
@@ -46,40 +46,52 @@ archivesBaseName = 'openBIS-server-standard-technologies'
 configurations.create('zipping')
 // TODO: find how configuration can be renamed into 'server-original-data-store'
 configurations.create('server_original_data_store')
-configurations.create('javadoc_sources')
+configurations.create('javadoc_sources') {
+    // Only unpack the explicitly listed source jars; transitive external sources break Javadoc.
+    transitive = false
+}
 configurations.create('javadoc_compilation')
 configurations.create('blast_tar')
 configurations.create('microscopeLibs')
 
-def jettyVersion = '12.1.1'
-def jettyDistributionVersion = '12.1.1'
+def jettyDistributionVersion = libs.org.eclipse.jetty.jetty.distribution.get().versionConstraint.requiredVersion
 
 dependencies {
     api project(':server-screening')
 
-    providedRuntime "org.eclipse.jetty:jetty-deploy:${jettyVersion}@jar",
-            "org.eclipse.jetty:jetty-xml:${jettyVersion}@jar",
-            "org.eclipse.jetty:jetty-security:${jettyVersion}@jar",
-            "org.eclipse.jetty:jetty-server:${jettyVersion}@jar",
-            "org.eclipse.jetty.ee10:jetty-ee10-annotations:${jettyVersion}@jar",
-            "org.eclipse.jetty.ee10:jetty-ee10-jndi:${jettyVersion}@jar",
-            "org.eclipse.jetty.ee10:jetty-ee10-plus:${jettyVersion}@jar",
-            "org.eclipse.jetty.ee10:jetty-ee10-servlet:${jettyVersion}@jar",
-            "org.eclipse.jetty.ee10:jetty-ee10-webapp:${jettyVersion}@jar",
-            "org.eclipse.jetty.ee:jetty-ee-webapp:${jettyVersion}@jar"
+    // @jar equivalent: transitive = false keeps Jetty's own transitive deps (e.g. slf4j-api-2.0.17)
+    // out of the providedRuntime resolved set, so the WAR plugin does not subtract them from WEB-INF/lib.
+    providedRuntime(libs.org.eclipse.jetty.jetty.deploy) { transitive = false }
+    providedRuntime(libs.org.eclipse.jetty.jetty.xml) { transitive = false }
+    providedRuntime(libs.org.eclipse.jetty.jetty.security) { transitive = false }
+    providedRuntime(libs.org.eclipse.jetty.jetty.server) { transitive = false }
+    providedRuntime(libs.org.eclipse.jetty.ee10.jetty.ee10.annotations) { transitive = false }
+    providedRuntime(libs.org.eclipse.jetty.ee10.jetty.ee10.jndi) { transitive = false }
+    providedRuntime(libs.org.eclipse.jetty.ee10.jetty.ee10.plus) { transitive = false }
+    providedRuntime(libs.org.eclipse.jetty.ee10.jetty.ee10.servlet) { transitive = false }
+    providedRuntime(libs.org.eclipse.jetty.ee10.jetty.ee10.webapp) { transitive = false }
+    providedRuntime(libs.org.eclipse.jetty.ee.jetty.ee.webapp) { transitive = false }
 
-    zipping "eclipse:jetty-distribution:${jettyVersion}@zip"
+    zipping(libs.org.eclipse.jetty.jetty.distribution) {
+        artifact {
+            type = 'zip'
+        }
+    }
 
-    blast_tar "blast:blast:2.2.30@tar.gz"
+    blast_tar(libs.blast.blast) {
+        artifact {
+            type = 'tar.gz'
+        }
+    }
 
     server_original_data_store project(':server-screening'),
             //'bioformats:bioformats:6.5.1',
-            'imagej:ij:1.43u',
-            'cisd:cisd-openbis-knime-server:13.6.0.r29301',
-            'apache:xml-apis:1.3.03',
-            'slf4j:slf4j-api:1.7.24',
-            'slf4j:slf4j-jdk14:1.7.24',
-            'sybit:image-viewer:0.3.6'
+            libs.imagej.ij,
+            libs.cisd.cisd.openbis.knime.server,
+            libs.xml.apis.xml.apis,
+            libs.org.slf4j.slf4j.api,
+            libs.org.slf4j.slf4j.jdk14,
+            libs.sybit.image.viewer
 
     javadoc_sources project(path: ':lib-commonbase', configuration: 'archives'),
             project(path: ':lib-common', configuration: 'archives'),
@@ -88,9 +100,9 @@ dependencies {
             project(path: ':server-application-server', configuration: 'archives'),
             project(path: ':server-original-data-store', configuration: 'archives'),
             project(path: ':server-screening', configuration: 'archives'),
-            'sis:sis-base:23.06.0:sources',
-            'cisd:cisd-args4j:9.11.2:sources',
-            'cisd:cisd-hotdeploy:13.01.0:sources'
+            "sis:sis-base:${libs.sis.sis.base.get().versionConstraint.requiredVersion}:sources",
+            "cisd:cisd-args4j:${libs.cisd.cisd.args4j.get().versionConstraint.requiredVersion}:sources",
+            "cisd:cisd-hotdeploy:${libs.cisd.cisd.hotdeploy.get().versionConstraint.requiredVersion}:sources"
 
     javadoc_compilation project(path: ':server-screening')
 
@@ -101,10 +113,10 @@ dependencies {
             project(path: ':api-openbis-java', configuration: 'tests'),
             project(path: ':lib-openbis-common', configuration: 'tests'),
             project(path: ':server-original-data-store', configuration: 'tests'),
-            'fjelmer:classycle:1.4.2',
-            'testng:testng:6.8-CISD',
-            'junit:junit:4.13.2',
-            'org.springframework:spring-test:6.1.10'
+            libs.fjelmer.classycle,
+            libs.org.testng.testng,
+            libs.org.junit.junit,
+            libs.org.springframework.spring.test.v6110
     testImplementation(project(path: ':server-application-server', configuration: 'tests'))
 }
 
@@ -198,7 +210,9 @@ war.dependsOn copyJarsForWebStart
 war.dependsOn signWebStartJars
 war {
     rootSpec.eachFile { file ->
-        if (file.name.startsWith('cisd-cifex')
+        if (file.name.endsWith('-sources.jar')
+                || file.name.endsWith('-javadoc.jar')
+                || file.name.startsWith('cisd-cifex')
                 || file.name.startsWith('server-original-data-store')
                 || file.name.startsWith('bioformats')
                 || file.name.startsWith('cisd-image-readers')
@@ -356,6 +370,8 @@ task zipDss(type: Zip, dependsOn: [copyJarsForWebStart,signWebStartJars]) {
     from(configurations.server_original_data_store) {
         into 'datastore_server/lib'
         exclude '**/antlr*.jar'
+        exclude '**/*-sources.jar'
+        exclude '**/*-javadoc.jar'
         exclude '**/fastutil*.jar'
         exclude '**/gwt*.jar'
         exclude '**/gxt*.jar'
@@ -460,7 +476,9 @@ task generateJavadoc(type: Javadoc) {
     }
     classpath = configurations.javadoc_compilation
     maxMemory = "1024m"
-    options.addStringOption("source", "11")
+    options.addStringOption("source", "17")
+    // Prevent the Javadoc tool from discovering source jars from the classpath.
+    options.addStringOption("sourcepath", "")
 }
 
 build.dependsOn zip

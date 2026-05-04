@@ -11,21 +11,21 @@ java {
 
 repositories {
     ivy {
-        ivyPattern "https://sissource.ethz.ch/openbis/openbis-public/openbis-ivy/-/raw/main/[organisation]/[module]/[revision]/ivy.xml"
-        artifactPattern "https://sissource.ethz.ch/openbis/openbis-public/openbis-ivy/-/raw/main/[organisation]/[module]/[revision]/[artifact]-[revision](-[classifier]).[ext]"
+        ivyPattern "https://sissource.ethz.ch/openbis/openbis-public/openbis-ivy/-/raw/BIS-2532-ivy-repository-refactoring-for-open-bis-7/[organisation]/[module]/[revision]/ivy.xml"
+        artifactPattern "https://sissource.ethz.ch/openbis/openbis-public/openbis-ivy/-/raw/BIS-2532-ivy-repository-refactoring-for-open-bis-7/[organisation]/[module]/[revision]/[artifact]-[revision](-[classifier]).[ext]"
     }
     //mavenCentral()
 }
 
 dependencies {
 
-    compileOnly 'lombok:lombok:1.18.38'
-    annotationProcessor 'lombok:lombok:1.18.38'
+    compileOnly libs.org.projectlombok.lombok
+    annotationProcessor libs.org.projectlombok.lombok
     implementation project(':lib-logging'),
             project(':lib-json'),
             project(':api-openbis-java'),
-            'slf4j:slf4j-api:1.7.24',
-            'slf4j:slf4j-jdk14:1.7.24'
+            libs.org.slf4j.slf4j.api,
+            libs.org.slf4j.slf4j.jdk14
 
 
 }

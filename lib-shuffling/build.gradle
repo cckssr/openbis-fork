@@ -7,6 +7,6 @@ dependencies {
             project(':lib-openbis-commonbase'),
             project(':lib-hierarchical-content'),
             project(':lib-maintenance'),
-            'commons-io:commons-io:2.19.0'
+            libs.commons.io.commons.io
     testImplementation project(path: ':lib-data-store-commonbase', configuration: 'tests')
 }

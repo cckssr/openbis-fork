@@ -1,3 +1,5 @@
+apply from: '../../../../../../../../../../build/version-catalog-settings.gradle'
+
 def includes = ['lib-common', 'lib-logging', 'lib-commonbase', 'lib-json', 'api-data-store-server-java',
  'lib-two-phase-transaction', 'api-openbis-java', 'api-openbis-javascript', 'lib-openbis-commonbase',
  'lib-data-store-commonbase', 'lib-hdf5', 'lib-compress', 'lib-mail', 'lib-maintenance', 'lib-hierarchical-content', 'lib-openbis-common',

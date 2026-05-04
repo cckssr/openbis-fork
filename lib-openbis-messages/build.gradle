@@ -1,13 +1,13 @@
 apply from: '../build/javalibrary.gradle'
 
 dependencies {
-    annotationProcessor 'lombok:lombok:1.18.38'
+    annotationProcessor libs.org.projectlombok.lombok
     
     implementation project(':lib-json'),
             project(':lib-messages-db'),
-            'lombok:lombok:1.18.38'
-    testImplementation 'junit:junit:4.10',
-            'hamcrest:hamcrest-core:1.3',
-            'hamcrest:hamcrest-library:1.3'
+            libs.org.projectlombok.lombok
+    testImplementation libs.org.junit.junit,
+            libs.org.hamcrest.hamcrest.core,
+            libs.org.hamcrest.hamcrest.library
 
 }

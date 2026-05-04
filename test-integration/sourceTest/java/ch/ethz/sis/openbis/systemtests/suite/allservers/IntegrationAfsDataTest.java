@@ -744,7 +744,7 @@ public class IntegrationAfsDataTest
         DataSetFileDownloadReader reader = new DataSetFileDownloadReader(stream);
         DataSetFileDownload file;
 
-        Map<String, String> downloadedFiles = new HashedMap<>();
+        Map<String, String> downloadedFiles = new HashedMap();
 
         while ((file = reader.read()) != null)
         {

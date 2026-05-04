@@ -1,5 +1,5 @@
 plugins {
-    id "com.github.node-gradle.node" version "7.1.0"
+    alias(libs.plugins.com.github.node.gradle.node)
 }
 
 configure(allprojects) {
@@ -12,7 +12,7 @@ configure(allprojects) {
 
 node {
     download = true
-    version = '20.18.0'
+    version = libs.versions.node.runtime.get()
     workDir = file("${projectDir}/node/nodejs")
     //nodeModulesDir = file("${projectDir}")
 }

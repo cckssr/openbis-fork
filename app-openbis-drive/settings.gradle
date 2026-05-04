@@ -1,1 +1,3 @@
+apply from: '../build/version-catalog-settings.gradle'
+
 includeFlat 'lib-json', 'api-data-store-server-java', 'lib-commonbase', 'lib-two-phase-transaction', 'lib-logging', 'api-openbis-java', 'lib-common'

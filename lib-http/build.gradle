@@ -10,8 +10,8 @@ targetCompatibility = JavaVersion.VERSION_21
 
 repositories {
     ivy {
-        ivyPattern "https://sissource.ethz.ch/openbis/openbis-public/openbis-ivy/-/raw/main/[organisation]/[module]/[revision]/ivy.xml"
-        artifactPattern "https://sissource.ethz.ch/openbis/openbis-public/openbis-ivy/-/raw/main/[organisation]/[module]/[revision]/[artifact]-[revision](-[classifier]).[ext]"
+        ivyPattern "https://sissource.ethz.ch/openbis/openbis-public/openbis-ivy/-/raw/BIS-2532-ivy-repository-refactoring-for-open-bis-7/[organisation]/[module]/[revision]/ivy.xml"
+        artifactPattern "https://sissource.ethz.ch/openbis/openbis-public/openbis-ivy/-/raw/BIS-2532-ivy-repository-refactoring-for-open-bis-7/[organisation]/[module]/[revision]/[artifact]-[revision](-[classifier]).[ext]"
     }
     //mavenCentral()
 }
@@ -22,14 +22,14 @@ configurations {
 }
 
 dependencies {
-    annotationProcessor 'lombok:lombok:1.18.38'
+    annotationProcessor libs.org.projectlombok.lombok
     project(':lib-logging')
     implementation project(':lib-logging'),
-            'lombok:lombok:1.18.38',
-            'io.netty:netty-all:4.1.68.Final'
-    testImplementation 'junit:junit:4.10',
-            'hamcrest:hamcrest-core:1.3',
-            'hamcrest:hamcrest-library:1.3'
+            libs.org.projectlombok.lombok,
+            libs.io.netty.netty.all.v4168final
+    testImplementation libs.org.junit.junit,
+            libs.org.hamcrest.hamcrest.core,
+            libs.org.hamcrest.hamcrest.library
 }
 
 

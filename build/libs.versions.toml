@@ -1,0 +1,372 @@
+# This file defines versions, libraries, and plugins for Gradle builds.
+# Keep all entries sorted by name.
+
+# Use kebab-case for names (example: commons-io).
+# In Gradle, you can use it like: libs.commons.io
+
+[versions]
+# Node.js runtime version only — no library or plugin entry needed, consumed directly via libs.versions.node.runtime.get()
+#jython27 is defined in the module
+
+# Tools or dependencies, even if they act like plugins in old scripts,
+# should go under libraries.
+aopalliance-aopalliance = "1.0"
+bioformats-bioformats = "6.5.2"
+blast-blast = "2.2.30"
+cglib-cglib-nodep = "2.2"
+cisd-cisd-ant-tasks = "r29834"
+cisd-cisd-args4j = "9.11.2"
+cisd-cisd-cifex = "r1550129411"
+cisd-cisd-hotdeploy = "13.01.0"
+cisd-cisd-image-readers = "r1553067167"
+cisd-cisd-openbis-knime-server = "13.6.0.r29301"
+com-fasterxml-classmate = "1.3.0"
+com-fasterxml-jackson = "2.18.3"
+com-github-freva-ascii-table = "1.2.0"
+com-github-node-gradle-node = "7.1.0"
+com-google-guava-guava = "31.1-jre"
+com-google-protobuf = "0.9.5"
+com-google-protobuf-protobuf-java = "4.31.1"
+com-google-protobuf-protoc = "3.25.5"
+com-h2database-h2 = "1.1.115"
+com-healthmarketscience-jackcess-jackcess = "1.2.2"
+com-networknt-json-schema-validator = "1.5.7"
+com-openhtmltopdf-openhtmltopdf-core = "1.0.10"
+com-openhtmltopdf-openhtmltopdf-pdfbox = "1.0.10"
+com-sun-istack-istack-commons-runtime = "3.0.5"
+com-sun-mail-javax-mail = "1.6.2"
+com-twmacinta-fast-md5 = "2.6.1"
+commons-cli-commons-cli = "1.10.0"
+commons-cli-commons-cli-v14 = "1.4"
+commons-codec-commons-codec = "1.10"
+commons-io-commons-io = "2.19.0"
+commons-io-commons-io-v26 = "2.6"
+commons-lang-commons-lang = "2.4"
+commons-logging-commons-logging = "1.2"
+cz-habarta-typescript-generator-typescript-generator-core = "3.2.1263"
+cz-habarta-typescript-generator-typescript-generator-gradle-plugin = "3.2.1263"
+de-rototor-pdfbox-graphics2d = "0.36"
+de-schlichtherle-truezip = "6.8.1"
+deltavisio-http-invoker-reloaded = "25.03.8-ac6cb8a"
+dom4j-dom4j = "1.6.1"
+edu-kit-datamanager-ro-crate-java = "2.0.1"
+fjelmer-classycle = "1.4.2"
+googlecode-jsonrpc4j = "1.8-CISD"
+hjg-pngj = "0.62"
+imagej-ij = "1.43u"
+io-grpc = "1.74.0"
+io-netty-netty-all = "4.1.110.Final"
+io-netty-netty-all-v4168final = "4.1.68.Final"
+io-quarkus = "3.23.0"
+io-rest-assured-rest-assured = "5.5.5"
+io-smallrye-jandex = "3.2.7"
+it-unimi-dsi-fastutil = "5.1.5"
+izpack-izpack = "5.0-beta9-SNAPSHOT-2022-03-22"
+jakarta-activation-jakarta-activation-api = "2.1.2"
+jakarta-annotation-jakarta-annotation-api = "2.1.1"
+jakarta-servlet-jakarta-servlet-api = "6.1.0"
+jakarta-servlet-jakarta-servlet-api-v60 = "6.0.0"
+jakarta-transaction-jakarta-transaction-api = "2.0.1"
+jakarta-validation-jakarta-validation-api = "3.0.2"
+jakarta-xml-bind-jakarta-xml-bind-api = "4.0.2"
+javax-activation-activation = "1.1.1"
+javax-activation-javax-activation-api = "1.2.0"
+javax-cache-cache-api = "1.1.1"
+javax-servlet-javax-servlet-api = "3.1.0"
+jfree-jfreechart = "1.0.13"
+jline-jline = "0.9.94"
+lemnik-eodsql = "2.2-CISD"
+marathon-marathon-spring-util = "1.2.5-jakarta"
+net-lingala-zip4j-zip4j = "2.11.5"
+net-sourceforge-javacsv-javacsv = "2.0"
+node-runtime = "20.18.0"
+openbis-openbis-v3-api-batteries-included = "20.10.0"
+oracle-appbundler = "1.0-CISD"
+org-apache-bcel-bcel = "6.0"
+org-apache-bcel-bcel-v52 = "5.2"
+org-apache-commons-commons-collections4 = "4.1"
+org-apache-commons-commons-compress = "1.8"
+org-apache-commons-commons-csv = "1.2"
+org-apache-commons-commons-dbcp2 = "2.13.0"
+org-apache-commons-commons-fileupload2-jakarta-servlet5 = "2.0.0-M4"
+org-apache-commons-commons-lang3 = "3.14.0"
+org-apache-commons-commons-lang3-v37 = "3.7"
+org-apache-commons-commons-pool2 = "2.12.1"
+org-apache-commons-commons-text = "1.11.0"
+org-apache-ftpserver-ftpserver-core = "1.2.1"
+org-apache-ftpserver-ftpserver-core-v106 = "1.0.6"
+org-apache-geronimo-specs-geronimo-stax-api10-spec = "1.0"
+org-apache-httpcomponents-httpclient = "4.5.14"
+org-apache-httpcomponents-httpclient-v436 = "4.3.6"
+org-apache-httpcomponents-httpcore = "4.3.3"
+org-apache-jena = "5.0.0"
+org-apache-pdfbox = "2.0.30"
+org-apache-poi = "3.17"
+org-apache-sshd-sshd = "2.17.1"
+org-apache-sshd-sshd-sftp-v27 = "2.7.0"
+org-apache-tomcat-annotations-api = "6.0.53"
+org-apache-xmlbeans-xmlbeans = "2.6.0"
+org-aspectj = "1.9.22.1"
+org-aspectj-aspectjweaver-v18 = "1.8.12"
+org-bouncycastle-bcpg-jdk15on = "1.59"
+org-controlsfx-controlsfx = "11.2.1"
+org-docx4j-docx4j = "6.1.2"
+org-dspace-xoai-data-provider = "4.2.0"
+org-eclipse-jdt-core-compiler-ecj = "4.6.1"
+org-eclipse-jetty = "12.1.1"
+org-eclipse-jetty-jetty = "9.4.9.v20180320"
+org-ehcache-ehcache = "3.11.1"
+org-glassfish-jakarta-el = "4.0.2"
+org-glassfish-jaxb = "4.0.5"
+org-glassfish-main-javaee-api-javax-jws = "3.1.2.2"
+org-hamcrest-hamcrest = "1.3"
+org-hibernate-orm-hibernate-core = "6.6.40.Final"
+org-hibernate-validator-hibernate-validator = "8.0.1.Final"
+org-javassist-javassist = "3.28.0-GA"
+org-jmock-jmock = "2.5.1"
+org-jsoup-jsoup = "1.14.2"
+org-junit-junit = "4.13.2"
+org-mockito-mockito-core = "4.4.0"
+org-openjfx-javafx = "21.0.6"
+org-openjfx-javafxplugin = "0.0.13"
+org-owasp-dependency-check-gradle = "12.2.0"
+org-paleozogt-symzip-plugin = "0.10.1"
+org-postgresql-postgresql = "42.7.9"
+org-projectlombok-lombok = "1.18.38"
+org-reactivestreams-reactive-streams = "1.0.4"
+org-reflections-reflections = "0.9.10"
+org-seleniumhq-selenium-selenium-java = "3.141.59"
+org-slf4j-slf4j = "1.7.24"
+org-springframework-spring = "6.2.15"
+org-springframework-spring-test-v6110 = "6.1.10"
+org-testng-testng = "6.8-CISD"
+org-xerial-sqlite-jdbc = "3.51.0.0"
+org-xerial-sqlite-jdbc-v35020 = "3.50.2.0"
+python-jython = "2.5.2"
+python-jython27 = "2.7.2"
+rinn-restrictions = "1.0.2"
+sencha-gxt = "2.2.5"
+sis-sis-base = "23.06.0"
+sis-sis-file-transfer = "19.03.1"
+sis-sis-jhdf5 = "19.04.0"
+sybit-image-viewer = "0.3.6"
+xml-apis-xml-apis = "1.3.03"
+[libraries]
+
+
+# Only put plugins here if they are used with:
+# plugins { alias(...) }
+aopalliance-aopalliance = { module = "aopalliance:aopalliance", version.ref = "aopalliance-aopalliance" }
+bioformats-bioformats = { module = "bioformats:bioformats", version.ref = "bioformats-bioformats" }
+blast-blast = { module = "blast:blast", version.ref = "blast-blast" }
+cglib-cglib-nodep = { module = "cglib:cglib-nodep", version.ref = "cglib-cglib-nodep" }
+cisd-cisd-ant-tasks = { module = "cisd:cisd-ant-tasks", version.ref = "cisd-cisd-ant-tasks" } # Buildscript classpath jar, not a plugin DSL id.
+cisd-cisd-args4j = { module = "cisd:cisd-args4j", version.ref = "cisd-cisd-args4j" }
+cisd-cisd-cifex = { module = "cisd:cisd-cifex", version.ref = "cisd-cisd-cifex" }
+cisd-cisd-hotdeploy = { module = "cisd:cisd-hotdeploy", version.ref = "cisd-cisd-hotdeploy" }
+cisd-cisd-image-readers = { module = "cisd:cisd-image-readers", version.ref = "cisd-cisd-image-readers" }
+cisd-cisd-openbis-knime-server = { module = "cisd:cisd-openbis-knime-server", version.ref = "cisd-cisd-openbis-knime-server" }
+com-fasterxml-classmate = { module = "com.fasterxml:classmate", version.ref = "com-fasterxml-classmate" }
+com-fasterxml-jackson-core-jackson-annotations = { module = "com.fasterxml.jackson.core:jackson-annotations", version.ref = "com-fasterxml-jackson" }
+com-fasterxml-jackson-core-jackson-core = { module = "com.fasterxml.jackson.core:jackson-core", version.ref = "com-fasterxml-jackson" }
+com-fasterxml-jackson-core-jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "com-fasterxml-jackson" }
+com-fasterxml-jackson-datatype-jackson-datatype-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "com-fasterxml-jackson" }
+com-github-freva-ascii-table = { module = "com.github.freva:ascii-table", version.ref = "com-github-freva-ascii-table" }
+com-google-guava-guava = { module = "com.google.guava:guava", version.ref = "com-google-guava-guava" }
+com-google-protobuf-protobuf-java = { module = "com.google.protobuf:protobuf-java", version.ref = "com-google-protobuf-protobuf-java" }
+com-google-protobuf-protoc = { module = "com.google.protobuf:protoc", version.ref = "com-google-protobuf-protoc" }
+com-h2database-h2 = { module = "com.h2database:h2", version.ref = "com-h2database-h2" }
+com-healthmarketscience-jackcess-jackcess = { module = "com.healthmarketscience.jackcess:jackcess", version.ref = "com-healthmarketscience-jackcess-jackcess" }
+com-networknt-json-schema-validator = { module = "com.networknt:json-schema-validator", version.ref = "com-networknt-json-schema-validator" }
+com-openhtmltopdf-openhtmltopdf-core = { module = "com.openhtmltopdf:openhtmltopdf-core", version.ref = "com-openhtmltopdf-openhtmltopdf-core" }
+com-openhtmltopdf-openhtmltopdf-pdfbox = { module = "com.openhtmltopdf:openhtmltopdf-pdfbox", version.ref = "com-openhtmltopdf-openhtmltopdf-pdfbox" }
+com-sun-istack-istack-commons-runtime = { module = "com.sun.istack:istack-commons-runtime", version.ref = "com-sun-istack-istack-commons-runtime" }
+com-sun-mail-javax-mail = { module = "com.sun.mail:javax.mail", version.ref = "com-sun-mail-javax-mail" }
+com-twmacinta-fast-md5 = { module = "com.twmacinta:fast-md5", version.ref = "com-twmacinta-fast-md5" }
+commons-cli-commons-cli = { module = "commons-cli:commons-cli", version.ref = "commons-cli-commons-cli" }
+commons-cli-commons-cli-v14 = { module = "commons-cli:commons-cli", version.ref = "commons-cli-commons-cli-v14" }
+commons-codec-commons-codec = { module = "commons-codec:commons-codec", version.ref = "commons-codec-commons-codec" }
+commons-io-commons-io = { module = "commons-io:commons-io", version.ref = "commons-io-commons-io" }
+commons-io-commons-io-v26 = { module = "commons-io:commons-io", version.ref = "commons-io-commons-io-v26" }
+commons-lang-commons-lang = { module = "commons-lang:commons-lang", version.ref = "commons-lang-commons-lang" }
+commons-logging-commons-logging = { module = "commons-logging:commons-logging", version.ref = "commons-logging-commons-logging" }
+cz-habarta-typescript-generator-typescript-generator-core = { module = "cz.habarta.typescript-generator:typescript-generator-core", version.ref = "cz-habarta-typescript-generator-typescript-generator-core" }
+cz-habarta-typescript-generator-typescript-generator-gradle-plugin = { module = "cz.habarta.typescript-generator:typescript-generator-gradle-plugin", version.ref = "cz-habarta-typescript-generator-typescript-generator-gradle-plugin" } # Buildscript classpath jar, not a plugin DSL id.
+de-rototor-pdfbox-graphics2d = { module = "de.rototor.pdfbox:graphics2d", version.ref = "de-rototor-pdfbox-graphics2d" }
+de-schlichtherle-truezip = { module = "de.schlichtherle:truezip", version.ref = "de-schlichtherle-truezip" }
+deltavisio-http-invoker-reloaded = { module = "deltavisio:http-invoker-reloaded", version.ref = "deltavisio-http-invoker-reloaded" }
+dom4j-dom4j = { module = "dom4j:dom4j", version.ref = "dom4j-dom4j" }
+edu-kit-datamanager-ro-crate-java = { module = "edu.kit.datamanager:ro-crate-java", version.ref = "edu-kit-datamanager-ro-crate-java" }
+fjelmer-classycle = { module = "fjelmer:classycle", version.ref = "fjelmer-classycle" }
+googlecode-jsonrpc4j = { module = "googlecode:jsonrpc4j", version.ref = "googlecode-jsonrpc4j" }
+hjg-pngj = { module = "hjg:pngj", version.ref = "hjg-pngj" }
+imagej-ij = { module = "imagej:ij", version.ref = "imagej-ij" }
+io-grpc-grpc-netty-shaded = { module = "io.grpc:grpc-netty-shaded", version.ref = "io-grpc" }
+io-grpc-grpc-protobuf = { module = "io.grpc:grpc-protobuf", version.ref = "io-grpc" }
+io-grpc-grpc-stub = { module = "io.grpc:grpc-stub", version.ref = "io-grpc" }
+io-grpc-protoc-gen-grpc-java = { module = "io.grpc:protoc-gen-grpc-java", version.ref = "io-grpc" }
+io-netty-netty-all = { module = "io.netty:netty-all", version.ref = "io-netty-netty-all" }
+io-netty-netty-all-v4168final = { module = "io.netty:netty-all", version.ref = "io-netty-netty-all-v4168final" }
+io-quarkus-quarkus-bom = { module = "io.quarkus:quarkus-bom", version.ref = "io-quarkus" }
+io-quarkus-quarkus-resteasy = { module = "io.quarkus:quarkus-resteasy", version.ref = "io-quarkus" }
+io-rest-assured-rest-assured = { module = "io.rest-assured:rest-assured", version.ref = "io-rest-assured-rest-assured" }
+io-smallrye-jandex = { module = "io.smallrye:jandex", version.ref = "io-smallrye-jandex" }
+it-unimi-dsi-fastutil = { module = "it.unimi.dsi:fastutil", version.ref = "it-unimi-dsi-fastutil" }
+izpack-izpack = { module = "izpack:izpack", version.ref = "izpack-izpack" }
+jakarta-activation-jakarta-activation-api = { module = "jakarta.activation:jakarta.activation-api", version.ref = "jakarta-activation-jakarta-activation-api" }
+jakarta-annotation-jakarta-annotation-api = { module = "jakarta.annotation:jakarta.annotation-api", version.ref = "jakarta-annotation-jakarta-annotation-api" }
+jakarta-servlet-jakarta-servlet-api = { module = "jakarta.servlet:jakarta.servlet-api", version.ref = "jakarta-servlet-jakarta-servlet-api" }
+jakarta-servlet-jakarta-servlet-api-v60 = { module = "jakarta.servlet:jakarta.servlet-api", version.ref = "jakarta-servlet-jakarta-servlet-api-v60" }
+jakarta-transaction-jakarta-transaction-api = { module = "jakarta.transaction:jakarta.transaction-api", version.ref = "jakarta-transaction-jakarta-transaction-api" }
+jakarta-validation-jakarta-validation-api = { module = "jakarta.validation:jakarta.validation-api", version.ref = "jakarta-validation-jakarta-validation-api" }
+jakarta-xml-bind-jakarta-xml-bind-api = { module = "jakarta.xml.bind:jakarta.xml.bind-api", version.ref = "jakarta-xml-bind-jakarta-xml-bind-api" }
+javax-activation-activation = { module = "javax.activation:activation", version.ref = "javax-activation-activation" }
+javax-activation-javax-activation-api = { module = "javax.activation:javax.activation-api", version.ref = "javax-activation-javax-activation-api" }
+javax-cache-cache-api = { module = "javax.cache:cache-api", version.ref = "javax-cache-cache-api" }
+javax-servlet-javax-servlet-api = { module = "javax.servlet:javax.servlet-api", version.ref = "javax-servlet-javax-servlet-api" }
+jfree-jfreechart = { module = "jfree:jfreechart", version.ref = "jfree-jfreechart" }
+jline-jline = { module = "jline:jline", version.ref = "jline-jline" }
+lemnik-eodsql = { module = "lemnik:eodsql", version.ref = "lemnik-eodsql" }
+marathon-marathon-spring-util = { module = "marathon:marathon-spring-util", version.ref = "marathon-marathon-spring-util" }
+net-lingala-zip4j-zip4j = { module = "net.lingala.zip4j:zip4j", version.ref = "net-lingala-zip4j-zip4j" }
+net-sourceforge-javacsv-javacsv = { module = "net.sourceforge.javacsv:javacsv", version.ref = "net-sourceforge-javacsv-javacsv" }
+openbis-openbis-v3-api-batteries-included = { module = "openbis:openbis-v3-api-batteries-included", version.ref = "openbis-openbis-v3-api-batteries-included" }
+oracle-appbundler = { module = "oracle:appbundler", version.ref = "oracle-appbundler" } # Buildscript classpath jar, not a plugin DSL id.
+org-apache-bcel-bcel = { module = "org.apache.bcel:bcel", version.ref = "org-apache-bcel-bcel" }
+org-apache-bcel-bcel-v52 = { module = "org.apache.bcel:bcel", version.ref = "org-apache-bcel-bcel-v52" }
+org-apache-commons-commons-collections4 = { module = "org.apache.commons:commons-collections4", version.ref = "org-apache-commons-commons-collections4" }
+org-apache-commons-commons-compress = { module = "org.apache.commons:commons-compress", version.ref = "org-apache-commons-commons-compress" }
+org-apache-commons-commons-csv = { module = "org.apache.commons:commons-csv", version.ref = "org-apache-commons-commons-csv" }
+org-apache-commons-commons-dbcp2 = { module = "org.apache.commons:commons-dbcp2", version.ref = "org-apache-commons-commons-dbcp2" }
+org-apache-commons-commons-fileupload2-jakarta-servlet5 = { module = "org.apache.commons:commons-fileupload2-jakarta-servlet5", version.ref = "org-apache-commons-commons-fileupload2-jakarta-servlet5" }
+org-apache-commons-commons-lang3 = { module = "org.apache.commons:commons-lang3", version.ref = "org-apache-commons-commons-lang3" }
+org-apache-commons-commons-lang3-v37 = { module = "org.apache.commons:commons-lang3", version.ref = "org-apache-commons-commons-lang3-v37" }
+org-apache-commons-commons-pool2 = { module = "org.apache.commons:commons-pool2", version.ref = "org-apache-commons-commons-pool2" }
+org-apache-commons-commons-text = { module = "org.apache.commons:commons-text", version.ref = "org-apache-commons-commons-text" }
+org-apache-ftpserver-ftpserver-core = { module = "org.apache.ftpserver:ftpserver-core", version.ref = "org-apache-ftpserver-ftpserver-core" }
+org-apache-ftpserver-ftpserver-core-v106 = { module = "org.apache.ftpserver:ftpserver-core", version.ref = "org-apache-ftpserver-ftpserver-core-v106" }
+org-apache-geronimo-specs-geronimo-stax-api10-spec = { module = "org.apache.geronimo.specs:geronimo-stax-api_1.0_spec", version.ref = "org-apache-geronimo-specs-geronimo-stax-api10-spec" }
+org-apache-httpcomponents-httpclient = { module = "org.apache.httpcomponents:httpclient", version.ref = "org-apache-httpcomponents-httpclient" }
+org-apache-httpcomponents-httpclient-v436 = { module = "org.apache.httpcomponents:httpclient", version.ref = "org-apache-httpcomponents-httpclient-v436" }
+org-apache-httpcomponents-httpcore = { module = "org.apache.httpcomponents:httpcore", version.ref = "org-apache-httpcomponents-httpcore" }
+org-apache-jena-apache-jena-libs = { module = "org.apache.jena:apache-jena-libs", version.ref = "org-apache-jena" }
+org-apache-jena-jena-rdfconnection = { module = "org.apache.jena:jena-rdfconnection", version.ref = "org-apache-jena" }
+org-apache-jena-jena-rdfpatch = { module = "org.apache.jena:jena-rdfpatch", version.ref = "org-apache-jena" }
+org-apache-jena-jena-shacl = { module = "org.apache.jena:jena-shacl", version.ref = "org-apache-jena" }
+org-apache-jena-jena-shex = { module = "org.apache.jena:jena-shex", version.ref = "org-apache-jena" }
+org-apache-jena-jena-tdb1 = { module = "org.apache.jena:jena-tdb1", version.ref = "org-apache-jena" }
+org-apache-jena-jena-tdb2 = { module = "org.apache.jena:jena-tdb2", version.ref = "org-apache-jena" }
+org-apache-pdfbox-fontbox = { module = "org.apache.pdfbox:fontbox", version.ref = "org-apache-pdfbox" }
+org-apache-pdfbox-pdfbox = { module = "org.apache.pdfbox:pdfbox", version.ref = "org-apache-pdfbox" }
+org-apache-pdfbox-xmpbox = { module = "org.apache.pdfbox:xmpbox", version.ref = "org-apache-pdfbox" }
+org-apache-poi-poi = { module = "org.apache.poi:poi", version.ref = "org-apache-poi" }
+org-apache-poi-poi-ooxml = { module = "org.apache.poi:poi-ooxml", version.ref = "org-apache-poi" }
+org-apache-poi-poi-ooxml-schemas = { module = "org.apache.poi:poi-ooxml-schemas", version.ref = "org-apache-poi" }
+org-apache-sshd-sshd-core = { module = "org.apache.sshd:sshd-core", version.ref = "org-apache-sshd-sshd" }
+org-apache-sshd-sshd-netty = { module = "org.apache.sshd:sshd-netty", version.ref = "org-apache-sshd-sshd" }
+org-apache-sshd-sshd-sftp = { module = "org.apache.sshd:sshd-sftp", version.ref = "org-apache-sshd-sshd" }
+org-apache-sshd-sshd-sftp-v27 = { module = "org.apache.sshd:sshd-sftp", version.ref = "org-apache-sshd-sshd-sftp-v27" }
+org-apache-tomcat-annotations-api = { module = "org.apache.tomcat:annotations-api", version.ref = "org-apache-tomcat-annotations-api" }
+org-apache-xmlbeans-xmlbeans = { module = "org.apache.xmlbeans:xmlbeans", version.ref = "org-apache-xmlbeans-xmlbeans" }
+org-aspectj-aspectjrt = { module = "org.aspectj:aspectjrt", version.ref = "org-aspectj" }
+org-aspectj-aspectjweaver = { module = "org.aspectj:aspectjweaver", version.ref = "org-aspectj" }
+org-aspectj-aspectjweaver-v18 = { module = "org.aspectj:aspectjweaver", version.ref = "org-aspectj-aspectjweaver-v18" }
+org-bouncycastle-bcpg-jdk15on = { module = "org.bouncycastle:bcpg-jdk15on", version.ref = "org-bouncycastle-bcpg-jdk15on" }
+org-controlsfx-controlsfx = { module = "org.controlsfx:controlsfx", version.ref = "org-controlsfx-controlsfx" }
+org-docx4j-docx4j = { module = "org.docx4j:docx4j", version.ref = "org-docx4j-docx4j" }
+org-dspace-xoai-data-provider = { module = "org.dspace:xoai-data-provider", version.ref = "org-dspace-xoai-data-provider" }
+org-eclipse-jdt-core-compiler-ecj = { module = "org.eclipse.jdt.core.compiler:ecj", version.ref = "org-eclipse-jdt-core-compiler-ecj" } # Compiler/tool classpath dependency, not a plugin DSL id.
+org-eclipse-jetty-compression-jetty-compression-common = { module = "org.eclipse.jetty.compression:jetty-compression-common", version.ref = "org-eclipse-jetty" }
+org-eclipse-jetty-compression-jetty-compression-gzip = { module = "org.eclipse.jetty.compression:jetty-compression-gzip", version.ref = "org-eclipse-jetty" }
+org-eclipse-jetty-ee-jetty-ee-webapp = { module = "org.eclipse.jetty.ee:jetty-ee-webapp", version.ref = "org-eclipse-jetty" }
+org-eclipse-jetty-ee10-jetty-ee10-annotations = { module = "org.eclipse.jetty.ee10:jetty-ee10-annotations", version.ref = "org-eclipse-jetty" }
+org-eclipse-jetty-ee10-jetty-ee10-jndi = { module = "org.eclipse.jetty.ee10:jetty-ee10-jndi", version.ref = "org-eclipse-jetty" }
+org-eclipse-jetty-ee10-jetty-ee10-plus = { module = "org.eclipse.jetty.ee10:jetty-ee10-plus", version.ref = "org-eclipse-jetty" }
+org-eclipse-jetty-ee10-jetty-ee10-proxy = { module = "org.eclipse.jetty.ee10:jetty-ee10-proxy", version.ref = "org-eclipse-jetty" }
+org-eclipse-jetty-ee10-jetty-ee10-servlet = { module = "org.eclipse.jetty.ee10:jetty-ee10-servlet", version.ref = "org-eclipse-jetty" }
+org-eclipse-jetty-ee10-jetty-ee10-webapp = { module = "org.eclipse.jetty.ee10:jetty-ee10-webapp", version.ref = "org-eclipse-jetty" }
+org-eclipse-jetty-jetty-annotations = { module = "org.eclipse.jetty:jetty-annotations", version.ref = "org-eclipse-jetty" }
+org-eclipse-jetty-jetty-client = { module = "org.eclipse.jetty:jetty-client", version.ref = "org-eclipse-jetty" }
+org-eclipse-jetty-jetty-client-v949v20180320 = { module = "org.eclipse.jetty:jetty-client", version.ref = "org-eclipse-jetty-jetty" }
+org-eclipse-jetty-jetty-deploy = { module = "org.eclipse.jetty:jetty-deploy", version.ref = "org-eclipse-jetty" }
+org-eclipse-jetty-jetty-distribution = { module = "org.eclipse.jetty:jetty-distribution", version.ref = "org-eclipse-jetty" }
+org-eclipse-jetty-jetty-jndi = { module = "org.eclipse.jetty:jetty-jndi", version.ref = "org-eclipse-jetty" }
+org-eclipse-jetty-jetty-plus = { module = "org.eclipse.jetty:jetty-plus", version.ref = "org-eclipse-jetty" }
+org-eclipse-jetty-jetty-proxy = { module = "org.eclipse.jetty:jetty-proxy", version.ref = "org-eclipse-jetty" }
+org-eclipse-jetty-jetty-security = { module = "org.eclipse.jetty:jetty-security", version.ref = "org-eclipse-jetty" }
+org-eclipse-jetty-jetty-server = { module = "org.eclipse.jetty:jetty-server", version.ref = "org-eclipse-jetty" }
+org-eclipse-jetty-jetty-server-v949v20180320 = { module = "org.eclipse.jetty:jetty-server", version.ref = "org-eclipse-jetty-jetty" }
+org-eclipse-jetty-jetty-session = { module = "org.eclipse.jetty:jetty-session", version.ref = "org-eclipse-jetty" }
+org-eclipse-jetty-jetty-util = { module = "org.eclipse.jetty:jetty-util", version.ref = "org-eclipse-jetty" }
+org-eclipse-jetty-jetty-xml = { module = "org.eclipse.jetty:jetty-xml", version.ref = "org-eclipse-jetty" }
+org-ehcache-ehcache = { module = "org.ehcache:ehcache", version.ref = "org-ehcache-ehcache" }
+org-glassfish-jakarta-el = { module = "org.glassfish:jakarta.el", version.ref = "org-glassfish-jakarta-el" }
+org-glassfish-jaxb-jaxb-core = { module = "org.glassfish.jaxb:jaxb-core", version.ref = "org-glassfish-jaxb" }
+org-glassfish-jaxb-jaxb-runtime = { module = "org.glassfish.jaxb:jaxb-runtime", version.ref = "org-glassfish-jaxb" }
+org-glassfish-jaxb-txw2 = { module = "org.glassfish.jaxb:txw2", version.ref = "org-glassfish-jaxb" }
+org-glassfish-main-javaee-api-javax-jws = { module = "org.glassfish.main.javaee-api:javax.jws", version.ref = "org-glassfish-main-javaee-api-javax-jws" }
+org-hamcrest-hamcrest-core = { module = "org.hamcrest:hamcrest-core", version.ref = "org-hamcrest-hamcrest" }
+org-hamcrest-hamcrest-integration = { module = "org.hamcrest:hamcrest-integration", version.ref = "org-hamcrest-hamcrest" }
+org-hamcrest-hamcrest-library = { module = "org.hamcrest:hamcrest-library", version.ref = "org-hamcrest-hamcrest" }
+org-hibernate-orm-hibernate-core = { module = "org.hibernate.orm:hibernate-core", version.ref = "org-hibernate-orm-hibernate-core" }
+org-hibernate-validator-hibernate-validator = { module = "org.hibernate.validator:hibernate-validator", version.ref = "org-hibernate-validator-hibernate-validator" }
+org-javassist-javassist = { module = "org.javassist:javassist", version.ref = "org-javassist-javassist" }
+org-jmock-jmock = { module = "org.jmock:jmock", version.ref = "org-jmock-jmock" }
+org-jsoup-jsoup = { module = "org.jsoup:jsoup", version.ref = "org-jsoup-jsoup" }
+org-junit-junit = { module = "org.junit:junit", version.ref = "org-junit-junit" }
+org-mockito-mockito-core = { module = "org.mockito:mockito-core", version.ref = "org-mockito-mockito-core" }
+org-openjfx-javafx-base = { module = "org.openjfx:javafx-base", version.ref = "org-openjfx-javafx" }
+org-openjfx-javafx-controls = { module = "org.openjfx:javafx-controls", version.ref = "org-openjfx-javafx" }
+org-openjfx-javafx-fxml = { module = "org.openjfx:javafx-fxml", version.ref = "org-openjfx-javafx" }
+org-openjfx-javafx-graphics = { module = "org.openjfx:javafx-graphics", version.ref = "org-openjfx-javafx" }
+org-owasp-dependency-check-gradle = { module = "org.owasp:dependency-check-gradle", version.ref = "org-owasp-dependency-check-gradle" } # Buildscript classpath jar, not a plugin DSL id.
+org-paleozogt-symzip-plugin = { module = "org.paleozogt:symzip-plugin", version.ref = "org-paleozogt-symzip-plugin" } # Buildscript classpath jar, not a plugin DSL id.
+org-postgresql-postgresql = { module = "org.postgresql:postgresql", version.ref = "org-postgresql-postgresql" }
+org-projectlombok-lombok = { module = "org.projectlombok:lombok", version.ref = "org-projectlombok-lombok" }
+org-reactivestreams-reactive-streams = { module = "org.reactivestreams:reactive-streams", version.ref = "org-reactivestreams-reactive-streams" }
+org-reflections-reflections = { module = "org.reflections:reflections", version.ref = "org-reflections-reflections" }
+org-seleniumhq-selenium-selenium-java = { module = "org.seleniumhq.selenium:selenium-java", version.ref = "org-seleniumhq-selenium-selenium-java" }
+org-slf4j-slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "org-slf4j-slf4j" }
+org-slf4j-slf4j-jdk14 = { module = "org.slf4j:slf4j-jdk14", version.ref = "org-slf4j-slf4j" }
+org-slf4j-slf4j-nop = { module = "org.slf4j:slf4j-nop", version.ref = "org-slf4j-slf4j" }
+org-springframework-spring-aop = { module = "org.springframework:spring-aop", version.ref = "org-springframework-spring" }
+org-springframework-spring-beans = { module = "org.springframework:spring-beans", version.ref = "org-springframework-spring" }
+org-springframework-spring-context = { module = "org.springframework:spring-context", version.ref = "org-springframework-spring" }
+org-springframework-spring-context-support = { module = "org.springframework:spring-context-support", version.ref = "org-springframework-spring" }
+org-springframework-spring-core = { module = "org.springframework:spring-core", version.ref = "org-springframework-spring" }
+org-springframework-spring-expression = { module = "org.springframework:spring-expression", version.ref = "org-springframework-spring" }
+org-springframework-spring-jdbc = { module = "org.springframework:spring-jdbc", version.ref = "org-springframework-spring" }
+org-springframework-spring-orm = { module = "org.springframework:spring-orm", version.ref = "org-springframework-spring" }
+org-springframework-spring-test = { module = "org.springframework:spring-test", version.ref = "org-springframework-spring" }
+org-springframework-spring-test-v6110 = { module = "org.springframework:spring-test", version.ref = "org-springframework-spring-test-v6110" }
+org-springframework-spring-tx = { module = "org.springframework:spring-tx", version.ref = "org-springframework-spring" }
+org-springframework-spring-web = { module = "org.springframework:spring-web", version.ref = "org-springframework-spring" }
+org-springframework-spring-webmvc = { module = "org.springframework:spring-webmvc", version.ref = "org-springframework-spring" }
+org-testng-testng = { module = "org.testng:testng", version.ref = "org-testng-testng" }
+org-xerial-sqlite-jdbc = { module = "org.xerial:sqlite-jdbc", version.ref = "org-xerial-sqlite-jdbc" }
+org-xerial-sqlite-jdbc-v35020 = { module = "org.xerial:sqlite-jdbc", version.ref = "org-xerial-sqlite-jdbc-v35020" }
+python-jython = { module = "python:jython", version.ref = "python-jython" }
+python-jython27 = { module = "python:jython27", version.ref = "python-jython27" }
+rinn-restrictions = { module = "rinn:restrictions", version.ref = "rinn-restrictions" }
+sencha-gxt = { module = "sencha:gxt", version.ref = "sencha-gxt" }
+sis-sis-base = { module = "sis:sis-base", version.ref = "sis-sis-base" }
+sis-sis-file-transfer = { module = "sis:sis-file-transfer", version.ref = "sis-sis-file-transfer" }
+sis-sis-jhdf5 = { module = "sis:sis-jhdf5", version.ref = "sis-sis-jhdf5" }
+sybit-image-viewer = { module = "sybit:image-viewer", version.ref = "sybit-image-viewer" }
+xml-apis-xml-apis = { module = "xml-apis:xml-apis", version.ref = "xml-apis-xml-apis" }
+
+[bundles]
+org-apache-jena-jena = [
+    "org-apache-jena-jena-rdfconnection",
+    "org-apache-jena-jena-rdfpatch",
+    "org-apache-jena-jena-shacl",
+    "org-apache-jena-jena-shex",
+    "org-apache-jena-jena-tdb1",
+    "org-apache-jena-jena-tdb2",
+]
+
+[plugins]
+com-github-node-gradle-node = { id = "com.github.node-gradle.node", version.ref = "com-github-node-gradle-node" }
+com-google-protobuf = { id = "com.google.protobuf", version.ref = "com-google-protobuf" }
+io-quarkus = { id = "io.quarkus", version.ref = "io-quarkus" }
+org-openjfx-javafxplugin = { id = "org.openjfx.javafxplugin", version.ref = "org-openjfx-javafxplugin" }

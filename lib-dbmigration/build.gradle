@@ -4,17 +4,17 @@ dependencies {
     api project(':lib-logging'),
             project(':lib-commonbase'),
             project(':lib-db'),
-            'sis:sis-base:23.06.0',
+            libs.sis.sis.base,
             //'apache:commons-dbcp:1.3-CISD',
-            'org.apache.commons:commons-dbcp2:2.13.0',
-            'org.apache.commons:commons-pool2:2.12.1',
-            'h2database:h2:1.1.115',
-            'postgresql:postgresql:42.7.9'
+            libs.org.apache.commons.commons.dbcp2,
+            libs.org.apache.commons.commons.pool2,
+            libs.com.h2database.h2,
+            libs.org.postgresql.postgresql
 
     testImplementation project(path: ':lib-logging', configuration: 'tests'),
             project(path: ':lib-commonbase', configuration: 'tests'),
-            'testng:testng:6.8-CISD',
-            'junit:junit:4.13.2',
-            'jmock:jmock:2.5.1',
-            'fjelmer:classycle:1.4.2'
+            libs.org.testng.testng,
+            libs.org.junit.junit,
+            libs.org.jmock.jmock,
+            libs.fjelmer.classycle
 } 

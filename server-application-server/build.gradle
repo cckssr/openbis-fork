@@ -31,59 +31,60 @@ dependencies {
             project(':lib-two-phase-transaction'),
             project(':api-data-store-server-java'),
             project(':api-data-store-server-javascript'),
-            'sencha:gxt:2.2.5',
-            'jboss:javassist:3.28.0.GA',
-            'org.hibernate:hibernate-core:6.6.40.Final',
-            'org.glassfish:jakarta.el:4.0.2',
-            'fasterxml:classmate:1.3.0',
-            'org.eclipse.jetty:jetty-deploy:12.1.1',
-            'jakarta.activation:jakarta.activation-api:2.1.2',
-            'jakarta.servlet:jakarta.servlet-api:6.0.0',
-            'jakarta.validation:jakarta.validation-api:3.0.2',
-            'jakarta.annotation:jakarta.annotation-api:2.1.1',
-            'javax:mail:1.6.2',
-            'org.springframework:spring-orm:6.2.15',
-            'cisd:cisd-hotdeploy:13.01.0',
-            'apache:poi-ooxml:3.17',
-            'org.hibernate:hibernate-validator:8.0.1.Final',
-            'unimi:fastutil:5.1.5',
-            'apache:commons-collections4:4.1',
-            'apache:commons-compress:1.8',
-            'org.springframework:spring-context-support:6.2.15',
-            'org.springframework:spring-expression:6.2.15',
+            libs.sencha.gxt,
+            libs.org.javassist.javassist,
+            libs.org.hibernate.orm.hibernate.core,
+            libs.org.glassfish.jakarta.el,
+            libs.com.fasterxml.classmate,
+            libs.org.eclipse.jetty.jetty.deploy,
+            libs.jakarta.activation.jakarta.activation.api,
+            libs.jakarta.servlet.jakarta.servlet.api.v60,
+            libs.jakarta.validation.jakarta.validation.api,
+            libs.jakarta.annotation.jakarta.annotation.api,
+            libs.com.sun.mail.javax.mail,
+            libs.org.springframework.spring.orm,
+            libs.cisd.cisd.hotdeploy,
+            libs.org.apache.poi.poi.ooxml,
+            libs.org.hibernate.validator.hibernate.validator,
+            libs.it.unimi.dsi.fastutil,
+            libs.org.apache.commons.commons.collections4,
+            libs.org.apache.commons.commons.compress,
+            libs.org.springframework.spring.context.support,
+            libs.org.springframework.spring.expression,
             //'ehcache:ehcache:2.10.0',
-            'jline:jline:0.9.94',
-            'jsoup:jsoup:1.14.2',
-            'org.apache.pdfbox:pdfbox:2.0.30',
-            'org.apache.pdfbox:fontbox:2.0.30',
-            'org.apache.pdfbox:xmpbox:2.0.30',
-            'de.rototor.pdfbox:graphics2d:0.36',
+            libs.jline.jline,
+            libs.org.jsoup.jsoup,
+            libs.org.apache.pdfbox.pdfbox,
+            libs.org.apache.pdfbox.fontbox,
+            libs.org.apache.pdfbox.xmpbox,
+            libs.de.rototor.pdfbox.graphics2d,
 //            'org.apache.pdfbox:pdfbox-io:3.0.0',
 //            'de.rototor.pdfbox:graphics2d:3.0.0',
-            'com.openhtmltopdf:openhtmltopdf-core:1.0.10',
-            'com.openhtmltopdf:openhtmltopdf-pdfbox:1.0.10',
-            'org.eclipse.jetty:jetty-server:12.1.1',
-            'org.eclipse.jetty.ee:jetty-ee-webapp:12.1.1',
-            'org.eclipse.jetty.ee10:jetty-ee10-webapp:12.1.1',
-            'org.eclipse.jetty.ee10:jetty-ee10-servlet:12.1.1',
-            'org.eclipse.jetty:jetty-security:12.1.1',
-            'org.eclipse.jetty:jetty-session:12.1.1',
-            'org.eclipse.jetty:jetty-deploy:12.1.1',
-            'org.eclipse.jetty.ee10:jetty-ee10-annotations:12.1.1',
-            'org.eclipse.jetty.ee10:jetty-ee10-plus:12.1.1',
-            'org.eclipse.jetty.ee10:jetty-ee10-jndi:12.1.1',
-            'org.eclipse.jetty:jetty-jndi:12.1.1',
-            'org.eclipse.jetty:jetty-xml:12.1.1',
-            'org.eclipse.jetty:jetty-plus:12.1.1',
-            'org.eclipse.jetty.compression:jetty-compression-common:12.1.1',
-            'org.eclipse.jetty.compression:jetty-compression-gzip:12.1.1',
-            'org.eclipse.jetty:jetty-annotations:12.1.1',
-            'aspectj:aspectjweaver:1.8.12'
+            libs.com.openhtmltopdf.openhtmltopdf.core,
+            libs.com.openhtmltopdf.openhtmltopdf.pdfbox,
+            libs.org.eclipse.jetty.jetty.server,
+            libs.org.eclipse.jetty.ee.jetty.ee.webapp,
+            libs.org.eclipse.jetty.ee10.jetty.ee10.webapp,
+            libs.org.eclipse.jetty.ee10.jetty.ee10.servlet,
+            libs.org.eclipse.jetty.jetty.security,
+            libs.org.eclipse.jetty.jetty.session,
+            libs.org.eclipse.jetty.jetty.deploy,
+            libs.org.eclipse.jetty.ee10.jetty.ee10.annotations,
+            libs.org.eclipse.jetty.ee10.jetty.ee10.plus,
+            libs.org.eclipse.jetty.ee10.jetty.ee10.jndi,
+            libs.org.eclipse.jetty.jetty.jndi,
+            libs.org.eclipse.jetty.jetty.xml,
+            libs.org.eclipse.jetty.jetty.plus,
+            libs.org.eclipse.jetty.compression.jetty.compression.common,
+            libs.org.eclipse.jetty.compression.jetty.compression.gzip,
+            libs.org.eclipse.jetty.jetty.annotations,
+            libs.org.aspectj.aspectjweaver.v18,
+            libs.org.slf4j.slf4j.api
 
-    implementation 'javax.cache:cache-api:1.1.1'
-    implementation("org.ehcache:ehcache-jakarta:3.11.1") {
+    implementation libs.javax.cache.cache.api
+    implementation(libs.org.ehcache.ehcache) {
         artifact {
-            name = "ehcache-jakarta"
+            classifier = "jakarta"
             type = "jar"
         }
     }
@@ -94,10 +95,11 @@ dependencies {
 //    }
 
 
-    runtimeOnly 'slf4j:slf4j-jdk14:1.7.24',
-            runtimeOnly('org.apache.commons:commons-fileupload2-jakarta-servlet5:2.0.0-M4'){
-                exclude group:'org.junit'
-            }
+    runtimeOnly libs.org.slf4j.slf4j.jdk14,
+            libs.jakarta.transaction.jakarta.transaction.api
+    runtimeOnly(libs.org.apache.commons.commons.fileupload2.jakarta.servlet5){
+        exclude group:'org.junit'
+    }
 
     asExecRuntime files("../core-plugin-openbis/dist/core-plugins/imaging/1/as/api-listener/imaging-dataset-interceptor/lib/imaging-dataset-interceptor.jar"),
             files("../core-plugin-openbis/dist/core-plugins/imaging/1/as/services/imaging/lib/openBIS-imaging-technology.jar"),
@@ -116,17 +118,18 @@ dependencies {
             project(path: ':lib-openbis-commonbase', configuration: 'tests'),
             project(path: ':lib-two-phase-transaction', configuration: 'tests'),
             project(path: ':api-data-store-server-javascript', configuration: 'tests'),
-            'org.aspectj:aspectjweaver:1.9.22.1',
-            'org.aspectj:aspectjrt:1.9.22.1',
-            'fjelmer:classycle:1.4.2',
-            'testng:testng:6.8-CISD',
-            'junit:junit:4.13.2',
-            'org.springframework:spring-test:6.2.15',
-            'org.apache.commons:commons-fileupload2-jakarta-servlet5:2.0.0-M4',
-            'hamcrest:hamcrest-integration:1.3',
-            'hamcrest:hamcrest-library:1.3'
+            libs.org.aspectj.aspectjweaver,
+            libs.org.aspectj.aspectjrt,
+            libs.fjelmer.classycle,
+            libs.org.testng.testng,
+            libs.org.junit.junit,
+            libs.org.jmock.jmock,
+            libs.org.springframework.spring.test,
+            libs.org.apache.commons.commons.fileupload2.jakarta.servlet5,
+            libs.org.hamcrest.hamcrest.integration,
+            libs.org.hamcrest.hamcrest.library
 
-    testRuntimeFirst 'jakarta:jakarta.servlet-api:6.1.0'
+    testRuntimeFirst libs.jakarta.servlet.jakarta.servlet.api
 
 }
 

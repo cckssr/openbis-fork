@@ -4,66 +4,66 @@ apply from: '../build/javaproject.gradle'
 
 dependencies {
     api project(':lib-commonbase'),
-        'org.springframework:spring-webmvc:6.2.15',
-        'org.springframework:spring-web:6.2.15',
-        'org.springframework:spring-core:6.2.15',
-        'org.springframework:spring-aop:6.2.15',
-        'org.springframework:spring-context:6.2.15',
-        'org.springframework:spring-beans:6.2.15',
-        'jakarta.servlet:jakarta.servlet-api:6.0.0',
+        libs.org.springframework.spring.webmvc,
+        libs.org.springframework.spring.web,
+        libs.org.springframework.spring.core,
+        libs.org.springframework.spring.aop,
+        libs.org.springframework.spring.context,
+        libs.org.springframework.spring.beans,
+        libs.jakarta.servlet.jakarta.servlet.api.v60,
 
-        'cisd:cisd-args4j:9.11.2',
-        'python:jython:2.5.2',
-        'python:jython27:2.7.2',
-        'apache:commons-text:1.11',
+        libs.cisd.cisd.args4j,
+        libs.python.jython,
+        libs.python.jython27,
+        libs.org.apache.commons.commons.text,
         //'javax.annotation:javax.annotation-api:1.3.2',
-        'jakarta.annotation:jakarta.annotation-api:2.1.1',
-        'javax.activation:activation:1.1.1',
+        libs.jakarta.annotation.jakarta.annotation.api,
+        libs.javax.activation.activation,
         //'javax.xml.bind:jaxb-api:2.3.1',
-        'jakarta.xml.bind:jakarta.xml.bind-api:4.0.2',
-        'org.glassfish.jaxb:txw2:4.0.5',
-        'org.glassfish.jaxb:jaxb-core:4.0.5',
-        'org.glassfish.jaxb:jaxb-runtime:4.0.5',
-        'org.glassfish.main.javaee-api:javax.jws:3.1.2.2',
-        'com.sun.istack:istack-commons-runtime:3.0.5',
-        'apache:poi:3.17',
-        'twmacinta:fast-md5:2.6.1',
-        'testng:testng:6.8-CISD', // this should ideally go away
-            'junit:junit:4.13.2', // this should go away
-        'marathon:marathon-spring-util:1.2.5-jakarta',
-        'lemnik:eodsql:2.2-CISD',
-        'unimi:fastutil:5.1.5',
-        'sis:sis-base:23.06.0',
-        'rinn:restrictions:1.0.2',
-        'apache:httpclient:4.3.6',
-        'org.eclipse.jetty:jetty-client:12.1.1'
+        libs.jakarta.xml.bind.jakarta.xml.bind.api,
+        libs.org.glassfish.jaxb.txw2,
+        libs.org.glassfish.jaxb.jaxb.core,
+        libs.org.glassfish.jaxb.jaxb.runtime,
+        libs.org.glassfish.main.javaee.api.javax.jws,
+        libs.com.sun.istack.istack.commons.runtime,
+        libs.org.apache.poi.poi,
+        libs.com.twmacinta.fast.md5,
+        libs.org.testng.testng, // this should ideally go away
+        libs.org.junit.junit, // this should go away
+        libs.marathon.marathon.spring.util,
+        libs.lemnik.eodsql,
+        libs.it.unimi.dsi.fastutil,
+        libs.sis.sis.base,
+        libs.rinn.restrictions,
+        libs.org.apache.httpcomponents.httpclient.v436,
+        libs.org.eclipse.jetty.jetty.client
 
-    api('org.eclipse.jetty.compression:jetty-compression-common:12.1.1'){
+    api(libs.org.eclipse.jetty.compression.jetty.compression.common) {
         exclude group: "org.eclipse.jetty", module: "jetty-http"
     }
-    api 'apache:commons-csv:1.2',
-        'com.fasterxml.jackson.core:jackson-databind:2.18.3',
-        'slf4j:slf4j-api:1.7.24',
-        'deltavisio:http-invoker-reloaded:25.03.8-ac6cb8a',
+    api libs.org.apache.commons.commons.csv,
+        libs.com.fasterxml.jackson.core.jackson.databind,
+        libs.org.slf4j.slf4j.api,
+        libs.deltavisio.http.invoker.reloaded,
 
-        'googlecode:jsonrpc4j:1.8-CISD',
-        'com.fasterxml.jackson.core:jackson-databind:2.18.3',
-        'reflections:reflections:0.9.10'
+        libs.googlecode.jsonrpc4j,
+        libs.com.fasterxml.jackson.core.jackson.databind,
+        libs.org.reflections.reflections
 
     testImplementation project(path: ':lib-logging', configuration: 'tests'),
             project(path: ':lib-commonbase', configuration: 'tests'),
-            api('jmock:jmock:2.5.1') {
-                exclude group: 'hamcrest', module: 'hamcrest-core'
-                exclude group: 'hamcrest', module: 'hamcrest-library'
-            },
-            'testng:testng:6.8-CISD',
-            'junit:junit:4.13.2',
-            'junit:junit:4.13.2',
-            'hamcrest:hamcrest-integration:1.3',
-            'hamcrest:hamcrest-library:1.3',
-            'fjelmer:classycle:1.4.2',
-           'org.eclipse.jetty.ee10:jetty-ee10-servlet:12.1.1'
+            libs.org.testng.testng,
+            libs.org.junit.junit,
+            libs.org.hamcrest.hamcrest.integration,
+            libs.org.hamcrest.hamcrest.library,
+            libs.fjelmer.classycle,
+           libs.org.eclipse.jetty.ee10.jetty.ee10.servlet
             //'org.glassfish.jaxb:jaxb-runtime:4.0.5'
+
+    testImplementation(libs.org.jmock.jmock) {
+        exclude group: 'hamcrest', module: 'hamcrest-core'
+        exclude group: 'hamcrest', module: 'hamcrest-library'
+    }
 }
 
 test {

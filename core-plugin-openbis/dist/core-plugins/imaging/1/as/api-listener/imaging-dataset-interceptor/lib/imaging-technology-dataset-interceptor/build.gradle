@@ -1,5 +1,5 @@
 plugins {
-    id "com.github.node-gradle.node" version "7.1.0"
+    alias(libs.plugins.com.github.node.gradle.node)
 }
 
 apply from: 'javaproject.gradle'
@@ -10,15 +10,16 @@ dependencies {
     api project(':api-openbis-java'),
             project(':server-original-data-store')
 
-    implementation 'com.fasterxml.jackson.core:jackson-annotations:2.18.3',
-            'com.fasterxml.jackson.core:jackson-core:2.18.3',
-            'com.fasterxml.jackson.core:jackson-databind:2.18.3',
-            'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.18.3'
+    implementation libs.com.fasterxml.jackson.core.jackson.annotations,
+            libs.com.fasterxml.jackson.core.jackson.core,
+            libs.com.fasterxml.jackson.core.jackson.databind,
+            libs.com.fasterxml.jackson.datatype.jackson.datatype.jsr310
 
-    testImplementation 'junit:junit:4.10',
-            'testng:testng:6.8-CISD'
+    testImplementation libs.org.junit.junit,
+            libs.org.jmock.jmock,
+            libs.org.testng.testng
 
-    testRuntimeOnly 'hamcrest:hamcrest-core:1.3',
+    testRuntimeOnly libs.org.hamcrest.hamcrest.core,
             project(':server-original-data-store')
 }
 
@@ -49,10 +50,3 @@ tasks.register('imagingDatasetInterceptorJar', Copy) {
     from("${project.buildDir}/libs/${premiseArchiveName}")
     into ".."
 }
-
-
-
-
-
-
-

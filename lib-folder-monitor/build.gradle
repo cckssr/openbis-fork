@@ -3,9 +3,9 @@ apply from: '../build/javalibrary.gradle'
 evaluationDependsOn(':api-openbis-java')
 
 dependencies {
-    annotationProcessor 'lombok:lombok:1.18.38'
-    implementation project(':lib-commonbase'), project(':api-openbis-java'), 'lombok:lombok:1.18.38'
-    testImplementation 'testng:testng:6.8-CISD'
+    annotationProcessor libs.org.projectlombok.lombok
+    implementation project(':lib-commonbase'), project(':api-openbis-java'), libs.org.projectlombok.lombok
+    testImplementation libs.org.testng.testng
 }
 
 task folderMonitorZip(type: Zip, dependsOn: compileJava) {

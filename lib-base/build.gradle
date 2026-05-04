@@ -1,10 +1,10 @@
 apply from: '../build/javaproject.gradle'
 
 dependencies {
-    api 'apache:commons-io:2.6',
-            'apache:commons-lang3:3.14',
-            'testng:testng:6.8-CISD',
-            'rinn:restrictions:1.0.2'
+    api libs.commons.io.commons.io.v26,
+            libs.org.apache.commons.commons.lang3,
+            libs.org.testng.testng,
+            libs.rinn.restrictions
 } 
 
 tasks.withType(Test) {

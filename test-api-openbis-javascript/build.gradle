@@ -1,5 +1,5 @@
 plugins {
-    id "com.github.node-gradle.node" version "7.1.0"
+    alias(libs.plugins.com.github.node.gradle.node)
 }
 
 evaluationDependsOn(':lib-commonbase')
@@ -39,27 +39,35 @@ configurations.create('externalDss')
 configurations.create('blast_tar')
 
 dependencies {
-    api project(path: ':server-screening'),
-            project(path: ':core-plugin-openbis'),
-            project(path: ':server-data-store'),
-            project(path: ':lib-transactional-file-system'),
-            //project(path: ':test-ui-core', configuration: 'tests'),
-            'reflections:reflections:0.9.10',
-            'com.fasterxml.jackson.core:jackson-core:2.18.3',
-            'com.fasterxml.jackson.core:jackson-annotations:2.18.3',
-            'com.fasterxml.jackson.core:jackson-databind:2.18.3',
-            'testng:testng:6.8-CISD',
-            'junit:junit:4.13.2',
-            api('selenium:selenium-java:3.141.59'){
-                exclude group: "bytebuddy", module: "byte-buddy"
-            }
+    api(project(path: ':server-screening'))
+    api(project(path: ':core-plugin-openbis'))
+    api(project(path: ':server-data-store'))
+    api(project(path: ':lib-transactional-file-system'))
+    //api(project(path: ':test-ui-core', configuration: 'tests'))
+    api(libs.org.reflections.reflections)
+    api(libs.com.fasterxml.jackson.core.jackson.core)
+    api(libs.com.fasterxml.jackson.core.jackson.annotations)
+    api(libs.com.fasterxml.jackson.core.jackson.databind)
+    api(libs.org.testng.testng)
+    api(libs.org.junit.junit)
+    api(libs.org.seleniumhq.selenium.selenium.java){
+        exclude group: "bytebuddy", module: "byte-buddy"
+    }
 
 
-    testRuntimeFirst 'jakarta:jakarta.servlet-api:6.1.0', 'reflections:reflections:0.9.10', 'apache:commons-lang3:3.14'
+    testRuntimeFirst(libs.jakarta.servlet.jakarta.servlet.api)
+    testRuntimeFirst(libs.org.reflections.reflections) {
+        exclude group: 'com.google.guava', module: 'guava'
+    }
+    testRuntimeFirst(libs.org.apache.commons.commons.lang3)
 
     externalDss project(':server-screening')
 
-    blast_tar "blast:blast:2.2.30@tar.gz"
+    blast_tar(libs.blast.blast) {
+        artifact {
+            type = 'tar.gz'
+        }
+    }
 }
 
 sourceSets.test.runtimeClasspath = configurations.testRuntimeFirst + configurations.testRuntimeSecond + sourceSets.test.runtimeClasspath
@@ -106,7 +114,7 @@ import org.gradle.internal.os.OperatingSystem
 
 node {
     download = true
-    version = '20.18.0'
+    version = libs.versions.node.runtime.get()
     workDir = file("${projectDir}/node/nodejs")
     //nodeModulesDir = file("${projectDir}")
 }
@@ -162,6 +170,3 @@ test {
 
     finalizedBy deleteBlast
 }
-
-
-

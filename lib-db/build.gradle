@@ -2,10 +2,10 @@ apply from: '../build/javalibrary.gradle'
 
 dependencies {
     api project(':lib-commonbase'),
-            'sis:sis-base:23.06.0',
-            'lemnik:eodsql:2.2-CISD',
-            'unimi:fastutil:5.1.5'
-    testImplementation 'testng:testng:6.8-CISD',
-            'junit:junit:4.13.2',
-            'jmock:jmock:2.5.1'
+            libs.sis.sis.base,
+            libs.lemnik.eodsql,
+            libs.it.unimi.dsi.fastutil
+    testImplementation libs.org.testng.testng,
+            libs.org.junit.junit,
+            libs.org.jmock.jmock
 }

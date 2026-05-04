@@ -1,7 +1,7 @@
 plugins {
     id 'java'
     id 'application'
-    id 'io.quarkus' version '3.23.0'
+    alias(libs.plugins.io.quarkus)
 }
 
 java {
@@ -15,8 +15,8 @@ tasks.withType(JavaCompile) {
 
 repositories {
     ivy {
-        ivyPattern "https://sissource.ethz.ch/openbis/openbis-public/openbis-ivy/-/raw/main/[organisation]/[module]/[revision]/ivy.xml"
-        artifactPattern "https://sissource.ethz.ch/openbis/openbis-public/openbis-ivy/-/raw/main/[organisation]/[module]/[revision]/[artifact]-[revision](-[classifier]).[ext]"
+        ivyPattern "https://sissource.ethz.ch/openbis/openbis-public/openbis-ivy/-/raw/BIS-2532-ivy-repository-refactoring-for-open-bis-7/[organisation]/[module]/[revision]/ivy.xml"
+        artifactPattern "https://sissource.ethz.ch/openbis/openbis-public/openbis-ivy/-/raw/BIS-2532-ivy-repository-refactoring-for-open-bis-7/[organisation]/[module]/[revision]/[artifact]-[revision](-[classifier]).[ext]"
     }
     //mavenCentral()
 }
@@ -26,11 +26,46 @@ configurations.all {
     exclude group: "org.jboss", module: "jandex"
 }
 
+configurations.matching { it.name.startsWith("quarkus") }.configureEach {
+    // BOM/POM-only artifacts must be excluded from Quarkus configurations because the Quarkus
+    // Gradle plugin (3.23.0) tries to open all classpath entries as JARs without checking
+    // if they are valid ZIP files.
+    exclude group: "io.quarkus", module: "quarkus-bom"
+    exclude group: "com.fasterxml.jackson", module: "jackson-bom"
+    exclude group: "org.junit", module: "junit-bom"
+    exclude group: "org.hibernate", module: "hibernate-core"
+}
+
+// Ivy repositories don't set the artifactType Gradle attribute that Quarkus's Gradle plugin
+// requires (it calls getType().equals("jar") without a null check). This rule adds it to any
+// variant missing it. Maven-resolved artifacts already have this attribute set and are unaffected.
+dependencies.components.all { ComponentMetadataDetails details ->
+    details.withVariant("default") {
+        def artifactTypeAttr = Attribute.of("artifactType", String)
+        attributes {
+            if (getAttribute(artifactTypeAttr) == null) {
+                attribute(artifactTypeAttr, "jar")
+            }
+        }
+        if (!isPomOnlyArtifact(details.id)) {
+            withFiles {
+                removeAllFiles()
+                addFile("${details.id.name}-${details.id.version}.jar")
+            }
+        }
+    }
+}
+
+boolean isPomOnlyArtifact(ModuleVersionIdentifier id) {
+    return (id.group == "io.quarkus" && id.name == "quarkus-bom") ||
+            (id.group == "com.fasterxml.jackson" && id.name == "jackson-bom") ||
+            (id.group == "org.junit" && id.name == "junit-bom")
+}
 
 dependencies {
-    annotationProcessor 'lombok:lombok:1.18.38'
+    annotationProcessor libs.org.projectlombok.lombok
 
-    implementation 'lombok:lombok:1.18.38',
+    implementation libs.org.projectlombok.lombok,
             project(':lib-logging'),
             project(':lib-ro-crate'),
             project(':lib-mail'),
@@ -39,23 +74,24 @@ dependencies {
 
 
     // Quarkus
-    implementation enforcedPlatform("io.quarkus:quarkus-bom:3.23.0"), // Any dependencies coming from quarkus take precedence
-            'io.quarkus:quarkus-resteasy:3.23.0'
+    implementation enforcedPlatform(libs.io.quarkus.quarkus.bom) // Any dependencies coming from quarkus take precedence
+    implementation libs.io.quarkus.quarkus.resteasy
+    implementation libs.org.reactivestreams.reactive.streams
 
     // Ro-crate library
-    implementation 'edu.kit.datamanager:ro-crate-java:2.0.1',
-            'com.fasterxml.jackson.core:jackson-core:2.18.3',
-            'com.fasterxml.jackson.core:jackson-databind:2.18.3',
-            'com.fasterxml.jackson.core:jackson-annotations:2.18.3',
-            'com.networknt:json-schema-validator:1.5.7',
-            'net.lingala.zip4j:zip4j:2.11.5',
-            'io.smallrye:jandex:3.2.7',
-            "org.eclipse.jetty:jetty-client:12.1.1",
-            'apache:commons-compress:1.8'
+    implementation libs.edu.kit.datamanager.ro.crate.java,
+            libs.com.fasterxml.jackson.core.jackson.core,
+            libs.com.fasterxml.jackson.core.jackson.databind,
+            libs.com.fasterxml.jackson.core.jackson.annotations,
+            libs.com.networknt.json.schema.validator,
+            libs.net.lingala.zip4j.zip4j,
+            libs.io.smallrye.jandex,
+            libs.org.eclipse.jetty.jetty.client,
+            libs.org.apache.commons.commons.compress
 
-    testImplementation 'testng:testng:6.8-CISD',
-            'junit:junit:4.13.2',
-                        'io.rest-assured:rest-assured:5.5.5'
+    testImplementation libs.org.testng.testng,
+            libs.org.junit.junit,
+                        libs.io.rest.assured.rest.assured
     testImplementation project(':app-ro-crate-openbis')
 }
 
@@ -97,6 +133,8 @@ jar {
 task RoCrateServerZip(type: Zip, dependsOn: quarkusBuild) {
     archiveBaseName = 'server-ro-crate'
     from('build/quarkus-app') {
+        exclude '**/*-sources.jar'
+        exclude '**/*-javadoc.jar'
         into 'server-ro-crate/quarkus-app'
     }
     from('dist') {

@@ -1,3 +1,5 @@
+apply from: '../../../../../../../../../../build/version-catalog-settings.gradle'
+
 def includes = [
 // add openbis project names here, if needed
 ]
