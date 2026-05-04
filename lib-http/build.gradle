@@ -10,8 +10,8 @@ targetCompatibility = JavaVersion.VERSION_21
 
 repositories {
     ivy {
-        ivyPattern "https://sissource.ethz.ch/openbis/openbis-public/openbis-ivy/-/raw/BIS-2532-ivy-repository-refactoring-for-open-bis-7/[organisation]/[module]/[revision]/ivy.xml"
-        artifactPattern "https://sissource.ethz.ch/openbis/openbis-public/openbis-ivy/-/raw/BIS-2532-ivy-repository-refactoring-for-open-bis-7/[organisation]/[module]/[revision]/[artifact]-[revision](-[classifier]).[ext]"
+        ivyPattern "https://sissource.ethz.ch/openbis/openbis-public/openbis-ivy/-/raw/main/[organisation]/[module]/[revision]/ivy.xml"
+        artifactPattern "https://sissource.ethz.ch/openbis/openbis-public/openbis-ivy/-/raw/main/[organisation]/[module]/[revision]/[artifact]-[revision](-[classifier]).[ext]"
     }
     //mavenCentral()
 }
