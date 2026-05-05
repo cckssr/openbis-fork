@@ -122,7 +122,7 @@ public final class ExportEntityCollector {
                     spacePermId = space.getPermId();
                     initialSpacePermId = setInitialSpacePermId(root, initialSpacePermId, current, spacePermId);
 
-                    if (withLevelsBelow && spacePermId.equals(initialSpacePermId)) { // BIS-2255: When exporting outside the original space do not export withLevelsBelow to avoid over-exporting
+                    if (withLevelsBelow && current.equals(root)) { // BIS-2255: only exporting downstream if was initially selected
                         // Projects
                         for (Project project: space.getProjects()) {
                             ExportablePermId projectId = new ExportablePermId(ExportableKind.PROJECT,
@@ -176,7 +176,7 @@ public final class ExportEntityCollector {
                         todo.add(spaceId);
                     }
 
-                    if (withLevelsBelow && projectSpacePermId.equals(initialSpacePermId)) { // BIS-2255: When exporting outside the original space do not export withLevelsBelow to avoid over-exporting
+                    if (withLevelsBelow && current.equals(root)) { // BIS-2255: only exporting downstream if was initially selected
                         // Experiments
                         List<Experiment> experiments = project.getExperiments();
                         for (Experiment experiment:experiments) {
@@ -249,7 +249,7 @@ public final class ExportEntityCollector {
                         todo.add(projectId);
                     }
 
-                    if (withLevelsBelow && experimentSpacePermId.equals(initialSpacePermId)) { // BIS-2255: When exporting outside the original space do not export withLevelsBelow to avoid over-exporting
+                    if (withLevelsBelow && current.equals(root)) { // BIS-2255: only exporting downstream if was initially selected
                         // Experiment Samples (implicitly always on same space as experiment)
                         SampleSearchCriteria sampleSearchCriteria = new SampleSearchCriteria();
                         sampleSearchCriteria.withExperiment().withPermId().thatEquals(current.getPermId());
