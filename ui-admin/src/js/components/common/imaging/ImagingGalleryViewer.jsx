@@ -232,6 +232,9 @@ const ImagingGalleryViewer = ({ objId, objType, extOpenbis, onOpenPreview, onSto
 
     const onGalleryFilterChange = (newGalleryFilter) => {
         setGalleryFilter(newGalleryFilter);
+        const newPaging = paging;
+        newPaging.page = 0;
+        setPaging(newPaging)
     }
 
     const extractCommonExportsConfig = () => {
