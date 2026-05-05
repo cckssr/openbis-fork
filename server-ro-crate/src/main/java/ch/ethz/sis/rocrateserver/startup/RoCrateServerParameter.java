@@ -31,4 +31,8 @@ public enum RoCrateServerParameter
     mailSmtpHost,
     mailSmtpUser,
     mailSmtpPassword,
+
+    cleanupTimeDownloadedCrates,
+    cleanupTimeWaitingCrates,
+
 }

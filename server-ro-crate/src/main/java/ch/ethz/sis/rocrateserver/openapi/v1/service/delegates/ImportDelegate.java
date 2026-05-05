@@ -8,15 +8,16 @@ import ch.ethz.sis.rocrateserver.openapi.v1.service.jobs.AsyncJobRegistry;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.jobs.ImportJob;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.params.ImportParams;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.response.AsyncJob;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 import edu.kit.datamanager.ro_crate.RoCrate;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
-import ch.ethz.sis.shared.log.classic.impl.Logger;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.Clock;
 import java.util.List;
 import java.util.Map;
 
@@ -125,7 +126,8 @@ public class ImportDelegate
         }
 
         String userName = openBIS.getSessionInformation().getUserName();
-        ImportJob importJob = new ImportJob(userName, headers, is2, openBIS, validateOnly);
+        ImportJob importJob =
+                new ImportJob(Clock.systemUTC(), userName, headers, is2, openBIS, validateOnly);
         String jobId = asyncJobRegistry.register(importJob);
         return new AsyncJob(jobId);
 
