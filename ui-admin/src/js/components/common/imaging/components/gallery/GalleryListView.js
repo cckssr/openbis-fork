@@ -45,24 +45,6 @@ const useStyles = makeStyles((theme) => ({
 const GalleryListView = ({ previewContainerList, onOpenPreview, onEditComment, onEditNote, imagingTags }) => {
     const classes = useStyles();
 
-    const renderDatasetProps = (datasetProperties, datasetId, idx) => {
-        if (isObjectEmpty(datasetProperties)) {
-            <p>No Properties to display</p>
-        } else {
-            return Object.entries(datasetProperties).map(([key, value], pos) => {
-                if (key === constants.IMAGING_NOTES) {
-                    return <EditableMetadataField keyProp={key}
-                        valueProp={value}
-                        idx={idx}
-                        onEdit={newVal => onEditNote(newVal, datasetId)} />
-                } else {
-                    return <DefaultMetadataField key={'property-' + idx + '-' + pos} label={key} value={value} />
-                }
-            })
-        }
-
-    }
-
     const renderTags = (tags, idx) => {
         var trasformedTags = []
         for (const activePreviewTag of tags) {
