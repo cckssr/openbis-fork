@@ -139,7 +139,8 @@ const ImagingGalleryViewer = ({ objId, objType, extOpenbis, onOpenPreview, onSto
         let selectedPreview = previewContainer.preview;
         selectedPreview.show = !selectedPreview.show;
         try {
-            await imagingFacade.updatePreview(previewContainer.datasetId, previewContainer.imageIdx, selectedPreview);
+            await imagingFacade.updatePreview(previewContainer.objectType,
+                previewContainer.datasetId, previewContainer.imageIdx, selectedPreview);
         } catch (error) {
             handleError(error);
         } finally {
@@ -203,7 +204,9 @@ const ImagingGalleryViewer = ({ objId, objType, extOpenbis, onOpenPreview, onSto
         let selectedPreviewContainer = previewContainer;
         selectedPreviewContainer.preview.comment = comment;
         try {
-            const isSaved = await imagingFacade.updatePreview(previewContainer.datasetId, previewContainer.imageIdx, selectedPreviewContainer.preview);
+            const isSaved = await imagingFacade.updatePreview(previewContainer.objectType,
+                previewContainer.datasetId, previewContainer.imageIdx,
+                selectedPreviewContainer.preview);
             if (isSaved === null) {
                 let updatedContainerList = [...previewsInfo.previewContainerList];
                 updatedContainerList[idx] = selectedPreviewContainer;

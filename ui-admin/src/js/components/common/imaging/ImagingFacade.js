@@ -271,18 +271,28 @@ export default class ImagingFacade {
     /**
      * Updates a preview within a dataset.
      *
+     * @param {string} objectType - Type of entity to update the preview of. Either
+     * ObjectType.OBJECT or ObjectType.DATA_SET.
      * @param {string} permId - Dataset permanent ID
      * @param {number} imageIdx - Index of the image
      * @param {Object} preview - Preview object to update
      * @returns {Promise<Object>} Update result
      */
-    updatePreview = async (permId, imageIdx, preview) => {
-        const toUpdateImgDS = await this.loadImagingDataset(permId, false, false, false, ObjectType.DATA_SET);
+    updatePreview = async (objectType, permId, imageIdx, preview) => {
+        const toUpdateImgDS = await this.loadImagingDataset(permId, false, false, false, objectType);
         toUpdateImgDS.images[imageIdx].previews[preview.index] = preview;
-        const update = new this.openbis.DataSetUpdate();
-        update.setDataSetId(new this.openbis.DataSetPermId(permId));
-        update.setProperty(constants.IMAGING_DATA_CONFIG, JSON.stringify(toUpdateImgDS));
-        return this.openbis.updateDataSets([update]);
+
+        if (objectType === ObjectType.DATA_SET) {
+            const update = new this.openbis.DataSetUpdate();
+            update.setDataSetId(new this.openbis.DataSetPermId(permId));
+            update.setProperty(constants.IMAGING_DATA_CONFIG, JSON.stringify(toUpdateImgDS));
+            return this.openbis.updateDataSets([update]);
+        } else {
+            const update = new this.openbis.SampleUpdate();
+            update.setSampleId(new this.openbis.SamplePermId(permId));
+            update.setProperty(constants.IMAGING_DATA_CONFIG, JSON.stringify(toUpdateImgDS));
+            return this.openbis.updateSamples([update]);
+        }
     };
 
     /**
