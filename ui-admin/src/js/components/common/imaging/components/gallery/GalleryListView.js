@@ -13,7 +13,7 @@ import TextField from '@src/js/components/common/form/TextField.jsx'
 import makeStyles from '@mui/styles/makeStyles';
 import constants from "@src/js/components/common/imaging/constants.js";
 import { isObjectEmpty } from "@src/js/components/common/imaging/utils.js";
-import DefaultMetadataField from "@src/js/components/common/imaging/components/gallery/DefaultMetadataField.js";
+import DefaultMetadataField, { formatMetadataValue } from "@src/js/components/common/imaging/components/gallery/DefaultMetadataField.js";
 import EditableMetadataField from "@src/js/components/common/imaging/components/gallery/EditableMetadataField.jsx";
 
 const useStyles = makeStyles((theme) => ({
@@ -115,7 +115,7 @@ const GalleryListView = ({ previewContainerList, onOpenPreview, onEditComment, o
                                         color: 'textSecondary'
                                     }}
                                 >
-                                    <strong>{key}:</strong> {value}
+                                    <strong>{key}:</strong> {formatMetadataValue(value)}
                                 </Typography>
                             ))}
                         </div>
