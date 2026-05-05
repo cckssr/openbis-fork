@@ -84,7 +84,7 @@ public final class ExportEntityCollector {
     {
         Deque<ExportablePermId> todo = new LinkedList<>();
         todo.add(root);
-        SpacePermId rootSpacePermId = null;
+        SpacePermId initialSpacePermId = null;
 
         while(todo.isEmpty() == false)
         {
@@ -115,10 +115,10 @@ public final class ExportEntityCollector {
                                 spaceFetchOptions);
                         Space space = spaces.values().iterator().next();
                         SpacePermId spacePermId = space.getPermId();
-                        rootSpacePermId = getRootSpacePermId(root, rootSpacePermId, current, spacePermId);
+                        initialSpacePermId = getInitialSpacePermId(root, initialSpacePermId, current, spacePermId);
 
                         // Skip withLevelsBelow
-                        if (withObjectsAndDataSetsOtherSpaces && spacePermId.equals(rootSpacePermId) == false) {
+                        if (withObjectsAndDataSetsOtherSpaces && spacePermId.equals(initialSpacePermId) == false) {
                             continue; // BIS-2255: When exporting withObjectsAndDataSetsOtherSpaces, outside the original space do not export withLevelsBelow to avoid over-exporting
                         }
 
@@ -160,7 +160,7 @@ public final class ExportEntityCollector {
                         Project project = projects.values().iterator().next();
                         Space space = project.getSpace();
                         SpacePermId projectSpacePermId = project.getSpace().getPermId();
-                        rootSpacePermId = getRootSpacePermId(root, rootSpacePermId, current, projectSpacePermId);
+                        initialSpacePermId = getInitialSpacePermId(root, initialSpacePermId, current, projectSpacePermId);
                         ExportablePermId spaceId = new ExportablePermId(ExportableKind.SPACE, space.getPermId().getPermId());
                         todo.add(spaceId);
                     }
@@ -175,10 +175,10 @@ public final class ExportEntityCollector {
                                 projectFetchOptions);
                         Project project = projects.values().iterator().next();
                         SpacePermId projectSpacePermId = project.getSpace().getPermId();
-                        rootSpacePermId = getRootSpacePermId(root, rootSpacePermId, current, projectSpacePermId);
+                        initialSpacePermId = getInitialSpacePermId(root, initialSpacePermId, current, projectSpacePermId);
 
                         // Skip withLevelsBelow
-                        if (withObjectsAndDataSetsOtherSpaces && projectSpacePermId.equals(rootSpacePermId) == false) {
+                        if (withObjectsAndDataSetsOtherSpaces && projectSpacePermId.equals(initialSpacePermId) == false) {
                             continue; // BIS-2255: When exporting withObjectsAndDataSetsOtherSpaces, outside the original space do not export withLevelsBelow to avoid over-exporting
                         }
 
@@ -235,12 +235,12 @@ public final class ExportEntityCollector {
 
                         experiment = experiments.values().iterator().next();
                         experimentSpacePermId = experiment.getProject().getSpace().getPermId();
-                        rootSpacePermId = getRootSpacePermId(root, rootSpacePermId, current, experimentSpacePermId);
+                        initialSpacePermId = getInitialSpacePermId(root, initialSpacePermId, current, experimentSpacePermId);
 
                         // Sample Properties (Might be in another space)
                         for (Sample[] sampleValues : safe(experiment.getSampleProperties()).values()) {
                             for (Sample sampleValue : sampleValues) {
-                                if (isSampleInOtherSpaceBeingFiltered(withObjectsAndDataSetsOtherSpaces, rootSpacePermId, sampleValue)) {
+                                if (isSampleInOtherSpaceBeingFiltered(withObjectsAndDataSetsOtherSpaces, initialSpacePermId, sampleValue)) {
                                     continue;
                                 }
 
@@ -261,7 +261,7 @@ public final class ExportEntityCollector {
 
                     if (withLevelsBelow) {
                         // Skip withLevelsBelow
-                        if (withObjectsAndDataSetsOtherSpaces && experimentSpacePermId.equals(rootSpacePermId) == false) {
+                        if (withObjectsAndDataSetsOtherSpaces && experimentSpacePermId.equals(initialSpacePermId) == false) {
                             continue; // BIS-2255: When exporting withObjectsAndDataSetsOtherSpaces, outside the original space do not export withLevelsBelow to avoid over-exporting
                         }
 
@@ -356,7 +356,7 @@ public final class ExportEntityCollector {
                     Map<ISampleId, Sample> samples = api.getSamples(sessionToken, List.of(new SamplePermId(current.getPermId())), sampleFetchOptions);
                     sample = samples.values().iterator().next();
                     sampleSpacePermId = sample.getSpace().getPermId();
-                    rootSpacePermId = getRootSpacePermId(root, rootSpacePermId, current, sampleSpacePermId);
+                    initialSpacePermId = getInitialSpacePermId(root, initialSpacePermId, current, sampleSpacePermId);
 
                     //
                     // Iterate over results (filter other spaces if needed)
@@ -365,7 +365,7 @@ public final class ExportEntityCollector {
                     // Sample Properties (Might be in another space)
                     for (Sample[] sampleValues:safe(sample.getSampleProperties()).values()) {
                         for (Sample sampleValue : sampleValues) {
-                            if (isSampleInOtherSpaceBeingFiltered(withObjectsAndDataSetsOtherSpaces, rootSpacePermId, sampleValue)) { continue; }
+                            if (isSampleInOtherSpaceBeingFiltered(withObjectsAndDataSetsOtherSpaces, initialSpacePermId, sampleValue)) { continue; }
                             ExportablePermId sampleId = new ExportablePermId(ExportableKind.SAMPLE,
                                     sampleValue.getPermId().getPermId());
                             todo.add(sampleId);
@@ -388,7 +388,7 @@ public final class ExportEntityCollector {
                         // Sample Parents (Might be in another space)
                         if (withObjectsAndDataSetsParents) {
                             for (Sample sampleParent : sample.getParents()) {
-                                if (isSampleInOtherSpaceBeingFiltered(withObjectsAndDataSetsOtherSpaces, rootSpacePermId, sampleParent)) {
+                                if (isSampleInOtherSpaceBeingFiltered(withObjectsAndDataSetsOtherSpaces, initialSpacePermId, sampleParent)) {
                                     continue;
                                 }
 
@@ -410,7 +410,7 @@ public final class ExportEntityCollector {
                         // Sample Children (Might be in another space)
                         if (withObjectsAndDataSetsChildren) {
                             for (Sample sampleChild : sample.getChildren()) {
-                                if (isSampleInOtherSpaceBeingFiltered(withObjectsAndDataSetsOtherSpaces, rootSpacePermId, sampleChild)) {
+                                if (isSampleInOtherSpaceBeingFiltered(withObjectsAndDataSetsOtherSpaces, initialSpacePermId, sampleChild)) {
                                     continue;
                                 }
 
@@ -493,7 +493,7 @@ public final class ExportEntityCollector {
                     if (dataSet.getExperiment() != null) {
                         datasetSpacePermId = dataSet.getExperiment().getProject().getSpace().getPermId();
                     }
-                    rootSpacePermId = getRootSpacePermId(root, rootSpacePermId, current, datasetSpacePermId);
+                    initialSpacePermId = getInitialSpacePermId(root, initialSpacePermId, current, datasetSpacePermId);
 
                     //
                     // Iterate over results (filter other spaces if needed)
@@ -502,7 +502,7 @@ public final class ExportEntityCollector {
                         // Sample Properties (Might be in another space)
                         for (Sample[] sampleValues : safe(dataSet.getSampleProperties()).values()) {
                             for (Sample sampleValue : sampleValues) {
-                                if (isSampleInOtherSpaceBeingFiltered(withObjectsAndDataSetsOtherSpaces, rootSpacePermId, sampleValue)) {
+                                if (isSampleInOtherSpaceBeingFiltered(withObjectsAndDataSetsOtherSpaces, initialSpacePermId, sampleValue)) {
                                     continue;
                                 }
 
@@ -526,7 +526,7 @@ public final class ExportEntityCollector {
                         // DataSet Parents (Might be in another space)
                         if (withObjectsAndDataSetsParents) {
                             for (DataSet dataSetParent : dataSet.getParents()) {
-                                if (isDataSetInOtherSpaceBeingFiltered(withObjectsAndDataSetsOtherSpaces, rootSpacePermId, dataSet)) {
+                                if (isDataSetInOtherSpaceBeingFiltered(withObjectsAndDataSetsOtherSpaces, initialSpacePermId, dataSet)) {
                                     continue;
                                 }
 
@@ -541,7 +541,7 @@ public final class ExportEntityCollector {
                         // DataSet Children (Might be in another space)
                         if (withObjectsAndDataSetsChildren) {
                             for (DataSet dataSetChild : dataSet.getChildren()) {
-                                if (isDataSetInOtherSpaceBeingFiltered(withObjectsAndDataSetsOtherSpaces, rootSpacePermId, dataSetChild)) {
+                                if (isDataSetInOtherSpaceBeingFiltered(withObjectsAndDataSetsOtherSpaces, initialSpacePermId, dataSetChild)) {
                                     continue;
                                 }
 
@@ -556,7 +556,7 @@ public final class ExportEntityCollector {
         }
     }
 
-    private static SpacePermId getRootSpacePermId(ExportablePermId root, SpacePermId rootSpacePermId, ExportablePermId currentPermId, SpacePermId currentPermIdSpacePermId) {
+    private static SpacePermId getInitialSpacePermId(ExportablePermId root, SpacePermId rootSpacePermId, ExportablePermId currentPermId, SpacePermId currentPermIdSpacePermId) {
         if (rootSpacePermId == null &&
                 root.getExportableKind().equals(currentPermId.getExportableKind()) &&
                 root.getPermId().equals(currentPermId.getPermId())) {
