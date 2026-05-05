@@ -26,8 +26,16 @@ configurations.all {
     resolutionStrategy.eachDependency { details ->
         if (details.requested.group == 'apache'
                 && details.requested.name == 'commons-io') {
-            details.useTarget 'commons-io:commons-io:2.19.0'
+            details.useTarget "commons-io:commons-io:${libs.commons.io.commons.io.get().versionConstraint.requiredVersion}"
         }
+    }
+    def hamcrestVersion = libs.org.hamcrest.hamcrest.core.get().versionConstraint.requiredVersion
+    resolutionStrategy {
+        force(
+                "org.hamcrest:hamcrest-core:${hamcrestVersion}",
+                "org.hamcrest:hamcrest-library:${hamcrestVersion}",
+                "org.hamcrest:hamcrest-integration:${hamcrestVersion}"
+        )
     }
 }
 
@@ -67,7 +75,7 @@ buildscript {
     repositories repositoryConfig
     
     dependencies {
-        classpath 'cisd:cisd-ant-tasks:r29834'
+        classpath libs.cisd.cisd.ant.tasks
     }
 }
 
@@ -247,7 +255,7 @@ test.dependsOn checkRestrictions
 
 // Legacy Java 8 compiler from eclipse
 dependencies {
-    ecj "eclipse:ecj:4.6.1"
+    ecj libs.org.eclipse.jdt.core.compiler.ecj
 }
 
 compileJava {

@@ -11,7 +11,7 @@ import ch.ethz.sis.rocrateserver.openapi.v1.service.response.AsyncJob;
 import edu.kit.datamanager.ro_crate.RoCrate;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
-import org.jboss.logging.Logger;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

@@ -1,14 +1,14 @@
 import org.gradle.api.tasks.Copy
 
 plugins {
-    id("com.github.node-gradle.node") version "7.1.0"
+    alias(libs.plugins.com.github.node.gradle.node)
 }
 
 apply from: '../build/javaproject.gradle'
 
 node {
     download = true
-    version = '20.18.0'
+    version = libs.versions.node.runtime.get()
     workDir = file("${projectDir}/node/nodejs")
     //nodeModulesDir = file("${projectDir}")
 }
@@ -35,5 +35,4 @@ tasks.register('release', Tar) {
     from("${project(':api-openbis-typescript').projectDir}/targets/openbis-typescript-api")
     into 'openbis-javascript-api'
 }
-
 

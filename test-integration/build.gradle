@@ -27,8 +27,8 @@ dependencies {
             project(':server-data-store'),
             project(path: ':server-data-store', configuration: 'tests'),
             project(':ui-eln-lims'),
-            'org.eclipse.jetty:jetty-proxy:12.1.1',
-            'org.eclipse.jetty.ee10:jetty-ee10-proxy:12.1.1',
-            'slf4j:slf4j-api:1.7.24'
+            libs.org.eclipse.jetty.jetty.proxy,
+            libs.org.eclipse.jetty.ee10.jetty.ee10.proxy,
+            libs.org.slf4j.slf4j.api
 
 }

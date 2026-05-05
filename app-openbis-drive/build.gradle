@@ -1,17 +1,23 @@
 plugins {
     id 'java-library'
     id 'application'
-    id 'com.google.protobuf' version '0.9.5'
-    id 'org.openjfx.javafxplugin' version '0.0.13'
+    alias(libs.plugins.com.google.protobuf)
+    alias(libs.plugins.org.openjfx.javafxplugin)
+}
+
+def dependencyCoordinates = { dependency ->
+    def module = dependency.get().module
+    def version = dependency.get().versionConstraint.requiredVersion
+    "${module.group}:${module.name}:${version}"
 }
 
 protobuf {
     protoc {
-        artifact = 'com.google.protobuf:protoc:3.25.5'
+        artifact = dependencyCoordinates(libs.com.google.protobuf.protoc)
     }
     plugins {
         grpc {
-            artifact = 'io.grpc:protoc-gen-grpc-java:1.74.0'
+            artifact = dependencyCoordinates(libs.io.grpc.protoc.gen.grpc.java)
         }
     }
     generateProtoTasks {
@@ -76,7 +82,13 @@ java {
     targetCompatibility = JavaVersion.VERSION_21
 }
 
-javafx.version = "21.0.6"
+javafx.version = libs.org.openjfx.javafx.base.get().versionConstraint.requiredVersion
+
+def openjfxDependency = { dependency, classifier ->
+    def module = dependency.get().module
+    def version = dependency.get().versionConstraint.requiredVersion
+    "${module.group}:${module.name}:${version}:${classifier}"
+}
 
 evaluationDependsOn(':lib-json')
 evaluationDependsOn(':api-data-store-server-java')
@@ -109,47 +121,52 @@ repositories {
 }
 
 dependencies {
-    annotationProcessor("org.projectlombok:lombok:1.18.38")
+    annotationProcessor(libs.org.projectlombok.lombok)
 
-    compileOnly("org.projectlombok:lombok:1.18.38")
-    testCompileOnly("org.projectlombok:lombok:1.18.38")
-    testAnnotationProcessor("org.projectlombok:lombok:1.18.38")
+    compileOnly(libs.org.projectlombok.lombok)
+    testCompileOnly(libs.org.projectlombok.lombok)
+    testAnnotationProcessor(libs.org.projectlombok.lombok)
 
     api(project(":lib-json"))
     api(project(":api-openbis-java"))
 
-    implementation("org.xerial:sqlite-jdbc:3.50.2.0")
-    implementation("commons-cli:commons-cli:1.10.0")
-    api("slf4j:slf4j-api:1.7.24")
-    api("org.slf4j:slf4j-nop:1.7.24")
+    implementation(libs.org.xerial.sqlite.jdbc.v35020)
+    implementation(libs.commons.cli.commons.cli)
+    implementation(libs.com.google.guava.guava) {
+        version {
+            strictly libs.versions.com.google.guava.guava.get()
+        }
+    }
+    api(libs.org.slf4j.slf4j.api)
+    api(libs.org.slf4j.slf4j.nop)
 
     //GOOGLE PROTOBUF
-    implementation("com.google.protobuf:protobuf-java:4.31.1")
-    implementation("io.grpc:grpc-netty-shaded:1.74.0")
-    implementation("io.grpc:grpc-protobuf:1.74.0")
-    implementation("io.grpc:grpc-stub:1.74.0")
-    compileOnly ("org.apache.tomcat:annotations-api:6.0.53") // necessary for Java 9+
+    implementation(libs.com.google.protobuf.protobuf.java)
+    implementation(libs.io.grpc.grpc.netty.shaded)
+    implementation(libs.io.grpc.grpc.protobuf)
+    implementation(libs.io.grpc.grpc.stub)
+    compileOnly(libs.org.apache.tomcat.annotations.api) // necessary for Java 9+
 
     //JAVAFX
-    implementation("org.openjfx:javafx-base:${javafx.version}:linux")
-    implementation("org.openjfx:javafx-base:${javafx.version}:win")
-    implementation("org.openjfx:javafx-base:${javafx.version}:mac")
-    implementation("org.openjfx:javafx-graphics:${javafx.version}:linux")
-    implementation("org.openjfx:javafx-graphics:${javafx.version}:win")
-    implementation("org.openjfx:javafx-graphics:${javafx.version}:mac")
-    implementation("org.openjfx:javafx-fxml:${javafx.version}:linux")
-    implementation("org.openjfx:javafx-fxml:${javafx.version}:win")
-    implementation("org.openjfx:javafx-fxml:${javafx.version}:mac")
-    implementation("org.openjfx:javafx-controls:${javafx.version}:linux")
-    implementation("org.openjfx:javafx-controls:${javafx.version}:win")
-    implementation("org.openjfx:javafx-controls:${javafx.version}:mac")
-    implementation("org.controlsfx:controlsfx:11.2.1")
+    implementation(openjfxDependency(libs.org.openjfx.javafx.base, 'linux'))
+    implementation(openjfxDependency(libs.org.openjfx.javafx.base, 'win'))
+    implementation(openjfxDependency(libs.org.openjfx.javafx.base, 'mac'))
+    implementation(openjfxDependency(libs.org.openjfx.javafx.graphics, 'linux'))
+    implementation(openjfxDependency(libs.org.openjfx.javafx.graphics, 'win'))
+    implementation(openjfxDependency(libs.org.openjfx.javafx.graphics, 'mac'))
+    implementation(openjfxDependency(libs.org.openjfx.javafx.fxml, 'linux'))
+    implementation(openjfxDependency(libs.org.openjfx.javafx.fxml, 'win'))
+    implementation(openjfxDependency(libs.org.openjfx.javafx.fxml, 'mac'))
+    implementation(openjfxDependency(libs.org.openjfx.javafx.controls, 'linux'))
+    implementation(openjfxDependency(libs.org.openjfx.javafx.controls, 'win'))
+    implementation(openjfxDependency(libs.org.openjfx.javafx.controls, 'mac'))
+    implementation(libs.org.controlsfx.controlsfx)
 
-    testImplementation("junit:junit:4.13.1")
-    testImplementation("org.mockito:mockito-core:4.4.0")
-    testImplementation( 'hamcrest:hamcrest-core:1.3')
-    testImplementation('hamcrest:hamcrest-integration:1.3')
-    testImplementation('hamcrest:hamcrest-library:1.3')
+    testImplementation(libs.org.junit.junit)
+    testImplementation(libs.org.mockito.mockito.core)
+    testImplementation(libs.org.hamcrest.hamcrest.core)
+    testImplementation(libs.org.hamcrest.hamcrest.integration)
+    testImplementation(libs.org.hamcrest.hamcrest.library)
 }
 
 tasks.named('jar', Jar) {

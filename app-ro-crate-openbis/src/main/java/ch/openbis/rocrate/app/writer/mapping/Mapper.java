@@ -21,12 +21,13 @@ import ch.openbis.rocrate.app.Constants;
 import ch.openbis.rocrate.app.writer.mapping.types.MapResult;
 import ch.openbis.rocrate.app.writer.mapping.types.RdfsSchema;
 import ch.openbis.rocrate.app.writer.mappinginfo.MappingInfo;
-import com.google.common.net.PercentEscaper;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.InputStream;
 import java.io.Serializable;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -404,8 +405,7 @@ public class Mapper
                 MapResult.RoCrateFile roCrateFile =
                         new MapResult.RoCrateFile(path, b.originalPath());
                 files.add(roCrateFile);
-                PercentEscaper percentEscaper = new PercentEscaper("-_/().", false);
-                identifiersToWrite.add(percentEscaper.escape(b.originalPath()));
+                identifiersToWrite.add(escape(b.originalPath()));
             }
 
             Map<String, MetadataEntry> idToEntities =
@@ -421,6 +421,17 @@ public class Mapper
         return new MapResult(
                 new RdfsSchema(new ArrayList<>(classes.values()), properties),
                 new MappingInfo(reverseMapping, rdfsPropertiesUsedIn), metaDataEntries, files);
+    }
+
+    private static String escape(String value) {
+        return URLEncoder.encode(value, StandardCharsets.UTF_8)
+                .replace("+", "%20")
+                .replace("%2F", "/")
+                .replace("%2D", "-")
+                .replace("%5F", "_")
+                .replace("%2E", ".")
+                .replace("%28", "(")
+                .replace("%29", ")");
     }
 
     private String mapValue(String val, DataType dataType)

@@ -481,16 +481,41 @@ e.g
 
 #### AS PROPERTIES
 
-| Key                                                                        | Example Value | Short Explanation |
-|----------------------------------------------------------------------------|---------------|-------------------|
-| eln-lims.as.miscellaneous.file-service.file-server.maximum-file-size-in-MB | 50            |                   |
+| Key                                                                        | Example Value           | Short Explanation                                                                                         |
+|----------------------------------------------------------------------------|-------------------------|-----------------------------------------------------------------------------------------------------------|
+| eln-lims.as.miscellaneous.file-service.file-server.maximum-file-size-in-MB | 50                      |                                                                                                           |
 | eln-lims.as.miscellaneous.file-service.file-server.repository-path         | /data/openbis/raw-store | Directory to be used for storing media objects such as images embedded within rich text fields in the ELN |
-| eln-lims.as.services.as-eln-lims-api.script-path                           |               |                   |
-| eln-lims.as.services.freeze-api.script-path                                |               |                   |
-| eln-lims.as.services.publication-api.script-path                           |               |                   |
-| eln-lims.as.webapps.eln-lims.webapp-folder                                 |               |                   |
-| file-server.section_eln-lims.download-url-template                         |               |                   |
-| file-server.section_eln-lims.error-message-template                        |               |                   |
+| eln-lims.as.services.as-eln-lims-api.script-path                           |                         |                                                                                                           |
+| eln-lims.as.services.freeze-api.script-path                                |                         |                                                                                                           |
+| eln-lims.as.services.publication-api.script-path                           |                         |                                                                                                           |
+| eln-lims.as.webapps.eln-lims.webapp-folder                                 |                         |                                                                                                           |
+| file-server.section_eln-lims.download-url-template                         |                         |                                                                                                           |
+| file-server.section_eln-lims.error-message-template                        |                         |                                                                                                           |
+| zenodo-exports-api-limit-data-size-megabytes                               | 4000                    |                                                                                                           |
+| zenodo-exports-api-zenodoUrl                                               |                         |                                                                                                           |
+| zenodo-exports-api-http-proxy-url                                          |                         |                                                                                                           |
+| zenodo-exports-api-http-proxy-port                                         |                         |                                                                                                           |
+| zenodo-exports-api-accessToken                                             |                         |                                                                                                           |
+| eln-lims.as.services.exports-api.share-id                                  |                         |                                                                                                           |
+| eln-lims.as.services.exports-api.limit-data-size-megabytes                 | 10000                   |                                                                                                           |
+| eln-lims.as.services.exports-api.research_collection.enabled               | true                    | Flag for enabling ResearchCollection export form                                                          |
+| eln-lims.as.services.exports-api.research_collection.realm                 | SWORD2                  |                                                                                                           |
+| rc-exports-api-limit-data-size-megabytes                                   |                         |                                                                                                           |
+| rc-exports-api-service-document-url                                        |                         |                                                                                                           |
+| rc-exports-api-user                                                        |                         |                                                                                                           |
+| rc-exports-api-password                                                    |                         |                                                                                                           |
+| rc-exports-api-http-proxy-url                                              |                         |                                                                                                           |
+| rc-exports-api-http-proxy-port                                             |                         |                                                                                                           |
+| eln-lims.as.services.exports-api.sci-cat.enabled                           | true                    | Flag for enabling SciCat export form                                                                      |
+| eln-lims.as.services.exports-api.sci-cat.export.url                        |                         |                                                                                                           |
+| eln-lims.as.services.exports-api.sci-cat.detail.url                        |                         |                                                                                                           |
+| eln-lims.as.services.exports-api.sci-cat.http.proxy.url                    |                         |                                                                                                           |
+| eln-lims.as.services.exports-api.sci-cat.http.proxy.port                   |                         |                                                                                                           |
+| eln-lims.as.services.exports-api.sci-cat.timeout.count                     |                         |                                                                                                           |
+| eln-lims.as.services.exports-api.sci-cat.timeout.sleep                     |                         |                                                                                                           |
+| eln-lims.as.services.exports-api.ro-crate.url                              |                         |                                                                                                           |
+
+
 
 #### DSS PROPERTIES
 
@@ -549,22 +574,11 @@ e.g
 | eln-lims.dss.reporting-plugins.zenodo-exports-api.share-id                           |               |                   |
 | eln-lims.dss.search-domain-services.blastsearch.blast-tools-directory                |               |                   |
 | eln-lims.dss.search-domain-services.blastsearch.blast-databases-folder               |               |                   |
-| rc-exports-api-limit-data-size-megabytes                                             |               |                   |
-| rc-exports-api-service-document-url                                                  |               |                   |
-| rc-exports-api-user                                                                  |               |                   |
-| rc-exports-api-password                                                              |               |                   |
-| rc-exports-api-http-proxy-url                                                        |               |                   |
-| rc-exports-api-http-proxy-port                                                       |               |                   |
 | dataset-uploader.h5-folders                                                          |               |                   |
 | dataset-uploader.h5ar-folders                                                        |               |                   |
 | default-incoming-share-id                                                            | 1             |                   |
 | default-incoming-share-minimum-free-space-in-gb                                      |               |                   |
 | download-url                                                                         |               |                   |
-| zenodo-exports-api-limit-data-size-megabytes                                         | 4000          |                   |
-| zenodo-exports-api-zenodoUrl                                                         |               |                   |
-| zenodo-exports-api-http-proxy-url                                                    |               |                   |
-| zenodo-exports-api-http-proxy-port                                                   |               |                   |
-| zenodo-exports-api-accessToken                                                       |               |                   |
 
 ### ADMIN
 
@@ -638,13 +652,19 @@ None.
 
 #### AS PROPERTIES
 
-None.
+
+| Key                                                     | Example Value | Short Explanation                                                  |
+|---------------------------------------------------------|---------------|--------------------------------------------------------------------|
+| imaging.as.services.imaging.python3-path                |               | Path to python installation (if python-based adapters are used)    |
+| imaging.as.services.imaging.storageRoot.dss             |               | Path to dss storage root                                           |
+| imaging.as.services.imaging.storageRoot.afs             |               | Path to afs storage root                                           |
+| imaging.as.services.imaging.python-adapter.script-path  |               | Path to python script to be used by build-in python adapter        |
+| imaging.as.services.imaging.python-adapter.python3-path |               | Path to python installation to be used for build-in python adapter |
+
 
 #### DSS PROPERTIES
 
-| Key                                       | Example Value | Short Explanation |
-|-------------------------------------------|---------------|-------------------|
-| imaging.dss.services.imaging.python3-path |               |                   |
+None.
 
 ### MONITORING-SUPPORT
 

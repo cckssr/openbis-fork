@@ -164,7 +164,7 @@ public class AbstractFileTest extends SystemTestCase
         }
 
         @Override
-        protected boolean matchesSafely(Collection<DataSetFile> elements)
+        public boolean matchesSafely(Collection<DataSetFile> elements)
         {
             for (String file : files)
             {

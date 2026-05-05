@@ -14,7 +14,7 @@
  *  limitations under the License.
  *
  */
-
+import java.security.MessageDigest
 
 tasks.register('clean', Delete) {
     delete 'build'
@@ -80,6 +80,73 @@ tasks.register('versionUpdate') {
 
 clean.dependsOn 'versionUpdate'
 
+
+def md5BaseDir = layout.buildDirectory.dir("tmp/md5")
+
+tasks.register('generateMd5Files') {
+    dependsOn(
+            project(':api-openbis-java').tasks.release,
+            project(':api-openbis-java').tasks.releaseDependenciesIncluded,
+            project(':api-openbis-javascript').tasks.release,
+            project(':api-openbis-python3-pybis').tasks.release,
+
+            project(':app-openbis-command-line').tasks.release,
+            project(':app-openbis-installer').tasks.release,
+            project(':app-openbis-drive').tasks.release,
+
+            project(':server-application-server').tasks.javadocTar,
+            project(':server-application-server').tasks.dynamicApiJavadocTar,
+            project(':server-original-data-store').tasks.javadocTar,
+            project(':server-original-data-store').tasks.dropboxJavadocTar
+    )
+
+    doLast {
+        def md = MessageDigest.getInstance("MD5")
+
+        def writeMd5 = { File file, String subDir ->
+            md.reset()
+            file.withInputStream { is ->
+                byte[] buffer = new byte[8192]
+                int read
+                while ((read = is.read(buffer)) != -1) {
+                    md.update(buffer, 0, read)
+                }
+            }
+
+            def hash = md.digest().encodeHex().toString()
+
+            def outDir = new File(md5BaseDir.get().asFile, subDir)
+            outDir.mkdirs()
+
+            def outFile = new File(outDir, file.name + ".md5")
+            outFile.text = "${hash}  ${file.name}"
+        }
+
+        // API
+        [
+                project(':api-openbis-java').tasks.release.archiveFile.get().asFile,
+                project(':api-openbis-java').tasks.releaseDependenciesIncluded.archiveFile.get().asFile,
+                project(':api-openbis-javascript').tasks.release.archiveFile.get().asFile,
+                project(':api-openbis-python3-pybis').tasks.release.archiveFile.get().asFile
+        ].each { writeMd5(it, "api") }
+
+        // APP
+        [
+                project(':app-openbis-command-line').tasks.release.archiveFile.get().asFile,
+                project(':app-openbis-installer').tasks.release.archiveFile.get().asFile,
+                project(':app-openbis-drive').tasks.release.archiveFile.get().asFile
+        ].each { writeMd5(it, "app") }
+
+        // JAVADOC
+        [
+                project(':server-application-server').tasks.javadocTar.archiveFile.get().asFile,
+                project(':server-application-server').tasks.dynamicApiJavadocTar.archiveFile.get().asFile,
+                project(':server-original-data-store').tasks.javadocTar.archiveFile.get().asFile,
+                project(':server-original-data-store').tasks.dropboxJavadocTar.archiveFile.get().asFile
+        ].each { writeMd5(it, "javadoc") }
+    }
+}
+
 tasks.register('release', Tar) {
     compression = Compression.GZIP
     // API
@@ -99,6 +166,8 @@ tasks.register('release', Tar) {
                ':server-original-data-store:javadocTar',
                ':server-original-data-store:dropboxJavadocTar'
     ])
+    //MD5
+    dependsOn tasks.named('generateMd5Files')
 
     archiveFileName = "openbis-release-${version}.tar.gz"
     destinationDirectory = layout.buildDirectory.dir(".")
@@ -111,12 +180,20 @@ tasks.register('release', Tar) {
     ]) {
         into 'api'
     }
+    from(md5BaseDir) {
+        into ''
+        include 'api/**'
+    }
 
     from([project(':app-openbis-command-line').tasks.release.archiveFile,
           project(':app-openbis-installer').tasks.release.archiveFile,
           project(':app-openbis-drive').tasks.release.archiveFile
     ]) {
         into 'app'
+    }
+    from(md5BaseDir) {
+        into ''
+        include 'app/**'
     }
 
     from([project(':server-application-server').tasks.javadocTar.archiveFile,
@@ -125,6 +202,10 @@ tasks.register('release', Tar) {
           project(':server-original-data-store').tasks.dropboxJavadocTar.archiveFile
     ]) {
         into 'javadoc'
+    }
+    from(md5BaseDir) {
+        into ''
+        include 'javadoc/**'
     }
 }
 

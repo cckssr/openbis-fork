@@ -37,7 +37,7 @@ import edu.kit.datamanager.ro_crate.entities.AbstractEntity;
 import edu.kit.datamanager.ro_crate.reader.FolderReader;
 import edu.kit.datamanager.ro_crate.reader.RoCrateReader;
 import io.quarkus.logging.Log;
-import org.jboss.logging.Logger;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 
 import java.io.*;
 import java.net.URL;

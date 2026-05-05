@@ -1,3 +1,5 @@
+apply from: '../build/version-catalog-settings.gradle'
+
 includeFlat 'api-data-store-server-javascript'
 
 //api-openbis-typescript and its dependencies

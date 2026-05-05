@@ -1,5 +1,6 @@
 package ch.ethz.sis.rocrateserver.startup;
 
+import ch.ethz.sis.shared.log.standard.utils.LogInitializer;
 import io.quarkus.runtime.LaunchMode;
 import io.quarkus.runtime.Quarkus;
 import io.quarkus.runtime.QuarkusApplication;
@@ -39,7 +40,6 @@ public class StartupMain implements QuarkusApplication
             configuration = new Configuration(List.of(RoCrateServerParameter.class), args[0]);
             validate(configuration);
             cleanBeforeRun(configuration);
-
         }
 
         System.setProperty("quarkus.http.port", configuration.getStringProperty(RoCrateServerParameter.httpServerPort));
@@ -67,6 +67,8 @@ public class StartupMain implements QuarkusApplication
     public int run(String... args) throws Exception
     {
         createServerStartedFile();
+        LogInitializer.init();
+        configuration.logLoadedProperties();
         System.out.println(">> Quarkus app running. Press Ctrl+C to exit.");
         Quarkus.waitForExit();
         return 0;

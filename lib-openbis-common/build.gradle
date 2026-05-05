@@ -11,15 +11,15 @@ dependencies {
             project(':lib-authentication'),
             project(':lib-hierarchical-content'),
             project(':lib-hdf5'),
-            'googlecode:jsonrpc4j:1.8-CISD',
-            'com.fasterxml.jackson.core:jackson-databind:2.18.3',
-            'com.fasterxml.jackson.core:jackson-annotations:2.18.3',
-            'reflections:reflections:0.9.10',
-            'lemnik:eodsql:2.2-CISD',
-            'org.springframework:spring-jdbc:6.2.15',
-            'org.springframework:spring-tx:6.2.15',
-            'apache:commons-collections4:4.1',
-            'truezip:truezip:6.8.1'
+            libs.googlecode.jsonrpc4j,
+            libs.com.fasterxml.jackson.core.jackson.databind,
+            libs.com.fasterxml.jackson.core.jackson.annotations,
+            libs.org.reflections.reflections,
+            libs.lemnik.eodsql,
+            libs.org.springframework.spring.jdbc,
+            libs.org.springframework.spring.tx,
+            libs.org.apache.commons.commons.collections4,
+            libs.de.schlichtherle.truezip
 
 
 
@@ -29,13 +29,14 @@ dependencies {
             project(path: ':lib-common', configuration: 'tests'),
             project(path: ':lib-dbmigration', configuration: 'tests'),
             project(path: ':lib-authentication', configuration: 'tests'),
-            'fjelmer:classycle:1.4.2',
-            'testng:testng:6.8-CISD',
-            'junit:junit:4.13.2',
-            'org.eclipse.jetty.ee10:jetty-ee10-servlet:12.1.1',
-            'hamcrest:hamcrest-integration:1.3',
-            'hamcrest:hamcrest-library:1.3',
-            'slf4j:slf4j-api:1.7.24',
-            'slf4j:slf4j-jdk14:1.7.24',
-            'org.eclipse.jetty:jetty-server:12.1.1'
+            libs.fjelmer.classycle,
+            libs.org.testng.testng,
+            libs.org.junit.junit,
+            libs.org.jmock.jmock,
+            libs.org.eclipse.jetty.ee10.jetty.ee10.servlet,
+            libs.org.hamcrest.hamcrest.integration,
+            libs.org.hamcrest.hamcrest.library,
+            libs.org.slf4j.slf4j.api,
+            libs.org.slf4j.slf4j.jdk14,
+            libs.org.eclipse.jetty.jetty.server
 }

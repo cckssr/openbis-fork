@@ -1,11 +1,10 @@
 package ch.ethz.sis.afsclient.client;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -21,6 +20,7 @@ import ch.ethz.sis.afsapi.dto.Chunk;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.matchers.JUnitMatchers;
 
 public class AfsClientTest
 {
@@ -70,7 +70,7 @@ public class AfsClientTest
             fail();
         } catch (IllegalStateException e)
         {
-            assertThat(e.getMessage(), containsString("No session information detected!"));
+            assertThat(e.getMessage(), JUnitMatchers.containsString("No session information detected!"));
         }
     }
 
@@ -96,7 +96,7 @@ public class AfsClientTest
             fail();
         } catch (IllegalStateException e)
         {
-            assertThat(e.getMessage(), containsString("No session information detected!"));
+            assertThat(e.getMessage(), JUnitMatchers.containsString("No session information detected!"));
         }
     }
 

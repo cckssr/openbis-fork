@@ -9,10 +9,10 @@ dependencies {
             project(':lib-hdf5'),
             project(':lib-compress'),
             project(':lib-transactional-file-system'),
-            'sis:sis-base:23.06.0',
-            'sis:sis-jhdf5:19.04.0',
-            'apache:commons-compress:1.8',
-            'truezip:truezip:6.8.1'
-    testImplementation project(path: ':lib-commonbase', configuration: 'tests'), 'testng:testng:6.8-CISD', 'junit:junit:4.13.2','jmock:jmock:2.5.1',
-            'apache:commons-compress:1.8'
+            libs.sis.sis.base,
+            libs.sis.sis.jhdf5,
+            libs.org.apache.commons.commons.compress,
+            libs.de.schlichtherle.truezip
+    testImplementation project(path: ':lib-commonbase', configuration: 'tests'), libs.org.testng.testng, libs.org.junit.junit, libs.org.jmock.jmock,
+            libs.org.apache.commons.commons.compress
 }

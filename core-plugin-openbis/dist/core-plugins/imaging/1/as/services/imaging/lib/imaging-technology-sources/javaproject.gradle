@@ -61,7 +61,7 @@ buildscript {
     repositories repositoryConfig
     
     dependencies {
-        classpath 'cisd:cisd-ant-tasks:r29834'
+        classpath libs.cisd.cisd.ant.tasks
     }
 }
 
@@ -261,7 +261,7 @@ test.dependsOn checkRestrictions
 
 // Legacy Java 8 compiler from eclipse
 dependencies {
-    ecj "eclipse:ecj:4.6.1"
+    ecj libs.org.eclipse.jdt.core.compiler.ecj
 }
 
 compileJava {

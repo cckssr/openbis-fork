@@ -105,12 +105,9 @@ public class OpenBISQueryUtil {
 
     public static List<AbstractEntity> searchSynchronizableOpenBISEntities(@NonNull String openBISUrl, @NonNull String personalAccessToken, @NonNull String searchText) throws Exception {
         OpenBIS openbis;
-        if ("true".equalsIgnoreCase(System.getenv("OPENBIS_DRIVE_LOCAL_DEVELOPMENT_AS_AND_AFS_URL"))) {
-            openBISUrl = openBISUrl.replaceAll("localhost:8085", "localhost:8888");
-            openbis = new OpenBIS(openBISUrl);
-            if ( openBISUrl.contains("localhost:8888") ) {
-                openbis.login("admin", "...");
-            }
+        if (isOpenbisDriveLocalDevelopmentAsAndAfsUrl(openBISUrl)
+        ) {
+            openbis = getOpenBISForLocalDevelopment(openBISUrl);
         } else {
             openbis = new OpenBIS(openBISUrl);
             openbis.setSessionToken(personalAccessToken);
@@ -150,6 +147,20 @@ public class OpenBISQueryUtil {
         } else {
             return Collections.emptyList();
         }
+    }
+
+    private static boolean isOpenbisDriveLocalDevelopmentAsAndAfsUrl(@NonNull String openBISUrl) {
+        return "true".equalsIgnoreCase(System.getenv("OPENBIS_DRIVE_LOCAL_DEVELOPMENT_AS_AND_AFS_URL"))
+                && openBISUrl.contains("localhost:8085");
+    }
+
+    private static @NonNull OpenBIS getOpenBISForLocalDevelopment(@NonNull String openBISUrl) {
+        openBISUrl = openBISUrl.replaceAll("localhost:8085", "localhost:8888");
+        OpenBIS openbis = new OpenBIS(openBISUrl);
+        if ( openBISUrl.contains("localhost:8888") ) {
+            openbis.login("admin", "...");
+        }
+        return openbis;
     }
 
     public static List<String> searchOpenBISEntityAfsDirectories(@NonNull String openBISUrl,

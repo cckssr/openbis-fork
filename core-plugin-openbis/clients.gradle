@@ -1,36 +1,36 @@
 configurations.create('webStartJars')
 configurations.create('appbundler')
 dependencies {
-    webStartJars 'sis:sis-base:23.06.0',
-            'cisd:cisd-args4j:9.11.2',
-            'cglib:cglib-nodep:2.2',
-            'jline:jline:0.9.94',
-            'apache:commons-codec:1.10',
-            'commons-io:commons-io:2.19.0',
-            'apache:httpclient:4.3.6',
-            'apache:commons-lang3:3.14',
-            'apache:commons-text:1.11',
-            'apache:commons-logging:1.2',
-            'apache:geronimo-stax:1.0',
-            'apache:poi:3.17',
-            'apache:poi-ooxml:3.17',
-            'apache:poi-ooxml-schemas:3.17',
-            'apache:xmlbeans:2.6.0',
-            'dom4j:dom4j:1.6.1',
-            'imagej:ij:1.43u',
-            'python:jython:2.5.2',
-            'sybit:image-viewer:0.3.6',
-            'com.fasterxml.jackson.core:jackson-databind:2.18.3',
-            'org.springframework:spring-aop:6.2.15',
-            'org.springframework:spring-beans:6.2.15',
-            'org.springframework:spring-context:6.2.15',
-            'org.springframework:spring-core:6.2.15',
-            'org.springframework:spring-web:6.2.15',
-            'org.springframework:spring-webmvc:6.2.15',
-            'org.springframework:spring-expression:6.2.15',
-            'aopalliance:aopalliance:1.0'
+    webStartJars libs.sis.sis.base,
+            libs.cisd.cisd.args4j,
+            libs.cglib.cglib.nodep,
+            libs.jline.jline,
+            libs.commons.codec.commons.codec,
+            libs.commons.io.commons.io,
+            libs.org.apache.httpcomponents.httpclient.v436,
+            libs.org.apache.commons.commons.lang3,
+            libs.org.apache.commons.commons.text,
+            libs.commons.logging.commons.logging,
+            libs.org.apache.geronimo.specs.geronimo.stax.api10.spec,
+            libs.org.apache.poi.poi,
+            libs.org.apache.poi.poi.ooxml,
+            libs.org.apache.poi.poi.ooxml.schemas,
+            libs.org.apache.xmlbeans.xmlbeans,
+            libs.dom4j.dom4j,
+            libs.imagej.ij,
+            libs.python.jython,
+            libs.sybit.image.viewer,
+            libs.com.fasterxml.jackson.core.jackson.databind,
+            libs.org.springframework.spring.aop,
+            libs.org.springframework.spring.beans,
+            libs.org.springframework.spring.context,
+            libs.org.springframework.spring.core,
+            libs.org.springframework.spring.web,
+            libs.org.springframework.spring.webmvc,
+            libs.org.springframework.spring.expression,
+            libs.aopalliance.aopalliance
 
-    appbundler 'oracle:appbundler:1.0-CISD'
+    appbundler libs.oracle.appbundler
 }
 
 ext.jarsToBeSignedFolder = "${buildDir}/jars_to_be_signed"
@@ -116,6 +116,8 @@ task createDssClientJar(type: Jar) {
 task copyJarsForWebStart(type: Copy, dependsOn: [createOpenbisJar, createDssClientJar]) {
     from(configurations.webStartJars.files) {
         include '*.jar'
+        exclude '*-sources.jar'
+        exclude '*-javadoc.jar'
     }
     from(jarsToBeSignedFolder) {
         include dssGuiClientJarName
@@ -263,4 +265,3 @@ task dssUploadGuiStandaloneZip(type: Zip, dependsOn: dssUploadGuiStandalone) {
         into 'DataSetUploader.app'
     }
 }
-

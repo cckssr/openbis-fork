@@ -15,8 +15,8 @@
  */
 package ch.ethz.sis.afssftp.server;
 
-import ch.ethz.sis.afssftp.authentication.OpenBISPasswordAuthenticator;
-import ch.ethz.sis.afssftp.filesystemview.OpenBISFileSystemFactory;
+import ch.ethz.sis.afssftp.authentication.PasswordAuthenticator;
+import ch.ethz.sis.afssftp.filesystemview.VirtualFileSystemFactory;
 import ch.ethz.sis.afssftp.startup.AfsSftpServerParameter;
 import ch.ethz.sis.afssftp.util.OpenBISClientUtil;
 import ch.ethz.sis.shared.log.standard.LogFactory;
@@ -77,7 +77,7 @@ public final class Server {
 
         // 2. Setup SFTP subsystem
         sftpServer.setSubsystemFactories(Collections.singletonList(new SftpSubsystemFactory()));
-        sftpServer.setFileSystemFactory(new OpenBISFileSystemFactory());
+        sftpServer.setFileSystemFactory(new VirtualFileSystemFactory());
 
         // 3. Configure port and start
         int serverPort = configuration.getIntegerProperty(AfsSftpServerParameter.serverPort);
@@ -95,7 +95,7 @@ public final class Server {
         sftpServer.setKeyPairProvider(KeyPairProvider.wrap(kp));
 
         // 5. Set Authenticator
-        sftpServer.setPasswordAuthenticator(new OpenBISPasswordAuthenticator());
+        sftpServer.setPasswordAuthenticator(new PasswordAuthenticator(new OpenBISClientUtil()));
         //sshd.setPasswordAuthenticator(AcceptAllPasswordAuthenticator.INSTANCE); //possibly useful for local tests
 
         sftpServer.start();

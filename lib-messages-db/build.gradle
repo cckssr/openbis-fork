@@ -4,7 +4,7 @@ dependencies {
     api project(':lib-logging'),
             project(':lib-db')
     testImplementation project(path: ':lib-commonbase', configuration: 'tests'),
-            'testng:testng:6.8-CISD',
-            'junit:junit:4.13.2',
-            'jmock:jmock:2.5.1'
+            libs.org.testng.testng,
+            libs.org.junit.junit,
+            libs.org.jmock.jmock
 }

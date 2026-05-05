@@ -116,11 +116,11 @@ Depending on the property types, additional optional features may be included.
 
 ![](img/property-types.png)
 
-1. **ARRAY_INTEGER**: comma-separated list of integers
-2. **ARRAY_REAL**: comma-separated list of decimal numbers
-3. **ARRAY_STRING**: comma-separated list of string values
-4. **ARRAY_TIMESTAMP**: comma-separated list of dates with timestamps
-5. **BOOLEAN**: yes or no
+1. **ARRAY_INTEGER**: comma-separated list of integers. Syntax: [1, 2, 3]
+2. **ARRAY_REAL**: comma-separated list of decimal numbers. Syntax: [1.2, 2.5, 3.7]
+3. **ARRAY_STRING**: comma-separated list of string values. Syntax: ["string 1", "string 2", "string 3"]
+4. **ARRAY_TIMESTAMP**: comma-separated list of dates with timestamps Syntax: ["2026-02-04 12:56:31", "2026-04-10 11:50:23"]
+5. **BOOLEAN**: true or false
 6. **CONTROLLEDVOCABULARY**: list of predefined values
 7. **DATE**. Date field
 8. **HYPERLINK**: URL
@@ -134,7 +134,7 @@ Depending on the property types, additional optional features may be included.
 13. **REAL**: decimal number
 10. **TIMESTAMP**: date with timestamp
 11. **VARCHAR**: one-line text
-12. **XML**: to be used by *Managed Properties* (see [openBIS Managed Properties](../properties-handled-by-scripts.md#managed-properties) and for *Spreadsheet component*s, as described here:[Enable Rich Text Editor or Spreadsheet Widgets](./new-entity-type-registration.md#enable-rich-text-editor-or-spreadsheet-widgets)
+12. **XML**: to be used for *Spreadsheet component*s, as described here:[Enable Rich Text Editor or Spreadsheet Widgets](./new-entity-type-registration.md#enable-rich-text-editor-or-spreadsheet-widgets)
  
 
 

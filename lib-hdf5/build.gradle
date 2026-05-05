@@ -1,7 +1,7 @@
 apply from: '../build/javalibrary.gradle'
 
 dependencies {
-    implementation 'apache:commons-collections4:4.1', 'sis:sis-base:23.06.0', 'sis:sis-jhdf5:19.04.0'
+    implementation libs.org.apache.commons.commons.collections4, libs.sis.sis.base, libs.sis.sis.jhdf5
 
-    testImplementation 'testng:testng:6.8-CISD'
+    testImplementation libs.org.testng.testng
 }

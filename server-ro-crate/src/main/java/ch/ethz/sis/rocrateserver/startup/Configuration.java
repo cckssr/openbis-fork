@@ -15,7 +15,7 @@
  */
 package ch.ethz.sis.rocrateserver.startup;
 
-import ch.ethz.sis.shared.log.standard.Logger;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 import ch.systemsx.cisd.common.io.PropertyIOUtils;
 
 import java.io.FileInputStream;
@@ -26,8 +26,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public class Configuration {
 
     private static final String SYSTEM_PROPERTY_PREFIX_KEY = "system.property.prefix";
-    private static final org.jboss.logging.Logger
-            LOG = org.jboss.logging.Logger.getLogger(Configuration.class);
+
+    private static final Logger LOG = Logger.getLogger(Configuration.class);
 
     private final Map<Enum, Object> sharables = new ConcurrentHashMap<>();
     private final Properties properties = new Properties();

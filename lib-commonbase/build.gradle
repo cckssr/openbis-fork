@@ -2,21 +2,22 @@ apply from: '../build/javaproject.gradle'
 
 dependencies {
     api project(':lib-logging'),
-            'commons-io:commons-io:2.19.0',
-            'apache:commons-lang3:3.14',
-            'sis:sis-base:23.06.0',
-            'rinn:restrictions:1.0.2'
+            libs.commons.io.commons.io,
+            libs.org.apache.commons.commons.lang3,
+            libs.sis.sis.base,
+            libs.rinn.restrictions
 
     testImplementation project(path: ':lib-logging', configuration: 'tests'),
-            'testng:testng:6.8-CISD',
-            'junit:junit:4.13.2',
-            api('jmock:jmock:2.5.1') {
-                exclude group: 'hamcrest', module: 'hamcrest-core'
-                exclude group: 'hamcrest', module: 'hamcrest-library'
-            },
-            'hamcrest:hamcrest-integration:1.3',
-            'hamcrest:hamcrest-library:1.3',
-            'fjelmer:classycle:1.4.2'
+            libs.org.testng.testng,
+            libs.org.junit.junit,
+            libs.org.hamcrest.hamcrest.integration,
+            libs.org.hamcrest.hamcrest.library,
+            libs.fjelmer.classycle
+
+    testImplementation(libs.org.jmock.jmock) {
+        exclude group: 'hamcrest', module: 'hamcrest-core'
+        exclude group: 'hamcrest', module: 'hamcrest-library'
+    }
 }
 
 jar {
@@ -26,4 +27,3 @@ jar {
     }
     from sourceSets.main.output + sourceSets.test.output
 }
-

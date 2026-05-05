@@ -11,12 +11,17 @@ repositories {
 
 dependencies {
     api project(':lib-microservice-server'), project(':lib-logging')
-    api 'openbis:openbis-v3-api-batteries-included:20.10.0'
+    api libs.openbis.openbis.v3.api.batteries.included
 }
 
 mainClassName = "ch.ethz.sis.microservices.download.server.startup.Main"
 
 distZip {
+    eachFile { file ->
+        if (file.name.endsWith('-sources.jar') || file.name.endsWith('-javadoc.jar')) {
+            file.exclude()
+        }
+    }
     into(project.name) {
         from './conf'
         include '*'

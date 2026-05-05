@@ -38,24 +38,24 @@ dependencies {
             project(':lib-compress'),
             project(':lib-maintenance'),
             project(':lib-hierarchical-content'),
-            'apache:ftpserver-core:1.0.6',
-            'apache:sshd-sftp:2.7.0',
-            'slf4j:slf4j-api:1.7.24',
-            'slf4j:slf4j-jdk14:1.7.24',
-            'bouncycastle:bcpg:1.59',
-            'jfree:jfreechart:1.0.13',
-            'cisd:cisd-cifex:r1550129411',
-            'shriop:javacsv:2.0',
-            'cisd:cisd-image-readers:r1553067167',
-            'hjg:pngj:0.62',
+            libs.org.apache.ftpserver.ftpserver.core.v106,
+            libs.org.apache.sshd.sshd.sftp.v27,
+            libs.org.slf4j.slf4j.api,
+            libs.org.slf4j.slf4j.jdk14,
+            libs.org.bouncycastle.bcpg.jdk15on,
+            libs.jfree.jfreechart,
+            libs.cisd.cisd.cifex,
+            libs.net.sourceforge.javacsv.javacsv,
+            libs.cisd.cisd.image.readers,
+            libs.hjg.pngj,
             //'apache:commons-fileupload:1.3.3',
-            'org.apache.commons:commons-fileupload2-jakarta-servlet5:2.0.0-M4',
-            'docx4j:docx4j:6.1.2',
-            'freva:ascii-table:1.2.0',
-            'sis:sis-jhdf5:19.04.0',
-            'jsoup:jsoup:1.14.2',
-            'commons-io:commons-io:2.19.0'
-    api('dspace:xoai-data-provider:4.2.0'){
+            libs.org.apache.commons.commons.fileupload2.jakarta.servlet5,
+            libs.org.docx4j.docx4j,
+            libs.com.github.freva.ascii.table,
+            libs.sis.sis.jhdf5,
+            libs.org.jsoup.jsoup,
+            libs.commons.io.commons.io
+    api(libs.org.dspace.xoai.data.provider){
         exclude module: 'log4j'
     }
 
@@ -83,12 +83,16 @@ dependencies {
             project(path: ':lib-data-store-commonbase', configuration: 'tests'),
             project(path: ':lib-logging', configuration: 'tests'),
             project(path: ':lib-hdf5', configuration: 'tests'),
-            'fjelmer:classycle:1.4.2',
-            'testng:testng:6.8-CISD'
+            libs.fjelmer.classycle,
+            libs.org.testng.testng
+    testImplementation(libs.org.jmock.jmock) {
+        exclude group: 'hamcrest', module: 'hamcrest-core'
+        exclude group: 'hamcrest', module: 'hamcrest-library'
+    }
 
     testImplementation(project(path: ':server-application-server', configuration: 'tests'))
 
-    testRuntimeFirst 'jakarta:jakarta.servlet-api:6.1.0',
+    testRuntimeFirst libs.jakarta.servlet.jakarta.servlet.api,
             files("../core-plugin-openbis/dist/core-plugins/imaging/1/as/services/imaging/lib/openBIS-imaging-technology.jar"),
             files("../core-plugin-openbis/dist/core-plugins/imaging/1/as/api-listener/imaging-dataset-interceptor/lib/imaging-dataset-interceptor.jar")
 }
@@ -179,7 +183,7 @@ tasks.register('dropboxApiJar', Jar) {
 }
 
 tasks.register('dropboxApiZip', Zip) {
-    dependsOn[dropboxApiJar]
+    dependsOn dropboxApiJar
     archiveBaseName = 'openbis-dropbox-api'
     from dropboxApiJar.archiveFile
     into 'openbis-dropbox-api'

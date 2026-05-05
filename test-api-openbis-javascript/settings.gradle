@@ -1,3 +1,5 @@
+apply from: '../build/version-catalog-settings.gradle'
+
 includeFlat 'lib-commonbase', 'lib-common', 'api-openbis-java', 'lib-openbis-commonbase', 'lib-openbis-common', 'lib-data-store-commonbase', 'lib-data-store-common', 'lib-authentication', 'lib-hierarchical-content', 'lib-hdf5', 'lib-folder-monitor', 'lib-ro-crate', 'lib-rdf',
         'lib-mail', 'lib-maintenance', 'lib-openbis-messages', 'lib-db', 'lib-dbmigration', 'lib-pathinfo', 'lib-pathinfo-db', 'lib-messages-db', 'lib-archiver-db', 'lib-archiver', 'lib-shuffling', 'lib-compress', 'lib-transactional-file-system', 'lib-logging', 'lib-json', 'lib-two-phase-transaction', 'lib-microservice-server',
         'api-openbis-javascript', 'api-data-store-server-java', 'api-data-store-server-javascript', 'api-openbis-typescript', 'app-ro-crate-openbis',

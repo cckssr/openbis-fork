@@ -15,7 +15,7 @@ repositories {
         ivyPattern "https://sissource.ethz.ch/openbis/openbis-public/openbis-ivy/-/raw/main/[organisation]/[module]/[revision]/ivy.xml"
         artifactPattern "https://sissource.ethz.ch/openbis/openbis-public/openbis-ivy/-/raw/main/[organisation]/[module]/[revision]/[artifact]-[revision](-[classifier]).[ext]"
     }
-    mavenCentral()
+    //mavenCentral()
 }
 
 configurations {
@@ -24,20 +24,20 @@ configurations {
 }
 
 dependencies {
-    annotationProcessor 'lombok:lombok:1.18.38'
+    annotationProcessor libs.org.projectlombok.lombok
     implementation project(':lib-logging'),
             project(':api-openbis-java'),
-            'lombok:lombok:1.18.38',
-            'slf4j:slf4j-api:1.7.24',
-            'slf4j:slf4j-jdk14:1.7.24',
-            'org.apache.sshd:sshd-core:2.17.1',
-            'org.apache.sshd:sshd-sftp:2.17.1',
-            'org.apache.sshd:sshd-netty:2.17.1',
-            'io.netty:netty-all:4.1.110.Final'
-    testImplementation 'junit:junit:4.10',
-            'org.mockito:mockito-core:4.4.0',
-            'hamcrest:hamcrest-core:1.3',
-            'hamcrest:hamcrest-library:1.3'
+            libs.org.projectlombok.lombok,
+            libs.org.slf4j.slf4j.api,
+            libs.org.slf4j.slf4j.jdk14,
+            libs.org.apache.sshd.sshd.core,
+            libs.org.apache.sshd.sshd.sftp,
+            libs.org.apache.sshd.sshd.netty,
+            libs.io.netty.netty.all
+    testImplementation libs.org.junit.junit,
+            libs.org.mockito.mockito.core,
+            libs.org.hamcrest.hamcrest.core,
+            libs.org.hamcrest.hamcrest.library
 }
 
 task openBISDevelopmentEnvironmentAfsSftpStart(type: JavaExec) {

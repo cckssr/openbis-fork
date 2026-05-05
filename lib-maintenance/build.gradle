@@ -3,8 +3,8 @@ apply from: '../build/javalibrary.gradle'
 dependencies {
     implementation project(':lib-logging'),
             project(':lib-commonbase'),
-            'org.springframework:spring-context:6.2.15',
-            'org.springframework:spring-core:6.2.15'
+            libs.org.springframework.spring.context,
+            libs.org.springframework.spring.core
     testImplementation project(path: ':lib-commonbase', configuration: 'tests'),
-            'testng:testng:6.8-CISD'
+            libs.org.testng.testng
 }

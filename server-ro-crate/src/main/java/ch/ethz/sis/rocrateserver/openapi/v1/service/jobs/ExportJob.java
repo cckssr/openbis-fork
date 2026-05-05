@@ -48,7 +48,7 @@ import org.eclipse.jetty.client.Request;
 import org.eclipse.jetty.client.transport.HttpClientTransportOverHTTP;
 import org.eclipse.jetty.io.ClientConnector;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
-import org.jboss.logging.Logger;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -429,7 +429,7 @@ public final class ExportJob implements IAsyncJob
             EMailAddress recipient = new EMailAddress(this.email);
             final String subject = "openBIS RoCrate Export failed!";
             String content = String.format("Error during export: %s", exception.getMessage());
-            Log.debug("Sending email to: " + recipient + "\nContent:" + content);
+            Log.info("Sending email to: " + recipient + "\nContent:" + content);
             mailClient.sendEmailMessage(subject, content, null, null, recipient);
         } catch (Exception e)
         {
@@ -444,7 +444,7 @@ public final class ExportJob implements IAsyncJob
 
         String roCratePublicUrl = openBIS.getServerInformation().get("server-public-information.ro-crate-server.url");
         String content = roCratePublicUrl + "/download?jobId=" + encode(this.jobId.toString()) + "&apiKey=" + encode(this.exportParams.getApiKey());
-        Log.debug("Sending email to: " + recipient + "\nContent:" + content);
+        Log.info("Sending email to: " + recipient + "\nContent:" + content);
         mailClient.sendEmailMessage(subject, content, null, null, recipient);
     }
 

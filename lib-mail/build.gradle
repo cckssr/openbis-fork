@@ -1,6 +1,6 @@
 apply from: '../build/javalibrary.gradle'
 
 dependencies {
-    api project(':lib-commonbase'), 'javax.activation:activation:1.1.1', 'javax:mail:1.6.2'
-    testImplementation 'testng:testng:6.8-CISD'
+    api project(':lib-commonbase'), libs.javax.activation.activation, libs.com.sun.mail.javax.mail
+    testImplementation libs.org.testng.testng
 }

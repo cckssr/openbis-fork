@@ -43,14 +43,14 @@ repositories {
 
 dependencies {
                     // Ro-crate library
-    implementation 'edu.kit.datamanager:ro-crate-java:2.0.1',
-                    'com.fasterxml.jackson.core:jackson-core:2.18.3',
-                    'com.fasterxml.jackson.core:jackson-databind:2.18.3',
-                    'com.networknt:json-schema-validator:1.5.7',
-                    'net.lingala.zip4j:zip4j:2.11.5',
-            'org.apache.httpcomponents:httpclient:4.5.14',
+    implementation libs.edu.kit.datamanager.ro.crate.java,
+                    libs.com.fasterxml.jackson.core.jackson.core,
+                    libs.com.fasterxml.jackson.core.jackson.databind,
+                    libs.com.networknt.json.schema.validator,
+                    libs.net.lingala.zip4j.zip4j,
+            libs.org.apache.httpcomponents.httpclient,
             // Apache Jena
-                    'org.apache.jena:apache-jena-libs:5.0.0'
+            libs.bundles.org.apache.jena.jena
 
-    testImplementation 'junit:junit:4.10'
+    testImplementation libs.org.junit.junit
 }

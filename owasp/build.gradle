@@ -12,7 +12,7 @@ buildscript {
     }
 
     dependencies {
-        classpath("org.owasp:dependency-check-gradle:12.2.0")
+        classpath(libs.org.owasp.dependency.check.gradle)
     }
 }
 

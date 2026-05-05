@@ -18,19 +18,19 @@ repositories {
 
 dependencies {
     implementation project(':lib-logging')
-    api     'org.eclipse.jetty:jetty-server:12.1.1',
-             "org.eclipse.jetty.ee10:jetty-ee10-servlet:12.1.1",
-            "org.eclipse.jetty.ee10:jetty-ee10-webapp:12.1.1",
-            "org.eclipse.jetty:jetty-util:12.1.1",
-            'jakarta:jakarta.servlet-api:6.1.0',
-            'lombok:lombok:1.18.38',
-            'com.fasterxml.jackson.core:jackson-annotations:2.18.3',
-            'com.fasterxml.jackson.core:jackson-core:2.18.3',
-            'com.fasterxml.jackson.core:jackson-databind:2.18.3',
-            'slf4j:slf4j-api:1.7.24', // Required by Jetty that uses SLF4J
-            'slf4j:slf4j-jdk14:1.7.24' // Required by Jetty to tell SLF4J to use JDK
+    api     libs.org.eclipse.jetty.jetty.server,
+            libs.org.eclipse.jetty.ee10.jetty.ee10.servlet,
+            libs.org.eclipse.jetty.ee10.jetty.ee10.webapp,
+            libs.org.eclipse.jetty.jetty.util,
+            libs.jakarta.servlet.jakarta.servlet.api,
+            libs.org.projectlombok.lombok,
+            libs.com.fasterxml.jackson.core.jackson.annotations,
+            libs.com.fasterxml.jackson.core.jackson.core,
+            libs.com.fasterxml.jackson.core.jackson.databind,
+            libs.org.slf4j.slf4j.api, // Required by Jetty that uses SLF4J
+            libs.org.slf4j.slf4j.jdk14 // Required by Jetty to tell SLF4J to use JDK
 
-    annotationProcessor 'lombok:lombok:1.18.38'
+    annotationProcessor libs.org.projectlombok.lombok
 }
 
 mainClassName = "ch.ethz.sis.microservices.download.server.startup.Main"

@@ -26,9 +26,7 @@ tasks.register('release', Tar) {
     dependsOn tasks.named('versionUpdate')
     destinationDirectory = layout.buildDirectory.dir(".")
 
-    doFirst {
-        archiveFileName = "openbis-python3-api-${project.ext.pep440VersionNumber}.tar.gz"
-    }
+    archiveFileName = "openbis-python3-api-${project.ext.pep440VersionNumber}.tar.gz"
 
     from 'src'
 }
@@ -78,47 +76,44 @@ def semverToPep440(String version) {
     def main = parts[0]
     def build = parts.length > 1 ? parts[1] : null
 
-    // Split pre-release (-...)
-    def mainParts = main.split('-', 2)
-    def base = mainParts[0]
-    def pre = mainParts.length > 1 ? mainParts[1] : null
-
+    def base = main
     def pep = base
 
-    if (pre) {
-        def lower = pre.toLowerCase()
+    // Match prerelease in BOTH formats:
+    // - 7.0.0-dev.9
+    // - 7.0.0.dev.9
+    def matcher = (base =~ /^(.*?)(?:[-.])(dev|alpha|beta|rc)[.\-]?(\d*)$/)
 
-        // SNAPSHOT → dev0
-        if (lower == 'snapshot') {
-            pep = "${base}.dev0"
-        }
-        // dev.X → .devX
-        else if (lower.startsWith('dev.')) {
-            def n = lower.replace('dev.', '')
-            pep = "${base}.dev${n}"
-        }
-        // alpha.X → aX
-        else if (lower.startsWith('alpha.')) {
-            def n = lower.replace('alpha.', '')
-            pep = "${base}a${n}"
-        }
-        // beta.X → bX
-        else if (lower.startsWith('beta.')) {
-            def n = lower.replace('beta.', '')
-            pep = "${base}b${n}"
-        }
-        // rc.X → rcX
-        else if (lower.startsWith('rc.')) {
-            def n = lower.replace('rc.', '')
-            pep = "${base}rc${n}"
-        }
-        // fallback: treat unknown as dev
-        else {
-            pep = "${base}.dev0"
+    if (matcher.matches()) {
+        def core = matcher[0][1]
+        def type = matcher[0][2].toLowerCase()
+        def num  = matcher[0][3]
+
+        if (!num) num = "0"
+
+        switch (type) {
+            case "dev":
+                pep = "${core}.dev${num}"
+                break
+            case "alpha":
+                pep = "${core}a${num}"
+                break
+            case "beta":
+                pep = "${core}b${num}"
+                break
+            case "rc":
+                pep = "${core}rc${num}"
+                break
         }
     }
 
-    // Append build metadata (PEP 440 local version)
+    // SNAPSHOT special case
+    else if (base.toLowerCase().contains("snapshot")) {
+        def core = base.replaceAll(/(?i)[.-]?snapshot/, "")
+        pep = "${core}.dev0"
+    }
+
+    // Build metadata
     if (build) {
         pep = "${pep}+${build}"
     }

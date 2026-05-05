@@ -1,0 +1,25 @@
+// Shared settings hook for the all standalone Gradle builds
+// Applying this from a module's settings.gradle makes the central dependency
+// catalog in build/libs.versions.toml available as `libs` in that module.
+// This root lookup avoids hardcoding a different relative path in every module.
+def findRepositoryRoot(File startDir) {
+    def current = startDir
+    while (current != null) {
+        if (new File(current, 'build/libs.versions.toml').isFile()) {
+            return current
+        }
+        current = current.parentFile
+    }
+    throw new GradleException("Cannot find build/libs.versions.toml from ${startDir}")
+}
+
+def repositoryRoot = findRepositoryRoot(settingsDir)
+def versionCatalogFile = new File(repositoryRoot, 'build/libs.versions.toml')
+
+dependencyResolutionManagement {
+    versionCatalogs {
+        libs {
+            from(files(versionCatalogFile))
+        }
+    }
+}

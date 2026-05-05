@@ -24,9 +24,9 @@ buildscript {
     repositories repositoryConfig
 
     dependencies {
-        classpath 'izpack:izpack:5.0-beta9-SNAPSHOT-2022-03-22',
-                'commons-io:commons-io:2.19.0',
-                'apache:commons-lang:2.4'
+        classpath libs.izpack.izpack,
+                libs.commons.io.commons.io,
+                libs.commons.lang.commons.lang
 
     }
 }
@@ -34,18 +34,18 @@ buildscript {
 dependencies {
     api project(':lib-common')
 
-    api 'izpack:izpack:5.0-beta9-SNAPSHOT-2022-03-22'
+    api libs.izpack.izpack
 
     testImplementation project(path: ':lib-commonbase', configuration: 'tests'),
             project(path: ':lib-common', configuration: 'tests'),
-            'fjelmer:classycle:1.4.2',
-            'testng:testng:6.8-CISD',
-            'junit:junit:4.13.2',
-            'jmock:jmock:2.5.1'
+            libs.fjelmer.classycle,
+            libs.org.testng.testng,
+            libs.org.junit.junit,
+            libs.org.jmock.jmock
 
-    runtimeOnly 'commons-io:commons-io:2.19.0',
-                'sis:sis-base:23.06.0',
-                'postgresql:postgresql:42.7.9'
+    runtimeOnly libs.commons.io.commons.io,
+                libs.sis.sis.base,
+                libs.org.postgresql.postgresql
 
 }
 
@@ -177,8 +177,11 @@ task createInstallerJar(type: Jar, dependsOn: [compileInstaller, jar]) {
     from zipTree(project(':lib-commonbase').jar.archivePath)
     from {
         configurations.runtimeClasspath.files
-                .findAll { it.isFile() && it.name.toLowerCase().endsWith('.jar') }
-                .collect { zipTree(it) }
+                .findAll {
+                    def name = it.name.toLowerCase()
+                    it.isFile() && name.endsWith('.jar') && name.endsWith('-sources.jar') == false && name.endsWith('-javadoc.jar') == false
+                }
+                .collect { zipTree(it).matching { exclude '**/*.java' } }
     }
 }
 

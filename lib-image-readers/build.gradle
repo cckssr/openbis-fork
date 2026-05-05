@@ -5,15 +5,15 @@ apply from: '../build/javaproject.gradle'
 
 dependencies {
     api project(':lib-common'),
-            'imagej:ij:1.43u',
-            'bioformats:bioformats:6.5.2',
-            'slf4j:slf4j-api:1.7.24',
-            'slf4j:slf4j-jdk14:1.7.24'
+            libs.imagej.ij,
+            libs.bioformats.bioformats,
+            libs.org.slf4j.slf4j.api,
+            libs.org.slf4j.slf4j.jdk14
 
     testImplementation project(path: ':lib-commonbase', configuration: 'tests'),
             project(path: ':lib-common', configuration: 'tests'),
-            'fjelmer:classycle:1.4.2',
-            'testng:testng:6.8-CISD'
+            libs.fjelmer.classycle,
+            libs.org.testng.testng
 }
 
 def jarConfiguration(parameters) {

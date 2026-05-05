@@ -26,7 +26,7 @@ configurations {
 }
 
 dependencies {
-    annotationProcessor 'lombok:lombok:1.18.38'
+    annotationProcessor libs.org.projectlombok.lombok
     implementation project(':lib-openbis-commonbase'),
             project(':lib-openbis-messages'),
             project(':lib-data-store-commonbase'),
@@ -46,16 +46,21 @@ dependencies {
             project(':lib-http'),
             project(':api-data-store-server-java'),
             project(':api-openbis-java'),
-            'lombok:lombok:1.18.38',
-            'io.netty:netty-all:4.1.68.Final',
-            'slf4j:slf4j-api:1.7.24',
-            'slf4j:slf4j-jdk14:1.7.24',
-            'shriop:javacsv:2.0',
-            'deltavisio:http-invoker-reloaded:25.03.8-ac6cb8a'
-    testImplementation project(path: ':lib-commonbase', configuration: 'tests'),
-            'junit:junit:4.10',
-            'hamcrest:hamcrest-core:1.3',
-            'hamcrest:hamcrest-library:1.3'
+            libs.org.projectlombok.lombok,
+            libs.io.netty.netty.all.v4168final,
+            libs.org.slf4j.slf4j.api,
+            libs.org.slf4j.slf4j.jdk14,
+            libs.net.sourceforge.javacsv.javacsv,
+            libs.deltavisio.http.invoker.reloaded
+
+    testImplementation(project(path: ':lib-commonbase', configuration: 'tests'))
+    testImplementation(libs.org.junit.junit)
+    testImplementation(libs.org.hamcrest.hamcrest.core)
+    testImplementation(libs.org.hamcrest.hamcrest.library)
+    testImplementation(libs.org.jmock.jmock) {
+        exclude group: 'hamcrest', module: 'hamcrest-core'
+        exclude group: 'hamcrest', module: 'hamcrest-library'
+    }
 }
 
 task openBISDevelopmentEnvironmentAFSStart(type: JavaExec) {
@@ -122,6 +127,8 @@ task AFSServerZip(type: Zip, dependsOn: compileJava) {
     }
     from(configurations.runtimeClasspath) {
         into('afs-server/lib/')
+        exclude '**/*-sources.jar'
+        exclude '**/*-javadoc.jar'
     }
     from('dist') {
         into 'afs-server/'
