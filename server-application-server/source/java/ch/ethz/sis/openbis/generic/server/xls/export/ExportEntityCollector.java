@@ -107,27 +107,29 @@ public final class ExportEntityCollector {
                      *  - Projects
                      *  - Space Samples without a project
                      */
+                    Space space = null;
+                    SpacePermId spacePermId = null;
+
+                    //
+                    // Space Fetch
+                    //
                     SpaceFetchOptions spaceFetchOptions = new SpaceFetchOptions();
                     spaceFetchOptions.withProjects();
                     Map<ISpaceId, Space> spaces = api.getSpaces(sessionToken,
                             List.of(new SpacePermId(current.getPermId())),
                             spaceFetchOptions);
-                    Space space = spaces.values().iterator().next();
-                    SpacePermId spacePermId = space.getPermId();
-                    initialSpacePermId = getInitialSpacePermId(root, initialSpacePermId, current, spacePermId);
+                    space = spaces.values().iterator().next();
+                    spacePermId = space.getPermId();
+                    initialSpacePermId = setInitialSpacePermId(root, initialSpacePermId, current, spacePermId);
 
-                    if (withLevelsBelow) {
-                        // Skip withLevelsBelow if you are not on initial space
-                        if (spacePermId.equals(initialSpacePermId) == false) {
-                            continue; // BIS-2255: When exporting outside the original space do not export withLevelsBelow to avoid over-exporting
-                        }
-
+                    if (withLevelsBelow && spacePermId.equals(initialSpacePermId)) { // BIS-2255: When exporting outside the original space do not export withLevelsBelow to avoid over-exporting
                         // Projects
                         for (Project project: space.getProjects()) {
                             ExportablePermId projectId = new ExportablePermId(ExportableKind.PROJECT,
                                     project.getPermId().getPermId());
                             todo.add(projectId);
                         }
+
                         // Space Samples without a project
                         SampleSearchCriteria sampleSearchCriteria = new SampleSearchCriteria();
                         sampleSearchCriteria.withSpace().withPermId().thatEquals(current.getPermId());
@@ -150,6 +152,12 @@ public final class ExportEntityCollector {
                      *  - Experiments
                      *  - Project Samples without an Experiment
                      */
+                    Project project = null;
+                    SpacePermId projectSpacePermId = null;
+
+                    //
+                    // Project Fetch
+                    //
                     ProjectFetchOptions projectFetchOptions = new ProjectFetchOptions();
                     projectFetchOptions.withSpace();
                     if (withLevelsBelow) {
@@ -158,23 +166,17 @@ public final class ExportEntityCollector {
                     Map<IProjectId, Project> projects = api.getProjects(sessionToken,
                             List.of(new ProjectPermId(current.getPermId())),
                             projectFetchOptions);
-                    Project project = projects.values().iterator().next();
-                    Space projectSpace = project.getSpace();
-                    SpacePermId projectSpacePermId = project.getSpace().getPermId();
-                    initialSpacePermId = getInitialSpacePermId(root, initialSpacePermId, current, projectSpacePermId);
+                    project = projects.values().iterator().next();
+                    projectSpacePermId = project.getSpace().getPermId();
+                    initialSpacePermId = setInitialSpacePermId(root, initialSpacePermId, current, projectSpacePermId);
 
                     if (withLevelsAbove) {
                         // Space
-                        ExportablePermId spaceId = new ExportablePermId(ExportableKind.SPACE, projectSpace.getPermId().getPermId());
+                        ExportablePermId spaceId = new ExportablePermId(ExportableKind.SPACE, projectSpacePermId.getPermId());
                         todo.add(spaceId);
                     }
 
-                    if (withLevelsBelow) {
-                        // Skip withLevelsBelow
-                        if (projectSpacePermId.equals(initialSpacePermId) == false) {
-                            continue; // BIS-2255: When exporting outside the original space do not export withLevelsBelow to avoid over-exporting
-                        }
-
+                    if (withLevelsBelow && projectSpacePermId.equals(initialSpacePermId)) { // BIS-2255: When exporting outside the original space do not export withLevelsBelow to avoid over-exporting
                         // Experiments
                         List<Experiment> experiments = project.getExperiments();
                         for (Experiment experiment:experiments) {
@@ -210,25 +212,21 @@ public final class ExportEntityCollector {
                     SpacePermId experimentSpacePermId = null; // Only used if withObjectsAndDataSetsOtherSpaces == false
 
                     //
-                    // Experiment Fetch Preparation
+                    // Experiment Fetch
                     //
-
                     ExperimentFetchOptions experimentFetchOptions = new ExperimentFetchOptions();
                     experimentFetchOptions.withProject().withSpace();
-
                     if (withObjectsAndDataSetsOtherSpaces == false) {
                         experimentFetchOptions.withSampleProperties().withSpace();
                     } else {
                         experimentFetchOptions.withSampleProperties();
                     }
-
                     Map<IExperimentId, Experiment> experiments = api.getExperiments(sessionToken,
                             List.of(new ExperimentPermId(current.getPermId())),
                             experimentFetchOptions);
-
                     experiment = experiments.values().iterator().next();
                     experimentSpacePermId = experiment.getProject().getSpace().getPermId();
-                    initialSpacePermId = getInitialSpacePermId(root, initialSpacePermId, current, experimentSpacePermId);
+                    initialSpacePermId = setInitialSpacePermId(root, initialSpacePermId, current, experimentSpacePermId);
 
                     // Sample Properties (Might be in another space)
                     for (Sample[] sampleValues : safe(experiment.getSampleProperties()).values()) {
@@ -251,12 +249,7 @@ public final class ExportEntityCollector {
                         todo.add(projectId);
                     }
 
-                    if (withLevelsBelow) {
-                        // Skip withLevelsBelow
-                        if (experimentSpacePermId.equals(initialSpacePermId) == false) {
-                            continue; // BIS-2255: When exporting outside the original space do not export withLevelsBelow to avoid over-exporting
-                        }
-
+                    if (withLevelsBelow && experimentSpacePermId.equals(initialSpacePermId)) { // BIS-2255: When exporting outside the original space do not export withLevelsBelow to avoid over-exporting
                         // Experiment Samples (implicitly always on same space as experiment)
                         SampleSearchCriteria sampleSearchCriteria = new SampleSearchCriteria();
                         sampleSearchCriteria.withExperiment().withPermId().thatEquals(current.getPermId());
@@ -298,18 +291,16 @@ public final class ExportEntityCollector {
                     SpacePermId sampleSpacePermId = null; // Only used if withObjectsAndDataSetsOtherSpaces == false
 
                     //
-                    // Sample Fetch Preparation
+                    // Sample Fetch
                     //
                     SampleFetchOptions sampleFetchOptions = new SampleFetchOptions();
                     sampleFetchOptions.withSpace();
 
-                    if (true) {
-                        // Sample Properties (Might be in another space)
-                        if (withObjectsAndDataSetsOtherSpaces == false) {
-                            sampleFetchOptions.withSampleProperties().withSpace();
-                        } else {
-                            sampleFetchOptions.withSampleProperties();
-                        }
+                    // Sample Properties (Might be in another space)
+                    if (withObjectsAndDataSetsOtherSpaces == false) {
+                        sampleFetchOptions.withSampleProperties().withSpace();
+                    } else {
+                        sampleFetchOptions.withSampleProperties();
                     }
 
                     if (withLevelsAbove) {
@@ -342,13 +333,10 @@ public final class ExportEntityCollector {
                         }
                     }
 
-                    //
-                    // Fetch execution
-                    //
                     Map<ISampleId, Sample> samples = api.getSamples(sessionToken, List.of(new SamplePermId(current.getPermId())), sampleFetchOptions);
                     sample = samples.values().iterator().next();
                     sampleSpacePermId = sample.getSpace().getPermId();
-                    initialSpacePermId = getInitialSpacePermId(root, initialSpacePermId, current, sampleSpacePermId);
+                    initialSpacePermId = setInitialSpacePermId(root, initialSpacePermId, current, sampleSpacePermId);
 
                     //
                     // Iterate over results (filter other spaces if needed)
@@ -431,19 +419,17 @@ public final class ExportEntityCollector {
                     SpacePermId datasetSpacePermId = null;
 
                     //
-                    // DataSet Fetch Preparation
+                    // DataSet Fetch
                     //
                     DataSetFetchOptions dataSetFetchOptions = new DataSetFetchOptions();
                     dataSetFetchOptions.withSample().withSpace();
                     dataSetFetchOptions.withExperiment().withProject().withSpace();
 
-                    if (true) {
-                        // Sample Properties (Might be in another space)
-                        if (withObjectsAndDataSetsOtherSpaces == false) {
-                            dataSetFetchOptions.withSampleProperties().withSpace();
-                        } else {
-                            dataSetFetchOptions.withSampleProperties();
-                        }
+                    // Sample Properties (Might be in another space)
+                    if (withObjectsAndDataSetsOtherSpaces == false) {
+                        dataSetFetchOptions.withSampleProperties().withSpace();
+                    } else {
+                        dataSetFetchOptions.withSampleProperties();
                     }
 
                     if (withLevelsAbove) {
@@ -474,9 +460,6 @@ public final class ExportEntityCollector {
                         }
                     }
 
-                    //
-                    // Fetch execution
-                    //
                     Map<IDataSetId, DataSet> datasets = api.getDataSets(sessionToken, List.of(new DataSetPermId(current.getPermId())), dataSetFetchOptions);
                     dataSet = datasets.values().iterator().next();
                     if (dataSet.getSample() != null) {
@@ -485,23 +468,22 @@ public final class ExportEntityCollector {
                     if (dataSet.getExperiment() != null) {
                         datasetSpacePermId = dataSet.getExperiment().getProject().getSpace().getPermId();
                     }
-                    initialSpacePermId = getInitialSpacePermId(root, initialSpacePermId, current, datasetSpacePermId);
+                    initialSpacePermId = setInitialSpacePermId(root, initialSpacePermId, current, datasetSpacePermId);
 
                     //
                     // Iterate over results (filter other spaces if needed)
                     //
-                    if (true) {
-                        // Sample Properties (Might be in another space)
-                        for (Sample[] sampleValues : safe(dataSet.getSampleProperties()).values()) {
-                            for (Sample sampleValue : sampleValues) {
-                                if (isSampleInOtherSpaceBeingFiltered(withObjectsAndDataSetsOtherSpaces, initialSpacePermId, sampleValue)) {
-                                    continue;
-                                }
 
-                                ExportablePermId sampleId = new ExportablePermId(ExportableKind.SAMPLE,
-                                        sampleValue.getPermId().getPermId());
-                                todo.add(sampleId);
+                    // Sample Properties (Might be in another space)
+                    for (Sample[] sampleValues : safe(dataSet.getSampleProperties()).values()) {
+                        for (Sample sampleValue : sampleValues) {
+                            if (isSampleInOtherSpaceBeingFiltered(withObjectsAndDataSetsOtherSpaces, initialSpacePermId, sampleValue)) {
+                                continue;
                             }
+
+                            ExportablePermId sampleId = new ExportablePermId(ExportableKind.SAMPLE,
+                                    sampleValue.getPermId().getPermId());
+                            todo.add(sampleId);
                         }
                     }
 
@@ -548,7 +530,7 @@ public final class ExportEntityCollector {
         }
     }
 
-    private static SpacePermId getInitialSpacePermId(ExportablePermId root, SpacePermId initialSpacePermId, ExportablePermId currentPermId, SpacePermId currentPermIdSpacePermId) {
+    private static SpacePermId setInitialSpacePermId(ExportablePermId root, SpacePermId initialSpacePermId, ExportablePermId currentPermId, SpacePermId currentPermIdSpacePermId) {
         if (initialSpacePermId == null &&
                 root.getExportableKind().equals(currentPermId.getExportableKind()) &&
                 root.getPermId().equals(currentPermId.getPermId())) {
