@@ -20,6 +20,7 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.Semaphore;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import ch.ethz.sis.afsapi.api.ClientAPI;
@@ -588,11 +589,13 @@ public class AfsClientUploadHelper
                     Path head = todo.remove();
                     if (Files.isDirectory(head))
                     {
-                        List<Path> dirPaths = Files.list(head)
-                                .filter(entry -> !TemporaryPathUtil.isTwinTemporaryPath(entry))
-                                .filter(entry -> !isAfsHiddenFile(entry))
-                                .collect(Collectors.toList());
-                        todo.addAll(dirPaths);
+                        try (Stream<Path> pathStream = Files.list(head)) {
+                            List<Path> dirPaths = pathStream
+                                    .filter(entry -> !TemporaryPathUtil.isTwinTemporaryPath(entry))
+                                    .filter(entry -> !isAfsHiddenFile(entry))
+                                    .collect(Collectors.toList());
+                            todo.addAll(dirPaths);
+                        }
                     }
                     return head;
                 }
