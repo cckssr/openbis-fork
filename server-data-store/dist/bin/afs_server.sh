@@ -203,6 +203,7 @@ case "$command" in
       PID=`cat $PID_FILE 2> /dev/null`
       isPIDRunning $PID
       if [ $? -eq 0 ]; then
+        pkill -P $PID 2>/dev/null
         kill $PID
         n=0
         while [ $n -lt $MAX_LOOPS ]; do

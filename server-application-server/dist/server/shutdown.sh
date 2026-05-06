@@ -31,6 +31,7 @@ if [ -f "$JETTY_PID_FILE" ]; then
     rm -f "$JETTY_PID_FILE"
   else
     echo "Trying 'kill -KILL' on $PID..."
+    pkill -KILL -P $PID 2>/dev/null
     kill -KILL $PID
     sleep 3
     isPIDRunning $PID
