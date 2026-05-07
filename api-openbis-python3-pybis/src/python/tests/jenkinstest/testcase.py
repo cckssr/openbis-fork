@@ -529,6 +529,8 @@ class OpenbisController(_Controller):
         Creates a new instance for specifies test case with specified test and instance name, installation path.
         """
         super(OpenbisController, self).__init__(testCase, testName, installPath, instanceName)
+        self.targetFolder = testCase.playgroundFolder
+        self.testName = testName
         self.templatesFolder = testCase.getTemplatesFolder()
         self.binFolder = "%s/bin" % installPath
         self.bisUpScript = "%s/bisup.sh" % self.binFolder
@@ -609,6 +611,15 @@ class OpenbisController(_Controller):
         self.dssProperties['archiver.cleaner.deletion-requests-dir'] = '${archive}/deletion-requests'
         self.dssProperties['archiver.cleaner.deletion-polling-time'] = '1 sec'
         self.dssProperties['archiver.timeout'] = '10800'
+
+        os.makedirs("%s/test/data/archive/tmp" % self.targetFolder)
+        os.makedirs("%s/test/data/archive/stage" % self.targetFolder)
+        os.makedirs("%s/test/data/archive/final" % self.targetFolder)
+        os.makedirs("%s/test/data/archive/backup" % self.targetFolder)
+
+        print("Target: %s", self.targetFolder)
+        print("TestName: %s", self.testName)
+
 
 
     def setDummyAuthentication(self):
