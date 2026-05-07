@@ -575,11 +575,15 @@ class OpenbisController(_Controller):
 
     def configureArchiving(self):
         self.dssProperties['archiver.class'] = 'ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.MultiDataSetArchiver'
-        self.dssProperties['archiver.final-destination'] = './test-archive/final-destination'
-        self.dssProperties['archiver.staging-destination'] = './test-archive/staging-destination'
-        self.dssProperties['archiver.replicated-destination'] = './test-archive/replicated-destination'
+        self.dssProperties['archive'] = '${root-dir}/archive'
+        self.dssProperties['archiver.temp-folder'] = '${archive}/tmp'
         self.dssProperties['archiver.minimum-container-size-in-bytes'] = '10'
         self.dssProperties['archiver.maximum-container-size-in-bytes'] = '1000000'
+
+        self.dssProperties['archiver.staging-destination'] = '${archive}/stage'
+        self.dssProperties['archiver.final-destination'] = '${archive}/final'
+        self.dssProperties['archiver.replicated-destination'] = '${archive}/backup'
+
         self.dssProperties['archiver.batch-size-in-bytes'] = '100000'
         self.dssProperties['archiver.hdf5-files-in-data-set'] = 'false'
         self.dssProperties['archiver.with-sharding'] = 'false'
@@ -596,11 +600,14 @@ class OpenbisController(_Controller):
         self.dssProperties['archiver.delay-unarchiving'] = 'false'
         self.dssProperties['archiver.pause-file'] = 'pause-archiving'
         self.dssProperties['archiver.pause-file-polling-time'] = '10 sec'
-        self.dssProperties['archiver.cleaner.file-path-prefixes-for-async-deletion'] = './test-archive/final-destination, ./test-archive/replicated-destination'
+        self.dssProperties['archiver.cleaner.file-path-prefixes-for-async-deletion'] = '${archiver.final-destination}, ${archiver.replicated-destination}'
         self.dssProperties['archiver.cleaner.email-address'] = 'pybis_test_cleaner@localhost'
         self.dssProperties['archiver.cleaner.email-from-address'] = 'pybis_test_cleaner_from@localhost'
         self.dssProperties['archiver.cleaner.email-subject'] = 'Deletion failure'
         self.dssProperties['archiver.cleaner.email-template'] = 'The following files could not be deleted:\n${file-list}'
+
+        self.dssProperties['archiver.cleaner.deletion-requests-dir'] = '${archive}/deletion-requests'
+        self.dssProperties['archiver.cleaner.deletion-polling-time'] = '1 sec'
         self.dssProperties['archiver.timeout'] = '10800'
 
 
