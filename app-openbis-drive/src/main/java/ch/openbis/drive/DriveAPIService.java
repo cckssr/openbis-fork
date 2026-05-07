@@ -75,9 +75,7 @@ public class DriveAPIService {
 
     public synchronized void start() throws Exception {
         if (!started) {
-
-            Settings settings = driveAPIServer.getSettings();
-            driveAPIServer.setSettings(Optional.ofNullable(settings).orElse(Settings.defaultSettings()));
+            driveAPIServer.start();
 
             systemTrayUtil.addAppToTray();
 
