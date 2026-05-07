@@ -76,8 +76,8 @@ class TestCase(object):
     def __init__(self, settings, filePath):
         self.artifactRepository = settings.REPOSITORY
         self.project = None
-        print("TESTCASE FILE PATH: %s" % filePath)
-        self.pluginsPath = filePath + "/../core-plugins"
+        print("[TEST CONFIG] TESTCASE FILE PATH: %s" % filePath)
+        self.pluginsFolder = filePath + "/../core-plugins"
         fileName = os.path.basename(filePath)
         self.name = fileName[0:fileName.rfind('.')]
         self.playgroundFolder = "%s/%s" % (PLAYGROUND, self.name)
@@ -274,7 +274,7 @@ class TestCase(object):
         consoleProperties['DSS_ROOT_DIR'] = "%s/data" % installPath
         for technology in technologies:
             consoleProperties[technology.upper()] = True
-        print(f"CONSOLE_PROPERTIES:{consoleProperties}")
+        print(f"[TEST CONFIG] CONSOLE_PROPERTIES:{consoleProperties}")
         util.writeProperties(consolePropertiesFile, consoleProperties)
         util.executeCommand("%s/%s/run-console.sh" % (self.playgroundFolder, installerFileName),
                             "Couldn't install openBIS", consoleInput='admin\nadmin')
@@ -560,7 +560,6 @@ class OpenbisController(_Controller):
         self.dssProperties['imaging-database.kind'] = self.databaseKind
         # self.configureArchiving()
         self.dssPropertiesModified = True
-        print(self.dssProperties)
         self.passwdScript = "%s/servers/openBIS-server/jetty/bin/passwd.sh" % installPath
         if port != '8443':
             self.sslIniFile = "%s/servers/openBIS-server/jetty/start.d/ssl.ini" % installPath
@@ -620,8 +619,8 @@ class OpenbisController(_Controller):
         os.makedirs("%s/openbis/data/archive/final" % self.targetFolder)
         os.makedirs("%s/openbis/data/archive/backup" % self.targetFolder)
 
-        print("Target:", self.targetFolder)
-        print("TestName:", self.testName)
+        print("[TEST CONFIG] Target:", self.targetFolder)
+        print("[TEST CONFIG] TestName:", self.testName)
 
 
 
@@ -873,16 +872,16 @@ class OpenbisController(_Controller):
     def _applyCorePlugins(self):
         source = self.pluginsFolder
         if os.path.exists(source):
-            print("APLY_CORE_PLUGINS: %s" % (source))
+            print("[TEST CONFIG] APLY_CORE_PLUGINS: %s" % (source))
             corePluginsFolder = "%s/servers/core-plugins" % self.installPath
             destination = "%s/%s" % (corePluginsFolder, self.instanceName)
             shutil.rmtree(destination, ignore_errors=True)
             shutil.copytree(source, destination)
-            print("APLY_CORE_PLUGINS-DESTINATION: %s" % (destination))
-            print("APLY_CORE_PLUGINS-PLUGIN_NAME: %s" % (self.instanceName))
+            print("[TEST CONFIG] APLY_CORE_PLUGINS-DESTINATION: %s" % (destination))
+            print("[TEST CONFIG] APLY_CORE_PLUGINS-PLUGIN_NAME: %s" % (self.instanceName))
             self.enableCorePlugin(self.instanceName)
         else:
-            print("APLY_CORE_PLUGINS: %s does not exist!" % (source))
+            print("[TEST CONFIG] APLY_CORE_PLUGINS: %s does not exist!" % (source))
 
     def enableCorePlugin(self, pluginName):
         corePluginsFolder = "%s/servers/core-plugins" % self.installPath
