@@ -726,7 +726,7 @@ def _wait_for_status(o, permId, expected_status, failure_states=None, poll_inter
 
 def test_archive_unarchive_datasets(space):
     o = space.openbis
-    testfile_path = os.path.join(os.path.dirname(__file__), "testdir/testfile")
+    testfile_path = os.path.join(os.path.dirname(__file__), "testdir/testfile_big")
 
     dataset = o.new_dataset(
         type="RAW_DATA",
