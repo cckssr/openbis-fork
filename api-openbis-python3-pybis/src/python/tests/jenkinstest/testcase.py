@@ -553,7 +553,9 @@ class OpenbisController(_Controller):
         self.dssProperties = util.readProperties(self.dssServicePropertiesFile)
         self.dssProperties['path-info-db.databaseKind'] = self.databaseKind
         self.dssProperties['imaging-database.kind'] = self.databaseKind
+        self.configureArchiving()
         self.dssPropertiesModified = True
+        print(self.dssProperties)
         self.passwdScript = "%s/servers/openBIS-server/jetty/bin/passwd.sh" % installPath
         if port != '8443':
             self.sslIniFile = "%s/servers/openBIS-server/jetty/start.d/ssl.ini" % installPath
@@ -600,7 +602,6 @@ class OpenbisController(_Controller):
         self.dssProperties['archiver.cleaner.email-subject'] = 'Deletion failure'
         self.dssProperties['archiver.cleaner.email-template'] = 'The following files could not be deleted:\n${file-list}'
         self.dssProperties['archiver.timeout'] = '10800'
-        self.dssPropertiesModified = True
 
 
     def setDummyAuthentication(self):
