@@ -421,7 +421,7 @@ public class SftpListUtilTest extends TestCase {
         experiment.setFetchOptions(experimentFetchOptions);
         experiment.setStringProperty("NAME", "Exp NAME");
         experiment.setPermId(new ExperimentPermId("exp-perm-id-1"));
-        assertEquals("Exp NAME(EXP-PERM-ID-1)", SftpListUtil.getDisplayName(experiment));
+        assertEquals("Exp NAME (EXP-PERM-ID-1)", SftpListUtil.getDisplayName(experiment));
 
         DataSet dataSet = new DataSet();
         DataSetFetchOptions dataSetFetchOptions = new DataSetFetchOptions();
@@ -429,7 +429,7 @@ public class SftpListUtilTest extends TestCase {
         dataSet.setFetchOptions(dataSetFetchOptions);
         dataSet.setStringProperty("NAME", "Dataset NAME");
         dataSet.setPermId(new DataSetPermId("dataset-perm-id-1"));
-        assertEquals("Dataset NAME(DATASET-PERM-ID-1)", SftpListUtil.getDisplayName(dataSet));
+        assertEquals("Dataset NAME (DATASET-PERM-ID-1)", SftpListUtil.getDisplayName(dataSet));
 
         Sample sample = new Sample();
         SampleFetchOptions sampleFetchOptions = new SampleFetchOptions();
@@ -437,7 +437,7 @@ public class SftpListUtilTest extends TestCase {
         sample.setFetchOptions(sampleFetchOptions);
         sample.setStringProperty("NAME", "Sample NAME");
         sample.setPermId(new SamplePermId("sample-perm-id-1"));
-        assertEquals("Sample NAME(SAMPLE-PERM-ID-1)", SftpListUtil.getDisplayName(sample));
+        assertEquals("Sample NAME (SAMPLE-PERM-ID-1)", SftpListUtil.getDisplayName(sample));
     }
 
     public void testGetSpaceCodeFromDisplayName() {
@@ -449,7 +449,7 @@ public class SftpListUtilTest extends TestCase {
     }
 
     public void testGetEntityPermIdFromDisplayName() {
-        assertEquals("ENTITY-PERM-ID", SftpListUtil.getEntityPermIdFromDisplayName("naME Surname(ENTITY-PERM-ID)"));
+        assertEquals("ENTITY-PERM-ID", SftpListUtil.getEntityPermIdFromDisplayName("naME Surname (ENTITY-PERM-ID)"));
         assertEquals("ENTITY-PERM-ID", SftpListUtil.getEntityPermIdFromDisplayName("(ENTITY-PERM-ID)"));
         assertEquals("ENTITY-PERM-ID", SftpListUtil.getEntityPermIdFromDisplayName("ENTITY-PERM-ID"));
     }

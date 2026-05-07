@@ -618,7 +618,7 @@ public class StandardPathListerTest extends TestCase {
                 sftpNodeChainList.getLast().getLast()
                         .get().getType());
         assertEquals(
-                "folderNAME(FOLDER-2)",
+                "folderNAME (FOLDER-2)",
                 sftpNodeChainList.getLast().getLast()
                         .get().getIdentifier().get());
         Mockito.clearInvocations(listUtil);
@@ -634,7 +634,7 @@ public class StandardPathListerTest extends TestCase {
                 sftpNodeChainList.getLast().getLast()
                         .get().getType());
         assertEquals(
-                "SaMpleName(SAMPLE-1)",
+                "SaMpleName (SAMPLE-1)",
                 sftpNodeChainList.getLast().getLast()
                         .get().getIdentifier().get());
         Mockito.clearInvocations(listUtil);
@@ -688,7 +688,7 @@ public class StandardPathListerTest extends TestCase {
                 sftpNodeChainList.getLast().getLast()
                         .get().getType());
         assertEquals(
-                "folderNAME(FOLDER-2)",
+                "folderNAME (FOLDER-2)",
                 sftpNodeChainList.getLast().getLast()
                         .get().getIdentifier().get());
         Mockito.clearInvocations(listUtil);
@@ -702,7 +702,7 @@ public class StandardPathListerTest extends TestCase {
                 sftpNodeChainList.getLast().getLast()
                         .get().getType());
         assertEquals(
-                "SaMpleName(SAMPLE-1)",
+                "SaMpleName (SAMPLE-1)",
                 sftpNodeChainList.getLast().getLast()
                         .get().getIdentifier().get());
         Mockito.clearInvocations(listUtil);
@@ -806,7 +806,7 @@ public class StandardPathListerTest extends TestCase {
 
         SftpNode sampleNode = SftpNode.builder()
                 .type(SftpNode.Type.SAMPLE)
-                .identifier(Optional.of("SAMPLE NAME1(sample-perm-id-1)")).build();
+                .identifier(Optional.of("SAMPLE NAME1 (sample-perm-id-1)")).build();
 
         SampleFetchOptions fetchOptions = new SampleFetchOptions();
         fetchOptions.withType();
@@ -846,7 +846,7 @@ public class StandardPathListerTest extends TestCase {
                 sftpNodeChainList.getLast().getLast()
                         .get().getType());
         assertEquals(
-                "folderNAME(FOLDER-2)",
+                "folderNAME (FOLDER-2)",
                 sftpNodeChainList.getLast().getLast()
                         .get().getIdentifier().get());
         Mockito.clearInvocations(listUtil);
@@ -860,7 +860,7 @@ public class StandardPathListerTest extends TestCase {
                 sftpNodeChainList.getLast().getLast()
                         .get().getType());
         assertEquals(
-                "SaMpleName(SAMPLE-1)",
+                "SaMpleName (SAMPLE-1)",
                 sftpNodeChainList.getLast().getLast()
                         .get().getIdentifier().get());
         Mockito.clearInvocations(listUtil);
@@ -873,7 +873,7 @@ public class StandardPathListerTest extends TestCase {
 
         SftpNode sampleNode = SftpNode.builder()
                 .type(SftpNode.Type.SAMPLE)
-                .identifier(Optional.of("Sample name(sample-perm-id-1)")).build();
+                .identifier(Optional.of("Sample name (sample-perm-id-1)")).build();
 
         standardPathLister.listDataSetsInSample(sampleNode, baseChain);
         Mockito.verify(listUtil, Mockito.times(1)).getSampleDatasets("sample-perm-id-1");
@@ -886,7 +886,7 @@ public class StandardPathListerTest extends TestCase {
 
         SftpNode sampleNode = SftpNode.builder()
                 .type(SftpNode.Type.SAMPLE)
-                .identifier(Optional.of("Sample name(sample-perm-id-1)")).build();
+                .identifier(Optional.of("Sample name (sample-perm-id-1)")).build();
 
         Mockito.doReturn("afs-perm-id-1").when(listUtil)
                         .getAfsEntityPermId(sampleNode);
@@ -920,7 +920,7 @@ public class StandardPathListerTest extends TestCase {
 
         SftpNode experimentNode = SftpNode.builder()
                 .type(SftpNode.Type.EXPERIMENT)
-                .identifier(Optional.of("Experiment name(experiment-1)")).build();
+                .identifier(Optional.of("Experiment name (experiment-1)")).build();
 
         Mockito.doReturn("afs-perm-id-1").when(listUtil)
                 .getAfsEntityPermId(experimentNode);
@@ -936,7 +936,7 @@ public class StandardPathListerTest extends TestCase {
 
         SftpNode datasetNode = SftpNode.builder()
                 .type(SftpNode.Type.DATA_SET)
-                .identifier(Optional.of("Dataset name(dataset-1)")).build();
+                .identifier(Optional.of("Dataset name (dataset-1)")).build();
 
         assertEquals(List.of(
                 SftpNodeChain.concat(
@@ -1015,7 +1015,7 @@ public class StandardPathListerTest extends TestCase {
 
         SftpNode experimentNode = SftpNode.builder()
                 .type(SftpNode.Type.EXPERIMENT)
-                .identifier(Optional.of("Experiment name(experiment-1)")).build();
+                .identifier(Optional.of("Experiment name (experiment-1)")).build();
 
         assertEquals(List.of(
                 SftpNodeChain.concat(
@@ -1057,7 +1057,7 @@ public class StandardPathListerTest extends TestCase {
 
         SftpNode experimentNode = SftpNode.builder()
                 .type(SftpNode.Type.EXPERIMENT)
-                .identifier(Optional.of("exp NAME(experiment-perm-id-1)")).build();
+                .identifier(Optional.of("exp NAME (experiment-perm-id-1)")).build();
 
         SampleFetchOptions fetchOptions = new SampleFetchOptions();
         fetchOptions.withType();
@@ -1097,7 +1097,7 @@ public class StandardPathListerTest extends TestCase {
                 sftpNodeChainList.getLast().getLast()
                         .get().getType());
         assertEquals(
-                "folderNAME(FOLDER-2)",
+                "folderNAME (FOLDER-2)",
                 sftpNodeChainList.getLast().getLast()
                         .get().getIdentifier().get());
         Mockito.clearInvocations(listUtil);
@@ -1111,7 +1111,7 @@ public class StandardPathListerTest extends TestCase {
                 sftpNodeChainList.getLast().getLast()
                         .get().getType());
         assertEquals(
-                "SaMpleName(SAMPLE-1)",
+                "SaMpleName (SAMPLE-1)",
                 sftpNodeChainList.getLast().getLast()
                         .get().getIdentifier().get());
         Mockito.clearInvocations(listUtil);
@@ -1124,7 +1124,7 @@ public class StandardPathListerTest extends TestCase {
 
         SftpNode afsEntityNode = SftpNode.builder()
                 .type(SftpNode.Type.SAMPLE)
-                .identifier(Optional.of("Sample name(sample-1)")).build();
+                .identifier(Optional.of("Sample name (sample-1)")).build();
 
         Mockito.doReturn(afsEntityNode).when(standardPathLister)
                 .validateAndGetAfsEntityNodeFromAfsFileChain(baseChain);
