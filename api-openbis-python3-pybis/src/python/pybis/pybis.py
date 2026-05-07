@@ -1547,8 +1547,8 @@ class Openbis:
             )
 
         os_options = {
-            "darwin": f"-oauto_cache,reconnect,defer_permissions,noappledouble,negative_vncache,volname={hostname} -oStrictHostKeyChecking=no ",
-            "linux": "-oauto_cache,reconnect -oStrictHostKeyChecking=no",
+            "darwin": f"-oauto_cache,reconnect,defer_permissions,noappledouble,negative_vncache,volname={hostname} -oStrictHostKeyChecking=no -o ServerAliveInterval=60 -o ServerAliveCountMax=3 ",
+            "linux": "-oauto_cache,reconnect -o ServerAliveInterval=60 -o ServerAliveCountMax=3 -oStrictHostKeyChecking=no,debug,sshfs_debug ",
         }
 
         if volname is None:
@@ -1575,15 +1575,16 @@ class Openbis:
             " {os_options}".format(**args)
         )
 
-        status = subprocess.call(cmd, shell=True)
+        result = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-        if status == 0:
+        if result.returncode == 0:
             if VERBOSE:
                 print(f"Mounted successfully to {full_mountpoint_path}")
             self.mountpoint = full_mountpoint_path
             return self.mountpoint
         else:
-            raise OSError("mount failed, exit status: ", status)
+            print("SSHFS Error:", result.stderr)
+            raise OSError("mount failed, exit status: ", result.returncode)
 
     def get_server_information(self):
         """Returns a dict containing the following server information:
@@ -5825,8 +5826,8 @@ class Openbis:
         if not isinstance(permIds, list):
             permIds = [permIds]
 
-        fetchopts = {
-            "@type": "as.dto.dataset.archive.DataSetUnarchiveOptions",
+        unarchive_options = {
+            "@type": "as.dto.dataset.unarchive.DataSetUnarchiveOptions",
         }
 
         request = {
@@ -5834,7 +5835,7 @@ class Openbis:
             "params": [
                 self.token,
                 [{"permId": x, "@type": "as.dto.dataset.id.DataSetPermId"} for x in permIds],
-                dict(fetchopts),
+                dict(unarchive_options),
             ],
         }
         self._post_request(self.as_v3, request)
