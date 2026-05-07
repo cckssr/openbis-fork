@@ -535,6 +535,8 @@ class OpenbisController(_Controller):
         self.targetFolder = testCase.playgroundFolder
         self.pluginsFolder = testCase.pluginsFolder
         self.testName = testName
+        print("[TEST CONFIG] Target:", self.targetFolder)
+        print("[TEST CONFIG] TestName:", self.testName)
         self.templatesFolder = testCase.getTemplatesFolder()
         self.binFolder = "%s/bin" % installPath
         self.bisUpScript = "%s/bisup.sh" % self.binFolder
@@ -559,7 +561,7 @@ class OpenbisController(_Controller):
         self.dssProperties = util.readProperties(self.dssServicePropertiesFile)
         self.dssProperties['path-info-db.databaseKind'] = self.databaseKind
         self.dssProperties['imaging-database.kind'] = self.databaseKind
-        self.configureArchiving()
+        self.configureArchivingFolders()
         self.dssPropertiesModified = True
         self.passwdScript = "%s/servers/openBIS-server/jetty/bin/passwd.sh" % installPath
         if port != '8443':
@@ -578,55 +580,12 @@ class OpenbisController(_Controller):
             util.dropDatabase(PSQL_EXE, "%s_%s" % (databaseToDrop, self.databaseKind))
         self._applyCorePlugins()
 
-    def configureArchiving(self):
-        # self.dssProperties['archiver.class'] = 'ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.MultiDataSetArchiver'
-        # self.dssProperties['archive'] = '${root-dir}/archive'
-        # self.dssProperties['archiver.temp-folder'] = '${archive}/tmp'
-        # self.dssProperties['archiver.minimum-container-size-in-bytes'] = '10'
-        # self.dssProperties['archiver.maximum-container-size-in-bytes'] = '1000000'
-        #
-        # self.dssProperties['archiver.staging-destination'] = '${archive}/stage'
-        # self.dssProperties['archiver.final-destination'] = '${archive}/final'
-        # self.dssProperties['archiver.replicated-destination'] = '${archive}/backup'
-        #
-        # self.dssProperties['archiver.batch-size-in-bytes'] = '100000'
-        # self.dssProperties['archiver.hdf5-files-in-data-set'] = 'false'
-        # self.dssProperties['archiver.with-sharding'] = 'false'
-        # self.dssProperties['archiver.wait-for-sanity-check'] = 'true'
-        # self.dssProperties['archiver.sanity-check-verify-checksums'] = 'true'
-        # self.dssProperties['archiver.check-consistency-between-store-and-pathinfo-db'] = 'true'
-        # self.dssProperties['archiver.unarchiving-wait-for-t-flag'] = 'true'
-        # self.dssProperties['archiver.unarchiving-max-waiting-time'] = '5 min'
-        # self.dssProperties['archiver.unarchiving-polling-time'] = '10 sec'
-        # self.dssProperties['archiver.finalizer-wait-for-t-flag'] = 'true'
-        # self.dssProperties['archiver.finalizer-sanity-check'] = 'true'
-        # self.dssProperties['archiver.finalizer-polling-time'] = '10 sec'
-        # self.dssProperties['archiver.finalizer-max-waiting-time'] = '5 min'
-        # self.dssProperties['archiver.delay-unarchiving'] = 'false'
-        # self.dssProperties['archiver.pause-file'] = 'pause-archiving'
-        # self.dssProperties['archiver.pause-file-polling-time'] = '10 sec'
-        # self.dssProperties['archiver.cleaner.file-path-prefixes-for-async-deletion'] = '${archiver.final-destination}, ${archiver.replicated-destination}'
-        # self.dssProperties['archiver.cleaner.email-address'] = 'pybis_test_cleaner@localhost'
-        # self.dssProperties['archiver.cleaner.email-from-address'] = 'pybis_test_cleaner_from@localhost'
-        # self.dssProperties['archiver.cleaner.email-subject'] = 'Deletion failure'
-        # self.dssProperties['archiver.cleaner.email-template'] = 'The following files could not be deleted:\n${file-list}'
-        #
-        # self.dssProperties['archiver.cleaner.deletion-requests-dir'] = '${archive}/deletion-requests'
-        # self.dssProperties['archiver.cleaner.deletion-polling-time'] = '1 sec'
-        # self.dssProperties['archiver.timeout'] = '10800'
-
+    def configureArchivingFolders(self):
         os.makedirs("%s/openbis/data/archive/tmp" % self.targetFolder)
-        # os.makedirs("%s/openbis/data/archive/stage" % self.targetFolder)
         os.makedirs("%s/openbis/data/archive/final" % self.targetFolder)
-        # os.makedirs("%s/openbis/data/archive/backup" % self.targetFolder)
-
         os.makedirs("%s/openbis/data/store/9" % self.targetFolder)
         util.writeProperties("%s/openbis/data/store/9/share.properties" % self.targetFolder,
                              {'unarchiving-scratch-share': 'true'})
-
-        print("[TEST CONFIG] Target:", self.targetFolder)
-        print("[TEST CONFIG] TestName:", self.testName)
-
 
 
     def setDummyAuthentication(self):
