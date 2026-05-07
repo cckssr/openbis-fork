@@ -619,6 +619,7 @@ class OpenbisController(_Controller):
         os.makedirs("%s/openbis/data/archive/stage" % self.targetFolder)
         os.makedirs("%s/openbis/data/archive/final" % self.targetFolder)
         os.makedirs("%s/openbis/data/archive/backup" % self.targetFolder)
+        os.makedirs("%s/openbis/data/archive/replicate" % self.targetFolder)
 
         print("[TEST CONFIG] Target:", self.targetFolder)
         print("[TEST CONFIG] TestName:", self.testName)
