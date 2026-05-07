@@ -77,7 +77,8 @@ class TestCase(object):
         self.artifactRepository = settings.REPOSITORY
         self.project = None
         print("[TEST CONFIG] TESTCASE FILE PATH: %s" % filePath)
-        self.pluginsFolder = filePath + "/../core-plugins"
+        self.pluginsFolder = os.path.dirname(filePath) + "/core-plugins"
+        print("[TEST CONFIG] PLUGINS FOLDER PATH: %s" % self.pluginsFolder)
         fileName = os.path.basename(filePath)
         self.name = fileName[0:fileName.rfind('.')]
         self.playgroundFolder = "%s/%s" % (PLAYGROUND, self.name)
