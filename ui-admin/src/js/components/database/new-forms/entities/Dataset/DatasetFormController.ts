@@ -43,14 +43,14 @@ export class DatasetFormController implements IFormController {
 				case EntityKind.EXPERIMENT:
 					const collectionId = new ExperimentPermId(params.parentId);
 					const collection = await this.openbisFacade.getExperiments([collectionId], new ExperimentFetchOptions());
-					parentDto = collection[collectionId];
+					parentDto = collection[params.parentId];
 					params.parentId = parentDto.getIdentifier().getIdentifier();
 					break;
 				case EntityKind.OBJECT:
 				case EntityKind.SAMPLE:
 					const objectId = new SamplePermId(params.parentId);
 					const object = await this.openbisFacade.getSamples([objectId], new SampleFetchOptions());
-					parentDto = object[objectId];
+					parentDto = object[params.parentId];
 					params.parentId = parentDto.getIdentifier().getIdentifier();
 					break;
 				default:
