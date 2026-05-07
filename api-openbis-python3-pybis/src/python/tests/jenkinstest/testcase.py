@@ -612,10 +612,10 @@ class OpenbisController(_Controller):
         self.dssProperties['archiver.cleaner.deletion-polling-time'] = '1 sec'
         self.dssProperties['archiver.timeout'] = '10800'
 
-        os.makedirs("%s/test/data/archive/tmp" % self.targetFolder)
-        os.makedirs("%s/test/data/archive/stage" % self.targetFolder)
-        os.makedirs("%s/test/data/archive/final" % self.targetFolder)
-        os.makedirs("%s/test/data/archive/backup" % self.targetFolder)
+        os.makedirs("%s/data/archive/tmp" % self.targetFolder)
+        os.makedirs("%s/data/archive/stage" % self.targetFolder)
+        os.makedirs("%s/data/archive/final" % self.targetFolder)
+        os.makedirs("%s/data/archive/backup" % self.targetFolder)
 
         print("Target: %s", self.targetFolder)
         print("TestName: %s", self.testName)
