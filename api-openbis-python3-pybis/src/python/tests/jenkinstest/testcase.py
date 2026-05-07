@@ -875,6 +875,8 @@ class OpenbisController(_Controller):
             shutil.rmtree(destination, ignore_errors=True)
             shutil.copytree(source, destination)
             self.enableCorePlugin(self.instanceName)
+        else:
+            print("APLY_CORE_PLUGINS: %s/core-plugins/%s does not exist" % (self.templatesFolder, self.instanceName))
 
     def enableCorePlugin(self, pluginName):
         corePluginsFolder = "%s/servers/core-plugins" % self.installPath
