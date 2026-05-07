@@ -559,7 +559,7 @@ class OpenbisController(_Controller):
         self.dssProperties = util.readProperties(self.dssServicePropertiesFile)
         self.dssProperties['path-info-db.databaseKind'] = self.databaseKind
         self.dssProperties['imaging-database.kind'] = self.databaseKind
-        self.configureArchiving()
+        # self.configureArchiving()
         self.dssPropertiesModified = True
         self.passwdScript = "%s/servers/openBIS-server/jetty/bin/passwd.sh" % installPath
         if port != '8443':
