@@ -616,10 +616,10 @@ class OpenbisController(_Controller):
         # self.dssProperties['archiver.timeout'] = '10800'
 
         os.makedirs("%s/openbis/data/archive/tmp" % self.targetFolder)
-        os.makedirs("%s/openbis/data/archive/stage" % self.targetFolder)
+        # os.makedirs("%s/openbis/data/archive/stage" % self.targetFolder)
         os.makedirs("%s/openbis/data/archive/final" % self.targetFolder)
-        os.makedirs("%s/openbis/data/archive/backup" % self.targetFolder)
-        os.makedirs("%s/openbis/data/archive/replicate" % self.targetFolder)
+        # os.makedirs("%s/openbis/data/archive/backup" % self.targetFolder)
+        # os.makedirs("%s/openbis/data/archive/replicate" % self.targetFolder)
 
         print("[TEST CONFIG] Target:", self.targetFolder)
         print("[TEST CONFIG] TestName:", self.testName)
