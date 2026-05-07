@@ -740,6 +740,10 @@ def test_archive_unarchive_datasets(space):
     try:
         # archive using a single string permId (not list)
         o.archive_datasets(permId)
+        ds = _wait_for_status(o, permId, "ARCHIVE_PENDING", failure_states={"AVAILABLE"})
+        assert ds.physicalData.status == "ARCHIVE_PENDING"
+
+        time.sleep(60)
         ds = _wait_for_status(o, permId, "ARCHIVED", failure_states={"AVAILABLE"})
         assert ds.physicalData.status == "ARCHIVED"
 
