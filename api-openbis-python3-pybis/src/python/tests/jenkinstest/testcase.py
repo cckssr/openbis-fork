@@ -77,6 +77,7 @@ class TestCase(object):
         self.artifactRepository = settings.REPOSITORY
         self.project = None
         print("TESTCASE FILE PATH: %s" % filePath)
+        self.pluginsPath = filePath + "/../core-plugins"
         fileName = os.path.basename(filePath)
         self.name = fileName[0:fileName.rfind('.')]
         self.playgroundFolder = "%s/%s" % (PLAYGROUND, self.name)
@@ -531,6 +532,7 @@ class OpenbisController(_Controller):
         """
         super(OpenbisController, self).__init__(testCase, testName, installPath, instanceName)
         self.targetFolder = testCase.playgroundFolder
+        self.pluginsFolder = testCase.pluginsFolder
         self.testName = testName
         self.templatesFolder = testCase.getTemplatesFolder()
         self.binFolder = "%s/bin" % installPath
@@ -556,7 +558,7 @@ class OpenbisController(_Controller):
         self.dssProperties = util.readProperties(self.dssServicePropertiesFile)
         self.dssProperties['path-info-db.databaseKind'] = self.databaseKind
         self.dssProperties['imaging-database.kind'] = self.databaseKind
-        self.configureArchiving()
+        # self.configureArchiving()
         self.dssPropertiesModified = True
         print(self.dssProperties)
         self.passwdScript = "%s/servers/openBIS-server/jetty/bin/passwd.sh" % installPath
@@ -869,15 +871,18 @@ class OpenbisController(_Controller):
                                    data)
 
     def _applyCorePlugins(self):
-        source = "%s/core-plugins/%s" % (self.templatesFolder, self.instanceName)
+        source = self.pluginsFolder
         if os.path.exists(source):
+            print("APLY_CORE_PLUGINS: %s" % (source))
             corePluginsFolder = "%s/servers/core-plugins" % self.installPath
             destination = "%s/%s" % (corePluginsFolder, self.instanceName)
             shutil.rmtree(destination, ignore_errors=True)
             shutil.copytree(source, destination)
+            print("APLY_CORE_PLUGINS-DESTINATION: %s" % (destination))
+            print("APLY_CORE_PLUGINS-PLUGIN_NAME: %s" % (self.instanceName))
             self.enableCorePlugin(self.instanceName)
         else:
-            print("APLY_CORE_PLUGINS: %s/core-plugins/%s does not exist" % (self.templatesFolder, self.instanceName))
+            print("APLY_CORE_PLUGINS: %s does not exist!" % (source))
 
     def enableCorePlugin(self, pluginName):
         corePluginsFolder = "%s/servers/core-plugins" % self.installPath
