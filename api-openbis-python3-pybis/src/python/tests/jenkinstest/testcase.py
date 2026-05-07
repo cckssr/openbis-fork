@@ -76,6 +76,7 @@ class TestCase(object):
     def __init__(self, settings, filePath):
         self.artifactRepository = settings.REPOSITORY
         self.project = None
+        print("TESTCASE FILE PATH: %s" % filePath)
         fileName = os.path.basename(filePath)
         self.name = fileName[0:fileName.rfind('.')]
         self.playgroundFolder = "%s/%s" % (PLAYGROUND, self.name)
@@ -617,8 +618,8 @@ class OpenbisController(_Controller):
         os.makedirs("%s/openbis/data/archive/final" % self.targetFolder)
         os.makedirs("%s/openbis/data/archive/backup" % self.targetFolder)
 
-        print("Target: %s", self.targetFolder)
-        print("TestName: %s", self.testName)
+        print("Target:", self.targetFolder)
+        print("TestName:", self.testName)
 
 
 
