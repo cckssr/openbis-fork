@@ -571,6 +571,38 @@ class OpenbisController(_Controller):
             util.dropDatabase(PSQL_EXE, "%s_%s" % (databaseToDrop, self.databaseKind))
         self._applyCorePlugins()
 
+    def configureArchiving(self):
+        self.dssProperties['archiver.class'] = 'ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.MultiDataSetArchiver'
+        self.dssProperties['archiver.final-destination'] = './test-archive/final-destination'
+        self.dssProperties['archiver.staging-destination'] = './test-archive/staging-destination'
+        self.dssProperties['archiver.replicated-destination'] = './test-archive/replicated-destination'
+        self.dssProperties['archiver.minimum-container-size-in-bytes'] = '10'
+        self.dssProperties['archiver.maximum-container-size-in-bytes'] = '1000000'
+        self.dssProperties['archiver.batch-size-in-bytes'] = '100000'
+        self.dssProperties['archiver.hdf5-files-in-data-set'] = 'false'
+        self.dssProperties['archiver.with-sharding'] = 'false'
+        self.dssProperties['archiver.wait-for-sanity-check'] = 'true'
+        self.dssProperties['archiver.sanity-check-verify-checksums'] = 'true'
+        self.dssProperties['archiver.check-consistency-between-store-and-pathinfo-db'] = 'true'
+        self.dssProperties['archiver.unarchiving-wait-for-t-flag'] = 'true'
+        self.dssProperties['archiver.unarchiving-max-waiting-time'] = '5 min'
+        self.dssProperties['archiver.unarchiving-polling-time'] = '10 sec'
+        self.dssProperties['archiver.finalizer-wait-for-t-flag'] = 'true'
+        self.dssProperties['archiver.finalizer-sanity-check'] = 'true'
+        self.dssProperties['archiver.finalizer-polling-time'] = '10 sec'
+        self.dssProperties['archiver.finalizer-max-waiting-time'] = '5 min'
+        self.dssProperties['archiver.delay-unarchiving'] = 'false'
+        self.dssProperties['archiver.pause-file'] = 'pause-archiving'
+        self.dssProperties['archiver.pause-file-polling-time'] = '10 sec'
+        self.dssProperties['archiver.cleaner.file-path-prefixes-for-async-deletion'] = './test-archive/final-destination, ./test-archive/replicated-destination'
+        self.dssProperties['archiver.cleaner.email-address'] = 'pybis_test_cleaner@localhost'
+        self.dssProperties['archiver.cleaner.email-from-address'] = 'pybis_test_cleaner_from@localhost'
+        self.dssProperties['archiver.cleaner.email-subject'] = 'Deletion failure'
+        self.dssProperties['archiver.cleaner.email-template'] = 'The following files could not be deleted:\n${file-list}'
+        self.dssProperties['archiver.timeout'] = '10800'
+        self.dssPropertiesModified = True
+
+
     def setDummyAuthentication(self):
         """ Disables authentication. """
         self.asProperties['authentication-service'] = 'dummy-authentication-service'
