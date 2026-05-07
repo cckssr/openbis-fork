@@ -49,6 +49,7 @@ public class ImagingFixes
     private static final String PYTHON_PATH = Paths.get("..", "..", "..", "imaging", "1", "as", "services", "imaging", "Python-3.10.16-linux-x64", "bin", "python3.10").toString();
 
     private static final String PYTHON_PATH_PROPERTY = "imaging.imaging-fixes-python3-path";
+    private static final String TIMEOUT_PROPERTY = "imaging.imaging-fixes-timeout-seconds";
     private static final String URL_SYS_PROPERTY = "OPENBIS_FQDN";
     private static final String PERSON_ID = "admin";
 
@@ -59,6 +60,8 @@ public class ImagingFixes
             @Override
             public void run()
             {
+                String timeoutStr = CommonServiceProvider.tryToGetProperty(TIMEOUT_PROPERTY);
+                int timeout = (timeoutStr == null || timeoutStr.isBlank()) ? TIMEOUT_COUNT : Integer.parseInt(timeoutStr);
                 int count = 0;
                 // Wait until DSS starts up
                 while(CommonServiceProvider.getDataStoreServerApi() == null) {
@@ -68,8 +71,8 @@ public class ImagingFixes
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }
-                    if(count == TIMEOUT_COUNT) {
-                        operationLog.info("DSS was not available for 1 hour! Shutting down thread.");
+                    if(count >= timeout) {
+                        operationLog.info("DSS was not available for "+ timeout +" seconds! Shutting down thread.");
                         break;
                     }
                     count++;
