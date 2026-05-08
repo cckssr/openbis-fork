@@ -12,8 +12,11 @@ public class OpenBISClientUtilTest extends TestCase {
                         .username("user1")
                         .sessionToken("sess1on")
                         .build());
-        OpenBISClientUtil openBISClientUtil = new OpenBISClientUtil();
+        OpenBISClientUtil openBISClientUtil = Mockito.spy(new OpenBISClientUtil());
+        OpenBIS openBISMock = Mockito.mock(OpenBIS.class);
+        Mockito.doReturn(openBISMock).when(openBISClientUtil).getOpenBISClient();
         openBISClientUtil.getOpenBISClient(user);
+        Mockito.verify(openBISMock, Mockito.times(1)).setSessionToken(user.getSessionToken());
     }
 
     public void testGetAfsClient() {
@@ -23,8 +26,11 @@ public class OpenBISClientUtilTest extends TestCase {
                         .sessionToken("sess1on")
                         .build());
         OpenBISClientUtil openBISClientUtil = Mockito.spy(new OpenBISClientUtil());
+        OpenBIS openBISMock = Mockito.mock(OpenBIS.class);
+        Mockito.doReturn(openBISMock).when(openBISClientUtil).getOpenBISClient();
         Mockito.doReturn("http://test.com:8080/afs-server")
                 .when(openBISClientUtil).getAfsUrl();
         openBISClientUtil.getAfsClient(user);
+        Mockito.verify(openBISMock, Mockito.times(1)).setSessionToken(user.getSessionToken());
     }
 }
