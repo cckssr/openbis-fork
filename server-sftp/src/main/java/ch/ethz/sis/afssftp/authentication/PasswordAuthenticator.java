@@ -25,7 +25,6 @@ public class PasswordAuthenticator implements org.apache.sshd.server.auth.passwo
                     USER_ATTRIBUTE,
                     User.builder()
                             .username(username)
-                            .password(password)  //TODO: decide if session already lasts long enough, so that password is not needed for session-renewal
                             .sessionToken(sessionToken)
                             .build()
             );

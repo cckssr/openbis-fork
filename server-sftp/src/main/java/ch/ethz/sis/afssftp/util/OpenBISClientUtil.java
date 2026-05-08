@@ -22,7 +22,6 @@ public class OpenBISClientUtil implements AuthenticationProvider
 
     public OpenBIS getOpenBISClient(@NonNull User user) {
         OpenBIS openBIS = getOpenBISClient();
-        user.checkAndRenewSessionIfNecessary(openBIS);
         return openBIS;
     }
 

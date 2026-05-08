@@ -62,7 +62,6 @@ public class SftpListUtilTest extends TestCase {
         OpenBIS openBIS = Mockito.mock(OpenBIS.class);
         User user = User.builder()
                 .username("u5er")
-                .password("pWd")
                 .sessionToken("53551on")
                 .build();
         SftpListUtil sftpListUtil = new SftpListUtil(user, openBISClientUtil);
@@ -84,7 +83,6 @@ public class SftpListUtilTest extends TestCase {
         OpenBIS openBIS = Mockito.mock(OpenBIS.class);
         User user = User.builder()
                 .username("u5er")
-                .password("pWd")
                 .sessionToken("53551on")
                 .build();
         SftpListUtil sftpListUtil = new SftpListUtil(user, openBISClientUtil);
@@ -107,7 +105,6 @@ public class SftpListUtilTest extends TestCase {
         OpenBIS openBIS = Mockito.mock(OpenBIS.class);
         User user = User.builder()
                 .username("u5er")
-                .password("pWd")
                 .sessionToken("53551on")
                 .build();
         SftpListUtil sftpListUtil = new SftpListUtil(user, openBISClientUtil);
@@ -150,7 +147,6 @@ public class SftpListUtilTest extends TestCase {
         OpenBIS openBIS = Mockito.mock(OpenBIS.class);
         User user = User.builder()
                 .username("u5er")
-                .password("pWd")
                 .sessionToken("53551on")
                 .build();
         SftpListUtil sftpListUtil = new SftpListUtil(user, openBISClientUtil);
@@ -176,7 +172,6 @@ public class SftpListUtilTest extends TestCase {
         OpenBIS openBIS = Mockito.mock(OpenBIS.class);
         User user = User.builder()
                 .username("u5er")
-                .password("pWd")
                 .sessionToken("53551on")
                 .build();
         SftpListUtil sftpListUtil = new SftpListUtil(user, openBISClientUtil);
@@ -202,7 +197,6 @@ public class SftpListUtilTest extends TestCase {
         OpenBIS openBIS = Mockito.mock(OpenBIS.class);
         User user = User.builder()
                 .username("u5er")
-                .password("pWd")
                 .sessionToken("53551on")
                 .build();
         SftpListUtil sftpListUtil = new SftpListUtil(user, openBISClientUtil);
@@ -227,7 +221,6 @@ public class SftpListUtilTest extends TestCase {
         OpenBIS openBIS = Mockito.mock(OpenBIS.class);
         User user = User.builder()
                 .username("u5er")
-                .password("pWd")
                 .sessionToken("53551on")
                 .build();
         SftpListUtil sftpListUtil = new SftpListUtil(user, openBISClientUtil);
@@ -252,7 +245,6 @@ public class SftpListUtilTest extends TestCase {
         OpenBIS openBIS = Mockito.mock(OpenBIS.class);
         User user = User.builder()
                 .username("u5er")
-                .password("pWd")
                 .sessionToken("53551on")
                 .build();
         SftpListUtil sftpListUtil = new SftpListUtil(user, openBISClientUtil);
@@ -276,7 +268,6 @@ public class SftpListUtilTest extends TestCase {
         OpenBIS openBIS = Mockito.mock(OpenBIS.class);
         User user = User.builder()
                 .username("u5er")
-                .password("pWd")
                 .sessionToken("53551on")
                 .build();
         SftpListUtil sftpListUtil = new SftpListUtil(user, openBISClientUtil);
@@ -304,7 +295,6 @@ public class SftpListUtilTest extends TestCase {
         OpenBISClientUtil openBISClientUtil = Mockito.mock(OpenBISClientUtil.class);
         User user = User.builder()
                 .username("u5er")
-                .password("pWd")
                 .sessionToken("53551on")
                 .build();
         OpenBIS.AfsServerFacade afsClientProxyMock = Mockito.mock(
@@ -322,7 +312,6 @@ public class SftpListUtilTest extends TestCase {
         OpenBISClientUtil openBISClientUtil = Mockito.mock(OpenBISClientUtil.class);
         User user = User.builder()
                 .username("u5er")
-                .password("pWd")
                 .sessionToken("53551on")
                 .build();
         OpenBIS.AfsServerFacade afsClientProxyMock = Mockito.mock(
@@ -340,7 +329,6 @@ public class SftpListUtilTest extends TestCase {
         OpenBISClientUtil openBISClientUtil = Mockito.mock(OpenBISClientUtil.class);
         User user = User.builder()
                 .username("u5er")
-                .password("pWd")
                 .sessionToken("53551on")
                 .build();
         OpenBIS.AfsServerFacade afsClientProxyMock = Mockito.mock(

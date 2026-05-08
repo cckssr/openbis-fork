@@ -22,7 +22,6 @@ public class PasswordAuthenticatorTest extends TestCase {
                 USER_ATTRIBUTE,
                 User.builder()
                         .username(user)
-                        .password(pwd)
                         .sessionToken(sessionToken)
                         .build()
         );
