@@ -22,7 +22,7 @@ from ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.data import ImportFormat
 from ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.options import ImportMode
 import sys
 
-print("======================== eln-lims-template-types-master-data xls import ========================")
+print("======================== eln-lims-types-templates-master-data xls import ========================")
 
 helper = MasterDataRegistrationHelper(sys.path)
 api = CommonServiceProvider.getApplicationContext().getBean(ApplicationServerApi.INTERNAL_SERVICE_NAME)
@@ -33,12 +33,12 @@ importData = ImportData(ImportFormat.EXCEL, [sessionWorkspaceFiles[0]])
 importOptions = ImportOptions(ImportMode.UPDATE_IF_EXISTS)
 importResult = api.executeImport(sessionToken, importData, importOptions)
 
-print("======================== eln-lims-template-types-master-data xls ingestion result ========================")
+print("======================== eln-lims-types-templates-master-data xls ingestion result ========================")
 print(importResult.getObjectIds())
 
 
 
 api.logout(sessionToken)
-print("======================== eln-lims-template-types-master-data xls import end ========================")
+print("======================== eln-lims-types-templates-master-data xls import end ========================")
 
 

@@ -48,7 +48,7 @@ def sslwrap(func):
 
 ssl.wrap_socket = sslwrap(ssl.wrap_socket)
 
-ALL_TECHNOLOGIES = ['eln-lims', 'illumina-ngs', 'microscopy', 'flow', 'eln-lims-template-types']
+ALL_TECHNOLOGIES = ['eln-lims', 'illumina-ngs', 'microscopy', 'flow', 'eln-lims-types-templates']
 DATA_SOURCE_AS_PORT = '9000'
 DATA_SOURCE_DSS_PORT = '9001'
 HARVESTER_AS_PORT = '9002'

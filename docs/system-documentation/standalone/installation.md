@@ -28,7 +28,7 @@ The server distribution is a `gzipped` `tar` file named `openBIS-installation-
     tar xvfz openBIS-installation-standard-technologies-<release-number>.tar.gz
     ```
 
-3. Customize the `console.properties` file by specifying values for at least the following parameters: `INSTALL_PATH`, `DSS_ROOT_DIR`, `INSTALLATION_TYPE`, `ELN-LIMS` (documented inline), and `ELN-LIMS-TEMPLATE-TYPES` (documented [../../user-documentation/general-users/ELN-types.html](here)).
+3. Customize the `console.properties` file by specifying values for at least the following parameters: `INSTALL_PATH`, `DSS_ROOT_DIR`, `INSTALLATION_TYPE`, `ELN-LIMS` (documented inline), and `ELN-LIMS-TYPES-TEMPLATES` (documented [../../user-documentation/general-users/ELN-types.html](here)).
 
 4. Run installation script:
     ```bash

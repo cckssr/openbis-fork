@@ -48,7 +48,7 @@ public class GlobalInstallationContext
 
     public static final String TECHNOLOGY_ELN_LIMS = "ELN-LIMS";
 
-    public static final String TECHNOLOGY_ELN_LIMS_TEMPLATE_TYPES = "ELN-LIMS-TEMPLATE-TYPES";
+    public static final String TECHNOLOGY_ELN_LIMS_TEMPLATE_TYPES = "ELN-LIMS-TYPES-TEMPLATES";
 
     public static final String TECHNOLOGY_MICROSCOPY = "MICROSCOPY";
 
