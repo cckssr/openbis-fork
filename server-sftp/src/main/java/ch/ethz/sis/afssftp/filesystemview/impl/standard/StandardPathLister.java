@@ -2,11 +2,9 @@ package ch.ethz.sis.afssftp.filesystemview.impl.standard;
 
 import ch.ethz.sis.afsapi.dto.File;
 import ch.ethz.sis.afssftp.authentication.User;
-import ch.ethz.sis.afssftp.filesystemview.FtpPathLister;
-import ch.ethz.sis.afssftp.filesystemview.SftpFileAttributes;
-import ch.ethz.sis.afssftp.filesystemview.SftpNode;
-import ch.ethz.sis.afssftp.filesystemview.SftpNodeChain;
+import ch.ethz.sis.afssftp.filesystemview.*;
 import ch.ethz.sis.afssftp.util.SftpListUtil;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectIdentifier;
 import lombok.NonNull;
 
 import java.io.IOException;
@@ -62,38 +60,116 @@ public class StandardPathLister implements FtpPathLister {
     }
 
     @Override
-    public SftpFileAttributes readAttributes(@NonNull SftpNodeChain nodeChain) throws NoSuchFileException {
+    public SftpFileAttributes readAttributes(@NonNull SftpNodeChain nodeChain)
+            throws NoSuchFileException {
         if ( pointsToAfsFile(nodeChain) ) {
-            SftpNode afsEntityNode = validateAndGetAfsEntityNodeFromAfsFileChain(nodeChain);
-            String afsFilePath = validateAndGetAfsFilePathFromAfsFileChain(nodeChain);
+            Optional<EntityDescriptor> entityDescriptorOpt = toEntityDescriptor(nodeChain);
+            if (entityDescriptorOpt.isPresent() && entityDescriptorOpt.get().type() == SftpNode.Type.AFS_FILE) {
+                EntityDescriptor entityDescriptor = entityDescriptorOpt.get();
 
-            String afsEntityPermId = listUtil.getAfsEntityPermId(afsEntityNode);
-            boolean isAfsEntityDataMutable = listUtil.isAfsEntityMutable(
-                    afsEntityPermId,
-                    afsEntityNode.getType()
-            );
+                String afsFilePath = entityDescriptor.afsPath();
+                boolean isAfsEntityDataMutable = entityDescriptor.afsEntity().mutable();
+                String afsEntityPermId = entityDescriptor.afsEntity().identifier();
 
-            if ("/".equals(afsFilePath) && isAfsEntityDataMutable) {
-                listUtil.tryToCreateAfsFileRootIfNecessary(
-                        afsEntityPermId
-                );
-            }
-
-            Optional<SftpFileAttributes> attributes =  listUtil.getDefaultAfsFileAttributes(
-                    afsEntityPermId, afsFilePath, isAfsEntityDataMutable
-            );
-
-            if (attributes.isPresent()) {
-                return attributes.get();
-            } else {
-                if ("/".equals(afsFilePath) && !isAfsEntityDataMutable) {
-                    return SftpListUtil.getDefaultAbstractDirectoryAttributes();
-                } else {
-                    throw new NoSuchFileException("AFS entity perm-id : " + afsEntityPermId + " AFS file-path : " + afsFilePath);
+                if ("/".equals(afsFilePath) && isAfsEntityDataMutable) {
+                    listUtil.tryToCreateAfsFileRootIfNecessary(
+                            afsEntityPermId
+                    );
                 }
+
+                Optional<SftpFileAttributes> attributes =  listUtil.getDefaultAfsFileAttributes(
+                        afsEntityPermId, afsFilePath, isAfsEntityDataMutable
+                );
+
+                if (attributes.isPresent()) {
+                    return attributes.get();
+                } else {
+                    if ("/".equals(afsFilePath) && !isAfsEntityDataMutable) {
+                        return SftpListUtil.getDefaultAbstractDirectoryAttributes();
+                    } else {
+                        throw new NoSuchFileException("AFS entity perm-id : " + afsEntityPermId + " AFS file-path : " + afsFilePath);
+                    }
+                }
+
+            } else {
+                throw new IllegalStateException("Entity descriptor should be of type AFS_FILE");
             }
         } else {
             return SftpListUtil.getDefaultAbstractDirectoryAttributes();
+        }
+    }
+
+    @Override
+    public Optional<EntityDescriptor> toEntityDescriptor(@NonNull SftpNodeChain nodeChain) {
+        if (nodeChain.size() > 0) {
+            SftpNode lastNode = nodeChain.getLast().orElseThrow();
+            SftpNode.Type lastNodeType = lastNode.getType();
+            return switch (lastNodeType) {
+                case ROOT -> Optional.empty();
+                case SPACE -> Optional.of(new EntityDescriptor(
+                        SftpNode.Type.SPACE,
+                        lastNode.getIdentifier().orElseThrow(),
+                        false,
+                        null,
+                        null
+                ));
+                case PROJECT -> Optional.of(new EntityDescriptor(
+                        SftpNode.Type.PROJECT,
+                        new ProjectIdentifier(
+                                Optional.ofNullable(nodeChain.lookUpSpaceCode())
+                                        .orElseThrow(),
+                                lastNode.getIdentifier().orElseThrow()
+                        ).getIdentifier(),
+                        false,
+                        null,
+                        null
+                ));
+                case EXPERIMENT, FOLDER, SAMPLE, DATA_SET -> {
+                    String entityPermId = SftpListUtil.getEntityPermIdFromDisplayName(
+                            lastNode.getIdentifier().orElseThrow()
+                    );
+                    yield Optional.of(new EntityDescriptor(
+                        lastNodeType,
+                        entityPermId,
+                        listUtil.isAfsEntityMutable(entityPermId, lastNodeType),
+                        null, null
+                    ));
+                }
+                case SUBLEVEL, AFS_FILE -> {
+                    if ( pointsToAfsFile(nodeChain) ) {
+                        SftpNode afsEntityNode = validateAndGetAfsEntityNodeFromAfsFileChain(nodeChain);
+                        String afsFilePath = validateAndGetAfsFilePathFromAfsFileChain(nodeChain);
+                        String entityPermId = SftpListUtil.getEntityPermIdFromDisplayName(
+                                afsEntityNode.getIdentifier().orElseThrow()
+                        );
+                        yield Optional.of(new EntityDescriptor(
+                                SftpNode.Type.AFS_FILE,
+                                null, false,
+                                new EntityDescriptor(
+                                    afsEntityNode.getType(),
+                                    entityPermId,
+                                    listUtil.isAfsEntityMutable(entityPermId, afsEntityNode.getType()),
+                                    null, null
+                                ),
+                                afsFilePath
+                        ));
+                    } else {
+                        if (nodeChain.size() > 1) {
+                            SftpNode secondLastNode = nodeChain.get(nodeChain.size() - 2);
+                            SftpNode.Type secondLastNodeType = secondLastNode.getType();
+                            if (secondLastNodeType != SftpNode.Type.SUBLEVEL && secondLastNodeType != SftpNode.Type.AFS_FILE) {
+                                yield toEntityDescriptor(new SftpNodeChain(nodeChain.nodes().subList(0, nodeChain.size() - 1)));
+                            } else {
+                                yield Optional.empty();
+                            }
+                        } else {
+                            yield Optional.empty();
+                        }
+                    }
+                }
+            };
+        } else {
+            return Optional.empty();
         }
     }
 

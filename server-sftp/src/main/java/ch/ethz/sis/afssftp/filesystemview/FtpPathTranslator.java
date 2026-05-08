@@ -6,8 +6,7 @@ import java.util.List;
 
 public interface FtpPathTranslator {
     @NonNull List<@NonNull String> toPathSegments(@NonNull SftpNodeChain nodeChain) throws MalformedPathException;
-    @NonNull
-    SftpNodeChain fromPathSegments(@NonNull List<@NonNull String> pathSegments) throws MalformedPathException;
+    @NonNull SftpNodeChain fromPathSegments(@NonNull List<@NonNull String> pathSegments) throws MalformedPathException;
 
     class MalformedPathException extends Exception {
         public MalformedPathException() {}

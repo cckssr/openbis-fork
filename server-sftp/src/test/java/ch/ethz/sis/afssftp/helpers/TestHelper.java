@@ -19,7 +19,10 @@ public class TestHelper {
         Random random = new Random();
         String identifier = switch (type) {
             case ROOT, AFS_FILE -> null;
-            case SPACE, PROJECT, EXPERIMENT, SAMPLE, FOLDER, DATA_SET, SUBLEVEL -> UUID.randomUUID().toString();
+            case SPACE, PROJECT, SUBLEVEL -> UUID.randomUUID().toString();
+            case EXPERIMENT, SAMPLE, FOLDER, DATA_SET ->
+                    UUID.randomUUID().toString().substring(0, 6)
+                            + " (" + UUID.randomUUID().toString() + ")";
         };
         List<String> afsPathSegments = switch (type) {
             case AFS_FILE -> {
