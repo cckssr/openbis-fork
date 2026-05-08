@@ -122,7 +122,7 @@ public final class ExportEntityCollector {
                     spacePermId = space.getPermId();
                     initialSpacePermId = setInitialSpacePermId(root, initialSpacePermId, current, spacePermId);
 
-                    if (withLevelsBelow && current.equals(root)) { // BIS-2255: only exporting downstream if was initially selected
+                    if (withLevelsBelow && isInitialEntityUpstreamCurrent(root.getExportableKind(), initialSpacePermId, current.getExportableKind(), spacePermId)) { // BIS-2255: only exporting downstream if was initially selected
                         // Projects
                         for (Project project: space.getProjects()) {
                             ExportablePermId projectId = new ExportablePermId(ExportableKind.PROJECT,
@@ -176,7 +176,7 @@ public final class ExportEntityCollector {
                         todo.add(spaceId);
                     }
 
-                    if (withLevelsBelow && current.equals(root)) { // BIS-2255: only exporting downstream if was initially selected
+                    if (withLevelsBelow && isInitialEntityUpstreamCurrent(root.getExportableKind(), initialSpacePermId, current.getExportableKind(), projectSpacePermId)) { // BIS-2255: only exporting downstream if was initially selected
                         // Experiments
                         List<Experiment> experiments = project.getExperiments();
                         for (Experiment experiment:experiments) {
@@ -249,7 +249,7 @@ public final class ExportEntityCollector {
                         todo.add(projectId);
                     }
 
-                    if (withLevelsBelow && current.equals(root)) { // BIS-2255: only exporting downstream if was initially selected
+                    if (withLevelsBelow && isInitialEntityUpstreamCurrent(root.getExportableKind(), initialSpacePermId, current.getExportableKind(), experimentSpacePermId)) { // BIS-2255: only exporting downstream if was initially selected
                         // Experiment Samples (implicitly always on same space as experiment)
                         SampleSearchCriteria sampleSearchCriteria = new SampleSearchCriteria();
                         sampleSearchCriteria.withExperiment().withPermId().thatEquals(current.getPermId());
@@ -528,6 +528,26 @@ public final class ExportEntityCollector {
                     break;
             }
         }
+    }
+
+    private static boolean isInitialEntityUpstreamCurrent(ExportableKind initialKind, SpacePermId initialSpace, ExportableKind currentKind, SpacePermId currentSpace) {
+        boolean isInitialSpace = currentSpace.equals(initialSpace);
+        boolean isIncludingCurrent = false;
+        switch (initialKind) {
+            case SPACE ->
+            {
+                isIncludingCurrent = currentKind == ExportableKind.SPACE || currentKind == ExportableKind.PROJECT || currentKind == ExportableKind.EXPERIMENT;
+            }
+            case PROJECT ->
+            {
+                isIncludingCurrent = currentKind == ExportableKind.PROJECT || currentKind == ExportableKind.EXPERIMENT;
+            }
+            case EXPERIMENT ->
+            {
+                isIncludingCurrent = currentKind == ExportableKind.EXPERIMENT;
+            }
+        }
+        return isInitialSpace && isIncludingCurrent;
     }
 
     private static SpacePermId setInitialSpacePermId(ExportablePermId root, SpacePermId initialSpacePermId, ExportablePermId currentPermId, SpacePermId currentPermIdSpacePermId) {
