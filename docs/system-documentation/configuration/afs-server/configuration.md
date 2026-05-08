@@ -42,6 +42,7 @@ For 10 concurrent users doing uploads using the defaults that means: 15728640 * 
 # FINEST  = most detailed, very verbose      | Log4j: TRACE
 # ALL     = enable all logging               | Log4j: ALL
 #############################################################
+system.property.prefix=afs.logging.
 
 # Global logging level
 .global.level=INFO

@@ -3,7 +3,7 @@ Multi Group Set Up
 
 
 openBIS can be configured to be used by multiple groups, where every group only sees their own group *Spaces*.
-This configuration needs to be done on *system level*, as described [here](../../../system-documentation/configuration/share-ids.md).
+This configuration needs to be done on *system level*, as described [here](../../../system-documentation/configuration/common/user-group-management-for-multi-groups-openbis-instances.md).
 
 
 In the example below we see two groups: **RDM** and **ETHRDH**. For each group, in the Inventory, there area an **Equipment**, a **Materials**, a **Methods** and a **Publications** *Spaces* with the group prefix.

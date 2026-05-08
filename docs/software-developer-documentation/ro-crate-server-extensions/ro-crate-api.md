@@ -34,7 +34,7 @@ In the header, the following arguments are available
 | `Content-Type`                                   | `application/json`                                                      | Yes      | HTTP Content type header    |
 | `api-key`                                        | openBIS session token _or_ openBIS personal access token                | Yes      | Token for accessing openBIS |
 | `openbis.identifier-annotations`                 | Semantic annotation for identifiers used in                             | No       | Used                        |
-| `openbis.with-Levels-below`                      | Standard openBIS config option for export                               | No       | openBIS setting for export  |
+| `openbis.with-levels-below`                      | Standard openBIS config option for export                               | No       | openBIS setting for export  |
 | `openbis.with-objects-and-dataSets-parents`      | Standard openBIS config option for export                               | No       | openBIS setting for export  |
 | `openbis.with-objects-and-dataSets-other-spaces` | Standard openBIS config option for export                               | No       | openBIS setting for export  |
 

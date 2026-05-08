@@ -514,8 +514,7 @@ e.g
 | eln-lims.as.services.exports-api.sci-cat.timeout.count                     |                         |                                                                                                           |
 | eln-lims.as.services.exports-api.sci-cat.timeout.sleep                     |                         |                                                                                                           |
 | eln-lims.as.services.exports-api.ro-crate.url                              |                         |                                                                                                           |
-
-
+| eln-lims.as.services.search-store.script-path                              |                         |                                                                                                           |
 
 #### DSS PROPERTIES
 
@@ -702,12 +701,4 @@ None.
 
 ### SEARCH-STORE
 
-#### AS PROPERTIES
-
-| Key                                               | Example Value | Short Explanation |
-|---------------------------------------------------|---------------|-------------------|
-| search-store.as.services.search-store.script-path |               |                   |
-
-#### DSS PROPERTIES
-
-None.
+search-store plugin has been merged into ELN
