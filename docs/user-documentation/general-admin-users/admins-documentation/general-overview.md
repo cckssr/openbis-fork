@@ -1,4 +1,4 @@
-The admin interface of openBIS can can be accessed via a URL of this type: https://openbis-xxx/openbis/webapp/openbis-ng-ui/
+The admin interface of openBIS can can be accessed via a URL of this type: https://openbis-xxx/openbis/webapp/admin/
 
 where openbis-xxx is the name of the server specified in the openBIS configuration file, during the installation by a system admin.
 
