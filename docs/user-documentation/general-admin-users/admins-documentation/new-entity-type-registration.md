@@ -178,7 +178,7 @@ One possible use case for this is to specify some custom widgets available for u
 
 ![](img/7.0-admin-ui-property-type-metadata.png)
  
-This can also be done from the ELN interface, in the Settings (see )
+This can also be done from the ELN interface, in the Settings (see below)
 
 ### Considerations on properties registration
 
