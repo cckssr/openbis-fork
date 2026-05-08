@@ -59,6 +59,7 @@ import ch.systemsx.cisd.openbis.common.io.hierarchical_content.DefaultFileBasedH
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.IHierarchicalContentFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetDirectoryProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
+import ch.systemsx.cisd.openbis.common.io.hierarchical_content.IHierarchicalContentNodeFilter;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IPathInfoServiceProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IShareIdManager;
 import ch.systemsx.cisd.openbis.dss.generic.shared.PathInfoServiceProviderFactory;
@@ -137,6 +138,11 @@ public class PathInfoDatabaseRefreshingTaskTest extends AbstractFileSystemTestCa
             @Override public IOpenBISService getOpenBISService()
             {
                 return service;
+            }
+
+            @Override public IHierarchicalContentNodeFilter getHierarchicalContentNodeFilter()
+            {
+                return IHierarchicalContentNodeFilter.MATCH_ALL;
             }
         });
 
