@@ -304,25 +304,24 @@ function DataGridController(
         mainController.serverFacade.setSetting(configKey, elnGridSettingsStr)
     }
 
-	this._exportXLS = function (parameters) {
-		let serviceParameters = {
-			"method" : "export",
-			"file_name" : parameters.exportedFilePrefix,
-			"ids" : parameters.exportedIds,
-			"export_referred_master_data" : parameters.exportedReferredMasterData,
-			"export_fields" : parameters.exportedFields,
-			"text_formatting" : parameters.exportedValues,
-			"compatible_with_import" : parameters.exportedImportCompatible
-		}
-
-		return new Promise(function(resolve, reject){
-			mainController.serverFacade.customASService(serviceParameters, function(result) {
-				resolve({ sessionToken: mainController.serverFacade.getSession(), exportResult: result.result})
-			}, "xls-export", function(error) {
-				reject(error)
-			}, true);
-		})
-	}
+    this._exportXLS = function (parameters) {
+        let serviceParameters = {
+            "method" : "export",
+            "file_name" : parameters.exportedFilePrefix,
+            "exportedIds" : parameters.exportedIds,
+            "exportedReferredMasterData" : parameters.exportedReferredMasterData,
+            "exportedFields" : parameters.exportedFields,
+            "exportedValues" : parameters.exportedValues,
+            "withImportCompatibility" : parameters.exportedImportCompatible
+        }
+        return new Promise(function(resolve, reject){
+            mainController.serverFacade.executeExport(serviceParameters, function(result) {
+                resolve({ sessionToken: mainController.serverFacade.getSession(), exportResult: result })
+            }, function(error) {
+                reject(error)
+            });
+        })
+    }
 
     this.refresh = function () {
         if (_this.controller) {
