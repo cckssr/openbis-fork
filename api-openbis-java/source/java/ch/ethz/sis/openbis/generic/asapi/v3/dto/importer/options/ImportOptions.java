@@ -17,6 +17,7 @@
 package ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.options;
 
 import java.io.Serializable;
+import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -29,6 +30,12 @@ public class ImportOptions implements Serializable
 {
 
     private static final long serialVersionUID = 1L;
+
+    @JsonProperty
+    private Map<String, String> experimentsByType;
+
+    @JsonProperty
+    private Map<String, String> spacesByType;
 
     @JsonProperty
     private ImportMode mode;
@@ -53,6 +60,26 @@ public class ImportOptions implements Serializable
     public void setMode(final ImportMode mode)
     {
         this.mode = mode;
+    }
+
+    @JsonIgnore
+    public Map<String, String> getExperimentsByType() {
+        return experimentsByType;
+    }
+
+    @JsonIgnore
+    public void setExperimentsByType(Map<String, String> experimentsByType) {
+        this.experimentsByType = experimentsByType;
+    }
+
+    @JsonIgnore
+    public Map<String, String> getSpacesByType() {
+        return spacesByType;
+    }
+
+    @JsonIgnore
+    public void setSpacesByType(Map<String, String> spacesByType) {
+        this.spacesByType = spacesByType;
     }
 
     @Override
