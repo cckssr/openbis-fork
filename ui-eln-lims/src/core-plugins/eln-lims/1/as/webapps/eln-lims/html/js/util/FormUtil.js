@@ -2058,7 +2058,7 @@ var FormUtil = new function() {
     	return !isNaN(str);
 	}
 
-    this.isString(x) {
+    this.isString = function(x) {
       return Object.prototype.toString.call(x) === '[object String]';
     }
 
