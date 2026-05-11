@@ -177,7 +177,13 @@ function SampleTableController(parentController, title, experimentIdentifier, pr
             Util.blockUI();
             mainController.openbisV3.uploadToSessionWorkspace(file)
               .done(function() {
-                mainController.serverFacade.importSamples("FAIL_IF_EXISTS", file.name, selectedSampleTypes, experimentsByType, spacesByType,
+                  var parameters = {
+                      mode: "FAIL_IF_EXISTS",
+                      fileName: file.name,
+                      experimentsByType: experimentsByType,
+                      spacesByType: spacesByType
+                  }
+                  mainController.serverFacade.executeImport(parameters,
                   function(result) {
                     _this._handleResult(result, "created", experimentIdentifier);
                   });
@@ -200,7 +206,13 @@ function SampleTableController(parentController, title, experimentIdentifier, pr
             Util.blockUI();
           mainController.openbisV3.uploadToSessionWorkspace(file)
             .done(function() {
-              mainController.serverFacade.importSamples("UPDATE_IF_EXISTS", file.name, selectedSampleTypes, experimentsByType, spacesByType,
+              var parameters = {
+                  mode: "UPDATE_IF_EXISTS",
+                  fileName: file.name,
+                  experimentsByType: experimentsByType,
+                  spacesByType: spacesByType
+              }
+              mainController.serverFacade.executeImport(parameters,
                 function(result) {
                   _this._handleResult(result, "updated", experimentIdentifier);
                 });
@@ -229,7 +241,7 @@ function SampleTableController(parentController, title, experimentIdentifier, pr
     }
 
     this._handleResult = function(result, verb, experimentIdentifier) {
-        Util.showSuccess(result.result.length + " " + ELNDictionary.Samples + " successfully " + verb, function() {
+        Util.showSuccess(result.objectIds.length + " " + ELNDictionary.Samples + " successfully " + verb, function() {
             Util.unblockUI();
             var expIdOrNull = experimentIdentifier ? '"' + experimentIdentifier + '"' : null;
             mainController.changeView('showSamplesPage', encodeURIComponent('[' + expIdOrNull + ',false]'));

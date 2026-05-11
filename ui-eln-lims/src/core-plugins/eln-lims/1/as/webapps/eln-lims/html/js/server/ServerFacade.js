@@ -134,17 +134,6 @@ function ServerFacade(openbisServer) {
         });
     }
 
-    this.importSamples = function(mode, sessionKey, allowedSampleTypes, experimentsByType, spacesByType, callback) {
-            this.customASService({
-                "method" : "import",
-                "mode" : mode,
-                "fileName" : sessionKey,
-                "allowedSampleTypes" : allowedSampleTypes,
-                "experimentsByType" : experimentsByType,
-                "spacesByType" : spacesByType,
-            }, callback, "xls-import", null, true);
-    }
-
     this.deleteSpace = function(code, reason, callback) {
         this.customELNASAPI({
             "method" : "deleteSpace",
@@ -3955,6 +3944,37 @@ function ServerFacade(openbisServer) {
                 mainController.openbisV3.executeExport(data, options).done(function(result) {
                     callbackFunction(result);
                 }).fail(failureHander);
+
+            });
+    }
+
+    this.executeImport = function(parameters, callbackFunction, errorHandler) {
+        require([   "as/dto/importer/data/ImportData", "as/dto/importer/options/ImportOptions",
+                "as/dto/importer/data/ImportFormat", "as/dto/importer/options/ImportMode"
+            ],
+            function(ImportData, ImportOptions, ImportFormat, ImportMode) {
+
+                var data = new ImportData(ImportFormat.EXCEL, parameters.fileName);
+                var options = new ImportOptions();
+                options.setMode(parameters.mode);
+                options.setExperimentsByType(parameters.experimentsByType);
+                options.setSpacesByType(parameters.spacesByType);
+
+                var failureHandler = function(result) {
+                    if (errorHandler) {
+                        errorHandler(result);
+                    } else {
+                        var msg = result.message;
+                        if (!msg) {
+                            msg = "Call failed to server: " + JSON.stringify(result);
+                        }
+                        Util.showError(msg);
+                    }
+                };
+
+                mainController.openbisV3.executeImport(data, options).done(function(result) {
+                    callbackFunction(result);
+                }).fail(failureHandler);
 
             });
     }
