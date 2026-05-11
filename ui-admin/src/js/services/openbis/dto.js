@@ -241,7 +241,15 @@ const CLASS_FULL_NAMES = [
   'as/dto/importer/data/ImportData',
   'as/dto/importer/data/ImportFormat',
   'as/dto/importer/options/ImportOptions',
-  'as/dto/importer/options/ImportMode'
+  'as/dto/importer/options/ImportMode',
+  'as/dto/exporter/data/ExportData',
+  'as/dto/exporter/options/ExportOptions',
+  'as/dto/exporter/options/ExportFormat',
+  'as/dto/exporter/data/ExportablePermId',
+  'as/dto/exporter/data/ExportableKind',
+  'as/dto/exporter/data/AllFields',
+  'as/dto/exporter/data/SelectedFields',
+  'as/dto/exporter/data/Attribute'
 ]
 
 class Dto {

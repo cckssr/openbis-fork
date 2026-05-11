@@ -519,6 +519,10 @@ class Facade {
     return this.promise(this.v3.executeImport(importData, importOptions))
   }
 
+  executeExport(exportData, exportOptions) {
+    return this.promise(this.v3.executeExport(exportData, exportOptions))
+  }
+
   promiseWithAbort(dfd) {
     const { promise, abortFn } = dfd;
     return {
