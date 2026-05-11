@@ -18,6 +18,7 @@ import java.util.function.Supplier;
 
 import javax.sql.DataSource;
 
+import ch.ethz.sis.afsclient.client.AfsClient;
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameterUtil;
 import ch.ethz.sis.openbis.afsserver.server.common.OpenBISConfiguration;
 import ch.ethz.sis.openbis.generic.OpenBIS;
@@ -91,6 +92,20 @@ public class IntegrationTestFacade
     public OpenBIS createOpenBIS()
     {
         return environment.createOpenBIS();
+    }
+
+    public OpenBIS createOpenBIS(int timeout, boolean callProxies){
+        return environment.createOpenBIS(timeout, callProxies);
+    }
+
+    public AfsClient createAfsClient()
+    {
+        return environment.createAfsClient();
+    }
+
+    public AfsClient createAfsClient(int timeout)
+    {
+        return environment.createAfsClient(timeout);
     }
 
     public SampleType createSampleType(OpenBIS openBIS, String sampleTypeCode, List<IPropertyTypeId> propertyTypeIds)

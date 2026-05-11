@@ -15,6 +15,8 @@
  */
 package ch.ethz.sis.afsserver.worker.proxy;
 
+import java.util.UUID;
+
 import ch.ethz.sis.afsapi.dto.Chunk;
 import ch.ethz.sis.afsapi.dto.File;
 import ch.ethz.sis.afsapi.dto.FreeSpace;
@@ -97,6 +99,11 @@ public class ValidationProxy extends AbstractProxy {
     @Override
     public byte[] preview(String owner, String source) throws Exception {
         return nextProxy.preview(owner, source);
+    }
+
+    @Override public Object status(final @NonNull UUID operationId) throws Exception
+    {
+        return nextProxy.status(operationId);
     }
 
     private void validateReadSize(String source, Integer limit) {

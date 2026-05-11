@@ -24,6 +24,7 @@ import ch.ethz.sis.shared.log.standard.LogManager;
 import ch.ethz.sis.shared.log.standard.Logger;
 import io.netty.handler.codec.http.HttpMethod;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -102,7 +103,7 @@ public class APIServerAdapterWrapper extends AbstractPublicAPIWrapper
                 throw new IllegalArgumentException("Not supported HTTP method type!");
             }
 
-            HttpResponse response = apiServerAdapter.process(httpMethod, requestParameters, data);
+            HttpResponse response = apiServerAdapter.process(httpMethod, requestParameters, Collections.emptyMap(), data);
             String contentType = response.getHeaders().get(HttpResponse.CONTENT_TYPE_HEADER);
             byte[] body = response.getInput().readAllBytes();
 

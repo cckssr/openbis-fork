@@ -21,6 +21,7 @@ import ch.ethz.sis.afsapi.api.PublicAPI;
 import ch.ethz.sis.afsclient.client.AfsClient;
 import ch.ethz.sis.afsjson.jackson.JacksonObjectMapper;
 import ch.ethz.sis.afsserver.server.Server;
+import ch.ethz.sis.afsserver.server.impl.OperationResultCache;
 import ch.ethz.sis.afsserver.server.observer.APIServerObserver;
 import ch.ethz.sis.afsserver.server.observer.ServerObserver;
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameter;
@@ -97,6 +98,9 @@ public class ServerClientEnvironmentFS
         configuration.put(AtomicFileSystemServerParameter.poolSize, "50");
         configuration.put(AtomicFileSystemServerParameter.connectionFactoryClass, ConnectionFactory.class.getName());
         configuration.put(AtomicFileSystemServerParameter.workerFactoryClass, WorkerFactory.class.getName());
+        configuration.put(AtomicFileSystemServerParameter.operationResultCacheClass, OperationResultCache.class.getName());
+        configuration.put(AtomicFileSystemServerParameter.operationResultCacheThresholdTime, "15000");
+        configuration.put(AtomicFileSystemServerParameter.operationResultCacheTimeout, "300000");
         configuration.put(AtomicFileSystemServerParameter.publicApiInterface, PublicAPI.class.getName());
         configuration.put(AtomicFileSystemServerParameter.apiServerInteractiveSessionKey, "1234");
         configuration.put(AtomicFileSystemServerParameter.apiServerTransactionManagerKey, "5678");

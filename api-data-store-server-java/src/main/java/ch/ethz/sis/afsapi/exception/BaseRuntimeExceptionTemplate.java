@@ -64,4 +64,8 @@ public abstract class BaseRuntimeExceptionTemplate<REASON extends Serializable, 
         return exception;
     }
 
+    public int getExceptionCode()
+    {
+        return exceptionCode;
+    }
 }

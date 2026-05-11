@@ -125,12 +125,15 @@ public final class Server<CONNECTION, API>
                 configuration.getSharableInstance(AtomicFileSystemServerParameter.workerFactoryClass);
         workerFactory.init(configuration);
 
-        // 2.4 Creating workers pool
+        // 2.4 Creating workers pool and result cache
         logger.info("Creating server workers");
         int poolSize = configuration.getIntegerProperty(AtomicFileSystemServerParameter.poolSize);
 
         connectionsPool = new Pool<>(poolSize, configuration, connectionFactory);
         workersPool = new Pool<>(poolSize, configuration, workerFactory);
+
+        OperationResultCache operationResultCache = configuration.getSharableInstance(AtomicFileSystemServerParameter.operationResultCacheClass);
+        operationResultCache.init(configuration);
 
         // 2.5 Init API Server observer
         APIServerObserver<CONNECTION> apiServerObserver = configuration.getSharableInstance(AtomicFileSystemServerParameter.apiServerObserver);
@@ -147,7 +150,7 @@ public final class Server<CONNECTION, API>
         String transactionManagerKey = configuration.getStringProperty(AtomicFileSystemServerParameter.apiServerTransactionManagerKey);
         int apiServerWorkerTimeout = configuration.getIntegerProperty(AtomicFileSystemServerParameter.apiServerWorkerTimeout);
         apiServer =
-                new APIServer(connectionsPool, workersPool, publicApiInterface, interactiveSessionKey, transactionManagerKey, apiServerWorkerTimeout,
+                new APIServer(connectionsPool, workersPool, operationResultCache, publicApiInterface, interactiveSessionKey, transactionManagerKey, apiServerWorkerTimeout,
                         apiServerObserver);
 
         // 2.7 Creating JSON RPC Service

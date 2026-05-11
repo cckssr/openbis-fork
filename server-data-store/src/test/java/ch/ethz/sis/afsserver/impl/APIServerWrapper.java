@@ -55,7 +55,7 @@ public class APIServerWrapper extends AbstractPublicAPIWrapper
         // Random Session token just works for tests with dummy authentication
         Map<String, Object> requestParams = prepareParameters(params, data);
 
-        ApiRequest request = new ApiRequest("test", method, requestParams, sessionToken, interactiveSessionKey, transactionManagerKey);
+        ApiRequest request = new ApiRequest("test", method, requestParams, sessionToken, interactiveSessionKey, transactionManagerKey, null);
 
         try {
             Response response = apiServer.processOperation(request, apiResponseBuilder, performanceAuditor);

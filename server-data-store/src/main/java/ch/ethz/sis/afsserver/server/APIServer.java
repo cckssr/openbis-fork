@@ -15,9 +15,24 @@
  */
 package ch.ethz.sis.afsserver.server;
 
+import static ch.ethz.sis.afsserver.server.APIServerErrorType.IncorrectParameters;
+import static ch.ethz.sis.afsserver.server.APIServerErrorType.MethodNotFound;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+
 import ch.ethz.sis.afs.api.TwoPhaseTransactionAPI;
 import ch.ethz.sis.afs.api.dto.ExceptionReason;
 import ch.ethz.sis.afsserver.exception.APIExceptions;
+import ch.ethz.sis.afsserver.server.impl.OperationResult;
 import ch.ethz.sis.afsserver.server.observer.APIServerObserver;
 import ch.ethz.sis.afsserver.server.performance.PerformanceAuditor;
 import ch.ethz.sis.shared.exception.ThrowableReason;
@@ -27,15 +42,6 @@ import ch.ethz.sis.shared.pool.Pool;
 import ch.ethz.sis.shared.reflect.Reflect;
 import ch.ethz.sis.shared.startup.Configuration;
 import lombok.NonNull;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-
-import static ch.ethz.sis.afsserver.server.APIServerErrorType.IncorrectParameters;
-import static ch.ethz.sis.afsserver.server.APIServerErrorType.MethodNotFound;
 
 /**
  * This class should be used as delegate by specific server transport classes
@@ -50,12 +56,15 @@ import static ch.ethz.sis.afsserver.server.APIServerErrorType.MethodNotFound;
 public class APIServer<CONNECTION, INPUT extends Request, OUTPUT extends Response, API> {
 
     private static final Logger logger = LogManager.getLogger(APIServer.class);
+
     private static final long IDLE_WORKER_TIMEOUT_CHECK_INTERVAL_IN_MILLIS = 1000;
+
     private final Pool<Configuration, CONNECTION> connectionsPool;
     private final Pool<Configuration, Worker<CONNECTION>> workersPool;
+    private final OperationResultCache operationResultCache;
 
-    private final Map<Worker<CONNECTION>, Long> workersLastAccessed = new ConcurrentHashMap<>();
-    private final Map<String, Worker<CONNECTION>> workersInUse = new ConcurrentHashMap<>();
+    private final Map<String, WorkerInUse> interactiveSessionWorkersInUse = new ConcurrentHashMap<>();
+    private final Map<Worker<CONNECTION>, Worker<CONNECTION>> workersInUse = new ConcurrentHashMap<>();
 
     private final Map<String, Method> apiMethods = new ConcurrentHashMap<>();
     private final Map<Method, Parameter[]> apiMethodParameters = new ConcurrentHashMap<>();
@@ -71,6 +80,7 @@ public class APIServer<CONNECTION, INPUT extends Request, OUTPUT extends Respons
     public APIServer(
             @NonNull Pool<Configuration, CONNECTION> connectionsPool,
             @NonNull Pool<Configuration, Worker<CONNECTION>> workersPool,
+            @NonNull OperationResultCache operationResultCache,
             @NonNull Class<API> apiClassDefinition,
             @NonNull String interactiveSessionKey,
             @NonNull String transactionManagerKey,
@@ -79,6 +89,7 @@ public class APIServer<CONNECTION, INPUT extends Request, OUTPUT extends Respons
         this.shutdown = false;
         this.connectionsPool = connectionsPool;
         this.workersPool = workersPool;
+        this.operationResultCache = operationResultCache;
 
         for (Method method : apiClassDefinition.getMethods()) {
             apiMethods.put(method.getName(), method);
@@ -107,21 +118,22 @@ public class APIServer<CONNECTION, INPUT extends Request, OUTPUT extends Respons
                 new TimerTask() {
                     @Override
                     public void run() {
-                        for (String sessionToken : workersInUse.keySet()) {
+                        for (String sessionToken : interactiveSessionWorkersInUse.keySet()) {
                             try {
-                                Worker<CONNECTION> worker = workersInUse.get(sessionToken);
-                                if (worker != null) {
-                                    boolean isTimeout = workersLastAccessed.get(worker) +
-                                            apiServerWorkerTimeout < System.currentTimeMillis();
+                                WorkerInUse workerInUse = interactiveSessionWorkersInUse.get(sessionToken);
+                                if (workerInUse != null) {
+                                    boolean isTimeout = workerInUse.lastAccessedTime + apiServerWorkerTimeout < System.currentTimeMillis();
 
-                                    if (isTimeout) {
+                                    if (isTimeout && !workerInUse.isProcessing && !workerInUse.isPrepared) {
                                         checkIn(true,
                                                 false,
                                                 false,
                                                 true,
+                                                false,
+                                                false,
                                                 true,
                                                 sessionToken,
-                                                worker);
+                                                workerInUse.worker);
                                     }
                                 }
                             } catch (Exception ex) {
@@ -139,21 +151,20 @@ public class APIServer<CONNECTION, INPUT extends Request, OUTPUT extends Respons
         return !twoPhaseTransactionAPIMethods.contains(request.getMethod());
     }
 
+    private boolean isValidInteractiveSessionPrepared(INPUT request) {
+        return request.getMethod().equals("prepare");
+    }
+
     private boolean isValidInteractiveSessionFinished(INPUT request) {
         return request.getMethod().equals("commit") || request.getMethod().equals("rollback");
     }
 
-    private boolean sameSessionToken(List<INPUT> requests) {
-        String sessionToken = requests.get(0).getSessionToken();
-        for (Request request : requests) {
-            if ((request.getSessionToken() == null && sessionToken == null) ||
-                    (request.getSessionToken() != null && request.getSessionToken().equals(sessionToken))) {
-                //Equals
-            } else {
-                return false;
-            }
+    private UUID getTransactionId(INPUT request){
+        if (request.getParams() != null) {
+            return (UUID) request.getParams().get("transactionId");
+        } else {
+            return null;
         }
-        return true;
     }
 
     public OUTPUT processOperation(INPUT request, ResponseBuilder<OUTPUT> responseBuilder, PerformanceAuditor performanceAuditor) throws APIServerException {
@@ -171,8 +182,11 @@ public class APIServer<CONNECTION, INPUT extends Request, OUTPUT extends Respons
         boolean isValidTransactionManagerMode = transactionManagerKey.equals(request.getTransactionManagerKey());
         boolean isValidInteractiveSession = interactiveSessionKey.equals(request.getInteractiveSessionKey());
 
+        boolean isValidInteractiveSessionPrepared = false;
         boolean isValidInteractiveSessionFinished = false;
+
         if (isValidInteractiveSession) {
+            isValidInteractiveSessionPrepared = isValidInteractiveSessionPrepared(request);
             isValidInteractiveSessionFinished = isValidInteractiveSessionFinished(request) || !sessionTokenFound;
         }
 
@@ -185,6 +199,8 @@ public class APIServer<CONNECTION, INPUT extends Request, OUTPUT extends Respons
             throw new APIServerException(null, IncorrectParameters, APIExceptions.NON_INTERACTIVE_WITH_TRANSACTION_CONTROL.getCause());
         }
 
+        UUID transactionId = getTransactionId(request);
+
         // Process requests separately
         Worker<CONNECTION> worker = null;
         String currentRequestId = null;
@@ -195,10 +211,10 @@ public class APIServer<CONNECTION, INPUT extends Request, OUTPUT extends Respons
             worker = checkOut(performanceAuditor,
                                 isValidTransactionManagerMode,
                                 isValidInteractiveSession,
-                                isValidInteractiveSessionFinished,
                                 isValidNonInteractiveSession,
                                 sessionTokenFound,
-                                sessionToken);
+                                sessionToken,
+                                transactionId);
 
             response = dispatcher(worker, request, responseBuilder);
             currentRequestId = request.getId();
@@ -239,7 +255,9 @@ public class APIServer<CONNECTION, INPUT extends Request, OUTPUT extends Respons
             throw apiException;
         } finally {
             checkIn(isValidInteractiveSession,
+                    isValidInteractiveSessionPrepared,
                     isValidInteractiveSessionFinished,
+                    false,
                     isValidNonInteractiveSession,
                     errorFound,
                     sessionTokenFound,
@@ -253,18 +271,20 @@ public class APIServer<CONNECTION, INPUT extends Request, OUTPUT extends Respons
     private Worker<CONNECTION> checkOut(PerformanceAuditor performanceAuditor,
                                         boolean isValidTransactionManagerMode,
                                         boolean isValidInteractiveSession,
-                                        boolean isValidInteractiveSessionFinished,
                                         boolean isValidNonInteractiveSession,
                                         boolean sessionTokenFound,
-                                        String sessionToken) throws Exception {
+                                        String sessionToken,
+                                        UUID transactionId) throws Exception {
         Worker<CONNECTION> worker = null;
 
         try {
             if (isValidInteractiveSession &&
                     sessionTokenFound &&
-                    workersInUse.containsKey(sessionToken)) {
-                worker = workersInUse.get(sessionToken);
-                workersLastAccessed.put(worker, System.currentTimeMillis());
+                    interactiveSessionWorkersInUse.containsKey(sessionToken)) {
+                WorkerInUse workerInUse = interactiveSessionWorkersInUse.get(sessionToken);
+                workerInUse.isProcessing = true;
+                workerInUse.lastAccessedTime = System.currentTimeMillis();
+                worker = workerInUse.worker;
             } else {
                 CONNECTION connection = connectionsPool.checkOut();
                 worker = workersPool.checkOut();
@@ -275,16 +295,31 @@ public class APIServer<CONNECTION, INPUT extends Request, OUTPUT extends Respons
 
                 if (sessionTokenFound) {
                     worker.setSessionToken(sessionToken);
-                    workersInUse.put(sessionToken, worker);
-                    workersLastAccessed.put(worker, System.currentTimeMillis());
-                    if (isValidNonInteractiveSession) {
+                    if (isValidInteractiveSession) {
+                        WorkerInUse workerInUse = null;
+                        if(transactionId != null){
+                            workerInUse = interactiveSessionWorkersInUse.values().stream().filter(w -> Objects.equals(w.transactionId, transactionId)).findFirst().orElse(null);
+                        }
+                        if(workerInUse == null){
+                            workerInUse = new WorkerInUse(worker);
+                            workerInUse.transactionId = transactionId;
+                        }
+                        workerInUse.isProcessing = true;
+                        workerInUse.lastAccessedTime = System.currentTimeMillis();
+                        interactiveSessionWorkersInUse.put(sessionToken, workerInUse);
+                    } else if (isValidNonInteractiveSession) {
                         worker.begin(UUID.randomUUID());
                     }
                 }
             }
+
+            workersInUse.put(worker, worker);
+
         } catch (Exception exceptionAtCheckout) {
             checkIn(isValidInteractiveSession,
-                    isValidInteractiveSessionFinished,
+                    false,
+                    false,
+                    false,
                     isValidNonInteractiveSession,
                     true,
                     sessionTokenFound,
@@ -297,39 +332,45 @@ public class APIServer<CONNECTION, INPUT extends Request, OUTPUT extends Respons
     }
 
     private void checkIn(boolean isValidInteractiveSession,
+                             boolean isValidInteractiveSessionPrepared,
                              boolean isValidInteractiveSessionFinished,
+                             boolean isValidInteractiveSessionTimedOut,
                              boolean isValidNonInteractiveSession,
                              boolean errorFound,
                              boolean sessionTokenFound,
                              String sessionToken,
                              Worker<CONNECTION> worker) {
         try {
-            if (sessionTokenFound) {
-                if (isValidInteractiveSession) {
-                    if (isValidInteractiveSessionFinished) {
-                        workersInUse.remove(sessionToken);
-                        workersLastAccessed.remove(worker);
+            if (sessionTokenFound && isValidInteractiveSession) {
+                if (isValidInteractiveSessionFinished || isValidInteractiveSessionTimedOut) {
+                    interactiveSessionWorkersInUse.remove(sessionToken);
+                } else
+                {
+                    WorkerInUse workerInUse = interactiveSessionWorkersInUse.get(sessionToken);
+                    workerInUse.isProcessing = false;
+                    if (isValidInteractiveSessionPrepared)
+                    {
+                        workerInUse.isPrepared = true;
                     }
                 }
-
-                if (isValidNonInteractiveSession) {
-                    workersInUse.remove(sessionToken);
-                    workersLastAccessed.remove(worker);
-                }
             }
+            workersInUse.remove(worker);
         } catch (Exception ex) {
             logger.catching(ex);
         }
 
         try {
-            if (isValidNonInteractiveSession && !errorFound && sessionTokenFound) {
+            if(sessionTokenFound && isValidInteractiveSessionTimedOut){
+                worker.rollback();
+            }
+            if (sessionTokenFound && isValidNonInteractiveSession && !errorFound) {
                 worker.commit();
             }
         } catch (Exception ex) {
             logger.catching(ex);
         }
 
-        boolean doCleanAndReturnWorker = isValidInteractiveSessionFinished || isValidNonInteractiveSession;
+        boolean doCleanAndReturnWorker = isValidInteractiveSessionFinished || isValidInteractiveSessionTimedOut || isValidNonInteractiveSession;
 
         if (doCleanAndReturnWorker) {
             CONNECTION connection = null;
@@ -404,12 +445,31 @@ public class APIServer<CONNECTION, INPUT extends Request, OUTPUT extends Respons
                 requestParamsForApiMethod[pIdx] = requestParam;
             }
 
-            observer.beforeAPICall(api, request);
-            Object result = apiMethod.invoke(api, requestParamsForApiMethod);
-            OUTPUT response = responseBuilder.build(request.getId(), result);
-            observer.afterAPICall(api, request, response);
+            long operationStartTime = System.currentTimeMillis();
+            Object operationResult = null;
+            Throwable operationException = null;
 
-            return response;
+            try
+            {
+                observer.beforeAPICall(api, request);
+                operationResult = apiMethod.invoke(api, requestParamsForApiMethod);
+                OUTPUT response = responseBuilder.build(request.getId(), operationResult);
+                observer.afterAPICall(api, request, response);
+                return response;
+            } catch(InvocationTargetException e) {
+                operationException = e.getCause();
+                throw e;
+            } catch(Exception e) {
+                operationException = e;
+                throw e;
+            } finally
+            {
+                if (request.getOperationId() != null)
+                {
+                    operationResultCache.setResult(request.getOperationId(), request.getMethod(), System.currentTimeMillis() - operationStartTime,
+                            OperationResult.builder().result(operationResult).exception(operationException).build());
+                }
+            }
         } else {
             throw new APIServerException(request.getId(), MethodNotFound, APIExceptions.METHOD_NOT_FOUND.getCause(request.getMethod()));
         }
@@ -425,15 +485,17 @@ public class APIServer<CONNECTION, INPUT extends Request, OUTPUT extends Respons
         return checkOut(performanceAuditor,
                 false,
                 false,
-                false,
                 true,
                 false,
+                null,
                 null);
     }
 
     public void checkIn(boolean errorFound,
                         Worker<CONNECTION> worker) {
         checkIn(false,
+                false,
+                false,
                 false,
                 true,
                 errorFound,
@@ -442,9 +504,14 @@ public class APIServer<CONNECTION, INPUT extends Request, OUTPUT extends Respons
                 worker);
     }
 
-    private static <T> T[] concat(T[] first, T[] second) {
-        T[] result = Arrays.copyOf(first, first.length + second.length);
-        System.arraycopy(second, 0, result, first.length, second.length);
-        return result;
+    private class WorkerInUse {
+        private final Worker<CONNECTION> worker;
+        private UUID transactionId;
+        private boolean isProcessing;
+        private boolean isPrepared;
+        private Long lastAccessedTime;
+        public WorkerInUse(Worker<CONNECTION> worker){
+            this.worker = worker;
+        }
     }
 }

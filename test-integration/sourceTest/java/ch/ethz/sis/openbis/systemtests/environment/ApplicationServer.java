@@ -168,11 +168,7 @@ public class ApplicationServer
 
                             if (proxyInterceptor != null)
                             {
-                                proxyInterceptor.invoke(remoteInvocation.getMethodName(), () ->
-                                {
-                                    super.service(proxyRequest, response);
-                                    return null;
-                                });
+                                proxyInterceptor.invoke(proxyRequest, response, remoteInvocation.getMethodName(), super::service);
                             } else
                             {
                                 super.service(proxyRequest, response);
@@ -181,6 +177,8 @@ public class ApplicationServer
                         {
                             super.service(proxyRequest, response);
                         }
+
+                        log.info("[AS PROXY] response status: " + response.getStatus());
                     } catch (Exception e)
                     {
                         log.info("[AS PROXY] failed");

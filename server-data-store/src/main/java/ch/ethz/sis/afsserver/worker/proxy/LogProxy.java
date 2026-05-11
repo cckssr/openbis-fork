@@ -147,4 +147,10 @@ public class LogProxy extends AbstractProxy {
         logger.traceAccess(null, owner, source);
         return logger.traceExit(nextProxy.preview(owner, source));
     }
+
+    @Override public Object status(final @NonNull UUID operationId) throws Exception
+    {
+        logger.traceAccess(null, operationId);
+        return logger.traceExit(nextProxy.status(operationId));
+    }
 }

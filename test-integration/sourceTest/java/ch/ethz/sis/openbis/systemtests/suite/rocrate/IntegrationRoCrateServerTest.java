@@ -115,7 +115,7 @@ public class IntegrationRoCrateServerTest
     @Test(enabled = true, timeOut = TIMEOUT, priority = 4)
     public void testImport() throws Exception
     {
-        OpenBIS openBIS = environment.createOpenBIS(TIMEOUT);
+        OpenBIS openBIS = environment.createOpenBIS(TIMEOUT, false);
         openBIS.login(username, password);
 
         Path file = Path.of("sourceTest/resource/" + getClass().getSimpleName() + "/OkayExample.json");
@@ -230,7 +230,7 @@ public class IntegrationRoCrateServerTest
     @Test(enabled = false, timeOut = TIMEOUT, priority = 4)
     public void testImportWithExternalFile() throws Exception
     {
-        OpenBIS openBIS = environment.createOpenBIS(TIMEOUT);
+        OpenBIS openBIS = environment.createOpenBIS(TIMEOUT, false);
         openBIS.login(username, password);
 
         Path file =
@@ -448,7 +448,7 @@ public class IntegrationRoCrateServerTest
     {
         String payload = "[\"/PUBLICATIONS/PUBLIC_REPOSITORIES/PUB29\"]";
 
-        OpenBIS openBIS = environment.createOpenBIS(TIMEOUT);
+        OpenBIS openBIS = environment.createOpenBIS(TIMEOUT, false);
         openBIS.login(username, password);
 
         String export_type = acceptableExportMimeType;
@@ -474,7 +474,7 @@ public class IntegrationRoCrateServerTest
     {
         String payload = "[\"/PUBLICATIONS/PUBLIC_REPOSITORIES/PUB29\"]";
 
-        OpenBIS openBIS = environment.createOpenBIS(TIMEOUT);
+        OpenBIS openBIS = environment.createOpenBIS(TIMEOUT, false);
         openBIS.login(username, password);
 
         HttpClient client = JettyHttpClientFactory.getHttpClient();
@@ -783,7 +783,7 @@ public class IntegrationRoCrateServerTest
         String payload = "[\"/PUBLICATIONS/PUBLIC_REPOSITORIES/PUB29\"]";
         String mimeType = "application/zip";
 
-        OpenBIS openBIS = environment.createOpenBIS(TIMEOUT);
+        OpenBIS openBIS = environment.createOpenBIS(TIMEOUT, false);
         openBIS.login(username, password);
 
         String export_type = mimeType;
@@ -862,7 +862,7 @@ public class IntegrationRoCrateServerTest
             Consumer<ExportCallerParams> afterCompletionCheck)
             throws IOException, InterruptedException, ExecutionException, TimeoutException
     {
-        OpenBIS openBIS = environment.createOpenBIS(TIMEOUT);
+        OpenBIS openBIS = environment.createOpenBIS(TIMEOUT, false);
         openBIS.login(username, password);
 
         String export_type = exportMimeType;

@@ -91,6 +91,9 @@ public class Integration2PCTest
     @AfterMethod
     public void afterMethod(Method method) throws Exception
     {
+        facade.getEnvironment().getApplicationServer().setProxyInterceptor(null);
+        facade.getEnvironment().getAfsServer().setProxyInterceptor(null);
+
         rollbackPreparedDatabaseTransactions();
         deleteCreatedSpacesProjectsAndExperiments();
     }
@@ -427,14 +430,14 @@ public class Integration2PCTest
     public void testBeginFailsAtAS()
     {
         // make begin fail at AS
-        facade.getEnvironment().getApplicationServer().setProxyInterceptor((method, defaultAction) ->
+        facade.getEnvironment().getApplicationServer().setProxyInterceptor((request, response, method, defaultAction) ->
         {
             if (method != null && method.equals("beginTransaction"))
             {
                 throw new RuntimeException("Test begin exception");
             } else
             {
-                defaultAction.call();
+                defaultAction.execute(request, response);
             }
         });
 
@@ -462,7 +465,7 @@ public class Integration2PCTest
         assertTransactions(getTransactionCoordinator().getTransactionMap(), new TestTransaction(transactionId, TransactionStatus.BEGIN_FINISHED));
 
         // make begin succeed at AS
-        facade.getEnvironment().getApplicationServer().setProxyInterceptor((method, defaultAction) -> defaultAction.call());
+        facade.getEnvironment().getApplicationServer().setProxyInterceptor((request, response, method, defaultAction) -> defaultAction.execute(request, response));
 
         // second attempt
         Space space = facade.createSpace(openBIS, ENTITY_CODE_PREFIX + UUID.randomUUID());
@@ -493,14 +496,14 @@ public class Integration2PCTest
     public void testBeginFailsAtAFS()
     {
         // make begin fail at AFS
-        facade.getEnvironment().getAfsServer().setProxyInterceptor((method, defaultAction) ->
+        facade.getEnvironment().getAfsServer().setProxyInterceptor((request, response, method, defaultAction) ->
         {
             if (method != null && method.equals("begin"))
             {
                 throw new RuntimeException("Test begin exception");
             } else
             {
-                defaultAction.call();
+                defaultAction.execute(request, response);
             }
         });
 
@@ -531,7 +534,7 @@ public class Integration2PCTest
         assertTransactions(getTransactionCoordinator().getTransactionMap(), new TestTransaction(transactionId, TransactionStatus.BEGIN_FINISHED));
 
         // make begin succeed at AFS
-        facade.getEnvironment().getAfsServer().setProxyInterceptor((method, defaultAction) -> defaultAction.call());
+        facade.getEnvironment().getAfsServer().setProxyInterceptor((request, response, method, defaultAction) -> defaultAction.execute(request, response));
 
         // second attempt
         openBIS.getAfsServerFacade().write(writeData.owner, writeData.source, 0L, writeData.bytes);
@@ -643,14 +646,14 @@ public class Integration2PCTest
     public void testPrepareFailsAtAS()
     {
         // make prepare fail at AS
-        facade.getEnvironment().getApplicationServer().setProxyInterceptor((method, defaultAction) ->
+        facade.getEnvironment().getApplicationServer().setProxyInterceptor((request, response, method, defaultAction) ->
         {
             if (method != null && method.equals("prepareTransaction"))
             {
                 throw new RuntimeException("Test prepare exception");
             } else
             {
-                defaultAction.call();
+                defaultAction.execute(request, response);
             }
         });
 
@@ -706,14 +709,14 @@ public class Integration2PCTest
     public void testPrepareFailsAtAFS()
     {
         // make prepare fail at AFS
-        facade.getEnvironment().getAfsServer().setProxyInterceptor((method, defaultAction) ->
+        facade.getEnvironment().getAfsServer().setProxyInterceptor((request, response, method, defaultAction) ->
         {
             if (method != null && method.equals("prepare"))
             {
                 throw new RuntimeException("Test prepare exception");
             } else
             {
-                defaultAction.call();
+                defaultAction.execute(request, response);
             }
         });
 
@@ -786,14 +789,14 @@ public class Integration2PCTest
     public void testCommitFailsAtAS() throws Exception
     {
         // make commit fail at AS
-        facade.getEnvironment().getApplicationServer().setProxyInterceptor((method, defaultAction) ->
+        facade.getEnvironment().getApplicationServer().setProxyInterceptor((request, response, method, defaultAction) ->
         {
             if (method != null && method.equals("commitTransaction"))
             {
                 throw new RuntimeException("Test commit exception");
             } else
             {
-                defaultAction.call();
+                defaultAction.execute(request, response);
             }
         });
 
@@ -817,7 +820,7 @@ public class Integration2PCTest
         assertTransactions(getTransactionCoordinator().getTransactionMap(), new TestTransaction(transactionId, TransactionStatus.COMMIT_STARTED));
 
         // make commit succeed at AS
-        facade.getEnvironment().getApplicationServer().setProxyInterceptor((method, defaultAction) -> defaultAction.call());
+        facade.getEnvironment().getApplicationServer().setProxyInterceptor((request, response, method, defaultAction) -> defaultAction.execute(request, response));
 
         // let's wait for the task that tries to finish failed or abandoned transactions runs
         Thread.sleep(WAITING_TIME_FOR_FINISHING_TRANSACTIONS);
@@ -842,14 +845,14 @@ public class Integration2PCTest
     public void testCommitFailsAtAFS() throws Exception
     {
         // make commit fail at AFS
-        facade.getEnvironment().getAfsServer().setProxyInterceptor((method, defaultAction) ->
+        facade.getEnvironment().getAfsServer().setProxyInterceptor((request, response, method, defaultAction) ->
         {
             if (method != null && method.equals("commit"))
             {
                 throw new RuntimeException("Test commit exception");
             } else
             {
-                defaultAction.call();
+                defaultAction.execute(request, response);
             }
         });
 
@@ -873,7 +876,7 @@ public class Integration2PCTest
         assertTransactions(getTransactionCoordinator().getTransactionMap(), new TestTransaction(transactionId, TransactionStatus.COMMIT_STARTED));
 
         // make commit succeed at AFS
-        facade.getEnvironment().getAfsServer().setProxyInterceptor((method, defaultAction) -> defaultAction.call());
+        facade.getEnvironment().getAfsServer().setProxyInterceptor((request, response, method, defaultAction) -> defaultAction.execute(request, response));
 
         // let's wait for the task that tries to finish failed or abandoned transactions runs
         Thread.sleep(WAITING_TIME_FOR_FINISHING_TRANSACTIONS);
@@ -909,7 +912,7 @@ public class Integration2PCTest
     private void testASOnlyTransaction(boolean rollback)
     {
         // make AFS always fail to make sure it does not interrupt AS only transaction
-        facade.getEnvironment().getAfsServer().setProxyInterceptor((method, defaultAction) ->
+        facade.getEnvironment().getAfsServer().setProxyInterceptor((request, response, method, defaultAction) ->
         {
             throw new RuntimeException("Test AFS exception");
         });
@@ -1311,24 +1314,24 @@ public class Integration2PCTest
     public void testRecovery() throws Exception
     {
         // make commit fail at both AS and AFS (prepare will succeed)
-        facade.getEnvironment().getApplicationServer().setProxyInterceptor((method, defaultAction) ->
+        facade.getEnvironment().getApplicationServer().setProxyInterceptor((request, response, method, defaultAction) ->
         {
             if (method != null && (method.equals("commitTransaction") || method.equals("commitRecoveredTransaction")))
             {
                 throw new RuntimeException("Test commit exception");
             } else
             {
-                defaultAction.call();
+                defaultAction.execute(request, response);
             }
         });
-        facade.getEnvironment().getAfsServer().setProxyInterceptor((method, defaultAction) ->
+        facade.getEnvironment().getAfsServer().setProxyInterceptor((request, response, method, defaultAction) ->
         {
             if (method != null && method.equals("commit"))
             {
                 throw new RuntimeException("Test commit exception");
             } else
             {
-                defaultAction.call();
+                defaultAction.execute(request, response);
             }
         });
 
@@ -1404,8 +1407,8 @@ public class Integration2PCTest
         facade.getEnvironment().getAfsServer().start();
 
         // make commit succeed at both AS and AFS
-        facade.getEnvironment().getApplicationServer().setProxyInterceptor((method, defaultAction) -> defaultAction.call());
-        facade.getEnvironment().getAfsServer().setProxyInterceptor((method, defaultAction) -> defaultAction.call());
+        facade.getEnvironment().getApplicationServer().setProxyInterceptor((request, response, method, defaultAction) -> defaultAction.execute(request, response));
+        facade.getEnvironment().getAfsServer().setProxyInterceptor((request, response, method, defaultAction) -> defaultAction.execute(request, response));
 
         // let's wait for the task that tries to finish failed or abandoned transactions runs
         Thread.sleep(WAITING_TIME_FOR_FINISHING_TRANSACTIONS);

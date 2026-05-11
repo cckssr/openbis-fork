@@ -1,5 +1,6 @@
 package ch.ethz.sis.openbis.systemtests.environment;
 
+import ch.ethz.sis.afsclient.client.AfsClient;
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameter;
 import ch.ethz.sis.openbis.afsserver.server.archiving.ArchiverDatabaseConfiguration;
 import ch.ethz.sis.openbis.afsserver.server.common.DatabaseConfiguration;
@@ -31,6 +32,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.SQLException;
@@ -250,11 +252,23 @@ public class IntegrationTestEnvironment
                 TestInstanceHostUtils.getAFSUrl() + TestInstanceHostUtils.getAFSPath());
     }
 
-    public OpenBIS createOpenBIS(int timeout)
+    public OpenBIS createOpenBIS(int timeout, boolean callProxies)
     {
-        return new OpenBIS(TestInstanceHostUtils.getOpenBISUrl() + TestInstanceHostUtils.getOpenBISPath(),
+        String asUrl = callProxies ? TestInstanceHostUtils.getOpenBISProxyUrl() : TestInstanceHostUtils.getOpenBISUrl();
+        String afsUrl = callProxies ? TestInstanceHostUtils.getAFSProxyUrl() : TestInstanceHostUtils.getAFSUrl();
+        return new OpenBIS(asUrl + TestInstanceHostUtils.getOpenBISPath(),
                 TestInstanceHostUtils.getDSSUrl() + TestInstanceHostUtils.getDSSPath(),
-                TestInstanceHostUtils.getAFSUrl() + TestInstanceHostUtils.getAFSPath(), timeout);
+                afsUrl + TestInstanceHostUtils.getAFSPath(), timeout);
+    }
+
+    public AfsClient createAfsClient()
+    {
+        return new AfsClient(URI.create(TestInstanceHostUtils.getAFSUrl() + TestInstanceHostUtils.getAFSPath()));
+    }
+
+    public AfsClient createAfsClient(int timeout)
+    {
+        return new AfsClient(URI.create(TestInstanceHostUtils.getAFSUrl() + TestInstanceHostUtils.getAFSPath()), timeout);
     }
 
     private void dropOpenBISDatabase()

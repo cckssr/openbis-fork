@@ -202,6 +202,12 @@ public class AuthenticationProxy extends AbstractProxy {
         return nextProxy.preview(owner, source);
     }
 
+    @Override public Object status(final @NonNull UUID operationId) throws Exception
+    {
+        validateSessionAvailable();
+        return nextProxy.status(operationId);
+    }
+
     //
     //
     //

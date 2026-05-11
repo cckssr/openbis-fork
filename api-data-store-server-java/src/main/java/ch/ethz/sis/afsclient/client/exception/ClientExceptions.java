@@ -51,4 +51,8 @@ public enum ClientExceptions implements ExceptionTemplateHolder {
     public ExceptionReason getCause(Object... args) {
         return template.getReason(args);
     }
+
+    public int getExceptionCode(){
+        return this.template.getExceptionCode();
+    }
 }

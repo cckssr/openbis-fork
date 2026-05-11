@@ -1766,6 +1766,20 @@ public class OpenBIS
                 throw new RuntimeException(e);
             }
         }
+
+        @Override public Object status(UUID operationId) throws Exception
+        {
+            try
+            {
+                return afsClientWithTransactions.status(operationId);
+            } catch (RuntimeException e)
+            {
+                throw e;
+            } catch (Exception e)
+            {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     //

@@ -27,6 +27,7 @@ import io.netty.handler.codec.http.HttpMethod;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import static io.netty.handler.codec.http.HttpMethod.*;
 
@@ -68,6 +69,7 @@ public class ApiServerAdapter<CONNECTION, API> extends AbstractAdapter<CONNECTIO
             case "isSessionValid":
             case "hash":
             case "preview":
+            case "status":
                 return GET; // all parameters from GET methods come on the query string
             case "create":
             case "read":
@@ -115,6 +117,9 @@ public class ApiServerAdapter<CONNECTION, API> extends AbstractAdapter<CONNECTIO
             case "limit":
                 parsedParameters.put(key, Integer.valueOf(value));
                 break;
+            case "operationId":
+                parsedParameters.put(key, UUID.fromString(value));
+                break;
            default:
                 parsedParameters.put(key, value);
                 break;
@@ -123,9 +128,9 @@ public class ApiServerAdapter<CONNECTION, API> extends AbstractAdapter<CONNECTIO
 
     @Override
     protected HttpResponse process(final String method, final Map<String, Object> parsedParameters, final String sessionToken,
-            final String interactiveSessionKey, final String transactionManagerKey, final PerformanceAuditor performanceAuditor) throws Exception
+            final String interactiveSessionKey, final String transactionManagerKey, final UUID operationId, final PerformanceAuditor performanceAuditor) throws Exception
     {
-        final ApiRequest apiRequest = new ApiRequest("1", method, parsedParameters, sessionToken, interactiveSessionKey, transactionManagerKey);
+        final ApiRequest apiRequest = new ApiRequest("1", method, parsedParameters, sessionToken, interactiveSessionKey, transactionManagerKey, operationId);
         final Response response = server.processOperation(apiRequest, apiResponseBuilder, performanceAuditor);
         final HttpResponse httpResponse = getHTTPResponse(response);
         return httpResponse;

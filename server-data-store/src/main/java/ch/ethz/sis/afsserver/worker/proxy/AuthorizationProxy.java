@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import ch.ethz.sis.afs.dto.operation.OperationName;
 import ch.ethz.sis.afsapi.dto.Chunk;
@@ -149,6 +150,12 @@ public class AuthorizationProxy extends AbstractProxy {
     {
         validateUserRights(owner, source, IOUtils.readPermissions, OperationName.Preview);
         return nextProxy.preview(owner, source);
+    }
+
+    @Override public Object status(final @NonNull UUID operationId) throws Exception
+    {
+        // session token verification done by the AuthenticationProxy is enough
+        return nextProxy.status(operationId);
     }
 
     //

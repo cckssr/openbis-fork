@@ -26,7 +26,9 @@ public enum HTTPExceptions implements ExceptionTemplateHolder {
     INVALID_PARAMETERS(IllegalArgumentException.class, List.of(
             ExceptionType.ClientDeveloperCodingError), 20002, "Invalid parameters"),
     INVALID_HTTP_METHOD(IllegalArgumentException.class, List.of(
-            ExceptionType.ClientDeveloperCodingError), 20003, "Invalid HTTP method");
+            ExceptionType.ClientDeveloperCodingError), 20003, "Invalid HTTP method"),
+    INVALID_HEADERS(IllegalArgumentException.class, List.of(
+            ExceptionType.ClientDeveloperCodingError), 20004, "Invalid headers");
 
     private RuntimeExceptionTemplate template;
 

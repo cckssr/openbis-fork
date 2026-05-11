@@ -1,7 +1,7 @@
 package ch.ethz.sis.afsserver.worker.proxy;
 
-import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import ch.ethz.sis.afsapi.dto.Chunk;
 import ch.ethz.sis.afsapi.dto.File;
@@ -246,6 +246,24 @@ public class InterceptorProxy extends AbstractProxy
         } else
         {
             return nextProxy.preview(owner, source);
+        }
+    }
+
+    @Override public Object status(final @NonNull UUID operationId) throws Exception
+    {
+        if (apiServerObserver != null)
+        {
+            return apiServerObserver.duringAPICall(nextProxy,
+                    new APICallImpl("status", Map.of("operationId", operationId))
+                    {
+                        @Override public Object executeDefault() throws Exception
+                        {
+                            return nextProxy.status(operationId);
+                        }
+                    });
+        } else
+        {
+            return nextProxy.status(operationId);
         }
     }
 

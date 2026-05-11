@@ -196,4 +196,9 @@ public abstract class AbstractProxy implements Worker<TransactionalFileSystem> {
     public byte[] preview(@NonNull String sourceOwner, @NonNull String source) throws Exception {
         return nextProxy.preview(sourceOwner, source);
     }
+
+    @Override public Object status(@NonNull final UUID operationId) throws Exception
+    {
+        return nextProxy.status(operationId);
+    }
 }

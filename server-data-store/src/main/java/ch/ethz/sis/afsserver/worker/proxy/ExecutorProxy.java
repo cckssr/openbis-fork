@@ -19,11 +19,12 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import ch.ethz.sis.afsapi.dto.Chunk;
 import ch.ethz.sis.afsapi.dto.File;
 import ch.ethz.sis.afsapi.dto.FreeSpace;
+import ch.ethz.sis.afsserver.server.OperationResult;
+import ch.ethz.sis.afsserver.server.OperationResultCache;
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameter;
 import ch.ethz.sis.afsserver.worker.AbstractProxy;
 import ch.ethz.sis.shared.io.IOUtils;
@@ -35,10 +36,19 @@ public class ExecutorProxy extends AbstractProxy
 
     private final String storageRoot;
 
+    private final OperationResultCache operationResultCache;
+
     public ExecutorProxy(final Configuration configuration)
     {
         super(null);
         storageRoot = configuration.getStringProperty(AtomicFileSystemServerParameter.storageRoot);
+        try
+        {
+            operationResultCache = configuration.getSharableInstance(AtomicFileSystemServerParameter.operationResultCacheClass);
+        } catch (Exception e)
+        {
+            throw new RuntimeException(e);
+        }
     }
 
     //
@@ -131,8 +141,10 @@ public class ExecutorProxy extends AbstractProxy
     public Chunk[] read(@NonNull Chunk[] chunks) throws Exception
     {
         Chunk[] reads = new Chunk[chunks.length];
-        for (int i = 0; i < chunks.length; i++) {
-            byte[] read = workerContext.getConnection().read(getSourcePath(chunks[i].getOwner(), chunks[i].getSource()), chunks[i].getOffset(), chunks[i].getLimit());
+        for (int i = 0; i < chunks.length; i++)
+        {
+            byte[] read = workerContext.getConnection()
+                    .read(getSourcePath(chunks[i].getOwner(), chunks[i].getSource()), chunks[i].getOffset(), chunks[i].getLimit());
             reads[i] = chunks[i].toBuilder().data(read).build();
         }
         return reads;
@@ -142,8 +154,10 @@ public class ExecutorProxy extends AbstractProxy
     public Boolean write(@NonNull Chunk[] chunks) throws Exception
     {
         boolean write = true;
-        for (int i = 0; i < chunks.length; i++) {
-            write = write && workerContext.getConnection().write(getSourcePath(chunks[i].getOwner(), chunks[i].getSource()), chunks[i].getOffset(), chunks[i].getData());
+        for (int i = 0; i < chunks.length; i++)
+        {
+            write = write && workerContext.getConnection()
+                    .write(getSourcePath(chunks[i].getOwner(), chunks[i].getSource()), chunks[i].getOffset(), chunks[i].getData());
         }
         return write;
     }
@@ -204,5 +218,30 @@ public class ExecutorProxy extends AbstractProxy
     public byte[] preview(String owner, String source) throws Exception
     {
         return workerContext.getConnection().preview(getSourcePath(owner, source));
+    }
+
+    @Override public Object status(final @NonNull UUID operationId) throws Exception
+    {
+        OperationResult operationResult = operationResultCache.getResult(operationId);
+
+        if (operationResult == null)
+        {
+            return null;
+        } else
+        {
+            if (operationResult.getException() != null)
+            {
+                if (operationResult.getException() instanceof Exception)
+                {
+                    throw (Exception) operationResult.getException();
+                } else
+                {
+                    throw new RuntimeException(operationResult.getException());
+                }
+            } else
+            {
+                return operationResult.getResult();
+            }
+        }
     }
 }

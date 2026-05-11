@@ -29,6 +29,8 @@ import java.nio.file.Path;
 public final class AllServersIntegrationTestEnvironment
 {
 
+    public static final String TEST_TRANSACTION_COORDINATOR_KEY = "integration-test-transaction-coordinator-key";
+
     public static final String TEST_INTERACTIVE_SESSION_KEY = "integration-test-interactive-session-key";
 
     public static final String DEFAULT_SPACE = "DEFAULT";

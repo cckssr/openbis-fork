@@ -17,6 +17,10 @@
 
 package ch.ethz.sis.afsserver.server.impl;
 
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
 import ch.ethz.sis.afsjson.JsonObjectMapper;
 import ch.ethz.sis.afsserver.server.APIServer;
 import ch.ethz.sis.afsserver.server.Request;
@@ -24,9 +28,6 @@ import ch.ethz.sis.afsserver.server.Response;
 import ch.ethz.sis.afsserver.server.performance.PerformanceAuditor;
 import ch.ethz.sis.libhttp.http.HttpResponse;
 import io.netty.handler.codec.http.HttpMethod;
-
-import java.util.List;
-import java.util.Map;
 
 public class HttpDownloadAdapter<CONNECTION, API> extends AbstractAdapter<CONNECTION, API>
 {
@@ -63,7 +64,7 @@ public class HttpDownloadAdapter<CONNECTION, API> extends AbstractAdapter<CONNEC
 
     @Override
     protected HttpResponse process(final String method, final Map<String, Object> parsedParameters, final String sessionToken,
-            final String interactiveSessionKey, final String transactionManagerKey, final PerformanceAuditor performanceAuditor) throws Exception
+            final String interactiveSessionKey, final String transactionManagerKey, final UUID operationId, final PerformanceAuditor performanceAuditor) throws Exception
     {
         return new HttpResponse(HttpResponse.OK,
                 Map.of(HttpResponse.CONTENT_TYPE_HEADER, HttpResponse.CONTENT_TYPE_ZIP),
