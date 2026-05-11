@@ -150,9 +150,10 @@ var PrintUtil = new function() {
 				} else {
 					propertyContent = entity.properties[propertyCode];
 					propertyContent = Util.getEmptyIfNull(propertyContent);
-					propertyContent = FormUtil.sanitizeRichHTMLText(propertyContent);
-					propertyContent = Util.replaceURLWithHTMLLinks(propertyContent);
-
+					if(FormUtil.isString(propertyContent)) {
+                        propertyContent = FormUtil.sanitizeRichHTMLText(propertyContent);
+                        propertyContent = Util.replaceURLWithHTMLLinks(propertyContent);
+					}
 					if(propertyType.dataType === "MULTILINE_VARCHAR") {
                         var imageWithoutDomain = "src=\"/openbis/openbis/";
                         var imageWithDomain = "src=\"" + window.location.origin + "/openbis/openbis/openbis/";
@@ -161,7 +162,7 @@ var PrintUtil = new function() {
 				}
 				
 				var isSingleColumn = false;
-				if(((propertyContent instanceof String) || (typeof propertyContent === "string"))) {
+				if(FormUtil.isString(propertyContent)) {
 					var transformerResult = profile.inspectorContentTransformer(entity, propertyCode, propertyContent);
 					isSingleColumn = transformerResult["isSingleColumn"];
 					propertyContent = transformerResult["content"];

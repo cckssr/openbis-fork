@@ -2058,6 +2058,10 @@ var FormUtil = new function() {
     	return !isNaN(str);
 	}
 
+    this.isString(x) {
+      return Object.prototype.toString.call(x) === '[object String]';
+    }
+
 	//
 	// errors
 	//
