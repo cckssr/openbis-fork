@@ -3899,6 +3899,66 @@ function ServerFacade(openbisServer) {
          });
     }
 
+    this.executeExport = function(parameters, callbackFunction, errorHandler) {
+        require([   "as/dto/exporter/data/ExportData",
+                "as/dto/exporter/options/ExportOptions",
+            "as/dto/exporter/options/XlsTextFormat",
+            "as/dto/exporter/options/ExportFormat",
+            "as/dto/exporter/data/AllFields",
+            "as/dto/exporter/data/SelectedFields",
+            "as/dto/exporter/data/ExportablePermId",
+            "as/dto/property/id/PropertyTypePermId"
+                ],
+            function(ExportData, ExportOptions, XlsTextFormat, ExportFormat, AllFields, SelectedFields, ExportablePermId, PropertyTypePermId) {
+
+                const ids = parameters.exportedIds.map(id => new ExportablePermId(id.exportable_kind, id.perm_id));
+                let fields = null;
+                if(Object.keys(parameters.exportedFields).length === 0) {
+                    fields = new AllFields();
+                } else {
+                    fields = new SelectedFields();
+                    var entityType = Object.keys(parameters.exportedFields)[0];
+                    var types = Object.keys(parameters.exportedFields[entityType]);
+                    var attrs = []
+                    var props = []
+                    for(let type of types) {
+                        let att = parameters.exportedFields[entityType][type].filter(x => x.type === 'ATTRIBUTE').map(x => x.id);
+                        attrs = attrs.concat(att);
+                        let prop = parameters.exportedFields[entityType][type].filter(x => x.type === 'PROPERTY').map(x => new PropertyTypePermId(x.id));
+                        props = props.concat(prop);
+                    }
+                    fields.setAttributes(attrs);
+                    fields.setProperties(props);
+                }
+                var data = new ExportData(ids, fields);
+
+                var options = new ExportOptions();
+
+                options.setWithImportCompatibility(parameters.withImportCompatibility)
+                options.setWithReferredTypes(parameters.exportedReferredMasterData)
+                options.setXlsTextFormat(parameters.exportedValues)
+                options.setZipSingleFiles(false)
+                options.setFormats([ExportFormat.XLSX])
+
+                var failureHander = function(result) {
+                    if (errorHandler) {
+                        errorHandler(result);
+                    } else {
+                        var msg = result.message;
+                        if (!msg) {
+                            msg = "Call failed to server: " + JSON.stringify(result);
+                        }
+                        Util.showError(msg);
+                    }
+                };
+
+                mainController.openbisV3.executeExport(data, options).done(function(result) {
+                    callbackFunction(result);
+                }).fail(failureHander);
+
+            });
+    }
+
 	this.searchCustomASServices = function(code, callbackFunction) {
 		require(['as/dto/service/search/CustomASServiceSearchCriteria', 'as/dto/service/fetchoptions/CustomASServiceFetchOptions'],
 			function(CustomASServiceSearchCriteria, CustomASServiceFetchOptions) {
