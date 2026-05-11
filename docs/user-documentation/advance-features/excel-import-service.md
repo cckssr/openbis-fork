@@ -497,32 +497,34 @@ Contents of initialize-master-data.py:
 ```python
 from ch.ethz.sis.openbis.generic.server.asapi.v3 import ApplicationServerApi
 from ch.systemsx.cisd.openbis.generic.server import CommonServiceProvider
-from ch.ethz.sis.openbis.generic.asapi.v3.dto.service.id import CustomASServiceCode
-from ch.ethz.sis.openbis.generic.asapi.v3.dto.service import CustomASServiceExecutionOptions
 from ch.systemsx.cisd.openbis.generic.server.jython.api.v1.impl import MasterDataRegistrationHelper
+from ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.data import ImportData
+from ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.options import ImportOptions
+from ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.data import ImportFormat
+from ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.options import ImportMode
 import sys
 
 helper = MasterDataRegistrationHelper(sys.path)
 api = CommonServiceProvider.getApplicationContext().getBean(ApplicationServerApi.INTERNAL_SERVICE_NAME)
 sessionToken = api.loginAsSystem()
-props = CustomASServiceExecutionOptions().withParameter('xls', helper.listXlsByteArrays()) \
-    .withParameter('xls_name', 'ELN-LIMS-LIFE-SCIENCES').withParameter('update_mode', 'UPDATE_IF_EXISTS') \
-    .withParameter('scripts', helper.getAllScripts())
-result = api.executeCustomASService(sessionToken, CustomASServiceCode("xls-import-api"), props)
+sessionWorkspaceFiles = helper.uploadToAsSessionWorkspace(sessionToken, "common-data-model.xls", "scripts/date_range_validation.py",
+                                                          "scripts/storage_position_validation.py")
+importData = ImportData(ImportFormat.EXCEL, [sessionWorkspaceFiles[0]])
+importOptions = ImportOptions(ImportMode.UPDATE_IF_EXISTS)
+importResult = api.executeImport(sessionToken, importData, importOptions)
+
 ```
 
 There are following parameters to fill (Easiest is to use
 MasterDataRegistrationHelper to evaluate parameter values):
 
--   'xls': Array of excel files. It can be easily acquired by calling
-    helper.listXlsByteArrays or listCsvByteArrays.
--   'xls\_name' - Name for the batch, it is used by versioning system.
+-   'xls': Array of excel files. I
 -   'update\_mode' - See "Modes" section.
 -   'scripts' - if you have any scripts in your data, provide them here.
     It is easiest to get it with MasterDataRegistrationHelper
     getAllScripts function.
 
-'results' object is a summary of what has been created.
+'importResult' object is a summary of what has been created.
 
 **Example**
 

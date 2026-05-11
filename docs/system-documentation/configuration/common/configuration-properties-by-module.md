@@ -587,10 +587,6 @@ e.g
 |------------------------------------|---------------|-------------------|------|
 | admin.as.admin-service.class       |               |                   |      |
 | admin.as.admin-service.script-path |               |                   |      |
-| admin.as.xls-export.class          |               |                   |      |
-| admin.as.xls-export.script-path    |               |                   |      |
-| admin.as.xls-import.class          |               |                   |      |
-| admin.as.xls-import.script-path    |               |                   |      |
 | admin.as.webapps.webapp-folder     |               |                   |      |
 
 #### DSS PROPERTIES
