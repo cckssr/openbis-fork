@@ -593,55 +593,6 @@ e.g
 
 None.
 
-### DATASET-UPLOADER
-
-#### AS PROPERTIES
-
-| Key                                                                  | Example Value | Short Explanation |
-|----------------------------------------------------------------------|---------------|-------------------|
-| dataset-uploader.as.webapps.dataset-uploader.webapp-folder           |               |                   |
-| dataset-uploader.as.webapps.dataset-uploader.openbisui-contexts      |               |                   |
-| dataset-uploader.as.webapps.dataset-uploader.sample-entity-types     |               |                   |
-| dataset-uploader.as.webapps.dataset-uploader.experiment-entity-types |               |                   |
-| dataset-uploader.as.webapps.dataset-uploader.label                   |               |                   |
-| dataset-uploader.as.webapps.dataset-uploader.sorting                 |               |                   |
-| dataset-uploader.as.webapps.dataset-uploader.data-set-entity-types   |               |                   |
-| dataset-uploader.as.webapps.dataset-uploader.material-entity-types   |               |                   |
-
-#### DSS PROPERTIES
-
-| Key                                                                     | Example Value | Short Explanation |
-|-------------------------------------------------------------------------|---------------|-------------------|
-| dataset-uploader.dss.reporting-plugins.dataset-uploader-api.label       |               |                   |
-| dataset-uploader.dss.reporting-plugins.dataset-uploader-api.script-path |               |                   |
-| dataset-uploader.dss.reporting-plugins.dataset-uploader-api.share-id    |               |                   |
-| dataset-uploader.h5-folders                                             |               |                   |
-| dataset-uploader.h5ar-folders                                           |               |                   |
-
-### DROPBOX-MONITOR
-
-#### AS PROPERTIES
-
-| Key                                                               | Example Value | Short Explanation |
-|-------------------------------------------------------------------|---------------|-------------------|
-| dropbox-monitor.as.webapps.dropBoxMonitor.label                   |               |                   |
-| dropbox-monitor.as.webapps.dropBoxMonitor.webapp-folder           |               |                   |
-| dropbox-monitor.as.webapps.dropBoxMonitor.openbisui-contexts      |               |                   |
-| dropbox-monitor.as.webapps.dropBoxMonitor.sample-entity-types     |               |                   |
-| dropbox-monitor.as.webapps.dropBoxMonitor.experiment-entity-types |               |                   |
-| dropbox-monitor.as.webapps.dropBoxMonitor.sorting                 |               |                   |
-| dropbox-monitor.as.webapps.dropBoxMonitor.data-set-entity-types   |               |                   |
-| dropbox-monitor.as.webapps.dropBoxMonitor.material-entity-types   |               |                   |
-
-#### DSS PROPERTIES
-
-| Key                                                               | Example Value | Short Explanation |
-|-------------------------------------------------------------------|---------------|-------------------|
-| dropbox-monitor.dss.reporting-plugins.dropboxReporter.label       |               |                   |
-| dropbox-monitor.dss.reporting-plugins.dropboxReporter.script-path |               |                   |
-| dropbox-monitor.dss.reporting-plugins.dropboxReporter.share-id    |               |                   |
-| root-dir                                                          | /data         | The root directory of the DSS. This property should point to a peristent storage path that is also backed up. |
-| dss-registration-log-dir                                          | /var/log/openbis/dss/log-registrations |                   |
 
 ### IMAGING
 
