@@ -182,6 +182,7 @@ function SampleField(isRequired,
                 width: '100%',
                 theme: "bootstrap",
                 minimumInputLength: 2,
+                allowClear: true,
                 placeholder : placeholder,
                 ajax: {
                     delay: 1000,

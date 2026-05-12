@@ -1887,7 +1887,6 @@ function MainController(profile) {
 		//Show Form
 		var newView = new DataSetFormController(this, FormMode.VIEW, sampleOrExperiment, dataset, null, datasetV3, paginationInfo, imageIdx, previewIdx);
 		var tabInfo = TabContentUtil.getDataSetTabInfo(dataset, FormMode.VIEW);
-		var tabInfo = TabContentUtil.getDataSetTabInfo(dataset, FormMode.VIEW);
 		var views = this._getNewViewModel(true, true, false, tabInfo);
 		newView.init(views);
 		this.currentView = newView;

@@ -1244,22 +1244,25 @@ var FormUtil = new function() {
 		if (isRequired) {
 			$component.attr('required', '');
 		}
+		var $options = [];
 
-		var labelOption = $("<option>").attr('value', '').attr('disabled', '').text(alt);
-		if(!isMultiValue) {
-		    labelOption = labelOption.attr('selected', '');
+		var properties = {
+			placeholder: alt,
+			allowClear: true
 		}
-		$component.append(labelOption);
-		$component.append($("<option>").attr('value', '').text('(empty)'));
-        var $options = [];
+
+		if(isMultiValue) {
+			properties.closeOnSelect = false;
+		}
+
 		for(var i = 0; i < terms.length; i++) {
 		    var $option = $("<option>", { value : terms[i].code }).text(terms[i].label);
 			$options.push($option);
 		}
 		$component.append($options);
-		Select2Manager.add($component);
+		Select2Manager.add($component, properties);
 		$component.refresh = function() {
-		    Select2Manager.add($component);
+		    Select2Manager.add($component, properties);
 		}
 		return $component;
 	}

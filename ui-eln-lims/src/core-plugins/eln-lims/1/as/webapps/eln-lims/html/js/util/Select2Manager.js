@@ -38,7 +38,13 @@ var Select2Manager = new function() {
 			while(toInitialize.length > 0) {
 				var next = toInitialize.shift();
 				if (_isInDom(next.element)) {
-					next.element.select2(next.element.properties ? next.element.properties : { width: '100%', theme: "bootstrap" });
+					if(next.properties) {
+						next.properties.width = '100%';
+						next.properties.theme = "bootstrap";
+					} else {
+						next.properties = { width: '100%', theme: "bootstrap" };
+					}
+					next.element.select2(next.properties ? next.properties : { width: '100%', theme: "bootstrap" });
 				} else {
 					toReschedule.push(next);
 				}	
