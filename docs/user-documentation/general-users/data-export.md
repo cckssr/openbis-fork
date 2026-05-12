@@ -266,11 +266,7 @@ To export data to the ETH Research Collection:
 
 1.  Go to **Exports** -> **Export to Research Collection** under **Utilities** in
     the main menu, in the **Tools** tab.
-2.  Select the Export options you want to use:
-    - **Make import compatible**: export is compatible with import in openBIS.
-    - **Export metadata as PDF**: metadata of selected entries is exported in pdf files.
-    - **Export metadata as XLSX**: metadata of selected entries is exported in an xlsx file.
-    - **Export data**: export datasets.
+2.  Select the Export options you want to use. The options are the same as explained above, in the [Export of entities](../general-users/data-export.md#export-lab-notebooks-inventory-spaces))
 3.  Select what to export from the tree.
 4.  Select the **Submission Type** from the available list: *Data
     collection, Dataset, Image, Model, Sound, Video, Other Research
@@ -302,7 +298,7 @@ The size limit for one single export to the ETH Research Collection is
 
 ## Export data to the ETH Research Collection in a multi-group instance
  
-If you export data from a multi-group instance where you have access to more than one group, you need to select the group under which the new publication entry should be created. See explanation in section **Export data to Zenodo in a multi-group instance** above.
+If you export data from a multi-group instance where you have access to more than one group, you need to select the group under which the new publication entry should be created. See explanation in section [Export data to Zenodo in a multi-group instance](../general-users/data-export.md#export-data-to-zenodo-in-a-multi-group-instance)).
  
 
 
