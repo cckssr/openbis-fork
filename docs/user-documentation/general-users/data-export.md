@@ -19,6 +19,7 @@ In each case, the following export options are available: 
 ![image info](img/7.0-space-export-options.png)
 
  
+
 - **Make import compatible**. If selected, datasets are exported in a **data** folder and are in a format ready to be uploaded in openBIS using the default eln-lims dropbox; the metadata are exported in a **xlsx** folder which contains information in a format ready to be uploaded via the openBIS admin UI.
 
 #### File formats
