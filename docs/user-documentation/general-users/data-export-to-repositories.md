@@ -1,13 +1,11 @@
-Data Export to Repositories
+Data & Metadata Export to Data Repositories
 ====
+
+openBIS currently supports direct export of data and metadata to  [Zenodo](https://zenodo.org/) and to the [ETH Research Collection](https://www.research-collection.ethz.ch/)
  
 ## Export to Zenodo
   
-openBIS provides an integration with the **Zenodo** data
-repository ([https://zenodo.org/).](https://zenodo.org/)
-
-  
-This enables data direct data transfer from openBIS to Zenodo. First of
+This export enables direct data & metadata transfer from openBIS to Zenodo. First of
 all the connection to Zenodo needs to be configured on *system level*
 in the DSS service.properties (see [How to configure the openBIS
 DSS)](../../system-documentation/standalone/optional-datastore-server-configuration.md)
@@ -102,7 +100,7 @@ ETH Zurich**. This export feature is only available to ETHZ members.
 
  
 
-To export data to the ETH Research Collection:
+To export data & metadata to the ETH Research Collection:
 
 
 1.  Go to **Exports** -> **Export to Research Collection** under **Utilities** in
