@@ -75,6 +75,9 @@ public class ImportExecutor implements IImportExecutor
         final boolean projectSamplesEnabled = Boolean.parseBoolean(CommonServiceProvider.getApplicationServerApi().getServerInformation(sessionToken)
                 .get("project-samples-enabled"));
         importerImportOptions.setAllowProjectSamples(projectSamplesEnabled);
+        importerImportOptions.setExperimentsByType(importOptions.getExperimentsByType());
+        importerImportOptions.setSpacesByType(importOptions.getSpacesByType());
+
         return executeImport(sessionToken, ImportModes.valueOf(importOptions.getMode().name()), importerImportOptions, importData.getSessionWorkspaceFiles());
     }
 
