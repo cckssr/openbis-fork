@@ -35,17 +35,59 @@ importData = ImportData(ImportFormat.EXCEL, [sessionWorkspaceFiles[0]])
 importOptions = ImportOptions(ImportMode.UPDATE_IF_EXISTS)
 importResult = api.executeImport(sessionToken, importData, importOptions)
 
+print("======================== imaging-nanonis-virtual-env creation ========================")
+
+def get_property(key, default_value):
+    property_configurer = CommonServiceProvider.getApplicationContext().getBean("propertyConfigurer")
+    properties = property_configurer.getResolvedProps()
+    return properties.getProperty(key, default_value)
+
+from java.lang import ProcessBuilder, String
+from java.io import BufferedReader, InputStreamReader
+from java.nio.charset import StandardCharsets
+
+venv_path = get_property("imaging-nanonis.venv-path", None)
+print("VENV_PATH", venv_path)
 
 
-print("======================== imaging-nanonis-data-model xls ingestion result ========================")
+if venv_path is None:
+    raise ValueError("Venv path not configured!")
+
+
+command = "python3 -m venv " + venv_path
+
+command += " && " + venv_path + "/bin/pip3 install -r " + sys.path[-1] + "/../scripts/python_requirements.txt"
+
+command += " && " + venv_path + "/bin/pip3 list"
+
+full_command = ["bash", "-c", command]
+
+pb = ProcessBuilder(full_command)
+process = pb.start()
+
+reader = BufferedReader(InputStreamReader(process.getInputStream()))
+
+line = reader.readLine()
+while line:
+    print(line)
+    line = reader.readLine()
+
+exitCode = process.waitFor()
+
+if exitCode != 0:
+    print("Error during")
+    error = String(process.getErrorStream().readAllBytes(), StandardCharsets.UTF_8)
+    raise ValueError("Error during virtual environment setup:" + error)
+
+
+print("======================== imaging-nanonis-data-model xls ingestion start ========================")
 print(importResult.getObjectIds())
 
+# raise ValueError("test break point")
 ImagingFixes.registerExamples(sys.path[-1], "imaging-nanonis")
 
 
-# raise ValueError("test break point")
-
 api.logout(sessionToken)
-print("======================== imaging-nanonis-data-model xls ingestion result ========================")
+print("======================== imaging-nanonis-data-model xls ingestion end ========================")
 
 

@@ -54,7 +54,7 @@ public class GlobalInstallationContext
 
     public static final String TECHNOLOGY_FLOW_CYTOMETRY = "FLOW";
 
-    public static final String TECHNOLOGY_IMAGING = "IMAGING";
+    public static final String TECHNOLOGY_IMAGING = "ELN-LIMS-IMAGING";
 
     public static final String TECHNOLOGY_SHARED_MICROSCOPY_FLOW_CYTOMETRY = "SHARED";
 

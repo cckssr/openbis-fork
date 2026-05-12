@@ -109,14 +109,18 @@ public class SetEnableTechnologiesVariableAction implements PanelAction
             String technologyFlag = data.getVariable(technology);
             if (Boolean.TRUE.toString().equalsIgnoreCase(technologyFlag))
             {
-                enabledModules.add(lowerCasedTechnology);
+
 
                 if(technology == GlobalInstallationContext.TECHNOLOGY_IMAGING)
                 {
-                    enabledModules.add("imaging-nanonis");
-                    enabledModules.add("imaging-test");
-                    allTechnologies.add("imaging-nanonis");
-                    allTechnologies.add("imaging-test");
+                    enabledModules.add("eln-lims-imaging-core");
+                    enabledModules.add("eln-lims-imaging-nanonis-adapter");
+                    enabledModules.add("eln-lims-imaging-test-adapter");
+                    allTechnologies.add("eln-lims-imaging-core");
+                    allTechnologies.add("eln-lims-imaging-nanonis-adapter");
+                    allTechnologies.add("eln-lims-imaging-test-adapter");
+                } else {
+                    enabledModules.add(lowerCasedTechnology);
                 }
 
                 if (technology == GlobalInstallationContext.TECHNOLOGY_MICROSCOPY ||

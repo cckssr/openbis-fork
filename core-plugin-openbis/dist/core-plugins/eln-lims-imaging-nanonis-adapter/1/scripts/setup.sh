@@ -17,8 +17,12 @@ check_arguments $@
 # setup virtual environment
 python3 -m venv $1/nanonis_venv
 
-source `dirname "$1"`/nanonis_venv/bin/activate
+#source `dirname "$1"`/nanonis_venv/bin/activate
 
-pip3 install -r python_requirements.txt
+#pip3 install -r python_requirements.txt
 
-echo `pwd "$1"`/nanonis_venv/bin/python3
+$1/nanonis_venv/bin/pip3 list
+
+echo `pwd .`/$1
+
+echo `pwd "$1"`/$1/nanonis_venv/bin/python3

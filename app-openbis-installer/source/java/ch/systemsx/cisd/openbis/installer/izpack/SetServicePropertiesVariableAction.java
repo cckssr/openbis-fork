@@ -117,8 +117,8 @@ public class SetServicePropertiesVariableAction implements PanelAction
                             new File(installDir, Utils.AS_PATH + Utils.SERVICE_PROPERTIES_PATH);
                     if(asServicePropertiesFile.exists()) {
                         String dataDir = GlobalInstallationContext.getDataDir(data);
-                        Utils.updateOrAppendProperty(asServicePropertiesFile, "imaging.as.services.imaging.storageRoot.dss", dataDir + "/store");
-                        Utils.updateOrAppendProperty(asServicePropertiesFile, "imaging.as.services.imaging.storageRoot.afs", dataDir + "/store");
+                        Utils.updateOrAppendProperty(asServicePropertiesFile, "eln-lims-imaging-core.as.services.imaging.storageRoot.dss", dataDir + "/store");
+                        Utils.updateOrAppendProperty(asServicePropertiesFile, "eln-lims-imaging-core.as.services.imaging.storageRoot.afs", dataDir + "/store");
                     }
                     break;
                 }

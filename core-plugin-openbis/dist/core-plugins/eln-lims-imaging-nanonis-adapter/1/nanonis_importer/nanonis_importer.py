@@ -32,6 +32,9 @@ SXM_ADAPTOR = "ch.ethz.sis.openbis.generic.server.dss.plugins.imaging.adaptor.Na
 DAT_ADAPTOR = "ch.ethz.sis.openbis.generic.server.dss.plugins.imaging.adaptor.NanonisDatAdaptor"
 VERBOSE = False
 DEFAULT_URL = "http://localhost:8888/openbis"
+# DEFAULT_URL = "https://openbis-empa-dev205.ethz.ch/"
+# DEFAULT_URL = "http://local.openbis.ch:8080/openbis"
+# DEFAULT_URL = "https://openbis-sis-ci-sprint.ethz.ch/openbis"
 
 SERVICE_TYPE = 'AS'
 
@@ -40,20 +43,23 @@ if SERVICE_TYPE == "AS":
     DAT_ADAPTOR = "ch.ethz.sis.openbis.generic.server.as.plugins.imaging.adaptor.NanonisDatAdaptor"
 
 AFS_URL = None
+# AFS_URL = 'http://localhost:8085/afs-server/api'
+# AFS_URL = "https://openbis-sis-ci-sprint.ethz.ch/afs-server/api"
 
-def get_instance(url, token):
-    openbis_token = token
+def get_instance(url=None, token=None):
     if url is None:
         url = DEFAULT_URL
     openbis_instance = Openbis(
         url=url,
-        verify_certificates=False
+        verify_certificates=False,
+        allow_http_but_do_not_use_this_in_production_and_only_within_safe_networks=True
     )
     if token is None:
-        openbis_token = openbis_instance.login('admin', 'changeit')
-
-    openbis_instance.token = openbis_token
-    print(f'Connected to {url} -> token: {openbis_token}')
+        token = openbis_instance.login('admin', 'changeit')
+        # token = openbis_instance.login('dev_admin', 'changeit123')
+    else:
+        openbis_instance.token = token
+    print(f'Connected to {url} -> token: {token}')
     return openbis_instance
 
 
@@ -160,8 +166,7 @@ def create_sxm_dataset(openbis, experiment, file_path, sample=None):
                imaging.ImagingDataSetControl('archive-format', "Dropdown", values=['zip', 'tar'], semanticAnnotation=imaging.ImagingSemanticAnnotation('schema.org', 'https://schema.org/version/28.1', 'https://schema.org/fileFormat')),
                imaging.ImagingDataSetControl('resolution', "Dropdown", values=['original', '150dpi', '300dpi'], semanticAnnotation=None),
                imaging.ImagingDataSetControl('include labels', "Dropdown", values=['True', 'False'], semanticAnnotation=None),
-               imaging.ImagingDataSetControl('include parameters', "Dropdown", values=['True', 'False'], semanticAnnotation=None)
-               ]
+               imaging.ImagingDataSetControl('include parameters', "Dropdown", values=['True', 'False'], semanticAnnotation=None)]
 
     inputs = [
         imaging.ImagingDataSetControl('Channel', "Dropdown", values=channels, section="Data"),
@@ -170,6 +175,9 @@ def create_sxm_dataset(openbis, experiment, file_path, sample=None):
         imaging.ImagingDataSetControl('Color-scale', "Range", section="Data", visibility=color_scale_visibility),
         imaging.ImagingDataSetControl('Scaling', "Dropdown", section="Data", values=['linear', 'logarithmic']),
         imaging.ImagingDataSetControl('Colormap', "Colormap", values=['gray', 'YlOrBr', 'viridis', 'cividis', 'inferno', 'rainbow', 'Spectral', 'RdBu', 'RdGy'], semanticAnnotation=imaging.ImagingSemanticAnnotation('schema.org', 'https://schema.org/version/28.1', 'https://schema.org/color')),
+
+        imaging.ImagingDataSetControl('include labels', "Dropdown", values=['True', 'False'], semanticAnnotation=None),
+        imaging.ImagingDataSetControl('include parameters', "Dropdown", values=['True', 'False'], semanticAnnotation=None)
     ]
 
     filters = {
@@ -405,7 +413,7 @@ def create_dat_dataset(openbis, folder_path, file_prefix='', sample=None, experi
     data = spm.importall(folder_path, 'spec')
     if [] == data:
         raise ValueError(f"No nanonis .DAT files found in {folder_path}")
-
+    # TODO FLAG
     imaging_control = ImagingControl(openbis, service_type=SERVICE_TYPE, afs_url=AFS_URL)
 
     for d in data:
@@ -504,10 +512,7 @@ def create_dat_dataset(openbis, folder_path, file_prefix='', sample=None, experi
     exports = [imaging.ImagingDataSetControl('include', "Dropdown", values=['image', 'raw data'], multiselect=True),
                imaging.ImagingDataSetControl('image-format', "Dropdown", values=['png', 'svg'], semanticAnnotation=imaging.ImagingSemanticAnnotation('schema.org', 'https://schema.org/version/28.1', 'https://schema.org/encoding')),
                imaging.ImagingDataSetControl('archive-format', "Dropdown", values=['zip', 'tar'], semanticAnnotation=imaging.ImagingSemanticAnnotation('schema.org', 'https://schema.org/version/28.1', 'https://schema.org/fileFormat')),
-               imaging.ImagingDataSetControl('resolution', "Dropdown", values=['original', '150dpi', '300dpi'], semanticAnnotation=None),
-               imaging.ImagingDataSetControl('include labels', "Dropdown", values=['True', 'False'], semanticAnnotation=None),
-               imaging.ImagingDataSetControl('include parameters', "Dropdown", values=['True', 'False'], semanticAnnotation=None)
-               ]
+               imaging.ImagingDataSetControl('resolution', "Dropdown", values=['original', '150dpi', '300dpi'])]
 
     inputs = [
         imaging.ImagingDataSetControl('Channel X', "Dropdown", values=[channel[0] for channel in channels_x]),
@@ -564,7 +569,8 @@ def update_image_with_preview(openbis, perm_id, image_id, preview: imaging.Imagi
 
 
 def export_image(openbis: Openbis, perm_id: str, image_id: int, path_to_download: str,
-                 include=None, image_format='original', archive_format="zip", resolution='original'):
+                 include=None, image_format='original', archive_format="zip", resolution='original',
+                 include_labels=True, include_parameters=True):
     if include is None:
         include = ['IMAGE', 'RAW_DATA']
     imaging_control = ImagingControl(openbis, service_type=SERVICE_TYPE, afs_url=AFS_URL)
@@ -572,14 +578,19 @@ def export_image(openbis: Openbis, perm_id: str, image_id: int, path_to_download
         "include": include,
         "image_format": image_format,
         "archive_format": archive_format,
-        "resolution": resolution
+        "resolution": resolution,
+        "custom_options": {
+            "include_labels": include_labels,
+            "include_parameters": include_parameters
+        }
     }
     imaging_control.export_image(perm_id, image_id, path_to_download, **export_config)
 
 
 def multi_export_images(openbis: Openbis, perm_ids: list[str], image_ids: list[int], preview_ids: list[int],
                         path_to_download: str, include=None, image_format='original',
-                        archive_format="zip", resolution='original', include_labels=True, include_parameters=True):
+                        archive_format="zip", resolution='original',
+                        include_labels=True, include_parameters=True):
     if include is None:
         include = ['IMAGE', 'RAW_DATA']
     imaging_control = ImagingControl(openbis, service_type=SERVICE_TYPE, afs_url=AFS_URL)
@@ -871,25 +882,23 @@ def upload_measurements_into_openbis(openbis_url, data_folder, collection_permid
 
                         shutil.rmtree(dat_files_directory)
 
+        o.logout()
 ########## END TODO
 
 
 openbis_url = None
 data_folder = ['data', 'data/dat2']
 # data_folder = ['data/sxm2']
+
 token = None
 
 if len(sys.argv) >= 3:
     openbis_url = sys.argv[1]
     data_folder = sys.argv[2]
-    # afs_url = openbis_url + "/afs-server/api"
-    if len(sys.argv) >= 4:
+    if len(sys.argv) > 3:
         token = sys.argv[3]
-    if len(sys.argv) >= 5:
-        AFS_URL = sys.argv[4]
-
 else:
-    print(f'Usage: python3 nanonis_importer.py <OPENBIS_URL> <PATH_TO_DATA_FOLDER> <TOKEN> [AFS_URL]')
+    print(f'Usage: python3 nanonis_importer.py <OPENBIS_URL> <PATH_TO_DATA_FOLDER>')
     print(f'Using default parameters')
     print(f'URL: {DEFAULT_URL}')
     print(f'Data folder: {data_folder}')
@@ -939,60 +948,275 @@ for sorted_files in sorted_measurement_files:
         grouped_measurement_files.append(group)
         group = []
 
+TYPE = "IMPORT"
+# TYPE = "OTHER"
+# TYPE = None
 
-for group in grouped_measurement_files:
-    if group[0].endswith(".sxm"):
-        print(f"SXM file: {group[0]}")
-        # file_path = os.path.join(data_folder, group[0])
-        file_path = group[0]
-        try:
-            demo_sxm_flow(o, file_path)
-            # exit(0)
-        except ValueError as e:
-            print(f"Cannot upload {group[0]}. Reason: {e}")
-    else:
-
-        # Split the dat files by measurement type (e.g.: bias spec dI vs V in one list, bias spec z vs V in another list, etc.)
-        dat_files_types = []
-        for dat_file in group:
-            # dat_data = spm(f"{data_folder}/{dat_file}")
-            dat_data = spm(f"{dat_file}")
-            dat_files_types.append(get_dat_type(dat_data.header))
-
-        grouped = defaultdict(list)
-
-        for item1, item2 in zip(group, dat_files_types):
-            grouped[item2].append(item1)
-
-        dat_files_grouped_by_type = list(grouped.values())
-        # ---------------
-
-        for dat_files_group in dat_files_grouped_by_type:
-            data_folder_path = os.path.dirname(dat_files_group[0])
-            dat_files_directory = os.path.join(data_folder_path, "dat_files")
-            shutil.rmtree(dat_files_directory, ignore_errors=True)
-            os.mkdir(dat_files_directory)
-
-            for dat_file in dat_files_group:
-                file_name = os.path.basename(dat_file)
-                shutil.copy(dat_file, os.path.join(dat_files_directory, file_name))
+if TYPE == "IMPORT":
+    for group in grouped_measurement_files:
+        if group[0].endswith(".sxm"):
+            print(f"SXM file: {group[0]}")
+            # file_path = os.path.join(data_folder, group[0])
+            file_path = group[0]
             try:
-                demo_dat_flow(o, dat_files_directory)
+                demo_sxm_flow(o, file_path)
+                # exit(0)
             except ValueError as e:
-                print(f"Cannot upload {dat_files_directory}. Reason: {e}")
-            shutil.rmtree(dat_files_directory)
+                print(f"Cannot upload {group[0]}. Reason: {e}")
+        else:
+
+            # Split the dat files by measurement type (e.g.: bias spec dI vs V in one list, bias spec z vs V in another list, etc.)
+            dat_files_types = []
+            for dat_file in group:
+                # dat_data = spm(f"{data_folder}/{dat_file}")
+                dat_data = spm(f"{dat_file}")
+                dat_files_types.append(get_dat_type(dat_data.header))
+
+            grouped = defaultdict(list)
+
+            for item1, item2 in zip(group, dat_files_types):
+                grouped[item2].append(item1)
+
+            dat_files_grouped_by_type = list(grouped.values())
+            # ---------------
+
+            for dat_files_group in dat_files_grouped_by_type:
+                data_folder_path = os.path.dirname(dat_files_group[0])
+                dat_files_directory = os.path.join(data_folder_path, "dat_files")
+                shutil.rmtree(dat_files_directory, ignore_errors=True)
+                os.mkdir(dat_files_directory)
+
+                for dat_file in dat_files_group:
+                    file_name = os.path.basename(dat_file)
+                    shutil.copy(dat_file, os.path.join(dat_files_directory, file_name))
+                try:
+                    demo_dat_flow(o, dat_files_directory)
+                except ValueError as e:
+                    print(f"Cannot upload {dat_files_directory}. Reason: {e}")
+                shutil.rmtree(dat_files_directory)
+
+elif TYPE == "OTHER":
+
+    pass
+    # import tempfile
+    # more_than_one = []
+    # zero_im = []
+    # imaging_control = ImagingControl(o, service_type=SERVICE_TYPE, afs_url=AFS_URL)
+    # datasets = o.get_datasets(type='IMAGING_DATA')
+    # for dataset in datasets:
+    #     is_dat = False
+    #     for f in dataset.file_list:
+    #         if f.endswith(".dat"):
+    #             is_dat = True
+    #             break
+    #     if is_dat:
+    #         changed = False
+    #         with tempfile.TemporaryDirectory() as temp_dir:
+    #             dir = str(temp_dir)
+    #             dataset.download(destination=dir, create_default_folders=False)
+    #             pc = imaging_control.get_property_config(dataset.permId)
+    #
+    #             data = spm.importall(dir, 'spec')
+    #
+    #
+    #             for d in data:
+    #                 if d.type == 'scan':
+    #                     date = d.get_param('rec_date')
+    #                     time = d.get_param('rec_time')
+    #                     date_time = '%s %s' % (date, time)
+    #                     d.date_time = datetime.strptime(date_time, "%d.%m.%Y %H:%M:%S")
+    #
+    #                 if d.type == 'spec':
+    #                     date_time = d.get_param('Saved Date')
+    #                     d.date_time = datetime.strptime(date_time, "%d.%m.%Y %H:%M:%S") if date_time is not None else datetime.now()
+    #
+    #             data.sort(key=lambda da: da.date_time)
+    #             # channels = list(set([(channel['ChannelNickname'], channel['ChannelUnit'], channel['ChannelScaling']) for spec in data for channel in spec.SignalsList]))
+    #             # channels = list([set([channel, spec.signals[channel]['ChannelUnit'], spec.signals[channel]['ChannelScaling']]) for spec in data for channel in spec.signals])
+    #             channels = list([list([channel, spec.signals[channel]['ChannelUnit'], spec.signals[channel]['ChannelScaling']]) for spec in data for channel in spec.signals])
+    #             channels.sort()
+    #             channels = list(k for k,_ in itertools.groupby(channels))
+    #             channels_x, channels_y = reorder_dat_channels(channels, data[0].header) # All files inside data belong to the same measurement type. Thus, the header of the first file can be used for all of them.
+    #
+    #
+    #             color_scale_visibility_x = []
+    #             color_scale_visibility_y = []
+    #             for idx, (channel_x, unit_x, scaling_x) in enumerate(channels_x):
+    #                 channel_y = channels_y[idx][0]
+    #                 unit_y = channels_y[idx][1]
+    #                 scaling_y = channels_y[idx][2]
+    #
+    #                 minimum_x, maximum_x = [], []
+    #                 minimum_y, maximum_y = [], []
+    #
+    #
+    #                 for spec in data:
+    #                     # # -------- Boolean flag was added to the code -------
+    #                     # channel_in_signals_list = False
+    #                     # for signal_settings in spec.SignalsList:
+    #                     #     if channel_x in signal_settings["ChannelNickname"]:
+    #                     #         channel_in_signals_list = True
+    #                     # if channel_in_signals_list:
+    #                     # # ---------------------------------------------------
+    #                     minimum_x += [np.nanmin(spec.get_channel(f'{channel_x}')[0])]
+    #                     maximum_x += [np.nanmax(spec.get_channel(f'{channel_x}')[0])]
+    #
+    #                     minimum_y += [np.nanmin(spec.get_channel(f'{channel_y}')[0])]
+    #                     maximum_y += [np.nanmax(spec.get_channel(f'{channel_y}')[0])]
+    #                 minimum_x = np.nanmin(minimum_x)
+    #                 maximum_x = np.nanmax(maximum_x)
+    #
+    #                 minimum_y = np.nanmin(minimum_y)
+    #                 maximum_y = np.nanmax(maximum_y)
+    #                 step_x = abs(round((maximum_x - minimum_x) / 100, 2))
+    #                 step_y = abs(round((maximum_y - minimum_y) / 100, 2))
+    #                 if step_x >= 1000:
+    #                     step_x = 10 ** np.floor(np.log10(step_x))
+    #                 elif step_x >= 1:
+    #                     step_x = 1
+    #                 elif step_x > 0:
+    #                     step_x = 0.01
+    #                 else:
+    #                     step_x = abs((maximum_x - minimum_x) / 100)
+    #                     step_x = np.log10(step_x)
+    #                     if np.isnan(step_x) or np.isinf(step_x):
+    #                         step_x = 0.01
+    #                     else:
+    #                         step_x = 10 ** np.floor(step_x)
+    #
+    #                 if step_y >= 1000:
+    #                     step_y = 10 ** np.floor(np.log10(step_y))
+    #                 elif step_y >= 1:
+    #                     step_y = 1
+    #                 elif step_y > 0:
+    #                     step_y = 0.01
+    #                 else:
+    #                     step_y = abs((maximum_y - minimum_y) / 100)
+    #                     step_y = np.log10(step_y)
+    #                     if np.isnan(step_y) or np.isinf(step_y):
+    #                         step_y = 0.01
+    #                     else:
+    #                         step_y = 10 ** np.floor(step_y)
+    #
+    #                 color_scale_visibility_x += [imaging.ImagingDataSetControlVisibility(
+    #                     "Channel X",
+    #                     [channel_x],
+    #                     [str(minimum_x), str(maximum_x), str(step_x)],
+    #                     unit_x
+    #                 )]
+    #
+    #                 color_scale_visibility_y += [imaging.ImagingDataSetControlVisibility(
+    #                     "Channel Y",
+    #                     [channel_y],
+    #                     [str(minimum_y), str(maximum_y), str(step_y)],
+    #                     unit_y
+    #                 )]
+    #
+    #
+    #             inputs = [
+    #                 imaging.ImagingDataSetControl('Channel X', "Dropdown", values=[channel[0] for channel in channels_x]),
+    #                 imaging.ImagingDataSetControl('Channel Y', "Dropdown", values=[channel[0] for channel in channels_y]),
+    #                 imaging.ImagingDataSetControl('X-axis', "Range", visibility=color_scale_visibility_x),
+    #                 imaging.ImagingDataSetControl('Y-axis', "Range", visibility=color_scale_visibility_y),
+    #                 imaging.ImagingDataSetControl('Grouping', "Dropdown", values=[d.name for d in data], multiselect=True),
+    #                 imaging.ImagingDataSetControl('Colormap', "Colormap", values=['gray', 'YlOrBr', 'viridis', 'cividis', 'inferno', 'rainbow', 'Spectral', 'RdBu', 'RdGy']),
+    #                 imaging.ImagingDataSetControl('Scaling', "Dropdown", values=['lin-lin', 'lin-log', 'log-lin', 'log-log']),
+    #                 # imaging.ImagingDataSetControl('Print legend', "Dropdown", values=['True', 'False']),
+    #             ]
+    #
+    #             im_len = len(pc.images)
+    #             if im_len > 1:
+    #                 more_than_one += [dataset.permId]
+    #             elif im_len == 1:
+    #                 changed = True
+    #                 current_image = pc.images[0]
+    #                 current_image.config.inputs = inputs
+    #             else:
+    #                 zero_im += [dataset.permId]
+    #
+    #             # for image in pc.images:
+    #             #     values = {}
+    #             #     for input in image.config.inputs:
+    #             #         if input.label == "Channel X" or input.label == "Channel Y":
+    #             #
+    #             #
+    #             #             result = []
+    #             #             d = set()
+    #             #             for value in input.values:
+    #             #                 if not value in d:
+    #             #                     d.add(value)
+    #             #                     result += [value]
+    #             #             if len(result) != len(input.values):
+    #             #                 input.values = result
+    #             #                 changed = True
+    #             # if changed:
+    #             #     pass
+    #             aa = 1
+    #             if changed:
+    #                 imaging_control.update_property_config(dataset.permId, pc)
+    #
+    # print(more_than_one)
+    # print(zero_im)
+    # a = 1
+
+
+    # perm_id_sxm = '20250218142736365-19062'
+    # perm_id_dat = '20250217145145421-19046'
+    #
+    # config_dat_preview = {
+    #     "spectraLocator": True,
+    #     "objId": perm_id_dat,
+    #     "sxmPreviewConfig": {
+    #         "Channel": 'z',  # usually one of these: ['z', 'I', 'dIdV', 'dIdV_Y']
+    #         "X-axis": ["0", "3.0"],  # file dependent
+    #         "Y-axis": ["0", "3.0"],  # file dependent
+    #         "Color-scale": ["-71", "-68"],  # file dependent
+    #         "Colormap": "gray",  # [gray, YlOrBr, viridis, cividis, inferno, rainbow, Spectral, RdBu, RdGy]
+    #         "Scaling": "logarithmic",  # ['linear', 'logarithmic']
+    #         # "Filter": "None",
+    #         # "Gaussian Sigma": "0",
+    #         # "Gaussian Truncate": "0",
+    #         # "Laplace Size": "3"
+    #     },
+    #     "sxmPermId": perm_id_sxm,
+    #     "sxmFilePath": "original/img_0150.sxm",
+    #     "Grouping": [
+    #         "didv_00063.dat",
+    #         "didv_00064.dat",
+    #         "didv_00065.dat",
+    #         "didv_00066.dat",
+    #         "didv_00067.dat",
+    #         "didv_00068.dat",
+    #         "didv_00069.dat",
+    #         # "didv_00070.dat",
+    #     ],
+    #
+    #
+    #     "Channel X": "V",
+    #     "Channel Y": "I",
+    #     "X-axis": ["-3.0", "1"],
+    #     "Y-axis": ["-331", "107"],
+    #     "Colormap": "rainbow",
+    #     "Scaling": "lin-lin",  # ['lin-lin', 'lin-log', 'log-lin', 'log-log']
+    #     "Print legend": "True", # disable legend in image
+    # }
+    #
+    # config_preview = config_dat_preview.copy()
+    #
+    # preview = create_preview(o, perm_id_dat, config_preview)
+    #
+    # preview.index = 2
+    # update_image_with_preview(o, perm_id_dat, 0, preview)
 
 
 
+# export_image(o, '20260122132431399-36', 0, '/home/alaskowski/PREMISE/test')
+# export_image(o, '20240111135043750-39', 0, '/home/alaskowski/PREMISE')
 
+# multi_export_images(o, ['20241218074117986-44', '20241218074117986-44'],
+#                     [0, 0],
+#                     [0, 1],
+#                     '/home/alaskowski/PREMISE/test2')
 
-# export_image(o, permId, image_index, export_path)
-
-# multi_export_images(o, [permId1, permId2],
-#                     [image1_index, image2_index],
-#                     [image1_preview_index, image2_preview_index],
-#                     export_path)
-
-if token is None:
-    o.logout()
+o.logout()
 print("DONE")

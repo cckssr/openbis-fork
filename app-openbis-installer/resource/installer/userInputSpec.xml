@@ -65,7 +65,7 @@
     <field type="check" variable="FLOW">
       <spec txt="Flow Cytometry" true="true" false="false"/>
     </field>
-    <field type="check" variable="IMAGING">
+    <field type="check" variable="ELN-LIMS-IMAGING">
       <spec txt="IMAGING Technology" true="true" false="false"/>
     </field>
   </panel>
