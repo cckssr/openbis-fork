@@ -13,6 +13,7 @@ General Users
    lab-notebook
    data-upload
    data-export
+   data-export-to-repositories
    data-archiving
    search
    tables
