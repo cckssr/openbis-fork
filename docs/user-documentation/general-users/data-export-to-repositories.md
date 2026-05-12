@@ -12,7 +12,7 @@ DSS)](../../system-documentation/configuration/datastore-server.md)
 If this is configured, a lab manager, who has admin rights for the
 **Settings,** needs to enable it in the ELN, as explained in [Enable
 Transfer to Data
-Repositories](../general-admin-users/admins-documentation/enable-transfer-to-data-repositories.md)**.
+Repositories](../general-admin-users/admins-documentation/enable-transfer-to-data-repositories.md).
 
 ###  Create Zenodo Personal Access Token
 
