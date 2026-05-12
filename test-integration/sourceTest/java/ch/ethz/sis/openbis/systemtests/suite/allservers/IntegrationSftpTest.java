@@ -203,9 +203,7 @@ public class IntegrationSftpTest
         test(INSTANCE_ADMIN, sftp ->
         {
             List<SftpClient.DirEntry> inventoryEntries = listDir(sftp, "/ELN-LIMS/Inventory");
-            System.out.println("DEBUG_PRINT:" + inventoryEntries);
-            System.out.println(inventoryEntries.stream().map(SftpClient.DirEntry::getFilename).collect(Collectors.toList()));
-            assertDirEntries(inventoryEntries, ".", "..", "MATERIALS", "PUBLICATIONS");
+            assertDirEntries(inventoryEntries, ".", "..", "MATERIALS", "METHODS", "PUBLICATIONS");
 
             List<SftpClient.DirEntry> materialsEntries = listDir(sftp, "/ELN-LIMS/Inventory/MATERIALS");
             assertDirEntries(materialsEntries, ".", "..");
