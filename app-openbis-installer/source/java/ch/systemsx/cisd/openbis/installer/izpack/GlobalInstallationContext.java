@@ -50,17 +50,10 @@ public class GlobalInstallationContext
 
     public static final String TECHNOLOGY_ELN_LIMS_TEMPLATE_TYPES = "ELN-LIMS-TYPES-TEMPLATES";
 
-    public static final String TECHNOLOGY_MICROSCOPY = "MICROSCOPY";
-
-    public static final String TECHNOLOGY_FLOW_CYTOMETRY = "FLOW";
-
     public static final String TECHNOLOGY_IMAGING = "ELN-LIMS-IMAGING";
 
-    public static final String TECHNOLOGY_SHARED_MICROSCOPY_FLOW_CYTOMETRY = "SHARED";
-
     public static final String[] TECHNOLOGIES =
-            { TECHNOLOGY_ELN_LIMS, TECHNOLOGY_MICROSCOPY,
-                    TECHNOLOGY_FLOW_CYTOMETRY, TECHNOLOGY_ELN_LIMS_TEMPLATE_TYPES, TECHNOLOGY_IMAGING };
+            { TECHNOLOGY_ELN_LIMS, TECHNOLOGY_ELN_LIMS_TEMPLATE_TYPES, TECHNOLOGY_IMAGING };
 
     /**
      * set to true if the installation process is trying to update an existing openBIS installation.
@@ -122,8 +115,8 @@ public class GlobalInstallationContext
             populateFirstTimeInstallVariables(data);
         }
     }
-    
-    private static final String[] FOLDERS_OF_INSTALLATION 
+
+    private static final String[] FOLDERS_OF_INSTALLATION
             = { "bin", "servers/core-plugins", "servers/datastore_server", "servers/openBIS-server" };
 
     private static boolean installationExists()

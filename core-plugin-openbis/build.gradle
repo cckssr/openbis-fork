@@ -264,18 +264,6 @@ war {
     }
 }
 
-def downloadCorePlugin(url, pluginname) {
-    if (!project.getGradle().startParameter.isOffline()) {
-        def file = project(':server-application-server').file("../core-plugin-openbis/targets/downloads/${pluginname}.zip")
-        def expectedDirName = url.tokenize('/').last().replace('.zip', '')
-        def expectedDir = project(':server-application-server').file("../core-plugin-openbis/targets/downloads/${expectedDirName}")
-        if (file.exists() == false || System.currentTimeMillis() - file.lastModified() > 3600000 || expectedDir.exists() == false) {
-            file.getParentFile().mkdirs()
-            ext.executeFunction('curl', [url, '-sLk', '-o', file.getAbsolutePath()])
-            ext.executeFunction('unzip', ['-uqo', file.getAbsolutePath(), '-d', '../core-plugin-openbis/targets/downloads/'])
-        }
-    }
-}
 
 import org.paleozogt.gradle.zip.SymZip;
 
@@ -284,13 +272,7 @@ task zipCorePlugins(type: SymZip) {
     includeEmptyDirs = false
     archiveFileName = 'core-plugins.zip'
 
-    downloadCorePlugin('https://github.com/openbis/obit_flow_core_technology/archive/release/7.x.zip', 'flow')
-    downloadCorePlugin('https://github.com/openbis/obit_microscopy_core_technology/archive/release/7.x.zip', 'microscopy')
-    downloadCorePlugin('https://github.com/openbis/obit_shared_core_technology/archive/release/7.x.zip', 'shared')
     from project(':server-screening').fileTree(dir: 'source/core-plugins', includes: ['screening/**', 'screening-optional/**'], excludes: ['**/package-to-dist'])
-    from fileTree(dir: 'targets/downloads/obit_flow_core_technology-release-7.x/core-plugins', includes: ['flow/**'])
-    from fileTree(dir: 'targets/downloads/obit_microscopy_core_technology-release-7.x/core-plugins', includes: ['microscopy/**'])
-    from fileTree(dir: 'targets/downloads/obit_shared_core_technology-release-20.x/core-plugins', includes: ['shared/**'])
     from "${project(':ui-eln-lims').projectDir}/src/core-plugins"
     from 'dist/core-plugins'
     from 'dist/server/core-plugins.properties'

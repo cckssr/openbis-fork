@@ -109,8 +109,6 @@ public class SetEnableTechnologiesVariableAction implements PanelAction
             String technologyFlag = data.getVariable(technology);
             if (Boolean.TRUE.toString().equalsIgnoreCase(technologyFlag))
             {
-
-
                 if(technology == GlobalInstallationContext.TECHNOLOGY_IMAGING)
                 {
                     enabledModules.add("eln-lims-imaging-core");
@@ -121,15 +119,6 @@ public class SetEnableTechnologiesVariableAction implements PanelAction
                     allTechnologies.add("eln-lims-imaging-test-adapter");
                 } else {
                     enabledModules.add(lowerCasedTechnology);
-                }
-
-                if (technology == GlobalInstallationContext.TECHNOLOGY_MICROSCOPY ||
-                        technology == GlobalInstallationContext.TECHNOLOGY_FLOW_CYTOMETRY)
-                {
-                    String lowerCasedTechnologyShared =
-                            GlobalInstallationContext.TECHNOLOGY_SHARED_MICROSCOPY_FLOW_CYTOMETRY.toLowerCase();
-                    enabledModules.add(lowerCasedTechnologyShared);
-                    allTechnologies.add(lowerCasedTechnologyShared);
                 }
             }
         }

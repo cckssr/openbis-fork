@@ -15,8 +15,8 @@
  */
 package ch.systemsx.cisd.openbis.installer.izpack;
 
-import static ch.systemsx.cisd.openbis.installer.izpack.GlobalInstallationContext.TECHNOLOGY_FLOW_CYTOMETRY;
-import static ch.systemsx.cisd.openbis.installer.izpack.GlobalInstallationContext.TECHNOLOGY_MICROSCOPY;
+import static ch.systemsx.cisd.openbis.installer.izpack.GlobalInstallationContext.TECHNOLOGY_ELN_LIMS;
+import static ch.systemsx.cisd.openbis.installer.izpack.GlobalInstallationContext.TECHNOLOGY_ELN_LIMS_TEMPLATE_TYPES;
 import static ch.systemsx.cisd.openbis.installer.izpack.SetEnableTechnologiesVariableAction.ENABLED_TECHNOLOGIES_VARNAME;
 import static ch.systemsx.cisd.openbis.installer.izpack.SetTechnologyCheckBoxesAction.ENABLED_TECHNOLOGIES_KEY;
 
@@ -66,20 +66,20 @@ public class SetEnableTechnologiesVariableActionTest extends AbstractFileSystemT
     public void testFirstInstallationFlowCytometryOnly()
     {
         Properties variables = new Properties();
-        variables.setProperty(TECHNOLOGY_FLOW_CYTOMETRY, "true");
-        variables.setProperty(TECHNOLOGY_MICROSCOPY, "false");
+        variables.setProperty(TECHNOLOGY_ELN_LIMS, "true");
+        variables.setProperty(TECHNOLOGY_ELN_LIMS_TEMPLATE_TYPES, "false");
 
         AutomatedInstallData data = updateEnabledTechnologyProperties(variables, true);
 
-        assertEquals("flow", data.getVariable(ENABLED_TECHNOLOGIES_VARNAME));
+        assertEquals("eln-lims", data.getVariable(ENABLED_TECHNOLOGIES_VARNAME));
     }
 
     @Test
     public void testFirstInstallation()
     {
         Properties variables = new Properties();
-        variables.setProperty(TECHNOLOGY_FLOW_CYTOMETRY, "false");
-        variables.setProperty(TECHNOLOGY_MICROSCOPY, "false");
+        variables.setProperty(TECHNOLOGY_ELN_LIMS, "false");
+        variables.setProperty(TECHNOLOGY_ELN_LIMS_TEMPLATE_TYPES, "false");
 
         AutomatedInstallData data = updateEnabledTechnologyProperties(variables, true);
 
@@ -90,11 +90,11 @@ public class SetEnableTechnologiesVariableActionTest extends AbstractFileSystemT
     public void testUpdateMissingConfigFile()
     {
         Properties variables = new Properties();
-        variables.setProperty(TECHNOLOGY_FLOW_CYTOMETRY, "false");
-        variables.setProperty(TECHNOLOGY_MICROSCOPY, "true");
+        variables.setProperty(TECHNOLOGY_ELN_LIMS_TEMPLATE_TYPES, "false");
+        variables.setProperty(TECHNOLOGY_ELN_LIMS, "true");
 
         updateEnabledTechnologyProperties(variables, false);
-        assertEquals("[, enabled-modules = " + MODULES + ", microscopy, shared]",
+        assertEquals("[, enabled-modules = " + MODULES + ", eln-lims]",
                 FileUtilities.loadToStringList(corePluginsProperties).toString());
     }
 
@@ -102,14 +102,14 @@ public class SetEnableTechnologiesVariableActionTest extends AbstractFileSystemT
     public void testUpdateInstallationWithOtherEnabledTechnologiesInAs()
     {
         FileUtilities.writeToFile(corePluginsProperties, "abc = 123\n" + ENABLED_TECHNOLOGIES_KEY
-                + "=" + MODULES + ", flow, shared, my-tech");
+                + "=" + MODULES + ", eln-lims, my-tech");
         Properties variables = new Properties();
-        variables.setProperty(TECHNOLOGY_FLOW_CYTOMETRY, "true");
-        variables.setProperty(TECHNOLOGY_MICROSCOPY, "false");
+        variables.setProperty(TECHNOLOGY_ELN_LIMS, "true");
+        variables.setProperty(TECHNOLOGY_ELN_LIMS_TEMPLATE_TYPES, "false");
 
         updateEnabledTechnologyProperties(variables, false);
 
-        assertEquals("[abc = 123, " + ENABLED_TECHNOLOGIES_KEY + "=" + MODULES + ", flow, shared, my-tech]",
+        assertEquals("[abc = 123, " + ENABLED_TECHNOLOGIES_KEY + "=" + MODULES + ", eln-lims, my-tech]",
                 FileUtilities.loadToStringList(corePluginsProperties).toString());
     }
 
@@ -117,14 +117,14 @@ public class SetEnableTechnologiesVariableActionTest extends AbstractFileSystemT
     public void testUpdateUnchangedProperty()
     {
         FileUtilities.writeToFile(corePluginsProperties, "abc = 123\n" + ENABLED_TECHNOLOGIES_KEY
-                + "=" + MODULES + ", flow, shared");
+                + "=" + MODULES + ", eln-lims");
         Properties variables = new Properties();
-        variables.setProperty(TECHNOLOGY_FLOW_CYTOMETRY, "true");
-        variables.setProperty(TECHNOLOGY_MICROSCOPY, "false");
+        variables.setProperty(TECHNOLOGY_ELN_LIMS, "true");
+        variables.setProperty(TECHNOLOGY_ELN_LIMS_TEMPLATE_TYPES, "false");
 
         updateEnabledTechnologyProperties(variables, false);
 
-        assertEquals("[abc = 123, " + ENABLED_TECHNOLOGIES_KEY + "=" + MODULES + ", flow, shared]",
+        assertEquals("[abc = 123, " + ENABLED_TECHNOLOGIES_KEY + "=" + MODULES + ", eln-lims]",
                 FileUtilities
                         .loadToStringList(corePluginsProperties).toString());
     }
@@ -133,14 +133,14 @@ public class SetEnableTechnologiesVariableActionTest extends AbstractFileSystemT
     public void testUpdateChangeProperty()
     {
         FileUtilities.writeToFile(corePluginsProperties, "abc = 123\n" + ENABLED_TECHNOLOGIES_KEY
-                + "=microscopy\nanswer = 42\n");
+                + "=\nanswer = 42\n");
         Properties variables = new Properties();
-        variables.setProperty(TECHNOLOGY_FLOW_CYTOMETRY, "true");
-        variables.setProperty(TECHNOLOGY_MICROSCOPY, "true");
+        variables.setProperty(TECHNOLOGY_ELN_LIMS, "true");
+        variables.setProperty(TECHNOLOGY_ELN_LIMS_TEMPLATE_TYPES, "true");
 
         updateEnabledTechnologyProperties(variables, false);
 
-        assertEquals("[abc = 123, " + ENABLED_TECHNOLOGIES_KEY + " = " + MODULES + ", microscopy, shared, flow, answer = 42]",
+        assertEquals("[abc = 123, " + ENABLED_TECHNOLOGIES_KEY + " = " + MODULES + ", eln-lims, eln-lims-types-templates, answer = 42]",
                 FileUtilities
                         .loadToStringList(corePluginsProperties).toString());
     }
@@ -150,12 +150,12 @@ public class SetEnableTechnologiesVariableActionTest extends AbstractFileSystemT
     {
         FileUtilities.writeToFile(corePluginsProperties, "abc = 123");
         Properties variables = new Properties();
-        variables.setProperty(TECHNOLOGY_FLOW_CYTOMETRY, "false");
-        variables.setProperty(TECHNOLOGY_MICROSCOPY, "true");
+        variables.setProperty(TECHNOLOGY_ELN_LIMS, "true");
+        variables.setProperty(TECHNOLOGY_ELN_LIMS_TEMPLATE_TYPES, "true");
 
         updateEnabledTechnologyProperties(variables, false);
 
-        assertEquals("[abc = 123, " + ENABLED_TECHNOLOGIES_KEY + " = " + MODULES + ", microscopy, shared]",
+        assertEquals("[abc = 123, " + ENABLED_TECHNOLOGIES_KEY + " = " + MODULES + ", eln-lims, eln-lims-types-templates]",
                 FileUtilities
                         .loadToStringList(corePluginsProperties).toString());
     }
@@ -164,14 +164,13 @@ public class SetEnableTechnologiesVariableActionTest extends AbstractFileSystemT
     public void testUpdateEnabledTechnologiesForSwitchedTechnologies()
     {
         FileUtilities.writeToFile(corePluginsProperties, "a = b\n" + ENABLED_TECHNOLOGIES_KEY
-                + "= flow\n" + "gamma = alpha");
+                + "= eln-lims\n" + "gamma = alpha");
         Properties variables = new Properties();
-        variables.setProperty(TECHNOLOGY_FLOW_CYTOMETRY, "false");
-        variables.setProperty(TECHNOLOGY_MICROSCOPY, "true");
+        variables.setProperty(TECHNOLOGY_ELN_LIMS_TEMPLATE_TYPES, "true");
 
         updateEnabledTechnologyProperties(variables, false);
 
-        assertEquals("[a = b, " + ENABLED_TECHNOLOGIES_KEY + " = " + MODULES + ", microscopy, shared, gamma = alpha]",
+        assertEquals("[a = b, " + ENABLED_TECHNOLOGIES_KEY + " = " + MODULES + ", eln-lims-types-templates, gamma = alpha]",
                 FileUtilities.loadToStringList(corePluginsProperties).toString());
     }
 
