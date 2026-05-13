@@ -54,22 +54,25 @@ export class ObjectFormController implements IFormController {
 				case EntityKind.PROJECT:
 					const projectId = new ProjectPermId(params.parentId);
 					const project = await this.openbisFacade.getProjects([projectId], new ProjectFetchOptions());
-					parentDto = project[projectId];
-					params.parentId = parentDto.getIdentifier().getIdentifier();
+					parentDto = project[params.parentId];
+					params.parentId = parentDto.getPermId().getPermId();
+					params.parentIdentifier = parentDto.getIdentifier().getIdentifier();
 					break;
 				case EntityKind.COLLECTION:
 				case EntityKind.EXPERIMENT:
 					const collectionId = new ExperimentPermId(params.parentId);
 					const collection = await this.openbisFacade.getExperiments([collectionId], new ExperimentFetchOptions());
-					parentDto = collection[collectionId];
-					params.parentId = parentDto.getIdentifier().getIdentifier();
+					parentDto = collection[params.parentId];
+					params.parentId = parentDto.getPermId().getPermId();
+					params.parentIdentifier = parentDto.getIdentifier().getIdentifier();
 					break;
 				case EntityKind.OBJECT:
 				case EntityKind.SAMPLE:
 					const objectId = new SamplePermId(params.parentId);
 					const object = await this.openbisFacade.getSamples([objectId], new SampleFetchOptions());
-					parentDto = object[objectId];
-					params.parentId = parentDto.getIdentifier().getIdentifier();
+					parentDto = object[params.parentId];
+					params.parentId = parentDto.getPermId().getPermId();
+					params.parentIdentifier = parentDto.getIdentifier().getIdentifier();
 					break;
 				default:
 					throw new Error(`Parent type ${params.parentType} not supported`);

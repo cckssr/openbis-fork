@@ -36,7 +36,8 @@ export const EntityFormContextProvider = ({
   sessionID,
   permId,
   initialMode,
-  externalAppController
+  externalAppController,
+  onModeChange,
 }: {
   openbisFacade: any;
   params: any;
@@ -46,6 +47,7 @@ export const EntityFormContextProvider = ({
   permId: string;
   initialMode: FormMode;
   externalAppController: any;
+  onModeChange?: (mode: FormMode) => void;
 }) => {
 
   const actionToastContext = useActionToastCtx();
@@ -73,6 +75,13 @@ export const EntityFormContextProvider = ({
     openDeleteDialog, closeDeleteDialog,
     openMoveDialog, closeMoveDialog,
   } = useDialogState();
+
+  // Notify parent when mode changes (e.g., to show unsaved-changes warning on tab switch)
+  useEffect(() => {
+    if (onModeChange) {
+      onModeChange(mode);
+    }
+  }, [mode]);
 
   // Other state (could also be extracted if needed)
   const [permissions] = useState({ canEdit: true, canDelete: true, canMove: true });

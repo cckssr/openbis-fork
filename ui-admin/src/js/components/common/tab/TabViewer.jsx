@@ -24,23 +24,24 @@ class TabViewer extends React.PureComponent {
   }
 
   handleTabChange = (event, newValue) => {
-    this.setState({
-      tabSelected: newValue,
-    })
-    
+    if (this.props.value === undefined) {
+      this.setState({ tabSelected: newValue })
+    }
     if (this.props.onTabChange) {
       this.props.onTabChange(newValue)
     }
   }
 
   render() {
-    const { classes, tabs, children, variant = 'fullWidth' } = this.props
+    const { classes, tabs, children, variant = 'fullWidth', value } = this.props
     const { tabSelected } = this.state
+    const currentTab = value !== undefined ? value.toString() : tabSelected
 
     return (
-      <TabContext value={tabSelected}>
+      <TabContext value={currentTab}>
         <TabList
           variant={variant}
+          value={currentTab}
           onChange={this.handleTabChange}
           classes={{ root: classes.tabsRoot }}
           textColor='inherit'

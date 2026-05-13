@@ -37,7 +37,7 @@ export class CollectionFormController implements IFormController {
 			const { ProjectPermId, ProjectFetchOptions } = this.openbisFacade;
 			const projectId = new ProjectPermId(params.parentId);
 			const project = await this.openbisFacade.getProjects([projectId], new ProjectFetchOptions());
-			const projectDto = project[projectId];
+			const projectDto = project[params.parentId];
 			params.parentId = projectDto.getIdentifier().getIdentifier();
 			return CollectionFormModel.adaptNewCollectionDtoToForm(permId, types[typeCode], params);
 		}
