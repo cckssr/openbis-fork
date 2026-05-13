@@ -3608,14 +3608,6 @@ COPY public.controlled_vocabulary_terms (id, code, registration_timestamp, covo_
 \.
 
 
---
--- Data for Name: core_plugins; Type: TABLE DATA; Schema: public; Owner: -
---
-
-COPY public.core_plugins (id, name, version, registration_timestamp, master_reg_script) FROM stdin;
-1	search-store	1	2020-10-01 08:03:25.228432+02	#\n# Copyright 2014 ETH Zuerich, Scientific IT Services\n#\n# Licensed under the Apache License, Version 2.0 (the "License");\n# you may not use this file except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#      http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an "AS IS" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n# See the License for the specific language governing permissions and\n# limitations under the License.\n#\n# MasterDataRegistrationTransaction Class\nfrom ch.ethz.sis.openbis.generic.server.asapi.v3 import ApplicationServerApi\nfrom ch.systemsx.cisd.openbis.generic.server import CommonServiceProvider\nfrom ch.ethz.sis.openbis.generic.asapi.v3.dto.service.id import CustomASServiceCode\nfrom ch.ethz.sis.openbis.generic.asapi.v3.dto.service import CustomASServiceExecutionOptions\nfrom ch.systemsx.cisd.openbis.generic.server.jython.api.v1.impl import MasterDataRegistrationHelper\nimport sys\n\nhelper = MasterDataRegistrationHelper(sys.path)\napi = CommonServiceProvider.getApplicationContext().getBean(ApplicationServerApi.INTERNAL_SERVICE_NAME)\nsessionToken = api.loginAsSystem()\nprops = CustomASServiceExecutionOptions().withParameter('xls', helper.listXlsByteArrays())\\\n    .withParameter('xls_name', 'SEARCH-STORE').withParameter('update_mode', 'IGNORE_EXISTING')\\\n    .withParameter('scripts', helper.getAllScripts())\nresult = api.executeCustomASService(sessionToken, CustomASServiceCode("xls-import-api"), props);\nprint("======================== master-data xls ingestion result ========================")\nprint(result)\nprint("======================== master-data xls ingestion result ========================")\n
-\.
-
 
 --
 -- Data for Name: data_all; Type: TABLE DATA; Schema: public; Owner: -
