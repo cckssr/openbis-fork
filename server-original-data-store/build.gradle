@@ -93,8 +93,8 @@ dependencies {
     testImplementation(project(path: ':server-application-server', configuration: 'tests'))
 
     testRuntimeFirst libs.jakarta.servlet.jakarta.servlet.api,
-            files("../core-plugin-openbis/dist/core-plugins/imaging/1/as/services/imaging/lib/openBIS-imaging-technology.jar"),
-            files("../core-plugin-openbis/dist/core-plugins/imaging/1/as/api-listener/imaging-dataset-interceptor/lib/imaging-dataset-interceptor.jar")
+            files("../core-plugin-openbis/dist/core-plugins/eln-lims-imaging-core/1/as/services/imaging/lib/openBIS-imaging-technology.jar"),
+            files("../core-plugin-openbis/dist/core-plugins/eln-lims-imaging-core/1/as/api-listener/imaging-dataset-interceptor/lib/imaging-dataset-interceptor.jar")
 }
 
 

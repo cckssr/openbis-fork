@@ -8,7 +8,7 @@ apply from: 'repository.gradle'
 
 dependencies {
 
-    api files("../../../../../../../imaging/1/as/services/imaging/lib/openBIS-imaging-technology.jar"),
+    api files("../../../../../../../eln-lims-imaging-core/1/as/services/imaging/lib/openBIS-imaging-technology.jar"),
             project(':api-openbis-java'),
             project(':server-original-data-store')
 

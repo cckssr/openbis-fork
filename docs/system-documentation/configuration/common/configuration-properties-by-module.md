@@ -599,13 +599,13 @@ None.
 #### AS PROPERTIES
 
 
-| Key                                                     | Example Value | Short Explanation                                                  |
-|---------------------------------------------------------|---------------|--------------------------------------------------------------------|
-| imaging.as.services.imaging.python3-path                |               | Path to python installation (if python-based adapters are used)    |
-| imaging.as.services.imaging.storageRoot.dss             |               | Path to dss storage root                                           |
-| imaging.as.services.imaging.storageRoot.afs             |               | Path to afs storage root                                           |
-| imaging.as.services.imaging.python-adapter.script-path  |               | Path to python script to be used by build-in python adapter        |
-| imaging.as.services.imaging.python-adapter.python3-path |               | Path to python installation to be used for build-in python adapter |
+| Key                                                                   | Example Value | Short Explanation                                                  |
+|-----------------------------------------------------------------------|---------------|--------------------------------------------------------------------|
+| eln-lims-imaging-core.as.services.imaging.python3-path                |               | Path to python installation (if python-based adapters are used)    |
+| eln-lims-imaging-core.as.services.imaging.storageRoot.dss             |               | Path to dss storage root                                           |
+| eln-lims-imaging-core.as.services.imaging.storageRoot.afs             |               | Path to afs storage root                                           |
+| eln-lims-imaging-core.as.services.imaging.python-adapter.script-path  |               | Path to python script to be used by build-in python adapter        |
+| eln-lims-imaging-core.as.services.imaging.python-adapter.python3-path |               | Path to python installation to be used for build-in python adapter |
 
 
 #### DSS PROPERTIES

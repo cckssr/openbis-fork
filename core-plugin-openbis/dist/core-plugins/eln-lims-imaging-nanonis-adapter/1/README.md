@@ -26,7 +26,7 @@ pip3 install -r scripts/python_requirements.txt
 ```
 
 Configuring imaging plugin to use virtual environment:
-1. Modify `python3-path` property of `imaging` core plugin and set it to point to your python virtual environment (either by setting environment property `imaging.as.services.imaging.python3-path` or you can find `plugin.properties` here: `<CORE_PLUGINS_FOLDER>/imaging/1/as/services/imaging/plugin.properties`)
+1. Modify `python3-path` property of `imaging` core plugin and set it to point to your python virtual environment (either by setting environment property `eln-lims-imaging-core.as.services.imaging.python3-path` or you can find `plugin.properties` here: `<CORE_PLUGINS_FOLDER>/eln-lims-imaging-core/1/as/services/imaging/plugin.properties`)
    ```properties
    python3-path = ~/my_venv/bin/python
    ```
@@ -68,6 +68,6 @@ It accepts 2 parameters:
 
 
 ## Uninstall 
-1. remove `python3-path` from `<CORE_PLUGINS_FOLDER>/imaging/1/dss/services/imaging/plugin.properties`
+1. remove `python3-path` from `<CORE_PLUGINS_FOLDER>/eln-lims-imaging-core/1/dss/services/imaging/plugin.properties`
 2. run `uninstall.sh` script from `scripts` directory
 3. remove imaging-nanonis from enabled core-plugins

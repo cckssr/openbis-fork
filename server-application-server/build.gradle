@@ -220,8 +220,8 @@ task openBISDevelopmentEnvironmentASStart(type: JavaExec) {
              '-Das.logging.configuration=etc/logging.properties',
              '-Djavax.net.ssl.trustStore=dist/server/openBIS.keystore',
              // config for imaging
-             '-Dimaging.as.services.imaging.storageRoot.dss=../server-original-data-store/targets/store',
-             '-Dimaging.as.services.imaging.storageRoot.afs=../server-data-store/targets/tests/storage',
+             '-Deln-lims-imaging-core.as.services.imaging.storageRoot.dss=../server-original-data-store/targets/store',
+             '-Deln-lims-imaging-core.as.services.imaging.storageRoot.afs=../server-data-store/targets/tests/storage',
 
              '-Dorg.mortbay.util.FileResource.checkAliases=false',
              '--add-opens=java.base/java.util=ALL-UNNAMED', '--add-opens=java.base/java.lang=ALL-UNNAMED',

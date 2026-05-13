@@ -24,9 +24,9 @@ This repository contains source code of imaging-nanonis service for OpenBIS, it 
 # Development environment notes
 In development environment, please remember to link jar files in the compilation paths of the AS in the build.gradle:
 ```java
-asExecRuntime files("../core-plugin-openbis/dist/core-plugins/imaging/1/as/api-listener/imaging-dataset-interceptor/lib/imaging-dataset-interceptor.jar"),
-      files("../core-plugin-openbis/dist/core-plugins/imaging/1/as/services/imaging/lib/openBIS-imaging-technology.jar"),
-      files("../core-plugin-openbis/dist/core-plugins/imaging-nanonis/1/as/services/imaging-nanonis/lib/premise-adapters.jar"),
-      files("../core-plugin-openbis/dist/core-plugins/imaging-test/1/as/services/imaging-test/lib/imaging-test-adapters.jar")
+asExecRuntime files("../core-plugin-openbis/dist/core-plugins/eln-lims-imaging-core/1/as/api-listener/imaging-dataset-interceptor/lib/imaging-dataset-interceptor.jar"),
+      files("../core-plugin-openbis/dist/core-plugins/eln-lims-imaging-core/1/as/services/imaging/lib/openBIS-imaging-technology.jar"),
+      files("../core-plugin-openbis/dist/core-plugins/eln-lims-imaging-nanonis-adapter/1/as/services/imaging-nanonis/lib/premise-adapters.jar"),
+      files("../core-plugin-openbis/dist/core-plugins/eln-lims-imaging-test-adapter/1/as/services/imaging-test/lib/imaging-test-adapters.jar")
 
 ```

@@ -18,13 +18,13 @@ includes.forEach { name ->
 }
 
 includeFlat('imaging-technology-sources')
-project(":imaging-technology-sources").projectDir = new File("../core-plugin-openbis/dist/core-plugins/imaging/1/as/services/imaging/lib/imaging-technology-sources")
+project(":imaging-technology-sources").projectDir = new File("../core-plugin-openbis/dist/core-plugins/eln-lims-imaging-core/1/as/services/imaging/lib/imaging-technology-sources")
 
 includeFlat('imaging-technology-dataset-interceptor')
-project(":imaging-technology-dataset-interceptor").projectDir = new File("../core-plugin-openbis/dist/core-plugins/imaging/1/as/api-listener/imaging-dataset-interceptor/lib/imaging-technology-dataset-interceptor")
+project(":imaging-technology-dataset-interceptor").projectDir = new File("../core-plugin-openbis/dist/core-plugins/eln-lims-imaging-core/1/as/api-listener/imaging-dataset-interceptor/lib/imaging-technology-dataset-interceptor")
 
 includeFlat('imaging-nanonis-adapters-sources')
-project(":imaging-nanonis-adapters-sources").projectDir = new File("../core-plugin-openbis/dist/core-plugins/imaging-nanonis/1/as/services/imaging-nanonis/lib/imaging-nanonis-adapters-sources")
+project(":imaging-nanonis-adapters-sources").projectDir = new File("../core-plugin-openbis/dist/core-plugins/eln-lims-imaging-nanonis-adapter/1/as/services/imaging-nanonis/lib/imaging-nanonis-adapters-sources")
 
 includeFlat('imaging-test-adapters-sources')
-project(":imaging-test-adapters-sources").projectDir = new File("../core-plugin-openbis/dist/core-plugins/imaging-test/1/as/services/imaging-test/lib/imaging-test-adapters-sources")
+project(":imaging-test-adapters-sources").projectDir = new File("../core-plugin-openbis/dist/core-plugins/eln-lims-imaging-test-adapter/1/as/services/imaging-test/lib/imaging-test-adapters-sources")

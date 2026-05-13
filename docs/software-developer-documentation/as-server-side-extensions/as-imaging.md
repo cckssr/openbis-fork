@@ -278,8 +278,8 @@ ImagingDataSetPythonAdaptor is a class that contains logic for handling adaptor 
 
 It requires 2 elements to be set in order to work:
 
-1. Property `imaging.as.services.imaging.python-adapter.pyhton3-path` - path to a python environment to execute script. If such property is not found, a default python3 environment is used.
-2. Property `imaging.as.services.imaging.python-adapter.script-path` - path to a python script to be executed by this adaptor.
+1. Property `eln-lims-imaging-core.as.services.imaging.python-adapter.pyhton3-path` - path to a python environment to execute script. If such property is not found, a default python3 environment is used.
+2. Property `eln-lims-imaging-core.as.services.imaging.python-adapter.script-path` - path to a python script to be executed by this adaptor.
 
 These properties can be set either of the following:
 
