@@ -37,6 +37,7 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import ch.systemsx.cisd.base.exceptions.IOExceptionUnchecked;
 import ch.systemsx.cisd.common.geometry.ConversionUtils;
+import ch.systemsx.cisd.common.xml.XMLInfraStructure;
 
 /**
  * XML parser for image analysis results from the GE Explorer image analysis application.
@@ -87,7 +88,7 @@ public class GEExplorerImageAnalysisResultParser extends DefaultHandler
     private void parseDocument(String fileName) throws ParserConfigurationException, SAXException,
             IOException
     {
-        final SAXParserFactory spf = SAXParserFactory.newInstance();
+        final SAXParserFactory spf = XMLInfraStructure.createSecureSAXParserFactory();
         final SAXParser sp = spf.newSAXParser();
         sp.parse(fileName, this);
     }

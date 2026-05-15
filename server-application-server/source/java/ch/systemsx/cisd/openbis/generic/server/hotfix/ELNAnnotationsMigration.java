@@ -25,6 +25,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.update.SampleUpdate;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.IApplicationServerInternalApi;
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
+import ch.systemsx.cisd.common.xml.XMLInfraStructure;
 import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider;
 import ch.ethz.sis.shared.log.classic.impl.Logger;
 import org.w3c.dom.*;
@@ -83,7 +84,7 @@ public class ELNAnnotationsMigration {
                 String annotations = (String) sample.getProperty("ANNOTATIONS_STATE");
                 // XML Properties can potentially contain garbage values, ignore those
                 if (!annotations.isEmpty() && !annotations.startsWith("�")) {
-                    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+                    DocumentBuilderFactory factory = XMLInfraStructure.createSecureDocumentBuilderFactory();
                     DocumentBuilder builder = factory.newDocumentBuilder();
                     ByteArrayInputStream input = new ByteArrayInputStream(annotations.getBytes("UTF-8"));
                     try {

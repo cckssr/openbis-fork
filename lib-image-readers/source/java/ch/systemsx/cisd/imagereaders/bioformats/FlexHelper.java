@@ -39,6 +39,7 @@ import org.xml.sax.InputSource;
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.common.geometry.SpatialPoint;
+import ch.systemsx.cisd.common.xml.XMLInfraStructure;
 
 /**
  * A helper class with utility methods that parse metadata from FLEX files.
@@ -293,8 +294,7 @@ public class FlexHelper
      */
     private Document parseXmlDocument(String value)
     {
-        DocumentBuilderFactory dBF = DocumentBuilderFactory.newInstance();
-        dBF.setNamespaceAware(true);
+        DocumentBuilderFactory dBF = XMLInfraStructure.createSecureDocumentBuilderFactory();
         InputSource is = new InputSource(new StringReader(value));
         try
         {

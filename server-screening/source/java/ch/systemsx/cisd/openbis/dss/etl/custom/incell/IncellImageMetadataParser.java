@@ -21,12 +21,13 @@ import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
+
+import ch.systemsx.cisd.common.xml.XMLInfraStructure;
 
 /**
  * XML parser for image metadata (xdce files) from the Incell 2000 microscopes.
@@ -65,8 +66,7 @@ public class IncellImageMetadataParser extends DefaultHandler
     {
         assert fileName != null;
 
-        final SAXParserFactory spf = SAXParserFactory.newInstance();
-        final SAXParser sp = spf.newSAXParser();
+        final SAXParser sp = XMLInfraStructure.createSecureSAXParserFactory().newSAXParser();
         sp.parse(fileName, this);
     }
 

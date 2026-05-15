@@ -52,8 +52,104 @@ import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
  */
 public class XMLInfraStructure
 {
-    private static final SchemaFactory SCHEMA_FACTORY =
-            SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+    private static final SchemaFactory SCHEMA_FACTORY = createSecureSchemaFactory();
+
+    private static SchemaFactory createSecureSchemaFactory()
+    {
+        SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+        try
+        {
+            factory.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+            factory.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
+        } catch (SAXException e)
+        {
+            throw CheckedExceptionTunnel.wrapIfNecessary(e);
+        }
+        return factory;
+    }
+
+    /**
+     * Returns a {@link DocumentBuilderFactory} hardened against XXE attacks: DOCTYPE declarations
+     * are disallowed, external entity resolution and external DTD loading are disabled, XInclude
+     * is off, and entity-reference expansion is off. Namespace-aware by default.
+     */
+    public static DocumentBuilderFactory createSecureDocumentBuilderFactory()
+    {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        factory.setNamespaceAware(true);
+        try
+        {
+            factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+            factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+            factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+            factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+            factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+        } catch (javax.xml.parsers.ParserConfigurationException e)
+        {
+            throw CheckedExceptionTunnel.wrapIfNecessary(e);
+        }
+        factory.setXIncludeAware(false);
+        factory.setExpandEntityReferences(false);
+        return factory;
+    }
+
+    /**
+     * Returns a {@link SAXParserFactory} hardened against XXE attacks: DOCTYPE declarations are
+     * disallowed, external entity resolution and external DTD loading are disabled, XInclude is
+     * off. Namespace-aware by default.
+     */
+    public static SAXParserFactory createSecureSAXParserFactory()
+    {
+        SAXParserFactory factory = SAXParserFactory.newInstance();
+        factory.setNamespaceAware(true);
+        try
+        {
+            factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+            factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+            factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+            factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+            factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+        } catch (Exception e)
+        {
+            throw CheckedExceptionTunnel.wrapIfNecessary(e);
+        }
+        factory.setXIncludeAware(false);
+        return factory;
+    }
+
+    /**
+     * Returns a {@link XMLReader} backed by the hardened {@link #createSecureSAXParserFactory()}.
+     * Convenience wrapper that unwraps the checked exceptions so callers don't need to declare them.
+     */
+    public static XMLReader createSecureXMLReader()
+    {
+        try
+        {
+            return createSecureSAXParserFactory().newSAXParser().getXMLReader();
+        } catch (javax.xml.parsers.ParserConfigurationException | SAXException e)
+        {
+            throw CheckedExceptionTunnel.wrapIfNecessary(e);
+        }
+    }
+
+    /**
+     * Returns a {@link TransformerFactory} hardened against XSLT-based attacks: secure processing
+     * is enabled, and external DTD / stylesheet access is blocked.
+     */
+    public static TransformerFactory createSecureTransformerFactory()
+    {
+        TransformerFactory factory = TransformerFactory.newInstance();
+        try
+        {
+            factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+        } catch (javax.xml.transform.TransformerConfigurationException e)
+        {
+            throw CheckedExceptionTunnel.wrapIfNecessary(e);
+        }
+        factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+        factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
+        return factory;
+    }
 
     /**
      * Creates a Schema from a classpath resource.
@@ -133,6 +229,17 @@ public class XMLInfraStructure
         parserFactory = SAXParserFactory.newInstance();
         parserFactory.setNamespaceAware(true);
         parserFactory.setValidating(validating);
+        try
+        {
+            parserFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+            parserFactory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+            parserFactory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+            parserFactory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+            parserFactory.setXIncludeAware(false);
+        } catch (Exception e)
+        {
+            throw CheckedExceptionTunnel.wrapIfNecessary(e);
+        }
     }
 
     /**
