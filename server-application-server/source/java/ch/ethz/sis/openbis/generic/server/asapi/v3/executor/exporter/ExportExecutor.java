@@ -1672,8 +1672,31 @@ public class ExportExecutor implements IExportExecutor
                             } else {
                                 propertyValue = terms.get(rawPropertyValue.toString().toUpperCase());
                             }
-                        }
-                        else
+                        } else if (rawPropertyValue.getClass().isArray())
+                        {
+                            final Serializable[] values = (Serializable[]) rawPropertyValue;
+                            final DataType dataType = propertyType.getDataType();
+                            final boolean quoted = dataType == DataType.ARRAY_STRING || dataType == DataType.ARRAY_TIMESTAMP;
+                            final StringBuilder builder = new StringBuilder("[");
+                            for (final Serializable value : values)
+                            {
+                                if (builder.length() > 1)
+                                {
+                                    builder.append(", ");
+                                }
+                                if (quoted)
+                                {
+                                    builder.append('"');
+                                }
+                                builder.append(value);
+                                if (quoted)
+                                {
+                                    builder.append('"');
+                                }
+                            }
+                            builder.append("]");
+                            propertyValue = builder.toString();
+                        } else
                         {
                             propertyValue = initialPropertyValue;
                         }

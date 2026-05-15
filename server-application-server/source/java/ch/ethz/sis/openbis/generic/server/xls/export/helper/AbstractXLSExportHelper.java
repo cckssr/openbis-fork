@@ -230,16 +230,27 @@ public abstract class AbstractXLSExportHelper<ENTITY_TYPE extends IEntityType> i
         }
         if (propertyValue.getClass().isArray())
         {
-            StringBuilder sb = new StringBuilder();
-            Serializable[] values = (Serializable[]) propertyValue;
-            for (Serializable value : values)
+            final Serializable[] values = (Serializable[]) propertyValue;
+            final DataType dataType = propertyType.getDataType();
+            final boolean quoted = dataType == DataType.ARRAY_STRING || dataType == DataType.ARRAY_TIMESTAMP;
+            final StringBuilder sb = new StringBuilder("[");
+            for (final Serializable value : values)
             {
-                if (sb.length() > 0)
+                if (sb.length() > 1)
                 {
                     sb.append(", ");
                 }
+                if (quoted)
+                {
+                    sb.append('"');
+                }
                 sb.append(getPropertyValueAsString(propertyType, value));
+                if (quoted)
+                {
+                    sb.append('"');
+                }
             }
+            sb.append("]");
             return new PropertyValue(sb.toString(), Map.of());
         } else
         {
