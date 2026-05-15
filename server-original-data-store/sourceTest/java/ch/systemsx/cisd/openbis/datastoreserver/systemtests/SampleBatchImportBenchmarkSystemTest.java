@@ -38,7 +38,7 @@ import ch.systemsx.cisd.common.filesystem.FileUtilities;
 public class SampleBatchImportBenchmarkSystemTest extends SystemTestCase
 {
     // for jython script go to
-    // sourceTest/core-plugins/generic-test/1/dss/drop-boxes/sample-benchmark/sample-benchmark-data-set-handler.py
+    // sourceTest/core-plugins/generic-test/src/dss/drop-boxes/sample-benchmark/sample-benchmark-data-set-handler.py
 
     @Override
     protected File getIncomingDirectory()

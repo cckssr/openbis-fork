@@ -31,7 +31,7 @@ dependencies {
 }
 
 tasks.register('versionUpdate') {
-    file('src/core-plugins/eln-lims/1/as/webapps/eln-lims/html/version.txt').write(System.getProperty("version"))
+    file('src/core-plugins/eln-lims/src/as/webapps/eln-lims/html/version.txt').write(System.getProperty("version"))
 }
 
 clean.dependsOn 'versionUpdate'

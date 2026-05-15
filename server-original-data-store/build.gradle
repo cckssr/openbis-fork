@@ -67,10 +67,10 @@ dependencies {
 
     // eln-lims Jython APIs dependencies
     datastoreExecRuntime files("../../../openbis-hvl.ethz.ch/deployed/core-plugins/hvl-dropbox/1/dss/dropboxes/hvl-dropbox/lib/jmatio-1.5.jar"),
-            /* eln-lims */ files("../ui-eln-lims/src/core-plugins/eln-lims/1/dss/reporting-plugins/eln-lims-api/lib/zip4j_1.3.2.jar"),
-            files("../ui-eln-lims/src/core-plugins/eln-lims/1/dss/reporting-plugins/eln-lims-api/lib/plasmapper.jar"),
-            files("../ui-eln-lims/src/core-plugins/eln-lims/1/dss/reporting-plugins/eln-lims-api/lib/htmlcleaner-2.23.jar"),
-            files("../ui-eln-lims/src/core-plugins/eln-lims/1/dss/reporting-plugins/password-reset-api/lib/persistentkeyvaluestore.jar")
+            /* eln-lims */ files("../ui-eln-lims/src/core-plugins/eln-lims/src/dss/reporting-plugins/eln-lims-api/lib/zip4j_1.3.2.jar"),
+            files("../ui-eln-lims/src/core-plugins/eln-lims/src/dss/reporting-plugins/eln-lims-api/lib/plasmapper.jar"),
+            files("../ui-eln-lims/src/core-plugins/eln-lims/src/dss/reporting-plugins/eln-lims-api/lib/htmlcleaner-2.23.jar"),
+            files("../ui-eln-lims/src/core-plugins/eln-lims/src/dss/reporting-plugins/password-reset-api/lib/persistentkeyvaluestore.jar")
 
     testImplementation project(path: ':lib-commonbase', configuration: 'tests'),
             project(path: ':lib-common', configuration: 'tests'),
@@ -93,8 +93,8 @@ dependencies {
     testImplementation(project(path: ':server-application-server', configuration: 'tests'))
 
     testRuntimeFirst libs.jakarta.servlet.jakarta.servlet.api,
-            files("../core-plugin-openbis/dist/core-plugins/eln-lims-imaging-core/1/as/services/imaging/lib/openBIS-imaging-technology.jar"),
-            files("../core-plugin-openbis/dist/core-plugins/eln-lims-imaging-core/1/as/api-listener/imaging-dataset-interceptor/lib/imaging-dataset-interceptor.jar")
+            files("../core-plugin-openbis/dist/core-plugins/eln-lims-imaging-core/src/as/services/imaging/lib/openBIS-imaging-technology.jar"),
+            files("../core-plugin-openbis/dist/core-plugins/eln-lims-imaging-core/src/as/api-listener/imaging-dataset-interceptor/lib/imaging-dataset-interceptor.jar")
 }
 
 

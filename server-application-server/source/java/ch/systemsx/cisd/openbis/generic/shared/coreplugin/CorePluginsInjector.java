@@ -233,24 +233,26 @@ public class CorePluginsInjector
                     for (File pluginFolder : pluginFolders)
                     {
                         String pluginName = pluginFolder.getName();
+                        String fullPluginName =
+                                module + ":" + pluginType.getSubFolderName() + ":" + pluginName;
+                        if (isDisabled(enabledPlugins, disabledPlugins, fullPluginName))
+                        {
+                            continue;
+                        }
                         NamedCorePluginFolder plugin =
                                 new NamedCorePluginFolder(properties, module, pluginType, pluginFolder);
-                        String fullPluginName = plugin.getFullPluginName();
-                        if (isDisabled(enabledPlugins, disabledPlugins, fullPluginName) == false)
+                        String fullPluginKey =
+                                pluginType.getPrefix()
+                                        + pluginType.getPluginKey(module, pluginName,
+                                                plugin.getPluginProperties());
+                        assertAndAddPluginName(fullPluginKey, pluginNames, pluginType);
+                        Map<String, NamedCorePluginFolder> map = typeToPluginsMap.get(pluginType);
+                        if (map == null)
                         {
-                            String fullPluginKey =
-                                    pluginType.getPrefix()
-                                            + pluginType.getPluginKey(module, pluginName,
-                                                    plugin.getPluginProperties());
-                            assertAndAddPluginName(fullPluginKey, pluginNames, pluginType);
-                            Map<String, NamedCorePluginFolder> map = typeToPluginsMap.get(pluginType);
-                            if (map == null)
-                            {
-                                map = new LinkedHashMap<String, CorePluginsInjector.NamedCorePluginFolder>();
-                                typeToPluginsMap.put(pluginType, map);
-                            }
-                            map.put(fullPluginKey, plugin);
+                            map = new LinkedHashMap<String, CorePluginsInjector.NamedCorePluginFolder>();
+                            typeToPluginsMap.put(pluginType, map);
                         }
+                        map.put(fullPluginKey, plugin);
                     }
                 }
             }

@@ -34,7 +34,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.RoleWithHierarchy;
 public class CreateSpacesFromDssSystemTest extends SystemTestCase
 {
     // for jython script go to
-    // sourceTest/core-plugins/generic-test/1/dss/drop-boxes/create-spaces/create-spaces-data-set-handler.py
+    // sourceTest/core-plugins/generic-test/src/dss/drop-boxes/create-spaces/create-spaces-data-set-handler.py
 
     @Override
     protected File getIncomingDirectory()

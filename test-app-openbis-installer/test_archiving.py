@@ -122,7 +122,7 @@ class TestCase(systemtest.testcase.TestCase):
 
     def reconfigure_archiver(self, openbisController):
         util.printAndFlush("Reconfiguring archiver to remove datasets from store ....")
-        archiver_core_plugin_properties = "openbis/1/dss/maintenance-tasks/auto-archiver/plugin.properties"
+        archiver_core_plugin_properties = "openbis/src/dss/maintenance-tasks/auto-archiver/plugin.properties"
 
         src = os.path.join(openbisController.dataFile("core-plugins"),
                            archiver_core_plugin_properties)

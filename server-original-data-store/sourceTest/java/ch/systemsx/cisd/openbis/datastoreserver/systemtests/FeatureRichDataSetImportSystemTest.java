@@ -45,7 +45,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.ProjectIdentifier;
 public class FeatureRichDataSetImportSystemTest extends SystemTestCase
 {
     // for jython script go to
-    // sourceTest/core-plugins/generic-test/1/dss/drop-boxes/rich-test/rich-data-set-handler.py
+    // sourceTest/core-plugins/generic-test/src/dss/drop-boxes/rich-test/rich-data-set-handler.py
 
     @Override
     protected File getIncomingDirectory()

@@ -45,6 +45,8 @@ public class CorePluginRegistratorTest extends AbstractFileSystemTestCase
 
     private String sessionToken = "SESSION-TOKEN";
 
+    private static final String CORE_PLUGIN_PROPERTIES_FILE_NAME = "core-plugin.properties";
+
     @BeforeMethod
     public void beforeMethod()
     {
@@ -124,13 +126,18 @@ public class CorePluginRegistratorTest extends AbstractFileSystemTestCase
 
     private void createCorePluginFolder(File corePluginsFolder, String technologyName) throws IOException
     {
-        File parentDir = corePluginsFolder;
-        for (String dir : Arrays.asList(technologyName, "1", "as"))
+        File technologyDir = new File(corePluginsFolder, technologyName);
+        File parentDir = technologyDir;
+        for (String dir : Arrays.asList("src", "as"))
         {
             parentDir = new File(parentDir, dir);
         }
         parentDir.mkdirs();
 
+        File corePluginProperties =
+                new File(technologyDir, CORE_PLUGIN_PROPERTIES_FILE_NAME);
+        ch.systemsx.cisd.common.filesystem.FileUtilities.writeToFile(corePluginProperties,
+                "version = 1\n");
         File masterDataScript = new File(parentDir, "initialize-master-data.py");
         masterDataScript.createNewFile();
     }

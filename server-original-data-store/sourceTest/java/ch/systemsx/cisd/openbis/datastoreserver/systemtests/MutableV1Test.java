@@ -25,7 +25,7 @@ import org.testng.annotations.Test;
 public class MutableV1Test extends MutableTest
 {
     // for jython script go to
-    // sourceTest/core-plugins/generic-test/1/dss/drop-boxes/mutable-v1-test/mutable-v1-test.py
+    // sourceTest/core-plugins/generic-test/src/dss/drop-boxes/mutable-v1-test/mutable-v1-test.py
 
     @Override
     protected File getIncomingDirectory()
