@@ -70,7 +70,7 @@ button at the bottom of the page. To remove a property, use the
 
 Please note that new *Object types* created in the admin UI, do not
 automatically appear in ELN drop downs, but they have to be manually
-enabled, as described below: [Enable Objects in dropdowns](../new-entity-type-registration.md#enable-objects-in-dropdowns) 
+enabled, as described below: [Enable Rich Text Editor or Spreadsheet Widgets](../general-admin-users/admins-documentation/new-entity-type-registration.md#enable-rich-text-editor-or-spreadsheet-widgets-in-eln-ui)
 
 ### Semantic Annotations
 
@@ -154,12 +154,12 @@ The following data types are available in openBIS.
 10. **JSON**: json-validated text field
 11. **MULTILINE\_VARCHAR**: long text. It is possible to enable a Rich
     Text Editor for this type of property. This is described
-    here: [Enable Rich Text Editor or Spreadsheet Widgets](./new-entity-type-registration.md#enable-rich-text-editor-or-spreadsheet-widgets)
+    here: [Enable Rich Text Editor or Spreadsheet Widgets](../general-admin-users/admins-documentation/new-entity-type-registration.html#enable-rich-text-editor-or-spreadsheet-widgets-in-eln-ui)
 12. **OBJECT**. 1-1 connection to one or more specific object type. 
 13. **REAL**: decimal number
 10. **TIMESTAMP**: date with timestamp
 11. **VARCHAR**: one-line text
-12. **XML**: to be used for *Spreadsheet component*s, as described here:[Enable Rich Text Editor or Spreadsheet Widgets](./new-entity-type-registration.md#enable-rich-text-editor-or-spreadsheet-widgets)
+12. **XML**: to be used for *Spreadsheet component*s, as described here:[Enable Rich Text Editor or Spreadsheet Widgets](../general-admin-users/admins-documentation/new-entity-type-registration.html#enable-rich-text-editor-or-spreadsheet-widgets-in-eln-ui)
  
 ### Semantic Annotations
 
