@@ -75,7 +75,7 @@ export default function CKEditorDocument({ value, sessionID, onEditorContentChan
 										)}
 										<div style={{ display: isEditorReady ? 'block' : 'none' }}>
 											<CKEditor
-												key={`ckeditor-document-${markdownEnabled ? 'markdown' : 'html'}-${value ? 'with-data' : 'empty'}`}
+												key={`ckeditor-document-${markdownEnabled ? 'markdown' : 'html'}`}
 												onReady={editor => {
 													// Store editor instance for value updates
 													editorInstanceRef.current = editor;

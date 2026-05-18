@@ -129,8 +129,9 @@ export const EntityFormContextProvider = ({
         setMode(FormMode.VIEW);
         if (params) {
           externalAppController.objectCreate(params);
+        } else {
+          loadForm();
         }
-        loadForm();
         setSaving(false);
       },
       externalAppController,

@@ -38,8 +38,11 @@ export class CollectionFormController implements IFormController {
 			const projectId = new ProjectPermId(params.parentId);
 			const project = await this.openbisFacade.getProjects([projectId], new ProjectFetchOptions());
 			const projectDto = project[params.parentId];
-			params.parentId = projectDto.getIdentifier().getIdentifier();
-			return CollectionFormModel.adaptNewCollectionDtoToForm(permId, types[typeCode], params);
+			if (!projectDto) {
+				throw new Error(`Project with permId '${params.parentId}' not found`);
+			}
+			const projectIdentifier = projectDto.getIdentifier().getIdentifier();
+			return CollectionFormModel.adaptNewCollectionDtoToForm(permId, types[typeCode], { ...params, parentId: projectIdentifier });
 		}
 		const { ExperimentPermId, ExperimentFetchOptions } = this.openbisFacade;
 		const id = new ExperimentPermId(permId);
@@ -57,7 +60,10 @@ export class CollectionFormController implements IFormController {
 
 		const collectionDto = result[permId];
 
-		if (!collectionDto) throw new Error(`[CollectionFormController.load] Collection with permId ${permId} not found`);
+		if (!collectionDto) {
+			throw new Error(`[CollectionFormController.load] Collection with permId ${permId} not found`);
+		}
+
 		return CollectionFormModel.adaptCollectionDtoToForm(collectionDto);
 	}
 
@@ -77,6 +83,9 @@ export class CollectionFormController implements IFormController {
 		experimentCreation.setTypeId(new EntityTypePermId(form.entityType));
 		experimentCreation.setProjectId(new ProjectIdentifier(findFormFieldById(form.fields, form.entityPermId, 'project', true) as string));
 		experimentCreation.setCode(findFormFieldById(form.fields, form.entityPermId, 'code', true) as string);
+
+		getChangedEditableFieldValues(form, experimentCreation);
+
 		const result = await this.openbisFacade.createExperiments([experimentCreation]);
 		return result[0].getPermId();
 	}
@@ -85,12 +94,14 @@ export class CollectionFormController implements IFormController {
 		const { ExperimentUpdate, ExperimentPermId, ProjectIdentifier } = this.openbisFacade;
 		const experimentUpdate = new ExperimentUpdate();
 		experimentUpdate.setExperimentId(new ExperimentPermId(form.entityPermId));
-		experimentUpdate.setProjectId(new ProjectIdentifier(getProjectIdentifierFromExperimentIdentifier(findFormFieldById(form.fields, form.entityPermId, 'identifier', true) as string)));
+		experimentUpdate.setProjectId(new ProjectIdentifier(
+			getProjectIdentifierFromExperimentIdentifier(
+				findFormFieldById(form.fields, form.entityPermId, 'identifier', true) as string)));
 
 		getChangedEditableFieldValues(form, experimentUpdate);
 
-		const result = await this.openbisFacade.updateExperiments([experimentUpdate]);
-		return Promise.resolve(form.version + 1);
+		await this.openbisFacade.updateExperiments([experimentUpdate]);
+		return form.version + 1;
 	}
 
 	async checkPermissions(form: Form) {
@@ -107,11 +118,9 @@ export class CollectionFormController implements IFormController {
 		const ids = [experimentId, dummyId, dummyId2];
 		const { editable, deletable } = await fetchRights(this.openbisFacade, objId, ids);
 		return { canEdit: editable, canDelete: deletable, canMove: true };
-		//return { canEdit: true, canDelete: true, canMove: true };
 	}
 
 	async delete(form: Form, context?: any): Promise<void> {
-
 		// If this is just a check, return early
 		if (context?.checkOnly) {
 			return;

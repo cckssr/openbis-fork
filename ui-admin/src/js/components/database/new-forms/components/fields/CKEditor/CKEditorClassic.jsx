@@ -66,9 +66,10 @@ export default function CKEditorClassic({ value, sessionID, onEditorContentChang
 									<CircularProgress />
 								</Box>
 							)}
+
 							<div style={{ display: isEditorReady ? 'block' : 'none' }}>
 								<CKEditor
-									key={`ckeditor-classic-${markdownEnabled ? 'markdown' : 'html'}-${value ? 'with-data' : 'empty'}`}
+									key={`ckeditor-classic-${markdownEnabled ? 'markdown' : 'html'}`}
 									editor={ClassicEditor}
 									config={editorConfig}
 									onReady={editor => {

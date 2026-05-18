@@ -520,7 +520,7 @@ function mapAssignmentToFormField(
   const propertyValue = getPropertyValue(dto, propertyCode, dataType, isMultiValue) ?? '';
 
   const column = determineFieldColumn(dataType, section, assignment.ordinal);
-  const meta = buildFieldMeta(propertyType.metaData, dataType);
+  const meta = buildFieldMeta(propertyType.metaData, dataType, propertyType);
 
   const readOnly = fieldOverrides.readOnly !== undefined 
     ? fieldOverrides.readOnly 
@@ -600,9 +600,9 @@ function determineFieldColumn(
  * @param dataType - The FormFieldDataType
  * @returns Meta object
  */
-function buildFieldMeta(propertyMetaData: any, dataType: FormFieldDataType): any {
+function buildFieldMeta(propertyMetaData: any, dataType: FormFieldDataType, propertyType?: any): any {
   const meta: any = { ...(propertyMetaData || {}) };
-  
+
   // Add mode for word processor types
   if (dataType === FormFieldDataType.WORD_PROCESSOR) {
     meta.mode = 'inline';
@@ -611,7 +611,11 @@ function buildFieldMeta(propertyMetaData: any, dataType: FormFieldDataType): any
   } else if (dataType === FormFieldDataType.WORD_PROCESSOR_CLASSIC) {
     meta.mode = 'classic';
   }
-  
+
+  if (dataType === FormFieldDataType.SAMPLE && propertyType?.sampleType?.code) {
+    meta.sampleTypeCode = propertyType.sampleType.code;
+  }
+
   return meta;
 }
 
