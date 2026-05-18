@@ -333,6 +333,34 @@ public class XMLInfraStructure
         }
     }
 
+    private static void configureParserXXEProtection(
+            SAXParser parser)
+    {
+        setPropertyQuietly(parser,
+                XMLConstants.ACCESS_EXTERNAL_DTD
+        );
+
+        setPropertyQuietly(parser,
+                XMLConstants.ACCESS_EXTERNAL_SCHEMA
+        );
+    }
+
+    private static void setPropertyQuietly(
+            SAXParser parser,
+            String property)
+    {
+        try
+        {
+            parser.setProperty(property, "");
+
+        } catch (SAXNotRecognizedException
+                | SAXNotSupportedException
+                | AbstractMethodError
+                | NoSuchMethodError ignored)
+        {
+        }
+    }
+
     private static void setAttributeQuietly(
             DocumentBuilderFactory factory,
             String attribute)
@@ -438,20 +466,8 @@ public class XMLInfraStructure
      */
     public XMLInfraStructure(boolean validating)
     {
-        parserFactory = SAXParserFactory.newInstance();
-        parserFactory.setNamespaceAware(true);
+        parserFactory = createSecureSAXParserFactory();
         parserFactory.setValidating(validating);
-        try
-        {
-            parserFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-            parserFactory.setFeature("http://xml.org/sax/features/external-general-entities", false);
-            parserFactory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
-            parserFactory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
-            parserFactory.setXIncludeAware(false);
-        } catch (Exception e)
-        {
-            throw CheckedExceptionTunnel.wrapIfNecessary(e);
-        }
     }
 
     /**
@@ -471,6 +487,7 @@ public class XMLInfraStructure
         try
         {
             SAXParser saxParser = parserFactory.newSAXParser();
+            configureParserXXEProtection(saxParser);
             if (parserFactory.isValidating())
             {
                 if (parserFactory.getSchema() == null)

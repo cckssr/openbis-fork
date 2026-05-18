@@ -18,8 +18,16 @@ package ch.systemsx.cisd.common.xml;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.SAXParserFactory;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
 
 import org.testng.AssertJUnit;
 import org.testng.annotations.BeforeMethod;
@@ -86,6 +94,8 @@ public class XMLInfraStructureTest extends AssertJUnit
             + "xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'\n"
             + "xsi:schemaLocation='http://my.host.org /note.xsd'>\n" + "  <to>Albert</to>\n";
 
+    private static final String EXTERNAL_RESOURCE = "http://127.0.0.1:9/xxe";
+
     private ContentHandler contentHandler;
 
     private EntityResolver entityResolver;
@@ -123,6 +133,139 @@ public class XMLInfraStructureTest extends AssertJUnit
         {
             // ignored
         }
+    }
+
+    @Test
+    public void testSecureDocumentBuilderFactoryRejectsDoctype() throws Exception
+    {
+        String xml = "<!DOCTYPE root [<!ELEMENT root ANY>]><root>text</root>";
+
+        assertDocumentBuilderParsingFails(xml);
+    }
+
+    @Test
+    public void testSecureDocumentBuilderFactoryDoesNotResolveExternalGeneralEntity()
+            throws Exception
+    {
+        String xml = "<!DOCTYPE root [<!ENTITY xxe SYSTEM '" + EXTERNAL_RESOURCE
+                + "/general'>]><root>&xxe;</root>";
+
+        assertDocumentBuilderParsingFails(xml);
+    }
+
+    @Test
+    public void testSecureSaxParserFactoryDoesNotResolveExternalParameterEntity()
+            throws Exception
+    {
+        String xml = "<!DOCTYPE root [<!ENTITY % xxe SYSTEM '" + EXTERNAL_RESOURCE
+                + "/parameter'>%xxe;]><root>text</root>";
+
+        assertSaxParsingFails(xml);
+    }
+
+    @Test
+    public void testSecureSaxParserFactoryDoesNotLoadExternalDtd() throws Exception
+    {
+        String xml = "<!DOCTYPE root SYSTEM '" + EXTERNAL_RESOURCE
+                + "/external.dtd'><root>text</root>";
+
+        assertSaxParsingFails(xml);
+    }
+
+    @Test
+    public void testSecureSchemaFactoryDoesNotLoadExternalSchema()
+    {
+        String schema = "<?xml version='1.0'?>"
+                + "<xs:schema xmlns:xs='http://www.w3.org/2001/XMLSchema'>"
+                + "<xs:include schemaLocation='" + EXTERNAL_RESOURCE + "/external.xsd'/>"
+                + "</xs:schema>";
+
+        try
+        {
+            XMLInfraStructure.createSchema(new ByteArrayInputStream(schema.getBytes()));
+            fail("External schema must not be loaded.");
+        } catch (Exception ex)
+        {
+            assertTrue(ex.toString(), ex.toString().contains("accessExternalSchema")
+                    || ex.toString().contains("External Schema")
+                    || ex.toString().contains("schema_reference"));
+        }
+    }
+
+    @Test
+    public void testSecureTransformerFactoryDoesNotLoadExternalStylesheet()
+    {
+        String xslt = "<xsl:stylesheet version='1.0' "
+                + "xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>"
+                + "<xsl:import href='" + EXTERNAL_RESOURCE + "/external.xsl'/>"
+                + "<xsl:template match='/'><out>text</out></xsl:template>"
+                + "</xsl:stylesheet>";
+
+        try
+        {
+            TransformerFactory factory = XMLInfraStructure.createSecureTransformerFactory();
+            factory.newTransformer(new StreamSource(new StringReader(xslt)));
+            fail("External stylesheet must not be loaded.");
+        } catch (Exception ex)
+        {
+            assertTrue(ex.toString(), ex.toString().contains("accessExternalStylesheet")
+                    || ex.toString().contains("External Stylesheet")
+                    || ex.toString().contains("Could not read stylesheet target"));
+        }
+    }
+
+    @Test
+    public void testSecureTransformerFactoryDoesNotResolveDocumentFunction()
+            throws Exception
+    {
+        String xslt = "<xsl:stylesheet version='1.0' "
+                + "xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>"
+                + "<xsl:template match='/'>"
+                + "<out><xsl:value-of select=\"document('" + EXTERNAL_RESOURCE
+                + "/document.xml')\"/></out>"
+                + "</xsl:template></xsl:stylesheet>";
+
+        TransformerFactory factory = XMLInfraStructure.createSecureTransformerFactory();
+        Transformer transformer = factory.newTransformer(new StreamSource(new StringReader(xslt)));
+        try
+        {
+            transformer.transform(new StreamSource(new StringReader("<root/>")),
+                    new StreamResult(new StringWriter()));
+            fail("XSLT document() must not resolve external resources.");
+        } catch (Exception ex)
+        {
+            assertTrue(ex.toString(), ex.toString().contains("accessExternalStylesheet")
+                    || ex.toString().contains("External Stylesheet")
+                    || ex.toString().contains("Could not read stylesheet target"));
+        }
+    }
+
+    @Test
+    public void testLegacyParserRejectsDoctypeWithoutValidation()
+    {
+        String xml = "<!DOCTYPE root [<!ELEMENT root ANY>]><root>text</root>";
+
+        assertLegacyParsingFails(false, xml, "DOCTYPE");
+    }
+
+    @Test
+    public void testLegacyParserRejectsDoctypeWithValidation()
+    {
+        String xml = "<!DOCTYPE root [<!ELEMENT root ANY>]><root>text</root>";
+
+        assertLegacyParsingFails(true, xml, "DOCTYPE");
+    }
+
+    @Test
+    public void testLegacyParserDoesNotResolveExternalSchemaWithValidation()
+    {
+        String xml = "<?xml version='1.0'?>"
+                + "<root xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' "
+                + "xsi:noNamespaceSchemaLocation='" + EXTERNAL_RESOURCE + "/external.xsd'>"
+                + "text</root>";
+
+        assertLegacyParsingFails(true, xml, "accessExternalSchema", "External Schema",
+                "schema_reference");
     }
 
     @Test
@@ -180,6 +323,56 @@ public class XMLInfraStructureTest extends AssertJUnit
             assertTrue(ex.toString().startsWith("org.xml.sax.SAXParseException"));
             assertTrue(ex.toString().contains(
                     "XML document structures must start and end within the same entity."));
+        }
+    }
+
+    private void assertDocumentBuilderParsingFails(String xml) throws Exception
+    {
+        DocumentBuilderFactory factory = XMLInfraStructure.createSecureDocumentBuilderFactory();
+        try
+        {
+            factory.newDocumentBuilder().parse(new InputSource(new StringReader(xml)));
+            fail("XML with external entity/DOCTYPE must not be parsed.");
+        } catch (Exception ex)
+        {
+            assertTrue(ex.toString(), ex.toString().contains("DOCTYPE")
+                    || ex.toString().contains("External Entity")
+                    || ex.toString().contains("external entity"));
+        }
+    }
+
+    private void assertLegacyParsingFails(boolean validating, String xml, String... expectedMessages)
+    {
+        XMLInfraStructure xmlInfraStructure = new XMLInfraStructure(validating);
+        try
+        {
+            xmlInfraStructure.parse(new StringReader(xml), new MockContentHandler());
+            fail("Legacy XMLInfraStructure parser must reject unsafe XML.");
+        } catch (Exception ex)
+        {
+            for (String expectedMessage : expectedMessages)
+            {
+                if (ex.toString().contains(expectedMessage))
+                {
+                    return;
+                }
+            }
+            fail("Unexpected exception message: " + ex);
+        }
+    }
+
+    private void assertSaxParsingFails(String xml) throws Exception
+    {
+        SAXParserFactory factory = XMLInfraStructure.createSecureSAXParserFactory();
+        try
+        {
+            factory.newSAXParser().parse(new InputSource(new StringReader(xml)), new DefaultHandler());
+            fail("XML with external entity/DOCTYPE must not be parsed.");
+        } catch (Exception ex)
+        {
+            assertTrue(ex.toString(), ex.toString().contains("DOCTYPE")
+                    || ex.toString().contains("External Entity")
+                    || ex.toString().contains("external entity"));
         }
     }
 }
