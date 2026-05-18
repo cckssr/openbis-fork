@@ -1640,9 +1640,10 @@ var FormUtil = new function() {
 
 		$component.refresh = function() {
 		    var instance = CKEditorManager.getEditorById($component.attr("id"));
-            if(!instance) {
-                FormUtil.createCkeditor($component, componentOnChange, value, placeholder, isReadOnly, toolbarContainer);
-            }
+			if(!instance) {
+				let newValue = $component.html();
+				FormUtil.createCkeditor($component, componentOnChange, newValue, placeholder, isReadOnly, toolbarContainer);
+			}
 		}
 		return $component;
 	}
