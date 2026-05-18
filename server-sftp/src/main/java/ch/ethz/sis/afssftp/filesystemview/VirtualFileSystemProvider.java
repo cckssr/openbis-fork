@@ -229,11 +229,18 @@ public class VirtualFileSystemProvider extends FileSystemProvider {
     }
 
     @Override
-    public boolean isSameFile(Path path, Path path1) throws IOException {
-        /* TODO There are cases of different paths pointing to the same item
-            in AS or AFS servers: implement a way to detect this
-        */
-        return Objects.equals(path, path1);
+    public boolean isSameFile(Path path1, Path path2) throws IOException {
+        try {
+            Optional<FtpPathLister.EntityDescriptor> entity1 =
+                    ftpPathLister.toEntityDescriptor(getNodeChainFromPath(path1));
+            Optional<FtpPathLister.EntityDescriptor> entity2 =
+                    ftpPathLister.toEntityDescriptor(getNodeChainFromPath(path2));
+
+            if (entity1.isPresent() && entity2.isPresent()) {
+                return entity1.get().equals(entity2.get());
+            }
+        } catch (Exception e) {}
+        return Objects.equals(path1, path2);
     }
 
     @Override
