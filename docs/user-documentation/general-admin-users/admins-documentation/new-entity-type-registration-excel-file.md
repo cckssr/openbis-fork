@@ -22,7 +22,7 @@ below. Three options can be chosen for the import:
 
  
 An example template of an Excel masterdata file can be found here:
-![masterdata-template](att/7.0-entity-types.xls)
+[masterdata-template](att/7.0-entity-types.xlsx)
 
 Please note that in the template we used separate spreadsheets for each
 type (Object, Experiment, Dataset), but it is also possible to have everything in the same spreadsheet.
