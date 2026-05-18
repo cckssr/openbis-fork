@@ -26,9 +26,11 @@ import java.util.List;
 
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.Source;
+import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
@@ -40,6 +42,8 @@ import org.xml.sax.EntityResolver;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 
@@ -52,19 +56,46 @@ import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
  */
 public class XMLInfraStructure
 {
-    private static final SchemaFactory SCHEMA_FACTORY = createSecureSchemaFactory();
+    // =========================================================================
+    // XML SECURITY FEATURES
+    // =========================================================================
+
+    private static final String FEATURE_DISALLOW_DOCTYPE =
+            "http://apache.org/xml/features/disallow-doctype-decl";
+
+    private static final String FEATURE_EXTERNAL_GENERAL_ENTITIES =
+            "http://xml.org/sax/features/external-general-entities";
+
+    private static final String FEATURE_EXTERNAL_PARAMETER_ENTITIES =
+            "http://xml.org/sax/features/external-parameter-entities";
+
+    private static final String FEATURE_LOAD_EXTERNAL_DTD =
+            "http://apache.org/xml/features/nonvalidating/load-external-dtd";
+
+    private static final SchemaFactory SCHEMA_FACTORY =
+            createSecureSchemaFactory();
+
+    // =========================================================================
+    // SCHEMA FACTORY
+    // =========================================================================
 
     private static SchemaFactory createSecureSchemaFactory()
     {
-        SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-        try
-        {
-            factory.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
-            factory.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
-        } catch (SAXException e)
-        {
-            throw CheckedExceptionTunnel.wrapIfNecessary(e);
-        }
+        SchemaFactory factory =
+                SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+
+        setFeatureQuietly(factory,
+                XMLConstants.FEATURE_SECURE_PROCESSING
+        );
+
+        setPropertyQuietly(factory,
+                XMLConstants.ACCESS_EXTERNAL_DTD
+        );
+
+        setPropertyQuietly(factory,
+                XMLConstants.ACCESS_EXTERNAL_SCHEMA
+        );
+
         return factory;
     }
 
@@ -75,21 +106,35 @@ public class XMLInfraStructure
      */
     public static DocumentBuilderFactory createSecureDocumentBuilderFactory()
     {
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilderFactory factory =
+                DocumentBuilderFactory.newInstance();
+
         factory.setNamespaceAware(true);
+
+        configureCommonXXEProtection(factory);
+
         try
         {
-            factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-            factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
-            factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
-            factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
-            factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
-        } catch (javax.xml.parsers.ParserConfigurationException e)
+            factory.setXIncludeAware(false);
+        } catch (UnsupportedOperationException ignored)
         {
-            throw CheckedExceptionTunnel.wrapIfNecessary(e);
         }
-        factory.setXIncludeAware(false);
-        factory.setExpandEntityReferences(false);
+
+        try
+        {
+            factory.setExpandEntityReferences(false);
+        } catch (UnsupportedOperationException ignored)
+        {
+        }
+
+        setAttributeQuietly(factory,
+                XMLConstants.ACCESS_EXTERNAL_DTD
+        );
+
+        setAttributeQuietly(factory,
+                XMLConstants.ACCESS_EXTERNAL_SCHEMA
+        );
+
         return factory;
     }
 
@@ -100,20 +145,20 @@ public class XMLInfraStructure
      */
     public static SAXParserFactory createSecureSAXParserFactory()
     {
-        SAXParserFactory factory = SAXParserFactory.newInstance();
+        SAXParserFactory factory =
+                SAXParserFactory.newInstance();
+
         factory.setNamespaceAware(true);
+
+        configureCommonXXEProtection(factory);
+
         try
         {
-            factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-            factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
-            factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
-            factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
-            factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
-        } catch (Exception e)
+            factory.setXIncludeAware(false);
+        } catch (UnsupportedOperationException ignored)
         {
-            throw CheckedExceptionTunnel.wrapIfNecessary(e);
         }
-        factory.setXIncludeAware(false);
+
         return factory;
     }
 
@@ -125,8 +170,11 @@ public class XMLInfraStructure
     {
         try
         {
-            return createSecureSAXParserFactory().newSAXParser().getXMLReader();
-        } catch (javax.xml.parsers.ParserConfigurationException | SAXException e)
+            return createSecureSAXParserFactory()
+                    .newSAXParser()
+                    .getXMLReader();
+
+        } catch (ParserConfigurationException | SAXException e)
         {
             throw CheckedExceptionTunnel.wrapIfNecessary(e);
         }
@@ -138,17 +186,181 @@ public class XMLInfraStructure
      */
     public static TransformerFactory createSecureTransformerFactory()
     {
-        TransformerFactory factory = TransformerFactory.newInstance();
+        TransformerFactory factory =
+                TransformerFactory.newInstance();
+
         try
         {
-            factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-        } catch (javax.xml.transform.TransformerConfigurationException e)
+            factory.setFeature(
+                    XMLConstants.FEATURE_SECURE_PROCESSING,
+                    true);
+
+        } catch (TransformerConfigurationException e)
         {
             throw CheckedExceptionTunnel.wrapIfNecessary(e);
         }
-        factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
-        factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
+
+        setAttributeQuietly(factory,
+                XMLConstants.ACCESS_EXTERNAL_DTD
+        );
+
+        setAttributeQuietly(factory,
+                XMLConstants.ACCESS_EXTERNAL_STYLESHEET
+        );
+
         return factory;
+    }
+
+    // =========================================================================
+    // COMMON XXE CONFIGURATION
+    // =========================================================================
+
+    private static void configureCommonXXEProtection(
+            DocumentBuilderFactory factory)
+    {
+        setFeatureQuietly(factory,
+                XMLConstants.FEATURE_SECURE_PROCESSING,
+                true);
+
+        setFeatureQuietly(factory,
+                FEATURE_DISALLOW_DOCTYPE,
+                true);
+
+        setFeatureQuietly(factory,
+                FEATURE_EXTERNAL_GENERAL_ENTITIES,
+                false);
+
+        setFeatureQuietly(factory,
+                FEATURE_EXTERNAL_PARAMETER_ENTITIES,
+                false);
+
+        setFeatureQuietly(factory,
+                FEATURE_LOAD_EXTERNAL_DTD,
+                false);
+    }
+
+    private static void configureCommonXXEProtection(
+            SAXParserFactory factory)
+    {
+        setFeatureQuietly(factory,
+                XMLConstants.FEATURE_SECURE_PROCESSING,
+                true);
+
+        setFeatureQuietly(factory,
+                FEATURE_DISALLOW_DOCTYPE,
+                true);
+
+        setFeatureQuietly(factory,
+                FEATURE_EXTERNAL_GENERAL_ENTITIES,
+                false);
+
+        setFeatureQuietly(factory,
+                FEATURE_EXTERNAL_PARAMETER_ENTITIES,
+                false);
+
+        setFeatureQuietly(factory,
+                FEATURE_LOAD_EXTERNAL_DTD,
+                false);
+    }
+
+    // =========================================================================
+    // SAFE SETTERS
+    // =========================================================================
+
+    private static void setFeatureQuietly(
+            SchemaFactory factory,
+            String feature)
+    {
+        try
+        {
+            factory.setFeature(feature, true);
+
+        } catch (SAXNotRecognizedException
+                | SAXNotSupportedException
+                | AbstractMethodError
+                | NoSuchMethodError ignored)
+        {
+        }
+    }
+
+    private static void setFeatureQuietly(
+            DocumentBuilderFactory factory,
+            String feature,
+            boolean value)
+    {
+        try
+        {
+            factory.setFeature(feature, value);
+
+        } catch (ParserConfigurationException
+                | AbstractMethodError
+                | NoSuchMethodError ignored)
+        {
+        }
+    }
+
+    private static void setFeatureQuietly(
+            SAXParserFactory factory,
+            String feature,
+            boolean value)
+    {
+        try
+        {
+            factory.setFeature(feature, value);
+
+        } catch (ParserConfigurationException
+                | SAXNotRecognizedException
+                | SAXNotSupportedException
+                | AbstractMethodError
+                | NoSuchMethodError ignored)
+        {
+        }
+    }
+
+    private static void setPropertyQuietly(
+            SchemaFactory factory,
+            String property)
+    {
+        try
+        {
+            factory.setProperty(property, "");
+
+        } catch (SAXNotRecognizedException
+                | SAXNotSupportedException
+                | AbstractMethodError
+                | NoSuchMethodError ignored)
+        {
+        }
+    }
+
+    private static void setAttributeQuietly(
+            DocumentBuilderFactory factory,
+            String attribute)
+    {
+        try
+        {
+            factory.setAttribute(attribute, "");
+
+        } catch (IllegalArgumentException
+                | AbstractMethodError
+                | NoSuchMethodError ignored)
+        {
+        }
+    }
+
+    private static void setAttributeQuietly(
+            TransformerFactory factory,
+            String attribute)
+    {
+        try
+        {
+            factory.setAttribute(attribute, "");
+
+        } catch (IllegalArgumentException
+                | AbstractMethodError
+                | NoSuchMethodError ignored)
+        {
+        }
     }
 
     /**
