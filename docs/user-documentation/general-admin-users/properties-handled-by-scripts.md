@@ -375,18 +375,7 @@ does not have any properties defined:
       for s in entity.children():
         requestValidation(s)
 
-### Activating the validation
 
-To make the validation active per entity type you have to select the
-validation script for each type:
-
--   Admin -> Types -> <Entity Kind> you selected also in the
-    script definition ->
--   Select a Sample Type and edit it
--   You find a property which is called 'Validation Script' (see screen
-    shot below). Just select your defined Script and hit save.
-
-![image info](img/Screen_shot_2013-03-01_at_11.40.41_AM.png)
 
 ### Creating and Deploying Java Validation Plugins
 
