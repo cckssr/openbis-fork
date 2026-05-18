@@ -1,4 +1,4 @@
-New Entity Type Registration
+New Entity Type Registration via User Interface
 ====
 
 
@@ -189,6 +189,18 @@ This can also be done from the ELN interface, in the Settings (see below)
     *Project*.
 2.  If you assign two properties with the same label to the same type, they will be exported using their code in the XLSX export. 
     
+
+ 
+### Properties overview
+
+
+The overview of all properties registered in openBIS and their
+assignments to types is available under the **Types** section in the
+admin UI, as shown below.
+
+ 
+
+![image info](img/7.0-admin-ui-property-types-table.png)
  
 
 ### Controlled Vocabularies
@@ -219,6 +231,7 @@ and allow also special characters. If the label is not defined, codes
 are shown.
 
 After creating the vocabulary and registering the terms, remember to **Save**.
+
 
 ## Register a new Experiment/Collection type
 
@@ -292,122 +305,18 @@ By default, no Object shows in dropdown menus in the ELN. Which object types sho
 
 
  
-## Register masterdata via Excel
 
 
 
-It is possible to register openBIS masterdata using an Excel template
-from the admin UI.
-
- 
-
-This can be done from the Import menu under the Tools sections, as shown
-below. Three options can be chosen for the import:
-
- 
-
-1.  **fail if exists**: if a type or a property already exists in the
-    database, the upload will fail.
-2.  **ignore if exists**: if a type or a property already exists in the
-    database, the upload will ignore this.
-3.  **update is exists**: if a type or a property already exists in the
-    database, the upload will update existing values.
-
- 
-
-![image info](img/Excel-import-admin-UI-1024x634.png)
-
- 
-
- 
-
-An example template of an Excel masterdata file can be found here:
-[masterdata-template](att/masterdata-template-no-version.xls)
-
-Please note that in the template we used separate spreadsheets for each
-type (Sample, Experiment, Dataset), but it is also possible to have
-everything in one single spreadsheet.
-
- 
-
-
-### Masterdata and metadata import
-
-The import on the admin UI allows also to register entities in addition to
-masterdata. An example template file for this can be found here:
-[masterdata-metadata](att/masterdata-metadata-no-version.xls)
-
- 
-
-More extensive documentation on the XLS format for masterdata and
-metadata registration can be found
-[here](../../advance-features/excel-import-service.md).
-
-
- 
-## Properties overview
-
-
-The overview of all properties registered in openBIS and their
-assignments to types is available under the **Types** section in the
-admin UI, as shown below.
-
- 
-
-![image info](img/7.0-admin-ui-property-types-table.png)
 
 
 
- 
-## Internal Types
-
-
-### Internal Entity Types
-
-Internal Entity types (Object, Collection, Dataset types) can be identified by a *lock* icon in the Entity Type Parameters section:
-
-![image info](img/7.0-admin-ui-publication-internal-object-type.png)
-
-or in the Entity table:
-
-![](img/7.0-admin-ui-object-types-table.png)
- 
-Internal types cannot be modified and cannot be deleted.
 
 
 
-### Internal Property Types
-
-Internal Properties types can be identified by a lock icon in the Property type Parameters section.
-
-Internal types cannot be deleted nor modified 
-
-Internal properties (e.g. NAME, BARCODE, etc) cannot be deleted nor
-modified, not even by an instance admin.
-
-![image info](img/7.0-admin-ui-internal-property-type.png) 
-
-### Internal Property Assignment
-
-In some cases, internal properties are also internally assigned. Thsi means that the assignment of this property to a specific Entity type cannot be removed.
-
-![image info](img/7.0-admin-ui-internal-property-assignment.png)
-
-### Internal Vocabularies
-
-Internal vocabularies (e.g. DEFAULT\_COLLECTION\_VIEWS, etc), cannot be
-deleted and their existing terms cannot be deleted nor modified, however
-an instance admin can add new terms to an internal vocabulary. The terms added by an admin can be modified and/or deleted.
-
-![image info](img/7.0-admin-ui-internal-vocabulary-type.png)
 
 
-## Default openBIS Types
-
-Certain Collection, Object and Dataset types are provided with the default openBIS installation.
-These types often use internal properties, which cannot be deleted nor modified.
-
-It is however possible to add new properties to these types. The newly added properties must NOT be made mandatory, as this might cause the system not to function correctly and will create problems during an upgrade.
+e system not to function correctly and will create problems during an upgrade.
 
 Default types should also not be deleted and re-created with the same code and different properties, as this might cause the system not to function correctly and will create problems during an upgrade.
 
