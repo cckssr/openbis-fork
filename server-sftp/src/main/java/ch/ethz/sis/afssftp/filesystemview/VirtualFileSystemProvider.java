@@ -39,6 +39,22 @@ public class VirtualFileSystemProvider extends FileSystemProvider {
         this.sftpFileUtil = new SftpFileUtil(user);
     }
 
+    // For unit-tests
+    VirtualFileSystemProvider(
+            @NonNull User user,
+            FtpPathTranslator ftpPathTranslator,
+            FtpPathLister ftpPathLister,
+            SftpListUtil sftpListUtil,
+            SftpFileUtil sftpFileUtil
+    ) {
+        this.logger = LogManager.getLogger(this.getClass());
+        this.user = user;
+        this.ftpPathTranslator = ftpPathTranslator;
+        this.ftpPathLister = ftpPathLister;
+        this.sftpListUtil = sftpListUtil;
+        this.sftpFileUtil = sftpFileUtil;
+    }
+
     void acceptCreatedFileSystem(@NonNull VirtualFileSystem createdFileSystem) {
         this.createdFileSystem = createdFileSystem;
     }
@@ -102,7 +118,12 @@ public class VirtualFileSystemProvider extends FileSystemProvider {
         SftpNodeChain sftpNodeChain = getNodeChainFromPath(path);
 
         List<Path> listedItems = ftpPathLister.list(sftpNodeChain)
-                .stream().map(this::getPathFromNodeChain).toList();
+                .stream().map(this::getPathFromNodeChain)
+                .filter( item -> {
+                    try {
+                        return filter == null || filter.accept(item);
+                    } catch (Exception e) { throw new RuntimeException(e); }
+                }).toList();
 
         return toDirectoryStream(listedItems);
     }
@@ -230,17 +251,21 @@ public class VirtualFileSystemProvider extends FileSystemProvider {
 
     @Override
     public boolean isSameFile(Path path1, Path path2) throws IOException {
-        try {
-            Optional<FtpPathLister.EntityDescriptor> entity1 =
-                    ftpPathLister.toEntityDescriptor(getNodeChainFromPath(path1));
-            Optional<FtpPathLister.EntityDescriptor> entity2 =
-                    ftpPathLister.toEntityDescriptor(getNodeChainFromPath(path2));
+        if (Objects.equals(path1, path2)) {
+            return true;
+        } else {
+            try {
+                Optional<FtpPathLister.EntityDescriptor> entity1 =
+                        ftpPathLister.toEntityDescriptor(getNodeChainFromPath(path1));
+                Optional<FtpPathLister.EntityDescriptor> entity2 =
+                        ftpPathLister.toEntityDescriptor(getNodeChainFromPath(path2));
 
-            if (entity1.isPresent() && entity2.isPresent()) {
-                return entity1.get().equals(entity2.get());
-            }
-        } catch (Exception e) {}
-        return Objects.equals(path1, path2);
+                if (entity1.isPresent() && entity2.isPresent()) {
+                    return entity1.get().equals(entity2.get());
+                }
+            } catch (Exception e) {}
+            return false;
+        }
     }
 
     @Override
