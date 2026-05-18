@@ -3813,12 +3813,13 @@ var FormUtil = new function() {
                 }
                 mainController.openbisV3.getSamples(samplePermIdsAsIds, fetchOptions).done(function(samplesByPermId) {
                     var samplesPermIdsToDelete = [];
+                    var samplesPermIdsSet = new Set();
                     var samplesList = [];
                     var sampleStoragesCodesToDelete = [];
                     for(permId in samplesByPermId) {
                         var sample = samplesByPermId[permId];
                         if (deleteDescendants) {
-                            _this.gatherAllDescendants(samplesPermIdsToDelete, sample, samplesList);
+                            _this.gatherAllDescendants(samplesPermIdsToDelete, samplesPermIdsSet, sample, samplesList);
                         } else { // Storage positions always SHOULD be deleted anyway
                             samplesPermIdsToDelete.push(sample.getPermId().getPermId());
                             samplesList.push(sample);
@@ -3839,10 +3840,14 @@ var FormUtil = new function() {
             });
         }
 
-        this.gatherAllDescendants = function(samplePermIds, sample, samplesList) {
-            samplePermIds.push(sample.getPermId().getPermId());
-            samplesList.push(sample);
-            sample.getChildren().forEach(child => this.gatherAllDescendants(samplePermIds, child, samplesList));
+        this.gatherAllDescendants = function(samplePermIds, samplesPermIdsSet, sample, samplesList) {
+			let permId = sample.getPermId().getPermId();
+			if(!samplesPermIdsSet.has(permId)) {
+				samplesPermIdsSet.add(permId);
+				samplePermIds.push(permId);
+				samplesList.push(sample);
+				sample.getChildren().forEach(child => this.gatherAllDescendants(samplePermIds, samplesPermIdsSet, child, samplesList));
+			}
         }
 
         this.getPrintPDFButtonModel = function(entityKind, entityPermId) {
