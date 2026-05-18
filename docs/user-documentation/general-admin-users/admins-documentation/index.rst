@@ -15,6 +15,7 @@ Admins Documentation
    user-registration
    new-entity-type-registration
    new-entity-type-registration-excel-file
+   internal-types
    masterdata-exports-and-imports
    import-openbis-exports
    create-templates-for-objects
