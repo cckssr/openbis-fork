@@ -70,7 +70,7 @@ button at the bottom of the page. To remove a property, use the
 
 Please note that new *Object types* created in the admin UI, do not
 automatically appear in ELN drop downs, but they have to be manually
-enabled, as described here: [Enable Objects in dropdowns](./new-entity-type-registration.md#enable-objects-in-dropdowns) 
+enabled, as described below: [Enable Objects in dropdowns](../new-entity-type-registration.md#enable-objects-in-dropdowns) 
 
 ### Semantic Annotations
 
@@ -303,22 +303,6 @@ By default, no Object shows in dropdown menus in the ELN. Which object types sho
 
 ![image info](img/Screenshot-2020-02-26-at-13.19.33-1-1024x537.png)
 
-
- 
-
-
-
-
-
-
-
-
-
-
-
-e system not to function correctly and will create problems during an upgrade.
-
-Default types should also not be deleted and re-created with the same code and different properties, as this might cause the system not to function correctly and will create problems during an upgrade.
 
 
 
