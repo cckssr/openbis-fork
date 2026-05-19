@@ -33,9 +33,9 @@ and one script type to perform validations on entities:
    
 
 2.  **Entity Validation**
-    1.  performed after creation or each update of an entity of a given type.
-    2.  the script performs a validation, which can cancel
-        the operation if the validation fails.
+    -  performed after creation or each update of an entity of a given type.
+    -  the script performs a validation, which can cancel
+       the operation if the validation fails.
 
  
 Dynamic Properties
