@@ -188,6 +188,8 @@ public class SftpFileUtil {
                 } catch (Exception e) {
                     throw new IOException("Error copying AFS-file");
                 }
+            } else {
+                throw new IOException("Error copying AFS-file: destination already exists");
             }
         } else {
             throw new IOException("Error copying AFS-file: file does not exist");
