@@ -23,10 +23,9 @@ service.properties property `jython-version` which should be 2.7.
 There is one type of plugin that can be used for handling properties
 and one script type to perform validations on entities:
 
-1.  **Dynamic Property Evaluator** (for properties referred to as
-    *Dynamic Properties*)  
+1.  **Dynamic Property Evaluator** (for properties referred to as *Dynamic Properties*)  
     -   for properties that **can't be modified by users**,
-    -   values of such properties will be **evaluated automatically**
+    -   values of such properties are **evaluated automatically**
         using metadata already stored in openBIS (e.g. values of other
         properties of the same entity or connected entities),
     -   the script defines an expression or a function that returns a
@@ -34,8 +33,8 @@ and one script type to perform validations on entities:
    
 
 2.  **Entity Validation**
-    1.  performed after creation or each update of a given entity type.
-    2.  the user provided script performs a validation, which can cancel
+    1.  performed after creation or each update of an entity of a given type.
+    2.  the script performs a validation, which can cancel
         the operation if the validation fails.
 
  
