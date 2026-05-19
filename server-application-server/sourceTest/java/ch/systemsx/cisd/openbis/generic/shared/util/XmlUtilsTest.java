@@ -270,4 +270,25 @@ public class XmlUtilsTest extends AssertJUnit
         String result = XmlUtils.transform(SIMPLE_XSLT, SIMPLE_XML);
         assertEquals(SIMPLE_XML_TRANSFORMED, result);
     }
+
+
+    @Test
+    public void testParseXmlDocumentRejectsEntityExpansionBomb()
+    {
+        String xml = "<!DOCTYPE lolz ["
+                + "<!ENTITY lol 'lol'>"
+                + "<!ENTITY lol1 '&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;'>"
+                + "<!ENTITY lol2 '&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;'>"
+                + "<!ENTITY lol3 '&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;'>"
+                + "]><root>&lol3;</root>";
+
+        try
+        {
+            XmlUtils.parseXmlDocument(xml);
+            fail("Entity expansion XML must not be parsed.");
+        } catch (UserFailureException ex)
+        {
+            assertTrue(ex.getMessage(), ex.getMessage().contains("DOCTYPE"));
+        }
+    }
 }

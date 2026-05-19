@@ -375,4 +375,17 @@ public class XMLInfraStructureTest extends AssertJUnit
                     || ex.toString().contains("external entity"));
         }
     }
+
+    @Test
+    public void testSecureDocumentBuilderFactoryRejectsEntityExpansionBomb() throws Exception
+    {
+        String xml = "<!DOCTYPE lolz ["
+                + "<!ENTITY lol 'lol'>"
+                + "<!ENTITY lol1 '&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;'>"
+                + "<!ENTITY lol2 '&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;'>"
+                + "<!ENTITY lol3 '&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;'>"
+                + "]><root>&lol3;</root>";
+
+        assertDocumentBuilderParsingFails(xml);
+    }
 }
