@@ -82,17 +82,17 @@ public class XMLInfraStructure
     private static SchemaFactory createSecureSchemaFactory()
     {
         SchemaFactory factory =
-                SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+                SchemaFactory.newDefaultInstance();
 
-        setFeatureQuietly(factory,
+        setFeature(factory,
                 XMLConstants.FEATURE_SECURE_PROCESSING
         );
 
-        setPropertyQuietly(factory,
+        setProperty(factory,
                 XMLConstants.ACCESS_EXTERNAL_DTD
         );
 
-        setPropertyQuietly(factory,
+        setProperty(factory,
                 XMLConstants.ACCESS_EXTERNAL_SCHEMA
         );
 
@@ -102,12 +102,14 @@ public class XMLInfraStructure
     /**
      * Returns a {@link DocumentBuilderFactory} hardened against XXE attacks: DOCTYPE declarations
      * are disallowed, external entity resolution and external DTD loading are disabled, XInclude
-     * is off, and entity-reference expansion is off. Namespace-aware by default.
+     * is off, and entity-reference expansion is off. Uses the platform-default JAXP provider so
+     * classpath service registrations cannot override it. Mandatory XXE protections fail factory
+     * creation if the provider does not support them. Namespace-aware by default.
      */
     public static DocumentBuilderFactory createSecureDocumentBuilderFactory()
     {
         DocumentBuilderFactory factory =
-                DocumentBuilderFactory.newInstance();
+                DocumentBuilderFactory.newDefaultInstance();
 
         factory.setNamespaceAware(true);
 
@@ -127,11 +129,11 @@ public class XMLInfraStructure
         {
         }
 
-        setAttributeQuietly(factory,
+        setAttribute(factory,
                 XMLConstants.ACCESS_EXTERNAL_DTD
         );
 
-        setAttributeQuietly(factory,
+        setAttribute(factory,
                 XMLConstants.ACCESS_EXTERNAL_SCHEMA
         );
 
@@ -141,12 +143,14 @@ public class XMLInfraStructure
     /**
      * Returns a {@link SAXParserFactory} hardened against XXE attacks: DOCTYPE declarations are
      * disallowed, external entity resolution and external DTD loading are disabled, XInclude is
-     * off. Namespace-aware by default.
+     * off. Uses the platform-default JAXP provider so classpath service registrations cannot
+     * override it. Mandatory XXE protections fail factory creation if the provider does not
+     * support them. Namespace-aware by default.
      */
     public static SAXParserFactory createSecureSAXParserFactory()
     {
         SAXParserFactory factory =
-                SAXParserFactory.newInstance();
+                SAXParserFactory.newDefaultInstance();
 
         factory.setNamespaceAware(true);
 
@@ -182,12 +186,14 @@ public class XMLInfraStructure
 
     /**
      * Returns a {@link TransformerFactory} hardened against XSLT-based attacks: secure processing
-     * is enabled, and external DTD / stylesheet access is blocked.
+     * is enabled, and external DTD / stylesheet access is blocked. Uses the platform-default JAXP
+     * provider so classpath service registrations cannot override it. Mandatory protections fail
+     * factory creation if the provider does not support them.
      */
     public static TransformerFactory createSecureTransformerFactory()
     {
         TransformerFactory factory =
-                TransformerFactory.newInstance();
+                TransformerFactory.newDefaultInstance();
 
         try
         {
@@ -200,11 +206,11 @@ public class XMLInfraStructure
             throw CheckedExceptionTunnel.wrapIfNecessary(e);
         }
 
-        setAttributeQuietly(factory,
+        setAttribute(factory,
                 XMLConstants.ACCESS_EXTERNAL_DTD
         );
 
-        setAttributeQuietly(factory,
+        setAttribute(factory,
                 XMLConstants.ACCESS_EXTERNAL_STYLESHEET
         );
 
@@ -218,23 +224,23 @@ public class XMLInfraStructure
     private static void configureCommonXXEProtection(
             DocumentBuilderFactory factory)
     {
-        setFeatureQuietly(factory,
+        setFeature(factory,
                 XMLConstants.FEATURE_SECURE_PROCESSING,
                 true);
 
-        setFeatureQuietly(factory,
+        setFeature(factory,
                 FEATURE_DISALLOW_DOCTYPE,
                 true);
 
-        setFeatureQuietly(factory,
+        setFeature(factory,
                 FEATURE_EXTERNAL_GENERAL_ENTITIES,
                 false);
 
-        setFeatureQuietly(factory,
+        setFeature(factory,
                 FEATURE_EXTERNAL_PARAMETER_ENTITIES,
                 false);
 
-        setFeatureQuietly(factory,
+        setFeature(factory,
                 FEATURE_LOAD_EXTERNAL_DTD,
                 false);
     }
@@ -242,32 +248,32 @@ public class XMLInfraStructure
     private static void configureCommonXXEProtection(
             SAXParserFactory factory)
     {
-        setFeatureQuietly(factory,
+        setFeature(factory,
                 XMLConstants.FEATURE_SECURE_PROCESSING,
                 true);
 
-        setFeatureQuietly(factory,
+        setFeature(factory,
                 FEATURE_DISALLOW_DOCTYPE,
                 true);
 
-        setFeatureQuietly(factory,
+        setFeature(factory,
                 FEATURE_EXTERNAL_GENERAL_ENTITIES,
                 false);
 
-        setFeatureQuietly(factory,
+        setFeature(factory,
                 FEATURE_EXTERNAL_PARAMETER_ENTITIES,
                 false);
 
-        setFeatureQuietly(factory,
+        setFeature(factory,
                 FEATURE_LOAD_EXTERNAL_DTD,
                 false);
     }
 
     // =========================================================================
-    // SAFE SETTERS
+    // MANDATORY SECURITY SETTERS
     // =========================================================================
 
-    private static void setFeatureQuietly(
+    private static void setFeature(
             SchemaFactory factory,
             String feature)
     {
@@ -278,12 +284,13 @@ public class XMLInfraStructure
         } catch (SAXNotRecognizedException
                 | SAXNotSupportedException
                 | AbstractMethodError
-                | NoSuchMethodError ignored)
+                | NoSuchMethodError ex)
         {
+            throw CheckedExceptionTunnel.wrapIfNecessary(ex);
         }
     }
 
-    private static void setFeatureQuietly(
+    private static void setFeature(
             DocumentBuilderFactory factory,
             String feature,
             boolean value)
@@ -294,12 +301,13 @@ public class XMLInfraStructure
 
         } catch (ParserConfigurationException
                 | AbstractMethodError
-                | NoSuchMethodError ignored)
+                | NoSuchMethodError ex)
         {
+            throw CheckedExceptionTunnel.wrapIfNecessary(ex);
         }
     }
 
-    private static void setFeatureQuietly(
+    private static void setFeature(
             SAXParserFactory factory,
             String feature,
             boolean value)
@@ -312,12 +320,13 @@ public class XMLInfraStructure
                 | SAXNotRecognizedException
                 | SAXNotSupportedException
                 | AbstractMethodError
-                | NoSuchMethodError ignored)
+                | NoSuchMethodError ex)
         {
+            throw CheckedExceptionTunnel.wrapIfNecessary(ex);
         }
     }
 
-    private static void setPropertyQuietly(
+    private static void setProperty(
             SchemaFactory factory,
             String property)
     {
@@ -328,24 +337,25 @@ public class XMLInfraStructure
         } catch (SAXNotRecognizedException
                 | SAXNotSupportedException
                 | AbstractMethodError
-                | NoSuchMethodError ignored)
+                | NoSuchMethodError ex)
         {
+            throw CheckedExceptionTunnel.wrapIfNecessary(ex);
         }
     }
 
     private static void configureParserXXEProtection(
             SAXParser parser)
     {
-        setPropertyQuietly(parser,
+        setProperty(parser,
                 XMLConstants.ACCESS_EXTERNAL_DTD
         );
 
-        setPropertyQuietly(parser,
+        setProperty(parser,
                 XMLConstants.ACCESS_EXTERNAL_SCHEMA
         );
     }
 
-    private static void setPropertyQuietly(
+    private static void setProperty(
             SAXParser parser,
             String property)
     {
@@ -356,12 +366,13 @@ public class XMLInfraStructure
         } catch (SAXNotRecognizedException
                 | SAXNotSupportedException
                 | AbstractMethodError
-                | NoSuchMethodError ignored)
+                | NoSuchMethodError ex)
         {
+            throw CheckedExceptionTunnel.wrapIfNecessary(ex);
         }
     }
 
-    private static void setAttributeQuietly(
+    private static void setAttribute(
             DocumentBuilderFactory factory,
             String attribute)
     {
@@ -371,12 +382,13 @@ public class XMLInfraStructure
 
         } catch (IllegalArgumentException
                 | AbstractMethodError
-                | NoSuchMethodError ignored)
+                | NoSuchMethodError ex)
         {
+            throw CheckedExceptionTunnel.wrapIfNecessary(ex);
         }
     }
 
-    private static void setAttributeQuietly(
+    private static void setAttribute(
             TransformerFactory factory,
             String attribute)
     {
@@ -386,8 +398,9 @@ public class XMLInfraStructure
 
         } catch (IllegalArgumentException
                 | AbstractMethodError
-                | NoSuchMethodError ignored)
+                | NoSuchMethodError ex)
         {
+            throw CheckedExceptionTunnel.wrapIfNecessary(ex);
         }
     }
 
@@ -549,15 +562,16 @@ public class XMLInfraStructure
     {
         final StringBuilder sb = new StringBuilder();
         sb.append(getJaxpImplementationInfo("DocumentBuilderFactory", DocumentBuilderFactory
-                .newInstance().getClass()));
+                .newDefaultInstance().getClass()));
         sb.append("\n");
-        sb.append(getJaxpImplementationInfo("XPathFactory", XPathFactory.newInstance().getClass()));
-        sb.append("\n");
-        sb.append(getJaxpImplementationInfo("TransformerFactory", TransformerFactory.newInstance()
+        sb.append(getJaxpImplementationInfo("XPathFactory", XPathFactory.newDefaultInstance()
                 .getClass()));
         sb.append("\n");
-        sb.append(getJaxpImplementationInfo("SAXParserFactory", SAXParserFactory.newInstance()
-                .getClass()));
+        sb.append(getJaxpImplementationInfo("TransformerFactory", TransformerFactory
+                .newDefaultInstance().getClass()));
+        sb.append("\n");
+        sb.append(getJaxpImplementationInfo("SAXParserFactory", SAXParserFactory
+                .newDefaultInstance().getClass()));
         sb.append("\n");
         sb.append(getJaxpImplementationInfo("SchemaFactory", SCHEMA_FACTORY.getClass()));
         sb.append("\n");
