@@ -37,6 +37,8 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.xpath.XPathFactory;
 
+import org.w3c.dom.ls.LSInput;
+import org.w3c.dom.ls.LSResourceResolver;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.ErrorHandler;
@@ -72,6 +74,33 @@ public class XMLInfraStructure
     private static final String FEATURE_LOAD_EXTERNAL_DTD =
             "http://apache.org/xml/features/nonvalidating/load-external-dtd";
 
+    private static final String W3C_XML_NAMESPACE =
+            "http://www.w3.org/XML/1998/namespace";
+
+    private static final String W3C_XML_XSD_SYSTEM_ID =
+            "http://www.w3.org/2001/xml.xsd";
+
+    private static final String W3C_XML_XSD_2001_03_SYSTEM_ID =
+            "http://www.w3.org/2001/03/xml.xsd";
+
+    private static final String W3C_XML_SCHEMA_XSD_SYSTEM_ID =
+            "http://www.w3.org/2001/XMLSchema.xsd";
+
+    private static final String W3C_XSLT_NAMESPACE =
+            "http://www.w3.org/1999/XSL/Transform";
+
+    private static final String W3C_XSLT20_SCHEMA_SYSTEM_ID =
+            "http://www.w3.org/2007/schema-for-xslt20.xsd";
+
+    private static final String XML_XSD_RESOURCE =
+            "/xml.xsd";
+
+    private static final String XML_SCHEMA_XSD_RESOURCE =
+            "/XMLSchema.xsd";
+
+    private static final String XSLT20_SCHEMA_RESOURCE =
+            "/schema-for-xslt20.xsd";
+
     private static final SchemaFactory SCHEMA_FACTORY =
             createSecureSchemaFactory();
 
@@ -96,7 +125,202 @@ public class XMLInfraStructure
                 XMLConstants.ACCESS_EXTERNAL_SCHEMA
         );
 
+        factory.setResourceResolver(new ClasspathSchemaResourceResolver());
+
         return factory;
+    }
+
+    private static final class ClasspathSchemaResourceResolver implements LSResourceResolver
+    {
+        @Override
+        public LSInput resolveResource(String type, String namespaceURI, String publicId,
+                String systemId, String baseURI)
+        {
+            String resource = getClasspathSchemaResource(namespaceURI, systemId);
+            if (resource == null)
+            {
+                return null;
+            }
+
+            InputStream inputStream = XMLInfraStructure.class.getResourceAsStream(resource);
+            if (inputStream == null)
+            {
+                return null;
+            }
+
+            return new ClasspathLSInput(publicId, systemId, baseURI, inputStream);
+        }
+    }
+
+    private static String getClasspathSchemaResource(String namespaceURI, String systemId)
+    {
+        if (matchesHttpOrHttpsSystemId(systemId, W3C_XML_XSD_SYSTEM_ID)
+                || matchesHttpOrHttpsSystemId(systemId, W3C_XML_XSD_2001_03_SYSTEM_ID))
+        {
+            return XML_XSD_RESOURCE;
+        }
+
+        if (matchesHttpOrHttpsSystemId(systemId, W3C_XML_SCHEMA_XSD_SYSTEM_ID))
+        {
+            return XML_SCHEMA_XSD_RESOURCE;
+        }
+
+        if (matchesHttpOrHttpsSystemId(systemId, W3C_XSLT20_SCHEMA_SYSTEM_ID))
+        {
+            return XSLT20_SCHEMA_RESOURCE;
+        }
+
+        if (W3C_XML_NAMESPACE.equals(namespaceURI) && "xml.xsd".equals(systemId))
+        {
+            return XML_XSD_RESOURCE;
+        }
+
+        if (XMLConstants.W3C_XML_SCHEMA_NS_URI.equals(namespaceURI)
+                && "XMLSchema.xsd".equals(systemId))
+        {
+            return XML_SCHEMA_XSD_RESOURCE;
+        }
+
+        if (W3C_XSLT_NAMESPACE.equals(namespaceURI) && "schema-for-xslt20.xsd".equals(systemId))
+        {
+            return XSLT20_SCHEMA_RESOURCE;
+        }
+
+        return null;
+    }
+
+    private static boolean matchesHttpOrHttpsSystemId(String systemId, String httpSystemId)
+    {
+        if (httpSystemId.equals(systemId))
+        {
+            return true;
+        }
+
+        return httpSystemId.replace("http://", "https://").equals(systemId);
+    }
+
+    private static final class ClasspathLSInput implements LSInput
+    {
+        private Reader characterStream;
+
+        private InputStream byteStream;
+
+        private String stringData;
+
+        private String systemId;
+
+        private String publicId;
+
+        private String baseURI;
+
+        private String encoding;
+
+        private boolean certifiedText;
+
+        private ClasspathLSInput(String publicId, String systemId, String baseURI,
+                InputStream byteStream)
+        {
+            this.publicId = publicId;
+            this.systemId = systemId;
+            this.baseURI = baseURI;
+            this.byteStream = byteStream;
+        }
+
+        @Override
+        public Reader getCharacterStream()
+        {
+            return characterStream;
+        }
+
+        @Override
+        public void setCharacterStream(Reader characterStream)
+        {
+            this.characterStream = characterStream;
+        }
+
+        @Override
+        public InputStream getByteStream()
+        {
+            return byteStream;
+        }
+
+        @Override
+        public void setByteStream(InputStream byteStream)
+        {
+            this.byteStream = byteStream;
+        }
+
+        @Override
+        public String getStringData()
+        {
+            return stringData;
+        }
+
+        @Override
+        public void setStringData(String stringData)
+        {
+            this.stringData = stringData;
+        }
+
+        @Override
+        public String getSystemId()
+        {
+            return systemId;
+        }
+
+        @Override
+        public void setSystemId(String systemId)
+        {
+            this.systemId = systemId;
+        }
+
+        @Override
+        public String getPublicId()
+        {
+            return publicId;
+        }
+
+        @Override
+        public void setPublicId(String publicId)
+        {
+            this.publicId = publicId;
+        }
+
+        @Override
+        public String getBaseURI()
+        {
+            return baseURI;
+        }
+
+        @Override
+        public void setBaseURI(String baseURI)
+        {
+            this.baseURI = baseURI;
+        }
+
+        @Override
+        public String getEncoding()
+        {
+            return encoding;
+        }
+
+        @Override
+        public void setEncoding(String encoding)
+        {
+            this.encoding = encoding;
+        }
+
+        @Override
+        public boolean getCertifiedText()
+        {
+            return certifiedText;
+        }
+
+        @Override
+        public void setCertifiedText(boolean certifiedText)
+        {
+            this.certifiedText = certifiedText;
+        }
     }
 
     /**
@@ -447,11 +671,36 @@ public class XMLInfraStructure
     {
         try
         {
+            Source schemaSource = createClasspathSchemaSource(schemaURL.toExternalForm());
+            if (schemaSource != null)
+            {
+                return SCHEMA_FACTORY.newSchema(schemaSource);
+            }
+
             return SCHEMA_FACTORY.newSchema(schemaURL);
         } catch (SAXException ex)
         {
             throw CheckedExceptionTunnel.wrapIfNecessary(ex);
         }
+    }
+
+    private static Source createClasspathSchemaSource(String systemId)
+    {
+        String resource = getClasspathSchemaResource(null, systemId);
+        if (resource == null)
+        {
+            return null;
+        }
+
+        InputStream inputStream = XMLInfraStructure.class.getResourceAsStream(resource);
+        if (inputStream == null)
+        {
+            return null;
+        }
+
+        StreamSource source = new StreamSource(inputStream);
+        source.setSystemId(systemId);
+        return source;
     }
 
     /**
