@@ -5,19 +5,18 @@ Properties Handled By Scripts
 ##### Introduction
 
 One of the reasons why openBIS is easily extensible and adjustible is
-the concept of generic entities like samples, experiments, materials and
-data sets. By adding domain specific properties to the mentioned
-objects, instance administrator creates a data model specific to given
+the concept of generic entities like objects, experiments and
+datasets. By adding domain specific properties to the mentioned
+entities, an instance administrator creates a data model specific to a given
 field of study. Values of configured properties will be defined by the
 user upon creation or update of the entities (samples etc.).
 
 In most cases values of properties must be provided directly by the
 user. The default way of handling a property in openBIS can be changed
-by instance admin defining a property that should be handled by a script
-written in [Jython](http://www.jython.org) or Predeployed Plugin written
+by an instance admin defining a property that should be handled by a script
+written in [Jython](http://www.jython.org) or predeployed plugin written
 in Java. Jython plugins use Jython version configured by the
-service.properties property `jython-version` which can be either 2.5 or
-2.7.
+service.properties property `jython-version` which should be 2.7.
 
 ##### Types of Scripts
 
