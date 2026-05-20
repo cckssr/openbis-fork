@@ -13,6 +13,7 @@ import jakarta.ws.rs.core.Response;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.time.Clock;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -57,7 +58,9 @@ public class ExportDelegate
 
 
         String userName = openBIS.getSessionInformation().getUserName();
-        ExportJob exportJob = new ExportJob(headers, inputStream, openBIS, userName);
+        ExportJob exportJob =
+                new ExportJob(Clock.systemUTC(), headers, inputStream, openBIS, userName
+                );
         String jobId = asyncJobRegistry.register(exportJob);
 
         return new AsyncJob(jobId);

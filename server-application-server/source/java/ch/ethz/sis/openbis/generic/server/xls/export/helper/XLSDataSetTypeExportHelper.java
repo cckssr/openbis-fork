@@ -74,7 +74,7 @@ public class XLSDataSetTypeExportHelper extends AbstractXLSEntityTypeExportHelpe
     protected Attribute[] getAttributes(final DataSetType entityType)
     {
         return new Attribute[] { CODE, INTERNAL, DESCRIPTION, VALIDATION_SCRIPT, MAIN_DATA_SET_PATTERN, MAIN_DATA_SET_PATH, DISALLOW_DELETION,
-                MODIFICATION_DATE, ONTOLOGY_ID, ONTOLOGY_ANNOTATION_ID, ONTOLOGY_VERSION };
+                MODIFICATION_DATE, ONTOLOGY_ID, ONTOLOGY_ANNOTATION_ID, ONTOLOGY_VERSION, META_DATA };
     }
 
     @Override
@@ -153,6 +153,10 @@ public class XLSDataSetTypeExportHelper extends AbstractXLSEntityTypeExportHelpe
                                 SemanticAnnotation::getPredicateAccessionId)
                         .collect(Collectors.joining("\n"));
 
+            }
+            case META_DATA:
+            {
+                return mapToJSON(dataSetType.getMetaData());
             }
 
             default:

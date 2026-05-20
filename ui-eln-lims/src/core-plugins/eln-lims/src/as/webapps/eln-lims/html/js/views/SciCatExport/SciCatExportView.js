@@ -149,7 +149,7 @@ function SciCatExportView(exportController, exportModel) {
             }
             _refreshableFields.push($formColumn);
 
-            var $formTitle = $('<h2>').append('Sci Cat Export Builder');
+            var $formTitle = $('<h2>').append('SciCat Export Builder');
             $header.append($formTitle);
 
             var $exportButton = $('<input>', { 'type': 'submit', 'class': 'btn btn-primary', 'value': 'Initialize export',

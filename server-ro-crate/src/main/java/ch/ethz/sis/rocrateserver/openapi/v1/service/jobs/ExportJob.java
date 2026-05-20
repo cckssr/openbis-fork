@@ -33,6 +33,7 @@ import ch.ethz.sis.rocrateserver.openapi.v1.service.params.ExportParams;
 import ch.ethz.sis.rocrateserver.startup.Configuration;
 import ch.ethz.sis.rocrateserver.startup.RoCrateServerParameter;
 import ch.ethz.sis.rocrateserver.startup.StartupMain;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 import ch.openbis.rocrate.app.writer.Writer;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.common.mail.EMailAddress;
@@ -48,7 +49,6 @@ import org.eclipse.jetty.client.Request;
 import org.eclipse.jetty.client.transport.HttpClientTransportOverHTTP;
 import org.eclipse.jetty.io.ClientConnector;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
-import ch.ethz.sis.shared.log.classic.impl.Logger;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -57,7 +57,9 @@ import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.time.Clock;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
@@ -87,8 +89,14 @@ public final class ExportJob implements IAsyncJob
 
     private static final int MAX_RETRIES = 3;
 
+    List<Path> pathsForDeletion = new ArrayList<>();
 
-    public ExportJob(ExportParams exportParams, InputStream body, OpenBIS openBIS, String username)
+    Instant completionTimestamp;
+
+    Clock clock;
+
+    public ExportJob(Clock clock, ExportParams exportParams, InputStream body, OpenBIS openBIS,
+            String username)
     {
         this.jobId = UUID.randomUUID();
         this.exportParams = exportParams;
@@ -101,6 +109,7 @@ public final class ExportJob implements IAsyncJob
             this.email = null;
         }
         this.username = username;
+        this.clock = clock;
     }
 
     @Override
@@ -294,6 +303,7 @@ public final class ExportJob implements IAsyncJob
                     java.nio.file.Path realPathToExcel = null;
                     java.nio.file.Path downloadPath =
                             downloadOpenBISExport(openBIS, exportParams, downloadURL);
+                    pathsForDeletion.add(downloadPath);
 
                     final String downloadedFileName = downloadPath.toFile().getName();
                     LOG.info(String.format("Downloaded OpenBIS export file: %s", downloadedFileName));
@@ -302,9 +312,11 @@ public final class ExportJob implements IAsyncJob
                             ExcelReader.convert(ExcelReader.Format.ZIP_EXPORT, downloadPath,
                                     ExcelReader.FileMode.DUMMY);
 
+                    Path cratePath = Path.of("result-crate.zip");
+                    pathsForDeletion.add(cratePath);
                     Path resultZipPath =
                             SessionWorkSpaceManager.getRealPath(exportParams.getApiKey(),
-                                    Path.of("result-crate.zip"));
+                                    cratePath);
                     File zipOut = resultZipPath.toFile();
                     Path roCrateFolderPath = SessionWorkSpaceManager.getRealPath(exportParams.getApiKey(),
                             Path.of("ro-crate-metadata"));
@@ -315,6 +327,7 @@ public final class ExportJob implements IAsyncJob
 
                     Path roCrateJsonPath = SessionWorkSpaceManager.getRealPath(exportParams.getApiKey(),
                             Path.of("ro-crate-metadata", "ro-crate-metadata.json"));
+                    pathsForDeletion.add(roCrateJsonPath);
                     File roCrateFile = roCrateJsonPath.toFile();
 
                     LOG.info(String.format("RO-Crate file path: %s", roCrateFile));
@@ -378,6 +391,8 @@ public final class ExportJob implements IAsyncJob
                         }
                         LOG.info(String.format("Export successful for export job: %s", jobId.toString()));
                         this.result = resultZipPath;
+                        pathsForDeletion.add(resultZipPath);
+                        this.completionTimestamp = clock.instant();
                         if(this.email != null && !this.email.isBlank()) {
                             LOG.info(String.format("Preparing to send email to: %s", this.email));
                             sendMailSuccess();
@@ -535,6 +550,11 @@ public final class ExportJob implements IAsyncJob
         return results;
     }
 
+    public Instant getCompletionTimestamp()
+    {
+        return completionTimestamp;
+    }
+
     private static ExportOptions getExportOptions(ExportParams exportParams)
     {
         ExportOptions exportOptions = new ExportOptions();
@@ -580,4 +600,14 @@ public final class ExportJob implements IAsyncJob
     {
         return result;
     }
+
+    public void delete() throws IOException
+    {
+        for (Path path : pathsForDeletion)
+        {
+            SessionWorkSpaceManager.delete(path);
+        }
+
+    }
+
 }

@@ -433,6 +433,31 @@ public class UpdatePropertyTypesTest extends AbstractTest
         assertUserFailureException(update, "isn't a well formed XML document. Content is not allowed in prolog.");
     }
 
+    @Test
+    public void testUpdateXmlPropertyTypeWithSchemaAndTransformation()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypePermId id = createXmlPropertyType(sessionToken);
+
+        PropertyTypeUpdate update = new PropertyTypeUpdate();
+        update.setTypeId(id);
+        update.setLabel("Updated XML property");
+        update.setDescription("Updated XML property description");
+        update.setSchema(CreatePropertyTypeTest.EXAMPLE_SCHEMA);
+        update.setTransformation(CreatePropertyTypeTest.EXAMPLE_XSLT);
+
+        v3api.updatePropertyTypes(sessionToken, Arrays.asList(update));
+
+        PropertyTypeFetchOptions fetchOptions = new PropertyTypeFetchOptions();
+        PropertyType propertyType = v3api.getPropertyTypes(sessionToken, Arrays.asList(id), fetchOptions).get(id);
+        assertEquals(propertyType.getLabel(), update.getLabel().getValue());
+        assertEquals(propertyType.getDescription(), update.getDescription().getValue());
+        assertEquals(propertyType.getSchema(), update.getSchema().getValue());
+        assertEquals(propertyType.getTransformation(), update.getTransformation().getValue());
+
+        v3api.logout(sessionToken);
+    }
+
     @Test(groups = "broken")
     public void testInvalidTransformation()
     {
@@ -508,15 +533,20 @@ public class UpdatePropertyTypesTest extends AbstractTest
     private PropertyTypePermId createXmlPropertyType()
     {
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypePermId permId = createXmlPropertyType(sessionToken);
+        v3api.logout(sessionToken);
+        return permId;
+    }
+
+    private PropertyTypePermId createXmlPropertyType(String sessionToken)
+    {
         PropertyTypeCreation creation = new PropertyTypeCreation();
         creation.setCode("TEST-" + System.currentTimeMillis());
         creation.setLabel("Test");
         creation.setDescription("Testing");
         creation.setDataType(DataType.XML);
         creation.setMultiValue(false);
-        PropertyTypePermId permId = v3api.createPropertyTypes(sessionToken, Arrays.asList(creation)).get(0);
-        v3api.logout(sessionToken);
-        return permId;
+        return v3api.createPropertyTypes(sessionToken, Arrays.asList(creation)).get(0);
     }
 
     private void assertUserFailureException(PropertyTypeUpdate update, String expectedMessage)

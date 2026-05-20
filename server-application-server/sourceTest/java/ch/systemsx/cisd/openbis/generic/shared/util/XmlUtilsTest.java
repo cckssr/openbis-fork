@@ -16,8 +16,10 @@
 package ch.systemsx.cisd.openbis.generic.shared.util;
 
 import java.io.IOException;
+import java.io.StringReader;
 import java.net.URL;
 
+import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 
 import org.testng.AssertJUnit;
@@ -152,11 +154,9 @@ public class XmlUtilsTest extends AssertJUnit
     @Test(groups = "broken")
     public void testParseAndValidateXmlSchemaDocument() throws SAXException, IOException
     {
-        // this test doesn't work offline! online namespaces are needed
         Document document = XmlUtils.parseXmlDocument(EXAMPLE_SCHEMA);
-        // get schema from a URL resource
+        // Known W3C schema URLs are resolved from bundled classpath resources.
         XmlUtils.validate(document, new URL(XmlUtils.XML_SCHEMA_XSD_URL));
-        // get schema from a file resource
         Schema schema = XMLInfraStructure.createSchema(XmlUtils.XML_SCHEMA_XSD_FILE_RESOURCE);
         XmlUtils.validate(document, schema);
     }
@@ -164,7 +164,6 @@ public class XmlUtilsTest extends AssertJUnit
     @Test(groups = "broken")
     public void testParseAndValidateXmlSchemaDocumentFails() throws SAXException, IOException
     {
-        // this test doesn't work offline! online namespaces are needed
         Document document = XmlUtils.parseXmlDocument(EXAMPLE_INCORRECT_SCHEMA);
         Schema schema = XMLInfraStructure.createSchema(XmlUtils.XML_SCHEMA_XSD_FILE_RESOURCE);
         boolean exceptionThrown = false;
@@ -174,20 +173,47 @@ public class XmlUtilsTest extends AssertJUnit
         } catch (SAXParseException ex)
         {
             assertTrue("Unexpected exception message:\n" + ex.getMessage(), ex.getMessage()
-                    .contains("Invalid content was found starting with element 'xs:complex'."));
+                    .contains("Invalid content was found starting with element"));
+            assertTrue("Unexpected exception message:\n" + ex.getMessage(), ex.getMessage()
+                    .contains("complex"));
+            assertTrue("Unexpected exception message:\n" + ex.getMessage(), ex.getMessage()
+                    .contains("complexType"));
             exceptionThrown = true;
         }
         assertTrue(exceptionThrown);
     }
 
+    @Test
+    public void testValidateXmlSchemaDocumentWithBundledSchema()
+    {
+        XmlUtils.validateXML(EXAMPLE_SCHEMA, "XML Schema", XmlUtils.XML_SCHEMA_XSD_FILE_RESOURCE);
+    }
+
+    @Test
+    public void testValidateXmlSchemaDocumentWithInvalidNamespaceDoesNotLoadExternalSchema()
+    {
+        String schema = EXAMPLE_SCHEMA.replaceAll("http://www.w3.org/2001/XMLSchema",
+                "www.w3.org/2001/XMLSchema");
+
+        try
+        {
+            XmlUtils.validateXML(schema, "XML Schema", XmlUtils.XML_SCHEMA_XSD_FILE_RESOURCE);
+            fail("Exception expected.");
+        } catch (UserFailureException ex)
+        {
+            assertFalse(ex.getMessage(), ex.getMessage().contains("accessExternalSchema"));
+            assertFalse(ex.getMessage(), ex.getMessage().contains("schema_reference"));
+            assertTrue(ex.getMessage(), ex.getMessage().contains(
+                    "Cannot find the declaration of element 'xs:schema'"));
+        }
+    }
+
     @Test(groups = "broken")
     public void testParseAndValidateXsltXmlDocument() throws SAXException, IOException
     {
-        // this test doesn't work offline! online namespaces are needed
         Document document = XmlUtils.parseXmlDocument(EXAMPLE_XSLT);
-        // get schema from a URL resource
+        // Known W3C schema URLs are resolved from bundled classpath resources.
         XmlUtils.validate(document, new URL(XmlUtils.XSLT_XSD_URL));
-        // get schema from a file resource
         Schema schema = XMLInfraStructure.createSchema(XmlUtils.XSLT_XSD_FILE_RESOURCE);
         XmlUtils.validate(document, schema);
     }
@@ -195,7 +221,6 @@ public class XmlUtilsTest extends AssertJUnit
     @Test(groups = "broken")
     public void testParseAndValidateXsltXmlDocumentFails() throws SAXException, IOException
     {
-        // this test doesn't work offline! online namespaces are needed
         Document document = XmlUtils.parseXmlDocument(EXAMPLE_INCORRECT_XSLT);
         Schema schema = XMLInfraStructure.createSchema(XmlUtils.XSLT_XSD_FILE_RESOURCE);
         boolean exceptionThrown = false;
@@ -209,6 +234,24 @@ public class XmlUtilsTest extends AssertJUnit
             exceptionThrown = true;
         }
         assertTrue(exceptionThrown);
+    }
+
+    @Test
+    public void testValidateXsltXmlDocumentWithBundledSchema()
+    {
+        XmlUtils.validateXML(EXAMPLE_XSLT, "XSLT", XmlUtils.XSLT_XSD_FILE_RESOURCE);
+    }
+
+    @Test
+    public void testCreateSchemaWithRelativeXsltSchemaImport()
+    {
+        String schema = "<?xml version='1.0'?>"
+                + "<xs:schema xmlns:xs='http://www.w3.org/2001/XMLSchema'>"
+                + "<xs:import namespace='http://www.w3.org/1999/XSL/Transform' "
+                + "schemaLocation='schema-for-xslt20.xsd'/>"
+                + "</xs:schema>";
+
+        XMLInfraStructure.createSchema(new StreamSource(new StringReader(schema)));
     }
 
     public static String SIMPLE_XML = "<root>hello world</root>";
@@ -226,5 +269,26 @@ public class XmlUtilsTest extends AssertJUnit
     {
         String result = XmlUtils.transform(SIMPLE_XSLT, SIMPLE_XML);
         assertEquals(SIMPLE_XML_TRANSFORMED, result);
+    }
+
+
+    @Test
+    public void testParseXmlDocumentRejectsEntityExpansionBomb()
+    {
+        String xml = "<!DOCTYPE lolz ["
+                + "<!ENTITY lol 'lol'>"
+                + "<!ENTITY lol1 '&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;'>"
+                + "<!ENTITY lol2 '&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;'>"
+                + "<!ENTITY lol3 '&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;'>"
+                + "]><root>&lol3;</root>";
+
+        try
+        {
+            XmlUtils.parseXmlDocument(xml);
+            fail("Entity expansion XML must not be parsed.");
+        } catch (UserFailureException ex)
+        {
+            assertTrue(ex.getMessage(), ex.getMessage().contains("DOCTYPE"));
+        }
     }
 }

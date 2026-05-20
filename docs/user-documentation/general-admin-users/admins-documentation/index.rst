@@ -14,6 +14,8 @@ Admins Documentation
    associate-file-types-to-dataset-types
    user-registration
    new-entity-type-registration
+   new-entity-type-registration-excel-file
+   internal-types
    masterdata-exports-and-imports
    import-openbis-exports
    create-templates-for-objects

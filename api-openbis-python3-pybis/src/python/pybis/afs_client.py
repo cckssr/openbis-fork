@@ -22,6 +22,9 @@ from .chunk import decode_chunks
 
 REQUEST_RETRIES_COUNT = 5
 
+FILE_ARRAY_SEPARATOR = '\n'
+FILE_SEPARATOR = '\t'
+
 def _create_session(url):
     """Create a session object to handle retries in case of server failure"""
     session = requests.Session()
@@ -89,10 +92,10 @@ class AfsClient:
 
         with self.session.get(self._afs_url, params=request, verify=self._verify, stream=True) as response:
             if response.ok:
-                entries = response.text.split(';')
+                entries = response.text.split(FILE_ARRAY_SEPARATOR)
                 result = []
                 for entry in entries:
-                    single_file = entry.split(",")
+                    single_file = entry.split(FILE_SEPARATOR)
                     file = File(*single_file)
                     result += [file]
                 return result
@@ -101,7 +104,6 @@ class AfsClient:
                 message = parsed_error['error'][1]['message']
                 if "NoSuchFileException" in message:
                     return []
-
                 if isinstance(message, dict) and "error" in message:
                     raise ValueError(
                         f"Error {message['error'][1]['exceptionCode']} during list: {message['error'][1]['message']}"

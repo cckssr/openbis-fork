@@ -1640,9 +1640,10 @@ var FormUtil = new function() {
 
 		$component.refresh = function() {
 		    var instance = CKEditorManager.getEditorById($component.attr("id"));
-            if(!instance) {
-                FormUtil.createCkeditor($component, componentOnChange, value, placeholder, isReadOnly, toolbarContainer);
-            }
+			if(!instance) {
+				let newValue = $component.html();
+				FormUtil.createCkeditor($component, componentOnChange, newValue, placeholder, isReadOnly, toolbarContainer);
+			}
 		}
 		return $component;
 	}
@@ -1737,6 +1738,10 @@ var FormUtil = new function() {
 				var title = option.title ? option.title : label;
 				var id = _this.prepareId(title).toLowerCase() + "-" +  + mainController.getNextId();
 				var $dropdownElement = $("<li>", { 'role' : 'presentation' }).append($("<a>", {'title' : title, 'id' : id}).append(label));
+				option.view = $dropdownElement;
+				if(option.hidden) {
+					$dropdownElement.attr("hidden", "hidden");
+				}
 				$("body").off("click", "[id='"+id+"']");
                 $("body").on("click", "[id='"+id+"']", option.action);
 				$dropdownOptionsMenuList.append($dropdownElement);
@@ -3813,12 +3818,13 @@ var FormUtil = new function() {
                 }
                 mainController.openbisV3.getSamples(samplePermIdsAsIds, fetchOptions).done(function(samplesByPermId) {
                     var samplesPermIdsToDelete = [];
+                    var samplesPermIdsSet = new Set();
                     var samplesList = [];
                     var sampleStoragesCodesToDelete = [];
                     for(permId in samplesByPermId) {
                         var sample = samplesByPermId[permId];
                         if (deleteDescendants) {
-                            _this.gatherAllDescendants(samplesPermIdsToDelete, sample, samplesList);
+                            _this.gatherAllDescendants(samplesPermIdsToDelete, samplesPermIdsSet, sample, samplesList);
                         } else { // Storage positions always SHOULD be deleted anyway
                             samplesPermIdsToDelete.push(sample.getPermId().getPermId());
                             samplesList.push(sample);
@@ -3839,10 +3845,14 @@ var FormUtil = new function() {
             });
         }
 
-        this.gatherAllDescendants = function(samplePermIds, sample, samplesList) {
-            samplePermIds.push(sample.getPermId().getPermId());
-            samplesList.push(sample);
-            sample.getChildren().forEach(child => this.gatherAllDescendants(samplePermIds, child, samplesList));
+        this.gatherAllDescendants = function(samplePermIds, samplesPermIdsSet, sample, samplesList) {
+			let permId = sample.getPermId().getPermId();
+			if(!samplesPermIdsSet.has(permId)) {
+				samplesPermIdsSet.add(permId);
+				samplePermIds.push(permId);
+				samplesList.push(sample);
+				sample.getChildren().forEach(child => this.gatherAllDescendants(samplePermIds, samplesPermIdsSet, child, samplesList));
+			}
         }
 
         this.getPrintPDFButtonModel = function(entityKind, entityPermId) {

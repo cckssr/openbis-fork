@@ -75,7 +75,8 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 		if (!this._dataSetFormModel.isMini) {
 			var $datasetFormTop = new $('<div>');
 			$wrapper.append($datasetFormTop);
-			profile.dataSetFormTop($datasetFormTop, this._dataSetFormModel);
+			let fields = profile.dataSetFormTop($datasetFormTop, this._dataSetFormModel);
+			fields.forEach(field =>  _refreshableFields.push(field));
 		}
 		
 		//Metadata Container
@@ -90,7 +91,8 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 		if(!this._dataSetFormModel.isMini) {
 			var $datasetFormBottom = new $('<div>');
 			$wrapper.append($datasetFormBottom);
-			profile.dataSetFormBottom($datasetFormBottom, this._dataSetFormModel);
+			let fields = profile.dataSetFormBottom($datasetFormBottom, this._dataSetFormModel);
+			fields.forEach(field =>  _refreshableFields.push(field));
 		}
 		
 		

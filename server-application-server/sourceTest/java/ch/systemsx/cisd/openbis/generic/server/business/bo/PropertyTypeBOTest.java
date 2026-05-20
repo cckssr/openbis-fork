@@ -279,9 +279,13 @@ public final class PropertyTypeBOTest extends AbstractBOTest
             propertyTypeBO.define(propertyType);
         } catch (UserFailureException ex)
         {
-            assertTrue("Unexpected exception: " + ex.getMessage(), ex.getMessage().startsWith(
-                    "Provided XML Schema isn't valid. cvc-complex-type.2.4.a: "
-                            + "Invalid content was found starting with element 'xs:complex'."));
+            String message = ex.getMessage();
+            assertTrue("Unexpected exception: " + message, message.startsWith(
+                    "Provided XML Schema isn't valid. cvc-complex-type.2.4.a: "));
+            assertTrue("Unexpected exception: " + message,
+                    message.contains("Invalid content was found starting with element"));
+            assertTrue("Unexpected exception: " + message, message.contains("complex"));
+            assertTrue("Unexpected exception: " + message, message.contains("complexType"));
             exceptionThrown = true;
         }
         assertTrue(exceptionThrown);
@@ -303,9 +307,11 @@ public final class PropertyTypeBOTest extends AbstractBOTest
             propertyTypeBO.define(propertyType);
         } catch (UserFailureException ex)
         {
-            assertTrue("Unexpected exception: " + ex.getMessage(), ex.getMessage().startsWith(
-                    "Provided XSLT isn't valid. cvc-elt.1: "
-                            + "Cannot find the declaration of element 'xsl:styleshet'."));
+            String message = ex.getMessage();
+            assertTrue("Unexpected exception: " + message,
+                    message.startsWith("Provided XSLT isn't valid. cvc-elt.1"));
+            assertTrue("Unexpected exception: " + message,
+                    message.contains("Cannot find the declaration of element 'xsl:styleshet'."));
             exceptionThrown = true;
         }
         assertTrue(exceptionThrown);

@@ -99,6 +99,16 @@ export default class DataBrowserController extends ComponentController {
     }, [])
   }
 
+  async createEmptyFile(name) {
+    await this.handleError(async () => {
+      await this.openbis.create(this.owner, this.path + name, false)
+    })
+
+    if (this.gridController) {
+      await this.gridController.load()
+    }
+  }
+
   async createNewFolder(name) {
     await this.handleError(async () => {
       await this.openbis.create(this.owner, this.path + name, true)

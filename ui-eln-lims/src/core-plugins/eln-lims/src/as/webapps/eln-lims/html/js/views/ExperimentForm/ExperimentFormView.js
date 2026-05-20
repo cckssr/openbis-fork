@@ -387,7 +387,8 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
         // Plugin Hook
         var $experimentFormTop = new $('<div>');
         $formColumn.append($experimentFormTop);
-        profile.experimentFormTop($experimentFormTop, this._experimentFormModel);
+        let fields = profile.experimentFormTop($experimentFormTop, this._experimentFormModel);
+        fields.forEach(field =>  _refreshableFields.push(field));
 
 		//
 		// Form Defined Properties from General Section
@@ -447,7 +448,8 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		// Plugin Hook
 		var $experimentFormBottom = new $('<div>');
 		$formColumn.append($experimentFormBottom);
-		profile.experimentFormBottom($experimentFormBottom, this._experimentFormModel);
+		let fieldsBottom = profile.experimentFormBottom($experimentFormBottom, this._experimentFormModel);
+        fieldsBottom.forEach(field =>  _refreshableFields.push(field));
 
 		//
 		// DATASETS

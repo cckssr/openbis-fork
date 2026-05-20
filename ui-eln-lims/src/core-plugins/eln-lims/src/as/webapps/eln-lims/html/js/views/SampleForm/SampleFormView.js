@@ -588,7 +588,22 @@
 			// Plugin Hook
 			var $sampleFormTop = new $('<div>');
 			$formColumn.append($sampleFormTop);
-			profile.sampleFormTop($sampleFormTop, _this._sampleFormModel);
+			let fields = profile.sampleFormTop($sampleFormTop, _this._sampleFormModel);
+			fields.forEach(field =>  _refreshableFields.push(field));
+
+			var entityLinkDiv = $("<div>");
+			$sampleFormTop.append(entityLinkDiv);
+			mainController.serverFacade.isSciCatEnabled((isEnabled) => {
+				if(isEnabled && isEnabled === "true") {
+					var entityLink = EntityLinkWidget.getEntityLinkContainer(entityLinkDiv, _this._sampleFormModel);
+					if(entityLink) {
+						_refreshableFields.push(entityLink);
+					}
+				}
+			}, (error) => {
+				console.log(error);
+			});
+
 	
 			//
 			// Form Defined Properties from General Section
@@ -724,7 +739,8 @@
 			// Plugin Hook
 			var $sampleFormBottom = new $('<div>');
 			$formColumn.append($sampleFormBottom);
-			profile.sampleFormBottom($sampleFormBottom, _this._sampleFormModel);
+			let fieldsBottom = profile.sampleFormBottom($sampleFormBottom, _this._sampleFormModel);
+			fieldsBottom.forEach(field =>  _refreshableFields.push(field));
 	
 			//
 			// Identification Info on View/Edit
@@ -793,6 +809,21 @@
 			if(profile.sampleTypeDefinitionsExtension[sampleType.code] && profile.sampleTypeDefinitionsExtension[sampleType.code].extraToolbarDropdown) {
 				dropdownOptionsModel = dropdownOptionsModel.concat(profile.sampleTypeDefinitionsExtension[sampleType.code].extraToolbarDropdown(_this._sampleFormModel.mode, _this._sampleFormModel.sample));
 			}
+
+			var entityLinkDropdown = EntityLinkWidget.getEntityLinkDropdown(_this._sampleFormModel.mode, _this._sampleFormModel.v3_sample, "SciCat");
+			if(entityLinkDropdown) {
+				entityLinkDropdown.hidden = true;
+				dropdownOptionsModel = dropdownOptionsModel.concat(entityLinkDropdown)
+			}
+			mainController.serverFacade.isSciCatEnabled((isEnabled) => {
+				if(isEnabled && isEnabled === "true") {
+					const view = entityLinkDropdown.view;
+					view.removeAttr('hidden');
+				}
+			}, (error) => {
+				console.log(error);
+			});
+
 	
 			FormUtil.addOptionsToToolbar(toolbarModel, dropdownOptionsModel, hideShowOptionsModel,
 					"SAMPLE-VIEW-" + _this._sampleFormModel.sample.sampleTypeCode, null, false);

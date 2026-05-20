@@ -76,7 +76,7 @@ public class XLSSampleTypeExportHelper extends AbstractXLSEntityTypeExportHelper
     {
         return new Attribute[] { CODE, INTERNAL, DESCRIPTION, AUTO_GENERATE_CODES, VALIDATION_SCRIPT,
                 GENERATED_CODE_PREFIX, UNIQUE_SUBCODES, MODIFICATION_DATE, ONTOLOGY_ID,
-                ONTOLOGY_ANNOTATION_ID, ONTOLOGY_VERSION, TYPE_GROUP };
+                ONTOLOGY_ANNOTATION_ID, ONTOLOGY_VERSION, TYPE_GROUP, META_DATA };
     }
 
     @Override
@@ -146,6 +146,10 @@ public class XLSSampleTypeExportHelper extends AbstractXLSEntityTypeExportHelper
                 return sampleType.getTypeGroupAssignments().stream()
                         .map(x -> x.getTypeGroup().getCode())
                         .collect(Collectors.joining("\n"));
+            }
+            case META_DATA:
+            {
+                return mapToJSON(sampleType.getMetaData());
             }
             default:
             {

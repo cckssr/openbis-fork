@@ -41,6 +41,7 @@ import ch.ethz.sis.openbis.generic.server.xls.importer.delay.DelayedExecutionDec
 import ch.ethz.sis.openbis.generic.server.xls.importer.delay.IdentifierVariable;
 import ch.ethz.sis.openbis.generic.server.xls.importer.enums.ImportModes;
 import ch.ethz.sis.openbis.generic.server.xls.importer.enums.ImportTypes;
+import ch.ethz.sis.openbis.generic.server.xls.importer.handler.JSONHandler;
 import ch.ethz.sis.openbis.generic.server.xls.importer.helper.semanticannotation.SemanticAnnotationHelper;
 import ch.ethz.sis.openbis.generic.server.xls.importer.helper.semanticannotation.SemanticAnnotationType;
 import ch.ethz.sis.openbis.generic.server.xls.importer.utils.AttributeValidator;
@@ -66,6 +67,7 @@ public class SampleImportHelper extends BasicImportHelper
         Experiment("Experiment", false, true),
         AutoGenerateCode("Auto generate code", false, false),
         Parents("Parents", false, true),
+        Metadata("Meta Data", false, false),
         Children("Children", false, true);
 
         private final String headerName;
@@ -207,6 +209,7 @@ public class SampleImportHelper extends BasicImportHelper
         String experiment = getValueByColumnName(header, values, Attribute.Experiment);
         String parents = getValueByColumnName(header, values, Attribute.Parents);
         String children = getValueByColumnName(header, values, Attribute.Children);
+        String metaData = getValueByColumnName(header, values, Attribute.Metadata);
 
         if (variable != null && !variable.isEmpty() && !variable.startsWith(VARIABLE_PREFIX))
         {
@@ -232,6 +235,9 @@ public class SampleImportHelper extends BasicImportHelper
         if (experiment != null && !experiment.isEmpty())
         {
             creation.setExperimentId(new ExperimentIdentifier(experiment));
+        }
+        if (metaData != null && !metaData.isEmpty()) {
+            creation.setMetaData(JSONHandler.parseMetaData(metaData));
         }
         injectOwner(creation);
 
@@ -290,6 +296,7 @@ public class SampleImportHelper extends BasicImportHelper
         String experiment = getValueByColumnName(header, values, Attribute.Experiment);
         String parents = getValueByColumnName(header, values, Attribute.Parents);
         String children = getValueByColumnName(header, values, Attribute.Children);
+        String metaData = getValueByColumnName(header, values, Attribute.Metadata);
 
         if (variable != null && !variable.isEmpty() && !variable.startsWith(VARIABLE_PREFIX))
         {
@@ -411,6 +418,10 @@ public class SampleImportHelper extends BasicImportHelper
                 PropertyType propertyType = propertyTypeSearcher.findPropertyType(sampleType, key);
                 update.setProperty(propertyType.getCode(), getPropertyValue(propertyType, value));
             }
+        }
+        if (metaData != null && !metaData.isEmpty())
+        {
+            update.getMetaData().add(JSONHandler.parseMetaData(metaData));
         }
 
         delayedExecutor.updateSample(variable, update, page, line);

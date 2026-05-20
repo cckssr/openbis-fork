@@ -1,10 +1,10 @@
 package ch.ethz.sis.afssftp.util;
 
 import ch.ethz.sis.afsapi.dto.File;
+import ch.ethz.sis.afssftp.StaticInitializer;
 import ch.ethz.sis.afssftp.authentication.User;
 import ch.ethz.sis.afssftp.filesystemview.SftpFileAttributes;
 import ch.ethz.sis.afssftp.filesystemview.SftpNode;
-import ch.ethz.sis.afssftp.startup.AfsSftpServerParameter;
 import ch.ethz.sis.openbis.generic.OpenBIS;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
@@ -26,9 +26,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.fetchoptions.SpaceFetchOpt
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.ISpaceId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.search.SpaceSearchCriteria;
-import ch.ethz.sis.shared.log.standard.LogFactory;
-import ch.ethz.sis.shared.log.standard.LogFactoryFactory;
-import ch.ethz.sis.shared.log.standard.LogManager;
 import junit.framework.TestCase;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
@@ -43,18 +40,7 @@ import static ch.ethz.sis.afssftp.helpers.TestHelper.createRandomNodeOfType;
 public class SftpListUtilTest extends TestCase {
 
     static {
-        initLogFactory();
-    }
-
-    private static void initLogFactory() {
-        try {
-            LogFactoryFactory logFactoryFactory = new LogFactoryFactory();
-            LogFactory logFactory = logFactoryFactory.create("ch.ethz.sis.shared.log.standard.impl.StandardLogFactory");
-            logFactory.configure("logging.properties");
-            LogManager.setLogFactory(logFactory);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        StaticInitializer.initialize();
     }
 
     public void testGetSpaces() {

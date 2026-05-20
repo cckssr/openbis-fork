@@ -1,5 +1,6 @@
 package ch.ethz.sis.afssftp.filesystemview;
 
+import ch.ethz.sis.afsapi.dto.File;
 import ch.ethz.sis.afsclient.client.AfsClient;
 import ch.ethz.sis.afssftp.authentication.User;
 import ch.ethz.sis.afssftp.util.OpenBISClientUtil;
@@ -47,6 +48,27 @@ public class AfsFileChannel extends FileChannel {
         this.writeOpenOption = writeOpenOption;
     }
 
+    // For unit-tests only
+    AfsFileChannel(
+        @NonNull String entityId,
+        @NonNull String afsPath,
+        @NonNull User user,
+        @NonNull OpenBISClientUtil clientUtil,
+        @NonNull SftpListUtil listUtil,
+        @NonNull AtomicLong position,
+        boolean readOpenOption,
+        boolean writeOpenOption
+    ) {
+        this.entityId = entityId;
+        this.afsPath = afsPath;
+        this.user = user;
+        this.clientUtil = clientUtil;
+        this.listUtil = listUtil;
+        this.position = position;
+        this.readOpenOption = readOpenOption;
+        this.writeOpenOption = writeOpenOption;
+    }
+
     @Override
     protected void implCloseChannel() throws IOException {
         //No necessary action
@@ -72,7 +94,7 @@ public class AfsFileChannel extends FileChannel {
                                 IntStream.of(
                                         dst.remaining(),
                                         (int) Long.min(readableBytes, Integer.MAX_VALUE),
-                                        AfsClient.DEFAULT_PACKAGE_SIZE_IN_BYTES).min().getAsInt()
+                                        getAfsClientMaxPackageSize()).min().getAsInt()
                         );
                     } catch (Exception e) {
                         throw new IOException("Error reading from AFS");
@@ -111,13 +133,13 @@ public class AfsFileChannel extends FileChannel {
                                 IntStream.of(
                                         (int) Long.min(remaining, Integer.MAX_VALUE),
                                         (int) Long.min(readableBytes, Integer.MAX_VALUE),
-                                        AfsClient.DEFAULT_PACKAGE_SIZE_IN_BYTES).min().getAsInt()
+                                        getAfsClientMaxPackageSize()).min().getAsInt()
                         );
                     } catch (Exception e) {
                         throw new IOException("Error reading from AFS");
                     }
                     for (int index = dstsOffset, bytesOffset = 0;
-                         index<dstsCount && bytesOffset < bytes.length;
+                         index<dstsOffset+dstsCount && bytesOffset < bytes.length;
                          index++
                     ) {
                         ByteBuffer src = dsts[index];
@@ -148,7 +170,7 @@ public class AfsFileChannel extends FileChannel {
                     fillWithZero(size, pos);
                 }
                 int bytesToWrite = (int) Long.min(
-                        AfsClient.DEFAULT_PACKAGE_SIZE_IN_BYTES,
+                        getAfsClientMaxPackageSize(),
                         src.remaining()
                 );
 
@@ -189,7 +211,7 @@ public class AfsFileChannel extends FileChannel {
                     fillWithZero(size, pos);
                 }
                 int bytesToWrite = (int) Long.min(
-                        AfsClient.DEFAULT_PACKAGE_SIZE_IN_BYTES,
+                        getAfsClientMaxPackageSize(),
                         remaining
                 );
 
@@ -239,7 +261,7 @@ public class AfsFileChannel extends FileChannel {
     public long size() throws IOException {
         return listUtil.getAfsFilePresence(
                 entityId, afsPath
-        ).get().getSize();
+        ).map(File::getSize).orElseThrow();
     }
 
     @Override
@@ -271,7 +293,7 @@ public class AfsFileChannel extends FileChannel {
         if (readOpenOption) {
             int maxBytesToBeRead = IntStream.of(
                     (int) Long.min(count, Integer.MAX_VALUE),
-                    AfsClient.DEFAULT_PACKAGE_SIZE_IN_BYTES).min().getAsInt();
+                    getAfsClientMaxPackageSize()).min().getAsInt();
 
             ByteBuffer byteBuffer = ByteBuffer.allocate(maxBytesToBeRead);
 
@@ -291,7 +313,7 @@ public class AfsFileChannel extends FileChannel {
         if (writeOpenOption) {
             int maxBytesToBeWrite = IntStream.of(
                     (int) Long.min(count, Integer.MAX_VALUE),
-                    AfsClient.DEFAULT_PACKAGE_SIZE_IN_BYTES).min().getAsInt();
+                    getAfsClientMaxPackageSize()).min().getAsInt();
 
             ByteBuffer byteBuffer = ByteBuffer.allocate(maxBytesToBeWrite);
 
@@ -325,7 +347,7 @@ public class AfsFileChannel extends FileChannel {
                                 IntStream.of(
                                         dst.remaining(),
                                         (int) Long.min(readableBytes, Integer.MAX_VALUE),
-                                        AfsClient.DEFAULT_PACKAGE_SIZE_IN_BYTES).min().getAsInt()
+                                        getAfsClientMaxPackageSize()).min().getAsInt()
                         );
                     } catch (Exception e) {
                         throw new IOException("Error reading from AFS");
@@ -351,7 +373,7 @@ public class AfsFileChannel extends FileChannel {
                     fillWithZero(size, position);
                 }
                 int bytesToWrite = (int) Long.min(
-                        AfsClient.DEFAULT_PACKAGE_SIZE_IN_BYTES,
+                        getAfsClientMaxPackageSize(),
                         src.remaining()
                 );
 
@@ -397,7 +419,7 @@ public class AfsFileChannel extends FileChannel {
         long index = beginInclusive;
         while ( index < endExclusive ) {
             int bytesToWrite = (int) Long.min(
-                    AfsClient.DEFAULT_PACKAGE_SIZE_IN_BYTES,
+                    getAfsClientMaxPackageSize(),
                     endExclusive - index
             );
             try {
@@ -413,5 +435,9 @@ public class AfsFileChannel extends FileChannel {
             }
             index = index + bytesToWrite;
         }
+    }
+
+    int getAfsClientMaxPackageSize() {
+        return AfsClient.DEFAULT_PACKAGE_SIZE_IN_BYTES;
     }
 }

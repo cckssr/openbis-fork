@@ -26,20 +26,26 @@ import java.util.List;
 
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.Source;
+import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.xpath.XPathFactory;
 
+import org.w3c.dom.ls.LSInput;
+import org.w3c.dom.ls.LSResourceResolver;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 
@@ -52,68 +58,335 @@ import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
  */
 public class XMLInfraStructure
 {
-    private static final SchemaFactory SCHEMA_FACTORY = createSecureSchemaFactory();
+    // =========================================================================
+    // XML SECURITY FEATURES
+    // =========================================================================
+
+    private static final String FEATURE_DISALLOW_DOCTYPE =
+            "http://apache.org/xml/features/disallow-doctype-decl";
+
+    private static final String FEATURE_EXTERNAL_GENERAL_ENTITIES =
+            "http://xml.org/sax/features/external-general-entities";
+
+    private static final String FEATURE_EXTERNAL_PARAMETER_ENTITIES =
+            "http://xml.org/sax/features/external-parameter-entities";
+
+    private static final String FEATURE_LOAD_EXTERNAL_DTD =
+            "http://apache.org/xml/features/nonvalidating/load-external-dtd";
+
+    private static final String W3C_XML_NAMESPACE =
+            "http://www.w3.org/XML/1998/namespace";
+
+    private static final String W3C_XML_XSD_SYSTEM_ID =
+            "http://www.w3.org/2001/xml.xsd";
+
+    private static final String W3C_XML_XSD_2001_03_SYSTEM_ID =
+            "http://www.w3.org/2001/03/xml.xsd";
+
+    private static final String W3C_XML_SCHEMA_XSD_SYSTEM_ID =
+            "http://www.w3.org/2001/XMLSchema.xsd";
+
+    private static final String W3C_XSLT_NAMESPACE =
+            "http://www.w3.org/1999/XSL/Transform";
+
+    private static final String W3C_XSLT20_SCHEMA_SYSTEM_ID =
+            "http://www.w3.org/2007/schema-for-xslt20.xsd";
+
+    private static final String XML_XSD_RESOURCE =
+            "/xml.xsd";
+
+    private static final String XML_SCHEMA_XSD_RESOURCE =
+            "/XMLSchema.xsd";
+
+    private static final String XSLT20_SCHEMA_RESOURCE =
+            "/schema-for-xslt20.xsd";
+
+    private static final SchemaFactory SCHEMA_FACTORY =
+            createSecureSchemaFactory();
+
+    // =========================================================================
+    // SCHEMA FACTORY
+    // =========================================================================
 
     private static SchemaFactory createSecureSchemaFactory()
     {
-        SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-        try
-        {
-            factory.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
-            factory.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
-        } catch (SAXException e)
-        {
-            throw CheckedExceptionTunnel.wrapIfNecessary(e);
-        }
+        SchemaFactory factory =
+                SchemaFactory.newDefaultInstance();
+
+        setFeature(factory,
+                XMLConstants.FEATURE_SECURE_PROCESSING
+        );
+
+        setProperty(factory,
+                XMLConstants.ACCESS_EXTERNAL_DTD
+        );
+
+        setProperty(factory,
+                XMLConstants.ACCESS_EXTERNAL_SCHEMA
+        );
+
+        factory.setResourceResolver(new ClasspathSchemaResourceResolver());
+
         return factory;
+    }
+
+    private static final class ClasspathSchemaResourceResolver implements LSResourceResolver
+    {
+        @Override
+        public LSInput resolveResource(String type, String namespaceURI, String publicId,
+                String systemId, String baseURI)
+        {
+            String resource = getClasspathSchemaResource(namespaceURI, systemId);
+            if (resource == null)
+            {
+                return null;
+            }
+
+            InputStream inputStream = XMLInfraStructure.class.getResourceAsStream(resource);
+            if (inputStream == null)
+            {
+                return null;
+            }
+
+            return new ClasspathLSInput(publicId, systemId, baseURI, inputStream);
+        }
+    }
+
+    private static String getClasspathSchemaResource(String namespaceURI, String systemId)
+    {
+        if (matchesHttpOrHttpsSystemId(systemId, W3C_XML_XSD_SYSTEM_ID)
+                || matchesHttpOrHttpsSystemId(systemId, W3C_XML_XSD_2001_03_SYSTEM_ID))
+        {
+            return XML_XSD_RESOURCE;
+        }
+
+        if (matchesHttpOrHttpsSystemId(systemId, W3C_XML_SCHEMA_XSD_SYSTEM_ID))
+        {
+            return XML_SCHEMA_XSD_RESOURCE;
+        }
+
+        if (matchesHttpOrHttpsSystemId(systemId, W3C_XSLT20_SCHEMA_SYSTEM_ID))
+        {
+            return XSLT20_SCHEMA_RESOURCE;
+        }
+
+        if (W3C_XML_NAMESPACE.equals(namespaceURI) && "xml.xsd".equals(systemId))
+        {
+            return XML_XSD_RESOURCE;
+        }
+
+        if (XMLConstants.W3C_XML_SCHEMA_NS_URI.equals(namespaceURI)
+                && "XMLSchema.xsd".equals(systemId))
+        {
+            return XML_SCHEMA_XSD_RESOURCE;
+        }
+
+        if (W3C_XSLT_NAMESPACE.equals(namespaceURI) && "schema-for-xslt20.xsd".equals(systemId))
+        {
+            return XSLT20_SCHEMA_RESOURCE;
+        }
+
+        return null;
+    }
+
+    private static boolean matchesHttpOrHttpsSystemId(String systemId, String httpSystemId)
+    {
+        if (httpSystemId.equals(systemId))
+        {
+            return true;
+        }
+
+        return httpSystemId.replace("http://", "https://").equals(systemId);
+    }
+
+    private static final class ClasspathLSInput implements LSInput
+    {
+        private Reader characterStream;
+
+        private InputStream byteStream;
+
+        private String stringData;
+
+        private String systemId;
+
+        private String publicId;
+
+        private String baseURI;
+
+        private String encoding;
+
+        private boolean certifiedText;
+
+        private ClasspathLSInput(String publicId, String systemId, String baseURI,
+                InputStream byteStream)
+        {
+            this.publicId = publicId;
+            this.systemId = systemId;
+            this.baseURI = baseURI;
+            this.byteStream = byteStream;
+        }
+
+        @Override
+        public Reader getCharacterStream()
+        {
+            return characterStream;
+        }
+
+        @Override
+        public void setCharacterStream(Reader characterStream)
+        {
+            this.characterStream = characterStream;
+        }
+
+        @Override
+        public InputStream getByteStream()
+        {
+            return byteStream;
+        }
+
+        @Override
+        public void setByteStream(InputStream byteStream)
+        {
+            this.byteStream = byteStream;
+        }
+
+        @Override
+        public String getStringData()
+        {
+            return stringData;
+        }
+
+        @Override
+        public void setStringData(String stringData)
+        {
+            this.stringData = stringData;
+        }
+
+        @Override
+        public String getSystemId()
+        {
+            return systemId;
+        }
+
+        @Override
+        public void setSystemId(String systemId)
+        {
+            this.systemId = systemId;
+        }
+
+        @Override
+        public String getPublicId()
+        {
+            return publicId;
+        }
+
+        @Override
+        public void setPublicId(String publicId)
+        {
+            this.publicId = publicId;
+        }
+
+        @Override
+        public String getBaseURI()
+        {
+            return baseURI;
+        }
+
+        @Override
+        public void setBaseURI(String baseURI)
+        {
+            this.baseURI = baseURI;
+        }
+
+        @Override
+        public String getEncoding()
+        {
+            return encoding;
+        }
+
+        @Override
+        public void setEncoding(String encoding)
+        {
+            this.encoding = encoding;
+        }
+
+        @Override
+        public boolean getCertifiedText()
+        {
+            return certifiedText;
+        }
+
+        @Override
+        public void setCertifiedText(boolean certifiedText)
+        {
+            this.certifiedText = certifiedText;
+        }
     }
 
     /**
      * Returns a {@link DocumentBuilderFactory} hardened against XXE attacks: DOCTYPE declarations
      * are disallowed, external entity resolution and external DTD loading are disabled, XInclude
-     * is off, and entity-reference expansion is off. Namespace-aware by default.
+     * is off, and entity-reference expansion is off. Uses the platform-default JAXP provider so
+     * classpath service registrations cannot override it. Mandatory XXE protections fail factory
+     * creation if the provider does not support them. Namespace-aware by default.
      */
     public static DocumentBuilderFactory createSecureDocumentBuilderFactory()
     {
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilderFactory factory =
+                DocumentBuilderFactory.newDefaultInstance();
+
         factory.setNamespaceAware(true);
+
+        configureCommonXXEProtection(factory);
+
         try
         {
-            factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-            factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
-            factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
-            factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
-            factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
-        } catch (javax.xml.parsers.ParserConfigurationException e)
+            factory.setXIncludeAware(false);
+        } catch (UnsupportedOperationException ignored)
         {
-            throw CheckedExceptionTunnel.wrapIfNecessary(e);
         }
-        factory.setXIncludeAware(false);
-        factory.setExpandEntityReferences(false);
+
+        try
+        {
+            factory.setExpandEntityReferences(false);
+        } catch (UnsupportedOperationException ignored)
+        {
+        }
+
+        setAttribute(factory,
+                XMLConstants.ACCESS_EXTERNAL_DTD
+        );
+
+        setAttribute(factory,
+                XMLConstants.ACCESS_EXTERNAL_SCHEMA
+        );
+
         return factory;
     }
 
     /**
      * Returns a {@link SAXParserFactory} hardened against XXE attacks: DOCTYPE declarations are
      * disallowed, external entity resolution and external DTD loading are disabled, XInclude is
-     * off. Namespace-aware by default.
+     * off. Uses the platform-default JAXP provider so classpath service registrations cannot
+     * override it. Mandatory XXE protections fail factory creation if the provider does not
+     * support them. Namespace-aware by default.
      */
     public static SAXParserFactory createSecureSAXParserFactory()
     {
-        SAXParserFactory factory = SAXParserFactory.newInstance();
+        SAXParserFactory factory =
+                SAXParserFactory.newDefaultInstance();
+
         factory.setNamespaceAware(true);
+
+        configureCommonXXEProtection(factory);
+
         try
         {
-            factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-            factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
-            factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
-            factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
-            factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
-        } catch (Exception e)
+            factory.setXIncludeAware(false);
+        } catch (UnsupportedOperationException ignored)
         {
-            throw CheckedExceptionTunnel.wrapIfNecessary(e);
         }
-        factory.setXIncludeAware(false);
+
         return factory;
     }
 
@@ -125,8 +398,11 @@ public class XMLInfraStructure
     {
         try
         {
-            return createSecureSAXParserFactory().newSAXParser().getXMLReader();
-        } catch (javax.xml.parsers.ParserConfigurationException | SAXException e)
+            return createSecureSAXParserFactory()
+                    .newSAXParser()
+                    .getXMLReader();
+
+        } catch (ParserConfigurationException | SAXException e)
         {
             throw CheckedExceptionTunnel.wrapIfNecessary(e);
         }
@@ -134,21 +410,222 @@ public class XMLInfraStructure
 
     /**
      * Returns a {@link TransformerFactory} hardened against XSLT-based attacks: secure processing
-     * is enabled, and external DTD / stylesheet access is blocked.
+     * is enabled, and external DTD / stylesheet access is blocked. Uses the platform-default JAXP
+     * provider so classpath service registrations cannot override it. Mandatory protections fail
+     * factory creation if the provider does not support them.
      */
     public static TransformerFactory createSecureTransformerFactory()
     {
-        TransformerFactory factory = TransformerFactory.newInstance();
+        TransformerFactory factory =
+                TransformerFactory.newDefaultInstance();
+
         try
         {
-            factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-        } catch (javax.xml.transform.TransformerConfigurationException e)
+            factory.setFeature(
+                    XMLConstants.FEATURE_SECURE_PROCESSING,
+                    true);
+
+        } catch (TransformerConfigurationException e)
         {
             throw CheckedExceptionTunnel.wrapIfNecessary(e);
         }
-        factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
-        factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
+
+        setAttribute(factory,
+                XMLConstants.ACCESS_EXTERNAL_DTD
+        );
+
+        setAttribute(factory,
+                XMLConstants.ACCESS_EXTERNAL_STYLESHEET
+        );
+
         return factory;
+    }
+
+    // =========================================================================
+    // COMMON XXE CONFIGURATION
+    // =========================================================================
+
+    private static void configureCommonXXEProtection(
+            DocumentBuilderFactory factory)
+    {
+        setFeature(factory,
+                XMLConstants.FEATURE_SECURE_PROCESSING,
+                true);
+
+        setFeature(factory,
+                FEATURE_DISALLOW_DOCTYPE,
+                true);
+
+        setFeature(factory,
+                FEATURE_EXTERNAL_GENERAL_ENTITIES,
+                false);
+
+        setFeature(factory,
+                FEATURE_EXTERNAL_PARAMETER_ENTITIES,
+                false);
+
+        setFeature(factory,
+                FEATURE_LOAD_EXTERNAL_DTD,
+                false);
+    }
+
+    private static void configureCommonXXEProtection(
+            SAXParserFactory factory)
+    {
+        setFeature(factory,
+                XMLConstants.FEATURE_SECURE_PROCESSING,
+                true);
+
+        setFeature(factory,
+                FEATURE_DISALLOW_DOCTYPE,
+                true);
+
+        setFeature(factory,
+                FEATURE_EXTERNAL_GENERAL_ENTITIES,
+                false);
+
+        setFeature(factory,
+                FEATURE_EXTERNAL_PARAMETER_ENTITIES,
+                false);
+
+        setFeature(factory,
+                FEATURE_LOAD_EXTERNAL_DTD,
+                false);
+    }
+
+    // =========================================================================
+    // MANDATORY SECURITY SETTERS
+    // =========================================================================
+
+    private static void setFeature(
+            SchemaFactory factory,
+            String feature)
+    {
+        try
+        {
+            factory.setFeature(feature, true);
+
+        } catch (SAXNotRecognizedException
+                | SAXNotSupportedException
+                | AbstractMethodError
+                | NoSuchMethodError ex)
+        {
+            throw CheckedExceptionTunnel.wrapIfNecessary(ex);
+        }
+    }
+
+    private static void setFeature(
+            DocumentBuilderFactory factory,
+            String feature,
+            boolean value)
+    {
+        try
+        {
+            factory.setFeature(feature, value);
+
+        } catch (ParserConfigurationException
+                | AbstractMethodError
+                | NoSuchMethodError ex)
+        {
+            throw CheckedExceptionTunnel.wrapIfNecessary(ex);
+        }
+    }
+
+    private static void setFeature(
+            SAXParserFactory factory,
+            String feature,
+            boolean value)
+    {
+        try
+        {
+            factory.setFeature(feature, value);
+
+        } catch (ParserConfigurationException
+                | SAXNotRecognizedException
+                | SAXNotSupportedException
+                | AbstractMethodError
+                | NoSuchMethodError ex)
+        {
+            throw CheckedExceptionTunnel.wrapIfNecessary(ex);
+        }
+    }
+
+    private static void setProperty(
+            SchemaFactory factory,
+            String property)
+    {
+        try
+        {
+            factory.setProperty(property, "");
+
+        } catch (SAXNotRecognizedException
+                | SAXNotSupportedException
+                | AbstractMethodError
+                | NoSuchMethodError ex)
+        {
+            throw CheckedExceptionTunnel.wrapIfNecessary(ex);
+        }
+    }
+
+    private static void configureParserXXEProtection(
+            SAXParser parser)
+    {
+        setProperty(parser,
+                XMLConstants.ACCESS_EXTERNAL_DTD
+        );
+
+        setProperty(parser,
+                XMLConstants.ACCESS_EXTERNAL_SCHEMA
+        );
+    }
+
+    private static void setProperty(
+            SAXParser parser,
+            String property)
+    {
+        try
+        {
+            parser.setProperty(property, "");
+
+        } catch (SAXNotRecognizedException
+                | SAXNotSupportedException
+                | AbstractMethodError
+                | NoSuchMethodError ex)
+        {
+            throw CheckedExceptionTunnel.wrapIfNecessary(ex);
+        }
+    }
+
+    private static void setAttribute(
+            DocumentBuilderFactory factory,
+            String attribute)
+    {
+        try
+        {
+            factory.setAttribute(attribute, "");
+
+        } catch (IllegalArgumentException
+                | AbstractMethodError
+                | NoSuchMethodError ex)
+        {
+            throw CheckedExceptionTunnel.wrapIfNecessary(ex);
+        }
+    }
+
+    private static void setAttribute(
+            TransformerFactory factory,
+            String attribute)
+    {
+        try
+        {
+            factory.setAttribute(attribute, "");
+
+        } catch (IllegalArgumentException
+                | AbstractMethodError
+                | NoSuchMethodError ex)
+        {
+            throw CheckedExceptionTunnel.wrapIfNecessary(ex);
+        }
     }
 
     /**
@@ -194,11 +671,36 @@ public class XMLInfraStructure
     {
         try
         {
+            Source schemaSource = createClasspathSchemaSource(schemaURL.toExternalForm());
+            if (schemaSource != null)
+            {
+                return SCHEMA_FACTORY.newSchema(schemaSource);
+            }
+
             return SCHEMA_FACTORY.newSchema(schemaURL);
         } catch (SAXException ex)
         {
             throw CheckedExceptionTunnel.wrapIfNecessary(ex);
         }
+    }
+
+    private static Source createClasspathSchemaSource(String systemId)
+    {
+        String resource = getClasspathSchemaResource(null, systemId);
+        if (resource == null)
+        {
+            return null;
+        }
+
+        InputStream inputStream = XMLInfraStructure.class.getResourceAsStream(resource);
+        if (inputStream == null)
+        {
+            return null;
+        }
+
+        StreamSource source = new StreamSource(inputStream);
+        source.setSystemId(systemId);
+        return source;
     }
 
     /**
@@ -226,20 +728,8 @@ public class XMLInfraStructure
      */
     public XMLInfraStructure(boolean validating)
     {
-        parserFactory = SAXParserFactory.newInstance();
-        parserFactory.setNamespaceAware(true);
+        parserFactory = createSecureSAXParserFactory();
         parserFactory.setValidating(validating);
-        try
-        {
-            parserFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-            parserFactory.setFeature("http://xml.org/sax/features/external-general-entities", false);
-            parserFactory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
-            parserFactory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
-            parserFactory.setXIncludeAware(false);
-        } catch (Exception e)
-        {
-            throw CheckedExceptionTunnel.wrapIfNecessary(e);
-        }
     }
 
     /**
@@ -259,6 +749,7 @@ public class XMLInfraStructure
         try
         {
             SAXParser saxParser = parserFactory.newSAXParser();
+            configureParserXXEProtection(saxParser);
             if (parserFactory.isValidating())
             {
                 if (parserFactory.getSchema() == null)
@@ -320,15 +811,16 @@ public class XMLInfraStructure
     {
         final StringBuilder sb = new StringBuilder();
         sb.append(getJaxpImplementationInfo("DocumentBuilderFactory", DocumentBuilderFactory
-                .newInstance().getClass()));
+                .newDefaultInstance().getClass()));
         sb.append("\n");
-        sb.append(getJaxpImplementationInfo("XPathFactory", XPathFactory.newInstance().getClass()));
-        sb.append("\n");
-        sb.append(getJaxpImplementationInfo("TransformerFactory", TransformerFactory.newInstance()
+        sb.append(getJaxpImplementationInfo("XPathFactory", XPathFactory.newDefaultInstance()
                 .getClass()));
         sb.append("\n");
-        sb.append(getJaxpImplementationInfo("SAXParserFactory", SAXParserFactory.newInstance()
-                .getClass()));
+        sb.append(getJaxpImplementationInfo("TransformerFactory", TransformerFactory
+                .newDefaultInstance().getClass()));
+        sb.append("\n");
+        sb.append(getJaxpImplementationInfo("SAXParserFactory", SAXParserFactory
+                .newDefaultInstance().getClass()));
         sb.append("\n");
         sb.append(getJaxpImplementationInfo("SchemaFactory", SCHEMA_FACTORY.getClass()));
         sb.append("\n");

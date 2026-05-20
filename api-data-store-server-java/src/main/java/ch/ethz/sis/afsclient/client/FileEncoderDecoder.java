@@ -11,8 +11,8 @@ import java.util.Base64;
 
 public class FileEncoderDecoder {
 
-    private static String FILE_SEPARATOR = ",";
-    private static String FILE_ARRAY_SEPARATOR = ";";
+    private static String FILE_SEPARATOR = "\t";
+    private static String FILE_ARRAY_SEPARATOR = "\n";
     private static final File[] EMPTY_FILE_ARRAY = new File[0];
 
     public static String encodeFile(File file) {

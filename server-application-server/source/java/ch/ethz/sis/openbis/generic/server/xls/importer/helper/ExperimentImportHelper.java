@@ -36,6 +36,7 @@ import ch.ethz.sis.openbis.generic.server.xls.importer.ImportOptions;
 import ch.ethz.sis.openbis.generic.server.xls.importer.delay.DelayedExecutionDecorator;
 import ch.ethz.sis.openbis.generic.server.xls.importer.enums.ImportModes;
 import ch.ethz.sis.openbis.generic.server.xls.importer.enums.ImportTypes;
+import ch.ethz.sis.openbis.generic.server.xls.importer.handler.JSONHandler;
 import ch.ethz.sis.openbis.generic.server.xls.importer.helper.semanticannotation.SemanticAnnotationHelper;
 import ch.ethz.sis.openbis.generic.server.xls.importer.helper.semanticannotation.SemanticAnnotationType;
 import ch.ethz.sis.openbis.generic.server.xls.importer.utils.AttributeValidator;
@@ -50,6 +51,7 @@ public class ExperimentImportHelper extends BasicImportHelper
     private enum Attribute implements IAttribute {
         Identifier("Identifier", false, true),
         Code("Code", true, true),
+        Metadata("Meta Data", false, false),
         Project("Project", true, true);
 
         private final String headerName;
@@ -180,6 +182,7 @@ public class ExperimentImportHelper extends BasicImportHelper
 
         String code = getValueByColumnName(header, values, Attribute.Code);
         String project = getValueByColumnName(header, values, Attribute.Project);
+        String metaData = getValueByColumnName(header, values, Attribute.Metadata);
 
         creation.setTypeId(experimentType);
         creation.setCode(code);
@@ -195,6 +198,10 @@ public class ExperimentImportHelper extends BasicImportHelper
             }
         }
 
+        if (metaData != null && !metaData.isEmpty()) {
+            creation.setMetaData(JSONHandler.parseMetaData(metaData));
+        }
+
         delayedExecutor.createExperiment(creation, page, line);
     }
 
@@ -206,6 +213,8 @@ public class ExperimentImportHelper extends BasicImportHelper
         {
             throw new UserFailureException("'Identifier' is missing, is mandatory since is needed to select a experiment to update.");
         }
+
+        String metaData = getValueByColumnName(header, values, Attribute.Metadata);
 
         ExperimentUpdate update = new ExperimentUpdate();
         IExperimentId experimentId = new ExperimentIdentifier(identifier);
@@ -234,6 +243,10 @@ public class ExperimentImportHelper extends BasicImportHelper
                 PropertyType propertyType = propertyTypeSearcher.findPropertyType(experimentType, key);
                 update.setProperty(propertyType.getCode(), getPropertyValue(propertyType, value));
             }
+        }
+        if (metaData != null && !metaData.isEmpty())
+        {
+            update.getMetaData().add(JSONHandler.parseMetaData(metaData));
         }
 
         delayedExecutor.updateExperiment(update, page, line);

@@ -3,6 +3,7 @@ package ch.ethz.sis.afssftp.helpers;
 import ch.ethz.sis.afssftp.filesystemview.SftpNode;
 import lombok.NonNull;
 
+import java.nio.ByteBuffer;
 import java.util.*;
 
 public class TestHelper {
@@ -40,5 +41,12 @@ public class TestHelper {
                 .identifier(Optional.ofNullable(identifier))
                 .afsFilePath(afsPathSegments)
                 .build();
+    }
+
+    public static ByteBuffer getRandomByteBuffer(int size) {
+        ByteBuffer byteBuffer = ByteBuffer.allocate(size);
+        Random random = new Random();
+        random.nextBytes(byteBuffer.array());
+        return byteBuffer;
     }
 }

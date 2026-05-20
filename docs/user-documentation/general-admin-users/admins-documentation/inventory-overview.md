@@ -12,11 +12,13 @@ These are used to organise respectively:
 
 - **Materials**: samples and materials of any type used in the lab.
 - **Methods**: protocols and procedures that need to be shared with all lab members.
-- **Publications**: this folder contains the **Public Repositories** *Collection*, used to collect entries published in Zenodo or in the ETH Research Collection (for ETH users only). See [Data export](./docs/user-documentation/general-users/data-export.md).
+- **Publications**: this folder contains the **Public Repositories** *Collection*, used to collect entries published in Zenodo or in the ETH Research Collection (for ETH users only). See [Data export to Repositories](../../general-users/data-export-to-repositories.md).
+
+
 
 Samples, materials and protocols are modelled in openBIS as *Objects*.
 
-For life sciences, following *Object* types are provided:
+For life sciences, following *Object* types are provided in the [community data model on github](https://github.com/openbis/community-data-models):
 
  
 
