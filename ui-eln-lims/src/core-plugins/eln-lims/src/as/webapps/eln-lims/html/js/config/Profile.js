@@ -181,34 +181,64 @@ $.extend(DefaultProfile.prototype, {
 
 		this.plugins = [new GenericTechnology()];
 		this.experimentFormTop = function($container, model) {
+			let refreshableFields = [];
 			for(var i = 0; i < this.plugins.length; i++) {
-				this.plugins[i].experimentFormTop($container, model);
+				let fields = this.plugins[i].experimentFormTop($container, model);
+				if(fields) {
+					fields.forEach(field =>  refreshableFields.push(field));
+				}
 			}
+			return refreshableFields;
 		}
 		this.experimentFormBottom = function($container, model) {
+			let refreshableFields = [];
 			for(var i = 0; i < this.plugins.length; i++) {
-				this.plugins[i].experimentFormBottom($container, model);
+				let fields = this.plugins[i].experimentFormBottom($container, model);
+				if(fields) {
+					fields.forEach(field =>  refreshableFields.push(field));
+				}
 			}
+			return refreshableFields;
 		}
 		this.sampleFormTop = function($container, model) {
+			let refreshableFields = [];
 			for(var i = 0; i < this.plugins.length; i++) {
-				this.plugins[i].sampleFormTop($container, model);
+				let fields = this.plugins[i].sampleFormTop($container, model);
+				if(fields) {
+					fields.forEach(field =>  refreshableFields.push(field));
+				}
 			}
+			return refreshableFields;
 		}
 		this.sampleFormBottom = function($container, model) {
+			let refreshableFields = [];
 			for(var i = 0; i < this.plugins.length; i++) {
-				this.plugins[i].sampleFormBottom($container, model);
+				let fields = this.plugins[i].sampleFormBottom($container, model);
+				if(fields) {
+					fields.forEach(field =>  refreshableFields.push(field));
+				}
 			}
+			return refreshableFields;
 		}
 		this.dataSetFormTop = function($container, model) {
+			let refreshableFields = [];
 			for(var i = 0; i < this.plugins.length; i++) {
-				this.plugins[i].dataSetFormTop($container, model);
+				let fields = this.plugins[i].dataSetFormTop($container, model);
+				if(fields) {
+					fields.forEach(field =>  refreshableFields.push(field));
+				}
 			}
+			return refreshableFields;
 		}
 		this.dataSetFormBottom = function($container, model) {
+			let refreshableFields = [];
 			for(var i = 0; i < this.plugins.length; i++) {
-				this.plugins[i].dataSetFormBottom($container, model);
+				let fields = this.plugins[i].dataSetFormBottom($container, model);
+				if(fields) {
+					fields.forEach(field =>  refreshableFields.push(field));
+				}
 			}
+			return refreshableFields;
 		}
 		this.onSampleSave = function(sample, changesToDo, action) {
             var idx = -1;

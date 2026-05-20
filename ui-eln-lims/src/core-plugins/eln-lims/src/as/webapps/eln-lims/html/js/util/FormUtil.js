@@ -1738,6 +1738,10 @@ var FormUtil = new function() {
 				var title = option.title ? option.title : label;
 				var id = _this.prepareId(title).toLowerCase() + "-" +  + mainController.getNextId();
 				var $dropdownElement = $("<li>", { 'role' : 'presentation' }).append($("<a>", {'title' : title, 'id' : id}).append(label));
+				option.view = $dropdownElement;
+				if(option.hidden) {
+					$dropdownElement.attr("hidden", "hidden");
+				}
 				$("body").off("click", "[id='"+id+"']");
                 $("body").on("click", "[id='"+id+"']", option.action);
 				$dropdownOptionsMenuList.append($dropdownElement);
