@@ -31,6 +31,7 @@ import ch.ethz.sis.openbis.generic.server.xls.importer.ImportOptions;
 import ch.ethz.sis.openbis.generic.server.xls.importer.delay.DelayedExecutionDecorator;
 import ch.ethz.sis.openbis.generic.server.xls.importer.enums.ImportModes;
 import ch.ethz.sis.openbis.generic.server.xls.importer.enums.ImportTypes;
+import ch.ethz.sis.openbis.generic.server.xls.importer.handler.JSONHandler;
 import ch.ethz.sis.openbis.generic.server.xls.importer.helper.semanticannotation.SemanticAnnotationHelper;
 import ch.ethz.sis.openbis.generic.server.xls.importer.helper.semanticannotation.SemanticAnnotationRecord;
 import ch.ethz.sis.openbis.generic.server.xls.importer.helper.semanticannotation.SemanticAnnotationType;
@@ -50,6 +51,7 @@ public class ExperimentTypeImportHelper extends BasicImportHelper
         OntologyId("Ontology Id", false, false),
         OntologyVersion("Ontology Version", false, false),
         OntologyAnnotationId("Ontology Annotation Id", false, false),
+        Metadata("Meta Data", false, false),
         Internal("Internal", false, false);
 
         private final String headerName;
@@ -187,6 +189,7 @@ public class ExperimentTypeImportHelper extends BasicImportHelper
         String description = getValueByColumnName(header, values, Attribute.Description);
         String validationScript = getValueByColumnName(header, values, Attribute.ValidationScript);
         String internal = getValueByColumnName(header, values, Attribute.Internal);
+        String metaData = getValueByColumnName(header, values, Attribute.Metadata);
 
         ExperimentTypeCreation creation = new ExperimentTypeCreation();
 
@@ -194,6 +197,9 @@ public class ExperimentTypeImportHelper extends BasicImportHelper
         creation.setDescription(description);
         creation.setValidationPluginId(ImportUtils.getScriptId(validationScript, null));
         creation.setManagedInternally(ImportUtils.isTrue(internal));
+        if (metaData != null && !metaData.isEmpty()) {
+            creation.setMetaData(JSONHandler.parseMetaData(metaData));
+        }
 
         delayedExecutor.createExperimentType(creation, page, line);
     }
@@ -203,6 +209,7 @@ public class ExperimentTypeImportHelper extends BasicImportHelper
         String code = getValueByColumnName(header, values, Attribute.Code);
         String description = getValueByColumnName(header, values, Attribute.Description);
         String validationScript = getValueByColumnName(header, values, Attribute.ValidationScript);
+        String metaData = getValueByColumnName(header, values, Attribute.Metadata);
 
         ExperimentTypeUpdate update = new ExperimentTypeUpdate();
         EntityTypePermId permId = new EntityTypePermId(code, EntityKind.EXPERIMENT);
@@ -232,7 +239,10 @@ public class ExperimentTypeImportHelper extends BasicImportHelper
         experimentTypeFetchOptions.withValidationPlugin();
         ExperimentType experimentType = delayedExecutor.getExperimentType(new EntityTypePermId(code, EntityKind.EXPERIMENT), experimentTypeFetchOptions);
         update.setValidationPluginId(ImportUtils.getScriptId(validationScript, experimentType.getValidationPlugin()));
-
+        if (metaData != null && !metaData.isEmpty())
+        {
+            update.getMetaData().add(JSONHandler.parseMetaData(metaData));
+        }
         delayedExecutor.updateExperimentType(update, page, line);
     }
 

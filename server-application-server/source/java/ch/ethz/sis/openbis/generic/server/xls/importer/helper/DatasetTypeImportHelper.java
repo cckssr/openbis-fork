@@ -31,6 +31,7 @@ import ch.ethz.sis.openbis.generic.server.xls.importer.ImportOptions;
 import ch.ethz.sis.openbis.generic.server.xls.importer.delay.DelayedExecutionDecorator;
 import ch.ethz.sis.openbis.generic.server.xls.importer.enums.ImportModes;
 import ch.ethz.sis.openbis.generic.server.xls.importer.enums.ImportTypes;
+import ch.ethz.sis.openbis.generic.server.xls.importer.handler.JSONHandler;
 import ch.ethz.sis.openbis.generic.server.xls.importer.helper.semanticannotation.SemanticAnnotationHelper;
 import ch.ethz.sis.openbis.generic.server.xls.importer.helper.semanticannotation.SemanticAnnotationRecord;
 import ch.ethz.sis.openbis.generic.server.xls.importer.helper.semanticannotation.SemanticAnnotationType;
@@ -50,6 +51,7 @@ public class DatasetTypeImportHelper extends BasicImportHelper
         OntologyId("Ontology Id", false, false),
         OntologyVersion("Ontology Version", false, false),
         OntologyAnnotationId("Ontology Annotation Id", false, false),
+        Metadata("Meta Data", false, false),
         Internal("Internal", false, false);
 
         private final String headerName;
@@ -189,6 +191,7 @@ public class DatasetTypeImportHelper extends BasicImportHelper
         String description = getValueByColumnName(header, values, Attribute.Description);
         String validationScript = getValueByColumnName(header, values, Attribute.ValidationScript);
         String internal = getValueByColumnName(header, values, Attribute.Internal);
+        String metaData = getValueByColumnName(header, values, Attribute.Metadata);
 
         DataSetTypeCreation creation = new DataSetTypeCreation();
         creation.setCode(code);
@@ -197,6 +200,9 @@ public class DatasetTypeImportHelper extends BasicImportHelper
         creation.setValidationPluginId(ImportUtils.getScriptId(validationScript, null));
 
         creation.setManagedInternally(ImportUtils.isTrue(internal));
+        if (metaData != null && !metaData.isEmpty()) {
+            creation.setMetaData(JSONHandler.parseMetaData(metaData));
+        }
 
         delayedExecutor.createDataSetType(creation, page, line);
     }
@@ -206,6 +212,7 @@ public class DatasetTypeImportHelper extends BasicImportHelper
         String code = getValueByColumnName(header, values, Attribute.Code);
         String description = getValueByColumnName(header, values, Attribute.Description);
         String validationScript = getValueByColumnName(header, values, Attribute.ValidationScript);
+        String metaData = getValueByColumnName(header, values, Attribute.Metadata);
 
         DataSetTypeUpdate update = new DataSetTypeUpdate();
         EntityTypePermId permId = new EntityTypePermId(code, EntityKind.DATA_SET);
@@ -233,7 +240,10 @@ public class DatasetTypeImportHelper extends BasicImportHelper
         dataSetTypeFetchOptions.withValidationPlugin();
         DataSetType dataSetType = delayedExecutor.getDataSetType(new EntityTypePermId(code, EntityKind.DATA_SET), dataSetTypeFetchOptions);
         update.setValidationPluginId(ImportUtils.getScriptId(validationScript, dataSetType.getValidationPlugin()));
-
+        if (metaData != null && !metaData.isEmpty())
+        {
+            update.getMetaData().add(JSONHandler.parseMetaData(metaData));
+        }
         delayedExecutor.updateDataSetType(update, page, line);
     }
 

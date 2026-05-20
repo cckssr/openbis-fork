@@ -15,21 +15,6 @@
  */
 package ch.ethz.sis.openbis.generic.server.xls.export.helper;
 
-import static ch.ethz.sis.openbis.generic.server.xls.export.Attribute.$;
-import static ch.ethz.sis.openbis.generic.server.xls.export.Attribute.AUTO_GENERATE_CODE;
-import static ch.ethz.sis.openbis.generic.server.xls.export.Attribute.CHILDREN;
-import static ch.ethz.sis.openbis.generic.server.xls.export.Attribute.CODE;
-import static ch.ethz.sis.openbis.generic.server.xls.export.Attribute.EXPERIMENT;
-import static ch.ethz.sis.openbis.generic.server.xls.export.Attribute.IDENTIFIER;
-import static ch.ethz.sis.openbis.generic.server.xls.export.Attribute.MODIFICATION_DATE;
-import static ch.ethz.sis.openbis.generic.server.xls.export.Attribute.MODIFIER;
-import static ch.ethz.sis.openbis.generic.server.xls.export.Attribute.PARENTS;
-import static ch.ethz.sis.openbis.generic.server.xls.export.Attribute.PERM_ID;
-import static ch.ethz.sis.openbis.generic.server.xls.export.Attribute.PROJECT;
-import static ch.ethz.sis.openbis.generic.server.xls.export.Attribute.REGISTRATION_DATE;
-import static ch.ethz.sis.openbis.generic.server.xls.export.Attribute.REGISTRATOR;
-import static ch.ethz.sis.openbis.generic.server.xls.export.Attribute.SPACE;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -54,6 +39,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
 import ch.ethz.sis.openbis.generic.server.xls.export.Attribute;
 import ch.ethz.sis.openbis.generic.server.xls.export.ExportableKind;
+
+import static ch.ethz.sis.openbis.generic.server.xls.export.Attribute.*;
 
 public class XLSSampleExportHelper extends AbstractXLSEntityExportHelper<Sample, SampleType>
 {
@@ -97,7 +84,7 @@ public class XLSSampleExportHelper extends AbstractXLSEntityExportHelper<Sample,
     protected Attribute[] getAttributes(final Collection<Sample> entities)
     {
         return new Attribute[] { $, AUTO_GENERATE_CODE, PERM_ID, IDENTIFIER, CODE, SPACE, PROJECT, EXPERIMENT, PARENTS, CHILDREN,
-                REGISTRATOR, REGISTRATION_DATE, MODIFIER, MODIFICATION_DATE };
+                REGISTRATOR, REGISTRATION_DATE, MODIFIER, MODIFICATION_DATE, META_DATA };
     }
 
     @Override
@@ -186,6 +173,10 @@ public class XLSSampleExportHelper extends AbstractXLSEntityExportHelper<Sample,
             case AUTO_GENERATE_CODE:
             {
                 return "FALSE";
+            }
+            case META_DATA:
+            {
+                return mapToJSON(sample.getMetaData());
             }
             default:
             {

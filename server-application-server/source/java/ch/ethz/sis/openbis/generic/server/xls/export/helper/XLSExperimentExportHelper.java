@@ -15,15 +15,6 @@
  */
 package ch.ethz.sis.openbis.generic.server.xls.export.helper;
 
-import static ch.ethz.sis.openbis.generic.server.xls.export.Attribute.CODE;
-import static ch.ethz.sis.openbis.generic.server.xls.export.Attribute.IDENTIFIER;
-import static ch.ethz.sis.openbis.generic.server.xls.export.Attribute.MODIFICATION_DATE;
-import static ch.ethz.sis.openbis.generic.server.xls.export.Attribute.MODIFIER;
-import static ch.ethz.sis.openbis.generic.server.xls.export.Attribute.PERM_ID;
-import static ch.ethz.sis.openbis.generic.server.xls.export.Attribute.PROJECT;
-import static ch.ethz.sis.openbis.generic.server.xls.export.Attribute.REGISTRATION_DATE;
-import static ch.ethz.sis.openbis.generic.server.xls.export.Attribute.REGISTRATOR;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -47,6 +38,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.Project;
 import ch.ethz.sis.openbis.generic.server.xls.export.Attribute;
 import ch.ethz.sis.openbis.generic.server.xls.export.ExportableKind;
 
+import static ch.ethz.sis.openbis.generic.server.xls.export.Attribute.*;
+
 public class XLSExperimentExportHelper extends AbstractXLSEntityExportHelper<Experiment, ExperimentType>
 {
 
@@ -58,7 +51,7 @@ public class XLSExperimentExportHelper extends AbstractXLSEntityExportHelper<Exp
     @Override
     protected Attribute[] getAttributes(final Collection<Experiment> entities)
     {
-        return new Attribute[] { PERM_ID, IDENTIFIER, CODE, PROJECT, REGISTRATOR, REGISTRATION_DATE, MODIFIER, MODIFICATION_DATE };
+        return new Attribute[] { PERM_ID, IDENTIFIER, CODE, PROJECT, REGISTRATOR, REGISTRATION_DATE, MODIFIER, MODIFICATION_DATE, META_DATA };
     }
 
     @Override
@@ -132,6 +125,10 @@ public class XLSExperimentExportHelper extends AbstractXLSEntityExportHelper<Exp
             {
                 final Date modificationDate = experiment.getModificationDate();
                 return modificationDate != null ? DATE_FORMAT.format(modificationDate) : null;
+            }
+            case META_DATA:
+            {
+                return mapToJSON(experiment.getMetaData());
             }
             default:
             {

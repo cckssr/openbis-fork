@@ -205,8 +205,8 @@ public class XLSImport
                         {
                             if (!entryName.isEmpty() &&
                                     !SCRIPTS_FOLDER_NAME.equals(entryName) &&
-                                    !DATA_FOLDER_NAME.equals(entryName) &&
                                     !entryName.startsWith(MISCELLANEOUS_FOLDER_NAME) &&
+                                    !entryName.startsWith(DATA_FOLDER_NAME) &&
                                     !entryName.startsWith(HIERARCHY))
                             {
                                 throw UserFailureException.fromTemplate("Illegal directory '%s' is found inside the imported file.", entryName);

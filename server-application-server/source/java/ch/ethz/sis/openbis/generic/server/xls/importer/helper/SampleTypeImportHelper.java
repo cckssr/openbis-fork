@@ -37,6 +37,7 @@ import ch.ethz.sis.openbis.generic.server.xls.importer.ImportOptions;
 import ch.ethz.sis.openbis.generic.server.xls.importer.delay.DelayedExecutionDecorator;
 import ch.ethz.sis.openbis.generic.server.xls.importer.enums.ImportModes;
 import ch.ethz.sis.openbis.generic.server.xls.importer.enums.ImportTypes;
+import ch.ethz.sis.openbis.generic.server.xls.importer.handler.JSONHandler;
 import ch.ethz.sis.openbis.generic.server.xls.importer.helper.semanticannotation.SemanticAnnotationHelper;
 import ch.ethz.sis.openbis.generic.server.xls.importer.helper.semanticannotation.SemanticAnnotationRecord;
 import ch.ethz.sis.openbis.generic.server.xls.importer.helper.semanticannotation.SemanticAnnotationType;
@@ -59,6 +60,7 @@ public class SampleTypeImportHelper extends BasicImportHelper
         OntologyVersion("Ontology Version", false, false),
         OntologyAnnotationId("Ontology Annotation Id", false, false),
         TypeGroup("Type Group", false, false),
+        Metadata("Meta Data", false, false),
         Internal("Internal", false, false);
 
         private final String headerName;
@@ -198,6 +200,7 @@ public class SampleTypeImportHelper extends BasicImportHelper
         String autoGenerateCodes = getValueByColumnName(header, values, Attribute.AutoGenerateCodes);
         String generatedCodePrefix = getValueByColumnName(header, values, Attribute.GeneratedCodePrefix);
         String internal = getValueByColumnName(header, values, Attribute.Internal);
+        String metaData = getValueByColumnName(header, values, Attribute.Metadata);
 
         SampleTypeCreation creation = new SampleTypeCreation();
 
@@ -210,6 +213,9 @@ public class SampleTypeImportHelper extends BasicImportHelper
             creation.setGeneratedCodePrefix(generatedCodePrefix);
         }
         creation.setManagedInternally(ImportUtils.isTrue(internal));
+        if (metaData != null && !metaData.isEmpty()) {
+            creation.setMetaData(JSONHandler.parseMetaData(metaData));
+        }
 
         delayedExecutor.createSampleType(creation, page, line);
 
@@ -236,6 +242,7 @@ public class SampleTypeImportHelper extends BasicImportHelper
         String validationScript = getValueByColumnName(header, values, Attribute.ValidationScript);
         String autoGenerateCodes = getValueByColumnName(header, values, Attribute.AutoGenerateCodes);
         String generatedCodePrefix = getValueByColumnName(header, values, Attribute.GeneratedCodePrefix);
+        String metaData = getValueByColumnName(header, values, Attribute.Metadata);
 
         SampleTypeUpdate update = new SampleTypeUpdate();
         EntityTypePermId permId = new EntityTypePermId(code, EntityKind.SAMPLE);
@@ -268,6 +275,10 @@ public class SampleTypeImportHelper extends BasicImportHelper
         if (generatedCodePrefix != null && !generatedCodePrefix.isEmpty())
         {
             update.setGeneratedCodePrefix(generatedCodePrefix);
+        }
+        if (metaData != null && !metaData.isEmpty())
+        {
+            update.getMetaData().add(JSONHandler.parseMetaData(metaData));
         }
 
         delayedExecutor.updateSampleType(update, page, line);
