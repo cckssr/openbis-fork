@@ -596,7 +596,9 @@
 			mainController.serverFacade.isSciCatEnabled((isEnabled) => {
 				if(isEnabled && isEnabled === "true") {
 					var entityLink = EntityLinkWidget.getEntityLinkContainer(entityLinkDiv, _this._sampleFormModel);
-					_refreshableFields.push(entityLink);
+					if(entityLink) {
+						_refreshableFields.push(entityLink);
+					}
 				}
 			}, (error) => {
 				console.log(error);

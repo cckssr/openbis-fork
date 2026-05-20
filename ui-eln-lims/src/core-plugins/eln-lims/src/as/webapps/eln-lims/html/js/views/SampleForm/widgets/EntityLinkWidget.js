@@ -141,6 +141,8 @@ var EntityLinkWidget = new function()
             });
 
             return $resizer;
+        } else {
+            return null;
         }
     }
 }
