@@ -244,13 +244,17 @@ export default class FileUploadManager {
       for (const file of event.target.files ) {                
         allFiles.push({ file, path: file.webkitRelativePath });        
       }
-      const {file, path} = allFiles[0]; 
-      const filePath = path ? path : file.name
-      const topLevelFolder = filePath.includes('/')
-          ? filePath.split('/')[0]
-          : file.name;
-      this.prepareUpload(topLevelFolder, allFiles);
-      await this.upload(allFiles)
+
+      if (allFiles.length > 0) {
+        // Ignore the upload if there are only empty folders and no files
+        const {file, path} = allFiles[0];
+        const filePath = path ? path : file.name
+        const topLevelFolder = filePath.includes('/')
+            ? filePath.split('/')[0]
+            : file.name;
+        this.prepareUpload(topLevelFolder, allFiles);
+        await this.upload(allFiles)
+      }
     } catch(err){
       console.error(err)
       if (isUserAbortedError(err)) {
