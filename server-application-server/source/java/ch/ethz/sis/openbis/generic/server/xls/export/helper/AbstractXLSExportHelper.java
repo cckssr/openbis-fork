@@ -232,26 +232,45 @@ public abstract class AbstractXLSExportHelper<ENTITY_TYPE extends IEntityType> i
         {
             final Serializable[] values = (Serializable[]) propertyValue;
             final DataType dataType = propertyType.getDataType();
-            final boolean quoted = dataType == DataType.ARRAY_STRING || dataType == DataType.ARRAY_TIMESTAMP;
-            final StringBuilder sb = new StringBuilder("[");
-            for (final Serializable value : values)
+            if(dataType == DataType.SAMPLE) {
+                if(values.length == 0) {
+                    return null;
+                } else {
+                    final StringBuilder sb = new StringBuilder();
+                    for (final Serializable value : values)
+                    {
+                        if (!sb.isEmpty())
+                        {
+                            sb.append(", ");
+                        }
+                        sb.append(getPropertyValueAsString(propertyType, value));
+                    }
+                    return new PropertyValue(sb.toString(), Map.of());
+                }
+            } else
             {
-                if (sb.length() > 1)
+                final boolean quoted =
+                        dataType == DataType.ARRAY_STRING || dataType == DataType.ARRAY_TIMESTAMP;
+                final StringBuilder sb = new StringBuilder("[");
+                for (final Serializable value : values)
                 {
-                    sb.append(", ");
+                    if (sb.length() > 1)
+                    {
+                        sb.append(", ");
+                    }
+                    if (quoted)
+                    {
+                        sb.append('"');
+                    }
+                    sb.append(getPropertyValueAsString(propertyType, value));
+                    if (quoted)
+                    {
+                        sb.append('"');
+                    }
                 }
-                if (quoted)
-                {
-                    sb.append('"');
-                }
-                sb.append(getPropertyValueAsString(propertyType, value));
-                if (quoted)
-                {
-                    sb.append('"');
-                }
+                sb.append("]");
+                return new PropertyValue(sb.toString(), Map.of());
             }
-            sb.append("]");
-            return new PropertyValue(sb.toString(), Map.of());
         } else
         {
             return new PropertyValue(getPropertyValueAsString(propertyType, propertyValue), Map.of());
