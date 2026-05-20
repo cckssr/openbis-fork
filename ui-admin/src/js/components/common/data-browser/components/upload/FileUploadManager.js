@@ -482,14 +482,18 @@ export default class FileUploadManager {
       let offset = 0;
 
       if (fileExists || fileTempExists) {
-        const resolution = await this.handleExistingFile(file, fileExists,existingFile,
+        const resolution = await this.handleExistingFile(file, fileExists, existingFile,
           fileTempExists, existingTempFile, fileList.length);
                   
-        if (resolution === Resolution.CANCEL) return; // Cancel uploading entirely
-        if (resolution === Resolution.SKIP) continue; // Skip this file and continue with others        
-        if(resolution == Resolution.REPLACE){
+        if (resolution === Resolution.CANCEL) {
+          return; // Cancel uploading entirely
+        }
+        if (resolution === Resolution.SKIP) {
+          continue; // Skip this file and continue with others
+        }
+        if (resolution == Resolution.REPLACE) {
           offset = 0
-          if(fileTempExists){           
+          if(fileTempExists) {
             await this.controller.deleteAndUpdateProgress(existingTempFile.path, this.updateProgress)
           }
         } else {
@@ -497,24 +501,28 @@ export default class FileUploadManager {
         }             
       }
 
-      if(file.size < 1){
-        continue
-      }
+      if (file.size > 0) {
+        // Replace or resume upload from the last point in the file
+        while (offset < file.size) {
+          const sizeUploaded = await this.controller.uploadFile(file, tempTargetFilePath,
+              offset, this.updateProgress)
+          this.throwAbortErrorIfTransferCancelled()
+          offset += sizeUploaded
+        }
 
-      // Replace or resume upload from the last point in the file
-      while (offset < file.size) {      
-        const sizeUploaded = await this.controller.uploadFile(file, tempTargetFilePath,
-          offset, this.updateProgress)
-        this.throwAbortErrorIfTransferCancelled()
-        offset += sizeUploaded
-      }
-      
-      if(fileExists){
-        await this.controller.snapshotAndUpdateProgress(existingFile.path, this.updateProgress)
-      }
+        if (fileExists) {
+          await this.controller.snapshotAndUpdateProgress(existingFile.path, this.updateProgress)
+        }
 
-      await this.controller.copyFileByPath(tempTargetFilePath, targetFilePath, this.updateProgress)
-      await this.controller.deleteAndUpdateProgress(tempTargetFilePath, this.updateProgress)
+        await this.controller.copyFileByPath(tempTargetFilePath, targetFilePath, this.updateProgress)
+        await this.controller.deleteAndUpdateProgress(tempTargetFilePath, this.updateProgress)
+      } else {
+        await this.controller.createEmptyFile(filePath)
+
+        if (fileExists) {
+          await this.controller.snapshotAndUpdateProgress(existingFile.path, this.updateProgress)
+        }
+      }
     }
         
     await this.controller?.gridController?.load()
