@@ -835,8 +835,8 @@ var ChunkEncoderDecoder = (function(){
                                       | data bytes (if any) |
     */
 
-    const CHUNK_SEPARATOR = ',';
-    const CHUNK_ARRAY_SEPARATOR = ';';
+    const CHUNK_SEPARATOR = '\t';
+    const CHUNK_ARRAY_SEPARATOR = '\n';
     const EMPTY_ARRAY = new Uint8Array();
 
     function encodeChunk(chunk) {
@@ -1015,8 +1015,8 @@ var ChunkEncoderDecoder = (function(){
 })();
 
 var FileEncoderDecoder = (function(){
-    const FILE_SEPARATOR = ',';
-    const FILE_ARRAY_SEPARATOR = ';';
+    const FILE_SEPARATOR = '\t';
+    const FILE_ARRAY_SEPARATOR = '\n';
 
     function encodeFile(file) {
         return file.getOwner() + FILE_SEPARATOR
