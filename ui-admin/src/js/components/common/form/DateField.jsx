@@ -158,11 +158,12 @@ class DateField extends React.PureComponent {
   }
 
   renderEdit() {
-    const { dateTime, name, value, error, variant, disabled, classes } =
+    const { dateTime, name, value, error, variant, disabled, classes, hiddenLabel } =
       this.props
 
     const dateObject = value && value.dateObject ? value.dateObject : null
     const dateString = value && value.dateString ? value.dateString : null
+    const label = hiddenLabel ? null : this.renderEditLabel()
 
     if (dateTime) {
       return (
@@ -173,7 +174,7 @@ class DateField extends React.PureComponent {
               views={['year','month','day','hours', 'minutes', 'seconds']}
               name={name}
               ampm={false}
-              label={this.renderEditLabel()}
+              label={label}
               invalidDateMessage={null}
               value={dateObject}
               inputValue={dateString}
@@ -185,7 +186,7 @@ class DateField extends React.PureComponent {
                 textField: this.renderEditInput
               }}
               slotProps={{
-                textField: { variant: variant, }
+                textField: { variant: variant, hiddenLabel: !!hiddenLabel }
               }}
               disabled={disabled}
               error={!!error}
@@ -199,7 +200,7 @@ class DateField extends React.PureComponent {
           <div className={classes.container}>
             <DatePicker
               name={name}
-              label={this.renderEditLabel()}
+              label={label}
               invalidDateMessage={null}
               value={dateObject}
               inputValue={dateString}
@@ -211,7 +212,7 @@ class DateField extends React.PureComponent {
                 textField: this.renderEditInput,
               }}
               slotProps={{
-                textField: { variant: variant, }
+                textField: { variant: variant, hiddenLabel: !!hiddenLabel }
               }}
               disabled={disabled}
               error={!!error}

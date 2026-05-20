@@ -3,7 +3,7 @@ import { FieldRendererProps } from '@src/js/components/database/new-forms/types/
 import SelectField from '@src/js/components/common/form/SelectField.jsx';
 import FormFieldView from '@src/js/components/common/form/FormFieldView.jsx';
 import MultiValueFieldEditor from './MultiValueFieldEditor.tsx';
-import { Select, MenuItem } from '@mui/material';
+import { Select, MenuItem, FormControl } from '@mui/material';
 
 export const SwitchFieldRenderer: React.FC<FieldRendererProps> = ({ field, onFieldChange, mode }) => {
 	const isEditing = mode === 'edit' || mode === 'create';
@@ -29,18 +29,17 @@ export const SwitchFieldRenderer: React.FC<FieldRendererProps> = ({ field, onFie
 				values={Array.isArray(field.value) ? field.value : []}
 				onChange={(vals) => onFieldChange(field.id, vals)}
 				renderInput={(val, onChange) => (
-					<Select
-						variant="filled"
-						size="small"
-						fullWidth
-						displayEmpty
-						value={val ?? ''}
-						onChange={(e) => onChange(e.target.value || null)}
-					>
-						<MenuItem value="">—</MenuItem>
-						<MenuItem value="true">Yes</MenuItem>
-						<MenuItem value="false">No</MenuItem>
-					</Select>
+					<FormControl variant="filled" size="small" fullWidth hiddenLabel>
+						<Select
+							displayEmpty
+							value={val ?? ''}
+							onChange={(e) => onChange(e.target.value || null)}
+						>
+							<MenuItem value="">—</MenuItem>
+							<MenuItem value="true">Yes</MenuItem>
+							<MenuItem value="false">No</MenuItem>
+						</Select>
+					</FormControl>
 				)}
 				isEmpty={(v) => !v}
 			/>

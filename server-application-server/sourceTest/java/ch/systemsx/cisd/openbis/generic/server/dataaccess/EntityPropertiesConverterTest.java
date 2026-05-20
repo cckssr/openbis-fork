@@ -393,7 +393,7 @@ public final class EntityPropertiesConverterTest extends AbstractBOTest
                 createSampleProperty("REAL_ARRAY", DataTypeCode.ARRAY_REAL,
                         "[\"1.5\", \"2.5\"]"),
                 createSampleProperty("TIMESTAMP_ARRAY", DataTypeCode.ARRAY_TIMESTAMP,
-                        "[\"2026-01-30 10:18:30\", \"2026-01-31 11:19:31\"]")
+                        "[\"2026-01-30 10:18:30 +0400\", \"2026-01-31 11:19:31 +0400\"]")
         };
 
         final RecordingMatcher<Set<IEntityProperty>> definedPropertiesMatcher =
@@ -453,8 +453,8 @@ public final class EntityPropertiesConverterTest extends AbstractBOTest
         assertArrayEquals(convertedProperties.get(3).getTimestampArrayValue(),
                 new Date[]
                 {
-                        parseTimestamp("2026-01-30 10:18:30"),
-                        parseTimestamp("2026-01-31 11:19:31")
+                        parseTimestamp("2026-01-30 10:18:30 +0400"),
+                        parseTimestamp("2026-01-31 11:19:31 +0400")
                 });
         context.assertIsSatisfied();
     }
@@ -652,8 +652,8 @@ public final class EntityPropertiesConverterTest extends AbstractBOTest
                                 new String[] { "3.5", "4.5" })),
                 createSampleProperty("MV_ARRAY_TIMESTAMP", DataTypeCode.ARRAY_TIMESTAMP,
                         toJsonArrayMatrix(
-                                new String[] { "2026-01-30 10:18:30", "2026-01-31 11:19:31" },
-                                new String[] { "2026-02-01 12:20:32", "2026-02-02 13:21:33" }))
+                                new String[] { "2026-01-30 10:18:30 +0500", "2026-01-31 11:19:31 +0500" },
+                                new String[] { "2026-02-01 12:20:32 +0500", "2026-02-02 13:21:33 +0500" }))
         };
 
         final RecordingMatcher<Set<IEntityProperty>> definedPropertiesMatcher =
@@ -711,10 +711,10 @@ public final class EntityPropertiesConverterTest extends AbstractBOTest
         assertRealArrayPropertyValues(convertedProperties, "MV_ARRAY_REAL",
                 new Double[] { 1.5, 2.5 }, new Double[] { 3.5, 4.5 });
         assertTimestampArrayPropertyValues(convertedProperties, "MV_ARRAY_TIMESTAMP",
-                new Date[] { parseTimestamp("2026-01-30 10:18:30"),
-                        parseTimestamp("2026-01-31 11:19:31") },
-                new Date[] { parseTimestamp("2026-02-01 12:20:32"),
-                        parseTimestamp("2026-02-02 13:21:33") });
+                new Date[] { parseTimestamp("2026-01-30 10:18:30 +0500"),
+                        parseTimestamp("2026-01-31 11:19:31 +0500") },
+                new Date[] { parseTimestamp("2026-02-01 12:20:32 +0500"),
+                        parseTimestamp("2026-02-02 13:21:33 +0500") });
         context.assertIsSatisfied();
     }
 
@@ -883,7 +883,7 @@ public final class EntityPropertiesConverterTest extends AbstractBOTest
 
     private Date parseTimestamp(String value) throws Exception
     {
-        return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(value);
+        return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z").parse(value);
     }
 
     private String toJsonArray(String... values) throws Exception

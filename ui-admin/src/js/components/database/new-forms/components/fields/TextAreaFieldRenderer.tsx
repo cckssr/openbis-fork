@@ -33,6 +33,7 @@ export const TextAreaFieldRenderer: React.FC<FieldRendererProps> = ({ field, onF
 						size="small"
 						fullWidth
 						multiline
+						hiddenLabel
 						minRows={2}
 						value={val ?? ''}
 						onChange={(e) => onChange(e.target.value)}

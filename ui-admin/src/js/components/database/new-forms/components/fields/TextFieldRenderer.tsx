@@ -83,6 +83,7 @@ const TextFieldRendererBase: React.FC<FieldRendererProps & { classes: any }> = (
             variant="filled"
             size="small"
             fullWidth
+            hiddenLabel
             type={isNumeric ? 'number' : 'text'}
             value={formatInner(val)}
             onChange={(e) => onChange(e.target.value)}

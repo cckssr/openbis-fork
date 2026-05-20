@@ -38,6 +38,7 @@ export const DateFieldRenderer: React.FC<FieldRendererProps> = ({ field, onField
           <DateField
             label={null}
             mode="edit"
+            hiddenLabel
             value={{ dateObject: val ? new Date(val) : null }}
             onChange={(e: any) => onChange(e.target.value.dateString || null)}
             dateTime={dateTime}
