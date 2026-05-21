@@ -7,6 +7,8 @@ SERVER_AFS_SFTP_FOLDER=$BASE/../../../../server-sftp
 TEST_INTEGRATION_FOLDER=$BASE/../../..
 INSTALLATION_FOLDER=$TEST_INTEGRATION_FOLDER/targets/server-sftp
 
+export AFS_SFTP_HOME="$INSTALLATION_FOLDER"/server-sftp
+
 # stop running server
 if [[ -f $INSTALLATION_FOLDER/server-sftp/bin/afs_sftp.sh ]]; then
   $INSTALLATION_FOLDER/server-sftp/bin/afs_sftp.sh stop
@@ -25,6 +27,5 @@ unzip $SERVER_AFS_SFTP_FOLDER/build/distributions/server-sftp.zip -d $INSTALLATI
 cp $1 $INSTALLATION_FOLDER/server-sftp/etc/service.properties
 
 # start server
-export AFS_SFTP_HOME="$INSTALLATION_FOLDER"/server-sftp
 
 $INSTALLATION_FOLDER/server-sftp/bin/afs_sftp.sh start
