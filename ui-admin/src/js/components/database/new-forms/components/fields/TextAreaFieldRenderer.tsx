@@ -11,7 +11,20 @@ export const TextAreaFieldRenderer: React.FC<FieldRendererProps> = ({ field, onF
 
 	if (field.isMultiValue && !isEditing) {
 		const values: any[] = Array.isArray(field.value) ? field.value : [];
-		const lines = values.map((v, i) => <div key={i}>{String(v ?? '')}</div>);
+		const lines = values.map((v, i) => (
+			<pre
+				key={i}
+				style={{
+					fontFamily: 'inherit',
+					fontSize: 'inherit',
+					whiteSpace: 'pre-wrap',
+					margin: 0,
+					marginBottom: i < values.length - 1 ? '8px' : 0,
+				}}
+			>
+				{String(v ?? '')}
+			</pre>
+		));
 		return (
 			<FormFieldView
 				label={field.label}
@@ -35,9 +48,10 @@ export const TextAreaFieldRenderer: React.FC<FieldRendererProps> = ({ field, onF
 						multiline
 						hiddenLabel
 						minRows={2}
+						maxRows={10}
 						value={val ?? ''}
 						onChange={(e) => onChange(e.target.value)}
-						margin="dense"
+						margin="none"
 					/>
 				)}
 			/>

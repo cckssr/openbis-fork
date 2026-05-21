@@ -76,8 +76,22 @@ const MultiValueFieldEditor: React.FC<MultiValueFieldEditorProps> = ({
         <FormFieldLabel label={label} mandatory={required} />
       </Typography>
       {slots.map((val, i) => (
-        <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5 }}>
-          <Box sx={{ flex: 1 }}>
+        <Box
+          key={i}
+          sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5, maxWidth: '44rem',
+            marginBottom: 0 }}
+        >
+          <Box sx={{
+            flex: 1, minWidth: 0,
+            ...(i > 0 && {
+              '& .MuiFilledInput-root': { borderTopLeftRadius: 0, borderTopRightRadius: 0 },
+              '& .SourceCodeField-editContainer': { borderTopLeftRadius: 0, borderTopRightRadius: 0 },
+              '& .SourceCodeField-editContainer textarea': {
+                borderTopLeftRadius: '0 !important',
+                borderTopRightRadius: '0 !important',
+              },
+            })
+          }}>
             {renderInput(val, (newVal: any) => handleChange(i, newVal))}
           </Box>
           <IconButton size="small" onClick={() => handleRemove(i)}>

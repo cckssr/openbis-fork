@@ -12,6 +12,9 @@ import { ButtonActionRenderer } from '@src/js/components/database/new-forms/comp
 import { SwitchActionRenderer } from '@src/js/components/database/new-forms/components/actions/SwitchActionRenderer.tsx';
 import { DividerActionRenderer } from '@src/js/components/database/new-forms/components/actions/DividerActionRenderer.tsx';
 import { DropdownActionRenderer } from '@src/js/components/database/new-forms/components/actions/DropdownActionRenderer.tsx';
+import {
+  SourceCodeFieldRenderer
+} from "@src/js/components/database/new-forms/components/fields/SourceCodeFieldRenderer.tsx";
 
 class ComponentRegistry {
   static getFieldRenderer(dataType: string) {
@@ -30,9 +33,10 @@ class ComponentRegistry {
         return DateFieldRenderer;
       case FormFieldDataType.MULTILINE_VARCHAR:
       case FormFieldDataType.MONOSPACE_FONT:
+        return TextAreaFieldRenderer;
       case FormFieldDataType.JSON:
       case FormFieldDataType.XML:
-        return TextAreaFieldRenderer;
+        return SourceCodeFieldRenderer;
       case FormFieldDataType.CONTROLLEDVOCABULARY:
         return SelectFieldRenderer;
       case FormFieldDataType.BOOLEAN:
