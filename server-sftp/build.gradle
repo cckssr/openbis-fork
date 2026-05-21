@@ -51,7 +51,7 @@ task openBISDevelopmentEnvironmentAfsSftpStart(type: JavaExec) {
              '-Xmx512M', '-ea'])
 }
 
-task AFSServerZip(type: Zip, dependsOn: compileJava) {
+task AfsSftpServerZip(type: Zip, dependsOn: compileJava) {
     archiveBaseName = 'server-sftp'
     from(jar) {
         into('server-sftp/lib/')

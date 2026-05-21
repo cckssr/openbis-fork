@@ -2,5 +2,6 @@
     <suite-files >
         <suite-file path="tests-allservers.xml" />
         <suite-file path="tests-rocrate.xml" />
+        <suite-file path="tests-afs-sftp.xml" />
     </suite-files>
 </suite>

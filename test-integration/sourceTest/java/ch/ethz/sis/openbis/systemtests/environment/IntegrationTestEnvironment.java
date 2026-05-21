@@ -57,6 +57,8 @@ public class IntegrationTestEnvironment
 
     private RoCrateServer roCrateServer;
 
+    private AfsSftpServer afsSftpServer;
+
     private FakeHttpServer fakeHttpServer;
 
     private List<Share> shares = new ArrayList<>();
@@ -169,6 +171,24 @@ public class IntegrationTestEnvironment
         return roCrateServer;
     }
 
+    public AfsSftpServer createAfsSftpServer()
+    {
+        return createAfsSftpServer(loadProperties(Path.of("etc/default/afs-sftp/service.properties")));
+    }
+
+    public AfsSftpServer createAfsSftpServer(Properties serviceProperties)
+    {
+        if (serviceProperties != null)
+        {
+            serviceProperties.setProperty("applicationServerUrl", TestInstanceHostUtils.getOpenBISProxyUrl());
+            serviceProperties.setProperty("afsUrl", TestInstanceHostUtils.getAFSProxyUrl() + TestInstanceHostUtils.getAFSPath());
+        }
+
+        afsSftpServer = new AfsSftpServer();
+        afsSftpServer.configure(serviceProperties);
+        return afsSftpServer;
+    }
+
     public void createShares(Map<Integer, Properties> shares)
     {
         List<Share> newShares = new ArrayList<>();
@@ -210,6 +230,10 @@ public class IntegrationTestEnvironment
         {
             roCrateServer.start();
         }
+        if (afsSftpServer != null)
+        {
+            afsSftpServer.start();
+        }
 
         configureSystemUser();
         configureELNSettings();
@@ -217,6 +241,10 @@ public class IntegrationTestEnvironment
 
     public void stop()
     {
+        if (afsSftpServer != null)
+        {
+            afsSftpServer.stop();
+        }
         if (roCrateServer != null)
         {
             roCrateServer.stop();
@@ -606,4 +634,7 @@ public class IntegrationTestEnvironment
         return roCrateServer;
     }
 
+    public AfsSftpServer getAfsSftpServer() {
+        return afsSftpServer;
+    }
 }
