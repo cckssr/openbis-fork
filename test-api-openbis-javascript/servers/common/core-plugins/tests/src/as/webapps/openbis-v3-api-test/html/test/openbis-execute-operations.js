@@ -183,6 +183,10 @@ define([], function() {
 			return this._executeCreateOperation(new dtos.CreatePersonalAccessTokensOperation(creations));
 		}
 
+		this.createDataStores = function(creations) {
+			return this._executeCreateOperation(new dtos.CreateDataStoresOperation(creations));
+		}
+
 		this.updateSpaces = function(updates) {
 			return this._executeUpdateOperation(new dtos.UpdateSpacesOperation(updates));
 		}

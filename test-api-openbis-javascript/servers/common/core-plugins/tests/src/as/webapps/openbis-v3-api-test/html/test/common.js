@@ -521,6 +521,15 @@ define([ 'jquery', 'underscore'], function($, _) {
 			});
 		}.bind(this);
 
+		this.findDataStore = function(facade, id) {
+			var c = this;
+			var criteria = new dtos.DataStoreSearchCriteria()
+			criteria.withCode().thatEquals(id.getPermId())
+			return facade.searchDataStores(criteria, c.createDataStoreFetchOptions()).then(function(result) {
+				return result.getObjects().length > 0 ? result.getObjects()[0] : null
+			});
+		}.bind(this);
+
 		this.deleteSpace = function(facade, id) {
 			var c = this;
 			var options = new dtos.SpaceDeletionOptions();

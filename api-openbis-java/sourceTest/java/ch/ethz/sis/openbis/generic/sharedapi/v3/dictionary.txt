@@ -2947,3 +2947,7 @@ isUnarchivingRequested
 setUnarchivingRequested
 MAJOR_VERSION
 MINOR_VERSION
+create Data Stores
+Create Data Stores Operation
+Create Data Stores Operation Result
+Data Store Creation

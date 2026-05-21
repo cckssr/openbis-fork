@@ -2,11 +2,11 @@ package ch.ethz.sis.openbis.afsserver.server.common;
 
 import java.io.File;
 
-import ch.ethz.sis.openbis.afsserver.server.observer.impl.OpenBISUtils;
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameterUtil;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.search.DataStoreKind;
 import ch.ethz.sis.shared.startup.Configuration;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IConfigProvider;
+import ch.systemsx.cisd.openbis.generic.shared.Constants;
 
 public class ConfigProvider implements IConfigProvider
 {
@@ -27,7 +27,7 @@ public class ConfigProvider implements IConfigProvider
     @Override
     public String getDataStoreCode()
     {
-        return OpenBISUtils.AFS_DATA_STORE_CODE;
+        return Constants.AFS_DATA_STORE_CODE;
     }
 
     @Override public DataStoreKind getDataStoreKind()

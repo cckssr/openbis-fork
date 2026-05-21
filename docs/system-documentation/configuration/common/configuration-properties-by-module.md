@@ -164,7 +164,6 @@
 | maintenance-plugins                      |                                  | Comma-separated list of maintenance plugins to be configured for the AS                                                                                                          |
 | project-samples-enabled                  | true                             |                                                                                                                                                                                  |
 | script-folder                            | .                                | Internal - do not change                                                                                                                                                         |
-| server-public-information.afs-server.url | http://localhost:8085/afs-server | A URL of the AFS server which is used for data storage                                                                                                                           |
 | web-client-configuration-file            |                                  |                                                                                                                                                                                  |
 | trusted-cross-origin-domains             | *                                |                                                                                                                                                                                  |
 

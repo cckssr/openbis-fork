@@ -553,7 +553,6 @@ class OpenbisController(_Controller):
 
             self.asProperties['api.v3.transaction.enabled'] = 'true'
             self.asProperties['api.v3.transaction.interactive-session-key'] = 'test-interactive-session-key-for-pybis'
-            # self.asProperties['server-public-information.afs-server.url'] = 'true'
             self.asProperties['api.v3.transaction.participant.application-server.url'] = 'jenkins:8443/openbis'
 
             self.asPropertiesModified = True

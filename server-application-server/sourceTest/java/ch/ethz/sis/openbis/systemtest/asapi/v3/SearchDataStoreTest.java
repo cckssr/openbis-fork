@@ -138,7 +138,7 @@ public class SearchDataStoreTest extends AbstractTest
         criteriaNonMatching.withCode().thatEquals("ANDAR");
         testSearch(TEST_USER, criteriaNonMatching);
     }
-    
+
     @Test
     public void testSearchWithCodes()
     {
@@ -279,7 +279,7 @@ public class SearchDataStoreTest extends AbstractTest
 
         DataStoreSearchCriteria c = new DataStoreSearchCriteria();
         c.withCode().thatEquals("STANDARD");
-        
+
         DataStoreFetchOptions fo = new DataStoreFetchOptions();
 
         v3api.searchDataStores(sessionToken, c, fo);

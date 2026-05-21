@@ -19,6 +19,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.create.CreateDataStoresOperation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.create.CreateDataStoresOperationResult;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.create.DataStoreCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.id.DataStorePermId;
 import jakarta.annotation.Resource;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.TypeGroup;
@@ -780,6 +784,14 @@ public class ApplicationServerApi extends AbstractServer<IApplicationServerApi> 
             List<TypeGroupAssignmentCreation> creations)
     {
         CreateTypeGroupAssignmentsOperationResult result = executeOperation(sessionToken, new CreateTypeGroupAssignmentsOperation(creations));
+        return result.getObjectIds();
+    }
+
+    @Override
+    @Transactional
+    public List<DataStorePermId> createDataStores(final String sessionToken, final List<DataStoreCreation> creations)
+    {
+        CreateDataStoresOperationResult result = executeOperation(sessionToken, new CreateDataStoresOperation(creations));
         return result.getObjectIds();
     }
 
