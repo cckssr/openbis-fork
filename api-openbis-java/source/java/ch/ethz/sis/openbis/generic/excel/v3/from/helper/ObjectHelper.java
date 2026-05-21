@@ -46,6 +46,7 @@ public class ObjectHelper extends BasicImportHelper
         Experiment("Experiment", false, true),
         AutoGenerateCode("Auto generate code", false, false),
         Parents("Parents", false, true),
+        MetaData("Meta Data", false, true),
         Children("Children", false, true);
 
         private final String headerName;
