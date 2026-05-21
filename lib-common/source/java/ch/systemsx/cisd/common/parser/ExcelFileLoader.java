@@ -26,6 +26,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 
@@ -213,7 +214,7 @@ public class ExcelFileLoader<T>
     private static boolean startsDefaultSection(Row row)
     {
         Cell cell = row.getCell(0);
-        if (cell == null || cell.getCellType() != Cell.CELL_TYPE_STRING)
+        if (cell == null || cell.getCellType() != CellType.STRING)
         {
             return false;
         } else

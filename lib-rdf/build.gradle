@@ -24,7 +24,7 @@ dependencies {
     implementation libs.bundles.org.apache.jena.jena,
             libs.org.apache.poi.poi,
             libs.org.apache.poi.poi.ooxml,
-            libs.org.apache.poi.poi.ooxml.schemas,
+            libs.org.apache.poi.poi.ooxml.lite,
             libs.commons.cli.commons.cli.v14
     implementation libs.org.xerial.sqlite.jdbc
     implementation project(':api-openbis-java')

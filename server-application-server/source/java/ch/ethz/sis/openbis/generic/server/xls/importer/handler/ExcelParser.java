@@ -101,7 +101,7 @@ public class ExcelParser
     private static String extractCellValue(Cell cell, int sheet, int row, int column)
     {
         String position = "[ sheet = " + sheet + ", row = " + row + ", column = " + column + "]";
-        switch (cell.getCellTypeEnum())
+        switch (cell.getCellType())
         {
             case BLANK:
                 return "";

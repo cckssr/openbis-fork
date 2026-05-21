@@ -424,7 +424,7 @@ public class XLSExportTest
 
     private static String getStringValue(final Cell cell)
     {
-        switch (cell.getCellTypeEnum())
+        switch (cell.getCellType())
         {
             case NUMERIC:
             {

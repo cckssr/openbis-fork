@@ -196,19 +196,19 @@ public class ExcelFileReader
     {
         switch (cell.getCellType())
         {
-            case Cell.CELL_TYPE_BLANK:
+            case BLANK:
                 return "BLANK";
-            case Cell.CELL_TYPE_BOOLEAN:
+            case BOOLEAN:
                 return Boolean.toString(cell.getBooleanCellValue());
-            case Cell.CELL_TYPE_NUMERIC:
+            case NUMERIC:
                 return Double.toString(cell.getNumericCellValue());
-            case Cell.CELL_TYPE_STRING:
+            case STRING:
                 return cell.getStringCellValue();
-            case Cell.CELL_TYPE_FORMULA:
+            case FORMULA:
                 throw new UserFailureException(
                         "Excel formulas are not supported but one was found in cell "
                                 + extractCellPosition(cell));
-            case Cell.CELL_TYPE_ERROR:
+            case ERROR:
                 throw new UserFailureException("There is an error in cell "
                         + extractCellPosition(cell));
             default:

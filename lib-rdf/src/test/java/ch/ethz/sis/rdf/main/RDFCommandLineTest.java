@@ -149,10 +149,10 @@ public class RDFCommandLineTest
             throw new AssertionError("One of the cells is null while the other is not.");
         }
 
-        assertEquals("Cell types differ", cell1.getCellTypeEnum(), cell2.getCellTypeEnum());
+        assertEquals("Cell types differ", cell1.getCellType(), cell2.getCellType());
 
 
-        switch (cell1.getCellTypeEnum()) {
+        switch (cell1.getCellType()) {
             case FORMULA:
                 assertEquals("Formulas differ", cell1.getCellFormula(), cell2.getCellFormula());
                 break;
@@ -163,13 +163,13 @@ public class RDFCommandLineTest
                 assertEquals("String values differ", cell1.getStringCellValue(), cell2.getStringCellValue());
                 break;
             case BLANK:
-                assertEquals("Blank cells differ", cell2.getCellTypeEnum(), CellType.BLANK);
+                assertEquals("Blank cells differ", CellType.BLANK, cell2.getCellType());
                 break;
             case BOOLEAN:
                 assertEquals("Boolean values differ", cell1.getBooleanCellValue(), cell2.getBooleanCellValue());
                 break;
             default:
-                throw new IllegalArgumentException("Unsupported cell type: " + cell1.getCellTypeEnum());
+                throw new IllegalArgumentException("Unsupported cell type: " + cell1.getCellType());
         }
     }
 }
