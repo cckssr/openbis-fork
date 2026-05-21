@@ -6,10 +6,7 @@ import static ch.ethz.sis.openbis.systemtests.suite.allservers.environment.AllSe
 import static org.testng.Assert.assertEquals;
 
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
@@ -87,8 +84,13 @@ public class IntegrationSftpTest
         Project project = facade.createProject(openBIS, space.getPermId(), "SFTP");
         Experiment experiment = facade.createExperiment(openBIS, project.getPermId(), "SFTP");
 
-        dssDataSet = facade.createDataSet(openBIS, experiment.getPermId(), ENTITY_CODE_PREFIX + UUID.randomUUID(), DSS_DATA_SET_FILE_NAME,
-                DSS_DATA_SET_FILE_CONTENT.getBytes());
+
+        Properties dssProperties = environment.getDataStoreServer().getServiceProperties();
+        String dssCode = dssProperties.getProperty("data-store-server-code");
+        dssDataSet = facade.createDataSet(openBIS, dssCode,
+                experiment.getPermId(), null,
+                ENTITY_CODE_PREFIX + UUID.randomUUID(), DSS_DATA_SET_FILE_NAME,
+                DSS_DATA_SET_FILE_CONTENT.getBytes(), null);
 
         openBIS.getAfsServerFacade().write(experiment.getPermId().getPermId(), AFS_DATA_SET_FILE_NAME, 0L, AFS_DATA_SET_FILE_CONTENT.getBytes());
         // calculate a hash for the file, it will be stored in OperationExecutor.HIDDEN_AFS_DIRECTORY folder

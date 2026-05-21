@@ -20,10 +20,7 @@ import java.net.HttpURLConnection;
 import java.net.http.HttpTimeoutException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -498,8 +495,13 @@ public class IntegrationAfsDataTest
                 // create experiment and data in TEST space with instance admin user
                 Project project = facade.createProject(openBISInstanceAdmin, new SpacePermId(TEST_SPACE), ENTITY_CODE_PREFIX + UUID.randomUUID());
                 Experiment experiment = facade.createExperiment(openBISInstanceAdmin, project.getPermId(), ENTITY_CODE_PREFIX + UUID.randomUUID());
-                DataSet dataSet = facade.createDataSet(openBISInstanceAdmin, experiment.getPermId(), ENTITY_CODE_PREFIX + UUID.randomUUID(), testFile,
-                        testData.getBytes());
+
+                Properties dssProperties = environment.getDataStoreServer().getServiceProperties();
+                String dssCode = dssProperties.getProperty("data-store-server-code");
+                DataSet dataSet = facade.createDataSet(openBISInstanceAdmin, dssCode,
+                        experiment.getPermId(), null,
+                        ENTITY_CODE_PREFIX + UUID.randomUUID(), testFile,
+                        testData.getBytes(), null);
 
                 facade.assertDSSDataSetExistsAtAS(dataSet.getPermId().getPermId(), true);
                 facade.assertAFSDataSetExistsAtAS(dataSet.getPermId().getPermId(), false);
@@ -556,8 +558,12 @@ public class IntegrationAfsDataTest
                 // create dataset with instance admin user
                 Project project = facade.createProject(openBISInstanceAdmin, new SpacePermId(TEST_SPACE), ENTITY_CODE_PREFIX + UUID.randomUUID());
                 Experiment experiment = facade.createExperiment(openBISInstanceAdmin, project.getPermId(), ENTITY_CODE_PREFIX + UUID.randomUUID());
-                DataSet dataSet = facade.createDataSet(openBISInstanceAdmin, experiment.getPermId(), ENTITY_CODE_PREFIX + UUID.randomUUID(), testFile,
-                        testData.getBytes());
+
+                Properties dssProperties = environment.getDataStoreServer().getServiceProperties();
+                String dssCode = dssProperties.getProperty("data-store-server-code");
+                DataSet dataSet = facade.createDataSet(openBISInstanceAdmin, dssCode,
+                        experiment.getPermId(), null, ENTITY_CODE_PREFIX + UUID.randomUUID(), testFile,
+                        testData.getBytes(), null);
 
                 facade.assertDSSDataSetExistsAtAS(dataSet.getPermId().getPermId(), true);
                 facade.assertAFSDataSetExistsAtAS(dataSet.getPermId().getPermId(), false);
