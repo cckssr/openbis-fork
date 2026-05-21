@@ -39,8 +39,7 @@ com-twmacinta-fast-md5 = "2.6.1"
 commons-cli-commons-cli = "1.10.0"
 commons-cli-commons-cli-v14 = "1.4"
 commons-codec-commons-codec = "1.10"
-commons-io-commons-io = "2.19.0"
-commons-io-commons-io-v26 = "2.6"
+commons-io-commons-io = "2.21.0"
 commons-lang-commons-lang = "2.4"
 commons-logging-commons-logging = "1.2"
 cz-habarta-typescript-generator-typescript-generator-core = "3.2.1263"
@@ -187,7 +186,6 @@ commons-cli-commons-cli = { module = "commons-cli:commons-cli", version.ref = "c
 commons-cli-commons-cli-v14 = { module = "commons-cli:commons-cli", version.ref = "commons-cli-commons-cli-v14" }
 commons-codec-commons-codec = { module = "commons-codec:commons-codec", version.ref = "commons-codec-commons-codec" }
 commons-io-commons-io = { module = "commons-io:commons-io", version.ref = "commons-io-commons-io" }
-commons-io-commons-io-v26 = { module = "commons-io:commons-io", version.ref = "commons-io-commons-io-v26" }
 commons-lang-commons-lang = { module = "commons-lang:commons-lang", version.ref = "commons-lang-commons-lang" }
 commons-logging-commons-logging = { module = "commons-logging:commons-logging", version.ref = "commons-logging-commons-logging" }
 cz-habarta-typescript-generator-typescript-generator-core = { module = "cz.habarta.typescript-generator:typescript-generator-core", version.ref = "cz-habarta-typescript-generator-typescript-generator-core" }
