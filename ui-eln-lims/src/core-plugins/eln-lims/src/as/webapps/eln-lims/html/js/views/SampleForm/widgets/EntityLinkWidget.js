@@ -73,7 +73,7 @@ var EntityLinkWidget = new function()
 
     this.getEntityLinkContainer = function($container, model) {
         if (model.mode === FormMode.VIEW &&
-            model.sample.sampleTypeCode === "LOGBOOK" &&
+            model.v3_sample.metaData &&
             model.v3_sample.metaData['ENTITY_LINK.URL']) {
 
             var id = mainController.getNextId();
