@@ -68,9 +68,9 @@ To register new users from the admin UI:
 ![](img/7.0-admin-ui-add-users.png)
 
 8. To assign a role to a user, first the **Level** needs to be selected
-(Instance, Space, Project) .
+(*Instance, Space, Project*) .
 
-9. If level is Instance, you can directly select a role (Admin, Observer). If the level is Space or Project, you first need to select the Space or Project and then assign a [Role](./user-registration.md#openbis-roles).
+9. If level is Instance, you can directly select a role (Admin, Observer). If the level is *Space* or *Project*, you first need to select the *Space* or *Project* and then assign a [Role](./user-registration.md#openbis-roles).
 
 ![](https://openbis.ch/wp-content/uploads/2020/02/admin-ui-roles-300x293.png)
 
@@ -99,7 +99,7 @@ Users can be activated/deactivated in the admin UI:
 ![](img/7.0-admin-ui-edit-user.png)
 
 
-3. Select *Inactive* from the **Access user status dropdown.
+3. Select *Inactive* from the **Access user status** dropdown.
 
 ![](img/7.0-admin-ui-user-access.png)
 
