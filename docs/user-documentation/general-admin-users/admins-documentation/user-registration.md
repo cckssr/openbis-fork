@@ -65,7 +65,7 @@ To register new users from the admin UI:
 6.  Click the **Add Role** button at the bottom of the page to assign a role to the user.
 7.  Click the **Add Group** button at the bottom of the page to assign a user to a group of users.
 
-![](img/admin-ui-add-users.png)
+![](img/7.0-admin-ui-add-users.png)
 
 8. To assign a role to a user, first the **Level** needs to be selected
 (Instance, Space, Project) .
@@ -81,24 +81,29 @@ the page. 
 
 12. After making the necessary changes, press the **Save** button.
 
-![](img/admin-ui-remove-role-save-1024x564.png)
+![](img/7.0-admin-ui-remove-role.png)
 
 Note: for using the ELN interface, it is necessary to assign every user
 or user group the OBSERVER role to the space ELN\_SETTINGS.
 
 
-## Deactivate users
+## User acess
 
-Users can be deactivated in the admin UI:
+Users can be activated/deactivated in the admin UI:
 
 1. Select the user to deactivate in the left menu of the **USERS** tab
 
 2. Click the **EDIT** button on the right bottom corner
 
-3. Unselect the **Active** checkbox
+3. Select Inactive from the **Access user status dropdown**.
 
-![](img/deactivate-user.png)
+![](img/7.0-admin-ui-user-access.png)
 
+
+It is also possible to specify a validity access period for a certain user, so after a certain date the user is deactivated, as shown below.
+
+
+![](img/7.0-admin-ui-user-access-till.png)
 
 
 ## Remove users
@@ -107,7 +112,7 @@ Users can be removed from openBIS only if they have not registered anything in t
 
 Users can be removed in the admin UI, by selecting the user in the left menu of the **USERS** tab and clicking the **REMOVE** button at the bottom of the menu, as shown below.
 
-![](img/remove-user.png)
+![](img/7.0-admin-ui-remove-user.png)
 
 
 
@@ -122,7 +127,7 @@ It is possible to create groups of users and assign rights to a group:
 4.  Enter a **Code** for the group. This is the equivalent of a name, but Codes can only contain numbers, letters and the following symbols: . – \_
 5.  You can now assign registered users to the group and assign Roles as explained above.
 
-![](img/admin-ui-groups-1-1024x559.png)
+![](img/7.0-admin-ui-add-group.png)
 
 
 ## openBIS roles
