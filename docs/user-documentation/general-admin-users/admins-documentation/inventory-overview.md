@@ -28,7 +28,7 @@ For life sciences, following *Object* types are provided in the [community data 
  
 
 These *Objects* are organised in *Collections* in the **Materials** and
-**Methods** sections of the Inventory. See [ELN types](./docs/user-documentation/general-users/ELN-types.md).
+**Methods** sections of the Inventory. See [ELN types](../../general-users/ELN-types.md).
 
  
 
@@ -40,8 +40,7 @@ created by the *Instance admin*, based on the needs of the lab.
  
 
 It is possible to add additional folders in the Inventory, for example
-for **Equipment** (see [Create new Inventory
-Spaces](./docs/user-documentation/general-admin-users/admins-documentation/space-management.md)).
+for **Equipment** (see [Create new InventorySpaces](../space-management.md)).
 
  
 
