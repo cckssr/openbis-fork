@@ -41,7 +41,7 @@ Contains the actual source of the plugin, we can distinguish three clear
 sections/patterns on the skeleton of the interface:
 
 -   Interface:
-    <https://sissource.ethz.ch/sispub/openbis/-/blob/master/ui-eln-lims/src/core-plugins/eln-lims/1/as/webapps/eln-lims/html/js/config/ELNLIMSPlugin.js>
+    <https://sissource.ethz.ch/sispub/openbis/-/blob/master/ui-eln-lims/src/core-plugins/eln-lims/src/as/webapps/eln-lims/html/js/config/ELNLIMSPlugin.js>
 
 1. Configuring views through the use of a JSON structure. Part of this
 structure are:
@@ -59,9 +59,9 @@ effort. Best examples of how to use these definition extensions can be
 found in technologies that ship with the ELN:
 
 -   Generic Technology:
-    <https://sissource.ethz.ch/sispub/openbis/-/blob/master/ui-eln-lims/src/core-plugins/eln-lims/1/as/webapps/eln-lims/html/plugins/generic/plugin.js>
+    <https://sissource.ethz.ch/sispub/openbis/-/blob/master/ui-eln-lims/src/core-plugins/eln-lims/src/as/webapps/eln-lims/html/plugins/generic/plugin.js>
 -   Life Sciences Technology:
-    <https://sissource.ethz.ch/sispub/openbis/-/blob/master/ui-eln-lims/src/core-plugins/eln-lims/1/as/webapps/eln-lims/html/plugins/life-sciences/plugin.js>
+    <https://sissource.ethz.ch/sispub/openbis/-/blob/master/ui-eln-lims/src/core-plugins/eln-lims/src/as/webapps/eln-lims/html/plugins/life-sciences/plugin.js>
 
 2\. Extending views through the use of the [Interceptor
 Pattern](https://en.wikipedia.org/wiki/Interceptor_pattern)
@@ -91,7 +91,7 @@ Pattern](https://en.wikipedia.org/wiki/Interceptor_pattern)
     views. Best examples of how to use these can be found in
     technologies that ship with the ELN:
     -   Microscopy Technology:
-        <https://sissource.ethz.ch/sispub/openbis/-/blob/master/ui-eln-lims/src/core-plugins/eln-lims/1/as/webapps/eln-lims/html/plugins/microscopy/plugin.js> 
+        <https://sissource.ethz.ch/sispub/openbis/-/blob/master/ui-eln-lims/src/core-plugins/eln-lims/src/as/webapps/eln-lims/html/plugins/microscopy/plugin.js> 
 
 3\. Other Extensions:
 
@@ -99,7 +99,7 @@ Pattern](https://en.wikipedia.org/wiki/Interceptor_pattern)
     is tricky to use properly.
 -   getExtraUtilities: Allows to extend the utilities menu. A great
     example is this template:
-    <https://sissource.ethz.ch/sispub/openbis/-/blob/master/ui-eln-lims/src/core-plugins/eln-lims/1/as/webapps/eln-lims/html/plugins/template-extra-utilities/plugin.js>
+    <https://sissource.ethz.ch/sispub/openbis/-/blob/master/ui-eln-lims/src/core-plugins/eln-lims/src/as/webapps/eln-lims/html/plugins/template-extra-utilities/plugin.js>
 
 ## Source Code Examples (plugin.js)
 
@@ -224,4 +224,4 @@ dollar sign '$' indicate they are jquery components:
 ### Extra Views as Utilities
 
 Please check the provided example:
-<https://sissource.ethz.ch/sispub/openbis/-/blob/master/ui-eln-lims/src/core-plugins/eln-lims/1/as/webapps/eln-lims/html/plugins/template-extra-utilities/plugin.js>
+<https://sissource.ethz.ch/sispub/openbis/-/blob/master/ui-eln-lims/src/core-plugins/eln-lims/src/as/webapps/eln-lims/html/plugins/template-extra-utilities/plugin.js>
