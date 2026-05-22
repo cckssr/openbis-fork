@@ -95,12 +95,16 @@ Users can be activated/deactivated in the admin UI:
 
 2. Click the **EDIT** button on the right bottom corner
 
-3. Select Inactive from the **Access user status dropdown**.
+
+![](img/7.0-admin-ui-edit-user.png)
+
+
+3. Select *Inactive* from the **Access user status dropdown**.
 
 ![](img/7.0-admin-ui-user-access.png)
 
 
-It is also possible to specify a validity access period for a certain user, so after a certain date the user is deactivated, as shown below.
+It is also possible to specify a validity access period for a certain user, by selecting the option *Active until* in the **Access user status dropdown**. In this case, after a certain date the user is deactivated, as shown below.
 
 
 ![](img/7.0-admin-ui-user-access-till.png)
