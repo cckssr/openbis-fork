@@ -202,6 +202,22 @@ public class SftpListUtil {
                 .map(Sample::getDataSets).orElse(Collections.emptyList());
     }
 
+    /***
+     * @param experimentPermId Experiment perm-id
+     * @return datasets attached to experiment-entity
+     */
+    public @NonNull List<DataSet> getExperimentDatasets(@NonNull String experimentPermId) {
+        OpenBIS openBIS = openBISClientUtil.getOpenBISClient(user);
+
+        ExperimentFetchOptions fetchOptions = new ExperimentFetchOptions();
+        fetchOptions.withDataSets();
+        fetchOptions.withDataSets().withProperties();
+        ExperimentPermId experimentId = new ExperimentPermId(experimentPermId);
+
+        return Optional.ofNullable(openBIS.getExperiments(List.of(experimentId), fetchOptions).get(experimentId))
+                .map(Experiment::getDataSets).orElse(Collections.emptyList());
+    }
+
     public String getAfsEntityPermId(@NonNull SftpNode afsEntityNode) {
         return switch (afsEntityNode.getType()) {
             case SAMPLE, FOLDER, DATA_SET, EXPERIMENT ->
