@@ -87,7 +87,7 @@ Note: for using the ELN interface, it is necessary to assign every user
 or user group the OBSERVER role to the space ELN\_SETTINGS.
 
 
-## User acess
+## User access
 
 Users can be activated/deactivated in the admin UI:
 
@@ -99,12 +99,14 @@ Users can be activated/deactivated in the admin UI:
 ![](img/7.0-admin-ui-edit-user.png)
 
 
-3. Select *Inactive* from the **Access user status dropdown**.
+3. Select *Inactive* from the **Access user status dropdown.
 
 ![](img/7.0-admin-ui-user-access.png)
 
+When a user is deactivated, the user rights remain assigned. This simplify things when a deactivated user is activated again. In openBIS versions prior to 7.0, when a user was deactivated, all rights were removed. In case of re-activation, rights had to be manually re-added. 
 
-It is also possible to specify a validity access period for a certain user, by selecting the option *Active until* in the **Access user status dropdown**. In this case, after a certain date the user is deactivated, as shown below.
+
+It is also possible to specify a validity access period for a certain user, by selecting the option *Active until* in the **Access user status** dropdown. In this case, after a certain date the user is deactivated, as shown below.
 
 
 ![](img/7.0-admin-ui-user-access-till.png)
@@ -301,7 +303,7 @@ shown below.
 
  
 
-![image info](img/home-space-admin-ui-1024x359.png)
+![image info](img/7.0-admin-ui-user-home-space.png)
 
  
 
