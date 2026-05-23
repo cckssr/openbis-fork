@@ -17,7 +17,9 @@ package ch.systemsx.cisd.dbmigration;
 
 import javax.sql.DataSource;
 
-import org.apache.commons.pool.impl.GenericObjectPool;
+import org.apache.commons.pool2.impl.GenericObjectPool;
+
+import java.time.Duration;
 
 /**
  * @author Piotr Buczek
@@ -60,8 +62,8 @@ public class BasicDataSourceFactory implements IDataSourceFactory
         dataSource.setUsername(owner);
         dataSource.setPassword(password);
         dataSource.setMaxIdle(maxIdle);
-        dataSource.setMaxActive(maxActive);
-        dataSource.setMaxWait(maxWaitMillis * 1000L);
+        dataSource.setMaxTotal(maxActive);   // replaces setMaxActive(...)
+        dataSource.setMaxWait(Duration.ofMillis(maxWaitMillis * 1000L)); // was before dataSource.setMaxWait(maxWaitMillis * 1000L);
         dataSource.setActiveConnectionsLogInterval(activeConnectionsLogIntervalMillis);
         dataSource.setValidationQuery(validationQuery);
         return dataSource;

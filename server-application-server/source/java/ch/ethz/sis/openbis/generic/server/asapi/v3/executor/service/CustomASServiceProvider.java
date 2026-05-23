@@ -21,7 +21,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.annotation.Resource;
+import ch.ethz.sis.openbis.generic.server.xls.export.EntityCollectorExtendedService;
+import jakarta.annotation.Resource;
 
 import ch.ethz.sis.openbis.generic.server.xls.export.XLSExportExtendedService;
 import org.springframework.beans.factory.InitializingBean;
@@ -83,6 +84,9 @@ public class CustomASServiceProvider implements InitializingBean, ICustomASServi
         // Official system services
         XLSExportExtendedService XLSExportExtendedService = new XLSExportExtendedService();
         addCustomASService(XLSExportExtendedService.getCode(), XLSExportExtendedService.getLabel(), XLSExportExtendedService.getDescription(), XLSExportExtendedService);
+
+        EntityCollectorExtendedService entityCollectorExtendedService = new EntityCollectorExtendedService();
+        addCustomASService(entityCollectorExtendedService.getCode(), entityCollectorExtendedService.getLabel(), entityCollectorExtendedService.getDescription(), entityCollectorExtendedService);
     }
 
     @Override

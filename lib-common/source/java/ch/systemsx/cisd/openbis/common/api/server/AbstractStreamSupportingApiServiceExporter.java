@@ -22,7 +22,7 @@ import ch.systemsx.cisd.common.spring.ServiceExceptionTranslator;
 import ch.systemsx.cisd.common.spring.WhiteAndBlackListStreamSupportingHttpInvokerExporter;
 import com.marathon.util.spring.StreamSupportingHttpInvokerServiceExporter;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 /**
  * Abstract super class of all classes make an API available via {@link StreamSupportingHttpInvokerServiceExporter}.

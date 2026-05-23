@@ -18,10 +18,10 @@ package ch.systemsx.cisd.openbis.generic.shared.dto;
 import java.io.Serializable;
 import java.util.Date;
 
-import javax.persistence.Column;
-import javax.persistence.MappedSuperclass;
-import javax.persistence.Version;
-import javax.validation.constraints.NotNull;
+import jakarta.persistence.Column;
+import jakarta.persistence.MappedSuperclass;
+import jakarta.persistence.Version;
+import jakarta.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.Length;
 
@@ -98,7 +98,7 @@ public abstract class AbstractExpressionPE<T> extends HibernateAbstractRegistrat
         this.modificationDate = versionDate;
     }
 
-    public final void setId(final Long id)
+    public void setId(final Long id)
     {
         this.id = id;
     }

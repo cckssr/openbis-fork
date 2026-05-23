@@ -20,16 +20,12 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.Locale;
 
 import ch.ethz.sis.shared.log.classic.impl.Logger;
-import org.hibernate.FetchMode;
+import org.hibernate.HibernateException;
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.criterion.DetachedCriteria;
-import org.hibernate.criterion.Order;
-import org.hibernate.criterion.Projections;
-import org.hibernate.criterion.Restrictions;
-import org.springframework.orm.hibernate5.HibernateTemplate;
 
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
@@ -43,6 +39,9 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.MetaprojectAssignmentPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.MetaprojectPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
+import org.springframework.orm.hibernate5.SessionFactoryUtils;
+
+import static ch.systemsx.cisd.openbis.generic.server.dataaccess.db.DAOUtils.BATCH_SIZE;
 
 /**
  * @author Pawel Glyzewski
@@ -63,11 +62,16 @@ public class MetaprojectDAO extends AbstractGenericEntityDAO<MetaprojectPE> impl
     @Override
     public MetaprojectPE tryFindByOwnerAndName(String ownerId, String metaprojectName)
     {
-        final DetachedCriteria criteria = DetachedCriteria.forClass(MetaprojectPE.class);
-        criteria.createAlias("owner", "o");
-        criteria.add(Restrictions.eq("name", metaprojectName).ignoreCase());
-        criteria.add(Restrictions.eq("o.userId", ownerId));
-        final List<MetaprojectPE> list = cast(getHibernateTemplate().findByCriteria(criteria));
+        // Fetch up to 2 so tryFindEntity can warn on duplicates (if your helper does that)
+        List<MetaprojectPE> list = currentSession().createQuery(
+                                "select m from MetaprojectPE m join m.owner o " +
+                                        "where lower(m.name) = :name and o.userId = :ownerId",
+                                MetaprojectPE.class)
+                        .setParameter("name", metaprojectName.toLowerCase(Locale.ROOT))
+                        .setParameter("ownerId", ownerId)
+                        .setMaxResults(2)
+                        .list();
+
         final MetaprojectPE entity = tryFindEntity(list, "metaproject");
 
         if (operationLog.isDebugEnabled())
@@ -82,10 +86,16 @@ public class MetaprojectDAO extends AbstractGenericEntityDAO<MetaprojectPE> impl
     @Override
     public List<MetaprojectPE> listMetaprojects(PersonPE owner)
     {
-        final DetachedCriteria criteria = DetachedCriteria.forClass(MetaprojectPE.class);
-        criteria.add(Restrictions.eq("owner", owner));
-        criteria.addOrder(Order.asc("name"));
-        final List<MetaprojectPE> list = cast(getHibernateTemplate().findByCriteria(criteria));
+
+        List<MetaprojectPE> list =
+                currentSession().createQuery(
+                                "select m from MetaprojectPE m " +
+                                        "where m.owner = :owner " +
+                                        "order by m.name asc",
+                                MetaprojectPE.class)
+                        .setParameter("owner", owner)
+                        .list();
+
         if (operationLog.isDebugEnabled())
         {
             operationLog.debug(String.format("%s(%s): %d metaproject(s) have been found.",
@@ -107,9 +117,11 @@ public class MetaprojectDAO extends AbstractGenericEntityDAO<MetaprojectPE> impl
             metaproject.setOwner(owner);
         }
         metaproject.setPrivate(true);
-        final HibernateTemplate template = getHibernateTemplate();
-        template.saveOrUpdate(metaproject);
-        template.flush();
+        doExecute(session -> {
+             session.saveOrUpdate(metaproject);
+             session.flush();
+             return null;
+        });
         if (operationLog.isInfoEnabled())
         {
             operationLog.info(String.format("SAVE: metaproject '%s'.", metaproject));
@@ -120,49 +132,47 @@ public class MetaprojectDAO extends AbstractGenericEntityDAO<MetaprojectPE> impl
     public Collection<MetaprojectPE> listMetaprojectsForEntity(PersonPE owner,
             IEntityInformationHolderDTO entity)
     {
-        final DetachedCriteria criteria = DetachedCriteria.forClass(MetaprojectAssignmentPE.class);
-        criteria.createAlias("metaproject", "m");
-        criteria.add(Restrictions.eq("m.owner", owner));
-        criteria.add(Restrictions.eq(entity.getEntityKind().getLabel(), entity));
-        criteria.setFetchMode("experiment", FetchMode.SELECT);
-        criteria.setFetchMode("dataSet", FetchMode.SELECT);
-        criteria.setFetchMode("material", FetchMode.SELECT);
-        criteria.setFetchMode("sample", FetchMode.SELECT);
 
-        final List<MetaprojectAssignmentPE> assignments =
-                cast(getHibernateTemplate().findByCriteria(criteria));
+        return doExecute(session -> {
+            final String entityKind = entity.getEntityKind().getLabel();
+            final String hql =
+                    "select distinct m " +
+                            "from MetaprojectAssignmentPE a " +
+                            "join a.metaproject m " +
+                            "where m.owner = :owner and a." + entityKind + " = :entity";
 
-        Set<MetaprojectPE> metaprojects = new HashSet<MetaprojectPE>();
-        for (MetaprojectAssignmentPE assignment : assignments)
-        {
-            metaprojects.add(assignment.getMetaproject());
-        }
-        if (operationLog.isDebugEnabled())
-        {
-            operationLog.debug(String.format("%s(%s, %s): %d metaproject(s) have been found.",
-                    MethodUtils.getCurrentMethod().getName(), owner, entity, metaprojects.size()));
-        }
+            List<MetaprojectPE> assignments =
+                    session.createQuery(hql, MetaprojectPE.class)
+                            .setParameter("owner", owner)
+                            .setParameter("entity", entity)
+                            .list();
 
-        return metaprojects;
+            Collection<MetaprojectPE> metaprojects = new HashSet<>(assignments);
+            if (operationLog.isDebugEnabled())
+            {
+                operationLog.debug(String.format("%s(%s, %s): %d metaproject(s) have been found.",
+                        MethodUtils.getCurrentMethod().getName(), owner, entity,
+                        metaprojects.size()));
+            }
+
+            return metaprojects;
+        });
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public Collection<Long> listMetaprojectEntityIds(Long metaprojectId, EntityKind entityKind)
     {
-        final DetachedCriteria criteria = DetachedCriteria.forClass(MetaprojectAssignmentPE.class);
-        criteria.createAlias("metaproject", "m");
-        criteria.createAlias(entityKind.getLabel(), "e");
-        criteria.add(Restrictions.eq("m.id", metaprojectId));
-        criteria.setProjection(Projections.property("e.id"));
 
-        List<Number> idsAsNumbers = (List<Number>) getHibernateTemplate().findByCriteria(criteria);
-        List<Long> idsAsLongs = new ArrayList<Long>();
+        final String hql =
+                "select e.id " +
+                        "from MetaprojectAssignmentPE a " +
+                        "join a." + entityKind.getLabel() + " e " +
+                        "where a.metaproject.id = :mpId";
 
-        for (Number idAsNumber : idsAsNumbers)
-        {
-            idsAsLongs.add(idAsNumber.longValue());
-        }
+        List<Long> idsAsLongs = doExecute(session -> session.createQuery(hql, Long.class)
+                        .setParameter("mpId", metaprojectId)
+                        .list());
 
         if (operationLog.isDebugEnabled())
         {
@@ -193,17 +203,21 @@ public class MetaprojectDAO extends AbstractGenericEntityDAO<MetaprojectPE> impl
 
         while ((partialEntities = entitiesScroller.next()) != null)
         {
-            final DetachedCriteria criteria = DetachedCriteria.forClass(MetaprojectAssignmentPE.class);
-            criteria.createAlias("metaproject", "m");
-            criteria.add(Restrictions.eq("m.owner", owner));
-            criteria.add(Restrictions.in(entityKind.getLabel(), partialEntities));
 
-            criteria.setFetchMode("experiment", FetchMode.SELECT);
-            criteria.setFetchMode("sample", FetchMode.SELECT);
-            criteria.setFetchMode("dataSet", FetchMode.SELECT);
-            criteria.setFetchMode("material", FetchMode.SELECT);
+            final List<? extends IEntityInformationWithPropertiesHolder> finalPartialEntities = partialEntities;
+            final String hql =
+                    "select a " +
+                            "from MetaprojectAssignmentPE a " +
+                            "join a.metaproject m " +
+                            "where m.owner = :owner " +
+                            "and a." + entityKind.getLabel() + " in (:entities)";
 
-            final List<MetaprojectAssignmentPE> partialAssignments = cast(getHibernateTemplate().findByCriteria(criteria));
+            List<MetaprojectAssignmentPE> partialAssignments = doExecute( session ->
+                    session.createQuery(hql, MetaprojectAssignmentPE.class)
+                            .setParameter("owner", owner)
+                            .setParameter("entities", finalPartialEntities)
+                            .list());
+
             assignments.addAll(partialAssignments);
         }
 
@@ -220,14 +234,19 @@ public class MetaprojectDAO extends AbstractGenericEntityDAO<MetaprojectPE> impl
     public Collection<MetaprojectAssignmentPE> listMetaprojectAssignments(Long metaprojectId,
             EntityKind entityKind)
     {
-        final DetachedCriteria criteria = DetachedCriteria.forClass(MetaprojectAssignmentPE.class);
-        criteria.createAlias("metaproject", "m");
-        criteria.add(Restrictions.eq("m.id", metaprojectId));
-        criteria.add(Restrictions.isNotNull(entityKind.getLabel()));
-        final List<MetaprojectAssignmentPE> assignments =
-                cast(getHibernateTemplate().findByCriteria(criteria));
 
-        if (operationLog.isDebugEnabled())
+        final String hql =
+                "select a " +
+                        "from MetaprojectAssignmentPE a " +
+                        "join a.metaproject m " +
+                        "where m.id = :mpId " +
+                        "and a." + entityKind.getLabel() + " is not null";
+
+        List<MetaprojectAssignmentPE> assignments = doExecute(session -> session.createQuery(hql, MetaprojectAssignmentPE.class)
+                        .setParameter("mpId", metaprojectId)
+                        .list());
+
+       if (operationLog.isDebugEnabled())
         {
             operationLog.debug(String.format("%s(%s, %s): %d metaproject(s) have been found.",
                     MethodUtils.getCurrentMethod().getName(), metaprojectId, entityKind,
@@ -240,13 +259,17 @@ public class MetaprojectDAO extends AbstractGenericEntityDAO<MetaprojectPE> impl
     @Override
     public int getMetaprojectAssignmentsCount(Long metaprojectId, EntityKind entityKind)
     {
-        final DetachedCriteria criteria = DetachedCriteria.forClass(MetaprojectAssignmentPE.class);
-        criteria.createAlias("metaproject", "m");
-        criteria.add(Restrictions.eq("m.id", metaprojectId));
-        criteria.add(Restrictions.isNotNull(entityKind.getLabel()));
-        criteria.setProjection(Projections.rowCount());
 
-        Number count = (Number) getHibernateTemplate().findByCriteria(criteria).get(0);
+        final String hql =
+                "select count(a) " +
+                        "from MetaprojectAssignmentPE a " +
+                        "join a.metaproject m " +
+                        "where m.id = :mpId " +
+                        "and a." + entityKind.getLabel() + " is not null";
+
+        Long count = currentSession().createQuery(hql, Long.class)
+                        .setParameter("mpId", metaprojectId)
+                        .uniqueResult();
 
         if (operationLog.isDebugEnabled())
         {
@@ -271,8 +294,24 @@ public class MetaprojectDAO extends AbstractGenericEntityDAO<MetaprojectPE> impl
         {
             return new ArrayList<MetaprojectPE>();
         }
-        final List<MetaprojectPE> list =
-                DAOUtils.listByCollection(getHibernateTemplate(), MetaprojectPE.class, idName, ids);
+        List<?> allIds = new ArrayList<>(ids);
+        List<MetaprojectPE> list = new ArrayList<>(allIds.size());
+
+        for (int i = 0; i < allIds.size(); i += BATCH_SIZE)
+        {
+            List<?> slice = allIds.subList(i, Math.min(allIds.size(), i + BATCH_SIZE));
+            if (slice.isEmpty())
+                continue;
+
+            List<MetaprojectPE> batch = doExecute(session -> session.createQuery(
+                                            "from " + MetaprojectPE.class.getName() + " e where e." + idName + " in (:ids)",
+                                            MetaprojectPE.class
+                                    )
+                                    .setParameter("ids", slice)
+                                    .list());
+
+            list.addAll(batch);
+        }
         if (operationLog.isDebugEnabled())
         {
             operationLog.debug(String.format("%d metaproject(s) have been found.", list.size()));

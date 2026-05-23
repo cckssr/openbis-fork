@@ -15,9 +15,9 @@
  */
 package ch.systemsx.cisd.openbis.generic.client.web.server.resultset;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
-import net.sf.ehcache.CacheManager;
+import org.ehcache.CacheManager;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -69,7 +69,9 @@ public class TableDataCache<K, T>
     {
         if (runtimeCache == null)
         {
-            runtimeCache = new RuntimeCache<>(cacheManager, CACHE_NAME, CACHE_SIZE_PROPERTY_NAME);
+            @SuppressWarnings("unchecked")
+            Class<K> keyType = (Class<K>) (Class<?>) Object.class; // or pass a concrete K type if you have it
+            runtimeCache = new RuntimeCache<>(cacheManager, CACHE_NAME, CACHE_SIZE_PROPERTY_NAME, keyType);
         }
         runtimeCache.initCache();
     }

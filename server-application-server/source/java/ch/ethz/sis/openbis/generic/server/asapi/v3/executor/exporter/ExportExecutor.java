@@ -76,7 +76,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.VocabularyTerm;
 import ch.ethz.sis.openbis.generic.server.xls.export.*;

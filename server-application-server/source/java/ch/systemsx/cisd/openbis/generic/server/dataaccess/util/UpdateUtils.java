@@ -15,35 +15,37 @@
  */
 package ch.systemsx.cisd.openbis.generic.server.dataaccess.util;
 
+import java.time.Instant;
 import java.util.Date;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.engine.spi.SessionImplementor;
-import org.hibernate.type.DbTimestampType;
-import org.hibernate.type.TimestampType;
-
 
 /**
  * @author Franz-Josef Elmer
  */
 public class UpdateUtils
 {
-    private static final TimestampType TIMESTAMP_TYPE = new DbTimestampType();
-
-    public static Date getTransactionTimeStamp(SessionFactory sessionFactory)
+    public static Instant getTransactionInstant(SessionFactory sessionFactory)
     {
-        Session currentSession = sessionFactory.getCurrentSession();
-        return getTransactionTimeStamp(currentSession);
+        return getTransactionTimestamp(sessionFactory).toInstant();
     }
 
-    private static Date getTransactionTimeStamp(Session currentSession)
+    public static Date getTransactionTimeStamp(SessionFactory sessionFactory) {
+        return getTransactionTimestamp(sessionFactory);
+    }
+
+    private static java.sql.Timestamp getTransactionTimestamp(SessionFactory sessionFactory)
     {
-        if (currentSession instanceof SessionImplementor)
-        {
-            return TIMESTAMP_TYPE.seed((SessionImplementor) currentSession);
-        }
-        return new Date();
+        Session session = sessionFactory.getCurrentSession();
+        return session.doReturningWork(conn -> {
+            try (var st = conn.createStatement();
+                    // On PostgreSQL, CURRENT_TIMESTAMP == transaction_timestamp()
+                    var rs = st.executeQuery("select current_timestamp")) {
+                rs.next();
+                return rs.getTimestamp(1);
+            }
+        });
     }
 
 }

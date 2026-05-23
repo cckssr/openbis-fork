@@ -21,11 +21,7 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 import java.util.Collections;
 import java.util.List;
 
-import org.hibernate.Criteria;
-import org.hibernate.ScrollMode;
-import org.hibernate.ScrollableResults;
 import org.hibernate.Session;
-import org.hibernate.criterion.Restrictions;
 
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.dynamic_property.IDynamicPropertyEvaluator;
 
@@ -76,11 +72,11 @@ public class EntityAdaptorRelationsLoader
 
             if (entityIds != null && entityIds.size() > 0)
             {
-                Criteria criteria = session.createCriteria(entityClass);
-                criteria.setFetchSize(10);
-                criteria.add(Restrictions.in("id", entityIds));
-                ScrollableResults results = criteria.scroll(ScrollMode.FORWARD_ONLY);
-                return new EntityAdaptorIterator<T>(results, evaluator, session);
+                var q = session.createQuery("from " + entityClass.getName() + " e where e.id in :ids", (Class<?>) entityClass)
+                        .setParameter("ids", entityIds)
+                        .setFetchSize(10);
+                var scroll = q.scroll(org.hibernate.ScrollMode.FORWARD_ONLY);
+                return new EntityAdaptorIterator<T>(scroll, evaluator, session);
             } else
             {
                 return Collections.emptyList();

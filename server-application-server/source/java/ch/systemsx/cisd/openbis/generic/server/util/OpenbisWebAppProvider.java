@@ -1,36 +1,24 @@
-/*
- * Copyright ETH 2011 - 2023 Zürich, Scientific IT Services
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-package ch.systemsx.cisd.openbis.generic.server.util;
-
-import org.eclipse.jetty.deploy.App;
-import org.eclipse.jetty.deploy.providers.WebAppProvider;
-import org.eclipse.jetty.server.handler.ContextHandler;
-
-/**
- * Web app provider which allows symbolic links.
- * 
- * @author Franz-Josef Elmer
- */
-public class OpenbisWebAppProvider extends WebAppProvider
-{
-    @Override
-    public ContextHandler createContextHandler(App app) throws Exception
-    {
-        ContextHandler handler = super.createContextHandler(app);
-        handler.setInitParameter("org.eclipse.jetty.servlet.Default.aliases", "true");
-        return handler;
-    }
-}
+//package ch.systemsx.cisd.openbis.generic.server.util;
+//
+//import org.eclipse.jetty.deploy.App;
+//import org.eclipse.jetty.deploy.providers.ContextProvider;
+//import org.eclipse.jetty.server.SymlinkAllowedResourceAliasChecker;
+//import org.eclipse.jetty.server.handler.ContextHandler;
+//
+//public class OpenbisWebAppProvider extends ContextProvider
+//{
+//    @Override
+//    public ContextHandler createContextHandler(App app) throws Exception
+//    {
+//        ContextHandler handler = super.createContextHandler(app);
+//
+//        // Allow serving resources through symlinks (Jetty 12+)
+//        handler.getAliasChecks().add(new SymlinkAllowedResourceAliasChecker());
+//
+//        // Optional: keep old DefaultServlet compat flags
+//        handler.setInitParameter("aliases", "true");
+//        handler.setInitParameter("org.eclipse.jetty.ee10.servlet.Default.aliases", "true");
+//
+//        return handler;
+//    }
+//}

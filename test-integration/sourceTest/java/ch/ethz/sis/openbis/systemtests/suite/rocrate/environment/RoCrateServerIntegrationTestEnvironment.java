@@ -14,6 +14,7 @@ public final class RoCrateServerIntegrationTestEnvironment
             environment = new IntegrationTestEnvironment();
             environment.createApplicationServer();
             environment.createRoCrateServer();
+            environment.enableSystemUser();
             environment.start();
         }
     }

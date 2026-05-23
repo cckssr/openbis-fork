@@ -14,9 +14,14 @@ interface EntityFormProps {
   onFieldMetadataChange: (fieldId: string, meta: any) => void;
   onAction: (actionName: string) => void;
   params: any;
+  /**
+   * Optional overrides applied to actions at render time (does NOT mutate the form).
+   * Useful for UI/session-driven values like switch checked states.
+   */
+  actionOverrides?: Record<string, Partial<FormActionDef>>;
 }
 
-const EntityForm = ({ form, mode, permissions, onFieldChange, onFieldMetadataChange, onAction, params }: EntityFormProps) => {
+const EntityForm = ({ form, mode, permissions, onFieldChange, onFieldMetadataChange, onAction, params, actionOverrides = {} }: EntityFormProps) => {
 
   const renderToolbar = () => {
     // UPDATED: Interpret declarative visibility rules
@@ -42,12 +47,18 @@ const EntityForm = ({ form, mode, permissions, onFieldChange, onFieldMetadataCha
         justifyContent: 'flex-start',
         alignItems: 'center',
         padding: '16px 16px',
-        backgroundColor: 'rgb(248,248,248)'
+        backgroundColor: 'rgb(248,248,248)',
+        position: 'sticky',
+        top: 0,
+        zIndex: 1000
       }}>
         {visibleActions?.map((action: FormActionDef) => {
           const ActionRenderer = ComponentRegistry.getActionRenderer(action.component);
           if (ActionRenderer) {
-            return <ActionRenderer key={action.name} action={action} onAction={onAction} mode={mode} />
+            const overriddenAction = actionOverrides[action.name]
+              ? { ...action, ...actionOverrides[action.name] }
+              : action
+            return <ActionRenderer key={overriddenAction.name} action={overriddenAction} onAction={onAction} mode={mode} />
           }
         })}
       </Stack>
@@ -128,12 +139,11 @@ const EntityForm = ({ form, mode, permissions, onFieldChange, onFieldMetadataCha
     // Get the correct renderer component from the registry
     const FieldRenderer = ComponentRegistry.getFieldRenderer(field.dataType);
     if (!FieldRenderer) {
-      return <div>Unsupported field type: {field.dataType}</div>;
+      return <div key={field.id}>Unsupported field type: {field.dataType}</div>;
     }
     return (
-      <div style={mode === FormMode.EDIT && !field.readOnly ? { marginBottom: '8px' } : {}}>
+      <div key={field.id} style={mode === FormMode.EDIT && !field.readOnly ? { marginBottom: '8px' } : {}}>
         <FieldRenderer
-          key={field.id}
           field={field}
           onFieldChange={onFieldChange}
           onFieldMetadataChange={onFieldMetadataChange}
@@ -145,10 +155,12 @@ const EntityForm = ({ form, mode, permissions, onFieldChange, onFieldMetadataCha
   };
 
   return (
-    <>
-      {/* renderToolbar() */}
-      {renderSections()}
-    </>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+      {renderToolbar()}
+      <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', minHeight: 0 }}>
+        {renderSections()}
+      </div>
+    </div>
   );
 };
 

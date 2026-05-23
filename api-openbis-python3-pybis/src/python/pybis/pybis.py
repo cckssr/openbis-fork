@@ -88,6 +88,7 @@ from .utils import (
     is_identifier,
     is_number,
     is_permid,
+    assign_jackson_ids,
     parse_jackson,
     split_identifier,
 )
@@ -1321,6 +1322,10 @@ class Openbis:
             request["jsonrpc"] = "2.0"
         if request["params"][0] is None:
             raise ValueError("Your session expired, please log in again")
+
+        if "params" in request:
+            for param in request["params"]:
+                assign_jackson_ids(param)
 
         if DEBUG_LEVEL >= LOG_DEBUG:
             print(json.dumps(request))
@@ -6370,6 +6375,9 @@ class ImagingControl:
             url, stream=True, verify=self._openbis.verify_certificates
         )
         file_name = url.split("/")[-1]
+        if '%2F' in file_name:
+            # Flow for cases where name is more complex
+            file_name = file_name.split('%2F')[-1]
         path = os.path.join(directory_path, file_name)
         os.makedirs(os.path.dirname(path), exist_ok=True)
         with open(path, "wb") as f:
@@ -6379,19 +6387,25 @@ class ImagingControl:
 
     def get_property_config(self, perm_id: str) -> ImagingDataSetPropertyConfig:
         """Returns imaging property config of given imaging dataset."""
-        dataset = self._openbis.get_dataset(perm_id)
-        imaging_property = json.loads(
-            dataset.props[ImagingControl.IMAGING_CONFIG_PROP_NAME]
-        )
+        sample = self._openbis.get_samples(permId=perm_id)
+        if len(sample) > 0:
+            entity = sample[0]
+        else:
+            entity = self._openbis.get_dataset(perm_id)
+        imaging_property = json.loads(entity.props[ImagingControl.IMAGING_CONFIG_PROP_NAME])
         return ImagingDataSetPropertyConfig.from_dict(imaging_property)
 
     def update_property_config(
         self, perm_id: str, config: ImagingDataSetPropertyConfig
     ):
         """Update imaging dataset with given imaging property config."""
-        dataset = self._openbis.get_dataset(perm_id)
-        dataset.props[ImagingControl.IMAGING_CONFIG_PROP_NAME] = config.to_json()
-        dataset.save()
+        sample = self._openbis.get_samples(permId=perm_id)
+        if len(sample) > 0:
+            entity = sample[0]
+        else:
+            entity = self._openbis.get_dataset(perm_id)
+        entity.props[ImagingControl.IMAGING_CONFIG_PROP_NAME] = config.to_json()
+        entity.save()
 
     def create_imaging_dataset(
         self,
@@ -6413,16 +6427,10 @@ class ImagingControl:
         if self.afs_client is not None and self.afs_client.is_session_valid():
             props = other_properties
             props[ImagingControl.IMAGING_CONFIG_PROP_NAME] = config.to_json()
-            props[ImagingControl.DEFAULT_OBJECT_VIEW_PROP_NAME] = (
-                ImagingControl.IMAGING_DATASET_VIEWER
-            )
-            sample = self._openbis.new_sample(
-                dataset_type, experiment=experiment, props=props
-            )
-            sample = sample.save()
-            self.afs_client.upload_files(
-                sample.permId, "/", files, wait_until_finished=True
-            )
+            props[ImagingControl.DEFAULT_OBJECT_VIEW_PROP_NAME] = ImagingControl.IMAGING_DATASET_VIEWER
+            sample = self._openbis.new_sample(dataset_type, experiment=experiment, props=props)
+            sample.save()
+            self.afs_client.upload_files(sample.permId, "/", files, wait_until_finished=True)
             return sample
 
         else:

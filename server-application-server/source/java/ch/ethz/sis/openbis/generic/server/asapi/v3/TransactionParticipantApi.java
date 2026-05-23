@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 import ch.ethz.sis.shared.log.classic.impl.Logger;
 import org.hibernate.Session;

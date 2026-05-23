@@ -15,14 +15,24 @@
  */
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.dataset;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Component;
 
+import ch.ethz.sis.afsjson.jackson.JacksonObjectMapper;
+import ch.ethz.sis.messages.db.MessagesDatabase;
+import ch.ethz.sis.messages.db.MessagesDatabaseUtil;
+import ch.ethz.sis.messages.process.MessageProcessId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.IObjectId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.DataSetCreation;
@@ -36,12 +46,16 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.entity.AbstractCreat
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.entity.IMapEntityTypeByIdExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.property.IUpdateEntityPropertyExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.tag.IAddTagToEntityExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.batch.Batch;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.batch.CollectionBatch;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.batch.CollectionBatchProcessor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.batch.MapBatch;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.entity.progress.CheckDataProgress;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.entity.progress.CreateProgress;
+import ch.ethz.sis.openbis.messages.DataSetCreatedMessage;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
+import ch.systemsx.cisd.dbmigration.DatabaseConfigurationContext;
+import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.DataAccessExceptionTranslator;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.db.IPermIdDAO;
@@ -275,6 +289,7 @@ public class CreateDataSetExecutor extends AbstractCreateEntityExecutor<DataSetC
     @Override
     protected void updateAll(IOperationContext context, MapBatch<DataSetCreation, DataPE> batch)
     {
+        List<String> dataSetCodes = new ArrayList<>();
         Map<IEntityWithMetaprojects, Collection<? extends ITagId>> tagMap = new HashMap<IEntityWithMetaprojects, Collection<? extends ITagId>>();
 
         for (Map.Entry<DataSetCreation, DataPE> entry : batch.getObjects().entrySet())
@@ -291,6 +306,7 @@ public class CreateDataSetExecutor extends AbstractCreateEntityExecutor<DataSetC
                 entity.setAfsData(true);
             }
 
+            dataSetCodes.add(entity.getCode());
             tagMap.put(entity, creation.getTagIds());
         }
 
@@ -300,6 +316,25 @@ public class CreateDataSetExecutor extends AbstractCreateEntityExecutor<DataSetC
         setDataSetParentsExecutor.set(context, batch);
         setDataSetComponentsExecutor.set(context, batch);
         setDataSetContainerExecutor.set(context, batch);
+
+        emitCreatedMessages(dataSetCodes);
+    }
+
+    private void emitCreatedMessages(List<String> dataSetCodes)
+    {
+        DatabaseConfigurationContext messagesDatabaseConfiguration = CommonServiceProvider.getMessagesDatabaseConfigurationContext();
+        MessagesDatabase messagesDatabase = new MessagesDatabase(messagesDatabaseConfiguration.getDataSource());
+
+        MessagesDatabaseUtil.execute(messagesDatabase, () ->
+        {
+            for (CollectionBatch<String> batch : Batch.createBatches(dataSetCodes))
+            {
+                DataSetCreatedMessage createdMessage =
+                        new DataSetCreatedMessage(MessageProcessId.getCurrentOrGenerateNew(), new ArrayList<>(batch.getObjects()));
+                messagesDatabase.getMessagesDAO().create(createdMessage.serialize(JacksonObjectMapper.getInstance()));
+            }
+            return null;
+        });
     }
 
     @Override

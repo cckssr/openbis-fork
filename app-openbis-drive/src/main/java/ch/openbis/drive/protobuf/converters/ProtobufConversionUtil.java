@@ -1,9 +1,6 @@
 package ch.openbis.drive.protobuf.converters;
 
-import ch.openbis.drive.model.Event;
-import ch.openbis.drive.model.Notification;
-import ch.openbis.drive.model.Settings;
-import ch.openbis.drive.model.SyncJob;
+import ch.openbis.drive.model.*;
 import ch.openbis.drive.protobuf.DriveApiService;
 import lombok.NonNull;
 
@@ -18,6 +15,7 @@ public class ProtobufConversionUtil {
         settings.setLanguage(settingsDto.getLanguage());
         settings.setSyncInterval(settingsDto.getSyncIntervalSeconds());
         settings.setJobs(fromProtobufSyncJobs(settingsDto.getJobs()));
+        settings.setIgnoredPathPatterns(new ArrayList<>(settingsDto.getIgnoredPathPatterns().getIgnoredPathPatternsList().stream().toList()));
 
         return settings;
     }
@@ -28,7 +26,8 @@ public class ProtobufConversionUtil {
             .setStartAtLogin(settings.isStartAtLogin())
             .setLanguage(settings.getLanguage())
             .setSyncIntervalSeconds(settings.getSyncInterval())
-            .setJobs(toProtobufSyncJobs(settings.getJobs())).build();
+            .setJobs(toProtobufSyncJobs(settings.getJobs()))
+            .setIgnoredPathPatterns(DriveApiService.IgnoredPathPatterns.newBuilder().addAllIgnoredPathPatterns(settings.getIgnoredPathPatterns())).build();
     }
 
     public static @NonNull ArrayList<@NonNull SyncJob> fromProtobufSyncJobs(@NonNull DriveApiService.SyncJobs syncJobsDto) {
@@ -41,11 +40,17 @@ public class ProtobufConversionUtil {
             syncJob.setEnabled(syncJobDto.getEnabled());
             syncJob.setOpenBisUrl(syncJobDto.getOpenBisUrl());
             syncJob.setEntityPermId(syncJobDto.getEntityPermId());
+            if (syncJobDto.hasEntityType()) {
+                syncJob.setEntityType(fromProtobuftoSyncJobEntityTypeEnum(syncJobDto.getEntityType()));
+            }
+            if (syncJobDto.hasEntityImmutable()) {
+                syncJob.setEntityImmutable(syncJobDto.getEntityImmutable());
+            }
             syncJob.setOpenBisPersonalAccessToken(syncJobDto.getOpenBisPersonalAccessToken());
             syncJob.setRemoteDirectoryRoot(syncJobDto.getRemoteDirectoryRoot());
             syncJob.setLocalDirectoryRoot(syncJobDto.getLocalDirectoryRoot());
-            syncJob.setSkipHiddenFiles(syncJobDto.getSkipHiddenFiles());
-            syncJob.setHiddenPathPatterns(new ArrayList<>(syncJobDto.getHiddenPathPatterns().getHiddenPathPatternsList().stream().toList()));
+            syncJob.setIgnoreFiles(fromProtobuftoSyncJobIgnoreFilesModeEnum(syncJobDto.getIgnoreFiles()));
+            syncJob.setIgnoredPathPatterns(new ArrayList<>(syncJobDto.getIgnoredPathPatterns().getIgnoredPathPatternsList().stream().toList()));
             syncJobs.add(syncJob);
         }
 
@@ -63,10 +68,50 @@ public class ProtobufConversionUtil {
             syncJobBuilder.setLocalDirectoryRoot(syncJob.getLocalDirectoryRoot());
             syncJobBuilder.setOpenBisUrl(syncJob.getOpenBisUrl());
             syncJobBuilder.setEntityPermId(syncJob.getEntityPermId());
+            if (syncJob.getEntityType() != null) {
+                syncJobBuilder.setEntityType(toProtobufSyncJobEntityTypeEnum(syncJob.getEntityType()));
+            }
+            syncJobBuilder.setEntityImmutable(syncJob.isEntityImmutable());
             syncJobBuilder.setOpenBisPersonalAccessToken(syncJob.getOpenBisPersonalAccessToken());
             syncJobBuilder.setRemoteDirectoryRoot(syncJob.getRemoteDirectoryRoot());
-            syncJobBuilder.setSkipHiddenFiles(syncJob.isSkipHiddenFiles());
-            syncJobBuilder.setHiddenPathPatterns(DriveApiService.HiddenPathPatterns.newBuilder().addAllHiddenPathPatterns(syncJob.getHiddenPathPatterns()).build());
+            syncJobBuilder.setIgnoreFiles(toProtobufSyncJobIgnoreFilesModeEnum(syncJob.getIgnoreFiles()));
+            syncJobBuilder.setIgnoredPathPatterns(DriveApiService.IgnoredPathPatterns.newBuilder().addAllIgnoredPathPatterns(syncJob.getIgnoredPathPatterns()).build());
+            builder.addSyncJobs(syncJobBuilder.build());
+        }
+
+        return builder.build();
+    }
+
+    public static @NonNull ArrayList<@NonNull SyncJobLive> fromProtobufSyncJobsLive(@NonNull DriveApiService.SyncJobsLive syncJobsLiveDto) {
+        ArrayList<SyncJobLive> syncJobs = new ArrayList<>();
+
+        for(DriveApiService.SyncJobLive syncJobDto: syncJobsLiveDto.getSyncJobsList()) {
+            SyncJobLive.SyncJobLiveBuilder syncJobLive = SyncJobLive.builder();
+            syncJobLive.localDirectory(syncJobDto.getLocalDirectoryRoot());
+            syncJobLive.uploading(syncJobDto.getUploading());
+            syncJobLive.downloading(syncJobDto.getDownloading());
+            syncJobLive.totalUpload(syncJobDto.getTotalUpload());
+            syncJobLive.totalDownload(syncJobDto.getTotalDownload());
+            syncJobLive.currentUpload(syncJobDto.getCurrentUpload());
+            syncJobLive.currentDownload(syncJobDto.getCurrentDownload());
+            syncJobs.add(syncJobLive.build());
+        }
+
+        return syncJobs;
+    }
+
+    public static DriveApiService.SyncJobsLive toProtobufSyncJobsLive(@NonNull List<@NonNull SyncJobLive> syncJobsLive) {
+        DriveApiService.SyncJobsLive.Builder builder = DriveApiService.SyncJobsLive.newBuilder();
+
+        for(SyncJobLive syncJobLive : syncJobsLive) {
+            DriveApiService.SyncJobLive.Builder syncJobBuilder = DriveApiService.SyncJobLive.newBuilder();
+            syncJobBuilder.setLocalDirectoryRoot(syncJobLive.getLocalDirectory());
+            syncJobBuilder.setUploading(syncJobLive.isUploading());
+            syncJobBuilder.setDownloading(syncJobLive.isDownloading());
+            syncJobBuilder.setTotalUpload(syncJobLive.getTotalUpload());
+            syncJobBuilder.setTotalDownload(syncJobLive.getTotalDownload());
+            syncJobBuilder.setCurrentUpload(syncJobLive.getCurrentUpload());
+            syncJobBuilder.setCurrentDownload(syncJobLive.getCurrentDownload());
             builder.addSyncJobs(syncJobBuilder.build());
         }
 
@@ -186,6 +231,40 @@ public class ProtobufConversionUtil {
             case Upload -> DriveApiService.SyncJob.Type.UPLOAD;
             case Download -> DriveApiService.SyncJob.Type.DOWNLOAD;
             case Bidirectional -> DriveApiService.SyncJob.Type.BIDIRECTIONAL;
+        };
+    }
+
+    public static SyncJob.IgnoredFilesMode fromProtobuftoSyncJobIgnoreFilesModeEnum(@NonNull DriveApiService.SyncJob.IgnoreFilesMode mode) {
+        return switch (mode) {
+            case GLOBAL_DEFAULT -> SyncJob.IgnoredFilesMode.GlobalDefault;
+            case SPECIFIC_LIST -> SyncJob.IgnoredFilesMode.SpecificList;
+            case NONE -> SyncJob.IgnoredFilesMode.None;
+            case UNRECOGNIZED -> throw new IllegalArgumentException("Unknown ignore-files mode");
+        };
+    }
+
+    public static DriveApiService.SyncJob.IgnoreFilesMode toProtobufSyncJobIgnoreFilesModeEnum(@NonNull SyncJob.IgnoredFilesMode mode) {
+        return switch (mode) {
+            case GlobalDefault -> DriveApiService.SyncJob.IgnoreFilesMode.GLOBAL_DEFAULT;
+            case SpecificList -> DriveApiService.SyncJob.IgnoreFilesMode.SPECIFIC_LIST;
+            case None -> DriveApiService.SyncJob.IgnoreFilesMode.NONE;
+        };
+    }
+
+    public static SyncJob.EntityType fromProtobuftoSyncJobEntityTypeEnum(@NonNull DriveApiService.SyncJob.EntityType entityType) {
+        return switch (entityType) {
+            case SAMPLE -> SyncJob.EntityType.Sample;
+            case EXPERIMENT -> SyncJob.EntityType.Experiment;
+            case DATASET -> SyncJob.EntityType.Dataset;
+            case UNRECOGNIZED -> throw new IllegalArgumentException("Unknown entity type");
+        };
+    }
+
+    public static DriveApiService.SyncJob.EntityType toProtobufSyncJobEntityTypeEnum(@NonNull SyncJob.EntityType entityType) {
+        return switch (entityType) {
+            case Sample -> DriveApiService.SyncJob.EntityType.SAMPLE;
+            case Experiment -> DriveApiService.SyncJob.EntityType.EXPERIMENT;
+            case Dataset -> DriveApiService.SyncJob.EntityType.DATASET;
         };
     }
 }

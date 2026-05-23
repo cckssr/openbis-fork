@@ -19,7 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
-import org.springframework.transaction.annotation.Transactional;
 import org.testng.AssertJUnit;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeSuite;
@@ -43,7 +42,6 @@ import ch.systemsx.cisd.openbis.plugin.generic.shared.IGenericServer;
  * 
  * @author Franz-Josef Elmer
  */
-@Transactional
 @ContextConfiguration(locations = "classpath:applicationContext.xml")
 public abstract class PersistentSystemTestCase extends AbstractTestNGSpringContextTests
 {

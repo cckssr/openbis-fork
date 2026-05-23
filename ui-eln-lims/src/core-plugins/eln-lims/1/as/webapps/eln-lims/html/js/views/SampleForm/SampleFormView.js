@@ -861,9 +861,20 @@
                         }
                         document.removeEventListener('keyup', _this._sampleFormViewGlobalEventListener);
                     }
+                    var tabInfo = mainController.tabContent.getCurrentTabInfo();
+                    tabInfo.finalize = mainController.currentView.finalize;
+                    mainController.tabContent.updateCurrentTabInfo(tabInfo);
 
                     this._sampleFormViewGlobalEventListener = arrowKeyEventListener(_this._sampleFormModel.paginationInfo);
                     document.addEventListener('keyup',  this._sampleFormViewGlobalEventListener);
+
+                    var eventRefresh = {
+                        refresh: function() {
+                            document.addEventListener('keyup',  _this._sampleFormViewGlobalEventListener);
+                        }
+                    }
+                    _refreshableFields.push(eventRefresh);
+
 
                     var $backBtn = FormUtil.getToolbarButton("PAGINATION_LEFT", function () {
                                         moveToIndex(_this._sampleFormModel.paginationInfo.currentIndex-1);
@@ -1040,7 +1051,14 @@
 								FormUtil.setFieldValue(propertyType, $component, value);
 							} else if(propertyType.dataType === "TIMESTAMP" || propertyType.dataType === "DATE") {
 							} else if(isMultiValue) {
-								var valueV3 = this._sampleFormModel.v3_sample.properties[propertyType.code];
+								var valueV3 = null;
+								if(this._sampleFormModel.v3_sample) {
+								    valueV3 = this._sampleFormModel.v3_sample.properties[propertyType.code];
+								} else {
+								    //flow for templates
+                                    valueV3 = this._sampleFormModel.sample.properties[propertyType.code];
+								}
+
 								if(valueV3) {
 									var valueArray;
 									if(Array.isArray(value)) {

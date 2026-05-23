@@ -1,5 +1,5 @@
 /*
- * Copyright ETH 2010 - 2023 Zürich, Scientific IT Services
+ * Copyright ETH 2010 - 2025 Zürich, Scientific IT Services
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,21 +16,13 @@
 package ch.systemsx.cisd.openbis.generic.server.dataaccess.dynamic_property;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.collections4.map.HashedMap;
-import ch.ethz.sis.shared.log.classic.impl.Logger;
-import org.hibernate.Criteria;
-import org.hibernate.Query;
-import org.hibernate.Session;
-import org.hibernate.criterion.Order;
-import org.hibernate.criterion.Projections;
-import org.hibernate.criterion.Restrictions;
-import org.springframework.dao.DataAccessException;
-
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ScriptType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
@@ -42,6 +34,9 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
 import ch.systemsx.cisd.openbis.generic.shared.managed_property.IManagedPropertyEvaluatorFactory;
+import org.hibernate.Session;
+import org.hibernate.query.Query;
+import org.springframework.dao.DataAccessException;
 
 /**
  * A default {@link IBatchDynamicPropertyEvaluator}.
@@ -53,14 +48,13 @@ final class DefaultBatchDynamicPropertyEvaluator implements IBatchDynamicPropert
     private static final Logger operationLog = LogFactory.getLogger(LogCategory.OPERATION,
             DefaultBatchDynamicPropertyEvaluator.class);
 
-    private static String ID_PROPERTY_NAME = ColumnNames.ID_COLUMN;
+    private static final String ID_PROPERTY_NAME = ColumnNames.ID_COLUMN; // expected to be "id"
 
-    private final static Map<Class<? extends IEntityInformationWithPropertiesHolder>, EntityKind> entityKindsByClass;
-
+    private static final Map<Class<? extends IEntityInformationWithPropertiesHolder>, EntityKind>
+            entityKindsByClass;
     static
     {
-        entityKindsByClass =
-                new HashedMap<Class<? extends IEntityInformationWithPropertiesHolder>, EntityKind>();
+        entityKindsByClass = new HashMap<>();
         entityKindsByClass.put(SamplePE.class, EntityKind.SAMPLE);
         entityKindsByClass.put(ExperimentPE.class, EntityKind.EXPERIMENT);
         entityKindsByClass.put(MaterialPE.class, EntityKind.MATERIAL);
@@ -188,50 +182,45 @@ final class DefaultBatchDynamicPropertyEvaluator implements IBatchDynamicPropert
         session.clear();
     }
 
-    private static final <T> List<Long> getAllIds(final Session session, final Class<T> clazz)
+    // ---------- HQL helpers (Hibernate 6) ----------
+
+    private static <T> List<Long> getAllIds(final Session session, final Class<T> clazz)
     {
-        Criteria criteria =
-                createCriteria(session, clazz)
-                        .setProjection(Projections.property(ID_PROPERTY_NAME)).addOrder(
-                                Order.asc(ID_PROPERTY_NAME));
-        return list(criteria);
+        // select e.id order by e.id asc
+        final String hql = "select e." + ID_PROPERTY_NAME + " from " + clazz.getName() + " e order by e." + ID_PROPERTY_NAME + " asc";
+        return session.createQuery(hql, Long.class).getResultList();
     }
 
-    private static final <T> List<T> listEntitiesWithRestrictedId(final Session session,
-            final Class<T> clazz, final long minId, final long maxId)
+    private static <T> List<T> listEntitiesWithRestrictedId(final Session session,
+            final Class<T> clazz,
+            final long minId,
+            final long maxId)
     {
-        Criteria criteria =
-                createCriteria(session, clazz).add(Restrictions.ge(ID_PROPERTY_NAME, minId)).add(
-                        Restrictions.lt(ID_PROPERTY_NAME, maxId));
-        return list(criteria);
-
+        final String hql = "from " + clazz.getName() + " e " +
+                "where e." + ID_PROPERTY_NAME + " >= :minId and e." + ID_PROPERTY_NAME + " < :maxId " +
+                "order by e." + ID_PROPERTY_NAME + " asc";
+        return session.createQuery(hql, clazz)
+                .setParameter("minId", minId)
+                .setParameter("maxId", maxId)
+                .getResultList();
     }
 
-    private static final <T> List<T> listEntitiesWithRestrictedId(final Session hibernateSession,
-            final Class<T> clazz, final List<Long> ids)
+    private static <T> List<T> listEntitiesWithRestrictedId(final Session session,
+            final Class<T> clazz,
+            final List<Long> ids)
     {
-        Criteria criteria =
-                createCriteria(hibernateSession, clazz).add(Restrictions.in(ID_PROPERTY_NAME, ids));
-        return list(criteria);
-
+        if (ids == null || ids.isEmpty())
+        {
+            return List.of();
+        }
+        final String hql = "from " + clazz.getName() + " e " +
+                "where e." + ID_PROPERTY_NAME + " in :ids ";
+        return session.createQuery(hql, clazz)
+                .setParameter("ids", ids)
+                .getResultList();
     }
 
-    private static final <T> Criteria createCriteria(final Session session, final Class<T> clazz)
-    {
-        return session.createCriteria(clazz);
-    }
-
-    @SuppressWarnings("unchecked")
-    private static final <T> List<T> list(final Criteria criteria)
-    {
-        return criteria.list();
-    }
-
-    @SuppressWarnings("unchecked")
-    private static final <T> List<T> list(final Query query)
-    {
-        return query.list();
-    }
+    // ---------- dynamic property filtering ----------
 
     /**
      * Retains only those elements in the <code>ids</code> list that are ids of entities of given class that have a dynamic property (connected with
@@ -290,7 +279,7 @@ final class DefaultBatchDynamicPropertyEvaluator implements IBatchDynamicPropert
                 throw new IllegalArgumentException(entityKind.toString());
         }
 
-        final List<Long> list = list(hibernateSession.createQuery(query));
+        final List<Long> list = list(hibernateSession.createQuery(query, Long.class));
 
         if (operationLog.isDebugEnabled())
         {
@@ -302,4 +291,9 @@ final class DefaultBatchDynamicPropertyEvaluator implements IBatchDynamicPropert
         return list;
     }
 
+    // typed list helper for org.hibernate.query.Query
+    private static <T> List<T> list(final Query<T> query)
+    {
+        return query.getResultList();
+    }
 }

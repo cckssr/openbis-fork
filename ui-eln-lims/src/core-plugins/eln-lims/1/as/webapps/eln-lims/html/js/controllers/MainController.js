@@ -389,6 +389,7 @@ function MainController(profile) {
 
 	this.reInitCurrentView = function() {
 	    if(this.currentView) {
+	        this.currentView.refresh();
 	        var tabInfo = mainController.tabContent.getCurrentTabInfo();
 	        var views = this._getNewViewModel(true, true, undefined, tabInfo);
 	        this.currentView.init(views);
@@ -1146,8 +1147,9 @@ function MainController(profile) {
 	this._getBackwardsCompatibleMainContainer = function(id, navigationTabInfo) {
 	    var header = null;
 		var content = $("<div>");
-		content.css("padding", "10px");
-		
+		content.css("margin-left", "10px");
+		content.css("margin-top", "10px");
+
 		if(id) {
 			content.attr("id", id);
 		}
@@ -1196,12 +1198,15 @@ function MainController(profile) {
 		    tabContentHeader.css("position", "sticky");
 		    tabContentHeader.css("top", "0");
 		    let tabContentBody = $("<div>", { id: "tab-content-body" });
+		    tabContentBody.css("overflow", "auto");
 
             mainController.tabContent.openTab(navigationTab, function() {
                 tab = $("[id='"+navigationTab.id+"']")
+                tab.css("overflow", "hidden");
                 tab.empty()
                 tab.append(tabContentHeader);
                 tab.append(tabContentBody);
+
                 if(callback) {
                     callback();
                 }
@@ -1230,8 +1235,8 @@ function MainController(profile) {
 		    if(!content) {
 			    content = $("<div>");
 			}
-			content.css({ 
-				"padding" : "10px"
+			content.css({
+				"margin-left" : "10px"
 			});
 			if(!withAuxContentOrAuxContentId) {  // Setting 100% height breaks views with 3 columns on tablet mode, better to explicitly set to 100% when the third column is not used
 				content.css({
@@ -1738,7 +1743,7 @@ function MainController(profile) {
 		sampleFormController.init(views);
 		sampleFormController.tabId = tabInfo.id;
 		this.currentView = sampleFormController;
-		mainController.tabContent.updateView(this.currentView)
+		mainController.tabContent.updateView(this.currentView);
 	}
 	
 	this._showEditSamplePage = function(sample, isELNSubExperiment, paginationInfo) {
@@ -1843,15 +1848,19 @@ function MainController(profile) {
 		newView.init(views);
 		newView.tabId = tabInfo.id;
 		this.currentView = newView;
+		mainController.tabContent.updateView(this.currentView)
 		this.sideMenu.collapseSideMenu();
 	}
 	
 	this._showViewDataSetPage = function(sampleOrExperiment, dataset, datasetV3, paginationInfo) {
 		//Show Form
 		var newView = new DataSetFormController(this, FormMode.VIEW, sampleOrExperiment, dataset, null, datasetV3, paginationInfo);
-		var views = this._getNewViewModel(true, true, false, TabContentUtil.getDataSetTabInfo(dataset, FormMode.VIEW));
+		var tabInfo = TabContentUtil.getDataSetTabInfo(dataset, FormMode.VIEW);
+		var views = this._getNewViewModel(true, true, false, tabInfo);
 		newView.init(views);
 		this.currentView = newView;
+		this.currentView.tabId = tabInfo.id;
+		mainController.tabContent.updateView(this.currentView);
 	}
 	
 	this._showEditDataSetPage = function(sampleOrExperiment, dataset, datasetV3, paginationInfo) {
@@ -1862,6 +1871,7 @@ function MainController(profile) {
 		newView.init(views);
 		newView.tabId = tabInfo.id;
 		this.currentView = newView;
+		mainController.tabContent.updateView(this.currentView);
 		this.sideMenu.collapseSideMenu();
 	}
 	

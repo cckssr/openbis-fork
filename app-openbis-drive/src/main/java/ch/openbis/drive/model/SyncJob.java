@@ -16,11 +16,15 @@ import java.util.stream.Stream;
 @NoArgsConstructor(force = true)
 public class SyncJob {
     public enum Type { Bidirectional, Upload, Download }
+    public enum IgnoredFilesMode { GlobalDefault, SpecificList, None }
+    public enum EntityType { Sample, Experiment, Dataset }
 
     @NonNull private Type type;
     @NonNull private String openBisUrl;
     @NonNull private String openBisPersonalAccessToken;
     @NonNull private String entityPermId;
+    private EntityType entityType;
+    private boolean entityImmutable;
     @NonNull private String title;
 
     @NonNull private String remoteDirectoryRoot;
@@ -28,8 +32,8 @@ public class SyncJob {
 
     private boolean enabled;
 
-    private boolean skipHiddenFiles = true;
-    @NonNull private ArrayList<String> hiddenPathPatterns = new ArrayList<>(getDefaultHiddenPathPatterns());
+    private IgnoredFilesMode ignoreFiles = IgnoredFilesMode.GlobalDefault;
+    @NonNull private ArrayList<String> ignoredPathPatterns = new ArrayList<>();
 
     public SyncJob(@NonNull Type type, @NonNull String openBisUrl, @NonNull String openBisPersonalAccessToken, @NonNull String entityPermId, @NonNull String title, @NonNull String remoteDirectoryRoot, @NonNull String localDirectoryRoot, boolean enabled) {
         this.enabled = enabled;
@@ -42,79 +46,56 @@ public class SyncJob {
         this.type = type;
     }
 
-    static public List<String> getDefaultHiddenPathPatterns() {
+    static public List<String> getDefaultIgnoredPathPatterns() {
         return Stream.concat(
-                getDefaultHiddenPathPatternsForAnyPlatform().stream(),
-                getDefaultHiddenPathPatternsForCurrentPlatform(OsDetectionUtil.detectOS()).stream()
+                getDefaultIgnoredPathPatternsForAnyPlatform().stream(),
+                getDefaultIgnoredPathPatternsForCurrentPlatform(OsDetectionUtil.detectOS()).stream()
         ).toList();
     }
 
-    static public List<String> getDefaultHiddenPathPatternsForAnyPlatform() {
+    static public List<String> getDefaultIgnoredPathPatternsForAnyPlatform() {
         return List.of(
                 //HIDDEN FILES WITH "DOT"
-                ".*[/\\\\]\\..*",
-                ".*'.*",
-                ".*~.*",
-                ".*\\$.*",
-                ".*%.*"
+                "**/.**",
+                "**'**",
+                "**~**",
+                "**$**",
+                "**%**"
         );
     }
 
-    static public List<String> getDefaultHiddenPathPatternsForCurrentPlatform(@NonNull OsDetectionUtil.OS operatingSystem) {
+    static public List<String> getDefaultIgnoredPathPatternsForCurrentPlatform(@NonNull OsDetectionUtil.OS operatingSystem) {
         return switch (operatingSystem) {
-            case Linux -> getDefaultHiddenPathPatternsForLinux();
-            case Windows -> getDefaultHiddenPathPatternsForWindows();
-            case Mac -> getDefaultHiddenPathPatternsForMacOS();
+            case Linux -> getDefaultIgnoredPathPatternsForLinux();
+            case Windows -> getDefaultIgnoredPathPatternsForWindows();
+            case Mac -> getDefaultIgnoredPathPatternsForMacOS();
             case Unknown -> Collections.emptyList();
         };
     }
 
-    static public List<String> getDefaultHiddenPathPatternsForLinux() {
-        return List.of(
-                //LINUX SYSTEM
-                "/bin(/.*)?",
-                "/boot(/.*)?",
-                "/dev(/.*)?",
-                "/etc(/.*)?",
-                "/lib(/.*)?",
-                "/media(/.*)?",
-                "/mnt(/.*)?",
-                "/opt(/.*)?",
-                "/proc(/.*)?",
-                "/root(/.*)?",
-                "/run(/.*)?",
-                "/sbin(/.*)?",
-                "/snap(/.*)?",
-                "/srv(/.*)?",
-                "/sys(/.*)?",
-                "/tmp(/.*)?",
-                "/usr(/.*)?",
-                "/var(/.*)?"
-        );
+    static public List<String> getDefaultIgnoredPathPatternsForLinux() {
+        return Collections.emptyList();
     }
 
-    static public List<String> getDefaultHiddenPathPatternsForWindows() {
+    static public List<String> getDefaultIgnoredPathPatternsForWindows() {
         return List.of(
                 //WINDOWS DB FILES
-                ".*[/\\\\]desktop\\.ini",
-                ".*[/\\\\]IconCache\\.db",
-                ".*[/\\\\]thumbs\\.db",
-
-                //WINDOWS SYSTEM
-                "([^:]+:)?[/\\\\]Windows([/\\\\].*)?",
-                "([^:]+:)?[/\\\\]Program Files([/\\\\].*)?",
-                "([^:]+:)?[/\\\\]Program Files \\(x86\\)([/\\\\].*)?",
-                "([^:]+:)?[/\\\\]ProgramData([/\\\\].*)?"
+                "**/desktop.ini",
+                "**/Desktop.ini",
+                "**/IconCache.db",
+                "**/thumbs.db",
+                "**/Thumbs.db"
         );
     }
 
-    static public List<String> getDefaultHiddenPathPatternsForMacOS() {
+    static public List<String> getDefaultIgnoredPathPatternsForMacOS() {
         return List.of(
-                //MAC-OS SYSTEM
-                "/Applications(/.*)?",
-                "/Library(/.*)?",
-                "/System(/.*)?",
-                "/Volumes(/.*)?"
+                //MAC desktop store
+                "**/.DS_Store",
+                "**/._.DS_Store",
+
+                //MAC time machine markers
+                "**/.com.apple.timemachine.supported-*"
         );
     }
 }

@@ -1,18 +1,21 @@
 package ch.ethz.sis.openbis.systemtests.environment;
 
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.Properties;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.MultipartConfigElement;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
-import org.eclipse.jetty.proxy.ProxyServlet;
+import org.eclipse.jetty.ee10.proxy.ProxyServlet;
+import org.eclipse.jetty.http.UriCompliance;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
-import org.springframework.beans.factory.xml.XmlBeanFactory;
+import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
+import org.eclipse.jetty.ee10.servlet.ServletHolder;
+import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.remoting.rmi.CodebaseAwareObjectInputStream;
@@ -74,8 +77,11 @@ public class ApplicationServer
                 System.setProperty(String.valueOf(key), String.valueOf(value));
             }
 
+            System.setProperty("org.eclipse.jetty.util.UrlEncoded.allowEncodedSlash", "true");
+
             org.eclipse.jetty.server.Server server = new org.eclipse.jetty.server.Server();
             HttpConfiguration httpConfig = new HttpConfiguration();
+            httpConfig.setUriCompliance(UriCompliance.UNSAFE);
             ServerConnector connector =
                     new ServerConnector(server, new HttpConnectionFactory(httpConfig));
             connector.setPort(TestInstanceHostUtils.getOpenBISPort());
@@ -87,17 +93,31 @@ public class ApplicationServer
                 @Override
                 protected WebApplicationContext findWebApplicationContext()
                 {
-                    XmlBeanFactory beanFactory =
-                            new XmlBeanFactory(new FileSystemResource("../server-application-server/resource/server/spring-servlet.xml"));
-                    applicationContext = new GenericWebApplicationContext(beanFactory);
+//                    XmlBeanFactory beanFactory =
+//                            new XmlBeanFactory(new FileSystemResource("../server-application-server/resource/server/spring-servlet.xml"));
+//                    applicationContext = new GenericWebApplicationContext(beanFactory);
+//                    GenericWebApplicationContext wac = new GenericWebApplicationContext();
+                    applicationContext = new GenericWebApplicationContext();
+                    XmlBeanDefinitionReader reader = new XmlBeanDefinitionReader(applicationContext);
+                    reader.loadBeanDefinitions(new FileSystemResource(
+                            "../server-application-server/resource/server/spring-servlet.xml"));
+
                     applicationContext.setParent(new ClassPathXmlApplicationContext("classpath:applicationContext.xml"));
                     applicationContext.refresh();
                     return applicationContext;
                 }
             };
             ServletContextHandler servletContext =
-                    new ServletContextHandler(server, "/", ServletContextHandler.SESSIONS);
-            servletContext.addServlet(new ServletHolder(dispatcherServlet), "/*");
+                    new ServletContextHandler(ServletContextHandler.SESSIONS);
+
+            servletContext.setContextPath("/");
+            server.setHandler(servletContext);
+
+            ServletHolder servlet = new ServletHolder(dispatcherServlet);
+            servlet.getRegistration().setMultipartConfig(
+                    new MultipartConfigElement(System.getProperty("java.io.tmpdir"))
+            );
+            servletContext.addServlet(servlet, "/*");
 
             server.start();
 
@@ -120,6 +140,7 @@ public class ApplicationServer
 
             org.eclipse.jetty.server.Server server = new org.eclipse.jetty.server.Server();
             HttpConfiguration httpConfig = new HttpConfiguration();
+            httpConfig.setUriCompliance(UriCompliance.UNSAFE);
             ServerConnector connector =
                     new ServerConnector(server, new HttpConnectionFactory(httpConfig));
             connector.setPort(TestInstanceHostUtils.getOpenBISProxyPort());
@@ -132,7 +153,8 @@ public class ApplicationServer
                     {
                         ProxyRequest proxyRequest = new ProxyRequest(request);
 
-                        if (request.getContentType().equals("application/octet-stream"))
+                        if (Objects.equals(request.getContentType(), "application/octet-stream")
+                                    || Objects.equals(request.getContentType(),"application/x-java-serialized-object"))
                         {
                             CodebaseAwareObjectInputStream objectInputStream =
                                     new CodebaseAwareObjectInputStream(proxyRequest.getInputStream(), getClass().getClassLoader(), true);
@@ -169,7 +191,10 @@ public class ApplicationServer
             ServletHolder proxyServletHolder = new ServletHolder(proxyServlet);
             proxyServletHolder.setInitParameter("proxyTo", TestInstanceHostUtils.getOpenBISUrl() + "/");
             ServletContextHandler servletContext =
-                    new ServletContextHandler(server, "/", ServletContextHandler.SESSIONS);
+                    new ServletContextHandler(ServletContextHandler.SESSIONS);
+            servletContext.setContextPath("/");
+            server.setHandler(servletContext);
+
             servletContext.addServlet(proxyServletHolder, "/*");
             server.start();
 

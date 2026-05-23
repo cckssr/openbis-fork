@@ -19,9 +19,10 @@ import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
-import org.springframework.beans.factory.xml.XmlBeanFactory;
+import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
+import org.eclipse.jetty.ee10.servlet.ServletHolder;
+import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
+
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
@@ -66,10 +67,14 @@ public class RemoteApiTestCase extends AbstractTransactionalTestNGSpringContextT
             @Override
             protected WebApplicationContext findWebApplicationContext()
             {
-                XmlBeanFactory f =
-                        new XmlBeanFactory(new FileSystemResource(
-                                "../server-application-server/resource/server/spring-servlet.xml"));
-                GenericWebApplicationContext wac = new GenericWebApplicationContext(f);
+//                XmlBeanFactory f =
+//                        new XmlBeanFactory(new FileSystemResource(
+//                                "../server-application-server/resource/server/spring-servlet.xml"));
+//                GenericWebApplicationContext wac = new GenericWebApplicationContext(f);
+                GenericWebApplicationContext wac = new GenericWebApplicationContext();
+                XmlBeanDefinitionReader reader = new XmlBeanDefinitionReader(wac);
+                reader.loadBeanDefinitions(new FileSystemResource(
+                        "../server-application-server/resource/server/spring-servlet.xml"));
                 try
                 {
                     springTestContextPrepareTestInstance();
@@ -84,7 +89,10 @@ public class RemoteApiTestCase extends AbstractTransactionalTestNGSpringContextT
             }
         };
         ServletContextHandler sch =
-                new ServletContextHandler(server, "/", ServletContextHandler.SESSIONS);
+                new ServletContextHandler(ServletContextHandler.SESSIONS);
+        sch.setContextPath("/");
+        server.setHandler(sch);
+
         sch.addServlet(new ServletHolder(dispatcherServlet), "/*");
         server.setStopAtShutdown(true);
         server.start();

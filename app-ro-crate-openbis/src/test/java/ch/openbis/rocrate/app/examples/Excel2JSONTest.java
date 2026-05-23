@@ -8,7 +8,6 @@ import ch.openbis.rocrate.app.writer.mapping.Mapper;
 import ch.openbis.rocrate.app.writer.mapping.types.MapResult;
 import org.junit.Test;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -23,7 +22,7 @@ public class Excel2JSONTest {
     static final String OUTPUT = "out/test/resources/";
 
     @Test
-    public void conversionTest() throws IOException
+    public void conversionTest() throws Exception
     {
         // These classes are to create the Excel Model that uses openBIS V3 classes
         Path path = Paths.get(INPUT);

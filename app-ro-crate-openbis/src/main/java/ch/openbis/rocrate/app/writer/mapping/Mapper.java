@@ -1,6 +1,7 @@
 package ch.openbis.rocrate.app.writer.mapping;
 
 import ch.eth.sis.rocrate.facade.*;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.ObjectIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IEntityType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetType;
@@ -18,24 +19,26 @@ import ch.openbis.rocrate.app.Constants;
 import ch.openbis.rocrate.app.writer.mapping.types.MapResult;
 import ch.openbis.rocrate.app.writer.mapping.types.RdfsSchema;
 import ch.openbis.rocrate.app.writer.mappinginfo.MappingInfo;
+import com.google.common.collect.Streams;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.Serializable;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Mapper
 {
 
     public static final String CANONICAL_OPENBIS_DATE_FORMAT_PATTERN = "yyyy-MM-dd HH:mm:ss Z";
 
-
-
-    public MapResult transform(OpenBisModel openBisModel)
+    public MapResult transform(OpenBisModel openBisModel) throws Exception
     {
         Map<String, List<Pair<PropertyAssignment, IType>>> classesUsingProperty =
                 new HashMap<>();
@@ -241,10 +244,13 @@ public class Mapper
                 String experimentIdentifier = Optional.ofNullable(sample.getExperiment())
                         .map(x -> x.getIdentifier())
                         .map(x -> x.getIdentifier())
-                        .orElse(sample.getType().getCode() + "_Collection");
+                        .orElse(null);
 
-                references.put(Constants.PROPERTY_COLLECTION,
-                        List.of(experimentIdentifier));
+                if (experimentIdentifier != null)
+                {
+                    references.put(Constants.PROPERTY_COLLECTION,
+                            List.of(experimentIdentifier));
+                }
 
                 Set<String> referenceTypeNames = openBisModel.getEntityTypes().values().stream()
                         .map(x -> x.getPropertyAssignments())
@@ -289,6 +295,24 @@ public class Mapper
                         .map(x -> x.getIdentifier().getIdentifier()).collect(Collectors.toList()));
                 references.put("parents", ((Sample) val).getChildren().stream()
                         .map(x -> x.getIdentifier().getIdentifier()).collect(Collectors.toList()));
+
+                List<OpenBisModel.FileInfo> files =
+                        openBisModel.getFiles().getOrDefault(metaData.getKey(), new ArrayList<>());
+                List<OpenBisModel.FileInfo> imageFiles =
+                        openBisModel.getImageFiles()
+                                .getOrDefault(metaData.getKey(), new ArrayList<>());
+                List<OpenBisModel.FileInfo> allFiles =
+                        Streams.concat(files.stream(), imageFiles.stream()).collect(
+                                Collectors.toList());
+                for (OpenBisModel.FileInfo file : allFiles)
+                {
+                    file.filePath();
+                    file.objectIdentifier();
+                    String[] parts = file.filePath().split("/");
+                    String fileName = parts[parts.length - 1];
+
+                }
+
                 MetadataEntry
                         entry =
                         new MetadataEntry(sample.getIdentifier().toString(), Set.of(type), props,
@@ -338,6 +362,7 @@ public class Mapper
             propertyType.setId(Constants.PROPERTY_PROJECT);
             propertyType.setDomainIncludes(typesWithProject);
             propertyType.addType(getProjectType());
+            properties.add(propertyType);
         }
         {
             PropertyType propertyType = new PropertyType();
@@ -349,10 +374,41 @@ public class Mapper
 
         }
 
+        List<MapResult.RoCrateFile> files = new ArrayList<>();
+
+        for (Map.Entry<ObjectIdentifier, List<OpenBisModel.FileInfo>> a : openBisModel.getFiles()
+                .entrySet())
+        {
+
+            List<String> identifiersToWrite = new ArrayList<>();
+
+            Stream<OpenBisModel.FileInfo> fileInfoStream = Stream.concat(a.getValue().stream(),
+                    openBisModel.getImageFiles().get(a.getKey()).stream());
+            for (OpenBisModel.FileInfo b : fileInfoStream.collect(Collectors.toList()))
+            {
+
+                UUID uuid = UUID.randomUUID();
+                Path path = Path.of("/tmp/ro-crate/" + uuid);
+                Files.createDirectories(Path.of("/tmp/ro-crate/"));
+                Files.write(path, b.contents());
+                MapResult.RoCrateFile roCrateFile = new MapResult.RoCrateFile(path, b.filePath());
+                files.add(roCrateFile);
+                identifiersToWrite.add(b.filePath());
+            }
+
+            Map<String, MetadataEntry> idToEntities =
+                    metaDataEntries.stream().collect(Collectors.toMap(x -> x.getId(), x -> x));
+
+            MetadataEntry metadataEntry = idToEntities.get(a.getKey().toString());
+            metadataEntry.getReferences().put(Constants.PROPERTY_ID_FILES, identifiersToWrite);
+
+
+        }
+
 
         return new MapResult(
-                new RdfsSchema(classes.values().stream().collect(Collectors.toList()), properties),
-                new MappingInfo(reverseMapping, rdfsPropertiesUsedIn), metaDataEntries);
+                new RdfsSchema(new ArrayList<>(classes.values()), properties),
+                new MappingInfo(reverseMapping, rdfsPropertiesUsedIn), metaDataEntries, files);
     }
 
     private String mapValue(String val, DataType dataType)
@@ -382,6 +438,11 @@ public class Mapper
         {
             return Arrays.stream(((Serializable[]) a)).map(x -> x.toString()).toList();
         }
+        if (a instanceof Object[])
+        {
+            return Arrays.stream((Object[]) a).map(x -> x.toString()).collect(Collectors.toList());
+        }
+
         return List.of(a.toString());
 
     }

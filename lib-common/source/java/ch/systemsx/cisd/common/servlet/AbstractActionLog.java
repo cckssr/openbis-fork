@@ -15,7 +15,7 @@
  */
 package ch.systemsx.cisd.common.servlet;
 
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpSession;
 
 import ch.ethz.sis.shared.log.classic.impl.Logger;
 

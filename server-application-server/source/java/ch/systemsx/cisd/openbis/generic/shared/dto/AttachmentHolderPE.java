@@ -20,8 +20,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import javax.persistence.MappedSuperclass;
-import javax.persistence.Transient;
+import jakarta.persistence.MappedSuperclass;
+import jakarta.persistence.Transient;
 
 import ch.systemsx.cisd.openbis.generic.shared.IServer;
 import ch.systemsx.cisd.openbis.generic.shared.basic.IIdHolder;

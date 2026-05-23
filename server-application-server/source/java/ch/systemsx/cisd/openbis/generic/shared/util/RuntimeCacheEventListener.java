@@ -15,96 +15,113 @@
  */
 package ch.systemsx.cisd.openbis.generic.shared.util;
 
-import net.sf.ehcache.CacheException;
-import net.sf.ehcache.Ehcache;
-import net.sf.ehcache.Element;
-import net.sf.ehcache.event.CacheEventListener;
+import java.util.concurrent.atomic.AtomicLong;
 
 import ch.ethz.sis.shared.log.classic.impl.Logger;
+import org.ehcache.event.CacheEvent;
+import org.ehcache.event.CacheEventListener;
+import org.ehcache.event.EventType;
 
-import ch.ethz.sis.shared.log.classic.core.LogCategory;
-import ch.ethz.sis.shared.log.classic.impl.LogFactory;
-
-/**
- * @author pkupczyk
- */
-public class RuntimeCacheEventListener implements CacheEventListener
+public final class RuntimeCacheEventListener<K, V> implements CacheEventListener<K, V>
 {
 
-    private final Logger operationLog = LogFactory.getLogger(LogCategory.OPERATION, getClass());
+    private final Logger operationLog;
+    private final AtomicLong entryCount;
+    private PendingCreated pendingCreated;
 
-    @Override
-    public void dispose()
+    public RuntimeCacheEventListener(Logger operationLog, AtomicLong entryCount)
     {
-        operationLog.info("Disposing cache listener");
+        this.operationLog = operationLog;
+        this.entryCount = entryCount;
     }
 
     @Override
-    public void notifyElementEvicted(Ehcache cache, Element element)
+    public void onEvent(CacheEvent<? extends K, ? extends V> event)
     {
-        logOperation(cache, element, "has been evicted from the cache");
-    }
-
-    @Override
-    public void notifyElementExpired(Ehcache cache, Element element)
-    {
-        logOperation(cache, element, "has expired");
-    }
-
-    @Override
-    public void notifyElementPut(Ehcache cache, Element element) throws CacheException
-    {
-        logOperation(cache, element, "has been put to the cache");
-    }
-
-    @Override
-    public void notifyElementRemoved(Ehcache cache, Element element) throws CacheException
-    {
-        logOperation(cache, element, "has been removed from the cache");
-    }
-
-    @Override
-    public void notifyElementUpdated(Ehcache cache, Element element) throws CacheException
-    {
-        logOperation(cache, element, "has been updated");
-    }
-
-    @Override
-    public void notifyRemoveAll(Ehcache cache)
-    {
-        operationLog.info("All entries have been removed from the cache.");
-    }
-
-    private void logOperation(Ehcache cache, Element element, String operation)
-    {
-        Object entry = element.getObjectValue();
-
-        if (entry != null)
+        if (!operationLog.isInfoEnabled())
         {
-            if (operationLog.isInfoEnabled())
+            return;
+        }
+
+        Object val = event.getNewValue() != null ? event.getNewValue() : event.getOldValue();
+        int identity = (val == null) ? 0 : System.identityHashCode(val);
+
+        EventType type = event.getType();
+
+        if (type == EventType.CREATED)
+        {
+            long size = entryCount.incrementAndGet();
+            logMessage(identity, val, "put to the cache", size);
+            pendingCreated = new PendingCreated(identity, String.valueOf(val));
+            return;
+        }
+
+        if (type == EventType.UPDATED)
+        {
+            pendingCreated = null;
+            return;
+        }
+
+        switch (type)
+        {
+            case EVICTED:
             {
-                StringBuilder sb = new StringBuilder();
-                sb.append("Cache entry " + entry.hashCode() + " that contains " + entry + " " + operation + ".");
+                long afterEvict = entryCount.updateAndGet(prev -> prev > 0 ? prev - 1 : 0);
+                long sizeForEvict = Math.max(0, afterEvict - (pendingCreated != null ? 1 : 0));
+                logMessage(identity, val, "evicted from the cache", sizeForEvict);
 
-                int cacheSize = cache.getSize();
-
-                if (cacheSize == 1)
+                if (pendingCreated != null)
                 {
-                    sb.append(" Cache now contains 1 entry.");
-                } else
-                {
-                    sb.append(" Cache now contains " + cacheSize + " entries.");
+                    logMessage(pendingCreated.identity, pendingCreated.valueDescription, "put to the cache",
+                            afterEvict);
+                    pendingCreated = null;
                 }
 
-                operationLog.info(sb.toString());
+                entryCount.set(afterEvict);
+                return;
+            }
+            case REMOVED:
+            {
+                long size = entryCount.updateAndGet(prev -> prev > 0 ? prev - 1 : 0);
+                pendingCreated = null;
+                logMessage(identity, val, "removed from the cache", size);
+                return;
+            }
+            case EXPIRED:
+            {
+                long size = entryCount.updateAndGet(prev -> prev > 0 ? prev - 1 : 0);
+                pendingCreated = null;
+                logMessage(identity, val, "expired from the cache", size);
+                return;
+            }
+            default:
+            {
+                long size = entryCount.get();
+                logMessage(identity, val, type.name().toLowerCase(), size);
             }
         }
     }
 
-    @Override
-    public Object clone()
+    private void logMessage(int identity, Object val, String action, long size)
     {
-        return new RuntimeCacheEventListener();
+        String base = String.format(
+                "Cache entry %d that contains %s has been %s.",
+                identity, String.valueOf(val), action
+        );
+        String tail = " Cache now contains " + size + (size == 1 ? " entry." : " entries.");
+
+        operationLog.info(base + tail);
     }
 
+    private static final class PendingCreated
+    {
+        private final int identity;
+        private final String valueDescription;
+
+        private PendingCreated(int identity, String valueDescription)
+        {
+            this.identity = identity;
+            this.valueDescription = valueDescription;
+        }
+    }
 }

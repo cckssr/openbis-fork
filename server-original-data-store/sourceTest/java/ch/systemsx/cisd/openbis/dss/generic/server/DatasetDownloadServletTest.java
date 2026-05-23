@@ -34,11 +34,11 @@ import java.util.Properties;
 import java.util.Vector;
 
 import javax.imageio.ImageIO;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.WriteListener;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.WriteListener;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 import ch.ethz.sis.shared.log.standard.core.Level;
 import org.eclipse.jetty.util.URIUtil;

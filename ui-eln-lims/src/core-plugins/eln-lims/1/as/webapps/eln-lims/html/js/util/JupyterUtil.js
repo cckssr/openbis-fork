@@ -81,7 +81,7 @@ var JupyterUtil = new function() {
 		});
 	}
 	
-	this.createJupyterNotebookAndOpen = function(folder, fileName, dataSets, ownerEntity) {
+	this.createJupyterNotebookAndOpen = function(folder, fileName, dataSets, ownerEntity, customNotebookContent) {
 		var _this = this;
 		fileName = fileName + ".ipynb";
 		var jupyterURL = profile.jupyterIntegrationServerEndpoint + "?token=" + mainController.serverFacade.openbisServer.getSession() + "&folder=" + folder + "&filename=" + fileName;
@@ -93,7 +93,7 @@ var JupyterUtil = new function() {
             data : "TEST",
             success : function(result) {
             	var fileName = result.fileName
-            	var newJupyterNotebook = _this.createJupyterNotebookContent(dataSets, ownerEntity, fileName);
+            	var newJupyterNotebook = _this.createJupyterNotebookContent(dataSets, ownerEntity, fileName, customNotebookContent);
         		var jupyterNotebookURL = JupyterUtil.getJupyterURL("/user/" + mainController.serverFacade.getUserId() + "/notebooks/" + folder + "/" + fileName);
         		
         		$.ajax({
@@ -127,7 +127,7 @@ var JupyterUtil = new function() {
 		return { "cell_type": "code", "execution_count": null, "metadata": { "collapsed": false, "code_cell_id" : code_cell_id }, "outputs": [], "source": source };
 	}
 	
-	this.createJupyterNotebookContent = function(dataSets, ownerEntity, fileName) {
+	this.createJupyterNotebookContent = function(dataSets, ownerEntity, fileName, customNotebookContent) {
 		var content = [];
 		var dataSetIds = [];
 		for(var dIdx = 0; dIdx < dataSets.length; dIdx++) {
@@ -169,7 +169,13 @@ var JupyterUtil = new function() {
 			//"ds" + cIdx + ".data[\"dataStore\"][\"downloadUrl\"]='http://10.0.2.2:8889'\n"
 			content.push(this.getCodeCell(["ds" + cIdx + ".download(files=ds" + cIdx + ".file_list, destination='./', wait_until_finished=True)"]));
 		}
-		
+
+		if(customNotebookContent) {
+			for(var cIdx = 0; cIdx < customNotebookContent.length; cIdx++) {
+				content.push(customNotebookContent[cIdx]);
+			}
+		}
+
 		content.push(this.getMarkdownCell("## Process your data here"));
 		content.push(this.getCodeCell([]));
 		

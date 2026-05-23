@@ -98,7 +98,7 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 		$mainPanel.append(this._$searchCriteriaPanelContainer);
 
 		//Search Results Panel
-		this._$dataGridContainer = $("<div>").css("margin-left", "-10px");;
+		this._$dataGridContainer = $("<div>");
 		$mainPanel.append(this._$dataGridContainer);
 		//
 

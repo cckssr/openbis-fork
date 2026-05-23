@@ -10,11 +10,14 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractEntitySear
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.SearchDataSetsOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.SearchDataSetsOperationResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifier;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.SearchExperimentsOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.SearchExperimentsOperationResult;
@@ -22,11 +25,14 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.SynchronousOperationEx
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.SynchronousOperationExecutionResults;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SearchSamplesOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SearchSamplesOperationResult;
-import lombok.SneakyThrows;
 
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 //TODO Scratchpad to be removed
@@ -140,5 +146,49 @@ public class SearchScratchpad {
 
     public static void main(String[] args) throws Exception {
         searchExampleBatchOperations();
+    }
+
+    public static List<AbstractEntity> fakeAbstractEntities() {
+        Experiment experiment = new Experiment();
+        experiment.setIdentifier(new ExperimentIdentifier("exp-identifier"));
+        experiment.setPermId(new ExperimentPermId("exp-perm-id"));
+        experiment.setCode("exp-CODE");
+        ExperimentFetchOptions experimentFetchOptions = new ExperimentFetchOptions();
+        experimentFetchOptions.withProperties();
+        experiment.setFetchOptions(experimentFetchOptions);
+        experiment.setProperties(new HashMap<>());
+        experiment.setStringProperty("NAME", "EXP");
+
+        Experiment experiment2 = new Experiment();
+        experiment2.setIdentifier(new ExperimentIdentifier("exp-identifier-2"));
+        experiment2.setPermId(new ExperimentPermId("exp-perm-id-2"));
+        experiment2.setCode("exp-CODE-TWO");
+        experiment2.setImmutableDataDate(new Date());
+        ExperimentFetchOptions experimentFetchOptions2 = new ExperimentFetchOptions();
+        experimentFetchOptions2.withProperties();
+        experiment2.setFetchOptions(experimentFetchOptions2);
+        experiment2.setProperties(new HashMap<>());
+        experiment2.setStringProperty("NAME", "EXP2");
+
+        DataSet dataSet = new DataSet();
+        dataSet.setPermId(new DataSetPermId("data-set-perm-id"));
+        dataSet.setCode("exp-CODE");
+        DataSetFetchOptions dataSetFetchOptions = new DataSetFetchOptions();
+        dataSetFetchOptions.withProperties();
+        dataSet.setFetchOptions(dataSetFetchOptions);
+        dataSet.setProperties(new HashMap<>());
+        dataSet.setStringProperty("NAME", "DATASET!!!");
+
+        Sample sample = new Sample();
+        sample.setIdentifier(new SampleIdentifier("sample-identifier"));
+        sample.setPermId(new SamplePermId("sample-perm-id"));
+        sample.setCode("sample-CODE");
+        SampleFetchOptions sampleFetchOptions = new SampleFetchOptions();
+        sampleFetchOptions.withProperties();
+        sample.setFetchOptions(sampleFetchOptions);
+        sample.setProperties(new HashMap<>());
+        sample.setStringProperty("NAME", "SAMPLEXXX");
+
+        return List.of(experiment, experiment2, dataSet, sample);
     }
 }

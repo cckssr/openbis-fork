@@ -24,4 +24,6 @@ unzip $SERVER_RO_CRATE_FOLDER/build/distributions/server-ro-crate.zip -d $INSTAL
 cp $1 $INSTALLATION_FOLDER/server-ro-crate/etc/service.properties
 
 # start server
+export RO_CRATE_HOME="$SERVER_RO_CRATE_FOLDER"
+
 $INSTALLATION_FOLDER/server-ro-crate/bin/ro-crate.sh start

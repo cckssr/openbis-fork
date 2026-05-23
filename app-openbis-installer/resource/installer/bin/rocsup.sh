@@ -16,4 +16,5 @@ if [ ${BASE#/} == ${BASE} ]; then
     BASE="`pwd`/${BASE}"
 fi
 
+export RO_CRATE_HOME="$BASE/../servers/server-ro-crate"
 $BASE/../servers/server-ro-crate/bin/ro-crate.sh start

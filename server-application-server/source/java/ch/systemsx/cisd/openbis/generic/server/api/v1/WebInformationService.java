@@ -15,8 +15,8 @@
  */
 package ch.systemsx.cisd.openbis.generic.server.api.v1;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpSession;
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpSession;
 
 import org.springframework.stereotype.Component;
 

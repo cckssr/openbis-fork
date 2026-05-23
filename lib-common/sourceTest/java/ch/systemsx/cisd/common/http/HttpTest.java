@@ -32,8 +32,9 @@ import javax.xml.xpath.XPathFactory;
 import org.apache.commons.codec.binary.Base64;
 import ch.ethz.sis.shared.log.classic.impl.Logger;
 import org.eclipse.jetty.client.HttpClient;
-import org.eclipse.jetty.client.api.ContentResponse;
-import org.eclipse.jetty.client.api.Request;
+import org.eclipse.jetty.client.ContentResponse;
+import org.eclipse.jetty.client.Request;
+import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.eclipse.jetty.util.thread.ScheduledExecutorScheduler;
 import org.w3c.dom.Document;
@@ -110,7 +111,8 @@ public class HttpTest
 
             if (authorizationHeader != null)
             {
-                req = req.header("Authorization", authorizationHeader);
+                req.headers(h -> h.put(HttpHeader.AUTHORIZATION, authorizationHeader));
+                //req = req.header("Authorization", authorizationHeader);
             }
 
             ContentResponse response = req.send();

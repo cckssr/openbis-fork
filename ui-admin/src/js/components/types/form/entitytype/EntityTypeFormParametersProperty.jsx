@@ -646,9 +646,7 @@ class EntityTypeFormParametersProperty extends React.PureComponent {
           disabled={!enabled}
           value={value}
           options={options}
-          emptyOption={
-            property.original && property.original.plugin.value ? null : {}
-          }
+          emptyOption={{}}
           mode={mode}
           onChange={this.handleChange}
           onFocus={this.handleFocus}

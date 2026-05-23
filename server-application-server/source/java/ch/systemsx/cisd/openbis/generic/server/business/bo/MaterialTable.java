@@ -260,6 +260,11 @@ public final class MaterialTable extends AbstractMaterialBusinessObject implemen
             if (ex.getCause() != null && (ex instanceof DataIntegrityViolationException))
             {
                 String materialPermId = ex.getCause().getMessage();
+                // Hibernate 6 appends SQL placeholder like "[n/a]" to the custom message; drop it.
+                if (materialPermId != null)
+                {
+                    materialPermId = materialPermId.replaceFirst("\\s*\\[.*\\]\\s*$", "");
+                }
                 errorSubject += " '" + materialPermId + "'";
             }
             throwException(ex, errorSubject, EntityKind.MATERIAL);

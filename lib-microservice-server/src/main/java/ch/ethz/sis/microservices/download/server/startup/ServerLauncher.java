@@ -17,8 +17,8 @@ package ch.ethz.sis.microservices.download.server.startup;
 
 import ch.ethz.sis.shared.log.classic.impl.Logger;
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.servlet.ServletHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.ee10.servlet.ServletHandler;
+import org.eclipse.jetty.ee10.servlet.ServletHolder;
 
 import ch.ethz.sis.microservices.download.api.configuration.Config;
 import ch.ethz.sis.microservices.download.api.configuration.ServiceConfig;

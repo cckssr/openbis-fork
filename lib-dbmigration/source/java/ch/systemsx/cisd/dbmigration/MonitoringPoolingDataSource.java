@@ -32,12 +32,12 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.commons.dbcp.DelegatingCallableStatement;
-import org.apache.commons.dbcp.DelegatingConnection;
-import org.apache.commons.dbcp.DelegatingPreparedStatement;
-import org.apache.commons.dbcp.DelegatingStatement;
-import org.apache.commons.dbcp.PoolingDataSource;
-import org.apache.commons.pool.ObjectPool;
+import org.apache.commons.dbcp2.DelegatingCallableStatement;
+import org.apache.commons.dbcp2.DelegatingConnection;
+import org.apache.commons.dbcp2.DelegatingPreparedStatement;
+import org.apache.commons.dbcp2.DelegatingStatement;
+import org.apache.commons.dbcp2.PoolingDataSource;
+import org.apache.commons.pool2.ObjectPool;
 import ch.ethz.sis.shared.log.standard.core.Level;
 import ch.ethz.sis.shared.log.classic.impl.Logger;
 
@@ -284,9 +284,9 @@ class MonitoringPoolingDataSource extends PoolingDataSource
     {
         try
         {
-            Connection conn = (Connection) (_pool.borrowObject());
+            Connection conn = (Connection) (getPool().borrowObject());
             final long now = System.currentTimeMillis();
-            final int numActive = _pool.getNumActive();
+            final int numActive = getPool().getNumActive();
             maxActiveSinceLastLogged = Math.max(maxActiveSinceLastLogged, numActive);
             if ((activeConnectionsLogInterval > 0)
                     && (now - lastLogged > activeConnectionsLogInterval)
@@ -315,14 +315,14 @@ class MonitoringPoolingDataSource extends PoolingDataSource
             throw e;
         } catch (NoSuchElementException e)
         {
-            throw new org.apache.commons.dbcp.SQLNestedException(
+            throw new SQLException(
                     "Cannot get a connection, pool error " + e.getMessage(), e);
         } catch (RuntimeException e)
         {
             throw e;
         } catch (Exception e)
         {
-            throw new org.apache.commons.dbcp.SQLNestedException(
+            throw new SQLException(
                     "Cannot get a connection, general error", e);
         }
     }
@@ -400,7 +400,7 @@ class MonitoringPoolingDataSource extends PoolingDataSource
         {
             if (machineLog.isDebugEnabled())
             {
-                final int numActive = _pool.getNumActive();
+                final int numActive = getPool().getNumActive();
                 final StackTraceElement[] stackTrace = getStackTrace();
                 final String serviceMethod = tryGetServiceMethodName(stackTrace);
                 final StringBuilder b = new StringBuilder();
@@ -429,66 +429,66 @@ class MonitoringPoolingDataSource extends PoolingDataSource
             }
         }
 
-        @Override
-        protected void checkOpen() throws SQLException
-        {
-            if (_conn == null)
-            {
-                throw new SQLException("Connection is closed.");
-            }
-        }
+//        @Override
+//        protected void checkOpen() throws SQLException
+//        {
+//            if (_conn== null)
+//            {
+//                throw new SQLException("Connection is closed.");
+//            }
+//        }
+//
+//        @Override
+//        public void close() throws SQLException
+//        {
+//            if (getConnection() != null)
+//            {
+//                log("Return database connection");
+//                this._conn.close();
+//                super.setDelegate(null);
+//                activeConnections.remove(System.identityHashCode(this));
+//            }
+//        }
+//
+//        @Override
+//        public boolean isClosed() throws SQLException
+//        {
+//            if (_conn == null)
+//            {
+//                return true;
+//            }
+//            return _conn.isClosed();
+//        }
+//
+//        @Override
+//        public void clearWarnings() throws SQLException
+//        {
+//            checkOpen();
+//            _conn.clearWarnings();
+//        }
+//
+//        @Override
+//        public void commit() throws SQLException
+//        {
+//            checkOpen();
+//            _conn.commit();
+//        }
 
-        @Override
-        public void close() throws SQLException
-        {
-            if (_conn != null)
-            {
-                log("Return database connection");
-                this._conn.close();
-                super.setDelegate(null);
-                activeConnections.remove(System.identityHashCode(this));
-            }
-        }
-
-        @Override
-        public boolean isClosed() throws SQLException
-        {
-            if (_conn == null)
-            {
-                return true;
-            }
-            return _conn.isClosed();
-        }
-
-        @Override
-        public void clearWarnings() throws SQLException
-        {
-            checkOpen();
-            _conn.clearWarnings();
-        }
-
-        @Override
-        public void commit() throws SQLException
-        {
-            checkOpen();
-            _conn.commit();
-        }
-
-        @Override
-        public Statement createStatement() throws SQLException
-        {
-            checkOpen();
-            return new DelegatingStatement(this, _conn.createStatement());
-        }
-
-        @Override
-        public Statement createStatement(int resultSetType, int resultSetConcurrency)
-                throws SQLException
-        {
-            checkOpen();
-            return new DelegatingStatement(this, _conn.createStatement(resultSetType,
-                    resultSetConcurrency));
-        }
+//        @Override
+//        public Statement createStatement() throws SQLException
+//        {
+//            checkOpen();
+//            return new DelegatingStatement(this, _conn.createStatement());
+//        }
+//
+//        @Override
+//        public Statement createStatement(int resultSetType, int resultSetConcurrency)
+//                throws SQLException
+//        {
+//            checkOpen();
+//            return new DelegatingStatement(this, _conn.createStatement(resultSetType,
+//                    resultSetConcurrency));
+//        }
 
         @Override
         public boolean innermostDelegateEquals(Connection c)
@@ -503,248 +503,248 @@ class MonitoringPoolingDataSource extends PoolingDataSource
             }
         }
 
-        @Override
-        public boolean getAutoCommit() throws SQLException
-        {
-            checkOpen();
-            return _conn.getAutoCommit();
-        }
+//        @Override
+//        public boolean getAutoCommit() throws SQLException
+//        {
+//            checkOpen();
+//            return _conn.getAutoCommit();
+//        }
+//
+//        @Override
+//        public String getCatalog() throws SQLException
+//        {
+//            checkOpen();
+//            return _conn.getCatalog();
+//        }
+//
+//        @Override
+//        public DatabaseMetaData getMetaData() throws SQLException
+//        {
+//            checkOpen();
+//            return _conn.getMetaData();
+//        }
+//
+//        @Override
+//        public int getTransactionIsolation() throws SQLException
+//        {
+//            checkOpen();
+//            return _conn.getTransactionIsolation();
+//        }
+//
+//        @SuppressWarnings(
+//        { "rawtypes", "unchecked" })
+//        @Override
+//        public Map getTypeMap() throws SQLException
+//        {
+//            checkOpen();
+//            return _conn.getTypeMap();
+//        }
+//
+//        @Override
+//        public SQLWarning getWarnings() throws SQLException
+//        {
+//            checkOpen();
+//            return _conn.getWarnings();
+//        }
+//
+//        @Override
+//        public boolean isReadOnly() throws SQLException
+//        {
+//            checkOpen();
+//            return _conn.isReadOnly();
+//        }
+//
+//        @Override
+//        public String nativeSQL(String sql) throws SQLException
+//        {
+//            checkOpen();
+//            return _conn.nativeSQL(sql);
+//        }
+//
+//        @Override
+//        public CallableStatement prepareCall(String sql) throws SQLException
+//        {
+//            checkOpen();
+//            return new DelegatingCallableStatement(this, _conn.prepareCall(sql));
+//        }
+//
+//        @Override
+//        public CallableStatement prepareCall(String sql, int resultSetType, int resultSetConcurrency)
+//                throws SQLException
+//        {
+//            checkOpen();
+//            return new DelegatingCallableStatement(this, _conn.prepareCall(sql, resultSetType,
+//                    resultSetConcurrency));
+//        }
+//
+//        @Override
+//        public PreparedStatement prepareStatement(String sql) throws SQLException
+//        {
+//            checkOpen();
+//            return new DelegatingPreparedStatement(this, _conn.prepareStatement(sql));
+//        }
+//
+//        @Override
+//        public PreparedStatement prepareStatement(String sql, int resultSetType,
+//                int resultSetConcurrency) throws SQLException
+//        {
+//            checkOpen();
+//            return new DelegatingPreparedStatement(this, _conn.prepareStatement(sql,
+//                    resultSetType, resultSetConcurrency));
+//        }
+//
+//        @Override
+//        public void rollback() throws SQLException
+//        {
+//            checkOpen();
+//            _conn.rollback();
+//        }
+//
+//        @Override
+//        public void setAutoCommit(boolean autoCommit) throws SQLException
+//        {
+//            checkOpen();
+//            _conn.setAutoCommit(autoCommit);
+//        }
+//
+//        @Override
+//        public void setCatalog(String catalog) throws SQLException
+//        {
+//            checkOpen();
+//            _conn.setCatalog(catalog);
+//        }
+//
+//        @Override
+//        public void setReadOnly(boolean readOnly) throws SQLException
+//        {
+//            checkOpen();
+//            _conn.setReadOnly(readOnly);
+//        }
+//
+//        @Override
+//        public void setTransactionIsolation(int level) throws SQLException
+//        {
+//            checkOpen();
+//            _conn.setTransactionIsolation(level);
+//        }
+//
+//        @Override
+//        @SuppressWarnings(
+//        { "rawtypes", "unchecked" })
+//        public void setTypeMap(Map map) throws SQLException
+//        {
+//            checkOpen();
+//            _conn.setTypeMap(map);
+//        }
+//
+//        @Override
+//        public String toString()
+//        {
+//            if (_conn == null)
+//            {
+//                return "NULL";
+//            }
+//            return _conn.toString();
+//        }
+//
+//        @Override
+//        public int getHoldability() throws SQLException
+//        {
+//            checkOpen();
+//            return _conn.getHoldability();
+//        }
+//
+//        @Override
+//        public void setHoldability(int holdability) throws SQLException
+//        {
+//            checkOpen();
+//            _conn.setHoldability(holdability);
+//        }
+//
+//        @Override
+//        public java.sql.Savepoint setSavepoint() throws SQLException
+//        {
+//            checkOpen();
+//            return _conn.setSavepoint();
+//        }
+//
+//        @Override
+//        public java.sql.Savepoint setSavepoint(String name) throws SQLException
+//        {
+//            checkOpen();
+//            return _conn.setSavepoint(name);
+//        }
+//
+//        @Override
+//        public void releaseSavepoint(java.sql.Savepoint savepoint) throws SQLException
+//        {
+//            checkOpen();
+//            _conn.releaseSavepoint(savepoint);
+//        }
+//
+//        @Override
+//        public void rollback(java.sql.Savepoint savepoint) throws SQLException
+//        {
+//            checkOpen();
+//            _conn.rollback(savepoint);
+//        }
+//
+//        @Override
+//        public Statement createStatement(int resultSetType, int resultSetConcurrency,
+//                int resultSetHoldability) throws SQLException
+//        {
+//            checkOpen();
+//            return new DelegatingStatement(this, _conn.createStatement(resultSetType,
+//                    resultSetConcurrency, resultSetHoldability));
+//        }
+//
+//        @Override
+//        public CallableStatement prepareCall(String sql, int resultSetType,
+//                int resultSetConcurrency, int resultSetHoldability) throws SQLException
+//        {
+//            checkOpen();
+//            return new DelegatingCallableStatement(this, _conn.prepareCall(sql, resultSetType,
+//                    resultSetConcurrency, resultSetHoldability));
+//        }
+//
+//        @Override
+//        public PreparedStatement prepareStatement(String sql, int autoGeneratedKeys)
+//                throws SQLException
+//        {
+//            checkOpen();
+//            return new DelegatingPreparedStatement(this, _conn.prepareStatement(sql,
+//                    autoGeneratedKeys));
+//        }
+//
+//        @Override
+//        public PreparedStatement prepareStatement(String sql, int resultSetType,
+//                int resultSetConcurrency, int resultSetHoldability) throws SQLException
+//        {
+//            checkOpen();
+//            return new DelegatingPreparedStatement(this, _conn.prepareStatement(sql,
+//                    resultSetType, resultSetConcurrency, resultSetHoldability));
+//        }
 
-        @Override
-        public String getCatalog() throws SQLException
-        {
-            checkOpen();
-            return _conn.getCatalog();
-        }
-
-        @Override
-        public DatabaseMetaData getMetaData() throws SQLException
-        {
-            checkOpen();
-            return _conn.getMetaData();
-        }
-
-        @Override
-        public int getTransactionIsolation() throws SQLException
-        {
-            checkOpen();
-            return _conn.getTransactionIsolation();
-        }
-
-        @SuppressWarnings(
-        { "rawtypes", "unchecked" })
-        @Override
-        public Map getTypeMap() throws SQLException
-        {
-            checkOpen();
-            return _conn.getTypeMap();
-        }
-
-        @Override
-        public SQLWarning getWarnings() throws SQLException
-        {
-            checkOpen();
-            return _conn.getWarnings();
-        }
-
-        @Override
-        public boolean isReadOnly() throws SQLException
-        {
-            checkOpen();
-            return _conn.isReadOnly();
-        }
-
-        @Override
-        public String nativeSQL(String sql) throws SQLException
-        {
-            checkOpen();
-            return _conn.nativeSQL(sql);
-        }
-
-        @Override
-        public CallableStatement prepareCall(String sql) throws SQLException
-        {
-            checkOpen();
-            return new DelegatingCallableStatement(this, _conn.prepareCall(sql));
-        }
-
-        @Override
-        public CallableStatement prepareCall(String sql, int resultSetType, int resultSetConcurrency)
-                throws SQLException
-        {
-            checkOpen();
-            return new DelegatingCallableStatement(this, _conn.prepareCall(sql, resultSetType,
-                    resultSetConcurrency));
-        }
-
-        @Override
-        public PreparedStatement prepareStatement(String sql) throws SQLException
-        {
-            checkOpen();
-            return new DelegatingPreparedStatement(this, _conn.prepareStatement(sql));
-        }
-
-        @Override
-        public PreparedStatement prepareStatement(String sql, int resultSetType,
-                int resultSetConcurrency) throws SQLException
-        {
-            checkOpen();
-            return new DelegatingPreparedStatement(this, _conn.prepareStatement(sql,
-                    resultSetType, resultSetConcurrency));
-        }
-
-        @Override
-        public void rollback() throws SQLException
-        {
-            checkOpen();
-            _conn.rollback();
-        }
-
-        @Override
-        public void setAutoCommit(boolean autoCommit) throws SQLException
-        {
-            checkOpen();
-            _conn.setAutoCommit(autoCommit);
-        }
-
-        @Override
-        public void setCatalog(String catalog) throws SQLException
-        {
-            checkOpen();
-            _conn.setCatalog(catalog);
-        }
-
-        @Override
-        public void setReadOnly(boolean readOnly) throws SQLException
-        {
-            checkOpen();
-            _conn.setReadOnly(readOnly);
-        }
-
-        @Override
-        public void setTransactionIsolation(int level) throws SQLException
-        {
-            checkOpen();
-            _conn.setTransactionIsolation(level);
-        }
-
-        @Override
-        @SuppressWarnings(
-        { "rawtypes", "unchecked" })
-        public void setTypeMap(Map map) throws SQLException
-        {
-            checkOpen();
-            _conn.setTypeMap(map);
-        }
-
-        @Override
-        public String toString()
-        {
-            if (_conn == null)
-            {
-                return "NULL";
-            }
-            return _conn.toString();
-        }
-
-        @Override
-        public int getHoldability() throws SQLException
-        {
-            checkOpen();
-            return _conn.getHoldability();
-        }
-
-        @Override
-        public void setHoldability(int holdability) throws SQLException
-        {
-            checkOpen();
-            _conn.setHoldability(holdability);
-        }
-
-        @Override
-        public java.sql.Savepoint setSavepoint() throws SQLException
-        {
-            checkOpen();
-            return _conn.setSavepoint();
-        }
-
-        @Override
-        public java.sql.Savepoint setSavepoint(String name) throws SQLException
-        {
-            checkOpen();
-            return _conn.setSavepoint(name);
-        }
-
-        @Override
-        public void releaseSavepoint(java.sql.Savepoint savepoint) throws SQLException
-        {
-            checkOpen();
-            _conn.releaseSavepoint(savepoint);
-        }
-
-        @Override
-        public void rollback(java.sql.Savepoint savepoint) throws SQLException
-        {
-            checkOpen();
-            _conn.rollback(savepoint);
-        }
-
-        @Override
-        public Statement createStatement(int resultSetType, int resultSetConcurrency,
-                int resultSetHoldability) throws SQLException
-        {
-            checkOpen();
-            return new DelegatingStatement(this, _conn.createStatement(resultSetType,
-                    resultSetConcurrency, resultSetHoldability));
-        }
-
-        @Override
-        public CallableStatement prepareCall(String sql, int resultSetType,
-                int resultSetConcurrency, int resultSetHoldability) throws SQLException
-        {
-            checkOpen();
-            return new DelegatingCallableStatement(this, _conn.prepareCall(sql, resultSetType,
-                    resultSetConcurrency, resultSetHoldability));
-        }
-
-        @Override
-        public PreparedStatement prepareStatement(String sql, int autoGeneratedKeys)
-                throws SQLException
-        {
-            checkOpen();
-            return new DelegatingPreparedStatement(this, _conn.prepareStatement(sql,
-                    autoGeneratedKeys));
-        }
-
-        @Override
-        public PreparedStatement prepareStatement(String sql, int resultSetType,
-                int resultSetConcurrency, int resultSetHoldability) throws SQLException
-        {
-            checkOpen();
-            return new DelegatingPreparedStatement(this, _conn.prepareStatement(sql,
-                    resultSetType, resultSetConcurrency, resultSetHoldability));
-        }
-
-        @Override
-        public PreparedStatement prepareStatement(String sql, int[] columnIndexes)
-                throws SQLException
-        {
-            checkOpen();
-            return new DelegatingPreparedStatement(this, _conn.prepareStatement(sql,
-                    columnIndexes));
-        }
-
-        @Override
-        public PreparedStatement prepareStatement(String sql, String[] columnNames)
-                throws SQLException
-        {
-            checkOpen();
-            return new DelegatingPreparedStatement(this,
-                    _conn.prepareStatement(sql, columnNames));
-        }
+//        @Override
+//        public PreparedStatement prepareStatement(String sql, int[] columnIndexes)
+//                throws SQLException
+//        {
+//            checkOpen();
+//            return new DelegatingPreparedStatement(this, _conn.prepareStatement(sql,
+//                    columnIndexes));
+//        }
+//
+//        @Override
+//        public PreparedStatement prepareStatement(String sql, String[] columnNames)
+//                throws SQLException
+//        {
+//            checkOpen();
+//            return new DelegatingPreparedStatement(this,
+//                    _conn.prepareStatement(sql, columnNames));
+//        }
 
         /**
-         * @see org.apache.commons.dbcp.DelegatingConnection#getDelegate()
+         * @see org.apache.commons.dbcp2.DelegatingConnection#getDelegate()
          */
         @Override
         public Connection getDelegate()
@@ -759,7 +759,7 @@ class MonitoringPoolingDataSource extends PoolingDataSource
         }
 
         /**
-         * @see org.apache.commons.dbcp.DelegatingConnection#getInnermostDelegate()
+         * @see org.apache.commons.dbcp2.DelegatingConnection#getInnermostDelegate()
          */
         @Override
         public Connection getInnermostDelegate()

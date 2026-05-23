@@ -23,9 +23,9 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
-import javax.persistence.Id;
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
+import jakarta.persistence.Id;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -71,7 +71,7 @@ public class EventsSearchPE implements IIdHolder, Serializable
 
     private Date registrationTimestamp;
 
-    public final void setId(final Long id)
+    public void setId(final Long id)
     {
         this.id = id;
     }
@@ -80,7 +80,7 @@ public class EventsSearchPE implements IIdHolder, Serializable
     @Id
     @SequenceGenerator(name = SequenceNames.EVENTS_SEARCH_SEQUENCE, sequenceName = SequenceNames.EVENTS_SEARCH_SEQUENCE, allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = SequenceNames.EVENTS_SEARCH_SEQUENCE)
-    public final Long getId()
+    public Long getId()
     {
         return id;
     }

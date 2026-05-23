@@ -85,10 +85,10 @@ class TrashcanForm extends React.PureComponent {
           await this.controller.facade.deletePermanently(row, true)
           break
         default:
-          console.log('Unknown operation:', operation)
+          logger.log(logger.ERROR, 'Unknown operation:', operation)
       }
     } catch (error) {
-      console.error('Operation failed:', error)
+      logger.log(logger.ERROR, 'Operation failed:', error)
     } finally {
       this.setState({ operationLoading: false })
       this.controller.load()
@@ -178,6 +178,7 @@ class TrashcanForm extends React.PureComponent {
         rows={rows}
         mode={PageMode.EDIT}
         onEmptyTrashcan={() => this.setState({ emptyTrashcanDialogOpen: true })}
+        onRefreshTrashcan={() => this.controller.load()}
       />
       <ConfirmationDialog
         open={emptyTrashcanDialogOpen || operationDialogOpen}
@@ -189,7 +190,7 @@ class TrashcanForm extends React.PureComponent {
           selectedRow: null
         })}
         title={emptyTrashcanDialogOpen ? "Empty Trashcan" : operationDescription}
-         content={emptyTrashcanDialogOpen ? emptyTrashcanContent : deleteEntityContent}
+        content={emptyTrashcanDialogOpen ? emptyTrashcanContent : deleteEntityContent}
         type='warning'
       />
     </>

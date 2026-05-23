@@ -16,37 +16,90 @@
 #
 #
 
+awkBin()
+{
+  # We need a awk that accepts variable assignments with '-v'
+  case `uname -s` in
+    "SunOS")
+      echo "nawk"
+      return
+      ;;
+  esac
+  # default
+  echo "awk"
+}
+
+isPIDRunning()
+{
+  if [ "$1" = "" ]; then
+    return 1
+  fi
+  if [ "$1" = "fake" ]; then # for unit tests
+    return 0
+  fi
+  # This will have a return value of 0 on BSDish systems
+  isBSD="`ps aux > /dev/null 2>&1; echo $?`"
+  AWK=`awkBin`
+  if [ "$isBSD" = "0" ]; then
+    if [ "`ps aux | $AWK -v PID=$1 '{if ($2==PID) {print "FOUND"}}'`" = "FOUND" ]; then
+      return 0
+    else
+      return 1
+    fi
+  else
+    if [ "`ps -ef | $AWK -v PID=$1 '{if ($2==PID) {print "FOUND"}}'`" = "FOUND" ]; then
+      return 0
+    else
+      return 1
+    fi
+  fi
+}
+
+checkNotRoot()
+{
+  if [ $UID -eq 0 ]; then
+    echo "openBIS RO-CRATE Server cannot run as user 'root'." > /dev/stderr
+    exit 1
+  fi
+}
+
+
 BASE=$(dirname "$0")/..
 PIDFILE=$BASE/ro_crate_server.pid
 QUARKUS_RUN_JAR=$BASE/quarkus-app/quarkus-run.jar
 SERVICE_PROPERTIES_FILE=$BASE/etc/service.properties
-LOG_FOLDER=$BASE/log
-LOG_FILE=$LOG_FOLDER/ro_crate.log
+#LOG_FOLDER=$BASE/log
+#LOG_FILE=$LOG_FOLDER/ro_crate.log
 SUCCESS_MSG="Quarkus app running"
+STARTED_MARKER="$RO_CRATE_HOME/SERVER_STARTED"
+TIMEOUT=120
 
 start(){
+  checkNotRoot
   if [ -f "$PIDFILE" ] && kill -0 $(cat "$PIDFILE") 2>/dev/null; then
     echo "Already running."
     exit 1
   fi
-  mkdir -p $LOG_FOLDER
-  java -jar $QUARKUS_RUN_JAR $SERVICE_PROPERTIES_FILE "$@" > $LOG_FILE 2>&1 &
+
+  #mkdir -p $LOG_FOLDER
+
+  # cd to working directory
+  cd "$RO_CRATE_HOME"
+
+  stdbuf -oL -eL java -jar "$QUARKUS_RUN_JAR" "$SERVICE_PROPERTIES_FILE" "$@" 2>&1 &
   echo $! >"$PIDFILE"
+  JAVA_PID=$!
   echo "Starting RO-CRATE server (pid $(cat "$PIDFILE"))"
 
-  # Now tail the log in the foreground
-  tail -n0 -F "$LOG_FILE" | while IFS= read -r line; do
-    echo "$line"
-    # check for your success marker
-    if [[ "$line" == *"$SUCCESS_MSG"* ]]; then
-      echo "Started RO-CRATE server."
-      break
-    fi
-    # check for any ERROR
-    if echo "$line" | grep -q -E 'ERROR'; then
-      echo "Startup of RO-CRATE server failed."
-      break
-    fi
+  echo "STARTED_MARKER: $STARTED_MARKER"
+
+  # Poll for marker file
+  for i in $(seq 1 $TIMEOUT); do
+      sleep 1
+
+      [ -f "$STARTED_MARKER" ] && { echo "Started RO-CRATE server."; exit 0; }
+
+      isPIDRunning "$JAVA_PID" || { echo "Startup of RO-CRATE server failed."; exit 1; }
   done
 }
 

@@ -7,6 +7,6 @@ dependencies {
             project(':lib-openbis-commonbase'),
             project(':lib-hierarchical-content'),
             project(':lib-maintenance'),
-            'apache:commons-io:2.6'
+            'commons-io:commons-io:2.19.0'
     testImplementation project(path: ':lib-data-store-commonbase', configuration: 'tests')
 }

@@ -60,6 +60,10 @@ public class UserManagementMaintenanceTask extends AbstractGroupMaintenanceTask
     
     static final String LDAP_GROUP_QUERY_TEMPLATE = "ldap-group-query-template";
 
+    public enum Mode { ldap, manual };
+
+    public static final String MODE = "mode";
+
     private File auditLogFile;
 
     private LDAPAuthenticationService ldapService;
@@ -78,6 +82,12 @@ public class UserManagementMaintenanceTask extends AbstractGroupMaintenanceTask
 
     private String groupQueryTemplateOrNull;
 
+    private Mode mode;
+
+    public Mode getMode() {
+        return mode;
+    }
+
     public UserManagementMaintenanceTask()
     {
         super(true);
@@ -87,13 +97,16 @@ public class UserManagementMaintenanceTask extends AbstractGroupMaintenanceTask
     @Override
     protected void setUpSpecific(Properties properties)
     {
+        mode = Mode.valueOf(properties.getProperty(MODE, Mode.ldap.toString()));
         deactivateUnknownUsers = PropertyUtils.getBoolean(properties, DEACTIVATE_UNKNOWN_USERS_PROPERTY, true);
         auditLogFile = new File(properties.getProperty(AUDIT_LOG_FILE_PATH_PROPERTY, DEFAULT_AUDIT_LOG_FILE_PATH));
         if (auditLogFile.isDirectory())
         {
             throw new ConfigurationFailureException("Audit log file '" + auditLogFile.getAbsolutePath() + "' is a directory.");
         }
-        ldapService = getLdapAuthenticationService();
+        if (mode == Mode.ldap) {
+            ldapService = getLdapAuthenticationService();
+        }
         filterKey = properties.getProperty(LDAP_FILTER_KEY_PROPERTY, DEFAULT_LDAP_FILTER_KEY);
         groupQueryTemplateOrNull = properties.getProperty(LDAP_GROUP_QUERY_TEMPLATE);
         String shareIdsMappingFilePath = properties.getProperty(SHARES_MAPPING_FILE_PATH_PROPERTY);
@@ -215,7 +228,7 @@ public class UserManagementMaintenanceTask extends AbstractGroupMaintenanceTask
                 if (StringUtils.isBlank(ldapGroupKey))
                 {
                     operationLog.warn("Group '" + key + "' has empty ldapGroupKey.");
-                } else
+                } else if(mode == Mode.ldap)
                 {
                     try
                     {

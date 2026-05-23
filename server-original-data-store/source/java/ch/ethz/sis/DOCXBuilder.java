@@ -28,8 +28,8 @@ import org.docx4j.openpackaging.parts.WordprocessingML.AlternativeFormatInputPar
 import org.docx4j.relationships.Relationship;
 import org.docx4j.wml.CTAltChunk;
 import org.eclipse.jetty.client.HttpClient;
-import org.eclipse.jetty.client.api.ContentResponse;
-import org.eclipse.jetty.client.api.Request;
+import org.eclipse.jetty.client.ContentResponse;
+import org.eclipse.jetty.client.Request;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;

@@ -1405,10 +1405,6 @@ export default class BrowserTreeController {
       settings.customSortings = loaded.customSortings
     }
 
-    if (_.isObject(loaded.selectedObject)) {
-      settings.selectedObject = loaded.selectedObject
-    }
-
     if (!_.isNil(settings.sortingIds)) {
       Object.entries(settings.sortingIds).forEach(([nodeId, sortingId]) => {
         if (sortingId === BrowserTreeController.INTERNAL_CUSTOM_SORTING_ID) {

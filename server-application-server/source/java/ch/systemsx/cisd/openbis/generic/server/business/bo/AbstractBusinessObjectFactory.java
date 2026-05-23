@@ -17,7 +17,7 @@ package ch.systemsx.cisd.openbis.generic.server.business.bo;
 
 import java.util.Properties;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 import org.springframework.beans.factory.InitializingBean;
 

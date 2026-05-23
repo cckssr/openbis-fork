@@ -149,7 +149,6 @@ export default class EntityTypeFormControllerLoad extends PageControllerLoad {
         value: value,
       }))
     }
-    console.log('loadedType', loadedType)
     const loadedTypeGroupsAssignments = loadedType?.typeGroupAssignments?.map(typeGroupAssignment => {
       return {
         id: typeGroupAssignment.typeGroup.getId().getPermId(),
@@ -157,7 +156,6 @@ export default class EntityTypeFormControllerLoad extends PageControllerLoad {
         managedInternally: typeGroupAssignment.typeGroup.managedInternally,
       }
     }) || []
-    console.log('loadedTypeGroupsAssignments', loadedTypeGroupsAssignments)
     const type = {
       code: FormUtil.createField({
         value: _.get(loadedType, 'code', null),

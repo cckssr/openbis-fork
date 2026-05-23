@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.testng.AssertJUnit;
 import org.testng.annotations.Test;
 
@@ -109,7 +110,8 @@ public final class GroupDAOTest extends AbstractDAOTest
         assertNull(groupDAO.tryGetById(TechId.create(deletedGroup)));
     }
 
-    @Test(expectedExceptions = DataIntegrityViolationException.class)
+    @Test(expectedExceptions = {DataIntegrityViolationException.class,
+            InvalidDataAccessApiUsageException.class })
     public final void testDeleteFail()
     {
         final ISpaceDAO groupDAO = daoFactory.getSpaceDAO();

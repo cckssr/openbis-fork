@@ -8,12 +8,12 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
 import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
 import ch.openbis.rocrate.app.reader.RdfToModel;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import edu.kit.datamanager.ro_crate.RoCrate;
+import edu.kit.datamanager.ro_crate.reader.FolderReader;
 import edu.kit.datamanager.ro_crate.reader.RoCrateReader;
-import edu.kit.datamanager.ro_crate.reader.ZipReader;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -23,14 +23,14 @@ import static org.junit.Assert.*;
 public class MoleculeRoCrateTest
 {
 
-    static final String INPUT = "src/test/resources/psi/molecules/ro-crate-out.zip";
+    static final String INPUT = "src/test/resources/psi/molecules/ro-crate-out/";
 
     public static final String IDENTIFIER_MOLECULE = "/MATERIALS/MOLECULES/MOLE151";
 
     @Test
-    public void testMoleculeRoCrate() throws JsonProcessingException
+    public void testMoleculeRoCrate() throws IOException
     {
-        RoCrateReader roCrateFolderReader = new RoCrateReader(new ZipReader());
+        RoCrateReader roCrateFolderReader = new RoCrateReader(new FolderReader());
         RoCrate crate = roCrateFolderReader.readCrate(INPUT);
         SchemaFacade schemaFacade = SchemaFacade.of(crate);
 
@@ -47,7 +47,7 @@ public class MoleculeRoCrateTest
                 openBisModel =
                 RdfToModel.convert(types, schemaFacade.getPropertyTypes(),
                         entryList.stream().toList(), "DEFAULT",
-                        "DEFAULT");
+                        "DEFAULT", schemaFacade);
 
         assertEquals(2, openBisModel.getEntityTypes().size());
         assertTrue(openBisModel.getEntities()

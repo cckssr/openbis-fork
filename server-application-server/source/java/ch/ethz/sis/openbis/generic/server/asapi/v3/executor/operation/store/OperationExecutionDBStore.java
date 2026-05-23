@@ -18,8 +18,10 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.operation.store;
 import java.util.Date;
 import java.util.List;
 
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
 
 import ch.systemsx.cisd.openbis.generic.server.business.bo.DataAccessExceptionTranslator;
@@ -74,6 +76,11 @@ public class OperationExecutionDBStore implements IOperationExecutionDBStore
         } catch (DataAccessException e)
         {
             DataAccessExceptionTranslator.throwException(e, "Operation execution " + code, null);
+        } catch (ConstraintViolationException|
+                org.hibernate.exception.ConstraintViolationException e)
+        {
+            DataAccessException de = new DataIntegrityViolationException(e.getMessage(),e);
+            DataAccessExceptionTranslator.throwException(de, "Operation execution " + code, null);
         }
     }
 

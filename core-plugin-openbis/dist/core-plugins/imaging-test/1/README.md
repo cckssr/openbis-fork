@@ -6,20 +6,19 @@ with randomly selected pixels.
 
 ## Prerequisites
 - Python >= 3.10 with [`numpy`, `pillow`] modules installed
-- Imaging core-plugin installed in Openbis
+- `imaging` core-plugin installed in Openbis
 
 ## Configuration
 
 1. Include imaging-test core plugin into core-plugins of your installation
-2. Configure DSS service properties (`<DSS_FOLDER>/etc/service.properties`) to include path to python script needed for image generation. The property is `imaging.imaging-test.script-path`.
-   (To use default script, configure it as: `imaging.imaging-test.script-path=<PATH_TO_CORE_PLUGINS_FOLDER>/imaging-test/1/dss/services/imaging-test/test_adaptor_script.py`)
-3. Restart Openbis
+2. Configure python3 path for AS  as service property `imaging.as.services.imaging.python3-path`
+3. Start Openbis
 
 ## Data import
 
 
 
-In `imaging-test/1/imaging_test_example/` you can find a python script (`importer.py`) that uploads test data into the system.
+In `imaging-test/1/imaging_test_importer/` you can find a python script (`importer.py`) that uploads test data into the system.
 
 ## Prerequisites
 

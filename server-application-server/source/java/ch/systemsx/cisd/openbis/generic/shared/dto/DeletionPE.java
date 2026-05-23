@@ -17,12 +17,12 @@ package ch.systemsx.cisd.openbis.generic.shared.dto;
 
 import java.io.Serializable;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.Table;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -50,7 +50,7 @@ public class DeletionPE extends HibernateAbstractRegistrationHolder implements I
 
     private String reason;
 
-    public final void setId(final Long id)
+    public void setId(final Long id)
     {
         this.id = id;
     }
@@ -59,7 +59,7 @@ public class DeletionPE extends HibernateAbstractRegistrationHolder implements I
     @Id
     @SequenceGenerator(name = SequenceNames.DELETION_SEQUENCE, sequenceName = SequenceNames.DELETION_SEQUENCE, allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = SequenceNames.DELETION_SEQUENCE)
-    public final Long getId()
+    public Long getId()
     {
         return id;
     }

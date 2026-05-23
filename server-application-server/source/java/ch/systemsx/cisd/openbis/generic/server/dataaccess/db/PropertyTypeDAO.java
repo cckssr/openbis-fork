@@ -18,10 +18,11 @@ package ch.systemsx.cisd.openbis.generic.server.dataaccess.db;
 import java.util.List;
 
 import ch.ethz.sis.shared.log.classic.impl.Logger;
-import org.hibernate.Criteria;
-import org.hibernate.FetchMode;
+
+import org.hibernate.HibernateException;
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.criterion.CriteriaSpecification;
+
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.support.JdbcAccessor;
@@ -36,6 +37,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.CodeConverter;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataTypeCode;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PropertyTypePE;
+import org.springframework.orm.hibernate5.SessionFactoryUtils;
 
 /**
  * <i>Data Access Object</i> implementation for {@link PropertyTypePE}.
@@ -70,10 +72,10 @@ final class PropertyTypeDAO extends AbstractGenericEntityDAO<PropertyTypePE> imp
 
         final String mangledCode = CodeConverter.tryToDatabase(code);
         final List<PropertyTypePE> list =
-                cast(getHibernateTemplate().find(
-                        String.format("select pt from %s pt where pt.simpleCode = ? ",
+                find(PropertyTypePE.class,
+                        String.format("select pt from %s pt where pt.simpleCode = ?1 ",
                                 PropertyTypePE.class.getSimpleName()),
-                        toArray(mangledCode)));
+                        toArray(mangledCode));
         final PropertyTypePE entity = tryFindEntity(list, "property type", code);
         if (operationLog.isDebugEnabled())
         {
@@ -86,9 +88,10 @@ final class PropertyTypeDAO extends AbstractGenericEntityDAO<PropertyTypePE> imp
     @Override
     public List<PropertyTypePE> listAllPropertyTypes()
     {
-        final Criteria criteria = currentSession().createCriteria(PropertyTypePE.class);
-        criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
-        final List<PropertyTypePE> list = cast(criteria.list());
+        List<PropertyTypePE> list = currentSession()
+                .createQuery("select distinct p from PropertyTypePE p", PropertyTypePE.class)
+                .list();
+
         if (operationLog.isDebugEnabled())
         {
             operationLog.debug(String.format("%s(): %d property types(s) have been found.",
@@ -100,13 +103,20 @@ final class PropertyTypeDAO extends AbstractGenericEntityDAO<PropertyTypePE> imp
     @Override
     public List<PropertyTypePE> listAllPropertyTypesWithRelations()
     {
-        final Criteria criteria = currentSession().createCriteria(PropertyTypePE.class);
-        criteria.setFetchMode("materialTypePropertyTypesInternal", FetchMode.JOIN);
-        criteria.setFetchMode("sampleTypePropertyTypesInternal", FetchMode.JOIN);
-        criteria.setFetchMode("experimentTypePropertyTypesInternal", FetchMode.JOIN);
-        criteria.setFetchMode("dataSetTypePropertyTypesInternal", FetchMode.JOIN);
-        criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
-        final List<PropertyTypePE> list = cast(criteria.list());
+
+        // TODO review if all these joins are really needed
+        List<PropertyTypePE> list = currentSession()
+                .createQuery(
+                        "select distinct p " +
+                                "from PropertyTypePE p " +
+                                "left join fetch p.materialTypePropertyTypesInternal " +
+                                "left join fetch p.sampleTypePropertyTypesInternal " +
+                                "left join fetch p.experimentTypePropertyTypesInternal " +
+                                "left join fetch p.dataSetTypePropertyTypesInternal",
+                        PropertyTypePE.class
+                )
+                .list();
+
         if (operationLog.isDebugEnabled())
         {
             operationLog.debug(String.format("%s(): %d property types(s) have been found.",
@@ -119,9 +129,9 @@ final class PropertyTypeDAO extends AbstractGenericEntityDAO<PropertyTypePE> imp
     public final List<PropertyTypePE> listPropertyTypes() throws DataAccessException
     {
         final List<PropertyTypePE> list =
-                cast(getHibernateTemplate().find(
+                find(PropertyTypePE.class,
                         String.format("from %s v where v.managedInternally = false", PropertyTypePE.class
-                                .getSimpleName())));
+                                .getSimpleName()));
         if (operationLog.isDebugEnabled())
         {
             operationLog.debug(String.format("%s(): %d property types(s) have been found.",
@@ -134,8 +144,8 @@ final class PropertyTypeDAO extends AbstractGenericEntityDAO<PropertyTypePE> imp
     public final List<DataTypePE> listDataTypes() throws DataAccessException
     {
         final List<DataTypePE> list =
-                cast(getHibernateTemplate().find(
-                        String.format("from %s dt", DataTypePE.class.getSimpleName())));
+                find(DataTypePE.class,
+                        String.format("from %s dt", DataTypePE.class.getSimpleName()));
         if (operationLog.isDebugEnabled())
         {
             operationLog.debug(String.format("%s(): %d data types(s) have been found.", MethodUtils
@@ -150,10 +160,10 @@ final class PropertyTypeDAO extends AbstractGenericEntityDAO<PropertyTypePE> imp
         assert code != null : "Unspecified entity data type.";
 
         final List<DataTypePE> list =
-                cast(getHibernateTemplate().find(
-                        String.format("from %s dt where dt.code = ?", DataTypePE.class
+                find(DataTypePE.class,
+                        String.format("from %s dt where dt.code = ?1", DataTypePE.class
                                 .getSimpleName()),
-                        toArray(code)));
+                        toArray(code));
         final DataTypePE entity = getEntity(list);
         if (operationLog.isDebugEnabled())
         {
@@ -170,9 +180,11 @@ final class PropertyTypeDAO extends AbstractGenericEntityDAO<PropertyTypePE> imp
         assert propertyType != null : "Unspecified property type.";
         validatePE(propertyType);
 
-        final HibernateTemplate template = getHibernateTemplate();
-        template.save(propertyType);
-        template.flush();
+        doExecute(session -> {
+            session.persist(propertyType);
+            session.flush();
+            return null;
+        });
         if (operationLog.isInfoEnabled())
         {
             operationLog.info(String.format("ADD: property type '%s'.", propertyType));

@@ -39,7 +39,7 @@ const styles = theme => ({
 class FormFieldView extends React.PureComponent {
   render() {
     const { label, value, description, classes, color, disableUnderline, monospaceFont } = this.props
-
+    
     // Build className array and filter out falsy values
     const classNameParts = []
     if (!disableUnderline) {
@@ -49,7 +49,7 @@ class FormFieldView extends React.PureComponent {
       classNameParts.push(classes.monospaceFont)
     }
     const className = classNameParts.join(' ')
-
+    
     return (
       <div className={classes.container}>
         <div className={classes.control}>

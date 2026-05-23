@@ -1,48 +1,50 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ehcache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.ehcache.org/v3"
+        xsi:schemaLocation="http://www.ehcache.org/v3 https://www.ehcache.org/schema/ehcache-core-3.0.xsd">
 
-	<diskStore path="java.io.tmpdir" />
+    <!-- Hibernate query + timestamps regions -->
+    <cache alias="hibernateQueryResultsRegion">
+        <key-type>java.lang.Object</key-type>
+        <value-type>java.lang.Object</value-type>
+        <expiry><none/></expiry> <!-- eternal -->
+        <resources>
+            <heap unit="entries">1000000</heap>
+        </resources>
+    </cache>
 
-	<!-- 
-	// The default cache configuration for (see warnings in the server startup log): 
-	// * ch.systemsx.cisd.openbis.generic.shared.dto.MaterialPropertyPE 
-	// * ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentPropertyPE 
-	// * ch.systemsx.cisd.openbis.generic.shared.dto.MaterialPE.materialProperties 
-	// * ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentPE.experimentProperties 
-	// and: 
-	// * org.hibernate.cache.UpdateTimestampsCache
-	// * org.hibernate.cache.StandardQueryCache 
-	-->
-	<defaultCache maxElementsInMemory="1000000" eternal="true"
-		overflowToDisk="false" diskPersistent="false"
-		memoryStoreEvictionPolicy="LFU" />
+    <cache alias="hibernateTimestampsRegion">
+        <key-type>java.lang.Object</key-type>
+        <value-type>java.lang.Object</value-type>
+        <expiry><none/></expiry>
+        <resources>
+            <heap unit="entries">1000000</heap>
+        </resources>
+    </cache>
 
-	<!-- 
-	
-	V3 Search Cache advanced configuration. 
-	Please uncomment it only if you want to fine-tune the search cache configuration. 
-	If you want to change the cache size only, please leave this commented out and set the size in openbis.conf file instead.
+    <!-- App caches -->
 
-	<cache name="searchCache" eternal="false" maxBytesLocalHeap="512m"
-		overflowToDisk="false" diskPersistent="false" timeToIdleSeconds="3600"
-		timeToLiveSeconds="0" memoryStoreEvictionPolicy="LRU">
-		<cacheEventListenerFactory class="ch.systemsx.cisd.openbis.generic.shared.util.RuntimeCacheEventListenerFactory" />
-		<sizeOfPolicy maxDepth="10000000" maxDepthExceededBehavior="continue"/>
-	</cache>
-	-->
+    <cache alias="searchCache">
+        <key-type>ch.ethz.sis.openbis.generic.server.asapi.v3.cache.SearchCacheKey</key-type>
+        <value-type>ch.systemsx.cisd.openbis.generic.shared.util.RuntimeCache$ValueWrapper</value-type>
+        <!-- timeToIdleSeconds = 3600, no absolute TTL -->
+        <expiry>
+            <tti unit="seconds">3600</tti>
+        </expiry>
+        <resources>
+            <heap unit="entries">500000</heap>
+        </resources>
+    </cache>
 
-	<!-- 
-	
-	TableData cache for GWT presentation layer. 
-	Please uncomment it only if you want to fine-tune the search cache configuration. 
-	If you want to change the cache size only, please leave this commented out and set the size in openbis.conf file instead.
+    <cache alias="tableDataCache">
+        <key-type>java.lang.Object</key-type>
+        <value-type>ch.systemsx.cisd.openbis.generic.shared.util.RuntimeCache$ValueWrapper</value-type>
+        <expiry>
+            <tti unit="seconds">3600</tti>
+        </expiry>
+        <resources>
+            <heap unit="entries">500000</heap>
+        </resources>
+    </cache>
 
-	<cache name="tableDataCache" eternal="false" maxBytesLocalHeap="512m"
-		overflowToDisk="false" diskPersistent="false" timeToIdleSeconds="3600"
-		timeToLiveSeconds="0" memoryStoreEvictionPolicy="LRU">
-		<cacheEventListenerFactory class="ch.systemsx.cisd.openbis.generic.shared.util.RuntimeCacheEventListenerFactory" />
-		<sizeOfPolicy maxDepth="10000000" maxDepthExceededBehavior="continue"/>
-	</cache>
-	-->
-
-</ehcache>
+</config>

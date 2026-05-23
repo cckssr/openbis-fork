@@ -3,6 +3,7 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.exporter;
 
 import ch.ethz.sis.openbis.generic.server.xls.export.helper.AbstractXLSExportHelper;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 
 import java.awt.*;
 import java.io.ByteArrayOutputStream;
@@ -103,9 +104,15 @@ public class ExportPDFUtils
             for (int j = 0; j < dataRow.size(); j++)
             {
                 final String stylesKey = AbstractXLSExportHelper.convertNumericToAlphanumeric(i, j);
-                final String style = styles.get(stylesKey).asText();
+                final String stylesValue;
+                if (styles == null || styles.get(stylesKey) == null) {
+                    // backwards compatibility
+                    stylesValue = "";
+                } else {
+                    stylesValue = styles.get(stylesKey).asText();
+                }
                 final JsonNode cell = dataRow.get(j);
-                tableBody.append("  <td style='").append(COMMON_STYLE).append(" ").append(style).append("'> ").append(cell.asText())
+                tableBody.append("  <td style='").append(COMMON_STYLE).append(" ").append(stylesValue).append("'> ").append(cell.asText())
                         .append(" </td>\n");
             }
             tableBody.append("</tr>\n");

@@ -162,16 +162,10 @@ public class DataBO extends AbstractDataSetBusinessObject implements IDataBO
                         lockForUpdate);
     }
 
-    static final String DATA_SET_TYPE = "dataSetType";
-
-    static final String PROPERTY_TYPES = "dataSetType.dataSetTypePropertyTypesInternal";
-
     @Override
     public void loadDataByTechId(TechId datasetId)
     {
-        String[] connections =
-                { PROPERTY_TYPES, DATA_SET_TYPE };
-        data = getDataDAO().tryGetById(datasetId, connections);
+        data = getDataDAO().tryGetByIdWithTypePropertyTypesAndSample(datasetId);
         if (data == null)
         {
             throw new UserFailureException(String.format("Data set with ID '%s' does not exist.",

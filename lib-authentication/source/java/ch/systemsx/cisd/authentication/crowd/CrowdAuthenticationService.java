@@ -29,9 +29,9 @@ import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import ch.ethz.sis.shared.log.classic.impl.Logger;
-import org.eclipse.jetty.client.api.ContentResponse;
-import org.eclipse.jetty.client.api.Request;
-import org.eclipse.jetty.client.util.StringContentProvider;
+import org.eclipse.jetty.client.ContentResponse;
+import org.eclipse.jetty.client.Request;
+import org.eclipse.jetty.client.StringRequestContent;
 import org.eclipse.jetty.http.HttpMethod;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -150,7 +150,8 @@ public class CrowdAuthenticationService implements IAuthenticationService
                     {
                         Request request = JettyHttpClientFactory.getHttpClient().newRequest(serviceUrl).method(HttpMethod.POST);
                         request.timeout(timeoutMillis, TimeUnit.MILLISECONDS);
-                        request.content(new StringContentProvider(message), "application/soap+xml");
+                        request.method(HttpMethod.POST)
+                                .body(new StringRequestContent("application/soap+xml", message));
                         ContentResponse response = request.send();
                         return response.getContentAsString();
                     } catch (final Exception ex)

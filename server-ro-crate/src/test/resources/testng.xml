@@ -1,0 +1,13 @@
+<suite name="OpenBIS Ro-Crate Test Suite" verbose="1">
+
+    <test name="All Tests">
+        <classes>
+            <!--<class name="EndToEndTests"/>-->
+            <!--class name="PsiDataFreshTests"/-->
+
+            <class name="ch.ethz.sis.openbis.generic.server.asapi.openapi.v1.service.RoCrateSchemaValidationTest"/>
+            <class name="ch.ethz.sis.openbis.generic.server.asapi.openapi.v1.service.RoCrateSchemaValidationRegressionCasesTest"/>
+        </classes>
+    </test>
+
+</suite>

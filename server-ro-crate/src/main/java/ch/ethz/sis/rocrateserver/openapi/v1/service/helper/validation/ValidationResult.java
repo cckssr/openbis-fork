@@ -1,28 +1,36 @@
 package ch.ethz.sis.rocrateserver.openapi.v1.service.helper.validation;
 
+import ch.ethz.sis.rocrateserver.openapi.v1.service.response.result.IResultPayload;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.List;
 import java.util.Map;
 
-public class ValidationResult
+public class ValidationResult implements IResultPayload
 {
-    private final Map<String, List<PropertyProblem>> entitiesToMissingProperties;
+    private Map<String, List<PropertyProblem>> entitiesToMissingProperties;
 
-    private final Map<String, List<PropertyProblem>> entititesToUndefinedProperties;
+    private Map<String, List<PropertyProblem>> entititesToUndefinedProperties;
 
-    private final Map<String, List<PropertyProblem>> wrongDataTypes;
+    private Map<String, List<PropertyProblem>> wrongDataTypes;
 
-    private final List<String> foundIdentifiers;
+    private List<String> entities;
+
+    public ValidationResult()
+    {
+    }
 
     public ValidationResult(Map<String, List<PropertyProblem>> entitiesToMissingProperties,
             Map<String, List<PropertyProblem>> entititesToUndefinedProperties,
-            Map<String, List<PropertyProblem>> wrongDataTypes, List<String> foundIdentifiers)
+            Map<String, List<PropertyProblem>> wrongDataTypes, List<String> entities)
     {
         this.entitiesToMissingProperties = entitiesToMissingProperties;
         this.entititesToUndefinedProperties = entititesToUndefinedProperties;
         this.wrongDataTypes = wrongDataTypes;
-        this.foundIdentifiers = foundIdentifiers;
+        this.entities = entities;
     }
 
+    @JsonProperty("isValid")
     public boolean isOkay()
     {
         return entitiesToMissingProperties.isEmpty() && entititesToUndefinedProperties.isEmpty()
@@ -44,8 +52,9 @@ public class ValidationResult
         return wrongDataTypes;
     }
 
-    public List<String> getFoundIdentifiers()
+    public List<String> getEntities()
     {
-        return foundIdentifiers;
+        return entities;
     }
+
 }

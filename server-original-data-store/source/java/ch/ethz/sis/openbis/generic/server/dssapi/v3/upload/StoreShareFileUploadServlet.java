@@ -18,15 +18,15 @@ package ch.ethz.sis.openbis.generic.server.dssapi.v3.upload;
 import java.io.IOException;
 import java.io.InputStream;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
-import org.apache.commons.fileupload.FileItemIterator;
-import org.apache.commons.fileupload.FileItemStream;
-import org.apache.commons.fileupload.FileUploadException;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.fileupload2.core.FileItemInput;
+import org.apache.commons.fileupload2.core.FileItemInputIterator;
+import org.apache.commons.fileupload2.core.FileUploadException;
+import org.apache.commons.fileupload2.jakarta.servlet5.JakartaServletFileUpload;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import ch.ethz.sis.shared.log.classic.impl.Logger;
@@ -71,7 +71,7 @@ public class StoreShareFileUploadServlet extends HttpServlet
 
         try
         {
-            FileItemIterator iterator = uploadRequest.getFiles();
+            FileItemInputIterator iterator = uploadRequest.getFiles();
 
             if (false == iterator.hasNext())
             {
@@ -82,13 +82,13 @@ public class StoreShareFileUploadServlet extends HttpServlet
 
             while (iterator.hasNext())
             {
-                FileItemStream file = null;
+                FileItemInput file = null;
                 InputStream stream = null;
 
                 try
                 {
                     file = iterator.next();
-                    stream = file.openStream();
+                    stream = file.getInputStream();
 
                     /*
                      * Most browsers send only base file names for files which were uploaded via a regular html form. Still, there are some browsers
@@ -162,15 +162,15 @@ public class StoreShareFileUploadServlet extends HttpServlet
             return request.getParameter(FOLDER_PATH_PARAM);
         }
 
-        public FileItemIterator getFiles() throws FileUploadException, IOException
+        public FileItemInputIterator getFiles() throws FileUploadException, IOException
         {
-            ServletFileUpload upload = new ServletFileUpload();
+            var upload = new JakartaServletFileUpload<>();
             return upload.getItemIterator(request);
         }
 
         public void validate()
         {
-            if (ServletFileUpload.isMultipartContent(request) == false)
+            if (JakartaServletFileUpload.isMultipartContent(request) == false)
             {
                 throw new UserFailureException("The file upload accepts only multipart requests");
             }

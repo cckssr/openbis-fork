@@ -813,6 +813,17 @@ class Spm:
             else:
                 data = False
 
+            print(f"params: {params}")
+            if "include_labels" in params:
+                include_labels = params["include_labels"]
+            else:
+                include_labels = True
+
+            if "include_parameters" in params:
+                include_parameters = params["include_parameters"]
+            else:
+                include_parameters = False
+
 
             if data is False:
                 (chData,chUnit) = self.get_channel(channel, direction = direction, flatten=flatten, offset=offset, zero=zero)
@@ -840,12 +851,12 @@ class Spm:
             width = [self.get_param("scan_range")[0][0]]
             height = [self.get_param("scan_range")[0][1]]
             unit = self.get_param("scan_range")[1]
-            print('||> HEIGTH')
             print(self.get_param("scan_range")[0][0])
             pix_y, pix_x = np.shape(chData)
 
             ### >>>> PREMISE - specific modifications
             fig = plt.figure()
+            # fig = plt.figure(figsize=(7, 8))
             # fig = plt.gcf()
             ### ---- PREMISE - specific modifications
             # fig = plt.figure(figsize=(7, 8))
@@ -864,6 +875,19 @@ class Spm:
                 plt.xlim(x_axis[0], x_axis[1])
             ### ---- PREMISE - specific modifications
 
+
+
+            if include_parameters:
+                x_offset = (x_axis[1] - x_axis[0]) / 100
+                y_offset = (y_axis[1] - y_axis[0]) / 100
+                # header = self.print_params_dict()
+                # print(f"PARAMS: {header}")
+                # offset = 1
+                # for x in header:
+                #     plt.text(x_axis[0] + x_offset, y_axis[1] + 0.1 * offset, rf'{x}: {header[x]}', fontsize=10)
+                #     offset += 1
+                plt.text(x_axis[0] + x_offset, y_axis[0] + y_offset + 0.01, rf'{channel}', fontsize=18)
+
             if log:
                 im = plt.imshow(
                     np.abs(chData),
@@ -874,6 +898,16 @@ class Spm:
                     origin=ImgOrigin,
                     interpolation = 'none'
                 )
+                # im = plt.imshow(
+                #     # np.abs(chData),
+                #     chData,
+                #     aspect="equal",
+                #     extent=[0, width[0], 0, height[0]],
+                #     cmap=cmap,
+                #     norm=SymLogNorm(linthresh=0.03, linscale=0.03, vmin=-1.0, vmax=1.0),
+                #     origin=ImgOrigin,
+                #     interpolation = 'none'
+                # )
             else:
                 im = plt.imshow(
                     chData,
@@ -885,9 +919,10 @@ class Spm:
                     origin=ImgOrigin,
                     interpolation = 'none'
                 )
+                plt.clim(color_scale)
 
-            if clim:
-                plt.clim(clim)
+            # if clim:
+            #     plt.clim(clim)
 
             ### >>>> PREMISE - specific modifications
             ### ---- PREMISE - specific modifications
@@ -905,19 +940,20 @@ class Spm:
             ### ---- PREMISE - specific modifications
             # plt.title(title + "\n", loc="left")
 
-            # plt.xlabel(f"x ({width[1]})")
-            plt.xlabel(f"x ({unit})")
-            # plt.ylabel(f"y ({height[1]})")
-            plt.ylabel(f"y ({unit})")
+            if include_labels is True:
+                plt.xlabel(f"x ({unit})")
+                plt.ylabel(f"y ({unit})")
 
-            ### >>>> PREMISE - specific modifications
-            cbar = plt.colorbar(im)
-            cbar.set_label(f'Channel: {channel} ({chUnit})')
-            ### ---- PREMISE - specific modifications
-            # cbar = plt.colorbar(
-            #     im, fraction=0.046, pad=0.02, format="%.2g", shrink=0.5, aspect=10
-            # )
-            # cbar.set_label(f"{channel} ({chUnit}")
+                ### >>>> PREMISE - specific modifications
+                cbar = fig.colorbar(im, fraction=0.046, format="%.3g", pad=0.02)
+                cbar.set_label(f'Channel: {channel} ({chUnit})')
+                ### ---- PREMISE - specific modifications
+                # cbar = plt.colorbar(
+                #     im, fraction=0.046, pad=0.02, format="%.2g", shrink=0.5, aspect=10
+                # )
+                # cbar.set_label(f"{channel} ({chUnit}")
+            else:
+                fig.axes[0].set_axis_off()
 
             if show:
                 plt.show()

@@ -1,7 +1,6 @@
 function MainHeaderController() {
     this._mainController = mainController
     this._mainHeaderModel = new MainHeaderModel()
-    this._mainHeaderController = new MainHeaderMenu()
     this._mainHeaderView = new MainHeaderView(this)
     var _this = this;
 
@@ -17,7 +16,6 @@ function MainHeaderController() {
         _this._mainHeaderView.repaint($container)
 
         initCallback()
-
     }
 
     this.getCurrentPage = function() {
@@ -29,11 +27,17 @@ function MainHeaderController() {
         mainController.sideMenu.removeSubSideMenu();
         mainController.tabContent.changePage(value);
         var tabInfo = mainController.tabContent.getCurrentTabInfo();
-        var node = JSON.parse(tabInfo.node);
-        mainController.sideMenu.changeCurrentTree(value, node);
+        if(tabInfo) {
+            var node = JSON.parse(tabInfo.node);
+            mainController.sideMenu.changeCurrentTree(value, node);
+        } else {
+            mainController.sideMenu.changeCurrentTree(value);
+        }
         if(mainController.sideMenu.isCollapsed) {
             mainController.sideMenu.expandSideMenu();
         }
+
+        _this._mainHeaderView.repaint(_this._mainHeaderModel.$container);
     }
 
     this.setSearchDomains = function(searchDomains) {
@@ -69,6 +73,7 @@ function MainHeaderController() {
             searchDomainLabel: searchDomainLabel,
         }
         var argsMapStr = JSON.stringify(argsMap)
+
 
         mainController.changeView("showSearchPage", argsMapStr)
 
@@ -109,7 +114,7 @@ function MainHeaderController() {
         }
         if(tree !== _this._mainHeaderModel.currentPage) {
             _this._mainHeaderModel.currentPage = tree;
-            _this._mainHeaderController.changeTab(tree);
+            _this._mainHeaderView.repaint(_this._mainHeaderModel.$container);
             _this._mainController.tabContent.changePage(tree)
             _this._mainController.sideMenu.changeCurrentTree(tree, node)
         }
@@ -137,8 +142,7 @@ function MainHeaderController() {
             _this._mainHeaderModel.currentPage = tree;
             _this._mainController.sideMenu.changeCurrentTree(tree)
             _this._mainController.tabContent.changePage(tree)
-            _this._mainHeaderController.changeTab(tree);
-
+            _this._mainHeaderView.repaint(_this._mainHeaderModel.$container);
         }
     }
 

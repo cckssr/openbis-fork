@@ -21,8 +21,10 @@ public class DataTypeMatcher
 {
 
     private static List<DataType> orderedTypes =
-            List.of(DataType.INTEGER, DataType.REAL, DataType.BOOLEAN, DataType.DATE,
-                    DataType.HYPERLINK, DataType.SAMPLE, DataType.SAMPLE, DataType.VARCHAR);
+            List.of(DataType.INTEGER, DataType.REAL, DataType.BOOLEAN, DataType.TIMESTAMP,
+                    DataType.DATE,
+                    DataType.HYPERLINK, DataType.SAMPLE, DataType.SAMPLE,
+                    DataType.MULTILINE_VARCHAR, DataType.VARCHAR);
 
     public static DataType findDataType(Serializable value, Set<DataType> possibleTypes,
             Map<String, IMetadataEntry> entities)
@@ -119,13 +121,10 @@ public class DataTypeMatcher
                     {
 
                         String[] parts = identifier.toString().split("/");
-                        if (parts.length != 4)
+                        if (parts.length != 4 && parts.length != 3)
                         {
                             return false;
                         }
-                        String space = parts[1];
-                        String project = parts[2];
-                        String code = parts[3];
                     }
                     return true;
                 } catch (RuntimeException e)
@@ -146,6 +145,8 @@ public class DataTypeMatcher
                 {
                     return false;
                 }
+            case MULTILINE_VARCHAR:
+                return true;
 
 
 

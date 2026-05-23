@@ -1,5 +1,5 @@
 /*
- * Copyright ETH 2019 - 2023 Zürich, Scientific IT Services
+ * Copyright ETH 2019 - 2025 Zürich, Scientific IT Services
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,144 +15,121 @@
  */
 package ch.systemsx.cisd.openbis.generic.shared.dto.hibernate;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.hibernate.HibernateException;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
+import org.hibernate.type.SqlTypes;
+import org.hibernate.usertype.UserType;
+
+import java.io.IOException;
 import java.io.Serializable;
-import java.io.StringWriter;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
+import java.util.Objects;
 
-import org.hibernate.HibernateException;
-import org.hibernate.engine.spi.SharedSessionContractImplementor;
-import org.hibernate.usertype.UserType;
+public class JsonMapUserType implements UserType<Map<String, String>> {
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
-import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
-
-/**
- * @author Franz-Josef Elmer
- */
-public class JsonMapUserType implements UserType
-{
+    public JsonMapUserType() { }
 
     @Override
-    public int[] sqlTypes()
-    {
-        return new int[] { Types.JAVA_OBJECT };
+    public int getSqlType() {
+        // Hibernate logical JSON type
+        return SqlTypes.JSON;
     }
 
     @Override
-    @SuppressWarnings("rawtypes")
-    public Class<Map> returnedClass()
-    {
-        return Map.class;
+    @SuppressWarnings("unchecked")
+    public Class<Map<String, String>> returnedClass() {
+        return (Class<Map<String, String>>) (Class<?>) Map.class;
     }
 
     @Override
-    public Object nullSafeGet(ResultSet rs, String[] names, SharedSessionContractImplementor session, Object owner)
-            throws HibernateException, SQLException
-    {
-        final String cellContent = rs.getString(names[0]);
-        if (cellContent == null)
-        {
-            return null;
-        }
-        try
-        {
-            return new ObjectMapper().readValue(cellContent.getBytes("UTF-8"), HashMap.class);
-        } catch (Exception e)
-        {
-            throw CheckedExceptionTunnel.wrapIfNecessary(e);
-        }
+    public boolean equals(Map<String, String> x, Map<String, String> y) {
+        return Objects.equals(x, y);
     }
 
     @Override
-    public void nullSafeSet(PreparedStatement st, Object value, int index, SharedSessionContractImplementor session)
-            throws HibernateException, SQLException
-    {
-        if (value == null)
-        {
-            st.setNull(index, Types.OTHER);
-            return;
-        }
-        try
-        {
-            final ObjectMapper mapper = new ObjectMapper();
-            final StringWriter w = new StringWriter();
-            mapper.writeValue(w, value);
-            w.flush();
-            st.setObject(index, w.toString(), Types.OTHER);
-        } catch (Exception e)
-        {
-        }
-    }
-
-    @Override
-    public boolean equals(Object x, Object y) throws HibernateException
-    {
-        return x == null ? x == y : x.equals(y);
-    }
-
-    @Override
-    public int hashCode(Object x) throws HibernateException
-    {
+    public int hashCode(Map<String, String> x) {
         return x == null ? 0 : x.hashCode();
     }
 
     @Override
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    public Object deepCopy(Object object) throws HibernateException
-    {
-        if (object instanceof Map == false)
-        {
-            return object;
+    public Map<String, String> nullSafeGet(
+            ResultSet rs,
+            int position,
+            SharedSessionContractImplementor session,
+            Object owner) throws SQLException {
+        final String json = rs.getString(position);
+        if (rs.wasNull() || json == null) {
+            return null;
         }
-        Map<String, String> result = new HashMap<String, String>();
-        for (Map.Entry<?, ?> entry : (Set<Entry<?, ?>>) ((Map) object).entrySet())
-        {
-            Object key = entry.getKey();
-            if (key instanceof String == false)
-            {
-                return object;
-            }
-            Object value = entry.getValue();
-            if (value instanceof String == false)
-            {
-                return object;
-            }
-            result.put((String) key, (String) value);
+        try {
+            return MAPPER.readValue(json, new TypeReference<Map<String, String>>() {});
+        } catch (IOException e) {
+            throw new HibernateException("Failed to deserialize JSON to Map<String,String>", e);
         }
-        
-        return result;
     }
 
     @Override
-    public boolean isMutable()
-    {
+    public void nullSafeSet(
+            PreparedStatement st,
+            Map<String, String> value,
+            int index,
+            SharedSessionContractImplementor session) throws SQLException {
+        if (value == null) {
+            // Postgres JSON/JSONB commonly uses OTHER; adjust if your DB needs a different code
+            st.setNull(index, Types.OTHER);
+            return;
+        }
+        try {
+            final String json = MAPPER.writeValueAsString(value);
+            st.setObject(index, json, Types.OTHER); // for MySQL you can also use st.setString(index, json)
+        } catch (IOException e) {
+            throw new HibernateException("Failed to serialize Map<String,String> to JSON", e);
+        }
+    }
+
+    @Override
+    public boolean isMutable() {
         return true;
     }
 
     @Override
-    public Serializable disassemble(Object value) throws HibernateException
-    {
-        return (Serializable) deepCopy(value);
+    public Map<String, String> deepCopy(Map<String, String> value) {
+        return value == null ? null : new HashMap<>(value);
     }
 
     @Override
-    public Object assemble(Serializable cached, Object owner) throws HibernateException
-    {
-        return deepCopy(cached);
+    public Serializable disassemble(Map<String, String> value) throws HibernateException {
+        return value == null ? null : new HashMap<>(value);
     }
 
     @Override
-    public Object replace(Object original, Object target, Object owner) throws HibernateException
-    {
-        return deepCopy(original);
+    @SuppressWarnings("unchecked")
+    public Map<String, String> assemble(Serializable cached, Object owner) throws HibernateException {
+        if (cached == null) return null;
+        if (cached instanceof Map) {
+            return new HashMap<>((Map<String, String>) cached);
+        }
+        throw new HibernateException("Cached value is not a Map: " + cached.getClass());
+    }
+
+    @Override
+    public Map<String, String> replace(
+            Map<String, String> detached,
+            Map<String, String> managed,
+            Object owner) {
+        if (detached == null) {
+            return null;
+        }
+        return new HashMap<>(detached);
     }
 
 }

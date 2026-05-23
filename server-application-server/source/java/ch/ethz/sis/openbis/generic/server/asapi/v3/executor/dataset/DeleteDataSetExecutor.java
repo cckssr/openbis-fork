@@ -21,8 +21,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.hibernate.exception.GenericJDBCException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.support.DataAccessUtils;
+import org.springframework.orm.hibernate5.SessionFactoryUtils;
 import org.springframework.stereotype.Component;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.delete.DataSetDeletionOptions;
@@ -106,6 +109,11 @@ public class DeleteDataSetExecutor extends AbstractDeleteEntityExecutor<IDeletio
         } catch (DataAccessException e)
         {
             DataAccessExceptionTranslator.throwException(e, "deletion", null);
+            return null; // never called
+        } catch (GenericJDBCException e) {
+            DataAccessException dataAccessException =
+                    SessionFactoryUtils.convertHibernateAccessException(e);
+            DataAccessExceptionTranslator.throwException(dataAccessException, "deletion", null);
             return null; // never called
         }
     }

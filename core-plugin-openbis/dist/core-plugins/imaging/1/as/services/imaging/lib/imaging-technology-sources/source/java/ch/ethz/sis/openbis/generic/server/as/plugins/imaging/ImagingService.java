@@ -93,7 +93,7 @@ public class ImagingService implements ICustomASServiceExecutor
     private Serializable executeService(String sessionToken, String serviceId,
             Map<String, Object> params)
     {
-        operationLog.info("Executing imaging service:" + serviceId);
+        operationLog.info("Executing imaging service: " + serviceId);
         this.afs = AfsClientProxy.getAfsClient(sessionToken);
         ImagingDataContainer data = getDataFromParams(params);
         try
@@ -107,12 +107,17 @@ public class ImagingService implements ICustomASServiceExecutor
             } else if (data.getType().equalsIgnoreCase("multi-export"))
             {
                 return processMultiExportFlow(sessionToken, (ImagingMultiExportContainer) data);
+            } else if (data.getType().equalsIgnoreCase("init"))
+            {
+                //TODO
+//              throw new UserFailureException("Unknown request type!");
             } else
             {
                 throw new UserFailureException("Unknown request type!");
             }
         } catch (Exception e)
         {
+            operationLog.info("Exception during imaging service: " + e.toString());
             data.setError(e.toString());
         }
         return data;
@@ -156,6 +161,9 @@ public class ImagingService implements ICustomASServiceExecutor
             path  = Path.of(this.storeRootAfs, dataSet.getPhysicalData().getShareId(), dataSet.getPhysicalData().getLocation());
         }
         File file = path.toFile();
+        if(!file.exists()) {
+            throw new UserFailureException("Could not find configured root file!");
+        }
         return file;
     }
 
@@ -273,7 +281,7 @@ public class ImagingService implements ICustomASServiceExecutor
                     int tmp = 1;
                 }
                 File[] files = rootFile.listFiles();
-                if(files.length == 1 && files[0].getName().equalsIgnoreCase("original")) {
+                if(files != null && files.length == 1 && files[0].getName().equalsIgnoreCase("original")) {
                     rootFile = files[0];
                 }
                 String adaptor = image.getConfig().getAdaptor();
@@ -381,6 +389,10 @@ public class ImagingService implements ICustomASServiceExecutor
             rootFile  = getRootFile(dataSet, false);
         } else {
             rootFile = getRootFile(dataSet, true);
+            File[] files = rootFile.listFiles();
+            if(files != null && files.length == 1 && files[0].getName().equalsIgnoreCase("original")) {
+                rootFile = files[0];
+            }
         }
 
         final int index = data.getIndex();
@@ -480,6 +492,10 @@ public class ImagingService implements ICustomASServiceExecutor
                 rootFile  = getRootFile(dataSet, false);
             } else {
                 rootFile = getRootFile(dataSet, true);
+                File[] files = rootFile.listFiles();
+                if(files != null && files.length == 1 && files[0].getName().equalsIgnoreCase("original")) {
+                    rootFile = files[0];
+                }
             }
             Map<Integer, Map<String, Object>> imageToMetaDataMap = new HashMap<>();
             for (ImagingDataSetMultiExport export : sortedExports.get(permId))
@@ -630,7 +646,10 @@ public class ImagingService implements ICustomASServiceExecutor
             String imgString;
             Map<String, Serializable> imageConfig = image.getImageConfig();
             Map<String, Serializable> previewConfig = preview.getConfig();
-
+            if(exportConfig.getCustomOptions() != null)
+            {
+                previewConfig.putAll(exportConfig.getCustomOptions());
+            }
             if ((imageConfig != null && !imageConfig.isEmpty())
                     || (previewConfig != null && !previewConfig.isEmpty()))
             {
@@ -696,6 +715,8 @@ public class ImagingService implements ICustomASServiceExecutor
             {
                 return sampleResult.get(samplePermId);
             }
+        } else {
+            operationLog.info("AFS not available, switching to DSS mode.");
         }
         DataSetPermId dataSetPermId = new DataSetPermId(permId);
         DataSetFetchOptions fetchOptions = new DataSetFetchOptions();

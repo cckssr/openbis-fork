@@ -41,6 +41,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.Project;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
+import ch.ethz.sis.openbis.systemtests.environment.IntegrationTestEnvironment;
 import ch.ethz.sis.openbis.systemtests.environment.IntegrationTestFacade;
 import ch.ethz.sis.openbis.systemtests.suite.allservers.environment.AllServersIntegrationTestEnvironment;
 import ch.ethz.sis.openbis.systemtests.suite.allservers.environment.TestMessagesConsumerMaintenanceTask;
@@ -80,10 +81,6 @@ public class IntegrationArchivingTest
 
     private Project project;
 
-    private File finalDestination;
-
-    private File replicatedDestination;
-
     @BeforeSuite
     public void beforeSuite()
     {
@@ -101,8 +98,8 @@ public class IntegrationArchivingTest
     {
         Properties archiverProperties = ArchiverServiceProviderFactory.getInstance().getArchiverProperties();
 
-        finalDestination = new File(archiverProperties.getProperty(MultiDataSetFileOperationsManager.FINAL_DESTINATION_KEY));
-        replicatedDestination = new File(archiverProperties.getProperty(MultiDataSetFileOperationsManager.REPLICATED_DESTINATION_KEY));
+        File finalDestination = new File(archiverProperties.getProperty(MultiDataSetFileOperationsManager.FINAL_DESTINATION_KEY));
+        File replicatedDestination = new File(archiverProperties.getProperty(MultiDataSetFileOperationsManager.REPLICATED_DESTINATION_KEY));
         File stagingDestination = new File(archiverProperties.getProperty(MultiDataSetFileOperationsManager.STAGING_DESTINATION_KEY));
 
         if (finalDestination.exists())
@@ -225,10 +222,9 @@ public class IntegrationArchivingTest
         testFailedArchivingWithFailedReplication(null, sample.getPermId());
     }
 
-    private void testSuccessfulArchivingAndUnarchiving(ExperimentPermId experimentId, SamplePermId sampleId) throws Exception
+    private void testSuccessfulArchivingAndUnarchiving(ExperimentPermId experimentId, SamplePermId sampleId)
     {
         OpenBIS openBIS = facade.createOpenBIS();
-
         openBIS.login(INSTANCE_ADMIN, PASSWORD);
 
         String ownerId = experimentId != null ? experimentId.getPermId() : sampleId.getPermId();
@@ -240,54 +236,7 @@ public class IntegrationArchivingTest
         String hash = openBIS.getAfsServerFacade().hash(ownerId, TEST_FILE_NAME);
         assertNotNull(hash);
 
-        log.info("check data set is AVAILABLE");
-        DataSet afsDataSet = getAfsDataSet(openBIS, ownerId);
-        assertEquals(afsDataSet.getPhysicalData().getStatus(), ArchivingStatus.AVAILABLE);
-
-        log.info("create archiving message");
-        DataSetArchiveOptions options = new DataSetArchiveOptions();
-        options.setRemoveFromDataStore(true);
-        openBIS.archiveDataSets(List.of(new DataSetPermId(ownerId)), options);
-
-        log.info("consume archiving message");
-        TestMessagesConsumerMaintenanceTask.executeOnce(ARCHIVING_MESSAGES_CONSUMER_TASK);
-
-        log.info("check data set is still AVAILABLE (it shouldn't have been archived as it is still mutable)");
-        afsDataSet = getAfsDataSet(openBIS, ownerId);
-        assertEquals(afsDataSet.getPhysicalData().getStatus(), ArchivingStatus.AVAILABLE);
-
-        log.info("make data immutable");
-        if (experimentId != null)
-        {
-            facade.makeExperimentImmutable(openBIS, experimentId);
-
-        } else
-        {
-            facade.makeSampleImmutable(openBIS, sampleId);
-        }
-
-        log.info("populate path info db (only immutable data is added)");
-        TestPathInfoDatabaseFeedingTask.executeOnce();
-
-        log.info("create archiving message again");
-        openBIS.archiveDataSets(List.of(new DataSetPermId(ownerId)), options);
-
-        log.info("consume archiving message");
-        TestMessagesConsumerMaintenanceTask.executeOnce(ARCHIVING_MESSAGES_CONSUMER_TASK);
-
-        log.info("check data set is now ARCHIVE_PENDING");
-        afsDataSet = getAfsDataSet(openBIS, ownerId);
-        assertEquals(afsDataSet.getPhysicalData().getStatus(), ArchivingStatus.ARCHIVE_PENDING);
-
-        log.info("replicate from final-destination to replica-destination");
-        replicateDataSetArchive(ownerId);
-
-        log.info("consume finalize archiving message");
-        TestMessagesConsumerMaintenanceTask.executeOnce(FINALIZE_ARCHIVING_MESSAGES_CONSUMER_TASK);
-
-        log.info("check data set is ARCHIVED");
-        afsDataSet = getAfsDataSet(openBIS, ownerId);
-        assertEquals(afsDataSet.getPhysicalData().getStatus(), ArchivingStatus.ARCHIVED);
+        archive(environment, openBIS, experimentId, sampleId);
 
         log.info("check data set can still be read");
         byte[] fileContent = openBIS.getAfsServerFacade().read(ownerId, TEST_FILE_NAME, 0L, TEST_FILE_CONTENT.length());
@@ -314,31 +263,7 @@ public class IntegrationArchivingTest
             AssertionUtil.assertContains("NoSuchFileException", e.getMessage());
         }
 
-        log.info("create unarchiving message");
-        DataSetUnarchiveOptions unarchiveOptions = new DataSetUnarchiveOptions();
-        openBIS.unarchiveDataSets(List.of(new DataSetPermId(ownerId)), unarchiveOptions);
-
-        log.info("consume unarchiving message");
-        TestMessagesConsumerMaintenanceTask.executeOnce(ARCHIVING_MESSAGES_CONSUMER_TASK);
-
-        log.info("check data set is now UNARCHIVE_PENDING");
-        afsDataSet = getAfsDataSet(openBIS, ownerId);
-        assertEquals(afsDataSet.getPhysicalData().getStatus(), ArchivingStatus.UNARCHIVE_PENDING);
-
-        log.info("wait for the cached location of the data set to timeout (the share has changed from 1 to 4)");
-        Configuration afsConfiguration = new Configuration(environment.getAfsServer().getServiceProperties());
-        Thread.sleep(2L * afsConfiguration.getIntegerProperty(AtomicFileSystemServerParameter.authorizationProxyCacheIdleTimeout));
-
-        log.info("check data set can be read again");
-        fileContent = openBIS.getAfsServerFacade().read(ownerId, TEST_FILE_NAME, 0L, TEST_FILE_CONTENT.length());
-        assertEquals(fileContent, TEST_FILE_CONTENT.getBytes());
-
-        log.info("consume status change message");
-        TestMessagesConsumerMaintenanceTask.executeOnce(COMMON_MESSAGES_CONSUMER_TASK);
-
-        log.info("check data set is now AVAILABLE");
-        afsDataSet = getAfsDataSet(openBIS, ownerId);
-        assertEquals(afsDataSet.getPhysicalData().getStatus(), ArchivingStatus.AVAILABLE);
+        unarchive(environment, openBIS, experimentId, sampleId);
     }
 
     private void testSkippedArchivingWhenNotAvailable(ExperimentPermId experimentId, SamplePermId sampleId) throws Exception
@@ -491,7 +416,7 @@ public class IntegrationArchivingTest
         AssertionUtil.assertContains("Replication failed", TestLogger.getRecordedLog());
     }
 
-    public DataSet getAfsDataSet(OpenBIS openBIS, String dataSetCode)
+    private static DataSet getAfsDataSet(OpenBIS openBIS, String dataSetCode)
     {
         DataSetPermId dataSetId = new DataSetPermId(dataSetCode);
         DataSetFetchOptions fetchOptions = new DataSetFetchOptions();
@@ -499,8 +424,13 @@ public class IntegrationArchivingTest
         return openBIS.getDataSets(List.of(dataSetId), fetchOptions).get(dataSetId);
     }
 
-    public void replicateDataSetArchive(String dataSetCode)
+    private static void replicateDataSetArchive(String dataSetCode)
     {
+        Properties archiverProperties = ArchiverServiceProviderFactory.getInstance().getArchiverProperties();
+
+        File finalDestination = new File(archiverProperties.getProperty(MultiDataSetFileOperationsManager.FINAL_DESTINATION_KEY));
+        File replicatedDestination = new File(archiverProperties.getProperty(MultiDataSetFileOperationsManager.REPLICATED_DESTINATION_KEY));
+
         File[] finalDestinationFiles = finalDestination.listFiles();
 
         if (finalDestinationFiles == null || finalDestinationFiles.length == 0)
@@ -549,6 +479,104 @@ public class IntegrationArchivingTest
         {
             throw new RuntimeException("Replication failed. Could not set the T flag on file " + dataSetArchiveReplica.getAbsolutePath());
         }
+    }
+
+    public static void archive(final IntegrationTestEnvironment environment, final OpenBIS openBIS, final ExperimentPermId experimentId,
+            final SamplePermId sampleId)
+    {
+        IntegrationTestFacade facade = new IntegrationTestFacade(environment);
+
+        String ownerId = experimentId != null ? experimentId.getPermId() : sampleId.getPermId();
+
+        log.info("check data set is AVAILABLE");
+        DataSet afsDataSet = getAfsDataSet(openBIS, ownerId);
+        assertEquals(afsDataSet.getPhysicalData().getStatus(), ArchivingStatus.AVAILABLE);
+
+        log.info("create archiving message");
+        DataSetArchiveOptions options = new DataSetArchiveOptions();
+        options.setRemoveFromDataStore(true);
+        openBIS.archiveDataSets(List.of(new DataSetPermId(ownerId)), options);
+
+        log.info("consume archiving message");
+        TestMessagesConsumerMaintenanceTask.executeOnce(ARCHIVING_MESSAGES_CONSUMER_TASK);
+
+        log.info("check data set is still AVAILABLE (it shouldn't have been archived as it is still mutable)");
+        afsDataSet = getAfsDataSet(openBIS, ownerId);
+        assertEquals(afsDataSet.getPhysicalData().getStatus(), ArchivingStatus.AVAILABLE);
+
+        log.info("make data immutable");
+        if (experimentId != null)
+        {
+            facade.makeExperimentImmutable(openBIS, experimentId);
+
+        } else
+        {
+            facade.makeSampleImmutable(openBIS, sampleId);
+        }
+
+        log.info("populate path info db (only immutable data is added)");
+        TestPathInfoDatabaseFeedingTask.executeOnce();
+
+        log.info("create archiving message again");
+        openBIS.archiveDataSets(List.of(new DataSetPermId(ownerId)), options);
+
+        log.info("consume archiving message");
+        TestMessagesConsumerMaintenanceTask.executeOnce(ARCHIVING_MESSAGES_CONSUMER_TASK);
+
+        log.info("check data set is now ARCHIVE_PENDING");
+        afsDataSet = getAfsDataSet(openBIS, ownerId);
+        assertEquals(afsDataSet.getPhysicalData().getStatus(), ArchivingStatus.ARCHIVE_PENDING);
+
+        log.info("replicate from final-destination to replica-destination");
+        replicateDataSetArchive(ownerId);
+
+        log.info("consume finalize archiving message");
+        TestMessagesConsumerMaintenanceTask.executeOnce(FINALIZE_ARCHIVING_MESSAGES_CONSUMER_TASK);
+
+        log.info("check data set is ARCHIVED");
+        afsDataSet = getAfsDataSet(openBIS, ownerId);
+        assertEquals(afsDataSet.getPhysicalData().getStatus(), ArchivingStatus.ARCHIVED);
+    }
+
+    public static void unarchive(final IntegrationTestEnvironment environment, final OpenBIS openBIS, final ExperimentPermId experimentId,
+            final SamplePermId sampleId)
+    {
+        String ownerId = experimentId != null ? experimentId.getPermId() : sampleId.getPermId();
+
+        byte[] fileContent;
+        DataSet afsDataSet;
+
+        log.info("create unarchiving message");
+        DataSetUnarchiveOptions unarchiveOptions = new DataSetUnarchiveOptions();
+        openBIS.unarchiveDataSets(List.of(new DataSetPermId(ownerId)), unarchiveOptions);
+
+        log.info("consume unarchiving message");
+        TestMessagesConsumerMaintenanceTask.executeOnce(ARCHIVING_MESSAGES_CONSUMER_TASK);
+
+        log.info("check data set is now UNARCHIVE_PENDING");
+        afsDataSet = getAfsDataSet(openBIS, ownerId);
+        assertEquals(afsDataSet.getPhysicalData().getStatus(), ArchivingStatus.UNARCHIVE_PENDING);
+
+        log.info("wait for the cached location of the data set to timeout (the share has changed from 1 to 4)");
+        Configuration afsConfiguration = new Configuration(environment.getAfsServer().getServiceProperties());
+        try
+        {
+            Thread.sleep(2L * afsConfiguration.getIntegerProperty(AtomicFileSystemServerParameter.authorizationProxyCacheIdleTimeout));
+        } catch (InterruptedException e)
+        {
+            throw new RuntimeException(e);
+        }
+
+        log.info("check data set can be read again");
+        fileContent = openBIS.getAfsServerFacade().read(ownerId, TEST_FILE_NAME, 0L, TEST_FILE_CONTENT.length());
+        assertEquals(fileContent, TEST_FILE_CONTENT.getBytes());
+
+        log.info("consume status change message");
+        TestMessagesConsumerMaintenanceTask.executeOnce(COMMON_MESSAGES_CONSUMER_TASK);
+
+        log.info("check data set is now AVAILABLE");
+        afsDataSet = getAfsDataSet(openBIS, ownerId);
+        assertEquals(afsDataSet.getPhysicalData().getStatus(), ArchivingStatus.AVAILABLE);
     }
 
 }

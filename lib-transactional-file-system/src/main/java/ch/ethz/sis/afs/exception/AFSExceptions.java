@@ -46,7 +46,9 @@ public enum AFSExceptions implements ExceptionTemplateHolder {
     TransactionReuse(               RuntimeException.class,         List.of(CoreDeveloperCodingError),  10021,"Transaction with uuid: %s and state: %s was going to be reused"),
     NoSharesFound(                  RuntimeException.class,         List.of(AdminConfigError),          10022,"No shares found"),
     PathInvalid(                    RuntimeException.class,         List.of(ClientDeveloperCodingError),10023,"Path %s contains invalid characters"),
-    PathLocksCannotBeObtained(      RuntimeException.class,         List.of(RecoverableSystemStateError), 10024,"Path can't be operated by: %s - %s locks cannot be obtained");
+    PathLocksCannotBeObtained(      RuntimeException.class,         List.of(RecoverableSystemStateError), 10024,"Path can't be operated by: %s - %s locks cannot be obtained"),
+    StoreRootDoesNotExist(          RuntimeException.class,         List.of(AdminConfigError),          10025,"Store root does not exist"),
+    StoreRootNotDirectory(          RuntimeException.class,         List.of(AdminConfigError),          10026,"Store root is not a directory");
 
     private RuntimeExceptionTemplate template;
 

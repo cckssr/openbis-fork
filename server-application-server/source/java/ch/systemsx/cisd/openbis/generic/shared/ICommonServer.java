@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePE;
 import org.springframework.transaction.annotation.Transactional;
 
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
@@ -796,6 +797,8 @@ public interface ICommonServer extends IServer
 
     /**
      * Updates a sample type.
+     *
+     * @return
      */
     @Transactional
     @DatabaseUpdateModification(value = ObjectKind.SAMPLE_TYPE)

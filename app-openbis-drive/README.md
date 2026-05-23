@@ -1,10 +1,20 @@
 # App openBIS-Drive
 
 This application can keep local directories synchronized with AFS-server directories.
+It consists of a background-process, which performs the synchronization tasks,
+and of a graphical interface and a command-line interface to start, stop, configure and monitor it.
 
-## Installation
+## Start in development environment
 
-After building the Gradle task: "release"
+See Gradle tasks:
+
+- `openBISDevelopmentEnvironmentDriveServerStart`
+- `openBISDevelopmentEnvironmentDriveGUIStart`
+- `openBISDevelopmentEnvironmentDriveCommandLine`
+
+## Manual installation
+
+After building the Gradle task: `manualRelease`
 
 extract the content of build/distributions/app-openbis-drive-$VERSION.tar.gz and copy it all under:
 (equivalently, copy the content of build/release under:)
@@ -86,3 +96,15 @@ The graphical user-interface can be started by entering into the launch-scripts 
 (or by adding this to the PATH environment variable) and typing:
 - `openbis-drive-gui.bat`
 
+## Skipping TLS certificate checks for OpenBIS servers
+
+If working with OpenBIS servers covered by self-signed TLS certificates (or anyway not validatable by public certificate authorities, or expired, ...),
+one can modify (create if necessary) a file openbis-drive.properties under
+
+for Linux: `$HOME/.local/state/openbis-drive/`
+
+for Windows: `%USERPROFILE%\AppData\Local\openbis-drive\`
+
+for MAC-OS: `$HOME/Library/"Application Support"/openbis-drive/`
+
+adding (or adapting) the following key-value line: `ch.ethz.sis.afs.client.client.noTLSCertCheck=true`

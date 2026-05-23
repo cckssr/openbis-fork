@@ -63,4 +63,6 @@ public interface IMaterialDAO extends IGenericDAO<MaterialPE>
     void delete(List<TechId> materialIds, PersonPE registrator, String reason)
             throws DataAccessException;
 
+    MaterialPE tryGetByIdWithMaterialTypePropertyTypes(TechId materialId);
+
 }

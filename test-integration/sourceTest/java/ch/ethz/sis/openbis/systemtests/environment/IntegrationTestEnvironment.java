@@ -59,8 +59,14 @@ public class IntegrationTestEnvironment
 
     private List<Share> shares = new ArrayList<>();
 
+    private boolean systemUserEnabled;
+
+    private boolean elnEnabled;
+
     public IntegrationTestEnvironment()
     {
+        System.setProperty("ant.project.name", "test-integration");
+
         createShares(Map.of(
                 1, loadProperties(Path.of("etc/default/shares/1/share.properties")),
                 2, loadProperties(Path.of("etc/default/shares/2/share.properties")),
@@ -80,6 +86,8 @@ public class IntegrationTestEnvironment
         {
             serviceProperties.setProperty(TransactionConfiguration.APPLICATION_SERVER_URL_PROPERTY_NAME, TestInstanceHostUtils.getOpenBISProxyUrl());
             serviceProperties.setProperty(TransactionConfiguration.AFS_SERVER_URL_PROPERTY_NAME,
+                    TestInstanceHostUtils.getAFSProxyUrl() + TestInstanceHostUtils.getAFSPath());
+            serviceProperties.setProperty("server-public-information.afs-server.url",
                     TestInstanceHostUtils.getAFSProxyUrl() + TestInstanceHostUtils.getAFSPath());
         }
 
@@ -217,6 +225,13 @@ public class IntegrationTestEnvironment
                 TestInstanceHostUtils.getAFSUrl() + TestInstanceHostUtils.getAFSPath());
     }
 
+    public OpenBIS createOpenBIS(int timeout)
+    {
+        return new OpenBIS(TestInstanceHostUtils.getOpenBISUrl() + TestInstanceHostUtils.getOpenBISPath(),
+                TestInstanceHostUtils.getDSSUrl() + TestInstanceHostUtils.getDSSPath(),
+                TestInstanceHostUtils.getAFSUrl() + TestInstanceHostUtils.getAFSPath(), timeout);
+    }
+
     private void dropOpenBISDatabase()
     {
         if (applicationServer != null)
@@ -319,7 +334,8 @@ public class IntegrationTestEnvironment
     {
         try
         {
-            SQLUtils.execute(context.getAdminDataSource(), "drop database " + context.getDatabaseName() + " with (force)", new SQLUtils.NoParametersSetter());
+            SQLUtils.execute(context.getAdminDataSource(), "drop database " + context.getDatabaseName() + " with (force)",
+                    new SQLUtils.NoParametersSetter());
         } catch (SQLException e)
         {
             if (!DBUtilities.isDBNotExistException(e))
@@ -401,6 +417,11 @@ public class IntegrationTestEnvironment
 
     private void configureSystemUser()
     {
+        if (!systemUserEnabled)
+        {
+            return;
+        }
+
         if (applicationServer != null)
         {
             OpenBIS openBIS = createOpenBIS();
@@ -463,6 +484,11 @@ public class IntegrationTestEnvironment
 
     private void configureELN()
     {
+        if (!elnEnabled)
+        {
+            return;
+        }
+
         if (applicationServer != null)
         {
             SoftLinkMaker.createSymbolicLink(new File("../ui-eln-lims/src/core-plugins/eln-lims"), new File("etc/default/as/core-plugins/eln-lims"));
@@ -479,6 +505,11 @@ public class IntegrationTestEnvironment
 
     private void configureELNSettings()
     {
+        if (!elnEnabled)
+        {
+            return;
+        }
+
         if (applicationServer != null)
         {
             OpenBIS openBIS = createOpenBIS();
@@ -504,6 +535,16 @@ public class IntegrationTestEnvironment
         {
             throw new RuntimeException("Loading properties from path: " + propertiesPath + " failed.", e);
         }
+    }
+
+    public void enableSystemUser()
+    {
+        systemUserEnabled = true;
+    }
+
+    public void enableELN()
+    {
+        elnEnabled = true;
     }
 
     public ApplicationServer getApplicationServer()

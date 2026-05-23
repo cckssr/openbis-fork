@@ -20,10 +20,11 @@ package ch.systemsx.cisd.openbis.generic.shared.dto.hibernate;
 import static org.testng.Assert.*;
 
 import ch.systemsx.cisd.openbis.generic.shared.dto.*;
+import jakarta.validation.ClockProvider;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import javax.validation.ConstraintValidatorContext;
+import jakarta.validation.ConstraintValidatorContext;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -106,6 +107,12 @@ public class PatternValueValidatorTest
         }
 
         @Override
+        public ClockProvider getClockProvider()
+        {
+            return null;
+        }
+
+        @Override
         public ConstraintViolationBuilder buildConstraintViolationWithTemplate(String s)
         {
             constraints.add(s);
@@ -118,11 +125,42 @@ public class PatternValueValidatorTest
                 }
 
                 @Override
+                public NodeBuilderCustomizableContext addPropertyNode(String s)
+                {
+                    return null;
+                }
+
+                @Override
+                public LeafNodeBuilderCustomizableContext addBeanNode()
+                {
+                    return null;
+                }
+
+                @Override
+                public ContainerElementNodeBuilderCustomizableContext addContainerElementNode(
+                        String s, Class<?> aClass, Integer integer)
+                {
+                    return null;
+                }
+
+                @Override
+                public NodeBuilderDefinedContext addParameterNode(int i)
+                {
+                    return null;
+                }
+
+                @Override
                 public ConstraintValidatorContext addConstraintViolation()
                 {
                     return null;
                 }
             };
+        }
+
+        @Override
+        public <T> T unwrap(Class<T> aClass)
+        {
+            return null;
         }
 
     }

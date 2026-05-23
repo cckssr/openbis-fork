@@ -25,19 +25,29 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
 
-import javax.validation.*;
+import jakarta.persistence.PersistenceException;
+import jakarta.persistence.TemporalType;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
 
+import org.hibernate.FlushMode;
 import org.hibernate.HibernateException;
 import org.hibernate.LockMode;
-import org.hibernate.Query;
-import org.hibernate.SQLQuery;
+import org.hibernate.LockOptions;
+import org.hibernate.ObjectDeletedException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.StatelessSession;
-import org.hibernate.internal.StatelessSessionImpl;
 import org.hibernate.jdbc.ReturningWork;
+import org.hibernate.query.NativeQuery;
+import org.hibernate.query.Query;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -47,7 +57,6 @@ import org.springframework.jdbc.UncategorizedSQLException;
 import org.springframework.orm.hibernate5.HibernateCallback;
 import org.springframework.orm.hibernate5.HibernateTemplate;
 import org.springframework.orm.hibernate5.SessionFactoryUtils;
-import org.springframework.orm.hibernate5.support.HibernateDaoSupport;
 
 import ch.systemsx.cisd.common.exceptions.ExceptionUtils;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.DynamicPropertyEvaluationOperation;
@@ -56,31 +65,27 @@ import ch.systemsx.cisd.openbis.generic.server.dataaccess.util.UpdateUtils;
 import ch.systemsx.cisd.openbis.generic.shared.basic.IIdHolder;
 import ch.systemsx.cisd.openbis.generic.shared.basic.TechId;
 import ch.systemsx.cisd.openbis.generic.shared.dto.IEntityInformationWithPropertiesHolder;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.util.Assert;
 
 /**
- * Abstract super class of all <i>Hibernate</i> DAOs.
- * 
- * @author Christian Ribeaud
+ * Spring 6 / Hibernate 6 compatible base DAO.
+ * Replaces HibernateDaoSupport + HibernateTemplate with direct Session usage.
  */
-public abstract class AbstractDAO extends HibernateDaoSupport
-{
+public abstract class AbstractDAO {
 
-    private static ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-
+    private static final ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
     private static final int MAX_STRING_ERROR_LENGTH = 500;
 
-    protected AbstractDAO(final SessionFactory sessionFactory)
-    {
+    private final SessionFactory sessionFactory;
+
+    protected AbstractDAO(final SessionFactory sessionFactory) {
         assert sessionFactory != null : "Unspecified session factory";
-        setSessionFactory(sessionFactory);
+        this.sessionFactory = sessionFactory;
     }
 
-    /*
-     * private static Map<Class<?>, ClassValidator<?>> validators = new HashMap<Class<?>, ClassValidator<?>>();
-     */
-    /**
-     * Validates given <i>Persistence Entity</i> using an appropriate {@link Validator}.
-     */
+    /* ---------- Validation ---------- */
+
     @SuppressWarnings({ "rawtypes" })
     protected final static <E> void validatePE(final E pe) throws DataIntegrityViolationException
     {
@@ -192,41 +197,22 @@ public abstract class AbstractDAO extends HibernateDaoSupport
      */
     protected final void executeUpdate(final String sql, final Serializable... parameters)
     {
-        getHibernateTemplate().execute(new HibernateCallback()
+
+        final NativeQuery<?> sqlQuery = currentSession().createNativeQuery(sql);
+        for (int i = 0; i < parameters.length; i++)
+        {
+            Serializable parameter = parameters[i];
+            int position = i + 1;
+            if (parameter instanceof Date)
             {
+                sqlQuery.setParameter(position, (Date) parameter, TemporalType.TIMESTAMP);
+            } else
+            {
+                sqlQuery.setParameter(position, parameter);
+            }
+        }
+        sqlQuery.executeUpdate();
 
-                //
-                // HibernateCallback
-                //
-
-                @Override
-                public final Object doInHibernate(final Session session) throws HibernateException
-                {
-                    final SQLQuery sqlQuery = session.createSQLQuery(sql);
-                    for (int i = 0; i < parameters.length; i++)
-                    {
-                        Serializable parameter = parameters[i];
-                        if (parameter instanceof Long)
-                        {
-                            sqlQuery.setLong(i, (Long) parameter);
-                        } else if (parameter instanceof Integer)
-                        {
-                            sqlQuery.setInteger(i, (Integer) parameter);
-                        } else if (parameter instanceof Character)
-                        {
-                            sqlQuery.setCharacter(i, (Character) parameter);
-                        } else if (parameter instanceof Date)
-                        {
-                            sqlQuery.setDate(i, (Date) parameter);
-                        } else
-                        {
-                            sqlQuery.setSerializable(i, parameter);
-                        }
-                    }
-                    sqlQuery.executeUpdate();
-                    return null;
-                }
-            });
     }
 
     /**
@@ -235,19 +221,8 @@ public abstract class AbstractDAO extends HibernateDaoSupport
     @SuppressWarnings("unchecked")
     protected final <T> T getUniqueResult(final String sql, final Object... parameters)
     {
-        return (T) getHibernateTemplate().execute(new HibernateCallback()
-            {
-
-                //
-                // HibernateCallback
-                //
-
-                @Override
-                public final Object doInHibernate(final Session session)
-                {
-                    return session.createSQLQuery(String.format(sql, parameters)).uniqueResult();
-                }
-            });
+        Query<?> q = currentSession().createNativeQuery(String.format(sql, parameters));
+        return (T) q.uniqueResultOptional().orElse(null);
     }
 
     protected final static Object[] toArray(final Object... objects)
@@ -257,54 +232,33 @@ public abstract class AbstractDAO extends HibernateDaoSupport
 
     protected final long getNextSequenceId(final String sequenceName)
     {
-        final Object result = getHibernateTemplate().execute(new HibernateCallback()
-            {
-                @Override
-                public Object doInHibernate(Session sess) throws HibernateException
-                {
-                    SQLQuery sqlQuery =
-                            sess.createSQLQuery("select nextval('" + sequenceName + "')");
-                    return sqlQuery.uniqueResult();
-                }
-            });
-
-        Long toReturn;
-        if (result instanceof BigInteger)
-        {
-            toReturn = ((BigInteger) result).longValue();
-        } else
-        {
-            toReturn = (Long) result;
+        // TT TODO : stop accepting arbitrary strings and force a whitelist/enum of allowed sequences.
+        Object result = currentSession()
+                .createNativeQuery("select nextval('" + sequenceName + "')")
+                .getSingleResult();
+        if (result instanceof BigInteger) {
+            return ((BigInteger) result).longValue();
         }
-        return toReturn;
+        return ((Number) result).longValue();
     }
 
     protected final Object executeStatelessAction(final StatelessHibernateCallback action) throws DataAccessException
     {
         assert action != null;
-        return getHibernateTemplate().execute(new HibernateCallback<Object>()
-            {
-                @Override
-                public final Object doInHibernate(final Session session) throws HibernateException
-                {
-                    return session.doReturningWork(new ReturningWork<Object>()
-                        {
-                            @Override
-                            public Object execute(Connection connection) throws SQLException
-                            {
-                                StatelessSessionImpl sls = null;
-                                try
-                                {
-                                    sls = (StatelessSessionImpl) getSessionFactory().openStatelessSession(connection);
-                                    return action.doInStatelessSession(sls);
-                                } catch (HibernateException ex)
-                                {
-                                    throw SessionFactoryUtils.convertHibernateAccessException(ex);
-                                }
-                            }
-                        });
+        Objects.requireNonNull(action, "action");
+        try {
+            return currentSession().doReturningWork((ReturningWork<Object>) (Connection connection) -> {
+                try (StatelessSession sls = getSessionFactory().openStatelessSession(connection)) {
+                    return action.doInStatelessSession(sls);
+                } catch (HibernateException ex) {
+                    throw SessionFactoryUtils.convertHibernateAccessException(ex);
+                } catch (RuntimeException ex) {
+                    throw ex;
                 }
             });
+        } catch (HibernateException ex) {
+            throw SessionFactoryUtils.convertHibernateAccessException(ex);
+        }
     }
 
     /*
@@ -334,10 +288,13 @@ public abstract class AbstractDAO extends HibernateDaoSupport
 
     protected void lockEntity(IIdHolder entityOrNull)
     {
-        if (entityOrNull != null && entityOrNull.getId() != null
-                && currentSession().contains(entityOrNull))
-        {
-            getHibernateTemplate().lock(entityOrNull, LockMode.PESSIMISTIC_WRITE);
+        var session = currentSession();
+        if (entityOrNull != null && entityOrNull.getId() != null && session.contains(entityOrNull)) {
+            try {
+                session.lock(entityOrNull, LockMode.PESSIMISTIC_WRITE);
+            } catch (ObjectDeletedException ode) {
+                session.evict(entityOrNull);
+            }
         }
     }
 
@@ -350,19 +307,32 @@ public abstract class AbstractDAO extends HibernateDaoSupport
         Object doInStatelessSession(StatelessSession sls);
     }
 
-    protected static void flushWithSqlExceptionHandling(HibernateTemplate hibernateTemplate)
+
+    protected void flushWithSqlExceptionHandling() throws DataAccessException {
+        try {
+            doExecute(session -> {
+                session.flush();
+                return null;
+            });
+        } catch (org.springframework.jdbc.UncategorizedSQLException e) {
+            translateUncategorizedSQLException(e);
+        } catch (jakarta.validation.ConstraintViolationException e) {
+            translateConstraintViolationException(e);
+        } catch (PersistenceException e) {
+            translatePersistenceConstraintViolationException(e);
+        }
+    }
+    protected static void translatePersistenceConstraintViolationException(PersistenceException exception)
             throws DataAccessException
     {
-        try
+        org.hibernate.exception.ConstraintViolationException constraintViolation =
+                ExceptionUtils.tryGetThrowableOfClass(exception,
+                        org.hibernate.exception.ConstraintViolationException.class);
+        if (constraintViolation != null)
         {
-            hibernateTemplate.flush();
-        } catch (UncategorizedSQLException e)
-        {
-            translateUncategorizedSQLException(e);
-        } catch(ConstraintViolationException e)
-        {
-            translateConstraintViolationException(e);
+            throw new DataIntegrityViolationException(constraintViolation.getMessage(), exception);
         }
+        throw exception;
     }
 
     protected static void translateConstraintViolationException(ConstraintViolationException exception) throws DataAccessException
@@ -444,20 +414,100 @@ public abstract class AbstractDAO extends HibernateDaoSupport
                 .evaluate(entityClass, entityIds));
     }
 
-    public void flush()
-    {
-        flushWithSqlExceptionHandling(getHibernateTemplate());
+    public void flush() throws DataAccessException {
+        flushWithSqlExceptionHandling();
     }
 
+    @SuppressWarnings("resource") // Spring-managed, transaction-bound Session; do not close here
     public void clear()
     {
-        getHibernateTemplate().clear();
+        currentSession().clear();
     }
 
-    @SuppressWarnings("unchecked")
     protected final static <T> Class<T> cast(final Class<?> clazz)
     {
         return (Class<T>) clazz;
     }
+
+
+    protected final SessionFactory getSessionFactory()
+    {
+        return this.sessionFactory;
+    }
+
+    protected final Session currentSession()
+    {
+        return this.sessionFactory.getCurrentSession();
+    }
+
+    protected <T> List<T> loadAll(Class<T> type) {
+        return doExecute(session ->
+                session.createQuery("from " + type.getName(), type)
+                        .getResultList()
+        );
+    }
+
+    // inspired by HibernateTemplate#doExecute
+    protected <T> T doExecute(HibernateCallback<T> action) throws DataAccessException {
+        Assert.notNull(action, "Callback object must not be null");
+
+        Session session = null;
+        boolean isNew = false;
+        try {
+            session = currentSession();
+        }
+        catch (HibernateException ex) {
+//            logger.debug("Could not retrieve pre-bound Hibernate session", ex);
+        }
+        if (session == null) {
+            session = sessionFactory.openSession();
+            session.setHibernateFlushMode(FlushMode.MANUAL);
+            isNew = true;
+        }
+
+        try {
+            return action.doInHibernate(session);
+        }
+        catch (HibernateException ex) {
+            throw SessionFactoryUtils.convertHibernateAccessException(ex);
+        }
+        catch (PersistenceException ex) {
+            if (ex.getCause() instanceof HibernateException) {
+                throw SessionFactoryUtils.convertHibernateAccessException((HibernateException) ex.getCause());
+            }
+            throw ex;
+        }
+        catch (RuntimeException ex) {
+            if (ex.getCause() instanceof HibernateException) {
+                throw SessionFactoryUtils.convertHibernateAccessException((HibernateException) ex.getCause());
+            }
+            // Callback code threw application exception...
+            throw ex;
+        }
+        finally
+        {
+            if (isNew)
+            {
+                SessionFactoryUtils.closeSession(session);
+            }
+        }
+    }
+
+
+    protected <T> List<T> find(Class<T> resultType, String hql, Object... params) throws DataAccessException {
+        return doExecute(session -> {
+            var q = session.createQuery(hql, resultType);
+
+            if (params != null) {
+                for (int i = 0; i < params.length; i++) {
+                    q.setParameter(i + 1, params[i]); // 1-based positional params
+                }
+            }
+
+            return q.getResultList();
+        });
+
+    }
+
 
 }

@@ -7,7 +7,7 @@ Server Configuration
 |-------|-----------------------------------------------------------------------------------------------------------|
 | `bin` | Contains one file, `afs_server.sh` that can be used for start, stop, restart or get status of the server. |
 | `lib` | Compiled server libraries                                                                                 |
-| `log` | Contains log, by default one log file `afs_server.log`.                                                   |
+| `log` | Contains log, by default one log file `afs.log`.                                                   |
 | `etc` | config files                                                                                              |
 
 ### etc config files
@@ -51,7 +51,7 @@ For 10 concurrent users doing uploads using the defaults that means: 15728640 * 
 
 # Custom File Handler using your custom class
 myFileHandler.class = ch.ethz.sis.shared.log.standard.handlers.DailyRollingFileHandler
-myFileHandler.logFileName = log/afs_server.log
+myFileHandler.logFileName = log/afs.log
 myFileHandler.maxLogFileSize = 10485760
 myFileHandler.append = true
 myFileHandler.level = INFO
@@ -108,11 +108,20 @@ Values are already filled in the template, just uncomment them.
 
 Additionally, these are MANDATORY for setups with multiple share ids, this is for backwards compatibility with the way DSS shuffles data.
 
-| Property                       | Description                                                                      |
-|--------------------------------|----------------------------------------------------------------------------------|
-| `maintenance-plugins`          | Value to be used: pathInfoFeedingTask, shufflingTask                             |
-| `shuffling-task.class`         | Value to be used: ch.systemsx.cisd.etlserver.plugins.SegmentedStoreShufflingTask |
-| `shuffling-task.interval`      | Value to be used: 3600                                                           |
-| `shuffling.class`              | Value to be used: ch.systemsx.cisd.etlserver.plugins.SimpleShuffling             |
-| `shuffling.share-finder.class` | Value to be used: ch.systemsx.cisd.openbis.dss.generic.shared.SimpleShareFinder  |
-| `shuffling.verify-checksum `   | Value to be used: true                                                           |
+| Property                           | Description                                                                                            |
+|------------------------------------|--------------------------------------------------------------------------------------------------------|
+| `maintenance-plugins`              | Value to be used: pathInfoFeedingTask, eagerShufflingTask, shufflingTask                               |
+| `eagerShufflingTask.class`         | Value to be used: ch.ethz.sis.openbis.afsserver.server.messages.MessagesConsumerMaintenanceTask        |
+| `eagerShufflingTask.consumerId`    | Value to be used: Eager shuffling                                                                      |
+| `eagerShufflingTask.handlers`      | Value to be used: ch.ethz.sis.openbis.afsserver.server.shuffling.messages.EagerShufflingMessageHandler |
+| `eagerShufflingTask.interval`      | Value to be used: 3600                                                                                 |
+| `shufflingTask.class`              | Value to be used: ch.systemsx.cisd.etlserver.plugins.SegmentedStoreShufflingTask                       |
+| `shufflingTask.interval`           | Value to be used: 3600                                                                                 |
+| `shuffling.class`                  | Value to be used: ch.systemsx.cisd.etlserver.plugins.SimpleShuffling                                   |
+| `shuffling.share-finder.class`     | Value to be used: ch.systemsx.cisd.openbis.dss.generic.shared.SimpleShareFinder                        |
+| `shuffling.verify-checksum`        | Value to be used: true                                                                                 |
+| `messagesDB.name`                  | Value to be used: messages                                                                             |
+| `messagesDB.kind`                  | Value to be used: prod                                                                                 |
+| `messagesDB.engine`                | Value to be used: postgresql                                                                           |
+| `messagesDB.version-holder-class`  | Value to be used: ch.ethz.sis.messages.db.MessagesDatabaseVersionHolder                                |
+| `messagesDB.script-folder`         | Value to be used: afs-server/sql/messages                                                              |

@@ -1,0 +1,510 @@
+{
+  "@context": [
+    "https://w3id.org/ro/crate/1.1/context",
+    {
+      "schema": "https://schema.org",
+      "owl": "http://www.w3.org/2002/07/owl#",
+      "openBIS": "www.openbis.ch"
+    }
+  ],
+  "@graph": [
+    {
+      "name": "name",
+      "description": "description",
+      "@id": "./",
+      "@type": "Dataset",
+      "license": {
+        "@id": "licenseIdentifier"
+      },
+      "datePublished": "2024-12-04T07:53:11Z",
+      "hasPart": [
+        {
+          "@id": "openBIS:hasPROJECT"
+        },
+        {
+          "@id": "openBIS:hasDESCRIPTION"
+        },
+        {
+          "@id": "/MATERIALS/MOLECULES/MOLECULE_COLLECTION"
+        },
+        {
+          "@id": "COLLECTION"
+        },
+        {
+          "@id": "/MATERIALS/MOLECULES"
+        },
+        {
+          "@id": "306231bf-1200-4bf1-9fd2-f2e53403dce5"
+        },
+        {
+          "@id": "openBIS:Dataset"
+        },
+        {
+          "@id": "openBIS:hasCOMMENTS"
+        },
+        {
+          "@id": "19ae6ae9-e871-4cd1-9583-aa7eb3accd51"
+        },
+        {
+          "@id": "openBIS:hasDEFAULT_OBJECT_TYPE"
+        },
+        {
+          "@id": "openBIS:hasCOLLECTION"
+        },
+        {
+          "@id": "46e796b6-1ac4-4cfe-93b2-6bbab42588ba"
+        },
+        {
+          "@id": "openBIS:hasNAME"
+        },
+        {
+          "@id": "openBIS:hasSUM_FORMULA"
+        },
+        {
+          "@id": "openBIS:hasEMPA_NUMBER"
+        },
+        {
+          "@id": "openBIS:Space"
+        },
+        {
+          "@id": "openBIS:hasCAS_NUMBER"
+        },
+        {
+          "@id": "openBIS:hasIUPAC_NAME"
+        },
+        {
+          "@id": "16f4df2e-ca2c-44bd-a7a8-3f974075bb6f"
+        },
+        {
+          "@id": "openBIS:hasDEFAULT_COLLECTION_VIEW"
+        },
+        {
+          "@id": "0dd090f1-5f5e-42db-a8dd-cc940fe82977"
+        },
+        {
+          "@id": "MOLECULE"
+        },
+        {
+          "@id": "6dbc6533-ead1-4c87-a50b-3198b601ab81"
+        },
+        {
+          "@id": "d0958afc-cf03-47e9-ac06-71fd38e699ef"
+        },
+        {
+          "@id": "openBIS:Object"
+        },
+        {
+          "@id": "openBIS:hasSPACE"
+        },
+        {
+          "@id": "ca900b6b-9c5c-4201-9dda-363e9d07c0d6"
+        },
+        {
+          "@id": "openBIS:hasSMILES"
+        },
+        {
+          "@id": "f8387c7b-5f3c-49b1-aebd-703edc15d243"
+        },
+        {
+          "@id": "openBIS:Collection"
+        },
+        {
+          "@id": "openBIS:Project"
+        },
+        {
+          "@id": "de7fb4a4-7fed-4a80-a645-ed11a79fd18b"
+        },
+        {
+          "@id": "de39e4f8-cf07-48c1-b96b-851dcf583da6"
+        },
+        {
+          "@id": "/MATERIALS/MOLECULES/MOLE151"
+        },
+        {
+          "@id": "MATERIALS"
+        },
+        {
+          "@id": "openBIS:Vocabulary"
+        }
+      ]
+    },
+    {
+      "about": {
+        "@id": "./"
+      },
+      "conformsTo": {
+        "@id": "https://w3id.org/ro/crate/1.1"
+      },
+      "@id": "ro-crate-metadata.json",
+      "@type": "CreativeWork"
+    },
+    {
+      "@type": "rdfs:Property",
+      "rdfs:label": "Name",
+      "rdfs:comment": "Name",
+      "@id": "openBIS:hasNAME",
+      "schema:rangeIncludes": {
+        "@id": "xsd:string"
+      },
+      "schema:domainIncludes": [
+        {
+          "@id": "COLLECTION"
+        },
+        {
+          "@id": "MOLECULE"
+        }
+      ]
+    },
+    {
+      "@id": "f8387c7b-5f3c-49b1-aebd-703edc15d243",
+      "@type": "owl:restriction",
+      "owl:onProperty": {
+        "@id": "openBIS:hasIUPAC_NAME"
+      },
+      "owl:minCardinality": 0,
+      "owl:maxCardinality": 1
+    },
+    {
+      "@id": "openBIS:Dataset",
+      "@type": "rdfs:Class"
+    },
+    {
+      "@type": "rdfs:Property",
+      "rdfs:label": "COMMENTS",
+      "rdfs:comment": "COMMENTS: COMMENTS",
+      "@id": "openBIS:hasCOMMENTS",
+      "schema:rangeIncludes": {
+        "@id": "xsd:string"
+      },
+      "schema:domainIncludes": {
+        "@id": "MOLECULE"
+      }
+    },
+    {
+      "@id": "openBIS:Space",
+      "@type": "rdfs:Class"
+    },
+    {
+      "@type": "rdfs:Property",
+      "rdfs:label": "Default collection view",
+      "rdfs:comment": "Default view for experiments of the type collection",
+      "@id": "openBIS:hasDEFAULT_COLLECTION_VIEW",
+      "schema:rangeIncludes": {
+        "@id": "xsd:string"
+      },
+      "schema:domainIncludes": {
+        "@id": "COLLECTION"
+      }
+    },
+    {
+      "@id": "MATERIALS",
+      "@type": "openBIS:Space"
+    },
+    {
+      "@id": "COLLECTION",
+      "@type": "rdfs:Class",
+      "owl:restriction": [
+        {
+          "@id": "de7fb4a4-7fed-4a80-a645-ed11a79fd18b"
+        },
+        {
+          "@id": "ca900b6b-9c5c-4201-9dda-363e9d07c0d6"
+        },
+        {
+          "@id": "6dbc6533-ead1-4c87-a50b-3198b601ab81"
+        }
+      ],
+      "rdfs:subClassOf": {
+        "@id": "openBIS:Collection"
+      }
+    },
+    {
+      "@id": "ca900b6b-9c5c-4201-9dda-363e9d07c0d6",
+      "@type": "owl:restriction",
+      "owl:onProperty": {
+        "@id": "openBIS:hasDEFAULT_OBJECT_TYPE"
+      },
+      "owl:minCardinality": 0,
+      "owl:maxCardinality": 1
+    },
+    {
+      "@id": "openBIS:Object",
+      "@type": "rdfs:Class"
+    },
+    {
+      "@id": "6dbc6533-ead1-4c87-a50b-3198b601ab81",
+      "@type": "owl:restriction",
+      "owl:onProperty": {
+        "@id": "openBIS:hasNAME"
+      },
+      "owl:minCardinality": 0,
+      "owl:maxCardinality": 1
+    },
+    {
+      "@type": "rdfs:Property",
+      "rdfs:label": "EMPA_NUMBER",
+      "rdfs:comment": "EMPA_NUMBER: EMPA_NUMBER",
+      "@id": "openBIS:hasEMPA_NUMBER",
+      "schema:rangeIncludes": {
+        "@id": "xsd:integer"
+      },
+      "schema:domainIncludes": {
+        "@id": "MOLECULE"
+      }
+    },
+    {
+      "openBIS:hasEMPA_NUMBER": "703",
+      "openBIS:hasSMILES": "C(#Cc1cccc2ccccc12)/C(=C(/C#Cc1cccc2ccccc12)c1ccccc1)c1ccccc1Ta",
+      "openBIS:hasSUM_FORMULA": "C38H24Ta",
+      "openBIS:hasNAME": "MOLE151",
+      "@id": "/MATERIALS/MOLECULES/MOLE151",
+      "openBIS:hasSPACE": {
+        "@id": "MATERIALS"
+      },
+      "openBIS:hasPROJECT": {
+        "@id": "/MATERIALS/MOLECULES"
+      },
+      "openBIS:hasCOLLECTION": {
+        "@id": "/MATERIALS/MOLECULES/MOLECULE_COLLECTION"
+      },
+      "@type": "MOLECULE"
+    },
+    {
+      "@type": "rdfs:Property",
+      "rdfs:label": "Default object type",
+      "rdfs:comment": "Enter the code of the object type for which the collection is used",
+      "@id": "openBIS:hasDEFAULT_OBJECT_TYPE",
+      "schema:rangeIncludes": {
+        "@id": "xsd:string"
+      },
+      "schema:domainIncludes": {
+        "@id": "COLLECTION"
+      }
+    },
+    {
+      "@type": "rdfs:Property",
+      "@id": "openBIS:hasSPACE",
+      "schema:rangeIncludes": {
+        "@id": "openBIS:Space"
+      },
+      "schema:domainIncludes": [
+        {
+          "@id": "COLLECTION"
+        },
+        {
+          "@id": "MOLECULE"
+        }
+      ]
+    },
+    {
+      "@id": "d0958afc-cf03-47e9-ac06-71fd38e699ef",
+      "@type": "owl:restriction",
+      "owl:onProperty": {
+        "@id": "openBIS:hasSUM_FORMULA"
+      },
+      "owl:minCardinality": 0,
+      "owl:maxCardinality": 1
+    },
+    {
+      "@id": "306231bf-1200-4bf1-9fd2-f2e53403dce5",
+      "@type": "owl:restriction",
+      "owl:onProperty": {
+        "@id": "openBIS:hasEMPA_NUMBER"
+      },
+      "owl:minCardinality": 0,
+      "owl:maxCardinality": 1
+    },
+    {
+      "@type": "rdfs:Property",
+      "rdfs:label": "CAS_NUMBER",
+      "rdfs:comment": "CAS_NUMBER: CAS_NUMBER",
+      "@id": "openBIS:hasCAS_NUMBER",
+      "schema:rangeIncludes": {
+        "@id": "xsd:string"
+      },
+      "schema:domainIncludes": {
+        "@id": "MOLECULE"
+      }
+    },
+    {
+      "@id": "16f4df2e-ca2c-44bd-a7a8-3f974075bb6f",
+      "@type": "owl:restriction",
+      "owl:onProperty": {
+        "@id": "openBIS:hasCOMMENTS"
+      },
+      "owl:minCardinality": 0,
+      "owl:maxCardinality": 1
+    },
+    {
+      "@id": "19ae6ae9-e871-4cd1-9583-aa7eb3accd51",
+      "@type": "owl:restriction",
+      "owl:onProperty": {
+        "@id": "openBIS:hasSMILES"
+      },
+      "owl:minCardinality": 0,
+      "owl:maxCardinality": 1
+    },
+    {
+      "@id": "de7fb4a4-7fed-4a80-a645-ed11a79fd18b",
+      "@type": "owl:restriction",
+      "owl:onProperty": {
+        "@id": "openBIS:hasDEFAULT_COLLECTION_VIEW"
+      },
+      "owl:minCardinality": 0,
+      "owl:maxCardinality": 1
+    },
+    {
+      "@id": "openBIS:Vocabulary",
+      "@type": "rdfs:Class"
+    },
+    {
+      "@id": "MOLECULE",
+      "@type": "rdfs:Class",
+      "owl:restriction": [
+        {
+          "@id": "46e796b6-1ac4-4cfe-93b2-6bbab42588ba"
+        },
+        {
+          "@id": "f8387c7b-5f3c-49b1-aebd-703edc15d243"
+        },
+        {
+          "@id": "16f4df2e-ca2c-44bd-a7a8-3f974075bb6f"
+        },
+        {
+          "@id": "19ae6ae9-e871-4cd1-9583-aa7eb3accd51"
+        },
+        {
+          "@id": "0dd090f1-5f5e-42db-a8dd-cc940fe82977"
+        },
+        {
+          "@id": "d0958afc-cf03-47e9-ac06-71fd38e699ef"
+        },
+        {
+          "@id": "306231bf-1200-4bf1-9fd2-f2e53403dce5"
+        },
+        {
+          "@id": "de39e4f8-cf07-48c1-b96b-851dcf583da6"
+        }
+      ],
+      "rdfs:subClassOf": {
+        "@id": "openBIS:Object"
+      }
+    },
+    {
+      "@type": "rdfs:Property",
+      "rdfs:label": "DESCRIPTION",
+      "rdfs:comment": "DESCRIPTION: DESCRIPTION",
+      "@id": "openBIS:hasDESCRIPTION",
+      "schema:rangeIncludes": {
+        "@id": "xsd:string"
+      },
+      "schema:domainIncludes": {
+        "@id": "MOLECULE"
+      }
+    },
+    {
+      "@id": "openBIS:Project",
+      "@type": "rdfs:Class"
+    },
+    {
+      "@id": "openBIS:Collection",
+      "@type": "rdfs:Class"
+    },
+    {
+      "openBIS:hasDEFAULT_OBJECT_TYPE": "MOLECULE",
+      "openBIS:hasNAME": "Unknown Collection",
+      "@id": "/MATERIALS/MOLECULES/MOLECULE_COLLECTION",
+      "@type": "openBIS:Collection"
+    },
+    {
+      "@id": "46e796b6-1ac4-4cfe-93b2-6bbab42588ba",
+      "@type": "owl:restriction",
+      "owl:onProperty": {
+        "@id": "openBIS:hasDESCRIPTION"
+      },
+      "owl:minCardinality": 0,
+      "owl:maxCardinality": 1
+    },
+    {
+      "@type": "rdfs:Property",
+      "rdfs:label": "IUPAC_NAME",
+      "rdfs:comment": "IUPAC_NAME: IUPAC_NAME",
+      "@id": "openBIS:hasIUPAC_NAME",
+      "schema:rangeIncludes": {
+        "@id": "xsd:string"
+      },
+      "schema:domainIncludes": {
+        "@id": "MOLECULE"
+      }
+    },
+    {
+      "@type": "rdfs:Property",
+      "rdfs:label": "SUM_FORMULA",
+      "rdfs:comment": "SUM_FORMULA: SUM_FORMULA",
+      "@id": "openBIS:hasSUM_FORMULA",
+      "schema:rangeIncludes": {
+        "@id": "xsd:string"
+      },
+      "schema:domainIncludes": {
+        "@id": "MOLECULE"
+      }
+    },
+    {
+      "@type": "rdfs:Property",
+      "rdfs:label": "SMILES",
+      "rdfs:comment": "SMILES: SMILES",
+      "@id": "openBIS:hasSMILES",
+      "schema:rangeIncludes": {
+        "@id": "xsd:string"
+      },
+      "schema:domainIncludes": {
+        "@id": "MOLECULE"
+      }
+    },
+    {
+      "@id": "de39e4f8-cf07-48c1-b96b-851dcf583da6",
+      "@type": "owl:restriction",
+      "owl:onProperty": {
+        "@id": "openBIS:hasCAS_NUMBER"
+      },
+      "owl:minCardinality": 0,
+      "owl:maxCardinality": 1
+    },
+    {
+      "description": "Molecules",
+      "@id": "/MATERIALS/MOLECULES",
+      "@type": "openBIS:Project"
+    },
+    {
+      "@id": "0dd090f1-5f5e-42db-a8dd-cc940fe82977",
+      "@type": "owl:restriction",
+      "owl:onProperty": {
+        "@id": "openBIS:hasNAME"
+      },
+      "owl:minCardinality": 0,
+      "owl:maxCardinality": 1
+    },
+    {
+      "@type": "rdfs:Property",
+      "@id": "openBIS:hasCOLLECTION",
+      "schema:rangeIncludes": {
+        "@id": "openBIS:Collection"
+      },
+      "schema:domainIncludes": [
+        {
+          "@id": "COLLECTION"
+        },
+        {
+          "@id": "MOLECULE"
+        }
+      ]
+    },
+    {
+      "@type": "rdfs:Property",
+      "@id": "openBIS:hasPROJECT",
+      "schema:rangeIncludes": {
+        "@id": "openBIS:Project"
+      }
+    }
+  ]
+}

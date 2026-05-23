@@ -15,9 +15,9 @@
  */
 package ch.ethz.sis.openbis.generic.server.asapi.v3.cache;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
-import net.sf.ehcache.CacheManager;
+import org.ehcache.CacheManager;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -72,7 +72,12 @@ public class SearchCache<CRITERIA, FETCH_OPTIONS, OBJECT> implements ISearchCach
     {
         if (runtimeCache == null)
         {
-            runtimeCache = new RuntimeCache<>(cacheManager, CACHE_NAME, CACHE_SIZE_PROPERTY_NAME);
+                     // Runtime type token for K = SearchCacheKey<CRITERIA, FETCH_OPTIONS>
+                     // At runtime this is simply SearchCacheKey.class
+             Class<SearchCacheKey<CRITERIA, FETCH_OPTIONS>> keyType =
+                     (Class<SearchCacheKey<CRITERIA, FETCH_OPTIONS>>) (Class<?>) SearchCacheKey.class;
+
+            runtimeCache = new RuntimeCache<>(cacheManager, CACHE_NAME, CACHE_SIZE_PROPERTY_NAME, keyType);
         }
         runtimeCache.initCache();
     }

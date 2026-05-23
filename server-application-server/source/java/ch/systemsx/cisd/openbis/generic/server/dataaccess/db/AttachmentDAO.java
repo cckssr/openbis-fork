@@ -77,14 +77,15 @@ final class AttachmentDAO extends AbstractGenericEntityDAO<AttachmentPE> impleme
 
     private final static String createFindLastVersionQuery(AttachmentHolderPE owner)
     {
-        return createFindLastVersionQuery(owner, "?");
+        return createFindLastVersionQuery(owner, "?1", "?2");
     }
 
-    private final static String createFindLastVersionQuery(AttachmentHolderPE owner, String fileName)
+    private final static String createFindLastVersionQuery(AttachmentHolderPE owner, String ownerParam,
+            String fileNameParam)
     {
         String ownerAsParent = getParentName(owner);
         return String.format("select max(version) from %s where " + ownerAsParent
-                + " = ? and fileName = %s", TABLE_NAME, fileName);
+                + " = %s and fileName = %s", TABLE_NAME, ownerParam, fileNameParam);
     }
 
     private static String getParentName(AttachmentHolderPE owner)
@@ -162,7 +163,7 @@ final class AttachmentDAO extends AbstractGenericEntityDAO<AttachmentPE> impleme
             final AttachmentHolderPE ownerParam) throws DataAccessException
     {
         AttachmentHolderPE result = internalCreateAttachment(attachment, ownerParam);
-        getHibernateTemplate().flush();
+        currentSession().flush();
 
         scheduleDynamicPropertiesEvaluation(ownerParam);
 
@@ -182,7 +183,7 @@ final class AttachmentDAO extends AbstractGenericEntityDAO<AttachmentPE> impleme
             internalCreateAttachment(attachment, attachment.getParent());
         }
 
-        getHibernateTemplate().flush();
+        currentSession().flush();
     }
 
     private AttachmentHolderPE internalCreateAttachment(final AttachmentPE attachment,
@@ -197,7 +198,7 @@ final class AttachmentDAO extends AbstractGenericEntityDAO<AttachmentPE> impleme
                 tryFindAttachmentByOwnerAndFileName(owner, attachment.getFileName());
         fillAttachmentData(attachment, previousAttachmentVersionOrNull);
 
-        final HibernateTemplate template = getHibernateTemplate();
+        //final HibernateTemplate template = getHibernateTemplate();
         Session session = currentSession();
         if (session.contains(owner) == false)
         {
@@ -206,9 +207,12 @@ final class AttachmentDAO extends AbstractGenericEntityDAO<AttachmentPE> impleme
         owner.addAttachment(attachment);
         validatePE(attachment);
 
-        template.save(attachment.getAttachmentContent());
-        template.save(attachment);
-        template.flush();
+        doExecute( session1 -> {
+            session1.save(attachment.getAttachmentContent());
+            session1.save(attachment);
+            session1.flush();
+            return  null;
+        });
         if (operationLog.isInfoEnabled())
         {
             operationLog.info(String.format("ADD: file attachment '%s'.", attachment));
@@ -242,8 +246,8 @@ final class AttachmentDAO extends AbstractGenericEntityDAO<AttachmentPE> impleme
         assert owner != null : "Unspecified attachment holder.";
 
         final String query =
-                String.format("from %s where " + getParentName(owner) + " = ?", TABLE_NAME);
-        final List<AttachmentPE> result = cast(getHibernateTemplate().find(query, toArray(owner)));
+                String.format("from %s where " + getParentName(owner) + " = ?1 ", TABLE_NAME);
+        final List<AttachmentPE> result = find(AttachmentPE.class, query, toArray(owner));
         if (operationLog.isDebugEnabled())
         {
             operationLog.debug(String.format("%d attachment(s) found for " + owner.getHolderName()
@@ -261,10 +265,10 @@ final class AttachmentDAO extends AbstractGenericEntityDAO<AttachmentPE> impleme
 
         final String query =
                 String.format("from %s where " + getParentName(owner)
-                        + " = ? and fileName = ? and version = ("
-                        + createFindLastVersionQuery(owner) + ")", TABLE_NAME);
+                        + " = ?1 and fileName = ?2 and version = ("
+                        + createFindLastVersionQuery(owner, "?3", "?4") + ")", TABLE_NAME);
         final List<AttachmentPE> result =
-                cast(getHibernateTemplate().find(query, toArray(owner, fileName, owner, fileName)));
+                find(AttachmentPE.class, query, toArray(owner, fileName, owner, fileName));
         final AttachmentPE attachment = tryFindEntity(result, "attachment", owner, fileName);
         if (operationLog.isDebugEnabled())
         {
@@ -287,9 +291,9 @@ final class AttachmentDAO extends AbstractGenericEntityDAO<AttachmentPE> impleme
 
         final String query =
                 String.format("from %s where " + getParentName(owner)
-                        + " = ? and fileName = ? and version = ?", TABLE_NAME);
+                        + " = ?1 and fileName = ?2 and version = ?3", TABLE_NAME);
         final List<AttachmentPE> result =
-                cast(getHibernateTemplate().find(query, toArray(owner, fileName, version)));
+                cast(find(AttachmentPE.class, query, toArray(owner, fileName, version)));
         final AttachmentPE attachment =
                 tryFindEntity(result, "attachment", owner, fileName, version);
         if (operationLog.isDebugEnabled())
@@ -309,20 +313,22 @@ final class AttachmentDAO extends AbstractGenericEntityDAO<AttachmentPE> impleme
         assert owner != null : "Unspecified attachment holder.";
         assert fileName != null : "Unspecified file name.";
 
-        final HibernateTemplate hibernateTemplate = getHibernateTemplate();
+        //final Session hibernateTemplate = currentSession();
+        int deletedRows = doExecute(session -> {
+                int delRows = 0;
+                for (AttachmentPE att : owner.getAttachments())
+                {
+                    if (fileName.equals(att.getFileName()))
+                    {
+                        owner.removeAttachment(att);
+                        session.delete(att);
+                        delRows++;
+                    }
+                }
 
-        int deletedRows = 0;
-        for (AttachmentPE att : owner.getAttachments())
-        {
-            if (fileName.equals(att.getFileName()))
-            {
-                owner.removeAttachment(att);
-                hibernateTemplate.delete(att);
-                deletedRows++;
-            }
-        }
-
-        hibernateTemplate.flush();
+                session.flush();
+                return delRows;
+            });
 
         scheduleDynamicPropertiesEvaluation(owner);
 

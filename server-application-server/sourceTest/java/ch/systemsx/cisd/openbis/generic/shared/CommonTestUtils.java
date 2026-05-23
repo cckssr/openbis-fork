@@ -57,7 +57,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.ProjectIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.SampleIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.SpaceIdentifier;
 
-import javax.persistence.Transient;
+import jakarta.persistence.Transient;
 
 /**
  * Contains methods and constants which may be used by many tests.

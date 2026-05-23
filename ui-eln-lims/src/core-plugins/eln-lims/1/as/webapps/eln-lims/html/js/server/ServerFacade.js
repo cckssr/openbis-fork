@@ -1743,6 +1743,12 @@ function ServerFacade(openbisServer) {
 						if(advancedFetchOptions.withParentsProperties) {
 							parentFetchOptions.withProperties();
 						}
+						if(advancedFetchOptions.withParentsSpace) {
+                            parentFetchOptions.withSpace();
+                        }
+                        if(advancedFetchOptions.withParentsProject) {
+                            parentFetchOptions.withProject();
+                        }
 						if (advancedFetchOptions.withParentsExperiment) {
 							parentFetchOptions.withExperiment();
 							if (advancedFetchOptions.withParentsExperimentType) {

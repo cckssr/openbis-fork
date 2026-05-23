@@ -19,8 +19,8 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Properties;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import ch.systemsx.cisd.openbis.dss.generic.server.plugins.jython.IPluginScriptRunnerFactory;
 import ch.systemsx.cisd.openbis.dss.generic.server.plugins.jython.IRequestHandlerPluginScriptRunner;
@@ -41,7 +41,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.SessionContextDTO;
  * def handle(request, response)
  * </pre>
  * <p>
- * where request is {@link javax.servlet.http.HttpServletRequest} request and response is {@link javax.servlet.http.HttpServletResponse}. Following
+ * where request is {@link jakarta.servlet.http.HttpServletRequest} request and response is {@link jakarta.servlet.http.HttpServletResponse}. Following
  * variables are available in the script:
  * <ul>
  * <li>searchService - {@link ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.v2.ISearchService}</li>

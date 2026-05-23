@@ -1,6 +1,7 @@
 import { Form, IExtendedActionContext } from '@src/js/components/database/new-forms/types/formITypes.ts';
 import { FormMode, FormSection, EntityKind } from '@src/js/components/database/new-forms/types/formEnums.ts';
 import { getPermIdField, getIdentifierField, getPathField, getSpaceField, getCodeField, getRegistratorField, getRegistrationDateField, getModifierField, getModificationDateField, getDescriptionField } from '@src/js/components/database/new-forms/entities/formFieldGetters.ts';
+import { getAutoSaveAction, getCancelAction, getDividerAction, getEditAction, getMoveAction, getSaveAction, getNewCollectionAction, getDeleteAction, getNewObjectAction, getMoreActionsAction } from '@src/js/components/database/new-forms/entities/actionsFieldGetters.ts';
 
 export class ProjectFormModel {
 
@@ -30,61 +31,19 @@ export class ProjectFormModel {
 			isDirty: false,
 			isValid: true,
 			actions: [
-				{
-					name: 'project:save',
-					label: 'Save',
-					component: 'button',
-					isAllowed: true,
-					visibility: [
-						{
-							mode: FormMode.EDIT,
-						},
-					],
-				},
-				{
-					name: 'edit',
-					label: 'Edit',
-					component: 'button',
-					isAllowed: true,
-					visibility: [
-						{
-							mode: FormMode.VIEW,
-						},
-					],
-				},
-				{
-					name: 'cancel',
-					label: 'Cancel',
-					component: 'button',
-					isAllowed: true,
-					visibility: [
-						{
-							mode: FormMode.EDIT,
-						},
-					],
-				},
-				{
-					name: 'delete',
-					label: 'Delete',
-					component: 'button',
-					isAllowed: true,
-					visibility: [
-						{
-							mode: FormMode.VIEW,
-						},
-					],
-				},
-				{
-					name: 'move',
-					label: 'Move',
-					component: 'button',
-					isAllowed: true,
-					visibility: [
-						{
-							mode: FormMode.VIEW,
-						},
-					],
-				}
+				// getNewCollectionAction(EntityKind.PROJECT),
+				// getNewObjectAction(EntityKind.PROJECT),
+				// getDividerAction(FormMode.VIEW),
+				getEditAction(),
+				getMoveAction(),
+				getDeleteAction(),
+				//getDividerAction(FormMode.VIEW),
+				// getMoreActionsAction(),
+				getSaveAction(EntityKind.PROJECT),
+				getCancelAction(),
+				getDividerAction(FormMode.EDIT),
+				getAutoSaveAction(),
+				
 			],
 		};
 	}
@@ -149,7 +108,6 @@ export class ProjectFormModel {
 		const { form, controller, onAfterSave, mode } = context;
 		await new Promise(resolve => setTimeout(resolve, 500));
 		const newPermId = await controller.save(form, mode);
-		console.log("Project saved successfully! New permId:", newPermId);
 		if (mode === FormMode.CREATE) {
 			onAfterSave({ oldType: EntityKind.NEW_PROJECT, oldId: form.entityPermId, newType: EntityKind.PROJECT, newId: newPermId });
 		} else {

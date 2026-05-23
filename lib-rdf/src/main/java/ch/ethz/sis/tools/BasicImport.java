@@ -56,6 +56,7 @@ public class BasicImport
             AsynchronousOperationExecutionResults ongoingOperations =
                     (AsynchronousOperationExecutionResults) openBIS.executeOperations(List.of(importOperation),
                             new AsynchronousOperationExecutionOptions());
+            System.out.println("JobID: " + ongoingOperations.getExecutionId().getPermId());
             // ImportResult importResult = openBIS.executeImport(importData, importOptions);
 
             OperationExecutionPermId executionId = ongoingOperations.getExecutionId();

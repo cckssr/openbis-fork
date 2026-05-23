@@ -72,16 +72,15 @@ dependencies {
     queryApiDependencies 'sis:sis-base:23.06.0',
             'apache:httpclient:4.3.6',
             'apache:httpcore:4.3.3',
-            'springframework:spring-aop:5.3.39',
-            'springframework:spring-beans:5.3.39',
-            'springframework:spring-context:5.3.39',
-            'springframework:spring-core:5.3.39',
-            'springframework:spring-web:5.3.39',
-            'springframework:spring-webmvc:5.3.39',
-            'springframework:spring-expression:5.3.39',
+            'org.springframework:spring-aop:6.1.10',
+            'org.springframework:spring-beans:6.1.10',
+            'org.springframework:spring-context:6.1.10',
+            'org.springframework:spring-core:6.1.10',
+            'org.springframework:spring-web:6.1.10',
+            'org.springframework:spring-webmvc:6.1.10',
+            'org.springframework:spring-expression:6.1.10',
             'apache:commons-logging:1.2',
             'apache:commons-lang3:3.14',
-            'marathon:marathon-spring-util:1.2.5',
             'aopalliance:aopalliance:1.0'
 }
 

@@ -18,7 +18,10 @@ package ch.systemsx.cisd.openbis.generic.server.business.bo;
 import java.util.HashSet;
 import java.util.Set;
 
+import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePE;
+import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DataRetrievalFailureException;
 
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
@@ -110,6 +113,10 @@ public class GridCustomColumnBO extends AbstractBusinessObject implements
             getGridCustomColumnDAO().createColumn(column);
         } catch (final DataAccessException e)
         {
+            throwException(e, "Column '" + column + "'");
+        } catch (ConstraintViolationException ce)
+        {
+            DataAccessException e = new DataIntegrityViolationException(ce.getMessage(), ce);
             throwException(e, "Column '" + column + "'");
         }
     }

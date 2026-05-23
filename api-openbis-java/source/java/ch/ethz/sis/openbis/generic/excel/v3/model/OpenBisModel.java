@@ -42,13 +42,28 @@ public class OpenBisModel
 
     public static final String CODE_SPECIAL_CHARACTER_REPLACEMENT = "_";
 
+    private final Map<ObjectIdentifier, List<FileInfo>> files;
+
+    private final Map<ObjectIdentifier, List<FileInfo>> imageFiles;
+
+    public record FileInfo(String objectIdentifier, String filePath, byte[] contents,
+                           String originalPath)
+    {
+    }
+
+    public record MiscFile()
+    {
+    }
+
 
     public OpenBisModel(Map<VocabularyPermId, Vocabulary> vocabularyTypes,
             Map<EntityTypePermId, IEntityType> entityTypes, Map<SpacePermId, Space> spaces,
             Map<ProjectIdentifier, Project> projects,
             Map<ObjectIdentifier, AbstractEntityPropertyHolder> entities,
             Map<PluginPermId, Plugin> plugins,
-            Map<String, List<Path>> miscellaneous, Map<String, String> externalToOpenBisIdentifiers)
+            Map<String, List<Path>> miscellaneous, Map<String, String> externalToOpenBisIdentifiers,
+            Map<ObjectIdentifier, List<FileInfo>> files,
+            Map<ObjectIdentifier, List<FileInfo>> imageFiles)
     {
         this.vocabularyTypes = vocabularyTypes;
         this.entityTypes = entityTypes;
@@ -58,6 +73,8 @@ public class OpenBisModel
         this.plugins = plugins;
         this.miscellaneous = miscellaneous;
         this.externalToOpenBisIdentifiers = externalToOpenBisIdentifiers;
+        this.files = files;
+        this.imageFiles = imageFiles;
     }
 
     public Map<VocabularyPermId, Vocabulary> getVocabularyTypes() {
@@ -107,6 +124,11 @@ public class OpenBisModel
         return externalToOpenBisIdentifiers;
     }
 
+    public Map<ObjectIdentifier, List<FileInfo>> getFiles()
+    {
+        return files;
+    }
+
     public static String makeOpenBisCodeCompliant(String candiate)
     {
         return candiate.replaceAll("\\|", CODE_SPECIAL_CHARACTER_REPLACEMENT)
@@ -115,4 +137,8 @@ public class OpenBisModel
                 .replaceAll("\\\\u([0-9A-Fa-f]{2}){3}", CODE_SPECIAL_CHARACTER_REPLACEMENT);
     }
 
+    public Map<ObjectIdentifier, List<FileInfo>> getImageFiles()
+    {
+        return imageFiles;
+    }
 }

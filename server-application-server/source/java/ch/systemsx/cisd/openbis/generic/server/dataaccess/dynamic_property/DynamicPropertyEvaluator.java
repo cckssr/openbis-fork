@@ -15,10 +15,11 @@
  */
 package ch.systemsx.cisd.openbis.generic.server.dataaccess.dynamic_property;
 
+import java.io.Serializable;
 import java.util.*;
 
 import ch.ethz.sis.shared.log.classic.impl.Logger;
-import org.hibernate.Query;
+import org.hibernate.query.Query;
 import org.hibernate.Session;
 
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
@@ -407,8 +408,9 @@ public class DynamicPropertyEvaluator implements IDynamicPropertyEvaluator
                 PropertyTypePE propertyType, EntityTypePropertyTypePE entityTypePropertyType,
                 String value)
         {
-            return convertersByEntityKind.get(entityKind).tryCreateValidatedPropertyValue(
+            Serializable serializable = convertersByEntityKind.get(entityKind).tryCreateValidatedPropertyValue(
                     propertyType, entityTypePropertyType, value);
+            return serializable != null ? serializable.toString() : null;
         }
 
         public MaterialPE tryGetMaterial(String value, PropertyTypePE propertyType)

@@ -125,16 +125,16 @@ public class CommonAuthorizationSystemTestService
     }
 
     @Transactional
-    public void createType(EntityTypePE entityType, EntityKind entityKind)
+    public void createType(EntityTypePE entityTypeP, EntityKind entityKind)
     {
-        daoFactory.getEntityTypeDAO(entityKind).createOrUpdateEntityType(entityType);
+        daoFactory.getEntityTypeDAO(entityKind).createOrUpdateEntityType(entityTypeP);
         if (EntityKind.DATA_SET.equals(entityKind))
         {
             DataSetType dataSetType = new DataSetType();
-            dataSetType.setCode(entityType.getCode());
+            dataSetType.setCode(entityTypeP.getCode());
             getDataStoreServiceRegistrator().register(dataSetType);
         }
-        createdObjects.add(entityType);
+        createdObjects.add(entityTypeP);
     }
 
     @Transactional

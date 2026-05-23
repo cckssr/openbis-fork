@@ -17,8 +17,8 @@ package ch.systemsx.cisd.dbmigration;
 
 import javax.sql.DataSource;
 
-import org.apache.commons.dbcp.BasicDataSource;
-import org.apache.commons.pool.impl.GenericObjectPool;
+import org.apache.commons.dbcp2.BasicDataSource;
+import org.apache.commons.pool2.impl.GenericObjectPool;
 
 /**
  * Factory for a {@link DataSource}.

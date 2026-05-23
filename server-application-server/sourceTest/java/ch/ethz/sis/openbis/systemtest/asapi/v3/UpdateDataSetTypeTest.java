@@ -94,7 +94,10 @@ public class UpdateDataSetTypeTest extends UpdateEntityTypeTest<DataSetTypeCreat
         creation.setDataSetKind(DataSetKind.CONTAINER);
         creation.setDataStoreId(new DataStorePermId("STANDARD"));
         creation.setExperimentId(new ExperimentIdentifier("/TEST-SPACE/TEST-PROJECT/EXP-SPACE-TEST"));
-        creation.setProperty(propertyType, propertyValue);
+        if(propertyType != null)
+        {
+            creation.setProperty(propertyType, propertyValue);
+        }
         v3api.createDataSets(sessionToken, Arrays.asList(creation));
     }
 

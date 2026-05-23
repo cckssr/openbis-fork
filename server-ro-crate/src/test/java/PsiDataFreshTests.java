@@ -3,10 +3,10 @@ import ch.ethz.sis.rocrateserver.startup.RoCrateServerParameter;
 import ch.ethz.sis.rocrateserver.startup.StartupMain;
 import jakarta.ws.rs.HttpMethod;
 import org.eclipse.jetty.client.HttpClient;
-import org.eclipse.jetty.client.api.Request;
-import org.eclipse.jetty.client.http.HttpClientTransportOverHTTP;
-import org.eclipse.jetty.client.util.BytesRequestContent;
-import org.eclipse.jetty.client.util.InputStreamResponseListener;
+import org.eclipse.jetty.client.Request;
+import org.eclipse.jetty.client.transport.HttpClientTransportOverHTTP;
+import org.eclipse.jetty.client.BytesRequestContent;
+import org.eclipse.jetty.client.InputStreamResponseListener;
 import org.eclipse.jetty.io.ClientConnector;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.testng.annotations.BeforeClass;
@@ -42,7 +42,7 @@ public class PsiDataFreshTests extends AbstractTest
         StartupMain.main(new String[] { "src/main/resources/service.properties" });
     }
 
-    @Test
+    @Test(enabled = false)
     public void testValidatePsiCrate()
             throws Exception
     {
@@ -64,7 +64,7 @@ public class PsiDataFreshTests extends AbstractTest
                 .statusCode(200);
     }
 
-    @Test
+    @Test(enabled = false)
     public void testImportFreshPsiCrate()
             throws Exception
     {

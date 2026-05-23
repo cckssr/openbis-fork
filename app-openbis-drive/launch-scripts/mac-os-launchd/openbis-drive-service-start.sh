@@ -36,4 +36,4 @@ then
 else
     cd "$OPENBIS_DRIVE_DIR" ; cd launch-scripts
 fi
-"$JAVACMD" -cp app-openbis-drive-full.jar ch.openbis.drive.DriveAPIService >/dev/null 2>&1
+"$JAVACMD" -Dch.openbis.drive.manualInstallation=true -cp app-openbis-drive-full.jar ch.openbis.drive.DriveAPIService >/dev/null 2>&1

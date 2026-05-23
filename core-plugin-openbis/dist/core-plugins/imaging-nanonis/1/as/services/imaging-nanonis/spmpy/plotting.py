@@ -82,14 +82,62 @@ def specs_plot(specs: list, **params):
     else:
         offset = 0
 
+    # PREMISE specific
+    if 'show' in params:
+        show = params['show']
+    else:
+        show = True
+
+    if 'colormap' in params:
+        colormap = params['colormap']
+        cmap = plt.get_cmap(colormap)
+        color = cmap(np.linspace(0,1,len(specs)))
+    else:
+        colormap = False
+
+    if 'scaling' in params:
+        scaling = params['scaling']
+    else:
+        scaling = False
+
+    if 'x_axis' in params:
+        x_axis = params['x_axis']
+    else:
+        x_axis = False
+
+    if 'y_axis' in params:
+        y_axis = params['y_axis']
+    else:
+        y_axis = False
+    #######
+
     fig = plt.figure(figsize=(6, 4))
+
+
 
     counter = 0
     for s, c in zip(specs, color):
         (x_data, x_unit) = s.get_channel(channelx, direction=direction)
-        (y_data, y_unit) = s.get_channel(channely, direction=direction)
+        if x_axis:
+            x_data = np.clip(x_data, x_axis[0], x_axis[1])
 
-        plt.plot(x_data, y_data + counter * offset, color=c, label=s.name)
+        (y_data, y_unit) = s.get_channel(channely, direction=direction)
+        if y_axis:
+            y_data = np.clip(y_data, y_axis[0], y_axis[1])
+
+        if scaling:
+            if scaling == 'lin-lin':
+                plt.plot(x_data, y_data, color=c, label=s.name)
+            elif scaling == "lin-log":
+                plt.semilogy(x_data, np.abs(y_data), color=c, label=s.name)
+            elif scaling == 'log-lin':
+                plt.semilogx(np.abs(x_data), y_data, color=c, label=s.name)
+            elif scaling == 'log-log':
+                plt.loglog(np.abs(x_data), np.abs(y_data), color=c, label=s.name)
+            else:
+                plt.plot(x_data, y_data, color=c, label=s.name)
+        else:
+            plt.plot(x_data, y_data + counter * offset, color = c, label = s.name)
         counter = counter + 1
 
     plt.xlabel(f"{channelx} ({x_unit})")

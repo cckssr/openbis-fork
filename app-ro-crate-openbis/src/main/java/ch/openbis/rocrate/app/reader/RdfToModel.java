@@ -1,5 +1,6 @@
 package ch.openbis.rocrate.app.reader;
 
+import ch.eth.sis.rocrate.SchemaFacade;
 import ch.eth.sis.rocrate.facade.*;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.entity.AbstractEntityPropertyHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.ObjectIdentifier;
@@ -31,25 +32,43 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
 import ch.openbis.rocrate.app.Constants;
 import ch.openbis.rocrate.app.reader.helper.DataTypeMatcher;
+import ch.openbis.rocrate.app.reader.helper.OpenBisStructureHelper;
+import ch.openbis.rocrate.app.reader.helper.PropertyTypeSpecialHandling;
+import ch.openbis.rocrate.app.reader.helper.SampleCodeHelper;
+import ch.openbis.rocrate.app.writer.mapping.images.ImageExtractor;
+import jakarta.annotation.Nullable;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.io.IOException;
 import java.io.Serializable;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.nio.file.Files;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAccessor;
 import java.util.*;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import static ch.ethz.sis.rdf.main.mappers.openBis.ValueMapper.CANONICAL_DATE_FORMAT_PATTERN;
 import static ch.openbis.rocrate.app.Constants.*;
 
 public class RdfToModel
 {
 
     public static OpenBisModel convert(List<IType> types, List<IPropertyType> typeProperties,
-            List<IMetadataEntry> entries, String fallbackSpaceCode, String fallbackProjectCode)
+            List<IMetadataEntry> entries, String fallbackSpaceCode, String fallbackProjectCode,
+            SchemaFacade schemaFacade)
+            throws IOException
     {
+
+        Set<SampleType> openBisDerivedTypes = new LinkedHashSet<>();
+        Map<ObjectIdentifier, List<OpenBisModel.FileInfo>> samplesToFiles = new LinkedHashMap<>();
+
 
         Map<String, IType> IdsToTypes =
                 types.stream().collect(Collectors.toMap(IType::getId, Function.identity()));
@@ -70,13 +89,17 @@ public class RdfToModel
 
         Map<String, ExperimentType> identifierToCollectionType = new LinkedHashMap<>();
 
-        Map<ExperimentIdentifier, Experiment> idsToCollections = new LinkedHashMap<>();
+        Map<ObjectIdentifier, List<OpenBisModel.FileInfo>> objectIdentifiersTOImageFiles =
+                new LinkedHashMap<>();
 
+        Map<ExperimentIdentifier, Experiment> idsToCollections = new LinkedHashMap<>();
+        Map<ObjectIdentifier, List<OpenBisModel.FileInfo>> objectIdentifiersToFiles =
+                new LinkedHashMap<>();
 
         Map<EntityTypePermId, IEntityType> schema = new LinkedHashMap<>();
         handleTypes(types, IdsToTypes, typeToInheritanceChain, entityTypeToRdfIdentifier,
                 codeToSampleType,
-                schema, identifierToCollectionType);
+                schema, identifierToCollectionType, openBisDerivedTypes);
 
         Map<IType, List<String>> typesToProperties = new LinkedHashMap<>();
         for (IPropertyType typeProperty : typeProperties)
@@ -105,7 +128,9 @@ public class RdfToModel
                 codeToSampleType,
                 externalIdentifierToSample, baseCodeToPossibleDataTypes, idToEntities,
                 roCrateIdsToObjects,
-                samplesWithSpaceAndProjectCodes, spaces, projects);
+                samplesWithSpaceAndProjectCodes, spaces, projects, objectIdentifiersToFiles,
+                objectIdentifiersTOImageFiles,
+                metadata);
 
         mapSpaces(fallbackSpaceCode, fallbackProjectCode, spaces, projects);
         mapProjects(projects, spaces);
@@ -114,27 +139,28 @@ public class RdfToModel
                 idsToCollections);
 
         resolveSpaceProjectAndCollections(samplesWithSpaceAndProjectCodes, spaces, projects,
-                idsToCollections, metadata);
+                idsToCollections, metadata, fallbackProjectCode, fallbackSpaceCode);
 
         resolveOpenBisStructure(entries, fallbackSpaceCode, fallbackProjectCode,
                 typeToInheritanceChain,
                 roCrateIdsToObjects, spaces, projects);
 
-        resolveSamples(samplesWithSpaceAndProjectCodes, spaces, projects, idsToCollections,
-                metadata, externalIdentifierToSample);
+        resolveSamples(samplesWithSpaceAndProjectCodes, externalIdentifierToSample);
+
         Map<String, String> collect = externalIdentifierToSample.entrySet().stream()
                 .collect(Collectors.toMap(x -> x.getKey(), x -> x.getValue().getCode()));
 
         return new OpenBisModel(Map.of(), schema, spaces, projects, metadata, Map.of(), Map.of(),
-                collect
-        );
+                collect,
+                objectIdentifiersToFiles, objectIdentifiersTOImageFiles);
     }
 
     private static void handleTypes(List<IType> types, Map<String, IType> IdsToTypes,
             Map<String, List<String>> typeToInheritanceChain,
             Map<String, EntityTypePermId> entityTypeToRdfIdentifier,
             Map<String, SampleType> codeToSampleType, Map<EntityTypePermId, IEntityType> schema,
-            Map<String, ExperimentType> identifierToCollectionType)
+            Map<String, ExperimentType> identifierToCollectionType,
+            Set<SampleType> openBisDerivedTypes)
     {
         for (IType type : types)
         {
@@ -165,6 +191,11 @@ public class RdfToModel
                 sampleType.setPropertyAssignments(new ArrayList<>());
 
                 codeToSampleType.put(sampleType.getCode(), sampleType);
+
+                if (inheritanceChain.stream().anyMatch(x -> x.getId().equals(GRAPH_ID_OBJECT)))
+                {
+                    openBisDerivedTypes.add(sampleType);
+                }
 
                 if (!isCollection(type) && (isOpenBisDerivedType(type) || isSample(type)))
                 {
@@ -216,6 +247,11 @@ public class RdfToModel
     {
         for (IPropertyType a : typeProperties)
         {
+            if (PropertyTypeSpecialHandling.requiresFileHandling(a))
+            {
+                continue;
+            }
+
             Set<DataType> dataTypes = matchDataTypes(a);
             boolean addSuffixes = dataTypes.size() > 1;
             String baseCode = openBisifyCode(deRdfIdentifier(a.getId()));
@@ -376,7 +412,11 @@ public class RdfToModel
             Map<String, Set<DataType>> baseCodeToPossibleDataTypes,
             Map<String, IMetadataEntry> idToEntities, Map<String, Sample> roCrateIdsToObjects,
             List<Pair<Sample, ReferencesToResolve>> samplesWithSpaceAndProjectCodes,
-            Map<SpacePermId, Space> spaces, Map<ProjectIdentifier, Project> projects)
+            Map<SpacePermId, Space> spaces, Map<ProjectIdentifier, Project> projects,
+            Map<ObjectIdentifier, List<OpenBisModel.FileInfo>> objectIdentifiersToFiles,
+            Map<ObjectIdentifier, List<OpenBisModel.FileInfo>> images,
+            Map<ObjectIdentifier, AbstractEntityPropertyHolder> metadata)
+            throws IOException
     {
         for (IMetadataEntry entry : entries)
         {
@@ -405,7 +445,7 @@ public class RdfToModel
                 SampleType type = codeToSampleType.get(openBisifyCode(typeCode));
                 sample.setType(type);
 
-                String code = createSampleCode(type, entry.getId());
+                String code = SampleCodeHelper.createSampleCode(type, entry.getId());
                 sample.setCode(code);
                 externalIdentifierToSample.put(entry.getId(), sample);
 
@@ -427,29 +467,45 @@ public class RdfToModel
                         DataType dataType =
                                 DataTypeMatcher.findDataType(property.getValue(), dataTypes,
                                         idToEntities);
+
+                        Serializable valueToPut =
+                                handlePossibleMultiValues(property.getValue(), dataType);
+
+
                         properties.put(DataTypeMatcher.suffixTypeCode(key, dataType),
-                                property.getValue());
+                                valueToPut);
 
                     } else
                     {
+                        DataType dataType =
+
+                                Optional.ofNullable(baseCodeToPossibleDataTypes.get(key))
+                                        .map(x -> x.stream().findFirst().orElseThrow())
+                                        .orElse(DataType.MULTILINE_VARCHAR);
+                        Serializable valueToPut =
+                                handlePossibleMultiValues(property.getValue(), dataType);
 
                         properties.put(key,
-                                property.getValue());
+                                valueToPut);
                     }
                 }
 
                 roCrateIdsToObjects.put(entry.getId(), sample);
 
-
-
+                if (!properties.containsKey("NAME"))
+                {
+                    properties.put("NAME",
+                            sample.getCode()); // We need a name to construct certain paths inside the zip
+                }
                 sample.setProperties(properties);
+                handleFiles(entry, objectIdentifier, sample, objectIdentifiersToFiles, images);
+
                 properties.get("SPACE");
                 ReferencesToResolve referencesToResolve =
-                        buildEntryWithSpaceAndProjectToResolve(entry.getReferences(),
-                                fallbackSpaceCode,
-                                fallbackProjectCode, sample.getType().getCode() + "_COLLECTION");
+                        buildEntryWithSpaceAndProjectToResolve(entry);
                 samplesWithSpaceAndProjectCodes.add(
                         new ImmutablePair<>(sample, referencesToResolve));
+                metadata.put(objectIdentifier, entity);
 
             } else if (entry.getTypes().stream().anyMatch(x -> x.equals(GRAPH_ID_SPACE)))
             {
@@ -479,6 +535,100 @@ public class RdfToModel
             }
 
         }
+    }
+
+    private static void handleFiles(IMetadataEntry metadataEntry, ObjectIdentifier objectIdentifier,
+            Sample sample,
+            Map<ObjectIdentifier, List<OpenBisModel.FileInfo>> res,
+            Map<ObjectIdentifier, List<OpenBisModel.FileInfo>> richTextImageFiles)
+            throws IOException
+    {
+
+        List<OpenBisModel.FileInfo> myRes = new ArrayList<>();
+
+        List<OpenBisModel.FileInfo> finalMyRes = myRes;
+        metadataEntry.getFileOrDirectory().ifPresent(x -> {
+            try
+            {
+                OpenBisModel.FileInfo fileInfo =
+                        new OpenBisModel.FileInfo(objectIdentifier.getIdentifier(), x.toString(),
+                                Files.readAllBytes(x), metadataEntry.getId());
+                finalMyRes.add(fileInfo);
+
+            } catch (IOException e)
+            {
+                throw new RuntimeException(e);
+            }
+
+        });
+        for (var a : metadataEntry.getDataEntitiesReferenced())
+        {
+            if (a.getPath() != null)
+            {
+                OpenBisModel.FileInfo fileInfo =
+                        new OpenBisModel.FileInfo(objectIdentifier.getIdentifier(),
+                                a.getPath().toString(), Files.readAllBytes(a.getPath()), a.getId());
+                myRes.add(fileInfo);
+            }
+
+        }
+        Set<String> multiLineVarcharProperties =
+                sample.getType().getPropertyAssignments().stream().map(x -> x.getPropertyType())
+                        .filter(x -> x.getDataType() == DataType.MULTILINE_VARCHAR)
+                        .map(x -> x.getCode())
+                        .collect(Collectors.toSet());
+
+        myRes.stream().collect(Collectors.toMap(x -> x.filePath(), x -> x));
+        Map<String, String> images = new LinkedHashMap<>();
+
+            for (var entry : sample.getProperties().entrySet())
+            {
+                if (!multiLineVarcharProperties.contains(entry.getKey()))
+                {
+                    continue;
+                }
+                Serializable[] vals;
+                if (entry.getValue() instanceof Serializable[])
+                {
+                    vals = (Serializable[]) entry.getValue();
+                } else
+                {
+                    vals = new Serializable[] { entry.getValue() };
+                }
+
+                Serializable writeVal = vals[0];
+                for (Serializable value : vals)
+                {
+                    var imageRes = ImageExtractor.findImageAndUpdatePaths(value);
+                    images = Stream.concat(images.entrySet().stream(),
+                            imageRes.images().entrySet().stream()).collect(
+                            Collectors.toMap(x -> x.getKey(), x -> x.getValue()));
+                    writeVal = imageRes.value();
+                }
+                sample.getProperties().put(entry.getKey(), writeVal);
+
+
+
+        }
+        myRes.addAll(finalMyRes);
+        var compareMap = new HashMap<>(images);
+        var fileRes = myRes.stream().distinct().filter(x -> !isImageMatch(x, compareMap))
+                .collect(Collectors.toList());
+        var imageRes = myRes.stream().distinct().filter(x -> isImageMatch(x, compareMap))
+                .map(x -> new OpenBisModel.FileInfo(x.objectIdentifier(), x.filePath(),
+                        x.contents(), compareMap.get(x.originalPath())))
+                .collect(Collectors.toList());
+        ;
+
+        res.put(objectIdentifier, fileRes);
+
+        richTextImageFiles.put(objectIdentifier, imageRes);
+    }
+
+    private static boolean isImageMatch(OpenBisModel.FileInfo x, Map<String, String> images)
+    {
+        return images.keySet().stream()
+                .anyMatch(y -> x.filePath().endsWith(y.replace("file-service/eln-lims", "")));
     }
 
     private static void mapSpaces(String fallbackSpaceCode, String fallbackProjectCode,
@@ -553,25 +703,33 @@ public class RdfToModel
             List<Pair<Sample, ReferencesToResolve>> samplesWithSpaceAndProjectCodes,
             Map<SpacePermId, Space> spaces, Map<ProjectIdentifier, Project> projects,
             Map<ExperimentIdentifier, Experiment> idsToCollections,
-            Map<ObjectIdentifier, AbstractEntityPropertyHolder> metadata)
+            Map<ObjectIdentifier, AbstractEntityPropertyHolder> metadata,
+            String fallbacbProjectCode, String fallbackSpaceCode)
     {
         for (Pair<Sample, ReferencesToResolve> sampleToResolve : samplesWithSpaceAndProjectCodes)
         {
-            Space space = spaces.get(new SpacePermId(sampleToResolve.getRight().getSpaceCode()));
-            Project project = projects.get(
-                    new ProjectIdentifier(space.getCode(),
-                            sampleToResolve.getRight().getProjectCode()));
-            sampleToResolve.getLeft().setSpace(space);
-            sampleToResolve.getLeft().setProject(project);
-            sampleToResolve.getLeft().setExperiment(idsToCollections.get(new ExperimentIdentifier(
-                    "/" + space.getCode() + "/" + project.getCode() + "/" + sampleToResolve.getRight().collectionCode)));
-            ObjectIdentifier objectIdentifier = new SampleIdentifier(
-                    "/" + sampleToResolve.getLeft().getSpace()
-                            .getCode() + "/" + sampleToResolve.getLeft().getProject()
-                            .getCode() + "/" + sampleToResolve.getLeft().getCode());
-            sampleToResolve.getLeft()
-                    .setIdentifier(new SampleIdentifier(objectIdentifier.toString()));
-            metadata.put(objectIdentifier, sampleToResolve.getLeft());
+
+            OpenBisStructureHelper.Structure structure =
+                    OpenBisStructureHelper.findStructure(spaces, projects, idsToCollections,
+                            sampleToResolve, fallbacbProjectCode, fallbackSpaceCode);
+
+            if (structure.space() != null)
+            {
+                sampleToResolve.getLeft().setSpace(structure.space());
+            }
+
+            if (structure.project() != null)
+            {
+                sampleToResolve.getLeft().setProject(structure.project());
+
+            }
+            if (structure.experiment() != null)
+            {
+                sampleToResolve.getLeft().setExperiment(structure.experiment());
+
+            }
+            sampleToResolve.getLeft().setIdentifier(structure.sampleIdentifier());
+
 
 
         }
@@ -579,9 +737,6 @@ public class RdfToModel
 
     private static void resolveSamples(
             List<Pair<Sample, ReferencesToResolve>> samplesWithSpaceAndProjectCodes,
-            Map<SpacePermId, Space> spaces, Map<ProjectIdentifier, Project> projects,
-            Map<ExperimentIdentifier, Experiment> idsToCollections,
-            Map<ObjectIdentifier, AbstractEntityPropertyHolder> metadata,
             Map<String, Sample> externalIdentifierToSample)
     {
         for (Pair<Sample, ReferencesToResolve> sampleToResolve : samplesWithSpaceAndProjectCodes)
@@ -593,6 +748,7 @@ public class RdfToModel
             {
                 String[] array = propertyToVals.getValue().stream()
                         .map(x -> externalIdentifierToSample.get(x))
+                        .filter(Objects::nonNull)
                         .map(x -> x.getIdentifier().toString()).toArray(String[]::new);
 
                 Map<String, Serializable> properties = sample.getProperties();
@@ -603,6 +759,18 @@ public class RdfToModel
 
         }
     }
+
+    private void addFiles(OpenBisModel openBisModel, Map<String, Sample> externalIdentifierToSample)
+    {
+        for (var a : openBisModel.getFiles().entrySet())
+        {
+
+        }
+
+    }
+
+
+
 
     private static void resolveOpenBisStructure(List<IMetadataEntry> entries,
             String fallbackSpaceCode,
@@ -677,31 +845,51 @@ public class RdfToModel
     }
 
     private static ReferencesToResolve buildEntryWithSpaceAndProjectToResolve(
-            Map<String, List<String>> properties, String spaceCode, String projectCode,
-            String defaultExperimentCode)
+            IMetadataEntry entry)
     {
 
+        var properties = entry.getReferences();
+        var parts = entry.getId().split("/");
+
+        String identifierSpaceCode = parts[0];
+
+
+
         String mySpace = Optional.ofNullable(properties.get(PROPERTY_SPACE)).map(x -> x.get(0))
-                .orElse(spaceCode);
+                .orElse(null);
         String myProject =
                 Optional.ofNullable(properties.get(PROPERTY_PROJECT)).map(x -> x.get(0))
-                        .orElse(spaceCode);
+                        .orElse(null);
+
+
         String myExperiment =
                 Optional.ofNullable(properties.get(Constants.PROPERTY_COLLECTION)).map(
                                 Object::toString)
                         .map(x -> x.split("/"))
+                        .filter(x -> x.length >= 4)
                         .map(x -> x[3])
                         .map(x -> x.replaceAll("]$", ""))
-                        .orElse(defaultExperimentCode);
+                        .orElse(null);
 
         myProject =
-                Optional.ofNullable(properties.get(Constants.PROPERTY_COLLECTION)).map(
+                Optional.ofNullable(properties.get(PROPERTY_PROJECT)).map(
                                 Object::toString)
                         .map(x -> x.split("/"))
+                        .filter(x -> x.length >= 3)
                         .map(x -> x[2])
                         .map(x -> x.replaceAll("]$", ""))
                         .orElse(myProject);
+        if (myProject == null)
+        {
+            String s = entry.getValues().entrySet().stream()
+                    .filter(x -> x.getKey().equals(PROPERTY_PROJECT))
+                    .findFirst()
+                    .map(x -> x.getValue())
+                    .map(Object::toString)
+                    .orElse(null);
+            myProject = s;
 
+        }
         Set<String> filterSet = Set.of(PROPERTY_SPACE, PROPERTY_PROJECT, PROPERTY_COLLECTION);
         Map<String, List<String>> samplesToResolve =
                 properties.entrySet().stream().filter(x -> !filterSet.contains(x.getKey()))
@@ -709,6 +897,12 @@ public class RdfToModel
 
         return new ReferencesToResolve(mySpace, myProject, myExperiment, samplesToResolve);
     }
+
+    private static void resolveFile()
+    {
+
+    }
+
 
 
 
@@ -776,7 +970,7 @@ public class RdfToModel
 
         if (rangeId.equals(LiteralType.STRING.getTypeName()))
         {
-            return DataType.VARCHAR;
+            return DataType.MULTILINE_VARCHAR;
         }
         if (rangeId.equals(LiteralType.BOOLEAN.getTypeName()))
         {
@@ -792,7 +986,7 @@ public class RdfToModel
         }
         if (rangeId.equals(LiteralType.DATETIME.getTypeName()))
         {
-            return DataType.DATE;
+            return DataType.TIMESTAMP;
         }
         if (rangeId.equals(LiteralType.ANY_URI.getTypeName()))
         {
@@ -955,7 +1149,7 @@ public class RdfToModel
         }
     }
 
-    private static class ReferencesToResolve
+    public static class ReferencesToResolve
     {
         String spaceCode;
 
@@ -965,7 +1159,8 @@ public class RdfToModel
 
         Map<String, List<String>> sampleIdentifiers;
 
-        public ReferencesToResolve(String spaceCode, String projectCode, String collectionCode,
+        public ReferencesToResolve(@Nullable String spaceCode, @Nullable String projectCode,
+                @Nullable String collectionCode,
                 Map<String, List<String>> sampleIdentifiers)
         {
             this.spaceCode = spaceCode;
@@ -984,6 +1179,10 @@ public class RdfToModel
             return projectCode;
         }
 
+        public String getCollectionCode()
+        {
+            return collectionCode;
+        }
     }
 
     private static String getIntersectionTypeIdentifier(Set<String> types)
@@ -1002,34 +1201,6 @@ public class RdfToModel
         return code.replaceAll(":", "_");
     }
 
-    private static String createSampleCode(SampleType sampleType, String identifier)
-    {
-        boolean isUrl = false;
-        try
-        {
-            URL url = new URL(identifier);
-            isUrl = true;
-
-        } catch (MalformedURLException ignored)
-        {
-        }
-        if (isUrl)
-        {
-            String[] parts = identifier.split("/");
-            return OpenBisModel.makeOpenBisCodeCompliant(
-                    sampleType.getCode() + "_" + parts[parts.length - 1]);
-        }
-        if (DataTypeMatcher.matches(identifier, DataType.SAMPLE))
-        {
-            String[] parts = identifier.split("/");
-            return parts[parts.length - 1];
-        }
-
-
-        return OpenBisModel.makeOpenBisCodeCompliant(identifier);
-
-    }
-
     private static String mapIdentifier(String fallbackSpace, String fallBackProject,
             Map<SpacePermId, Space> spaces, Map<ProjectIdentifier, Project> projects, Sample sample)
     {
@@ -1037,7 +1208,7 @@ public class RdfToModel
         String spaceCode =
                 Optional.ofNullable(sample.getSpace()).map(Space::getCode).orElse(fallbackSpace);
         String projectCode = Optional.ofNullable(sample.getProject()).map(Project::getCode)
-                .orElse(fallbackSpace);
+                .orElse(fallBackProject);
 
         return "/" + spaceCode + "/" + projectCode + "/" + sample.getCode();
 
@@ -1048,6 +1219,50 @@ public class RdfToModel
     {
         String[] split = type.getId().split(":");
         return split[split.length - 1].toUpperCase();
+
+    }
+
+    private static Serializable handleLiteralValues(Serializable a, DataType dataType)
+    {
+        if (dataType == DataType.TIMESTAMP || dataType == DataType.DATE)
+        {
+            TemporalAccessor ta = DateTimeFormatter.ISO_INSTANT.parse(
+                    a.toString().toString().replaceAll("\"", ""));
+            Instant i = Instant.from(ta);
+            Date d = Date.from(i);
+            DateFormat dateFormat = new SimpleDateFormat(
+                    CANONICAL_DATE_FORMAT_PATTERN); // ch.systemsx.cisd.openbis.generic.shared.util.SupportedDateTimePattern.ISO_CANONICAL_DATE_PATTERN
+            return dateFormat.format(d);
+
+        }
+        return a;
+
+    }
+
+    private static Serializable handlePossibleMultiValues(Serializable a, DataType dataType)
+    {
+        if (a instanceof Serializable[])
+        {
+            Serializable[] b = (Serializable[]) a;
+            Arrays.stream(b).map(x -> handleLiteralValues(b, dataType)).map(x -> x.toString())
+                    .collect(Collectors.joining(","));
+        }
+        return a;
+
+    }
+
+
+
+    private static boolean isOpenBisDerived(Set<SampleType> openBisDerivedTypes,
+            SampleType sampleType)
+    {
+        return openBisDerivedTypes.contains(sampleType);
+
+    }
+
+    private static Map<ObjectIdentifier, List<OpenBisModel.FileInfo>> findRichTextImages()
+    {
+        return null;
 
     }
 

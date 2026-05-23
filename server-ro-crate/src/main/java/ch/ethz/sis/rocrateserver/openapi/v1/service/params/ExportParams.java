@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 public class ExportParams {
+    public static final String EXPORT_MIME_TYPE_HEADER = "Export";
 
     //
     // Header Parameters
@@ -18,11 +19,35 @@ public class ExportParams {
     @HeaderParam("Accept")
     private String accept;
 
+    @HeaderParam(EXPORT_MIME_TYPE_HEADER)
+    private String exportMimeTyp;
+
     @HeaderParam("openbis.identifier-annotations")
     private String identifierAnnotations;
 
-    @HeaderParam("openbis.with-Levels-below")
+    @HeaderParam("openbis.import-compatible")
+    private String importCompatible;
+
+    @HeaderParam("openbis.metadata-pdf")
+    private String formatPDF;
+
+    @HeaderParam("openbis.metadata-xlsx")
+    private String formatXLSX;
+
+    @HeaderParam("openbis.dataset-data")
+    private String importDatasetData;
+
+    @HeaderParam("openbis.afs-data")
+    private String importAfsData;
+
+    @HeaderParam("openbis.with-levels-above")
+    private String withLevelsAbove;
+
+    @HeaderParam("openbis.with-levels-below")
     private String withLevelsBelow; // Include levels below from same space
+
+    @HeaderParam("openbis.with-objects-and-dataSets-children")
+    private String withObjectsAndDataSetsChildren; // Include levels below from same space
 
     @HeaderParam("openbis.with-objects-and-dataSets-parents")
     private String withObjectsAndDataSetsParents; // Include levels below from same space
@@ -47,6 +72,14 @@ public class ExportParams {
 
     public void setIdentifierAnnotations(String identifierAnnotations) {
         this.identifierAnnotations = identifierAnnotations;
+    }
+
+    public boolean isWithLevelsAbove() {
+        return Boolean.parseBoolean(withLevelsAbove);
+    }
+
+    public void setWithLevelsAbove(String withLevelsAbove) {
+        this.withLevelsAbove = withLevelsAbove;
     }
 
     public boolean isWithLevelsBelow() {
@@ -108,5 +141,70 @@ public class ExportParams {
     public String getWithObjectsAndDataSetsOtherSpaces()
     {
         return withObjectsAndDataSetsOtherSpaces;
+    }
+
+    public String getExportMimeType()
+    {
+        return exportMimeTyp;
+    }
+
+    public boolean isImportCompatible()
+    {
+        return Boolean.parseBoolean(importCompatible);
+    }
+
+    public void setImportCompatible(String importCompatible)
+    {
+        this.importCompatible = importCompatible;
+    }
+
+    public boolean isFormatPDF()
+    {
+        return Boolean.parseBoolean(formatPDF);
+    }
+
+    public void setFormatPDF(String formatPDF)
+    {
+        this.formatPDF = formatPDF;
+    }
+
+    public boolean isFormatXLSX()
+    {
+        return Boolean.parseBoolean(formatXLSX);
+    }
+
+    public void setFormatXLSX(String formatXLSX)
+    {
+        this.formatXLSX = formatXLSX;
+    }
+
+    public boolean isImportDatasetData()
+    {
+        return Boolean.parseBoolean(importDatasetData);
+    }
+
+    public void setImportDatasetData(String importDatasetData)
+    {
+        this.importDatasetData = importDatasetData;
+    }
+
+    public boolean isImportAfsData()
+    {
+        return Boolean.parseBoolean(importAfsData);
+    }
+
+    public boolean isWithObjectsAndDataSetsChildren()
+    {
+        return Boolean.parseBoolean(withObjectsAndDataSetsChildren);
+    }
+
+    public void setWithObjectsAndDataSetsChildren(String withObjectsAndDataSetsChildren)
+    {
+        this.withObjectsAndDataSetsChildren = withObjectsAndDataSetsChildren;
+    }
+
+    public void setImportAfsData(String importAfsData)
+    {
+        this.importAfsData = importAfsData;
     }
 }

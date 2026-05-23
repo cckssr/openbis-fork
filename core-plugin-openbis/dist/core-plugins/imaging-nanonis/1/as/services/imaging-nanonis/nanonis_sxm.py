@@ -98,4 +98,5 @@ def sxm_mode(sxm_file_path, format, parameters, filter_config, print_out=True):
 
     return img
 
+# print(f"PREVIEW_CONF: {json.dumps(preview_config)}")
 sxm_mode(file_path, format, preview_config, filter_config)

@@ -16,10 +16,12 @@
 package ch.ethz.sis.afsserver.startup;
 
 import java.io.File;
-import java.util.Arrays;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.List;
 
 import ch.ethz.sis.afsserver.server.Server;
+import ch.ethz.sis.shared.exception.ThrowableReason;
 import ch.ethz.sis.shared.startup.Configuration;
 
 public class Main
@@ -39,8 +41,14 @@ public class Main
             Thread.currentThread().join();
         } catch (Exception e)
         {
-            System.out.println(e);
-            Arrays.stream(e.getStackTrace()).forEach(System.out::println);
+            if (e.getCause() instanceof ThrowableReason)
+            {
+                System.out.println(((ThrowableReason) e.getCause()).getReason());
+            }
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            e.printStackTrace(pw);
+            System.out.println(sw);
             throw e;
         }
     }

@@ -16,10 +16,9 @@
 package ch.systemsx.cisd.openbis.generic.server.dataaccess.db;
 
 import ch.ethz.sis.shared.log.classic.impl.Logger;
-import org.hibernate.Criteria;
+
 import org.hibernate.SessionFactory;
-import org.hibernate.criterion.Restrictions;
-import org.springframework.orm.hibernate5.HibernateTemplate;
+
 
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
@@ -44,12 +43,15 @@ public class EntityOperationsLogDAO extends AbstractGenericEntityDAO<EntityOpera
         EntityOperationsLogEntryPE logEntry = new EntityOperationsLogEntryPE();
         logEntry.setRegistrationId(registrationId);
 
-        HibernateTemplate template = getHibernateTemplate();
-        template.persist(logEntry);
-        template.flush();
+        doExecute(session -> {
+                    session.persist(logEntry);
+                    session.flush();
+                    return null;
+                });
 
-        operationLog.info(String.format("Add entity operation log entry for registration id '%d'.",
-                registrationId));
+        operationLog.info(
+                String.format("Add entity operation log entry for registration id '%d'.",
+                        registrationId));
     }
 
     @Override
@@ -57,9 +59,16 @@ public class EntityOperationsLogDAO extends AbstractGenericEntityDAO<EntityOpera
     {
         assert registrationId != null : "Unspecified registration id.";
 
-        final Criteria criteria = currentSession().createCriteria(getEntityClass());
-        criteria.add(Restrictions.eq("registrationId", registrationId));
-        EntityOperationsLogEntryPE result = (EntityOperationsLogEntryPE) criteria.uniqueResult();
+        EntityOperationsLogEntryPE result = currentSession()
+                .createQuery(
+                        "from " + getEntityClass().getName() + " e where e.registrationId = :rid",
+                        getEntityClass()
+                )
+                .setParameter("rid", registrationId)
+                .uniqueResultOptional()
+                .orElse(null);
+
+
         if (null != result)
         {
             operationLog.info(String.format("Found a log entry for registration id '%d'.",

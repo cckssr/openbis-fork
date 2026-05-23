@@ -25,15 +25,17 @@ import java.util.List;
 import java.util.Properties;
 import java.util.zip.Deflater;
 
-import javax.servlet.DispatcherType;
-import javax.servlet.Servlet;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.DispatcherType;
+import jakarta.servlet.Servlet;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import ch.ethz.sis.shared.log.classic.impl.Logger;
+import org.eclipse.jetty.ee10.servlet.SessionHandler;
 import ch.ethz.sis.shared.log.classic.impl.SimpleLogger;
+import org.eclipse.jetty.http.UriCompliance;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
@@ -45,8 +47,8 @@ import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.server.handler.gzip.GzipHandler;
-import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
+import org.eclipse.jetty.ee10.servlet.ServletHolder;
 import org.eclipse.jetty.util.compression.CompressionPool;
 import org.eclipse.jetty.util.compression.DeflaterPool;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
@@ -156,6 +158,8 @@ public class DataStoreServer
     public static final void start()
     {
         assert server == null : "Server already started";
+        System.setProperty("org.eclipse.jetty.util.UrlEncoded.allowEncodedSlash", "true");
+
         ConfigParameters configParams = getConfigParameters();
         final IEncapsulatedOpenBISService openBISService = ServiceProvider.getOpenBISService();
         OpenbisSessionTokenCache sessionTokenCache =
@@ -251,8 +255,16 @@ public class DataStoreServer
         // Register the handler that returns the webstart jars
         registerDssUploadClientHandler(thisServer, contextHandlers, configParams);
 
-        ServletContextHandler servletContextHandler =
-                new ServletContextHandler(contextHandlers, "/", ServletContextHandler.SESSIONS);
+//        ServletContextHandler servletContextHandler =
+//                new ServletContextHandler(contextHandlers, "/", ServletContextHandler.SESSIONS);
+
+        ServletContextHandler servletContextHandler = new ServletContextHandler();
+        servletContextHandler.setContextPath("/");
+
+        // (Jetty 12) sessions are enabled by attaching a SessionHandler
+        servletContextHandler.setSessionHandler(new SessionHandler());
+        contextHandlers.addHandler(servletContextHandler);
+
         servletContextHandler.setAttribute(APPLICATION_CONTEXT_KEY, applicationContext);
         servletContextHandler.setAttribute(
                 WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE,
@@ -488,8 +500,11 @@ public class DataStoreServer
         // client.
         // This is the value assigned to the ${dss_upload_gui} variable in dss/build.xml .
         // We have set this up to be the same as the servletPathSuffix.
-        webstartContextHandler.setResourceBase(configParams.getWebstartJarPath()
-                + servletPathSuffix);
+//        webstartContextHandler.setResourceBase(configParams.getWebstartJarPath()
+//                + servletPathSuffix);
+        webstartContextHandler.setBaseResourceAsString(
+                configParams.getWebstartJarPath() + servletPathSuffix
+        );
         // Add a resource handler to the webstart jar path to serve files from the file system.
         ResourceHandler webstartJarHandler = new ResourceHandler();
         webstartContextHandler.setHandler(webstartJarHandler);
@@ -499,6 +514,7 @@ public class DataStoreServer
     {
         HttpConfiguration httpConfig = new HttpConfiguration();
         httpConfig.setSecureScheme("https");
+        httpConfig.setUriCompliance(UriCompliance.UNSAFE);
 
         if (configParams.isUseSSL())
         {
@@ -531,6 +547,7 @@ public class DataStoreServer
             sslContextFactory.setSniRequired(false);
 
             HttpConfiguration httpsConfig = new HttpConfiguration(httpConfig);
+            httpConfig.setUriCompliance(UriCompliance.UNSAFE);
 
             SecureRequestCustomizer customizer = new SecureRequestCustomizer();
             customizer.setSniHostCheck(false);

@@ -1,13 +1,18 @@
 package ch.ethz.sis.rocrateserver.startup;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.stream.Stream;
+
+import org.apache.commons.io.FileUtils;
+
 import io.quarkus.runtime.LaunchMode;
 import io.quarkus.runtime.Quarkus;
 import io.quarkus.runtime.QuarkusApplication;
 import io.quarkus.runtime.annotations.QuarkusMain;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
 
 @QuarkusMain
 public class StartupMain implements QuarkusApplication
@@ -33,12 +38,13 @@ public class StartupMain implements QuarkusApplication
             System.out.println("Loading configuration from: " + (new File(args[0])).getCanonicalPath());
             configuration = new Configuration(List.of(RoCrateServerParameter.class), args[0]);
             validate(configuration);
+            cleanBeforeRun(configuration);
+
         }
 
         System.setProperty("quarkus.http.port", configuration.getStringProperty(RoCrateServerParameter.httpServerPort));
         System.setProperty("quarkus.http.idle-timeout", configuration.getStringProperty(RoCrateServerParameter.httpServerTimeout));
         System.setProperty("quarkus.http.read-timeout", configuration.getStringProperty(RoCrateServerParameter.httpServerTimeout));
-
 
         if (LaunchMode.current().isDevOrTest())
         {
@@ -60,8 +66,54 @@ public class StartupMain implements QuarkusApplication
     @Override
     public int run(String... args) throws Exception
     {
+        createServerStartedFile();
         System.out.println(">> Quarkus app running. Press Ctrl+C to exit.");
         Quarkus.waitForExit();
         return 0;
     }
+
+    private void createServerStartedFile()
+    {
+        File STARTED_FILE = new File("SERVER_STARTED");
+        try
+        {
+            STARTED_FILE.createNewFile();
+            STARTED_FILE.deleteOnExit();
+            System.out.println(STARTED_FILE.getAbsolutePath()+" created");
+        } catch (IOException ex)
+        {
+            System.out.println("Couldn't create marker file " + STARTED_FILE);
+            ex.printStackTrace();
+        }
+    }
+
+    private static void cleanBeforeRun(Configuration configuration) throws IOException
+    {
+        if (LaunchMode.current().isDevOrTest())
+        {
+            // Locally, we might want to keep outputs from tests and such for the moment.
+            return;
+        }
+
+        Path sessionWorkSpacePath =
+                Path.of(configuration.getStringProperty(RoCrateServerParameter.sessionWorkSpace));
+
+        if (Files.exists(sessionWorkSpacePath))
+        {
+            Stream<Path> list = Files.list(sessionWorkSpacePath);
+            list.forEach(x ->
+            {
+                try
+                {
+
+                    FileUtils.deleteDirectory(new File(x.toString()));
+                } catch (IOException e)
+                {
+                    throw new RuntimeException(e);
+                }
+
+            });
+        }
+    }
+
 }

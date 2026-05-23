@@ -11,7 +11,7 @@ service plugins have the following properties in common:
 
 |Property Key|Description|
 |--- |--- |
-|class|The fully-qualified Java class name of the service plugin. The class has to implement javax.servlet.Servlet  interface.|
+|class|The fully-qualified Java class name of the service plugin. The class has to implement jakarta.servlet.Servlet  interface.|
 |path|The path the servlet will be available at. For instance, a service with /test-path/* path can be access via  http://my-data-store/test-path  url.|
 
 ## Service Plugins
@@ -82,8 +82,8 @@ The script should define a function with a following signature:
 
 `def handle(request, response)`
 
-where request is javax.servlet.http.HttpServletRequest request and
-response is javax.servlet.http.HttpServletResponse. Following variables
+where request is jakarta.servlet.http.HttpServletRequest request and
+response is jakarta.servlet.http.HttpServletResponse. Following variables
 are available in the script:
 
 -   searchService

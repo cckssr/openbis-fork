@@ -13,8 +13,8 @@ dependencies {
             project(':server-original-data-store')
 
     implementation 'fasterxml:jackson-annotations:2.9.10',
-            'fasterxml:jackson-core:2.9.10',
-            'fasterxml:jackson-databind:2.9.10.8',
+            'fasterxml:jackson-core:2.18.1',
+            'fasterxml:jackson-databind:2.18.1',
             'fasterxml:jackson-datatype-jsr310:2.9.10'
 
     testImplementation 'junit:junit:4.10',

@@ -32,11 +32,13 @@ Created on Tue Jan  3 15:13:13 2017
 
 import os as os
 import numpy as np
-import nanonispy as nap
+# import nanonispy as nap
 import spiepy
 import warnings
 import matplotlib.pyplot as plt
 import matplotlib.pylab as pl
+
+from spmpy import nanonispy as nap
 
 class spm:
 

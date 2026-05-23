@@ -15,7 +15,7 @@
  */
 package ch.systemsx.cisd.openbis.plugin.screening.shared.imaging.dataaccess;
 
-import javax.xml.bind.DatatypeConverter;
+import jakarta.xml.bind.DatatypeConverter;
 
 import org.apache.commons.lang3.SerializationUtils;
 import org.testng.Assert;

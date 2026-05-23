@@ -35,9 +35,9 @@ import java.util.UUID;
 import org.apache.commons.collections4.IteratorUtils;
 import org.apache.commons.collections4.Transformer;
 import org.apache.commons.lang3.StringUtils;
-import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.transaction.TestTransaction;
 import org.testng.Assert;
@@ -511,7 +511,7 @@ public abstract class DeletionTest extends AbstractTest
     private List<Change> getSortedAndFilteredChanges(String permId, IModificationFilter filter) throws IOException, JsonProcessingException
     {
         Session session = sessionFactory.getCurrentSession();
-        Query query = session.createQuery("SELECT e FROM EventPE e WHERE :permId IN e.identifiersInternal").setParameter("permId", permId);
+        Query query = session.createQuery("SELECT e FROM EventPE e WHERE :permId = e.identifiersInternal").setParameter("permId", permId);
         EventPE event = (EventPE) query.uniqueResult();
         String attachmentContent = getAttachmentContent(event);
 

@@ -36,14 +36,26 @@ import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.TypeGroup;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.TypeGroupAssignment;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.create.TypeGroupAssignmentCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.delete.TypeGroupAssignmentDeletionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.fetchoptions.TypeGroupAssignmentFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.fetchoptions.TypeGroupFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.ITypeGroupAssignmentId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.ITypeGroupId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.TypeGroupAssignmentId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.search.TypeGroupAssignmentSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.update.TypeGroupUpdate;
+import org.eclipse.jetty.client.BytesRequestContent;
+import org.eclipse.jetty.client.MultiPartRequestContent;
+import org.eclipse.jetty.client.StringRequestContent;
+import org.eclipse.jetty.client.ContentResponse;
 import org.eclipse.jetty.client.HttpClient;
-import org.eclipse.jetty.client.api.ContentResponse;
-import org.eclipse.jetty.client.api.Request;
-import org.eclipse.jetty.client.util.BytesContentProvider;
-import org.eclipse.jetty.client.util.MultiPartContentProvider;
-import org.eclipse.jetty.client.util.PathContentProvider;
-import org.eclipse.jetty.client.util.StringContentProvider;
+import org.eclipse.jetty.client.Request;
+import org.eclipse.jetty.http.HttpFields;
 import org.eclipse.jetty.http.HttpMethod;
+import org.eclipse.jetty.http.MultiPart;
 
 import ch.ethz.sis.afsapi.api.ClientAPI;
 import ch.ethz.sis.afsapi.api.OperationsAPI;
@@ -322,6 +334,7 @@ import ch.ethz.sis.openbis.generic.excel.v3.to.ExcelWriter;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.common.http.JettyHttpClientFactory;
 import ch.systemsx.cisd.common.spring.HttpInvokerUtils;
+import org.eclipse.jetty.io.ByteBufferPool;
 
 public class OpenBIS
 {
@@ -611,9 +624,13 @@ public class OpenBIS
         return asFacadeWithTransactions.createPersonalAccessTokens(sessionToken, newPersonalAccessTokens);
     }
 
-    public List<TypeGroupId> createTypeGroups(String sessionToken, List<TypeGroupCreation> newTypeGroups)
+    public List<TypeGroupId> createTypeGroups(List<TypeGroupCreation> newTypeGroups)
     {
         return asFacadeWithTransactions.createTypeGroups(sessionToken, newTypeGroups);
+    }
+
+    public List<TypeGroupAssignmentId> createTypeGroupAssignments(List<TypeGroupAssignmentCreation> newTypeGroupAssignments) {
+        return asFacadeWithTransactions.createTypeGroupAssignments(sessionToken, newTypeGroupAssignments);
     }
 
     public void updateSpaces(List<SpaceUpdate> spaceUpdates)
@@ -724,6 +741,10 @@ public class OpenBIS
     public void updatePersonalAccessTokens(List<PersonalAccessTokenUpdate> personalAccessTokenUpdates)
     {
         asFacadeWithTransactions.updatePersonalAccessTokens(sessionToken, personalAccessTokenUpdates);
+    }
+
+    public void updateTypeGroups(List<TypeGroupUpdate> typeGroupUpdates) {
+        asFacadeWithTransactions.updateTypeGroups(sessionToken, typeGroupUpdates);
     }
 
     public Map<IObjectId, Rights> getRights(List<? extends IObjectId> ids, RightsFetchOptions fetchOptions)
@@ -857,6 +878,16 @@ public class OpenBIS
             PersonalAccessTokenFetchOptions fetchOptions)
     {
         return asFacadeWithTransactions.getPersonalAccessTokens(sessionToken, personalAccessTokenIds, fetchOptions);
+    }
+
+    public Map<ITypeGroupId, TypeGroup> getTypeGroups(List<? extends ITypeGroupId> typeGroupIds,
+            TypeGroupFetchOptions fetchOptions) {
+        return asFacadeWithTransactions.getTypeGroups(sessionToken, typeGroupIds, fetchOptions);
+    }
+
+    public Map<ITypeGroupAssignmentId, TypeGroupAssignment> getTypeGroupAssignments(List<? extends ITypeGroupAssignmentId> ids,
+            TypeGroupAssignmentFetchOptions fetchOptions) {
+        return asFacadeWithTransactions.getTypeGroupAssignments(sessionToken, ids, fetchOptions);
     }
 
     public SearchResult<Space> searchSpaces(SpaceSearchCriteria searchCriteria, SpaceFetchOptions fetchOptions)
@@ -1030,6 +1061,11 @@ public class OpenBIS
         return asFacadeWithTransactions.searchQueryDatabases(sessionToken, searchCriteria, fetchOptions);
     }
 
+    public SearchResult<TypeGroupAssignment> searchTypeGroupAssignments(TypeGroupAssignmentSearchCriteria searchCriteria,
+            TypeGroupAssignmentFetchOptions fetchOptions) {
+        return asFacadeWithTransactions.searchTypeGroupAssignments(sessionToken, searchCriteria, fetchOptions);
+    }
+
     public void deleteSpaces(List<? extends ISpaceId> spaceIds, SpaceDeletionOptions deletionOptions)
     {
         asFacadeWithTransactions.deleteSpaces(sessionToken, spaceIds, deletionOptions);
@@ -1144,6 +1180,11 @@ public class OpenBIS
             PersonalAccessTokenDeletionOptions deletionOptions)
     {
         asFacadeWithTransactions.deletePersonalAccessTokens(sessionToken, personalAccessTokenIds, deletionOptions);
+    }
+
+    public void deleteTypeGroupAssignments(List<? extends ITypeGroupAssignmentId> typeGroupAssignmentIds,
+            TypeGroupAssignmentDeletionOptions deletionOptions) {
+        asFacadeWithTransactions.deleteTypeGroupAssignments(sessionToken, typeGroupAssignmentIds, deletionOptions);
     }
 
     public SearchResult<Deletion> searchDeletions(DeletionSearchCriteria searchCriteria, DeletionFetchOptions fetchOptions)
@@ -1287,18 +1328,31 @@ public class OpenBIS
         {
             HttpClient httpClient = JettyHttpClientFactory.getHttpClient();
 
-            MultiPartContentProvider multiPart = new MultiPartContentProvider();
-            multiPart.addFieldPart("sessionKeysNumber", new StringContentProvider("1"), null);
-            multiPart.addFieldPart("sessionKey_0", new StringContentProvider("openbis-file-upload"), null);
-            multiPart.addFilePart("openbis-file-upload", uploadId, new PathContentProvider(fileOrFolder), null);
-            multiPart.addFieldPart("keepOriginalFileName", new StringContentProvider("True"), null);
-            multiPart.addFieldPart("sessionID", new StringContentProvider(this.sessionToken), null);
+            MultiPartRequestContent multiPart = new MultiPartRequestContent();
+            multiPart.addPart(new MultiPart.ContentSourcePart(
+                             "sessionKeysNumber", null, HttpFields.EMPTY, new StringRequestContent("1")));
+            multiPart.addPart(new MultiPart.ContentSourcePart(
+                             "sessionKey_0", null, HttpFields.EMPTY, new StringRequestContent("openbis-file-upload")));
+//            multiPart.addPart(new MultiPart.PathPart(
+//                             "openbis-file-upload", uploadId, HttpFields.EMPTY, fileOrFolder));
+            ByteBufferPool.Sized sized = new ByteBufferPool.Sized(httpClient.getByteBufferPool());
+            multiPart.addPart(new MultiPart.PathPart(
+                    sized,
+                    "openbis-file-upload",
+                    uploadId,
+                    HttpFields.EMPTY,
+                    fileOrFolder
+            ));
+            multiPart.addPart(new MultiPart.ContentSourcePart(
+                             "keepOriginalFileName", null, HttpFields.EMPTY, new StringRequestContent("True")));
+            multiPart.addPart(new MultiPart.ContentSourcePart(
+                             "sessionID", null, HttpFields.EMPTY, new StringRequestContent(this.sessionToken)));
             multiPart.close();
 
             ContentResponse response = httpClient.newRequest(this.asURL + "/upload")
-                    .method(HttpMethod.POST)
-                    .content(multiPart)
-                    .send();
+                     .method(HttpMethod.POST)
+                     .body(multiPart)
+                     .send();
 
             final int status = response.getStatus();
             if (status != 200)
@@ -1450,7 +1504,8 @@ public class OpenBIS
                     httpRequest.param("startByte", Long.toString(start));
                     httpRequest.param("endByte", Long.toString(end));
                     httpRequest.param("size", Long.toString(file.length()));
-                    httpRequest.content(new BytesContentProvider(chunk));
+                    //httpRequest.content(new BytesContentProvider(chunk));
+                    httpRequest.body(new BytesRequestContent("application/octet-stream", chunk));
                     final ContentResponse response = httpRequest.send();
                     final int status = response.getStatus();
                     if (status != 200)

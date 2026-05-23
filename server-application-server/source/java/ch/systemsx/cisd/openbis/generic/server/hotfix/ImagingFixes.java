@@ -104,17 +104,20 @@ public class ImagingFixes
         String pythonPathProperty = CommonServiceProvider.tryToGetProperty(PYTHON_PATH_PROPERTY);
         String pythonPath = null;
         if(pythonPathProperty != null && !pythonPathProperty.trim().isEmpty()) {
-            pythonPath = Paths.get(pathToDir, pythonPathProperty).toAbsolutePath().toString();
+            pythonPath = Paths.get(pythonPathProperty).toAbsolutePath().toString();
         } else {
             pythonPath = Paths.get(pathToDir, PYTHON_PATH).toAbsolutePath().toString();
         }
         operationLog.info("Configured python path: " + pythonPath);
 
         String examplePath =
-                Paths.get(pathToDir, "..", "nanonis_example").toAbsolutePath().toString();
+                Paths.get(pathToDir, "..", "nanonis_importer").toAbsolutePath().toString();
         String scriptPath =
                 Paths.get(examplePath, "nanonis_importer.py").toAbsolutePath().toString();
         String dataPath = Paths.get(examplePath, "data").toAbsolutePath().toString();
+
+        operationLog.info("Script path: " + scriptPath);
+        operationLog.info("Data path: " + dataPath);
 
         PersonalAccessTokenPermId patToken = null;
         try
@@ -131,7 +134,7 @@ public class ImagingFixes
         }
     }
 
-    private static PersonalAccessTokenPermId getOrCreatePersonPAT(String sessionToken, String sessionName) {
+    private static synchronized PersonalAccessTokenPermId getOrCreatePersonPAT(String sessionToken, String sessionName) {
         IApplicationServerInternalApi api = CommonServiceProvider.getApplicationServerApi();
         IPersonId personId = new PersonPermId(PERSON_ID);
         PersonalAccessTokenPermId patToken = null;
@@ -171,15 +174,18 @@ public class ImagingFixes
         String pythonPathProperty = CommonServiceProvider.tryToGetProperty(PYTHON_PATH_PROPERTY);
         String pythonPath = null;
         if(pythonPathProperty != null && !pythonPathProperty.trim().isEmpty()) {
-            pythonPath = Paths.get(pathToDir, pythonPathProperty).toAbsolutePath().toString();
+            pythonPath = Paths.get(pythonPathProperty).toAbsolutePath().toString();
         } else {
             pythonPath = Paths.get(pathToDir, PYTHON_PATH).toAbsolutePath().toString();
         }
         operationLog.info("Configured python path: " + pythonPath);
 
-        String examplePath = Paths.get(pathToDir, "..", "imaging_test_example").toAbsolutePath().toString();
+        String examplePath = Paths.get(pathToDir, "..", "imaging_test_importer").toAbsolutePath().toString();
         String scriptPath = Paths.get(examplePath, "importer.py").toAbsolutePath().toString();
         String dataPath = Paths.get(examplePath, "data").toAbsolutePath().toString();
+
+        operationLog.info("Script path: " + scriptPath);
+        operationLog.info("Data path: " + dataPath);
 
         PersonalAccessTokenPermId patToken = null;
         try

@@ -23,7 +23,7 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import ch.ethz.sis.shared.log.classic.impl.Logger;
@@ -47,9 +47,9 @@ public class ConcurrentOperationLimiter implements IConcurrentOperationLimiter
     @Autowired
     private ConcurrentOperationLimiterConfig config;
 
-    private Map<Pattern, Semaphore> semaphores;
+    private Map<Pattern, Semaphore> semaphores  = new LinkedHashMap<Pattern, Semaphore>();;
 
-    private Set<Thread> threads;
+    private Set<Thread> threads = new HashSet<Thread>();;
 
     @SuppressWarnings("unused")
     private ConcurrentOperationLimiter()
@@ -75,7 +75,7 @@ public class ConcurrentOperationLimiter implements IConcurrentOperationLimiter
         }
 
         this.semaphores = semaphores;
-        this.threads = new HashSet<Thread>();
+
     }
 
     @Override

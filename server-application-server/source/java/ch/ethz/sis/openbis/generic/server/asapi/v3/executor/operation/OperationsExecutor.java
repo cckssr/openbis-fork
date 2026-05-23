@@ -21,7 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.persistence.PersistenceException;
+import jakarta.persistence.PersistenceException;
 
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.typegroup.*;
 import org.springframework.beans.factory.annotation.Autowired;

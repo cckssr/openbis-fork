@@ -82,11 +82,20 @@ public class SampleOptimisticLockingTest extends OptimisticLockingTestCase
     @Test
     public void testChangePropertyOfAStaleSample()
     {
+
         PropertyBuilder propBuilder = new PropertyBuilder("COMMENT").value("a");
+
+
         Sample sample = toolBox.createAndLoadSample(1, null, propBuilder.getProperty());
+
+        //clear() call is necessary in hibernate 6
+        // to simulate "Creation" and the "Update" happening in distinct transactions
+        daoFactory.getSampleDAO().clear();
+
         String sessionToken = logIntoCommonClientService().getSessionID();
         SampleUpdatesDTOBuilder builder = new SampleUpdatesDTOBuilder(sample);
         builder.property("COMMENT", "b");
+
         etlService.updateSample(sessionToken, builder.get());
 
         try

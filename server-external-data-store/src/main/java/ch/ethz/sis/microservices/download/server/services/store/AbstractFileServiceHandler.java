@@ -22,9 +22,9 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Map;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import ch.ethz.sis.microservices.download.server.services.Service;
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;

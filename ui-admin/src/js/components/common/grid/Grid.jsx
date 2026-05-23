@@ -40,8 +40,6 @@ const styles = theme => ({
     flex: '1 1 auto',
     display: 'block',
     width: '100%',
-    overflowY: 'auto',
-    maxHeight: 'calc(100vh - (' + theme.spacing(36) + ' ))',
   },
   loadingContainer: {
     flex: '1 1 auto'

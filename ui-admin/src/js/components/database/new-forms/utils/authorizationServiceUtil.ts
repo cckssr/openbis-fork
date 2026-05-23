@@ -33,7 +33,6 @@ export async function getUserRole(openbisFacade: openbis.openbis, isAdmin: boole
 		await openbisFacade.searchRoleAssignments(criteria, fetchOptions)
 			.then(roleAssignments => {
 				var roles = [];
-				console.log({ roleAssignments });
 				for (let i = 0; i < roleAssignments.getObjects().length; i++) {
 					const ra = roleAssignments.getObjects()[i];
 					if (ra.space && ra.space.code === space && roles.indexOf(ra.role) < 0) {
@@ -69,7 +68,6 @@ export async function getRoleAssignments(openbisFacade: openbis.openbis, user: s
 	fetchOptions.withAuthorizationGroup();
 	const roleAssignments = await openbisFacade.searchRoleAssignments(criteria, fetchOptions)
 	const roles = [];
-	console.log({ roleAssignments });
 	for (let i = 0; i < roleAssignments.length; i++) {
 		const ra = roleAssignments[i];
 		if (

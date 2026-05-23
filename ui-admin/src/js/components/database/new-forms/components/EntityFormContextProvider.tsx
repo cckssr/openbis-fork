@@ -1,14 +1,30 @@
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import LoadingDialog from "@src/js/components/common/loading/LoadingDialog.jsx";
 import ErrorDialog from "@src/js/components/common/error/ErrorDialog.jsx";
 import EntityForm from '@src/js/components/database/new-forms/components/EntityForm.tsx';
+
 import ControllerDispatcher from '@src/js/components/database/new-forms/engine/ControllerDispatcher.ts';
+import ActionHandlerDispatcher from '@src/js/components/database/new-forms/engine/ActionHandlerDispatcher.ts';
+
 import { EntityKind, FormMode } from '@src/js/components/database/new-forms/types/formEnums.ts';
 import { Form, IExtendedActionContext } from '@src/js/components/database/new-forms/types/formITypes.ts';
-import { useFormState } from '@src/js/components/database/new-forms/hooks/useFormState.ts';
-import { useOperationState } from '@src/js/components/database/new-forms/hooks/useOperationState.ts';
 import { IFormController } from '@src/js/components/database/new-forms/types/IFormController.ts';
 
+import { findConflicts, checkModificationDateConflict } from '@src/js/components/database/new-forms/utils/conflictResolutionUtil.ts';
+import ConflictResolutionDialog from '@src/js/components/database/new-forms/components/common/ConflictResolutionDialog.tsx';
+import DeleteConfirmationDialog from '@src/js/components/database/new-forms/components/common/DeleteConfirmationDialog.tsx';
+import MoveDialog from '@src/js/components/database/new-forms/components/common/MoveDialog.tsx';
+
+import { useFormState } from '@src/js/components/database/new-forms/hooks/useFormState.ts';
+import { useOperationState } from '@src/js/components/database/new-forms/hooks/useOperationState.ts';
+import { useDialogState } from '@src/js/components/database/new-forms/hooks/useDialogState.ts';
+
+import { useMoveFlow } from '@src/js/components/database/new-forms/hooks/useMoveFlow.ts';
+import { useConflictFlow } from '@src/js/components/database/new-forms/hooks/useConflictFlow.ts';
+import { useDeleteFlow } from '@src/js/components/database/new-forms/hooks/useDeleteFlow.ts';
+import { useEntityAutoSaveFlow } from '@src/js/components/database/new-forms/hooks/useEntityAutoSaveFlow.tsx';
+
+import { ActionToast, useActionToastCtx } from '@src/js/components/database/new-forms/components/common/ActionToast.tsx';
 
 export const EntityFormContextProvider = ({
   openbisFacade,
@@ -29,8 +45,13 @@ export const EntityFormContextProvider = ({
   initialMode: FormMode;
   externalAppController: any;
 }) => {
+
+  const actionToastContext = useActionToastCtx();
+  // ErrorDialog is a .jsx component without TS typings; cast to any to satisfy TSX type checking.
+  const ErrorDialogAny = ErrorDialog as any;
+
   // Form state (already well-organized)
-  const { form, mode, setForm, setMode, updateField, updateFieldMetadata } = useFormState({
+  const { form, originalForm, mode, setForm, setMode, updateField, updateFieldMetadata } = useFormState({
     initialForm: null,
     initialMode
   });
@@ -43,10 +64,39 @@ export const EntityFormContextProvider = ({
     executeOperation
   } = useOperationState();
 
-  
+  // Dialog state (conflict, delete, move) - NEW
+  const {
+    dialogs,
+    openConflictDialog, closeConflictDialog, setConflictResolving,
+    openDeleteDialog, closeDeleteDialog,
+    openMoveDialog, closeMoveDialog,
+  } = useDialogState();
+
   // Other state (could also be extracted if needed)
   const [permissions] = useState({ canEdit: true, canDelete: true, canMove: true });
-  
+
+  // Handle data restoration from localStorage
+  const handleDataRestore = useCallback((savedData: Form) => {
+    setForm(savedData);
+    actionToastContext.raiseInfo('Restored unsaved changes');
+  }, [setForm, actionToastContext]);
+
+  // Auto-save feature flow (preference + save + restore + actionOverrides)
+  const {
+    isAutoSaveEnabled,
+    setAutoSaveEnabled,
+    actionOverrides,
+    clearStorage
+  } = useEntityAutoSaveFlow({
+    form,
+    originalForm,
+    mode,
+    user,
+    entityKind,
+    permId,
+    onRestore: handleDataRestore
+  });
+
   // Create controller using dispatcher
   const controller: IFormController = useMemo(
     () => ControllerDispatcher.createController(entityKind, openbisFacade, user),
@@ -61,6 +111,8 @@ export const EntityFormContextProvider = ({
       setForm,
       mode,
       setMode,
+      isAutoSaveEnabled,
+      setAutoSaveEnabled,
       onAfterSave: (params?: any) => {
         console.log('[EntityFormContextProvider] context onAfterSave:', params);
         setMode(FormMode.VIEW);
@@ -71,9 +123,9 @@ export const EntityFormContextProvider = ({
       },
       externalAppController,
       deleteReason: reason || undefined,
-      //dependentEntities: dialogs.delete.config?.dependentEntities || undefined,
+      dependentEntities: dialogs.delete.config?.dependentEntities || undefined,
     };
-  }, [form, mode, externalAppController, controller]);
+  }, [form, mode, externalAppController, controller, dialogs.delete.config, isAutoSaveEnabled, setAutoSaveEnabled]);
 
   // Load initial form data
   useEffect(() => {
@@ -81,15 +133,16 @@ export const EntityFormContextProvider = ({
   }, [permId, controller]);
 
   const loadForm = useCallback(async () => {
-    console.log('loadForm', { permId }, { entityKind }, { params });
+    //console.log('loadForm', { permId }, { entityKind }, { params });
 
     await executeOperation(
       async () => {
         if (entityKind === EntityKind.NEW_OBJECT) {
-          const loadedForm = await controller.load(permId, entityKind, params, 'ENTRY');
-          setForm(loadedForm);
+          //const loadedForm = await controller.load(permId, entityKind, params, 'ENTRY');
+          //setForm(loadedForm);
         } else {
           const loadedForm = await controller.load(permId, entityKind, params);
+          console.log('loadedForm: ', loadedForm);
           setForm(loadedForm);
         }
       },
@@ -99,6 +152,136 @@ export const EntityFormContextProvider = ({
 
   const handleErrorCancel = () => {
     clearError();
+  };
+
+  const { handleMoveRequest, handleMoveConfirm, handleMoveCancel } = useMoveFlow({
+    form,
+    controller,
+    dialogs,
+    openMoveDialog,
+    closeMoveDialog,
+    loadForm,
+    setLoading,
+    setSaving,
+    setError,
+    clearError,
+    externalAppController,
+  });
+
+  const { handleResolveConflicts } = useConflictFlow({
+    form,
+    setForm,
+    closeConflictDialog,
+    setConflictResolving,
+  });
+
+  const { handleDeleteWithDependencyCheck, handleDeleteConfirm, handleDeleteCancel } = useDeleteFlow({
+    form,
+    controller,
+    entityKind,
+    dialogs,
+    getExtendedActionContext,
+    openDeleteDialog,
+    closeDeleteDialog,
+    setSaving,
+    setError,
+    clearError,
+    executeOperation,
+    externalAppController,
+    actionToastContext,
+  });
+
+  // Handle actions by creating them from dispatcher
+  const handleAction = useCallback(async (actionName: string) => {
+    console.log(`[EntityFormContextProvider] Handling action: ${actionName}`);
+    // Action handlers can require different context shapes (mode, extended, autosave, etc.)
+    // so we treat them as dynamic at runtime.
+    const actionHandler: any = ActionHandlerDispatcher.getActionHandler(actionName);
+
+    if (!actionHandler || !form) {
+      console.warn(`No action handler registered for '${actionName}'`);
+      return;
+    }
+
+    const lowerActionName = actionName.toLowerCase();
+    const isSaveAction = lowerActionName === 'save' || lowerActionName.endsWith(':save');
+
+    if (isSaveAction) {
+      await handleSaveActions(actionHandler);
+    } else if (actionName === 'delete') {
+      await handleDeleteWithDependencyCheck();
+    } else if (actionName === 'move') {
+      await handleMoveRequest();
+    } else {
+      const context: IExtendedActionContext = getExtendedActionContext();
+      try {
+        await actionHandler(context);
+      } catch (e: any) {
+        setError(e.message);
+      } finally {
+        setSaving(false);
+      }
+    }
+  }, [form, mode, permissions, openbisFacade, externalAppController, getExtendedActionContext, setSaving, setError, handleMoveRequest, handleDeleteWithDependencyCheck, clearStorage]);
+
+  const handleSaveActions = async (actionHandler: any) => {
+    if (!form) throw new Error('Form is not loaded');
+
+    const context: IExtendedActionContext = getExtendedActionContext();
+    setSaving(true);
+    clearError();
+
+    if (mode === FormMode.EDIT) {
+      try {
+        const latestForm = await controller.load(form.entityPermId);
+
+        if (!dialogs.conflict.isResolving && checkModificationDateConflict(form, latestForm)) {
+          const conflicts = findConflicts(form, latestForm) as any[];
+          openConflictDialog(conflicts);
+          setSaving(false);
+          return;
+        }
+
+        await actionHandler(context);
+        actionToastContext.raiseSuccess('SUCCESSFULLY SAVED ENTITY');
+
+        // Clear saved data after successful save
+        clearStorage();
+
+        setConflictResolving(false);
+        if (context.onAfterSave) context.onAfterSave(params);
+      } catch (error: any) {
+        if (error.status === 409) {
+          const latestForm = await controller.load(form.entityPermId);
+          const conflicts = findConflicts(form, latestForm) as any[];
+          openConflictDialog(conflicts);
+        } else {
+          console.error('Save failed:', error);
+          actionToastContext.raiseError('ERROR SAVING');
+          //alert('ERROR SAVING (GENERAL)');
+          setError(error.message);
+        }
+      } finally {
+        setSaving(false);
+      }
+    } else if (mode === FormMode.CREATE) {
+      try {
+        await actionHandler(context);
+        actionToastContext.raiseSuccess('SUCCESSFULLY SAVED ');
+        //alert('SUCCESSFULLY SAVED (GENERAL)');
+
+        // Clear saved data after successful save
+        clearStorage();
+      } catch (error: any) {
+        setError(error.message);
+        actionToastContext.raiseError('ERROR SAVING ');
+        //alert('ERROR SAVING (GENERAL)');
+      } finally {
+        setSaving(false);
+      }
+    } else {
+      throw new Error('Invalid mode');
+    }
   };
 
   // Early returns
@@ -114,22 +297,51 @@ export const EntityFormContextProvider = ({
     <>
       {operationState.saving && <LoadingDialog loading={operationState.saving} />}
       {operationState.error && (
-        <ErrorDialog
+        <ErrorDialogAny
           key='entity-form-error-dialog'
           open={!!operationState.error}
           error={operationState.error}
           onClose={handleErrorCancel}
         />
       )}
+      <ActionToast ctx={actionToastContext}></ActionToast>
       <EntityForm
         form={form}
         mode={mode}
         permissions={permissions}
         onFieldChange={updateField}
         onFieldMetadataChange={updateFieldMetadata}
-        onAction={() => alert('actions not implemented')}
-        params={{ sessionID: sessionID }}
+        onAction={handleAction}
+        params={{ sessionID: sessionID, user: user, entityPermId: form.entityPermId }}
+        actionOverrides={actionOverrides}
       />
+      {dialogs.conflict.isOpen && (
+        <ConflictResolutionDialog
+          open={dialogs.conflict.isOpen}
+          conflicts={dialogs.conflict.fields}
+          onResolve={handleResolveConflicts}
+          onCancel={closeConflictDialog}
+        />
+      )}
+      {dialogs.delete.isOpen && dialogs.delete.config && (
+        <DeleteConfirmationDialog
+          open={dialogs.delete.isOpen}
+          onConfirm={handleDeleteConfirm}
+          onCancel={handleDeleteCancel}
+          config={dialogs.delete.config}
+        />
+      )}
+      {dialogs.move.isOpen && (
+        <MoveDialog
+          open={dialogs.move.isOpen}
+          onConfirm={handleMoveConfirm}
+          onCancel={handleMoveCancel}
+          form={form}
+          moveInfo={dialogs.move.info}
+          openbisFacade={openbisFacade}
+          entityFormController={controller}
+        />
+      )}
     </>
   );
 };

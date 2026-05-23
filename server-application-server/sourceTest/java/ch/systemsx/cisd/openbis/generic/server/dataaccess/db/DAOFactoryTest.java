@@ -17,7 +17,7 @@ package ch.systemsx.cisd.openbis.generic.server.dataaccess.db;
 
 import static org.testng.AssertJUnit.assertEquals;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 import ch.ethz.sis.shared.log.standard.core.Level;
 import org.springframework.beans.factory.InitializingBean;

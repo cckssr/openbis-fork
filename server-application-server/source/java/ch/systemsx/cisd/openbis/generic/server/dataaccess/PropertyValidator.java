@@ -22,16 +22,22 @@ import java.util.Base64;
 import java.util.EnumMap;
 import java.util.Map;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.property.PropertiesDeserializer;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.property.Spreadsheet;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.*;
 import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Document;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.property.PropertiesDeserializer;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.property.Spreadsheet;
 import ch.systemsx.cisd.common.collection.CollectionUtils;
 import ch.systemsx.cisd.common.collection.IToStringConverter;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.generic.shared.basic.BasicConstant;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataTypeCode;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Material;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialIdentifier;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Sample;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.VocabularyTerm;
 import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PropertyTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.VocabularyPE;
@@ -41,7 +47,7 @@ import ch.systemsx.cisd.openbis.generic.shared.util.XmlUtils;
 
 /**
  * The default {@link IPropertyValueValidator} implementation.
- * 
+ *
  * @author Christian Ribeaud
  */
 public final class PropertyValidator implements IPropertyValueValidator
@@ -73,7 +79,7 @@ public final class PropertyValidator implements IPropertyValueValidator
         assert value != null : "Unspecified value.";
 
         // don't validate error messages and placeholders
-        if (value.getClass().equals(String.class) &&  ((String)value).startsWith(BasicConstant.ERROR_PROPERTY_PREFIX))
+        if (value.getClass().equals(String.class) && ((String) value).startsWith(BasicConstant.ERROR_PROPERTY_PREFIX))
         {
             return value;
         }
@@ -120,7 +126,7 @@ public final class PropertyValidator implements IPropertyValueValidator
     {
         /**
          * Validates given <var>value</var> according to this data type.
-         * 
+         *
          * @return the validated value. Note that it can differ from the given one.
          * @throws UserFailureException if given <var>value</var> is not valid.
          */
@@ -130,28 +136,36 @@ public final class PropertyValidator implements IPropertyValueValidator
     private final static class SampleValidator implements IDataTypeValidator
     {
         @Override
-        public Serializable validate(Serializable value) throws UserFailureException {
+        public Serializable validate(Serializable value) throws UserFailureException
+        {
             assert value != null : "Unspecified value.";
 
-            if(value.getClass().isArray()) {
+            if (value.getClass().isArray())
+            {
                 Serializable[] arrayValues = (Serializable[]) value;
-                if(arrayValues.length == 0) {
+                if (arrayValues.length == 0)
+                {
                     return null;
                 }
-            } else {
+            } else
+            {
                 String stringValue;
-                if(value.getClass().equals(Sample.class)) {
+                if (value.getClass().equals(Sample.class))
+                {
                     stringValue = ((Sample) value).getPermId();
-                } else {
+                } else
+                {
                     stringValue = value.toString();
                 }
                 if (StringUtils.isBlank(stringValue))
                 {
                     return null;
                 }
-                if (stringValue.startsWith("/")) {
+                if (stringValue.startsWith("/"))
+                {
                     // Is well formed identifier?
-                } else {
+                } else
+                {
                     // Is well formed permId?
                 }
             }
@@ -162,15 +176,19 @@ public final class PropertyValidator implements IPropertyValueValidator
     private final static class JsonValidator implements IDataTypeValidator
     {
         @Override
-        public Serializable validate(Serializable value) throws UserFailureException {
+        public Serializable validate(Serializable value) throws UserFailureException
+        {
             assert value != null : "Unspecified value.";
 
-            if(value.getClass().isArray()) {
+            if (value.getClass().isArray())
+            {
                 Serializable[] arrayValues = (Serializable[]) value;
-                if(arrayValues.length == 0) {
+                if (arrayValues.length == 0)
+                {
                     return null;
                 }
-            } else {
+            } else
+            {
                 String val = (String) value;
                 if (StringUtils.isBlank(val))
                 {
@@ -183,6 +201,9 @@ public final class PropertyValidator implements IPropertyValueValidator
 
     private final static class ArrayValidator implements IDataTypeValidator
     {
+
+        ObjectMapper mapper = new ObjectMapper();
+
         DataTypeCode arrayType;
 
         public void setArrayType(DataTypeCode arrayType)
@@ -191,14 +212,28 @@ public final class PropertyValidator implements IPropertyValueValidator
         }
 
         @Override
-        public Serializable validate(Serializable value) throws UserFailureException {
+        public Serializable validate(Serializable value) throws UserFailureException
+        {
             assert value != null : "Unspecified value.";
 
-            if(!value.getClass().isArray()) {
+            if (value.getClass().isArray())
+            {
+                return value;
+            } else if (value instanceof String)
+            {
+                try
+                {
+                    return mapper.readValue((String) value, String[].class);
+                } catch (Exception e)
+                {
+                    throw UserFailureException.fromTemplate(e,
+                            "Array value '%s' is not valid. Provided value is a String which could not be parsed to an array.", value);
+                }
+            } else
+            {
                 throw UserFailureException.fromTemplate("Array value '%s' is not valid. "
-                                + "Provided value is not an array", value);
+                        + "Provided value is not an array", value);
             }
-            return value;
         }
     }
 
@@ -206,6 +241,7 @@ public final class PropertyValidator implements IPropertyValueValidator
     {
 
         private VocabularyPE vocabulary;
+
         private PropertyTypePE propertyTypePE;
 
         final void setVocabulary(final PropertyTypePE propertyTypePE)
@@ -224,18 +260,22 @@ public final class PropertyValidator implements IPropertyValueValidator
             assert value != null : "Unspecified value.";
             assert vocabulary != null : "Unspecified vocabulary.";
 
-            if(value.getClass().isArray()) {
+            if (value.getClass().isArray())
+            {
                 Serializable[] arrayValues = (Serializable[]) value;
-                if(arrayValues.length == 0) {
+                if (arrayValues.length == 0)
+                {
                     return null;
                 }
                 return Arrays.stream(arrayValues)
-                        .map(x -> validateSingleValue((String)x))
+                        .map(x -> validateSingleValue((String) x))
                         .toArray(Serializable[]::new);
-            } else {
+            } else
+            {
                 String val = value.toString();
-                if(value.getClass().equals(VocabularyTerm.class)) {
-                    val = ((VocabularyTerm)value).getCode();
+                if (value.getClass().equals(VocabularyTerm.class))
+                {
+                    val = ((VocabularyTerm) value).getCode();
                 }
 
                 if (StringUtils.isBlank(val))
@@ -246,9 +286,11 @@ public final class PropertyValidator implements IPropertyValueValidator
             }
         }
 
-        private Serializable validateSingleValue(final String value) {
+        private Serializable validateSingleValue(final String value)
+        {
             String upperCaseValue = value.toUpperCase();
-            if(hasTerm(upperCaseValue)) {
+            if (hasTerm(upperCaseValue))
+            {
                 return upperCaseValue;
             }
             throw UserFailureException.fromTemplate("Vocabulary value '%s' of property '%s' is not valid. "
@@ -256,7 +298,8 @@ public final class PropertyValidator implements IPropertyValueValidator
                     vocabulary.getCode(), getVocabularyDetails());
         }
 
-        private boolean hasTerm(String value) {
+        private boolean hasTerm(String value)
+        {
             vocabulary.tryGetVocabularyTerm(value);
             VocabularyTermPE termOrNull = vocabulary.tryGetVocabularyTerm(value);
             return termOrNull != null;
@@ -264,10 +307,10 @@ public final class PropertyValidator implements IPropertyValueValidator
 
         /**
          * @return Details about vocabulary dependent on {@link VocabularyPE#isChosenFromList()} value:
-         *         <ul>
-         *         <li>for <var>true</var> - returns a list of first few vocabulary terms from it.
-         *         <li>for <var>false</var> - returns a vocabulary description
-         *         </ul>
+         * <ul>
+         * <li>for <var>true</var> - returns a list of first few vocabulary terms from it.
+         * <li>for <var>false</var> - returns a vocabulary description
+         * </ul>
          */
         private final String getVocabularyDetails()
         {
@@ -275,18 +318,18 @@ public final class PropertyValidator implements IPropertyValueValidator
             {
                 return CollectionUtils.abbreviate(vocabulary.getTerms(), 10,
                         new IToStringConverter<VocabularyTermPE>()
+                        {
+
+                            //
+                            // IToStringConverter
+                            //
+
+                            @Override
+                            public final String toString(final VocabularyTermPE term)
                             {
-
-                                //
-                                // IToStringConverter
-                                //
-
-                                @Override
-                                public final String toString(final VocabularyTermPE term)
-                                {
-                                    return term.getCode();
-                                }
-                            });
+                                return term.getCode();
+                            }
+                        });
             } else
             {
                 String descriptionOrNull = vocabulary.getDescription();
@@ -315,12 +358,13 @@ public final class PropertyValidator implements IPropertyValueValidator
         {
             assert val != null : "Unspecified value.";
             String value;
-            if (val.getClass().equals(Material.class)) {
-                value = ((Material)val).getIdentifier();
-            } else {
+            if (val.getClass().equals(Material.class))
+            {
+                value = ((Material) val).getIdentifier();
+            } else
+            {
                 value = val.toString();
             }
-
 
             if (StringUtils.isBlank(value))
             {
@@ -344,7 +388,7 @@ public final class PropertyValidator implements IPropertyValueValidator
             }
             if (materialTypeOrNull != null
                     && identifierOrNull.getTypeCode()
-                            .equalsIgnoreCase(materialTypeOrNull.getCode()) == false)
+                    .equalsIgnoreCase(materialTypeOrNull.getCode()) == false)
             {
                 throw UserFailureException.fromTemplate(
                         "Material '%s' is of wrong type. Expected: '%s'.", value,
@@ -389,18 +433,22 @@ public final class PropertyValidator implements IPropertyValueValidator
         {
             assert value != null : "Unspecified value.";
 
-            if(value.getClass().isArray()) {
-                for(Serializable singleValue : (Serializable[]) value) {
+            if (value.getClass().isArray())
+            {
+                for (Serializable singleValue : (Serializable[]) value)
+                {
                     validateSingleValue(singleValue);
                 }
-            } else {
+            } else
+            {
                 validateSingleValue(value);
             }
             // validated value is valid
             return value;
         }
 
-        private Serializable validateSingleValue(Serializable val) {
+        private Serializable validateSingleValue(Serializable val)
+        {
             String value = (String) val;
             // parsing checks if the value is a well-formed XML document
             Document document = XmlUtils.parseXmlDocument(value);
@@ -419,12 +467,12 @@ public final class PropertyValidator implements IPropertyValueValidator
                             e.getMessage());
                 }
             }
-            if(metaData != null)
+            if (metaData != null)
             {
                 String customWidgetValue = metaData.get("custom_widget");
-                if(customWidgetValue != null)
+                if (customWidgetValue != null)
                 {
-                    if(customWidgetValue.toUpperCase().equals(SPREADSHEET_WIDGET))
+                    if (customWidgetValue.toUpperCase().equals(SPREADSHEET_WIDGET))
                     {
 
                         validateSpreadsheet(value);
@@ -436,9 +484,10 @@ public final class PropertyValidator implements IPropertyValueValidator
             return value;
         }
 
-        private void validateSpreadsheet(String value) {
+        private void validateSpreadsheet(String value)
+        {
             String rawData = value;
-            if(rawData.startsWith("<DATA>"))
+            if (rawData.startsWith("<DATA>"))
             {
                 rawData = rawData.substring("<DATA>".length(), rawData.length() - "</DATA>".length());
             }

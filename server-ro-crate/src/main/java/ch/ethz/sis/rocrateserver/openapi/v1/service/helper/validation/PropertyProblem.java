@@ -6,6 +6,10 @@ public class PropertyProblem {
     private String property;
     private String message;
 
+    public PropertyProblem()
+    {
+    }
+
     public PropertyProblem(String node, String property, String message) {
         this.node = node;
         this.property = property;

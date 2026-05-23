@@ -15,14 +15,24 @@
  */
 package ch.systemsx.cisd.openbis.common.api.server;
 
+import java.lang.reflect.Method;
+import java.util.List;
+
+import jakarta.annotation.Resource;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.googlecode.jsonrpc4j.ErrorData;
+import com.googlecode.jsonrpc4j.ErrorResolver;
+import com.googlecode.jsonrpc4j.JsonRpcInterceptor;
+import com.googlecode.jsonrpc4j.spring.JsonServiceExporter;
+
+import org.springframework.aop.framework.ProxyFactory;
+
 import ch.systemsx.cisd.common.api.IRpcService;
 import ch.systemsx.cisd.common.api.IRpcServiceNameServer;
 import ch.systemsx.cisd.common.api.RpcServiceInterfaceVersionDTO;
 import ch.systemsx.cisd.common.spring.ServiceExceptionTranslator;
 import ch.systemsx.cisd.openbis.common.api.server.json.resolver.JsonErrorResolver;
-import com.googlecode.jsonrpc4j.spring.JsonServiceExporter;
-
-import javax.annotation.Resource;
 
 /**
  * Abstract super class of all classes make an API available via {@link JsonServiceExporter}.
@@ -42,8 +52,7 @@ public abstract class AbstractApiJsonServiceExporter extends JsonServiceExporter
             IRpcService service, String serviceName, String serviceURL)
     {
         setServiceInterface(serviceInterface);
-        setService(service);
-        setInterceptors(new Object[] { new ServiceExceptionTranslator() });
+        setService(wrapWithExceptionTranslator(service));
         int majorVersion = service.getMajorVersion();
         int minorVersion = service.getMinorVersion();
         RpcServiceInterfaceVersionDTO ifaceVersion =
@@ -51,5 +60,12 @@ public abstract class AbstractApiJsonServiceExporter extends JsonServiceExporter
                         minorVersion);
         nameServer.addSupportedInterfaceVersion(ifaceVersion);
         setErrorResolver(new JsonErrorResolver());
+    }
+
+    private IRpcService wrapWithExceptionTranslator(IRpcService service)
+    {
+        ProxyFactory proxyFactory = new ProxyFactory(service);
+        proxyFactory.addAdvice(new ServiceExceptionTranslator());
+        return (IRpcService) proxyFactory.getProxy();
     }
 }

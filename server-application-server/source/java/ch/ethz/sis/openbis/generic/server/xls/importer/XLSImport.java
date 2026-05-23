@@ -1,5 +1,5 @@
 /*
- * Copyright ETH 2022 - 2023 Zürich, Scientific IT Services
+ * Copyright ETH 2022 - 2026 Zürich, Scientific IT Services
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,20 +15,17 @@
  */
 package ch.ethz.sis.openbis.generic.server.xls.importer;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
+import ch.ethz.sis.afsapi.exception.ThrowableReason;
+import ch.ethz.sis.afsclient.client.AfsClient;
+import ch.ethz.sis.openbis.generic.OpenBIS;
 import ch.ethz.sis.openbis.generic.server.xls.importer.helper.*;
 import ch.ethz.sis.openbis.generic.server.xls.importer.helper.semanticannotation.SemanticAnnotationHelper;
 import ch.ethz.sis.shared.log.classic.impl.Logger;
@@ -43,11 +40,15 @@ import ch.ethz.sis.openbis.generic.server.xls.importer.handler.ExcelParser;
 import ch.ethz.sis.openbis.generic.server.xls.importer.handler.VersionInfoHandler;
 import ch.ethz.sis.openbis.generic.server.xls.importer.utils.DatabaseConsistencyChecker;
 import ch.ethz.sis.openbis.generic.server.xls.importer.utils.FileServerUtils;
+import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
+import ch.systemsx.cisd.common.exceptions.EnvironmentFailureException;
+import ch.systemsx.cisd.common.exceptions.ExceptionUtils;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider;
 import ch.systemsx.cisd.openbis.generic.shared.ISessionWorkspaceProvider;
+import org.apache.commons.io.IOUtils;
 
 public class XLSImport
 {
@@ -67,6 +68,8 @@ public class XLSImport
 
     private static final String XLSX_EXTENSION = "." + "xlsx";
 
+    private static final String HIERARCHY = "hierarchy";
+
     private static final int XLSX_DOCUMENT_LIMIT = 536870912; // 512 MB
 
     private static final int EMBEDDED_DOCUMENT_LIMIT = 16777216; // 16 MB
@@ -75,7 +78,8 @@ public class XLSImport
 
     private final String sessionToken;
 
-    private final IApplicationServerApi api;
+    private OpenBIS openBIS;
+    private IApplicationServerApi v3;
 
     private final DelayedExecutionDecorator delayedExecutor;
 
@@ -125,22 +129,36 @@ public class XLSImport
 
     private final AfsDataImportHelper afsDataImportHelper;
 
+    private final boolean containsAfsData;
+
     private static final String ZIP_EXTENSION = "." + "zip";
 
     public XLSImport(String sessionToken,
-            IApplicationServerApi api,
+            IApplicationServerApi v3,
             ImportModes mode,
             ImportOptions options,
             String[] sessionWorkspaceFiles,
-            boolean shouldCheckVersionsOnDatabase) throws IOException
+            boolean shouldCheckVersionsOnDatabase
+            ) throws IOException
+    {
+        this(sessionToken, v3, mode, options, sessionWorkspaceFiles, shouldCheckVersionsOnDatabase, null);
+    }
+
+    public XLSImport(String sessionToken,
+            IApplicationServerApi v3,
+            ImportModes mode,
+            ImportOptions options,
+            String[] sessionWorkspaceFiles,
+            boolean shouldCheckVersionsOnDatabase,
+            AfsClient client) throws IOException
     {
         this.sessionToken = sessionToken;
-        this.api = api;
+        this.v3 = v3;
         this.options = options;
         this.beforeVersions = Collections.unmodifiableMap(VersionInfoHandler.loadAllVersions(options));
         this.afterVersions = VersionInfoHandler.loadAllVersions(options);
-        this.dbChecker = new DatabaseConsistencyChecker(this.sessionToken, this.api, this.afterVersions);
-        this.delayedExecutor = new DelayedExecutionDecorator(this.sessionToken, this.api);
+        this.dbChecker = new DatabaseConsistencyChecker(this.sessionToken, this.v3, this.afterVersions);
+        this.delayedExecutor = new DelayedExecutionDecorator(this.sessionToken, this.v3);
 
         SemanticAnnotationHelper annotationCache = new SemanticAnnotationHelper(delayedExecutor);
 
@@ -159,7 +177,7 @@ public class XLSImport
         this.typeGroupImportHelper = new TypeGroupImportHelper(this.delayedExecutor, mode, options);
         this.shouldCheckVersionsOnDatabase = shouldCheckVersionsOnDatabase;
 
-        this.afsDataImportHelper = new AfsDataImportHelper(sessionToken, mode, options);
+        this.afsDataImportHelper = new AfsDataImportHelper(sessionToken, mode, options, this.v3, client);
 
         // File Parsing
         this.sessionWorkspaceFiles = sessionWorkspaceFiles;
@@ -169,6 +187,7 @@ public class XLSImport
         final Map<String, String> scripts = new HashMap<>();
         byte[][] xls = new byte[sessionWorkspaceFiles.length][];
         this.importValues = new HashMap<>();
+        boolean containsData = false;
 
         for (int i = 0; i < sessionWorkspaceFiles.length; i++)
         {
@@ -188,7 +207,7 @@ public class XLSImport
                                     !SCRIPTS_FOLDER_NAME.equals(entryName) &&
                                     !DATA_FOLDER_NAME.equals(entryName) &&
                                     !entryName.startsWith(MISCELLANEOUS_FOLDER_NAME) &&
-                                    !entryName.startsWith("hierarchy"))
+                                    !entryName.startsWith(HIERARCHY))
                             {
                                 throw UserFailureException.fromTemplate("Illegal directory '%s' is found inside the imported file.", entryName);
                             }
@@ -212,8 +231,10 @@ public class XLSImport
                             {
                                 validateEntrySize(entry.getSize(), EMBEDDED_DOCUMENT_LIMIT);
                                 this.importValues.put(entryName.substring(DATA_FOLDER_NAME.length()), new String(zip.readAllBytes()));
+                            } else if(entryName.startsWith(HIERARCHY + PATH_SEPARATOR) && entryName.contains(PATH_SEPARATOR + DATA_FOLDER_NAME)) {
+                                containsData = true;
                             } else if (!entryName.startsWith(MISCELLANEOUS_FOLDER_NAME) &&
-                                        !entryName.startsWith("hierarchy"))
+                                        !entryName.startsWith(HIERARCHY))
                             {
                                 throw UserFailureException.fromTemplate(
                                         "Entry '%s' is not allowed. Only one root XLS file is allowed and files inside the '%s' or '%s' folder",
@@ -264,8 +285,13 @@ public class XLSImport
             }
         }
 
+        this.containsAfsData = containsData;
         this.xls = xls;
         this.scriptHelper = new ScriptImportHelper(this.delayedExecutor, mode, options, scripts);
+    }
+
+    public boolean importContainsAfsData() {
+        return this.containsAfsData;
     }
 
     private static void validateEntrySize(final long size, final int limit)
@@ -464,7 +490,6 @@ public class XLSImport
     private void importZipData() throws IOException
     {
         try {
-            boolean isAfsAvailable = afsDataImportHelper.isAfsConnectionAvailable();
             for (int i = 0; i < this.sessionWorkspaceFiles.length; i++)
             {
                 if (this.sessionWorkspaceFiles[i].toLowerCase().endsWith(ZIP_EXTENSION))
@@ -487,20 +512,116 @@ public class XLSImport
                                     zip.transferTo(outputStream);
                                 }
                             }
-                            else if(isAfsAvailable && filePath.startsWith("hierarchy/") && filePath.contains("/data/")) {
-//                                afsDataImportHelper.beginIfNotStarted();
-                                afsDataImportHelper.importData(zip, entry);
-                            }
                         }
                     }
                 }
             }
+        } catch (Exception e)
+        {
+            throw new UserFailureException("Data upload failed.", e);
+        }
+    }
+
+    public void importZipAfsData() throws IOException
+    {
+        try {
+            boolean isAfsAvailable = afsDataImportHelper.isAfsConnectionAvailable();
+            if(!isAfsAvailable) {
+                throw new UserFailureException("Imported file contains AFS data but connection is not available.");
+            }
+            final ISessionWorkspaceProvider sessionWorkspaceProvider = CommonServiceProvider.getSessionWorkspaceProvider();
+            File sessionWorkspaceFile = sessionWorkspaceProvider.getSessionWorkspace(this.sessionToken);
+            File afsDir = Files.createTempDirectory(sessionWorkspaceFile.toPath(), "__AFS_DATA_TO_IMPORT__").toFile();
+
+            for (int i = 0; i < this.sessionWorkspaceFiles.length; i++)
+            {
+                List<String> dataFilePaths = new ArrayList<>();
+                if (this.sessionWorkspaceFiles[i].toLowerCase().endsWith(ZIP_EXTENSION))
+                {
+                    ZipFile zipFile = new ZipFile(new File(sessionWorkspaceFile, this.sessionWorkspaceFiles[i]));
+                    InputStream read = sessionWorkspaceProvider.read(this.sessionToken, this.sessionWorkspaceFiles[i]);
+                    try (final ZipInputStream zip = new ZipInputStream(read))
+                    {
+                        ZipEntry entry;
+                        while ((entry = zip.getNextEntry()) != null)
+                        {
+                            final String filePath = entry.getName().startsWith(XLSX_FOLDER_NAME) ? entry.getName().substring(XLSX_FOLDER_NAME.length())
+                                    : entry.getName();
+                            if(filePath.startsWith(HIERARCHY + PATH_SEPARATOR) && filePath.contains(PATH_SEPARATOR + DATA_FOLDER_NAME)) {
+                                if(filePath.endsWith(DATA_FOLDER_NAME)) {
+                                    dataFilePaths.add(filePath);
+                                }
+                                if (entry.isDirectory())
+                                {
+                                    createDirectory(new File(afsDir, entry.getName()));
+                                } else
+                                {
+                                    createFile(afsDir, zipFile, entry);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if(!dataFilePaths.isEmpty()) {
+                    for(String dataFilePath : dataFilePaths)
+                    {
+                        // afsDataImportHelper.beginIfNotStarted();
+                        afsDataImportHelper.importData(afsDir, dataFilePath);
+                    }
+                }
+            }
+            afsDir.delete();
 //            afsDataImportHelper.commit();
         } catch (Exception e)
         {
 //            afsDataImportHelper.rollback();
-            throw new RuntimeException("Data upload failed.", e);
+            Throwable throwable = ExceptionUtils.getEndOfChain(e);
+            if(throwable instanceof Error || throwable instanceof Exception) {
+                throw CheckedExceptionTunnel.wrapIfNecessary(throwable);
+            } else {
+                //AFS throws ThrowableReason
+                if(throwable instanceof ThrowableReason afsThrowable) {
+                    throw new RuntimeException(afsThrowable.getReason().toString());
+                } else {
+                    throw new RuntimeException(throwable.getMessage());
+                }
 
+            }
         }
     }
+
+    private static void createFile(File outputDir, ZipFile zipFile, ZipEntry zipEntry)
+            throws IOException
+    {
+        File outputFile = new File(outputDir, zipEntry.getName());
+        File parentDirectory = outputFile.getParentFile();
+        if (parentDirectory.exists() == false)
+        {
+            createDirectory(parentDirectory);
+        }
+        BufferedInputStream inputStream = new BufferedInputStream(zipFile.getInputStream(zipEntry));
+        BufferedOutputStream outputStream =
+                new BufferedOutputStream(new FileOutputStream(outputFile));
+        try
+        {
+            IOUtils.copy(inputStream, outputStream);
+        } finally
+        {
+            outputStream.close();
+            inputStream.close();
+        }
+    }
+
+    private static void createDirectory(File directory)
+    {
+        boolean directoryCreated = directory.mkdirs();
+        if (directoryCreated == false && !directory.exists())
+        {
+            throw EnvironmentFailureException.fromTemplate("Could not create directory '%s'",
+                    directory);
+        }
+    }
+
+
 }

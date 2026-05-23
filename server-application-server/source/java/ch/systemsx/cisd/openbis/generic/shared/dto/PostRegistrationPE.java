@@ -17,15 +17,15 @@ package ch.systemsx.cisd.openbis.generic.shared.dto;
 
 import java.io.Serializable;
 
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.Table;
 
 import ch.systemsx.cisd.openbis.generic.shared.IServer;
 import ch.systemsx.cisd.openbis.generic.shared.basic.IIdHolder;
@@ -48,7 +48,7 @@ public class PostRegistrationPE implements IIdHolder, Serializable
     @SequenceGenerator(name = SequenceNames.POST_REGISTRATION_DATASET_QUEUE_SEQUENCE, sequenceName = SequenceNames.POST_REGISTRATION_DATASET_QUEUE_SEQUENCE, allocationSize = 1)
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = SequenceNames.POST_REGISTRATION_DATASET_QUEUE_SEQUENCE)
-    public final Long getId()
+    public Long getId()
     {
         return id;
     }

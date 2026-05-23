@@ -18,12 +18,15 @@ package ch.ethz.sis.openbis.systemtest.asapi.v3;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import java.util.function.BiFunction;
 
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -45,6 +48,12 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.create.PropertyTypeCrea
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.IPropertyTypeId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyAssignmentPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyTypePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.SampleCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.SampleTypeCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.id.VocabularyPermId;
 import ch.systemsx.cisd.common.action.IDelegatedAction;
 import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
 
@@ -90,14 +99,15 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
                         "Access denied to object with EntityTypePermId = [NEW_ENTITY_TYPE (" + getEntityKind() + ")]" },
 
                 { "NEW_INTERNAL", true, SYSTEM_USER, null },
-                { "NEW_INTERNAL", true,TEST_USER, null },
-                { "NEW_INTERNAL", true,TEST_POWER_USER_CISD,
+                { "NEW_INTERNAL", true, TEST_USER, null },
+                { "NEW_INTERNAL", true, TEST_POWER_USER_CISD,
                         "Access denied to object with EntityTypePermId = [NEW_ENTITY_TYPE (" + getEntityKind() + ")]" }
         };
     }
 
     @Test(dataProvider = "providerTestUpdateAuthorizationWithCreateAssignment")
-    public void testUpdateAuthorizationWithCreateAssignment(String propertyTypeCode, boolean isInternal, String propertyAssignmentRegistrator, String expectedError)
+    public void testUpdateAuthorizationWithCreateAssignment(String propertyTypeCode, boolean isInternal, String propertyAssignmentRegistrator,
+            String expectedError)
     {
         String systemSessionToken = v3api.loginAsSystem();
         String registratorSessionToken =
@@ -124,16 +134,16 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
         entityTypeUpdate.getPropertyAssignments().add(propertyAssignmentCreation);
 
         assertExceptionMessage(new IDelegatedAction()
+        {
+            @Override
+            public void execute()
             {
-                @Override
-                public void execute()
-                {
-                    updateTypes(registratorSessionToken, Arrays.asList(entityTypeUpdate));
+                updateTypes(registratorSessionToken, Arrays.asList(entityTypeUpdate));
 
-                    TYPE entityType = getType(systemSessionToken, entityTypeIds.get(0));
-                    assertEquals(entityType.getPropertyAssignments().size(), 1);
-                }
-            }, expectedError);
+                TYPE entityType = getType(systemSessionToken, entityTypeIds.get(0));
+                assertEquals(entityType.getPropertyAssignments().size(), 1);
+            }
+        }, expectedError);
     }
 
     @DataProvider
@@ -184,7 +194,8 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
     }
 
     @Test(dataProvider = "providerTestUpdateAuthorizationWithUpdateAssignment")
-    public void testUpdateAuthorizationWithUpdateAssignment(String propertyTypeCode, boolean isInternal, boolean isPropertyInternal, String propertyAssignmentRegistrator,
+    public void testUpdateAuthorizationWithUpdateAssignment(String propertyTypeCode, boolean isInternal, boolean isPropertyInternal,
+            String propertyAssignmentRegistrator,
             String propertyAssignmentUpdater, boolean updateLayoutFieldsOnly, String expectedError)
     {
         String systemSessionToken = v3api.loginAsSystem();
@@ -239,30 +250,30 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
         entityTypeUpdateWithAssignmentUpdate.getPropertyAssignments().set(propertyAssignmentUpdate);
 
         assertExceptionMessage(new IDelegatedAction()
+        {
+            @Override
+            public void execute()
             {
-                @Override
-                public void execute()
+                updateTypes(updaterSessionToken, Arrays.asList(entityTypeUpdateWithAssignmentUpdate));
+
+                TYPE entityType = getType(systemSessionToken, entityTypeIds.get(0));
+                assertEquals(entityType.getPropertyAssignments().size(), 1);
+
+                PropertyAssignment updatedAssignment = entityType.getPropertyAssignments().get(0);
+
+                if (updateLayoutFieldsOnly)
                 {
-                    updateTypes(updaterSessionToken, Arrays.asList(entityTypeUpdateWithAssignmentUpdate));
-
-                    TYPE entityType = getType(systemSessionToken, entityTypeIds.get(0));
-                    assertEquals(entityType.getPropertyAssignments().size(), 1);
-
-                    PropertyAssignment updatedAssignment = entityType.getPropertyAssignments().get(0);
-
-                    if (updateLayoutFieldsOnly)
-                    {
-                        assertEquals(updatedAssignment.getSection(), "Updated section");
-                        assertEquals(updatedAssignment.getOrdinal(), Integer.valueOf(2));
-                        assertEquals(updatedAssignment.isMandatory(), Boolean.valueOf(false));
-                    } else
-                    {
-                        assertEquals(updatedAssignment.getSection(), "Test section");
-                        assertEquals(updatedAssignment.getOrdinal(), Integer.valueOf(1));
-                        assertEquals(updatedAssignment.isMandatory(), Boolean.valueOf(true));
-                    }
+                    assertEquals(updatedAssignment.getSection(), "Updated section");
+                    assertEquals(updatedAssignment.getOrdinal(), Integer.valueOf(2));
+                    assertEquals(updatedAssignment.isMandatory(), Boolean.valueOf(false));
+                } else
+                {
+                    assertEquals(updatedAssignment.getSection(), "Test section");
+                    assertEquals(updatedAssignment.getOrdinal(), Integer.valueOf(1));
+                    assertEquals(updatedAssignment.isMandatory(), Boolean.valueOf(true));
                 }
-            }, expectedError);
+            }
+        }, expectedError);
     }
 
     @DataProvider
@@ -271,7 +282,7 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
         return new Object[][] {
                 { "NEW_NON_INTERNAL", false, false, SYSTEM_USER, SYSTEM_USER, null },
                 { "NEW_NON_INTERNAL", false, false, SYSTEM_USER, TEST_USER, null },
-                { "NEW_NON_INTERNAL", false, false,SYSTEM_USER, TEST_POWER_USER_CISD,
+                { "NEW_NON_INTERNAL", false, false, SYSTEM_USER, TEST_POWER_USER_CISD,
                         "Access denied to object with EntityTypePermId = [NEW_ENTITY_TYPE (" + getEntityKind() + ")]" },
 
                 { "NEW_NON_INTERNAL", false, false, TEST_USER, SYSTEM_USER, null },
@@ -293,7 +304,8 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
     }
 
     @Test(dataProvider = "providerTestUpdateAuthorizationWithDeleteAssignment")
-    public void testUpdateAuthorizationWithDeleteAssignment(String propertyTypeCode, boolean isPropertyInternal, boolean isAssignmentInternal, String propertyAssignmentRegistrator,
+    public void testUpdateAuthorizationWithDeleteAssignment(String propertyTypeCode, boolean isPropertyInternal, boolean isAssignmentInternal,
+            String propertyAssignmentRegistrator,
             String propertyAssignmentDeleter, String expectedError)
     {
         String systemSessionToken = v3api.loginAsSystem();
@@ -330,16 +342,16 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
         entityTypeUpdateWithAssignmentDeletion.getPropertyAssignments().set();
 
         assertExceptionMessage(new IDelegatedAction()
+        {
+            @Override
+            public void execute()
             {
-                @Override
-                public void execute()
-                {
-                    updateTypes(deleterSessionToken, Arrays.asList(entityTypeUpdateWithAssignmentDeletion));
+                updateTypes(deleterSessionToken, Arrays.asList(entityTypeUpdateWithAssignmentDeletion));
 
-                    TYPE entityType = getType(systemSessionToken, entityTypeIds.get(0));
-                    assertEquals(entityType.getPropertyAssignments().size(), 0);
-                }
-            }, expectedError);
+                TYPE entityType = getType(systemSessionToken, entityTypeIds.get(0));
+                assertEquals(entityType.getPropertyAssignments().size(), 0);
+            }
+        }, expectedError);
     }
 
     @Test
@@ -350,13 +362,13 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
         UPDATE update = newTypeUpdate();
 
         assertUserFailureException(new IDelegatedAction()
-            {
-                @Override
-                public void execute()
-                {// When
-                    updateTypes(sessionToken, Arrays.asList(update));
-                }
-            },
+                                   {
+                                       @Override
+                                       public void execute()
+                                       {// When
+                                           updateTypes(sessionToken, Arrays.asList(update));
+                                       }
+                                   },
                 // Then
                 "Missing type id.");
     }
@@ -371,13 +383,13 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
         update.setTypeId(new EntityTypePermId("UNDEFINED", getTypeId().getEntityKind()));
 
         assertUserFailureException(new IDelegatedAction()
-            {
-                @Override
-                public void execute()
-                {// When
-                    updateTypes(sessionToken, Arrays.asList(update));
-                }
-            },
+                                   {
+                                       @Override
+                                       public void execute()
+                                       {// When
+                                           updateTypes(sessionToken, Arrays.asList(update));
+                                       }
+                                   },
                 "Object with EntityTypePermId = [" + update.getTypeId() + "] has not been found.");
     }
 
@@ -391,14 +403,14 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
         update.setTypeId(new EntityTypePermId(typeId.getPermId(), nextEntityKind(typeId.getEntityKind())));
 
         assertUserFailureException(new IDelegatedAction()
-            {
-                @Override
-                public void execute()
-                {
-                    // When
-                    updateTypes(sessionToken, Arrays.asList(update));
-                }
-            },
+                                   {
+                                       @Override
+                                       public void execute()
+                                       {
+                                           // When
+                                           updateTypes(sessionToken, Arrays.asList(update));
+                                       }
+                                   },
                 // Then
                 "Entity kind " + typeId.getEntityKind() + " expected: ");
     }
@@ -500,14 +512,14 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
         update.setValidationPluginId(new PluginPermId("properties"));
 
         assertUserFailureException(new IDelegatedAction()
-            {
-                @Override
-                public void execute()
-                {
-                    // When
-                    updateTypes(sessionToken, Arrays.asList(update));
-                }
-            },
+                                   {
+                                       @Override
+                                       public void execute()
+                                       {
+                                           // When
+                                           updateTypes(sessionToken, Arrays.asList(update));
+                                       }
+                                   },
                 // Then
                 "Entity type validation plugin has to be of type 'Entity Validator'. "
                         + "The specified plugin with id 'properties' is of type 'Dynamic Property Evaluator'");
@@ -525,14 +537,14 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
         update.setValidationPluginId(new PluginPermId("test" + incorrectEntityKind));
 
         assertUserFailureException(new IDelegatedAction()
-            {
-                @Override
-                public void execute()
-                {
-                    // When
-                    updateTypes(sessionToken, Arrays.asList(update));
-                }
-            },
+                                   {
+                                       @Override
+                                       public void execute()
+                                       {
+                                           // When
+                                           updateTypes(sessionToken, Arrays.asList(update));
+                                       }
+                                   },
                 // Then
                 "Entity type validation plugin has entity kind set to '" + incorrectEntityKind.name()
                         + "'. Expected a plugin where entity kind is either '" + getEntityKind().name() + "' or null");
@@ -630,14 +642,14 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
         update.getPropertyAssignments().remove(new PropertyAssignmentPermId(typeId, new PropertyTypePermId(code)));
 
         assertUserFailureException(new IDelegatedAction()
-            {
-                @Override
-                public void execute()
-                {
-                    // When
-                    updateTypes(sessionToken, Arrays.asList(update));
-                }
-            },
+                                   {
+                                       @Override
+                                       public void execute()
+                                       {
+                                           // When
+                                           updateTypes(sessionToken, Arrays.asList(update));
+                                       }
+                                   },
                 // Then
                 "Can not remove property type " + code + " from type " + typeId.getPermId());
     }
@@ -678,7 +690,6 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
         TYPE type = getType(sessionToken, typeId);
         assertNotNull(type);
 
-
         UPDATE updateAddAssignment = newTypeUpdate();
         updateAddAssignment.setTypeId(typeId);
         updateAddAssignment.getPropertyAssignments().set(assignmentCreation);
@@ -708,14 +719,14 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
         update.getPropertyAssignments().add(assignmentCreation);
 
         assertUserFailureException(new IDelegatedAction()
-            {
-                @Override
-                public void execute()
-                {
-                    // When
-                    updateTypes(sessionToken, Arrays.asList(update));
-                }
-            },
+                                   {
+                                       @Override
+                                       public void execute()
+                                       {
+                                           // When
+                                           updateTypes(sessionToken, Arrays.asList(update));
+                                       }
+                                   },
                 "Property type '" + propertyTypePermId + "' is already assigned to "
                         + getEntityKind().getLabel() + " type '" + typeId.getPermId() + "'.");
     }
@@ -732,7 +743,6 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
         List<EntityTypePermId> entityTypeIds = createTypes(sessionToken, Arrays.asList(entityTypeCreation));
 
         EntityTypePermId typeId = entityTypeIds.get(0);
-
 
         // Given
         String regularSessionToken = v3api.login(TEST_USER, PASSWORD);
@@ -765,7 +775,6 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
         propertyTypeCreation.setLabel("some property type");
         propertyTypeCreation.setDescription("some property type");
         v3api.createPropertyTypes(sessionToken, Arrays.asList(propertyTypeCreation));
-
 
         final CREATION typeCreation = newTypeCreation();
         typeCreation.setCode("NEW_TEST_ENTITY_TYPE");
@@ -816,7 +825,6 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
         propertyTypeCreation.setDescription("some property type");
         v3api.createPropertyTypes(sessionToken, Arrays.asList(propertyTypeCreation));
 
-
         final CREATION typeCreation = newTypeCreation();
         typeCreation.setCode("NEW_TEST_ENTITY_TYPE_2");
         typeCreation.setManagedInternally(false);
@@ -849,7 +857,7 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
             {
                 updateTypes(sessionToken, Arrays.asList(update));
             }
-        }, "Existing property '"+propertyValue+"' does not match the new pattern!");
+        }, "Existing property '" + propertyValue + "' does not match the new pattern!");
     }
 
     @Test
@@ -891,12 +899,9 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
         propertyTypeCreation.setDescription("internal property type");
         v3api.createPropertyTypes(sessionToken, Arrays.asList(propertyTypeCreation));
 
-
         final CREATION typeCreation = newTypeCreation();
         typeCreation.setCode("NEW_INTERNAL_ENTITY_TYPE");
         typeCreation.setManagedInternally(true);
-
-
 
         PropertyAssignmentCreation assignmentCreation = new PropertyAssignmentCreation();
         assignmentCreation.setPropertyTypeId(new PropertyTypePermId("DESCRIPTION"));
@@ -941,7 +946,6 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
         propertyTypeCreation.setLabel("internal property type");
         propertyTypeCreation.setDescription("internal property type");
         v3api.createPropertyTypes(sessionToken, Arrays.asList(propertyTypeCreation));
-
 
         PropertyAssignmentCreation assignmentCreationInternal = new PropertyAssignmentCreation();
         assignmentCreationInternal.setPropertyTypeId(new PropertyTypePermId("INTERNAL_TYPE"));
@@ -1017,14 +1021,14 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
         update.getPropertyAssignments().set(replaceCreation);
 
         assertUserFailureException(new IDelegatedAction()
-            {
-                @Override
-                public void execute()
-                {
-                    // When
-                    updateTypes(sessionToken, Arrays.asList(update));
-                }
-            },
+                                   {
+                                       @Override
+                                       public void execute()
+                                       {
+                                           // When
+                                           updateTypes(sessionToken, Arrays.asList(update));
+                                       }
+                                   },
                 // Then
                 "PropertyTypeId cannot be null.");
     }
@@ -1039,22 +1043,280 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
         update.setTypeId(typeId);
         PropertyAssignmentCreation replaceCreation = new PropertyAssignmentCreation();
         replaceCreation.setPropertyTypeId(new IPropertyTypeId()
-            {
-                private static final long serialVersionUID = 1L;
-            });
+        {
+            private static final long serialVersionUID = 1L;
+        });
         update.getPropertyAssignments().set(replaceCreation);
 
         assertUserFailureException(new IDelegatedAction()
-            {
-                @Override
-                public void execute()
-                {
-                    // When
-                    updateTypes(sessionToken, Arrays.asList(update));
-                }
-            },
+                                   {
+                                       @Override
+                                       public void execute()
+                                       {
+                                           // When
+                                           updateTypes(sessionToken, Arrays.asList(update));
+                                       }
+                                   },
                 // Then
                 "Unknown type of property type id: ch.ethz.sis.openbis.systemtest.asapi.v3.UpdateEntityTypeTest$");
+    }
+
+    @Test
+    public void testMakeExistingStringPropertyMandatory()
+    {
+        testMakeExistingSimplePropertyMandatory(DataType.VARCHAR, "Hello World", IPropertiesHolder::getProperty, "Hello World");
+    }
+
+    @Test
+    public void testMakeExistingMultilineStringPropertyMandatory()
+    {
+        testMakeExistingSimplePropertyMandatory(DataType.MULTILINE_VARCHAR, "Hello\nWorld", IPropertiesHolder::getProperty, "Hello\nWorld");
+    }
+
+    @Test
+    public void testMakeExistingStringArrayPropertyMandatory()
+    {
+        testMakeExistingSimplePropertyMandatory(DataType.ARRAY_STRING, "[\"abc\", \"def\"]", IPropertiesHolder::getStringArrayProperty,
+                new String[] { "abc", "def" });
+        testMakeExistingSimplePropertyMandatory(DataType.ARRAY_STRING, "[123, 234]", IPropertiesHolder::getStringArrayProperty,
+                new String[] { "123", "234" });
+
+        assertExceptionMessage(() ->
+                        testMakeExistingSimplePropertyMandatory(DataType.ARRAY_STRING, "abc", IPropertiesHolder::getStringArrayProperty, null),
+                "Array value 'abc' is not valid. Provided value is a String which could not be parsed to an array.");
+        assertExceptionMessage(() ->
+                        testMakeExistingSimplePropertyMandatory(DataType.ARRAY_STRING, "[abc, def]", IPropertiesHolder::getStringArrayProperty,
+                                new String[] { "abc", "def" }),
+                "Array value '[abc, def]' is not valid. Provided value is a String which could not be parsed to an array.");
+    }
+
+    @Test
+    public void testMakeExistingIntegerPropertyMandatory()
+    {
+        testMakeExistingSimplePropertyMandatory(DataType.INTEGER, "123", IPropertiesHolder::getIntegerProperty, 123L);
+
+        assertExceptionMessage(() ->
+                        testMakeExistingSimplePropertyMandatory(DataType.INTEGER, "abc", IPropertiesHolder::getIntegerProperty, null),
+                "Integer value 'abc' has improper format.");
+    }
+
+    @Test
+    public void testMakeExistingIntegerArrayPropertyMandatory()
+    {
+        testMakeExistingSimplePropertyMandatory(DataType.ARRAY_INTEGER, "[123, 234]", IPropertiesHolder::getIntegerArrayProperty,
+                new Long[] { 123L, 234L });
+
+        assertExceptionMessage(() ->
+                        testMakeExistingSimplePropertyMandatory(DataType.ARRAY_INTEGER, "abc", IPropertiesHolder::getIntegerArrayProperty, null),
+                "Array value 'abc' is not valid. Provided value is a String which could not be parsed to an array.");
+        assertExceptionMessage(() ->
+                        testMakeExistingSimplePropertyMandatory(DataType.ARRAY_INTEGER, "[\"abc\", \"def\"]", IPropertiesHolder::getIntegerArrayProperty,
+                                null),
+                "For input string: \"abc\"");
+    }
+
+    @Test
+    public void testMakeExistingRealPropertyMandatory()
+    {
+        testMakeExistingSimplePropertyMandatory(DataType.REAL, "1.23", IPropertiesHolder::getRealProperty, 1.23);
+
+        assertExceptionMessage(() ->
+                        testMakeExistingSimplePropertyMandatory(DataType.REAL, "abc", IPropertiesHolder::getRealProperty, 1.23),
+                "Double value 'abc' has improper format.");
+    }
+
+    @Test
+    public void testMakeExistingRealArrayPropertyMandatory()
+    {
+        testMakeExistingSimplePropertyMandatory(DataType.ARRAY_REAL, "[1.23, 2.34]", IPropertiesHolder::getRealArrayProperty,
+                new Double[] { 1.23, 2.34 });
+
+        assertExceptionMessage(() ->
+                        testMakeExistingSimplePropertyMandatory(DataType.ARRAY_REAL, "[\"abc\", \"def\"]", IPropertiesHolder::getRealArrayProperty,
+                                null),
+                "For input string: \"abc\"");
+    }
+
+    @Test
+    public void testMakeExistingBooleanPropertyMandatory()
+    {
+        testMakeExistingSimplePropertyMandatory(DataType.BOOLEAN, "true", IPropertiesHolder::getBooleanProperty, true);
+
+        assertExceptionMessage(() ->
+                        testMakeExistingSimplePropertyMandatory(DataType.BOOLEAN, "abc", IPropertiesHolder::getBooleanProperty, null),
+                "Boolean value 'abc' has improper format. It should be either 'true' or 'false'.");
+    }
+
+    @Test
+    public void testMakeExistingDatePropertyMandatory()
+    {
+        testMakeExistingSimplePropertyMandatory(DataType.DATE, "2026-01-30", IPropertiesHolder::getProperty, "2026-01-30");
+
+        assertExceptionMessage(() ->
+                        testMakeExistingSimplePropertyMandatory(DataType.DATE, "abc", IPropertiesHolder::getProperty, null),
+                "Date value 'abc' has improper format. It must be one of '[yyyy-MM-dd\n" +
+                        "M/d/yy]'.");
+    }
+
+    @Test
+    public void testMakeExistingTimestampPropertyMandatory()
+    {
+        testMakeExistingSimplePropertyMandatory(DataType.TIMESTAMP, "2026-01-30 10:18:30", IPropertiesHolder::getProperty,
+                "2026-01-30 10:18:30 +0100");
+
+        assertExceptionMessage(() ->
+                        testMakeExistingSimplePropertyMandatory(DataType.TIMESTAMP, "abc", IPropertiesHolder::getProperty, null),
+                "Date value 'abc' has improper format. It must be one of '[yyyy-MM-dd'T'HH:mm:ssXXX\n"
+                        + "yyyy-MM-dd'T'HH:mm:ssX\n"
+                        + "yyyy-MM-dd'T'HH:mm:ss\n"
+                        + "yyyy-MM-dd'T'HH:mm\n"
+                        + "yyyy-MM-dd HH:mm:ss Z\n"
+                        + "yyyy-MM-dd HH:mm:ss Z\n"
+                        + "yyyy-MM-dd HH:mm:ss\n"
+                        + "yyyy-MM-dd HH:mm\n"
+                        + "yyyy-MM-dd\n"
+                        + "M/d/yy h:mm a\n"
+                        + "M/d/yy HH:mm\n"
+                        + "M/d/yy]'.");
+    }
+
+    @Test
+    public void testMakeExistingTimestampArrayPropertyMandatory()
+    {
+        testMakeExistingSimplePropertyMandatory(DataType.ARRAY_TIMESTAMP, "[\"2026-01-30 10:18:30\"]", IPropertiesHolder::getProperty,
+                new String[] { "2026-01-30 10:18:30 +0100" });
+
+        assertExceptionMessage(() ->
+                        testMakeExistingSimplePropertyMandatory(DataType.ARRAY_TIMESTAMP, "abc", IPropertiesHolder::getProperty, null),
+                "Array value 'abc' is not valid. Provided value is a String which could not be parsed to an array.");
+        assertExceptionMessage(() ->
+                        testMakeExistingSimplePropertyMandatory(DataType.ARRAY_TIMESTAMP, "[\"abc\", \"def\"]", IPropertiesHolder::getProperty, null),
+                "Wrong date format:abc");
+    }
+
+    @Test
+    public void testMakeExistingJsonPropertyMandatory()
+    {
+        testMakeExistingSimplePropertyMandatory(DataType.JSON, "{\"abc\":\"123\"}", IPropertiesHolder::getJsonProperty,
+                "{\"abc\": \"123\"}");
+
+        assertExceptionMessage(() ->
+                        testMakeExistingSimplePropertyMandatory(DataType.JSON, "abc", IPropertiesHolder::getJsonProperty, null),
+                "invalid input syntax for type json");
+    }
+
+    @Test
+    public void testMakeExistingXmlPropertyMandatory()
+    {
+        testMakeExistingSimplePropertyMandatory(DataType.XML, "<abc><def/></abc>", IPropertiesHolder::getProperty,
+                "<abc><def/></abc>");
+
+        assertExceptionMessage(() ->
+                testMakeExistingSimplePropertyMandatory(DataType.XML, "abc", IPropertiesHolder::getProperty,
+                        null), "Provided value:\n"
+                + "\n"
+                + "abc\n"
+                + "\n"
+                + "isn't a well formed XML document.");
+    }
+
+    @Test
+    public void testMakeExistingHyperlinkPropertyMandatory()
+    {
+        testMakeExistingSimplePropertyMandatory(DataType.HYPERLINK, "https://openbis.ch", IPropertiesHolder::getProperty,
+                "https://openbis.ch");
+
+        assertExceptionMessage(() ->
+                testMakeExistingSimplePropertyMandatory(DataType.HYPERLINK, "abc", IPropertiesHolder::getProperty,
+                        null), "Hyperlink 'abc' should start with one of the following protocols: '[http://, https://, ftp://]'");
+    }
+
+    @Test
+    public void testMakeExistingObjectPropertyMandatory()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        // Create sample type
+        SampleTypeCreation sampleTypeCreation = new SampleTypeCreation();
+        sampleTypeCreation.setCode("SAMPLE_TYPE_FOR_PROPERTY_VALUE_" + UUID.randomUUID());
+        EntityTypePermId sampleTypeId = v3api.createSampleTypes(sessionToken, List.of(sampleTypeCreation)).get(0);
+
+        // Create sample property
+        PropertyTypePermId samplePropertyId = createASamplePropertyType(sessionToken, sampleTypeId);
+
+        // Create sample
+        SampleCreation sampleCreation = new SampleCreation();
+        sampleCreation.setCode("SAMPLE_FOR_PROPERTY_VALUE_" + UUID.randomUUID());
+        sampleCreation.setTypeId(sampleTypeId);
+        SamplePermId sampleId = v3api.createSamples(sessionToken, List.of(sampleCreation)).get(0);
+        Sample sample = v3api.getSamples(sessionToken, List.of(sampleId), new SampleFetchOptions()).get(sampleId);
+
+        testMakeExistingPropertyMandatory(sessionToken, samplePropertyId, sample.getPermId().getPermId(),
+                IPropertiesHolder::getSampleProperty, sample.getPermId());
+        testMakeExistingPropertyMandatory(sessionToken, samplePropertyId, sample.getIdentifier().getIdentifier(),
+                IPropertiesHolder::getSampleProperty, sample.getPermId());
+    }
+
+    @Test
+    public void testMakeExistingVocabularyPropertyMandatory()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        // Create vocabulary
+        VocabularyPermId vocabularyId = createVocabulary(sessionToken, "VOCABULARY_FOR_PROPERTY_VALUE_" + UUID.randomUUID(), "TERM_1", "TERM_2");
+
+        // Create vocabulary property
+        PropertyTypePermId propertyId = createAVocabularyPropertyType(sessionToken, vocabularyId, "VOCABULARY_PROPERTY_" + UUID.randomUUID());
+
+        testMakeExistingPropertyMandatory(sessionToken, propertyId, "TERM_1", IPropertiesHolder::getControlledVocabularyProperty, "TERM_1");
+    }
+
+    private void testMakeExistingSimplePropertyMandatory(DataType dataType, String initialPropertyValue,
+            BiFunction<IPropertiesHolder, String, Object> propertyValueGetter, Serializable expectedPropertyValue)
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        PropertyTypeCreation propertyTypeCreation = new PropertyTypeCreation();
+        propertyTypeCreation.setCode(dataType + "_PROPERTY_TYPE_" + UUID.randomUUID());
+        propertyTypeCreation.setDataType(dataType);
+        propertyTypeCreation.setDescription(propertyTypeCreation.getCode());
+        propertyTypeCreation.setLabel(propertyTypeCreation.getCode());
+        PropertyTypePermId propertyId = v3api.createPropertyTypes(sessionToken, List.of(propertyTypeCreation)).get(0);
+
+        testMakeExistingPropertyMandatory(sessionToken, propertyId, initialPropertyValue, propertyValueGetter, expectedPropertyValue);
+    }
+
+    private void testMakeExistingPropertyMandatory(String sessionToken, PropertyTypePermId propertyTypeId, String initialPropertyValue,
+            BiFunction<IPropertiesHolder, String, Object> propertyValueGetter, Serializable expectedPropertyValue)
+    {
+        // Create entity type with property not mandatory
+        PropertyAssignmentCreation propertyAssignmentCreation = new PropertyAssignmentCreation();
+        propertyAssignmentCreation.setPropertyTypeId(propertyTypeId);
+
+        CREATION entityTypeCreation = newTypeCreation();
+        entityTypeCreation.setCode("ENTITY_TYPE_" + UUID.randomUUID());
+        entityTypeCreation.setPropertyAssignments(List.of(propertyAssignmentCreation));
+        EntityTypePermId entityTypeId = createTypes(sessionToken, List.of(entityTypeCreation)).get(0);
+
+        // Create entity with the newly created entity type
+        createEntity(sessionToken, entityTypeId, null, null);
+
+        // Update the entity type and make the property mandatory
+        PropertyAssignmentCreation propertyAssignmentUpdate = new PropertyAssignmentCreation();
+        propertyAssignmentUpdate.setPropertyTypeId(propertyTypeId);
+        propertyAssignmentUpdate.setMandatory(true);
+        propertyAssignmentUpdate.setInitialValueForExistingEntities(initialPropertyValue);
+
+        UPDATE entityTypeUpdate = newTypeUpdate();
+        entityTypeUpdate.setTypeId(entityTypeId);
+        entityTypeUpdate.getPropertyAssignments().set(propertyAssignmentUpdate);
+
+        updateTypes(sessionToken, List.of(entityTypeUpdate));
+
+        // Check the entity got the initial property value
+        IPropertiesHolder entity = searchEntities(sessionToken, createSearchCriteria(entityTypeId)).get(0);
+        Object actualPropertyValue = propertyValueGetter.apply(entity, propertyTypeId.getPermId());
+        assertEquals(actualPropertyValue, expectedPropertyValue);
     }
 
     @Test(dataProvider = "usersNotAllowedToUpdate")
@@ -1062,20 +1324,20 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
     {
         EntityTypePermId typeId = getTypeId();
         assertUnauthorizedObjectAccessException(new IDelegatedAction()
+        {
+            @Override
+            public void execute()
             {
-                @Override
-                public void execute()
-                {
-                    // Given
-                    String sessionToken = v3api.login(user, PASSWORD);
-                    UPDATE update = newTypeUpdate();
-                    update.setTypeId(typeId);
-                    update.setDescription("new description " + System.currentTimeMillis());
+                // Given
+                String sessionToken = v3api.login(user, PASSWORD);
+                UPDATE update = newTypeUpdate();
+                update.setTypeId(typeId);
+                update.setDescription("new description " + System.currentTimeMillis());
 
-                    // When
-                    updateTypes(sessionToken, Arrays.asList(update));
-                }
-            }, typeId, patternContains("checking access"));
+                // When
+                updateTypes(sessionToken, Arrays.asList(update));
+            }
+        }, typeId, patternContains("checking access"));
     }
 
     @Test
@@ -1091,7 +1353,6 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
         propertyTypeCreation.setLabel("some property type");
         propertyTypeCreation.setDescription("some property type");
         v3api.createPropertyTypes(sessionToken, Arrays.asList(propertyTypeCreation));
-
 
         final CREATION typeCreation = newTypeCreation();
         typeCreation.setCode("PATTERN_ASSIGNMENT_ENTITY_TYPE");

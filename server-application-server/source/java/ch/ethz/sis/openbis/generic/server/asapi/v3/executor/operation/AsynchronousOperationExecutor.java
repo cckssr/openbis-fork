@@ -20,7 +20,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 import ch.ethz.sis.shared.log.classic.impl.Logger;
 import org.springframework.beans.factory.annotation.Autowired;

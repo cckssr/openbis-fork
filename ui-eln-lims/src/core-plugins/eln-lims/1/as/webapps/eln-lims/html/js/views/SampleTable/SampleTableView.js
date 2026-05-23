@@ -16,7 +16,7 @@
 function SampleTableView(sampleTableController, sampleTableModel) {
 	this._sampleTableController = sampleTableController;
 	this._sampleTableModel = sampleTableModel;
-	this._tableContainer = $("<div>").css("margin-top", "-10px").css("margin-left", "-10px");
+	this._tableContainer = $("<div>", { id : "table-container"});
 	this.sampleTypeSelector = null;
 	this._viewId = mainController.getNextId();
 	var _refreshableFields = [];

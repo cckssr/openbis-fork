@@ -23,6 +23,7 @@ openbis_url = "https://localhost:8443"
 admin_username = "admin"
 admin_password = "admin"
 
+
 @pytest.fixture(scope="module")
 def openbis_instance():
     instance = Openbis(

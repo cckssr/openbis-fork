@@ -7,6 +7,7 @@ message Settings {
     string language = 2;
     int32 sync_interval_seconds = 3;
     SyncJobs jobs = 4;
+    IgnoredPathPatterns ignored_path_patterns = 5;
 }
 
 message SyncJob {
@@ -17,23 +18,51 @@ message SyncJob {
     string remote_directory_root = 5;
     string local_directory_root = 6;
     bool enabled = 7;
-    bool skip_hidden_files = 8;
-    HiddenPathPatterns hidden_path_patterns = 9;
+    IgnoreFilesMode ignore_files = 8;
+    IgnoredPathPatterns ignored_path_patterns = 9;
     string title = 10;
+    optional EntityType entity_type = 11;
+    optional bool entity_immutable = 12;
 
     enum Type {
       BIDIRECTIONAL = 0;
       UPLOAD = 1;
       DOWNLOAD = 2;
     }
+
+    enum IgnoreFilesMode {
+      GLOBAL_DEFAULT = 0;
+      SPECIFIC_LIST = 1;
+      NONE = 2;
+    }
+
+    enum EntityType {
+      SAMPLE = 0;
+      EXPERIMENT = 1;
+      DATASET = 2;
+    }
 }
 
-message HiddenPathPatterns {
-    repeated string hidden_path_patterns = 1;
+message IgnoredPathPatterns {
+    repeated string ignored_path_patterns = 1;
 }
 
 message SyncJobs {
     repeated SyncJob sync_jobs = 1;
+}
+
+message SyncJobLive {
+  string local_directory_root = 1;
+  bool uploading = 2;
+  bool downloading = 3;
+  int64 total_upload = 4;
+  int64 total_download = 5;
+  int64 current_upload = 6;
+  int64 current_download = 7;
+}
+
+message SyncJobsLive {
+  repeated SyncJobLive sync_jobs = 1;
 }
 
 message Event {
@@ -94,4 +123,6 @@ service DriveAPIService {
 
     rpc GetEvents(Limit) returns (Events);
     rpc GetNotifications(Limit) returns (Notifications);
+
+    rpc GetSyncJobsLive(Empty) returns (SyncJobsLive);
 }

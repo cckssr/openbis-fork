@@ -21,6 +21,7 @@ import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.generic.server.business.IRelationshipService;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.util.DataSetTypeWithoutExperimentChecker;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
+import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SampleTypeTypeGroupsPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SampleTypeTypeGroupsTechId;
 import ch.systemsx.cisd.openbis.generic.shared.dto.Session;
@@ -71,6 +72,7 @@ public class TypeGroupAssignmentTable extends AbstractBusinessObject implements 
     @Override
     public void save() throws UserFailureException
     {
+
 
     }
 }

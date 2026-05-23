@@ -4,6 +4,7 @@ import ch.openbis.drive.conf.Configuration;
 import ch.openbis.drive.db.SyncJobEventDAO;
 import ch.openbis.drive.model.SyncJob;
 import ch.openbis.drive.notifications.NotificationManager;
+import ch.openbis.drive.settings.SettingsManager;
 import junit.framework.TestCase;
 import org.junit.Assert;
 import org.junit.Test;
@@ -21,8 +22,9 @@ public class TaskManagerImplTest extends TestCase {
 
     private final SyncJobEventDAO syncJobEventDAO = Mockito.mock(SyncJobEventDAO.class);
     private final NotificationManager notificationManager = Mockito.mock(NotificationManager.class);
+    private final SettingsManager settingsManager = Mockito.mock(SettingsManager.class);
     private final Configuration configuration = new Configuration(Path.of("/fake-local-app-directory"));
-    private final TaskManagerImpl taskManagerImpl = new TaskManagerImpl(syncJobEventDAO, notificationManager, configuration);
+    private final TaskManagerImpl taskManagerImpl = new TaskManagerImpl(syncJobEventDAO, notificationManager, settingsManager, configuration);
 
 
     @Test

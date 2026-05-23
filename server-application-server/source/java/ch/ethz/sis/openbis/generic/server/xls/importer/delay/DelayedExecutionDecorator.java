@@ -101,7 +101,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.fetchoptions.TypeGroup
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.fetchoptions.TypeGroupFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.ITypeGroupAssignmentId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.ITypeGroupId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.TypeGroupId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.search.TypeGroupAssignmentSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.update.TypeGroupUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.Vocabulary;
@@ -120,9 +119,9 @@ import ch.systemsx.cisd.common.exceptions.UserFailureException;
 
 public class DelayedExecutionDecorator
 {
-    private String sessionToken;
+    private final String sessionToken;
 
-    private IApplicationServerApi v3;
+    private final IApplicationServerApi v3;
 
     Set<IObjectId> ids;
 

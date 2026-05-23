@@ -18,6 +18,7 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.person;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;

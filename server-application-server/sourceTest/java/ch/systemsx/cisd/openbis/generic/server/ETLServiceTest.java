@@ -34,6 +34,8 @@ import ch.systemsx.cisd.openbis.generic.SamplePENoDAO;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.jmock.Expectations;
+import org.jmock.api.Invocation;
+import org.jmock.lib.action.CustomAction;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 

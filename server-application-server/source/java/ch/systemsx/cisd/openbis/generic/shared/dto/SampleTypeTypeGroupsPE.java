@@ -22,9 +22,9 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.ICustomIdHolder;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-import javax.persistence.*;
-import javax.persistence.Id;
-import javax.validation.constraints.NotNull;
+import jakarta.persistence.*;
+import jakarta.persistence.Id;
+import jakarta.validation.constraints.NotNull;
 import java.io.Serializable;
 
 @Entity

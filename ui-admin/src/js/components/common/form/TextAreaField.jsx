@@ -8,7 +8,7 @@ import { Typography } from '@mui/material';
 
 const styles = theme => ({
   textarea: {
-    width: '95%',
+    width: '98%',
     fontSize: theme.typography.body2.fontSize,
     padding: theme.spacing(1),
     borderRadius: theme.shape.borderRadius,

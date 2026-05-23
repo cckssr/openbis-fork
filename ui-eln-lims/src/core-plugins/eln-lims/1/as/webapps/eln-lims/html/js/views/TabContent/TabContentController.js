@@ -118,6 +118,10 @@ function TabContentController(controller) {
     }
 
     this.handleTabSelect = function(tab) {
+        var currentTab = _this.getCurrentTabInfo();
+        if(currentTab && currentTab.finalize) {
+            currentTab.finalize();
+        }
         _this._updateView(tab);
         mainController.sideMenu.moveToNodeId(tab.node);
         _this._model.currentTab = tab;

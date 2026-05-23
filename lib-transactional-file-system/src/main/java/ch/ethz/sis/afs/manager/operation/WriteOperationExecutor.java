@@ -17,14 +17,18 @@ package ch.ethz.sis.afs.manager.operation;
 
 import static ch.ethz.sis.afs.exception.AFSExceptions.PathIsDirectory;
 
-import ch.ethz.sis.afs.api.dto.File;
+import java.util.List;
+
 import ch.ethz.sis.afs.dto.Transaction;
+import ch.ethz.sis.afs.dto.Transaction.PathState;
 import ch.ethz.sis.afs.dto.operation.OperationName;
 import ch.ethz.sis.afs.dto.operation.WriteOperation;
 import ch.ethz.sis.afs.exception.AFSExceptions;
+import ch.ethz.sis.afs.manager.PathLockFinder;
 import ch.ethz.sis.shared.io.IOUtils;
 
-public class WriteOperationExecutor implements OperationExecutor<WriteOperation, Void> {
+public class WriteOperationExecutor implements OperationExecutor<WriteOperation, Void>
+{
 
     //
     // Singleton
@@ -32,14 +36,17 @@ public class WriteOperationExecutor implements OperationExecutor<WriteOperation,
 
     private static final WriteOperationExecutor instance;
 
-    static {
+    static
+    {
         instance = new WriteOperationExecutor();
     }
 
-    private WriteOperationExecutor() {
+    private WriteOperationExecutor()
+    {
     }
 
-    public static WriteOperationExecutor getInstance() {
+    public static WriteOperationExecutor getInstance()
+    {
         return instance;
     }
 
@@ -47,38 +54,58 @@ public class WriteOperationExecutor implements OperationExecutor<WriteOperation,
     // Operation
     //
 
-
     @Override
-    public Void prepare(Transaction transaction, WriteOperation operation) throws Exception {
+    public Void prepare(Transaction transaction, WriteOperation operation) throws Exception
+    {
         // 1. Check that if the file exists, is not a directory
-        boolean sourceExists = IOUtils.exists(operation.getSource());
-        if (sourceExists) {
-            File existingFile = IOUtils.getFile(operation.getSource());
-            if (existingFile.getDirectory()) {
-                AFSExceptions.throwInstance(PathIsDirectory, OperationName.Write.name(), operation.getSource());
+        PathState pathState = OperationExecutor.getCachedPathState(transaction, operation.getSource());
+        if (pathState.isExists() && pathState.isDirectory())
+        {
+            AFSExceptions.throwInstance(PathIsDirectory, OperationName.Write.name(), operation.getSource());
+        }
+
+        // 2. Update state of the path and its parents
+        List<String> parentSubPaths = PathLockFinder.getParentSubPaths(operation.getSource());
+        for (String parentSubPath : parentSubPaths)
+        {
+            PathState parentSubPathState = OperationExecutor.getCachedPathState(transaction, parentSubPath);
+            parentSubPathState.setExists(true);
+            parentSubPathState.setDeleted(false);
+            if (parentSubPathState == pathState)
+            {
+                parentSubPathState.setWritten(true);
+                parentSubPathState.setDirectory(false);
+            } else
+            {
+                parentSubPathState.setDirectory(true);
             }
         }
+
         //byte md5Hash = IOUtils.getMD5(operation.getData());
 
-        // 1. Create temporary file if it has not been created already
+        // 3. Create temporary file if it has not been created already
         boolean tempSourceExists = IOUtils.exists(operation.getTempSource());
-        if (!tempSourceExists) {
+        if (!tempSourceExists)
+        {
             IOUtils.createDirectories(IOUtils.getParentPath(operation.getTempSource()));
             IOUtils.createFile(operation.getTempSource());
         }
 
-        // 2. Flush bytes
+        // 4. Flush bytes
         IOUtils.write(operation.getTempSource(), 0, operation.getData());
         return null;
     }
 
     @Override
-    public boolean commit(Transaction transaction, WriteOperation operation) throws Exception {
-        if (!IOUtils.exists(operation.getSource())) {
+    public boolean commit(Transaction transaction, WriteOperation operation) throws Exception
+    {
+        if (!IOUtils.exists(operation.getSource()))
+        {
             IOUtils.createDirectories(IOUtils.getParentPath(operation.getSource()));
             IOUtils.createFile(operation.getSource());
         }
-        if (IOUtils.exists(operation.getTempSource())) { // Only copies if has not been done already
+        if (IOUtils.exists(operation.getTempSource()))
+        { // Only copies if has not been done already
             byte[] data = (operation.getData() != null)
                     ? operation.getData()
                     : IOUtils.readFully(operation.getTempSource());

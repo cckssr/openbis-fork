@@ -9,6 +9,7 @@ interface UseFormStateProps {
 
 interface UseFormStateReturn {
   form: Form | null;
+  originalForm: Form | null; // Original form state for comparison
   mode: FormMode;
   isDirty: boolean;
   isValid: boolean;
@@ -29,7 +30,6 @@ export const useFormState = ({
 
   // Update original form when form changes externally
   const handleSetForm = useCallback((newForm: React.SetStateAction<Form | null>) => {
-    setForm(newForm);
     if (typeof newForm === 'function') {
       // Handle function updates
       setForm(prevForm => {
@@ -39,14 +39,18 @@ export const useFormState = ({
         }
         return updatedForm;
       });
-    } else if (newForm) {
-      setOriginalForm(newForm);
+    } else {
+      // Handle direct value updates
+      setForm(newForm);
+      if (newForm) {
+        setOriginalForm(newForm);
+      }
     }
   }, []);
 
   // Update field value
   const updateField = useCallback((fieldId: string, value: any) => {
-    //console.log(`[useFormState] Updating field: ${fieldId} to ${value}`);
+    console.log(`[useFormState] Updating field: ${fieldId} to ${value}`);
     setForm(prevForm => {
       if (!prevForm) return null;
       
@@ -105,6 +109,7 @@ export const useFormState = ({
 
   return {
     form,
+    originalForm,
     mode,
     isDirty,
     isValid,

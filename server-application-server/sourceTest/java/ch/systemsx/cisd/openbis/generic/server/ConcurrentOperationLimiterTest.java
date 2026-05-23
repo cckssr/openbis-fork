@@ -178,7 +178,8 @@ public class ConcurrentOperationLimiterTest
                     threadsChannel.send("operation-1-start");
                     mainChannel.assertNextMessage("other-threads-start");
                     // sleep for a while to give other threads a chance to execute (should not happen as the limit is set to 1)
-                    ConcurrencyUtilities.sleep(100);
+                    ConcurrencyUtilities.sleep(200);
+                    threadsChannel.send("operation-1-finish");
                     return null;
                 }
             };
@@ -211,9 +212,11 @@ public class ConcurrentOperationLimiterTest
         threadsChannel.assertNextMessage("operation-1-start");
 
         executeLimitedFromNewThread(limiter, "test", operation2);
+        ConcurrencyUtilities.sleep(50);
         executeLimitedFromNewThread(limiter, "test", operation3);
         mainChannel.send("other-threads-start");
 
+        threadsChannel.assertNextMessage("operation-1-finish");
         threadsChannel.assertNextMessage("operation-2-start");
         threadsChannel.assertNextMessage("operation-2-finish");
         threadsChannel.assertNextMessage("operation-3-start");

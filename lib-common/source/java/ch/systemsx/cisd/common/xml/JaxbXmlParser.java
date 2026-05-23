@@ -19,12 +19,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.SchemaOutputResolver;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.bind.helpers.DefaultValidationEventHandler;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.SchemaOutputResolver;
+import jakarta.xml.bind.Unmarshaller;
+import jakarta.xml.bind.helpers.DefaultValidationEventHandler;
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamResult;

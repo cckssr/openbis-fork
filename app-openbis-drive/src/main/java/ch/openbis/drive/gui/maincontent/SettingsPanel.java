@@ -57,7 +57,7 @@ public class SettingsPanel extends ResizablePanel {
         activeTabId.addListener((obs, oldValue, newValue) -> {
             if (newValue != null && !newValue.equals(oldValue)) {
                 switch (newValue) {
-                    case TOP_TAB_GENERAL_LABEL_ID -> activateGeneralSubpanel();
+                    case TOP_TAB_GENERAL_LABEL_ID -> activateGeneralSubpanel(new GeneralSettingsPanel.GeneralSettingsPanelContext(false));
                     case TOP_TAB_PROXY_LABEL_ID -> activateProxySubpanel();
                     case TOP_TAB_USAGE_LABEL_ID -> activateUsageSubpanel();
                 }
@@ -88,7 +88,7 @@ public class SettingsPanel extends ResizablePanel {
         //
 
         resize();
-        activateGeneralSubpanel();
+        activateGeneralSubpanel(new GeneralSettingsPanel.GeneralSettingsPanelContext(false));
     }
 
     @Override
@@ -101,9 +101,9 @@ public class SettingsPanel extends ResizablePanel {
         this.mainContentSpace.resize(parent.getWidth(), parent.getHeight() - DisplaySettings.MAIN_CONTENT_TAB_LABEL_HEIGHT);
     }
 
-    synchronized void activateGeneralSubpanel() {
+    synchronized void activateGeneralSubpanel(@NonNull GeneralSettingsPanel.GeneralSettingsPanelContext context) {
         closeAndClearChildNodes(mainContentSpace);
-        mainContentSpace.getChildren().add(new GeneralSettingsPanel(mainContentSpace, (voidArg) -> { this.activateGeneralSubpanel(); return null;}));
+        mainContentSpace.getChildren().add(new GeneralSettingsPanel(mainContentSpace,  context, (ctx) -> { this.activateGeneralSubpanel(ctx); return null;}));
         markButtonAsActiveById(TOP_TAB_GENERAL_LABEL_ID);
     }
 

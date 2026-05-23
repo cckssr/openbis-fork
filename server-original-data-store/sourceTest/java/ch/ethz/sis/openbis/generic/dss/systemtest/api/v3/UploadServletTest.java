@@ -22,12 +22,16 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
+import org.eclipse.jetty.client.ContentResponse;
 import org.eclipse.jetty.client.HttpClient;
-import org.eclipse.jetty.client.api.ContentResponse;
-import org.eclipse.jetty.client.api.Request;
-import org.eclipse.jetty.client.util.MultiPartContentProvider;
-import org.eclipse.jetty.client.util.StringContentProvider;
+import org.eclipse.jetty.client.MultiPartRequestContent;
+import org.eclipse.jetty.client.Request;
+import org.eclipse.jetty.client.StringRequestContent;
+
+import org.eclipse.jetty.http.HttpCookieStore;
+import org.eclipse.jetty.http.HttpFields;
 import org.eclipse.jetty.http.HttpMethod;
+import org.eclipse.jetty.http.MultiPart;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
@@ -71,7 +75,9 @@ public class UploadServletTest extends SystemTestCase
     @BeforeMethod
     private void beforeMethod() throws Exception
     {
-        JettyHttpClientFactory.getHttpClient().getCookieStore().removeAll();
+        HttpClient client = JettyHttpClientFactory.getHttpClient();
+        HttpCookieStore store = client.getHttpCookieStore();
+        store.clear();              // Jetty 12 equivalent of removeAll()
         cleanOSTempFolder();
     }
 
@@ -93,8 +99,13 @@ public class UploadServletTest extends SystemTestCase
 
         cleanSessionWorkspace(sessionToken);
 
-        MultiPartContentProvider multipart = new MultiPartContentProvider();
-        multipart.addFilePart("testFieldName", "testFileName", new StringContentProvider("testContent"), null);
+        MultiPartRequestContent multipart = new MultiPartRequestContent();
+        multipart.addPart(new MultiPart.ContentSourcePart(
+                "testFieldName",
+                "testFileName",
+                HttpFields.EMPTY,
+                new StringRequestContent("testContent")
+        ));
         multipart.close();
 
         HttpClient client = JettyHttpClientFactory.getHttpClient();
@@ -105,7 +116,7 @@ public class UploadServletTest extends SystemTestCase
         }
         request.param(PARAM_SESSION_KEYS_NUMBER, "1");
         request.param(PARAM_SESSION_KEY_PREFIX + "0", "testFieldName");
-        request.content(multipart);
+        request.body(multipart);
 
         request.send();
 
@@ -124,9 +135,15 @@ public class UploadServletTest extends SystemTestCase
 
         cleanSessionWorkspace(sessionToken);
 
-        MultiPartContentProvider multipart = new MultiPartContentProvider();
-        multipart.addFilePart("testFieldName1", "testFileName1", new StringContentProvider("testContent1"), null);
-        multipart.addFilePart("testFieldName2", "testFileName2", new StringContentProvider("testContent2"), null);
+        MultiPartRequestContent multipart = new MultiPartRequestContent();
+        multipart.addPart(new MultiPart.ContentSourcePart(
+                "testFieldName1", "testFileName1", HttpFields.EMPTY,
+                new StringRequestContent("testContent1")
+        ));
+        multipart.addPart(new MultiPart.ContentSourcePart(
+                "testFieldName2", "testFileName2", HttpFields.EMPTY,
+                new StringRequestContent("testContent2")
+        ));
         multipart.close();
 
         HttpClient client = JettyHttpClientFactory.getHttpClient();
@@ -137,7 +154,7 @@ public class UploadServletTest extends SystemTestCase
         }
         request.param(PARAM_SESSION_KEYS_NUMBER, "1");
         request.param(PARAM_SESSION_KEY_PREFIX + "0", "testFieldName");
-        request.content(multipart);
+        request.body(multipart);
 
         request.send();
 
@@ -156,9 +173,15 @@ public class UploadServletTest extends SystemTestCase
 
         cleanSessionWorkspace(sessionToken);
 
-        MultiPartContentProvider multipart = new MultiPartContentProvider();
-        multipart.addFilePart("testFieldName1", "testFileName1", new StringContentProvider("testContent1"), null);
-        multipart.addFilePart("testFieldName2", "testFileName2", new StringContentProvider("testContent2"), null);
+        MultiPartRequestContent multipart = new MultiPartRequestContent();
+        multipart.addPart(new MultiPart.ContentSourcePart(
+                "testFieldName1", "testFileName1", HttpFields.EMPTY,
+                new StringRequestContent("testContent1")
+        ));
+        multipart.addPart(new MultiPart.ContentSourcePart(
+                "testFieldName2", "testFileName2", HttpFields.EMPTY,
+                new StringRequestContent("testContent2")
+        ));
         multipart.close();
 
         HttpClient client = JettyHttpClientFactory.getHttpClient();
@@ -170,7 +193,7 @@ public class UploadServletTest extends SystemTestCase
         request.param(PARAM_SESSION_KEYS_NUMBER, "2");
         request.param(PARAM_SESSION_KEY_PREFIX + "0", "testFieldName1");
         request.param(PARAM_SESSION_KEY_PREFIX + "1", "testFieldName2");
-        request.content(multipart);
+        request.body(multipart);
 
         request.send();
 
@@ -327,15 +350,20 @@ public class UploadServletTest extends SystemTestCase
     {
         String sessionToken = as.login(USER, PASSWORD);
 
-        MultiPartContentProvider multipart = new MultiPartContentProvider();
-        multipart.addFilePart("testFieldName", "testFileName", new StringContentProvider("testContent"), null);
+        MultiPartRequestContent multipart = new MultiPartRequestContent();
+        multipart.addPart(new MultiPart.ContentSourcePart(
+                "testFieldName",                    // field name
+                "testFileName",                     // filename
+                HttpFields.EMPTY,                   // headers
+                new StringRequestContent("testContent")  // content (text/plain by default)
+        ));
         multipart.close();
 
         HttpClient client = JettyHttpClientFactory.getHttpClient();
         Request request = client.newRequest(SERVICE_URL).method(HttpMethod.POST);
         request.param(PARAM_SESSION_ID, sessionToken);
         request.param(PARAM_SESSION_KEY_PREFIX + "0", "testFieldName");
-        request.content(multipart);
+        request.body(multipart);
 
         ContentResponse response = request.send();
         assertEquals("<message type=\"error\">No form field 'sessionKeysNumber' could be found in the transmitted form.</message>",
@@ -347,8 +375,13 @@ public class UploadServletTest extends SystemTestCase
     {
         String sessionToken = as.login(USER, PASSWORD);
 
-        MultiPartContentProvider multipart = new MultiPartContentProvider();
-        multipart.addFilePart("testFieldName", "testFileName", new StringContentProvider("testContent"), null);
+        MultiPartRequestContent multipart = new MultiPartRequestContent();
+        multipart.addPart(new MultiPart.ContentSourcePart(
+                "testFieldName",
+                "testFileName",
+                HttpFields.EMPTY,
+                new StringRequestContent("testContent")
+        ));
         multipart.close();
 
         HttpClient client = JettyHttpClientFactory.getHttpClient();
@@ -356,7 +389,7 @@ public class UploadServletTest extends SystemTestCase
         request.param(PARAM_SESSION_ID, sessionToken);
         request.param(PARAM_SESSION_KEYS_NUMBER, "thisShouldBeANumber");
         request.param(PARAM_SESSION_KEY_PREFIX + "0", "testFieldName");
-        request.content(multipart);
+        request.body(multipart);
 
         ContentResponse response = request.send();
         assertEquals("<message type=\"error\">For input string: \"thisShouldBeANumber\"</message>",
@@ -368,15 +401,20 @@ public class UploadServletTest extends SystemTestCase
     {
         String sessionToken = as.login(USER, PASSWORD);
 
-        MultiPartContentProvider multipart = new MultiPartContentProvider();
-        multipart.addFilePart("testFieldName", "testFileName", new StringContentProvider("testContent"), null);
+        MultiPartRequestContent multipart = new MultiPartRequestContent();
+        multipart.addPart(new MultiPart.ContentSourcePart(
+                "testFieldName",
+                "testFileName",
+                HttpFields.EMPTY,
+                new StringRequestContent("testContent")
+        ));
         multipart.close();
 
         HttpClient client = JettyHttpClientFactory.getHttpClient();
         Request request = client.newRequest(SERVICE_URL).method(HttpMethod.POST);
         request.param(PARAM_SESSION_ID, sessionToken);
         request.param(PARAM_SESSION_KEYS_NUMBER, "1");
-        request.content(multipart);
+        request.body(multipart);
 
         ContentResponse response = request.send();
 
@@ -389,8 +427,13 @@ public class UploadServletTest extends SystemTestCase
     {
         String sessionToken = as.login(USER, PASSWORD);
 
-        MultiPartContentProvider multipart = new MultiPartContentProvider();
-        multipart.addFilePart("testFieldName", "testFileName", new StringContentProvider("testContent"), null);
+        MultiPartRequestContent multipart = new MultiPartRequestContent();
+        multipart.addPart(new MultiPart.ContentSourcePart(
+                "testFieldName",
+                "testFileName",
+                HttpFields.EMPTY,
+                new StringRequestContent("testContent")
+        ));
         multipart.close();
 
         HttpClient client = JettyHttpClientFactory.getHttpClient();
@@ -398,7 +441,7 @@ public class UploadServletTest extends SystemTestCase
         request.param(PARAM_SESSION_ID, sessionToken);
         request.param(PARAM_SESSION_KEYS_NUMBER, "2");
         request.param(PARAM_SESSION_KEY_PREFIX + "0", "testFieldName");
-        request.content(multipart);
+        request.body(multipart);
 
         ContentResponse response = request.send();
 
@@ -446,8 +489,13 @@ public class UploadServletTest extends SystemTestCase
     private void initHttpSession(String sessionToken) throws Exception
     {
         // upload a dummy file to initialize HTTP session
-        MultiPartContentProvider multipart = new MultiPartContentProvider();
-        multipart.addFilePart("initHttpSession", "initHttpSession", new StringContentProvider("initHttpSession"), null);
+        MultiPartRequestContent multipart = new MultiPartRequestContent();
+        multipart.addPart(new MultiPart.ContentSourcePart(
+                "initHttpSession",              // field name
+                "initHttpSession",              // filename
+                HttpFields.EMPTY,               // headers (none)
+                new StringRequestContent("initHttpSession") // content (defaults to text/plain)
+        ));
         multipart.close();
 
         HttpClient client = JettyHttpClientFactory.getHttpClient();
@@ -455,15 +503,20 @@ public class UploadServletTest extends SystemTestCase
         request.param(PARAM_SESSION_ID, sessionToken);
         request.param(PARAM_SESSION_KEYS_NUMBER, "1");
         request.param(PARAM_SESSION_KEY_PREFIX + "0", "initHttpSession");
-        request.content(multipart);
 
+        request.body(multipart);
         request.send();
     }
 
     private ContentResponse upload(String sessionToken, String fileContent) throws Exception
     {
-        MultiPartContentProvider multipart = new MultiPartContentProvider();
-        multipart.addFilePart("testFieldName", "testFileName", new StringContentProvider(fileContent), null);
+        MultiPartRequestContent multipart = new MultiPartRequestContent();
+        multipart.addPart(new MultiPart.ContentSourcePart(
+                "testFieldName",
+                "testFileName",
+                HttpFields.EMPTY,
+                new StringRequestContent(fileContent)
+        ));
         multipart.close();
 
         HttpClient client = JettyHttpClientFactory.getHttpClient();
@@ -474,8 +527,8 @@ public class UploadServletTest extends SystemTestCase
         }
         request.param(PARAM_SESSION_KEYS_NUMBER, "1");
         request.param(PARAM_SESSION_KEY_PREFIX + "0", "testFieldName");
-        request.content(multipart);
 
+        request.body(multipart);
         return request.send();
     }
 

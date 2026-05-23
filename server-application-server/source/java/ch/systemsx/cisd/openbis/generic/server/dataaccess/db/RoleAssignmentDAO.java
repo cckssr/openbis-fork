@@ -21,10 +21,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import ch.ethz.sis.shared.log.classic.impl.Logger;
-import org.hibernate.Criteria;
+
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.criterion.DetachedCriteria;
-import org.hibernate.criterion.Restrictions;
+
 import org.springframework.jdbc.support.JdbcAccessor;
 import org.springframework.orm.hibernate5.HibernateTemplate;
 
@@ -39,6 +39,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.RoleWithHierarchy.RoleC
 import ch.systemsx.cisd.openbis.generic.shared.dto.AuthorizationGroupPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.RoleAssignmentPE;
+import ch.systemsx.cisd.openbis.generic.shared.dto.SpacePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.ProjectIdentifier;
 
 /**
@@ -79,8 +80,8 @@ public final class RoleAssignmentDAO extends AbstractGenericEntityDAO<RoleAssign
     {
         // returns roles connected directly or indirectly (through space) to current db instance
         final List<RoleAssignmentPE> list =
-                cast(getHibernateTemplate().find(
-                        String.format("select r from %s r ", TABLE_NAME)));
+                find(RoleAssignmentPE.class,
+                        String.format("select r from %s r ", TABLE_NAME));
         Date currentDate = new Date(System.currentTimeMillis());
         final List<RoleAssignmentPE> result = list.stream().filter(x -> x.getAuthorizationGroupInternal() != null
                 || x.getPersonInternal().getExpiryDate() == null
@@ -99,9 +100,14 @@ public final class RoleAssignmentDAO extends AbstractGenericEntityDAO<RoleAssign
     {
         assert person != null : "Unspecified person.";
 
-        final DetachedCriteria criteria = DetachedCriteria.forClass(ENTITY_CLASS);
-        criteria.add(Restrictions.eq("personInternal", person));
-        final List<RoleAssignmentPE> list = cast(getHibernateTemplate().findByCriteria(criteria));
+        List<RoleAssignmentPE> list = currentSession()
+                .createQuery(
+                        "from " + ENTITY_CLASS.getName() + " ra where ra.personInternal = :person",
+                        ENTITY_CLASS
+                )
+                .setParameter("person", person)
+                .list();
+
         if (operationLog.isDebugEnabled())
         {
             operationLog.debug(String.format("%s(%s): %d role assignment(s) have been found.",
@@ -116,9 +122,11 @@ public final class RoleAssignmentDAO extends AbstractGenericEntityDAO<RoleAssign
         assert roleAssignment != null : "Role assignment unspecified";
         validatePE(roleAssignment);
 
-        final HibernateTemplate hibernateTemplate = getHibernateTemplate();
-        hibernateTemplate.save(roleAssignment);
-        hibernateTemplate.flush();
+        doExecute( session -> {
+            session.persist(roleAssignment);
+            session.flush();
+            return null;
+        });
         if (operationLog.isInfoEnabled())
         {
             operationLog.info(String.format("ADD: role assignment '%s'.", roleAssignment));
@@ -141,9 +149,11 @@ public final class RoleAssignmentDAO extends AbstractGenericEntityDAO<RoleAssign
         {
             roleAssignment.getAuthorizationGroup().removeRoleAssigment(roleAssignment);
         }
-        final HibernateTemplate hibernateTemplate = getHibernateTemplate();
-        hibernateTemplate.delete(roleAssignment);
-        hibernateTemplate.flush();
+        doExecute(session -> {
+            session.remove(roleAssignment);
+            session.flush();
+            return null;
+        });
         if (operationLog.isInfoEnabled())
         {
             operationLog.info(String.format("DELETE: role assignment '%s'.", roleAssignment));
@@ -168,12 +178,11 @@ public final class RoleAssignmentDAO extends AbstractGenericEntityDAO<RoleAssign
         assert role != null : "Unspecified role.";
         assert grantee != null : "Unspecified grantee.";
 
-        final List<RoleAssignmentPE> roles =
-                cast(getHibernateTemplate().find(
+        final List<RoleAssignmentPE> roles = find(RoleAssignmentPE.class,
                         String.format("from %s r where r."
                                 + getGranteeHqlParameter(grantee.getType())
-                                + " = ? and project.code = ? and project.space.code = ? and r.role = ?", TABLE_NAME),
-                        toArray(grantee.getCode(), projectIdentifier.getProjectCode(), projectIdentifier.getSpaceCode(), role)));
+                                + " = ?1 and project.code = ?2 and project.space.code = ?3 and r.role = ?4", TABLE_NAME),
+                        toArray(grantee.getCode(), projectIdentifier.getProjectCode(), projectIdentifier.getSpaceCode(), role));
         final RoleAssignmentPE roleAssignment =
                 tryFindEntity(roles, "role_assignments", role, projectIdentifier, grantee);
         if (operationLog.isInfoEnabled())
@@ -192,12 +201,11 @@ public final class RoleAssignmentDAO extends AbstractGenericEntityDAO<RoleAssign
 
 
 
-        final List<RoleAssignmentPE> roles =
-                cast(getHibernateTemplate().find(
+        final List<RoleAssignmentPE> roles = find(RoleAssignmentPE.class,
                         String.format("from %s r where r."
                                 + getGranteeHqlParameter(grantee.getType())
-                                + " = ? and space.code = ? " + "and r.role = ?", TABLE_NAME),
-                        toArray(grantee.getCode(), space, role)));
+                                + " = ?1 and space.code = ?2 " + "and r.role = ?3", TABLE_NAME),
+                        toArray(grantee.getCode(), space, role));
         final RoleAssignmentPE roleAssignment =
                 tryFindEntity(roles, "role_assignments", role, space, grantee);
         if (operationLog.isInfoEnabled())
@@ -215,12 +223,11 @@ public final class RoleAssignmentDAO extends AbstractGenericEntityDAO<RoleAssign
         assert role != null : "Unspecified role.";
         assert grantee != null : "Unspecified grantee.";
 
-        final List<RoleAssignmentPE> roles =
-                cast(getHibernateTemplate().find(
+        final List<RoleAssignmentPE> roles = find(RoleAssignmentPE.class,
                         String.format("from %s r where r."
-                                + getGranteeHqlParameter(grantee.getType()) + " = ? "
-                                + "and r.role = ? and space is null and project is null", TABLE_NAME),
-                        toArray(grantee.getCode(), role)));
+                                + getGranteeHqlParameter(grantee.getType()) + " = ?1 "
+                                + "and r.role = ?2 and space is null and project is null", TABLE_NAME),
+                        toArray(grantee.getCode(), role));
         final RoleAssignmentPE roleAssignment =
                 tryFindEntity(roles, "role_assignments", role, grantee);
         if (operationLog.isInfoEnabled())
@@ -236,13 +243,33 @@ public final class RoleAssignmentDAO extends AbstractGenericEntityDAO<RoleAssign
     public List<RoleAssignmentPE> listRoleAssignmentsByAuthorizationGroup(
             AuthorizationGroupPE authGroup)
     {
-        final Criteria criteria = currentSession().createCriteria(RoleAssignmentPE.class);
-        criteria.add(Restrictions.eq("authorizationGroupInternal", authGroup));
-        List<RoleAssignmentPE> result = cast(criteria.list());
+
+        List<RoleAssignmentPE> result = currentSession()
+                .createQuery(
+                        "from RoleAssignmentPE ra where ra.authorizationGroupInternal = :group",
+                        RoleAssignmentPE.class)
+                .setParameter("group", authGroup)
+                .list();
+
         if (operationLog.isInfoEnabled())
         {
             operationLog.info(String.format("LIST: role assignments for authorization group '%s'.",
                     authGroup));
+        }
+        return result;
+    }
+
+    @Override
+    public List<RoleAssignmentPE> listRoleAssignmentsBySpace(SpacePE space)
+    {
+        List<RoleAssignmentPE> result = currentSession()
+                .createQuery("from RoleAssignmentPE ra where ra.space = :space", RoleAssignmentPE.class)
+                .setParameter("space", space)
+                .list();
+
+        if (operationLog.isInfoEnabled())
+        {
+            operationLog.info(String.format("LIST: role assignments for space '%s'.", space));
         }
         return result;
     }

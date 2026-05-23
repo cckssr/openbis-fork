@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePE;
 import org.springframework.dao.DataAccessException;
 import org.springframework.orm.ObjectRetrievalFailureException;
 

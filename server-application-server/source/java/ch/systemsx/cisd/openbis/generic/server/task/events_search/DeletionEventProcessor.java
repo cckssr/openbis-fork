@@ -15,7 +15,10 @@
  */
 package ch.systemsx.cisd.openbis.generic.server.task.events_search;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.format.DateTimeParseException;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
@@ -197,7 +200,7 @@ abstract class DeletionEventProcessor extends EventProcessor
                         registerer = value;
                     } else if (ENTRY_KEY_REGISTRATION_TIMESTAMP.equals(key))
                     {
-                        registrationTimestamp = ENTRY_REGISTRATION_TIMESTAMP_FORMAT.parse(value);
+                        registrationTimestamp = parseDate(value, ENTRY_REGISTRATION_TIMESTAMP_FORMAT);
                     }
                 }
             }
@@ -241,13 +244,13 @@ abstract class DeletionEventProcessor extends EventProcessor
                         String validFrom = entry.get(ENTRY_VALID_FROM);
                         if (validFrom != null)
                         {
-                            snapshot.from = ENTRY_VALID_TIMESTAMP_FORMAT.parse(validFrom);
+                            snapshot.from = parseDate(validFrom, ENTRY_VALID_TIMESTAMP_FORMAT);
                         }
 
                         String validUntil = entry.get(ENTRY_VALID_UNTIL);
                         if (validUntil != null)
                         {
-                            snapshot.to = ENTRY_VALID_TIMESTAMP_FORMAT.parse(validUntil);
+                            snapshot.to = parseDate(validUntil, ENTRY_VALID_TIMESTAMP_FORMAT);
                         } else
                         {
                             snapshot.to = deletion.getRegistrationDateInternal();
@@ -286,6 +289,24 @@ abstract class DeletionEventProcessor extends EventProcessor
                 newEvent.content = OBJECT_MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(entries);
                 newEvents.add(newEvent);
             }
+        }
+    }
+
+    protected Date parseDate(String value, SimpleDateFormat format) throws ParseException
+    {
+        try
+        {
+            return format.parse(value);
+        } catch (ParseException e)
+        {
+            try
+            {
+                return Date.from(Instant.parse(value));
+            } catch (DateTimeParseException ignored)
+            {
+                // fall through to rethrow the original parse exception
+            }
+            throw e;
         }
     }
 

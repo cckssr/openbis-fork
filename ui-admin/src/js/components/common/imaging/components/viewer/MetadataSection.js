@@ -1,78 +1,81 @@
 import React from 'react'
-import { Chip, Typography } from '@mui/material';
+import { Typography, Box } from '@mui/material';
 import { isObjectEmpty } from '@src/js/components/common/imaging/utils.js';
-import DefaultMetadataField from '@src/js/components/common/imaging/components/gallery/DefaultMetadataField.js';
 import CollapsableSection from '@src/js/components/common/imaging/components/viewer/CollapsableSection.jsx';
 import EditableMetadataField from "@src/js/components/common/imaging/components/gallery/EditableMetadataField.jsx";
+import { useImagingDataContext } from '@src/js/components/common/imaging/components/viewer/ImagingDataContext.jsx';
+import TagsAutocomplete from '@src/js/components/common/imaging/components/viewer/TagsAutocomplete.jsx';
 
-const MetadataSection = ({ activePreview, activeImage, imagingTags, onEditComment }) => {
+const MetadataSection = ({ activePreview, activeImage, onEditComment }) => {
 
-	const currImageMetadata = activeImage.metadata;
-	const configMetadata = activeImage.config.metadata;
 	const currPreviewMetadata = activePreview.metadata;
 	const currPreviewTags = activePreview.tags;
 	const currPreviewComment = activePreview.comment;
+	const currImageMetadata = activeImage.metadata;
+	const configMetadata = activeImage.config.metadata;
 
-	const matchTagsToLabel = () => {
-		var trasformedTags = []
-		for (const activePreviewTag of currPreviewTags) {
-			const matchTag = imagingTags.find(imagingTag => imagingTag.value === activePreviewTag);
-			trasformedTags.push(matchTag.label);
+	const { handleTagImage, state} = useImagingDataContext();
+	const { imagingTags } = state;
+
+	const renderParameters = () => {
+		if (!currImageMetadata || isObjectEmpty(currImageMetadata)) {
+			return null;
 		}
-		return <DefaultMetadataField key={'property-tags'}
-			label={'Preview Tags'}
-			value={trasformedTags.map(item => (<Chip sx={{ mr: '4px' }} key={item}
-				size='small'
-				tabIndex={-1}
-				label={item} />))} />
-	}
 
-	const renderPreviewMetadata = () => {
-		return (<CollapsableSection title='Preview Metadata' span={true} isCollapsed={false}>
+		return (
+			<Box sx={{ py: 1 }}>
+				{Object.entries(currImageMetadata).map(([key, value]) => (
+					<Typography key={key}
+						variant='body2'
+						component='div'
+						sx={{color: 'textSecondary'}}
+					>
+						<strong>{key}:</strong> {value}
+					</Typography>
+				))}
+			</Box>
+		);
+	};
 
-			<Typography key={`preview-comment-${activePreview.index}`} variant='body2'
-				component={'span'} sx={{
-					color: 'textSecondary'
-				}}>
-				<EditableMetadataField keyProp={"Preview Comment"}
+	const handleTagsChange = (event, tagsArray) => {
+		handleTagImage(false, tagsArray);
+	};
+
+	const renderTags = () => {
+		return (
+			<Box sx={{ py: 1 }}>
+				<TagsAutocomplete
+					activePreviewTags={currPreviewTags}
+					imagingTags={imagingTags}
+					label='Preview Tags'
+					size='small'
+					onChange={handleTagsChange}
+				/>
+			</Box>
+		);
+	};
+
+	const renderComments = () => {
+		return (
+			<Box sx={{ py: 1 }}>
+				<EditableMetadataField
+					key={`comment-${activePreview.index}`}
+					keyProp={"Comment"}
 					valueProp={currPreviewComment}
-					onEdit={newVal => onEditComment(newVal)} />
+					onEdit={newVal => onEditComment(newVal)}
+				/>
+			</Box>
+		);
+	};
 
-				{(currPreviewTags !== null && currPreviewTags.length > 0) && matchTagsToLabel()}
-			</Typography>
-			<Typography key={`preview-metadata-${activePreview.index}`} variant='body2'
-				component={'span'} sx={{
-					color: 'textSecondary'
-				}}>
-				{!isObjectEmpty(currPreviewMetadata) &&
-					Object.entries(currPreviewMetadata).map(([key, value], pos) =>
-						<DefaultMetadataField key={'preview-property-' + pos} label={'(raw metadata) ' + key}
-							value={value} />)
-				}
-			</Typography>
-		</CollapsableSection>);
-	}
-
-	const renderImageMetadata = () => {
-		return (<CollapsableSection title='Image Metadata' span={true} isCollapsed={false}>
-			<Typography key={`image-metadata-${activeImage.index}`} variant='body2'
-				component={'span'} sx={{
-					color: 'textSecondary'
-				}}>
-				{(currImageMetadata === null || isObjectEmpty(currImageMetadata)) ?
-					<p>No image metadata to display</p>
-					: Object.entries(currImageMetadata).map(([key, value], pos) =>
-						<DefaultMetadataField key={'image-property-' + pos} label={key}
-							value={value} />)
-				}
-			</Typography>
-		</CollapsableSection>);
-	}
-
-	return (<CollapsableSection title='Metadata' isCollapsed={false}>
-		{renderPreviewMetadata()}
-		{renderImageMetadata()}
-	</CollapsableSection>
+	return (
+		<CollapsableSection title='Parameters' isCollapsed={false}>
+			<div style={{ marginLeft: '32px' }}>
+				{renderParameters()}
+				{renderTags()}
+				{renderComments()}
+			</div>
+		</CollapsableSection>
 	);
 };
 

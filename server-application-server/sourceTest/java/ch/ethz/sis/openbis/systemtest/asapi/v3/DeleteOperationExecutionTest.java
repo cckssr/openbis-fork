@@ -58,9 +58,10 @@ public class DeleteOperationExecutionTest extends AbstractOperationExecutionTest
     @AfterClass(alwaysRun = true)
     public void afterClass()
     {
-        super.afterClass();
+        // Start (or restore) while Spring context is still alive
         getMarkTimeOutPendingMaintenancePlugin().start();
         getMarkTimedOutOrDeletedMaintenancePlugin().start();
+        super.afterClass();
     }
 
     @Test

@@ -27,7 +27,7 @@ public class DriveAPIServerImpl implements DriveAPI {
         syncJobEventDAO = new SyncJobEventDAOImp(configuration);
         notificationManager = new NotificationManagerSqliteImpl(configuration);
         settingsManager = new SettingsManager(configuration, syncJobEventDAO, notificationManager);
-        taskManager = new TaskManagerImpl(syncJobEventDAO, notificationManager, configuration);
+        taskManager = new TaskManagerImpl(syncJobEventDAO, notificationManager, settingsManager, configuration);
     }
 
     public DriveAPIServerImpl(SettingsManager settingsManager, NotificationManager notificationManager, TaskManager taskManager, SyncJobEventDAO syncJobEventDAO) {
@@ -90,6 +90,10 @@ public class DriveAPIServerImpl implements DriveAPI {
 
     synchronized public @NonNull List<Notification> getNotifications(@NonNull Integer limit) {
         return notificationManager.getNotifications(limit);
+    }
+
+    synchronized public @NonNull List<@NonNull SyncJobLive> getSyncJobsLive() {
+        return taskManager.getSyncJobsLive();
     }
 
     // NON-PUBLIC METHODS

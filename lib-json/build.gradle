@@ -2,8 +2,8 @@ apply from: '../build/javaproject.gradle'
 
 dependencies {
     implementation 'fasterxml:jackson-annotations:2.9.10',
-        'fasterxml:jackson-core:2.9.10',
-        'fasterxml:jackson-databind:2.9.10.8',
+        'fasterxml:jackson-core:2.18.1',
+        'fasterxml:jackson-databind:2.18.1',
         'fasterxml:jackson-datatype-jsr310:2.9.10'
 
     testImplementation 'testng:testng:6.8-CISD'

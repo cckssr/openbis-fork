@@ -13,15 +13,21 @@ class DatabaseBrowser extends React.Component {
   }
 
   componentDidMount() {
-    this.componentDidUpdate(null)
+    this.componentDidUpdate({})
   }
 
   componentDidUpdate(prevProps) {
-    const prevSelectedObject = prevProps ? prevProps.selectedObject : null
-    const selectedObject = this.props.selectedObject
-
-    if (!_.isEqual(prevSelectedObject, selectedObject)) {
+    if (!_.isEqual(this.props.selectedObject, prevProps.selectedObject)) {
       this.controller.selectObject(this.props.selectedObject)
+    }
+
+    if (
+      !_.isEqual(
+        this.props.lastObjectModifications,
+        prevProps.lastObjectModifications
+      )
+    ) {
+      this.controller.reload(this.props.lastObjectModifications)
     }
   }
 
@@ -32,5 +38,6 @@ class DatabaseBrowser extends React.Component {
 }
 
 export default AppController.getInstance().withState(() => ({
-  selectedObject: AppController.getInstance().getSelectedObject(pages.DATABASE)
+  selectedObject: AppController.getInstance().getSelectedObject(pages.DATABASE),
+  lastObjectModifications: AppController.getInstance().getLastObjectModifications()
 }))(DatabaseBrowser)

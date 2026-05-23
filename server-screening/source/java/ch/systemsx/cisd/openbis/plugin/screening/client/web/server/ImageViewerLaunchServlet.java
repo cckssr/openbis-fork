@@ -25,8 +25,8 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import ch.ethz.sis.shared.log.classic.impl.Logger;
 import org.springframework.stereotype.Controller;

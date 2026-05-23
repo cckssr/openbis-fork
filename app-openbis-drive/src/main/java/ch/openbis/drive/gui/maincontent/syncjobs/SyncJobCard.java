@@ -4,12 +4,23 @@ import ch.openbis.drive.gui.i18n.I18n;
 import ch.openbis.drive.gui.maincontent.ResizablePanel;
 import ch.openbis.drive.gui.util.DisplaySettings;
 import ch.openbis.drive.gui.util.SharedContext;
+import ch.openbis.drive.gui.util.UsageUtil;
 import ch.openbis.drive.model.SyncJob;
+import javafx.animation.Animation;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
+import javafx.scene.control.Label;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
@@ -17,12 +28,15 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.util.Duration;
 import lombok.NonNull;
 
 import java.util.List;
 
 public class SyncJobCard extends ResizablePanel implements AutoCloseable {
     public static final int SYNC_JOB_ATTRIBUTE_WIDTH = 165;
+    private final I18n i18n;
     private final SyncJob syncJob;
     private final HBox hBoxContainer;
     private final RadioButton radioButton;
@@ -31,15 +45,26 @@ public class SyncJobCard extends ResizablePanel implements AutoCloseable {
 
     private final List<SyncJobCardLabel> syncJobCardLabels;
 
+    private final AnchorPane progressBarWithFraction;
+    private final Label liveStatus;
+    private final AnimatedProgressBar animatedProgressBar;
+    private final Label progressFraction;
+
     public SyncJobCard(@NonNull SyncJob syncJob, @NonNull Pane parent) {
         super(parent);
         this.syncJob = syncJob;
         this.radioButton = new RadioButton();
 
-        I18n i18n = SharedContext.getContext().getI18n();
+        i18n = SharedContext.getContext().getI18n();
+        EventHandler<MouseEvent> mouseClickEvent = new EventHandler<>() {
+            @Override
+            public void handle(MouseEvent mouseEvent) {
+                radioButton.selectedProperty().setValue(!radioButton.selectedProperty().getValue());
+            }
+        };
 
         this.getStyleClass().add(DisplaySettings.SYNC_JOB_CARD_CLASS);
-        this.setMaxSize(2 * DisplaySettings.DEFAULT_INITIAL_WINDOW_WIDTH, DisplaySettings.SYNC_TASK_PANEL_JOB_CARD_HEIGHT);
+        this.setMaxSize(10 * DisplaySettings.DEFAULT_INITIAL_WINDOW_WIDTH, DisplaySettings.SYNC_TASK_PANEL_JOB_CARD_HEIGHT);
         this.setMinWidth(DisplaySettings.DEFAULT_INITIAL_WINDOW_WIDTH - DisplaySettings.SIDE_MENU_WIDTH - 100);
 
         hBoxContainer = new HBox();
@@ -53,8 +78,9 @@ public class SyncJobCard extends ResizablePanel implements AutoCloseable {
         TextField titleLabel = new TextField(syncJob.getTitle());
         titleLabel.setPrefWidth(this.getMaxWidth());
         titleLabel.setStyle(String.format("-fx-font-weight: bold; -fx-font-size: %spt; -fx-background-color: transparent", 14));
-        titleLabel.setPadding(new Insets(15, 0, 10, 0));
+        titleLabel.setPadding(new Insets(15, 0, 10, -8));
         titleLabel.setEditable(false);
+        titleLabel.setOnMouseClicked(mouseClickEvent);
         dataBox.getChildren().add(titleLabel);
         hBoxContainer.getChildren().add(dataBox);
 
@@ -64,11 +90,11 @@ public class SyncJobCard extends ResizablePanel implements AutoCloseable {
         syncJobCoordinates.setPrefHeight(DisplaySettings.SYNC_TASK_PANEL_JOB_CARD_HEIGHT);
         ObservableValue<Double> desiredSyncJobCoordinatesWidth = parent.widthProperty().map( (parentWidth) -> Math.min(parentWidth.doubleValue(), this.getMaxWidth()) - SYNC_JOB_ATTRIBUTE_WIDTH - 180);
 
-        SyncJobCardLabel entityPermIdLabel = new SyncJobCardLabel(i18n.get("main_panel.sync_tasks.sync_job_card.entity_perm_id"), syncJob.getEntityPermId(), SyncJobCardLabel.DEFAULT_SMALL_LABEL_SIZE, desiredSyncJobCoordinatesWidth);
-        SyncJobCardLabel serverDirectoryLabel = new SyncJobCardLabel(i18n.get("main_panel.sync_tasks.sync_job_card.server_directory"), syncJob.getRemoteDirectoryRoot(), SyncJobCardLabel.DEFAULT_SMALL_LABEL_SIZE, desiredSyncJobCoordinatesWidth);
-        SyncJobCardLabel localDirectoryLabel = new SyncJobCardLabel(i18n.get("main_panel.sync_tasks.sync_job_card.local_directory"), syncJob.getLocalDirectoryRoot(), SyncJobCardLabel.DEFAULT_SMALL_LABEL_SIZE, desiredSyncJobCoordinatesWidth);
-        SyncJobCardLabel openBisServerUrlLabel = new SyncJobCardLabel(i18n.get("main_panel.sync_tasks.sync_job_card.open_bis_url"), syncJob.getOpenBisUrl(), SyncJobCardLabel.DEFAULT_SMALL_LABEL_SIZE, desiredSyncJobCoordinatesWidth);
-        syncJobCoordinates.getChildren().addAll(entityPermIdLabel, serverDirectoryLabel, localDirectoryLabel, openBisServerUrlLabel);
+        SyncJobCardLabel entityPermIdLabel = new SyncJobCardLabel(i18n.get("main_panel.sync_tasks.sync_job_card.entity_perm_id"), syncJob.getEntityPermId(), SyncJobCardLabel.DEFAULT_SMALL_LABEL_SIZE, desiredSyncJobCoordinatesWidth, mouseClickEvent);
+        SyncJobCardLabel serverDirectoryLabel = new SyncJobCardLabel(i18n.get("main_panel.sync_tasks.sync_job_card.server_directory"), syncJob.getRemoteDirectoryRoot(), SyncJobCardLabel.DEFAULT_SMALL_LABEL_SIZE, desiredSyncJobCoordinatesWidth, mouseClickEvent);
+        SyncJobCardLabel localDirectoryLabel = new SyncJobCardLabel(i18n.get("main_panel.sync_tasks.sync_job_card.local_directory"), syncJob.getLocalDirectoryRoot(), SyncJobCardLabel.DEFAULT_SMALL_LABEL_SIZE, desiredSyncJobCoordinatesWidth, mouseClickEvent);
+        SyncJobCardLabel openBisServerUrlLabel = new SyncJobCardLabel(i18n.get("main_panel.sync_tasks.sync_job_card.open_bis_url"), syncJob.getOpenBisUrl(), SyncJobCardLabel.DEFAULT_SMALL_LABEL_SIZE, desiredSyncJobCoordinatesWidth, mouseClickEvent);
+        syncJobCoordinates.getChildren().addAll(entityPermIdLabel, openBisServerUrlLabel, serverDirectoryLabel, localDirectoryLabel);
         labelPane.getChildren().add(syncJobCoordinates);
 
         syncJobAttributes = new VBox();
@@ -83,29 +109,46 @@ public class SyncJobCard extends ResizablePanel implements AutoCloseable {
                     case Upload -> "main_panel.sync_tasks.sync_job_card.mode.upload";
                     case Download -> "main_panel.sync_tasks.sync_job_card.mode.download";
                 }),
-                SyncJobCardLabel.DEFAULT_SMALL_LABEL_SIZE, syncJobAttributes.widthProperty().map(Number::doubleValue), 55);
+                SyncJobCardLabel.DEFAULT_SMALL_LABEL_SIZE, syncJobAttributes.widthProperty().map(Number::doubleValue), 55, mouseClickEvent, null);
         SyncJobCardLabel stateLabel = new SyncJobCardLabel(i18n.get("main_panel.sync_tasks.sync_job_card.state"),
                 i18n.get(syncJob.isEnabled() ? "main_panel.sync_tasks.sync_job_card.state.enabled" : "main_panel.sync_tasks.sync_job_card.state.disabled"),
-                SyncJobCardLabel.DEFAULT_SMALL_LABEL_SIZE,  syncJobAttributes.widthProperty().map(Number::doubleValue),55);
+                SyncJobCardLabel.DEFAULT_SMALL_LABEL_SIZE,  syncJobAttributes.widthProperty().map(Number::doubleValue),55, mouseClickEvent,
+                syncJob.isEnabled() ? Color.GREEN : Color.RED);
+
+        VBox liveStatusBox = new VBox();
+        liveStatusBox.setSpacing(10);
+        this.progressFraction = new Label();
+        this.animatedProgressBar = new AnimatedProgressBar(150);
+        ProgressBar progressBar = this.animatedProgressBar.getProgressBar();
+        this.liveStatus = new Label();
+        this.progressBarWithFraction = new AnchorPane();
+        AnchorPane.setTopAnchor(progressBar,0.0);
+        AnchorPane.setLeftAnchor(progressBar,0.0);
+        AnchorPane.setTopAnchor(this.progressFraction,0.0);
+        AnchorPane.setLeftAnchor(this.progressFraction,10.0);
+        progressBarWithFraction.getChildren().addAll(progressBar, this.progressFraction);
+        liveStatusBox.getChildren().addAll(this.liveStatus, progressBarWithFraction);
+
         syncJobAttributes.getChildren().addAll(modeLabel, stateLabel);
+
         AnchorPane.setRightAnchor(syncJobAttributes, 0.0);
         AnchorPane.setTopAnchor(syncJobAttributes, 0.0);
         labelPane.getChildren().add(syncJobAttributes);
+
+        AnchorPane.setBottomAnchor(liveStatusBox, 16.0);
+        AnchorPane.setRightAnchor(liveStatusBox, 22.0);
+        labelPane.getChildren().add(liveStatusBox);
 
         dataBox.getChildren().add(labelPane);
 
         AnchorPane.setLeftAnchor(hBoxContainer, 30.0);
         this.getChildren().add(hBoxContainer);
 
-
-        this.setOnMouseClicked(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent mouseEvent) {
-                radioButton.selectedProperty().setValue(!radioButton.selectedProperty().getValue());
-            }
-        });
+        this.setOnMouseClicked(mouseClickEvent);
 
         syncJobCardLabels = List.of(serverDirectoryLabel, entityPermIdLabel, localDirectoryLabel, openBisServerUrlLabel, modeLabel, stateLabel);
+
+        setNotRunning();
         resize();
     }
 
@@ -113,7 +156,7 @@ public class SyncJobCard extends ResizablePanel implements AutoCloseable {
         return radioButton.selectedProperty();
     }
 
-    @SuppressWarnings("")
+    @SuppressWarnings("lombok")
     public SyncJob getSyncJob() {
         return syncJob;
     }
@@ -127,8 +170,113 @@ public class SyncJobCard extends ResizablePanel implements AutoCloseable {
         this.syncJobCoordinates.setMaxWidth(Math.min(parent.getWidth(), this.getMaxWidth()) - SYNC_JOB_ATTRIBUTE_WIDTH - 150);
     }
 
+    public void setUploading(long total, long current) {
+        double progress;
+        if (total != 0) {
+            progress = Double.max(0, Double.min(1, (double) current / total));
+        } else {
+            progress = 1;
+        }
+        Platform.runLater( () -> {
+            this.liveStatus.setText(i18n.get("main_panel.sync_tasks.sync_job_card.live_state.upload"));
+            this.progressBarWithFraction.getStyleClass().removeIf( cls -> cls.equals(DisplaySettings.HIDDEN_DISPLAY_STYLE_CLASS) );
+            this.animatedProgressBar.getProgressBar().setProgress(progress);
+            this.progressFraction.setText(String.format("%s / %s",
+                    UsageUtil.getFileSizeWithUnitOfMeasurement(current),
+                    UsageUtil.getFileSizeWithUnitOfMeasurement(total)));
+        });
+    }
+
+    public void setDownloading(long total, long current) {
+        double progress;
+        if (total != 0) {
+            progress = Double.max(0, Double.min(1, (double) current / total));
+        } else {
+            progress = 1;
+        }
+        Platform.runLater( () -> {
+            this.liveStatus.setText(i18n.get("main_panel.sync_tasks.sync_job_card.live_state.download"));
+            this.progressBarWithFraction.getStyleClass().removeIf( cls -> cls.equals(DisplaySettings.HIDDEN_DISPLAY_STYLE_CLASS) );
+            this.animatedProgressBar.getProgressBar().setProgress(progress);
+            this.progressFraction.setText(String.format("%s / %s",
+                    UsageUtil.getFileSizeWithUnitOfMeasurement(current),
+                    UsageUtil.getFileSizeWithUnitOfMeasurement(total)));
+        });
+    }
+
+    public void setNotRunning() {
+        Platform.runLater( () -> {
+            if ( !this.progressBarWithFraction.getStyleClass().contains(DisplaySettings.HIDDEN_DISPLAY_STYLE_CLASS) ) {
+                this.progressBarWithFraction.getStyleClass().add(DisplaySettings.HIDDEN_DISPLAY_STYLE_CLASS);
+            }
+            if (syncJob.isEnabled()) {
+                this.liveStatus.setText(i18n.get("main_panel.sync_tasks.sync_job_card.live_state.not_running"));
+            } else {
+                this.liveStatus.setText("");
+            }
+        });
+    }
+
+    static class AnimatedProgressBar {
+        final SimpleObjectProperty<Node> node = new SimpleObjectProperty<>();
+
+        // Wrapped and not simply extended, for difficulties with animated style otherwise
+        final ProgressBar progressBar;
+
+        final Timeline timeline;
+
+        public AnimatedProgressBar(int minWidth) {
+            this.progressBar = new ProgressBar(0) {
+                @Override
+                protected void layoutChildren() {
+                    super.layoutChildren();
+                    if (node.get() == null) {
+                        Node n = lookup(".bar");
+                        node.set(n);
+
+                        progressProperty().addListener((obs, old, val) -> {
+                            if (old.doubleValue() <= 0) {
+                                timeline.playFromStart();
+                            }
+                        });
+                    }
+                }
+            };
+            this.progressBar.setMinWidth(minWidth);
+
+            int stripWidth = 15;
+            IntegerProperty x = new SimpleIntegerProperty(0);
+            IntegerProperty y = new SimpleIntegerProperty(stripWidth);
+            this.timeline = new Timeline(new KeyFrame(Duration.millis(150), e -> {
+                Node n = node.get();
+                if (n != null) {
+                    x.set(x.get() + 1);
+                    y.set(y.get() + 1);
+                    String style = "-fx-background-color: linear-gradient(from " + x.get() + "px " + x.get() + "px to " + y.get() + "px " + y.get() + "px, repeat, derive(-fx-accent, 75%) 10%, derive(-fx-accent, 90%) 90%);";
+                    n.setStyle(style);
+                    if (x.get() >= stripWidth * 2) {
+                        x.set(0);
+                        y.set(stripWidth);
+                    }
+                }
+            }));
+
+            this.timeline.setCycleCount(Animation.INDEFINITE);
+        }
+
+        @SuppressWarnings("lombok")
+        public ProgressBar getProgressBar() {
+            return progressBar;
+        }
+
+        public void close() {
+            timeline.stop();
+        }
+    }
+
     @Override
     public void close() throws Exception {
+        this.animatedProgressBar.close();
         super.close();
         for (SyncJobCardLabel syncJobCardLabel : syncJobCardLabels) {
             syncJobCardLabel.close();

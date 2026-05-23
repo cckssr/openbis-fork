@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 
 public class LastSeenMessagesDAO implements ILastSeenMessagesDAO
 {
@@ -19,6 +20,8 @@ public class LastSeenMessagesDAO implements ILastSeenMessagesDAO
 
     private static final String GET_BY_CONSUMER_ID_SQL =
             "SELECT ID, LAST_SEEN_MESSAGE_ID, CONSUMER_ID FROM LAST_SEEN_MESSAGES WHERE CONSUMER_ID = ?";
+
+    private static final String DELETE_SQL = "DELETE FROM LAST_SEEN_MESSAGES WHERE ID IN (SELECT UNNEST(?));";
 
     private final Connection connection;
 
@@ -88,6 +91,18 @@ public class LastSeenMessagesDAO implements ILastSeenMessagesDAO
             {
                 return null;
             }
+        } catch (SQLException e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override public void delete(final List<Long> lastSeenIds)
+    {
+        try (PreparedStatement statement = connection.prepareStatement(DELETE_SQL))
+        {
+            statement.setObject(1, lastSeenIds.toArray(new Long[0]));
+            statement.executeUpdate();
         } catch (SQLException e)
         {
             throw new RuntimeException(e);

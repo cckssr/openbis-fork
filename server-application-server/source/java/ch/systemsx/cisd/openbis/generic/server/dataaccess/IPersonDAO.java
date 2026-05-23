@@ -86,6 +86,8 @@ public interface IPersonDAO extends IGenericDAO<PersonPE>
 
     /**
      * Updates given <var>PersonPE</var>.
+     *
+     * @return
      */
     public void updatePerson(final PersonPE person) throws DataAccessException;
 

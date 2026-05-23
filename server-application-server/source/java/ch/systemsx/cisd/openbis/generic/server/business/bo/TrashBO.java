@@ -384,6 +384,11 @@ public class TrashBO extends AbstractBusinessObject implements ITrashBO
                             return dataSet.getSample();
                         }
                     }));
+        List<TechId> afsDataSetIds = getDataDAO().listAfsDataSetIdsBySampleIds(sampleIds);
+        if(!afsDataSetIds.isEmpty())
+        {
+            trashManager.addTrashOperation(EntityKind.DATA_SET, afsDataSetIds, false);
+        }
     }
 
     private Set<TechId> trashExperimentDependentSamples(TrashOperationsManager trashManager, Set<TechId> experimentIds)
@@ -428,6 +433,11 @@ public class TrashBO extends AbstractBusinessObject implements ITrashBO
                             return dataSet.getExperiment();
                         }
                     }));
+        List<TechId> afsDataSetIds = getDataDAO().listAfsDataSetIdsByExperimentIds(experimentIds);
+        if(!afsDataSetIds.isEmpty())
+        {
+            trashManager.addTrashOperation(EntityKind.DATA_SET, afsDataSetIds, false);
+        }
     }
 
     private void assertDataSetDeletionBusinessRules(Set<TechId> experimentIds, Set<TechId> sampleIdes,

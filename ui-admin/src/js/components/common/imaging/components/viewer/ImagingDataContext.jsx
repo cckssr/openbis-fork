@@ -1,4 +1,4 @@
-import React, { useState, useEffect, createContext, useContext, useCallback } from 'react';
+import React, { useState, useEffect, createContext, useContext, useCallback, useMemo } from 'react';
 import { convertToBase64, isObjectEmpty, createInitValues } from "@src/js/components/common/imaging/utils.js";
 import constants from '@src/js/components/common/imaging/constants.js';
 
@@ -11,6 +11,8 @@ const ImagingDataContext = createContext();
 export const useImagingDataContext = () => useContext(ImagingDataContext);
 
 export const ImagingDataProvider = ({ onUnsavedChanges, objId, objType, extOpenbis, children, showSemanticAnnotations}) => {
+    const imagingFacade = useMemo(() => new ImagingFacade(extOpenbis), [extOpenbis]);
+    const mapper = useMemo(() => new ImagingMapper(extOpenbis), [extOpenbis]);
     const [state, setState] = useState({
         error: { open: false, error: null },
         isSaved: true,
@@ -26,11 +28,11 @@ export const ImagingDataProvider = ({ onUnsavedChanges, objId, objType, extOpenb
         datasetFilePaths: [],
         showSemanticAnnotations: showSemanticAnnotations
     });
+    const [autoUpdate, setAutoUpdate] = useState(false);
 
     const loadImagingDataset = useCallback(async () => {
         if (!state.loaded) {
             try {
-                const imagingFacade = new ImagingFacade(extOpenbis);
                 const [datasetFilePaths, datasetType, imagingDataSetPropertyConfig] = await imagingFacade.loadImagingDataset(objId, false, true, true);
                 const imagingTagsArr = await imagingFacade.loadImagingVocabularyTerms(constants.IMAGING_TAGS);
 
@@ -48,19 +50,19 @@ export const ImagingDataProvider = ({ onUnsavedChanges, objId, objType, extOpenb
                     datasetType: datasetType,
                     datasetFilePaths: datasetFilePaths
                 }));
-                console.log('imagingDataSetPropertyConfig : ', imagingDataSetPropertyConfig);
+                //console.log('imagingDataSetPropertyConfig : ', imagingDataSetPropertyConfig);
             } catch (error) {
                 handleError(error);
             }
         }
-    }, [state.loaded, objId, extOpenbis]);
+    }, [state.loaded, objId, imagingFacade]);
 
     const createLocatedSXMPreview = async (sxmPermId, sxmFilePath) => {
         handleOpen();
         const newActivePreviewIdx = createNewPreview();
         const { activeImageIdx, imagingDataset } = state;
         const selectedSpectraPreview = imagingDataset.images[activeImageIdx].previews[newActivePreviewIdx];
-        const newSpectraPreview = await new ImagingFacade(extOpenbis).createLocatedSXMPreview(objId, sxmPermId, sxmFilePath, activeImageIdx, selectedSpectraPreview);
+        const newSpectraPreview = await imagingFacade.createLocatedSXMPreview(objId, sxmPermId, sxmFilePath, activeImageIdx, selectedSpectraPreview);
         if (newSpectraPreview.error) {
             setState(prev => ({ ...prev, open: false, isChanged: true, isSaved: false }));
             handleError(newSpectraPreview.error);
@@ -102,7 +104,7 @@ export const ImagingDataProvider = ({ onUnsavedChanges, objId, objType, extOpenb
         const { imagingDataset } = state;
         handleOpen();
         try {
-            const isSaved = await new ImagingFacade(extOpenbis).saveImagingDataset(objId, objType, imagingDataset);
+            const isSaved = await imagingFacade.saveImagingDataset(objId, objType, imagingDataset);
             if (isSaved === null) {
                 setState(prev => ({ ...prev, open: false, isChanged: false, isSaved: true }));
                 if (onUnsavedChanges !== null)
@@ -124,6 +126,9 @@ export const ImagingDataProvider = ({ onUnsavedChanges, objId, objType, extOpenb
             imagingDataset: toUpdateImgDs,
             isChanged: true
         }));
+        if (autoUpdate) {
+            handleUpdate();
+        }
     }
 
     const deleteSerializationIds = (imagingDataset) => {
@@ -137,8 +142,7 @@ export const ImagingDataProvider = ({ onUnsavedChanges, objId, objType, extOpenb
         handleOpen();
         const { imagingDataset, activeImageIdx, activePreviewIdx } = state;
         try {
-            const updatedImagingDataset = await new ImagingFacade(extOpenbis)
-                .updateImagingDataset(objId, activeImageIdx, imagingDataset.images[activeImageIdx].previews[activePreviewIdx]);
+            const updatedImagingDataset = await imagingFacade.updateImagingDataset(objId, activeImageIdx, imagingDataset.images[activeImageIdx].previews[activePreviewIdx]);
             if (updatedImagingDataset.error) {
                 setState(prev => ({ ...prev, open: false, isChanged: true, isSaved: false }));
                 handleError(updatedImagingDataset.error);
@@ -167,8 +171,7 @@ export const ImagingDataProvider = ({ onUnsavedChanges, objId, objType, extOpenb
         handleOpen();
         const { activeImageIdx } = state;
         try {
-            const downloadableURL = await new ImagingFacade(extOpenbis)
-                .exportImagingDataset(objId, activeImageIdx, state, {});
+            const downloadableURL = await imagingFacade.exportImagingDataset(objId, activeImageIdx, state, {});
             if (downloadableURL)
                 window.open(downloadableURL, '_blank');
             setState(prev => ({ ...prev, open: false }));
@@ -199,7 +202,7 @@ export const ImagingDataProvider = ({ onUnsavedChanges, objId, objType, extOpenb
         try {
             let toUpdateImgDs = { ...imagingDataset };
             let newLastIdx = toUpdateImgDs.images[activeImageIdx].previews.length;
-            let previewTemplate = new ImagingMapper(extOpenbis).getImagingDataSetPreview(
+            let previewTemplate = mapper.getImagingDataSetPreview(
                 {},
                 file.type.split('/')[1],
                 base64.split(',')[1],
@@ -272,13 +275,14 @@ export const ImagingDataProvider = ({ onUnsavedChanges, objId, objType, extOpenb
         setState(prev => ({ ...prev, resolution: v_list }));
     };
 
-    const handleActiveConfigChange = (name, value, update = false) => {
+    const handleActiveConfigChange = (name, value, update = false, autoUpdate = false) => {
+        console.log('handleActiveConfigChange - name: ', name, 'value: ', value, 'update: ', update);
         const { imagingDataset, activeImageIdx, activePreviewIdx, } = state;
         let toUpdateIDS = { ...imagingDataset };
         toUpdateIDS.images[activeImageIdx].previews[activePreviewIdx].config[name] = value;
         setState(prev => ({ ...prev, imagingDataset: toUpdateIDS, isChanged: true }));
         // Used by the player to autoupdate
-        if (update) {
+        if (update || autoUpdate) {
             handleUpdate();
         }
     }
@@ -298,7 +302,7 @@ export const ImagingDataProvider = ({ onUnsavedChanges, objId, objType, extOpenb
         let activeImage = toUpdateImgDs.images[activeImageIdx];
         let newLastIdx = activeImage.previews.length;
         let inputValues = createInitValues(imagingDataset.images[0].config.inputs, activeImage.previews[activePreviewIdx].config);
-        let imagingDataSetPreview = new ImagingMapper(extOpenbis).getImagingDataSetPreview(inputValues, 'png', null, null, null, newLastIdx, false, {}, [], '', []);
+        let imagingDataSetPreview = mapper.getImagingDataSetPreview(inputValues, 'png', null, null, null, newLastIdx, false, {}, [], '', []);
         activeImage.previews = [...activeImage.previews, imagingDataSetPreview];
         setState(prev => ({
             ...prev,
@@ -314,7 +318,7 @@ export const ImagingDataProvider = ({ onUnsavedChanges, objId, objType, extOpenb
 
     return (
         <ImagingDataContext.Provider value={{
-            state, handleOpen, handleError, handleErrorCancel,
+            state, autoUpdate, setAutoUpdate, handleOpen, handleError, handleErrorCancel,
             saveDataset, handleOnAddFilter,
             handleUpdate, onExport, deletePreview,
             handleActiveImageChange, handleActivePreviewChange,

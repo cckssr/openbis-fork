@@ -26,17 +26,16 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.ICustomIdHolder;
 import ch.systemsx.cisd.openbis.generic.shared.basic.TechId;
 import org.apache.commons.lang3.StringUtils;
 import ch.ethz.sis.shared.log.classic.impl.Logger;
-import org.hibernate.Criteria;
-import org.hibernate.FetchMode;
+
 import org.hibernate.SessionFactory;
-import org.hibernate.criterion.Restrictions;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataRetrievalFailureException;
-import org.springframework.orm.hibernate5.HibernateTemplate;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
+import static ch.systemsx.cisd.openbis.generic.server.dataaccess.db.DAOUtils.BATCH_SIZE;
 
 public abstract class AbstractGenericEntityWithCustomIdDAO<T extends ICustomIdHolder<?>, X extends ICustomIdHolder> extends AbstractDAO implements
         ICustomIdDAO<T, X>
@@ -66,42 +65,41 @@ public abstract class AbstractGenericEntityWithCustomIdDAO<T extends ICustomIdHo
     public T getById(X techId)
     {
         assert techId != null : "Technical identifier unspecified.";
-        final Object entity = getHibernateTemplate().get(getEntityClass(), techId.getId());
-        T result = null;
-        if (entity == null)
-        {
-            throw new DataRetrievalFailureException(getEntityDescription() + " with ID "
-                    + techId.getId() + " does not exist. Maybe someone has just deleted it.");
-        } else
-        {
-            result = getEntity(entity);
-        }
-        if (operationLog.isDebugEnabled())
-        {
-            operationLog.debug(String.format("%s(%s): '%s'.", MethodUtils.getCurrentMethod()
-                    .getName(), techId, result));
-        }
-        return result;
+        return doExecute( session -> {
+            final Object entity = session.get(getEntityClass(), techId.getId());
+            T result = null;
+            if (entity == null)
+            {
+                throw new DataRetrievalFailureException(getEntityDescription() + " with ID "
+                        + techId.getId() + " does not exist. Maybe someone has just deleted it.");
+            } else
+            {
+                result = getEntity(entity);
+            }
+            if (operationLog.isDebugEnabled())
+            {
+                operationLog.debug(String.format("%s(%s): '%s'.", MethodUtils.getCurrentMethod()
+                        .getName(), techId, result));
+            }
+            return result;
+        });
     }
 
     public final T loadByTechId(final TechId techId) throws DataAccessException
     {
         assert techId != null : "Technical identifier unspecified.";
-        return getEntity(getHibernateTemplate().load(getEntityClass(), techId.getId()));
+        T result = doExecute(session -> session.load(getEntityClass(), techId.getId()));
+        return getEntity(result);
     }
 
-    // TODO 2009-05-22, Tomasz Pylak: remove connections, it forces BOs to use strings with field
-    @Override
-    public T tryGetById(X techId, String... connections)
+
+    @Deprecated
+    public T tryGetById(X techId)
     {
         assert techId != null : "Technical identifier unspecified.";
-        final Criteria criteria = currentSession().createCriteria(getEntityClass());
-        criteria.add(Restrictions.eq("id", techId.getId()));
-        for (String connection : connections)
-        {
-            criteria.setFetchMode(connection, FetchMode.SELECT);
-        }
-        final T result = tryGetEntity(criteria.uniqueResult());
+        final T result = tryGetEntity(
+                currentSession().get(getEntityClass(), techId.getId())
+        );
         if (operationLog.isDebugEnabled())
         {
             operationLog.debug(String.format("%s(%s): '%s'.", MethodUtils.getCurrentMethod()
@@ -123,7 +121,23 @@ public abstract class AbstractGenericEntityWithCustomIdDAO<T extends ICustomIdHo
         {
             return new ArrayList<T>();
         }
-        final List<T> list = DAOUtils.listByCollection(getHibernateTemplate(), clazz, idName, ids);
+        List<?> all = new ArrayList<>(ids);
+        List<T> list = new ArrayList<>(all.size());
+
+        for (int i = 0; i < all.size(); i += BATCH_SIZE) {
+            List<?> slice = all.subList(i, Math.min(all.size(), i + BATCH_SIZE));
+            if (!slice.isEmpty()) {
+                List<T> subList = doExecute(session -> session.createQuery(
+                                        "from " + clazz.getName() + " e where e." + idName + " in (:ids)",
+                                        clazz)
+                                .setParameter("ids", slice)
+                                .getResultList());
+                if(subList != null)
+                {
+                    list.addAll(subList);
+                }
+            }
+        }
         if (operationLog.isDebugEnabled())
         {
             String name = clazz.getSimpleName();
@@ -148,7 +162,7 @@ public abstract class AbstractGenericEntityWithCustomIdDAO<T extends ICustomIdHo
         // experiment.setCode(CodeConverter.tryToDatabase(experiment.getCode()));
 
         validatePE(entity);
-        flushWithSqlExceptionHandling(getHibernateTemplate());
+        flushWithSqlExceptionHandling();
     }
 
     @Override
@@ -165,16 +179,6 @@ public abstract class AbstractGenericEntityWithCustomIdDAO<T extends ICustomIdHo
         validatePE(entity);
     }
 
-    public void clearSession()
-    {
-        getHibernateTemplate().clear();
-    }
-
-    public final void flush()
-    {
-        getHibernateTemplate().flush();
-    }
-
     @Override
     public void persist(T entity)
             throws DataAccessException
@@ -182,16 +186,16 @@ public abstract class AbstractGenericEntityWithCustomIdDAO<T extends ICustomIdHo
         assert entity != null : "entity unspecified";
 
         validatePE(entity);
+        doExecute( session -> {
+                    session.save(entity);
+                    session.flush();
+                    return null;
+                });
 
-        final HibernateTemplate hibernateTemplate = getHibernateTemplate();
-        hibernateTemplate.save(entity);
-        hibernateTemplate.flush();
-
-        if (operationLog.isInfoEnabled())
-        {
-            operationLog.debug(String.format("%s(%s)", MethodUtils.getCurrentMethod().getName(),
-                    entity));
+        if (operationLog.isInfoEnabled()) {
+            operationLog.debug(String.format("%s(%s)", MethodUtils.getCurrentMethod().getName(), entity));
         }
+
     }
 
     @Override
@@ -200,20 +204,21 @@ public abstract class AbstractGenericEntityWithCustomIdDAO<T extends ICustomIdHo
     {
         assert entity != null : "entity unspecified";
 
-        final HibernateTemplate hibernateTemplate = getHibernateTemplate();
-        hibernateTemplate.delete(entity);
-        hibernateTemplate.flush();
-
-        if (operationLog.isInfoEnabled())
-        {
-            operationLog.debug(String.format("%s(%s)", MethodUtils.getCurrentMethod().getName(),
-                    entity));
-        }
+            doExecute( session -> {
+                        //            Session session = currentSession();
+                        T managed = (T) session.merge(entity);
+                        session.delete(managed); // Or session.remove(entity) in pure JPA
+                        session.flush();
+                        return  null;
+                    });
+            if (operationLog.isInfoEnabled()) {
+                operationLog.debug(String.format("%s(%s)", MethodUtils.getCurrentMethod().getName(), entity));
+            }
     }
 
     @Override
     public List<T> listAllEntities() throws DataAccessException
     {
-        return cast(getHibernateTemplate().loadAll(getEntityClass()));
+        return loadAll(getEntityClass());
     }
 }

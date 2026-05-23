@@ -62,15 +62,15 @@ describe(SUITE, () => {
   test('open and close types', async () => {
     let object1 = {
       type: objectType.OBJECT_TYPE,
-      id: fixture.TEST_SAMPLE_TYPE_DTO.code
+      id: fixture.TEST_SAMPLE_TYPE_DTO.code,
     }
     let object2 = {
       type: objectType.COLLECTION_TYPE,
-      id: fixture.TEST_EXPERIMENT_TYPE_DTO.code
+      id: fixture.TEST_EXPERIMENT_TYPE_DTO.code,
     }
     let object3 = {
       type: objectType.VOCABULARY_TYPE,
-      id: fixture.TEST_VOCABULARY_DTO.code
+      id: fixture.TEST_VOCABULARY_DTO.code,
     }
 
     await controller.objectOpen(pages.TYPES, object1.type, object1.id)
@@ -111,8 +111,12 @@ describe(SUITE, () => {
   })
 
   test('open and close users and groups', async () => {
-    let object1 = { type: objectType.USER, id: fixture.TEST_USER_DTO.userId }
-    let object2 = { type: objectType.USER, id: fixture.ANOTHER_USER_DTO.userId }
+    let object1 = {
+      type: objectType.USER, id: fixture.TEST_USER_DTO.userId
+    }
+    let object2 = {
+      type: objectType.USER, id: fixture.ANOTHER_USER_DTO.userId
+    }
     let object3 = {
       type: objectType.USER_GROUP,
       id: fixture.TEST_USER_GROUP_DTO.code

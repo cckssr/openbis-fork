@@ -7,7 +7,9 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.Project;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectIdentifier;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.SemanticAnnotation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
@@ -15,6 +17,7 @@ import ch.ethz.sis.openbis.generic.excel.v3.from.enums.ImportTypes;
 import ch.ethz.sis.openbis.generic.excel.v3.from.enums.ScriptTypes;
 import ch.ethz.sis.openbis.generic.excel.v3.from.helper.*;
 import ch.ethz.sis.openbis.generic.excel.v3.from.utils.ExcelParser;
+import ch.ethz.sis.openbis.generic.excel.v3.from.utils.NewExportFileReader;
 import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 
@@ -54,6 +57,8 @@ public class ExcelReader
 
     private static final int EMBEDDED_DOCUMENT_LIMIT = 16777216; // 16 MB
 
+    public static final String FOLDER_NAME_NEW_DATA = "hierarchy/";
+
     private final Path[] sessionWorkspaceFiles;
 
     private final VocabularyHelper vocabularyHelper;
@@ -84,6 +89,8 @@ public class ExcelReader
 
     private final Map<String, String> importValues;
 
+    //private final Map<String, List<>>;
+
     private final byte[][] xls;
 
     private static final String ZIP_EXTENSION = "." + "zip";
@@ -91,6 +98,14 @@ public class ExcelReader
     private Map<String, List<Path>> miscellaneous = new LinkedHashMap<>();
 
     public static enum Format { ZIP_EXPORT, EXCEL }
+
+    Map<Path, Path> externalToZipPath = new LinkedHashMap<>();
+
+
+    private final Map<ObjectIdentifier, List<OpenBisModel.FileInfo>> files = new LinkedHashMap<>();
+
+    private final Map<ObjectIdentifier, List<OpenBisModel.FileInfo>> imageFiles =
+            new LinkedHashMap<>();
 
     public static OpenBisModel convert(Format inputFormat, Path inputFile) throws IOException {
             if (inputFormat != Format.EXCEL && inputFormat != Format.ZIP_EXPORT) {
@@ -150,7 +165,10 @@ public class ExcelReader
                             if (!entryName.isEmpty() &&
                                     !SCRIPTS_FOLDER_NAME.equals(entryName) &&
                                     !DATA_FOLDER_NAME.equals(entryName) &&
-                                    !entryName.startsWith(MISCELLANEOUS_FOLDER_NAME))
+                                    !entryName.startsWith(MISCELLANEOUS_FOLDER_NAME)
+                                    && !entryName.startsWith(FOLDER_NAME_NEW_DATA)
+                            )
+
                             {
                                 throw UserFailureException.fromTemplate(
                                         "Illegal directory '%s' is found inside the imported file.",
@@ -181,6 +199,27 @@ public class ExcelReader
                                 this.importValues.put(
                                         entryName.substring(DATA_FOLDER_NAME.length()),
                                         new String(zip.readAllBytes()));
+                            } else if (entryName.startsWith(
+                                    FOLDER_NAME_NEW_DATA) && !entry.isDirectory())
+                            {
+                                validateEntrySize(entry.getSize(), EMBEDDED_DOCUMENT_LIMIT);
+                                OpenBisModel.FileInfo fileInfo =
+                                        NewExportFileReader.readFiles(entry, zip);
+                                SampleIdentifier key =
+                                        new SampleIdentifier(fileInfo.objectIdentifier());
+                                List<OpenBisModel.FileInfo> vals =
+                                        files.getOrDefault(key, new ArrayList<>());
+                                vals.add(fileInfo);
+                                files.put(key, vals);
+
+                                validateEntrySize(entry.getSize(), EMBEDDED_DOCUMENT_LIMIT);
+                                this.importValues.put(
+                                        entryName.substring(FOLDER_NAME_NEW_DATA.length()),
+                                        new String(zip.readAllBytes()));
+
+                            } else if (entryName.startsWith(FILE_SERVICES_FOLDER_NAME))
+                            {
+
                             } else if (!entryName.startsWith(MISCELLANEOUS_FOLDER_NAME))
                             {
                                 throw UserFailureException.fromTemplate(
@@ -405,9 +444,41 @@ public class ExcelReader
         SemanticAnnotationByKind semanticAnnotationByKind =
                 semanticAnnotationHelper.getResult();
         setSemanticAnnotations(schema, semanticAnnotationByKind);
+        Map<Sample, List<Path>> samplesToPaths =
+                metadata.values().stream().filter(x -> x instanceof Sample)
+                .map(Sample.class::cast)
+                        .collect(Collectors.toMap(x -> x,
+                                x -> ImageExtractor.findAndUpdateImages(x)));
+        for (var samplesWithPaths : samplesToPaths.entrySet())
+        {
+
+            SampleIdentifier mapKey = samplesWithPaths.getKey().getIdentifier();
+            if (!files.containsKey(mapKey))
+            {
+                imageFiles.put(mapKey, new ArrayList<>());
+            }
+
+            List<OpenBisModel.FileInfo> fileInfos =
+                    imageFiles.getOrDefault(mapKey, new ArrayList<>());
+
+            for (Path myPath : samplesWithPaths.getValue())
+            {
+                Path filePath = externalToZipPath.get(
+                        Path.of(myPath.toString()));
+                byte[] contents = Files.readAllBytes(filePath);
+
+                OpenBisModel.FileInfo fileInfo =
+                        new OpenBisModel.FileInfo(mapKey.getIdentifier(), myPath.toString(),
+                                contents, myPath.toString());
+                fileInfos.add(fileInfo);
+
+            }
+            imageFiles.put(mapKey, fileInfos);
+
+        }
 
         return new OpenBisModel(Map.of(), schema, spaceResult, projectResult, metadata,
-                scriptHelper.getResults(), miscellaneous, Map.of());
+                scriptHelper.getResults(), miscellaneous, Map.of(), this.files, this.imageFiles);
     }
 
     private void setSemanticAnnotations(Map<EntityTypePermId, IEntityType> schema,
@@ -528,7 +599,11 @@ public class ExcelReader
                             try (final OutputStream outputStream = newOutputStream(
                                     fileServicePath))
                             {
+                                Path path = getPath(fileServicePath);
+                                String s = path.toString().replaceFirst("^/", "");
                                 zip.transferTo(outputStream);
+                                externalToZipPath.put(Path.of("xlsx/miscellaneous/file-service/",
+                                        fileServicePath.replaceFirst("^/", "")), path);
                             }
                         }
                     }
@@ -539,9 +614,15 @@ public class ExcelReader
 
     private static OutputStream newOutputStream(String dst) throws IOException
     {
-        final Path filePathAsPath = Path.of(dst);
+        final Path filePathAsPath = getPath(dst);
         Files.createDirectories(filePathAsPath.getParent());
         return Files.newOutputStream(filePathAsPath);
+    }
+
+    private static Path getPath(String dst)
+    {
+        final Path filePathAsPath = Path.of("/tmp/" + dst);
+        return filePathAsPath;
     }
 
 }

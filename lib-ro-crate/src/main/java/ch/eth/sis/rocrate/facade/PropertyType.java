@@ -55,6 +55,7 @@ public class PropertyType implements IPropertyType
     @Override
     public List<String> getRange()
     {
+        System.out.println(this.id);
         Stream<String> a = rangeIncludes.stream().map(x -> x.getId());
         Stream<String> b = rangeeIndlucesDataType.stream().map(x -> x.getTypeName());
         return Stream.concat(a, b).collect(Collectors.toList());

@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.hibernate.Query;
 
 import ch.systemsx.cisd.openbis.generic.server.authorization.validator.SamplePropertyAccessValidator;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.IDataBO;
@@ -40,6 +39,7 @@ import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.LogicalImageIn
 import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.ScreeningConstants;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.WellLocation;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.imaging.IImageDatasetLoader;
+import org.hibernate.query.SelectionQuery;
 
 /**
  * @author Tomasz Pylak
@@ -172,8 +172,9 @@ public class LogicalImageLoader
 
     private List<AbstractExternalData> fetchOverlayDatasets(DataPE imageDataset)
     {
-        Query query = hibernateSession.createQuery(
-                "SELECT rel.childDataSet from DataSetRelationshipPE rel WHERE rel.parentDataSet = :parent")
+        SelectionQuery<DataPE> query = hibernateSession.createSelectionQuery(
+                "SELECT rel.childDataSet from DataSetRelationshipPE rel WHERE rel.parentDataSet = :parent",
+                        DataPE.class)
                 .setParameter("parent", imageDataset);
         @SuppressWarnings("unchecked")
         List<DataPE> children = query.list();

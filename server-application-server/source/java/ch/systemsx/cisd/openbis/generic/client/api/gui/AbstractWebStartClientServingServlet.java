@@ -21,8 +21,8 @@ import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import ch.ethz.sis.shared.log.classic.impl.Logger;
 

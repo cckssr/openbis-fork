@@ -44,7 +44,7 @@ These core plugins will be eventually deprecated since they have dependencies wi
     - `processing-plugins`: Processing tasks triggered by users. Property `class` denotes fully-qualified class name of a class implementing `ch.systemsx.cisd.openbis.dss.generic.server.plugins.tasks.IProcessingPluginTask`. For more details see [Processing Plugins](../legacy-server-side-extensions/processing-plugins.md).`                            `
     - `search-domain-services`: Services for variaous search domains (e.g. search on sequence databases using BLAST). Property `class` denotes fully-qualified class name of a class implementing `ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.v2.ISearchDomainService`.
     - `data-sources`: Internal or external database sources.
-    - `servlet-services`: Services based on servlets. Property `class` denotes fully-qualified class name of a class implementing `javax.servlet.Servlet`.
+    - `servlet-services`: Services based on servlets. Property `class` denotes fully-qualified class name of a class implementing `jakarta.servlet.Servlet`.
     - `imaging-overview-plugins`: Data set type specific provider of the overview image of a data set. Property `class` denotes fully-qualified class name of a class implementing `ch.systemsx.cisd.openbis.dss.generic.server.IDatasetImageOverviewPlugin`.
     - `file-system-plugins`: Provider of a custom DSS file system (FTP/SFTP) view hierarchy. Property `class` denotes fully-qualified class name of a class implementing `ch.systemsx.cisd.openbis.dss.generic.server.fs.IResolverPlugin` Property code denotes the name of the top-level directory under which the custom hierarchy will be visible
 

@@ -166,19 +166,17 @@ public class SettingsManager {
     synchronized void cleanSyncJobApplicationFiles(@NonNull List<@NonNull SyncJob> newSyncJobs) throws Exception {
         List<SyncJob> currentJobs = Optional.ofNullable(getSettings()).map(Settings::getJobs).orElse(new ArrayList<>());
         for(SyncJob currentJob : currentJobs) {
-            if(newSyncJobs.stream().noneMatch( newSyncJob -> areEqualExceptEnabled(newSyncJob, currentJob))) {
+            if(newSyncJobs.stream().noneMatch( newSyncJob -> areEqualInCoordinates(newSyncJob, currentJob))) {
                 cleanSyncJobApplicationFiles(currentJob);
             }
         }
     }
 
-    public static boolean areEqualExceptEnabled(@NonNull SyncJob syncJob1, @NonNull SyncJob syncJob2) {
-        return syncJob1.getType() == syncJob2.getType() &&
-                syncJob1.getLocalDirectoryRoot().equals(syncJob2.getLocalDirectoryRoot()) &&
+    public static boolean areEqualInCoordinates(@NonNull SyncJob syncJob1, @NonNull SyncJob syncJob2) {
+        return syncJob1.getLocalDirectoryRoot().equals(syncJob2.getLocalDirectoryRoot()) &&
                 syncJob1.getRemoteDirectoryRoot().equals(syncJob2.getRemoteDirectoryRoot()) &&
                 syncJob1.getOpenBisUrl().equals(syncJob2.getOpenBisUrl()) &&
-                syncJob1.getEntityPermId().equals(syncJob2.getEntityPermId()) &&
-                syncJob1.getOpenBisPersonalAccessToken().equals(syncJob2.getOpenBisPersonalAccessToken());
+                syncJob1.getEntityPermId().equals(syncJob2.getEntityPermId());
     }
 
     synchronized void cleanSyncJobApplicationFiles(@NonNull SyncJob removedSyncJob) throws Exception {

@@ -17,11 +17,15 @@ package ch.systemsx.cisd.openbis.generic.server.business.bo;
 
 import java.lang.reflect.Method;
 import java.util.Date;
+import java.util.Properties;
 
+import ch.systemsx.cisd.common.jython.evaluator.Evaluator;
+import ch.systemsx.cisd.common.jython.evaluator.JythonEvaluatorSpringComponent;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.testng.AssertJUnit;
 import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 
 import ch.rinn.restrictions.Friend;
@@ -142,6 +146,15 @@ public abstract class AbstractBOTest extends AssertJUnit
     protected IExternalDataManagementSystemDAO dataManagementSystemDAO;
 
     protected IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory;
+
+    @BeforeClass
+    public void initJythonEvaluatorOnce() {
+
+        Properties p = new Properties();
+        p.setProperty(JythonEvaluatorSpringComponent.JYTHON_VERSION_KEY, "2.7"); // or "2.5"
+        new JythonEvaluatorSpringComponent(p); // sets Evaluator.setFactory(...)
+
+    }
 
     @BeforeMethod
     public void beforeMethod()

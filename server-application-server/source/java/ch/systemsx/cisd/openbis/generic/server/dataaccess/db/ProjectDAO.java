@@ -17,16 +17,17 @@ package ch.systemsx.cisd.openbis.generic.server.dataaccess.db;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import ch.ethz.sis.shared.log.classic.impl.Logger;
-import org.hibernate.Criteria;
+
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.criterion.DetachedCriteria;
-import org.hibernate.criterion.Restrictions;
 import org.springframework.orm.hibernate5.HibernateTemplate;
 
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
@@ -40,6 +41,8 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.ProjectPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SpacePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.IdentifierHelper;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.ProjectIdentifier;
+
+import static ch.systemsx.cisd.openbis.generic.server.dataaccess.db.DAOUtils.BATCH_SIZE;
 
 /**
  * Implementation of {@link IProjectDAO}.
@@ -59,7 +62,7 @@ public class ProjectDAO extends AbstractGenericEntityDAO<ProjectPE> implements I
     @Override
     public List<ProjectPE> listProjects()
     {
-        final List<ProjectPE> list = cast(getHibernateTemplate().loadAll(ProjectPE.class));
+        final List<ProjectPE> list = loadAll(ProjectPE.class);
         if (operationLog.isDebugEnabled())
         {
             operationLog.debug(String.format("%s(): %d projects(s) have been found.", MethodUtils
@@ -73,9 +76,10 @@ public class ProjectDAO extends AbstractGenericEntityDAO<ProjectPE> implements I
     {
         assert space != null : "Unspecified space.";
 
-        final DetachedCriteria criteria = DetachedCriteria.forClass(ProjectPE.class);
-        criteria.add(Restrictions.eq("space", space));
-        final List<ProjectPE> list = cast(getHibernateTemplate().findByCriteria(criteria));
+        List<ProjectPE> list = doExecute( session -> session
+                .createQuery("from ProjectPE p where p.space = :space", ProjectPE.class)
+                .setParameter("space", space)
+                .list());
         if (operationLog.isDebugEnabled())
         {
             operationLog.debug(String.format("%s(%s): %d project(s) have been found.", MethodUtils
@@ -87,9 +91,14 @@ public class ProjectDAO extends AbstractGenericEntityDAO<ProjectPE> implements I
     @Override
     public ProjectPE tryGetByPermID(String permId)
     {
-        final Criteria criteria = currentSession().createCriteria(getEntityClass());
-        criteria.add(Restrictions.eq("permId", permId));
-        final ProjectPE projectOrNull = (ProjectPE) criteria.uniqueResult();
+        ProjectPE projectOrNull = currentSession()
+                .createQuery(
+                        "from " + getEntityClass().getName() + " p where p.permId = :permId",
+                        getEntityClass()
+                )
+                .setParameter("permId", permId)
+                .uniqueResultOptional()
+                .orElse(null);
         if (operationLog.isDebugEnabled())
         {
             operationLog.debug(String
@@ -105,12 +114,20 @@ public class ProjectDAO extends AbstractGenericEntityDAO<ProjectPE> implements I
         assert projectCode != null : "Unspecified project code.";
         assert spaceCode != null : "Unspecified space code.";
 
-        final Criteria criteria = currentSession().createCriteria(ProjectPE.class);
-        criteria.add(Restrictions.eq("code", CodeConverter.tryToDatabase(projectCode)));
-        final Criteria spaceCriteria = criteria.createCriteria("space");
-        spaceCriteria.add(Restrictions.eq("code", CodeConverter.tryToDatabase(spaceCode)));
+        String pCode = CodeConverter.tryToDatabase(projectCode);
+        String sCode = CodeConverter.tryToDatabase(spaceCode);
 
-        return (ProjectPE) criteria.uniqueResult();
+        return currentSession()
+                .createQuery(
+                        "select p " +
+                                "from ProjectPE p " +
+                                "join p.space s " +
+                                "where p.code = :pCode and s.code = :sCode",
+                        ProjectPE.class)
+                .setParameter("pCode", pCode)
+                .setParameter("sCode", sCode)
+                .uniqueResultOptional()
+                .orElse(null);
     }
 
     @Override
@@ -154,8 +171,25 @@ public class ProjectDAO extends AbstractGenericEntityDAO<ProjectPE> implements I
         {
             return new ArrayList<ProjectPE>();
         }
-        final List<ProjectPE> list =
-                DAOUtils.listByCollection(getHibernateTemplate(), ProjectPE.class, idName, values);
+        List<?> allValues = new ArrayList<>(values);
+        List<ProjectPE> list = new ArrayList<>(allValues.size());
+
+        for (int i = 0; i < allValues.size(); i += BATCH_SIZE)
+        {
+            List<?> slice = allValues.subList(i, Math.min(allValues.size(), i + BATCH_SIZE));
+            if (slice.isEmpty())
+                continue;
+
+            List<ProjectPE> batch = doExecute(session -> session.createQuery(
+                                            "from " + ProjectPE.class.getName() + " e where e." + idName + " in (:ids)",
+                                            ProjectPE.class
+                                    )
+                                    .setParameter("ids", slice)
+                                    .list());
+
+            list.addAll(batch);
+        }
+
         if (operationLog.isDebugEnabled())
         {
             operationLog.debug(String.format("%d projects(s) have been found.", list.size()));
@@ -172,9 +206,11 @@ public class ProjectDAO extends AbstractGenericEntityDAO<ProjectPE> implements I
         project.setCode(CodeConverter.tryToDatabase(project.getCode()));
         project.setModifier(modifier);
         project.setModificationDate(getTransactionTimeStamp());
-        final HibernateTemplate template = getHibernateTemplate();
-        template.saveOrUpdate(project);
-        template.flush();
+        doExecute( session -> {
+            session.saveOrUpdate(project);
+            session.flush();
+            return null;
+        });
         if (operationLog.isInfoEnabled())
         {
             operationLog.info(String.format("SAVE: project '%s'.", project));

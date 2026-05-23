@@ -42,6 +42,8 @@ public interface IMetaprojectDAO extends IGenericDAO<MetaprojectPE>
 
     /**
      * Creates a new metaproject or updates existing one.
+     *
+     * @return
      */
     public void createOrUpdateMetaproject(MetaprojectPE metaproject, PersonPE owner);
 

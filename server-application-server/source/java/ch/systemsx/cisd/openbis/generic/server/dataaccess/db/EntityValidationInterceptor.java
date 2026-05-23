@@ -25,18 +25,18 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-import java.util.stream.Collectors;
 
-import org.hibernate.Criteria;
 import org.hibernate.EmptyInterceptor;
-import org.hibernate.FetchMode;
+
 import org.hibernate.Interceptor;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.hibernate.criterion.Restrictions;
+
 import org.hibernate.engine.spi.EntityKey;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.internal.SessionImpl;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
+import org.hibernate.metamodel.spi.MetamodelImplementor;
+import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.type.Type;
 
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
@@ -58,6 +58,8 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.IEntityInformationWithPropert
 import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
 import ch.systemsx.cisd.openbis.generic.shared.hotdeploy_plugins.api.IEntityAdaptor;
 import ch.systemsx.cisd.openbis.generic.shared.managed_property.IManagedPropertyEvaluatorFactory;
+
+import static java.util.stream.Collectors.toSet;
 
 /**
  * {@link Interceptor} which reacts to creation and update of entities, and calls the validation script. It is coupled with
@@ -185,10 +187,25 @@ public class EntityValidationInterceptor extends EmptyInterceptor implements
 
     private boolean isCached(Session session, EntityIdentifier identifier)
     {
-        return ((SessionImpl) session)
-                .getEntityUsingInterceptor(new EntityKey(identifier.getId(),
-                        ((SessionFactoryImplementor) daoFactory.getSessionFactory())
-                                .getEntityPersister(identifier.getEntityClass().getName()))) != null;
+        // unwrap to Hibernate SPI
+        SharedSessionContractImplementor s = session.unwrap(SharedSessionContractImplementor.class);
+        SessionFactoryImplementor sf = s.getFactory();
+
+        // get the persister for the entity class
+        //hibernate 6
+//        EntityPersister persister = sf.getMappingMetamodel()
+//                .getEntityDescriptor(identifier.getEntityClass());
+
+         MetamodelImplementor mm = (MetamodelImplementor) sf.getMetamodel();
+         EntityPersister persister = mm.entityPersister(identifier.getEntityClass());
+
+        // build the key and ask the PersistenceContext
+        EntityKey key = new EntityKey(identifier.getId(), persister);
+        return s.getPersistenceContext().containsEntity(key);
+//        return ((SessionImpl) session)
+//                .getEntityUsingInterceptor(new EntityKey(identifier.getId(),
+//                        ((SessionFactoryImplementor) daoFactory.getSessionFactory())
+//                                .getEntityPersister(identifier.getEntityClass().getName()))) != null;
     }
 
     private Collection<EntityIdentifier> cachedEntities(Session session)
@@ -257,18 +274,33 @@ public class EntityValidationInterceptor extends EmptyInterceptor implements
     @SuppressWarnings("unchecked")
     private List<IEntityInformationWithPropertiesHolder> findEntities(Session session, List<EntityIdentifier> identifiers)
     {
-        Criteria criteria = session.createCriteria(identifiers.get(0).getEntityClass());
-        criteria.add(Restrictions.in("id", identifiers.stream().map(EntityIdentifier::getId).collect(Collectors.toSet())));
-        criteria.setFetchMode("sampleProperties", FetchMode.JOIN);
-        criteria.setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
+        if (identifiers == null || identifiers.isEmpty()) {
+            return java.util.Collections.emptyList();
+        }
 
-        return (List<IEntityInformationWithPropertiesHolder>) criteria.list();
+        Class<?> entityClass = identifiers.get(0).getEntityClass();
+        var ids = identifiers.stream().map(EntityIdentifier::getId).collect(toSet());
+
+        var cb = session.getCriteriaBuilder();
+        var cq = cb.createQuery();
+        var root = cq.from(entityClass);
+
+        try {
+            root.fetch("sampleProperties", jakarta.persistence.criteria.JoinType.LEFT);
+        } catch (IllegalArgumentException ignored) {
+            // entity doesn’t have that association – mimic legacy behaviour
+        }
+        cq.select(root).distinct(true);
+        cq.where(root.get("id").in(ids));
+
+        var result = session.createQuery(cq).getResultList();
+        return (List<IEntityInformationWithPropertiesHolder>)(List<?>) result;
     }
 
     private Set<Long> getIdsOfFoundEntitiesToBeValidated(List<IEntityInformationWithPropertiesHolder> foundEntities)
     {
         Set<Long> foundIdsToValidate = new HashSet<>();
-        Set<Long> foundIds = foundEntities.stream().map(IIdHolder::getId).collect(Collectors.toSet());
+        Set<Long> foundIds = foundEntities.stream().map(IIdHolder::getId).collect(toSet());
         for (EntityIdentifier entityToValidate : entitiesToValidate)
         {
             if (foundIds.contains(entityToValidate.getId()))

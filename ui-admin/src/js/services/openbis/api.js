@@ -15,15 +15,15 @@ class Facade {
         ['openbis', 'util/Json'],
         (openbis, stjs) => {
           _this.stjs = stjs
-          if(!v3){
-              new openbis().getServerPublicInformation().then(
-                result => {
-                  const afsServerUrlKey = 'server-public-information.afs-server.url'
-                  const afsServerUrl = result[afsServerUrlKey]
-                  _this.v3 = new openbis(null, afsServerUrl)
-                
-                  resolve()
-                },             
+          if (!v3) {
+            new openbis().getServerPublicInformation().then(
+              result => {
+                const afsServerUrlKey = 'server-public-information.afs-server.url'
+                const afsServerUrl = result[afsServerUrlKey]
+                _this.v3 = new openbis(null, afsServerUrl)
+
+                resolve()
+              },
               error => {
                 reject(error)
               }
@@ -229,6 +229,10 @@ class Facade {
     return this.promise(this.v3.searchEvents(criteria, fo))
   }
 
+  searchDeletions(criteria, fo) {
+    return this.promise(this.v3.searchDeletions(criteria, fo))
+  }
+
   getSampleTypes(ids, fo) {
     return this.promise(this.v3.getSampleTypes(ids, fo))
   }
@@ -257,16 +261,36 @@ class Facade {
     return this.promise(this.v3.getOperationExecutions(ids, fo))
   }
 
+  updateSpaces(updates) {
+    return this.promise(this.v3.updateSpaces(updates));
+  }
+
+  updateProjects(updates) {
+    return this.promise(this.v3.updateProjects(updates))
+  }
+
+  updateExperiments(updates) {
+    return this.promise(this.v3.updateExperiments(updates))
+  }
+
+  updateDataSets(updates) {
+    return this.promise(this.v3.updateDataSets(updates))
+  }
+
+  updateSamples(updates) {
+    return this.promise(this.v3.updateSamples(updates))
+  }
+
+  createSamples(samples) {
+    return this.promise(this.v3.createSamples(samples))
+  }
+
   updateSampleTypes(updates) {
     return this.promise(this.v3.updateSampleTypes(updates))
   }
 
   updateExperimentTypes(updates) {
     return this.promise(this.v3.updateExperimentTypes(updates))
-  }
-
-  updateDataSets(updates) {
-    return this.promise(this.v3.updateDataSets(updates))
   }
 
   updateDataSetTypes(updates) {
@@ -325,12 +349,32 @@ class Facade {
     return this.promise(this.v3.deleteExperimentTypes(ids, options))
   }
 
+  deleteDataSets(ids, options) {
+    return this.promise(this.v3.deleteDataSets(ids, options))
+  }
+
   deleteDataSetTypes(ids, options) {
     return this.promise(this.v3.deleteDataSetTypes(ids, options))
   }
 
   deleteMaterialTypes(ids, options) {
     return this.promise(this.v3.deleteMaterialTypes(ids, options))
+  }
+
+  deleteSpaces(ids, options) {
+    return this.promise(this.v3.deleteSpaces(ids, options))
+  }
+
+  deleteProjects(ids, options) {
+    return this.promise(this.v3.deleteProjects(ids, options))
+  }
+
+  deleteSamples(ids, options) {
+    return this.promise(this.v3.deleteSamples(ids, options))
+  }
+
+  deleteExperiments(ids, options) {
+    return this.promise(this.v3.deleteExperiments(ids, options))
   }
 
   evaluatePlugin(options) {
@@ -397,6 +441,12 @@ class Facade {
     )
   }
 
+  createProjects(projects) {
+    return this.promise(
+      this.v3.createProjects(projects)
+    )
+  }
+
   free(owner, source) {
     return this.promise(this._getAfsServerFacade().free(owner, source))
   }
@@ -419,6 +469,10 @@ class Facade {
     })
 
     return this.promise(this.v3.getRights(ids, fo))
+  }
+
+  searchRoleAssignments(criteria, fo) {
+    return this.promise(this.v3.searchRoleAssignments(criteria, fo))
   }
 
   async executeService(id, options) {
@@ -469,11 +523,15 @@ class Facade {
     return this.promise(this.v3.executeOperations(operations, options))
   }
 
+  executeImport(importData, importOptions) {
+    return this.promise(this.v3.executeImport(importData, importOptions))
+  }
+
   promiseWithAbort(dfd) {
     const { promise, abortFn } = dfd;
     return {
-        promise: this.promise(promise),        
-        abortFn 
+      promise: this.promise(promise),
+      abortFn
     };
   }
 

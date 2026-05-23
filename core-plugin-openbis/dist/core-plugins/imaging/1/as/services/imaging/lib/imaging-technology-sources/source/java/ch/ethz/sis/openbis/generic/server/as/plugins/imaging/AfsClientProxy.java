@@ -3,7 +3,9 @@ package ch.ethz.sis.openbis.generic.server.as.plugins.imaging;
 import ch.ethz.sis.afsapi.api.ClientAPI;
 import ch.ethz.sis.afsapi.dto.File;
 import ch.ethz.sis.afsclient.client.AfsClient;
-import ch.systemsx.cisd.common.exceptions.UserFailureException;
+import ch.ethz.sis.shared.log.classic.core.LogCategory;
+import ch.ethz.sis.shared.log.classic.impl.LogFactory;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 import ch.systemsx.cisd.common.spring.ExposablePropertyPlaceholderConfigurer;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
 import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider;
@@ -23,6 +25,9 @@ final class AfsClientProxy
     private UUID transactionId;
 
     private final AfsClient client;
+
+    private static final Logger
+            operationLog = LogFactory.getLogger(LogCategory.OPERATION, AfsClientProxy.class);
 
     private final ClientAPI.FileCollisionListener overrideCollisionListener = new ClientAPI.FileCollisionListener() {
         @Override
@@ -46,6 +51,7 @@ final class AfsClientProxy
 
         String url = CommonServiceProvider.tryToGetProperty(AFS_SERVER_URL_PROPERTY_NAME);
         if(url != null && !url.isBlank()) {
+            operationLog.info("Resolved AFS server URL: " + url);
             String timeoutStr = CommonServiceProvider.tryToGetProperty(AFS_SERVER_TIMEOUT_PROPERTY_NAME, AFS_SERVER_TIMEOUT_DEFAULT);
 //            String interactiveSessionKey = CommonServiceProvider.tryToGetProperty(INTERACTIVE_SESSION_KEY_PROPERTY_NAME);
 //            if(interactiveSessionKey == null || interactiveSessionKey.isBlank()) {
@@ -57,6 +63,7 @@ final class AfsClientProxy
 
             return new AfsClientProxy(client);
         } else {
+            operationLog.info("Could not resolve AFS server URL");
             return new AfsClientProxy(null);
         }
     }
@@ -75,9 +82,10 @@ final class AfsClientProxy
             return client.list(permId, "", true);
         } catch (Exception e)
         {
-            // TODO files not found vs regular exception
-            int a = 1;
-            return new File[0];
+            if(e.toString().contains("NoSuchFileException")) {
+                return new File[0];
+            }
+            throw new RuntimeException(e);
         }
     }
 

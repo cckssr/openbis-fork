@@ -1,5 +1,6 @@
 package ch.ethz.sis.openbis.generic.excel.v3.to;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.entity.AbstractEntityPropertyHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType;
@@ -7,6 +8,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.Vocabulary;
 import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
 import ch.ethz.sis.openbis.generic.excel.v3.to.helper.*;
 import ch.ethz.sis.openbis.generic.excel.v3.to.helper.longvals.RowWriteResult;
+import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -80,6 +82,13 @@ public class ExcelWriter
     //TODO Remove projectIdentifier from write method
     private byte[] write(OpenBisModel openBisModel, Format format, boolean writeSchema)
     {
+        if (openBisModel.getFiles().values().stream()
+                .anyMatch(x -> !x.isEmpty()) && format == Format.EXCEL)
+        {
+            throw new UserFailureException(
+                    "Attempting to write data to Excel sheet, this requires Zip format");
+        }
+
         this.format = format;
         try (Workbook workbook = new XSSFWorkbook())
         {  // Create a new workbook
@@ -133,6 +142,32 @@ public class ExcelWriter
                             final BufferedOutputStream bos = new BufferedOutputStream(zos);
                     )
                     {
+                        for (var objectAndFileInfo : openBisModel.getFiles().entrySet())
+                        {
+                            for (var file : objectAndFileInfo.getValue())
+                            {
+                                AbstractEntityPropertyHolder entity =
+                                        openBisModel.getEntities().get(objectAndFileInfo.getKey());
+                                String zipPath = DataPathHelper.getPath(file, entity);
+                                ZipEntry zipEntry = new ZipEntry(zipPath);
+                                zos.putNextEntry(zipEntry);
+                                bos.write(file.contents());
+                                bos.flush();
+
+                            }
+                        }
+                        for (var objectAndFileInfo : openBisModel.getImageFiles().entrySet())
+                        {
+                            for (var file : objectAndFileInfo.getValue())
+                            {
+                                ZipEntry zipEntry = new ZipEntry(file.originalPath());
+                                zos.putNextEntry(zipEntry);
+                                bos.write(file.contents());
+                                bos.flush();
+
+                            }
+                        }
+
 
                         for (final Map.Entry<String, String> valueFile : valueFiles.entrySet())
                         {

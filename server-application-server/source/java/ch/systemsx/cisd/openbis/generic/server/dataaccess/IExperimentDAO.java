@@ -129,4 +129,7 @@ public interface IExperimentDAO extends IGenericDAO<ExperimentPE>
      */
     public void delete(List<TechId> experimentIds, PersonPE tryGetPerson, String reason);
 
+    ExperimentPE tryGetByIdWithTypePropertyTypes(TechId experimentId);
+
+
 }

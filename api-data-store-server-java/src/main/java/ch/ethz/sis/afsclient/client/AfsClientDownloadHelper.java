@@ -30,6 +30,7 @@ public class AfsClientDownloadHelper {
             @NonNull String sourceOwner, @NonNull Path sourcePath, @NonNull Path destinationPath,
             FileCollisionListener fileCollisionListener,
             @NonNull TransferMonitorListener transferMonitorListener) throws Exception {
+        destinationPath = destinationPath.normalize().toAbsolutePath();
         DownloadCurrentsAndTotals currentsAndTotals = new DownloadCurrentsAndTotals();
 
         //Preliminary argument validation
@@ -457,7 +458,11 @@ public class AfsClientDownloadHelper {
         synchronized boolean updateCurrentAmountsAndCheckCompletion(@NonNull AfsClient afsClient, @NonNull String ownerId, @NonNull Path fromPath, @NonNull Path toPath, int writtenByteCount) throws Exception {
             Long expectedSrcLastModification = lastModificationTimestamps.get(fromPath);
             Optional<File> remoteFromPath = AfsClientUploadHelper.getServerFilePresence(afsClient, ownerId, AfsClientUploadHelper.toServerPathString(fromPath));
-            if (expectedSrcLastModification == null || !remoteFromPath.map( info -> info.getLastModifiedTime().toInstant().toEpochMilli() == expectedSrcLastModification).orElse(false)) {
+            if ( expectedSrcLastModification == null ||
+                    !remoteFromPath
+                            .map(File::getLastModifiedTime)
+                            .map(lmt -> lmt.toInstant().toEpochMilli() == expectedSrcLastModification).orElse(false) ) {
+
                 concurrentModification.add(fromPath);
                 return false;
             }

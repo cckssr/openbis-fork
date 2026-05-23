@@ -122,7 +122,7 @@ public class PersonalAccessTokenDAOTest
                 allowing(personDAO).tryFindPersonByUserId(with(any(String.class)));
                 will(returnValue(null));
 
-                allowing(personDAO).tryGetById(with(any(TechId.class)), with(any(String[].class)));
+                allowing(personDAO).tryGetById(with(any(TechId.class)));
                 will(returnValue(null));
             }
         });
@@ -288,7 +288,7 @@ public class PersonalAccessTokenDAOTest
 
         assertContains("ERROR OPERATION.PersonalAccessTokenDAO - Loading of personal access tokens file failed.",
                 logRecorder.getLogContent());
-        assertContains("Cannot deserialize value of type `java.lang.Long` from String \"I_SHOULD_BE_A_NUMBER\": not a valid Long value",
+        assertContains("Cannot deserialize value of type `java.lang.Long` from String \"I_SHOULD_BE_A_NUMBER\": not a valid `java.lang.Long` value",
                 logRecorder.getLogContent());
     }
 
