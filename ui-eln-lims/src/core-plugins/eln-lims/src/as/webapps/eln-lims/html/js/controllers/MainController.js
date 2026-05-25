@@ -2261,11 +2261,13 @@ function MainController(profile) {
 					var regEx = /\d{4}-\d{2}-\d{2}/g;
 					var match = value.match(regEx);
 					if(match && match.length === 1) {
-						var registrationDateValue = Util.getFormatedDate(new Date(sample.registrationDetails.registrationDate));
+						var registrationDateValue = Util.getFormattedTimestamp(
+							sample.registrationDetails.registrationDate);
 						if(registrationDateValue.indexOf(match[0]) !== -1) {
 							matchedPairs.push({ name : "Registration Date", value : registrationDateValue, found : match[0]});
 						}
-						var modificationDateValue = Util.getFormatedDate(new Date(sample.registrationDetails.modificationDate));
+						var modificationDateValue = Util.getFormattedTimestamp(
+							sample.registrationDetails.modificationDate);
 						if(modificationDateValue.indexOf(match[0]) !== -1) {
 							matchedPairs.push({ name : "Modification Date", value : modificationDateValue, found : match[0]});
 						}

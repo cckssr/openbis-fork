@@ -140,9 +140,9 @@ function AdvancedSearchController(mainController, forceSearch) {
 					rowData.code =  entity.code;
 					rowData.permId = (entity.permId)?entity.permId.permId:"";
 					rowData.registrator = (entity.registrator)?entity.registrator.userId:null;
-					rowData.registrationDate = (entity.registrationDate)?Util.getFormatedDate(new Date(entity.registrationDate)):null;
+					rowData.registrationDate = Util.getFormattedTimestamp(entity.registrationDate);
 					rowData.modifier = (entity.modifier)?entity.modifier.userId:null;
-					rowData.modificationDate = (entity.modificationDate)?Util.getFormatedDate(new Date(entity.modificationDate)):null;
+					rowData.modificationDate = Util.getFormattedTimestamp(entity.modificationDate);
 					rowData.$object = entity;
 					rowData.id = (rowData.entityKind || "") + rowData.permId
 

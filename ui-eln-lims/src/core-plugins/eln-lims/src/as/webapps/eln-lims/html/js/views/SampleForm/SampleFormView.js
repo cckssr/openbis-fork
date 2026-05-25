@@ -1047,18 +1047,24 @@
 					}
 					var $controlGroup =  null;
 					var value = this._sampleFormModel.sample.properties[propertyType.code];
+
+					if(!value && propertyType.code.charAt(0) === '$') {
+						value = this._sampleFormModel.sample.properties[propertyType.code.substr(1)];
+						this._sampleFormModel.sample.properties[propertyType.code] = value;
+						delete this._sampleFormModel.sample.properties[propertyType.code.substr(1)];
+					}
+
+					if (["ARRAY_INTEGER", "ARRAY_REAL", "ARRAY_STRING", "ARRAY_TIMESTAMP"]
+							.includes(propertyType.dataType)) {
+						value = this._sampleFormModel.v3_sample.properties[propertyType.code];
+					}
+
 					if (propertyType.dataType === "TIMESTAMP") {
 						value = FormUtil.toUserTimeZoneTimestamp(value);
 					} else if (propertyType.dataType === "ARRAY_TIMESTAMP" && value) {
 						value = value.map(function(v) {
 							return FormUtil.toUserTimeZoneTimestamp(v);
 						});
-					}
-	
-					if(!value && propertyType.code.charAt(0) === '$') {
-						value = this._sampleFormModel.sample.properties[propertyType.code.substr(1)];
-						this._sampleFormModel.sample.properties[propertyType.code] = value;
-						delete this._sampleFormModel.sample.properties[propertyType.code.substr(1)];
 					}
 	
 					if(this._sampleFormModel.mode === FormMode.VIEW) { //Show values without input boxes if the form is in view mode
@@ -1138,12 +1144,16 @@
 								if(propertyType.dataType === "BOOLEAN") {
 									_this._sampleFormModel.sample.properties[propertyTypeCode] = FormUtil.getBooleanValue(field);
 								} else if (propertyType.dataType === "TIMESTAMP" || propertyType.dataType === "DATE") {
-									var timeValue = $($(field.children()[0]).children()[0]).val();
-									var isValidValue = Util.isDateValid(timeValue, propertyType.dataType === "DATE");
-									if(!isValidValue.isValid) {
-										Util.showUserError(isValidValue.error);
+									if (jsEvent.date === false) {
+										_this._sampleFormModel.sample.properties[propertyTypeCode] = "";
 									} else {
-										_this._sampleFormModel.sample.properties[propertyTypeCode] = timeValue;
+										var timeValue = $($(field.children()[0]).children()[0]).val();
+										var isValidValue = Util.isDateValid(timeValue, propertyType.dataType === "DATE");
+										if(!isValidValue.isValid) {
+											Util.showUserError(isValidValue.error);
+										} else {
+											_this._sampleFormModel.sample.properties[propertyTypeCode] = timeValue;
+										}
 									}
 								} else {
 									if(newValue !== undefined && newValue !== null) {
@@ -1385,13 +1395,15 @@
 				var $registrator = FormUtil.getFieldForLabelWithText("Registrator", registrationDetails.userId);
 				$fieldset.append($registrator);
 	
-				var $registationDate = FormUtil.getFieldForLabelWithText("Registration Date", Util.getFormatedDate(new Date(registrationDetails.registrationDate)))
+				var $registationDate = FormUtil.getFieldForLabelWithText("Registration Date",
+					Util.getFormattedTimestamp(registrationDetails.registrationDate))
 				$fieldset.append($registationDate);
-	
+
 				var $modifier = FormUtil.getFieldForLabelWithText("Modifier", registrationDetails.modifierUserId);
 				$fieldset.append($modifier);
-	
-				var $modificationDate = FormUtil.getFieldForLabelWithText("Modification Date", Util.getFormatedDate(new Date(registrationDetails.modificationDate)));
+
+				var $modificationDate = FormUtil.getFieldForLabelWithText("Modification Date",
+					Util.getFormattedTimestamp(registrationDetails.modificationDate));
 				$fieldset.append($modificationDate);
 			}
 	

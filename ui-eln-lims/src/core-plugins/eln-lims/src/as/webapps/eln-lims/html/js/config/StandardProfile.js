@@ -160,7 +160,7 @@ $.extend(StandardProfile.prototype, DefaultProfile.prototype, {
 									page += "\n";
 									page += languageLabels["ORDER_INFORMATION"];
 									page += "\n";
-									page += "- " + languageLabels["ORDER_DATE"] + ": " + Util.getFormatedDate(new Date(registrationDate));
+									page += "- " + languageLabels["ORDER_DATE"] + ": " + Util.getFormattedTimestamp(registrationDate);
 									page += "\n";
 									page += "- " + languageLabels["ORDER_STATUS"] + ": " + order.properties[profile.getInternalNamespacePrefix() + "ORDERING.ORDER_STATUS"];
 									page += "\n";

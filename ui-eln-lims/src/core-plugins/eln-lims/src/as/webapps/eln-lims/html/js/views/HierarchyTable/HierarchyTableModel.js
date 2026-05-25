@@ -106,7 +106,7 @@ function HierarchyTableModel(entity) {
 		dataList.push({
 			id: entity.permId.permId + "-" + dataList.length,
 			level : level,
-			registrationDate : Util.getFormatedDate(new Date(entity.registrationDate)),
+			registrationDate : Util.getFormattedTimestamp(entity.registrationDate),
 			type : entity.type.code,
 			identifier : (entity.identifier)?entity.identifier.identifier:undefined,
 			code : entity.code,

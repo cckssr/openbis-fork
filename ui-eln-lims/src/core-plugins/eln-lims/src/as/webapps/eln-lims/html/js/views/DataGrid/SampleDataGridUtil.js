@@ -448,19 +448,19 @@ var SampleDataGridUtil = new function() {
 					
 					var registrationDate = null;
 					if(sample.registrationDetails && sample.registrationDetails.registrationDate) {
-						registrationDate = Util.getFormatedDate(new Date(sample.registrationDetails.registrationDate));
+						registrationDate = moment(sample.registrationDetails.registrationDate).format("YYYY-MM-DD HH:mm:ss ZZ");
 					}
-					
+
 					var modifier = null;
 					if(sample.registrationDetails && sample.registrationDetails.modifierUserId) {
 						modifier = sample.registrationDetails.modifierUserId;
 					}
-					
+
 					var modificationDate = null;
 					if(sample.registrationDetails && sample.registrationDetails.modificationDate) {
-						modificationDate = Util.getFormatedDate(new Date(sample.registrationDetails.modificationDate));
+						modificationDate = moment(sample.registrationDetails.modificationDate).format("YYYY-MM-DD HH:mm:ss ZZ");
 					}
-					
+
 					var sampleModel = {
 										'id' : sample.permId,
 										'exportableId' : {
@@ -700,17 +700,17 @@ var SampleDataGridUtil = new function() {
 				
 				var registrationDate = null;
 				if(sample.registrationDetails && sample.registrationDetails.registrationDate) {
-					registrationDate = Util.getFormatedDate(new Date(sample.registrationDetails.registrationDate));
+					registrationDate = moment(sample.registrationDetails.registrationDate).format("YYYY-MM-DD HH:mm:ss ZZ");
 				}
-				
+
 				var modifier = null;
 				if(sample.registrationDetails && sample.registrationDetails.modifierUserId) {
 					modifier = sample.registrationDetails.modifierUserId;
 				}
-				
+
 				var modificationDate = null;
 				if(sample.registrationDetails && sample.registrationDetails.modificationDate) {
-					modificationDate = Util.getFormatedDate(new Date(sample.registrationDetails.modificationDate));
+					modificationDate = moment(sample.registrationDetails.modificationDate).format("YYYY-MM-DD HH:mm:ss ZZ");
 				}
 				
 				var sampleModel = {
@@ -958,6 +958,14 @@ var SampleDataGridUtil = new function() {
                         sortable : true,
                         metadata: {
                             dataType: propertyType.dataType
+                        },
+                        getValue: function(params) {
+                            const value = params.row[propertyType.code];
+                            if (propertyType.dataType === "TIMESTAMP") {
+                                return FormUtil.toUserTimeZoneTimestamp(value) || value;
+                            } else {
+								return value;
+							}
                         },
                         renderFilter : function(params) {
                             return FormUtil.renderDateRangeGridFilter(params, propertyType.dataType)

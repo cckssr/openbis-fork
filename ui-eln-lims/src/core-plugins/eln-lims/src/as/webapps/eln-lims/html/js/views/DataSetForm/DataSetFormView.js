@@ -780,13 +780,13 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 			var $registrator = FormUtil.getFieldForLabelWithText("Registrator", (_this._dataSetFormModel.dataSetV3.registrator)?_this._dataSetFormModel.dataSetV3.registrator.userId:'');
 			$dataSetTypeFieldSet.append($registrator);
 			
-			var $registationDate = FormUtil.getFieldForLabelWithText("Registration Date", Util.getFormatedDate(new Date(_this._dataSetFormModel.dataSetV3.registrationDate)))
+			var $registationDate = FormUtil.getFieldForLabelWithText("Registration Date", Util.getFormattedTimestamp(_this._dataSetFormModel.dataSetV3.registrationDate))
 			$dataSetTypeFieldSet.append($registationDate);
 
 			var $modifier = FormUtil.getFieldForLabelWithText("Modifier", (_this._dataSetFormModel.dataSetV3.modifier.userId)?_this._dataSetFormModel.dataSetV3.modifier.userId:'');
 			$dataSetTypeFieldSet.append($modifier);
-			
-			var $modificationDate = FormUtil.getFieldForLabelWithText("Modification Date", Util.getFormatedDate(new Date(_this._dataSetFormModel.dataSetV3.modificationDate)));
+
+			var $modificationDate = FormUtil.getFieldForLabelWithText("Modification Date", Util.getFormattedTimestamp(_this._dataSetFormModel.dataSetV3.modificationDate));
 			$dataSetTypeFieldSet.append($modificationDate);
 		}
 		$dataSetTypeFieldSet.hide();
@@ -886,6 +886,11 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 	
 	this._repaintMetadata = function(dataSetType) {
 		var _this = this;
+		var numberFormat = new Intl.NumberFormat('en-US', { notation : "standard",
+			minimumSignificantDigits :  "1",
+			maximumSignificantDigits : "21",
+			minimumFractionDigits : "0",
+			maximumFractionDigits : "20" });
 		$("#metadataContainer-"+_this._viewId).empty();
 		if(dataSetType == null) {
 		    return;
@@ -962,6 +967,14 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 							this._dataSetFormModel.dataSetV3.properties[propertyType.code] = value;
 							delete this._dataSetFormModel.dataSetV3.properties[propertyType.code.substr(1)];
 						}
+
+						if (propertyType.dataType === "TIMESTAMP") {
+							value = FormUtil.toUserTimeZoneTimestamp(value);
+						} else if (propertyType.dataType === "ARRAY_TIMESTAMP" && value) {
+							value = value.map(function(v) {
+								return FormUtil.toUserTimeZoneTimestamp(v);
+							});
+						}
 					}
 					
 					if(this._dataSetFormModel.mode === FormMode.VIEW) {
@@ -1015,13 +1028,17 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 								if(propertyType.dataType === "BOOLEAN") {
 								    _this._setDataSetProperty(propertyTypeCode, Util.getEmptyIfNull(FormUtil.getBooleanValue(field)));
 								} else if (propertyType.dataType === "TIMESTAMP" || propertyType.dataType === "DATE") {
-									var timeValue = $($(field.children()[0]).children()[0]).val();
-                                    var isValidValue = Util.isDateValid(timeValue, propertyType.dataType === "DATE");
-                                    if(!isValidValue.isValid) {
-                                        Util.showUserError(isValidValue.error);
-                                    } else {
-                                        _this._setDataSetProperty(propertyTypeCode, Util.getEmptyIfNull(timeValue));
-                                    }
+									if (jsEvent.date === false) {
+										_this._setDataSetProperty(propertyTypeCode, "");
+									} else {
+										var timeValue = $($(field.children()[0]).children()[0]).val();
+										var isValidValue = Util.isDateValid(timeValue, propertyType.dataType === "DATE");
+										if(!isValidValue.isValid) {
+											Util.showUserError(isValidValue.error);
+										} else {
+											_this._setDataSetProperty(propertyTypeCode, Util.getEmptyIfNull(timeValue));
+										}
+									}
 								} else {
 									if(newValue !== undefined && newValue !== null) {
 									    _this._setDataSetProperty(propertyTypeCode, Util.getEmptyIfNull(newValue));
@@ -1080,7 +1097,17 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 							if(propertyType.dataType === "BOOLEAN") {
 							    FormUtil.setFieldValue(propertyType, $component, value);
 							} else if(propertyType.dataType === "TIMESTAMP" || propertyType.dataType === "DATE") {
-							} else if(isMultiValue) {
+							} else if (propertyType.dataType === "ARRAY_INTEGER" || propertyType.dataType === "ARRAY_REAL") {
+                                const valueToRender = value != null
+                                    ? "[" + value.map((v) => numberFormat.format(v)).join(", ") + "]"
+                                    : "";
+                                $component.val(valueToRender);
+                            } else if (propertyType.dataType === "ARRAY_STRING" || propertyType.dataType === "ARRAY_TIMESTAMP") {
+                                const valueToRender = value != null
+                                    ? "[" + value.map((v) => '"' + v + '"').join(", ") + "]"
+                                    : "";
+                                $component.val(valueToRender);
+                            } else if(isMultiValue) {
 							    var valueV3 = this._dataSetFormModel.v3_dataset.properties[propertyType.code];
                                 if(valueV3) {
                                     var valueArray;

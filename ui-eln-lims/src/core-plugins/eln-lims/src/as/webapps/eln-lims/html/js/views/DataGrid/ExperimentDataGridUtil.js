@@ -89,10 +89,10 @@ var ExperimentDataGridUtil = new function() {
 			property : 'registrationDate',
 			exportableProperty: DataGridExportOptions.EXPORTABLE_FIELD.REGISTRATION_DATE,
 			sortable : true,
-			renderFilter : function(params) {
+			renderFilter: function(params) {
 				return FormUtil.renderDateRangeGridFilter(params, "TIMESTAMP");
 			},
-			filter : function(data, filter){
+			filter: function(data, filter){
 				return FormUtil.filterDateRangeGridColumn(data.registrationDate, filter)
 			}
 		})
@@ -109,10 +109,10 @@ var ExperimentDataGridUtil = new function() {
 			property : 'modificationDate',
 			exportableProperty: DataGridExportOptions.EXPORTABLE_FIELD.MODIFICATION_DATE,
 			sortable : true,
-			renderFilter : function(params) {
+			renderFilter: function(params) {
 				return FormUtil.renderDateRangeGridFilter(params, "TIMESTAMP");
 			},
-			filter : function(data, filter){
+			filter: function(data, filter){
 				return FormUtil.filterDateRangeGridColumn(data.modificationDate, filter)
 			}
 		})
@@ -135,9 +135,9 @@ var ExperimentDataGridUtil = new function() {
                     'permId' : entity.permId.permId,
                     'type' : entity.type.code,
                     'registrator' : (entity.registrator)?entity.registrator.userId:null,
-                    'registrationDate' : (entity.registrationDate)?Util.getFormatedDate(new Date(entity.registrationDate)):null,
+                    'registrationDate' : entity.registrationDate ? moment(entity.registrationDate).format("YYYY-MM-DD HH:mm:ss ZZ") : null,
                     'modifier' : (entity.modifier)?entity.modifier.userId:null,
-                    'modificationDate' : (entity.modificationDate)?Util.getFormatedDate(new Date(entity.modificationDate)):null
+                    'modificationDate' : entity.modificationDate ? moment(entity.modificationDate).format("YYYY-MM-DD HH:mm:ss ZZ") : null
                 };
 				if(entity.properties) {
                     for(var propertyCode in entity.properties) {

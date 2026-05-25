@@ -69,13 +69,6 @@ class TextFormField extends React.PureComponent {
     if (value) {
       if (dataType === FormFieldDataType.HYPERLINK) {
         return <a href={value} target='_blank'>{value}</a>
-      } else if (
-        dataType === FormFieldDataType.ARRAY_TIMESTAMP ||
-        dataType === FormFieldDataType.ARRAY_STRING ||
-        dataType === FormFieldDataType.ARRAY_INTEGER ||
-        dataType === FormFieldDataType.ARRAY_REAL
-      ) {
-        return this.arrayToString(value, dataType)
       } else {
         return value
       }
@@ -87,10 +80,17 @@ class TextFormField extends React.PureComponent {
   renderView() {
     const { label, value, description, disableUnderline, dataType } = this.props
 
+    let finalValue;
+    if (globalThis.Array.isArray(value)) {
+      finalValue = this.arrayToString(value, dataType);
+    } else {
+      finalValue = value || '';
+    }
+
     return (
       <FormFieldView
         label={label}
-        value={this.renderValue(value, dataType)}
+        value={this.renderValue(finalValue, dataType)}
         description={description}
         disableUnderline={disableUnderline || false}
       />

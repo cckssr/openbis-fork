@@ -203,7 +203,7 @@ function TrashManagerView(trashManagerController, trashManagerModel) {
 				//
 				dataList.push({
 					id: deletion.id,
-                    deletionDate : Util.getFormatedDate(new Date(deletion.deletionDate)),
+                    deletionDate: Util.getFormattedTimestamp(deletion.deletionDate),
 					entities : entitiesExperiments + entitiesSamples + entitiesDatasets,
 					reason : deletion.reason,
 					entity : deletion

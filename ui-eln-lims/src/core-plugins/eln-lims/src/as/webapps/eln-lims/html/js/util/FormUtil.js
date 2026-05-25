@@ -47,7 +47,7 @@ var FormUtil = new function() {
 		if (!value) {
 			return value;
 		}
-		const parsed = moment.parseZone(value, ["YYYY-MM-DD HH:mm:ss Z", "YYYY-MM-DD HH:mm:ss"], true);
+		const parsed = moment.parseZone(value, ["YYYY-MM-DD HH:mm:ss Z", "YYYY-MM-DD HH:mm:ss", "YYYY-MM-DDTHH:mm:ssZ", "YYYY-MM-DDTHH:mm:ss.SSSZ"], true);
 		if (!parsed.isValid()) {
 			return value;
 		}
@@ -1162,7 +1162,10 @@ var FormUtil = new function() {
 		    }
 			$field.val(value);
 		} else if(propertyType.dataType === "TIMESTAMP" || propertyType.dataType === "DATE") {
-			$($($field.children()[0]).children()[0]).val(value);
+			var displayValue = propertyType.dataType === "TIMESTAMP"
+				? (this.toUserTimeZoneTimestamp(value) || value)
+				: value;
+			$($($field.children()[0]).children()[0]).val(displayValue);
 		} else {
 			$field.val(value);
 		}
@@ -1326,7 +1329,7 @@ var FormUtil = new function() {
 	this._getDatePickerField = function(id, alt, isRequired, isDateOnly, value, excludeTimeZone) {
 		var $component = $('<div>', {'class' : 'form-group', 'style' : 'margin-left: 0px;', 'placeholder' : alt, 'id' : 'datetimepicker_parent_' + id });
 		var $subComponent = $('<div>', {'class' : 'input-group date', 'id' : 'datetimepicker_' + id });
-		var $input = $('<input>', {'class' : 'form-control', 'type' : 'text', 'id' : id, 'placeholder' : (isDateOnly ? 'yyyy-MM-dd (YEAR-MONTH-DAY)' : (excludeTimeZone ? 'yyyy-MM-dd HH:mm:ss (YEAR-MONTH-DAY : HOUR-MINUTE-SECOND)' : 'yyyy-MM-dd HH:mm:ss ZZ (YEAR-MONTH-DAY : HOUR-MINUTE-SECOND TIMEZONE)')),
+		var $input = $('<input>', {'class' : 'form-control', 'type' : 'text', 'id' : id, 'placeholder' : (isDateOnly ? 'yyyy-MM-dd (YEAR-MONTH-DAY)' : (excludeTimeZone ? 'yyyy-MM-dd HH:mm:ss (YEAR-MONTH-DAY HOUR:MINUTE:SECOND)' : 'yyyy-MM-dd HH:mm:ss ZZ (YEAR-MONTH-DAY HOUR:MINUTE:SECOND TIMEZONE)')),
 			'data-format' : isDateOnly ? 'yyyy-MM-dd' : 'yyyy-MM-dd HH:mm:ss'});
 		if (isRequired) {
 			$input.attr('required', '');
@@ -1339,27 +1342,29 @@ var FormUtil = new function() {
 		$subComponent.append($spanAddOn);
 
 		var date = null;
-		if(value && value != null) {
+		if(value) {
+			if (!isDateOnly) {
+				value = this.toUserTimeZoneTimestamp(value) || value;
+			}
 			date = Util.parseDate(value);
 		}
-		var datetimepicker = $subComponent.datetimepicker({
-            format : isDateOnly ? 'YYYY-MM-DD' : (excludeTimeZone ? 'YYYY-MM-DD HH:mm:ss' : 'YYYY-MM-DD HH:mm:ss ZZ'),
+		$subComponent.datetimepicker({
+            format: isDateOnly ? 'YYYY-MM-DD' : (excludeTimeZone ? 'YYYY-MM-DD HH:mm:ss' : 'YYYY-MM-DD HH:mm:ss ZZ'),
             extraFormats: isDateOnly ? [] : [ 'YYYY-MM-DD HH:mm:ss' ],
-            useCurrent : false,
-            defaultDate : date,
+            useCurrent: false,
+            defaultDate: date,
             locale: 'en-GB',
         });
 
 		$component.append($subComponent);
 
 		$component.refresh = function() {
-		    $subComponent.datetimepicker({
-                format : isDateOnly ? 'YYYY-MM-DD' : (excludeTimeZone ? 'YYYY-MM-DD HH:mm:ss' : 'YYYY-MM-DD HH:mm:ss ZZ'),
-                extraFormats: isDateOnly ? [] : [ 'YYYY-MM-DD HH:mm:ss' ],
-                useCurrent : false,
-                defaultDate : date,
-//                locale: 'en-GB',
-            });
+			$subComponent.datetimepicker({
+				format : isDateOnly ? 'YYYY-MM-DD' : (excludeTimeZone ? 'YYYY-MM-DD HH:mm:ss' : 'YYYY-MM-DD HH:mm:ss ZZ'),
+				extraFormats : isDateOnly ? [] : [ 'YYYY-MM-DD HH:mm:ss' ],
+				useCurrent : false,
+				defaultDate : $input.val().trim() ? date : false,
+			});
 		}
 
 		return $component;
