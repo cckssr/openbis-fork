@@ -15,8 +15,7 @@
  */
 package ch.systemsx.cisd.openbis.installer.izpack;
 
-import static ch.systemsx.cisd.openbis.installer.izpack.GlobalInstallationContext.TECHNOLOGY_ELN_LIMS;
-import static ch.systemsx.cisd.openbis.installer.izpack.GlobalInstallationContext.TECHNOLOGY_ELN_LIMS_TEMPLATE_TYPES;
+import static ch.systemsx.cisd.openbis.installer.izpack.GlobalInstallationContext.TECHNOLOGY_IMAGING;
 import static ch.systemsx.cisd.openbis.installer.izpack.SetEnableTechnologiesVariableAction.ENABLED_TECHNOLOGIES_VARNAME;
 import static ch.systemsx.cisd.openbis.installer.izpack.SetTechnologyCheckBoxesAction.ENABLED_TECHNOLOGIES_KEY;
 
@@ -63,23 +62,21 @@ public class SetEnableTechnologiesVariableActionTest extends AbstractFileSystemT
     }
 
     @Test
-    public void testFirstInstallationFlowCytometryOnly()
+    public void testFirstInstallationImaging()
     {
         Properties variables = new Properties();
-        variables.setProperty(TECHNOLOGY_ELN_LIMS, "true");
-        variables.setProperty(TECHNOLOGY_ELN_LIMS_TEMPLATE_TYPES, "false");
+        variables.setProperty(TECHNOLOGY_IMAGING, "true");
 
         AutomatedInstallData data = updateEnabledTechnologyProperties(variables, true);
 
-        assertEquals("eln-lims", data.getVariable(ENABLED_TECHNOLOGIES_VARNAME));
+        assertEquals(TECHNOLOGY_IMAGING.toLowerCase(), data.getVariable(ENABLED_TECHNOLOGIES_VARNAME));
     }
 
     @Test
     public void testFirstInstallation()
     {
         Properties variables = new Properties();
-        variables.setProperty(TECHNOLOGY_ELN_LIMS, "false");
-        variables.setProperty(TECHNOLOGY_ELN_LIMS_TEMPLATE_TYPES, "false");
+        variables.setProperty(TECHNOLOGY_IMAGING, "false");
 
         AutomatedInstallData data = updateEnabledTechnologyProperties(variables, true);
 
@@ -90,11 +87,10 @@ public class SetEnableTechnologiesVariableActionTest extends AbstractFileSystemT
     public void testUpdateMissingConfigFile()
     {
         Properties variables = new Properties();
-        variables.setProperty(TECHNOLOGY_ELN_LIMS_TEMPLATE_TYPES, "false");
-        variables.setProperty(TECHNOLOGY_ELN_LIMS, "true");
+        variables.setProperty(TECHNOLOGY_IMAGING, "false");
 
         updateEnabledTechnologyProperties(variables, false);
-        assertEquals("[, enabled-modules = " + MODULES + ", eln-lims]",
+        assertEquals("[, enabled-modules = " + MODULES + "]",
                 FileUtilities.loadToStringList(corePluginsProperties).toString());
     }
 
@@ -102,31 +98,14 @@ public class SetEnableTechnologiesVariableActionTest extends AbstractFileSystemT
     public void testUpdateInstallationWithOtherEnabledTechnologiesInAs()
     {
         FileUtilities.writeToFile(corePluginsProperties, "abc = 123\n" + ENABLED_TECHNOLOGIES_KEY
-                + "=" + MODULES + ", eln-lims, my-tech");
+                + "=" + MODULES + ", eln-lims-imaging-core, eln-lims-imaging-nanonis-adapter, eln-lims-imaging-test-adapter, my-tech");
         Properties variables = new Properties();
-        variables.setProperty(TECHNOLOGY_ELN_LIMS, "true");
-        variables.setProperty(TECHNOLOGY_ELN_LIMS_TEMPLATE_TYPES, "false");
+        variables.setProperty(TECHNOLOGY_IMAGING, "true");
 
         updateEnabledTechnologyProperties(variables, false);
 
-        assertEquals("[abc = 123, " + ENABLED_TECHNOLOGIES_KEY + "=" + MODULES + ", eln-lims, my-tech]",
+        assertEquals("[abc = 123, " + ENABLED_TECHNOLOGIES_KEY + "=" + MODULES + ", eln-lims-imaging-core, eln-lims-imaging-nanonis-adapter, eln-lims-imaging-test-adapter, my-tech]",
                 FileUtilities.loadToStringList(corePluginsProperties).toString());
-    }
-
-    @Test
-    public void testUpdateUnchangedProperty()
-    {
-        FileUtilities.writeToFile(corePluginsProperties, "abc = 123\n" + ENABLED_TECHNOLOGIES_KEY
-                + "=" + MODULES + ", eln-lims");
-        Properties variables = new Properties();
-        variables.setProperty(TECHNOLOGY_ELN_LIMS, "true");
-        variables.setProperty(TECHNOLOGY_ELN_LIMS_TEMPLATE_TYPES, "false");
-
-        updateEnabledTechnologyProperties(variables, false);
-
-        assertEquals("[abc = 123, " + ENABLED_TECHNOLOGIES_KEY + "=" + MODULES + ", eln-lims]",
-                FileUtilities
-                        .loadToStringList(corePluginsProperties).toString());
     }
 
     @Test
@@ -135,12 +114,11 @@ public class SetEnableTechnologiesVariableActionTest extends AbstractFileSystemT
         FileUtilities.writeToFile(corePluginsProperties, "abc = 123\n" + ENABLED_TECHNOLOGIES_KEY
                 + "=\nanswer = 42\n");
         Properties variables = new Properties();
-        variables.setProperty(TECHNOLOGY_ELN_LIMS, "true");
-        variables.setProperty(TECHNOLOGY_ELN_LIMS_TEMPLATE_TYPES, "true");
+        variables.setProperty(TECHNOLOGY_IMAGING, "true");
 
         updateEnabledTechnologyProperties(variables, false);
 
-        assertEquals("[abc = 123, " + ENABLED_TECHNOLOGIES_KEY + " = " + MODULES + ", eln-lims, eln-lims-types-templates, answer = 42]",
+        assertEquals("[abc = 123, " + ENABLED_TECHNOLOGIES_KEY + " = " + MODULES + ", eln-lims-imaging-core, eln-lims-imaging-nanonis-adapter, eln-lims-imaging-test-adapter, answer = 42]",
                 FileUtilities
                         .loadToStringList(corePluginsProperties).toString());
     }
@@ -150,28 +128,13 @@ public class SetEnableTechnologiesVariableActionTest extends AbstractFileSystemT
     {
         FileUtilities.writeToFile(corePluginsProperties, "abc = 123");
         Properties variables = new Properties();
-        variables.setProperty(TECHNOLOGY_ELN_LIMS, "true");
-        variables.setProperty(TECHNOLOGY_ELN_LIMS_TEMPLATE_TYPES, "true");
+        variables.setProperty(TECHNOLOGY_IMAGING, "true");
 
         updateEnabledTechnologyProperties(variables, false);
 
-        assertEquals("[abc = 123, " + ENABLED_TECHNOLOGIES_KEY + " = " + MODULES + ", eln-lims, eln-lims-types-templates]",
+        assertEquals("[abc = 123, " + ENABLED_TECHNOLOGIES_KEY + " = " + MODULES + ", eln-lims-imaging-core, eln-lims-imaging-nanonis-adapter, eln-lims-imaging-test-adapter]",
                 FileUtilities
                         .loadToStringList(corePluginsProperties).toString());
-    }
-
-    @Test
-    public void testUpdateEnabledTechnologiesForSwitchedTechnologies()
-    {
-        FileUtilities.writeToFile(corePluginsProperties, "a = b\n" + ENABLED_TECHNOLOGIES_KEY
-                + "= eln-lims\n" + "gamma = alpha");
-        Properties variables = new Properties();
-        variables.setProperty(TECHNOLOGY_ELN_LIMS_TEMPLATE_TYPES, "true");
-
-        updateEnabledTechnologyProperties(variables, false);
-
-        assertEquals("[a = b, " + ENABLED_TECHNOLOGIES_KEY + " = " + MODULES + ", eln-lims-types-templates, gamma = alpha]",
-                FileUtilities.loadToStringList(corePluginsProperties).toString());
     }
 
     private AutomatedInstallData updateEnabledTechnologyProperties(Properties variables,
