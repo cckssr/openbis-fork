@@ -67,6 +67,7 @@ jakarta-servlet-jakarta-servlet-api = "6.1.0"
 jakarta-servlet-jakarta-servlet-api-v60 = "6.0.0"
 jakarta-transaction-jakarta-transaction-api = "2.0.1"
 jakarta-validation-jakarta-validation-api = "3.0.2"
+jakarta-ws-rs-jakarta-ws-rs-api = "3.1.0"
 jakarta-xml-bind-jakarta-xml-bind-api = "4.0.2"
 javax-activation-activation = "1.1.1"
 javax-activation-javax-activation-api = "1.2.0"
@@ -217,6 +218,7 @@ jakarta-servlet-jakarta-servlet-api = { module = "jakarta.servlet:jakarta.servle
 jakarta-servlet-jakarta-servlet-api-v60 = { module = "jakarta.servlet:jakarta.servlet-api", version.ref = "jakarta-servlet-jakarta-servlet-api-v60" }
 jakarta-transaction-jakarta-transaction-api = { module = "jakarta.transaction:jakarta.transaction-api", version.ref = "jakarta-transaction-jakarta-transaction-api" }
 jakarta-validation-jakarta-validation-api = { module = "jakarta.validation:jakarta.validation-api", version.ref = "jakarta-validation-jakarta-validation-api" }
+jakarta-ws-rs-jakarta-ws-rs-api = { module = "jakarta.ws.rs:jakarta.ws.rs-api", version.ref = "jakarta-ws-rs-jakarta-ws-rs-api" }
 jakarta-xml-bind-jakarta-xml-bind-api = { module = "jakarta.xml.bind:jakarta.xml.bind-api", version.ref = "jakarta-xml-bind-jakarta-xml-bind-api" }
 javax-activation-activation = { module = "javax.activation:activation", version.ref = "javax-activation-activation" }
 javax-activation-javax-activation-api = { module = "javax.activation:javax.activation-api", version.ref = "javax-activation-javax-activation-api" }
