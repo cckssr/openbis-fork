@@ -106,6 +106,12 @@ public abstract class AbstractFtpFile implements FtpFile
     }
 
     @Override
+    public Object getPhysicalFile()
+    {
+        return null;
+    }
+
+    @Override
     public boolean isReadable()
     {
         return true;

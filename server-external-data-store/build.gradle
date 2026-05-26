@@ -4,9 +4,15 @@ apply plugin: 'application'
 apply from: '../build/repository.gradle'
 repositories repositoryConfig
 
+apply from: '../build/common-resolutions.gradle'
+
 dependencies {
     api project(':lib-microservice-server'), project(':lib-logging')
-    api libs.openbis.openbis.v3.api.batteries.included
+    // Was libs.openbis.openbis.v3.api.batteries.included (a fat jar with
+    // shaded Jetty 9.4.30 and Jackson 2.9.7). The same classes are built
+    // from source in this monorepo, so depend on the project modules
+    // directly and let the current Jetty/Jackson versions flow through.
+    api project(':api-openbis-java'), project(':lib-common')
 }
 
 mainClassName = "ch.ethz.sis.microservices.download.server.startup.Main"

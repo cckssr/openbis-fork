@@ -11,6 +11,8 @@ targetCompatibility = JavaVersion.VERSION_21
 apply from: '../build/repository.gradle'
 repositories repositoryConfig
 
+apply from: '../build/common-resolutions.gradle'
+
 configurations {
     tests.extendsFrom testImplementation
     tests.canBeResolved true
@@ -21,7 +23,7 @@ dependencies {
     project(':lib-logging')
     implementation project(':lib-logging'),
             libs.org.projectlombok.lombok,
-            libs.io.netty.netty.all.v4168final
+            libs.io.netty.netty.all
     testImplementation libs.org.junit.junit,
             libs.org.hamcrest.hamcrest.core,
             libs.org.hamcrest.hamcrest.library

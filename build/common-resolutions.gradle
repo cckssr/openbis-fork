@@ -1,0 +1,89 @@
+// Shared dependency resolution policy applied to every module.
+//
+// This file centralises three concerns so they hold uniformly across modules,
+// including ones that do not apply javaproject.gradle or javalibrary.gradle
+// (and therefore would not otherwise pick up the rules):
+//
+//   1. log4j 1.x and 2.x must never reach the classpath. lib-logging
+//      provides the JUL-backed replacement; transitive log4j-api leaks
+//      (e.g. POI 5.x) are caught here.
+//   2. commons-logging is replaced by Spring's spring-jcl, which exposes
+//      the same org.apache.commons.logging.* API but routes through
+//      SLF4J -> slf4j-jdk14 -> JUL.
+//   3. Vulnerable transitive versions are pinned to current ones via
+//      dependencySubstitution and resolutionStrategy.force. Each entry
+//      cites the CVE(s) it closes so future readers know why the pin
+//      exists.
+
+configurations.all {
+    resolutionStrategy.cacheDynamicVersionsFor 0, 'hours'
+    resolutionStrategy.cacheChangingModulesFor 0, 'hours'
+
+    // Some artifacts in the old ivy world use the legacy group id "apache"
+    // for commons-io; redirect to the proper coordinates.
+    resolutionStrategy.eachDependency { details ->
+        if (details.requested.group == 'apache'
+                && details.requested.name == 'commons-io') {
+            details.useTarget "commons-io:commons-io:${libs.commons.io.commons.io.get().versionConstraint.requiredVersion}"
+        }
+        // The openbis-ivy mirror's vertx-core 4.5.27 ivy metadata wrongly pulls
+        // netty 4.2.x, which is binary-incompatible with the Quarkus 3.36 /
+        // Vert.x 4.5 stack (built against netty 4.1; the Quarkus BOM pins
+        // 4.1.133.Final). Mixing 4.2.x onto that classpath made the RO-Crate
+        // server drop connections (EOF) on validate/import. Pin every netty
+        // module to the single 4.1.x version the whole build standardises on.
+        if (details.requested.group == 'io.netty') {
+            details.useVersion libs.io.netty.netty.all.get().versionConstraint.requiredVersion
+        }
+    }
+
+    exclude group: 'log4j', module: 'log4j'
+    exclude group: 'org.apache.logging.log4j'
+
+    def springVersion = libs.org.springframework.spring.core.get().versionConstraint.requiredVersion
+    def dom4jVersion = libs.org.dom4j.dom4j.get().versionConstraint.requiredVersion
+    resolutionStrategy.dependencySubstitution {
+        substitute module('commons-logging:commons-logging') using module("org.springframework:spring-jcl:${springVersion}")
+        // CVE-2020-10683: legacy dom4j:dom4j 1.x was relocated to org.dom4j:dom4j
+        // in 2.x and the package name is unchanged.
+        substitute module('dom4j:dom4j') using module("org.dom4j:dom4j:${dom4jVersion}")
+    }
+
+    def hamcrestVersion = libs.org.hamcrest.hamcrest.core.get().versionConstraint.requiredVersion
+    def catalog = project.extensions.getByType(VersionCatalogsExtension).named("libs")
+    def bcelVersion = catalog.findVersion("org-apache-bcel-bcel").get().requiredVersion
+    def commonsLangVersion = catalog.findVersion("commons-lang-commons-lang").get().requiredVersion
+    def commonsIoVersion = catalog.findVersion("commons-io-commons-io").get().requiredVersion
+    def commonsLang3Version = catalog.findVersion("org-apache-commons-commons-lang3").get().requiredVersion
+    resolutionStrategy {
+        force(
+                "org.hamcrest:hamcrest-core:${hamcrestVersion}",
+                "org.hamcrest:hamcrest-library:${hamcrestVersion}",
+                "org.hamcrest:hamcrest-integration:${hamcrestVersion}",
+                // CVE-2020-11988: xmlgraphics-commons 2.3 pulled via docx4j 6.1.2.
+                "org.apache.xmlgraphics:xmlgraphics-commons:2.11",
+                // CVE-2022-34169: xalan/serializer 2.7.2 pulled via xmlbeans/poi.
+                "xalan:xalan:2.7.3",
+                "xalan:serializer:2.7.3",
+                // CVE-2022-42920: bcel 6.0 pulled via rinn:restrictions:1.0.2.
+                "org.apache.bcel:bcel:${bcelVersion}",
+                // CVE-2015-6420: commons-collections 3.2.1 deserialization (lyncode builder-commons).
+                "commons-collections:commons-collections:3.2.2",
+                // CVE-2025-48924: commons-lang 2.0 pulled via jackcess 1.2.2.
+                "commons-lang:commons-lang:${commonsLangVersion}",
+                // CVE-2025-48734: commons-beanutils 1.9.4 (test-only via server-ro-crate).
+                "commons-beanutils:commons-beanutils:1.11.0",
+                // CVE-2026-41409, CVE-2026-41635, CVE-2026-42778, CVE-2026-42779 (CRITICAL):
+                // mina-core 2.2.4 via ftpserver 1.2.1; fixes are in the 2.2.6/2.2.7 patch line.
+                "org.apache.mina:mina-core:2.2.7",
+                // CVE-2021-29425, CVE-2024-47554: commons-io 2.6 sneaks into custom
+                // configurations (apiDependenciesIncluded, runtimeOnly bundles) that
+                // Gradle's default conflict resolution does not unify with the catalog
+                // version.
+                "commons-io:commons-io:${commonsIoVersion}",
+                // CVE-2025-48924: commons-lang3 3.7 likewise leaks via legacy POMs
+                // (docx4j, sis-base) and custom batteries/adminConsole bundles.
+                "org.apache.commons:commons-lang3:${commonsLang3Version}"
+        )
+    }
+}

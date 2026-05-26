@@ -72,6 +72,12 @@ public class NonExistingFtpFile implements FtpFile
     }
 
     @Override
+    public Object getPhysicalFile()
+    {
+        return null;
+    }
+
+    @Override
     public boolean isDirectory()
     {
         return false;

@@ -296,7 +296,7 @@ public class TemplateBasedDataSetResourceResolverTest extends AbstractFileSystem
         assertEquals(dataSetPathElement, ftpFile.getName());
         assertEquals(path, ftpFile.getAbsolutePath());
         assertEquals(true, ftpFile.isDirectory());
-        List<FtpFile> files = ftpFile.listFiles();
+        List<? extends FtpFile> files = ftpFile.listFiles();
         assertEquals("PARENT-DS-DS_TYPE2-ds2-" + RENDERED_REGISTRATION_DATE + "-A", files.get(0)
                 .getName());
         assertEquals(true, files.get(0).isDirectory());
@@ -335,7 +335,7 @@ public class TemplateBasedDataSetResourceResolverTest extends AbstractFileSystem
         assertEquals(ds2AsParent, ftpFile.getName());
         assertEquals(path, ftpFile.getAbsolutePath());
         assertEquals(true, ftpFile.isDirectory());
-        List<FtpFile> files = ftpFile.listFiles();
+        List<? extends FtpFile> files = ftpFile.listFiles();
         assertEquals("CHILD-DS-DS_TYPE3-ds3-" + RENDERED_REGISTRATION_DATE + "-B", files.get(0)
                 .getName());
         assertEquals(true, files.get(0).isDirectory());
@@ -374,7 +374,7 @@ public class TemplateBasedDataSetResourceResolverTest extends AbstractFileSystem
         assertEquals(ds2AsParent, ftpFile.getName());
         assertEquals(path, ftpFile.getAbsolutePath());
         assertEquals(true, ftpFile.isDirectory());
-        List<FtpFile> files = ftpFile.listFiles();
+        List<? extends FtpFile> files = ftpFile.listFiles();
         assertEquals("original2", files.get(0).getName());
         assertEquals(true, files.get(0).isDirectory());
         assertEquals(1, files.size());

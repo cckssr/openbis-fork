@@ -91,7 +91,7 @@ public class XmlUtils
     {
         try
         {
-            TransformerFactory transfac = TransformerFactory.newInstance();
+            TransformerFactory transfac = XMLInfraStructure.createSecureTransformerFactory();
             // throws exception in a running openBIS instance
             // transfac.setAttribute("indent-number", INDENTATION);
             Transformer trans = transfac.newTransformer();

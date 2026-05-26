@@ -44,6 +44,9 @@ dependencyCheck {
     data {
         directory = "${projectDir}/.dependency-check-data"
     }
+    // Keep test-only dependencies out of the report without suppressing the
+    // same artifacts if they are introduced on a production classpath.
+    skipTestGroups = true
     skipConfigurations = ["testRuntimeClasspath", "testCompileClasspath"]
     // scanConfigurations = ["runtimeClasspath"]
     proxy {

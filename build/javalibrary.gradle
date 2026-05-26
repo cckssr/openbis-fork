@@ -15,6 +15,8 @@ configurations {
     tests.canBeResolved true
 }
 
+apply from: '../build/common-resolutions.gradle'
+
 task testJar(type: Jar, dependsOn: testClasses) {
     archiveBaseName = "test-${project.name}"
     from sourceSets.test.output
