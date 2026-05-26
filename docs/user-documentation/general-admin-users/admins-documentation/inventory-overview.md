@@ -40,7 +40,7 @@ created by the *Instance admin*, based on the needs of the lab.
  
 
 It is possible to add additional folders in the Inventory, for example
-for **Equipment** (see [Create new InventorySpaces](../space-management.md)).
+for **Equipment** (see [Create new InventorySpaces](./space-management.md) ).
 
  
 
