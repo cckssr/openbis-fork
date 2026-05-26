@@ -12,13 +12,8 @@ tasks.withType(JavaCompile) {
     options.compilerArgs << '-parameters'
 }
 
-repositories {
-    ivy {
-        ivyPattern "https://sissource.ethz.ch/openbis/openbis-public/openbis-ivy/-/raw/main/[organisation]/[module]/[revision]/ivy.xml"
-        artifactPattern "https://sissource.ethz.ch/openbis/openbis-public/openbis-ivy/-/raw/main/[organisation]/[module]/[revision]/[artifact]-[revision](-[classifier]).[ext]"
-    }
-//    mavenCentral()
-}
+apply from: '../build/repository.gradle'
+repositories repositoryConfig
 
 dependencies {
     implementation libs.bundles.org.apache.jena.jena,
