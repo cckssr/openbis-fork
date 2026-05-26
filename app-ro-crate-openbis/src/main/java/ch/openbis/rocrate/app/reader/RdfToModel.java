@@ -134,7 +134,8 @@ public class RdfToModel
         Map<String, IMetadataEntry> idToEntities =
                 entries.stream().collect(Collectors.toMap(x -> x.getId(), x -> x, (x, y) -> y));
         List<AbstractEntityPropertyHolder> abstractEntityPropertyHolders =
-                processEntities(entries, fallbackSpaceCode, fallbackProjectCode,
+                processEntities(schema, entityTypeToRdfIdentifier, entries, fallbackSpaceCode,
+                        fallbackProjectCode,
                         typeToInheritanceChain,
                         codeToSampleType,
                         externalIdentifierToSample, baseCodeToPossibleDataTypes, idToEntities,
@@ -146,13 +147,15 @@ public class RdfToModel
         mapSpaces(fallbackSpaceCode, fallbackProjectCode, spaces, projects);
         mapProjects(projects, spaces);
 
-        mapCollections(entries, typeToInheritanceChain, identifierToCollectionType,
+        mapCollections(schema, entityTypeToRdfIdentifier, entries, typeToInheritanceChain,
+                identifierToCollectionType,
                 idsToCollections);
 
         resolveSpaceProjectAndCollections(samplesWithSpaceAndProjectCodes, spaces, projects,
                 idsToCollections, fallbackProjectCode, fallbackSpaceCode);
 
-        resolveOpenBisStructure(entries, fallbackSpaceCode, fallbackProjectCode,
+        resolveOpenBisStructure(schema, entityTypeToRdfIdentifier, entries, fallbackSpaceCode,
+                fallbackProjectCode,
                 typeToInheritanceChain,
                 roCrateIdsToObjects, spaces, projects);
 
@@ -416,7 +419,7 @@ public class RdfToModel
             for (String type : intersectionType)
             {
 
-                IEntityType entityType = schema.get(entityTypeToRdfIdentifier.get(type));
+                IEntityType entityType = tryFind(schema, entityTypeToRdfIdentifier, type);
                 if (entityType == null)
                 {
                     continue;
@@ -452,7 +455,37 @@ public class RdfToModel
         }
     }
 
-    private static List<AbstractEntityPropertyHolder> processEntities(List<IMetadataEntry> entries,
+    private static IEntityType tryFind(Map<EntityTypePermId, IEntityType> schema,
+            Map<String, EntityTypePermId> entityTypeToRdfIdentifier, String type)
+    {
+        IEntityType entityType = schema.get(entityTypeToRdfIdentifier.get(type));
+        if (entityType != null)
+        {
+            return entityType;
+        }
+        if (!type.contains(":"))
+        {
+            return schema.get(entityTypeToRdfIdentifier.get("schema:" + type));
+
+        }
+        return null;
+
+    }
+
+    private static String tryFindRdfIdentifier(Map<EntityTypePermId, IEntityType> schema,
+            Map<String, EntityTypePermId> entityTypeToRdfIdentifier, String type)
+    {
+        if (type.contains(":"))
+        {
+            return type;
+        }
+        return "schema:" + type;
+
+    }
+
+    private static List<AbstractEntityPropertyHolder> processEntities(
+            Map<EntityTypePermId, IEntityType> schema,
+            Map<String, EntityTypePermId> entityTypeToRdfIdentifier, List<IMetadataEntry> entries,
             String fallbackSpaceCode,
             String fallbackProjectCode, Map<String, List<String>> typeToInheritanceChain,
             Map<String, SampleType> codeToSampleType,
@@ -474,7 +507,8 @@ public class RdfToModel
             ObjectIdentifier objectIdentifier;
 
             Optional<EntityKind> entityKind =
-                    matchEntityKind(entry, typeToInheritanceChain);
+                    matchEntityKind(schema, entityTypeToRdfIdentifier, entry,
+                            typeToInheritanceChain);
 
             if (entityKind.filter(x -> x == EntityKind.SAMPLE).isPresent())
             {
@@ -494,7 +528,9 @@ public class RdfToModel
                         entry.getTypes().stream().findFirst().orElseThrow() :
                         getIntersectionTypeIdentifier(entry.getTypes());
 
-                SampleType type = codeToSampleType.get(openBisifyCode(typeCode));
+                SampleType type =
+                        Optional.ofNullable(codeToSampleType.get(openBisifyCode(typeCode)))
+                                .orElse(codeToSampleType.get(openBisifyCode("schema:" + typeCode)));
                 sample.setType(type);
 
                 String code = SampleCodeHelper.createSampleCode(type, entry.getId());
@@ -799,7 +835,8 @@ public class RdfToModel
         }
     }
 
-    private static void mapCollections(List<IMetadataEntry> entries,
+    private static void mapCollections(Map<EntityTypePermId, IEntityType> schema,
+            Map<String, EntityTypePermId> entityTypeToRdfIdentifier, List<IMetadataEntry> entries,
             Map<String, List<String>> typeToInheritanceChain,
             Map<String, ExperimentType> identifierToCollectionType,
             Map<ExperimentIdentifier, Experiment> idsToCollections)
@@ -807,7 +844,8 @@ public class RdfToModel
         for (IMetadataEntry entry : entries)
         {
             Optional<EntityKind> entityKind =
-                    matchEntityKind(entry, typeToInheritanceChain);
+                    matchEntityKind(schema, entityTypeToRdfIdentifier, entry,
+                            typeToInheritanceChain);
 
 
             if (entityKind.filter(x -> x == EntityKind.EXPERIMENT).isPresent())
@@ -911,7 +949,8 @@ public class RdfToModel
         }
     }
 
-    private static void resolveOpenBisStructure(List<IMetadataEntry> entries,
+    private static void resolveOpenBisStructure(Map<EntityTypePermId, IEntityType> schema,
+            Map<String, EntityTypePermId> entityTypeToRdfIdentifier, List<IMetadataEntry> entries,
             String fallbackSpaceCode,
             String fallbackProjectCode, Map<String, List<String>> typeToInheritanceChain,
             Map<String, Sample> roCrateIdsToObjects, Map<SpacePermId, Space> spaces,
@@ -920,7 +959,8 @@ public class RdfToModel
         for (IMetadataEntry entry : entries)
         {
             Optional<EntityKind> entityKind =
-                    matchEntityKind(entry, typeToInheritanceChain);
+                    matchEntityKind(schema, entityTypeToRdfIdentifier, entry,
+                            typeToInheritanceChain);
 
             if (entityKind.filter(x -> x == EntityKind.SAMPLE).isPresent())
             {
@@ -1050,16 +1090,30 @@ public class RdfToModel
 
     }
 
-
-
-
-    private static Optional<EntityKind> matchEntityKind(IMetadataEntry metfadataEntry,
+    private static Optional<EntityKind> matchEntityKind(Map<EntityTypePermId, IEntityType> schema,
+            Map<String, EntityTypePermId> entityTypeToRdfIdentifier, IMetadataEntry metadataEntry,
             Map<String, List<String>> typeToInheritanceChain)
     {
+
+
+
         List<String> a =
-                metfadataEntry.getTypes().stream().map(x -> typeToInheritanceChain.get(x))
+                metadataEntry.getTypes().stream()
+                        .map(x -> tryFindRdfIdentifier(schema, entityTypeToRdfIdentifier, x))
+                        .map(typeToInheritanceChain::get)
                         .filter(Objects::nonNull).flatMap(Collection::stream)
+                        .distinct()
                         .collect(Collectors.toList());
+        for (String typeId : metadataEntry.getTypes())
+        {
+            IEntityType iEntityType = tryFind(schema, entityTypeToRdfIdentifier, typeId);
+            if (iEntityType != null)
+            {
+                return Optional.of(EntityKind.SAMPLE);
+            }
+
+        }
+
 
         if (a.isEmpty())
         {
