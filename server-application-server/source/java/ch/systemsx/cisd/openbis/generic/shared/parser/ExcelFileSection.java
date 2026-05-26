@@ -25,6 +25,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -221,7 +222,7 @@ public class ExcelFileSection
         final String beginSection = "[";
         final String endSection = "]";
         if (row == null || row.getCell(0) == null
-                || row.getCell(0).getCellType() != Cell.CELL_TYPE_STRING)
+                || row.getCell(0).getCellType() != CellType.STRING)
         {
             return null;
         }

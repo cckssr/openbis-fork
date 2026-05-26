@@ -148,6 +148,7 @@ tasks.register('generateMd5Files') {
 }
 
 tasks.register('release', Tar) {
+    dependsOn tasks.named('versionUpdate') // Ensure versionUpdate triggers even without using clean
     compression = Compression.GZIP
     // API
     dependsOn([project(':api-openbis-java').tasks.release,

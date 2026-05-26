@@ -27,7 +27,6 @@ import ch.ethz.sis.afsserver.server.Response;
 import ch.ethz.sis.afsserver.server.Worker;
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameterUtil;
 import ch.ethz.sis.openbis.afsserver.server.common.OpenBISConfiguration;
-import ch.ethz.sis.openbis.afsserver.server.observer.impl.OpenBISUtils;
 import ch.ethz.sis.openbis.generic.OpenBIS;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.DataSetCreation;
@@ -49,6 +48,7 @@ import ch.ethz.sis.shared.io.IOUtils;
 import ch.ethz.sis.shared.log.standard.LogManager;
 import ch.ethz.sis.shared.log.standard.Logger;
 import ch.ethz.sis.shared.startup.Configuration;
+import ch.systemsx.cisd.openbis.generic.shared.Constants;
 
 public class CreateDataSetsAPIServerObserver
 {
@@ -272,9 +272,9 @@ public class CreateDataSetsAPIServerObserver
 
         DataSetCreation creation = new DataSetCreation();
         creation.setAfsData(true);
-        creation.setDataStoreId(new DataStorePermId(OpenBISUtils.AFS_DATA_STORE_CODE));
+        creation.setDataStoreId(new DataStorePermId(Constants.AFS_DATA_STORE_CODE));
         creation.setDataSetKind(DataSetKind.PHYSICAL);
-        creation.setTypeId(new EntityTypePermId(OpenBISUtils.AFS_DATA_SET_TYPE_CODE));
+        creation.setTypeId(new EntityTypePermId(Constants.FILES_DATA_SET_TYPE_CODE));
         creation.setPhysicalData(physicalCreation);
 
         if (experimentPermId != null)

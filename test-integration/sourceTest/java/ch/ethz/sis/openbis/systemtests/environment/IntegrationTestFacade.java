@@ -10,10 +10,7 @@ import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 import java.util.function.Supplier;
 
 import javax.sql.DataSource;
@@ -24,22 +21,28 @@ import ch.ethz.sis.openbis.afsserver.server.common.OpenBISConfiguration;
 import ch.ethz.sis.openbis.generic.OpenBIS;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetKind;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.DataSetCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.PhysicalDataCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.ProprietaryStorageFormatPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.RelativeLocationLocatorTypePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update.DataSetTypeUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.id.DataStorePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.id.IDeletionId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.IEntityTypeId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.ExperimentType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.create.ExperimentCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.delete.ExperimentDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.IExperimentId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.update.ExperimentTypeUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.update.ExperimentUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.Person;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.create.PersonCreation;
@@ -67,6 +70,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchO
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.ISampleId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.update.SampleTypeUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.update.SampleUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.create.SpaceCreation;
@@ -76,6 +80,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 import ch.ethz.sis.shared.log.classic.impl.Logger;
 import ch.ethz.sis.shared.startup.Configuration;
+import jakarta.annotation.Nullable;
 
 public class IntegrationTestFacade
 {
@@ -139,6 +144,60 @@ public class IntegrationTestFacade
         return propertyType;
     }
 
+    public SampleType assignPropertyToSampleType(
+            OpenBIS openBIS, String sampleTypeId, String property
+    ) {
+        SampleTypeUpdate sampleTypeUpdate = new SampleTypeUpdate();
+        EntityTypePermId typeId = new EntityTypePermId(sampleTypeId);
+        sampleTypeUpdate.setTypeId(typeId);
+        PropertyAssignmentCreation propertyAssignmentCreation = new PropertyAssignmentCreation();
+        propertyAssignmentCreation.setPropertyTypeId(new PropertyTypePermId(property));
+        sampleTypeUpdate.getPropertyAssignments().add(propertyAssignmentCreation);
+        openBIS.updateSampleTypes(Collections.singletonList(sampleTypeUpdate));
+        SampleTypeFetchOptions sampleTypeFetchOptions = new SampleTypeFetchOptions();
+        sampleTypeFetchOptions.withPropertyAssignments();
+        return openBIS.getSampleTypes(
+                Collections.singletonList(typeId),
+                sampleTypeFetchOptions
+        ).get(typeId);
+    }
+
+    public ExperimentType assignPropertyToExperimentType(
+            OpenBIS openBIS, String experimentTypeId, String property
+    ) {
+        ExperimentTypeUpdate experimentTypeUpdate = new ExperimentTypeUpdate();
+        EntityTypePermId typeId = new EntityTypePermId(experimentTypeId);
+        experimentTypeUpdate.setTypeId(typeId);
+        PropertyAssignmentCreation propertyAssignmentCreation = new PropertyAssignmentCreation();
+        propertyAssignmentCreation.setPropertyTypeId(new PropertyTypePermId(property));
+        experimentTypeUpdate.getPropertyAssignments().add(propertyAssignmentCreation);
+        openBIS.updateExperimentTypes(Collections.singletonList(experimentTypeUpdate));
+        ExperimentTypeFetchOptions experimentTypeFetchOptions = new ExperimentTypeFetchOptions();
+        experimentTypeFetchOptions.withPropertyAssignments();
+        return openBIS.getExperimentTypes(
+                Collections.singletonList(typeId),
+                experimentTypeFetchOptions
+        ).get(typeId);
+    }
+
+    public DataSetType assignPropertyToDatasetType(
+            OpenBIS openBIS, String datasetTypeId, String property
+    ) {
+        DataSetTypeUpdate dataSetTypeUpdate = new DataSetTypeUpdate();
+        EntityTypePermId typeId = new EntityTypePermId(datasetTypeId);
+        dataSetTypeUpdate.setTypeId(typeId);
+        PropertyAssignmentCreation propertyAssignmentCreation = new PropertyAssignmentCreation();
+        propertyAssignmentCreation.setPropertyTypeId(new PropertyTypePermId(property));
+        dataSetTypeUpdate.getPropertyAssignments().add(propertyAssignmentCreation);
+        openBIS.updateDataSetTypes(Collections.singletonList(dataSetTypeUpdate));
+        DataSetTypeFetchOptions datasetTypeFetchOptions = new DataSetTypeFetchOptions();
+        datasetTypeFetchOptions.withPropertyAssignments();
+        return openBIS.getDataSetTypes(
+                Collections.singletonList(typeId),
+                datasetTypeFetchOptions
+        ).get(typeId);
+    }
+
     public Space createSpace(OpenBIS openBIS, String spaceCode)
     {
         SpaceCreation spaceCreation = new SpaceCreation();
@@ -187,6 +246,19 @@ public class IntegrationTestFacade
         return experiment;
     }
 
+    public Experiment createExperimentWithName(OpenBIS openBIS, IProjectId projectId, String experimentCode, String experimentName)
+    {
+        ExperimentCreation experimentCreation = new ExperimentCreation();
+        experimentCreation.setTypeId(new EntityTypePermId("UNKNOWN"));
+        experimentCreation.setProjectId(projectId);
+        experimentCreation.setCode(experimentCode);
+        experimentCreation.setProperty("NAME", experimentName);
+        List<ExperimentPermId> experimentIds = openBIS.createExperiments(List.of(experimentCreation));
+        Experiment experiment = openBIS.getExperiments(experimentIds, new ExperimentFetchOptions()).get(experimentIds.get(0));
+        log.info("Created experiment " + experiment.getIdentifier() + " (" + experiment.getPermId().getPermId() + ")");
+        return experiment;
+    }
+
     public void makeExperimentImmutable(OpenBIS openBIS, IExperimentId experimentId)
     {
         ExperimentUpdate update = new ExperimentUpdate();
@@ -216,6 +288,24 @@ public class IntegrationTestFacade
         return sample;
     }
 
+    public Sample createSampleWithTypeAndNameAndParent(OpenBIS openBIS, ISpaceId spaceId,
+                                                       ISampleId parent,
+                                                       String sampleCode, String sampleType, String sampleName)
+    {
+        SampleCreation sampleCreation = new SampleCreation();
+        sampleCreation.setTypeId(new EntityTypePermId(sampleType));
+        sampleCreation.setSpaceId(spaceId);
+        sampleCreation.setCode(sampleCode);
+        sampleCreation.setProperty("NAME", sampleName);
+        if (parent != null) {
+            sampleCreation.setParentIds(Collections.singletonList(parent));
+        }
+        List<SamplePermId> sampleIds = openBIS.createSamples(List.of(sampleCreation));
+        Sample sample = getSample(openBIS, sampleIds.get(0));
+        log.info("Created sample " + sample.getIdentifier() + " (" + sample.getPermId().getPermId() + ")");
+        return sample;
+    }
+
     public Sample createSample(OpenBIS openBIS, IProjectId projectId, String sampleCode)
     {
         ProjectFetchOptions projectFetchOptions = new ProjectFetchOptions();
@@ -232,6 +322,34 @@ public class IntegrationTestFacade
         sampleCreation.setSpaceId(project.getSpace().getPermId());
         sampleCreation.setProjectId(project.getPermId());
         sampleCreation.setCode(sampleCode);
+        List<SamplePermId> sampleIds = openBIS.createSamples(List.of(sampleCreation));
+        Sample sample = getSample(openBIS, sampleIds.get(0));
+        log.info("Created sample " + sample.getIdentifier() + " (" + sample.getPermId().getPermId() + ")");
+        return sample;
+    }
+
+    public Sample createSampleWithTypeAndNameAndParent(OpenBIS openBIS, IProjectId projectId,
+                                                       ISampleId parent,
+                                                       String sampleCode, String sampleType, String sampleName)
+    {
+        ProjectFetchOptions projectFetchOptions = new ProjectFetchOptions();
+        projectFetchOptions.withSpace();
+
+        Project project = openBIS.getProjects(List.of(projectId), projectFetchOptions).get(projectId);
+        if (project == null)
+        {
+            throw new RuntimeException("Project with id " + projectId + " hasn't been found.");
+        }
+
+        SampleCreation sampleCreation = new SampleCreation();
+        sampleCreation.setTypeId(new EntityTypePermId(sampleType));
+        sampleCreation.setSpaceId(project.getSpace().getPermId());
+        sampleCreation.setProjectId(project.getPermId());
+        sampleCreation.setCode(sampleCode);
+        sampleCreation.setProperty("NAME", sampleName);
+        if (parent != null) {
+            sampleCreation.setParentIds(Collections.singletonList(parent));
+        }
         List<SamplePermId> sampleIds = openBIS.createSamples(List.of(sampleCreation));
         Sample sample = getSample(openBIS, sampleIds.get(0));
         log.info("Created sample " + sample.getIdentifier() + " (" + sample.getPermId().getPermId() + ")");
@@ -260,6 +378,34 @@ public class IntegrationTestFacade
         return sample;
     }
 
+    public Sample createSampleWithTypeAndNameAndParent(OpenBIS openBIS, IExperimentId experimentId,
+                                                       ISampleId parent,
+                                                       String sampleCode, String sampleType, String sampleName)
+    {
+        ExperimentFetchOptions experimentFetchOptions = new ExperimentFetchOptions();
+        experimentFetchOptions.withProject().withSpace();
+
+        Experiment experiment = openBIS.getExperiments(List.of(experimentId), experimentFetchOptions).get(experimentId);
+        if (experiment == null)
+        {
+            throw new RuntimeException("Experiment with id " + experimentId + " hasn't been found.");
+        }
+
+        SampleCreation sampleCreation = new SampleCreation();
+        sampleCreation.setTypeId(new EntityTypePermId(sampleType));
+        sampleCreation.setSpaceId(experiment.getProject().getSpace().getPermId());
+        sampleCreation.setExperimentId(experiment.getPermId());
+        sampleCreation.setCode(sampleCode);
+        sampleCreation.setProperty("NAME", sampleName);
+        if (parent != null) {
+            sampleCreation.setParentIds(Collections.singletonList(parent));
+        }
+        List<SamplePermId> sampleIds = openBIS.createSamples(List.of(sampleCreation));
+        Sample sample = getSample(openBIS, sampleIds.get(0));
+        log.info("Created sample " + sample.getIdentifier() + " (" + sample.getPermId().getPermId() + ")");
+        return sample;
+    }
+
     public void makeSampleImmutable(OpenBIS openBIS, ISampleId sampleId)
     {
         SampleUpdate update = new SampleUpdate();
@@ -282,8 +428,16 @@ public class IntegrationTestFacade
         return openBIS.getSamples(List.of(sampleId), new SampleFetchOptions()).get(sampleId);
     }
 
-    public DataSet createDataSet(OpenBIS openBIS, IExperimentId experimentId, String dataSetCode, String testFile, byte[] testData)
-            throws IOException
+    public DataSet createDataSet(
+            OpenBIS openBIS,
+            String dssCode,
+            @Nullable IExperimentId experimentId,
+            @Nullable ISampleId sampleId,
+            String dataSetCode,
+            String testFile,
+            byte[] testData,
+            @Nullable String name
+    ) throws IOException
     {
         Configuration afsServerConfiguration = new Configuration(environment.getAfsServer().getServiceProperties());
         String storageRoot = AtomicFileSystemServerParameterUtil.getStorageRoot(afsServerConfiguration);
@@ -309,14 +463,19 @@ public class IntegrationTestFacade
         physicalCreation.setH5arFolders(false);
         physicalCreation.setH5Folders(false);
 
-        Properties dssProperties = environment.getDataStoreServer().getServiceProperties();
-        String dssCode = dssProperties.getProperty("data-store-server-code");
-
         DataSetCreation dataSetCreation = new DataSetCreation();
         dataSetCreation.setDataStoreId(new DataStorePermId(dssCode));
         dataSetCreation.setDataSetKind(DataSetKind.PHYSICAL);
         dataSetCreation.setTypeId(new EntityTypePermId("UNKNOWN"));
-        dataSetCreation.setExperimentId(experimentId);
+        if (experimentId != null) {
+            dataSetCreation.setExperimentId(experimentId);
+        }
+        if (sampleId != null) {
+            dataSetCreation.setSampleId(sampleId);
+        }
+        if (name != null) {
+            dataSetCreation.setProperty("NAME", name);
+        }
         dataSetCreation.setCode(dataSetCode);
         dataSetCreation.setPhysicalData(physicalCreation);
 

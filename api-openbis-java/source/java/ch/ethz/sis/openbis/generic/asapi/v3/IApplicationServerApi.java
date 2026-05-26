@@ -49,7 +49,9 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.unlock.DataSetUnlockOpti
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update.DataSetTypeUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update.DataSetUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.DataStore;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.create.DataStoreCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.fetchoptions.DataStoreFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.id.DataStorePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.search.DataStoreSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.Deletion;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.fetchoptions.DeletionFetchOptions;
@@ -588,6 +590,17 @@ public interface IApplicationServerApi extends IRpcService
      * where nth id corresponds to nth creation object.
      */
     public List<TypeGroupAssignmentId> createTypeGroupAssignments(String sessionToken, List<TypeGroupAssignmentCreation> newTypeGroupAssignments);
+
+    /**
+     * Creates data stores basing on the provided {@code DataStoreCreation} objects. Returns ids of the newly created data stores where nth id corresponds to nth
+     * creation object.
+     * <p>
+     * Required access rights: {@code SPACE_ETL_SERVER} or stronger
+     * </p>
+     *
+     * @throws UserFailureException in case of any problems, e.g. incorrect {@code DataStoreCreation} objects, insufficient access rights etc.
+     */
+    public List<DataStorePermId> createDataStores(String sessionToken, List<DataStoreCreation> newDataStores);
 
     /**
      * Updates spaces basing on the provided {@code SpaceUpdate} objects.

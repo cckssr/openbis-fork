@@ -107,7 +107,7 @@ public class ExcelReader
      * reused for the actual data. For debug purposes, FULL is available.
      */
     public static enum FileMode
-    {FULL, DUMMY}
+    {DEBUG_FULL_FILES, DUMMY}
 
     private final FileMode fileMode;
 
@@ -121,7 +121,7 @@ public class ExcelReader
 
     public static OpenBisModel convert(Format inputFormat, Path inputFile) throws IOException
     {
-        return convert(inputFormat, inputFile, FileMode.FULL);
+        return convert(inputFormat, inputFile, FileMode.DEBUG_FULL_FILES);
     }
 
     public static OpenBisModel convert(Format inputFormat, Path inputFile, FileMode fileMode)

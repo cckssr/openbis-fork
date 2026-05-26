@@ -58,7 +58,7 @@ class DatabaseComponent extends React.PureComponent {
         object.type === objectType.COLLECTION ||
         object.type === objectType.OBJECT
       ) {
-        canUseDataBrowser = await this.hasAvailableAfsDataStore()
+        canUseDataBrowser = await openbis.hasAfsDataStore()
       }
       if (object.type === objectType.SPACE) {
         const spaces = await openbis.getSpaces(
@@ -175,18 +175,6 @@ class DatabaseComponent extends React.PureComponent {
         </TabPanel>
       </TabContext>
     </Container>
-  }
-
-  async hasAvailableAfsDataStore() {
-    if (!openbis.isAfsSet()) {
-      return false
-    }
-    try {
-      return await openbis.hasAfsDataStore()
-    } catch (error) {
-      await AppController.getInstance().errorChange(error)
-      return false
-    }
   }
 
   getGridSettingsId() {

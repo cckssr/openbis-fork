@@ -325,6 +325,10 @@ public class StandardPathLister implements FtpPathLister {
                     ),
                     SftpNodeChain.concat(
                             fullChain,
+                            SftpNodeChain.createSublevelNode(StandardPathTranslator.DATA_SET_TYPE_LABEL)
+                    ),
+                    SftpNodeChain.concat(
+                            fullChain,
                             SftpNodeChain.createSublevelNode(StandardPathTranslator.FILE_TYPE_LABEL)
                     )
             );
@@ -332,6 +336,8 @@ public class StandardPathLister implements FtpPathLister {
             return listSamplesOrFoldersInSample(folderNode, fullChain, true);
         } else if ( sublevel.equals(StandardPathTranslator.SAMPLE_TYPE_LABEL) ) {
             return listSamplesOrFoldersInSample(folderNode, fullChain, false);
+        } else if ( sublevel.equals(StandardPathTranslator.DATA_SET_TYPE_LABEL) ) {
+            return listDataSetsInSample(folderNode, fullChain);
         } else if ( sublevel.equals(StandardPathTranslator.FILE_TYPE_LABEL) ) {
             return listFilesInSampleOrFolder(folderNode, fullChain);
         } else {
@@ -361,6 +367,21 @@ public class StandardPathLister implements FtpPathLister {
         List<SftpNodeChain> listedDatasets = new ArrayList<>();
         listUtil.getSampleDatasets(
                 sampleNode.getIdentifier().map(SftpListUtil::getEntityPermIdFromDisplayName).orElseThrow()
+        ).iterator().forEachRemaining(
+                dataSet -> {
+                    listedDatasets.add(SftpNodeChain.concat(fullChain,
+                            SftpNodeChain.fromDataSet(dataSet))
+                    );
+                }
+        );
+
+        return listedDatasets;
+    }
+
+    @NonNull List<@NonNull SftpNodeChain> listDataSetsInExperiment(@NonNull SftpNode experimentNode, @NonNull SftpNodeChain fullChain) {
+        List<SftpNodeChain> listedDatasets = new ArrayList<>();
+        listUtil.getExperimentDatasets(
+                experimentNode.getIdentifier().map(SftpListUtil::getEntityPermIdFromDisplayName).orElseThrow()
         ).iterator().forEachRemaining(
                 dataSet -> {
                     listedDatasets.add(SftpNodeChain.concat(fullChain,
@@ -511,6 +532,10 @@ public class StandardPathLister implements FtpPathLister {
                     ),
                     SftpNodeChain.concat(
                             fullChain,
+                            SftpNodeChain.createSublevelNode(StandardPathTranslator.DATA_SET_TYPE_LABEL)
+                    ),
+                    SftpNodeChain.concat(
+                            fullChain,
                             SftpNodeChain.createSublevelNode(StandardPathTranslator.FILE_TYPE_LABEL)
                     )
             );
@@ -518,6 +543,8 @@ public class StandardPathLister implements FtpPathLister {
             return listSamplesOrFoldersInExperiment(experimentNode, fullChain, true);
         } else if ( sublevel.equals(StandardPathTranslator.SAMPLE_TYPE_LABEL) ) {
             return listSamplesOrFoldersInExperiment(experimentNode, fullChain, false);
+        } else if ( sublevel.equals(StandardPathTranslator.DATA_SET_TYPE_LABEL) ) {
+            return listDataSetsInExperiment(experimentNode, fullChain);
         } else if ( sublevel.equals(StandardPathTranslator.FILE_TYPE_LABEL) ) {
             return listFilesInExperiment(experimentNode, fullChain);
         } else {

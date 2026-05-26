@@ -249,6 +249,29 @@ public class SftpListUtilTest extends TestCase {
         assertTrue(sampleFetchOptionsArgumentCaptor.getValue().withDataSets().hasProperties());
     }
 
+    public void testGetExperimentDatasets() {
+        OpenBISClientUtil openBISClientUtil = Mockito.mock(OpenBISClientUtil.class);
+        OpenBIS openBIS = Mockito.mock(OpenBIS.class);
+        User user = User.builder()
+                .username("u5er")
+                .sessionToken("53551on")
+                .build();
+        SftpListUtil sftpListUtil = new SftpListUtil(user, openBISClientUtil);
+        Mockito.doReturn(openBIS).when(openBISClientUtil).getOpenBISClient(user);
+        Mockito.doReturn(Collections.emptyMap()).when(openBIS).getSamples(
+                Mockito.any(), Mockito.any()
+        );
+        sftpListUtil.getExperimentDatasets("exp-perm-id");
+        ArgumentCaptor<List<? extends ExperimentPermId>> experimentIdListArgumentCaptor = ArgumentCaptor.forClass(List.class);
+        ArgumentCaptor<ExperimentFetchOptions> fetchOptionsArgumentCaptor = ArgumentCaptor.forClass(ExperimentFetchOptions.class);
+        Mockito.verify(openBIS, Mockito.times(1)).getExperiments(
+                experimentIdListArgumentCaptor.capture(), fetchOptionsArgumentCaptor.capture()
+        );
+        assertEquals(new ExperimentPermId("exp-perm-id").getPermId(), experimentIdListArgumentCaptor.getValue().get(0).getPermId());
+        assertTrue(fetchOptionsArgumentCaptor.getValue().hasDataSets());
+        assertTrue(fetchOptionsArgumentCaptor.getValue().withDataSets().hasProperties());
+    }
+
     public void testGetAfsEntityPermId() {
         OpenBISClientUtil openBISClientUtil = Mockito.mock(OpenBISClientUtil.class);
         OpenBIS openBIS = Mockito.mock(OpenBIS.class);

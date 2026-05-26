@@ -18,6 +18,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static ch.openbis.rocrate.app.Constants.EQUIVALENCE_PARENT;
+
 public class Writer
 {
 
@@ -80,7 +82,7 @@ public class Writer
 
     private void addSystemSchema(ISchemaFacade facade)
     {
-
+        IType objectType = null;
         List<IType> fileTypes = new ArrayList<>();
         {
             Type type = new Type();
@@ -92,6 +94,7 @@ public class Writer
             Type type = new Type();
             type.setId(Constants.GRAPH_ID_OBJECT);
             fileTypes.add(type);
+            objectType = type;
 
             facade.addType(type);
 
@@ -119,9 +122,10 @@ public class Writer
         }
 
         {
-            PropertyType propertyType = new PropertyType();
-            propertyType.setId(Constants.PROPERTY_ID_FILES);
             {
+                PropertyType propertyType = new PropertyType();
+                propertyType.setId(Constants.PROPERTY_ID_FILES);
+
                 Type roCrateFileType = new Type();
                 roCrateFileType.setId("File");
                 propertyType.addType(roCrateFileType);
@@ -134,6 +138,21 @@ public class Writer
                 facade.addPropertyType(propertyType);
                 propertyType.setDomainIncludes(fileTypes);
             }
+            {
+                PropertyType propertyType = new PropertyType();
+                propertyType.setId(Constants.PROPERTY_ID_PARENTS);
+                propertyType.setOntologicalAnnotations(List.of(EQUIVALENCE_PARENT));
+                Type roCrateFileType = new Type();
+                roCrateFileType.setId(Constants.GRAPH_ID_OBJECT);
+                propertyType.addType(roCrateFileType);
+
+                Type type = (Type) objectType;
+                type.addProperty(propertyType);
+                facade.addPropertyType(propertyType);
+                propertyType.setDomainIncludes(fileTypes);
+
+            }
+
         }
 
     }

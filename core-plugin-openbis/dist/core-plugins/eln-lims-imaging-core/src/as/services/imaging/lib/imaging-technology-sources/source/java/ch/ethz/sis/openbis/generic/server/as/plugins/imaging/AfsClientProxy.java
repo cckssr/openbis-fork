@@ -1,8 +1,18 @@
 package ch.ethz.sis.openbis.generic.server.as.plugins.imaging;
 
+import java.net.URI;
+import java.nio.file.Path;
+import java.util.UUID;
+
 import ch.ethz.sis.afsapi.api.ClientAPI;
 import ch.ethz.sis.afsapi.dto.File;
 import ch.ethz.sis.afsclient.client.AfsClient;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.DataStore;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.fetchoptions.DataStoreFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.search.DataStoreKind;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.search.DataStoreSearchCriteria;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.IApplicationServerInternalApi;
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 import ch.ethz.sis.shared.log.classic.impl.Logger;
@@ -10,18 +20,8 @@ import ch.systemsx.cisd.common.spring.ExposablePropertyPlaceholderConfigurer;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
 import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider;
 
-import java.net.URI;
-import java.nio.file.Path;
-import java.util.UUID;
-
 final class AfsClientProxy
 {
-    public static final String AFS_SERVER_URL_PROPERTY_NAME = "server-public-information.afs-server.url";
-
-    public static final String AFS_SERVER_TIMEOUT_PROPERTY_NAME = "server-public-information.afs-server.timeout";
-
-    public static final String AFS_SERVER_TIMEOUT_DEFAULT = "3600";
-
     private UUID transactionId;
 
     private final AfsClient client;
@@ -46,18 +46,22 @@ final class AfsClientProxy
                 .getPropertyValue(propertyName, defaultValue);
     }
 
-    public static AfsClientProxy getAfsClient(String sessionToken) {
+    public static AfsClientProxy getAfsClient(String sessionToken, int timeout) {
+        IApplicationServerInternalApi applicationServerApi = CommonServiceProvider.getApplicationServerApi();
 
+        DataStoreSearchCriteria dataStoreSearchCriteria = new DataStoreSearchCriteria();
+        dataStoreSearchCriteria.withKind().thatIn(DataStoreKind.AFS);
 
-        String url = CommonServiceProvider.tryToGetProperty(AFS_SERVER_URL_PROPERTY_NAME);
+        SearchResult<DataStore> dataStoreSearchResult =
+                applicationServerApi.searchDataStores(sessionToken, dataStoreSearchCriteria, new DataStoreFetchOptions());
+        String url = dataStoreSearchResult.getObjects().isEmpty() ? null : dataStoreSearchResult.getObjects().getFirst().getDownloadUrl();
+
         if(url != null && !url.isBlank()) {
             operationLog.info("Resolved AFS server URL: " + url);
-            String timeoutStr = CommonServiceProvider.tryToGetProperty(AFS_SERVER_TIMEOUT_PROPERTY_NAME, AFS_SERVER_TIMEOUT_DEFAULT);
 //            String interactiveSessionKey = CommonServiceProvider.tryToGetProperty(INTERACTIVE_SESSION_KEY_PROPERTY_NAME);
 //            if(interactiveSessionKey == null || interactiveSessionKey.isBlank()) {
 //                throw new IllegalStateException("Interactive Session Key is not configured!");
 //            }
-            final int timeout = Integer.parseInt(timeoutStr);
 //            AfsClient client = getAfsClient(sessionToken, url, timeout, interactiveSessionKey);
             AfsClient client = getAfsClient(sessionToken, url, timeout);
 

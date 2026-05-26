@@ -58,7 +58,7 @@ public class SearchDataSetTypeTest extends AbstractTest
         List<DataSetType> types = searchResult.getObjects();
         List<String> codes = extractCodes(types);
         Collections.sort(codes);
-        assertEquals(codes.toString(), "[AFS_DATA, CONTAINER_TYPE, DELETION_TEST, DELETION_TEST_CONTAINER, HCS_IMAGE, "
+        assertEquals(codes.toString(), "[CONTAINER_TYPE, DELETION_TEST, DELETION_TEST_CONTAINER, FILES, HCS_IMAGE, "
                 + "HCS_IMAGE_ANALYSIS_DATA, IMAGING_DATA, LINK_TYPE, REQUIRES_EXPERIMENT, UNKNOWN, VALIDATED_CONTAINER_TYPE, "
                 + "VALIDATED_IMPOSSIBLE_TO_UPDATE_TYPE, VALIDATED_NORMAL_TYPE]");
         assertEquals(types.get(0).getFetchOptions().hasPropertyAssignments(), true);
@@ -78,13 +78,14 @@ public class SearchDataSetTypeTest extends AbstractTest
         List<DataSetType> types = searchResult.getObjects();
         List<String> codes = extractCodes(types);
         Collections.sort(codes);
-        assertEquals(codes.toString(), "[AFS_DATA, CONTAINER_TYPE, DELETION_TEST, DELETION_TEST_CONTAINER, HCS_IMAGE, "
+        assertEquals(codes.toString(), "[CONTAINER_TYPE, DELETION_TEST, DELETION_TEST_CONTAINER, FILES, HCS_IMAGE, "
                 + "HCS_IMAGE_ANALYSIS_DATA, IMAGING_DATA, LINK_TYPE, REQUIRES_EXPERIMENT, UNKNOWN, VALIDATED_CONTAINER_TYPE, "
                 + "VALIDATED_IMPOSSIBLE_TO_UPDATE_TYPE, VALIDATED_NORMAL_TYPE]");
         assertEquals(types.get(0).getFetchOptions().hasPropertyAssignments(), true);
-        assertEquals(getDataSetTypePropertyTypeInfo(types).toString(), "[AFS_DATA:, CONTAINER_TYPE:, "
+        assertEquals(getDataSetTypePropertyTypeInfo(types).toString(), "[CONTAINER_TYPE:, "
                 + "DELETION_TEST: DESCRIPTION[VARCHAR] ORGANISM[CONTROLLEDVOCABULARY:?], "
                 + "DELETION_TEST_CONTAINER: DESCRIPTION[VARCHAR] ORGANISM[CONTROLLEDVOCABULARY:?], "
+                + "FILES:, "
                 + "HCS_IMAGE: COMMENT[VARCHAR] GENDER[CONTROLLEDVOCABULARY:?] SIZE[INTEGER], "
                 + "HCS_IMAGE_ANALYSIS_DATA:, IMAGING_DATA: IMAGING_DATA_CONFIG[JSON], LINK_TYPE:, REQUIRES_EXPERIMENT:, UNKNOWN:, "
                 + "VALIDATED_CONTAINER_TYPE:, VALIDATED_IMPOSSIBLE_TO_UPDATE_TYPE:, VALIDATED_NORMAL_TYPE:]");
@@ -161,13 +162,14 @@ public class SearchDataSetTypeTest extends AbstractTest
         List<DataSetType> types = searchResult.getObjects();
         List<String> codes = extractCodes(types);
         Collections.sort(codes);
-        assertEquals(codes.toString(), "[AFS_DATA, CONTAINER_TYPE, DELETION_TEST, DELETION_TEST_CONTAINER, HCS_IMAGE, "
+        assertEquals(codes.toString(), "[CONTAINER_TYPE, DELETION_TEST, DELETION_TEST_CONTAINER, FILES, HCS_IMAGE, "
                 + "HCS_IMAGE_ANALYSIS_DATA, IMAGING_DATA, LINK_TYPE, REQUIRES_EXPERIMENT, UNKNOWN, VALIDATED_CONTAINER_TYPE, "
                 + "VALIDATED_IMPOSSIBLE_TO_UPDATE_TYPE, VALIDATED_NORMAL_TYPE]");
         assertEquals(types.get(0).getFetchOptions().hasPropertyAssignments(), true);
-        assertEquals(getDataSetTypePropertyTypeInfo(types).toString(), "[AFS_DATA:, CONTAINER_TYPE:, "
+        assertEquals(getDataSetTypePropertyTypeInfo(types).toString(), "[CONTAINER_TYPE:, "
                 + "DELETION_TEST: ORGANISM[CONTROLLEDVOCABULARY:ORGANISM] DESCRIPTION[VARCHAR], "
                 + "DELETION_TEST_CONTAINER: ORGANISM[CONTROLLEDVOCABULARY:ORGANISM] DESCRIPTION[VARCHAR], "
+                + "FILES:, "
                 + "HCS_IMAGE: SIZE[INTEGER] GENDER[CONTROLLEDVOCABULARY:GENDER] COMMENT[VARCHAR], "
                 + "HCS_IMAGE_ANALYSIS_DATA:, IMAGING_DATA: IMAGING_DATA_CONFIG[JSON], LINK_TYPE:, REQUIRES_EXPERIMENT:, UNKNOWN:, "
                 + "VALIDATED_CONTAINER_TYPE:, VALIDATED_IMPOSSIBLE_TO_UPDATE_TYPE:, VALIDATED_NORMAL_TYPE:]");

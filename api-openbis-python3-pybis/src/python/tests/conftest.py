@@ -76,10 +76,10 @@ def afs(space):
     token = space.openbis.token
     o = space.openbis
 
-    server_info = o.get_server_information()
+    data_stores = o.get_datastores()
+    data_store = data_stores[data_stores["code"] == "AFS"]
 
-    afs_url = getattr(server_info, "server-public-information.afs-server.url") + "/api"
-
+    afs_url = data_store["downloadUrl"][0] + "/api" if not data_store.empty else None
     afs_client = AfsClient(afs_url, token, False)
 
     yield (space, afs_client)

@@ -37,6 +37,7 @@ import ch.ethz.sis.openbis.generic.imagingapi.v3.dto.*;
 import ch.ethz.sis.openbis.generic.server.as.plugins.imaging.adaptor.IImagingDataSetAdaptor;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
+import ch.systemsx.cisd.common.properties.PropertyUtils;
 import ch.systemsx.cisd.common.reflection.ClassUtils;
 import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider;
 import ch.systemsx.cisd.openbis.generic.shared.ISessionWorkspaceProvider;
@@ -75,12 +76,14 @@ public class ImagingService implements ICustomASServiceExecutor
 
     private final String storeRootDss;
     private final String storeRootAfs;
+    private final int afsTimeout;
 
     public ImagingService(Properties properties)
     {
         this.properties = properties;
         this.storeRootDss = properties.getProperty("storageRoot.dss");
         this.storeRootAfs = properties.getProperty("storageRoot.afs");
+        this.afsTimeout = PropertyUtils.getInt(properties, "afs.timeout", 3600);
     }
 
     @Override
@@ -94,7 +97,7 @@ public class ImagingService implements ICustomASServiceExecutor
             Map<String, Object> params)
     {
         operationLog.info("Executing imaging service: " + serviceId);
-        this.afs = AfsClientProxy.getAfsClient(sessionToken);
+        this.afs = AfsClientProxy.getAfsClient(sessionToken, afsTimeout);
         ImagingDataContainer data = getDataFromParams(params);
         try
         {

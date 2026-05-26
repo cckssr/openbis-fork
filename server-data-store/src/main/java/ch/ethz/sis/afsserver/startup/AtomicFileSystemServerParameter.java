@@ -42,6 +42,7 @@ public enum AtomicFileSystemServerParameter
     httpServerClass,
     httpServerUri,
     httpServerPort,
+    httpServerPublicUrl,
     httpMaxContentLength, // This is a low level package size used by the netty layer, helps to avoid DOS attacks discarding packages
     //
     // Parameters for the API server

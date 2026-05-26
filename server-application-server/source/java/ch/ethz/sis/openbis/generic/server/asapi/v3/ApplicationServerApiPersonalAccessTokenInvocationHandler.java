@@ -51,7 +51,9 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.unlock.DataSetUnlockOpti
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update.DataSetTypeUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update.DataSetUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.DataStore;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.create.DataStoreCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.fetchoptions.DataStoreFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.id.DataStorePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.search.DataStoreSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.Deletion;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.fetchoptions.DeletionFetchOptions;
@@ -471,6 +473,11 @@ public class ApplicationServerApiPersonalAccessTokenInvocationHandler implements
     @Override
     public List<TypeGroupAssignmentId> createTypeGroupAssignments(String sessionToken,
             List<TypeGroupAssignmentCreation> newTypeGroupAssignments)
+    {
+        return invocation.proceedWithNewFirstArgument(converter.convert(sessionToken));
+    }
+
+    @Override public List<DataStorePermId> createDataStores(final String sessionToken, final List<DataStoreCreation> newDataStores)
     {
         return invocation.proceedWithNewFirstArgument(converter.convert(sessionToken));
     }

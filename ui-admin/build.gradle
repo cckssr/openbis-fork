@@ -2,12 +2,12 @@ plugins {
     alias(libs.plugins.com.github.node.gradle.node)
 }
 
+apply from: '../build/repository.gradle'
+
 configure(allprojects) {
     apply plugin: 'base'
 
-    repositories {
-        mavenCentral()
-    }
+    repositories repositoryConfig
 }
 
 node {

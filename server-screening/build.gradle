@@ -26,6 +26,30 @@ configurations.all {
     )
 }
 
+// bioformats-6.5.2 is a fat-jar that bundles 2008-era org/apache/commons/io classes.
+// The bundled IOUtils lacks the 4-arg read(InputStream, byte[], int, int) that
+// commons-compress 1.28.0 calls, causing NoSuchMethodError in any tar/zip code that
+// runs with bioformats on the classpath. Strip the bundled commons-io copies so the
+// real commons-io artifact wins on the test classpath.
+configurations {
+    bioformatsRaw
+}
+
+dependencies {
+    bioformatsRaw libs.bioformats.bioformats
+}
+
+tasks.register('bioformatsStripped', Jar) {
+    archiveBaseName = 'bioformats-stripped'
+    destinationDirectory = file("${buildDir}/libs")
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from {
+        configurations.bioformatsRaw.collect {
+            zipTree(it).matching { exclude 'org/apache/commons/io/**' }
+        }
+    }
+}
+
 dependencies {
     api project(':lib-common'),
             project(':server-original-data-store'),
@@ -58,9 +82,12 @@ dependencies {
             libs.org.hamcrest.hamcrest.core,
             libs.org.hamcrest.hamcrest.library,
             libs.org.hamcrest.hamcrest.integration,
-            libs.bioformats.bioformats
+            files(tasks.bioformatsStripped.archiveFile)
     testImplementation(project(path: ':server-application-server', configuration: 'tests'))
 }
+
+compileTestJava.dependsOn tasks.bioformatsStripped
+test.dependsOn tasks.bioformatsStripped
 
 sourceSets {
     main {

@@ -36,6 +36,8 @@ import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.create.DataStoreCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.id.DataStorePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.TypeGroup;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.TypeGroupAssignment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.create.TypeGroupAssignmentCreation;
@@ -607,6 +609,10 @@ public class OpenBIS
 
     public List<TypeGroupAssignmentId> createTypeGroupAssignments(List<TypeGroupAssignmentCreation> newTypeGroupAssignments) {
         return asFacadeWithTransactions.createTypeGroupAssignments(sessionToken, newTypeGroupAssignments);
+    }
+
+    public List<DataStorePermId> createDataStores(List<DataStoreCreation> newDataStores) {
+        return asFacadeWithTransactions.createDataStores(sessionToken, newDataStores);
     }
 
     public void updateSpaces(List<SpaceUpdate> spaceUpdates)

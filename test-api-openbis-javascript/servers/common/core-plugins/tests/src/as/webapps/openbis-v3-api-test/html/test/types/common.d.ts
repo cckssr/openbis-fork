@@ -65,6 +65,7 @@ export namespace common {
         findOperationExecution(facade: openbis.openbis, id): Promise<openbis.OperationExecution>
         findQuery(facade: openbis.openbis, id): Promise<openbis.Query>
         findPersonalAccessToken(facade: openbis.openbis, id): Promise<openbis.PersonalAccessToken>
+        findDataStore(facade: openbis.openbis, id): Promise<openbis.DataStore>
         deleteSpace(facade: openbis.openbis, id): Promise<void>
         deleteProject(facade: openbis.openbis, id): Promise<void>
         deleteExperiment(facade: openbis.openbis, id): Promise<openbis.IDeletionId>

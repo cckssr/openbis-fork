@@ -24,7 +24,8 @@ public interface IDataStoreAuthorizationExecutor
 {
 
     void canGet(IOperationContext context);
-    
+
     void canSearch(IOperationContext context);
 
+    void canCreate(IOperationContext context);
 }

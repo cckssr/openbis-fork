@@ -43,37 +43,24 @@ public class SetTechnologyCheckBoxesActionTest extends AssertJUnit
     }
 
     @Test
-    public void testEmptyInstallDir()
+    public void testNoTechnologiesSelected()
     {
         SetTechnologyCheckBoxesAction action = new SetTechnologyCheckBoxesAction();
 
-        assertEquals(false, action.isTechnologyEnabled(TEST_FOLDER, TECHNOLOGY_ELN_LIMS));
-        assertEquals(false, action.isTechnologyEnabled(TEST_FOLDER, "blabla"));
+        assertEquals(false, action.isTechnologyEnabled(TEST_FOLDER, TECHNOLOGY_IMAGING));
+        assertEquals(false, action.isTechnologyEnabled(TEST_FOLDER, "test-technology"));
     }
 
     @Test
-    public void testDisabledTechnologiesPropertyPresent() throws Exception
+    public void testTechnologyPropertyDisabledStayDisabled() throws Exception
     {
         Properties properties = new Properties();
-        properties.setProperty(SetTechnologyCheckBoxesAction.ENABLED_TECHNOLOGIES_KEY, "eln-lims");
-        saveProperties(properties, Utils.CORE_PLUGINS_PROPERTIES_PATH);
-        SetTechnologyCheckBoxesAction action = new SetTechnologyCheckBoxesAction();
-
-        assertEquals(true, action.isTechnologyEnabled(TEST_FOLDER, TECHNOLOGY_ELN_LIMS));
-        assertEquals(false, action.isTechnologyEnabled(TEST_FOLDER, TECHNOLOGY_ELN_LIMS_TEMPLATE_TYPES));
-        assertEquals(false, action.isTechnologyEnabled(TEST_FOLDER, "blabla"));
-    }
-
-    @Test
-    public void testDisabledTechnologiesPropertyNotPresentForGeneric() throws Exception
-    {
-        Properties properties = new Properties();
-        properties.setProperty(SetTechnologyCheckBoxesAction.ENABLED_TECHNOLOGIES_KEY, "my");
+        properties.setProperty(SetTechnologyCheckBoxesAction.ENABLED_TECHNOLOGIES_KEY, "test-technology");
+        properties.setProperty(SetTechnologyCheckBoxesAction.ENABLED_TECHNOLOGIES_KEY, TECHNOLOGY_IMAGING);
         saveProperties(properties, Utils.SERVICE_PROPERTIES_PATH);
         SetTechnologyCheckBoxesAction action = new SetTechnologyCheckBoxesAction();
 
-        assertEquals(false, action.isTechnologyEnabled(TEST_FOLDER, TECHNOLOGY_ELN_LIMS));
-        assertEquals(false, action.isTechnologyEnabled(TEST_FOLDER, TECHNOLOGY_ELN_LIMS_TEMPLATE_TYPES));
+        assertEquals(false, action.isTechnologyEnabled(TEST_FOLDER, TECHNOLOGY_IMAGING));
     }
 
     private void saveProperties(Properties properties, String path) throws IOException

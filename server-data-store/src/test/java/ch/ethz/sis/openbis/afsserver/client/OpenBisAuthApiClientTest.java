@@ -62,6 +62,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 import ch.ethz.sis.shared.io.IOUtils;
 import ch.ethz.sis.shared.startup.Configuration;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
+import ch.systemsx.cisd.openbis.generic.shared.Constants;
 
 public class OpenBisAuthApiClientTest extends BaseApiClientTest
 {
@@ -573,7 +574,7 @@ public class OpenBisAuthApiClientTest extends BaseApiClientTest
         // dataset gets created on first write
         assertEquals(1, dataSetCreations.size());
         assertEquals(ownerWithoutFiles, dataSetCreations.get(0).getCode());
-        assertEquals(new DataStorePermId("AFS"), dataSetCreations.get(0).getDataStoreId());
+        assertEquals(new DataStorePermId(Constants.AFS_DATA_STORE_CODE), dataSetCreations.get(0).getDataStoreId());
 
         afsClient.write(ownerWithoutFiles, FILE_B, 0L, DATA);
 
@@ -699,7 +700,7 @@ public class OpenBisAuthApiClientTest extends BaseApiClientTest
                 // dataset gets created on commit (if the commit itself would fail then the dataset unfortunately would stay)
                 assertEquals(1, dataSetCreations.size());
                 assertEquals(ownerWithoutFiles.toUpperCase(), dataSetCreations.get(0).getCode());
-                assertEquals(new DataStorePermId("AFS"), dataSetCreations.get(0).getDataStoreId());
+                assertEquals(new DataStorePermId(Constants.AFS_DATA_STORE_CODE), dataSetCreations.get(0).getDataStoreId());
 
                 // files were stored
                 assertTrue(Files.exists(ownerFolderPath));
@@ -806,7 +807,7 @@ public class OpenBisAuthApiClientTest extends BaseApiClientTest
             {
                 assertEquals(1, dataSetCreations.size());
                 assertEquals(ownerWithoutFiles.toUpperCase(), dataSetCreations.get(0).getCode().toUpperCase());
-                assertEquals(new DataStorePermId("AFS"), dataSetCreations.get(0).getDataStoreId());
+                assertEquals(new DataStorePermId(Constants.AFS_DATA_STORE_CODE), dataSetCreations.get(0).getDataStoreId());
                 assertFalse(Files.exists(ownerFolderPath));
             }
         } catch (Exception e)
@@ -944,6 +945,8 @@ public class OpenBisAuthApiClientTest extends BaseApiClientTest
                 case "createDataSets":
                     List<?> creations = ((List<?>) methodArguments[1]);
                     return creations.stream().map(c -> new DataSetPermId(UUID.randomUUID().toString())).toList();
+                case "createDataStores":
+                    return null;
             }
 
             throw new UnsupportedOperationException(methodName, methodArguments);

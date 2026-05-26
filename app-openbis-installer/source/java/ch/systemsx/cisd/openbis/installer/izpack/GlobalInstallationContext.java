@@ -46,14 +46,10 @@ public class GlobalInstallationContext
 
     public static final String BACKUP_FOLDER_VARNAME = "BACKUP_FOLDER";
 
-    public static final String TECHNOLOGY_ELN_LIMS = "ELN-LIMS";
-
-    public static final String TECHNOLOGY_ELN_LIMS_TEMPLATE_TYPES = "ELN-LIMS-TYPES-TEMPLATES";
-
     public static final String TECHNOLOGY_IMAGING = "ELN-LIMS-IMAGING";
 
     public static final String[] TECHNOLOGIES =
-            { TECHNOLOGY_ELN_LIMS, TECHNOLOGY_ELN_LIMS_TEMPLATE_TYPES, TECHNOLOGY_IMAGING };
+            { TECHNOLOGY_IMAGING };
 
     /**
      * set to true if the installation process is trying to update an existing openBIS installation.

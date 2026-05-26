@@ -10,13 +10,8 @@ compileJava {
 sourceCompatibility = JavaVersion.VERSION_21
 targetCompatibility = JavaVersion.VERSION_21
 
-repositories {
-    ivy {
-        ivyPattern "https://sissource.ethz.ch/openbis/openbis-public/openbis-ivy/-/raw/main/[organisation]/[module]/[revision]/ivy.xml"
-        artifactPattern "https://sissource.ethz.ch/openbis/openbis-public/openbis-ivy/-/raw/main/[organisation]/[module]/[revision]/[artifact]-[revision](-[classifier]).[ext]"
-    }
-    //mavenCentral()
-}
+apply from: '../build/repository.gradle'
+repositories repositoryConfig
 
 configurations {
     tests.extendsFrom testImplementation
@@ -51,7 +46,7 @@ task openBISDevelopmentEnvironmentAfsSftpStart(type: JavaExec) {
              '-Xmx512M', '-ea'])
 }
 
-task AFSServerZip(type: Zip, dependsOn: compileJava) {
+task AfsSftpServerZip(type: Zip, dependsOn: compileJava) {
     archiveBaseName = 'server-sftp'
     from(jar) {
         into('server-sftp/lib/')
