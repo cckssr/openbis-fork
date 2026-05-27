@@ -61,7 +61,7 @@ describe('SpaceFormModel', () => {
 
     // Dates are converted from timestamps to formatted strings
     const registrationDateField = form.fields.find(field => field.id === 'DEFAULT-registrationDate')
-    expect(registrationDateField?.value).toMatch(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/)
+    expect(registrationDateField?.value).toMatch(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} [+-]\d{4}$/)
     expect(registrationDateField?.dataType).toBe('TIMESTAMP')
   })
 
