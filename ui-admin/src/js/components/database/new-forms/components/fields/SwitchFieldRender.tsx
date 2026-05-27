@@ -3,7 +3,6 @@ import { FieldRendererProps } from '@src/js/components/database/new-forms/types/
 import SelectField from '@src/js/components/common/form/SelectField.jsx';
 import FormFieldView from '@src/js/components/common/form/FormFieldView.jsx';
 import MultiValueFieldEditor from './MultiValueFieldEditor.tsx';
-import { Select, MenuItem, FormControl } from '@mui/material';
 
 export const SwitchFieldRenderer: React.FC<FieldRendererProps> = ({ field, onFieldChange, mode }) => {
 	const isEditing = mode === 'edit' || mode === 'create';
@@ -29,17 +28,22 @@ export const SwitchFieldRenderer: React.FC<FieldRendererProps> = ({ field, onFie
 				values={Array.isArray(field.value) ? field.value : []}
 				onChange={(vals) => onFieldChange(field.id, vals)}
 				renderInput={(val, onChange) => (
-					<FormControl variant="filled" size="small" fullWidth hiddenLabel>
-						<Select
-							displayEmpty
-							value={val ?? ''}
-							onChange={(e) => onChange(e.target.value || null)}
-						>
-							<MenuItem value="">—</MenuItem>
-							<MenuItem value="true">Yes</MenuItem>
-							<MenuItem value="false">No</MenuItem>
-						</Select>
-					</FormControl>
+					<SelectField
+						reference={field}
+						options={[{label: '', value: null}, {label: 'Yes', value: 'true'},
+							{label: 'No', value: 'false'}]}
+						id={field.id}
+						name={field.label}
+						mandatory={field.required}
+						mode="edit"
+						disabled={field.readOnly}
+						value={val ?? ''}
+						onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange(e.target.value || null)}
+						description={field.meta?.helpText}
+						emptyOption={field.meta?.emptyOption}
+						hiddenLabel={true}
+						disableUnderline={true}
+					/>
 				)}
 				isEmpty={(v) => !v}
 			/>
@@ -47,10 +51,7 @@ export const SwitchFieldRenderer: React.FC<FieldRendererProps> = ({ field, onFie
 	} else {
 		return (<SelectField
 				reference={field}
-				options={[{label: '', value: null}, {label: 'Yes', value: "true"}, {
-					label: 'No',
-					value: "false"
-				}]}
+				options={[{label: '', value: null}, {label: 'Yes', value: 'true'}, {label: 'No', value: 'false'}]}
 				id={field.id}
 				name={field.label}
 				mandatory={field.required}

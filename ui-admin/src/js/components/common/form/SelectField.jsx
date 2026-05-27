@@ -113,7 +113,8 @@ class SelectFormField extends React.PureComponent {
       onOpen,
       classes,
       variant,
-      fullWidth
+      fullWidth,
+      hiddenLabel
     } = this.props
 
     this.fixReference(reference)
@@ -129,6 +130,7 @@ class SelectFormField extends React.PureComponent {
         <TextField
           select
           inputRef={this.inputReference}
+          hiddenLabel={hiddenLabel}
           label={
             label ? (
               <FormFieldLabel
