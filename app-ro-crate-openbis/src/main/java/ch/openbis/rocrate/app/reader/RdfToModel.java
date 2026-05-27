@@ -412,6 +412,7 @@ public class RdfToModel
             String artificialTypeIdentifier =
                     openBisifyCode(getIntersectionTypeIdentifier(intersectionType));
             sampleType.setCode(artificialTypeIdentifier);
+            List<SemanticAnnotation> annotations = new ArrayList<>();
 
             List<PropertyAssignment> assignments = new ArrayList<>();
             List<SemanticAnnotation> semanticAnnotations = new ArrayList<>();
@@ -426,6 +427,10 @@ public class RdfToModel
                 }
                 SampleType sampleType1 =
                         (SampleType) entityType;
+                if (sampleType1.getSemanticAnnotations() != null)
+                {
+                    sampleType1.getSemanticAnnotations().stream().forEach(annotations::add);
+                }
 
                 for (PropertyAssignment propertyAssignment : sampleType1.getPropertyAssignments())
                 {
@@ -451,9 +456,39 @@ public class RdfToModel
             sampleType.setPermId(new EntityTypePermId(sampleType.getCode(), EntityKind.SAMPLE));
             schema.put(sampleType.getPermId(), sampleType);
             codeToSampleType.put(sampleType.getCode(), sampleType);
-
+            List<SemanticAnnotation> deduplicatedAnnotations = deduplicateAnnotations(annotations);
+            if (deduplicatedAnnotations.size() == 1)
+            {
+                // Only adding 1 annotation to guard against transitive equivalences for people who use owl reasoners
+                sampleType.setSemanticAnnotations(deduplicatedAnnotations);
+            }
         }
     }
+
+    /**
+     * Deduplication logic, the ontology field be null, therefore standard deduplication does not
+     * work.
+     *
+     * @param annotations
+     * @return
+     */
+    private static List<SemanticAnnotation> deduplicateAnnotations(
+            List<SemanticAnnotation> annotations)
+    {
+        Set<String> accessions = new LinkedHashSet<>();
+        List<SemanticAnnotation> res = new ArrayList<>();
+        for (SemanticAnnotation semanticAnnotation : annotations)
+        {
+            if (!accessions.contains(semanticAnnotation.getPredicateAccessionId()))
+            {
+                accessions.add(semanticAnnotation.getPredicateAccessionId());
+                res.add(semanticAnnotation);
+            }
+        }
+        return res;
+    }
+
+    ;
 
     private static IEntityType tryFind(Map<EntityTypePermId, IEntityType> schema,
             Map<String, EntityTypePermId> entityTypeToRdfIdentifier, String type)
