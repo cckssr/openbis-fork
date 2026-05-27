@@ -1056,7 +1056,12 @@
 
 					if (["ARRAY_INTEGER", "ARRAY_REAL", "ARRAY_STRING", "ARRAY_TIMESTAMP"]
 							.includes(propertyType.dataType)) {
-						value = this._sampleFormModel.v3_sample.properties[propertyType.code];
+						if (this._sampleFormModel.v3_sample) {
+							value = this._sampleFormModel.v3_sample.properties[propertyType.code];
+						} else {
+							//flow for new samples / templates: no persisted v3 sample yet
+							value = this._sampleFormModel.sample.properties[propertyType.code];
+						}
 					}
 
 					if (propertyType.dataType === "TIMESTAMP") {

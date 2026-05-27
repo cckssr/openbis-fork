@@ -712,7 +712,12 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 
                 if (["ARRAY_INTEGER", "ARRAY_REAL", "ARRAY_STRING", "ARRAY_TIMESTAMP"]
                         .includes(propertyType.dataType)) {
-                    value = this._experimentFormModel.v3_experiment.properties[propertyType.code];
+                    if (this._experimentFormModel.v3_experiment) {
+                        value = this._experimentFormModel.v3_experiment.properties[propertyType.code];
+                    } else {
+                        //flow for new experiments / templates: no persisted v3 experiment yet
+                        value = this._experimentFormModel.experiment.properties[propertyType.code];
+                    }
                 }
 
                 if (propertyType.dataType === "TIMESTAMP") {

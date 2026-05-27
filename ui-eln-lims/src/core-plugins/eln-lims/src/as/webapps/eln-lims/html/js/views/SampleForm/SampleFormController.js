@@ -96,8 +96,13 @@ function SampleFormController(mainController, mode, sample, paginationInfo, acti
 								}
 								
 								//Load view
+								try {
 								_this._sampleFormView.repaint(views);
-								Util.unblockUI();
+								} catch (e) {
+									console.error(e);
+								} finally {
+									Util.unblockUI();
+								}
 							});
 						});
 					});
@@ -118,8 +123,13 @@ function SampleFormController(mainController, mode, sample, paginationInfo, acti
 //				Util.unblockUI();
 //			}
 			//Load view
-            _this._sampleFormView.repaint(views, loadFromTemplate);
-            Util.unblockUI();
+            try {
+                _this._sampleFormView.repaint(views, loadFromTemplate);
+            } catch (e) {
+                console.error(e);
+            } finally {
+                Util.unblockUI();
+            }
 		}
 		});
 	}

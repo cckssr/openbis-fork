@@ -73,7 +73,11 @@ function ExperimentFormController(mainController, mode, experiment) {
 					    Util.showError(error);
 					});
 				} else {
-					_this._experimentFormView.repaint(views);
+					try {
+						_this._experimentFormView.repaint(views);
+					} catch (e) {
+						console.error(e);
+					}
 				}
 		});
 		});
