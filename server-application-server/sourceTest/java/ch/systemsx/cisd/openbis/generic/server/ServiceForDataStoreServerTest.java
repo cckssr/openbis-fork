@@ -1355,9 +1355,9 @@ public class ServiceForDataStoreServerTest extends SystemTestCase
     public Object[][] providerTestPerformEntityOperationsWithVocabularyUpdateManagedInternallyAuthorization()
     {
         return new Object[][] {
-                { "ORGANISM", TEST_INSTANCE_ETLSERVER, null, "Internal vocabularies can be managed only by the system user" },
+                { "ORGANISM", TEST_INSTANCE_ETLSERVER, null, "Vocabulary internal flag can be modified only by the system user" },
                 { "ORGANISM", TEST_INSTANCE_ETLSERVER, SYSTEM_USER, null },
-                { "ORGANISM", TEST_INSTANCE_ETLSERVER, TEST_USER, "Internal vocabularies can be managed only by the system user" },
+                { "ORGANISM", TEST_INSTANCE_ETLSERVER, TEST_USER, "Vocabulary internal flag can be modified only by the system user" },
                 { "ORGANISM", TEST_INSTANCE_ETLSERVER, TEST_GROUP_ADMIN,
                         "None of method roles '[INSTANCE_ADMIN, INSTANCE_ETL_SERVER]' could be found in roles of user 'admin'" },
 

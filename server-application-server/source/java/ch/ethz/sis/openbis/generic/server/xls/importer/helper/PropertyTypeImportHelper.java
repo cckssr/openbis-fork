@@ -165,13 +165,6 @@ public class PropertyTypeImportHelper extends BasicImportHelper
         return ImportTypes.PROPERTY_TYPE;
     }
 
-    @Override protected boolean isNewVersion(Map<String, Integer> header, List<String> values)
-    {
-        return isNewVersionWithInternalNamespace(header, values, versions,
-                delayedExecutor.isSystem(),
-                getTypeName().getType(),
-                Attribute.Version, Attribute.Code, Attribute.Internal);
-    }
 
     @Override
     protected void updateVersion(Map<String, Integer> header, List<String> values)

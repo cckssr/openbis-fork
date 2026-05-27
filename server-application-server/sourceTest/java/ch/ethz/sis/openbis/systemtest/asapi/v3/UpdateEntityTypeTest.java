@@ -961,7 +961,7 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
                                            updateTypes(sessionToken, Arrays.asList(update));
                                        }
                                    },
-                "Internal property assignments can be used for internal entity types");
+                "Internal property assignments can be used only for internal entity types");
     }
 
     @Test

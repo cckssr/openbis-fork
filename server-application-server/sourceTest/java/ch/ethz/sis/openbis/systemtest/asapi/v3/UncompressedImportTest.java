@@ -263,22 +263,93 @@ public class UncompressedImportTest extends AbstractImportTest
     }
 
     @Test
-    public void testInternalTypes_failForNormalUser() throws Exception
+    public void testInternalTypesForNormalUser_createNonInternal() throws Exception
     {
         final String[] sessionWorkspaceFiles = uploadToAsSessionWorkspace(sessionToken, "import_internal_type.xlsx");
 
         final ImportData importData = new ImportData(ImportFormat.EXCEL, sessionWorkspaceFiles);
         final ImportOptions importOptions = new ImportOptions(ImportMode.UPDATE_IF_EXISTS);
 
-        assertUserFailureException(new IDelegatedAction()
-                                   {
-                                       @Override
-                                       public void execute()
-                                       {
-                                           v3api.executeImport(sessionToken, importData, importOptions);
-                                       }
-                                   },
-                "Non-system user can not create new internal entity types!");
+        v3api.executeImport(sessionToken, importData, importOptions);
+
+        final DataSetTypeSearchCriteria dataSetTypeSearchCriteria = new DataSetTypeSearchCriteria();
+        dataSetTypeSearchCriteria.withCode().thatEquals("INTERNAL_DATASET_TYPE");
+
+        final DataSetTypeFetchOptions dataSetTypeFetchOptions = new DataSetTypeFetchOptions();
+
+        SearchResult<DataSetType> dataSetTypeSearchResult =
+                v3api.searchDataSetTypes(sessionToken, dataSetTypeSearchCriteria, dataSetTypeFetchOptions);
+
+        assertEquals(dataSetTypeSearchResult.getTotalCount(), 1);
+        assertEquals(dataSetTypeSearchResult.getObjects().get(0).getDescription(), "Internal Dataset Type");
+
+        final SampleTypeSearchCriteria sampleTypeSearchCriteria = new SampleTypeSearchCriteria();
+        sampleTypeSearchCriteria.withPermId().thatEquals("INTERNAL_SAMPLE_TYPE");
+
+        final SampleTypeFetchOptions sampleTypeFetchOptions = new SampleTypeFetchOptions();
+        sampleTypeFetchOptions.withPropertyAssignments().withPropertyType();
+
+        SearchResult<SampleType> sampleTypeSearchResult =
+                v3api.searchSampleTypes(sessionToken, sampleTypeSearchCriteria, sampleTypeFetchOptions);
+
+        assertEquals(sampleTypeSearchResult.getTotalCount(), 1);
+        assertEquals(sampleTypeSearchResult.getObjects().get(0).getDescription(), "Internal Sample Type");
+
+        SampleType sampleType = sampleTypeSearchResult.getObjects().get(0);
+        List<PropertyAssignment> sampleTypePropertyAssignments = sampleType.getPropertyAssignments();
+        Optional<PropertyAssignment> sampleTypeAssignmentOptional = sampleTypePropertyAssignments.stream().filter(x -> "FOR_WHAT_INTERNAL".equals(x.getPropertyType().getCode())).findFirst();
+        assertTrue(sampleTypeAssignmentOptional.isPresent());
+        PropertyAssignment sampleTypeAssignment = sampleTypeAssignmentOptional.get();
+        assertFalse(sampleTypeAssignment.isManagedInternally());
+        assertFalse(sampleTypeAssignment.getPropertyType().isManagedInternally());
+        assertEquals(sampleTypeAssignment.getPatternType(), "PATTERN");
+        assertEquals(sampleTypeAssignment.getPattern(), ".*");
+
+
+        final ExperimentTypeSearchCriteria experimentTypeSearchCriteria = new ExperimentTypeSearchCriteria();
+        experimentTypeSearchCriteria.withCode().thatEquals("INTERNAL_EXPERIMENT_TYPE");
+
+        final ExperimentTypeFetchOptions experimentTypeFetchOptions = new ExperimentTypeFetchOptions();
+        experimentTypeFetchOptions.withPropertyAssignments().withPropertyType();
+
+        SearchResult<ExperimentType> experimentTypeSearchResult =
+                v3api.searchExperimentTypes(sessionToken, experimentTypeSearchCriteria, experimentTypeFetchOptions);
+
+        assertEquals(experimentTypeSearchResult.getTotalCount(), 1);
+        ExperimentType experimentType = experimentTypeSearchResult.getObjects().get(0);
+        assertEquals(experimentType.getDescription(), "Internal Experiment Type");
+
+        List<PropertyAssignment> propertyAssignments = experimentType.getPropertyAssignments();
+        assertEquals(propertyAssignments.size(), 2);
+        Optional<PropertyAssignment> assignmentOptional = propertyAssignments.stream().filter(x -> "FOR_WHAT_INTERNAL".equals(x.getPropertyType().getCode())).findFirst();
+        assertTrue(assignmentOptional.isPresent());
+        assertFalse(assignmentOptional.get().isManagedInternally());
+        assertFalse(assignmentOptional.get().getPropertyType().isManagedInternally());
+
+        final VocabularySearchCriteria vocabularySearchCriteria = new VocabularySearchCriteria();
+        vocabularySearchCriteria.withCode().thatEquals("INTERNAL_VOCABULARY_TYPE");
+
+        final VocabularyFetchOptions vocabularyFetchOptions = new VocabularyFetchOptions();
+        vocabularyFetchOptions.withTerms();
+
+        SearchResult<Vocabulary> vocabularySearchResult = v3api.searchVocabularies(sessionToken, vocabularySearchCriteria, vocabularyFetchOptions);
+        assertEquals(vocabularySearchResult.getTotalCount(), 1);
+        Vocabulary vocabulary = vocabularySearchResult.getObjects().get(0);
+        assertEquals(vocabulary.getDescription(), "Internal Vocabulary Type");
+        assertEquals(vocabulary.getTerms().size(), 2);
+
+        for(VocabularyTerm term : vocabulary.getTerms())
+        {
+            if(term.getCode().equals("INTERNAL_TERM"))
+            {
+                assertFalse(term.isManagedInternally());
+            } else if (term.getCode().equals("REGULAR_TERM")) {
+                assertFalse(term.isManagedInternally());
+            } else {
+                fail("UNKNOWN TERM!");
+            }
+        }
+
     }
 
     @Test

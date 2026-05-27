@@ -93,20 +93,6 @@ public class VocabularyImportHelper extends BasicImportHelper
     }
 
     @Override
-    protected void validateLine(Map<String, Integer> header, List<String> values) {
-
-    }
-
-    @Override
-    protected boolean isNewVersion(Map<String, Integer> header, List<String> values)
-    {
-        return isNewVersionWithInternalNamespace(header, values, versions,
-                delayedExecutor.isSystem(),
-                getTypeName().getType(),
-                Attribute.Version, Attribute.Code, Attribute.Internal);
-    }
-
-    @Override
     protected void updateVersion(Map<String, Integer> header, List<String> values)
     {
         String version = getValueByColumnName(header, values, Attribute.Version);
