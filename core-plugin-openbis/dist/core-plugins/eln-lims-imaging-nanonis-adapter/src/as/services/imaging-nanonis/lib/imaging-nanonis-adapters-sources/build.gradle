@@ -3,7 +3,6 @@ plugins {
 }
 
 apply from: 'javaproject.gradle'
-apply from: 'repository.gradle'
 
 
 dependencies {

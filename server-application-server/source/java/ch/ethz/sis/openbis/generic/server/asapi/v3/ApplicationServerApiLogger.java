@@ -49,7 +49,9 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.unlock.DataSetUnlockOpti
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update.DataSetTypeUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update.DataSetUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.DataStore;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.create.DataStoreCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.fetchoptions.DataStoreFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.id.DataStorePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.search.DataStoreSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.Deletion;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.fetchoptions.DeletionFetchOptions;
@@ -477,6 +479,12 @@ public class ApplicationServerApiLogger extends AbstractServerLogger implements
             List<TypeGroupAssignmentCreation> newTypeGroupAssignments)
     {
         logAccess(sessionToken, "create-type-group-assignments", "NEW_TYPE_GROUP_ASSIGNMENTS(%s)", abbreviate(newTypeGroupAssignments));
+        return null;
+    }
+
+    @Override public List<DataStorePermId> createDataStores(final String sessionToken, final List<DataStoreCreation> newDataStores)
+    {
+        logAccess(sessionToken, "create-data-stores", "NEW_DATA_STORES(%s)", abbreviate(newDataStores));
         return null;
     }
 

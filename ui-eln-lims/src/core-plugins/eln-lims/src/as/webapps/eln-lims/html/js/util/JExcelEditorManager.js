@@ -134,6 +134,10 @@ var JExcelEditorManager = new function() {
                                     for(;rowCount <= y;rowCount++) {
                                         jExcelEditor.insertRow();
                                     }
+                                    if(Array.isArray(value)) {
+                                        // value = JSON.stringify(value);
+                                        value = value.map(x => Array.isArray(x) ? "["+x.toString()+"]" : x).toString()
+                                    }
                                     jExcelEditor.setValueFromCoords(x+vIdx, y, value, true);
                                 }
                             }
@@ -215,10 +219,20 @@ var JExcelEditorManager = new function() {
                                     var data = spreadsheet.getData();
                                     var headers = spreadsheet.getHeaders().split(',');
                                     var cellsWithIdentifiers = [];
+                                    var cellsWithPermIds = [];
                                     var identifiers = new Set();
+                                    var permIds = new Set();
                                     for (let i=0; i<data.length; i++ ) {
                                         for(let j=0; j < data[i].length; j++) {
                                             let cellData = data[i][j];
+                                            let permIdsInCell = _this.getPermIdsFromCell(cellData);
+                                            if(permIdsInCell && permIdsInCell.length > 0) {
+                                                let cellIndex = headers[j] + (i+1);
+                                                let cell = spreadsheet.getCell(cellIndex);
+                                                permIdsInCell.forEach(x => permIds.add(x));
+                                                cellsWithPermIds.push({cell: cell, cellData: cellData});
+                                                cell.innerHTML = Util.getProgressBarSVG();
+                                            }
                                             if(_this._isIdentifierCell(cellData)) {
                                                 let cellIndex = headers[j] + (i+1);
                                                 let cell = spreadsheet.getCell(cellIndex);
@@ -249,6 +263,24 @@ var JExcelEditorManager = new function() {
                                             }
                                         }
 
+                                    });
+                                    _this._searchByPermIds(Array.from(permIds), function(results) {
+                                        for(cell of cellsWithPermIds) {
+                                            var stringArray = cell.cellData.split(/(\s+|,\s*)/);
+                                            var cellText = "";
+                                            for (let word of stringArray) {
+                                                if(results[word]) {
+                                                    cellText += results[word][0].outerHTML;
+                                                } else {
+                                                    cellText += word;
+                                                }
+                                            }
+                                            cell.cell.innerHTML = cellText;
+
+                                            cell.cell.onclick = function(event) {
+                                                results[event.target.innerText].click();
+                                            }
+                                        }
                                     });
                                 }
 
@@ -301,17 +333,34 @@ var JExcelEditorManager = new function() {
 	}
 
 	this._isIdentifierCell = function(cellData) {
-	    if(!this._isString(cellData) || cellData == '') {
+	    if(!this._isString(cellData) || cellData === '') {
 	        return false;
 	    }
 	    var arr = cellData.split(/\s+/).filter(Boolean);
-        for(let element of cellData.split(/\s+/).filter(Boolean)) {
+        for(let element of arr) {
             if(this._isIdentifier(element)) {
                 return true;
             }
         }
         return false;
 	}
+
+    this.getPermIdsFromCell = function(cellData) {
+        if(!this._isString(cellData) || cellData === '') {
+            return [];
+        }
+        var arr = cellData.split(/\s+|,\s*/).filter(Boolean);
+        var permIdRegexp = /\d{17}-\d+/g
+        var ids = []
+        for(let element of arr) {
+            var permIds = element.match(permIdRegexp);
+            if ( !permIds) {
+                permIds = [];
+            }
+            ids = ids.concat(permIds);
+        }
+        return ids;
+    }
 
 	this._isString = function(value) {
         return typeof value === 'string' || value instanceof String;
@@ -343,7 +392,7 @@ var JExcelEditorManager = new function() {
                                     missing.push(id);
                                 }
                             }
-                            if(missing.length == 0) {
+                            if(missing.length === 0) {
                                 callback(links);
                             } else {
                                 var experimentFetchOptions = new ExperimentFetchOptions();
@@ -364,6 +413,72 @@ var JExcelEditorManager = new function() {
                     });
 
 	}
+
+    this._searchByPermIds = function(permIds, callback) {
+
+        require([ "as/dto/sample/id/SamplePermId", "as/dto/sample/fetchoptions/SampleFetchOptions",
+                "as/dto/experiment/id/ExperimentPermId", "as/dto/experiment/fetchoptions/ExperimentFetchOptions",
+                "as/dto/dataset/id/DataSetPermId", "as/dto/dataset/fetchoptions/DataSetFetchOptions"],
+            function(SamplePermId, SampleFetchOptions, ExperimentPermId, ExperimentFetchOptions, DataSetPermId, DataSetFetchOptions) {
+
+                var sampleFetchOptions = new SampleFetchOptions();
+
+                var ids = permIds.map(id => new SamplePermId(id));
+
+                mainController.openbisV3.getSamples(ids, sampleFetchOptions).done(function(sampleResults) {
+                    let links = {};
+                    let missing = []
+                    for(let id of permIds) {
+                        if(sampleResults[id]) {
+                            let sample = sampleResults[id];
+                            links[id] = FormUtil.getFormLink(sample.identifier.identifier, 'Sample', sample.permId.permId, null);
+                            links[sample.identifier.identifier] = FormUtil.getFormLink(sample.identifier.identifier, 'Sample', sample.permId.permId, null);
+                        } else {
+                            missing.push(id);
+                        }
+                    }
+                    if(missing.length === 0) {
+                        callback(links);
+                    } else {
+                        var experimentFetchOptions = new ExperimentFetchOptions();
+                        var ids = missing.map(id => new ExperimentPermId(id));
+                        mainController.openbisV3.getExperiments(ids, experimentFetchOptions).done(function(experimentResults) {
+                            let missingV2 = []
+                            for(let id of missing) {
+                                if(experimentResults[id]) {
+                                    let experiment = experimentResults[id];
+                                    links[id] = FormUtil.getFormLink(experiment.identifier.identifier, 'Experiment', experiment.permId.permId, null);
+                                    links[experiment.identifier.identifier] = FormUtil.getFormLink(experiment.identifier.identifier, 'Experiment', experiment.permId.permId, null);
+                                } else {
+                                    missingV2.push(id);
+                                }
+                            }
+                            if(missing.length === 0) {
+                                callback(links);
+                            } else {
+                                var dataSetFetchOptions = new DataSetFetchOptions();
+                                var ids = missing.map(id => new DataSetPermId(id));
+                                mainController.openbisV3.getDataSets(ids, dataSetFetchOptions).done(function(dataSetResults) {
+                                    var dataSets = Util.mapValuesToList(dataSetResults);
+                                    for ( let dataSet of dataSets) {
+                                        links[dataSet.permId.permId] = FormUtil.getFormLink(dataSet.permId.permId, 'DataSet', dataSet.permId.permId, null);
+                                    }
+                                    callback(links);
+                                }).fail(function(result) {
+                                    callback(links);
+                                });
+                            }
+
+                        }).fail(function(result) {
+                            callback(links);
+                        });
+                    }
+                }).fail(function(result) {
+                    callback({});
+                });
+            });
+
+    }
 
 	this.getEntityAsTable = function(entity) {
 	    var tableModel = {

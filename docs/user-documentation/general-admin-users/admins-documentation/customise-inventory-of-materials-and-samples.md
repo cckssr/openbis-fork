@@ -78,7 +78,7 @@ If you use a *Collection* for one *Object Type*, you can display a button to add
 
 For this, you need to edit the *Collection* form and set the **Default Object type**, as shown below.
 
-![image info](img/201012-edit-collection.png)
+![image info](img/7.0-edit-inventory-collection.png)
 
 ![image info](img/201012-collection-default-object-type.png)
 
@@ -97,7 +97,7 @@ To delete an existing *Collection*:
 
  
 
-![image info](img/201012-edit-collection.png)
+![image info](img/7.0-edit-inventory-collection.png)
 
  
 

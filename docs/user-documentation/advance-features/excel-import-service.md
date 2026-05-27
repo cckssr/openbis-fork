@@ -529,18 +529,13 @@ MasterDataRegistrationHelper to evaluate parameter values):
 **Example**
 
 For an complete up to date example, please check the
-eln-lims-life-sciences plugin that ships with the installer or on the
-official Git repository:
+eln-lims excel that ships with the installer or on the
+official GitHub community data models repository:
 
-<https://sissource.ethz.ch/sispub/openbis/-/tree/master/openbis_standard_technologies/dist/core-plugins/eln-lims-life-sciences/1/as>
-
-Or download the complete plugin using the next link:
-
-<https://sissource.ethz.ch/sispub/openbis/-/archive/master/openbis-master.zip?path=openbis_standard_technologies/dist/core-plugins/eln-lims-life-sciences>
+<https://github.com/openbis/community-data-models/releases>
 
 ## Known Limitations
 
--   Property type assignments to entity types cannot be updated since
-    the current V3 API does not support this functionality. This means
-    that a change in the order of assignments or group names during an
-    update will be ignored.
+-   Some Property type assignments attributes to entity types cannot be updated since
+    the current V3 API does not support some functionality. Changes in the order of 
+    assignments or group names during an update will be ignored.

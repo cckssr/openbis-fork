@@ -94,19 +94,19 @@ public class ExcelRowTokenizer implements ILineTokenizer<Row>
     {
         switch (cell.getCellType())
         {
-            case Cell.CELL_TYPE_BLANK:
+            case BLANK:
                 return "";
-            case Cell.CELL_TYPE_BOOLEAN:
+            case BOOLEAN:
                 return Boolean.toString(cell.getBooleanCellValue());
-            case Cell.CELL_TYPE_NUMERIC:
+            case NUMERIC:
                 return NumberToTextConverter.toText(cell.getNumericCellValue());
-            case Cell.CELL_TYPE_STRING:
+            case STRING:
                 return cell.getStringCellValue();
-            case Cell.CELL_TYPE_FORMULA:
+            case FORMULA:
                 throw new ParserException(
                         "Excel formulas are not supported but one was found in cell "
                                 + extractCellPosition(cell));
-            case Cell.CELL_TYPE_ERROR:
+            case ERROR:
                 throw new ParserException("There is an error in cell " + extractCellPosition(cell));
             default:
                 throw new ParserException("Unknown data type of cell " + extractCellPosition(cell));

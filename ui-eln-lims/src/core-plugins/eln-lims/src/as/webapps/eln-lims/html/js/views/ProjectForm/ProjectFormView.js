@@ -270,13 +270,15 @@ function ProjectFormView(projectFormController, projectFormModel) {
 			var $registrator = FormUtil.getFieldForLabelWithText("Registrator", registrationDetails.userId);
 			$identificationInfo.append($registrator);
 
-			var $registationDate = FormUtil.getFieldForLabelWithText("Registration Date", Util.getFormatedDate(new Date(registrationDetails.registrationDate)));
+			var $registationDate = FormUtil.getFieldForLabelWithText("Registration Date",
+                Util.getFormattedTimestamp(registrationDetails.registrationDate));
 			$identificationInfo.append($registationDate);
 
 			var $modifier = FormUtil.getFieldForLabelWithText("Modifier", registrationDetails.modifierUserId);
 			$identificationInfo.append($modifier);
 
-			var $modificationDate = FormUtil.getFieldForLabelWithText("Modification Date", Util.getFormatedDate(new Date(registrationDetails.modificationDate)));
+			var $modificationDate = FormUtil.getFieldForLabelWithText("Modification Date",
+                Util.getFormattedTimestamp(registrationDetails.modificationDate));
 			$identificationInfo.append($modificationDate);
 		}
 		$identificationInfo.hide();

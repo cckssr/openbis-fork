@@ -943,6 +943,10 @@ public class StandardPathListerTest extends TestCase {
                 ),
                 SftpNodeChain.concat(
                         exampleBaseChain,
+                        SftpNodeChain.createSublevelNode(StandardPathTranslator.DATA_SET_TYPE_LABEL)
+                ),
+                SftpNodeChain.concat(
+                        exampleBaseChain,
                         SftpNodeChain.createSublevelNode(StandardPathTranslator.FILE_TYPE_LABEL)
                 )), standardPathLister.listFolder(folderNode, null, exampleBaseChain));
 
@@ -955,6 +959,12 @@ public class StandardPathListerTest extends TestCase {
         standardPathLister.listFolder(folderNode, StandardPathTranslator.SAMPLE_TYPE_LABEL, exampleBaseChain);
         Mockito.verify(standardPathLister, Mockito.times(1)).listSamplesOrFoldersInSample(
                 folderNode, exampleBaseChain, false
+        );
+        Mockito.clearInvocations(standardPathLister);
+
+        standardPathLister.listFolder(folderNode, StandardPathTranslator.DATA_SET_TYPE_LABEL, exampleBaseChain);
+        Mockito.verify(standardPathLister, Mockito.times(1)).listDataSetsInSample(
+                folderNode, exampleBaseChain
         );
         Mockito.clearInvocations(standardPathLister);
 
@@ -1043,6 +1053,19 @@ public class StandardPathListerTest extends TestCase {
 
         standardPathLister.listDataSetsInSample(sampleNode, baseChain);
         Mockito.verify(listUtil, Mockito.times(1)).getSampleDatasets("sample-perm-id-1");
+    }
+
+    public void testListDataSetsInExperiment() {
+        SftpListUtil listUtil = Mockito.mock(SftpListUtil.class);
+        StandardPathLister standardPathLister = Mockito.spy(new StandardPathLister(listUtil));
+        SftpNodeChain baseChain = Mockito.spy(exampleBaseChain);
+
+        SftpNode experimentNode = SftpNode.builder()
+                .type(SftpNode.Type.EXPERIMENT)
+                .identifier(Optional.of("Experiment name (exp-perm-id-1)")).build();
+
+        standardPathLister.listDataSetsInExperiment(experimentNode, baseChain);
+        Mockito.verify(listUtil, Mockito.times(1)).getExperimentDatasets("exp-perm-id-1");
     }
 
     public void testListFilesInSampleOrFolder() {
@@ -1194,6 +1217,10 @@ public class StandardPathListerTest extends TestCase {
                 ),
                 SftpNodeChain.concat(
                         baseChain,
+                        SftpNodeChain.createSublevelNode(StandardPathTranslator.DATA_SET_TYPE_LABEL)
+                ),
+                SftpNodeChain.concat(
+                        baseChain,
                         SftpNodeChain.createSublevelNode(StandardPathTranslator.FILE_TYPE_LABEL)
                 )), standardPathLister.listExperiment(experimentNode, null, baseChain));
 
@@ -1206,6 +1233,12 @@ public class StandardPathListerTest extends TestCase {
         standardPathLister.listExperiment(experimentNode, StandardPathTranslator.SAMPLE_TYPE_LABEL, baseChain);
         Mockito.verify(standardPathLister, Mockito.times(1)).listSamplesOrFoldersInExperiment(
                 experimentNode, baseChain, false
+        );
+        Mockito.clearInvocations(standardPathLister);
+
+        standardPathLister.listExperiment(experimentNode, StandardPathTranslator.DATA_SET_TYPE_LABEL, baseChain);
+        Mockito.verify(standardPathLister, Mockito.times(1)).listDataSetsInExperiment(
+                experimentNode, baseChain
         );
         Mockito.clearInvocations(standardPathLister);
 

@@ -457,7 +457,8 @@ public final class ExportJob implements IAsyncJob
         EMailAddress recipient = new EMailAddress(this.email);
         final String subject = "openBIS RoCrate Export Download Ready";
 
-        String roCratePublicUrl = openBIS.getServerInformation().get("server-public-information.ro-crate-server.url");
+        Configuration configuration = StartupMain.getConfiguration();
+        String roCratePublicUrl = configuration.getStringProperty(RoCrateServerParameter.httpServerPublicUrl);
         String content = roCratePublicUrl + "/download?jobId=" + encode(this.jobId.toString()) + "&apiKey=" + encode(this.exportParams.getApiKey());
         Log.info("Sending email to: " + recipient + "\nContent:" + content);
         mailClient.sendEmailMessage(subject, content, null, null, recipient);

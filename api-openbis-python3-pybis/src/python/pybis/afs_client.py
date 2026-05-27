@@ -64,7 +64,8 @@ class AfsClient:
             self._afs_url = url + "/api"
         self._sessionToken = sessionToken
         self._verify = verify
-        self.session = _create_session(url)
+        if url is not None:
+            self.session = _create_session(url)
 
 
     def is_session_valid(self):

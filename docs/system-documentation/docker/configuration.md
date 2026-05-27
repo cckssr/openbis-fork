@@ -81,7 +81,7 @@ Besides adjustments to existing plugins, it is also possible to [create new plug
 ##### Customize the InstanceProfile.js
 
 This file is part of the `eln-lims` core-plugin. It is located here:
-`<openbis-app-etc>/core-plugins/eln-lims/1/as/webapps/eln-lims/html/etc/InstanceProfile.js`
+`<openbis-app-etc>/core-plugins/eln-lims/src/as/webapps/eln-lims/html/etc/InstanceProfile.js`
 
 1. Make any changes to this file
 

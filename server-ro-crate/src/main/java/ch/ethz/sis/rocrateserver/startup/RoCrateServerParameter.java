@@ -19,6 +19,7 @@ public enum RoCrateServerParameter
 {
     httpServerPort,
     httpServerTimeout,
+    httpServerPublicUrl,
     sessionWorkSpace,
 
     httpMaxContentLength,

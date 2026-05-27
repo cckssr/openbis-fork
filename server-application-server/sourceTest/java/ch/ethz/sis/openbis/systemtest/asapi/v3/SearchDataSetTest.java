@@ -51,6 +51,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriter
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.update.SampleUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.TagPermId;
+import ch.systemsx.cisd.openbis.generic.shared.Constants;
 import ch.systemsx.cisd.openbis.systemtest.authorization.ProjectAuthorizationUser;
 import static org.junit.Assert.fail;
 import static org.testng.Assert.assertEquals;
@@ -1080,7 +1081,7 @@ public class SearchDataSetTest extends AbstractDataSetTest
         creation.setCode(code);
         creation.setTypeId(dataSetType);
         creation.setExperimentId(experimentId);
-        creation.setDataStoreId(new DataStorePermId(afsData ? "AFS" : "STANDARD"));
+        creation.setDataStoreId(new DataStorePermId(afsData ? Constants.AFS_DATA_STORE_CODE : "STANDARD"));
         creation.setAfsData(afsData);
         return creation;
     }
@@ -1093,7 +1094,7 @@ public class SearchDataSetTest extends AbstractDataSetTest
         creation.setTypeId(dataSetType);
         creation.setExperimentId(experimentId);
         creation.setSampleId(sampleId);
-        creation.setDataStoreId(new DataStorePermId(afsData ? "AFS" : "STANDARD"));
+        creation.setDataStoreId(new DataStorePermId(afsData ? Constants.AFS_DATA_STORE_CODE : "STANDARD"));
         creation.setAfsData(afsData);
         return creation;
     }

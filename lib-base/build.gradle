@@ -1,7 +1,7 @@
 apply from: '../build/javaproject.gradle'
 
 dependencies {
-    api libs.commons.io.commons.io.v26,
+    api libs.commons.io.commons.io,
             libs.org.apache.commons.commons.lang3,
             libs.org.testng.testng,
             libs.rinn.restrictions

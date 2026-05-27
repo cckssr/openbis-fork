@@ -106,8 +106,8 @@ dependencies {
             files("../core-plugin-openbis/dist/core-plugins/eln-lims-imaging-nanonis-adapter/src/as/services/imaging-nanonis/lib/premise-adapters.jar"),
             files("../core-plugin-openbis/dist/core-plugins/eln-lims-imaging-test-adapter/src/as/services/imaging-test/lib/imaging-test-adapters.jar"),
             // zenodo export dependencies
-            files("../ui-eln-lims/src/core-plugins/eln-lims/1/as/services/exports-api/lib/job-scheduler.jar"),
-            files("../ui-eln-lims/src/core-plugins/eln-lims/1/as/services/exports-api/lib/json-20250517.jar")
+            files("../ui-eln-lims/src/core-plugins/eln-lims/src/as/services/exports-api/lib/job-scheduler.jar"),
+            files("../ui-eln-lims/src/core-plugins/eln-lims/src/as/services/exports-api/lib/json-20250517.jar")
 
     testImplementation project(path: ':lib-commonbase', configuration: 'tests'),
             project(path: ':lib-common', configuration: 'tests'),

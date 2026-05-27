@@ -5883,9 +5883,7 @@ class ServerInformation:
             "personal_access_tokens_enabled",
             "personal_access_tokens_max_validity_period",
             "personal_access_tokens_validity_warning_period",
-            "project_samples_enabled",
-            "server-public-information.afs-server.url",
-            "server-public-information.afs-server.timeout"
+            "project_samples_enabled"
         ]
 
     def _reformat_info(self, info):

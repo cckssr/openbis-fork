@@ -23,4 +23,10 @@ public class Constants
 
     public static final String PROPERTY_ID_FILES = "schema:hasPart";
 
+    public static final String PROPERTY_ID_PARENTS = "openBIS:parents";
+
+    public static final String EQUIVALENCE_PARENT = "https://schema.org/isBasedOn";
+
+
+
 }

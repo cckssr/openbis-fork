@@ -134,7 +134,8 @@ public class RdfToModel
         Map<String, IMetadataEntry> idToEntities =
                 entries.stream().collect(Collectors.toMap(x -> x.getId(), x -> x, (x, y) -> y));
         List<AbstractEntityPropertyHolder> abstractEntityPropertyHolders =
-                processEntities(entries, fallbackSpaceCode, fallbackProjectCode,
+                processEntities(schema, entityTypeToRdfIdentifier, entries, fallbackSpaceCode,
+                        fallbackProjectCode,
                         typeToInheritanceChain,
                         codeToSampleType,
                         externalIdentifierToSample, baseCodeToPossibleDataTypes, idToEntities,
@@ -146,13 +147,15 @@ public class RdfToModel
         mapSpaces(fallbackSpaceCode, fallbackProjectCode, spaces, projects);
         mapProjects(projects, spaces);
 
-        mapCollections(entries, typeToInheritanceChain, identifierToCollectionType,
+        mapCollections(schema, entityTypeToRdfIdentifier, entries, typeToInheritanceChain,
+                identifierToCollectionType,
                 idsToCollections);
 
         resolveSpaceProjectAndCollections(samplesWithSpaceAndProjectCodes, spaces, projects,
                 idsToCollections, fallbackProjectCode, fallbackSpaceCode);
 
-        resolveOpenBisStructure(entries, fallbackSpaceCode, fallbackProjectCode,
+        resolveOpenBisStructure(schema, entityTypeToRdfIdentifier, entries, fallbackSpaceCode,
+                fallbackProjectCode,
                 typeToInheritanceChain,
                 roCrateIdsToObjects, spaces, projects);
 
@@ -416,7 +419,7 @@ public class RdfToModel
             for (String type : intersectionType)
             {
 
-                IEntityType entityType = schema.get(entityTypeToRdfIdentifier.get(type));
+                IEntityType entityType = tryFind(schema, entityTypeToRdfIdentifier, type);
                 if (entityType == null)
                 {
                     continue;
@@ -424,7 +427,7 @@ public class RdfToModel
                 SampleType sampleType1 =
                         (SampleType) entityType;
 
-                for (var propertyAssignment : sampleType1.getPropertyAssignments())
+                for (PropertyAssignment propertyAssignment : sampleType1.getPropertyAssignments())
                 {
                     PropertyAssignment newAssignment = new PropertyAssignment();
                     newAssignment.setMandatory(propertyAssignment.isMandatory());
@@ -452,7 +455,37 @@ public class RdfToModel
         }
     }
 
-    private static List<AbstractEntityPropertyHolder> processEntities(List<IMetadataEntry> entries,
+    private static IEntityType tryFind(Map<EntityTypePermId, IEntityType> schema,
+            Map<String, EntityTypePermId> entityTypeToRdfIdentifier, String type)
+    {
+        IEntityType entityType = schema.get(entityTypeToRdfIdentifier.get(type));
+        if (entityType != null)
+        {
+            return entityType;
+        }
+        if (!type.contains(":"))
+        {
+            return schema.get(entityTypeToRdfIdentifier.get("schema:" + type));
+
+        }
+        return null;
+
+    }
+
+    private static String tryFindRdfIdentifier(Map<EntityTypePermId, IEntityType> schema,
+            Map<String, EntityTypePermId> entityTypeToRdfIdentifier, String type)
+    {
+        if (type.contains(":"))
+        {
+            return type;
+        }
+        return "schema:" + type;
+
+    }
+
+    private static List<AbstractEntityPropertyHolder> processEntities(
+            Map<EntityTypePermId, IEntityType> schema,
+            Map<String, EntityTypePermId> entityTypeToRdfIdentifier, List<IMetadataEntry> entries,
             String fallbackSpaceCode,
             String fallbackProjectCode, Map<String, List<String>> typeToInheritanceChain,
             Map<String, SampleType> codeToSampleType,
@@ -474,7 +507,8 @@ public class RdfToModel
             ObjectIdentifier objectIdentifier;
 
             Optional<EntityKind> entityKind =
-                    matchEntityKind(entry, typeToInheritanceChain);
+                    matchEntityKind(schema, entityTypeToRdfIdentifier, entry,
+                            typeToInheritanceChain);
 
             if (entityKind.filter(x -> x == EntityKind.SAMPLE).isPresent())
             {
@@ -486,13 +520,17 @@ public class RdfToModel
                     fetchOptions.withSpace();
                     fetchOptions.withProperties();
                     fetchOptions.withExperiment();
+                    fetchOptions.withParents();
+                    fetchOptions.withChildren();
                     sample.setFetchOptions(fetchOptions);
                 }
                 String typeCode = entry.getTypes().size() == 1 ?
                         entry.getTypes().stream().findFirst().orElseThrow() :
                         getIntersectionTypeIdentifier(entry.getTypes());
 
-                SampleType type = codeToSampleType.get(openBisifyCode(typeCode));
+                SampleType type =
+                        Optional.ofNullable(codeToSampleType.get(openBisifyCode(typeCode)))
+                                .orElse(codeToSampleType.get(openBisifyCode("schema:" + typeCode)));
                 sample.setType(type);
 
                 String code = SampleCodeHelper.createSampleCode(type, entry.getId());
@@ -632,7 +670,7 @@ public class RdfToModel
                 traversalResult.files();
         identifiersWithMissingFiles.addAll(traversalResult.missingEntitites());
 
-        for (var a : allFiles)
+        for (AbstractEntity a : allFiles)
         {
             Path downloadedPath = identifiersToExternalFiles.get(a);
 
@@ -664,7 +702,7 @@ public class RdfToModel
         myRes.stream().collect(Collectors.toMap(x -> x.filePath(), x -> x));
         Map<String, String> images = new LinkedHashMap<>();
 
-            for (var entry : sample.getProperties().entrySet())
+        for (Map.Entry<String, Serializable> entry : sample.getProperties().entrySet())
             {
                 if (!multiLineVarcharProperties.contains(entry.getKey()))
                 {
@@ -731,7 +769,7 @@ public class RdfToModel
 
 
         });
-        for (var a : metadataEntry.getDataEntitiesReferenced())
+        for (DataEntity a : metadataEntry.getDataEntitiesReferenced())
         {
             if (a.getPath() != null)
             {
@@ -742,8 +780,8 @@ public class RdfToModel
             }
 
         }
-        var compareMap = new LinkedHashMap<>();
-        var fileRes = myRes;
+        LinkedHashMap<Object, Object> compareMap = new LinkedHashMap<>();
+        List<IFileInfo> fileRes = myRes;
         ;
 
         res.put(objectIdentifier, fileRes);
@@ -797,7 +835,8 @@ public class RdfToModel
         }
     }
 
-    private static void mapCollections(List<IMetadataEntry> entries,
+    private static void mapCollections(Map<EntityTypePermId, IEntityType> schema,
+            Map<String, EntityTypePermId> entityTypeToRdfIdentifier, List<IMetadataEntry> entries,
             Map<String, List<String>> typeToInheritanceChain,
             Map<String, ExperimentType> identifierToCollectionType,
             Map<ExperimentIdentifier, Experiment> idsToCollections)
@@ -805,7 +844,8 @@ public class RdfToModel
         for (IMetadataEntry entry : entries)
         {
             Optional<EntityKind> entityKind =
-                    matchEntityKind(entry, typeToInheritanceChain);
+                    matchEntityKind(schema, entityTypeToRdfIdentifier, entry,
+                            typeToInheritanceChain);
 
 
             if (entityKind.filter(x -> x == EntityKind.EXPERIMENT).isPresent())
@@ -882,22 +922,35 @@ public class RdfToModel
 
             }
 
+
+            {
+            List<Sample> parents = sampleToResolve.getRight().hierarchyEntries.stream()
+                    .filter(x -> x.type() == HierarchyToResolve.Type.PARENT)
+                    .map(x -> externalIdentifierToSample.get(x.objectIdentifer))
+                    .collect(Collectors.toList());
+                sample.setParents(parents);
+                for (Sample parent : parents)
+                {
+                    List<Sample> children =
+                            Optional.ofNullable(parent.getChildren()).orElse(new ArrayList<>());
+                    children.add(sampleToResolve.getLeft());
+                    parent.setChildren(children);
+
+                }
+
+            }
+
+            List<Sample> children =
+                    Optional.ofNullable(sample.getChildren()).orElse(new ArrayList<>());
+            sample.setChildren(children); // prevent NPEs for empty lists
+
+
+
         }
     }
 
-    private void addFiles(OpenBisModel openBisModel, Map<String, Sample> externalIdentifierToSample)
-    {
-        for (var a : openBisModel.getFiles().entrySet())
-        {
-
-        }
-
-    }
-
-
-
-
-    private static void resolveOpenBisStructure(List<IMetadataEntry> entries,
+    private static void resolveOpenBisStructure(Map<EntityTypePermId, IEntityType> schema,
+            Map<String, EntityTypePermId> entityTypeToRdfIdentifier, List<IMetadataEntry> entries,
             String fallbackSpaceCode,
             String fallbackProjectCode, Map<String, List<String>> typeToInheritanceChain,
             Map<String, Sample> roCrateIdsToObjects, Map<SpacePermId, Space> spaces,
@@ -906,7 +959,8 @@ public class RdfToModel
         for (IMetadataEntry entry : entries)
         {
             Optional<EntityKind> entityKind =
-                    matchEntityKind(entry, typeToInheritanceChain);
+                    matchEntityKind(schema, entityTypeToRdfIdentifier, entry,
+                            typeToInheritanceChain);
 
             if (entityKind.filter(x -> x == EntityKind.SAMPLE).isPresent())
             {
@@ -973,8 +1027,8 @@ public class RdfToModel
             IMetadataEntry entry)
     {
 
-        var properties = entry.getReferences();
-        var parts = entry.getId().split("/");
+        Map<String, List<String>> properties = entry.getReferences();
+        String[] parts = entry.getId().split("/");
 
         String identifierSpaceCode = parts[0];
 
@@ -1015,12 +1069,20 @@ public class RdfToModel
             myProject = s;
 
         }
-        Set<String> filterSet = Set.of(PROPERTY_SPACE, PROPERTY_PROJECT, PROPERTY_COLLECTION);
+        Set<String> filterSet =
+                Set.of(PROPERTY_SPACE, PROPERTY_PROJECT, PROPERTY_COLLECTION,
+                        PROPERTY_ID_PARENTS);
         Map<String, List<String>> samplesToResolve =
                 properties.entrySet().stream().filter(x -> !filterSet.contains(x.getKey()))
                         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        List<HierarchyToResolve> hierarchyInfo = new ArrayList<>();
 
-        return new ReferencesToResolve(mySpace, myProject, myExperiment, samplesToResolve);
+        properties.getOrDefault(PROPERTY_ID_PARENTS, List.of())
+                .stream().map(x -> new HierarchyToResolve(HierarchyToResolve.Type.PARENT, x))
+                .forEach(hierarchyInfo::add);
+
+        return new ReferencesToResolve(mySpace, myProject, myExperiment, samplesToResolve,
+                hierarchyInfo);
     }
 
     private static void resolveFile()
@@ -1028,16 +1090,30 @@ public class RdfToModel
 
     }
 
-
-
-
-    private static Optional<EntityKind> matchEntityKind(IMetadataEntry metfadataEntry,
+    private static Optional<EntityKind> matchEntityKind(Map<EntityTypePermId, IEntityType> schema,
+            Map<String, EntityTypePermId> entityTypeToRdfIdentifier, IMetadataEntry metadataEntry,
             Map<String, List<String>> typeToInheritanceChain)
     {
+
+
+
         List<String> a =
-                metfadataEntry.getTypes().stream().map(x -> typeToInheritanceChain.get(x))
+                metadataEntry.getTypes().stream()
+                        .map(x -> tryFindRdfIdentifier(schema, entityTypeToRdfIdentifier, x))
+                        .map(typeToInheritanceChain::get)
                         .filter(Objects::nonNull).flatMap(Collection::stream)
+                        .distinct()
                         .collect(Collectors.toList());
+        for (String typeId : metadataEntry.getTypes())
+        {
+            IEntityType iEntityType = tryFind(schema, entityTypeToRdfIdentifier, typeId);
+            if (iEntityType != null)
+            {
+                return Optional.of(EntityKind.SAMPLE);
+            }
+
+        }
+
 
         if (a.isEmpty())
         {
@@ -1229,6 +1305,11 @@ public class RdfToModel
         {
             return true;
         }
+        if (typeProperty.getId().equals(PROPERTY_ID_PARENTS))
+        {
+            return true;
+        }
+
         return false;
 
     }
@@ -1274,6 +1355,16 @@ public class RdfToModel
         }
     }
 
+    record HierarchyToResolve(HierarchyToResolve.Type type, String objectIdentifer)
+    {
+        enum Type
+        {
+            PARENT,
+            CHILD
+        }
+
+    }
+
     public static class ReferencesToResolve
     {
         String spaceCode;
@@ -1284,14 +1375,18 @@ public class RdfToModel
 
         Map<String, List<String>> sampleIdentifiers;
 
+        List<HierarchyToResolve> hierarchyEntries;
+
         public ReferencesToResolve(@Nullable String spaceCode, @Nullable String projectCode,
                 @Nullable String collectionCode,
-                Map<String, List<String>> sampleIdentifiers)
+                Map<String, List<String>> sampleIdentifiers,
+                List<HierarchyToResolve> hierarchyEntries)
         {
             this.spaceCode = spaceCode;
             this.projectCode = projectCode;
             this.collectionCode = collectionCode;
             this.sampleIdentifiers = sampleIdentifiers;
+            this.hierarchyEntries = hierarchyEntries;
         }
 
         public String getSpaceCode()
@@ -1307,6 +1402,16 @@ public class RdfToModel
         public String getCollectionCode()
         {
             return collectionCode;
+        }
+
+        public Map<String, List<String>> getSampleIdentifiers()
+        {
+            return sampleIdentifiers;
+        }
+
+        public List<HierarchyToResolve> getHierarchyEntries()
+        {
+            return hierarchyEntries;
         }
     }
 

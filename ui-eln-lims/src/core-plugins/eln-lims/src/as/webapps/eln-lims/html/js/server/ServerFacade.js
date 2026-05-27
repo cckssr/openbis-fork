@@ -40,17 +40,7 @@ function ServerFacade(openbisServer) {
             var testUrl = testProtocol + "//" + testHost + ":" + testPort;
             var testApiUrl = testUrl + "/openbis/openbis/rmi-application-server-v3.json";
 
-            var testUrl = testProtocol + "//" + testHost + ":" + testPort;
-
-			var openbisInt = new openbis(testApiUrl)
-	        openbisInt.getServerPublicInformation().then(result => {
-				const afsServerUrlKey = 'server-public-information.afs-server.url'
-				const afsServerUrl = result[afsServerUrlKey]
-			
-				var openbisV3 = new openbis(testApiUrl, afsServerUrl);
-				callbackFunction(openbisV3);
-			})
-			
+            callbackFunction(new openbis(testApiUrl));
         });
     }
 

@@ -22,7 +22,7 @@ public class Write
         cmd = parser.parse(options, args);
         boolean dummy = cmd.hasOption("dummy");
         ExcelReader.FileMode fileMode =
-                dummy ? ExcelReader.FileMode.DUMMY : ExcelReader.FileMode.FULL;
+                dummy ? ExcelReader.FileMode.DUMMY : ExcelReader.FileMode.DEBUG_FULL_FILES;
 
 
         Path path = Path.of(cmd.getOptionValues('i')[0]);

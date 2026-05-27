@@ -197,8 +197,8 @@ function SpaceFormView(spaceFormController, spaceFormModel) {
             var $registrator = FormUtil.getFieldForLabelWithText("Registrator", space.getRegistrator().userId);
             $identificationInfo.append($registrator);
 
-            var $registationDate = FormUtil.getFieldForLabelWithText("Registration Date", 
-                   Util.getFormatedDate(new Date(space.registrationDate)));
+            var $registationDate = FormUtil.getFieldForLabelWithText("Registration Date",
+                Util.getFormattedTimestamp(space.registrationDate));
             $identificationInfo.append($registationDate);
         } else { // FormMode.CREATE
             var groupPrefixes = this._spaceFormController.getAllGroupPrefixes();

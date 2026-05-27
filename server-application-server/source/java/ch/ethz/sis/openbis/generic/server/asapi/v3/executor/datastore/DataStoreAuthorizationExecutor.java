@@ -43,4 +43,12 @@ public class DataStoreAuthorizationExecutor implements IDataStoreAuthorizationEx
     {
     }
 
+    @Override
+    @RolesAllowed({ RoleWithHierarchy.SPACE_ETL_SERVER })
+    @Capability("CREATE_DATASTORE")
+    public void canCreate(IOperationContext context)
+    {
+
+    }
+
 }

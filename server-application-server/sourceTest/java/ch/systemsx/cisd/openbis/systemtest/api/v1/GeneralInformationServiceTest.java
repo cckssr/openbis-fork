@@ -2032,8 +2032,8 @@ public class GeneralInformationServiceTest extends SystemTestCase
                     return t1.getCode().compareTo(t2.getCode());
                 }
             });
-        assertEquals("CONTAINER_TYPE", types.get(1).getCode());
-        assertEquals("[]", types.get(1).getPropertyTypeGroups().toString());
+        assertEquals("CONTAINER_TYPE", types.get(0).getCode());
+        assertEquals("[]", types.get(0).getPropertyTypeGroups().toString());
         assertTrue(types.size() > 0);
         boolean guard = false;
         List<PropertyTypeGroup> groups = null;

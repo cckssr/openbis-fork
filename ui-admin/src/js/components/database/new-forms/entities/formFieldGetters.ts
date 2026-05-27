@@ -4,7 +4,7 @@ import {
   FormSection,
   Widget
 } from '@src/js/components/database/new-forms/types/formEnums.ts';
-import {getFormatedDate} from '@src/js/components/database/new-forms/utils/dateUtil.ts';
+import {getFormattedTimestamp} from '@src/js/components/database/new-forms/utils/dateUtil.ts';
 
 // Helper type for overrides
 export type FieldOverrides<T = any> = Partial<Omit<FormField<T>, 'value'>> & { value?: T };
@@ -204,7 +204,7 @@ export function getRegistrationDateField(dto: any, overrides: FieldOverrides = {
   return {
     id: permId + '-registrationDate',
     label: 'Registration Date',
-    value: overrides.value ?? (dto.registrationDate ? getFormatedDate(new Date(dto.registrationDate)) : ''),
+    value: overrides.value ?? (dto.registrationDate ? getFormattedTimestamp(dto.registrationDate) : ''),
     dataType: FormFieldDataType.TIMESTAMP,
     required: false,
     readOnly: true,
@@ -238,7 +238,7 @@ export function getModificationDateField(dto: any, overrides: FieldOverrides = {
   return {
     id: permId + '-modificationDate',
     label: 'Modification Date',
-    value: overrides.value ?? (dto.modificationDate ? getFormatedDate(new Date(dto.modificationDate)) : ''),
+    value: overrides.value ?? (dto.modificationDate ? getFormattedTimestamp(dto.modificationDate) : ''),
     dataType: FormFieldDataType.TIMESTAMP,
     required: false,
     readOnly: true,

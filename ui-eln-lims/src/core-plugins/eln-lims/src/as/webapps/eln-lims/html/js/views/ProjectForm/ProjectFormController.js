@@ -142,7 +142,8 @@ function ProjectFormController(mainController, mode, project) {
             if (dependentDeletions.length > 0) {
                 var text = "This project can only be deleted if the following deletions sets in Trashcan are deleted permanently:<br>";
                 dependentDeletions.forEach(function(deletion) {
-                    text += Util.getFormatedDate(new Date(deletion.deletionDate)) + " (reason: " + deletion.reason + ")<br>";
+                    text += Util.getFormattedTimestamp(deletion.deletionDate) +
+                        " (reason: " + deletion.reason + ")<br>";
                 });
                 Util.showInfo(text);
             } else {

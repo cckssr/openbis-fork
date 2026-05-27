@@ -131,9 +131,9 @@ function DataSetViewerView(dataSetViewerController, dataSetViewerModel) {
                     'properties' : properties,
                     'parents' : dataSet.getParents().map(d => d.getCode()),
                     'registrator' : (dataSet.getRegistrator())?dataSet.getRegistrator().getUserId():'',
-                    'registrationDate' : Util.getFormatedDate(new Date(dataSet.getRegistrationDate())),
+                    'registrationDate' : Util.getFormattedTimestamp(dataSet.getRegistrationDate()),
                     'modifier' : (dataSet.getModifier())?dataSet.getModifier().getUserId():'',
-                    'modificationDate' : Util.getFormatedDate(new Date(dataSet.getModificationDate()))
+                    'modificationDate' : Util.getFormattedTimestamp(dataSet.getModificationDate())
                 };
                 if (dataSet.getPhysicalData()) {
                     row.storageConfirmation = dataSet.getPhysicalData().isStorageConfirmation();

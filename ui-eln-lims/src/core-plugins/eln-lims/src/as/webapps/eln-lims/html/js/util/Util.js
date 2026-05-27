@@ -537,7 +537,7 @@ var Util = new function() {
 
             if(timeValueObject.getFullYear() !== parseInt(dateAsString.substring(0,4))) {
                 result.isValid = false;
-                result.error = "Incorrect Date Format. Please follow the format " + (isDateOnly ? 'yyyy-MM-dd (YEAR-MONTH-DAY)' : 'yyyy-MM-dd HH:mm:ss (YEAR-MONTH-DAY : HOUR-MINUTE-SECOND)') + ".";
+                result.error = "Incorrect Date Format. Please follow the format " + (isDateOnly ? 'yyyy-MM-dd (YEAR-MONTH-DAY)' : 'yyyy-MM-dd HH:mm:ss (YEAR-MONTH-DAY HOUR:MINUTE:SECOND)') + ".";
             }
         }
         return result;
@@ -566,6 +566,14 @@ var Util = new function() {
 			second = "0" + second;
 		}
 		return year + "-" + month + "-" + day + " " + hour + ":" + minute + ":" + second;
+	}
+
+    this.getFormattedTimestamp = function(timestamp) {
+		if (timestamp) {
+			return moment(timestamp).format("YYYY-MM-DD HH:mm:ss ZZ");
+		} else {
+			return null;
+		}
 	}
 	
 	//

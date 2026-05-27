@@ -89,5 +89,17 @@ public class RoCrateSchemaValidationRegressionCasesTest
 
     }
 
+    @Test
+    public void testSciLogEln() throws IOException
+    {
+        String location = "validation/scilog/test.eln";
+
+        ValidationResult validationResult =
+                new RoCrateSchemaValidationRegressionCasesTest().getValidationResult(location);
+        Assert.assertTrue(validationResult.isOkay());
+
+    }
+
+
 
 }

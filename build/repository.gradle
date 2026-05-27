@@ -1,6 +1,41 @@
-ext.repositoryConfig = {
-    ivy {
-        ivyPattern "https://sissource.ethz.ch/openbis/openbis-public/openbis-ivy/-/raw/main/[organisation]/[module]/[revision]/ivy.xml"
-        artifactPattern "https://sissource.ethz.ch/openbis/openbis-public/openbis-ivy/-/raw/main/[organisation]/[module]/[revision]/[artifact]-[revision](-[classifier]).[ext]"
+def openbisIvyUrl = "https://sissource.ethz.ch/openbis/openbis-public/openbis-ivy/-/raw/main"
+def useLocalIvy = false
+def localIvyRepositoryPath = '../../openbis-ivy'
+
+def localIvyDir = null
+if (useLocalIvy) {
+    localIvyDir = new File(buildscript.sourceFile.parentFile, localIvyRepositoryPath).canonicalFile
+    if (!localIvyDir.isDirectory()) {
+        throw new GradleException("Local Ivy repository is enabled, but the expected sibling directory does not exist: ${localIvyDir}")
     }
+}
+
+ext.repositoryConfig = {
+
+    if (useLocalIvy) {
+        println "Using local openbis-ivy repository: ${localIvyDir}"
+
+        ivy {
+            name 'openbis-ivy-local'
+            url localIvyDir.toURI()
+
+            patternLayout {
+                ivy '[organisation]/[module]/[revision]/ivy.xml'
+                artifact '[organisation]/[module]/[revision]/[artifact]-[revision](-[classifier]).[ext]'
+            }
+
+            metadataSources {
+                ivyDescriptor()
+                artifact()
+            }
+        }
+    } else {
+        ivy {
+            name 'openbis-ivy-remote'
+            ivyPattern "${openbisIvyUrl}/[organisation]/[module]/[revision]/ivy.xml"
+            artifactPattern "${openbisIvyUrl}/[organisation]/[module]/[revision]/[artifact]-[revision](-[classifier]).[ext]"
+        }
+    }
+
+    //mavenCentral()
 }

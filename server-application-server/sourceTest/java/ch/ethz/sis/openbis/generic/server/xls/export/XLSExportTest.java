@@ -318,7 +318,7 @@ public class XLSExportTest
         assertEquals(valueFiles.size(), 1);
 
         final Map.Entry<String, String> entry = valueFiles.entrySet().iterator().next();
-        assertEquals(entry.getKey(), "value-M5.txt");
+        assertEquals(entry.getKey(), "value-N5.txt");
         assertTrue(entry.getValue().length() > Short.MAX_VALUE);
     }
 
@@ -424,7 +424,7 @@ public class XLSExportTest
 
     private static String getStringValue(final Cell cell)
     {
-        switch (cell.getCellTypeEnum())
+        switch (cell.getCellType())
         {
             case NUMERIC:
             {

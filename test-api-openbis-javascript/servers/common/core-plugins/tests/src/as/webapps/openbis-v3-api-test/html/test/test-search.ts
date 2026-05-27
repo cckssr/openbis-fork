@@ -2410,6 +2410,8 @@ exports.default = new Promise((resolve) => {
                     })
             })
 
+            const CREATED_DATA_STORE = "CREATED_DATA_STORE"
+
             QUnit.test("searchDataStores() withEmptyCriteria", function (assert) {
                 var c = new common(assert, dtos)
 
@@ -2419,6 +2421,7 @@ exports.default = new Promise((resolve) => {
                 }
 
                 var fCheck = function (facade: openbis.openbis, dataStores: openbis.DataStore[]) {
+                    dataStores = dataStores.filter(ds => !ds.getCode().includes(CREATED_DATA_STORE))
                     c.assertEqual(dataStores.length, 2)
                     c.assertObjectsWithValues(dataStores, "code", ["DSS1", "DSS2"])
                 }
@@ -2436,6 +2439,7 @@ exports.default = new Promise((resolve) => {
                 }
 
                 var fCheck = function (facade: openbis.openbis, dataStores: openbis.DataStore[]) {
+                    dataStores = dataStores.filter(ds => !ds.getCode().includes(CREATED_DATA_STORE))
                     c.assertEqual(dataStores.length, 1)
                     var dataStore = dataStores[0]
                     c.assertEqual(dataStore.getCode(), "DSS1", "Code")
@@ -2454,6 +2458,7 @@ exports.default = new Promise((resolve) => {
                 }
 
                 var fCheck = function (facade: openbis.openbis, dataStores: openbis.DataStore[]) {
+                    dataStores = dataStores.filter(ds => !ds.getCode().includes(CREATED_DATA_STORE))
                     var codes: string[] = dataStores.map((dataStore: openbis.DataStore): string => dataStore.getCode())
                     c.assertEqual(codes.length, 0)
                 }
@@ -2471,6 +2476,7 @@ exports.default = new Promise((resolve) => {
                 }
 
                 var fCheck = function (facade: openbis.openbis, dataStores: openbis.DataStore[]) {
+                    dataStores = dataStores.filter(ds => !ds.getCode().includes(CREATED_DATA_STORE))
                     var codes: string[] = dataStores.map((dataStore: openbis.DataStore): string => dataStore.getCode())
                     c.assertTrue(arraySetsEqual(codes, ["DSS1", "DSS2"]))
                 }
@@ -2488,6 +2494,7 @@ exports.default = new Promise((resolve) => {
                 }
 
                 var fCheck = function (facade: openbis.openbis, dataStores: openbis.DataStore[]) {
+                    dataStores = dataStores.filter(ds => !ds.getCode().includes(CREATED_DATA_STORE))
                     var codes: string[] = dataStores.map((dataStore: openbis.DataStore): string => dataStore.getCode())
                     c.assertTrue(arraySetsEqual(codes, ["AFS"]))
                 }
@@ -2505,6 +2512,7 @@ exports.default = new Promise((resolve) => {
                 }
 
                 var fCheck = function (facade: openbis.openbis, dataStores: openbis.DataStore[]) {
+                    dataStores = dataStores.filter(ds => !ds.getCode().includes(CREATED_DATA_STORE))
                     var codes: string[] = dataStores.map((dataStore: openbis.DataStore): string => dataStore.getCode())
                     c.assertTrue(arraySetsEqual(codes, ["AFS", "DSS1", "DSS2"]))
                 }

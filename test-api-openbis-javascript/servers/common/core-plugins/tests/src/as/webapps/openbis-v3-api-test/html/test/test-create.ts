@@ -1586,6 +1586,27 @@ exports.default = new Promise((resolve) => {
 
                 testCreate(c, fCreate, c.findPersonalAccessToken, fCheck)
             })
+
+            QUnit.test("createDataStores()", function (assert) {
+                var c = new common(assert, dtos)
+                var code = c.generateId("CREATED_DATA_STORE")
+
+                var fCreate = function (facade: openbis.openbis) {
+                    var creation = new dtos.DataStoreCreation()
+                    creation.setCode(code)
+                    creation.setDownloadUrl("test download url")
+                    creation.setStorageUuid("test storage uuid")
+                    return facade.createDataStores([creation])
+                }
+
+                var fCheck = function (dataStore: openbis.DataStore) {
+                    c.assertEqual(dataStore.getCode(), code, "Code")
+                    c.assertEqual(dataStore.getDownloadUrl(), "test download url", "Download url")
+                    c.assertEqual(dataStore.getStorageUuid(), "test storage uuid", "Storage uuid")
+                }
+
+                testCreate(c, fCreate, c.findDataStore, fCheck)
+            })
         }
 
         resolve(function () {

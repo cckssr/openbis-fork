@@ -236,12 +236,16 @@ function SciCatExportView(exportController, exportModel) {
                     if(propertyType.dataType === "BOOLEAN") {
                         _this.exportModel.properties[propertyTypeCode] = FormUtil.getBooleanValue(field);
                     } else if (propertyType.dataType === "TIMESTAMP" || propertyType.dataType === "DATE") {
-                        var timeValue = $($(field.children()[0]).children()[0]).val();
-                        var isValidValue = Util.isDateValid(timeValue, propertyType.dataType === "DATE");
-                        if(!isValidValue.isValid) {
-                            Util.showUserError(isValidValue.error);
+                        if (jsEvent.date === false) {
+                            _this.exportModel.properties[propertyTypeCode] = "";
                         } else {
-                            _this.exportModel.properties[propertyTypeCode] = timeValue;
+                            var timeValue = $($(field.children()[0]).children()[0]).val();
+                            var isValidValue = Util.isDateValid(timeValue, propertyType.dataType === "DATE");
+                            if(!isValidValue.isValid) {
+                                Util.showUserError(isValidValue.error);
+                            } else {
+                                _this.exportModel.properties[propertyTypeCode] = timeValue;
+                            }
                         }
                     } else {
                         if(newValue !== undefined && newValue !== null) {

@@ -603,13 +603,15 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 			var $registrator = FormUtil.getFieldForLabelWithText("Registrator", registrationDetails.userId);
 			$identificationInfo.append($registrator);
 
-			var $registationDate = FormUtil.getFieldForLabelWithText("Registration Date", Util.getFormatedDate(new Date(registrationDetails.registrationDate)))
+			var $registationDate = FormUtil.getFieldForLabelWithText("Registration Date",
+                Util.getFormattedTimestamp(registrationDetails.registrationDate))
 			$identificationInfo.append($registationDate);
 
 			var $modifier = FormUtil.getFieldForLabelWithText("Modifier", registrationDetails.modifierUserId);
 			$identificationInfo.append($modifier);
 
-			var $modificationDate = FormUtil.getFieldForLabelWithText("Modification Date", Util.getFormatedDate(new Date(registrationDetails.modificationDate)));
+			var $modificationDate = FormUtil.getFieldForLabelWithText("Modification Date",
+                Util.getFormattedTimestamp(registrationDetails.modificationDate));
 			$identificationInfo.append($modificationDate);
 		}
 		$identificationInfo.hide();
@@ -708,6 +710,11 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 					delete this._experimentFormModel.experiment.properties[propertyType.code.substr(1)];
 				}
 
+                if (["ARRAY_INTEGER", "ARRAY_REAL", "ARRAY_STRING", "ARRAY_TIMESTAMP"]
+                        .includes(propertyType.dataType)) {
+                    value = this._experimentFormModel.v3_experiment.properties[propertyType.code];
+                }
+
                 if (propertyType.dataType === "TIMESTAMP") {
                     value = FormUtil.toUserTimeZoneTimestamp(value);
                 } else if (propertyType.dataType === "ARRAY_TIMESTAMP" && value) {
@@ -792,12 +799,16 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
                             if(propertyType.dataType === "BOOLEAN") {
                                 _this._experimentFormModel.experiment.properties[propertyTypeCode] = FormUtil.getBooleanValue(field);
                             } else if (propertyType.dataType === "TIMESTAMP" || propertyType.dataType === "DATE") {
-                                var timeValue = $($(field.children()[0]).children()[0]).val();
-                                var isValidValue = Util.isDateValid(timeValue, propertyType.dataType === "DATE");
-                                if(!isValidValue.isValid) {
-                                    Util.showUserError(isValidValue.error);
+                                if (jsEvent.date === false) {
+                                    _this._experimentFormModel.experiment.properties[propertyTypeCode] = "";
                                 } else {
-                                    _this._experimentFormModel.experiment.properties[propertyTypeCode] = timeValue;
+                                    var timeValue = $($(field.children()[0]).children()[0]).val();
+                                    var isValidValue = Util.isDateValid(timeValue, propertyType.dataType === "DATE");
+                                    if(!isValidValue.isValid) {
+                                        Util.showUserError(isValidValue.error);
+                                    } else {
+                                        _this._experimentFormModel.experiment.properties[propertyTypeCode] = timeValue;
+                                    }
                                 }
                             } else {
                                 if(newValue !== undefined && newValue !== null) {

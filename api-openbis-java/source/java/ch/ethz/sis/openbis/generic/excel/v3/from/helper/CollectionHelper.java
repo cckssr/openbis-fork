@@ -28,6 +28,7 @@ public class CollectionHelper extends BasicImportHelper
     {
         Identifier("Identifier", false, true),
         Code("Code", true, true),
+        MetaData("Meta Data", false, true),
         Project("Project", true, true);
 
         private final String headerName;

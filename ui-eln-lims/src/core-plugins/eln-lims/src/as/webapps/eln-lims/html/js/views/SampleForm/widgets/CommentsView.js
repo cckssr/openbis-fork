@@ -52,7 +52,7 @@ function CommentsView(commentsController, commentsModel) {
 			$buttonDelete = $("<a>", {"class" : "btn btn-default", "id" : buttonDeleteId});
 			$buttonDelete.append($("<span>", { "class" : "glyphicon glyphicon-minus-sign"}));
 		}
-		var date = Util.getFormatedDate(new Date(parseInt(dateValue)));
+		var date = Util.getFormattedTimestamp(parseInt(dateValue));
 		
 		var deleteEnabled = false;
 		var $sufixComponent = null;

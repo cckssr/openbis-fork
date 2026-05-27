@@ -135,10 +135,8 @@ public class ExcelWriter
                 }
                 case ZIP_EXPORT:
                 {
-                    try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                            final ZipOutputStream zos = new ZipOutputStream(outputStream);
-                            final BufferedOutputStream bos = new BufferedOutputStream(zos);
-                    )
+                    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                    try (final ZipOutputStream zos = new ZipOutputStream(outputStream))
                     {
                         for (Map.Entry<ObjectIdentifier, List<IFileInfo>> objectAndFileInfo : openBisModel.getFiles()
                                 .entrySet())
@@ -151,8 +149,8 @@ public class ExcelWriter
                                 ZipEntry zipEntry = new ZipEntry(zipPath);
                                 zos.putNextEntry(zipEntry);
 
-                                writeFile(file, bos);
-
+                                writeFile(file, zos);
+                                zos.closeEntry();
                             }
                         }
                         for (Map.Entry<ObjectIdentifier, List<IFileInfo>> objectAndFileInfo : openBisModel.getImageFiles()
@@ -162,7 +160,8 @@ public class ExcelWriter
                             {
                                 ZipEntry zipEntry = new ZipEntry(file.originalPath());
                                 zos.putNextEntry(zipEntry);
-                                writeFile(file, bos);
+                                writeFile(file, zos);
+                                zos.closeEntry();
                             }
                         }
 
@@ -171,18 +170,20 @@ public class ExcelWriter
                         {
                             zos.putNextEntry(new ZipEntry(
                                     String.format("%s/%s", DATA_DIRECTORY, valueFile.getKey())));
-                            bos.write(valueFile.getValue().getBytes());
-                            bos.flush();
+                            zos.write(valueFile.getValue().getBytes());
                             zos.closeEntry();
                         }
                         zos.putNextEntry(new ZipEntry("metadata" + XLSX_EXTENSION));
 
-                        workbook.write(bos);
-                        return outputStream.toByteArray();
+                        workbook.write(zos);
+                        zos.closeEntry();
+
+                        zos.finish();
                     } catch (FileNotFoundException e)
                     {
                         throw new RuntimeException(e);
                     }
+                    return outputStream.toByteArray();
 
                 }
 
@@ -196,10 +197,10 @@ public class ExcelWriter
         throw new RuntimeException("Unknown format, how did this happen?");
     }
 
-    private static void writeFile(IFileInfo file, BufferedOutputStream bos) throws IOException
+    private static void writeFile(IFileInfo file, OutputStream out) throws IOException
     {
         try (InputStream input = file.getInputStream()) {
-            input.transferTo(bos);
+            input.transferTo(out);
         }
     }
 

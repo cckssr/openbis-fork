@@ -297,9 +297,7 @@ public class Mapper
 
                 }
 
-                references.put("children", ((Sample) val).getChildren().stream()
-                        .map(x -> x.getIdentifier().getIdentifier()).collect(Collectors.toList()));
-                references.put("parents", ((Sample) val).getChildren().stream()
+                references.put(Constants.PROPERTY_ID_PARENTS, ((Sample) val).getParents().stream()
                         .map(x -> x.getIdentifier().getIdentifier()).collect(Collectors.toList()));
 
                 List<IFileInfo> files =
