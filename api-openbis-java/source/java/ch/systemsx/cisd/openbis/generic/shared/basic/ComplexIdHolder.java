@@ -23,7 +23,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ServiceVersionHolder;
 import java.io.Serializable;
 
 @JsonObject("ComplexIdHolder")
-public class ComplexIdHolder implements ICustomIdHolder<Serializable>
+public class ComplexIdHolder implements ICustomIdHolder<Serializable>, Serializable
 {
 
     private static final long serialVersionUID = ServiceVersionHolder.VERSION;
@@ -53,7 +53,6 @@ public class ComplexIdHolder implements ICustomIdHolder<Serializable>
     }
 
     @Override
-    //    @JsonIgnore
     public Serializable getId()
     {
         return this.id;

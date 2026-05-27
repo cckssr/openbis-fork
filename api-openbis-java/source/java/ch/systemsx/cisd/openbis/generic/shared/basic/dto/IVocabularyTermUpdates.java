@@ -34,4 +34,6 @@ public interface IVocabularyTermUpdates extends IIdHolder, ICodeHolder
     Long getOrdinal();
 
     Date getModificationDate();
+
+    Boolean isManagedInternally();
 }

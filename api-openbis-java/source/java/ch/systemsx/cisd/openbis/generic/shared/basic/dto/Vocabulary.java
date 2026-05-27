@@ -79,6 +79,7 @@ public class Vocabulary extends CodeWithRegistration<Vocabulary> implements IVoc
         this.description = description;
     }
 
+    @Override
     public final boolean isManagedInternally()
     {
         return managedInternally;

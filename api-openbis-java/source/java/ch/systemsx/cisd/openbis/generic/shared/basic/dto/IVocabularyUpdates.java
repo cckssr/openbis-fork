@@ -34,4 +34,6 @@ public interface IVocabularyUpdates extends IIdHolder, ICodeHolder
     boolean isChosenFromList();
 
     Date getModificationDate();
+
+    boolean isManagedInternally();
 }

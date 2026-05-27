@@ -168,6 +168,7 @@ public class VocabularyTerm extends CodeWithRegistrationAndModificationDate<Voca
     }
 
     @JsonIgnore
+    @Override
     public Boolean isManagedInternally()
     {
         return managedInternally;

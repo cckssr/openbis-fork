@@ -51,6 +51,9 @@ public class ExperimentTypeUpdate implements IEntityTypeUpdate, IMetaDataUpdateH
     @JsonProperty
     private ListUpdateMapValues metaData = new ListUpdateMapValues();
 
+    @JsonProperty
+    private FieldUpdateValue<Boolean> managedInternally = new FieldUpdateValue<>();
+
     @Override
     @JsonIgnore
     public IEntityTypeId getObjectId()
@@ -112,6 +115,20 @@ public class ExperimentTypeUpdate implements IEntityTypeUpdate, IMetaDataUpdateH
     public ListUpdateMapValues getMetaData()
     {
         return metaData;
+    }
+
+    @Override
+    @JsonIgnore
+    public FieldUpdateValue<Boolean> getManagedInternally()
+    {
+        return managedInternally;
+    }
+
+    @Override
+    @JsonIgnore
+    public void setManagedInternally(boolean managedInternally)
+    {
+        this.managedInternally.setValue(managedInternally);
     }
 
     @Override
