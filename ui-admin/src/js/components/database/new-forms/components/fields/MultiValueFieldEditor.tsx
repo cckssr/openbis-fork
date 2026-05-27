@@ -82,7 +82,7 @@ const MultiValueFieldEditor: React.FC<MultiValueFieldEditorProps> = ({
             marginBottom: 0 }}
         >
           <Box sx={{
-            flex: 1, minWidth: 0,
+            flex: 1, minWidth: 0, fontSize: '0.875rem',
             ...(i > 0 && {
               '& .MuiFilledInput-root': { borderTopLeftRadius: 0, borderTopRightRadius: 0 },
               '& .SourceCodeField-editContainer': { borderTopLeftRadius: 0, borderTopRightRadius: 0 },
