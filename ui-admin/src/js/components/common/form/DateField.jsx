@@ -199,6 +199,7 @@ class DateField extends React.PureComponent {
         <FormFieldContainer error={error}>
           <div className={classes.container}>
             <DatePicker
+              sx={{ width: '100%' }}
               name={name}
               label={label}
               invalidDateMessage={null}

@@ -11,7 +11,9 @@ import date from '@src/js/common/date.js'
 
 const styles = (theme: any) => ({
   input: {
-    fontSize: theme.typography.body2.fontSize
+    fontSize: theme.typography.body2.fontSize,
+    marginTop: 0,
+    marginBottom: 0
   }
 })
 
@@ -87,7 +89,7 @@ const TextFieldRendererBase: React.FC<FieldRendererProps & { classes: any }> = (
             type={isNumeric ? 'number' : 'text'}
             value={formatInner(val)}
             onChange={(e) => onChange(e.target.value)}
-            margin="dense"
+            margin="none"
             slotProps={{
               htmlInput: { className: classes.input }
             }}

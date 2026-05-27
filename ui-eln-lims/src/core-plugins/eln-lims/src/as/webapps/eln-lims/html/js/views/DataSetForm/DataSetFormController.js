@@ -65,8 +65,13 @@ function DataSetFormController(parentController, mode, entity, dataSet, isMini, 
 									});
 							});
 						} else {
-							_this._dataSetFormView.repaint(views);
-							Util.unblockUI();
+							try {
+								_this._dataSetFormView.repaint(views);
+							} catch (e) {
+								console.error(e);
+							} finally {
+								Util.unblockUI();
+							}
 						}
 					});
 		});
