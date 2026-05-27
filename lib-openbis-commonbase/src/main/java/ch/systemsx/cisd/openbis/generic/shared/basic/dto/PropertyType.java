@@ -199,6 +199,7 @@ public class PropertyType extends Code<PropertyType> implements IPropertyTypeUpd
         this.experimentTypePropertyTypes = experimentTypePropertyTypes;
     }
 
+    @Override
     public final boolean isManagedInternally()
     {
         return managedInternally;

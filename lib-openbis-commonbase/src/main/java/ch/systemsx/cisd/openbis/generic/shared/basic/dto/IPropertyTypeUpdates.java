@@ -38,4 +38,6 @@ public interface IPropertyTypeUpdates extends IIdHolder, ICodeHolder
     String getTransformation();
 
     Date getModificationDate();
+
+    boolean isManagedInternally();
 }
