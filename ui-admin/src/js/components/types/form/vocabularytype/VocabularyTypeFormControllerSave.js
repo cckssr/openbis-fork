@@ -1,4 +1,5 @@
 import _ from 'lodash'
+import AppController from '@src/js/components/AppController.js'
 import PageControllerSave from '@src/js/components/common/page/PageControllerSave.js'
 import FormUtil from '@src/js/components/common/form/FormUtil.js'
 import openbis from '@src/js/services/openbis.js'
@@ -68,7 +69,8 @@ export default class VocabularyTypeFormControllerSave extends PageControllerSave
     return FormUtil.haveFieldsChanged(vocabulary, vocabulary.original, [
       'code',
       'description',
-      'urlTemplate'
+      'urlTemplate',
+      'internal'
     ])
   }
 
@@ -77,7 +79,8 @@ export default class VocabularyTypeFormControllerSave extends PageControllerSave
       'code',
       'label',
       'description',
-      'official'
+      'official',
+      'internal'
     ])
   }
 
@@ -96,6 +99,9 @@ export default class VocabularyTypeFormControllerSave extends PageControllerSave
     update.setVocabularyId(new openbis.VocabularyPermId(vocabulary.code.value))
     update.setDescription(vocabulary.description.value)
     update.setUrlTemplate(vocabulary.urlTemplate.value)
+    if(AppController.getInstance().isSystemUser()) {
+      update.setManagedInternally(vocabulary.internal.value)
+    }
     return new openbis.UpdateVocabulariesOperation([update])
   }
 
@@ -119,6 +125,9 @@ export default class VocabularyTypeFormControllerSave extends PageControllerSave
     update.setLabel(term.label.value)
     update.setDescription(term.description.value)
     update.setOfficial(term.official.value)
+    if(AppController.getInstance().isSystemUser()) {
+      update.setManagedInternally(term.internal.value)
+    }
     return new openbis.UpdateVocabularyTermsOperation([update])
   }
 

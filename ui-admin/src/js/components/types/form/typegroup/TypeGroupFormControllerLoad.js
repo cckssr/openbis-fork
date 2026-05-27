@@ -64,9 +64,7 @@ export default class TypeGroupFormControllerLoad extends PageControllerLoad {
       internal: FormUtil.createField({
         value: internal,
         visible: AppController.getInstance().isSystemUser(),
-        enabled:
-          loadedTypeGroup === null &&
-          AppController.getInstance().isSystemUser()
+        enabled: AppController.getInstance().isSystemUser()
       }),
       registrator: FormUtil.createField({
         value: registrator,
@@ -110,9 +108,7 @@ export default class TypeGroupFormControllerLoad extends PageControllerLoad {
       internal: FormUtil.createField({
         value: _.get(loadedTypeGroupAssignment, 'managedInternally', false),
         visible: AppController.getInstance().isSystemUser(),
-        enabled:
-          loadedTypeGroupAssignment === null &&
-          AppController.getInstance().isSystemUser()
+        enabled: AppController.getInstance().isSystemUser()
       }),
     }
     objectType.original = _.cloneDeep(objectType)

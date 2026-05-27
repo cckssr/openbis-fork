@@ -170,7 +170,7 @@ export default class EntityTypeFormControllerLoad extends PageControllerLoad {
       internal: FormUtil.createField({
         value: internal,
         visible: AppController.getInstance().isSystemUser(),
-        enabled: loadedType === null && AppController.getInstance().isSystemUser(),
+        enabled: AppController.getInstance().isSystemUser(),
       }),
       semanticAnnotations: FormUtil.createField({
         value: _.get(loadedType, 'semanticAnnotations', []),
@@ -240,12 +240,12 @@ export default class EntityTypeFormControllerLoad extends PageControllerLoad {
       internal: FormUtil.createField({
         value: propertyTypeInternal,
         visible: isSystemUser,
-        enabled: false
+        enabled: isSystemUser
       }),
       assignmentInternal: FormUtil.createField({
         value: assignmentInternal,
         visible: loadedAssignment && isSystemUser,
-        enabled: false
+        enabled: propertyTypeInternal && isSystemUser
       }),
       label: FormUtil.createField({
         value: _.get(propertyType, 'label', null),

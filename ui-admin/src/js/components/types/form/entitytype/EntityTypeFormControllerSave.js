@@ -1,4 +1,5 @@
 import _ from 'lodash'
+import AppController from '@src/js/components/AppController.js'
 import PageControllerSave from '@src/js/components/common/page/PageControllerSave.js'
 import EntityTypeFormControllerStrategies from '@src/js/components/types/form/entitytype/EntityTypeFormControllerStrategies.js'
 import FormUtil from '@src/js/components/common/form/FormUtil.js'
@@ -281,7 +282,8 @@ export default class EntityTypeFormControllerSave extends PageControllerSave {
       'label',
       'description',
       'schema',
-      'transformation'
+      'transformation',
+      'internal'
     ])
   }
 
@@ -348,6 +350,9 @@ export default class EntityTypeFormControllerSave extends PageControllerSave {
     update.setSchema(property.schema.value)
     update.setTransformation(property.transformation.value)
     update.convertToDataType(property.dataType.value)
+    if(AppController.getInstance().isSystemUser()) {
+      update.setManagedInternally(property.internal.value)
+    }
     return new openbis.UpdatePropertyTypesOperation([update])
   }
 
@@ -478,6 +483,9 @@ export default class EntityTypeFormControllerSave extends PageControllerSave {
         ? new openbis.PluginPermId(type.validationPlugin.value)
         : null
     )
+    if(AppController.getInstance().isSystemUser()) {
+      update.setManagedInternally(type.internal.value);
+    }
     update.getPropertyAssignments().set(assignments.reverse())
 
     if (FormUtil.haveFieldsChanged(type, type.original, ['metadata'])) {

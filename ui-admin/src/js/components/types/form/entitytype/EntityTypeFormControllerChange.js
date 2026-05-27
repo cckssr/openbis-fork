@@ -60,6 +60,7 @@ export default class EntityTypeFormControllerChange extends PageControllerChange
       this._handleChangePropertyCode(oldObject, newObject)
       this._handleChangePropertyDataType(oldObject, newObject)
       this._handleChangePropertyMandatory(oldObject, newObject)
+      this._handleChangePropertyInternal(oldObject, newObject)
 
       return {
         properties: newCollection
@@ -294,6 +295,21 @@ export default class EntityTypeFormControllerChange extends PageControllerChange
           }
         })
       }
+    }
+  }
+
+  _handleChangePropertyInternal(oldProperty, newProperty) {
+    const oldInternal = oldProperty.internal.value
+    const newInternal = newProperty.internal.value
+    if(oldInternal !== newInternal) {
+      const isSystemUser = AppController.getInstance().isSystemUser()
+      _.assign(newProperty, {
+        assignmentInternal: {
+          ...newProperty.assignmentInternal,
+          value: newInternal && newProperty.assignmentInternal.value && isSystemUser,
+          enabled: newInternal && isSystemUser
+        }
+      })
     }
   }
 

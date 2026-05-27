@@ -1,11 +1,13 @@
 import React from 'react'
 import autoBind from 'auto-bind'
 import withStyles from '@mui/styles/withStyles';
+import AppController from '@src/js/components/AppController.js'
 import ImportAllUpdateMode from '@src/js/components/tools/form/import/all/ImportAllUpdateMode.js'
 import Container from '@src/js/components/common/form/Container.jsx'
 import Header from '@src/js/components/common/form/Header.jsx'
 import SelectField from '@src/js/components/common/form/SelectField.jsx'
 import FileChooserField from '@src/js/components/common/form/FileChooserField.jsx'
+import Message from '@src/js/components/common/form/Message.jsx'
 import messages from '@src/js/common/messages.js'
 import logger from '@src/js/common/logger.js'
 
@@ -66,6 +68,7 @@ class ImportAllFormParameters extends React.PureComponent {
     return (
       <Container>
         {this.renderHeader()}
+        {this.renderNonSystemUserImportMessage()}
         {this.renderFileChooser()}
         {this.renderUpdateMode()}
       </Container>
@@ -74,6 +77,25 @@ class ImportAllFormParameters extends React.PureComponent {
 
   renderHeader() {
     return <Header>{messages.get(messages.IMPORT)}</Header>
+  }
+
+  renderNonSystemUserImportMessage() {
+
+    if (!AppController.getInstance().isSystemUser()) {
+
+      const { classes } = this.props
+
+      return (
+          <div className={classes.field}>
+            <Message type='info'>
+              {messages.get(messages.NON_SYSTEM_IMPORT)}
+            </Message>
+          </div>
+      )
+    } else {
+      return null;
+    }
+
   }
 
   renderFileChooser() {
