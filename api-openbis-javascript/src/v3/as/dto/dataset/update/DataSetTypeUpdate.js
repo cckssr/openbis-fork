@@ -7,6 +7,7 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue", "as/dto/entitytype/upd
 		this.mainDataSetPath = new FieldUpdateValue();
 		this.disallowDeletion = new FieldUpdateValue();
 		this.validationPluginId = new FieldUpdateValue();
+		this.managedInternally = new FieldUpdateValue();
 		this.propertyAssignments = new PropertyAssignmentListUpdateValue();
 		this.metaData = new ListUpdateMapValues();
 	};
@@ -20,6 +21,7 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue", "as/dto/entitytype/upd
 		prototype.disallowDeletion = null;
 		prototype.validationPluginId = null;
 		prototype.propertyAssignments = null;
+		prototype.managedInternally = null;
 		prototype.metaData = null;
 
 		prototype.getObjectId = function() {
@@ -61,6 +63,12 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue", "as/dto/entitytype/upd
 		prototype.getValidationPluginId = function() {
 			return this.validationPluginId;
 		};
+		prototype.setManagedInternally = function(managedInternally) {
+			this.managedInternally.setValue(managedInternally);
+		};
+		prototype.getManagedInternally = function() {
+			return this.managedInternally;
+		};
 		prototype.getPropertyAssignments = function() {
 			return this.propertyAssignments;
 		};
@@ -82,6 +90,10 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue", "as/dto/entitytype/upd
 			arguments : [ "String" ]
 		},
 		disallowDeletion : {
+			name : "FieldUpdateValue",
+			arguments : [ "Boolean" ]
+		},
+		managedInternally : {
 			name : "FieldUpdateValue",
 			arguments : [ "Boolean" ]
 		},

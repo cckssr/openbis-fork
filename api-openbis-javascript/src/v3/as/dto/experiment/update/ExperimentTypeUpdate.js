@@ -4,6 +4,7 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue",
 	var ExperimentTypeUpdate = function() {
 		this.description = new FieldUpdateValue();
 		this.validationPluginId = new FieldUpdateValue();
+		this.managedInternally = new FieldUpdateValue();
 		this.propertyAssignments = new PropertyAssignmentListUpdateValue();
 		this.metaData = new ListUpdateMapValues();
 	};
@@ -14,6 +15,7 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue",
 		prototype.description = null;
 		prototype.validationPluginId = null;
 		prototype.propertyAssignments = null;
+		prototype.managedInternally = null;
 		prototype.metaData = null;
 
 		prototype.getObjectId = function() {
@@ -37,6 +39,12 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue",
 		prototype.getValidationPluginId = function() {
 			return this.validationPluginId;
 		};
+		prototype.setManagedInternally = function(managedInternally) {
+			this.managedInternally.setValue(managedInternally);
+		};
+		prototype.getManagedInternally = function() {
+			return this.managedInternally;
+		};
 		prototype.getPropertyAssignments = function() {
 			return this.propertyAssignments;
 		};
@@ -52,6 +60,10 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue",
 		validationPluginId : {
 			name : "FieldUpdateValue",
 			arguments : [ "IPluginId" ]
+		},
+		managedInternally : {
+			name : "FieldUpdateValue",
+			arguments : [ "Boolean" ]
 		},
 		propertyAssignments : "PropertyAssignmentListUpdateValue",
 		metaData : "ListUpdateMapValues"

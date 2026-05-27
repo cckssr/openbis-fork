@@ -52,7 +52,7 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue" ], function(stjs, Field
 		prototype.setOfficial = function(official) {
 			this.official.setValue(official);
 		};
-		prototype.isManagedInternally = function() {
+		prototype.getManagedInternally = function() {
             return this.managedInternally;
         };
         prototype.setManagedInternally = function(managedInternally) {
