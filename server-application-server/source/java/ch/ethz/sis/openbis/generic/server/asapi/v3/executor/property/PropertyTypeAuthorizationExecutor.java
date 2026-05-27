@@ -15,6 +15,7 @@
  */
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.property;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.update.PropertyTypeUpdate;
 import org.springframework.stereotype.Component;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.IPropertyTypeId;
@@ -57,9 +58,9 @@ public class PropertyTypeAuthorizationExecutor implements IPropertyTypeAuthoriza
     @Override
     @RolesAllowed(RoleWithHierarchy.INSTANCE_ADMIN)
     @Capability("UPDATE_PROPERTY_TYPE")
-    public void canUpdate(IOperationContext context, IPropertyTypeId id, PropertyTypePE entity)
+    public void canUpdate(IOperationContext context, IPropertyTypeId id, PropertyTypePE entity, PropertyTypeUpdate update)
     {
-        new InternalPropertyTypeAuthorization().canUpdatePropertyType(context.getSession(), entity);
+        new InternalPropertyTypeAuthorization().canUpdatePropertyType(context.getSession(), entity, update);
     }
 
     @Override

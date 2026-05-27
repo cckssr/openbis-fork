@@ -15,11 +15,13 @@
  */
 package ch.systemsx.cisd.openbis.generic.server.business.bo;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.update.VocabularyUpdate;
 import ch.systemsx.cisd.common.exceptions.AuthorizationFailureException;
-import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.Session;
-import ch.systemsx.cisd.openbis.generic.shared.dto.VocabularyPE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.VocabularyTermPE;
+import ch.systemsx.cisd.common.exceptions.UserFailureException;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IVocabularyTermUpdates;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IVocabularyUpdates;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.UpdatedVocabularyTerm;
+import ch.systemsx.cisd.openbis.generic.shared.dto.*;
 
 public class InternalVocabularyAuthorization
 {
@@ -29,9 +31,38 @@ public class InternalVocabularyAuthorization
         checkVocabulary(session, vocabulary);
     }
 
-    public void canUpdateVocabulary(Session session, VocabularyPE vocabulary)
+    public void canUpdateVocabulary(Session session, VocabularyPE vocabulary, VocabularyUpdate update)
     {
         checkVocabulary(session, vocabulary);
+        if(isSystemUser(session) == false)
+        {
+            if ((!vocabulary.isManagedInternally() && update.getManagedInternally().isModified() &&
+                    update.getManagedInternally().getValue() == true) ||
+                (vocabulary.isManagedInternally() && update.getManagedInternally().isModified() &&
+                        update.getManagedInternally().getValue() == false))
+            {
+                throw new AuthorizationFailureException(
+                        "Vocabulary internal flag can be modified only by the system user.");
+            }
+        }
+    }
+
+    public void canUpdateVocabulary(Session session, VocabularyPE vocabulary, IVocabularyUpdates update)
+    {
+        checkVocabulary(session, vocabulary);
+        if(((!vocabulary.isManagedInternally() && update.isManagedInternally()) || (vocabulary.isManagedInternally() && !update.isManagedInternally()))
+                && isSystemUser(session) == false) {
+            throw new AuthorizationFailureException("Vocabulary internal flag can be modified only by the system user.");
+        }
+    }
+
+    public void canUpdateVocabulary(Session session, VocabularyPE vocabulary, VocabularyUpdatesDTO update)
+    {
+        checkVocabulary(session, vocabulary);
+        if(((!vocabulary.isManagedInternally() && update.isManagedInternally()) || (vocabulary.isManagedInternally() && !update.isManagedInternally()))
+                && isSystemUser(session) == false) {
+            throw new AuthorizationFailureException("Vocabulary internal flag can be modified only by the system user.");
+        }
     }
 
     public void canDeleteVocabulary(Session session, VocabularyPE vocabulary)
@@ -44,9 +75,33 @@ public class InternalVocabularyAuthorization
         // do not check anything - allow new terms to be created even in internally managed vocabularies
     }
 
-    public void canUpdateTerm(Session session, VocabularyPE vocabulary, VocabularyTermPE term)
+    public void canUpdateTermToOfficial(Session session, VocabularyPE vocabulary, VocabularyTermPE term)
     {
         checkTerm(session, vocabulary, term);
+    }
+
+    public void canUpdateTerm(Session session, VocabularyPE vocabulary, VocabularyTermPE term, IVocabularyTermUpdates updates)
+    {
+        checkTerm(session, vocabulary, term);
+        if(((!term.isManagedInternally() && updates.isManagedInternally()) || (term.isManagedInternally() && !updates.isManagedInternally()))
+                && isSystemUser(session) == false) {
+            throw new AuthorizationFailureException("Vocabulary Term internal flag can only be modified by the system user.");
+        }
+        if(!vocabulary.isManagedInternally() &&  updates.isManagedInternally()) {
+            throw new UserFailureException("Only internal vocabularies can have internal terms.");
+        }
+    }
+
+    public void canUpdateTerm(Session session, VocabularyPE vocabulary, VocabularyTermPE term, UpdatedVocabularyTerm updates)
+    {
+        checkTerm(session, vocabulary, term);
+        if(((!term.isManagedInternally() && updates.isManagedInternally()) || (term.isManagedInternally() && !updates.isManagedInternally()))
+                && isSystemUser(session) == false) {
+            throw new AuthorizationFailureException("Vocabulary Term internal flag can only be modified by the system user.");
+        }
+        if(!vocabulary.isManagedInternally() &&  updates.isManagedInternally()) {
+            throw new UserFailureException("Only internal vocabularies can have internal terms.");
+        }
     }
 
     public void canDeleteTerm(Session session, VocabularyPE vocabulary, VocabularyTermPE term)

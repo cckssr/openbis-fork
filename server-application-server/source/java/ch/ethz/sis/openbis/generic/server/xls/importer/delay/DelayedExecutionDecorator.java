@@ -904,6 +904,11 @@ public class DelayedExecutionDecorator
         return v3.getSampleTypes(this.sessionToken, List.of(sampleTypeId), fetchOptions).getOrDefault(sampleTypeId, null);
     }
 
+    public Map<IEntityTypeId, SampleType> getSampleTypes(List<IEntityTypeId> sampleTypeIds, SampleTypeFetchOptions fetchOptions)
+    {
+        return v3.getSampleTypes(this.sessionToken, sampleTypeIds, fetchOptions);
+    }
+
     public void createSampleType(SampleTypeCreation sampleTypeCreation, int page, int line)
     {
         if (!safe(sampleTypeCreation.getPropertyAssignments()).isEmpty())
@@ -1266,6 +1271,14 @@ public class DelayedExecutionDecorator
         return v3.getTypeGroupAssignments(this.sessionToken, List.of(typeGroupAssignmentId), fetchOptions).getOrDefault(typeGroupAssignmentId, null);
     }
 
+    public List<TypeGroupAssignment> getTypeGroupAssignments(String typeGroupId, TypeGroupAssignmentFetchOptions fetchOptions)
+    {
+        TypeGroupAssignmentSearchCriteria searchCriteria = new TypeGroupAssignmentSearchCriteria();
+        searchCriteria.withTypeGroup().withCode().thatEquals(typeGroupId);
+        SearchResult<TypeGroupAssignment> assignments = v3.searchTypeGroupAssignments(this.sessionToken, searchCriteria, fetchOptions);
+        return assignments.getObjects();
+    }
+
     public List<TypeGroupAssignment> getTypeGroupAssignmentsForSampleType(String sampleTypeId, TypeGroupAssignmentFetchOptions fetchOptions)
     {
         TypeGroupAssignmentSearchCriteria criteria = new TypeGroupAssignmentSearchCriteria();
@@ -1283,13 +1296,13 @@ public class DelayedExecutionDecorator
 
     public void createTypeGroupAssignments(List<TypeGroupAssignmentCreation> creations, int page, int line)
     {
-        Map<ITypeGroupId, TypeGroupAssignmentCreation> creationMap = creations.stream()
-                .collect(Collectors.toMap(TypeGroupAssignmentCreation::getTypeGroupId, x -> x));
-        Map<ITypeGroupId, TypeGroup> existingTypeGroups = getTypeGroups(
-                new ArrayList<>(creationMap.keySet()), new TypeGroupFetchOptions());
+        Map<IEntityTypeId, TypeGroupAssignmentCreation> creationMap = creations.stream()
+                .collect(Collectors.toMap(TypeGroupAssignmentCreation::getSampleTypeId, x -> x));
+        Map<IEntityTypeId, SampleType> existingSampleTypes = getSampleTypes(
+                new ArrayList<>(creationMap.keySet()), new SampleTypeFetchOptions());
         List<TypeGroupAssignmentCreation> readyCreations = new ArrayList<>();
-        for(Map.Entry<ITypeGroupId, TypeGroupAssignmentCreation> entry : creationMap.entrySet()) {
-            if(!existingTypeGroups.containsKey(entry.getKey()))
+        for(Map.Entry<IEntityTypeId, TypeGroupAssignmentCreation> entry : creationMap.entrySet()) {
+            if(!existingSampleTypes.containsKey(entry.getKey()))
             {
                 DelayedExecution delayedExecution = new DelayedExecution(null, entry.getKey(),
                         entry.getValue(), page, line);
@@ -1304,8 +1317,6 @@ public class DelayedExecutionDecorator
         {
             v3.createTypeGroupAssignments(this.sessionToken, readyCreations);
         }
-
-
 
     }
 

@@ -90,10 +90,6 @@ public class CreateDataSetTypesExecutor extends AbstractCreateEntityTypeExecutor
         dataStoreServiceRegistrator.register(type);
     }
 
-    @Override
-    protected void checkAccess(IOperationContext context)
-    {
-    }
 
     @Override
     protected void checkAccessTypeSpecific(IOperationContext context, DataSetTypePE entityType)

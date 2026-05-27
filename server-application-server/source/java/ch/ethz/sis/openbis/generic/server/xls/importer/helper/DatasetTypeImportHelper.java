@@ -110,17 +110,7 @@ public class DatasetTypeImportHelper extends BasicImportHelper
 
     @Override
     protected void validateLine(Map<String, Integer> header, List<String> values) {
-        String code = getValueByColumnName(header, values, Attribute.Code);
-        String internal = getValueByColumnName(header, values, Attribute.Internal);
 
-        if(!delayedExecutor.isSystem() && ImportUtils.isTrue(internal))
-        {
-            DataSetType
-                    dt = delayedExecutor.getDataSetType(new EntityTypePermId(code), new DataSetTypeFetchOptions());
-            if(dt == null) {
-                throw new UserFailureException("Non-system user can not create new internal entity types!");
-            }
-        }
     }
 
     @Override protected boolean isNewVersion(Map<String, Integer> header, List<String> values)
@@ -198,8 +188,10 @@ public class DatasetTypeImportHelper extends BasicImportHelper
         creation.setDescription(description);
 
         creation.setValidationPluginId(ImportUtils.getScriptId(validationScript, null));
-
-        creation.setManagedInternally(ImportUtils.isTrue(internal));
+        if(delayedExecutor.isSystem())
+        {
+            creation.setManagedInternally(ImportUtils.isTrue(internal));
+        }
         if (metaData != null && !metaData.isEmpty()) {
             creation.setMetaData(JSONHandler.parseMetaData(metaData));
         }
@@ -213,6 +205,7 @@ public class DatasetTypeImportHelper extends BasicImportHelper
         String description = getValueByColumnName(header, values, Attribute.Description);
         String validationScript = getValueByColumnName(header, values, Attribute.ValidationScript);
         String metaData = getValueByColumnName(header, values, Attribute.Metadata);
+        String internal = getValueByColumnName(header, values, Attribute.Internal);
 
         DataSetTypeUpdate update = new DataSetTypeUpdate();
         EntityTypePermId permId = new EntityTypePermId(code, EntityKind.DATA_SET);
@@ -225,6 +218,11 @@ public class DatasetTypeImportHelper extends BasicImportHelper
             permId = new EntityTypePermId(code, EntityKind.DATA_SET);
         }
         update.setTypeId(permId);
+
+        if(delayedExecutor.isSystem() && internal != null && !internal.isEmpty()) {
+            update.setManagedInternally(ImportUtils.isTrue(internal));
+        }
+
         if (description != null)
         {
             if (description.equals("--DELETE--") || description.equals("__DELETE__"))

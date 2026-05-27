@@ -176,12 +176,13 @@ public final class PropertyTypeBO extends VocabularyBO implements IPropertyTypeB
             throwModifiedEntityException("Property type");
         }
 
-        new InternalPropertyTypeAuthorization().canUpdatePropertyType(session, propertyTypePE);
+        new InternalPropertyTypeAuthorization().canUpdatePropertyType(session, propertyTypePE, updates);
 
         propertyTypePE.setDescription(updates.getDescription());
         propertyTypePE.setLabel(updates.getLabel());
         propertyTypePE.setSchema(updates.getSchema());
         propertyTypePE.setTransformation(updates.getTransformation());
+        propertyTypePE.setManagedInternally(updates.isManagedInternally());
 
         validateAndSave();
     }

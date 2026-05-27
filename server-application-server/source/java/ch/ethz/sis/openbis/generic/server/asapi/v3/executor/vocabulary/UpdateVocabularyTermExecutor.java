@@ -62,24 +62,14 @@ public class UpdateVocabularyTermExecutor implements IUpdateVocabularyTermExecut
     @Override
     public List<VocabularyTermPermId> update(IOperationContext context, List<VocabularyTermUpdate> updates)
     {
-        authorizationExecutor.canUpdate(context);
-
         checkData(context, updates);
 
         final Map<IVocabularyTermId, VocabularyTermPE> terms = getTermsMap(context, updates);
         final Map<IVocabularyTermId, VocabularyTermPE> previousTerms = getPreviousTermsMap(context, updates);
 
-        for (final VocabularyTermUpdate update : updates)
-        {
-            final VocabularyTermPE newTermPE = terms.get(update.getVocabularyTermId());
-            final VocabularyTermPE prevTermPE = previousTerms.get(update.getVocabularyTermId());
-
-            if(prevTermPE != null && ((newTermPE.isManagedInternally() && !prevTermPE.isManagedInternally())
-                    || (!newTermPE.isManagedInternally() && prevTermPE.isManagedInternally())))
-            {
-                throw new UserFailureException(
-                    "Internal management of vocabulary terms can not be changed.");
-            }
+        for (final VocabularyTermUpdate update : updates) {
+            final VocabularyTermPE termPE = terms.get(update.getVocabularyTermId());
+            authorizationExecutor.canUpdate(context, termPE, update);
         }
 
         IVocabularyTermBO termBO = businessObjectFactory.createVocabularyTermBO(context.getSession());
@@ -91,7 +81,7 @@ public class UpdateVocabularyTermExecutor implements IUpdateVocabularyTermExecut
 
             permIds.add(new VocabularyTermPermId(termPE.getCode(), termPE.getVocabulary().getCode()));
 
-            if (update.getDescription().isModified() || update.getLabel().isModified() || update.getPreviousTermId().isModified())
+            if (update.getDescription().isModified() || update.getLabel().isModified() || update.getPreviousTermId().isModified() || update.getManagedInternally().isModified())
             {
                 termBO.update(new IVocabularyTermUpdates()
                     {
@@ -160,6 +150,12 @@ public class UpdateVocabularyTermExecutor implements IUpdateVocabularyTermExecut
                         public Date getModificationDate()
                         {
                             return termPE.getModificationDate();
+                        }
+
+                        @Override
+                        public Boolean isManagedInternally()
+                        {
+                            return update.getManagedInternally().isModified() ? update.getManagedInternally().getValue() : termPE.isManagedInternally();
                         }
 
                     });

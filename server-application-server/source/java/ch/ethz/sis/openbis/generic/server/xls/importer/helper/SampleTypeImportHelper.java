@@ -59,7 +59,7 @@ public class SampleTypeImportHelper extends BasicImportHelper
         OntologyId("Ontology Id", false, false),
         OntologyVersion("Ontology Version", false, false),
         OntologyAnnotationId("Ontology Annotation Id", false, false),
-        TypeGroup("Type Group", false, false),
+        TypeGroups("Type Groups", false, false),
         Metadata("Meta Data", false, false),
         Internal("Internal", false, false);
 
@@ -118,17 +118,7 @@ public class SampleTypeImportHelper extends BasicImportHelper
 
     @Override
     protected void validateLine(Map<String, Integer> header, List<String> values) {
-        String code = getValueByColumnName(header, values, Attribute.Code);
-        String internal = getValueByColumnName(header, values, Attribute.Internal);
 
-        if(!delayedExecutor.isSystem() && ImportUtils.isTrue(internal))
-        {
-            SampleType
-                    st = delayedExecutor.getSampleType(new EntityTypePermId(code), new SampleTypeFetchOptions());
-            if(st == null) {
-                throw new UserFailureException("Non-system user can not create new internal entity types!");
-            }
-        }
     }
 
     @Override protected boolean isNewVersion(Map<String, Integer> header, List<String> values)
@@ -212,14 +202,17 @@ public class SampleTypeImportHelper extends BasicImportHelper
         {
             creation.setGeneratedCodePrefix(generatedCodePrefix);
         }
-        creation.setManagedInternally(ImportUtils.isTrue(internal));
+        if(delayedExecutor.isSystem())
+        {
+            creation.setManagedInternally(ImportUtils.isTrue(internal));
+        }
         if (metaData != null && !metaData.isEmpty()) {
             creation.setMetaData(JSONHandler.parseMetaData(metaData));
         }
 
         delayedExecutor.createSampleType(creation, page, line);
 
-        String[] typeGroups = getMultiValueByColumnName(header, values, Attribute.TypeGroup, "\n");
+        String[] typeGroups = getMultiValueByColumnName(header, values, Attribute.TypeGroups, "\n");
         if(typeGroups != null) {
             List<TypeGroupAssignmentCreation> typeGroupAssignmentCreations = new ArrayList<>();
             for(String typeGroup : typeGroups)
@@ -227,8 +220,7 @@ public class SampleTypeImportHelper extends BasicImportHelper
                 TypeGroupAssignmentCreation assignmentCreation = new TypeGroupAssignmentCreation();
                 assignmentCreation.setSampleTypeId(new EntityTypePermId(code, EntityKind.SAMPLE));
                 assignmentCreation.setTypeGroupId(new TypeGroupId(typeGroup));
-                //TODO how to handle internal type group assignments
-//                assignmentCreation.setManagedInternally(false);
+                assignmentCreation.setManagedInternally(false);
                 typeGroupAssignmentCreations.add(assignmentCreation);
             }
             delayedExecutor.createTypeGroupAssignments(typeGroupAssignmentCreations, page, line);
@@ -243,6 +235,7 @@ public class SampleTypeImportHelper extends BasicImportHelper
         String autoGenerateCodes = getValueByColumnName(header, values, Attribute.AutoGenerateCodes);
         String generatedCodePrefix = getValueByColumnName(header, values, Attribute.GeneratedCodePrefix);
         String metaData = getValueByColumnName(header, values, Attribute.Metadata);
+        String internal = getValueByColumnName(header, values, Attribute.Internal);
 
         SampleTypeUpdate update = new SampleTypeUpdate();
         EntityTypePermId permId = new EntityTypePermId(code, EntityKind.SAMPLE);
@@ -252,6 +245,10 @@ public class SampleTypeImportHelper extends BasicImportHelper
         if(annotation != null) {
             code = annotation.getEntityType().getCode();
             permId = new EntityTypePermId(code, EntityKind.SAMPLE);
+        }
+
+        if(delayedExecutor.isSystem() && internal != null && !internal.isEmpty()) {
+            update.setManagedInternally(ImportUtils.isTrue(internal));
         }
 
         update.setTypeId(permId);
@@ -283,7 +280,7 @@ public class SampleTypeImportHelper extends BasicImportHelper
 
         delayedExecutor.updateSampleType(update, page, line);
 
-        String[] typeGroups = getMultiValueByColumnName(header, values, Attribute.TypeGroup, "\n");
+        String[] typeGroups = getMultiValueByColumnName(header, values, Attribute.TypeGroups, "\n");
         if(typeGroups != null) {
             TypeGroupAssignmentFetchOptions fetchOptions = new TypeGroupAssignmentFetchOptions();
             fetchOptions.withTypeGroup();
@@ -316,6 +313,7 @@ public class SampleTypeImportHelper extends BasicImportHelper
                     TypeGroupAssignmentCreation assignmentCreation = new TypeGroupAssignmentCreation();
                     assignmentCreation.setSampleTypeId(new EntityTypePermId(code, EntityKind.SAMPLE));
                     assignmentCreation.setTypeGroupId(new TypeGroupId(typeGroup));
+                    assignmentCreation.setManagedInternally(false);
                     typeGroupAssignmentCreations.add(assignmentCreation);
                 }
             }
@@ -324,6 +322,7 @@ public class SampleTypeImportHelper extends BasicImportHelper
                 delayedExecutor.createTypeGroupAssignments(typeGroupAssignmentCreations, page, line);
             }
         }
+
     }
 
     @Override protected void validateHeader(Map<String, Integer> header)

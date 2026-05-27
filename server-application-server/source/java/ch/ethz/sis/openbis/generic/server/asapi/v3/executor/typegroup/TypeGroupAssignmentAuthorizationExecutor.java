@@ -19,10 +19,13 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.typegroup;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.ITypeGroupAssignmentId;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
+import ch.systemsx.cisd.common.exceptions.AuthorizationFailureException;
 import ch.systemsx.cisd.openbis.generic.server.authorization.annotation.Capability;
 import ch.systemsx.cisd.openbis.generic.server.authorization.annotation.RolesAllowed;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.RoleWithHierarchy;
+import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SampleTypeTypeGroupsPE;
+import ch.systemsx.cisd.openbis.generic.shared.dto.Session;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -33,7 +36,15 @@ public class TypeGroupAssignmentAuthorizationExecutor implements ITypeGroupAssig
     @Capability("CREATE_TYPE_GROUP_ASSIGNMENT")
     public void canCreate(IOperationContext context, SampleTypeTypeGroupsPE typeGroupAssignment)
     {
-
+        if (!isSystemUser(context.getSession()))
+        {
+            boolean internalTypeGroup = typeGroupAssignment.getTypeGroup().isManagedInternally();
+            boolean internalSampleType = typeGroupAssignment.getSampleType().isManagedInternally();
+            if(typeGroupAssignment.isManagedInternally() && !(internalTypeGroup && internalSampleType) ) {
+                throw new AuthorizationFailureException(
+                        "Internal type group assignments can be managed only by the system user.");
+            }
+        }
     }
 
     @Override
@@ -42,7 +53,10 @@ public class TypeGroupAssignmentAuthorizationExecutor implements ITypeGroupAssig
     public void canDelete(IOperationContext context, ITypeGroupAssignmentId id,
             SampleTypeTypeGroupsPE typeGroupAssignment)
     {
-
+        if(typeGroupAssignment.isManagedInternally() && isSystemUser(context.getSession()) == false)
+        {
+            throw new AuthorizationFailureException("Internal type group assignments can be managed only by the system user.");
+        }
     }
 
     @Override
@@ -59,5 +73,19 @@ public class TypeGroupAssignmentAuthorizationExecutor implements ITypeGroupAssig
     public void canSearch(IOperationContext context)
     {
 
+    }
+
+    private boolean isSystemUser(Session session)
+    {
+        PersonPE user = session.tryGetPerson();
+
+        if (user == null)
+        {
+            throw new AuthorizationFailureException(
+                    "Could not check access because the current session does not have any user assigned.");
+        } else
+        {
+            return user.isSystemUser();
+        }
     }
 }

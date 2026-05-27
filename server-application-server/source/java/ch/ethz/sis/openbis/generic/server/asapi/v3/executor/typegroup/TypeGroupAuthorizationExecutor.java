@@ -39,7 +39,6 @@ public class TypeGroupAuthorizationExecutor implements ITypeGroupAuthorizationEx
     @Override
     @RolesAllowed(RoleWithHierarchy.INSTANCE_ADMIN)
     @Capability("CREATE_TYPE_GROUP")
-//    @DatabaseCreateOrDeleteModification(value = DatabaseModificationKind.ObjectKind.TYPE_GROUP)
     public void canCreate(IOperationContext context, TypeGroupPE typeGroup)
     {
         if (typeGroup.isManagedInternally() && isSystemUser(context.getSession()) == false)
@@ -55,30 +54,43 @@ public class TypeGroupAuthorizationExecutor implements ITypeGroupAuthorizationEx
     @Capability("UPDATE_TYPE_GROUP")
     public void canUpdate(IOperationContext context, TypeGroupUpdate update, TypeGroupPE typeGroup)
     {
-        if (typeGroup.isManagedInternally() && isSystemUser(context.getSession()) == false)
+        if(isSystemUser(context.getSession()) == false)
         {
-            boolean isModified =
-                    isFieldUpdated(update.getCode(), typeGroup.getCode());
-
-            if (!isModified && update.getMetaData() != null && update.getMetaData().hasActions())
+            if (typeGroup.isManagedInternally())
             {
-                if (!update.getMetaData().getRemoved().isEmpty() || !update.getMetaData().getAdded()
-                        .isEmpty())
+                boolean isModified =
+                        isFieldUpdated(update.getCode(), typeGroup.getCode());
+
+                if (!isModified && update.getMetaData() != null && update.getMetaData()
+                        .hasActions())
                 {
-                    isModified = true;
-                } else
-                {
-                    for (Map<String, String> m : update.getMetaData().getSet())
+                    if (!update.getMetaData().getRemoved().isEmpty() || !update.getMetaData()
+                            .getAdded()
+                            .isEmpty())
                     {
-                        isModified = isModified || !m.equals(typeGroup.getMetaData());
+                        isModified = true;
+                    } else
+                    {
+                        for (Map<String, String> m : update.getMetaData().getSet())
+                        {
+                            isModified = isModified || !m.equals(typeGroup.getMetaData());
+                        }
                     }
                 }
-            }
 
-            if (isModified)
+                if(!isModified && update.getManagedInternally().isModified() && update.getManagedInternally().getValue() == false) {
+                    isModified = true;
+                }
+
+                if (isModified)
+                {
+                    throw new AuthorizationFailureException(
+                            "Internal type group fields can be managed only by the system user.");
+                }
+            } else if (update.getManagedInternally().isModified() && update.getManagedInternally().getValue() == true)
             {
                 throw new AuthorizationFailureException(
-                        "Internal type group fields can be managed only by the system user.");
+                        "Type Group can be made internal only by the system user.");
             }
         }
     }

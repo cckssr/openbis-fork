@@ -16,6 +16,7 @@
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.property;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.IPropertyTypeId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.update.PropertyTypeUpdate;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.IObjectAuthorizationExecutor;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PropertyTypePE;
@@ -32,7 +33,7 @@ public interface IPropertyTypeAuthorizationExecutor extends IObjectAuthorization
 
     void canCreate(IOperationContext context, PropertyTypePE entity);
 
-    void canUpdate(IOperationContext context, IPropertyTypeId id, PropertyTypePE entity);
+    void canUpdate(IOperationContext context, IPropertyTypeId id, PropertyTypePE entity, PropertyTypeUpdate update);
 
     void canDelete(IOperationContext context, IPropertyTypeId entityId, PropertyTypePE entity);
 

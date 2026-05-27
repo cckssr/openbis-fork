@@ -94,16 +94,7 @@ public class VocabularyImportHelper extends BasicImportHelper
 
     @Override
     protected void validateLine(Map<String, Integer> header, List<String> values) {
-        String code = getValueByColumnName(header, values, Attribute.Code);
-        String internal = getValueByColumnName(header, values, Attribute.Internal);
 
-        if(!delayedExecutor.isSystem() && ImportUtils.isTrue(internal))
-        {
-            Vocabulary vocabulary = delayedExecutor.getVocabulary(new VocabularyPermId(code), new VocabularyFetchOptions());
-            if(vocabulary == null) {
-                throw new UserFailureException("Non-system user can not create new internal vocabularies!");
-            }
-        }
     }
 
     @Override
@@ -150,7 +141,10 @@ public class VocabularyImportHelper extends BasicImportHelper
 
         VocabularyCreation create = new VocabularyCreation();
         create.setCode(code);
-        create.setManagedInternally(ImportUtils.isTrue(internal));
+        if(delayedExecutor.isSystem())
+        {
+            create.setManagedInternally(ImportUtils.isTrue(internal));
+        }
         create.setDescription(description);
         delayedExecutor.createVocabulary(create);
     }
@@ -160,6 +154,7 @@ public class VocabularyImportHelper extends BasicImportHelper
     {
         String code = getValueByColumnName(header, values, Attribute.Code);
         String description = getValueByColumnName(header, values, Attribute.Description);
+        String internal = getValueByColumnName(header, values, Attribute.Internal);
 
         VocabularyPermId vocabularyPermId = new VocabularyPermId(code);
 
@@ -175,6 +170,10 @@ public class VocabularyImportHelper extends BasicImportHelper
                 update.setDescription(description);
             }
         }
+        if(delayedExecutor.isSystem() && internal != null && !internal.isEmpty()) {
+            update.setManagedInternally(ImportUtils.isTrue(internal));
+        }
+
         delayedExecutor.updateVocabulary(update);
     }
 
