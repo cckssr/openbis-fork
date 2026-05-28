@@ -735,10 +735,10 @@ class OpenbisController(_Controller):
             util.executeCommand([self.bisUpScript],
                                 "Starting up openBIS AS '%s' failed." % self.instanceName)
         self.dssUp()
-        self.afsUp()
+        # self.afsUp()
 
     def stop(self):
-        self.allDownNew()
+        self.allDown()
 
     def allDown(self):
         """ Shuts down AS and DSS. """
