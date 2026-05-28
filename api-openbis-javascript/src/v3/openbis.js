@@ -527,8 +527,10 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 		this.isAvailable = async function(){
 			try{
 				await getAfsServer()
+				console.log("AFS server is available")
 				return true
-			}catch(e){
+			} catch(e) {
+				console.log("AFS server is NOT available")
 				return false
 			}
 		}
