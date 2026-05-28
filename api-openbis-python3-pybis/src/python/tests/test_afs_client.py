@@ -16,7 +16,7 @@ def test_afs_client(afs):
     # assert client.is_session_valid()
 
     if client.is_session_valid():
-        print("AFS IS AVAILABLE")
+        print("[TEST] AFS IS AVAILABLE")
 
         o = space.openbis
 
@@ -45,7 +45,7 @@ def test_afs_client(afs):
                     assert filecmp.cmp(os.path.join(base_file, file.path[1:]), os.path.join(tmpdirname, file.path[1:]))
 
     else:
-        print("AFS IS NOT AVAILABLE - TEST SKIPPED")
+        print("[TEST] AFS IS NOT AVAILABLE - TEST SKIPPED")
 
 
 

@@ -24,6 +24,10 @@ admin_username = "admin"
 admin_password = "admin"
 
 
+
+print(f'[TEST] Configured OpenBIS url for tests is: {openbis_url}')
+
+
 @pytest.fixture(scope="module")
 def openbis_instance():
     instance = Openbis(
@@ -80,6 +84,7 @@ def afs(space):
     data_store = data_stores[data_stores["code"] == "AFS"]
 
     afs_url = data_store["downloadUrl"][0] + "/api" if not data_store.empty else None
+    print(f'[TEST] Configured OpenBIS AFS url is: {afs_url}')
     afs_client = AfsClient(afs_url, token, False)
 
     yield (space, afs_client)
