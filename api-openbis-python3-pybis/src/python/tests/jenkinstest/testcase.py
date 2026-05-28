@@ -732,15 +732,36 @@ class OpenbisController(_Controller):
         """ Starts up AS and DSS if not running. """
         if not util.isAlive("%s/servers/openBIS-server/jetty/openbis.pid" % self.installPath):
             self._saveAsPropertiesIfModified()
+            util.executeCommand([self.bisUpScript],
+                                "Starting up openBIS AS '%s' failed." % self.instanceName)
+        self.dssUp()
+        # self.afsUp()
+
+    def stop(self):
+        self.allDown()
+
+    def allDown(self):
+        """ Shuts down AS and DSS. """
+        self.testCase._removeFromRunningInstances(self)
+        # util.executeCommand([self.afsDownScript],
+        #                     "Shutting down openBIS AFS '%s' failed." % self.instanceName)
+        util.executeCommand([self.dssDownScript],
+                            "Shutting down openBIS DSS '%s' failed." % self.instanceName)
+        if self.asProperties:
+            util.executeCommand([self.bisDownScript],
+                                "Shutting down openBIS AS '%s' failed." % self.instanceName)
+
+
+    def allUpNew(self):
+        """ Starts up AS and DSS if not running. """
+        if not util.isAlive("%s/servers/openBIS-server/jetty/openbis.pid" % self.installPath):
+            self._saveAsPropertiesIfModified()
             self._saveDssPropertiesIfModified()
             self._saveAfsPropertiesIfModified()
             util.executeCommand([self.allUpScript],
                                 "Starting up openBIS ALL '%s' failed." % self.instanceName)
 
-    def stop(self):
-        self.allDown()
-
-    def allDown(self, silent=False):
+    def allDownNew(self, silent=False):
         """ Shuts down AS, DSS and AFS. """
         self.testCase._removeFromRunningInstances(self)
         util.executeCommand([self.allDownScript],
