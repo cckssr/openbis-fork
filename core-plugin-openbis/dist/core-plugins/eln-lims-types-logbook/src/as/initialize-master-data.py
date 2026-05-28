@@ -52,6 +52,6 @@ print(importResult.getObjectIds())
 
 
 api.logout(sessionToken)
-print("======================== eln-lims-types-templates-master-data xls import end ========================")
+print("======================== eln-lims-types-logbook-master-data xls import end ========================")
 
 
