@@ -31,7 +31,7 @@ class Facade {
   }
 
   async hasAfsDataStore() {
-      await this.v3.getAfsServerFacade().isAvailable()
+      return await this.v3.getAfsServerFacade().isAvailable()
   }
 
   setSession(sessionToken) {
