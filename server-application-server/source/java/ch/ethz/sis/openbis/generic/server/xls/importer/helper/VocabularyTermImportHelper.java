@@ -121,6 +121,14 @@ public class VocabularyTermImportHelper extends BasicImportHelper
         return ImportTypes.VOCABULARY_TERM;
     }
 
+    @Override
+    protected void validateLine(Map<String, Integer> header, List<String> values) {
+        String code = getValueByColumnName(header, values, Attribute.Code);
+        if(code == null || code.isEmpty()) {
+            throw new UserFailureException("Mandatory field is missing or empty: Code.");
+        }
+    }
+
 
     @Override protected void updateVersion(Map<String, Integer> header, List<String> values)
     {

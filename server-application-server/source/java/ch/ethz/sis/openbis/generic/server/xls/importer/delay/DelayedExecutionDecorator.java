@@ -1296,13 +1296,13 @@ public class DelayedExecutionDecorator
 
     public void createTypeGroupAssignments(List<TypeGroupAssignmentCreation> creations, int page, int line)
     {
-        Map<IEntityTypeId, TypeGroupAssignmentCreation> creationMap = creations.stream()
-                .collect(Collectors.toMap(TypeGroupAssignmentCreation::getSampleTypeId, x -> x));
-        Map<IEntityTypeId, SampleType> existingSampleTypes = getSampleTypes(
-                new ArrayList<>(creationMap.keySet()), new SampleTypeFetchOptions());
+        Map<ITypeGroupId, TypeGroupAssignmentCreation> creationMapByTypeGroup = creations.stream()
+                .collect(Collectors.toMap(TypeGroupAssignmentCreation::getTypeGroupId, x -> x));
+        Map<ITypeGroupId, TypeGroup> existingTypeGroups = getTypeGroups(
+                new ArrayList<>(creationMapByTypeGroup.keySet()), new TypeGroupFetchOptions());
         List<TypeGroupAssignmentCreation> readyCreations = new ArrayList<>();
-        for(Map.Entry<IEntityTypeId, TypeGroupAssignmentCreation> entry : creationMap.entrySet()) {
-            if(!existingSampleTypes.containsKey(entry.getKey()))
+        for(Map.Entry<ITypeGroupId, TypeGroupAssignmentCreation> entry : creationMapByTypeGroup.entrySet()) {
+            if(!existingTypeGroups.containsKey(entry.getKey()))
             {
                 DelayedExecution delayedExecution = new DelayedExecution(null, entry.getKey(),
                         entry.getValue(), page, line);
@@ -1313,9 +1313,31 @@ public class DelayedExecutionDecorator
             }
         }
 
-        if(!readyCreations.isEmpty())
+        Map<IEntityTypeId, List<TypeGroupAssignmentCreation>> creationMap = new HashMap<>();
+        for(TypeGroupAssignmentCreation creation : readyCreations) {
+            creationMap.computeIfAbsent(creation.getSampleTypeId(), x -> new ArrayList<>()).add(creation);
+        }
+
+        Map<IEntityTypeId, SampleType> existingSampleTypes = getSampleTypes(
+                new ArrayList<>(creationMap.keySet()), new SampleTypeFetchOptions());
+        List<TypeGroupAssignmentCreation> readyCreationsFinal = new ArrayList<>();
+        for(Map.Entry<IEntityTypeId, List<TypeGroupAssignmentCreation>> entry : creationMap.entrySet()) {
+            if(!existingSampleTypes.containsKey(entry.getKey()))
+            {
+                for(TypeGroupAssignmentCreation creation : entry.getValue()) {
+                    DelayedExecution delayedExecution = new DelayedExecution(null, entry.getKey(),
+                            creation, page, line);
+                    delayedExecution.addDependencies(List.of(entry.getKey()));
+                    addDelayedExecution(delayedExecution);
+                }
+            } else {
+                readyCreationsFinal.addAll(entry.getValue());
+            }
+        }
+
+        if(!readyCreationsFinal.isEmpty())
         {
-            v3.createTypeGroupAssignments(this.sessionToken, readyCreations);
+            v3.createTypeGroupAssignments(this.sessionToken, readyCreationsFinal);
         }
 
     }

@@ -136,6 +136,14 @@ public class VocabularyImportHelper extends BasicImportHelper
     }
 
     @Override
+    protected void validateLine(Map<String, Integer> header, List<String> values) {
+        String code = getValueByColumnName(header, values, Attribute.Code);
+        if(code == null || code.isEmpty()) {
+            throw new UserFailureException("Mandatory field is missing or empty: Code.");
+        }
+    }
+
+    @Override
     protected void updateObject(Map<String, Integer> header, List<String> values, int page, int line)
     {
         String code = getValueByColumnName(header, values, Attribute.Code);

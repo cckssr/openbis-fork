@@ -113,7 +113,7 @@ public abstract class BasicImportHelper extends AbstractImportHelper
                         switch (mode)
                         {
                             case FAIL_IF_EXISTS:
-                                if (!(this instanceof SemanticAnnotationImportHelper))
+                                if (!(this instanceof SemanticAnnotationImportHelper || this instanceof PropertyTypeImportHelper))
                                 {
                                     throw new UserFailureException("Mode FAIL_IF_EXISTS - Found existing " + getTypeName());
                                 }

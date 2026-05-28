@@ -146,6 +146,9 @@ public class PropertyTypeImportHelper extends BasicImportHelper
         String vocabularyCode = getValueByColumnName(headers, values, Attribute.VocabularyCode);
         String metadata = getValueByColumnName(headers, values, Attribute.Metadata);
 
+        if(code == null || code.isEmpty()) {
+            throw new UserFailureException("Mandatory field is missing or empty: Code.");
+        }
         String propertyData =
                 code + propertyLabel + description + dataType + vocabularyCode + metadata;
         if (this.propertyCache.get(code) == null)
