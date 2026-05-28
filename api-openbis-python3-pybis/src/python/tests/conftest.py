@@ -80,10 +80,11 @@ def afs(space):
     token = space.openbis.token
     o = space.openbis
 
-    data_stores = o.get_datastores()
+    data_stores = o.get_datastores(with_afs=True)
+    print(f'[TEST] Detected data stores: {data_stores}')
     data_store = data_stores[data_stores["code"] == "AFS"]
 
-    afs_url = data_store["downloadUrl"][0] + "/api" if not data_store.empty else None
+    afs_url = data_store.iloc[0]["downloadUrl"] + "/api" if not data_store.empty else None
     print(f'[TEST] Configured OpenBIS AFS url is: {afs_url}')
     afs_client = AfsClient(afs_url, token, False)
 

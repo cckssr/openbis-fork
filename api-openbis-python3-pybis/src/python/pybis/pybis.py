@@ -1548,7 +1548,7 @@ class Openbis:
 
         os_options = {
             "darwin": f"-oauto_cache,reconnect,defer_permissions,noappledouble,negative_vncache,volname={hostname} -oStrictHostKeyChecking=no -o ServerAliveInterval=60 -o ServerAliveCountMax=3 ",
-            "linux": "-oauto_cache,reconnect -o ServerAliveInterval=60 -o ServerAliveCountMax=3 -oStrictHostKeyChecking=no,debug,sshfs_debug ",
+            "linux": "-oauto_cache,reconnect -o ServerAliveInterval=60 -o ServerAliveCountMax=3 -oStrictHostKeyChecking=no ",
         }
 
         if volname is None:
@@ -1617,7 +1617,7 @@ class Openbis:
         else:
             raise ValueError("Could not create permId")
 
-    def get_datastores(self):
+    def get_datastores(self, with_afs=False):
         """Get a list of all available datastores. Usually there is only one, but in some cases
         there might be multiple servers. If you upload a file, you need to specifiy the datastore you want
         the file uploaded to.
@@ -1629,7 +1629,15 @@ class Openbis:
             "method": "searchDataStores",
             "params": [
                 self.token,
-                {"@type": "as.dto.datastore.search.DataStoreSearchCriteria"},
+                {
+                    "@type": "as.dto.datastore.search.DataStoreSearchCriteria",
+                    "criteria": [
+                        {
+                            "@type": "as.dto.datastore.search.DataStoreKindSearchCriteria",
+                            "dataStoreKinds": ["DSS", "AFS"] if with_afs else ["DSS"],
+                        }
+                    ]
+                },
                 {"@type": "as.dto.datastore.fetchoptions.DataStoreFetchOptions"},
             ],
         }
