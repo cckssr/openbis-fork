@@ -85,6 +85,10 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue", "as/dto/common/update/
 			name: "FieldUpdateValue",
 			arguments: ["String"]
 		},
+		managedInternally : {
+			name : "FieldUpdateValue",
+			arguments : [ "Boolean" ]
+		},
 		dataType : "DataType",
 		metaData : "ListUpdateMapValues"
 	});
