@@ -567,7 +567,7 @@ class OpenbisController(_Controller):
         self.configureArchivingFolders()
         self.dssPropertiesModified = True
         self.afsServicePropertiesFile = "%s/servers/afs-server/etc/service.properties" % installPath
-        self.afsProperties = util.readProperties(self.dssServicePropertiesFile)
+        self.afsProperties = util.readProperties(self.afsServicePropertiesFile)
 
         self.afsPropertiesModified = True
         self.passwdScript = "%s/servers/openBIS-server/jetty/bin/passwd.sh" % installPath
