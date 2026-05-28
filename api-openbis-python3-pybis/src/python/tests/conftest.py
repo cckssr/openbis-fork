@@ -79,20 +79,17 @@ def space():
 def afs(space):
     token = space.openbis.token
     o = space.openbis
+    afs_url = None
     try:
         print(f'[TEST] Searching for data stores with token: {token}')
         data_stores = o.get_datastores(with_afs=True)
         print(f'[TEST] Detected data stores: {data_stores}')
-        data_store = data_stores[data_stores["code"] == "AFS"]
-        afs_url = data_store.iloc[0]["downloadUrl"] + "/api" if not data_store.empty else None
-        print(f'[TEST] Configured OpenBIS AFS url is: {afs_url}')
-    except BaseException as e:
-        print(f'[TEST] Failed to connect to OpenBIS AFS: {e}')
-        afs_url = None
+        # data_store = data_stores[data_stores["code"] == "AFS"]
+        # afs_url = data_store.iloc[0]["downloadUrl"] + "/api" if not data_store.empty else None
     except:
         print(f'[TEST] Failed to connect to OpenBIS AFS for unknown reasons')
-        afs_url = None
 
+    print(f'[TEST] Configured OpenBIS AFS url is: {afs_url}')
     afs_client = AfsClient(afs_url, token, False)
 
     yield (space, afs_client)
