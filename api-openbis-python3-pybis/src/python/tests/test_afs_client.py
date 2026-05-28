@@ -14,7 +14,7 @@ def test_afs_client(afs):
     (space, client) = afs
 
     # assert client.is_session_valid()
-
+    print("[TEST] CHECKING AFS AVAILABILITY")
     if client.is_session_valid():
         print("[TEST] AFS IS AVAILABLE")
 

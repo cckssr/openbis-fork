@@ -1,36 +1,44 @@
 
-import requests
 import os
 import json
 
-import urllib.parse
 from queue import Queue, Empty
 import threading
 from threading import Thread
-from typing import Set, Optional, List
-from urllib.parse import urljoin, quote
 
 import requests
-from pandas import DataFrame
-from requests import Session
 from requests.adapters import HTTPAdapter, Retry
-from tabulate import tabulate
 from pathlib import Path
 
 from .chunk import encode_chunks_as_bytes
 from .chunk import decode_chunks
 
 REQUEST_RETRIES_COUNT = 5
+CONNECT_TIMEOUT=5
+READ_TIMEOUT=10
 
 FILE_ARRAY_SEPARATOR = '\n'
 FILE_SEPARATOR = '\t'
 
-def _create_session(url):
+
+class TimeoutAdapter(HTTPAdapter):
+
+    def __init__(self, connect_timeout, read_timeout,  **kwargs):
+        super().__init__(**kwargs)
+        self.read_timeout = read_timeout
+        self.connect_timeout = connect_timeout
+
+    def send(self, *args, **kwargs):
+        kwargs['timeout'] = (self.read_timeout, self.connect_timeout)
+        return super().send(*args, **kwargs)
+
+def _create_session(url, connect_timeout=CONNECT_TIMEOUT, read_timeout=READ_TIMEOUT):
     """Create a session object to handle retries in case of server failure"""
     session = requests.Session()
     retries = Retry(total=REQUEST_RETRIES_COUNT, backoff_factor=1,
                     status_forcelist=[502, 503, 504])
-    session.mount(url, HTTPAdapter(max_retries=retries))
+    # session.mount(url, HTTPAdapter(max_retries=retries))
+    session.mount(url, TimeoutAdapter(connect_timeout=connect_timeout, read_timeout=read_timeout, max_retries=retries))
     return session
 
 class File:
@@ -58,14 +66,14 @@ class File:
 
 class AfsClient:
 
-    def __init__(self, url, sessionToken, verify=True):
+    def __init__(self, url, sessionToken, verify=True, connect_timeout=CONNECT_TIMEOUT, read_timeout=READ_TIMEOUT):
         self._afs_url = url
         if url is not None and not url.endswith("/api"):
             self._afs_url = url + "/api"
         self._sessionToken = sessionToken
         self._verify = verify
         if url is not None:
-            self.session = _create_session(url)
+            self.session = _create_session(url, connect_timeout=connect_timeout, read_timeout=read_timeout)
 
 
     def is_session_valid(self):
