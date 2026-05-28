@@ -738,13 +738,13 @@ class OpenbisController(_Controller):
         self.afsUp()
 
     def stop(self):
-        self.allDown()
+        self.allDownNew()
 
     def allDown(self):
         """ Shuts down AS and DSS. """
         self.testCase._removeFromRunningInstances(self)
-        util.executeCommand([self.afsDownScript],
-                            "Shutting down openBIS AFS '%s' failed." % self.instanceName)
+        # util.executeCommand([self.afsDownScript],
+        #                     "Shutting down openBIS AFS '%s' failed." % self.instanceName)
         util.executeCommand([self.dssDownScript],
                             "Shutting down openBIS DSS '%s' failed." % self.instanceName)
         if self.asProperties:
@@ -759,13 +759,13 @@ class OpenbisController(_Controller):
             self._saveDssPropertiesIfModified()
             self._saveAfsPropertiesIfModified()
             util.executeCommand([self.allUpScript],
-                                "Starting up openBIS ALL '%s' failed." % self.instanceName)
+                                "Starting up openBIS '%s' failed." % self.instanceName)
 
     def allDownNew(self, silent=False):
         """ Shuts down AS, DSS and AFS. """
         self.testCase._removeFromRunningInstances(self)
         util.executeCommand([self.allDownScript],
-                            "Shutting down openBIS ALL '%s' failed." % self.instanceName if not silent else None)
+                            "Shutting down openBIS '%s' failed." % self.instanceName if not silent else None)
 
 
     def bisUp(self):
