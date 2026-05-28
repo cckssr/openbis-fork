@@ -125,7 +125,6 @@ class Vocabulary(
             }
             if terms:
                 request["params"][1][0]["terms"] = terms
-            print(f"[DEBUG] VocabularyUpdate request:{request}")
             self.openbis._post_request(self.openbis.as_v3, request)
             if VERBOSE:
                 print("Vocabulary successfully updated.")

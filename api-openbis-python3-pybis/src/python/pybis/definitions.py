@@ -203,7 +203,7 @@ def openbis_definitions(entity):
         },
         "vocabulary": {
             "attrs_new": "code description managedInternally chosenFromList urlTemplate terms".split(),
-            "attrs_up": "description managedInternally chosenFromList urlTemplate".split(),
+            "attrs_up": "description chosenFromList urlTemplate".split(),
             "attrs": "code description managedInternally chosenFromList urlTemplate registrator registrationDate modifier modificationDate".split(),
             "multi": "".split(),
             "identifier": "vocabularyId",
