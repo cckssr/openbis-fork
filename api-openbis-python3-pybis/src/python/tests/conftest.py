@@ -89,6 +89,9 @@ def afs(space):
     except BaseException as e:
         print(f'[TEST] Failed to connect to OpenBIS AFS: {e}')
         afs_url = None
+    except:
+        print(f'[TEST] Failed to connect to OpenBIS AFS for unknown reasons')
+        afs_url = None
 
     afs_client = AfsClient(afs_url, token, False)
 
