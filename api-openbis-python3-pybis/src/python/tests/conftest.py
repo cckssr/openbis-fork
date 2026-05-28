@@ -79,7 +79,7 @@ def space():
 def afs(space):
     token = space.openbis.token
     o = space.openbis
-
+    print(f'[TEST] Searching for data stores with token: {token}')
     data_stores = o.get_datastores(with_afs=True)
     print(f'[TEST] Detected data stores: {data_stores}')
     data_store = data_stores[data_stores["code"] == "AFS"]
