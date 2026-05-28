@@ -736,8 +736,6 @@ class OpenbisController(_Controller):
             self._saveAfsPropertiesIfModified()
             util.executeCommand([self.allUpScript],
                                 "Starting up openBIS ALL '%s' failed." % self.instanceName)
-        self.dssUp()
-        self.afsUp()
 
     def stop(self):
         self.allDown()
