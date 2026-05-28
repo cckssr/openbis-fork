@@ -56,7 +56,7 @@ export class ObjectFormModel {
       isValid: true,
       actions: [
         getNewObjectAction(EntityKind.OBJECT),
-        getNewDatasetAction(EntityKind.OBJECT),
+        // getNewDatasetAction(EntityKind.OBJECT),
         getDividerAction(FormMode.VIEW),
         getEditAction(),
         getMoveAction(),

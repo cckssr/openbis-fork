@@ -36,7 +36,7 @@ export class CollectionFormModel {
 			isValid: true,
 			actions: [
 				getNewObjectAction(EntityKind.COLLECTION),
-				getNewDatasetAction(EntityKind.COLLECTION),
+				// getNewDatasetAction(EntityKind.COLLECTION),
 				getDividerAction(FormMode.VIEW),
 				getEditAction(),
 				getMoveAction(),
