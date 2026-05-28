@@ -84,10 +84,15 @@ def afs(space):
         print(f'[TEST] Searching for data stores with token: {token}')
         data_stores = o.get_datastores(with_afs=True)
         print(f'[TEST] Detected data stores: {data_stores}')
-        # data_store = data_stores[data_stores["code"] == "AFS"]
+        data_store = data_stores[data_stores["code"] == "AFS"]
+        print(f'[TEST] Found AFS datastore: {data_store}')
+
+        url = data_stores.loc[data_stores['code'] == 'AFS', 'downloadUrl']
+
+        afs_url = url.values[0] + "/api" if not url.empty else None
         # afs_url = data_store.iloc[0]["downloadUrl"] + "/api" if not data_store.empty else None
-    except:
-        print(f'[TEST] Failed to connect to OpenBIS AFS for unknown reasons')
+    except BaseException as e:
+        print(f'[TEST] Failed to connect to OpenBIS AFS {e}')
 
     print(f'[TEST] Configured OpenBIS AFS url is: {afs_url}')
     afs_client = AfsClient(afs_url, token, False)
