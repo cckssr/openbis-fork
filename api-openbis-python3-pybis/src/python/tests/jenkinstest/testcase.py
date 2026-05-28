@@ -742,11 +742,11 @@ class OpenbisController(_Controller):
     def stop(self):
         self.allDown()
 
-    def allDown(self):
+    def allDown(self, silent=False):
         """ Shuts down AS, DSS and AFS. """
         self.testCase._removeFromRunningInstances(self)
         util.executeCommand([self.allDownScript],
-                            "Shutting down openBIS ALL '%s' failed." % self.instanceName)
+                            "Shutting down openBIS ALL '%s' failed." % self.instanceName if not silent else None)
 
 
     def bisUp(self):
