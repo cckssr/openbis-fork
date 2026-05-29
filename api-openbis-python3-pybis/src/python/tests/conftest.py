@@ -90,6 +90,7 @@ def afs(space):
         # workaround because jenkins test server is not handling DataFrame properly
         import numpy as np
         data_store_list = np.array(data_store).tolist()
+        print(f'[TEST] AFS data after conversion: {data_store_list}')
 
         afs_url = data_store_list[0][1] + "/api" if len(data_store_list) > 0 else None
     except BaseException as e:
