@@ -39,7 +39,7 @@ class DatabaseComponent extends React.PureComponent {
       datasetTab: "0",
       showImagingGallery: false,
       detailsTab: '0',
-      isFormInEditMode: false,
+      hasUnsavedChanges: false,
       pendingTab: null,
       showUnsavedChangesWarning: false,
     }
@@ -201,12 +201,12 @@ class DatabaseComponent extends React.PureComponent {
     await AppController.getInstance().setSetting(settingsId, settings)
   }
 
-  handleFormModeChange(mode) {
-    this.setState({ isFormInEditMode: mode === 'edit' })
+  handleUnsavedStateChange(changed) {
+    this.setState({ hasUnsavedChanges: changed })
   }
 
   handleDataBrowserTabChangeRequest(newTab) {
-    if (this.state.detailsTab === '0' && newTab !== '0' && this.state.isFormInEditMode) {
+    if (this.state.detailsTab === '0' && newTab !== '0' && this.state.hasUnsavedChanges) {
       this.setState({ pendingTab: newTab, showUnsavedChangesWarning: true })
     } else {
       this.setState({ detailsTab: newTab })
@@ -339,7 +339,7 @@ class DatabaseComponent extends React.PureComponent {
           sessionID={AppController.getInstance().getSessionToken()}
           initialMode={String(object.type).includes('new') ? 'create' : 'view'}
           externalAppController={this.externalAppController}
-          onModeChange={this.handleFormModeChange}
+          onUnsavedStateChange={this.handleUnsavedStateChange}
         />
       </FormErrorBoundary>
     )

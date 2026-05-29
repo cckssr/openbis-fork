@@ -41,25 +41,38 @@ export class CoreFormModel {
 		context.setMode(FormMode.EDIT);
 	};
 
-	static cancelEditAction = async (context: IModeActionContext) => {
+	static cancelEditAction = async (context: IExtendedActionContext) => {
 		// Reload the form to restore original values
-		try {
-			const originalForm = await context.controller.load(context.form.entityPermId);
-			context.setForm(originalForm);
-		} catch (error: any) {
-			throw error;
-		} finally {
-			context.setMode(FormMode.VIEW);
+		const performCancel = async () => {
+			try {
+				const originalForm = await context.controller.load(context.form.entityPermId);
+				context.setForm(originalForm);
+			} finally {
+				context.setMode(FormMode.VIEW);
+			}
+		};
+		if (!context.isAutoSaveEnabled && context.requestUnsavedConfirmation) {
+			context.requestUnsavedConfirmation(performCancel);
+		} else {
+			await performCancel();
 		}
 	};
 
 	static cancelNewFormAction = (context: IExtendedActionContext) => {
-		const originalId = context.form.entityPermId.substring(0, context.form.entityPermId.indexOf('-'));
-		const params = {
-			type: context.form.entityKind,
-			id: originalId
+		const performCancel = () => {
+			const originalId = context.form.entityPermId.substring(0, context.form.entityPermId.indexOf('-'));
+			const params = {
+				type: context.form.entityKind,
+				id: originalId
+			};
+			context.externalAppController.closeForm(params);
 		};
-		context.externalAppController.closeForm(params);
+		// New forms are never auto-saved (auto-save applies to EDIT only), so always confirm.
+		if (context.requestUnsavedConfirmation) {
+			context.requestUnsavedConfirmation(performCancel);
+		} else {
+			performCancel();
+		}
 	};
 
 	static autoSaveAction = (context: IAutoSaveActionContext) => {
