@@ -87,7 +87,7 @@ def afs(space):
         data_store = data_stores[data_stores["code"] == "AFS"]
         print(f'[TEST] Found AFS datastore: {data_store}')
 
-        ds_list = data_store.to_list()
+        ds_list = data_store.values[0]
         print(f'[TEST] AFS list {ds_list} | {ds_list[1]}')
         url = ds_list[1]
         # url = data_stores.loc[data_stores['code'] == 'AFS', 'downloadUrl']
