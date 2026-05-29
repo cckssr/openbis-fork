@@ -88,10 +88,10 @@ def afs(space):
         print(f'[TEST] Found AFS datastore: {data_store}')
 
         result = [list(row) for _, row in data_store.iterrows()]
-        print(f'[TEST] AFS list {result} | {result[0]}')
+        print(f'[TEST] AFS list {result}')
         import numpy as np
         result2 = np.array(data_store).tolist()
-        print(f'[TEST] AFS list {result2} | {result2[0]}')
+        print(f'[TEST] AFS list {result2}')
 
         # ds_list = data_store.values[0]
         # print(f'[TEST] AFS list {ds_list} | {ds_list[1]}')
