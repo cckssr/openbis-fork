@@ -64,6 +64,6 @@ printf "changeit\nchangeit\n" | ./run-console.sh
 
 
 
-echo "Starting openBIS with bin/allup.sh"
+echo "Starting openBIS with bin/openbis.sh start"
 cd "$OPENBIS_DIR"
-sh bin/allup.sh
+sh bin/openbis.sh start
