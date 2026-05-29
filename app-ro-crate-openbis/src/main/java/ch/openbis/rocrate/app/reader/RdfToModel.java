@@ -254,8 +254,11 @@ public class RdfToModel
                 type.getOntologicalAnnotations().forEach(x -> {
                     SemanticAnnotation semanticAnnotation = new SemanticAnnotation();
                     semanticAnnotation.setPredicateAccessionId(x);
-                    semanticAnnotation.setPredicateAccessionId(x);
                     semanticAnnotation.setPredicateOntologyVersion(x);
+                    if (x.contains("https://schema.org"))
+                    {
+                        semanticAnnotation.setPredicateOntologyId("https://schema.org");
+                    }
 
                     List<SemanticAnnotation> existingAnnotations =
                             sampleType.getSemanticAnnotations();
