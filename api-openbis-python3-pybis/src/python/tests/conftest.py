@@ -87,9 +87,12 @@ def afs(space):
         data_store = data_stores[data_stores["code"] == "AFS"]
         print(f'[TEST] Found AFS datastore: {data_store}')
 
+        ds_list = data_store.to_list()
+        print(f'[TEST] AFS list {ds_list} | {ds_list[1]}')
+        url = ds_list[1]
         # url = data_stores.loc[data_stores['code'] == 'AFS', 'downloadUrl']
 
-        # afs_url = url.values[0] + "/api" if not url.empty else None
+        afs_url = url + "/api" if url != '' else None
         # afs_url = data_store.iloc[0]["downloadUrl"] + "/api" if not data_store.empty else None
     except BaseException as e:
         print(f'[TEST] Failed to connect to OpenBIS AFS {e}')
