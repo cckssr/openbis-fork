@@ -24,6 +24,10 @@ admin_username = "admin"
 admin_password = "admin"
 
 
+
+print(f'[TEST] Configured OpenBIS url for tests is: {openbis_url}')
+
+
 @pytest.fixture(scope="module")
 def openbis_instance():
     instance = Openbis(
@@ -75,11 +79,24 @@ def space():
 def afs(space):
     token = space.openbis.token
     o = space.openbis
+    afs_url = None
+    try:
+        print(f'[TEST] Searching for data stores with token: {token}')
+        data_stores = o.get_datastores(with_afs=True)
+        print(f'[TEST] Detected data stores: {data_stores}')
+        data_store = data_stores[data_stores["code"] == "AFS"]
+        print(f'[TEST] Found AFS datastore: {data_store}')
 
-    data_stores = o.get_datastores()
-    data_store = data_stores[data_stores["code"] == "AFS"]
+        # workaround because jenkins test server is not handling DataFrame properly
+        import numpy as np
+        data_store_list = np.array(data_store).tolist()
+        print(f'[TEST] AFS data after conversion: {data_store_list}')
 
-    afs_url = data_store["downloadUrl"][0] + "/api" if not data_store.empty else None
+        afs_url = data_store_list[0][1] + "/api" if len(data_store_list) > 0 else None
+    except BaseException as e:
+        print(f'[TEST] Failed to connect to OpenBIS AFS {e}')
+
+    print(f'[TEST] Configured OpenBIS AFS url is: {afs_url}')
     afs_client = AfsClient(afs_url, token, False)
 
     yield (space, afs_client)

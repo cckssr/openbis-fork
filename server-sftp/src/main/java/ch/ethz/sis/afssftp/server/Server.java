@@ -15,6 +15,7 @@
  */
 package ch.ethz.sis.afssftp.server;
 
+import ch.ethz.sis.afsclient.client.AfsClient;
 import ch.ethz.sis.afssftp.authentication.PasswordAuthenticator;
 import ch.ethz.sis.afssftp.filesystemview.VirtualFileSystemFactory;
 import ch.ethz.sis.afssftp.startup.AfsSftpServerParameter;
@@ -24,9 +25,11 @@ import ch.ethz.sis.shared.log.standard.LogFactoryFactory;
 import ch.ethz.sis.shared.log.standard.LogManager;
 import ch.ethz.sis.shared.log.standard.Logger;
 import ch.ethz.sis.shared.startup.Configuration;
+import org.apache.sshd.common.PropertyResolverUtils;
 import org.apache.sshd.common.keyprovider.KeyPairProvider;
 import org.apache.sshd.netty.NettyIoServiceFactoryFactory;
 import org.apache.sshd.server.SshServer;
+import org.apache.sshd.sftp.SftpModuleProperties;
 import org.apache.sshd.sftp.server.SftpSubsystemFactory;
 
 import java.io.File;
@@ -71,6 +74,8 @@ public final class Server {
                 configuration.getStringProperty(AfsSftpServerParameter.afsUrl)
         );
         sftpServer = SshServer.setUpDefaultServer();
+        PropertyResolverUtils.updateProperty(sftpServer, SftpModuleProperties.MAX_WRITEDATA_PACKET_LENGTH.getName(), AfsClient.DEFAULT_PACKAGE_SIZE_IN_BYTES);
+        PropertyResolverUtils.updateProperty(sftpServer, SftpModuleProperties.MAX_READDATA_PACKET_LENGTH.getName(), AfsClient.DEFAULT_PACKAGE_SIZE_IN_BYTES);
 
         // 1. Mandatory: Force the server to use Netty instead of default NIO2
         sftpServer.setIoServiceFactoryFactory(new NettyIoServiceFactoryFactory());

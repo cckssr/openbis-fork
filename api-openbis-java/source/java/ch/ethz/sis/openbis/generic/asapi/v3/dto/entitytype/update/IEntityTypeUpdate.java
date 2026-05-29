@@ -43,4 +43,8 @@ public interface IEntityTypeUpdate extends IUpdate, IObjectUpdate<IEntityTypeId>
     public void setValidationPluginId(IPluginId pluginId);
 
     public PropertyAssignmentListUpdateValue getPropertyAssignments();
+
+    public FieldUpdateValue<Boolean> getManagedInternally();
+
+    public void setManagedInternally(boolean managedInternally);
 }

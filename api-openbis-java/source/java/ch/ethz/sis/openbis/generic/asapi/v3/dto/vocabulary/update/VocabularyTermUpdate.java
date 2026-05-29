@@ -125,7 +125,7 @@ public class VocabularyTermUpdate implements IUpdate, IObjectUpdate<IVocabularyT
     }
 
     @JsonIgnore
-    public FieldUpdateValue<Boolean> isManagedInternally()
+    public FieldUpdateValue<Boolean> getManagedInternally()
     {
         return managedInternally;
     }

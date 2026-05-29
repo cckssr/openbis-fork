@@ -15,7 +15,6 @@
  */
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.entity;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -68,6 +67,9 @@ public abstract class AbstractUpdateEntityTypeExecutor<UPDATE extends IEntityTyp
 
     @Autowired
     private SetEntityTypeValidationScriptExecutor setEntityTypeValidationScriptExecutor;
+
+    @Autowired
+    private IUpdateEntityTypeAuthorizationExecutor<UPDATE, TYPE_PE> entityTypeAuthorizationExecutor;
 
     protected abstract EntityKind getDAOEntityKind();
 
@@ -154,6 +156,7 @@ public abstract class AbstractUpdateEntityTypeExecutor<UPDATE extends IEntityTyp
             UPDATE update = entry.getKey();
             TYPE_PE type = entry.getValue();
             type.setDescription(getNewValue(update.getDescription(), type.getDescription()));
+            type.setManagedInternally(getNewValue(update.getManagedInternally(), type.isManagedInternally()));
             updateSpecific(type, update);
         }
     }
@@ -194,6 +197,7 @@ public abstract class AbstractUpdateEntityTypeExecutor<UPDATE extends IEntityTyp
     @Override
     protected void checkAccess(IOperationContext context, IEntityTypeId id, TYPE_PE entity, UPDATE update)
     {
+        entityTypeAuthorizationExecutor.canUpdate(context, entity, update);
         checkAccessTypeSpecific(context, id, entity, update);
 
         if(!isSystemUser(context.getSession()))
@@ -282,14 +286,16 @@ public abstract class AbstractUpdateEntityTypeExecutor<UPDATE extends IEntityTyp
     @Override
     protected void checkBusinessRules(IOperationContext context, IEntityTypeId id, TYPE_PE entity, UPDATE update)
     {
-        if(!entity.isManagedInternally() && update.getPropertyAssignments() != null)
+        if(((update.getManagedInternally().isModified() && !update.getManagedInternally().getValue())
+                        || (!update.getManagedInternally().isModified() && !entity.isManagedInternally()))
+                && update.getPropertyAssignments() != null)
         {
             PropertyAssignmentListUpdateValue assignmentListUpdateValue = update.getPropertyAssignments();
             for(PropertyAssignmentCreation creation : assignmentListUpdateValue.getAdded()) {
                 if(creation.isManagedInternally())
                 {
                     throw new UserFailureException(
-                            "Internal property assignments can be used for internal entity types");
+                            "Internal property assignments can be used only for internal entity types");
                 }
             }
             for(PropertyAssignmentCreation assignmentSet : assignmentListUpdateValue.getSet())
@@ -297,7 +303,7 @@ public abstract class AbstractUpdateEntityTypeExecutor<UPDATE extends IEntityTyp
                 if(assignmentSet.isManagedInternally())
                 {
                     throw new UserFailureException(
-                            "Internal property assignments can be used for internal entity types");
+                            "Internal property assignments can be used only for internal entity types");
                 }
             }
 

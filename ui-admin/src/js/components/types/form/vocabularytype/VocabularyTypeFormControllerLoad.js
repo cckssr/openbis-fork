@@ -62,9 +62,7 @@ export default class VocabularyTypeFormControllerLoad extends PageControllerLoad
       internal: FormUtil.createField({
         value: internal,
         visible: AppController.getInstance().isSystemUser(),
-        enabled:
-          loadedVocabulary === null &&
-          AppController.getInstance().isSystemUser()
+        enabled: AppController.getInstance().isSystemUser()
       }),
       registrator: FormUtil.createField({
         value: registrator,
@@ -121,8 +119,8 @@ export default class VocabularyTypeFormControllerLoad extends PageControllerLoad
       }),
       internal: FormUtil.createField({
         value: managedInternally,
-        visible: false,
-        enabled: false
+        visible: AppController.getInstance().isSystemUser(),
+        enabled: AppController.getInstance().isSystemUser()
       })
     }
     term.original = _.cloneDeep(term)

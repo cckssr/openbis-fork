@@ -49,11 +49,6 @@ public class ExperimentTypeAuthorizationExecutor implements IExperimentTypeAutho
     @DatabaseCreateOrDeleteModification(value = ObjectKind.EXPERIMENT_TYPE)
     public void canCreate(IOperationContext context, ExperimentTypePE experimentTypePE)
     {
-        if (experimentTypePE.isManagedInternally() && isSystemUser(context.getSession()) == false)
-        {
-            throw new AuthorizationFailureException(
-                    "Internal entity types can be managed only by the system user.");
-        }
     }
 
     @Override

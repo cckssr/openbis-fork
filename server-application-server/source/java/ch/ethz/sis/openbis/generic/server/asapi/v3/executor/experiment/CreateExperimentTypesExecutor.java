@@ -77,11 +77,6 @@ public class CreateExperimentTypesExecutor extends AbstractCreateEntityTypeExecu
         typeBO.save();
     }
 
-    @Override
-    protected void checkAccess(IOperationContext context)
-    {
-
-    }
 
     @Override
     protected void checkAccessTypeSpecific(IOperationContext context, ExperimentTypePE experimentTypePE)

@@ -49,11 +49,6 @@ public class DataSetTypeAuthorizationExecutor implements IDataSetTypeAuthorizati
     @DatabaseCreateOrDeleteModification(value = ObjectKind.DATASET_TYPE)
     public void canCreate(IOperationContext context, DataSetTypePE entityTypePE)
     {
-        if (entityTypePE.isManagedInternally() && isSystemUser(context.getSession()) == false)
-        {
-            throw new AuthorizationFailureException(
-                    "Internal entity types can be managed only by the system user.");
-        }
     }
 
     @Override

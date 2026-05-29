@@ -127,7 +127,7 @@ def killProcess(pidFile):
         return
     executeCommand(['kill', pid])
     
-def isAlive(pidFile, pattern):
+def isAlive(pidFile):
     """
     Checks if the process with PID in specified file is alive. The specified regex
     is used to check that the process of expected PID is the process expected.
@@ -138,8 +138,7 @@ def isAlive(pidFile, pattern):
     lines = executeCommand(['ps', '-p', pid], suppressStdOut=True)
     if len(lines) < 2:
         return False
-    return re.compile(pattern).search(lines[1]) is not None
-    
+
     
 def getPid(pidFile):
     if not os.path.exists(pidFile):

@@ -21,6 +21,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.update.VocabularyTerm
 import ch.systemsx.cisd.common.exceptions.AuthorizationFailureException;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.Session;
+import ch.systemsx.cisd.openbis.generic.shared.dto.VocabularyTermPE;
 import org.springframework.stereotype.Component;
 
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
@@ -66,8 +67,15 @@ public class VocabularyTermAuthorizationExecutor implements IVocabularyTermAutho
     @RolesAllowed({ RoleWithHierarchy.INSTANCE_ADMIN, RoleWithHierarchy.INSTANCE_ETL_SERVER })
     @DatabaseUpdateModification(value = ObjectKind.VOCABULARY_TERM)
     @Capability("UPDATE_VOCABULARY_TERM")
-    public void canUpdate(IOperationContext context)
+    public void canUpdate(IOperationContext context, VocabularyTermPE term, VocabularyTermUpdate update)
     {
+        if(isSystemUser(context.getSession()) == false) {
+            if(( term.isManagedInternally() && update.getManagedInternally().isModified() && update.getManagedInternally().getValue() == true) ||
+               (!term.isManagedInternally() && update.getManagedInternally().isModified() && update.getManagedInternally().getValue() == false)) {
+                    throw new AuthorizationFailureException(
+                            "Vocabulary terms internal management can be handled only by the system user.");
+            }
+        }
     }
 
     @Override
@@ -90,6 +98,19 @@ public class VocabularyTermAuthorizationExecutor implements IVocabularyTermAutho
     @Capability("SEARCH_VOCABULARY_TERM")
     public void canSearch(IOperationContext context)
     {
+    }
+
+    private boolean isSystemUser(Session session)
+    {
+        PersonPE user = session.tryGetPerson();
+
+        if (user == null)
+        {
+            throw new AuthorizationFailureException("Could not check access because the current session does not have any user assigned.");
+        } else
+        {
+            return user.isSystemUser();
+        }
     }
 
 }

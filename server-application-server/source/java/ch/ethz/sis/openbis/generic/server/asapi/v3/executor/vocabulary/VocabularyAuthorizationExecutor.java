@@ -15,6 +15,7 @@
  */
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.vocabulary;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.update.VocabularyUpdate;
 import org.springframework.stereotype.Component;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.id.IVocabularyId;
@@ -62,9 +63,9 @@ public class VocabularyAuthorizationExecutor implements IVocabularyAuthorization
     @RolesAllowed({ RoleWithHierarchy.INSTANCE_ADMIN, RoleWithHierarchy.INSTANCE_ETL_SERVER })
     @DatabaseUpdateModification(value = ObjectKind.VOCABULARY)
     @Capability("UPDATE_VOCABULARY")
-    public void canUpdate(IOperationContext context, IVocabularyId id, VocabularyPE entity)
+    public void canUpdate(IOperationContext context, IVocabularyId id, VocabularyPE entity, VocabularyUpdate update)
     {
-        new InternalVocabularyAuthorization().canUpdateVocabulary(context.getSession(), entity);
+        new InternalVocabularyAuthorization().canUpdateVocabulary(context.getSession(), entity, update);
     }
 
     @Override

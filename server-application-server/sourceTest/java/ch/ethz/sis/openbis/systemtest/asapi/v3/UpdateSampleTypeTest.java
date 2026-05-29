@@ -101,6 +101,7 @@ public class UpdateSampleTypeTest extends UpdateEntityTypeTest<SampleTypeCreatio
         SampleTypeFetchOptions fetchOptions = new SampleTypeFetchOptions();
         fetchOptions.withPropertyAssignments().withEntityType();
         fetchOptions.withPropertyAssignments().withPropertyType();
+        fetchOptions.withTypeGroupAssignments().withTypeGroup();
         return v3api.searchSampleTypes(sessionToken, searchCriteria, fetchOptions).getObjects().get(0);
     }
 

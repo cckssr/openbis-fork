@@ -61,7 +61,7 @@ public final class VocabularyTermBO extends AbstractBusinessObject implements IV
             throwModifiedEntityException("Vocabulary term");
         }
 
-        new InternalVocabularyAuthorization().canUpdateTerm(session, vocabularyTermPE.getVocabulary(), vocabularyTermPE);
+        new InternalVocabularyAuthorization().canUpdateTerm(session, vocabularyTermPE.getVocabulary(), vocabularyTermPE, updates);
 
         vocabularyTermPE.setDescription(updates.getDescription());
         vocabularyTermPE.setLabel(updates.getLabel());
@@ -71,6 +71,7 @@ public final class VocabularyTermBO extends AbstractBusinessObject implements IV
             increaseVocabularyTermOrdinals(updates.getOrdinal());
             vocabularyTermPE.setOrdinal(updates.getOrdinal());
         }
+        vocabularyTermPE.setManagedInternally(updates.isManagedInternally());
 
         makeSystemInternalIfSystemUser(vocabularyTermPE);
         validateAndSave();
@@ -118,7 +119,7 @@ public final class VocabularyTermBO extends AbstractBusinessObject implements IV
     {
         loadDataByTechId(TechId.create(term));
 
-        new InternalVocabularyAuthorization().canUpdateTerm(session, vocabularyTermPE.getVocabulary(), vocabularyTermPE);
+        new InternalVocabularyAuthorization().canUpdateTermToOfficial(session, vocabularyTermPE.getVocabulary(), vocabularyTermPE);
 
         vocabularyTermPE.setOfficial(true);
 

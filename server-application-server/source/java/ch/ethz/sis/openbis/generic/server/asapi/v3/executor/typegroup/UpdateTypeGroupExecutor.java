@@ -68,18 +68,14 @@ public class UpdateTypeGroupExecutor extends AbstractUpdateEntityExecutor<TypeGr
     @Override
     protected void checkData(IOperationContext context, TypeGroupUpdate update)
     {
-        if (update.getCode() == null)
-        {
-            throw new UserFailureException("Type group code cannot be null.");
+        if(update.getTypeGroupId() == null) {
+            throw new UserFailureException("Type Group id can not be null");
         }
-        String newValue = update.getCode().getValue();
-        if(newValue == null )
+        if (update.getCode() != null && update.getCode().isModified())
         {
-            throw new UserFailureException("Type group code cannot be null.");
-        }
-        if(newValue.trim().isEmpty())
-        {
-            throw new UserFailureException("Type group code cannot be empty.");
+            if(update.getCode().getValue() == null || update.getCode().getValue().isBlank()) {
+                throw new UserFailureException("Type Group code cannot be empty.");
+            }
         }
     }
 
@@ -88,14 +84,16 @@ public class UpdateTypeGroupExecutor extends AbstractUpdateEntityExecutor<TypeGr
             TypeGroupUpdate update)
     {
         authorizationExecutor.canUpdate(context, update, entity);
-        if(entity.isManagedInternally() && isSystemUser(context.getSession()) == false)
-        {
-            if(update.getCode().isModified())
-            {
-                throw new AuthorizationFailureException(
-                        "Internal type group code can be managed only by the system user.");
-            }
+    }
 
+    @Override
+    protected void checkBusinessRules(IOperationContext context, ITypeGroupId id, TypeGroupPE entity, TypeGroupUpdate update) {
+        if(entity.isManagedInternally() && update.getManagedInternally().isModified() && update.getManagedInternally().getValue() == false) {
+            for(SampleTypeTypeGroupsPE assignments : entity.getTypeGroupAssignments()) {
+                if(assignments.isManagedInternally()) {
+                    throw new UserFailureException("Type Group can not be made non-internal if it has internal assignments!");
+                }
+            }
         }
     }
 
@@ -111,6 +109,9 @@ public class UpdateTypeGroupExecutor extends AbstractUpdateEntityExecutor<TypeGr
             if (update.getCode() != null && update.getCode().isModified())
             {
                 typeGroup.setCode(update.getCode().getValue());
+            }
+            if(update.getManagedInternally() != null && update.getManagedInternally().isModified()) {
+                typeGroup.setManagedInternally(update.getManagedInternally().getValue());
             }
         }
 

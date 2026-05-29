@@ -18,6 +18,9 @@ package ch.ethz.sis.afs.dto.operation;
 import ch.ethz.sis.afs.dto.Lock;
 import ch.ethz.sis.shared.io.IOUtils;
 import ch.ethz.sis.afs.dto.LockType;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Value;
 
 import java.io.IOException;
@@ -25,6 +28,8 @@ import java.util.List;
 import java.util.UUID;
 
 @Value
+@Builder(toBuilder = true)
+@AllArgsConstructor(access = AccessLevel.PUBLIC)
 public class DeleteOperation implements Operation {
 
     private UUID owner;

@@ -16,12 +16,15 @@
 package ch.ethz.sis.openbis.systemtest.asapi.v3;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.create.VocabularyCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.update.VocabularyUpdate;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -340,6 +343,58 @@ public class UpdateVocabularyTermTest extends AbstractVocabularyTest
     }
 
     @Test
+    public void testUpdateMakeTermNonInternal() throws Exception
+    {
+        String sessionToken = v3api.loginAsSystem();
+
+        VocabularyCreation vocabularyCreation = new VocabularyCreation();
+        vocabularyCreation.setCode("ANOTHER_INTERNAL_TEST");
+        vocabularyCreation.setManagedInternally(true);
+        vocabularyCreation.setDescription("creation test");
+        vocabularyCreation.setChosenFromList(true);
+        vocabularyCreation.setUrlTemplate("https://en.wikipedia.org/wiki/${term}");
+        VocabularyTermCreation term1 = new VocabularyTermCreation();
+        term1.setCode("OMEGA");
+        term1.setManagedInternally(true);
+        vocabularyCreation.setTerms(Arrays.asList(term1));
+        List<VocabularyPermId> vocabularies = v3api.createVocabularies(sessionToken,
+                Arrays.asList(vocabularyCreation));
+
+
+        VocabularyTermUpdate update = new VocabularyTermUpdate();
+        update.setVocabularyTermId(new VocabularyTermPermId("OMEGA", "ANOTHER_INTERNAL_TEST"));
+        update.setManagedInternally(false);
+
+        List<VocabularyTerm> after = updateTermsAsSystem(update);
+        assertFalse(after.get(0).isManagedInternally());
+    }
+
+    @Test(expectedExceptions = UserFailureException.class, expectedExceptionsMessageRegExp = "(?s).*Internal vocabulary terms can be managed only by the system user.*")
+    public void testUpdateMakeTermNonInternal_fail()
+    {
+        String sessionToken = v3api.loginAsSystem();
+
+        VocabularyCreation vocabularyCreation = new VocabularyCreation();
+        vocabularyCreation.setCode("ANOTHER_INTERNAL_TEST");
+        vocabularyCreation.setManagedInternally(true);
+        vocabularyCreation.setDescription("creation test");
+        vocabularyCreation.setChosenFromList(true);
+        vocabularyCreation.setUrlTemplate("https://en.wikipedia.org/wiki/${term}");
+        VocabularyTermCreation term1 = new VocabularyTermCreation();
+        term1.setCode("OMEGA");
+        term1.setManagedInternally(true);
+        vocabularyCreation.setTerms(Arrays.asList(term1));
+        List<VocabularyPermId> vocabularies = v3api.createVocabularies(sessionToken,
+                Arrays.asList(vocabularyCreation));
+
+        VocabularyTermUpdate update = new VocabularyTermUpdate();
+        update.setVocabularyTermId(new VocabularyTermPermId("OMEGA", "ANOTHER_INTERNAL_TEST"));
+        update.setManagedInternally(false);
+
+        List<VocabularyTerm> after = updateTerms(TEST_USER, PASSWORD, update);
+    }
+
+    @Test
     public void testUpdateWithLabel()
     {
         VocabularyTermUpdate update = new VocabularyTermUpdate();
@@ -384,6 +439,23 @@ public class UpdateVocabularyTermTest extends AbstractVocabularyTest
 
         assertAccessLog(
                 "update-vocabulary-terms  VOCABULARY_TERM_UPDATES('[VocabularyTermUpdate[vocabularyTermId=DOG (ORGANISM)], VocabularyTermUpdate[vocabularyTermId=PROPRIETARY (STORAGE_FORMAT)]]')");
+    }
+
+    private List<VocabularyTerm> updateTermsAsSystem(VocabularyTermUpdate... updates)
+    {
+        String sessionToken = v3api.loginAsSystem();
+
+        List<IVocabularyTermId> ids = new ArrayList<IVocabularyTermId>();
+        for (VocabularyTermUpdate update : updates)
+        {
+            ids.add(update.getVocabularyTermId());
+        }
+
+        v3api.updateVocabularyTerms(sessionToken, Arrays.asList(updates));
+
+        List<VocabularyTerm> terms = searchTerms(ids, new VocabularyTermFetchOptions());
+
+        return terms;
     }
 
     private List<VocabularyTerm> updateTerms(String user, String password, VocabularyTermUpdate... updates)
