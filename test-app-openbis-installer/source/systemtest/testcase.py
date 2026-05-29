@@ -530,10 +530,10 @@ class OpenbisController(_Controller):
         super(OpenbisController, self).__init__(testCase, testName, installPath, instanceName)
         self.templatesFolder = testCase.getTemplatesFolder()
         self.binFolder = "%s/bin" % installPath
-        self.bisUpScript = "%s/bisup.sh" % self.binFolder
-        self.bisDownScript = "%s/bisdown.sh" % self.binFolder
-        self.dssUpScript = "%s/dssup.sh" % self.binFolder
-        self.dssDownScript = "%s/dssdown.sh" % self.binFolder
+        self.bisUpScript = "%s/as-service.sh" % self.binFolder
+        self.bisDownScript = "%s/as-service.sh" % self.binFolder
+        self.dssUpScript = "%s/dss-service.sh" % self.binFolder
+        self.dssDownScript = "%s/dss-service.sh" % self.binFolder
         self.databaseKind = "%s_%s" % (testName, instanceName)
         self.asServicePropertiesFile = "%s/servers/openBIS-server/jetty/etc/service.properties" % installPath
         self.asProperties = None
@@ -701,7 +701,7 @@ class OpenbisController(_Controller):
         if not util.isAlive("%s/servers/openBIS-server/jetty/openbis.pid" % self.installPath,
                             "openBIS.keystore"):
             self._saveAsPropertiesIfModified()
-            util.executeCommand([self.bisUpScript],
+            util.executeCommand([self.bisUpScript, "start"],
                                 "Starting up openBIS AS '%s' failed." % self.instanceName)
         self.dssUp()
 
@@ -711,10 +711,10 @@ class OpenbisController(_Controller):
     def allDown(self):
         """ Shuts down AS and DSS. """
         self.testCase._removeFromRunningInstances(self)
-        util.executeCommand([self.dssDownScript],
+        util.executeCommand([self.dssDownScript, "stop"],
                             "Shutting down openBIS DSS '%s' failed." % self.instanceName)
         if self.asProperties:
-            util.executeCommand([self.bisDownScript],
+            util.executeCommand([self.bisDownScript, "stop"],
                                 "Shutting down openBIS AS '%s' failed." % self.instanceName)
 
     def dssUp(self):
@@ -723,13 +723,13 @@ class OpenbisController(_Controller):
                             "openBIS.keystore"):
             self._saveDssPropertiesIfModified()
             self.testCase._addToRunningInstances(self)
-            util.executeCommand([self.dssUpScript],
+            util.executeCommand([self.dssUpScript, "start"],
                                 "Starting up openBIS DSS '%s' failed." % self.instanceName)
 
     def dssDown(self):
         """ Shuts down DSS. """
         self.testCase._removeFromRunningInstances(self)
-        util.executeCommand([self.dssDownScript],
+        util.executeCommand([self.dssDownScript, "stop"],
                             "Shutting down openBIS DSS '%s' failed." % self.instanceName)
 
     def dropAndWait(self, dataName, dropBoxName, numberOfDataSets=1,

@@ -13,22 +13,8 @@ h4 { font: 16px; }
   margin: 15px 300px 15px 0px
 	}
 
-.proteomics {
-	background-color: #FB8072;
-	padding-top: 5px;
-  padding-bottom: 5px;
-  margin: 15px 300px 15px 0px
-	}
-	
-.screening {
+.home {
 	background-color: #8DD3C7;
-	padding-top: 5px;
-  padding-bottom: 5px;
-  margin: 15px 300px 15px 0px
-}
-
-.illumina-ngs {
-	background-color: #80B1D3;
 	padding-top: 5px;
   padding-bottom: 5px;
   margin: 15px 300px 15px 0px

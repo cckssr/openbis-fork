@@ -1,9 +1,0 @@
-# name of the openbis core database
-OPENBIS_DB=openbis_productive
-
-# postgres user name with admin rights
-DB_USER_NAME=postgres
-
-# Unalias rm and cp commands
-alias cp='cp'
-alias rm='rm'
