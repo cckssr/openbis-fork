@@ -854,9 +854,6 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
                                          } else {
                                               _this._experimentFormModel.experiment.properties[propertyTypeCode] = Util.getEmptyIfNull(field.val());
                                          }
-
-
-
                                     } else {
                                         var value = Util.getEmptyIfNull(field.val());
                                         if(!profile.isOpenBIS6orNewer && Array.isArray(value)) {

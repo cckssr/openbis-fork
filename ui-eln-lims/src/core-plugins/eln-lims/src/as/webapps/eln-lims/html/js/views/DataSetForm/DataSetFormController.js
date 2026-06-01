@@ -212,6 +212,52 @@ function DataSetFormController(parentController, mode, entity, dataSet, isMini, 
 			dataSetTypeCode = this._dataSetFormModel.dataSetV3.getType().getCode();
 		}
 
+		var dataSetTypeV3 = null;
+		for (var i = 0; i < this._dataSetFormModel.dataSetTypesV3.length; i++) {
+			if (this._dataSetFormModel.dataSetTypesV3[i].code === dataSetTypeCode) {
+				dataSetTypeV3 = this._dataSetFormModel.dataSetTypesV3[i];
+				break;
+			}
+		}
+		if (dataSetTypeV3 && this._dataSetFormModel.v3_dataset) {
+			for (var pa of dataSetTypeV3.propertyAssignments) {
+				var pt = pa.propertyType;
+				if (["ARRAY_INTEGER", "ARRAY_REAL", "ARRAY_STRING", "ARRAY_TIMESTAMP"].includes(pt.dataType)) {
+					var currentVal = metadata[pt.code];
+					var isNormalized = currentVal == null
+						|| currentVal === ""
+						|| (typeof currentVal === "string" && currentVal.trim().startsWith("["));
+					if (!isNormalized) {
+						var v3Val = this._dataSetFormModel.v3_dataset.properties[pt.code];
+						metadata[pt.code] = v3Val != null ? JSON.stringify(v3Val) : null;
+					}
+				}
+			}
+		}
+
+		if (dataSetTypeV3) {
+			for (var pa of dataSetTypeV3.propertyAssignments) {
+				var pt = pa.propertyType;
+				if (["ARRAY_INTEGER", "ARRAY_REAL", "ARRAY_STRING", "ARRAY_TIMESTAMP"].includes(pt.dataType)) {
+					var val = metadata[pt.code];
+					if (!val) {
+						continue;
+					}
+					var errorMessage = "Invalid value for " + pt.label + ": " + val;
+					try {
+						var array = Array.isArray(val) ? val : JSON.parse(val);
+						if (val && !FormUtil.isValidArray(array, pt.dataType)) {
+							Util.showUserError(errorMessage, function() { Util.unblockUI(); });
+							return;
+						}
+					} catch (e) {
+						Util.showUserError(errorMessage, function() { Util.unblockUI(); });
+						return;
+					}
+				}
+			}
+		}
+
 		var dataSetParents = [];
 
 		if(this._dataSetFormModel.datasetParentsComponent) {

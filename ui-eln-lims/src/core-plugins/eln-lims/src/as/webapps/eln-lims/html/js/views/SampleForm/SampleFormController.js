@@ -344,6 +344,43 @@ function SampleFormController(mainController, mode, sample, paginationInfo, acti
                     return;
                 }
             }
+
+			var sampleType = _this._sampleFormModel.sampleType;
+			if (_this._sampleFormModel.v3_sample) {
+				for (var pa of sampleType.propertyAssignments) {
+					var pt = pa.propertyType;
+					if (["ARRAY_INTEGER", "ARRAY_REAL", "ARRAY_STRING", "ARRAY_TIMESTAMP"].includes(pt.dataType)) {
+						var currentVal = sample.properties[pt.code];
+						var isNormalized = currentVal == null
+							|| currentVal === ""
+							|| (typeof currentVal === "string" && currentVal.trim().startsWith("["));
+						if (!isNormalized) {
+							var v3Val = _this._sampleFormModel.v3_sample.properties[pt.code];
+							sample.properties[pt.code] = v3Val != null ? JSON.stringify(v3Val) : null;
+						}
+					}
+				}
+			}
+
+			for (var pa of sampleType.propertyAssignments) {
+				var pt = pa.propertyType;
+				if (["ARRAY_INTEGER", "ARRAY_REAL", "ARRAY_STRING", "ARRAY_TIMESTAMP"].includes(pt.dataType)) {
+					var val = sample.properties[pt.code];
+					if (!val) {
+						continue;
+					}
+					var errorMessage = "Invalid value for " + pt.label + ": " + val;
+					try {
+						var array = Array.isArray(val) ? val : JSON.parse(val);
+						if (val && !FormUtil.isValidArray(array, pt.dataType)) {
+							Util.showUserError(errorMessage);
+							return;
+						}
+					} catch (e) {
+						Util.showUserError(errorMessage);
+					}
+				}
+			}
 			
 			//
 			//Identification Info
