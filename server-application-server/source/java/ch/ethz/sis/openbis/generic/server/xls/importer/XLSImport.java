@@ -207,7 +207,7 @@ public class XLSImport
                         if (entry.isDirectory())
                         {
                             if (!entryName.isEmpty() &&
-                                    !SCRIPTS_FOLDER_NAME.equals(entryName) &&
+                                    !entryName.startsWith(SCRIPTS_FOLDER_NAME) &&
                                     !entryName.startsWith(MISCELLANEOUS_FOLDER_NAME) &&
                                     !entryName.startsWith(DATA_FOLDER_NAME) &&
                                     !entryName.startsWith(HIERARCHY))
