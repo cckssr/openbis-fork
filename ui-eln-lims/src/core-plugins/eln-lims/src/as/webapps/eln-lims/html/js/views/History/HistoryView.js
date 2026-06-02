@@ -229,6 +229,9 @@ function HistoryView(controller, model) {
                     } else if(property.propertyType.dataType === "XML") {
                         $oldValue = FormUtil.renderXmlGridValue(object(property.code, property.oldValue), params, property.propertyType)
                         $newValue = FormUtil.renderXmlGridValue(object(property.code, property.newValue), params, property.propertyType)
+                    } else if(property.propertyType.dataType.startsWith("ARRAY_")) {
+                        $oldValue = FormUtil.renderArrayGridValue(object(property.code, property.oldValue), params, property.propertyType)
+                        $newValue = FormUtil.renderArrayGridValue(object(property.code, property.newValue), params, property.propertyType)
                     } else {
                         $oldValue = $("<div>").html(DOMPurify.sanitize(property.oldValue))
                         $newValue = $("<div>").html(DOMPurify.sanitize(property.newValue))
