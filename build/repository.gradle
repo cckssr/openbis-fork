@@ -1,7 +1,7 @@
 // Branch (or tag/commit ref) of the openbis-ivy GitLab repo to resolve
 // remote ivy artifacts from. Change this single value to point the build
 // at a different branch.
-def openbisIvyBranch = "BIS-2705-update-open-bis-dependencies-to-the-latest-available-versions"
+def openbisIvyBranch = "main"
 def openbisIvyUrl = "https://sissource.ethz.ch/openbis/openbis-public/openbis-ivy/-/raw/${openbisIvyBranch}"
 def useLocalIvy = false
 def localIvyRepositoryPath = '../../openbis-ivy'
