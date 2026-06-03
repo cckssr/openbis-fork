@@ -434,6 +434,9 @@ public class ExcelReader
                             semanticAnnotationHelper.importBlockForPropertyType(page, pageNumber,
                                     lineNumber, blockEnd);
                             break;
+                        case TYPE_GROUP:
+                            // TODO BIS-2769: implement type group import
+                            break;
                         default:
                             throw new UserFailureException("Unknown type: " + blockType);
                     }
