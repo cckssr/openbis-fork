@@ -47,7 +47,14 @@ dependencyCheck {
     // Keep test-only dependencies out of the report without suppressing the
     // same artifacts if they are introduced on a production classpath.
     skipTestGroups = true
-    skipConfigurations = ["testRuntimeClasspath", "testCompileClasspath"]
+    skipConfigurations = [
+            "testRuntimeClasspath",
+            "testCompileClasspath",
+            "javadoc_sources",
+            "javadoc_compilation",
+            "queryApiJavadoc",
+            "screeningApiJavadoc"
+    ]
     // scanConfigurations = ["runtimeClasspath"]
     proxy {
         server = 'proxy.ethz.ch'
