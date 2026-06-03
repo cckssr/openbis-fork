@@ -131,6 +131,19 @@ public class SampleTypeImportHelper extends BasicImportHelper
         VersionUtils.updateVersion(version, versions, ImportTypes.SAMPLE_TYPE.getType(), code);
     }
 
+    @Override
+    protected boolean isNewVersion(Map<String, Integer> header, List<String> values)
+    {
+        String internal = getValueByColumnName(header, values, Attribute.Internal);
+        boolean isInternalNamespace = ImportUtils.isTrue(internal);
+
+        if(isInternalNamespace && !delayedExecutor.isSystem()) {
+            //if exists, skip
+            return !isObjectExist(header, values);
+        }
+        return true;
+    }
+
     @Override protected boolean isObjectExist(Map<String, Integer> header, List<String> values)
     {
         String code = getValueByColumnName(header, values, Attribute.Code);
