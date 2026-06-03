@@ -143,16 +143,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
     TREE_TOOLS = "tools"
 
     TREES_INITIALIZED = false
-    TREES_BY_TYPE = {
-        "lab_notebook": [],
-        "lims": [],
-        "tools": []
-    }
-    ROOTS = {
-        "lab_notebook": null,
-        "lims": null,
-        "tools": null
-    }
+    TREE_NODES = []
 
     constructor(id) {
         super()
@@ -1664,26 +1655,24 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
             results.nodes.push(this._createAboutNode())
         } else {
             if(!this.TREES_INITIALIZED) {
-                var elnNodes = this._createLabNotebookNode();
-                this.TREES_BY_TYPE[this.TREE_LAB_NOTEBOOK].push(elnNodes);
-
-                var inv = this._createInventoryNode()
-                var stock = this._createStockNode()
-
-                this.TREES_BY_TYPE[this.TREE_LIMS].push(inv);
-                this.TREES_BY_TYPE[this.TREE_LIMS].push(stock);
-
-                var utilities = this._createUtilitiesNode();
-                this.TREES_BY_TYPE[this.TREE_TOOLS].push(utilities);
-
-                var about = this._createAboutNode();
-
-                this.TREES_BY_TYPE[this.TREE_TOOLS].push(about);
+                if(this.id === this.TREE_LAB_NOTEBOOK) {
+                    const elnNodes = this._createLabNotebookNode();
+                    this.TREE_NODES.push(elnNodes);
+                } else if(this.id === this.TREE_LIMS) {
+                    const inv = this._createInventoryNode();
+                    const stock = this._createStockNode();
+                    this.TREE_NODES.push(inv);
+                    this.TREE_NODES.push(stock);
+                } else if(this.id === this.TREE_TOOLS) {
+                    const utilities = this._createUtilitiesNode();
+                    const about = this._createAboutNode();
+                    this.TREE_NODES.push(utilities);
+                    this.TREE_NODES.push(about);
+                }
                 this.TREES_INITIALIZED = true
             }
-            results.nodes = this.TREES_BY_TYPE[this.id];
+            results.nodes = this.TREE_NODES;
         }
-
         results.nodes = results.nodes.filter((node) => !!node)
 
         return results

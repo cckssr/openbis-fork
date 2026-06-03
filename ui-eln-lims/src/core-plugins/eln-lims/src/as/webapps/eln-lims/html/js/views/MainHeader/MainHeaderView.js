@@ -45,13 +45,8 @@ function MainHeaderView(controller) {
             });
         }
 
-        let tabs = [
-            {page: "lab_notebook", label: "Lab Notebook"},
-            {page: "lims", label: "Inventory"},
-            {page: "tools", label: "Tools"},
-        ];
+        let tabs = [];
         if (!profile.isAdmin) {
-            tabs = [];
             if(profile.mainMenu.showLabNotebook) {
                 tabs.push({page: "lab_notebook", label: "Lab Notebook"})
             }
@@ -61,6 +56,12 @@ function MainHeaderView(controller) {
             if(profile.mainMenu.showTools) {
                 tabs.push({page: "tools", label: "Tools"})
             }
+        } else {
+            tabs = [
+                {page: "lab_notebook", label: "Lab Notebook"},
+                {page: "lims", label: "Inventory"},
+                {page: "tools", label: "Tools"},
+            ];
         }
 
         let props = {

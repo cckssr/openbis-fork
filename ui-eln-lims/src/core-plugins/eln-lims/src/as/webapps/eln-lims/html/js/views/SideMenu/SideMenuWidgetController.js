@@ -164,15 +164,18 @@ function SideMenuWidgetController(mainController) {
         return this._browserController.selectObject(nodeObject, { ignore: true })
     }
 
-    this.moveToNodeIdAfterLoad = function(nodeObj) {
+    this.moveToNodeIdAfterLoad = function(nodeObj, callback) {
         var _this = this;
         var counter = 20;
         var repeatUntilSet = function() {
             if(counter <= 0) {
                 return;
             }
-           if(!_this._browserController.isLoading()) {
+           if(!_this._browserController.isLoading() && _this._browserController.isLoaded()) {
                 _this._browserController.selectObject(nodeObj, { ignore: true })
+               if(callback) {
+                   callback();
+               }
            } else {
                 counter--;
                 setTimeout(repeatUntilSet, 500);
@@ -198,12 +201,12 @@ function SideMenuWidgetController(mainController) {
     }
 
     this.setAsRootById = function (code) {
-            var nodes = this._browserController.getNodes();
-            var node = nodes.find(x => x.object.id === code);
-            if(node) {
-                this._browserController.setNodeAsRoot(node.id);
-            }
+        var nodes = this._browserController.getNodes();
+        var node = nodes.find(x => x.object.id === code);
+        if(node) {
+            this._browserController.setNodeAsRoot(node.id);
         }
+    }
 
     //
     // Init method that builds the menu object hierarchy

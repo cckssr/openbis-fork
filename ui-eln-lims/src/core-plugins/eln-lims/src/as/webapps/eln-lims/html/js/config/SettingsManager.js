@@ -319,6 +319,10 @@ function SettingsManager(serverFacade) {
 
      	    }
 
+             if(settings.rootNodeSettings) {
+                 targetProfile.rootNodeSettings = settings.rootNodeSettings;
+             }
+
              // Miscellaneous
              var miscellaneousFields = [{name: "hideSectionsByDefault", defaultValue: true},
                                         {name: "showSemanticAnnotations", defaultValue: false},
@@ -449,8 +453,17 @@ function SettingsManager(serverFacade) {
 		this._validateForcedMonospaceFont(settings, errors);
 		this._validateDataSetTypeForFileNameMap(settings, errors);
 		this._validateSampleTypeDefinitionsExtension(settings, errors);
+        this._validateRootNode(settings, errors);
 		return errors;
 	}
+
+    this._validateRootNode = function(settings, errors) {
+       if(settings.rootNodeSettings) {
+           if(settings.rootNodeSettings.type === "identifier" && !settings.rootNodeSettings.value) {
+               errors.push("Empty value found for Root Node Option [identifier], please select an entity before save.")
+           }
+       }
+    }
 
     this._validateSpaces = function(settings, errors) {
         if(settings.inventorySpaces) {

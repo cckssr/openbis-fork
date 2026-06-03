@@ -331,39 +331,93 @@ function MainController(profile) {
                                                         var hideMenu = queryString.hideMenu;
                                                         
                                                         LayoutManager.reloadView(localReference.views);
-//                                                        localReference.views.tabContent = LayoutManager.tabContent;
                                                         if(viewName && viewData) {
                                                             localReference.sideMenu.moveToNodeId(decodeURIComponent(menuUniqueId)).then(function(){
                                                                 localReference.changeView(viewName, viewData);
                                                             })
                                                         } else {
-                                                             profile.getHomeSpace(function(homeSpaceCode) {
-                                                                if(homeSpaceCode) {
-                                                                    localReference.serverFacade.getSetting('hasLoggedOnce', function(hasLoggedOnce) {
-                                                                        if(hasLoggedOnce !== 'true') {
-                                                                            localReference.serverFacade.setSetting('hasLoggedOnce', true);
-                                                                            var homeSpace = {
-                                                                                type: "SPACE",
-                                                                                id: homeSpaceCode
-                                                                            }
-                                                                            localReference.sideMenu._browserController.load().then(x => {
-                                                                                    localReference.sideMenu.moveToNodeId(JSON.stringify(homeSpace)).then(function(){
-                                                                                        localReference.sideMenu.setAsRootById("LAB_NOTEBOOK");
-                                                                                    })
-                                                                            });
-                                                                        }
-                                                                    });
-                                                                } else {
-                                                                    localReference.sideMenu._browserController.load().then(x => {
-                                                                        labNotebookNode = {
-                                                                            type: "LAB_NOTEBOOK",
-                                                                            id: "LAB_NOTEBOOK"
-                                                                        }
-                                                                        localReference.sideMenu.moveToNodeId(JSON.stringify(labNotebookNode));
-                                                                    });
-                                                                }
-                                                            });
-                                                            localReference.changeView("showLabNotebookPage", null);
+															var rootNodeSettings = profile.rootNodeSettings;
+															if(rootNodeSettings && rootNodeSettings.type !== "none") {
+																if(rootNodeSettings.type === "identifier") {
+																	var entity = rootNodeSettings.value;
+																	var node = null;
+
+																	switch(entity['@type']) {
+																		case "as.dto.project.Project":
+																			if(profile.isInventorySpace(entity.space.code)) {
+																				localReference.mainHeader.navigateToTab("LIMS");
+																			}
+																			node = {
+																				type: "PROJECT",
+																				id: entity.permId.permId
+																			}
+																			break;
+																		case "as.dto.space.Space":
+																			if(profile.isInventorySpace(entity.code)) {
+																				localReference.mainHeader.navigateToTab("LIMS");
+																			}
+																			node = {
+																				type: "SPACE",
+																				id: entity.code
+																			}
+																			break;
+																	}
+
+																	localReference.sideMenu.moveToNodeIdAfterLoad(node, () => {
+																		localReference.sideMenu.setAsRootById(node.id);
+																	})
+
+																} else if(rootNodeSettings.type === "homeSpace") {
+																	profile.getHomeSpace(function(homeSpaceCode) {
+																		if(homeSpaceCode) {
+																			if(profile.isInventorySpace(homeSpaceCode)) {
+																				localReference.mainHeader.navigateToTab("LIMS");
+																			}
+																			const homeSpace = {
+																				type: "SPACE",
+																				id: homeSpaceCode
+																			}
+																			localReference.sideMenu.moveToNodeIdAfterLoad(homeSpace, () => {
+																				localReference.sideMenu.setAsRootById(homeSpace.id);
+																			})
+																		} else {
+																			var labNotebookNode = {
+																				type: "LAB_NOTEBOOK",
+																				id: "LAB_NOTEBOOK"
+																			}
+																			localReference.sideMenu.moveToNodeIdAfterLoad(labNotebookNode, () => {
+																				localReference.sideMenu.setAsRootById(labNotebookNode.id);
+																			})
+																		}
+																	});
+																}
+															} else {
+																profile.getHomeSpace(function (homeSpaceCode) {
+																	if (homeSpaceCode) {
+																		localReference.serverFacade.getSetting('hasLoggedOnce', function (hasLoggedOnce) {
+																			if (hasLoggedOnce !== 'true') {
+																				localReference.serverFacade.setSetting('hasLoggedOnce', true);
+																				const homeSpace = {
+																					type: "SPACE",
+																					id: homeSpaceCode
+																				}
+																				localReference.sideMenu.moveToNodeIdAfterLoad(homeSpace, () => {
+																					localReference.sideMenu.setAsRootById("LAB_NOTEBOOK");
+																				})
+																			}
+																		});
+																	} else {
+																		var labNotebookNode = {
+																			type: "LAB_NOTEBOOK",
+																			id: "LAB_NOTEBOOK"
+																		}
+																		localReference.sideMenu.moveToNodeIdAfterLoad(labNotebookNode, () => {
+																			localReference.sideMenu.setAsRootById(labNotebookNode.id);
+																		})
+																	}
+																});
+																localReference.changeView("showLabNotebookPage", null);
+															}
                                                         }
                                                         
                                                         Util.unblockUI();
