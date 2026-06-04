@@ -544,12 +544,6 @@ var SampleDataGridUtil = new function() {
                 rules: [],
             }
 
-            var criteriaToSend = {
-                logicalOperator: "AND",
-                rules: [],
-                subCriteria: [mainSubcriteria, gridSubcriteria]
-            }
-
             if(options) {
                 if(options.searchMode === "GLOBAL_FILTER") {
                     if(options.globalSearch.text !== null) {
@@ -677,12 +671,27 @@ var SampleDataGridUtil = new function() {
                 })
                 fetchOptions.sortings = sortings
             }
-			
-//			Util.blockUI();
-//			mainController.serverFacade.searchForSamplesAdvanced(criteriaToSend, fetchOptions, function(result) {
-//				callbackForSearch(result);
-//				Util.unblockUI();
-//			});
+
+			var criteriaToSend = null;
+
+			// optimization - if possible send only one criteria object to eliminate subqueries
+			if (Object.keys(gridSubcriteria.rules).length === 0) {
+				criteriaToSend = mainSubcriteria
+			} else {
+				if (mainSubcriteria.logicalOperator === "AND" && gridSubcriteria.logicalOperator === "AND") {
+					Object.keys(gridSubcriteria.rules).forEach(function(key){
+						mainSubcriteria.rules[key] = gridSubcriteria.rules[key];
+					});
+					criteriaToSend = mainSubcriteria
+				} else {
+					criteriaToSend = {
+						logicalOperator: "AND",
+						rules: [],
+						subCriteria: [mainSubcriteria, gridSubcriteria]
+					}
+				}
+			}
+
 			mainController.serverFacade.searchForSamplesAdvanced(criteriaToSend, fetchOptions, callbackForSearch);
 		}
 	}

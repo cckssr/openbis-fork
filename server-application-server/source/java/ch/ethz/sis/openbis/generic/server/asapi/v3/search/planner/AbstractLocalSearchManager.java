@@ -84,14 +84,27 @@ public abstract class AbstractLocalSearchManager<CRITERIA extends ISearchCriteri
 
     protected static <E> Set<E> intersection(final Collection<Set<E>> sets)
     {
-        return !sets.isEmpty() ? sets.stream().reduce(new HashSet<>(sets.iterator().next()), (set1, set2) ->
-                {
-                    if (set2 != null)
-                    {
-                        set1.retainAll(set2);
-                    }
-                    return set1;
-                }) : new HashSet<>(0);
+        if (sets.isEmpty()) {
+            return new HashSet<>(0);
+        }
+
+        if (sets.size() == 1) {
+            return sets.iterator().next();
+        }
+
+        // Start with the smallest set to minimize retainAll() work
+        Set<E> result = sets.stream()
+                .min(Comparator.comparingInt(Set::size))
+                .map(HashSet::new).orElseThrow();
+
+        for (Set<E> set : sets) {
+            result.retainAll(set);
+            if (result.isEmpty()) {
+                return result;
+            }
+        }
+
+        return result;
     }
 
     protected static <E> Set<E> union(final Collection<Set<E>> sets)
