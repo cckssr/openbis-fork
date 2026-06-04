@@ -2045,6 +2045,26 @@ var FormUtil = new function() {
       return Object.prototype.toString.call(x) === '[object String]';
     }
 
+	this.isValidArray = function(val, dataType) {
+		try {
+			if (!Array.isArray(val)) {
+				return false;
+			} else if (dataType === "ARRAY_INTEGER") {
+				return val.every(v => typeof v === "number" && Number.isInteger(v) ||
+					typeof v === "string" && /^-?\d+$/.test(v.trim()));
+			} else if (dataType === "ARRAY_REAL") {
+				return val.every(v => typeof v === "number"
+					|| typeof v === "string" && !isNaN(Number(v.trim())) && v.trim() !== "");
+			} if (dataType === "ARRAY_TIMESTAMP") {
+				return val.every(v => typeof v === "string" && /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} [+-]\d{4}$/.test(v.trim()));
+			} else {
+				return true;
+			}
+		} catch (e) {
+			return false;
+		}
+	}
+
 	//
 	// errors
 	//
@@ -3388,10 +3408,6 @@ var FormUtil = new function() {
 		const value = row[propertyType.code]
 		if (!value) {
 			return ""
-		}
-
-		if (!Array.isArray(params.value)) {
-			return value.toString();
 		}
 
         if (propertyType.dataType === "ARRAY_STRING") {

@@ -21,6 +21,8 @@ import java.time.Instant;
 import java.util.*;
 import java.util.stream.Stream;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 
@@ -56,6 +58,8 @@ public abstract class EntityPropertyPE extends HibernateAbstractRegistrationHold
         IUntypedValueSetter, IEntityPropertyHolder
 {
     private static final long serialVersionUID = IServer.VERSION;
+
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     protected IEntityPropertiesHolder entity;
 
@@ -376,13 +380,16 @@ public abstract class EntityPropertyPE extends HibernateAbstractRegistrationHold
                 .get();
     }
 
-    private String convertArrayToString(Object[] array) {
-        if (array == null || array.length == 0)
-            return "";
-        return Stream.of(array)
-                .map(String::valueOf)
-                .reduce((x, y) -> x + ", " + y)
-                .get();
+    private static String convertArrayToString(final Object[] array)
+    {
+        try
+        {
+            return MAPPER.writeValueAsString(array);
+        } catch (final JsonProcessingException e)
+        {
+            throw new IllegalArgumentException("Not supported value for array: " +
+                    Arrays.toString(array) + ".", e);
+        }
     }
 
     /**
