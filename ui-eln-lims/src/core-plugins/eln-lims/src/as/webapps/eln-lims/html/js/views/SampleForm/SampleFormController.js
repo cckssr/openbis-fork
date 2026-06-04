@@ -449,7 +449,7 @@ function SampleFormController(mainController, mode, sample, paginationInfo, acti
 					if(child.newSample) {
 						samplesToCreate.push(child);
 					} else if(child.deleteSample) {
-						sampleChildrenRemovedFinal.push(child.identifier);
+						// sampleChildrenRemovedFinal.push(child.identifier);
 						samplesToDelete.push(child.permId);
 					}
 				});
@@ -1055,7 +1055,7 @@ function SampleFormController(mainController, mode, sample, paginationInfo, acti
                     }
                     mainController.openbisV3.updateSamples([sampleUpdate]).done(function() {
                         if(samplesToDelete) {
-                            mainController.serverFacade.trashStorageSamplesWithoutParents(samplesToDelete,
+                            mainController.serverFacade.trashStorageSamples(samplesToDelete,
                             "Deleted to trashcan from eln sample form " + _this._sampleFormModel.sample.identifier,
                             function(response) {
                                 Util.showSuccess(message, callbackOk);
@@ -1070,7 +1070,7 @@ function SampleFormController(mainController, mode, sample, paginationInfo, acti
             });
         } else { // Branch for openBIS 19.X
             if(samplesToDelete) {
-                mainController.serverFacade.trashStorageSamplesWithoutParents(samplesToDelete,
+                mainController.serverFacade.trashStorageSamples(samplesToDelete,
                     "Deleted to trashcan from eln sample form " + _this._sampleFormModel.sample.identifier,
                     function(response) {
                         Util.showSuccess(message, callbackOk);

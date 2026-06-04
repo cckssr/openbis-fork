@@ -918,9 +918,9 @@ function ServerFacade(openbisServer) {
 		}
 	}
 
-	this.trashStorageSamplesWithoutParents = function(samplePermIds, reason, callback) {
+	this.trashStorageSamples = function(samplePermIds, reason, callback) {
 	    this.customELNASAPI({
-	        method : "trashStorageSamplesWithoutParents",
+	        method : "trashStorageSamples",
 	        samplePermIds : samplePermIds,
 	        reason : reason
 	    }, callback);
