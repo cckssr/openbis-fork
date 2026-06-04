@@ -363,7 +363,7 @@ function MainController(profile) {
 																			break;
 																	}
 
-																	localReference.sideMenu.moveToNodeIdAfterLoad(node, () => {
+																	localReference.sideMenu.moveToNodeIdAfterLoad(node, true,() => {
 																		localReference.sideMenu.setAsRootById(node.id);
 																	})
 
@@ -377,7 +377,7 @@ function MainController(profile) {
 																				type: "SPACE",
 																				id: homeSpaceCode
 																			}
-																			localReference.sideMenu.moveToNodeIdAfterLoad(homeSpace, () => {
+																			localReference.sideMenu.moveToNodeIdAfterLoad(homeSpace, true,() => {
 																				localReference.sideMenu.setAsRootById(homeSpace.id);
 																			})
 																		} else {
@@ -385,7 +385,7 @@ function MainController(profile) {
 																				type: "LAB_NOTEBOOK",
 																				id: "LAB_NOTEBOOK"
 																			}
-																			localReference.sideMenu.moveToNodeIdAfterLoad(labNotebookNode, () => {
+																			localReference.sideMenu.moveToNodeIdAfterLoad(labNotebookNode, true,() => {
 																				localReference.sideMenu.setAsRootById(labNotebookNode.id);
 																			})
 																		}
@@ -401,7 +401,7 @@ function MainController(profile) {
 																					type: "SPACE",
 																					id: homeSpaceCode
 																				}
-																				localReference.sideMenu.moveToNodeIdAfterLoad(homeSpace, () => {
+																				localReference.sideMenu.moveToNodeIdAfterLoad(homeSpace, false, () => {
 																					localReference.sideMenu.setAsRootById("LAB_NOTEBOOK");
 																				})
 																			}
@@ -411,7 +411,7 @@ function MainController(profile) {
 																			type: "LAB_NOTEBOOK",
 																			id: "LAB_NOTEBOOK"
 																		}
-																		localReference.sideMenu.moveToNodeIdAfterLoad(labNotebookNode, () => {
+																		localReference.sideMenu.moveToNodeIdAfterLoad(labNotebookNode, true,() => {
 																			localReference.sideMenu.setAsRootById(labNotebookNode.id);
 																		})
 																	}

@@ -164,7 +164,7 @@ function SideMenuWidgetController(mainController) {
         return this._browserController.selectObject(nodeObject, { ignore: true })
     }
 
-    this.moveToNodeIdAfterLoad = function(nodeObj, callback) {
+    this.moveToNodeIdAfterLoad = function(nodeObj, shouldOpenPage, callback) {
         var _this = this;
         var counter = 20;
         var repeatUntilSet = function() {
@@ -172,7 +172,11 @@ function SideMenuWidgetController(mainController) {
                 return;
             }
            if(!_this._browserController.isLoading() && _this._browserController.isLoaded()) {
-                _this._browserController.selectObject(nodeObj, { ignore: true })
+               let ignore = true;
+               if(shouldOpenPage) {
+                   ignore = false;
+               }
+                _this._browserController.selectObject(nodeObj, { ignore: ignore })
                if(callback) {
                    callback();
                }
