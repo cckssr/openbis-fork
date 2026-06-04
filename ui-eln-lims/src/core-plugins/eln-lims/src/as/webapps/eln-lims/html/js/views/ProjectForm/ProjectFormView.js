@@ -200,7 +200,7 @@ function ProjectFormView(projectFormController, projectFormModel) {
 			$formColumn.append(this._createExperimentsSection(projectIdentifier, hideShowOptionsModel));
 		}
 
-		FormUtil.addOptionsToToolbar(toolbarModel, dropdownOptionsModel, hideShowOptionsModel, "PROJECT-VIEW", null, false);
+		FormUtil.addOptionsToToolbar($formColumn, toolbarModel, dropdownOptionsModel, hideShowOptionsModel, "PROJECT-VIEW", null, false);
 
 		var $helpBtn = FormUtil.getToolbarButton("?", function() {
                                     mainController.openHelpPage();

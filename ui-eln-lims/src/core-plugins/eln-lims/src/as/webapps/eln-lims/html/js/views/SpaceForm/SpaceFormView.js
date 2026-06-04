@@ -161,7 +161,7 @@ function SpaceFormView(spaceFormController, spaceFormModel) {
         var hideShowOptionsModel = [];
         $formColumn.append(this._createIdentificationInfoSection(hideShowOptionsModel));
         $formColumn.append(this._createDescriptionSection(hideShowOptionsModel));
-        FormUtil.addOptionsToToolbar(toolbarModel, dropdownOptionsModel, hideShowOptionsModel, "SPACE-VIEW", null, false);
+        FormUtil.addOptionsToToolbar($formColumn, toolbarModel, dropdownOptionsModel, hideShowOptionsModel, "SPACE-VIEW", null, false);
 
         var $helpBtn = FormUtil.getToolbarButton("?", function() {
                             mainController.openHelpPage();

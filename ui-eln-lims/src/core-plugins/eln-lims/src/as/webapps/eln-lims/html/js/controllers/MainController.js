@@ -1846,7 +1846,10 @@ function MainController(profile) {
 	}
 	
     this._showCreateSpacePage = function(isInventory) {
-        //Show Form
+		if(isInventory === "undefined") {
+			// this happens only when create space form is opened through url
+			isInventory = null;
+		}
         var spaceFormController = new SpaceFormController(this, FormMode.CREATE, isInventory);
         var tabInfo = TabContentUtil.getCleanTab("CREATE_SPACE", true);
         var views = this._getNewViewModel(true, true, false, tabInfo);

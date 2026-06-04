@@ -825,7 +825,7 @@
 			});
 
 	
-			FormUtil.addOptionsToToolbar(toolbarModel, dropdownOptionsModel, hideShowOptionsModel,
+			FormUtil.addOptionsToToolbar($formColumn, toolbarModel, dropdownOptionsModel, hideShowOptionsModel,
 					"SAMPLE-VIEW-" + _this._sampleFormModel.sample.sampleTypeCode, null, false);
 
 	        var $helpBtn = FormUtil.getToolbarButton("?", function() {
