@@ -364,7 +364,7 @@ function SampleFormController(mainController, mode, sample, paginationInfo, acti
 					}
 				}
 			}
-			
+
 			//
 			//Identification Info
 			//
