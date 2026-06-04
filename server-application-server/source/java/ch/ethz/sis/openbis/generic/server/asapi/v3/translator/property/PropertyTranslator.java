@@ -169,13 +169,6 @@ public abstract class PropertyTranslator extends
         return result;
     }
 
-    private String convertArrayToString(String[] array)
-    {
-        return Stream.of(array)
-                .reduce((x, y) -> x + ", " + y)
-                .get();
-    }
-
     @SuppressWarnings("unchecked")
     @Override
     protected void updateObject(TranslationContext context, Long objectId,

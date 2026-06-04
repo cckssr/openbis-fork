@@ -42,8 +42,8 @@ public class PropertyRecord
     public String sample_perm_id;
 
     public Date modificationTimestamp;
-    public String[] integerArrayPropertyValue;
-    public String[] realArrayPropertyValue;
+    public Long[] integerArrayPropertyValue;
+    public Double[] realArrayPropertyValue;
     public String[] stringArrayPropertyValue;
     public String[] timestampArrayPropertyValue;
     public String jsonPropertyValue;

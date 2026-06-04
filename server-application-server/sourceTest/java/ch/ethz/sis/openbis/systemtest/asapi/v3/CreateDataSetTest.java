@@ -2425,16 +2425,16 @@ public class CreateDataSetTest extends AbstractDataSetTest
         DataSet dataSet = v3api.getDataSets(sessionToken, dataSetIds, fetchOptions).get(dataSetIds.get(0));
         assertEquals(dataSet.getProperties().get(PLATE_GEOMETRY.getPermId()), "384_WELLS_16X24");
 
-        List<Long[]> props = dataSet.getMultiValueIntegerArrayProperty(propertyType.getPermId());
+        List<Double[]> props = dataSet.getMultiValueRealArrayProperty(propertyType.getPermId());
         assertEquals(props.size(), 2);
-        for (Long[] prop : props)
+        for (Double[] prop : props)
         {
             if (prop[0] > 3L)
             {
-                assertEqualsNoOrder(prop, new Long[] { 4L, 5L, 6L });
+                assertEqualsNoOrder(prop, new Double[] { 4.0, 5.0, 6.0 });
             } else
             {
-                assertEqualsNoOrder(prop, new Long[] { 1L, 2L, 3L });
+                assertEqualsNoOrder(prop, new Double[] { 1.0, 2.0, 3.0 });
             }
         }
 

@@ -1981,13 +1981,16 @@ public class CreateSampleTest extends AbstractSampleTest
         Sample sample2 = v3api.getSamples(sessionToken, sampleIds, fetchOptions).get(sampleIds.get(0));
         assertEquals(sample2.getProperties().get(PLATE_GEOMETRY.getPermId()), "384_WELLS_16X24");
 
-        List<Long[]> props = sample2.getMultiValueIntegerArrayProperty(propertyType.getPermId());
+        List<Double[]> props = sample2.getMultiValueRealArrayProperty(propertyType.getPermId());
         assertEquals(props.size(), 2);
-        for(Long[] prop : props) {
-            if(prop[0] > 3L) {
-                assertEqualsNoOrder(prop, new Long[] {4L, 5L, 6L});
-            } else {
-                assertEqualsNoOrder(prop, new Long[] {1L, 2L, 3L});
+        for (Double[] prop : props)
+        {
+            if (prop[0] > 3L)
+            {
+                assertEqualsNoOrder(prop, new Double[] { 4.0, 5.0, 6.0 });
+            } else
+            {
+                assertEqualsNoOrder(prop, new Double[] { 1.0, 2.0, 3.0 });
             }
         }
 
@@ -2020,13 +2023,16 @@ public class CreateSampleTest extends AbstractSampleTest
         Sample sample2 = v3api.getSamples(sessionToken, sampleIds, fetchOptions).get(sampleIds.get(0));
         assertEquals(sample2.getProperties().get(PLATE_GEOMETRY.getPermId()), "384_WELLS_16X24");
 
-        List<Long[]> props = sample2.getMultiValueIntegerArrayProperty(propertyType.getPermId());
+        List<Double[]> props = sample2.getMultiValueRealArrayProperty(propertyType.getPermId());
         assertEquals(props.size(), 2);
-        for(Long[] prop : props) {
-            if(prop[0] > 3L) {
-                assertEqualsNoOrder(prop, new Long[] {4L, 5L, 6L});
-            } else {
-                assertEqualsNoOrder(prop, new Long[] {1L, 2L, 3L});
+        for (Double[] prop : props)
+        {
+            if (prop[0] > 3L)
+            {
+                assertEqualsNoOrder(prop, new Double[] { 4.0, 5.0, 6.0 });
+            } else
+            {
+                assertEqualsNoOrder(prop, new Double[] { 1.0, 2.0, 3.0 });
             }
         }
 
