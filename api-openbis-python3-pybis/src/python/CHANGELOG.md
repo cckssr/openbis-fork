@@ -1,8 +1,10 @@
-## Changes with pybis-6.9.1.0
+## Changes with pybis-7.0.0.0
 
 - Changed versioning scheme
-- Added Imaging technology beta functionalities
-- Added AFS data handling
+- Added Imaging technology functionalities
+- Added AFS api handling
+- Improvements to dataset symlinks
+- Added basic functionalities for RO-Crate server communication
 
 ## Changes with pybis-1.37.5
 

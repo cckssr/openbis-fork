@@ -94,7 +94,7 @@ from .vocabulary import Vocabulary, VocabularyTerm
 from .spreadsheet import Spreadsheet
 from .type_group import TypeGroup
 from .imaging import *
-from .afs_client import AfsClient
+from .afs.afs_client import AfsClient
 
 # import the various openBIS entities
 

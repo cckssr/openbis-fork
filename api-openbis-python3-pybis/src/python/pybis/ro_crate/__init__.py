@@ -1,28 +1,15 @@
-#   Copyright ETH 2018 - 2026 Zürich, Scientific IT Services
-# 
+#   Copyright ETH 2026 Zürich, Scientific IT Services
+#
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
 #   You may obtain a copy of the License at
-# 
+#
 #        http://www.apache.org/licenses/LICENSE-2.0
-#   
+#
 #   Unless required by applicable law or agreed to in writing, software
 #   distributed under the License is distributed on an "AS IS" BASIS,
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 #
-name = "pybis"
-__author__ = "ID SIS • ETH Zürich"
-__email__ = "openbis-support@id.ethz.ch"
-__version__ = "99.99.99.dev0"
-
-from . import pybis
-from .pybis import DataSet
-from .pybis import Openbis
-from .pybis import ImagingControl
-from .pybis import Spreadsheet
-from .imaging import *
-
-from .afs.afs_client import File, AfsClient
-# from .ro_crate.ro_crate_client import RoCrateClient
+from .ro_crate_client import RoCrateClient
