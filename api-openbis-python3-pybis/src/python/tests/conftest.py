@@ -93,6 +93,11 @@ def afs(space):
         print(f'[TEST] AFS data after conversion: {data_store_list}')
 
         afs_url = data_store_list[0][1] + "/api" if len(data_store_list) > 0 else None
+
+        afs_client_debug = AfsClient('http://jenkins:8085/afs-server/api', token, False)
+        print(f'[TEST] AFS session from debug link: {afs_client_debug.is_session_valid()}')
+
+
     except BaseException as e:
         print(f'[TEST] Failed to connect to OpenBIS AFS {e}')
 
