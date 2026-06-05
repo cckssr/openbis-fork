@@ -15,11 +15,15 @@
  */
 package ch.ethz.sis.openbis.generic.server.dss.plugins.sync.datasource;
 
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.xml.stream.XMLStreamWriter;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.exporter.data.ExportableKind;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.IDataSourceQueryService;
 
 /**
@@ -33,7 +37,7 @@ class DeliveryExecutionContext
 
     private String sessionToken;
 
-    private Set<String> spaces;
+    private Map<ExportableKind, List<String>> permIdsByKind = Collections.emptyMap();
 
     private Date requestTimestamp;
 
@@ -69,14 +73,19 @@ class DeliveryExecutionContext
         this.sessionToken = sessionToken;
     }
 
-    public Set<String> getSpaces()
+    public Map<ExportableKind, List<String>> getPermIdsByKind()
     {
-        return spaces;
+        return permIdsByKind;
     }
 
-    public void setSpaces(Set<String> spaces)
+    public void setPermIdsByKind(Map<ExportableKind, List<String>> permIdsByKind)
     {
-        this.spaces = spaces;
+        this.permIdsByKind = permIdsByKind;
+    }
+
+    public List<String> getPermIds(ExportableKind kind)
+    {
+        return permIdsByKind.getOrDefault(kind, Collections.emptyList());
     }
 
     public Date getRequestTimestamp()

@@ -7,6 +7,11 @@ data-source-alias = DS1
 data-source-auth-realm = OAI-PMH
 data-source-auth-user = admin
 data-source-auth-pass = admin
+exportable-perm-ids = SPACE:DEFAULT, SPACE:TEST, SPACE:BSSE_FLOWCELLS, SPACE:ELN_SETTINGS, SPACE:STORAGE, SPACE:METHODS, SPACE:MATERIALS, SPACE:STOCK_CATALOG, SPACE:STOCK_ORDERS, SPACE:DEFAULT_LAB_NOTEBOOK, SPACE:GUEST, SPACE:SPACE_EXTRA_WENT, SPACE:SPACE_WIDESCREEN_KILLS, SPACE:SPACE_REVEAL_GENOME, SPACE:SPACE_THOMSON_EFFICIENCY, SPACE:PUBLICATIONS
+with-levels-below = true
+with-objects-and-data-sets-parents = false
+with-objects-and-data-sets-children = true
+with-objects-and-data-sets-other-spaces = false
 
 #replace the following with proper user on openbis2
 #after switching on master data synchronization
@@ -20,4 +25,3 @@ harvester-tmp-dir = harvester-tmp
 file-service-repository-path = ../../data/file-server
 last-sync-timestamp-file = ../../last-sync-timestamp-file_HRVSTR.txt
 log-file = ../../synchronization.log
-

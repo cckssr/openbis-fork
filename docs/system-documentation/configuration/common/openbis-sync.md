@@ -114,21 +114,36 @@ From capabilities described in the ResourceSync Framework Specification only `re
 The resourcelist returns an XML with all metadata of the data source openBIS instance. 
 This includes master data, meta data including file meta data.
 
-Two optional URL parameters filter the data by spaces:
+The data to deliver is selected by a list of entities (perm ids) plus a set of flags.
+The selection is expanded on the data source into the full closed set of entities (spaces,
+projects, experiments, samples and data sets) and only the master data actually
+used by those entities is delivered. The parent levels of the selected entities
+(e.g. the experiment, project and space of a sample) are always included.
 
--   `black_list`: comma-separated list of regular expressions. All
-    entities which belong to a space which matches one of the regular
-    expressions of this list will be suppressed.
--   `white_list`: comma-separated list of regular expressions. If
-    defined only entities which belong to a space which matches one of
-    the regular expressions of this list will be delivered (if not
-    suppressed by the black list).
+The following URL parameters control the selection:
+
+-   `exportable_perm_id`: repeatable parameter. Each value has the form
+    `<KIND>:<permId>`, where `<KIND>` is one of `SPACE`, `PROJECT`,
+    `EXPERIMENT`, `SAMPLE` or `DATASET`, e.g.
+    `exportable_perm_id=SAMPLE:20170610109309206-1234`. These are the root
+    entities of the selection.
+-   `with_levels_below` (`true`/`false`): also include the child levels of the
+    selected entities (e.g. the experiments and samples of a project).
+-   `with_objects_and_data_sets_parents` (`true`/`false`): also include the
+    parent objects and data sets.
+-   `with_objects_and_data_sets_children` (`true`/`false`): also include the
+    child objects and data sets.
+-   `with_objects_and_data_sets_other_spaces` (`true`/`false`): also follow
+    relations into objects and data sets that belong to a different space than
+    the selected root entity. 
 
 Remarks:
 
 -   Basic HTTP authentication is used for authentication.
 -   The resourcelist capability returns only data visible for the user
     which did the authentication.
+-   If no `exportable_perm_id` parameters are given, the resourcelist will be
+    empty.
 
 ## Harvester Service Configuration
 
@@ -169,8 +184,8 @@ data-source-dss-url = https://<data source host>:<DSS port>/datastore_server
 data-source-auth-realm = OAI-PMH
 data-source-auth-user = <data source user id>
 data-source-auth-pass = <data source password>
-space-black-list = SYSTEM
-space-white-list = LAB1.*
+exportable-perm-ids = SAMPLE:20240101120000000-1, PROJECT:20240101120000000-2
+with-levels-below = true
 
 harvester-user = <harvester user id>
 harvester-pass = <harvester user password>
@@ -195,9 +210,14 @@ verbose = true
 -   `<data source user id>` and `<data source password>` are the
     credential to access the Data Source openBIS instance. Only data
     seen by this user is harvested.
--   `space-black-list` and `space-white-list` have the same meaning
-    as `black_list` and `white_list` as specified above in the Data
-    Source section.
+-   `exportable-perm-ids` is a mandatory, comma-separated list of `<KIND>:<permId>`
+    root entities to synchronize.
+-   `with-levels-below`, `with-objects-and-data-sets-parents`,
+    `with-objects-and-data-sets-children`, and `with-objects-and-data-sets-other-spaces`
+    are the hierarchy inclusion flags.
+    *   They have the same meaning as the `exportable_perm_id` parameter and the
+        corresponding flags specified in the Data Source section.
+    *   All hierarchy inclusion flags default to `false`.    
 -   `<harvester user id>` and `<harvester user password>` are the
     credential to access the Harvester openBIS instance. It has to be a
     user with instance admin rights.

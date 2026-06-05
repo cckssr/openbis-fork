@@ -19,6 +19,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -45,6 +46,7 @@ import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.exporter.data.ExportablePermId;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.config.BasicAuthCredentials;
 import ch.systemsx.cisd.common.http.JettyHttpClientFactory;
 import ch.systemsx.cisd.common.xml.XMLInfraStructure;
@@ -69,15 +71,18 @@ public class DataSourceConnector implements IDataSourceConnector
     }
 
     @Override
-    public Document getResourceListAsXMLDoc(List<String> spaceBlackList, List<String> spaceWhiteList) throws Exception
+    public Document getResourceListAsXMLDoc(List<ExportablePermId> exportablePermIds, boolean withLevelsAbove, boolean withLevelsBelow,
+            boolean withObjectsAndDataSetsParents, boolean withObjectsAndDataSetsChildren, boolean withObjectsAndDataSetsOtherSpaces)
+            throws Exception
     {
         HttpClient client = JettyHttpClientFactory.getHttpClient();
-        Request requestEntity = createResourceListRequest(client, spaceBlackList, spaceWhiteList);
+        Request requestEntity = createResourceListRequest(client, exportablePermIds, withLevelsAbove, withLevelsBelow,
+                withObjectsAndDataSetsParents, withObjectsAndDataSetsChildren, withObjectsAndDataSetsOtherSpaces);
         operationLog.info("Start loading a resource list from " + requestEntity.getURI());
         
         InputStreamResponseListener listener = new InputStreamResponseListener();
         requestEntity.send(listener);
-        Response response = listener.get(50, TimeUnit.SECONDS);
+        Response response = listener.get(300, TimeUnit.SECONDS);
         if (response.getStatus() == HttpStatus.OK_200)
         {
             try (InputStream responseContent = listener.getInputStream())
@@ -210,24 +215,30 @@ public class DataSourceConnector implements IDataSourceConnector
         return contentResponse;
     }
 
-    private Request createResourceListRequest(HttpClient client, List<String> spaceBlackList, List<String> spaceWhiteList)
+    private Request createResourceListRequest(HttpClient client, List<ExportablePermId> exportablePermIds, boolean withLevelsAbove,
+            boolean withLevelsBelow, boolean withObjectsAndDataSetsParents, boolean withObjectsAndDataSetsChildren,
+            boolean withObjectsAndDataSetsOtherSpaces)
     {
-        String url = createRequestUrl(spaceBlackList, spaceWhiteList);
+        String url = createRequestUrl(exportablePermIds, withLevelsAbove, withLevelsBelow, withObjectsAndDataSetsParents,
+                withObjectsAndDataSetsChildren, withObjectsAndDataSetsOtherSpaces);
         return createRequest(client, url);
     }
 
-    private String createRequestUrl(List<String> spaceBlackList, List<String> spaceWhiteList)
+    String createRequestUrl(List<ExportablePermId> exportablePermIds, boolean withLevelsAbove, boolean withLevelsBelow,
+            boolean withObjectsAndDataSetsParents, boolean withObjectsAndDataSetsChildren, boolean withObjectsAndDataSetsOtherSpaces)
     {
-        String url = dataSourceUrl + "?verb=resourcelist.xml";
-        for (String space : spaceBlackList)
+        StringBuilder url = new StringBuilder(dataSourceUrl).append("?verb=resourcelist.xml");
+        for (ExportablePermId exportablePermId : exportablePermIds)
         {
-            url += "&black_list=" + space;
+            url.append("&exportable_perm_id=").append(exportablePermId.getExportableKind().name()).append(':')
+                    .append(URLEncoder.encode(exportablePermId.getPermId(), StandardCharsets.UTF_8));
         }
-        for (String space : spaceWhiteList)
-        {
-            url += "&white_list=" + space;
-        }
-        return url;
+        url.append("&with_levels_above=").append(withLevelsAbove);
+        url.append("&with_levels_below=").append(withLevelsBelow);
+        url.append("&with_objects_and_data_sets_parents=").append(withObjectsAndDataSetsParents);
+        url.append("&with_objects_and_data_sets_children=").append(withObjectsAndDataSetsChildren);
+        url.append("&with_objects_and_data_sets_other_spaces=").append(withObjectsAndDataSetsOtherSpaces);
+        return url.toString();
     }
 
     private Request createRequest(HttpClient client, String url) {

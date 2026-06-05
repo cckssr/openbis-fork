@@ -19,12 +19,16 @@ import java.util.List;
 
 import org.w3c.dom.Document;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.exporter.data.ExportablePermId;
+
 /**
- * 
+ *
  *
  * @author Ganime Betul Akin
  */
 public interface IDataSourceConnector
 {
-    public Document getResourceListAsXMLDoc(List<String> spaceBlackList, List<String> spaceWhiteList) throws Exception;
+    public Document getResourceListAsXMLDoc(List<ExportablePermId> exportablePermIds, boolean withLevelsAbove, boolean withLevelsBelow,
+            boolean withObjectsAndDataSetsParents, boolean withObjectsAndDataSetsChildren, boolean withObjectsAndDataSetsOtherSpaces)
+            throws Exception;
 }

@@ -3,5 +3,6 @@
         <suite-file path="tests-allservers.xml" />
         <suite-file path="tests-rocrate.xml" />
         <suite-file path="tests-afs-sftp.xml" />
+        <suite-file path="tests-openbis-sync.xml" />
     </suite-files>
 </suite>

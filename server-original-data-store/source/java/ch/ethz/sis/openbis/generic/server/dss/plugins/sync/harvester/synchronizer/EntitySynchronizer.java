@@ -795,7 +795,9 @@ public class EntitySynchronizer
         DataSourceConnector dataSourceConnector =
                 new DataSourceConnector(config.getDataSourceURI(), config.getAuthenticationCredentials(), operationLog);
         operationLog.info("Retrieving the resource list...");
-        Document doc = dataSourceConnector.getResourceListAsXMLDoc(config.getSpaceBlackList(), config.getSpaceWhiteList());
+        Document doc = dataSourceConnector.getResourceListAsXMLDoc(config.getExportablePermIds(), config.isWithLevelsAbove(),
+                config.isWithLevelsBelow(), config.isWithObjectsAndDataSetsParents(), config.isWithObjectsAndDataSetsChildren(),
+                config.isWithObjectsAndDataSetsOtherSpaces());
         monitor.log();
         return doc;
     }

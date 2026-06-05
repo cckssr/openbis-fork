@@ -19,6 +19,7 @@ import java.util.Date;
 
 import org.springframework.aop.framework.Advised;
 import org.springframework.beans.factory.BeanFactory;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.remoting.httpinvoker.HttpInvokerServiceExporter;
 
@@ -120,6 +121,24 @@ public class ServiceProvider
     {
         return tryGetApplicationContext(true);
 
+    }
+
+    public static void resetApplicationContext()
+    {
+        synchronized (ServiceProvider.class)
+        {
+            try
+            {
+                if (applicationContext instanceof ConfigurableApplicationContext)
+                {
+                    ((ConfigurableApplicationContext) applicationContext).close();
+                }
+            } finally
+            {
+                applicationContext = null;
+                buildingApplicationContext = false;
+            }
+        }
     }
 
     public static IServiceForDataStoreServer getServiceForDSS()

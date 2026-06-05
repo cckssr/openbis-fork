@@ -69,7 +69,7 @@ public class IntegrationTestEnvironment
 
     public IntegrationTestEnvironment()
     {
-        System.setProperty("ant.project.name", "test-integration");
+        System.setProperty("ant.project.name", System.getProperty("ant.project.name", "test-integration"));
 
         createShares(Map.of(
                 1, loadProperties(Path.of("etc/default/shares/1/share.properties")),
@@ -235,36 +235,68 @@ public class IntegrationTestEnvironment
 
     public void stop()
     {
+        RuntimeException failure = null;
         if (afsSftpServer != null)
         {
-            afsSftpServer.stop();
+            failure = stopSafely("AFS SFTP server", () -> afsSftpServer.stop(), failure);
+            afsSftpServer = null;
         }
         if (roCrateServer != null)
         {
-            roCrateServer.stop();
+            failure = stopSafely("RO-Crate server", () -> roCrateServer.stop(), failure);
+            roCrateServer = null;
         }
         if (afsServer != null)
         {
-            afsServer.stop();
+            failure = stopSafely("AFS server", () -> afsServer.stop(), failure);
+            afsServer = null;
         }
         if (dataStoreServer != null)
         {
-            dataStoreServer.stop();
+            failure = stopSafely("data store server", () -> dataStoreServer.stop(), failure);
+            dataStoreServer = null;
         }
         if (applicationServer != null)
         {
-            applicationServer.stop();
+            failure = stopSafely("application server", () -> applicationServer.stop(), failure);
+            applicationServer = null;
         }
         if (fakeHttpServer != null)
         {
-            try
+            failure = stopSafely("fake HTTP server", () ->
             {
-                fakeHttpServer.stop();
-            } catch (InterruptedException e)
-            {
-                throw new RuntimeException(e);
-            }
+                try
+                {
+                    fakeHttpServer.stop();
+                } catch (InterruptedException e)
+                {
+                    Thread.currentThread().interrupt();
+                    throw new RuntimeException(e);
+                }
+            }, failure);
+            fakeHttpServer = null;
         }
+        if (failure != null)
+        {
+            throw failure;
+        }
+    }
+
+    private RuntimeException stopSafely(String name, Runnable stopAction, RuntimeException previousFailure)
+    {
+        try
+        {
+            stopAction.run();
+        } catch (RuntimeException e)
+        {
+            log.error("Stopping " + name + " failed.", e);
+            if (previousFailure == null)
+            {
+                return e;
+            }
+            previousFailure.addSuppressed(e);
+        }
+        return previousFailure;
     }
 
     public OpenBIS createOpenBIS()

@@ -53,14 +53,21 @@ public final class AllServersIntegrationTestEnvironment
     {
         if (environment == null)
         {
-            environment = new IntegrationTestEnvironment();
-            environment.createApplicationServer();
-            environment.createDataStoreServer();
-            environment.createAfsServer(IntegrationTestEnvironment.loadProperties(Path.of("etc/suite/allservers/afs/service.properties")));
-            environment.createRoCrateServer(new IntegrationTestEnvironment.RoCrateServerArgs(8100));
-            environment.enableELN();
-            environment.start();
-            createTestData();
+            try
+            {
+                environment = new IntegrationTestEnvironment();
+                environment.createApplicationServer();
+                environment.createDataStoreServer();
+                environment.createAfsServer(IntegrationTestEnvironment.loadProperties(Path.of("etc/suite/allservers/afs/service.properties")));
+                environment.createRoCrateServer(new IntegrationTestEnvironment.RoCrateServerArgs(8100));
+                environment.enableELN();
+                environment.start();
+                createTestData();
+            } catch (RuntimeException | Error e)
+            {
+                stop();
+                throw e;
+            }
         }
     }
 

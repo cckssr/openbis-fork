@@ -17,7 +17,6 @@ package ch.ethz.sis.openbis.generic.server.dss.plugins.sync.datasource;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.xml.stream.XMLStreamException;
@@ -25,6 +24,7 @@ import javax.xml.stream.XMLStreamWriter;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.exporter.data.ExportableKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
@@ -38,7 +38,7 @@ public class ExperimentDeliverer extends AbstractEntityWithPermIdDeliverer
 
     ExperimentDeliverer(DeliveryContext context)
     {
-        super(context, "experiment", "experiments");
+        super(context, "experiment", ExportableKind.EXPERIMENT);
     }
 
     @Override
@@ -46,39 +46,35 @@ public class ExperimentDeliverer extends AbstractEntityWithPermIdDeliverer
     {
         XMLStreamWriter writer = context.getWriter();
         String sessionToken = context.getSessionToken();
-        Set<String> spaces = context.getSpaces();
         IApplicationServerApi v3api = getV3Api();
         List<ExperimentPermId> permIds = experiments.stream().map(ExperimentPermId::new).collect(Collectors.toList());
         Collection<Experiment> fullExperiments = v3api.getExperiments(sessionToken, permIds, createFullFetchOptions()).values();
         int count = 0;
         for (Experiment experiment : fullExperiments)
         {
-            if (spaces.contains(experiment.getProject().getSpace().getCode()))
-            {
-                String permId = experiment.getPermId().getPermId();
-                startUrlElement(writer, "EXPERIMENT", permId, experiment.getModificationDate());
-                startXdElement(writer);
-                writer.writeAttribute("code", experiment.getCode());
-                addKind(writer, EntityKind.EXPERIMENT);
-                addAttributeIfSet(writer, "frozen", experiment.isFrozen());
-                addAttributeIfSet(writer, "frozenForSamples", experiment.isFrozenForSamples());
-                addAttributeIfSet(writer, "frozenForDataSets", experiment.isFrozenForDataSets());
-                addModifier(writer, experiment);
-                addProject(writer, experiment.getProject());
-                addRegistrationDate(writer, experiment);
-                addRegistrator(writer, experiment);
-                addSpace(writer, experiment.getProject().getSpace());
-                addType(writer, experiment.getType());
-                addProperties(writer, experiment.getProperties(), context);
+            String permId = experiment.getPermId().getPermId();
+            startUrlElement(writer, "EXPERIMENT", permId, experiment.getModificationDate());
+            startXdElement(writer);
+            writer.writeAttribute("code", experiment.getCode());
+            addKind(writer, EntityKind.EXPERIMENT);
+            addAttributeIfSet(writer, "frozen", experiment.isFrozen());
+            addAttributeIfSet(writer, "frozenForSamples", experiment.isFrozenForSamples());
+            addAttributeIfSet(writer, "frozenForDataSets", experiment.isFrozenForDataSets());
+            addModifier(writer, experiment);
+            addProject(writer, experiment.getProject());
+            addRegistrationDate(writer, experiment);
+            addRegistrator(writer, experiment);
+            addSpace(writer, experiment.getProject().getSpace());
+            addType(writer, experiment.getType());
+            addProperties(writer, experiment.getProperties(), context);
 //                ConnectionsBuilder connectionsBuilder = new ConnectionsBuilder();
 //                connectionsBuilder.addConnections(experiment.getSamples());
 //                connectionsBuilder.addConnections(experiment.getDataSets());
 //                connectionsBuilder.writeTo(writer);
-                addAttachments(writer, experiment.getAttachments());
-                writer.writeEndElement();
-                writer.writeEndElement();
-                count++;
-            }
+            addAttachments(writer, experiment.getAttachments());
+            writer.writeEndElement();
+            writer.writeEndElement();
+            count++;
         }
         operationLog.info(count + " of " + experiments.size() + " experiments have been delivered.");
     }

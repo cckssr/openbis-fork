@@ -47,6 +47,7 @@ import org.apache.commons.lang3.StringUtils;
 import ch.ethz.sis.shared.log.classic.impl.Logger;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.exporter.data.ExportablePermId;
 import ch.ethz.sis.openbis.generic.dssapi.v3.IDataStoreServerApi;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.common.SyncEntityKind;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.config.ConfigReader;
@@ -189,6 +190,7 @@ public class HarvesterMaintenanceTask<T extends DataSetInformation> implements I
         logger.info((config.isDryRun() ? "DRY RUN" : "SYNC") + " Mode");
         checkAlias(config);
         logger.info("verbose = " + config.isVerbose());
+        logExportablePermIds(config, logger);
 
         String fileName = config.getLastSyncTimestampFileName();
         File lastSyncTimestampFile = new File(fileName);
@@ -261,6 +263,16 @@ public class HarvesterMaintenanceTask<T extends DataSetInformation> implements I
         if (config.isTranslateUsingDataSourceAlias() && StringUtils.isBlank(config.getDataSourceAlias()))
         {
             throw new UserFailureException("Please specify a data source alias in the config file to be used in name translations.");
+        }
+    }
+
+    private void logExportablePermIds(SyncConfig config, Logger logger)
+    {
+        List<ExportablePermId> exportablePermIds = config.getExportablePermIds();
+        logger.info("exportable-perm-ids (" + exportablePermIds.size() + "):");
+        for (ExportablePermId exportablePermId : exportablePermIds)
+        {
+            logger.info("    " + exportablePermId.getExportableKind() + ":" + exportablePermId.getPermId());
         }
     }
 

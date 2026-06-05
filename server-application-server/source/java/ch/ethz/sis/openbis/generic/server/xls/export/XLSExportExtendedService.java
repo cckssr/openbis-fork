@@ -6,6 +6,7 @@ import java.io.StringWriter;
 import java.util.*;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.exporter.ExportResult;
+import ch.ethz.sis.openbis.generic.asapi.v3.exporter.ExportEntityCollector;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.exporter.data.AllFields;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.exporter.data.ExportData;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.exporter.data.ExportableKind;
