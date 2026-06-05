@@ -738,7 +738,7 @@ class OpenbisController(_Controller):
         self.afsUp()
 
     def stop(self):
-        self.allDown()
+        self.allDownNew()
 
     def allDown(self):
         """ Shuts down AS and DSS. """
