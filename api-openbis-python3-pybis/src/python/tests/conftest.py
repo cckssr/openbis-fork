@@ -81,27 +81,27 @@ def afs(space):
     o = space.openbis
     afs_url = None
     try:
-        print(f'[TEST] Searching for data stores with token: {token}')
+        print(f'[CONFTEST] Searching for data stores with token: {token}')
         data_stores = o.get_datastores(with_afs=True)
-        print(f'[TEST] Detected data stores: {data_stores}')
+        print(f'[CONFTEST] Detected data stores: {data_stores}')
         data_store = data_stores[data_stores["code"] == "AFS"]
-        print(f'[TEST] Found AFS datastore: {data_store}')
+        print(f'[CONFTEST] Found AFS datastore: {data_store}')
 
         # workaround because jenkins test server is not handling DataFrame properly
         import numpy as np
         data_store_list = np.array(data_store).tolist()
-        print(f'[TEST] AFS data after conversion: {data_store_list}')
+        print(f'[CONFTEST] AFS data after conversion: {data_store_list}')
 
         afs_url = data_store_list[0][1] + "/api" if len(data_store_list) > 0 else None
 
         afs_client_debug = AfsClient('http://jenkins:8085/afs-server/api', token, False)
-        print(f'[TEST] AFS session from debug link: {afs_client_debug.is_session_valid()}')
+        print(f'[CONFTEST] AFS session from debug link: {afs_client_debug.is_session_valid()}')
 
 
     except BaseException as e:
-        print(f'[TEST] Failed to connect to OpenBIS AFS {e}')
+        print(f'[CONFTEST] Failed to connect to OpenBIS AFS {e}')
 
-    print(f'[TEST] Configured OpenBIS AFS url is: {afs_url}')
+    print(f'[CONFTEST] Configured OpenBIS AFS url is: {afs_url}')
     afs_client = AfsClient(afs_url, token, False)
 
     yield (space, afs_client)

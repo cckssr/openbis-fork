@@ -105,9 +105,9 @@ class PropertyReformatter:
             return []
         result = []
         if data_type in ("ARRAY_INTEGER", "INTEGER"):
-            result = [int(x.strip()) for x in prop_value]
+            result = [x if isinstance(x, int) else int(x.strip()) for x in prop_value]
         elif data_type in ("ARRAY_REAL", "REAL"):
-            result = [float(x.strip()) for x in prop_value]
+            result = [x if isinstance(x, float) else float(x.strip()) for x in prop_value]
         elif data_type == "BOOLEAN":
             result = [x.strip().lower() == "true" for x in prop_value]
         elif data_type in ("ARRAY_TIMESTAMP", "TIMESTAMP", "DATE"):
