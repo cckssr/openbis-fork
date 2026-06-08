@@ -10,11 +10,12 @@ const DEFAULT_TIMEOUT_IN_MILLIS = 30000 // 30 seconds
  * ======================================================
  */
 
-function _DataStoreServerInternal(datastoreUrlOrNull, httpServerUri, timeoutInMillis){
-	this.init(datastoreUrlOrNull, httpServerUri, timeoutInMillis);
+function _DataStoreServerInternal(dataStoreServer, datastoreUrlOrNull, httpServerUri, timeoutInMillis){
+	this.init(dataStoreServer, datastoreUrlOrNull, httpServerUri, timeoutInMillis);
 }
 
-_DataStoreServerInternal.prototype.init = function(datastoreUrlOrNull, httpServerUri, timeoutInMillis){
+_DataStoreServerInternal.prototype.init = function(dataStoreServer, datastoreUrlOrNull, httpServerUri, timeoutInMillis){
+	this.dataStoreServer = dataStoreServer
 	this.datastoreUrl = this.normalizeUrl(datastoreUrlOrNull, httpServerUri) + "/api";
 	this.httpServerUri = httpServerUri;
 	this.timeoutInMillis = Number.isInteger(timeoutInMillis) ? timeoutInMillis : DEFAULT_TIMEOUT_IN_MILLIS;
@@ -58,22 +59,31 @@ _DataStoreServerInternal.prototype.sendHttpRequest = function(httpMethod, conten
 }
 
 _DataStoreServerInternal.prototype.sendHttpRequestAbortable = function(httpMethod, contentType, url, data) {
+	const _this = this
+
+	const operationId = crypto.randomUUID()
+	const startTime = Date.now()
+
 	const xhr = new XMLHttpRequest();
 	xhr.open(httpMethod, url);
+	xhr.setRequestHeader("openbis.operation-id", operationId)
 	xhr.responseType = "blob";
     // Set a timeout
 	xhr.timeout = this.timeoutInMillis; 
 
-    let abortFn;
+	const result = {}
 
-	const promise = new Promise((resolve, reject) => {
+	result.promise = new Promise((resolve, reject) => {
 		xhr.onreadystatechange = function() {
 			if (xhr.readyState === XMLHttpRequest.DONE) {
 				const status = xhr.status;
 				const response = xhr.response;                
 
-				if (status >= 200 && status < 300) {
+				if (status === 0) {
+					reject(new Error("Network error or CORS violation — no response received."));
+				} else if (status >= 200 && status < 300) {
 					const contentType = this.getResponseHeader('content-type');
+					result.contentType = contentType
 
 					switch (contentType) {
 						case 'text/plain':
@@ -93,16 +103,20 @@ _DataStoreServerInternal.prototype.sendHttpRequestAbortable = function(httpMetho
 						}
 					}
 				} else if (status >= 400 && status < 600) {
-					response.text().then((textResponse) => {
-						try {
-							const errorMessage = JSON.parse(textResponse).error[1].message;
-							reject(new Error(errorMessage));
-						} catch (e) {
-							reject(new Error(textResponse || xhr.statusText));
-						}
-					}).catch(() => {
-						reject(new Error("HTTP Error: " + status));
-					});
+					if (status === 504) { // HTTP_GATEWAY_TIMEOUT
+						_this.getLongRunningOperationResult(startTime, operationId).then(resolve, reject);
+					} else {
+						response.text().then((textResponse) => {
+							try {
+								const errorMessage = JSON.parse(textResponse).error[1].message;
+								reject(new Error(errorMessage));
+							} catch (e) {
+								reject(new Error(textResponse || xhr.statusText));
+							}
+						}).catch(() => {
+							reject(new Error("HTTP Error: " + status));
+						});
+					}
 				}
 			}
 		};
@@ -117,7 +131,7 @@ _DataStoreServerInternal.prototype.sendHttpRequestAbortable = function(httpMetho
 			reject(new Error("Request timed out: The server did not respond."));
 		};
 
-        abortFn = () => {
+        result.abortFn = () => {
             xhr.abort();
             reject(new Error("Request aborted by user."));
         };
@@ -125,17 +139,40 @@ _DataStoreServerInternal.prototype.sendHttpRequestAbortable = function(httpMetho
 		xhr.send(data);
 	});
 
-    return { promise, abortFn: abortFn };
+    return result;
 }
 
+_DataStoreServerInternal.prototype.getLongRunningOperationResult = async function(startTime, operationId) {
+	const maxSleepTime = 60000;
+	let sleepTime = 500;
 
+	const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-  _DataStoreServerInternal.prototype.buildGetUrl = function(queryParams) {
+	while (Date.now() < startTime + this.timeoutInMillis) {
+		let result = null
+
+		try {
+			result = await this.dataStoreServer.status(operationId).promise;
+		} catch(e) {
+		}
+
+		if (result !== undefined && result !== null) {
+			return result
+		}
+
+		await sleep(sleepTime);
+		sleepTime = Math.min(sleepTime * 2, maxSleepTime);
+	}
+
+	throw new Error("Operation timed out after " + (Date.now() - startTime) + "milliseconds.");
+}
+
+_DataStoreServerInternal.prototype.buildGetUrl = function(queryParams) {
 	const queryString = Object.keys(queryParams)
 	  .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(queryParams[key])}`)
 	  .join('&');
 	return `${this.datastoreUrl}?${queryString}`;
-  }
+}
 
 
 // parseUri 1.2.2 (c) Steven Levithan <stevenlevithan.com> MIT License (see http://blog.stevenlevithan.com/archives/parseuri)
@@ -195,7 +232,7 @@ function parseJsonResponse(rawResponse) {
 function DataStoreServer(datastoreUrlOrNull, httpServerUri, maxReadSizeInBytes, timeoutInMillis) {
 	this.maxReadSizeInBytes = Number.isInteger(maxReadSizeInBytes) ? maxReadSizeInBytes : DEFAULT_PACKAGE_SIZE_IN_BYTES;
 	this.timeoutInMillis = Number.isInteger(timeoutInMillis) ? timeoutInMillis : DEFAULT_TIMEOUT_IN_MILLIS;
-	this._internal = new _DataStoreServerInternal(datastoreUrlOrNull, httpServerUri, this.timeoutInMillis);
+	this._internal = new _DataStoreServerInternal(this, datastoreUrlOrNull, httpServerUri, this.timeoutInMillis);
 }
 
 DataStoreServer.prototype.getMaxReadSizeInBytes = function() {
@@ -652,6 +689,41 @@ DataStoreServer.prototype.preview = function(owner, source){
         promise : promise, // Return JPEG image as Blob
         abortFn
     };
+}
+
+/**
+ * Get status of operation with given operationId
+ */
+DataStoreServer.prototype.status = function(operationId){
+	const data =  this.fillCommonParameters({
+		"method": "status",
+		"operationId" :  operationId
+	});
+	const result = this._internal.sendHttpRequestAbortable(
+		"GET",
+		"application/octet-stream",
+		this._internal.buildGetUrl(data),
+		{}
+	)
+	return {
+		promise : result.promise.then((response) => {
+			if (result.contentType === "application/json") {
+				try {
+					let jsonResponse = JSON.parse(response)
+					if (jsonResponse.result !== undefined && jsonResponse.result !== null) {
+						return response
+					} else {
+						return null
+					}
+				} catch (e) {
+					return null
+				}
+			} else {
+				return response
+			}
+		}),
+		abortFn: result.abortFn
+	};
 }
 
 /**
