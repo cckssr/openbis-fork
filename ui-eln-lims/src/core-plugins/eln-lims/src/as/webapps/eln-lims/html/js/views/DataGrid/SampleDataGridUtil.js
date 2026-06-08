@@ -846,12 +846,16 @@ var SampleDataGridUtil = new function() {
         var samplePropertiesDetails = new Map();
         var samplePermIdsToIdentify = new Set();
         var propertyColumnsToSort = [];
+
         for (propertyCode in foundPropertyCodes) {
             var propertiesToSkip = [profile.getInternalNamespacePrefix() + "NAME", profile.getInternalNamespacePrefix() + "XMLCOMMENTS", profile.getInternalNamespacePrefix() + "ANNOTATIONS_STATE"];
             if($.inArray(propertyCode, propertiesToSkip) !== -1) {
                 continue;
             }
             var propertyType = profile.getPropertyType(propertyCode);
+
+			const isArrayProperty = propertyType.dataType.startsWith("ARRAY_");
+			const isMultiValueProperty = propertyType.multiValue;
 
             // Preprocessing
             if(propertyType.dataType === 'SAMPLE') {
@@ -876,7 +880,7 @@ var SampleDataGridUtil = new function() {
                         label : propertyType.label,
                         property : propertyType.code,
                         exportableProperty: DataGridExportOptions.EXPORTABLE_FIELD.PROPERTY(propertyType.code),
-                        filterable : true,
+                        filterable : !isMultiValueProperty,
                         sortable : false,
                         metadata: {
                             dataType: propertyType.dataType
@@ -898,12 +902,13 @@ var SampleDataGridUtil = new function() {
             } else if(propertyType.dataType === "CONTROLLEDVOCABULARY") {
                 var getVocabularyColumn = function(propertyType) {
                     return function() {
-                        return {
-                            label : propertyType.label,
+
+						return {
+							label : propertyType.label,
                             property : propertyType.code,
                             exportableProperty: DataGridExportOptions.EXPORTABLE_FIELD.PROPERTY(propertyType.code),
-                            filterable: true,
-                            sortable : true,
+                            filterable: !isArrayProperty && !isMultiValueProperty,
+                            sortable : !isArrayProperty && !isMultiValueProperty,
                             metadata: {
                                 dataType: propertyType.dataType
                             },
@@ -946,8 +951,8 @@ var SampleDataGridUtil = new function() {
                         label : propertyType.label,
                         property : propertyType.code,
                         exportableProperty: DataGridExportOptions.EXPORTABLE_FIELD.PROPERTY(propertyType.code),
-                        filterable : true,
-                        sortable : true,
+                        filterable : !isArrayProperty && !isMultiValueProperty,
+                        sortable : !isArrayProperty && !isMultiValueProperty,
                         metadata: {
                             dataType: propertyType.dataType
                         },
@@ -963,8 +968,8 @@ var SampleDataGridUtil = new function() {
                         label : propertyType.label,
                         property : propertyType.code,
                         exportableProperty: DataGridExportOptions.EXPORTABLE_FIELD.PROPERTY(propertyType.code),
-                        filterable : true,
-                        sortable : true,
+                        filterable : !isArrayProperty && !isMultiValueProperty,
+                        sortable : !isArrayProperty && !isMultiValueProperty,
                         metadata: {
                             dataType: propertyType.dataType
                         },
@@ -1038,7 +1043,7 @@ var SampleDataGridUtil = new function() {
 							}
 						}
                       })(propertyType)
-                } else if (propertyType.dataType.startsWith("ARRAY_")) {
+                } else if (isArrayProperty) {
 					renderValue = (function(propertyType){
                         return function(row, params){
                             return FormUtil.renderArrayGridValue(row, params, propertyType)
@@ -1050,8 +1055,8 @@ var SampleDataGridUtil = new function() {
                     label : propertyType.label,
                     property : propertyType.code,
                     exportableProperty: DataGridExportOptions.EXPORTABLE_FIELD.PROPERTY(propertyType.code),
-                    filterable : true,
-                    sortable : propertyType.dataType !== "XML",
+                    filterable : !isArrayProperty && !isMultiValueProperty,
+                    sortable : !isArrayProperty && !isMultiValueProperty && propertyType.dataType !== "XML",
                     truncate: true,
                     metadata: {
                         dataType: propertyType.dataType
