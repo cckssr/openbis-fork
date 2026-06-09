@@ -33,7 +33,10 @@ class DatabaseTab extends React.PureComponent {
       let typeText = null
       let idText = null
 
-      if (object.type === objectType.SPACE) {
+      if (object.type === objectType.SPACES) {
+        typeText = messages.get(messages.SPACES)
+        idText = null
+      } else if (object.type === objectType.SPACE) {
         typeText = messages.get(messages.SPACE)
         idText = object.id
       } else if (object.type == objectType.NEW_SPACE) {
@@ -74,9 +77,12 @@ class DatabaseTab extends React.PureComponent {
       }
 
       //label: (object.params.entityType ? ('new ' + object.params.entityType) : (typeText || object.type)) + ': ' + (idText || object.id)
+      const newLabel = idText
+        ? (typeText || object.type) + ': ' + idText
+        : (typeText || object.type)
       const tabWithLabel = {
         ...tab,
-        label: (typeText || object.type) + ': ' + (idText || object.id)
+        label: newLabel
       }
 
       AppController.getInstance().replaceOpenTab(

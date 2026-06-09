@@ -370,6 +370,10 @@ class Facade {
     )
   }
 
+  createSpaces(spaces) {
+    return this.promise(this.v3.createSpaces(spaces))
+  }
+
   createProjects(projects) {
     return this.promise(this.v3.createProjects(projects))
   }

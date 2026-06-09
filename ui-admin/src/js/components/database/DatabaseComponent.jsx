@@ -12,6 +12,7 @@ import ImagingDatasetViewer from '@src/js/components/common/imaging/ImagingDatas
 import Tabs from '@mui/material/Tabs'
 import Tab from '@mui/material/Tab'
 import Box from '@mui/material/Box'
+import Button from '@mui/material/Button'
 import { TabContext, TabPanel } from '@mui/lab'
 import autoBind from 'auto-bind'
 import withStyles from '@mui/styles/withStyles';
@@ -325,7 +326,23 @@ class DatabaseComponent extends React.PureComponent {
   }
 
 
-  renderJson() {  
+  renderSpacesOverview() {
+    return (
+      <Container>
+        <Box sx={{ padding: 2 }}>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => AppController.getInstance().objectNew(pages.DATABASE, objectType.NEW_SPACE)}
+          >
+            + NEW SPACE
+          </Button>
+        </Box>
+      </Container>
+    )
+  }
+
+  renderJson() {
     const { object } = this.props
     console.log('DatabaseComponent.renderJson', object);
     return (
@@ -351,6 +368,9 @@ class DatabaseComponent extends React.PureComponent {
       return null
     }
     const { object } = this.props
+    if (object.type === objectType.SPACES) {
+      return this.renderSpacesOverview()
+    }
     const { properties } = this.state.json
     if (object.type === objectType.DATA_SET && constants.IMAGING_DATA_CONFIG in properties) return this.renderImagingDataset(object)
     return this.state.showDataBrowser ? this.renderDataBrowsers() : this.renderJson()
