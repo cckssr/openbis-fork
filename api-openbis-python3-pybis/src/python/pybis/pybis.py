@@ -1649,7 +1649,8 @@ class Openbis:
             objects = resp["objects"]
             parse_jackson(objects)
             datastores = DataFrame(objects)
-            self.datastores = datastores[attrs]
+            if not with_afs:
+                self.datastores = datastores[attrs]
             return datastores[attrs]
 
     def gen_codes(self, entity: str, prefix: str = "", count: int = 1) -> List[str]:
