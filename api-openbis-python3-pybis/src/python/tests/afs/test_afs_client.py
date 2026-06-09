@@ -3,7 +3,6 @@ import os
 import time
 import uuid
 
-import pytest
 import tempfile
 import filecmp
 
@@ -25,48 +24,37 @@ def test_afs_detection(openbis_instance):
 
     print(f'[TEST] Configured OpenBIS AFS url is: {afs_url}')
     afs_client = AfsClient(afs_url, openbis_instance.token, False)
-
     assert afs_client.is_session_valid()
 
 
-def test_afs_client(afs):
+def test_upload_download(afs):
 
     (space, client) = afs
+    assert client.is_session_valid()
 
-    # assert client.is_session_valid()
-    print("[TEST] CHECKING AFS AVAILABILITY")
-    if client.is_session_valid():
-        print("[TEST] AFS IS AVAILABLE")
+    o = space.openbis
 
-        o = space.openbis
+    timestamp = time.strftime("afs_test_%a_%y%m%d_%H%M%S").lower()
 
-        timestamp = time.strftime("afs_test_%a_%y%m%d_%H%M%S").lower()
+    sample = o.new_sample('UNKNOWN', code=timestamp , space=space)
+    sample.save()
 
-        sample = o.new_sample('UNKNOWN', code=timestamp , space=space)
-        sample.save()
+    permId = sample.permId
 
-        # permId = sample.permId
-        #
-        # files = client.list(permId, "/", True)
-        #
-        # assert files == []
-        #
-        # testfile_path = os.path.join(os.path.dirname(__file__), "testdir")
-        # client.upload_files(permId, '/', [testfile_path], wait_until_finished=True)
-        #
-        # files = client.list(permId, "/", True)
-        # assert len(files) == 3
-        #
-        # with tempfile.TemporaryDirectory() as tmpdirname:
-        #     client.download_files(permId, "/", tmpdirname, wait_until_finished=True)
-        #     base_file = os.path.dirname(__file__)
-        #     for file in files:
-        #         if not file.directory:
-        #             assert filecmp.cmp(os.path.join(base_file, file.path[1:]), os.path.join(tmpdirname, file.path[1:]))
+    files = client.list(permId, "/", True)
 
-    else:
-        print("[TEST] AFS IS NOT AVAILABLE - TEST SKIPPED")
+    assert files == []
 
+    testfile_path = os.path.join(os.path.dirname(__file__), "..", "testdir")
+    client.upload_files(permId, '/', [testfile_path], wait_until_finished=True)
 
+    files = client.list(permId, "/", True)
+    assert len(files) == 3
 
+    with tempfile.TemporaryDirectory() as tmpdirname:
+        client.download_files(permId, "/", tmpdirname, wait_until_finished=True)
+        base_file = os.path.dirname(__file__)
+        for file in files:
+            if not file.directory:
+                assert filecmp.cmp(os.path.join(base_file, "..", file.path[1:]), os.path.join(tmpdirname, file.path[1:]))
 
