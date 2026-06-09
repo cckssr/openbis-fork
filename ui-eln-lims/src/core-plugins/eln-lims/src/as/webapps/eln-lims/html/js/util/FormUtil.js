@@ -1130,8 +1130,15 @@ var FormUtil = new function() {
 			$component = this._getDatePickerField(propertyType.code + idSuffix, propertyType.description, propertyType.mandatory, true, timestampValue);
 		} else if (propertyType.dataType === "VARCHAR") {
             $component = this._getInputField("text", propertyType.code + idSuffix, propertyType.description, null, propertyType.mandatory);
-        } else if (['ARRAY_STRING', 'ARRAY_INTEGER', 'ARRAY_REAL', 'ARRAY_TIMESTAMP'].includes(propertyType.dataType)) {
-            $component = this._getInputField("text", propertyType.code + idSuffix, propertyType.description, null, propertyType.mandatory);
+        } else if (["ARRAY_STRING", "ARRAY_INTEGER", "ARRAY_REAL", "ARRAY_TIMESTAMP"].includes(propertyType.dataType)) {
+			const placeholderByDataType  = {
+				ARRAY_TIMESTAMP: '["yyyy-MM-dd HH:mm:ss ZZ", ...]',
+				ARRAY_STRING: '["Str1", "Str2", ...]',
+				ARRAY_INTEGER: '[1, 2, ...]',
+				ARRAY_REAL: '[0.1, 0.2, ...]'
+			}
+            $component = this._getInputField("text", propertyType.code + idSuffix,
+				placeholderByDataType[propertyType.dataType], null, propertyType.mandatory);
         } else if (propertyType.dataType === "XML") {
 			$component = this._getTextBox(propertyType.code + idSuffix, propertyType.description, propertyType.mandatory);
 		} else if (propertyType.dataType === "SAMPLE") {
