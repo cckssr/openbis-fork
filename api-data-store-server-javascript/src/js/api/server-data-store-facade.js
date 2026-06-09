@@ -29,19 +29,19 @@ _DataStoreServerInternal.prototype.log = function(msg){
 
 _DataStoreServerInternal.prototype.normalizeUrl = function(openbisUrlOrNull, httpServerUri){
 	var parts = this.parseUri(window.location);
-	
+
 	if(openbisUrlOrNull){
 		var openbisParts = this.parseUri(openbisUrlOrNull);
-		
+
 		for(var openbisPartName in openbisParts){
 			var openbisPartValue = openbisParts[openbisPartName];
-			
+
 			if(openbisPartValue){
 				parts[openbisPartName] = openbisPartValue;
 			}
 		}
 	}
-	
+
 	return parts.protocol + "://" + parts.authority + (httpServerUri || parts.path);
 }
 
@@ -69,7 +69,7 @@ _DataStoreServerInternal.prototype.sendHttpRequestAbortable = function(httpMetho
 	xhr.setRequestHeader("openbis.operation-id", operationId)
 	xhr.responseType = "blob";
     // Set a timeout
-	xhr.timeout = this.timeoutInMillis; 
+	xhr.timeout = this.timeoutInMillis;
 
 	const result = {}
 
@@ -77,7 +77,7 @@ _DataStoreServerInternal.prototype.sendHttpRequestAbortable = function(httpMetho
 		xhr.onreadystatechange = function() {
 			if (xhr.readyState === XMLHttpRequest.DONE) {
 				const status = xhr.status;
-				const response = xhr.response;                
+				const response = xhr.response;
 
 				if (status === 0) {
 					reject(new Error("Network error or CORS violation — no response received."));
@@ -190,7 +190,7 @@ _DataStoreServerInternal.prototype.parseUri = function(str) {
 			loose:  /^(?:(?![^:@]+:[^:@\/]*@)([^:\/?#.]+):)?(?:\/\/)?((?:(([^:@]*)(?::([^:@]*))?)?@)?([^:\/?#]*)(?::(\d*))?)(((\/(?:[^?#](?![^?#\/]*\.[^?#\/.]+(?:[?#]|$)))*\/?)?([^?#\/]*))(?:\?([^#]*))?(?:#(.*))?)/
 		}
 	};
-	
+
 	var	o   = options,
 		m   = o.parser[o.strictMode ? "strict" : "loose"].exec(str),
 		uri = {},
@@ -225,9 +225,9 @@ function parseJsonResponse(rawResponse) {
  * ===============
  * DSS facade
  * ===============
- * 
+ *
  * The facade provides access to the DSS methods
- * 
+ *
  */
 function DataStoreServer(datastoreUrlOrNull, httpServerUri, maxReadSizeInBytes, timeoutInMillis) {
 	this.maxReadSizeInBytes = Number.isInteger(maxReadSizeInBytes) ? maxReadSizeInBytes : DEFAULT_PACKAGE_SIZE_IN_BYTES;
@@ -261,7 +261,7 @@ DataStoreServer.prototype.setSession = function(sessionToken){
 
 /**
  * Returns the current session.
- * 
+ *
  * @method
  */
 DataStoreServer.prototype.getSession = function(){
@@ -270,7 +270,7 @@ DataStoreServer.prototype.getSession = function(){
 
 /**
  * Sets interactiveSessionKey.
- * 
+ *
  * @method
  */
 DataStoreServer.prototype.setInteractiveSessionKey = function(interactiveSessionKey){
@@ -279,7 +279,7 @@ DataStoreServer.prototype.setInteractiveSessionKey = function(interactiveSession
 
 /**
  * Returns the current session.
- * 
+ *
  * @method
  */
 DataStoreServer.prototype.getInteractiveSessionKey = function(){
@@ -288,7 +288,7 @@ DataStoreServer.prototype.getInteractiveSessionKey = function(){
 
 /**
  * Sets transactionManagerKey.
- * 
+ *
  * @method
  */
 DataStoreServer.prototype.setTransactionManagerKey = function(transactionManagerKey){
@@ -297,7 +297,7 @@ DataStoreServer.prototype.setTransactionManagerKey = function(transactionManager
 
 /**
  * Returns the current session.
- * 
+ *
  * @method
  */
 DataStoreServer.prototype.getTransactionManagerKey = function(){
@@ -331,7 +331,7 @@ const encodeParams = (params) => {
 
 /**
  * Log into DSS.
- * 
+ *
  * @method
  */
 DataStoreServer.prototype.login = function(userId, userPassword) {
@@ -378,7 +378,7 @@ DataStoreServer.prototype.isSessionValid = function() {
 
 /**
  * Restores the current session from a cookie.
- * 
+ *
  * @see restoreSession()
  * @see isSessionActive()
  * @method
@@ -389,7 +389,7 @@ DataStoreServer.prototype.ifRestoredSessionActive = function() {
 
 /**
  * Log out of DSS.
- * 
+ *
  * @method
  */
 DataStoreServer.prototype.logout = function() {
@@ -475,14 +475,43 @@ DataStoreServer.prototype._read = function(chunks){
 
 /**
  * Read the contents of selected file
- * @param {str} owner owner of the file 
+ * This function is overloaded
+ * function(owner, source, offset, limit)
+ * @param {str} owner owner of the file
  * @param {str} source path to file
  * @param {int} offset offset from which to start reading
  * @param {int} limit how many characters to read
+ * OR
+ * function(chunks)
+ * @param {chunk} chunks of the file
  */
 DataStoreServer.prototype.read = function(owner, source, offset, limit){
-	var effectiveLimit = Number.isInteger(limit) ? limit : this.maxReadSizeInBytes;
-	return this._read([new Chunk(owner, source, offset, effectiveLimit, ChunkEncoderDecoder.EMPTY_ARRAY)]);
+    if((arguments.length) === 1) { // function(chunks)
+        const data =  this.fillCommonParameters({
+            "method": "read"
+        });
+        const original = this._internal.sendHttpRequestAbortable(
+            "POST",
+            "application/octet-stream",
+            this._internal.buildGetUrl(data),
+            ChunkEncoderDecoder.encodeChunks(chunks) // Encode Chunks
+        );
+
+        original.promise = original.promise.then(function(result) {
+            if (!(result instanceof Blob)) {
+                throw new TypeError('_read result is not a valid value of type Blob');
+            }
+            return result.arrayBuffer();
+        }).then(function(arrayBuffer) {
+            var chunks = ChunkEncoderDecoder.decodeChunks(new Uint8Array(arrayBuffer)); // Decode Chunks
+            var data = chunks[0].getData();
+            return new Blob([data]);
+        });
+        return result;
+    } else { // function(owner, source, offset, limit)
+        var effectiveLimit = Number.isInteger(limit) ? limit : this.maxReadSizeInBytes;
+        return this.read([new Chunk(owner, source, offset, effectiveLimit, ChunkEncoderDecoder.EMPTY_ARRAY)]);
+    }
 }
 
 /**
@@ -504,13 +533,32 @@ DataStoreServer.prototype._write = function(chunks){
 
 /**
  * Write data to file (or create it)
+ * This function is overloaded
+ * function(owner, source, offset, data)
  * @param {str} owner owner of the file
  * @param {str} source path to file
  * @param {int} offset offset from which to start writing
  * @param {str} data data to write
+ * OR
+ * function(chunks)
+ * @param {chunk} chunks of the file
  */
 DataStoreServer.prototype.write = function(owner, source, offset, data){
-	return this._write([new Chunk(owner, source, offset, data.length, data)]);
+    if((arguments.length) === 1) { // function(chunks)
+    	const data =  this.fillCommonParameters({
+    		"method": "write"
+    	});
+    	const result = this._internal.sendHttpRequestAbortable(
+    		"POST",
+    		"application/octet-stream",
+
+    		this._internal.buildGetUrl(data),
+    		ChunkEncoderDecoder.encodeChunks(chunks) // Encode Chunks
+    	);
+    	return result;
+    } else { // function(owner, source, offset, data)
+    	return this.write([new Chunk(owner, source, offset, data.length, data)]);
+    }
 }
 
 /**
