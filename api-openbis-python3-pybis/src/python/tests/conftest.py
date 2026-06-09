@@ -25,7 +25,7 @@ admin_password = "admin"
 
 
 
-print(f'[TEST] Configured OpenBIS url for tests is: {openbis_url}')
+print(f'[CONFTEST] Configured OpenBIS url for tests is: {openbis_url}')
 
 
 @pytest.fixture(scope="module")
@@ -94,7 +94,7 @@ def afs(space):
 
         afs_url = data_store_list[0][1] + "/api" if len(data_store_list) > 0 else None
 
-        afs_client_debug = AfsClient('http://jenkins:8085/afs-server/api', token, False)
+        afs_client_debug = AfsClient('http://localhost:8085/afs-server/api', token, False)
         print(f'[CONFTEST] AFS session from debug link: {afs_client_debug.is_session_valid()}')
 
 
