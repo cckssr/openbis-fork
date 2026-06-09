@@ -577,19 +577,23 @@ var SampleDataGridUtil = new function() {
                             gridSubcriteria.rules[Util.guid()] = { type : "Attribute", name : "REGISTRATOR", value : search, operator: "thatContainsUserId" };
                         } else if (field === "registrationDate") {
                             if (search.from && search.from.dateObject) {
-                                gridSubcriteria.rules[Util.guid()] = { type : "Attribute", name : "REGISTRATION_DATE", value : search.from.dateString, operator: "thatIsLaterThanOrEqualToDate" };
+								const dateString = moment(search.from.dateObject).format("YYYY-MM-DD HH:mm:ss");
+                                gridSubcriteria.rules[Util.guid()] = { type : "Attribute", name : "REGISTRATION_DATE", value : dateString, operator: "thatIsLaterThanOrEqualToDate" };
                             }
                             if (search.to && search.to.dateObject) {
-                                gridSubcriteria.rules[Util.guid()] = { type : "Attribute", name : "REGISTRATION_DATE", value : search.to.dateString, operator: "thatIsEarlierThanOrEqualToDate" };
+								const dateString = moment(search.to.dateObject).format("YYYY-MM-DD HH:mm:ss");
+                                gridSubcriteria.rules[Util.guid()] = { type : "Attribute", name : "REGISTRATION_DATE", value : dateString, operator: "thatIsEarlierThanOrEqualToDate" };
                             }
                         } else if (field === "modifier") {
                             gridSubcriteria.rules[Util.guid()] = { type : "Attribute", name : "MODIFIER", value : search, operator: "thatContainsUserId" };
                         } else if (field === "modificationDate") {
                             if (search.from && search.from.dateObject) {
-                                gridSubcriteria.rules[Util.guid()] = { type : "Attribute", name : "MODIFICATION_DATE", value : search.from.dateString, operator: "thatIsLaterThanOrEqualToDate" };
+								const dateString = moment(search.from.dateObject).format("YYYY-MM-DD HH:mm:ss");
+                                gridSubcriteria.rules[Util.guid()] = { type : "Attribute", name : "MODIFICATION_DATE", value : dateString, operator: "thatIsLaterThanOrEqualToDate" };
                             }
                             if (search.to && search.to.dateObject) {
-                                gridSubcriteria.rules[Util.guid()] = { type : "Attribute", name : "MODIFICATION_DATE", value : search.to.dateString, operator: "thatIsEarlierThanOrEqualToDate" };
+								const dateString = moment(search.to.dateObject).format("YYYY-MM-DD HH:mm:ss");
+                                gridSubcriteria.rules[Util.guid()] = { type : "Attribute", name : "MODIFICATION_DATE", value : dateString, operator: "thatIsEarlierThanOrEqualToDate" };
                             }
                         } else if (field === "parents") {
                             gridSubcriteria.rules[Util.guid()] = { type : "Attribute", name : "PARENTS", value : search, operator: "thatContains" };
