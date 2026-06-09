@@ -145,7 +145,7 @@ function ExperimentFormController(mainController, mode, experiment) {
 		var experimentType = this._mainController.profile.getExperimentTypeForExperimentTypeCode(
 			this._experimentFormModel.experiment.experimentTypeCode);
 
-		for (var group of experimentType.propertyTypeGroups) {
+		for (var group of (experimentType && experimentType.propertyTypeGroups || [])) {
 			for (var pt of group.propertyTypes) {
 				if (["ARRAY_INTEGER", "ARRAY_REAL", "ARRAY_STRING", "ARRAY_TIMESTAMP"].includes(pt.dataType)) {
 					var val = this._experimentFormModel.experiment.properties[pt.code];
