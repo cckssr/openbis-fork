@@ -23,11 +23,14 @@ const TextFieldRendererBase: React.FC<FieldRendererProps & { classes: any }> = (
   mode,
   classes
 }) => {
-  const isEditing = mode === FormMode.EDIT || mode === FormMode.CREATE
-
-  const placeholder:string | undefined = field.dataType === FormFieldDataType.ARRAY_TIMESTAMP
-      ? '["yyyy-MM-dd HH:mm:ss ZZ", ...]'
-      : undefined
+  const isEditing:boolean = mode === FormMode.EDIT || mode === FormMode.CREATE
+  const placeholderByDataType:Record<string, string>  = {
+    [FormFieldDataType.ARRAY_TIMESTAMP]: '["yyyy-MM-dd HH:mm:ss ZZ", ...]',
+    [FormFieldDataType.ARRAY_STRING]: '["Str1", "Str2", ...]',
+    [FormFieldDataType.ARRAY_INTEGER]: '[1, 2, ...]',
+    [FormFieldDataType.ARRAY_REAL]: '[0.1, 0.2, ...]'
+  }
+  const placeholder:string | undefined = placeholderByDataType[field.dataType]
 
   if (field.isMultiValue && !isEditing) {
     const values: any[] = Array.isArray(field.value) ? field.value : [];
