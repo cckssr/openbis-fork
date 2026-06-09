@@ -44,7 +44,7 @@ export class SpaceFormModel {
 	}
 
 	static adaptNewSpaceDtoToForm(tmpPermId: string): Form {
-		const permId = tmpPermId;
+		const permId = tmpPermId + '-' + EntityKind.NEW_SPACE;
 		return {
 			entityPermId: permId,
 			entityType: EntityKind.SPACE,
@@ -70,7 +70,8 @@ export class SpaceFormModel {
 		await new Promise(resolve => setTimeout(resolve, 500)); // to display the loading spinner
 		const result = await controller.save(form, mode);
 		if (mode === FormMode.CREATE) {
-			onAfterSave({ oldType: EntityKind.NEW_SPACE, oldId: form.entityPermId, newType: EntityKind.SPACE, newId: result });
+			const originalId = form.entityPermId.substring(0, form.entityPermId.indexOf('-'));
+			onAfterSave({ oldType: EntityKind.NEW_SPACE, oldId: originalId, newType: EntityKind.SPACE, newId: result });
 		} else {
 			onAfterSave();
 		}
