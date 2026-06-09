@@ -142,8 +142,29 @@ function ExperimentFormController(mainController, mode, experiment) {
 	this.updateExperiment = function() {
 		Util.blockUI();
 		
-		var experimentType = this._mainController.profile.getExperimentTypeForExperimentTypeCode(this._experimentFormModel.experiment.experimentTypeCode);
-		
+		var experimentType = this._mainController.profile.getExperimentTypeForExperimentTypeCode(
+			this._experimentFormModel.experiment.experimentTypeCode);
+
+		for (var group of experimentType.propertyTypeGroups) {
+			for (var pt of group.propertyTypes) {
+				if (["ARRAY_INTEGER", "ARRAY_REAL", "ARRAY_STRING", "ARRAY_TIMESTAMP"].includes(pt.dataType)) {
+					var val = this._experimentFormModel.experiment.properties[pt.code];
+					if (val) {
+						var errorMessage = "Invalid value for " + pt.label + ": " + val;
+						try {
+							var array = Array.isArray(val) ? val : JSON.parse(val);
+							if (val && !FormUtil.isValidArray(array, pt.dataType)) {
+								Util.showUserError(errorMessage);
+								return;
+							}
+						} catch (e) {
+							Util.showUserError(errorMessage);
+						}
+					}
+				}
+			}
+		}
+
 		//Identification Info (This way of collecting the identifier also works for the creation mode)
 		var experimentSpace = IdentifierUtil.getSpaceCodeFromIdentifier(this._experimentFormModel.experiment.identifier);
 		var experimentProject = IdentifierUtil.getProjectCodeFromExperimentIdentifier(this._experimentFormModel.experiment.identifier);
