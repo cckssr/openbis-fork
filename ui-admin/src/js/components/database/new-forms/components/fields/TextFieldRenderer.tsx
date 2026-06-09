@@ -25,6 +25,10 @@ const TextFieldRendererBase: React.FC<FieldRendererProps & { classes: any }> = (
 }) => {
   const isEditing = mode === FormMode.EDIT || mode === FormMode.CREATE
 
+  const placeholder:string | undefined = field.dataType === FormFieldDataType.ARRAY_TIMESTAMP
+      ? '["yyyy-MM-dd HH:mm:ss ZZ", ...]'
+      : undefined
+
   if (field.isMultiValue && !isEditing) {
     const values: any[] = Array.isArray(field.value) ? field.value : [];
     const lines = values.map((v, i) => {
@@ -90,6 +94,7 @@ const TextFieldRendererBase: React.FC<FieldRendererProps & { classes: any }> = (
             value={formatInner(val)}
             onChange={(e) => onChange(e.target.value)}
             margin="none"
+            placeholder={placeholder}
             slotProps={{
               htmlInput: { className: classes.input }
             }}
@@ -110,6 +115,7 @@ const TextFieldRendererBase: React.FC<FieldRendererProps & { classes: any }> = (
             disabled={isEditing && field.readOnly}
             dataType={field.dataType}
             value={value}
+            placeholder={placeholder}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                 onFieldChange(field.id, e.target.value)
             }

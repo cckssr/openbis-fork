@@ -118,6 +118,7 @@ class TextFormField extends React.PureComponent {
       styles,
       classes,
       variant,
+      placeholder,
       onClick,
       onKeyPress,
       onChange,
@@ -154,6 +155,7 @@ class TextFormField extends React.PureComponent {
           }
           name={name}
           value={finalValue}
+          placeholder={placeholder}
           error={!!error}
           disabled={disabled}
           multiline={multiline}
