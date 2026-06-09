@@ -20,7 +20,7 @@ from pybis import Openbis
 from pybis import AfsClient
 
 openbis_url = "https://localhost:8443"
-openbis_afs_url = "https://localhost:8085"
+openbis_afs_url = "http://localhost:8085"
 admin_username = "admin"
 admin_password = "admin"
 
