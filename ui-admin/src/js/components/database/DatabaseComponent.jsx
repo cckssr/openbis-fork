@@ -12,7 +12,6 @@ import ImagingDatasetViewer from '@src/js/components/common/imaging/ImagingDatas
 import Tabs from '@mui/material/Tabs'
 import Tab from '@mui/material/Tab'
 import Box from '@mui/material/Box'
-import Button from '@mui/material/Button'
 import { TabContext, TabPanel } from '@mui/lab'
 import autoBind from 'auto-bind'
 import withStyles from '@mui/styles/withStyles';
@@ -21,6 +20,8 @@ import TabViewer from '@src/js/components/common/tab/TabViewer.jsx'
 import { EntityFormContextProvider } from '@src/js/components/database/new-forms/components/EntityFormContextProvider.tsx';
 import FormErrorBoundary from '@src/js/components/database/new-forms/components/common/FormErrorBoundary.tsx';
 import UnsavedChangesDialog from '@src/js/components/common/dialog/UnsavedChangesDialog.jsx';
+import {Stack} from "@mui/material";
+import {ButtonActionRenderer} from "@src/js/components/database/new-forms/components/actions/ButtonActionRenderer.tsx";
 
 const styles = theme => ({
   tabsPanel: {
@@ -325,21 +326,30 @@ class DatabaseComponent extends React.PureComponent {
     objectMove: (params) => AppController.getInstance().objectUpdate(params.type)
   }
 
-
   renderSpacesOverview() {
-    return (
-      <Container>
-        <Box sx={{ padding: 2 }}>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => AppController.getInstance().objectNew(pages.DATABASE, objectType.NEW_SPACE)}
-          >
-            + NEW SPACE
-          </Button>
-        </Box>
-      </Container>
-    )
+    const action = {
+      name: 'newSpace',
+      label: 'NEW SPACE',
+      component: 'button',
+      isAllowed: true,
+      visibility: [],
+      value: null
+    }
+    return (<Stack key='space-actions' direction='row' spacing={{ xs: 1, sm: 2 }} sx={{
+      justifyContent: 'flex-start',
+      alignItems: 'center',
+      padding: '16px 16px',
+      backgroundColor: 'rgb(248,248,248)',
+      position: 'sticky',
+      top: 0,
+      zIndex: 1000
+    }}>
+        <ButtonActionRenderer key={action.name}
+                        action={action}
+                        onAction={() => AppController.getInstance()
+                            .objectNew(pages.DATABASE, objectType.NEW_SPACE)}
+                        mode="edit" />
+    </Stack>)
   }
 
   renderJson() {

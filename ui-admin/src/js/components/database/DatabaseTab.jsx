@@ -39,7 +39,7 @@ class DatabaseTab extends React.PureComponent {
       } else if (object.type === objectType.SPACE) {
         typeText = messages.get(messages.SPACE)
         idText = object.id
-      } else if (object.type == objectType.NEW_SPACE) {
+      } else if (object.type === objectType.NEW_SPACE) {
         typeText = messages.get(messages.NEW_SPACE)
       } else if (object.type === objectType.PROJECT) {
         typeText = messages.get(messages.PROJECT)
