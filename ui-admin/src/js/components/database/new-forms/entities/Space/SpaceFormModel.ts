@@ -44,7 +44,7 @@ export class SpaceFormModel {
 	}
 
 	static adaptNewSpaceDtoToForm(tmpPermId: string): Form {
-		const permId = tmpPermId + '-' + EntityKind.NEW_SPACE;
+		const permId = tmpPermId;
 		return {
 			entityPermId: permId,
 			entityType: EntityKind.SPACE,
