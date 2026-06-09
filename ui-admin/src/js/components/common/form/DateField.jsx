@@ -177,6 +177,7 @@ class DateField extends React.PureComponent {
               label={label}
               invalidDateMessage={null}
               value={dateObject}
+              referenceDate={new Date()}
               inputValue={dateString}
               onChange={this.handleChange}
               onBlur={this.handleBlur}
@@ -204,6 +205,7 @@ class DateField extends React.PureComponent {
               label={label}
               invalidDateMessage={null}
               value={dateObject}
+              referenceDate={new Date()}
               inputValue={dateString}
               onChange={this.handleChange}
               onBlur={this.handleBlur}
