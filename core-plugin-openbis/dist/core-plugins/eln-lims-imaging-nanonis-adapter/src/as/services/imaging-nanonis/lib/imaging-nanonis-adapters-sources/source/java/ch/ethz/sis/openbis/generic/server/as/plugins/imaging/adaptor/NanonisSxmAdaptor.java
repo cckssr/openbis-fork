@@ -41,7 +41,21 @@ public final class NanonisSxmAdaptor extends ImagingDataSetAbstractPythonAdaptor
             throw new IllegalArgumentException("Script file " + script + " does not exists!");
         }
         this.scriptPath = script.toString();
-        this.pythonPath = properties.getProperty("python3-path", "python3");
+
+        String venvProperty = properties.getProperty("venv-path", "");
+        if (venvProperty.trim().isEmpty()) {
+            throw new IllegalArgumentException(
+                    "There is no venv path property called 'venv-path' defined for this adaptor!");
+        }
+        if(!venvProperty.endsWith("/bin/python")) {
+            venvProperty = venvProperty + "/bin/python";
+        }
+        Path venvPath = Paths.get(venvProperty);
+        if (!Files.exists(venvPath))
+        {
+            throw new IllegalArgumentException("Venv directory " + venvPath + " does not exists!");
+        }
+        this.pythonPath = venvProperty;
     }
 
 }
