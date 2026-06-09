@@ -2838,21 +2838,17 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
     }
 
     _createLabNotebookNode() {
-        if (profile.mainMenu.showLabNotebook) {
-            return {
-                text: profile.MainMenuNodeNames.Lab_Notebook,
-                object: {
-                    type: this.TYPE_LAB_NOTEBOOK,
-                    id: this.TYPE_LAB_NOTEBOOK,
-                },
-                expanded: true,
-                rootable: true,
-                canHaveChildren: true,
-                view: "showLabNotebookPage",
-                icon: IconUtil.getNavigationIcon(this.TYPE_LAB_NOTEBOOK),
-            }
-        } else {
-            return null
+        return {
+            text: profile.MainMenuNodeNames.Lab_Notebook,
+            object: {
+                type: this.TYPE_LAB_NOTEBOOK,
+                id: this.TYPE_LAB_NOTEBOOK,
+            },
+            expanded: true,
+            rootable: true,
+            canHaveChildren: true,
+            view: "showLabNotebookPage",
+            icon: IconUtil.getNavigationIcon(this.TYPE_LAB_NOTEBOOK),
         }
     }
 
@@ -2887,7 +2883,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
     }
 
     _createInventoryNode() {
-        if (profile.mainMenu.showInventory) {
+        if (profile.mainMenu.showInventory || profile.isAdmin) {
             return {
                 text: profile.MainMenuNodeNames.Inventory,
                 object: {
@@ -2908,7 +2904,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
     }
 
     _createStockNode() {
-        if (profile.mainMenu.showStock) {
+        if (profile.mainMenu.showStock || profile.isAdmin) {
             return {
                 text: profile.MainMenuNodeNames.Stock,
                 object: {
