@@ -200,7 +200,7 @@ public class UncompressedImportTest extends AbstractImportTest
     @Test
     public void testWithValidationScript() throws Exception
     {
-        final String name = "valid.py";
+        final String name = "ANTIBODY.valid.py";
         final String source = "print 'Test validation script'";
         final String[] sessionWorkspaceFiles = uploadToAsSessionWorkspace(sessionToken, "validation_script.xls", "scripts/" + name);
         final ImportData importData = new ImportData(ImportFormat.EXCEL, sessionWorkspaceFiles[0]);
@@ -230,7 +230,7 @@ public class UncompressedImportTest extends AbstractImportTest
     @Test
     public void testWithDynamicScript() throws Exception
     {
-        final String name = "dynamic.py";
+        final String name = "CODE.dynamic.py";
         final String source = "1+1";
         final String[] sessionWorkspaceFiles = uploadToAsSessionWorkspace(sessionToken, "dynamic_script.xls", "scripts/" + name);
         final ImportData importData = new ImportData(ImportFormat.EXCEL, sessionWorkspaceFiles[0]);
