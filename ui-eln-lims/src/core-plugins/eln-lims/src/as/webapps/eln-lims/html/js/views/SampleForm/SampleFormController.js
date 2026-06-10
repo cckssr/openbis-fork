@@ -344,7 +344,27 @@ function SampleFormController(mainController, mode, sample, paginationInfo, acti
                     return;
                 }
             }
-			
+
+			var sampleType = _this._sampleFormModel.sampleType;
+			for (var pa of sampleType.propertyAssignments) {
+				var pt = pa.propertyType;
+				if (["ARRAY_INTEGER", "ARRAY_REAL", "ARRAY_STRING", "ARRAY_TIMESTAMP"].includes(pt.dataType)) {
+					var val = sample.properties[pt.code];
+					if (val) {
+						var errorMessage = "Invalid value for " + pt.label + ": " + val;
+						try {
+							var array = Array.isArray(val) ? val : JSON.parse(val);
+							if (val && !FormUtil.isValidArray(array, pt.dataType)) {
+								Util.showUserError(errorMessage);
+								return;
+							}
+						} catch (e) {
+							Util.showUserError(errorMessage);
+						}
+					}
+				}
+			}
+
 			//
 			//Identification Info
 			//
@@ -449,7 +469,7 @@ function SampleFormController(mainController, mode, sample, paginationInfo, acti
 					if(child.newSample) {
 						samplesToCreate.push(child);
 					} else if(child.deleteSample) {
-						sampleChildrenRemovedFinal.push(child.identifier);
+						// sampleChildrenRemovedFinal.push(child.identifier);
 						samplesToDelete.push(child.permId);
 					}
 				});
@@ -1055,7 +1075,7 @@ function SampleFormController(mainController, mode, sample, paginationInfo, acti
                     }
                     mainController.openbisV3.updateSamples([sampleUpdate]).done(function() {
                         if(samplesToDelete) {
-                            mainController.serverFacade.trashStorageSamplesWithoutParents(samplesToDelete,
+                            mainController.serverFacade.trashStorageSamples(samplesToDelete,
                             "Deleted to trashcan from eln sample form " + _this._sampleFormModel.sample.identifier,
                             function(response) {
                                 Util.showSuccess(message, callbackOk);
@@ -1070,7 +1090,7 @@ function SampleFormController(mainController, mode, sample, paginationInfo, acti
             });
         } else { // Branch for openBIS 19.X
             if(samplesToDelete) {
-                mainController.serverFacade.trashStorageSamplesWithoutParents(samplesToDelete,
+                mainController.serverFacade.trashStorageSamples(samplesToDelete,
                     "Deleted to trashcan from eln sample form " + _this._sampleFormModel.sample.identifier,
                     function(response) {
                         Util.showSuccess(message, callbackOk);

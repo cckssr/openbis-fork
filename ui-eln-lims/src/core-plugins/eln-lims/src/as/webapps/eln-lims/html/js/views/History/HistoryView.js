@@ -223,13 +223,13 @@ function HistoryView(controller, model) {
                     $oldValue = ""
                     $newValue = ""
 
-                    if(property.propertyType.dataType === "MULTILINE_VARCHAR"){
+                    if(property.propertyType.dataType === "MULTILINE_VARCHAR") {
                         $oldValue = FormUtil.renderMultilineVarcharGridValue(object(property.code, property.oldValue), params, property.propertyType)
                         $newValue = FormUtil.renderMultilineVarcharGridValue(object(property.code, property.newValue), params, property.propertyType)
-                    }else if(property.propertyType.dataType === "XML"){
+                    } else if(property.propertyType.dataType === "XML") {
                         $oldValue = FormUtil.renderXmlGridValue(object(property.code, property.oldValue), params, property.propertyType)
                         $newValue = FormUtil.renderXmlGridValue(object(property.code, property.newValue), params, property.propertyType)
-                    }else{
+                    } else {
                         $oldValue = $("<div>").html(DOMPurify.sanitize(property.oldValue))
                         $newValue = $("<div>").html(DOMPurify.sanitize(property.newValue))
                     }

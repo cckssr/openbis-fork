@@ -11,6 +11,8 @@ targetCompatibility = JavaVersion.VERSION_21
 apply from: '../build/repository.gradle'
 repositories repositoryConfig
 
+apply from: '../build/common-resolutions.gradle'
+
 dependencies {
     annotationProcessor libs.org.projectlombok.lombok
     implementation  project(':lib-json'),

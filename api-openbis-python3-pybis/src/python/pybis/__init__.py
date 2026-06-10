@@ -1,4 +1,4 @@
-#   Copyright ETH 2018 - 2023 Zürich, Scientific IT Services
+#   Copyright ETH 2018 - 2026 Zürich, Scientific IT Services
 # 
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -23,5 +23,6 @@ from .pybis import Openbis
 from .pybis import ImagingControl
 from .pybis import Spreadsheet
 from .imaging import *
-from .afs_client import File, AfsClient
-# from .ro_crate_client import RoCrateClient
+
+from .afs.afs_client import File, AfsClient
+# from .ro_crate.ro_crate_client import RoCrateClient

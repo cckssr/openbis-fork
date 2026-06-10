@@ -1,4 +1,8 @@
-def openbisIvyUrl = "https://sissource.ethz.ch/openbis/openbis-public/openbis-ivy/-/raw/main"
+// Branch (or tag/commit ref) of the openbis-ivy GitLab repo to resolve
+// remote ivy artifacts from. Change this single value to point the build
+// at a different branch.
+def openbisIvyBranch = "main"
+def openbisIvyUrl = "https://sissource.ethz.ch/openbis/openbis-public/openbis-ivy/-/raw/${openbisIvyBranch}"
 def useLocalIvy = false
 def localIvyRepositoryPath = '../../openbis-ivy'
 
@@ -11,6 +15,8 @@ if (useLocalIvy) {
 }
 
 ext.repositoryConfig = {
+    
+    //mavenCentral()
 
     if (useLocalIvy) {
         println "Using local openbis-ivy repository: ${localIvyDir}"
@@ -37,5 +43,5 @@ ext.repositoryConfig = {
         }
     }
 
-    //mavenCentral()
+    
 }

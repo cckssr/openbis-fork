@@ -20,29 +20,8 @@ configurations {
 	ecj
 }
 
-configurations.all {
-    resolutionStrategy.cacheDynamicVersionsFor 0, 'hours'
-    resolutionStrategy.cacheChangingModulesFor 0, 'hours'
-    resolutionStrategy.eachDependency { details ->
-        if (details.requested.group == 'apache'
-                && details.requested.name == 'commons-io') {
-            details.useTarget "commons-io:commons-io:${libs.commons.io.commons.io.get().versionConstraint.requiredVersion}"
-        }
-    }
-    def hamcrestVersion = libs.org.hamcrest.hamcrest.core.get().versionConstraint.requiredVersion
-    resolutionStrategy {
-        force(
-                "org.hamcrest:hamcrest-core:${hamcrestVersion}",
-                "org.hamcrest:hamcrest-library:${hamcrestVersion}",
-                "org.hamcrest:hamcrest-integration:${hamcrestVersion}"
-        )
-    }
-}
+apply from: '../build/common-resolutions.gradle'
 
-//task wrapper(type: Wrapper) {
-//    gradleVersion = '4.10.3'
-//    distributionUrl = "https://services.gradle.org/distributions/gradle-4.10.3-bin.zip"
-//}
 sourceCompatibility = JavaVersion.VERSION_21
 targetCompatibility = JavaVersion.VERSION_21
 

@@ -287,11 +287,11 @@ function MoveEntityController(entityType, entityPermIds, optionalPostAction) {
                                     fetchOptions.withSpace();
                                     fetchOptions.withChildrenUsing(fetchOptions);
                                      mainController.openbisV3.getSamples(permIds, fetchOptions).done(function(map) {
-                                        var samplesToUpdate = [];
                                         var sampleIdsSet = new Set();
                                         var updates = [];
 
                                          for(var i = 0; i < moveEntityModel.entities.length; i++) {
+                                             var samplesToUpdate = [];
                                              var entity = moveEntityModel.entities[i];
                                              var permId = entity.getPermId();
                                              _this.gatherAllDescendants(samplesToUpdate, sampleIdsSet, map[permId]);
@@ -306,34 +306,34 @@ function MoveEntityController(entityType, entityPermIds, optionalPostAction) {
                                                  var level = "SPACE";
                                                  var currentEntity = entity.getSpace().getPermId().getPermId();
                                              }
-                                         }
 
-                                        switch(level) {
-                                            case "EXPERIMENT":
-                                                samplesToUpdate.forEach(function(sample) {
-                                                    if (sample.getExperiment() != null && currentEntity == sample.getExperiment().getPermId().getPermId()) {
-                                                        var sampleUpdate = prepareSampleUpdate(sample.getPermId());
-                                                        updates.push(sampleUpdate);
-                                                    }
-                                                });
-                                                break;
-                                            case "PROJECT":
-                                                samplesToUpdate.forEach(function(sample) {
-                                                    if (sample.getExperiment() == null && currentEntity == sample.getProject().getPermId().getPermId()) {
-                                                        var sampleUpdate = prepareSampleUpdate(sample.getPermId());
-                                                        updates.push(sampleUpdate);
-                                                    }
-                                                });
-                                                break;
-                                            case "SPACE":
-                                                samplesToUpdate.forEach(function(sample) {
-                                                    if (sample.getExperiment() == null && sample.getProject() == null && currentEntity == sample.getSpace().getPermId().getPermId()) {
-                                                        var sampleUpdate = prepareSampleUpdate(sample.getPermId());
-                                                        updates.push(sampleUpdate);
-                                                    }
-                                                });
-                                                break;
-                                        }
+                                             switch (level) {
+                                                 case "EXPERIMENT":
+                                                     samplesToUpdate.forEach(function (sample) {
+                                                         if (sample.getExperiment() != null && currentEntity === sample.getExperiment().getPermId().getPermId()) {
+                                                             var sampleUpdate = prepareSampleUpdate(sample.getPermId());
+                                                             updates.push(sampleUpdate);
+                                                         }
+                                                     });
+                                                     break;
+                                                 case "PROJECT":
+                                                     samplesToUpdate.forEach(function (sample) {
+                                                         if (sample.getExperiment() == null && sample.getProject() != null && currentEntity === sample.getProject().getPermId().getPermId()) {
+                                                             var sampleUpdate = prepareSampleUpdate(sample.getPermId());
+                                                             updates.push(sampleUpdate);
+                                                         }
+                                                     });
+                                                     break;
+                                                 case "SPACE":
+                                                     samplesToUpdate.forEach(function (sample) {
+                                                         if (sample.getExperiment() == null && sample.getProject() == null && sample.getSpace() != null && currentEntity === sample.getSpace().getPermId().getPermId()) {
+                                                             var sampleUpdate = prepareSampleUpdate(sample.getPermId());
+                                                             updates.push(sampleUpdate);
+                                                         }
+                                                     });
+                                                     break;
+                                             }
+                                         }
 
                                         mainController.openbisV3.updateSamples(updates).done(doneFunction).fail(fail);
                                     });

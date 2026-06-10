@@ -309,6 +309,7 @@ class DataSet(
 
         # construct the absolute path of our sftp source
         sftp_source_path = os.path.join(mountpoint_path, self._sftp_source_dir)
+        sftp_source_path_with_default = os.path.join(mountpoint_path, "DEFAULT", self._sftp_source_dir)
 
         # make sure our sftp source is really available
         # create symlink
@@ -316,6 +317,12 @@ class DataSet(
             target_dir_path.symlink_to(sftp_source_path, target_is_directory=True)
             if VERBOSE:
                 print(f"Symlink created: {target_dir} --> {sftp_source_path}")
+
+            return str(target_dir_path.absolute())
+        elif os.path.exists(sftp_source_path_with_default):
+            target_dir_path.symlink_to(sftp_source_path_with_default, target_is_directory=True)
+            if VERBOSE:
+                print(f"Symlink created: {target_dir} --> {sftp_source_path_with_default}")
 
             return str(target_dir_path.absolute())
         else:
@@ -438,12 +445,12 @@ class DataSet(
         return self
 
     def archive(self, remove_from_data_store=True):
-        self.openbis.archive(self.permId, remove_from_data_store=remove_from_data_store)
+        self.openbis.archive_datasets(self.permId, remove_from_data_store=remove_from_data_store)
         if VERBOSE:
             print(f"DataSet {self.permId} archived")
 
     def unarchive(self):
-        self.openbis.unarchive(self.permId)
+        self.openbis.unarchive_datasets(self.permId)
         if VERBOSE:
             print(f"DataSet {self.permId} unarchived")
 

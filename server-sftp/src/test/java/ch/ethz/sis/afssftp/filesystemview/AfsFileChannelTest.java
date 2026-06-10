@@ -32,6 +32,33 @@ public class AfsFileChannelTest extends TestCase {
         StaticInitializer.initialize();
     }
 
+    public void testRealConstructor() throws Exception {
+        String entityId = "entity-id";
+        String afsPath = "/dir0/dir1/file2.png";
+        User user = User.builder()
+                .username("user_name").sessionToken("session-tkn-0").build();
+
+
+        long position = 0L;
+        boolean readOption = true;
+        boolean writeOption = true;
+
+        AfsFileChannel afsFileChannel = new AfsFileChannel(
+                entityId,
+                afsPath,
+                user,
+                position,
+                readOption,
+                writeOption
+        );
+
+        assertEquals(1, AfsFileChannel.fileChannelPerSessionCounters.size());
+
+        afsFileChannel.implCloseChannel();
+
+        assertEquals(0, AfsFileChannel.fileChannelPerSessionCounters.size());
+    }
+
     public void testImplCloseChannel() throws Exception {
         String entityId = "entity-id";
         String afsPath = "/dir0/dir1/file2.png";
@@ -39,6 +66,8 @@ public class AfsFileChannelTest extends TestCase {
                 .username("user_name").sessionToken("session-tkn-0").build();
         SftpListUtil listUtil = Mockito.spy(new SftpListUtil(user));
         OpenBISClientUtil clientUtil = Mockito.mock(OpenBISClientUtil.class);
+
+
         long position = 0L;
         boolean readOption = true;
         boolean writeOption = true;
@@ -53,8 +82,16 @@ public class AfsFileChannelTest extends TestCase {
                 readOption,
                 writeOption
         );
+        afsFileChannel.setMockSizeCache(Mockito.spy(afsFileChannel.new SizeCache()));
+        afsFileChannel.setMockReadCache(Mockito.spy(afsFileChannel.new ReadCache()));
+        afsFileChannel.setMockWriteBuffer(Mockito.spy(afsFileChannel.new WriteBuffer()));
 
         afsFileChannel.implCloseChannel();
+
+        Mockito.verify(afsFileChannel.readCache, Mockito.times(1)).close();
+        Mockito.verify(afsFileChannel.readCache, Mockito.times(1)).clear();
+        Mockito.verify(afsFileChannel.writeBuffer, Mockito.times(1)).close();
+        Mockito.verify(afsFileChannel.writeBuffer, Mockito.times(1)).flush(null);
     }
 
     public void testRead() throws Exception {
@@ -81,20 +118,22 @@ public class AfsFileChannelTest extends TestCase {
                     readOption,
                     writeOption
             ));
+            afsFileChannel.setMockSizeCache(Mockito.spy(afsFileChannel.new SizeCache()));
+            afsFileChannel.setMockReadCache(Mockito.spy(afsFileChannel.new ReadCache()));
+            afsFileChannel.setMockWriteBuffer(Mockito.spy(afsFileChannel.new WriteBuffer()));
 
             if (readOption) {
                 ByteBuffer fakeContent = TestHelper.getRandomByteBuffer(30000);
                 Mockito.doAnswer((invocation) -> {
-                    int offset = (int) (long) invocation.getArgument(2);
-                    int limit = invocation.getArgument(3);
+                    int offset = (int) (long) invocation.getArgument(0);
+                    int limit = invocation.getArgument(1);
                     return Arrays.copyOfRange(fakeContent.array(), offset, offset + limit);
-                }).when(afsClient).read(
-                        Mockito.eq(entityId),
-                        Mockito.eq(afsPath),
+                }).when(afsFileChannel).readData(
                         Mockito.anyLong(),
                         Mockito.anyInt()
                 );
                 Mockito.doReturn(30000L).when(afsFileChannel).size();
+                Mockito.doReturn(30000L).when(afsFileChannel).internalRealSize();
 
                 assertEquals(10000L, afsFileChannel.position());
                 ByteBuffer byteBuffer = ByteBuffer.allocate(10000);
@@ -116,9 +155,7 @@ public class AfsFileChannelTest extends TestCase {
                 assertArrayEquals(
                         Arrays.copyOfRange(fakeContent.array(), 5, 9805),
                         Arrays.copyOfRange(byteBuffer.array(), 100, 9900));
-                Mockito.verify(afsClient, Mockito.times(1)).read(
-                        entityId,
-                        afsPath,
+                Mockito.verify(afsFileChannel, Mockito.times(1)).readData(
                         5L,
                         9800
                 );
@@ -159,20 +196,22 @@ public class AfsFileChannelTest extends TestCase {
                     readOption,
                     writeOption
             ));
+            afsFileChannel.setMockSizeCache(Mockito.spy(afsFileChannel.new SizeCache()));
+            afsFileChannel.setMockReadCache(Mockito.spy(afsFileChannel.new ReadCache()));
+            afsFileChannel.setMockWriteBuffer(Mockito.spy(afsFileChannel.new WriteBuffer()));
 
             if (readOption) {
                 ByteBuffer fakeContent = TestHelper.getRandomByteBuffer(30000);
                 Mockito.doAnswer((invocation) -> {
-                    int offset = (int) (long) invocation.getArgument(2);
-                    int limit = invocation.getArgument(3);
+                    int offset = (int) (long) invocation.getArgument(0);
+                    int limit = invocation.getArgument(1);
                     return Arrays.copyOfRange(fakeContent.array(), offset, offset + limit);
-                }).when(afsClient).read(
-                        Mockito.eq(entityId),
-                        Mockito.eq(afsPath),
+                }).when(afsFileChannel).readData(
                         Mockito.anyLong(),
                         Mockito.anyInt()
                 );
                 Mockito.doReturn(30000L).when(afsFileChannel).size();
+                Mockito.doReturn(30000L).when(afsFileChannel).internalRealSize();
 
                 assertEquals(10000L, afsFileChannel.position());
                 ByteBuffer[] byteBuffers = new ByteBuffer[] {
@@ -206,9 +245,7 @@ public class AfsFileChannelTest extends TestCase {
                             .put(Arrays.copyOfRange(byteBuffers[2].array(), 0, 4900))
                             .array()
                         );
-                Mockito.verify(afsClient, Mockito.times(1)).read(
-                        entityId,
-                        afsPath,
+                Mockito.verify(afsFileChannel, Mockito.times(1)).readData(
                         5L,
                         9800
                 );
@@ -252,20 +289,22 @@ public class AfsFileChannelTest extends TestCase {
                     readOption,
                     writeOption
             ));
+            afsFileChannel.setMockSizeCache(Mockito.spy(afsFileChannel.new SizeCache()));
+            afsFileChannel.setMockReadCache(Mockito.spy(afsFileChannel.new ReadCache()));
+            afsFileChannel.setMockWriteBuffer(Mockito.spy(afsFileChannel.new WriteBuffer()));
 
             if (readOption) {
                 ByteBuffer fakeContent = TestHelper.getRandomByteBuffer(30000);
                 Mockito.doAnswer((invocation) -> {
-                    int offset = (int) (long) invocation.getArgument(2);
-                    int limit = invocation.getArgument(3);
+                    int offset = (int) (long) invocation.getArgument(0);
+                    int limit = invocation.getArgument(1);
                     return Arrays.copyOfRange(fakeContent.array(), offset, offset + limit);
-                }).when(afsClient).read(
-                        Mockito.eq(entityId),
-                        Mockito.eq(afsPath),
+                }).when(afsFileChannel).readData(
                         Mockito.anyLong(),
                         Mockito.anyInt()
                 );
                 Mockito.doReturn(30000L).when(afsFileChannel).size();
+                Mockito.doReturn(30000L).when(afsFileChannel).internalRealSize();
 
                 assertEquals(10000L, afsFileChannel.position());
                 ByteBuffer byteBuffer = ByteBuffer.allocate(10000);
@@ -284,9 +323,7 @@ public class AfsFileChannelTest extends TestCase {
                 assertArrayEquals(
                         Arrays.copyOfRange(fakeContent.array(), 5, 9805),
                         Arrays.copyOfRange(byteBuffer.array(), 100, 9900));
-                Mockito.verify(afsClient, Mockito.times(1)).read(
-                        entityId,
-                        afsPath,
+                Mockito.verify(afsFileChannel, Mockito.times(1)).readData(
                         5L,
                         9800
                 );
@@ -327,6 +364,9 @@ public class AfsFileChannelTest extends TestCase {
                     readOption,
                     writeOption
             ));
+            afsFileChannel.setMockSizeCache(Mockito.spy(afsFileChannel.new SizeCache()));
+            afsFileChannel.setMockReadCache(Mockito.spy(afsFileChannel.new ReadCache()));
+            afsFileChannel.setMockWriteBuffer(Mockito.spy(afsFileChannel.new WriteBuffer()));
 
             if (writeOption) {
                 Mockito.doReturn(true).when(afsClient)
@@ -343,15 +383,14 @@ public class AfsFileChannelTest extends TestCase {
                 assertEquals(0, afsFileChannel.write(byteBuffer));
                 assertEquals(10000L, afsFileChannel.position());
                 Mockito.doReturn(5000L).when(afsFileChannel).size();
+                Mockito.doReturn(5000L).when(afsFileChannel).internalRealSize();
                 byteBuffer.position(10);
                 byteBuffer.limit(9990);
                 assertEquals(9980, afsFileChannel.write(byteBuffer));
                 Mockito.verify(afsFileChannel, Mockito.times(1)).fillWithZero(5000, 10000);
-                Mockito.verify(afsClient, Mockito.times(1)).write(
-                        entityId,
-                        afsPath,
-                        10000L,
-                        Arrays.copyOfRange(byteBuffer.array(), 10, 9990)
+                Mockito.verify(afsFileChannel, Mockito.times(1)).writeData(
+                        Arrays.copyOfRange(byteBuffer.array(), 10, 9990),
+                        10000L
                 );
                 assertEquals(19980, afsFileChannel.position());
 
@@ -362,11 +401,9 @@ public class AfsFileChannelTest extends TestCase {
                 assertEquals(9800, afsFileChannel.write(byteBuffer));
                 Mockito.verify(afsFileChannel, Mockito.times(0))
                         .fillWithZero(Mockito.anyInt(), Mockito.anyInt());
-                Mockito.verify(afsClient, Mockito.times(1)).write(
-                        entityId,
-                        afsPath,
-                        5L,
-                        Arrays.copyOfRange(byteBuffer.array(), 100, 9900)
+                Mockito.verify(afsFileChannel, Mockito.times(1)).writeData(
+                        Arrays.copyOfRange(byteBuffer.array(), 100, 9900),
+                        5L
                 );
                 assertEquals(9805, afsFileChannel.position());
             } else {
@@ -405,6 +442,9 @@ public class AfsFileChannelTest extends TestCase {
                     readOption,
                     writeOption
             ));
+            afsFileChannel.setMockSizeCache(Mockito.spy(afsFileChannel.new SizeCache()));
+            afsFileChannel.setMockReadCache(Mockito.spy(afsFileChannel.new ReadCache()));
+            afsFileChannel.setMockWriteBuffer(Mockito.spy(afsFileChannel.new WriteBuffer()));
 
             if (writeOption) {
                 Mockito.doReturn(true).when(afsClient)
@@ -427,19 +467,18 @@ public class AfsFileChannelTest extends TestCase {
                 assertEquals(0, afsFileChannel.write(byteBuffers, 1, 2));
                 assertEquals(10000L, afsFileChannel.position());
                 Mockito.doReturn(5000L).when(afsFileChannel).size();
+                Mockito.doReturn(5000L).when(afsFileChannel).internalRealSize();
                 byteBuffers[1].position(10);
                 byteBuffers[2].position(0);
                 byteBuffers[2].limit(4990);
                 assertEquals(9980, afsFileChannel.write(byteBuffers, 1, 2));
                 Mockito.verify(afsFileChannel, Mockito.times(1)).fillWithZero(5000, 10000);
-                Mockito.verify(afsClient, Mockito.times(1)).write(
-                        entityId,
-                        afsPath,
-                        10000L,
+                Mockito.verify(afsFileChannel, Mockito.times(1)).writeData(
                         ByteBuffer.allocate(9980)
                                 .put(Arrays.copyOfRange(byteBuffers[1].array(), 10, 5000))
                                 .put(Arrays.copyOfRange(byteBuffers[2].array(), 0, 4990))
-                                .array()
+                                .array(),
+                        10000L
                 );
                 assertEquals(19980, afsFileChannel.position());
 
@@ -451,14 +490,12 @@ public class AfsFileChannelTest extends TestCase {
                 assertEquals(9800, afsFileChannel.write(byteBuffers, 1, 2));
                 Mockito.verify(afsFileChannel, Mockito.times(0))
                         .fillWithZero(Mockito.anyInt(), Mockito.anyInt());
-                Mockito.verify(afsClient, Mockito.times(1)).write(
-                        entityId,
-                        afsPath,
-                        5L,
+                Mockito.verify(afsFileChannel, Mockito.times(1)).writeData(
                         ByteBuffer.allocate(9800)
                                 .put(Arrays.copyOfRange(byteBuffers[1].array(), 100, 5000))
                                 .put(Arrays.copyOfRange(byteBuffers[2].array(), 0, 4900))
-                                .array()
+                                .array(),
+                        5L
                 );
                 assertEquals(9805, afsFileChannel.position());
             } else {
@@ -500,6 +537,9 @@ public class AfsFileChannelTest extends TestCase {
                     readOption,
                     writeOption
             ));
+            afsFileChannel.setMockSizeCache(Mockito.spy(afsFileChannel.new SizeCache()));
+            afsFileChannel.setMockReadCache(Mockito.spy(afsFileChannel.new ReadCache()));
+            afsFileChannel.setMockWriteBuffer(Mockito.spy(afsFileChannel.new WriteBuffer()));
 
             if (writeOption) {
                 Mockito.doReturn(true).when(afsClient)
@@ -516,15 +556,14 @@ public class AfsFileChannelTest extends TestCase {
                 assertEquals(0, afsFileChannel.write(byteBuffer, 10000));
                 assertEquals(10000L, afsFileChannel.position());
                 Mockito.doReturn(5000L).when(afsFileChannel).size();
+                Mockito.doReturn(5000L).when(afsFileChannel).internalRealSize();
                 byteBuffer.position(10);
                 byteBuffer.limit(9990);
                 assertEquals(9980, afsFileChannel.write(byteBuffer, 10000));
                 Mockito.verify(afsFileChannel, Mockito.times(1)).fillWithZero(5000, 10000);
-                Mockito.verify(afsClient, Mockito.times(1)).write(
-                        entityId,
-                        afsPath,
-                        10000L,
-                        Arrays.copyOfRange(byteBuffer.array(), 10, 9990)
+                Mockito.verify(afsFileChannel, Mockito.times(1)).writeData(
+                        Arrays.copyOfRange(byteBuffer.array(), 10, 9990),
+                        10000L
                 );
                 assertEquals(10000, afsFileChannel.position());
 
@@ -534,11 +573,9 @@ public class AfsFileChannelTest extends TestCase {
                 assertEquals(9800, afsFileChannel.write(byteBuffer, 5));
                 Mockito.verify(afsFileChannel, Mockito.times(0))
                         .fillWithZero(Mockito.anyInt(), Mockito.anyInt());
-                Mockito.verify(afsClient, Mockito.times(1)).write(
-                        entityId,
-                        afsPath,
-                        5L,
-                        Arrays.copyOfRange(byteBuffer.array(), 100, 9900)
+                Mockito.verify(afsFileChannel, Mockito.times(1)).writeData(
+                        Arrays.copyOfRange(byteBuffer.array(), 100, 9900),
+                        5L
                 );
                 assertEquals(10000, afsFileChannel.position());
             } else {
@@ -603,6 +640,44 @@ public class AfsFileChannelTest extends TestCase {
                 readOption,
                 writeOption
         );
+        afsFileChannel.setMockSizeCache(Mockito.spy(afsFileChannel.new SizeCache()));
+        afsFileChannel.setMockReadCache(Mockito.spy(afsFileChannel.new ReadCache()));
+        afsFileChannel.setMockWriteBuffer(Mockito.spy(afsFileChannel.new WriteBuffer()));
+
+        File existingFile = new File(entityId,
+                afsPath,
+                "file2.png",
+                false,
+                345729L,
+                Instant.now().atOffset(ZoneOffset.UTC)
+        );
+        Mockito.doReturn(Optional.of(existingFile)).when(listUtil)
+                .getAfsFilePresence(entityId, afsPath);
+        assertEquals(345729L, afsFileChannel.size());
+        Mockito.verify(afsFileChannel.sizeCache, Mockito.times(1)).getCachedSize();
+    }
+
+    public void testInternalSize() throws Exception {
+        String entityId = "entity-id";
+        String afsPath = "/dir0/dir1/file2.png";
+        User user = User.builder()
+                .username("user_name").sessionToken("session-tkn-0").build();
+        SftpListUtil listUtil = Mockito.spy(new SftpListUtil(user));
+        OpenBISClientUtil clientUtil = Mockito.mock(OpenBISClientUtil.class);
+        long position = 0L;
+        boolean readOption = true;
+        boolean writeOption = true;
+
+        AfsFileChannel afsFileChannel = new AfsFileChannel(
+                entityId,
+                afsPath,
+                user,
+                clientUtil,
+                listUtil,
+                new AtomicLong(position),
+                readOption,
+                writeOption
+        );
 
         File existingFile = new File(entityId,
                 afsPath,
@@ -628,48 +703,62 @@ public class AfsFileChannelTest extends TestCase {
         long position = 10000L;
 
         for (boolean writeOption : List.of(false, true)) {
-            boolean readOption = true;
+            for (boolean readOption : List.of(false, true)) {
+                AfsFileChannel afsFileChannel = Mockito.spy(new AfsFileChannel(
+                        entityId,
+                        afsPath,
+                        user,
+                        clientUtil,
+                        listUtil,
+                        new AtomicLong(position),
+                        readOption,
+                        writeOption
+                ));
+                afsFileChannel.setMockSizeCache(Mockito.spy(afsFileChannel.new SizeCache()));
+                afsFileChannel.setMockReadCache(Mockito.spy(afsFileChannel.new ReadCache()));
+                afsFileChannel.setMockWriteBuffer(Mockito.spy(afsFileChannel.new WriteBuffer()));
 
-            AfsFileChannel afsFileChannel = Mockito.spy(new AfsFileChannel(
-                    entityId,
-                    afsPath,
-                    user,
-                    clientUtil,
-                    listUtil,
-                    new AtomicLong(position),
-                    readOption,
-                    writeOption
-            ));
+                if (writeOption) {
+                    Mockito.doReturn(1000).when(afsFileChannel).getAfsClientMaxPackageSize();
+                    Mockito.doReturn(true).when(afsClient)
+                            .truncate(
+                                    Mockito.eq(entityId),
+                                    Mockito.eq(afsPath),
+                                    Mockito.anyLong()
+                            );
 
-            if (writeOption) {
-                Mockito.doReturn(1000).when(afsFileChannel).getAfsClientMaxPackageSize();
-                Mockito.doReturn(true).when(afsClient)
-                        .truncate(
-                                Mockito.eq(entityId),
-                                Mockito.eq(afsPath),
-                                Mockito.anyLong()
-                        );
-
-                assertEquals(10000L, afsFileChannel.position());
-                afsFileChannel.truncate(5020);
-                Mockito.verify(afsClient, Mockito.times(1)).truncate(
-                        entityId, afsPath, 5020L
-                );
-                assertEquals(5020, afsFileChannel.position());
-
-                afsFileChannel.truncate(235043);
-                Mockito.verify(afsClient, Mockito.times(1)).truncate(
-                        entityId, afsPath, 235043L
-                );
-                assertEquals(5020, afsFileChannel.position());
-            } else {
-                Exception exception = null;
-                try {
+                    assertEquals(10000L, afsFileChannel.position());
                     afsFileChannel.truncate(5020);
-                } catch (Exception e) {
-                    exception = e;
+                    Mockito.verify(afsClient, Mockito.times(1)).truncate(
+                            entityId, afsPath, 5020L
+                    );
+                    Mockito.verify(afsFileChannel.writeBuffer, Mockito.times(1)).flush(null);
+                    Mockito.verify(afsFileChannel.readCache, Mockito.times(readOption ? 1 : 0)).clear();
+                    Mockito.verify(afsFileChannel.sizeCache, Mockito.times(1)).clear();
+                    assertEquals(5020, afsFileChannel.position());
+
+                    Mockito.clearInvocations(afsClient, afsFileChannel.writeBuffer, afsFileChannel.readCache, afsFileChannel.sizeCache);
+
+                    afsFileChannel.truncate(235043);
+                    Mockito.verify(afsClient, Mockito.times(1)).truncate(
+                            entityId, afsPath, 235043L
+                    );
+                    Mockito.verify(afsFileChannel.writeBuffer, Mockito.times(1)).flush(null);
+                    Mockito.verify(afsFileChannel.readCache, Mockito.times(readOption ? 1 : 0)).clear();
+                    Mockito.verify(afsFileChannel.sizeCache, Mockito.times(1)).clear();
+
+                    assertEquals(5020, afsFileChannel.position());
+                } else {
+                    Exception exception = null;
+                    try {
+                        afsFileChannel.truncate(5020);
+                    } catch (Exception e) {
+                        exception = e;
+                    }
+                    assertEquals(UnsupportedOperationException.class, exception.getClass());
                 }
-                assertEquals(UnsupportedOperationException.class, exception.getClass());
+
+                Mockito.clearInvocations(afsClient, afsFileChannel.writeBuffer, afsFileChannel.readCache, afsFileChannel.sizeCache);
             }
         }
     }
@@ -695,9 +784,21 @@ public class AfsFileChannelTest extends TestCase {
                 readOption,
                 writeOption
         );
+        afsFileChannel.setMockSizeCache(Mockito.spy(afsFileChannel.new SizeCache()));
+        afsFileChannel.setMockReadCache(Mockito.spy(afsFileChannel.new ReadCache()));
+        afsFileChannel.setMockWriteBuffer(Mockito.spy(afsFileChannel.new WriteBuffer()));
 
         afsFileChannel.force(false);
+        Mockito.verify(afsFileChannel.writeBuffer, Mockito.times(1)).flush(null);
+        Mockito.verify(afsFileChannel.readCache, Mockito.times(1)).clear();
+        Mockito.verify(afsFileChannel.sizeCache, Mockito.times(1)).clear();
+
+        Mockito.clearInvocations(afsFileChannel.writeBuffer, afsFileChannel.readCache, afsFileChannel.sizeCache);
+
         afsFileChannel.force(true);
+        Mockito.verify(afsFileChannel.writeBuffer, Mockito.times(1)).flush(null);
+        Mockito.verify(afsFileChannel.readCache, Mockito.times(1)).clear();
+        Mockito.verify(afsFileChannel.sizeCache, Mockito.times(1)).clear();
     }
 
     public void testTransferTo() throws Exception {
@@ -724,20 +825,22 @@ public class AfsFileChannelTest extends TestCase {
                     readOption,
                     writeOption
             ));
+            afsFileChannel.setMockSizeCache(Mockito.spy(afsFileChannel.new SizeCache()));
+            afsFileChannel.setMockReadCache(Mockito.spy(afsFileChannel.new ReadCache()));
+            afsFileChannel.setMockWriteBuffer(Mockito.spy(afsFileChannel.new WriteBuffer()));
 
             if (readOption) {
                 ByteBuffer fakeContent = TestHelper.getRandomByteBuffer(30000);
                 Mockito.doAnswer((invocation) -> {
-                    int offset = (int) (long) invocation.getArgument(2);
-                    int limit = invocation.getArgument(3);
+                    int offset = (int) (long) invocation.getArgument(0);
+                    int limit = invocation.getArgument(1);
                     return Arrays.copyOfRange(fakeContent.array(), offset, offset + limit);
-                }).when(afsClient).read(
-                        Mockito.eq(entityId),
-                        Mockito.eq(afsPath),
+                }).when(afsFileChannel).readData(
                         Mockito.anyLong(),
                         Mockito.anyInt()
                 );
                 Mockito.doReturn(30000L).when(afsFileChannel).size();
+                Mockito.doReturn(30000L).when(afsFileChannel).internalRealSize();
 
                 WritableByteChannel writableByteChannel = Mockito.spy(new WritableByteChannel() {
                     @Override
@@ -798,6 +901,9 @@ public class AfsFileChannelTest extends TestCase {
                     readOption,
                     writeOption
             ));
+            afsFileChannel.setMockSizeCache(Mockito.spy(afsFileChannel.new SizeCache()));
+            afsFileChannel.setMockReadCache(Mockito.spy(afsFileChannel.new ReadCache()));
+            afsFileChannel.setMockWriteBuffer(Mockito.spy(afsFileChannel.new WriteBuffer()));
 
             if (writeOption) {
                 ByteBuffer fakeContent = TestHelper.getRandomByteBuffer(30000);
@@ -950,34 +1056,117 @@ public class AfsFileChannelTest extends TestCase {
         OpenBIS.AfsServerFacade afsClient = Mockito.mock(OpenBIS.AfsServerFacade.class);
         Mockito.doReturn(afsClient).when(clientUtil).getAfsClient(user);
         long position = 0L;
-        boolean readOption = true;
-        boolean writeOption = true;
 
-        AfsFileChannel afsFileChannel = Mockito.spy(new AfsFileChannel(
-                entityId,
-                afsPath,
-                user,
-                clientUtil,
-                listUtil,
-                new AtomicLong(position),
-                readOption,
-                writeOption
-        ));
-        Mockito.doReturn(1000).when(afsFileChannel).getAfsClientMaxPackageSize();
-        Mockito.doReturn(true).when(afsClient)
-                .write(
-                        Mockito.anyString(),
-                        Mockito.anyString(),
-                        Mockito.anyLong(),
-                        Mockito.any(byte[].class)
-                );
+        for (boolean readOption : List.of(false, true)) {
+            boolean writeOption = true;
 
-        afsFileChannel.fillWithZero(0, 5020);
-        Mockito.verify(afsClient).write(entityId, afsPath, 0L, new byte[1000]);
-        Mockito.verify(afsClient).write(entityId, afsPath, 1000L, new byte[1000]);
-        Mockito.verify(afsClient).write(entityId, afsPath, 2000L, new byte[1000]);
-        Mockito.verify(afsClient).write(entityId, afsPath, 3000L, new byte[1000]);
-        Mockito.verify(afsClient).write(entityId, afsPath, 4000L, new byte[1000]);
-        Mockito.verify(afsClient).write(entityId, afsPath, 5000L, new byte[20]);
+            AfsFileChannel afsFileChannel = Mockito.spy(new AfsFileChannel(
+                    entityId,
+                    afsPath,
+                    user,
+                    clientUtil,
+                    listUtil,
+                    new AtomicLong(position),
+                    readOption,
+                    writeOption
+            ));
+            afsFileChannel.setMockSizeCache(Mockito.spy(afsFileChannel.new SizeCache()));
+            afsFileChannel.setMockReadCache(Mockito.spy(afsFileChannel.new ReadCache()));
+            afsFileChannel.setMockWriteBuffer(Mockito.spy(afsFileChannel.new WriteBuffer()));
+
+            Mockito.doReturn(1000).when(afsFileChannel).getAfsClientMaxPackageSize();
+            Mockito.doReturn(true).when(afsClient)
+                    .write(
+                            Mockito.anyString(),
+                            Mockito.anyString(),
+                            Mockito.anyLong(),
+                            Mockito.any(byte[].class)
+                    );
+
+            afsFileChannel.fillWithZero(0, 5020);
+            Mockito.verify(afsClient).write(entityId, afsPath, 0L, new byte[1000]);
+            Mockito.verify(afsClient).write(entityId, afsPath, 1000L, new byte[1000]);
+            Mockito.verify(afsClient).write(entityId, afsPath, 2000L, new byte[1000]);
+            Mockito.verify(afsClient).write(entityId, afsPath, 3000L, new byte[1000]);
+            Mockito.verify(afsClient).write(entityId, afsPath, 4000L, new byte[1000]);
+            Mockito.verify(afsClient).write(entityId, afsPath, 5000L, new byte[20]);
+            Mockito.verify(afsFileChannel.readCache, Mockito.times(readOption ? 1 : 0)).clear();
+            Mockito.clearInvocations(afsClient);
+        }
+    }
+
+    public void testReadData() throws Exception {
+        String entityId = "entity-id";
+        String afsPath = "/dir0/dir1/file2.png";
+        User user = User.builder()
+                .username("user_name").sessionToken("session-tkn-0").build();
+        SftpListUtil listUtil = Mockito.spy(new SftpListUtil(user));
+        OpenBISClientUtil clientUtil = Mockito.mock(OpenBISClientUtil.class);
+        OpenBIS.AfsServerFacade afsClient = Mockito.mock(OpenBIS.AfsServerFacade.class);
+        Mockito.doReturn(afsClient).when(clientUtil).getAfsClient(user);
+
+        long position = 10000L;
+
+        for (boolean writeOption : List.of(false, true)) {
+            boolean readOption = true;
+
+            AfsFileChannel afsFileChannel = Mockito.spy(new AfsFileChannel(
+                    entityId,
+                    afsPath,
+                    user,
+                    clientUtil,
+                    listUtil,
+                    new AtomicLong(position),
+                    readOption,
+                    writeOption
+            ));
+            afsFileChannel.setMockSizeCache(Mockito.spy(afsFileChannel.new SizeCache()));
+            afsFileChannel.setMockReadCache(Mockito.spy(afsFileChannel.new ReadCache()));
+            afsFileChannel.setMockWriteBuffer(Mockito.spy(afsFileChannel.new WriteBuffer()));
+            Mockito.doReturn(new byte[15356]).when(afsFileChannel.readCache).getCachedData(Mockito.anyLong(), Mockito.anyInt());
+
+            afsFileChannel.readData(15, 15356);
+
+            Mockito.verify(afsFileChannel.readCache, Mockito.times(1)).getCachedData(15, 15356);
+            Mockito.verify(afsFileChannel.writeBuffer, Mockito.times(writeOption ? 1 : 0)).flush(null);
+        }
+    }
+
+    public void testWriteData() throws Exception {
+        String entityId = "entity-id";
+        String afsPath = "/dir0/dir1/file2.png";
+        User user = User.builder()
+                .username("user_name").sessionToken("session-tkn-0").build();
+        SftpListUtil listUtil = Mockito.spy(new SftpListUtil(user));
+        OpenBISClientUtil clientUtil = Mockito.mock(OpenBISClientUtil.class);
+        OpenBIS.AfsServerFacade afsClient = Mockito.mock(OpenBIS.AfsServerFacade.class);
+        Mockito.doReturn(afsClient).when(clientUtil).getAfsClient(user);
+
+        long position = 10000L;
+
+        for (boolean readOption : List.of(false, true)) {
+            boolean writeOption = true;
+
+            AfsFileChannel afsFileChannel = Mockito.spy(new AfsFileChannel(
+                    entityId,
+                    afsPath,
+                    user,
+                    clientUtil,
+                    listUtil,
+                    new AtomicLong(position),
+                    readOption,
+                    writeOption
+            ));
+            afsFileChannel.setMockSizeCache(Mockito.spy(afsFileChannel.new SizeCache()));
+            afsFileChannel.setMockReadCache(Mockito.spy(afsFileChannel.new ReadCache()));
+            afsFileChannel.setMockWriteBuffer(Mockito.spy(afsFileChannel.new WriteBuffer()));
+            Mockito.doNothing().when(afsFileChannel.writeBuffer).addChunk(Mockito.anyLong(), Mockito.any(byte[].class));
+
+            afsFileChannel.writeData(new byte[4535], 345);
+
+            Mockito.verify(afsFileChannel.writeBuffer, Mockito.times(1)).addChunk(345, new byte[4535]);
+            Mockito.verify(afsFileChannel.readCache, Mockito.times(readOption ? 1 : 0)).clear();
+            Mockito.verify(afsFileChannel.sizeCache, Mockito.times(1)).trackNewWrite(345, 345 + 4535);
+        }
     }
 }

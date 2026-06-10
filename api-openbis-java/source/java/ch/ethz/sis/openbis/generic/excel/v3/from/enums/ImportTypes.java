@@ -23,6 +23,7 @@ public enum ImportTypes
     EXPERIMENT_TYPE("EXPERIMENTTYPE", false),
     DATASET_TYPE("DATASETTYPE", false),
     PROPERTY_TYPE("PROPERTYTYPE", false),
+    TYPE_GROUP(null, false),
     SPACE(null, true),
     PROJECT(null, true),
     EXPERIMENT(null, true),

@@ -263,6 +263,30 @@ public class UncompressedImportTest extends AbstractImportTest
     }
 
     @Test
+    public void testInternalTypesForNormalUser_nothingGetsUpdated() throws Exception
+    {
+        // Step 1: import as system
+        final String systemSessionToken = v3api.loginAsSystem();
+
+        final String[] sessionWorkspaceFiles =
+                uploadToAsSessionWorkspace(systemSessionToken, "import_internal_types_only.xlsx");
+
+        final ImportData importData = new ImportData(ImportFormat.EXCEL, sessionWorkspaceFiles);
+        final ImportOptions importOptions = new ImportOptions(ImportMode.UPDATE_IF_EXISTS);
+
+        v3api.executeImport(systemSessionToken, importData, importOptions);
+
+        // Step 2: regular user imports and nothing is broken
+        final String[] sessionWorkspaceFilesRegular =
+                uploadToAsSessionWorkspace(sessionToken, "import_internal_types_only.xlsx");
+
+        final ImportData importDataRegular = new ImportData(ImportFormat.EXCEL, sessionWorkspaceFilesRegular);
+        final ImportOptions importOptionsRegular = new ImportOptions(ImportMode.UPDATE_IF_EXISTS);
+
+        v3api.executeImport(sessionToken, importDataRegular, importOptionsRegular);
+    }
+
+    @Test
     public void testInternalTypesForNormalUser_createNonInternal() throws Exception
     {
         final String[] sessionWorkspaceFiles = uploadToAsSessionWorkspace(sessionToken, "import_internal_type.xlsx");

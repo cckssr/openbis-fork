@@ -66,11 +66,11 @@ def process(context, parameters):
             result = isUnusedBarcode(context, parameters, sessionToken)
         finally:
             context.applicationService.logout(sessionToken)
-    elif method == "trashStorageSamplesWithoutParents":
+    elif method == "trashStorageSamples":
         sessionToken = None
         try:
             sessionToken = context.applicationService.loginAsSystem()
-            result = trashStorageSamplesWithoutParents(context, parameters, sessionToken)
+            result = trashStorageSamples(context, parameters, sessionToken)
         finally:
             context.applicationService.logout(sessionToken)
     elif method == "isValidStoragePositionToInsertUpdate":
@@ -715,7 +715,7 @@ def isUnusedBarcode(context, parameters, sessionToken):
     sampleSearchResults = context.applicationService.searchSamples(sessionToken, searchCriteria, fetchOptions).getObjects()
     return sampleSearchResults.size() == 0
 
-def trashStorageSamplesWithoutParents(context, parameters, sessionToken):
+def trashStorageSamples(context, parameters, sessionToken):
     from ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id import SamplePermId
     from ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions import SampleFetchOptions
     from ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.delete import SampleDeletionOptions
@@ -733,9 +733,6 @@ def trashStorageSamplesWithoutParents(context, parameters, sessionToken):
         # Is an storage position
         if sample.getType().getCode() != "STORAGE_POSITION":
             raise UserFailureException("Sample with PermId " + sample.getPermId().getPermId() + " is not an STORAGE_POSITION but instead " + sample.getType().getCode())
-        # Doesn't have parents
-        if len(sample.getParents()) > 0:
-            raise UserFailureException("Sample with PermId " + sample.getPermId().getPermId() + " has " + str(len(sample.getParents())) + " parents.")
     # Delete
     deleteOptions = SampleDeletionOptions()
     deleteOptions.setReason(parameters.get("reason"))

@@ -148,7 +148,7 @@ public class FtpPathResolverRegistry implements IFtpPathResolverRegistry
         public List<FtpFile> unsafeListFiles() throws RuntimeException
         {
             FtpFile ftpFile = ftpPathResolverRegistry.resolveAndConvert(absolutePath, resolverContext);
-            return ftpFile.listFiles();
+            return new LinkedList<>(ftpFile.listFiles());
         }
     }
 

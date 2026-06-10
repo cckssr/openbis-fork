@@ -61,8 +61,9 @@ public class ScriptImportHelper extends BasicImportHelper
 
     private PluginPermId getScriptId(Map<String, Integer> header, List<String> values)
     {
+        String ownerCode = getValueByColumnName(header, values, OWNER_CODE);
         String script = getValueByColumnName(header, values, scriptType.getColumnName());
-        return ImportUtils.getScriptId(script, null);
+        return ImportUtils.getScriptId(ownerCode, script, null);
     }
 
     @Override protected boolean isObjectExist(Map<String, Integer> header, List<String> values)

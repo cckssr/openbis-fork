@@ -114,6 +114,8 @@ tasks.withType(JavaCompile) {
 apply from: '../build/repository.gradle'
 repositories repositoryConfig
 
+apply from: '../build/common-resolutions.gradle'
+
 dependencies {
     annotationProcessor(libs.org.projectlombok.lombok)
 
@@ -124,7 +126,7 @@ dependencies {
     api(project(":lib-json"))
     api(project(":api-openbis-java"))
 
-    implementation(libs.org.xerial.sqlite.jdbc.v35020)
+    implementation(libs.org.xerial.sqlite.jdbc)
     implementation(libs.commons.cli.commons.cli)
     implementation(libs.com.google.guava.guava) {
         version {

@@ -624,7 +624,9 @@ public final class AfsClient implements PublicAPI, ClientAPI
 
     private <T> T getLongRunningOperationResult(final String apiMethod, final long startTime, final UUID operationId) throws Exception
     {
+        final int maxSleepTime = 60000;
         int sleepTime = 500;
+
         while (System.currentTimeMillis() < startTime + timeout) {
             Object result = null;
             try
@@ -651,7 +653,7 @@ public final class AfsClient implements PublicAPI, ClientAPI
                 } catch (InterruptedException e) {
                     break;
                 }
-                sleepTime = sleepTime * 2;
+                sleepTime = Math.min(sleepTime * 2, maxSleepTime);
             }
         }
         throw new HttpTimeoutException("Operation '" + apiMethod + "' timed out after " + (System.currentTimeMillis() - startTime) + " milliseconds.");

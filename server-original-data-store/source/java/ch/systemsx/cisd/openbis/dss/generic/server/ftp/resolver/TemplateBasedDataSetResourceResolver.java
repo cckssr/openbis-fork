@@ -278,7 +278,7 @@ public class TemplateBasedDataSetResourceResolver implements IFtpPathResolver,
                 result = new DataSetFtpFolder(subPath, dataSet, resolverContext);
             } else
             {
-                List<FtpFile> files = result.listFiles();
+                List<? extends FtpFile> files = result.listFiles();
                 FtpFile matchingFile = null;
                 for (FtpFile file : files)
                 {

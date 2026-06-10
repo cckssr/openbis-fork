@@ -29,11 +29,12 @@ sessionToken = api.loginAsSystem()
 sessionWorkspaceFiles = helper.uploadToAsSessionWorkspace(sessionToken, "imaging-data-model.xls")
 importData = ImportData(ImportFormat.EXCEL, [sessionWorkspaceFiles[0]])
 importOptions = ImportOptions(ImportMode.UPDATE_IF_EXISTS)
+print("======================== eln-lims-imaging-core master-data xls ingestion start ========================")
 importResult = api.executeImport(sessionToken, importData, importOptions)
 
 api.logout(sessionToken)
-print("======================== imaging-master-data xls ingestion result ========================")
+print("======================== eln-lims-imaging-core master-data xls ingestion result ========================")
 print(importResult.getObjectIds())
-print("======================== imaging-data xls ingestion result ========================")
+print("======================== eln-lims-imaging-core master-data xls ingestion end ========================")
 
 

@@ -10,6 +10,8 @@ apply plugin: 'application'
 apply from: '../build/repository.gradle'
 repositories repositoryConfig
 
+apply from: '../build/common-resolutions.gradle'
+
 
 dependencies {
     implementation project(':lib-logging')

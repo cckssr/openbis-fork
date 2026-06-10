@@ -4,7 +4,7 @@ var SampleDataGridUtil = new function() {
             showParentsAndChildren, withExperiment, heightPercentage) {
 		var _this = this;
 		var isDynamic = samplesOrCriteria.entityKind && samplesOrCriteria.rules;
-		
+
 		//Fill Columns model
 		var columnsFirst = [];
 
@@ -161,7 +161,7 @@ var SampleDataGridUtil = new function() {
 			property : null,
 			sortable : false
 		});
-		
+
 		var dynamicColumnsFunc = function(samples) {
 			var foundPropertyCodes = {};
 			var foundSampleTypes = {};
@@ -324,7 +324,7 @@ var SampleDataGridUtil = new function() {
 			property : null,
 			sortable : false
 		});
-		
+
 		columnsLast.push({
 			label : 'Registrator',
 			property : 'registrator',
@@ -332,7 +332,7 @@ var SampleDataGridUtil = new function() {
 			filterable: true,
 			sortable : false
 		});
-		
+
 		columnsLast.push({
 			label : 'Registration Date',
 			property : 'registrationDate',
@@ -343,7 +343,7 @@ var SampleDataGridUtil = new function() {
 				return FormUtil.renderDateRangeGridFilter(params, "TIMESTAMP");
 			}
 		});
-		
+
 		columnsLast.push({
 			label : 'Modifier',
 			property : 'modifier',
@@ -351,7 +351,7 @@ var SampleDataGridUtil = new function() {
 			filterable: true,
 			sortable : false,
 		});
-		
+
 		columnsLast.push({
 			label : 'Modification Date',
 			property : 'modificationDate',
@@ -362,13 +362,13 @@ var SampleDataGridUtil = new function() {
 				return FormUtil.renderDateRangeGridFilter(params, "TIMESTAMP");
 			}
 		});
-		
+
 		if(!isOperationsDisabled && customOperations) {
 			columnsLast.push(customOperations);
 		} else if(!isOperationsDisabled) {
 			columnsLast.push(this.createOperationsColumn());
 		}
-		
+
 		//Fill data model
 		var getDataList = null;
 		if(isDynamic) {
@@ -376,13 +376,13 @@ var SampleDataGridUtil = new function() {
 		} else {
 			getDataList = SampleDataGridUtil.getDataList(samplesOrCriteria); //Static model
 		}
-			
+
 		//Create and return a data grid controller
 		var configKey = "SAMPLE_TABLE_" + mandatoryConfigPostKey;
 		if(optionalConfigPostKey) {
 			configKey += "_" + optionalConfigPostKey;
 		}
-		
+
 		var dataGridController = new DataGridController(null, columnsFirst, columnsLast, dynamicColumnsFunc, getDataList, rowClick, false, configKey, isMultiselectable, {
 			fileFormat: DataGridExportOptions.FILE_FORMAT.XLS,
 			filePrefix: 'objects',
@@ -437,15 +437,15 @@ var SampleDataGridUtil = new function() {
 		return function(callback, options) {
 			var callbackForSearch = function(result) {
 				var dataList = [];
-				
+
 				for(var sIdx = 0; sIdx < result.objects.length; sIdx++) {
 					var sample = mainController.serverFacade.getV3SampleAsV1(result.objects[sIdx]);
-					
+
 					var registrator = null;
 					if(sample.registrationDetails && sample.registrationDetails.userId) {
 						registrator = sample.registrationDetails.userId;
 					}
-					
+
 					var registrationDate = null;
 					if(sample.registrationDetails && sample.registrationDetails.registrationDate) {
 						registrationDate = moment(sample.registrationDetails.registrationDate).format("YYYY-MM-DD HH:mm:ss ZZ");
@@ -469,7 +469,7 @@ var SampleDataGridUtil = new function() {
 											type_perm_id: sample.sampleTypeCode
 										},
 										'$object' : sample,
-										'identifier' : sample.identifier, 
+										'identifier' : sample.identifier,
 										'code' : sample.code,
 										'sampleTypeCode' : sample.sampleTypeCode,
 										'default_space' : sample.spaceCode,
@@ -480,15 +480,15 @@ var SampleDataGridUtil = new function() {
 										'modifier' : modifier,
 										'modificationDate' : modificationDate
 									};
-					
+
 					if(sample.properties) {
 						for(var propertyCode in sample.properties) {
 							sampleModel[propertyCode] = sample.properties[propertyCode];
 						}
 					}
-					
+
                     sampleModel['parents'] = result.objects[sIdx].parents;;
-					
+
 					var children = [];
                     var sampleChildren = result.objects[sIdx].children;
                     if(sampleChildren) {
@@ -499,25 +499,25 @@ var SampleDataGridUtil = new function() {
                             children.push(sampleChildren[caIdx]);
                         }
                     }
-					
+
 					sampleModel['children'] = children;
-					
+
 					dataList.push(sampleModel);
 				}
-				
+
 				callback({
 					objects : dataList,
 					totalCount : result.totalCount
 				});
 			}
-			
+
 			var fetchOptions = {
 					minTableInfo : true,
 					withExperiment : withExperiment,
 					withChildrenInfo : true,
 					withParentInfo : true
 			};
-			
+
 			var optionsSearch = null;
 			if(options) {
 				fetchOptions.count = options.pageSize;
@@ -525,10 +525,10 @@ var SampleDataGridUtil = new function() {
                 optionsSearch = JSON.stringify({
                    searchMode: options.searchMode,
                    searchMap: options.searchMap,
-                   globalSearch: options.globalSearch 
+                   globalSearch: options.globalSearch
                 })
 			}
-			
+
 			if(!criteria.cached || (criteria.cachedSearch !== optionsSearch)) {
 				fetchOptions.cache = "RELOAD_AND_CACHE";
 				criteria.cachedSearch = optionsSearch;
@@ -536,18 +536,12 @@ var SampleDataGridUtil = new function() {
 			} else {
 				fetchOptions.cache = "CACHE";
 			}
-			
+
             var mainSubcriteria = $.extend(true, {}, criteria)
 
             var gridSubcriteria = {
                 logicalOperator: "AND",
                 rules: [],
-            }
-
-            var criteriaToSend = {
-                logicalOperator: "AND",
-                rules: [],
-                subCriteria: [mainSubcriteria, gridSubcriteria]
             }
 
             if(options) {
@@ -583,19 +577,23 @@ var SampleDataGridUtil = new function() {
                             gridSubcriteria.rules[Util.guid()] = { type : "Attribute", name : "REGISTRATOR", value : search, operator: "thatContainsUserId" };
                         } else if (field === "registrationDate") {
                             if (search.from && search.from.dateObject) {
-                                gridSubcriteria.rules[Util.guid()] = { type : "Attribute", name : "REGISTRATION_DATE", value : search.from.dateString, operator: "thatIsLaterThanOrEqualToDate" };
+								const dateString = moment(search.from.dateObject).format("YYYY-MM-DD HH:mm:ss");
+                                gridSubcriteria.rules[Util.guid()] = { type : "Attribute", name : "REGISTRATION_DATE", value : dateString, operator: "thatIsLaterThanOrEqualToDate" };
                             }
                             if (search.to && search.to.dateObject) {
-                                gridSubcriteria.rules[Util.guid()] = { type : "Attribute", name : "REGISTRATION_DATE", value : search.to.dateString, operator: "thatIsEarlierThanOrEqualToDate" };
+								const dateString = moment(search.to.dateObject).format("YYYY-MM-DD HH:mm:ss");
+                                gridSubcriteria.rules[Util.guid()] = { type : "Attribute", name : "REGISTRATION_DATE", value : dateString, operator: "thatIsEarlierThanOrEqualToDate" };
                             }
                         } else if (field === "modifier") {
                             gridSubcriteria.rules[Util.guid()] = { type : "Attribute", name : "MODIFIER", value : search, operator: "thatContainsUserId" };
                         } else if (field === "modificationDate") {
                             if (search.from && search.from.dateObject) {
-                                gridSubcriteria.rules[Util.guid()] = { type : "Attribute", name : "MODIFICATION_DATE", value : search.from.dateString, operator: "thatIsLaterThanOrEqualToDate" };
+								const dateString = moment(search.from.dateObject).format("YYYY-MM-DD HH:mm:ss");
+                                gridSubcriteria.rules[Util.guid()] = { type : "Attribute", name : "MODIFICATION_DATE", value : dateString, operator: "thatIsLaterThanOrEqualToDate" };
                             }
                             if (search.to && search.to.dateObject) {
-                                gridSubcriteria.rules[Util.guid()] = { type : "Attribute", name : "MODIFICATION_DATE", value : search.to.dateString, operator: "thatIsEarlierThanOrEqualToDate" };
+								const dateString = moment(search.to.dateObject).format("YYYY-MM-DD HH:mm:ss");
+                                gridSubcriteria.rules[Util.guid()] = { type : "Attribute", name : "MODIFICATION_DATE", value : dateString, operator: "thatIsEarlierThanOrEqualToDate" };
                             }
                         } else if (field === "parents") {
                             gridSubcriteria.rules[Util.guid()] = { type : "Attribute", name : "PARENTS", value : search, operator: "thatContains" };
@@ -628,7 +626,7 @@ var SampleDataGridUtil = new function() {
                                 } else {
                                     operator = "thatContainsString"
                                 }
-    
+
                                 gridSubcriteria.rules[Util.guid()] = { type : "Property", name : "PROP." + field, value : search, operator: operator };
                             }
                         }
@@ -677,27 +675,42 @@ var SampleDataGridUtil = new function() {
                 })
                 fetchOptions.sortings = sortings
             }
-			
-//			Util.blockUI();
-//			mainController.serverFacade.searchForSamplesAdvanced(criteriaToSend, fetchOptions, function(result) {
-//				callbackForSearch(result);
-//				Util.unblockUI();
-//			});
+
+			var criteriaToSend = null;
+
+			// optimization - if possible send only one criteria object to eliminate subqueries
+			if (Object.keys(gridSubcriteria.rules).length === 0) {
+				criteriaToSend = mainSubcriteria
+			} else {
+				if (mainSubcriteria.logicalOperator === "AND" && gridSubcriteria.logicalOperator === "AND") {
+					Object.keys(gridSubcriteria.rules).forEach(function(key){
+						mainSubcriteria.rules[key] = gridSubcriteria.rules[key];
+					});
+					criteriaToSend = mainSubcriteria
+				} else {
+					criteriaToSend = {
+						logicalOperator: "AND",
+						rules: [],
+						subCriteria: [mainSubcriteria, gridSubcriteria]
+					}
+				}
+			}
+
 			mainController.serverFacade.searchForSamplesAdvanced(criteriaToSend, fetchOptions, callbackForSearch);
 		}
 	}
-	
+
 	this.getDataList = function(samples) {
 		return function(callback) {
 			var dataList = [];
 			for(var sIdx = 0; sIdx < samples.length; sIdx++) {
 				var sample = samples[sIdx];
-				
+
 				var registrator = null;
 				if(sample.registrationDetails && sample.registrationDetails.userId) {
 					registrator = sample.registrationDetails.userId;
 				}
-				
+
 				var registrationDate = null;
 				if(sample.registrationDetails && sample.registrationDetails.registrationDate) {
 					registrationDate = moment(sample.registrationDetails.registrationDate).format("YYYY-MM-DD HH:mm:ss ZZ");
@@ -712,7 +725,7 @@ var SampleDataGridUtil = new function() {
 				if(sample.registrationDetails && sample.registrationDetails.modificationDate) {
 					modificationDate = moment(sample.registrationDetails.modificationDate).format("YYYY-MM-DD HH:mm:ss ZZ");
 				}
-				
+
 				var sampleModel = {
 									'id' : sample.permId,
 									'exportableId' : {
@@ -721,7 +734,7 @@ var SampleDataGridUtil = new function() {
 										type_perm_id: sample.sampleTypeCode
 									},
 									'$object' : sample,
-									'identifier' : sample.identifier, 
+									'identifier' : sample.identifier,
 									'code' : sample.code,
 									'sampleTypeCode' : sample.sampleTypeCode,
 									'default_space' : sample.spaceCode,
@@ -732,13 +745,13 @@ var SampleDataGridUtil = new function() {
 									'modifier' : modifier,
 									'modificationDate' : modificationDate
 								};
-				
+
 				if(sample.properties) {
 					for(var propertyCode in sample.properties) {
 						sampleModel[propertyCode] = sample.properties[propertyCode];
 					}
 				}
-				
+
 				var parents = "";
 				if(sample.parents) {
 					for (var paIdx = 0; paIdx < sample.parents.length; paIdx++) {
@@ -748,15 +761,15 @@ var SampleDataGridUtil = new function() {
 						parents += sample.parents[paIdx].identifier;
 					}
 				}
-				
+
 				sampleModel['parents'] = parents;
-				
+
 				dataList.push(sampleModel);
 			}
 			callback(dataList);
 		};
 	}
-	
+
 	this.createOperationsColumn = function() {
 		return {
 			label : "Operations",
@@ -772,7 +785,7 @@ var SampleDataGridUtil = new function() {
                 $list.css("right", "0").css("left", "auto");
 				$dropDownMenu.append($caret);
 				$dropDownMenu.append($list);
-				
+
 				var stopEventsBuble = function(event) {
 						event.stopPropagation();
 						event.preventDefault();
@@ -780,14 +793,14 @@ var SampleDataGridUtil = new function() {
 				};
 				$dropDownMenu.dropdown();
 				$dropDownMenu.click(stopEventsBuble);
-				
+
 				var $upload = $("<li>", { 'role' : 'presentation' }).append($("<a>", {'title' : 'File Upload'}).append("File Upload"));
 				$upload.click(function(event) {
 					stopEventsBuble(event);
 					mainController.changeView('showCreateDataSetPageFromPermId', data.permId, true);
 				});
 				$list.append($upload);
-				
+
 				var $move = $("<li>", { 'role' : 'presentation' }).append($("<a>", {'title' : 'Move'}).append("Move"));
 				$move.click(function(event) {
 					stopEventsBuble(event);
@@ -820,7 +833,7 @@ var SampleDataGridUtil = new function() {
 					mainController.changeView('showSampleHierarchyTablePage', data.permId, true);
 				});
 				$list.append($hierarchyTable);
-				
+
 				return $dropDownMenu;
 			},
 			filter : function(data, filter) {
@@ -928,7 +941,7 @@ var SampleDataGridUtil = new function() {
                         };
                     }
                 }
-                
+
                 var newVocabularyColumnFunc = getVocabularyColumn(propertyType);
                 propertyColumnsToSort.push(newVocabularyColumnFunc());
             } else if (propertyType.dataType === "HYPERLINK") {
@@ -1012,24 +1025,30 @@ var SampleDataGridUtil = new function() {
                             });
                     };
                     renderValue = (function(propertyType){
-                          return function(row, params){
-                            if(Array.isArray(params.value)) {
-                               var result = [];
-                               for (var singleValue of params.value) {
-                                   if(result.length > 0) {
-                                       result.push(', ')
-                                   }
-                                   var displayValue = params.displayValues.get(singleValue) ?? singleValue
-                                   result.push(FormUtil.getFormLink(displayValue, "Sample", singleValue));
-                               }
-                               return result;
-                            } else {
-                               var displayValue = params.displayValues.get(params.value) ?? params.value
-                               return FormUtil.getFormLink(displayValue, "Sample", params.value);
-                            }
-                          }
+						return function (row, params) {
+							if (Array.isArray(params.value)) {
+								var result = [];
+								for (var singleValue of params.value) {
+									if (result.length > 0) {
+										result.push(', ')
+									}
+									var displayValue = params.displayValues.get(singleValue) ?? singleValue
+									result.push(FormUtil.getFormLink(displayValue, "Sample", singleValue));
+								}
+								return result;
+							} else {
+								var displayValue = params.displayValues.get(params.value) ?? params.value
+								return FormUtil.getFormLink(displayValue, "Sample", params.value);
+							}
+						}
                       })(propertyType)
-                }
+                } else if (propertyType.dataType.startsWith("ARRAY_")) {
+					renderValue = (function(propertyType){
+                        return function(row, params){
+                            return FormUtil.renderArrayGridValue(row, params, propertyType)
+                        }
+					})(propertyType)
+				}
 
                 propertyColumnsToSort.push({
                     label : propertyType.label,
