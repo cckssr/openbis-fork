@@ -4,6 +4,7 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue", "as/dto/common/update/
 		this.description = new FieldUpdateValue();
 		this.schema = new FieldUpdateValue();
 		this.transformation = new FieldUpdateValue();
+		this.managedInternally = new FieldUpdateValue();
 		this.metaData = new ListUpdateMapValues();
 	};
 	stjs.extend(PropertyTypeUpdate, null, [], function(constructor, prototype) {
@@ -16,6 +17,7 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue", "as/dto/common/update/
 		prototype.schema = null;
 		prototype.transformation = null;
 		prototype.metaData = null;
+		prototype.managedInternally = null;
 
 		prototype.getObjectId = function() {
 			return this.getTypeId();
@@ -56,6 +58,12 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue", "as/dto/common/update/
 		prototype.setTransformation = function(transformation) {
 			this.transformation.setValue(transformation);
 		};
+		prototype.getManagedInternally = function() {
+			return this.managedInternally;
+		};
+		prototype.setManagedInternally = function(managedInternally) {
+			this.managedInternally.setValue(managedInternally);
+		};
 		prototype.getMetaData = function() {
 			return this.metaData;
 		};
@@ -76,6 +84,10 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue", "as/dto/common/update/
 		transformation: {
 			name: "FieldUpdateValue",
 			arguments: ["String"]
+		},
+		managedInternally : {
+			name : "FieldUpdateValue",
+			arguments : [ "Boolean" ]
 		},
 		dataType : "DataType",
 		metaData : "ListUpdateMapValues"

@@ -904,6 +904,11 @@ public class DelayedExecutionDecorator
         return v3.getSampleTypes(this.sessionToken, List.of(sampleTypeId), fetchOptions).getOrDefault(sampleTypeId, null);
     }
 
+    public Map<IEntityTypeId, SampleType> getSampleTypes(List<IEntityTypeId> sampleTypeIds, SampleTypeFetchOptions fetchOptions)
+    {
+        return v3.getSampleTypes(this.sessionToken, sampleTypeIds, fetchOptions);
+    }
+
     public void createSampleType(SampleTypeCreation sampleTypeCreation, int page, int line)
     {
         if (!safe(sampleTypeCreation.getPropertyAssignments()).isEmpty())
@@ -1266,6 +1271,14 @@ public class DelayedExecutionDecorator
         return v3.getTypeGroupAssignments(this.sessionToken, List.of(typeGroupAssignmentId), fetchOptions).getOrDefault(typeGroupAssignmentId, null);
     }
 
+    public List<TypeGroupAssignment> getTypeGroupAssignments(String typeGroupId, TypeGroupAssignmentFetchOptions fetchOptions)
+    {
+        TypeGroupAssignmentSearchCriteria searchCriteria = new TypeGroupAssignmentSearchCriteria();
+        searchCriteria.withTypeGroup().withCode().thatEquals(typeGroupId);
+        SearchResult<TypeGroupAssignment> assignments = v3.searchTypeGroupAssignments(this.sessionToken, searchCriteria, fetchOptions);
+        return assignments.getObjects();
+    }
+
     public List<TypeGroupAssignment> getTypeGroupAssignmentsForSampleType(String sampleTypeId, TypeGroupAssignmentFetchOptions fetchOptions)
     {
         TypeGroupAssignmentSearchCriteria criteria = new TypeGroupAssignmentSearchCriteria();
@@ -1283,12 +1296,12 @@ public class DelayedExecutionDecorator
 
     public void createTypeGroupAssignments(List<TypeGroupAssignmentCreation> creations, int page, int line)
     {
-        Map<ITypeGroupId, TypeGroupAssignmentCreation> creationMap = creations.stream()
+        Map<ITypeGroupId, TypeGroupAssignmentCreation> creationMapByTypeGroup = creations.stream()
                 .collect(Collectors.toMap(TypeGroupAssignmentCreation::getTypeGroupId, x -> x));
         Map<ITypeGroupId, TypeGroup> existingTypeGroups = getTypeGroups(
-                new ArrayList<>(creationMap.keySet()), new TypeGroupFetchOptions());
+                new ArrayList<>(creationMapByTypeGroup.keySet()), new TypeGroupFetchOptions());
         List<TypeGroupAssignmentCreation> readyCreations = new ArrayList<>();
-        for(Map.Entry<ITypeGroupId, TypeGroupAssignmentCreation> entry : creationMap.entrySet()) {
+        for(Map.Entry<ITypeGroupId, TypeGroupAssignmentCreation> entry : creationMapByTypeGroup.entrySet()) {
             if(!existingTypeGroups.containsKey(entry.getKey()))
             {
                 DelayedExecution delayedExecution = new DelayedExecution(null, entry.getKey(),
@@ -1300,12 +1313,32 @@ public class DelayedExecutionDecorator
             }
         }
 
-        if(!readyCreations.isEmpty())
-        {
-            v3.createTypeGroupAssignments(this.sessionToken, readyCreations);
+        Map<IEntityTypeId, List<TypeGroupAssignmentCreation>> creationMap = new HashMap<>();
+        for(TypeGroupAssignmentCreation creation : readyCreations) {
+            creationMap.computeIfAbsent(creation.getSampleTypeId(), x -> new ArrayList<>()).add(creation);
         }
 
+        Map<IEntityTypeId, SampleType> existingSampleTypes = getSampleTypes(
+                new ArrayList<>(creationMap.keySet()), new SampleTypeFetchOptions());
+        List<TypeGroupAssignmentCreation> readyCreationsFinal = new ArrayList<>();
+        for(Map.Entry<IEntityTypeId, List<TypeGroupAssignmentCreation>> entry : creationMap.entrySet()) {
+            if(!existingSampleTypes.containsKey(entry.getKey()))
+            {
+                for(TypeGroupAssignmentCreation creation : entry.getValue()) {
+                    DelayedExecution delayedExecution = new DelayedExecution(null, entry.getKey(),
+                            creation, page, line);
+                    delayedExecution.addDependencies(List.of(entry.getKey()));
+                    addDelayedExecution(delayedExecution);
+                }
+            } else {
+                readyCreationsFinal.addAll(entry.getValue());
+            }
+        }
 
+        if(!readyCreationsFinal.isEmpty())
+        {
+            v3.createTypeGroupAssignments(this.sessionToken, readyCreationsFinal);
+        }
 
     }
 

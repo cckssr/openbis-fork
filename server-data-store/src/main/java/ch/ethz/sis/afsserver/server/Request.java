@@ -30,4 +30,6 @@ public interface Request {
     String getInteractiveSessionKey();
 
     String getTransactionManagerKey();
+
+    UUID getOperationId();
 }

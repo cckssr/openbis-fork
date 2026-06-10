@@ -692,6 +692,69 @@ def test_create_new_dataset_with_parent(space):
     assert new_dataset.file_list == ["original/testfile"]
     assert new_dataset.parents == [dataset.permId]
 
+def test_archive_datasets_raises_on_none(space):
+    o = space.openbis
+    with pytest.raises(ValueError):
+        o.archive_datasets(None)
+
+
+def test_unarchive_datasets_raises_on_none(space):
+    o = space.openbis
+    with pytest.raises(ValueError):
+        o.unarchive_datasets(None)
+
+
+def _wait_for_status(o, permId, expected_status, failure_states=None, poll_interval=2, timeout=30):
+    deadline = time.time() + timeout
+    ds = None
+    while time.time() < deadline:
+        ds = o.get_dataset(permId)
+        status = ds.physicalData.status
+        if status == expected_status:
+            return ds
+        if failure_states and status in failure_states:
+            raise AssertionError(
+                f"Dataset {permId} reached failure status '{status}' while waiting for '{expected_status}'"
+            )
+        time.sleep(poll_interval)
+    last = ds.physicalData.status if ds else "unknown"
+    raise TimeoutError(
+        f"Dataset {permId} did not reach status '{expected_status}' within {timeout}s "
+        f"(last status: '{last}')"
+    )
+
+
+def test_archive_unarchive_datasets(space):
+    o = space.openbis
+    testfile_path = os.path.join(os.path.dirname(__file__), "testdir/testfile_big")
+
+    dataset = o.new_dataset(
+        type="RAW_DATA",
+        experiment="/DEFAULT/DEFAULT/DEFAULT",
+        files=[testfile_path],
+        props={"name": "archive unarchive test"},
+    )
+    dataset.save()
+    permId = dataset.permId
+
+    try:
+        # archive using a single string permId (not list)
+        o.archive_datasets(permId)
+        ds = _wait_for_status(o, permId, "ARCHIVE_PENDING", failure_states={"AVAILABLE"})
+        assert ds.physicalData.status == "ARCHIVE_PENDING"
+
+        time.sleep(60)
+        ds = _wait_for_status(o, permId, "ARCHIVED", failure_states={"AVAILABLE"})
+        assert ds.physicalData.status == "ARCHIVED"
+
+        # unarchive using a list
+        o.unarchive_datasets([permId])
+        ds = _wait_for_status(o, permId, "AVAILABLE", failure_states={"ARCHIVED"})
+        assert ds.physicalData.status == "AVAILABLE"
+    finally:
+        dataset.delete("test_archive_unarchive_datasets", True)
+
+
 def test_create_new_dataset_in_chunks(space):
     openbis_instance = space.openbis
 

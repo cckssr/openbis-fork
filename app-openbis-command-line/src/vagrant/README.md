@@ -18,7 +18,7 @@ This sets up two machines:
 
 0. log into the obisserver machne: `vagrant ssh obisserver`
 1. switch to the openbis user: `sudo su openbis`
-3. run the start script: `~/bin/allup.sh`
+3. run the start script: `~/bin/openbis.sh start`
 
 When openBIS is running it can be accessed on the host machine from `https://localhost:8443/openbis`.
 

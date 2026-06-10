@@ -88,6 +88,8 @@ public enum Attribute
 
     TYPE_GROUP("Type Group", true, false, true),
 
+    META_DATA("Meta Data", true, false, true),
+
     VALIDATION_SCRIPT("Validation script", true, true, true);
 
     final String name;

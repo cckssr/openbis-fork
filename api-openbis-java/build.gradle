@@ -12,7 +12,7 @@ dependencies {
             libs.com.fasterxml.jackson.core.jackson.annotations,
             libs.org.apache.poi.poi,
             libs.org.apache.poi.poi.ooxml,
-            libs.org.apache.poi.poi.ooxml.schemas,
+            libs.org.apache.poi.poi.ooxml.lite,
             libs.org.jsoup.jsoup
 
 

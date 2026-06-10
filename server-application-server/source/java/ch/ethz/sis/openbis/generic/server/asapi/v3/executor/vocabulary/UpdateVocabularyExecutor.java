@@ -21,6 +21,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import ch.systemsx.cisd.common.exceptions.AuthorizationFailureException;
+import ch.systemsx.cisd.openbis.generic.shared.dto.VocabularyTermPE;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Component;
@@ -75,9 +77,22 @@ public class UpdateVocabularyExecutor
     }
 
     @Override
+    protected void checkBusinessRules(IOperationContext context, IVocabularyId id, VocabularyPE vocabulary, VocabularyUpdate update)
+    {
+        if(vocabulary.isManagedInternally() && update.getManagedInternally().isModified() &&
+                update.getManagedInternally().getValue() == false) {
+            for(VocabularyTermPE term : vocabulary.getTerms()) {
+                if(term.isManagedInternally()) {
+                    throw new AuthorizationFailureException("Vocabulary can not be made non-internal if it has an internal term!");
+                }
+            }
+        }
+    }
+
+    @Override
     protected void checkAccess(IOperationContext context, IVocabularyId id, VocabularyPE entity, VocabularyUpdate update)
     {
-        authorizationExecutor.canUpdate(context, id, entity);
+        authorizationExecutor.canUpdate(context, id, entity, update);
     }
 
     @Override
@@ -91,6 +106,7 @@ public class UpdateVocabularyExecutor
             vocabulary.setDescription(getNewValue(update.getDescription(), vocabulary.getDescription()));
             vocabulary.setChosenFromList(getNewValue(update.getChosenFromList(), vocabulary.isChosenFromList()));
             vocabulary.setURLTemplate(getNewValue(update.getUrlTemplate(), vocabulary.getURLTemplate()));
+            vocabulary.setManagedInternally(getNewValue(update.getManagedInternally(), vocabulary.isManagedInternally()));
         }
     }
     

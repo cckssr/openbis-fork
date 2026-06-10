@@ -41,6 +41,9 @@ public class TypeGroupUpdate implements IUpdate, IObjectUpdate<ITypeGroupId>, IM
     @JsonProperty
     private ListUpdateMapValues metaData = new ListUpdateMapValues();
 
+    @JsonProperty
+    private FieldUpdateValue<Boolean> managedInternally = new FieldUpdateValue<Boolean>();
+
     @Override
     @JsonIgnore
     public ITypeGroupId getObjectId()
@@ -76,6 +79,18 @@ public class TypeGroupUpdate implements IUpdate, IObjectUpdate<ITypeGroupId>, IM
     public ListUpdateMapValues getMetaData()
     {
         return metaData;
+    }
+
+    @JsonIgnore
+    public void setManagedInternally(Boolean managedInternally)
+    {
+        this.managedInternally.setValue(managedInternally);
+    }
+
+    @JsonIgnore
+    public FieldUpdateValue<Boolean> getManagedInternally()
+    {
+        return managedInternally;
     }
 
     @Override

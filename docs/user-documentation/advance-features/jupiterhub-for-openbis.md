@@ -379,7 +379,7 @@ openBIS ELN Integration Configuration
 
 On the openBIS end, what needs to be done is to append the following
 lines into your ELN instance profile:
-servers/core-plugins/eln-lims/1/as/webapps/eln-lims/html/etc/InstanceProfile.js
+servers/core-plugins/eln-lims/src/as/webapps/eln-lims/html/etc/InstanceProfile.js
 
 ```js
 # Ansible yml syntax, replace the variables in the double curly braces by the appropriate values:

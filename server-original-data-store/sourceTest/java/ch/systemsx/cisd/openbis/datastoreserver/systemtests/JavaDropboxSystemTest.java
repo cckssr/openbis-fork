@@ -43,7 +43,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.TrackingDataSetCriteria
 public class JavaDropboxSystemTest extends SystemTestCase
 {
 
-    // for configuration go to sourceTest/core-plugins/generic-test/1/dss/drop-boxes/java-dropbox
+    // for configuration go to sourceTest/core-plugins/generic-test/src/dss/drop-boxes/java-dropbox
 
     File emailDirectory = new File(new File(new File(workingDirectory, "SystemTests"), "dss-root"),
             "email");

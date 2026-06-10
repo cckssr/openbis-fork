@@ -164,7 +164,6 @@
 | maintenance-plugins                      |                                  | Comma-separated list of maintenance plugins to be configured for the AS                                                                                                          |
 | project-samples-enabled                  | true                             |                                                                                                                                                                                  |
 | script-folder                            | .                                | Internal - do not change                                                                                                                                                         |
-| server-public-information.afs-server.url | http://localhost:8085/afs-server | A URL of the AFS server which is used for data storage                                                                                                                           |
 | web-client-configuration-file            |                                  |                                                                                                                                                                                  |
 | trusted-cross-origin-domains             | *                                |                                                                                                                                                                                  |
 
@@ -514,8 +513,7 @@ e.g
 | eln-lims.as.services.exports-api.sci-cat.timeout.count                     |                         |                                                                                                           |
 | eln-lims.as.services.exports-api.sci-cat.timeout.sleep                     |                         |                                                                                                           |
 | eln-lims.as.services.exports-api.ro-crate.url                              |                         |                                                                                                           |
-
-
+| eln-lims.as.services.search-store.script-path                              |                         |                                                                                                           |
 
 #### DSS PROPERTIES
 
@@ -588,78 +586,25 @@ e.g
 |------------------------------------|---------------|-------------------|------|
 | admin.as.admin-service.class       |               |                   |      |
 | admin.as.admin-service.script-path |               |                   |      |
-| admin.as.xls-export.class          |               |                   |      |
-| admin.as.xls-export.script-path    |               |                   |      |
-| admin.as.xls-import.class          |               |                   |      |
-| admin.as.xls-import.script-path    |               |                   |      |
 | admin.as.webapps.webapp-folder     |               |                   |      |
 
 #### DSS PROPERTIES
 
 None.
 
-### DATASET-UPLOADER
-
-#### AS PROPERTIES
-
-| Key                                                                  | Example Value | Short Explanation |
-|----------------------------------------------------------------------|---------------|-------------------|
-| dataset-uploader.as.webapps.dataset-uploader.webapp-folder           |               |                   |
-| dataset-uploader.as.webapps.dataset-uploader.openbisui-contexts      |               |                   |
-| dataset-uploader.as.webapps.dataset-uploader.sample-entity-types     |               |                   |
-| dataset-uploader.as.webapps.dataset-uploader.experiment-entity-types |               |                   |
-| dataset-uploader.as.webapps.dataset-uploader.label                   |               |                   |
-| dataset-uploader.as.webapps.dataset-uploader.sorting                 |               |                   |
-| dataset-uploader.as.webapps.dataset-uploader.data-set-entity-types   |               |                   |
-| dataset-uploader.as.webapps.dataset-uploader.material-entity-types   |               |                   |
-
-#### DSS PROPERTIES
-
-| Key                                                                     | Example Value | Short Explanation |
-|-------------------------------------------------------------------------|---------------|-------------------|
-| dataset-uploader.dss.reporting-plugins.dataset-uploader-api.label       |               |                   |
-| dataset-uploader.dss.reporting-plugins.dataset-uploader-api.script-path |               |                   |
-| dataset-uploader.dss.reporting-plugins.dataset-uploader-api.share-id    |               |                   |
-| dataset-uploader.h5-folders                                             |               |                   |
-| dataset-uploader.h5ar-folders                                           |               |                   |
-
-### DROPBOX-MONITOR
-
-#### AS PROPERTIES
-
-| Key                                                               | Example Value | Short Explanation |
-|-------------------------------------------------------------------|---------------|-------------------|
-| dropbox-monitor.as.webapps.dropBoxMonitor.label                   |               |                   |
-| dropbox-monitor.as.webapps.dropBoxMonitor.webapp-folder           |               |                   |
-| dropbox-monitor.as.webapps.dropBoxMonitor.openbisui-contexts      |               |                   |
-| dropbox-monitor.as.webapps.dropBoxMonitor.sample-entity-types     |               |                   |
-| dropbox-monitor.as.webapps.dropBoxMonitor.experiment-entity-types |               |                   |
-| dropbox-monitor.as.webapps.dropBoxMonitor.sorting                 |               |                   |
-| dropbox-monitor.as.webapps.dropBoxMonitor.data-set-entity-types   |               |                   |
-| dropbox-monitor.as.webapps.dropBoxMonitor.material-entity-types   |               |                   |
-
-#### DSS PROPERTIES
-
-| Key                                                               | Example Value | Short Explanation |
-|-------------------------------------------------------------------|---------------|-------------------|
-| dropbox-monitor.dss.reporting-plugins.dropboxReporter.label       |               |                   |
-| dropbox-monitor.dss.reporting-plugins.dropboxReporter.script-path |               |                   |
-| dropbox-monitor.dss.reporting-plugins.dropboxReporter.share-id    |               |                   |
-| root-dir                                                          | /data         | The root directory of the DSS. This property should point to a peristent storage path that is also backed up. |
-| dss-registration-log-dir                                          | /var/log/openbis/dss/log-registrations |                   |
 
 ### IMAGING
 
 #### AS PROPERTIES
 
 
-| Key                                                     | Example Value | Short Explanation                                                  |
-|---------------------------------------------------------|---------------|--------------------------------------------------------------------|
-| imaging.as.services.imaging.python3-path                |               | Path to python installation (if python-based adapters are used)    |
-| imaging.as.services.imaging.storageRoot.dss             |               | Path to dss storage root                                           |
-| imaging.as.services.imaging.storageRoot.afs             |               | Path to afs storage root                                           |
-| imaging.as.services.imaging.python-adapter.script-path  |               | Path to python script to be used by build-in python adapter        |
-| imaging.as.services.imaging.python-adapter.python3-path |               | Path to python installation to be used for build-in python adapter |
+| Key                                                                   | Example Value | Short Explanation                                                  |
+|-----------------------------------------------------------------------|---------------|--------------------------------------------------------------------|
+| eln-lims-imaging-core.as.services.imaging.python3-path                |               | Path to python installation (if python-based adapters are used)    |
+| eln-lims-imaging-core.as.services.imaging.storageRoot.dss             |               | Path to dss storage root                                           |
+| eln-lims-imaging-core.as.services.imaging.storageRoot.afs             |               | Path to afs storage root                                           |
+| eln-lims-imaging-core.as.services.imaging.python-adapter.script-path  |               | Path to python script to be used by build-in python adapter        |
+| eln-lims-imaging-core.as.services.imaging.python-adapter.python3-path |               | Path to python installation to be used for build-in python adapter |
 
 
 #### DSS PROPERTIES
@@ -702,12 +647,4 @@ None.
 
 ### SEARCH-STORE
 
-#### AS PROPERTIES
-
-| Key                                               | Example Value | Short Explanation |
-|---------------------------------------------------|---------------|-------------------|
-| search-store.as.services.search-store.script-path |               |                   |
-
-#### DSS PROPERTIES
-
-None.
+search-store plugin has been merged into ELN

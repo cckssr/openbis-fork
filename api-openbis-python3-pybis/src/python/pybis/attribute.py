@@ -263,6 +263,12 @@ class AttrHolder:
                     ],
                     "@type": "as.dto.common.update.IdListUpdateValue",
                 }
+            elif attr == "managedInternally":
+                up_obj[attr] = {
+                    # "value": self.__dict__["_" + attr],
+                    "isModified": False,
+                    "@type": "as.dto.common.update.FieldUpdateValue",
+                }
             elif attr == "metaData":
                 is_system = False
                 if self.managedInternally:

@@ -89,10 +89,6 @@ public class CreateSampleTypesExecutor extends AbstractCreateEntityTypeExecutor<
         typeBO.save();
     }
 
-    @Override
-    protected void checkAccess(IOperationContext context)
-    {
-    }
 
     @Override
     protected void checkAccessTypeSpecific(IOperationContext context, SampleTypePE entityType)

@@ -524,7 +524,7 @@ public class DataSetAndPathInfoDBConsistencyCheckTaskTest extends AbstractFileSy
 
     private DataSetBuilder createDataSetBuilder()
     {
-        return new DataSetBuilder().store(new DataStoreBuilder("DSS").getStore()).fileFormat("XML").registrationDate(new Date(startTimestamp));
+        return new DataSetBuilder().store(new DataStoreBuilder("DSS").getStore()).registrationDate(new Date(startTimestamp));
     }
 
 }

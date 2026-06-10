@@ -64,30 +64,37 @@ export default class GridWithOpenbis extends React.PureComponent {
   }
 
   async exportXLS({
-    exportedFilePrefix,
-    exportedIds,
-    exportedFields,
-    exportedValues,
-    exportedReferredMasterData,
-    exportedImportCompatible
-  }) {
-    const serviceId = new openbis.CustomASServiceCode(ids.EXPORT_SERVICE)
+                    exportedIds,
+                    exportedFields,
+                    exportedValues,
+                    exportedReferredMasterData,
+                    exportedImportCompatible
+                  }) {
 
-    const serviceOptions = new openbis.CustomASServiceExecutionOptions()
-    serviceOptions.withParameter('method', 'export')
-    serviceOptions.withParameter('file_name', exportedFilePrefix)
-    serviceOptions.withParameter('ids', exportedIds)
-    serviceOptions.withParameter(
-      'export_referred_master_data',
-      exportedReferredMasterData
+    const ids = exportedIds.map(id => new openbis.ExportablePermId(id.exportable_kind, id.perm_id));
+    let fields = null;
+    if(Object.keys(exportedFields).length === 0) {
+      fields = new openbis.AllFields();
+    } else {
+      fields = new openbis.SelectedFields();
+      var type = Object.keys(exportedFields.TYPE)[0];
+      fields.setAttributes(exportedFields.TYPE[type].map(x => x.id));
+      fields.setProperties([]);
+    }
+
+    const exportData = new openbis.ExportData(ids, fields)
+    const exportOptions = new openbis.ExportOptions(
+        [ openbis.ExportFormat.XLSX],
+        exportedValues,
+        exportedReferredMasterData,
+        exportedImportCompatible,
+        false
     )
-    serviceOptions.withParameter('export_fields', exportedFields)
-    serviceOptions.withParameter('text_formatting', exportedValues)
-    serviceOptions.withParameter('compatible_with_import', exportedImportCompatible)
 
     const sessionToken = AppController.getInstance().getSessionToken()
-    const exportResult = await openbis.executeService(serviceId, serviceOptions)
+    const exportResult = await openbis.executeExport(exportData, exportOptions)
 
     return { sessionToken, exportResult }
   }
+
 }

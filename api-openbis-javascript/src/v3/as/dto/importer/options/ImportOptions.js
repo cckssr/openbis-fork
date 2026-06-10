@@ -28,6 +28,8 @@ define(["stjs"], function (stjs) {
 
       constructor.serialVersionUID = 1;
       prototype.mode = null;
+      prototype.experimentsByType = null;
+      prototype.spacesByType = null;
 
       prototype.getMode = function() {
         return this.mode;
@@ -36,9 +38,33 @@ define(["stjs"], function (stjs) {
       prototype.setMode = function(mode) {
         this.mode = mode;
       };
+
+      prototype.getExperimentsByType = function() {
+          return this.experimentsByType;
+      };
+
+        prototype.setExperimentsByType = function(experimentsByType) {
+            this.experimentsByType = experimentsByType;
+        };
+
+        prototype.getSpacesByType = function() {
+            return this.spacesByType;
+        };
+
+        prototype.setSpacesByType = function(spacesByType) {
+            this.spacesByType = spacesByType;
+        };
     },
     {
-      mode: "ImportMode"
+      mode: "ImportMode",
+      experimentsByType: {
+        name : "Map",
+        arguments : [ "String", "String" ]
+      },
+      spacesByType: {
+        name : "Map",
+        arguments : [ "String", "String" ]
+      }
     }
   );
 

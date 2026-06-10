@@ -2,12 +2,12 @@ plugins {
     alias(libs.plugins.com.github.node.gradle.node)
 }
 
+apply from: '../build/repository.gradle'
+
 configure(allprojects) {
     apply plugin: 'base'
 
-    repositories {
-        mavenCentral()
-    }
+    repositories repositoryConfig
 }
 
 node {
@@ -28,7 +28,7 @@ task copyCorePlugins(type: Copy) {
 
 task copyWebApp(type: Copy) {
     from file('build/js')
-    into file('build/core-plugins/admin/1/as/webapps/admin/html')
+    into file('build/core-plugins/admin/src/as/webapps/admin/html')
 }
 
 task test {
@@ -42,7 +42,7 @@ task installComponents(type: NpmTask) {
 task copyComponents(type: Copy) {
     dependsOn installComponents
     from('build/components/js')
-    into "../ui-eln-lims/src/core-plugins/eln-lims/1/as/webapps/eln-lims/html/lib/react"
+    into "../ui-eln-lims/src/core-plugins/eln-lims/src/as/webapps/eln-lims/html/lib/react"
 }
 
 npm_run_build.dependsOn cleanBuild

@@ -152,44 +152,21 @@ public class PropertyAssignmentImportHelper extends BasicImportHelper
         {
             throw new UserFailureException("Mandatory field is missing or empty: " + Attribute.Code);
         }
-
-        String internalAssignment = getValueByColumnName(header, values, Attribute.InternalAssignment);
-        boolean isInternalNamespace = ImportUtils.isTrue(internalAssignment);
-
-        boolean isSystem = delayedExecutor.isSystem();
-        boolean canUpdate = (isInternalNamespace == false) || isSystem;
-
-        if (canUpdate == false) {
-            if(!existingDynamicPluginsByPropertyCode.containsKey(code))
-            {
-                throw new UserFailureException("Non-system user can not assign new internal assignments!");
-            }
-        }
     }
 
-    @Override protected boolean isNewVersion(Map<String, Integer> header, List<String> values)
+    @Override
+    protected boolean isNewVersion(Map<String, Integer> header, List<String> values)
     {
-        String version = getValueByColumnName(header, values, Attribute.Version);
-        String code = getValueByColumnName(header, values, Attribute.Code);
-        SemanticAnnotation annotation = annotationCache.getCachedSemanticAnnotation(SemanticAnnotationType.PropertyAssignment, this.permId, code);
-        if(annotation != null)
-        {
-            code = annotation.getPropertyAssignment().getPropertyType().getCode();
-        }
-        String internalAssignment = getValueByColumnName(header, values, Attribute.InternalAssignment);
-        boolean isInternalNamespace = ImportUtils.isTrue(internalAssignment);
+        String internal = getValueByColumnName(header, values, Attribute.Internal);
+        boolean isInternalNamespace = ImportUtils.isTrue(internal);
 
-        boolean isSystem = delayedExecutor.isSystem();
-        boolean canUpdate = (isInternalNamespace == false) || isSystem;
-        if (canUpdate == false) {
-            return false;
-        } if (canUpdate && (version == null || version.isEmpty())) {
-            return true;
-        } else {
-            Set<String> existingCodes = existingDynamicPluginsByPropertyCode.keySet();
-            return !existingCodes.contains(code) || VersionUtils.isNewVersion(version, VersionUtils.getStoredVersion(beforeVersions, ImportTypes.PROPERTY_TYPE.getType(), code));
+        if(isInternalNamespace && !delayedExecutor.isSystem()) {
+            //if exists, skip
+            return !isObjectExist(header, values);
         }
+        return true;
     }
+
 
     @Override protected boolean isObjectExist(Map<String, Integer> headers, List<String> values)
     {
@@ -255,11 +232,14 @@ public class PropertyAssignmentImportHelper extends BasicImportHelper
         creation.setUnique(Boolean.parseBoolean(unique));
         creation.setPattern(pattern);
         creation.setPatternType(patternType);
-        creation.setManagedInternally(ImportUtils.isTrue(internalAssignment));
+        if(delayedExecutor.isSystem()) {
+            creation.setManagedInternally(ImportUtils.isTrue(internalAssignment));
+        }
+
 
         PropertyAssignmentListUpdateValue newAssignments = new PropertyAssignmentListUpdateValue();
         Set<String> existingCodes = existingDynamicPluginsByPropertyCode.keySet();
-        PluginPermId scriptId = ImportUtils.getScriptId(script,
+        PluginPermId scriptId = ImportUtils.getScriptId(code, script,
                 existingDynamicPluginsByPropertyCode.get(code));
         if (scriptId != null)
         {
@@ -368,7 +348,9 @@ public class PropertyAssignmentImportHelper extends BasicImportHelper
             creation.setOrdinal(propertyAssignment.getOrdinal());
             creation.setSection(propertyAssignment.getSection());
             creation.setShowInEditView(propertyAssignment.isShowInEditView());
-            creation.setManagedInternally(propertyAssignment.isManagedInternally());
+            if(delayedExecutor.isSystem()) {
+                creation.setManagedInternally(propertyAssignment.isManagedInternally());
+            }
             newPropertyAssignmentCreations.add(creation);
         }
         return newPropertyAssignmentCreations;

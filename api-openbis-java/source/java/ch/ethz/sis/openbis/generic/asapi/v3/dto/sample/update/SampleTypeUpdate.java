@@ -72,6 +72,9 @@ public class SampleTypeUpdate implements IEntityTypeUpdate, IMetaDataUpdateHolde
     @JsonProperty
     private ListUpdateMapValues metaData = new ListUpdateMapValues();
 
+    @JsonProperty
+    private FieldUpdateValue<Boolean> managedInternally = new FieldUpdateValue<>();
+
     @Override
     @JsonIgnore
     public IEntityTypeId getTypeId()
@@ -220,9 +223,22 @@ public class SampleTypeUpdate implements IEntityTypeUpdate, IMetaDataUpdateHolde
     }
 
     @Override
+    @JsonIgnore
+    public FieldUpdateValue<Boolean> getManagedInternally()
+    {
+        return managedInternally;
+    }
+
+    @Override
+    @JsonIgnore
+    public void setManagedInternally(boolean managedInternally)
+    {
+        this.managedInternally.setValue(managedInternally);
+    }
+
+    @Override
     public String toString()
     {
         return new ObjectToString(this).append("typeId", typeId).toString();
     }
-
 }

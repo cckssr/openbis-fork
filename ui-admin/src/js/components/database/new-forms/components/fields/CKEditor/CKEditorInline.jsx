@@ -48,7 +48,7 @@ export default function CKEditorInline({ value, sessionID, onEditorContentChange
 		<div className="inline-editor-container" ref={editorContainerRef}>
 			{editorConfig && (
 				<CKEditor
-					key={`ckeditor-inline-${markdownEnabled ? 'markdown' : 'html'}-${value ? 'with-data' : 'empty'}`}
+					key={`ckeditor-inline-${markdownEnabled ? 'markdown' : 'html'}`}
 					editor={InlineEditor}
 					config={editorConfig}
 					onReady={editor => {

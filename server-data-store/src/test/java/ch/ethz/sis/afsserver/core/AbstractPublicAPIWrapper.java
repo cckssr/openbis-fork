@@ -15,7 +15,6 @@
  */
 package ch.ethz.sis.afsserver.core;
 
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -153,6 +152,13 @@ public abstract class AbstractPublicAPIWrapper implements PublicAPI
                 "owner", owner,
                 "source", source);
         return process(byte[].class, "preview", args);
+    }
+
+    @Override public Object status(@NonNull final UUID operationId) throws Exception
+    {
+        Map<String, Object> args = Map.of(
+                "operationId", operationId);
+        return process(Object.class, "status", args);
     }
 
     @Override

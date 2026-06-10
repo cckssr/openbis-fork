@@ -13,13 +13,10 @@ tasks.withType(JavaCompile) {
     options.compilerArgs << '-parameters'
 }
 
-repositories {
-    ivy {
-        ivyPattern "https://sissource.ethz.ch/openbis/openbis-public/openbis-ivy/-/raw/main/[organisation]/[module]/[revision]/ivy.xml"
-        artifactPattern "https://sissource.ethz.ch/openbis/openbis-public/openbis-ivy/-/raw/main/[organisation]/[module]/[revision]/[artifact]-[revision](-[classifier]).[ext]"
-    }
-    //mavenCentral()
-}
+apply from: '../build/repository.gradle'
+repositories repositoryConfig
+
+apply from: '../build/common-resolutions.gradle'
 
 configurations.all {
     exclude group: 'reflections', module: 'reflections'
@@ -107,7 +104,8 @@ compileQuarkusGeneratedSourcesJava.dependsOn(compileJava)
 
 ["quarkusAppPartsBuild", "quarkusGenerateCode", "quarkusDependenciesBuild"].each { taskName ->
     tasks.named(taskName) {
-        dependsOn(":lib-logging:jar")
+        // Quarkus reads runtime artifacts while building its application model.
+        dependsOn(configurations.runtimeClasspath.buildDependencies)
     }
 }
 

@@ -135,7 +135,7 @@ public class SftpNodeChainTest extends TestCase {
         assertEquals(
                 SftpNode.builder()
                         .type(SftpNode.Type.SAMPLE)
-                        .identifier(Optional.of("sample name(SAMPLE-1)")).build(),
+                        .identifier(Optional.of("sample name (SAMPLE-1)")).build(),
                 SftpNodeChain.fromSample(sample)
         );
 
@@ -150,7 +150,7 @@ public class SftpNodeChainTest extends TestCase {
         assertEquals(
                 SftpNode.builder()
                         .type(SftpNode.Type.FOLDER)
-                        .identifier(Optional.of("folder name(FOLDER-1)")).build(),
+                        .identifier(Optional.of("folder name (FOLDER-1)")).build(),
                 SftpNodeChain.fromSample(folder)
         );
     }
@@ -165,7 +165,7 @@ public class SftpNodeChainTest extends TestCase {
         assertEquals(
                 SftpNode.builder()
                         .type(SftpNode.Type.EXPERIMENT)
-                        .identifier(Optional.of("Exp name(EXPERIMENT-1)")).build(),
+                        .identifier(Optional.of("Exp name (EXPERIMENT-1)")).build(),
                 SftpNodeChain.fromExperiment(experiment)
         );
     }
@@ -180,7 +180,7 @@ public class SftpNodeChainTest extends TestCase {
         assertEquals(
                 SftpNode.builder()
                         .type(SftpNode.Type.DATA_SET)
-                        .identifier(Optional.of("Dataset name(DATASET-1)")).build(),
+                        .identifier(Optional.of("Dataset name (DATASET-1)")).build(),
                 SftpNodeChain.fromDataSet(dataset)
         );
     }

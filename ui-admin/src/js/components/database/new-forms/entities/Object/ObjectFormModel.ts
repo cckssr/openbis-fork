@@ -56,7 +56,7 @@ export class ObjectFormModel {
       isValid: true,
       actions: [
         getNewObjectAction(EntityKind.OBJECT),
-        getNewDatasetAction(EntityKind.OBJECT),
+        // getNewDatasetAction(EntityKind.OBJECT),
         getDividerAction(FormMode.VIEW),
         getEditAction(),
         getMoveAction(),
@@ -75,10 +75,10 @@ export class ObjectFormModel {
     console.log('ObjectFormModel.adaptNewObjectDtoToForm: dto', { dto, tmpPermId, params });
     const permId = tmpPermId + '-' + EntityKind.NEW_OBJECT;
     const parentType = params.parentType;
-    const parentTypeField = parentType === EntityKind.SPACE ? getSpaceField({ permId: { permId: permId } }, { value: params.parentId, id: permId + '-space' }) : 
-      parentType === EntityKind.PROJECT ? getProjectField({ permId: { permId: permId } }, { value: params.parentId, id: permId + '-project' }) : 
-      (parentType === EntityKind.COLLECTION || parentType === EntityKind.EXPERIMENT) ? getCollectionField({ permId: { permId: permId } }, { value: params.parentId, id: permId + '-collection' }) : 
-      (parentType === EntityKind.OBJECT || parentType === EntityKind.SAMPLE) ? getObjectField({ permId: { permId: permId } }, { value: params.parentId, id: permId + '-object' }) : null;
+    const parentTypeField = parentType === EntityKind.SPACE ? getSpaceField({ permId: { permId: permId } }, { value: params.parentIdentifier, id: permId + '-space' }) :
+      parentType === EntityKind.PROJECT ? getProjectField({ permId: { permId: permId } }, { value: params.parentIdentifier, id: permId + '-project' }) :
+      (parentType === EntityKind.COLLECTION || parentType === EntityKind.EXPERIMENT) ? getCollectionField({ permId: { permId: permId } }, { value: params.parentIdentifier, id: permId + '-collection' }) :
+      (parentType === EntityKind.OBJECT || parentType === EntityKind.SAMPLE) ? getObjectField({ permId: { permId: permId } }, { value: params.parentIdentifier, id: permId + '-object' }) : null;
     if (!parentTypeField) {
       throw new Error(`Parent type ${parentType} not supported`);
     }

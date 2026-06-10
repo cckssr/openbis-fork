@@ -497,48 +497,45 @@ Contents of initialize-master-data.py:
 ```python
 from ch.ethz.sis.openbis.generic.server.asapi.v3 import ApplicationServerApi
 from ch.systemsx.cisd.openbis.generic.server import CommonServiceProvider
-from ch.ethz.sis.openbis.generic.asapi.v3.dto.service.id import CustomASServiceCode
-from ch.ethz.sis.openbis.generic.asapi.v3.dto.service import CustomASServiceExecutionOptions
 from ch.systemsx.cisd.openbis.generic.server.jython.api.v1.impl import MasterDataRegistrationHelper
+from ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.data import ImportData
+from ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.options import ImportOptions
+from ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.data import ImportFormat
+from ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.options import ImportMode
 import sys
 
 helper = MasterDataRegistrationHelper(sys.path)
 api = CommonServiceProvider.getApplicationContext().getBean(ApplicationServerApi.INTERNAL_SERVICE_NAME)
 sessionToken = api.loginAsSystem()
-props = CustomASServiceExecutionOptions().withParameter('xls', helper.listXlsByteArrays()) \
-    .withParameter('xls_name', 'ELN-LIMS-LIFE-SCIENCES').withParameter('update_mode', 'UPDATE_IF_EXISTS') \
-    .withParameter('scripts', helper.getAllScripts())
-result = api.executeCustomASService(sessionToken, CustomASServiceCode("xls-import-api"), props)
+sessionWorkspaceFiles = helper.uploadToAsSessionWorkspace(sessionToken, "common-data-model.xls", "scripts/date_range_validation.py",
+                                                          "scripts/storage_position_validation.py")
+importData = ImportData(ImportFormat.EXCEL, [sessionWorkspaceFiles[0]])
+importOptions = ImportOptions(ImportMode.UPDATE_IF_EXISTS)
+importResult = api.executeImport(sessionToken, importData, importOptions)
+
 ```
 
 There are following parameters to fill (Easiest is to use
 MasterDataRegistrationHelper to evaluate parameter values):
 
--   'xls': Array of excel files. It can be easily acquired by calling
-    helper.listXlsByteArrays or listCsvByteArrays.
--   'xls\_name' - Name for the batch, it is used by versioning system.
+-   'xls': Array of excel files. I
 -   'update\_mode' - See "Modes" section.
 -   'scripts' - if you have any scripts in your data, provide them here.
     It is easiest to get it with MasterDataRegistrationHelper
     getAllScripts function.
 
-'results' object is a summary of what has been created.
+'importResult' object is a summary of what has been created.
 
 **Example**
 
 For an complete up to date example, please check the
-eln-lims-life-sciences plugin that ships with the installer or on the
-official Git repository:
+eln-lims excel that ships with the installer or on the
+official GitHub community data models repository:
 
-<https://sissource.ethz.ch/sispub/openbis/-/tree/master/openbis_standard_technologies/dist/core-plugins/eln-lims-life-sciences/1/as>
-
-Or download the complete plugin using the next link:
-
-<https://sissource.ethz.ch/sispub/openbis/-/archive/master/openbis-master.zip?path=openbis_standard_technologies/dist/core-plugins/eln-lims-life-sciences>
+<https://github.com/openbis/community-data-models/releases>
 
 ## Known Limitations
 
--   Property type assignments to entity types cannot be updated since
-    the current V3 API does not support this functionality. This means
-    that a change in the order of assignments or group names during an
-    update will be ignored.
+-   Some Property type assignments attributes to entity types cannot be updated since
+    the current V3 API does not support some functionality. Changes in the order of 
+    assignments or group names during an update will be ignored.

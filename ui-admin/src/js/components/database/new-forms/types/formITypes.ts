@@ -93,6 +93,11 @@ export interface IExtendedActionContext extends IModeActionContext {
    */
   isAutoSaveEnabled?: boolean;
   setAutoSaveEnabled?: (isAutoSaveEnabled: boolean) => void;
+  /**
+   * Requests a confirmation dialog before performing a destructive action
+   * (e.g. cancelling an edit). The provided callback runs only if the user confirms.
+   */
+  requestUnsavedConfirmation?: (onConfirm: () => void | Promise<void>) => void;
 }
 
 export interface IAutoSaveActionContext extends IBaseActionContext {

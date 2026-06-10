@@ -37,7 +37,7 @@ public class PropertiesDeserializer extends JsonDeserializer<Serializable>
         JsonNode node = p.readValueAsTree();
         if(node.isArray()) {
             ArrayList<String> list = new ArrayList<>();
-            node.forEach(value -> list.add(value.asText()));
+            node.forEach(value -> list.add(value.isArray() ? value.toString() : value.asText()));
             return list.toArray(new String[0]);
         } else if(node.isObject()) {
             return readValue(node.toString(), HashMap.class);

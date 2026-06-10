@@ -348,10 +348,15 @@ public class EntityTypePropertyTypeBO extends AbstractBusinessObject implements
 
         UpdateAuthorizationSnapshot snapshotAfter = new UpdateAuthorizationSnapshot(assignment);
 
+        InternalPropertyTypeAuthorization authorization = new InternalPropertyTypeAuthorization();
+
         if (snapshotBefore.equals(snapshotAfter) == false)
         {
-            new InternalPropertyTypeAuthorization().canUpdatePropertyAssignment(session, assignment.getEntityType(), assignment.getPropertyType(), assignment);
+            authorization.canUpdatePropertyAssignment(session, assignment.getEntityType(), assignment.getPropertyType(), assignment);
         }
+
+        authorization.canUpdateInternallyManagedFlag(session, assignment, assignmentUpdates);
+        assignment.setManagedInternallyNamespace(assignmentUpdates.isManagedInternally());
 
         validateAndSave();
 

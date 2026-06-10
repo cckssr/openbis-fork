@@ -85,6 +85,7 @@ public final class ExportEntityCollector {
         Deque<ExportablePermId> todo = new LinkedList<>();
         todo.add(root);
         SpacePermId initialSpacePermId = null;
+        String initialEntityIdentifier = null;
 
         while(todo.isEmpty() == false)
         {
@@ -108,6 +109,7 @@ public final class ExportEntityCollector {
                      *  - Space Samples without a project
                      */
                     Space space = null;
+                    String spaceIdentifier = null;
                     SpacePermId spacePermId = null;
 
                     //
@@ -120,9 +122,11 @@ public final class ExportEntityCollector {
                             spaceFetchOptions);
                     space = spaces.values().iterator().next();
                     spacePermId = space.getPermId();
+                    spaceIdentifier = "/" + space.getPermId();
                     initialSpacePermId = setInitialSpacePermId(root, initialSpacePermId, current, spacePermId);
+                    initialEntityIdentifier = setInitialEntityIdentifier(root.getPermId(), current.getPermId(), initialEntityIdentifier, spaceIdentifier);
 
-                    if (withLevelsBelow && current.equals(root)) { // BIS-2255: only exporting downstream if was initially selected
+                    if (withLevelsBelow && isCurrentContainedByRoot(initialEntityIdentifier, spaceIdentifier)) { // BIS-2255: only exporting downstream if was initially selected
                         // Projects
                         for (Project project: space.getProjects()) {
                             ExportablePermId projectId = new ExportablePermId(ExportableKind.PROJECT,
@@ -153,6 +157,7 @@ public final class ExportEntityCollector {
                      *  - Project Samples without an Experiment
                      */
                     Project project = null;
+                    String projectIdentifier = null;
                     SpacePermId projectSpacePermId = null;
 
                     //
@@ -167,8 +172,10 @@ public final class ExportEntityCollector {
                             List.of(new ProjectPermId(current.getPermId())),
                             projectFetchOptions);
                     project = projects.values().iterator().next();
+                    projectIdentifier = project.getIdentifier().getIdentifier();
                     projectSpacePermId = project.getSpace().getPermId();
                     initialSpacePermId = setInitialSpacePermId(root, initialSpacePermId, current, projectSpacePermId);
+                    initialEntityIdentifier = setInitialEntityIdentifier(root.getPermId(), current.getPermId(), initialEntityIdentifier, projectIdentifier);
 
                     if (withLevelsAbove) {
                         // Space
@@ -176,7 +183,7 @@ public final class ExportEntityCollector {
                         todo.add(spaceId);
                     }
 
-                    if (withLevelsBelow && current.equals(root)) { // BIS-2255: only exporting downstream if was initially selected
+                    if (withLevelsBelow && isCurrentContainedByRoot(initialEntityIdentifier, projectIdentifier)) { // BIS-2255: only exporting downstream if was initially selected
                         // Experiments
                         List<Experiment> experiments = project.getExperiments();
                         for (Experiment experiment:experiments) {
@@ -209,6 +216,7 @@ public final class ExportEntityCollector {
                      *  - Experiment DataSets NOT belonging to a Sample
                      */
                     Experiment experiment = null;
+                    String experimentIdentifier = null;
                     SpacePermId experimentSpacePermId = null; // Only used if withObjectsAndDataSetsOtherSpaces == false
 
                     //
@@ -225,8 +233,10 @@ public final class ExportEntityCollector {
                             List.of(new ExperimentPermId(current.getPermId())),
                             experimentFetchOptions);
                     experiment = experiments.values().iterator().next();
+                    experimentIdentifier = experiment.getIdentifier().getIdentifier();
                     experimentSpacePermId = experiment.getProject().getSpace().getPermId();
                     initialSpacePermId = setInitialSpacePermId(root, initialSpacePermId, current, experimentSpacePermId);
+                    initialEntityIdentifier = setInitialEntityIdentifier(root.getPermId(), current.getPermId(), initialEntityIdentifier, experimentIdentifier);
 
                     // Sample Properties (Might be in another space)
                     for (Sample[] sampleValues : safe(experiment.getSampleProperties()).values()) {
@@ -249,7 +259,7 @@ public final class ExportEntityCollector {
                         todo.add(projectId);
                     }
 
-                    if (withLevelsBelow && current.equals(root)) { // BIS-2255: only exporting downstream if was initially selected
+                    if (withLevelsBelow && isCurrentContainedByRoot(initialEntityIdentifier, experimentIdentifier)) { // BIS-2255: only exporting downstream if was initially selected
                         // Experiment Samples (implicitly always on same space as experiment)
                         SampleSearchCriteria sampleSearchCriteria = new SampleSearchCriteria();
                         sampleSearchCriteria.withExperiment().withPermId().thatEquals(current.getPermId());
@@ -530,6 +540,15 @@ public final class ExportEntityCollector {
         }
     }
 
+    private static String setInitialEntityIdentifier(String initialPermId, String currentPermId, String initialEntityIdentifier, String currentEntityIdentifier)
+    {
+        if (initialEntityIdentifier == null &&
+                initialPermId.equals(currentPermId)) {
+            return currentEntityIdentifier;
+        }
+        return initialEntityIdentifier;
+    }
+
     private static SpacePermId setInitialSpacePermId(ExportablePermId root, SpacePermId initialSpacePermId, ExportablePermId currentPermId, SpacePermId currentPermIdSpacePermId) {
         if (initialSpacePermId == null &&
                 root.getExportableKind().equals(currentPermId.getExportableKind()) &&
@@ -539,6 +558,9 @@ public final class ExportEntityCollector {
         return initialSpacePermId;
     }
 
+    private static boolean isCurrentContainedByRoot(String initialIdentifier, String currentIdentifier) {
+        return currentIdentifier.startsWith(initialIdentifier);
+    }
     private static boolean isDataSetInOtherSpaceBeingFiltered(boolean withObjectsAndDataSetsOtherSpaces, SpacePermId enforceSpaceId, DataSet dataSet) {
         if (enforceSpaceId != null && withObjectsAndDataSetsOtherSpaces == false) {
             if (dataSet.getSample() != null) {

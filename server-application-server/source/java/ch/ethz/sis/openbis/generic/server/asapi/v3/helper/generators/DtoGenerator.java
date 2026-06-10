@@ -369,7 +369,7 @@ public class DtoGenerator
     public void generateDTOJS() throws FileNotFoundException
     {
         generateDTOJS(
-                "../test-api-openbis-javascript/servers/common/core-plugins/tests/1/as/webapps/openbis-v3-api-test/html/dto/" + className + ".js");
+                "../test-api-openbis-javascript/servers/common/core-plugins/tests/src/as/webapps/openbis-v3-api-test/html/dto/" + className + ".js");
     }
 
     private void generateDTO(String file) throws FileNotFoundException
@@ -437,7 +437,7 @@ public class DtoGenerator
     public void generateFetchOptionsJS() throws FileNotFoundException
     {
         generateFetchOptionsJS(
-                "../test-api-openbis-javascript/servers/common/core-plugins/tests/1/as/webapps/openbis-v3-api-test/html/dto/" + className
+                "../test-api-openbis-javascript/servers/common/core-plugins/tests/src/as/webapps/openbis-v3-api-test/html/dto/" + className
                         + "FetchOptions.js");
     }
 

@@ -16,6 +16,7 @@ import ConflictResolutionDialog from '@src/js/components/database/new-forms/comp
 import DeleteConfirmationDialog from '@src/js/components/database/new-forms/components/common/DeleteConfirmationDialog.tsx';
 import MoveDialog from '@src/js/components/database/new-forms/components/common/MoveDialog.tsx';
 import EntityTypeSelectionDialog from '@src/js/components/database/new-forms/components/common/EntityTypeSelectionDialog.tsx';
+import UnsavedChangesDialog from '@src/js/components/common/dialog/UnsavedChangesDialog.jsx';
 
 import { useFormState } from '@src/js/components/database/new-forms/hooks/useFormState.ts';
 import { useOperationState } from '@src/js/components/database/new-forms/hooks/useOperationState.ts';
@@ -36,7 +37,8 @@ export const EntityFormContextProvider = ({
   sessionID,
   permId,
   initialMode,
-  externalAppController
+  externalAppController,
+  onUnsavedStateChange,
 }: {
   openbisFacade: any;
   params: any;
@@ -46,11 +48,14 @@ export const EntityFormContextProvider = ({
   permId: string;
   initialMode: FormMode;
   externalAppController: any;
+  onUnsavedStateChange?: (changed: boolean) => void;
 }) => {
 
   const actionToastContext = useActionToastCtx();
   // ErrorDialog is a .jsx component without TS typings; cast to any to satisfy TSX type checking.
   const ErrorDialogAny = ErrorDialog as any;
+  // UnsavedChangesDialog is a .jsx component without TS typings; cast to any.
+  const UnsavedChangesDialogAny = UnsavedChangesDialog as any;
 
   // Form state (already well-organized)
   const { form, originalForm, mode, setForm, setMode, updateField, updateFieldMetadata } = useFormState({
@@ -77,6 +82,19 @@ export const EntityFormContextProvider = ({
   // Other state (could also be extracted if needed)
   const [permissions] = useState({ canEdit: true, canDelete: true, canMove: true });
 
+  // Confirmation dialog for cancelling unsaved changes (driven by CoreFormModel cancel actions)
+  const [unsavedConfirm, setUnsavedConfirm] = useState<{
+    open: boolean;
+    onConfirm: (() => void | Promise<void>) | null;
+  }>({ open: false, onConfirm: null });
+
+  const requestUnsavedConfirmation = useCallback(
+    (onConfirm: () => void | Promise<void>) => {
+      setUnsavedConfirm({ open: true, onConfirm });
+    },
+    []
+  );
+
   // Handle data restoration from localStorage
   const handleDataRestore = useCallback((savedData: Form) => {
     setForm(savedData);
@@ -99,6 +117,21 @@ export const EntityFormContextProvider = ({
     onRestore: handleDataRestore
   });
 
+  // Report unsaved-changes state to the tab system (drives the close-tab warning via
+  // tab.changed) and to the parent (Files-tab guard).
+  // Auto-save only applies to EDIT mode (drafts are persisted to localStorage only when
+  // mode === EDIT, see useEntityAutoSaveFlow). A new (CREATE) form is never auto-saved, so it
+  // must always warn — regardless of any stale auto-save preference.
+  useEffect(() => {
+    const changed =
+      mode === FormMode.CREATE ||
+      (mode === FormMode.EDIT && !isAutoSaveEnabled);
+    externalAppController.objectChange({ objectTypeChanging: entityKind, id: permId, changed });
+    if (onUnsavedStateChange) {
+      onUnsavedStateChange(changed);
+    }
+  }, [mode, isAutoSaveEnabled, entityKind, permId]);
+
   // Create controller using dispatcher
   const controller: IFormController = useMemo(
     () => ControllerDispatcher.createController(entityKind, openbisFacade, user),
@@ -120,15 +153,17 @@ export const EntityFormContextProvider = ({
         setMode(FormMode.VIEW);
         if (params) {
           externalAppController.objectCreate(params);
+        } else {
+          loadForm();
         }
-        loadForm();
         setSaving(false);
       },
       externalAppController,
+      requestUnsavedConfirmation,
       deleteReason: reason || undefined,
       dependentEntities: dialogs.delete.config?.dependentEntities || undefined,
     };
-  }, [form, mode, externalAppController, controller, dialogs.delete.config, isAutoSaveEnabled, setAutoSaveEnabled]);
+  }, [form, mode, externalAppController, controller, dialogs.delete.config, isAutoSaveEnabled, setAutoSaveEnabled, requestUnsavedConfirmation]);
 
   // Load initial form data
   useEffect(() => {
@@ -323,6 +358,22 @@ export const EntityFormContextProvider = ({
         />
       )}
       <ActionToast ctx={actionToastContext}></ActionToast>
+      <UnsavedChangesDialogAny
+        open={unsavedConfirm.open}
+        onConfirm={async () => {
+          const cb = unsavedConfirm.onConfirm;
+          setUnsavedConfirm({ open: false, onConfirm: null });
+          if (cb) {
+            try {
+              await cb();
+            } catch (e: any) {
+              setError(getErrorMessage(e, 'Action failed'));
+              console.error(formatErrorForLogging(e, 'EntityFormContextProvider.unsavedConfirm'));
+            }
+          }
+        }}
+        onCancel={() => setUnsavedConfirm({ open: false, onConfirm: null })}
+      />
       <EntityForm
         form={form}
         mode={mode}

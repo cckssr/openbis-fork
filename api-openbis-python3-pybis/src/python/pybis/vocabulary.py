@@ -57,14 +57,18 @@ class Vocabulary(
         """Returns the VocabularyTerms of the given Vocabulary."""
         return self.openbis.get_terms(vocabulary=self.code)
 
-    def add_term(self, code, label=None, description=None):
-        """Adds a term to this Vocabulary.
-        If Vocabulary is already persistent, it is added by adding a new VocabularyTerm object.
-        If Vocabulary is new, the term is added to the list of terms
-        """
-        self.__dict__["terms"].append(
-            {"code": code, "label": label, "description": description}
-        )
+    # def add_term(self, code, label=None, description=None, internal=False):
+    #     """Adds a term to this Vocabulary.
+    #     If Vocabulary is already persistent, it is added by adding a new VocabularyTerm object.
+    #     If Vocabulary is new, the term is added to the list of terms
+    #     """
+    #     if not "_terms" in self.__dict__:
+    #         self.__dict__["_terms"] = []
+    #
+    #
+    #     self.__dict__["_terms"].append(
+    #         {"code": code, "label": label, "description": description, 'managedInternally': internal}
+    #     )
 
     def delete(self, reason):
         """Delete this vocabulary"""

@@ -47,7 +47,7 @@ public class XLSExperimentTypeExportHelper extends AbstractXLSEntityTypeExportHe
     protected Attribute[] getAttributes(final ExperimentType entityType)
     {
         return new Attribute[] { CODE, INTERNAL, DESCRIPTION, VALIDATION_SCRIPT, MODIFICATION_DATE,
-                ONTOLOGY_ID, ONTOLOGY_ANNOTATION_ID, ONTOLOGY_VERSION };
+                ONTOLOGY_ID, ONTOLOGY_ANNOTATION_ID, ONTOLOGY_VERSION, META_DATA };
     }
 
     @Override
@@ -100,7 +100,10 @@ public class XLSExperimentTypeExportHelper extends AbstractXLSEntityTypeExportHe
                         .map(SemanticAnnotation::getPredicateAccessionId).collect(
                                 Collectors.joining("\n"));
             }
-
+            case META_DATA:
+            {
+                return mapToJSON(experimentType.getMetaData());
+            }
             default:
             {
                 return null;

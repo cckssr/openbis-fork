@@ -86,15 +86,6 @@ public class CreateTypeGroupAssignmentExecutor extends AbstractCreateEntityWithC
     protected void checkAccess(IOperationContext context, SampleTypeTypeGroupsPE entity)
     {
         authorizationExecutor.canCreate(context, entity);
-        if (!isSystemUser(context.getSession()))
-        {
-            boolean internalTypeGroup = entity.getTypeGroup().isManagedInternally();
-            boolean internalSampleType = entity.getSampleType().isManagedInternally();
-            if(entity.isManagedInternally() && !(internalTypeGroup && internalSampleType) ) {
-                throw new AuthorizationFailureException(
-                        "Internal type group assignments can be managed only by the system user.");
-            }
-        }
     }
 
     @Override
@@ -173,17 +164,4 @@ public class CreateTypeGroupAssignmentExecutor extends AbstractCreateEntityWithC
         DataAccessExceptionTranslator.throwException(e, "type group assignment", null);
     }
 
-    private boolean isSystemUser(Session session)
-    {
-        PersonPE user = session.tryGetPerson();
-
-        if (user == null)
-        {
-            throw new AuthorizationFailureException(
-                    "Could not check access because the current session does not have any user assigned.");
-        } else
-        {
-            return user.isSystemUser();
-        }
-    }
 }

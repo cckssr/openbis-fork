@@ -21,7 +21,6 @@ import ch.ethz.sis.afsserver.server.performance.PerformanceAuditor;
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameterUtil;
 import ch.ethz.sis.openbis.afsserver.server.common.IOpenBISFacade;
 import ch.ethz.sis.openbis.afsserver.server.common.OpenBISConfiguration;
-import ch.ethz.sis.openbis.afsserver.server.observer.impl.OpenBISUtils;
 import ch.ethz.sis.openbis.afsserver.server.pathinfo.PathInfoDatabaseConfiguration;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.EntityType;
@@ -35,6 +34,7 @@ import ch.ethz.sis.shared.io.IOUtils;
 import ch.ethz.sis.shared.log.standard.LogManager;
 import ch.ethz.sis.shared.log.standard.Logger;
 import ch.ethz.sis.shared.startup.Configuration;
+import ch.systemsx.cisd.openbis.generic.shared.Constants;
 import lombok.Value;
 import net.lemnik.eodsql.QueryTool;
 
@@ -193,7 +193,7 @@ public class DeleteDataOfDeletedDataSetsServerObserver implements ServerObserver
     private boolean isAfsDataSetDeletionEvent(Event event)
     {
         return EventType.DELETION.equals(event.getEventType()) && EntityType.DATA_SET.equals(event.getEntityType()) && event.getDescription() != null
-                && event.getDescription().startsWith("/" + OpenBISUtils.AFS_DATA_STORE_CODE);
+                && event.getDescription().startsWith("/" + Constants.AFS_DATA_STORE_CODE);
     }
 
     private void processAfsDataSetDeletionEvent(String sessionToken, Event event) throws APIServerException
@@ -202,7 +202,7 @@ public class DeleteDataOfDeletedDataSetsServerObserver implements ServerObserver
         {
             ApiRequest apiRequest =
                     new ApiRequest("1", "delete", Map.of("owner", event.getIdentifier(), "source", "", "trash", false), sessionToken,
-                            null, null);
+                            null, null, null);
 
             apiServer.processOperation(apiRequest, new ApiResponseBuilder(), new PerformanceAuditor());
 

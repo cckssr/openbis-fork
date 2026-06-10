@@ -36,7 +36,6 @@ import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameterUtil;
 import ch.ethz.sis.afsserver.worker.WorkerContext;
 import ch.ethz.sis.afsserver.worker.providers.AuthorizationInfoProvider;
 import ch.ethz.sis.openbis.afsserver.server.common.OpenBISConfiguration;
-import ch.ethz.sis.openbis.afsserver.server.observer.impl.OpenBISUtils;
 import ch.ethz.sis.openbis.generic.OpenBIS;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.ObjectPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
@@ -64,6 +63,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.session.SessionInformation;
 import ch.ethz.sis.shared.io.FilePermission;
 import ch.ethz.sis.shared.io.IOUtils;
 import ch.ethz.sis.shared.startup.Configuration;
+import ch.systemsx.cisd.openbis.generic.shared.Constants;
 import lombok.Data;
 
 public class OpenBISAuthorizationInfoProvider implements AuthorizationInfoProvider, TrashRootProvider, LockMapper<UUID, String>
@@ -274,7 +274,7 @@ public class OpenBISAuthorizationInfoProvider implements AuthorizationInfoProvid
         {
             Event deletion = searchResult.getObjects().get(0);
 
-            if (deletion.getDescription() != null && deletion.getDescription().startsWith("/" + OpenBISUtils.AFS_DATA_STORE_CODE))
+            if (deletion.getDescription() != null && deletion.getDescription().startsWith("/" + Constants.AFS_DATA_STORE_CODE))
             {
                 return deletion;
             }

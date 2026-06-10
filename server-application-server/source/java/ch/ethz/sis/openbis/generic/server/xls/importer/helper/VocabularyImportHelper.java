@@ -93,29 +93,6 @@ public class VocabularyImportHelper extends BasicImportHelper
     }
 
     @Override
-    protected void validateLine(Map<String, Integer> header, List<String> values) {
-        String code = getValueByColumnName(header, values, Attribute.Code);
-        String internal = getValueByColumnName(header, values, Attribute.Internal);
-
-        if(!delayedExecutor.isSystem() && ImportUtils.isTrue(internal))
-        {
-            Vocabulary vocabulary = delayedExecutor.getVocabulary(new VocabularyPermId(code), new VocabularyFetchOptions());
-            if(vocabulary == null) {
-                throw new UserFailureException("Non-system user can not create new internal vocabularies!");
-            }
-        }
-    }
-
-    @Override
-    protected boolean isNewVersion(Map<String, Integer> header, List<String> values)
-    {
-        return isNewVersionWithInternalNamespace(header, values, versions,
-                delayedExecutor.isSystem(),
-                getTypeName().getType(),
-                Attribute.Version, Attribute.Code, Attribute.Internal);
-    }
-
-    @Override
     protected void updateVersion(Map<String, Integer> header, List<String> values)
     {
         String version = getValueByColumnName(header, values, Attribute.Version);
@@ -128,6 +105,19 @@ public class VocabularyImportHelper extends BasicImportHelper
         }
 
         VersionUtils.updateVersion(version, versions, ImportTypes.VOCABULARY_TYPE.getType(), code);
+    }
+
+    @Override
+    protected boolean isNewVersion(Map<String, Integer> header, List<String> values)
+    {
+        String internal = getValueByColumnName(header, values, Attribute.Internal);
+        boolean isInternalNamespace = ImportUtils.isTrue(internal);
+
+        if(isInternalNamespace && !delayedExecutor.isSystem()) {
+            //if exists, skip
+            return !isObjectExist(header, values);
+        }
+        return true;
     }
 
     @Override
@@ -150,9 +140,20 @@ public class VocabularyImportHelper extends BasicImportHelper
 
         VocabularyCreation create = new VocabularyCreation();
         create.setCode(code);
-        create.setManagedInternally(ImportUtils.isTrue(internal));
+        if(delayedExecutor.isSystem())
+        {
+            create.setManagedInternally(ImportUtils.isTrue(internal));
+        }
         create.setDescription(description);
         delayedExecutor.createVocabulary(create);
+    }
+
+    @Override
+    protected void validateLine(Map<String, Integer> header, List<String> values) {
+        String code = getValueByColumnName(header, values, Attribute.Code);
+        if(code == null || code.isEmpty()) {
+            throw new UserFailureException("Mandatory field is missing or empty: Code.");
+        }
     }
 
     @Override
@@ -160,6 +161,7 @@ public class VocabularyImportHelper extends BasicImportHelper
     {
         String code = getValueByColumnName(header, values, Attribute.Code);
         String description = getValueByColumnName(header, values, Attribute.Description);
+        String internal = getValueByColumnName(header, values, Attribute.Internal);
 
         VocabularyPermId vocabularyPermId = new VocabularyPermId(code);
 
@@ -175,6 +177,10 @@ public class VocabularyImportHelper extends BasicImportHelper
                 update.setDescription(description);
             }
         }
+        if(delayedExecutor.isSystem() && internal != null && !internal.isEmpty()) {
+            update.setManagedInternally(ImportUtils.isTrue(internal));
+        }
+
         delayedExecutor.updateVocabulary(update);
     }
 

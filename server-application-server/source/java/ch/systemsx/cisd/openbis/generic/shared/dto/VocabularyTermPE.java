@@ -105,13 +105,11 @@ public class VocabularyTermPE extends HibernateAbstractRegistrationHolder implem
     @Transient
     public String getCode()
     {
-//        return CodeConverter.tryToBusinessLayer(getSimpleCode(), isManagedInternally());
         return getSimpleCode();
     }
 
     public void setCode(final String code)
     {
-//        setManagedInternally(CodeConverter.isInternalNamespace(code));
         setSimpleCode(code);
     }
 

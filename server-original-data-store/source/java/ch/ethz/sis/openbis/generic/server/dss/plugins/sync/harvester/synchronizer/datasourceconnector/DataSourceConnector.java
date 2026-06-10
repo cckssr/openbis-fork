@@ -47,6 +47,7 @@ import org.xml.sax.SAXException;
 
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.config.BasicAuthCredentials;
 import ch.systemsx.cisd.common.http.JettyHttpClientFactory;
+import ch.systemsx.cisd.common.xml.XMLInfraStructure;
 
 /**
  * @author Ganime Betul Akin
@@ -81,10 +82,8 @@ public class DataSourceConnector implements IDataSourceConnector
         {
             try (InputStream responseContent = listener.getInputStream())
             {
-                DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-                factory.setValidating(false);
+                DocumentBuilderFactory factory = XMLInfraStructure.createSecureDocumentBuilderFactory();
                 factory.setIgnoringComments(true);
-                factory.setNamespaceAware(true);
                 DocumentBuilder builder = factory.newDocumentBuilder();
                 builder.setEntityResolver(new EntityResolver()
                     {
@@ -192,8 +191,7 @@ public class DataSourceConnector implements IDataSourceConnector
 
     private Document parse(byte[] content) throws ParserConfigurationException, SAXException, IOException
     {
-        DocumentBuilderFactory domFactory = DocumentBuilderFactory.newInstance();
-        domFactory.setNamespaceAware(true);
+        DocumentBuilderFactory domFactory = XMLInfraStructure.createSecureDocumentBuilderFactory();
         ByteArrayInputStream bis = new ByteArrayInputStream(content);
         DocumentBuilder builder = domFactory.newDocumentBuilder();
         Document doc = builder.parse(bis);

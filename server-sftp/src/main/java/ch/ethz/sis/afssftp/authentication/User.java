@@ -9,13 +9,5 @@ import lombok.NonNull;
 @Builder
 public class User {
     @NonNull final String username;
-    @NonNull final String password;
-    volatile String sessionToken;
-
-    public synchronized void checkAndRenewSessionIfNecessary(@NonNull OpenBIS openBIS) {
-        openBIS.setSessionToken(sessionToken);
-        if ( !openBIS.isSessionActive() ) {
-            openBIS.login(username, password);
-        }
-    }
+    @NonNull final String sessionToken;
 }

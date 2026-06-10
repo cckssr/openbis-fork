@@ -111,15 +111,13 @@ public class AfsServer
 
                         if (proxyInterceptor != null)
                         {
-                            proxyInterceptor.invoke(parameters.get("method"), () ->
-                            {
-                                super.service(proxyRequest, response);
-                                return null;
-                            });
+                            proxyInterceptor.invoke(proxyRequest, response, parameters.get("method"), super::service);
                         } else
                         {
                             super.service(proxyRequest, response);
                         }
+
+                        log.info("[AFS PROXY] response status: " + response.getStatus());
                     } catch (Exception e)
                     {
                         log.info("[AFS PROXY] failed");

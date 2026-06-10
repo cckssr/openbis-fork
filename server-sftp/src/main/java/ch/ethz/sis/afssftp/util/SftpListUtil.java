@@ -202,6 +202,22 @@ public class SftpListUtil {
                 .map(Sample::getDataSets).orElse(Collections.emptyList());
     }
 
+    /***
+     * @param experimentPermId Experiment perm-id
+     * @return datasets attached to experiment-entity
+     */
+    public @NonNull List<DataSet> getExperimentDatasets(@NonNull String experimentPermId) {
+        OpenBIS openBIS = openBISClientUtil.getOpenBISClient(user);
+
+        ExperimentFetchOptions fetchOptions = new ExperimentFetchOptions();
+        fetchOptions.withDataSets();
+        fetchOptions.withDataSets().withProperties();
+        ExperimentPermId experimentId = new ExperimentPermId(experimentPermId);
+
+        return Optional.ofNullable(openBIS.getExperiments(List.of(experimentId), fetchOptions).get(experimentId))
+                .map(Experiment::getDataSets).orElse(Collections.emptyList());
+    }
+
     public String getAfsEntityPermId(@NonNull SftpNode afsEntityNode) {
         return switch (afsEntityNode.getType()) {
             case SAMPLE, FOLDER, DATA_SET, EXPERIMENT ->
@@ -324,19 +340,19 @@ public class SftpListUtil {
     public static @NonNull String getDisplayName(@NonNull Experiment experiment) {
         String name = experiment.getStringProperty("NAME");
         String permId = experiment.getPermId().getPermId();
-        return ((name != null) ? name : "") + "(" + permId + ")";
+        return ((name != null) ? (name + " ") : "") + "(" + permId + ")";
     }
 
     public static @NonNull String getDisplayName(@NonNull Sample sample) {
         String name = sample.getStringProperty("NAME");
         String permId = sample.getPermId().getPermId();
-        return ((name != null) ? name : "") + "(" + permId + ")";
+        return ((name != null) ? (name + " ") : "") + "(" + permId + ")";
     }
 
     public static @NonNull String getDisplayName(@NonNull DataSet dataSet) {
         String name = dataSet.getStringProperty("NAME");
         String permId = dataSet.getPermId().getPermId();
-        return ((name != null) ? name : "") + "(" + permId + ")";
+        return ((name != null) ? (name + " ") : "") + "(" + permId + ")";
     }
 
     public static @NonNull String getSpaceCodeFromDisplayName(@NonNull String displayName) {

@@ -15,13 +15,14 @@
  */
 package ch.ethz.sis.afsserver.server.impl;
 
+import java.util.Map;
+import java.util.UUID;
+
 import ch.ethz.sis.afsserver.server.Request;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Value;
-
-import java.util.Map;
 
 @Value
 @Builder(toBuilder = true)
@@ -33,4 +34,5 @@ public class ApiRequest implements Request {
     private final String sessionToken;
     private final String interactiveSessionKey;
     private final String transactionManagerKey;
+    private final UUID operationId;
 }

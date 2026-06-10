@@ -38,11 +38,11 @@ dependencies {
             project(':lib-compress'),
             project(':lib-maintenance'),
             project(':lib-hierarchical-content'),
-            libs.org.apache.ftpserver.ftpserver.core.v106,
-            libs.org.apache.sshd.sshd.sftp.v27,
+            libs.org.apache.ftpserver.ftpserver.core,
+            libs.org.apache.sshd.sshd.sftp,
             libs.org.slf4j.slf4j.api,
             libs.org.slf4j.slf4j.jdk14,
-            libs.org.bouncycastle.bcpg.jdk15on,
+            libs.org.bouncycastle.bcpg.jdk18on,
             libs.jfree.jfreechart,
             libs.cisd.cisd.cifex,
             libs.net.sourceforge.javacsv.javacsv,
@@ -57,6 +57,8 @@ dependencies {
             libs.commons.io.commons.io
     api(libs.org.dspace.xoai.data.provider){
         exclude module: 'log4j'
+        // Its legacy Woodstox provider does not implement SAX secure-processing used by POI.
+        exclude group: 'org.codehaus.woodstox', module: 'wstx-asl'
     }
 
 //    runtimeOnly 'bioformats:bioformats:6.5.1'
@@ -67,10 +69,10 @@ dependencies {
 
     // eln-lims Jython APIs dependencies
     datastoreExecRuntime files("../../../openbis-hvl.ethz.ch/deployed/core-plugins/hvl-dropbox/1/dss/dropboxes/hvl-dropbox/lib/jmatio-1.5.jar"),
-            /* eln-lims */ files("../ui-eln-lims/src/core-plugins/eln-lims/1/dss/reporting-plugins/eln-lims-api/lib/zip4j_1.3.2.jar"),
-            files("../ui-eln-lims/src/core-plugins/eln-lims/1/dss/reporting-plugins/eln-lims-api/lib/plasmapper.jar"),
-            files("../ui-eln-lims/src/core-plugins/eln-lims/1/dss/reporting-plugins/eln-lims-api/lib/htmlcleaner-2.23.jar"),
-            files("../ui-eln-lims/src/core-plugins/eln-lims/1/dss/reporting-plugins/password-reset-api/lib/persistentkeyvaluestore.jar")
+            /* eln-lims */ files("../ui-eln-lims/src/core-plugins/eln-lims/src/dss/reporting-plugins/eln-lims-api/lib/zip4j_1.3.2.jar"),
+            files("../ui-eln-lims/src/core-plugins/eln-lims/src/dss/reporting-plugins/eln-lims-api/lib/plasmapper.jar"),
+            files("../ui-eln-lims/src/core-plugins/eln-lims/src/dss/reporting-plugins/eln-lims-api/lib/htmlcleaner-2.23.jar"),
+            files("../ui-eln-lims/src/core-plugins/eln-lims/src/dss/reporting-plugins/password-reset-api/lib/persistentkeyvaluestore.jar")
 
     testImplementation project(path: ':lib-commonbase', configuration: 'tests'),
             project(path: ':lib-common', configuration: 'tests'),
@@ -93,8 +95,8 @@ dependencies {
     testImplementation(project(path: ':server-application-server', configuration: 'tests'))
 
     testRuntimeFirst libs.jakarta.servlet.jakarta.servlet.api,
-            files("../core-plugin-openbis/dist/core-plugins/imaging/1/as/services/imaging/lib/openBIS-imaging-technology.jar"),
-            files("../core-plugin-openbis/dist/core-plugins/imaging/1/as/api-listener/imaging-dataset-interceptor/lib/imaging-dataset-interceptor.jar")
+            files("../core-plugin-openbis/dist/core-plugins/eln-lims-imaging-core/src/as/services/imaging/lib/openBIS-imaging-technology.jar"),
+            files("../core-plugin-openbis/dist/core-plugins/eln-lims-imaging-core/src/as/api-listener/imaging-dataset-interceptor/lib/imaging-dataset-interceptor.jar")
 }
 
 

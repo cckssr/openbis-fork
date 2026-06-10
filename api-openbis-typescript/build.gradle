@@ -3,17 +3,17 @@ import cz.habarta.typescript.generator.Settings.ConfiguredExtension
 apply from: '../build/javaproject.gradle'
 
 buildscript {
-    repositories {
-        mavenCentral()
-    }
+    apply from: '../build/repository.gradle'
+
+    repositories repositoryConfig
+
     dependencies {
         classpath libs.cz.habarta.typescript.generator.typescript.generator.gradle.plugin
+        classpath libs.jakarta.ws.rs.jakarta.ws.rs.api
     }
 }
 
-repositories {
-    mavenCentral()
-}
+repositories repositoryConfig
 
 dependencies {
     implementation project(':api-openbis-java'), libs.com.fasterxml.jackson.core.jackson.core, libs.com.fasterxml.jackson.core.jackson.databind, libs.com.google.guava.guava, libs.cz.habarta.typescript.generator.typescript.generator.core, libs.sis.sis.base

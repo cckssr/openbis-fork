@@ -41,6 +41,15 @@ public class SftpFileUtil {
             @NonNull Set<? extends OpenOption> options,
             boolean isAfsEntityMutable
     ) throws IOException {
+        boolean readOpenOption = options.contains(StandardOpenOption.READ);
+        boolean writeOpenOption = options.contains(StandardOpenOption.WRITE) ||
+                options.contains(StandardOpenOption.APPEND) ||
+                options.contains(StandardOpenOption.TRUNCATE_EXISTING);
+
+        if (writeOpenOption && !isAfsEntityMutable) {
+            throw new UnsupportedOperationException("Cannot write AFS data on data-immutable entity");
+        }
+
         File afsFile = Optional.of(entityId)
                 .flatMap( entId -> sftpListUtil.getAfsFilePresence(entId, afsPath))
                 .orElse(null);
@@ -74,9 +83,6 @@ public class SftpFileUtil {
                 Optional.ofNullable(afsFile).map(File::getSize).orElse(0L);
 
         if (afsRegularFile) {
-            boolean readOpenOption = options.contains(StandardOpenOption.READ);
-            boolean writeOpenOption = options.contains(StandardOpenOption.WRITE);
-
             final long initialPosition;
             if (writeOpenOption) {
                 if (options.contains(StandardOpenOption.APPEND)) {
@@ -101,7 +107,7 @@ public class SftpFileUtil {
                     user,
                     initialPosition,
                     readOpenOption,
-                    writeOpenOption && isAfsEntityMutable
+                    writeOpenOption
             );
         } else {
             throw new UnsupportedOperationException("AFS-file does not exist or is not a regular file");
@@ -182,6 +188,8 @@ public class SftpFileUtil {
                 } catch (Exception e) {
                     throw new IOException("Error copying AFS-file");
                 }
+            } else {
+                throw new IOException("Error copying AFS-file: destination already exists");
             }
         } else {
             throw new IOException("Error copying AFS-file: file does not exist");

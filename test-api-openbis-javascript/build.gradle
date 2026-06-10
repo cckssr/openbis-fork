@@ -50,7 +50,7 @@ dependencies {
     api(libs.com.fasterxml.jackson.core.jackson.databind)
     api(libs.org.testng.testng)
     api(libs.org.junit.junit)
-    api(libs.org.seleniumhq.selenium.selenium.java){
+    testImplementation(libs.org.seleniumhq.selenium.selenium.java){
         exclude group: "bytebuddy", module: "byte-buddy"
     }
 
@@ -121,13 +121,13 @@ node {
 
 task copyTypeScriptDTS(type: Copy, dependsOn: [':api-openbis-typescript:generateTypeScript']) {
     from project(':api-openbis-typescript').file('targets/openbis-typescript-api/openbis.esm.d.ts')
-    into file('servers/common/core-plugins/tests/1/as/webapps/openbis-v3-api-test/html/test/types/')
+    into file('servers/common/core-plugins/tests/src/as/webapps/openbis-v3-api-test/html/test/types/')
 }
 
 task compileTypeScript(type: NpxTask, dependsOn: copyTypeScriptDTS) {
     dependsOn 'npmInstall'
     command = 'tsc'
-    args = ['--build', 'servers/common/core-plugins/tests/1/as/webapps/openbis-v3-api-test/html/tsconfig.json']
+    args = ['--build', 'servers/common/core-plugins/tests/src/as/webapps/openbis-v3-api-test/html/tsconfig.json']
 }
 
 test {

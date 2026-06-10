@@ -1,5 +1,6 @@
 package ch.ethz.sis.openbis.systemtests.environment;
 
+import ch.ethz.sis.afsclient.client.AfsClient;
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameter;
 import ch.ethz.sis.openbis.afsserver.server.archiving.ArchiverDatabaseConfiguration;
 import ch.ethz.sis.openbis.afsserver.server.common.DatabaseConfiguration;
@@ -31,6 +32,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.SQLException;
@@ -54,6 +56,8 @@ public class IntegrationTestEnvironment
     private AfsServer afsServer;
 
     private RoCrateServer roCrateServer;
+
+    private AfsSftpServer afsSftpServer;
 
     private FakeHttpServer fakeHttpServer;
 
@@ -87,8 +91,6 @@ public class IntegrationTestEnvironment
             serviceProperties.setProperty(TransactionConfiguration.APPLICATION_SERVER_URL_PROPERTY_NAME, TestInstanceHostUtils.getOpenBISProxyUrl());
             serviceProperties.setProperty(TransactionConfiguration.AFS_SERVER_URL_PROPERTY_NAME,
                     TestInstanceHostUtils.getAFSProxyUrl() + TestInstanceHostUtils.getAFSPath());
-            serviceProperties.setProperty("server-public-information.afs-server.url",
-                    TestInstanceHostUtils.getAFSProxyUrl() + TestInstanceHostUtils.getAFSPath());
         }
 
         applicationServer = new ApplicationServer();
@@ -115,17 +117,13 @@ public class IntegrationTestEnvironment
         return dataStoreServer;
     }
 
-    public AfsServer createAfsServer()
-    {
-        return createAfsServer(loadProperties(Path.of("etc/default/afs/service.properties")));
-    }
-
     public AfsServer createAfsServer(Properties serviceProperties)
     {
         if (serviceProperties != null)
         {
             serviceProperties.setProperty(AtomicFileSystemServerParameter.httpServerPort.name(), String.valueOf(TestInstanceHostUtils.getAFSPort()));
             serviceProperties.setProperty(AtomicFileSystemServerParameter.httpServerUri.name(), TestInstanceHostUtils.getAFSPath());
+            serviceProperties.setProperty(AtomicFileSystemServerParameter.httpServerPublicUrl.name(), TestInstanceHostUtils.getAFSProxyUrl() + TestInstanceHostUtils.getAFSPath());
             serviceProperties.setProperty(OpenBISConfiguration.OpenBISParameter.openBISUrl.name(), TestInstanceHostUtils.getOpenBISProxyUrl());
         }
 
@@ -165,6 +163,24 @@ public class IntegrationTestEnvironment
         roCrateServer.configure(serviceProperties);
         roCrateServer.setRoCrateServerArgs(roCrateServerArgs);
         return roCrateServer;
+    }
+
+    public AfsSftpServer createAfsSftpServer()
+    {
+        return createAfsSftpServer(loadProperties(Path.of("etc/default/afs-sftp/service.properties")));
+    }
+
+    public AfsSftpServer createAfsSftpServer(Properties serviceProperties)
+    {
+        if (serviceProperties != null)
+        {
+            serviceProperties.setProperty("applicationServerUrl", TestInstanceHostUtils.getOpenBISProxyUrl());
+            serviceProperties.setProperty("afsUrl", TestInstanceHostUtils.getAFSProxyUrl() + TestInstanceHostUtils.getAFSPath());
+        }
+
+        afsSftpServer = new AfsSftpServer();
+        afsSftpServer.configure(serviceProperties);
+        return afsSftpServer;
     }
 
     public void createShares(Map<Integer, Properties> shares)
@@ -208,6 +224,10 @@ public class IntegrationTestEnvironment
         {
             roCrateServer.start();
         }
+        if (afsSftpServer != null)
+        {
+            afsSftpServer.start();
+        }
 
         configureSystemUser();
         configureELNSettings();
@@ -215,6 +235,10 @@ public class IntegrationTestEnvironment
 
     public void stop()
     {
+        if (afsSftpServer != null)
+        {
+            afsSftpServer.stop();
+        }
         if (roCrateServer != null)
         {
             roCrateServer.stop();
@@ -250,11 +274,23 @@ public class IntegrationTestEnvironment
                 TestInstanceHostUtils.getAFSUrl() + TestInstanceHostUtils.getAFSPath());
     }
 
-    public OpenBIS createOpenBIS(int timeout)
+    public OpenBIS createOpenBIS(int timeout, boolean callProxies)
     {
-        return new OpenBIS(TestInstanceHostUtils.getOpenBISUrl() + TestInstanceHostUtils.getOpenBISPath(),
+        String asUrl = callProxies ? TestInstanceHostUtils.getOpenBISProxyUrl() : TestInstanceHostUtils.getOpenBISUrl();
+        String afsUrl = callProxies ? TestInstanceHostUtils.getAFSProxyUrl() : TestInstanceHostUtils.getAFSUrl();
+        return new OpenBIS(asUrl + TestInstanceHostUtils.getOpenBISPath(),
                 TestInstanceHostUtils.getDSSUrl() + TestInstanceHostUtils.getDSSPath(),
-                TestInstanceHostUtils.getAFSUrl() + TestInstanceHostUtils.getAFSPath(), timeout);
+                afsUrl + TestInstanceHostUtils.getAFSPath(), timeout);
+    }
+
+    public AfsClient createAfsClient()
+    {
+        return new AfsClient(URI.create(TestInstanceHostUtils.getAFSUrl() + TestInstanceHostUtils.getAFSPath()));
+    }
+
+    public AfsClient createAfsClient(int timeout)
+    {
+        return new AfsClient(URI.create(TestInstanceHostUtils.getAFSUrl() + TestInstanceHostUtils.getAFSPath()), timeout);
     }
 
     private void dropOpenBISDatabase()
@@ -592,4 +628,7 @@ public class IntegrationTestEnvironment
         return roCrateServer;
     }
 
+    public AfsSftpServer getAfsSftpServer() {
+        return afsSftpServer;
+    }
 }

@@ -8,13 +8,10 @@ compileJava {
 sourceCompatibility = JavaVersion.VERSION_21
 targetCompatibility = JavaVersion.VERSION_21
 
-repositories {
-    ivy {
-        ivyPattern "https://sissource.ethz.ch/openbis/openbis-public/openbis-ivy/-/raw/main/[organisation]/[module]/[revision]/ivy.xml"
-        artifactPattern "https://sissource.ethz.ch/openbis/openbis-public/openbis-ivy/-/raw/main/[organisation]/[module]/[revision]/[artifact]-[revision](-[classifier]).[ext]"
-    }
-    //mavenCentral()
-}
+apply from: '../build/repository.gradle'
+repositories repositoryConfig
+
+apply from: '../build/common-resolutions.gradle'
 
 configurations {
     tests.extendsFrom testImplementation
@@ -26,7 +23,7 @@ dependencies {
     project(':lib-logging')
     implementation project(':lib-logging'),
             libs.org.projectlombok.lombok,
-            libs.io.netty.netty.all.v4168final
+            libs.io.netty.netty.all
     testImplementation libs.org.junit.junit,
             libs.org.hamcrest.hamcrest.core,
             libs.org.hamcrest.hamcrest.library

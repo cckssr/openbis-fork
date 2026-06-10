@@ -368,7 +368,7 @@ public class VocabularyBO extends AbstractBusinessObject implements IVocabularyB
             throwModifiedEntityException("Vocabulary");
         }
 
-        new InternalVocabularyAuthorization().canUpdateVocabulary(session, vocabularyPE);
+        new InternalVocabularyAuthorization().canUpdateVocabulary(session, vocabularyPE, updates);
 
         vocabularyPE.setCode(updates.getCode());
         vocabularyPE.setDescription(updates.getDescription());
@@ -389,7 +389,7 @@ public class VocabularyBO extends AbstractBusinessObject implements IVocabularyB
 
         if (updateNeeded)
         {
-            new InternalVocabularyAuthorization().canUpdateVocabulary(session, vocabularyPE);
+            new InternalVocabularyAuthorization().canUpdateVocabulary(session, vocabularyPE, updates);
 
             vocabularyPE.setCode(updates.getCode());
             vocabularyPE.setDescription(updates.getDescription());
@@ -397,7 +397,7 @@ public class VocabularyBO extends AbstractBusinessObject implements IVocabularyB
             vocabularyPE.setChosenFromList(updates.isChosenFromList());
             vocabularyPE.setManagedInternally(updates.isManagedInternally());
 
-            new InternalVocabularyAuthorization().canUpdateVocabulary(session, vocabularyPE);
+            new InternalVocabularyAuthorization().canUpdateVocabulary(session, vocabularyPE, updates);
         }
 
         for (NewVocabularyTerm t : updates.getNewTerms())
@@ -563,7 +563,7 @@ public class VocabularyBO extends AbstractBusinessObject implements IVocabularyB
             UpdatedVocabularyTerm update = newTermsMap.get(code);
             VocabularyTermBatchUpdateDetails batchUpdateDetails = update.getBatchUpdateDetails();
 
-            new InternalVocabularyAuthorization().canUpdateTerm(session, vocabularyPE, oldTerm);
+            new InternalVocabularyAuthorization().canUpdateTerm(session, vocabularyPE, oldTerm, update);
 
             if (batchUpdateDetails.isDescriptionUpdateRequested())
             {

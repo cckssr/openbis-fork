@@ -46,7 +46,7 @@ export class DatasetFormModel {
       isValid: true,
       actions: [
         getNewObjectAction(EntityKind.DATASET),
-        getNewDatasetAction(EntityKind.DATASET),
+        // getNewDatasetAction(EntityKind.DATASET),
         getDividerAction(FormMode.VIEW),
         getEditAction(),
         getMoveAction(),

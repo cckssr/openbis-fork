@@ -29,13 +29,14 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.executor.exporter.Expo
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.executor.exporter.ExportExecutor.PDF_EXTENSION;
 import static ch.ethz.sis.openbis.generic.server.xls.export.XLSExport.XLSX_EXTENSION;
 import static ch.ethz.sis.openbis.generic.server.xls.export.XLSExport.ZIP_EXTENSION;
+import static ch.ethz.sis.openbis.systemtest.asapi.v3.ExportData.ARRAY_INTEGER_PROPERTY_NAME;
+import static ch.ethz.sis.openbis.systemtest.asapi.v3.ExportData.ARRAY_REAL_PROPERTY_NAME;
+import static ch.ethz.sis.openbis.systemtest.asapi.v3.ExportData.ARRAY_STRING_PROPERTY_NAME;
+import static ch.ethz.sis.openbis.systemtest.asapi.v3.ExportData.ARRAY_TIMESTAMP_PROPERTY_NAME;
 import static ch.ethz.sis.openbis.systemtest.asapi.v3.ExportData.RICH_TEXT_PROPERTY_NAME;
 import static ch.ethz.sis.openbis.systemtest.asapi.v3.ExportData.RICH_TEXT_WITH_IMAGE_PROPERTY_NAME;
 import static ch.ethz.sis.openbis.systemtest.asapi.v3.ExportData.RICH_TEXT_WITH_SPREADSHEET_PROPERTY_NAME;
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertNull;
-import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.*;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -52,6 +53,9 @@ import java.io.ObjectOutputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.Enumeration;
@@ -136,6 +140,14 @@ public class ExportTest extends AbstractTest
 
     private static final String CELL_WITH_IMAGE_REFERENCES_SAMPLE_CODE = "IMAGE_REF";
 
+    private static final String ARRAY_TYPES_SAMPLE_CODE = "ARRAY_TYPES";
+
+    private static final ZonedDateTime ARRAY_TIMESTAMP_VALUE_1 =
+            ZonedDateTime.of(2023, 1, 15, 10, 30, 0, 0, ZoneOffset.ofHours(1));
+
+    private static final ZonedDateTime ARRAY_TIMESTAMP_VALUE_2 =
+            ZonedDateTime.of(2024, 6, 30, 14, 0, 0, 0, ZoneOffset.ofHours(2));
+
     private static final String JAVA_FOLDER_PATH = "./sourceTest/java/";
 
     protected String sessionToken;
@@ -146,17 +158,29 @@ public class ExportTest extends AbstractTest
 
     private PropertyTypePermId richTextWithSpreadsheetPropertyTypePermId;
 
+    private PropertyTypePermId arrayIntegerPropertyTypePermId;
+
+    private PropertyTypePermId arrayRealPropertyTypePermId;
+
+    private PropertyTypePermId arrayStringPropertyTypePermId;
+
+    private PropertyTypePermId arrayTimestampPropertyTypePermId;
+
     private EntityTypePermId richTextSampleTypePermId;
 
     private EntityTypePermId bigCellSampleTypePermId;
 
     private EntityTypePermId cellWithImageReferencesSampleTypePermId;
 
+    private EntityTypePermId arrayTypesSampleTypePermId;
+
     private SamplePermId richTextSamplePermId;
 
     private SamplePermId bigCellSamplePermId;
 
     private SamplePermId cellWithImageReferencesSamplePermId;
+
+    private SamplePermId arrayTypesSamplePermId;
 
     @Resource(name = ExposablePropertyPlaceholderConfigurer.PROPERTY_CONFIGURER_BEAN_NAME)
     private ExposablePropertyPlaceholderConfigurer configurer;
@@ -195,22 +219,53 @@ public class ExportTest extends AbstractTest
         richTextWithSpreadsheetPropertyTypeCreation.setMetaData(Map.of("custom_widget", "Spreadsheet"));
         richTextWithSpreadsheetPropertyTypeCreation.setDataType(DataType.XML);
 
+        final PropertyTypeCreation arrayIntegerPropertyTypeCreation = new PropertyTypeCreation();
+        arrayIntegerPropertyTypeCreation.setCode(ARRAY_INTEGER_PROPERTY_NAME);
+        arrayIntegerPropertyTypeCreation.setLabel("Array Integer");
+        arrayIntegerPropertyTypeCreation.setDescription("Integer array property");
+        arrayIntegerPropertyTypeCreation.setDataType(DataType.ARRAY_INTEGER);
+
+        final PropertyTypeCreation arrayRealPropertyTypeCreation = new PropertyTypeCreation();
+        arrayRealPropertyTypeCreation.setCode(ARRAY_REAL_PROPERTY_NAME);
+        arrayRealPropertyTypeCreation.setLabel("Array Real");
+        arrayRealPropertyTypeCreation.setDescription("Real array property");
+        arrayRealPropertyTypeCreation.setDataType(DataType.ARRAY_REAL);
+
+        final PropertyTypeCreation arrayStringPropertyTypeCreation = new PropertyTypeCreation();
+        arrayStringPropertyTypeCreation.setCode(ARRAY_STRING_PROPERTY_NAME);
+        arrayStringPropertyTypeCreation.setLabel("Array String");
+        arrayStringPropertyTypeCreation.setDescription("String array property");
+        arrayStringPropertyTypeCreation.setDataType(DataType.ARRAY_STRING);
+
+        final PropertyTypeCreation arrayTimestampPropertyTypeCreation = new PropertyTypeCreation();
+        arrayTimestampPropertyTypeCreation.setCode(ARRAY_TIMESTAMP_PROPERTY_NAME);
+        arrayTimestampPropertyTypeCreation.setLabel("Array Timestamp");
+        arrayTimestampPropertyTypeCreation.setDescription("Timestamp array property");
+        arrayTimestampPropertyTypeCreation.setDataType(DataType.ARRAY_TIMESTAMP);
+
         final List<PropertyTypePermId> propertyTypes =
                 v3api.createPropertyTypes(sessionToken, List.of(richTextPropertyTypeCreation, richTextWithImagePropertyTypeCreation,
-                        richTextWithSpreadsheetPropertyTypeCreation));
+                        richTextWithSpreadsheetPropertyTypeCreation, arrayIntegerPropertyTypeCreation, arrayRealPropertyTypeCreation,
+                        arrayStringPropertyTypeCreation, arrayTimestampPropertyTypeCreation));
         richTextPropertyTypePermId = propertyTypes.get(0);
         richTextWithImagePropertyTypePermId = propertyTypes.get(1);
         richTextWithSpreadsheetPropertyTypePermId = propertyTypes.get(2);
+        arrayIntegerPropertyTypePermId = propertyTypes.get(3);
+        arrayRealPropertyTypePermId = propertyTypes.get(4);
+        arrayStringPropertyTypePermId = propertyTypes.get(5);
+        arrayTimestampPropertyTypePermId = propertyTypes.get(6);
 
         final SampleCreation richTextSampleCreation = getRichTextSampleCreation();
         final SampleCreation bigCellSampleCreation = getBigCellSampleCreation();
         final SampleCreation cellWithImageReferencesSampleCreation = getCellWithImageReferencesSampleCreation();
+        final SampleCreation arrayTypesSampleCreation = getArrayTypesSampleCreation();
 
         final List<SamplePermId> samplePermsIds = v3api.createSamples(sessionToken,
-                List.of(richTextSampleCreation, bigCellSampleCreation, cellWithImageReferencesSampleCreation));
+                List.of(richTextSampleCreation, bigCellSampleCreation, cellWithImageReferencesSampleCreation, arrayTypesSampleCreation));
         richTextSamplePermId = samplePermsIds.get(0);
         bigCellSamplePermId = samplePermsIds.get(1);
         cellWithImageReferencesSamplePermId = samplePermsIds.get(2);
+        arrayTypesSamplePermId = samplePermsIds.get(3);
 
         final Mockery mockery = new Mockery();
         registerDss(mockery);
@@ -327,18 +382,22 @@ public class ExportTest extends AbstractTest
         final SampleDeletionOptions sampleDeletionOptions = new SampleDeletionOptions();
         sampleDeletionOptions.setReason("Test");
         final IDeletionId deletionId = v3api.deleteSamples(sessionToken,
-                List.of(richTextSamplePermId, bigCellSamplePermId, cellWithImageReferencesSamplePermId), sampleDeletionOptions);
+                List.of(richTextSamplePermId, bigCellSamplePermId, cellWithImageReferencesSamplePermId, arrayTypesSamplePermId),
+                sampleDeletionOptions);
         v3api.confirmDeletions(systemSessionToken, List.of(deletionId));
 
         final SampleTypeDeletionOptions sampleTypeDeletionOptions = new SampleTypeDeletionOptions();
         sampleTypeDeletionOptions.setReason("Test");
-        v3api.deleteSampleTypes(sessionToken, List.of(richTextSampleTypePermId, bigCellSampleTypePermId, cellWithImageReferencesSampleTypePermId),
+        v3api.deleteSampleTypes(sessionToken,
+                List.of(richTextSampleTypePermId, bigCellSampleTypePermId, cellWithImageReferencesSampleTypePermId, arrayTypesSampleTypePermId),
                 sampleTypeDeletionOptions);
 
         final PropertyTypeDeletionOptions propertyTypeDeletionOptions = new PropertyTypeDeletionOptions();
         propertyTypeDeletionOptions.setReason("Test");
         v3api.deletePropertyTypes(sessionToken,
-                List.of(richTextPropertyTypePermId, richTextWithImagePropertyTypePermId, richTextWithSpreadsheetPropertyTypePermId),
+                List.of(richTextPropertyTypePermId, richTextWithImagePropertyTypePermId, richTextWithSpreadsheetPropertyTypePermId,
+                        arrayIntegerPropertyTypePermId, arrayRealPropertyTypePermId, arrayStringPropertyTypePermId,
+                        arrayTimestampPropertyTypePermId),
                 propertyTypeDeletionOptions);
 
         v3api.logout(sessionToken);
@@ -538,6 +597,126 @@ public class ExportTest extends AbstractTest
         final ExportResult exportResult = v3api.executeExport(sessionToken, exportData, exportOptions);
 
         compareFiles(XLS_EXPORT_RESOURCES_PATH + "export-cell-with-images.zip", getBareFileName(exportResult.getDownloadURL()));
+    }
+
+    private SampleCreation getArrayTypesSampleCreation()
+    {
+        final SampleTypeCreation sampleTypeCreation = new SampleTypeCreation();
+        sampleTypeCreation.setCode("ARRAY_TYPES_SAMPLE_TYPE");
+        sampleTypeCreation.setPropertyAssignments(List.of(
+                assignmentFor(arrayIntegerPropertyTypePermId),
+                assignmentFor(arrayRealPropertyTypePermId),
+                assignmentFor(arrayStringPropertyTypePermId),
+                assignmentFor(arrayTimestampPropertyTypePermId)));
+        arrayTypesSampleTypePermId = v3api.createSampleTypes(sessionToken, List.of(sampleTypeCreation)).get(0);
+
+        final SampleCreation creation = new SampleCreation();
+        creation.setSpaceId(new SpacePermId("TEST-SPACE"));
+        creation.setCode(ARRAY_TYPES_SAMPLE_CODE);
+        creation.setTypeId(arrayTypesSampleTypePermId);
+        creation.setIntegerArrayProperty(ARRAY_INTEGER_PROPERTY_NAME, new Long[] { 1L, 2L, 3L });
+        creation.setRealArrayProperty(ARRAY_REAL_PROPERTY_NAME, new Double[] { 0.1, 0.2, 0.3 });
+        creation.setStringArrayProperty(ARRAY_STRING_PROPERTY_NAME, new String[] { "alpha", "beta" });
+        creation.setTimestampArrayProperty(ARRAY_TIMESTAMP_PROPERTY_NAME,
+                new ZonedDateTime[] { ARRAY_TIMESTAMP_VALUE_1, ARRAY_TIMESTAMP_VALUE_2 });
+        return creation;
+    }
+
+    private static PropertyAssignmentCreation assignmentFor(final PropertyTypePermId id)
+    {
+        final PropertyAssignmentCreation assignment = new PropertyAssignmentCreation();
+        assignment.setPropertyTypeId(id);
+        return assignment;
+    }
+
+    /**
+     * Tests that ARRAY_INTEGER, ARRAY_REAL, ARRAY_STRING and ARRAY_TIMESTAMP property values are
+     * exported as human-readable, UI-consistent text in HTML export and not as Java array
+     * object references (e.g. "[Ljava.lang.String;@...").
+     */
+    @Test
+    public void testArrayTypesHtmlExport() throws IOException
+    {
+        final ExportData exportData = new ExportData(
+                List.of(new ExportablePermId(ExportableKind.SAMPLE, arrayTypesSamplePermId.getPermId())),
+                new AllFields());
+        final ExportOptions exportOptions =
+                new ExportOptions(EnumSet.of(ExportFormat.HTML), XlsTextFormat.PLAIN, false, false, false);
+        final ExportResult exportResult = v3api.executeExport(sessionToken, exportData, exportOptions);
+
+        final File htmlFile = getActualFile(getBareFileName(exportResult.getDownloadURL()));
+        final String content = Files.readString(htmlFile.toPath(), StandardCharsets.UTF_8);
+
+        assertFalse(content.contains("[Ljava.lang."),
+                "HTML export must not contain Java array class names");
+
+        // Integer: [1, 2, 3] - brackets, no quotes around values
+        assertTrue(content.contains("[1, 2, 3]"),
+                "Integer array should render as '[1, 2, 3]'");
+
+        // Real: [0.1, 0.2, 0.3] - brackets, no quotes around values
+        assertTrue(content.contains("[0.1, 0.2, 0.3]"),
+                "Real array should render as '[0.1, 0.2, 0.3]'");
+
+        // String: ["alpha", "beta"] - brackets with quoted values
+        assertTrue(content.contains("[\"alpha\", \"beta\"]"),
+                "String array should render as '[\"alpha\", \"beta\"]'");
+
+        // Timestamp: ["2023-01-15 10:30:00 +0100", ...]  - brackets with quoted values
+        assertTrue(content.contains("\"2023-01-15 10:30:00 +0100\""),
+                "Timestamp array should render with quoted, human-readable timestamps");
+        assertTrue(content.contains("\"2024-06-30 14:00:00 +0200\""),
+                "Timestamp array should render with quoted, human-readable timestamps");
+    }
+
+    /**
+     * Tests that ARRAY_INTEGER, ARRAY_REAL, ARRAY_STRING and ARRAY_TIMESTAMP property values are
+     * exported as human-readable, UI-consistent text in XLSX export.
+     */
+    @Test
+    public void testArrayTypesXlsxExport() throws IOException
+    {
+        final ExportData exportData = new ExportData(
+                List.of(new ExportablePermId(ExportableKind.SAMPLE, arrayTypesSamplePermId.getPermId())),
+                new AllFields());
+        final ExportOptions exportOptions =
+                new ExportOptions(EnumSet.of(ExportFormat.XLSX), XlsTextFormat.PLAIN, false, false, false);
+        final ExportResult exportResult = v3api.executeExport(sessionToken, exportData, exportOptions);
+
+        final File xlsxFile = getActualFile(getBareFileName(exportResult.getDownloadURL()));
+        try (final XSSFWorkbook workbook = new XSSFWorkbook(new FileInputStream(xlsxFile)))
+        {
+            final String sheetContent = collectSheetText(workbook);
+
+            assertFalse(sheetContent.contains("[Ljava.lang."),
+                    "XLSX export must not contain Java array class names");
+
+            assertTrue(sheetContent.contains("[1, 2, 3]"),
+                    "Integer array should render as '[1, 2, 3]'");
+            assertTrue(sheetContent.contains("[0.1, 0.2, 0.3]"),
+                    "Real array should render as '[0.1, 0.2, 0.3]'");
+            assertTrue(sheetContent.contains("[\"alpha\", \"beta\"]"),
+                    "String array should render as '[\"alpha\", \"beta\"]'");
+            assertTrue(sheetContent.contains("\"2023-01-15 10:30:00 +0100\""),
+                    "Timestamp array should contain a formatted date");
+            assertTrue(sheetContent.contains("\"2024-06-30 14:00:00 +0200\""),
+                    "Timestamp array should contain a formatted date");
+        }
+    }
+
+    private static String collectSheetText(final XSSFWorkbook workbook)
+    {
+        final StringBuilder sb = new StringBuilder();
+        workbook.forEach(sheet ->
+                sheet.forEach(row ->
+                        row.forEach(cell -> {
+                            final String v = cell.toString();
+                            if (!v.isBlank())
+                            {
+                                sb.append(v).append(' ');
+                            }
+                        })));
+        return sb.toString();
     }
 
     private static String getBareFileName(final String url)

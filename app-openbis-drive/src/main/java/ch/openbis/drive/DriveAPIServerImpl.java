@@ -15,6 +15,7 @@ import lombok.SneakyThrows;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class DriveAPIServerImpl implements DriveAPI {
@@ -42,6 +43,11 @@ public class DriveAPIServerImpl implements DriveAPI {
         this.taskManager = taskManager;
         this.syncJobEventDAO = syncJobEventDAO;
         this.systemTrayUtil = systemTrayUtil;
+    }
+
+    synchronized public void start() {
+        Settings settings = settingsManager.getSettings();
+        setSettings(Optional.ofNullable(settings).orElse(Settings.defaultSettings()));
     }
 
     synchronized public void setSettings(@NonNull Settings settings) {

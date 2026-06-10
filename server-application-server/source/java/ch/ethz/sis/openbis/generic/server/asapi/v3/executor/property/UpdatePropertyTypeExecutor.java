@@ -100,7 +100,7 @@ public class UpdatePropertyTypeExecutor
     @Override
     protected void checkAccess(IOperationContext context, IPropertyTypeId id, PropertyTypePE entity, PropertyTypeUpdate update)
     {
-        authorizationExecutor.canUpdate(context, id, entity);
+        authorizationExecutor.canUpdate(context, id, entity, update);
     }
 
     @Override
@@ -113,6 +113,7 @@ public class UpdatePropertyTypeExecutor
                 {
                     propertyType.setDescription(getNewValue(update.getDescription(), propertyType.getDescription()));
                     propertyType.setLabel(getNewValue(update.getLabel(), propertyType.getLabel()));
+                    propertyType.setManagedInternally(getNewValue(update.getManagedInternally(), propertyType.isManagedInternally()));
                     String dataType = propertyType.getType().getCode().name();
                     DataType dataTypeToBeConverted = update.getDataTypeToBeConverted();
                     if (dataTypeToBeConverted != null && dataTypeToBeConverted.name().equals(dataType) == false)

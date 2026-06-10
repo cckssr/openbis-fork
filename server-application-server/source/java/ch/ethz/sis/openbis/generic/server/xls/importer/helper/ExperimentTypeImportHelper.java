@@ -31,6 +31,7 @@ import ch.ethz.sis.openbis.generic.server.xls.importer.ImportOptions;
 import ch.ethz.sis.openbis.generic.server.xls.importer.delay.DelayedExecutionDecorator;
 import ch.ethz.sis.openbis.generic.server.xls.importer.enums.ImportModes;
 import ch.ethz.sis.openbis.generic.server.xls.importer.enums.ImportTypes;
+import ch.ethz.sis.openbis.generic.server.xls.importer.handler.JSONHandler;
 import ch.ethz.sis.openbis.generic.server.xls.importer.helper.semanticannotation.SemanticAnnotationHelper;
 import ch.ethz.sis.openbis.generic.server.xls.importer.helper.semanticannotation.SemanticAnnotationRecord;
 import ch.ethz.sis.openbis.generic.server.xls.importer.helper.semanticannotation.SemanticAnnotationType;
@@ -50,6 +51,7 @@ public class ExperimentTypeImportHelper extends BasicImportHelper
         OntologyId("Ontology Id", false, false),
         OntologyVersion("Ontology Version", false, false),
         OntologyAnnotationId("Ontology Annotation Id", false, false),
+        Metadata("Meta Data", false, false),
         Internal("Internal", false, false);
 
         private final String headerName;
@@ -106,27 +108,6 @@ public class ExperimentTypeImportHelper extends BasicImportHelper
         return ImportTypes.EXPERIMENT_TYPE;
     }
 
-    @Override
-    protected void validateLine(Map<String, Integer> header, List<String> values) {
-        String code = getValueByColumnName(header, values, Attribute.Code);
-        String internal = getValueByColumnName(header, values, Attribute.Internal);
-
-        if(!delayedExecutor.isSystem() && ImportUtils.isTrue(internal))
-        {
-            ExperimentType exp = delayedExecutor.getExperimentType(new EntityTypePermId(code), new ExperimentTypeFetchOptions());
-            if(exp == null) {
-                throw new UserFailureException("Non-system user can not create new internal entity types!");
-            }
-        }
-    }
-
-    @Override protected boolean isNewVersion(Map<String, Integer> header, List<String> values)
-    {
-        return isNewVersionWithInternalNamespace(header, values, versions,
-                delayedExecutor.isSystem(),
-                getTypeName().getType(),
-                Attribute.Version, Attribute.Code, Attribute.Internal);
-    }
 
     @Override protected void updateVersion(Map<String, Integer> header, List<String> values)
     {
@@ -140,6 +121,19 @@ public class ExperimentTypeImportHelper extends BasicImportHelper
         }
 
         VersionUtils.updateVersion(version, versions, ImportTypes.EXPERIMENT_TYPE.getType(), code);
+    }
+
+    @Override
+    protected boolean isNewVersion(Map<String, Integer> header, List<String> values)
+    {
+        String internal = getValueByColumnName(header, values, Attribute.Internal);
+        boolean isInternalNamespace = ImportUtils.isTrue(internal);
+
+        if(isInternalNamespace && !delayedExecutor.isSystem()) {
+            //if exists, skip
+            return !isObjectExist(header, values);
+        }
+        return true;
     }
 
     @Override protected boolean isObjectExist(Map<String, Integer> header, List<String> values)
@@ -187,13 +181,20 @@ public class ExperimentTypeImportHelper extends BasicImportHelper
         String description = getValueByColumnName(header, values, Attribute.Description);
         String validationScript = getValueByColumnName(header, values, Attribute.ValidationScript);
         String internal = getValueByColumnName(header, values, Attribute.Internal);
+        String metaData = getValueByColumnName(header, values, Attribute.Metadata);
 
         ExperimentTypeCreation creation = new ExperimentTypeCreation();
 
         creation.setCode(code);
         creation.setDescription(description);
-        creation.setValidationPluginId(ImportUtils.getScriptId(validationScript, null));
-        creation.setManagedInternally(ImportUtils.isTrue(internal));
+        creation.setValidationPluginId(ImportUtils.getScriptId(code, validationScript, null));
+        if(delayedExecutor.isSystem())
+        {
+            creation.setManagedInternally(ImportUtils.isTrue(internal));
+        }
+        if (metaData != null && !metaData.isEmpty()) {
+            creation.setMetaData(JSONHandler.parseMetaData(metaData));
+        }
 
         delayedExecutor.createExperimentType(creation, page, line);
     }
@@ -203,6 +204,8 @@ public class ExperimentTypeImportHelper extends BasicImportHelper
         String code = getValueByColumnName(header, values, Attribute.Code);
         String description = getValueByColumnName(header, values, Attribute.Description);
         String validationScript = getValueByColumnName(header, values, Attribute.ValidationScript);
+        String metaData = getValueByColumnName(header, values, Attribute.Metadata);
+        String internal = getValueByColumnName(header, values, Attribute.Internal);
 
         ExperimentTypeUpdate update = new ExperimentTypeUpdate();
         EntityTypePermId permId = new EntityTypePermId(code, EntityKind.EXPERIMENT);
@@ -216,6 +219,10 @@ public class ExperimentTypeImportHelper extends BasicImportHelper
         }
 
         update.setTypeId(permId);
+
+        if(delayedExecutor.isSystem() && internal != null && !internal.isEmpty()) {
+            update.setManagedInternally(ImportUtils.isTrue(internal));
+        }
 
         if (description != null)
         {
@@ -231,8 +238,11 @@ public class ExperimentTypeImportHelper extends BasicImportHelper
         ExperimentTypeFetchOptions experimentTypeFetchOptions = new ExperimentTypeFetchOptions();
         experimentTypeFetchOptions.withValidationPlugin();
         ExperimentType experimentType = delayedExecutor.getExperimentType(new EntityTypePermId(code, EntityKind.EXPERIMENT), experimentTypeFetchOptions);
-        update.setValidationPluginId(ImportUtils.getScriptId(validationScript, experimentType.getValidationPlugin()));
-
+        update.setValidationPluginId(ImportUtils.getScriptId(code, validationScript, experimentType.getValidationPlugin()));
+        if (metaData != null && !metaData.isEmpty())
+        {
+            update.getMetaData().add(JSONHandler.parseMetaData(metaData));
+        }
         delayedExecutor.updateExperimentType(update, page, line);
     }
 

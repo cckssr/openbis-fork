@@ -46,11 +46,6 @@ public class SampleTypeAuthorizationExecutor implements ISampleTypeAuthorization
     @DatabaseCreateOrDeleteModification(value = ObjectKind.SAMPLE_TYPE)
     public void canCreate(IOperationContext context, SampleTypePE entityType)
     {
-        if (entityType.isManagedInternally() && isSystemUser(context.getSession()) == false)
-        {
-            throw new AuthorizationFailureException(
-                    "Internal entity types can be managed only by the system user.");
-        }
     }
 
     @Override

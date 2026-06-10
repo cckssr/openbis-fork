@@ -32,7 +32,7 @@ import ch.systemsx.cisd.common.filesystem.FileUtilities;
 public class AttachmentsDropboxTest extends SystemTestCase
 {
     // for jython script go to
-    // sourceTest/core-plugins/generic-test/1/dss/drop-boxes/attachments-test/attachments-test-handler.py
+    // sourceTest/core-plugins/generic-test/src/dss/drop-boxes/attachments-test/attachments-test-handler.py
 
     @BeforeClass
     public void beforeClass()

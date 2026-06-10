@@ -72,6 +72,9 @@ public abstract class AbstractCreateEntityTypeExecutor<CREATION extends IEntityT
     @Autowired
     private SetEntityTypeValidationScriptExecutor setEntityTypeValidationScriptExecutor;
 
+    @Autowired
+    private ICreateEntityTypeAuthorizationExecutor<TYPE_PE> createEntityTypeAuthorizationExecutor;
+
     protected abstract ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityKind getPEEntityKind();
 
     protected abstract EntityKind getDAOEntityKind();
@@ -171,8 +174,15 @@ public abstract class AbstractCreateEntityTypeExecutor<CREATION extends IEntityT
     }
 
     @Override
+    protected void checkAccess(IOperationContext context)
+    {
+        // nothing to do
+    }
+
+    @Override
     protected void checkAccess(IOperationContext context, TYPE_PE entity)
     {
+        createEntityTypeAuthorizationExecutor.canCreate(context, entity);
         checkAccessTypeSpecific(context, entity);
         if (!isSystemUser(context.getSession()))
         {

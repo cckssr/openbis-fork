@@ -14,7 +14,7 @@ import logger from '@src/js/common/logger.js'
 
 const DATE_FORMAT = "yyyy-MM-dd"
 const DATE_TIME_PICKER_FORMAT = "yyyy-MM-dd HH:mm:ss"
-const DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss XX"
+const DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss xx"
 
 const styles = theme => ({
   container: {
@@ -158,11 +158,12 @@ class DateField extends React.PureComponent {
   }
 
   renderEdit() {
-    const { dateTime, name, value, error, variant, disabled, classes } =
+    const { dateTime, name, value, error, variant, disabled, classes, hiddenLabel } =
       this.props
 
     const dateObject = value && value.dateObject ? value.dateObject : null
     const dateString = value && value.dateString ? value.dateString : null
+    const label = hiddenLabel ? null : this.renderEditLabel()
 
     if (dateTime) {
       return (
@@ -173,9 +174,10 @@ class DateField extends React.PureComponent {
               views={['year','month','day','hours', 'minutes', 'seconds']}
               name={name}
               ampm={false}
-              label={this.renderEditLabel()}
+              label={label}
               invalidDateMessage={null}
               value={dateObject}
+              referenceDate={new Date()}
               inputValue={dateString}
               onChange={this.handleChange}
               onBlur={this.handleBlur}
@@ -185,7 +187,7 @@ class DateField extends React.PureComponent {
                 textField: this.renderEditInput
               }}
               slotProps={{
-                textField: { variant: variant, }
+                textField: { variant: variant, hiddenLabel: !!hiddenLabel }
               }}
               disabled={disabled}
               error={!!error}
@@ -198,10 +200,12 @@ class DateField extends React.PureComponent {
         <FormFieldContainer error={error}>
           <div className={classes.container}>
             <DatePicker
+              sx={{ width: '100%' }}
               name={name}
-              label={this.renderEditLabel()}
+              label={label}
               invalidDateMessage={null}
               value={dateObject}
+              referenceDate={new Date()}
               inputValue={dateString}
               onChange={this.handleChange}
               onBlur={this.handleBlur}
@@ -211,7 +215,7 @@ class DateField extends React.PureComponent {
                 textField: this.renderEditInput,
               }}
               slotProps={{
-                textField: { variant: variant, }
+                textField: { variant: variant, hiddenLabel: !!hiddenLabel }
               }}
               disabled={disabled}
               error={!!error}

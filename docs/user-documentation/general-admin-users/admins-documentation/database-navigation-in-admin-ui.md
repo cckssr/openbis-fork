@@ -4,20 +4,17 @@
 
  
 
-openBIS version 20.10.5 provides a new database navigation in the admin
-UI, as shown below.
+In openBIS version 7.0 forms have been added to the database navigation in the admin UI, as shown below.
 
  
 
-![image info](img/database-navigation-amdin-ui.png)
+![image info](img/7.0-admiun-ui-database-navigation-forms.png)
 
  
 
 This allows to navigate the openBIS hierarchy of *Spaces, Projects,
 Experiments/Collections, Objects, Datasets*.
 
-The same navigation menu will be used in the ELN UI in an upcoming
-openBIS version.
 
  
 
@@ -40,9 +37,7 @@ It is possible to filter the menu by code or name of the desired entity.
 To navigate the menu, the nodes have to be opened individually.
 
 When you select an entry in the node, the corresponding entry page
-opens. Please note that at this stage, this is only intended as a
-preview for the navigation menu and the forms show the information  of
-the entity in json format.
+opens. 
 
 If you open several entry pages and you switch between them, by default
 the navigation menu will scroll up or down to the corresponding entry in
@@ -52,10 +47,13 @@ menu, as show in the picture below.
 
  
 
-![image info](img/database-navigation-tabs-1024x496.png)
+![image info](img/7.0-admin-ui-menu-focus-button.png)
 
  
+It is possible to collapse the menu by using the button shown in the picture below.
 
+
+![image info](img/7.0-admin-ui-menu-collapse-button.png)
  
 
 ### Sorting
@@ -77,4 +75,3 @@ ascending date; sorting by descending date.
 ![image info](img/Screenshot-2022-11-30-at-17.25.37.png)
 
 
-Updated on December 5, 2022

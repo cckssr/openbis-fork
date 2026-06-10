@@ -76,6 +76,9 @@ class TestCase(object):
     def __init__(self, settings, filePath):
         self.artifactRepository = settings.REPOSITORY
         self.project = None
+        print("[TEST CONFIG] TESTCASE FILE PATH: %s" % filePath)
+        self.pluginsFolder = os.path.dirname(filePath) + "/core-plugins/openbis"
+        print("[TEST CONFIG] PLUGINS FOLDER PATH: %s" % self.pluginsFolder)
         fileName = os.path.basename(filePath)
         self.name = fileName[0:fileName.rfind('.')]
         self.playgroundFolder = "%s/%s" % (PLAYGROUND, self.name)
@@ -272,7 +275,7 @@ class TestCase(object):
         consoleProperties['DSS_ROOT_DIR'] = "%s/data" % installPath
         for technology in technologies:
             consoleProperties[technology.upper()] = True
-        print(f"CONSOLE_PROPERTIES:{consoleProperties}")
+        print(f"[TEST CONFIG] CONSOLE_PROPERTIES:{consoleProperties}")
         util.writeProperties(consolePropertiesFile, consoleProperties)
         util.executeCommand("%s/%s/run-console.sh" % (self.playgroundFolder, installerFileName),
                             "Couldn't install openBIS", consoleInput='admin\nadmin')
@@ -529,12 +532,21 @@ class OpenbisController(_Controller):
         Creates a new instance for specifies test case with specified test and instance name, installation path.
         """
         super(OpenbisController, self).__init__(testCase, testName, installPath, instanceName)
+        self.targetFolder = testCase.playgroundFolder
+        self.pluginsFolder = testCase.pluginsFolder
+        self.testName = testName
+        print("[TEST CONFIG] Target:", self.targetFolder)
+        print("[TEST CONFIG] TestName:", self.testName)
         self.templatesFolder = testCase.getTemplatesFolder()
         self.binFolder = "%s/bin" % installPath
-        self.bisUpScript = "%s/bisup.sh" % self.binFolder
-        self.bisDownScript = "%s/bisdown.sh" % self.binFolder
-        self.dssUpScript = "%s/dssup.sh" % self.binFolder
-        self.dssDownScript = "%s/dssdown.sh" % self.binFolder
+        self.allUpScript = "%s/openbis.sh" % self.binFolder
+        self.allDownScript = "%s/openbis.sh" % self.binFolder
+        self.bisUpScript = "%s/as-service.sh" % self.binFolder
+        self.bisDownScript = "%s/as-service.sh" % self.binFolder
+        self.dssUpScript = "%s/dss-service.sh" % self.binFolder
+        self.dssDownScript = "%s/dss-service.sh" % self.binFolder
+        self.afsUpScript = "%s/afs-service.sh" % self.binFolder
+        self.afsDownScript = "%s/afs-service.sh" % self.binFolder
         self.databaseKind = "%s_%s" % (testName, instanceName)
         self.asServicePropertiesFile = "%s/servers/openBIS-server/jetty/etc/service.properties" % installPath
         self.asProperties = None
@@ -545,7 +557,6 @@ class OpenbisController(_Controller):
 
             self.asProperties['api.v3.transaction.enabled'] = 'true'
             self.asProperties['api.v3.transaction.interactive-session-key'] = 'test-interactive-session-key-for-pybis'
-            # self.asProperties['server-public-information.afs-server.url'] = 'true'
             self.asProperties['api.v3.transaction.participant.application-server.url'] = 'jenkins:8443/openbis'
 
             self.asPropertiesModified = True
@@ -553,7 +564,12 @@ class OpenbisController(_Controller):
         self.dssProperties = util.readProperties(self.dssServicePropertiesFile)
         self.dssProperties['path-info-db.databaseKind'] = self.databaseKind
         self.dssProperties['imaging-database.kind'] = self.databaseKind
+        self.configureArchivingFolders()
         self.dssPropertiesModified = True
+        self.afsServicePropertiesFile = "%s/servers/afs-server/etc/service.properties" % installPath
+        self.afsProperties = util.readProperties(self.afsServicePropertiesFile)
+
+        self.afsPropertiesModified = True
         self.passwdScript = "%s/servers/openBIS-server/jetty/bin/passwd.sh" % installPath
         if port != '8443':
             self.sslIniFile = "%s/servers/openBIS-server/jetty/start.d/ssl.ini" % installPath
@@ -570,6 +586,14 @@ class OpenbisController(_Controller):
         for databaseToDrop in databasesToDrop:
             util.dropDatabase(PSQL_EXE, "%s_%s" % (databaseToDrop, self.databaseKind))
         self._applyCorePlugins()
+
+    def configureArchivingFolders(self):
+        os.makedirs("%s/openbis/data/archive/tmp" % self.targetFolder)
+        os.makedirs("%s/openbis/data/archive/final" % self.targetFolder)
+        os.makedirs("%s/openbis/data/store/9" % self.targetFolder)
+        util.writeProperties("%s/openbis/data/store/9/share.properties" % self.targetFolder,
+                             {'unarchiving-scratch-share': 'true'})
+
 
     def setDummyAuthentication(self):
         """ Disables authentication. """
@@ -706,39 +730,86 @@ class OpenbisController(_Controller):
 
     def allUp(self):
         """ Starts up AS and DSS if not running. """
-        if not util.isAlive("%s/servers/openBIS-server/jetty/openbis.pid" % self.installPath,
-                            "openBIS.keystore"):
+        if not util.isAlive("%s/servers/openBIS-server/jetty/openbis.pid" % self.installPath):
             self._saveAsPropertiesIfModified()
-            util.executeCommand([self.bisUpScript],
+            util.executeCommand([self.bisUpScript, 'start'],
                                 "Starting up openBIS AS '%s' failed." % self.instanceName)
         self.dssUp()
+        self.afsUp()
 
     def stop(self):
-        self.allDown()
+        self.allDownNew()
 
     def allDown(self):
         """ Shuts down AS and DSS. """
         self.testCase._removeFromRunningInstances(self)
-        util.executeCommand([self.dssDownScript],
+        util.executeCommand([self.afsDownScript, 'stop'],
+                            "Shutting down openBIS AFS '%s' failed." % self.instanceName)
+        util.executeCommand([self.dssDownScript, 'stop'],
                             "Shutting down openBIS DSS '%s' failed." % self.instanceName)
         if self.asProperties:
-            util.executeCommand([self.bisDownScript],
+            util.executeCommand([self.bisDownScript, 'stop'],
                                 "Shutting down openBIS AS '%s' failed." % self.instanceName)
+
+
+    def allUpNew(self):
+        """ Starts up AS and DSS if not running. """
+        if not util.isAlive("%s/servers/openBIS-server/jetty/openbis.pid" % self.installPath):
+            self._saveAsPropertiesIfModified()
+            self._saveDssPropertiesIfModified()
+            self._saveAfsPropertiesIfModified()
+            util.executeCommand([self.allUpScript, 'start'],
+                                "Starting up openBIS '%s' failed." % self.instanceName)
+
+    def allDownNew(self, silent=False):
+        """ Shuts down AS, DSS and AFS. """
+        self.testCase._removeFromRunningInstances(self)
+        util.executeCommand([self.allDownScript, 'stop'],
+                            "Shutting down openBIS '%s' failed." % self.instanceName if not silent else None)
+
+
+    def bisUp(self):
+        """ Starts up AS if not running. """
+        if not util.isAlive("%s/servers/openBIS-server/jetty/openbis.pid" % self.installPath):
+            self._saveAsPropertiesIfModified()
+            self.testCase._addToRunningInstances(self)
+            util.executeCommand([self.dssUpScript],
+                                "Starting up openBIS AS '%s' failed." % self.instanceName)
+
+    def bisDown(self):
+        """ Shuts down AS. """
+        self.testCase._removeFromRunningInstances(self)
+        util.executeCommand([self.bisDownScript],
+                            "Shutting down openBIS AS '%s' failed." % self.instanceName)
 
     def dssUp(self):
         """ Starts up DSS if not running. """
-        if not util.isAlive("%s/servers/datastore_server/datastore_server.pid" % self.installPath,
-                            "openBIS.keystore"):
+        if not util.isAlive("%s/servers/datastore_server/datastore_server.pid" % self.installPath):
             self._saveDssPropertiesIfModified()
             self.testCase._addToRunningInstances(self)
-            util.executeCommand([self.dssUpScript],
+            util.executeCommand([self.dssUpScript, 'start'],
                                 "Starting up openBIS DSS '%s' failed." % self.instanceName)
 
     def dssDown(self):
         """ Shuts down DSS. """
         self.testCase._removeFromRunningInstances(self)
-        util.executeCommand([self.dssDownScript],
+        util.executeCommand([self.dssDownScript, 'stop'],
                             "Shutting down openBIS DSS '%s' failed." % self.instanceName)
+    def afsUp(self):
+        """ Starts up AFS if not running. """
+        if not util.isAlive("%s/servers/afs-server/afs_server.pid" % self.installPath):
+            self._saveAfsPropertiesIfModified()
+            self.testCase._addToRunningInstances(self)
+            util.executeCommand([self.afsUpScript, 'start'],
+                                "Starting up openBIS AFS '%s' failed." % self.instanceName)
+
+    def afsDown(self):
+        """ Shuts down AFS. """
+        self.testCase._removeFromRunningInstances(self)
+        util.executeCommand([self.afsDownScript, 'stop'],
+                            "Shutting down openBIS AFS '%s' failed." % self.instanceName)
+
+
 
     def dropAndWait(self, dataName, dropBoxName, numberOfDataSets=1,
                     timeOutInMinutes=DEFAULT_TIME_OUT_IN_MINUTES):
@@ -817,13 +888,18 @@ class OpenbisController(_Controller):
                                    data)
 
     def _applyCorePlugins(self):
-        source = "%s/core-plugins/%s" % (self.templatesFolder, self.instanceName)
+        source = self.pluginsFolder
         if os.path.exists(source):
+            print("[TEST CONFIG] APLY_CORE_PLUGINS: %s" % (source))
             corePluginsFolder = "%s/servers/core-plugins" % self.installPath
             destination = "%s/%s" % (corePluginsFolder, self.instanceName)
             shutil.rmtree(destination, ignore_errors=True)
             shutil.copytree(source, destination)
+            print("[TEST CONFIG] APLY_CORE_PLUGINS-DESTINATION: %s" % (destination))
+            print("[TEST CONFIG] APLY_CORE_PLUGINS-PLUGIN_NAME: %s" % (self.instanceName))
             self.enableCorePlugin(self.instanceName)
+        else:
+            print("[TEST CONFIG] APLY_CORE_PLUGINS: %s does not exist!" % (source))
 
     def enableCorePlugin(self, pluginName):
         corePluginsFolder = "%s/servers/core-plugins" % self.installPath
@@ -866,6 +942,11 @@ class OpenbisController(_Controller):
         if self.dssPropertiesModified:
             util.writeProperties(self.dssServicePropertiesFile, self.dssProperties)
             self.dssPropertiesModified = False
+
+    def _saveAfsPropertiesIfModified(self):
+        if self.afsPropertiesModified:
+            util.writeProperties(self.afsServicePropertiesFile , self.afsProperties)
+            self.afsPropertiesModified = False
 
     def _setMaxHeapSize(self, configFile, maxHeapSize):
         path = "%s/servers/%s" % (self.installPath, configFile)

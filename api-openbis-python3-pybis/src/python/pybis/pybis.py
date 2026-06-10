@@ -94,7 +94,7 @@ from .vocabulary import Vocabulary, VocabularyTerm
 from .spreadsheet import Spreadsheet
 from .type_group import TypeGroup
 from .imaging import *
-from .afs_client import AfsClient
+from .afs.afs_client import AfsClient
 
 # import the various openBIS entities
 
@@ -1547,8 +1547,8 @@ class Openbis:
             )
 
         os_options = {
-            "darwin": f"-oauto_cache,reconnect,defer_permissions,noappledouble,negative_vncache,volname={hostname} -oStrictHostKeyChecking=no ",
-            "linux": "-oauto_cache,reconnect -oStrictHostKeyChecking=no",
+            "darwin": f"-oauto_cache,reconnect,defer_permissions,noappledouble,negative_vncache,volname={hostname} -oStrictHostKeyChecking=no -o ServerAliveInterval=60 -o ServerAliveCountMax=3 ",
+            "linux": "-oauto_cache,reconnect -o ServerAliveInterval=60 -o ServerAliveCountMax=3 -oStrictHostKeyChecking=no ",
         }
 
         if volname is None:
@@ -1575,15 +1575,16 @@ class Openbis:
             " {os_options}".format(**args)
         )
 
-        status = subprocess.call(cmd, shell=True)
+        result = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-        if status == 0:
+        if result.returncode == 0:
             if VERBOSE:
                 print(f"Mounted successfully to {full_mountpoint_path}")
             self.mountpoint = full_mountpoint_path
             return self.mountpoint
         else:
-            raise OSError("mount failed, exit status: ", status)
+            print("SSHFS Error:", result.stderr)
+            raise OSError("mount failed, exit status: ", result.returncode)
 
     def get_server_information(self):
         """Returns a dict containing the following server information:
@@ -1616,7 +1617,7 @@ class Openbis:
         else:
             raise ValueError("Could not create permId")
 
-    def get_datastores(self):
+    def get_datastores(self, with_afs=False):
         """Get a list of all available datastores. Usually there is only one, but in some cases
         there might be multiple servers. If you upload a file, you need to specifiy the datastore you want
         the file uploaded to.
@@ -1628,7 +1629,15 @@ class Openbis:
             "method": "searchDataStores",
             "params": [
                 self.token,
-                {"@type": "as.dto.datastore.search.DataStoreSearchCriteria"},
+                {
+                    "@type": "as.dto.datastore.search.DataStoreSearchCriteria",
+                    "criteria": [
+                        {
+                            "@type": "as.dto.datastore.search.DataStoreKindSearchCriteria",
+                            "dataStoreKinds": ["DSS", "AFS"] if with_afs else ["DSS"],
+                        }
+                    ]
+                },
                 {"@type": "as.dto.datastore.fetchoptions.DataStoreFetchOptions"},
             ],
         }
@@ -1640,7 +1649,8 @@ class Openbis:
             objects = resp["objects"]
             parse_jackson(objects)
             datastores = DataFrame(objects)
-            self.datastores = datastores[attrs]
+            if not with_afs:
+                self.datastores = datastores[attrs]
             return datastores[attrs]
 
     def gen_codes(self, entity: str, prefix: str = "", count: int = 1) -> List[str]:
@@ -5825,8 +5835,8 @@ class Openbis:
         if not isinstance(permIds, list):
             permIds = [permIds]
 
-        fetchopts = {
-            "@type": "as.dto.dataset.archive.DataSetUnarchiveOptions",
+        unarchive_options = {
+            "@type": "as.dto.dataset.unarchive.DataSetUnarchiveOptions",
         }
 
         request = {
@@ -5834,7 +5844,7 @@ class Openbis:
             "params": [
                 self.token,
                 [{"permId": x, "@type": "as.dto.dataset.id.DataSetPermId"} for x in permIds],
-                dict(fetchopts),
+                dict(unarchive_options),
             ],
         }
         self._post_request(self.as_v3, request)
@@ -5882,9 +5892,7 @@ class ServerInformation:
             "personal_access_tokens_enabled",
             "personal_access_tokens_max_validity_period",
             "personal_access_tokens_validity_warning_period",
-            "project_samples_enabled",
-            "server-public-information.afs-server.url",
-            "server-public-information.afs-server.timeout"
+            "project_samples_enabled"
         ]
 
     def _reformat_info(self, info):

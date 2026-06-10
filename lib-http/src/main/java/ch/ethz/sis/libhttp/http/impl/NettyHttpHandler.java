@@ -103,11 +103,15 @@ public class NettyHttpHandler extends ChannelInboundHandlerAdapter
                         Map<String, List<String>> parameters =
                                 queryStringDecoderForPath.parameters();
 
+                        Map<String, List<String>> headers = request.headers().names().stream().collect(Collectors.toMap(
+                                        name -> name,
+                                        name -> request.headers().getAll(name)));
+
                         byte[] requestBody = new byte[content.readableBytes()];
                         content.readBytes(requestBody);
 
                         HttpResponse apiResponse = httpServerHandler.process(request.method(),
-                                parameters, requestBody);
+                                parameters, headers, requestBody);
 
                         HttpResponseStatus status = null;
                         switch (apiResponse.getStatus()) {

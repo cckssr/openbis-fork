@@ -94,6 +94,7 @@ class VocabularyTypeFormParametersTerm extends React.PureComponent {
         {this.renderLabel(term)}
         {this.renderDescription(term)}
         {this.renderOfficial(term)}
+        {this.renderInternal(term)}
       </Container>
     )
   }
@@ -246,6 +247,32 @@ class VocabularyTypeFormParametersTerm extends React.PureComponent {
           onBlur={this.handleBlur}
         />
       </div>
+    )
+  }
+
+  renderInternal(term) {
+    const { visible, enabled, error, value } = { ...term.internal }
+
+    if (!visible) {
+      return null
+    }
+
+    const { mode, classes } = this.props
+    return (
+        <div className={classes.field}>
+          <CheckboxField
+              reference={this.references.internal}
+              label={messages.get(messages.INTERNAL)}
+              name='internal'
+              error={error}
+              disabled={!enabled}
+              value={value}
+              mode={mode}
+              onChange={this.handleChange}
+              onFocus={this.handleFocus}
+              onBlur={this.handleBlur}
+          />
+        </div>
     )
   }
 

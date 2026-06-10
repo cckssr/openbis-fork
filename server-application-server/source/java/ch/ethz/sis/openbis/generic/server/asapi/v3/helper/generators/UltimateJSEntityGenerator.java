@@ -38,7 +38,7 @@ public class UltimateJSEntityGenerator
 
     @SuppressWarnings("unused")
     private static final String JSTEST_PROJECT_SOURCE_FOLDER = API_PROJECT_ROOT_FOLDER
-            + "/test-api-openbis-javascript/servers/common/core-plugins/tests/1/as/webapps/openbis-v3-api-test/html/dto/";
+            + "/test-api-openbis-javascript/servers/common/core-plugins/tests/src/as/webapps/openbis-v3-api-test/html/dto/";
 
     private static final String[] CLASSES_TO_CONVERT = new String[] {
             // "ch.ethz.sis.openbis.generic.shared.api.v3.dto.entity.attachment.Attachment",

@@ -39,6 +39,22 @@ public class VirtualFileSystemProvider extends FileSystemProvider {
         this.sftpFileUtil = new SftpFileUtil(user);
     }
 
+    // For unit-tests
+    VirtualFileSystemProvider(
+            @NonNull User user,
+            FtpPathTranslator ftpPathTranslator,
+            FtpPathLister ftpPathLister,
+            SftpListUtil sftpListUtil,
+            SftpFileUtil sftpFileUtil
+    ) {
+        this.logger = LogManager.getLogger(this.getClass());
+        this.user = user;
+        this.ftpPathTranslator = ftpPathTranslator;
+        this.ftpPathLister = ftpPathLister;
+        this.sftpListUtil = sftpListUtil;
+        this.sftpFileUtil = sftpFileUtil;
+    }
+
     void acceptCreatedFileSystem(@NonNull VirtualFileSystem createdFileSystem) {
         this.createdFileSystem = createdFileSystem;
     }
@@ -69,19 +85,12 @@ public class VirtualFileSystemProvider extends FileSystemProvider {
     @Override
     public FileChannel newFileChannel(Path path, Set<? extends OpenOption> options, FileAttribute<?>... attrs) throws IOException {
         SftpNodeChain sftpNodeChain = getNodeChainFromPath(path);
-        if (sftpNodeChain.getLast()
-                .map( node -> node.getType() == SftpNode.Type.AFS_FILE)
-                .orElse(false)
-        ) {
-            SftpNode afsEntityNode = sftpNodeChain.get(sftpNodeChain.size() - 3);
-            String entityId = sftpListUtil.getAfsEntityPermId(
-                    afsEntityNode
-            );
-            SftpNode afsFileNode = sftpNodeChain.getLast().get();
-            boolean isAfsEntityDataMutable = sftpListUtil.isAfsEntityMutable(
-                    entityId, afsEntityNode.getType()
-            );
-            String afsPath = afsFileNode.getJoinedAfsFilePath();
+        FtpPathLister.EntityDescriptor entityDescriptor = ftpPathLister.toEntityDescriptor(sftpNodeChain).orElseThrow();
+
+        if (entityDescriptor.type() == SftpNode.Type.AFS_FILE) {
+            String entityId = entityDescriptor.afsEntity().identifier();
+            String afsPath = entityDescriptor.afsPath();
+            boolean isAfsEntityDataMutable = entityDescriptor.afsEntity().mutable();
 
             if ( entityId != null && afsPath != null ) {
                 return sftpFileUtil.createAfsFileChannel(
@@ -109,7 +118,12 @@ public class VirtualFileSystemProvider extends FileSystemProvider {
         SftpNodeChain sftpNodeChain = getNodeChainFromPath(path);
 
         List<Path> listedItems = ftpPathLister.list(sftpNodeChain)
-                .stream().map(this::getPathFromNodeChain).toList();
+                .stream().map(this::getPathFromNodeChain)
+                .filter( item -> {
+                    try {
+                        return filter == null || filter.accept(item);
+                    } catch (Exception e) { throw new RuntimeException(e); }
+                }).toList();
 
         return toDirectoryStream(listedItems);
     }
@@ -117,28 +131,18 @@ public class VirtualFileSystemProvider extends FileSystemProvider {
     @Override
     public void createDirectory(Path path, FileAttribute<?>... fileAttributes) throws IOException {
         SftpNodeChain sftpNodeChain = getNodeChainFromPath(path);
-        if (sftpNodeChain.getLast()
-                .map( node -> node.getType() == SftpNode.Type.AFS_FILE)
-                .orElse(false)
-        ) {
-            SftpNode afsEntityNode = sftpNodeChain.get(sftpNodeChain.size() - 3);
-            String entityId = sftpListUtil.getAfsEntityPermId(
-                    afsEntityNode
-            );
-            SftpNode afsFileNode = sftpNodeChain.getLast().get();
-            boolean isAfsEntityDataMutable = sftpListUtil.isAfsEntityMutable(
-                    entityId, afsEntityNode.getType()
-            );
+        FtpPathLister.EntityDescriptor entityDescriptor = ftpPathLister.toEntityDescriptor(sftpNodeChain).orElseThrow();
+
+        if (entityDescriptor.type() == SftpNode.Type.AFS_FILE) {
+            String entityId = entityDescriptor.afsEntity().identifier();
+            String afsPath = entityDescriptor.afsPath();
+            boolean isAfsEntityDataMutable = entityDescriptor.afsEntity().mutable();
 
             if (isAfsEntityDataMutable) {
-                String afsPath = afsFileNode.getJoinedAfsFilePath();
-
                 sftpListUtil.tryToCreateAfsFileRootIfNecessary(entityId);
 
-                if ( entityId != null && afsPath != null ) {
+                if ( !"/".equals(afsPath) ) {
                     sftpFileUtil.createAfsDirectory(entityId, afsPath, user);
-                } else {
-                    throw new IllegalArgumentException("Missing AFS-file coordinates");
                 }
             } else {
                 throw new UnsupportedOperationException("Cannot create AFS-directories in immutable entity");
@@ -151,22 +155,14 @@ public class VirtualFileSystemProvider extends FileSystemProvider {
     @Override
     public void delete(Path path) throws IOException {
         SftpNodeChain sftpNodeChain = getNodeChainFromPath(path);
-        if (sftpNodeChain.getLast()
-                .map( node -> node.getType() == SftpNode.Type.AFS_FILE)
-                .orElse(false)
-        ) {
-            SftpNode afsEntityNode = sftpNodeChain.get(sftpNodeChain.size() - 3);
-            String entityId = sftpListUtil.getAfsEntityPermId(
-                    afsEntityNode
-            );
-            SftpNode afsFileNode = sftpNodeChain.getLast().get();
-            boolean isAfsEntityDataMutable = sftpListUtil.isAfsEntityMutable(
-                    entityId, afsEntityNode.getType()
-            );
+        FtpPathLister.EntityDescriptor entityDescriptor = ftpPathLister.toEntityDescriptor(sftpNodeChain).orElseThrow();
+
+        if (entityDescriptor.type() == SftpNode.Type.AFS_FILE) {
+            String entityId = entityDescriptor.afsEntity().identifier();
+            String afsPath = entityDescriptor.afsPath();
+            boolean isAfsEntityDataMutable = entityDescriptor.afsEntity().mutable();
 
             if (isAfsEntityDataMutable) {
-                String afsPath = afsFileNode.getJoinedAfsFilePath();
-
                 if ( entityId != null && afsPath != null ) {
                     sftpFileUtil.deleteAfsFile(entityId, afsPath, user);
                 } else {
@@ -184,27 +180,19 @@ public class VirtualFileSystemProvider extends FileSystemProvider {
     public void copy(Path source, Path destination, CopyOption... copyOptions) throws IOException {
         SftpNodeChain sftpNodeChain1 = getNodeChainFromPath(source);
         SftpNodeChain sftpNodeChain2 = getNodeChainFromPath(destination);
-        if (sftpNodeChain1.getLast()
-                .map( node -> node.getType() == SftpNode.Type.AFS_FILE)
-                .orElse(false) &&
-            sftpNodeChain2.getLast()
-                .map( node -> node.getType() == SftpNode.Type.AFS_FILE)
-                .orElse(false)
-        ) {
-            SftpNode afsEntityNode1 = sftpNodeChain1.get(sftpNodeChain1.size() - 3);
-            String entityId1 = sftpListUtil.getAfsEntityPermId(
-                    afsEntityNode1
-            );
-            String afsPath1 = sftpNodeChain1.getLast().get().getJoinedAfsFilePath();
 
-            SftpNode afsEntityNode2 = sftpNodeChain2.get(sftpNodeChain2.size() - 3);
-            String entityId2 = sftpListUtil.getAfsEntityPermId(
-                    afsEntityNode2
-            );
-            String afsPath2 = sftpNodeChain2.getLast().get().getJoinedAfsFilePath();
-            boolean isAfsEntity2DataMutable = sftpListUtil.isAfsEntityMutable(
-                    entityId2, afsEntityNode2.getType()
-            );
+        FtpPathLister.EntityDescriptor entityDescriptor1 = ftpPathLister.toEntityDescriptor(sftpNodeChain1).orElseThrow();
+        FtpPathLister.EntityDescriptor entityDescriptor2 = ftpPathLister.toEntityDescriptor(sftpNodeChain2).orElseThrow();
+
+        if ( entityDescriptor1.type() == SftpNode.Type.AFS_FILE &&
+                entityDescriptor2.type() == SftpNode.Type.AFS_FILE
+        ) {
+            String entityId1 = entityDescriptor1.afsEntity().identifier();
+            String afsPath1 = entityDescriptor1.afsPath();
+
+            String entityId2 = entityDescriptor2.afsEntity().identifier();
+            String afsPath2 = entityDescriptor2.afsPath();
+            boolean isAfsEntity2DataMutable = entityDescriptor2.afsEntity().mutable();
 
             if (isAfsEntity2DataMutable) {
                 if ( entityId1 != null && afsPath1 != null && entityId2 != null && afsPath2 != null ) {
@@ -228,33 +216,22 @@ public class VirtualFileSystemProvider extends FileSystemProvider {
     public void move(Path source, Path destination, CopyOption... copyOptions) throws IOException {
         SftpNodeChain sftpNodeChain1 = getNodeChainFromPath(source);
         SftpNodeChain sftpNodeChain2 = getNodeChainFromPath(destination);
-        if (sftpNodeChain1.getLast()
-                .map( node -> node.getType() == SftpNode.Type.AFS_FILE)
-                .orElse(false) &&
-            sftpNodeChain2.getLast()
-                        .map( node -> node.getType() == SftpNode.Type.AFS_FILE)
-                        .orElse(false)
-        ) {
-            SftpNode afsEntityNode1 = sftpNodeChain1.get(sftpNodeChain1.size() - 3);
-            String entityId1 = sftpListUtil.getAfsEntityPermId(
-                    afsEntityNode1
-            );
-            boolean isAfsEntity1DataMutable = sftpListUtil.isAfsEntityMutable(
-                    entityId1, afsEntityNode1.getType()
-            );
 
-            SftpNode afsEntityNode2 = sftpNodeChain2.get(sftpNodeChain2.size() - 3);
-            String entityId2 = sftpListUtil.getAfsEntityPermId(
-                    sftpNodeChain2.get(sftpNodeChain2.size() - 3)
-            );
-            boolean isAfsEntity2DataMutable = sftpListUtil.isAfsEntityMutable(
-                    entityId2, afsEntityNode2.getType()
-            );
+        FtpPathLister.EntityDescriptor entityDescriptor1 = ftpPathLister.toEntityDescriptor(sftpNodeChain1).orElseThrow();
+        FtpPathLister.EntityDescriptor entityDescriptor2 = ftpPathLister.toEntityDescriptor(sftpNodeChain2).orElseThrow();
+
+        if ( entityDescriptor1.type() == SftpNode.Type.AFS_FILE &&
+                entityDescriptor2.type() == SftpNode.Type.AFS_FILE
+        ) {
+            String entityId1 = entityDescriptor1.afsEntity().identifier();
+            String afsPath1 = entityDescriptor1.afsPath();
+            boolean isAfsEntity1DataMutable = entityDescriptor1.afsEntity().mutable();
+
+            String entityId2 = entityDescriptor2.afsEntity().identifier();
+            String afsPath2 = entityDescriptor2.afsPath();
+            boolean isAfsEntity2DataMutable = entityDescriptor2.afsEntity().mutable();
 
             if (isAfsEntity1DataMutable && isAfsEntity2DataMutable) {
-                String afsPath1 = sftpNodeChain1.getLast().get().getJoinedAfsFilePath();
-                String afsPath2 = sftpNodeChain2.getLast().get().getJoinedAfsFilePath();
-
                 if ( entityId1 != null && afsPath1 != null && entityId2 != null && afsPath2 != null ) {
                     sftpFileUtil.moveAfsFile(
                             entityId1, afsPath1,
@@ -273,11 +250,22 @@ public class VirtualFileSystemProvider extends FileSystemProvider {
     }
 
     @Override
-    public boolean isSameFile(Path path, Path path1) throws IOException {
-        /* TODO There are cases of different paths pointing to the same item
-            in AS or AFS servers: implement a way to detect this
-        */
-        return Objects.equals(path, path1);
+    public boolean isSameFile(Path path1, Path path2) throws IOException {
+        if (Objects.equals(path1, path2)) {
+            return true;
+        } else {
+            try {
+                Optional<FtpPathLister.EntityDescriptor> entity1 =
+                        ftpPathLister.toEntityDescriptor(getNodeChainFromPath(path1));
+                Optional<FtpPathLister.EntityDescriptor> entity2 =
+                        ftpPathLister.toEntityDescriptor(getNodeChainFromPath(path2));
+
+                if (entity1.isPresent() && entity2.isPresent()) {
+                    return entity1.get().equals(entity2.get());
+                }
+            } catch (Exception e) {}
+            return false;
+        }
     }
 
     @Override

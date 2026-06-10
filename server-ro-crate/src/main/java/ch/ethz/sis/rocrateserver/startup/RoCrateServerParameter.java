@@ -19,6 +19,7 @@ public enum RoCrateServerParameter
 {
     httpServerPort,
     httpServerTimeout,
+    httpServerPublicUrl,
     sessionWorkSpace,
 
     httpMaxContentLength,
@@ -31,4 +32,8 @@ public enum RoCrateServerParameter
     mailSmtpHost,
     mailSmtpUser,
     mailSmtpPassword,
+
+    cleanupTimeDownloadedCrates,
+    cleanupTimeWaitingCrates,
+
 }

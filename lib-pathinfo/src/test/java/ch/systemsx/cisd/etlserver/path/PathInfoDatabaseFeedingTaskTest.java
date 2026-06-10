@@ -39,6 +39,7 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.DataSetDirectoryProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IConfigProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetDirectoryProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
+import ch.systemsx.cisd.openbis.common.io.hierarchical_content.IHierarchicalContentNodeFilter;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IPathInfoServiceProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IShareIdManager;
 import ch.systemsx.cisd.openbis.dss.generic.shared.PathInfoServiceProviderFactory;
@@ -116,6 +117,11 @@ public class PathInfoDatabaseFeedingTaskTest extends AbstractFileSystemTestCase
             @Override public IConfigProvider getConfigProvider()
             {
                 return configProvider;
+            }
+
+            @Override public IHierarchicalContentNodeFilter getHierarchicalContentNodeFilter()
+            {
+                return IHierarchicalContentNodeFilter.MATCH_ALL;
             }
         });
     }

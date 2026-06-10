@@ -1,8 +1,10 @@
 package ch.ethz.sis.rocrateserver.openapi.v1.service.jobs;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.vertx.core.impl.ConcurrentHashSet;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -12,6 +14,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 public class AsyncJobRegistry
 {
+
 
     public static final int N_THREADS = 2;
 
@@ -49,6 +52,15 @@ public class AsyncJobRegistry
     ConcurrentHashMap<JobKey, IAsyncJob> jobs = new ConcurrentHashMap<>();
 
     ConcurrentHashMap<JobKey, Future> results = new ConcurrentHashMap<>();
+
+    ConcurrentHashSet<JobKey> downloaded = new ConcurrentHashSet<>();
+
+    public record CompletedAndFailedJobs(List<ExportJob> downloaded,
+                                         List<ExportJob> notDownloaded,
+                                         List<ExportJob> failedExports,
+                                         List<ImportJob> failedAndCompletedImportJobs)
+    {
+    }
 
     ThreadPoolExecutor executor =
             (ThreadPoolExecutor) Executors.newFixedThreadPool(N_THREADS);
@@ -161,6 +173,60 @@ public class AsyncJobRegistry
             return jobId;
         }
     }
+
+    public void setDownloaded(JobKey jobKey)
+    {
+        this.downloaded.add(jobKey);
+    }
+
+    public CompletedAndFailedJobs getCompletedExportJobs()
+    {
+        List<Map.Entry<JobKey, IAsyncJob>> completedExports =
+                jobs.entrySet().stream()
+                        .filter(x -> x.getValue() instanceof ExportJob)
+                        .filter(x -> x.getValue().getStatus().equals(Status.COMPLETED))
+                        .toList();
+
+        List<ExportJob> failedExports =
+                jobs.entrySet().stream()
+                        .filter(x -> x.getValue() instanceof ExportJob)
+                        .filter(x -> x.getValue().getStatus().equals(Status.FAILED))
+                        .map(x -> x.getValue())
+                        .map(ExportJob.class::cast)
+                        .toList();
+
+        List<ExportJob> downloadedExports =
+                completedExports.stream().filter(x -> downloaded.contains(x.getKey()))
+                        .map(x -> x.getValue())
+                        .map(ExportJob.class::cast)
+                        .toList();
+
+        List<ExportJob> waitingExports =
+                completedExports.stream().filter(x -> !downloaded.contains(x.getKey()))
+                        .map(x -> x.getValue())
+                        .map(ExportJob.class::cast)
+                        .toList();
+
+        List<ImportJob> failedAndCompletedImportJobs =
+                jobs.entrySet().stream()
+                        .filter(x -> x.getValue() instanceof ImportJob)
+                        .filter(x -> x.getValue().getStatus().equals(Status.FAILED) || x.getValue()
+                                .getStatus().equals(Status.COMPLETED))
+                        .map(x -> x.getValue())
+                        .map(ImportJob.class::cast)
+                        .toList();
+
+        return new CompletedAndFailedJobs(downloadedExports, waitingExports, failedExports,
+                failedAndCompletedImportJobs);
+    }
+
+    public void remove(String userId, UUID jobId)
+    {
+        jobs.remove(new JobKey(userId, jobId.toString()));
+        results.remove(new JobKey(userId, jobId.toString()));
+
+    }
+
 
 
 

@@ -1,4 +1,4 @@
-The admin interface of openBIS can can be accessed via a URL of this type: https://openbis-xxx/openbis/webapp/openbis-ng-ui/
+The admin interface of openBIS can can be accessed via a URL of this type: https://openbis-xxx/openbis/webapp/admin/
 
 where openbis-xxx is the name of the server specified in the openBIS configuration file, during the installation by a system admin.
 
@@ -21,11 +21,11 @@ When SSO authentication, such as SWITCHaai or SWITCH Edu-ID, is used in addition
 
 SSO is selected by default. In this case, users need to click on **Login** and they will be redirected to the SWITCHaai/SWITCH Edu-ID login page.
 
-![](img/201012-admin-login-SSO.png)
+![](img/7.0-admin-ui-sso.png)
 
 If a user would like to authenticate with a file-based account or LDAP (depending on system configuration), they need to select **Default Login Service** from the dropdown and provide username and password.
 
-![](img/201012-admin-login-SSO-dropdown.png)
+![](img/7.0-admin-ui-sso-dropdown.png)
 
 
 ![](img/201012-admin-login-default-authentication.png)

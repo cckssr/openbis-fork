@@ -1446,41 +1446,25 @@ export default class GridController {
           state.exportOptions.includeDependencies
       })
 
-      if (exportResult.status === 'OK') {
-        const filePath = exportResult.result.file_name
-        const fileName = filePath.substring(filePath.lastIndexOf('/') + 1)
-        const fileUrl =
-          '/openbis/openbis/download?sessionID=' +
-          encodeURIComponent(sessionToken) +
-          '&filePath=' +
-          encodeURIComponent(filePath)
+      const fileUrl = exportResult.getDownloadURL()
+      const urlObj = new URL(fileUrl)
+      const filePath = decodeURIComponent(urlObj.searchParams.get('filePath') || '')
+      const fileName = filePath.substring(filePath.lastIndexOf('/') + 1) || filePath
+      const warnings = exportResult.getWarnings()
 
-        if (!_.isEmpty(exportResult.result.warnings)) {
-          this.context.setState({
-            exportState: {
-              warnings: exportResult.result.warnings,
-              fileName,
-              fileUrl
-            }
-          })
-        } else {
-          this.context.setState({
-            exportState: null
-          })
-          this.handleExportDownload(fileName, fileUrl)
-        }
-      } else if (exportResult.status === 'error') {
+      if (!_.isEmpty(warnings)) {
         this.context.setState({
           exportState: {
-            error: exportResult.message
+            warnings,
+            fileName,
+            fileUrl
           }
         })
       } else {
         this.context.setState({
-          exportState: {
-            error: JSON.stringify(exportResult)
-          }
+          exportState: null
         })
+        this.handleExportDownload(fileName, fileUrl)
       }
     } catch (e) {
       this.context.setState({

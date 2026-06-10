@@ -47,9 +47,11 @@ task openBISDevelopmentEnvironmentASPrepare(type: Copy, dependsOn: [copyV3Api]) 
         ]
 
         def sourceSymlinksMap = [
-                "admin":   "${project(':ui-admin').projectDir}/src/core-plugins/admin",
-                "eln-lims":"${project(':ui-eln-lims').projectDir}/src/core-plugins/eln-lims",
-                "imaging": "${project(':core-plugin-openbis').projectDir}/dist/core-plugins/imaging"
+                "admin": "${project(':ui-admin').projectDir}/src/core-plugins/admin",
+                "eln-lims": "${project(':ui-eln-lims').projectDir}/src/core-plugins/eln-lims",
+                "eln-lims-imaging-core": "${project(':core-plugin-openbis').projectDir}/dist/core-plugins/eln-lims-imaging-core",
+                "eln-lims-imaging-nanonis-adapter": "${project(':core-plugin-openbis').projectDir}/dist/core-plugins/eln-lims-imaging-nanonis-adapter",
+                "eln-lims-imaging-test-adapter": "${project(':core-plugin-openbis').projectDir}/dist/core-plugins/eln-lims-imaging-test-adapter"
         ]
 
         targetLinkDirs.each { targetLinkDir ->

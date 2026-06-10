@@ -15,12 +15,16 @@
  */
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.cache;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Map;
@@ -28,15 +32,16 @@ import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
-import ch.ethz.sis.shared.log.classic.impl.Logger;
 
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.CacheOptionsVO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.operation.config.OperationExecutionConfig;
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 import ch.systemsx.cisd.common.properties.PropertyUtils;
 import ch.systemsx.cisd.common.utilities.ITimeProvider;
 
@@ -44,8 +49,12 @@ public class FileCache<V> implements ITestableCache<V>
 {
     private static final Logger OPERATION_LOG = LogFactory.getLogger(LogCategory.OPERATION, FileCache.class);
 
-    /** Whether at least one instance of this cache has been created. */
-    private static boolean instanceCreated = false;
+    private static final int IO_BUFFER_SIZE = 1024 * 1024;
+
+    /**
+     * Whether at least one instance of this cache has been created.
+     */
+    private static final AtomicBoolean instanceCreated = new AtomicBoolean(false);
 
     private final int capacity;
 
@@ -57,7 +66,9 @@ public class FileCache<V> implements ITestableCache<V>
 
     private final File cacheDir;
 
-    /** If true cache values will be stored asynchronously in a separate thread. */
+    /**
+     * If true cache values will be stored asynchronously in a separate thread.
+     */
     private final boolean asyncStorage;
 
     private final ITimeProvider timeProvider;
@@ -86,9 +97,8 @@ public class FileCache<V> implements ITestableCache<V>
         this.cacheDirPath = cacheDirPath;
         this.cacheDir = new File(cacheDirPath);
 
-        if (!instanceCreated)
+        if (instanceCreated.compareAndSet(false, true))
         {
-            instanceCreated = true;
             deleteDir(cacheDir);
         }
         this.cacheDir.mkdirs();
@@ -123,7 +133,7 @@ public class FileCache<V> implements ITestableCache<V>
                     {
                         final String message = getCacheFile(removedKey).exists()
                                 ? String.format("The key removed from the queue cannot be removed from the cache. "
-                                + "[removedKey=%s]", removedKey)
+                                                + "[removedKey=%s]", removedKey)
                                 : String.format("Cache file to remove is not found. [removedKey=%s]", removedKey);
                         throw new RuntimeException(message);
                     }
@@ -136,8 +146,6 @@ public class FileCache<V> implements ITestableCache<V>
             {
                 keyQueue.add(key);
             }
-
-            writingKeys.remove(key);
         }
     }
 
@@ -148,13 +156,41 @@ public class FileCache<V> implements ITestableCache<V>
 
         final Runnable fileOutputRunnable = () ->
         {
-            try (final ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(cacheFile)))
+            // write to a tmp file and then move it to the final destination to prevent reading from not fully written file
+            final File tempFile = new File(cacheFile.getPath() + ".tmp");
+            tempFile.deleteOnExit();
+            try
             {
-                out.writeObject(new ImmutablePair<>(timeProvider.getTimeInMilliseconds(), value));
-            } catch (final IOException e)
+                try (final ObjectOutputStream out = new ObjectOutputStream(
+                        new BufferedOutputStream(new FileOutputStream(tempFile), IO_BUFFER_SIZE)))
+                {
+                    out.writeObject(new ImmutablePair<>(timeProvider.getTimeInMilliseconds(), value));
+                } catch (final IOException e)
+                {
+                    OPERATION_LOG.error(String.format("Error storing value in cache. [key=%s, value=%s]", key, value), e);
+                    tempFile.delete();
+                    return;
+                }
+
+                try
+                {
+                    Files.move(tempFile.toPath(), cacheFile.toPath(),
+                            StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+                } catch (final IOException e)
+                {
+                    // fall back to non-atomic rename
+                    try
+                    {
+                        Files.move(tempFile.toPath(), cacheFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                    } catch (final IOException ex)
+                    {
+                        OPERATION_LOG.error(String.format("Error moving temp cache file to final location. [key=%s]", key), ex);
+                        tempFile.delete();
+                    }
+                }
+            } finally
             {
-                OPERATION_LOG.error(String.format("Error storing value in cache. [key=%s, value=%s]", key, value),
-                        e);
+                writingKeys.remove(key);
             }
         };
 
@@ -175,7 +211,7 @@ public class FileCache<V> implements ITestableCache<V>
 
         if (cacheFile.isFile())
         {
-            try (final ObjectInputStream in = new ObjectInputStream(new FileInputStream(cacheFile)))
+            try (final ObjectInputStream in = new ObjectInputStream(new BufferedInputStream(new FileInputStream(cacheFile), IO_BUFFER_SIZE)))
             {
                 final ImmutablePair<Long, V> cachedResult = (ImmutablePair<Long, V>) in.readObject();
                 return cachedResult != null ? cachedResult.getRight() : null;
@@ -217,16 +253,24 @@ public class FileCache<V> implements ITestableCache<V>
     }
 
     @Override
-    public void clearOld(final long time)
+    public synchronized void clearOld(final long time)
     {
-        final File cacheDir = new File(cacheDirPath);
-
         final File[] files = cacheDir.listFiles();
+
+        if (files == null)
+        {
+            return;
+        }
 
         for (final File file : files)
         {
+            if (file.getName().endsWith(".tmp"))
+            {
+                continue;
+            }
+
             ImmutablePair<Long, V> cachedResult;
-            try (final ObjectInputStream in = new ObjectInputStream(new FileInputStream(file)))
+            try (final ObjectInputStream in = new ObjectInputStream(new BufferedInputStream(new FileInputStream(file), IO_BUFFER_SIZE)))
             {
                 cachedResult = (ImmutablePair<Long, V>) in.readObject();
             } catch (final IOException | ClassNotFoundException e)
@@ -248,7 +292,8 @@ public class FileCache<V> implements ITestableCache<V>
         return new File(cacheDirPath + File.separator + key.replaceAll("[^\\w-]+", ""));
     }
 
-    private static void deleteDir(final File dir) {
+    private static void deleteDir(final File dir)
+    {
         final File[] files = dir.listFiles();
         if (files != null)
         {

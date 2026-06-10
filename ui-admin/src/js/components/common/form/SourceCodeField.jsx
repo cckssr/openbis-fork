@@ -6,6 +6,8 @@ import 'prismjs/components/prism-clike.js'
 import 'prismjs/components/prism-python.js'
 import 'prismjs/components/prism-sql.js'
 import 'prismjs/components/prism-log.js'
+import 'prismjs/components/prism-json.js'
+import 'prismjs/components/prism-markup.js'
 import 'prismjs/themes/prism.css'
 import Editor from 'react-simple-code-editor'
 import InputLabel from '@mui/material/InputLabel'
@@ -26,6 +28,7 @@ const styles = theme => ({
   },
 
   edit: {
+    borderRadius: '4px 4px 0 0',
     fontFamily: theme.typography.sourceCode.fontFamily,
     fontSize: theme.typography.body2.fontSize,
     lineHeight: theme.typography.body2.lineHeight,
@@ -35,6 +38,8 @@ const styles = theme => ({
       background: 'none !important'
     },
     '& textarea': {
+      borderTopLeftRadius: '4px !important',
+      borderTopRightRadius: '4px !important',
       whiteSpace: 'pre !important',
       padding: '23px 12px 6px 12px !important',
       border: `1px solid ${theme.palette.border.primary} !important`,
@@ -65,6 +70,14 @@ class SourceCodeField extends React.PureComponent {
   static defaultProps = {
     mode: 'edit',
     variant: 'filled'
+  }
+
+  static languageToPrismJsDefinition = {
+    python: languages.python,
+    sql: languages.sql,
+    log: languages.log,
+    xml: languages.xml,
+    json: languages.json
   }
 
   constructor(props) {
@@ -164,10 +177,15 @@ class SourceCodeField extends React.PureComponent {
       variant,
       onClick,
       styles,
+      minRows,
+      maxRows,
       classes
     } = this.props
 
     const { focused } = this.state
+
+    const editorMinHeight = minRows ? `calc(${minRows} * 1.43em + 29px)` : undefined
+    const editorMaxHeight = maxRows ? `calc(${maxRows} * 1.43em + 29px)` : undefined
 
     return (
       <FormFieldContainer
@@ -181,11 +199,7 @@ class SourceCodeField extends React.PureComponent {
       >
         <div
           ref={this.containerRef}
-          className={`
-            ${classes.edit} 
-            ${error ? classes.error : ''} 
-            ${disabled ? classes.disabled : ''}
-          `}
+          className={`SourceCodeField-editContainer ${classes.edit} ${error ? classes.error : ''} ${disabled ? classes.disabled : ''}`}
         >
           <InputLabel
             shrink={!!value || focused}
@@ -200,17 +214,20 @@ class SourceCodeField extends React.PureComponent {
               onClick={onClick}
             />
           </InputLabel>
-          <Editor
-            name={name}
-            value={value || ''}
-            highlight={code => highlight(code, this.getLanguageDefinition())}
-            disabled={disabled}
-            readOnly={readOnly}
-            tabSize={4}
-            onValueChange={this.handleValueChange}
-            onFocus={this.handleFocus}
-            onBlur={this.handleBlur}
-          />
+          <div style={{ maxHeight: editorMaxHeight, overflowY: editorMaxHeight ? 'auto' : undefined }}>
+            <Editor
+              name={name}
+              value={value || ''}
+              highlight={code => highlight(code, this.getLanguageDefinition())}
+              disabled={disabled}
+              readOnly={readOnly}
+              tabSize={4}
+              onValueChange={this.handleValueChange}
+              onFocus={this.handleFocus}
+              onBlur={this.handleBlur}
+              style={{ minHeight: editorMinHeight }}
+            />
+          </div>
         </div>
       </FormFieldContainer>
     )
@@ -218,12 +235,9 @@ class SourceCodeField extends React.PureComponent {
 
   getLanguageDefinition() {
     const { language } = this.props
-    if (language === 'python') {
-      return languages.python
-    } else if (language === 'sql') {
-      return languages.sql
-    } else if (language === 'log') {
-      return languages.log
+    const value = SourceCodeField.languageToPrismJsDefinition[language]
+    if (value) {
+      return value
     } else {
       throw new Error('Unsupported language: ' + language)
     }

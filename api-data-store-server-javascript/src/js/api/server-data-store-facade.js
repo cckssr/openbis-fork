@@ -10,11 +10,12 @@ const DEFAULT_TIMEOUT_IN_MILLIS = 30000 // 30 seconds
  * ======================================================
  */
 
-function _DataStoreServerInternal(datastoreUrlOrNull, httpServerUri, timeoutInMillis){
-	this.init(datastoreUrlOrNull, httpServerUri, timeoutInMillis);
+function _DataStoreServerInternal(dataStoreServer, datastoreUrlOrNull, httpServerUri, timeoutInMillis){
+	this.init(dataStoreServer, datastoreUrlOrNull, httpServerUri, timeoutInMillis);
 }
 
-_DataStoreServerInternal.prototype.init = function(datastoreUrlOrNull, httpServerUri, timeoutInMillis){
+_DataStoreServerInternal.prototype.init = function(dataStoreServer, datastoreUrlOrNull, httpServerUri, timeoutInMillis){
+	this.dataStoreServer = dataStoreServer
 	this.datastoreUrl = this.normalizeUrl(datastoreUrlOrNull, httpServerUri) + "/api";
 	this.httpServerUri = httpServerUri;
 	this.timeoutInMillis = Number.isInteger(timeoutInMillis) ? timeoutInMillis : DEFAULT_TIMEOUT_IN_MILLIS;
@@ -28,19 +29,19 @@ _DataStoreServerInternal.prototype.log = function(msg){
 
 _DataStoreServerInternal.prototype.normalizeUrl = function(openbisUrlOrNull, httpServerUri){
 	var parts = this.parseUri(window.location);
-	
+
 	if(openbisUrlOrNull){
 		var openbisParts = this.parseUri(openbisUrlOrNull);
-		
+
 		for(var openbisPartName in openbisParts){
 			var openbisPartValue = openbisParts[openbisPartName];
-			
+
 			if(openbisPartValue){
 				parts[openbisPartName] = openbisPartValue;
 			}
 		}
 	}
-	
+
 	return parts.protocol + "://" + parts.authority + (httpServerUri || parts.path);
 }
 
@@ -58,22 +59,31 @@ _DataStoreServerInternal.prototype.sendHttpRequest = function(httpMethod, conten
 }
 
 _DataStoreServerInternal.prototype.sendHttpRequestAbortable = function(httpMethod, contentType, url, data) {
+	const _this = this
+
+	const operationId = crypto.randomUUID()
+	const startTime = Date.now()
+
 	const xhr = new XMLHttpRequest();
 	xhr.open(httpMethod, url);
+	xhr.setRequestHeader("openbis.operation-id", operationId)
 	xhr.responseType = "blob";
     // Set a timeout
-	xhr.timeout = this.timeoutInMillis; 
+	xhr.timeout = this.timeoutInMillis;
 
-    let abortFn;
+	const result = {}
 
-	const promise = new Promise((resolve, reject) => {
+	result.promise = new Promise((resolve, reject) => {
 		xhr.onreadystatechange = function() {
 			if (xhr.readyState === XMLHttpRequest.DONE) {
 				const status = xhr.status;
-				const response = xhr.response;                
+				const response = xhr.response;
 
-				if (status >= 200 && status < 300) {
+				if (status === 0) {
+					reject(new Error("Network error or CORS violation — no response received."));
+				} else if (status >= 200 && status < 300) {
 					const contentType = this.getResponseHeader('content-type');
+					result.contentType = contentType
 
 					switch (contentType) {
 						case 'text/plain':
@@ -93,16 +103,20 @@ _DataStoreServerInternal.prototype.sendHttpRequestAbortable = function(httpMetho
 						}
 					}
 				} else if (status >= 400 && status < 600) {
-					response.text().then((textResponse) => {
-						try {
-							const errorMessage = JSON.parse(textResponse).error[1].message;
-							reject(new Error(errorMessage));
-						} catch (e) {
-							reject(new Error(textResponse || xhr.statusText));
-						}
-					}).catch(() => {
-						reject(new Error("HTTP Error: " + status));
-					});
+					if (status === 504) { // HTTP_GATEWAY_TIMEOUT
+						_this.getLongRunningOperationResult(startTime, operationId).then(resolve, reject);
+					} else {
+						response.text().then((textResponse) => {
+							try {
+								const errorMessage = JSON.parse(textResponse).error[1].message;
+								reject(new Error(errorMessage));
+							} catch (e) {
+								reject(new Error(textResponse || xhr.statusText));
+							}
+						}).catch(() => {
+							reject(new Error("HTTP Error: " + status));
+						});
+					}
 				}
 			}
 		};
@@ -117,7 +131,7 @@ _DataStoreServerInternal.prototype.sendHttpRequestAbortable = function(httpMetho
 			reject(new Error("Request timed out: The server did not respond."));
 		};
 
-        abortFn = () => {
+        result.abortFn = () => {
             xhr.abort();
             reject(new Error("Request aborted by user."));
         };
@@ -125,17 +139,40 @@ _DataStoreServerInternal.prototype.sendHttpRequestAbortable = function(httpMetho
 		xhr.send(data);
 	});
 
-    return { promise, abortFn: abortFn };
+    return result;
 }
 
+_DataStoreServerInternal.prototype.getLongRunningOperationResult = async function(startTime, operationId) {
+	const maxSleepTime = 60000;
+	let sleepTime = 500;
 
+	const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-  _DataStoreServerInternal.prototype.buildGetUrl = function(queryParams) {
+	while (Date.now() < startTime + this.timeoutInMillis) {
+		let result = null
+
+		try {
+			result = await this.dataStoreServer.status(operationId).promise;
+		} catch(e) {
+		}
+
+		if (result !== undefined && result !== null) {
+			return result
+		}
+
+		await sleep(sleepTime);
+		sleepTime = Math.min(sleepTime * 2, maxSleepTime);
+	}
+
+	throw new Error("Operation timed out after " + (Date.now() - startTime) + "milliseconds.");
+}
+
+_DataStoreServerInternal.prototype.buildGetUrl = function(queryParams) {
 	const queryString = Object.keys(queryParams)
 	  .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(queryParams[key])}`)
 	  .join('&');
 	return `${this.datastoreUrl}?${queryString}`;
-  }
+}
 
 
 // parseUri 1.2.2 (c) Steven Levithan <stevenlevithan.com> MIT License (see http://blog.stevenlevithan.com/archives/parseuri)
@@ -153,7 +190,7 @@ _DataStoreServerInternal.prototype.parseUri = function(str) {
 			loose:  /^(?:(?![^:@]+:[^:@\/]*@)([^:\/?#.]+):)?(?:\/\/)?((?:(([^:@]*)(?::([^:@]*))?)?@)?([^:\/?#]*)(?::(\d*))?)(((\/(?:[^?#](?![^?#\/]*\.[^?#\/.]+(?:[?#]|$)))*\/?)?([^?#\/]*))(?:\?([^#]*))?(?:#(.*))?)/
 		}
 	};
-	
+
 	var	o   = options,
 		m   = o.parser[o.strictMode ? "strict" : "loose"].exec(str),
 		uri = {},
@@ -188,14 +225,14 @@ function parseJsonResponse(rawResponse) {
  * ===============
  * DSS facade
  * ===============
- * 
+ *
  * The facade provides access to the DSS methods
- * 
+ *
  */
 function DataStoreServer(datastoreUrlOrNull, httpServerUri, maxReadSizeInBytes, timeoutInMillis) {
 	this.maxReadSizeInBytes = Number.isInteger(maxReadSizeInBytes) ? maxReadSizeInBytes : DEFAULT_PACKAGE_SIZE_IN_BYTES;
 	this.timeoutInMillis = Number.isInteger(timeoutInMillis) ? timeoutInMillis : DEFAULT_TIMEOUT_IN_MILLIS;
-	this._internal = new _DataStoreServerInternal(datastoreUrlOrNull, httpServerUri, this.timeoutInMillis);
+	this._internal = new _DataStoreServerInternal(this, datastoreUrlOrNull, httpServerUri, this.timeoutInMillis);
 }
 
 DataStoreServer.prototype.getMaxReadSizeInBytes = function() {
@@ -224,7 +261,7 @@ DataStoreServer.prototype.setSession = function(sessionToken){
 
 /**
  * Returns the current session.
- * 
+ *
  * @method
  */
 DataStoreServer.prototype.getSession = function(){
@@ -233,7 +270,7 @@ DataStoreServer.prototype.getSession = function(){
 
 /**
  * Sets interactiveSessionKey.
- * 
+ *
  * @method
  */
 DataStoreServer.prototype.setInteractiveSessionKey = function(interactiveSessionKey){
@@ -242,7 +279,7 @@ DataStoreServer.prototype.setInteractiveSessionKey = function(interactiveSession
 
 /**
  * Returns the current session.
- * 
+ *
  * @method
  */
 DataStoreServer.prototype.getInteractiveSessionKey = function(){
@@ -251,7 +288,7 @@ DataStoreServer.prototype.getInteractiveSessionKey = function(){
 
 /**
  * Sets transactionManagerKey.
- * 
+ *
  * @method
  */
 DataStoreServer.prototype.setTransactionManagerKey = function(transactionManagerKey){
@@ -260,7 +297,7 @@ DataStoreServer.prototype.setTransactionManagerKey = function(transactionManager
 
 /**
  * Returns the current session.
- * 
+ *
  * @method
  */
 DataStoreServer.prototype.getTransactionManagerKey = function(){
@@ -294,7 +331,7 @@ const encodeParams = (params) => {
 
 /**
  * Log into DSS.
- * 
+ *
  * @method
  */
 DataStoreServer.prototype.login = function(userId, userPassword) {
@@ -341,7 +378,7 @@ DataStoreServer.prototype.isSessionValid = function() {
 
 /**
  * Restores the current session from a cookie.
- * 
+ *
  * @see restoreSession()
  * @see isSessionActive()
  * @method
@@ -352,7 +389,7 @@ DataStoreServer.prototype.ifRestoredSessionActive = function() {
 
 /**
  * Log out of DSS.
- * 
+ *
  * @method
  */
 DataStoreServer.prototype.logout = function() {
@@ -438,14 +475,43 @@ DataStoreServer.prototype._read = function(chunks){
 
 /**
  * Read the contents of selected file
- * @param {str} owner owner of the file 
+ * This function is overloaded
+ * function(owner, source, offset, limit)
+ * @param {str} owner owner of the file
  * @param {str} source path to file
  * @param {int} offset offset from which to start reading
  * @param {int} limit how many characters to read
+ * OR
+ * function(chunks)
+ * @param {chunk} chunks of the file
  */
 DataStoreServer.prototype.read = function(owner, source, offset, limit){
-	var effectiveLimit = Number.isInteger(limit) ? limit : this.maxReadSizeInBytes;
-	return this._read([new Chunk(owner, source, offset, effectiveLimit, ChunkEncoderDecoder.EMPTY_ARRAY)]);
+    if((arguments.length) === 1) { // function(chunks)
+        const data =  this.fillCommonParameters({
+            "method": "read"
+        });
+        const original = this._internal.sendHttpRequestAbortable(
+            "POST",
+            "application/octet-stream",
+            this._internal.buildGetUrl(data),
+            ChunkEncoderDecoder.encodeChunks(chunks) // Encode Chunks
+        );
+
+        original.promise = original.promise.then(function(result) {
+            if (!(result instanceof Blob)) {
+                throw new TypeError('_read result is not a valid value of type Blob');
+            }
+            return result.arrayBuffer();
+        }).then(function(arrayBuffer) {
+            var chunks = ChunkEncoderDecoder.decodeChunks(new Uint8Array(arrayBuffer)); // Decode Chunks
+            var data = chunks[0].getData();
+            return new Blob([data]);
+        });
+        return result;
+    } else { // function(owner, source, offset, limit)
+        var effectiveLimit = Number.isInteger(limit) ? limit : this.maxReadSizeInBytes;
+        return this.read([new Chunk(owner, source, offset, effectiveLimit, ChunkEncoderDecoder.EMPTY_ARRAY)]);
+    }
 }
 
 /**
@@ -467,13 +533,32 @@ DataStoreServer.prototype._write = function(chunks){
 
 /**
  * Write data to file (or create it)
+ * This function is overloaded
+ * function(owner, source, offset, data)
  * @param {str} owner owner of the file
  * @param {str} source path to file
  * @param {int} offset offset from which to start writing
  * @param {str} data data to write
+ * OR
+ * function(chunks)
+ * @param {chunk} chunks of the file
  */
 DataStoreServer.prototype.write = function(owner, source, offset, data){
-	return this._write([new Chunk(owner, source, offset, data.length, data)]);
+    if((arguments.length) === 1) { // function(chunks)
+    	const data =  this.fillCommonParameters({
+    		"method": "write"
+    	});
+    	const result = this._internal.sendHttpRequestAbortable(
+    		"POST",
+    		"application/octet-stream",
+
+    		this._internal.buildGetUrl(data),
+    		ChunkEncoderDecoder.encodeChunks(chunks) // Encode Chunks
+    	);
+    	return result;
+    } else { // function(owner, source, offset, data)
+    	return this.write([new Chunk(owner, source, offset, data.length, data)]);
+    }
 }
 
 /**
@@ -652,6 +737,41 @@ DataStoreServer.prototype.preview = function(owner, source){
         promise : promise, // Return JPEG image as Blob
         abortFn
     };
+}
+
+/**
+ * Get status of operation with given operationId
+ */
+DataStoreServer.prototype.status = function(operationId){
+	const data =  this.fillCommonParameters({
+		"method": "status",
+		"operationId" :  operationId
+	});
+	const result = this._internal.sendHttpRequestAbortable(
+		"GET",
+		"application/octet-stream",
+		this._internal.buildGetUrl(data),
+		{}
+	)
+	return {
+		promise : result.promise.then((response) => {
+			if (result.contentType === "application/json") {
+				try {
+					let jsonResponse = JSON.parse(response)
+					if (jsonResponse.result !== undefined && jsonResponse.result !== null) {
+						return response
+					} else {
+						return null
+					}
+				} catch (e) {
+					return null
+				}
+			} else {
+				return response
+			}
+		}),
+		abortFn: result.abortFn
+	};
 }
 
 /**
@@ -835,8 +955,8 @@ var ChunkEncoderDecoder = (function(){
                                       | data bytes (if any) |
     */
 
-    const CHUNK_SEPARATOR = ',';
-    const CHUNK_ARRAY_SEPARATOR = ';';
+    const CHUNK_SEPARATOR = '\t';
+    const CHUNK_ARRAY_SEPARATOR = '\n';
     const EMPTY_ARRAY = new Uint8Array();
 
     function encodeChunk(chunk) {
@@ -1015,8 +1135,8 @@ var ChunkEncoderDecoder = (function(){
 })();
 
 var FileEncoderDecoder = (function(){
-    const FILE_SEPARATOR = ',';
-    const FILE_ARRAY_SEPARATOR = ';';
+    const FILE_SEPARATOR = '\t';
+    const FILE_ARRAY_SEPARATOR = '\n';
 
     function encodeFile(file) {
         return file.getOwner() + FILE_SEPARATOR

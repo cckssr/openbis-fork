@@ -16,9 +16,14 @@
 package ch.ethz.sis.openbis.systemtest.asapi.v3;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
 
 import java.util.Arrays;
+import java.util.List;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.create.VocabularyCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.create.VocabularyTermCreation;
+import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.Vocabulary;
@@ -199,6 +204,88 @@ public class UpdateVocabulariesTest extends AbstractVocabularyTest
 
         assertAccessLog(
                 "update-vocabularies  VOCABULARY_UPDATES('[VocabularyUpdate[vocabularyId=PLATE_GEOMETRY], VocabularyUpdate[vocabularyId=ORGANISM]]')");
+    }
+
+    @Test(expectedExceptions = UserFailureException.class, expectedExceptionsMessageRegExp = "(?s).*Vocabulary internal flag can be modified only by the system user.*")
+    public void testUpdateMakeInternalAsAdmin_failure()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        VocabularyCreation vocabularyCreation = new VocabularyCreation();
+        vocabularyCreation.setCode("NON_INTERNAL_TEST");
+        vocabularyCreation.setManagedInternally(false);
+        vocabularyCreation.setDescription("creation test");
+        vocabularyCreation.setChosenFromList(true);
+        vocabularyCreation.setUrlTemplate("https://en.wikipedia.org/wiki/${term}");
+        VocabularyTermCreation term1 = new VocabularyTermCreation();
+        term1.setCode("OMEGA");
+        VocabularyTermCreation term2 = new VocabularyTermCreation();
+        term2.setCode("ALPHA");
+        vocabularyCreation.setTerms(Arrays.asList(term1, term2));
+        List<VocabularyPermId> vocabularies = v3api.createVocabularies(sessionToken,
+                Arrays.asList(vocabularyCreation));
+
+
+
+        VocabularyUpdate update = new VocabularyUpdate();
+        update.setManagedInternally(true);
+        update.setVocabularyId(new VocabularyPermId("NON_INTERNAL_TEST"));
+        v3api.updateVocabularies(sessionToken, Arrays.asList(update));
+    }
+
+    @Test
+    public void testUpdateMakeInternalAsSystem()
+    {
+        String sessionToken = v3api.loginAsSystem();
+
+        VocabularyCreation vocabularyCreation = new VocabularyCreation();
+        vocabularyCreation.setCode("NON_INTERNAL_TEST");
+        vocabularyCreation.setManagedInternally(false);
+        vocabularyCreation.setDescription("creation test");
+        vocabularyCreation.setChosenFromList(true);
+        vocabularyCreation.setUrlTemplate("https://en.wikipedia.org/wiki/${term}");
+        VocabularyTermCreation term1 = new VocabularyTermCreation();
+        term1.setCode("OMEGA");
+        VocabularyTermCreation term2 = new VocabularyTermCreation();
+        term2.setCode("ALPHA");
+        vocabularyCreation.setTerms(Arrays.asList(term1, term2));
+        List<VocabularyPermId> vocabularies = v3api.createVocabularies(sessionToken,
+                Arrays.asList(vocabularyCreation));
+
+
+
+        VocabularyUpdate update = new VocabularyUpdate();
+        update.setManagedInternally(true);
+        update.setVocabularyId(new VocabularyPermId("NON_INTERNAL_TEST"));
+        v3api.updateVocabularies(sessionToken, Arrays.asList(update));
+
+
+        Vocabulary vocabulary = v3api.getVocabularies(sessionToken, Arrays.asList(new VocabularyPermId("NON_INTERNAL_TEST")), new VocabularyFetchOptions()).get(new VocabularyPermId("NON_INTERNAL_TEST"));
+        assertTrue(vocabulary.isManagedInternally());
+    }
+
+    @Test(expectedExceptions = UserFailureException.class, expectedExceptionsMessageRegExp = "(?s).*Vocabulary can not be made non-internal if it has an internal term!.*")
+    public void testUpdateMakeNonInternal_failure()
+    {
+        String sessionToken = v3api.loginAsSystem();
+
+        VocabularyCreation vocabularyCreation = new VocabularyCreation();
+        vocabularyCreation.setCode("NON_INTERNAL_TEST");
+        vocabularyCreation.setManagedInternally(true);
+        vocabularyCreation.setDescription("creation test");
+        vocabularyCreation.setChosenFromList(true);
+        vocabularyCreation.setUrlTemplate("https://en.wikipedia.org/wiki/${term}");
+        VocabularyTermCreation term1 = new VocabularyTermCreation();
+        term1.setCode("OMEGA");
+        term1.setManagedInternally(true);
+        vocabularyCreation.setTerms(Arrays.asList(term1));
+        List<VocabularyPermId> vocabularies = v3api.createVocabularies(sessionToken,
+                Arrays.asList(vocabularyCreation));
+
+        VocabularyUpdate update = new VocabularyUpdate();
+        update.setManagedInternally(false);
+        update.setVocabularyId(new VocabularyPermId("NON_INTERNAL_TEST"));
+        v3api.updateVocabularies(sessionToken, Arrays.asList(update));
     }
 
 }

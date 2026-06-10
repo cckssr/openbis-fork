@@ -54,7 +54,7 @@ configurations.create('javadoc_compilation')
 configurations.create('blast_tar')
 configurations.create('microscopeLibs')
 
-def jettyDistributionVersion = libs.org.eclipse.jetty.jetty.distribution.get().versionConstraint.requiredVersion
+def jettyHomeVersion = libs.org.eclipse.jetty.jetty.home.get().versionConstraint.requiredVersion
 
 dependencies {
     api project(':server-screening')
@@ -72,7 +72,8 @@ dependencies {
     providedRuntime(libs.org.eclipse.jetty.ee10.jetty.ee10.webapp) { transitive = false }
     providedRuntime(libs.org.eclipse.jetty.ee.jetty.ee.webapp) { transitive = false }
 
-    zipping(libs.org.eclipse.jetty.jetty.distribution) {
+    zipping(libs.org.eclipse.jetty.jetty.home) {
+        transitive = false
         artifact {
             type = 'zip'
         }
@@ -116,7 +117,7 @@ dependencies {
             libs.fjelmer.classycle,
             libs.org.testng.testng,
             libs.org.junit.junit,
-            libs.org.springframework.spring.test.v6110
+            libs.org.springframework.spring.test
     testImplementation(project(path: ':server-application-server', configuration: 'tests'))
 }
 
@@ -264,18 +265,6 @@ war {
     }
 }
 
-def downloadCorePlugin(url, pluginname) {
-    if (!project.getGradle().startParameter.isOffline()) {
-        def file = project(':server-application-server').file("../core-plugin-openbis/targets/downloads/${pluginname}.zip")
-        def expectedDirName = url.tokenize('/').last().replace('.zip', '')
-        def expectedDir = project(':server-application-server').file("../core-plugin-openbis/targets/downloads/${expectedDirName}")
-        if (file.exists() == false || System.currentTimeMillis() - file.lastModified() > 3600000 || expectedDir.exists() == false) {
-            file.getParentFile().mkdirs()
-            ext.executeFunction('curl', [url, '-sLk', '-o', file.getAbsolutePath()])
-            ext.executeFunction('unzip', ['-uqo', file.getAbsolutePath(), '-d', '../core-plugin-openbis/targets/downloads/'])
-        }
-    }
-}
 
 import org.paleozogt.gradle.zip.SymZip;
 
@@ -284,13 +273,7 @@ task zipCorePlugins(type: SymZip) {
     includeEmptyDirs = false
     archiveFileName = 'core-plugins.zip'
 
-    downloadCorePlugin('https://github.com/openbis/obit_flow_core_technology/archive/release/7.x.zip', 'flow')
-    downloadCorePlugin('https://github.com/openbis/obit_microscopy_core_technology/archive/release/7.x.zip', 'microscopy')
-    downloadCorePlugin('https://github.com/openbis/obit_shared_core_technology/archive/release/7.x.zip', 'shared')
     from project(':server-screening').fileTree(dir: 'source/core-plugins', includes: ['screening/**', 'screening-optional/**'], excludes: ['**/package-to-dist'])
-    from fileTree(dir: 'targets/downloads/obit_flow_core_technology-release-7.x/core-plugins', includes: ['flow/**'])
-    from fileTree(dir: 'targets/downloads/obit_microscopy_core_technology-release-7.x/core-plugins', includes: ['microscopy/**'])
-    from fileTree(dir: 'targets/downloads/obit_shared_core_technology-release-20.x/core-plugins', includes: ['shared/**'])
     from "${project(':ui-eln-lims').projectDir}/src/core-plugins"
     from 'dist/core-plugins'
     from 'dist/server/core-plugins.properties'
@@ -342,7 +325,7 @@ task createJettyVersionFile {
     ext.versionFile = new File(buildDir, 'jetty-version.txt')
     outputs.file versionFile
     doLast {
-        versionFile.text = "${jettyDistributionVersion}"
+        versionFile.text = "${jettyHomeVersion}"
     }
 }
 
@@ -354,7 +337,7 @@ task zip(type: Zip, dependsOn: createJettyVersionFile) {
     from configurations.zipping
     from zipCorePlugins.archivePath
     from zipAdminConsole.archivePath
-    rename 'jetty-distribution(.*).zip', 'jetty.zip'
+    rename 'jetty-home(.*).zip', 'jetty.zip'
     rename 'openBIS(.*).war', 'openBIS.war'
 }
 zip.dependsOn war

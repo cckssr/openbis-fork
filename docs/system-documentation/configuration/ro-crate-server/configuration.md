@@ -66,15 +66,17 @@ production environments.
 
 Here are ONLY discussed the ones that SHOULD BE manually configured.
 
-| Property               | Description                                                                                              |
-|------------------------|----------------------------------------------------------------------------------------------------------|
-| `httpServerPort`       | Port used by the quarkus instance                                                                        |
-| `httpServerTimeout`    | Timeout for this server, e.g. `30s`                                                                      |
-| `sessionWorkSpace`     | This path is used to write temporary files used by the server. The subdirectories are based on sessions. |
-| `httpMaxContentLength` | For AFS                                                                                                  |
-| `maxReadSizeInBytes`   | For AFS                                                                                                  |
-| `openBISUrl`           | URL for an openBIS application server instance, e.g. http://localhost:8080                               |
-| `openBISTimeout`       | Timeout for openBIS calls                                                                                |
+| Property                      | Description                                                                                                                                          |
+|-------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `httpServerPort`              | Port used by the quarkus instance                                                                                                                    |
+| `httpServerTimeout`           | Timeout for this server, e.g. `30s`                                                                                                                  |
+| `sessionWorkSpace`            | This path is used to write temporary files used by the server. The subdirectories are based on openBIS sessions.                                     |
+| `httpMaxContentLength`        | For AFS                                                                                                                                              |
+| `maxReadSizeInBytes`          | For AFS                                                                                                                                              |
+| `openBISUrl`                  | URL for an openBIS application server instance, e.g. http://localhost:8080                                                                           |
+| `openBISTimeout`              | Timeout for openBIS calls                                                                                                                            |
+| `cleanupTimeDownloadedCrates` | Time in minutes until downloaded RO-Crate are deleted. This is also used for input files for import and validate. Empty values default to 720: 12 h. |
+| `cleanupTimeWaitingCrates`    | Time in minutes exported RO-Crate are kept if they have not been downloaded. Empty values default to 1440: 24 h.                                     |
 
 #### application.properties (Optional)
 

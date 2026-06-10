@@ -15,22 +15,6 @@
  */
 package ch.ethz.sis.openbis.generic.server.xls.export.helper;
 
-import static ch.ethz.sis.openbis.generic.server.xls.export.Attribute.ARCHIVING_STATUS;
-import static ch.ethz.sis.openbis.generic.server.xls.export.Attribute.CHILDREN;
-import static ch.ethz.sis.openbis.generic.server.xls.export.Attribute.CODE;
-import static ch.ethz.sis.openbis.generic.server.xls.export.Attribute.EXPERIMENT;
-import static ch.ethz.sis.openbis.generic.server.xls.export.Attribute.IDENTIFIER;
-import static ch.ethz.sis.openbis.generic.server.xls.export.Attribute.MODIFICATION_DATE;
-import static ch.ethz.sis.openbis.generic.server.xls.export.Attribute.MODIFIER;
-import static ch.ethz.sis.openbis.generic.server.xls.export.Attribute.PARENTS;
-import static ch.ethz.sis.openbis.generic.server.xls.export.Attribute.PERM_ID;
-import static ch.ethz.sis.openbis.generic.server.xls.export.Attribute.PRESENT_IN_ARCHIVE;
-import static ch.ethz.sis.openbis.generic.server.xls.export.Attribute.REGISTRATION_DATE;
-import static ch.ethz.sis.openbis.generic.server.xls.export.Attribute.REGISTRATOR;
-import static ch.ethz.sis.openbis.generic.server.xls.export.Attribute.SAMPLE;
-import static ch.ethz.sis.openbis.generic.server.xls.export.Attribute.SIZE;
-import static ch.ethz.sis.openbis.generic.server.xls.export.Attribute.STORAGE_CONFIRMATION;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -56,6 +40,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.server.xls.export.Attribute;
 import ch.ethz.sis.openbis.generic.server.xls.export.ExportableKind;
 import ch.ethz.sis.openbis.generic.server.xls.export.XLSExport;
+
+import static ch.ethz.sis.openbis.generic.server.xls.export.Attribute.*;
 
 public class XLSDataSetExportHelper extends AbstractXLSEntityExportHelper<DataSet, DataSetType>
 {
@@ -128,7 +114,7 @@ public class XLSDataSetExportHelper extends AbstractXLSEntityExportHelper<DataSe
     protected Attribute[] getAttributes(final Collection<DataSet> dataSets)
     {
         return new Attribute[] { PERM_ID, CODE, IDENTIFIER, ARCHIVING_STATUS, PRESENT_IN_ARCHIVE, STORAGE_CONFIRMATION, SAMPLE, EXPERIMENT, PARENTS,
-                CHILDREN, REGISTRATOR, REGISTRATION_DATE, MODIFIER, MODIFICATION_DATE, SIZE };
+                CHILDREN, REGISTRATOR, REGISTRATION_DATE, MODIFIER, MODIFICATION_DATE, SIZE, META_DATA };
     }
 
     @Override
@@ -206,6 +192,10 @@ public class XLSDataSetExportHelper extends AbstractXLSEntityExportHelper<DataSe
                 return dataSet.getChildren() == null ? "" : dataSet.getChildren().stream()
                         .map(DataSet::getCode)
                         .collect(Collectors.joining("\n"));
+            }
+            case META_DATA:
+            {
+                return mapToJSON(dataSet.getMetaData());
             }
             default:
             {

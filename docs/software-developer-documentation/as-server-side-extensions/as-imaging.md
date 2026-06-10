@@ -259,33 +259,33 @@ Imaging service is implemented using Custom Services technology for AS (For more
 
 ### Adaptors
 Currently, there are 3 types of adaptors that are implemented:
-- [ImagingDataSetExampleAdaptor](https://sissource.ethz.ch/sispub/openbis/-/blob/master/core-plugin-openbis/dist/core-plugins/imaging/1/as/services/imaging/lib/imaging-technology-sources/source/java/ch/ethz/sis/openbis/generic/server/as/plugins/imaging/adaptor/ImagingDataSetExampleAdaptor.java) - an example adaptor written in Java, it produces a random image.
-- [ImagingDataSetJythonAdaptor](https://sissource.ethz.ch/sispub/openbis/-/blob/master/core-plugin-openbis/dist/core-plugins/imaging/1/as/services/imaging/lib/imaging-technology-sources/source/java/ch/ethz/sis/openbis/generic/server/as/plugins/imaging/adaptor/ImagingDataSetJythonAdaptor.java) - an adaptor that makes use of Jython (deprecated).
-- [ImagingDataSetPythonAdaptor](https://sissource.ethz.ch/sispub/openbis/-/blob/master/core-plugin-openbis/dist/core-plugins/imaging/1/as/services/imaging/lib/imaging-technology-sources/source/java/ch/ethz/sis/openbis/generic/server/as/plugins/imaging/adaptor/ImagingDataSetPythonAdaptor.java) - abstract adaptor that allows to implement image computation logic as a python script. More can be read here: [Python adaptor]
+- [ImagingDataSetExampleAdaptor](https://sissource.ethz.ch/sispub/openbis/-/blob/master/core-plugin-openbis/dist/core-plugins/eln-lims-imaging-core/src/as/services/imaging/lib/imaging-technology-sources/source/java/ch/ethz/sis/openbis/generic/server/as/plugins/imaging/adaptor/ImagingDataSetExampleAdaptor.java) - an example adaptor written in Java, it produces a random image.
+- [ImagingDataSetJythonAdaptor](https://sissource.ethz.ch/sispub/openbis/-/blob/master/core-plugin-openbis/dist/core-plugins/eln-lims-imaging-core/src/as/services/imaging/lib/imaging-technology-sources/source/java/ch/ethz/sis/openbis/generic/server/as/plugins/imaging/adaptor/ImagingDataSetJythonAdaptor.java) - an adaptor that makes use of Jython (deprecated).
+- [ImagingDataSetPythonAdaptor](https://sissource.ethz.ch/sispub/openbis/-/blob/master/core-plugin-openbis/dist/core-plugins/eln-lims-imaging-core/src/as/services/imaging/lib/imaging-technology-sources/source/java/ch/ethz/sis/openbis/generic/server/as/plugins/imaging/adaptor/ImagingDataSetPythonAdaptor.java) - abstract adaptor that allows to implement image computation logic as a python script. More can be read here: [Python adaptor]
 
-All of these adaptor have one thing in common: they implement [IImagingDataSetAdaptor](https://sissource.ethz.ch/sispub/openbis/-/blob/master/core-plugin-openbis/dist/core-plugins/imaging/1/as/services/imaging/lib/imaging-technology-sources/source/java/ch/ethz/sis/openbis/generic/server/as/plugins/imaging/adaptor/IImagingDataSetAdaptor.java) interface.
+All of these adaptor have one thing in common: they implement [IImagingDataSetAdaptor](https://sissource.ethz.ch/sispub/openbis/-/blob/master/core-plugin-openbis/dist/core-plugins/eln-lims-imaging-core/src/as/services/imaging/lib/imaging-technology-sources/source/java/ch/ethz/sis/openbis/generic/server/as/plugins/imaging/adaptor/IImagingDataSetAdaptor.java) interface.
 
 Writing a completely new adaptor requires:
 1. Writing a Java class that implements IImagingDataSetAdaptor interface (by either interface realization or extension of existing adapter implementaiton).
 2. Compiling java classes into a .jar file.
-3. Including .jar library in  `servers/core-plugins/imaging/<version number>/as/services/imaging/lib` folder or in you custom plugin directory.
+3. Including .jar library in  `servers/core-plugins/eln-lims-imaging-core/src/as/services/imaging/lib` folder or in you custom plugin directory.
 4. Restarting OpenBIS.
 
-Example of such implementation can be found [here](https://sissource.ethz.ch/sispub/openbis/-/blob/master/core-plugin-openbis/dist/core-plugins/imaging-test/1/as/services/imaging-test/lib/imaging-test-adapters-sources/source/java/ch/ethz/sis/openbis/generic/server/as/plugins/imaging/adaptor/ImagingTestAdaptor.java?ref_type=heads)
+Example of such implementation can be found [here](https://sissource.ethz.ch/sispub/openbis/-/blob/master/core-plugin-openbis/dist/core-plugins/imaging-test/src/as/services/imaging-test/lib/imaging-test-adapters-sources/source/java/ch/ethz/sis/openbis/generic/server/as/plugins/imaging/adaptor/ImagingTestAdaptor.java?ref_type=heads)
 
 #### Python adaptor
 ImagingDataSetPythonAdaptor is a class that contains logic for handling adaptor logic written in a python script. It can be reused so no additional Java class implementation would be needed.
 
 It requires 2 elements to be set in order to work:
 
-1. Property `imaging.as.services.imaging.python-adapter.pyhton3-path` - path to a python environment to execute script. If such property is not found, a default python3 environment is used.
-2. Property `imaging.as.services.imaging.python-adapter.script-path` - path to a python script to be executed by this adaptor.
+1. Property `eln-lims-imaging-core.as.services.imaging.python-adapter.pyhton3-path` - path to a python environment to execute script. If such property is not found, a default python3 environment is used.
+2. Property `eln-lims-imaging-core.as.services.imaging.python-adapter.script-path` - path to a python script to be executed by this adaptor.
 
 These properties can be set either of the following:
 
 1. As a system environment variable
 2. In AS `etc/service.properties`
-3. In `servers/core-plugins/imaging/<version number>/as/services/imaging/plugin.properties`
+3. In `servers/core-plugins/eln-lims-imaging-core/src/as/services/imaging/plugin.properties`
 
 
 ### Communication with the service

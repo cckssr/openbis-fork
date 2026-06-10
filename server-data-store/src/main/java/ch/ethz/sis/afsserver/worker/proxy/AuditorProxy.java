@@ -158,6 +158,11 @@ public class AuditorProxy extends AbstractProxy {
         return auditAfter(nextProxy.preview(owner, source));
     }
 
+    @Override public Object status(final @NonNull UUID operationId) throws Exception
+    {
+        auditBefore();
+        return auditAfter(nextProxy.status(operationId));
+    }
 
     private void auditBefore() {
         Class clazz = nextProxy.getClass();

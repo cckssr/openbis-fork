@@ -1,4 +1,5 @@
 import _ from 'lodash'
+import AppController from '@src/js/components/AppController.js'
 import PageControllerSave from '@src/js/components/common/page/PageControllerSave.js'
 import FormUtil from '@src/js/components/common/form/FormUtil.js'
 import openbis from '@src/js/services/openbis.js'
@@ -22,7 +23,7 @@ export default class TypeGroupFormControllerSave extends PageControllerSave {
 
     state.original.objectTypes.forEach(originalObjectType => {
       const objectType = _.find(objectTypes, ['id', originalObjectType.id])
-      if (!objectType) {
+      if (!objectType || objectType.internal.value !== objectType.original.internal.value) {
         operations.push(
           this._deleteTypeGroupAssignmentOperation(typeGroup, originalObjectType)
         )
@@ -30,7 +31,7 @@ export default class TypeGroupFormControllerSave extends PageControllerSave {
     })
 
     objectTypes.forEach(objectType => {
-      if (!objectType.original) {
+      if (!objectType.original || objectType.internal.value !== objectType.original.internal.value) {
         operations.push(this._createTypeGroupAssignmentOperation(typeGroup, objectType))
       }
     })
@@ -55,7 +56,8 @@ export default class TypeGroupFormControllerSave extends PageControllerSave {
   _isTypeGroupUpdateNeeded(typeGroup) {
     return FormUtil.haveFieldsChanged(typeGroup, typeGroup.original, [
       'code',
-      'metadata'
+      'metadata',
+      'internal'
     ])
   }
 
@@ -88,6 +90,9 @@ export default class TypeGroupFormControllerSave extends PageControllerSave {
     update.setCode(typeGroup.code.value)
     const metadataObject = this._transformMetadataToObject(typeGroup.metadata.value)
     update.getMetaData().set(metadataObject)
+    if(AppController.getInstance().isSystemUser()) {
+      update.setManagedInternally(typeGroup.internal.value)
+    }
     return new openbis.UpdateTypeGroupsOperation([update])
   }
 

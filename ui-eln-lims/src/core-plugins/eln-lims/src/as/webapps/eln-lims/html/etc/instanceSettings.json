@@ -1,0 +1,26 @@
+[
+  {
+    "variableName": "minBarcodeLength",
+    "label": "Minimal barcode length",
+    "type": "INTEGER",
+    "default": 10
+  },
+  {
+    "variableName": "barcodePattern",
+    "label": "Barcode pattern",
+    "type": "REGEX",
+    "default": "^[-A-Za-z0-9]+$"
+  },
+  {
+    "variableName": "docuBaseUrl",
+    "label": "Documentation base URL",
+    "type": "STRING",
+    "default": "https://openbis.readthedocs.io/en/7.x/"
+  },
+  {
+    "variableName": "showUserManagementConfig",
+    "label": "Show user management config",
+    "type": "BOOLEAN",
+    "default": false
+  }
+]

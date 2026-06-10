@@ -27,6 +27,8 @@ public class ObjectTypeHelper extends BasicImportHelper
         OntologyId("Ontology Id", false, false),
         OntologyVersion("Ontology Version", false, false),
         OntologyAnnotationId("Ontology Annotation Id", false, false),
+        TypeGroups("Type Groups", false, false),
+        MetaData("Meta Data", false, true),
         Internal("Internal", false, false);
 
         private final String headerName;

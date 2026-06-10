@@ -26,6 +26,12 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		prototype.setPropertyAssignments = function(propertyAssignments) {
 			throw new exceptions.RuntimeException("Interface method.");
 		};
+		prototype.getManagedInternally = function() {
+			throw new exceptions.RuntimeException("Interface method.");
+		};
+		prototype.setManagedInternally = function(propertyAssignments) {
+			throw new exceptions.RuntimeException("Interface method.");
+		};
 	}, {});
 	return IEntityTypeUpdate;
 })

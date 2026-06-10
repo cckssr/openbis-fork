@@ -17,6 +17,8 @@
 
 package ch.ethz.sis.afsapi.api;
 
+import java.util.UUID;
+
 import ch.ethz.sis.afsapi.dto.Chunk;
 import ch.ethz.sis.afsapi.dto.File;
 import ch.ethz.sis.afsapi.dto.FreeSpace;
@@ -63,4 +65,6 @@ public interface OperationsAPI
 
     @NonNull
     byte[] preview(@NonNull String owner, @NonNull String source) throws Exception; // Get preview (JPEG smaller version of image): supported for a list of whitelisted image file-type extensions
+
+    Object status(@NonNull UUID operationId) throws Exception;
 }

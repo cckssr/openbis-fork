@@ -15,6 +15,19 @@
  */
 package ch.ethz.sis.afsserver.server.impl;
 
+import static ch.ethz.sis.libhttp.http.exceptions.HTTPExceptions.INVALID_HEADERS;
+import static ch.ethz.sis.libhttp.http.exceptions.HTTPExceptions.INVALID_PARAMETERS;
+import static ch.ethz.sis.libhttp.http.exceptions.HTTPExceptions.throwInstance;
+import static io.netty.handler.codec.http.HttpMethod.GET;
+import static io.netty.handler.codec.http.HttpMethod.POST;
+
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
 import ch.ethz.sis.afsapi.dto.Chunk;
 import ch.ethz.sis.afsapi.dto.DTO;
 import ch.ethz.sis.afsapi.dto.File;
@@ -35,18 +48,6 @@ import ch.ethz.sis.shared.log.standard.LogManager;
 import ch.ethz.sis.shared.log.standard.Logger;
 import io.netty.handler.codec.http.HttpMethod;
 
-import java.io.ByteArrayInputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
-import static ch.ethz.sis.libhttp.http.exceptions.HTTPExceptions.INVALID_PARAMETERS;
-import static ch.ethz.sis.libhttp.http.exceptions.HTTPExceptions.throwInstance;
-import static io.netty.handler.codec.http.HttpMethod.GET;
-import static io.netty.handler.codec.http.HttpMethod.POST;
-
 /*
  * This class is supposed to be called by a TCP or HTTP transport class
  */
@@ -54,6 +55,8 @@ public abstract class AbstractAdapter<CONNECTION, API> implements HttpServerHand
 {
 
     private static final Logger logger = LogManager.getLogger(AbstractAdapter.class);
+
+    private static final String OPERATION_ID_HEADER = "openbis.operation-id";
 
     protected final APIServer<CONNECTION, Request, Response, API> server;
 
@@ -74,9 +77,10 @@ public abstract class AbstractAdapter<CONNECTION, API> implements HttpServerHand
     protected abstract void parseParameters(final String key, final List<String> values, final Map<String, Object> parsedParameters);
 
     protected abstract HttpResponse process(final String method, final Map<String, Object> parsedParameters, final String sessionToken,
-            final String interactiveSessionKey, final String transactionManagerKey, final PerformanceAuditor performanceAuditor) throws Exception;
+            final String interactiveSessionKey, final String transactionManagerKey, final UUID operationId, final PerformanceAuditor performanceAuditor) throws Exception;
 
-    public HttpResponse process(HttpMethod httpMethod, Map<String, List<String>> parameters,
+    @Override
+    public HttpResponse process(HttpMethod httpMethod, Map<String, List<String>> parameters, Map<String, List<String>> headers,
             byte[] requestBody)
     {
         try
@@ -103,6 +107,22 @@ public abstract class AbstractAdapter<CONNECTION, API> implements HttpServerHand
 
             if(requestBody != null && requestBody.length > 0){
                 parsedParameters.put("chunks", ChunkEncoderDecoder.decodeChunks(requestBody));
+            }
+
+            List<String> operationIds = headers.get(OPERATION_ID_HEADER);
+            UUID operationId = null;
+
+            if (operationIds != null && !operationIds.isEmpty()) {
+                try
+                {
+                    operationId = UUID.fromString(operationIds.getFirst());
+                } catch (Exception e) {
+                    logger.catching(e);
+                    return getHTTPResponse(new ApiResponse("1", null,
+                            INVALID_HEADERS.getCause(
+                                    e.getClass().getSimpleName(),
+                                    e.getMessage())));
+                }
             }
 
             for (Map.Entry<String, List<String>> entry : parameters.entrySet())
@@ -146,7 +166,7 @@ public abstract class AbstractAdapter<CONNECTION, API> implements HttpServerHand
             }
 
             final HttpResponse httpResponse =
-                    process(method, parsedParameters, sessionToken, interactiveSessionKey, transactionManagerKey, performanceAuditor);
+                    process(method, parsedParameters, sessionToken, interactiveSessionKey, transactionManagerKey, operationId, performanceAuditor);
             performanceAuditor.audit(Event.WriteResponse);
             logger.traceExit(performanceAuditor);
             logger.traceExit(httpResponse);
@@ -223,7 +243,7 @@ public abstract class AbstractAdapter<CONNECTION, API> implements HttpServerHand
         } else
         {
             final Object result = response.getResult();
-            if (result instanceof DTO || result instanceof List) {
+            if (result == null || result instanceof DTO || result instanceof List) {
                 contentType = HttpResponse.CONTENT_TYPE_JSON;
                 body = jsonObjectMapper.writeValue(response);
             } else if (result instanceof Chunk[]) {

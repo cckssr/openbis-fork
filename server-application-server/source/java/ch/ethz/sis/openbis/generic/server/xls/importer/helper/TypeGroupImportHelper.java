@@ -27,6 +27,7 @@ import ch.ethz.sis.openbis.generic.server.xls.importer.ImportOptions;
 import ch.ethz.sis.openbis.generic.server.xls.importer.delay.DelayedExecutionDecorator;
 import ch.ethz.sis.openbis.generic.server.xls.importer.enums.ImportModes;
 import ch.ethz.sis.openbis.generic.server.xls.importer.enums.ImportTypes;
+import ch.ethz.sis.openbis.generic.server.xls.importer.handler.JSONHandler;
 import ch.ethz.sis.openbis.generic.server.xls.importer.utils.AttributeValidator;
 import ch.ethz.sis.openbis.generic.server.xls.importer.utils.IAttribute;
 import ch.ethz.sis.openbis.generic.server.xls.importer.utils.ImportUtils;
@@ -40,6 +41,7 @@ public class TypeGroupImportHelper extends BasicImportHelper
     private enum Attribute implements IAttribute
     {
         Code("Code", true, true),
+        Metadata("Meta Data", false, false),
         Internal("Internal", false, false);
 
         private final String headerName;
@@ -92,18 +94,24 @@ public class TypeGroupImportHelper extends BasicImportHelper
 
     @Override
     protected void validateLine(Map<String, Integer> header, List<String> values) {
-        String name = getValueByColumnName(header, values, Attribute.Code);
-        String internal = getValueByColumnName(header, values, Attribute.Internal);
-        if(!delayedExecutor.isSystem() && ImportUtils.isTrue(internal))
-        {
-            TypeGroup
-                    st = delayedExecutor.getTypeGroup(new TypeGroupId(name), new TypeGroupFetchOptions());
-            if(st == null) {
-                throw new UserFailureException("Non-system user can not create new internal type groups!");
-            }
+        String code = getValueByColumnName(header, values, Attribute.Code);
+        if(code == null || code.isEmpty()) {
+            throw new UserFailureException("Mandatory field is missing or empty: Code.");
         }
     }
 
+    @Override
+    protected boolean isNewVersion(Map<String, Integer> header, List<String> values)
+    {
+        String internal = getValueByColumnName(header, values, Attribute.Internal);
+        boolean isInternalNamespace = ImportUtils.isTrue(internal);
+
+        if(isInternalNamespace && !delayedExecutor.isSystem()) {
+            //if exists, skip
+            return !isObjectExist(header, values);
+        }
+        return true;
+    }
 
 
     @Override
@@ -121,10 +129,17 @@ public class TypeGroupImportHelper extends BasicImportHelper
     {
         String code = getValueByColumnName(header, values, Attribute.Code);
         String internal = getValueByColumnName(header, values, Attribute.Internal);
+        String metaData = getValueByColumnName(header, values, Attribute.Metadata);
 
         TypeGroupCreation creation = new TypeGroupCreation();
         creation.setCode(code);
-        creation.setManagedInternally(ImportUtils.isTrue(internal));
+        if(delayedExecutor.isSystem())
+        {
+            creation.setManagedInternally(ImportUtils.isTrue(internal));
+        }
+        if (metaData != null && !metaData.isEmpty()) {
+            creation.setMetaData(JSONHandler.parseMetaData(metaData));
+        }
 
         delayedExecutor.createTypeGroup(creation);
     }
@@ -134,11 +149,22 @@ public class TypeGroupImportHelper extends BasicImportHelper
             int line)
     {
         String code = getValueByColumnName(header, values, Attribute.Code);
+        String internal = getValueByColumnName(header, values, Attribute.Internal);
+        String metaData = getValueByColumnName(header, values, Attribute.Metadata);
 
         TypeGroupUpdate update = new TypeGroupUpdate();
         TypeGroupId typeGroupId = new TypeGroupId(code);
         update.setTypeGroupId(typeGroupId);
         update.setCode(code);
+
+        if(delayedExecutor.isSystem() && internal != null && !internal.isEmpty()) {
+            update.setManagedInternally(ImportUtils.isTrue(internal));
+        }
+
+        if (metaData != null && !metaData.isEmpty())
+        {
+            update.getMetaData().add(JSONHandler.parseMetaData(metaData));
+        }
 
         delayedExecutor.updateTypeGroup(update);
     }

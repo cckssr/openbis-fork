@@ -15,9 +15,6 @@
  */
 package ch.ethz.sis.openbis.systemtest.asapi.v3;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNotNull;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,6 +25,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.BiFunction;
 
+import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -56,6 +54,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.id.VocabularyPermId;
 import ch.systemsx.cisd.common.action.IDelegatedAction;
 import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
+
+import static org.testng.Assert.*;
 
 /**
  * @author Franz-Josef Elmer
@@ -961,7 +961,7 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
                                            updateTypes(sessionToken, Arrays.asList(update));
                                        }
                                    },
-                "Internal property assignments can be used for internal entity types");
+                "Internal property assignments can be used only for internal entity types");
     }
 
     @Test
@@ -1388,6 +1388,122 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
         assertEquals(type.getPropertyAssignments().size(), 1);
         assertEquals(type.getPropertyAssignments().get(0).getPatternType(), "RANGES");
         assertEquals(type.getPropertyAssignments().get(0).getPattern(), "(-3)-(-1), 1-10, 100-200");
+    }
+
+    @Test
+    public void testUpdateMakeInternal()
+    {
+        // Given
+        String sessionToken = v3api.loginAsSystem();
+
+        final CREATION typeCreation = newTypeCreation();
+        typeCreation.setCode("NON-INTERNAL-TEST-CODE");
+        typeCreation.setManagedInternally(false);
+
+        EntityTypePermId typeId = createTypes(sessionToken, Arrays.asList(typeCreation)).get(0);
+        TYPE type = getType(sessionToken, typeId);
+        assertFalse(type.isManagedInternally());
+
+        UPDATE update = newTypeUpdate();
+        update.setTypeId(typeId);
+        update.setManagedInternally(true);
+        updateTypes(sessionToken, Arrays.asList(update));
+
+        type = getType(sessionToken, typeId);
+        assertTrue(type.isManagedInternally());
+    }
+
+    @Test
+    public void testUpdateMakeNonInternal()
+    {
+        // Given
+        String sessionToken = v3api.loginAsSystem();
+
+        final CREATION typeCreation = newTypeCreation();
+        typeCreation.setCode("INTERNAL-TEST-CODE");
+        typeCreation.setManagedInternally(true);
+
+        EntityTypePermId typeId = createTypes(sessionToken, Arrays.asList(typeCreation)).get(0);
+        TYPE type = getType(sessionToken, typeId);
+        assertTrue(type.isManagedInternally());
+
+        UPDATE update = newTypeUpdate();
+        update.setTypeId(typeId);
+        update.setManagedInternally(false);
+        updateTypes(sessionToken, Arrays.asList(update));
+
+        type = getType(sessionToken, typeId);
+        assertFalse(type.isManagedInternally());
+    }
+
+    @Test(expectedExceptions = UserFailureException.class, expectedExceptionsMessageRegExp = "(?s).*Entity type can be made internal only by the system user.*")
+    public void testUpdateMakeInternal_fail()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        final CREATION typeCreation = newTypeCreation();
+        typeCreation.setCode("NON-INTERNAL-TEST-CODE");
+        typeCreation.setManagedInternally(false);
+
+        EntityTypePermId typeId = createTypes(sessionToken, Arrays.asList(typeCreation)).get(0);
+        TYPE type = getType(sessionToken, typeId);
+        assertFalse(type.isManagedInternally());
+
+        UPDATE update = newTypeUpdate();
+        update.setTypeId(typeId);
+        update.setManagedInternally(true);
+        updateTypes(sessionToken, Arrays.asList(update));
+    }
+
+    @Test
+    public void testUpdateMakeAssignmentInternal()
+    {
+        // Given
+        String sessionToken = v3api.loginAsSystem();
+
+        // Given
+        PropertyTypeCreation propertyTypeCreation = new PropertyTypeCreation();
+        propertyTypeCreation.setCode("ANTOTHER_ASSIGNMENT_TYPE_TEST");
+        propertyTypeCreation.setManagedInternally(false);
+        propertyTypeCreation.setDataType(DataType.VARCHAR);
+        propertyTypeCreation.setLabel("some property type");
+        propertyTypeCreation.setDescription("some property type");
+        PropertyTypePermId propertyTypePermId = v3api.createPropertyTypes(sessionToken, Arrays.asList(propertyTypeCreation)).get(0);
+
+
+        final CREATION typeCreation = newTypeCreation();
+        typeCreation.setCode("NON-INTERNAL-TEST-CODE");
+        typeCreation.setManagedInternally(false);
+
+        PropertyAssignmentCreation assignmentCreation = new PropertyAssignmentCreation();
+        assignmentCreation.setPropertyTypeId(new PropertyTypePermId("ANTOTHER_ASSIGNMENT_TYPE_TEST"));
+        assignmentCreation.setManagedInternally(false);
+
+        typeCreation.setPropertyAssignments(Arrays.asList(assignmentCreation));
+
+        EntityTypePermId typeId = createTypes(sessionToken, Arrays.asList(typeCreation)).get(0);
+        TYPE type = getType(sessionToken, typeId);
+        assertFalse(type.isManagedInternally());
+
+        UPDATE update = newTypeUpdate();
+        update.setTypeId(typeId);
+        update.setManagedInternally(true);
+
+        // Update the entity type and make the property assignment internal
+        PropertyAssignmentCreation propertyAssignmentUpdate = new PropertyAssignmentCreation();
+        propertyAssignmentUpdate.setPropertyTypeId(propertyTypePermId);
+        propertyAssignmentUpdate.setManagedInternally(true);
+
+        update.getPropertyAssignments().set(propertyAssignmentUpdate);
+
+
+        updateTypes(sessionToken, Arrays.asList(update));
+
+        type = getType(sessionToken, typeId);
+        assertTrue(type.isManagedInternally());
+        assertEquals(type.getPropertyAssignments().size(), 1);
+        assertTrue(type.getPropertyAssignments().get(0).isManagedInternally());
     }
 
     @DataProvider

@@ -74,7 +74,7 @@ Inside an _Experiement/Collection_ you can create:
 *Default Experiment* and *Collection* are two different types of _Experiment/Collection_
 (see [openBIS data model](../advance-features/openbis-data-modelling.md)
 ). *Collection* is a _Standard Type_ provided with the openBIS installation; *Default Experiment* is a _Default Type_ and 
-is created if _eln-lims-template-types_ plugin is enabled (see [ELN Types](./docs/user-documentation/general-users/ELN-types.md)).
+is created if _eln-lims-types-templates_ plugin is enabled (see [ELN Types](./docs/user-documentation/general-users/ELN-types.md)).
 
 The difference between the two consists in the fact that a *Collection* can be considered similar to a folder, with no metadata and the content of a *Collection* is visible in a table in the *Collection* page and not in the ELN menu.
 

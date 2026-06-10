@@ -1,10 +1,10 @@
 package ch.ethz.sis.afssftp.util;
 
 import ch.ethz.sis.afsapi.dto.File;
+import ch.ethz.sis.afssftp.StaticInitializer;
 import ch.ethz.sis.afssftp.authentication.User;
 import ch.ethz.sis.afssftp.filesystemview.SftpFileAttributes;
 import ch.ethz.sis.afssftp.filesystemview.SftpNode;
-import ch.ethz.sis.afssftp.startup.AfsSftpServerParameter;
 import ch.ethz.sis.openbis.generic.OpenBIS;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
@@ -26,9 +26,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.fetchoptions.SpaceFetchOpt
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.ISpaceId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.search.SpaceSearchCriteria;
-import ch.ethz.sis.shared.log.standard.LogFactory;
-import ch.ethz.sis.shared.log.standard.LogFactoryFactory;
-import ch.ethz.sis.shared.log.standard.LogManager;
 import junit.framework.TestCase;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
@@ -43,18 +40,7 @@ import static ch.ethz.sis.afssftp.helpers.TestHelper.createRandomNodeOfType;
 public class SftpListUtilTest extends TestCase {
 
     static {
-        initLogFactory();
-    }
-
-    private static void initLogFactory() {
-        try {
-            LogFactoryFactory logFactoryFactory = new LogFactoryFactory();
-            LogFactory logFactory = logFactoryFactory.create("ch.ethz.sis.shared.log.standard.impl.StandardLogFactory");
-            logFactory.configure("logging.properties");
-            LogManager.setLogFactory(logFactory);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        StaticInitializer.initialize();
     }
 
     public void testGetSpaces() {
@@ -62,7 +48,6 @@ public class SftpListUtilTest extends TestCase {
         OpenBIS openBIS = Mockito.mock(OpenBIS.class);
         User user = User.builder()
                 .username("u5er")
-                .password("pWd")
                 .sessionToken("53551on")
                 .build();
         SftpListUtil sftpListUtil = new SftpListUtil(user, openBISClientUtil);
@@ -84,7 +69,6 @@ public class SftpListUtilTest extends TestCase {
         OpenBIS openBIS = Mockito.mock(OpenBIS.class);
         User user = User.builder()
                 .username("u5er")
-                .password("pWd")
                 .sessionToken("53551on")
                 .build();
         SftpListUtil sftpListUtil = new SftpListUtil(user, openBISClientUtil);
@@ -107,7 +91,6 @@ public class SftpListUtilTest extends TestCase {
         OpenBIS openBIS = Mockito.mock(OpenBIS.class);
         User user = User.builder()
                 .username("u5er")
-                .password("pWd")
                 .sessionToken("53551on")
                 .build();
         SftpListUtil sftpListUtil = new SftpListUtil(user, openBISClientUtil);
@@ -150,7 +133,6 @@ public class SftpListUtilTest extends TestCase {
         OpenBIS openBIS = Mockito.mock(OpenBIS.class);
         User user = User.builder()
                 .username("u5er")
-                .password("pWd")
                 .sessionToken("53551on")
                 .build();
         SftpListUtil sftpListUtil = new SftpListUtil(user, openBISClientUtil);
@@ -176,7 +158,6 @@ public class SftpListUtilTest extends TestCase {
         OpenBIS openBIS = Mockito.mock(OpenBIS.class);
         User user = User.builder()
                 .username("u5er")
-                .password("pWd")
                 .sessionToken("53551on")
                 .build();
         SftpListUtil sftpListUtil = new SftpListUtil(user, openBISClientUtil);
@@ -202,7 +183,6 @@ public class SftpListUtilTest extends TestCase {
         OpenBIS openBIS = Mockito.mock(OpenBIS.class);
         User user = User.builder()
                 .username("u5er")
-                .password("pWd")
                 .sessionToken("53551on")
                 .build();
         SftpListUtil sftpListUtil = new SftpListUtil(user, openBISClientUtil);
@@ -227,7 +207,6 @@ public class SftpListUtilTest extends TestCase {
         OpenBIS openBIS = Mockito.mock(OpenBIS.class);
         User user = User.builder()
                 .username("u5er")
-                .password("pWd")
                 .sessionToken("53551on")
                 .build();
         SftpListUtil sftpListUtil = new SftpListUtil(user, openBISClientUtil);
@@ -252,7 +231,6 @@ public class SftpListUtilTest extends TestCase {
         OpenBIS openBIS = Mockito.mock(OpenBIS.class);
         User user = User.builder()
                 .username("u5er")
-                .password("pWd")
                 .sessionToken("53551on")
                 .build();
         SftpListUtil sftpListUtil = new SftpListUtil(user, openBISClientUtil);
@@ -271,12 +249,34 @@ public class SftpListUtilTest extends TestCase {
         assertTrue(sampleFetchOptionsArgumentCaptor.getValue().withDataSets().hasProperties());
     }
 
+    public void testGetExperimentDatasets() {
+        OpenBISClientUtil openBISClientUtil = Mockito.mock(OpenBISClientUtil.class);
+        OpenBIS openBIS = Mockito.mock(OpenBIS.class);
+        User user = User.builder()
+                .username("u5er")
+                .sessionToken("53551on")
+                .build();
+        SftpListUtil sftpListUtil = new SftpListUtil(user, openBISClientUtil);
+        Mockito.doReturn(openBIS).when(openBISClientUtil).getOpenBISClient(user);
+        Mockito.doReturn(Collections.emptyMap()).when(openBIS).getSamples(
+                Mockito.any(), Mockito.any()
+        );
+        sftpListUtil.getExperimentDatasets("exp-perm-id");
+        ArgumentCaptor<List<? extends ExperimentPermId>> experimentIdListArgumentCaptor = ArgumentCaptor.forClass(List.class);
+        ArgumentCaptor<ExperimentFetchOptions> fetchOptionsArgumentCaptor = ArgumentCaptor.forClass(ExperimentFetchOptions.class);
+        Mockito.verify(openBIS, Mockito.times(1)).getExperiments(
+                experimentIdListArgumentCaptor.capture(), fetchOptionsArgumentCaptor.capture()
+        );
+        assertEquals(new ExperimentPermId("exp-perm-id").getPermId(), experimentIdListArgumentCaptor.getValue().get(0).getPermId());
+        assertTrue(fetchOptionsArgumentCaptor.getValue().hasDataSets());
+        assertTrue(fetchOptionsArgumentCaptor.getValue().withDataSets().hasProperties());
+    }
+
     public void testGetAfsEntityPermId() {
         OpenBISClientUtil openBISClientUtil = Mockito.mock(OpenBISClientUtil.class);
         OpenBIS openBIS = Mockito.mock(OpenBIS.class);
         User user = User.builder()
                 .username("u5er")
-                .password("pWd")
                 .sessionToken("53551on")
                 .build();
         SftpListUtil sftpListUtil = new SftpListUtil(user, openBISClientUtil);
@@ -304,7 +304,6 @@ public class SftpListUtilTest extends TestCase {
         OpenBISClientUtil openBISClientUtil = Mockito.mock(OpenBISClientUtil.class);
         User user = User.builder()
                 .username("u5er")
-                .password("pWd")
                 .sessionToken("53551on")
                 .build();
         OpenBIS.AfsServerFacade afsClientProxyMock = Mockito.mock(
@@ -322,7 +321,6 @@ public class SftpListUtilTest extends TestCase {
         OpenBISClientUtil openBISClientUtil = Mockito.mock(OpenBISClientUtil.class);
         User user = User.builder()
                 .username("u5er")
-                .password("pWd")
                 .sessionToken("53551on")
                 .build();
         OpenBIS.AfsServerFacade afsClientProxyMock = Mockito.mock(
@@ -340,7 +338,6 @@ public class SftpListUtilTest extends TestCase {
         OpenBISClientUtil openBISClientUtil = Mockito.mock(OpenBISClientUtil.class);
         User user = User.builder()
                 .username("u5er")
-                .password("pWd")
                 .sessionToken("53551on")
                 .build();
         OpenBIS.AfsServerFacade afsClientProxyMock = Mockito.mock(
@@ -421,7 +418,7 @@ public class SftpListUtilTest extends TestCase {
         experiment.setFetchOptions(experimentFetchOptions);
         experiment.setStringProperty("NAME", "Exp NAME");
         experiment.setPermId(new ExperimentPermId("exp-perm-id-1"));
-        assertEquals("Exp NAME(EXP-PERM-ID-1)", SftpListUtil.getDisplayName(experiment));
+        assertEquals("Exp NAME (EXP-PERM-ID-1)", SftpListUtil.getDisplayName(experiment));
 
         DataSet dataSet = new DataSet();
         DataSetFetchOptions dataSetFetchOptions = new DataSetFetchOptions();
@@ -429,7 +426,7 @@ public class SftpListUtilTest extends TestCase {
         dataSet.setFetchOptions(dataSetFetchOptions);
         dataSet.setStringProperty("NAME", "Dataset NAME");
         dataSet.setPermId(new DataSetPermId("dataset-perm-id-1"));
-        assertEquals("Dataset NAME(DATASET-PERM-ID-1)", SftpListUtil.getDisplayName(dataSet));
+        assertEquals("Dataset NAME (DATASET-PERM-ID-1)", SftpListUtil.getDisplayName(dataSet));
 
         Sample sample = new Sample();
         SampleFetchOptions sampleFetchOptions = new SampleFetchOptions();
@@ -437,7 +434,7 @@ public class SftpListUtilTest extends TestCase {
         sample.setFetchOptions(sampleFetchOptions);
         sample.setStringProperty("NAME", "Sample NAME");
         sample.setPermId(new SamplePermId("sample-perm-id-1"));
-        assertEquals("Sample NAME(SAMPLE-PERM-ID-1)", SftpListUtil.getDisplayName(sample));
+        assertEquals("Sample NAME (SAMPLE-PERM-ID-1)", SftpListUtil.getDisplayName(sample));
     }
 
     public void testGetSpaceCodeFromDisplayName() {
@@ -449,7 +446,7 @@ public class SftpListUtilTest extends TestCase {
     }
 
     public void testGetEntityPermIdFromDisplayName() {
-        assertEquals("ENTITY-PERM-ID", SftpListUtil.getEntityPermIdFromDisplayName("naME Surname(ENTITY-PERM-ID)"));
+        assertEquals("ENTITY-PERM-ID", SftpListUtil.getEntityPermIdFromDisplayName("naME Surname (ENTITY-PERM-ID)"));
         assertEquals("ENTITY-PERM-ID", SftpListUtil.getEntityPermIdFromDisplayName("(ENTITY-PERM-ID)"));
         assertEquals("ENTITY-PERM-ID", SftpListUtil.getEntityPermIdFromDisplayName("ENTITY-PERM-ID"));
     }

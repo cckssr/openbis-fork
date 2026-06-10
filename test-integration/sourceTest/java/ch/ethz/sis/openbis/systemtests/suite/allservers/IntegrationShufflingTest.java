@@ -11,6 +11,7 @@ import static org.testng.Assert.fail;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Properties;
 import java.util.UUID;
 
 import org.testng.annotations.AfterMethod;
@@ -143,9 +144,13 @@ public class IntegrationShufflingTest
         openBIS.login(INSTANCE_ADMIN, PASSWORD);
 
         // create data at DSS (should be stored in the incoming share i.e. 1)
+        Properties dssProperties = environment.getDataStoreServer().getServiceProperties();
+        String dssCode = dssProperties.getProperty("data-store-server-code");
         DataSet dataSet =
-                facade.createDataSet(openBIS, experimentShuffledToShare2.getPermId(), ENTITY_CODE_PREFIX + UUID.randomUUID(), TEST_FILE_NAME,
-                        TEST_FILE_CONTENT.getBytes());
+                facade.createDataSet(openBIS, dssCode,
+                        experimentShuffledToShare2.getPermId(), null,
+                        ENTITY_CODE_PREFIX + UUID.randomUUID(), TEST_FILE_NAME,
+                        TEST_FILE_CONTENT.getBytes(), null);
 
         facade.assertDataExistsInStoreInShare(dataSet.getPermId().getPermId(), true, 1);
         facade.assertDataExistsInStoreInShare(dataSet.getPermId().getPermId(), false, 2);

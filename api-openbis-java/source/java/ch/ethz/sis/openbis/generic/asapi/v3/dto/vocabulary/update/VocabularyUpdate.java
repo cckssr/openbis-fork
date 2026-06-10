@@ -45,6 +45,9 @@ public class VocabularyUpdate implements IUpdate, IObjectUpdate<IVocabularyId>
     @JsonProperty
     private FieldUpdateValue<String> urlTemplate = new FieldUpdateValue<String>();
 
+    @JsonProperty
+    private FieldUpdateValue<Boolean> managedInternally = new FieldUpdateValue<>();
+
     @Override
     @JsonIgnore
     public IVocabularyId getObjectId()
@@ -98,6 +101,18 @@ public class VocabularyUpdate implements IUpdate, IObjectUpdate<IVocabularyId>
     public void setUrlTemplate(String urlTemplate)
     {
         this.urlTemplate.setValue(urlTemplate);
+    }
+
+    @JsonIgnore
+    public void setManagedInternally(Boolean managedInternally)
+    {
+        this.managedInternally.setValue(managedInternally);
+    }
+
+    @JsonIgnore
+    public FieldUpdateValue<Boolean> getManagedInternally()
+    {
+        return managedInternally;
     }
 
     @Override

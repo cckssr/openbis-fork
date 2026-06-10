@@ -38,6 +38,14 @@ class ExportData
 
     static final String RICH_TEXT_WITH_SPREADSHEET_PROPERTY_NAME = "MULTILINE_WITH_SPREADSHEET";
 
+    static final String ARRAY_INTEGER_PROPERTY_NAME = "ARRAY_INTEGER";
+
+    static final String ARRAY_REAL_PROPERTY_NAME = "ARRAY_REAL";
+
+    static final String ARRAY_STRING_PROPERTY_NAME = "ARRAY_STRING";
+
+    static final String ARRAY_TIMESTAMP_PROPERTY_NAME = "ARRAY_TIMESTAMP";
+
         static final Object[][] EXPORT_DATA = {
             // XLS: All fields
             {

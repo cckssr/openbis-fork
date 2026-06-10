@@ -19,6 +19,7 @@ import messages from '@src/js/common/messages.js'
 import TabViewer from '@src/js/components/common/tab/TabViewer.jsx'
 import { EntityFormContextProvider } from '@src/js/components/database/new-forms/components/EntityFormContextProvider.tsx';
 import FormErrorBoundary from '@src/js/components/database/new-forms/components/common/FormErrorBoundary.tsx';
+import UnsavedChangesDialog from '@src/js/components/common/dialog/UnsavedChangesDialog.jsx';
 
 const styles = theme => ({
   tabsPanel: {
@@ -37,6 +38,10 @@ class DatabaseComponent extends React.PureComponent {
       showDataBrowser: false,
       datasetTab: "0",
       showImagingGallery: false,
+      detailsTab: '0',
+      hasUnsavedChanges: false,
+      pendingTab: null,
+      showUnsavedChangesWarning: false,
     }
   }
 
@@ -53,7 +58,7 @@ class DatabaseComponent extends React.PureComponent {
         object.type === objectType.COLLECTION ||
         object.type === objectType.OBJECT
       ) {
-        canUseDataBrowser = await this.hasAvailableAfsDataStore()
+        canUseDataBrowser = await openbis.hasAfsDataStore()
       }
       if (object.type === objectType.SPACE) {
         const spaces = await openbis.getSpaces(
@@ -172,18 +177,6 @@ class DatabaseComponent extends React.PureComponent {
     </Container>
   }
 
-  async hasAvailableAfsDataStore() {
-    if (!openbis.isAfsSet()) {
-      return false
-    }
-    try {
-      return await openbis.hasAfsDataStore()
-    } catch (error) {
-      await AppController.getInstance().errorChange(error)
-      return false
-    }
-  }
-
   getGridSettingsId() {
     return "ata-browser-grid"
   }
@@ -206,6 +199,30 @@ class DatabaseComponent extends React.PureComponent {
     }
 
     await AppController.getInstance().setSetting(settingsId, settings)
+  }
+
+  handleUnsavedStateChange(changed) {
+    this.setState({ hasUnsavedChanges: changed })
+  }
+
+  handleDataBrowserTabChangeRequest(newTab) {
+    if (this.state.detailsTab === '0' && newTab !== '0' && this.state.hasUnsavedChanges) {
+      this.setState({ pendingTab: newTab, showUnsavedChangesWarning: true })
+    } else {
+      this.setState({ detailsTab: newTab })
+    }
+  }
+
+  handleUnsavedWarningConfirm() {
+    this.setState(state => ({
+      detailsTab: state.pendingTab,
+      pendingTab: null,
+      showUnsavedChangesWarning: false,
+    }))
+  }
+
+  handleUnsavedWarningCancel() {
+    this.setState({ pendingTab: null, showUnsavedChangesWarning: false })
   }
 
   renderDataBrowsers() {
@@ -252,13 +269,21 @@ class DatabaseComponent extends React.PureComponent {
     }
 
     return (
-      <TabViewer
-        tabs={tabs}
-        defaultTab={0}
-        variant='standard'
-      >
-        {tabContent}
-      </TabViewer>
+      <>
+        <UnsavedChangesDialog
+          open={this.state.showUnsavedChangesWarning}
+          onConfirm={this.handleUnsavedWarningConfirm}
+          onCancel={this.handleUnsavedWarningCancel}
+        />
+        <TabViewer
+          tabs={tabs}
+          value={this.state.detailsTab}
+          onTabChange={this.handleDataBrowserTabChangeRequest}
+          variant='standard'
+        >
+          {tabContent}
+        </TabViewer>
+      </>
     )
   }
 
@@ -314,6 +339,7 @@ class DatabaseComponent extends React.PureComponent {
           sessionID={AppController.getInstance().getSessionToken()}
           initialMode={String(object.type).includes('new') ? 'create' : 'view'}
           externalAppController={this.externalAppController}
+          onUnsavedStateChange={this.handleUnsavedStateChange}
         />
       </FormErrorBoundary>
     )

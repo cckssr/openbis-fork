@@ -38,18 +38,28 @@ import java.util.List;
 import java.util.Map;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
 
 public class UpdateTypeGroupTest extends AbstractTest
 {
-    @Test(expectedExceptions = UserFailureException.class, expectedExceptionsMessageRegExp = "(?s).*Type group code cannot be null.*")
-    public void testUpdateWithTypeGroupIdNull()
+    @Test(expectedExceptions = UserFailureException.class, expectedExceptionsMessageRegExp = "(?s).*Type Group id can not be null.*")
+    public void testUpdateWithTypeGroupIdNull_failure()
     {
         TypeGroupUpdate update = new TypeGroupUpdate();
         updateTypeGroup(TEST_USER, update);
     }
 
+    @Test(expectedExceptions = UserFailureException.class, expectedExceptionsMessageRegExp = "(?s).*Type Group code cannot be empty.*")
+    public void testUpdateWithTypeGroupCodeEmpty_failure()
+    {
+        TypeGroupUpdate update = new TypeGroupUpdate();
+        update.setTypeGroupId(new TypeGroupId("TYPE-GROUP"));
+        update.setCode("");
+        updateTypeGroup(TEST_USER, update);
+    }
+
     @Test
-    public void testUpdateWithTypeGroupIdNonexistent()
+    public void testUpdateWithTypeGroupIdNonexistent_failure()
     {
         final ITypeGroupId id = new TypeGroupId("IDONTEXIST");
         assertObjectNotFoundException(new IDelegatedAction()
@@ -66,7 +76,7 @@ public class UpdateTypeGroupTest extends AbstractTest
     }
 
     @Test
-    public void testUpdateWithTagUnauthorized()
+    public void testUpdateWithTagUnauthorized_failure()
     {
         final TypeGroupId id = new TypeGroupId( "TYPE-GROUP-INTERNAL");
         assertUnauthorizedObjectAccessException(new IDelegatedAction()
@@ -144,6 +154,124 @@ public class UpdateTypeGroupTest extends AbstractTest
         assertEquals(after.getCode(), newGroup.getCode());
         assertEquals(after.getTypeGroupAssignments().size(), 0);
 
+    }
+
+    @Test(expectedExceptions = UserFailureException.class, expectedExceptionsMessageRegExp = "(?s).*Type Group can be made internal only by the system user..*")
+    public void testUpdateInternalFlag_failure()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        TypeGroupCreation newGroup = new TypeGroupCreation();
+        newGroup.setCode("MY_TYPE_GROUP_FOR_UPDATE_INTERNAL");
+        newGroup.setMetaData(Map.of("key", "value"));
+        newGroup.setManagedInternally(false);
+
+        TypeGroupId group = v3api.createTypeGroups(sessionToken, Arrays.asList(newGroup)).get(0);
+        assertEquals(group.getPermId(), newGroup.getCode());
+
+        SampleTypeCreation newType = new SampleTypeCreation();
+        newType.setCode("SAMPLE_TYPE_WITH_TYPE_GROUP");
+        newType.setDescription("test");
+        newType.setGeneratedCodePrefix("TEST-");
+        EntityTypePermId sampleTypeId = v3api.createSampleTypes(sessionToken, Arrays.asList(newType)).get(0);
+        assertEquals(sampleTypeId.getPermId(), newType.getCode());
+
+        TypeGroupAssignmentCreation creation = new TypeGroupAssignmentCreation();
+        creation.setTypeGroupId(group);
+        creation.setSampleTypeId(sampleTypeId);
+
+        List<TypeGroupAssignmentId> ids = v3api.createTypeGroupAssignments(sessionToken, Arrays.asList(creation));
+
+        TypeGroup before = getTypeGroup(TEST_USER, group);
+        assertEquals(before.getCode(), newGroup.getCode());
+        assertEquals(before.getTypeGroupAssignments().size(), 1);
+
+
+        TypeGroupUpdate update = new TypeGroupUpdate();
+        update.setTypeGroupId(before.getId());
+
+        update.setManagedInternally(true);
+        updateTypeGroup(INSTANCE_ADMIN_USER, update);
+    }
+
+    @Test(expectedExceptions = UserFailureException.class, expectedExceptionsMessageRegExp = "(?s).*Type Group can not be made non-internal if it has internal assignments!.*")
+    public void testUpdateToNonInternalIfHasInternalAssignments_failure()
+    {
+        String sessionToken = v3api.loginAsSystem();
+
+        TypeGroupCreation newGroup = new TypeGroupCreation();
+        newGroup.setCode("INTERNAL_TYPE_GROUP_FOR_UPDATE");
+        newGroup.setManagedInternally(true);
+
+        TypeGroupId group = v3api.createTypeGroups(sessionToken, Arrays.asList(newGroup)).get(0);
+        assertEquals(group.getPermId(), newGroup.getCode());
+
+        SampleTypeCreation newType = new SampleTypeCreation();
+        newType.setCode("INTERNAL_SAMPLE_TYPE_WITH_TYPE_GROUP");
+        newType.setDescription("test");
+        newType.setGeneratedCodePrefix("TEST-");
+        newType.setManagedInternally(true);
+        EntityTypePermId sampleTypeId = v3api.createSampleTypes(sessionToken, Arrays.asList(newType)).get(0);
+        assertEquals(sampleTypeId.getPermId(), newType.getCode());
+
+        TypeGroupAssignmentCreation creation = new TypeGroupAssignmentCreation();
+        creation.setTypeGroupId(group);
+        creation.setSampleTypeId(sampleTypeId);
+        creation.setManagedInternally(true);
+
+        List<TypeGroupAssignmentId> ids = v3api.createTypeGroupAssignments(sessionToken, Arrays.asList(creation));
+
+        TypeGroup before = getTypeGroup(TEST_USER, group);
+        assertEquals(before.getCode(), newGroup.getCode());
+        assertEquals(before.getTypeGroupAssignments().size(), 1);
+
+
+        TypeGroupUpdate update = new TypeGroupUpdate();
+        update.setTypeGroupId(before.getId());
+        update.setCode("INTERNAL_TYPE_GROUP_FOR_UPDATE");
+        update.setManagedInternally(false);
+        updateTypeGroup(SYSTEM_USER, update);
+    }
+
+    @Test
+    public void testUpdateToInternal()
+    {
+        String sessionToken = v3api.loginAsSystem();
+
+        TypeGroupCreation newGroup = new TypeGroupCreation();
+        newGroup.setCode("NON_INTERNAL_TYPE_GROUP_FOR_UPDATE");
+        newGroup.setManagedInternally(false);
+
+        TypeGroupId group = v3api.createTypeGroups(sessionToken, Arrays.asList(newGroup)).get(0);
+        assertEquals(group.getPermId(), newGroup.getCode());
+
+        SampleTypeCreation newType = new SampleTypeCreation();
+        newType.setCode("SAMPLE_TYPE_WITH_TYPE_GROUP");
+        newType.setDescription("test");
+        newType.setGeneratedCodePrefix("TEST-");
+        EntityTypePermId sampleTypeId = v3api.createSampleTypes(sessionToken, Arrays.asList(newType)).get(0);
+        assertEquals(sampleTypeId.getPermId(), newType.getCode());
+
+        TypeGroupAssignmentCreation creation = new TypeGroupAssignmentCreation();
+        creation.setTypeGroupId(group);
+        creation.setSampleTypeId(sampleTypeId);
+        creation.setManagedInternally(false);
+
+        List<TypeGroupAssignmentId> ids = v3api.createTypeGroupAssignments(sessionToken, Arrays.asList(creation));
+
+        TypeGroup before = getTypeGroup(TEST_USER, group);
+        assertEquals(before.getCode(), newGroup.getCode());
+        assertEquals(before.getTypeGroupAssignments().size(), 1);
+
+
+        TypeGroupUpdate update = new TypeGroupUpdate();
+        update.setTypeGroupId(before.getId());
+        update.setCode("NON_INTERNAL_TYPE_GROUP_FOR_UPDATE");
+        update.setManagedInternally(true);
+        TypeGroup after = updateTypeGroup(SYSTEM_USER, update);
+
+        assertEquals(after.getCode(), newGroup.getCode());
+        assertTrue(after.isManagedInternally());
     }
 
     private TypeGroup getTypeGroup(String user, ITypeGroupId id)

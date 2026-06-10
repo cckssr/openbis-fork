@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.datastore.ICreateDataStoresOperationExecutor;
 import jakarta.persistence.PersistenceException;
 
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.typegroup.*;
@@ -327,6 +328,9 @@ public class OperationsExecutor implements IOperationsExecutor
 
     @Autowired
     private ICreateTypeGroupAssignmentsOperationExecutor createTypeGroupAssignmentsExecutor;
+
+    @Autowired
+    private ICreateDataStoresOperationExecutor createDataStoresExecutor;
 
     @Autowired
     private IUpdateSpacesOperationExecutor updateSpacesExecutor;
@@ -834,6 +838,7 @@ public class OperationsExecutor implements IOperationsExecutor
     private void executeCreations(List<? extends IOperation> operations,
             Map<IOperation, IOperationResult> resultMap, IOperationContext context)
     {
+        resultMap.putAll(createDataStoresExecutor.execute(context, operations));
         resultMap.putAll(createPersonsExecutor.execute(context, operations));
         resultMap.putAll(createPluginsExecutor.execute(context, operations));
         resultMap.putAll(createTypeGroupsExecutor.execute(context, operations));

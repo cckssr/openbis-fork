@@ -15,8 +15,11 @@
  */
 package ch.systemsx.cisd.openbis.generic.server.business.bo;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.update.PropertyTypeUpdate;
 import ch.systemsx.cisd.common.exceptions.AuthorizationFailureException;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IPropertyTypeUpdates;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewETPTAssignment;
 import ch.systemsx.cisd.openbis.generic.shared.dto.*;
 
 public class InternalPropertyTypeAuthorization
@@ -27,9 +30,30 @@ public class InternalPropertyTypeAuthorization
         checkPropertyType(session, propertyType);
     }
 
-    public void canUpdatePropertyType(Session session, PropertyTypePE propertyType)
+    public void canUpdatePropertyType(Session session, PropertyTypePE propertyType, PropertyTypeUpdate update)
     {
         checkPropertyType(session, propertyType);
+        // internal flag change check
+        if((!propertyType.isManagedInternally() && update.getManagedInternally().isModified() && update.getManagedInternally().getValue() == true) ||
+           ( propertyType.isManagedInternally() && update.getManagedInternally().isModified() && update.getManagedInternally().getValue() == false)) {
+            if(isSystemUser(session) == false) {
+                throw new AuthorizationFailureException(
+                        "Property types can be made internal only by the system user.");
+            }
+        }
+    }
+
+    public void canUpdatePropertyType(Session session, PropertyTypePE propertyType, IPropertyTypeUpdates update)
+    {
+        checkPropertyType(session, propertyType);
+        // internal flag change check
+        if((!propertyType.isManagedInternally() && update.isManagedInternally() == true) ||
+           (propertyType.isManagedInternally()  && update.isManagedInternally() == false)) {
+            if(isSystemUser(session) == false) {
+                throw new AuthorizationFailureException(
+                        "Property types can be made internal only by the system user.");
+            }
+        }
     }
 
     public void canDeletePropertyType(Session session, PropertyTypePE propertyType)
@@ -55,6 +79,15 @@ public class InternalPropertyTypeAuthorization
         } else if(entityType.isManagedInternally() && propertyAssignment.isMandatory() && isSystemUser(session) == false) {
             throw new AuthorizationFailureException(
                     "Mandatory property assignments for internal types can be managed only by the system user.");
+        }
+    }
+
+    public void canUpdateInternallyManagedFlag(Session session, EntityTypePropertyTypePE propertyAssignment, NewETPTAssignment assignmentUpdates) {
+        if((!propertyAssignment.isManagedInternallyNamespace() && assignmentUpdates.isManagedInternally())
+                || (propertyAssignment.isManagedInternallyNamespace() && !assignmentUpdates.isManagedInternally())) {
+            if(isSystemUser(session) == false) {
+                throw new AuthorizationFailureException("Internal property assignment flag can be managed only by the system user.");
+            }
         }
     }
 

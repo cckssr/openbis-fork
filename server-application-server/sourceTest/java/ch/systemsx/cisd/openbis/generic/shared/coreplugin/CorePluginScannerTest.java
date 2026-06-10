@@ -53,7 +53,7 @@ public class CorePluginScannerTest extends AbstractFileSystemTestCase
 
         CorePlugin plugin = plugins.get(0);
         assertEquals("plugin-X", plugin.getName());
-        assertEquals(15, plugin.getVersion());
+        assertEquals(17, plugin.getVersion());
         assertEquals("[plugin-Y:drop-boxes]", plugin.getRequiredPlugins().toString());
         assertEquals("TEST-SCRIPT", getMasterDataScript(plugin, scanner).trim());
 
@@ -64,7 +64,9 @@ public class CorePluginScannerTest extends AbstractFileSystemTestCase
 
         String output =
                 String.format(
-                        "WARN: No valid versions have been detected for plugin '%s/invalid-folder'.\n",
+                        "WARN: No valid AS plugin content has been detected for core plugin "
+                                + "'%s/invalid-folder'. Expected folder "
+                                + "'%s/invalid-folder/src/as'.\n",
                         pluginsDir.getAbsolutePath(), pluginsDir.getAbsolutePath());
         assertEquals(output, logger.toString());
     }
@@ -85,15 +87,17 @@ public class CorePluginScannerTest extends AbstractFileSystemTestCase
         CorePlugin plugin = plugins.get(0);
         assertEquals("plugin-X", plugin.getName());
         assertEquals(17, plugin.getVersion());
-        assertEquals("[]", plugin.getRequiredPlugins().toString());
+        assertEquals("[plugin-Y:drop-boxes]", plugin.getRequiredPlugins().toString());
 
         plugin = plugins.get(1);
         assertEquals("plugin-Y", plugin.getName());
-        assertEquals(2, plugin.getVersion());
+        assertEquals(3, plugin.getVersion());
 
         String output =
                 String.format(
-                        "WARN: No valid versions have been detected for plugin '%s/invalid-folder'.\n",
+                        "WARN: No valid DSS plugin content has been detected for core plugin "
+                                + "'%s/invalid-folder'. Expected folder "
+                                + "'%s/invalid-folder/src/dss'.\n",
                         pluginsDir.getAbsolutePath(), pluginsDir.getAbsolutePath());
         assertEquals(output, logger.toString());
     }

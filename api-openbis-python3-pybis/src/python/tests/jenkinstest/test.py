@@ -22,10 +22,10 @@ import util as util
 class TestCase(testcase.TestCase):
 
     def execute(self):
-        self.installOpenbis(technologies=['eln-lims', 'eln-lims-template-types', 'flow'])
+        self.installOpenbis(technologies=['eln-lims', 'eln-lims-types-templates', 'flow'])
         # pybis should be installed on the jenkins job configuration level
         self.openbisController = self.createOpenbisController()
-        self.openbisController.allUp()
+        self.openbisController.allUpNew()
         # run tests
         util.executeCommand(['pytest', '-s', '--verbose', '--junitxml=test_results_pybis.xml',
                              'api-openbis-python3-pybis/src/python/tests'])

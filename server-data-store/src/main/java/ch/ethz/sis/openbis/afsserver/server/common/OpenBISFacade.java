@@ -9,6 +9,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetc
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update.DataSetUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.DataStore;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.create.DataStoreCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.fetchoptions.DataStoreFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.search.DataStoreSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.Event;
@@ -44,6 +45,11 @@ public class OpenBISFacade implements IOpenBISFacade
         this.openBISUser = openBISUser;
         this.openBISPassword = openBISPassword;
         this.openBISTimeout = openBISTimeout;
+    }
+
+    @Override public void createDataStore(final DataStoreCreation creation)
+    {
+        executeOperation(openBIS -> openBIS.createDataStores(List.of(creation)));
     }
 
     @Override public SearchResult<Event> searchEvents(EventSearchCriteria criteria, EventFetchOptions fetchOptions)

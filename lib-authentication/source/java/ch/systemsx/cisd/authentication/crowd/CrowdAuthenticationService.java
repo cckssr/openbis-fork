@@ -36,7 +36,8 @@ import org.eclipse.jetty.http.HttpMethod;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.XMLReaderFactory;
+
+import ch.systemsx.cisd.common.xml.XMLInfraStructure;
 
 import ch.rinn.restrictions.Private;
 import ch.systemsx.cisd.authentication.IAuthenticationService;
@@ -486,7 +487,7 @@ public class CrowdAuthenticationService implements IAuthenticationService
     private final static Map<String, String> parseXmlResponse(final String xmlResponse)
             throws SAXException, IOException
     {
-        final XMLReader xmlReader = XMLReaderFactory.createXMLReader();
+        final XMLReader xmlReader = XMLInfraStructure.createSecureXMLReader();
         final SOAPAttributeContentHandler contentHandler = new SOAPAttributeContentHandler();
         xmlReader.setContentHandler(contentHandler);
         final StringReader stringReader = new StringReader(xmlResponse);

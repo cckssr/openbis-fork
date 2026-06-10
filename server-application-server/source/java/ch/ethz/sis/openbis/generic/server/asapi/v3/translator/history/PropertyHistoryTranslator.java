@@ -17,6 +17,8 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.translator.history;
 
 import java.util.*;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.history.HistoryEntry;
@@ -34,6 +36,8 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.property.PropertyR
  */
 public abstract class PropertyHistoryTranslator extends AbstractCachingTranslator<Long, ObjectHolder<List<HistoryEntry>>, HistoryEntryFetchOptions>
 {
+
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     @Autowired
     private IPersonTranslator personTranslator;
@@ -210,9 +214,16 @@ public abstract class PropertyHistoryTranslator extends AbstractCachingTranslato
         return entry;
     }
 
-    private String convertArrayToString(String[] array)
+    private static String convertArrayToString(final Object[] array)
     {
-        return Arrays.stream(array).reduce((a, b) -> a + ", " + b).get();
+        try
+        {
+            return MAPPER.writeValueAsString(array);
+        } catch (final JsonProcessingException e)
+        {
+            throw new IllegalArgumentException("Not supported value for array: " +
+                    Arrays.toString(array) + ".", e);
+        }
     }
 
 }

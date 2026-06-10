@@ -12,6 +12,7 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue",
 		this.showParents = new FieldUpdateValue();
 		this.showParentMetadata = new FieldUpdateValue();
 		this.validationPluginId = new FieldUpdateValue();
+		this.managedInternally = new FieldUpdateValue();
 		this.propertyAssignments = new PropertyAssignmentListUpdateValue();
 		this.metaData = new ListUpdateMapValues();
 	};
@@ -28,6 +29,7 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue",
 		prototype.showParents = null;
 		prototype.showParentMetadata = null;
 		prototype.validationPluginId = null;
+		prototype.managedInternally = null;
 		prototype.propertyAssignments = null;
 		prototype.metaData = null;
 
@@ -94,6 +96,12 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue",
 		prototype.getValidationPluginId = function() {
 			return this.validationPluginId;
 		};
+		prototype.setManagedInternally = function(managedInternally) {
+			this.managedInternally.setValue(managedInternally);
+		};
+		prototype.getManagedInternally = function() {
+			return this.managedInternally;
+		};
 		prototype.getPropertyAssignments = function() {
 			return this.propertyAssignments;
 		};
@@ -137,6 +145,10 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue",
 		validationPluginId : {
 			name : "FieldUpdateValue",
 			arguments : [ "IPluginId" ]
+		},
+		managedInternally : {
+			name : "FieldUpdateValue",
+			arguments : [ "Boolean" ]
 		},
 		propertyAssignments : "PropertyAssignmentListUpdateValue",
         metaData : "ListUpdateMapValues"

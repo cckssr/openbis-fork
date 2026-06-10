@@ -58,6 +58,9 @@ public class PropertyTypeUpdate implements IUpdate, IObjectUpdate<IPropertyTypeI
     @JsonProperty
     private ListUpdateMapValues metaData = new ListUpdateMapValues();
 
+    @JsonProperty
+    private FieldUpdateValue<Boolean> managedInternally = new FieldUpdateValue<>();
+
     @Override
     @JsonIgnore
     public IPropertyTypeId getObjectId()
@@ -141,6 +144,18 @@ public class PropertyTypeUpdate implements IUpdate, IObjectUpdate<IPropertyTypeI
     public ListUpdateMapValues getMetaData()
     {
         return metaData;
+    }
+
+    @JsonIgnore
+    public FieldUpdateValue<Boolean> getManagedInternally()
+    {
+        return managedInternally;
+    }
+
+    @JsonIgnore
+    public void setManagedInternally(boolean managedInternally)
+    {
+        this.managedInternally.setValue(managedInternally);
     }
 
     @Override

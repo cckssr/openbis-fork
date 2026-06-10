@@ -39,8 +39,8 @@ import ch.systemsx.cisd.common.shared.basic.string.CommaSeparatedListBuilder;
  */
 public class SetEnableTechnologiesVariableAction implements PanelAction
 {
-    static final String[] MODULES = { "monitoring-support", "dropbox-monitor", "dataset-uploader",
-            "dataset-file-search", "xls-import", "search-store", "openbis-sync", "admin" };
+    static final String[] MODULES = { "monitoring-support",
+            "dataset-file-search", "xls-import", "openbis-sync", "admin", "eln-lims", "eln-lims-types-templates" };
 
     static final String ENABLED_TECHNOLOGIES_VARNAME = "ENABLED_TECHNOLOGIES";
 
@@ -109,23 +109,16 @@ public class SetEnableTechnologiesVariableAction implements PanelAction
             String technologyFlag = data.getVariable(technology);
             if (Boolean.TRUE.toString().equalsIgnoreCase(technologyFlag))
             {
-                enabledModules.add(lowerCasedTechnology);
-
                 if(technology == GlobalInstallationContext.TECHNOLOGY_IMAGING)
                 {
-                    enabledModules.add("imaging-nanonis");
-                    enabledModules.add("imaging-test");
-                    allTechnologies.add("imaging-nanonis");
-                    allTechnologies.add("imaging-test");
-                }
-
-                if (technology == GlobalInstallationContext.TECHNOLOGY_MICROSCOPY ||
-                        technology == GlobalInstallationContext.TECHNOLOGY_FLOW_CYTOMETRY)
-                {
-                    String lowerCasedTechnologyShared =
-                            GlobalInstallationContext.TECHNOLOGY_SHARED_MICROSCOPY_FLOW_CYTOMETRY.toLowerCase();
-                    enabledModules.add(lowerCasedTechnologyShared);
-                    allTechnologies.add(lowerCasedTechnologyShared);
+                    enabledModules.add("eln-lims-imaging-core");
+                    enabledModules.add("eln-lims-imaging-nanonis-adapter");
+                    enabledModules.add("eln-lims-imaging-test-adapter");
+                    allTechnologies.add("eln-lims-imaging-core");
+                    allTechnologies.add("eln-lims-imaging-nanonis-adapter");
+                    allTechnologies.add("eln-lims-imaging-test-adapter");
+                } else {
+                    enabledModules.add(lowerCasedTechnology);
                 }
             }
         }

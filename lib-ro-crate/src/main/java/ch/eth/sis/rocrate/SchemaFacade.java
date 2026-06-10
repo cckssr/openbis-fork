@@ -266,9 +266,21 @@ public class SchemaFacade implements ISchemaFacade
         return metadataEntries.get(id);
     }
 
+    public List<IMetadataEntry> getAllEntries()
+    {
+        return metadataEntries.values().stream().toList();
+
+    }
+
     @Override
     public List<IMetadataEntry> getEntries(String rdfsClassId)
     {
+        if (rdfsClassId.startsWith("schema:"))
+        {
+            getEntries(rdfsClassId.replace("schema:", ""));
+        }
+
+
         return metadataEntries.values().stream()
                 .filter(x -> matchClasses(resolvePrefixSingleValue(rdfsClassId), x))
                 .toList();
@@ -612,7 +624,7 @@ public class SchemaFacade implements ISchemaFacade
         {
             return identifiersToEnlong.get(type);
         }
-        Map<String, String> shorten = identifiersToEnlong.entrySet().stream()
+        Map<String, String> shorten = identifiersToShorten.entrySet().stream()
                 .collect(Collectors.toMap(x -> x.getValue(), x -> x.getKey()));
         if (shorten.containsKey(type))
         {

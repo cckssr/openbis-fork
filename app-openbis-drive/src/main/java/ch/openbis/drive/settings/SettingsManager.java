@@ -6,7 +6,6 @@ import ch.openbis.drive.db.SyncJobEventDAO;
 import ch.openbis.drive.model.Settings;
 import ch.openbis.drive.model.SyncJob;
 import ch.openbis.drive.notifications.NotificationManager;
-import ch.openbis.drive.util.OpenBISDriveUtil;
 import ch.openbis.drive.util.StartAtLoginUtil;
 import lombok.NonNull;
 import lombok.SneakyThrows;
@@ -134,7 +133,7 @@ public class SettingsManager {
             if(bytes.length > 0) {
                 return Optional.of(JacksonObjectMapper.getInstance().readValue(new ByteArrayInputStream(bytes), Settings.class));
             } else {
-                return Optional.empty();
+                throw new IllegalArgumentException("Empty settings file");
             }
         } else {
             return Optional.empty();

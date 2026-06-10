@@ -105,7 +105,9 @@ start(){
 
 stop(){
   if [ -f "$PIDFILE" ]; then
-    kill $(cat "$PIDFILE")
+    PID=$(cat "$PIDFILE")
+    pkill -P $PID 2>/dev/null
+    kill $PID
     rm "$PIDFILE"
     echo "Stopped RO-CRATE server."
   else

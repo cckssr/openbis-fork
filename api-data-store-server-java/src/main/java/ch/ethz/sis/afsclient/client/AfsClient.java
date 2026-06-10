@@ -1,11 +1,13 @@
 package ch.ethz.sis.afsclient.client;
 
 import java.io.ByteArrayInputStream;
+import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.net.http.HttpTimeoutException;
 import java.nio.ByteBuffer;
 import java.nio.channels.CompletionHandler;
 import java.nio.charset.StandardCharsets;
@@ -29,8 +31,10 @@ import ch.ethz.sis.afsapi.api.ClientAPI;
 import ch.ethz.sis.afsapi.api.PublicAPI;
 import ch.ethz.sis.afsapi.dto.ApiResponse;
 import ch.ethz.sis.afsapi.dto.Chunk;
+import ch.ethz.sis.afsapi.dto.ExceptionReason;
 import ch.ethz.sis.afsapi.dto.File;
 import ch.ethz.sis.afsapi.dto.FreeSpace;
+import ch.ethz.sis.afsapi.exception.ThrowableReason;
 import ch.ethz.sis.afsclient.client.exception.ClientExceptions;
 import ch.ethz.sis.afsjson.JsonObjectMapper;
 import ch.ethz.sis.afsjson.jackson.JacksonObjectMapper;
@@ -396,6 +400,19 @@ public final class AfsClient implements PublicAPI, ClientAPI
         }
     }
 
+    @Override public Object status(@NonNull final UUID operationId) throws Exception
+    {
+        validateSessionToken();
+
+        if (serverApi != null)
+        {
+            return serverApi.status(operationId);
+        } else
+        {
+            return request("GET", "status", Object.class, Map.of("operationId", operationId.toString()));
+        }
+    }
+
     @Override
     public void begin(final UUID transactionId) throws Exception
     {
@@ -533,6 +550,9 @@ public final class AfsClient implements PublicAPI, ClientAPI
             mutableParams.put("transactionManagerKey", transactionManagerKey);
         }
 
+        final UUID operationId = UUID.randomUUID();
+        final long startTime = System.currentTimeMillis();
+
         byte[] bodyBytes = (body != null) ? body : new byte[0];
         String queryParameters = null;
         if (httpMethod.equals("GET") || !sendParamsInBodyPostAndDelete)
@@ -554,6 +574,7 @@ public final class AfsClient implements PublicAPI, ClientAPI
                 .version(HttpClient.Version.HTTP_1_1)
                 .timeout(Duration.ofMillis(timeout))
                 .header("Content-Type", "application/octet-stream")
+                .header("openbis.operation-id", operationId.toString())
                 .method(httpMethod, HttpRequest.BodyPublishers.ofByteArray(bodyBytes));
 
         final HttpRequest request = builder.build();
@@ -591,11 +612,51 @@ public final class AfsClient implements PublicAPI, ClientAPI
             throw ClientExceptions.API_ERROR.getInstance(res);
         } else if (statusCode >= 500 && statusCode < 600)
         {
+            if (HttpURLConnection.HTTP_GATEWAY_TIMEOUT == statusCode && !"status".equals(apiMethod)) {
+                return getLongRunningOperationResult(apiMethod, startTime, operationId);
+            }
             throw ClientExceptions.SERVER_ERROR.getInstance(String.valueOf(statusCode));
         } else
         {
             throw ClientExceptions.OTHER_ERROR.getInstance(String.valueOf(statusCode));
         }
+    }
+
+    private <T> T getLongRunningOperationResult(final String apiMethod, final long startTime, final UUID operationId) throws Exception
+    {
+        final int maxSleepTime = 60000;
+        int sleepTime = 500;
+
+        while (System.currentTimeMillis() < startTime + timeout) {
+            Object result = null;
+            try
+            {
+                result = status(operationId);
+            } catch (Exception e) {
+                // a SERVER_ERROR thrown by "status" method if allowed (i.e. doesn't break the waiting for the long-running operation result)
+                if(e.getCause() instanceof ThrowableReason && ((ThrowableReason) e.getCause()).getReason() instanceof final ExceptionReason reason){
+                    if (ClientExceptions.SERVER_ERROR.getExceptionCode() != reason.getExceptionCode())
+                    {
+                        throw e;
+                    }
+                } else {
+                    throw e;
+                }
+            }
+
+            if (result != null) {
+                return (T) result;
+            } else {
+                try
+                {
+                    Thread.sleep(sleepTime);
+                } catch (InterruptedException e) {
+                    break;
+                }
+                sleepTime = Math.min(sleepTime * 2, maxSleepTime);
+            }
+        }
+        throw new HttpTimeoutException("Operation '" + apiMethod + "' timed out after " + (System.currentTimeMillis() - startTime) + " milliseconds.");
     }
 
     private static SSLContext getInsecureSslContext() throws NoSuchAlgorithmException, KeyManagementException {

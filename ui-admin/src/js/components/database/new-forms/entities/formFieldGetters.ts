@@ -1,6 +1,10 @@
 import {FormField} from '@src/js/components/database/new-forms/types/formITypes.ts';
-import {FormFieldDataType, FormSection, Widget} from '@src/js/components/database/new-forms/types/formEnums.ts';
-import {getFormatedDate} from '@src/js/components/database/new-forms/utils/dateUtil.ts';
+import {
+  FormFieldDataType,
+  FormSection,
+  Widget
+} from '@src/js/components/database/new-forms/types/formEnums.ts';
+import {getFormattedTimestamp} from '@src/js/components/database/new-forms/utils/dateUtil.ts';
 
 // Helper type for overrides
 export type FieldOverrides<T = any> = Partial<Omit<FormField<T>, 'value'>> & { value?: T };
@@ -200,7 +204,7 @@ export function getRegistrationDateField(dto: any, overrides: FieldOverrides = {
   return {
     id: permId + '-registrationDate',
     label: 'Registration Date',
-    value: overrides.value ?? (dto.registrationDate ? getFormatedDate(new Date(dto.registrationDate)) : ''),
+    value: overrides.value ?? (dto.registrationDate ? getFormattedTimestamp(dto.registrationDate) : ''),
     dataType: FormFieldDataType.TIMESTAMP,
     required: false,
     readOnly: true,
@@ -234,7 +238,7 @@ export function getModificationDateField(dto: any, overrides: FieldOverrides = {
   return {
     id: permId + '-modificationDate',
     label: 'Modification Date',
-    value: overrides.value ?? (dto.modificationDate ? getFormatedDate(new Date(dto.modificationDate)) : ''),
+    value: overrides.value ?? (dto.modificationDate ? getFormattedTimestamp(dto.modificationDate) : ''),
     dataType: FormFieldDataType.TIMESTAMP,
     required: false,
     readOnly: true,
@@ -306,6 +310,18 @@ export function getPropertyValue(
       case FormFieldDataType.SPREADSHEET:
         // Multi-value spreadsheet uses JSON array
         return dto.getMultiValueJsonProperty?.(propertyCode) || null;
+      case FormFieldDataType.JSON:
+        return dto.getMultiValueJsonProperty?.(propertyCode) || null;
+      case FormFieldDataType.XML:
+        return dto.getMultiValueXmlProperty?.(propertyCode) || null;
+      case FormFieldDataType.ARRAY_INTEGER:
+        return dto.getMultiValueIntegerArrayProperty?.(propertyCode) || null;
+      case FormFieldDataType.ARRAY_REAL:
+        return dto.getMultiValueRealArrayProperty?.(propertyCode) || null;
+      case FormFieldDataType.ARRAY_STRING:
+        return dto.getMultiValueStringArrayProperty?.(propertyCode) || null;
+      case FormFieldDataType.ARRAY_TIMESTAMP:
+        return dto.getMultiValueTimestampArrayProperty?.(propertyCode) || null;
       default:
         // Fallback to generic getProperty for unknown types
         return dto.getProperty?.(propertyCode) || null;
@@ -338,6 +354,18 @@ export function getPropertyValue(
     case FormFieldDataType.WORD_PROCESSOR_CLASSIC:
     case FormFieldDataType.MONOSPACE_FONT:
       return dto.getRichTextProperty?.(propertyCode) || null;
+    case FormFieldDataType.JSON:
+      return dto.getJsonProperty?.(propertyCode) || null;
+    case FormFieldDataType.XML:
+      return dto.getXmlProperty?.(propertyCode) || null;
+    case FormFieldDataType.ARRAY_INTEGER:
+      return dto.getIntegerArrayProperty?.(propertyCode) || null;
+    case FormFieldDataType.ARRAY_REAL:
+      return dto.getRealArrayProperty?.(propertyCode) || null;
+    case FormFieldDataType.ARRAY_STRING:
+      return dto.getStringArrayProperty?.(propertyCode) || null;
+    case FormFieldDataType.ARRAY_TIMESTAMP:
+      return dto.getTimestampArrayProperty?.(propertyCode) || null;
     default:
       // Fallback to generic getProperty for unknown types
       return dto.getProperty?.(propertyCode) || null;
@@ -397,6 +425,24 @@ export function setPropertyValue(
         // Multi-value spreadsheet uses JSON array
         dto.setMultiValueJsonProperty?.(propertyCode, value);
         return;
+      case FormFieldDataType.JSON:
+        dto.setMultiValueJsonProperty?.(propertyCode, value);
+        return;
+      case FormFieldDataType.XML:
+        dto.setMultiValueXmlProperty?.(propertyCode, value);
+        return;
+      case FormFieldDataType.ARRAY_INTEGER:
+        dto.setMultiValueIntegerArrayProperty?.(propertyCode, normalizeMultiValueArrayPropertyValues(value, dataType));
+        return;
+      case FormFieldDataType.ARRAY_REAL:
+        dto.setMultiValueRealArrayProperty?.(propertyCode, normalizeMultiValueArrayPropertyValues(value, dataType));
+        return;
+      case FormFieldDataType.ARRAY_STRING:
+        dto.setMultiValueStringArrayProperty?.(propertyCode, normalizeMultiValueArrayPropertyValues(value, dataType));
+        return;
+      case FormFieldDataType.ARRAY_TIMESTAMP:
+        dto.setMultiValueTimestampArrayProperty?.(propertyCode, normalizeMultiValueArrayPropertyValues(value, dataType));
+        return;
       default:
         // Fallback to generic setProperty for unknown types
         dto.setProperty?.(propertyCode, value);
@@ -440,11 +486,33 @@ export function setPropertyValue(
     case FormFieldDataType.MONOSPACE_FONT:
       dto.setRichTextProperty?.(propertyCode, value);
       return;
+    case FormFieldDataType.JSON:
+      dto.setJsonProperty?.(propertyCode, value);
+      return;
+    case FormFieldDataType.XML:
+      dto.setXmlProperty?.(propertyCode, value);
+      return;
+    case FormFieldDataType.ARRAY_INTEGER:
+      dto.setIntegerArrayProperty?.(propertyCode, normalizeArrayPropertyValue(value, dataType));
+      return;
+    case FormFieldDataType.ARRAY_REAL:
+      dto.setRealArrayProperty?.(propertyCode, normalizeArrayPropertyValue(value, dataType));
+      return;
+    case FormFieldDataType.ARRAY_STRING:
+      dto.setStringArrayProperty?.(propertyCode, normalizeArrayPropertyValue(value, dataType));
+      return;
+    case FormFieldDataType.ARRAY_TIMESTAMP:
+      dto.setTimestampArrayProperty?.(propertyCode, normalizeArrayPropertyValue(value, dataType));
+      return;
     default:
       // Fallback to generic setProperty for unknown types
       dto.setProperty?.(propertyCode, value);
       return;
   }
+}
+
+function normalizeMultiValueArrayPropertyValues(values: any[], dataType: FormFieldDataType): any[][] {
+  return values.map(value => normalizeArrayPropertyValue(value, dataType));
 }
 
 function normalizeArrayPropertyValue(value: any, dataType: FormFieldDataType): any[] {
@@ -520,7 +588,7 @@ function mapAssignmentToFormField(
   const propertyValue = getPropertyValue(dto, propertyCode, dataType, isMultiValue) ?? '';
 
   const column = determineFieldColumn(dataType, section, assignment.ordinal);
-  const meta = buildFieldMeta(propertyType.metaData, dataType);
+  const meta = buildFieldMeta(propertyType.metaData, dataType, propertyType);
 
   const readOnly = fieldOverrides.readOnly !== undefined 
     ? fieldOverrides.readOnly 
@@ -600,9 +668,9 @@ function determineFieldColumn(
  * @param dataType - The FormFieldDataType
  * @returns Meta object
  */
-function buildFieldMeta(propertyMetaData: any, dataType: FormFieldDataType): any {
+function buildFieldMeta(propertyMetaData: any, dataType: FormFieldDataType, propertyType?: any): any {
   const meta: any = { ...(propertyMetaData || {}) };
-  
+
   // Add mode for word processor types
   if (dataType === FormFieldDataType.WORD_PROCESSOR) {
     meta.mode = 'inline';
@@ -611,7 +679,11 @@ function buildFieldMeta(propertyMetaData: any, dataType: FormFieldDataType): any
   } else if (dataType === FormFieldDataType.WORD_PROCESSOR_CLASSIC) {
     meta.mode = 'classic';
   }
-  
+
+  if (dataType === FormFieldDataType.SAMPLE && propertyType?.sampleType?.code) {
+    meta.sampleTypeCode = propertyType.sampleType.code;
+  }
+
   return meta;
 }
 

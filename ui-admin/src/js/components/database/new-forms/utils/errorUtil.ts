@@ -50,9 +50,12 @@ export function formatError(error: any, fallbackMessage: string = 'An unexpected
   }
 
   // Handle objects with message property
-  if (typeof error === 'object' && error !== null) {
-    const message = error.message || error.error || error.msg || error.toString();
-    
+  if (typeof error === 'object') {
+    const message = error.message
+        || (typeof error.error === 'string' ? error.error : error.error?.message)
+        || error.msg
+        || error.toString();
+
     return {
       message: typeof message === 'string' ? message : fallbackMessage,
       details: error.details || error.description,

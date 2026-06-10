@@ -29,6 +29,7 @@ import ch.ethz.sis.rocrateserver.openapi.v1.service.helper.validation.RoCrateSch
 import ch.ethz.sis.rocrateserver.openapi.v1.service.helper.validation.ValidationResult;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.jobs.importjob.download.SessionWorkSpacveSaving;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.params.ImportParams;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 import ch.openbis.rocrate.app.reader.RdfToModel;
 import ch.openbis.rocrate.app.reader.externalfile.FileDownloader;
 import ch.openbis.rocrate.app.reader.externalfile.IFileDownloader;
@@ -37,11 +38,12 @@ import edu.kit.datamanager.ro_crate.entities.AbstractEntity;
 import edu.kit.datamanager.ro_crate.reader.FolderReader;
 import edu.kit.datamanager.ro_crate.reader.RoCrateReader;
 import io.quarkus.logging.Log;
-import ch.ethz.sis.shared.log.classic.impl.Logger;
 
 import java.io.*;
 import java.net.URL;
 import java.nio.file.Path;
+import java.time.Clock;
+import java.time.Instant;
 import java.util.*;
 import java.util.function.Function;
 import java.util.zip.ZipEntry;
@@ -66,9 +68,16 @@ public final class ImportJob implements IAsyncJob
 
     ImportDelegate.OpenBisImportResult importResult;
 
+    List<Path> pathsForDeletion;
+
     String username;
 
-    public ImportJob(String username, ImportParams importParams, InputStream body, OpenBIS openBIS,
+    Instant completionOrFailInstant;
+
+    Clock clock;
+
+    public ImportJob(Clock clock, String username, ImportParams importParams, InputStream body,
+            OpenBIS openBIS,
             boolean validateOnly)
     {
         this.jobId =  UUID.randomUUID();
@@ -77,6 +86,8 @@ public final class ImportJob implements IAsyncJob
         this.body = body;
         this.openBIS = openBIS;
         this.validateOnly = validateOnly;
+        this.pathsForDeletion = new ArrayList<>();
+        this.clock = clock;
     }
 
 
@@ -153,7 +164,7 @@ public final class ImportJob implements IAsyncJob
                 RoCrateExceptions.throwInstance(RoCrateExceptions.MALFORMED_INPUT);
 
             }
-            for (var type : types)
+            for (IType type : types)
             {
                 entryList.addAll(schemaFacade.getEntries(type.getId()));
             }
@@ -187,6 +198,7 @@ public final class ImportJob implements IAsyncJob
             byte[] importExcel = ExcelWriter.convert(ExcelWriter.Format.ZIP_EXPORT, model);
             java.nio.file.Path modelAsExcel;
             modelAsExcel = Path.of(UUID.randomUUID() + ".zip");
+            pathsForDeletion.add(modelAsExcel);
             if (validateOnly)
             {
                 importResult = new ImportDelegate.OpenBisImportResult(List.of(), Map.of(),
@@ -203,6 +215,7 @@ public final class ImportJob implements IAsyncJob
                     new ByteArrayInputStream(importExcel));
             java.nio.file.Path realPath =
                     SessionWorkSpaceManager.getRealPath(openBIS.getSessionToken(), modelAsExcel);
+            pathsForDeletion.add(realPath);
             openBIS.uploadToSessionWorkspace(realPath);
 
             ImportData importData = new ImportData();
@@ -270,10 +283,14 @@ public final class ImportJob implements IAsyncJob
                     importOperationResult.getImportResult().getObjectIds().stream()
                             .map(id -> id.toString()).toList(),
                     model.getExternalToOpenBisIdentifiers(), validationResult);
+
         } catch (Exception e)
         {
             LOG.error("Import did not work", e);
             this.exception = e;
+        } finally
+        {
+            this.completionOrFailInstant = clock.instant();
         }
     }
 
@@ -389,8 +406,24 @@ public final class ImportJob implements IAsyncJob
         return destFile;
     }
 
+    public void delete() throws IOException
+    {
+        for (Path path : pathsForDeletion)
+        {
+            SessionWorkSpaceManager.delete(path);
+        }
+
+    }
+
+    ;
+
     public boolean isValidateOnly()
     {
         return validateOnly;
+    }
+
+    public Instant getCompletionOrFailInstant()
+    {
+        return completionOrFailInstant;
     }
 }

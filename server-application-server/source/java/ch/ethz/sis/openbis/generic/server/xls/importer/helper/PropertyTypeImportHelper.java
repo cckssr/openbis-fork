@@ -146,6 +146,9 @@ public class PropertyTypeImportHelper extends BasicImportHelper
         String vocabularyCode = getValueByColumnName(headers, values, Attribute.VocabularyCode);
         String metadata = getValueByColumnName(headers, values, Attribute.Metadata);
 
+        if(code == null || code.isEmpty()) {
+            throw new UserFailureException("Mandatory field is missing or empty: Code.");
+        }
         String propertyData =
                 code + propertyLabel + description + dataType + vocabularyCode + metadata;
         if (this.propertyCache.get(code) == null)
@@ -157,18 +160,19 @@ public class PropertyTypeImportHelper extends BasicImportHelper
             throw new UserFailureException("Ambiguous property " + code + " found, it has been declared before with different attributes.");
         }
 
-        if(!delayedExecutor.isSystem())
-        {
-            String internal = getValueByColumnName(headers, values, Attribute.Internal);
-            boolean isInternal = ImportUtils.isTrue(internal);
-            if(isInternal)
-            {
-                PropertyType pt = delayedExecutor.getPropertyType(new PropertyTypePermId(code));
-                if(pt == null) {
-                    throw new UserFailureException("Non-system user can not create internal property types!");
-                }
-            }
+    }
+
+    @Override
+    protected boolean isNewVersion(Map<String, Integer> header, List<String> values)
+    {
+        String internal = getValueByColumnName(header, values, Attribute.Internal);
+        boolean isInternalNamespace = ImportUtils.isTrue(internal);
+
+        if(isInternalNamespace && !delayedExecutor.isSystem()) {
+            //if exists, skip
+            return !isObjectExist(header, values);
         }
+        return true;
     }
 
     @Override
@@ -177,13 +181,6 @@ public class PropertyTypeImportHelper extends BasicImportHelper
         return ImportTypes.PROPERTY_TYPE;
     }
 
-    @Override protected boolean isNewVersion(Map<String, Integer> header, List<String> values)
-    {
-        return isNewVersionWithInternalNamespace(header, values, versions,
-                delayedExecutor.isSystem(),
-                getTypeName().getType(),
-                Attribute.Version, Attribute.Code, Attribute.Internal);
-    }
 
     @Override
     protected void updateVersion(Map<String, Integer> header, List<String> values)
@@ -305,7 +302,10 @@ public class PropertyTypeImportHelper extends BasicImportHelper
             creation.setSampleTypeId(new EntityTypePermId(dataTypeObjectType, EntityKind.SAMPLE));
         }
 
-        creation.setManagedInternally(ImportUtils.isTrue(internal));
+        if(delayedExecutor.isSystem())
+        {
+            creation.setManagedInternally(ImportUtils.isTrue(internal));
+        }
         creation.setMultiValue(ImportUtils.isTrue(multiValued));
 
         if (dataType == DataType.CONTROLLEDVOCABULARY && vocabularyCode != null && !vocabularyCode.isEmpty())
@@ -333,6 +333,7 @@ public class PropertyTypeImportHelper extends BasicImportHelper
         String dataType = getValueByColumnName(header, values, Attribute.DataType);
         String vocabularyCode = getValueByColumnName(header, values, Attribute.VocabularyCode);
         String metadata = getValueByColumnName(header, values, Attribute.Metadata);
+        String internal = getValueByColumnName(header, values, Attribute.Internal);
 
         SemanticAnnotation annotation = annotationCache.getCachedSemanticAnnotation(SemanticAnnotationType.PropertyType, null, code);
         if(annotation != null) {
@@ -368,6 +369,10 @@ public class PropertyTypeImportHelper extends BasicImportHelper
             {
                 update.setDescription(description);
             }
+        }
+
+        if(delayedExecutor.isSystem() && internal != null && !internal.isEmpty()) {
+            update.setManagedInternally(ImportUtils.isTrue(internal));
         }
 
         PropertyType propertyType = delayedExecutor.getPropertyType(propertyTypePermId);

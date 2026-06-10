@@ -3,14 +3,6 @@ buildscript {
 
     repositories repositoryConfig
 
-    repositories {
-        ivy {
-            ivyPattern "https://sissource.ethz.ch/openbis/openbis-public/openbis-ivy/-/raw/main/owasp/dependency-check-gradle/12.2.0/[organisation]/[module]/ivy-[revision].xml"
-            artifactPattern "https://sissource.ethz.ch/openbis/openbis-public/openbis-ivy/-/raw/main/owasp/dependency-check-gradle/12.2.0/[organisation]/[module]/jars/[artifact]-[revision](-[classifier]).[ext]"
-            artifactPattern "https://sissource.ethz.ch/openbis/openbis-public/openbis-ivy/-/raw/main/owasp/dependency-check-gradle/12.2.0/[organisation]/[module]/bundles/[artifact]-[revision](-[classifier]).[ext]"
-        }
-    }
-
     dependencies {
         classpath(libs.org.owasp.dependency.check.gradle)
     }
@@ -52,7 +44,17 @@ dependencyCheck {
     data {
         directory = "${projectDir}/.dependency-check-data"
     }
-    skipConfigurations = ["testRuntimeClasspath", "testCompileClasspath"]
+    // Keep test-only dependencies out of the report without suppressing the
+    // same artifacts if they are introduced on a production classpath.
+    skipTestGroups = true
+    skipConfigurations = [
+            "testRuntimeClasspath",
+            "testCompileClasspath",
+            "javadoc_sources",
+            "javadoc_compilation",
+            "queryApiJavadoc",
+            "screeningApiJavadoc"
+    ]
     // scanConfigurations = ["runtimeClasspath"]
     proxy {
         server = 'proxy.ethz.ch'

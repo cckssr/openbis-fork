@@ -230,17 +230,47 @@ public abstract class AbstractXLSExportHelper<ENTITY_TYPE extends IEntityType> i
         }
         if (propertyValue.getClass().isArray())
         {
-            StringBuilder sb = new StringBuilder();
-            Serializable[] values = (Serializable[]) propertyValue;
-            for (Serializable value : values)
-            {
-                if (sb.length() > 0)
-                {
-                    sb.append(", ");
+            final Serializable[] values = (Serializable[]) propertyValue;
+            final DataType dataType = propertyType.getDataType();
+            if(dataType == DataType.SAMPLE) {
+                if(values.length == 0) {
+                    return null;
+                } else {
+                    final StringBuilder sb = new StringBuilder();
+                    for (final Serializable value : values)
+                    {
+                        if (!sb.isEmpty())
+                        {
+                            sb.append(", ");
+                        }
+                        sb.append(getPropertyValueAsString(propertyType, value));
+                    }
+                    return new PropertyValue(sb.toString(), Map.of());
                 }
-                sb.append(getPropertyValueAsString(propertyType, value));
+            } else
+            {
+                final boolean quoted =
+                        dataType == DataType.ARRAY_STRING || dataType == DataType.ARRAY_TIMESTAMP;
+                final StringBuilder sb = new StringBuilder("[");
+                for (final Serializable value : values)
+                {
+                    if (sb.length() > 1)
+                    {
+                        sb.append(", ");
+                    }
+                    if (quoted)
+                    {
+                        sb.append('"');
+                    }
+                    sb.append(getPropertyValueAsString(propertyType, value));
+                    if (quoted)
+                    {
+                        sb.append('"');
+                    }
+                }
+                sb.append("]");
+                return new PropertyValue(sb.toString(), Map.of());
             }
-            return new PropertyValue(sb.toString(), Map.of());
         } else
         {
             return new PropertyValue(getPropertyValueAsString(propertyType, propertyValue), Map.of());

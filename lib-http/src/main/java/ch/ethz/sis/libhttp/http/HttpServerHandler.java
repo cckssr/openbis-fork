@@ -30,5 +30,5 @@ public interface HttpServerHandler {
     /*
      * The handler
      */
-    public HttpResponse process(HttpMethod method, Map<String, List<String>> uriParameters, byte[] requestBody);
+    public HttpResponse process(HttpMethod method, Map<String, List<String>> uriParameters, Map<String, List<String>> headers, byte[] requestBody);
 }

@@ -48,17 +48,16 @@ class TestCase(systemtest.testcase.TestCase):
         util.printWhoAmI()
         self.installOpenbis(technologies=['microscopy'])
         openbisController = self.createOpenbisController(databasesToDrop=['openbis', 'pathinfo'])
-        self.setThumbnailResolutions(openbisController, ['256x256'])
         openbisController.setDssMaxHeapSize("4g")
         openbisController.createTestDatabase("openbis")
-        # copy the bioformats to lib folder test-app-openbis-installer/targets/playground/test_scu_microscopy/openbis/servers/core-plugins/microscopy/4/dss/drop-boxes/MicroscopyDropbox/lib
+        # copy the bioformats to lib folder test-app-openbis-installer/targets/playground/test_scu_microscopy/openbis/servers/core-plugins/microscopy/src/dss/drop-boxes/MicroscopyDropbox/lib
         # download from the ivy
         self.downloadBioformatsJar(openbisController)
         openbisController.allUp()
         return openbisController
 
     def downloadBioformatsJar(self, openbisController, version="6.5.2"):
-        lib_dir = path = "%s/servers/core-plugins/microscopy/4/dss/drop-boxes/MicroscopyDropbox/lib" % openbisController.installPath
+        lib_dir = path = "%s/servers/core-plugins/microscopy/src/dss/drop-boxes/MicroscopyDropbox/lib" % openbisController.installPath
         jar = f"bioformats-{version}.jar"
         url = (
             "https://sissource.ethz.ch/openbis/openbis-public/openbis-ivy/-/raw/main/bioformats/bioformats/"
@@ -79,19 +78,9 @@ class TestCase(systemtest.testcase.TestCase):
         util.printAndFlush("Download failed (file missing or empty).")
         return None
 
-
-    def setThumbnailResolutions(self, openbisController, resolutions):
-        path = "%s/servers/core-plugins/microscopy/2/dss/drop-boxes/MicroscopyDropbox/GlobalSettings.py" % openbisController.installPath
-        with open(path, "r") as f:
-            content = f.readlines()
-        with open(path, "w") as f:
-            for line in content:
-                if line.find('ImageResolutions') > 0:
-                    line = line.replace('[]', str(resolutions))
-                f.write("%s" % line)
-
-    def getTestDataFolder(self):
-        testDataFolder = "%s/../../test-data/integration_%s" % (self.playgroundFolder, self.name)
+    def getTestDataFolder(self, openbisController=None):
+        testDataFolder = os.path.abspath(
+            "%s/%s" % (systemtest.testcase.TEST_DATA, self.name))
         if os.path.exists(testDataFolder):
             util.printAndFlush("Path exists as expected: %s" % testDataFolder)
         else:

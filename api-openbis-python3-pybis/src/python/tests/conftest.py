@@ -20,8 +20,13 @@ from pybis import Openbis
 from pybis import AfsClient
 
 openbis_url = "https://localhost:8443"
+openbis_afs_url = "http://localhost:8085"
 admin_username = "admin"
 admin_password = "admin"
+
+
+
+print(f'[CONFTEST] Configured OpenBIS url for tests is: {openbis_url}')
 
 
 @pytest.fixture(scope="module")
@@ -74,12 +79,7 @@ def space():
 @pytest.fixture(scope="session")
 def afs(space):
     token = space.openbis.token
-    o = space.openbis
-
-    server_info = o.get_server_information()
-
-    afs_url = getattr(server_info, "server-public-information.afs-server.url") + "/api"
-
+    afs_url = openbis_afs_url + "/afs-server/api"
     afs_client = AfsClient(afs_url, token, False)
 
     yield (space, afs_client)

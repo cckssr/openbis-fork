@@ -12,7 +12,7 @@
 | Object                 | Entity that is defined as object type                                                                  |
 | Dataset                | N/A                                                                                                    |
 | Rich Text Image        | File that is referenced in one of the rich text properties, this is separate from the data directories |
-| parent/child           | [TBD](https://en.wikipedia.org/wiki/Douglas_TBD_Devastator)                                            |
+| Parent/child           | Linked via `openBIS:parents`, annotated with `schema:isBasedOn`                                        |
 | File                   | `File` entities, referenced via `schema:hasPart`                                                       |
 
 
@@ -76,4 +76,18 @@ An initial step is converting
 
 Afterward, the various types of references are resolved. All object references need to be mapped
 from RO-Crate identifiers to openBIS ones. The really complicated stuff is mapping back the openBIS
-constructs like projects, spaces, collections. 
+constructs like projects, spaces, collections and parent/child relationships.
+
+# Reconstructing/Creating spaces
+
+If the crate contains openBIS objects, the import is going to recreate the structure of spaces,
+projects, collections and parents and children.
+For other crates, a space and project can be specified, collections are going to be per object type.
+
+# Parent-Child relationship
+
+This is only reconstructed for openBIS crates. These are linked via the `openBIS:parents` property.
+The property is annotated with `https://schmema.org/isBasedOn` for graph traversal by other systems.
+Only the parents are indicated in the RO-Crate because not all children might be included in the
+openBIS exports.
+We reconstruct the children for re-import. 

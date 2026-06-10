@@ -6,6 +6,7 @@ import ch.ethz.sis.rocrateserver.exception.RoCrateExceptions;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.delegates.ExportDelegate;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.delegates.ImportDelegate;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.helper.OpeBISFactory;
+import ch.ethz.sis.rocrateserver.openapi.v1.service.helper.SessionWorkSpaceCleanupTimer;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.helper.validation.ValidationResult;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.jobs.*;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.params.DownloadParams;
@@ -18,6 +19,7 @@ import ch.ethz.sis.rocrateserver.openapi.v1.service.response.ImportResponse;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.response.Validation.ValidationReport;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.response.result.AsyncResult;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.response.result.StatusResponse;
+import ch.ethz.sis.rocrateserver.startup.StartupMain;
 import ch.ethz.sis.shared.log.classic.impl.Logger;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -32,8 +34,10 @@ import org.jboss.resteasy.specimpl.ResponseBuilderImpl;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.time.Clock;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Timer;
 import java.util.stream.Collectors;
 
 @Path("/openbis/open-api/ro-crate")
@@ -55,6 +59,10 @@ public class RoCrateService
     AsyncJobRegistry asyncJobRegistry = new AsyncJobRegistry();
 
     ObjectMapper objectMapper = new ObjectMapper();
+
+    Timer sessionWorkSpaceCleanupTimer =
+            SessionWorkSpaceCleanupTimer.getTimer(Clock.systemUTC(), StartupMain.getConfiguration(),
+                    asyncJobRegistry);
 
 
     @GET
@@ -523,6 +531,7 @@ public class RoCrateService
                         ((ExportJob) job).getExportType());
                 responseBuilder.header("Content-Disposition",  "attachment; filename=\""+ fileName +"\"");
                 responseBuilder.type(((ExportJob) job).getExportType());
+
                 return responseBuilder.build();
             } else
             {

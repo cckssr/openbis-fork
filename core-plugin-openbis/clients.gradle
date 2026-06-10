@@ -14,9 +14,9 @@ dependencies {
             libs.org.apache.geronimo.specs.geronimo.stax.api10.spec,
             libs.org.apache.poi.poi,
             libs.org.apache.poi.poi.ooxml,
-            libs.org.apache.poi.poi.ooxml.schemas,
+            libs.org.apache.poi.poi.ooxml.lite,
             libs.org.apache.xmlbeans.xmlbeans,
-            libs.dom4j.dom4j,
+            libs.org.dom4j.dom4j,
             libs.imagej.ij,
             libs.python.jython,
             libs.sybit.image.viewer,
@@ -99,10 +99,10 @@ task createDssClientJar(type: Jar) {
 
     def dssClientJars = ['aopalliance.jar', 'sis-base.jar', 'cisd-args4j.jar', 'cglib-nodep.jar ', 'jline.jar',
                          'spring-aop.jar', 'spring-beans.jar', 'spring-context.jar', 'spring-core.jar', 'spring-web.jar', 'spring-webmvc.jar', 'spring-expression.jar',
-                         'stream-supporting-httpinvoker.jar', 'poi.jar', 'poi-ooxml.jar', 'poi-ooxml-schemas.jar',
+                         'stream-supporting-httpinvoker.jar', 'poi.jar', 'poi-ooxml.jar', 'poi-ooxml-lite.jar',
                          'commons-codec.jar', 'httpclient.jar', 'httpcore.jar', 'commons-io.jar', 'commons-lang.jar', 'commons-lang3.jar',
-                         'commons-text.jar', 'commons-logging.jar', 'jython.jar', 'log4j.jar', 'dom4j-1.6.1.jar',
-                         'geronimo-stax-api_1.0_spec-1.0.jar', 'xmlbeans-2.6.0.jar']
+                         'commons-text.jar', 'commons-logging.jar', 'jython.jar', 'dom4j-1.6.1.jar',
+                         'geronimo-stax-api_1.0_spec-1.0.jar', 'xmlbeans.jar']
     manifest {
         def manifestClasspath = dssClientJars.collect { it }.join(' ')
         attributes("Main-Class": "ch.systemsx.cisd.openbis.dss.client.api.gui.DataSetUploadClient",
@@ -126,11 +126,11 @@ task copyJarsForWebStart(type: Copy, dependsOn: [createOpenbisJar, createDssClie
     into jarsToBeSignedFolder
     rename 'poi-[0-9]+.*\\.jar', 'poi.jar'
     rename 'poi-ooxml-[0-9]+.*\\.jar', 'poi-ooxml.jar'
-    rename 'poi-ooxml-schemas-.*\\.jar', 'poi-ooxml-schemas.jar'
+    rename 'poi-ooxml-lite-.*\\.jar', 'poi-ooxml-lite.jar'
     rename '(.+)-[0-9[r]]+.*\\.jar', '$1.jar'
     rename 'dom4j.jar', 'dom4j-1.6.1.jar'
     rename 'geronimo-stax.jar', 'geronimo-stax-api_1.0_spec-1.0.jar'
-    rename 'xmlbeans.jar', 'xmlbeans-2.6.0.jar'
+    rename 'xmlbeans-[0-9]+.*\\.jar', 'xmlbeans.jar'
 }
 
 task signWebStartJars(type: Copy, dependsOn: [copyJarsForWebStart]) {
@@ -196,8 +196,7 @@ task dssUploadGuiStandalone {
                 include(name: "dss_upload_gui.jar")
                 include(name: "geronimo-stax-api_1.0_spec-1.0.jar")
                 include(name: "jython.jar")
-                include(name: "log4j.jar")
-                include(name: "poi-ooxml-schemas.jar")
+                include(name: "poi-ooxml-lite.jar")
                 include(name: "poi-ooxml.jar")
                 include(name: "poi.jar")
                 include(name: "spring-aop.jar")
@@ -208,6 +207,7 @@ task dssUploadGuiStandalone {
                 include(name: "spring-webmvc.jar")
                 include(name: "spring-expression.jar")
                 include(name: "stream-supporting-httpinvoker.jar")
+                include(name: "xmlbeans.jar")
             }
         }
     }
@@ -236,8 +236,7 @@ task dssUploadGuiStandaloneJar(type: Jar, dependsOn: dssUploadGuiStandalone) {
             include "dss_upload_gui.jar"
             include "geronimo-stax-api_1.0_spec-1.0.jar"
             include "jython.jar"
-            include "log4j.jar"
-            include "poi-ooxml-schemas.jar"
+            include "poi-ooxml-lite.jar"
             include "poi-ooxml.jar"
             include "poi.jar"
             include "spring-aop.jar"
@@ -248,6 +247,7 @@ task dssUploadGuiStandaloneJar(type: Jar, dependsOn: dssUploadGuiStandalone) {
             include "spring-webmvc.jar"
             include "spring-expression.jar"
             include "stream-supporting-httpinvoker.jar"
+            include "xmlbeans.jar"
         }.collect { zipTree(it).matching { exclude "META-INF/**", "ch/systemsx/cisd/base/utilities/AbstractBuildAndEnvironmentInfo.class" } }
     })
 

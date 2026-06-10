@@ -501,14 +501,42 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 
     var AfsServerFacade = function(asFacade) {
 
-        if(!asFacade._private.afsUrl){
-            throw Error("Please specify AFS server url");
-        }
+		const getAfsServer = async () => {
+			if(!asFacade._private.afsServer){
+				const criteria = new DataStoreSearchCriteria();
+				criteria.withKind().thatIn([DataStoreKind.AFS]);
+				const fetchOptions = new DataStoreFetchOptions()
+				const result = await asFacade.searchDataStores(criteria, fetchOptions)
 
-        var afsServer = new AfsServer(asFacade._private.afsUrl);
-        var afsServerTransactionParticipantId = "afs-server"
+				if(result.getObjects().length > 0){
+					const afsUrl = result.getObjects()[0].getDownloadUrl()
+					if (afsUrl === null || afsUrl.trim().length === 0) {
+						throw Error("AFS data store download url is null or empty.");
+					} else {
+						asFacade._private.afsServer = new AfsServer(afsUrl)
+					}
+				} else {
+					throw Error("AFS data store not found.");
+				}
+			}
+			return asFacade._private.afsServer;
+		}
 
-		this.list = function(owner, source, recursively){
+        const afsServerTransactionParticipantId = "afs-server"
+
+		this.isAvailable = async function(){
+			try{
+				await getAfsServer()
+				console.log("AFS server is available")
+				return true
+			} catch(e) {
+				console.log("AFS server is NOT available")
+				return false
+			}
+		}
+
+		this.list = async function(owner, source, recursively){
+			const afsServer = await getAfsServer()
 		    if(asFacade._private.transactionId){
                 return asFacade._private.ajaxRequestTransactional(afsServerTransactionParticipantId, {
                     data : {
@@ -531,11 +559,12 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 		    }
 		}
 
-        this.read = function(owner, source, offset, limit) {
-            return this._read([new AfsServer.prototype.Private.Chunk(owner, source, offset, limit, AfsServer.prototype.Private.ChunkEncoderDecoder.EMPTY_ARRAY)]);
+        this.read = async function(owner, source, offset, limit) {
+            return await this._read([new AfsServer.prototype.Private.Chunk(owner, source, offset, limit, AfsServer.prototype.Private.ChunkEncoderDecoder.EMPTY_ARRAY)]);
         }
 
-		this._read = function(chunks) {
+		this._read = async function(chunks) {
+			const afsServer = await getAfsServer()
 		    if(asFacade._private.transactionId){
                 return asFacade._private.ajaxRequestTransactional(afsServerTransactionParticipantId, {
                     data : {
@@ -554,11 +583,12 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
             }
 		}
 
-        this.write = function(owner, source, offset, data){
-            return this._write([new AfsServer.prototype.Private.Chunk(owner, source, offset, data.length, data)]);
+        this.write = async function(owner, source, offset, data){
+            return await this._write([new AfsServer.prototype.Private.Chunk(owner, source, offset, data.length, data)]);
         }
 
-		this._write = function(chunks){
+		this._write = async function(chunks){
+			const afsServer = await getAfsServer()
 		    if(asFacade._private.transactionId){
                 return asFacade._private.ajaxRequestTransactional(afsServerTransactionParticipantId, {
                     data : {
@@ -575,7 +605,8 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
             }
 		}
 
-		this.delete = function(owner, source, trash){
+		this.delete = async function(owner, source, trash){
+			const afsServer = await getAfsServer()
 		    if(asFacade._private.transactionId){
                 return asFacade._private.ajaxRequestTransactional(afsServerTransactionParticipantId, {
                     data : {
@@ -590,7 +621,8 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
             }
 		}
 
-		this.copy = function(sourceOwner, source, targetOwner, target){
+		this.copy = async function(sourceOwner, source, targetOwner, target){
+			const afsServer = await getAfsServer()
 		    if(asFacade._private.transactionId){
                 return asFacade._private.ajaxRequestTransactional(afsServerTransactionParticipantId, {
                     data : {
@@ -605,7 +637,8 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
             }
         }
 
-		this.move = function(sourceOwner, source, targetOwner, target){
+		this.move = async function(sourceOwner, source, targetOwner, target){
+			const afsServer = await getAfsServer()
 		    if(asFacade._private.transactionId){
                 return asFacade._private.ajaxRequestTransactional(afsServerTransactionParticipantId, {
                     data : {
@@ -620,7 +653,8 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
             }
 		}
 
-		this.create = function(owner, source, directory){
+		this.create = async function(owner, source, directory){
+			const afsServer = await getAfsServer()
 		    if(asFacade._private.transactionId){
                 return asFacade._private.ajaxRequestTransactional(afsServerTransactionParticipantId, {
                     data : {
@@ -635,7 +669,8 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
             }
 		}
 
-		this.truncate = function(owner, source, size){
+		this.truncate = async function(owner, source, size){
+			const afsServer = await getAfsServer()
 		    if(asFacade._private.transactionId){
                 return asFacade._private.ajaxRequestTransactional(afsServerTransactionParticipantId, {
                     data : {
@@ -650,7 +685,8 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
             }
 		}
 
-		this.snapshot = function(owner, source){
+		this.snapshot = async function(owner, source){
+			const afsServer = await getAfsServer()
 		    if(asFacade._private.transactionId){
                 return asFacade._private.ajaxRequestTransactional(afsServerTransactionParticipantId, {
                     data : {
@@ -665,7 +701,8 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
             }
 		}
 
-		this.free = function(owner, source){
+		this.free = async function(owner, source){
+			const afsServer = await getAfsServer()
 		    if(asFacade._private.transactionId){
                 return asFacade._private.ajaxRequestTransactional(afsServerTransactionParticipantId, {
                     data : {
@@ -686,7 +723,8 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
             }
 		}
 
-        this.hash = function(owner, source){
+        this.hash = async function(owner, source){
+			const afsServer = await getAfsServer()
             if(asFacade._private.transactionId){
                 return asFacade._private.ajaxRequestTransactional(afsServerTransactionParticipantId, {
                     data : {
@@ -701,7 +739,8 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
             }
         }
 
-        this.preview = function(owner, source){
+        this.preview = async function(owner, source){
+			const afsServer = await getAfsServer()
             if(asFacade._private.transactionId){
                 return asFacade._private.ajaxRequestTransactional(afsServerTransactionParticipantId, {
                     data : {
@@ -724,24 +763,23 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 
 	}
 
-	var facade = function(asUrl, afsUrl) {
+	var facade = function(url) {
 
         var openbisUrl = "/openbis/openbis/rmi-application-server-v3.json";
         var transactionCoordinatorUrl = "/openbis/openbis/rmi-transaction-coordinator.json";
         var transactionParticipantId = "application-server"
 
-        if(asUrl){
-            var asUrlParts = parseUri(asUrl)
-            if (asUrlParts.protocol && asUrlParts.authority) {
-                openbisUrl = asUrlParts.protocol + "://" + asUrlParts.authority + openbisUrl;
-                transactionCoordinatorUrl = asUrlParts.protocol + "://" + asUrlParts.authority + transactionCoordinatorUrl;
+        if(url){
+            const urlParts = parseUri(url)
+            if (urlParts.protocol && urlParts.authority) {
+                openbisUrl = urlParts.protocol + "://" + urlParts.authority + openbisUrl;
+                transactionCoordinatorUrl = urlParts.protocol + "://" + urlParts.authority + transactionCoordinatorUrl;
             }
 		}
 
 		this._private = new __private();
 		this._private.openbisUrl = openbisUrl
 		this._private.transactionCoordinatorUrl = transactionCoordinatorUrl
-		this._private.afsUrl = afsUrl
 
         this.setSessionToken = function(sessionToken) {
             var thisFacade = this;
@@ -753,10 +791,6 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
             var thisFacade = this;
             return thisFacade._private.sessionToken;
         }
-
-		this.getAfsUrl = function() {
-			return this._private.afsUrl;
-		}
 
 		this.login = function(user, password) {
 			var thisFacade = this;
@@ -1214,6 +1248,21 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 				returnType : {
 					name : "List",
 					arguments : [ "PersonalAccessTokenPermId" ]
+				}
+			});
+		}
+
+		this.createDataStores = function(creations) {
+			var thisFacade = this;
+			return thisFacade._private.ajaxRequestTransactional(transactionParticipantId, {
+				url : openbisUrl,
+				data : {
+					"method" : "createDataStores",
+					"params" : [ thisFacade._private.sessionToken, creations ]
+				},
+				returnType : {
+					name : "List",
+					arguments : [ "DataStorePermId" ]
 				}
 			});
 		}

@@ -101,13 +101,13 @@ dependencies {
         exclude group:'org.junit'
     }
 
-    asExecRuntime files("../core-plugin-openbis/dist/core-plugins/imaging/1/as/api-listener/imaging-dataset-interceptor/lib/imaging-dataset-interceptor.jar"),
-            files("../core-plugin-openbis/dist/core-plugins/imaging/1/as/services/imaging/lib/openBIS-imaging-technology.jar"),
-            files("../core-plugin-openbis/dist/core-plugins/imaging-nanonis/1/as/services/imaging-nanonis/lib/premise-adapters.jar"),
-            files("../core-plugin-openbis/dist/core-plugins/imaging-test/1/as/services/imaging-test/lib/imaging-test-adapters.jar"),
+    asExecRuntime files("../core-plugin-openbis/dist/core-plugins/eln-lims-imaging-core/src/as/api-listener/imaging-dataset-interceptor/lib/imaging-dataset-interceptor.jar"),
+            files("../core-plugin-openbis/dist/core-plugins/eln-lims-imaging-core/src/as/services/imaging/lib/openBIS-imaging-technology.jar"),
+            files("../core-plugin-openbis/dist/core-plugins/eln-lims-imaging-nanonis-adapter/src/as/services/imaging-nanonis/lib/premise-adapters.jar"),
+            files("../core-plugin-openbis/dist/core-plugins/eln-lims-imaging-test-adapter/src/as/services/imaging-test/lib/imaging-test-adapters.jar"),
             // zenodo export dependencies
-            files("../ui-eln-lims/src/core-plugins/eln-lims/1/as/services/exports-api/lib/job-scheduler.jar"),
-            files("../ui-eln-lims/src/core-plugins/eln-lims/1/as/services/exports-api/lib/json-20250517.jar")
+            files("../ui-eln-lims/src/core-plugins/eln-lims/src/as/services/exports-api/lib/job-scheduler.jar"),
+            files("../ui-eln-lims/src/core-plugins/eln-lims/src/as/services/exports-api/lib/json-20250517.jar")
 
     testImplementation project(path: ':lib-commonbase', configuration: 'tests'),
             project(path: ':lib-common', configuration: 'tests'),
@@ -220,8 +220,8 @@ task openBISDevelopmentEnvironmentASStart(type: JavaExec) {
              '-Das.logging.configuration=etc/logging.properties',
              '-Djavax.net.ssl.trustStore=dist/server/openBIS.keystore',
              // config for imaging
-             '-Dimaging.as.services.imaging.storageRoot.dss=../server-original-data-store/targets/store',
-             '-Dimaging.as.services.imaging.storageRoot.afs=../server-data-store/targets/tests/storage',
+             '-Deln-lims-imaging-core.as.services.imaging.storageRoot.dss=../server-original-data-store/targets/store',
+             '-Deln-lims-imaging-core.as.services.imaging.storageRoot.afs=../server-data-store/targets/tests/storage',
 
              '-Dorg.mortbay.util.FileResource.checkAliases=false',
              '--add-opens=java.base/java.util=ALL-UNNAMED', '--add-opens=java.base/java.lang=ALL-UNNAMED',

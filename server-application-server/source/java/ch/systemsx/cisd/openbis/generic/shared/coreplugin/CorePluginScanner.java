@@ -44,6 +44,10 @@ public class CorePluginScanner implements ICorePluginResourceLoader
 
     static final String REQUIRED_PLUGINS_KEY = "required-plugins";
 
+    static final String VERSION_KEY = "version";
+
+    static final String SRC_FOLDER_NAME = "src";
+
     /**
      * the type of plugins we are scanning for.
      */
@@ -67,7 +71,7 @@ public class CorePluginScanner implements ICorePluginResourceLoader
     public static String constructPath(CorePlugin corePlugin, ScannerType scannerType,
             IPluginType pluginType)
     {
-        return corePlugin.getName() + "/" + corePlugin.getVersion() + "/"
+        return corePlugin.getName() + "/" + SRC_FOLDER_NAME + "/"
                 + scannerType.getSubFolderName() + "/" + pluginType.getSubFolderName();
     }
 
@@ -149,11 +153,11 @@ public class CorePluginScanner implements ICorePluginResourceLoader
         List<CorePlugin> allVersionsForPlugin = new ArrayList<CorePlugin>();
         for (File versionDir : listFiles(pluginRootDir))
         {
-            if (isNumber(versionDir) == false)
+            if (isVersionFolder(versionDir) == false)
             {
                 continue;
             }
-            if (isValidVersionDir(versionDir))
+            if (isValidVersionDir(pluginRootDir))
             {
                 CorePlugin pluginVersion = createPlugin(pluginRootDir, versionDir);
                 File folder = getFolderForPlugin(pluginVersion);
@@ -165,19 +169,28 @@ public class CorePluginScanner implements ICorePluginResourceLoader
             {
                 log.log(LogLevel.WARN, String.format("Invalid version '%s' for plugin '%s'. "
                                 + "Plugin version must be non-negative integer numbers.",
-                        versionDir.getName(), pluginRootDir.getAbsolutePath()));
+                        getVersion(pluginRootDir), pluginRootDir.getAbsolutePath()));
             }
         }
 
         if (allVersionsForPlugin.isEmpty())
         {
             log.log(LogLevel.WARN, String.format(
-                    "No valid versions have been detected for plugin '%s'.", pluginRootDir));
+                    "No valid %s plugin content has been detected for core plugin '%s'. "
+                            + "Expected folder '%s'.",
+                    scannerType.name(), pluginRootDir,
+                    new File(new File(pluginRootDir, SRC_FOLDER_NAME),
+                            scannerType.getSubFolderName())));
             return null;
         } else
         {
             return Collections.max(allVersionsForPlugin);
         }
+    }
+
+    private boolean isVersionFolder(File versionDir)
+    {
+        return SRC_FOLDER_NAME.equals(versionDir.getName());
     }
 
     private List<File> listFiles(File folder)
@@ -197,7 +210,7 @@ public class CorePluginScanner implements ICorePluginResourceLoader
     private CorePlugin createPlugin(File pluginDir, File versionDir)
     {
         String name = pluginDir.getName();
-        int version = parseVersion(versionDir);
+        int version = parseVersion(pluginDir);
         CorePlugin corePlugin = new CorePlugin(name, version);
         File corePluginPropertiesFile = new File(versionDir, CORE_PLUGIN_PROPERTIES_FILE_NAME);
         if (corePluginPropertiesFile.isFile())
@@ -217,39 +230,42 @@ public class CorePluginScanner implements ICorePluginResourceLoader
     /**
      * only integer numbers are accepted for plugins.
      */
-    private boolean isValidVersionDir(File versionDir)
+    private boolean isValidVersionDir(File pluginDir)
     {
-        return parseVersion(versionDir) >= 0;
+        return parseVersion(pluginDir) >= 0;
     }
 
-    private int parseVersion(File versionDir)
+    private int parseVersion(File pluginDir)
     {
+        String version = getVersion(pluginDir);
+        if (version == null)
+        {
+            return -1;
+        }
+
         try
         {
-            return Integer.parseInt(versionDir.getName());
+            return Integer.parseInt(version.trim());
         } catch (NumberFormatException nfe)
         {
             return -1;
         }
     }
 
-    private boolean isNumber(File versionDir)
+    private String getVersion(File pluginDir)
     {
-        try
+        File corePluginPropertiesFile = new File(pluginDir, CORE_PLUGIN_PROPERTIES_FILE_NAME);
+        if (corePluginPropertiesFile.isFile())
         {
-            Integer.parseInt(versionDir.getName());
-            return true;
-        } catch (NumberFormatException nfe)
-        {
-            return false;
+            return PropertyIOUtils.loadProperties(corePluginPropertiesFile).getProperty(VERSION_KEY);
         }
+        return null;
     }
 
     private File getFolderForPlugin(CorePlugin plugin)
     {
         File unversionedFolder = new File(pluginsFolder, plugin.getName());
-        String version = String.valueOf(plugin.getVersion());
-        File versionFolder = new File(unversionedFolder, version);
+        File versionFolder = new File(unversionedFolder, SRC_FOLDER_NAME);
         return new File(versionFolder, scannerType.getSubFolderName());
     }
 }

@@ -115,6 +115,8 @@ public class XLSImport
 
     private final TypeGroupImportHelper typeGroupImportHelper;
 
+    private final TypeGroupAssignmentImportHelper typeGroupAssignmentImportHelper;
+
     private final DatabaseConsistencyChecker dbChecker;
 
     private final boolean shouldCheckVersionsOnDatabase;
@@ -175,6 +177,7 @@ public class XLSImport
         this.propertyAssignmentHelper = new PropertyAssignmentImportHelper(this.delayedExecutor, mode, options, beforeVersions, annotationCache);
         this.semanticAnnotationImportHelper = new SemanticAnnotationImportHelper(this.delayedExecutor, mode, options, annotationCache);
         this.typeGroupImportHelper = new TypeGroupImportHelper(this.delayedExecutor, mode, options);
+        this.typeGroupAssignmentImportHelper = new TypeGroupAssignmentImportHelper(this.delayedExecutor, mode, options);
         this.shouldCheckVersionsOnDatabase = shouldCheckVersionsOnDatabase;
 
         this.afsDataImportHelper = new AfsDataImportHelper(sessionToken, mode, options, this.v3, client);
@@ -204,9 +207,9 @@ public class XLSImport
                         if (entry.isDirectory())
                         {
                             if (!entryName.isEmpty() &&
-                                    !SCRIPTS_FOLDER_NAME.equals(entryName) &&
-                                    !DATA_FOLDER_NAME.equals(entryName) &&
+                                    !entryName.startsWith(SCRIPTS_FOLDER_NAME) &&
                                     !entryName.startsWith(MISCELLANEOUS_FOLDER_NAME) &&
+                                    !entryName.startsWith(DATA_FOLDER_NAME) &&
                                     !entryName.startsWith(HIERARCHY))
                             {
                                 throw UserFailureException.fromTemplate("Illegal directory '%s' is found inside the imported file.", entryName);
@@ -415,7 +418,11 @@ public class XLSImport
                             semanticAnnotationImportHelper.importBlockForPropertyType(page, pageNumber, lineNumber, blockEnd);
                             break;
                         case TYPE_GROUP:
-                            typeGroupImportHelper.importBlock(page, pageNumber, lineNumber, blockEnd);
+                            typeGroupImportHelper.importBlock(page, pageNumber, lineNumber, lineNumber+2);
+                            if (lineNumber + 2 != blockEnd)
+                            {
+                                typeGroupAssignmentImportHelper.importBlock(page, pageNumber, lineNumber, blockEnd);
+                            }
                             break;
                         default:
                             throw new UserFailureException("Unknown type: " + blockType);

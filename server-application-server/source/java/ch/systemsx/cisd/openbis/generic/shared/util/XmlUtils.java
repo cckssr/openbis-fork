@@ -23,6 +23,7 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Result;
@@ -70,8 +71,7 @@ public class XmlUtils
      */
     public static Document parseXmlDocument(String value)
     {
-        DocumentBuilderFactory dBF = DocumentBuilderFactory.newInstance();
-        dBF.setNamespaceAware(true);
+        DocumentBuilderFactory dBF = XMLInfraStructure.createSecureDocumentBuilderFactory();
         InputSource is = new InputSource(new StringReader(value));
         try
         {
@@ -91,7 +91,7 @@ public class XmlUtils
     {
         try
         {
-            TransformerFactory transfac = TransformerFactory.newInstance();
+            TransformerFactory transfac = XMLInfraStructure.createSecureTransformerFactory();
             // throws exception in a running openBIS instance
             // transfac.setAttribute("indent-number", INDENTATION);
             Transformer trans = transfac.newTransformer();
@@ -133,6 +133,8 @@ public class XmlUtils
     {
         // create a Validator instance, which can be used to validate an instance document
         Validator validator = schema.newValidator();
+        validator.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+        validator.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
         // validate the DOM tree
         validator.validate(new DOMSource(document));
     }
@@ -141,7 +143,7 @@ public class XmlUtils
     // XSL Transformations
     //
 
-    private static final TransformerFactory TRANSFORMER_FACTORY = TransformerFactory.newInstance();
+    private static final TransformerFactory TRANSFORMER_FACTORY = XMLInfraStructure.createSecureTransformerFactory();
 
     private static final Map<String, Transformer> cachedTransformers =
             new HashMap<String, Transformer>();

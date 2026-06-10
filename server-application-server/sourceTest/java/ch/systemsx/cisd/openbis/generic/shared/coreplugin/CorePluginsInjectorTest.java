@@ -126,7 +126,7 @@ public class CorePluginsInjectorTest extends AbstractFileSystemTestCase
     @Test
     public void testMissingPluginProperties()
     {
-        File alpha = new File(corePluginsFolder, "screening/1/dss/drop-boxes/alpha");
+        File alpha = new File(corePluginsFolder, "screening/src/dss/drop-boxes/alpha");
         alpha.mkdirs();
         Properties properties = createProperties();
         properties.setProperty(INPUT_THREAD_NAMES, "a, b");
@@ -147,7 +147,7 @@ public class CorePluginsInjectorTest extends AbstractFileSystemTestCase
     @Test
     public void testInvalidPluginNameAndIgnoringDotFilesAndFolders() throws IOException
     {
-        File alpha = new File(corePluginsFolder, "screening/1/dss/drop-boxes/a b");
+        File alpha = new File(corePluginsFolder, "screening/src/dss/drop-boxes/a b");
         alpha.mkdirs();
         FileUtilities.writeToFile(new File(alpha, PLUGIN_PROPERTIES_FILE_NAME), "");
         new File(alpha.getParentFile(), ".svn").mkdirs();
@@ -170,7 +170,7 @@ public class CorePluginsInjectorTest extends AbstractFileSystemTestCase
     @Test
     public void testPluginIsNotAFolder() throws IOException
     {
-        File alpha = new File(corePluginsFolder, "screening/1/dss/drop-boxes/alpha");
+        File alpha = new File(corePluginsFolder, "screening/src/dss/drop-boxes/alpha");
         alpha.getParentFile().mkdirs();
         alpha.createNewFile();
         Properties properties = createProperties();
@@ -210,7 +210,7 @@ public class CorePluginsInjectorTest extends AbstractFileSystemTestCase
     @Test
     public void testADropBoxWithScriptFile()
     {
-        File myDropBox = new File(corePluginsFolder, "screening/1/dss/drop-boxes/my-drop-box");
+        File myDropBox = new File(corePluginsFolder, "screening/src/dss/drop-boxes/my-drop-box");
         myDropBox.mkdirs();
         FileUtilities.writeToFile(new File(myDropBox, PLUGIN_PROPERTIES_FILE_NAME),
                 "class = blabla\n" + "incoming = ${fdata}\n" + "script = handler.py");
@@ -232,16 +232,37 @@ public class CorePluginsInjectorTest extends AbstractFileSystemTestCase
     }
 
     @Test
+    public void testADropBoxWithManifestVersion()
+    {
+        File myDropBox = new File(corePluginsFolder, "screening/src/dss/drop-boxes/my-drop-box");
+        myDropBox.mkdirs();
+        FileUtilities.writeToFile(new File(corePluginsFolder, "screening/" + CORE_PLUGIN_PROPERTIES_FILE_NAME),
+                "version = 3\n");
+        FileUtilities.writeToFile(new File(myDropBox, PLUGIN_PROPERTIES_FILE_NAME),
+                "class = blabla\n" + "script = handler.py");
+        FileUtilities.writeToFile(new File(myDropBox, "handler.py"), "print 'hello world'");
+        Properties properties = createProperties();
+        preparePluginNameLog("screening:drop-boxes:my-drop-box [" + myDropBox + "]");
+
+        injector.injectCorePlugins(properties);
+
+        assertProperties(corePluginsFolderProperty + noMasterDataDisabled + enabledScreeningProperty
+                + "inputs = my-drop-box\n" + "my-drop-box.class = blabla\n"
+                + "my-drop-box.script = " + myDropBox + "/handler.py\n", properties);
+        context.assertIsSatisfied();
+    }
+
+    @Test
     public void testDropBoxAndProcessingPluginsFromDifferentTechnologiesAndVersions()
     {
-        File myDropBox = new File(corePluginsFolder, "screening/1/dss/drop-boxes/my-drop-box");
+        File myDropBox = new File(corePluginsFolder, "screening/src/dss/drop-boxes/my-drop-box");
         myDropBox.mkdirs();
         FileUtilities.writeToFile(new File(myDropBox, PLUGIN_PROPERTIES_FILE_NAME),
                 "script1 = script1.py\n" + "script2 = script2.py");
         FileUtilities.writeToFile(new File(myDropBox, "script1.py"), "print 'hello world'");
         FileUtilities.writeToFile(new File(myDropBox, "script2.py"), "print 'hello universe'");
         File myProcessingPlugin =
-                new File(corePluginsFolder, "proteomics/2/dss/processing-plugins/my-processing");
+                new File(corePluginsFolder, "proteomics/src/dss/processing-plugins/my-processing");
         myProcessingPlugin.mkdirs();
         FileUtilities.writeToFile(new File(myProcessingPlugin, PLUGIN_PROPERTIES_FILE_NAME),
                 "script = script.py");
@@ -266,8 +287,7 @@ public class CorePluginsInjectorTest extends AbstractFileSystemTestCase
     @Test
     public void testADuplicatedReportingPluginVersion2()
     {
-        new File(corePluginsFolder, "screening/1/dss/drop-boxes/my-drop-box").mkdirs();
-        File dropBox2 = new File(corePluginsFolder, "screening/2/dss/drop-boxes/k2");
+        File dropBox2 = new File(corePluginsFolder, "screening/src/dss/drop-boxes/k2");
         dropBox2.mkdirs();
         FileUtilities.writeToFile(new File(dropBox2, PLUGIN_PROPERTIES_FILE_NAME),
                 "class = blabla\n");
@@ -289,8 +309,8 @@ public class CorePluginsInjectorTest extends AbstractFileSystemTestCase
     @Test
     public void testADuplicatedButDisabledReportingPluginVersion2()
     {
-        new File(corePluginsFolder, "screening/1/dss/drop-boxes/my-drop-box").mkdirs();
-        File dropBox2 = new File(corePluginsFolder, "screening/2/dss/drop-boxes/k2");
+        new File(corePluginsFolder, "screening/src/dss/drop-boxes/my-drop-box").mkdirs();
+        File dropBox2 = new File(corePluginsFolder, "screening/src/dss/drop-boxes/k2");
         dropBox2.mkdirs();
         FileUtilities.writeToFile(new File(dropBox2, PLUGIN_PROPERTIES_FILE_NAME),
                 "class = blabla\n");
@@ -306,7 +326,7 @@ public class CorePluginsInjectorTest extends AbstractFileSystemTestCase
     @Test
     public void testAMiscellaneousPlugin()
     {
-        File misc = new File(corePluginsFolder, "screening/1/dss/miscellaneous/a");
+        File misc = new File(corePluginsFolder, "screening/src/dss/miscellaneous/a");
         misc.mkdirs();
         FileUtilities.writeToFile(new File(misc, PLUGIN_PROPERTIES_FILE_NAME),
                 REPORTING_PLUGIN_NAMES + " = my-report\n" + "my-report.script = r.py\n"
@@ -331,7 +351,7 @@ public class CorePluginsInjectorTest extends AbstractFileSystemTestCase
     @Test
     public void testWebappsPlugin() throws IOException
     {
-        File webapps = new File(corePluginsFolder, "screening/1/dss/webapps");
+        File webapps = new File(corePluginsFolder, "screening/src/dss/webapps");
         webapps.mkdirs();
 
         File exampleWebapp =
@@ -362,27 +382,27 @@ public class CorePluginsInjectorTest extends AbstractFileSystemTestCase
     @Test
     public void testDependentPlugins()
     {
-        File r1 = new File(corePluginsFolder, "dep2/2/dss/reporting-plugins/r1");
+        File r1 = new File(corePluginsFolder, "dep2/src/dss/reporting-plugins/r1");
         r1.mkdirs();
         FileUtilities.writeToFile(new File(r1, PLUGIN_PROPERTIES_FILE_NAME), "");
-        File dpa = new File(corePluginsFolder, "dep/1/dss/drop-boxes/a");
+        File dpa = new File(corePluginsFolder, "dep/src/dss/drop-boxes/a");
         dpa.mkdirs();
         FileUtilities.writeToFile(new File(dpa, PLUGIN_PROPERTIES_FILE_NAME), "");
-        File dpb = new File(corePluginsFolder, "dep/1/dss/drop-boxes/b");
+        File dpb = new File(corePluginsFolder, "dep/src/dss/drop-boxes/b");
         dpb.mkdirs();
         FileUtilities.writeToFile(new File(dpb, PLUGIN_PROPERTIES_FILE_NAME), "");
-        File s1 = new File(corePluginsFolder, "dep/1/dss/services/s1");
+        File s1 = new File(corePluginsFolder, "dep/src/dss/services/s1");
         s1.mkdirs();
         FileUtilities.writeToFile(new File(s1, PLUGIN_PROPERTIES_FILE_NAME), "");
-        File s2 = new File(corePluginsFolder, "dep/1/dss/services/s2");
+        File s2 = new File(corePluginsFolder, "dep/src/dss/services/s2");
         s2.mkdirs();
         FileUtilities.writeToFile(new File(s2, PLUGIN_PROPERTIES_FILE_NAME), "");
-        FileUtilities.writeToFile(new File(corePluginsFolder, "dep/1/" + CORE_PLUGIN_PROPERTIES_FILE_NAME), 
+        FileUtilities.writeToFile(new File(corePluginsFolder, "dep/src/" + CORE_PLUGIN_PROPERTIES_FILE_NAME), 
                 CorePluginScanner.REQUIRED_PLUGINS_KEY + " = dep2:reporting-plugins, dep2:services");
-        File misc = new File(corePluginsFolder, "screening/1/dss/miscellaneous/c");
+        File misc = new File(corePluginsFolder, "screening/src/dss/miscellaneous/c");
         misc.mkdirs();
         FileUtilities.writeToFile(new File(misc, PLUGIN_PROPERTIES_FILE_NAME), "");
-        FileUtilities.writeToFile(new File(corePluginsFolder, "screening/1/" + CORE_PLUGIN_PROPERTIES_FILE_NAME), 
+        FileUtilities.writeToFile(new File(corePluginsFolder, "screening/src/" + CORE_PLUGIN_PROPERTIES_FILE_NAME), 
                 CorePluginScanner.REQUIRED_PLUGINS_KEY + " = dep:drop-boxes:a, dep:services");
         
         Properties properties = createProperties();
@@ -402,19 +422,19 @@ public class CorePluginsInjectorTest extends AbstractFileSystemTestCase
     @Test
     public void testDisabledPluginsByPropertiesAndNotEnabledTechnology()
     {
-        File dpa = new File(corePluginsFolder, "screening/1/dss/miscellaneous/a");
+        File dpa = new File(corePluginsFolder, "screening/src/dss/miscellaneous/a");
         dpa.mkdirs();
         FileUtilities.writeToFile(new File(dpa, PLUGIN_PROPERTIES_FILE_NAME), "");
-        File dpb = new File(corePluginsFolder, "screening/1/dss/miscellaneous/b");
+        File dpb = new File(corePluginsFolder, "screening/src/dss/miscellaneous/b");
         dpb.mkdirs();
         FileUtilities.writeToFile(new File(dpb, PLUGIN_PROPERTIES_FILE_NAME), "");
-        File dp1 = new File(corePluginsFolder, "screening/1/dss/drop-boxes/dp1");
+        File dp1 = new File(corePluginsFolder, "screening/src/dss/drop-boxes/dp1");
         dp1.mkdirs();
         FileUtilities.writeToFile(new File(dp1, PLUGIN_PROPERTIES_FILE_NAME), "");
-        File dp2 = new File(corePluginsFolder, "screening/1/dss/drop-boxes/dp2");
+        File dp2 = new File(corePluginsFolder, "screening/src/dss/drop-boxes/dp2");
         dp2.mkdirs();
         FileUtilities.writeToFile(new File(dp2, PLUGIN_PROPERTIES_FILE_NAME), "");
-        File dp3 = new File(corePluginsFolder, "proteomics/1/dss/drop-boxes/dp3");
+        File dp3 = new File(corePluginsFolder, "proteomics/src/dss/drop-boxes/dp3");
         dp3.mkdirs();
         FileUtilities.writeToFile(new File(dp3, PLUGIN_PROPERTIES_FILE_NAME), "");
         Properties properties = createProperties();
@@ -436,11 +456,11 @@ public class CorePluginsInjectorTest extends AbstractFileSystemTestCase
     @Test
     public void testDisabledPluginsByMarkerFile() throws Exception
     {
-        File dp1 = new File(corePluginsFolder, "screening/1/dss/drop-boxes/dp1");
+        File dp1 = new File(corePluginsFolder, "screening/src/dss/drop-boxes/dp1");
         dp1.mkdirs();
         FileUtilities.writeToFile(new File(dp1, PLUGIN_PROPERTIES_FILE_NAME), "");
         new File(dp1, CorePluginsInjector.DISABLED_MARKER_FILE_NAME).createNewFile();
-        File dp2 = new File(corePluginsFolder, "screening/1/dss/drop-boxes/dp2");
+        File dp2 = new File(corePluginsFolder, "screening/src/dss/drop-boxes/dp2");
         dp2.mkdirs();
         FileUtilities.writeToFile(new File(dp2, PLUGIN_PROPERTIES_FILE_NAME), "");
         Properties properties = createProperties();
@@ -457,7 +477,7 @@ public class CorePluginsInjectorTest extends AbstractFileSystemTestCase
     @Test
     public void testDeletedPropertyForPluginTypeNotMiscellaneous()
     {
-        File pluginFolder = new File(corePluginsFolder, "screening/1/dss/services/z");
+        File pluginFolder = new File(corePluginsFolder, "screening/src/dss/services/z");
         pluginFolder.mkdirs();
         FileUtilities.writeToFile(new File(pluginFolder, PLUGIN_PROPERTIES_FILE_NAME),
                 "alpha = 42\nbeta = 43");
@@ -476,7 +496,7 @@ public class CorePluginsInjectorTest extends AbstractFileSystemTestCase
     @Test
     public void testDeletedPropertyForPluginTypeMiscellaneous()
     {
-        File pluginFolder = new File(corePluginsFolder, "screening/1/dss/miscellaneous/z");
+        File pluginFolder = new File(corePluginsFolder, "screening/src/dss/miscellaneous/z");
         pluginFolder.mkdirs();
         FileUtilities.writeToFile(new File(pluginFolder, PLUGIN_PROPERTIES_FILE_NAME),
                 "z = 42\nbeta = 43");
@@ -495,7 +515,7 @@ public class CorePluginsInjectorTest extends AbstractFileSystemTestCase
     @Test
     public void testDssDataSource()
     {
-        File pluginFolder = new File(corePluginsFolder, "screening/1/dss/dss-data-sources/dss1");
+        File pluginFolder = new File(corePluginsFolder, "screening/src/dss/dss-data-sources/dss1");
         pluginFolder.mkdirs();
         FileUtilities.writeToFile(new File(pluginFolder, PLUGIN_PROPERTIES_FILE_NAME),
                 "driver = alpha\nurl = blabla");
@@ -519,12 +539,12 @@ public class CorePluginsInjectorTest extends AbstractFileSystemTestCase
     public void testDssDataSourcesForDifferentTechnologiesButSameDSS()
     {
         File screeningPluginFolder =
-                new File(corePluginsFolder, "screening/1/dss/dss-data-sources/dss1");
+                new File(corePluginsFolder, "screening/src/dss/dss-data-sources/dss1");
         screeningPluginFolder.mkdirs();
         FileUtilities.writeToFile(new File(screeningPluginFolder, PLUGIN_PROPERTIES_FILE_NAME),
                 "driver = alpha\nurl = blabla");
         File proteomicsPluginFolder =
-                new File(corePluginsFolder, "proteomics/1/dss/dss-data-sources/dss1");
+                new File(corePluginsFolder, "proteomics/src/dss/dss-data-sources/dss1");
         proteomicsPluginFolder.mkdirs();
         FileUtilities.writeToFile(new File(proteomicsPluginFolder, PLUGIN_PROPERTIES_FILE_NAME),
                 "driver = beta\nurl = blub");
@@ -549,11 +569,11 @@ public class CorePluginsInjectorTest extends AbstractFileSystemTestCase
     public void testDssDataSourcesForSameTechnologyButDifferentDSSInDifferentTechFolders()
     {
         File screeningPluginFolder =
-                new File(corePluginsFolder, "screening/1/dss/dss-data-sources/dss1");
+                new File(corePluginsFolder, "screening/src/dss/dss-data-sources/dss1");
         screeningPluginFolder.mkdirs();
         FileUtilities.writeToFile(new File(screeningPluginFolder, PLUGIN_PROPERTIES_FILE_NAME),
                 "driver = alpha\nurl = blabla");
-        File devPluginFolder = new File(corePluginsFolder, "dev/1/dss/dss-data-sources/dss2");
+        File devPluginFolder = new File(corePluginsFolder, "dev/src/dss/dss-data-sources/dss2");
         devPluginFolder.mkdirs();
         FileUtilities.writeToFile(new File(devPluginFolder, PLUGIN_PROPERTIES_FILE_NAME),
                 "technology = screening\ndriver = beta\nurl = blub");
@@ -578,7 +598,7 @@ public class CorePluginsInjectorTest extends AbstractFileSystemTestCase
     @Test
     public void testDssDataSourceFailedBecauseOfDuplicatedPlugin()
     {
-        File pluginFolder = new File(corePluginsFolder, "screening/1/dss/dss-data-sources/dss1");
+        File pluginFolder = new File(corePluginsFolder, "screening/src/dss/dss-data-sources/dss1");
         pluginFolder.mkdirs();
         FileUtilities.writeToFile(new File(pluginFolder, PLUGIN_PROPERTIES_FILE_NAME),
                 "driver = alpha\nurl = blabla");
@@ -635,10 +655,24 @@ public class CorePluginsInjectorTest extends AbstractFileSystemTestCase
 
     private Properties createProperties(String technologies)
     {
+        ensureCorePluginVersionFiles();
         Properties properties = new ExtendedProperties();
         properties.setProperty(CorePluginsUtils.CORE_PLUGINS_FOLDER_KEY, corePluginsFolder.getPath());
         properties.setProperty(ENABLED_MODULES_KEY, technologies);
         return properties;
+    }
+
+    private void ensureCorePluginVersionFiles()
+    {
+        for (File pluginFolder : FileUtilities.listDirectories(corePluginsFolder, false))
+        {
+            File corePluginPropertiesFile =
+                    new File(pluginFolder, CORE_PLUGIN_PROPERTIES_FILE_NAME);
+            if (corePluginPropertiesFile.isFile() == false)
+            {
+                FileUtilities.writeToFile(corePluginPropertiesFile, "version = 1\n");
+            }
+        }
     }
 
 }

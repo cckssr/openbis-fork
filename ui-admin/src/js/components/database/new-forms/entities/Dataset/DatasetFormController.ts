@@ -3,6 +3,7 @@ import { IFormController } from '@src/js/components/database/new-forms/types/IFo
 import { DatasetFormModel } from '@src/js/components/database/new-forms/entities/Dataset/DatasetFormModel.ts';
 import { EntityKind, FormMode } from '@src/js/components/database/new-forms/types/formEnums.ts';
 import { findFormFieldById, getChangedEditableFieldValues } from '@src/js/components/database/new-forms/utils/formFieldUtil.ts';
+import { setPropertyValue } from '@src/js/components/database/new-forms/entities/formFieldGetters.ts';
 import { createDummyDataSetIdentifierFromExperimentIdentifier, createDummySampleIdentifierFromSampleIdentifier } from '@src/js/components/database/new-forms/utils/identifierUtil.ts';
 import { fetchRights } from '@src/js/components/database/new-forms/utils/authorizationServiceUtil.ts';
 import { DeleteService } from '@src/js/components/database/new-forms/services/DeleteService.ts';
@@ -37,26 +38,35 @@ export class DatasetFormController implements IFormController {
 			const dto = types[typeCode];
 			console.log('DatasetFormController.load', { dto });
 			const { ExperimentPermId, SamplePermId, ExperimentFetchOptions, SampleFetchOptions } = this.openbisFacade;
-			let parentDto = null;
+			let parentIdentifier: string;
 			switch (params.parentType) {
 				case EntityKind.COLLECTION:
-				case EntityKind.EXPERIMENT:
+				case EntityKind.EXPERIMENT: {
 					const collectionId = new ExperimentPermId(params.parentId);
 					const collection = await this.openbisFacade.getExperiments([collectionId], new ExperimentFetchOptions());
-					parentDto = collection[collectionId];
-					params.parentId = parentDto.getIdentifier().getIdentifier();
+					const collectionDto = collection[params.parentId];
+					if (!collectionDto) {
+						throw new Error(`Collection with permId '${params.parentId}' not found`);
+					}
+					parentIdentifier = collectionDto.getIdentifier().getIdentifier();
 					break;
+				}
 				case EntityKind.OBJECT:
-				case EntityKind.SAMPLE:
+				case EntityKind.SAMPLE: {
 					const objectId = new SamplePermId(params.parentId);
 					const object = await this.openbisFacade.getSamples([objectId], new SampleFetchOptions());
-					parentDto = object[objectId];
-					params.parentId = parentDto.getIdentifier().getIdentifier();
+					const objectDto = object[params.parentId];
+					if (!objectDto) {
+						throw new Error(`Object with permId '${params.parentId}' not found`);
+					}
+					parentIdentifier = objectDto.getIdentifier().getIdentifier();
 					break;
-				default:
+				}
+				default: {
 					throw new Error(`Parent type ${params.parentType} not supported`);
+				}
 			}
-			return DatasetFormModel.adaptNewDatasetDtoToForm(dto, permId, params);
+			return DatasetFormModel.adaptNewDatasetDtoToForm(dto, permId, { ...params, parentId: parentIdentifier });
 		}
 		const { DataSetPermId, DataSetFetchOptions } = this.openbisFacade;
 		const id = new DataSetPermId(permId);
@@ -118,6 +128,16 @@ export class DatasetFormController implements IFormController {
 			datasetUpdate.setSampleId(new SampleIdentifier(objectIdentifier));
 		} */
 		getChangedEditableFieldValues(form, datasetUpdate);
+
+		// The imaging interceptor requires IMAGING_DATA_CONFIG on every update of an imaging
+		// dataset, even when the user didn't change it. Always forward the field if present.
+		const imagingConfigField = form.fields.find(
+			f => f.name?.toUpperCase() === 'IMAGING_DATA_CONFIG'
+		);
+		if (imagingConfigField?.value != null) {
+			setPropertyValue(datasetUpdate, imagingConfigField.name, imagingConfigField.value, imagingConfigField.dataType, imagingConfigField.isMultiValue);
+		}
+
 		const result = await this.openbisFacade.updateDataSets([datasetUpdate]);
 		return Promise.resolve(form.version + 1);
 	}

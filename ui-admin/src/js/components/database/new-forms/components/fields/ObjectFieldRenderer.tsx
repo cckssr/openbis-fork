@@ -4,9 +4,12 @@ import {
 	TextField,
 	Box,
 	Typography,
-	CircularProgress
+	CircularProgress,
+	Checkbox
 } from '@mui/material';
-import { EntityKind, FormMode } from '@src/js/components/database/new-forms/types/formEnums.ts';
+import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
+import CheckBoxIcon from '@mui/icons-material/CheckBox';
+import { FormMode } from '@src/js/components/database/new-forms/types/formEnums.ts';
 import { FieldRendererProps } from '@src/js/components/database/new-forms/types/formITypes.ts';
 import FormFieldView from '@src/js/components/common/form/FormFieldView.jsx';
 
@@ -21,6 +24,7 @@ export const ObjectFieldRenderer: React.FC<FieldRendererProps> = ({
 	const [loading, setLoading] = useState(false);
 	const [inputValue, setInputValue] = useState('');
 	const [value, setValue] = useState<any>(field.value || null);
+	const [multiValues, setMultiValues] = useState<any[]>([]);
 
 	const searchEntities = async (searchTerm: string) => {
 		if (!searchTerm || searchTerm.length < 2) {
@@ -43,12 +47,35 @@ export const ObjectFieldRenderer: React.FC<FieldRendererProps> = ({
 		const { SampleFetchOptions, SampleSearchCriteria } = openbisFacade;
 		const criteria = new SampleSearchCriteria();
 		criteria.withCode().thatContains(searchTerm);
+		if (field.meta?.sampleTypeCode) {
+			criteria.withType().withCode().thatEquals(field.meta.sampleTypeCode);
+		}
 		const fetchOptions = new SampleFetchOptions();
 		fetchOptions.withExperiment();
 		fetchOptions.withProject();
 		fetchOptions.withSpace();
 		const result = await openbisFacade.searchSamples(criteria, fetchOptions);
 		return result.getObjects();
+	};
+
+	const loadSelectedSamples = async (permIds: string[]): Promise<any[]> => {
+		if (!permIds || permIds.length === 0) return [];
+		const { SamplePermId, SampleFetchOptions } = openbisFacade;
+		const ids = permIds.map((id: string) => new SamplePermId(id));
+		const fetchOptions = new SampleFetchOptions();
+		fetchOptions.withExperiment();
+		fetchOptions.withProject();
+		fetchOptions.withSpace();
+		const result = await openbisFacade.getSamples(ids, fetchOptions);
+		return Object.values(result);
+	};
+
+	const formatSampleDisplay = (sample: any): string => {
+		if (!sample) return '';
+		if (typeof sample === 'string') return sample;
+		const identifier = sample?.identifier?.identifier || sample?.displayName || sample?.code || '';
+		const permId = sample?.permId?.permId;
+		return permId ? `${identifier} (${permId})` : identifier;
 	};
 
 	// Debounced search
@@ -59,6 +86,34 @@ export const ObjectFieldRenderer: React.FC<FieldRendererProps> = ({
 
 		return () => clearTimeout(timeoutId);
 	}, [inputValue]);
+
+	// Resolve permId(s) to sample object(s) on mount AND whenever field.value changes externally
+	// (e.g. auto-save restore from localStorage). Content-guarded so a local pick that just
+	// round-trips through the parent doesn't trigger a refetch.
+	useEffect(() => {
+		if (field.isMultiValue && Array.isArray(field.value)) {
+			const currentPermIds = multiValues.map(v => v?.permId?.permId).filter(Boolean);
+			const incoming = field.value as string[];
+			const sameContent =
+				currentPermIds.length === incoming.length &&
+				currentPermIds.every((p, i) => p === incoming[i]);
+			if (!sameContent) {
+				if (incoming.length > 0) {
+					loadSelectedSamples(incoming).then(setMultiValues);
+				} else {
+					setMultiValues([]);
+				}
+			}
+		} else if (!field.isMultiValue && typeof field.value === 'string' && field.value) {
+			if (value?.permId?.permId !== field.value) {
+				loadSelectedSamples([field.value]).then(objects => {
+					if (objects.length > 0) {
+						setValue(objects[0]);
+					}
+				});
+			}
+		}
+	}, [field.value, field.isMultiValue]);
 
 	const handleInputChange = (event: any, newInputValue: string) => {
 		setInputValue(newInputValue);
@@ -99,15 +154,96 @@ export const ObjectFieldRenderer: React.FC<FieldRendererProps> = ({
 	};
 
 	const renderView = () => {
-		return (
-			<FormFieldView
-				label={field.label}
-				value={value}
-				description={field.meta?.helpText}
-				disableUnderline={true}
-			/>
-		);
+		if (field.isMultiValue) {
+			const lines = multiValues.map((s, i) => <div key={i}>{formatSampleDisplay(s)}</div>);
+			return (
+				<FormFieldView
+					label={field.label}
+					value={lines.length > 0 ? <>{lines}</> : undefined}
+					description={field.meta?.helpText}
+					disableUnderline={true}
+				/>
+			);
+		} else {
+			return (
+				<FormFieldView
+					label={field.label}
+					value={formatSampleDisplay(value)}
+					description={field.meta?.helpText}
+					disableUnderline={true}
+				/>
+			);
+		}
 	};
+
+	const renderMultiEdit = () => (
+		<Box sx={{ width: '100%' }}>
+			<Autocomplete
+				multiple
+				disableCloseOnSelect
+				value={multiValues}
+				onChange={(_, newValues: any[]) => {
+					setMultiValues(newValues);
+					onFieldChange(
+						field.id,
+						newValues.map((v) => v?.permId?.permId).filter(Boolean)
+					);
+				}}
+				inputValue={inputValue}
+				onInputChange={handleInputChange}
+				options={options}
+				loading={loading}
+				getOptionLabel={getOptionLabel}
+				isOptionEqualToValue={isOptionEqualToValue}
+				renderOption={(props, option, { selected }) => {
+					const { key, ...optionProps } = props;
+					const displayName =
+						option?.identifier?.identifier ||
+						option?.displayName ||
+						option?.code ||
+						'Unknown';
+					const permId = option?.permId?.permId;
+					return (
+						<Box component="li" key={key} {...optionProps}>
+							<Checkbox
+								icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
+								checkedIcon={<CheckBoxIcon fontSize="small" />}
+								style={{ marginRight: 8 }}
+								checked={selected}
+							/>
+							<Typography variant="body1">
+								{displayName} ({permId})
+							</Typography>
+						</Box>
+					);
+				}}
+				renderInput={(params) => (
+					<TextField
+						{...params}
+						label={field.label}
+						required={field.required}
+						variant="filled"
+						slotProps={{
+							input: {
+								...params.InputProps,
+								endAdornment: (
+									<>
+										{loading ? <CircularProgress color="inherit" size={20} /> : null}
+										{params.InputProps.endAdornment}
+									</>
+								),
+							},
+						}}
+					/>
+				)}
+				noOptionsText={
+					inputValue.length < 2
+						? 'Type at least 2 characters to search'
+						: 'No objects found'
+				}
+			/>
+		</Box>
+	);
 
 	const renderEdit = () => {
 		return (
@@ -164,7 +300,11 @@ export const ObjectFieldRenderer: React.FC<FieldRendererProps> = ({
 	};
 
 	return (
-		mode === FormMode.VIEW ? renderView() : renderEdit()
+		mode === FormMode.VIEW
+			? renderView()
+			: field.isMultiValue
+			? renderMultiEdit()
+			: renderEdit()
 	);
 };
 
