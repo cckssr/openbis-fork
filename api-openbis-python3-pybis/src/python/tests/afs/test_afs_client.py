@@ -1,6 +1,5 @@
 import datetime
 import os
-import time
 import uuid
 
 import tempfile
@@ -11,7 +10,7 @@ from pybis.afs import AfsClient
 
 def get_sample_for_test(space):
     openbis = space.openbis
-    timestamp = time.strftime("afs_test_%a_%y%m%d_%H%M%S.%f").lower()
+    timestamp = datetime.datetime.now().strftime("afs_test_%Y_%m_%d_%H%M%S.%f")
     sample = openbis.new_sample('UNKNOWN', code=timestamp, space=space)
     sample.save()
     return sample
