@@ -23,9 +23,8 @@ tasks.register('clean', Delete) {
 tasks.register('release', Tar) {
     dependsOn tasks.clean
     destinationDirectory = layout.buildDirectory.dir(".")
-    def contentOfSetUpFile = file('src/python/setup.cfg').text
-    def version = (contentOfSetUpFile =~ /version.*=.*(.*)/)[0][0]
-    def pybisVersion = (version =~ /\d.*/)[0]
+    def contentOfProjectFile = file('src/python/pyproject.toml').text
+    def pybisVersion = (contentOfProjectFile =~ /(?m)^version\s*=\s*"([^"]+)"/)[0][1]
     archiveFileName = 'openbis-python3-api-' + pybisVersion + '.tar.gz'
     from 'src'
 }

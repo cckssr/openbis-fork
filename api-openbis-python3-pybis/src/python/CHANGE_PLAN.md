@@ -1,5 +1,8 @@
 # CHANGE PLAN: Modernizing pybis for maintainability and user experience
 
+> **SUPERSEDED** — kept for history. The active plan for the v2 clean-break
+> refactor is `REFACTOR_PLAN.md` (spec: `../pybis_refactor_prompt.md`).
+
 The Core Problem: Three Unrelated Concerns Fused Together
 
 pybis conflates three distinct responsibilities in one package, and that root cause explains every symptom you and your colleagues have identified:

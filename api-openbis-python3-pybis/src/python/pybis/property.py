@@ -21,6 +21,8 @@ on :class:`~pybis.sample.Sample`, :class:`~pybis.experiment.Experiment`, and
 type definitions before storing them.
 """
 
+from __future__ import annotations
+
 from typing import Any, Optional, TYPE_CHECKING
 
 from tabulate import tabulate

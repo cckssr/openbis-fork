@@ -22,19 +22,19 @@ pytest tests
 
 - `git flow release start pybis-1.32.0`
 - add the most important changes to CHANGELOG.md
-- bump the version number in `setup.py` and `/pybis/__init__.py`
+- bump the version number in `pyproject.toml` and `/pybis/__init__.py`
   - increase the last digit +1 for bugfixes
   - increase the middle digit +1 for improvements and added features
   - increase the first digit +1 for breaking changes and backward-incompatibilities
 - after commiting, finish the release with `git flow release finish pybis-1.32.0`
-- create a distribution: `python setup.py sdist`
+- create a distribution: `python -m build --sdist`
 - upload the distribution: `twine upload dist/PyBIS-1.32.0.tar.gz`
 
 ## Make a pre-release
 
-- set the version number in `setup.py` to `1.32.0rc1` (to specify a release candidate, for example)
+- set the version number in `pyproject.toml` to `1.32.0rc1` (to specify a release candidate, for example)
 - see https://peps.python.org/pep-0440/
-- create a distribution: `python setup.py sdist`
+- create a distribution: `python -m build --sdist`
 - upload the distribution: `twine upload dist/PyBIS-1.32.0rc1.tar.gz`
 - people will be able to install the test distribution using `pip install PyBIS==1.32.0rc1`
 - a normal `pip install pybis` will not install a pre-release, only stable releases

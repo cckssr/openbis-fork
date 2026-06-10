@@ -26,6 +26,8 @@ Example:
     >>> def grant(role: AuthorizationRoles, kind: DataSetKind) -> None: ...
 """
 
+from __future__ import annotations
+
 from typing import Literal, NewType, TypeAlias, TypedDict, TYPE_CHECKING
 
 if TYPE_CHECKING:

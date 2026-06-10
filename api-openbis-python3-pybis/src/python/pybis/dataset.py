@@ -31,6 +31,8 @@ Key helpers:
     - :class:`LinkedData` — linked-data metadata of a dataset.
 """
 
+from __future__ import annotations
+
 import json
 import os
 import random

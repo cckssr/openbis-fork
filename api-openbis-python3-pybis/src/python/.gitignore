@@ -8,3 +8,8 @@ notebooks
 *__pycache__/
 *.mypy_cache/
 build/
+.venv/
+*.egg-info/
+.ruff_cache/
+.pytest_cache/
+.coverage

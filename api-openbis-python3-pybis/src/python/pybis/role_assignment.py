@@ -15,6 +15,8 @@
 #
 """Role assignment entity for openBIS access control."""
 
+from __future__ import annotations
+
 from typing import Any, Optional, TYPE_CHECKING
 
 from .attribute import AttrHolder

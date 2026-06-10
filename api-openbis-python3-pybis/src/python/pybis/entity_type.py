@@ -29,6 +29,8 @@ Key classes:
     - :class:`PropertyAssignment` — a property type assigned to an entity type.
 """
 
+from __future__ import annotations
+
 import copy
 import sys
 from typing import Any, Optional, TYPE_CHECKING

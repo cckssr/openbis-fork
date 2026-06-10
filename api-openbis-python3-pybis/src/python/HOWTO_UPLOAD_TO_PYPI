@@ -1,8 +1,8 @@
 # PyBIS Release Guide
-1. Change version number in setup.py
+1. Change version number in pyproject.toml
 2. Change version number in __init__.py
 3. Create a source-distribution
-python3 setup.py sdist
+python3 -m build --sdist
 
 4. See distributions
 ls -la dist/

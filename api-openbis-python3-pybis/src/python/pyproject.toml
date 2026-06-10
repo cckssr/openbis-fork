@@ -1,7 +1,71 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pybis"
+version = "7.0.0.dev0"
+description = "openBIS connection and interaction, optimized for using with Jupyter"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache Software License Version 2.0" }
+authors = [
+    { name = "ID SIS • ETH Zürich", email = "openbis-support@id.ethz.ch" },
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "requests",
+    "urllib3",
+    "pandas",
+    "texttable",
+    "tabulate",
+    "python-dateutil",
+]
+
+[project.urls]
+Homepage = "https://sissource.ethz.ch/sispub/openbis/-/tree/master/api-openbis-python3-pybis"
+Documentation = "https://openbis.readthedocs.io/en/latest/software-developer-documentation/apis/python-v3-api.html"
+Changelog = "https://sissource.ethz.ch/sispub/openbis/-/blob/master/api-openbis-python3-pybis/src/python/CHANGELOG.md"
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-cov",
+    "mypy",
+    "ruff",
+    "libcst",
+    "pandas-stubs",
+    "types-requests",
+    "types-python-dateutil",
+    "types-tabulate",
+]
+
+[tool.setuptools.packages.find]
+include = ["pybis*"]
+
 [tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--tb=short"
+markers = [
+    "integration: requires live openBIS instance (use --integration to enable)",
+]
 filterwarnings = [
     "ignore::urllib3.exceptions.InsecureRequestWarning",
 ]
+
+[tool.coverage.run]
+source = ["pybis"]
+omit = ["pybis/_compat.py"]
+
+[tool.coverage.report]
+fail_under = 85
+
+[tool.ruff]
+target-version = "py310"
 
 [tool.ruff.format]
 docstring-code-format = true
@@ -11,3 +75,86 @@ convention = "google"
 
 [tool.ruff.lint]
 select = ["D"]
+
+# Legacy modules awaiting migration — same shrinking-list rule as the mypy
+# overrides below. New and migrated modules must be clean.
+[tool.ruff.lint.per-file-ignores]
+"pybis/pybis.py" = ["D"]
+"pybis/afs_client.py" = ["D"]
+"pybis/attachment.py" = ["D"]
+"pybis/attribute.py" = ["D"]
+"pybis/chunk.py" = ["D"]
+"pybis/data_set.py" = ["D"]
+"pybis/dataset.py" = ["D"]
+"pybis/definitions.py" = ["D"]
+"pybis/entity_type.py" = ["D"]
+"pybis/experiment.py" = ["D"]
+"pybis/fast_download.py" = ["D"]
+"pybis/group.py" = ["D"]
+"pybis/imaging.py" = ["D"]
+"pybis/material.py" = ["D"]
+"pybis/openbis_object.py" = ["D"]
+"pybis/openbis_typing.py" = ["D"]
+"pybis/person.py" = ["D"]
+"pybis/project.py" = ["D"]
+"pybis/property.py" = ["D"]
+"pybis/property_reformatter.py" = ["D"]
+"pybis/role_assignment.py" = ["D"]
+"pybis/sample.py" = ["D"]
+"pybis/scripts/*" = ["D"]
+"pybis/semantic_annotation.py" = ["D"]
+"pybis/space.py" = ["D"]
+"pybis/spreadsheet.py" = ["D"]
+"pybis/tag.py" = ["D"]
+"pybis/things.py" = ["D"]
+"pybis/type_group.py" = ["D"]
+"pybis/utils.py" = ["D"]
+"pybis/vocabulary.py" = ["D"]
+"pybis/__init__.py" = ["D"]
+"tests/*" = ["D"]
+"playground.py" = ["D"]
+
+[tool.mypy]
+strict = true
+python_version = "3.10"
+files = ["pybis"]
+
+# Legacy modules awaiting migration. Every work package removes its modules
+# from this list; the refactor is complete when the list is empty.
+[[tool.mypy.overrides]]
+module = [
+    "pybis",
+    "pybis.pybis",
+    "pybis.afs_client",
+    "pybis.attachment",
+    "pybis.attribute",
+    "pybis.chunk",
+    "pybis.data_set",
+    "pybis.dataset",
+    "pybis.definitions",
+    "pybis.entity_type",
+    "pybis.experiment",
+    "pybis.fast_download",
+    "pybis.group",
+    "pybis.imaging",
+    "pybis.material",
+    "pybis.openbis_object",
+    "pybis.openbis_typing",
+    "pybis.person",
+    "pybis.project",
+    "pybis.property",
+    "pybis.property_reformatter",
+    "pybis.role_assignment",
+    "pybis.sample",
+    "pybis.scripts",
+    "pybis.scripts.cli",
+    "pybis.semantic_annotation",
+    "pybis.space",
+    "pybis.spreadsheet",
+    "pybis.tag",
+    "pybis.things",
+    "pybis.type_group",
+    "pybis.utils",
+    "pybis.vocabulary",
+]
+ignore_errors = true
