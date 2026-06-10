@@ -77,6 +77,18 @@ class File:
     def __repr__(self):
         return self.__str__()
 
+class FreeSpace:
+    total: int
+    free: int
+    def __init__(self, total, free):
+        self.total = total
+        self.free = free
+
+    def __str__(self):
+        return f'FreeSpace[{self.free}/{self.total}]'
+
+    def __repr__(self):
+        return self.__str__()
 
 def handle_afs_error(response):
     parsed_error = json.loads(response.text)
@@ -332,6 +344,49 @@ class AfsClient:
             content = None
             if response.ok:
                 content = response.text.lower() == "true"
+            else:
+                handle_afs_error(response)
+            return content
+
+    def free(self, owner, source):
+        params= {
+            "sessionToken": self._sessionToken,
+            # "interactiveSessionKey": None,
+            # "transactionManagerKey": None,
+            "method": "free",
+            "owner": owner,
+            "source": source
+        }
+
+        with self.session.get(self._afs_url, params=params, verify=self._verify, stream=True) as response:
+            content = None
+            if response.ok:
+                if response.text == '':
+                    return []
+                entry = json.loads(response.text)
+                if entry["error"] is not None:
+                    handle_afs_error(response)
+                entry = entry["result"]
+                result = FreeSpace(int(entry[1]["total"]), int(entry[1]["free"]))
+                return result
+            else:
+                handle_afs_error(response)
+            return content
+
+    def hash(self, owner, source):
+        params= {
+            "sessionToken": self._sessionToken,
+            # "interactiveSessionKey": None,
+            # "transactionManagerKey": None,
+            "method": "hash",
+            "owner": owner,
+            "source": source
+        }
+
+        with self.session.get(self._afs_url,params=params, verify=self._verify, stream=True) as response:
+            content = None
+            if response.ok:
+                content = response.text
             else:
                 handle_afs_error(response)
             return content
@@ -619,6 +674,7 @@ class AfsFileDownloadQueue:
                 file_size = file.size
                 file_dest = os.path.join(destination, file.path[1:])
                 if not os.path.exists(file_dest):
+                    Path(file_dest).parent.mkdir(parents=True, exist_ok=True)
                     Path(file_dest).touch(exist_ok=True)
 
                 for i in range(0, file_size, self.max_chunk_size):

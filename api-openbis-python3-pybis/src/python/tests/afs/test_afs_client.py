@@ -1,6 +1,6 @@
 import datetime
 import os
-import uuid
+import hashlib
 
 import tempfile
 import filecmp
@@ -51,12 +51,18 @@ def test_upload_download(afs):
     files = client.list(permId, "/", True)
     assert len(files) == 3
 
-    # with tempfile.TemporaryDirectory() as tmpdirname:
-    #     client.download_files(permId, "/", tmpdirname, wait_until_finished=True)
-    #     base_file = os.path.dirname(__file__)
-    #     for file in files:
-    #         if not file.directory:
-    #             assert filecmp.cmp(os.path.join(base_file, "..", file.path[1:]), os.path.join(tmpdirname, file.path[1:]))
+
+    with tempfile.TemporaryDirectory() as tmpdirname:
+        client.download_files(permId, "/", tmpdirname, wait_until_finished=True)
+
+        dir_compare = filecmp.dircmp(testfile_path, os.path.join(tmpdirname, "testdir"))
+        assert len(dir_compare.same_files) == 2
+        assert len(dir_compare.left_only) == 0
+        assert len(dir_compare.right_only) == 0
+        assert len(dir_compare.diff_files) == 0
+
+        for file in os.listdir(testfile_path):
+            assert filecmp.cmp(os.path.join(testfile_path, file), os.path.join(tmpdirname, "testdir", file))
 
 def test_write(afs):
     (space, client) = afs
@@ -249,6 +255,39 @@ def test_snapshot(afs):
     assert len(files) == 4
     for file in files:
         assert file.path.startswith("/.afs.snapshots") or file.path == "/test.txt"
+
+def test_free(afs):
+    (space, client) = afs
+    sample = get_sample_for_test(space)
+    permId = sample.permId
+    files = client.list(permId, "/", True)
+    assert len(files) == 0
+
+    text = "hello test_free!".encode("utf-8")
+    client.write(permId, '/test.txt', 0, len(text), text)
+
+    files = client.list(permId, "/", True)
+    assert len(files) == 1
+
+    # just check if this method fails
+    free_space = client.free(permId, '/')
+
+
+def test_hash(afs):
+    (space, client) = afs
+    sample = get_sample_for_test(space)
+    permId = sample.permId
+    files = client.list(permId, "/", True)
+    assert len(files) == 0
+
+    text = "hello test_hash!".encode("utf-8")
+    client.write(permId, '/test.txt', 0, len(text), text)
+
+    files = client.list(permId, "/", True)
+    assert len(files) == 1
+
+    hash_result = client.hash(permId, '/test.txt')
+    assert hash_result == hashlib.md5(text).hexdigest()
 
 
 
