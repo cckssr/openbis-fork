@@ -1,11 +1,12 @@
-#   Copyright ETH 2018 - 2024 Zürich, Scientific IT Services
-# 
+#
+#   Copyright ETH 2018 - 2026 Zürich, Scientific IT Services
+#
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
 #   You may obtain a copy of the License at
-# 
+#
 #        http://www.apache.org/licenses/LICENSE-2.0
-#   
+#
 #   Unless required by applicable law or agreed to in writing, software
 #   distributed under the License is distributed on an "AS IS" BASIS,
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,6 +20,7 @@ from tabulate import tabulate
 
 class Things:
     """An object that contains a DataFrame object about an entity  available in openBIS.
+
     Use .df to work with the DataFrame instead.
     Can be used in a for-loop:
 
@@ -38,20 +40,20 @@ class Things:
     """
 
     def __init__(
-            self,
-            openbis_obj,
-            entity,
-            identifier_name="code",
-            additional_identifier=None,
-            start_with=None,
-            count=None,
-            totalCount=None,
-            single_item_method=None,
-            response=None,
-            df_initializer=None,
-            objects_initializer=None,
-            attrs=None,
-            props=None,
+        self,
+        openbis_obj,
+        entity,
+        identifier_name="code",
+        additional_identifier=None,
+        start_with=None,
+        count=None,
+        totalCount=None,
+        single_item_method=None,
+        response=None,
+        df_initializer=None,
+        objects_initializer=None,
+        attrs=None,
+        props=None,
     ):
         self.openbis = openbis_obj
         self.entity = entity
@@ -249,7 +251,5 @@ class Things:
                 get_item = self.single_item_method
             else:
                 get_item = getattr(self.openbis, "get_" + self.entity)
-            for item in self.df[[self.identifier_name]][
-                self.identifier_name
-            ].items():
+            for item in self.df[[self.identifier_name]][self.identifier_name].items():
                 yield get_item(item[1])

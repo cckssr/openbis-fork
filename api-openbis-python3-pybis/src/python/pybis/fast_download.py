@@ -1,4 +1,5 @@
-#   Copyright ETH 2023 - 2024 Zürich, Scientific IT Services
+#
+#   Copyright ETH 2018 - 2026 Zürich, Scientific IT Services
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -22,7 +23,8 @@ from threading import Lock, Thread
 from urllib.parse import urljoin
 
 import requests
-from requests.adapters import HTTPAdapter, Retry
+from requests.adapters import HTTPAdapter
+from urllib3.util import Retry
 
 DSS_V3 = "/datastore_server/rmi-data-store-server-v3.json"
 REQUEST_RETRIES_COUNT = 3
@@ -34,9 +36,7 @@ def make_fileserver_body_params(server_information, **params):
     """create a proper pam of key-values for fileserver request"""
     result = {}
     if server_information.is_version_greater_than(3, 6):
-        result = {
-            "version": [str(FAST_DOWNLOAD_PROTOCOL_VERSION)]
-        }
+        result = {"version": [str(FAST_DOWNLOAD_PROTOCOL_VERSION)]}
 
     for key, value in params.items():
         result[str(key)] = [str(value).replace("'", '"')]
@@ -51,7 +51,9 @@ def comma_separated_items(arr):
 def create_session(download_url_base):
     """Create a session object to handle retries in case of server failure"""
     session = requests.Session()
-    retries = Retry(total=REQUEST_RETRIES_COUNT, backoff_factor=1, status_forcelist=[502, 503, 504])
+    retries = Retry(
+        total=REQUEST_RETRIES_COUNT, backoff_factor=1, status_forcelist=[502, 503, 504]
+    )
     session.mount(download_url_base, HTTPAdapter(max_retries=retries))
     return session
 
@@ -60,7 +62,9 @@ def post_request(session, full_url, verify_certificates, request, parse_response
     """Perform POST call to server"""
     try:
         if request:
-            resp = session.post(full_url, json.dumps(request), verify=verify_certificates)
+            resp = session.post(
+                full_url, json.dumps(request), verify=verify_certificates
+            )
         else:
             resp = session.post(full_url, verify=verify_certificates)
     except requests.exceptions.SSLError as exc:
@@ -82,17 +86,29 @@ def post_request(session, full_url, verify_certificates, request, parse_response
         raise ValueError("general error while performing post request")
 
 
-def queue_chunks(session, base_url, download_session_id, chunks, verify_certificates, server_information):
+def queue_chunks(
+    session,
+    base_url,
+    download_session_id,
+    chunks,
+    verify_certificates,
+    server_information,
+):
     """Queue particular session chunks for download"""
-    queue_request = make_fileserver_body_params(server_information,
-                                                method='queue',
-                                                downloadSessionId=download_session_id,
-                                                ranges=comma_separated_items(chunks))
-    response = post_request(session, base_url, verify_certificates, queue_request,
-                            parse_response=False)
+    queue_request = make_fileserver_body_params(
+        server_information,
+        method="queue",
+        downloadSessionId=download_session_id,
+        ranges=comma_separated_items(chunks),
+    )
+    response = post_request(
+        session, base_url, verify_certificates, queue_request, parse_response=False
+    )
     if response.ok is False:
         raise ValueError(
-            "error during queueing for download! Message:" + response["error"]["message"])
+            "error during queueing for download! Message:"
+            + response["error"]["message"]
+        )
 
 
 def deserialize_chunk(byte_array):
@@ -105,49 +121,46 @@ def deserialize_chunk(byte_array):
     sent_header_checksum_bytes = 8
     sent_payload_checksum_bytes = 8
 
-    result = {
-        "invalid": False,
-        'invalid_reason': ""
-    }
+    result = {"invalid": False, "invalid_reason": ""}
 
     if len(byte_array) == 0:
-        result['invalid'] = True
-        result['invalid_reason'] = "HEADER"
+        result["invalid"] = True
+        result["invalid_reason"] = "HEADER"
         return result
 
     start, end = 0, sequence_number_bytes
-    result['sequence_number'] = int.from_bytes(byte_array[start:end], "big")
+    result["sequence_number"] = int.from_bytes(byte_array[start:end], "big")
     start, end = end, end + download_item_id_length_bytes
     download_item_id_length = int.from_bytes(byte_array[start:end], "big")
     start, end = end, end + is_directory_bytes
-    result['is_directory'] = bool.from_bytes(byte_array[start:end], "big")
+    result["is_directory"] = bool.from_bytes(byte_array[start:end], "big")
     start, end = end, end + file_path_length_bytes
     file_path_length = int.from_bytes(byte_array[start:end], "big")
     start, end = end, end + file_offset_bytes
-    result['file_offset'] = int.from_bytes(byte_array[start:end], "big")
+    result["file_offset"] = int.from_bytes(byte_array[start:end], "big")
     start, end = end, end + payload_length_bytes
-    result['payload_length'] = int.from_bytes(byte_array[start:end], "big")
+    result["payload_length"] = int.from_bytes(byte_array[start:end], "big")
     start, end = end, end + download_item_id_length
-    result['download_item_id'] = byte_array[start:end].decode("utf8")
+    result["download_item_id"] = byte_array[start:end].decode("utf8")
     start, end = end, end + file_path_length
-    result['file_path'] = byte_array[start:end].decode("utf8")
+    result["file_path"] = byte_array[start:end].decode("utf8")
     calculated_header_checksum = binascii.crc32(byte_array[:end])
     # End of header
     start, end = end, end + sent_header_checksum_bytes
     sent_header_checksum = int.from_bytes(byte_array[start:end], "big")
     if sent_header_checksum != calculated_header_checksum:
-        result['invalid'] = True
-        result['invalid_reason'] = "HEADER"
+        result["invalid"] = True
+        result["invalid_reason"] = "HEADER"
         return result
-    start, end = end, end + result['payload_length']
-    result['payload'] = byte_array[start:end]
+    start, end = end, end + result["payload_length"]
+    result["payload"] = byte_array[start:end]
     calculated_payload_checksum = binascii.crc32(byte_array[start:end])
     # End of payload
     start, end = end, end + sent_payload_checksum_bytes
     sent_payload_checksum = int.from_bytes(byte_array[start:end], "big")
     if sent_payload_checksum != calculated_payload_checksum:
-        result['invalid'] = True
-        result['invalid_reason'] = "PAYLOAD"
+        result["invalid"] = True
+        result["invalid_reason"] = "PAYLOAD"
         return result
 
     return result
@@ -158,7 +171,9 @@ class AtomicChecker:
 
     def __init__(self, values_to_download: set):
         self._value = 0
-        self._max = len(values_to_download)  # limit to not have an infinite download sessions
+        self._max = len(
+            values_to_download
+        )  # limit to not have an infinite download sessions
         self._set = values_to_download
         self._lock = Lock()
 
@@ -196,9 +211,19 @@ def _get_json(response):
 class DownloadThread(Thread):
     """Helper class defining single stream download"""
 
-    def __init__(self, session, download_url_base, download_session_id, stream_id,
-                 counter: AtomicChecker, verify_certificates, create_default_folders, destination,
-                 server_information, number_of_chunks=1):
+    def __init__(
+        self,
+        session,
+        download_url_base,
+        download_session_id,
+        stream_id,
+        counter: AtomicChecker,
+        verify_certificates,
+        create_default_folders,
+        destination,
+        server_information,
+        number_of_chunks=1,
+    ):
         Thread.__init__(self)
         self.session = session
         self.download_url = download_url_base
@@ -214,51 +239,70 @@ class DownloadThread(Thread):
 
     def run(self):
         repeated_chunks = {}
-        download_params = make_fileserver_body_params(self.server_information,
-                                                      method='download',
-                                                      downloadSessionId=self.download_session_id,
-                                                      numberOfChunks=self.number_of_chunks,
-                                                      downloadStreamId=self.stream_id)
+        download_params = make_fileserver_body_params(
+            self.server_information,
+            method="download",
+            downloadSessionId=self.download_session_id,
+            numberOfChunks=self.number_of_chunks,
+            downloadStreamId=self.stream_id,
+        )
         retry_counter = 0
         while self.counter.should_continue():
             try:
-                download_response = self.session.post(self.download_url,
-                                                      data=json.dumps(download_params), stream=True,
-                                                      verify=self.verify_certificates)
+                download_response = self.session.post(
+                    self.download_url,
+                    data=json.dumps(download_params),
+                    stream=True,
+                    verify=self.verify_certificates,
+                )
                 if download_response.ok is True:
                     data = deserialize_chunk(download_response.content)
-                    if data['invalid'] is True:
+                    if data["invalid"] is True:
                         is_json, response = _get_json(download_response)
                         if is_json:
-                            if 'retriable' in response and response['retriable'] is False:
+                            if (
+                                "retriable" in response
+                                and response["retriable"] is False
+                            ):
                                 self.counter.break_count()
                                 raise ValueError(response["error"])
                         else:
-                            if data['invalid_reason'] == "PAYLOAD":
-                                sequence_number = data['sequence_number']
-                                if repeated_chunks.get(sequence_number, 0) >= DOWNLOAD_RETRIES_COUNT:
+                            if data["invalid_reason"] == "PAYLOAD":
+                                sequence_number = data["sequence_number"]
+                                if (
+                                    repeated_chunks.get(sequence_number, 0)
+                                    >= DOWNLOAD_RETRIES_COUNT
+                                ):
                                     self.counter.break_count()
                                     raise ValueError(
-                                        "Received incorrect payload multiple times. Aborting.")
-                                repeated_chunks[sequence_number] = repeated_chunks.get(sequence_number,
-                                                                                       0) + 1
-                                queue_chunks(self.session, self.download_url,
-                                             self.download_session_id,
-                                             [f"{sequence_number}:{sequence_number}"],
-                                             self.verify_certificates, self.server_information)
+                                        "Received incorrect payload multiple times. Aborting."
+                                    )
+                                repeated_chunks[sequence_number] = (
+                                    repeated_chunks.get(sequence_number, 0) + 1
+                                )
+                                queue_chunks(
+                                    self.session,
+                                    self.download_url,
+                                    self.download_session_id,
+                                    [f"{sequence_number}:{sequence_number}"],
+                                    self.verify_certificates,
+                                    self.server_information,
+                                )
                                 self.counter.repeat_call()  # queue additional download chunk run
 
                         if retry_counter >= REQUEST_RETRIES_COUNT:
                             self.counter.break_count()
-                            raise ValueError("Consecutive download calls to the server failed.")
+                            raise ValueError(
+                                "Consecutive download calls to the server failed."
+                            )
 
                         # Exponential backoff for the consecutive failures
-                        time.sleep(2 ** retry_counter)
+                        time.sleep(2**retry_counter)
                         retry_counter += 1
 
                     else:
                         retry_counter = 0
-                        sequence_number = data['sequence_number']
+                        sequence_number = data["sequence_number"]
                         self.save_to_file(data)
                         self.counter.remove_value(sequence_number)
             except Exception as e:
@@ -266,7 +310,7 @@ class DownloadThread(Thread):
         return True
 
     def save_to_file(self, deserialized_response):
-        file_name = deserialized_response['file_path']
+        file_name = deserialized_response["file_path"]
         if self.create_default_folders:
             # create original/ or original/DEFAULT subdirectories
             filename_dest = os.path.join(self.destination, file_name)
@@ -281,31 +325,31 @@ class DownloadThread(Thread):
         # create the necessary directory structure if they don't exist yet
         os.makedirs(os.path.dirname(filename_dest), exist_ok=True)
 
-        if deserialized_response['is_directory'] is False:
+        if deserialized_response["is_directory"] is False:
             # create file if it does not exist already
             Path(filename_dest).touch(exist_ok=True)
 
-            file_offset = deserialized_response['file_offset']
+            file_offset = deserialized_response["file_offset"]
             with open(filename_dest, "rb+") as file:
                 file.seek(file_offset)
-                file.write(deserialized_response['payload'])
+                file.write(deserialized_response["payload"])
 
 
 class FastDownload:
     """Class for downloading data using FastDownload scheme"""
 
     def __init__(
-            self,
-            token,
-            download_url,
-            perm_id,
-            files,
-            destination,
-            create_default_folders,
-            wait_until_finished,
-            verify_certificates,
-            server_information,
-            wished_number_of_streams=4
+        self,
+        token,
+        download_url,
+        perm_id,
+        files,
+        destination,
+        create_default_folders,
+        wait_until_finished,
+        verify_certificates,
+        server_information,
+        wished_number_of_streams=4,
     ):
         self.dss_facade_url = urljoin(download_url, DSS_V3)
         self.session = create_session(download_url)
@@ -334,45 +378,65 @@ class FastDownload:
 
         # Step 1 - request DSS Facade to create fast download session in fileserver
 
-        create_fast_download_response = \
-            post_request(self.session, self.dss_facade_url, self.verify_certificates,
-                         self._create_fast_download_session_request())['result']
-        download_url = create_fast_download_response['downloadUrl']
-        user_session_id = create_fast_download_response['fileTransferUserSessionId']
+        create_fast_download_response = post_request(
+            self.session,
+            self.dss_facade_url,
+            self.verify_certificates,
+            self._create_fast_download_session_request(),
+        )["result"]
+        download_url = create_fast_download_response["downloadUrl"]
+        user_session_id = create_fast_download_response["fileTransferUserSessionId"]
 
         # Step 2 - Request fileserver to start the download session
 
         if self.server_information.is_version_greater_than(3, 6):
-            download_item_ids = list(map(lambda file: file['filePath'], create_fast_download_response['files']))
+            download_item_ids = list(
+                map(
+                    lambda file: file["filePath"],
+                    create_fast_download_response["files"],
+                )
+            )
         else:
             download_item_ids = comma_separated_items(
-                map(lambda file: file['filePath'], create_fast_download_response['files']))
+                map(
+                    lambda file: file["filePath"],
+                    create_fast_download_response["files"],
+                )
+            )
 
-        start_session_params = make_fileserver_body_params(self.server_information,
-                                                           method="startDownloadSession",
-                                                           userSessionId=user_session_id,
-                                                           downloadItemIds=download_item_ids,
-                                                           wishedNumberOfStreams=self.wished_number_of_streams)
+        start_session_params = make_fileserver_body_params(
+            self.server_information,
+            method="startDownloadSession",
+            userSessionId=user_session_id,
+            downloadItemIds=download_item_ids,
+            wishedNumberOfStreams=self.wished_number_of_streams,
+        )
 
-        start_download_session = post_request(self.session, download_url,
-                                              self.verify_certificates,
-                                              start_session_params)
-        download_session_id = start_download_session['downloadSessionId']
-
+        start_download_session = post_request(
+            self.session, download_url, self.verify_certificates, start_session_params
+        )
+        download_session_id = start_download_session["downloadSessionId"]
 
         # Step 3 - Put files into fileserver download queue
 
-        ranges = start_download_session['ranges']
+        ranges = start_download_session["ranges"]
         self._queue_all_files(download_url, download_session_id, ranges)
 
         # Step 4 & 5 - Download files in chunks and close connection
 
-        session_stream_ids = list(start_download_session['streamIds'])
+        session_stream_ids = list(start_download_session["streamIds"])
 
         exception_list = []
-        thread = Thread(target=self._download_step,
-                        args=(download_url, download_session_id, session_stream_ids, ranges,
-                              exception_list))
+        thread = Thread(
+            target=self._download_step,
+            args=(
+                download_url,
+                download_session_id,
+                session_stream_ids,
+                ranges,
+                exception_list,
+            ),
+        )
         thread.start()
 
         if self.wait_until_finished is True:
@@ -384,7 +448,8 @@ class FastDownload:
 
     def _create_fast_download_session_request(self):
         file_ids = list(
-            map(lambda file_path: self._make_json_id(file_path), self.files))
+            map(lambda file_path: self._make_json_id(file_path), self.files)
+        )
 
         fast_download_session_options = {
             "wishedNumberOfStreams": self.wished_number_of_streams,
@@ -395,7 +460,7 @@ class FastDownload:
             "id": "2",
             "jsonrpc": "2.0",
             "method": "createFastDownloadSession",
-            "params": [self.token, file_ids, fast_download_session_options]
+            "params": [self.token, file_ids, fast_download_session_options],
         }
 
     def _make_json_id(self, file_path):
@@ -403,10 +468,10 @@ class FastDownload:
         return {
             "dataSetId": {
                 "permId": self.perm_id,
-                "@type": "as.dto.dataset.id.DataSetPermId"
+                "@type": "as.dto.dataset.id.DataSetPermId",
             },
             "filePath": self.perm_id + "/" + file_path,
-            "@type": "dss.dto.datasetfile.id.DataSetFilePermId"
+            "@type": "dss.dto.datasetfile.id.DataSetFilePermId",
         }
 
     def _queue_all_files(self, base_url, download_session_id, ranges):
@@ -418,11 +483,23 @@ class FastDownload:
         chunks = []
         for file, chunks_range in ranges.items():
             chunks += [chunks_range]
-        queue_chunks(self.session, base_url, download_session_id, chunks,
-                     self.verify_certificates, self.server_information)
+        queue_chunks(
+            self.session,
+            base_url,
+            download_session_id,
+            chunks,
+            self.verify_certificates,
+            self.server_information,
+        )
 
-    def _download_step(self, download_url, download_session_id, session_stream_ids, ranges,
-                       exception_list):
+    def _download_step(
+        self,
+        download_url,
+        download_session_id,
+        session_stream_ids,
+        ranges,
+        exception_list,
+    ):
         """
         Perform downloading of chunks in separate threads
         :param download_url: url to use for downloading data
@@ -440,39 +517,65 @@ class FastDownload:
             while True:  # each iteration will create threads for streams
                 checker = AtomicChecker(chunks_to_download)
                 streams = [
-                    DownloadThread(self.session, download_url, download_session_id, stream_id, checker,
-                                   self.verify_certificates, self.create_default_folders,
-                                   self.destination, self.server_information) for stream_id in session_stream_ids]
+                    DownloadThread(
+                        self.session,
+                        download_url,
+                        download_session_id,
+                        stream_id,
+                        checker,
+                        self.verify_certificates,
+                        self.create_default_folders,
+                        self.destination,
+                        self.server_information,
+                    )
+                    for stream_id in session_stream_ids
+                ]
 
                 for thread in streams:
                     thread.start()
                 for thread in streams:
                     thread.join()
 
-                if chunks_to_download == set():  # if there are no more chunks to download
+                if (
+                    chunks_to_download == set()
+                ):  # if there are no more chunks to download
                     break
                 else:
                     if counter >= DOWNLOAD_RETRIES_COUNT:
                         print(f"Reached maximum retry count:{counter}. Aborting.")
                         exception_list += [
-                            ValueError(f"Reached maximum retry count:{counter}. Aborting.")]
+                            ValueError(
+                                f"Reached maximum retry count:{counter}. Aborting."
+                            )
+                        ]
                         break
-                    exceptions = [stream.exc for stream in streams if stream.exc is not None]
+                    exceptions = [
+                        stream.exc for stream in streams if stream.exc is not None
+                    ]
                     if exceptions:
                         print(f"Download failed with message: {exceptions[0]}")
                         exception_list += exceptions
                         break
                     counter += 1
                     # queue chunks that failed to download in the previous pass
-                    queue_chunks(self.session, download_url, download_session_id,
-                                 [f"{x}:{x}" for x in chunks_to_download],
-                                 self.verify_certificates, self.server_information)
+                    queue_chunks(
+                        self.session,
+                        download_url,
+                        download_session_id,
+                        [f"{x}:{x}" for x in chunks_to_download],
+                        self.verify_certificates,
+                        self.server_information,
+                    )
         finally:
             # Step 5 - Close the session
-            finish_download_session_params = make_fileserver_body_params(self.server_information,
-                method='finishDownloadSession',
-                downloadSessionId=download_session_id)
+            finish_download_session_params = make_fileserver_body_params(
+                self.server_information,
+                method="finishDownloadSession",
+                downloadSessionId=download_session_id,
+            )
 
-            self.session.post(download_url,
-                              data=json.dumps(finish_download_session_params),
-                              verify=self.verify_certificates)
+            self.session.post(
+                download_url,
+                data=json.dumps(finish_download_session_params),
+                verify=self.verify_certificates,
+            )

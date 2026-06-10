@@ -1,17 +1,40 @@
+#
+#   Copyright ETH 2018 - 2026 Zürich, Scientific IT Services
+#
+#   Licensed under the Apache License, Version 2.0 (the "License");
+#   you may not use this file except in compliance with the License.
+#   You may obtain a copy of the License at
+#
+#        http://www.apache.org/licenses/LICENSE-2.0
+#
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
+#
 import struct
 
+
 def encode_chunk(chunk):
-    owner_bytes = chunk.get('owner').encode('utf-8') if chunk.get('owner') is not None else None
-    source_bytes = chunk.get('source').encode('utf-8') if chunk.get('source') is not None else None
-    data_bytes = chunk.get('data') if chunk.get('data') is not None else None
+    owner_bytes = (
+        chunk.get("owner").encode("utf-8") if chunk.get("owner") is not None else None
+    )
+    source_bytes = (
+        chunk.get("source").encode("utf-8") if chunk.get("source") is not None else None
+    )
+    data_bytes = chunk.get("data") if chunk.get("data") is not None else None
 
     # Calculate packet size
     packet_size = (
-        4 + (len(owner_bytes) if owner_bytes else 0) +  # owner length + bytes
-        4 + (len(source_bytes) if source_bytes else 0) +  # source length + bytes
-        8 +  # offset (long)
-        4 +  # limit (int)
-        4 + (len(data_bytes) if data_bytes else 0)  # data length + bytes
+        4
+        + (len(owner_bytes) if owner_bytes else 0)  # owner length + bytes
+        + 4
+        + (len(source_bytes) if source_bytes else 0)  # source length + bytes
+        + 8  # offset (long)
+        + 4  # limit (int)
+        + 4
+        + (len(data_bytes) if data_bytes else 0)  # data length + bytes
     )
 
     packet = bytearray(packet_size)
@@ -24,17 +47,17 @@ def encode_chunk(chunk):
 
     def put_int(value):
         nonlocal pos
-        struct.pack_into('>i', packet, pos, value)
+        struct.pack_into(">i", packet, pos, value)
         pos += 4
 
     def put_long(value):
         nonlocal pos
-        struct.pack_into('>q', packet, pos, value)
+        struct.pack_into(">q", packet, pos, value)
         pos += 8
 
     def put_bytes(b):
         nonlocal pos
-        packet[pos:pos + len(b)] = b
+        packet[pos : pos + len(b)] = b
         pos += len(b)
 
     # owner
@@ -48,10 +71,10 @@ def encode_chunk(chunk):
         put_bytes(source_bytes)
 
     # offset
-    put_long(chunk.get('offset', -1))
+    put_long(chunk.get("offset", -1))
 
     # limit
-    put_int(chunk.get('limit', -1))
+    put_int(chunk.get("limit", -1))
 
     # data
     put_int(len(data_bytes) if data_bytes is not None else -1)
@@ -59,6 +82,7 @@ def encode_chunk(chunk):
         put_bytes(data_bytes)
 
     return bytes(packet)
+
 
 def encode_chunks_as_bytes(chunks):
     """
@@ -70,7 +94,9 @@ def encode_chunks_as_bytes(chunks):
     positionally_encoded_chunks = [encode_chunk(chunk) for chunk in chunks]
 
     # Total size = 4 bytes for number of chunks + sum of encoded chunk sizes
-    total_size = 4 + sum(len(chunk_bytes) for chunk_bytes in positionally_encoded_chunks)
+    total_size = 4 + sum(
+        len(chunk_bytes) for chunk_bytes in positionally_encoded_chunks
+    )
 
     # Allocate a bytearray of the correct size
     packet = bytearray(total_size)
@@ -78,12 +104,12 @@ def encode_chunks_as_bytes(chunks):
 
     def put_int(value):
         nonlocal pos
-        struct.pack_into('>i', packet, pos, value)
+        struct.pack_into(">i", packet, pos, value)
         pos += 4
 
     def put_bytes(b):
         nonlocal pos
-        packet[pos:pos + len(b)] = b
+        packet[pos : pos + len(b)] = b
         pos += len(b)
 
     # Write number of chunks
@@ -95,6 +121,7 @@ def encode_chunks_as_bytes(chunks):
 
     return bytes(packet)
 
+
 def decode_chunks(chunks_as_bytes):
     """
     Decodes a bytes object representing multiple encoded chunks into a list of chunk dictionaries.
@@ -103,7 +130,7 @@ def decode_chunks(chunks_as_bytes):
 
     def get_int():
         nonlocal pos
-        value = struct.unpack_from('>i', chunks_as_bytes, pos)[0]
+        value = struct.unpack_from(">i", chunks_as_bytes, pos)[0]
         pos += 4
         return value
 
@@ -126,19 +153,19 @@ def decode_chunk(buffer, pos):
 
     def get_int():
         nonlocal pos
-        value = struct.unpack_from('>i', buffer, pos)[0]
+        value = struct.unpack_from(">i", buffer, pos)[0]
         pos += 4
         return value
 
     def get_long():
         nonlocal pos
-        value = struct.unpack_from('>q', buffer, pos)[0]
+        value = struct.unpack_from(">q", buffer, pos)[0]
         pos += 8
         return value
 
     def get_bytes(length):
         nonlocal pos
-        data = buffer[pos:pos + length]
+        data = buffer[pos : pos + length]
         pos += length
         return data
 
@@ -146,13 +173,13 @@ def decode_chunk(buffer, pos):
     owner_len = get_int()
     owner = None
     if owner_len >= 0:
-        owner = get_bytes(owner_len).decode('utf-8')
+        owner = get_bytes(owner_len).decode("utf-8")
 
     # --- source ---
     source_len = get_int()
     source = None
     if source_len >= 0:
-        source = get_bytes(source_len).decode('utf-8')
+        source = get_bytes(source_len).decode("utf-8")
 
     # --- offset ---
     offset = get_long()
@@ -175,7 +202,7 @@ def decode_chunk(buffer, pos):
         "source": source,
         "offset": offset,
         "limit": limit,
-        "data": data
+        "data": data,
     }
 
     return chunk, pos

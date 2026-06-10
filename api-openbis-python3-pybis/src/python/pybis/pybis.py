@@ -1,7 +1,5 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-#   Copyright ETH 2018 - 2025 Zürich, Scientific IT Services
+#
+#   Copyright ETH 2018 - 2026 Zürich, Scientific IT Services
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -28,12 +26,39 @@ import os
 import re
 import subprocess
 import time
+import sys
 import zlib
 from datetime import datetime
 from pathlib import Path
-from typing import List
+from typing import Optional, Union, Dict, Literal, Any, List
+
+try:
+    from warnings import deprecated  # Python 3.13+
+except ImportError:
+    import functools
+    from warnings import warn
+
+    def deprecated(msg: str):
+        def decorator(cls):
+            orig_init = cls.__init__
+
+            @functools.wraps(orig_init)
+            def __init__(self, *args, **kwargs):
+                warn(msg, DeprecationWarning, stacklevel=2)
+                orig_init(self, *args, **kwargs)
+
+            cls.__init__ = __init__
+            return cls
+
+        return decorator
+
+
 from urllib.parse import urljoin, urlparse
-from typing import Optional, Union, Dict, Literal, Any
+
+if sys.version_info < (3, 12):
+    from typing_extensions import Unpack
+else:
+    from typing import Unpack
 
 import requests
 import urllib3
@@ -98,6 +123,7 @@ from .type_group import TypeGroup
 from .imaging import *
 from .afs_client import AfsClient
 
+
 # import the various openBIS entities
 
 LOG_NONE = 0
@@ -122,10 +148,10 @@ def get_search_type_for_entity(entity, operator=None):
     """Returns a dictionary containing the correct search criteria type
     for a given entity.
 
-    Example::
-        get_search_type_for_entity('space')
-        # returns:
-        {'@type': 'as.dto.space.search.SpaceSearchCriteria'}
+    Example:
+        >>> get_search_type_for_entity("space")
+        >>> # returns:
+        >>> {"@type": "as.dto.space.search.SpaceSearchCriteria"}
     """
     search_criteria = {
         "personalAccessToken": "as.dto.pat.search.PersonalAccessTokenSearchCriteria",
@@ -903,8 +929,8 @@ def _subcriteria_for_code_new(codes, entity, parents_or_children="", operator="A
 def _subcriteria_for_code(code, entity):
     """Creates the often used search criteria for code values. Returns a dictionary.
 
-    Example::
-        _subcriteria_for_code("username", "space")
+    Example:
+        >>> _subcriteria_for_code("username", "space")
 
     {
         "criteria": [
@@ -977,13 +1003,12 @@ class Openbis:
             o_test = Openbis('https://test_openbis.example.com:8443', verify_certificates=False)
 
         Args:
-            url (str): https://openbis.example.com
-            verify_certificates (bool): set to False when you use self-signed certificates
-            token (str): a valid openBIS token. If not set, pybis will try to read a valid token from ~/.pybis
+            url: https://openbis.example.com
+            verify_certificates: set to False when you use self-signed certificates
+            token: a valid openBIS token. If not set, pybis will try to read a valid token from ~/.pybis
             use_cache: make openBIS to store spaces, projects, sample types, vocabulary terms and oder more-or-less static objects to optimise speed
-            allow_http_but_do_not_use_this_in_production_and_only_within_safe_networks (bool): False
+            allow_http_but_do_not_use_this_in_production_and_only_within_safe_networks: False
         """
-
         self.as_v3 = "/openbis/openbis/rmi-application-server-v3.json"
         self.as_v1 = "/openbis/openbis/rmi-general-information-v1.json"
         self.reg_v1 = "/openbis/openbis/rmi-query-v1.json"
@@ -1184,10 +1209,12 @@ class Openbis:
 
     def gen_token_path(self, os_home: Optional[str] = None) -> str:
         """Generate the path to the saved token file.
+
         Default is ~/.pybis/hostname.token
 
         Args:
-            os_home (str, optional): Override the home directory. Defaults to None.
+            os_home: Override the home directory. Defaults to None.
+
         Returns:
             str: The path to the token file.
         """
@@ -1208,7 +1235,7 @@ class Openbis:
         """Save the token to disk and set the correct user permissions.
 
         Args:
-            os_home (str, optional): Override the home directory. Defaults to None.
+            os_home: Override the home directory. Defaults to None.
         """
         token_path = self._save_token_to_disk(os_home)
 
@@ -1231,11 +1258,13 @@ class Openbis:
 
     def _save_token_to_disk(self, os_home: Optional[str] = None) -> str:
         """Save the token to disk for later access.
+
         Default location is ~/.pybis/hostname.token. After initialisation of an
         Openbis instance, pybis tries to read this saved token by default.
 
         Args:
-            os_home (str, optional): Override the home directory. Defaults to None.
+            os_home: Override the home directory. Defaults to None.
+
         Returns:
             str: The path to the saved token file.
         """
@@ -1248,19 +1277,24 @@ class Openbis:
         os.chmod(token_path, 0o600)
         return token_path
 
-    def _delete_saved_token(self, os_home: Optional[str] = None):
+    def _delete_saved_token(self, os_home: Optional[str] = None) -> None:
         """Delete the saved token from disk.
+
         Default location is ~/.pybis/hostname.token
 
         Args:
-            os_home (str, optional): Override the home directory. Defaults to None.
+            os_home: Override the home directory. Defaults to None.
         """
         token_path = self.gen_token_path(os_home)
         if os.path.exists(token_path):
             os.unlink(token_path)
 
-    def _get_saved_token(self):
-        """Read the token from the .pybis, on the default user location"""
+    def _get_saved_token(self) -> Optional[SessionToken]:
+        """Read the token from the .pybis, on the default user location.
+
+        Returns:
+            SessionToken: The saved token, if it exists and is not empty. Otherwise, None.
+        """
         token_path = self.gen_token_path()
         if not os.path.exists(token_path):
             return None
@@ -1278,7 +1312,7 @@ class Openbis:
         """Serialize and send a post request to openBIS.
 
         Args:
-            resource (str): resource path, e.g. /openbis/openbis/rmi-application-server-v3.json
+            resource: resource path, e.g. /openbis/openbis/rmi-application-server-v3.json
             request (dict): the request dictionary to be serialized and sent
         Returns:
             dict: the response from openBIS, deserialized
@@ -1286,9 +1320,7 @@ class Openbis:
         return self._post_request_full_url(urljoin(self.url, resource), request)
 
     def _recover_session(self, full_url, request):
-        """Current token seems to be expired,
-        try to use other means to connect.
-        """
+        """Current token seems to be expired, try to use other means to connect."""
         if is_session_token(self.token):
             for session_token in get_saved_tokens():
                 pass
@@ -1306,7 +1338,7 @@ class Openbis:
         """Handle all post requests to openBIS.
 
         Args:
-            full_url (str): full url including resource path
+            full_url: full url including resource path
             request (dict): the request dictionary to be serialized and sent
         Returns:
             dict: the response from openBIS, deserialized
@@ -1315,7 +1347,6 @@ class Openbis:
             requests.exceptions.SSLError: if certificate validation fails
             requests.ConnectionError: if connection to openBIS server fails
         """
-
         if "id" not in request:
             request["id"] = "2"
         if "jsonrpc" not in request:
@@ -1355,10 +1386,16 @@ class Openbis:
                 f"general error while performing post request. {resp.status_code}:{resp.reason}"
             )
 
-    def logout(self):
-        """Log out of openBIS. After logout, the session token is no longer valid."""
+    def logout(self) -> Optional[dict]:
+        """Log out of openBIS.
+
+        After logout, the session token is no longer valid.
+
+        Returns:
+            dict: the response from openBIS, deserialized, or None if there was no active session
+        """
         if self.token is None:
-            return
+            return None
 
         logout_request = {
             "method": "logout",
@@ -1373,22 +1410,22 @@ class Openbis:
         username: Optional[str] = None,
         password: Optional[str] = None,
         save_token: bool = False,
-    ) -> str:
+    ) -> SessionToken:
         """Logs into OpenBIS with given username and password.
+
         On success, the session token is stored in the Openbis instance and returned.
 
         Args:
-            username (str, optional): openBIS username. If not provided, the current username is used.
-            password (str, optional): openBIS password. If not provided, the user is prompted to enter it.
+            username: openBIS username. If not provided, the current username.
+            password: openBIS password. If not provided, prompted for securely.
             save_token (bool): If True, the token is saved to disk for later use. Default is False.
 
         Returns:
-            str: The session token.
+            SessionToken: Server-generated session token for authentication on successful login.
 
         Raises:
             ValueError: If login fails.
         """
-
         if password is None:
             import getpass
 
@@ -1417,7 +1454,7 @@ class Openbis:
         """Store or retrieve the password from an internal store.
 
         Args:
-            password (str, optional): If provided, the password is stored. If None, the password is retrieved.
+            password: If provided, the password is stored. If None, the password is retrieved.
             pstore (dict): Internal password store.
 
         Returns:
@@ -1442,16 +1479,17 @@ class Openbis:
 
     def unmount(self, mountpoint: Optional[str] = None) -> None:
         """Unmounts the openBIS dataStore from the given mountpoint.
+
         If the unmount fails, the process is killed and unmount is retried.
 
         Args:
-            mountpoint (str, optional): The mountpoint to unmount. If None, the mountpoint
-                                        stored in the Openbis instance is used.
+            mountpoint: The mountpoint to unmount. If None, the mountpoint
+                stored in the Openbis instance is used.
+
         Raises:
             ValueError: If no mountpoint is provided and none is stored in the instance.
             OSError: If unmounting fails.
         """
-
         if mountpoint is None and not getattr(self, "mountpoint", None):
             raise ValueError("please provide a mountpoint to unmount")
 
@@ -1483,11 +1521,12 @@ class Openbis:
             self.mountpoint = None
 
     def is_mounted(self, mountpoint: Optional[str] = None) -> bool:
-        """Check whether openBIS dataStore is mounted or not.
+        """Check whether OpenBIS DataStore is mounted or not.
 
         Args:
-            mountpoint (str, optional): The mountpoint to check. If None, the mountpoint
+            mountpoint: The mountpoint to check. If None, the mountpoint
                                         stored in the Openbis instance is used.
+
         Returns:
             bool: True if mounted, False otherwise.
         """
@@ -1500,17 +1539,18 @@ class Openbis:
         return os.path.ismount(mountpoint)
 
     def get_mountpoint(self, search_mountpoint: bool = False) -> Optional[str]:
-        """Retrieve the active mountpoint.
+        """Retrieve the active mountpoint path.
 
         Args:
-            search_mountpoint (bool): If True, tries to find an existing mountpoint for the given hostname.
-                                       Default is False.
+            search_mountpoint: If True, tries to find an existing mountpoint
+                for the given hostname. Default is False.
+
         Returns:
             str: The path to the active mountpoint, or None if not found or not mounted.
+
         Raises:
             Exception: If no mountpoint is set and search_mountpoint is False.
         """
-
         mountpoint = getattr(self, "mountpoint", None)
         if mountpoint:
             if self.is_mounted(mountpoint):
@@ -1552,6 +1592,7 @@ class Openbis:
         kex_algorithms: str = "+diffie-hellman-group1-sha1",
     ) -> str:
         """Mount the openBIS dataStore using sshfs and fuse.
+
         Uses the provided system username and password instead of root privileges.
         SSHFS and FUSE have to be installed on your system. If not installed, please follow the instructions below:
 
@@ -1564,10 +1605,14 @@ class Openbis:
             $ usermod -a -G fuse "$user"
 
         Args:
-            username (str, optional): openBIS username. If not provided, the current username is used.
-            password (str, optional): openBIS password. If not provided, the user is prompted to enter it.
-            hostname (str, optional): The openBIS hostname. If not provided, the hostname from the Openbis instance is used.
-            mountpoint (str, optional): The mountpoint to mount the dataStore. If not provided, ~/hostname is used.
+            username: openBIS username.
+                If not provided, the current username is used.
+            password: openBIS password.
+                If not provided, the user is prompted to enter it.
+            hostname: The openBIS hostname.
+                If not provided, the hostname from the Openbis instance is used.
+            mountpoint: The mountpoint to mount the dataStore.
+                If not provided, ~/hostname is used.
 
         Returns:
             str: The path to the mountpoint.
@@ -1674,11 +1719,13 @@ class Openbis:
 
     def get_server_information(self) -> "ServerInformation":
         """Retrieve general information about the openBIS server.
+
         Following attributes are available:
             api-version, archiving-configured, authentication-service, enabled-technologies, project-samples-enabled
 
         Returns:
             ServerInformation: An object containing the server information.
+
         Raises:
             ValueError: If the server information could not be retrieved.
         """
@@ -1696,10 +1743,12 @@ class Openbis:
         else:
             raise ValueError("Could not get the server information")
 
-    def create_permId(self) -> str:
+    def create_permId(self) -> PermId:
         """Create a new permId on server side.
+
         Returns:
-            str: The newly created permId.
+            PermId: The created permId.
+
         Raises:
             ValueError: If the permId could not be created.
         """
@@ -1716,12 +1765,14 @@ class Openbis:
 
     def get_datastores(self) -> DataFrame:
         """Get available datastores.
+
         Usually there is only one datastore, but in some cases there might be multiple servers.
         If you upload a file, you need to specify the datastore you want the file uploaded to.
 
         Returns:
             DataFrame: A DataFrame containing the available datastores with
-                        columns 'code', 'downloadUrl', and 'remoteUrl'.
+                columns 'code', 'downloadUrl', and 'remoteUrl'.
+
         Raises:
             ValueError: If no datastore is found.
         """
@@ -1751,40 +1802,43 @@ class Openbis:
         self, entity: EntityKindCode, prefix: str = "", count: int = 1
     ) -> list[str]:
         """Create multiple codes for the given entity type.
-        Get multiple next sequence numbers for a the given entity type.
+
+        Get the next prefix + sequence numbers for a the given entity type.
 
         Args:
-            entity (EntityKindCode): The entity type for which to generate codes.
-            prefix (str): The prefix to use for the generated codes.
-            count (int): The number of codes to generate.
+            entity: The entity type for which to generate codes.
+                Old naming is still supported, e.g., SAMPLE, EXPERIMENT, MATERIAL.
+            prefix: The prefix to use for the generated codes.
+            count: The number of codes to generate.
 
         Returns:
             List[str]: A list of generated codes.
+
         Raises:
             ValueError: If the entity type is not supported or if code generation fails.
 
         Examples:
-            >>> gen_code('sample', 'SAM-')
-            ['SAM-0001']
-            >>> gen_code('collection', 'COL-', 3)
+            >>> gen_code("OBJECT", "OBJ-")
+            ['OBJ-0001']
+            >>> gen_code("COLLECTION", "COL-", 3)
             ['COL-0001', 'COL-0002', 'COL-0003']
-            >>> gen_code('dataset', '')
+            >>> gen_code("DATASET", "")
             ['0001']
         """
         entity = entity.upper()
 
         entity2enum = {
-            "DATASET": "DATA_SET",
+            "DATASET": "DATA_SET",  # Inconsistency in openBIS API
             "OBJECT": "SAMPLE",
-            "SAMPLE": "SAMPLE",
-            "EXPERIMENT": "EXPERIMENT",
+            "SAMPLE": "SAMPLE",  # Old naming
+            "EXPERIMENT": "EXPERIMENT",  # Old naming
             "COLLECTION": "EXPERIMENT",
-            "MATERIAL": "MATERIAL",
+            "MATERIAL": "MATERIAL",  # Deprecated
         }
 
         if entity not in entity2enum:
             raise ValueError(
-                "no such entity: {}. Allowed entities are: DATA_SET, SAMPLE, EXPERIMENT, MATERIAL"
+                "No such entity: {}. Allowed entities are: DATA_SET, SAMPLE, EXPERIMENT, MATERIAL"
             )
 
         request = {
@@ -1798,39 +1852,44 @@ class Openbis:
 
     def gen_code(self, entity: EntityKindCode, prefix: str = "") -> str:
         """Create a code for the given entity type.
+
         Get the next sequence number for a the given entity type.
+
         Args:
-            entity (EntityKindCode): The entity type for which to generate a code.
-            prefix (str): The prefix to use for the generated code.
+            entity: The entity type for which to generate a code.
+                Old naming is still supported, e.g., SAMPLE, EXPERIMENT, MATERIAL.
+            prefix: The prefix to use for the generated code.
+
         Returns:
             str: The generated code.
+
         Raises:
             ValueError: If the entity type is not supported or if code generation fails.
 
         Examples:
-            >>> gen_code('sample', 'SAM-')
-            SAM-0001
-            >>> gen_code('collection', 'COL-')
-            COL-0001
-            >>> gen_code('dataset', '')
-            0001
+            >>> gen_code("OBJECT", "OBJ-")
+            'OBJ-0001'
+            >>> gen_code("DATASET", "")
+            '0001'
         """
         return self.gen_codes(entity=entity, prefix=prefix)[0]
 
-    def gen_permId(self, count: int = 1) -> list[str]:
-        """Create a list of new permIds on server side.
+    def gen_permId(self, count: int = 1) -> list[PermId]:
+        """Create a list of new PermIds on server side and return them.
 
         Args:
-            count (int): The number of permIds to generate.
+            count: The number of permIds to generate.
+
         Returns:
-            list[str]: A list of newly created permIds.
+            list[PermId]: A list of newly created permIds.
+
         Raises:
             ValueError: If the permIds could not be created.
+
         Examples:
             >>> gen_permId(2)
-            ['20251213184712345-89', '20251213184712345-90', '20251213184712345-91']
+            ['20251213184712345-89', '20251213184712346-90', '20251213184712347-91']
         """
-
         request = {"method": "createPermIdStrings", "params": [self.token, count]}
         try:
             return self._post_request(self.as_v3, request)
@@ -1839,17 +1898,21 @@ class Openbis:
 
     def new_person(self, userId: str, space: Optional[str] = None) -> "Person":
         """Create a new Person or return an existing one.
+
         Args:
-            userId (str): The userId of the person.
-            space (str, optional): The space to which the person belongs. Defaults to None.
+            userId: The userId of the person.
+            space: The space to which the person belongs. Defaults to None.
+
         Returns:
             Person: The created or existing Person object.
+
         Raises:
             ValueError: If the person could not be created.
+
         Examples:
-            >>> new_person('jdoe', 'MYSPACE')
+            >>> new_person("jdoe", "MYSPACE")
             Person(userId='jdoe', space='MYSPACE') # new person
-            >>> new_person('asmith@ethz.ch')
+            >>> new_person("asmith@ethz.ch")
             Person(userId='asmith@ethz.ch', space=None) # existing person
         """
         try:
@@ -1865,21 +1928,27 @@ class Openbis:
         userIds: Optional[list[str]] = None,
     ) -> "Group":
         """Create a new Group or return an existing one.
+
         Args:
-            code (str): The code of the group.
-            description (str, optional): The description of the group. Defaults to None.
-            userIds (list[str], optional): List of userIds to be added to the group.
-                                           Defaults to None.
+            code: The code of the group.
+            description: The description of the group. Defaults to None.
+            userIds: List of userIds to be added to the group.
+                Defaults to None.
+
         Returns:
             Group: The created or existing Group object.
+
         Raises:
             ValueError: If the group could not be created.
+
         Examples:
-            >>> new_group(code = 'MYGROUP',
-            ... description = 'My Group Description',
-            ... userIds = ['user1', 'user2'])
+            >>> new_group(
+            ...     code="MYGROUP",
+            ...     description="My Group Description",
+            ...     userIds=["user1", "user2"],
+            ... )
             Group(...) # new group
-            >>> new_group(code = 'EXISTINGGROUP')
+            >>> new_group(code="EXISTINGGROUP")
             Group(...) # existing group
         """
         try:
@@ -1891,21 +1960,25 @@ class Openbis:
 
     def get_group(self, code: str, only_data: bool = False) -> Optional["Group"]:
         """Get an authorization group by its code.
+
         TODO: currently the exact return of this function is not well defined.
+
         Args:
-            code (str): The code of the group.
+            code: The code of the group.
             only_data (bool): If True, return only the data dictionary. Defaults to False.
+
         Returns:
             Optional[Group]: The Group object or None if not found.
+
         Raises:
             ValueError: If no group is found.
+
         Examples:
-            >>> get_group('MYGROUP')
+            >>> get_group("MYGROUP")
             Group(...) # existing group
-            >>> get_group('NONEXISTENTGROUP')
+            >>> get_group("NONEXISTENTGROUP")
             ValueError: No group found!
         """
-
         ids = [
             {
                 "@type": "as.dto.authorizationgroup.id.AuthorizationGroupPermId",
@@ -1938,11 +2011,39 @@ class Openbis:
             else:
                 return Group(self, data=group)
 
-    def get_role_assignments(self, start_with=None, count=None, **search_args):
-        """Get the assigned roles for a given group, person or space"""
+    def get_role_assignments(
+        self,
+        start_with: Optional[int] = None,
+        count: Optional[int] = None,
+        **search_args: Unpack[RoleAssignmentSearch],
+    ) -> Things:
+        """Get role assignments optionally filtered by search criteria.
+
+        Valid search criteria are person, group or person.
+        Role and role level search criteria are not yet implemented.
+
+        Args:
+            start_with: The index of the first result to return. Defaults to None.
+            count: The maximum number of results to return. Defaults to None.
+            **search_args: Filter criteria for searching role assignments combined with AND.
+                See :class:`RoleAssignmentSearch` for valid criteria.
+
+        Returns:
+            Things: A Things object containing the role assignments matching the search criteria.
+
+        Raises:
+            ValueError: If invalid, unimplemented search criteria are provided or the search fails.
+
+        Examples:
+            >>> print(get_role_assignments(person="jdoe"))
+                user   role    roleLevel   space   project   techId   group
+            --  -----  ------  ----------  ------  --------  -------  ------
+             0  jdoe   ADMIN   INSTANCE                      4
+        """
         entity = "roleAssignment"
         search_criteria = get_type_for_entity(entity, "search")
-        allowed_search_attrs = ["role", "roleLevel", "user", "group", "person", "space"]
+        # allowed_search_attrs = ["role", "roleLevel", "user", "group", "person", "space"]
+        allowed_search_attrs = set(RoleAssignmentSearch.__annotations__)
 
         sub_crit = []
         for attr in search_args:
@@ -1968,10 +2069,10 @@ class Openbis:
                     )
                 elif attr == "role":
                     # TODO
-                    raise ValueError("not yet implemented")
+                    raise NotImplementedError("Not yet implemented.")
                 elif attr == "roleLevel":
                     # TODO
-                    raise ValueError("not yet implemented")
+                    raise NotImplementedError("Not yet implemented.")
                 else:
                     pass
             else:
@@ -2026,13 +2127,15 @@ class Openbis:
     def get_role_assignment(
         self, techId: int, only_data: bool = False
     ) -> Optional["RoleAssignment"]:
-        """Fetch a role assignment by its techID.
+        """Get a authorization role assignment by its techID.
 
         Args:
-            techId (int): The technical ID of the role assignment.
-            only_data (bool): If True, return only the data dictionary. Defaults to False.
+            techId: The technical ID of the role assignment.
+            only_data: If True, return only the data dictionary. Defaults to False.
+
         Returns:
             Optional[RoleAssignment]: The RoleAssignment object or None if not found.
+
         Raises:
             ValueError: If no role assignment is found.
 
@@ -2042,7 +2145,6 @@ class Openbis:
             >>> get_role_assignment(99999)
             ValueError: No assigned role found for techId=99999
         """
-
         fetchopts = get_fetchoption_for_entity("roleAssignment")
         for option in ["space", "project", "user", "authorizationGroup", "registrator"]:
             fetchopts[option] = get_fetchoption_for_entity(option)
@@ -2074,7 +2176,12 @@ class Openbis:
             else:
                 return RoleAssignment(self, data=data)
 
-    def assign_role(self, role, **args):
+    # TODO: Docstring
+    def assign_role(
+        self,
+        role: AuthorizationRoles,
+        **args: Literal["person", "group", "space", "project"],
+    ) -> None:
         """general method to assign a role to either
             - a person
             - a group
@@ -2132,11 +2239,24 @@ class Openbis:
         self._post_request(self.as_v3, request)
         return
 
-    def get_groups(self, start_with=None, count=None, **search_args):
-        """Get openBIS AuthorizationGroups. Returns a «Things» object.
+    def get_groups(
+        self,
+        start_with: Optional[int] = None,
+        count: Optional[int] = None,
+        **search_args: Literal["code", "userId"],
+    ) -> Things:
+        """Get authorization groups optionally filtered by search criteria.
 
-        Usage:
-            groups = e.get.groups()
+        Args:
+            start_with: The index of the first result to return. Defaults to None.
+            count: The maximum number of results to return. Defaults to None.
+            **search_args: Filter criteria for searching groups combined with AND.
+
+        Returns:
+            Things: A Things object containing the groups matching the search criteria.
+
+        Examples:
+            >>> groups = get_groups()
             groups[0]             # select first group
             groups['GROUP_NAME']  # select group with this code
             for group in groups:
@@ -2144,9 +2264,7 @@ class Openbis:
             groups.df             # get a DataFrame object of the group list
             print(groups)         # print a nice ASCII table (eg. in IPython)
             groups                # HTML table (in a Jupyter notebook)
-
         """
-
         criteria = []
         for search_arg in ["code", "userId"]:
             if search_arg in search_args:
@@ -2215,21 +2333,30 @@ class Openbis:
         self,
         sessionName: str,
         validFrom: datetime = datetime.now(),
-        validTo: datetime = None,
-        force=False,
+        validTo: Optional[datetime] = None,
+        force: bool = False,
     ) -> str:
-        """Creates a new personal access token (PAT).  If a PAT with the given sessionName
-        already exists and its expiry date (validToDate) is not within the warning period,
-        the existing PAT is returned instead.
+        """Creates a new personal access token (PAT).
+
+        If a PAT with the given sessionName already exists and its expiry date (validToDate)
+        is not within the warning period, the existing PAT is returned instead.
 
         Args:
+            sessionName: Session name to identify the PAT. Defaults to None.
+            validFrom (datetime): Start of the validity period.
+                Defaults to the current date and time.
+            validTo (datetime, optional): End of the validity period.
+                Defaults to None and thus the maximum validity period defined on the server is used.
+            force (bool): Whether to force the creation of a new PAT even
+                if existing valid PATs are found. Defaults to False.
 
-            sessionName (str):    a session name (mandatory)
-            validFrom (datetime): begin of the validity period (default: now)
-            validTo (datetime):   end of the validity period (default: validFrom + maximum validity period, as configured in openBIS)
-            force (bool):         if set to True, a new PAT is created, regardless of existing ones.
+        Returns:
+            str: The created or existing personal access token.
+
+        Raises:
+            ValueError: If a session token is required but not provided.
+            NotImplementedError: If the openBIS instance does not support personal access tokens.
         """
-
         server_info = self.get_server_information()
         session_token = self.token
         if not is_session_token(session_token):
@@ -2295,18 +2422,27 @@ class Openbis:
 
     def get_personal_access_tokens(
         self,
-        sessionName=None,
-        start_with=None,
-        count=None,
-        save_to_disk=False,
+        sessionName: Optional[str] = None,
+        start_with: Optional[int] = None,
+        count: Optional[int] = None,
+        save_to_disk: bool = False,
         **search_args,
-    ):
-        """Get a list of Personal Access Tokens (PAT).
+    ) -> Things:
+        """Get a list of all Personal Access Tokens (PAT), optionally filtered by search criteria.
 
         Args:
+            sessionName: Filter PATs by session name. Defaults to None.
+            start_with: The index of the first result to return. Defaults to None.
+            count: The maximum number of results to return. Defaults to None.
+            save_to_disk (bool): Whether to save the response to disk for debugging purposes.
+                Defaults to False.
+            **search_args: Additional filter criteria for searching PATs combined with AND.
 
-            sessionName (str)  :  a session name
-            save_to_disk (bool):  saves the PATs to the disk, in ~/.pybis
+        Returns:
+            Things: A Things object containing the PATs matching the search criteria.
+
+        Raises:
+            NotImplementedError: If the openBIS instance does not support personal access tokens.
         """
         entity = "personalAccessToken"
 
@@ -2602,51 +2738,58 @@ class Openbis:
                     self._object_cache(entity="space", code=code, value=space)
                 return space
 
-    def get_objects(
+    def get_samples(
         self,
         identifier: Optional[str] = None,
         code: Optional[str] = None,
-        permId: Optional[str] = None,
+        permId: Optional[PermId] = None,
         space: Optional[str] = None,
         project: Optional[str] = None,
         experiment: Optional[str] = None,
-        collection: Optional[str | List[str]] = None,
+        collection: Optional[str] = None,
         type: Optional[str] = None,
         start_with: Optional[int] = None,
         count: Optional[int] = None,
         withParents: Optional[bool] = None,
         withChildren: Optional[bool] = None,
-        tags: Optional[list] = None,
-        attrs: Optional[list] = None,
-        props=None,
-        where=None,
-        raw_response=False,
+        tags: Optional[list[str]] = None,
+        attrs: Optional[list[str]] = None,
+        props: Optional[list[str]] = None,
+        where: Optional[dict[str, str]] = None,
+        raw_response: bool = False,
         **properties,
     ):
-        """Retrieve objects according to the specified criteria.
+        """Get objects of any type by specifying a combination of filters.
+
+        This is a general method which can be used to fetch samples, datasets, experiments, etc.
+        without needing to use the specific methods for each entity type.
+        The arguments specify the filters to apply.
 
         Args:
-            identifier (str, optional): Object identifier.
-                e.g., 'SPACE/PROJECT/EXP/SAMPLE' or 'SPACE/PROJECT/SAMPLE' 
-            code (str, optional): Object code.
-            permId (str, optional): Object permId.
-            space (str, optional): Space code or object.
-                e.g., 'MYSPACE' or o.get_space('MYSPACE')
-            project (str, optional): Project code or object.
-                e.g., 'MYPROJECT' or o.get_project('MYSPACE', 'MYPROJECT')
-            collection (str | List[str], optional): Experiment code or object.
-                e.g., 'MYEXP' or o.get_experiment('MYSPACE', 'MYPROJECT', 'MYEXP')
-            type (str, optional): Sample type code or object.
-                e.g., 'MY_SAMPLE_TYPE' or o.get_sample_type('MY_SAMPLE_TYPE')
-            start_with (int, optional): Paging start index. Default is None.
-            count (int, optional): Number of objects to fetch. Default is None.
-            withParents (bool, optional): Include parent's permIds in 'parents' column.
-            withChildren (bool, optional): Include children's permIds in 'children' column.
-            tags (list, optional): Only return samples with the specified tags.
-            attrs (list, optional): List of desired attributes to include in the result.
-                e.g., ['space', 'project', 'experiment', 'container']
+            identifier: Object identifier. Defaults to None.
+                e.g., 'SPACE/PROJECT/EXP/SAMPLE' or '20260506113213729-1'
+            code: Object code. Defaults to None.
+            permId: Object permId. Defaults to None.
+            space: Space code. Defaults to None.
+            project: Project code or identifier. Defaults to None.
+            experiment: Experiment code or identifier. Defaults to None.
+            collection: Collection code or identifier. Defaults to None.
+            type: Code of the object type. Defaults to None.
+            start_with: Paging start index. Default is None.
+            count: Number of objects to fetch. Default is None.
+            withParents: Whether to include parents' permIds. Defaults to None.
+            withChildren: Whether to include children's permIds. Defaults to None.
+            tags: List of tags to filter by. Defaults to None.
+            attrs: List of desired attributes to include in the result.
+                e.g., ['code', 'modifier.email', 'type.generatedCodePrefix']. Defaults to None.
+            props: List of desired properties to include in the result.
+                e.g., ['$NAME', '$SUPPLIER.COMPANY_EMAIL']. Defaults to None.
+            where: Key-value pairs of property values to search for.
+                Defaults to None. e.g., {'$SUPPLIER.COMPANY_EMAIL': 'supplier@example.com'}.
+            raw_response: Whether to return the raw response as a JSON dictionary
+                from the server. Defaults to False.
 
-        
+
         Returns a DataFrame of all samples for a given space/project/experiment (or any combination).
         The default result contains only basic attributes, i.e identifier, permId, type, registrator,
         registrationDate, modifier, modificationDate. Additional attributes may be downloaded by specifying
@@ -2681,7 +2824,6 @@ class Openbis:
                         a) property is not present
                         b) property is not defined for this sampleType
         """
-
         if collection is not None:
             experiment = collection
         if attrs is None:
@@ -2794,7 +2936,7 @@ class Openbis:
 
         return result
 
-    get_samples = get_objects  # Alias samples is old name
+    get_objects = get_samples  # Alias
 
     def _get_fetchopts_for_attrs(self, attrs=None):
         if attrs is None:
@@ -2834,6 +2976,7 @@ class Openbis:
         **properties,
     ):
         """Returns a DataFrame of all samples for a given space/project (or any combination).
+
         The default result contains only basic attributes, i.e identifier, permId, type, registrator,
         registrationDate, modifier, modificationDate. Additional attributes may be downloaded by specifying
         'attrs' list.
@@ -3060,6 +3203,7 @@ class Openbis:
         **properties,
     ):
         """Returns a DataFrame of all dataSets for a given project/experiment/sample (or any combination).
+
         The default result contains only basic attributes, i.e permId, type, experiment, sample, registrationDate,
         modificationDate, location, status, presentInArchive, size.
         Additional attributes may be downloaded by specifying 'attrs' list.
@@ -3095,7 +3239,6 @@ class Openbis:
                         a) property is not present
                         b) property is not defined for this dataSetType
         """
-
         if "object" in properties:
             sample = properties["object"]
         if collection is not None:
@@ -4428,6 +4571,7 @@ class Openbis:
             df_initializer=create_data_frame,
         )
 
+    @deprecated("Material is deprecated; use Object instead")
     def get_material_types(self, type=None, start_with=None, count=None):
         """Returns a list of all available material types"""
         return self.get_entity_types(
@@ -4438,6 +4582,7 @@ class Openbis:
             count=count,
         )
 
+    @deprecated("Material is deprecated; use Object instead")
     def get_material_type(self, type, only_data=False):
         """Returns detailed information regarding particular material type, given its code"""
         return self.get_entity_type(
@@ -5147,7 +5292,6 @@ class Openbis:
                     display_attrs.append(prop)
                 samples = DataFrame(columns=display_attrs)
             else:
-
                 samples = DataFrame(response)
                 for attr in attrs:
                     if "." in attr:
@@ -5604,6 +5748,7 @@ class Openbis:
 
     new_collection_type = new_experiment_type
 
+    @deprecated("Material is deprecated; use Object instead")
     def new_material_type(
         self,
         code,
@@ -5689,12 +5834,12 @@ class Openbis:
         """Creates a new vocabulary
         Usage::
             new_vocabulary(
-                code = 'vocabulary_code',
-                description = '',
-                terms = [
-                    { "code": "term1", "label": "label1", "description": "description1" },
-                    { "code": "term2", "label": "label2", "description": "description2" },
-                ]
+                code="vocabulary_code",
+                description="",
+                terms=[
+                    {"code": "term1", "label": "label1", "description": "description1"},
+                    {"code": "term2", "label": "label2", "description": "description2"},
+                ],
             )
         """
         kwargs["code"] = code
@@ -6164,8 +6309,8 @@ class PersonalAccessToken(
         (and still valid) one.
 
         Args:
-            validFrom (datetime): begin of the validity period (default:now)
-            validTo (datetime):   end of the validity period (default: validFrom + maximum validity period, as configured in openBIS)
+            validFrom: begin of the validity period (default:now)
+            validTo:   end of the validity period (default: validFrom + maximum validity period, as configured in openBIS)
         """
         if not validFrom:
             validFrom = datetime.now()
@@ -6193,7 +6338,6 @@ class SessionInformation(
 
 
 class ImagingControl:
-
     DEFAULT_SERVICE_NAME = "imaging"
     IMAGING_CONFIG_PROP_NAME = "IMAGING_DATA_CONFIG".lower()
     DEFAULT_DATASET_VIEW_PROP_NAME = "default_dataset_view"
@@ -6375,9 +6519,9 @@ class ImagingControl:
             url, stream=True, verify=self._openbis.verify_certificates
         )
         file_name = url.split("/")[-1]
-        if '%2F' in file_name:
+        if "%2F" in file_name:
             # Flow for cases where name is more complex
-            file_name = file_name.split('%2F')[-1]
+            file_name = file_name.split("%2F")[-1]
         path = os.path.join(directory_path, file_name)
         os.makedirs(os.path.dirname(path), exist_ok=True)
         with open(path, "wb") as f:
@@ -6392,7 +6536,9 @@ class ImagingControl:
             entity = sample[0]
         else:
             entity = self._openbis.get_dataset(perm_id)
-        imaging_property = json.loads(entity.props[ImagingControl.IMAGING_CONFIG_PROP_NAME])
+        imaging_property = json.loads(
+            entity.props[ImagingControl.IMAGING_CONFIG_PROP_NAME]
+        )
         return ImagingDataSetPropertyConfig.from_dict(imaging_property)
 
     def update_property_config(
@@ -6420,17 +6566,23 @@ class ImagingControl:
         if other_properties is None:
             other_properties = {}
         assert dataset_type is not None
-        assert (
-            files is not None and len(files) > 0
-        ), "Files parameter must not be empty!"
+        assert files is not None and len(files) > 0, (
+            "Files parameter must not be empty!"
+        )
         assert config is not None
         if self.afs_client is not None and self.afs_client.is_session_valid():
             props = other_properties
             props[ImagingControl.IMAGING_CONFIG_PROP_NAME] = config.to_json()
-            props[ImagingControl.DEFAULT_OBJECT_VIEW_PROP_NAME] = ImagingControl.IMAGING_DATASET_VIEWER
-            sample = self._openbis.new_sample(dataset_type, experiment=experiment, props=props)
+            props[ImagingControl.DEFAULT_OBJECT_VIEW_PROP_NAME] = (
+                ImagingControl.IMAGING_DATASET_VIEWER
+            )
+            sample = self._openbis.new_sample(
+                dataset_type, experiment=experiment, props=props
+            )
             sample.save()
-            self.afs_client.upload_files(sample.permId, "/", files, wait_until_finished=True)
+            self.afs_client.upload_files(
+                sample.permId, "/", files, wait_until_finished=True
+            )
             return sample
 
         else:

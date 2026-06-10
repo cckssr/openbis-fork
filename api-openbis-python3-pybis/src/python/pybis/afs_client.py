@@ -1,4 +1,18 @@
-
+#
+#   Copyright ETH 2018 - 2026 Zürich, Scientific IT Services
+#
+#   Licensed under the Apache License, Version 2.0 (the "License");
+#   you may not use this file except in compliance with the License.
+#   You may obtain a copy of the License at
+#
+#        http://www.apache.org/licenses/LICENSE-2.0
+#
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
+#
 import requests
 import os
 import json
@@ -13,7 +27,8 @@ from urllib.parse import urljoin, quote
 import requests
 from pandas import DataFrame
 from requests import Session
-from requests.adapters import HTTPAdapter, Retry
+from requests.adapters import HTTPAdapter
+from urllib3.util import Retry
 from tabulate import tabulate
 from pathlib import Path
 
@@ -22,13 +37,16 @@ from .chunk import decode_chunks
 
 REQUEST_RETRIES_COUNT = 5
 
+
 def _create_session(url):
     """Create a session object to handle retries in case of server failure"""
     session = requests.Session()
-    retries = Retry(total=REQUEST_RETRIES_COUNT, backoff_factor=1,
-                    status_forcelist=[502, 503, 504])
+    retries = Retry(
+        total=REQUEST_RETRIES_COUNT, backoff_factor=1, status_forcelist=[502, 503, 504]
+    )
     session.mount(url, HTTPAdapter(max_retries=retries))
     return session
+
 
 class File:
     owner: str
@@ -38,20 +56,21 @@ class File:
     size: int
     lastModifiedTime: str
 
-    def __init__(self, owner: str, path: str, name: str, directory, size, lastModifiedTime):
+    def __init__(
+        self, owner: str, path: str, name: str, directory, size, lastModifiedTime
+    ):
         self.owner = owner
         self.path = path
         self.name = name
-        self.directory = directory.lower() == 'true'
-        self.size = int(size) if size != '' else 0
+        self.directory = directory.lower() == "true"
+        self.size = int(size) if size != "" else 0
         self.lastModifiedTime = lastModifiedTime
 
     def __str__(self):
-        return f'File[{self.owner},{self.path},{self.name},{self.directory},{self.size},{self.lastModifiedTime}]'
+        return f"File[{self.owner},{self.path},{self.name},{self.directory},{self.size},{self.lastModifiedTime}]"
 
 
 class AfsClient:
-
     def __init__(self, url, sessionToken, verify=True):
         self._afs_url = url
         if url is not None and not url.endswith("/api"):
@@ -59,7 +78,6 @@ class AfsClient:
         self._sessionToken = sessionToken
         self._verify = verify
         self.session = _create_session(url)
-
 
     def is_session_valid(self):
         request = {
@@ -69,7 +87,9 @@ class AfsClient:
             "method": "isSessionValid",
         }
         try:
-            with self.session.get(self._afs_url, params=request, verify=self._verify, stream=True) as r:
+            with self.session.get(
+                self._afs_url, params=request, verify=self._verify, stream=True
+            ) as r:
                 content = r.content.decode("utf-8").lower() == "true"
                 return content
         except BaseException:
@@ -83,12 +103,14 @@ class AfsClient:
             "method": "list",
             "owner": owner,
             "source": source,
-            "recursively": recursively
+            "recursively": recursively,
         }
 
-        with self.session.get(self._afs_url, params=request, verify=self._verify, stream=True) as response:
+        with self.session.get(
+            self._afs_url, params=request, verify=self._verify, stream=True
+        ) as response:
             if response.ok:
-                entries = response.text.split(';')
+                entries = response.text.split(";")
                 result = []
                 for entry in entries:
                     single_file = entry.split(",")
@@ -97,7 +119,7 @@ class AfsClient:
                 return result
             else:
                 parsed_error = json.loads(response.text)
-                message = parsed_error['error'][1]['message']
+                message = parsed_error["error"][1]["message"]
                 if "NoSuchFileException" in message:
                     return []
                 raise ValueError(
@@ -114,54 +136,69 @@ class AfsClient:
             "source": source,
         }
 
-        with self.session.get(self._afs_url, params=request, verify=self._verify, stream=True) as r:
+        with self.session.get(
+            self._afs_url, params=request, verify=self._verify, stream=True
+        ) as r:
             return r.content
 
-
     def read(self, owner, source, offset, limit):
-        params= {
+        params = {
             "sessionToken": self._sessionToken,
             # "interactiveSessionKey": None,
             # "transactionManagerKey": None,
             "method": "read",
         }
-        chunks = [{
+        chunks = [
+            {
                 "@type": "ch.ethz.sis.afsapi.dto.Chunk",
                 "owner": owner,
                 "source": source,
                 "offset": offset,
                 "limit": limit,
-                "data": []
+                "data": [],
             }
         ]
 
         chunks_encoded = encode_chunks_as_bytes(chunks)
 
-        with self.session.post(self._afs_url, data=chunks_encoded, params=params, verify=self._verify, stream=True) as r:
+        with self.session.post(
+            self._afs_url,
+            data=chunks_encoded,
+            params=params,
+            verify=self._verify,
+            stream=True,
+        ) as r:
             content = r.content
             decoded = decode_chunks(content)[0]
-            return decoded['data']
+            return decoded["data"]
 
     def write(self, owner, source, offset, limit, data):
-        params= {
+        params = {
             "sessionToken": self._sessionToken,
             # "interactiveSessionKey": None,
             # "transactionManagerKey": None,
             "method": "write",
         }
-        chunks = [{
+        chunks = [
+            {
                 "@type": "ch.ethz.sis.afsapi.dto.Chunk",
                 "owner": owner,
                 "source": source,
                 "offset": offset,
                 "limit": limit,
-                "data": data
+                "data": data,
             }
         ]
 
         chunks_encoded = encode_chunks_as_bytes(chunks)
 
-        with self.session.post(self._afs_url, data=chunks_encoded, params=params, verify=self._verify, stream=True) as r:
+        with self.session.post(
+            self._afs_url,
+            data=chunks_encoded,
+            params=params,
+            verify=self._verify,
+            stream=True,
+        ) as r:
             content = r.content.decode("utf-8").lower() == "true"
             return content
 
@@ -173,10 +210,12 @@ class AfsClient:
             "method": "create",
             "owner": owner,
             "source": source,
-            "directory": is_directory
+            "directory": is_directory,
         }
 
-        with self.session.post(self._afs_url, data=params, params=params, verify=self._verify, stream=True) as r:
+        with self.session.post(
+            self._afs_url, data=params, params=params, verify=self._verify, stream=True
+        ) as r:
             content = r.content.decode("utf-8").lower() == "true"
             return content
 
@@ -201,9 +240,11 @@ class AfsClient:
 
         with AfsFileUploadQueue(self._afs_url, self._verify) as queue:
             for filename in real_files:
-                file_path_afs = os.path.join(source_path, filename[0], os.path.basename(filename[1]))
+                file_path_afs = os.path.join(
+                    source_path, filename[0], os.path.basename(filename[1])
+                )
                 if file_path_afs in existing_files:
-                #     TODO delete flow?
+                    #     TODO delete flow?
                     pass
 
                 queue.put((file_path_afs, filename[1], self._sessionToken, owner))
@@ -235,8 +276,6 @@ class AfsClient:
                     raise e
 
 
-
-
 class PropagatingThread(Thread):
     def run(self):
         self.exc = None
@@ -251,10 +290,10 @@ class PropagatingThread(Thread):
             raise self.exc
         return self.ret
 
+
 class AfsFileUploadQueue:
     """Structure for uploading files to AFS in separate threads.
-    It works as a queue where each item is a single file upload. """
-
+    It works as a queue where each item is a single file upload."""
 
     def __init__(self, url, verify_certificates=True, workers=10):
         self.url = url
@@ -316,7 +355,7 @@ class AfsFileUploadQueue:
             (afs_path, file_path, session_token, owner) = item
 
             try:
-                if file_path == '':
+                if file_path == "":
                     params = {
                         "sessionToken": session_token,
                         # "interactiveSessionKey": None,
@@ -324,10 +363,16 @@ class AfsFileUploadQueue:
                         "method": "create",
                         "owner": owner,
                         "source": afs_path,
-                        "directory": True
+                        "directory": True,
                     }
 
-                    response = self.session.post(self.url, data=params, params=params, stream=True, verify=self.verify_certificates)
+                    response = self.session.post(
+                        self.url,
+                        data=params,
+                        params=params,
+                        stream=True,
+                        verify=self.verify_certificates,
+                    )
                     if response.ok:
                         content = response.content.decode("utf-8").lower() == "true"
                         if not content:
@@ -349,43 +394,65 @@ class AfsFileUploadQueue:
                     if file_size > size:
                         with open(file_path, "rb") as f:
                             for i in range(0, file_size, size):
-                                range_to_get = file_size - i if i + size > file_size else size
+                                range_to_get = (
+                                    file_size - i if i + size > file_size else size
+                                )
                                 data = f.read(range_to_get)
-                                chunks = [{
-                                    # "owner": 'aaaa',
-                                    "owner": owner,
-                                    "source": afs_path,
-                                    "offset": i,
-                                    "limit": i + range_to_get,
-                                    "data": data
-                                }]
+                                chunks = [
+                                    {
+                                        # "owner": 'aaaa',
+                                        "owner": owner,
+                                        "source": afs_path,
+                                        "offset": i,
+                                        "limit": i + range_to_get,
+                                        "data": data,
+                                    }
+                                ]
 
                                 chunks_encoded = encode_chunks_as_bytes(chunks)
 
-                                with self.session.post(self.url, data=chunks_encoded, params=params, stream=True, verify=self.verify_certificates) as response:
+                                with self.session.post(
+                                    self.url,
+                                    data=chunks_encoded,
+                                    params=params,
+                                    stream=True,
+                                    verify=self.verify_certificates,
+                                ) as response:
                                     if response.ok:
-                                        content = response.content.decode("utf-8").lower() == "true"
+                                        content = (
+                                            response.content.decode("utf-8").lower()
+                                            == "true"
+                                        )
                                         if not content:
                                             message = json.loads(response.text)
                                             raise ValueError(
-                                                        f"Error {message['error'][1]['exceptionCode']} during upload: {message['error'][1]['message']}"
-                                                    )
+                                                f"Error {message['error'][1]['exceptionCode']} during upload: {message['error'][1]['message']}"
+                                            )
                                     response.raise_for_status()
                     else:
                         with open(file_path, "rb") as f:
-
-                            chunks = [{
-                                "owner": owner,
-                                "source": afs_path,
-                                "offset": 0,
-                                "limit": file_size,
-                                "data": f.read()
-                            }]
+                            chunks = [
+                                {
+                                    "owner": owner,
+                                    "source": afs_path,
+                                    "offset": 0,
+                                    "limit": file_size,
+                                    "data": f.read(),
+                                }
+                            ]
 
                             chunks_encoded = encode_chunks_as_bytes(chunks)
 
-                            with self.session.post(self.url, data=chunks_encoded, params=params, stream=True, verify=self.verify_certificates) as response:
-                                content = response.content.decode("utf-8").lower() == "true"
+                            with self.session.post(
+                                self.url,
+                                data=chunks_encoded,
+                                params=params,
+                                stream=True,
+                                verify=self.verify_certificates,
+                            ) as response:
+                                content = (
+                                    response.content.decode("utf-8").lower() == "true"
+                                )
                                 if not content:
                                     message = json.loads(response.text)
                                     raise ValueError(
@@ -420,6 +487,7 @@ class AfsFileUploadQueue:
             else:
                 # normal success path
                 self.upload_queue.task_done()
+
 
 class AfsFileDownloadQueue:
     def __init__(self, url, workers=10):
@@ -498,29 +566,33 @@ class AfsFileDownloadQueue:
                         # "transactionManagerKey": None,
                         "method": "read",
                     }
-                    chunks = [{
-                        "@type": "ch.ethz.sis.afsapi.dto.Chunk",
-                        "owner": file.owner,
-                        "source": file.path,
-                        "offset": i,
-                        "limit": range_to_get,
-                        "data": []
-                    }]
+                    chunks = [
+                        {
+                            "@type": "ch.ethz.sis.afsapi.dto.Chunk",
+                            "owner": file.owner,
+                            "source": file.path,
+                            "offset": i,
+                            "limit": range_to_get,
+                            "data": [],
+                        }
+                    ]
 
                     chunks_encoded = encode_chunks_as_bytes(chunks)
 
-                    with self.session.post(self.url, data=chunks_encoded, params=params, stream=True, verify=self.verify_certificates) as r:
+                    with self.session.post(
+                        self.url,
+                        data=chunks_encoded,
+                        params=params,
+                        stream=True,
+                        verify=self.verify_certificates,
+                    ) as r:
                         content = r.content
                         decoded = decode_chunks(content)[0]
-                        data = decoded['data']
+                        data = decoded["data"]
 
                         with open(file_dest, "rb+") as local_file:
                             local_file.seek(i)
                             local_file.write(data)
-
-
-
-
 
             except BaseException as e:
                 # make sure only the *first* failing worker drains the queue

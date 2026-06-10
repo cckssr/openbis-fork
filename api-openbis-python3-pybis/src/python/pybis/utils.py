@@ -1,11 +1,12 @@
-#   Copyright ETH 2018 - 2025 Zürich, Scientific IT Services
-# 
+#
+#   Copyright ETH 2018 - 2026 Zürich, Scientific IT Services
+#
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
 #   You may obtain a copy of the License at
-# 
+#
 #        http://www.apache.org/licenses/LICENSE-2.0
-#   
+#
 #   Unless required by applicable law or agreed to in writing, software
 #   distributed under the License is distributed on an "AS IS" BASIS,
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -60,7 +61,7 @@ def parse_jackson(input_json):
         "validationPlugin",
         "dataSetPermId",
         "dataStore",
-        "sampleType"
+        "sampleType",
     ]
     found = {}
 
@@ -154,7 +155,9 @@ def check_datatype(type_name, value, is_multi_value=False):
         if type_name == "INTEGER":
             return all([isinstance(x, int) and not math.isnan(x) for x in value])
         if type_name == "REAL":
-            return all([isinstance(x, (int, float)) and not math.isnan(x) for x in value])
+            return all(
+                [isinstance(x, (int, float)) and not math.isnan(x) for x in value]
+            )
         if type_name == "BOOLEAN":
             return all([isinstance(x, bool) for x in value])
         if type_name == "VARCHAR":
@@ -209,7 +212,7 @@ def is_identifier(ident):
 
 
 def is_permid(ident):
-    match = re.match("^\d+\-\d+$", ident)
+    match = re.match(r"^\d+\-\d+$", ident)
     if match:
         return True
     else:
@@ -266,7 +269,7 @@ def extract_deletion(obj):
                 "reason": obj["reason"],
                 "permId": deleted_object["id"]["permId"],
                 "type": deleted_object["id"]["@type"],
-                "deletionId": obj["id"]["id"]
+                "deletionId": obj["id"]["id"],
             }
         )
     return del_objs
@@ -305,7 +308,11 @@ def extract_identifiers(items):
 def extract_nested_identifier(ident):
     if not isinstance(ident, dict):
         return "" if ident is None else str(ident)
-    return "" if ident["identifier"]["identifier"] is None else ident["identifier"]["identifier"]
+    return (
+        ""
+        if ident["identifier"]["identifier"] is None
+        else ident["identifier"]["identifier"]
+    )
 
 
 def extract_nested_permid(permid):

@@ -1,7 +1,5 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-#   Copyright ETH 2023 - 2024 Zürich, Scientific IT Services
+#
+#   Copyright ETH 2018 - 2026 Zürich, Scientific IT Services
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -22,11 +20,11 @@ imaging.py
 Work with Openbis Imaging technology with Python.
 
 """
+
 import abc
 import json
 import base64
 import threading
-
 
 
 class AtomicIncrementer:
@@ -48,7 +46,7 @@ class AbstractImagingClass(metaclass=abc.ABCMeta):
         def dictionary_creator(x):
             dictionary = x.__dict__
             val = c.inc()
-            dictionary['@id'] = val
+            dictionary["@id"] = val
             return dictionary
 
         return json.dumps(self, default=dictionary_creator, sort_keys=True, indent=4)
@@ -65,12 +63,15 @@ class AbstractImagingRequest(AbstractImagingClass, metaclass=abc.ABCMeta):
     def _validate_data(self):
         return
 
+
 class ImagingSemanticAnnotation(AbstractImagingClass):
     ontologyId: str
     ontologyVersion: str
     ontologyAnnotationId: str
 
-    def __init__(self, ontologyId=None, ontologyVersion=None, ontologyAnnotationId=None):
+    def __init__(
+        self, ontologyId=None, ontologyVersion=None, ontologyAnnotationId=None
+    ):
         self.__dict__["@type"] = "imaging.dto.ImagingSemanticAnnotation"
         self.ontologyId = ontologyId
         self.ontologyVersion = ontologyVersion
@@ -88,6 +89,7 @@ class ImagingSemanticAnnotation(AbstractImagingClass):
             semantic_annotation.__dict__[prop] = attribute
         return semantic_annotation
 
+
 class ImagingDataSetFilter(AbstractImagingClass):
     name: str
     parameters: dict
@@ -103,11 +105,12 @@ class ImagingDataSetFilter(AbstractImagingClass):
             return None
         if "@id" in data:
             del data["@id"]
-        imaging_filter = cls('', None)
+        imaging_filter = cls("", None)
         for prop in cls.__annotations__.keys():
             attribute = data.get(prop)
             imaging_filter.__dict__[prop] = attribute
         return imaging_filter
+
 
 class ImagingDataSetPreview(AbstractImagingRequest):
     config: dict
@@ -122,7 +125,16 @@ class ImagingDataSetPreview(AbstractImagingRequest):
     tags: list
     filterConfig: list
 
-    def __init__(self, preview_format, config=None, metadata=None, index=0, comment="", tags=[], filterConfig=[]):
+    def __init__(
+        self,
+        preview_format,
+        config=None,
+        metadata=None,
+        index=0,
+        comment="",
+        tags=[],
+        filterConfig=[],
+    ):
         self.__dict__["@type"] = "imaging.dto.ImagingDataSetPreview"
         self.bytes = None
         self.format = preview_format
@@ -144,7 +156,7 @@ class ImagingDataSetPreview(AbstractImagingRequest):
 
     def save_to_file(self, file_path):
         assert self.bytes is not None, "There is no image information!"
-        img_data = bytearray(self.bytes, encoding='utf-8')
+        img_data = bytearray(self.bytes, encoding="utf-8")
         with open(file_path, "wb") as fh:
             fh.write(base64.decodebytes(img_data))
 
@@ -154,11 +166,12 @@ class ImagingDataSetPreview(AbstractImagingRequest):
             return None
         if "@id" in data:
             del data["@id"]
-        preview = cls('', None, None)
+        preview = cls("", None, None)
         for prop in cls.__annotations__.keys():
             attribute = data.get(prop)
             preview.__dict__[prop] = attribute
         return preview
+
 
 class ImagingDataSetExportConfig(AbstractImagingClass):
     archiveFormat: str
@@ -195,7 +208,6 @@ class ImagingDataSetExportConfig(AbstractImagingClass):
         return preview
 
 
-
 class ImagingDataSetExport(AbstractImagingRequest):
     config: ImagingDataSetExportConfig
     metadata: dict
@@ -208,7 +220,6 @@ class ImagingDataSetExport(AbstractImagingRequest):
 
     def _validate_data(self):
         assert self.config is not None, "Config can not be null"
-
 
 
 class ImagingDataSetMultiExport(AbstractImagingRequest):
@@ -273,10 +284,21 @@ class ImagingDataSetControl(AbstractImagingClass):
     metadata: dict
     semanticAnnotation: ImagingSemanticAnnotation
 
-    def __init__(self, label: str, control_type: str, section: str = None, values: list = None,
-                 unit: str = None, values_range: list = None, multiselect: bool = None,
-                 playable: bool = False, speeds: list = None,
-                 visibility: list = None, metadata: dict = None, semanticAnnotation: ImagingSemanticAnnotation = None):
+    def __init__(
+        self,
+        label: str,
+        control_type: str,
+        section: str = None,
+        values: list = None,
+        unit: str = None,
+        values_range: list = None,
+        multiselect: bool = None,
+        playable: bool = False,
+        speeds: list = None,
+        visibility: list = None,
+        metadata: dict = None,
+        semanticAnnotation: ImagingSemanticAnnotation = None,
+    ):
         self.__dict__["@type"] = "imaging.dto.ImagingDataSetControl"
         self.label = label
         self.type = control_type
@@ -308,9 +330,12 @@ class ImagingDataSetControl(AbstractImagingClass):
         for prop in cls.__annotations__.keys():
             attribute = data.get(prop)
             if attribute is not None:
-                if prop == 'visibility':
-                    attribute = [ImagingDataSetControlVisibility.from_dict(visibility) for visibility in attribute]
-                elif prop == 'semanticAnnotation':
+                if prop == "visibility":
+                    attribute = [
+                        ImagingDataSetControlVisibility.from_dict(visibility)
+                        for visibility in attribute
+                    ]
+                elif prop == "semanticAnnotation":
                     attribute = ImagingSemanticAnnotation.from_dict(attribute)
             control.__dict__[prop] = attribute
         return control
@@ -328,10 +353,19 @@ class ImagingDataSetConfig(AbstractImagingClass):
     filters: dict
     filterSemanticAnnotation: dict
 
-    def __init__(self, adaptor: str, version: float, resolutions: list, playable: bool,
-                 speeds: list = None, exports: list = None,
-                 inputs: list = None, metadata: dict = None, filters: dict = None,
-                 filterSemanticAnnotation: dict = None):
+    def __init__(
+        self,
+        adaptor: str,
+        version: float,
+        resolutions: list,
+        playable: bool,
+        speeds: list = None,
+        exports: list = None,
+        inputs: list = None,
+        metadata: dict = None,
+        filters: dict = None,
+        filterSemanticAnnotation: dict = None,
+    ):
         self.__dict__["@type"] = "imaging.dto.ImagingDataSetConfig"
         self.adaptor = adaptor
         self.version = version
@@ -343,7 +377,9 @@ class ImagingDataSetConfig(AbstractImagingClass):
         self.inputs = inputs
         self.metadata = metadata if metadata is not None else dict()
         self.filters = filters if filters is not None else dict()
-        self.filterSemanticAnnotation = filterSemanticAnnotation if filterSemanticAnnotation is not None else dict()
+        self.filterSemanticAnnotation = (
+            filterSemanticAnnotation if filterSemanticAnnotation is not None else dict()
+        )
 
     @classmethod
     def from_dict(cls, data):
@@ -355,17 +391,25 @@ class ImagingDataSetConfig(AbstractImagingClass):
         for prop in cls.__annotations__.keys():
             attribute = data.get(prop)
             if attribute is not None:
-                if prop in ['exports', 'inputs']:
-                    attribute = [ImagingDataSetControl.from_dict(control) for control in attribute]
-                elif prop in ['filters']:
+                if prop in ["exports", "inputs"]:
+                    attribute = [
+                        ImagingDataSetControl.from_dict(control)
+                        for control in attribute
+                    ]
+                elif prop in ["filters"]:
                     filters = {}
                     for attr in attribute:
-                        filters[attr] = [ImagingDataSetControl.from_dict(control) for control in attribute[attr]]
+                        filters[attr] = [
+                            ImagingDataSetControl.from_dict(control)
+                            for control in attribute[attr]
+                        ]
                     attribute = filters
-                elif prop in ['filterSemanticAnnotation']:
+                elif prop in ["filterSemanticAnnotation"]:
                     filter_semantic_annotation = {}
                     for attr in attribute:
-                        filter_semantic_annotation[attr] = ImagingSemanticAnnotation.from_dict(attribute[attr])
+                        filter_semantic_annotation[attr] = (
+                            ImagingSemanticAnnotation.from_dict(attribute[attr])
+                        )
                     attribute = filter_semantic_annotation
             config.__dict__[prop] = attribute
         return config
@@ -378,12 +422,21 @@ class ImagingDataSetImage(AbstractImagingClass):
     index: int
     metadata: dict
 
-    def __init__(self, config: ImagingDataSetConfig, imageConfig=None, previews=None, metadata=None, index=0):
+    def __init__(
+        self,
+        config: ImagingDataSetConfig,
+        imageConfig=None,
+        previews=None,
+        metadata=None,
+        index=0,
+    ):
         self.__dict__["@type"] = "imaging.dto.ImagingDataSetImage"
         assert config is not None, "Config must not be None!"
         self.config = config
         self.imageConfig = imageConfig if imageConfig is not None else dict()
-        self.previews = previews if previews is not None else [ImagingDataSetPreview("png")]
+        self.previews = (
+            previews if previews is not None else [ImagingDataSetPreview("png")]
+        )
         self.metadata = metadata if metadata is not None else dict()
         self.index = index if index is not None else 0
         assert isinstance(self.previews, list), "Previews must be a list!"
@@ -397,13 +450,15 @@ class ImagingDataSetImage(AbstractImagingClass):
             return None
         if "@id" in data:
             del data["@id"]
-        config = ImagingDataSetConfig.from_dict(data.get('config'))
+        config = ImagingDataSetConfig.from_dict(data.get("config"))
         image = cls(config, None, None, None)
         for prop in cls.__annotations__.keys():
             attribute = data.get(prop)
-            if prop == 'previews' and attribute is not None:
-                attribute = [ImagingDataSetPreview.from_dict(preview) for preview in attribute]
-            if prop not in ['config']:
+            if prop == "previews" and attribute is not None:
+                attribute = [
+                    ImagingDataSetPreview.from_dict(preview) for preview in attribute
+                ]
+            if prop not in ["config"]:
                 image.__dict__[prop] = attribute
         return image
 
@@ -422,9 +477,13 @@ class ImagingDataSetPropertyConfig(AbstractImagingClass):
         assert data is not None and any(data), "There is no property config found!"
         if "@id" in data:
             del data["@id"]
-        attr = data.get('images')
-        images = [ImagingDataSetImage.from_dict(image) for image in attr] if attr is not None else None
-        metadata = data.get('metadata')
+        attr = data.get("images")
+        images = (
+            [ImagingDataSetImage.from_dict(image) for image in attr]
+            if attr is not None
+            else None
+        )
+        metadata = data.get("metadata")
         return cls(images, metadata)
 
     def add_image(self, image: ImagingDataSetImage):

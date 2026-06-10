@@ -1,11 +1,12 @@
-#   Copyright ETH 2018 - 2023 Zürich, Scientific IT Services
-# 
+#
+#   Copyright ETH 2018 - 2026 Zürich, Scientific IT Services
+#
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
 #   You may obtain a copy of the License at
-# 
+#
 #        http://www.apache.org/licenses/LICENSE-2.0
-#   
+#
 #   Unless required by applicable law or agreed to in writing, software
 #   distributed under the License is distributed on an "AS IS" BASIS,
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -46,7 +47,7 @@ setup(
     ],
     project_urls={
         "Documentation": "https://openbis.readthedocs.io/en/latest/software-developer-documentation/apis/python-v3-api.html",
-        "Changelog": "https://sissource.ethz.ch/sispub/openbis/-/blob/master/api-openbis-python3-pybis/src/python/CHANGELOG.md"
+        "Changelog": "https://sissource.ethz.ch/sispub/openbis/-/blob/master/api-openbis-python3-pybis/src/python/CHANGELOG.md",
     },
     python_requires=">=3.6",
     classifiers=[

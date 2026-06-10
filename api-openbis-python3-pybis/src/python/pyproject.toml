@@ -2,3 +2,12 @@
 filterwarnings = [
     "ignore::urllib3.exceptions.InsecureRequestWarning",
 ]
+
+[tool.ruff.format]
+docstring-code-format = true
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint]
+select = ["D"]

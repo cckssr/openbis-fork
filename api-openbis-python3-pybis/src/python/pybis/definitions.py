@@ -1,11 +1,12 @@
-#   Copyright ETH 2018 - 2024 Zürich, Scientific IT Services
-# 
+#
+#   Copyright ETH 2018 - 2026 Zürich, Scientific IT Services
+#
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
 #   You may obtain a copy of the License at
-# 
+#
 #        http://www.apache.org/licenses/LICENSE-2.0
-#   
+#
 #   Unless required by applicable law or agreed to in writing, software
 #   distributed under the License is distributed on an "AS IS" BASIS,
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -173,7 +174,7 @@ def openbis_definitions(entity):
                 "ARRAY_REAL",
                 "ARRAY_STRING",
                 "ARRAY_TIMESTAMP",
-                "JSON"
+                "JSON",
             ],
             "identifier": "typeId",
         },
@@ -326,7 +327,7 @@ def openbis_definitions(entity):
             "attrs_new": "code metaData".split(),
             "attrs_up": "code metaData".split(),
             "identifier": "typeGroupId",
-        }
+        },
     }
     return entities[entity]
 
@@ -352,9 +353,9 @@ fetch_option = {
     "leader": {"@type": "as.dto.person.fetchoptions.PersonFetchOptions"},
     "authorizationGroup": {
         "@type": "as.dto.authorizationgroup.fetchoptions.AuthorizationGroupFetchOptions",
-         "roleAssignments": {
+        "roleAssignments": {
             "@type": "as.dto.roleassignment.fetchoptions.RoleAssignmentFetchOptions",
-        }
+        },
     },
     "experiment": {
         "@type": "as.dto.experiment.fetchoptions.ExperimentFetchOptions",
@@ -464,9 +465,7 @@ fetch_option = {
         "semanticAnnotations": {
             "@type": "as.dto.semanticannotation.fetchoptions.SemanticAnnotationFetchOptions"
         },
-        "sampleType": {
-            "@type": "as.dto.sample.fetchoptions.SampleTypeFetchOptions"
-        },
+        "sampleType": {"@type": "as.dto.sample.fetchoptions.SampleTypeFetchOptions"},
         "registrator": {"@type": "as.dto.person.fetchoptions.PersonFetchOptions"},
     },
     "semanticAnnotations": {

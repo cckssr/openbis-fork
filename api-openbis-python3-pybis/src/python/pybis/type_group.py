@@ -1,4 +1,5 @@
-#   Copyright ETH 2025 Zürich, Scientific IT Services
+#
+#   Copyright ETH 2018 - 2026 Zürich, Scientific IT Services
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -36,10 +37,9 @@ from .utils import (
     nvl,
 )
 
+
 class TypeGroupAssignment:
-    def __init__(
-            self, openbis_obj, data=None, **kwargs
-    ):
+    def __init__(self, openbis_obj, data=None, **kwargs):
         self.openbis = openbis_obj
         self.data = data
 
@@ -71,6 +71,7 @@ class TypeGroupAssignment:
             "managedInternally",
         ]
 
+
 class TypeGroup(
     OpenBisObject, entity="typeGroup", single_item_method_name="get_type_group"
 ):
@@ -96,7 +97,7 @@ class TypeGroup(
 
         Usage::
             group.get_roles()
-            group.get_roles(space='TEST_SPACE')
+            group.get_roles(space="TEST_SPACE")
         """
         attrs = [
             "sampleType",
@@ -106,9 +107,10 @@ class TypeGroup(
             "managedInternally",
         ]
 
-        pas = self.openbis.search_type_group_assignment(type_group=self.id, sample_type="*")
-        pas = pas['objects']
-
+        pas = self.openbis.search_type_group_assignment(
+            type_group=self.id, sample_type="*"
+        )
+        pas = pas["objects"]
 
         def create_data_frame(attrs, props, response):
             df = DataFrame(response, columns=attrs)
@@ -147,10 +149,10 @@ class TypeGroup(
             response=pas,
             df_initializer=create_data_frame,
             objects_initializer=create_objects,
-            attrs=attrs
+            attrs=attrs,
         )
 
-    def delete(self, reason='pybis delete'):
+    def delete(self, reason="pybis delete"):
         """Delete this type group"""
         if not self.data:
             return
@@ -174,7 +176,6 @@ class TypeGroup(
         resp = self.openbis._post_request(self.openbis.as_v3, request)
         if VERBOSE:
             print(f"{self.entity} {self.code} successfully deleted.")
-
 
     def save(self):
         if self.is_new:

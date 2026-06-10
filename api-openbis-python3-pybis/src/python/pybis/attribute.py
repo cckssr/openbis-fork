@@ -1,11 +1,12 @@
-#   Copyright ETH 2018 - 2023 Zürich, Scientific IT Services
-# 
+#
+#   Copyright ETH 2018 - 2026 Zürich, Scientific IT Services
+#
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
 #   You may obtain a copy of the License at
-# 
+#
 #        http://www.apache.org/licenses/LICENSE-2.0
-#   
+#
 #   Unless required by applicable law or agreed to in writing, software
 #   distributed under the License is distributed on an "AS IS" BASIS,
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -77,8 +78,8 @@ class AttrHolder:
         """
         # entity is read from openBIS, so it is not new anymore
         self.__dict__["_is_new"] = False
-        if 'fetchOptions' in data:
-            self.__dict__["_fetchOptions"] = data['fetchOptions']
+        if "fetchOptions" in data:
+            self.__dict__["_fetchOptions"] = data["fetchOptions"]
 
         for attr in self._defs["attrs"]:
             if attr in ["code", "permId", "identifier", "type", "id"]:
@@ -128,10 +129,14 @@ class AttrHolder:
                         try:
                             if "identifier" in item:
                                 self.__dict__["_" + attr].append(item["identifier"])
-                                self.__dict__["_" + attr + "_orig"].append(copy.copy(item["identifier"]))
+                                self.__dict__["_" + attr + "_orig"].append(
+                                    copy.copy(item["identifier"])
+                                )
                             elif "permId" in item:
                                 self.__dict__["_" + attr].append(item["permId"])
-                                self.__dict__["_" + attr + "_orig"].append(copy.copy(item["permId"]))
+                                self.__dict__["_" + attr + "_orig"].append(
+                                    copy.copy(item["permId"])
+                                )
                         except Exception:
                             # TODO: under certain circumstances, openBIS only delivers an integer
                             pass
@@ -145,8 +150,12 @@ class AttrHolder:
             elif attr in ["registrator", "modifier", "dataProducer", "owner"]:
                 self.__dict__["_" + attr] = extract_person(data.get(attr))
 
-            elif attr in ["sampleType"] and self.entity == 'propertyType' and data.get('dataType', None) == 'SAMPLE':
-                if data.get('sampleType', None) is None:
+            elif (
+                attr in ["sampleType"]
+                and self.entity == "propertyType"
+                and data.get("dataType", None) == "SAMPLE"
+            ):
+                if data.get("sampleType", None) is None:
                     self.__dict__["_" + attr] = "(ALL)"
                 else:
                     self.__dict__["_" + attr] = data.get(attr, None)
@@ -298,7 +307,7 @@ class AttrHolder:
                                     "@type": "as.dto.person.id.PersonPermId",
                                 }
                             ],
-                            "@type": f'as.dto.common.update.ListUpdateAction{self.__dict__["_changed_users"][userId]["action"]}',
+                            "@type": f"as.dto.common.update.ListUpdateAction{self.__dict__['_changed_users'][userId]['action']}",
                         }
                     )
 
@@ -325,14 +334,14 @@ class AttrHolder:
                     continue
                 additions = []
                 deletions = []
-                items_identifiers = [x['identifier'] for x in items]
-                orig_identifiers = [x['identifier'] for x in items_orig]
+                items_identifiers = [x["identifier"] for x in items]
+                orig_identifiers = [x["identifier"] for x in items_orig]
                 for item in items:
-                    if item['identifier'] in orig_identifiers:
+                    if item["identifier"] in orig_identifiers:
                         continue
                     additions += [item]
                 for item in items_orig:
-                    if item['identifier'] in items_identifiers:
+                    if item["identifier"] in items_identifiers:
                         continue
                     deletions += [item]
 
@@ -342,15 +351,19 @@ class AttrHolder:
                         "@type": "as.dto.common.update.IdListUpdateValue",
                     }
                     if additions:
-                        up_obj[attr2ids[attr]]["actions"] += [{
-                            "items": additions,
-                            "@type": "as.dto.common.update.ListUpdateActionAdd",
-                        }]
+                        up_obj[attr2ids[attr]]["actions"] += [
+                            {
+                                "items": additions,
+                                "@type": "as.dto.common.update.ListUpdateActionAdd",
+                            }
+                        ]
                     if deletions:
-                        up_obj[attr2ids[attr]]["actions"] += [{
-                            "items": deletions,
-                            "@type": "as.dto.common.update.ListUpdateActionRemove",
-                        }]
+                        up_obj[attr2ids[attr]]["actions"] += [
+                            {
+                                "items": deletions,
+                                "@type": "as.dto.common.update.ListUpdateActionRemove",
+                            }
+                        ]
             elif "_" + attr in self.__dict__:
                 # handle multivalue attributes (tags etc.)
                 # we only cover the Set mechanism, which means we always update
@@ -375,9 +388,9 @@ class AttrHolder:
                     if value is None:
                         pass
                     elif isinstance(value, bool):
-                        if 'PluginUpdate' in up_obj['@type']:
+                        if "PluginUpdate" in up_obj["@type"]:
                             # PluginUpdate is special
-                            #TODO consolidate boolean attribute options
+                            # TODO consolidate boolean attribute options
                             up_obj[attr] = {
                                 "@type": "as.dto.common.update.FieldUpdateValue",
                                 "isModified": True,
@@ -474,12 +487,17 @@ class AttrHolder:
                     )
                 return ras
 
-            elif int_name == '_parents':
+            elif int_name == "_parents":
                 result = None
-                if "_fetchOptions" in self.__dict__ and self.__dict__["_fetchOptions"] is not None:
-                    if 'parents' in self.__dict__["_fetchOptions"] and self.__dict__["_fetchOptions"][
-                        'parents'] is None:
-                        return '--NOT FETCHED--'
+                if (
+                    "_fetchOptions" in self.__dict__
+                    and self.__dict__["_fetchOptions"] is not None
+                ):
+                    if (
+                        "parents" in self.__dict__["_fetchOptions"]
+                        and self.__dict__["_fetchOptions"]["parents"] is None
+                    ):
+                        return "--NOT FETCHED--"
                     result = self.__dict__[int_name]
                 else:
                     result = self.__dict__[int_name]
@@ -495,12 +513,17 @@ class AttrHolder:
                     return values
                 return result
 
-            elif int_name == '_children':
+            elif int_name == "_children":
                 result = None
-                if "_fetchOptions" in self.__dict__ and self.__dict__["_fetchOptions"] is not None:
-                    if 'children' in self.__dict__["_fetchOptions"] and self.__dict__["_fetchOptions"][
-                        'children'] is None:
-                        return '--NOT FETCHED--'
+                if (
+                    "_fetchOptions" in self.__dict__
+                    and self.__dict__["_fetchOptions"] is not None
+                ):
+                    if (
+                        "children" in self.__dict__["_fetchOptions"]
+                        and self.__dict__["_fetchOptions"]["children"] is None
+                    ):
+                        return "--NOT FETCHED--"
                     result = self.__dict__[int_name]
                 else:
                     result = self.__dict__[int_name]
@@ -576,16 +599,15 @@ class AttrHolder:
         if self._is_new:
             if name not in self._defs["attrs_new"]:
                 raise ValueError(
-                    f'No such attribute: «{name}» for entity: {self.entity}. Allowed attributes are: {self._defs["attrs_new"]}'
+                    f"No such attribute: «{name}» for entity: {self.entity}. Allowed attributes are: {self._defs['attrs_new']}"
                 )
         else:
             if name not in self._defs["attrs_up"]:
                 raise ValueError(
-                    f'No such attribute: «{name}» for entity: {self.entity}. Allowed attributes are: {self._defs["attrs_up"]}'
+                    f"No such attribute: «{name}» for entity: {self.entity}. Allowed attributes are: {self._defs['attrs_up']}"
                 )
 
         if name in ["parents", "children", "components"]:
-
             if not isinstance(value, list):
                 value = [value]
             objs = []
@@ -872,10 +894,13 @@ class AttrHolder:
         )
         if self.__dict__["_fetchOptions"] is None:
             self.__dict__["_fetchOptions"] = {}
-        if 'parents' not in self.__dict__["_fetchOptions"] or self.__dict__["_fetchOptions"]['parents'] is None:
-            self.__dict__["_fetchOptions"]['parents'] = {}
+        if (
+            "parents" not in self.__dict__["_fetchOptions"]
+            or self.__dict__["_fetchOptions"]["parents"] is None
+        ):
+            self.__dict__["_fetchOptions"]["parents"] = {}
         if len(parents) > 0:
-            self.__dict__["_parents"] = list(parents[['identifier']].values.flatten())
+            self.__dict__["_parents"] = list(parents[["identifier"]].values.flatten())
         else:
             self.__dict__["_parents"] = []
         if self.__dict__["_parents"] is None or self.__dict__["_parents"] == []:
@@ -912,7 +937,7 @@ class AttrHolder:
             ident = self._ident_for_whatever(parent)
             if not self.__dict__["_parents"]:
                 self.__dict__["_parents_orig"].append(ident)
-            else :
+            else:
                 for i, item in enumerate(self.__dict__["_parents"]):
                     if (
                         "identifier" in ident
@@ -936,10 +961,13 @@ class AttrHolder:
         )
         if self.__dict__["_fetchOptions"] is None:
             self.__dict__["_fetchOptions"] = {}
-        if 'children' not in self.__dict__["_fetchOptions"] or self.__dict__["_fetchOptions"]['children'] is None:
-            self.__dict__["_fetchOptions"]['children'] = {}
+        if (
+            "children" not in self.__dict__["_fetchOptions"]
+            or self.__dict__["_fetchOptions"]["children"] is None
+        ):
+            self.__dict__["_fetchOptions"]["children"] = {}
         if len(children) > 0:
-            self.__dict__["_children"] = list(children[['identifier']].values.flatten())
+            self.__dict__["_children"] = list(children[["identifier"]].values.flatten())
         else:
             self.__dict__["_children"] = []
         if self.__dict__["_children"] is None or self.__dict__["_children"] == []:
@@ -1156,7 +1184,7 @@ class AttrHolder:
         for attr in attrs:
             if attr == "attachments":
                 continue
-            html += f'<tr> <td>{attr}</td> <td>{nvl(getattr(self, attr, ""), "")}</td> </tr>'
+            html += f"<tr> <td>{attr}</td> <td>{nvl(getattr(self, attr, ''), '')}</td> </tr>"
         if getattr(self, "_attachments") is not None:
             html += "<tr><td>attachments</td><td>"
             html += "<br/>".join(att["fileName"] for att in self._attachments)
@@ -1186,7 +1214,7 @@ class AttrHolder:
                 for role in self._roleAssignments:
                     if role.get("space") is not None:
                         roles.append(
-                            f'{role.get("role")} ({role.get("space").get("code")})'
+                            f"{role.get('role')} ({role.get('space').get('code')})"
                         )
                     else:
                         roles.append(role.get("role"))

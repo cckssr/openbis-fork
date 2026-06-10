@@ -1,21 +1,18 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-#   Copyright ETH 2018 - 2024 Zürich, Scientific IT Services
-# 
+#
+#   Copyright ETH 2018 - 2026 Zürich, Scientific IT Services
+#
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
 #   You may obtain a copy of the License at
-# 
+#
 #        http://www.apache.org/licenses/LICENSE-2.0
-#   
+#
 #   Unless required by applicable law or agreed to in writing, software
 #   distributed under the License is distributed on an "AS IS" BASIS,
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 #
-
 
 
 """
@@ -132,7 +129,7 @@ class GitDataSetCreation(object):
     def data_store_url(self, dss_code):
         data_stores = self.openbis.get_datastores()
         data_store = data_stores[data_stores["code"] == dss_code]
-        return f'{data_store["downloadUrl"][0]}/datastore_server/rmi-data-store-server-v3.json'
+        return f"{data_store['downloadUrl'][0]}/datastore_server/rmi-data-store-server-v3.json"
 
     def data_set_metadata_creation(self):
         """Create the respresentation of the data set metadata."""
@@ -354,4 +351,4 @@ class GitDataSetFileSearch(object):
         if self.dss_code is None:
             self.dss_code = self.openbis.get_datastores()["code"][0]
         data_store = data_stores[data_stores["code"] == self.dss_code]
-        return f'{data_store["downloadUrl"][0]}/datastore_server/rmi-data-store-server-v3.json'
+        return f"{data_store['downloadUrl'][0]}/datastore_server/rmi-data-store-server-v3.json"
