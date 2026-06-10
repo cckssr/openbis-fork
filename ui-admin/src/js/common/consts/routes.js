@@ -58,6 +58,15 @@ const routes = {
   DATABASE: new Route('/database', {
     page: pages.DATABASE
   }),
+  SPACES: new Route('/spaces', {
+    page: pages.DATABASE,
+    type: objectTypes.SPACES,
+    id: 'spaces'
+  }),
+  NEW_SPACE: new Route('/new-space/:id', {
+    page: pages.DATABASE,
+    type: objectTypes.NEW_SPACE
+  }),
   SPACE: new Route('/space/:id', {
     page: pages.DATABASE,
     type: objectTypes.SPACE
