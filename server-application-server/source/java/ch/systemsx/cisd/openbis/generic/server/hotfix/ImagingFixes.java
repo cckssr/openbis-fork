@@ -106,13 +106,13 @@ public class ImagingFixes
         if(!results.isEmpty()) {
             Experiment experiment = results.get(id);
             if(experiment.getDataSets().isEmpty() && experiment.getSamples().size() == 1) {
-                operationLog.info("Collection '"+collectionIdentifier+"' is empty - data upload required.");
+                operationLog.info("Collection '"+collectionIdentifier+"' is empty.");
                 return true;
             }
-            operationLog.info("Collection '"+collectionIdentifier+"' is not empty - skipping upload.");
+            operationLog.info("Collection '"+collectionIdentifier+"' is not empty.");
             return false;
         }
-        operationLog.info("Could not find '"+collectionIdentifier+"' - skipping upload.");
+        operationLog.info("Could not find '"+collectionIdentifier+"'");
         return false;
     }
 
