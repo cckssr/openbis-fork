@@ -200,7 +200,7 @@ public class UncompressedImportTest extends AbstractImportTest
     @Test
     public void testWithValidationScript() throws Exception
     {
-        final String name = "ANTIBODY.valid.py";
+        final String name = "valid.py";
         final String source = "print 'Test validation script'";
         final String[] sessionWorkspaceFiles = uploadToAsSessionWorkspace(sessionToken, "validation_script.xls", "scripts/" + name);
         final ImportData importData = new ImportData(ImportFormat.EXCEL, sessionWorkspaceFiles[0]);
@@ -223,14 +223,14 @@ public class UncompressedImportTest extends AbstractImportTest
         final Plugin validationPlugin = sampleType.getValidationPlugin();
         final String validationPluginBareName = name.substring(0, name.lastIndexOf("."));
 
-        assertEquals(validationPlugin.getName(), validationPluginBareName);
+        assertEquals(validationPlugin.getName(), "ANTIBODY." + validationPluginBareName);
         assertEquals(validationPlugin.getScript(), source);
     }
 
     @Test
     public void testWithDynamicScript() throws Exception
     {
-        final String name = "CODE.dynamic.py";
+        final String name = "dynamic.py";
         final String source = "1+1";
         final String[] sessionWorkspaceFiles = uploadToAsSessionWorkspace(sessionToken, "dynamic_script.xls", "scripts/" + name);
         final ImportData importData = new ImportData(ImportFormat.EXCEL, sessionWorkspaceFiles[0]);
@@ -255,10 +255,9 @@ public class UncompressedImportTest extends AbstractImportTest
 
         final PropertyAssignment propertyAssignment = sampleType.getPropertyAssignments().get(0);
         final Plugin plugin = propertyAssignment.getPlugin();
-
         final String pluginBareName = name.substring(0, name.lastIndexOf("."));
 
-        assertEquals(plugin.getName(), pluginBareName);
+        assertEquals(plugin.getName(), "CODE." + pluginBareName);
         assertEquals(plugin.getScript(), source);
     }
 
