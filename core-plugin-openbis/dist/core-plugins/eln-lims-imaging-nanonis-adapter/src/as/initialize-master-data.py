@@ -30,7 +30,7 @@ import os
 helper = MasterDataRegistrationHelper(sys.path)
 api = CommonServiceProvider.getApplicationContext().getBean(ApplicationServerApi.INTERNAL_SERVICE_NAME)
 sessionToken = api.loginAsSystem()
-uploadRequired = ImagingFixes.isUploadRequired(sessionToken, "/IMAGING/NANONIS/SXM_COLLECTION")
+
 print("======================== eln-lims-imaging-nanonis-adapter data-model xls ingestion start ========================")
 sessionWorkspaceFiles = helper.uploadToAsSessionWorkspace(sessionToken, "imaging-nanonis-data-model.xls")
 importData = ImportData(ImportFormat.EXCEL, [sessionWorkspaceFiles[0]])
@@ -41,6 +41,8 @@ print("======================== eln-lims-imaging-nanonis-adapter data-model xls 
 print(importResult.getObjectIds())
 
 print("======================== eln-lims-imaging-nanonis-adapter data upload start ========================")
+
+uploadRequired = ImagingFixes.isUploadRequired(sessionToken, "/IMAGING/NANONIS/SXM_COLLECTION")
 
 def get_property(key, default_value):
     property_configurer = CommonServiceProvider.getApplicationContext().getBean("propertyConfigurer")
