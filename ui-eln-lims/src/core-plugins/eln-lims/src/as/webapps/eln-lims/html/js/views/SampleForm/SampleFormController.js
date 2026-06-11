@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-function SampleFormController(mainController, mode, sample, paginationInfo, activeTab) {
+function SampleFormController(mainController, mode, sample, paginationInfo, activeTab, imageIdx, previewIdx) {
 	this._mainController = mainController;
-	this._sampleFormModel = new SampleFormModel(mode, sample, paginationInfo, activeTab);
+	this._sampleFormModel = new SampleFormModel(mode, sample, paginationInfo, activeTab, imageIdx, previewIdx);
 	this._sampleFormView = new SampleFormView(this, this._sampleFormModel);
 
     this.refresh = function() {

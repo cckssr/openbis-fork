@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-function SampleFormModel(mode, sample, paginationInfo, activeTab) {
+function SampleFormModel(mode, sample, paginationInfo, activeTab, imageIdx, previewIdx) {
 	this.mode = mode;
 	this.sample = sample;
 	this.datasets = [];
@@ -36,5 +36,7 @@ function SampleFormModel(mode, sample, paginationInfo, activeTab) {
 	this.sampleLinksChildren = EmptyLinksController;
 	this.sampleLinksNone = null;
 	this.paginationInfo = paginationInfo;
-	this.activeTab = activeTab
+	this.activeTab = activeTab;
+	this.imageIdx = imageIdx;
+	this.previewIdx = previewIdx;
 }
