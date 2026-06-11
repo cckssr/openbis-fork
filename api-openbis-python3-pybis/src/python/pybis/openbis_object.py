@@ -68,7 +68,7 @@ class OpenBisObject(EntityBehavior):
 
     def __init__(
         self,
-        openbis_obj: Openbis,
+        openbis_obj: Any,
         type: Optional[str] = None,
         data: Optional[dict] = None,
         props: Optional[dict] = None,
@@ -311,6 +311,8 @@ class OpenBisObject(EntityBehavior):
         deletion_id = self.openbis.delete_openbis_entity(
             entity=self._entity, objectId=self.data["permId"], reason=reason
         )
+        # the transparent object cache must never serve deleted entities
+        self.openbis.clear_cache(self._entity)
         if VERBOSE:
             print(f"{self._entity} {self.permId} successfully deleted.")
 
@@ -423,7 +425,7 @@ class OpenBisObject(EntityBehavior):
 
             if VERBOSE:
                 print(f"{self.entity} successfully created.")
-            new_entity_data = get_single_item(resp[0]["permId"], only_data=True)
+            new_entity_data = self._refetch_data(get_single_item, resp[0]["permId"])
             self._set_data(new_entity_data)
             return self
 
@@ -462,11 +464,28 @@ class OpenBisObject(EntityBehavior):
             resp = self.openbis._post_request(self.openbis.as_v3, request)
             if VERBOSE:
                 print(f"{self.entity} successfully updated.")
-            new_entity_data = get_single_item(
-                self.permId, only_data=True, use_cache=False
-            )
+            new_entity_data = self._refetch_data(get_single_item, self.permId)
             self._set_data(new_entity_data)
             return self
+
+    def _refetch_data(self, get_single_item: Any, perm_id: Any) -> dict:
+        """Re-fetch the raw entity data after a save.
+
+        Bridges the two getter generations: legacy getters take
+        ``only_data=True`` (and ``use_cache=False``), migrated v2 getters
+        return the entity whose ``.data`` carries the raw dict.
+        """
+        import inspect
+
+        parameters = inspect.signature(get_single_item).parameters
+        if "only_data" in parameters:  # legacy getter
+            kwargs = {"only_data": True}
+            if "use_cache" in parameters and not self.is_new:
+                kwargs["use_cache"] = False
+            return get_single_item(perm_id, **kwargs)
+        # migrated getter: invalidate the transparent cache, then use .data
+        self.openbis.clear_cache(self._entity)
+        return get_single_item(perm_id).data
 
 
 class Transaction:

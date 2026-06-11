@@ -579,6 +579,18 @@ class AttrHolder:
         else:
             return None
 
+
+    def _fetch_or_raise(self, entity_name, value):
+        """Fetch a referenced entity, failing fast when it does not exist.
+
+        Prefers the migrated ``get_<entity>_or_raise`` getter (returns-None
+        generation); falls back to the legacy getter, which raises itself.
+        """
+        getter = getattr(self._openbis, "get_" + entity_name + "_or_raise", None)
+        if getter is None:
+            getter = getattr(self._openbis, "get_" + entity_name)
+        return getter(value)
+
     def __setattr__(self, name, value):
         """This method is always invoked whenever we assign an attribute to an
         object, e.g.
@@ -615,7 +627,7 @@ class AttrHolder:
             for val in value:
                 if isinstance(val, str):
                     # fetch objects in openBIS, make sure they actually exists
-                    obj = getattr(self._openbis, "get_" + self._entity.lower())(val)
+                    obj = self._fetch_or_raise(self._entity.lower(), val)
                     objs.append(obj)
                 elif getattr(val, "_permId"):
                     # we got an existing object
@@ -698,7 +710,7 @@ class AttrHolder:
 
             if isinstance(value, str):
                 # fetch object in openBIS, make sure it actually exists
-                obj = getattr(self._openbis, "get_" + name)(value)
+                obj = self._fetch_or_raise(name, value)
             else:
                 obj = value
 
@@ -714,7 +726,7 @@ class AttrHolder:
             obj = None
             if isinstance(value, str):
                 # fetch object in openBIS, make sure it actually exists
-                obj = getattr(self._openbis, "get_" + name)(value)
+                obj = self._fetch_or_raise(name, value)
             elif value is None:
                 self.__dict__["_" + name] = {}
                 return
@@ -768,7 +780,7 @@ class AttrHolder:
     def _ident_for_whatever(self, whatever):
         if isinstance(whatever, str):
             # fetch parent in openBIS, we are given an identifier
-            obj = getattr(self._openbis, "get_" + self._entity.lower())(whatever)
+            obj = self._fetch_or_raise(self._entity.lower(), whatever)
         else:
             # we assume we got an object
             obj = whatever

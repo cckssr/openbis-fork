@@ -17,12 +17,16 @@
 
 from ._properties import PropertyBag
 from .base import EntityBehavior
+from .project import Project
 from .server import ServerInformation, ServerVersion, requires_version
+from .space import Space
 
 __all__ = [
     "EntityBehavior",
+    "Project",
     "PropertyBag",
     "ServerInformation",
     "ServerVersion",
+    "Space",
     "requires_version",
 ]

@@ -28,5 +28,6 @@ def test_create_delete_space(openbis_instance):
 
     space.delete("test on {}".format(timestamp))
 
-    with pytest.raises(ValueError):
-        space_not_exists = openbis_instance.get_space(code=space_name, use_cache=False)
+    # pybis 7: get_space returns None for missing spaces (was: ValueError),
+    # and the use_cache parameter was removed (cache invalidates on delete).
+    assert openbis_instance.get_space(code=space_name) is None

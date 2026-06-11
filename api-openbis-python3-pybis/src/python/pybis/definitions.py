@@ -16,7 +16,10 @@
 import copy
 
 
-def openbis_definitions(entity):
+from typing import Any
+
+
+def openbis_definitions(entity: str) -> "dict[str, Any]":
     """
     attrs_new: Attributes, that can appear when creating new entities
     attrs_up: Attributes that can be updated
@@ -501,7 +504,7 @@ fetch_option = {
 }
 
 
-def get_fetchoption_for_entity(entity):
+def get_fetchoption_for_entity(entity: str) -> "dict[str, Any]":
     entity = entity[0].lower() + entity[1:]  # make first character lowercase
     try:
         return copy.deepcopy(fetch_option[entity])
@@ -509,7 +512,7 @@ def get_fetchoption_for_entity(entity):
         return {}
 
 
-def get_type_for_entity(entity, action, parents_or_children=""):
+def get_type_for_entity(entity: str, action: str, parents_or_children: str = "") -> "dict[str, Any]":
     if action not in "create update delete search".split():
         raise ValueError(f"unknown action: {action}")
 
@@ -536,7 +539,7 @@ def get_type_for_entity(entity, action, parents_or_children=""):
             }
 
 
-def get_fetchoptions(entity, including=None):
+def get_fetchoptions(entity: str, including: "list[str] | None" = None) -> "dict[str, Any]":
     if including is None:
         including = []
     including += ["@type"]

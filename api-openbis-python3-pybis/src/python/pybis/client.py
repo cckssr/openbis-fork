@@ -68,6 +68,8 @@ from pandas import DataFrame
 from . import data_set as pbds
 from .api.rpc import RpcClient
 from .entities.server import ServerInformation
+from .entities.project import _ProjectApi
+from .entities.space import _SpaceApi
 from .api.rpc import type_for_id as _type_for_id
 from .auth import (
     CONFIG_FILENAME,
@@ -856,7 +858,7 @@ def _subcriteria_for_code(code, entity):
         # return get_search_type_for_entity(entity.lower())
 
 
-class Openbis:
+class Openbis(_SpaceApi, _ProjectApi):
     """Interface for communicating with openBIS.
 
     Note:
@@ -1096,14 +1098,6 @@ class Openbis:
             </table>
         """
         return html
-
-    @property
-    def spaces(self):
-        return self.get_spaces()
-
-    @property
-    def projects(self):
-        return self.get_projects()
 
     def gen_token_path(self, os_home: Optional[str] = None) -> str:
         """Generate the path to the saved token file.
@@ -2504,101 +2498,6 @@ class Openbis:
 
     get_user = get_person  # Alias
 
-    def get_spaces(self, code=None, start_with=None, count=None, use_cache=True):
-        """Get a list of all available spaces (DataFrame object). To create a sample or a
-        dataset, you need to specify in which space it should live.
-        """
-
-        method = get_method_for_entity("space", "search")
-        search_criteria = _subcriteria_for_code(code, "space")
-        fetchopts = get_fetchoption_for_entity("space")
-        fetchopts["from"] = start_with
-        fetchopts["count"] = count
-        fetchopts["registrator"] = get_fetchoption_for_entity("registrator")
-        request = {
-            "method": method,
-            "params": [
-                self.token,
-                search_criteria,
-                fetchopts,
-            ],
-        }
-        resp = self._post_request(self.as_v3, request)
-        parse_jackson(resp)
-
-        def create_data_frame(attrs, props, response):
-            attrs = [
-                "code",
-                "description",
-                "registrationDate",
-                "registrator",
-                "modificationDate",
-                "frozen",
-                "frozenForProjects",
-                "frozenForSamples",
-            ]
-            if len(resp["objects"]) == 0:
-                spaces = DataFrame(columns=attrs)
-            else:
-                spaces = DataFrame(resp["objects"])
-                spaces["registrationDate"] = spaces["registrationDate"].map(
-                    format_timestamp
-                )
-                spaces["modificationDate"] = spaces["modificationDate"].map(
-                    format_timestamp
-                )
-                spaces["registrator"] = spaces["registrator"].map(extract_userId)
-            return spaces[spaces.columns.intersection(attrs)]
-
-        return Things(
-            openbis_obj=self,
-            entity="space",
-            start_with=start_with,
-            count=count,
-            totalCount=resp.get("totalCount"),
-            response=resp,
-            df_initializer=create_data_frame,
-        )
-
-    def get_space(self, code, only_data=False, use_cache=True):
-        """Returns a Space object for a given identifier."""
-
-        code = str(code).upper()
-        space = (
-            not only_data
-            and use_cache
-            and self._object_cache(entity="space", code=code)
-        )
-        if space:
-            return space
-
-        fetchopts = {"@type": "as.dto.space.fetchoptions.SpaceFetchOptions"}
-        for option in ["registrator"]:
-            fetchopts[option] = get_fetchoption_for_entity(option)
-
-        method = get_method_for_entity("space", "get")
-
-        request = {
-            "method": method,
-            "params": [
-                self.token,
-                [{"permId": code, "@type": "as.dto.space.id.SpacePermId"}],
-                fetchopts,
-            ],
-        }
-        resp = self._post_request(self.as_v3, request)
-        if len(resp) == 0:
-            raise ValueError("No such space: %s" % code)
-
-        for permid in resp:
-            if only_data:
-                return resp[permid]
-            else:
-                space = Space(self, data=resp[permid])
-                if self.use_cache:
-                    self._object_cache(entity="space", code=code, value=space)
-                return space
-
     def get_samples(
         self,
         identifier: Optional[str] = None,
@@ -3438,157 +3337,11 @@ class Openbis:
 
         return DataFrame(new_objs)
 
-    def new_project(self, space, code, description=None, **kwargs):
-        """Create new project instance"""
-        return Project(
-            self, None, space=space, code=code, description=description, **kwargs
-        )
-
     def _gen_fetchoptions(self, options, foType):
         fo = {"@type": foType}
         for option in options:
             fo[option] = get_fetchoption_for_entity(option)
         return fo
-
-    def get_project(self, projectId, only_data=False, use_cache=True):
-        """Returns a Project object for a given identifier, code or permId."""
-
-        project = (
-            not only_data
-            and use_cache
-            and self._object_cache(entity="project", code=projectId)
-        )
-        if project:
-            return project
-
-        options = ["space", "registrator", "modifier", "attachments"]
-        if is_identifier(projectId) or is_permid(projectId):
-            request = self._create_get_request(
-                "getProjects",
-                "project",
-                projectId,
-                options,
-                "as.dto.project.fetchoptions.ProjectFetchOptions",
-            )
-            resp = self._post_request(self.as_v3, request)
-            if len(resp) == 0:
-                raise ValueError("No such project: %s" % projectId)
-            if only_data:
-                return resp[projectId]
-            project = Project(openbis_obj=self, type=None, data=resp[projectId])
-            if self.use_cache:
-                self._object_cache(entity="project", code=projectId, value=project)
-            return project
-
-        else:
-            search_criteria = _gen_search_criteria(
-                {"project": "Project", "operator": "AND", "code": projectId}
-            )
-            fo = self._gen_fetchoptions(
-                options, foType="as.dto.project.fetchoptions.ProjectFetchOptions"
-            )
-            request = {
-                "method": "searchProjects",
-                "params": [self.token, search_criteria, fo],
-            }
-            resp = self._post_request(self.as_v3, request)
-            if len(resp["objects"]) == 0:
-                raise ValueError("No such project: %s" % projectId)
-            elif len(resp["objects"]) > 1:
-                raise ValueError(
-                    "There is more than one project with code '%s'" % projectId
-                )
-            if only_data:
-                return resp["objects"][0]
-
-            project = Project(openbis_obj=self, type=None, data=resp["objects"][0])
-            if self.use_cache:
-                self._object_cache(entity="project", code=projectId, value=project)
-            return project
-
-    def get_projects(
-        self,
-        space=None,
-        code=None,
-        start_with=None,
-        count=None,
-    ):
-        """Get a list of all available projects (DataFrame object)."""
-
-        sub_criteria = []
-        if space:
-            sub_criteria.append(_subcriteria_for_code(space, "space"))
-        if code:
-            sub_criteria.append(_criteria_for_code(code))
-
-        criteria = {
-            "criteria": sub_criteria,
-            "@type": "as.dto.project.search.ProjectSearchCriteria",
-            "operator": "AND",
-        }
-
-        fetchopts = {"@type": "as.dto.project.fetchoptions.ProjectFetchOptions"}
-        fetchopts["from"] = start_with
-        fetchopts["count"] = count
-        for option in ["registrator", "modifier", "leader"]:
-            fetchopts[option] = get_fetchoption_for_entity(option)
-
-        request = {
-            "method": "searchProjects",
-            "params": [
-                self.token,
-                criteria,
-                fetchopts,
-            ],
-        }
-        resp = self._post_request(self.as_v3, request)
-
-        def create_data_frame(attrs, props, response):
-            attrs = [
-                "code",
-                "identifier",
-                "permId",
-                "description",
-                "leader",
-                "registrator",
-                "registrationDate",
-                "modifier",
-                "modificationDate",
-                "frozen",
-                "frozenForExperiments",
-                "frozenForSamples",
-            ]
-            objects = response["objects"]
-            if len(objects) == 0:
-                projects = DataFrame(columns=attrs)
-            else:
-                parse_jackson(objects)
-
-                projects = DataFrame(objects)
-
-                projects["registrationDate"] = projects["registrationDate"].map(
-                    format_timestamp
-                )
-                projects["modificationDate"] = projects["modificationDate"].map(
-                    format_timestamp
-                )
-                projects["leader"] = projects["leader"].map(extract_person)
-                projects["registrator"] = projects["registrator"].map(extract_person)
-                projects["modifier"] = projects["modifier"].map(extract_person)
-                projects["permId"] = projects["permId"].map(extract_permid)
-                projects["identifier"] = projects["identifier"].map(extract_identifier)
-            return projects[projects.columns.intersection(attrs)]
-
-        return Things(
-            openbis_obj=self,
-            entity="project",
-            identifier_name="identifier",
-            start_with=start_with,
-            count=count,
-            totalCount=resp.get("totalCount"),
-            response=resp,
-            df_initializer=create_data_frame,
-        )
 
     def _create_get_request(self, method_name, entity, permids, options, foType):
 
@@ -5388,10 +5141,6 @@ class Openbis:
 
     get_externalDms = get_external_data_management_system  # alias
 
-    def new_space(self, **kwargs):
-        """Creates a new space in the openBIS instance."""
-        return Space(self, None, **kwargs)
-
     def new_git_data_set(
         self,
         data_set_type,
@@ -6359,3 +6108,8 @@ class ImagingControl:
                 props=props,
             )
             return dataset.save()
+
+
+from ._compat import install_compat  # noqa: E402
+
+install_compat(Openbis)

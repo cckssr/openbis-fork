@@ -104,7 +104,7 @@ def nvl(val, string=""):
     return val
 
 
-def extract_permid(permid):
+def extract_permid(permid: object) -> str:
     if not isinstance(permid, dict):
         return str(permid)
     return permid["permId"]
@@ -122,7 +122,7 @@ def extract(obj, property_name):
     return "" if obj[property_name] is None else obj[property_name]
 
 
-def extract_code(obj):
+def extract_code(obj: object) -> str:
     if not isinstance(obj, dict):
         return "" if obj is None else str(obj)
     return "" if obj["code"] is None else obj["code"]
@@ -164,7 +164,7 @@ def extract_attr(attr):
     return attr_func
 
 
-def extract_identifier(ident):
+def extract_identifier(ident: object) -> object:
     if not isinstance(ident, dict):
         return "" if ident is None else str(ident)
     return "" if ident["identifier"] is None else ident["identifier"]
@@ -184,7 +184,7 @@ def extract_identifiers(items):
         return []
 
 
-def extract_nested_identifier(ident):
+def extract_nested_identifier(ident: object) -> object:
     if not isinstance(ident, dict):
         return "" if ident is None else str(ident)
     return (
@@ -194,7 +194,7 @@ def extract_nested_identifier(ident):
     )
 
 
-def extract_nested_permid(permid):
+def extract_nested_permid(permid: object) -> object:
     if not isinstance(permid, dict):
         return "" if permid is None else str(permid)
     return "" if permid["permId"]["permId"] is None else permid["permId"]["permId"]
@@ -230,7 +230,7 @@ def extract_role_assignments(ras):
     return ra_strings
 
 
-def extract_person(person):
+def extract_person(person: object) -> str:
     if not isinstance(person, dict):
         if person is None:
             return ""
@@ -252,7 +252,7 @@ def extract_id(id):
         return id["techId"]
 
 
-def extract_userId(user):
+def extract_userId(user: object) -> str:
     if isinstance(user, list):
         return ", ".join([u["userId"] for u in user])
     elif isinstance(user, dict):

@@ -42,8 +42,10 @@ def test_create_delete_project(space):
 
     project_exists.delete("test project on " + timestamp)
 
-    with pytest.raises(ValueError):
-        project_no_longer_exists = o.get_project(project_name, use_cache=False)
+    # pybis 7: get_project returns None for missing projects (was: ValueError),
+    # and the use_cache parameter was removed (cache invalidates on delete).
+    project_no_longer_exists = o.get_project(project_name)
+    assert project_no_longer_exists is None
 
 
 def test_create_project_with_attachment(space):
