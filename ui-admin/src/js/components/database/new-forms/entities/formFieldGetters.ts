@@ -516,15 +516,20 @@ function normalizeMultiValueArrayPropertyValues(values: any[], dataType: FormFie
 }
 
 function normalizeArrayPropertyValue(value: any, dataType: FormFieldDataType): any[] {
+  const errorMessage = `Invalid array value for ${dataType}: ${value}.`;
   let parsedValue = value;
 
   if (typeof parsedValue === 'string') {
     const trimmedValue = parsedValue.trim();
-    parsedValue = trimmedValue === '' ? [] : JSON.parse(trimmedValue);
+    try {
+      parsedValue = trimmedValue === '' ? [] : JSON.parse(trimmedValue);
+    } catch (e) {
+      throw new Error(errorMessage);
+    }
   }
 
   if (!Array.isArray(parsedValue)) {
-    throw new Error(`Property value for ${dataType} must be an array.`);
+    throw new Error(errorMessage);
   }
 
   switch (dataType) {
