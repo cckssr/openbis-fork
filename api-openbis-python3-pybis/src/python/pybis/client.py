@@ -67,6 +67,7 @@ from pandas import DataFrame
 
 from . import data_set as pbds
 from .api.rpc import RpcClient
+from .entities.server import ServerInformation
 from .api.rpc import type_for_id as _type_for_id
 from .auth import (
     CONFIG_FILENAME,
@@ -6050,109 +6051,6 @@ class ExternalDMS:
 
     def __str__(self):
         return self.data.get("code", None)
-
-
-class ServerInformation:
-    def __init__(self, info):
-        self._info = self._reformat_info(info)
-        self.attrs = [
-            "api_version",
-            "archiving_configured",
-            "authentication_service",
-            "authentication_service.switch_aai.label",
-            "authentication_service.switch_aai.link",
-            "create_continuous_sample_codes",
-            "enabled_technologies",
-            "openbis_version",
-            "openbis_support_email",
-            "personal_access_tokens_enabled",
-            "personal_access_tokens_max_validity_period",
-            "personal_access_tokens_validity_warning_period",
-            "project_samples_enabled",
-            "server-public-information.afs-server.url",
-            "server-public-information.afs-server.timeout",
-        ]
-
-    def _reformat_info(self, info):
-        for bool_field in [
-            "archiving-configured",
-            "project-samples-enabled",
-            "personal-access-tokens-enabled",
-        ]:
-            if bool_field in info:
-                info[bool_field] = info[bool_field] == "true"
-        for csv_field in ["enabled-technologies"]:
-            if csv_field in info:
-                info[csv_field] = list(
-                    map(lambda item: item.strip(), info[csv_field].split(","))
-                )
-        for int_field in [
-            "personal-access-tokens-max-validity-period",
-            "personal-access-tokens-validity-warning-period",
-        ]:
-            if int_field in info:
-                info[int_field] = int(info[int_field])
-        info["openbis-support-email"] = info.get("openbis.support.email", "")
-        info.pop("openbis.support.email", "")
-        return info
-
-    def __dir__(self):
-        return self.attrs
-
-    def __getattr__(self, name):
-        return self._info.get(name.replace("_", "-"))
-
-    def get_service_props(self):
-        result = {}
-        if "as-service-properties" in self._info:
-            props = self._info["as-service-properties"].split("\n")[1:]
-            result = {"_resolution_date": props[0]}
-            for prop in props[1:]:
-                split = prop.split("=")
-                if len(split) > 1:
-                    result[split[0]] = "=".join(split[1:])
-        return result
-
-    def get_major_version(self):
-        return int(self._info["api-version"].split(".")[0])
-
-    def get_minor_version(self):
-        return int(self._info["api-version"].split(".")[1])
-
-    def is_openbis_1605(self):
-        return (self.get_major_version() == 3) and (self.get_minor_version() <= 2)
-
-    def is_openbis_1806(self):
-        return (self.get_major_version() == 3) and (self.get_minor_version() >= 5)
-
-    def is_version_greater_than(self, major: int, minor: int):
-        """Checks if server api version is greater than provided"""
-        current_major = self.get_major_version()
-        current_minor = self.get_minor_version()
-        return (
-            current_major == major and current_minor > minor
-        ) or current_major > major
-
-    def _repr_html_(self):
-        html = """
-            <table border="1" class="dataframe">
-            <thead>
-                <tr style="text-align: right;">
-                <th>attribute</th>
-                <th>value</th>
-                </tr>
-            </thead>
-            <tbody>
-        """
-
-        for attr in self.attrs:
-            html += f"<tr> <td>{attr}</td> <td>{getattr(self, attr, '')}</td> </tr>"
-
-        html += """
-            </tbody>
-            </table>
-        """
-        return html
 
 
 class Plugin(OpenBisObject, entity="plugin", single_item_method_name="get_plugin"):
