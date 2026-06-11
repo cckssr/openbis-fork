@@ -312,7 +312,8 @@ public final class ExportJob implements IAsyncJob
                             ExcelReader.convert(ExcelReader.Format.ZIP_EXPORT, downloadPath,
                                     ExcelReader.FileMode.DUMMY);
 
-                    Path cratePath = Path.of("result-crate.zip");
+                    final String exportTime = downloadedFileName.split("\\.")[1];
+                    Path cratePath = Path.of("result-crate." + exportTime +".zip");
                     pathsForDeletion.add(cratePath);
                     Path resultZipPath =
                             SessionWorkSpaceManager.getRealPath(exportParams.getApiKey(),
@@ -408,12 +409,19 @@ public final class ExportJob implements IAsyncJob
 
         } catch (Exception e)
         {
+            Log.error("Exception during export", e);
             if(this.email != null && !this.email.isBlank()) {
                 LOG.info("Export failed, preparing to send email");
-                sendMailFailure(e);
+                sendMailFailure(e.getMessage());
             }
-            Log.error("Exception during export", e);
             this.exception = e;
+        } catch (Error e) {
+            Log.error("Error during export", e);
+            if(this.email != null && !this.email.isBlank()) {
+                LOG.info("Export failed, preparing to send email");
+                sendMailFailure(e.getMessage());
+            }
+            throw e;
         }
 
     }
@@ -438,12 +446,12 @@ public final class ExportJob implements IAsyncJob
         return new MailClient(mailClientParameters);
     }
 
-    private void sendMailFailure(Exception exception) {
+    private void sendMailFailure(String exceptionMessage) {
         try {
             MailClient mailClient = createMailClient();
             EMailAddress recipient = new EMailAddress(this.email);
             final String subject = "openBIS RoCrate Export failed!";
-            String content = String.format("Error during export: %s", exception.getMessage());
+            String content = String.format("Error during export: %s", exceptionMessage);
             Log.info("Sending email to: " + recipient + "\nContent:" + content);
             mailClient.sendEmailMessage(subject, content, null, null, recipient);
         } catch (Exception e)

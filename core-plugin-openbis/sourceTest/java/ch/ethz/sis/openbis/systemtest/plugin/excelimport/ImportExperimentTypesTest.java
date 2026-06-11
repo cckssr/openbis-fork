@@ -156,7 +156,7 @@ public class ImportExperimentTypesTest extends AbstractImportTest
         ExperimentType collection = TestUtils.getExperimentType(v3api, sessionToken, "COLLECTION");
 
         // THEN
-        assertEquals(collection.getValidationPlugin().getName().toUpperCase(), "VALID");
+        assertEquals(collection.getValidationPlugin().getName().toUpperCase(), "COLLECTION.VALID");
     }
 
     @Test(expectedExceptions = UserFailureException.class, expectedExceptionsMessageRegExp = "(?s).*Mandatory field is missing or empty: Code.*")

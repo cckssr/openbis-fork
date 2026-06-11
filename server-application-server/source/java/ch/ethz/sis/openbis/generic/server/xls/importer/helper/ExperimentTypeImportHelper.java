@@ -123,6 +123,19 @@ public class ExperimentTypeImportHelper extends BasicImportHelper
         VersionUtils.updateVersion(version, versions, ImportTypes.EXPERIMENT_TYPE.getType(), code);
     }
 
+    @Override
+    protected boolean isNewVersion(Map<String, Integer> header, List<String> values)
+    {
+        String internal = getValueByColumnName(header, values, Attribute.Internal);
+        boolean isInternalNamespace = ImportUtils.isTrue(internal);
+
+        if(isInternalNamespace && !delayedExecutor.isSystem()) {
+            //if exists, skip
+            return !isObjectExist(header, values);
+        }
+        return true;
+    }
+
     @Override protected boolean isObjectExist(Map<String, Integer> header, List<String> values)
     {
         String code = getValueByColumnName(header, values, Attribute.Code);
@@ -174,7 +187,7 @@ public class ExperimentTypeImportHelper extends BasicImportHelper
 
         creation.setCode(code);
         creation.setDescription(description);
-        creation.setValidationPluginId(ImportUtils.getScriptId(validationScript, null));
+        creation.setValidationPluginId(ImportUtils.getScriptId(code, validationScript, null));
         if(delayedExecutor.isSystem())
         {
             creation.setManagedInternally(ImportUtils.isTrue(internal));
@@ -225,7 +238,7 @@ public class ExperimentTypeImportHelper extends BasicImportHelper
         ExperimentTypeFetchOptions experimentTypeFetchOptions = new ExperimentTypeFetchOptions();
         experimentTypeFetchOptions.withValidationPlugin();
         ExperimentType experimentType = delayedExecutor.getExperimentType(new EntityTypePermId(code, EntityKind.EXPERIMENT), experimentTypeFetchOptions);
-        update.setValidationPluginId(ImportUtils.getScriptId(validationScript, experimentType.getValidationPlugin()));
+        update.setValidationPluginId(ImportUtils.getScriptId(code, validationScript, experimentType.getValidationPlugin()));
         if (metaData != null && !metaData.isEmpty())
         {
             update.getMetaData().add(JSONHandler.parseMetaData(metaData));

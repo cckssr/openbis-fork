@@ -41,6 +41,10 @@ export default class DatabaseBrowserController extends BrowserController {
   }
 
   async selectObject(nodeObject, event) {
+    if (!_.isNil(nodeObject) && nodeObject.type === objectType.SPACES) {
+      AppController.getInstance().objectOpen(pages.DATABASE, objectType.SPACES, 'spaces')
+      return
+    }
     if (!_.isNil(nodeObject) && OBJECT_TYPES.includes(nodeObject.type)) {
       await super.selectObject(nodeObject, event);
     } else {

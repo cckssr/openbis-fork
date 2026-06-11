@@ -64,7 +64,7 @@ $.extend(DefaultProfile.prototype, {
 				showLabNotebook : true,
 				showInventory : true,
 				showStock : true,
-//				showDrawingBoard : false,
+				showTools : true,
 				showObjectBrowser : true,
 				showExports : true,
 				showStorageManager : true,

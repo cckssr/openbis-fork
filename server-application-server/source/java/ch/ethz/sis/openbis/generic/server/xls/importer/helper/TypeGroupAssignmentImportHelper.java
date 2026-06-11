@@ -90,7 +90,18 @@ public class TypeGroupAssignmentImportHelper extends BasicImportHelper
         return ImportTypes.TYPE_GROUP;
     }
 
+    @Override
+    protected boolean isNewVersion(Map<String, Integer> header, List<String> values)
+    {
+        String internal = getValueByColumnName(header, values, Attribute.Internal);
+        boolean isInternalNamespace = ImportUtils.isTrue(internal);
 
+        if(isInternalNamespace && !delayedExecutor.isSystem()) {
+            //if exists, skip
+            return !isObjectExist(header, values);
+        }
+        return true;
+    }
 
     @Override
     protected boolean isObjectExist(Map<String, Integer> header, List<String> values)
@@ -141,7 +152,7 @@ public class TypeGroupAssignmentImportHelper extends BasicImportHelper
         Map<String, Integer> header = parseHeader(page.get(start), false);
         String typeGroupCode = getValueByColumnName(header, page.get(start + 1), "Code");
         TypeGroupFetchOptions fetchOptions = new TypeGroupFetchOptions();
-        fetchOptions.withTypeGroupAssignments();
+        fetchOptions.withTypeGroupAssignments().withSampleType();
         typeGroup = delayedExecutor.getTypeGroup(new TypeGroupId(typeGroupCode), fetchOptions);
         if(typeGroup != null) {
             assignments = typeGroup.getTypeGroupAssignments();
@@ -159,13 +170,12 @@ public class TypeGroupAssignmentImportHelper extends BasicImportHelper
         if(!assignmentsToDelete.isEmpty()) {
             TypeGroupAssignmentDeletionOptions deletionOptions = new TypeGroupAssignmentDeletionOptions();
             delayedExecutor.deleteTypeGroupAssignments(assignmentsToDelete, deletionOptions);
-        }
-
-        typeGroup = delayedExecutor.getTypeGroup(new TypeGroupId(typeGroupCode), fetchOptions);
-        if(typeGroup != null) {
-            assignments = typeGroup.getTypeGroupAssignments();
-        } else {
-            assignments = new ArrayList<>();
+            typeGroup = delayedExecutor.getTypeGroup(new TypeGroupId(typeGroupCode), fetchOptions);
+            if(typeGroup != null) {
+                assignments = typeGroup.getTypeGroupAssignments();
+            } else {
+                assignments = new ArrayList<>();
+            }
         }
 
         super.importBlock(page, pageIndex, start + 2, end);

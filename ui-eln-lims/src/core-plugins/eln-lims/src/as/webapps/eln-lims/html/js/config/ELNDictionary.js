@@ -80,6 +80,10 @@ ELNDictionary.settingsView = {
 			title : "Miscellaneous",
 			info : "Miscellaneous settings."
 		},
+		rootNode: {
+			title : "Root Node Options",
+			info : "Settings for selection of root node."
+		}
 	}
 }
 

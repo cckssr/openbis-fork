@@ -211,7 +211,7 @@ def test_experiment_array_properties(space):
     experiment_type.assign_property(f'EXPERIMENT_{timestamp}_JSON')
 
     exp = space.openbis.new_experiment(
-        code = 'EXP_PYTHON',
+        code = f'EXP_PYTHON_{timestamp}',
         type = collection_code,
         project = 'DEFAULT',
         props = { f'experiment_{timestamp}_array_integer': [1, 2, 3]})

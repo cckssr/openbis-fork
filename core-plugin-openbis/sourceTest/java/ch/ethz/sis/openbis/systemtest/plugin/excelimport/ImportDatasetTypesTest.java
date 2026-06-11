@@ -49,6 +49,7 @@ public class ImportDatasetTypesTest extends AbstractImportTest
 
     private static final String DATASET_WITH_VALIDATION_SCRIPT = "dataset_types/with_validation.xls";
 
+
     private static final String DATASET_WITHOUT_PROPERTIES = "dataset_types/no_properties.xls";
 
     private static final String DATASET_TYPES_UPDATE = "dataset_types/normal_dataset_update.xls";
@@ -128,7 +129,7 @@ public class ImportDatasetTypesTest extends AbstractImportTest
         DataSetType rawData = TestUtils.getDatasetType(v3api, sessionToken, "RAW_DATA");
 
         // THEN
-        assertEquals(rawData.getValidationPlugin().getName().toUpperCase(), "VALID");
+        assertEquals(rawData.getValidationPlugin().getName().toUpperCase(), "RAW_DATA.VALID");
     }
 
     @Test

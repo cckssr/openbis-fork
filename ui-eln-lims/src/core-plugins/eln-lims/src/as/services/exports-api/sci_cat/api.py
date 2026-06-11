@@ -43,7 +43,7 @@ from java.net import SocketTimeoutException
 from java.nio.file import Path
 
 
-from ro_crate.api import exportRoCrate, checkStatues, downloadRoCrate, RO_CRATE_EXPORT_ZIP_NAME
+from ro_crate.api import exportRoCrate, checkStatues, downloadRoCrate
 from util import sendMail, sendMailFailure, resultDict
 
 
@@ -67,14 +67,15 @@ def exportSciCat(context, params):
 
     def worker():
         sessionToken = context.getSessionToken()
-        date = datetime.date.today().strftime('%Y-%m-%dT %H:%M:%S')
-        print(date, "SciCat export thread started by", sessionToken)
-        OPERATION_LOG.info("SciCat export thread started by: " + sessionToken)
+        date = datetime.datetime.today()
+        dateStr = date.strftime('%Y-%m-%dT%H:%M:%S')
+        print("SciCat export thread started on: " + dateStr + " by", sessionToken)
+        OPERATION_LOG.info("SciCat export thread started on "+dateStr+" by: " + sessionToken)
 
-        exportSciCat_withEmail(context, params)
+        exportSciCat_withEmail(context, params, date)
 
-        print("SciCat export thread done. Starting time: "+ date+" token: "+sessionToken)
-        OPERATION_LOG.info("SciCat export thread done. Starting time: "+ date+" token: "+sessionToken)
+        print("SciCat export thread done. Starting time: " + dateStr + " token: "+sessionToken)
+        OPERATION_LOG.info("SciCat export thread done. Starting time: " + date + " token: "+sessionToken)
 
     t = threading.Thread(target=worker)
     t.start()
@@ -116,11 +117,13 @@ def createNewPublication(sessionToken, v3, properties):
         print("ID:", id)
         return resultDict(id.get(0).getPermId())
     except Throwable as e:
+        print("Creation of publication sample failed:" + e)
+        OPERATION_LOG.error("Creation of publication sample for SciCat failed %s" % e)
         return resultDict(None, e)
 
 
-def exportSciCat_withEmail(context, params):
-
+def exportSciCat_withEmail(context, params, date):
+    dateStr = date.strftime('%Y-%m-%d-%H-%M-%S')
     sessionToken = context.getSessionToken()
     v3 = context.getApplicationService()
     userEmail = v3.getSessionInformation(sessionToken).getPerson().getEmail()
@@ -154,7 +157,7 @@ def exportSciCat_withEmail(context, params):
         return
 
     jobId = roCrateExport["result"]["jobId"]
-    download_result = getRoCrateExportToWorkspace(context, Map.of("jobId", jobId))
+    download_result = getRoCrateExportToWorkspace(context, Map.of("jobId", jobId, 'openbis.job.time', dateStr))
     OPERATION_LOG.info("RO_CRATE_DOWNLOAD: " + str(download_result))
 
     if download_result["error"] is not None:
@@ -162,7 +165,7 @@ def exportSciCat_withEmail(context, params):
         return
 
     OPERATION_LOG.info("Sending Ro-Crate to SciCat.")
-    sciCatOutput = sendToSciCat(context, Map.of("accessToken", params.get("accessToken")))
+    sciCatOutput = sendToSciCat(context, Map.of("accessToken", params.get("accessToken"), "fileName", download_result["result"]))
 
     print("SCI_CAT_OUTPUT", sciCatOutput)
     OPERATION_LOG.info("SCI-CAT Output: " + str(sciCatOutput))
@@ -228,7 +231,8 @@ def getRoCrateExportToWorkspace(context, params):
 
         time.sleep(sleep)
 
-    OPERATION_LOG.info("Starting crate download")
+    print("Starting ro-crate download")
+    OPERATION_LOG.info("Starting ro-crate download")
     download_result = downloadRoCrate(context, params)
 
     if download_result["error"] is not None:
@@ -240,23 +244,25 @@ def getRoCrateExportToWorkspace(context, params):
 
     session_workspace = sessionWorkspaceProvider.getSessionWorkspace(sessionToken)
 
-    file_path = Path.of(session_workspace.toPath().toString(), RO_CRATE_EXPORT_ZIP_NAME)
+    file_name = download_result["fileName"]
+    file_path = Path.of(session_workspace.toPath().toString(), file_name)
 
     if file_path.toFile().exists() == False:
         OPERATION_LOG.error("Could not find file: " + path)
         return resultDict(None, "Could not find file: " + path)
 
-    return resultDict("COMPLETED")
+    return resultDict(file_name)
 
 def sendToSciCat(context, params):
 
     accessToken = params.get('accessToken')
+    fileName = params.get('fileName')
     sessionWorkspaceProvider = CommonServiceProvider.getSessionWorkspaceProvider()
     sessionToken = context.getSessionToken()
 
     session_workspace = sessionWorkspaceProvider.getSessionWorkspace(sessionToken)
 
-    file_path = Path.of(session_workspace.toPath().toString(), RO_CRATE_EXPORT_ZIP_NAME)
+    file_path = Path.of(session_workspace.toPath().toString(), fileName)
 
     print("Session Workspace:", file_path)
 

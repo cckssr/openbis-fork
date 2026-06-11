@@ -481,7 +481,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		    dropdownOptionsModel = dropdownOptionsModel.concat(profile.experimentTypeDefinitionsExtension[experimentTypeCode].extraToolbarDropdown(_this._experimentFormModel.mode, _this._experimentFormModel.experiment));
 		}
 
-		FormUtil.addOptionsToToolbar(toolbarModel, dropdownOptionsModel, hideShowOptionsModel,
+		FormUtil.addOptionsToToolbar($formColumn, toolbarModel, dropdownOptionsModel, hideShowOptionsModel,
 				"EXPERIMENT-VIEW-" + this._experimentFormModel.experiment.experimentTypeCode, null, false);
 
         var $helpBtn = FormUtil.getToolbarButton("?", function() {

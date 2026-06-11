@@ -163,6 +163,19 @@ public class PropertyTypeImportHelper extends BasicImportHelper
     }
 
     @Override
+    protected boolean isNewVersion(Map<String, Integer> header, List<String> values)
+    {
+        String internal = getValueByColumnName(header, values, Attribute.Internal);
+        boolean isInternalNamespace = ImportUtils.isTrue(internal);
+
+        if(isInternalNamespace && !delayedExecutor.isSystem()) {
+            //if exists, skip
+            return !isObjectExist(header, values);
+        }
+        return true;
+    }
+
+    @Override
     protected ImportTypes getTypeName()
     {
         return ImportTypes.PROPERTY_TYPE;

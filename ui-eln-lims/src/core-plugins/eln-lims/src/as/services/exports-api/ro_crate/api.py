@@ -155,6 +155,13 @@ def downloadRoCrate(context, params):
         'jobid': params.get("jobId")
     }
 
+    dateStr = params.get("openbis.job.time")
+    if dateStr is None:
+        zip_name = RO_CRATE_EXPORT_ZIP_NAME
+    else:
+        zip_name = "ro_crate." + dateStr + ".zip"
+    print("Detected zip name:", zip_name)
+
     conn = None
     try:
         url = URL(download_url)
@@ -180,11 +187,12 @@ def downloadRoCrate(context, params):
         if code < 300:
             print("Saving response to session workspace")
             input_stream = BufferedInputStream(conn.getInputStream())
-            sessionWorkspaceProvider.write(sessionToken, RO_CRATE_EXPORT_ZIP_NAME, input_stream)
+            sessionWorkspaceProvider.write(sessionToken, zip_name, input_stream)
 
             download_url = CommonServiceProvider.tryToGetProperty("download-url")
             return {
-                "result": download_url + "/openbis/openbis/download?sessionID=" + sessionToken + "&filePath=" + RO_CRATE_EXPORT_ZIP_NAME,
+                "result": download_url + "/openbis/openbis/download?sessionID=" + sessionToken + "&filePath=" + zip_name,
+                "fileName": zip_name,
                 "error": None
             }
         else:

@@ -16,7 +16,7 @@ dependencies {
             libs.org.apache.poi.poi.ooxml,
             libs.org.apache.poi.poi.ooxml.lite,
             libs.org.apache.xmlbeans.xmlbeans,
-            libs.dom4j.dom4j,
+            libs.org.dom4j.dom4j,
             libs.imagej.ij,
             libs.python.jython,
             libs.sybit.image.viewer,

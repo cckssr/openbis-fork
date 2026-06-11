@@ -20,6 +20,8 @@ configurations {
     tests.canBeResolved true
 }
 
+apply from: '../build/common-resolutions.gradle'
+
 dependencies {
     annotationProcessor libs.org.projectlombok.lombok
     implementation project(':lib-openbis-commonbase'),
@@ -42,7 +44,7 @@ dependencies {
             project(':api-data-store-server-java'),
             project(':api-openbis-java'),
             libs.org.projectlombok.lombok,
-            libs.io.netty.netty.all.v4168final,
+            libs.io.netty.netty.all,
             libs.org.slf4j.slf4j.api,
             libs.org.slf4j.slf4j.jdk14,
             libs.net.sourceforge.javacsv.javacsv,

@@ -131,7 +131,7 @@ public class ImportUtils
         }
     }
 
-    private static String getScriptName(String pathToScript)
+    private static String getScriptName(String ownerCode, String pathToScript)
     {
         if (pathToScript.contains("/"))
         {
@@ -141,10 +141,10 @@ public class ImportUtils
         {
             pathToScript = pathToScript.substring(0, pathToScript.lastIndexOf("."));
         }
-        return pathToScript;
+        return ownerCode + "." + pathToScript;
     }
 
-    public static PluginPermId getScriptId(String script, Plugin existingPlugin)
+    public static PluginPermId getScriptId(String ownerCode, String script, Plugin existingPlugin)
     {
         if (script != null && !script.isEmpty())
         {
@@ -152,7 +152,7 @@ public class ImportUtils
             {
                 return null;
             } else {
-                return new PluginPermId(ImportUtils.getScriptName(script));
+                return new PluginPermId(ImportUtils.getScriptName(ownerCode, script));
             }
         } else if (existingPlugin != null){
             return existingPlugin.getPermId();

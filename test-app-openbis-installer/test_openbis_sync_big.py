@@ -48,7 +48,7 @@ def sslwrap(func):
 
 ssl.wrap_socket = sslwrap(ssl.wrap_socket)
 
-ALL_TECHNOLOGIES = ['eln-lims', 'illumina-ngs', 'microscopy', 'flow', 'eln-lims-types-templates']
+ALL_TECHNOLOGIES = ['eln-lims', 'illumina-ngs', 'eln-lims-types-templates']
 DATA_SOURCE_AS_PORT = '9000'
 DATA_SOURCE_DSS_PORT = '9001'
 HARVESTER_AS_PORT = '9002'
@@ -61,6 +61,7 @@ class TestCase(systemtest.testcase.TestCase):
     def execute(self):
         openbis_data_source = self._setupOpenbisDataSource()
         openbis_data_source.allUp()
+        self._normalize_legacy_resolution_property_type(openbis_data_source)
         self._drop_test_examples(openbis_data_source)
         self._freeze_some_entities(openbis_data_source)
 
@@ -452,6 +453,16 @@ class TestCase(systemtest.testcase.TestCase):
         openbis_harvester.enableCorePlugin("openbis-sync")
         util.copyFromTo(self.getTemplatesFolder(), openbis_harvester.installPath, "harvester-config.txt")
         return openbis_harvester
+
+    def _normalize_legacy_resolution_property_type(self, openbis):
+        statements = [
+            # Legacy microscopy/screening data keeps RESOLUTION in the internal namespace, not as system-managed.
+            "UPDATE property_types SET is_managed_internally = 'f' "
+            + "WHERE code = 'RESOLUTION' AND is_managed_internally = 't'",
+        ]
+
+        for statement in statements:
+            openbis.queryDatabase("openbis", statement)
 
     def _remove_materials(self, openbis):
         statements = [

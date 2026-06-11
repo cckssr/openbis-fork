@@ -41,14 +41,13 @@ public class ValidationProxy extends AbstractProxy {
 
     @Override
     public Chunk[] read(@NonNull Chunk[] chunks) throws Exception {
-        for (Chunk chunk: chunks){
-            validateReadSize(chunk.getSource(), chunk.getLimit());
-        }
+        validateSize(chunks);
         return nextProxy.read(chunks);
     }
 
     @Override
     public Boolean write(@NonNull Chunk[] chunks) throws Exception {
+        validateSize(chunks);
         return nextProxy.write(chunks);
     }
 
@@ -106,9 +105,21 @@ public class ValidationProxy extends AbstractProxy {
         return nextProxy.status(operationId);
     }
 
-    private void validateReadSize(String source, Integer limit) {
+    private void validateSize(Chunk[] chunks) {
+        int limit = 0;
+        for (Chunk chunk: chunks) {
+            int dataLength = 0;
+            if (chunk.getData() != null) {
+                dataLength = chunk.getData().length;
+            }
+            int dataLimit = 0;
+            if(chunk.getLimit() != null){
+                dataLimit = chunk.getLimit();
+            }
+            limit += Math.max(dataLimit, dataLength) ;
+        }
         if (limit > maxReadSizeInBytes) {
-            throw FSExceptions.MAX_READ_SIZE_EXCEEDED.getInstance(workerContext.getSessionToken(), limit, source, maxReadSizeInBytes);
+            throw FSExceptions.MAX_READ_SIZE_EXCEEDED.getInstance(workerContext.getSessionToken(), limit, maxReadSizeInBytes);
         }
     }
 }

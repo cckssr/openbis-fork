@@ -67,6 +67,8 @@ buildscript {
 
 repositories repositoryConfig
 
+apply from: '../../../../../../../../../../build/common-resolutions.gradle'
+
 def execute(command, arguments) {
     new ByteArrayOutputStream().withStream { os ->
         print "execute: ${command}"

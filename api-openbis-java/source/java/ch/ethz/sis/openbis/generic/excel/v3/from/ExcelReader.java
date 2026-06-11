@@ -185,10 +185,10 @@ public class ExcelReader
                         if (entry.isDirectory())
                         {
                             if (!entryName.isEmpty() &&
-                                    !SCRIPTS_FOLDER_NAME.equals(entryName) &&
-                                    !DATA_FOLDER_NAME.equals(entryName) &&
-                                    !entryName.startsWith(MISCELLANEOUS_FOLDER_NAME)
-                                    && !entryName.startsWith(FOLDER_NAME_NEW_DATA)
+                                    !entryName.startsWith(SCRIPTS_FOLDER_NAME) &&
+                                    !entryName.startsWith(DATA_FOLDER_NAME) &&
+                                    !entryName.startsWith(MISCELLANEOUS_FOLDER_NAME) &&
+                                    !entryName.startsWith(FOLDER_NAME_NEW_DATA)
                             )
 
                             {
@@ -433,6 +433,9 @@ public class ExcelReader
                         case PROPERTY_TYPE:
                             semanticAnnotationHelper.importBlockForPropertyType(page, pageNumber,
                                     lineNumber, blockEnd);
+                            break;
+                        case TYPE_GROUP:
+                            // TODO BIS-2769: implement type group import
                             break;
                         default:
                             throw new UserFailureException("Unknown type: " + blockType);

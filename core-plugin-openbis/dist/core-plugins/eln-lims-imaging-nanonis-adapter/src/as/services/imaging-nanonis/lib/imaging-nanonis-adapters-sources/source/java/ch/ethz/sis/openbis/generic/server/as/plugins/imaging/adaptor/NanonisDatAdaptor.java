@@ -25,12 +25,8 @@ import ch.ethz.sis.openbis.generic.imagingapi.v3.dto.ImagingDataSetFilter;
 import ch.ethz.sis.openbis.generic.imagingapi.v3.dto.ImagingDataSetImage;
 import ch.ethz.sis.openbis.generic.imagingapi.v3.dto.ImagingDataSetPreview;
 import ch.ethz.sis.openbis.generic.server.as.plugins.imaging.ImagingServiceContext;
-import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchicalContent;
-import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchicalContentNode;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IHierarchicalContentProvider;
-import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
 import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider;
-import ch.systemsx.cisd.openbis.generic.shared.dto.OpenBISSessionHolder;
 
 import java.io.File;
 import java.io.Serializable;
@@ -65,7 +61,22 @@ public class NanonisDatAdaptor extends ImagingDataSetAbstractPythonAdaptor
             throw new IllegalArgumentException("Script file " + script + " does not exists!");
         }
         this.scriptPath = script.toString();
-        this.pythonPath = properties.getProperty("python3-path", "python3");
+
+        String venvProperty = properties.getProperty("venv-path", "");
+        if (venvProperty.trim().isEmpty()) {
+            throw new IllegalArgumentException(
+                    "There is no venv path property called 'venv-path' defined for this adaptor!");
+        }
+        if(!venvProperty.endsWith("/bin/python")) {
+            venvProperty = venvProperty + "/bin/python";
+        }
+        Path venvPath = Paths.get(venvProperty);
+        if (!Files.exists(venvPath))
+        {
+            throw new IllegalArgumentException("Venv directory " + venvPath + " does not exists!");
+        }
+        this.pythonPath = venvProperty;
+
         this.storeRootDss = properties.getProperty("storageRoot.dss");
         this.storeRootAfs = properties.getProperty("storageRoot.afs");
     }

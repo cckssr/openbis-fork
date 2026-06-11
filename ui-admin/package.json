@@ -19,7 +19,7 @@
     "@mui/styles": "^6.4.8",
     "@mui/x-date-pickers": "^7.22.2",
     "buffer": "^6.0.3",
-    "ckeditor5": "^47.2.0",
+    "ckeditor5": "^48.0.0",
     "csv": "^6.4.1",
     "date-fns": "^4.1.0",
     "file-saver": "^2.0.5",
