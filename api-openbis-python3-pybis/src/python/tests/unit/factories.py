@@ -41,6 +41,21 @@ def make_object_response(**kwargs: Any) -> dict[str, Any]:
             },
         },
         "properties": kwargs.pop("properties", {}),
+        # relationship keys are always present on the wire (fetch options
+        # request them); AttrHolder indexes them unconditionally
+        "parents": kwargs.pop("parents", []),
+        "children": kwargs.pop("children", []),
+        "components": kwargs.pop("components", []),
+        "tags": kwargs.pop("tags", []),
+        "container": kwargs.pop("container", None),
+        "space": kwargs.pop("space", None),
+        "experiment": kwargs.pop("experiment", None),
+        "project": kwargs.pop("project", None),
+        "registrator": None,
+        "modifier": None,
+        "registrationDate": None,
+        "modificationDate": None,
+        "attachments": None,
     }
     defaults.update(kwargs)
     return defaults
@@ -66,6 +81,13 @@ def make_collection_response(**kwargs: Any) -> dict[str, Any]:
             "code": kwargs.pop("type", "UNKNOWN"),
         },
         "properties": kwargs.pop("properties", {}),
+        "tags": kwargs.pop("tags", []),
+        "project": kwargs.pop("project", None),
+        "registrator": None,
+        "modifier": None,
+        "registrationDate": None,
+        "modificationDate": None,
+        "attachments": None,
     }
     defaults.update(kwargs)
     return defaults

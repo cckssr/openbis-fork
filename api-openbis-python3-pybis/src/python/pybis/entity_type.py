@@ -554,7 +554,7 @@ class SampleType(
     OpenBisObject,
     EntityType,
     entity="sampleType",
-    single_item_method_name="get_sample_type",
+    single_item_method_name="get_object_type",
 ):
     """Schema definition for :class:`~pybis.sample.Sample` objects.
 
@@ -726,7 +726,7 @@ class ExperimentType(
     OpenBisObject,
     EntityType,
     entity="experimentType",
-    single_item_method_name="get_experiment_type",
+    single_item_method_name="get_collection_type",
 ):
     """Schema definition for :class:`~pybis.experiment.Experiment` objects.
 

@@ -65,7 +65,8 @@ def test_shim_translates_positional_arguments(client, monkeypatch):
     assert calls == [{"code": "MY_SPACE"}]
 
 
-def test_shim_drops_legacy_none_pagination(client, monkeypatch):
+def test_shim_drops_explicit_none_arguments(client, monkeypatch):
+    """1.x signatures defaulted everything to None; the new defaults apply."""
     calls = []
     monkeypatch.setattr(
         Openbis, "search_spaces", lambda self, **kwargs: calls.append(kwargs)
@@ -73,7 +74,7 @@ def test_shim_drops_legacy_none_pagination(client, monkeypatch):
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         client.get_spaces(code=None, start_with=None, count=None)
-    assert calls == [{"code": None}]
+    assert calls == [{}]
 
 
 def test_removed_parameter_raises_pointed_type_error(client):

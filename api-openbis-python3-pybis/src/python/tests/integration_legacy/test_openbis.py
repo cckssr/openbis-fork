@@ -151,7 +151,10 @@ def test_get_samples_update_in_transaction(openbis_instance):
 
     trans = openbis_instance.new_transaction()
     # get samples with attributes and change name
-    samples = openbis_instance.get_samples(space=space.code, attrs=["parents", "children"])
+    # pybis 7: attrs= was removed; with_parents/with_children fetch the relations
+    samples = openbis_instance.get_samples(
+        space=space.code, withParents=True, withChildren=True
+    )
     for sample in samples:
         sample.props["name"] = "default name"
         trans.add(sample)

@@ -28,6 +28,8 @@ may appear. See ``MIGRATION_GUIDE.md`` for the full mapping.
 from __future__ import annotations
 
 import functools
+import inspect
+import re
 import warnings
 from typing import Any, Callable, TypeVar
 
@@ -90,6 +92,23 @@ _REMOVED_PARAMS: dict[str, str] = {
 _METHOD_RENAMES: dict[str, str] = {
     "get_spaces": "search_spaces",
     "get_projects": "search_projects",
+    # wave 2: objects (samples), collections (experiments), entity types
+    "get_samples": "search_objects",
+    "get_objects": "search_objects",
+    "get_sample": "get_object",
+    "new_sample": "new_object",
+    "get_experiments": "search_collections",
+    "get_collections": "search_collections",
+    "get_experiment": "get_collection",
+    "new_experiment": "new_collection",
+    "get_sample_types": "search_object_types",
+    "get_object_types": "search_object_types",
+    "get_sample_type": "get_object_type",
+    "get_experiment_types": "search_collection_types",
+    "get_collection_types": "search_collection_types",
+    "get_experiment_type": "get_collection_type",
+    "new_sample_type": "new_object_type",
+    "new_experiment_type": "new_collection_type",
 }
 
 #: Positional parameter names of the legacy signatures, so positional 1.x
@@ -97,19 +116,236 @@ _METHOD_RENAMES: dict[str, str] = {
 _LEGACY_POSITIONAL: dict[str, list[str]] = {
     "get_spaces": ["code", "start_with", "count"],
     "get_projects": ["space", "code", "start_with", "count"],
+    "get_samples": [
+        "identifier",
+        "code",
+        "permId",
+        "space",
+        "project",
+        "experiment",
+        "collection",
+        "type",
+        "start_with",
+        "count",
+    ],
+    "get_objects": [
+        "identifier",
+        "code",
+        "permId",
+        "space",
+        "project",
+        "experiment",
+        "collection",
+        "type",
+        "start_with",
+        "count",
+    ],
+    "get_sample": ["sample_ident"],
+    "new_sample": ["type", "project", "props"],
+    "get_experiments": [
+        "code",
+        "permId",
+        "type",
+        "space",
+        "project",
+        "start_with",
+        "count",
+    ],
+    "get_collections": [
+        "code",
+        "permId",
+        "type",
+        "space",
+        "project",
+        "start_with",
+        "count",
+    ],
+    "get_experiment": ["identifier"],
+    "new_experiment": ["type", "code", "project"],
+    "get_sample_types": ["type", "start_with", "count"],
+    "get_object_types": ["type", "start_with", "count"],
+    "get_sample_type": ["type"],
+    "get_experiment_types": ["type", "start_with", "count"],
+    "get_collection_types": ["type", "start_with", "count"],
+    "get_experiment_type": ["type"],
+    "new_sample_type": ["code", "generatedCodePrefix"],
+    "new_experiment_type": ["code", "description"],
 }
+
+#: Per-method parameter handling that differs from the global rename map.
+#: A value of None silently absorbs the parameter (obsolete, behavior now
+#: built in — e.g. property columns are always part of result.df).
+_PER_METHOD_PARAM_RENAMES: dict[str, dict[str, str | None]] = {
+    "get_samples": {"props": None},
+    "get_objects": {"props": None},
+    "get_sample": {"props": None, "withAttachments": None, "withDataSetIds": None},
+    "get_experiments": {"props": None},
+    "get_collections": {"props": None},
+    "get_experiment": {"withAttachments": None},
+    "new_sample": {"props": "properties"},
+    "new_experiment": {"props": "properties"},
+    "get_sample_types": {"type": "code"},
+    "get_object_types": {"type": "code"},
+    "get_sample_type": {"type": "code"},
+    "get_experiment_types": {"type": "code"},
+    "get_collection_types": {"type": "code"},
+    "get_experiment_type": {"type": "code"},
+}
+
+#: Parameters whose 1.x meaning depended on the value: a bool means the
+#: fetch flag, anything else is a relationship filter.
+_VALUE_DEPENDENT: dict[str, tuple[str, str]] = {
+    "withParents": ("with_parents", "parents"),
+    "withChildren": ("with_children", "children"),
+}
+
+#: Parameters carrying identifying strings; 1.x accepted whole entity
+#: objects here, the v2 API takes strings.
+_ID_LIKE_PARAMS = frozenset(
+    [
+        "id",
+        "identifier",
+        "perm_id",
+        "code",
+        "space",
+        "project",
+        "collection",
+        "object",
+        "parents",
+        "children",
+    ]
+)
+
+_MAGIC_RE = re.compile(r"^(?P<op>>=|>|<=|<|==|=)\s*(?P<value>.*)$")
+
+
+def _looks_like_number(value: str) -> bool:
+    try:
+        float(value)
+    except ValueError:
+        return False
+    return True
+
+
+def _magic_to_filter(value: Any) -> Any:
+    """Translate a 1.x magic-string operator value into a typed filter."""
+    if not isinstance(value, str):
+        return value
+    match = _MAGIC_RE.match(value)
+    if match is None:
+        return value
+    op, raw = match.group("op"), match.group("value")
+    from .api import filters
+
+    if _looks_like_number(raw):
+        number: float | int = float(raw) if "." in raw else int(raw)
+        return {
+            ">": filters.gt,
+            ">=": filters.gte,
+            "<": filters.lt,
+            "<=": filters.lte,
+            "=": filters.number_eq,
+            "==": filters.number_eq,
+        }[op](number)
+    if re.search(r"\d{4}-\d{2}-\d{2}", raw):
+        if op in (">", ">="):
+            return filters.date_after(raw)
+        if op in ("<", "<="):
+            return filters.date_before(raw)
+        return filters.date_eq(raw)
+    if op in ("=", "=="):
+        return filters.eq(raw)
+    warnings.warn(
+        f"pybis 7: string ordering comparison {value!r} is not supported"
+        f" anymore; matching the literal value instead.",
+        UserWarning,
+        stacklevel=4,
+    )
+    return filters.eq(value)
+
+
+def _coerce_id_value(value: Any) -> Any:
+    """Turn 1.x entity-object arguments into their identifying strings."""
+    if isinstance(value, list):
+        return [_coerce_id_value(item) for item in value]
+    if isinstance(value, (str, bool, int)) or value is None:
+        return value
+    for attribute in ("identifier", "permId", "code"):
+        ident = getattr(value, attribute, None)
+        if isinstance(ident, str) and ident:
+            return ident
+    return value
 
 
 def _translate_kwargs(old_name: str, kwargs: dict[str, Any]) -> dict[str, Any]:
     """Rename 1.x keyword arguments; hard-fail on removed parameters."""
+    per_method = _PER_METHOD_PARAM_RENAMES.get(old_name, {})
     translated: dict[str, Any] = {}
     for key, value in kwargs.items():
+        if key in per_method:
+            new_key = per_method[key]
+            if new_key is None:  # obsolete; behavior is built in now
+                continue
+            translated[new_key] = value
+            continue
+        if key in _VALUE_DEPENDENT:
+            fetch_flag, relation_filter = _VALUE_DEPENDENT[key]
+            if isinstance(value, bool):
+                translated[fetch_flag] = value
+            else:
+                translated[relation_filter] = value
+            continue
         if key in _REMOVED_PARAMS:
             raise TypeError(
                 f"pybis 7: parameter {key!r} of {old_name}() was removed —"
                 f" {_REMOVED_PARAMS[key]}. See MIGRATION_GUIDE.md."
             )
         translated[_PARAM_RENAMES.get(key, key)] = value
+    return translated
+
+
+def _adapt_for_new_signature(
+    new_method: Callable[..., Any], translated: dict[str, Any]
+) -> dict[str, Any]:
+    """Fold 1.x free-form parts into the v2 signature.
+
+    - ``where=`` dicts and unknown keyword arguments were property filters
+      in 1.x; both merge into ``properties`` (magic strings become typed
+      filters).
+    - entity objects in identifying parameters become their identifier
+      strings.
+    """
+    parameters = inspect.signature(new_method).parameters
+    has_var_keyword = any(
+        param.kind is inspect.Parameter.VAR_KEYWORD
+        for param in parameters.values()
+    )
+    takes_properties = "properties" in parameters
+
+    extra_properties: dict[str, Any] = {}
+    if takes_properties and isinstance(translated.get("where"), dict):
+        extra_properties.update(translated.pop("where"))
+
+    for key in list(translated):
+        if key not in parameters and not has_var_keyword:
+            if takes_properties:
+                extra_properties[key] = translated.pop(key)
+            else:
+                raise TypeError(
+                    f"unexpected keyword argument {key!r}"
+                    f" (see MIGRATION_GUIDE.md for renamed parameters)"
+                )
+
+    if extra_properties or isinstance(translated.get("properties"), dict):
+        merged = dict(translated.get("properties") or {})
+        merged.update(extra_properties)
+        translated["properties"] = {
+            code: _magic_to_filter(value) for code, value in merged.items()
+        }
+
+    for key in _ID_LIKE_PARAMS:
+        if key in translated:
+            translated[key] = _coerce_id_value(translated[key])
     return translated
 
 
@@ -136,12 +372,24 @@ def _make_shim(cls: type, old_name: str, new_name: str) -> Callable[..., Any]:
                 kwargs.setdefault(name, value)
         translated = _translate_kwargs(old_name, kwargs)
         # 1.x used None for "no pagination limit"; drop those so the new
-        # defaults apply.
-        for pagination in ("count", "start_with"):
-            if translated.get(pagination, 0) is None:
-                translated.pop(pagination)
+        # defaults apply. Filters explicitly passed as None are dropped too
+        # (1.x signatures defaulted everything to None).
+        for key in list(translated):
+            if translated[key] is None:
+                translated.pop(key)
         # resolve at call time so subclassing and test patching work
-        return getattr(self, new_name)(**translated)
+        target = getattr(self, new_name)
+        translated = _adapt_for_new_signature(target, translated)
+        # 1.x single-item getters accepted lists of identifiers
+        first_param = next(iter(inspect.signature(target).parameters), None)
+        if (
+            new_name.startswith("get_")
+            and first_param is not None
+            and isinstance(translated.get(first_param), list)
+        ):
+            idents = translated.pop(first_param)
+            return [target(ident, **translated) for ident in idents]
+        return target(**translated)
 
     shim.__name__ = old_name
     shim.__qualname__ = f"{cls.__name__}.{old_name}"

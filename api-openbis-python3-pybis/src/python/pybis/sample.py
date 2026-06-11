@@ -25,7 +25,7 @@ from .property import PropertyHolder
 from .property_reformatter import PropertyReformatter
 
 
-class Sample(OpenBisObject, entity="sample", single_item_method_name="get_sample"):
+class Sample(OpenBisObject, entity="sample", single_item_method_name="get_object"):
     """An openBIS sample, also called an *Object* in the ELN-LIMS UI.
 
     Samples are the primary data-bearing entities in openBIS.  They live in

@@ -69,7 +69,7 @@ class OpenBisObject(EntityBehavior):
     def __init__(
         self,
         openbis_obj: Any,
-        type: Optional[str] = None,
+        type: Any = None,
         data: Optional[dict] = None,
         props: Optional[dict] = None,
         **kwargs,

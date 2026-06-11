@@ -586,10 +586,16 @@ class AttrHolder:
         Prefers the migrated ``get_<entity>_or_raise`` getter (returns-None
         generation); falls back to the legacy getter, which raises itself.
         """
-        getter = getattr(self._openbis, "get_" + entity_name + "_or_raise", None)
-        if getter is None:
-            getter = getattr(self._openbis, "get_" + entity_name)
-        return getter(value)
+        new_vocab = {"sample": "object", "experiment": "collection"}
+        for candidate in (
+            "get_" + new_vocab.get(entity_name, entity_name) + "_or_raise",
+            "get_" + entity_name + "_or_raise",
+            "get_" + entity_name,
+        ):
+            getter = getattr(self._openbis, candidate, None)
+            if getter is not None:
+                return getter(value)
+        raise AttributeError("no getter for " + entity_name)
 
     def __setattr__(self, name, value):
         """This method is always invoked whenever we assign an attribute to an

@@ -23,7 +23,7 @@ from .openbis_typing import PropertyDataArrayTypes
 
 
 class Experiment(
-    OpenBisObject, entity="experiment", single_item_method_name="get_experiment"
+    OpenBisObject, entity="experiment", single_item_method_name="get_collection"
 ):
     """An openBIS experiment, also called a *Collection* in the ELN-LIMS UI.
 

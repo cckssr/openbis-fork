@@ -17,12 +17,19 @@
 
 from ._properties import PropertyBag
 from .base import EntityBehavior
+from .collection import Collection
+from .entity_type import CollectionType, ObjectType
+from .object import Object
 from .project import Project
 from .server import ServerInformation, ServerVersion, requires_version
 from .space import Space
 
 __all__ = [
+    "Collection",
+    "CollectionType",
     "EntityBehavior",
+    "Object",
+    "ObjectType",
     "Project",
     "PropertyBag",
     "ServerInformation",
