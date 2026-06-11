@@ -80,6 +80,7 @@ select = ["D"]
 # overrides below. New and migrated modules must be clean.
 [tool.ruff.lint.per-file-ignores]
 "pybis/pybis.py" = ["D"]
+"pybis/client.py" = ["D"]
 "pybis/afs_client.py" = ["D"]
 "pybis/attachment.py" = ["D"]
 "pybis/attribute.py" = ["D"]
@@ -125,6 +126,7 @@ files = ["pybis"]
 module = [
     "pybis",
     "pybis.pybis",
+    "pybis.client",
     "pybis.afs_client",
     "pybis.attachment",
     "pybis.attribute",

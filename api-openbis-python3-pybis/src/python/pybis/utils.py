@@ -17,6 +17,9 @@ import math
 import re
 from datetime import datetime
 
+# moved to the transport layer; re-exported here for legacy importers
+from .api.rpc import assign_jackson_ids, parse_jackson  # noqa: F401
+
 # display messages when in a interactive context (IPython or Jupyter)
 try:
     get_ipython()
@@ -24,130 +27,6 @@ except Exception:
     VERBOSE = False
 else:
     VERBOSE = True
-
-
-def parse_jackson(input_json):
-    """openBIS uses a library called «jackson» to automatically generate the JSON RPC output.
-    Objects that are found the first time are added an attribute «@id».
-    Any further findings only carry this reference id.
-    This function is used to dereference the output.
-    """
-    interesting = [
-        "tags",
-        "registrator",
-        "modifier",
-        "owner",
-        "type",
-        "parents",
-        "children",
-        "containers",  # 'container',
-        "properties",
-        "experiment",
-        "sample",
-        "project",
-        "space",
-        "propertyType",
-        "entityType",
-        "propertyType",
-        "propertyAssignment",
-        "externalDms",
-        "roleAssignments",
-        "user",
-        "person",
-        "creatorPerson",
-        "users",
-        "authorizationGroup",
-        "vocabulary",
-        "validationPlugin",
-        "dataSetPermId",
-        "dataStore",
-        "sampleType",
-    ]
-    found = {}
-
-    def build_cache(graph):
-        if isinstance(graph, list):
-            for item in graph:
-                build_cache(item)
-        elif isinstance(graph, dict) and len(graph) > 0:
-            for key, value in graph.items():
-                if key in interesting:
-                    if isinstance(value, dict):
-                        if "@id" in value:
-                            found[value["@id"]] = value
-                        build_cache(value)
-                    elif isinstance(value, list):
-                        for item in value:
-                            if isinstance(item, dict):
-                                if "@id" in item:
-                                    found[item["@id"]] = item
-                                build_cache(item)
-                elif isinstance(value, dict):
-                    build_cache(value)
-                elif isinstance(value, list):
-                    build_cache(value)
-
-    def deref_graph(graph):
-        if isinstance(graph, list):
-            for i, list_item in enumerate(graph):
-                if isinstance(list_item, int):
-                    # try: # TODO: use "if list_item in found" with found.get()
-                    #     graph[i] = found[list_item]
-                    # except KeyError:
-                    #     pass
-                    if list_item in found:
-                        graph[i] = found.get(list_item)
-                else:
-                    deref_graph(list_item)
-        elif isinstance(graph, dict) and len(graph) > 0:
-            for key, value in graph.items():
-                if key in interesting:
-                    if isinstance(value, dict):
-                        deref_graph(value)
-                    elif isinstance(value, int):
-                        graph[key] = found.get(value)
-                    elif isinstance(value, list):
-                        for i, list_item in enumerate(value):
-                            if isinstance(list_item, int):
-                                if list_item in found:
-                                    value[i] = found[list_item]
-                                else:
-                                    value[i] = list_item
-                elif isinstance(value, dict):
-                    deref_graph(value)
-                elif isinstance(value, list):
-                    deref_graph(value)
-
-    build_cache(input_json)
-    deref_graph(found)
-    deref_graph(input_json)
-
-
-def assign_jackson_ids(input_json):
-    """Ensure all objects with an @type have unique @id values and reuse ids via references."""
-    counter = 1
-    seen = {}
-
-    def visit(graph):
-        nonlocal counter
-        if isinstance(graph, dict):
-            if "@type" in graph:
-                obj_key = id(graph)
-                existing = seen.get(obj_key)
-                if existing is not None:
-                    return existing
-                obj_id = counter
-                counter += 1
-                seen[obj_key] = obj_id
-                graph["@id"] = obj_id
-            for key, value in list(graph.items()):
-                graph[key] = visit(value)
-            return graph
-        if isinstance(graph, list):
-            return [visit(item) for item in graph]
-        return graph
-
-    return visit(input_json)
 
 
 def check_datatype(type_name, value, is_multi_value=False):
@@ -194,7 +73,7 @@ def split_identifier(ident):
     return results
 
 
-def format_timestamp(ts):
+def format_timestamp(ts: float | None) -> str:
     if ts is None:
         return ""
     if ts != ts:  # test for NaN
