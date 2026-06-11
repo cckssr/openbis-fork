@@ -86,7 +86,7 @@ public enum Attribute
 
     URL_TEMPLATE("URL Template", false, false, true),
 
-    TYPE_GROUP("Type Group", true, false, true),
+    TYPE_GROUPS("Type Groups", true, false, true),
 
     META_DATA("Meta Data", true, false, true),
 
