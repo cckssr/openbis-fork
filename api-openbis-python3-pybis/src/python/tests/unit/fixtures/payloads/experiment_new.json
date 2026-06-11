@@ -1,0 +1,23 @@
+{
+  "method": "createExperiments",
+  "params": [
+    "golden-token",
+    [
+      {
+        "@type": "as.dto.experiment.create.ExperimentCreation",
+        "code": "E-NEW",
+        "metaData": null,
+        "projectId": {
+          "@type": "as.dto.project.id.ProjectIdentifier",
+          "identifier": "/MY_SPACE/MY_PROJECT"
+        },
+        "tagIds": [],
+        "typeId": {
+          "@type": "as.dto.entitytype.id.EntityTypePermId",
+          "entityKind": "EXPERIMENT",
+          "permId": "DEFAULT_EXPERIMENT"
+        }
+      }
+    ]
+  ]
+}

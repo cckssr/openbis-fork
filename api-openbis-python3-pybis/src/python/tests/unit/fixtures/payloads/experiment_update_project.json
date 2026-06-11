@@ -1,0 +1,44 @@
+{
+  "method": "updateExperiments",
+  "params": [
+    "golden-token",
+    [
+      {
+        "@type": "as.dto.experiment.update.ExperimentUpdate",
+        "experimentId": {
+          "@type": "as.dto.experiment.id.ExperimentPermId",
+          "permId": "20240101000000000-50"
+        },
+        "immutableData": false,
+        "metaData": {
+          "@type": "as.dto.common.update.ListUpdateMapValues",
+          "actions": [
+            {
+              "@type": "as.dto.common.update.ListUpdateActionSet",
+              "items": [
+                {}
+              ]
+            }
+          ]
+        },
+        "projectId": {
+          "@type": "as.dto.common.update.FieldUpdateValue",
+          "isModified": true,
+          "value": {
+            "@type": "as.dto.project.id.ProjectIdentifier",
+            "identifier": "/MY_SPACE/OTHER_PROJECT"
+          }
+        },
+        "tagIds": {
+          "@type": "as.dto.common.update.IdListUpdateValue",
+          "actions": [
+            {
+              "@type": "as.dto.common.update.ListUpdateActionSet",
+              "items": []
+            }
+          ]
+        }
+      }
+    ]
+  ]
+}

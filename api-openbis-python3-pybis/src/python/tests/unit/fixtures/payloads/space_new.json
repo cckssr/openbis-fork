@@ -1,0 +1,13 @@
+{
+  "method": "createSpaces",
+  "params": [
+    "golden-token",
+    [
+      {
+        "@type": "as.dto.space.create.SpaceCreation",
+        "code": "MY_SPACE",
+        "description": "test space"
+      }
+    ]
+  ]
+}

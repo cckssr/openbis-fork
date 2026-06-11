@@ -19,6 +19,7 @@ from collections import defaultdict
 from typing import Optional, Union, Any, TYPE_CHECKING
 
 from .attribute import AttrHolder
+from .entities.base import EntityBehavior
 from .definitions import (
     get_definition_for_entity,
     get_type_for_entity,
@@ -37,7 +38,7 @@ if TYPE_CHECKING:
     from .sample import Sample
 
 
-class OpenBisObject:
+class OpenBisObject(EntityBehavior):
     """Base class for all OpenBIS entities, such as Space, Project, Sample, etc.
 
     Contains the common attributes and methods for all entities,
@@ -368,12 +369,12 @@ class OpenBisObject:
         get_single_item = self._get_single_item_method()
         # check for mandatory properties before saving the object
         props = None
-        if self.props:
-            for prop_name, prop in self.props._property_names.items():
+        if self.p:
+            for prop_name, prop in self.p._property_names.items():
                 if prop["mandatory"]:
                     if (
-                        getattr(self.props, prop_name) is None
-                        or getattr(self.props, prop_name) == ""
+                        getattr(self.p, prop_name) is None
+                        or getattr(self.p, prop_name) == ""
                     ):
                         raise ValueError(
                             f"Property '{prop_name}' is mandatory and must not be None"
@@ -616,12 +617,12 @@ class Transaction:
                         request_coll.append(request)
                         continue
                     props = None
-                    if entity.props:
-                        for prop_name, prop in entity.props._property_names.items():
+                    if entity.p:
+                        for prop_name, prop in entity.p._property_names.items():
                             if prop["mandatory"]:
                                 if (
-                                    getattr(entity.props, prop_name) is None
-                                    or getattr(entity.props, prop_name) == ""
+                                    getattr(entity.p, prop_name) is None
+                                    or getattr(entity.p, prop_name) == ""
                                 ):
                                     raise ValueError(
                                         f"Property '{prop_name}' is mandatory and must not be None"

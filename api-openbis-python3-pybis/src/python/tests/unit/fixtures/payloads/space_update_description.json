@@ -1,0 +1,20 @@
+{
+  "method": "updateSpaces",
+  "params": [
+    "golden-token",
+    [
+      {
+        "@type": "as.dto.space.update.SpaceUpdate",
+        "description": {
+          "@type": "as.dto.common.update.FieldUpdateValue",
+          "isModified": true,
+          "value": "updated description"
+        },
+        "spaceId": {
+          "@type": "as.dto.space.id.SpacePermId",
+          "permId": "MY_SPACE"
+        }
+      }
+    ]
+  ]
+}

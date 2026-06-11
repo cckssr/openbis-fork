@@ -102,7 +102,6 @@ class Material(OpenBisObject):
         self.__dict__["type"] = type
         ph = PropertyHolder(openbis_obj, type)
         self.__dict__["p"] = ph
-        self.__dict__["props"] = ph
         self.__dict__["a"] = AttrHolder(openbis_obj, "material", type)
         self.__dict__["formatter"] = PropertyReformatter(openbis_obj)
 

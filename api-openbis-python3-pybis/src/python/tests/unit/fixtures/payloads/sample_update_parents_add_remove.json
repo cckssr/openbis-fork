@@ -1,0 +1,68 @@
+{
+  "method": "updateSamples",
+  "params": [
+    "golden-token",
+    [
+      {
+        "@type": "as.dto.sample.update.SampleUpdate",
+        "componentIds": {
+          "@type": "as.dto.common.update.IdListUpdateValue",
+          "actions": [
+            {
+              "@type": "as.dto.common.update.ListUpdateActionSet",
+              "items": []
+            }
+          ]
+        },
+        "immutableData": false,
+        "metaData": {
+          "@type": "as.dto.common.update.ListUpdateMapValues",
+          "actions": [
+            {
+              "@type": "as.dto.common.update.ListUpdateActionSet",
+              "items": [
+                {}
+              ]
+            }
+          ]
+        },
+        "parentIds": {
+          "@type": "as.dto.common.update.IdListUpdateValue",
+          "actions": [
+            {
+              "@type": "as.dto.common.update.ListUpdateActionAdd",
+              "items": [
+                {
+                  "@type": "as.dto.sample.id.SampleIdentifier",
+                  "identifier": "/SPACE/PROJ/PARENT_B"
+                }
+              ]
+            },
+            {
+              "@type": "as.dto.common.update.ListUpdateActionRemove",
+              "items": [
+                {
+                  "@type": "as.dto.sample.id.SampleIdentifier",
+                  "identifier": "/SPACE/PROJ/PARENT_A"
+                }
+              ]
+            }
+          ]
+        },
+        "sampleId": {
+          "@type": "as.dto.sample.id.SamplePermId",
+          "permId": "20240101000000000-1"
+        },
+        "tagIds": {
+          "@type": "as.dto.common.update.IdListUpdateValue",
+          "actions": [
+            {
+              "@type": "as.dto.common.update.ListUpdateActionSet",
+              "items": []
+            }
+          ]
+        }
+      }
+    ]
+  ]
+}

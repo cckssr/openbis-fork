@@ -1,0 +1,47 @@
+{
+  "method": "updateSamples",
+  "params": [
+    "golden-token",
+    [
+      {
+        "@type": "as.dto.sample.update.SampleUpdate",
+        "componentIds": {
+          "@type": "as.dto.common.update.IdListUpdateValue",
+          "actions": [
+            {
+              "@type": "as.dto.common.update.ListUpdateActionSet",
+              "items": []
+            }
+          ]
+        },
+        "freeze": true,
+        "freezeForChildren": true,
+        "immutableData": false,
+        "metaData": {
+          "@type": "as.dto.common.update.ListUpdateMapValues",
+          "actions": [
+            {
+              "@type": "as.dto.common.update.ListUpdateActionSet",
+              "items": [
+                {}
+              ]
+            }
+          ]
+        },
+        "sampleId": {
+          "@type": "as.dto.sample.id.SamplePermId",
+          "permId": "20240101000000000-1"
+        },
+        "tagIds": {
+          "@type": "as.dto.common.update.IdListUpdateValue",
+          "actions": [
+            {
+              "@type": "as.dto.common.update.ListUpdateActionSet",
+              "items": []
+            }
+          ]
+        }
+      }
+    ]
+  ]
+}

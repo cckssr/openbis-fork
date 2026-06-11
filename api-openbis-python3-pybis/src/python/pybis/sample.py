@@ -106,7 +106,6 @@ class Sample(OpenBisObject, entity="sample", single_item_method_name="get_sample
         self.__dict__["type"] = type
         ph = PropertyHolder(openbis_obj, type)
         self.__dict__["p"] = ph
-        self.__dict__["props"] = ph
         self.__dict__["a"] = AttrHolder(openbis_obj, "sample", type)
         self.__dict__["formatter"] = PropertyReformatter(openbis_obj)
 

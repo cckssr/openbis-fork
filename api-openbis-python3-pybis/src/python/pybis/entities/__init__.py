@@ -15,9 +15,13 @@
 #
 """Typed openBIS entity classes (Object, Collection, DataSet, Space, ...)."""
 
+from ._properties import PropertyBag
+from .base import EntityBehavior
 from .server import ServerInformation, ServerVersion, requires_version
 
 __all__ = [
+    "EntityBehavior",
+    "PropertyBag",
     "ServerInformation",
     "ServerVersion",
     "requires_version",

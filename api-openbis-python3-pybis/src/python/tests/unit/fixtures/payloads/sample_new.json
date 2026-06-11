@@ -1,0 +1,45 @@
+{
+  "method": "createSamples",
+  "params": [
+    "golden-token",
+    [
+      {
+        "@type": "as.dto.sample.create.SampleCreation",
+        "childIds": [],
+        "code": "S-NEW",
+        "componentIds": [],
+        "containerId": null,
+        "experimentId": null,
+        "metaData": {
+          "custom": "x"
+        },
+        "parentIds": [
+          {
+            "@type": "as.dto.sample.id.SampleIdentifier",
+            "identifier": "/SPACE/PROJ/PARENT1"
+          }
+        ],
+        "projectId": null,
+        "spaceId": {
+          "@type": "as.dto.space.id.SpacePermId",
+          "permId": "MY_SPACE"
+        },
+        "tagIds": [
+          {
+            "code": "TAG1",
+            "permId": "/admin/TAG1"
+          },
+          {
+            "code": "TAG2",
+            "permId": "/admin/TAG2"
+          }
+        ],
+        "typeId": {
+          "@type": "as.dto.entitytype.id.EntityTypePermId",
+          "entityKind": "SAMPLE",
+          "permId": "MOLECULE"
+        }
+      }
+    ]
+  ]
+}
