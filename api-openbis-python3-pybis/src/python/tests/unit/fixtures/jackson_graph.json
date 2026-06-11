@@ -1,0 +1,41 @@
+{
+  "@type": "as.dto.common.search.SearchResult",
+  "objects": [
+    {
+      "@type": "as.dto.sample.Sample",
+      "@id": 10,
+      "code": "S1",
+      "permId": {
+        "@type": "as.dto.sample.id.SamplePermId",
+        "@id": 11,
+        "permId": "20240101000000000-1"
+      },
+      "type": {
+        "@type": "as.dto.sample.SampleType",
+        "@id": 12,
+        "code": "MOLECULE"
+      },
+      "registrator": {
+        "@type": "as.dto.person.Person",
+        "@id": 13,
+        "userId": "admin",
+        "firstName": "Ad",
+        "lastName": "Min"
+      }
+    },
+    {
+      "@type": "as.dto.sample.Sample",
+      "@id": 14,
+      "code": "S2",
+      "permId": {
+        "@type": "as.dto.sample.id.SamplePermId",
+        "@id": 15,
+        "permId": "20240101000000000-2"
+      },
+      "type": 12,
+      "registrator": 13,
+      "parents": [10]
+    }
+  ],
+  "totalCount": 2
+}

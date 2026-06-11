@@ -1,85 +1,88 @@
-#   Copyright ETH 2018 - 2024 Zürich, Scientific IT Services
-# 
+#
+#   Copyright ETH 2026 Zürich, Scientific IT Services
+#
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
 #   You may obtain a copy of the License at
-# 
+#
 #        http://www.apache.org/licenses/LICENSE-2.0
-#   
+#
 #   Unless required by applicable law or agreed to in writing, software
 #   distributed under the License is distributed on an "AS IS" BASIS,
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 #
-import time
+"""Shared pytest configuration: integration gating and the mocked client.
+
+Unit tests (``tests/unit``) run fully offline against a mocked JSON-RPC
+transport.  Integration tests (``tests/integration*``) require a live
+openBIS instance and only run with ``--integration``::
+
+    pytest --integration \
+        --openbis-url https://localhost:8443 \
+        --openbis-user admin --openbis-pass admin
+"""
+
+from unittest.mock import patch
 
 import pytest
 
 from pybis import Openbis
-from pybis import AfsClient
-
-openbis_url = "https://localhost:8443"
-admin_username = "admin"
-admin_password = "admin"
 
 
-@pytest.fixture(scope="module")
-def openbis_instance():
-    instance = Openbis(
-        url=openbis_url,
-        verify_certificates=False,
-        allow_http_but_do_not_use_this_in_production_and_only_within_safe_networks=True
+def pytest_addoption(parser):
+    parser.addoption(
+        "--integration",
+        action="store_true",
+        default=False,
+        help="Run integration tests against a live openBIS instance",
     )
-    print("\nLOGGING IN...")
-    instance.login(admin_username, admin_password)
-    yield instance
-    instance.logout()
-    print("LOGGED OUT...")
+    parser.addoption("--openbis-url", default=None)
+    parser.addoption("--openbis-user", default=None)
+    parser.addoption("--openbis-pass", default=None)
 
 
-@pytest.fixture(scope="module")
-def other_openbis_instance():
-    instance = Openbis(
-        url=openbis_url,
-        verify_certificates=False,
-        allow_http_but_do_not_use_this_in_production_and_only_within_safe_networks=True
+def pytest_configure(config):
+    config.addinivalue_line(
+        "markers",
+        "integration: requires a live openBIS instance (skip without --integration)",
     )
-    print("\nLOGGING IN...")
-    instance.login(admin_username, admin_password)
-    yield instance
-    instance.logout()
-    print("LOGGED OUT...")
 
 
-@pytest.fixture(scope="session")
-def space():
-    o = Openbis(
-        url=openbis_url,
-        verify_certificates=False,
-        allow_http_but_do_not_use_this_in_production_and_only_within_safe_networks=True
-    )
-    o.login(admin_username, admin_password)
+def pytest_collection_modifyitems(config, items):
+    run_integration = config.getoption("--integration")
+    skip = pytest.mark.skip(reason="pass --integration to run")
+    for item in items:
+        # Everything under tests/integration* talks to a live server.
+        if any(part.startswith("integration") for part in item.path.parts):
+            item.add_marker(pytest.mark.integration)
+        if "integration" in item.keywords and not run_integration:
+            item.add_marker(skip)
 
-    # create a space
-    timestamp = time.strftime("%a_%y%m%d_%H%M%S").upper()
-    space_name = "test_space_" + timestamp
-    space = o.new_space(code=space_name)
-    space.save()
-    yield space
 
-    # teardown
-    o.logout()
+@pytest.fixture
+def mock_rpc():
+    """Patch the JSON-RPC transport class used by Openbis; yields the mock class.
 
-@pytest.fixture(scope="session")
-def afs(space):
-    token = space.openbis.token
-    o = space.openbis
+    ``mock_rpc.return_value`` is the RpcClient instance the client will use;
+    configure ``mock_rpc.return_value.post.return_value`` (or
+    ``side_effect``) to script server responses.
+    """
+    with patch("pybis.client.RpcClient", autospec=True) as mock:
+        yield mock
 
-    server_info = o.get_server_information()
 
-    afs_url = getattr(server_info, "server-public-information.afs-server.url") + "/api"
+@pytest.fixture
+def client(mock_rpc, monkeypatch):
+    """An authenticated Openbis client with a mocked transport."""
+    # Never read or write the real ~/.pybis token store in unit tests.
+    monkeypatch.setattr(Openbis, "_get_saved_token", lambda self: None)
+    monkeypatch.setattr(Openbis, "_save_token_to_disk", lambda self, *a, **k: None)
 
-    afs_client = AfsClient(afs_url, token, False)
-
-    yield (space, afs_client)
+    mock_rpc.return_value.post.return_value = "mock-token-123"
+    o = Openbis("https://mock.openbis.example.com")
+    o.login("user", "password")
+    # Leave response scripting to the individual test.
+    mock_rpc.return_value.post.reset_mock()
+    return o

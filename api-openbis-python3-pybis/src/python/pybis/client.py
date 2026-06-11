@@ -4777,6 +4777,8 @@ class Openbis:
         to the disk, i.e. in the ~/.pybis directory
         """
         if not token:
+            # clearing the token (e.g. on logout) must actually clear it
+            self.__dict__["token"] = None
             return
         if type(token) is PersonalAccessToken:
             token = token.permId
