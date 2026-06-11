@@ -29,6 +29,7 @@ from .chunk import decode_chunks
 REQUEST_RETRIES_COUNT = 5
 CONNECT_TIMEOUT=5
 READ_TIMEOUT=10
+DEFAULT_CHUNK_LIMIT = 1024 * 1024 * 10  # 10MB
 
 FILE_ARRAY_SEPARATOR = '\n'
 FILE_SEPARATOR = '\t'
@@ -76,11 +77,35 @@ class File:
     def __repr__(self):
         return self.__str__()
 
+class FreeSpace:
+    total: int
+    free: int
+    def __init__(self, total, free):
+        self.total = total
+        self.free = free
+
+    def __str__(self):
+        return f'FreeSpace[{self.free}/{self.total}]'
+
+    def __repr__(self):
+        return self.__str__()
+
+def handle_afs_error(response):
+    parsed_error = json.loads(response.text)
+    message = parsed_error['error'][1]['message']
+    if isinstance(message, dict) and "error" in message:
+        raise ValueError(
+            f"Error {message['error'][1]['exceptionCode']}: {message['error'][1]['message']}"
+        )
+    else:
+        raise ValueError(message)
 
 class AfsClient:
 
-    def __init__(self, url, sessionToken, verify=True, connect_timeout=CONNECT_TIMEOUT, read_timeout=READ_TIMEOUT):
+    def __init__(self, url, sessionToken, verify=True, max_chunk_size=DEFAULT_CHUNK_LIMIT,
+                 connect_timeout=CONNECT_TIMEOUT, read_timeout=READ_TIMEOUT):
         self._afs_url = url
+        self._max_chunk_size = max_chunk_size
         if url is not None and not url.endswith("/api"):
             self._afs_url = url + "/api"
         self._sessionToken = sessionToken
@@ -97,9 +122,11 @@ class AfsClient:
             "method": "isSessionValid",
         }
         try:
-            with self.session.get(self._afs_url, params=request, verify=self._verify, stream=True) as r:
-                content = r.content.decode("utf-8").lower() == "true"
-                return content
+            with self.session.get(self._afs_url, params=request, verify=self._verify, stream=True) as response:
+                if response.ok:
+                    content = response.content.decode("utf-8").lower() == "true"
+                    return content
+                response.raise_for_status()
         except BaseException:
             return False
 
@@ -114,6 +141,8 @@ class AfsClient:
 
         with self.session.get(self._afs_url, params=request, verify=self._verify, stream=True) as response:
             if response.ok:
+                if response.text == '':
+                    return []
                 entries = response.text.split(FILE_ARRAY_SEPARATOR)
                 result = []
                 for entry in entries:
@@ -141,8 +170,12 @@ class AfsClient:
             "source": source,
         }
 
-        with self.session.get(self._afs_url, params=request, verify=self._verify, stream=True) as r:
-            return r.content
+        with self.session.get(self._afs_url, params=request, verify=self._verify, stream=True) as response:
+            content = None
+            if response.ok:
+                content = response.content
+            response.raise_for_status()
+            return content
 
 
     def read(self, owner, source, offset, limit):
@@ -164,10 +197,15 @@ class AfsClient:
 
         chunks_encoded = encode_chunks_as_bytes(chunks)
 
-        with self.session.post(self._afs_url, data=chunks_encoded, params=params, verify=self._verify, stream=True) as r:
-            content = r.content
-            decoded = decode_chunks(content)[0]
-            return decoded['data']
+        with self.session.post(self._afs_url, data=chunks_encoded, params=params, verify=self._verify, stream=True) as response:
+            result = None
+            if response.ok:
+                content = response.content
+                decoded = decode_chunks(content)[0]
+                result = decoded['data']
+            else:
+                handle_afs_error(response)
+            return result
 
     def delete(self, owner, source, trash=True):
         request = {
@@ -178,8 +216,13 @@ class AfsClient:
             "trash": str(trash).lower()
         }
 
-        with self.session.delete(self._afs_url, data=request, params=request, verify=self._verify, stream=True) as r:
-            content = r.text
+        with self.session.delete(self._afs_url, data=request, params=request, verify=self._verify, stream=True) as response:
+            content = None
+            if response.ok:
+                content = response.text.lower() == "true"
+            else:
+                handle_afs_error(response)
+            response.raise_for_status()
             return content
 
     def write(self, owner, source, offset, limit, data):
@@ -201,8 +244,12 @@ class AfsClient:
 
         chunks_encoded = encode_chunks_as_bytes(chunks)
 
-        with self.session.post(self._afs_url, data=chunks_encoded, params=params, verify=self._verify, stream=True) as r:
-            content = r.content.decode("utf-8").lower() == "true"
+        with self.session.post(self._afs_url, data=chunks_encoded, params=params, verify=self._verify, stream=True) as response:
+            content = None
+            if response.ok:
+                content = response.content.decode("utf-8").lower() == "true"
+            else:
+                handle_afs_error(response)
             return content
 
     def create(self, owner, source, is_directory):
@@ -216,8 +263,132 @@ class AfsClient:
             "directory": is_directory
         }
 
-        with self.session.post(self._afs_url, data=params, params=params, verify=self._verify, stream=True) as r:
-            content = r.content.decode("utf-8").lower() == "true"
+        with self.session.post(self._afs_url, data=params, params=params, verify=self._verify, stream=True) as response:
+            content = None
+            if response.ok:
+                content = response.content.decode("utf-8").lower() == "true"
+            else:
+                handle_afs_error(response)
+            return content
+
+    def copy(self, sourceOwner, source, targetOwner, target):
+        params = {
+            "sessionToken": self._sessionToken,
+            # "interactiveSessionKey": None,
+            # "transactionManagerKey": None,
+            "method": "copy",
+            "sourceOwner": sourceOwner,
+            "source": source,
+            "targetOwner": targetOwner,
+            "target": target
+        }
+
+        with self.session.post(self._afs_url, data=params, params=params, verify=self._verify, stream=True) as response:
+            content = None
+            if response.ok:
+                content = response.content.decode("utf-8").lower() == "true"
+            else:
+                handle_afs_error(response)
+            return content
+
+    def move(self, sourceOwner, source, targetOwner, target):
+        params = {
+            "sessionToken": self._sessionToken,
+            # "interactiveSessionKey": None,
+            # "transactionManagerKey": None,
+            "method": "move",
+            "sourceOwner": sourceOwner,
+            "source": source,
+            "targetOwner": targetOwner,
+            "target": target
+        }
+
+        with self.session.post(self._afs_url, data=params, params=params, verify=self._verify, stream=True) as response:
+            content = None
+            if response.ok:
+                content = response.content.decode("utf-8").lower() == "true"
+            else:
+                handle_afs_error(response)
+            return content
+
+    def truncate(self, owner, source, size):
+        params = {
+            "sessionToken": self._sessionToken,
+            # "interactiveSessionKey": None,
+            # "transactionManagerKey": None,
+            "method": "truncate",
+            "owner": owner,
+            "source": source,
+            "size": size,
+        }
+
+        with self.session.post(self._afs_url, data=params, params=params, verify=self._verify, stream=True) as response:
+            content = None
+            if response.ok:
+                content = response.content.decode("utf-8").lower() == "true"
+            else:
+                handle_afs_error(response)
+            return content
+
+    def snapshot(self, owner, source):
+        params= {
+            "sessionToken": self._sessionToken,
+            # "interactiveSessionKey": None,
+            # "transactionManagerKey": None,
+            "method": "snapshot",
+            "owner": owner,
+            "source": source
+        }
+
+        with self.session.post(self._afs_url, data=params, params=params, verify=self._verify, stream=True) as response:
+            content = None
+            if response.ok:
+                content = response.text.lower() == "true"
+            else:
+                handle_afs_error(response)
+            return content
+
+    def free(self, owner, source):
+        params= {
+            "sessionToken": self._sessionToken,
+            # "interactiveSessionKey": None,
+            # "transactionManagerKey": None,
+            "method": "free",
+            "owner": owner,
+            "source": source
+        }
+
+        with self.session.get(self._afs_url, params=params, verify=self._verify, stream=True) as response:
+            content = None
+            if response.ok:
+                if response.text == '':
+                    return []
+                entry = json.loads(response.text)
+                if entry["error"] is not None:
+                    handle_afs_error(response)
+                entry = entry["result"]
+                result = FreeSpace(int(entry[1]["total"]), int(entry[1]["free"]))
+                return result
+            else:
+                handle_afs_error(response)
+            return content
+
+    def hash(self, owner, source):
+        params= {
+            "sessionToken": self._sessionToken,
+            # "interactiveSessionKey": None,
+            # "transactionManagerKey": None,
+            "method": "hash",
+            "owner": owner,
+            "source": source
+        }
+
+        with self.session.get(self._afs_url,params=params, verify=self._verify, stream=True) as response:
+            content = None
+            if response.ok:
+                content = response.text
+            else:
+                handle_afs_error(response)
             return content
 
     def upload_files(self, owner, source_path, files, wait_until_finished=True):
@@ -239,7 +410,7 @@ class AfsClient:
             else:
                 real_files.append(("", os.path.join(filename)))
 
-        with AfsFileUploadQueue(self._afs_url, self._verify) as queue:
+        with AfsFileUploadQueue(self._afs_url, verify_certificates=self._verify, max_chunk_size=self._max_chunk_size) as queue:
             for filename in real_files:
                 file_path_afs = os.path.join(source_path, filename[0], os.path.basename(filename[1]))
                 if file_path_afs in existing_files:
@@ -260,7 +431,7 @@ class AfsClient:
         if not os.path.exists(destination):
             os.makedirs(os.path.dirname(destination), exist_ok=True)
 
-        with AfsFileDownloadQueue(self._afs_url, self._verify) as queue:
+        with AfsFileDownloadQueue(self._afs_url, verify_certificates=self._verify, max_chunk_size=self._max_chunk_size) as queue:
             for file in file_list:
                 if file.directory:
                     os.makedirs(os.path.join(destination, file.path[1:]), exist_ok=True)
@@ -296,8 +467,9 @@ class AfsFileUploadQueue:
     It works as a queue where each item is a single file upload. """
 
 
-    def __init__(self, url, verify_certificates=True, workers=10):
+    def __init__(self, url, verify_certificates=True, max_chunk_size=DEFAULT_CHUNK_LIMIT, workers=10):
         self.url = url
+        self.max_chunk_size = max_chunk_size
         self.session = _create_session(url)
         self.items = []
         # maximum files to be uploaded at once
@@ -367,18 +539,17 @@ class AfsFileUploadQueue:
                         "directory": True
                     }
 
-                    response = self.session.post(self.url, data=params, params=params, stream=True, verify=self.verify_certificates)
-                    if response.ok:
-                        content = response.content.decode("utf-8").lower() == "true"
-                        if not content:
-                            message = json.loads(response.text)
-                            raise ValueError(
-                                f"Error {message['error'][1]['exceptionCode']} during upload: {message['error'][1]['message']}"
-                            )
-                    response.raise_for_status()
+                    with self.session.post(self.url, data=params, params=params, stream=True, verify=self.verify_certificates) as response:
+                        if response.ok:
+                            content = response.content.decode("utf-8").lower() == "true"
+                            if not content:
+                                message = json.loads(response.text)
+                                raise ValueError(
+                                    f"Error {message['error'][1]['exceptionCode']} during upload: {message['error'][1]['message']}"
+                                )
+                        response.raise_for_status()
                 else:
                     file_size = os.path.getsize(file_path)
-                    size = 1024 * 1024 * 10  # 10MB
 
                     params = {
                         "sessionToken": session_token,
@@ -386,51 +557,28 @@ class AfsFileUploadQueue:
                         # "transactionManagerKey": None,
                         "method": "write",
                     }
-                    if file_size > size:
-                        with open(file_path, "rb") as f:
-                            for i in range(0, file_size, size):
-                                range_to_get = file_size - i if i + size > file_size else size
-                                data = f.read(range_to_get)
-                                chunks = [{
-                                    # "owner": 'aaaa',
-                                    "owner": owner,
-                                    "source": afs_path,
-                                    "offset": i,
-                                    "limit": i + range_to_get,
-                                    "data": data
-                                }]
-
-                                chunks_encoded = encode_chunks_as_bytes(chunks)
-
-                                with self.session.post(self.url, data=chunks_encoded, params=params, stream=True, verify=self.verify_certificates) as response:
-                                    if response.ok:
-                                        content = response.content.decode("utf-8").lower() == "true"
-                                        if not content:
-                                            message = json.loads(response.text)
-                                            raise ValueError(
-                                                        f"Error {message['error'][1]['exceptionCode']} during upload: {message['error'][1]['message']}"
-                                                    )
-                                    response.raise_for_status()
-                    else:
-                        with open(file_path, "rb") as f:
-
+                    with open(file_path, "rb") as f:
+                        for i in range(0, file_size, self.max_chunk_size):
+                            range_to_get = file_size - i if i + self.max_chunk_size > file_size else self.max_chunk_size
+                            data = f.read(range_to_get)
                             chunks = [{
                                 "owner": owner,
                                 "source": afs_path,
-                                "offset": 0,
-                                "limit": file_size,
-                                "data": f.read()
+                                "offset": i,
+                                "limit": range_to_get,
+                                "data": data
                             }]
 
                             chunks_encoded = encode_chunks_as_bytes(chunks)
 
                             with self.session.post(self.url, data=chunks_encoded, params=params, stream=True, verify=self.verify_certificates) as response:
-                                content = response.content.decode("utf-8").lower() == "true"
-                                if not content:
-                                    message = json.loads(response.text)
-                                    raise ValueError(
-                                        f"Error {message['error'][1]['exceptionCode']} during upload: {message['error'][1]['message']}"
-                                    )
+                                if response.ok:
+                                    content = response.content.decode("utf-8").lower() == "true"
+                                    if not content:
+                                        message = json.loads(response.text)
+                                        raise ValueError(
+                                                    f"Error {message['error'][1]['exceptionCode']} during upload: {message['error'][1]['message']}"
+                                                )
                                 response.raise_for_status()
 
             except BaseException as e:
@@ -462,7 +610,7 @@ class AfsFileUploadQueue:
                 self.upload_queue.task_done()
 
 class AfsFileDownloadQueue:
-    def __init__(self, url, workers=10):
+    def __init__(self, url, verify_certificates=True, max_chunk_size=DEFAULT_CHUNK_LIMIT, workers=10):
         self.url = url
         self.session = _create_session(url)
         self.items = []
@@ -473,6 +621,8 @@ class AfsFileDownloadQueue:
         self.exceptions = Queue()
         self.cancelled = threading.Event()
         self._drain_lock = threading.Lock()
+        self.verify_certificates = verify_certificates
+        self.max_chunk_size = max_chunk_size
         # define number of threads and start them
         for t in range(workers):
             t = PropagatingThread(target=self.download_file)
@@ -522,15 +672,13 @@ class AfsFileDownloadQueue:
 
             try:
                 file_size = file.size
-                size = 1024 * 1024 * 10  # 10MB
-
-                # os.path.join(destination, file.path)
                 file_dest = os.path.join(destination, file.path[1:])
                 if not os.path.exists(file_dest):
+                    Path(file_dest).parent.mkdir(parents=True, exist_ok=True)
                     Path(file_dest).touch(exist_ok=True)
 
-                for i in range(0, file_size, size):
-                    range_to_get = file_size - i if i + size > file_size else size
+                for i in range(0, file_size, self.max_chunk_size):
+                    range_to_get = file_size - i if i + self.max_chunk_size > file_size else self.max_chunk_size
 
                     params = {
                         "sessionToken": session_token,
@@ -549,18 +697,16 @@ class AfsFileDownloadQueue:
 
                     chunks_encoded = encode_chunks_as_bytes(chunks)
 
-                    with self.session.post(self.url, data=chunks_encoded, params=params, stream=True, verify=self.verify_certificates) as r:
-                        content = r.content
-                        decoded = decode_chunks(content)[0]
-                        data = decoded['data']
+                    with self.session.post(self.url, data=chunks_encoded, params=params, stream=True, verify=self.verify_certificates) as response:
+                        if response.ok:
+                            content = response.content
+                            decoded = decode_chunks(content)[0]
+                            data = decoded['data']
 
-                        with open(file_dest, "rb+") as local_file:
-                            local_file.seek(i)
-                            local_file.write(data)
-
-
-
-
+                            with open(file_dest, "rb+") as local_file:
+                                local_file.seek(i)
+                                local_file.write(data)
+                        response.raise_for_status()
 
             except BaseException as e:
                 # make sure only the *first* failing worker drains the queue

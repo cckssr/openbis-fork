@@ -15,8 +15,8 @@
  */
 package ch.ethz.sis.afssftp.server;
 
-import ch.ethz.sis.afsclient.client.AfsClient;
 import ch.ethz.sis.afssftp.authentication.PasswordAuthenticator;
+import ch.ethz.sis.afssftp.conf.Parameters;
 import ch.ethz.sis.afssftp.filesystemview.VirtualFileSystemFactory;
 import ch.ethz.sis.afssftp.startup.AfsSftpServerParameter;
 import ch.ethz.sis.afssftp.util.OpenBISClientUtil;
@@ -60,6 +60,8 @@ public final class Server {
         // Load logging plugin, Initializing LogManager
         shutdown = false;
 
+        Parameters.initialize(configuration);
+
         LogFactoryFactory logFactoryFactory = new LogFactoryFactory();
         LogFactory logFactory = logFactoryFactory.create(configuration.getStringProperty(AfsSftpServerParameter.logFactoryClass));
         logFactory.configure(configuration.getStringProperty(AfsSftpServerParameter.logConfigFile));
@@ -79,8 +81,8 @@ public final class Server {
                 configuration.getStringProperty(AfsSftpServerParameter.afsUrl)
         );
         sftpServer = SshServer.setUpDefaultServer();
-        PropertyResolverUtils.updateProperty(sftpServer, SftpModuleProperties.MAX_WRITEDATA_PACKET_LENGTH.getName(), AfsClient.DEFAULT_PACKAGE_SIZE_IN_BYTES);
-        PropertyResolverUtils.updateProperty(sftpServer, SftpModuleProperties.MAX_READDATA_PACKET_LENGTH.getName(), AfsClient.DEFAULT_PACKAGE_SIZE_IN_BYTES);
+        PropertyResolverUtils.updateProperty(sftpServer, SftpModuleProperties.MAX_WRITEDATA_PACKET_LENGTH.getName(), Parameters.getMaxAfsClientChunkSize());
+        PropertyResolverUtils.updateProperty(sftpServer, SftpModuleProperties.MAX_READDATA_PACKET_LENGTH.getName(), Parameters.getMaxAfsClientChunkSize());
 
         // Create a custom list of allowed cipher factories
         List<NamedFactory<Cipher>> cipherFactories = new ArrayList<>();

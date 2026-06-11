@@ -13,7 +13,9 @@ import org.testng.annotations.Test;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 import static ch.ethz.sis.openbis.systemtests.suite.sftp.environment.AfsSftpServerIntegrationTestEnvironment.*;
@@ -546,6 +548,22 @@ public class IntegrationAfsSftpServerTest
                             ),
                             content
                     );
+
+                    byte[] biggerContent = new byte[40000000];
+                    ThreadLocalRandom.current().nextBytes(biggerContent);
+
+                     uploadTestFile(sftp,
+                            sampleFilesRootDirectory + "/newfile2.txt",
+                            0L, biggerContent
+                    );
+                    assertEquals(
+                            readTestFile(
+                                    sftp,
+                                    sampleFilesRootDirectory + "/newfile2.txt",
+                                    0L, 42000000
+                            ),
+                            biggerContent
+                    );
                 }
             }
         }
@@ -792,8 +810,24 @@ public class IntegrationAfsSftpServerTest
         try (SftpClient.CloseableHandle fileHandle = sftp.open(filePath, SftpClient.OpenMode.Read))
         {
             byte[] bytes = new byte[maximum];
-            int readBytes = sftp.read(fileHandle, offset, bytes);
-            return Arrays.copyOfRange(bytes, 0, readBytes);
+
+            int index = 0;
+            while (index < maximum) {
+                int chunkSize = Integer.min(
+                        16500,
+                        (int) Long.min(Integer.MAX_VALUE, maximum - index)
+                );
+                byte[] chunk = new byte[chunkSize];
+                int readBytes = sftp.read(fileHandle, offset + index, chunk);
+
+                if (readBytes > -1) {
+                    System.arraycopy(chunk, 0, bytes, index, readBytes);
+                    index = index + readBytes;
+                } else {
+                    break;
+                }
+            }
+            return Arrays.copyOfRange(bytes, 0, index);
         }
     }
 
@@ -801,7 +835,16 @@ public class IntegrationAfsSftpServerTest
     {
         try (SftpClient.CloseableHandle fileHandle = sftp.open(filePath, SftpClient.OpenMode.Write, SftpClient.OpenMode.Create))
         {
-            sftp.write(fileHandle, offset, content);
+            int index = 0;
+            while (index < offset + content.length) {
+                int chunkSize = Integer.min(
+                        16500,
+                        (int) Long.min(Integer.MAX_VALUE, offset + content.length - index)
+                );
+
+                sftp.write(fileHandle, offset + index, Arrays.copyOfRange(content, index, index + chunkSize));
+                index = index + chunkSize;
+            }
         }
     }
 

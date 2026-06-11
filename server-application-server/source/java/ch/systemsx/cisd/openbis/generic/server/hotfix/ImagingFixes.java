@@ -17,6 +17,10 @@
 
 package ch.systemsx.cisd.openbis.generic.server.hotfix;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifier;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.IExperimentId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.pat.create.PersonalAccessTokenCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.pat.delete.PersonalAccessTokenDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.pat.id.PersonalAccessTokenPermId;
@@ -46,14 +50,11 @@ public class ImagingFixes
             operationLog = LogFactory.getLogger(LogCategory.OPERATION, ImagingFixes.class);
 
     private static final int TIMEOUT_COUNT = 60 * 60; //60 minutes
-    private static final String PYTHON_PATH = Paths.get("..", "..", "..", "imaging", "1", "as", "services", "imaging", "Python-3.10.16-linux-x64", "bin", "python3.10").toString();
 
-    private static final String PYTHON_PATH_PROPERTY = "imaging.imaging-fixes-python3-path";
     private static final String TIMEOUT_PROPERTY = "imaging.imaging-fixes-timeout-seconds";
-    private static final String URL_SYS_PROPERTY = "OPENBIS_FQDN";
     private static final String PERSON_ID = "admin";
 
-    public static void registerExamples(String pathToDir, String pluginName) {
+    public static void registerExamples(String pathToDir, String pluginName, String venvPath) {
 
         Runnable registerOnSeparateThread = new Runnable()
         {
@@ -79,10 +80,10 @@ public class ImagingFixes
                 }
                 switch (pluginName) {
                     case "imaging-nanonis":
-                        registerNanonisExamples(pathToDir);
+                        registerNanonisExamples(pathToDir, venvPath);
                         break;
                     case "imaging-test":
-                        registerTestExamples(pathToDir);
+                        registerTestExamples(pathToDir, venvPath);
                     default:
                         break;
                 }
@@ -92,8 +93,31 @@ public class ImagingFixes
         new Thread(registerOnSeparateThread).start();
     }
 
+    // needed for master data scripts
+    public static boolean isUploadRequired(String sessionToken, String collectionIdentifier) {
+        IApplicationServerInternalApi api = CommonServiceProvider.getApplicationServerApi();
 
-    private static void registerNanonisExamples(String pathToDir)
+        IExperimentId id = new ExperimentIdentifier(collectionIdentifier);
+        ExperimentFetchOptions fetchOptions = new ExperimentFetchOptions();
+        fetchOptions.withSamples();
+        fetchOptions.withDataSets();
+        Map<IExperimentId, Experiment> results = api.getExperiments(sessionToken, List.of(id), fetchOptions);
+
+        if(!results.isEmpty()) {
+            Experiment experiment = results.get(id);
+            if(experiment.getDataSets().isEmpty() && experiment.getSamples().size() == 1) {
+                operationLog.info("Collection '"+collectionIdentifier+"' is empty.");
+                return true;
+            }
+            operationLog.info("Collection '"+collectionIdentifier+"' is not empty.");
+            return false;
+        }
+        operationLog.info("Could not find '"+collectionIdentifier+"'");
+        return false;
+    }
+
+
+    private static void registerNanonisExamples(String pathToDir, String venvPath)
     {
         IApplicationServerInternalApi api = CommonServiceProvider.getApplicationServerApi();
         String token = api.loginAsSystem();
@@ -104,12 +128,9 @@ public class ImagingFixes
 
         operationLog.info("Configured url: " + openbisUrl);
 
-        String pythonPathProperty = CommonServiceProvider.tryToGetProperty(PYTHON_PATH_PROPERTY);
-        String pythonPath = null;
-        if(pythonPathProperty != null && !pythonPathProperty.trim().isEmpty()) {
-            pythonPath = Paths.get(pythonPathProperty).toAbsolutePath().toString();
-        } else {
-            pythonPath = Paths.get(pathToDir, PYTHON_PATH).toAbsolutePath().toString();
+        String pythonPath = venvPath;
+        if(!pythonPath.endsWith("/bin/python")) {
+            pythonPath += "/bin/python";
         }
         operationLog.info("Configured python path: " + pythonPath);
 
@@ -137,36 +158,7 @@ public class ImagingFixes
         }
     }
 
-    private static synchronized PersonalAccessTokenPermId getOrCreatePersonPAT(String sessionToken, String sessionName) {
-        IApplicationServerInternalApi api = CommonServiceProvider.getApplicationServerApi();
-        IPersonId personId = new PersonPermId(PERSON_ID);
-        PersonalAccessTokenPermId patToken = null;
-
-        Map<IPersonId, Person> personMap = api.getPersons(sessionToken, Arrays.asList(personId), new PersonFetchOptions());
-        if(!personMap.containsKey(personId)) {
-            PersonCreation pc = new PersonCreation();
-            pc.setUserId(PERSON_ID);
-            PersonPermId importer = api.createPersons(sessionToken, Arrays.asList(pc)).get(0);
-
-            RoleAssignmentCreation roleC = new RoleAssignmentCreation();
-            roleC.setRole(Role.ADMIN);
-            roleC.setUserId(new PersonPermId(PERSON_ID));
-            RoleAssignmentTechId raId =
-                    api.createRoleAssignments(sessionToken, Arrays.asList(roleC)).get(0);
-        }
-
-        PersonalAccessTokenCreation patc = new PersonalAccessTokenCreation();
-        patc.setOwnerId(personId);
-        patc.setSessionName(sessionName);
-        patc.setValidFromDate(new Date(System.currentTimeMillis() - 10 * 60 * 1000L));
-        patc.setValidToDate(new Date(System.currentTimeMillis() + 10 * 60 * 1000L));
-        patToken =
-                api.createPersonalAccessTokens(sessionToken, Arrays.asList(patc)).get(0);
-        return patToken;
-
-    }
-
-    private static void registerTestExamples(String pathToDir) {
+    private static void registerTestExamples(String pathToDir, String venvPath) {
         IApplicationServerInternalApi api = CommonServiceProvider.getApplicationServerApi();
         String token = api.loginAsSystem();
 
@@ -174,13 +166,11 @@ public class ImagingFixes
         String downloadUrl = CommonServiceProvider.tryToGetProperty("download-url");
         String openbisUrl = String.format("%s/openbis", downloadUrl);
 
-        String pythonPathProperty = CommonServiceProvider.tryToGetProperty(PYTHON_PATH_PROPERTY);
-        String pythonPath = null;
-        if(pythonPathProperty != null && !pythonPathProperty.trim().isEmpty()) {
-            pythonPath = Paths.get(pythonPathProperty).toAbsolutePath().toString();
-        } else {
-            pythonPath = Paths.get(pathToDir, PYTHON_PATH).toAbsolutePath().toString();
+        String pythonPath = venvPath;
+        if(!pythonPath.endsWith("/bin/python")) {
+            pythonPath += "/bin/python";
         }
+
         operationLog.info("Configured python path: " + pythonPath);
 
         String examplePath = Paths.get(pathToDir, "..", "imaging_test_importer").toAbsolutePath().toString();
@@ -228,6 +218,35 @@ public class ImagingFixes
         {
             throw new RuntimeException(e);
         }
+    }
+
+    private static synchronized PersonalAccessTokenPermId getOrCreatePersonPAT(String sessionToken, String sessionName) {
+        IApplicationServerInternalApi api = CommonServiceProvider.getApplicationServerApi();
+        IPersonId personId = new PersonPermId(PERSON_ID);
+        PersonalAccessTokenPermId patToken = null;
+
+        Map<IPersonId, Person> personMap = api.getPersons(sessionToken, Arrays.asList(personId), new PersonFetchOptions());
+        if(!personMap.containsKey(personId)) {
+            PersonCreation pc = new PersonCreation();
+            pc.setUserId(PERSON_ID);
+            PersonPermId importer = api.createPersons(sessionToken, Arrays.asList(pc)).get(0);
+
+            RoleAssignmentCreation roleC = new RoleAssignmentCreation();
+            roleC.setRole(Role.ADMIN);
+            roleC.setUserId(new PersonPermId(PERSON_ID));
+            RoleAssignmentTechId raId =
+                    api.createRoleAssignments(sessionToken, Arrays.asList(roleC)).get(0);
+        }
+
+        PersonalAccessTokenCreation patc = new PersonalAccessTokenCreation();
+        patc.setOwnerId(personId);
+        patc.setSessionName(sessionName);
+        patc.setValidFromDate(new Date(System.currentTimeMillis() - 10 * 60 * 1000L));
+        patc.setValidToDate(new Date(System.currentTimeMillis() + 10 * 60 * 1000L));
+        patToken =
+                api.createPersonalAccessTokens(sessionToken, Arrays.asList(patc)).get(0);
+        return patToken;
+
     }
 
     private static void logOutput(String output) {

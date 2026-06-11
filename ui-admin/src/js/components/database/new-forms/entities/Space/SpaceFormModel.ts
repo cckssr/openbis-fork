@@ -43,11 +43,38 @@ export class SpaceFormModel {
 		};
 	}
 
+	static adaptNewSpaceDtoToForm(tmpPermId: string): Form {
+		const permId = tmpPermId + '-' + EntityKind.NEW_SPACE;
+		return {
+			entityPermId: permId,
+			entityType: EntityKind.SPACE,
+			title: 'New Space',
+			version: 1,
+			entityKind: EntityKind.NEW_SPACE,
+			meta: {},
+			fields: [
+				getCodeField({ permId: { permId } }, { readOnly: false, value: '', id: permId + '-code' }),
+				getDescriptionField({ permId: { permId } }, { column: 'center', value: '', id: permId + '-description' }),
+			],
+			isDirty: false,
+			isValid: true,
+			actions: [
+				getSaveAction(EntityKind.SPACE),
+				getCancelAction(true),
+			],
+		};
+	}
+
 	static saveSpaceAction = async (context: IExtendedActionContext) => {
 		const { form, mode, controller, onAfterSave } = context;
 		await new Promise(resolve => setTimeout(resolve, 500)); // to display the loading spinner
-		const newVersion = await controller.save(form, mode);
-		onAfterSave();
+		const result = await controller.save(form, mode);
+		if (mode === FormMode.CREATE) {
+			const originalId = form.entityPermId.substring(0, form.entityPermId.indexOf('-'));
+			onAfterSave({ oldType: EntityKind.NEW_SPACE, oldId: originalId, newType: EntityKind.SPACE, newId: result });
+		} else {
+			onAfterSave();
+		}
 	};
 
 	static newProjectAction = (context: IExtendedActionContext) => {

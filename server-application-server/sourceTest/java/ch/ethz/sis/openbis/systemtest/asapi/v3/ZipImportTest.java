@@ -381,7 +381,7 @@ public class ZipImportTest extends AbstractImportTest
     {
         final String[] sessionWorkspaceFiles = uploadToAsSessionWorkspace(sessionToken, "validation_script.zip");
 
-        final String name = "valid.py";
+        final String name = "ANTIBODY.valid.py";
         final String source = "print 'Test validation script'";
         final ImportData importData = new ImportData(ImportFormat.EXCEL, sessionWorkspaceFiles);
         final ImportOptions importOptions = new ImportOptions(ImportMode.UPDATE_IF_EXISTS);
@@ -412,7 +412,7 @@ public class ZipImportTest extends AbstractImportTest
     {
         final String[] sessionWorkspaceFiles = uploadToAsSessionWorkspace(sessionToken, "dynamic_script.zip");
 
-        final String name = "dynamic.py";
+        final String name = "CODE.dynamic.py";
         final String source = "1+1";
         final ImportData importData = new ImportData(ImportFormat.EXCEL, sessionWorkspaceFiles);
         final ImportOptions importOptions = new ImportOptions(ImportMode.UPDATE_IF_EXISTS);

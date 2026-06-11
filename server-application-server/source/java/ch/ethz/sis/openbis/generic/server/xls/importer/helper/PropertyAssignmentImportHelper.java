@@ -239,7 +239,7 @@ public class PropertyAssignmentImportHelper extends BasicImportHelper
 
         PropertyAssignmentListUpdateValue newAssignments = new PropertyAssignmentListUpdateValue();
         Set<String> existingCodes = existingDynamicPluginsByPropertyCode.keySet();
-        PluginPermId scriptId = ImportUtils.getScriptId(script,
+        PluginPermId scriptId = ImportUtils.getScriptId(code, script,
                 existingDynamicPluginsByPropertyCode.get(code));
         if (scriptId != null)
         {

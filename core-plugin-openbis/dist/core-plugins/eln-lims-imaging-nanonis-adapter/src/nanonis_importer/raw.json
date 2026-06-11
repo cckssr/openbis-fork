@@ -1,0 +1,425 @@
+{
+  "@id": 1,
+  "@type": "imaging.dto.ImagingDataSetPropertyConfig",
+  "images": [
+    {
+      "@id": 2,
+      "@type": "imaging.dto.ImagingDataSetImage",
+      "index": 0,
+      "config": {
+        "@id": 3,
+        "@type": "imaging.dto.ImagingDataSetConfig",
+        "inputs": [
+          {
+            "@id": 14,
+            "type": "Dropdown",
+            "unit": null,
+            "@type": "imaging.dto.ImagingDataSetControl",
+            "label": "Channel",
+            "range": null,
+            "speeds": null,
+            "values": [
+              "z",
+              "I",
+              "dIdV",
+              "dIdV_Y"
+            ],
+            "section": "Data",
+            "metadata": null,
+            "playable": null,
+            "visibility": null,
+            "multiselect": false,
+            "semanticAnnotation": null
+          },
+          {
+            "@id": 15,
+            "type": "Range",
+            "unit": null,
+            "@type": "imaging.dto.ImagingDataSetControl",
+            "label": "X-axis",
+            "range": [
+              "0",
+              "3.0",
+              "0.01"
+            ],
+            "speeds": null,
+            "values": null,
+            "section": "Data",
+            "metadata": null,
+            "playable": null,
+            "visibility": null,
+            "multiselect": null,
+            "semanticAnnotation": null
+          },
+          {
+            "@id": 16,
+            "type": "Range",
+            "unit": null,
+            "@type": "imaging.dto.ImagingDataSetControl",
+            "label": "Y-axis",
+            "range": [
+              "0",
+              "3.0",
+              "0.01"
+            ],
+            "speeds": null,
+            "values": null,
+            "section": "Data",
+            "metadata": null,
+            "playable": null,
+            "visibility": null,
+            "multiselect": null,
+            "semanticAnnotation": null
+          },
+          {
+            "@id": 17,
+            "type": "Range",
+            "unit": null,
+            "@type": "imaging.dto.ImagingDataSetControl",
+            "label": "Color-scale",
+            "range": null,
+            "speeds": null,
+            "values": null,
+            "section": "Data",
+            "metadata": null,
+            "playable": null,
+            "visibility": [
+              {
+                "@id": 18,
+                "unit": "nm",
+                "@type": "imaging.dto.ImagingDataSetControlVisibility",
+                "label": "Channel",
+                "range": [
+                  "-70.189766",
+                  "-69.88171",
+                  "0.001"
+                ],
+                "values": [
+                  "z"
+                ]
+              },
+              {
+                "@id": 19,
+                "unit": "pA",
+                "@type": "imaging.dto.ImagingDataSetControlVisibility",
+                "label": "Channel",
+                "range": [
+                  "-52.619587",
+                  "-47.26614",
+                  "0.01"
+                ],
+                "values": [
+                  "I"
+                ]
+              },
+              {
+                "@id": 20,
+                "unit": "pS",
+                "@type": "imaging.dto.ImagingDataSetControlVisibility",
+                "label": "Channel",
+                "range": [
+                  "-0.5605464",
+                  "0.5439468",
+                  "0.01"
+                ],
+                "values": [
+                  "dIdV"
+                ]
+              },
+              {
+                "@id": 21,
+                "unit": "pS",
+                "@type": "imaging.dto.ImagingDataSetControlVisibility",
+                "label": "Channel",
+                "range": [
+                  "-0.54629105",
+                  "0.5622666",
+                  "0.01"
+                ],
+                "values": [
+                  "dIdV_Y"
+                ]
+              }
+            ],
+            "multiselect": null,
+            "semanticAnnotation": null
+          },
+          {
+            "@id": 22,
+            "type": "Dropdown",
+            "unit": null,
+            "@type": "imaging.dto.ImagingDataSetControl",
+            "label": "Scaling",
+            "range": null,
+            "speeds": null,
+            "values": [
+              "linear",
+              "logarithmic"
+            ],
+            "section": "Data",
+            "metadata": null,
+            "playable": null,
+            "visibility": null,
+            "multiselect": false,
+            "semanticAnnotation": null
+          },
+          {
+            "@id": 23,
+            "type": "Colormap",
+            "unit": null,
+            "@type": "imaging.dto.ImagingDataSetControl",
+            "label": "Colormap",
+            "range": null,
+            "speeds": null,
+            "values": [
+              "gray",
+              "YlOrBr",
+              "viridis",
+              "cividis",
+              "inferno",
+              "rainbow",
+              "Spectral",
+              "RdBu",
+              "RdGy"
+            ],
+            "section": null,
+            "metadata": null,
+            "playable": null,
+            "visibility": null,
+            "multiselect": false,
+            "semanticAnnotation": {
+              "@id": 24,
+              "@type": "imaging.dto.ImagingSemanticAnnotation",
+              "ontologyId": "schema.org",
+              "ontologyVersion": "https://schema.org/version/28.1",
+              "ontologyAnnotationId": "https://schema.org/color"
+            }
+          }
+        ],
+        "speeds": [
+          1000,
+          2000,
+          5000
+        ],
+        "adaptor": "ch.ethz.sis.openbis.generic.server.as.plugins.imaging.adaptor.NanonisSxmAdaptor",
+        "exports": [
+          {
+            "@id": 4,
+            "type": "Dropdown",
+            "unit": null,
+            "@type": "imaging.dto.ImagingDataSetControl",
+            "label": "include",
+            "range": null,
+            "speeds": null,
+            "values": [
+              "image",
+              "raw data"
+            ],
+            "section": null,
+            "metadata": null,
+            "playable": null,
+            "visibility": null,
+            "multiselect": true,
+            "semanticAnnotation": null
+          },
+          {
+            "@id": 5,
+            "type": "Dropdown",
+            "unit": null,
+            "@type": "imaging.dto.ImagingDataSetControl",
+            "label": "image-format",
+            "range": null,
+            "speeds": null,
+            "values": [
+              "png",
+              "svg"
+            ],
+            "section": null,
+            "metadata": null,
+            "playable": null,
+            "visibility": null,
+            "multiselect": false,
+            "semanticAnnotation": {
+              "@id": 6,
+              "@type": "imaging.dto.ImagingSemanticAnnotation",
+              "ontologyId": "schema.org",
+              "ontologyVersion": "https://schema.org/version/28.1",
+              "ontologyAnnotationId": "https://schema.org/encoding"
+            }
+          },
+          {
+            "@id": 7,
+            "type": "Dropdown",
+            "unit": null,
+            "@type": "imaging.dto.ImagingDataSetControl",
+            "label": "archive-format",
+            "range": null,
+            "speeds": null,
+            "values": [
+              "zip",
+              "tar"
+            ],
+            "section": null,
+            "metadata": null,
+            "playable": null,
+            "visibility": null,
+            "multiselect": false,
+            "semanticAnnotation": {
+              "@id": 8,
+              "@type": "imaging.dto.ImagingSemanticAnnotation",
+              "ontologyId": "schema.org",
+              "ontologyVersion": "https://schema.org/version/28.1",
+              "ontologyAnnotationId": "https://schema.org/fileFormat"
+            }
+          },
+          {
+            "@id": 9,
+            "type": "Dropdown",
+            "unit": null,
+            "@type": "imaging.dto.ImagingDataSetControl",
+            "label": "resolution",
+            "range": null,
+            "speeds": null,
+            "values": [
+              "original",
+              "150dpi",
+              "300dpi"
+            ],
+            "section": null,
+            "metadata": null,
+            "playable": null,
+            "visibility": null,
+            "multiselect": false,
+            "semanticAnnotation": null
+          }
+        ],
+        "filters": {
+          "Laplace": [
+            {
+              "@id": 13,
+              "type": "Slider",
+              "unit": null,
+              "@type": "imaging.dto.ImagingDataSetControl",
+              "label": "Size",
+              "range": [
+                "3",
+                "30",
+                "1"
+              ],
+              "speeds": null,
+              "values": null,
+              "section": "Laplace",
+              "metadata": null,
+              "playable": null,
+              "visibility": null,
+              "multiselect": null,
+              "semanticAnnotation": null
+            }
+          ],
+          "Gaussian": [
+            {
+              "@id": 11,
+              "type": "Slider",
+              "unit": null,
+              "@type": "imaging.dto.ImagingDataSetControl",
+              "label": "Sigma",
+              "range": [
+                "1",
+                "100",
+                "1"
+              ],
+              "speeds": null,
+              "values": null,
+              "section": "Gaussian",
+              "metadata": null,
+              "playable": null,
+              "visibility": null,
+              "multiselect": null,
+              "semanticAnnotation": null
+            },
+            {
+              "@id": 12,
+              "type": "Slider",
+              "unit": null,
+              "@type": "imaging.dto.ImagingDataSetControl",
+              "label": "Truncate",
+              "range": [
+                "0",
+                "1",
+                "0.1"
+              ],
+              "speeds": null,
+              "values": null,
+              "section": "Gaussian",
+              "metadata": null,
+              "playable": null,
+              "visibility": null,
+              "multiselect": null,
+              "semanticAnnotation": null
+            }
+          ],
+          "Zero background": [],
+          "Line Subtraction": [],
+          "Plane Subtraction": []
+        },
+        "version": 1,
+        "metadata": {},
+        "playable": true,
+        "resolutions": [
+          "original",
+          "200x200",
+          "2000x2000"
+        ],
+        "filterSemanticAnnotation": {
+          "Gaussian": {
+            "@id": 10,
+            "@type": "imaging.dto.ImagingSemanticAnnotation",
+            "ontologyId": "schema.org",
+            "ontologyVersion": "https://schema.org/version/28.1",
+            "ontologyAnnotationId": "https://schema.org/headline"
+          }
+        }
+      },
+      "metadata": {
+        "comment": "Raw config"
+        
+      },
+      "previews": [
+        {
+          "@id": 25,
+          "show": false,
+          "tags": [
+          ],
+          "@type": "imaging.dto.ImagingDataSetPreview",
+          "bytes": null,
+          "index": 0,
+          "width": null,
+          "config": {
+            "X-axis": [
+              "0",
+              "3.0"
+            ],
+            "Y-axis": [
+              "0",
+              "3.0"
+            ],
+            "Channel": "z",
+            "Scaling": "linear",
+            "Colormap": "gray",
+            "Color-scale": [
+              "-70.189766",
+              "-69.88171"
+            ]
+          },
+          "format": "png",
+          "height": null,
+          "comment": "",
+          "metadata": {},
+          "filterConfig": []
+        }
+      ],
+      "imageConfig": {}
+    }
+  ],
+  "metadata": {}
+}

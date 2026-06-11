@@ -59,8 +59,29 @@ boolean isPomOnlyArtifact(ModuleVersionIdentifier id) {
             (id.group == "org.junit" && id.name == "junit-bom")
 }
 
+// javax.mail (used by lib-mail's MailClient) needs the javax.activation classes at runtime,
+// but Quarkus drops the javax.activation:activation module from its application model
+// because quarkus-resteasy-common lists it in its excluded-artifacts. The exclusion matches
+// on the module key, and a file dependency pointing at the Gradle cache jar gets deduplicated
+// against the excluded module artifact. Copying the jar to a project-local path and adding
+// that copy as a plain file dependency gives it a synthetic key the exclusion cannot match.
+configurations {
+    javaxActivationWorkaround
+}
+
+def javaxActivationWorkaroundDir = layout.buildDirectory.dir('javax-activation-workaround')
+
+tasks.register('copyJavaxActivationWorkaround', Copy) {
+    from configurations.javaxActivationWorkaround
+    into javaxActivationWorkaroundDir
+}
+
 dependencies {
     annotationProcessor libs.org.projectlombok.lombok
+
+    javaxActivationWorkaround libs.javax.activation.activation
+    implementation files(javaxActivationWorkaroundDir.map { it.asFileTree })
+            .builtBy('copyJavaxActivationWorkaround')
 
     implementation libs.org.projectlombok.lombok,
             project(':lib-logging'),

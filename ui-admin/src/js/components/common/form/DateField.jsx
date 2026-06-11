@@ -14,7 +14,7 @@ import logger from '@src/js/common/logger.js'
 
 const DATE_FORMAT = "yyyy-MM-dd"
 const DATE_TIME_PICKER_FORMAT = "yyyy-MM-dd HH:mm:ss"
-const DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss XX"
+const DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss xx"
 
 const styles = theme => ({
   container: {
@@ -177,6 +177,7 @@ class DateField extends React.PureComponent {
               label={label}
               invalidDateMessage={null}
               value={dateObject}
+              referenceDate={new Date()}
               inputValue={dateString}
               onChange={this.handleChange}
               onBlur={this.handleBlur}
@@ -204,6 +205,7 @@ class DateField extends React.PureComponent {
               label={label}
               invalidDateMessage={null}
               value={dateObject}
+              referenceDate={new Date()}
               inputValue={dateString}
               onChange={this.handleChange}
               onBlur={this.handleBlur}

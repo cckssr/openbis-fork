@@ -187,7 +187,7 @@ public class ExperimentTypeImportHelper extends BasicImportHelper
 
         creation.setCode(code);
         creation.setDescription(description);
-        creation.setValidationPluginId(ImportUtils.getScriptId(validationScript, null));
+        creation.setValidationPluginId(ImportUtils.getScriptId(code, validationScript, null));
         if(delayedExecutor.isSystem())
         {
             creation.setManagedInternally(ImportUtils.isTrue(internal));
@@ -238,7 +238,7 @@ public class ExperimentTypeImportHelper extends BasicImportHelper
         ExperimentTypeFetchOptions experimentTypeFetchOptions = new ExperimentTypeFetchOptions();
         experimentTypeFetchOptions.withValidationPlugin();
         ExperimentType experimentType = delayedExecutor.getExperimentType(new EntityTypePermId(code, EntityKind.EXPERIMENT), experimentTypeFetchOptions);
-        update.setValidationPluginId(ImportUtils.getScriptId(validationScript, experimentType.getValidationPlugin()));
+        update.setValidationPluginId(ImportUtils.getScriptId(code, validationScript, experimentType.getValidationPlugin()));
         if (metaData != null && !metaData.isEmpty())
         {
             update.getMetaData().add(JSONHandler.parseMetaData(metaData));

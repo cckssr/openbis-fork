@@ -30,22 +30,71 @@ import os
 helper = MasterDataRegistrationHelper(sys.path)
 api = CommonServiceProvider.getApplicationContext().getBean(ApplicationServerApi.INTERNAL_SERVICE_NAME)
 sessionToken = api.loginAsSystem()
+
+print("======================== eln-lims-imaging-nanonis-adapter data-model xls ingestion start ========================")
 sessionWorkspaceFiles = helper.uploadToAsSessionWorkspace(sessionToken, "imaging-nanonis-data-model.xls")
 importData = ImportData(ImportFormat.EXCEL, [sessionWorkspaceFiles[0]])
 importOptions = ImportOptions(ImportMode.UPDATE_IF_EXISTS)
 importResult = api.executeImport(sessionToken, importData, importOptions)
 
-
-
-print("======================== imaging-nanonis-data-model xls ingestion result ========================")
+print("======================== eln-lims-imaging-nanonis-adapter data-model xls ingestion end ========================")
 print(importResult.getObjectIds())
 
-ImagingFixes.registerExamples(sys.path[-1], "imaging-nanonis")
+print("======================== eln-lims-imaging-nanonis-adapter data upload start ========================")
+
+uploadRequired = ImagingFixes.isUploadRequired(sessionToken, "/IMAGING/NANONIS/SXM_COLLECTION")
+
+def get_property(key, default_value):
+    property_configurer = CommonServiceProvider.getApplicationContext().getBean("propertyConfigurer")
+    properties = property_configurer.getResolvedProps()
+    return properties.getProperty(key, default_value)
+
+from java.lang import ProcessBuilder, String
+from java.io import BufferedReader, InputStreamReader
+from java.nio.charset import StandardCharsets
+
+venv_path = get_property("imaging-nanonis.venv-path", None)
+print("VENV_PATH", venv_path)
 
 
-# raise ValueError("test break point")
+# skip if just upgrade
+if uploadRequired:
+
+    if venv_path is None:
+        raise ValueError("Venv path not configured!")
+
+    if not os.path.exists(venv_path) or len(os.listdir(venv_path)) <= 1:
+        command = "python3 -m venv " + venv_path + " && "
+
+        command += venv_path + "/bin/pip3 install -r " + sys.path[-1] + "/../scripts/python_requirements.txt"
+        command += " && " + venv_path + "/bin/pip3 list"
+
+        full_command = ["bash", "-c", command]
+
+        pb = ProcessBuilder(full_command)
+        process = pb.start()
+
+        reader = BufferedReader(InputStreamReader(process.getInputStream()))
+
+        line = reader.readLine()
+        while line:
+            print(line)
+            line = reader.readLine()
+
+        exitCode = process.waitFor()
+
+        if exitCode != 0:
+            print("Error during")
+            error = String(process.getErrorStream().readAllBytes(), StandardCharsets.UTF_8)
+            raise ValueError("Error during virtual environment setup:" + error)
+
+
+    print("registering imaging-nanonis data!")
+    ImagingFixes.registerExamples(sys.path[-1], "imaging-nanonis", venv_path)
+
+print("======================== eln-lims-imaging-nanonis-adapter data upload end ========================")
 
 api.logout(sessionToken)
-print("======================== imaging-nanonis-data-model xls ingestion result ========================")
+
 
 

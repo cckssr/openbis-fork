@@ -190,6 +190,7 @@ const CLASS_FULL_NAMES = [
   'as/dto/service/execute/ExecuteCustomASServiceOperation',
   'as/dto/service/id/CustomASServiceCode',
   'as/dto/space/Space',
+  'as/dto/space/create/SpaceCreation',
   'as/dto/space/fetchoptions/SpaceFetchOptions',
   'as/dto/space/id/SpacePermId',
   'as/dto/space/search/SpaceSearchCriteria',

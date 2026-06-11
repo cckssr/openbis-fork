@@ -188,7 +188,7 @@ public class DatasetTypeImportHelper extends BasicImportHelper
         creation.setCode(code);
         creation.setDescription(description);
 
-        creation.setValidationPluginId(ImportUtils.getScriptId(validationScript, null));
+        creation.setValidationPluginId(ImportUtils.getScriptId(code, validationScript, null));
         if(delayedExecutor.isSystem())
         {
             creation.setManagedInternally(ImportUtils.isTrue(internal));
@@ -238,7 +238,7 @@ public class DatasetTypeImportHelper extends BasicImportHelper
         DataSetTypeFetchOptions dataSetTypeFetchOptions = new DataSetTypeFetchOptions();
         dataSetTypeFetchOptions.withValidationPlugin();
         DataSetType dataSetType = delayedExecutor.getDataSetType(new EntityTypePermId(code, EntityKind.DATA_SET), dataSetTypeFetchOptions);
-        update.setValidationPluginId(ImportUtils.getScriptId(validationScript, dataSetType.getValidationPlugin()));
+        update.setValidationPluginId(ImportUtils.getScriptId(code, validationScript, dataSetType.getValidationPlugin()));
         if (metaData != null && !metaData.isEmpty())
         {
             update.getMetaData().add(JSONHandler.parseMetaData(metaData));

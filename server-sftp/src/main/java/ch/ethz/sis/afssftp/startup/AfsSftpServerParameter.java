@@ -30,7 +30,11 @@ public enum AfsSftpServerParameter
 
     keyStorePath,
     keyStorePassword,
-    keyStoreKeyAlias;
+    keyStoreKeyAlias,
+
+    maxFileChannelsPerSession,
+    maxAfsClientChunkSize,
+    afsCacheTimeoutMillis;
 
     private final String parameterName;
 

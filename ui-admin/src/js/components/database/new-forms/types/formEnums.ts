@@ -13,6 +13,7 @@ export enum EntityKind {
 	COLLECTION = 'collection',
 	DATASET = 'dataSet',
 	DATA_SET = 'DATA_SET',
+	NEW_SPACE = 'newSpace',
 	NEW_PROJECT = 'newProject',
 	NEW_OBJECT = 'newObject',
 	NEW_COLLECTION = 'newCollection',

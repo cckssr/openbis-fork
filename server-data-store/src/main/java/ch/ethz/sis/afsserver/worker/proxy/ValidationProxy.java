@@ -112,7 +112,11 @@ public class ValidationProxy extends AbstractProxy {
             if (chunk.getData() != null) {
                 dataLength = chunk.getData().length;
             }
-            limit += Math.max(chunk.getLimit(), dataLength) ;
+            int dataLimit = 0;
+            if(chunk.getLimit() != null){
+                dataLimit = chunk.getLimit();
+            }
+            limit += Math.max(dataLimit, dataLength) ;
         }
         if (limit > maxReadSizeInBytes) {
             throw FSExceptions.MAX_READ_SIZE_EXCEEDED.getInstance(workerContext.getSessionToken(), limit, maxReadSizeInBytes);

@@ -1193,6 +1193,38 @@ public abstract class BaseApiClientTest
     }
 
     @Test
+    public void read_moreBytesThanAllowed() throws Exception
+    {
+        login();
+
+        Configuration configuration = getServerConfiguration();
+        final int maxReadSizeInBytes = configuration.getIntegerProperty(AtomicFileSystemServerParameter.maxReadSizeInBytes);
+
+        final String expectedError =
+                "Session " + afsClient.getSessionToken() + " tried to read " + (maxReadSizeInBytes + 1) + " bytes when the maximum is "
+                        + maxReadSizeInBytes;
+        try
+        {
+            afsClient.read(owner, FILE_A, 0L, maxReadSizeInBytes + 1);
+            fail();
+        } catch (Exception e)
+        {
+            assertTrue(e.getMessage(), e.getMessage().contains(expectedError));
+        }
+
+        try
+        {
+            Chunk chunk1 = Chunk.builder().owner(owner).source(FILE_A).limit(maxReadSizeInBytes).build();
+            Chunk chunk2 = Chunk.builder().owner(owner).source(FILE_A).limit(1).build();
+            afsClient.read(new Chunk[] { chunk1, chunk2 });
+            fail();
+        } catch (Exception e)
+        {
+            assertTrue(e.getMessage(), e.getMessage().contains(expectedError));
+        }
+    }
+
+    @Test
     public void create_fileAlreadyInTheStoreIsNotAllowed() throws Exception
     {
         login();
@@ -1351,6 +1383,38 @@ public abstract class BaseApiClientTest
     public void write_fileInSnapshotsDirectoryIsNotAllowed() throws Exception
     {
         testOperationOnAFileInSnapshotsIsNotAllowed(OperationName.Write, (owner, source) -> afsClient.write(owner, source, 0L, DATA));
+    }
+
+    @Test
+    public void write_moreBytesThanAllowed() throws Exception
+    {
+        login();
+
+        Configuration configuration = getServerConfiguration();
+        final int maxReadSizeInBytes = configuration.getIntegerProperty(AtomicFileSystemServerParameter.maxReadSizeInBytes);
+
+        final String expectedError =
+                "Session " + afsClient.getSessionToken() + " tried to read " + (maxReadSizeInBytes + 1) + " bytes when the maximum is "
+                        + maxReadSizeInBytes;
+        try
+        {
+            afsClient.write(owner, FILE_A, 0L, new byte[maxReadSizeInBytes + 1]);
+            fail();
+        } catch (Exception e)
+        {
+            assertTrue(e.getMessage(), e.getMessage().contains(expectedError));
+        }
+
+        try
+        {
+            Chunk chunk1 = Chunk.builder().owner(owner).source(FILE_A).data(new byte[maxReadSizeInBytes]).build();
+            Chunk chunk2 = Chunk.builder().owner(owner).source(FILE_A).data(new byte[1]).build();
+            afsClient.write(new Chunk[] { chunk1, chunk2 });
+            fail();
+        } catch (Exception e)
+        {
+            assertTrue(e.getMessage(), e.getMessage().contains(expectedError));
+        }
     }
 
     @Test

@@ -30,20 +30,75 @@ from ch.systemsx.cisd.openbis.generic.server.hotfix import ImagingFixes
 helper = MasterDataRegistrationHelper(sys.path)
 api = CommonServiceProvider.getApplicationContext().getBean(ApplicationServerApi.INTERNAL_SERVICE_NAME)
 sessionToken = api.loginAsSystem()
+
+print("======================== eln-lims-imaging-test-adapter data-model xls ingestion start ========================")
 sessionWorkspaceFiles = helper.uploadToAsSessionWorkspace(sessionToken, "imaging-test-data-model.xls")
 print(sessionWorkspaceFiles)
 importData = ImportData(ImportFormat.EXCEL, [sessionWorkspaceFiles[0]])
 importOptions = ImportOptions(ImportMode.UPDATE_IF_EXISTS)
 importResult = api.executeImport(sessionToken, importData, importOptions)
 
-print("======================== imaging-test-data-model xls ingestion result ========================")
+print("======================== eln-lims-imaging-test-adapter data-model xls ingestion end ========================")
 print(importResult.getObjectIds())
 
 
-ImagingFixes.registerExamples(sys.path[-1], "imaging-test")
+print("======================== eln-lims-imaging-test-adapter data upload start ========================")
+
+uploadRequired = ImagingFixes.isUploadRequired(sessionToken, "/IMAGING/TEST/TEST_COLLECTION")
+
+def get_property(key, default_value):
+    property_configurer = CommonServiceProvider.getApplicationContext().getBean("propertyConfigurer")
+    properties = property_configurer.getResolvedProps()
+    return properties.getProperty(key, default_value)
+
+from java.lang import ProcessBuilder, String
+from java.io import BufferedReader, InputStreamReader
+from java.nio.charset import StandardCharsets
+
+venv_path = get_property("imaging-test.venv-path", None)
+print("VENV_PATH", venv_path)
+
+
+# skip if just upgrade
+if uploadRequired:
+
+    if venv_path is None:
+        raise ValueError("Venv path not configured!")
+
+    command = ""
+    if not os.path.exists(venv_path) or len(os.listdir(venv_path)) <= 1:
+        print("VENV does not exists - creating one")
+        command = "python3 -m venv " + venv_path
+
+        command += " && " + venv_path + "/bin/pip3 install -r " + sys.path[-1] + "/services/imaging-test/python_requirements.txt"
+        command += " && " + venv_path + "/bin/pip3 list"
+
+        full_command = ["bash", "-c", command]
+
+        pb = ProcessBuilder(full_command)
+        process = pb.start()
+
+        reader = BufferedReader(InputStreamReader(process.getInputStream()))
+
+        line = reader.readLine()
+        while line:
+            print(line)
+            line = reader.readLine()
+
+        exitCode = process.waitFor()
+
+        if exitCode != 0:
+            print("Error during")
+            error = String(process.getErrorStream().readAllBytes(), StandardCharsets.UTF_8)
+            raise ValueError("Error during virtual environment setup:" + error)
+
+
+    print("registering imaging-test data!")
+    ImagingFixes.registerExamples(sys.path[-1], "imaging-test", venv_path)
+
+print("======================== eln-lims-imaging-test-adapter data upload end ========================")
 
 
 api.logout(sessionToken)
-print("======================== imaging-test-data-model xls ingestion result ========================")
 
 

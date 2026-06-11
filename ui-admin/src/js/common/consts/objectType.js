@@ -8,6 +8,7 @@ const NEW_USER_GROUP = 'newUserGroup'
 const NEW_DYNAMIC_PROPERTY_PLUGIN = 'newDynamicPropertyPlugin'
 const NEW_ENTITY_VALIDATION_PLUGIN = 'newEntityValidationPlugin'
 const NEW_QUERY = 'newQuery'
+const SPACES = 'spaces'
 const NEW_SPACE = 'newSpace'
 const NEW_PROJECT = 'newProject'
 const NEW_COLLECTION = 'newCollection'
@@ -52,6 +53,7 @@ export default {
   NEW_DYNAMIC_PROPERTY_PLUGIN,
   NEW_ENTITY_VALIDATION_PLUGIN,
   NEW_QUERY,
+  SPACES,
   NEW_SPACE,
   NEW_PROJECT,
   NEW_COLLECTION,

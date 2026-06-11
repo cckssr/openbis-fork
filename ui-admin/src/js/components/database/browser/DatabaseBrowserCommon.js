@@ -56,7 +56,7 @@ function spacesFolderNode() {
     },
     canHaveChildren: true,
     childrenLoadLimit: LOAD_LIMIT,
-    selectable: false
+    selectable: true
   }
 }
 
