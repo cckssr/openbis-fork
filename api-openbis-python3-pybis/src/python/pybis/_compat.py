@@ -109,6 +109,18 @@ _METHOD_RENAMES: dict[str, str] = {
     "get_experiment_type": "get_collection_type",
     "new_sample_type": "new_object_type",
     "new_experiment_type": "new_collection_type",
+    # wave 3: datasets
+    "get_datasets": "search_datasets",
+    "get_dataset_types": "search_dataset_types",
+}
+
+#: Methods that keep their name but whose 1.x parameters are translated.
+#: The wrapper warns only when a legacy parameter was actually used.
+_PARAM_SHIMMED: dict[str, list[str]] = {
+    # legacy positional order
+    "get_dataset": ["permIds"],
+    "new_dataset": ["type", "kind", "files", "file", "props", "folder"],
+    "get_dataset_type": ["type"],
 }
 
 #: Positional parameter names of the legacy signatures, so positional 1.x
@@ -190,6 +202,11 @@ _PER_METHOD_PARAM_RENAMES: dict[str, dict[str, str | None]] = {
     "get_experiment_types": {"type": "code"},
     "get_collection_types": {"type": "code"},
     "get_experiment_type": {"type": "code"},
+    "get_datasets": {"props": None},
+    "get_dataset": {"permIds": "perm_id", "props": None},
+    "new_dataset": {"props": "properties", "file": "files", "zipfile": "zip_file"},
+    "get_dataset_types": {"type": "code"},
+    "get_dataset_type": {"type": "code"},
 }
 
 #: Parameters whose 1.x meaning depended on the value: a bool means the
@@ -398,6 +415,53 @@ def _make_shim(cls: type, old_name: str, new_name: str) -> Callable[..., Any]:
     return shim
 
 
+def _make_param_shim(method: Callable[..., Any], name: str) -> Callable[..., Any]:
+    """Wrap a same-name method whose 1.x parameters were renamed.
+
+    Warns only when a legacy parameter (or legacy positional style) was
+    actually used; otherwise the call passes through untouched.
+    """
+    positional = _PARAM_SHIMMED[name]
+    new_params = inspect.signature(method).parameters
+    param_names = [p for p in new_params if p != "self"]
+    first_param = param_names[0] if param_names else None
+
+    @functools.wraps(method)
+    def shim(self: Any, *args: Any, **kwargs: Any) -> Any:
+        legacy_keys = [
+            key
+            for key in kwargs
+            if key not in new_params or key in _REMOVED_PARAMS
+        ]
+        legacy_positional = len(args) > 1  # v2 keeps at most the identifier
+        if legacy_keys or legacy_positional:
+            warnings.warn(
+                f"pybis 7: {name}() parameters changed"
+                f" ({', '.join(legacy_keys) or 'positional style'});"
+                f" see MIGRATION_GUIDE.md.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+        for param, value in zip(positional, args):
+            kwargs.setdefault(param, value)
+        translated = _translate_kwargs(name, kwargs)
+        for key in list(translated):
+            if translated[key] is None:
+                translated.pop(key)
+        translated = _adapt_for_new_signature(method, translated)
+        if (
+            name.startswith("get_")
+            and first_param is not None
+            and isinstance(translated.get(first_param), list)
+        ):
+            idents = translated.pop(first_param)
+            return [method(self, ident, **translated) for ident in idents]
+        return method(self, **translated)
+
+    shim._pybis_compat_shim = True  # type: ignore[attr-defined]  # reason: shim marker
+    return shim
+
+
 def install_compat(cls: type) -> None:
     """Install all deprecated method shims onto the Openbis class.
 
@@ -418,6 +482,13 @@ def install_compat(cls: type) -> None:
             f" installing its shim"
         )
         setattr(cls, old_name, _make_shim(cls, old_name, new_name))
+
+    for name in _PARAM_SHIMMED:
+        method = getattr(cls, name, None)
+        assert method is not None, f"missing method {name} for param shim"
+        if getattr(method, "_pybis_compat_shim", False):
+            continue  # already wrapped (idempotent re-install)
+        setattr(cls, name, _make_param_shim(method, name))
 
 
 __all__ = [

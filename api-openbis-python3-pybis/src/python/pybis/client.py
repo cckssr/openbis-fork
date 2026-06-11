@@ -69,6 +69,7 @@ from . import data_set as pbds
 from .api.rpc import RpcClient
 from .entities.server import ServerInformation
 from .entities.collection import _CollectionApi
+from .entities.dataset import _DataSetApi
 from .entities.entity_type import _EntityTypeApi
 from .entities.object import _ObjectApi
 from .entities.project import _ProjectApi
@@ -861,7 +862,9 @@ def _subcriteria_for_code(code, entity):
         # return get_search_type_for_entity(entity.lower())
 
 
-class Openbis(_SpaceApi, _ProjectApi, _ObjectApi, _CollectionApi, _EntityTypeApi):
+class Openbis(
+    _SpaceApi, _ProjectApi, _ObjectApi, _CollectionApi, _DataSetApi, _EntityTypeApi
+):
     """Interface for communicating with openBIS.
 
     Note:
@@ -3540,26 +3543,6 @@ class Openbis(_SpaceApi, _ProjectApi, _ObjectApi, _CollectionApi, _EntityTypeApi
             only_data=only_data,
         )
 
-    def get_dataset_types(self, type=None, start_with=None, count=None):
-        """Returns a list of all available dataSet types"""
-        return self.get_entity_types(
-            entity="dataSetType",
-            cls=DataSetType,
-            type=type,
-            start_with=start_with,
-            count=count,
-        )
-
-    def get_dataset_type(self, type, only_data=False, **kwargs):
-        """Returns detailed information regarding particular dataset type, given its code"""
-        return self.get_entity_type(
-            entity="dataSetType",
-            identifier=type,
-            cls=DataSetType,
-            method=self.get_dataset_type,
-            only_data=only_data,
-        )
-
     def get_entity_types(
         self, entity, cls, type=None, start_with=None, count=None, with_vocabulary=False
     ):
@@ -3823,73 +3806,6 @@ class Openbis(_SpaceApi, _ProjectApi, _ObjectApi, _CollectionApi, _EntityTypeApi
             self.__dict__["token"] = token
         if save_token:
             self._save_token_to_disk()
-
-    def get_dataset(self, permIds, only_data=False, props=None, **kvals):
-        """fetch a dataset and some metadata attached to it:
-        - properties
-        - sample
-        - parents
-        - children
-        - containers
-        - dataStore
-        - physicalData
-        - linkedData
-        :return: a DataSet object
-        """
-
-        just_one = True
-        identifiers = []
-        if isinstance(permIds, list):
-            just_one = False
-            for permId in permIds:
-                identifiers.append(_type_for_id(permId, "dataset"))
-        else:
-            identifiers.append(_type_for_id(permIds, "dataset"))
-
-        fetchopts = get_fetchoption_for_entity("dataSet")
-
-        for option in [
-            "tags",
-            "properties",
-            "dataStore",
-            "physicalData",
-            "linkedData",
-            "experiment",
-            "sample",
-            "registrator",
-            "modifier",
-        ]:
-            fetchopts[option] = get_fetchoption_for_entity(option)
-
-        request = {
-            "method": "getDataSets",
-            "params": [
-                self.token,
-                identifiers,
-                fetchopts,
-            ],
-        }
-
-        resp = self._post_request(self.as_v3, request)
-        if just_one:
-            if len(resp) == 0:
-                raise ValueError(f"no such dataset found: {permIds}")
-
-            parse_jackson(resp)
-
-            for permId in resp:
-                if only_data:
-                    return resp[permId]
-                else:
-                    return DataSet(
-                        openbis_obj=self,
-                        type=self.get_dataset_type(resp[permId]["type"]["code"]),
-                        data=resp[permId],
-                    )
-        else:
-            return self._dataset_list_for_response(
-                response=list(resp.values()), props=props, parsed=False
-            )
 
     def _dataset_list_for_response(
         self,
@@ -4200,16 +4116,16 @@ class Openbis(_SpaceApi, _ProjectApi, _ObjectApi, _CollectionApi, _EntityTypeApi
             path, commit_id, repository_id, edms_id
         )
 
-    def search_files(self, data_set_id, dss_code=None):
-        return pbds.GitDataSetFileSearch(self, data_set_id).search_files()
+    def search_files(self, dataset_id, dss_code=None):
+        return pbds.GitDataSetFileSearch(self, dataset_id).search_files()
 
-    def delete_content_copy(self, data_set_id, content_copy):
+    def delete_content_copy(self, dataset_id, content_copy):
         """
         Deletes a content copy from a data set.
         :param data_set_id: Id of the data set containing the content copy
         :param content_copy: The content copy to be deleted
         """
-        return pbds.GitDataSetUpdate(self, data_set_id).delete_content_copy(
+        return pbds.GitDataSetUpdate(self, dataset_id).delete_content_copy(
             content_copy
         )
 
@@ -4259,28 +4175,6 @@ class Openbis(_SpaceApi, _ProjectApi, _ObjectApi, _CollectionApi, _EntityTypeApi
             }
         return dms_id
 
-    def new_dataset_type(
-        self,
-        code,
-        description=None,
-        mainDataSetPattern=None,
-        mainDataSetPath=None,
-        disallowDeletion=False,
-        validationPlugin=None,
-    ):
-        """Creates a new dataSet type."""
-
-        return DataSetType(
-            self,
-            code=code,
-            description=description,
-            mainDataSetPattern=mainDataSetPattern,
-            mainDataSetPath=mainDataSetPath,
-            disallowDeletion=disallowDeletion,
-            validationPlugin=validationPlugin,
-            method=self.get_dataset_type,
-        )
-
     @deprecated("Material is deprecated; use Object instead")
     def new_material_type(
         self,
@@ -4295,60 +4189,6 @@ class Openbis(_SpaceApi, _ProjectApi, _ObjectApi, _CollectionApi, _EntityTypeApi
             description=description,
             validationPlugin=validationPlugin,
             method=self.get_material_type,
-        )
-
-    def new_dataset(
-        self,
-        type=None,
-        kind="PHYSICAL",
-        files=None,
-        file=None,
-        props=None,
-        folder=None,
-        **kwargs,
-    ):
-        """Creates a new dataset of a given type.
-
-        type         -- sampleType code or object: mandatory
-        sample       -- sample code or object
-        experiment   -- experiment code or object
-        collection   -- same as above
-        file         -- path to a single file or a directory
-        files        -- list of paths to files. Instead of a file, a directory (or many directories)
-                        can be provided, the structure is kept intact in openBIS
-        zipfile      -- path to a zipfile, which is unzipped in openBIS
-        kind         -- if set to CONTAINER, no files should be provided.
-                        Instead, the dataset acts as a container for other datasets.
-
-        props        -- a dictionary containing the properties
-        """
-
-        if type is None:
-            raise ValueError("Please provide a dataSet type")
-
-        if file:
-            files = [file]
-
-        if isinstance(type, str):
-            type_obj = self.get_dataset_type(type.upper())
-        else:
-            type_obj = type
-
-        if "object" in kwargs:
-            kwargs["sample"] = kwargs["object"]
-            kwargs.pop("object", None)
-        if "collection" in kwargs:
-            kwargs["experiment"] = kwargs["collection"]
-            kwargs.pop("collection", None)
-
-        return DataSet(
-            self,
-            type=type_obj,
-            kind=kind,
-            files=files,
-            folder=folder,
-            props=props,
-            **kwargs,
         )
 
     def new_semantic_annotation(self, entityType=None, propertyType=None, **kwargs):

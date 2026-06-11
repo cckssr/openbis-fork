@@ -102,10 +102,28 @@ def make_dataset_response(**kwargs: Any) -> dict[str, Any]:
         "code": kwargs.pop("code", perm_id),
         "type": {
             "@type": "as.dto.dataset.DataSetType",
-            "code": kwargs.pop("type", "RAW_DATA"),
+            "code": (dataset_type := kwargs.pop("type", "RAW_DATA")),
+            "permId": {
+                "permId": dataset_type,
+                "@type": "as.dto.entitytype.id.EntityTypePermId",
+            },
         },
         "kind": kwargs.pop("kind", "PHYSICAL"),
         "properties": kwargs.pop("properties", {}),
+        "parents": kwargs.pop("parents", []),
+        "children": kwargs.pop("children", []),
+        "components": kwargs.pop("components", []),
+        "containers": kwargs.pop("containers", []),
+        "tags": kwargs.pop("tags", []),
+        "sample": kwargs.pop("sample", None),
+        "experiment": kwargs.pop("experiment", None),
+        "physicalData": kwargs.pop("physicalData", None),
+        "linkedData": None,
+        "dataStore": None,
+        "registrator": None,
+        "modifier": None,
+        "registrationDate": None,
+        "modificationDate": None,
     }
     defaults.update(kwargs)
     return defaults

@@ -157,13 +157,13 @@ class DataSet(
 
     def __init__(
         self,
-        openbis_obj: Openbis,
+        openbis_obj: Any,
         type: Any,
         data: Optional[dict] = None,
         files: Optional[Any] = None,
         zipfile: Optional[str] = None,
-        folder: Optional[str] = None,
-        kind: Optional[DataSetKind] = None,
+        folder: Optional[Any] = None,
+        kind: Optional[str] = None,
         props: Optional[dict] = None,
         **kwargs: Any,
     ) -> None:
@@ -1553,7 +1553,7 @@ class DataSet(
         self,
         datastore_url: Optional[str] = None,
         files: Optional[Any] = None,
-        folder: Optional[str] = None,
+        folder: Optional[Any] = None,
         wait_until_finished: bool = False,
     ) -> list:
         """Upload files to the DSS session workspace using the V1 API.
@@ -1649,7 +1649,7 @@ class DataSet(
         self,
         files: Any,
         datastore_url: Optional[str] = None,
-        folder: Optional[str] = None,
+        folder: Optional[Any] = None,
         wait_until_finished: bool = False,
     ) -> str:
         """Upload files to the DSS session workspace using the V3 multipart API.
