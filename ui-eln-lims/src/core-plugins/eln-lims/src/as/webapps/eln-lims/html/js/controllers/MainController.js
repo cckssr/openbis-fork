@@ -1039,10 +1039,14 @@ function MainController(profile) {
 					var permId = null;
 					var paginationInfo = null;
 					var activeTab = null;
+					var imageIdx = null;
+					var previewIdx = null;
 					if((typeof arg) !== "string") {
 						permId = arg.permIdOrIdentifier;
 						paginationInfo = arg.paginationInfo;
 						activeTab = arg.activeTab;
+						imageIdx = arg.imageIndex;
+						previewIdx = arg.previewIndex;
 						arg = permId;
 					} else {
 						permId = arg;
@@ -1054,7 +1058,7 @@ function MainController(profile) {
 							document.title = "" + Util.getDisplayNameFromCode(data[0].sampleTypeCode) + " " + data[0].code;
 							var isELNSubExperiment = $.inArray(data[0].spaceCode, _this.profile.inventorySpaces) === -1 && _this.profile.inventorySpaces.length > 0;
 							_this.mainHeader.navigateToTabByEntity("OBJECT", data[0].spaceCode, data[0].permId);
-							_this._showViewSamplePage(data[0], isELNSubExperiment, paginationInfo, activeTab);
+							_this._showViewSamplePage(data[0], isELNSubExperiment, paginationInfo, activeTab, imageIdx, previewIdx);
 						}
 					});
 					break;
@@ -1829,9 +1833,9 @@ function MainController(profile) {
 		trashcanController.init(views);
 	}
 	
-	this._showViewSamplePage = function(sample, isELNSubExperiment, paginationInfo, activeTab) {
+	this._showViewSamplePage = function(sample, isELNSubExperiment, paginationInfo, activeTab, imageIdx, previewIdx) {
 		//Show Form
-		var sampleFormController = new SampleFormController(this, FormMode.VIEW, sample, paginationInfo, activeTab);
+		var sampleFormController = new SampleFormController(this, FormMode.VIEW, sample, paginationInfo, activeTab, imageIdx, previewIdx);
 		var tabInfo = TabContentUtil.getSampleTabInfo(sample, FormMode.VIEW);
 		var views = this._getNewViewModel(true, true, true, tabInfo);
 		sampleFormController.init(views);

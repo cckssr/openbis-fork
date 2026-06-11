@@ -336,40 +336,43 @@ $.extend(ImagingTechnology.prototype, ELNLIMSPlugin.prototype, {
             if (isGalleryView) {
                 var _this = this;
                 this.displayImagingTechViewer($container, false, model.experiment.permId, 'collection',
-                    function (objId, imageIndex, previewIndex) {
-                        require([ "as/dto/dataset/id/DataSetPermId", "as/dto/dataset/fetchoptions/DataSetFetchOptions" ],
-                        function(DataSetPermId, DataSetFetchOptions) {
-                            var ids = [new DataSetPermId(objId)];
-                            var fetchOptions = new DataSetFetchOptions();
-                            fetchOptions.withProperties();
-                            mainController.openbisV3.getDataSets(ids, fetchOptions).done(function(map) {
-                                var dataSets = Util.mapValuesToList(map);
-                                //var dataSets = model.v3_experiment.dataSets;
-                                var paginationInfo = null;
-                                var indexFound = null;
-                                for(var idx = 0; idx < dataSets.length; idx++) {
-                                    if(dataSets[idx].permId.permId === objId) {
-                                        indexFound = idx;
-                                        break;
-                                    }
-                                }
-                                if(indexFound !== null) {
-                                    paginationInfo = {
-                                        pagFunction : _this._getDataListDynamic(dataSets),
-                                        pagOptions : {},
-                                        currentIndex : indexFound,
-                                        totalCount : dataSets.length
-                                    }
-                                }
-                                var arg = {
-                                    permIdOrIdentifier : objId,
-                                    paginationInfo : paginationInfo,
-                                    imageIndex: imageIndex,
-                                    previewIndex: previewIndex
-                                }
-                                mainController.changeView('showViewDataSetPageFromPermId', arg)
+                    function (objId, imageIndex, previewIndex, objectType) {
+                        var arg = { permIdOrIdentifier: objId, imageIndex: imageIndex, previewIndex: previewIndex };
+                        if (objectType === 'object') {
+                            require(["as/dto/sample/id/SamplePermId", "as/dto/sample/fetchoptions/SampleFetchOptions"],
+                            function(SamplePermId, SampleFetchOptions) {
+                                var fetchOptions = new SampleFetchOptions();
+                                fetchOptions.withProperties();
+                                mainController.openbisV3.getSamples([new SamplePermId(objId)], fetchOptions).done(function(map) {
+                                    var samples = Util.mapValuesToList(map);
+                                    var indexFound = samples.findIndex(function(s) { return s.permId.permId === objId; });
+                                    arg.paginationInfo = indexFound !== -1 ? {
+                                        pagFunction: _this._getDataListDynamic(samples),
+                                        pagOptions: {},
+                                        currentIndex: indexFound,
+                                        totalCount: samples.length
+                                    } : null;
+                                    mainController.changeView('showViewSamplePageFromPermId', arg);
+                                });
                             });
-                        });
+                        } else {
+                            require(["as/dto/dataset/id/DataSetPermId", "as/dto/dataset/fetchoptions/DataSetFetchOptions"],
+                            function(DataSetPermId, DataSetFetchOptions) {
+                                var fetchOptions = new DataSetFetchOptions();
+                                fetchOptions.withProperties();
+                                mainController.openbisV3.getDataSets([new DataSetPermId(objId)], fetchOptions).done(function(map) {
+                                    var dataSets = Util.mapValuesToList(map);
+                                    var indexFound = dataSets.findIndex(function(d) { return d.permId.permId === objId; });
+                                    arg.paginationInfo = indexFound !== -1 ? {
+                                        pagFunction: _this._getDataListDynamic(dataSets),
+                                        pagOptions: {},
+                                        currentIndex: indexFound,
+                                        totalCount: dataSets.length
+                                    } : null;
+                                    mainController.changeView('showViewDataSetPageFromPermId', arg);
+                                });
+                            });
+                        }
                     }, model.experiment.experimentTypeCode);
             }
         }
@@ -420,7 +423,7 @@ $.extend(ImagingTechnology.prototype, ELNLIMSPlugin.prototype, {
                 let viewDirty = function(objId, isDirty) {
                     model.isFormDirty = isDirty;
                 }
-                this.displayImagingTechViewer($container, true, model.sample.permId, 'object', viewDirty, null);
+                this.displayImagingTechViewer($container, true, model.sample.permId, 'object', viewDirty, null, model.imageIdx, model.previewIdx);
             }
         }
     },
