@@ -4,7 +4,7 @@ import { createDummySampleIdentifier } from '@src/js/components/database/new-for
 import { findFormFieldByLabel } from '@src/js/components/database/new-forms/utils/formFieldUtil.ts';
 import { fetchRights } from '@src/js/components/database/new-forms/utils/authorizationServiceUtil.ts';
 import { SpaceFormModel } from '@src/js/components/database/new-forms/entities/Space/SpaceFormModel.ts';
-import { FormMode } from '@src/js/components/database/new-forms/types/formEnums.ts';
+import { EntityKind, FormMode } from '@src/js/components/database/new-forms/types/formEnums.ts';
 import { DeleteService } from '@src/js/components/database/new-forms/services/DeleteService.ts';
 
 export class SpaceFormController implements IFormController {
@@ -17,7 +17,11 @@ export class SpaceFormController implements IFormController {
     this.deleteService = new DeleteService({ openbisFacade: this.openbisFacade });
   }
 
-  async load(permId: string): Promise<Form> {
+  async load(permId: string, entityKind?: string): Promise<Form> {
+    if (entityKind === EntityKind.NEW_SPACE) {
+      return SpaceFormModel.adaptNewSpaceDtoToForm(permId);
+    }
+
     const { SpacePermId, SpaceFetchOptions } = this.openbisFacade;
     const id = new SpacePermId(permId);
     const fetchOptions = new SpaceFetchOptions();
@@ -34,7 +38,7 @@ export class SpaceFormController implements IFormController {
     return SpaceFormModel.adaptSpaceDtoToForm(spaceDto);
   }
 
-  async save(form: Form, mode: FormMode): Promise<number> {
+  async save(form: Form, mode: FormMode): Promise<any> {
     if (mode === FormMode.CREATE) {
       return this._createSpace(form);
     } else if (mode === FormMode.EDIT) {
@@ -44,8 +48,13 @@ export class SpaceFormController implements IFormController {
     }
   }
 
-  async _createSpace(form: Form): Promise<number> {
-    throw new Error('Not implemented');
+  async _createSpace(form: Form): Promise<string> {
+    const { SpaceCreation } = this.openbisFacade;
+    const creation = new SpaceCreation();
+    creation.setCode(findFormFieldByLabel(form.fields, 'Code', true));
+    creation.setDescription(findFormFieldByLabel(form.fields, 'Description', true));
+    const result = await this.openbisFacade.createSpaces([creation]);
+    return result[0].getPermId();
   }
 
   async _updateSpace(form: Form): Promise<number> {

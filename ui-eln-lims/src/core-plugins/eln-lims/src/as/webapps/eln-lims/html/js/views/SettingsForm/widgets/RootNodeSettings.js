@@ -28,7 +28,7 @@ function RootNodeSettings(mode, profileToEdit)
             if(value === "identifier") {
                 $inputDiv.empty();
                 _this._advancedEntitySearchDropdown = new AdvancedEntitySearchDropdown(false, true, "search entity use as root node",
-                    false, false, false, true, true);
+                    true, false, false, true, true);
                 _this._advancedEntitySearchDropdown.onChange(function(selected) {
                     _this.selected = {type: value, value: selected[0]};
                 });

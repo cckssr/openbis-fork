@@ -30,7 +30,7 @@ from ch.systemsx.cisd.openbis.generic.server.hotfix import ImagingFixes
 helper = MasterDataRegistrationHelper(sys.path)
 api = CommonServiceProvider.getApplicationContext().getBean(ApplicationServerApi.INTERNAL_SERVICE_NAME)
 sessionToken = api.loginAsSystem()
-uploadRequired = ImagingFixes.isUploadRequired(sessionToken, "/IMAGING/TEST/TEST_COLLECTION")
+
 print("======================== eln-lims-imaging-test-adapter data-model xls ingestion start ========================")
 sessionWorkspaceFiles = helper.uploadToAsSessionWorkspace(sessionToken, "imaging-test-data-model.xls")
 print(sessionWorkspaceFiles)
@@ -43,6 +43,8 @@ print(importResult.getObjectIds())
 
 
 print("======================== eln-lims-imaging-test-adapter data upload start ========================")
+
+uploadRequired = ImagingFixes.isUploadRequired(sessionToken, "/IMAGING/TEST/TEST_COLLECTION")
 
 def get_property(key, default_value):
     property_configurer = CommonServiceProvider.getApplicationContext().getBean("propertyConfigurer")

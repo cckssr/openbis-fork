@@ -112,7 +112,7 @@ public class SetServicePropertiesVariableAction implements PanelAction
             for (String technology : GlobalInstallationContext.TECHNOLOGIES) {
                 String lowerCasedTechnology = technology.toLowerCase();
                 String technologyFlag = data.getVariable(technology);
-                if (lowerCasedTechnology.equalsIgnoreCase("imaging") && Boolean.TRUE.toString().equalsIgnoreCase(technologyFlag)) {
+                if (lowerCasedTechnology.equalsIgnoreCase("ELN-LIMS-IMAGING") && Boolean.TRUE.toString().equalsIgnoreCase(technologyFlag)) {
                     File asServicePropertiesFile =
                             new File(installDir, Utils.AS_PATH + Utils.SERVICE_PROPERTIES_PATH);
                     if(asServicePropertiesFile.exists()) {

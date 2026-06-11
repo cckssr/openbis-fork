@@ -559,8 +559,13 @@ public final class ExportEntityCollector {
     }
 
     private static boolean isCurrentContainedByRoot(String initialIdentifier, String currentIdentifier) {
-        return currentIdentifier.startsWith(initialIdentifier);
+        if (initialIdentifier != null && currentIdentifier != null) {
+            return currentIdentifier.startsWith(initialIdentifier);
+        } else {
+            return false;
+        }
     }
+
     private static boolean isDataSetInOtherSpaceBeingFiltered(boolean withObjectsAndDataSetsOtherSpaces, SpacePermId enforceSpaceId, DataSet dataSet) {
         if (enforceSpaceId != null && withObjectsAndDataSetsOtherSpaces == false) {
             if (dataSet.getSample() != null) {

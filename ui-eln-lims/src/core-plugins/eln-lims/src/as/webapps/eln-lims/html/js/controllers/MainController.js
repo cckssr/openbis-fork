@@ -343,6 +343,15 @@ function MainController(profile) {
 																	var node = null;
 
 																	switch(entity['@type']) {
+																		case "as.dto.experiment.Experiment":
+																			if(profile.isInventorySpace(entity.project.space.code)) {
+																				localReference.mainHeader.navigateToTab("LIMS");
+																			}
+																			node = {
+																				type: "EXPERIMENT",
+																				id: entity.permId.permId
+																			}
+																			break;
 																		case "as.dto.project.Project":
 																			if(profile.isInventorySpace(entity.space.code)) {
 																				localReference.mainHeader.navigateToTab("LIMS");
