@@ -13,10 +13,12 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 #
+"""OpenBisObject base class and the batch Transaction."""
+
 from __future__ import annotations
 
 from collections import defaultdict
-from typing import Optional, Union, Any, TYPE_CHECKING
+from typing import Optional, Union, Any, TYPE_CHECKING, cast, get_args
 
 from .attribute import AttrHolder
 from .entities.base import EntityBehavior
@@ -45,9 +47,14 @@ class OpenBisObject(EntityBehavior):
     such as properties, attributes, save(), delete(), etc.
     """
 
+    _entity: Optional[str] = None
+    _single_item_method_name: Optional[str] = None
+
     def __init_subclass__(
-        cls, entity: Optional[str] = None, single_item_method_name: Optional[str] = None
-    ):
+        cls,
+        entity: Optional[str] = None,
+        single_item_method_name: Optional[str] = None,
+    ) -> None:
         """Register entity metadata on subclasses at class definition time.
 
         Called automatically by Python when a subclass of OpenBisObject is created.
@@ -70,10 +77,10 @@ class OpenBisObject(EntityBehavior):
         self,
         openbis_obj: Any,
         type: Any = None,
-        data: Optional[dict] = None,
-        props: Optional[dict] = None,
-        **kwargs,
-    ):
+        data: Optional[dict[str, Any]] = None,
+        props: Optional[dict[str, Any]] = None,
+        **kwargs: Any,
+    ) -> None:
         """Initialize an OpenBIS entity object.
 
         Sets up the core namespaces used throughout the object:
@@ -102,7 +109,7 @@ class OpenBisObject(EntityBehavior):
         self.__dict__["openbis"] = openbis_obj
         self.__dict__["type"] = type
         self.__dict__["p"] = PropertyHolder(openbis_obj, type)
-        self.__dict__["a"] = AttrHolder(openbis_obj, self._entity, type)
+        self.__dict__["a"] = AttrHolder(openbis_obj, self._entity, type)  # type: ignore[no-untyped-call]  # reason: legacy attribute module
         self.__dict__["formatter"] = PropertyReformatter(openbis_obj)
 
         # existing OpenBIS object
@@ -136,18 +143,18 @@ class OpenBisObject(EntityBehavior):
         """
         defs = get_definition_for_entity(self.entity)
         if self.is_new:
-            return defs["attrs_new"]
+            return list(defs["attrs_new"])
         else:
             return list(set(defs["attrs"] + defs["attrs_up"]))
 
-    def _set_data(self, data: dict):
+    def _set_data(self, data: dict[str, Any]) -> None:
         # assign the attribute data to self.a by calling it
         # (invoking the AttrHolder.__call__ function)
         self.a(data)
         self.__dict__["data"] = data
 
         # put the properties in the self.p namespace (without checking them)
-        array_types = PropertyDataArrayTypes.__args__
+        array_types = get_args(PropertyDataArrayTypes)
         if "properties" in data:
             for key, value in data["properties"].items():
                 if self.p.type:
@@ -194,7 +201,7 @@ class OpenBisObject(EntityBehavior):
         self.a.__dict__["_is_new"] = False
 
     @property
-    def attrs(self) -> list[str]:
+    def attrs(self) -> Any:
         """List of all attribute names available on this entity.
 
         e.g., ``code``, ``space``, ``permId``, etc.
@@ -206,25 +213,33 @@ class OpenBisObject(EntityBehavior):
     def space(self) -> Optional[Space]:
         """Return the Space this entity belongs to, if applicable and available."""
         try:
-            return self.openbis.get_space(self._space["permId"])
+            return cast(
+                "Optional[Space]", self.openbis.get_space(self._space["permId"])
+            )
         except Exception:
-            pass
+            return None
 
     @property
     def project(self) -> Optional[Project]:
         """Return the Project this entity belongs to, if applicable and available."""
         try:
-            return self.openbis.get_project(self._project["identifier"])
+            return cast(
+                "Optional[Project]",
+                self.openbis.get_project(self._project["identifier"]),
+            )
         except Exception:
-            pass
+            return None
 
     @property
     def experiment(self) -> Optional[Experiment]:
         """Return the Experiment this entity belongs to, if applicable and available."""
         try:
-            return self.openbis.get_experiment(self._experiment["identifier"])
+            return cast(
+                "Optional[Experiment]",
+                self.openbis.get_experiment(self._experiment["identifier"]),
+            )
         except Exception:
-            pass
+            return None
 
     collection = experiment  # Alias
 
@@ -232,17 +247,20 @@ class OpenBisObject(EntityBehavior):
     def sample(self) -> Optional[Sample]:
         """Return the Sample this entity belongs to, if applicable and available."""
         try:
-            return self.openbis.get_sample(self._sample["identifier"])
+            return cast(
+                "Optional[Sample]",
+                self.openbis.get_sample(self._sample["identifier"]),
+            )
         except Exception:
-            pass
+            return None
 
     object = sample  # Alias
 
     @property
-    def _permId(self) -> Union[dict, str]:
+    def _permId(self) -> Union[dict[str, Any], str]:
         """Return the permId of this entity, if available."""
         try:
-            return self.data["permId"]
+            return cast("dict[str, Any]", self.data["permId"])
         except Exception:
             return ""
 
@@ -250,10 +268,10 @@ class OpenBisObject(EntityBehavior):
     def permId(self) -> Union[PermId, str]:
         """Return the permId of this entity, if available."""
         try:
-            return self.data["permId"]["permId"]
+            return cast(str, self.data["permId"]["permId"])
         except Exception:
             try:
-                return self.a.__dict__["_permId"]["permId"]
+                return cast(str, self.a.__dict__["_permId"]["permId"])
             except Exception:
                 return ""
 
@@ -261,7 +279,7 @@ class OpenBisObject(EntityBehavior):
         """Delegate attribute access to self.a (AttrHolder) for attributes not found."""
         return getattr(self.__dict__["a"], name)
 
-    def __setattr__(self, name: str, value: Union[str, list, dict]) -> Any:
+    def __setattr__(self, name: str, value: Any) -> None:
         """Delegate attribute setting to self.a (AttrHolder) for attributes not found."""
         if name in ["set_properties", "set_tags", "add_tags"]:
             raise ValueError("These are methods which should not be overwritten")
@@ -274,7 +292,7 @@ class OpenBisObject(EntityBehavior):
         See :class:`AttrHolder` for the attributes and :class:`PropertyHolder` for the properties
         included in the default representation.
         """
-        return self.a._repr_html_()
+        return cast(str, self.a._repr_html_())
 
     def __repr__(self) -> str:
         """Print a human-readable HTML representation of this entity for IPython.
@@ -283,7 +301,7 @@ class OpenBisObject(EntityBehavior):
         See :class:`AttrHolder` for the attributes and :class:`PropertyHolder` for the properties
         included in the default representation.
         """
-        return self.a.__repr__()
+        return cast(str, self.a.__repr__())
 
     def mark_to_be_deleted(self) -> None:
         """Mark this entity to be deleted in a transaction."""
@@ -295,7 +313,7 @@ class OpenBisObject(EntityBehavior):
 
     def is_marked_to_be_deleted(self) -> bool:
         """Check if this entity is marked to be deleted in a transaction."""
-        return self.__dict__.get("mark_to_be_deleted", False)
+        return cast(bool, self.__dict__.get("mark_to_be_deleted", False))
 
     def delete(self, reason: str, permanently: bool = False) -> None:
         """Delete this entity from openBIS.
@@ -468,7 +486,7 @@ class OpenBisObject(EntityBehavior):
             self._set_data(new_entity_data)
             return self
 
-    def _refetch_data(self, get_single_item: Any, perm_id: Any) -> dict:
+    def _refetch_data(self, get_single_item: Any, perm_id: Any) -> dict[str, Any]:
         """Re-fetch the raw entity data after a save.
 
         Bridges the two getter generations: legacy getters take
@@ -482,10 +500,10 @@ class OpenBisObject(EntityBehavior):
             kwargs = {"only_data": True}
             if "use_cache" in parameters and not self.is_new:
                 kwargs["use_cache"] = False
-            return get_single_item(perm_id, **kwargs)
+            return cast("dict[str, Any]", get_single_item(perm_id, **kwargs))
         # migrated getter: invalidate the transparent cache, then use .data
         self.openbis.clear_cache(self._entity)
-        return get_single_item(perm_id).data
+        return cast("dict[str, Any]", get_single_item(perm_id).data)
 
 
 class Transaction:
@@ -523,7 +541,7 @@ class Transaction:
                 immediately. Equivalent to calling :meth:`add` for each one
                 after construction.
         """
-        self.entities = {}
+        self.entities: dict[str, Any] = {}
         self.reason = "no reason"
 
         if not entities:
@@ -710,7 +728,7 @@ class Transaction:
 
                     try:
 
-                        def remove_at_id(request):
+                        def remove_at_id(request: Any) -> Any:
                             if request is not None:
                                 if type(request) == dict:
                                     for key in list(request.keys()):

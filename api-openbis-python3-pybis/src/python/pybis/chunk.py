@@ -13,16 +13,18 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 #
+"""Binary (de)serialization of AFS transfer chunks (Java ByteBuffer layout)."""
+
 import struct
+from typing import Any, Optional
 
 
-def encode_chunk(chunk):
-    owner_bytes = (
-        chunk.get("owner").encode("utf-8") if chunk.get("owner") is not None else None
-    )
-    source_bytes = (
-        chunk.get("source").encode("utf-8") if chunk.get("source") is not None else None
-    )
+def encode_chunk(chunk: "dict[str, Any]") -> bytes:
+    """Encode one chunk dict into its binary wire format."""
+    owner = chunk.get("owner")
+    owner_bytes = owner.encode("utf-8") if owner is not None else None
+    source = chunk.get("source")
+    source_bytes = source.encode("utf-8") if source is not None else None
     data_bytes = chunk.get("data") if chunk.get("data") is not None else None
 
     # Calculate packet size
@@ -45,17 +47,17 @@ def encode_chunk(chunk):
     # q  = long (8 bytes)
     pos = 0
 
-    def put_int(value):
+    def put_int(value: int) -> None:
         nonlocal pos
         struct.pack_into(">i", packet, pos, value)
         pos += 4
 
-    def put_long(value):
+    def put_long(value: int) -> None:
         nonlocal pos
         struct.pack_into(">q", packet, pos, value)
         pos += 8
 
-    def put_bytes(b):
+    def put_bytes(b: bytes) -> None:
         nonlocal pos
         packet[pos : pos + len(b)] = b
         pos += len(b)
@@ -84,12 +86,11 @@ def encode_chunk(chunk):
     return bytes(packet)
 
 
-def encode_chunks_as_bytes(chunks):
-    """
-    Encodes a list of chunk dictionaries into a single bytes object.
-    Each chunk is encoded using `encode_chunk`.
-    """
+def encode_chunks_as_bytes(chunks: "list[dict[str, Any]]") -> bytes:
+    """Encode a list of chunk dictionaries into a single bytes object.
 
+    Each chunk is encoded using ``encode_chunk``.
+    """
     # Encode each chunk individually
     positionally_encoded_chunks = [encode_chunk(chunk) for chunk in chunks]
 
@@ -102,12 +103,12 @@ def encode_chunks_as_bytes(chunks):
     packet = bytearray(total_size)
     pos = 0
 
-    def put_int(value):
+    def put_int(value: int) -> None:
         nonlocal pos
         struct.pack_into(">i", packet, pos, value)
         pos += 4
 
-    def put_bytes(b):
+    def put_bytes(b: bytes) -> None:
         nonlocal pos
         packet[pos : pos + len(b)] = b
         pos += len(b)
@@ -122,15 +123,13 @@ def encode_chunks_as_bytes(chunks):
     return bytes(packet)
 
 
-def decode_chunks(chunks_as_bytes):
-    """
-    Decodes a bytes object representing multiple encoded chunks into a list of chunk dictionaries.
-    """
+def decode_chunks(chunks_as_bytes: bytes) -> "list[dict[str, Any]]":
+    """Decode a bytes object of encoded chunks into a list of chunk dicts."""
     pos = 0
 
-    def get_int():
+    def get_int() -> int:
         nonlocal pos
-        value = struct.unpack_from(">i", chunks_as_bytes, pos)[0]
+        value: int = struct.unpack_from(">i", chunks_as_bytes, pos)[0]
         pos += 4
         return value
 
@@ -145,25 +144,26 @@ def decode_chunks(chunks_as_bytes):
     return chunks
 
 
-def decode_chunk(buffer, pos):
-    """
-    Decodes a single Chunk structure from a bytes buffer starting at position `pos`.
-    Returns (chunk_dict, new_position).
+def decode_chunk(buffer: bytes, pos: int) -> "tuple[dict[str, Any], int]":
+    """Decode one chunk from ``buffer`` starting at ``pos``.
+
+    Returns:
+        A ``(chunk_dict, new_position)`` tuple.
     """
 
-    def get_int():
+    def get_int() -> int:
         nonlocal pos
-        value = struct.unpack_from(">i", buffer, pos)[0]
+        value: int = struct.unpack_from(">i", buffer, pos)[0]
         pos += 4
         return value
 
-    def get_long():
+    def get_long() -> int:
         nonlocal pos
-        value = struct.unpack_from(">q", buffer, pos)[0]
+        value: int = struct.unpack_from(">q", buffer, pos)[0]
         pos += 8
         return value
 
-    def get_bytes(length):
+    def get_bytes(length: int) -> bytes:
         nonlocal pos
         data = buffer[pos : pos + length]
         pos += length
@@ -182,13 +182,13 @@ def decode_chunk(buffer, pos):
         source = get_bytes(source_len).decode("utf-8")
 
     # --- offset ---
-    offset = get_long()
-    if offset < 0:
+    offset: Optional[int] = get_long()
+    if offset is not None and offset < 0:
         offset = None
 
     # --- limit ---
-    limit = get_int()
-    if limit < 0:
+    limit: Optional[int] = get_int()
+    if limit is not None and limit < 0:
         limit = None
 
     # --- data ---

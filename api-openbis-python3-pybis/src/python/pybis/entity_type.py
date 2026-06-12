@@ -33,28 +33,9 @@ from __future__ import annotations
 
 import copy
 import sys
-from typing import Any, Optional, TYPE_CHECKING
+from typing import Any, Optional, TYPE_CHECKING, cast
 
-try:
-    from warnings import deprecated  # Python 3.13+
-except ImportError:
-    import functools
-    from warnings import warn
-
-    def deprecated(msg: str):
-        def decorator(cls):
-            orig_init = cls.__init__
-
-            @functools.wraps(orig_init)
-            def __init__(self, *args, **kwargs):
-                warn(msg, DeprecationWarning, stacklevel=2)
-                orig_init(self, *args, **kwargs)
-
-            cls.__init__ = __init__
-            return cls
-
-        return decorator
-
+from ._deprecated import deprecated
 
 from pandas import DataFrame
 from tabulate import tabulate
@@ -105,7 +86,7 @@ class EntityType:
     def __init__(
         self,
         openbis_obj: Openbis,
-        data: Optional[dict] = None,
+        data: Optional[dict[str, Any]] = None,
         method: Optional[Any] = None,
         **kwargs: Any,
     ) -> None:
@@ -144,7 +125,7 @@ class EntityType:
         getter = getattr(self.openbis, getter_for_entity[self._entity])
         return getter(self.permId).data
 
-    def _set_entity_data(self, data: Optional[dict] = None) -> None:
+    def _set_entity_data(self, data: Optional[dict[str, Any]] = None) -> None:
         """Extract and store ``propertyAssignments`` from a raw API response.
 
         Args:
@@ -157,7 +138,8 @@ class EntityType:
         self.__dict__["_propertyAssignments"] = pas
 
     def __str__(self) -> str:
-        return self.data["code"]
+        """Return the type code."""
+        return str(self.data["code"])
 
     def _attrs(self) -> list[str]:
         """Return the list of recognised entity-type attribute names.
@@ -195,7 +177,7 @@ class EntityType:
             "get_next_code()",
         ]
         if self.is_new:
-            return attrs + defs["attrs_new"]
+            return attrs + list(defs["attrs_new"])
         else:
             return attrs + list(set(defs["attrs"] + defs["attrs_up"]))
 
@@ -251,7 +233,9 @@ class EntityType:
 
         pas = self.__dict__["_propertyAssignments"]
 
-        def create_data_frame(attrs: Any, props: Any, response: list) -> DataFrame:
+        def create_data_frame(
+            attrs: Any, props: Any, response: "list[Any]"
+        ) -> DataFrame:
             df = DataFrame(response, columns=attrs)
 
             if "dataType" in df:
@@ -269,7 +253,7 @@ class EntityType:
 
             return df
 
-        def create_objects(response: list) -> list:
+        def create_objects(response: "list[Any]") -> "list[Any]":
             result = []
             for element in response:
                 obj = copy.deepcopy(element)
@@ -425,8 +409,8 @@ class EntityType:
                 print(f"Property {property_type} revoked from {self.permId}")
 
     def _get_request_for_pa(
-        self, items: dict, item_action: str, force: bool = False
-    ) -> dict:
+        self, items: dict[str, Any], item_action: str, force: bool = False
+    ) -> dict[str, Any]:
         """Build a V3 API request to add or remove a property assignment.
 
         Args:
@@ -499,7 +483,7 @@ class EntityType:
         try:
             return self.openbis.get_plugin(self._validationPlugin["name"])
         except Exception:
-            pass
+            return None
 
     def codes(self) -> list[str]:
         """Return the lower-cased property codes for this entity type.
@@ -541,7 +525,7 @@ class EntityType:
             resp = self.openbis._post_request(self.openbis.as_v3, request)
         except Exception:
             return None
-        return resp
+        return cast("Optional[int]", resp)
 
     def get_next_code(self) -> str:
         """Return the next auto-generated code for a new instance of this type.
@@ -561,7 +545,7 @@ class EntityType:
         """
         seq = self.get_next_sequence()
         if seq:
-            return self.generatedCodePrefix + str(seq)
+            return str(self.generatedCodePrefix) + str(seq)
         else:
             raise ValueError("Could not generate next code.")
 
@@ -591,11 +575,12 @@ class SampleType(
         self,
         openbis_obj: Any,
         type: Optional[Any] = None,
-        data: Optional[dict] = None,
+        data: Optional[dict[str, Any]] = None,
         props: Optional[Any] = None,
         method: Optional[Any] = None,
         **kwargs: Any,
     ) -> None:
+        """Initialise the entity type from raw V3 API data."""
         OpenBisObject.__init__(
             self, openbis_obj, type=type, data=data, props=props, **kwargs
         )
@@ -610,6 +595,7 @@ class SampleType(
         )
 
     def __dir__(self) -> list[str]:
+        """Return public attributes for tab-completion."""
         return (
             ["add_semantic_annotation()", "get_semantic_annotations()"]
             + EntityType.__dir__(self)
@@ -674,11 +660,12 @@ class DataSetType(
         self,
         openbis_obj: Any,
         type: Optional[Any] = None,
-        data: Optional[dict] = None,
+        data: Optional[dict[str, Any]] = None,
         props: Optional[Any] = None,
         method: Optional[Any] = None,
         **kwargs: Any,
     ) -> None:
+        """Initialise the entity type from raw V3 API data."""
         OpenBisObject.__init__(
             self, openbis_obj, type=type, data=data, props=props, **kwargs
         )
@@ -693,6 +680,7 @@ class DataSetType(
         )
 
     def __dir__(self) -> list[str]:
+        """Return public attributes for tab-completion."""
         return [] + EntityType.__dir__(self) + OpenBisObject.__dir__(self)
 
 
@@ -716,11 +704,12 @@ class MaterialType(
         self,
         openbis_obj: Any,
         type: Optional[Any] = None,
-        data: Optional[dict] = None,
+        data: Optional[dict[str, Any]] = None,
         props: Optional[Any] = None,
         method: Optional[Any] = None,
         **kwargs: Any,
     ) -> None:
+        """Initialise the entity type from raw V3 API data."""
         OpenBisObject.__init__(
             self, openbis_obj, type=type, data=data, props=props, **kwargs
         )
@@ -735,6 +724,7 @@ class MaterialType(
         )
 
     def __dir__(self) -> list[str]:
+        """Return public attributes for tab-completion."""
         return [] + EntityType.__dir__(self) + OpenBisObject.__dir__(self)
 
 
@@ -759,11 +749,12 @@ class ExperimentType(
         self,
         openbis_obj: Any,
         type: Optional[Any] = None,
-        data: Optional[dict] = None,
+        data: Optional[dict[str, Any]] = None,
         props: Optional[Any] = None,
         method: Optional[Any] = None,
         **kwargs: Any,
     ) -> None:
+        """Initialise the entity type from raw V3 API data."""
         OpenBisObject.__init__(
             self, openbis_obj, type=type, data=data, props=props, **kwargs
         )
@@ -778,6 +769,7 @@ class ExperimentType(
         )
 
     def __dir__(self) -> list[str]:
+        """Return public attributes for tab-completion."""
         return [] + EntityType.__dir__(self) + OpenBisObject.__dir__(self)
 
 
@@ -816,7 +808,7 @@ class PropertyType(
         >>> sample_type.assign_property(pt, mandatory=False)
     """
 
-    def save(self) -> OpenbisObject:
+    def save(self) -> OpenBisObject:
         """Persist this property type to openBIS (create or update).
 
         For **new** property types, checks that no type with the same code
@@ -827,13 +819,9 @@ class PropertyType(
         """
         if self.is_new:
             get_single_item = self._get_single_item_method()
-            try:
-                new_entity_data = get_single_item(self.code)
+            if get_single_item(self.code) is not None:
                 raise ValueError(f"propertyType '{self.code}' already exists!")
-            except ValueError as e:
-                if not "no such propertyType" in str(e):
-                    raise e
-        super().save()
+        return super().save()
 
 
 class PropertyAssignment:
@@ -866,7 +854,7 @@ class PropertyAssignment:
     data: Optional[dict[str, Any]]
 
     def __init__(
-        self, openbis_obj: Any, data: Optional[dict] = None, **kwargs: Any
+        self, openbis_obj: Any, data: Optional[dict[str, Any]] = None, **kwargs: Any
     ) -> None:
         """Initialise a PropertyAssignment from a pre-processed data dict.
 
@@ -880,13 +868,16 @@ class PropertyAssignment:
         self.data = data
 
     def __getattr__(self, name: str) -> Any:
+        """Read an assignment field from the raw data."""
         if name in self._attrs():
-            if name in self.data:
+            if self.data and name in self.data:
                 return self.data[name]
             else:
                 return ""
+        return None
 
     def __repr__(self) -> str:
+        """Return a table of all assignment fields."""
         headers = ["attribute", "value"]
         lines = []
         for attr in self._attrs():
@@ -906,7 +897,11 @@ class PropertyAssignment:
             >>> print(pt.dataType)
             REAL
         """
-        return self.openbis.get_property_type(self.data["propertyType"]["code"])
+        assert self.data is not None
+        return cast(
+            "PropertyType",
+            self.openbis.get_property_type(self.data["propertyType"]["code"]),
+        )
 
     def _attrs(self) -> list[str]:
         """Return the list of recognised attribute names.

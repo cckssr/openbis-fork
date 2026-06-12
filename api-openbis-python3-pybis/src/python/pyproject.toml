@@ -84,12 +84,9 @@ select = ["D"]
 "pybis/client.py" = ["D"]
 "pybis/afs_client.py" = ["D"]
 "pybis/attribute.py" = ["D"]
-"pybis/chunk.py" = ["D"]
 "pybis/data_set.py" = ["D"]
 "pybis/dataset.py" = ["D"]
-"pybis/entity_type.py" = ["D"]
 "pybis/fast_download.py" = ["D"]
-"pybis/openbis_object.py" = ["D"]
 "tests/*" = ["D"]
 "playground.py" = ["D"]
 
@@ -105,11 +102,8 @@ module = [
     "pybis.client",
     "pybis.afs_client",
     "pybis.attribute",
-    "pybis.chunk",
     "pybis.data_set",
     "pybis.dataset",
-    "pybis.entity_type",
     "pybis.fast_download",
-    "pybis.openbis_object",
 ]
 ignore_errors = true
