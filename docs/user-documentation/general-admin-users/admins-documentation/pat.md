@@ -20,4 +20,4 @@ To create a PAT in the admin UI:
 4. Click **Save**
 
 
-PATs can also be created with [pyBIS)](../../../software-developer-documentation/apis/python-v3-api.md#personal-access-token-pat).
+PATs can also be created with [pyBIS](../../../software-developer-documentation/apis/python-v3-api.md#personal-access-token-pat).
