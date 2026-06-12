@@ -203,15 +203,13 @@ payload-snapshot goldens, mock-RPC test infra.
   `search_datasets` raises (server cannot search by kind).
 
 **Open (next session):**
-- WP11 (remaining): strict-typing of the last 4 modules on the mypy
-  override list: `client` (~223 errors), `attribute` (~71), `dataset`
-  (~68), `afs_client` (~61). Everything else is strict-clean and off
-  both shrinking lists (mypy overrides + ruff docstring ignores).
-  Imaging/spreadsheet typing and the transparent-cache consolidation are
-  done: `_object_cache` honors `use_cache`, write paths invalidate,
-  `clear_cache("vocabulary")` also drops term lists, and all internal
-  `only_data=True` refetches were ported to the v2 getters —
-  type_group.py still uses its unmigrated legacy getter.
+- WP11: DONE. The whole package is `mypy --strict` clean — the override
+  list and the ruff docstring per-file-ignores are both empty (only
+  `tests/*` and `playground.py` keep a D ignore). Transparent cache
+  consolidated (`_object_cache` honors `use_cache`, write paths
+  invalidate, `clear_cache("vocabulary")` drops term lists); all
+  internal `only_data=True` refetches ported to the v2 getters
+  (type_group.py still uses its own unmigrated legacy getter).
 - WP12: compat audit vs §3 inventory, `__init__.py` public surface,
   delete the `pybis/pybis.py` stub, old-vocabulary grep gate.
 - WP15: live verification — no openBIS instance was reachable in the dev

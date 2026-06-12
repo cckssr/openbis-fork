@@ -81,7 +81,6 @@ select = ["D"]
 # Legacy modules awaiting migration — same shrinking-list rule as the mypy
 # overrides below. New and migrated modules must be clean.
 [tool.ruff.lint.per-file-ignores]
-"pybis/client.py" = ["D"]
 "tests/*" = ["D"]
 "playground.py" = ["D"]
 
@@ -90,10 +89,3 @@ strict = true
 python_version = "3.10"
 files = ["pybis"]
 
-# Legacy modules awaiting migration. Every work package removes its modules
-# from this list; the refactor is complete when the list is empty.
-[[tool.mypy.overrides]]
-module = [
-    "pybis.client",
-]
-ignore_errors = true

@@ -257,7 +257,7 @@ class SemanticAnnotation:
         Example:
             >>> ann.delete("Ontology term retired")
         """
-        self._openbis.delete_entity(  # type: ignore[no-untyped-call]  # reason: legacy client module
+        self._openbis.delete_entity(
             entity="SemanticAnnotation", id=self.permId, reason=reason
         )
         if VERBOSE:
