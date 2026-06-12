@@ -13,6 +13,8 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 #
+"""Parallel chunked download protocol against the openBIS fileserver."""
+
 import binascii
 import functools
 import json
@@ -20,6 +22,7 @@ import os
 import time
 from pathlib import Path
 from threading import Lock, Thread
+from typing import Any, Optional
 from urllib.parse import urljoin
 
 import requests
@@ -32,8 +35,10 @@ DOWNLOAD_RETRIES_COUNT = 3
 FAST_DOWNLOAD_PROTOCOL_VERSION = 2
 
 
-def make_fileserver_body_params(server_information, **params):
-    """create a proper pam of key-values for fileserver request"""
+def make_fileserver_body_params(
+    server_information: Any, **params: Any
+) -> "dict[str, list[str]]":
+    """Create a proper map of key-values for a fileserver request."""
     result = {}
     if server_information.is_version_greater_than(3, 6):
         result = {"version": [str(FAST_DOWNLOAD_PROTOCOL_VERSION)]}
@@ -43,13 +48,13 @@ def make_fileserver_body_params(server_information, **params):
     return result
 
 
-def comma_separated_items(arr):
-    """Create comma-separated string from the list of items"""
-    return functools.reduce(lambda a, b: a + ", " + b, arr)
+def comma_separated_items(arr: Any) -> str:
+    """Create comma-separated string from the list of items."""
+    return str(functools.reduce(lambda a, b: a + ", " + b, arr))
 
 
-def create_session(download_url_base):
-    """Create a session object to handle retries in case of server failure"""
+def create_session(download_url_base: str) -> requests.Session:
+    """Create a session object to handle retries in case of server failure."""
     session = requests.Session()
     retries = Retry(
         total=REQUEST_RETRIES_COUNT, backoff_factor=1, status_forcelist=[502, 503, 504]
@@ -58,8 +63,14 @@ def create_session(download_url_base):
     return session
 
 
-def post_request(session, full_url, verify_certificates, request, parse_response=True):
-    """Perform POST call to server"""
+def post_request(
+    session: requests.Session,
+    full_url: str,
+    verify_certificates: bool,
+    request: Any,
+    parse_response: bool = True,
+) -> Any:
+    """Perform POST call to server."""
     try:
         if request:
             resp = session.post(
@@ -87,14 +98,14 @@ def post_request(session, full_url, verify_certificates, request, parse_response
 
 
 def queue_chunks(
-    session,
-    base_url,
-    download_session_id,
-    chunks,
-    verify_certificates,
-    server_information,
-):
-    """Queue particular session chunks for download"""
+    session: requests.Session,
+    base_url: str,
+    download_session_id: str,
+    chunks: "list[str]",
+    verify_certificates: bool,
+    server_information: Any,
+) -> None:
+    """Queue particular session chunks for download."""
     queue_request = make_fileserver_body_params(
         server_information,
         method="queue",
@@ -111,7 +122,8 @@ def queue_chunks(
         )
 
 
-def deserialize_chunk(byte_array):
+def deserialize_chunk(byte_array: bytes) -> "dict[str, Any]":
+    """Parse one binary chunk into its header fields and payload."""
     sequence_number_bytes = 4
     download_item_id_length_bytes = 2
     is_directory_bytes = 1
@@ -121,7 +133,7 @@ def deserialize_chunk(byte_array):
     sent_header_checksum_bytes = 8
     sent_payload_checksum_bytes = 8
 
-    result = {"invalid": False, "invalid_reason": ""}
+    result: dict[str, Any] = {"invalid": False, "invalid_reason": ""}
 
     if len(byte_array) == 0:
         result["invalid"] = True
@@ -167,9 +179,10 @@ def deserialize_chunk(byte_array):
 
 
 class AtomicChecker:
-    """Helper class for keeping watch of chunks to download"""
+    """Helper class for keeping watch of chunks to download."""
 
-    def __init__(self, values_to_download: set):
+    def __init__(self, values_to_download: "set[int]") -> None:
+        """Track the chunk numbers that still need downloading."""
         self._value = 0
         self._max = len(
             values_to_download
@@ -177,31 +190,36 @@ class AtomicChecker:
         self._set = values_to_download
         self._lock = Lock()
 
-    def should_continue(self):
+    def should_continue(self) -> bool:
+        """Claim one download slot; False when the budget is exhausted."""
         with self._lock:
             if self._value >= self._max:
                 return False
             self._value += 1
             return True
 
-    def repeat_call(self):
+    def repeat_call(self) -> None:
+        """Grow the budget by one (a chunk was re-queued)."""
         with self._lock:
             self._max += 1
 
-    def break_count(self):
+    def break_count(self) -> None:
+        """Abort: no further downloads are allowed."""
         with self._lock:
             self._max = 0
 
-    def remove_value(self, value):
+    def remove_value(self, value: int) -> None:
+        """Mark one chunk as successfully downloaded."""
         with self._lock:
             if value in self._set:
                 self._set.remove(value)
 
-    def get_remaining_values(self):
+    def get_remaining_values(self) -> "set[int]":
+        """Return the chunks that are still missing."""
         return self._set
 
 
-def _get_json(response):
+def _get_json(response: Any) -> "tuple[bool, Any]":
     try:
         return True, response.json()
     except:
@@ -209,21 +227,22 @@ def _get_json(response):
 
 
 class DownloadThread(Thread):
-    """Helper class defining single stream download"""
+    """Helper class defining single stream download."""
 
     def __init__(
         self,
-        session,
-        download_url_base,
-        download_session_id,
-        stream_id,
+        session: requests.Session,
+        download_url_base: str,
+        download_session_id: str,
+        stream_id: str,
         counter: AtomicChecker,
-        verify_certificates,
-        create_default_folders,
-        destination,
-        server_information,
-        number_of_chunks=1,
-    ):
+        verify_certificates: bool,
+        create_default_folders: bool,
+        destination: str,
+        server_information: Any,
+        number_of_chunks: int = 1,
+    ) -> None:
+        """Set up one download stream worker."""
         Thread.__init__(self)
         self.session = session
         self.download_url = download_url_base
@@ -234,11 +253,12 @@ class DownloadThread(Thread):
         self.create_default_folders = create_default_folders
         self.destination = destination
         self.verify_certificates = verify_certificates
-        self.exc = None
+        self.exc: Optional[Exception] = None
         self.server_information = server_information
 
-    def run(self):
-        repeated_chunks = {}
+    def run(self) -> None:
+        """Download chunks until the shared budget is exhausted."""
+        repeated_chunks: dict[int, int] = {}
         download_params = make_fileserver_body_params(
             self.server_information,
             method="download",
@@ -307,9 +327,9 @@ class DownloadThread(Thread):
                         self.counter.remove_value(sequence_number)
             except Exception as e:
                 self.exc = e
-        return True
 
-    def save_to_file(self, deserialized_response):
+    def save_to_file(self, deserialized_response: "dict[str, Any]") -> None:
+        """Write one chunk's payload at its offset in the target file."""
         file_name = deserialized_response["file_path"]
         if self.create_default_folders:
             # create original/ or original/DEFAULT subdirectories
@@ -336,21 +356,22 @@ class DownloadThread(Thread):
 
 
 class FastDownload:
-    """Class for downloading data using FastDownload scheme"""
+    """Class for downloading data using FastDownload scheme."""
 
     def __init__(
         self,
-        token,
-        download_url,
-        perm_id,
-        files,
-        destination,
-        create_default_folders,
-        wait_until_finished,
-        verify_certificates,
-        server_information,
-        wished_number_of_streams=4,
-    ):
+        token: Optional[str],
+        download_url: str,
+        perm_id: str,
+        files: Any,
+        destination: str,
+        create_default_folders: bool,
+        wait_until_finished: bool,
+        verify_certificates: bool,
+        server_information: Any,
+        wished_number_of_streams: int = 4,
+    ) -> None:
+        """Store the download parameters and create the retrying session."""
         self.dss_facade_url = urljoin(download_url, DSS_V3)
         self.session = create_session(download_url)
         self.token = token
@@ -370,9 +391,8 @@ class FastDownload:
 
         self.files = files
 
-    def download(self):
-        """Fast download of files from dataset"""
-
+    def download(self) -> str:
+        """Fast download of files from dataset."""
         if self.token is None:
             raise ValueError("Your session expired, please log in again")
 
@@ -389,6 +409,7 @@ class FastDownload:
 
         # Step 2 - Request fileserver to start the download session
 
+        download_item_ids: Any
         if self.server_information.is_version_greater_than(3, 6):
             download_item_ids = list(
                 map(
@@ -426,7 +447,7 @@ class FastDownload:
 
         session_stream_ids = list(start_download_session["streamIds"])
 
-        exception_list = []
+        exception_list: list[Exception] = []
         thread = Thread(
             target=self._download_step,
             args=(
@@ -446,7 +467,7 @@ class FastDownload:
 
         return self.destination
 
-    def _create_fast_download_session_request(self):
+    def _create_fast_download_session_request(self) -> "dict[str, Any]":
         file_ids = list(
             map(lambda file_path: self._make_json_id(file_path), self.files)
         )
@@ -463,8 +484,8 @@ class FastDownload:
             "params": [self.token, file_ids, fast_download_session_options],
         }
 
-    def _make_json_id(self, file_path):
-        """Prepare JSON to create session for fileserver for given file in dataset"""
+    def _make_json_id(self, file_path: str) -> "dict[str, Any]":
+        """Prepare JSON to create session for fileserver for given file in dataset."""
         return {
             "dataSetId": {
                 "permId": self.perm_id,
@@ -474,13 +495,15 @@ class FastDownload:
             "@type": "dss.dto.datasetfile.id.DataSetFilePermId",
         }
 
-    def _queue_all_files(self, base_url, download_session_id, ranges):
+    def _queue_all_files(
+        self, base_url: str, download_session_id: str, ranges: "dict[str, str]"
+    ) -> None:
+        """Queue all chunks for download from the fileserver.
+
+        Each file receives a different chunk range, e.g. FileA ``0:4``,
+        FileB ``5:6``.
         """
-        queue all chunks for download from fileserver, each file receives different chunk range
-        FileA: 0:4
-        FileB: 5:6
-        """
-        chunks = []
+        chunks: list[str] = []
         for file, chunks_range in ranges.items():
             chunks += [chunks_range]
         queue_chunks(
@@ -494,19 +517,20 @@ class FastDownload:
 
     def _download_step(
         self,
-        download_url,
-        download_session_id,
-        session_stream_ids,
-        ranges,
-        exception_list,
-    ):
-        """
-        Perform downloading of chunks in separate threads
-        :param download_url: url to use for downloading data
-        :param download_session_id: download session id
-        :param session_stream_ids: list of available streams
-        :param ranges: ranges provided for files
-        :return: nothing
+        download_url: str,
+        download_session_id: str,
+        session_stream_ids: "list[str]",
+        ranges: "dict[str, str]",
+        exception_list: "list[Exception]",
+    ) -> None:
+        """Perform downloading of chunks in separate threads.
+
+        Args:
+            download_url: URL to use for downloading data.
+            download_session_id: Download session id.
+            session_stream_ids: List of available streams.
+            ranges: Chunk ranges provided per file.
+            exception_list: Output list collecting per-stream failures.
         """
         min_chunk = min(map(lambda x: int(x.split(":")[0]), ranges.values()))
         max_chunk = max(map(lambda x: int(x.split(":")[1]), ranges.values()))
