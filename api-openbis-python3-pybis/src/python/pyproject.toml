@@ -94,7 +94,6 @@ select = ["D"]
 "pybis/experiment.py" = ["D"]
 "pybis/fast_download.py" = ["D"]
 "pybis/group.py" = ["D"]
-"pybis/imaging.py" = ["D"]
 "pybis/material.py" = ["D"]
 "pybis/openbis_object.py" = ["D"]
 "pybis/openbis_typing.py" = ["D"]
@@ -107,7 +106,6 @@ select = ["D"]
 "pybis/scripts/*" = ["D"]
 "pybis/semantic_annotation.py" = ["D"]
 "pybis/space.py" = ["D"]
-"pybis/spreadsheet.py" = ["D"]
 "pybis/tag.py" = ["D"]
 "pybis/things.py" = ["D"]
 "pybis/type_group.py" = ["D"]
@@ -140,7 +138,6 @@ module = [
     "pybis.experiment",
     "pybis.fast_download",
     "pybis.group",
-    "pybis.imaging",
     "pybis.material",
     "pybis.openbis_object",
     "pybis.openbis_typing",
@@ -154,7 +151,6 @@ module = [
     "pybis.scripts.cli",
     "pybis.semantic_annotation",
     "pybis.space",
-    "pybis.spreadsheet",
     "pybis.tag",
     "pybis.things",
     "pybis.type_group",

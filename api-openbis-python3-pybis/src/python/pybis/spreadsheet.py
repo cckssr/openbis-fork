@@ -179,13 +179,13 @@ class Spreadsheet:
             raise ValueError(f"Column '{column}' does not exists!")
         if row == "":
             raise ValueError("Missing row index!")
-        row = int(row)
-        if len(self.data) < row or row < 1:
-            raise ValueError(f"Row '{row}' does not exists!")
+        row_number = int(row)
+        if len(self.data) < row_number or row_number < 1:
+            raise ValueError(f"Row '{row_number}' does not exists!")
 
-        return row - 1, self.headers.index(column)
+        return row_number - 1, self.headers.index(column)
 
-    def _get_index_tuple(self, index: tuple) -> tuple[int, int]:
+    def _get_index_tuple(self, index: tuple[Any, Any]) -> tuple[int, int]:
         """Parse a ``(column, row)`` tuple into ``(row, col)`` indices.
 
         Args:
@@ -234,7 +234,7 @@ class Spreadsheet:
             return self._get_index_tuple(index)
         raise ValueError(f"'{index}' is not a valid index!")
 
-    def __getitem__(self, index: tuple) -> "Spreadsheet.CellBuilder":
+    def __getitem__(self, index: tuple[Any, Any]) -> "Spreadsheet.CellBuilder":
         """Return a :class:`CellBuilder` for the cell at ``index``.
 
         Args:
@@ -273,7 +273,7 @@ class Spreadsheet:
         """
         return self.version
 
-    def get_meta_data(self) -> dict:
+    def get_meta_data(self) -> dict[str, Any]:
         """Return the metadata dict.
 
         Returns:
@@ -281,7 +281,7 @@ class Spreadsheet:
         """
         return self.meta
 
-    def get_formulas(self) -> list:
+    def get_formulas(self) -> list[list[str]]:
         """Return a deep copy of the 2-D formula grid.
 
         Returns:
@@ -297,7 +297,7 @@ class Spreadsheet:
         """
         return copy.deepcopy(self.headers)
 
-    def get_values(self) -> list:
+    def get_values(self) -> list[list[str]]:
         """Return a deep copy of the 2-D computed-value grid.
 
         Returns:
@@ -313,7 +313,7 @@ class Spreadsheet:
         """
         return copy.deepcopy(self.width)
 
-    def get_style(self) -> dict:
+    def get_style(self) -> dict[str, str]:
         """Return a copy of the per-cell style dict.
 
         Returns:
@@ -358,8 +358,7 @@ class Spreadsheet:
                 columns=self.headers,
                 index=range(1, len(self.values) + 1, 1),
             )
-        elif attribute == "width":
-            return DataFrame(self.width)
+        return DataFrame(self.width)
 
     def add_column(self, column_name: Optional[str] = None) -> None:
         """Append a new empty column to the right of the spreadsheet.
@@ -515,7 +514,7 @@ class Spreadsheet:
             self,
             parent: "Spreadsheet",
             column_identifier: Union[int, str],
-            row_number: int,
+            row_number: Union[int, str],
         ) -> None:
             """Initialise a CellBuilder.
 
@@ -560,6 +559,7 @@ class Spreadsheet:
             self.__dict__["row_index"] = row - 1
 
         def __getattr__(self, name: str) -> Any:
+            """Read a cell attribute: formula, value, style, or position."""
             row = self.__dict__["row_index"]
             column = self.__dict__["column_index"]
             label = self.__dict__["column_label"]
@@ -579,6 +579,7 @@ class Spreadsheet:
                 raise ValueError(f"No such attribute '{name}' found!")
 
         def __setattr__(self, name: str, value: Any) -> None:
+            """Write a cell attribute: only formula and style can be set."""
             row = self.__dict__["row_index"]
             column = self.__dict__["column_index"]
             label = self.__dict__["column_label"]
@@ -590,6 +591,7 @@ class Spreadsheet:
                 raise ValueError(f"No such attribute '{name}' is allowed for setting!")
 
         def __str__(self) -> str:
+            """Return the cell position, formula, and value."""
             attr = self.__dict__
             row = attr["row_index"]
             column = attr["column_index"]
@@ -646,6 +648,7 @@ class Spreadsheet:
                 ]
 
         def __getattr__(self, name: str) -> Any:
+            """Read a column attribute: header, width, or column_number."""
             if name == "header":
                 return self.__dict__["column_label"]
             elif name == "width":
@@ -656,6 +659,7 @@ class Spreadsheet:
                 raise ValueError(f"No such attribute '{name}' found!")
 
         def __setattr__(self, name: str, value: Any) -> None:
+            """Write a column attribute: only header and width can be set."""
             if name == "header":
                 self.__dict__["parent"].headers[self.__dict__["column_index"]] = value
             elif name == "width":
@@ -664,15 +668,18 @@ class Spreadsheet:
                 raise ValueError(f"No such attribute '{name}' found!")
 
         def __str__(self) -> str:
+            """Return the column index and header label."""
             attr = self.__dict__
             return (
                 f"Column[column={attr['column_index']}, header={attr['column_label']}]"
             )
 
     def __str__(self) -> str:
+        """Return the JSON representation."""
         return json.dumps(self.__dict__, default=lambda x: x.__dict__)
 
     def __repr__(self) -> str:
+        """Return the JSON representation."""
         return json.dumps(self.__dict__, default=lambda x: x.__dict__)
 
     def to_json(self) -> str:
@@ -682,14 +689,14 @@ class Spreadsheet:
             A pretty-printed JSON string representation of the spreadsheet.
         """
 
-        def dictionary_creator(x: Any) -> dict:
-            dictionary = x.__dict__
+        def dictionary_creator(x: Any) -> dict[str, Any]:
+            dictionary: dict[str, Any] = x.__dict__
             return dictionary
 
         return json.dumps(self, default=dictionary_creator, sort_keys=True, indent=4)
 
     @classmethod
-    def from_dict(cls, data: Optional[dict]) -> Optional["Spreadsheet"]:
+    def from_dict(cls, data: Optional[dict[str, Any]]) -> Optional["Spreadsheet"]:
         """Deserialise a :class:`Spreadsheet` from a plain dictionary.
 
         Args:
