@@ -2,7 +2,9 @@ package ch.openbis.rocrate.app.writer.mapping;
 
 import ch.eth.sis.rocrate.facade.*;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.entity.AbstractEntityPropertyHolder;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.IObjectId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.ObjectIdentifier;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.ObjectPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IEntityType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetType;
@@ -209,13 +211,12 @@ public class Mapper
             properties.add(rdfsProperty);
         }
 
-        List<MetadataEntry> metaDataEntries = new ArrayList<MetadataEntry>();
+        Map<IObjectId, MetadataEntry> idToMetadataEntryMap = new HashMap<>();
         for (Map.Entry<SpacePermId, Space> space : openBisModel.getSpaces().entrySet())
         {
-            metaDataEntries.add(
-                    new MetadataEntry(space.getKey().getPermId(), Set.of(Constants.GRAPH_ID_SPACE),
-                            new HashMap<>(), new LinkedHashMap<>()))
-            ;
+            MetadataEntry metadataEntry = new MetadataEntry(space.getKey().getPermId(), Set.of(Constants.GRAPH_ID_SPACE),
+                    new HashMap<>(), new LinkedHashMap<>());
+            idToMetadataEntryMap.put(space.getKey(), metadataEntry);
         }
         openBisModel.getProjects().entrySet().forEach(project -> {
             Map<String, Serializable> props = new HashMap<>();
@@ -223,11 +224,11 @@ public class Mapper
             {
                 props.put("description", project.getValue().getDescription());
             }
-            metaDataEntries.add(
-                    new MetadataEntry(project.getKey().toString(),
-                            Set.of(Constants.GRAPH_ID_PROJECT),
-                            props,
-                            new LinkedHashMap<>()));
+            MetadataEntry metadataEntry = new MetadataEntry(project.getKey().toString(),
+                    Set.of(Constants.GRAPH_ID_PROJECT),
+                    props,
+                    new LinkedHashMap<>());
+            idToMetadataEntryMap.put(project.getKey(), metadataEntry);
         });
 
         for (Map.Entry<ObjectIdentifier, AbstractEntityPropertyHolder> metaData : openBisModel.getEntities()
@@ -319,12 +320,11 @@ public class Mapper
                 }
 
                 MetadataEntry
-                        entry =
+                        metadataEntry =
                         new MetadataEntry(sample.getIdentifier().toString(), Set.of(type), props,
                                 references);
 
-                metaDataEntries.add(entry
-                );
+                idToMetadataEntryMap.put(sample.getIdentifier(), metadataEntry);
 
             }
             if (val instanceof DataSet dataSet)
@@ -335,9 +335,9 @@ public class Mapper
                     String propName = openBisPropertiesToRdfsProperties.get(a.getKey());
                     props.put(propName, a.getValue());
                 }
-                metaDataEntries.add(
-                        new MetadataEntry(dataSet.getCode(), Set.of(type), props,
-                                new LinkedHashMap<>()));
+                MetadataEntry metadataEntry = new MetadataEntry(dataSet.getCode(), Set.of(type), props,
+                        new LinkedHashMap<>());
+                idToMetadataEntryMap.put(dataSet.getPermId(), metadataEntry);
 
             }
             if (val instanceof Experiment experiment)
@@ -348,11 +348,10 @@ public class Mapper
                     String propName = openBisPropertiesToRdfsProperties.get(a.getKey());
                     props.put(propName, a.getValue());
                 }
-                metaDataEntries.add(
-                        new MetadataEntry(experiment.getIdentifier().toString(), Set.of(type),
-                                props,
-                                new LinkedHashMap<>()));
-
+                MetadataEntry metadataEntry = new MetadataEntry(experiment.getIdentifier().toString(), Set.of(type),
+                        props,
+                        new LinkedHashMap<>());
+                idToMetadataEntryMap.put(experiment.getIdentifier(), metadataEntry);
             }
 
         }
@@ -382,14 +381,14 @@ public class Mapper
 
         List<MapResult.RoCrateFile> files = new ArrayList<>();
 
-        for (Map.Entry<ObjectIdentifier, List<IFileInfo>> a : openBisModel.getFiles()
+        for (Map.Entry<ObjectIdentifier, List<IFileInfo>> entityIdToFiles : openBisModel.getFiles()
                 .entrySet())
         {
 
             List<String> identifiersToWrite = new ArrayList<>();
 
-            Stream<IFileInfo> fileInfoStream = Stream.concat(a.getValue().stream(),
-                    openBisModel.getImageFiles().getOrDefault(a.getKey(), new ArrayList<>())
+            Stream<IFileInfo> fileInfoStream = Stream.concat(entityIdToFiles.getValue().stream(),
+                    openBisModel.getImageFiles().getOrDefault(entityIdToFiles.getKey(), new ArrayList<>())
                             .stream());
             for (IFileInfo b : fileInfoStream.collect(Collectors.toList()))
             {
@@ -406,15 +405,13 @@ public class Mapper
                 identifiersToWrite.add(escape(b.originalPath()));
             }
 
-            Map<String, MetadataEntry> idToEntities =
-                    metaDataEntries.stream().collect(Collectors.toMap(x -> x.getId(), x -> x));
-
-            MetadataEntry metadataEntry = idToEntities.get(a.getKey().toString());
+            MetadataEntry metadataEntry = idToMetadataEntryMap.get(entityIdToFiles.getKey());
             metadataEntry.getReferences().put(Constants.PROPERTY_ID_FILES, identifiersToWrite);
 
 
         }
 
+        List<MetadataEntry> metaDataEntries = new ArrayList<>(idToMetadataEntryMap.values());
 
         return new MapResult(
                 new RdfsSchema(new ArrayList<>(classes.values()), properties),
