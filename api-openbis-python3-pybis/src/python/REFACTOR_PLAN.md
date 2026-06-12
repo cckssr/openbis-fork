@@ -182,8 +182,13 @@ Invariants at every commit:
 
 ## 6. Status (as of 2026-06-12)
 
-**Done:** WP0–WP10, WP13, WP14. 507 offline tests green (unit + migration);
-`mypy pybis/ --strict` clean (62 files; legacy modules still on the
+**Done:** WP0–WP10, WP13, WP14, and the WP11 rename wave (wave 5: plugins,
+property types, material types, semantic annotations, external DMS,
+personal access tokens — new mixins in `entities/{plugin,semantic_annotation,
+external_dms,pat}.py` and property/material types in
+`entities/entity_type.py`; `Plugin`/`ExternalDMS`/`PersonalAccessToken`
+classes moved out of client.py). 580 offline tests green (unit + migration);
+`mypy pybis/ --strict` clean (66 files; legacy modules still on the
 override list); ruff clean. Deliverables in place: `MIGRATION_GUIDE.md`,
 `migrate.py` (+ fixture tests), `_compat.py` shims for every rename,
 payload-snapshot goldens, mock-RPC test infra.
@@ -198,10 +203,9 @@ payload-snapshot goldens, mock-RPC test infra.
   `search_datasets` raises (server cannot search by kind).
 
 **Open (next session):**
-- WP11: plural renames still pending for plugins, property types, semantic
-  annotations, external DMS, personal access tokens, material types;
-  imaging/spreadsheet typing retrofit; strict-typing the legacy modules to
-  empty the mypy override list; transparent-cache consolidation.
+- WP11 (remaining): imaging/spreadsheet typing retrofit; strict-typing the
+  legacy modules to empty the mypy override list; transparent-cache
+  consolidation (invalidate on save()/delete()).
 - WP12: compat audit vs §3 inventory, `__init__.py` public surface,
   delete the `pybis/pybis.py` stub, old-vocabulary grep gate.
 - WP15: live verification — no openBIS instance was reachable in the dev

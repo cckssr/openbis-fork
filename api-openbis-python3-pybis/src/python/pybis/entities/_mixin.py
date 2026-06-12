@@ -24,10 +24,13 @@ type-check standalone; the real implementations live on ``Openbis``.
 from __future__ import annotations
 
 from collections.abc import Iterator
-from typing import Any, Protocol, TypeVar
+from typing import TYPE_CHECKING, Any, Protocol, TypeVar
 
 from ..api.rpc import JsonPayload
 from ..types.results import SearchResult
+
+if TYPE_CHECKING:
+    from .server import ServerInformation
 
 T = TypeVar("T")
 
@@ -64,10 +67,24 @@ class ClientApiMixin:
     """Declares the Openbis members that entity API mixins may use."""
 
     as_v3: str
+    url: str
+    hostname: str | None
 
     @property
     def token(self) -> str | None:
         """Current session or personal access token."""
+        raise NotImplementedError
+
+    def is_token_valid(self, token: str | None = None) -> bool:
+        """Check a token against the server (implemented by Openbis)."""
+        raise NotImplementedError
+
+    def _get_username(self) -> str:
+        """User id behind the current token (implemented by Openbis)."""
+        raise NotImplementedError
+
+    def get_server_information(self) -> "ServerInformation":
+        """Cached server capability record (implemented by Openbis)."""
         raise NotImplementedError
 
     def _post_request(self, resource: str, request: JsonPayload) -> JsonPayload:

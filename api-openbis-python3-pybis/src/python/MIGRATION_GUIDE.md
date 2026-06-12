@@ -70,6 +70,13 @@ Every old name still works one release, with a warning.
 | `get_vocabularies(...)` | `search_vocabularies(...)` |
 | `get_tags(...)` | `search_tags(...)` |
 | `get_deletions(...)` | `search_deletions(...)` |
+| `get_plugins(...)` | `search_plugins(...)` |
+| `get_property_types(...)` | `search_property_types(...)` |
+| `get_material_types(...)` | `search_material_types(...)` |
+| `get_semantic_annotations()` | `search_semantic_annotations()` |
+| `get_external_data_management_systems(...)` | `search_external_data_management_systems(...)` |
+| `get_externalDms(id)` | `get_external_data_management_system(id)` |
+| `get_personal_access_tokens(...)` | `search_personal_access_tokens(...)` |
 | `sample_to_sample_id` etc. | removed — internal transport helpers |
 
 New in 7.x: `get_*_or_raise(id)` (raises `NotFoundError`) and `iter_*(...)`
@@ -107,6 +114,9 @@ Applied uniformly across all methods (shims translate them):
 | `mainDataSetPattern`, `mainDataSetPath`, `disallowDeletion` | `main_dataset_pattern`, `main_dataset_path`, `disallow_deletion` |
 | `validationPlugin`, `managedInternally`, `chosenFromList` | `validation_plugin`, `managed_internally`, `chosen_from_list` |
 | `dataType`, `pluginType`, `materialType` | `data_type`, `plugin_type`, `material_type` |
+| `entityKind`, `metaData`, `multiValue` | `entity_kind`, `meta_data`, `multi_value` |
+| `predicateOntologyId`, `predicateOntologyVersion`, `predicateAccessionId` | `predicate_ontology_id`, `predicate_ontology_version`, `predicate_accession_id` |
+| `descriptorOntologyId`, `descriptorOntologyVersion`, `descriptorAccessionId` | `descriptor_ontology_id`, `descriptor_ontology_version`, `descriptor_accession_id` |
 | `sampleType` | `object_type` |
 | `data_set_id` | `dataset_id` |
 | `techId`, `projectId` | `tech_id`, `project_id` |
@@ -121,9 +131,15 @@ Applied uniformly across all methods (shims translate them):
 
 `get_dataset`, `new_dataset`, `get_dataset_type`, `get_person`,
 `new_person`, `new_group`, `get_role_assignment`, `get_term`, `new_term`,
-`get_vocabulary`, `new_vocabulary`, `get_tag`, and `new_tag` keep their
-names; their 1.x parameter spellings (`permIds`, `vocabularyCode`,
-`userIds`, `props`, ...) are translated with a warning.
+`get_vocabulary`, `new_vocabulary`, `get_tag`, `new_tag`, `get_plugin`,
+`new_plugin`, `get_property_type`, `new_property_type`,
+`get_material_type`, `new_material_type`, `search_semantic_annotations`,
+`get_semantic_annotation`, `new_semantic_annotation`,
+`get_external_data_management_system`,
+`create_external_data_management_system`, `get_personal_access_token`,
+and `get_or_create_personal_access_token` keep their names; their 1.x
+parameter spellings (`permIds`, `vocabularyCode`, `userIds`, `props`,
+`sessionName`, ...) are translated with a warning.
 
 ## 5. Removed parameters
 

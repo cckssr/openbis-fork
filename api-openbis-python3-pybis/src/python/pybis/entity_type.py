@@ -625,17 +625,17 @@ class SampleType(
         semantic_annotation.save()
         return semantic_annotation
 
-    def get_semantic_annotations(self) -> Things:
+    def get_semantic_annotations(self) -> Any:
         """Return all semantic annotations for this sample type.
 
         Returns:
-            A :class:`~pybis.things.Things` container of
+            A :class:`~pybis.types.results.SearchResult` of
             :class:`~pybis.semantic_annotation.SemanticAnnotation` objects.
 
         Example:
             >>> st.get_semantic_annotations().df
         """
-        return self.openbis.search_semantic_annotations(entityType=self.code)
+        return self.openbis.search_semantic_annotations(entity_type=self.code)
 
 
 class DataSetType(

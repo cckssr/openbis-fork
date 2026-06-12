@@ -67,6 +67,15 @@ _PARAM_RENAMES: dict[str, str] = {
     "sampleType": "object_type",
     "materialType": "material_type",
     "pluginType": "plugin_type",
+    "entityKind": "entity_kind",
+    "metaData": "meta_data",
+    "multiValue": "multi_value",
+    "predicateOntologyId": "predicate_ontology_id",
+    "predicateOntologyVersion": "predicate_ontology_version",
+    "predicateAccessionId": "predicate_accession_id",
+    "descriptorOntologyId": "descriptor_ontology_id",
+    "descriptorOntologyVersion": "descriptor_ontology_version",
+    "descriptorAccessionId": "descriptor_accession_id",
     "userIds": "user_ids",
     "data_set_id": "dataset_id",
     # old vocabulary in parameter names
@@ -118,6 +127,15 @@ _METHOD_RENAMES: dict[str, str] = {
     "get_vocabularies": "search_vocabularies",
     "get_tags": "search_tags",
     "get_deletions": "search_deletions",
+    # wave 5 (WP11): plugins, property/material types, semantic annotations,
+    # external DMS, personal access tokens
+    "get_plugins": "search_plugins",
+    "get_property_types": "search_property_types",
+    "get_material_types": "search_material_types",
+    "get_semantic_annotations": "search_semantic_annotations",
+    "get_external_data_management_systems": ("search_external_data_management_systems"),
+    "get_externalDms": "get_external_data_management_system",
+    "get_personal_access_tokens": "search_personal_access_tokens",
 }
 
 #: Methods that keep their name but whose 1.x parameters are translated.
@@ -137,6 +155,42 @@ _PARAM_SHIMMED: dict[str, list[str]] = {
     "new_vocabulary": ["code", "terms"],
     "get_tag": ["permId"],
     "new_tag": ["code", "description"],
+    "get_plugin": ["permId"],
+    "new_plugin": ["name", "pluginType"],
+    "get_property_type": ["code"],
+    "new_property_type": [
+        "code",
+        "label",
+        "description",
+        "dataType",
+        "managedInternally",
+        "vocabulary",
+        "materialType",
+        "sampleType",
+        "schema",
+        "transformation",
+        "metaData",
+        "multiValue",
+    ],
+    "get_material_type": ["type"],
+    "new_material_type": ["code", "description", "validationPlugin"],
+    "search_semantic_annotations": ["permId", "entityType", "propertyType"],
+    "get_semantic_annotation": ["permId"],
+    "new_semantic_annotation": ["entityType", "propertyType"],
+    "get_external_data_management_system": ["permId"],
+    "create_external_data_management_system": [
+        "code",
+        "label",
+        "address",
+        "address_type",
+    ],
+    "get_personal_access_token": ["permId"],
+    "get_or_create_personal_access_token": [
+        "sessionName",
+        "validFrom",
+        "validTo",
+        "force",
+    ],
 }
 
 #: Positional parameter names of the legacy signatures, so positional 1.x
@@ -201,6 +255,13 @@ _LEGACY_POSITIONAL: dict[str, list[str]] = {
     "get_experiment_type": ["type"],
     "new_sample_type": ["code", "generatedCodePrefix"],
     "new_experiment_type": ["code", "description"],
+    "get_plugins": ["start_with", "count"],
+    "get_property_types": ["code", "start_with", "count"],
+    "get_material_types": ["type", "start_with", "count"],
+    "get_semantic_annotations": [],
+    "get_external_data_management_systems": ["start_with", "count"],
+    "get_externalDms": ["permId"],
+    "get_personal_access_tokens": ["sessionName", "start_with", "count"],
 }
 
 #: Per-method parameter handling that differs from the global rename map.
@@ -229,6 +290,9 @@ _PER_METHOD_PARAM_RENAMES: dict[str, dict[str, str | None]] = {
     "get_role_assignments": {"user": "person"},
     "get_persons": {"userId": "user_id"},
     "get_terms": {"vocabulary": "vocabulary"},
+    "get_plugin": {"permId": "name"},
+    "get_material_type": {"type": "code"},
+    "get_material_types": {"type": "code"},
 }
 
 #: Parameters whose 1.x meaning depended on the value: a bool means the

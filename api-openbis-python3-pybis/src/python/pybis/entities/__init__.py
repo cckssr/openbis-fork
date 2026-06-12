@@ -19,9 +19,13 @@ from ._properties import PropertyBag
 from .base import EntityBehavior
 from .collection import Collection
 from .dataset import DataSet, DataSetType
-from .entity_type import CollectionType, ObjectType
+from .entity_type import CollectionType, MaterialType, ObjectType, PropertyType
+from .external_dms import ExternalDMS
 from .object import Object
+from .pat import PersonalAccessToken
+from .plugin import Plugin
 from .project import Project
+from .semantic_annotation import SemanticAnnotation
 from .server import ServerInformation, ServerVersion, requires_version
 from .space import Space
 
@@ -31,10 +35,16 @@ __all__ = [
     "DataSet",
     "DataSetType",
     "EntityBehavior",
+    "ExternalDMS",
+    "MaterialType",
     "Object",
     "ObjectType",
+    "PersonalAccessToken",
+    "Plugin",
     "Project",
     "PropertyBag",
+    "PropertyType",
+    "SemanticAnnotation",
     "ServerInformation",
     "ServerVersion",
     "Space",
