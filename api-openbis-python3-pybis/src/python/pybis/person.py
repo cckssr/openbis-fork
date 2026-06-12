@@ -313,7 +313,7 @@ class Person(OpenBisObject):
             resp = self.openbis._post_request(self.openbis.as_v3, request)
             if VERBOSE:
                 print("Person successfully created.")
-            new_person_data = self.openbis.get_person(resp[0]["permId"], only_data=True)
+            new_person_data = self.openbis.get_person_or_raise(resp[0]["permId"]).data
             self._set_data(new_person_data)
             return self
 
@@ -322,6 +322,6 @@ class Person(OpenBisObject):
             self.openbis._post_request(self.openbis.as_v3, request)
             if VERBOSE:
                 print("Person successfully updated.")
-            new_person_data = self.openbis.get_person(self.permId, only_data=True)
+            new_person_data = self.openbis.get_person_or_raise(self.permId).data
             self._set_data(new_person_data)
             return None

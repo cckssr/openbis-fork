@@ -159,8 +159,11 @@ class Material(OpenBisObject):
 
             if VERBOSE:
                 print("Material successfully created.")
-            new_material_data = self.openbis.get_tag(resp[0]["permId"], only_data=True)
-            self._set_data(new_material_data)
+            # materials are deprecated and have no single-item getter;
+            # keep the local state (1.x re-fetched a *tag* here, which
+            # could never succeed)
+            self.a.__dict__["_permId"] = resp[0]["permId"]
+            self.a.__dict__["_is_new"] = False
             return self
 
         else:
@@ -169,8 +172,6 @@ class Material(OpenBisObject):
             self.openbis._post_request(self.openbis.as_v3, request)
             if VERBOSE:
                 print("Material successfully updated.")
-            new_material_data = self.openbis.get_tag(self.permId, only_data=True)
-            self._set_data(new_material_data)
 
     def delete(self, reason: str = "no reason") -> None:
         """Delete this material from openBIS.

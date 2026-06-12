@@ -1359,9 +1359,9 @@ class DataSet(
 
                 if VERBOSE:
                     print("DataSet successfully created.")
-                new_dataset_data = self.openbis.get_dataset(
-                    resp[0]["permId"], only_data=True
-                )
+                new_dataset_data = self.openbis.get_dataset_or_raise(
+                    resp[0]["permId"]
+                ).data
                 self._set_data(new_dataset_data)
                 return self
 
@@ -1421,7 +1421,7 @@ class DataSet(
                         "DataSet successfully created. Because you connected to an openBIS version older than 16.05.04, you cannot update the object."
                     )
             else:
-                new_dataset_data = self.openbis.get_dataset(permId, only_data=True)
+                new_dataset_data = self.openbis.get_dataset_or_raise(permId).data
                 self._set_data(new_dataset_data)
                 if VERBOSE:
                     print("DataSet successfully created.")
@@ -1512,7 +1512,7 @@ class DataSet(
                         "DataSet successfully created. Because you connected to an openBIS version older than 16.05.04, you cannot update the object."
                     )
             else:
-                new_dataset_data = self.openbis.get_dataset(permId, only_data=True)
+                new_dataset_data = self.openbis.get_dataset_or_raise(permId).data
                 self._set_data(new_dataset_data)
                 if VERBOSE:
                     print("DataSet successfully created.")

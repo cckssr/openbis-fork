@@ -281,7 +281,7 @@ class Group(
             resp = self.openbis._post_request(self.openbis.as_v3, request)
             if VERBOSE:
                 print("Group successfully created.")
-            new_data = self.openbis.get_group(resp[0]["permId"], only_data=True)
+            new_data = self.openbis.get_group_or_raise(resp[0]["permId"]).data
             self._set_data(new_data)
             return self
 
@@ -290,6 +290,6 @@ class Group(
             self.openbis._post_request(self.openbis.as_v3, request)
             if VERBOSE:
                 print("Group successfully updated.")
-            new_data = self.openbis.get_group(self.permId, only_data=True)
+            new_data = self.openbis.get_group_or_raise(self.permId).data
             self._set_data(new_data)
             return self

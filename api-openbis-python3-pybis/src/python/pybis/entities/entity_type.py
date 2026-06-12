@@ -376,7 +376,7 @@ class _EntityTypeApi(ClientApiMixin):
             code: The property type code, e.g. ``"DESCRIPTION"``.
         """
         code = str(code).upper()
-        cached = self._object_cache(entity="property_type", code=code)
+        cached = self._object_cache(entity="propertyType", code=code)
         if cached is not None:
             return cached  # type: ignore[no-any-return]  # reason: heterogeneous legacy cache
 
@@ -396,7 +396,7 @@ class _EntityTypeApi(ClientApiMixin):
         parse_jackson(resp)
         for ident in resp:
             property_type = PropertyType(openbis_obj=self, data=resp[ident])
-            self._object_cache(entity="property_type", code=code, value=property_type)
+            self._object_cache(entity="propertyType", code=code, value=property_type)
             return property_type
         return None
 

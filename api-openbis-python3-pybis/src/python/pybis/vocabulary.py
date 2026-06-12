@@ -169,6 +169,7 @@ class Vocabulary(
             ],
         }
         resp = self.openbis._post_request(self.openbis.as_v3, request)
+        self.openbis.clear_cache("vocabulary")
         if VERBOSE:
             print(f"{self.entity} {self.code} successfully deleted.")
 
@@ -200,7 +201,8 @@ class Vocabulary(
 
             if VERBOSE:
                 print("Vocabulary successfully created.")
-            data = self.openbis.get_vocabulary(resp[0]["permId"], only_data=True)
+            self.openbis.clear_cache("vocabulary")
+            data = self.openbis.get_vocabulary_or_raise(resp[0]["permId"]).data
             self._set_data(data)
             return self
 
@@ -218,9 +220,10 @@ class Vocabulary(
             if terms:
                 request["params"][1][0]["terms"] = terms
             self.openbis._post_request(self.openbis.as_v3, request)
+            self.openbis.clear_cache("vocabulary")
             if VERBOSE:
                 print("Vocabulary successfully updated.")
-            data = self.openbis.get_vocabulary(self.code, only_data=True)
+            data = self.openbis.get_vocabulary_or_raise(self.code).data
             self._set_data(data)
 
 
@@ -426,24 +429,22 @@ class VocabularyTerm(OpenBisObject):
             request = self._new_attrs()
             resp = self.openbis._post_request(self.openbis.as_v3, request)
 
+            self.openbis.clear_cache("term")
             if VERBOSE:
                 print("Vocabulary Term successfully created.")
-            data = self.openbis.get_term(
-                code=resp[0]["code"],
-                vocabularyCode=resp[0]["vocabularyCode"],
-                only_data=True,
-            )
+            data = self.openbis.get_term_or_raise(
+                resp[0]["code"], resp[0]["vocabularyCode"]
+            ).data
             self._set_data(data)
             return self
 
         else:
             request = self._up_attrs()
             self.openbis._post_request(self.openbis.as_v3, request)
+            self.openbis.clear_cache("term")
             if VERBOSE:
                 print("Vocabulary Term successfully updated.")
-            data = self.openbis.get_term(
-                code=self.code, vocabularyCode=self.vocabularyCode, only_data=True
-            )
+            data = self.openbis.get_term_or_raise(self.code, self.vocabularyCode).data
             self._set_data(data)
 
     def delete(self, reason: str = "no particular reason") -> None:
@@ -459,5 +460,6 @@ class VocabularyTerm(OpenBisObject):
         self.openbis.delete_openbis_entity(
             entity="vocabularyTerm", objectId=self.data["permId"], reason=reason
         )
+        self.openbis.clear_cache("term")
         if VERBOSE:
             print("VocabularyTerm successfully deleted.")

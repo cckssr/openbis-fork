@@ -1962,10 +1962,16 @@ class Openbis(
         """
         if entity:
             self.cache[entity] = {}
+            if entity == "vocabulary":
+                # term lists are cached per vocabulary; a vocabulary change
+                # (e.g. added terms) invalidates them too
+                self.cache["term"] = {}
         else:
             self.cache = {}
 
     def _object_cache(self, entity=None, code=None, value=None):
+        if not self.use_cache:
+            return None
 
         # return the value, if no value provided
         if value is None:

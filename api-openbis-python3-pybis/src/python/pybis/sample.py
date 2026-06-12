@@ -457,7 +457,7 @@ class Sample(OpenBisObject, entity="sample", single_item_method_name="get_object
             resp = self.openbis._post_request(self.openbis.as_v3, request)
 
             permId = resp[0]["permId"]
-            new_entity_data = self.openbis.get_sample(permId, only_data=True)
+            new_entity_data = self.openbis.get_object_or_raise(permId).data
             self._set_data(new_entity_data)
             return self
 

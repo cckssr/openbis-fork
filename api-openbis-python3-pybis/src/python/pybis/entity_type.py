@@ -126,6 +126,24 @@ class EntityType:
         if method:
             self.__dict__["_get_method"] = method
 
+    def _refetch_type_data(self) -> Any:
+        """Re-fetch this type's raw data after a property-assignment change.
+
+        Returns:
+            The fresh raw entity-type dict from the V3 API.
+        """
+        getter_for_entity = {
+            "sampleType": "get_object_type",
+            "experimentType": "get_collection_type",
+            "dataSetType": "get_dataset_type",
+            "materialType": "get_material_type",
+            "propertyType": "get_property_type",
+        }
+        # the transparent cache must not serve the pre-change type
+        self.openbis.clear_cache(self._entity)
+        getter = getattr(self.openbis, getter_for_entity[self._entity])
+        return getter(self.permId).data
+
     def _set_entity_data(self, data: Optional[dict] = None) -> None:
         """Extract and store ``propertyAssignments`` from a raw API response.
 
@@ -369,8 +387,7 @@ class EntityType:
             else:
                 raise ValueError(exc)
 
-        new_data = self._get_method(self.permId, only_data=True)
-        self._set_entity_data(new_data)
+        self._set_entity_data(self._refetch_type_data())
         if VERBOSE:
             print(f"Property {property_type.permId} assigned to {self.permId}")
 
@@ -403,8 +420,7 @@ class EntityType:
         request = self._get_request_for_pa(items, "Remove", force)
         resp = self.openbis._post_request(self.openbis.as_v3, request)
         if not resp:
-            new_data = self._get_method(self.permId, only_data=True)
-            self._set_entity_data(new_data)
+            self._set_entity_data(self._refetch_type_data())
             if VERBOSE:
                 print(f"Property {property_type} revoked from {self.permId}")
 
