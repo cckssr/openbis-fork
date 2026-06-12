@@ -91,10 +91,7 @@ class SearchResult(Generic[T]):
     def _repr_html_(self) -> str:
         """Render as an HTML table in Jupyter notebooks."""
         html = self.df.to_html(notebook=True)
-        return (
-            f"{html}\n<p>{len(self._items)} of {self.total_count}"
-            f" total matches</p>"
-        )
+        return f"{html}\n<p>{len(self._items)} of {self.total_count} total matches</p>"
 
 
 __all__ = ["SearchResult"]

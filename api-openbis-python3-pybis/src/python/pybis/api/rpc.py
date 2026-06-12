@@ -170,7 +170,10 @@ def type_for_id(ident: str, entity: str) -> JsonPayload:
 
     Examples of produced payloads::
 
-        {"identifier": "/DEFAULT/SAMPLE_NAME", "@type": "as.dto.sample.id.SampleIdentifier"}
+        {
+            "identifier": "/DEFAULT/SAMPLE_NAME",
+            "@type": "as.dto.sample.id.SampleIdentifier",
+        }
         {"permId": "20160817175233002-331", "@type": "as.dto.sample.id.SamplePermId"}
 
     Args:

@@ -93,9 +93,7 @@ def test_search_projects_pagination(client, mock_rpc):
 
 
 def test_get_project_by_identifier(client, mock_rpc):
-    mock_rpc.return_value.post.return_value = {
-        "/SPACE/PROJ": make_project_response()
-    }
+    mock_rpc.return_value.post.return_value = {"/SPACE/PROJ": make_project_response()}
     project = client.get_project("/space/proj")
     assert project is not None
     assert project.code == "PROJ"

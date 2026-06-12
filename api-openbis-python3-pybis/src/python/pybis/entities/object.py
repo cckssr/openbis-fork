@@ -117,9 +117,7 @@ def _objects_df(items: Sequence[Any]) -> "pd.DataFrame":
     return cast("pd.DataFrame", df[df.columns.intersection(attrs)])
 
 
-def _related_criterion(
-    relation_type: str, things: str | list[str]
-) -> dict[str, Any]:
+def _related_criterion(relation_type: str, things: str | list[str]) -> dict[str, Any]:
     """Wrap id criteria of related entities (parents/children filters)."""
     if not isinstance(things, list):
         things = [things]
@@ -336,12 +334,8 @@ class _ObjectApi(_EntityTypeApi):
         resp = self._post_request(self.as_v3, request)
         parse_jackson(resp)
         type_cache: dict[str, Any] = {}
-        items = [
-            self._object_from_data(data, type_cache) for data in resp["objects"]
-        ]
-        return SearchResult(
-            items, int(resp.get("totalCount", len(items))), _objects_df
-        )
+        items = [self._object_from_data(data, type_cache) for data in resp["objects"]]
+        return SearchResult(items, int(resp.get("totalCount", len(items))), _objects_df)
 
     def iter_objects(self, *, page_size: int = 100, **filters: Any) -> Iterator[Object]:
         """Iterate over all matching Objects, paginating automatically.

@@ -221,7 +221,11 @@ def build_scenarios():
     sample_new = Sample(o, type=st, code="S-NEW")
     sample_new.space = make_space(o)
     sample_new.parents = [
-        Sample(o, type=st, data=sample_data(st, "20240101000000000-9", "/SPACE/PROJ/PARENT1"))
+        Sample(
+            o,
+            type=st,
+            data=sample_data(st, "20240101000000000-9", "/SPACE/PROJ/PARENT1"),
+        )
     ]
     sample_new.tags = TAG_DICTS
     sample_new.metaData = {"custom": "x"}
@@ -241,8 +245,13 @@ def build_scenarios():
     sample_up.space = make_space(o, "OTHER_SPACE")
     scenarios["sample_update_space"] = sample_up.a._up_attrs()
 
-    parent_a = {"identifier": "/SPACE/PROJ/PARENT_A", "@type": "as.dto.sample.id.SampleIdentifier"}
-    parent_b = Sample(o, type=st, data=sample_data(st, "20240101000000000-8", "/SPACE/PROJ/PARENT_B"))
+    parent_a = {
+        "identifier": "/SPACE/PROJ/PARENT_A",
+        "@type": "as.dto.sample.id.SampleIdentifier",
+    }
+    parent_b = Sample(
+        o, type=st, data=sample_data(st, "20240101000000000-8", "/SPACE/PROJ/PARENT_B")
+    )
     sample_rel = Sample(
         o,
         type=st,
@@ -250,7 +259,13 @@ def build_scenarios():
     )
     sample_rel.add_parents([parent_b])
     sample_rel.del_parents(
-        [Sample(o, type=st, data=sample_data(st, "20240101000000000-7", "/SPACE/PROJ/PARENT_A"))]
+        [
+            Sample(
+                o,
+                type=st,
+                data=sample_data(st, "20240101000000000-7", "/SPACE/PROJ/PARENT_A"),
+            )
+        ]
     )
     scenarios["sample_update_parents_add_remove"] = sample_rel.a._up_attrs()
 

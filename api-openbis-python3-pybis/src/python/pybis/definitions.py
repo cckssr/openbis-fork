@@ -512,7 +512,9 @@ def get_fetchoption_for_entity(entity: str) -> "dict[str, Any]":
         return {}
 
 
-def get_type_for_entity(entity: str, action: str, parents_or_children: str = "") -> "dict[str, Any]":
+def get_type_for_entity(
+    entity: str, action: str, parents_or_children: str = ""
+) -> "dict[str, Any]":
     if action not in "create update delete search".split():
         raise ValueError(f"unknown action: {action}")
 
@@ -539,7 +541,9 @@ def get_type_for_entity(entity: str, action: str, parents_or_children: str = "")
             }
 
 
-def get_fetchoptions(entity: str, including: "list[str] | None" = None) -> "dict[str, Any]":
+def get_fetchoptions(
+    entity: str, including: "list[str] | None" = None
+) -> "dict[str, Any]":
     if including is None:
         including = []
     including += ["@type"]

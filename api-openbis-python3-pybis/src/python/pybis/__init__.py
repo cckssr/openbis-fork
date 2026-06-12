@@ -19,9 +19,9 @@ __email__ = "openbis-support@id.ethz.ch"
 __version__ = "7.0.0.dev0"
 
 from . import pybis  # transitional re-export module
-from .client import DataSet
+from .dataset import DataSet
 from .client import Openbis
 from .client import ImagingControl
-from .client import Spreadsheet
+from .spreadsheet import Spreadsheet
 from .imaging import *
 from .afs_client import File, AfsClient

@@ -116,9 +116,7 @@ class ServerInformation:
                 info[bool_field] = info[bool_field] == "true"
         for csv_field in ["enabled-technologies"]:
             if csv_field in info:
-                info[csv_field] = [
-                    item.strip() for item in info[csv_field].split(",")
-                ]
+                info[csv_field] = [item.strip() for item in info[csv_field].split(",")]
         for int_field in [
             "personal-access-tokens-max-validity-period",
             "personal-access-tokens-validity-warning-period",
@@ -268,9 +266,7 @@ def requires_version(
 
     def decorator(fn: Callable[..., R]) -> Callable[..., R]:
         @wraps(fn)
-        def wrapper(
-            self: _HasServerInformation, *args: object, **kwargs: object
-        ) -> R:
+        def wrapper(self: _HasServerInformation, *args: object, **kwargs: object) -> R:
             info = self.get_server_information()
             if not info.is_version_gte(major, minor):
                 name = feature or fn.__name__
@@ -285,9 +281,7 @@ def requires_version(
     return decorator
 
 
-def require_server_flag(
-    info: ServerInformation, flag: str, feature: str
-) -> None:
+def require_server_flag(info: ServerInformation, flag: str, feature: str) -> None:
     """Raise unless a boolean server flag is enabled.
 
     Args:

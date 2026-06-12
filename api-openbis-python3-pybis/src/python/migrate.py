@@ -260,7 +260,7 @@ class PybisMigrator(cst.CSTTransformer):
                 continue
             value = element.value
             if isinstance(value, cst.SimpleString) and value.value[1:].lstrip(
-                "\'\""
+                "'\""
             ).startswith(_MAGIC_PREFIXES):
                 self._todo(
                     "magic operator string in properties — use"

@@ -38,9 +38,7 @@ def test_migration_fixture(fixture):
     expected = (FIXTURES / "after" / fixture.name).read_text()
     actual, _changes = migrate_source(before)
     assert actual == expected, "\n" + "\n".join(
-        difflib.unified_diff(
-            expected.splitlines(), actual.splitlines(), lineterm=""
-        )
+        difflib.unified_diff(expected.splitlines(), actual.splitlines(), lineterm="")
     )
 
 

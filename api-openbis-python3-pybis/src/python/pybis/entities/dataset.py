@@ -364,9 +364,7 @@ class _DataSetApi(_EntityTypeApi):
         resp = self._post_request(self.as_v3, request)
         parse_jackson(resp)
         type_cache: dict[str, Any] = {}
-        items = [
-            self._dataset_from_data(data, type_cache) for data in resp["objects"]
-        ]
+        items = [self._dataset_from_data(data, type_cache) for data in resp["objects"]]
         return SearchResult(
             items, int(resp.get("totalCount", len(items))), _datasets_df
         )

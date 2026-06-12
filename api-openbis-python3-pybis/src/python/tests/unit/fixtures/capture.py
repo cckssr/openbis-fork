@@ -45,9 +45,7 @@ def rpc(session: requests.Session, url: str, method: str, params: list[Any]) -> 
     """Send one raw JSON-RPC request and return the raw result."""
     resp = session.post(
         url + AS_V3,
-        json.dumps(
-            {"id": "1", "jsonrpc": "2.0", "method": method, "params": params}
-        ),
+        json.dumps({"id": "1", "jsonrpc": "2.0", "method": method, "params": params}),
     )
     resp.raise_for_status()
     body = resp.json()
@@ -168,9 +166,7 @@ def main() -> None:
                 {"@type": "as.dto.project.search.ProjectSearchCriteria"},
                 {
                     "@type": "as.dto.project.fetchoptions.ProjectFetchOptions",
-                    "space": {
-                        "@type": "as.dto.space.fetchoptions.SpaceFetchOptions"
-                    },
+                    "space": {"@type": "as.dto.space.fetchoptions.SpaceFetchOptions"},
                     "from": 0,
                     "count": 10,
                 },

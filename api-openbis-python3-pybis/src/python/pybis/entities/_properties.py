@@ -89,10 +89,7 @@ class PropertyBag(MutableMapping[str, PropertyValue]):
     def _is_known(self, key: str) -> bool:
         """True if the property is defined by the type or currently set."""
         lower = key.lower()
-        return (
-            lower in self._holder._property_names
-            or lower in self._holder.__dict__
-        )
+        return lower in self._holder._property_names or lower in self._holder.__dict__
 
     # --- MutableMapping interface ---------------------------------------------
 

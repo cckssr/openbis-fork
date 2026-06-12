@@ -1,11 +1,11 @@
 #   Copyright ETH 2018 - 2024 Zürich, Scientific IT Services
-# 
+#
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
 #   You may obtain a copy of the License at
-# 
+#
 #        http://www.apache.org/licenses/LICENSE-2.0
-#   
+#
 #   Unless required by applicable law or agreed to in writing, software
 #   distributed under the License is distributed on an "AS IS" BASIS,
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -135,11 +135,11 @@ def test_create_delete_dataset(space):
     assert dataset_by_permId.registrationDate is not None
     # check date format: 2019-03-22 11:36:40
     assert (
-            re.search(
-                r"^\d{4}\-\d{2}\-\d{2} \d{2}\:\d{2}\:\d{2}$",
-                dataset_by_permId.registrationDate,
-            )
-            is not None
+        re.search(
+            r"^\d{4}\-\d{2}\-\d{2} \d{2}\:\d{2}\:\d{2}$",
+            dataset_by_permId.registrationDate,
+        )
+        is not None
     )
 
     # delete datasets
@@ -197,15 +197,15 @@ def test_revert_deletion_dataset(space):
         assert "This should fail" is None
 
     df = o.get_deletions()
-    assert df[df['permId'] == permId].empty is False
-    deletionId = df[df['permId'] == permId]['deletionId'].iloc[0]
+    assert df[df["permId"] == permId].empty is False
+    deletionId = df[df["permId"] == permId]["deletionId"].iloc[0]
     o.revert_deletions([deletionId])
 
     dataset = o.get_dataset(permId)
     assert dataset is not None
     df = o.get_deletions()
     if df.empty is False:
-        assert df[df['permId'] == permId].empty is True
+        assert df[df["permId"] == permId].empty is True
 
 
 def test_create_dataset_with_code(space):
@@ -244,14 +244,14 @@ def test_things_initialization(space):
 
     things = Things(
         openbis_obj=None,
-        entity='dataset',
-        identifier_name='permId',
+        entity="dataset",
+        identifier_name="permId",
         start_with=0,
         count=10,
         totalCount=10,
         response=None,
         df_initializer=create_data_frame,
-        objects_initializer=create_objects
+        objects_initializer=create_objects,
     )
 
     assert not things.is_df_initialised()
@@ -330,9 +330,9 @@ def test_dataset_property_in_isoformat_date(space):
     property_type_code = "test_property_type_" + timestamp + "_" + str(uuid.uuid4())
     pt_date = o.new_property_type(
         code=property_type_code,
-        label='custom property of data type timestamp',
-        description='custom property created in unit test',
-        dataType='TIMESTAMP',
+        label="custom property of data type timestamp",
+        description="custom property created in unit test",
+        dataType="TIMESTAMP",
     )
     pt_date.save()
 
@@ -370,42 +370,42 @@ def test_dataset_property_in_isoformat_date(space):
 
 def create_array_properties(openbis, code_prefix):
     pt = openbis.new_property_type(
-        code=code_prefix + '_ARRAY_INTEGER',
-        label='integer array',
-        description='integer array property',
-        dataType='ARRAY_INTEGER',
+        code=code_prefix + "_ARRAY_INTEGER",
+        label="integer array",
+        description="integer array property",
+        dataType="ARRAY_INTEGER",
     )
     pt.save()
 
     pt = openbis.new_property_type(
-        code=code_prefix + '_ARRAY_REAL',
-        label='real array',
-        description='real array property',
-        dataType='ARRAY_REAL',
+        code=code_prefix + "_ARRAY_REAL",
+        label="real array",
+        description="real array property",
+        dataType="ARRAY_REAL",
     )
     pt.save()
 
     pt = openbis.new_property_type(
-        code=code_prefix + '_ARRAY_STRING',
-        label='string array',
-        description='string array property',
-        dataType='ARRAY_STRING',
+        code=code_prefix + "_ARRAY_STRING",
+        label="string array",
+        description="string array property",
+        dataType="ARRAY_STRING",
     )
     pt.save()
 
     pt = openbis.new_property_type(
-        code=code_prefix + '_ARRAY_TIMESTAMP',
-        label='timestamp array',
-        description='timestamp array property',
-        dataType='ARRAY_TIMESTAMP',
+        code=code_prefix + "_ARRAY_TIMESTAMP",
+        label="timestamp array",
+        description="timestamp array property",
+        dataType="ARRAY_TIMESTAMP",
     )
     pt.save()
 
     pt = openbis.new_property_type(
-        code=code_prefix + '_JSON',
-        label='json',
-        description='json type property',
-        dataType='JSON',
+        code=code_prefix + "_JSON",
+        label="json",
+        description="json type property",
+        dataType="JSON",
     )
     pt.save()
 
@@ -414,43 +414,46 @@ def test_dataset_array_properties(space):
     timestamp = time.strftime("%a_%y%m%d_%H%M%S").lower()
     create_array_properties(space.openbis, f"DATASET_{timestamp}")
 
-    dataset_code = f'TEST_ARRAY_DATASET_{timestamp}'
-    dataset_type = space.openbis.new_dataset_type(
-        code=dataset_code
-    )
+    dataset_code = f"TEST_ARRAY_DATASET_{timestamp}"
+    dataset_type = space.openbis.new_dataset_type(code=dataset_code)
     dataset_type.save()
 
-    dataset_type.assign_property('NAME')
-    dataset_type.assign_property(f'DATASET_{timestamp}_ARRAY_INTEGER')
-    dataset_type.assign_property(f'DATASET_{timestamp}_ARRAY_REAL')
-    dataset_type.assign_property(f'DATASET_{timestamp}_ARRAY_STRING')
-    dataset_type.assign_property(f'DATASET_{timestamp}_ARRAY_TIMESTAMP')
-    dataset_type.assign_property(f'DATASET_{timestamp}_JSON')
+    dataset_type.assign_property("NAME")
+    dataset_type.assign_property(f"DATASET_{timestamp}_ARRAY_INTEGER")
+    dataset_type.assign_property(f"DATASET_{timestamp}_ARRAY_REAL")
+    dataset_type.assign_property(f"DATASET_{timestamp}_ARRAY_STRING")
+    dataset_type.assign_property(f"DATASET_{timestamp}_ARRAY_TIMESTAMP")
+    dataset_type.assign_property(f"DATASET_{timestamp}_JSON")
 
     testfile_path = os.path.join(os.path.dirname(__file__), "testdir/testfile")
     dataset = space.openbis.new_dataset(
         type=dataset_code,
         sample="/DEFAULT/DEFAULT/DEFAULT",
         files=[testfile_path],
-        props={f'dataset_{timestamp}_array_integer': [1, 2, 3]}
+        props={f"dataset_{timestamp}_array_integer": [1, 2, 3]},
     )
     dataset.save()
 
-    dataset.props[f'dataset_{timestamp}_array_integer'] = [3, 2, 1]
-    dataset.props[f'dataset_{timestamp}_array_real'] = [3.1, 2.2, 1.3]
-    dataset.props[f'dataset_{timestamp}_array_string'] = ["aa", "bb", "cc"]
-    dataset.props[f'dataset_{timestamp}_array_timestamp'] = ['2023-05-18 11:17:03', '2023-05-18 11:17:04',
-                                                '2023-05-18 11:17:05']
-    dataset.props[f'dataset_{timestamp}_json'] = "{ \"key\": [1, 1, 1] }"
+    dataset.props[f"dataset_{timestamp}_array_integer"] = [3, 2, 1]
+    dataset.props[f"dataset_{timestamp}_array_real"] = [3.1, 2.2, 1.3]
+    dataset.props[f"dataset_{timestamp}_array_string"] = ["aa", "bb", "cc"]
+    dataset.props[f"dataset_{timestamp}_array_timestamp"] = [
+        "2023-05-18 11:17:03",
+        "2023-05-18 11:17:04",
+        "2023-05-18 11:17:05",
+    ]
+    dataset.props[f"dataset_{timestamp}_json"] = '{ "key": [1, 1, 1] }'
     dataset.save()
 
-    assert dataset.props[f'dataset_{timestamp}_array_integer'] == [3, 2, 1]
-    assert dataset.props[f'dataset_{timestamp}_array_real'] == [3.1, 2.2, 1.3]
-    assert dataset.props[f'dataset_{timestamp}_array_string'] == ["aa", "bb", "cc"]
-    assert dataset.props[f'dataset_{timestamp}_json'] == "{ \"key\": [1, 1, 1] }"
-    assert dataset.props[f'dataset_{timestamp}_array_timestamp'] == ['2023-05-18 11:17:03',
-                                                        '2023-05-18 11:17:04',
-                                                        '2023-05-18 11:17:05']
+    assert dataset.props[f"dataset_{timestamp}_array_integer"] == [3, 2, 1]
+    assert dataset.props[f"dataset_{timestamp}_array_real"] == [3.1, 2.2, 1.3]
+    assert dataset.props[f"dataset_{timestamp}_array_string"] == ["aa", "bb", "cc"]
+    assert dataset.props[f"dataset_{timestamp}_json"] == '{ "key": [1, 1, 1] }'
+    assert dataset.props[f"dataset_{timestamp}_array_timestamp"] == [
+        "2023-05-18 11:17:03",
+        "2023-05-18 11:17:04",
+        "2023-05-18 11:17:05",
+    ]
 
 
 def test_dataset_assigned_not_multivalue_property_error(space):
@@ -462,9 +465,9 @@ def test_dataset_assigned_not_multivalue_property_error(space):
     property_type_code = "test_property_type_" + timestamp + "_" + str(uuid.uuid4())
     pt_date = o.new_property_type(
         code=property_type_code,
-        label='custom property of data type timestamp for dataset',
-        description='custom property created in unit test',
-        dataType='SAMPLE',
+        label="custom property of data type timestamp for dataset",
+        description="custom property created in unit test",
+        dataType="SAMPLE",
     )
     pt_date.save()
 
@@ -482,12 +485,15 @@ def test_dataset_assigned_not_multivalue_property_error(space):
             type=type_code,
             experiment="/DEFAULT/DEFAULT/DEFAULT",
             files=[testfile_path],
-            props={property_type_code: ['some_id1', 'some_id2']},
+            props={property_type_code: ["some_id1", "some_id2"]},
         )
         dataset.save()
         pytest.fail("Dataset creation should should fail!")
     except ValueError as e:
-        assert str(e) == f'Property type {property_type_code.upper()} is not a multi-value property!'
+        assert (
+            str(e)
+            == f"Property type {property_type_code.upper()} is not a multi-value property!"
+        )
 
 
 def test_dataset_with_multivalue_property_sample(space):
@@ -499,10 +505,10 @@ def test_dataset_with_multivalue_property_sample(space):
     property_type_code = "test_property_type_" + timestamp + "_" + str(uuid.uuid4())
     pt_date = o.new_property_type(
         code=property_type_code,
-        label='custom property of data type timestamp for dataset',
-        description='custom property created in unit test',
-        dataType='SAMPLE',
-        multiValue=True
+        label="custom property of data type timestamp for dataset",
+        description="custom property created in unit test",
+        dataType="SAMPLE",
+        multiValue=True,
     )
     pt_date.save()
 
@@ -518,11 +524,17 @@ def test_dataset_with_multivalue_property_sample(space):
 
     sample_code = "my_sample_{}".format(timestamp)
 
-    test_sample1 = o.new_sample(code=sample_code + "_property1", type='UNKNOWN', space=space)
+    test_sample1 = o.new_sample(
+        code=sample_code + "_property1", type="UNKNOWN", space=space
+    )
     test_sample1.save()
-    test_sample2 = o.new_sample(code=sample_code + "_property2", type='UNKNOWN', space=space)
+    test_sample2 = o.new_sample(
+        code=sample_code + "_property2", type="UNKNOWN", space=space
+    )
     test_sample2.save()
-    test_sample3 = o.new_sample(code=sample_code + "_property3", type='UNKNOWN', space=space)
+    test_sample3 = o.new_sample(
+        code=sample_code + "_property3", type="UNKNOWN", space=space
+    )
     test_sample3.save()
 
     props = {property_type_code: [test_sample1.permId, test_sample2.identifier]}
@@ -561,27 +573,38 @@ def test_dataset_with_multivalue_property_vocabulary(space):
 
     timestamp = time.strftime("%a_%y%m%d_%H%M%S").lower()
 
-    vocab = o.new_vocabulary(code=f'test_vocab_{timestamp}_{uuid.uuid4()}',
-                             description='test vocab for multi-value property tests',
-                             terms=[
-                                 {"code": 'term_code1', "label": "term_label1",
-                                  "description": "term_description1"},
-                                 {"code": 'term_code2', "label": "term_label2",
-                                  "description": "term_description2"},
-                                 {"code": 'term_code3', "label": "term_label3",
-                                  "description": "term_description3"}
-                             ])
+    vocab = o.new_vocabulary(
+        code=f"test_vocab_{timestamp}_{uuid.uuid4()}",
+        description="test vocab for multi-value property tests",
+        terms=[
+            {
+                "code": "term_code1",
+                "label": "term_label1",
+                "description": "term_description1",
+            },
+            {
+                "code": "term_code2",
+                "label": "term_label2",
+                "description": "term_description2",
+            },
+            {
+                "code": "term_code3",
+                "label": "term_label3",
+                "description": "term_description3",
+            },
+        ],
+    )
     vocab.save()
 
     # Create custom CONTROLLEDVOCABULARY property type
     property_type_code = "test_property_type_" + timestamp + "_" + str(uuid.uuid4())
     pt_date = o.new_property_type(
         code=property_type_code,
-        label='custom property of data type timestamp for dataset',
-        description='custom property created in unit test',
-        dataType='CONTROLLEDVOCABULARY',
+        label="custom property of data type timestamp for dataset",
+        description="custom property created in unit test",
+        dataType="CONTROLLEDVOCABULARY",
         vocabulary=vocab,
-        multiValue=True
+        multiValue=True,
     )
     pt_date.save()
 
@@ -594,11 +617,11 @@ def test_dataset_with_multivalue_property_vocabulary(space):
 
     sample_code = "my_sample_{}".format(timestamp)
 
-    test_sample = o.new_sample(code=sample_code, type='UNKNOWN', space=space)
+    test_sample = o.new_sample(code=sample_code, type="UNKNOWN", space=space)
     test_sample.save()
 
     testfile_path = os.path.join(os.path.dirname(__file__), "testdir/testfile")
-    props = {property_type_code: ['term_code1', 'term_code2']}
+    props = {property_type_code: ["term_code1", "term_code2"]}
 
     dataset = o.new_dataset(
         type=type_code,
@@ -615,18 +638,19 @@ def test_dataset_with_multivalue_property_vocabulary(space):
     assert key == property_type_code
     assert type(val) == list
     assert len(val) == 2
-    assert 'term_code1'.upper() in val
-    assert 'term_code2'.upper() in val
+    assert "term_code1".upper() in val
+    assert "term_code2".upper() in val
 
     # Update dataset case
-    dataset.p[property_type_code] = ['term_code3'.upper()]
+    dataset.p[property_type_code] = ["term_code3".upper()]
     dataset.save()
 
     assert len(dataset.p()) == 1
     assert dataset.p[property_type_code] is not None
     key, val = dataset.props().popitem()
     assert key == property_type_code
-    assert val == ['term_code3'.upper()]
+    assert val == ["term_code3".upper()]
+
 
 def test_create_new_dataset_with_parent(space):
     openbis_instance = space.openbis
@@ -649,13 +673,14 @@ def test_create_new_dataset_with_parent(space):
         experiment="/DEFAULT/DEFAULT/DEFAULT",
         files=[testfile_path],
         props={"name": "some good name"},
-        parents=[dataset.permId]
+        parents=[dataset.permId],
     )
     new_dataset.save()
 
     assert new_dataset.permId is not None
     assert new_dataset.file_list == ["original/testfile"]
     assert new_dataset.parents == [dataset.permId]
+
 
 def test_create_new_dataset_in_chunks(space):
     openbis_instance = space.openbis
@@ -676,4 +701,3 @@ def test_create_new_dataset_in_chunks(space):
     with tempfile.TemporaryDirectory() as tmpdirname:
         dataset.download(destination=tmpdirname, create_default_folders=False)
         assert filecmp.cmp(testfile_path, os.path.join(tmpdirname, "testfile_big"))
-

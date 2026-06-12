@@ -95,9 +95,7 @@ class PropertyFilter:
             The ``@type``-tagged dict embedded into a property search
             criterion.
         """
-        base: dict[str, str | int | float | bool] = {
-            "@type": _OP_TO_RPC[self.operator]
-        }
+        base: dict[str, str | int | float | bool] = {"@type": _OP_TO_RPC[self.operator]}
         if self.value is not None:
             base["value"] = self.value
         if self.use_wildcards:

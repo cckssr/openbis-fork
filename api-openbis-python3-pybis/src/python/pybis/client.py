@@ -30,7 +30,71 @@ import sys
 import zlib
 from datetime import datetime
 from pathlib import Path
-from typing import Optional, Union, Dict, Literal, Any, List
+from typing import Optional, Literal, Any
+from urllib.parse import urljoin, urlparse
+
+import requests
+import urllib3
+from dateutil.relativedelta import relativedelta
+from pandas import DataFrame
+
+from . import data_set as pbds
+from .api.rpc import RpcClient
+from .entities.server import ServerInformation
+from .entities.admin import _AdminApi
+from .entities.misc import _MiscApi
+from .entities.vocabulary import _VocabularyApi
+from .entities.collection import _CollectionApi
+from .entities.dataset import _DataSetApi
+from .entities.entity_type import _EntityTypeApi
+from .entities.object import _ObjectApi
+from .entities.project import _ProjectApi
+from .entities.space import _SpaceApi
+from .api.rpc import type_for_id as _type_for_id
+from .auth import (
+    get_saved_pats,
+    get_saved_tokens,
+    get_token_for_hostname,
+    is_session_token,
+    save_pats_to_disk,
+)
+from .openbis_typing import *
+from .definitions import (
+    get_definition_for_entity,
+    get_fetchoption_for_entity,
+    get_method_for_entity,
+    get_type_for_entity,
+    openbis_definitions,
+)
+from .entity_type import (
+    EntityType,
+    MaterialType,
+    PropertyType,
+)
+from .openbis_object import OpenBisObject
+from .semantic_annotation import SemanticAnnotation
+from .things import Things
+from .utils import (
+    VERBOSE,
+    extract_code,
+    extract_identifiers,
+    extract_nested_identifier,
+    extract_nested_permid,
+    extract_nested_permids,
+    extract_permid,
+    extract_person,
+    format_timestamp,
+    is_identifier,
+    is_number,
+    is_permid,
+    parse_jackson,
+    split_identifier,
+)
+from .vocabulary import Vocabulary
+from .spreadsheet import Spreadsheet
+from .type_group import TypeGroup
+from .imaging import *
+from .afs_client import AfsClient
 
 try:
     from warnings import deprecated  # Python 3.13+
@@ -53,98 +117,10 @@ except ImportError:
         return decorator
 
 
-from urllib.parse import urljoin, urlparse
-
 if sys.version_info < (3, 12):
     from typing_extensions import Unpack
 else:
     from typing import Unpack
-
-import requests
-import urllib3
-from dateutil.relativedelta import relativedelta
-from pandas import DataFrame
-
-from . import data_set as pbds
-from .api.rpc import RpcClient
-from .entities.server import ServerInformation
-from .entities.admin import _AdminApi
-from .entities.misc import _MiscApi
-from .entities.vocabulary import _VocabularyApi
-from .entities.collection import _CollectionApi
-from .entities.dataset import _DataSetApi
-from .entities.entity_type import _EntityTypeApi
-from .entities.object import _ObjectApi
-from .entities.project import _ProjectApi
-from .entities.space import _SpaceApi
-from .api.rpc import type_for_id as _type_for_id
-from .auth import (
-    CONFIG_FILENAME,
-    PYBIS_FOLDER,
-    get_saved_pats,
-    get_saved_tokens,
-    get_token_for_hostname,
-    is_personal_access_token,
-    is_session_token,
-    save_pats_to_disk,
-)
-from .exceptions import AuthenticationError, ServerError
-from .openbis_typing import *
-from .dataset import DataSet
-from .definitions import (
-    get_definition_for_entity,
-    get_fetchoption_for_entity,
-    get_fetchoptions,
-    get_method_for_entity,
-    get_type_for_entity,
-    openbis_definitions,
-)
-from .entity_type import (
-    DataSetType,
-    EntityType,
-    ExperimentType,
-    MaterialType,
-    SampleType,
-    PropertyType,
-)
-from .experiment import Experiment
-from .group import Group
-from .openbis_object import OpenBisObject, Transaction
-from .person import Person
-from .project import Project
-from .role_assignment import RoleAssignment
-from .sample import Sample
-from .semantic_annotation import SemanticAnnotation
-from .space import Space
-from .tag import Tag
-from .things import Things
-from .utils import (
-    VERBOSE,
-    extract_attr,
-    extract_code,
-    extract_deletion,
-    extract_id,
-    extract_identifier,
-    extract_identifiers,
-    extract_nested_identifier,
-    extract_nested_permid,
-    extract_nested_permids,
-    extract_permid,
-    extract_person,
-    extract_userId,
-    format_timestamp,
-    is_identifier,
-    is_number,
-    is_permid,
-    assign_jackson_ids,
-    parse_jackson,
-    split_identifier,
-)
-from .vocabulary import Vocabulary, VocabularyTerm
-from .spreadsheet import Spreadsheet
-from .type_group import TypeGroup
-from .imaging import *
-from .afs_client import AfsClient
 
 
 # import the various openBIS entities
@@ -3368,9 +3344,7 @@ class Openbis(
         :param data_set_id: Id of the data set containing the content copy
         :param content_copy: The content copy to be deleted
         """
-        return pbds.GitDataSetUpdate(self, dataset_id).delete_content_copy(
-            content_copy
-        )
+        return pbds.GitDataSetUpdate(self, dataset_id).delete_content_copy(content_copy)
 
     @staticmethod
     def sample_to_sample_id(sample):

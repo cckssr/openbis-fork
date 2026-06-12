@@ -1,11 +1,11 @@
 #   Copyright ETH 2018 - 2024 Zürich, Scientific IT Services
-# 
+#
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
 #   You may obtain a copy of the License at
-# 
+#
 #        http://www.apache.org/licenses/LICENSE-2.0
-#   
+#
 #   Unless required by applicable law or agreed to in writing, software
 #   distributed under the License is distributed on an "AS IS" BASIS,
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -81,6 +81,7 @@ def test_get_project_by_code(space):
     project_exists = o.get_project(project_code)
     assert project_exists is not None
 
+
 #  TODO fix this test
 # def test_get_project_fail_because_of_multiple_projects_existing(space):
 #     o = space.openbis
@@ -102,5 +103,3 @@ def test_get_project_by_code(space):
 #
 #     with pytest.raises(ValueError):
 #         project_exists = o.get_project(project_code)
-
-

@@ -150,7 +150,9 @@ class _SpaceApi(ClientApiMixin):
         resp = self._post_request(self.as_v3, request)
         parse_jackson(resp)
         spaces = [Space(self, data=obj) for obj in resp["objects"]]
-        return SearchResult(spaces, int(resp.get("totalCount", len(spaces))), _spaces_df)
+        return SearchResult(
+            spaces, int(resp.get("totalCount", len(spaces))), _spaces_df
+        )
 
     def iter_spaces(
         self, *, code: str | None = None, page_size: int = 100
@@ -171,9 +173,7 @@ class _SpaceApi(ClientApiMixin):
             page_size=page_size,
         )
 
-    def new_space(
-        self, *, code: str, description: str | None = None
-    ) -> Space:
+    def new_space(self, *, code: str, description: str | None = None) -> Space:
         """Construct an unsaved Space; call ``.save()`` to persist it.
 
         Args:

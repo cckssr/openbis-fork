@@ -317,9 +317,7 @@ class _CollectionApi(_EntityTypeApi):
             kwargs["code"] = code
         if tags is not None:
             kwargs["tags"] = tags
-        return Collection(
-            self, type=collection_type, props=properties, **kwargs
-        )
+        return Collection(self, type=collection_type, props=properties, **kwargs)
 
 
 __all__ = ["Collection", "_CollectionApi"]

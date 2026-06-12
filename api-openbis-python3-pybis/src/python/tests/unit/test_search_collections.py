@@ -173,9 +173,7 @@ def test_get_collection_or_raise(search_client):
 
 
 def test_new_collection_resolves_type(search_client):
-    coll = search_client.new_collection(
-        "UNKNOWN", project="/SPACE/PROJ", code="E-NEW"
-    )
+    coll = search_client.new_collection("UNKNOWN", project="/SPACE/PROJ", code="E-NEW")
     assert coll.is_new
     assert coll.code == "E-NEW"
 

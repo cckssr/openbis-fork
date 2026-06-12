@@ -30,9 +30,7 @@ from pybis._compat import _METHOD_RENAMES, _translate_kwargs
 @pytest.mark.parametrize("old_name,new_name", sorted(_METHOD_RENAMES.items()))
 def test_deprecated_shim_warns(client, monkeypatch, old_name, new_name):
     calls = []
-    monkeypatch.setattr(
-        Openbis, new_name, lambda self, **kwargs: calls.append(kwargs)
-    )
+    monkeypatch.setattr(Openbis, new_name, lambda self, **kwargs: calls.append(kwargs))
     method = getattr(client, old_name)
     with warnings.catch_warnings(record=True) as caught:
         warnings.simplefilter("always")
@@ -45,9 +43,7 @@ def test_deprecated_shim_warns(client, monkeypatch, old_name, new_name):
 @pytest.mark.parametrize("old_name,new_name", sorted(_METHOD_RENAMES.items()))
 def test_deprecated_shim_delegates(client, monkeypatch, old_name, new_name):
     calls = []
-    monkeypatch.setattr(
-        Openbis, new_name, lambda self, **kwargs: calls.append(kwargs)
-    )
+    monkeypatch.setattr(Openbis, new_name, lambda self, **kwargs: calls.append(kwargs))
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         getattr(client, old_name)()
@@ -98,9 +94,7 @@ def test_translate_kwargs_renames_old_vocabulary():
     }
 
 
-@pytest.mark.parametrize(
-    "removed", ["only_data", "raw_response", "use_cache", "attrs"]
-)
+@pytest.mark.parametrize("removed", ["only_data", "raw_response", "use_cache", "attrs"])
 def test_translate_kwargs_hard_fails_on_removed(removed):
     with pytest.raises(TypeError, match=removed):
         _translate_kwargs("m", {removed: True})

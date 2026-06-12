@@ -1,11 +1,11 @@
 #   Copyright ETH 2018 - 2024 Zürich, Scientific IT Services
-# 
+#
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
 #   You may obtain a copy of the License at
-# 
+#
 #        http://www.apache.org/licenses/LICENSE-2.0
-#   
+#
 #   Unless required by applicable law or agreed to in writing, software
 #   distributed under the License is distributed on an "AS IS" BASIS,
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -56,11 +56,11 @@ def test_create_delete_sample(space):
     assert sample_by_permId.registrationDate is not None
     # check date format: 2019-03-22 11:36:40
     assert (
-            re.search(
-                r"^\d{4}\-\d{2}\-\d{2} \d{2}\:\d{2}\:\d{2}$",
-                sample_by_permId.registrationDate,
-            )
-            is not None
+        re.search(
+            r"^\d{4}\-\d{2}\-\d{2} \d{2}\:\d{2}\:\d{2}$",
+            sample_by_permId.registrationDate,
+        )
+        is not None
     )
 
     # get sample by identifier
@@ -104,11 +104,11 @@ def test_revert_deletion_sample(space):
     assert sample_by_permId.registrationDate is not None
     # check date format: 2019-03-22 11:36:40
     assert (
-            re.search(
-                r"^\d{4}\-\d{2}\-\d{2} \d{2}\:\d{2}\:\d{2}$",
-                sample_by_permId.registrationDate,
-            )
-            is not None
+        re.search(
+            r"^\d{4}\-\d{2}\-\d{2} \d{2}\:\d{2}\:\d{2}$",
+            sample_by_permId.registrationDate,
+        )
+        is not None
     )
 
     sample.delete("sample creation test on " + timestamp)
@@ -118,15 +118,15 @@ def test_revert_deletion_sample(space):
         assert "This should fail" is None
 
     df = o.get_deletions()
-    assert df[df['permId'] == sample.permId].empty is False
-    deletionId = df[df['permId'] == sample.permId]['deletionId'].iloc[0]
+    assert df[df["permId"] == sample.permId].empty is False
+    deletionId = df[df["permId"] == sample.permId]["deletionId"].iloc[0]
     o.revert_deletions([deletionId])
 
     sample = o.get_sample(sample.permId)
     assert sample is not None
     df = o.get_deletions()
     if df.empty is False:
-        assert df[df['permId'] == sample.permId].empty is True
+        assert df[df["permId"] == sample.permId].empty is True
 
 
 def test_create_delete_space_sample(space):
@@ -149,7 +149,7 @@ def test_parent_child(space):
     sample_type = "UNKNOWN"
     timestamp = time.strftime("%a_%y%m%d_%H%M%S").upper()
     parent_code = (
-            "parent_sample_{}".format(timestamp) + "_" + str(random.randint(0, 1000))
+        "parent_sample_{}".format(timestamp) + "_" + str(random.randint(0, 1000))
     )
     sample_parent = o.new_sample(code=parent_code, type=sample_type, space=space)
     sample_parent.save()
@@ -164,7 +164,7 @@ def test_parent_child(space):
     ex_sample_parents = sample_child.get_parents()
     ex_sample_parent = ex_sample_parents[0]
     assert (
-            ex_sample_parent.identifier == "/{}/{}".format(space.code, parent_code).upper()
+        ex_sample_parent.identifier == "/{}/{}".format(space.code, parent_code).upper()
     )
 
     ex_sample_children = ex_sample_parent.get_children()
@@ -187,7 +187,7 @@ def test_empty_data_frame(openbis_instance):
         listable=True,
         showContainer=False,
         showParents=True,
-        showParentMetadata=False
+        showParentMetadata=False,
     )
     sample_type.save()
 
@@ -208,7 +208,7 @@ def test_empty_data_frame(openbis_instance):
         "plugin",
         "unique",
         "pattern",
-        "patternType"
+        "patternType",
     ]
 
     pd.testing.assert_frame_equal(pa.df, pd.DataFrame(columns=attrs))
@@ -218,7 +218,7 @@ def test_new_sample_type_with_description(openbis_instance):
     timestamp = time.strftime("%a_%y%m%d_%H%M%S").upper()
     sample_type_code = "test_sample_type_" + timestamp + "_" + str(uuid.uuid4())
 
-    description = 'my test description'
+    description = "my test description"
 
     sample_type = openbis_instance.new_sample_type(
         code=sample_type_code,
@@ -229,7 +229,7 @@ def test_new_sample_type_with_description(openbis_instance):
         showContainer=False,
         showParents=True,
         showParentMetadata=False,
-        description=description
+        description=description,
     )
     sample_type.save()
 
@@ -246,9 +246,9 @@ def test_sample_date_property(space):
     property_type_code = "test_property_type_" + current_date + "_" + str(uuid.uuid4())
     pt_date = o.new_property_type(
         code=property_type_code,
-        label='custom property of data type date',
-        description='custom property created in unit test',
-        dataType='DATE',
+        label="custom property of data type date",
+        description="custom property created in unit test",
+        dataType="DATE",
     )
     pt_date.save()
 
@@ -265,19 +265,20 @@ def test_sample_date_property(space):
     # Assign created property to new sample type
     sample_type.assign_property(
         prop=property_type_code,
-        section='',
+        section="",
         ordinal=1,
         mandatory=False,
         showInEditView=True,
-        showRawValueInForms=True
+        showRawValueInForms=True,
     )
 
     sample_code = "my_sample_{}_{}".format(current_date, str(uuid.uuid4()))
-    sample = o.new_sample(code=sample_code,
-                          type=sample_type_code,
-                          space=space,
-                          props={
-                              property_type_code: current_date})
+    sample = o.new_sample(
+        code=sample_code,
+        type=sample_type_code,
+        space=space,
+        props={property_type_code: current_date},
+    )
     sample.save()
 
     # New item case
@@ -287,13 +288,13 @@ def test_sample_date_property(space):
     assert val == current_date
 
     # Update item case
-    sample.props = {property_type_code: '2024-05-16'}
+    sample.props = {property_type_code: "2024-05-16"}
     sample.save()
 
     assert len(sample.props()) == 1
     key, val = sample.props().popitem()
     assert key == property_type_code
-    assert val == '2024-05-16'
+    assert val == "2024-05-16"
 
 
 def test_sample_property_in_isoformat_timestamp(space):
@@ -305,9 +306,9 @@ def test_sample_property_in_isoformat_timestamp(space):
     property_type_code = "test_property_type_" + timestamp + "_" + str(uuid.uuid4())
     pt_date = o.new_property_type(
         code=property_type_code,
-        label='custom property of data type timestamp',
-        description='custom property created in unit test',
-        dataType='TIMESTAMP',
+        label="custom property of data type timestamp",
+        description="custom property created in unit test",
+        dataType="TIMESTAMP",
     )
     pt_date.save()
 
@@ -324,21 +325,22 @@ def test_sample_property_in_isoformat_timestamp(space):
     # Assign created property to new sample type
     sample_type.assign_property(
         prop=property_type_code,
-        section='',
+        section="",
         ordinal=5,
         mandatory=False,
         showInEditView=True,
-        showRawValueInForms=True
+        showRawValueInForms=True,
     )
 
     sample_code = "my_sample_{}".format(timestamp)
     # Create new sample with timestamp property in non-supported format
     timestamp_property = datetime.datetime.now().isoformat()
-    sample = o.new_sample(code=sample_code,
-                          type=sample_type_code,
-                          space=space,
-                          props={
-                              property_type_code: timestamp_property})
+    sample = o.new_sample(
+        code=sample_code,
+        type=sample_type_code,
+        space=space,
+        props={property_type_code: timestamp_property},
+    )
     sample.save()
 
     # New item case
@@ -357,42 +359,42 @@ def test_sample_property_in_isoformat_timestamp(space):
 
 def create_array_properties(openbis, code_prefix):
     pt = openbis.new_property_type(
-        code=code_prefix + '_ARRAY_INTEGER',
-        label='integer array',
-        description='integer array property',
-        dataType='ARRAY_INTEGER',
+        code=code_prefix + "_ARRAY_INTEGER",
+        label="integer array",
+        description="integer array property",
+        dataType="ARRAY_INTEGER",
     )
     pt.save()
 
     pt = openbis.new_property_type(
-        code=code_prefix + '_ARRAY_REAL',
-        label='real array',
-        description='real array property',
-        dataType='ARRAY_REAL',
+        code=code_prefix + "_ARRAY_REAL",
+        label="real array",
+        description="real array property",
+        dataType="ARRAY_REAL",
     )
     pt.save()
 
     pt = openbis.new_property_type(
-        code=code_prefix + '_ARRAY_STRING',
-        label='string array',
-        description='string array property',
-        dataType='ARRAY_STRING',
+        code=code_prefix + "_ARRAY_STRING",
+        label="string array",
+        description="string array property",
+        dataType="ARRAY_STRING",
     )
     pt.save()
 
     pt = openbis.new_property_type(
-        code=code_prefix + '_ARRAY_TIMESTAMP',
-        label='timestamp array',
-        description='timestamp array property',
-        dataType='ARRAY_TIMESTAMP',
+        code=code_prefix + "_ARRAY_TIMESTAMP",
+        label="timestamp array",
+        description="timestamp array property",
+        dataType="ARRAY_TIMESTAMP",
     )
     pt.save()
 
     pt = openbis.new_property_type(
-        code=code_prefix + '_JSON',
-        label='json',
-        description='json type property',
-        dataType='JSON',
+        code=code_prefix + "_JSON",
+        label="json",
+        description="json type property",
+        dataType="JSON",
     )
     pt.save()
 
@@ -401,55 +403,59 @@ def test_sample_array_properties(space):
     timestamp = time.strftime("%a_%y%m%d_%H%M%S").lower()
     create_array_properties(space.openbis, f"SAMPLE_{timestamp}")
 
-    sample_code = f'TEST_ARRAY_SAMPLE_{timestamp}'
+    sample_code = f"TEST_ARRAY_SAMPLE_{timestamp}"
     sample_type = space.openbis.new_sample_type(
         sample_code,
-        generatedCodePrefix='S-',
+        generatedCodePrefix="S-",
         autoGeneratedCode=True,
         validationPlugin=None,
     )
     sample_type.save()
 
-    sample_type.assign_property(f'SAMPLE_{timestamp}_ARRAY_INTEGER')
-    sample_type.assign_property(f'SAMPLE_{timestamp}_ARRAY_REAL')
-    sample_type.assign_property(f'SAMPLE_{timestamp}_ARRAY_STRING')
-    sample_type.assign_property(f'SAMPLE_{timestamp}_ARRAY_TIMESTAMP')
-    sample_type.assign_property(f'SAMPLE_{timestamp}_JSON')
+    sample_type.assign_property(f"SAMPLE_{timestamp}_ARRAY_INTEGER")
+    sample_type.assign_property(f"SAMPLE_{timestamp}_ARRAY_REAL")
+    sample_type.assign_property(f"SAMPLE_{timestamp}_ARRAY_STRING")
+    sample_type.assign_property(f"SAMPLE_{timestamp}_ARRAY_TIMESTAMP")
+    sample_type.assign_property(f"SAMPLE_{timestamp}_JSON")
 
     sample = space.openbis.new_sample(
         type=sample_code,
-        experiment='/DEFAULT/DEFAULT/DEFAULT',
-        props={f'sample_{timestamp}_array_integer': [1, 2, 3]})
+        experiment="/DEFAULT/DEFAULT/DEFAULT",
+        props={f"sample_{timestamp}_array_integer": [1, 2, 3]},
+    )
     sample.save()
 
-    assert sample.props[f'sample_{timestamp}_array_integer'] == [1, 2, 3]
+    assert sample.props[f"sample_{timestamp}_array_integer"] == [1, 2, 3]
 
-    sample.props[f'sample_{timestamp}_array_integer'] = [3, 2, 1]
-    sample.props[f'sample_{timestamp}_array_real'] = [3.1, 2.2, 1.3]
-    sample.props[f'sample_{timestamp}_array_string'] = ["aa", "bb", "cc"]
-    sample.props[f'sample_{timestamp}_array_timestamp'] = ['2023-05-18 11:17:03', '2023-05-18 11:17:04',
-                                              '2023-05-18 11:17:05']
-    sample.props[f'sample_{timestamp}_json'] = "{ \"key\": [1, 1, 1] }"
+    sample.props[f"sample_{timestamp}_array_integer"] = [3, 2, 1]
+    sample.props[f"sample_{timestamp}_array_real"] = [3.1, 2.2, 1.3]
+    sample.props[f"sample_{timestamp}_array_string"] = ["aa", "bb", "cc"]
+    sample.props[f"sample_{timestamp}_array_timestamp"] = [
+        "2023-05-18 11:17:03",
+        "2023-05-18 11:17:04",
+        "2023-05-18 11:17:05",
+    ]
+    sample.props[f"sample_{timestamp}_json"] = '{ "key": [1, 1, 1] }'
     sample.save()
 
-    assert sample.props[f'sample_{timestamp}_array_integer'] == [3, 2, 1]
-    assert sample.props[f'sample_{timestamp}_array_real'] == [3.1, 2.2, 1.3]
-    assert sample.props[f'sample_{timestamp}_array_string'] == ["aa", "bb", "cc"]
-    assert sample.props[f'sample_{timestamp}_json'] == "{\"key\": [1, 1, 1]}"
+    assert sample.props[f"sample_{timestamp}_array_integer"] == [3, 2, 1]
+    assert sample.props[f"sample_{timestamp}_array_real"] == [3.1, 2.2, 1.3]
+    assert sample.props[f"sample_{timestamp}_array_string"] == ["aa", "bb", "cc"]
+    assert sample.props[f"sample_{timestamp}_json"] == '{"key": [1, 1, 1]}'
 
-    sample.props[f'sample_{timestamp}_array_integer'] = ''
-    sample.props[f'sample_{timestamp}_array_real'] = None
-    sample.props[f'sample_{timestamp}_array_string'] = None
-    sample.props[f'sample_{timestamp}_array_timestamp'] = None
-    sample.props[f'sample_{timestamp}_json'] = ''
+    sample.props[f"sample_{timestamp}_array_integer"] = ""
+    sample.props[f"sample_{timestamp}_array_real"] = None
+    sample.props[f"sample_{timestamp}_array_string"] = None
+    sample.props[f"sample_{timestamp}_array_timestamp"] = None
+    sample.props[f"sample_{timestamp}_json"] = ""
     sample.save()
 
-    assert sample.props[f'sample_{timestamp}_array_integer'] is None
-    assert sample.props[f'sample_{timestamp}_array_real'] is None
-    assert sample.props[f'sample_{timestamp}_array_string'] is None
-    assert sample.props[f'sample_{timestamp}_array_integer'] is None
-    assert sample.props[f'sample_{timestamp}_array_timestamp'] is None
-    assert sample.props[f'sample_{timestamp}_json'] is None
+    assert sample.props[f"sample_{timestamp}_array_integer"] is None
+    assert sample.props[f"sample_{timestamp}_array_real"] is None
+    assert sample.props[f"sample_{timestamp}_array_string"] is None
+    assert sample.props[f"sample_{timestamp}_array_integer"] is None
+    assert sample.props[f"sample_{timestamp}_array_timestamp"] is None
+    assert sample.props[f"sample_{timestamp}_json"] is None
 
 
 def test_create_sample_type_assign_property(space):
@@ -467,17 +473,25 @@ def test_create_sample_type_assign_property(space):
     pr.save()
 
     # Create the experiment
-    exp = space.openbis.new_collection(code=pc, project="/" + sc + "/" + pc, type="COLLECTION")
+    exp = space.openbis.new_collection(
+        code=pc, project="/" + sc + "/" + pc, type="COLLECTION"
+    )
     exp.save()
 
     # Create the sample type
-    date_prop = space.openbis.new_property_type(code=ptc1, dataType="TIMESTAMP",
-                                                label="Start date",
-                                                description="Date of the measurement")
+    date_prop = space.openbis.new_property_type(
+        code=ptc1,
+        dataType="TIMESTAMP",
+        label="Start date",
+        description="Date of the measurement",
+    )
     date_prop.save()
-    date_prop = space.openbis.new_property_type(code=ptc2, dataType="MULTILINE_VARCHAR",
-                                                label="Experimental description",
-                                                description="Experimental description")
+    date_prop = space.openbis.new_property_type(
+        code=ptc2,
+        dataType="MULTILINE_VARCHAR",
+        label="Experimental description",
+        description="Experimental description",
+    )
     date_prop.save()
     st = space.openbis.new_sample_type(code=stc, generatedCodePrefix="EXSTEPMILAR")
     st.save()
@@ -502,7 +516,9 @@ def test_del_child_from_sample(space):
     sample_child = space.new_sample(code=sample_code1, type=sample_type)
     sample_child.save()
 
-    sample_code2 = "test_sample_parent_" + timestamp + "_" + str(random.randint(0, 1000))
+    sample_code2 = (
+        "test_sample_parent_" + timestamp + "_" + str(random.randint(0, 1000))
+    )
     sample_parent = space.new_sample(code=sample_code2, type=sample_type)
     sample_parent.children = [sample_child]
     sample_parent.save()
@@ -526,10 +542,10 @@ def test_create_sample_with_multivalue_property_sample(space):
     property_type_code = "test_property_type_" + timestamp + "_" + str(uuid.uuid4())
     pt_date = o.new_property_type(
         code=property_type_code,
-        label='custom multi-value property of SAMPLE type',
-        description='custom property created in unit test',
-        dataType='SAMPLE',
-        multiValue=True
+        label="custom multi-value property of SAMPLE type",
+        description="custom property created in unit test",
+        dataType="SAMPLE",
+        multiValue=True,
     )
     pt_date.save()
 
@@ -546,28 +562,35 @@ def test_create_sample_with_multivalue_property_sample(space):
     # Assign created property to new sample type
     sample_type.assign_property(
         prop=property_type_code,
-        section='',
+        section="",
         ordinal=1,
         mandatory=False,
         showInEditView=True,
-        showRawValueInForms=True
+        showRawValueInForms=True,
     )
 
     sample_code = "my_sample_{}".format(timestamp)
 
-    test_sample1 = o.new_sample(code=sample_code + "_property1", type='UNKNOWN', space=space)
+    test_sample1 = o.new_sample(
+        code=sample_code + "_property1", type="UNKNOWN", space=space
+    )
     test_sample1.save()
-    test_sample2 = o.new_sample(code=sample_code + "_property2", type='UNKNOWN', space=space)
+    test_sample2 = o.new_sample(
+        code=sample_code + "_property2", type="UNKNOWN", space=space
+    )
     test_sample2.save()
-    test_sample3 = o.new_sample(code=sample_code + "_property3", type='UNKNOWN', space=space)
+    test_sample3 = o.new_sample(
+        code=sample_code + "_property3", type="UNKNOWN", space=space
+    )
     test_sample3.save()
 
     # Create new sample with timestamp property in non-supported format
-    sample = o.new_sample(code=sample_code,
-                          type=sample_type_code,
-                          space=space,
-                          props={
-                              property_type_code: [test_sample1.permId, test_sample2.identifier]})
+    sample = o.new_sample(
+        code=sample_code,
+        type=sample_type_code,
+        space=space,
+        props={property_type_code: [test_sample1.permId, test_sample2.identifier]},
+    )
     sample.save()
 
     # New item case
@@ -589,7 +612,13 @@ def test_create_sample_with_multivalue_property_sample(space):
     assert val == [test_sample3.permId]
 
     # Yet again update items
-    sample.props = {property_type_code: [test_sample1.identifier, test_sample2.identifier, test_sample3.identifier]}
+    sample.props = {
+        property_type_code: [
+            test_sample1.identifier,
+            test_sample2.identifier,
+            test_sample3.identifier,
+        ]
+    }
     sample.save()
     assert len(sample.props()) == 1
     key, val = sample.props().popitem()
@@ -605,27 +634,38 @@ def test_create_sample_with_multivalue_property_vocabulary(space):
 
     timestamp = time.strftime("%a_%y%m%d_%H%M%S").lower()
 
-    vocab = o.new_vocabulary(code=f'test_vocab_{timestamp}_{uuid.uuid4()}',
-                             description='test vocab for multi-value property tests',
-                             terms=[
-                                 {"code": 'term_code1', "label": "term_label1",
-                                  "description": "term_description1"},
-                                 {"code": 'term_code2', "label": "term_label2",
-                                  "description": "term_description2"},
-                                 {"code": 'term_code3', "label": "term_label3",
-                                  "description": "term_description3"}
-                             ])
+    vocab = o.new_vocabulary(
+        code=f"test_vocab_{timestamp}_{uuid.uuid4()}",
+        description="test vocab for multi-value property tests",
+        terms=[
+            {
+                "code": "term_code1",
+                "label": "term_label1",
+                "description": "term_description1",
+            },
+            {
+                "code": "term_code2",
+                "label": "term_label2",
+                "description": "term_description2",
+            },
+            {
+                "code": "term_code3",
+                "label": "term_label3",
+                "description": "term_description3",
+            },
+        ],
+    )
     vocab.save()
 
     # Create custom CONTROLLEDVOCABULARY property type
     property_type_code = "test_property_type_" + timestamp + "_" + str(uuid.uuid4())
     pt_date = o.new_property_type(
         code=property_type_code,
-        label='custom multi-value property of CONTROLLEDVOCABULARY type',
-        description='custom property created in unit test',
-        dataType='CONTROLLEDVOCABULARY',
+        label="custom multi-value property of CONTROLLEDVOCABULARY type",
+        description="custom property created in unit test",
+        dataType="CONTROLLEDVOCABULARY",
         vocabulary=vocab,
-        multiValue=True
+        multiValue=True,
     )
     pt_date.save()
 
@@ -642,21 +682,22 @@ def test_create_sample_with_multivalue_property_vocabulary(space):
     # Assign created property to new sample type
     sample_type.assign_property(
         prop=property_type_code,
-        section='',
+        section="",
         ordinal=1,
         mandatory=False,
         showInEditView=True,
-        showRawValueInForms=True
+        showRawValueInForms=True,
     )
 
     sample_code = "my_sample_{}".format(timestamp)
 
     # Create new sample with timestamp property in non-supported format
-    sample = o.new_sample(code=sample_code,
-                          type=sample_type_code,
-                          space=space,
-                          props={
-                              property_type_code: ['term_code1', 'term_code2']})
+    sample = o.new_sample(
+        code=sample_code,
+        type=sample_type_code,
+        space=space,
+        props={property_type_code: ["term_code1", "term_code2"]},
+    )
     sample.save()
 
     # New item case
@@ -665,17 +706,17 @@ def test_create_sample_with_multivalue_property_vocabulary(space):
     assert key == property_type_code
     assert type(val) == list
     assert len(val) == 2
-    assert 'term_code1'.upper() in val
-    assert 'term_code2'.upper() in val
+    assert "term_code1".upper() in val
+    assert "term_code2".upper() in val
 
     # Update item case
-    sample.props = {property_type_code: ['term_code3'.upper()]}
+    sample.props = {property_type_code: ["term_code3".upper()]}
     sample.save()
 
     assert len(sample.props()) == 1
     key, val = sample.props().popitem()
     assert key == property_type_code
-    assert val == ['term_code3'.upper()]
+    assert val == ["term_code3".upper()]
 
 
 def test_sample_with_auto_generated_code(space):
@@ -687,9 +728,9 @@ def test_sample_with_auto_generated_code(space):
     property_type_code = "test_property_type_" + timestamp + "_" + str(uuid.uuid4())
     pt_date = o.new_property_type(
         code=property_type_code,
-        label='custom property of data type varchar',
-        description='custom property created in unit test',
-        dataType='VARCHAR',
+        label="custom property of data type varchar",
+        description="custom property created in unit test",
+        dataType="VARCHAR",
     )
     pt_date.save()
 
@@ -706,28 +747,29 @@ def test_sample_with_auto_generated_code(space):
     # Assign created property to new sample type
     sample_type.assign_property(
         prop=property_type_code,
-        section='',
+        section="",
         ordinal=5,
         mandatory=False,
         showInEditView=True,
-        showRawValueInForms=True
+        showRawValueInForms=True,
     )
 
-    project = space.new_project(f'my_project_{timestamp}')
+    project = space.new_project(f"my_project_{timestamp}")
     project.save()
 
-    collection = o.new_experiment('UNKNOWN', f'my_collection_{timestamp}', project)
+    collection = o.new_experiment("UNKNOWN", f"my_collection_{timestamp}", project)
     collection.save()
 
     sample_code = "my_sample_{}".format(timestamp)
     # create varchar property
     timestamp_property = str(datetime.datetime.now().isoformat())
 
-    sample = space.new_sample(code=sample_code,
-                          type=sample_type_code,
-                          experiment=collection,
-                          props={
-                              property_type_code: timestamp_property})
+    sample = space.new_sample(
+        code=sample_code,
+        type=sample_type_code,
+        experiment=collection,
+        props={property_type_code: timestamp_property},
+    )
     sample.save()
 
     assert len(sample.props()) == 1
@@ -745,20 +787,20 @@ def test_create_sample_clear_property_values(space):
     property_type_code_1 = "test_property_type_" + timestamp + "_" + str(uuid.uuid4())
     pt_integer = o.new_property_type(
         code=property_type_code_1,
-        label='custom property of INTEGER type',
-        description='custom property created in unit test',
-        dataType='INTEGER',
-        multiValue=False
+        label="custom property of INTEGER type",
+        description="custom property created in unit test",
+        dataType="INTEGER",
+        multiValue=False,
     )
     pt_integer.save()
 
     property_type_code_2 = "test_property_type_" + timestamp + "_" + str(uuid.uuid4())
     pt_integer_2 = o.new_property_type(
         code=property_type_code_2,
-        label='custom property of BOOLEAN type',
-        description='custom property created in unit test',
-        dataType='BOOLEAN',
-        multiValue=False
+        label="custom property of BOOLEAN type",
+        description="custom property created in unit test",
+        dataType="BOOLEAN",
+        multiValue=False,
     )
     pt_integer_2.save()
 
@@ -775,45 +817,47 @@ def test_create_sample_clear_property_values(space):
     # Assign created property to new sample type
     sample_type.assign_property(
         prop=property_type_code_1,
-        section='',
+        section="",
         ordinal=1,
         mandatory=False,
         showInEditView=True,
-        showRawValueInForms=True
+        showRawValueInForms=True,
     )
 
     sample_type.assign_property(
         prop=property_type_code_2,
-        section='',
+        section="",
         ordinal=2,
         mandatory=False,
         showInEditView=True,
-        showRawValueInForms=True
+        showRawValueInForms=True,
     )
 
     sample_code = "my_sample_{}".format(timestamp)
 
     # Create new sample with timestamp property in non-supported format
-    sample = o.new_sample(code=sample_code,
-                          type=sample_type_code,
-                          space=space,
-                          props={
-                              property_type_code_1: 1,
-                              property_type_code_2: True,
-                                })
+    sample = o.new_sample(
+        code=sample_code,
+        type=sample_type_code,
+        space=space,
+        props={
+            property_type_code_1: 1,
+            property_type_code_2: True,
+        },
+    )
     sample.save()
 
     # New item case
     assert len(sample.props()) == 2
     key, val = sample.props().popitem()
     assert key in [property_type_code_1, property_type_code_2]
-    assert val in [1, 'true']
+    assert val in [1, "true"]
     key, val = sample.props().popitem()
     assert key in [property_type_code_1, property_type_code_2]
-    assert val in [1, 'true']
+    assert val in [1, "true"]
 
     # Update item case
-    sample.props = {property_type_code_1: '', property_type_code_2: None}
+    sample.props = {property_type_code_1: "", property_type_code_2: None}
     sample.save()
 
     assert len(sample.props()) == 2
@@ -841,21 +885,32 @@ def test_create_sample_type_assign_property_pattern(space):
     pr.save()
 
     # Create the experiment
-    exp = space.openbis.new_collection(code=pc, project="/" + sc + "/" + pc, type="COLLECTION")
+    exp = space.openbis.new_collection(
+        code=pc, project="/" + sc + "/" + pc, type="COLLECTION"
+    )
     exp.save()
 
     # Create the sample type
-    date_prop = space.openbis.new_property_type(code=ptc1, dataType="VARCHAR",
-                                                label="text pattern",
-                                                description="test text pattern")
+    date_prop = space.openbis.new_property_type(
+        code=ptc1,
+        dataType="VARCHAR",
+        label="text pattern",
+        description="test text pattern",
+    )
     date_prop.save()
-    date_prop = space.openbis.new_property_type(code=ptc2, dataType="INTEGER",
-                                                label="integer test pattern",
-                                                description="integer test pattern")
+    date_prop = space.openbis.new_property_type(
+        code=ptc2,
+        dataType="INTEGER",
+        label="integer test pattern",
+        description="integer test pattern",
+    )
     date_prop.save()
-    date_prop = space.openbis.new_property_type(code=ptc3, dataType="VARCHAR",
-                                                label="text pattern 2",
-                                                description="test text pattern 2")
+    date_prop = space.openbis.new_property_type(
+        code=ptc3,
+        dataType="VARCHAR",
+        label="text pattern 2",
+        description="test text pattern 2",
+    )
     date_prop.save()
     st = space.openbis.new_sample_type(code=stc, generatedCodePrefix="TEST_PATTERN_")
     st.save()
@@ -869,6 +924,7 @@ def test_create_sample_type_assign_property_pattern(space):
     st.assign_property(ptc2, patternType="RANGES", pattern="1-10, 15-20")
     st.assign_property(ptc3, patternType="VALUES", pattern='"a", "b", "c"')
     st.save()
+
 
 def test_create_sample_with_spreadsheet(space):
     name_suffix = str(time.time())
@@ -884,14 +940,19 @@ def test_create_sample_with_spreadsheet(space):
     pr.save()
 
     # Create the experiment
-    exp = space.openbis.new_collection(code=pc, project="/" + sc + "/" + pc, type="COLLECTION")
+    exp = space.openbis.new_collection(
+        code=pc, project="/" + sc + "/" + pc, type="COLLECTION"
+    )
     exp.save()
 
     # Create the sample type
-    date_prop = space.openbis.new_property_type(code=ptc1, dataType="XML",
-                                                label="test spreadsheet",
-                                                description="test xml property",
-                                                metaData={"custom_widget": "Spreadsheet"})
+    date_prop = space.openbis.new_property_type(
+        code=ptc1,
+        dataType="XML",
+        label="test spreadsheet",
+        description="test xml property",
+        metaData={"custom_widget": "Spreadsheet"},
+    )
     date_prop.save()
 
     st = space.openbis.new_sample_type(code=stc, generatedCodePrefix="TEST_PATTERN_")
@@ -908,32 +969,37 @@ def test_create_sample_with_spreadsheet(space):
     spreadsheet = space.openbis.new_spreadsheet(10, 10)
     spreadsheet.data[0][0] = 10
 
-    sample = space.openbis.new_sample(code=f"CODE_{name_suffix}",
-                                      type=st.code,
-                                      experiment=exp,
-                                      props={ptc1.lower(): spreadsheet})
+    sample = space.openbis.new_sample(
+        code=f"CODE_{name_suffix}",
+        type=st.code,
+        experiment=exp,
+        props={ptc1.lower(): spreadsheet},
+    )
     sample.save()
 
     assert sample.props[ptc1.lower()] is not None
     assert sample.props[ptc1.lower()].data[0][0] == 10
+
 
 def test_parent_child_in_project(space):
     o = space.openbis
 
     timestamp = time.strftime("%a_%y%m%d_%H%M%S").upper()
 
-    project = space.new_project(f'my_project_{timestamp}')
+    project = space.new_project(f"my_project_{timestamp}")
     project.save()
 
-    collection = o.new_experiment('UNKNOWN', f'my_collection_{timestamp}', project)
+    collection = o.new_experiment("UNKNOWN", f"my_collection_{timestamp}", project)
     collection.save()
 
     sample_type = "UNKNOWN"
 
     parent_code = (
-            "parent_sample_{}".format(timestamp) + "_" + str(random.randint(0, 1000))
+        "parent_sample_{}".format(timestamp) + "_" + str(random.randint(0, 1000))
     )
-    sample_parent = o.new_sample(code=parent_code, type=sample_type, collection=collection)
+    sample_parent = o.new_sample(
+        code=parent_code, type=sample_type, collection=collection
+    )
     sample_parent.save()
 
     child_code = "child_sample_{}".format(timestamp)
@@ -945,7 +1011,7 @@ def test_parent_child_in_project(space):
 
     samples = o.get_samples(sample_parent)
     assert len(samples) == 1
-    assert samples[0].children == '--NOT FETCHED--'
+    assert samples[0].children == "--NOT FETCHED--"
     child = samples[0].get_children()
     assert child is not None
     assert len(child) == 1
@@ -953,6 +1019,6 @@ def test_parent_child_in_project(space):
     children = samples.get_children()
     assert children is not None
     assert len(children) == 1
-    assert samples[0].get_children().get_parents()[0].identifier == samples[0].identifier
-
-
+    assert (
+        samples[0].get_children().get_parents()[0].identifier == samples[0].identifier
+    )

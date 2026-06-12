@@ -579,7 +579,6 @@ class AttrHolder:
         else:
             return None
 
-
     def _fetch_or_raise(self, entity_name, value):
         """Fetch a referenced entity, failing fast when it does not exist.
 

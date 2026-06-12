@@ -1,11 +1,11 @@
 #   Copyright ETH 2013 - 2023 Zürich, Scientific IT Services
-# 
+#
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
 #   You may obtain a copy of the License at
-# 
+#
 #        http://www.apache.org/licenses/LICENSE-2.0
-#   
+#
 #   Unless required by applicable law or agreed to in writing, software
 #   distributed under the License is distributed on an "AS IS" BASIS,
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -30,7 +30,7 @@ class ArtifactRepository:
 
     def __init__(self, localRepositoryFolder):
         """
-        Creates a new instance for the specified folder. The folder will be created if it does not exist. 
+        Creates a new instance for the specified folder. The folder will be created if it does not exist.
         """
         self.localRepositoryFolder = localRepositoryFolder
         if not os.path.exists(localRepositoryFolder):
@@ -47,18 +47,22 @@ class ArtifactRepository:
                 os.remove(path)
         printAndFlush("Artifact repository cleared.")
 
-    def getPathToArtifact(self, project, pattern='.*'):
+    def getPathToArtifact(self, project, pattern=".*"):
         """
         Returns the path to artifact requested by the specified pattern and project.
         The pattern is a regular expression which has to match the beginning of the artifact file name.
         The project specifies the project on CI server to download the artifact.
-        
-        An Exception is raised if non or more than one artifact matches the pattern.  
+
+        An Exception is raised if non or more than one artifact matches the pattern.
         """
-        files = [f for f in os.listdir(self.localRepositoryFolder) if re.match(pattern, f)]
+        files = [
+            f for f in os.listdir(self.localRepositoryFolder) if re.match(pattern, f)
+        ]
         if len(files) > 1:
-            raise Exception("More than one artifact in '%s' matches the pattern '%s': %s"
-                            % (self.localRepositoryFolder, pattern, files))
+            raise Exception(
+                "More than one artifact in '%s' matches the pattern '%s': %s"
+                % (self.localRepositoryFolder, pattern, files)
+            )
         if len(files) == 0:
             f = self.downloadArtifact(project, pattern)
         else:
@@ -73,7 +77,7 @@ class ArtifactRepository:
 
     def _download(self, readHandle, fileName):
         filePath = "%s/%s" % (self.localRepositoryFolder, fileName)
-        writeHandle = open(filePath, 'wb')
+        writeHandle = open(filePath, "wb")
         try:
             blockSize = 8192
             while True:
@@ -102,25 +106,34 @@ class JenkinsArtifactRepository(ArtifactRepository):
         Downloads the requested artifact from Jenkins. It uses the Jenkins API.
         """
         projectUrl = "%s/job/%s" % (self.baseUrl, project)
-        apiUrl = "%s/lastSuccessfulBuild/api/xml?xpath=//artifact&wrapper=bag" % projectUrl
+        apiUrl = (
+            "%s/lastSuccessfulBuild/api/xml?xpath=//artifact&wrapper=bag" % projectUrl
+        )
         printAndFlush("Get artifact info from %s" % apiUrl)
         handle = urlopen(apiUrl)  # urllib.urlopen(apiUrl)
         url = None
         fileName = None
         dom = xml.dom.minidom.parseString(handle.read())
-        for element in dom.getElementsByTagName('artifact'):
-            elementFileName = element.getElementsByTagName('fileName')[0].firstChild.nodeValue
+        for element in dom.getElementsByTagName("artifact"):
+            elementFileName = element.getElementsByTagName("fileName")[
+                0
+            ].firstChild.nodeValue
             if re.match(pattern, elementFileName):
                 if fileName != None:
                     raise Exception(
                         "Pattern '%s' matches at least two artifacts in project '%s': %s and %s"
-                        % (pattern, project, fileName, elementFileName))
+                        % (pattern, project, fileName, elementFileName)
+                    )
                 fileName = elementFileName
-                relativePath = element.getElementsByTagName('relativePath')[0].firstChild.nodeValue
+                relativePath = element.getElementsByTagName("relativePath")[
+                    0
+                ].firstChild.nodeValue
                 url = "%s/lastSuccessfulBuild/artifact/%s" % (projectUrl, relativePath)
         if url == None:
             raise Exception(
-                "For pattern '%s' no artifact found in project '%s'." % (pattern, project))
+                "For pattern '%s' no artifact found in project '%s'."
+                % (pattern, project)
+            )
         printAndFlush("Download %s to %s." % (url, self.localRepositoryFolder))
         self._download(urlopen(url), fileName)
         return fileName
@@ -131,7 +144,7 @@ class GitArtifactRepository(ArtifactRepository):
     Artifact repository for a git projects.
     """
 
-    def __init__(self, localRepositoryFolder, host='github.com'):
+    def __init__(self, localRepositoryFolder, host="github.com"):
         ArtifactRepository.__init__(self, localRepositoryFolder)
         self.host = host
 

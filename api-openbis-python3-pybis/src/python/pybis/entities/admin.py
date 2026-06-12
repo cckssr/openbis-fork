@@ -241,8 +241,7 @@ class _AdminApi(ClientApiMixin):
         """Get a single authorization group by code, or None if missing."""
         fetchopts: dict[str, Any] = {
             "@type": (
-                "as.dto.authorizationgroup.fetchoptions"
-                ".AuthorizationGroupFetchOptions"
+                "as.dto.authorizationgroup.fetchoptions.AuthorizationGroupFetchOptions"
             )
         }
         for option in ["roleAssignments", "users", "registrator"]:

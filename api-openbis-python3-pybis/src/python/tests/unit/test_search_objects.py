@@ -117,8 +117,7 @@ def test_search_objects_by_project(search_client, mock_rpc):
     crit = first_criterion(mock_rpc)
     assert crit["@type"] == "as.dto.project.search.ProjectSearchCriteria"
     assert (
-        crit["criteria"][0]["@type"]
-        == "as.dto.common.search.IdentifierSearchCriteria"
+        crit["criteria"][0]["@type"] == "as.dto.common.search.IdentifierSearchCriteria"
     )
 
 
@@ -194,8 +193,7 @@ def test_search_objects_by_parents_filter(search_client, mock_rpc):
     crit = first_criterion(mock_rpc)
     assert crit["@type"] == "as.dto.sample.search.SampleParentsSearchCriteria"
     assert (
-        crit["criteria"][0]["@type"]
-        == "as.dto.common.search.IdentifierSearchCriteria"
+        crit["criteria"][0]["@type"] == "as.dto.common.search.IdentifierSearchCriteria"
     )
 
 
@@ -224,9 +222,7 @@ def test_search_objects_by_registration_date(search_client, mock_rpc):
 
 
 def test_search_objects_by_modification_date_filter(search_client, mock_rpc):
-    search_client.search_objects(
-        modification_date=filters.date_after("2024-01-01")
-    )
+    search_client.search_objects(modification_date=filters.date_after("2024-01-01"))
     crit = first_criterion(mock_rpc)
     assert crit["@type"] == "as.dto.common.search.ModificationDateSearchCriteria"
 

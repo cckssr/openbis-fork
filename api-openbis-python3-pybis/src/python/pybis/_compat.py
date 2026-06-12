@@ -77,12 +77,8 @@ _PARAM_RENAMES: dict[str, str] = {
 
 #: Implementation-detail parameters removed from the public API.
 _REMOVED_PARAMS: dict[str, str] = {
-    "only_data": (
-        "entities are always returned; use entity.data for the raw dict"
-    ),
-    "raw_response": (
-        "raw responses are no longer exposed; use the typed entities"
-    ),
+    "only_data": ("entities are always returned; use entity.data for the raw dict"),
+    "raw_response": ("raw responses are no longer exposed; use the typed entities"),
     "use_cache": "caching is transparent now; see Openbis.clear_cache()",
     "attrs": "use the returned entities (or result.df) instead",
 }
@@ -360,8 +356,7 @@ def _adapt_for_new_signature(
     """
     parameters = inspect.signature(new_method).parameters
     has_var_keyword = any(
-        param.kind is inspect.Parameter.VAR_KEYWORD
-        for param in parameters.values()
+        param.kind is inspect.Parameter.VAR_KEYWORD for param in parameters.values()
     )
     takes_properties = "properties" in parameters
 
@@ -455,9 +450,7 @@ def _make_param_shim(method: Callable[..., Any], name: str) -> Callable[..., Any
     @functools.wraps(method)
     def shim(self: Any, *args: Any, **kwargs: Any) -> Any:
         legacy_keys = [
-            key
-            for key in kwargs
-            if key not in new_params or key in _REMOVED_PARAMS
+            key for key in kwargs if key not in new_params or key in _REMOVED_PARAMS
         ]
         legacy_positional = len(args) > 1  # v2 keeps at most the identifier
         if legacy_keys or legacy_positional:
@@ -501,9 +494,7 @@ def install_compat(cls: type) -> None:
     for old_name, new_name in _METHOD_RENAMES.items():
         assert hasattr(cls, new_name), f"missing new method {new_name}"
         existing = vars(cls).get(old_name)
-        assert existing is None or getattr(
-            existing, "_pybis_compat_shim", False
-        ), (
+        assert existing is None or getattr(existing, "_pybis_compat_shim", False), (
             f"legacy method {old_name} still defined; remove it before"
             f" installing its shim"
         )

@@ -71,7 +71,10 @@ OPERATOR_RPC_TABLE = [
         f.lte(5),
         {"@type": "as.dto.common.search.NumberLessThanOrEqualToValue", "value": 5},
     ),
-    (f.number_eq(42), {"@type": "as.dto.common.search.NumberEqualToValue", "value": 42}),
+    (
+        f.number_eq(42),
+        {"@type": "as.dto.common.search.NumberEqualToValue", "value": 42},
+    ),
     (
         f.date_eq("2024-01-01"),
         {"@type": "as.dto.common.search.DateEqualToValue", "value": "2024-01-01"},
@@ -210,16 +213,12 @@ def test_parent_property_criterion_for_objects():
 
 
 def test_child_property_criterion_for_datasets():
-    crit = hierarchy_property_criterion(
-        "dataset", f.child_prop("STATUS", f.eq("OK"))
-    )
+    crit = hierarchy_property_criterion("dataset", f.child_prop("STATUS", f.eq("OK")))
     assert crit["@type"] == "as.dto.dataset.search.DataSetChildrenSearchCriteria"
 
 
 def test_container_property_criterion():
-    crit = hierarchy_property_criterion(
-        "sample", f.container_prop("BOX", f.eq("B1"))
-    )
+    crit = hierarchy_property_criterion("sample", f.container_prop("BOX", f.eq("B1")))
     assert crit["@type"] == "as.dto.sample.search.SampleContainerSearchCriteria"
 
 
