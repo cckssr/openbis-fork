@@ -16,7 +16,7 @@
 """Sample (Object) entity for openBIS."""
 
 import copy
-from typing import Any, Optional
+from typing import Any, Optional, cast
 from urllib.parse import quote
 
 from .attribute import AttrHolder
@@ -81,9 +81,9 @@ class Sample(OpenBisObject, entity="sample", single_item_method_name="get_object
         openbis_obj: Any,
         type: Any,
         project: Optional[Any] = None,
-        data: Optional[dict] = None,
-        props: Optional[dict] = None,
-        attrs: Optional[list] = None,
+        data: Optional[dict[str, Any]] = None,
+        props: Optional[dict[str, Any]] = None,
+        attrs: Optional[list[str]] = None,
         **kwargs: Any,
     ) -> None:
         """Initialise a Sample instance.
@@ -106,7 +106,7 @@ class Sample(OpenBisObject, entity="sample", single_item_method_name="get_object
         self.__dict__["type"] = type
         ph = PropertyHolder(openbis_obj, type)
         self.__dict__["p"] = ph
-        self.__dict__["a"] = AttrHolder(openbis_obj, "sample", type)
+        self.__dict__["a"] = AttrHolder(openbis_obj, "sample", type)  # type: ignore[no-untyped-call]  # reason: legacy attribute module
         self.__dict__["formatter"] = PropertyReformatter(openbis_obj)
 
         if data is not None:
@@ -119,7 +119,7 @@ class Sample(OpenBisObject, entity="sample", single_item_method_name="get_object
             if "experiment" in kwargs:
                 try:
                     experiment = self.experiment
-                    if not "space" in kwargs:
+                    if experiment is not None and "space" not in kwargs:
                         project = experiment.project
                         self.a.space = project.space
                 except Exception:
@@ -127,9 +127,9 @@ class Sample(OpenBisObject, entity="sample", single_item_method_name="get_object
 
         if project is None:
             if self.experiment:
-                self.project = self.experiment.project
+                self.project = self.experiment.project  # type: ignore[misc]  # reason: __setattr__ routes to AttrHolder at runtime
         else:
-            self.project = project
+            self.project = project  # type: ignore[misc]  # reason: __setattr__ routes to AttrHolder at runtime
 
         if props is not None:
             for key in props:
@@ -163,7 +163,7 @@ class Sample(OpenBisObject, entity="sample", single_item_method_name="get_object
             if not self.is_new:
                 self.a.__dict__["_components_orig"] = self.a.__dict__["_components"]
 
-    def _set_data(self, data: dict) -> None:
+    def _set_data(self, data: dict[str, Any]) -> None:
         """Populate attributes and properties from a raw V3 API response dict.
 
         Handles multi-value properties, array types, and spreadsheet widgets.
@@ -299,6 +299,7 @@ class Sample(OpenBisObject, entity="sample", single_item_method_name="get_object
                 else:
                     obj = value
 
+                assert obj is not None
                 self.a.__dict__["_container"] = obj.data["identifier"]
 
                 if self.is_new:
@@ -307,9 +308,13 @@ class Sample(OpenBisObject, entity="sample", single_item_method_name="get_object
                     self.a.__dict__["_container"]["isModified"] = True
         else:
             try:
-                return self.openbis.get_sample(self.a._container["identifier"])
+                return cast(
+                    "Sample",
+                    self.openbis.get_sample(self.a._container["identifier"]),
+                )
             except Exception:
                 pass
+        return None
 
     @property
     def type(self) -> Any:
@@ -328,17 +333,20 @@ class Sample(OpenBisObject, entity="sample", single_item_method_name="get_object
         self.a.__dict__["_type"] = sample_type
 
     def __getattr__(self, name: str) -> Any:
+        """Delegate attribute access to the attribute holder."""
         if name in ["container"]:
             return getattr(self, "_" + name)()
 
         return getattr(self.__dict__["a"], name)
 
     def __setattr__(self, name: str, value: Any) -> None:
+        """Set an entity attribute (or replace all properties via ``props``)."""
         if name in ["set_properties", "set_tags", "add_tags"]:
             raise ValueError("These are methods which should not be overwritten")
 
         if name in ["container"]:
-            return getattr(self, "_" + name)(value)
+            getattr(self, "_" + name)(value)
+            return
 
         if name in ["p", "props"]:
             if isinstance(value, dict):
@@ -350,12 +358,13 @@ class Sample(OpenBisObject, entity="sample", single_item_method_name="get_object
             setattr(self.__dict__["a"], name, value)
 
     def _repr_html_(self) -> str:
-        return self.a._repr_html_()
+        return cast(str, self.a._repr_html_())
 
     def __repr__(self) -> str:
-        return self.a.__repr__()
+        """Return a table of all attributes."""
+        return cast(str, self.a.__repr__())
 
-    def set_properties(self, properties: dict) -> None:
+    def set_properties(self, properties: dict[str, Any]) -> None:
         """Set multiple properties at once from a dictionary.
 
         Does not save the sample — call :meth:`save` afterwards.
@@ -408,7 +417,7 @@ class Sample(OpenBisObject, entity="sample", single_item_method_name="get_object
         try:
             return self.openbis.get_experiment(self._experiment["identifier"])
         except Exception:
-            pass
+            return None
 
     def save(self) -> "Sample":
         """Persist this sample to openBIS (create or update).
@@ -443,7 +452,7 @@ class Sample(OpenBisObject, entity="sample", single_item_method_name="get_object
                             raise ValueError(
                                 f"Property '{prop_name}' is mandatory and must not be None"
                             )
-            properties = PropertyReformatter(self.openbis).format(self.props())
+            properties = PropertyReformatter(self.openbis).format(self.p())
 
             for attr in request["params"][1][0]:
                 if (
@@ -463,6 +472,7 @@ class Sample(OpenBisObject, entity="sample", single_item_method_name="get_object
 
         else:
             super().save()
+        return self
 
     def get_eln_url(self) -> str:
         """Return the direct URL to this sample in the ELN-LIMS web UI.

@@ -90,10 +90,6 @@ select = ["D"]
 "pybis/entity_type.py" = ["D"]
 "pybis/fast_download.py" = ["D"]
 "pybis/openbis_object.py" = ["D"]
-"pybis/openbis_typing.py" = ["D"]
-"pybis/sample.py" = ["D"]
-"pybis/type_group.py" = ["D"]
-"pybis/vocabulary.py" = ["D"]
 "tests/*" = ["D"]
 "playground.py" = ["D"]
 
@@ -106,7 +102,6 @@ files = ["pybis"]
 # from this list; the refactor is complete when the list is empty.
 [[tool.mypy.overrides]]
 module = [
-    "pybis",
     "pybis.client",
     "pybis.afs_client",
     "pybis.attribute",
@@ -116,9 +111,5 @@ module = [
     "pybis.entity_type",
     "pybis.fast_download",
     "pybis.openbis_object",
-    "pybis.openbis_typing",
-    "pybis.sample",
-    "pybis.type_group",
-    "pybis.vocabulary",
 ]
 ignore_errors = true

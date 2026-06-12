@@ -15,7 +15,7 @@
 #
 """Vocabulary and VocabularyTerm entities for openBIS controlled vocabularies."""
 
-from typing import Any, Optional
+from typing import Any, Optional, cast
 
 from .attribute import AttrHolder
 from .definitions import openbis_definitions, get_type_for_entity, get_method_for_entity
@@ -58,12 +58,12 @@ class Vocabulary(
     def __init__old_(
         self,
         openbis_obj: Any,
-        data: Optional[dict] = None,
-        terms: Optional[list] = None,
+        data: Optional[dict[str, Any]] = None,
+        terms: Optional[list[dict[str, Any]]] = None,
         **kwargs: Any,
     ) -> None:
         self.__dict__["openbis"] = openbis_obj
-        self.__dict__["a"] = AttrHolder(openbis_obj, "vocabulary")
+        self.__dict__["a"] = AttrHolder(openbis_obj, "vocabulary")  # type: ignore[no-untyped-call]  # reason: legacy attribute module
 
         if data is not None:
             self._set_data(data)
@@ -136,7 +136,7 @@ class Vocabulary(
             {"code": code, "label": label, "description": description}
         )
 
-    def delete(self, reason: str) -> None:
+    def delete(self, reason: str) -> None:  # type: ignore[override]  # reason: vocabularies are deleted directly, no trash/confirm step
         """Delete this vocabulary from openBIS.
 
         Args:
@@ -173,7 +173,7 @@ class Vocabulary(
         if VERBOSE:
             print(f"{self.entity} {self.code} successfully deleted.")
 
-    def save(self) -> "Vocabulary":
+    def save(self) -> "Optional[Vocabulary]":  # type: ignore[override]  # reason: 1.x returns None after updates
         """Persist this vocabulary to openBIS (create or update).
 
         For **new** vocabularies, also submits any terms added via
@@ -225,6 +225,7 @@ class Vocabulary(
                 print("Vocabulary successfully updated.")
             data = self.openbis.get_vocabulary_or_raise(self.code).data
             self._set_data(data)
+            return None
 
 
 class VocabularyTerm(OpenBisObject):
@@ -257,7 +258,7 @@ class VocabularyTerm(OpenBisObject):
     """
 
     def __init__(
-        self, openbis_obj: Any, data: Optional[dict] = None, **kwargs: Any
+        self, openbis_obj: Any, data: Optional[dict[str, Any]] = None, **kwargs: Any
     ) -> None:
         """Initialise a VocabularyTerm.
 
@@ -267,7 +268,7 @@ class VocabularyTerm(OpenBisObject):
             **kwargs: Additional attribute key/value pairs.
         """
         self.__dict__["openbis"] = openbis_obj
-        self.__dict__["a"] = AttrHolder(openbis_obj, "vocabularyTerm")
+        self.__dict__["a"] = AttrHolder(openbis_obj, "vocabularyTerm")  # type: ignore[no-untyped-call]  # reason: legacy attribute module
 
         if data is not None:
             self._set_data(data)
@@ -284,9 +285,9 @@ class VocabularyTerm(OpenBisObject):
             The vocabulary code as a string.
         """
         if self.is_new:
-            return self.__dict__["a"].vocabularyCode
+            return cast(str, self.__dict__["a"].vocabularyCode)
         else:
-            return self.data["permId"]["vocabularyCode"]
+            return cast(str, self.data["permId"]["vocabularyCode"])
 
     def __dir__(self) -> list[str]:
         """Return public attributes and methods for tab-completion.
@@ -334,7 +335,7 @@ class VocabularyTerm(OpenBisObject):
         """
         self.previousTermId = term
 
-    def _up_attrs(self) -> dict:
+    def _up_attrs(self) -> dict[str, Any]:
         """Build an update request for this vocabulary term.
 
         VocabularyTerms use a different update mechanism from other openBIS
@@ -343,7 +344,7 @@ class VocabularyTerm(OpenBisObject):
         Returns:
             A V3 API request dict for ``updateVocabularyTerms``.
         """
-        attrs = {}
+        attrs: dict[str, Any] = {}
         for attr in "label description official".split():
             attrs[attr] = {
                 "value": getattr(self, attr),
@@ -352,16 +353,15 @@ class VocabularyTerm(OpenBisObject):
             }
 
         if not getattr(self, "previousTermId") == None:
-            value = self.previousTermId
+            value: Any = self.previousTermId
             if value == "":
                 value = None
             else:
-                permId = {
+                value = {
                     "@type": "as.dto.vocabulary.id.VocabularyTermPermId",
                     "vocabularyCode": self.vocabularyCode,
                     "code": value,
                 }
-                value = permId
 
             attrs["previousTermId"] = {
                 "isModified": True,
@@ -377,13 +377,13 @@ class VocabularyTerm(OpenBisObject):
         }
         return request
 
-    def _new_attrs(self) -> dict:
+    def _new_attrs(self) -> dict[str, Any]:
         """Build a creation request for this vocabulary term.
 
         Returns:
             A V3 API request dict for ``createVocabularyTerms``.
         """
-        attrs = {
+        attrs: dict[str, Any] = {
             "@type": "as.dto.vocabulary.create.VocabularyTermCreation",
             "vocabularyId": self.vocabularyTermId(),
         }
@@ -396,7 +396,7 @@ class VocabularyTerm(OpenBisObject):
         }
         return request
 
-    def vocabularyTermId(self) -> dict:
+    def vocabularyTermId(self) -> dict[str, Any]:
         """Return the vocabulary identifier dict used in V3 API requests.
 
         Returns:
@@ -409,11 +409,11 @@ class VocabularyTerm(OpenBisObject):
                 "@type": "as.dto.vocabulary.id.VocabularyPermId",
             }
         else:
-            permId = self.data["permId"]
+            permId = cast("dict[str, Any]", self.data["permId"])
             permId.pop("@id", None)
             return permId
 
-    def save(self) -> "VocabularyTerm":
+    def save(self) -> "Optional[VocabularyTerm]":  # type: ignore[override]  # reason: 1.x returns None after updates
         """Persist this term to openBIS (create or update).
 
         Returns:
@@ -446,8 +446,9 @@ class VocabularyTerm(OpenBisObject):
                 print("Vocabulary Term successfully updated.")
             data = self.openbis.get_term_or_raise(self.code, self.vocabularyCode).data
             self._set_data(data)
+            return None
 
-    def delete(self, reason: str = "no particular reason") -> None:
+    def delete(self, reason: str = "no particular reason") -> None:  # type: ignore[override]  # reason: legacy default-reason signature
         """Delete this vocabulary term from openBIS.
 
         Args:

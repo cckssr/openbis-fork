@@ -13,12 +13,10 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 #
-from .openbis_object import OpenBisObject
-from .things import Things
-from .utils import VERBOSE, extract_permid, extract_nested_permid, format_timestamp
-from .definitions import openbis_definitions, get_type_for_entity, get_method_for_entity
+"""Type groups: named groups of sample types."""
 
 import copy
+from typing import Any, Optional
 
 from pandas import DataFrame
 from tabulate import tabulate
@@ -39,19 +37,25 @@ from .utils import (
 
 
 class TypeGroupAssignment:
-    def __init__(self, openbis_obj, data=None, **kwargs):
+    """One sample-type membership in a type group."""
+
+    def __init__(
+        self, openbis_obj: Any, data: Optional[dict[str, Any]] = None, **kwargs: Any
+    ) -> None:
+        """Wrap one assignment record from the V3 API."""
         self.openbis = openbis_obj
         self.data = data
 
-    def __getattr__(self, name):
+    def __getattr__(self, name: str) -> Any:
+        """Read an assignment field from the raw data."""
         if name in self._attrs():
-            if name in self.data:
+            if self.data and name in self.data:
                 return self.data[name]
             else:
                 return ""
 
-    def __repr__(self):
-        """same thing as _repr_html_() but for IPython"""
+    def __repr__(self) -> str:
+        """Return a table of all assignment fields."""
         headers = ["attribute", "value"]
         lines = []
         for attr in self._attrs():
@@ -62,7 +66,7 @@ class TypeGroupAssignment:
     # def get_property_type(self):
     #     return self.openbis.get_property_type(self.data["propertyType"]["code"])
 
-    def _attrs(self):
+    def _attrs(self) -> "list[str]":
         return [
             "sampleType",
             "typeGroup",
@@ -75,9 +79,10 @@ class TypeGroupAssignment:
 class TypeGroup(
     OpenBisObject, entity="typeGroup", single_item_method_name="get_type_group"
 ):
-    """Managing openBIS authorization groups"""
+    """A named group of sample types."""
 
-    def __dir__(self):
+    def __dir__(self) -> "list[str]":
+        """Return public attributes for tab-completion."""
         return [
             "id",
             "code",
@@ -91,8 +96,9 @@ class TypeGroup(
             "save()",
         ]
 
-    def get_assignments(self):
-        """Get all roles that are assigned to this group.
+    def get_assignments(self) -> Things:
+        """Get all sample types that are assigned to this type group.
+
         Provide additional search arguments to refine your search.
 
         Usage::
@@ -112,7 +118,7 @@ class TypeGroup(
         )
         pas = pas["objects"]
 
-        def create_data_frame(attrs, props, response):
+        def create_data_frame(attrs: Any, props: Any, response: Any) -> DataFrame:
             df = DataFrame(response, columns=attrs)
 
             if "sampleType" in df:
@@ -127,7 +133,7 @@ class TypeGroup(
 
             return df
 
-        def create_objects(response):
+        def create_objects(response: Any) -> "list[TypeGroupAssignment]":
             result = []
             for element in response:
                 obj = copy.deepcopy(element)
@@ -152,8 +158,8 @@ class TypeGroup(
             attrs=attrs,
         )
 
-    def delete(self, reason="pybis delete"):
-        """Delete this type group"""
+    def delete(self, reason: str = "pybis delete") -> None:  # type: ignore[override]  # reason: type groups are deleted directly, no trash/confirm step
+        """Delete this type group."""
         if not self.data:
             return
 
@@ -177,7 +183,8 @@ class TypeGroup(
         if VERBOSE:
             print(f"{self.entity} {self.code} successfully deleted.")
 
-    def save(self):
+    def save(self) -> "TypeGroup":
+        """Persist this type group to openBIS (create or update)."""
         if self.is_new:
             request = self._new_attrs("createTypeGroups")
             resp = self.openbis._post_request(self.openbis.as_v3, request)
