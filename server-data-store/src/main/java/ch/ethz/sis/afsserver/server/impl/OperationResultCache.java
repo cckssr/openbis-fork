@@ -10,10 +10,14 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import ch.ethz.sis.afsserver.server.OperationResult;
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameter;
+import ch.ethz.sis.shared.log.standard.LogManager;
+import ch.ethz.sis.shared.log.standard.Logger;
 import ch.ethz.sis.shared.startup.Configuration;
 
 public class OperationResultCache implements ch.ethz.sis.afsserver.server.OperationResultCache
 {
+
+    private static final Logger logger = LogManager.getLogger(OperationResultCache.class);
 
     private static final int CLEAN_UP_INTERVAL = 1000;
 
@@ -22,6 +26,8 @@ public class OperationResultCache implements ch.ethz.sis.afsserver.server.Operat
     private final Map<UUID, Long> timeoutTimes = new ConcurrentHashMap<>();
 
     private long thresholdTime;
+
+    private Integer lastLoggedSize;
 
     private long timeout;
 
@@ -37,24 +43,8 @@ public class OperationResultCache implements ch.ethz.sis.afsserver.server.Operat
                     @Override
                     public void run()
                     {
-                        List<UUID> toRemove = new LinkedList<>();
-
-                        for (Map.Entry<UUID, Long> entry : timeoutTimes.entrySet())
-                        {
-                            UUID operationId = entry.getKey();
-                            long timeoutTime = entry.getValue();
-
-                            if (System.currentTimeMillis() > timeoutTime)
-                            {
-                                toRemove.add(operationId);
-                            }
-                        }
-
-                        for (UUID operationId : toRemove)
-                        {
-                            results.remove(operationId);
-                            timeoutTimes.remove(operationId);
-                        }
+                        removeTimedOutEntries();
+                        logCacheSizeIfChanged();
                     }
                 }, 0, CLEAN_UP_INTERVAL
         );
@@ -76,6 +66,38 @@ public class OperationResultCache implements ch.ethz.sis.afsserver.server.Operat
         results.remove(operationId);
         timeoutTimes.remove(operationId);
         return result;
+    }
+
+    private void removeTimedOutEntries()
+    {
+        List<UUID> toRemove = new LinkedList<>();
+
+        for (Map.Entry<UUID, Long> entry : timeoutTimes.entrySet())
+        {
+            UUID operationId = entry.getKey();
+            long timeoutTime = entry.getValue();
+
+            if (System.currentTimeMillis() > timeoutTime)
+            {
+                toRemove.add(operationId);
+            }
+        }
+
+        for (UUID operationId : toRemove)
+        {
+            results.remove(operationId);
+            timeoutTimes.remove(operationId);
+        }
+    }
+
+    private void logCacheSizeIfChanged()
+    {
+        int currentSize = results.size();
+        if (lastLoggedSize == null || lastLoggedSize != currentSize)
+        {
+            logger.info("Cached " + currentSize + " result(s)");
+            lastLoggedSize = currentSize;
+        }
     }
 
 }
