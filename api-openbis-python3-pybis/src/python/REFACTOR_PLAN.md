@@ -179,3 +179,37 @@ Invariants at every commit:
 - `mypy pybis/ --strict` clean (override list only shrinks);
 - no old vocabulary outside `_compat.py` once a wave completes (grep gate; `@type`
   protocol strings in `api/definitions.py`/`api/rpc.py` exempt).
+
+## 6. Status (as of 2026-06-12)
+
+**Done:** WP0–WP10, WP13, WP14. 507 offline tests green (unit + migration);
+`mypy pybis/ --strict` clean (62 files; legacy modules still on the
+override list); ruff clean. Deliverables in place: `MIGRATION_GUIDE.md`,
+`migrate.py` (+ fixture tests), `_compat.py` shims for every rename,
+payload-snapshot goldens, mock-RPC test infra.
+
+**Strategy deviations from the original plan (intentional):**
+- *Wrap-first instead of file moves:* AttrHolder/PropertyHolder/definitions/
+  transfer stack stay in their legacy files as the proven engine; the new
+  typed surface wraps them. Payload goldens guard the engine. The physical
+  moves into `entities/_attrs.py` etc. now belong to WP11/12.
+- Exception classes dual-inherit `ValueError` for the migration window.
+- `get_datastores` not renamed (low value); `kind=` filtering on
+  `search_datasets` raises (server cannot search by kind).
+
+**Open (next session):**
+- WP11: plural renames still pending for plugins, property types, semantic
+  annotations, external DMS, personal access tokens, material types;
+  imaging/spreadsheet typing retrofit; strict-typing the legacy modules to
+  empty the mypy override list; transparent-cache consolidation.
+- WP12: compat audit vs §3 inventory, `__init__.py` public surface,
+  delete the `pybis/pybis.py` stub, old-vocabulary grep gate.
+- WP15: live verification — no openBIS instance was reachable in the dev
+  environment (Docker not installed); the legacy integration suite
+  (74 tests, `--integration`) has NOT yet run against the refactor. Start
+  one via the CONTRIBUTING.md docker command, then:
+  `pytest tests/ --integration -q`. Then port the legacy tests with
+  `migrate.py --write` into `tests/integration/`, backfill unit coverage
+  (currently 45% vs the 85% gate — the untested mass is the legacy half:
+  client.py 4k lines, dataset/transfer, attribute.py), jenkinstest update,
+  CHANGELOG, README.
