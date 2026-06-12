@@ -109,7 +109,7 @@ class OpenBisObject(EntityBehavior):
         self.__dict__["openbis"] = openbis_obj
         self.__dict__["type"] = type
         self.__dict__["p"] = PropertyHolder(openbis_obj, type)
-        self.__dict__["a"] = AttrHolder(openbis_obj, self._entity, type)  # type: ignore[no-untyped-call]  # reason: legacy attribute module
+        self.__dict__["a"] = AttrHolder(openbis_obj, self._entity, type)
         self.__dict__["formatter"] = PropertyReformatter(openbis_obj)
 
         # existing OpenBIS object

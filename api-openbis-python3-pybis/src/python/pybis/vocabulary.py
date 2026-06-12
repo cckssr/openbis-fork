@@ -63,7 +63,7 @@ class Vocabulary(
         **kwargs: Any,
     ) -> None:
         self.__dict__["openbis"] = openbis_obj
-        self.__dict__["a"] = AttrHolder(openbis_obj, "vocabulary")  # type: ignore[no-untyped-call]  # reason: legacy attribute module
+        self.__dict__["a"] = AttrHolder(openbis_obj, "vocabulary")
 
         if data is not None:
             self._set_data(data)
@@ -268,7 +268,7 @@ class VocabularyTerm(OpenBisObject):
             **kwargs: Additional attribute key/value pairs.
         """
         self.__dict__["openbis"] = openbis_obj
-        self.__dict__["a"] = AttrHolder(openbis_obj, "vocabularyTerm")  # type: ignore[no-untyped-call]  # reason: legacy attribute module
+        self.__dict__["a"] = AttrHolder(openbis_obj, "vocabularyTerm")
 
         if data is not None:
             self._set_data(data)

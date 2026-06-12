@@ -84,7 +84,7 @@ class Material(OpenBisObject):
         self.__dict__["type"] = type
         ph = PropertyHolder(openbis_obj, type)
         self.__dict__["p"] = ph
-        self.__dict__["a"] = AttrHolder(openbis_obj, "material", type)  # type: ignore[no-untyped-call]  # reason: legacy attribute module
+        self.__dict__["a"] = AttrHolder(openbis_obj, "material", type)
         self.__dict__["formatter"] = PropertyReformatter(openbis_obj)
 
         if data is not None:

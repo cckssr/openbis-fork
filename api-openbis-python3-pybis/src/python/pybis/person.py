@@ -77,7 +77,7 @@ class Person(OpenBisObject):
             **kwargs: Additional key/value pairs set as attributes.
         """
         self.__dict__["openbis"] = openbis_obj
-        self.__dict__["a"] = AttrHolder(openbis_obj, "person")  # type: ignore[no-untyped-call]  # reason: legacy attribute module
+        self.__dict__["a"] = AttrHolder(openbis_obj, "person")
 
         if data is not None:
             self.a(data)

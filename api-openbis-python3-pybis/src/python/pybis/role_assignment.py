@@ -71,7 +71,7 @@ class RoleAssignment(OpenBisObject):
                 construction.
         """
         self.__dict__["openbis"] = openbis_obj
-        self.__dict__["a"] = AttrHolder(openbis_obj, "roleAssignment")  # type: ignore[no-untyped-call]  # reason: legacy attribute module
+        self.__dict__["a"] = AttrHolder(openbis_obj, "roleAssignment")
 
         if data is not None:
             self.a(data)

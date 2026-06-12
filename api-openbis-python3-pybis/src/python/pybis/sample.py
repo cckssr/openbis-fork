@@ -106,7 +106,7 @@ class Sample(OpenBisObject, entity="sample", single_item_method_name="get_object
         self.__dict__["type"] = type
         ph = PropertyHolder(openbis_obj, type)
         self.__dict__["p"] = ph
-        self.__dict__["a"] = AttrHolder(openbis_obj, "sample", type)  # type: ignore[no-untyped-call]  # reason: legacy attribute module
+        self.__dict__["a"] = AttrHolder(openbis_obj, "sample", type)
         self.__dict__["formatter"] = PropertyReformatter(openbis_obj)
 
         if data is not None:

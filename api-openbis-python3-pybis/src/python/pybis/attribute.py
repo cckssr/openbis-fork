@@ -13,8 +13,11 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 #
+"""AttrHolder: the attribute store and create/update payload engine."""
+
 import base64
 import os
+from typing import Any, Optional, cast
 import pathlib
 import copy
 
@@ -36,23 +39,28 @@ from .utils import (
 
 
 class AttrHolder:
-    """General class for both samples and experiments that hold all common attributes, such as:
+    """General class for samples and experiments holding all common attributes.
+
+    Covers:
     - space
     - project
     - experiment (sample)
     - samples (experiment)
     - dataset
-    - tags
+    - tags.
     """
 
-    def __init__(self, openbis_obj, entity, type=None):
+    def __init__(
+        self, openbis_obj: Any, entity: Optional[str], type: Any = None
+    ) -> None:
+        """Set up the holder for one entity kind (and optional entity type)."""
         self.__dict__["_openbis"] = openbis_obj
         self.__dict__["_entity"] = entity
 
         if type is not None:
             self.__dict__["_type"] = type.data
 
-        self.__dict__["_defs"] = openbis_definitions(entity)
+        self.__dict__["_defs"] = openbis_definitions(entity or "")
         # self.__dict__['_allowed_attrs'] = openbis_definitions(entity)['attrs']
         # self.__dict__['_allowed_attrs_new'] = openbis_definitions(entity)['attrs_new']
         # self.__dict__['_allowed_attrs_up'] = openbis_definitions(entity)['attrs_up']
@@ -60,8 +68,10 @@ class AttrHolder:
         self.__dict__["_is_new"] = True
         self.__dict__["_tags"] = []
 
-    def __call__(self, data):
-        """This internal method is invoked when an existing object is loaded.
+    def __call__(self, data: dict[str, Any]) -> None:
+        """Populate the holder from a raw API response (existing object).
+
+        Invoked when an existing object is loaded.
         Instead of invoking a special method we «call» the object with the data
            self(data)
         which automatically invokes this method.
@@ -74,7 +84,7 @@ class AttrHolder:
             }
         but when fetching the attribute without the underscore, we only return
         the relevant data for the user:
-            sample.space   # MATERIALS
+            sample.space   # MATERIALS.
         """
         # entity is read from openBIS, so it is not new anymore
         self.__dict__["_is_new"] = False
@@ -163,8 +173,9 @@ class AttrHolder:
             else:
                 self.__dict__["_" + attr] = data.get(attr, None)
 
-    def _new_attrs(self, method_name=None):
-        """Returns the Python-equivalent JSON request when a new object is created.
+    def _new_attrs(self, method_name: Optional[str] = None) -> dict[str, Any]:
+        """Return the Python-equivalent JSON request to create this object.
+
         It is used internally by the save() method of a newly created object.
         """
         attr2ids = openbis_definitions("attr2ids")
@@ -217,8 +228,11 @@ class AttrHolder:
         request = {"method": method_name, "params": [self.openbis.token, [new_obj]]}
         return request
 
-    def _up_attrs(self, method_name=None, permId=None):
-        """Returns the Python-equivalent JSON request when a new object is updated.
+    def _up_attrs(
+        self, method_name: Optional[str] = None, permId: Any = None
+    ) -> dict[str, Any]:
+        """Return the Python-equivalent JSON request to update this object.
+
         It is used internally by the save() method of an object to be updated.
         """
         # defs = openbis_definitions(self._entity)
@@ -237,7 +251,7 @@ class AttrHolder:
         # look at all attributes available for that entity
         # that can be updated
         for attr in self._defs["attrs_up"]:
-            items = None
+            items: Any = None
 
             if attr == "attachments":
                 # v3 API currently only supports adding attachments
@@ -424,14 +438,14 @@ class AttrHolder:
         request = {"method": method_name, "params": [self.openbis.token, [up_obj]]}
         return request
 
-    def __getattr__(self, name):
-        """handles all attribute requests dynamically.
+    def __getattr__(self, name: str) -> Any:
+        """Handle all attribute requests dynamically.
+
         Values are returned in a sensible way, for example:
             the identifiers of parents, children and components are returned as an
             array of values, whereas attachments, users (of groups) and
             roleAssignments are returned as an array of dictionaries.
         """
-
         name_map = {
             "group": "authorizationGroup",
             "roles": "roleAssignments",
@@ -579,7 +593,7 @@ class AttrHolder:
         else:
             return None
 
-    def _fetch_or_raise(self, entity_name, value):
+    def _fetch_or_raise(self, entity_name: str, value: Any) -> Any:
         """Fetch a referenced entity, failing fast when it does not exist.
 
         Prefers the migrated ``get_<entity>_or_raise`` getter (returns-None
@@ -596,13 +610,14 @@ class AttrHolder:
                 return getter(value)
         raise AttributeError("no getter for " + entity_name)
 
-    def __setattr__(self, name, value):
-        """This method is always invoked whenever we assign an attribute to an
+    def __setattr__(self, name: str, value: Any) -> None:
+        """Set an attribute, tracking the change for the update payload.
+
+        Invoked whenever we assign an attribute to an
         object, e.g.
             new_sample.space = 'MATERIALS'
-            new_sample.parents = ['/MATERIALS/YEAST747']
+            new_sample.parents = ['/MATERIALS/YEAST747'].
         """
-
         # experiment aka collection, sample aka object
         name_map = {
             "collection": "experiment",
@@ -779,10 +794,11 @@ class AttrHolder:
         else:
             self.__dict__["_" + name] = value
 
-    def get_type(self):
+    def get_type(self) -> Any:
+        """Return the entity type object."""
         return self._type
 
-    def _ident_for_whatever(self, whatever):
+    def _ident_for_whatever(self, whatever: Any) -> dict[str, Any]:
         if isinstance(whatever, str):
             # fetch parent in openBIS, we are given an identifier
             obj = self._fetch_or_raise(self._entity.lower(), whatever)
@@ -796,29 +812,32 @@ class AttrHolder:
         elif getattr(obj, "_permId"):
             ident = obj._permId
 
+        assert ident is not None
         ident.pop("@id", None)
-        return ident
+        return cast("dict[str, Any]", ident)
 
-    def get_container(self, **kwargs):
+    def get_container(self, **kwargs: Any) -> Any:
+        """Get the container of this sample or dataset."""
         return getattr(self._openbis, "get_" + self._entity.lower())(
             self.container, **kwargs
         )
 
-    def get_containers(self, **kwargs):
-        """get the containers and return them as a list (Things/DataFrame)
-        or return empty list
+    def get_containers(self, **kwargs: Any) -> Any:
+        """Get the containers and return them as a list (Things/DataFrame).
+
+        or return empty list.
         """
         return getattr(self._openbis, "get_" + self._entity.lower())(
             self.containers, **kwargs
         )
 
-    def set_containers(self, containers_to_set):
-        """set the new _containers list"""
+    def set_containers(self, containers_to_set: Any) -> None:
+        """Set the new _containers list."""
         self.__dict__["_containers"] = []
         self.add_containers(containers_to_set)
 
-    def add_containers(self, containers_to_add):
-        """add component to _containers list"""
+    def add_containers(self, containers_to_add: Any) -> None:
+        """Add component to _containers list."""
         if not isinstance(containers_to_add, list):
             containers_to_add = [containers_to_add]
         for component in containers_to_add:
@@ -826,8 +845,8 @@ class AttrHolder:
             if ident not in self.__dict__["_containers"]:
                 self.__dict__["_containers"].append(ident)
 
-    def del_containers(self, containers_to_remove):
-        """remove component from _containers list"""
+    def del_containers(self, containers_to_remove: Any) -> None:
+        """Remove component from _containers list."""
         if not isinstance(containers_to_remove, list):
             containers_to_remove = [containers_to_remove]
         for component in containers_to_remove:
@@ -846,9 +865,11 @@ class AttrHolder:
                 ):
                     self.__dict__["_containers"].pop(i, None)
 
-    def get_components(self, **kwargs):
-        """Samples and DataSets may contain other DataSets and Samples. This function returns the
-        contained Samples/DataSets (a.k.a. components) as a list (Things/DataFrame)
+    def get_components(self, **kwargs: Any) -> Any:
+        """Return the contained objects of this sample or dataset.
+
+        Samples and DataSets may contain other DataSets and Samples. This function returns the
+        contained Samples/DataSets (a.k.a. components) as a list (Things/DataFrame).
         """
         return getattr(self._openbis, "get_" + self._entity.lower())(
             self.components, **kwargs
@@ -856,17 +877,21 @@ class AttrHolder:
 
     get_contained = get_components  # Alias
 
-    def set_components(self, components_to_set):
-        """Samples and DataSets may contain other DataSets and Samples. This function sets the
-        contained Samples/DataSets (a.k.a. components)
+    def set_components(self, components_to_set: Any) -> None:
+        """Set the contained objects of this sample or dataset.
+
+        Samples and DataSets may contain other DataSets and Samples. This function sets the
+        contained Samples/DataSets (a.k.a. components).
         """
         self.__dict__["_components"] = []
         self.add_components(components_to_set)
 
     set_contained = set_components  # Alias
 
-    def add_components(self, components_to_add):
-        """Samples and DataSets may contain other DataSets and Samples. This function adds
+    def add_components(self, components_to_add: Any) -> None:
+        """Add contained objects to this sample or dataset.
+
+        Samples and DataSets may contain other DataSets and Samples. This function adds
         additional Samples/DataSets to the current object.
         """
         if not isinstance(components_to_add, list):
@@ -878,8 +903,10 @@ class AttrHolder:
 
     add_contained = add_components  # Alias
 
-    def del_components(self, components_to_remove):
-        """Samples and DataSets may contain other DataSets and Samples. This function removes
+    def del_components(self, components_to_remove: Any) -> None:
+        """Remove contained objects from this sample or dataset.
+
+        Samples and DataSets may contain other DataSets and Samples. This function removes
         additional Samples/DataSets from the current object.
         """
         if not isinstance(components_to_remove, list):
@@ -902,9 +929,10 @@ class AttrHolder:
 
     del_contained = del_components  # Alias
 
-    def get_parents(self, **kwargs):
-        """get the current parents and return them as a list (Things/DataFrame)
-        or return empty list
+    def get_parents(self, **kwargs: Any) -> Any:
+        """Get the current parents and return them as a list (Things/DataFrame).
+
+        or return empty list.
         """
         parents = getattr(self.openbis, "get_" + self.entity.lower() + "s")(
             withChildren=self.identifier, **kwargs
@@ -926,13 +954,13 @@ class AttrHolder:
             self.parents, **kwargs
         )
 
-    def set_parents(self, parents_to_set):
-        """set the new _parents list"""
+    def set_parents(self, parents_to_set: Any) -> None:
+        """Set the new _parents list."""
         self.__dict__["_parents"] = []
         self.add_parents(parents_to_set)
 
-    def add_parents(self, parents_to_add):
-        """add parent to _parents list"""
+    def add_parents(self, parents_to_add: Any) -> None:
+        """Add parent to _parents list."""
         if not isinstance(parents_to_add, list):
             parents_to_add = [parents_to_add]
         if self.__dict__["_parents"] is None:
@@ -942,8 +970,8 @@ class AttrHolder:
             if ident not in self.__dict__["_parents"]:
                 self.__dict__["_parents"].append(ident)
 
-    def del_parents(self, parents_to_remove):
-        """remove parent from _parents list"""
+    def del_parents(self, parents_to_remove: Any) -> None:
+        """Remove parent from _parents list."""
         if not isinstance(parents_to_remove, list):
             parents_to_remove = [parents_to_remove]
         if self.__dict__["_parents"] is None:
@@ -969,9 +997,10 @@ class AttrHolder:
                     ):
                         self.__dict__["_parents"].pop(i)
 
-    def get_children(self, **kwargs):
-        """get the current children and return them as a list (Things/DataFrame)
-        or return empty list
+    def get_children(self, **kwargs: Any) -> Any:
+        """Get the current children and return them as a list (Things/DataFrame).
+
+        or return empty list.
         """
         children = getattr(self.openbis, "get_" + self.entity.lower() + "s")(
             withParents=self.identifier, **kwargs
@@ -993,13 +1022,13 @@ class AttrHolder:
             self.children, **kwargs
         )
 
-    def set_children(self, children_to_set):
-        """set the new _children list"""
+    def set_children(self, children_to_set: Any) -> None:
+        """Set the new _children list."""
         self.__dict__["_children"] = []
         self.add_children(children_to_set)
 
-    def add_children(self, children):
-        """add children to _children list"""
+    def add_children(self, children: Any) -> None:
+        """Add children to _children list."""
         if getattr(self, "_children") is None:
             self.__dict__["_children"] = []
         if self.__dict__["_children"] is None:
@@ -1009,8 +1038,8 @@ class AttrHolder:
         for child in children:
             self.__dict__["_children"].append(self._ident_for_whatever(child))
 
-    def del_children(self, children):
-        """remove children from _children list"""
+    def del_children(self, children: Any) -> None:
+        """Remove children from _children list."""
         if getattr(self, "_children") is None:
             return
         if not isinstance(children, list):
@@ -1039,22 +1068,23 @@ class AttrHolder:
                         self.__dict__["_children"].pop(i)
 
     @property
-    def tags(self):
+    def tags(self) -> Any:
+        """The tags of this entity."""
         if getattr(self, "_tags") is not None:
             return [x["code"] for x in self._tags]
 
-    def get_tags(self):
+    def get_tags(self) -> Any:
+        """Fetch the entity's tags."""
         if getattr(self, "_tags") is not None:
             return self._openbis.get_tag([x["permId"] for x in self._tags])
 
-    def set_tags(self, tags):
-        """set _tags list"""
-
+    def set_tags(self, tags: Any) -> None:
+        """Set _tags list."""
         self.__dict__["_tags"] = []
         self.add_tags(tags)
 
-    def add_tags(self, tags):
-        """add tags to _tags list"""
+    def add_tags(self, tags: Any) -> None:
+        """Add tags to _tags list."""
         if not isinstance(tags, list):
             tags = [tags]
 
@@ -1074,8 +1104,8 @@ class AttrHolder:
             if tag_dict not in self.__dict__["_tags"]:
                 self.__dict__["_tags"].append(tag_dict)
 
-    def del_tags(self, tags):
-        """remove tags from _tags list"""
+    def del_tags(self, tags: Any) -> None:
+        """Remove tags from _tags list."""
         if not isinstance(tags, list):
             tags = [tags]
 
@@ -1084,7 +1114,8 @@ class AttrHolder:
                 if tag in tag_dict[i]["code"] or tag in tag_dict[i]["permId"]:
                     tag_dict.pop(i, None)
 
-    def set_users(self, userIds):
+    def set_users(self, userIds: Any) -> None:
+        """Replace the users of this authorization group."""
         if userIds is None:
             return
         if getattr(self, "_userIds") is None:
@@ -1096,7 +1127,8 @@ class AttrHolder:
                 {"permId": userId, "@type": "as.dto.person.id.PersonPermId"}
             )
 
-    def add_users(self, userIds):
+    def add_users(self, userIds: Any) -> None:
+        """Add users to this authorization group."""
         if userIds is None:
             return
         if getattr(self, "_changed_users") is None:
@@ -1109,7 +1141,8 @@ class AttrHolder:
 
     add_members = add_users  # Alias
 
-    def del_users(self, userIds):
+    def del_users(self, userIds: Any) -> None:
+        """Remove users from this authorization group."""
         if userIds is None:
             return
         if getattr(self, "_changed_users") is None:
@@ -1122,7 +1155,8 @@ class AttrHolder:
 
     del_members = del_users  # Alias
 
-    def get_attachments(self):
+    def get_attachments(self) -> Any:
+        """Return the entity's attachments as a DataFrame, or None."""
         if getattr(self, "_attachments") is None:
             return None
         else:
@@ -1130,7 +1164,13 @@ class AttrHolder:
                 ["fileName", "title", "description", "version"]
             ]
 
-    def add_attachment(self, fileName, title=None, description=None):
+    def add_attachment(
+        self,
+        fileName: str,
+        title: Optional[str] = None,
+        description: Optional[str] = None,
+    ) -> None:
+        """Queue a local file as a new attachment (saved on save())."""
         att = Attachment(filename=fileName, title=title, description=description)
         if getattr(self, "_attachments") is None:
             self.__dict__["_attachments"] = []
@@ -1140,7 +1180,8 @@ class AttrHolder:
             self.__dict__["_new_attachments"] = []
         self._new_attachments.append(att)
 
-    def download_attachments(self, destination_folder=None):
+    def download_attachments(self, destination_folder: Optional[str] = None) -> Any:
+        """Download all attachments into the destination folder."""
         method = "get" + self.entity.lower().capitalize() + "s"
         request = {
             "method": method,
@@ -1171,8 +1212,8 @@ class AttrHolder:
             file_list.append(str(filename))
         return file_list
 
-    def all(self):
-        """Return all attributes of an entity in a dict"""
+    def all(self) -> dict[str, Any]:
+        """Return all attributes of an entity in a dict."""
         attrs = {}
         for attr in self._defs["attrs"]:
             if attr == "attachments":
@@ -1180,8 +1221,8 @@ class AttrHolder:
             attrs[attr] = getattr(self, attr)
         return attrs
 
-    def _repr_html_(self):
-        def nvl(val, string=""):
+    def _repr_html_(self) -> str:
+        def nvl(val: Any, string: str = "") -> Any:
             if val is None:
                 return string
             return val
@@ -1213,11 +1254,13 @@ class AttrHolder:
         """
         return html
 
-    def __repr__(self):
-        """When using IPython, this method displays a nice table
+    def __repr__(self) -> str:
+        """Return a table of the defined attributes."""
+        """Display a table of all attributes for IPython.
+
+        When using IPython, this method displays a nice table
         of all attributes and their values when the object is printed.
         """
-
         headers = ["attribute", "value"]
         lines = []
         attrs = self._defs["attrs_new"] if self.is_new else self._defs["attrs"]
