@@ -45,7 +45,7 @@ from pathlib import Path
 from queue import Queue, Empty
 import threading
 from threading import Thread
-from typing import Any, Optional, Set, List, TYPE_CHECKING
+from typing import Any, Optional, Set, List, TYPE_CHECKING, Union, cast
 from urllib.parse import urljoin, quote
 
 import requests
@@ -159,12 +159,12 @@ class DataSet(
         self,
         openbis_obj: Any,
         type: Any,
-        data: Optional[dict] = None,
+        data: Optional[dict[str, Any]] = None,
         files: Optional[Any] = None,
         zipfile: Optional[str] = None,
         folder: Optional[Any] = None,
         kind: Optional[str] = None,
-        props: Optional[dict] = None,
+        props: Optional[dict[str, Any]] = None,
         **kwargs: Any,
     ) -> None:
         """Initialise a DataSet instance.
@@ -269,9 +269,10 @@ class DataSet(
 
     def __str__(self) -> str:
         """String representation of this dataset returns its code."""
-        return self.data["code"]
+        return str(self.data["code"])
 
     def __dir__(self) -> list[str]:
+        """Return the attribute names for tab-completion."""
         """Return public attributes and methods for tab-completion.
 
         Returns:
@@ -391,6 +392,7 @@ class DataSet(
         """
         if "physicalData" in self.data:
             return PhysicalData(data=self.data["physicalData"])
+        return None
 
     @property
     def linkedData(self) -> Optional["LinkedData"]:
@@ -401,6 +403,7 @@ class DataSet(
         """
         if "linkedData" in self.data:
             return LinkedData(data=self.data["linkedData"])
+        return None
 
     @property
     def status(self) -> Optional[str]:
@@ -415,7 +418,7 @@ class DataSet(
         ds = self.openbis.get_dataset(self.permId)
         self.data["physicalData"] = ds.data["physicalData"]
         try:
-            return self.data["physicalData"]["status"]
+            return cast(str, self.data["physicalData"]["status"])
         except Exception:
             return None
 
@@ -429,7 +432,7 @@ class DataSet(
         Returns:
             Relative path string, or ``""`` if no download has occurred.
         """
-        return self.__dict__.get("download_path", "")
+        return cast(str, self.__dict__.get("download_path", ""))
 
     @property
     def _sftp_source_dir(self) -> str:
@@ -441,7 +444,9 @@ class DataSet(
         Returns:
             Relative SFTP source directory string.
         """
-        return os.path.join(self.experiment.identifier[1:], self.permId)
+        experiment = self.experiment
+        assert experiment is not None
+        return os.path.join(experiment.identifier[1:], self.permId)
 
     def symlink(
         self,
@@ -602,7 +607,7 @@ class DataSet(
         if VERBOSE:
             print(f"DataSet {self.permId} unarchived")
 
-    def archive_unarchive(self, method: str, fetchopts: dict) -> None:
+    def archive_unarchive(self, method: str, fetchopts: dict[str, Any]) -> None:
         """Send an archive or unarchive request to the V3 API.
 
         Args:
@@ -610,7 +615,7 @@ class DataSet(
                 ``"unarchiveDataSets"``).
             fetchopts: Options dict for the request.
         """
-        payload = {}
+        payload: dict[str, Any] = {}
 
         request = {
             "method": method,
@@ -623,7 +628,7 @@ class DataSet(
         resp = self.openbis._post_request(self._openbis.as_v3, request)
         return
 
-    def set_properties(self, properties: dict) -> None:
+    def set_properties(self, properties: dict[str, Any]) -> None:
         """Set multiple properties at once from a dictionary.
 
         Does not save the dataset — call :meth:`save` afterwards.
@@ -697,7 +702,7 @@ class DataSet(
         full_url = urljoin(self._get_download_url(), DSS_ENDPOINT)
         resp = self.openbis._post_request_full_url(full_url, request)
 
-        def create_data_frame(attrs: Any, props: Any, response: list) -> DataFrame:
+        def create_data_frame(attrs: Any, props: Any, response: Any) -> DataFrame:
             objects = response["objects"]
             parse_jackson(objects)
 
@@ -731,7 +736,7 @@ class DataSet(
                 dataSetFiles["dataSetPermId"] = dataSetFiles["dataSetPermId"].map(
                     extract_permid
                 )
-            return dataSetFiles[attrs]
+            return cast(DataFrame, dataSetFiles[attrs])
 
         return Things(
             openbis_obj=self.openbis,
@@ -839,7 +844,7 @@ class DataSet(
 
     def _download_fast_physical(
         self,
-        files: list,
+        files: list[str],
         destination: str,
         create_default_folders: bool,
         wait_until_finished: bool,
@@ -881,7 +886,7 @@ class DataSet(
 
     def _download_physical(
         self,
-        files: list,
+        files: list[str],
         destination: str,
         create_default_folders: bool,
         wait_until_finished: bool,
@@ -952,7 +957,7 @@ class DataSet(
         workers: int,
         linked_dataset_fileservice_url: str,
         content_copy_index: int,
-    ) -> tuple:
+    ) -> tuple[Any, ...]:
         """Download from a LINK dataset via the microservice.
 
         Supports resumable downloads: if a partial file exists and its size
@@ -1035,7 +1040,7 @@ class DataSet(
         Returns:
             The folder string or ``None``.
         """
-        return self.__dict__["folder"]
+        return cast("Optional[str]", self.__dict__["folder"])
 
     @property
     def file_list(self) -> list[str]:
@@ -1053,13 +1058,13 @@ class DataSet(
             >>> # ['original/DEFAULT/data.csv', 'original/DEFAULT/meta.json']
         """
         if self.is_new:
-            return self.files
+            return cast("list[str]", self.files)
         else:
             fl = self.get_dataset_files().df
-            return fl[fl["directory"] == False]["path"].to_list()
+            return cast("list[str]", fl[fl["directory"] == False]["path"].to_list())
 
     @property
-    def file_links(self) -> dict:
+    def file_links(self) -> Union[str, dict[str, str]]:
         """Absolute download URLs for all files in this dataset.
 
         Each URL includes the session token (``sessionID``), so sharing links
@@ -1076,7 +1081,9 @@ class DataSet(
         if self.is_new:
             return ""
         url = self.openbis.url
-        location_part = self.physicalData.location.split("/")[-1]
+        physical_data = self.physicalData
+        assert physical_data is not None
+        location_part = physical_data.location.split("/")[-1]
         token = self.openbis.token
 
         file_links = {}
@@ -1091,7 +1098,7 @@ class DataSet(
         return file_links
 
     @property
-    def rel_file_links(self) -> Union[str, dict]:
+    def rel_file_links(self) -> Union[str, dict[str, str]]:
         """Relative download URLs for all files in this dataset.
 
         Relative links can be embedded in HTML ``<img src="…">`` or
@@ -1109,7 +1116,9 @@ class DataSet(
         if self.is_new:
             return ""
         url = self.openbis.url
-        location_part = self.physicalData.location.split("/")[-1]
+        physical_data = self.physicalData
+        assert physical_data is not None
+        location_part = physical_data.location.split("/")[-1]
 
         rel_file_links = {}
         for filepath in self.file_list:
@@ -1151,7 +1160,7 @@ class DataSet(
                 "checksumCRC32": "crc32Checksum",
             }
         )
-        return new_file_list
+        return cast(DataFrame, new_file_list)
 
     def _get_download_url(self) -> str:
         """Resolve the DSS download base URL for this dataset.
@@ -1164,7 +1173,7 @@ class DataSet(
         """
         download_url = ""
         if "downloadUrl" in self.data["dataStore"]:
-            download_url = self.data["dataStore"]["downloadUrl"]
+            download_url = cast(str, self.data["dataStore"]["downloadUrl"])
         else:
             datastores = self.openbis.get_datastores()
             download_url = datastores["downloadUrl"][0]
@@ -1220,7 +1229,7 @@ class DataSet(
 
     def _generate_plugin_request(
         self, dss: str, permId: Optional[PermId] = None
-    ) -> dict:
+    ) -> dict[str, Any]:
         """Build a V1 ingestion plugin request for registering uploaded files.
 
         Args:
@@ -1386,6 +1395,7 @@ class DataSet(
             self.openbis._post_request(self.openbis.as_v3, request)
             if VERBOSE:
                 print("DataSet successfully updated.")
+            return self
 
     def _upload_v1(self, permId: Optional[PermId], datastores: Any) -> "DataSet":
         """Upload files via the V1 session-workspace API and register the dataset.
@@ -1431,6 +1441,7 @@ class DataSet(
             raise ValueError(
                 "Error while creating the DataSet: " + resp["rows"][0][1]["value"]
             )
+        return self
 
     def _upload_v3(self, data_stores: Any) -> "DataSet":
         """Upload files using the V3 DSS upload API and register the dataset.
@@ -1522,6 +1533,7 @@ class DataSet(
             raise ValueError(
                 "Error while creating the DataSet: " + resp["rows"][0][1]["value"]
             )
+        return self
 
     def zipit(self, file_or_folder: str, zipf: Any) -> None:
         """Add a file or directory to a zipfile instance.
@@ -1555,7 +1567,7 @@ class DataSet(
         files: Optional[Any] = None,
         folder: Optional[Any] = None,
         wait_until_finished: bool = False,
-    ) -> list:
+    ) -> list[str]:
         """Upload files to the DSS session workspace using the V1 API.
 
         Directories in ``files`` are automatically zipped before upload.
@@ -1600,12 +1612,14 @@ class DataSet(
             buf = ZipBuffer(
                 openbis_obj=self.openbis, host=datastore_url, filename=filename
             )
-            zipf = zipfile.ZipFile(file=buf, mode="w", compression=zipfile.ZIP_DEFLATED)
+            zipf = zipfile.ZipFile(
+                file=cast(Any, buf), mode="w", compression=zipfile.ZIP_DEFLATED
+            )
             for file_or_folder in files:
                 self.zipit(file_or_folder, zipf)
             self.__dict__["files_in_wsp"] = [filename]
             self.__dict__["isZipDirectoryUpload"] = True
-            return self.files_in_wsp
+            return cast("list[str]", self.files_in_wsp)
 
         with DataSetUploadQueue() as queue:
             real_files = []
@@ -1643,7 +1657,7 @@ class DataSet(
             if wait_until_finished:
                 queue.join()
 
-            return self.files_in_wsp
+            return cast("list[str]", self.files_in_wsp)
 
     def upload_files_v3(
         self,
@@ -1822,7 +1836,7 @@ class PropagatingThread(Thread):
         """Run the thread target, capturing any exception."""
         self.exc = None
         try:
-            self.ret = self._target(*self._args, **self._kwargs)
+            self.ret = self._target(*self._args, **self._kwargs)  # type: ignore[attr-defined]  # reason: Thread internals, mirrors threading.Thread.run
         except BaseException as e:
             self.exc = e
 
@@ -1844,7 +1858,7 @@ class PropagatingThread(Thread):
         return self.ret
 
 
-def _stat_snapshot(path: str) -> tuple:
+def _stat_snapshot(path: str) -> tuple[int, int]:
     """Take a (size, mtime_ns) snapshot of a file for change detection.
 
     Args:
@@ -1857,7 +1871,7 @@ def _stat_snapshot(path: str) -> tuple:
     return (st.st_size, getattr(st, "st_mtime_ns", int(st.st_mtime * 1e9)))
 
 
-def _assert_unchanged(path: str, expected: tuple) -> None:
+def _assert_unchanged(path: str, expected: tuple[int, int]) -> None:
     """Raise an error if a file has changed since the snapshot was taken.
 
     Compares current ``(size, mtime_ns)`` against ``expected``.
@@ -1892,11 +1906,11 @@ class DataSetUploadQueueNew:
         ...     queue.join()
     """
 
-    upload_queue: Queue
+    upload_queue: "Queue[Any]"
     workers: int
     session: requests.Session
     threads: list[PropagatingThread]
-    exceptions: Queue
+    exceptions: "Queue[BaseException]"
     cancelled: threading.Event
     _drain_lock: threading.Lock
 
@@ -1932,12 +1946,13 @@ class DataSetUploadQueueNew:
         self.exceptions = Queue()
         self.cancelled = threading.Event()
         self._drain_lock = threading.Lock()
-        for t in range(workers):
-            t = PropagatingThread(target=self.upload_file)
-            self.threads += [t]
-            t.start()
+        for _ in range(workers):
+            thread = PropagatingThread(target=self.upload_file)
+            self.threads += [thread]
+            thread.start()
 
     def __enter__(self, *args: Any, **kwargs: Any) -> "DataSetUploadQueueNew":
+        """Return self for use in a with statement."""
         return self
 
     def __exit__(self, *args: Any, **kwargs: Any) -> None:
@@ -1947,7 +1962,7 @@ class DataSetUploadQueueNew:
         for t in self.threads:
             t.join()
 
-    def put(self, things: list) -> None:
+    def put(self, things: list[Any]) -> None:
         """Enqueue a file upload task.
 
         Args:
@@ -1968,7 +1983,7 @@ class DataSetUploadQueueNew:
             raise self.exceptions.get()
         for t in self.threads:
             if getattr(t, "exc", None):
-                raise t.exc
+                raise t.exc  # type: ignore[misc]  # reason: exc is checked non-None above
 
     def upload_file(self) -> Any:
         """Worker loop: dequeue and execute upload tasks.
@@ -2071,7 +2086,7 @@ class DataSetUploadQueue:
         ...     queue.join()
     """
 
-    upload_queue: Queue
+    upload_queue: "Queue[Any]"
     workers: int
     multipart: bool
 
@@ -2087,11 +2102,12 @@ class DataSetUploadQueue:
         self.workers = workers
         self.multipart = multipart
 
-        for t in range(workers):
-            t = Thread(target=self.upload_file)
-            t.start()
+        for _ in range(workers):
+            thread = Thread(target=self.upload_file)
+            thread.start()
 
     def __enter__(self, *args: Any, **kwargs: Any) -> "DataSetUploadQueue":
+        """Return self for use in a with statement."""
         return self
 
     def __exit__(self, *args: Any, **kwargs: Any) -> None:
@@ -2099,7 +2115,7 @@ class DataSetUploadQueue:
         for i in range(self.workers):
             self.upload_queue.put(None)
 
-    def put(self, things: list) -> None:
+    def put(self, things: list[Any]) -> None:
         """Enqueue a file upload task.
 
         Args:
@@ -2167,6 +2183,7 @@ class ZipBuffer(object):
     session: Session
 
     def __init__(self, openbis_obj: Any, host: str, filename: str) -> None:
+        """Open the upload connection for the zip stream."""
         self.openbis = openbis_obj
         self.startByte = 0
         self.endByte = 0
@@ -2240,7 +2257,7 @@ class DataSetDownloadQueue:
 
     collect_files_with_wrong_length: bool
     workers: int
-    download_queue: Queue
+    download_queue: "Queue[Any]"
     files_with_wrong_length: list[str]
 
     def __init__(
@@ -2267,6 +2284,7 @@ class DataSetDownloadQueue:
             thread.start()
 
     def __enter__(self, *args: Any, **kwargs: Any) -> "DataSetDownloadQueue":
+        """Return self for use in a with statement."""
         return self
 
     def __exit__(self, *args: Any, **kwargs: Any) -> None:
@@ -2274,7 +2292,7 @@ class DataSetDownloadQueue:
         for i in range(self.workers):
             self.download_queue.put(None)
 
-    def put(self, things: list) -> None:
+    def put(self, things: list[Any]) -> None:
         """Enqueue a file download task.
 
         Args:
@@ -2363,7 +2381,7 @@ class PhysicalData:
     data: dict[str, Any]
     attrs: list[str]
 
-    def __init__(self, data: Optional[dict] = None) -> None:
+    def __init__(self, data: Optional[dict[str, Any]] = None) -> None:
         """Initialise PhysicalData from a raw API dict.
 
         Args:
@@ -2388,14 +2406,17 @@ class PhysicalData:
         ]
 
     def __dir__(self) -> list[str]:
+        """Return the attribute names for tab-completion."""
         return self.attrs
 
     def __getattr__(self, name: str) -> Any:
+        """Read an attribute from the raw data dict."""
         if name in self.attrs:
             if name in self.data:
                 return self.data[name]
 
     def __getitem__(self, key: str) -> Any:
+        """Read an attribute from the raw data dict by key."""
         if key in self.attrs:
             if key in self.data:
                 return self.data[key]
@@ -2422,6 +2443,7 @@ class PhysicalData:
         return html
 
     def __repr__(self) -> str:
+        """Return a table of all attributes."""
         headers = ["attribute", "value"]
         lines = []
         for attr in self.attrs:
@@ -2456,9 +2478,11 @@ class LinkedData:
         self.attrs = ["externalCode", "contentCopies"]
 
     def __dir__(self) -> list[str]:
+        """Return the attribute names for tab-completion."""
         return self.attrs
 
     def __getattr__(self, name: str) -> Any:
+        """Read an attribute from the raw data dict."""
         if name in self.attrs:
             if name in self.data:
                 return self.data[name]

@@ -82,7 +82,6 @@ select = ["D"]
 # overrides below. New and migrated modules must be clean.
 [tool.ruff.lint.per-file-ignores]
 "pybis/client.py" = ["D"]
-"pybis/dataset.py" = ["D"]
 "tests/*" = ["D"]
 "playground.py" = ["D"]
 
@@ -96,6 +95,5 @@ files = ["pybis"]
 [[tool.mypy.overrides]]
 module = [
     "pybis.client",
-    "pybis.dataset",
 ]
 ignore_errors = true
