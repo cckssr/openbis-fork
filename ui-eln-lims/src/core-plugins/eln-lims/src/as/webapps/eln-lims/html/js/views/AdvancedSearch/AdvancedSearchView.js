@@ -514,26 +514,37 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
     
     this._setUpKeyHandling = function($fieldValue, uuid) {
         var _this = this;
-        $fieldValue.keyup(function() {
+        var keyUpFunction = function() {
             var $thisComponent = $(this);
             var selectedValue = $thisComponent.val();
             _this._advancedSearchModel.criteria.rules[uuid].value = selectedValue; //Update model
-        });
+        };
+        $fieldValue.keyup(keyUpFunction);
 
-        $fieldValue.keypress(function (e) {
+        var keypressFunction = function (e) {
             var key = e.which;
             if (key == 13) { // the enter key code
                 _this._advancedSearchController.search();
                 return false;
             }
-        });
+        };
+        $fieldValue.keypress(keypressFunction);
+
+        $fieldValue.refresh = function() {
+            $fieldValue.off('keyup');
+            $fieldValue.off('keypress');
+            $fieldValue.keyup(keyUpFunction);
+            $fieldValue.keyup(keypressFunction);
+        }
+        _refreshableFieldValues[uuid] = $fieldValue;
+
     }
 
     this._addTimestampField = function($container, uuid, isDateOnly) {
         var _this = this;
         var $dateField = FormUtil._getDatePickerField(uuid, "", false, isDateOnly, null, true);
         var $input = $dateField.find("#" + uuid);
-        _refreshableFieldValues[uuid] = $dateField;
+        _refreshableFieldValues[uuid + "_date"] = $dateField;
         this._setUpKeyHandling($input, uuid);
         $input.blur(function() {
             _this._advancedSearchModel.criteria.rules[uuid].value = $input.val();
@@ -1063,6 +1074,7 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
                 delete _refreshableFieldNames[uuid];
                 delete _refreshableFieldOperators[uuid];
                 delete _refreshableFieldValues[uuid];
+                delete _refreshableFieldValues[uuid + "_date"];
                 $row.remove();
             } else {
                 Util.showUserError("There must be at least one row of search criteria present.");

@@ -783,8 +783,16 @@ function MainController(profile) {
 					break;
 				case "showAdvancedSearchPage":
 					document.title = "Advanced Search";
-					this.mainHeader.navigateToTab("TOOLS");
-					this._showAdvancedSearchPage(arg);
+					var text,page;
+					if(typeof(arg) === 'string' || arg === null) {
+						text = arg;
+						page = "TOOLS";
+					} else {
+						text = arg["text"];
+						page = arg["page"];
+					}
+					this.mainHeader.navigateToTab(page);
+					this._showAdvancedSearchPage(text);
 					break;
                 case "showDropboxMonitorPage":
                     document.title = "Dropbox Monitor";
@@ -849,8 +857,12 @@ function MainController(profile) {
 					var searchText = arg["searchText"];
 					var searchDomain = arg["searchDomain"];
 					var searchDomainLabel = arg["searchDomainLabel"];
-					this.mainHeader.navigateToTab("TOOLS");
-					this._showSearchPage(searchText, searchDomain, searchDomainLabel);
+					var page = arg["page"];
+					if(!page) {
+						page = "TOOLS";
+					}
+					this.mainHeader.navigateToTab(page);
+					this._showSearchPage(searchText, searchDomain, searchDomainLabel, page);
 					break;
 				case "showSpacePage":
 					var _this = this;
@@ -1986,7 +1998,7 @@ function MainController(profile) {
 		} else {
 			newView = new AdvancedSearchController(this);
 		}
-		var tabInfo = TabContentUtil.getToolTabInfo('SEARCH', freeText);
+		var tabInfo = TabContentUtil.getSearchTabInfo(freeText);
 		var views = this._getNewViewModel(true, true, false, tabInfo);
 		newView.init(views);
 		newView.tabId = tabInfo.id;
@@ -1998,7 +2010,7 @@ function MainController(profile) {
 	
 	this.lastSearchId = 0; //Used to discard search responses that don't pertain to the last search call.
 	
-	this._showSearchPage = function(value, searchDomain, searchDomainLabel) {
+	this._showSearchPage = function(value, searchDomain, searchDomainLabel, page) {
 		this.lastSearchId++;
 		var localSearchId = this.lastSearchId;
 		var localReference = this;
@@ -2021,7 +2033,11 @@ function MainController(profile) {
 							localReference._legacyGlobalSearch(value);
 						} else {
 							$("#search").removeClass("search-query-searching");
-							localReference.changeView("showAdvancedSearchPage", value);
+							let args = {
+								text: value,
+								page: page
+							}
+							localReference.changeView("showAdvancedSearchPage", args);
 						}
 					} else if(searchDomain == "data-set-file-search") { 
 						localReference.serverFacade.searchOnSearchDomain(searchDomain, value, function(data) {
