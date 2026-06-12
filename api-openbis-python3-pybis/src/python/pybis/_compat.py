@@ -40,8 +40,8 @@ _PARAM_RENAMES: dict[str, str] = {
     "permId": "perm_id",
     "withParents": "with_parents",
     "withChildren": "with_children",
-    "withAttachments": "with_attachments",
-    "withDataSetIds": "with_dataset_ids",
+    # withAttachments / withDataSetIds are absorbed per-method (the new
+    # getters fetch attachments and datasets by default)
     "projectId": "project_id",
     "userId": "user_id",
     "techId": "tech_id",

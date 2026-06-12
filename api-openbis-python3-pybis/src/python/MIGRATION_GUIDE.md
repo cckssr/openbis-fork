@@ -1,0 +1,249 @@
+# pybis 7 Migration Guide
+
+pybis 7 is a clean-break major release. The old vocabulary (*sample*,
+*experiment*) is gone from the public API, every parameter is `snake_case`,
+search and lookup are separate operations, and search filters are typed
+objects instead of magic strings.
+
+Deprecated 1.x names keep working **for one major release** through compat
+shims that emit `DeprecationWarning` with the new name. Run your code with
+`python -W error::DeprecationWarning` to find every call you need to change,
+or use the automated rewriter:
+
+```bash
+pip install libcst
+python migrate.py --dry-run path/to/your/project/
+python migrate.py --write   path/to/your/project/
+```
+
+## 1. What changed and why
+
+| Area | 1.x | 7.x |
+|---|---|---|
+| Vocabulary | `get_samples`, `new_experiment` | `search_objects`, `new_collection` — matches current openBIS naming |
+| Parameters | `permId=`, `withParents=` | `perm_id=`, `with_parents=` |
+| Lookup vs search | `get_sample(id)` and `get_samples(...)` both "get" | `get_object(id) -> Object \| None` vs `search_objects(...) -> SearchResult[Object]` |
+| Missing entities | raised `ValueError` | `get_*` returns `None`; `get_*_or_raise` raises `NotFoundError` |
+| Search operators | magic strings `">= 5"`, `"*foo*"` | typed filters: `filters.gte(5)`, `filters.wildcard("foo*")` |
+| Search results | `Things` (DataFrame container) | `SearchResult[T]` — iterable entities, `.total_count`, lazy `.df` |
+| Properties | `obj.p.name = "x"` (attribute style) | `obj.props["NAME"] = "x"` (dict style; attribute style still delegated) |
+| Errors | bare `ValueError` / `Exception` | typed hierarchy under `PybisError` |
+
+## 2. Import changes
+
+| 1.x | 7.x |
+|---|---|
+| `from pybis.pybis import Openbis` | `from pybis import Openbis` |
+| `from pybis.sample import Sample` | `from pybis.entities import Object` |
+| `from pybis.experiment import Experiment` | `from pybis.entities import Collection` |
+| `from pybis.entity_type import SampleType` | `from pybis.entities import ObjectType` |
+| `from pybis.entity_type import ExperimentType` | `from pybis.entities import CollectionType` |
+| — | `from pybis.api import filters` (typed search operators) |
+| — | `from pybis.exceptions import NotFoundError, PybisError, ...` |
+
+## 3. Method renames
+
+Every old name still works one release, with a warning.
+
+| 1.x | 7.x |
+|---|---|
+| `get_sample(id)` / `get_object(id)` | `get_object(id)` — returns `Object \| None` |
+| `get_samples(...)` / `get_objects(...)` | `search_objects(...)` |
+| `new_sample(...)` | `new_object(...)` |
+| `get_experiment(id)` / `get_collection(id)` | `get_collection(id)` |
+| `get_experiments(...)` / `get_collections(...)` | `search_collections(...)` |
+| `new_experiment(...)` | `new_collection(...)` |
+| `get_sample_type` / `get_sample_types` | `get_object_type` / `search_object_types` |
+| `get_object_types` (1.x alias) | `search_object_types` |
+| `get_experiment_type` / `get_experiment_types` | `get_collection_type` / `search_collection_types` |
+| `get_collection_types` (1.x alias) | `search_collection_types` |
+| `new_sample_type` / `new_experiment_type` | `new_object_type` / `new_collection_type` |
+| `get_datasets(...)` | `search_datasets(...)` |
+| `get_dataset_types(...)` | `search_dataset_types(...)` |
+| `get_spaces(...)` | `search_spaces(...)` |
+| `get_projects(...)` | `search_projects(...)` |
+| `get_persons(...)` / `get_users(...)` | `search_persons(...)` |
+| `get_user(id)` | `get_person(id)` |
+| `get_groups(...)` | `search_groups(...)` |
+| `get_role_assignments(...)` | `search_role_assignments(...)` |
+| `get_terms(...)` | `search_terms(...)` |
+| `get_vocabularies(...)` | `search_vocabularies(...)` |
+| `get_tags(...)` | `search_tags(...)` |
+| `get_deletions(...)` | `search_deletions(...)` |
+| `sample_to_sample_id` etc. | removed — internal transport helpers |
+
+New in 7.x: `get_*_or_raise(id)` (raises `NotFoundError`) and `iter_*(...)`
+(auto-paginating iterators) for every entity.
+
+```python
+# 1.x
+samples = o.get_samples(space="MY_SPACE", type="MOLECULE", props="*")
+
+# 7.x
+result = o.search_objects(space="MY_SPACE", type="MOLECULE")
+result.total_count      # server-side total
+result.df               # DataFrame incl. property columns (was props="*")
+for obj in result: ...  # typed Object entities
+```
+
+## 4. Parameter renames
+
+Applied uniformly across all methods (shims translate them):
+
+| 1.x | 7.x |
+|---|---|
+| `permId` | `perm_id` |
+| `withParents` (bool) | `with_parents` — eager-fetch flag |
+| `withParents` (identifier) | `parents=` — relationship filter |
+| `withChildren` | `with_children` / `children=` (same split) |
+| `sample=` | `object=` |
+| `experiment=` | `collection=` |
+| `sample_ident` | `identifier` |
+| `userId` / `userIds` | `user_id` / `user_ids` |
+| `vocabularyCode` | `vocabulary_code` |
+| `sessionName`, `validFrom`, `validTo` | `session_name`, `valid_from`, `valid_to` |
+| `generatedCodePrefix`, `subcodeUnique`, `autoGeneratedCode` | `generated_code_prefix`, `subcode_unique`, `auto_generated_code` |
+| `showContainer`, `showParents`, `showParentMetadata` | `show_container`, `show_parents`, `show_parent_metadata` |
+| `mainDataSetPattern`, `mainDataSetPath`, `disallowDeletion` | `main_dataset_pattern`, `main_dataset_path`, `disallow_deletion` |
+| `validationPlugin`, `managedInternally`, `chosenFromList` | `validation_plugin`, `managed_internally`, `chosen_from_list` |
+| `dataType`, `pluginType`, `materialType` | `data_type`, `plugin_type`, `material_type` |
+| `sampleType` | `object_type` |
+| `data_set_id` | `dataset_id` |
+| `techId`, `projectId` | `tech_id`, `project_id` |
+| `entityType`, `propertyType` | `entity_type`, `property_type` |
+| `withAttachments`, `withDataSetIds` | gone for getters — attachments/datasets are fetched by default |
+| `props=` (initial values, `new_*`) | `properties=` |
+| `props=` (column selection, searches) | gone — `result.df` always includes property columns |
+| `file=` / `zipfile=` (`new_dataset`) | `files=` / `zip_file=` |
+| `type=` (entity-type getters) | `code=` |
+
+### Same-name methods with translated parameters
+
+`get_dataset`, `new_dataset`, `get_dataset_type`, `get_person`,
+`new_person`, `new_group`, `get_role_assignment`, `get_term`, `new_term`,
+`get_vocabulary`, `new_vocabulary`, `get_tag`, and `new_tag` keep their
+names; their 1.x parameter spellings (`permIds`, `vocabularyCode`,
+`userIds`, `props`, ...) are translated with a warning.
+
+## 5. Removed parameters
+
+These raise a pointed `TypeError` — they cannot be silently translated:
+
+| Parameter | Replacement |
+|---|---|
+| `only_data=True` | entities are always returned; the raw response dict is `entity.data` |
+| `raw_response=True` | gone; use the typed entities |
+| `use_cache=False` | caching is transparent and invalidates on `save()`/`delete()`; `clear_cache()` remains |
+| `attrs=[...]` | gone; `with_parents=True` / `with_children=True` fetch relations, `result.df` carries the columns |
+
+## 6. Property access
+
+```python
+# 1.x                                   # 7.x
+sample.p.formula = "H2O"                obj.props["FORMULA"] = "H2O"   # validated, marks dirty
+sample.p["formula"]                     obj.props["FORMULA"]
+sample.p()                              obj.props.to_dict()
+                                        "FORMULA" in obj.props
+                                        del obj.props["FORMULA"]
+```
+
+Attribute-style access (`obj.props.formula`) still works through delegation.
+The low-level `obj.p` namespace remains for the transition but is not part
+of the 7.x contract.
+
+## 7. Error handling
+
+```python
+from pybis.exceptions import (
+    PybisError,            # base of everything pybis raises
+    AuthenticationError,   # login/token problems
+    NotFoundError,         # get_*_or_raise misses (has .entity_type, .identifier)
+    ValidationError,       # bad values/filters
+    ConnectionError,       # server unreachable / TLS
+    ServerError,           # openBIS reported an error (has .code)
+    FeatureNotAvailableError,  # server too old for the feature
+)
+```
+
+During the transition, `AuthenticationError`, `NotFoundError`,
+`ValidationError`, `PermissionError`, and `ServerError` also inherit
+`ValueError`, so 1.x `except ValueError:` blocks keep working. This dual
+inheritance disappears when the shims do.
+
+Date filter semantics fix: 1.x silently treated `">2024-01-01"` and
+`">=2024-01-01"` both as *on-or-after*. The typed DSL has only the honest
+`filters.date_after` / `filters.date_before` (inclusive).
+
+## 8. Pagination
+
+```python
+# one page, with total awareness
+page = o.search_objects(type="MOLECULE", count=50, start_with=100)
+page.total_count    # e.g. 4213 — more than len(page)
+
+# everything, auto-paginated
+for obj in o.iter_objects(type="MOLECULE", page_size=200):
+    ...
+```
+
+Note: 1.x fetched **all** results when `count` was omitted; 7.x defaults to
+`count=25`. Use `iter_*` for exhaustive listings.
+
+## 9. Typed search filters
+
+```python
+from pybis.api import filters
+
+o.search_objects(
+    properties={
+        "FORMULA": "H2O",                      # plain str = exact match
+        "NAME": filters.wildcard("H2*"),       # explicit wildcards
+        "ATOMS": filters.gte(3),               # was: ATOMS=">= 3"
+        "MEASURED": filters.date_before("2024-06-01"),
+    },
+    hierarchy_properties=[
+        filters.parent_prop("BATCH_ID", filters.eq("BATCH-001")),
+    ],
+)
+```
+
+Available operators: `eq`, `contains`, `starts_with`, `ends_with`,
+`wildcard`, `gt`, `gte`, `lt`, `lte`, `number_eq`, `date_eq`, `date_after`,
+`date_before`, `any_value` (`contains`/`ends_with` are new in 7.x).
+
+## 10. Version-gated features
+
+Version-gated features raise `FeatureNotAvailableError` against servers that
+lack them, instead of failing with cryptic server errors:
+
+| Feature | Requirement |
+|---|---|
+| Array property types (`ARRAY_*`) | openBIS API ≥ 3.1 |
+| `JSON` property type | API ≥ 3.5 |
+| Validation plugins | API ≥ 3.3 |
+| Personal access tokens | API ≥ 3.3 |
+| Project-level objects | server flag `project-samples-enabled` |
+
+Note: the array variant of VARCHAR is named **`ARRAY_STRING`** on the server
+(pybis 1.x docs sometimes said `ARRAY_VARCHAR`).
+
+## 11. Hard breaks (no shim possible)
+
+- **`Things` is gone.** `search_*` returns `SearchResult[T]`. `.df`,
+  iteration, `len()`, and integer indexing carry over; `Things[str]` lookup
+  and the set-level `things.get_parents()/get_children()` queries do not —
+  use the entities' own relations or another `search_*` call.
+- **`logout()` clears the token now.** (1.x left the invalid token set.)
+- **`get_*` single getters return `None`** for missing entities instead of
+  raising; use `get_*_or_raise` for the old behavior.
+- **`o.spaces` / `o.projects` properties** are gone — call
+  `search_spaces()` / `search_projects()`.
+- **String-ordering property comparisons** (`"> abc"`) are not supported.
+- **`entity.a` attribute access** is an implementation detail; use the
+  documented attributes.
+
+## 12. Removal schedule
+
+The `_compat` shims (old method names, camelCase translation, ValueError
+dual inheritance) are scheduled for removal in **pybis 8**. Migrate with
+`migrate.py` and run with `-W error::DeprecationWarning` to be ready.
