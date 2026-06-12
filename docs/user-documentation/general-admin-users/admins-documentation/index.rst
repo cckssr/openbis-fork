@@ -13,6 +13,7 @@ Admins Documentation
    customise-the-main-menu
    associate-file-types-to-dataset-types
    user-registration
+   pat
    new-entity-type-registration
    new-entity-type-registration-excel-file
    internal-types
