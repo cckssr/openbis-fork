@@ -23,4 +23,4 @@ If you want to sync to a specific folder inside the home folder, you can provide
 ![](img/7.0-entity-afs-home-subfolder.png)
 
 - **Local directory**. This is the directory on you local storage you want to sync to an openBIS entity.
-- **Personal accees token**. PATs can now only be created via the [admin UI](../../system-documentation/configuration/optional-datastore-server-configuration.md) or [pyBIS](../../software-developer-documentation/apis/python-v3-api.md#personal-access-token-pat). This is used to connect to openBIS.
+- **Personal accees token**. PATs can now only be created via the [admin UI](../../user-documentation/general-admin-users/admins-documentation/pat.md) or [pyBIS](../../software-developer-documentation/apis/python-v3-api.md#personal-access-token-pat). This is used to connect to openBIS.
