@@ -13,20 +13,22 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 #
-
-
-"""
-data_set.py
-
-Module with functions for operating on data sets.
-
+"""Creation, update, and file search of git link data sets.
 
 Created by Chandrasekhar Ramakrishnan on 2017-04-05.
 Copyright (c) 2017 Chandrasekhar Ramakrishnan. All rights reserved.
 """
 
+from typing import Any, Optional
 
-def transfer_to_file_creation(content, file_creation, key, file_creation_key=None):
+
+def transfer_to_file_creation(
+    content: "dict[str, Any]",
+    file_creation: "dict[str, Any]",
+    key: str,
+    file_creation_key: Optional[str] = None,
+) -> None:
+    """Copy one field from a content dict into a file-creation DTO, if set."""
     if file_creation_key is None:
         file_creation_key = key
     if content.get(key) is not None:
@@ -34,43 +36,44 @@ def transfer_to_file_creation(content, file_creation, key, file_creation_key=Non
 
 
 class GitDataSetCreation(object):
+    """Builds and executes the creation of a git link data set."""
+
     def __init__(
         self,
-        openbis,
-        data_set_type,
-        path,
-        commit_id,
-        repository_id,
-        dms,
-        sample=None,
-        experiment=None,
-        properties={},
-        dss_code=None,
-        parents=None,
-        data_set_code=None,
-        contents=[],
-    ):
+        openbis: Any,
+        data_set_type: str,
+        path: str,
+        commit_id: str,
+        repository_id: str,
+        dms: Any,
+        sample: Optional[Any] = None,
+        experiment: Optional[Any] = None,
+        properties: "Optional[dict[str, Any]]" = None,
+        dss_code: Optional[str] = None,
+        parents: Optional[Any] = None,
+        data_set_code: Optional[str] = None,
+        contents: "Optional[list[dict[str, Any]]]" = None,
+    ) -> None:
         """Initialize the command object with the necessary parameters.
-        :param openbis: The openBIS API object.
-        :param data_set_type: The type of the data set
-        :param path: The path to the git repository
-        :param commit_id: The git commit id
-        :param repository_id: The git repository id - same for copies
-        :param dms: An external data managment system object or external_dms_id
-        :param sample: A sample object or sample id.
-        :param experiment: An experiment or experiment id.
-        :param properties: Properties for the data set.
-        :param dss_code: Code for the DSS -- defaults to the first dss if none is supplied.
-        :param parents: Parents for the data set.
-        :param data_set_code: A data set code -- used if provided, otherwise generated on the server
-        :param contents: A list of dicts that describe the contents:
-            {'fileLength': [file length],
-             'crc32': [crc32 checksum],
-             'checksum': [checksum other than crc32],
-             'checksumType': [checksum type if fiels checksum is used],
-             'directory': [is path a directory?]
-             'path': [the relative path string]}
 
+        Args:
+            openbis: The openBIS API object.
+            data_set_type: The type of the data set.
+            path: The path to the git repository.
+            commit_id: The git commit id.
+            repository_id: The git repository id - same for copies.
+            dms: An external data managment system object or external_dms_id.
+            sample: A sample object or sample id.
+            experiment: An experiment or experiment id.
+            properties: Properties for the data set.
+            dss_code: Code for the DSS -- defaults to the first dss if none
+                is supplied.
+            parents: Parents for the data set.
+            data_set_code: A data set code -- used if provided, otherwise
+                generated on the server.
+            contents: A list of dicts that describe the contents:
+                ``{'fileLength': ..., 'crc32': ..., 'checksum': ...,
+                'checksumType': ..., 'directory': ..., 'path': ...}``.
         """
         self.openbis = openbis
         self.data_set_type = data_set_type
@@ -80,24 +83,26 @@ class GitDataSetCreation(object):
         self.dms = dms
         self.sample = sample
         self.experiment = experiment
-        self.properties = properties
+        self.properties = properties if properties is not None else {}
         self.dss_code = dss_code
         self.parents = parents
         self.data_set_code = data_set_code
-        self.contents = contents
+        self.contents = contents if contents is not None else []
 
-    def new_git_data_set(self):
+    def new_git_data_set(self) -> Any:
         """Create a link data set.
-        :return: A DataSet object
-        """
 
+        Returns:
+            A DataSet object.
+        """
         data_set_creation = self.data_set_metadata_creation()
         file_metadata = self.data_set_file_metadata()
         if not file_metadata:
             return self.create_pure_metadata_data_set(data_set_creation)
         return self.create_mixed_data_set(data_set_creation, file_metadata)
 
-    def create_pure_metadata_data_set(self, data_set_creation):
+    def create_pure_metadata_data_set(self, data_set_creation: "dict[str, Any]") -> Any:
+        """Register a metadata-only link data set and return it."""
         # register the files in openBIS
         request = {
             "method": "createDataSets",
@@ -108,7 +113,12 @@ class GitDataSetCreation(object):
         resp = self.openbis._post_request(self.openbis.as_v3, request)
         return self.openbis.get_dataset(resp[0]["permId"])
 
-    def create_mixed_data_set(self, metadata_creation, file_metadata):
+    def create_mixed_data_set(
+        self,
+        metadata_creation: "dict[str, Any]",
+        file_metadata: "list[dict[str, Any]]",
+    ) -> Any:
+        """Register a link data set with file metadata and return it."""
         data_set_creation = {
             "fileMetadata": file_metadata,
             "metadataCreation": metadata_creation,
@@ -126,12 +136,13 @@ class GitDataSetCreation(object):
         resp = self.openbis._post_request_full_url(server_url, request)
         return self.openbis.get_dataset(resp[0]["permId"])
 
-    def data_store_url(self, dss_code):
+    def data_store_url(self, dss_code: str) -> str:
+        """Return the V3 JSON-RPC endpoint of the data store ``dss_code``."""
         data_stores = self.openbis.get_datastores()
         data_store = data_stores[data_stores["code"] == dss_code]
         return f"{data_store['downloadUrl'][0]}/datastore_server/rmi-data-store-server-v3.json"
 
-    def data_set_metadata_creation(self):
+    def data_set_metadata_creation(self) -> "dict[str, Any]":
         """Create the respresentation of the data set metadata."""
         dss_code = self.dss_code
         if dss_code is None:
@@ -146,7 +157,7 @@ class GitDataSetCreation(object):
             parentIds = [
                 self.openbis.data_set_to_data_set_id(parent) for parent in parents
             ]
-        data_set_creation = {
+        data_set_creation: dict[str, Any] = {
             "linkedData": {
                 "@type": "as.dto.dataset.create.LinkedDataCreation",
                 "contentCopies": [
@@ -188,14 +199,15 @@ class GitDataSetCreation(object):
 
         return data_set_creation
 
-    def data_set_file_metadata(self):
-        """Create a representation of the file metadata"""
+    def data_set_file_metadata(self) -> "list[dict[str, Any]]":
+        """Create a representation of the file metadata."""
         return [self.as_file_metadata(c) for c in self.contents]
 
-    def as_file_metadata(self, content):
+    def as_file_metadata(self, content: "dict[str, Any]") -> "dict[str, Any]":
+        """Map one content description onto the DSS file-creation fields."""
         # The DSS objects do not use type
         # result = {"@type": "dss.dto.datasetfile.DataSetFileCreation"}
-        result = {}
+        result: dict[str, Any] = {}
         transfer_to_file_creation(content, result, "fileLength")
         transfer_to_file_creation(content, result, "crc32", "checksumCRC32")
         transfer_to_file_creation(content, result, "checksum", "checksum")
@@ -206,17 +218,25 @@ class GitDataSetCreation(object):
 
 
 class GitDataSetUpdate(object):
-    def __init__(self, openbis, data_set_id):
+    """Adds or removes content copies of an existing link data set."""
+
+    def __init__(self, openbis: Any, data_set_id: str) -> None:
         """Initialize the command object with the necessary parameters.
-        :param openbis: The openBIS API object.
-        :param data_set_id: Id of the data set to be updated
+
+        Args:
+            openbis: The openBIS API object.
+            data_set_id: Id of the data set to be updated.
         """
         self.openbis = openbis
         self.data_set_id = data_set_id
 
-    def new_content_copy(self, path, commit_id, repository_id, edms_id):
+    def new_content_copy(
+        self, path: str, commit_id: str, repository_id: str, edms_id: str
+    ) -> None:
         """Create a data set update for adding a content copy.
-        :return: A DataSetUpdate object
+
+        Returns:
+            A DataSetUpdate object.
         """
         self.path = path
         self.commit_id = commit_id
@@ -227,32 +247,42 @@ class GitDataSetUpdate(object):
         data_set_update = self.get_data_set_update(content_copy_actions)
         self.send_request(data_set_update)
 
-    def delete_content_copy(self, content_copy):
+    def delete_content_copy(self, content_copy: "dict[str, Any]") -> None:
         """Deletes the given content_copy from openBIS.
-        :param content_copy: Content copy to be deleted.
+
+        Args:
+            content_copy: Content copy to be deleted.
         """
         content_copy_actions = self.get_actions_remove_content_copy(content_copy)
         data_set_update = self.get_data_set_update(content_copy_actions)
         self.send_request(data_set_update)
 
-    def send_request(self, data_set_update):
+    def send_request(self, data_set_update: "dict[str, Any]") -> None:
+        """Post the update request to the V3 API."""
         request = {
             "method": "updateDataSets",
             "params": [self.openbis.token, [data_set_update]],
         }
         self.openbis._post_request(self.openbis.as_v3, request)
 
-    def get_data_set_update(self, content_copy_actions=[]):
+    def get_data_set_update(
+        self, content_copy_actions: "Optional[list[dict[str, Any]]]" = None
+    ) -> "dict[str, Any]":
+        """Build the DataSetUpdate DTO for the given content-copy actions."""
         return {
             "@type": "as.dto.dataset.update.DataSetUpdate",
             "dataSetId": self.get_data_set_id(),
-            "linkedData": self.get_linked_data(content_copy_actions),
+            "linkedData": self.get_linked_data(
+                content_copy_actions if content_copy_actions is not None else []
+            ),
         }
 
-    def get_data_set_id(self):
+    def get_data_set_id(self) -> "dict[str, Any]":
+        """Build the DataSetPermId DTO of the updated data set."""
         return {"@type": "as.dto.dataset.id.DataSetPermId", "permId": self.data_set_id}
 
-    def get_linked_data(self, actions):
+    def get_linked_data(self, actions: "list[dict[str, Any]]") -> "dict[str, Any]":
+        """Build the LinkedDataUpdate DTO wrapping the given actions."""
         return {
             "@type": "as.dto.common.update.FieldUpdateValue",
             "isModified": True,
@@ -265,7 +295,8 @@ class GitDataSetUpdate(object):
             },
         }
 
-    def get_actions_add_content_copy(self):
+    def get_actions_add_content_copy(self) -> "list[dict[str, Any]]":
+        """Build the list-update action adding the new content copy."""
         return [
             {
                 "@type": "as.dto.common.update.ListUpdateActionAdd",
@@ -273,7 +304,10 @@ class GitDataSetUpdate(object):
             }
         ]
 
-    def get_actions_remove_content_copy(self, content_copy):
+    def get_actions_remove_content_copy(
+        self, content_copy: "dict[str, Any]"
+    ) -> "list[dict[str, Any]]":
+        """Build the list-update action removing the given content copy."""
         return [
             {
                 "@type": "as.dto.common.update.ListUpdateActionRemove",
@@ -281,7 +315,8 @@ class GitDataSetUpdate(object):
             }
         ]
 
-    def get_content_copy_creation(self):
+    def get_content_copy_creation(self) -> "dict[str, Any]":
+        """Build the ContentCopyCreation DTO from the stored parameters."""
         return {
             "@type": "as.dto.dataset.create.ContentCopyCreation",
             "externalDmsId": {
@@ -295,17 +330,25 @@ class GitDataSetUpdate(object):
 
 
 class GitDataSetFileSearch(object):
-    def __init__(self, openbis, data_set_id, dss_code=None):
+    """Searches the files of a link data set on its data store."""
+
+    def __init__(
+        self, openbis: Any, data_set_id: str, dss_code: Optional[str] = None
+    ) -> None:
         """Initialize the command object with the necessary parameters.
-        :param openbis: The openBIS API object.
-        :param data_set_id: Id of the data set to be updated
-        :param dss_code: Code for the DSS -- defaults to the first dss if none is supplied.
+
+        Args:
+            openbis: The openBIS API object.
+            data_set_id: Id of the data set to be updated.
+            dss_code: Code for the DSS -- defaults to the first dss if none
+                is supplied.
         """
         self.openbis = openbis
         self.data_set_id = data_set_id
         self.dss_code = dss_code
 
-    def search_files(self):
+    def search_files(self) -> Any:
+        """Run the file search on the data store and return the raw response."""
         request = {
             "method": "searchFiles",
             "params": [
@@ -317,7 +360,8 @@ class GitDataSetFileSearch(object):
         server_url = self.data_store_url()
         return self.openbis._post_request_full_url(server_url, request)
 
-    def get_data_set_file_search_criteria(self):
+    def get_data_set_file_search_criteria(self) -> "dict[str, Any]":
+        """Build the search criteria matching this data set's code."""
         return {
             "@type": "dss.dto.datasetfile.search.DataSetFileSearchCriteria",
             "operator": "AND",
@@ -341,12 +385,14 @@ class GitDataSetFileSearch(object):
             ],
         }
 
-    def get_data_set_file_fetch_options(self):
+    def get_data_set_file_fetch_options(self) -> "dict[str, Any]":
+        """Build the (empty) file fetch options."""
         return {
             "@type": "dss.dto.datasetfile.fetchoptions.DataSetFileFetchOptions",
         }
 
-    def data_store_url(self):
+    def data_store_url(self) -> str:
+        """Return the V3 JSON-RPC endpoint of the target data store."""
         data_stores = self.openbis.get_datastores()
         if self.dss_code is None:
             self.dss_code = self.openbis.get_datastores()["code"][0]

@@ -84,7 +84,6 @@ select = ["D"]
 "pybis/client.py" = ["D"]
 "pybis/afs_client.py" = ["D"]
 "pybis/attribute.py" = ["D"]
-"pybis/data_set.py" = ["D"]
 "pybis/dataset.py" = ["D"]
 "pybis/fast_download.py" = ["D"]
 "tests/*" = ["D"]
@@ -102,7 +101,6 @@ module = [
     "pybis.client",
     "pybis.afs_client",
     "pybis.attribute",
-    "pybis.data_set",
     "pybis.dataset",
     "pybis.fast_download",
 ]
