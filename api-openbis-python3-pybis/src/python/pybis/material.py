@@ -30,25 +30,7 @@ from .property import PropertyHolder
 from .property_reformatter import PropertyReformatter
 from .utils import VERBOSE
 
-try:
-    from warnings import deprecated  # Python 3.13+
-except ImportError:
-    import functools
-    from warnings import warn
-
-    def deprecated(msg: str):
-        def decorator(cls):
-            orig_init = cls.__init__
-
-            @functools.wraps(orig_init)
-            def __init__(self, *args, **kwargs):
-                warn(msg, DeprecationWarning, stacklevel=2)
-                orig_init(self, *args, **kwargs)
-
-            cls.__init__ = __init__
-            return cls
-
-        return decorator
+from ._deprecated import deprecated
 
 
 @deprecated("Material is deprecated; use Object instead")
@@ -80,8 +62,8 @@ class Material(OpenBisObject):
         self,
         openbis_obj: Any,
         type: Any,
-        data: Optional[dict] = None,
-        props: Optional[dict] = None,
+        data: Optional[dict[str, Any]] = None,
+        props: Optional[dict[str, Any]] = None,
         **kwargs: Any,
     ) -> None:
         """Initialise a Material instance.
@@ -102,7 +84,7 @@ class Material(OpenBisObject):
         self.__dict__["type"] = type
         ph = PropertyHolder(openbis_obj, type)
         self.__dict__["p"] = ph
-        self.__dict__["a"] = AttrHolder(openbis_obj, "material", type)
+        self.__dict__["a"] = AttrHolder(openbis_obj, "material", type)  # type: ignore[no-untyped-call]  # reason: legacy attribute module
         self.__dict__["formatter"] = PropertyReformatter(openbis_obj)
 
         if data is not None:
@@ -124,7 +106,7 @@ class Material(OpenBisObject):
         """
         return ["code", "description", "set_tags()", "add_tags()", "del_tags()"]
 
-    def save(self) -> "Material":
+    def save(self) -> "Optional[Material]":  # type: ignore[override]  # reason: 1.x returns None after updates
         """Persist this material to openBIS (create or update).
 
         .. deprecated::
@@ -172,8 +154,9 @@ class Material(OpenBisObject):
             self.openbis._post_request(self.openbis.as_v3, request)
             if VERBOSE:
                 print("Material successfully updated.")
+            return None
 
-    def delete(self, reason: str = "no reason") -> None:
+    def delete(self, reason: str = "no reason") -> None:  # type: ignore[override]  # reason: legacy default-reason signature
         """Delete this material from openBIS.
 
         .. deprecated::

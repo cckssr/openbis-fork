@@ -13,22 +13,23 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 #
+"""Per-entity schema registry: attributes, fetch options, and RPC method names."""
+
 import copy
-
-
-from typing import Any
+from typing import Any, cast
 
 
 def openbis_definitions(entity: str) -> "dict[str, Any]":
+    """Return the schema definition of an entity.
+
+    The definition keys are: ``attrs_new`` (attributes that can appear when
+    creating new entities), ``attrs_up`` (attributes that can be updated),
+    ``attrs`` (attributes displayed when fetched), ``multi`` (multivalue
+    elements, e.g. parents or children of a Sample), and ``identifier``
+    (the id field name used in updates, usually the camel-case entity name
+    with ``Id`` added).
     """
-    attrs_new: Attributes, that can appear when creating new entities
-    attrs_up: Attributes that can be updated
-    attrs: Attributes that are displayed when fetched
-    multi: multivalue-elements which appear in an entity. E.g. parents or children in a Sample.
-    identifier: to update entities, the identifier must be specified. Usually identityName + "Id"
-    (Entity-Name in camel-case, starting with lowercase letter, with Id added)
-    """
-    entities = {
+    entities: dict[str, dict[str, Any]] = {
         "sessionInformation": {
             "attrs": "sessionToken userName homeGroupCode personalAccessTokenSession personalAccessTokenSessionName person creatorPerson".split(),
         },
@@ -338,7 +339,7 @@ def openbis_definitions(entity: str) -> "dict[str, Any]":
 get_definition_for_entity = openbis_definitions  # Alias
 
 
-fetch_option = {
+fetch_option: dict[str, dict[str, Any]] = {
     "personalAccessToken": {
         "@type": "as.dto.pat.fetchoptions.PersonalAccessTokenFetchOptions"
     },
@@ -505,6 +506,7 @@ fetch_option = {
 
 
 def get_fetchoption_for_entity(entity: str) -> "dict[str, Any]":
+    """Return a copy of the default fetch options of an entity."""
     entity = entity[0].lower() + entity[1:]  # make first character lowercase
     try:
         return copy.deepcopy(fetch_option[entity])
@@ -515,12 +517,13 @@ def get_fetchoption_for_entity(entity: str) -> "dict[str, Any]":
 def get_type_for_entity(
     entity: str, action: str, parents_or_children: str = ""
 ) -> "dict[str, Any]":
+    """Build the ``@type``-tagged DTO for an action on an entity."""
     if action not in "create update delete search".split():
         raise ValueError(f"unknown action: {action}")
 
     definition = openbis_definitions(entity)
     if action in definition and not parents_or_children:
-        return definition[action]
+        return cast("dict[str, Any]", definition[action])
     else:
         # try to guess type, according to the naming scheme
         cap_entity = entity[:1].upper() + entity[1:]
@@ -544,11 +547,12 @@ def get_type_for_entity(
 def get_fetchoptions(
     entity: str, including: "list[str] | None" = None
 ) -> "dict[str, Any]":
+    """Return only the requested fetch-option parts of an entity."""
     if including is None:
         including = []
     including += ["@type"]
     entity = entity[0].lower() + entity[1:]  # make first character lowercase
-    fo = {}
+    fo: dict[str, Any] = {}
     for inc in including:
         try:
             item = fetch_option[entity][inc]
@@ -559,6 +563,7 @@ def get_fetchoptions(
 
 
 def get_method_for_entity(entity: str, action: str) -> str:
+    """Return the V3 RPC method name for an action on an entity."""
     action = action.lower()
 
     if entity == "vocabulary":

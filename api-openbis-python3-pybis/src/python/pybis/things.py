@@ -13,6 +13,10 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 #
+"""Legacy ``Things`` DataFrame container (superseded by ``SearchResult``)."""
+
+from typing import Any, Iterator, Optional, cast
+
 import pandas as pd
 from pandas import DataFrame
 from tabulate import tabulate
@@ -39,22 +43,22 @@ class Things:
 
     """
 
-    def __init__(
+    def __init__(  # noqa: D107 — parameters mirror the legacy search responses
         self,
-        openbis_obj,
-        entity,
-        identifier_name="code",
-        additional_identifier=None,
-        start_with=None,
-        count=None,
-        totalCount=None,
-        single_item_method=None,
-        response=None,
-        df_initializer=None,
-        objects_initializer=None,
-        attrs=None,
-        props=None,
-    ):
+        openbis_obj: Any,
+        entity: str,
+        identifier_name: str = "code",
+        additional_identifier: Optional[str] = None,
+        start_with: Optional[int] = None,
+        count: Optional[int] = None,
+        totalCount: Optional[int] = None,
+        single_item_method: Optional[Any] = None,
+        response: Optional[Any] = None,
+        df_initializer: Optional[Any] = None,
+        objects_initializer: Optional[Any] = None,
+        attrs: Optional[Any] = None,
+        props: Optional[Any] = None,
+    ) -> None:
         self.openbis = openbis_obj
         self.entity = entity
         self.__df = None
@@ -71,14 +75,17 @@ class Things:
         self.__attrs = attrs
         self.__props = props
 
-    def is_df_initialised(self):
+    def is_df_initialised(self) -> bool:
+        """Check whether the DataFrame view has been built already."""
         return self.__df is not None
 
-    def is_objects_initialised(self):
+    def is_objects_initialised(self) -> bool:
+        """Check whether the object list has been built already."""
         return self.__objects is not None
 
     @property
-    def df(self):
+    def df(self) -> Any:
+        """The lazily built DataFrame view of the response."""
         if self.__df is None and self.__df_initializer is not None:
             self.__df = self.__df_initializer(
                 attrs=self.__attrs, props=self.__props, response=self.response
@@ -86,32 +93,40 @@ class Things:
         return self.__df
 
     @property
-    def objects(self):
+    def objects(self) -> Any:
+        """The lazily built entity list of the response."""
         if self.__objects is None and self.__objects_initializer is not None:
             self.__objects = self.__objects_initializer(response=self.response)
         return self.__objects
 
-    def __repr__(self, headers=None, sort_by=None):
+    def __repr__(
+        self, headers: Optional[Any] = None, sort_by: Optional[Any] = None
+    ) -> str:
+        """Return the tabulated DataFrame."""
         if headers is None:
             headers = list(self.df)
         if sort_by:
             return tabulate(self.df.sort_values(by=sort_by), headers=headers)
         return tabulate(self.df, headers=headers)
 
-    def __len__(self):
+    def __len__(self) -> int:
+        """Return the number of rows."""
         return len(self.df)
 
-    def _repr_html_(self):
+    def _repr_html_(self) -> Any:
+        """Render the DataFrame as HTML for Jupyter."""
         return self.df._repr_html_()
 
     @staticmethod
-    def __create_data_frame(attrs, props, response):
+    def __create_data_frame(attrs: Any, props: Any, response: Any) -> DataFrame:
+        """Concatenate the per-entity DataFrames of a relational query."""
         if len(response) > 0:
-            return pd.concat(response)
+            return cast(DataFrame, pd.concat(response))
         else:
             return DataFrame()
 
-    def get_parents(self, **kwargs):
+    def get_parents(self, **kwargs: Any) -> "Optional[Things]":
+        """Fetch the parents of every listed sample or dataset."""
         if self.entity not in ["sample", "dataset"]:
             raise ValueError(f"{self.entity}s do not have parents")
 
@@ -133,8 +148,10 @@ class Things:
                 response=dfs,
                 df_initializer=self.__create_data_frame,
             )
+        return None
 
-    def get_children(self, **kwargs):
+    def get_children(self, **kwargs: Any) -> "Optional[Things]":
+        """Fetch the children of every listed sample or dataset."""
         if self.entity not in ["sample", "dataset"]:
             raise ValueError(f"{self.entity}s do not have children")
 
@@ -157,8 +174,10 @@ class Things:
                 response=dfs,
                 df_initializer=self.__create_data_frame,
             )
+        return None
 
-    def get_samples(self, **kwargs):
+    def get_samples(self, **kwargs: Any) -> "Optional[Things]":
+        """Fetch the samples of every listed space, project, or experiment."""
         if self.entity not in ["space", "project", "experiment"]:
             raise ValueError(f"{self.entity}s do not have samples")
 
@@ -180,10 +199,12 @@ class Things:
                 response=dfs,
                 df_initializer=self.__create_data_frame,
             )
+        return None
 
     get_objects = get_samples  # Alias
 
-    def get_datasets(self, **kwargs):
+    def get_datasets(self, **kwargs: Any) -> "Optional[Things]":
+        """Fetch the datasets of every listed sample or experiment."""
         if self.entity not in ["sample", "experiment"]:
             raise ValueError(f"{self.entity}s do not have datasets")
 
@@ -205,12 +226,15 @@ class Things:
                 response=dfs,
                 df_initializer=self.__create_data_frame,
             )
+        return None
 
-    def __getitem__(self, key):
-        """elegant way to fetch a certain element from the displayed list.
-        If an integer value is given, we choose the row.
-        If the key is a list, we return the desired columns (normal dataframe behaviour)
-        If the key is a non-integer value, we treat it as a primary-key lookup
+    def __getitem__(self, key: Any) -> Any:
+        """Fetch one element (or column selection) from the displayed list.
+
+        If an integer value is given, we choose the row. If the key is a
+        list, we return the desired columns (normal dataframe behaviour).
+        If the key is a non-integer value, we treat it as a primary-key
+        lookup.
         """
         if self.df is not None and len(self.df) > 0:
             row = None
@@ -242,7 +266,8 @@ class Things:
                         row[self.additional_identifier].values[0],
                     )
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[Any]:
+        """Yield the entities, fetching them one by one if necessary."""
         if self.objects:
             for obj in self.objects:
                 yield obj

@@ -13,16 +13,20 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 #
+"""Coercion of property values (timestamps, arrays, spreadsheets) to wire format."""
+
+import base64
+import json
 from datetime import datetime
 
 import pandas as pd
-import base64
-import json
+from typing import Any
 
 from .spreadsheet import Spreadsheet
 
 
-def is_of_openbis_supported_date_format(value):
+def is_of_openbis_supported_date_format(value: str) -> bool:
+    """Check whether the value matches one of the openBIS datetime formats."""
     is_supported = False
     for date_format in PropertyReformatter.SUPPORTED_DATETIME_FORMATS:
         try:
@@ -35,7 +39,7 @@ def is_of_openbis_supported_date_format(value):
 
 
 class PropertyReformatter:
-    """Helper class for reformatting of properties, is needed"""
+    """Coerces property values into their openBIS wire format."""
 
     LONG_DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
@@ -50,10 +54,12 @@ class PropertyReformatter:
         "%y-%m-%d %H:%M:%S %z",  # LongDateFormat with timezone
     ]
 
-    def __init__(self, openbis_obj):
+    def __init__(self, openbis_obj: Any) -> None:
+        """Store the Openbis connection used to look up property types."""
         self.openbis = openbis_obj
 
-    def format(self, properties):
+    def format(self, properties: "dict[str, Any]") -> "dict[str, Any]":
+        """Coerce all property values to their wire format, in place."""
         if properties is None:
             raise ValueError("properties can not be None!")
 
@@ -69,13 +75,13 @@ class PropertyReformatter:
                     properties[key] = self._format_timestamp(value)
             if property_type.dataType == "SAMPLE":
                 if property_type.multiValue:
-                    result = []
+                    linked: list[Any] = []
                     for sample in value:
                         if not isinstance(sample, str):
-                            result += sample.permId
+                            linked += sample.permId
                         else:
-                            result += [sample]
-                    properties[key] = result
+                            linked += [sample]
+                    properties[key] = linked
                 else:
                     if not isinstance(value, str):
                         properties[key] = value.permId
@@ -104,7 +110,7 @@ class PropertyReformatter:
                     properties[key] = result
         return properties
 
-    def _format_timestamp(self, value):
+    def _format_timestamp(self, value: Any) -> Any:
         if value is None:
             return value
         if is_of_openbis_supported_date_format(value):
@@ -116,10 +122,11 @@ class PropertyReformatter:
         )
         return result
 
-    def to_array(self, data_type, prop_value):
+    def to_array(self, data_type: str, prop_value: Any) -> "list[Any]":
+        """Parse a server-side array value into a typed Python list."""
         if prop_value is None or prop_value == "":
             return []
-        result = []
+        result: list[Any] = []
         if data_type in ("ARRAY_INTEGER", "INTEGER"):
             result = [int(x.strip()) for x in prop_value]
         elif data_type in ("ARRAY_REAL", "REAL"):
@@ -132,7 +139,8 @@ class PropertyReformatter:
             result = prop_value
         return result
 
-    def to_spreadsheet(self, rawValue):
+    def to_spreadsheet(self, rawValue: Any) -> Any:
+        """Decode a ``<DATA>base64</DATA>`` value into a Spreadsheet."""
         try:
             b64 = rawValue[len("<DATA>") : -len("</DATA>")]
             jsonb = base64.b64decode(b64)

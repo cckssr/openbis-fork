@@ -15,7 +15,7 @@
 #
 """Experiment (Collection) entity for openBIS."""
 
-from typing import Any
+from typing import Any, cast, get_args
 from urllib.parse import quote
 
 from .openbis_object import OpenBisObject
@@ -65,7 +65,7 @@ class Experiment(
         >>> exp.get_datasets().df
     """
 
-    def _set_data(self, data: dict) -> None:
+    def _set_data(self, data: dict[str, Any]) -> None:
         """Populate attributes and properties from a raw V3 API response dict.
 
         Handles multi-value properties, array types, and spreadsheet widgets.
@@ -83,22 +83,21 @@ class Experiment(
                 if property_type["multiValue"] is True:
                     if type(value) is not list:
                         value = [value]
-                    if data_type in PropertyDataArrayTypes.__args__:
+                    if data_type in get_args(PropertyDataArrayTypes):
                         value = [self.formatter.to_array(data_type, x) for x in value]
                     else:
                         value = self.formatter.to_array(data_type, value)
                 else:
-                    if (
-                        type(value) is list
-                        and data_type not in PropertyDataArrayTypes.__args__
+                    if type(value) is list and data_type not in get_args(
+                        PropertyDataArrayTypes
                     ):
                         raise ValueError(
                             f"Property type {property_type} is not a multi-value property!"
                         )
-                    if data_type in PropertyDataArrayTypes.__args__:
+                    if data_type in get_args(PropertyDataArrayTypes):
                         value = self.formatter.to_array(data_type, value)
             else:
-                if data_type in PropertyDataArrayTypes.__args__:
+                if data_type in get_args(PropertyDataArrayTypes):
                     value = self.formatter.to_array(data_type, value)
             if (
                 data_type == "XML"
@@ -116,7 +115,7 @@ class Experiment(
 
     def __str__(self) -> str:
         """String representation of this experiment returns its code."""
-        return self.data["code"]
+        return str(self.data["code"])
 
     def __dir__(self) -> list[str]:
         """Return public attributes and methods for tab-completion.
@@ -166,9 +165,11 @@ class Experiment(
         self.a.__dict__["_type"] = experiment_type
 
     def __getattr__(self, name: str) -> Any:
+        """Delegate attribute access to the attribute holder."""
         return getattr(self.__dict__["a"], name)
 
     def __setattr__(self, name: str, value: Any) -> None:
+        """Set an entity attribute (or replace all properties via ``props``)."""
         if name in ["set_properties", "add_tags()", "del_tags()", "set_tags()"]:
             raise ValueError("These are methods which should not be overwritten")
         elif name in ["p", "props"]:
@@ -181,10 +182,9 @@ class Experiment(
             setattr(self.__dict__["a"], name, value)
 
     def _repr_html_(self) -> str:
-        html = self.a._repr_html_()
-        return html
+        return cast(str, self.a._repr_html_())
 
-    def set_properties(self, properties: dict) -> None:
+    def set_properties(self, properties: dict[str, Any]) -> None:
         """Set multiple properties at once from a dictionary.
 
         Does not save the experiment — call :meth:`save` afterwards.

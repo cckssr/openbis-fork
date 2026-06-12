@@ -18,7 +18,7 @@
 from __future__ import annotations
 
 from itertools import chain
-from typing import Any, Optional, TYPE_CHECKING
+from typing import Any, Optional, cast, TYPE_CHECKING
 
 from pandas import DataFrame
 
@@ -66,7 +66,7 @@ class Person(OpenBisObject):
     """
 
     def __init__(
-        self, openbis_obj: Any, data: Optional[dict] = None, **kwargs: Any
+        self, openbis_obj: Any, data: Optional[dict[str, Any]] = None, **kwargs: Any
     ) -> None:
         """Initialise a Person from raw V3 API data.
 
@@ -77,7 +77,7 @@ class Person(OpenBisObject):
             **kwargs: Additional key/value pairs set as attributes.
         """
         self.__dict__["openbis"] = openbis_obj
-        self.__dict__["a"] = AttrHolder(openbis_obj, "person")
+        self.__dict__["a"] = AttrHolder(openbis_obj, "person")  # type: ignore[no-untyped-call]  # reason: legacy attribute module
 
         if data is not None:
             self.a(data)
@@ -147,7 +147,7 @@ class Person(OpenBisObject):
         )
 
     def _create_role_assigment_data_frame(
-        self, attrs: Any, props: Any, response: list
+        self, attrs: Any, props: Any, response: "list[Any]"
     ) -> DataFrame:
         """Build the role-assignment DataFrame from raw V3 API objects.
 
@@ -176,7 +176,7 @@ class Person(OpenBisObject):
             )
             roles["space"] = spaces_s + spaces_p
             roles["project"] = roles["project"].map(extract_nested_identifier)
-        return roles[roles.columns.intersection(attrs)]
+        return cast(DataFrame, roles[roles.columns.intersection(attrs)])
 
     def assign_role(self, role: AuthorizationRoles, **kwargs: Any) -> None:
         """Assign a role to this person.
@@ -248,7 +248,7 @@ class Person(OpenBisObject):
         if isinstance(role, int):
             techId = role
         else:
-            query = {"role": role}
+            query: dict[str, str] = {"role": role}
             if space is None:
                 query["space"] = ""
             else:
@@ -284,9 +284,10 @@ class Person(OpenBisObject):
         return
 
     def __str__(self) -> str:
+        """Return first and last name."""
         return f"{self.get('firstName')} {self.get('lastName')}"
 
-    def delete(self, reason: str) -> None:
+    def delete(self, reason: str) -> None:  # type: ignore[override]  # reason: persons cannot be deleted at all
         """Persons cannot be deleted via the openBIS V3 API.
 
         Args:
@@ -297,7 +298,7 @@ class Person(OpenBisObject):
         """
         raise ValueError("Persons cannot be deleted")
 
-    def save(self) -> Optional["Person"]:
+    def save(self) -> Optional["Person"]:  # type: ignore[override]  # reason: 1.x returns None after updates
         """Persist this person to openBIS (create or update).
 
         Returns:

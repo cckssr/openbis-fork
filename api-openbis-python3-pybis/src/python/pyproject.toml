@@ -81,37 +81,19 @@ select = ["D"]
 # Legacy modules awaiting migration — same shrinking-list rule as the mypy
 # overrides below. New and migrated modules must be clean.
 [tool.ruff.lint.per-file-ignores]
-"pybis/pybis.py" = ["D"]
 "pybis/client.py" = ["D"]
 "pybis/afs_client.py" = ["D"]
-"pybis/attachment.py" = ["D"]
 "pybis/attribute.py" = ["D"]
 "pybis/chunk.py" = ["D"]
 "pybis/data_set.py" = ["D"]
 "pybis/dataset.py" = ["D"]
-"pybis/definitions.py" = ["D"]
 "pybis/entity_type.py" = ["D"]
-"pybis/experiment.py" = ["D"]
 "pybis/fast_download.py" = ["D"]
-"pybis/group.py" = ["D"]
-"pybis/material.py" = ["D"]
 "pybis/openbis_object.py" = ["D"]
 "pybis/openbis_typing.py" = ["D"]
-"pybis/person.py" = ["D"]
-"pybis/project.py" = ["D"]
-"pybis/property.py" = ["D"]
-"pybis/property_reformatter.py" = ["D"]
-"pybis/role_assignment.py" = ["D"]
 "pybis/sample.py" = ["D"]
-"pybis/scripts/*" = ["D"]
-"pybis/semantic_annotation.py" = ["D"]
-"pybis/space.py" = ["D"]
-"pybis/tag.py" = ["D"]
-"pybis/things.py" = ["D"]
 "pybis/type_group.py" = ["D"]
-"pybis/utils.py" = ["D"]
 "pybis/vocabulary.py" = ["D"]
-"pybis/__init__.py" = ["D"]
 "tests/*" = ["D"]
 "playground.py" = ["D"]
 
@@ -125,36 +107,18 @@ files = ["pybis"]
 [[tool.mypy.overrides]]
 module = [
     "pybis",
-    "pybis.pybis",
     "pybis.client",
     "pybis.afs_client",
-    "pybis.attachment",
     "pybis.attribute",
     "pybis.chunk",
     "pybis.data_set",
     "pybis.dataset",
-    "pybis.definitions",
     "pybis.entity_type",
-    "pybis.experiment",
     "pybis.fast_download",
-    "pybis.group",
-    "pybis.material",
     "pybis.openbis_object",
     "pybis.openbis_typing",
-    "pybis.person",
-    "pybis.project",
-    "pybis.property",
-    "pybis.property_reformatter",
-    "pybis.role_assignment",
     "pybis.sample",
-    "pybis.scripts",
-    "pybis.scripts.cli",
-    "pybis.semantic_annotation",
-    "pybis.space",
-    "pybis.tag",
-    "pybis.things",
     "pybis.type_group",
-    "pybis.utils",
     "pybis.vocabulary",
 ]
 ignore_errors = true

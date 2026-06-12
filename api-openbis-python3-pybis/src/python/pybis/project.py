@@ -70,15 +70,11 @@ class Project(OpenBisObject, entity="project", single_item_method_name="get_proj
         ] + super().__dir__()
 
     @property
-    def props(self) -> dict[str, str]:
-        """All properties of this project.
-
-        Returns:
-            A dictionary of property codes to values.
-        """
+    def props(self) -> Any:
+        """The legacy property holder of this project."""
         return self.__dict__["p"]
 
-    def get_samples(self, **kwargs: Any) -> Things:
+    def get_samples(self, **kwargs: Any) -> Any:
         """Return all samples (objects) that belong directly to this project.
 
         Args:
@@ -122,7 +118,7 @@ class Project(OpenBisObject, entity="project", single_item_method_name="get_proj
 
     get_object = get_sample
 
-    def get_experiments(self) -> Things:
+    def get_experiments(self) -> Any:
         """Return all experiments (collections) in this project.
 
         Returns:
@@ -136,7 +132,7 @@ class Project(OpenBisObject, entity="project", single_item_method_name="get_proj
 
     get_collections = get_experiments
 
-    def get_datasets(self) -> Things:
+    def get_datasets(self) -> Any:
         """Return all datasets linked to this project (via experiments or directly).
 
         Returns:

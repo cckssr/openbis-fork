@@ -58,7 +58,7 @@ class RoleAssignment(OpenBisObject):
     """
 
     def __init__(
-        self, openbis_obj: Any, data: Optional[dict] = None, **kwargs: Any
+        self, openbis_obj: Any, data: Optional[dict[str, Any]] = None, **kwargs: Any
     ) -> None:
         """Initialise a RoleAssignment from raw V3 API data.
 
@@ -71,7 +71,7 @@ class RoleAssignment(OpenBisObject):
                 construction.
         """
         self.__dict__["openbis"] = openbis_obj
-        self.__dict__["a"] = AttrHolder(openbis_obj, "roleAssignment")
+        self.__dict__["a"] = AttrHolder(openbis_obj, "roleAssignment")  # type: ignore[no-untyped-call]  # reason: legacy attribute module
 
         if data is not None:
             self.a(data)
@@ -90,9 +90,10 @@ class RoleAssignment(OpenBisObject):
         return ["id", "role", "roleLevel", "space", "project", "group"]
 
     def __str__(self) -> str:
+        """Return the role name."""
         return f"{self.get('role')}"
 
-    def delete(self, reason: str = "no reason specified") -> None:
+    def delete(self, reason: str = "no reason specified") -> None:  # type: ignore[override]  # reason: role assignments are deleted directly, no trash/confirm step
         """Delete this role assignment from openBIS.
 
         Calls ``deleteRoleAssignments`` via the V3 API.  After deletion the

@@ -17,7 +17,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Optional
+from typing import Any, Optional, cast
 
 from pandas import DataFrame
 
@@ -93,7 +93,9 @@ class Group(
             >>> group.get_persons().df
         """
 
-        def create_data_frame(attrs: Any, props: Any, response: list) -> DataFrame:
+        def create_data_frame(
+            attrs: Any, props: Any, response: "list[Any]"
+        ) -> DataFrame:
             columns = [
                 "permId",
                 "userId",
@@ -113,7 +115,7 @@ class Group(
             )
             persons["space"] = persons["space"].map(extract_nested_permid)
 
-            return persons[columns]
+            return cast("DataFrame", persons[columns])
 
         p = Things(
             self.openbis,
@@ -146,7 +148,9 @@ class Group(
             >>> group.get_roles().df
             >>> group.get_roles(space="TEST_SPACE").df
         """
-        return self.openbis.get_role_assignments(group=self, **search_args)
+        return cast(
+            "Things", self.openbis.get_role_assignments(group=self, **search_args)
+        )
 
     def assign_role(self, role: AuthorizationRoles, **kwargs: Any) -> None:
         """Assign a role to this group.
@@ -222,7 +226,7 @@ class Group(
         if isinstance(role, int):
             techId = role
         else:
-            query = {"role": role}
+            query: dict[str, str] = {"role": role}
             if space is None:
                 query["space"] = ""
             else:

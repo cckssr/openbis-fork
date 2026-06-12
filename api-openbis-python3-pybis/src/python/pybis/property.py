@@ -101,21 +101,21 @@ class PropertyHolder:
                     terms = voc.get_terms()
                     self._property_names[property_name]["terms"] = terms
 
-    def _all_props(self) -> dict:
+    def _all_props(self) -> dict[str, Any]:
         """Return all properties including ``None`` values.
 
         Returns:
             A ``{code: value}`` dict for every property defined by the type,
             including those that have not been set.
         """
-        props = {}
+        props: dict[str, Any] = {}
         if not getattr(self, "_type"):
             return props
         for code in self._type.codes():
             props[code] = getattr(self, code)
         return props
 
-    def all(self) -> dict:
+    def all(self) -> dict[str, Any]:
         """Return all properties as a dictionary, including ``None`` values.
 
         Returns:
@@ -129,7 +129,7 @@ class PropertyHolder:
             props[code] = getattr(self, code)
         return props
 
-    def all_nonempty(self) -> dict:
+    def all_nonempty(self) -> dict[str, Any]:
         """Return only properties that have a non-``None`` value.
 
         Returns:
@@ -193,9 +193,8 @@ class PropertyHolder:
         elif len(args) == 1 and not isinstance(args[0], list):
             return getattr(self, args[0])
         else:
-            if isinstance(args[0], list):
-                args = args[0]
-            return {arg: getattr(self, arg, None) for arg in args}
+            keys = args[0] if isinstance(args[0], list) else list(args)
+            return {key: getattr(self, key, None) for key in keys}
 
     def set(self, *args: Any) -> None:
         """Set one or more property values.
@@ -359,6 +358,7 @@ class PropertyHolder:
         return setattr(self, key, value)
 
     def __dir__(self) -> Any:
+        """Return the property names for tab-completion."""
         return self._property_names
 
     def _repr_html_(self) -> str:
@@ -406,6 +406,8 @@ class PropertyHolder:
         return html
 
     def __repr__(self) -> str:
+        """Return a table of all property values."""
+
         def nvl(val: Any, string: str = "") -> Any:
             if val is None:
                 return string

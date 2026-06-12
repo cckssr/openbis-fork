@@ -17,6 +17,7 @@
 
 import base64
 import os
+from typing import Any
 from typing import Optional
 
 
@@ -71,7 +72,7 @@ class Attachment:
         self.title = title
         self.description = description
 
-    def get_data_short(self) -> dict:
+    def get_data_short(self) -> dict[str, Any]:
         """Return a lightweight metadata dict (no file content).
 
         Used internally when listing existing attachments where the binary
@@ -86,7 +87,7 @@ class Attachment:
             "description": self.description,
         }
 
-    def get_data(self) -> dict:
+    def get_data(self) -> dict[str, Any]:
         """Return a full attachment dict with Base64-encoded file content.
 
         Reads ``fileName`` from disk, encodes it as Base64, and returns a

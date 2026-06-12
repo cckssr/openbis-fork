@@ -13,5 +13,9 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 #
-def main():
+"""Stub command-line entry point of pybis."""
+
+
+def main() -> None:
+    """Print a placeholder message."""
     print("called")

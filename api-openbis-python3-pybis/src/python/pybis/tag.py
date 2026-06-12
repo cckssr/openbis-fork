@@ -17,25 +17,7 @@
 
 from typing import Any
 
-try:
-    from warnings import deprecated  # Python 3.13+
-except ImportError:
-    import functools
-    from warnings import warn
-
-    def deprecated(msg: str):
-        def decorator(cls):
-            orig_init = cls.__init__
-
-            @functools.wraps(orig_init)
-            def __init__(self, *args, **kwargs):
-                warn(msg, DeprecationWarning, stacklevel=2)
-                orig_init(self, *args, **kwargs)
-
-            cls.__init__ = __init__
-            return cls
-
-        return decorator
+from ._deprecated import deprecated
 
 
 from .openbis_object import OpenBisObject

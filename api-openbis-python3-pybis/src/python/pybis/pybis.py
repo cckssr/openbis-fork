@@ -22,12 +22,9 @@ the v2 refactor.
 """
 
 from .client import *  # noqa: F401,F403
-from .client import (  # noqa: F401
-    Openbis,
-    PersonalAccessToken,
-    ServerInformation,
-    SessionInformation,
-)
+from .client import Openbis, SessionInformation  # noqa: F401
+from .entities.pat import PersonalAccessToken  # noqa: F401
+from .entities.server import ServerInformation  # noqa: F401
 from .auth import (  # noqa: F401
     CONFIG_FILENAME,
     PYBIS_FOLDER,

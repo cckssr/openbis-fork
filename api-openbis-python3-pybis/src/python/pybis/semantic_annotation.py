@@ -159,7 +159,7 @@ class SemanticAnnotation:
         ``propertyType``, or both are set, then populates all ontology
         term fields.
         """
-        creation = {
+        creation: dict[str, Any] = {
             "@type": "as.dto.semanticannotation.create.SemanticAnnotationCreation"
         }
 
@@ -257,7 +257,7 @@ class SemanticAnnotation:
         Example:
             >>> ann.delete("Ontology term retired")
         """
-        self._openbis.delete_entity(
+        self._openbis.delete_entity(  # type: ignore[no-untyped-call]  # reason: legacy client module
             entity="SemanticAnnotation", id=self.permId, reason=reason
         )
         if VERBOSE:
@@ -298,6 +298,7 @@ class SemanticAnnotation:
         return html
 
     def __repr__(self) -> str:
+        """Return a table of all annotation fields."""
         headers = ["attribute", "value"]
         lines = []
         lines.append(["permId", self.permId])

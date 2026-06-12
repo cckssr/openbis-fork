@@ -69,9 +69,10 @@ class Space(OpenBisObject, entity="space", single_item_method_name="get_space"):
         ] + super().__dir__()
 
     def __str__(self) -> str:
-        return self.data.get("code", None)
+        """Return the space code."""
+        return str(self.data.get("code", None))
 
-    def get_samples(self, **kwargs: Any) -> Things:
+    def get_samples(self, **kwargs: Any) -> Any:
         """Return all samples (objects) in this space.
 
         Args:
@@ -120,7 +121,7 @@ class Space(OpenBisObject, entity="space", single_item_method_name="get_space"):
 
     get_object = get_sample
 
-    def get_project(self, project_code: str) -> Things:
+    def get_project(self, project_code: str) -> Any:
         """Return a single project from this space by code or identifier.
 
         Args:
@@ -147,7 +148,7 @@ class Space(OpenBisObject, entity="space", single_item_method_name="get_space"):
 
             return projects[0]
 
-    def get_projects(self, **kwargs: Any) -> Things:
+    def get_projects(self, **kwargs: Any) -> Any:
         """Return all projects in this space.
 
         Args:
@@ -167,7 +168,7 @@ class Space(OpenBisObject, entity="space", single_item_method_name="get_space"):
         code: str,
         description: Optional[str] = None,
         **kwargs: Any,
-    ) -> Things:
+    ) -> Any:
         """Create a new project in this space (not yet saved).
 
         Args:
@@ -185,7 +186,7 @@ class Space(OpenBisObject, entity="space", single_item_method_name="get_space"):
         """
         return self.openbis.new_project(self.code, code, description, **kwargs)
 
-    def get_experiments(self, **kwargs: Any) -> Things:
+    def get_experiments(self, **kwargs: Any) -> Any:
         """Return all experiments (collections) in this space.
 
         Args:
@@ -203,7 +204,7 @@ class Space(OpenBisObject, entity="space", single_item_method_name="get_space"):
 
     get_collections = get_experiments
 
-    def get_experiment(self, experiment_code: str) -> Things:
+    def get_experiment(self, experiment_code: str) -> Any:
         """Return a single experiment (collection) from this space by code or identifier.
 
         Args:
