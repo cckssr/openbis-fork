@@ -13,24 +13,19 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 #
-import requests
-import os
+"""Client for the openBIS AFS (file storage) server."""
+
 import json
-
-import urllib.parse
-from queue import Queue, Empty
+import os
 import threading
+from pathlib import Path
+from queue import Empty, Queue
 from threading import Thread
-from typing import Set, Optional, List
-from urllib.parse import urljoin, quote
+from typing import Any, Optional
 
 import requests
-from pandas import DataFrame
-from requests import Session
 from requests.adapters import HTTPAdapter
 from urllib3.util import Retry
-from tabulate import tabulate
-from pathlib import Path
 
 from .chunk import encode_chunks_as_bytes
 from .chunk import decode_chunks
@@ -38,8 +33,8 @@ from .chunk import decode_chunks
 REQUEST_RETRIES_COUNT = 5
 
 
-def _create_session(url):
-    """Create a session object to handle retries in case of server failure"""
+def _create_session(url: str) -> requests.Session:
+    """Create a session object to handle retries in case of server failure."""
     session = requests.Session()
     retries = Retry(
         total=REQUEST_RETRIES_COUNT, backoff_factor=1, status_forcelist=[502, 503, 504]
@@ -49,6 +44,8 @@ def _create_session(url):
 
 
 class File:
+    """One file or directory entry on the AFS server."""
+
     owner: str
     path: str
     name: str
@@ -57,8 +54,15 @@ class File:
     lastModifiedTime: str
 
     def __init__(
-        self, owner: str, path: str, name: str, directory, size, lastModifiedTime
-    ):
+        self,
+        owner: str,
+        path: str,
+        name: str,
+        directory: str,
+        size: str,
+        lastModifiedTime: str,
+    ) -> None:
+        """Parse one entry of the AFS list response."""
         self.owner = owner
         self.path = path
         self.name = name
@@ -66,12 +70,18 @@ class File:
         self.size = int(size) if size != "" else 0
         self.lastModifiedTime = lastModifiedTime
 
-    def __str__(self):
+    def __str__(self) -> str:
+        """Return all fields, comma-separated."""
         return f"File[{self.owner},{self.path},{self.name},{self.directory},{self.size},{self.lastModifiedTime}]"
 
 
 class AfsClient:
-    def __init__(self, url, sessionToken, verify=True):
+    """Talks to the AFS server: list, read, write, up/download files."""
+
+    def __init__(
+        self, url: str, sessionToken: Optional[str], verify: bool = True
+    ) -> None:
+        """Store the AFS endpoint, token, and TLS verification flag."""
         self._afs_url = url
         if url is not None and not url.endswith("/api"):
             self._afs_url = url + "/api"
@@ -79,7 +89,8 @@ class AfsClient:
         self._verify = verify
         self.session = _create_session(url)
 
-    def is_session_valid(self):
+    def is_session_valid(self) -> bool:
+        """Check the session token against the AFS server."""
         request = {
             "sessionToken": self._sessionToken,
             # "interactiveSessionKey": None,
@@ -95,7 +106,8 @@ class AfsClient:
         except BaseException:
             return False
 
-    def list(self, owner, source, recursively=False):
+    def list(self, owner: str, source: str, recursively: bool = False) -> "list[File]":
+        """List the files of ``owner`` under ``source``."""
         request = {
             "sessionToken": self._sessionToken,
             # "interactiveSessionKey": None,
@@ -126,7 +138,8 @@ class AfsClient:
                     f"Error {message['error'][1]['exceptionCode']} during list: {message['error'][1]['message']}"
                 )
 
-    def preview(self, owner, source):
+    def preview(self, owner: str, source: str) -> bytes:
+        """Fetch the preview bytes of a file."""
         request = {
             "sessionToken": self._sessionToken,
             # "interactiveSessionKey": None,
@@ -141,7 +154,8 @@ class AfsClient:
         ) as r:
             return r.content
 
-    def read(self, owner, source, offset, limit):
+    def read(self, owner: str, source: str, offset: int, limit: int) -> bytes:
+        """Read ``limit`` bytes of a file starting at ``offset``."""
         params = {
             "sessionToken": self._sessionToken,
             # "interactiveSessionKey": None,
@@ -170,9 +184,12 @@ class AfsClient:
         ) as r:
             content = r.content
             decoded = decode_chunks(content)[0]
-            return decoded["data"]
+            return bytes(decoded["data"])
 
-    def write(self, owner, source, offset, limit, data):
+    def write(
+        self, owner: str, source: str, offset: int, limit: int, data: bytes
+    ) -> bool:
+        """Write ``data`` into a file at ``offset``; True on success."""
         params = {
             "sessionToken": self._sessionToken,
             # "interactiveSessionKey": None,
@@ -202,7 +219,8 @@ class AfsClient:
             content = r.content.decode("utf-8").lower() == "true"
             return content
 
-    def create(self, owner, source, is_directory):
+    def create(self, owner: str, source: str, is_directory: bool) -> bool:
+        """Create a file or directory; True on success."""
         params = {
             "sessionToken": self._sessionToken,
             # "interactiveSessionKey": None,
@@ -219,7 +237,14 @@ class AfsClient:
             content = r.content.decode("utf-8").lower() == "true"
             return content
 
-    def upload_files(self, owner, source_path, files, wait_until_finished=True):
+    def upload_files(
+        self,
+        owner: str,
+        source_path: str,
+        files: Any,
+        wait_until_finished: bool = True,
+    ) -> None:
+        """Upload local files (or directory trees) below ``source_path``."""
         file_list = self.list(owner, "/", True)
         existing_files = set()
         for file in file_list:
@@ -256,12 +281,19 @@ class AfsClient:
                 except BaseException as e:
                     raise e
 
-    def download_files(self, owner, source, destination, wait_until_finished=True):
+    def download_files(
+        self,
+        owner: str,
+        source: str,
+        destination: str,
+        wait_until_finished: bool = True,
+    ) -> None:
+        """Download the files of ``owner`` under ``source`` to ``destination``."""
         file_list = self.list(owner, source, True)
         if not os.path.exists(destination):
             os.makedirs(os.path.dirname(destination), exist_ok=True)
 
-        with AfsFileDownloadQueue(self._afs_url, self._verify) as queue:
+        with AfsFileDownloadQueue(self._afs_url, self._verify) as queue:  # noqa: E501
             for file in file_list:
                 if file.directory:
                     os.makedirs(os.path.join(destination, file.path[1:]), exist_ok=True)
@@ -277,14 +309,21 @@ class AfsClient:
 
 
 class PropagatingThread(Thread):
-    def run(self):
+    """A thread that re-raises its exception when joined."""
+
+    exc: Optional[BaseException]
+    ret: Any
+
+    def run(self) -> None:
+        """Run the target, capturing any exception for join()."""
         self.exc = None
         try:
-            self.ret = self._target(*self._args, **self._kwargs)
+            self.ret = self._target(*self._args, **self._kwargs)  # type: ignore[attr-defined]  # reason: Thread internals, mirrors threading.Thread.run
         except BaseException as e:
             self.exc = e
 
-    def join(self, timeout=None):
+    def join(self, timeout: Optional[float] = None) -> Any:
+        """Wait for the thread; re-raise its exception, return its result."""
         super(PropagatingThread, self).join(timeout)
         if self.exc:
             raise self.exc
@@ -293,52 +332,60 @@ class PropagatingThread(Thread):
 
 class AfsFileUploadQueue:
     """Structure for uploading files to AFS in separate threads.
-    It works as a queue where each item is a single file upload."""
 
-    def __init__(self, url, verify_certificates=True, workers=10):
+    It works as a queue where each item is a single file upload.
+    """
+
+    def __init__(
+        self, url: str, verify_certificates: bool = True, workers: int = 10
+    ) -> None:
+        """Start ``workers`` upload threads against the AFS endpoint."""
         self.url = url
         self.session = _create_session(url)
-        self.items = []
+        self.items: list[Any] = []
         # maximum files to be uploaded at once
-        self.upload_queue = Queue()
+        self.upload_queue: Queue[Any] = Queue()
         self.workers = workers
-        self.threads = []
-        self.exceptions = Queue()
+        self.threads: list[PropagatingThread] = []
+        self.exceptions: Queue[BaseException] = Queue()
         self.cancelled = threading.Event()
         self._drain_lock = threading.Lock()
         self.verify_certificates = verify_certificates
         # define number of threads and start them
-        for t in range(workers):
-            t = PropagatingThread(target=self.upload_file)
-            self.threads += [t]
-            t.start()
+        for _ in range(workers):
+            thread = PropagatingThread(target=self.upload_file)
+            self.threads += [thread]
+            thread.start()
 
-    def __enter__(self, *args, **kwargs):
+    def __enter__(self, *args: Any, **kwargs: Any) -> "AfsFileUploadQueue":
+        """Return self for use in a with statement."""
         return self
 
-    def __exit__(self, *args, **kwargs):
-        """This method is called at the end of a with statement."""
+    def __exit__(self, *args: Any, **kwargs: Any) -> None:
+        """Stop the workers and wait for a clean shutdown."""
         # stop the workers
-        for i in range(self.workers):
+        for _ in range(self.workers):
             self.upload_queue.put(None)
         # ensure clean shutdown
         for t in self.threads:
             t.join()
 
-    def put(self, item):
-        """expects a list [afs_path, local_file_path] which is put into the upload queue"""
+    def put(self, item: Any) -> None:
+        """Queue one ``(afs_path, local_path, token, owner)`` upload."""
         self.upload_queue.put(item)
 
-    def join(self):
+    def join(self) -> None:
+        """Wait for all queued uploads; re-raise the first failure."""
         # wait for all tasks (including those we mark done in the drainer)
         self.upload_queue.join()
         if not self.exceptions.empty():
             raise self.exceptions.get()
         for t in self.threads:
             if getattr(t, "exc", None):
-                raise t.exc
+                raise t.exc  # type: ignore[misc]  # reason: exc is checked non-None above
 
-    def upload_file(self):
+    def upload_file(self) -> None:
+        """Worker loop: upload queued files until the sentinel arrives."""
         while True:
             # get the next item in the queue
             item = self.upload_queue.get()
@@ -490,49 +537,58 @@ class AfsFileUploadQueue:
 
 
 class AfsFileDownloadQueue:
-    def __init__(self, url, workers=10):
+    """Structure for downloading files from AFS in separate threads."""
+
+    def __init__(
+        self, url: str, verify_certificates: bool = True, workers: int = 10
+    ) -> None:
+        """Start ``workers`` download threads against the AFS endpoint."""
         self.url = url
         self.session = _create_session(url)
-        self.items = []
+        self.items: list[Any] = []
         # maximum files to be downloaded at once
-        self.download_queue = Queue()
+        self.download_queue: Queue[Any] = Queue()
         self.workers = workers
-        self.threads = []
-        self.exceptions = Queue()
+        self.threads: list[PropagatingThread] = []
+        self.exceptions: Queue[BaseException] = Queue()
         self.cancelled = threading.Event()
         self._drain_lock = threading.Lock()
+        self.verify_certificates = verify_certificates
         # define number of threads and start them
-        for t in range(workers):
-            t = PropagatingThread(target=self.download_file)
-            self.threads += [t]
-            t.start()
+        for _ in range(workers):
+            thread = PropagatingThread(target=self.download_file)
+            self.threads += [thread]
+            thread.start()
 
-    def __enter__(self, *args, **kwargs):
+    def __enter__(self, *args: Any, **kwargs: Any) -> "AfsFileDownloadQueue":
+        """Return self for use in a with statement."""
         return self
 
-    def __exit__(self, *args, **kwargs):
-        """This method is called at the end of a with statement."""
+    def __exit__(self, *args: Any, **kwargs: Any) -> None:
+        """Stop the workers and wait for a clean shutdown."""
         # stop the workers
-        for i in range(self.workers):
+        for _ in range(self.workers):
             self.download_queue.put(None)
         # ensure clean shutdown
         for t in self.threads:
             t.join()
 
-    def put(self, item):
-        """expects a tuple (file, session_token, destination) which is put into the download queue"""
+    def put(self, item: Any) -> None:
+        """Queue one ``(file, session_token, destination)`` download."""
         self.download_queue.put(item)
 
-    def join(self):
+    def join(self) -> None:
+        """Wait for all queued downloads; re-raise the first failure."""
         # wait for all tasks (including those we mark done in the drainer)
         self.download_queue.join()
         if not self.exceptions.empty():
             raise self.exceptions.get()
         for t in self.threads:
             if getattr(t, "exc", None):
-                raise t.exc
+                raise t.exc  # type: ignore[misc]  # reason: exc is checked non-None above
 
-    def download_file(self):
+    def download_file(self) -> None:
+        """Worker loop: download queued files until the sentinel arrives."""
         while True:
             # get the next item in the queue
             item = self.download_queue.get()
