@@ -15,6 +15,7 @@
 #
 import math
 import re
+from typing import Any
 from datetime import datetime
 
 # moved to the transport layer; re-exported here for legacy importers
@@ -140,7 +141,7 @@ def extract_name(obj):
     return "" if obj["name"] is None else obj["name"]
 
 
-def extract_deletion(obj):
+def extract_deletion(obj: object) -> "list[dict]":
     del_objs = []
     for deleted_object in obj["deletedObjects"]:
         del_objs.append(
@@ -154,7 +155,7 @@ def extract_deletion(obj):
     return del_objs
 
 
-def extract_attr(attr):
+def extract_attr(attr: str) -> "Any":
     def attr_func(obj):
         if isinstance(obj, dict):
             return obj.get(attr, "")

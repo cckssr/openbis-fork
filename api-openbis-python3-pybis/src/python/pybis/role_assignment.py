@@ -58,7 +58,7 @@ class RoleAssignment(OpenBisObject):
     """
 
     def __init__(
-        self, openbis_obj: Openbis, data: Optional[dict] = None, **kwargs: Any
+        self, openbis_obj: Any, data: Optional[dict] = None, **kwargs: Any
     ) -> None:
         """Initialise a RoleAssignment from raw V3 API data.
 

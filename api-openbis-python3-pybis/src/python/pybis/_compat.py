@@ -112,6 +112,16 @@ _METHOD_RENAMES: dict[str, str] = {
     # wave 3: datasets
     "get_datasets": "search_datasets",
     "get_dataset_types": "search_dataset_types",
+    # wave 4: admin entities
+    "get_persons": "search_persons",
+    "get_users": "search_persons",
+    "get_user": "get_person",
+    "get_groups": "search_groups",
+    "get_role_assignments": "search_role_assignments",
+    "get_terms": "search_terms",
+    "get_vocabularies": "search_vocabularies",
+    "get_tags": "search_tags",
+    "get_deletions": "search_deletions",
 }
 
 #: Methods that keep their name but whose 1.x parameters are translated.
@@ -121,11 +131,24 @@ _PARAM_SHIMMED: dict[str, list[str]] = {
     "get_dataset": ["permIds"],
     "new_dataset": ["type", "kind", "files", "file", "props", "folder"],
     "get_dataset_type": ["type"],
+    "get_person": ["userId"],
+    "new_person": ["userId", "space"],
+    "new_group": ["code", "description", "userIds"],
+    "get_role_assignment": ["techId"],
+    "get_term": ["code", "vocabularyCode"],
+    "new_term": ["code", "vocabularyCode", "label", "description"],
+    "get_vocabulary": ["code"],
+    "new_vocabulary": ["code", "terms"],
+    "get_tag": ["permId"],
+    "new_tag": ["code", "description"],
 }
 
 #: Positional parameter names of the legacy signatures, so positional 1.x
 #: call styles keep working through the shims.
 _LEGACY_POSITIONAL: dict[str, list[str]] = {
+    "get_terms": ["vocabulary", "start_with", "count"],
+    "get_vocabularies": ["code", "start_with", "count"],
+    "get_tags": ["code", "start_with", "count"],
     "get_spaces": ["code", "start_with", "count"],
     "get_projects": ["space", "code", "start_with", "count"],
     "get_samples": [
@@ -207,6 +230,9 @@ _PER_METHOD_PARAM_RENAMES: dict[str, dict[str, str | None]] = {
     "new_dataset": {"props": "properties", "file": "files", "zipfile": "zip_file"},
     "get_dataset_types": {"type": "code"},
     "get_dataset_type": {"type": "code"},
+    "get_role_assignments": {"user": "person"},
+    "get_persons": {"userId": "user_id"},
+    "get_terms": {"vocabulary": "vocabulary"},
 }
 
 #: Parameters whose 1.x meaning depended on the value: a bool means the
