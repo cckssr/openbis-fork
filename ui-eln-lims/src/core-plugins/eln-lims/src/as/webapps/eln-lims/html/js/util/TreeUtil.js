@@ -84,28 +84,51 @@ var TreeUtil = new function() {
     	    		});
     	    		break;
     	    	case "SPACE":
-    	    		var projectRules = { "UUIDv4" : { type : "Attribute", name : "SPACE", value : permId } };
-    	    		mainController.serverFacade.searchForProjectsAdvanced({ entityKind : "PROJECT", logicalOperator : "AND", rules : projectRules }, null, function(searchResult) {
-    	    			var results = [];
-    	                var projects = searchResult.objects;
-    	                for (var i = 0; i < projects.length; i++) {
-    	                    var project = projects[i];
-    	                    results.push({ title : Util.getDisplayNameForEntity(project), entityType: "PROJECT", key : project.permId, folder : true, lazy : true, hideCheckbox: hideCheckboxForFolders });
-    	                }
-    	                dfd.resolve(results);
-    	    		});
+					var spaceSampleRules = {
+						[Util.guid()] : { type : "Attribute", name : "SPACE", value : permId },
+						[Util.guid()] : { type: "Project", name: "NULL.NULL", value: "NULL" }
+					};
+					mainController.serverFacade.searchForSamplesAdvanced({ entityKind : "SAMPLE", logicalOperator : "AND", rules : spaceSampleRules }, null, function(searchResult) {
+						var results = [];
+						var samples = searchResult.objects;
+						for (var i = 0; i < samples.length; i++) {
+							var sample = samples[i];
+							results.push({ title : Util.getDisplayNameForEntity(sample), entityType: "SAMPLE", key : sample.permId, folder : true, lazy : true, hideCheckbox: hideCheckboxForFolders });
+						}
+
+						var projectRules = { "UUIDv4" : { type : "Attribute", name : "SPACE", value : permId } };
+						mainController.serverFacade.searchForProjectsAdvanced({ entityKind : "PROJECT", logicalOperator : "AND", rules : projectRules }, null, function(searchResult) {
+							var projects = searchResult.objects;
+							for (var i = 0; i < projects.length; i++) {
+								var project = projects[i];
+								results.push({ title : Util.getDisplayNameForEntity(project), entityType: "PROJECT", key : project.permId, folder : true, lazy : true, hideCheckbox: hideCheckboxForFolders });
+							}
+							dfd.resolve(results);
+						});
+					});
     	    		break;
     	    	case "PROJECT":
-    	    		var experimentRules = { "UUIDv4" : { type : "Attribute", name : "PROJECT_PERM_ID", value : permId } };
-    	    		mainController.serverFacade.searchForExperimentsAdvanced({ entityKind : "EXPERIMENT", logicalOperator : "AND", rules : experimentRules }, null, function(searchResult) {
-    	    			var results = [];
-    	                var experiments = searchResult.objects;
-    	                for (var i = 0; i < experiments.length; i++) {
-    	                    var experiment = experiments[i];
-    	                    results.push({ title : Util.getDisplayNameForEntity(experiment), entityType: "EXPERIMENT", key : experiment.permId, folder : true, lazy : true, hideCheckbox: hideCheckboxForFolders });
-    	                }
-    	                dfd.resolve(results);
-    	    		});
+					var projectSampleRules = {
+						[Util.guid()]: { type: "Attribute", name: "PROJECT_PERM_ID", value: permId },
+						[Util.guid()]: { type: "Experiment", name: "NULL.NULL", value: "NULL" },
+					};
+					mainController.serverFacade.searchForSamplesAdvanced({ entityKind : "SAMPLE", logicalOperator : "AND", rules : projectSampleRules }, null, function(searchResult) {
+						var results = [];
+						var samples = searchResult.objects;
+						for (var i = 0; i < samples.length; i++) {
+							var sample = samples[i];
+							results.push({ title : Util.getDisplayNameForEntity(sample), entityType: "SAMPLE", key : sample.permId, folder : true, lazy : true, hideCheckbox: hideCheckboxForFolders });
+						}
+						var experimentRules = { "UUIDv4" : { type : "Attribute", name : "PROJECT_PERM_ID", value : permId } };
+						mainController.serverFacade.searchForExperimentsAdvanced({ entityKind : "EXPERIMENT", logicalOperator : "AND", rules : experimentRules }, null, function(searchResult) {
+							var experiments = searchResult.objects;
+							for (var i = 0; i < experiments.length; i++) {
+								var experiment = experiments[i];
+								results.push({ title : Util.getDisplayNameForEntity(experiment), entityType: "EXPERIMENT", key : experiment.permId, folder : true, lazy : true, hideCheckbox: hideCheckboxForFolders });
+							}
+							dfd.resolve(results);
+						});
+					});
     	    		break;
     	    	case "EXPERIMENT":
     	    		var sampleRules = { "UUIDv4" : { type : "Experiment", name : "ATTR.PERM_ID", value : permId } };
