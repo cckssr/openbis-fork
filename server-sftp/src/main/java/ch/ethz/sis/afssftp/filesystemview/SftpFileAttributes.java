@@ -30,17 +30,17 @@ public class SftpFileAttributes implements PosixFileAttributes
 
     @Override
     public FileTime lastModifiedTime() {
-        return null;
+        return modifiedTime;
     }
 
     @Override
     public FileTime lastAccessTime() {
-        return null;
+        return accessTime;
     }
 
     @Override
     public FileTime creationTime() {
-        return null;
+        return creationTime;
     }
 
     @Override
