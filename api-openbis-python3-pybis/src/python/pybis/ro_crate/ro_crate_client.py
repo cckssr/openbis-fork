@@ -15,6 +15,7 @@
 import requests
 import json
 from requests.adapters import HTTPAdapter, Retry
+from typing import Union
 
 
 REQUEST_RETRIES_COUNT = 5
@@ -62,7 +63,7 @@ class RoCrateClient:
                 parsed_error = json.loads(response.text)
                 raise ValueError(f"{parsed_error}")
 
-    def export(self, permIds):
+    def export(self, permIds, zip=True):
         ro_crate_url = self._ro_crate_url + "/export"
 
         identifiers = permIds
@@ -70,7 +71,7 @@ class RoCrateClient:
         headers = {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
-            'Export': 'application/zip',
+            'Export': 'application/zip' if zip is True else 'application/ld+json',
             'api-key': self.token,
             'openbis.import-compatible': "True",
             'openbis.metadata-pdf': "True",
@@ -90,6 +91,7 @@ class RoCrateClient:
                 job_id = response_obj["jobId"]
                 return job_id
             else:
+                response.raise_for_status()
                 parsed_error = json.loads(response.text)
                 raise ValueError(f"{parsed_error}")
 
@@ -109,6 +111,35 @@ class RoCrateClient:
                 response_json = response.json()
                 job = response_json
                 return Status(job)
+            else:
+                parsed_error = json.loads(response.text)
+                raise ValueError(f"{parsed_error}")
+
+    def download(self, job_id, destination, zip=True):
+        if job_id is None:
+            raise ValueError("job_id cannot be None")
+        if destination is None:
+            raise ValueError("destination cannot be None")
+
+        ro_crate_url = self._ro_crate_url + "/download"
+        headers = {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'api-key': self.token,
+            'jobId': job_id
+        }
+
+        if zip:
+            file_path = destination + "/ro_crate_metadata" + job_id + ".zip"
+        else:
+            file_path = destination + "/ro_crate" + job_id + ".json"
+
+        with self.session.get(ro_crate_url, headers=headers, verify=self._verify, stream=True) as response:
+            if response.ok:
+                with open(file_path, "wb") as f:
+                    for chunk in response.iter_content(chunk_size=1024*1024):
+                        f.write(chunk)
+                return file_path
             else:
                 parsed_error = json.loads(response.text)
                 raise ValueError(f"{parsed_error}")
@@ -160,10 +191,10 @@ class ImportResponse:
 class Status:
     jobId: str
     status: str
-    errors: list | None
-    downloadUrl: str | None
-    validationResult: ValidationReport | None
-    importResponse: ImportResponse | None
+    errors: Union[list, None]
+    downloadUrl: Union[str, None]
+    validationResult: Union[ValidationReport, None]
+    importResponse: Union[ImportResponse, None]
 
     def __init__(self, jsonResponse):
         self.jobId = jsonResponse['jobId']

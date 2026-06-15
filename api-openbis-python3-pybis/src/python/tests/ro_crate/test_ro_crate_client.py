@@ -14,6 +14,8 @@
 #
 import datetime
 import time
+import tempfile
+import os
 
 
 def test_echo(ro_crate):
@@ -46,7 +48,7 @@ def test_export_1_non_existing_id(ro_crate):
     assert status is not None
     assert status.status == 'FAILED'
 
-def test_export_2_check_status(ro_crate):
+def test_export_2_download(ro_crate):
     space, client = ro_crate
 
     openbis = space.openbis
@@ -55,15 +57,27 @@ def test_export_2_check_status(ro_crate):
     sample.save()
 
 
-    jobId = client.export([sample.permId])
+    jobId = client.export([sample.permId], zip=False)
 
     assert jobId is not None
 
-    time.sleep(3)
-    status = client.check_status(jobId)
 
-    assert status is not None
-    assert status.status in ['RUNNING', 'COMPLETED']
+    for i in range(10):
+        time.sleep(1)
+        status = client.check_status(jobId)
+        if not status.status in ['RUNNING', 'COMPLETED']:
+            raise ValueError(status)
+        if status.status == 'COMPLETED':
+            break
+
+    if not status.status == 'COMPLETED':
+        raise ValueError(status)
+
+    with tempfile.TemporaryDirectory() as tmpdirname:
+        file = client.download(jobId, tmpdirname, zip=False)
+        assert file is not None
+        assert os.path.exists(file) is True
+
 
 def test_export_3_check_statuses(ro_crate):
     space, client = ro_crate
