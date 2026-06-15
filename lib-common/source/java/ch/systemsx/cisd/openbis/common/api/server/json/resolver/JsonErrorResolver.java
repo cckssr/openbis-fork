@@ -28,7 +28,17 @@ public class JsonErrorResolver implements ErrorResolver
 {
     @Override public JsonError resolveError(final Throwable t, final Method method, final List<JsonNode> arguments)
     {
-        return new JsonError(0, t.getMessage(), new FullErrorData(t));
+        return new JsonError(0, messageWithoutContext(t.getMessage()), new FullErrorData(t));
+    }
+
+    private static String messageWithoutContext(String message)
+    {
+        if (message == null)
+        {
+            return null;
+        }
+        int idx = message.indexOf(" (Context: ");
+        return idx >= 0 ? message.substring(0, idx) : message;
     }
 
     public static class FullErrorData extends ErrorData
