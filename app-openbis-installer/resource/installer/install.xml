@@ -240,6 +240,13 @@
             <parsable targetfile="$INSTALL_PATH/servers/server-ro-crate/etc/service.properties"/>
         </pack>
 
+        <pack name="SFTP Server" required="yes" loose="yes">
+            <description>SFTP server backed by openBIS application server and AFS</description>
+            <file src="@{installer.dist.dir}/server-sftp"
+                  targetdir="$INSTALL_PATH/servers"/>
+            <parsable targetfile="$INSTALL_PATH/servers/server-sftp/etc/service.properties"/>
+        </pack>
+
         <pack name="Administration Scripts" required="yes" loose="yes">
             <description>Scripts to facilitate openBIS administration</description>
             <file src="@{installer.dist.dir}/bin" targetdir="$INSTALL_PATH"/>

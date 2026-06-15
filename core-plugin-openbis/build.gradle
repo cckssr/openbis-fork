@@ -31,6 +31,7 @@ evaluationDependsOn(':server-data-store')
 evaluationDependsOn(':server-ro-crate')
 evaluationDependsOn(':ui-admin')
 evaluationDependsOn(':ui-eln-lims')
+evaluationDependsOn(':server-sftp')
 
 
 apply from: '../build/javaproject.gradle'
@@ -407,6 +408,11 @@ task zipBdlServer(type: Zip, dependsOn: project(':server-external-data-store').t
 task zipAfsServer(type: Zip, dependsOn: project(':server-data-store').tasks.AFSServerZip) {
     archiveBaseName = 'afs_server'
     from zipTree('../server-data-store/build/distributions/afs-server.zip')
+}
+
+task zipAfsSftpServer(type: Zip, dependsOn: project(':server-sftp').tasks.AfsSftpServerZip) {
+    archiveBaseName = 'sftp_server'
+    from zipTree('../server-sftp/build/distributions/server-sftp.zip')
 }
 
 task commonbaseZip(type: Zip, dependsOn: [project(':lib-commonbase').tasks.jar]) {
