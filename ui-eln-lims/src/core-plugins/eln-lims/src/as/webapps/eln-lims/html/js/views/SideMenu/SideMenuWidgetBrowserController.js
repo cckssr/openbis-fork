@@ -145,9 +145,10 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
     TREES_INITIALIZED = false
     TREE_NODES = []
 
-    constructor(id) {
+    constructor(id, settingsCache) {
         super()
         this.id = id;
+        this.settingsCache = settingsCache;
     }
 
     SORTINGS_BY_NAME_AND_REGISTRATION_DATE = [].concat(this.SORTINGS_BY_NAME).concat(this.SORTINGS_BY_REGISTRATION_DATE)
@@ -647,21 +648,40 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
         return path
     }
 
+    _hasExactKeys(obj, keys) {
+        const objKeys = Object.keys(obj);
+        return objKeys.length === keys.length && keys.every(k => k in obj);
+    }
+
     loadSettings() {
-        return new Promise((resolve) => {
-            mainController.serverFacade.getSetting("eln-main-browser", (settingsStr) => {
-                if (settingsStr) {
-                    resolve(JSON.parse(settingsStr))
-                } else {
-                    resolve({})
-                }
+        var _this = this;
+        if(_.isEmpty(this.settingsCache[this.id])) {
+            return new Promise((resolve) => {
+                mainController.serverFacade.getSetting("eln-main-browser", (settingsStr) => {
+                    if (settingsStr) {
+                        var settingsFull = JSON.parse(settingsStr);
+                        if(_this._hasExactKeys(settingsFull, ["lab_notebook", "lims", "tools"])) {
+                            _this.settingsCache = settingsFull;
+                        } else {
+                            // old settings, applicable to lab_notebook only
+                            _this.settingsCache['lab_notebook'] = settingsFull;
+                        }
+                        resolve(_this.settingsCache[_this.id]);
+                    } else {
+                        resolve({})
+                    }
+                })
             })
-        })
+        } else {
+            return this.settingsCache[this.id];
+        }
+
     }
 
     onSettingsChange(settings) {
         if (settings) {
-            mainController.serverFacade.setSetting("eln-main-browser", JSON.stringify(settings))
+            this.settingsCache[this.id] = settings;
+            mainController.serverFacade.setSetting("eln-main-browser", JSON.stringify(this.settingsCache))
         }
     }
 

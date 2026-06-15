@@ -25,10 +25,15 @@
 function SideMenuWidgetController(mainController) {
     this._mainController = mainController
     this._sideMenuWidgetModel = new SideMenuWidgetModel()
+    this._settingsMap = {
+        "lab_notebook": {},
+        "lims": {},
+        "tools": {},
+    }
     this._browserControllerMap = {
-            "lab_notebook": new SideMenuWidgetBrowserController('lab_notebook'),
-            "lims": new SideMenuWidgetBrowserController('lims'),
-            "tools": new SideMenuWidgetBrowserController('tools')
+            "lab_notebook": new SideMenuWidgetBrowserController('lab_notebook', this._settingsMap),
+            "lims": new SideMenuWidgetBrowserController('lims', this._settingsMap),
+            "tools": new SideMenuWidgetBrowserController('tools', this._settingsMap)
     }
 
     this._sideMenuWidgetView = new SideMenuWidgetViewController(this, this._sideMenuWidgetModel);
@@ -166,17 +171,18 @@ function SideMenuWidgetController(mainController) {
 
     this.moveToNodeIdAfterLoad = function(nodeObj, shouldOpenPage, callback) {
         var _this = this;
+        var _browserController = _this._browserController;
         var counter = 20;
         var repeatUntilSet = function() {
             if(counter <= 0) {
                 return;
             }
-           if(!_this._browserController.isLoading() && _this._browserController.isLoaded()) {
+           if(!_browserController.isLoading() && _browserController.isLoaded()) {
                let ignore = true;
                if(shouldOpenPage) {
                    ignore = false;
                }
-                _this._browserController.selectObject(nodeObj, { ignore: ignore })
+               _browserController.selectObject(nodeObj, { ignore: ignore })
                if(callback) {
                    callback();
                }
