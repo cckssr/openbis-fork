@@ -1,5 +1,6 @@
 package ch.openbis.drive.util;
 
+import com.sun.nio.file.ExtendedWatchEventModifier;
 import lombok.NonNull;
 
 import java.nio.file.*;
@@ -47,14 +48,23 @@ public class DirectoryWatch {
     }
 
     void register(@NonNull WatchService watcher, @NonNull Path localParentDirectory) throws IOException {
-        // register local directory and subdirectories
-        Files.walkFileTree(localParentDirectory, new SimpleFileVisitor<>() {
-            @Override
-            public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-            dir.register(watcher, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY);
-            return FileVisitResult.CONTINUE;
-            }
-        });
+        if (OsDetectionUtil.detectOS() != OsDetectionUtil.OS.Windows) {
+            // register local directory and subdirectories on non-Windows systems
+            Files.walkFileTree(localParentDirectory, new SimpleFileVisitor<>() {
+                @Override
+                public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+                    dir.register(watcher, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY);
+                    return FileVisitResult.CONTINUE;
+                }
+            });
+        } else {
+            // register only local parent directory on Windows systems
+            localParentDirectory.register(
+                    watcher,
+                    new WatchEvent.Kind[]{ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY},
+                    ExtendedWatchEventModifier.FILE_TREE
+            );
+        }
     }
 
     public synchronized void close() throws Exception {

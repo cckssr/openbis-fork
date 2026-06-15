@@ -375,8 +375,10 @@ public class LogsPanel extends ResizablePanel {
 
             this.event = event;
 
-            this.localFileColumn = event.getLocalFile();
-            this.remoteFileColumn = !event.isSourceDeleted() ? event.getRemoteFile() : "";
+            this.localFileColumn = event.isSourceDeleted() && event.getSyncDirection() == Event.SyncDirection.DOWN ?
+                    "" : event.getLocalFile();
+            this.remoteFileColumn = event.isSourceDeleted() && event.getSyncDirection() == Event.SyncDirection.UP ?
+                    "" : event.getRemoteFile();
             this.fileTypeColumn = event.isDirectory() ?
                     i18n.get("log_panel.event_table.file_type.directory") : i18n.get("log_panel.event_table.file_type.file");
             this.dateAndTimeColumn = Instant.ofEpochMilli(event.getTimestamp()).atZone(ZoneId.systemDefault()).format(DATE_TIME_FORMATTER);

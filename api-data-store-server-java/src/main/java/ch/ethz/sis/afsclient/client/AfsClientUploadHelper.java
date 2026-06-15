@@ -434,7 +434,7 @@ public class AfsClientUploadHelper
                 for (Chunk chunk : chunksToBeRequested)
                 {
                     Path chunkServerPath = Path.of(chunk.getSource());
-                    Path relativeServerPath = destinationPath.toAbsolutePath().relativize(chunkServerPath);
+                    Path relativeServerPath = destinationPath.relativize(chunkServerPath);
                     Path localPath;
                     if (Files.isDirectory(sourcePath))
                     {
@@ -480,7 +480,7 @@ public class AfsClientUploadHelper
                 for (Chunk chunk : chunksToBeRequested)
                 {
                     Path chunkServerPath = Path.of(chunk.getSource());
-                    Path relativeServerPath = destinationPath.toAbsolutePath().relativize(chunkServerPath);
+                    Path relativeServerPath = destinationPath.relativize(chunkServerPath);
                     Path localPath;
                     if (Files.isDirectory(sourcePath))
                     {
@@ -490,7 +490,7 @@ public class AfsClientUploadHelper
                         localPath = sourcePath;
                     }
                     boolean completed =
-                            currentsAndTotals.updateCurrentAmountsAndCheckCompletion(afsClient, localPath, ownerId, chunkServerPath.toAbsolutePath(),
+                            currentsAndTotals.updateCurrentAmountsAndCheckCompletion(afsClient, localPath, ownerId, chunkServerPath,
                                     chunk.getLimit(), transactional);
                     if (completed && !transactional)
                     {

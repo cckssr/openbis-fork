@@ -330,6 +330,7 @@ public class AfsClientDownloadHelper {
 
                 boolean completed = currentsAndTotals.updateCurrentAmountsAndCheckCompletion(afsClient, chunk.getOwner(), fromPath, localPath, writtenByteCount);
                 if (completed) {
+                    randAccessFile.close();
                     Files.move(twinTmpLocalPath, localPath, StandardCopyOption.REPLACE_EXISTING);
                 }
                 transferMonitor.add(fromPath, localPath.toAbsolutePath(), writtenByteCount, completed);
@@ -500,7 +501,7 @@ public class AfsClientDownloadHelper {
         synchronized void startTracking(@NonNull AfsClient afsClient, @NonNull String ownerId, @NonNull Path from, long size, long lastModificationTs) throws Exception {
             lastModificationTimestamps.put(from, lastModificationTs);
             totals.put(from, size);
-            checksums.put(from, afsClient.hash(ownerId, from.toAbsolutePath().toString()));
+            checksums.put(from, afsClient.hash(ownerId, AfsClientUploadHelper.toServerPathString(from)));
         }
 
         synchronized boolean isAllCompleted() {
