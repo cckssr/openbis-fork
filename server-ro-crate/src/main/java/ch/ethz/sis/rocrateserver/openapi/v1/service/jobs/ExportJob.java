@@ -62,6 +62,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -162,7 +163,8 @@ public final class ExportJob implements IAsyncJob
         {
             LOG.info(String.format("Starting export job: %s", jobId.toString()));
             LOG.info(String.format("Received parameters: %s", exportParams.toString()));
-            Map<String, String> identifiers[] = ExportParams.getIdentifiers(exportParams.getInputBodyFormat(), body);
+            Map<String, String>[] identifiers = ExportParams.getIdentifiers(exportParams.getInputBodyFormat(), body);
+            LOG.info(String.format("Received identifiers: %s", Arrays.toString(identifiers)));
             String[] identifierAnnotations = exportParams.getIdentifierAnnotations();
 
             List<ExportablePermId> exportablePermIds = new ArrayList<>();
