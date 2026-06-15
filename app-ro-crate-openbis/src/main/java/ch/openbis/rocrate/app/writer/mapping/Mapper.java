@@ -11,10 +11,12 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.ExperimentType;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyAssignment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import ch.ethz.sis.openbis.generic.excel.v3.model.IFileInfo;
@@ -406,8 +408,11 @@ public class Mapper
             }
 
             MetadataEntry metadataEntry = idToMetadataEntryMap.get(entityIdToFiles.getKey());
+            if(metadataEntry == null && entityIdToFiles.getKey() instanceof SampleIdentifier) {
+                // workaround until we remove experiments
+                metadataEntry = idToMetadataEntryMap.get(new ExperimentIdentifier(entityIdToFiles.getKey().toString()));
+            }
             metadataEntry.getReferences().put(Constants.PROPERTY_ID_FILES, identifiersToWrite);
-
 
         }
 
