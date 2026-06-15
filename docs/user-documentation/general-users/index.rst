@@ -12,6 +12,7 @@ General Users
    barcodes
    lab-notebook
    data-upload
+   openbis-drive-ui
    data-export
    data-export-to-repositories
    data-archiving
