@@ -26,11 +26,10 @@ def test_echo(ro_crate):
 
     assert result == message
 
-def test_connection(ro_crate):
+def test_connection(ro_crate_another):
+    token, client = ro_crate_another
 
-    space, client = ro_crate
-    token = space.openbis.token
-
+    # test_connection method logs-out openbis session
     result = client.test_connection()
 
     assert token.startswith(result.lower())
@@ -96,5 +95,9 @@ def test_export_3_check_statuses(ro_crate):
     assert stats is not None
     assert len(stats) > 0
     assert len(list(filter(lambda x: x.jobId == jobId, stats))) == 1
+
+
+
+
 
 
