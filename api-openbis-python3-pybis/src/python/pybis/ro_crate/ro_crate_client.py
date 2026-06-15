@@ -100,8 +100,7 @@ class RoCrateClient:
                 return job_id
             else:
                 response.raise_for_status()
-                parsed_error = json.loads(response.text)
-                raise ValueError(f"{parsed_error}")
+                raise ValueError(f"{response.text}")
 
     def check_status(self, job_id):
         if job_id is None:
@@ -120,8 +119,8 @@ class RoCrateClient:
                 job = response_json
                 return Status(job)
             else:
-                parsed_error = json.loads(response.text)
-                raise ValueError(f"{parsed_error}")
+                response.raise_for_status()
+                raise ValueError(f"{response.text}")
 
     def download(self, job_id, destination, zip=True):
         if job_id is None:
@@ -149,8 +148,8 @@ class RoCrateClient:
                         f.write(chunk)
                 return file_path
             else:
-                parsed_error = json.loads(response.text)
-                raise ValueError(f"{parsed_error}")
+                response.raise_for_status()
+                raise ValueError(f"{response.text}")
 
     def check_statuses(self):
         ro_crate_url = self._ro_crate_url + "/status"
@@ -165,8 +164,8 @@ class RoCrateClient:
                 response_json = response.json()
                 return [Status(job) for job in response_json['jobs']]
             else:
-                parsed_error = json.loads(response.text)
-                raise ValueError(f"{parsed_error}")
+                response.raise_for_status()
+                raise ValueError(f"{response.text}")
 
 class ValidationReport:
     isValid: bool
