@@ -9,6 +9,7 @@ import {
   DateTimePicker,
 } from '@mui/x-date-pickers'
 import format from 'date-fns/format';
+import parse from 'date-fns/parse';
 import date from '@src/js/common/date.js'
 import logger from '@src/js/common/logger.js'
 
@@ -89,7 +90,7 @@ class DateField extends React.PureComponent {
             const second = match[6] === '__' ? '00' : match[6]
 
             string = `${year}-${month}-${day} ${hour}:${minute}:${second}`
-            date = format(new Date(), DATE_TIME_FORMAT).toString()
+            date = parse(string, DATE_TIME_PICKER_FORMAT, new Date())
           }
         } else {
           const match = event.target.value
@@ -102,8 +103,7 @@ class DateField extends React.PureComponent {
             const day = match[3] === '__' ? '01' : match[3]
 
             string = `${year}-${month}-${day}`
-            //date = new DateFnsUtils().parse(string, DATE_FORMAT)
-            date = format(new Date(), DATE_FORMAT).toString()
+            date = parse(string, DATE_FORMAT, new Date())
           }
         }
       }
