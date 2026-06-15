@@ -82,17 +82,49 @@ def space():
     o.logout()
 
 @pytest.fixture(scope="session")
-def afs(space):
-    token = space.openbis.token
+def afs():
+    o = Openbis(
+        url=openbis_url,
+        verify_certificates=False,
+        allow_http_but_do_not_use_this_in_production_and_only_within_safe_networks=True
+    )
+    o.login(admin_username, admin_password)
+
+    # create a space
+    timestamp = time.strftime("%a_%y%m%d_%H%M%S").upper()
+    space_name = "test_afs_space_" + timestamp
+    space = o.new_space(code=space_name)
+    space.save()
+
+    token = o.token
     afs_url = openbis_afs_url + "/afs-server/api"
     afs_client = AfsClient(afs_url, token, False)
 
     yield space, afs_client
 
+    # teardown
+    o.logout()
+
 @pytest.fixture(scope="session")
-def ro_crate(space):
+def ro_crate():
+    o = Openbis(
+        url=openbis_url,
+        verify_certificates=False,
+        allow_http_but_do_not_use_this_in_production_and_only_within_safe_networks=True
+    )
+    o.login(admin_username, admin_password)
+
+    # create a space
+    timestamp = time.strftime("%a_%y%m%d_%H%M%S").upper()
+    space_name = "test_ro_crate_space_" + timestamp
+    space = o.new_space(code=space_name)
+    space.save()
+
     token = space.openbis.token
     ro_crate_url = openbis_ro_crate_url + "/openbis"
     ro_crate_client = RoCrateClient(ro_crate_url, token, False)
 
     yield space, ro_crate_client
+
+    # teardown
+    o.logout()

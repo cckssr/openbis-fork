@@ -38,7 +38,7 @@ def test_connection(ro_crate):
 def test_export_1_non_existing_id(ro_crate):
     space, client = ro_crate
 
-    jobId = client.export(['UNKNOWN-ID'])
+    jobId = client.export([{"kind": "SAMPLE", "permId": "UNKNOWN-ID"}])
 
     assert jobId is not None
 
@@ -56,8 +56,7 @@ def test_export_2_download(ro_crate):
     sample = openbis.new_sample('UNKNOWN', code=timestamp, space=space)
     sample.save()
 
-
-    jobId = client.export([sample.permId], zip=False)
+    jobId = client.export([sample.permId], zipExport=False)
 
     assert jobId is not None
 
@@ -88,7 +87,7 @@ def test_export_3_check_statuses(ro_crate):
     sample.save()
 
 
-    jobId = client.export([sample.permId])
+    jobId = client.export([{"kind": "SAMPLE", "permId": sample.permId}])
 
     assert jobId is not None
 

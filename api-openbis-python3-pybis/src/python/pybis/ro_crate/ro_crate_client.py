@@ -63,15 +63,22 @@ class RoCrateClient:
                 parsed_error = json.loads(response.text)
                 raise ValueError(f"{parsed_error}")
 
-    def export(self, permIds, zip=True):
+    def export(self, permIds: list, zipExport:bool=True, withLevelsBelow:bool=False):
         ro_crate_url = self._ro_crate_url + "/export"
 
-        identifiers = permIds
+        identifiers = []
+
+        for permId in permIds:
+            if isinstance(permId, str):
+                identifiers.append({"kind":"SAMPLE", "permId":permId})
+            else:
+                identifiers.append(permId)
+
 
         headers = {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
-            'Export': 'application/zip' if zip is True else 'application/ld+json',
+            'Export': 'application/zip' if zipExport is True else 'application/ld+json',
             'api-key': self.token,
             'openbis.import-compatible': "True",
             'openbis.metadata-pdf': "True",
@@ -79,10 +86,11 @@ class RoCrateClient:
             'openbis.dataset-data': "True",
             'openbis.afs-data': "True",
             'openbis.with-levels-above': "True",
-            'openbis.with-levels-below': "False",
+            'openbis.with-levels-below': str(withLevelsBelow),
             'openbis.with-objects-and-dataSets-children': "False",
             'openbis.with-objects-and-dataSets-parents': "False",
             'openbis.with-objects-and-dataSets-other-spaces': "False",
+            'openbis.input-body-format': 'json'
         }
 
         with self.session.post(ro_crate_url, json.dumps(identifiers), headers=headers, verify=self._verify) as response:
