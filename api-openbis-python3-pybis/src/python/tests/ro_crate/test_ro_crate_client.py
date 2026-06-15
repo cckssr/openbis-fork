@@ -13,7 +13,7 @@
 #   limitations under the License.
 #
 import datetime
-
+import time
 
 
 def test_echo(ro_crate):
@@ -33,17 +33,55 @@ def test_connection(ro_crate):
 
     assert token.startswith(result.lower())
 
-# def test_export(ro_crate):
-#     space, client = ro_crate
-#
-#     openbis = space.openbis
-#     timestamp = datetime.datetime.now().strftime("afs_test_%Y_%m_%d_%H%M%S.%f")
-#     sample = openbis.new_sample('UNKNOWN', code=timestamp, space=space)
-#     sample.save()
-#
-#
-#     jobId = client.export([sample.permId])
-#
-#     client.check_status(jobId)
+def test_export_1_non_existing_id(ro_crate):
+    space, client = ro_crate
+
+    jobId = client.export(['UNKNOWN-ID'])
+
+    assert jobId is not None
+
+    time.sleep(5)
+    status = client.check_status(jobId)
+
+    assert status is not None
+    assert status.status == 'FAILED'
+
+def test_export_2_check_status(ro_crate):
+    space, client = ro_crate
+
+    openbis = space.openbis
+    timestamp = datetime.datetime.now().strftime("ro_crate_test_%Y_%m_%d_%H%M%S.%f")
+    sample = openbis.new_sample('UNKNOWN', code=timestamp, space=space)
+    sample.save()
+
+
+    jobId = client.export([sample.permId])
+
+    assert jobId is not None
+
+    time.sleep(3)
+    status = client.check_status(jobId)
+
+    assert status is not None
+    assert status.status in ['RUNNING', 'COMPLETED']
+
+def test_export_3_check_statuses(ro_crate):
+    space, client = ro_crate
+
+    openbis = space.openbis
+    timestamp = datetime.datetime.now().strftime("ro_crate_test_%Y_%m_%d_%H%M%S.%f")
+    sample = openbis.new_sample('UNKNOWN', code=timestamp, space=space)
+    sample.save()
+
+
+    jobId = client.export([sample.permId])
+
+    assert jobId is not None
+
+    stats = client.check_statuses()
+
+    assert stats is not None
+    assert len(stats) > 0
+    assert len(list(filter(lambda x: x.jobId == jobId, stats))) == 1
 
 

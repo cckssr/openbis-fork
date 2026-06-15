@@ -94,7 +94,9 @@ class RoCrateClient:
                 raise ValueError(f"{parsed_error}")
 
     def check_status(self, job_id):
-        ro_crate_url = self._ro_crate_url + "/status"
+        if job_id is None:
+            raise ValueError("job_id cannot be None")
+        ro_crate_url = self._ro_crate_url + "/status/" + job_id
         headers = {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
@@ -105,23 +107,75 @@ class RoCrateClient:
         with self.session.get(ro_crate_url, headers=headers, verify=self._verify) as response:
             if response.ok:
                 response_json = response.json()
-                if response_json['status'] == 'FAILED':
-                    print(response_json["errors"])
-                    raise ValueError(f"Something failed: {response_json['errors']}")
-                content_type = response.headers['Content-Type']
-                if content_type != 'application/json':
-                    content = response.content
-                    # with open('/tmp/out.zip', 'wb') as out_file:
-                    #     out_file.write(response.content)
-                    return "TODO"
-                else:
-                    status = response_json['status']
-                    return status
-                return response.text
+                job = response_json
+                return Status(job)
             else:
                 parsed_error = json.loads(response.text)
-                # message = parsed_error['error'][1]['message']
                 raise ValueError(f"{parsed_error}")
 
+    def check_statuses(self):
+        ro_crate_url = self._ro_crate_url + "/status"
+        headers = {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'api-key': self.token,
+        }
+
+        with self.session.get(ro_crate_url, headers=headers, verify=self._verify) as response:
+            if response.ok:
+                response_json = response.json()
+                return [Status(job) for job in response_json['jobs']]
+            else:
+                parsed_error = json.loads(response.text)
+                raise ValueError(f"{parsed_error}")
+
+class ValidationReport:
+    isValid: bool
+    entities: list
+    errors: list
+
+    def __init__(self, jsonResponse):
+        self.isValid = jsonResponse['isValid']
+        self.entities = jsonResponse['entities']
+        self.errors = jsonResponse['errors']
+
+    def __str__(self):
+        return f'ValidationReport[{self.isValid},{self.entities},{self.errors}]'
+
+    def __repr__(self):
+        return self.__str__()
+
+class ImportResponse:
+    externalToOpenBisIdentifier: dict
+
+    def __init__(self, externalToOpenBisIdentifier):
+        self.externalToOpenBisIdentifier = externalToOpenBisIdentifier
+
+    def __str__(self):
+        return f'ImportResponse[{self.externalToOpenBisIdentifier}]'
+
+    def __repr__(self):
+        return self.__str__()
+
+class Status:
+    jobId: str
+    status: str
+    errors: list | None
+    downloadUrl: str | None
+    validationResult: ValidationReport | None
+    importResponse: ImportResponse | None
+
+    def __init__(self, jsonResponse):
+        self.jobId = jsonResponse['jobId']
+        self.status = jsonResponse['status']
+        self.errors = jsonResponse['errors']
+        self.downloadUrl = jsonResponse['downloadUrl']
+        self.validationResult = ValidationReport(jsonResponse['validationResult']) if jsonResponse['validationResult'] is not None else None
+        self.importResponse = ImportResponse(jsonResponse['importResponse']) if jsonResponse['importResponse'] is not None else None
 
 
+    def __str__(self):
+        return f'Status[{self.jobId},{self.status}]'
+
+    def __repr__(self):
+        return self.__str__()
