@@ -1,0 +1,14 @@
+<!DOCTYPE suite SYSTEM "http://beust.com/testng/testng-1.0.dtd" >
+
+<suite name="OpenbisSync" verbose="1">
+    <test name="OpenbisSync">
+        <groups>
+            <run>
+                <exclude name="broken" />
+            </run>
+        </groups>
+        <packages>
+            <package name="ch.ethz.sis.openbis.systemtests.suite.openbissync.*" />
+        </packages>
+    </test>
+</suite>

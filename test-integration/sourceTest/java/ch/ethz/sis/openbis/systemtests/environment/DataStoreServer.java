@@ -13,6 +13,7 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverServiceProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverServiceProviderFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.HierarchicalContentServiceProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.HierarchicalContentServiceProviderFactory;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProviderFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProviderImpl;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ShufflingServiceProvider;
@@ -48,6 +49,9 @@ public class DataStoreServer
             log.info("Starting data store server.");
             serviceProperties.store(new FileOutputStream(new File("etc/service.properties")),
                     "This file has been generated. DSS has service.properties location hardcoded, without this file it won't start up");
+
+            ch.systemsx.cisd.openbis.dss.generic.server.DataStoreServer.clearConfigParameters();
+            ServiceProvider.resetApplicationContext();
 
             ServiceProviderFactory.setInstance(new ServiceProviderImpl());
             ArchiverServiceProviderFactory.setInstance(new ArchiverServiceProvider());

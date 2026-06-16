@@ -67,12 +67,19 @@ public final class AfsSftpServerIntegrationTestEnvironment
     {
         if (environment == null)
         {
-            environment = new IntegrationTestEnvironment();
-            environment.createApplicationServer();
-            environment.createAfsServer(IntegrationTestEnvironment.loadProperties(Path.of("etc/suite/sftp/afs/service.properties")));
-            environment.createAfsSftpServer();
-            environment.start();
-            createTestData();
+            try
+            {
+                environment = new IntegrationTestEnvironment();
+                environment.createApplicationServer();
+                environment.createAfsServer(IntegrationTestEnvironment.loadProperties(Path.of("etc/suite/sftp/afs/service.properties")));
+                environment.createAfsSftpServer();
+                environment.start();
+                createTestData();
+            } catch (RuntimeException | Error e)
+            {
+                stop();
+                throw e;
+            }
         }
     }
 

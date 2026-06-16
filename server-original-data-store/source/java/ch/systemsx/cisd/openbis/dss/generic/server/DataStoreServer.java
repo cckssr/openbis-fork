@@ -651,4 +651,10 @@ public class DataStoreServer
     {
         return getConfigParameters().getProperties().getProperty(key, defaultValue);
     }
+
+    public static void clearConfigParameters()
+    {
+        configParameters = null;
+        DssPropertyParametersUtil.clearCachedServiceProperties();
+    }
 }

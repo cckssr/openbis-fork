@@ -79,6 +79,7 @@ import java.util.zip.ZipEntry;
 import jakarta.annotation.Resource;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.VocabularyTerm;
+import ch.ethz.sis.openbis.generic.asapi.v3.exporter.ExportEntityCollector;
 import ch.ethz.sis.openbis.generic.server.xls.export.*;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;

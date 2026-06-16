@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.exporter.data.ExportablePermId;
 import ch.systemsx.cisd.common.mail.EMailAddress;
 
 /**
@@ -247,9 +248,17 @@ public class SyncConfig
 
     private Integer wishedNumberOfStreams;
 
-    private List<String> spaceBlackList = new ArrayList<>();
+    private List<ExportablePermId> exportablePermIds = new ArrayList<>();
 
-    private List<String> spaceWhiteList = new ArrayList<>();
+    private boolean withLevelsAbove;
+
+    private boolean withLevelsBelow;
+
+    private boolean withObjectsAndDataSetsParents;
+
+    private boolean withObjectsAndDataSetsChildren;
+
+    private boolean withObjectsAndDataSetsOtherSpaces;
 
     public HashMap<String, String> getSpaceMappings()
     {
@@ -419,23 +428,63 @@ public class SyncConfig
         this.wishedNumberOfStreams = wishedNumberOfStreams;
     }
 
-    public List<String> getSpaceBlackList()
+    public List<ExportablePermId> getExportablePermIds()
     {
-        return spaceBlackList;
+        return exportablePermIds;
     }
 
-    public void setSpaceBlackList(List<String> spaceBlackList)
+    public void setExportablePermIds(List<ExportablePermId> exportablePermIds)
     {
-        this.spaceBlackList = spaceBlackList;
+        this.exportablePermIds = exportablePermIds;
     }
 
-    public List<String> getSpaceWhiteList()
+    public boolean isWithLevelsAbove()
     {
-        return spaceWhiteList;
+        return withLevelsAbove;
     }
 
-    public void setSpaceWhiteList(List<String> spaceWhiteList)
+    public void setWithLevelsAbove(boolean withLevelsAbove)
     {
-        this.spaceWhiteList = spaceWhiteList;
+        this.withLevelsAbove = withLevelsAbove;
+    }
+
+    public boolean isWithLevelsBelow()
+    {
+        return withLevelsBelow;
+    }
+
+    public void setWithLevelsBelow(boolean withLevelsBelow)
+    {
+        this.withLevelsBelow = withLevelsBelow;
+    }
+
+    public boolean isWithObjectsAndDataSetsParents()
+    {
+        return withObjectsAndDataSetsParents;
+    }
+
+    public void setWithObjectsAndDataSetsParents(boolean withObjectsAndDataSetsParents)
+    {
+        this.withObjectsAndDataSetsParents = withObjectsAndDataSetsParents;
+    }
+
+    public boolean isWithObjectsAndDataSetsChildren()
+    {
+        return withObjectsAndDataSetsChildren;
+    }
+
+    public void setWithObjectsAndDataSetsChildren(boolean withObjectsAndDataSetsChildren)
+    {
+        this.withObjectsAndDataSetsChildren = withObjectsAndDataSetsChildren;
+    }
+
+    public boolean isWithObjectsAndDataSetsOtherSpaces()
+    {
+        return withObjectsAndDataSetsOtherSpaces;
+    }
+
+    public void setWithObjectsAndDataSetsOtherSpaces(boolean withObjectsAndDataSetsOtherSpaces)
+    {
+        this.withObjectsAndDataSetsOtherSpaces = withObjectsAndDataSetsOtherSpaces;
     }
 }

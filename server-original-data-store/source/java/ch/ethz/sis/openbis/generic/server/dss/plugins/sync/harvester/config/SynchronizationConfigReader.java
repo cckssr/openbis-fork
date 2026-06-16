@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.exporter.data.ExportableKind;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.exporter.data.ExportablePermId;
 import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Space;
@@ -79,9 +81,15 @@ public class SynchronizationConfigReader
 
     private static final String VERBOSE_PROPERTY_NAME = "verbose";
 
-    private static final String SPACE_BLACK_LIST_PROPERTY_NAME = "space-black-list";
+    private static final String EXPORTABLE_PERM_IDS_PROPERTY_NAME = "exportable-perm-ids";
 
-    private static final String SPACE_WHITE_LIST_PROPERTY_NAME = "space-white-list";
+    private static final String WITH_LEVELS_BELOW_PROPERTY_NAME = "with-levels-below";
+
+    private static final String WITH_OBJECTS_AND_DATA_SETS_PARENTS_PROPERTY_NAME = "with-objects-and-data-sets-parents";
+
+    private static final String WITH_OBJECTS_AND_DATA_SETS_CHILDREN_PROPERTY_NAME = "with-objects-and-data-sets-children";
+
+    private static final String WITH_OBJECTS_AND_DATA_SETS_OTHER_SPACES_PROPERTY_NAME = "with-objects-and-data-sets-other-spaces";
 
     private static final String MASTER_DATA_UPDATE_ALLOWED_PROPERTY_NAME = "master-data-update-allowed";
 
@@ -144,8 +152,25 @@ public class SynchronizationConfigReader
             config.setHarvesterUser(reader.getString(section, HARVESTER_USER_PROPERTY_NAME, null, true));
             config.setHarvesterPass(reader.getString(section, HARVESTER_PASS_PROPERTY_NAME, null, true));
 
-            config.setSpaceBlackList(reader.getStrings(section, SPACE_BLACK_LIST_PROPERTY_NAME, new ArrayList<>()));
-            config.setSpaceWhiteList(reader.getStrings(section, SPACE_WHITE_LIST_PROPERTY_NAME, new ArrayList<>()));
+            List<ExportablePermId> exportablePermIds = parseExportablePermIds(
+                    reader.getStrings(section, EXPORTABLE_PERM_IDS_PROPERTY_NAME, new ArrayList<>()), section);
+            if (exportablePermIds.isEmpty())
+            {
+                throw new ConfigurationFailureException("Please specify '" + EXPORTABLE_PERM_IDS_PROPERTY_NAME
+                        + "' in section '" + section + "'. Without it the data source returns an empty resourcelist, "
+                        + "and if '" + DELETION_ALLOWED_PROPERTY_NAME + "' is set, all entities previously synchronized "
+                        + "to the harvester would be deleted.");
+            }
+            config.setExportablePermIds(exportablePermIds);
+            // set to true like done for export/import
+            config.setWithLevelsAbove(true);
+            config.setWithLevelsBelow(reader.getBoolean(section, WITH_LEVELS_BELOW_PROPERTY_NAME, false));
+            config.setWithObjectsAndDataSetsParents(
+                    reader.getBoolean(section, WITH_OBJECTS_AND_DATA_SETS_PARENTS_PROPERTY_NAME, false));
+            config.setWithObjectsAndDataSetsChildren(
+                    reader.getBoolean(section, WITH_OBJECTS_AND_DATA_SETS_CHILDREN_PROPERTY_NAME, false));
+            config.setWithObjectsAndDataSetsOtherSpaces(
+                    reader.getBoolean(section, WITH_OBJECTS_AND_DATA_SETS_OTHER_SPACES_PROPERTY_NAME, false));
 
             String dsSpaces = reader.getString(section, DATA_SOURCE_SPACES_PROPERTY_NAME, null, false);
             if (dsSpaces != null)
@@ -209,6 +234,35 @@ public class SynchronizationConfigReader
 
         }
         return configs;
+    }
+
+    private static List<ExportablePermId> parseExportablePermIds(List<String> tokens, String section)
+    {
+        List<ExportablePermId> result = new ArrayList<>();
+        for (String token : tokens)
+        {
+            if (token.isEmpty())
+            {
+                continue;
+            }
+            int index = token.indexOf(':');
+            if (index < 0)
+            {
+                throw new ConfigurationFailureException("Invalid '" + EXPORTABLE_PERM_IDS_PROPERTY_NAME
+                        + "' value (expected '<KIND>:<permId>') in section '" + section + "': " + token);
+            }
+            ExportableKind kind;
+            try
+            {
+                kind = ExportableKind.valueOf(token.substring(0, index).trim());
+            } catch (IllegalArgumentException ex)
+            {
+                throw new ConfigurationFailureException("Unknown exportable kind in '" + EXPORTABLE_PERM_IDS_PROPERTY_NAME
+                        + "' value in section '" + section + "': " + token);
+            }
+            result.add(new ExportablePermId(kind, token.substring(index + 1).trim()));
+        }
+        return result;
     }
 
     private static void createDataSourceToHarvesterSpaceMappings(SyncConfig config)

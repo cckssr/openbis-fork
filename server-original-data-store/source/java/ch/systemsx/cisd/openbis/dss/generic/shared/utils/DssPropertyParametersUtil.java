@@ -170,6 +170,11 @@ public class DssPropertyParametersUtil
         return fullServiceProperties;
     }
 
+    public static void clearCachedServiceProperties()
+    {
+        fullServiceProperties = null;
+    }
+
     public static ExtendedProperties loadProperties(String filePath)
     {
         return ExtendedProperties.createWith(PropertyIOUtils.loadProperties(filePath));

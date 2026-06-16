@@ -24,7 +24,17 @@ public class TestInstanceHostUtils
 
     public static int getOpenBISPort()
     {
-        return 8800 + getProjectNumber() + 8;
+        return getOpenBISPort(getProjectNumber());
+    }
+
+    public static int getOpenBISPort(String projectName)
+    {
+        return getOpenBISPort(getProjectNumber(projectName));
+    }
+
+    private static int getOpenBISPort(int projectNumber)
+    {
+        return 8800 + projectNumber + 8;
     }
 
     public static int getOpenBISProxyPort()
@@ -32,14 +42,29 @@ public class TestInstanceHostUtils
         return getOpenBISPort() + 1000;
     }
 
+    public static int getOpenBISProxyPort(String projectName)
+    {
+        return getOpenBISPort(projectName) + 1000;
+    }
+
     public static String getOpenBISUrl()
     {
         return OPENBIS_URL + ":" + getOpenBISPort();
     }
 
+    public static String getOpenBISUrl(String projectName)
+    {
+        return OPENBIS_URL + ":" + getOpenBISPort(projectName);
+    }
+
     public static String getOpenBISProxyUrl()
     {
         return OPENBIS_URL + ":" + getOpenBISProxyPort();
+    }
+
+    public static String getOpenBISProxyUrl(String projectName)
+    {
+        return OPENBIS_URL + ":" + getOpenBISProxyPort(projectName);
     }
 
     public static String getOpenBISPath()
@@ -49,12 +74,27 @@ public class TestInstanceHostUtils
 
     public static int getDSSPort()
     {
-        return 8800 + getProjectNumber() + 9;
+        return getDSSPort(getProjectNumber());
+    }
+
+    public static int getDSSPort(String projectName)
+    {
+        return getDSSPort(getProjectNumber(projectName));
+    }
+
+    private static int getDSSPort(int projectNumber)
+    {
+        return 8800 + projectNumber + 9;
     }
 
     public static String getDSSUrl()
     {
         return OPENBIS_URL + ":" + getDSSPort();
+    }
+
+    public static String getDSSUrl(String projectName)
+    {
+        return OPENBIS_URL + ":" + getDSSPort(projectName);
     }
 
     public static String getDSSPath()
@@ -99,7 +139,15 @@ public class TestInstanceHostUtils
 
     private static int getProjectNumber()
     {
-        String projectName = System.getProperty("ant.project.name", "");
+        return getProjectNumber(System.getProperty("ant.project.name", ""));
+    }
+
+    private static int getProjectNumber(String projectName)
+    {
+        if (projectName == null)
+        {
+            projectName = "";
+        }
 
         if (projectName.equals("server-application-server"))
         {
@@ -119,6 +167,11 @@ public class TestInstanceHostUtils
         } else if (projectName.equals("test-integration"))
         {
             return 50;
+        } else if (projectName.equals("test-integration-fork"))
+        {
+            // Second, forked openBIS instance used by multi-server suites (e.g. the openbis-sync
+            // source instance). Its port block must not overlap the in-JVM "test-integration" one.
+            return 60;
         }
 
         return 80;

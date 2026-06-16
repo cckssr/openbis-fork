@@ -15,51 +15,28 @@
  */
 package ch.ethz.sis.openbis.generic.server.dss.plugins.sync.datasource;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
-import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.IDataSourceQueryService;
-import net.lemnik.eodsql.DataSet;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.exporter.data.ExportableKind;
 
 /**
+ *
  * @author Franz-Josef Elmer
  */
 abstract class AbstractEntityWithPermIdDeliverer extends AbstractEntityDeliverer<String>
 {
-    private final String databasePermIdColumn;
+    private final ExportableKind exportableKind;
 
-    private final String sql;
-
-    AbstractEntityWithPermIdDeliverer(DeliveryContext context, String entityKind, String databaseTable)
-    {
-        this(context, entityKind, databaseTable, "perm_id");
-    }
-
-    AbstractEntityWithPermIdDeliverer(DeliveryContext context, String entityKind, String databaseTable, String databasePermIdColumn)
+    AbstractEntityWithPermIdDeliverer(DeliveryContext context, String entityKind, ExportableKind exportableKind)
     {
         super(context, entityKind);
-        this.databasePermIdColumn = databasePermIdColumn;
-        sql = "select " + databasePermIdColumn + " from " + databaseTable + " order by " + databasePermIdColumn;
+        this.exportableKind = exportableKind;
     }
 
     @Override
     protected List<String> getAllEntities(DeliveryExecutionContext executionContext, String sessionToken)
     {
-        return getAllEntities(executionContext, sessionToken, sql);
-    }
-
-    protected List<String> getAllEntities(DeliveryExecutionContext executionContext, String sessionToken, String query)
-    {
-        IDataSourceQueryService queryService = executionContext.getQueryService();
-        List<String> permIds = new ArrayList<>();
-        String dataSourceName = context.getOpenBisDataSourceName();
-        DataSet<Map<String, Object>> select = queryService.select(dataSourceName, query);
-        for (Map<String, Object> row : select)
-        {
-            permIds.add((String) row.get(databasePermIdColumn));
-        }
-        return permIds;
+        return executionContext.getPermIds(exportableKind);
     }
 
 }

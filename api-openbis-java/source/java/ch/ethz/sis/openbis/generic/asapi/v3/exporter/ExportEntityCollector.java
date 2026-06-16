@@ -1,4 +1,4 @@
-package ch.ethz.sis.openbis.generic.server.xls.export;
+package ch.ethz.sis.openbis.generic.asapi.v3.exporter;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
@@ -27,8 +27,11 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.fetchoptions.SpaceFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.ISpaceId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.IApplicationServerInternalApi;
+import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
+import ch.systemsx.cisd.openbis.generic.shared.basic.ICustomIdHolder;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ServiceVersionHolder;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashSet;
@@ -44,7 +47,7 @@ public final class ExportEntityCollector {
      * Used by the V3 API to select samples for export
      */
     public static ExportData collectEntities(
-            IApplicationServerInternalApi api,
+            IApplicationServerApi api,
             String sessionToken,
             ExportData exportData,
             ExportOptions exportOptions) {
@@ -72,7 +75,7 @@ public final class ExportEntityCollector {
      * Used by the extended service
      */
     public static void collectEntities(
-            IApplicationServerInternalApi api,
+            IApplicationServerApi api,
             String sessionToken,
             Set<ExportablePermId> collection,
             ExportablePermId root,

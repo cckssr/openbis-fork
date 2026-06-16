@@ -208,17 +208,55 @@ public class ApplicationServer
 
     public void stop()
     {
-        stopServer();
-        stopProxy();
+        RuntimeException failure = null;
+        try
+        {
+            stopServer();
+        } catch (RuntimeException e)
+        {
+            failure = e;
+        }
+        try
+        {
+            stopProxy();
+        } catch (RuntimeException e)
+        {
+            if (failure == null)
+            {
+                failure = e;
+            } else
+            {
+                failure.addSuppressed(e);
+            }
+        }
+        if (failure != null)
+        {
+            throw failure;
+        }
     }
 
     private void stopServer()
     {
+        if (applicationServer == null && applicationContext == null)
+        {
+            return;
+        }
         try
         {
-            applicationContext.close();
-            ((ClassPathXmlApplicationContext) applicationContext.getParent()).close();
-            applicationServer.stop();
+            if (applicationContext != null)
+            {
+                applicationContext.close();
+                if (applicationContext.getParent() instanceof ClassPathXmlApplicationContext)
+                {
+                    ((ClassPathXmlApplicationContext) applicationContext.getParent()).close();
+                }
+                applicationContext = null;
+            }
+            if (applicationServer != null)
+            {
+                applicationServer.stop();
+                applicationServer = null;
+            }
             log.info("Stopped application server.");
         } catch (Exception e)
         {
@@ -229,9 +267,14 @@ public class ApplicationServer
 
     private void stopProxy()
     {
+        if (proxyServer == null)
+        {
+            return;
+        }
         try
         {
             proxyServer.stop();
+            proxyServer = null;
             log.info("Stopped application server proxy.");
         } catch (Exception e)
         {
