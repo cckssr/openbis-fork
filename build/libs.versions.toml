@@ -35,7 +35,6 @@ com-networknt-json-schema-validator = "1.5.9"
 com-openhtmltopdf-openhtmltopdf-core = "1.0.10"
 com-openhtmltopdf-openhtmltopdf-pdfbox = "1.0.10"
 com-sun-istack-istack-commons-runtime = "3.0.12"
-com-sun-mail-javax-mail = "1.6.2"
 com-twmacinta-fast-md5 = "2.6.1"
 commons-cli-commons-cli = "1.11.0"
 commons-cli-commons-cli-v14 = "1.4"
@@ -62,16 +61,13 @@ it-unimi-dsi-fastutil = "5.1.5"
 izpack-izpack = "5.0-beta9-SNAPSHOT-2022-03-22"
 jakarta-activation-jakarta-activation-api = "2.1.4"
 jakarta-annotation-jakarta-annotation-api = "2.1.1"
+jakarta-mail-jakarta-mail-api = "2.1.5"
 jakarta-servlet-jakarta-servlet-api = "6.1.0"
 jakarta-servlet-jakarta-servlet-api-v60 = "6.0.0"
 jakarta-transaction-jakarta-transaction-api = "2.0.1"
 jakarta-validation-jakarta-validation-api = "3.1.1"
 jakarta-ws-rs-jakarta-ws-rs-api = "3.1.0"
 jakarta-xml-bind-jakarta-xml-bind-api = "4.0.5"
-javax-activation-activation = "1.1.1"
-javax-activation-javax-activation-api = "1.2.0"
-javax-cache-cache-api = "1.1.1"
-javax-servlet-javax-servlet-api = "3.1.0"
 jfree-jfreechart = "1.0.13"
 jline-jline = "0.9.94"
 lemnik-eodsql = "2.2-CISD"
@@ -108,6 +104,7 @@ org-controlsfx-controlsfx = "11.2.3"
 org-docx4j-docx4j = "6.1.2"
 org-dom4j-dom4j = "2.1.4"
 org-dspace-xoai-data-provider = "4.2.0"
+org-eclipse-angus-angus-mail = "2.0.5"
 org-eclipse-jdt-core-compiler-ecj = "4.6.1"
 org-eclipse-jetty = "12.1.9"
 org-ehcache-ehcache = "3.12.0"
@@ -174,7 +171,6 @@ com-networknt-json-schema-validator = { module = "com.networknt:json-schema-vali
 com-openhtmltopdf-openhtmltopdf-core = { module = "com.openhtmltopdf:openhtmltopdf-core", version.ref = "com-openhtmltopdf-openhtmltopdf-core" }
 com-openhtmltopdf-openhtmltopdf-pdfbox = { module = "com.openhtmltopdf:openhtmltopdf-pdfbox", version.ref = "com-openhtmltopdf-openhtmltopdf-pdfbox" }
 com-sun-istack-istack-commons-runtime = { module = "com.sun.istack:istack-commons-runtime", version.ref = "com-sun-istack-istack-commons-runtime" }
-com-sun-mail-javax-mail = { module = "com.sun.mail:javax.mail", version.ref = "com-sun-mail-javax-mail" }
 com-twmacinta-fast-md5 = { module = "com.twmacinta:fast-md5", version.ref = "com-twmacinta-fast-md5" }
 commons-cli-commons-cli = { module = "commons-cli:commons-cli", version.ref = "commons-cli-commons-cli" }
 commons-cli-commons-cli-v14 = { module = "commons-cli:commons-cli", version.ref = "commons-cli-commons-cli-v14" }
@@ -205,16 +201,13 @@ it-unimi-dsi-fastutil = { module = "it.unimi.dsi:fastutil", version.ref = "it-un
 izpack-izpack = { module = "izpack:izpack", version.ref = "izpack-izpack" }
 jakarta-activation-jakarta-activation-api = { module = "jakarta.activation:jakarta.activation-api", version.ref = "jakarta-activation-jakarta-activation-api" }
 jakarta-annotation-jakarta-annotation-api = { module = "jakarta.annotation:jakarta.annotation-api", version.ref = "jakarta-annotation-jakarta-annotation-api" }
+jakarta-mail-jakarta-mail-api = { module = "jakarta.mail:jakarta.mail-api", version.ref = "jakarta-mail-jakarta-mail-api" }
 jakarta-servlet-jakarta-servlet-api = { module = "jakarta.servlet:jakarta.servlet-api", version.ref = "jakarta-servlet-jakarta-servlet-api" }
 jakarta-servlet-jakarta-servlet-api-v60 = { module = "jakarta.servlet:jakarta.servlet-api", version.ref = "jakarta-servlet-jakarta-servlet-api-v60" }
 jakarta-transaction-jakarta-transaction-api = { module = "jakarta.transaction:jakarta.transaction-api", version.ref = "jakarta-transaction-jakarta-transaction-api" }
 jakarta-validation-jakarta-validation-api = { module = "jakarta.validation:jakarta.validation-api", version.ref = "jakarta-validation-jakarta-validation-api" }
 jakarta-ws-rs-jakarta-ws-rs-api = { module = "jakarta.ws.rs:jakarta.ws.rs-api", version.ref = "jakarta-ws-rs-jakarta-ws-rs-api" }
 jakarta-xml-bind-jakarta-xml-bind-api = { module = "jakarta.xml.bind:jakarta.xml.bind-api", version.ref = "jakarta-xml-bind-jakarta-xml-bind-api" }
-javax-activation-activation = { module = "javax.activation:activation", version.ref = "javax-activation-activation" }
-javax-activation-javax-activation-api = { module = "javax.activation:javax.activation-api", version.ref = "javax-activation-javax-activation-api" }
-javax-cache-cache-api = { module = "javax.cache:cache-api", version.ref = "javax-cache-cache-api" }
-javax-servlet-javax-servlet-api = { module = "javax.servlet:javax.servlet-api", version.ref = "javax-servlet-javax-servlet-api" }
 jfree-jfreechart = { module = "jfree:jfreechart", version.ref = "jfree-jfreechart" }
 jline-jline = { module = "jline:jline", version.ref = "jline-jline" }
 lemnik-eodsql = { module = "lemnik:eodsql", version.ref = "lemnik-eodsql" }
@@ -263,6 +256,7 @@ org-controlsfx-controlsfx = { module = "org.controlsfx:controlsfx", version.ref 
 org-docx4j-docx4j = { module = "org.docx4j:docx4j", version.ref = "org-docx4j-docx4j" }
 org-dom4j-dom4j = { module = "org.dom4j:dom4j", version.ref = "org-dom4j-dom4j" }
 org-dspace-xoai-data-provider = { module = "org.dspace:xoai-data-provider", version.ref = "org-dspace-xoai-data-provider" }
+org-eclipse-angus-angus-mail = { module = "org.eclipse.angus:angus-mail", version.ref = "org-eclipse-angus-angus-mail" }
 org-eclipse-jdt-core-compiler-ecj = { module = "org.eclipse.jdt.core.compiler:ecj", version.ref = "org-eclipse-jdt-core-compiler-ecj" } # Compiler/tool classpath dependency, not a plugin DSL id.
 org-eclipse-jetty-compression-jetty-compression-common = { module = "org.eclipse.jetty.compression:jetty-compression-common", version.ref = "org-eclipse-jetty" }
 org-eclipse-jetty-compression-jetty-compression-gzip = { module = "org.eclipse.jetty.compression:jetty-compression-gzip", version.ref = "org-eclipse-jetty" }

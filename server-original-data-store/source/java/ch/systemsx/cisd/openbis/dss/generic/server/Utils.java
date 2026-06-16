@@ -15,7 +15,7 @@
  */
 package ch.systemsx.cisd.openbis.dss.generic.server;
 
-import javax.activation.MimetypesFileTypeMap;
+import jakarta.activation.MimetypesFileTypeMap;
 
 import org.apache.commons.io.FilenameUtils;
 

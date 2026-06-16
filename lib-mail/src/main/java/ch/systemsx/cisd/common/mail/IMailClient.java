@@ -15,7 +15,7 @@
  */
 package ch.systemsx.cisd.common.mail;
 
-import javax.activation.DataHandler;
+import jakarta.activation.DataHandler;
 
 import ch.systemsx.cisd.common.exceptions.EnvironmentFailureException;
 

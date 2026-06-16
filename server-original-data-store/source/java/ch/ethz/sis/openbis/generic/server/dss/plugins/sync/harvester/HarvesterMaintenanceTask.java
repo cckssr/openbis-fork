@@ -37,9 +37,9 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Handler;
 
-import javax.activation.DataHandler;
-import javax.activation.DataSource;
-import javax.mail.util.ByteArrayDataSource;
+import jakarta.activation.DataHandler;
+import jakarta.activation.DataSource;
+import jakarta.mail.util.ByteArrayDataSource;
 
 import ch.ethz.sis.shared.log.standard.handlers.NamedFileHandler;
 import ch.ethz.sis.shared.log.standard.handlers.PatternFormatter;

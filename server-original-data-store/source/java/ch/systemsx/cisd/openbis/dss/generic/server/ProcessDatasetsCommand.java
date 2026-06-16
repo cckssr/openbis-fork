@@ -18,7 +18,7 @@ package ch.systemsx.cisd.openbis.dss.generic.server;
 import java.util.List;
 import java.util.Map;
 
-import javax.activation.DataHandler;
+import jakarta.activation.DataHandler;
 
 import ch.ethz.sis.shared.log.classic.impl.Logger;
 

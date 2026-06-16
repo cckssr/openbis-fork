@@ -69,6 +69,17 @@ task openBISDevelopmentEnvironmentAFSStart(type: JavaExec) {
              '-Dafs.logging.configuration=src/main/resources/logging.properties',
              '-Dio.netty.tryReflectionSetAccessible=true',
              '-Xmx512M', '-ea'])
+    // DEV ONLY: Creates the storageRoot directory if missing before starting the server.
+    // In new branches the storage dir doesn't exist and the server throws StoreRootDoesNotExist
+    // on startup — always a pain. This saves that round-trip.
+    doFirst {
+        def props = new Properties()
+        file("src/main/resources/service.properties").withInputStream { props.load(it) }
+        def storageRoot = props.getProperty("storageRoot")
+        if (storageRoot) {
+            mkdir(storageRoot)
+        }
+    }
 }
 
 task benchmarkAFS(type: JavaExec) {

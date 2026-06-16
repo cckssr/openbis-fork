@@ -18,7 +18,7 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.operation.notificat
 import java.util.Arrays;
 import java.util.List;
 
-import javax.activation.DataHandler;
+import jakarta.activation.DataHandler;
 
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;

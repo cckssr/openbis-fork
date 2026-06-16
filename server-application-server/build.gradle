@@ -41,7 +41,6 @@ dependencies {
             libs.jakarta.servlet.jakarta.servlet.api.v60,
             libs.jakarta.validation.jakarta.validation.api,
             libs.jakarta.annotation.jakarta.annotation.api,
-            libs.com.sun.mail.javax.mail,
             libs.org.springframework.spring.orm,
             libs.cisd.cisd.hotdeploy,
             libs.org.apache.poi.poi.ooxml,
@@ -81,7 +80,6 @@ dependencies {
             libs.org.aspectj.aspectjweaver.v18,
             libs.org.slf4j.slf4j.api
 
-    implementation libs.javax.cache.cache.api
     implementation(libs.org.ehcache.ehcache) {
         artifact {
             classifier = "jakarta"
