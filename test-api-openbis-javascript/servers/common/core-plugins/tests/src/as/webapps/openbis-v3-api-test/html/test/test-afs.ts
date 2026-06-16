@@ -38,7 +38,7 @@ exports.default = new Promise((resolve) => {
                     await facade.getAfsServerFacade().write(ownerPermId, "/test-folder-1/test-file-2", 0, testContent2)
                     await facade.getAfsServerFacade().write(ownerPermId, "/test-folder-1/test-file-3", 0, testContent3)
                     await facade.getAfsServerFacade().write(ownerPermId, "/test-folder-2/test-file-4", 0, testContent4)
-                    await facade.getAfsServerFacade().write(ownerPermId, "/test-folder-2/test-file-5 % $ = + ", 0, testContent5)
+                    await facade.getAfsServerFacade().write(ownerPermId, "/test-folder-2/test-file-5 % $ = +", 0, testContent5)
 
                     if (useTransaction) {
                         facade.setInteractiveSessionKey(testInteractiveSessionKey)
@@ -106,9 +106,9 @@ exports.default = new Promise((resolve) => {
                         lastModifiedTime: [startDate, new Date()],
                     })
                     c.assertFileEquals(listAll[6], {
-                        path: "/test-folder-2/test-file-5 % $ = + ",
+                        path: "/test-folder-2/test-file-5 % $ = +",
                         owner: ownerPermId,
-                        name: "test-file-5 % $ = + ",
+                        name: "test-file-5 % $ = +",
                         size: testContent5.length,
                         directory: false,
                         lastModifiedTime: [startDate, new Date()],
