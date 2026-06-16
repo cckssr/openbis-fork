@@ -515,7 +515,7 @@ public final class AfsClient implements PublicAPI, ClientAPI
         return Stream.concat(
                         Stream.of(new AbstractMap.SimpleImmutableEntry<>("method", apiMethod)),
                         params.entrySet().stream())
-                .map(entry -> urlEncode(entry.getKey() + "=" + urlEncode(entry.getValue())))
+                .map(entry -> urlEncode(entry.getKey()) + "=" + urlEncode(entry.getValue()))
                 .collect(Collectors.joining("&"));
     }
 
