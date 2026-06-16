@@ -510,12 +510,12 @@ public final class AfsClient implements PublicAPI, ClientAPI
         return AfsClientDownloadHelper.download(this, sourceOwner, sourcePath, destinationPath, fileCollisionListener, transferMonitorListener);
     }
 
-    private static String getQueryString(String apiMethod, Map<String, String> params, boolean encode)
+    private static String getQueryString(String apiMethod, Map<String, String> params)
     {
         return Stream.concat(
                         Stream.of(new AbstractMap.SimpleImmutableEntry<>("method", apiMethod)),
                         params.entrySet().stream())
-                .map(entry -> (encode ? urlEncode(entry.getKey()) : entry.getKey()) + "=" + (encode ? urlEncode(entry.getValue()) : entry.getValue()))
+                .map(entry -> urlEncode(entry.getKey() + "=" + urlEncode(entry.getValue())))
                 .collect(Collectors.joining("&"));
     }
 
@@ -557,17 +557,17 @@ public final class AfsClient implements PublicAPI, ClientAPI
         String queryParameters = null;
         if (httpMethod.equals("GET") || !sendParamsInBodyPostAndDelete)
         {
-            queryParameters = getQueryString(apiMethod, mutableParams, false);
+            queryParameters = getQueryString(apiMethod, mutableParams);
 
         } else if (httpMethod.equals("POST") || httpMethod.equals("DELETE"))
         {
-            bodyBytes = getQueryString(apiMethod, mutableParams, true).getBytes(StandardCharsets.UTF_8);
+            bodyBytes = getQueryString(apiMethod, mutableParams).getBytes(StandardCharsets.UTF_8);
         }
 
-        final URI uri =
-                new URI(serverUri.getScheme(), null, serverUri.getHost(),
-                        serverUri.getPort(), serverUri.getPath() + "/api",
-                        queryParameters, null);
+        final URI uri = new URI(serverUri.getScheme() + "://" +
+                serverUri.getHost() + ":" + serverUri.getPort() +
+                serverUri.getPath() + "/api" +
+                (queryParameters != null ?  "?" + queryParameters : ""));
 
         HttpRequest.Builder builder = HttpRequest.newBuilder()
                 .uri(uri)

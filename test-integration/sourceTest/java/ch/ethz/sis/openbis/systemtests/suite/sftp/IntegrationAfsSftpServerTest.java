@@ -398,13 +398,13 @@ public class IntegrationAfsSftpServerTest
                                         assertEquals(
                                                 listRemoteDirectory(sftp,"/spaces/" + space + "/projects/" + project + "/experiments/" + experimentDisplayName + "/samples/" + experimentSampleDisplayName + "/datasets/" + datasetDisplayName + "/files"),
                                                 Set.of(".", "..",
-                                                        "file_" + space + "_" + project + "_" + experiment + "_" + experimentSample + "_" + experimentSampleDataset
+                                                        "file_ % = # ~ $ " + space + "_" + project + "_" + experiment + "_" + experimentSample + "_" + experimentSampleDataset
                                                 )
                                         );
                                         assertEquals(
                                                 readTestFile(sftp,
                                                         "/spaces/" + space + "/projects/" + project + "/experiments/" + experimentDisplayName + "/samples/" + experimentSampleDisplayName + "/datasets/" + datasetDisplayName + "/files/" +
-                                                        "file_" + space + "_" + project + "_" + experiment + "_" + experimentSample + "_" + experimentSampleDataset,
+                                                        "file_ % = # ~ $ " + space + "_" + project + "_" + experiment + "_" + experimentSample + "_" + experimentSampleDataset,
                                                         0L, 1024
                                                 ),
                                                 ("data:" + project + "_" + experiment + "_" + experimentSample + "_" + experimentSampleDataset).getBytes(StandardCharsets.UTF_8)
@@ -504,7 +504,7 @@ public class IntegrationAfsSftpServerTest
                             getSampleOrDatasetPermIdByName("S1", "P1_E1_X1_D1"));
                     Set<String> currentEntries = listRemoteDirectory(sftp, datasetFilesRootDirectory);
 
-                    assertTrue(currentEntries.containsAll(List.of(".", "..", "file_S1_P1_E1_X1_D1")));
+                    assertTrue(currentEntries.containsAll(List.of(".", "..", "file_ % = # ~ $ S1_P1_E1_X1_D1")));
                     assertFalse(currentEntries.contains("newfile.txt"));
 
                     uploadTestFile(sftp,
@@ -652,11 +652,14 @@ public class IntegrationAfsSftpServerTest
                             getSampleOrDatasetPermIdByName("S1", "P1_E1_X1_D2"));
                     Set<String> currentEntries = listRemoteDirectory(sftp, datasetFilesRootDirectory);
 
-                    assertTrue(currentEntries.containsAll(List.of(".", "..", "file_S1_P1_E1_X1_D2")));
+                    assertTrue(currentEntries.containsAll(List.of(".", "..", "file_ % = # ~ $ S1_P1_E1_X1_D2")));
                     assertFalse(currentEntries.contains("newdir"));
 
                     deleteTestFile(sftp,
-                            "/spaces/S1/projects/P1/experiments/E1 (%s)/samples/X1 (%s)/datasets/D2 (%s)/files/file_S1_P1_E1_X1_D2"
+                            String.format("/spaces/S1/projects/P1/experiments/E1 (%s)/samples/X1 (%s)/datasets/D2 (%s)/files/file_ %% = # ~ $ S1_P1_E1_X1_D2",
+                                    getExperimentPermIdByName("S1", "P1", "E1"),
+                                    getSampleOrDatasetPermIdByName("S1", "P1_E1_X1"),
+                                    getSampleOrDatasetPermIdByName("S1", "P1_E1_X1_D2"))
                     );
                 } catch (Exception e) {
                     exception = e;
@@ -731,12 +734,12 @@ public class IntegrationAfsSftpServerTest
                             getSampleOrDatasetPermIdByName("S1", "P1_E1_X1_D2"));
                     Set<String> currentEntries = listRemoteDirectory(sftp, datasetFilesRootDirectory);
 
-                    assertTrue(currentEntries.containsAll(List.of(".", "..", "file_S1_P1_E1_X1_D2")));
+                    assertTrue(currentEntries.containsAll(List.of(".", "..", "file_ % = # ~ $ S1_P1_E1_X1_D2")));
                     assertFalse(currentEntries.contains("newdir"));
 
                     renameTestFile(sftp,
-                            "/spaces/S1/projects/P1/experiments/E1 (%s)/samples/X1 (%s)/datasets/D2 (%s)/files/file_S1_P1_E1_X1_D2",
-                            "/spaces/S1/projects/P1/experiments/E1 (%s)/samples/X1 (%s)/datasets/D2 (%s)/files/renamed_file_S1_P1_E1_X1_D2"
+                            "/spaces/S1/projects/P1/experiments/E1 (%s)/samples/X1 (%s)/datasets/D2 (%s)/files/file_ % = # ~ $ S1_P1_E1_X1_D2",
+                            "/spaces/S1/projects/P1/experiments/E1 (%s)/samples/X1 (%s)/datasets/D2 (%s)/files/renamed_file_ % = # ~ $ S1_P1_E1_X1_D2"
 
                     );
                 } catch (Exception e) {
