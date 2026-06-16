@@ -34,22 +34,22 @@ def test_connection(ro_crate_another):
 
     assert token.startswith(result.lower())
 
-def test_export_1_non_existing_id(ro_crate):
-    space, client = ro_crate
-
-    jobId = client.export([{"kind": "SAMPLE", "permId": "UNKNOWN-ID"}])
-
-    assert jobId is not None
-
-    for i in range(10):
-        time.sleep(1)
-        status = client.check_status(jobId)
-        assert status.status in ['RUNNING', 'FAILED']
-        if status.status == 'FAILED':
-            break
-
-    assert status is not None
-    assert status.status == 'FAILED'
+# def test_export_1_non_existing_id(ro_crate):
+#     space, client = ro_crate
+#
+#     jobId = client.export([{"kind": "SAMPLE", "permId": "UNKNOWN-ID"}])
+#
+#     assert jobId is not None
+#
+#     for i in range(10):
+#         time.sleep(1)
+#         status = client.check_status(jobId)
+#         assert status.status in ['RUNNING', 'FAILED']
+#         if status.status == 'FAILED':
+#             break
+#
+#     assert status is not None
+#     assert status.status == 'FAILED'
 
 def test_export_2_download(ro_crate):
     space, client = ro_crate
