@@ -16,7 +16,8 @@ const styles = theme => ({
   },
   label: {
     fontSize: theme.typography.label.fontSize,
-    color: theme.typography.label.color
+    color: theme.typography.label.color,
+    paddingTop: theme.spacing(1),
   },
   value: {
     paddingBottom: theme.spacing(1) / 2,
