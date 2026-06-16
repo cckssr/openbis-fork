@@ -41,8 +41,12 @@ def test_export_1_non_existing_id(ro_crate):
 
     assert jobId is not None
 
-    time.sleep(5)
-    status = client.check_status(jobId)
+    for i in range(10):
+        time.sleep(1)
+        status = client.check_status(jobId)
+        assert status.status in ['RUNNING', 'FAILED']
+        if status.status == 'FAILED':
+            break
 
     assert status is not None
     assert status.status == 'FAILED'
