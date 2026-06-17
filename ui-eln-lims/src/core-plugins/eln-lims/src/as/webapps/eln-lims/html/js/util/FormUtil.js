@@ -53,7 +53,32 @@ var FormUtil = new function() {
 		}
 		return parsed.local().format("YYYY-MM-DD HH:mm:ss ZZ");
 	}
-	
+
+	// Normalizes an ARRAY_TIMESTAMP JSON string: adds the user's local timezone to any
+	// element that does not already carry one. Elements with an explicit timezone are kept as-is.
+	this.normalizeArrayTimestampValues = function(val) {
+		try {
+			var array = Array.isArray(val) ? val : JSON.parse(val);
+			if (!Array.isArray(array)) {
+				return val;
+			}
+			var localOffset = moment().format("ZZ");
+			var normalized = array.map(function(v) {
+				if (typeof v !== "string") {
+					return v;
+				}
+				var trimmed = v.trim();
+				if (/[+-]\d{2}:?\d{2}$/.test(trimmed)) {
+					return trimmed;
+				}
+				return trimmed + " " + localOffset;
+			});
+			return JSON.stringify(normalized);
+		} catch (e) {
+			return val;
+		}
+	}
+
 	this.writeAnnotationForSample = function(stateObj, sample, propertyTypeCode, propertyValue) {
 		var sampleAnnotations = this.addAnnotationSlotForSample(stateObj, sample);
 		
@@ -2063,7 +2088,7 @@ var FormUtil = new function() {
 				return val.every(v => typeof v === "number"
 					|| typeof v === "string" && !isNaN(Number(v.trim())) && v.trim() !== "");
 			} if (dataType === "ARRAY_TIMESTAMP") {
-				return val.every(v => typeof v === "string" && /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} [+-]\d{4}$/.test(v.trim()));
+				return val.every(v => typeof v === "string" && /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}( [+-]\d{4})?$/.test(v.trim()));
 			} else {
 				return true;
 			}
