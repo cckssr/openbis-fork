@@ -8,8 +8,8 @@ import {
   DatePicker,
   DateTimePicker,
 } from '@mui/x-date-pickers'
-import format from 'date-fns/format';
-import parse from 'date-fns/parse';
+import { format } from 'date-fns/format';
+import { parse } from 'date-fns/parse';
 import date from '@src/js/common/date.js'
 import logger from '@src/js/common/logger.js'
 
