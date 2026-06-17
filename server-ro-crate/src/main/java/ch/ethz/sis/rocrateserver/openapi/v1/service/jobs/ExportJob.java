@@ -455,7 +455,7 @@ public final class ExportJob implements IAsyncJob
             final String subject = "openBIS RoCrate Export failed!";
             String content = String.format("Error during export: %s", exceptionMessage);
             Log.info("Sending email to: " + recipient + "\nContent:" + content);
-            mailClient.sendEmailMessage(subject, content, null, null, recipient);
+            sendEmailMessage(mailClient, subject, content, recipient);
         } catch (Exception e)
         {
             Log.error("Failed to send failure message", e);
@@ -471,7 +471,36 @@ public final class ExportJob implements IAsyncJob
         String roCratePublicUrl = configuration.getStringProperty(RoCrateServerParameter.httpServerPublicUrl);
         String content = roCratePublicUrl + "/download?jobId=" + encode(this.jobId.toString()) + "&apiKey=" + encode(this.exportParams.getApiKey());
         Log.info("Sending email to: " + recipient + "\nContent:" + content);
-        mailClient.sendEmailMessage(subject, content, null, null, recipient);
+        sendEmailMessage(mailClient, subject, content, recipient);
+    }
+
+    private static void sendEmailMessage(MailClient mailClient, String subject, String content,
+            EMailAddress recipient)
+    {
+        Thread thread = Thread.currentThread();
+        ClassLoader originalContextClassLoader = thread.getContextClassLoader();
+        ClassLoader mailClassLoader = MailClient.class.getClassLoader();
+        // RO-Crate can run under Quarkus class loaders where Jakarta Mail API classes are
+        // resolved from one loader while ServiceLoader finds Angus Mail from another one.
+        // That makes org.eclipse.angus.mail.util.MailStreamProvider fail the
+        // jakarta.mail.util.StreamProvider subtype check. Use the MailClient loader only
+        // for this send operation so Jakarta Mail loads its provider from the same loader.
+        boolean restoreContextClassLoader = mailClassLoader != null
+                && originalContextClassLoader != mailClassLoader;
+        if (restoreContextClassLoader)
+        {
+            thread.setContextClassLoader(mailClassLoader);
+        }
+        try
+        {
+            mailClient.sendEmailMessage(subject, content, null, null, recipient);
+        } finally
+        {
+            if (restoreContextClassLoader)
+            {
+                thread.setContextClassLoader(originalContextClassLoader);
+            }
+        }
     }
 
     private static String encode(String value) {
