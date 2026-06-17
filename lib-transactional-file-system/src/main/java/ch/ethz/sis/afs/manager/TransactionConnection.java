@@ -121,7 +121,7 @@ public class TransactionConnection implements TransactionalFileSystem
             Set<String> enabledPreviewFileTypes,
             long enablePreviewSizeInBytes)
     {
-        this(lockManager, jsonObjectMapper, trashRootProvider, null, enabledPreviewFileTypes, enablePreviewSizeInBytes);
+        this(lockManager, jsonObjectMapper, trashRootProvider, null, null, enabledPreviewFileTypes, enablePreviewSizeInBytes);
         this.writeAheadLogRoot = writeAheadLogRoot;
         this.storageRoot = storageRoot;
         this.recoveredTransactions = recoveredTransactions;
@@ -134,6 +134,7 @@ public class TransactionConnection implements TransactionalFileSystem
             JsonObjectMapper jsonObjectMapper,
             TrashRootProvider trashRootProvider,
             Transaction transaction,
+            State state,
             Set<String> enabledPreviewFileTypes,
             long enablePreviewSizeInBytes)
     {
@@ -144,7 +145,7 @@ public class TransactionConnection implements TransactionalFileSystem
 
         if (transaction != null)
         {
-            state = State.Prepare;
+            this.state = state;
             for (Operation operation : transaction.getOperations())
             {
                 boolean locksObtained = lockManager.add(operation.getLocks());
@@ -156,7 +157,7 @@ public class TransactionConnection implements TransactionalFileSystem
             }
         } else
         {
-            state = State.New;
+            this.state = State.New;
         }
 
         this.enabledPreviewFileTypes = enabledPreviewFileTypes;
@@ -186,9 +187,9 @@ public class TransactionConnection implements TransactionalFileSystem
         if (state == State.New)
         {
             // New just created transaction
-        } else if (state == State.Executed || state == State.Rollback || state == State.Prepare)
+        } else if (state == State.Executed || state == State.Failed || state == State.Rollback || state == State.Prepare)
         {
-            // Clean transaction, can ve reused
+            // Clean transaction, can be reused
             transaction = null;
             transactionFileSystemIO = null;
             state = State.New;
@@ -250,16 +251,14 @@ public class TransactionConnection implements TransactionalFileSystem
         {
             for (Operation operation : transaction.getOperations())
             {
-                operationExecutors.get(operation.getName()).commit(transaction, operation);
+                try
+                {
+                    operationExecutors.get(operation.getName()).commit(transaction, operation);
+                } catch (Exception e) {
+                    state = State.Failed;
+                    throw new RuntimeException("Commit failed for transaction " + transaction.getUuid() + " operation " + operation.getName() + ".", e);
+                }
             }
-
-            // Additionally to the write operations, there is read operations that generate metadata like the md5 and the preview
-            // These operations all stored on the .afs folders and all these files should override whatever is on the destination
-            {
-                // ./transaction-log/.afs
-                // ./transaction-log/folderA/.afs
-            }
-            //
 
             cleanTransaction();
             state = State.Executed;

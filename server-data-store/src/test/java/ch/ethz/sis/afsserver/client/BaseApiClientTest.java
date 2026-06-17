@@ -969,6 +969,55 @@ public abstract class BaseApiClientTest
     }
 
     @Test
+    public void delete_rootFolder() throws Exception
+    {
+        login();
+
+        File[] beforeDeletionAFS = listFilesFromAFS(afsClient, owner, "/");
+        assertEquals("""
+                /A.txt, FILE, 4
+                /test-folder, FOLDER, null
+                /test-folder/test-subfolder, FOLDER, null
+                /test-folder/test-subfolder/test.png, FILE, 19951
+                """, printFiles(beforeDeletionAFS));
+
+        afsClient.delete(owner, "", false);
+
+        try
+        {
+            listFilesFromAFS(afsClient, owner, "/");
+            fail();
+        } catch (Exception e)
+        {
+            assertTrue(e.getMessage(), e.getMessage().contains("NoSuchFileException"));
+        }
+    }
+
+    @Test
+    public void delete_rootFolderToTrash() throws Exception
+    {
+        login();
+
+        File[] beforeDeletionAFS = listFilesFromAFS(afsClient, owner, "/");
+        assertEquals("""
+                /A.txt, FILE, 4
+                /test-folder, FOLDER, null
+                /test-folder/test-subfolder, FOLDER, null
+                /test-folder/test-subfolder/test.png, FILE, 19951
+                """, printFiles(beforeDeletionAFS));
+
+        try
+        {
+            afsClient.delete(owner, "", true);
+            fail();
+        } catch (Exception e)
+        {
+            assertThat(e.getMessage(),
+                    containsString("Parameter of operation Delete is invalid. Deleted source cannot be an ancestor of the trash root."));
+        }
+    }
+
+    @Test
     public void login_sessionTokenIsNotNull() throws Exception
     {
         final String token = login();
@@ -1626,6 +1675,41 @@ public abstract class BaseApiClientTest
     }
 
     @Test
+    public void copy_rootFolder() throws Exception
+    {
+        login();
+
+        UUID newOwner = UUID.randomUUID();
+
+        File[] filesBefore = listFilesFromAFS(afsClient, owner, "/");
+        assertEquals("""
+                /A.txt, FILE, 4
+                /test-folder, FOLDER, null
+                /test-folder/test-subfolder, FOLDER, null
+                /test-folder/test-subfolder/test.png, FILE, 19951
+                """, printFiles(filesBefore));
+
+        Boolean result = afsClient.copy(owner, "", newOwner.toString(), "");
+        assertTrue(result);
+
+        File[] filesAfterOwner = listFilesFromAFS(afsClient, owner, "/");
+        assertEquals("""
+                /A.txt, FILE, 4
+                /test-folder, FOLDER, null
+                /test-folder/test-subfolder, FOLDER, null
+                /test-folder/test-subfolder/test.png, FILE, 19951
+                """, printFiles(filesAfterOwner));
+
+        File[] filesAfterNewOwner = listFilesFromAFS(afsClient, newOwner.toString(), "/");
+        assertEquals("""
+                /A.txt, FILE, 4
+                /test-folder, FOLDER, null
+                /test-folder/test-subfolder, FOLDER, null
+                /test-folder/test-subfolder/test.png, FILE, 19951
+                """, printFiles(filesAfterNewOwner));
+    }
+
+    @Test
     public void move_fromFileNotInTheStoreIsNotAllowed() throws Exception
     {
         testOperationOnAFileNotInTheStoreIsNotAllowed(OperationName.Move, (owner, source) -> afsClient.move(owner, source, owner, FILE_BINARY));
@@ -1793,6 +1877,42 @@ public abstract class BaseApiClientTest
                 /test-subfolder, FOLDER, null
                 /test-subfolder/test.png, FILE, 19951
                 """, printFiles(filesAfter));
+    }
+
+    @Test
+    public void move_rootFolder() throws Exception
+    {
+        login();
+
+        UUID newOwner = UUID.randomUUID();
+
+        File[] filesBefore = listFilesFromAFS(afsClient, owner, "/");
+        assertEquals("""
+                /A.txt, FILE, 4
+                /test-folder, FOLDER, null
+                /test-folder/test-subfolder, FOLDER, null
+                /test-folder/test-subfolder/test.png, FILE, 19951
+                """, printFiles(filesBefore));
+
+        Boolean result = afsClient.move(owner, "", newOwner.toString(), "");
+        assertTrue(result);
+
+        try
+        {
+            listFilesFromAFS(afsClient, owner, "/");
+            fail();
+        } catch (Exception e)
+        {
+            assertTrue(e.getMessage(), e.getMessage().contains("NoSuchFileException"));
+        }
+
+        File[] filesAfterNewOwner = listFilesFromAFS(afsClient, newOwner.toString(), "/");
+        assertEquals("""
+                /A.txt, FILE, 4
+                /test-folder, FOLDER, null
+                /test-folder/test-subfolder, FOLDER, null
+                /test-folder/test-subfolder/test.png, FILE, 19951
+                """, printFiles(filesAfterNewOwner));
     }
 
     @Test
