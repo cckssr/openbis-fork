@@ -384,7 +384,9 @@ public class SampleDAO extends AbstractGenericEntityWithPropertiesDAO<SamplePE> 
             parameterBinder.accept(query);
         }
 
-        List<SamplePE> result = query.getResultList();
+        // JOIN FETCH on sample_properties produces one row per property; deduplicate in Java
+        // to avoid SELECT DISTINCT on json columns (PostgreSQL json type has no equality operator).
+        List<SamplePE> result = new ArrayList<>(new HashSet<>(query.getResultList()));
         if (operationLog.isDebugEnabled())
         {
             operationLog.debug(String.format("%s samples has been found", result.size()));
@@ -447,7 +449,11 @@ public class SampleDAO extends AbstractGenericEntityWithPropertiesDAO<SamplePE> 
     private Query<SamplePE> createSampleSelectionQuery(List<String> conditions, boolean fetchProperties)
     {
         StringBuilder hql = new StringBuilder();
-        hql.append("select distinct s from ").append(ENTITY_CLASS.getName()).append(" s ")
+        // When fetching properties, omit DISTINCT: sample_properties has a json_value column
+        // of type json, and PostgreSQL's json type has no equality operator, so SELECT DISTINCT
+        // would fail. The caller deduplicates in Java instead.
+        hql.append(fetchProperties ? "select s from " : "select distinct s from ")
+                .append(ENTITY_CLASS.getName()).append(" s ")
                 .append("join fetch s.sampleType st ")
                 .append("left join fetch st.sampleTypePropertyTypesInternal ");
         if (fetchProperties)
