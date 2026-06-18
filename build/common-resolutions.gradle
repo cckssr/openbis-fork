@@ -55,6 +55,7 @@ configurations.all {
     def commonsLangVersion = catalog.findVersion("commons-lang-commons-lang").get().requiredVersion
     def commonsIoVersion = catalog.findVersion("commons-io-commons-io").get().requiredVersion
     def commonsLang3Version = catalog.findVersion("org-apache-commons-commons-lang3").get().requiredVersion
+    def guavaVersion = catalog.findVersion("com-google-guava-guava").get().requiredVersion
     resolutionStrategy {
         force(
                 "org.hamcrest:hamcrest-core:${hamcrestVersion}",
@@ -83,7 +84,10 @@ configurations.all {
                 "commons-io:commons-io:${commonsIoVersion}",
                 // CVE-2025-48924: commons-lang3 3.7 likewise leaks via legacy POMs
                 // (docx4j, sis-base) and custom batteries/adminConsole bundles.
-                "org.apache.commons:commons-lang3:${commonsLang3Version}"
+                "org.apache.commons:commons-lang3:${commonsLang3Version}",
+                // CVE-2018-10237: older guava 18.0/20.0 leaks through reflections,
+                // docx4j, and xoai. Keep every configuration on the catalog version.
+                "com.google.guava:guava:${guavaVersion}"
         )
     }
 }

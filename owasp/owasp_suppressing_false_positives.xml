@@ -36,18 +36,64 @@
 		<packageUrl regex="true">^pkg:maven/com\.squareup\.okhttp3/okhttp@.*$</packageUrl>
 		<cve>CVE-2018-20200</cve>
 	</suppress>
-	<!-- [2027-06-01] guava 18.0 / 20.0 / 31.1 on production classpaths. CVE-2020-8908
+	<!-- [2027-06-01] guava 31.1 on production classpaths. Older transitive guava
+	     releases are force-pinned to this catalog version in common-resolutions.
+	     CVE-2020-8908
 	     and CVE-2023-2976 are the same world-readable temp-dir family in
 	     com.google.common.io (Files.createTempDir / FileBackedOutputStream);
 	     CVE-2023-2976 is the follow-up "complete fix" CVE for CVE-2020-8908.
-	     openBIS does not use these temp-dir APIs, and the legacy 18.0/20.0 jars
-	     come from the openbis-ivy repo where a force-upgrade to 32+ would be a
-	     14-major-version jump on old modules. Re-validate annually - a future
-	     guava bump on the modern jars would also clear it. -->
+	     openBIS does not use these temp-dir APIs. Re-validate annually - a future
+	     guava bump would also clear it. -->
 	<suppress until="2027-06-01Z">
 		<packageUrl regex="true">^pkg:maven/com\.google\.guava/guava@.*$</packageUrl>
 		<cve>CVE-2020-8908</cve>
 		<cve>CVE-2023-2976</cve>
+	</suppress>
+	<!-- [2027-06-01] CVE-2023-50572 is for jline-groovy v3.24.1
+	     GroovyEngine.execute. The reported jline:jline 0.9.94 artifact is the
+	     legacy JLine 1 API used by CLI code and does not contain the JLine 3
+	     groovy module. CPE over-match - annual re-check. -->
+	<suppress until="2027-06-01Z">
+		<packageUrl>pkg:maven/jline/jline@0.9.94</packageUrl>
+		<cve>CVE-2023-50572</cve>
+	</suppress>
+	<!-- [2027-06-01] CVE-2023-1932 applies to org.hibernate.validator
+	     hibernate-validator versions before 6.2. OWASP matches the unrelated
+	     io.quarkus:quarkus-hibernate-validator-spi artifact to the
+	     hibernate-validator CPE because of the artifact name; the real
+	     hibernate-validator catalog dependency is on 8.x. CPE over-match -
+	     annual re-check. -->
+	<suppress until="2027-06-01Z">
+		<packageUrl regex="true">^pkg:maven/io\.quarkus/quarkus\-hibernate\-validator\-spi@.*$</packageUrl>
+		<cve>CVE-2023-1932</cve>
+	</suppress>
+	<!-- [2026-09-01] sqlite-jdbc 3.53.1.0 embeds SQLite before 3.53.2
+	     (CVE-2026-11822 / CVE-2026-11824 in FTS5). The patched
+	     org.xerial:sqlite-jdbc:3.53.2.0 is not present in openbis-ivy yet, and
+	     the current code has no FTS5 MATCH queries. Add 3.53.2.0 to the mirror,
+	     bump the catalog, and remove this suppression. -->
+	<suppress until="2026-09-01Z">
+		<packageUrl>pkg:maven/org.xerial/sqlite-jdbc@3.53.1.0</packageUrl>
+		<cve>CVE-2026-11822</cve>
+		<cve>CVE-2026-11824</cve>
+	</suppress>
+	<!-- [2026-09-01] CVE-2026-33929 affects the Apache PDFBox
+	     ExtractEmbeddedFiles example. The configured openbis-ivy mirror does not
+	     carry PDFBox 2.0.37 yet, the repo has no ExtractEmbeddedFiles copy/usage,
+	     and the resolved pdfbox-2.0.36 jar does not include the examples package.
+	     Re-check shortly and remove this once 2.0.37 is available in the mirror. -->
+	<suppress until="2026-09-01Z">
+		<packageUrl regex="true">^pkg:maven/org\.apache\.pdfbox/(pdfbox|xmpbox)@2\.0\.36$</packageUrl>
+		<cve>CVE-2026-33929</cve>
+	</suppress>
+	<!-- [2027-06-01] CVE-2026-6860 is a Vert.x TLS hostname/SNI issue. The
+	     reported vertx-uri-template 4.5.26 jar contains only URI template code,
+	     while the relevant vertx-core dependency resolves to 4.5.27. The mirror
+	     also has no vertx-uri-template 4.5.27 artifact. CPE over-match on the
+	     component artifact - annual re-check. -->
+	<suppress until="2027-06-01Z">
+		<packageUrl>pkg:maven/io.vertx/vertx-uri-template@4.5.26</packageUrl>
+		<cve>CVE-2026-6860</cve>
 	</suppress>
 	<!-- [2027-06-01] qui-directory-tree is a tiny mvnpm-packaged JavaScript module;
 	     OWASP's CPE heuristic incorrectly matches it against the Quarkus framework
@@ -97,7 +143,7 @@
 	     whether a patched 4.1.x has shipped or Quarkus has moved to netty 4.2 so
 	     the whole build can upgrade together. -->
 	<suppress until="2026-12-01Z">
-		<packageUrl regex="true">^pkg:maven/io\.netty/netty-.*@4\.1\.134\.Final$</packageUrl>
+		<packageUrl regex="true">^pkg:maven/io\.netty/netty-.*@4\.1\.135\.Final$</packageUrl>
 		<cve>CVE-2026-42582</cve>
 	</suppress>
 	<!-- [2026-12-01] IzPack 5.0-beta9 is the installer-build toolkit, pulled in ONLY by
