@@ -134,6 +134,12 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
             }
         }
 
+		this.getUUID = function() {
+			return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+				(c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+			);
+		}
+
 		this.log = function(msg) {
 			if (console) {
 				console.log(msg);
@@ -379,17 +385,11 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
             return dfd.promise();
 		}
 
-		function getUUID() {
-			return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
-				(c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
-			);
-		}
-
 	    this.uploadFilesWorkspaceDSS = function(files) {
 	        checkTransactionsNotSupported()
 
 			var thisFacade = this;
-			var uploadId = getUUID();
+			var uploadId = thisFacade._private.getUUID();
 			var dfd = jquery.Deferred();
 
 			this._uploadFileWorkspaceDSSEmptyDir(uploadId).then(function() {
@@ -858,7 +858,7 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
             thisFacade._private.checkSessionTokenExists();
             thisFacade._private.checkInteractiveSessionKeyExists();
 
-		    thisFacade._private.transactionId = crypto.randomUUID();
+		    thisFacade._private.transactionId = thisFacade._private.getUUID();
 
 		    return thisFacade._private.ajaxRequest({
                 url : transactionCoordinatorUrl,
