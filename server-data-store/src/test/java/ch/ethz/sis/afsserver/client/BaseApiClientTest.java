@@ -976,6 +976,7 @@ public abstract class BaseApiClientTest
         File[] beforeDeletionAFS = listFilesFromAFS(afsClient, owner, "/");
         assertEquals("""
                 /A.txt, FILE, 4
+                /C % = # ~ $ .txt, FILE, 4
                 /test-folder, FOLDER, null
                 /test-folder/test-subfolder, FOLDER, null
                 /test-folder/test-subfolder/test.png, FILE, 19951
@@ -1001,6 +1002,7 @@ public abstract class BaseApiClientTest
         File[] beforeDeletionAFS = listFilesFromAFS(afsClient, owner, "/");
         assertEquals("""
                 /A.txt, FILE, 4
+                /C % = # ~ $ .txt, FILE, 4
                 /test-folder, FOLDER, null
                 /test-folder/test-subfolder, FOLDER, null
                 /test-folder/test-subfolder/test.png, FILE, 19951
@@ -1684,6 +1686,7 @@ public abstract class BaseApiClientTest
         File[] filesBefore = listFilesFromAFS(afsClient, owner, "/");
         assertEquals("""
                 /A.txt, FILE, 4
+                /C % = # ~ $ .txt, FILE, 4
                 /test-folder, FOLDER, null
                 /test-folder/test-subfolder, FOLDER, null
                 /test-folder/test-subfolder/test.png, FILE, 19951
@@ -1695,6 +1698,7 @@ public abstract class BaseApiClientTest
         File[] filesAfterOwner = listFilesFromAFS(afsClient, owner, "/");
         assertEquals("""
                 /A.txt, FILE, 4
+                /C % = # ~ $ .txt, FILE, 4
                 /test-folder, FOLDER, null
                 /test-folder/test-subfolder, FOLDER, null
                 /test-folder/test-subfolder/test.png, FILE, 19951
@@ -1703,6 +1707,7 @@ public abstract class BaseApiClientTest
         File[] filesAfterNewOwner = listFilesFromAFS(afsClient, newOwner.toString(), "/");
         assertEquals("""
                 /A.txt, FILE, 4
+                /C % = # ~ $ .txt, FILE, 4
                 /test-folder, FOLDER, null
                 /test-folder/test-subfolder, FOLDER, null
                 /test-folder/test-subfolder/test.png, FILE, 19951
@@ -1889,6 +1894,7 @@ public abstract class BaseApiClientTest
         File[] filesBefore = listFilesFromAFS(afsClient, owner, "/");
         assertEquals("""
                 /A.txt, FILE, 4
+                /C % = # ~ $ .txt, FILE, 4
                 /test-folder, FOLDER, null
                 /test-folder/test-subfolder, FOLDER, null
                 /test-folder/test-subfolder/test.png, FILE, 19951
@@ -1909,6 +1915,7 @@ public abstract class BaseApiClientTest
         File[] filesAfterNewOwner = listFilesFromAFS(afsClient, newOwner.toString(), "/");
         assertEquals("""
                 /A.txt, FILE, 4
+                /C % = # ~ $ .txt, FILE, 4
                 /test-folder, FOLDER, null
                 /test-folder/test-subfolder, FOLDER, null
                 /test-folder/test-subfolder/test.png, FILE, 19951
