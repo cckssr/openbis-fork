@@ -67,7 +67,7 @@ async function testValidate() {
         error: 'Code cannot be empty'
       },
       generatedCodePrefix: {
-        error: 'Generated code prefix cannot be empty'
+        error: 'Generated Code Prefix cannot be empty'
       },
       errors: 2
     },
@@ -76,7 +76,7 @@ async function testValidate() {
         id: 'property-0',
         code: { value: null, error: 'Code cannot be empty' },
         dataType: { value: null, error: 'Data Type cannot be empty' },
-        label: { value: null, error: 'Property label cannot be empty' },
+        label: { value: null, error: 'Property Label cannot be empty' },
         description: { value: null, error: 'Description cannot be empty' },
         errors: 4
       }
