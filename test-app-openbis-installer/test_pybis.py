@@ -80,7 +80,7 @@ class TestCase(systemtest.testcase.TestCase):
     def _get_openbis(self):
         # pybis can only be imported after installPybis is called
         import pybis
-        return pybis.Openbis(url="https://localhost:8443", verify_certificates=False)
+        return pybis.Openbis(url="http://localhost:8080", verify_certificates=False, allow_http_but_do_not_use_this_in_production_and_only_within_safe_networks=True)
 
 
     def _test_login(self, openbis):
