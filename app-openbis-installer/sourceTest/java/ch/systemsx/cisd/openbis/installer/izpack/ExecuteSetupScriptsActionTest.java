@@ -37,13 +37,9 @@ public class ExecuteSetupScriptsActionTest extends AbstractFileSystemTestCase
 {
     private File dssServicePropertiesFile;
 
-    private File jettySSLIniFile;
-
     private ExecuteSetupScriptsAction action;
 
     private File myKeystoreFile;
-
-    private File keystoreFileAS;
 
     private File keystoreFileDSS;
 
@@ -52,15 +48,10 @@ public class ExecuteSetupScriptsActionTest extends AbstractFileSystemTestCase
     {
         dssServicePropertiesFile =
                 new File(workingDirectory, Utils.DSS_PATH + Utils.SERVICE_PROPERTIES_PATH);
-        jettySSLIniFile = new File(workingDirectory, Utils.AS_PATH + Utils.JETTY_SSL_INI_PATH);
         FileUtils.copyFile(
                 new File("../core-plugin-openbis/dist/etc/service.properties/"),
                 dssServicePropertiesFile);
-        FileUtils.copyFile(
-                new File("../server-application-server/dist/server/base/start.d/ssl.ini"),
-                jettySSLIniFile);
 
-        keystoreFileAS = new File(workingDirectory, Utils.AS_PATH + Utils.KEYSTORE_PATH);
         keystoreFileDSS = new File(workingDirectory, Utils.DSS_PATH + Utils.KEYSTORE_PATH);
         myKeystoreFile = new File(workingDirectory, "my-keystore");
         FileUtils.writeStringToFile(myKeystoreFile, "my-keys");
@@ -72,7 +63,6 @@ public class ExecuteSetupScriptsActionTest extends AbstractFileSystemTestCase
     {
         action.installKeyStore("", workingDirectory);
 
-        assertEquals(false, keystoreFileAS.exists());
         assertEquals(false, keystoreFileDSS.exists());
     }
 
@@ -81,8 +71,6 @@ public class ExecuteSetupScriptsActionTest extends AbstractFileSystemTestCase
     {
         action.installKeyStore(myKeystoreFile.getPath(), workingDirectory);
 
-        assertEquals(true, keystoreFileAS.exists());
-        assertEquals("my-keys", FileUtils.readFileToString(keystoreFileAS));
         assertEquals(true, keystoreFileDSS.exists());
         assertEquals("my-keys", FileUtils.readFileToString(keystoreFileDSS));
     }
@@ -123,33 +111,6 @@ public class ExecuteSetupScriptsActionTest extends AbstractFileSystemTestCase
                 properties.getProperty(ExecuteSetupScriptsAction.POST_REGISTRATION_TASKS_KEY));
         assertEquals("post-registration, " + ExecuteSetupScriptsAction.PATHINFO_DB_DELETION_TASK,
                 properties.getProperty(ExecuteSetupScriptsAction.MAINTENANCE_PLUGINS_KEY));
-    }
-
-    @Test
-    public void testInjectPasswords() throws Exception
-    {
-        action.injectPasswords("my-<store>", "my-<key>", workingDirectory);
-
-        Properties properties = loadProperties(dssServicePropertiesFile);
-        assertEquals("my-<store>", properties.getProperty(Utils.DSS_KEYSTORE_PASSWORD_KEY));
-        assertEquals("my-<key>", properties.getProperty(Utils.DSS_KEYSTORE_KEY_PASSWORD_KEY));
-        assertEquals(
-                "[jetty.sslContext.keyStorePassword=my-<store>, jetty.sslContext.keyManagerPassword=my-<key>, jetty.sslContext.trustStorePassword=my-<store>]",
-                loadFilteredAndTrimmedJettyXMLFile().toString());
-    }
-
-    public List<String> loadFilteredAndTrimmedJettyXMLFile()
-    {
-        List<String> lines = FileUtilities.loadToStringList(jettySSLIniFile);
-        List<String> result = new ArrayList<String>();
-        for (String line : lines)
-        {
-            if (line.indexOf("Password=") > 0)
-            {
-                result.add(line.trim());
-            }
-        }
-        return result;
     }
 
     public Properties loadProperties(File propertiesFile) throws Exception

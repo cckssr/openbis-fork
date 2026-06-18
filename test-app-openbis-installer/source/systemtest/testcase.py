@@ -294,7 +294,7 @@ class TestCase(object):
                                                             nameOfNewInstance)
         util.writeProperties(dssPropsFile, dssProps)
 
-    def createOpenbisController(self, instanceName='openbis', port='8443', dropDatabases=True,
+    def createOpenbisController(self, instanceName='openbis', port='8080', dropDatabases=True,
                                 databasesToDrop=[]):
         """
         Creates an openBIS controller object assuming that an openBIS instance for the specified name is installed.
@@ -484,7 +484,7 @@ class ScreeningTestClient(object):
         output = util.executeCommand(['java',
                                       '-Djavax.net.ssl.trustStore=../openbis/servers/openBIS-server/jetty/etc/openBIS.keystore',
                                       '-jar', 'openbis_screening_api.jar', 'admin', 'admin',
-                                      'https://localhost:8443'], suppressStdOut=True,
+                                      'http://localhost:8080'], suppressStdOut=True,
                                      workingDir=self.installPath)
         with open("%s/log.txt" % self.installPath, 'w') as log:
             for line in output:
@@ -522,7 +522,7 @@ class OpenbisController(_Controller):
     Class to control AS and DSS of an installed openBIS instance.
     """
 
-    def __init__(self, testCase, testName, installPath, instanceName, port='8443',
+    def __init__(self, testCase, testName, installPath, instanceName, port='8080',
                  dropDatabases=True, databasesToDrop=[]):
         """
         Creates a new instance for specifies test case with specified test and instance name, installation path.
@@ -547,12 +547,12 @@ class OpenbisController(_Controller):
         self.dssProperties['imaging-database.kind'] = self.databaseKind
         self.dssPropertiesModified = True
         self.passwdScript = "%s/servers/openBIS-server/jetty/bin/passwd.sh" % installPath
-        if port != '8443':
-            self.sslIniFile = "%s/servers/openBIS-server/jetty/start.d/ssl.ini" % installPath
-            if os.path.exists(self.sslIniFile):
-                self.sslIni = util.readProperties(self.sslIniFile)
-                self.sslIni['jetty.ssl.port'] = port
-                util.writeProperties(self.sslIniFile, self.sslIni)
+#         if port != '8443':
+#             self.sslIniFile = "%s/servers/openBIS-server/jetty/start.d/ssl.ini" % installPath
+#             if os.path.exists(self.sslIniFile):
+#                 self.sslIni = util.readProperties(self.sslIniFile)
+#                 self.sslIni['jetty.ssl.port'] = port
+#                 util.writeProperties(self.sslIniFile, self.sslIni)
         if dropDatabases:
             util.dropDatabase(PSQL_EXE, "openbis_%s" % self.databaseKind)
             util.dropDatabase(PSQL_EXE, "pathinfo_%s" % self.databaseKind)
