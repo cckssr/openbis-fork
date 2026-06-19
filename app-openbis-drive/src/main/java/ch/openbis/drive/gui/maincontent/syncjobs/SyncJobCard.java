@@ -19,10 +19,7 @@ import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.control.Label;
-import javafx.scene.control.ProgressBar;
-import javafx.scene.control.RadioButton;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
@@ -168,6 +165,19 @@ public class SyncJobCard extends ResizablePanel implements AutoCloseable {
         this.hBoxContainer.setMinWidth(Math.min(parent.getWidth(), this.getMaxWidth()) - 50);
         this.syncJobCoordinates.setPrefWidth(Math.min(parent.getWidth(), this.getMaxWidth()) - SYNC_JOB_ATTRIBUTE_WIDTH - 150);
         this.syncJobCoordinates.setMaxWidth(Math.min(parent.getWidth(), this.getMaxWidth()) - SYNC_JOB_ATTRIBUTE_WIDTH - 150);
+    }
+
+    public void setScanning(boolean remote) {
+        Platform.runLater( () -> {
+            this.liveStatus.setText(
+                remote ?
+                    i18n.get("main_panel.sync_tasks.sync_job_card.live_state.scanning_remote") :
+                    i18n.get("main_panel.sync_tasks.sync_job_card.live_state.scanning_local")
+            );
+            this.progressBarWithFraction.getStyleClass().removeIf( cls -> cls.equals(DisplaySettings.HIDDEN_DISPLAY_STYLE_CLASS) );
+            this.animatedProgressBar.getProgressBar().setProgress(ProgressIndicator.INDETERMINATE_PROGRESS);
+            this.progressFraction.setText("");
+        });
     }
 
     public void setUploading(long total, long current) {

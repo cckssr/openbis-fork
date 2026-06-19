@@ -1307,7 +1307,7 @@ public class SyncOperationTest extends TestCase {
                             ClientAPI.TransferMonitorListener transferMonitorListener = invocationOnMock.getArgument(4, ClientAPI.TransferMonitorListener.class);
                             //call start and add on transferMonitorListener to cause a 'transferred' event
                             transferMonitorListener.start(localFile, remoteFile, 10);
-                            transferMonitorListener.add(localFile, remoteFile, 10, true);
+                            transferMonitorListener.add(localFile, remoteFile, 10, true, false);
                             if(transferMonitorException) {
                                 transferMonitorListener.failed(new RuntimeException("EXCEPTIONAL RESULT"));
                             }

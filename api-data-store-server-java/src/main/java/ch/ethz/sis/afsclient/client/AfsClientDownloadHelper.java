@@ -63,7 +63,7 @@ public class AfsClientDownloadHelper {
 
                 if (Boolean.FALSE.equals(nextFile.getDirectory())) {
                     Path localPathForFile = computeLocalPathForFile(sourcePath, destinationPath, nextFile);
-                    Optional<File> precheckedNextFile = createRegularFile(localPathForFile, nextFile, fileCollisionListener);
+                    Optional<File> precheckedNextFile = createRegularFile(localPathForFile, nextFile, fileCollisionListener, transferMonitorListener);
 
                     if (precheckedNextFile.isPresent()) {
                         if (nextFile.getSize() > 0) {
@@ -71,7 +71,7 @@ public class AfsClientDownloadHelper {
                             transferMonitorListener.start(nextFromPath, localPathForFile.toAbsolutePath(), nextFile.getSize());
                         } else {
                             transferMonitorListener.start(nextFromPath, localPathForFile.toAbsolutePath(), 0);
-                            transferMonitorListener.add(nextFromPath, localPathForFile.toAbsolutePath(), 0, true);
+                            transferMonitorListener.add(nextFromPath, localPathForFile.toAbsolutePath(), 0, true, false);
                         }
 
                         ChunkIterable chunkIterable = new ChunkIterable(precheckedNextFile.get(), afsClient.getMaxReadSizeInBytes());
@@ -228,7 +228,12 @@ public class AfsClientDownloadHelper {
         return localPath;
     }
 
-    private static Optional<File> createRegularFile(Path localPathForFile, File serverFile, FileCollisionListener fileCollisionListener) throws IOException {
+    private static Optional<File> createRegularFile(
+            Path localPathForFile,
+            File serverFile,
+            FileCollisionListener fileCollisionListener,
+            TransferMonitorListener transferMonitor
+    ) throws IOException {
         Path serverFileAbsolutePath = Path.of(serverFile.getPath());
         Path twinTmpLocalPath = TemporaryPathUtil.getTwinTemporaryPath(localPathForFile);
 
@@ -268,8 +273,13 @@ public class AfsClientDownloadHelper {
             throw new UnsupportedOperationException("CollisionAction.Resume not yet supported");
 
         } else if (collisionAction.equals(ClientAPI.CollisionAction.Skip)) {
+            transferMonitor.add(
+                    serverFileAbsolutePath,
+                    localPathForFile,
+                    Optional.ofNullable(serverFile.getSize()).orElse(0L),
+                    false, true
+            );
             return Optional.empty();
-
         } else {
             throw new IllegalStateException(String.format("Unhandled CollisionAction for collision between local-file %s and server-file %s", localPathForFile, serverFileAbsolutePath));
         }
@@ -333,7 +343,7 @@ public class AfsClientDownloadHelper {
                     randAccessFile.close();
                     Files.move(twinTmpLocalPath, localPath, StandardCopyOption.REPLACE_EXISTING);
                 }
-                transferMonitor.add(fromPath, localPath.toAbsolutePath(), writtenByteCount, completed);
+                transferMonitor.add(fromPath, localPath.toAbsolutePath(), writtenByteCount, completed, false);
             }
         }
 
