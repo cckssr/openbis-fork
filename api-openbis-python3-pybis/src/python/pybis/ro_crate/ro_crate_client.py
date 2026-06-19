@@ -44,7 +44,7 @@ class RoCrateClient:
     def __repr__(self):
         return self.__str__()
 
-    def echo(self, message):
+    def echo(self, message:str):
         ro_crate_url = self._ro_crate_url + "/test-echo"
         params = {
             "message": message
@@ -108,7 +108,7 @@ class RoCrateClient:
                 response.raise_for_status()
                 raise ValueError(f"{response.text}")
 
-    def check_status(self, job_id):
+    def check_status(self, job_id:str):
         if job_id is None:
             raise ValueError("job_id cannot be None")
         ro_crate_url = self._ro_crate_url + "/status/" + job_id
@@ -128,7 +128,7 @@ class RoCrateClient:
                 response.raise_for_status()
                 raise ValueError(f"{response.text}")
 
-    def download(self, job_id, destination, zip=True):
+    def download(self, job_id:str, destination:str, zip:bool=True):
         if job_id is None:
             raise ValueError("job_id cannot be None")
         if destination is None:
@@ -212,7 +212,7 @@ class Status:
     def __init__(self, jsonResponse):
         self.jobId = jsonResponse['jobId']
         self.status = jsonResponse['status']
-        self.errors = jsonResponse['errors'] if 'errors' in jsonResponse and len(jsonResponse['errors']) > 0 else None
+        self.errors = jsonResponse['errors']
         self.downloadUrl = jsonResponse['downloadUrl']
         self.validationResult = ValidationReport(jsonResponse['validationResult']) if jsonResponse['validationResult'] is not None else None
         self.importResponse = ImportResponse(jsonResponse['importResponse']) if jsonResponse['importResponse'] is not None else None
