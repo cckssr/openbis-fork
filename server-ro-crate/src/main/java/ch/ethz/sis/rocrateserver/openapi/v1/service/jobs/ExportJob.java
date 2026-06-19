@@ -308,7 +308,7 @@ public final class ExportJob implements IAsyncJob
                     pathsForDeletion.add(downloadPath);
 
                     final String downloadedFileName = downloadPath.toFile().getName();
-                    LOG.info(String.format("Downloaded OpenBIS export file: %s", downloadedFileName));
+                    LOG.info(String.format("Downloaded OpenBIS export file: %s", downloadPath));
 
                     OpenBisModel openBisModel =
                             ExcelReader.convert(ExcelReader.Format.ZIP_EXPORT, downloadPath,
@@ -544,7 +544,7 @@ public final class ExportJob implements IAsyncJob
                                 openBIS.getSessionToken()));
         request.method(HttpMethod.GET);
         request.send(listener);
-        LOG.info("Got a response!:");
+        LOG.info("Got a response!");
 
         // Write openBIS export to disk
         // TODO: Extract this part with previous
