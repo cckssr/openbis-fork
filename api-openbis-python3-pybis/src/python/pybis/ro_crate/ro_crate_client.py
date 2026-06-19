@@ -38,6 +38,12 @@ class RoCrateClient:
         self._verify = verify
         self.session = _create_session(url)
 
+    def __str__(self):
+        return f'RoCrateClient[url={self._ro_crate_url},verify={self._verify}]'
+
+    def __repr__(self):
+        return self.__str__()
+
     def echo(self, message):
         ro_crate_url = self._ro_crate_url + "/test-echo"
         params = {
@@ -178,7 +184,7 @@ class ValidationReport:
         self.errors = jsonResponse['errors']
 
     def __str__(self):
-        return f'ValidationReport[{self.isValid},{self.entities},{self.errors}]'
+        return f'ValidationReport[valid={self.isValid},entities={self.entities},errors={self.errors}]'
 
     def __repr__(self):
         return self.__str__()
@@ -206,14 +212,16 @@ class Status:
     def __init__(self, jsonResponse):
         self.jobId = jsonResponse['jobId']
         self.status = jsonResponse['status']
-        self.errors = jsonResponse['errors']
+        self.errors = jsonResponse['errors'] if 'errors' in jsonResponse and len(jsonResponse['errors']) > 0 else None
         self.downloadUrl = jsonResponse['downloadUrl']
         self.validationResult = ValidationReport(jsonResponse['validationResult']) if jsonResponse['validationResult'] is not None else None
         self.importResponse = ImportResponse(jsonResponse['importResponse']) if jsonResponse['importResponse'] is not None else None
 
 
     def __str__(self):
-        return f'Status[{self.jobId},{self.status}]'
+        if self.errors is not None:
+            f'Status[jobId={self.jobId},status={self.status},errors={self.errors}]'
+        return f'Status[jobId={self.jobId},status={self.status}]'
 
     def __repr__(self):
         return self.__str__()
