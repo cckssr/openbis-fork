@@ -54,43 +54,54 @@ function SpaceFormView(spaceFormController, spaceFormModel) {
 		var toolbarModel = [];
 		var continuedToolbarModel = [];
 		var dropdownOptionsModel = [];
+        var toolbarConfig = profile.getSpaceToolbarConfiguration();
         if (this._spaceFormModel.mode === FormMode.VIEW) {
 
-            if (_this._allowedToCreateProject()) {
+            if (_this._allowedToCreateProject() && toolbarConfig.CREATE_PROJECT) {
+                const labelInfo = LabelUtil.getToolbarLabelInfo("CREATE_PROJECT");
                 var $createProj = FormUtil.getToolbarButton("PROJECT", function() {
                     _this._spaceFormController.createProject();
-                }, "Project", "New Project", "create-project-btn-"+ this._viewId, 'btn btn-primary btn-secondary');
+                }, labelInfo.label, labelInfo.tooltip, "create-project-btn-"+ this._viewId, 'btn btn-primary btn-secondary');
                 toolbarModel.push({ component : $createProj});
             }
-            if(!spaceFormModel.isInventory) {
+            if(!spaceFormModel.isInventory && toolbarConfig.CREATE_FOLDER) {
+                const labelInfo = LabelUtil.getToolbarLabelInfo("CREATE_FOLDER");
                 var $createFolder = FormUtil.getToolbarButton("FOLDER", function() {
                     _this._spaceFormController.createObject("FOLDER");
-                }, "Folder", "New Folder", "create-folder-btn-"+ this._viewId, 'btn btn-primary btn-secondary');
+                }, labelInfo.label, labelInfo.tooltip, "create-folder-btn-"+ this._viewId, 'btn btn-primary btn-secondary');
                 toolbarModel.push({ component : $createFolder});
             }
 
-            var $createEntry = FormUtil.getToolbarButton("ENTRY", function() {
-                _this._spaceFormController.createObject("ENTRY");
-            }, "Entry", "New Entry", "create-entry-btn-"+ this._viewId, 'btn btn-primary btn-secondary');
-            toolbarModel.push({ component : $createEntry});
+            if(toolbarConfig.CREATE_ENTRY) {
+                const labelInfo = LabelUtil.getToolbarLabelInfo("CREATE_ENTRY");
+                var $createEntry = FormUtil.getToolbarButton("ENTRY", function () {
+                    _this._spaceFormController.createObject("ENTRY");
+                }, labelInfo.label, labelInfo.tooltip, "create-entry-btn-" + this._viewId, 'btn btn-primary btn-secondary');
+                toolbarModel.push({component: $createEntry});
+            }
 
-            var $createOther = FormUtil.getToolbarButton("ENTRY", function() {
-                _this._spaceFormController.createObject();
-            }, "Other", "Create different object", "create-object-btn-"+ this._viewId, 'btn btn-primary btn-secondary');
-            toolbarModel.push({ component : $createOther});
-            
-            if (this._allowedToEditSpace()) {
+            if(toolbarConfig.CREATE_OTHER) {
+                const labelInfo = LabelUtil.getToolbarLabelInfo("CREATE_OTHER");
+                var $createOther = FormUtil.getToolbarButton("ENTRY", function () {
+                    _this._spaceFormController.createObject();
+                }, labelInfo.label, labelInfo.tooltip, "create-object-btn-" + this._viewId, 'btn btn-primary btn-secondary');
+                toolbarModel.push({component: $createOther});
+            }
+
+            if (this._allowedToEditSpace() && toolbarConfig.EDIT) {
                 // edit
+                const labelInfo = LabelUtil.getToolbarLabelInfo("EDIT_SPACE");
                 var $editBtn = FormUtil.getToolbarButton("EDIT", function () {
                     _this._spaceFormController.enableEditing();
-                }, "Edit", "Edit space", "edit-space-btn-"+ this._viewId, 'btn btn-primary btn-secondary');
+                }, labelInfo.label, labelInfo.tooltip, "edit-space-btn-"+ this._viewId, 'btn btn-primary btn-secondary');
                 toolbarModel.push({ component : $editBtn });
             }
             
-            if (this._allowedToDeleteSpace()) {
+            if (this._allowedToDeleteSpace() && toolbarConfig.DELETE) {
                 // deletion
+                const labelInfo = LabelUtil.getToolbarLabelInfo("DELETE");
                 dropdownOptionsModel.push({
-                    label : "Delete",
+                    label : labelInfo.label,
                     action : function() {
                         var modalView = new DeleteEntityController(function(reason) {
                             _this._spaceFormController.deleteSpace(reason);
@@ -101,16 +112,21 @@ function SpaceFormView(spaceFormController, spaceFormModel) {
                 });
             }
 
-            //Print
-            dropdownOptionsModel.push(FormUtil.getPrintPDFButtonModel("SPACE", _this._spaceFormModel.v3_space.permId.permId));
+            if(toolbarConfig.PRINT) {
+                //Print
+                dropdownOptionsModel.push(FormUtil.getPrintPDFButtonModel("SPACE", _this._spaceFormModel.v3_space.permId.permId));
+            }
 
-            //Export
-            dropdownOptionsModel.push(FormUtil.getExportButtonModel("SPACE", _this._spaceFormModel.v3_space.permId.permId));
+            if(toolbarConfig.EXPORT_ALL) {
+                //Export
+                dropdownOptionsModel.push(FormUtil.getExportButtonModel("SPACE", _this._spaceFormModel.v3_space.permId.permId));
+            }
 
             //Jupyter Button
             if(profile.jupyterIntegrationServerEndpoint) {
+                const labelInfo = LabelUtil.getToolbarLabelInfo("NEW_JUPYTER");
                 dropdownOptionsModel.push({
-                    label : "New Jupyter notebook",
+                    label : labelInfo.label,
                     action : function () {
                         var jupyterNotebook = new JupyterNotebookController(_this._spaceFormModel.space);
                         jupyterNotebook.init();
@@ -119,9 +135,10 @@ function SpaceFormView(spaceFormController, spaceFormModel) {
             }
             
             // authorization
-            if (this._spaceFormModel.roles.indexOf("ADMIN") > -1 ) {
+            if (this._spaceFormModel.roles.indexOf("ADMIN") > -1 && toolbarConfig.MANAGE_ACCESS) {
+                const labelInfo = LabelUtil.getToolbarLabelInfo("MANAGE_ACCESS");
                 dropdownOptionsModel.push({
-                    label : "Manage access",
+                    label : labelInfo.label,
                     action : function () {
                         FormUtil.showAuthorizationDialog({
                             space: _this._spaceFormModel.space,
@@ -132,26 +149,31 @@ function SpaceFormView(spaceFormController, spaceFormModel) {
             
             //Freeze
             if(_this._spaceFormModel.v3_space && _this._spaceFormModel.v3_space.frozen !== undefined) { //Freezing available on the API
-                var isEntityFrozen = _this._spaceFormModel.v3_space.frozen;
-                if(isEntityFrozen) {
-                    var $freezeButton = FormUtil.getFreezeButton("SPACE", _this._spaceFormModel.v3_space.permId.permId, isEntityFrozen);
-                    toolbarModel.push({ component : $freezeButton, tooltip: "Entity Frozen" });
-                } else {
-                    dropdownOptionsModel.push({
-                        label : "Freeze Entity (Disable further modifications)",
-                        action : function() {
-                            FormUtil.showFreezeForm("SPACE", _this._spaceFormModel.v3_space.permId.permId,  _this._spaceFormModel.v3_space.code);
-                        }
-                    });
+                if(toolbarConfig.FREEZE) {
+                    var isEntityFrozen = _this._spaceFormModel.v3_space.frozen;
+                    if (isEntityFrozen) {
+                        const labelInfo = LabelUtil.getToolbarLabelInfo("FROZEN");
+                        var $freezeButton = FormUtil.getFreezeButton("SPACE", _this._spaceFormModel.v3_space.permId.permId, isEntityFrozen);
+                        toolbarModel.push({component: $freezeButton, tooltip: labelInfo.tooltip});
+                    } else {
+                        const labelInfo = LabelUtil.getToolbarLabelInfo("FREEZE_ENTITY");
+                        dropdownOptionsModel.push({
+                            label: labelInfo.label,
+                            action: function () {
+                                FormUtil.showFreezeForm("SPACE", _this._spaceFormModel.v3_space.permId.permId, _this._spaceFormModel.v3_space.code);
+                            }
+                        });
+                    }
                 }
             }
         } else {
+            const labelInfo = LabelUtil.getToolbarLabelInfo("SAVE");
             var $saveBtn = FormUtil.getToolbarButton("SAVE", function() {
                 _this._spaceFormController.updateSpace();
                 if(!_this._wasSideMenuCollapsed) {
                     mainController.sideMenu.expandSideMenu();
                 }
-            }, "Save", "Save changes", "save-space-btn-"+ this._viewId, 'btn btn-primary');
+            }, labelInfo.label, labelInfo.tooltip, "save-space-btn-"+ this._viewId, 'btn btn-primary');
             toolbarModel.push({ component : $saveBtn });
         }
 
@@ -163,9 +185,10 @@ function SpaceFormView(spaceFormController, spaceFormModel) {
         $formColumn.append(this._createDescriptionSection(hideShowOptionsModel));
         FormUtil.addOptionsToToolbar($formColumn, toolbarModel, dropdownOptionsModel, hideShowOptionsModel, "SPACE-VIEW", null, false);
 
+        const labelInfoHelp = LabelUtil.getToolbarLabelInfo("DOCS");
         var $helpBtn = FormUtil.getToolbarButton("?", function() {
                             mainController.openHelpPage();
-                        }, null, "Documentation", "help-btn-space-" + this._viewId, 'btn btn-default help');
+                        }, labelInfoHelp.label, labelInfoHelp.tooltip, "help-btn-space-" + this._viewId, 'btn btn-default help');
         $helpBtn.find("span").css("vertical-align", "middle").css("font-size", "24px")
         toolbarModel.push({ component : $helpBtn });
 

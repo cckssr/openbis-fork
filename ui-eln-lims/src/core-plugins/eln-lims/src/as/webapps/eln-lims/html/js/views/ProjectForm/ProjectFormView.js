@@ -66,67 +66,79 @@ function ProjectFormView(projectFormController, projectFormModel) {
 		var toolbarModel = [];
 		var continuedToolbarModel = [];
 		var dropdownOptionsModel = [];
+        var toolbarConfig = profile.getProjectToolbarConfiguration();
 		if(this._projectFormModel.mode === FormMode.VIEW) {
 
-            if(!isInventoryProject) {
+            if(!isInventoryProject && toolbarConfig.CREATE_FOLDER) {
+                 const labelInfo = LabelUtil.getToolbarLabelInfo("CREATE_FOLDER");
                  var $createFolder = FormUtil.getToolbarButton("FOLDER", function() {
                       _this._projectFormController.createObject("FOLDER");
-                 }, "Folder", "New Folder", "create-folder-btn-" + _this._viewId, 'btn btn-primary btn-secondary');
+                 }, labelInfo.label, labelInfo.tooltip, "create-folder-btn-" + _this._viewId, 'btn btn-primary btn-secondary');
                  toolbarModel.push({ component : $createFolder});
             }
+            if(toolbarConfig.CREATE_ENTRY) {
+                const labelInfo = LabelUtil.getToolbarLabelInfo("CREATE_ENTRY");
+                var $createEntry = FormUtil.getToolbarButton("ENTRY", function () {
+                    _this._projectFormController.createObject("ENTRY");
+                }, labelInfo.label, labelInfo.tooltip, "create-entry-btn-" + _this._viewId, 'btn btn-primary btn-secondary');
+                toolbarModel.push({component: $createEntry});
+            }
 
-		    var $createEntry = FormUtil.getToolbarButton("ENTRY", function() {
-                _this._projectFormController.createObject("ENTRY");
-            }, "Entry", "New Entry", "create-entry-btn-" + _this._viewId, 'btn btn-primary btn-secondary');
-            toolbarModel.push({ component : $createEntry});
 
-
-
-			if (_this._allowedToCreateExperiments()) {
+			if (_this._allowedToCreateExperiments() && toolbarConfig.CREATE_OTHER) {
 			    //Create Experiment
+                const labelInfo = LabelUtil.getToolbarLabelInfo("CREATE_OTHER");
 			    var $createOther = FormUtil.getToolbarButton("ENTRY", function() {
                     FormUtil.createNewCollectionOrObject(_this._projectFormModel.project.spaceCode, _this._projectFormModel.project.code, null, null);
-                }, "Other", "Create different object", "create-collection-btn-" + _this._viewId, 'btn btn-primary btn-secondary');
+                }, labelInfo.label, labelInfo.tooltip, "create-collection-btn-" + _this._viewId, 'btn btn-primary btn-secondary');
                 toolbarModel.push({ component : $createOther});
 			}
-			if (_this._allowedToMove()) {
+			if (_this._allowedToMove() && toolbarConfig.MOVE) {
                 //Move
+                const labelInfo = LabelUtil.getToolbarLabelInfo("MOVE");
 				dropdownOptionsModel.push({
-                    label : "Move",
+                    label : labelInfo.label,
                     action : function() {
                         var moveEntityController = new MoveEntityController("PROJECT", _this._projectFormModel.project.permId);
                         moveEntityController.init();
                     }
                 });
             }
-			if(_this._allowedToEdit()) {
+			if(_this._allowedToEdit() && toolbarConfig.EDIT) {
 				//Edit
+                const labelInfo = LabelUtil.getToolbarLabelInfo("EDIT_PROJECT");
 				var $editBtn = FormUtil.getToolbarButton("EDIT", function () {
 				    Util.blockUI();
 					_this._projectFormController.enableEditing();
-				}, "Edit", "Edit project", "edit-btn-"+_this._viewId, 'btn btn-primary btn-secondary');
+				}, labelInfo.label, labelInfo.tooltip, "edit-btn-"+_this._viewId, 'btn btn-primary btn-secondary');
 				toolbarModel.push({ component : $editBtn });
 			}
-			if(_this._allowedToDelete()) {
+			if(_this._allowedToDelete() && toolbarConfig.DELETE) {
 				//Delete
+                const labelInfo = LabelUtil.getToolbarLabelInfo("DELETE");
 				dropdownOptionsModel.push({
-                    label : "Delete",
+                    label : labelInfo.label,
                     action : function() {
                         _this._projectDeletionAction();
                     }
                 });
 			}
 
-			//Print
-			dropdownOptionsModel.push(FormUtil.getPrintPDFButtonModel("PROJECT",  _this._projectFormModel.project.permId));
+            if(toolbarConfig.PRINT) {
+                //Print
+                dropdownOptionsModel.push(FormUtil.getPrintPDFButtonModel("PROJECT", _this._projectFormModel.project.permId));
+            }
 
-			//Export
-			dropdownOptionsModel.push(FormUtil.getExportButtonModel("PROJECT", _this._projectFormModel.project.permId));
+            if(toolbarConfig.EXPORT_ALL) {
+                //Export
+                dropdownOptionsModel.push(FormUtil.getExportButtonModel("PROJECT", _this._projectFormModel.project.permId));
+            }
 
 			//Jupyter Button
 			if(profile.jupyterIntegrationServerEndpoint) {
+                const labelInfo = LabelUtil.getToolbarLabelInfo("NEW_JUPYTER");
 			    dropdownOptionsModel.push({
-                    label : "New Jupyter notebook",
+                    label : labelInfo.label,
                     action : function () {
                         var jupyterNotebook = new JupyterNotebookController(_this._projectFormModel.project);
                         jupyterNotebook.init();
@@ -135,9 +147,10 @@ function ProjectFormView(projectFormController, projectFormModel) {
 			}
 
 			// authorization
-			if (this._projectFormModel.roles.indexOf("ADMIN") > -1 ) {
+			if (this._projectFormModel.roles.indexOf("ADMIN") > -1 && toolbarConfig.MANAGE_ACCESS) {
+                const labelInfo = LabelUtil.getToolbarLabelInfo("MANAGE_ACCESS");
 				dropdownOptionsModel.push({
-                    label : "Manage access",
+                    label : labelInfo.label,
                     action : function () {
                         FormUtil.showAuthorizationDialog({
                             project: _this._projectFormModel.project,
@@ -148,35 +161,43 @@ function ProjectFormView(projectFormController, projectFormModel) {
 
             //Freeze
             if(_this._projectFormModel.v3_project && _this._projectFormModel.v3_project.frozen !== undefined) { //Freezing available on the API
-                var isEntityFrozen = _this._projectFormModel.v3_project.frozen;
-                if(isEntityFrozen) {
-                    var $freezeButton = FormUtil.getFreezeButton("PROJECT", this._projectFormModel.v3_project.permId.permId, "Entity Frozen");
-                    toolbarModel.push({ component : $freezeButton, tooltip: "Entity Frozen" });
-                } else {
-                    dropdownOptionsModel.push({
-                        label : "Freeze Entity (Disable further modifications)",
-                        action : function() {
-                            FormUtil.showFreezeForm("PROJECT", _this._projectFormModel.v3_project.permId.permId, _this._projectFormModel.v3_project.code);
-                        }
-                    });
+                if(toolbarConfig.FREEZE) {
+                    var isEntityFrozen = _this._projectFormModel.v3_project.frozen;
+                    if (isEntityFrozen) {
+                        const labelInfo = LabelUtil.getToolbarLabelInfo("FROZEN");
+                        var $freezeButton = FormUtil.getFreezeButton("PROJECT", this._projectFormModel.v3_project.permId.permId, "Entity Frozen");
+                        toolbarModel.push({component: $freezeButton, tooltip: labelInfo.tooltip});
+                    } else {
+                        const labelInfo = LabelUtil.getToolbarLabelInfo("FREEZE_ENTITY");
+                        dropdownOptionsModel.push({
+                            label: labelInfo.label,
+                            action: function () {
+                                FormUtil.showFreezeForm("PROJECT", _this._projectFormModel.v3_project.permId.permId, _this._projectFormModel.v3_project.code);
+                            }
+                        });
+                    }
                 }
 
             }
 
-            //History
-            dropdownOptionsModel.push({
-                label : "History",
-                action : function() {
-                    mainController.changeView('showProjectHistoryPage', _this._projectFormModel.project.permId);
-                }
-            });
+            if(toolbarConfig.HISTORY) {
+                //History
+                const labelInfo = LabelUtil.getToolbarLabelInfo("HISTORY");
+                dropdownOptionsModel.push({
+                    label: labelInfo.label,
+                    action: function () {
+                        mainController.changeView('showProjectHistoryPage', _this._projectFormModel.project.permId);
+                    }
+                });
+            }
 		} else {
+            const labelInfo = LabelUtil.getToolbarLabelInfo("SAVE");
 			var $saveBtn = FormUtil.getToolbarButton("SAVE", function() {
 				_this._projectFormController.updateProject();
 				if(!_this._wasSideMenuCollapsed) {
                     mainController.sideMenu.expandSideMenu();
                 }
-			}, "Save", "Save changes", "save-btn-project-" + _this._viewId);
+			}, labelInfo.label, labelInfo.tooltip, "save-btn-project-" + _this._viewId);
 			$saveBtn.removeClass("btn-default");
 			$saveBtn.addClass("btn-primary");
 			toolbarModel.push({ component : $saveBtn });
@@ -202,9 +223,10 @@ function ProjectFormView(projectFormController, projectFormModel) {
 
 		FormUtil.addOptionsToToolbar($formColumn, toolbarModel, dropdownOptionsModel, hideShowOptionsModel, "PROJECT-VIEW", null, false);
 
+        const labelInfoHelp = LabelUtil.getToolbarLabelInfo("DOCS");
 		var $helpBtn = FormUtil.getToolbarButton("?", function() {
                                     mainController.openHelpPage();
-                                }, null, "Documentation", "help-btn-project-" + _this._viewId, 'btn btn-default help');
+                                }, labelInfoHelp.label, labelInfoHelp.tooltip, "help-btn-project-" + _this._viewId, 'btn btn-default help');
         $helpBtn.find("span").css("vertical-align", "middle").css("font-size", "24px")
         toolbarModel.push({ component : $helpBtn });
 

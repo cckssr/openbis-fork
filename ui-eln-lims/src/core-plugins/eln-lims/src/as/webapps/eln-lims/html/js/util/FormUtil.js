@@ -2646,8 +2646,9 @@ var FormUtil = new function() {
 		var $freezeButton = FormUtil.getToolbarButton("LOCKED")
 
 		if(isEntityFrozen) {
+			const labelInfo = LabelUtil.getToolbarLabelInfo("FROZEN");
 			$freezeButton.attr("disabled", "disabled");
-			$freezeButton.append("Frozen");
+			$freezeButton.append(labelInfo.label);
 		} else {
 		    var id = 'btn-freeze-'+mainController.getNextId();
 		    $freezeButton.attr("id", buttonId);
@@ -3879,8 +3880,9 @@ var FormUtil = new function() {
         }
 
         this.getPrintPDFButtonModel = function(entityKind, entityPermId) {
+			const labelInfo = LabelUtil.getToolbarLabelInfo("PRINT")
             var printButtonModel = {
-                                    label : "Print PDF",
+                                    label : labelInfo.label,
                                     action : function() {
                                          require([
                                             "as/dto/exporter/data/ExportData",
@@ -3937,8 +3939,9 @@ var FormUtil = new function() {
         }
 
         this.getExportButtonModel = function(entityKind, entityPermId) {
+			const labelInfo = LabelUtil.getToolbarLabelInfo("EXPORT")
             var exportButtonModel = {
-                                    label : "Export", 
+                                    label : labelInfo.label,
                                     action : function() {
                                         var $window = $('<form>', { 'action' : 'javascript:void(0);' });
                                         $window.append($('<legend>').append('Export'));

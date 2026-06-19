@@ -27,9 +27,16 @@ var LayoutManager = {
 	secondColumnContentResize : function() {
 		var width = $( window ).width();
 		if (width > LayoutManager.TABLET_SIZE) {
+
 			LayoutManager.secondColumnContent.css({
 				height : $( window ).height() - LayoutManager.secondColumnHeader.outerHeight() - LayoutManager.MAIN_HEADER_HEIGHT
 			});
+
+		}
+		if(mainController.currentView && mainController.currentView.refresh) {
+			setTimeout(() => {
+				mainController.currentView.refresh();
+			}, 100);
 		}
 	},
 	isResizingColumn : false,
