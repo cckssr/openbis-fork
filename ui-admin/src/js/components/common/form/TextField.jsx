@@ -41,11 +41,11 @@ class TextFormField extends React.PureComponent {
     switch (dataType) {
       case FormFieldDataType.ARRAY_INTEGER:
       case FormFieldDataType.ARRAY_REAL:
-        return '[' + array.map(Number).join(', ') + ']'
+        return '[' + array.map(v => v == null ? 'null' : Number(v)).join(', ') + ']'
       case FormFieldDataType.ARRAY_STRING:
         return '[' + array.map(v => JSON.stringify(v)).join(', ') + ']'
       case FormFieldDataType.ARRAY_TIMESTAMP:
-        return `["${array.map(v => date.format(new Date(v), true)).join('", "')}"]`
+        return '[' + array.map(v => v == null ? 'null' : `"${date.format(new Date(v), true)}"`).join(', ') + ']'
       default:
         throw 'Unsupported array data type: ' + dataType
     }

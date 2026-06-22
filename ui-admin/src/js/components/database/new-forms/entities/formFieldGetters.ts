@@ -529,9 +529,31 @@ function normalizeArrayPropertyValue(value: any, dataType: FormFieldDataType): a
 
   switch (dataType) {
     case FormFieldDataType.ARRAY_INTEGER:
-      return parsedValue.map(item => item == null ? null : Number.parseInt(item, 10));
+      return parsedValue.map(item => {
+        if (item == null) {
+          return null;
+        } else {
+          const parsed = Number.parseInt(item, 10);
+          if (isNaN(parsed)) {
+            throw new Error(`Not a valid integer: "${item}"`);
+          } else {
+            return parsed;
+          }
+        }
+      });
     case FormFieldDataType.ARRAY_REAL:
-      return parsedValue.map(item => item == null ? null : Number(item));
+      return parsedValue.map(item => {
+        if (item == null) {
+          return null;
+        } else {
+          const parsed = Number(item);
+          if (isNaN(parsed)) {
+            throw new Error(`Not a valid real number: "${item}"`);
+          } else {
+            return parsed;
+          }
+        }
+      });
     default:
       return parsedValue;
   }
