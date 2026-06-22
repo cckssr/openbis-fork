@@ -529,9 +529,9 @@ function normalizeArrayPropertyValue(value: any, dataType: FormFieldDataType): a
 
   switch (dataType) {
     case FormFieldDataType.ARRAY_INTEGER:
-      return parsedValue.map(item => Number.parseInt(item, 10));
+      return parsedValue.map(item => item == null ? null : Number.parseInt(item, 10));
     case FormFieldDataType.ARRAY_REAL:
-      return parsedValue.map(item => Number(item));
+      return parsedValue.map(item => item == null ? null : Number(item));
     default:
       return parsedValue;
   }
