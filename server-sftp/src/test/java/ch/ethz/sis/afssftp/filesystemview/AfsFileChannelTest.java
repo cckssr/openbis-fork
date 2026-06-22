@@ -22,6 +22,7 @@ import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static org.junit.Assert.assertArrayEquals;
@@ -43,20 +44,22 @@ public class AfsFileChannelTest extends TestCase {
         boolean readOption = true;
         boolean writeOption = true;
 
+        ConcurrentHashMap<User, Integer> globalFileChannelPerSessionCounters = new ConcurrentHashMap<>();
         AfsFileChannel afsFileChannel = new AfsFileChannel(
                 entityId,
                 afsPath,
                 user,
                 position,
                 readOption,
-                writeOption
+                writeOption,
+                globalFileChannelPerSessionCounters
         );
 
-        assertEquals(1, AfsFileChannel.fileChannelPerSessionCounters.size());
+        assertEquals(1, afsFileChannel.fileChannelPerSessionCounters.size());
 
         afsFileChannel.implCloseChannel();
 
-        assertEquals(0, AfsFileChannel.fileChannelPerSessionCounters.size());
+        assertEquals(0, afsFileChannel.fileChannelPerSessionCounters.size());
     }
 
     public void testImplCloseChannel() throws Exception {
