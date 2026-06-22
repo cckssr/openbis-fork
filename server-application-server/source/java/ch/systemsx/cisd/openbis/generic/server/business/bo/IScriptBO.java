@@ -50,8 +50,6 @@ public interface IScriptBO extends IEntityBusinessObject
 
     public void tryDefineOrUpdateIfPossible(Script script);
 
-    public void tryDeleteOrInvalidatePredeployedPlugin(String name, ScriptType scriptType);
-
     public ScriptPE getScript();
 
 }

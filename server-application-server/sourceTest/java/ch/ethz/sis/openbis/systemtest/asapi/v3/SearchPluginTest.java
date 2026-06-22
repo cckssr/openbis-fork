@@ -146,14 +146,17 @@ public class SearchPluginTest extends AbstractTest
         // Given
         String sessionToken = v3api.login(TEST_SPACE_USER, PASSWORD);
         PluginSearchCriteria searchCriteria = new PluginSearchCriteria();
-        searchCriteria.withPluginKind().thatEquals(PluginKind.PREDEPLOYED);
+        searchCriteria.withPluginKind().thatEquals(PluginKind.JYTHON);
         PluginFetchOptions fetchOptions = new PluginFetchOptions();
 
         // When
         List<Plugin> plugins = v3api.searchPlugins(sessionToken, searchCriteria, fetchOptions).getObjects();
 
         // Then
-        assertEquals(plugins.stream().map(p -> p.getName()).collect(Collectors.toList()).toString(), "[]");
+        AssertionUtil.assertCollectionContainsAtLeast(plugins.stream().map(p -> p.getName()).collect(Collectors.toList()),
+                "code", "code_date", "date", "managed list", "properties", "propertiesEXPERIMENT", "propertiesSAMPLE", "test", ""
+                        + "testEXPERIMENT",
+                "testSAMPLE", "validateChildren", "validateFAIL", "validateOK", "validateUpdateFAIL", "waitOK");
 
         v3api.logout(sessionToken);
     }

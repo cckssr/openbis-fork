@@ -152,7 +152,7 @@ public class DatasetListerTest extends AbstractDAOTest
         List<SamplePE> samplePEs = daoFactory.getSampleDAO().listByPermID(samplePermIDs);
         List<Sample> samples =
                 SampleTranslator.translate(samplePEs, "", new HashMap<Long, Set<Metaproject>>(),
-                        new ManagedPropertyEvaluatorFactory(null, new TestJythonEvaluatorPool()), null);
+                        new ManagedPropertyEvaluatorFactory(new TestJythonEvaluatorPool()), null);
 
         Map<Sample, List<AbstractExternalData>> dataSets = lister.listAllDataSetsFor(samples);
 

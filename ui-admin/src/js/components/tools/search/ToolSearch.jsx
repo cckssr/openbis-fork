@@ -105,9 +105,6 @@ class ToolSearch extends React.Component {
           description: FormUtil.createField({
             value: _.get(plugin, 'description')
           }),
-          pluginKind: FormUtil.createField({
-            value: _.get(plugin, 'pluginKind')
-          }),
           entityKind: FormUtil.createField({
             value:
               entityKinds && entityKinds.length === 1 ? entityKinds[0] : null

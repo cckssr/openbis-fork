@@ -15,19 +15,18 @@
  */
 package ch.systemsx.cisd.openbis.generic.server.util;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
 import ch.systemsx.cisd.common.mail.EMailAddress;
 import ch.systemsx.cisd.common.properties.PropertyUtils;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.dynamic_property.calculator.JythonDynamicPropertyCalculator;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.dynamic_property.calculator.JythonEntityValidationCalculator;
 import ch.systemsx.cisd.openbis.generic.shared.IJythonEvaluatorPool;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PluginType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ScriptType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ScriptPE;
 import ch.systemsx.cisd.openbis.generic.shared.managed_property.JythonManagedPropertyEvaluator;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * @author Franz-Josef Elmer
@@ -38,12 +37,6 @@ public class PluginUtils
 
     public static void checkScriptCompilation(ScriptPE script, IJythonEvaluatorPool evaluatorPool)
     {
-        PluginType pluginType = script.getPluginType();
-        if (pluginType == PluginType.PREDEPLOYED)
-        {
-            return;
-        }
-
         String scriptExpression = script.getScript();
         ScriptType scriptType = script.getScriptType();
         if (scriptType == ScriptType.MANAGED_PROPERTY)

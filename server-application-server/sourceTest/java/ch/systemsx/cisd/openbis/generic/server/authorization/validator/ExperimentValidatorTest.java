@@ -39,7 +39,7 @@ public class ExperimentValidatorTest extends AuthorizationTestCase
         PersonPE person = createPersonWithRoleAssignments();
         assertEquals(true, validator.isValid(person, ExperimentTranslator.translate(
                 createExperiment(createAnotherSpace()), BASE_URL, null,
-                new ManagedPropertyEvaluatorFactory(null, new TestJythonEvaluatorPool()), null)));
+                new ManagedPropertyEvaluatorFactory(new TestJythonEvaluatorPool()), null)));
     }
 
     @Test
@@ -49,6 +49,6 @@ public class ExperimentValidatorTest extends AuthorizationTestCase
         PersonPE person = createPersonWithRoleAssignments();
         assertEquals(true, validator.isValid(person, ExperimentTranslator.translate(
                 createExperiment(createSpace()), BASE_URL, null,
-                new ManagedPropertyEvaluatorFactory(null, new TestJythonEvaluatorPool()), null)));
+                new ManagedPropertyEvaluatorFactory(new TestJythonEvaluatorPool()), null)));
     }
 }

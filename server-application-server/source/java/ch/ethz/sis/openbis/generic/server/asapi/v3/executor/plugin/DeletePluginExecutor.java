@@ -15,14 +15,10 @@
  */
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.plugin;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import jakarta.annotation.Resource;
-
-import ch.ethz.sis.shared.log.classic.impl.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -32,12 +28,12 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.entity.AbstractDeleteEntityExecutor;
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
-import ch.systemsx.cisd.openbis.generic.server.IHotDeploymentController;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IScriptDAO;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.entity_validation.IEntityValidatorFactory;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PluginType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ScriptPE;
+import jakarta.annotation.Resource;
 
 /**
  * @author Franz-Josef Elmer
@@ -82,29 +78,9 @@ public class DeletePluginExecutor
     protected Void delete(IOperationContext context, Collection<ScriptPE> entities, PluginDeletionOptions deletionOptions)
     {
         IScriptDAO scriptDAO = daoFactory.getScriptDAO();
-        List<String> namesOfPredeployedPlugins = new ArrayList<String>();
         for (ScriptPE script : entities)
         {
-            if (script.getPluginType() == PluginType.PREDEPLOYED)
-            {
-                namesOfPredeployedPlugins.add(script.getName());
-            }
             scriptDAO.delete(script);
-        }
-        if (namesOfPredeployedPlugins.isEmpty() == false)
-        {
-            IHotDeploymentController hotDeploymentController =
-                    entityValidationFactory.getHotDeploymentController();
-            if (hotDeploymentController == null)
-            {
-                operationLog.warn("Can not disable pre-deployed plugins because of missing controller.");
-            } else
-            {
-                for (String name : namesOfPredeployedPlugins)
-                {
-                    hotDeploymentController.disablePlugin(name);
-                }
-            }
         }
         return null;
     }

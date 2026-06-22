@@ -16,16 +16,13 @@
 package ch.systemsx.cisd.openbis.generic.server.dataaccess.dynamic_property;
 
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.dynamic_property.calculator.api.IDynamicPropertyCalculator;
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.dynamic_property.calculator.api.IDynamicPropertyCalculatorHotDeployPlugin;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PluginType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePropertyTypePE;
-import ch.systemsx.cisd.openbis.generic.shared.hotdeploy_plugins.ICommonPropertyBasedHotDeployPluginFactory;
 
 /**
  * @author Pawel Glyzewski
  */
-public interface IDynamicPropertyCalculatorFactory extends
-        ICommonPropertyBasedHotDeployPluginFactory<IDynamicPropertyCalculatorHotDeployPlugin>
+public interface IDynamicPropertyCalculatorFactory
 {
     public IDynamicPropertyCalculator getCalculator(EntityTypePropertyTypePE etpt);
 

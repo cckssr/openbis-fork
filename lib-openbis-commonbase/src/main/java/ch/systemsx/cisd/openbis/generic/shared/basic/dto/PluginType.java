@@ -22,7 +22,7 @@ import java.io.Serializable;
  */
 public enum PluginType implements Serializable
 {
-    JYTHON("Jython Script Plugin"), PREDEPLOYED("Predeployed Plugin");
+    JYTHON("Jython Script Plugin");
 
     private final String description;
 

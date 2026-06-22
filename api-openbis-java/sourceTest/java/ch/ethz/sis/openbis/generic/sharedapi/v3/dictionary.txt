@@ -1624,7 +1624,6 @@ Plugin Update
 PluginPermId
 POSTREGISTRATION_QUEUE
 POWER_USER
-PREDEPLOYED
 PredicateAccessionIdSearchCriteria
 PredicateOntologyIdSearchCriteria
 PredicateOntologyVersionSearchCriteria

@@ -17,7 +17,6 @@ package ch.systemsx.cisd.openbis.generic.server.business.bo;
 
 import java.util.Properties;
 
-import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePE;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -34,9 +33,7 @@ import ch.systemsx.cisd.openbis.generic.server.util.PluginUtils;
 import ch.systemsx.cisd.openbis.generic.shared.IJythonEvaluatorPool;
 import ch.systemsx.cisd.openbis.generic.shared.basic.TechId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IScriptUpdates;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PluginType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Script;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ScriptType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePropertyTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ScriptPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.Session;
@@ -197,35 +194,6 @@ public final class ScriptBO extends AbstractBusinessObject implements IScriptBO
                         .append(newScript.getScriptType())
                         .append(" plugin '")
                         .append(newScript.getName())
-                        .append("' because plugin of different kind with the same name already exists.");
-                throw new IllegalArgumentException(sb.toString());
-            }
-        }
-    }
-
-    @Override
-    public void tryDeleteOrInvalidatePredeployedPlugin(String name, ScriptType scriptType)
-    {
-        assert name != null : "Script name cannot be null";
-        assert scriptType != null : "Script type cannot be null";
-
-        checkAllowedUser(session);
-        IScriptDAO scriptDAO = getScriptDAO();
-        script = scriptDAO.tryFindByName(name);
-
-        if (script != null)
-        {
-            if (script.getPluginType() == PluginType.PREDEPLOYED
-                    && script.getScriptType() == scriptType)
-            {
-                script.setAvailable(false);
-                save();
-            } else
-            {
-                StringBuilder sb = new StringBuilder("Cannot delete ");
-                sb.append(scriptType)
-                        .append(" plugin '")
-                        .append(name)
                         .append("' because plugin of different kind with the same name already exists.");
                 throw new IllegalArgumentException(sb.toString());
             }

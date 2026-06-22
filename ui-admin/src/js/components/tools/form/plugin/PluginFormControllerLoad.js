@@ -26,15 +26,11 @@ export default class PluginFormControllerLoad extends PageControllerLoad {
   }
 
   _createPlugin(object, loadedPlugin) {
-    let pluginKind = null
     let pluginType = null
 
     if (loadedPlugin) {
-      pluginKind = _.get(loadedPlugin, 'pluginKind')
       pluginType = _.get(loadedPlugin, 'pluginType')
     } else {
-      pluginKind = openbis.PluginKind.JYTHON
-
       if (this.controller.isDynamicPropertyType()) {
         pluginType = openbis.PluginType.DYNAMIC_PROPERTY
       } else if (this.controller.isEntityValidationType()) {
@@ -48,7 +44,6 @@ export default class PluginFormControllerLoad extends PageControllerLoad {
 
     const plugin = {
       id: _.get(loadedPlugin, 'name', null),
-      pluginKind,
       pluginType,
       name: FormUtil.createField({
         value: _.get(loadedPlugin, 'name', null),

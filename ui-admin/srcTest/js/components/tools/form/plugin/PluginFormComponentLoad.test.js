@@ -24,14 +24,6 @@ describe(PluginFormComponentTest.SUITE, () => {
     const { testEntityValidationJythonPlugin } = PluginFormTestData
     await testLoadExistingJython(testEntityValidationJythonPlugin)
   })
-  test('load existing DYNAMIC_PROPERTY PREDEPLOYED', async () => {
-    const { testDynamicPropertyPredeployedPlugin } = PluginFormTestData
-    await testLoadExistingPredeployed(testDynamicPropertyPredeployedPlugin)
-  })
-  test('load existing ENTITY_VALIDATION PREDEPLOYED', async () => {
-    const { testEntityValidationPredeployedPlugin } = PluginFormTestData
-    await testLoadExistingPredeployed(testEntityValidationPredeployedPlugin)
-  })
 })
 
 async function testLoadNew(pluginType) {
@@ -247,60 +239,6 @@ async function testLoadExistingJython(plugin) {
         enabled: true
       },
       edit: null,
-      message: null
-    }
-  })
-}
-
-async function testLoadExistingPredeployed(plugin) {
-  const form = await common.mountExisting(plugin)
-
-  form.expectJSON({
-    script: null,
-    parameters: {
-      title:
-        plugin.getPluginType() === openbis.PluginType.DYNAMIC_PROPERTY
-          ? 'Dynamic Property Plugin'
-          : 'Entity Validation Plugin',
-      messages: [
-        {
-          text: 'The plugin is disabled.',
-          type: 'warning'
-        },
-        {
-          text:
-            'This is a predeployed Java plugin. Its parameters and logic are defined in the plugin Java class and therefore cannot be changed from the UI.',
-          type: 'info'
-        }
-      ],
-      name: {
-        label: 'Name',
-        value: plugin.getName(),
-        mode: 'view'
-      },
-      entityKind: {
-        label: 'Entity Kind',
-        value:
-          plugin.getEntityKinds().length === 1
-            ? plugin.getEntityKinds()[0]
-            : null,
-        options: [
-          { value: 'EXPERIMENT', label: 'COLLECTION' },
-          { value: 'SAMPLE', label: 'OBJECT' },
-          { value: 'DATA_SET', label: 'DATA_SET' }
-        ],
-        mode: 'view'
-      },
-      description: {
-        label: 'Description',
-        value: plugin.getDescription(),
-        mode: 'view'
-      }
-    },
-    buttons: {
-      edit: null,
-      save: null,
-      cancel: null,
       message: null
     }
   })

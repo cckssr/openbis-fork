@@ -35,7 +35,7 @@ public class ExternalDataValidatorTest extends AuthorizationTestCase
     {
         PhysicalDataSet data = new PhysicalDataSet();
         data.setExperiment(ExperimentTranslator.translate(createExperiment(space),
-                "http://someURL", null, new ManagedPropertyEvaluatorFactory(null, new TestJythonEvaluatorPool()), null));
+                "http://someURL", null, new ManagedPropertyEvaluatorFactory(new TestJythonEvaluatorPool()), null));
         return data;
     }
 
@@ -43,7 +43,7 @@ public class ExternalDataValidatorTest extends AuthorizationTestCase
     {
         PhysicalDataSet data = new PhysicalDataSet();
         data.setSample(SampleTranslator.translate(createSample(space),
-                "http://someURL", null, new ManagedPropertyEvaluatorFactory(null, new TestJythonEvaluatorPool()), null));
+                "http://someURL", null, new ManagedPropertyEvaluatorFactory(new TestJythonEvaluatorPool()), null));
         return data;
     }
 

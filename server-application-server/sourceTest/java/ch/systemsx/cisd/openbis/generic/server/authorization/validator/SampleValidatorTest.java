@@ -39,7 +39,7 @@ public class SampleValidatorTest extends AuthorizationTestCase
         PersonPE person = createPersonWithRoleAssignments();
         assertEquals(true, validator.isValid(person, SampleTranslator.translate(
                 createSample(createAnotherSpace()), BASE_URL, null,
-                new ManagedPropertyEvaluatorFactory(null, new TestJythonEvaluatorPool()), null)));
+                new ManagedPropertyEvaluatorFactory(new TestJythonEvaluatorPool()), null)));
     }
 
     @Test
@@ -49,7 +49,7 @@ public class SampleValidatorTest extends AuthorizationTestCase
         PersonPE person = createPersonWithRoleAssignments();
         assertEquals(true, validator.isValid(person, SampleTranslator.translate(
                 createSample(), BASE_URL, null,
-                new ManagedPropertyEvaluatorFactory(null, new TestJythonEvaluatorPool()), null)));
+                new ManagedPropertyEvaluatorFactory(new TestJythonEvaluatorPool()), null)));
     }
 
     @Test
@@ -59,6 +59,6 @@ public class SampleValidatorTest extends AuthorizationTestCase
         PersonPE person = createPersonWithRoleAssignments();
         assertEquals(true, validator.isValid(person, SampleTranslator.translate(
                 createSample(createSpace()), BASE_URL, null, new ManagedPropertyEvaluatorFactory(
-                        null, new TestJythonEvaluatorPool()), null)));
+                        new TestJythonEvaluatorPool()), null)));
     }
 }

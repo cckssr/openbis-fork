@@ -186,7 +186,7 @@ public abstract class AbstractBOTest extends AssertJUnit
         sampleLister = context.mock(ISampleLister.class);
         datasetLister = context.mock(IDatasetLister.class);
         dataManagementSystemDAO = context.mock(IExternalDataManagementSystemDAO.class);
-        managedPropertyEvaluatorFactory = new ManagedPropertyEvaluatorFactory(null, new TestJythonEvaluatorPool());
+        managedPropertyEvaluatorFactory = new ManagedPropertyEvaluatorFactory(new TestJythonEvaluatorPool());
         context.checking(new Expectations()
             {
                 {

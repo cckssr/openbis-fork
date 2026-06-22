@@ -15,13 +15,8 @@
  */
 package ch.ethz.sis.openbis.generic.server.asapi.v3.translator.plugin;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
-import java.util.List;
-import java.util.Set;
-
-import jakarta.annotation.Resource;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -37,8 +32,8 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.TranslationContext
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.TranslationResults;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.dynamic_property.IDynamicPropertyCalculatorFactory;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.entity_validation.IEntityValidatorFactory;
-import ch.systemsx.cisd.openbis.generic.shared.hotdeploy_plugins.api.ICommonPropertyBasedHotDeployPlugin;
 import ch.systemsx.cisd.openbis.generic.shared.managed_property.IManagedPropertyEvaluatorFactory;
+import jakarta.annotation.Resource;
 
 /**
  * @author Franz-Josef Elmer
@@ -107,7 +102,6 @@ public class PluginTranslator
         }
         plugin.setPluginKind(PluginKind.valueOf(baseRecord.plugin_type));
         plugin.setPluginType(PluginType.valueOf(baseRecord.script_type));
-        injectEntityKindsFromPredeployed(plugin);
         if (fetchOptions.hasScript())
         {
             plugin.setScript(baseRecord.script);
@@ -122,51 +116,4 @@ public class PluginTranslator
 
     }
     
-    private void injectEntityKindsFromPredeployed(Plugin plugin)
-    {
-        if (plugin.getPluginKind() == PluginKind.PREDEPLOYED)
-        {
-            ICommonPropertyBasedHotDeployPlugin hotDeployPlugin = null;
-            switch (plugin.getPluginType())
-            {
-                case ENTITY_VALIDATION:
-                    hotDeployPlugin =
-                            entityValidationFactory.tryGetPredeployedPluginByName(plugin.getName());
-                    break;
-                case DYNAMIC_PROPERTY:
-                    hotDeployPlugin =
-                            dynamicPropertyCalculatorFactory.tryGetPredeployedPluginByName(plugin
-                                    .getName());
-                    break;
-                case MANAGED_PROPERTY:
-                    hotDeployPlugin =
-                            managedPropertyEvaluatorFactory.tryGetPredeployedPluginByName(plugin
-                                    .getName());
-            }
-
-            if (hotDeployPlugin != null)
-            {
-                EnumSet<ch.systemsx.cisd.openbis.generic.shared.hotdeploy_plugins.api.ICommonPropertyBasedHotDeployPlugin.EntityKind> supportedEntityKinds =
-                        hotDeployPlugin.getSupportedEntityKinds();
-                plugin.setEntityKinds(translateEntityKinds(supportedEntityKinds));
-            }
-        }
-    }
-
-    private static Set<EntityKind> translateEntityKinds(
-            EnumSet<ch.systemsx.cisd.openbis.generic.shared.hotdeploy_plugins.api.ICommonPropertyBasedHotDeployPlugin.EntityKind> entityKinds)
-    {
-        if (entityKinds == null)
-        {
-            return null;
-        }
-
-        List<EntityKind> kinds = new ArrayList<EntityKind>(entityKinds.size());
-        for (ch.systemsx.cisd.openbis.generic.shared.hotdeploy_plugins.api.ICommonPropertyBasedHotDeployPlugin.EntityKind kind : entityKinds)
-        {
-            kinds.add(EntityKind.valueOf(kind.name()));
-        }
-        return EnumSet.copyOf(kinds);
-    }
-
 }

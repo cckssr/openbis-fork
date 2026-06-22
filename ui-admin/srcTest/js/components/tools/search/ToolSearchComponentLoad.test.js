@@ -70,10 +70,6 @@ async function testLoadWithSearchText(resultsFound) {
             label: 'Description'
           },
           {
-            name: 'pluginKind',
-            label: 'Plugin Kind'
-          },
-          {
             name: 'entityKind',
             label: 'Entity Kind'
           },
@@ -91,7 +87,6 @@ async function testLoadWithSearchText(resultsFound) {
             values: {
               name: testPlugin.getName(),
               description: testPlugin.getDescription(),
-              pluginKind: testPlugin.getPluginKind(),
               entityKind: 'OBJECT',
               registrator: testPlugin.registrator.userId
             }
@@ -100,7 +95,6 @@ async function testLoadWithSearchText(resultsFound) {
             values: {
               name: testPlugin2.getName(),
               description: testPlugin2.getDescription(),
-              pluginKind: null,
               entityKind: '(All)',
               registrator: null
             }
@@ -116,10 +110,6 @@ async function testLoadWithSearchText(resultsFound) {
           {
             name: 'description',
             label: 'Description'
-          },
-          {
-            name: 'pluginKind',
-            label: 'Plugin Kind'
           },
           {
             name: 'entityKind',
@@ -139,7 +129,6 @@ async function testLoadWithSearchText(resultsFound) {
             values: {
               name: testPlugin2.getName(),
               description: testPlugin2.getDescription(),
-              pluginKind: null,
               entityKind: '(All)',
               registrator: null
             }
@@ -236,10 +225,6 @@ async function testLoadWithObjectType(resultsFound) {
           label: 'Description'
         },
         {
-          name: 'pluginKind',
-          label: 'Plugin Kind'
-        },
-        {
           name: 'entityKind',
           label: 'Entity Kind'
         },
@@ -258,7 +243,6 @@ async function testLoadWithObjectType(resultsFound) {
               values: {
                 name: anotherPlugin.getName(),
                 description: anotherPlugin.getDescription(),
-                pluginKind: null,
                 entityKind: '(All)',
                 registrator: null
               }
@@ -267,7 +251,6 @@ async function testLoadWithObjectType(resultsFound) {
               values: {
                 name: testPlugin.getName(),
                 description: testPlugin.getDescription(),
-                pluginKind: testPlugin.getPluginKind(),
                 entityKind: 'OBJECT',
                 registrator: testPlugin.registrator.userId
               }
@@ -276,7 +259,6 @@ async function testLoadWithObjectType(resultsFound) {
               values: {
                 name: testPlugin2.getName(),
                 description: testPlugin2.getDescription(),
-                pluginKind: null,
                 entityKind: '(All)',
                 registrator: null
               }

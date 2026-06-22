@@ -48,15 +48,4 @@ public interface ICommonServerForInternalUse extends ICommonServer
     @Transactional
     public List<DataStore> listDataStores();
 
-    /**
-     * Registers predeployed plugin
-     */
-    @Transactional
-    public void registerOrUpdatePredeployedPlugin(String sessionToken, Script script);
-
-    /**
-     * Invalidates predeployed plugin.
-     */
-    @Transactional
-    public void invalidatePredeployedPlugin(String sessionToken, String name, ScriptType scriptType);
 }

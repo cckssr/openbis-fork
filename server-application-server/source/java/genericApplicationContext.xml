@@ -26,29 +26,18 @@
 	<bean id="memory-monitor"
 		class="ch.systemsx.cisd.common.monitoring.JMXMemoryMonitorSpringBean" />
 
-	<bean id="hot-deployment-plugin-container"
-		class="ch.systemsx.cisd.openbis.generic.server.HotDeploymentController">
-		<constructor-arg ref="common-server" />
-		<constructor-arg ref="entity-validation-factory" />
-		<constructor-arg ref="dynamic-property-calculator-factory" />
-		<constructor-arg ref="managed-property-evaluator-factory" />
-	</bean>
-
 	<bean id="entity-validation-factory"
 		class="ch.systemsx.cisd.openbis.generic.server.dataaccess.entity_validation.EntityValidatorFactory">
-		<constructor-arg value="${entity-validation-plugins-directory}" />
 		<constructor-arg ref="jython-evaluator-pool" />
 	</bean>
 
 	<bean id="dynamic-property-calculator-factory"
 		class="ch.systemsx.cisd.openbis.generic.server.dataaccess.dynamic_property.calculator.DynamicPropertyCalculatorFactory">
-		<constructor-arg value="${dynamic-property-plugins-directory}" />
 		<constructor-arg ref="jython-evaluator-pool" />
 	</bean>
 
 	<bean id="managed-property-evaluator-factory"
 		class="ch.systemsx.cisd.openbis.generic.shared.managed_property.ManagedPropertyEvaluatorFactory">
-		<constructor-arg value="${managed-property-plugins-directory}" />
 		<constructor-arg ref="jython-evaluator-pool" />
 	</bean>
 

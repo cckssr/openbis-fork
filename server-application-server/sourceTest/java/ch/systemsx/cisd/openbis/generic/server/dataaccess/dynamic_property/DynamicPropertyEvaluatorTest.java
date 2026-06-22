@@ -97,7 +97,7 @@ public class DynamicPropertyEvaluatorTest extends AbstractBOTest
 
         evaluator =
                 new DynamicPropertyEvaluator(daoFactory, sessionProvider,
-                        new DynamicPropertyCalculatorFactory(null, new TestJythonEvaluatorPool()), managedPropertyEvaluatorFactory);
+                        new DynamicPropertyCalculatorFactory(new TestJythonEvaluatorPool()), managedPropertyEvaluatorFactory);
     }
 
     @Test
