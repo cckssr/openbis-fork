@@ -375,7 +375,7 @@ public abstract class EntityPropertyPE extends HibernateAbstractRegistrationHold
             return "";
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss XX");
         return Stream.of(array)
-                .map(dateFormat::format)
+                .map(d -> d == null ? "" : dateFormat.format(d))
                 .reduce((x, y) -> x + ", " + y)
                 .get();
     }

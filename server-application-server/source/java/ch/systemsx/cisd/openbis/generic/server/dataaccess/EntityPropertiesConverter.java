@@ -354,7 +354,10 @@ public final class EntityPropertiesConverter implements IEntityPropertiesConvert
                 List<Serializable> values = new ArrayList<>();
                 for (Serializable element : array)
                 {
-                    if (element.getClass().equals(String.class))
+                    if (element == null)
+                    {
+                        values.add(null);
+                    } else if (element.getClass().equals(String.class))
                     {
                         values.add(readValue((String) element, String[].class));
                     } else

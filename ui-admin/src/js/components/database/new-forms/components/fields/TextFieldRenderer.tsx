@@ -38,10 +38,10 @@ const TextFieldRendererBase: React.FC<FieldRendererProps & { classes: any }> = (
       let text: string;
       if (Array.isArray(v)) {
         if (field.dataType === FormFieldDataType.ARRAY_TIMESTAMP) {
-          text = `["${v.map(item => date.format(new Date(item), true)).join('", "')}"]`;
+          text = '[' + v.map(item => item == null ? 'null' : `"${date.format(new Date(item), true)}"`).join(', ') + ']';
         } else if (field.dataType === FormFieldDataType.ARRAY_INTEGER ||
           field.dataType === FormFieldDataType.ARRAY_REAL) {
-          text = '[' + v.map(Number).join(', ') + ']';
+          text = '[' + v.map(item => item == null ? 'null' : Number(item)).join(', ') + ']';
         } else {
           text = '[' + v.map(item => JSON.stringify(item)).join(', ') + ']';
         }
@@ -70,10 +70,10 @@ const TextFieldRendererBase: React.FC<FieldRendererProps & { classes: any }> = (
       if (val == null) return '';
       if (Array.isArray(val)) {
         if (field.dataType === FormFieldDataType.ARRAY_TIMESTAMP) {
-          return `["${val.map(item => date.format(new Date(item), true)).join('", "')}"]`;
+          return '[' + val.map(item => item == null ? 'null' : `"${date.format(new Date(item), true)}"`).join(', ') + ']';
         } else if (field.dataType === FormFieldDataType.ARRAY_INTEGER ||
           field.dataType === FormFieldDataType.ARRAY_REAL) {
-          return '[' + val.map(Number).join(', ') + ']';
+          return '[' + val.map(item => item == null ? 'null' : Number(item)).join(', ') + ']';
         } else {
           return '[' + val.map(item => JSON.stringify(item)).join(', ') + ']';
         }
@@ -109,7 +109,7 @@ const TextFieldRendererBase: React.FC<FieldRendererProps & { classes: any }> = (
     const value: string | string[] | number[] | null = field.value && field.value.map &&
         (field.dataType === FormFieldDataType.ARRAY_INTEGER ||
             field.dataType === FormFieldDataType.ARRAY_REAL)
-        ? field.value.map(Number) : field.value
+        ? field.value.map((item: any) => item == null ? null : Number(item)) : field.value
     return (
         <TextField
             mandatory={field.required}

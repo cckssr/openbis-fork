@@ -46,7 +46,7 @@ public class ComplexPropertyValueUtils {
             return null;
         }
         return Arrays.stream((Serializable[]) value)
-                .map(x -> Long.parseLong(x.toString().trim()))
+                .map(x -> x == null ? null : Long.parseLong(x.toString().trim()))
                 .toArray(Long[]::new);
     }
 
@@ -58,7 +58,7 @@ public class ComplexPropertyValueUtils {
             return null;
         }
         return Arrays.stream((Serializable[]) value)
-                .map(x -> Double.parseDouble(x.toString().trim()))
+                .map(x -> x == null ? null : Double.parseDouble(x.toString().trim()))
                 .toArray(Double[]::new);
     }
 
@@ -70,7 +70,7 @@ public class ComplexPropertyValueUtils {
             return null;
         }
         return Arrays.stream((Serializable[]) value)
-                .map(Serializable::toString)
+                .map(x -> x == null ? null : x.toString())
                 .toArray(String[]::new);
     }
 
@@ -82,7 +82,7 @@ public class ComplexPropertyValueUtils {
             return null;
         }
         return Arrays.stream((Serializable[]) value)
-                .map(x -> parseDateFromString((String) x))
+                .map(x -> x == null ? null : parseDateFromString((String) x))
                 .toArray(Date[]::new);
     }
 

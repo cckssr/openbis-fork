@@ -52,11 +52,12 @@ public class PropertyRecordDataObjectBinding
         into.modificationTimestamp = row.getTimestamp("modificationTimestamp");
 
         into.integerArrayPropertyValue = convertToArray(
-                row.getArray("integerArrayPropertyValue"), o -> Long.parseLong(o.toString()), Long[]::new);
+                row.getArray("integerArrayPropertyValue"), o -> o == null ? null : Long.parseLong(o.toString()),
+                Long[]::new);
         into.realArrayPropertyValue = convertToArray(row.getArray("realArrayPropertyValue"),
-                o -> Double.parseDouble(o.toString()), Double[]::new);
+                o -> o == null ? null : Double.parseDouble(o.toString()), Double[]::new);
         into.stringArrayPropertyValue = convertToArray(row.getArray("stringArrayPropertyValue"),
-                Object::toString, String[]::new);
+                o -> o == null ? null : o.toString(), String[]::new);
         into.timestampArrayPropertyValue = convertTimestampsToString(
                 row.getArray("timestampArrayPropertyValue"));
         into.jsonPropertyValue = row.getString("jsonPropertyValue");
@@ -78,8 +79,7 @@ public class PropertyRecordDataObjectBinding
         if(array != null) {
             Object[] values = (Object[]) array.getArray();
             return Arrays.stream(values)
-                    .map(Object::toString)
-                    .map(this::parseDate)
+                    .map(v -> v == null ? null : parseDate(v.toString()))
                     .toArray(String[]::new);
         }
         return null;

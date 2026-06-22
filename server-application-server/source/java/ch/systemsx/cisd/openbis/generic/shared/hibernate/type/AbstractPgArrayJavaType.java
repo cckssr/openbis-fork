@@ -103,7 +103,7 @@ abstract class AbstractPgArrayJavaType<T> extends ArrayJavaType<T>
         for (String part : parts)
         {
             String val = part.trim();
-            result.add(val.isEmpty() ? null : convertElement(val));
+            result.add(val.isEmpty() || val.equalsIgnoreCase("null") ? null : convertElement(val));
         }
         @SuppressWarnings("unchecked")
         T[] arr = (T[]) result.toArray(createArray(result.size()));
