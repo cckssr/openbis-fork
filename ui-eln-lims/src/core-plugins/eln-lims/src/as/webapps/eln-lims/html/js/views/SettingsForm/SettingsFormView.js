@@ -29,7 +29,11 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 	this._sampleTypeDefinitionsMiscellaneousSettingsTableModels = {}; // key: sample type; value: table model
 	this._sampleTypeDefinitionsSettingsTableModels = {}; // key: sample type; value: table model
 	this._sampleTypeDefinitionsHintsTableModels = {}; // key: sample type; value: table model
+	this._sampleTypeToolbarSettings = {}; // key: sample type; value: toolbarSettingsWidget
+	this._projectsToolbarSettings = null;
+	this._spacesToolbarSettings = null;
 	this._miscellaneousTableModel = null;
+	this._rootNodeSettings = null;
 
 	var _refreshableFields = [];
 
@@ -54,6 +58,18 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
             }
         }
         _refreshableFields = temp;
+		if(this._rootNodeSettings) {
+			this._rootNodeSettings.refresh();
+		}
+		if(this._spacesToolbarSettings) {
+			this._spacesToolbarSettings.refresh();
+		}
+		if(this._projectsToolbarSettings) {
+			this._projectsToolbarSettings.refresh();
+		}
+		for(let toolbarSetting of Object.keys(this._sampleTypeToolbarSettings)) {
+			this._sampleTypeToolbarSettings[toolbarSetting].refresh();
+		}
     }
 
 	this.repaint = function(views, profileToEdit) {
@@ -133,9 +149,13 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
             this._paintStoragesSection($formColumn, texts.storages);
 			this._paintTemplateSection($formColumn, texts.templates);
             this._paintSampleTypesDefinition($formColumn,texts.sampleTypeDefinitionsExtension);
+            this._paintSpacesSettingsSection($formColumn,texts.spaces);
+            this._paintProjectsSettingsSection($formColumn,texts.projects);
             this._paintInventorySpacesSection($formColumn, texts.inventorySpaces);
 			this._paintMainMenuSection($formColumn, texts.mainMenu);
+			this._paintRootNodeSection($formColumn, texts.rootNode)
 			this._paintMiscellaneous($formColumn, texts.miscellaneous)
+
 
             if(this._settingsFormModel.settingsSample.code === "GENERAL_ELN_SETTINGS") {
                 $formColumn.append($("<h2>").append("Deprecated"));
@@ -150,6 +170,13 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 
 	}
 
+	this._paintRootNodeSection = function($formColumn, text) {
+		var $fieldset = this._getFieldset($formColumn, text.title, "settings-section-root-node", false);
+		$fieldset.append(FormUtil.getInfoText(text.info));
+		this._rootNodeSettings = new RootNodeSettings(this._settingsFormModel.mode, this._profileToEdit);
+		this._rootNodeSettings.init($fieldset);
+	}
+
 	this._getSettings = function() {
 	    var settings = {
             mainMenu : this._mainMenuItemsTableModel.getValues(),
@@ -158,7 +185,10 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
             showSemanticAnnotations : this._miscellaneousTableModel.getValues()["Show Semantic Annotations"],
             hideSectionsByDefault : this._miscellaneousTableModel.getValues()["Hide sections by default"],
             inventorySpaces : this._inventorySpacesTableModel.getValues(),
-            inventorySpacesReadOnly : this._inventorySpacesReadOnlyTableModel.getValues()
+            inventorySpacesReadOnly : this._inventorySpacesReadOnlyTableModel.getValues(),
+			rootNodeSettings: this._rootNodeSettings.getValue(),
+			spaceToolbarSettings: this._spacesToolbarSettings.getValue(),
+			projectToolbarSettings: this._projectsToolbarSettings.getValue(),
         };
 
         if(this._settingsFormModel.settingsSample.code === "GENERAL_ELN_SETTINGS") {
@@ -194,6 +224,7 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 			}
 			
 			sampleTypeDefinitionsSettings[sampleType] = sampleTypeSection;
+			sampleTypeDefinitionsSettings[sampleType]["TOOLBAR"] = this._sampleTypeToolbarSettings[sampleType].getValue();
 		}
 		return sampleTypeDefinitionsSettings;
 	}
@@ -316,6 +347,34 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 		$fieldset.append(this._getTable(this._inventorySpacesTableModel, canRemoveFunctionSpace));
 		this._inventorySpacesReadOnlyTableModel = this._getInventorySpacesReadOnlyTableModel();
         $fieldset.append(this._getTable(this._inventorySpacesReadOnlyTableModel, canRemoveFunctionSpaceReadOnly));
+	}
+
+	this._paintSpacesSettingsSection = function($container, text) {
+		var $fieldset = this._getFieldset($container, text.title, "settings-section-spaces", true);
+		$fieldset.append(FormUtil.getInfoText(text.info));
+
+		var toolbarSettings = SettingsManagerUtils.getDefaultSpaceToolbarConfiguration();
+		if(this._profileToEdit.spaceToolbarSettings) {
+			$.extend(toolbarSettings, this._profileToEdit.spaceToolbarSettings);
+		}
+
+		var toolbarSettingsWidget = new ToolbarSettings(this._settingsFormModel.mode, this._profileToEdit, toolbarSettings);
+		toolbarSettingsWidget.init($fieldset);
+		this._spacesToolbarSettings = toolbarSettingsWidget;
+	}
+
+	this._paintProjectsSettingsSection = function($container, text) {
+		var $fieldset = this._getFieldset($container, text.title, "settings-section-projects", true);
+		$fieldset.append(FormUtil.getInfoText(text.info));
+
+		var toolbarSettings = SettingsManagerUtils.getDefaultProjectToolbarConfiguration();
+		if(this._profileToEdit.projectToolbarSettings) {
+			$.extend(toolbarSettings, this._profileToEdit.projectToolbarSettings);
+		}
+
+		var toolbarSettingsWidget = new ToolbarSettings(this._settingsFormModel.mode, this._profileToEdit, toolbarSettings);
+		toolbarSettingsWidget.init($fieldset);
+		this._projectsToolbarSettings = toolbarSettingsWidget;
 	}
 
 	this._getMainMenuItemsTableModel = function() {
@@ -562,7 +621,9 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 			miscellaneousSettingsTable.css( { "margin-left" : "30px" } );
 			$sampleTypeFieldset.append(miscellaneousSettingsTable);
 			this._sampleTypeDefinitionsMiscellaneousSettingsTableModels[sampleType.code] = miscellaneousSettingsTableModel;
-			
+
+			this._toolbarSettingsSectionForType($sampleTypeFieldset, sampleType.code, sampleTypeSettings);
+
 			// table for parents / children settings:
 			// SAMPLE_PARENTS_TITLE, SAMPLE_PARENTS_DISABLED, SAMPLE_PARENTS_ANY_TYPE_DISABLED, 
 			// SAMPLE_CHILDREN_TITLE, SAMPLE_CHILDREN_DISABLED, SAMPLE_CHILDREN_ANY_TYPE_DISABLED
@@ -577,6 +638,19 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 			$sampleTypeFieldset.append(this._getTable(hintsTableModel));
 			this._sampleTypeDefinitionsHintsTableModels[sampleType.code] = hintsTableModel;
 		}
+	}
+
+	this._toolbarSettingsSectionForType = function($formColumn, sampleTypeCode, sampleTypeSettings) {
+
+		var toolbarSettings = profile.getSampleTypeToolbarConfiguration(sampleTypeCode);
+
+		if(sampleTypeSettings && sampleTypeSettings["TOOLBAR"]) {
+			$.extend(toolbarSettings, sampleTypeSettings["TOOLBAR"]);
+		}
+
+		var toolbarSettingsWidget = new ToolbarSettings(this._settingsFormModel.mode, this._profileToEdit, toolbarSettings);
+		toolbarSettingsWidget.init($formColumn);
+		this._sampleTypeToolbarSettings[sampleTypeCode] = toolbarSettingsWidget;
 	}
 
 	this._paintMiscellaneous = function($container, text) {

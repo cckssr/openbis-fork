@@ -1,0 +1,37 @@
+# Harvester configuration for the openbis-sync integration suite.
+#
+# The data-source URLs point at the forked SOURCE instance, which runs with
+# ant.project.name=test-integration-fork and therefore listens on the AS port 8868 and the DSS port
+# 8869 (see TestInstanceHostUtils). The harvester itself runs in the in-JVM instance and registers the
+# pulled entities into that instance's database. The relative paths below are resolved against the test
+# working directory (test-integration/). The test invokes HarvesterMaintenanceTask against this file and
+# deletes the last-sync timestamp beforehand to force a full (initial) sync.
+
+[DS1]
+
+resource-list-url = http://localhost:8869/datastore_server/re-sync
+data-source-openbis-url = http://localhost:8868/openbis/openbis
+data-source-dss-url = http://localhost:8869/datastore_server
+data-source-alias = DS1
+data-source-auth-realm = OAI-PMH
+data-source-auth-user = admin
+data-source-auth-pass = password
+
+# The test overrides exportable-perm-ids at runtime (see IntegrationOpenbisSyncTest#runHarvester)
+#exportable-perm-ids = SPACE:SYNC_SPACE
+with-levels-below = true
+with-objects-and-data-sets-parents = true
+with-objects-and-data-sets-children = true
+with-objects-and-data-sets-other-spaces = false
+
+harvester-user = admin
+harvester-pass = password
+# Prefix harvested entities with "<alias>_" so the copies form a parallel hierarchy (DS1_SYNC_SPACE).
+translate-using-data-source-alias = true
+
+email-addresses = test@localhost
+max-threads = 1
+harvester-tmp-dir = targets/openbis-sync/harvester-tmp
+file-service-repository-path = targets/openbis-sync/file-server
+last-sync-timestamp-file = targets/openbis-sync/last-sync-timestamp.txt
+log-file = targets/openbis-sync/synchronization.log

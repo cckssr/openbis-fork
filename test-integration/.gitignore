@@ -10,3 +10,9 @@ etc/service.properties
 .dynamic_property_evaluator_queue
 /obis_test/test_data/
 /obis_test/openbis/
+etc/suite/openbis-sync/dss/core-plugins/openbis-sync
+etc/default/dss/core-plugins/eln-lims/
+etc/default/as/core-plugins/admin/
+etc/default/as/core-plugins/eln-lims/
+etc/default/dss/core-plugins/admin/
+etc/suite/openbis-sync/source/dss/core-plugins/openbis-sync/

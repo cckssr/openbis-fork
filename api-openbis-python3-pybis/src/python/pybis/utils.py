@@ -40,7 +40,7 @@ def parse_jackson(input_json):
         "parents",
         "children",
         "containers",  # 'container',
-        "properties",
+        # "properties",
         "experiment",
         "sample",
         "project",

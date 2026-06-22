@@ -1299,13 +1299,16 @@ public class CreateExperimentTest extends AbstractExperimentTest
         Experiment experiment2 = v3api.getExperiments(sessionToken, experimentIds, fetchOptions).get(experimentIds.get(0));
         assertEquals(experiment2.getProperties().get(PLATE_GEOMETRY.getPermId()), "384_WELLS_16X24");
 
-        List<Long[]> props = experiment2.getMultiValueIntegerArrayProperty(propertyType.getPermId());
+        List<Double[]> props = experiment2.getMultiValueRealArrayProperty(propertyType.getPermId());
         assertEquals(props.size(), 2);
-        for(Long[] prop : props) {
-            if(prop[0] > 3L) {
-                assertEqualsNoOrder(prop, new Long[] {4L, 5L, 6L});
-            } else {
-                assertEqualsNoOrder(prop, new Long[] {1L, 2L, 3L});
+        for (Double[] prop : props)
+        {
+            if (prop[0] > 3L)
+            {
+                assertEqualsNoOrder(prop, new Double[] { 4.0, 5.0, 6.0 });
+            } else
+            {
+                assertEqualsNoOrder(prop, new Double[] { 1.0, 2.0, 3.0 });
             }
         }
 

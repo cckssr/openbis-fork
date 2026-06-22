@@ -233,13 +233,22 @@ public class TaskManagerImpl implements TaskManager {
                     if (syncOperation != null) {
                         ClientAPI.TransferMonitorListener uploadMonitor = syncOperation.getUploadTransferMonitor();
                         ClientAPI.TransferMonitorListener downloadMonitor = syncOperation.getDownloadTransferMonitor();
-                        return new SyncJobLive(syncJob.getLocalDirectoryRoot(),
-                                !uploadMonitor.isFinished(),
-                                uploadMonitor.isFinished() && !downloadMonitor.isFinished(),
+                        return new SyncJobLive(
+                                syncJob.getLocalDirectoryRoot(),
+                                switch (syncJob.getType()) {
+                                    case Bidirectional, Upload -> !uploadMonitor.isFinished();
+                                    case Download -> false;
+                                },
+                                switch (syncJob.getType()) {
+                                    case Bidirectional -> uploadMonitor.isFinished() && !downloadMonitor.isFinished();
+                                    case Download -> !downloadMonitor.isFinished();
+                                    case Upload -> false;
+                                },
                                 uploadMonitor.getTotal(),
                                 downloadMonitor.getTotal(),
                                 uploadMonitor.getCurrent(),
-                                downloadMonitor.getCurrent());
+                                downloadMonitor.getCurrent()
+                        );
                     } else {
                         return new SyncJobLive(syncJob.getLocalDirectoryRoot(),
                                 false, false,

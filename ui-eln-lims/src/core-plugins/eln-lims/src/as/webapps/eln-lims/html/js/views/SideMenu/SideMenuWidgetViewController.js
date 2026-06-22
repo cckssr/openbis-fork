@@ -6,8 +6,6 @@ function SideMenuWidgetViewController(sideMenuWidgetController, sideMenuWidgetMo
 
     var MOBILE_MODE = $(window).width() < LayoutManager.TABLET_SIZE;
 
-    var _this = this;
-
     this._sideMenuMap = {
             "lab_notebook": new SideMenuWidgetView("lab_notebook", this._sideMenuWidgetController, this._sideMenuWidgetController._browserControllerMap["lab_notebook"], this._sideMenuWidgetModel),
             "lims": new SideMenuWidgetView("lims", this._sideMenuWidgetController, this._sideMenuWidgetController._browserControllerMap["lims"], this._sideMenuWidgetModel),

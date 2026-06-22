@@ -9,6 +9,7 @@ evaluationDependsOn(':server-application-server')
 evaluationDependsOn(':server-original-data-store')
 evaluationDependsOn(':server-screening')
 evaluationDependsOn(':server-ro-crate')
+evaluationDependsOn(':server-sftp')
 evaluationDependsOn(':core-plugin-openbis')
 
 apply from: '../build/javaproject.gradle'
@@ -57,7 +58,15 @@ println "installerDir:${installerDistDir}"
 println "buildDir:${buildDir}"
 println "installer:${project.projectDir}/resource/installer"
 
-task copyResources(type: Copy, dependsOn: [compileJava, ':core-plugin-openbis:zip', ':core-plugin-openbis:zipDss', ':core-plugin-openbis:zipRoCrateServer', ':core-plugin-openbis:zipBdlServer', ':core-plugin-openbis:zipAfsServer']) {
+task copyResources(type: Copy, dependsOn: [
+        compileJava,
+       ':core-plugin-openbis:zip',
+       ':core-plugin-openbis:zipDss',
+       ':core-plugin-openbis:zipRoCrateServer',
+       ':core-plugin-openbis:zipBdlServer',
+       ':core-plugin-openbis:zipAfsServer',
+       ':core-plugin-openbis:zipAfsSftpServer'
+]) {
     duplicatesStrategy 'include'
     from "${project.projectDir}/resource/installer"
     from "${project.projectDir}/../core-plugin-openbis/dist/tarball/installer"
@@ -68,6 +77,8 @@ task copyResources(type: Copy, dependsOn: [compileJava, ':core-plugin-openbis:zi
     from zipTree(project(':core-plugin-openbis').zipBdlServer.archivePath)
     into installerDistDir
     from zipTree(project(':core-plugin-openbis').zipAfsServer.archivePath)
+    into installerDistDir
+    from zipTree(project(':core-plugin-openbis').zipAfsSftpServer.archivePath)
     into installerDistDir
     from("${installerDistDir}/../BUILD-app-openbis-installer.INFO") {
         into 'bin'

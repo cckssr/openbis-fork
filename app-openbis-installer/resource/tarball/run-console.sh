@@ -73,7 +73,8 @@ if [ -z "$install_path" ]; then
 fi
 	
 if [[ -d "$install_path/bin" && -d "$install_path/servers/core-plugins" && -d "$install_path/servers/datastore_server" && -d "$install_path/servers/openBIS-server" ]]; then
-  echo "Previous openBIS installation detected. Upgrading..."
+  echo "Previous openBIS installation detected. Please choose a different folder."
+  exit 1
 else 
   dss_root_dir=$( grep -e "^DSS_ROOT_DIR=.*$" $BASE/console.properties | sed "s/DSS_ROOT_DIR=//" )
   if [ -z "$dss_root_dir" ]; then

@@ -15,8 +15,8 @@
  */
 package ch.ethz.sis.afssftp.server;
 
-import ch.ethz.sis.afsclient.client.AfsClient;
 import ch.ethz.sis.afssftp.authentication.PasswordAuthenticator;
+import ch.ethz.sis.afssftp.conf.Parameters;
 import ch.ethz.sis.afssftp.filesystemview.VirtualFileSystemFactory;
 import ch.ethz.sis.afssftp.startup.AfsSftpServerParameter;
 import ch.ethz.sis.afssftp.util.OpenBISClientUtil;
@@ -25,7 +25,10 @@ import ch.ethz.sis.shared.log.standard.LogFactoryFactory;
 import ch.ethz.sis.shared.log.standard.LogManager;
 import ch.ethz.sis.shared.log.standard.Logger;
 import ch.ethz.sis.shared.startup.Configuration;
+import org.apache.sshd.common.NamedFactory;
 import org.apache.sshd.common.PropertyResolverUtils;
+import org.apache.sshd.common.cipher.BuiltinCiphers;
+import org.apache.sshd.common.cipher.Cipher;
 import org.apache.sshd.common.keyprovider.KeyPairProvider;
 import org.apache.sshd.netty.NettyIoServiceFactoryFactory;
 import org.apache.sshd.server.SshServer;
@@ -42,7 +45,9 @@ import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 public final class Server {
 
@@ -54,6 +59,8 @@ public final class Server {
     {
         // Load logging plugin, Initializing LogManager
         shutdown = false;
+
+        Parameters.initialize(configuration);
 
         LogFactoryFactory logFactoryFactory = new LogFactoryFactory();
         LogFactory logFactory = logFactoryFactory.create(configuration.getStringProperty(AfsSftpServerParameter.logFactoryClass));
@@ -74,8 +81,20 @@ public final class Server {
                 configuration.getStringProperty(AfsSftpServerParameter.afsUrl)
         );
         sftpServer = SshServer.setUpDefaultServer();
-        PropertyResolverUtils.updateProperty(sftpServer, SftpModuleProperties.MAX_WRITEDATA_PACKET_LENGTH.getName(), AfsClient.DEFAULT_PACKAGE_SIZE_IN_BYTES);
-        PropertyResolverUtils.updateProperty(sftpServer, SftpModuleProperties.MAX_READDATA_PACKET_LENGTH.getName(), AfsClient.DEFAULT_PACKAGE_SIZE_IN_BYTES);
+        PropertyResolverUtils.updateProperty(sftpServer, SftpModuleProperties.MAX_WRITEDATA_PACKET_LENGTH.getName(), Parameters.getMaxAfsClientChunkSize());
+        PropertyResolverUtils.updateProperty(sftpServer, SftpModuleProperties.MAX_READDATA_PACKET_LENGTH.getName(), Parameters.getMaxAfsClientChunkSize());
+
+        // Create a custom list of allowed cipher factories
+        List<NamedFactory<Cipher>> cipherFactories = new ArrayList<>();
+
+        // Standard ciphers allowed:
+        // cipherFactories.add(BuiltinCiphers.none); // We might support none if we decide no not to ship certificates for the encryption on the future
+        cipherFactories.add(BuiltinCiphers.cc20p1305_openssh);
+        cipherFactories.add(BuiltinCiphers.aes256ctr);
+        // cipherFactories.add(BuiltinCiphers.aes128ctr);
+
+        // Bind the factories to the server
+        sftpServer.setCipherFactories(cipherFactories);
 
         // 1. Mandatory: Force the server to use Netty instead of default NIO2
         sftpServer.setIoServiceFactoryFactory(new NettyIoServiceFactoryFactory());

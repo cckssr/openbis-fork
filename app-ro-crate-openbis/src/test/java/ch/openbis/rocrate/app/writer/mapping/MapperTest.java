@@ -8,6 +8,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IEntityType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.Project;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectIdentifier;
@@ -22,6 +23,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleTypeFe
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
+import ch.ethz.sis.openbis.generic.excel.v3.model.IFileInfo;
 import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
 import ch.openbis.rocrate.app.writer.mapping.types.MapResult;
 import junit.framework.TestCase;
@@ -29,10 +31,7 @@ import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class MapperTest extends TestCase
 {
@@ -306,6 +305,125 @@ public class MapperTest extends TestCase
         MetadataEntry entry = result.getMetaDataEntries().get(0);
         assertEquals("/SPACE/PROJECT", entry.getId());
 
+    }
+
+    @Test
+    public void testSampleAndCollectionWithSameIdentifier() throws Exception
+    {
+
+        Map<EntityTypePermId, IEntityType> schema = new HashMap<>();
+        Mockery context = new Mockery();
+
+        EntityTypePermId sampleTypePermId = new EntityTypePermId("DEFAULT", EntityKind.SAMPLE);
+        EntityTypePermId collectionTypePermId = new EntityTypePermId("DEFAULT", EntityKind.EXPERIMENT);
+
+
+        Project project = new Project();
+        Space space = new Space();
+        SpacePermId  spacePermId = new SpacePermId("DEFAULT");
+        space.setPermId(spacePermId);
+        space.setCode("DEFAULT");
+        Map<SpacePermId, Space> spaces = Map.of(spacePermId, space);
+
+        project.setCode("DEFAULT");
+        ProjectIdentifier projectId = new ProjectIdentifier("DEFAULT", "DEFAULT");
+        project.setIdentifier(projectId);
+        project.setSpace(space);
+        Map<ProjectIdentifier, Project> projects =
+                Map.of(projectId, project);
+
+        ExperimentFetchOptions experimentFetchOptions = new ExperimentFetchOptions();
+        experimentFetchOptions.withProperties();
+
+        Experiment experiment = new Experiment();
+        experiment.setCode("DEFAULT");
+        experiment.setProject(project);
+        experiment.setFetchOptions(experimentFetchOptions);
+        ExperimentIdentifier experimentIdentifier = new ExperimentIdentifier("DEFAULT", "DEFAULT", "DEFAULT");
+        experiment.setIdentifier(experimentIdentifier);
+        experiment.setProperties(new HashMap<>());
+
+
+        SampleTypeFetchOptions sampleTypeFetchOptions = new SampleTypeFetchOptions();
+        sampleTypeFetchOptions.withPropertyAssignments();
+        sampleTypeFetchOptions.withSemanticAnnotations();
+
+        SampleType sampleType = new SampleType();
+        sampleType.setCode("DEFAULT");
+        sampleType.setFetchOptions(sampleTypeFetchOptions);
+        sampleType.setPropertyAssignments(List.of());
+        sampleType.setSemanticAnnotations(List.of());
+
+
+        Sample sample = new Sample();
+        sample.setCode("DEFAULT");
+        SampleIdentifier sampleIdentifier = new SampleIdentifier("/DEFAULT/DEFAULT/DEFAULT");
+        sample.setIdentifier(sampleIdentifier);
+        sample.setExperiment(experiment);
+        sample.setProject(project);
+        sample.setSpace(space);
+        sample.setType(sampleType);
+        sample.setParents(List.of());
+        sample.setChildren(List.of());
+        sample.setProperties(new HashMap<>());
+
+        SampleFetchOptions sampleFetchOptions = new SampleFetchOptions();
+        sampleFetchOptions.withSpace();
+        sampleFetchOptions.withExperiment();
+        sampleFetchOptions.withProject();
+        sampleFetchOptions.withProperties();
+        sampleFetchOptions.withParents();
+        sampleFetchOptions.withChildren();
+        sampleFetchOptions.withType().withPropertyAssignments();
+        sample.setFetchOptions(sampleFetchOptions);
+
+        Map<ObjectIdentifier, AbstractEntityPropertyHolder> metadata = new HashMap<>();
+        metadata.put(sampleIdentifier, sample);
+        metadata.put(experimentIdentifier, experiment);
+
+
+        Map<ObjectIdentifier, List<IFileInfo>> files = new LinkedHashMap<>();
+
+        byte[] contents = new byte[]{ 0 };
+
+        OpenBisModel.FileInfoContents file = new OpenBisModel.FileInfoContents(
+                sampleIdentifier.getIdentifier(),
+                "hierarchy/DEFAULT/DEFAULT/DEFAULT/file.txt",
+                contents,
+                "hierarchy/DEFAULT/DEFAULT/DEFAULT/data/file.txt"
+                );
+
+        files.put(sampleIdentifier, List.of(file));
+
+        Map<ObjectIdentifier, List<IFileInfo>> imageFiles =
+                new LinkedHashMap<>();
+
+        IEntityType entryType = context.mock(IEntityType.class);
+        context.checking(new Expectations()
+        {
+            {
+                atLeast(1).of(entryType).getCode();
+                will(returnValue("DEFAULT"));
+            }
+
+            {
+                allowing(entryType).getPropertyAssignments();
+                will(returnValue(new ArrayList<>()));
+            }
+        });
+        schema.put(sampleTypePermId, sampleType);
+        schema.put(collectionTypePermId, entryType);
+
+        OpenBisModel openBisModel =
+                new OpenBisModel(Map.of(), schema, spaces, projects, metadata, Map.of(), Map.of(),
+                        Map.of(), files, imageFiles);
+        Mapper mapper = new Mapper();
+        MapResult result = mapper.transform(openBisModel);
+
+        assertEquals(4, result.getSchema().getClasses().size());
+        assertEquals(3, result.getSchema().getProperties().size());
+        assertEquals(4, result.getMetaDataEntries().size());
+        assertEquals(1, result.getFiles().size());
     }
 
 }

@@ -123,6 +123,19 @@ public class DatasetTypeImportHelper extends BasicImportHelper
         VersionUtils.updateVersion(version, versions, ImportTypes.DATASET_TYPE.getType(), code);
     }
 
+    @Override
+    protected boolean isNewVersion(Map<String, Integer> header, List<String> values)
+    {
+        String internal = getValueByColumnName(header, values, Attribute.Internal);
+        boolean isInternalNamespace = ImportUtils.isTrue(internal);
+
+        if(isInternalNamespace && !delayedExecutor.isSystem()) {
+            //if exists, skip
+            return !isObjectExist(header, values);
+        }
+        return true;
+    }
+
     @Override protected boolean isObjectExist(Map<String, Integer> header, List<String> values)
     {
         String code = getValueByColumnName(header, values, Attribute.Code);
@@ -175,7 +188,7 @@ public class DatasetTypeImportHelper extends BasicImportHelper
         creation.setCode(code);
         creation.setDescription(description);
 
-        creation.setValidationPluginId(ImportUtils.getScriptId(validationScript, null));
+        creation.setValidationPluginId(ImportUtils.getScriptId(code, validationScript, null));
         if(delayedExecutor.isSystem())
         {
             creation.setManagedInternally(ImportUtils.isTrue(internal));
@@ -225,7 +238,7 @@ public class DatasetTypeImportHelper extends BasicImportHelper
         DataSetTypeFetchOptions dataSetTypeFetchOptions = new DataSetTypeFetchOptions();
         dataSetTypeFetchOptions.withValidationPlugin();
         DataSetType dataSetType = delayedExecutor.getDataSetType(new EntityTypePermId(code, EntityKind.DATA_SET), dataSetTypeFetchOptions);
-        update.setValidationPluginId(ImportUtils.getScriptId(validationScript, dataSetType.getValidationPlugin()));
+        update.setValidationPluginId(ImportUtils.getScriptId(code, validationScript, dataSetType.getValidationPlugin()));
         if (metaData != null && !metaData.isEmpty())
         {
             update.getMetaData().add(JSONHandler.parseMetaData(metaData));

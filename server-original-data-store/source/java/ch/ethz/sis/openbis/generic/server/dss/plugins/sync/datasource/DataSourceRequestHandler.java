@@ -16,8 +16,10 @@
 package ch.ethz.sis.openbis.generic.server.dss.plugins.sync.datasource;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.EnumMap;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -26,7 +28,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.stream.Collectors;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -36,9 +37,10 @@ import javax.xml.stream.XMLStreamWriter;
 
 import ch.ethz.sis.shared.log.classic.impl.Logger;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.fetchoptions.SpaceFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.search.SpaceSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.exporter.data.ExportableKind;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.exporter.data.ExportablePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.exporter.ExportEntityCollector;
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
@@ -56,6 +58,19 @@ public class DataSourceRequestHandler implements IRequestHandler
 {
     private static final Logger operationLog =
             LogFactory.getLogger(LogCategory.OPERATION, DataSourceRequestHandler.class);
+
+    private static final String EXPORTABLE_PERM_ID_PARAM = "exportable_perm_id";
+
+    private static final String WITH_LEVELS_ABOVE_PARAM = "with_levels_above";
+
+    private static final String WITH_LEVELS_BELOW_PARAM = "with_levels_below";
+
+    private static final String WITH_OBJECTS_AND_DATA_SETS_PARENTS_PARAM = "with_objects_and_data_sets_parents";
+
+    private static final String WITH_OBJECTS_AND_DATA_SETS_CHILDREN_PARAM = "with_objects_and_data_sets_children";
+
+    private static final String WITH_OBJECTS_AND_DATA_SETS_OTHER_SPACES_PARAM = "with_objects_and_data_sets_other_spaces";
+
     private enum Capability
     {
         ABOUT("about", "description", null, false),
@@ -65,23 +80,21 @@ public class DataSourceRequestHandler implements IRequestHandler
             @Override
             void writeUrls(WritingContext context) throws XMLStreamException
             {
-                SpaceSearchCriteria searchCriteria = new SpaceSearchCriteria();
-                SpaceFetchOptions fetchOptions = new SpaceFetchOptions();
                 DeliveryContext deliveryContext = context.getDeliveryContext();
                 String sessionToken = context.getSessionToken();
-                List<Space> spaces = deliveryContext.getV3api().searchSpaces(sessionToken, searchCriteria, fetchOptions).getObjects();
-                List<String> spaceCodes = spaces.stream().map(Space::getCode).collect(Collectors.toList());
                 Map<String, List<String>> parameterMap = context.getParameterMap();
-                Set<String> requestedSpaces = DataSourceUtils.getRequestedAndAllowedSubSet(spaceCodes,
-                        parameterMap.get("white_list"), parameterMap.get("black_list"));
-                operationLog.info("Requested spaces: " + requestedSpaces);
+
+                Map<ExportableKind, List<String>> permIdsByKind =
+                        collectPermIdsByKind(deliveryContext.getV3api(), sessionToken, parameterMap);
+                operationLog.info("Requested entities (perm ids by kind): " + permIdsByKind);
+
                 IDeliverer deliverer = context.getDeliverer();
                 IDataSourceQueryService queryService = context.getQueryService();
                 DeliveryExecutionContext executionContext = new DeliveryExecutionContext();
                 executionContext.setQueryService(queryService);
                 executionContext.setRequestTimestamp(context.getRequestTimestamp());
                 executionContext.setSessionToken(sessionToken);
-                executionContext.setSpaces(requestedSpaces);
+                executionContext.setPermIdsByKind(permIdsByKind);
                 executionContext.setWriter(context.getWriter());
                 executionContext.setFileServicePaths(context.getFileServicePaths());
                 deliverer.deliverEntities(executionContext);
@@ -163,6 +176,59 @@ public class DataSourceRequestHandler implements IRequestHandler
             return context.getDownloadUrl() + context.getServletPath() + "/?verb=" + verb;
         }
 
+    }
+
+    private static Map<ExportableKind, List<String>> collectPermIdsByKind(IApplicationServerApi v3api, String sessionToken,
+            Map<String, List<String>> parameterMap)
+    {
+        List<ExportablePermId> permIds = parseExportablePermIds(parameterMap.get(EXPORTABLE_PERM_ID_PARAM));
+        boolean withLevelsAbove = getFlag(parameterMap, WITH_LEVELS_ABOVE_PARAM);
+        boolean withLevelsBelow = getFlag(parameterMap, WITH_LEVELS_BELOW_PARAM);
+        boolean withObjectsAndDataSetsParents = getFlag(parameterMap, WITH_OBJECTS_AND_DATA_SETS_PARENTS_PARAM);
+        boolean withObjectsAndDataSetsChildren = getFlag(parameterMap, WITH_OBJECTS_AND_DATA_SETS_CHILDREN_PARAM);
+        boolean withObjectsAndDataSetsOtherSpaces = getFlag(parameterMap, WITH_OBJECTS_AND_DATA_SETS_OTHER_SPACES_PARAM);
+
+        Set<ExportablePermId> collected = new HashSet<>();
+        for (ExportablePermId permId : permIds)
+        {
+            ExportEntityCollector.collectEntities(v3api, sessionToken, collected, permId,
+                    withLevelsAbove, withLevelsBelow, withObjectsAndDataSetsParents, withObjectsAndDataSetsChildren,
+                    withObjectsAndDataSetsOtherSpaces);
+        }
+
+        Map<ExportableKind, List<String>> permIdsByKind = new EnumMap<>(ExportableKind.class);
+        for (ExportablePermId permId : collected)
+        {
+            permIdsByKind.computeIfAbsent(permId.getExportableKind(), k -> new ArrayList<>()).add(permId.getPermId());
+        }
+        return permIdsByKind;
+    }
+
+    static List<ExportablePermId> parseExportablePermIds(List<String> tokens)
+    {
+        List<ExportablePermId> result = new ArrayList<>();
+        if (tokens != null)
+        {
+            for (String token : tokens)
+            {
+                int index = token.indexOf(':');
+                if (index < 0)
+                {
+                    throw new IllegalArgumentException(
+                            "Invalid '" + EXPORTABLE_PERM_ID_PARAM + "' value (expected '<KIND>:<permId>'): " + token);
+                }
+                ExportableKind kind = ExportableKind.valueOf(token.substring(0, index).trim());
+                String permId = token.substring(index + 1).trim();
+                result.add(new ExportablePermId(kind, permId));
+            }
+        }
+        return result;
+    }
+
+    static boolean getFlag(Map<String, List<String>> parameterMap, String name)
+    {
+        List<String> values = parameterMap.get(name);
+        return values != null && values.isEmpty() == false && Boolean.parseBoolean(values.get(0));
     }
 
     private IDeliverer deliverer;

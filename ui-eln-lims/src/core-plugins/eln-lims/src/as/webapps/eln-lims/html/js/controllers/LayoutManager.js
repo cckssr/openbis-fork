@@ -8,6 +8,7 @@ var LayoutManager = {
 	MOBILE_SIZE : 0,
 	MIN_HEADER_HEIGHT : 100,
 	HEADER_PADDING : 20,
+	ENTRY_HEADER_TOOLBAR: 50,
 	MAX_FIRST_COLUMN_WIDTH : 350,
 	body : null,
 	mainContainer : null,
@@ -26,9 +27,16 @@ var LayoutManager = {
 	secondColumnContentResize : function() {
 		var width = $( window ).width();
 		if (width > LayoutManager.TABLET_SIZE) {
+
 			LayoutManager.secondColumnContent.css({
 				height : $( window ).height() - LayoutManager.secondColumnHeader.outerHeight() - LayoutManager.MAIN_HEADER_HEIGHT
 			});
+
+		}
+		if(mainController.currentView && mainController.currentView.refresh) {
+			setTimeout(() => {
+				mainController.currentView.refresh();
+			}, 100);
 		}
 	},
 	isResizingColumn : false,
@@ -244,6 +252,23 @@ var LayoutManager = {
                 "min-height" : headerHeight,
                 "height" : "auto"
             });
+
+            // Header's resize dynamically when adding toolbars or buttons
+            // Such resizes should trigger a non initial resize of the content
+            const observer = new MutationObserver(function(mutationsList) {
+                // LayoutManager.resize(mainController.views, false);
+                view.content.css({
+                    display : "block",
+                    height : height - Math.max(view.header ? view.header.height() : 0, LayoutManager.MIN_HEADER_HEIGHT) - LayoutManager.HEADER_PADDING - LayoutManager.TAB_TOP_BAR_HEIGHT
+                });
+            });
+
+            observer.observe(view.header[0], {
+                childList: true,
+                subtree: true, // Watch all deeply nested children too
+                attributes: true
+            });
+
         } else {
             _this.secondColumnHeader.css({ display : "none" });
         }
@@ -253,7 +278,6 @@ var LayoutManager = {
                 display : "block",
                 height : height - Math.max(view.header ? view.header.height() : 0, LayoutManager.MIN_HEADER_HEIGHT) - LayoutManager.HEADER_PADDING - LayoutManager.TAB_TOP_BAR_HEIGHT
             });
-
         } else {
             _this.secondColumnContent.css({ display : "none" });
         }

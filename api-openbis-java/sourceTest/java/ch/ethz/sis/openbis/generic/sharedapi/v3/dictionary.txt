@@ -2951,3 +2951,5 @@ create Data Stores
 Create Data Stores Operation
 Create Data Stores Operation Result
 Data Store Creation
+Export Entity Collector
+collect Entities

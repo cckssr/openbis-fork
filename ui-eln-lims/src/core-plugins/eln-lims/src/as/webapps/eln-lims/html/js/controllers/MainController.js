@@ -331,39 +331,102 @@ function MainController(profile) {
                                                         var hideMenu = queryString.hideMenu;
                                                         
                                                         LayoutManager.reloadView(localReference.views);
-//                                                        localReference.views.tabContent = LayoutManager.tabContent;
                                                         if(viewName && viewData) {
                                                             localReference.sideMenu.moveToNodeId(decodeURIComponent(menuUniqueId)).then(function(){
                                                                 localReference.changeView(viewName, viewData);
                                                             })
                                                         } else {
-                                                             profile.getHomeSpace(function(homeSpaceCode) {
-                                                                if(homeSpaceCode) {
-                                                                    localReference.serverFacade.getSetting('hasLoggedOnce', function(hasLoggedOnce) {
-                                                                        if(hasLoggedOnce !== 'true') {
-                                                                            localReference.serverFacade.setSetting('hasLoggedOnce', true);
-                                                                            var homeSpace = {
-                                                                                type: "SPACE",
-                                                                                id: homeSpaceCode
-                                                                            }
-                                                                            localReference.sideMenu._browserController.load().then(x => {
-                                                                                    localReference.sideMenu.moveToNodeId(JSON.stringify(homeSpace)).then(function(){
-                                                                                        localReference.sideMenu.setAsRootById("LAB_NOTEBOOK");
-                                                                                    })
-                                                                            });
-                                                                        }
-                                                                    });
-                                                                } else {
-                                                                    localReference.sideMenu._browserController.load().then(x => {
-                                                                        labNotebookNode = {
-                                                                            type: "LAB_NOTEBOOK",
-                                                                            id: "LAB_NOTEBOOK"
-                                                                        }
-                                                                        localReference.sideMenu.moveToNodeId(JSON.stringify(labNotebookNode));
-                                                                    });
-                                                                }
-                                                            });
-                                                            localReference.changeView("showLabNotebookPage", null);
+															var rootNodeSettings = profile.rootNodeSettings;
+															if(rootNodeSettings && rootNodeSettings.type !== "none") {
+																if(rootNodeSettings.type === "identifier") {
+																	var entity = rootNodeSettings.value;
+																	var node = null;
+
+																	switch(entity['@type']) {
+																		case "as.dto.experiment.Experiment":
+																			if(profile.isInventorySpace(entity.project.space.code)) {
+																				localReference.mainHeader.navigateToTab("LIMS");
+																			}
+																			node = {
+																				type: "EXPERIMENT",
+																				id: entity.permId.permId
+																			}
+																			break;
+																		case "as.dto.project.Project":
+																			if(profile.isInventorySpace(entity.space.code)) {
+																				localReference.mainHeader.navigateToTab("LIMS");
+																			}
+																			node = {
+																				type: "PROJECT",
+																				id: entity.permId.permId
+																			}
+																			break;
+																		case "as.dto.space.Space":
+																			if(profile.isInventorySpace(entity.code)) {
+																				localReference.mainHeader.navigateToTab("LIMS");
+																			}
+																			node = {
+																				type: "SPACE",
+																				id: entity.code
+																			}
+																			break;
+																	}
+
+																	localReference.sideMenu.moveToNodeIdAfterLoad(node, true,() => {
+																		localReference.sideMenu.setAsRootById(node.id);
+																	})
+
+																} else if(rootNodeSettings.type === "homeSpace") {
+																	profile.getHomeSpace(function(homeSpaceCode) {
+																		if(homeSpaceCode) {
+																			if(profile.isInventorySpace(homeSpaceCode)) {
+																				localReference.mainHeader.navigateToTab("LIMS");
+																			}
+																			const homeSpace = {
+																				type: "SPACE",
+																				id: homeSpaceCode
+																			}
+																			localReference.sideMenu.moveToNodeIdAfterLoad(homeSpace, true,() => {
+																				localReference.sideMenu.setAsRootById(homeSpace.id);
+																			})
+																		} else {
+																			var labNotebookNode = {
+																				type: "LAB_NOTEBOOK",
+																				id: "LAB_NOTEBOOK"
+																			}
+																			localReference.sideMenu.moveToNodeIdAfterLoad(labNotebookNode, true,() => {
+																				localReference.sideMenu.setAsRootById(labNotebookNode.id);
+																			})
+																		}
+																	});
+																}
+															} else {
+																profile.getHomeSpace(function (homeSpaceCode) {
+																	if (homeSpaceCode) {
+																		localReference.serverFacade.getSetting('hasLoggedOnce', function (hasLoggedOnce) {
+																			if (hasLoggedOnce !== 'true') {
+																				localReference.serverFacade.setSetting('hasLoggedOnce', true);
+																				const homeSpace = {
+																					type: "SPACE",
+																					id: homeSpaceCode
+																				}
+																				localReference.sideMenu.moveToNodeIdAfterLoad(homeSpace, false, () => {
+																					localReference.sideMenu.setAsRootById("LAB_NOTEBOOK");
+																				})
+																			}
+																		});
+																	} else {
+																		var labNotebookNode = {
+																			type: "LAB_NOTEBOOK",
+																			id: "LAB_NOTEBOOK"
+																		}
+																		localReference.sideMenu.moveToNodeIdAfterLoad(labNotebookNode, true,() => {
+																			localReference.sideMenu.setAsRootById(labNotebookNode.id);
+																		})
+																	}
+																});
+																localReference.changeView("showLabNotebookPage", null);
+															}
                                                         }
                                                         
                                                         Util.unblockUI();
@@ -720,8 +783,16 @@ function MainController(profile) {
 					break;
 				case "showAdvancedSearchPage":
 					document.title = "Advanced Search";
-					this.mainHeader.navigateToTab("TOOLS");
-					this._showAdvancedSearchPage(arg);
+					var text,page;
+					if(typeof(arg) === 'string' || arg === null) {
+						text = arg;
+						page = "TOOLS";
+					} else {
+						text = arg["text"];
+						page = arg["page"];
+					}
+					this.mainHeader.navigateToTab(page);
+					this._showAdvancedSearchPage(text);
 					break;
                 case "showDropboxMonitorPage":
                     document.title = "Dropbox Monitor";
@@ -786,8 +857,12 @@ function MainController(profile) {
 					var searchText = arg["searchText"];
 					var searchDomain = arg["searchDomain"];
 					var searchDomainLabel = arg["searchDomainLabel"];
-					this.mainHeader.navigateToTab("TOOLS");
-					this._showSearchPage(searchText, searchDomain, searchDomainLabel);
+					var page = arg["page"];
+					if(!page) {
+						page = "TOOLS";
+					}
+					this.mainHeader.navigateToTab(page);
+					this._showSearchPage(searchText, searchDomain, searchDomainLabel, page);
 					break;
 				case "showSpacePage":
 					var _this = this;
@@ -976,10 +1051,14 @@ function MainController(profile) {
 					var permId = null;
 					var paginationInfo = null;
 					var activeTab = null;
+					var imageIdx = null;
+					var previewIdx = null;
 					if((typeof arg) !== "string") {
 						permId = arg.permIdOrIdentifier;
 						paginationInfo = arg.paginationInfo;
 						activeTab = arg.activeTab;
+						imageIdx = arg.imageIndex;
+						previewIdx = arg.previewIndex;
 						arg = permId;
 					} else {
 						permId = arg;
@@ -991,7 +1070,7 @@ function MainController(profile) {
 							document.title = "" + Util.getDisplayNameFromCode(data[0].sampleTypeCode) + " " + data[0].code;
 							var isELNSubExperiment = $.inArray(data[0].spaceCode, _this.profile.inventorySpaces) === -1 && _this.profile.inventorySpaces.length > 0;
 							_this.mainHeader.navigateToTabByEntity("OBJECT", data[0].spaceCode, data[0].permId);
-							_this._showViewSamplePage(data[0], isELNSubExperiment, paginationInfo, activeTab);
+							_this._showViewSamplePage(data[0], isELNSubExperiment, paginationInfo, activeTab, imageIdx, previewIdx);
 						}
 					});
 					break;
@@ -1706,7 +1785,7 @@ function MainController(profile) {
 	}
 
 	this.openHelpPage = function() {
-        var src = "https://openbis.readthedocs.io/en/20.10.12-plus/user-documentation/general-users";
+        var src = "https://openbis.readthedocs.io/en/7.x/user-documentation/general-users";
         var win = window.open(src, '_blank');
         win.focus();
 	}
@@ -1766,9 +1845,9 @@ function MainController(profile) {
 		trashcanController.init(views);
 	}
 	
-	this._showViewSamplePage = function(sample, isELNSubExperiment, paginationInfo, activeTab) {
+	this._showViewSamplePage = function(sample, isELNSubExperiment, paginationInfo, activeTab, imageIdx, previewIdx) {
 		//Show Form
-		var sampleFormController = new SampleFormController(this, FormMode.VIEW, sample, paginationInfo, activeTab);
+		var sampleFormController = new SampleFormController(this, FormMode.VIEW, sample, paginationInfo, activeTab, imageIdx, previewIdx);
 		var tabInfo = TabContentUtil.getSampleTabInfo(sample, FormMode.VIEW);
 		var views = this._getNewViewModel(true, true, true, tabInfo);
 		sampleFormController.init(views);
@@ -1792,7 +1871,10 @@ function MainController(profile) {
 	}
 	
     this._showCreateSpacePage = function(isInventory) {
-        //Show Form
+		if(isInventory === "undefined") {
+			// this happens only when create space form is opened through url
+			isInventory = null;
+		}
         var spaceFormController = new SpaceFormController(this, FormMode.CREATE, isInventory);
         var tabInfo = TabContentUtil.getCleanTab("CREATE_SPACE", true);
         var views = this._getNewViewModel(true, true, false, tabInfo);
@@ -1916,7 +1998,7 @@ function MainController(profile) {
 		} else {
 			newView = new AdvancedSearchController(this);
 		}
-		var tabInfo = TabContentUtil.getToolTabInfo('SEARCH', freeText);
+		var tabInfo = TabContentUtil.getSearchTabInfo(freeText);
 		var views = this._getNewViewModel(true, true, false, tabInfo);
 		newView.init(views);
 		newView.tabId = tabInfo.id;
@@ -1928,7 +2010,7 @@ function MainController(profile) {
 	
 	this.lastSearchId = 0; //Used to discard search responses that don't pertain to the last search call.
 	
-	this._showSearchPage = function(value, searchDomain, searchDomainLabel) {
+	this._showSearchPage = function(value, searchDomain, searchDomainLabel, page) {
 		this.lastSearchId++;
 		var localSearchId = this.lastSearchId;
 		var localReference = this;
@@ -1951,7 +2033,11 @@ function MainController(profile) {
 							localReference._legacyGlobalSearch(value);
 						} else {
 							$("#search").removeClass("search-query-searching");
-							localReference.changeView("showAdvancedSearchPage", value);
+							let args = {
+								text: value,
+								page: page
+							}
+							localReference.changeView("showAdvancedSearchPage", args);
 						}
 					} else if(searchDomain == "data-set-file-search") { 
 						localReference.serverFacade.searchOnSearchDomain(searchDomain, value, function(data) {

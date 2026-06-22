@@ -143,20 +143,12 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
     TREE_TOOLS = "tools"
 
     TREES_INITIALIZED = false
-    TREES_BY_TYPE = {
-        "lab_notebook": [],
-        "lims": [],
-        "tools": []
-    }
-    ROOTS = {
-        "lab_notebook": null,
-        "lims": null,
-        "tools": null
-    }
+    TREE_NODES = []
 
-    constructor(id) {
+    constructor(id, settingsCache) {
         super()
         this.id = id;
+        this.settingsCache = settingsCache;
     }
 
     SORTINGS_BY_NAME_AND_REGISTRATION_DATE = [].concat(this.SORTINGS_BY_NAME).concat(this.SORTINGS_BY_REGISTRATION_DATE)
@@ -656,21 +648,40 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
         return path
     }
 
+    _hasExactKeys(obj, keys) {
+        const objKeys = Object.keys(obj);
+        return objKeys.length === keys.length && keys.every(k => k in obj);
+    }
+
     loadSettings() {
-        return new Promise((resolve) => {
-            mainController.serverFacade.getSetting("eln-main-browser", (settingsStr) => {
-                if (settingsStr) {
-                    resolve(JSON.parse(settingsStr))
-                } else {
-                    resolve({})
-                }
+        var _this = this;
+        if(_.isEmpty(this.settingsCache[this.id])) {
+            return new Promise((resolve) => {
+                mainController.serverFacade.getSetting("eln-main-browser", (settingsStr) => {
+                    if (settingsStr) {
+                        var settingsFull = JSON.parse(settingsStr);
+                        if(_this._hasExactKeys(settingsFull, ["lab_notebook", "lims", "tools"])) {
+                            _this.settingsCache = settingsFull;
+                        } else {
+                            // old settings, applicable to lab_notebook only
+                            _this.settingsCache['lab_notebook'] = settingsFull;
+                        }
+                        resolve(_this.settingsCache[_this.id]);
+                    } else {
+                        resolve({})
+                    }
+                })
             })
-        })
+        } else {
+            return this.settingsCache[this.id];
+        }
+
     }
 
     onSettingsChange(settings) {
         if (settings) {
-            mainController.serverFacade.setSetting("eln-main-browser", JSON.stringify(settings))
+            this.settingsCache[this.id] = settings;
+            mainController.serverFacade.setSetting("eln-main-browser", JSON.stringify(this.settingsCache))
         }
     }
 
@@ -1664,26 +1675,24 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
             results.nodes.push(this._createAboutNode())
         } else {
             if(!this.TREES_INITIALIZED) {
-                var elnNodes = this._createLabNotebookNode();
-                this.TREES_BY_TYPE[this.TREE_LAB_NOTEBOOK].push(elnNodes);
-
-                var inv = this._createInventoryNode()
-                var stock = this._createStockNode()
-
-                this.TREES_BY_TYPE[this.TREE_LIMS].push(inv);
-                this.TREES_BY_TYPE[this.TREE_LIMS].push(stock);
-
-                var utilities = this._createUtilitiesNode();
-                this.TREES_BY_TYPE[this.TREE_TOOLS].push(utilities);
-
-                var about = this._createAboutNode();
-
-                this.TREES_BY_TYPE[this.TREE_TOOLS].push(about);
+                if(this.id === this.TREE_LAB_NOTEBOOK) {
+                    const elnNodes = this._createLabNotebookNode();
+                    this.TREE_NODES.push(elnNodes);
+                } else if(this.id === this.TREE_LIMS) {
+                    const inv = this._createInventoryNode();
+                    const stock = this._createStockNode();
+                    this.TREE_NODES.push(inv);
+                    this.TREE_NODES.push(stock);
+                } else if(this.id === this.TREE_TOOLS) {
+                    const utilities = this._createUtilitiesNode();
+                    const about = this._createAboutNode();
+                    this.TREE_NODES.push(utilities);
+                    this.TREE_NODES.push(about);
+                }
                 this.TREES_INITIALIZED = true
             }
-            results.nodes = this.TREES_BY_TYPE[this.id];
+            results.nodes = this.TREE_NODES;
         }
-
         results.nodes = results.nodes.filter((node) => !!node)
 
         return results
@@ -2849,21 +2858,17 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
     }
 
     _createLabNotebookNode() {
-        if (profile.mainMenu.showLabNotebook) {
-            return {
-                text: profile.MainMenuNodeNames.Lab_Notebook,
-                object: {
-                    type: this.TYPE_LAB_NOTEBOOK,
-                    id: this.TYPE_LAB_NOTEBOOK,
-                },
-                expanded: true,
-                rootable: true,
-                canHaveChildren: true,
-                view: "showLabNotebookPage",
-                icon: IconUtil.getNavigationIcon(this.TYPE_LAB_NOTEBOOK),
-            }
-        } else {
-            return null
+        return {
+            text: profile.MainMenuNodeNames.Lab_Notebook,
+            object: {
+                type: this.TYPE_LAB_NOTEBOOK,
+                id: this.TYPE_LAB_NOTEBOOK,
+            },
+            expanded: true,
+            rootable: true,
+            canHaveChildren: true,
+            view: "showLabNotebookPage",
+            icon: IconUtil.getNavigationIcon(this.TYPE_LAB_NOTEBOOK),
         }
     }
 
@@ -2898,7 +2903,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
     }
 
     _createInventoryNode() {
-        if (profile.mainMenu.showInventory) {
+        if (profile.mainMenu.showInventory || profile.isAdmin) {
             return {
                 text: profile.MainMenuNodeNames.Inventory,
                 object: {
@@ -2919,7 +2924,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
     }
 
     _createStockNode() {
-        if (profile.mainMenu.showStock) {
+        if (profile.mainMenu.showStock || profile.isAdmin) {
             return {
                 text: profile.MainMenuNodeNames.Stock,
                 object: {

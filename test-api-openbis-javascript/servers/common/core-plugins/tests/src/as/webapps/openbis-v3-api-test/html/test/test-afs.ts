@@ -21,6 +21,7 @@ exports.default = new Promise((resolve) => {
                 const testContent2 = new TextEncoder().encode("test-content-2-abcd")
                 const testContent3 = new TextEncoder().encode("test-content-3-abcde")
                 const testContent4 = new TextEncoder().encode("test-content-4-abcdef")
+                const testContent5 = new TextEncoder().encode("file-with-name-with-strange-characters")
 
                 try {
                     var startDate = new Date()
@@ -37,6 +38,7 @@ exports.default = new Promise((resolve) => {
                     await facade.getAfsServerFacade().write(ownerPermId, "/test-folder-1/test-file-2", 0, testContent2)
                     await facade.getAfsServerFacade().write(ownerPermId, "/test-folder-1/test-file-3", 0, testContent3)
                     await facade.getAfsServerFacade().write(ownerPermId, "/test-folder-2/test-file-4", 0, testContent4)
+                    await facade.getAfsServerFacade().write(ownerPermId, "/test-folder-2/test-file-5 % $ = +", 0, testContent5)
 
                     if (useTransaction) {
                         facade.setInteractiveSessionKey(testInteractiveSessionKey)
@@ -53,7 +55,7 @@ exports.default = new Promise((resolve) => {
                         return file1.getPath().localeCompare(file2.getPath())
                     })
 
-                    c.assertEqual(listAll.length, 6, "Number of files")
+                    c.assertEqual(listAll.length, 7, "Number of files")
 
                     c.assertFileEquals(listAll[0], {
                         path: "/test-file-1",
@@ -100,6 +102,14 @@ exports.default = new Promise((resolve) => {
                         owner: ownerPermId,
                         name: "test-file-4",
                         size: testContent4.length,
+                        directory: false,
+                        lastModifiedTime: [startDate, new Date()],
+                    })
+                    c.assertFileEquals(listAll[6], {
+                        path: "/test-folder-2/test-file-5 % $ = +",
+                        owner: ownerPermId,
+                        name: "test-file-5 % $ = +",
+                        size: testContent5.length,
                         directory: false,
                         lastModifiedTime: [startDate, new Date()],
                     })

@@ -15,6 +15,7 @@ SERVICES=(
     "$BASE/dss-service.sh"
     "$BASE/afs-service.sh"
     "$BASE/roc-service.sh"
+    "$BASE/sftp-service.sh"
 )
 
 # --- Helper Functions ---

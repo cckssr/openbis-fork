@@ -67,12 +67,19 @@ public final class AfsSftpServerIntegrationTestEnvironment
     {
         if (environment == null)
         {
-            environment = new IntegrationTestEnvironment();
-            environment.createApplicationServer();
-            environment.createAfsServer(IntegrationTestEnvironment.loadProperties(Path.of("etc/suite/sftp/afs/service.properties")));
-            environment.createAfsSftpServer();
-            environment.start();
-            createTestData();
+            try
+            {
+                environment = new IntegrationTestEnvironment();
+                environment.createApplicationServer();
+                environment.createAfsServer(IntegrationTestEnvironment.loadProperties(Path.of("etc/suite/sftp/afs/service.properties")));
+                environment.createAfsSftpServer();
+                environment.start();
+                createTestData();
+            } catch (RuntimeException | Error e)
+            {
+                stop();
+                throw e;
+            }
         }
     }
 
@@ -206,7 +213,7 @@ public final class AfsSftpServerIntegrationTestEnvironment
                                 DataSet dataSet = facade.createDataSet(openBIS, DSS_CODE,
                                         null, sampleObj.getPermId(),
                                         space + "_" + project + "_" + experiment + "_" + experimentSample + "_" + experimentSampleDataset,
-                                        "file_" + space + "_" + project + "_" + experiment + "_" + experimentSample + "_" + experimentSampleDataset,
+                                        "file_ % = # ~ $ " + space + "_" + project + "_" + experiment + "_" + experimentSample + "_" + experimentSampleDataset,
                                         ("data:" + project + "_" + experiment + "_" + experimentSample + "_" + experimentSampleDataset).getBytes(StandardCharsets.UTF_8),
                                         project + "_" + experiment + "_" + experimentSample + "_" + experimentSampleDataset
                                 );

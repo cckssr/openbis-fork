@@ -31,7 +31,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
-import javax.activation.DataHandler;
+import jakarta.activation.DataHandler;
 
 import ch.ethz.sis.shared.log.standard.core.Level;
 import org.hamcrest.core.IsNull;

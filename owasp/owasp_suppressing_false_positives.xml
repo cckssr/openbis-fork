@@ -1,414 +1,200 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.4.xsd">
-	<!-- XML Beans 2.6.0 -->
-	<suppress>
-		<packageUrl regex="true">^pkg:maven/apache/xmlbeans@.*$</packageUrl>
-		<cve>CVE-2021-23926</cve>
-	</suppress>
-	<!-- Bootstrap -->
-	<suppress>
-		<packageUrl regex="true">^pkg:javascript/bootstrap@.*$</packageUrl>
-		<cve>CVE-2018-14040</cve>
-		<cve>CVE-2018-14041</cve>
-		<cve>CVE-2018-14042</cve>
-		<cve>CVE-2019-8331</cve>
-	</suppress>
-	<!-- Jquery 1.11.3 -->
-	<suppress>
-		<packageUrl regex="true">^pkg:javascript/jquery@.*$</packageUrl>
-		<cve>CVE-2015-9251</cve>
-		<cve>CVE-2019-11358</cve>
-		<cve>CVE-2020-11022</cve>
-		<cve>CVE-2020-11023</cve>
-		<cve>CVE-2012-6708</cve>
-	</suppress>
-	<suppress>
-		<packageUrl regex="true">^pkg:javascript/moment\.js@.*$</packageUrl>
-		<vulnerabilityName>reDOS - regular expression denial of service</vulnerabilityName>
-	</suppress>
+	<!-- Every suppression below carries an "until" review date so none of them
+	     becomes a permanent blind spot. When a date lapses the finding
+	     re-surfaces and breaks the build, forcing a conscious re-decision.
+	     Three review tiers are used:
 
-	<!-- Bouncy Castle -->
-	<suppress>
-		<packageUrl regex="true">^pkg:maven/bouncycastle/bcprov@.*$</packageUrl>
-		<cve>CVE-2018-1000613</cve>
-		<cve>CVE-2020-26939</cve>
-	</suppress>
-	<!-- Commons Compress 1.8 -->
-	<suppress>
-		<packageUrl regex="true">^pkg:maven/apache/commons\-compress@.*$</packageUrl>
-		<cve>CVE-2018-11771</cve>
-	</suppress>
-	<!-- Spring 5 -->
-	<suppress>
-		<packageUrl regex="true">^pkg:maven/springframework/.*$</packageUrl>
-		<cve>CVE-2018-11039</cve>
-		<cve>CVE-2018-11040</cve>
-		<cve>CVE-2018-1199</cve>
-		<cve>CVE-2018-1257</cve>
-		<cve>CVE-2018-1270</cve>
-		<cve>CVE-2018-1271</cve>
-		<cve>CVE-2018-1272</cve>
-		<cve>CVE-2018-1275</cve>
-		<cve>CVE-2018-15756</cve>
-		<cve>CVE-2020-5398</cve>
-		<cve>CVE-2020-5421</cve>
-	</suppress>
-	<!-- Apache Poi 3.17 -->
-	<suppress>
-		<packageUrl regex="true">^pkg:maven/apache/poi@.*$</packageUrl>
-		<cve>CVE-2019-12415</cve>
-	</suppress>
-	<suppress>
-		<packageUrl regex="true">^pkg:maven/apache/poi\-ooxml@.*$</packageUrl>
-		<cve>CVE-2019-12415</cve>
-	</suppress>
-	<suppress>
-		<packageUrl regex="true">^pkg:maven/apache/poi\-ooxml\-schemas@.*$</packageUrl>
-		<cve>CVE-2019-12415</cve>
-	</suppress>
-	<!-- Log4j 1.2 -->
-	<suppress>
-		<packageUrl regex="true">^pkg:maven/apache/log4j@.*$</packageUrl>
-		<cve>CVE-2019-17571</cve>
-		<cve>CVE-2020-9488</cve>
-	</suppress>
-	<!-- Jython 2.7 -->
-	<suppress>
+	       2026-09-01Z  near-term deferred upgrades - a fixed version is
+	                    expected soon and we just need to pick it up.
+	       2026-12-01Z  frozen / bundled artifacts and breaking upgrades -
+	                    re-check at year end whether upstream has moved or the
+	                    "kept as-is" policy still holds.
+	       2027-06-01Z  CPE / version false positives - no upgrade can fix a
+	                    mis-match, so these only need an annual re-validation
+	                    that the matcher is still wrong. -->
+
+	<!-- [2026-12-01] commons-compress shaded inside izpack-commons-compress-5.0-beta9
+	     (used by app-openbis-installer). The izpack repackage cannot be upgraded;
+	     the jython27 copy of commons-compress is handled by the jython wildcard
+	     below. Re-check at year end together with the izpack block. -->
+	<suppress until="2026-12-01Z">
 		<packageUrl regex="true">^pkg:maven/org\.apache\.commons/commons\-compress@.*$</packageUrl>
-		<cve>CVE-2021-35515</cve>
-		<cve>CVE-2021-35516</cve>
 		<cve>CVE-2021-35517</cve>
 		<cve>CVE-2021-36090</cve>
 	</suppress>
-	<!-- Junit 4 -->
-	<suppress>
-		<packageUrl regex="true">^pkg:maven/junit/junit@.*$</packageUrl>
-		<cve>CVE-2020-15250</cve>
-	</suppress>
-	<!-- Hibernate 4 -->
-	<suppress>
-		<packageUrl regex="true">^pkg:maven/hibernate/hibernate\-validator@.*$</packageUrl>
-		<cve>CVE-2019-14900</cve>
-		<cve>CVE-2020-25638</cve>
-	</suppress>
-	<!-- Old Jackson used by ? -->
-	<suppress>
-		<packageUrl regex="true">^pkg:maven/googlecode/jsonrpc4j@.*$</packageUrl>
-		<cve>CVE-2018-7489</cve>
-	</suppress>
-	<!-- Old Jetty used by GWT -->
-	<suppress>
-		<packageUrl regex="true">^pkg:maven/org\.mortbay\.jetty/jetty@.*$</packageUrl>
-		<cve>CVE-2009-1523</cve>
-		<cve>CVE-2009-1524</cve>
-		<cve>CVE-2009-5047</cve>
-		<cve>CVE-2011-4461</cve>
-		<cve>CVE-2017-7656</cve>
-		<cve>CVE-2017-7657</cve>
-		<cve>CVE-2017-7658</cve>
-		<cve>CVE-2017-9735</cve>
-		<cve>CVE-2019-10241</cve>
-		<cve>CVE-2019-10247</cve>
-		<cve>CVE-2020-27216</cve>
-		<cve>CVE-2021-28169</cve>
-		<cve>CVE-2021-34428</cve>
-	</suppress>
-	<!-- GWT -->
-	<suppress>
-		<packageUrl regex="true">^pkg:maven/net\.sourceforge\.htmlunit/htmlunit@.*$</packageUrl>
-		<cve>CVE-2020-5529</cve>
-	</suppress>
-	<suppress>
-		<packageUrl regex="true">^pkg:maven/org\.apache\.httpcomponents/httpmime@.*$</packageUrl>
-		<cve>CVE-2012-6153</cve>
-	</suppress>
-	<!-- ? -->
-	<suppress>
-		<packageUrl regex="true">^pkg:maven/bouncycastle/bcprov@.*$</packageUrl>
-		<cve>CVE-2018-1000180</cve>
-	</suppress>
-	<!-- ? -->
-	<suppress>
-		<packageUrl regex="true">^pkg:maven/apache/geronimo\-stax@.*$</packageUrl>
-		<cve>CVE-2006-0254</cve>
-		<cve>CVE-2008-0732</cve>
-		<cve>CVE-2011-5034</cve>
-	</suppress>
-	<!-- Bio Formats 6.5.1 -->
-	<suppress>
+	<!-- [2027-06-01] httpclient 4.3.6 / 4.5.6 on production classpaths;
+	     CVE-2020-13956 is a URL parsing issue that does not affect how openBIS
+	     constructs request URIs. False positive for our usage - annual re-check. -->
+	<suppress until="2027-06-01Z">
 		<packageUrl regex="true">^pkg:maven/org\.apache\.httpcomponents/httpclient@.*$</packageUrl>
 		<cve>CVE-2020-13956</cve>
 	</suppress>
-	<suppress>
+	<!-- [2027-06-01] okhttp 3.11.0 (CVE-2018-20200 only affects callers that put
+	     credentials in URLs, which openBIS does not do). Not-affected - annual re-check. -->
+	<suppress until="2027-06-01Z">
 		<packageUrl regex="true">^pkg:maven/com\.squareup\.okhttp3/okhttp@.*$</packageUrl>
 		<cve>CVE-2018-20200</cve>
 	</suppress>
-	<suppress>
+	<!-- [2027-06-01] guava 31.1 on production classpaths. Older transitive guava
+	     releases are force-pinned to this catalog version in common-resolutions.
+	     CVE-2020-8908
+	     and CVE-2023-2976 are the same world-readable temp-dir family in
+	     com.google.common.io (Files.createTempDir / FileBackedOutputStream);
+	     CVE-2023-2976 is the follow-up "complete fix" CVE for CVE-2020-8908.
+	     openBIS does not use these temp-dir APIs. Re-validate annually - a future
+	     guava bump would also clear it. -->
+	<suppress until="2027-06-01Z">
 		<packageUrl regex="true">^pkg:maven/com\.google\.guava/guava@.*$</packageUrl>
 		<cve>CVE-2020-8908</cve>
+		<cve>CVE-2023-2976</cve>
 	</suppress>
-	<suppress>
-		<packageUrl regex="true">^pkg:maven/ch\.qos\.logback/logback\-classic@.*$</packageUrl>
-		<cve>CVE-2017-5929</cve>
+	<!-- [2027-06-01] CVE-2023-50572 is for jline-groovy v3.24.1
+	     GroovyEngine.execute. The reported jline:jline 0.9.94 artifact is the
+	     legacy JLine 1 API used by CLI code and does not contain the JLine 3
+	     groovy module. CPE over-match - annual re-check. -->
+	<suppress until="2027-06-01Z">
+		<packageUrl>pkg:maven/jline/jline@0.9.94</packageUrl>
+		<cve>CVE-2023-50572</cve>
 	</suppress>
-	<suppress>
-		<packageUrl regex="true">^pkg:maven/ch\.qos\.logback/logback\-core@.*$</packageUrl>
-		<cve>CVE-2017-5929</cve>
+	<!-- [2027-06-01] CVE-2023-1932 applies to org.hibernate.validator
+	     hibernate-validator versions before 6.2. OWASP matches the unrelated
+	     io.quarkus:quarkus-hibernate-validator-spi artifact to the
+	     hibernate-validator CPE because of the artifact name; the real
+	     hibernate-validator catalog dependency is on 8.x. CPE over-match -
+	     annual re-check. -->
+	<suppress until="2027-06-01Z">
+		<packageUrl regex="true">^pkg:maven/io\.quarkus/quarkus\-hibernate\-validator\-spi@.*$</packageUrl>
+		<cve>CVE-2023-1932</cve>
 	</suppress>
-	<suppress>
-		<packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson\-annotations@.*$</packageUrl>
-		<cve>CVE-2018-1000873</cve>
+	<!-- [2026-09-01] sqlite-jdbc 3.53.1.0 embeds SQLite before 3.53.2
+	     (CVE-2026-11822 / CVE-2026-11824 in FTS5). The patched
+	     org.xerial:sqlite-jdbc:3.53.2.0 is not present in openbis-ivy yet, and
+	     the current code has no FTS5 MATCH queries. Add 3.53.2.0 to the mirror,
+	     bump the catalog, and remove this suppression. -->
+	<suppress until="2026-09-01Z">
+		<packageUrl>pkg:maven/org.xerial/sqlite-jdbc@3.53.1.0</packageUrl>
+		<cve>CVE-2026-11822</cve>
+		<cve>CVE-2026-11824</cve>
 	</suppress>
-	<suppress>
-		<packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson\-core@.*$</packageUrl>
-		<cve>CVE-2018-1000873</cve>
+	<!-- [2026-09-01] CVE-2026-33929 affects the Apache PDFBox
+	     ExtractEmbeddedFiles example. The configured openbis-ivy mirror does not
+	     carry PDFBox 2.0.37 yet, the repo has no ExtractEmbeddedFiles copy/usage,
+	     and the resolved pdfbox-2.0.36 jar does not include the examples package.
+	     Re-check shortly and remove this once 2.0.37 is available in the mirror. -->
+	<suppress until="2026-09-01Z">
+		<packageUrl regex="true">^pkg:maven/org\.apache\.pdfbox/(pdfbox|xmpbox)@2\.0\.36$</packageUrl>
+		<cve>CVE-2026-33929</cve>
 	</suppress>
-	<suppress>
-		<packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson\-databind@.*$</packageUrl>
-		<cve>CVE-2018-1000873</cve>
-		<cve>CVE-2018-14718</cve>
-		<cve>CVE-2018-14719</cve>
-		<cve>CVE-2018-14720</cve>
-		<cve>CVE-2018-14721</cve>
-		<cve>CVE-2018-19360</cve>
-		<cve>CVE-2018-19361</cve>
-		<cve>CVE-2018-19362</cve>
-		<cve>CVE-2019-12086</cve>
-		<cve>CVE-2019-12384</cve>
-		<cve>CVE-2019-12814</cve>
-		<cve>CVE-2019-14379</cve>
-		<cve>CVE-2019-14439</cve>
-		<cve>CVE-2019-14540</cve>
-		<cve>CVE-2019-14892</cve>
-		<cve>CVE-2019-14893</cve>
-		<cve>CVE-2019-16335</cve>
-		<cve>CVE-2019-16942</cve>
-		<cve>CVE-2019-16943</cve>
-		<cve>CVE-2019-17267</cve>
-		<cve>CVE-2019-17531</cve>
-		<cve>CVE-2019-20330</cve>
-		<cve>CVE-2020-10672</cve>
-		<cve>CVE-2020-10673</cve>
-		<cve>CVE-2020-10968</cve>
-		<cve>CVE-2020-10969</cve>
-		<cve>CVE-2020-11111</cve>
-		<cve>CVE-2020-11112</cve>
-		<cve>CVE-2020-11113</cve>
-		<cve>CVE-2020-11619</cve>
-		<cve>CVE-2020-11620</cve>
-		<cve>CVE-2020-14060</cve>
-		<cve>CVE-2020-14061</cve>
-		<cve>CVE-2020-14062</cve>
-		<cve>CVE-2020-14195</cve>
-		<cve>CVE-2020-24616</cve>
-		<cve>CVE-2020-24750</cve>
-		<cve>CVE-2020-25649</cve>
-		<cve>CVE-2020-35490</cve>
-		<cve>CVE-2020-35491</cve>
-		<cve>CVE-2020-35728</cve>
-		<cve>CVE-2020-36179</cve>
-		<cve>CVE-2020-36180</cve>
-		<cve>CVE-2020-36181</cve>
-		<cve>CVE-2020-36182</cve>
-		<cve>CVE-2020-36183</cve>
-		<cve>CVE-2020-36184</cve>
-		<cve>CVE-2020-36185</cve>
-		<cve>CVE-2020-36186</cve>
-		<cve>CVE-2020-36187</cve>
-		<cve>CVE-2020-36188</cve>
-		<cve>CVE-2020-36189</cve>
-		<cve>CVE-2020-8840</cve>
-		<cve>CVE-2020-9546</cve>
-		<cve>CVE-2020-9547</cve>
-		<cve>CVE-2020-9548</cve>
-		<cve>CVE-2021-20190</cve>
+	<!-- [2027-06-01] CVE-2026-6860 is a Vert.x TLS hostname/SNI issue. The
+	     reported vertx-uri-template 4.5.26 jar contains only URI template code,
+	     while the relevant vertx-core dependency resolves to 4.5.27. The mirror
+	     also has no vertx-uri-template 4.5.27 artifact. CPE over-match on the
+	     component artifact - annual re-check. -->
+	<suppress until="2027-06-01Z">
+		<packageUrl>pkg:maven/io.vertx/vertx-uri-template@4.5.26</packageUrl>
+		<cve>CVE-2026-6860</cve>
 	</suppress>
-   <!-- GWT Development - Jetty 6 -->
-   <suppress>
-      <gav regex="true">^org\.mortbay\.jetty:jetty-util:.*$</gav>
-      <cpe>cpe:/a:mortbay:jetty</cpe>
-   </suppress>
-   <suppress>
-	   <gav regex="true">^org\.mortbay\.jetty:jetty:.*$</gav>
-	   <cpe>cpe:/a:mortbay:jetty</cpe>
+	<!-- [2027-06-01] qui-directory-tree is a tiny mvnpm-packaged JavaScript module;
+	     OWASP's CPE heuristic incorrectly matches it against the Quarkus framework
+	     (cpe:quarkus:quarkus) because of the "qu" prefix in the artifact id.
+	     None of the matched CVEs apply to this artifact. Annual re-check. -->
+	<suppress until="2027-06-01Z">
+		<packageUrl regex="true">^pkg:maven/org\.mvnpm\.at\.qomponent/qui-directory-tree@.*$</packageUrl>
+		<cpe>cpe:/a:quarkus:quarkus</cpe>
 	</suppress>
-	<suppress>
-	   <gav regex="true">^org\.mortbay\.jetty:servlet-api-2\.5:.*$</gav>
-	   <cpe>cpe:/a:mortbay:jetty</cpe>
+	<!-- [2026-12-01] bioformats 6.5.2 is kept as-is per project policy; the shaded jars
+	     (jackson-databind 2.9.6, logback 1.1.1, guava 27.1, okhttp 3.7,
+	     okio 1.12, commons-lang 2.4, org.openmicroscopy:* libs) cannot be
+	     upgraded without rebuilding bioformats. Re-check at year end whether the
+	     "kept as-is" policy still holds or a newer bioformats can be adopted. -->
+	<suppress until="2026-12-01Z">
+		<notes><![CDATA[ shaded inside bioformats-6.5.2.jar -- kept as-is per project policy ]]></notes>
+		<filePath regex="true">.*bioformats-6\.5\.2\.jar.*</filePath>
+		<vulnerabilityName regex="true">.*</vulnerabilityName>
 	</suppress>
-	<!-- GWT Development - Apache Client -->
-	<suppress>
-	   <gav regex="true">^org\.apache\.httpcomponents:httpclient:.*$</gav>
-	   <cve>CVE-2011-1498</cve>
-	   <cve>CVE-2014-3577</cve>
-	   <cve>CVE-2015-5262</cve>
+	<!-- [2026-12-01] jython 2.5 and 2.7 ship as fat jars with old jline / guava /
+	     commons-compress shaded inside. openBIS uses them as embedded
+	     scripting interpreters; the shaded transitives cannot be upgraded
+	     without rebuilding jython. Re-check at year end for a newer jython. -->
+	<suppress until="2026-12-01Z">
+		<notes><![CDATA[ shaded inside jython-2.5.2.jar / jython27-2.7.2.jar -- embedded scripting interpreter, unrebuildable here ]]></notes>
+		<filePath regex="true">.*jython(27)?-2\.[57]\.2\.jar.*</filePath>
+		<vulnerabilityName regex="true">.*</vulnerabilityName>
 	</suppress>
-	<suppress>
-	   <gav regex="true">^org\.apache\.httpcomponents:httpmime:.*$</gav>
-	   <cve>CVE-2011-1498</cve>
-	   <cve>CVE-2014-3577</cve>
-	   <cve>CVE-2015-5262</cve>
+	<!-- [2027-06-01] CVE-2020-29582 affects Kotlin <= 1.4.20 (the createTempDir/File
+	     issue was fixed in 1.4.21). The reported artifacts are at 1.8.10,
+	     which is past the fix, so this is an OWASP CPE-matcher false
+	     positive (its version-range data has no upper bound). Annual re-check. -->
+	<suppress until="2027-06-01Z">
+		<packageUrl regex="true">^pkg:maven/org\.jetbrains\.kotlin/kotlin-(stdlib|stdlib-common|reflect)@.*$</packageUrl>
+		<cve>CVE-2020-29582</cve>
 	</suppress>
-	<!-- Jetty 8 - False positive, found in a ehcache POM file -->
-	<suppress>
-	   	<notes><![CDATA[ ehcache-2.10.0.jar ]]></notes>
-	   	<gav regex="true">^org\.eclipse\.jetty:jetty-continuation:.*$</gav>
-	   	<cve>CVE-2017-9735</cve>
-		<cve>CVE-2017-7656</cve>
-		<cve>CVE-2017-7657</cve>
-		<cve>CVE-2017-7658</cve>
+	<!-- [2026-12-01] netty is unified across the whole build on a single
+	     4.1.134.Final (the io-netty-netty-all catalog alias, used by lib-http,
+	     server-data-store and server-sftp). We deliberately stay on the 4.1.x
+	     line rather than 4.2.x because Quarkus 3.36.0 / Vert.x 4.5.27 (the
+	     server-ro-crate stack) are built against netty 4.1 (the Quarkus BOM pins
+	     4.1.133.Final); pulling netty 4.2.x onto that classpath breaks request
+	     handling (the RO-Crate server dropped connections with EOF on
+	     validate/import). 4.1.134 is the latest 4.1.x, so there is no patched
+	     4.1 to move to yet, and the CVE-2026-42582 fix in the 4.2.x line cannot
+	     be adopted until Quarkus/Vert.x support netty 4.2. Re-check at year end
+	     whether a patched 4.1.x has shipped or Quarkus has moved to netty 4.2 so
+	     the whole build can upgrade together. -->
+	<suppress until="2026-12-01Z">
+		<packageUrl regex="true">^pkg:maven/io\.netty/netty-.*@4\.1\.135\.Final$</packageUrl>
+		<cve>CVE-2026-42582</cve>
 	</suppress>
-	<suppress>
-	   	<notes><![CDATA[ ehcache-2.10.0.jar ]]></notes>
-	   	<gav regex="true">^org\.eclipse\.jetty:jetty-http:.*$</gav>
-	   	<cve>CVE-2017-9735</cve>
-		<cve>CVE-2017-7656</cve>
-		<cve>CVE-2017-7657</cve>
-		<cve>CVE-2017-7658</cve>
+	<!-- [2026-12-01] IzPack 5.0-beta9 is the installer-build toolkit, pulled in ONLY by
+	     app-openbis-installer. It is a frozen, repackaged beta snapshot whose
+	     shaded jars bundle very old libraries (xstream 1.3.1, ant 1.8.2,
+	     commons-compress 1.1) that cannot be upgraded without replacing IzPack
+	     itself. These never run on the deployed openBIS server; they execute
+	     only while building/running the installer, so the bundled CVEs are
+	     not exploitable in the product. Re-check at year end for an IzPack
+	     replacement / newer release. -->
+	<suppress until="2026-12-01Z">
+		<notes><![CDATA[ izpack installer toolkit (app-openbis-installer only) -- frozen beta9 repackage, unupgradable, not on any server classpath ]]></notes>
+		<filePath regex="true">.*izpack-(xstream|ant|commons-compress)-5\.0-beta9.*\.jar.*</filePath>
+		<vulnerabilityName regex="true">.*</vulnerabilityName>
 	</suppress>
-	<suppress>
-	   	<notes><![CDATA[ ehcache-2.10.0.jar ]]></notes>
-	   	<gav regex="true">^org\.eclipse\.jetty:jetty-security:.*$</gav>
-	   	<cve>CVE-2017-9735</cve>
-		<cve>CVE-2017-7656</cve>
-		<cve>CVE-2017-7657</cve>
-		<cve>CVE-2017-7658</cve>
+	<!-- [2026-12-01] h2 1.1.115 ships on the server classpath only as the alternative
+	     DatabaseEngine.H2 option; every production service.properties uses
+	     database.engine=postgresql, and H2 (when used at all) runs embedded
+	     (jdbc:h2:file:...;DB_CLOSE_DELAY=-1). The H2 web Console / TCP Server
+	     are never started (no org.h2.tools.Console/Server usage anywhere), so
+	     the Console/CLI JNDI-RCE vectors below are not reachable. The 1.1.115
+	     -> 2.x upgrade that fixes these is a breaking file-format + SQL-dialect
+	     change with no 1.x patch escape; re-assess at year end alongside any
+	     planned H2 2.x migration. -->
+	<suppress until="2026-12-01Z">
+		<packageUrl regex="true">^pkg:maven/com\.h2database/h2@1\.1\.115$</packageUrl>
+		<cve>CVE-2021-42392</cve>
+		<cve>CVE-2022-23221</cve>
+		<cve>CVE-2022-45868</cve>
 	</suppress>
-	<suppress>
-	   	<notes><![CDATA[ ehcache-2.10.0.jar ]]></notes>
-	   	<gav regex="true">^org\.eclipse\.jetty:jetty-server:.*$</gav>
-	   	<cve>CVE-2017-9735</cve>
-		<cve>CVE-2017-7656</cve>
-		<cve>CVE-2017-7657</cve>
-		<cve>CVE-2017-7658</cve>
+	<!-- [2026-09-01] libthrift 0.22.0 is transitive via the RO-Crate / RDF stack
+	     (jena-arq 5.6.0 -> lib-ro-crate -> server-ro-crate). The Java-relevant
+	     fixes ship in Apache Thrift 0.23.0, but the build resolves only from the
+	     curated openbis-ivy mirror (mavenCentral is disabled) and that mirror
+	     currently carries only 0.19.0 / 0.22.0. Most of these CVEs are in the
+	     c_glib (C) and Go bindings and match the Java jar only through the shared
+	     cpe:apache:thrift. Suppress until 2026-09-01, by which point 0.23.0 should
+	     be added to the mirror and force-pinned in build/common-resolutions.gradle;
+	     if it lapses the findings re-surface so we revisit. -->
+	<suppress until="2026-09-01Z">
+		<notes><![CDATA[ libthrift 0.22.0 -- pending 0.23.0 in openbis-ivy mirror; mostly c_glib/Go CPE over-matches ]]></notes>
+		<packageUrl regex="true">^pkg:maven/org\.apache\.thrift/libthrift@0\.22\.0$</packageUrl>
+		<vulnerabilityName regex="true">.*</vulnerabilityName>
 	</suppress>
-	<suppress>
-	   	<notes><![CDATA[ ehcache-2.10.0.jar ]]></notes>
-	   	<gav regex="true">^org\.eclipse\.jetty:jetty-servlet:.*$</gav>
-	   	<cve>CVE-2017-9735</cve>
-		<cve>CVE-2017-7656</cve>
-		<cve>CVE-2017-7657</cve>
-		<cve>CVE-2017-7658</cve>
-	</suppress>
-	<suppress>
-	   	<notes><![CDATA[ ehcache-2.10.0.jar ]]></notes>
-	   	<gav regex="true">^org\.eclipse\.jetty:jetty-util:.*$</gav>
-	   	<cve>CVE-2017-9735</cve>
-		<cve>CVE-2017-7656</cve>
-		<cve>CVE-2017-7657</cve>
-		<cve>CVE-2017-7658</cve>
-	</suppress>
-	<!-- Jetty 9.4.9 -->
-	<suppress>
-   		<gav regex="true">^org\.eclipse\.jetty\.alpn:alpn-api:.*$</gav>
-   		<cve>CVE-2017-9735</cve> <!-- False positive, only affects 9.4.6 and earlier -->
-		<cve>CVE-2017-7656</cve> <!-- False positive, only affects 9.4.10 and earlier -->
-		<cve>CVE-2017-7657</cve> <!-- False positive, only affects 9.4.10 and earlier -->
-		<cve>CVE-2017-7658</cve> <!-- False positive, only affects 9.4.10 and earlier -->
-	</suppress>
-	<suppress>
-   		<gav regex="true">^org\.eclipse\.jetty\.orbit:javax\.security\.auth\.message:.*$</gav>
-   		<cve>CVE-2017-9735</cve> <!-- False positive, only affects 9.4.6 and earlier -->
-		<cve>CVE-2017-7656</cve> <!-- False positive, only affects 9.4.10 and earlier -->
-		<cve>CVE-2017-7657</cve> <!-- False positive, only affects 9.4.10 and earlier -->
-		<cve>CVE-2017-7658</cve> <!-- False positive, only affects 9.4.10 and earlier -->
-	</suppress>
-	<suppress>
-   		<gav regex="true">^org\.eclipse\.jetty\.orbit:javax\.mail\.glassfish:.*$</gav>
-   		<cve>CVE-2017-9735</cve> <!-- False positive, only affects 9.4.6 and earlier -->
-		<cve>CVE-2017-7656</cve> <!-- False positive, only affects 9.4.10 and earlier -->
-		<cve>CVE-2017-7657</cve> <!-- False positive, only affects 9.4.10 and earlier -->
-		<cve>CVE-2017-7658</cve> <!-- False positive, only affects 9.4.10 and earlier -->
-	</suppress>
-	<suppress>
-   		<gav regex="true">^org\.eclipse\.jetty\.toolchain:jetty-schemas:.*$</gav>
-   		<cve>CVE-2007-5613</cve>  <!-- False positive, only affects 6.1.6 and earlier -->
-   		<cve>CVE-2007-5614</cve>  <!-- False positive, only affects 6.1.6 and earlier -->
-   		<cve>CVE-2007-5615</cve>  <!-- False positive, only affects 6.1.6 and earlier -->
-   		<cve>CVE-2017-9735</cve> <!-- False positive, only affects 9.4.6 and earlier -->
-		<cve>CVE-2017-7656</cve> <!-- False positive, only affects 9.4.10 and earlier -->
-		<cve>CVE-2017-7657</cve> <!-- False positive, only affects 9.4.10 and earlier -->
-		<cve>CVE-2017-7658</cve> <!-- False positive, only affects 9.4.10 and earlier -->
-	</suppress>
-	<!-- Jackson 2.0.2 -->
-	<suppress>
-   		<gav regex="true">^com\.fasterxml\.jackson\.core:jackson-annotations:.*$</gav>
-   		<cve>CVE-2017-15095</cve> <!-- Only affects you if you allow to deserialize generic classes, object, serializable, etc.. -->
-   		<cve>CVE-2017-17485</cve> <!-- Only affects you if you allow to deserialize generic classes, object, serializable, etc.. -->
-   		<cve>CVE-2017-7525</cve> <!-- Only affects you if you allow to deserialize generic classes, object, serializable, etc.. -->
-   		<cve>CVE-2018-5968</cve> <!-- No Gadgets used, or DTOs are plain DTOs -->
-   		<cve>CVE-2018-7489</cve> <!-- We don't use c3p0 libraries -->
-	</suppress>
-	<suppress>
-   		<gav regex="true">^com\.fasterxml\.jackson\.core:jackson-databind:.*$</gav>
-   		<cve>CVE-2017-15095</cve><cve>CVE-2017-17485</cve><cve>CVE-2017-7525</cve><cve>CVE-2018-5968</cve><cve>CVE-2018-7489</cve>
-	</suppress>
-	<!-- Spring 4.1 -->
-	<suppress>
-	   <gav regex="true">^springframework:spring-aop:.*$</gav>
-	   <cve>CVE-2015-0201</cve> <!-- The Java SockJS client, we don't use the web sockets client -->
-	   <cve>CVE-2015-3192</cve> <!-- DOS Attacks using crafted DTD for XML, where we use DTDs? -->
-	   <cve>CVE-2015-5211</cve> <!-- This only affects downloads where the user could give the name of the file, not the case of the DSS -->
-	   <cve>CVE-2016-5007</cve> <!-- We don't use spring security to protect controllers -->
-	   <cve>CVE-2018-1270</cve> <!-- We don't use web sockets endpoints -->
-	   <cve>CVE-2018-1271</cve> <!-- We don't deploy on Windows -->
-	   <cve>CVE-2018-1272</cve> <!-- We don't forward user input blindly to create packages from our web client -->
-	   <cve>CVE-2018-1258</cve> <!-- We don't use the web-security jar -->
-	</suppress>
-	<suppress>
-	   <gav regex="true">^springframework:spring-beans:.*$</gav>
-	   <cve>CVE-2018-1258</cve><cve>CVE-2015-0201</cve><cve>CVE-2015-3192</cve><cve>CVE-2015-5211</cve><cve>CVE-2016-5007</cve><cve>CVE-2018-1270</cve><cve>CVE-2018-1271</cve><cve>CVE-2018-1272</cve>
-	</suppress>
-	<suppress>
-	   <gav regex="true">^org\.springframework:spring-context:.*$</gav>
-	   <cve>CVE-2018-1258</cve><cve>CVE-2015-0201</cve><cve>CVE-2015-3192</cve><cve>CVE-2015-5211</cve><cve>CVE-2016-5007</cve><cve>CVE-2018-1270</cve><cve>CVE-2018-1271</cve><cve>CVE-2018-1272</cve>
-	</suppress>
-	<suppress>
-	   <gav regex="true">^springframework:spring-core:.*$</gav>
-	   <cve>CVE-2018-1258</cve><cve>CVE-2015-0201</cve><cve>CVE-2015-3192</cve><cve>CVE-2015-5211</cve><cve>CVE-2016-5007</cve><cve>CVE-2018-1270</cve><cve>CVE-2018-1271</cve><cve>CVE-2018-1272</cve>
-	</suppress>
-	<suppress>
-	   <gav regex="true">^springframework:spring-web:.*$</gav>
-	   <cve>CVE-2018-1258</cve><cve>CVE-2015-0201</cve><cve>CVE-2015-3192</cve><cve>CVE-2015-5211</cve><cve>CVE-2016-5007</cve><cve>CVE-2018-1270</cve><cve>CVE-2018-1271</cve><cve>CVE-2018-1272</cve>
-	</suppress>
-	<suppress>
-	   <gav regex="true">^springframework:spring-webmvc:.*$</gav>
-	   <cve>CVE-2018-1258</cve><cve>CVE-2015-0201</cve><cve>CVE-2015-3192</cve><cve>CVE-2015-5211</cve><cve>CVE-2016-5007</cve><cve>CVE-2018-1270</cve><cve>CVE-2018-1271</cve><cve>CVE-2018-1272</cve>
-	</suppress>
-	<suppress>
-	   <gav regex="true">^springframework:spring-expression:.*$</gav>
-	   <cve>CVE-2018-1258</cve><cve>CVE-2015-0201</cve><cve>CVE-2015-3192</cve><cve>CVE-2015-5211</cve><cve>CVE-2016-5007</cve><cve>CVE-2018-1270</cve><cve>CVE-2018-1271</cve><cve>CVE-2018-1272</cve>
-	</suppress>
-	<suppress>
-	   <gav regex="true">^springframework:spring-tx:.*$</gav>
-	   <cve>CVE-2018-1258</cve><cve>CVE-2015-0201</cve><cve>CVE-2015-3192</cve><cve>CVE-2015-5211</cve><cve>CVE-2016-5007</cve><cve>CVE-2018-1270</cve><cve>CVE-2018-1271</cve><cve>CVE-2018-1272</cve>
-	</suppress>
-	<suppress>
-	   <gav regex="true">^springframework:spring-context-support:.*$</gav>
-	   <cve>CVE-2018-1258</cve><cve>CVE-2015-0201</cve><cve>CVE-2015-3192</cve><cve>CVE-2015-5211</cve><cve>CVE-2016-5007</cve><cve>CVE-2018-1270</cve><cve>CVE-2018-1271</cve><cve>CVE-2018-1272</cve>
-	</suppress>
-	<suppress>
-	   <gav regex="true">^springframework:spring-jdbc:.*$</gav>
-	   <cve>CVE-2018-1258</cve><cve>CVE-2015-0201</cve><cve>CVE-2015-3192</cve><cve>CVE-2015-5211</cve><cve>CVE-2016-5007</cve><cve>CVE-2018-1270</cve><cve>CVE-2018-1271</cve><cve>CVE-2018-1272</cve>
-	</suppress>
-	<suppress>
-	   <gav regex="true">^org\.springframework:spring-orm:.*$</gav>
-	   <cve>CVE-2018-1258</cve><cve>CVE-2015-0201</cve><cve>CVE-2015-3192</cve><cve>CVE-2015-5211</cve><cve>CVE-2016-5007</cve><cve>CVE-2018-1270</cve><cve>CVE-2018-1271</cve><cve>CVE-2018-1272</cve>
-	</suppress>
-	<!-- Postgresql JDBC -->
-	<suppress>
-   		<gav regex="true">^org\.postgresql:postgresql:.*$</gav>
-   		<cve>CVE-2017-14798</cve> <!-- Clients can't use JDBC directly and execute their own SQL -->
-   		<cve>CVE-2018-1115</cve> <!-- We don't use any admin pack -->
-		<cve>CVE-2016-7048</cve> <!-- Don't apply to the driver -->
-		<cve>CVE-2018-10936</cve>
-		<cve>CVE-2020-13692</cve>
-	</suppress>
-	<!-- Jython -->
-	<suppress>
-		<gav regex="true">^org\.jruby\.extras:jaffl:.*$</gav>
-		<cpe>CVE-2010-1330</cpe>
-		<cpe>CVE-2011-4838</cpe>
-		<cpe>CVE-2012-5370</cpe>
+	<!-- [2027-06-01] CVE-2025-7962 is a Jakarta Mail SMTP-injection issue (CR/LF in
+	     message headers). OWASP's CPE matcher wrongly pins it to
+	     jakarta.authentication-api (the Jakarta Authentication / JASPIC spec
+	     bundled in jetty-home's ee9-jaspi lib), which is an unrelated artifact with
+	     no SMTP/mail code. False positive - annual re-check. -->
+	<suppress until="2027-06-01Z">
+		<packageUrl regex="true">^pkg:maven/jakarta\.authentication/jakarta\.authentication-api@.*$</packageUrl>
+		<cve>CVE-2025-7962</cve>
 	</suppress>
 </suppressions>

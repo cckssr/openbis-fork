@@ -17,7 +17,6 @@ package ch.ethz.sis.openbis.generic.server.dss.plugins.sync.datasource;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.xml.stream.XMLStreamException;
@@ -31,7 +30,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.PhysicalData;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.exporter.data.ExportableKind;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchicalContent;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchicalContentNode;
 
@@ -43,7 +42,7 @@ public class DataSetDeliverer extends AbstractEntityWithPermIdDeliverer
 
     DataSetDeliverer(DeliveryContext context)
     {
-        super(context, "data set", "data", "code");
+        super(context, "data set", ExportableKind.DATASET);
     }
 
     @Override
@@ -51,43 +50,39 @@ public class DataSetDeliverer extends AbstractEntityWithPermIdDeliverer
     {
         XMLStreamWriter writer = context.getWriter();
         String sessionToken = context.getSessionToken();
-        Set<String> spaces = context.getSpaces();
         IApplicationServerApi v3api = getV3Api();
         List<DataSetPermId> permIds = dataSets.stream().map(DataSetPermId::new).collect(Collectors.toList());
         Collection<DataSet> fullDataSets = v3api.getDataSets(sessionToken, permIds, createDataSetFetchOptions()).values();
         int count = 0;
         for (DataSet dataSet : fullDataSets)
         {
-            if (accept(dataSet, spaces))
-            {
-                String code = dataSet.getCode();
-                startUrlElement(writer, "DATA_SET", code, dataSet.getModificationDate());
-                startXdElement(writer);
-                writer.writeAttribute("code", code);
-                writer.writeAttribute("dsKind", dataSet.getKind().toString());
-                addAttributeIfSet(writer, "frozen", dataSet.isFrozen());
-                addAttributeIfSet(writer, "frozenForChildren", dataSet.isFrozenForChildren());
-                addAttributeIfSet(writer, "frozenForParents", dataSet.isFrozenForParents());
-                addAttributeIfSet(writer, "frozenForComponents", dataSet.isFrozenForComponents());
-                addAttributeIfSet(writer, "frozenForContainers", dataSet.isFrozenForContainers());
-                addExperiment(writer, dataSet.getExperiment());
-                addKind(writer, EntityKind.DATA_SET);
-                addModifier(writer, dataSet);
-                addRegistrationDate(writer, dataSet);
-                addRegistrator(writer, dataSet);
-                addSample(writer, dataSet.getSample());
-                addType(writer, dataSet.getType());
-                addProperties(writer, dataSet.getProperties(), context);
-                addPhysicalData(writer, dataSet, code);
-                addLinkedData(writer, dataSet, code);
-                ConnectionsBuilder connectionsBuilder = new ConnectionsBuilder();
-                connectionsBuilder.addChildren(dataSet.getChildren());
-                connectionsBuilder.addComponents(dataSet.getComponents());
-                connectionsBuilder.writeTo(writer);
-                writer.writeEndElement();
-                writer.writeEndElement();
-                count++;
-            }
+            String code = dataSet.getCode();
+            startUrlElement(writer, "DATA_SET", code, dataSet.getModificationDate());
+            startXdElement(writer);
+            writer.writeAttribute("code", code);
+            writer.writeAttribute("dsKind", dataSet.getKind().toString());
+            addAttributeIfSet(writer, "frozen", dataSet.isFrozen());
+            addAttributeIfSet(writer, "frozenForChildren", dataSet.isFrozenForChildren());
+            addAttributeIfSet(writer, "frozenForParents", dataSet.isFrozenForParents());
+            addAttributeIfSet(writer, "frozenForComponents", dataSet.isFrozenForComponents());
+            addAttributeIfSet(writer, "frozenForContainers", dataSet.isFrozenForContainers());
+            addExperiment(writer, dataSet.getExperiment());
+            addKind(writer, EntityKind.DATA_SET);
+            addModifier(writer, dataSet);
+            addRegistrationDate(writer, dataSet);
+            addRegistrator(writer, dataSet);
+            addSample(writer, dataSet.getSample());
+            addType(writer, dataSet.getType());
+            addProperties(writer, dataSet.getProperties(), context);
+            addPhysicalData(writer, dataSet, code);
+            addLinkedData(writer, dataSet, code);
+            ConnectionsBuilder connectionsBuilder = new ConnectionsBuilder();
+            connectionsBuilder.addChildren(dataSet.getChildren());
+            connectionsBuilder.addComponents(dataSet.getComponents());
+            connectionsBuilder.writeTo(writer);
+            writer.writeEndElement();
+            writer.writeEndElement();
+            count++;
         }
         operationLog.info(count + " of " + dataSets.size() + " data sets have been delivered.");
     }
@@ -152,16 +147,6 @@ public class DataSetDeliverer extends AbstractEntityWithPermIdDeliverer
                     + node.getRelativePath() + "?");
             writer.writeEndElement();
         }
-    }
-
-    private boolean accept(DataSet dataSet, Set<String> spaces)
-    {
-        Experiment experiment = dataSet.getExperiment();
-        if (experiment != null)
-        {
-            return spaces.contains(experiment.getProject().getSpace().getCode());
-        }
-        return spaces.contains(dataSet.getSample().getSpace().getCode());
     }
 
     private DataSetFetchOptions createDataSetFetchOptions()

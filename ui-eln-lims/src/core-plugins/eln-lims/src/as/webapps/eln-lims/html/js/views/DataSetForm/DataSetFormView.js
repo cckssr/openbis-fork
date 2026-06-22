@@ -498,7 +498,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
                 }
             }
 
-			FormUtil.addOptionsToToolbar(toolbarModel, dropdownOptionsModel, hideShowOptionsModel, "DATA-SET-VIEW");
+			FormUtil.addOptionsToToolbar(null, toolbarModel, dropdownOptionsModel, hideShowOptionsModel, "DATA-SET-VIEW");
 			var $helpBtn = FormUtil.getToolbarButton("?", function() {
                 mainController.openHelpPage();
             }, null, "Documentation", "help-dataset-btn-"+this._viewId, 'btn btn-default help');

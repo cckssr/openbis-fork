@@ -1,6 +1,7 @@
 apply from: '../build/javalibrary.gradle'
 
 dependencies {
-    api project(':lib-commonbase'), libs.javax.activation.activation, libs.com.sun.mail.javax.mail
+    api project(':lib-commonbase'), libs.jakarta.activation.jakarta.activation.api, libs.jakarta.mail.jakarta.mail.api
+    runtimeOnly libs.org.eclipse.angus.angus.mail
     testImplementation libs.org.testng.testng
 }

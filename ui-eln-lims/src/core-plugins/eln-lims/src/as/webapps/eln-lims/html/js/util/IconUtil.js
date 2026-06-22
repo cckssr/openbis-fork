@@ -39,18 +39,7 @@ var IconUtil = new function() {
                 break;
         }
 
-        if(icon.type === "img_with_class") {
-            $icon.addClass(icon.class)
-        } else if(icon.type === "font") {
-            if (icon.class) {
-                $icon.addClass(icon.class)
-            }
-
-            if(icon.text) {
-                $icon.text(icon.text);
-                $icon.css("font-size", size+"px");
-            }
-        } else if(Array.isArray(icon.type)) {
+        if(Array.isArray(icon.type)) {
             for (let i = 0; i < icon.type.length; i++) {
                 var type = icon.type[i];
                 var tempIcon;
@@ -66,14 +55,33 @@ var IconUtil = new function() {
                 } else if(type === "img") {
                     tempIcon = $("<img/>").attr("src", icon.url[i]).css("vertical-align", "bottom");
                 }
+
+                if(icon.css[i]) {
+                    $icon.css(icon.css[i]);
+                } else {
+                    $icon.css("vertical-align", "text-bottom");
+                }
                 $icon.append(tempIcon);
             }
-        }
-
-        if(icon.css) {
-            $icon.css(icon.css);
         } else {
-            $icon.css("vertical-align", "text-bottom");
+            if(icon.type === "img_with_class") {
+                $icon.addClass(icon.class)
+            } else if(icon.type === "font") {
+                if (icon.class) {
+                    $icon.addClass(icon.class)
+                }
+
+                if(icon.text) {
+                    $icon.text(icon.text);
+                    $icon.css("font-size", size+"px");
+                }
+            }
+
+            if(icon.css) {
+                $icon.css(icon.css);
+            } else {
+                $icon.css("vertical-align", "text-bottom");
+            }
         }
 
         return $icon;
@@ -106,6 +114,7 @@ var IconUtil = new function() {
             icon.url = [null, "./img/folder-with-settings.svg"];
             icon.class = ["material-icons", null];
             icon.text = [materialPlusIcon, null];
+            icon.css = [null, null];
         } else if(type === "OTHER") {
             icon.class = "material-icons";
             icon.text = materialPlusIcon;
@@ -113,7 +122,7 @@ var IconUtil = new function() {
             icon.type = ["font", "font"]
             icon.class = ["material-icons", "fa fa-database"];
             icon.text = [materialPlusIcon, null];
-            icon.css = {"margin-top": "-2px"}
+            icon.css = [{"margin-top": "-2px"}, {"margin-top": "-2px"}]
         } else if(type === "EDIT") {
             icon.class = "glyphicon glyphicon-edit";
             icon.css = {"padding-top": "3px"}
@@ -144,6 +153,7 @@ var IconUtil = new function() {
             icon.url = [null, "./img/folder-with-key.svg"];
             icon.class = ["material-icons", null];
             icon.text = [materialPlusIcon, null];
+            icon.css = [null, null];
         } else if(type === "HIDE") {
             icon.class = "material-icons";
             icon.text = "keyboard_double_arrow_left";

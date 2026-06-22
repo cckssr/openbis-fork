@@ -17,7 +17,7 @@ repositories repositoryConfig
 
 dependencies {
     implementation project(':api-openbis-java'), libs.com.fasterxml.jackson.core.jackson.core, libs.com.fasterxml.jackson.core.jackson.databind, libs.com.google.guava.guava, libs.cz.habarta.typescript.generator.typescript.generator.core, libs.sis.sis.base
-    testImplementation libs.org.testng.testng, libs.javax.activation.javax.activation.api, libs.org.junit.junit
+    testImplementation libs.org.testng.testng, libs.jakarta.activation.jakarta.activation.api, libs.org.junit.junit
 }
 
 apply plugin: "cz.habarta.typescript-generator"

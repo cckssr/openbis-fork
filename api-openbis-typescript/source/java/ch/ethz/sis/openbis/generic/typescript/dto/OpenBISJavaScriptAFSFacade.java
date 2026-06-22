@@ -86,6 +86,12 @@ public class OpenBISJavaScriptAFSFacade
         return null;
     }
 
+    @TypeScriptMethod(sessionToken = false)
+    public Object status(final String operationId)
+    {
+        return null;
+    }
+
     @TypeScriptObject
     public static class File
     {

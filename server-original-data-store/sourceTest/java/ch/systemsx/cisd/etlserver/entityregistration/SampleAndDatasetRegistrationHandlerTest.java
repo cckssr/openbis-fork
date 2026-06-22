@@ -25,7 +25,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
-import javax.activation.DataHandler;
+import jakarta.activation.DataHandler;
 
 import ch.ethz.sis.shared.log.classic.impl.Logger;
 import org.hamcrest.core.IsNull;

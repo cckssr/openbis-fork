@@ -61,7 +61,7 @@ public class ExcelParser
 
         } catch (Exception e)
         {
-            throw new UserFailureException(e.getMessage());
+            throw new UserFailureException(e.getMessage(), e);
         }
 
         return lines;

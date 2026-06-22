@@ -13,6 +13,8 @@ targetCompatibility = JavaVersion.VERSION_21
 apply from: '../build/repository.gradle'
 repositories repositoryConfig
 
+apply from: '../build/common-resolutions.gradle'
+
 configurations {
     tests.extendsFrom testImplementation
     tests.canBeResolved true

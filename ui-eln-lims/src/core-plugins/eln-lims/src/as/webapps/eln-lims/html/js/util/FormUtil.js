@@ -53,7 +53,32 @@ var FormUtil = new function() {
 		}
 		return parsed.local().format("YYYY-MM-DD HH:mm:ss ZZ");
 	}
-	
+
+	// Normalizes an ARRAY_TIMESTAMP JSON string: adds the user's local timezone to any
+	// element that does not already carry one. Elements with an explicit timezone are kept as-is.
+	this.normalizeArrayTimestampValues = function(val) {
+		try {
+			var array = Array.isArray(val) ? val : JSON.parse(val);
+			if (!Array.isArray(array)) {
+				return val;
+			}
+			var localOffset = moment().format("ZZ");
+			var normalized = array.map(function(v) {
+				if (typeof v !== "string") {
+					return v;
+				}
+				var trimmed = v.trim();
+				if (/[+-]\d{2}:?\d{2}$/.test(trimmed)) {
+					return trimmed;
+				}
+				return trimmed + " " + localOffset;
+			});
+			return JSON.stringify(normalized);
+		} catch (e) {
+			return val;
+		}
+	}
+
 	this.writeAnnotationForSample = function(stateObj, sample, propertyTypeCode, propertyValue) {
 		var sampleAnnotations = this.addAnnotationSlotForSample(stateObj, sample);
 		
@@ -1130,8 +1155,15 @@ var FormUtil = new function() {
 			$component = this._getDatePickerField(propertyType.code + idSuffix, propertyType.description, propertyType.mandatory, true, timestampValue);
 		} else if (propertyType.dataType === "VARCHAR") {
             $component = this._getInputField("text", propertyType.code + idSuffix, propertyType.description, null, propertyType.mandatory);
-        } else if (['ARRAY_STRING', 'ARRAY_INTEGER', 'ARRAY_REAL', 'ARRAY_TIMESTAMP'].includes(propertyType.dataType)) {
-            $component = this._getInputField("text", propertyType.code + idSuffix, propertyType.description, null, propertyType.mandatory);
+        } else if (["ARRAY_STRING", "ARRAY_INTEGER", "ARRAY_REAL", "ARRAY_TIMESTAMP"].includes(propertyType.dataType)) {
+			const placeholderByDataType  = {
+				ARRAY_TIMESTAMP: '["yyyy-MM-dd HH:mm:ss ZZ", ...]',
+				ARRAY_STRING: '["Str1", "Str2", ...]',
+				ARRAY_INTEGER: '[1, 2, ...]',
+				ARRAY_REAL: '[0.1, 0.2, ...]'
+			}
+            $component = this._getInputField("text", propertyType.code + idSuffix,
+				placeholderByDataType[propertyType.dataType], null, propertyType.mandatory);
         } else if (propertyType.dataType === "XML") {
 			$component = this._getTextBox(propertyType.code + idSuffix, propertyType.description, propertyType.mandatory);
 		} else if (propertyType.dataType === "SAMPLE") {
@@ -1677,42 +1709,7 @@ var FormUtil = new function() {
 		return originalValue;
 	}
 
-	this.addCreationDropdown = function(toolbarModel, types, priorityTypeCodes, actionFactory) {
-		var priorityTypes = [];
-		var otherTypes = [];
-		for (var idx = 0; idx < types.length; idx++) {
-			var type = types[idx];
-			if ($.inArray(type.code, priorityTypeCodes) !== -1) {
-				priorityTypes.push(type);
-			} else {
-				otherTypes.push(type);
-			}
-		}
-		
-		var dropdownModel = [];
-		this._populateDropdownModel(dropdownModel, priorityTypes, actionFactory);
-		if (priorityTypes.length > 0 && otherTypes.length > 0) {
-			dropdownModel.push({ separator : true });
-		}
-		this._populateDropdownModel(dropdownModel, otherTypes, actionFactory);
-		
-		var newWithIcon = $('<span>')
-			.append($('<span>', {'class' : 'glyphicon glyphicon-plus' }))
-			.append('&nbsp;New&nbsp;');
-		FormUtil.addOptionsToToolbar(toolbarModel, dropdownModel, [], null, newWithIcon);
-	}
-	
-	this._populateDropdownModel = function(dropdownModel, types, actionFactory) {
-		types.forEach(function (type) {
-			dropdownModel.push({
-				title : type.description,
-				label : Util.getDisplayNameFromCode(type.code),
-				action : actionFactory(type.code)
-			});
-		});
-	}
-
-	this.addOptionsToToolbar = function(toolbarModel, dropdownOptionsModel, hideShowOptionsModel, namespace, title, alignLeft) {
+	this.addOptionsToToolbar = function($formColumn, toolbarModel, dropdownOptionsModel, hideShowOptionsModel, namespace, title, alignLeft) {
 	    var _this = this;
 		if(!title) {
 			title = "More ... ";
@@ -1773,8 +1770,13 @@ var FormUtil = new function() {
 						shown = ! profile.hideSectionsByDefault;
 					}
 				}
+				var $section;
+				if($formColumn) {
+					$section = $formColumn.find(option.section);
+				} else {
+					$section = $(option.section);
+				}
 
-				var $section = $(option.section);
 				$section.toggle(shown);
 				var $label = $("<span>").append((shown ? "Hide " : "Show ") + option.label);
 				var id = 'options-menu-btn-' + _this.prepareId(option.label).toLowerCase() + '-' + mainController.getNextId();
@@ -2074,6 +2076,26 @@ var FormUtil = new function() {
     this.isString = function(x) {
       return Object.prototype.toString.call(x) === '[object String]';
     }
+
+	this.isValidArray = function(val, dataType) {
+		try {
+			if (!Array.isArray(val)) {
+				return false;
+			} else if (dataType === "ARRAY_INTEGER") {
+				return val.every(v => typeof v === "number" && Number.isInteger(v) ||
+					typeof v === "string" && /^-?\d+$/.test(v.trim()));
+			} else if (dataType === "ARRAY_REAL") {
+				return val.every(v => typeof v === "number"
+					|| typeof v === "string" && !isNaN(Number(v.trim())) && v.trim() !== "");
+			} if (dataType === "ARRAY_TIMESTAMP") {
+				return val.every(v => typeof v === "string" && /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}( [+-]\d{4})?$/.test(v.trim()));
+			} else {
+				return true;
+			}
+		} catch (e) {
+			return false;
+		}
+	}
 
 	//
 	// errors
@@ -2624,8 +2646,9 @@ var FormUtil = new function() {
 		var $freezeButton = FormUtil.getToolbarButton("LOCKED")
 
 		if(isEntityFrozen) {
+			const labelInfo = LabelUtil.getToolbarLabelInfo("FROZEN");
 			$freezeButton.attr("disabled", "disabled");
-			$freezeButton.append("Frozen");
+			$freezeButton.append(labelInfo.label);
 		} else {
 		    var id = 'btn-freeze-'+mainController.getNextId();
 		    $freezeButton.attr("id", buttonId);
@@ -3420,10 +3443,6 @@ var FormUtil = new function() {
 			return ""
 		}
 
-		if (!Array.isArray(params.value)) {
-			return value.toString();
-		}
-
         if (propertyType.dataType === "ARRAY_STRING") {
             return '["' + value.join('", "') + '"]';
         } else if (propertyType.dataType === "ARRAY_TIMESTAMP") {
@@ -3861,8 +3880,9 @@ var FormUtil = new function() {
         }
 
         this.getPrintPDFButtonModel = function(entityKind, entityPermId) {
+			const labelInfo = LabelUtil.getToolbarLabelInfo("PRINT")
             var printButtonModel = {
-                                    label : "Print PDF",
+                                    label : labelInfo.label,
                                     action : function() {
                                          require([
                                             "as/dto/exporter/data/ExportData",
@@ -3919,8 +3939,9 @@ var FormUtil = new function() {
         }
 
         this.getExportButtonModel = function(entityKind, entityPermId) {
+			const labelInfo = LabelUtil.getToolbarLabelInfo("EXPORT")
             var exportButtonModel = {
-                                    label : "Export", 
+                                    label : labelInfo.label,
                                     action : function() {
                                         var $window = $('<form>', { 'action' : 'javascript:void(0);' });
                                         $window.append($('<legend>').append('Export'));

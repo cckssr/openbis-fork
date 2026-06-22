@@ -270,7 +270,7 @@ exports.default = new Promise((resolve) => {
                 c.login(facade).then(function () {
                     return fCreate(facade).then(null, function (error) {
                         c.assertEqual(
-                            "Insert/Update of experiment failed because property contains value that is not unique! (value:  my_unique_value) (Context: [])",
+                            "Insert/Update of experiment failed because property contains value that is not unique! (value:  my_unique_value)",
                             error.message,
                             "Uniqueness error message"
                         )
@@ -603,7 +603,7 @@ exports.default = new Promise((resolve) => {
                 c.login(facade).then(function () {
                     return fCreate(facade).then(null, function (error) {
                         c.assertEqual(
-                            "Insert/Update of object failed because property contains value that is not unique! (value:  my_unique_value) (Context: [])",
+                            "Insert/Update of object failed because property contains value that is not unique! (value:  my_unique_value)",
                             error.message,
                             "Uniqueness error message"
                         )
@@ -944,7 +944,7 @@ exports.default = new Promise((resolve) => {
                 c.login(facade).then(function () {
                     return fCreate(facade).then(null, function (error) {
                         c.assertEqual(
-                            "Insert/Update of dataset failed because property contains value that is not unique! (value:  my_unique_value) (Context: [])",
+                            "Insert/Update of dataset failed because property contains value that is not unique! (value:  my_unique_value)",
                             error.message,
                             "Uniqueness error message"
                         )

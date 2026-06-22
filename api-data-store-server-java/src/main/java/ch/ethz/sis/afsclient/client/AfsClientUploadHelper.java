@@ -100,7 +100,7 @@ public class AfsClientUploadHelper
                     long nextFileSize = Files.size(nextFile);
                     Optional<Path> precheckedNextFile =
                             checkAndPrepareRegularFilePaths(afsClient, nextFile, nextFileSize, destinationOwner, absServerPathAsStr,
-                                    fileCollisionListener, transactional, cache);
+                                    fileCollisionListener, transferMonitorListener, transactional, cache);
 
                     if (precheckedNextFile.isPresent())
                     {
@@ -111,7 +111,7 @@ public class AfsClientUploadHelper
                         } else
                         {
                             transferMonitorListener.start(nextFile.toAbsolutePath(), absServerPath, 0);
-                            transferMonitorListener.add(nextFile.toAbsolutePath(), absServerPath, 0, true);
+                            transferMonitorListener.add(nextFile.toAbsolutePath(), absServerPath, 0, true, false);
                         }
 
                         ChunkIterable chunkIterable = new ChunkIterable(destinationOwner, absServerPathAsStr, Files.size(precheckedNextFile.get()),
@@ -232,6 +232,7 @@ public class AfsClientUploadHelper
             @NonNull String destinationOwner,
             @NonNull String absoluteServerPath,
             @NonNull FileCollisionListener fileCollisionListener,
+            @NonNull TransferMonitorListener transferMonitor,
             boolean transactional, Cache cache) throws Exception
     {
         Optional<File> serverFile = getServerFilePresence(afsClient, destinationOwner, absoluteServerPath, cache);
@@ -279,9 +280,8 @@ public class AfsClientUploadHelper
 
         } else if (collisionAction.equals(ClientAPI.CollisionAction.Skip))
         {
-
+            transferMonitor.add(localFile, Path.of(absoluteServerPath), localFileSize, false, true);
             return Optional.empty();
-
         } else
         {
             throw new IllegalStateException(
@@ -434,7 +434,7 @@ public class AfsClientUploadHelper
                 for (Chunk chunk : chunksToBeRequested)
                 {
                     Path chunkServerPath = Path.of(chunk.getSource());
-                    Path relativeServerPath = destinationPath.toAbsolutePath().relativize(chunkServerPath);
+                    Path relativeServerPath = destinationPath.relativize(chunkServerPath);
                     Path localPath;
                     if (Files.isDirectory(sourcePath))
                     {
@@ -480,7 +480,7 @@ public class AfsClientUploadHelper
                 for (Chunk chunk : chunksToBeRequested)
                 {
                     Path chunkServerPath = Path.of(chunk.getSource());
-                    Path relativeServerPath = destinationPath.toAbsolutePath().relativize(chunkServerPath);
+                    Path relativeServerPath = destinationPath.relativize(chunkServerPath);
                     Path localPath;
                     if (Files.isDirectory(sourcePath))
                     {
@@ -490,7 +490,7 @@ public class AfsClientUploadHelper
                         localPath = sourcePath;
                     }
                     boolean completed =
-                            currentsAndTotals.updateCurrentAmountsAndCheckCompletion(afsClient, localPath, ownerId, chunkServerPath.toAbsolutePath(),
+                            currentsAndTotals.updateCurrentAmountsAndCheckCompletion(afsClient, localPath, ownerId, chunkServerPath,
                                     chunk.getLimit(), transactional);
                     if (completed && !transactional)
                     {
@@ -508,7 +508,7 @@ public class AfsClientUploadHelper
                         // delete the twin file
                         deleteServerRegularFile(afsClient, chunk.getOwner(), twinAbsoluteServerPath, false);
                     }
-                    transferMonitorListener.add(localPath, chunkServerPath, chunk.getLimit(), completed);
+                    transferMonitorListener.add(localPath, chunkServerPath, chunk.getLimit(), completed, false);
                 }
 
             } catch (Exception e)

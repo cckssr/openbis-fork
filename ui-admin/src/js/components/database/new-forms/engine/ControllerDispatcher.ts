@@ -9,6 +9,7 @@ class ControllerDispatcher {
   static createController(entityKind: string, openbisFacade: any, user?: string) {
     switch (entityKind) {
       case EntityKind.SPACE:
+      case EntityKind.NEW_SPACE:
         return new SpaceFormController(openbisFacade);
       case EntityKind.PROJECT:
       case EntityKind.NEW_PROJECT:

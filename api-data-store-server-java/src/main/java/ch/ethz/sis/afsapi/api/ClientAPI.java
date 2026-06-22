@@ -42,7 +42,7 @@ public interface ClientAPI
 
         void start(Path from, Path to, long total);
         void stop();
-        void add(Path from, Path to, long amount, boolean completed);
+        void add(Path from, Path to, long amount, boolean completed, boolean skipped);
 
         // These methods are for implementations using event mechanisms
         void success();
@@ -93,7 +93,7 @@ public interface ClientAPI
         }
 
         @Override
-        public synchronized void add(Path from, Path to, long amount, boolean completed) {
+        public synchronized void add(Path from, Path to, long amount, boolean completed, boolean skipped) {
             this.current.addAndGet(amount);
             if(completed) {
                 for (FileTransferredListener fileTransferredListener:fileTransferredListeners) {

@@ -34,7 +34,7 @@ public enum FSExceptions implements ExceptionTemplateHolder {
     RECOVER_REQUIRES_TM(                                    RuntimeException.class,                 List.of(ClientDeveloperCodingError), 40002, "recover can only be called using Transaction Manager Mode"),
     SESSION_NOT_FOUND(                                      RuntimeException.class,                 List.of(RecoverableSystemStateError),40003, "Session %s doesn't exist"),
     // CorrectnessProxy
-    MAX_READ_SIZE_EXCEEDED(                                RuntimeException.class,         List.of(ClientDeveloperCodingError),40004, "Session %s tried to read %d bytes from %s when the maximum is %d"),
+    MAX_READ_SIZE_EXCEEDED(                                RuntimeException.class,         List.of(ClientDeveloperCodingError),40004, "Session %s tried to read %d bytes when the maximum is %d"),
     WRONG_SHARE_NAME(                                      RuntimeException.class,         List.of(ClientDeveloperCodingError),40005, "Session %s send a request intended to %s when he made a request to %s");
 
     private RuntimeExceptionTemplate template;

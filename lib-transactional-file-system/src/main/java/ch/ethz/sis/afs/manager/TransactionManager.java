@@ -150,7 +150,7 @@ public class TransactionManager
                     byte[] transactionLogBytes = IOUtils.readFully(transactionLogCommitted);
                     Transaction transaction = jsonObjectMapper.readValue(new ByteArrayInputStream(transactionLogBytes), Transaction.class);
                     logger.info(String.format("Transaction loaded %s", transactionLogCommitted));
-                    TransactionConnection transactionConnection = new TransactionConnection(lockManager, jsonObjectMapper, trashRootProvider, transaction, enabledPreviewFileTypes, enablePreviewSizeInBytes);
+                    TransactionConnection transactionConnection = new TransactionConnection(lockManager, jsonObjectMapper, trashRootProvider, transaction, State.Commit, enabledPreviewFileTypes, enablePreviewSizeInBytes);
                     logger.info(String.format("Transaction %s to be committed from recovery", transaction.getUuid().toString()));
                     transactionConnection.commit();
                     logger.info(String.format("Transaction %s committed", transaction.getUuid().toString()));
@@ -161,7 +161,7 @@ public class TransactionManager
                     Transaction transaction = jsonObjectMapper.readValue(new ByteArrayInputStream(transactionLogBytes), Transaction.class);
                     logger.info(String.format("Transaction loaded %s", transactionLogPrepared));
                     // The connection is created just to hold the locks again, can be discarded afterwards and the transaction will wait to be recovered
-                    TransactionConnection transactionConnection = new TransactionConnection(lockManager, jsonObjectMapper, trashRootProvider, transaction, enabledPreviewFileTypes, enablePreviewSizeInBytes);
+                    TransactionConnection transactionConnection = new TransactionConnection(lockManager, jsonObjectMapper, trashRootProvider, transaction, State.Prepare, enabledPreviewFileTypes, enablePreviewSizeInBytes);
                     recoveredTransactions.addRecovered(transaction);
                     logger.info(String.format("Transaction %s waiting to be committed/rollback holding locks", transaction.getUuid().toString()));
                 } else

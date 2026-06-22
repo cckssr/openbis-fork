@@ -19,7 +19,7 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.activation.DataHandler;
+import jakarta.activation.DataHandler;
 
 import org.testng.annotations.Test;
 

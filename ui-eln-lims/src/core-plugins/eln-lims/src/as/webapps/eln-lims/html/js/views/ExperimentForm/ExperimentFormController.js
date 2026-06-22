@@ -142,14 +142,78 @@ function ExperimentFormController(mainController, mode, experiment) {
 	this.updateExperiment = function() {
 		Util.blockUI();
 		
-		var experimentType = this._mainController.profile.getExperimentTypeForExperimentTypeCode(this._experimentFormModel.experiment.experimentTypeCode);
-		
+		var experimentType = this._mainController.profile.getExperimentTypeForExperimentTypeCode(
+			this._experimentFormModel.experiment.experimentTypeCode);
+
+		for (var group of (experimentType && experimentType.propertyTypeGroups || [])) {
+			for (var pt of group.propertyTypes) {
+				if (["ARRAY_INTEGER", "ARRAY_REAL", "ARRAY_STRING", "ARRAY_TIMESTAMP"].includes(pt.dataType)) {
+					var val = this._experimentFormModel.experiment.properties[pt.code];
+					if (val) {
+						var errorMessage = "Invalid value for " + pt.label + ": " + val;
+						try {
+							var array = Array.isArray(val) ? val : JSON.parse(val);
+							if (val && !FormUtil.isValidArray(array, pt.dataType)) {
+								Util.showUserError(errorMessage);
+								return;
+							}
+						} catch (e) {
+							Util.showUserError(errorMessage);
+						}
+					}
+				}
+			}
+		}
+
 		//Identification Info (This way of collecting the identifier also works for the creation mode)
 		var experimentSpace = IdentifierUtil.getSpaceCodeFromIdentifier(this._experimentFormModel.experiment.identifier);
 		var experimentProject = IdentifierUtil.getProjectCodeFromExperimentIdentifier(this._experimentFormModel.experiment.identifier);
 		var experimentCode = this._experimentFormModel.experiment.code;
 		var experimentIdentifier = IdentifierUtil.getExperimentIdentifier(experimentSpace, experimentProject, experimentCode);
-		
+
+		var experimentTypeV3 = this._experimentFormModel.experimentType;
+		if (this._experimentFormModel.v3_experiment) {
+			for (var pa of experimentTypeV3.propertyAssignments) {
+				var pt = pa.propertyType;
+				if (["ARRAY_INTEGER", "ARRAY_REAL", "ARRAY_STRING", "ARRAY_TIMESTAMP"].includes(pt.dataType)) {
+					var currentVal = this._experimentFormModel.experiment.properties[pt.code];
+					var isNormalized = currentVal == null
+						|| currentVal === ""
+						|| (typeof currentVal === "string" && currentVal.trim().startsWith("["));
+					if (!isNormalized) {
+						var v3Val = this._experimentFormModel.v3_experiment.properties[pt.code];
+						this._experimentFormModel.experiment.properties[pt.code] =
+							v3Val != null ? JSON.stringify(v3Val) : null;
+					}
+				}
+			}
+		}
+
+		for (var pa of experimentTypeV3.propertyAssignments) {
+			var pt = pa.propertyType;
+			if (["ARRAY_INTEGER", "ARRAY_REAL", "ARRAY_STRING", "ARRAY_TIMESTAMP"].includes(pt.dataType)) {
+				var val = this._experimentFormModel.experiment.properties[pt.code];
+				if (!val) {
+					continue;
+				}
+				var errorMessage = "Invalid value for " + pt.label + ": " + val;
+				try {
+					var array = Array.isArray(val) ? val : JSON.parse(val);
+					if (val && !FormUtil.isValidArray(array, pt.dataType)) {
+						Util.showUserError(errorMessage, function () {
+							Util.unblockUI();
+						});
+						return;
+					}
+				} catch (e) {
+					Util.showUserError(errorMessage, function () {
+						Util.unblockUI();
+					});
+					return;
+				}
+			}
+		}
+
 		var method = "";
 		if(this._experimentFormModel.mode === FormMode.CREATE) {
 			method = "insertExperiment";

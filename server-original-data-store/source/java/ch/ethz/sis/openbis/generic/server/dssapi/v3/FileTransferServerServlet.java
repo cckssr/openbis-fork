@@ -178,6 +178,7 @@ public class FileTransferServerServlet extends HttpServlet
                 }
             } else
             {
+                operationLog.error("No method defined in request:" + parameterMap);
                 throw new IllegalArgumentException(
                         "There must be a single method defined: '" + Arrays.toString(
                                 methodParam) + "'.");

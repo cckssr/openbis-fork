@@ -1,0 +1,744 @@
+{
+  "@context" : [ "https://w3id.org/ro/crate/1.1/context", {
+    "schema" : "https://schema.org",
+    "owl" : "http://www.w3.org/2002/07/owl#",
+    "openBIS" : "www.openbis.ch"
+  } ],
+  "@graph" : [ {
+    "name" : "name",
+    "description" : "description",
+    "@id" : "./",
+    "@type" : "Dataset",
+    "license" : {
+      "@id" : "licenseIdentifier"
+    },
+    "datePublished" : "2024-12-04T07:53:11Z",
+    "hasPart" : [ {
+      "@id" : "e02f73ad-0169-4553-a93b-08aff2056aac"
+    }, {
+      "@id" : "0eb8575d-9188-4e5f-8fb6-f36d51137de7"
+    }, {
+      "@id" : "ce859af5-4e3d-4e6b-b72b-5351ddcb8418"
+    }, {
+      "@id" : "openBIS:hasEND_DATE"
+    }, {
+      "@id" : "openBIS:hasDEFAULT_OBJECT_TYPE"
+    }, {
+      "@id" : "openBIS:hasCOLLECTION"
+    }, {
+      "@id" : "openBIS:hasDEFAULT_EXPERIMENT.EXPERIMENTAL_GOALS"
+    }, {
+      "@id" : "53da8ad7-411f-48ac-8fe5-20d820720070"
+    }, {
+      "@id" : "openBIS:hasPROJECT"
+    }, {
+      "@id" : "/RDF/PROJECT1"
+    }, {
+      "@id" : "/RDF/PROJECT2"
+    }, {
+      "@id" : "openBIS:hasNOTES"
+    }, {
+      "@id" : "a0c6b63c-211e-4560-8331-93966c177b7c"
+    }, {
+      "@id" : "openBIS:isSHOW_IN_PROJECT_OVERVIEW"
+    }, {
+      "@id" : "openBIS:hasDEFAULT_COLLECTION_VIEW"
+    }, {
+      "@id" : "ENTRY"
+    }, {
+      "@id" : "openBIS:hasREFERENCE"
+    }, {
+      "@id" : "schema:hasPart"
+    }, {
+      "@id" : "8f098bd5-3c86-4a21-8e9e-77ff1022b54c"
+    }, {
+      "@id" : "openBIS:isFINISHED_FLAG"
+    }, {
+      "@id" : "openBIS:Object"
+    }, {
+      "@id" : "/RDF/PROJECT2/ENTRY10"
+    }, {
+      "@id" : "openBIS:hasSPACE"
+    }, {
+      "@id" : "/RDF/PROJECT2/ENTRY11"
+    }, {
+      "@id" : "/RDF/PROJECT2/ENTRY12"
+    }, {
+      "@id" : "openBIS:Collection"
+    }, {
+      "@id" : "/RDF/PROJECT2/ENTRY9"
+    }, {
+      "@id" : "aa76480b-0350-42ea-8eef-fb423f18d7ad"
+    }, {
+      "@id" : "openBIS:hasDEFAULT_EXPERIMENT.EXPERIMENTAL_RESULTS"
+    }, {
+      "@id" : "b355c972-d5b4-43b2-9a71-8061c2cf7a63"
+    }, {
+      "@id" : "/RDF/PROJECT1/PROJECT1_EXP_1"
+    }, {
+      "@id" : "/RDF/PROJECT1/PROJECT1_EXP_2"
+    }, {
+      "@id" : "openBIS:Dataset"
+    }, {
+      "@id" : "00729564-0762-4e88-badf-bf52811e49f3"
+    }, {
+      "@id" : "562cf435-06bb-4a17-9ab9-35a9dd2b0ea8"
+    }, {
+      "@id" : "d06f02b9-e53b-46ed-b25f-52121c9b33ae"
+    }, {
+      "@id" : "RDF"
+    }, {
+      "@id" : "0246dc4b-dcce-4c16-84a2-376e906558b2"
+    }, {
+      "@id" : "openBIS:hasNAME"
+    }, {
+      "@id" : "openBIS:Space"
+    }, {
+      "@id" : "/RDF/PROJECT2/PROJECT2_EXP_1"
+    }, {
+      "@id" : "/RDF/PROJECT2/PROJECT2_EXP_2"
+    }, {
+      "@id" : "openBIS:hasPUBLICATION"
+    }, {
+      "@id" : "1f2b2820-06d9-49cc-abc8-8db9e29dd7fd"
+    }, {
+      "@id" : "63709b16-2ccf-448e-96c3-95ac484c1d5f"
+    }, {
+      "@id" : "openBIS:hasDEFAULT_EXPERIMENT.EXPERIMENTAL_DESCRIPTION"
+    }, {
+      "@id" : "ad41c0af-ff8a-4420-b71c-49ea23beefb1"
+    }, {
+      "@id" : "openBIS:hasDOCUMENT"
+    }, {
+      "@id" : "openBIS:parents"
+    }, {
+      "@id" : "92f60474-1023-459c-8131-9024ca75b665"
+    }, {
+      "@id" : "openBIS:Project"
+    }, {
+      "@id" : "41ad1dfb-f3a9-45c8-8db5-ec4002f217e3"
+    }, {
+      "@id" : "/RDF/PROJECT1/ENTRY6"
+    }, {
+      "@id" : "/RDF/PROJECT1/ENTRY5"
+    }, {
+      "@id" : "/RDF/PROJECT1/ENTRY8"
+    }, {
+      "@id" : "openBIS:hasSTART_DATE"
+    }, {
+      "@id" : "/RDF/PROJECT1/ENTRY7"
+    }, {
+      "@id" : "DEFAULT_EXPERIMENT"
+    }, {
+      "@id" : "openBIS:hasDEFAULT_EXPERIMENT.GRANT"
+    }, {
+      "@id" : "openBIS:hasXMLCOMMENTS"
+    }, {
+      "@id" : "openBIS:Vocabulary"
+    }, {
+      "@id" : "74b6d654-4d7f-40db-a88f-83b4d0730f6c"
+    } ]
+  }, {
+    "about" : {
+      "@id" : "./"
+    },
+    "conformsTo" : {
+      "@id" : "https://w3id.org/ro/crate/1.1"
+    },
+    "@id" : "ro-crate-metadata.json",
+    "@type" : "CreativeWork"
+  }, {
+    "@type" : "rdf:Property",
+    "rdfs:label" : "Start date",
+    "rdfs:comment" : "Start date",
+    "@id" : "openBIS:hasSTART_DATE",
+    "schema:rangeIncludes" : {
+      "@id" : "xsd:dateTime"
+    },
+    "schema:domainIncludes" : {
+      "@id" : "DEFAULT_EXPERIMENT"
+    }
+  }, {
+    "@id" : "0246dc4b-dcce-4c16-84a2-376e906558b2",
+    "@type" : "owl:Restriction",
+    "owl:onProperty" : {
+      "@id" : "openBIS:hasREFERENCE"
+    },
+    "owl:minCardinality" : 0,
+    "owl:maxCardinality" : 1
+  }, {
+    "@id" : "openBIS:Dataset",
+    "@type" : "rdfs:Class"
+  }, {
+    "@id" : "0eb8575d-9188-4e5f-8fb6-f36d51137de7",
+    "@type" : "owl:Restriction",
+    "owl:onProperty" : {
+      "@id" : "openBIS:hasDEFAULT_EXPERIMENT.EXPERIMENTAL_DESCRIPTION"
+    },
+    "owl:minCardinality" : 0,
+    "owl:maxCardinality" : 1
+  }, {
+    "@id" : "ENTRY",
+    "@type" : "rdfs:Class",
+    "owl:restriction" : [ {
+      "@id" : "92f60474-1023-459c-8131-9024ca75b665"
+    }, {
+      "@id" : "aa76480b-0350-42ea-8eef-fb423f18d7ad"
+    }, {
+      "@id" : "74b6d654-4d7f-40db-a88f-83b4d0730f6c"
+    } ],
+    "rdfs:subClassOf" : {
+      "@id" : "openBIS:Object"
+    }
+  }, {
+    "openBIS:hasSTART_DATE" : "2026-06-01 13:52:53 +0200",
+    "openBIS:hasNAME" : "EXP1",
+    "@id" : "/RDF/PROJECT1/PROJECT1_EXP_1",
+    "@type" : "openBIS:Collection"
+  }, {
+    "@id" : "53da8ad7-411f-48ac-8fe5-20d820720070",
+    "@type" : "owl:Restriction",
+    "owl:onProperty" : {
+      "@id" : "openBIS:hasXMLCOMMENTS"
+    },
+    "owl:minCardinality" : 0,
+    "owl:maxCardinality" : 1
+  }, {
+    "@type" : "rdf:Property",
+    "@id" : "openBIS:hasCOLLECTION",
+    "schema:rangeIncludes" : {
+      "@id" : "openBIS:Collection"
+    },
+    "schema:domainIncludes" : [ {
+      "@id" : "DEFAULT_EXPERIMENT"
+    }, {
+      "@id" : "ENTRY"
+    } ]
+  }, {
+    "openBIS:hasDOCUMENT" : "<html>\n <head></head>\n <body>\n  <h2>ENTRY11</h2>\n  <p>new content</p>\n </body>\n</html>",
+    "openBIS:hasNAME" : "ENTRY11",
+    "@id" : "/RDF/PROJECT1/ENTRY5",
+    "openBIS:hasSPACE" : {
+      "@id" : "RDF"
+    },
+    "openBIS:hasPROJECT" : {
+      "@id" : "/RDF/PROJECT1"
+    },
+    "openBIS:hasCOLLECTION" : {
+      "@id" : "/RDF/PROJECT1/PROJECT1_EXP_1"
+    },
+    "@type" : "ENTRY"
+  }, {
+    "@type" : "rdf:Property",
+    "@id" : "openBIS:hasPROJECT",
+    "schema:rangeIncludes" : {
+      "@id" : "openBIS:Project"
+    },
+    "schema:domainIncludes" : [ {
+      "@id" : "DEFAULT_EXPERIMENT"
+    }, {
+      "@id" : "ENTRY"
+    } ]
+  }, {
+    "@id" : "00729564-0762-4e88-badf-bf52811e49f3",
+    "@type" : "owl:Restriction",
+    "owl:onProperty" : {
+      "@id" : "openBIS:isSHOW_IN_PROJECT_OVERVIEW"
+    },
+    "owl:minCardinality" : 0,
+    "owl:maxCardinality" : 1
+  }, {
+    "@type" : "rdf:Property",
+    "rdfs:label" : "Notes",
+    "rdfs:comment" : "Notes",
+    "@id" : "openBIS:hasNOTES",
+    "schema:rangeIncludes" : {
+      "@id" : "xsd:string"
+    },
+    "schema:domainIncludes" : {
+      "@id" : "DEFAULT_EXPERIMENT"
+    }
+  }, {
+    "@id" : "openBIS:Project",
+    "@type" : "rdfs:Class"
+  }, {
+    "@type" : "rdf:Property",
+    "rdfs:label" : "Document",
+    "rdfs:comment" : "Document",
+    "@id" : "openBIS:hasDOCUMENT",
+    "schema:rangeIncludes" : {
+      "@id" : "xsd:string"
+    },
+    "schema:domainIncludes" : {
+      "@id" : "ENTRY"
+    }
+  }, {
+    "openBIS:hasDOCUMENT" : "<html>\n <head></head>\n <body>\n  <h2>ENTRY12</h2>\n  <p>new content</p>\n </body>\n</html>",
+    "openBIS:hasNAME" : "ENTRY12",
+    "@id" : "/RDF/PROJECT1/ENTRY6",
+    "openBIS:hasSPACE" : {
+      "@id" : "RDF"
+    },
+    "openBIS:hasPROJECT" : {
+      "@id" : "/RDF/PROJECT1"
+    },
+    "openBIS:hasCOLLECTION" : {
+      "@id" : "/RDF/PROJECT1/PROJECT1_EXP_1"
+    },
+    "@type" : "ENTRY"
+  }, {
+    "@type" : "rdf:Property",
+    "rdfs:label" : "Grant",
+    "rdfs:comment" : "Grant",
+    "@id" : "openBIS:hasDEFAULT_EXPERIMENT.GRANT",
+    "schema:rangeIncludes" : {
+      "@id" : "xsd:string"
+    },
+    "schema:domainIncludes" : {
+      "@id" : "DEFAULT_EXPERIMENT"
+    }
+  }, {
+    "description" : "<p>TEST</p>",
+    "@id" : "/RDF/PROJECT1",
+    "@type" : "openBIS:Project"
+  }, {
+    "openBIS:hasDOCUMENT" : "<html>\n <head></head>\n <body>\n  <h2>ENTRY42</h2>\n  <p>new content</p>\n </body>\n</html>",
+    "openBIS:hasNAME" : "ENTRY42",
+    "@id" : "/RDF/PROJECT2/ENTRY12",
+    "openBIS:hasSPACE" : {
+      "@id" : "RDF"
+    },
+    "openBIS:hasPROJECT" : {
+      "@id" : "/RDF/PROJECT2"
+    },
+    "openBIS:hasCOLLECTION" : {
+      "@id" : "/RDF/PROJECT2/PROJECT2_EXP_2"
+    },
+    "@type" : "ENTRY"
+  }, {
+    "@type" : "rdf:Property",
+    "rdfs:label" : "Show in project overview",
+    "rdfs:comment" : "Show in project overview page",
+    "@id" : "openBIS:isSHOW_IN_PROJECT_OVERVIEW",
+    "schema:rangeIncludes" : {
+      "@id" : "xsd:boolean"
+    },
+    "schema:domainIncludes" : [ {
+      "@id" : "DEFAULT_EXPERIMENT"
+    }, {
+      "@id" : "ENTRY"
+    } ]
+  }, {
+    "@id" : "562cf435-06bb-4a17-9ab9-35a9dd2b0ea8",
+    "@type" : "owl:Restriction",
+    "owl:onProperty" : {
+      "@id" : "openBIS:hasNAME"
+    },
+    "owl:minCardinality" : 0,
+    "owl:maxCardinality" : 1
+  }, {
+    "@id" : "8f098bd5-3c86-4a21-8e9e-77ff1022b54c",
+    "@type" : "owl:Restriction",
+    "owl:onProperty" : {
+      "@id" : "openBIS:hasDEFAULT_OBJECT_TYPE"
+    },
+    "owl:minCardinality" : 0,
+    "owl:maxCardinality" : 1
+  }, {
+    "@id" : "d06f02b9-e53b-46ed-b25f-52121c9b33ae",
+    "@type" : "owl:Restriction",
+    "owl:onProperty" : {
+      "@id" : "openBIS:hasDEFAULT_EXPERIMENT.GRANT"
+    },
+    "owl:minCardinality" : 0,
+    "owl:maxCardinality" : 1
+  }, {
+    "description" : "<p>SOMETHING</p>",
+    "@id" : "/RDF/PROJECT2",
+    "@type" : "openBIS:Project"
+  }, {
+    "@id" : "openBIS:Space",
+    "@type" : "rdfs:Class"
+  }, {
+    "@id" : "1f2b2820-06d9-49cc-abc8-8db9e29dd7fd",
+    "@type" : "owl:Restriction",
+    "owl:onProperty" : {
+      "@id" : "openBIS:hasSTART_DATE"
+    },
+    "owl:minCardinality" : 0,
+    "owl:maxCardinality" : 1
+  }, {
+    "@id" : "e02f73ad-0169-4553-a93b-08aff2056aac",
+    "@type" : "owl:Restriction",
+    "owl:onProperty" : {
+      "@id" : "openBIS:hasNOTES"
+    },
+    "owl:minCardinality" : 0,
+    "owl:maxCardinality" : 1
+  }, {
+    "@id" : "ce859af5-4e3d-4e6b-b72b-5351ddcb8418",
+    "@type" : "owl:Restriction",
+    "owl:onProperty" : {
+      "@id" : "openBIS:hasPUBLICATION"
+    },
+    "owl:minCardinality" : 0,
+    "owl:maxCardinality" : 1
+  }, {
+    "@id" : "ad41c0af-ff8a-4420-b71c-49ea23beefb1",
+    "@type" : "owl:Restriction",
+    "owl:onProperty" : {
+      "@id" : "openBIS:hasEND_DATE"
+    },
+    "owl:minCardinality" : 0,
+    "owl:maxCardinality" : 1
+  }, {
+    "@id" : "b355c972-d5b4-43b2-9a71-8061c2cf7a63",
+    "@type" : "owl:Restriction",
+    "owl:onProperty" : {
+      "@id" : "openBIS:hasDEFAULT_EXPERIMENT.EXPERIMENTAL_RESULTS"
+    },
+    "owl:minCardinality" : 0,
+    "owl:maxCardinality" : 1
+  }, {
+    "@type" : "rdf:Property",
+    "rdfs:label" : "Name",
+    "rdfs:comment" : "Name",
+    "@id" : "openBIS:hasNAME",
+    "schema:rangeIncludes" : {
+      "@id" : "xsd:string"
+    },
+    "schema:domainIncludes" : [ {
+      "@id" : "DEFAULT_EXPERIMENT"
+    }, {
+      "@id" : "ENTRY"
+    } ]
+  }, {
+    "@type" : "rdf:Property",
+    "@id" : "schema:hasPart",
+    "schema:rangeIncludes" : {
+      "@id" : "File"
+    },
+    "schema:domainIncludes" : [ {
+      "@id" : "openBIS:Object"
+    }, {
+      "@id" : "openBIS:Collection"
+    } ]
+  }, {
+    "@type" : "rdf:Property",
+    "rdfs:label" : "Description",
+    "rdfs:comment" : "Description of the experiment",
+    "@id" : "openBIS:hasDEFAULT_EXPERIMENT.EXPERIMENTAL_DESCRIPTION",
+    "schema:rangeIncludes" : {
+      "@id" : "xsd:string"
+    },
+    "schema:domainIncludes" : {
+      "@id" : "DEFAULT_EXPERIMENT"
+    }
+  }, {
+    "@id" : "openBIS:Vocabulary",
+    "@type" : "rdfs:Class"
+  }, {
+    "openBIS:hasDOCUMENT" : "<html>\n <head></head>\n <body>\n  <h2>ENTRY32</h2>\n  <p>new content</p>\n </body>\n</html>",
+    "openBIS:hasNAME" : "ENTRY32",
+    "@id" : "/RDF/PROJECT2/ENTRY10",
+    "openBIS:hasSPACE" : {
+      "@id" : "RDF"
+    },
+    "openBIS:hasPROJECT" : {
+      "@id" : "/RDF/PROJECT2"
+    },
+    "openBIS:hasCOLLECTION" : {
+      "@id" : "/RDF/PROJECT2/PROJECT2_EXP_1"
+    },
+    "@type" : "ENTRY"
+  }, {
+    "openBIS:hasDOCUMENT" : "<html>\n <head></head>\n <body>\n  <h2>ENTRY31</h2>\n  <p>new content</p>\n </body>\n</html>",
+    "openBIS:isSHOW_IN_PROJECT_OVERVIEW" : "true",
+    "openBIS:hasNAME" : "ENTRY31",
+    "@id" : "/RDF/PROJECT2/ENTRY9",
+    "openBIS:hasSPACE" : {
+      "@id" : "RDF"
+    },
+    "openBIS:hasPROJECT" : {
+      "@id" : "/RDF/PROJECT2"
+    },
+    "openBIS:hasCOLLECTION" : {
+      "@id" : "/RDF/PROJECT2/PROJECT2_EXP_1"
+    },
+    "@type" : "ENTRY"
+  }, {
+    "openBIS:hasSTART_DATE" : "2026-06-01 13:55:05 +0200",
+    "openBIS:hasNAME" : "EXP3",
+    "@id" : "/RDF/PROJECT2/PROJECT2_EXP_1",
+    "@type" : "openBIS:Collection"
+  }, {
+    "@type" : "rdf:Property",
+    "rdfs:label" : "Experiment completed",
+    "rdfs:comment" : "Marks the experiment as finished",
+    "@id" : "openBIS:isFINISHED_FLAG",
+    "schema:rangeIncludes" : {
+      "@id" : "xsd:boolean"
+    },
+    "schema:domainIncludes" : {
+      "@id" : "DEFAULT_EXPERIMENT"
+    }
+  }, {
+    "@id" : "92f60474-1023-459c-8131-9024ca75b665",
+    "@type" : "owl:Restriction",
+    "owl:onProperty" : {
+      "@id" : "openBIS:isSHOW_IN_PROJECT_OVERVIEW"
+    },
+    "owl:minCardinality" : 0,
+    "owl:maxCardinality" : 1
+  }, {
+    "@type" : "rdf:Property",
+    "@id" : "openBIS:hasSPACE",
+    "schema:rangeIncludes" : {
+      "@id" : "openBIS:Space"
+    },
+    "schema:domainIncludes" : [ {
+      "@id" : "DEFAULT_EXPERIMENT"
+    }, {
+      "@id" : "ENTRY"
+    } ]
+  }, {
+    "@type" : "rdf:Property",
+    "rdfs:label" : "References",
+    "rdfs:comment" : "Useful refences",
+    "@id" : "openBIS:hasREFERENCE",
+    "schema:rangeIncludes" : {
+      "@id" : "xsd:string"
+    },
+    "schema:domainIncludes" : {
+      "@id" : "DEFAULT_EXPERIMENT"
+    }
+  }, {
+    "@id" : "63709b16-2ccf-448e-96c3-95ac484c1d5f",
+    "@type" : "owl:Restriction",
+    "owl:onProperty" : {
+      "@id" : "openBIS:hasDEFAULT_COLLECTION_VIEW"
+    },
+    "owl:minCardinality" : 0,
+    "owl:maxCardinality" : 1
+  }, {
+    "@type" : "rdf:Property",
+    "rdfs:label" : "Default collection view",
+    "rdfs:comment" : "Default view for experiments of the type collection",
+    "@id" : "openBIS:hasDEFAULT_COLLECTION_VIEW",
+    "schema:rangeIncludes" : {
+      "@id" : "xsd:string"
+    },
+    "schema:domainIncludes" : {
+      "@id" : "DEFAULT_EXPERIMENT"
+    }
+  }, {
+    "openBIS:hasDOCUMENT" : "<html>\n <head></head>\n <body>\n  <h2>ENTRY41</h2>\n  <p>new content</p>\n </body>\n</html>",
+    "openBIS:hasNAME" : "ENTRY41",
+    "@id" : "/RDF/PROJECT2/ENTRY11",
+    "openBIS:hasSPACE" : {
+      "@id" : "RDF"
+    },
+    "openBIS:hasPROJECT" : {
+      "@id" : "/RDF/PROJECT2"
+    },
+    "openBIS:hasCOLLECTION" : {
+      "@id" : "/RDF/PROJECT2/PROJECT2_EXP_2"
+    },
+    "@type" : "ENTRY"
+  }, {
+    "@id" : "openBIS:Collection",
+    "@type" : "rdfs:Class"
+  }, {
+    "@id" : "41ad1dfb-f3a9-45c8-8db5-ec4002f217e3",
+    "@type" : "owl:Restriction",
+    "owl:onProperty" : {
+      "@id" : "openBIS:isFINISHED_FLAG"
+    },
+    "owl:minCardinality" : 0,
+    "owl:maxCardinality" : 1
+  }, {
+    "@type" : "rdf:Property",
+    "rdfs:label" : "Comments",
+    "rdfs:comment" : "Comments log",
+    "@id" : "openBIS:hasXMLCOMMENTS",
+    "schema:rangeIncludes" : {
+      "@id" : "xsd:string"
+    },
+    "schema:domainIncludes" : {
+      "@id" : "DEFAULT_EXPERIMENT"
+    }
+  }, {
+    "openBIS:hasDOCUMENT" : "<html>\n <head></head>\n <body>\n  <h2>ENTRY22</h2>\n  <p>new content</p>\n </body>\n</html>",
+    "openBIS:hasNAME" : "ENTRY22",
+    "@id" : "/RDF/PROJECT1/ENTRY8",
+    "openBIS:hasSPACE" : {
+      "@id" : "RDF"
+    },
+    "openBIS:hasPROJECT" : {
+      "@id" : "/RDF/PROJECT1"
+    },
+    "openBIS:hasCOLLECTION" : {
+      "@id" : "/RDF/PROJECT1/PROJECT1_EXP_2"
+    },
+    "@type" : "ENTRY"
+  }, {
+    "openBIS:hasDOCUMENT" : "<html>\n <head></head>\n <body>\n  <h2>ENTRY21</h2>\n  <p>new content</p>\n </body>\n</html>",
+    "openBIS:isSHOW_IN_PROJECT_OVERVIEW" : "true",
+    "openBIS:hasNAME" : "ENTRY21",
+    "@id" : "/RDF/PROJECT1/ENTRY7",
+    "openBIS:hasSPACE" : {
+      "@id" : "RDF"
+    },
+    "openBIS:hasPROJECT" : {
+      "@id" : "/RDF/PROJECT1"
+    },
+    "openBIS:hasCOLLECTION" : {
+      "@id" : "/RDF/PROJECT1/PROJECT1_EXP_2"
+    },
+    "@type" : "ENTRY"
+  }, {
+    "@type" : "rdf:Property",
+    "rdfs:label" : "End date",
+    "rdfs:comment" : "End date",
+    "@id" : "openBIS:hasEND_DATE",
+    "schema:rangeIncludes" : {
+      "@id" : "xsd:dateTime"
+    },
+    "schema:domainIncludes" : {
+      "@id" : "DEFAULT_EXPERIMENT"
+    }
+  }, {
+    "@type" : "rdf:Property",
+    "rdfs:label" : "Results",
+    "rdfs:comment" : "Summary of  experimental results",
+    "@id" : "openBIS:hasDEFAULT_EXPERIMENT.EXPERIMENTAL_RESULTS",
+    "schema:rangeIncludes" : {
+      "@id" : "xsd:string"
+    },
+    "schema:domainIncludes" : {
+      "@id" : "DEFAULT_EXPERIMENT"
+    }
+  }, {
+    "openBIS:hasSTART_DATE" : "2026-07-01 13:55:30 +0200",
+    "openBIS:hasNAME" : "EXP4",
+    "@id" : "/RDF/PROJECT2/PROJECT2_EXP_2",
+    "@type" : "openBIS:Collection"
+  }, {
+    "@type" : "rdf:Property",
+    "@id" : "openBIS:parents",
+    "schema:rangeIncludes" : {
+      "@id" : "openBIS:Object"
+    },
+    "schema:domainIncludes" : {
+      "@id" : "openBIS:Object"
+    },
+    "owl:equivalentProperty" : {
+      "@id" : "https://schema.org/isBasedOn"
+    }
+  }, {
+    "@id" : "aa76480b-0350-42ea-8eef-fb423f18d7ad",
+    "@type" : "owl:Restriction",
+    "owl:onProperty" : {
+      "@id" : "openBIS:hasDOCUMENT"
+    },
+    "owl:minCardinality" : 0,
+    "owl:maxCardinality" : 1
+  }, {
+    "@id" : "openBIS:Object",
+    "@type" : "rdfs:Class"
+  }, {
+    "openBIS:hasSTART_DATE" : "2026-07-01 13:54:39 +0200",
+    "openBIS:hasNAME" : "EXP2",
+    "@id" : "/RDF/PROJECT1/PROJECT1_EXP_2",
+    "@type" : "openBIS:Collection"
+  }, {
+    "@type" : "rdf:Property",
+    "rdfs:label" : "Goals",
+    "rdfs:comment" : "Goals of the experiment",
+    "@id" : "openBIS:hasDEFAULT_EXPERIMENT.EXPERIMENTAL_GOALS",
+    "schema:rangeIncludes" : {
+      "@id" : "xsd:string"
+    },
+    "schema:domainIncludes" : {
+      "@id" : "DEFAULT_EXPERIMENT"
+    }
+  }, {
+    "@id" : "RDF",
+    "@type" : "openBIS:Space"
+  }, {
+    "@type" : "rdf:Property",
+    "rdfs:label" : "Publication",
+    "rdfs:comment" : "Own publication where this entity is referenced",
+    "@id" : "openBIS:hasPUBLICATION",
+    "schema:rangeIncludes" : {
+      "@id" : "xsd:string"
+    },
+    "schema:domainIncludes" : {
+      "@id" : "DEFAULT_EXPERIMENT"
+    }
+  }, {
+    "@id" : "a0c6b63c-211e-4560-8331-93966c177b7c",
+    "@type" : "owl:Restriction",
+    "owl:onProperty" : {
+      "@id" : "openBIS:hasDEFAULT_EXPERIMENT.EXPERIMENTAL_GOALS"
+    },
+    "owl:minCardinality" : 0,
+    "owl:maxCardinality" : 1
+  }, {
+    "@type" : "rdf:Property",
+    "rdfs:label" : "Default object type",
+    "rdfs:comment" : "Enter the code of the object type for which the collection is used",
+    "@id" : "openBIS:hasDEFAULT_OBJECT_TYPE",
+    "schema:rangeIncludes" : {
+      "@id" : "xsd:string"
+    },
+    "schema:domainIncludes" : {
+      "@id" : "DEFAULT_EXPERIMENT"
+    }
+  }, {
+    "@id" : "74b6d654-4d7f-40db-a88f-83b4d0730f6c",
+    "@type" : "owl:Restriction",
+    "owl:onProperty" : {
+      "@id" : "openBIS:hasNAME"
+    },
+    "owl:minCardinality" : 0,
+    "owl:maxCardinality" : 1
+  }, {
+    "@id" : "DEFAULT_EXPERIMENT",
+    "@type" : "rdfs:Class",
+    "owl:restriction" : [ {
+      "@id" : "00729564-0762-4e88-badf-bf52811e49f3"
+    }, {
+      "@id" : "b355c972-d5b4-43b2-9a71-8061c2cf7a63"
+    }, {
+      "@id" : "63709b16-2ccf-448e-96c3-95ac484c1d5f"
+    }, {
+      "@id" : "0246dc4b-dcce-4c16-84a2-376e906558b2"
+    }, {
+      "@id" : "41ad1dfb-f3a9-45c8-8db5-ec4002f217e3"
+    }, {
+      "@id" : "ce859af5-4e3d-4e6b-b72b-5351ddcb8418"
+    }, {
+      "@id" : "0eb8575d-9188-4e5f-8fb6-f36d51137de7"
+    }, {
+      "@id" : "ad41c0af-ff8a-4420-b71c-49ea23beefb1"
+    }, {
+      "@id" : "8f098bd5-3c86-4a21-8e9e-77ff1022b54c"
+    }, {
+      "@id" : "a0c6b63c-211e-4560-8331-93966c177b7c"
+    }, {
+      "@id" : "562cf435-06bb-4a17-9ab9-35a9dd2b0ea8"
+    }, {
+      "@id" : "1f2b2820-06d9-49cc-abc8-8db9e29dd7fd"
+    }, {
+      "@id" : "d06f02b9-e53b-46ed-b25f-52121c9b33ae"
+    }, {
+      "@id" : "e02f73ad-0169-4553-a93b-08aff2056aac"
+    }, {
+      "@id" : "53da8ad7-411f-48ac-8fe5-20d820720070"
+    } ],
+    "rdfs:subClassOf" : {
+      "@id" : "openBIS:Collection"
+    }
+  } ]
+}

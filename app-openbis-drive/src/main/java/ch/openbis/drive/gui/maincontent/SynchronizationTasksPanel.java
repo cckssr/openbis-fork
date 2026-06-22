@@ -308,9 +308,17 @@ public class SynchronizationTasksPanel extends ResizablePanel {
                     SyncJobLive syncJobLive = jobsLive.get(syncJobCard.getSyncJob().getLocalDirectoryRoot());
                     if (syncJobLive != null) {
                         if (syncJobLive.isUploading()) {
-                            syncJobCard.setUploading(syncJobLive.getTotalUpload(), syncJobLive.getCurrentUpload());
+                            if (syncJobLive.getTotalUpload() == 0) {
+                                syncJobCard.setScanning(false);
+                            } else {
+                                syncJobCard.setUploading(syncJobLive.getTotalUpload(), syncJobLive.getCurrentUpload());
+                            }
                         } else if (syncJobLive.isDownloading()) {
-                            syncJobCard.setDownloading(syncJobLive.getTotalDownload(), syncJobLive.getCurrentDownload());
+                            if (syncJobLive.getTotalDownload() == 0) {
+                                syncJobCard.setScanning(true);
+                            } else {
+                                syncJobCard.setDownloading(syncJobLive.getTotalDownload(), syncJobLive.getCurrentDownload());
+                            }
                         } else {
                             syncJobCard.setNotRunning();
                         }

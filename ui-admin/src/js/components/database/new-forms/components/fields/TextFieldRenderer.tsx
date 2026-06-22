@@ -23,7 +23,14 @@ const TextFieldRendererBase: React.FC<FieldRendererProps & { classes: any }> = (
   mode,
   classes
 }) => {
-  const isEditing = mode === FormMode.EDIT || mode === FormMode.CREATE
+  const isEditing:boolean = mode === FormMode.EDIT || mode === FormMode.CREATE
+  const placeholderByDataType:Record<string, string>  = {
+    [FormFieldDataType.ARRAY_TIMESTAMP]: '["yyyy-MM-dd HH:mm:ss ZZ", ...]',
+    [FormFieldDataType.ARRAY_STRING]: '["Str1", "Str2", ...]',
+    [FormFieldDataType.ARRAY_INTEGER]: '[1, 2, ...]',
+    [FormFieldDataType.ARRAY_REAL]: '[0.1, 0.2, ...]'
+  }
+  const placeholder:string | undefined = placeholderByDataType[field.dataType]
 
   if (field.isMultiValue && !isEditing) {
     const values: any[] = Array.isArray(field.value) ? field.value : [];
@@ -90,6 +97,7 @@ const TextFieldRendererBase: React.FC<FieldRendererProps & { classes: any }> = (
             value={formatInner(val)}
             onChange={(e) => onChange(e.target.value)}
             margin="none"
+            placeholder={placeholder}
             slotProps={{
               htmlInput: { className: classes.input }
             }}
@@ -110,6 +118,7 @@ const TextFieldRendererBase: React.FC<FieldRendererProps & { classes: any }> = (
             disabled={isEditing && field.readOnly}
             dataType={field.dataType}
             value={value}
+            placeholder={placeholder}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                 onFieldChange(field.id, e.target.value)
             }

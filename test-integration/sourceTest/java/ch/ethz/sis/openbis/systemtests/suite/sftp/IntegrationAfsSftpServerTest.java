@@ -13,7 +13,9 @@ import org.testng.annotations.Test;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 import static ch.ethz.sis.openbis.systemtests.suite.sftp.environment.AfsSftpServerIntegrationTestEnvironment.*;
@@ -396,13 +398,13 @@ public class IntegrationAfsSftpServerTest
                                         assertEquals(
                                                 listRemoteDirectory(sftp,"/spaces/" + space + "/projects/" + project + "/experiments/" + experimentDisplayName + "/samples/" + experimentSampleDisplayName + "/datasets/" + datasetDisplayName + "/files"),
                                                 Set.of(".", "..",
-                                                        "file_" + space + "_" + project + "_" + experiment + "_" + experimentSample + "_" + experimentSampleDataset
+                                                        "file_ % = # ~ $ " + space + "_" + project + "_" + experiment + "_" + experimentSample + "_" + experimentSampleDataset
                                                 )
                                         );
                                         assertEquals(
                                                 readTestFile(sftp,
                                                         "/spaces/" + space + "/projects/" + project + "/experiments/" + experimentDisplayName + "/samples/" + experimentSampleDisplayName + "/datasets/" + datasetDisplayName + "/files/" +
-                                                        "file_" + space + "_" + project + "_" + experiment + "_" + experimentSample + "_" + experimentSampleDataset,
+                                                        "file_ % = # ~ $ " + space + "_" + project + "_" + experiment + "_" + experimentSample + "_" + experimentSampleDataset,
                                                         0L, 1024
                                                 ),
                                                 ("data:" + project + "_" + experiment + "_" + experimentSample + "_" + experimentSampleDataset).getBytes(StandardCharsets.UTF_8)
@@ -502,7 +504,7 @@ public class IntegrationAfsSftpServerTest
                             getSampleOrDatasetPermIdByName("S1", "P1_E1_X1_D1"));
                     Set<String> currentEntries = listRemoteDirectory(sftp, datasetFilesRootDirectory);
 
-                    assertTrue(currentEntries.containsAll(List.of(".", "..", "file_S1_P1_E1_X1_D1")));
+                    assertTrue(currentEntries.containsAll(List.of(".", "..", "file_ % = # ~ $ S1_P1_E1_X1_D1")));
                     assertFalse(currentEntries.contains("newfile.txt"));
 
                     uploadTestFile(sftp,
@@ -545,6 +547,22 @@ public class IntegrationAfsSftpServerTest
                                     0L, 1024
                             ),
                             content
+                    );
+
+                    byte[] biggerContent = new byte[40000000];
+                    ThreadLocalRandom.current().nextBytes(biggerContent);
+
+                     uploadTestFile(sftp,
+                            sampleFilesRootDirectory + "/newfile2.txt",
+                            0L, biggerContent
+                    );
+                    assertEquals(
+                            readTestFile(
+                                    sftp,
+                                    sampleFilesRootDirectory + "/newfile2.txt",
+                                    0L, 42000000
+                            ),
+                            biggerContent
                     );
                 }
             }
@@ -634,11 +652,14 @@ public class IntegrationAfsSftpServerTest
                             getSampleOrDatasetPermIdByName("S1", "P1_E1_X1_D2"));
                     Set<String> currentEntries = listRemoteDirectory(sftp, datasetFilesRootDirectory);
 
-                    assertTrue(currentEntries.containsAll(List.of(".", "..", "file_S1_P1_E1_X1_D2")));
+                    assertTrue(currentEntries.containsAll(List.of(".", "..", "file_ % = # ~ $ S1_P1_E1_X1_D2")));
                     assertFalse(currentEntries.contains("newdir"));
 
                     deleteTestFile(sftp,
-                            "/spaces/S1/projects/P1/experiments/E1 (%s)/samples/X1 (%s)/datasets/D2 (%s)/files/file_S1_P1_E1_X1_D2"
+                            String.format("/spaces/S1/projects/P1/experiments/E1 (%s)/samples/X1 (%s)/datasets/D2 (%s)/files/file_ %% = # ~ $ S1_P1_E1_X1_D2",
+                                    getExperimentPermIdByName("S1", "P1", "E1"),
+                                    getSampleOrDatasetPermIdByName("S1", "P1_E1_X1"),
+                                    getSampleOrDatasetPermIdByName("S1", "P1_E1_X1_D2"))
                     );
                 } catch (Exception e) {
                     exception = e;
@@ -713,12 +734,12 @@ public class IntegrationAfsSftpServerTest
                             getSampleOrDatasetPermIdByName("S1", "P1_E1_X1_D2"));
                     Set<String> currentEntries = listRemoteDirectory(sftp, datasetFilesRootDirectory);
 
-                    assertTrue(currentEntries.containsAll(List.of(".", "..", "file_S1_P1_E1_X1_D2")));
+                    assertTrue(currentEntries.containsAll(List.of(".", "..", "file_ % = # ~ $ S1_P1_E1_X1_D2")));
                     assertFalse(currentEntries.contains("newdir"));
 
                     renameTestFile(sftp,
-                            "/spaces/S1/projects/P1/experiments/E1 (%s)/samples/X1 (%s)/datasets/D2 (%s)/files/file_S1_P1_E1_X1_D2",
-                            "/spaces/S1/projects/P1/experiments/E1 (%s)/samples/X1 (%s)/datasets/D2 (%s)/files/renamed_file_S1_P1_E1_X1_D2"
+                            "/spaces/S1/projects/P1/experiments/E1 (%s)/samples/X1 (%s)/datasets/D2 (%s)/files/file_ % = # ~ $ S1_P1_E1_X1_D2",
+                            "/spaces/S1/projects/P1/experiments/E1 (%s)/samples/X1 (%s)/datasets/D2 (%s)/files/renamed_file_ % = # ~ $ S1_P1_E1_X1_D2"
 
                     );
                 } catch (Exception e) {
@@ -792,8 +813,24 @@ public class IntegrationAfsSftpServerTest
         try (SftpClient.CloseableHandle fileHandle = sftp.open(filePath, SftpClient.OpenMode.Read))
         {
             byte[] bytes = new byte[maximum];
-            int readBytes = sftp.read(fileHandle, offset, bytes);
-            return Arrays.copyOfRange(bytes, 0, readBytes);
+
+            int index = 0;
+            while (index < maximum) {
+                int chunkSize = Integer.min(
+                        16500,
+                        (int) Long.min(Integer.MAX_VALUE, maximum - index)
+                );
+                byte[] chunk = new byte[chunkSize];
+                int readBytes = sftp.read(fileHandle, offset + index, chunk);
+
+                if (readBytes > -1) {
+                    System.arraycopy(chunk, 0, bytes, index, readBytes);
+                    index = index + readBytes;
+                } else {
+                    break;
+                }
+            }
+            return Arrays.copyOfRange(bytes, 0, index);
         }
     }
 
@@ -801,7 +838,16 @@ public class IntegrationAfsSftpServerTest
     {
         try (SftpClient.CloseableHandle fileHandle = sftp.open(filePath, SftpClient.OpenMode.Write, SftpClient.OpenMode.Create))
         {
-            sftp.write(fileHandle, offset, content);
+            int index = 0;
+            while (index < offset + content.length) {
+                int chunkSize = Integer.min(
+                        16500,
+                        (int) Long.min(Integer.MAX_VALUE, offset + content.length - index)
+                );
+
+                sftp.write(fileHandle, offset + index, Arrays.copyOfRange(content, index, index + chunkSize));
+                index = index + chunkSize;
+            }
         }
     }
 

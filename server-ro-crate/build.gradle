@@ -16,6 +16,8 @@ tasks.withType(JavaCompile) {
 apply from: '../build/repository.gradle'
 repositories repositoryConfig
 
+apply from: '../build/common-resolutions.gradle'
+
 configurations.all {
     exclude group: 'reflections', module: 'reflections'
     exclude group: "org.jboss", module: "jandex"
@@ -102,7 +104,8 @@ compileQuarkusGeneratedSourcesJava.dependsOn(compileJava)
 
 ["quarkusAppPartsBuild", "quarkusGenerateCode", "quarkusDependenciesBuild"].each { taskName ->
     tasks.named(taskName) {
-        dependsOn(":lib-logging:jar")
+        // Quarkus reads runtime artifacts while building its application model.
+        dependsOn(configurations.runtimeClasspath.buildDependencies)
     }
 }
 

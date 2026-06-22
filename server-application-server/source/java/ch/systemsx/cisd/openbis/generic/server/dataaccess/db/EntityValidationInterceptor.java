@@ -26,6 +26,10 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import ch.systemsx.cisd.openbis.generic.shared.dto.DataStorePE;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Root;
 import org.hibernate.EmptyInterceptor;
 
 import org.hibernate.Interceptor;
@@ -278,23 +282,27 @@ public class EntityValidationInterceptor extends EmptyInterceptor implements
             return java.util.Collections.emptyList();
         }
 
-        Class<?> entityClass = identifiers.get(0).getEntityClass();
-        var ids = identifiers.stream().map(EntityIdentifier::getId).collect(toSet());
+        final Class<IEntityInformationWithPropertiesHolder> entityClass =
+                (Class<IEntityInformationWithPropertiesHolder>) identifiers.get(0).getEntityClass();
+        final Set<Long> ids = identifiers.stream().map(EntityIdentifier::getId).collect(toSet());
 
-        var cb = session.getCriteriaBuilder();
-        var cq = cb.createQuery();
-        var root = cq.from(entityClass);
+        final CriteriaBuilder cb = session.getCriteriaBuilder();
+        final CriteriaQuery<IEntityInformationWithPropertiesHolder> cq = cb.createQuery(
+                IEntityInformationWithPropertiesHolder.class);
+        final Root<IEntityInformationWithPropertiesHolder> root = cq.from(entityClass);
 
         try {
             root.fetch("sampleProperties", jakarta.persistence.criteria.JoinType.LEFT);
         } catch (IllegalArgumentException ignored) {
             // entity doesn’t have that association – mimic legacy behaviour
         }
-        cq.select(root).distinct(true);
+        cq.select(root);
         cq.where(root.get("id").in(ids));
 
-        var result = session.createQuery(cq).getResultList();
-        return (List<IEntityInformationWithPropertiesHolder>)(List<?>) result;
+        // JOIN FETCH produces one row per collection item; deduplicate in Java to avoid
+        // SELECT DISTINCT on json columns which PostgreSQL's json type doesn't support.
+        List<IEntityInformationWithPropertiesHolder> result = session.createQuery(cq).getResultList();
+        return new ArrayList<>(new HashSet<>(result));
     }
 
     private Set<Long> getIdsOfFoundEntitiesToBeValidated(List<IEntityInformationWithPropertiesHolder> foundEntities)

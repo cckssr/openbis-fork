@@ -62,6 +62,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -162,7 +163,8 @@ public final class ExportJob implements IAsyncJob
         {
             LOG.info(String.format("Starting export job: %s", jobId.toString()));
             LOG.info(String.format("Received parameters: %s", exportParams.toString()));
-            Map<String, String> identifiers[] = ExportParams.getIdentifiers(exportParams.getInputBodyFormat(), body);
+            Map<String, String>[] identifiers = ExportParams.getIdentifiers(exportParams.getInputBodyFormat(), body);
+            LOG.info(String.format("Received identifiers: %s", Arrays.toString(identifiers)));
             String[] identifierAnnotations = exportParams.getIdentifierAnnotations();
 
             List<ExportablePermId> exportablePermIds = new ArrayList<>();
@@ -306,13 +308,14 @@ public final class ExportJob implements IAsyncJob
                     pathsForDeletion.add(downloadPath);
 
                     final String downloadedFileName = downloadPath.toFile().getName();
-                    LOG.info(String.format("Downloaded OpenBIS export file: %s", downloadedFileName));
+                    LOG.info(String.format("Downloaded OpenBIS export file: %s", downloadPath));
 
                     OpenBisModel openBisModel =
                             ExcelReader.convert(ExcelReader.Format.ZIP_EXPORT, downloadPath,
                                     ExcelReader.FileMode.DUMMY);
 
-                    Path cratePath = Path.of("result-crate.zip");
+                    final String exportTime = downloadedFileName.split("\\.")[1];
+                    Path cratePath = Path.of("result-crate." + exportTime +".zip");
                     pathsForDeletion.add(cratePath);
                     Path resultZipPath =
                             SessionWorkSpaceManager.getRealPath(exportParams.getApiKey(),
@@ -408,12 +411,19 @@ public final class ExportJob implements IAsyncJob
 
         } catch (Exception e)
         {
+            Log.error("Exception during export", e);
             if(this.email != null && !this.email.isBlank()) {
                 LOG.info("Export failed, preparing to send email");
-                sendMailFailure(e);
+                sendMailFailure(e.getMessage());
             }
-            Log.error("Exception during export", e);
             this.exception = e;
+        } catch (Error e) {
+            Log.error("Error during export", e);
+            if(this.email != null && !this.email.isBlank()) {
+                LOG.info("Export failed, preparing to send email");
+                sendMailFailure(e.getMessage());
+            }
+            throw e;
         }
 
     }
@@ -438,14 +448,14 @@ public final class ExportJob implements IAsyncJob
         return new MailClient(mailClientParameters);
     }
 
-    private void sendMailFailure(Exception exception) {
+    private void sendMailFailure(String exceptionMessage) {
         try {
             MailClient mailClient = createMailClient();
             EMailAddress recipient = new EMailAddress(this.email);
             final String subject = "openBIS RoCrate Export failed!";
-            String content = String.format("Error during export: %s", exception.getMessage());
+            String content = String.format("Error during export: %s", exceptionMessage);
             Log.info("Sending email to: " + recipient + "\nContent:" + content);
-            mailClient.sendEmailMessage(subject, content, null, null, recipient);
+            sendEmailMessage(mailClient, subject, content, recipient);
         } catch (Exception e)
         {
             Log.error("Failed to send failure message", e);
@@ -461,7 +471,36 @@ public final class ExportJob implements IAsyncJob
         String roCratePublicUrl = configuration.getStringProperty(RoCrateServerParameter.httpServerPublicUrl);
         String content = roCratePublicUrl + "/download?jobId=" + encode(this.jobId.toString()) + "&apiKey=" + encode(this.exportParams.getApiKey());
         Log.info("Sending email to: " + recipient + "\nContent:" + content);
-        mailClient.sendEmailMessage(subject, content, null, null, recipient);
+        sendEmailMessage(mailClient, subject, content, recipient);
+    }
+
+    private static void sendEmailMessage(MailClient mailClient, String subject, String content,
+            EMailAddress recipient)
+    {
+        Thread thread = Thread.currentThread();
+        ClassLoader originalContextClassLoader = thread.getContextClassLoader();
+        ClassLoader mailClassLoader = MailClient.class.getClassLoader();
+        // RO-Crate can run under Quarkus class loaders where Jakarta Mail API classes are
+        // resolved from one loader while ServiceLoader finds Angus Mail from another one.
+        // That makes org.eclipse.angus.mail.util.MailStreamProvider fail the
+        // jakarta.mail.util.StreamProvider subtype check. Use the MailClient loader only
+        // for this send operation so Jakarta Mail loads its provider from the same loader.
+        boolean restoreContextClassLoader = mailClassLoader != null
+                && originalContextClassLoader != mailClassLoader;
+        if (restoreContextClassLoader)
+        {
+            thread.setContextClassLoader(mailClassLoader);
+        }
+        try
+        {
+            mailClient.sendEmailMessage(subject, content, null, null, recipient);
+        } finally
+        {
+            if (restoreContextClassLoader)
+            {
+                thread.setContextClassLoader(originalContextClassLoader);
+            }
+        }
     }
 
     private static String encode(String value) {
@@ -505,7 +544,7 @@ public final class ExportJob implements IAsyncJob
                                 openBIS.getSessionToken()));
         request.method(HttpMethod.GET);
         request.send(listener);
-        LOG.info("Got a response!:");
+        LOG.info("Got a response!");
 
         // Write openBIS export to disk
         // TODO: Extract this part with previous

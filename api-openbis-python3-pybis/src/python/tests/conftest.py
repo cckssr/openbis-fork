@@ -18,14 +18,20 @@ import pytest
 
 from pybis import Openbis
 from pybis import AfsClient
+from pybis.ro_crate import RoCrateClient
 
-openbis_url = "https://localhost:8443"
+openbis_url = "http://localhost:8080"
+openbis_afs_url = "http://localhost:8085"
+openbis_ro_crate_url = "http://localhost:8086"
 admin_username = "admin"
 admin_password = "admin"
 
 
 
-print(f'[TEST] Configured OpenBIS url for tests is: {openbis_url}')
+
+print(f'[CONFTEST] Configured OpenBIS url for tests is: {openbis_url}')
+print(f'[CONFTEST] Configured OpenBIS AFS url for tests is: {openbis_afs_url}')
+print(f'[CONFTEST] Configured OpenBIS RO-CRATE url for tests is: {openbis_ro_crate_url}')
 
 
 @pytest.fixture(scope="module")
@@ -76,27 +82,65 @@ def space():
     o.logout()
 
 @pytest.fixture(scope="session")
-def afs(space):
-    token = space.openbis.token
-    o = space.openbis
-    afs_url = None
-    try:
-        print(f'[TEST] Searching for data stores with token: {token}')
-        data_stores = o.get_datastores(with_afs=True)
-        print(f'[TEST] Detected data stores: {data_stores}')
-        data_store = data_stores[data_stores["code"] == "AFS"]
-        print(f'[TEST] Found AFS datastore: {data_store}')
+def afs():
+    o = Openbis(
+        url=openbis_url,
+        verify_certificates=False,
+        allow_http_but_do_not_use_this_in_production_and_only_within_safe_networks=True
+    )
+    token = o.login(admin_username, admin_password)
 
-        # workaround because jenkins test server is not handling DataFrame properly
-        import numpy as np
-        data_store_list = np.array(data_store).tolist()
-        print(f'[TEST] AFS data after conversion: {data_store_list}')
+    # create a space
+    timestamp = time.strftime("%a_%y%m%d_%H%M%S").upper()
+    space_name = "test_afs_space_" + timestamp
+    space = o.new_space(code=space_name)
+    space.save()
 
-        afs_url = data_store_list[0][1] + "/api" if len(data_store_list) > 0 else None
-    except BaseException as e:
-        print(f'[TEST] Failed to connect to OpenBIS AFS {e}')
-
-    print(f'[TEST] Configured OpenBIS AFS url is: {afs_url}')
+    afs_url = openbis_afs_url + "/afs-server/api"
     afs_client = AfsClient(afs_url, token, False)
 
-    yield (space, afs_client)
+    yield space, afs_client
+
+    # teardown
+    o.logout()
+
+@pytest.fixture(scope="session")
+def ro_crate():
+    o = Openbis(
+        url=openbis_url,
+        verify_certificates=False,
+        allow_http_but_do_not_use_this_in_production_and_only_within_safe_networks=True
+    )
+    token = o.login(admin_username, admin_password)
+
+    # create a space
+    timestamp = time.strftime("%a_%y%m%d_%H%M%S").upper()
+    space_name = "test_ro_crate_space_" + timestamp
+    space = o.new_space(code=space_name)
+    space.save()
+
+    ro_crate_url = openbis_ro_crate_url + "/openbis"
+    ro_crate_client = RoCrateClient(ro_crate_url, token, False)
+
+    yield space, ro_crate_client
+
+    # teardown
+    o.logout()
+
+
+@pytest.fixture()
+def ro_crate_another():
+    o = Openbis(
+        url=openbis_url,
+        verify_certificates=False,
+        allow_http_but_do_not_use_this_in_production_and_only_within_safe_networks=True
+    )
+    token = o.login(admin_username, admin_password)
+
+    ro_crate_url = openbis_ro_crate_url + "/openbis"
+    ro_crate_client = RoCrateClient(ro_crate_url, token, False)
+
+    yield token, ro_crate_client
+
+    # teardown
+    o.logout()

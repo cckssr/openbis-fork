@@ -15,9 +15,23 @@
  */
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.sql.Types;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes;
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
@@ -52,35 +66,67 @@ public abstract class AbstractSQLExecutor implements ISQLExecutor
     @Override
     public List<Map<String, Object>> execute(final String sqlQuery, final List<Object> args)
     {
-        OPERATION_LOG.debug("QUERY: " + sqlQuery);
+        if (OPERATION_LOG.isDebugEnabled())
+        {
+            OPERATION_LOG.debug("QUERY: " + sqlQuery);
+        }
+
         if (OPERATION_LOG.isTraceEnabled())
         {
             OPERATION_LOG.trace("ARGS: " + Arrays.deepToString(args.toArray()));
         }
 
-        final List<Map<String, Object>> results = new ArrayList<>();
+        final List<Map<String, Object>> results = new ArrayList<>(1000);
+
         try (final PreparedStatement preparedStatement = getConnection().prepareStatement(sqlQuery))
         {
             setArgsForPreparedStatement(args, preparedStatement);
+
+            preparedStatement.setFetchSize(10_000);
 
             try (final ResultSet resultSet = preparedStatement.executeQuery())
             {
                 final ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
                 final int columnCount = resultSetMetaData.getColumnCount();
-                final List<String> columnNames = new ArrayList<>(columnCount);
-                for (int index = 0; index < columnCount; index++)
-                {
-                    columnNames.add(resultSetMetaData.getColumnName(index + 1));
-                }
 
-                while (resultSet.next())
+                // optimization
+                if (columnCount == 1)
                 {
-                    final Map<String, Object> row = new LinkedHashMap<>();
-                    for (final String columnName : columnNames)
+                    String columnName = resultSetMetaData.getColumnName(1);
+                    boolean isLongCompatibleColumn =
+                            Set.of(Types.BIGINT, Types.INTEGER, Types.SMALLINT, Types.TINYINT).contains(resultSetMetaData.getColumnType(1));
+
+                    // optimization
+                    if (isLongCompatibleColumn)
                     {
-                        row.put(columnName, resultSet.getObject(columnName));
+                        while (resultSet.next())
+                        {
+                            results.add(new SingleEntryMap<>(columnName, resultSet.getLong(1)));
+                        }
+                    } else
+                    {
+                        while (resultSet.next())
+                        {
+                            results.add(new SingleEntryMap<>(columnName, resultSet.getObject(1)));
+                        }
                     }
-                    results.add(row);
+                } else
+                {
+                    final List<String> columnNames = new ArrayList<>(columnCount);
+                    for (int index = 0; index < columnCount; index++)
+                    {
+                        columnNames.add(resultSetMetaData.getColumnName(index + 1));
+                    }
+
+                    while (resultSet.next())
+                    {
+                        final Map<String, Object> row = new HashMap<>(columnCount * 2, 0.5f);
+                        for (int index = 0; index < columnCount; index++)
+                        {
+                            row.put(columnNames.get(index), resultSet.getObject(index + 1));
+                        }
+                        results.add(row);
+                    }
                 }
             }
         } catch (SQLException ex)
@@ -88,8 +134,16 @@ public abstract class AbstractSQLExecutor implements ISQLExecutor
             throw new RuntimeException(ex);
         }
 
-        OPERATION_LOG.debug("RESULTS COUNT: " + results.size());
-        OPERATION_LOG.trace("RESULTS: " + results);
+        if (OPERATION_LOG.isDebugEnabled())
+        {
+            OPERATION_LOG.debug("RESULTS COUNT: " + results.size());
+        }
+
+        if (OPERATION_LOG.isTraceEnabled())
+        {
+            OPERATION_LOG.trace("RESULTS: " + results);
+        }
+
         return results;
     }
 
@@ -123,6 +177,55 @@ public abstract class AbstractSQLExecutor implements ISQLExecutor
             {
                 preparedStatement.setObject(index + 1, object);
             }
+        }
+    }
+
+    private static final class SingleEntryMap<K, V> extends AbstractMap<K, V>
+    {
+        private final K key;
+
+        private final V value;
+
+        private final Entry<K, V> entry;
+
+        private final Set<Entry<K, V>> entrySet;
+
+        public SingleEntryMap(K key, V value)
+        {
+            this.key = key;
+            this.value = value;
+            this.entry = new SimpleImmutableEntry<>(key, value);
+            this.entrySet = Collections.singleton(entry);
+        }
+
+        @Override
+        public V get(Object key)
+        {
+            return this.key.equals(key) ? value : null;
+        }
+
+        @Override
+        public boolean containsKey(Object key)
+        {
+            return this.key.equals(key);
+        }
+
+        @Override
+        public int size()
+        {
+            return 1;
+        }
+
+        @Override
+        public boolean isEmpty()
+        {
+            return false;
+        }
+
+        @Override
+        public Set<Entry<K, V>> entrySet()
+        {
+            return entrySet;
         }
     }
 

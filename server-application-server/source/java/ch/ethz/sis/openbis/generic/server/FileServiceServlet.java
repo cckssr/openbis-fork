@@ -23,7 +23,7 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.UUID;
 
-import javax.activation.MimetypesFileTypeMap;
+import jakarta.activation.MimetypesFileTypeMap;
 
 import ch.systemsx.cisd.openbis.common.spring.MultipartFileAdapter;
 import jakarta.annotation.Resource;

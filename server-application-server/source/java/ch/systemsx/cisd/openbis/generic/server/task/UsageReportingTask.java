@@ -31,8 +31,8 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
-import javax.activation.DataHandler;
-import javax.mail.util.ByteArrayDataSource;
+import jakarta.activation.DataHandler;
+import jakarta.mail.util.ByteArrayDataSource;
 
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import org.apache.commons.lang3.StringUtils;

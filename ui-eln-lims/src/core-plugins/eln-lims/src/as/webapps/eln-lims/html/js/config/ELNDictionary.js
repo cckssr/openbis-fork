@@ -65,7 +65,7 @@ ELNDictionary.settingsView = {
 			info : "Use this section to force the use of monospace font for selected MULTILINE_VARCHAR properties.",
 		},
 		inventorySpaces : {
-			title : "Inventory Spaces",
+			title : "Inventory",
 			info : "Spaces listed here are shown under the Inventory.",
 		},
 		dataSetTypeForFileName : {
@@ -73,13 +73,25 @@ ELNDictionary.settingsView = {
 			info : "When listing a combination of file extension / Dataset Type on this section the Dataset uploader will select a Dataset Type by default. This decision can be overridden by users afterwards but provides a nice default to avoid mistakes.",
 		},
 		sampleTypeDefinitionsExtension : {
-			title : ELNDictionary.Sample +" Type definitions Extension",
-			info : "This section is used to extend the common openBIS definitions to: 1. Enable the storage. 2. Specify if the " + ELNDictionary.sample + " type is a protocol. 3. Add intended parent/children hints. 4. Support annotations for these links using properties. 5. Show in dropdowns.",
+			title : ELNDictionary.Sample +" Types",
+			info : "This section is used to extend the common openBIS definitions to object types",
+		},
+		spaces : {
+			title : "Spaces",
+			info : "Common openBIS ELN definitions to spaces.",
+		},
+		projects : {
+			title : "Projects",
+			info : "Common openBIS ELN definitions to projects.",
 		},
 		miscellaneous : {
 			title : "Miscellaneous",
 			info : "Miscellaneous settings."
 		},
+		rootNode: {
+			title : "Root Node Options",
+			info : "Settings for selection of root node."
+		}
 	}
 }
 

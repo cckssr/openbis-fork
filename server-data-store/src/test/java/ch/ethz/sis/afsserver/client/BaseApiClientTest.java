@@ -117,6 +117,10 @@ public abstract class BaseApiClientTest
 
     protected static final String FILE_C = FILE_C_NAME;
 
+    protected static final String FILE_WITH_STRANGE_CHARACTERS_NAME = "C % = # ~ $ .txt";
+
+    protected static final String FILE_WITH_STRANGE_CHARACTERS = FILE_WITH_STRANGE_CHARACTERS_NAME;
+
     protected static final String FILE_BINARY_FOLDER_NAME = "test-folder";
 
     protected static final String FILE_BINARY_FOLDER = FILE_BINARY_FOLDER_NAME;
@@ -177,6 +181,7 @@ public abstract class BaseApiClientTest
 
         createTestDataFile(owner, FILE_A, DATA);
         createTestDataFile(owner, FILE_BINARY, binaryData);
+        createTestDataFile(owner, FILE_WITH_STRANGE_CHARACTERS_NAME, DATA);
 
         String testResourceDirectory = TEST_RESOURCE_DIRECTORY;
         Path resourceDirectoryPath = Path.of(getClass().getClassLoader().getResource(testResourceDirectory).getPath());
@@ -379,6 +384,7 @@ public abstract class BaseApiClientTest
         File[] beforeSnapshot = listFilesFromAFS(afsClient, owner, "/");
         assertEquals("""
                 /A.txt, FILE, 4
+                /C % = # ~ $ .txt, FILE, 4
                 /test-folder, FOLDER, null
                 /test-folder/test-subfolder, FOLDER, null
                 /test-folder/test-subfolder/test.png, FILE, 19951
@@ -393,6 +399,7 @@ public abstract class BaseApiClientTest
                 /.afs.snapshots/A.txt, FOLDER, null
                 /.afs.snapshots/A.txt/<SNAPSHOT>, FILE, 4
                 /A.txt, FILE, 4
+                /C % = # ~ $ .txt, FILE, 4
                 /test-folder, FOLDER, null
                 /test-folder/test-subfolder, FOLDER, null
                 /test-folder/test-subfolder/test.png, FILE, 19951
@@ -406,6 +413,7 @@ public abstract class BaseApiClientTest
                 /.afs.snapshots/A.txt, FOLDER, null
                 /.afs.snapshots/A.txt/<SNAPSHOT>, FILE, 4
                 /A.txt, FILE, 5
+                /C % = # ~ $ .txt, FILE, 4
                 /test-folder, FOLDER, null
                 /test-folder/test-subfolder, FOLDER, null
                 /test-folder/test-subfolder/test.png, FILE, 19951
@@ -421,6 +429,7 @@ public abstract class BaseApiClientTest
                 /.afs.snapshots/A.txt/<SNAPSHOT>, FILE, 4
                 /.afs.snapshots/A.txt/<SNAPSHOT>, FILE, 5
                 /A.txt, FILE, 5
+                /C % = # ~ $ .txt, FILE, 4
                 /test-folder, FOLDER, null
                 /test-folder/test-subfolder, FOLDER, null
                 /test-folder/test-subfolder/test.png, FILE, 19951
@@ -535,6 +544,7 @@ public abstract class BaseApiClientTest
                 /.afs.snapshots/A.txt/<SNAPSHOT>, FILE, 4
                 /.afs.snapshots/A.txt/<SNAPSHOT>, FILE, 5
                 /A.txt, FILE, 5
+                /C % = # ~ $ .txt, FILE, 4
                 /test-folder, FOLDER, null
                 /test-folder/test-subfolder, FOLDER, null
                 /test-folder/test-subfolder/.afs.snapshots, FOLDER, null
@@ -552,6 +562,7 @@ public abstract class BaseApiClientTest
                 /.afs.snapshots/A.txt/<SNAPSHOT>, FILE, 5
                 /.afs/A.txt-hash.md5, FILE, 32
                 /A.txt, FILE, 5
+                /C % = # ~ $ .txt, FILE, 4
                 /test-folder, FOLDER, null
                 /test-folder/test-subfolder, FOLDER, null
                 /test-folder/test-subfolder/.afs, FOLDER, null
@@ -574,6 +585,7 @@ public abstract class BaseApiClientTest
                 /.afs.trash/.afs.snapshots/A.txt/<SNAPSHOT>, FILE, 4
                 /.afs.trash/.afs.snapshots/A.txt/<SNAPSHOT>, FILE, 5
                 /.afs.trash/A.txt, FILE, 5
+                /C % = # ~ $ .txt, FILE, 4
                 /test-folder, FOLDER, null
                 /test-folder/test-subfolder, FOLDER, null
                 /test-folder/test-subfolder/.afs.snapshots, FOLDER, null
@@ -593,6 +605,7 @@ public abstract class BaseApiClientTest
                 /.afs.trash/.afs.snapshots/A.txt/<SNAPSHOT>, FILE, 5
                 /.afs.trash/.afs/A.txt-hash.md5, FILE, 32
                 /.afs.trash/A.txt, FILE, 5
+                /C % = # ~ $ .txt, FILE, 4
                 /test-folder, FOLDER, null
                 /test-folder/test-subfolder, FOLDER, null
                 /test-folder/test-subfolder/.afs, FOLDER, null
@@ -624,6 +637,7 @@ public abstract class BaseApiClientTest
                         /.afs.trash/.afs.snapshots/A.txt#%s/<SNAPSHOT>, FILE, 5
                         /.afs.trash/A.txt, FILE, 6
                         /.afs.trash/A.txt#%s, FILE, 5
+                        /C %% = # ~ $ .txt, FILE, 4
                         /test-folder, FOLDER, null
                         /test-folder/test-subfolder, FOLDER, null
                         /test-folder/test-subfolder/.afs.snapshots, FOLDER, null
@@ -646,6 +660,7 @@ public abstract class BaseApiClientTest
                         /.afs.trash/.afs/A.txt#%s-hash.md5, FILE, 32
                         /.afs.trash/A.txt, FILE, 6
                         /.afs.trash/A.txt#%s, FILE, 5
+                        /C %% = # ~ $ .txt, FILE, 4
                         /test-folder, FOLDER, null
                         /test-folder/test-subfolder, FOLDER, null
                         /test-folder/test-subfolder/.afs, FOLDER, null
@@ -667,6 +682,7 @@ public abstract class BaseApiClientTest
         assertEquals("""
                         /.afs.trash, FOLDER, null
                         /.afs.trash/A.txt, FILE, 6
+                        /C % = # ~ $ .txt, FILE, 4
                         /test-folder, FOLDER, null
                         /test-folder/test-subfolder, FOLDER, null
                         /test-folder/test-subfolder/.afs.snapshots, FOLDER, null
@@ -682,6 +698,7 @@ public abstract class BaseApiClientTest
                         /.afs.trash, FOLDER, null
                         /.afs.trash/.afs, FOLDER, null
                         /.afs.trash/A.txt, FILE, 6
+                        /C % = # ~ $ .txt, FILE, 4
                         /test-folder, FOLDER, null
                         /test-folder/test-subfolder, FOLDER, null
                         /test-folder/test-subfolder/.afs, FOLDER, null
@@ -699,6 +716,7 @@ public abstract class BaseApiClientTest
 
         File[] afterWholeTrashDeletionAFS = listFilesFromAFS(afsClient, owner, "/");
         assertEquals("""
+                /C % = # ~ $ .txt, FILE, 4
                 /test-folder, FOLDER, null
                 /test-folder/test-subfolder, FOLDER, null
                 /test-folder/test-subfolder/.afs.snapshots, FOLDER, null
@@ -710,6 +728,7 @@ public abstract class BaseApiClientTest
         ch.ethz.sis.afs.api.dto.File[] afterWholeTrashDeletionFS = listFilesFromFS(testDataRoot);
         assertEquals("""
                 /.afs, FOLDER, null
+                /C % = # ~ $ .txt, FILE, 4
                 /test-folder, FOLDER, null
                 /test-folder/test-subfolder, FOLDER, null
                 /test-folder/test-subfolder/.afs, FOLDER, null
@@ -787,6 +806,7 @@ public abstract class BaseApiClientTest
         File[] beforeFirstDeletionAFS = listFilesFromAFS(afsClient, owner, "/");
         assertEquals("""
                 /A.txt, FILE, 4
+                /C % = # ~ $ .txt, FILE, 4
                 /test-folder, FOLDER, null
                 /test-folder/test-subfolder, FOLDER, null
                 /test-folder/test-subfolder/.afs.snapshots, FOLDER, null
@@ -809,6 +829,7 @@ public abstract class BaseApiClientTest
                 /.afs.trash/test-folder/test-subfolder/.afs.snapshots/test.png/<SNAPSHOT>, FILE, 19951
                 /.afs.trash/test-folder/test-subfolder/test.png, FILE, 19951
                 /A.txt, FILE, 4
+                /C % = # ~ $ .txt, FILE, 4
                 /test-folder, FOLDER, null
                 """, replaceSnapshots(printFiles(afterFirstDeletionAFS)));
 
@@ -828,6 +849,7 @@ public abstract class BaseApiClientTest
                 /.afs.trash/test-folder/test-subfolder/.afs.snapshots/test.png/<SNAPSHOT>, FILE, 19951
                 /.afs.trash/test-folder/test-subfolder/test.png, FILE, 19951
                 /A.txt, FILE, 4
+                /C % = # ~ $ .txt, FILE, 4
                 /test-folder, FOLDER, null
                 /test-folder/test-subfolder, FOLDER, null
                 /test-folder/test-subfolder/.afs.snapshots, FOLDER, null
@@ -858,6 +880,7 @@ public abstract class BaseApiClientTest
                         /.afs.trash/test-folder/test-subfolder/test.png, FILE, 5
                         /.afs.trash/test-folder/test-subfolder/test.png#%s, FILE, 19951
                         /A.txt, FILE, 4
+                        /C %% = # ~ $ .txt, FILE, 4
                         /test-folder, FOLDER, null
                         """.formatted(firstDeletedFileALastModifiedTimeFormatted, firstDeletedFileALastModifiedTimeFormatted,
                         firstDeletedFileALastModifiedTimeFormatted),
@@ -872,6 +895,7 @@ public abstract class BaseApiClientTest
                 /.afs.trash, FOLDER, null
                 /.afs.trash/test-folder, FOLDER, null
                 /A.txt, FILE, 4
+                /C % = # ~ $ .txt, FILE, 4
                 /test-folder, FOLDER, null
                 """, printFiles(afterPermanentDeletionAFS));
 
@@ -882,6 +906,7 @@ public abstract class BaseApiClientTest
         File[] afterWholeTrashDeletionAFS = listFilesFromAFS(afsClient, owner, "/");
         assertEquals("""
                 /A.txt, FILE, 4
+                /C % = # ~ $ .txt, FILE, 4
                 /test-folder, FOLDER, null
                 """, printFiles(afterWholeTrashDeletionAFS));
     }
@@ -941,6 +966,57 @@ public abstract class BaseApiClientTest
                 /.afs.trash/A.txt#%s, FOLDER, null
                 /.afs.trash/A.txt#%s/A.txt, FILE, 4
                 """.formatted(deletedFileALastModifiedTimeFormatted, deletedFileALastModifiedTimeFormatted), printFiles(afterFileDeletionAFS));
+    }
+
+    @Test
+    public void delete_rootFolder() throws Exception
+    {
+        login();
+
+        File[] beforeDeletionAFS = listFilesFromAFS(afsClient, owner, "/");
+        assertEquals("""
+                /A.txt, FILE, 4
+                /C % = # ~ $ .txt, FILE, 4
+                /test-folder, FOLDER, null
+                /test-folder/test-subfolder, FOLDER, null
+                /test-folder/test-subfolder/test.png, FILE, 19951
+                """, printFiles(beforeDeletionAFS));
+
+        afsClient.delete(owner, "", false);
+
+        try
+        {
+            listFilesFromAFS(afsClient, owner, "/");
+            fail();
+        } catch (Exception e)
+        {
+            assertTrue(e.getMessage(), e.getMessage().contains("NoSuchFileException"));
+        }
+    }
+
+    @Test
+    public void delete_rootFolderToTrash() throws Exception
+    {
+        login();
+
+        File[] beforeDeletionAFS = listFilesFromAFS(afsClient, owner, "/");
+        assertEquals("""
+                /A.txt, FILE, 4
+                /C % = # ~ $ .txt, FILE, 4
+                /test-folder, FOLDER, null
+                /test-folder/test-subfolder, FOLDER, null
+                /test-folder/test-subfolder/test.png, FILE, 19951
+                """, printFiles(beforeDeletionAFS));
+
+        try
+        {
+            afsClient.delete(owner, "", true);
+            fail();
+        } catch (Exception e)
+        {
+            assertThat(e.getMessage(),
+                    containsString("Parameter of operation Delete is invalid. Deleted source cannot be an ancestor of the trash root."));
+        }
     }
 
     @Test
@@ -1040,13 +1116,14 @@ public abstract class BaseApiClientTest
         login();
 
         File[] files = afsClient.list(owner, "", Boolean.TRUE);
-        assertEquals(4, files.length);
+        assertEquals(5, files.length);
 
         Arrays.sort(files, Comparator.comparing(File::getPath));
         assertFileEquals(files[0], owner, "/" + FILE_A, FILE_A_NAME, false, (long) DATA.length);
-        assertFileEquals(files[1], owner, "/" + FILE_BINARY_FOLDER, FILE_BINARY_FOLDER_NAME, true, null);
-        assertFileEquals(files[2], owner, "/" + FILE_BINARY_SUBFOLDER, FILE_BINARY_SUBFOLDER_NAME, true, null);
-        assertFileEquals(files[3], owner, "/" + FILE_BINARY, FILE_BINARY_NAME, false, (long) binaryData.length);
+        assertFileEquals(files[1], owner, "/" + FILE_WITH_STRANGE_CHARACTERS, FILE_WITH_STRANGE_CHARACTERS_NAME, false, (long) DATA.length);
+        assertFileEquals(files[2], owner, "/" + FILE_BINARY_FOLDER, FILE_BINARY_FOLDER_NAME, true, null);
+        assertFileEquals(files[3], owner, "/" + FILE_BINARY_SUBFOLDER, FILE_BINARY_SUBFOLDER_NAME, true, null);
+        assertFileEquals(files[4], owner, "/" + FILE_BINARY, FILE_BINARY_NAME, false, (long) binaryData.length);
     }
 
     @Test
@@ -1055,11 +1132,12 @@ public abstract class BaseApiClientTest
         login();
 
         File[] files = afsClient.list(owner, "", Boolean.FALSE);
-        assertEquals(2, files.length);
+        assertEquals(3, files.length);
 
         Arrays.sort(files, Comparator.comparing(File::getPath));
         assertFileEquals(files[0], owner, "/" + FILE_A, FILE_A_NAME, false, (long) DATA.length);
-        assertFileEquals(files[1], owner, "/" + FILE_BINARY_FOLDER, FILE_BINARY_FOLDER_NAME, true, null);
+        assertFileEquals(files[1], owner, "/" + FILE_WITH_STRANGE_CHARACTERS, FILE_WITH_STRANGE_CHARACTERS_NAME, false, (long) DATA.length);
+        assertFileEquals(files[2], owner, "/" + FILE_BINARY_FOLDER, FILE_BINARY_FOLDER_NAME, true, null);
     }
 
     @Test
@@ -1190,6 +1268,38 @@ public abstract class BaseApiClientTest
     public void read_fileAlreadyCopiedIsNotAllowed() throws Exception
     {
         testOperationOnAFileAlreadyCopiedIsNotAllowed(OperationName.Read, (owner, source) -> afsClient.read(owner, source, 0L, 1));
+    }
+
+    @Test
+    public void read_moreBytesThanAllowed() throws Exception
+    {
+        login();
+
+        Configuration configuration = getServerConfiguration();
+        final int maxReadSizeInBytes = configuration.getIntegerProperty(AtomicFileSystemServerParameter.maxReadSizeInBytes);
+
+        final String expectedError =
+                "Session " + afsClient.getSessionToken() + " tried to read " + (maxReadSizeInBytes + 1) + " bytes when the maximum is "
+                        + maxReadSizeInBytes;
+        try
+        {
+            afsClient.read(owner, FILE_A, 0L, maxReadSizeInBytes + 1);
+            fail();
+        } catch (Exception e)
+        {
+            assertTrue(e.getMessage(), e.getMessage().contains(expectedError));
+        }
+
+        try
+        {
+            Chunk chunk1 = Chunk.builder().owner(owner).source(FILE_A).limit(maxReadSizeInBytes).build();
+            Chunk chunk2 = Chunk.builder().owner(owner).source(FILE_A).limit(1).build();
+            afsClient.read(new Chunk[] { chunk1, chunk2 });
+            fail();
+        } catch (Exception e)
+        {
+            assertTrue(e.getMessage(), e.getMessage().contains(expectedError));
+        }
     }
 
     @Test
@@ -1354,6 +1464,38 @@ public abstract class BaseApiClientTest
     }
 
     @Test
+    public void write_moreBytesThanAllowed() throws Exception
+    {
+        login();
+
+        Configuration configuration = getServerConfiguration();
+        final int maxReadSizeInBytes = configuration.getIntegerProperty(AtomicFileSystemServerParameter.maxReadSizeInBytes);
+
+        final String expectedError =
+                "Session " + afsClient.getSessionToken() + " tried to read " + (maxReadSizeInBytes + 1) + " bytes when the maximum is "
+                        + maxReadSizeInBytes;
+        try
+        {
+            afsClient.write(owner, FILE_A, 0L, new byte[maxReadSizeInBytes + 1]);
+            fail();
+        } catch (Exception e)
+        {
+            assertTrue(e.getMessage(), e.getMessage().contains(expectedError));
+        }
+
+        try
+        {
+            Chunk chunk1 = Chunk.builder().owner(owner).source(FILE_A).data(new byte[maxReadSizeInBytes]).build();
+            Chunk chunk2 = Chunk.builder().owner(owner).source(FILE_A).data(new byte[1]).build();
+            afsClient.write(new Chunk[] { chunk1, chunk2 });
+            fail();
+        } catch (Exception e)
+        {
+            assertTrue(e.getMessage(), e.getMessage().contains(expectedError));
+        }
+    }
+
+    @Test
     public void delete_fileIsGone() throws Exception
     {
         login();
@@ -1363,7 +1505,7 @@ public abstract class BaseApiClientTest
 
         List<ch.ethz.sis.afs.api.dto.File> list =
                 IOUtils.list(testDataRoot, true).stream().filter(file -> !IOUtils.isAfsHiddenFile(file.getPath())).toList();
-        assertEquals(3, list.size());
+        assertEquals(4, list.size());
     }
 
     @Test
@@ -1397,6 +1539,7 @@ public abstract class BaseApiClientTest
                 /.afs.snapshots/B.txt/<SNAPSHOT>, FILE, 5
                 /A.txt, FILE, 4
                 /B.txt, FILE, 5
+                /C % = # ~ $ .txt, FILE, 4
                 /test-folder, FOLDER, null
                 /test-folder/test-subfolder, FOLDER, null
                 /test-folder/test-subfolder/test.png, FILE, 19951
@@ -1417,6 +1560,7 @@ public abstract class BaseApiClientTest
                 /.afs.snapshots/B.txt/<SNAPSHOT>, FILE, 5
                 /A.txt, FILE, 4
                 /B.txt, FILE, 4
+                /C % = # ~ $ .txt, FILE, 4
                 /C.txt, FILE, 4
                 /test-folder, FOLDER, null
                 /test-folder/test-subfolder, FOLDER, null
@@ -1530,6 +1674,44 @@ public abstract class BaseApiClientTest
     public void copy_toSnapshotsDirectoryIsNotAllowed() throws Exception
     {
         testOperationOnAFileInSnapshotsIsNotAllowed(OperationName.Copy, (owner, source) -> afsClient.copy(owner, FILE_A, owner, source));
+    }
+
+    @Test
+    public void copy_rootFolder() throws Exception
+    {
+        login();
+
+        UUID newOwner = UUID.randomUUID();
+
+        File[] filesBefore = listFilesFromAFS(afsClient, owner, "/");
+        assertEquals("""
+                /A.txt, FILE, 4
+                /C % = # ~ $ .txt, FILE, 4
+                /test-folder, FOLDER, null
+                /test-folder/test-subfolder, FOLDER, null
+                /test-folder/test-subfolder/test.png, FILE, 19951
+                """, printFiles(filesBefore));
+
+        Boolean result = afsClient.copy(owner, "", newOwner.toString(), "");
+        assertTrue(result);
+
+        File[] filesAfterOwner = listFilesFromAFS(afsClient, owner, "/");
+        assertEquals("""
+                /A.txt, FILE, 4
+                /C % = # ~ $ .txt, FILE, 4
+                /test-folder, FOLDER, null
+                /test-folder/test-subfolder, FOLDER, null
+                /test-folder/test-subfolder/test.png, FILE, 19951
+                """, printFiles(filesAfterOwner));
+
+        File[] filesAfterNewOwner = listFilesFromAFS(afsClient, newOwner.toString(), "/");
+        assertEquals("""
+                /A.txt, FILE, 4
+                /C % = # ~ $ .txt, FILE, 4
+                /test-folder, FOLDER, null
+                /test-folder/test-subfolder, FOLDER, null
+                /test-folder/test-subfolder/test.png, FILE, 19951
+                """, printFiles(filesAfterNewOwner));
     }
 
     @Test
@@ -1650,6 +1832,7 @@ public abstract class BaseApiClientTest
                 /.afs.snapshots/A.txt, FOLDER, null
                 /.afs.snapshots/A.txt/<SNAPSHOT>, FILE, 4
                 /A.txt, FILE, 4
+                /C % = # ~ $ .txt, FILE, 4
                 /test-folder, FOLDER, null
                 /test-folder/test-subfolder, FOLDER, null
                 /test-folder/test-subfolder/test.png, FILE, 19951
@@ -1664,6 +1847,7 @@ public abstract class BaseApiClientTest
                 /.afs.snapshots/B.txt, FOLDER, null
                 /.afs.snapshots/B.txt/<SNAPSHOT>, FILE, 4
                 /B.txt, FILE, 4
+                /C % = # ~ $ .txt, FILE, 4
                 /test-folder, FOLDER, null
                 /test-folder/test-subfolder, FOLDER, null
                 /test-folder/test-subfolder/test.png, FILE, 19951
@@ -1681,6 +1865,7 @@ public abstract class BaseApiClientTest
         File[] filesBefore = listFilesFromAFS(afsClient, owner, "/");
         assertEquals("""
                 /A.txt, FILE, 4
+                /C % = # ~ $ .txt, FILE, 4
                 /test-folder, FOLDER, null
                 /test-folder/test-subfolder, FOLDER, null
                 /test-folder/test-subfolder/test.png, FILE, 19951
@@ -1692,10 +1877,49 @@ public abstract class BaseApiClientTest
         File[] filesAfter = listFilesFromAFS(afsClient, owner, "/");
         assertEquals("""
                 /A.txt, FILE, 4
+                /C % = # ~ $ .txt, FILE, 4
                 /test-folder, FOLDER, null
                 /test-subfolder, FOLDER, null
                 /test-subfolder/test.png, FILE, 19951
                 """, printFiles(filesAfter));
+    }
+
+    @Test
+    public void move_rootFolder() throws Exception
+    {
+        login();
+
+        UUID newOwner = UUID.randomUUID();
+
+        File[] filesBefore = listFilesFromAFS(afsClient, owner, "/");
+        assertEquals("""
+                /A.txt, FILE, 4
+                /C % = # ~ $ .txt, FILE, 4
+                /test-folder, FOLDER, null
+                /test-folder/test-subfolder, FOLDER, null
+                /test-folder/test-subfolder/test.png, FILE, 19951
+                """, printFiles(filesBefore));
+
+        Boolean result = afsClient.move(owner, "", newOwner.toString(), "");
+        assertTrue(result);
+
+        try
+        {
+            listFilesFromAFS(afsClient, owner, "/");
+            fail();
+        } catch (Exception e)
+        {
+            assertTrue(e.getMessage(), e.getMessage().contains("NoSuchFileException"));
+        }
+
+        File[] filesAfterNewOwner = listFilesFromAFS(afsClient, newOwner.toString(), "/");
+        assertEquals("""
+                /A.txt, FILE, 4
+                /C % = # ~ $ .txt, FILE, 4
+                /test-folder, FOLDER, null
+                /test-folder/test-subfolder, FOLDER, null
+                /test-folder/test-subfolder/test.png, FILE, 19951
+                """, printFiles(filesAfterNewOwner));
     }
 
     @Test

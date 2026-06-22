@@ -17,7 +17,7 @@ const MetadataSection = ({ activePreview, activeImage, onEditComment }) => {
 	const { handleTagImage, state} = useImagingDataContext();
 	const { imagingTags } = state;
 
-	const renderParameters = () => {
+	const renderImageParameters = () => {
 		if (!currImageMetadata || isObjectEmpty(currImageMetadata)) {
 			return null;
 		}
@@ -33,6 +33,28 @@ const MetadataSection = ({ activePreview, activeImage, onEditComment }) => {
 						<strong>{key}:</strong> {value}
 					</Typography>
 				))}
+			</Box>
+		);
+	};
+
+	const renderPreviewParameters = () => {
+		if (!currPreviewMetadata || isObjectEmpty(currPreviewMetadata)) {
+			return null;
+		}
+
+		return (
+			<Box sx={{ py: 1 }}>
+				{
+				Object.entries(currPreviewMetadata).map(([key, value]) => (
+					<Typography key={key}
+					            variant='body2'
+					            component='div'
+					            sx={{color: 'textSecondary'}}
+					>
+						<strong>{key}:</strong> {value}
+					</Typography>
+				))
+				}
 			</Box>
 		);
 	};
@@ -71,7 +93,8 @@ const MetadataSection = ({ activePreview, activeImage, onEditComment }) => {
 	return (
 		<CollapsableSection title='Parameters' isCollapsed={false}>
 			<div style={{ marginLeft: '32px' }}>
-				{renderParameters()}
+				{renderImageParameters()}
+				{renderPreviewParameters()}
 				{renderTags()}
 				{renderComments()}
 			</div>

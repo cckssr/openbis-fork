@@ -38,11 +38,11 @@ dependencies {
             project(':lib-compress'),
             project(':lib-maintenance'),
             project(':lib-hierarchical-content'),
-            libs.org.apache.ftpserver.ftpserver.core.v106,
-            libs.org.apache.sshd.sshd.sftp.v27,
+            libs.org.apache.ftpserver.ftpserver.core,
+            libs.org.apache.sshd.sshd.sftp,
             libs.org.slf4j.slf4j.api,
             libs.org.slf4j.slf4j.jdk14,
-            libs.org.bouncycastle.bcpg.jdk15on,
+            libs.org.bouncycastle.bcpg.jdk18on,
             libs.jfree.jfreechart,
             libs.cisd.cisd.cifex,
             libs.net.sourceforge.javacsv.javacsv,
@@ -57,6 +57,8 @@ dependencies {
             libs.commons.io.commons.io
     api(libs.org.dspace.xoai.data.provider){
         exclude module: 'log4j'
+        // Its legacy Woodstox provider does not implement SAX secure-processing used by POI.
+        exclude group: 'org.codehaus.woodstox', module: 'wstx-asl'
     }
 
 //    runtimeOnly 'bioformats:bioformats:6.5.1'

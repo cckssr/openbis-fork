@@ -26,6 +26,8 @@ import java.sql.Array;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.function.Function;
+import java.util.function.IntFunction;
 
 public class HistoryPropertyRecordDataObjectBinding extends NonUpdateCapableDataObjectBinding<HistoryPropertyRecord>
 {
@@ -42,19 +44,25 @@ public class HistoryPropertyRecordDataObjectBinding extends NonUpdateCapableData
         into.validFrom = row.getTimestamp("validFrom");
         into.validTo = row.getTimestamp("validTo");
 
-        into.integerArrayPropertyValue = convertToStringArray(row.getArray("integerArrayPropertyValue"));
-        into.realArrayPropertyValue = convertToStringArray(row.getArray("realArrayPropertyValue"));
-        into.stringArrayPropertyValue = convertToStringArray(row.getArray("stringArrayPropertyValue"));
-        into.timestampArrayPropertyValue = convertToStringArray(row.getArray("timestampArrayPropertyValue"));
+        into.integerArrayPropertyValue = convertToArray(
+                row.getArray("integerArrayPropertyValue"), o -> Long.parseLong(o.toString()), Long[]::new);
+        into.realArrayPropertyValue = convertToArray(row.getArray("realArrayPropertyValue"),
+                o -> Double.parseDouble(o.toString()), Double[]::new);
+        into.stringArrayPropertyValue = convertToArray(row.getArray("stringArrayPropertyValue"),
+                Object::toString, String[]::new);
+        into.timestampArrayPropertyValue = convertToArray(
+                row.getArray("timestampArrayPropertyValue"), Object::toString, String[]::new);
         into.jsonPropertyValue = row.getString("jsonPropertyValue");
     }
 
-    private String[] convertToStringArray(Array array) throws SQLException {
-        if(array != null) {
+    private <T> T[] convertToArray(final Array array,
+            final Function<? super Object, T> conversionFunction,
+            final IntFunction<T[]> emptyArrayFactory) throws SQLException {
+        if (array != null) {
             Object[] values = (Object[]) array.getArray();
             return Arrays.stream(values)
-                    .map(v -> v == null ? null : v.toString())
-                    .toArray(String[]::new);
+                    .map(conversionFunction)
+                    .toArray(emptyArrayFactory);
         }
         return null;
     }

@@ -180,7 +180,7 @@ exports.default = new Promise((resolve) => {
                     return facade.executeAggregationService(id, options)
                 }
 
-                testActionWhichShouldFail(c, fAction, "Data store code cannot be empty. (Context: [])")
+                testActionWhichShouldFail(c, fAction, "Data store code cannot be empty.")
             })
 
             QUnit.test("executeAggregationService() with data store id is null", function (assert) {
@@ -192,7 +192,7 @@ exports.default = new Promise((resolve) => {
                     return facade.executeAggregationService(id, options)
                 }
 
-                testActionWhichShouldFail(c, fAction, "Data store id cannot be null. (Context: [])")
+                testActionWhichShouldFail(c, fAction, "Data store id cannot be null.")
             })
 
             QUnit.test("executeAggregationService() with key is null", function (assert) {
@@ -204,7 +204,7 @@ exports.default = new Promise((resolve) => {
                     return facade.executeAggregationService(id, options)
                 }
 
-                testActionWhichShouldFail(c, fAction, "Service key cannot be empty. (Context: [])")
+                testActionWhichShouldFail(c, fAction, "Service key cannot be empty.")
             })
 
             QUnit.test("searchReportingService()", function (assert) {

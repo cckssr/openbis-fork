@@ -45,21 +45,33 @@ function MainHeaderView(controller) {
             });
         }
 
+        let tabs = [];
+        if (!profile.isAdmin) {
+            if(profile.mainMenu.showLabNotebook) {
+                tabs.push({page: "lab_notebook", label: "Lab Notebook"})
+            }
+            if(profile.mainMenu.showInventory || profile.mainMenu.showStock) {
+                tabs.push({page: "lims", label: "Inventory"})
+            }
+            if(profile.mainMenu.showTools) {
+                tabs.push({page: "tools", label: "Tools"})
+            }
+        } else {
+            tabs = [
+                {page: "lab_notebook", label: "Lab Notebook"},
+                {page: "lims", label: "Inventory"},
+                {page: "tools", label: "Tools"},
+            ];
+        }
+
         let props = {
             pageChangeFunction: this._controller.handlePageChange,
             searchFunction: this._controller.searchFunction,
             logoutFunction: this._controller.handleLogout,
-
             searchText: "",
             currentPage: this._controller.getCurrentPage(),
-
             userName: mainController.serverFacade.getUserId(),
-
-            tabs: [
-                {page: "lab_notebook", label: "Lab Notebook"},
-                {page: "lims", label: "Inventory"},
-                {page: "tools", label: "Tools"},
-            ],
+            tabs: tabs,
             barcodeFunction: barcodeFunction,
             showChatbot: profile.mainMenu.showChatAgent,
             sendMessageCallback: sendChatBotMessage,

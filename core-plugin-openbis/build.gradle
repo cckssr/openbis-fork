@@ -31,6 +31,7 @@ evaluationDependsOn(':server-data-store')
 evaluationDependsOn(':server-ro-crate')
 evaluationDependsOn(':ui-admin')
 evaluationDependsOn(':ui-eln-lims')
+evaluationDependsOn(':server-sftp')
 
 
 apply from: '../build/javaproject.gradle'
@@ -54,7 +55,7 @@ configurations.create('javadoc_compilation')
 configurations.create('blast_tar')
 configurations.create('microscopeLibs')
 
-def jettyDistributionVersion = libs.org.eclipse.jetty.jetty.distribution.get().versionConstraint.requiredVersion
+def jettyHomeVersion = libs.org.eclipse.jetty.jetty.home.get().versionConstraint.requiredVersion
 
 dependencies {
     api project(':server-screening')
@@ -72,7 +73,8 @@ dependencies {
     providedRuntime(libs.org.eclipse.jetty.ee10.jetty.ee10.webapp) { transitive = false }
     providedRuntime(libs.org.eclipse.jetty.ee.jetty.ee.webapp) { transitive = false }
 
-    zipping(libs.org.eclipse.jetty.jetty.distribution) {
+    zipping(libs.org.eclipse.jetty.jetty.home) {
+        transitive = false
         artifact {
             type = 'zip'
         }
@@ -116,7 +118,7 @@ dependencies {
             libs.fjelmer.classycle,
             libs.org.testng.testng,
             libs.org.junit.junit,
-            libs.org.springframework.spring.test.v6110
+            libs.org.springframework.spring.test
     testImplementation(project(path: ':server-application-server', configuration: 'tests'))
 }
 
@@ -324,7 +326,7 @@ task createJettyVersionFile {
     ext.versionFile = new File(buildDir, 'jetty-version.txt')
     outputs.file versionFile
     doLast {
-        versionFile.text = "${jettyDistributionVersion}"
+        versionFile.text = "${jettyHomeVersion}"
     }
 }
 
@@ -336,7 +338,7 @@ task zip(type: Zip, dependsOn: createJettyVersionFile) {
     from configurations.zipping
     from zipCorePlugins.archivePath
     from zipAdminConsole.archivePath
-    rename 'jetty-distribution(.*).zip', 'jetty.zip'
+    rename 'jetty-home(.*).zip', 'jetty.zip'
     rename 'openBIS(.*).war', 'openBIS.war'
 }
 zip.dependsOn war
@@ -406,6 +408,11 @@ task zipBdlServer(type: Zip, dependsOn: project(':server-external-data-store').t
 task zipAfsServer(type: Zip, dependsOn: project(':server-data-store').tasks.AFSServerZip) {
     archiveBaseName = 'afs_server'
     from zipTree('../server-data-store/build/distributions/afs-server.zip')
+}
+
+task zipAfsSftpServer(type: Zip, dependsOn: project(':server-sftp').tasks.AfsSftpServerZip) {
+    archiveBaseName = 'sftp_server'
+    from zipTree('../server-sftp/build/distributions/server-sftp.zip')
 }
 
 task commonbaseZip(type: Zip, dependsOn: [project(':lib-commonbase').tasks.jar]) {

@@ -15,7 +15,7 @@
     "variableName": "docuBaseUrl",
     "label": "Documentation base URL",
     "type": "STRING",
-    "default": "https://openbis.readthedocs.io/en/20.10.12-plus/"
+    "default": "https://openbis.readthedocs.io/en/7.x/"
   },
   {
     "variableName": "showUserManagementConfig",

@@ -18,9 +18,9 @@ package ch.systemsx.cisd.openbis.dss.generic.server.plugins.jython;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
-import javax.activation.DataHandler;
-import javax.activation.DataSource;
-import javax.mail.util.ByteArrayDataSource;
+import jakarta.activation.DataHandler;
+import jakarta.activation.DataSource;
+import jakarta.mail.util.ByteArrayDataSource;
 
 import ch.systemsx.cisd.common.mail.EMailAddress;
 import ch.systemsx.cisd.common.mail.IMailClient;

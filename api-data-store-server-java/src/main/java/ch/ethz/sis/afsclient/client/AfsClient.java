@@ -510,12 +510,12 @@ public final class AfsClient implements PublicAPI, ClientAPI
         return AfsClientDownloadHelper.download(this, sourceOwner, sourcePath, destinationPath, fileCollisionListener, transferMonitorListener);
     }
 
-    private static String getQueryString(String apiMethod, Map<String, String> params, boolean encode)
+    private static String getQueryString(String apiMethod, Map<String, String> params)
     {
         return Stream.concat(
                         Stream.of(new AbstractMap.SimpleImmutableEntry<>("method", apiMethod)),
                         params.entrySet().stream())
-                .map(entry -> (encode ? urlEncode(entry.getKey()) : entry.getKey()) + "=" + (encode ? urlEncode(entry.getValue()) : entry.getValue()))
+                .map(entry -> urlEncode(entry.getKey()) + "=" + urlEncode(entry.getValue()))
                 .collect(Collectors.joining("&"));
     }
 
@@ -557,17 +557,17 @@ public final class AfsClient implements PublicAPI, ClientAPI
         String queryParameters = null;
         if (httpMethod.equals("GET") || !sendParamsInBodyPostAndDelete)
         {
-            queryParameters = getQueryString(apiMethod, mutableParams, false);
+            queryParameters = getQueryString(apiMethod, mutableParams);
 
         } else if (httpMethod.equals("POST") || httpMethod.equals("DELETE"))
         {
-            bodyBytes = getQueryString(apiMethod, mutableParams, true).getBytes(StandardCharsets.UTF_8);
+            bodyBytes = getQueryString(apiMethod, mutableParams).getBytes(StandardCharsets.UTF_8);
         }
 
-        final URI uri =
-                new URI(serverUri.getScheme(), null, serverUri.getHost(),
-                        serverUri.getPort(), serverUri.getPath() + "/api",
-                        queryParameters, null);
+        final URI uri = new URI(serverUri.getScheme() + "://" +
+                serverUri.getHost() + ":" + serverUri.getPort() +
+                serverUri.getPath() + "/api" +
+                (queryParameters != null ?  "?" + queryParameters : ""));
 
         HttpRequest.Builder builder = HttpRequest.newBuilder()
                 .uri(uri)
@@ -624,7 +624,9 @@ public final class AfsClient implements PublicAPI, ClientAPI
 
     private <T> T getLongRunningOperationResult(final String apiMethod, final long startTime, final UUID operationId) throws Exception
     {
+        final int maxSleepTime = 60000;
         int sleepTime = 500;
+
         while (System.currentTimeMillis() < startTime + timeout) {
             Object result = null;
             try
@@ -651,7 +653,7 @@ public final class AfsClient implements PublicAPI, ClientAPI
                 } catch (InterruptedException e) {
                     break;
                 }
-                sleepTime = sleepTime * 2;
+                sleepTime = Math.min(sleepTime * 2, maxSleepTime);
             }
         }
         throw new HttpTimeoutException("Operation '" + apiMethod + "' timed out after " + (System.currentTimeMillis() - startTime) + " milliseconds.");

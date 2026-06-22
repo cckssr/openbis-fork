@@ -160,7 +160,7 @@ public class IntegrationSessionWorkspaceTest
 
         assertNotNull(validationPlugin);
 
-        assertEquals(validationPlugin.getName(), "EXPERIMENTAL_STEP.EXPERIMENTAL_STEP.EXPERIMENTAL_STEP.date_range_validation");
+        assertEquals(validationPlugin.getName(), "EXPERIMENTAL_STEP.EXPERIMENTAL_STEP.EXPERIMENTAL_STEP.EXPERIMENTAL_STEP.date_range_validation");
         assertTrue(validationPlugin.getScript().contains("\"End date cannot be before start date!\""));
 
         openBIS.logout();

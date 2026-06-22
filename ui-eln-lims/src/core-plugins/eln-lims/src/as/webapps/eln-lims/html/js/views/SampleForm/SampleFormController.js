@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-function SampleFormController(mainController, mode, sample, paginationInfo, activeTab) {
+function SampleFormController(mainController, mode, sample, paginationInfo, activeTab, imageIdx, previewIdx) {
 	this._mainController = mainController;
-	this._sampleFormModel = new SampleFormModel(mode, sample, paginationInfo, activeTab);
+	this._sampleFormModel = new SampleFormModel(mode, sample, paginationInfo, activeTab, imageIdx, previewIdx);
 	this._sampleFormView = new SampleFormView(this, this._sampleFormModel);
 
     this.refresh = function() {
@@ -344,7 +344,43 @@ function SampleFormController(mainController, mode, sample, paginationInfo, acti
                     return;
                 }
             }
-			
+
+			var sampleType = _this._sampleFormModel.sampleType;
+			if (_this._sampleFormModel.v3_sample) {
+				for (var pa of sampleType.propertyAssignments) {
+					var pt = pa.propertyType;
+					if (["ARRAY_INTEGER", "ARRAY_REAL", "ARRAY_STRING", "ARRAY_TIMESTAMP"].includes(pt.dataType)) {
+						var currentVal = sample.properties[pt.code];
+						var isNormalized = currentVal == null
+							|| currentVal === ""
+							|| (typeof currentVal === "string" && currentVal.trim().startsWith("["));
+						if (!isNormalized) {
+							var v3Val = _this._sampleFormModel.v3_sample.properties[pt.code];
+							sample.properties[pt.code] = v3Val != null ? JSON.stringify(v3Val) : null;
+						}
+					}
+				}
+			}
+
+			for (var pa of sampleType.propertyAssignments) {
+				var pt = pa.propertyType;
+				if (["ARRAY_INTEGER", "ARRAY_REAL", "ARRAY_STRING", "ARRAY_TIMESTAMP"].includes(pt.dataType)) {
+					var val = sample.properties[pt.code];
+					if (val) {
+                        var errorMessage = "Invalid value for " + pt.label + ": " + val;
+                        try {
+                            var array = Array.isArray(val) ? val : JSON.parse(val);
+                            if (val && !FormUtil.isValidArray(array, pt.dataType)) {
+                                Util.showUserError(errorMessage);
+                                return;
+                            }
+                        } catch (e) {
+                            Util.showUserError(errorMessage);
+                        }
+                    }
+				}
+			}
+
 			//
 			//Identification Info
 			//
@@ -449,7 +485,7 @@ function SampleFormController(mainController, mode, sample, paginationInfo, acti
 					if(child.newSample) {
 						samplesToCreate.push(child);
 					} else if(child.deleteSample) {
-						sampleChildrenRemovedFinal.push(child.identifier);
+						// sampleChildrenRemovedFinal.push(child.identifier);
 						samplesToDelete.push(child.permId);
 					}
 				});
@@ -1055,7 +1091,7 @@ function SampleFormController(mainController, mode, sample, paginationInfo, acti
                     }
                     mainController.openbisV3.updateSamples([sampleUpdate]).done(function() {
                         if(samplesToDelete) {
-                            mainController.serverFacade.trashStorageSamplesWithoutParents(samplesToDelete,
+                            mainController.serverFacade.trashStorageSamples(samplesToDelete,
                             "Deleted to trashcan from eln sample form " + _this._sampleFormModel.sample.identifier,
                             function(response) {
                                 Util.showSuccess(message, callbackOk);
@@ -1070,7 +1106,7 @@ function SampleFormController(mainController, mode, sample, paginationInfo, acti
             });
         } else { // Branch for openBIS 19.X
             if(samplesToDelete) {
-                mainController.serverFacade.trashStorageSamplesWithoutParents(samplesToDelete,
+                mainController.serverFacade.trashStorageSamples(samplesToDelete,
                     "Deleted to trashcan from eln sample form " + _this._sampleFormModel.sample.identifier,
                     function(response) {
                         Util.showSuccess(message, callbackOk);

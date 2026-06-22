@@ -31,7 +31,7 @@ public class VirtualFileSystem extends BaseFileSystem<SftpPath> {
 
     @Override
     public boolean isOpen() {
-        return closed.get();
+        return !closed.get();
     }
 
     @Override

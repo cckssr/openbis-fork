@@ -76,6 +76,7 @@ function MainHeaderController() {
             searchText: searchText,
             searchDomain: searchDomain,
             searchDomainLabel: searchDomainLabel,
+            page: page,
         }
         var argsMapStr = JSON.stringify(argsMap)
 
@@ -138,6 +139,9 @@ function MainHeaderController() {
     }
 
     this.navigateToTab = function(type) {
+        if(type) {
+            type = type.toUpperCase();
+        }
         var tabTypes = ["LAB_NOTEBOOK", "LIMS", "TOOLS"]
         var tree = _this._mainHeaderModel.currentPage;
         if(tabTypes.includes(type)) {

@@ -94,7 +94,7 @@ from .vocabulary import Vocabulary, VocabularyTerm
 from .spreadsheet import Spreadsheet
 from .type_group import TypeGroup
 from .imaging import *
-from .afs_client import AfsClient
+from .afs.afs_client import AfsClient
 
 # import the various openBIS entities
 
@@ -1649,7 +1649,8 @@ class Openbis:
             objects = resp["objects"]
             parse_jackson(objects)
             datastores = DataFrame(objects)
-            self.datastores = datastores[attrs]
+            if not with_afs:
+                self.datastores = datastores[attrs]
             return datastores[attrs]
 
     def gen_codes(self, entity: str, prefix: str = "", count: int = 1) -> List[str]:

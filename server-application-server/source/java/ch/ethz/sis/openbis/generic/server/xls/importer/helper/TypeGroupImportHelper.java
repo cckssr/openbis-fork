@@ -94,9 +94,24 @@ public class TypeGroupImportHelper extends BasicImportHelper
 
     @Override
     protected void validateLine(Map<String, Integer> header, List<String> values) {
-
+        String code = getValueByColumnName(header, values, Attribute.Code);
+        if(code == null || code.isEmpty()) {
+            throw new UserFailureException("Mandatory field is missing or empty: Code.");
+        }
     }
 
+    @Override
+    protected boolean isNewVersion(Map<String, Integer> header, List<String> values)
+    {
+        String internal = getValueByColumnName(header, values, Attribute.Internal);
+        boolean isInternalNamespace = ImportUtils.isTrue(internal);
+
+        if(isInternalNamespace && !delayedExecutor.isSystem()) {
+            //if exists, skip
+            return !isObjectExist(header, values);
+        }
+        return true;
+    }
 
 
     @Override

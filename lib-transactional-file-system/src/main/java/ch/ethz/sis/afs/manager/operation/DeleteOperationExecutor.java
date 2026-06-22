@@ -15,6 +15,7 @@
  */
 package ch.ethz.sis.afs.manager.operation;
 
+import static ch.ethz.sis.afs.exception.AFSExceptions.OperationParameterInvalid;
 import static ch.ethz.sis.afs.manager.operation.OperationExecutor.checkExists;
 import static ch.ethz.sis.afs.manager.operation.OperationExecutor.checkNotCopied;
 import static ch.ethz.sis.afs.manager.operation.OperationExecutor.checkNotDeleted;
@@ -32,6 +33,7 @@ import java.util.stream.Stream;
 import ch.ethz.sis.afs.dto.Transaction;
 import ch.ethz.sis.afs.dto.operation.DeleteOperation;
 import ch.ethz.sis.afs.dto.operation.OperationName;
+import ch.ethz.sis.afs.exception.AFSExceptions;
 import ch.ethz.sis.afs.manager.TransactionFileSystemIO;
 import ch.ethz.sis.shared.io.IOUtils;
 import lombok.NonNull;
@@ -73,6 +75,17 @@ public class DeleteOperationExecutor implements OperationExecutor<DeleteOperatio
         checkNotCopied(transactionFileSystemIO, OperationName.Delete, operation.getSource());
         checkNotDeleted(transactionFileSystemIO, OperationName.Delete, operation.getSource());
         checkExists(transactionFileSystemIO, OperationName.Delete, operation.getSource());
+
+        if (operation.isTrash())
+        {
+            Path normalizedSource = Path.of(operation.getSource()).toAbsolutePath().normalize();
+            Path normalizedTrashRoot = Path.of(operation.getTrashRoot()).toAbsolutePath().normalize();
+            if (normalizedTrashRoot.startsWith(normalizedSource) && !normalizedTrashRoot.equals(normalizedSource))
+            {
+                AFSExceptions.throwInstance(OperationParameterInvalid, OperationName.Delete.name(),
+                        "Deleted source cannot be an ancestor of the trash root.");
+            }
+        }
 
         transactionFileSystemIO.setDeleted(operation.getSource());
 

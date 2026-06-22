@@ -154,7 +154,7 @@ class TestCase(object):
                 itemName, actualValue, expectedUpperLimit))
             return False
         elif verbose:
-            util.printAndFlush("%s actual value <%s> is below the expected upper limit <%s>" % (
+            util.printAndFlush("[TEST] %s actual value <%s> is below the expected upper limit <%s>" % (
                 itemName, actualValue, expectedUpperLimit))
         return True
 
@@ -170,7 +170,7 @@ class TestCase(object):
             self.fail("%s\n  Differences:\n%s" % (itemName, '\n'.join(diff)))
             return False
         elif verbose:
-            util.printAndFlush("%s as expected: <%s>" % (itemName, rendered_expected))
+            util.printAndFlush("[TEST] %s as expected: <%s>" % (itemName, rendered_expected))
         return True
 
     def assertType(self, variableName, expectedType, variable):
@@ -179,7 +179,7 @@ class TestCase(object):
     def assertIn(self, itemsName, items, item):
         if item not in items:
             self.fail("Item %s not in %s" % (item, itemsName))
-        util.printAndFlush("%s as expected: contains <%s>" % (itemsName, item))
+        util.printAndFlush("[TEST] %s as expected: contains <%s>" % (itemsName, item))
 
     def assertNone(self, itemName, item):
         self.assertEquals(itemName, None, item)
@@ -187,7 +187,7 @@ class TestCase(object):
     def assertNotNone(self, itemName, item):
         if item is None:
             self.fail("Item %s is None" % itemName)
-        util.printAndFlush("%s as expected: not None" % itemName)
+        util.printAndFlush("[TEST] %s as expected: not None" % itemName)
 
     def assertTrue(self, itemName, item):
         self.assertEquals(itemName, True, item)
@@ -204,7 +204,7 @@ class TestCase(object):
     def assertNotEmpty(self, itemsName, items):
         if len(items) == 0:
             self.fail("%s is empty" % itemsName)
-        util.printAndFlush("%s as expected: not empty" % itemsName)
+        util.printAndFlush("[TEST] %s as expected: not empty" % itemsName)
 
     def _render(self, item):
         if not isinstance(item, list):
@@ -222,7 +222,7 @@ class TestCase(object):
         """
         self.numberOfFailures += 1
         util.printWhoAmI(levels=10, template="ERROR found (caller chain: %s)")
-        util.printAndFlush("ERROR causing test failure: %s" % errorMessage)
+        util.printAndFlush("[TEST] ERROR causing test failure: %s" % errorMessage)
 
     def installScriptBasedServer(self, templateName, instanceName,
                                  startCommand=['./start.sh'], stopCommand=['./stop.sh']):
@@ -294,7 +294,7 @@ class TestCase(object):
                                                             nameOfNewInstance)
         util.writeProperties(dssPropsFile, dssProps)
 
-    def createOpenbisController(self, instanceName='openbis', port='8443', dropDatabases=True,
+    def createOpenbisController(self, instanceName='openbis', port='8080', dropDatabases=True,
                                 databasesToDrop=[]):
         """
         Creates an openBIS controller object assuming that an openBIS instance for the specified name is installed.
@@ -484,7 +484,7 @@ class ScreeningTestClient(object):
         output = util.executeCommand(['java',
                                       '-Djavax.net.ssl.trustStore=../openbis/servers/openBIS-server/jetty/etc/openBIS.keystore',
                                       '-jar', 'openbis_screening_api.jar', 'admin', 'admin',
-                                      'https://localhost:8443'], suppressStdOut=True,
+                                      'http://localhost:8080'], suppressStdOut=True,
                                      workingDir=self.installPath)
         with open("%s/log.txt" % self.installPath, 'w') as log:
             for line in output:
@@ -522,7 +522,7 @@ class OpenbisController(_Controller):
     Class to control AS and DSS of an installed openBIS instance.
     """
 
-    def __init__(self, testCase, testName, installPath, instanceName, port='8443',
+    def __init__(self, testCase, testName, installPath, instanceName, port='8080',
                  dropDatabases=True, databasesToDrop=[]):
         """
         Creates a new instance for specifies test case with specified test and instance name, installation path.
@@ -547,12 +547,12 @@ class OpenbisController(_Controller):
         self.dssProperties['imaging-database.kind'] = self.databaseKind
         self.dssPropertiesModified = True
         self.passwdScript = "%s/servers/openBIS-server/jetty/bin/passwd.sh" % installPath
-        if port != '8443':
-            self.sslIniFile = "%s/servers/openBIS-server/jetty/start.d/ssl.ini" % installPath
-            if os.path.exists(self.sslIniFile):
-                self.sslIni = util.readProperties(self.sslIniFile)
-                self.sslIni['jetty.ssl.port'] = port
-                util.writeProperties(self.sslIniFile, self.sslIni)
+#         if port != '8443':
+#             self.sslIniFile = "%s/servers/openBIS-server/jetty/start.d/ssl.ini" % installPath
+#             if os.path.exists(self.sslIniFile):
+#                 self.sslIni = util.readProperties(self.sslIniFile)
+#                 self.sslIni['jetty.ssl.port'] = port
+#                 util.writeProperties(self.sslIniFile, self.sslIni)
         if dropDatabases:
             util.dropDatabase(PSQL_EXE, "openbis_%s" % self.databaseKind)
             util.dropDatabase(PSQL_EXE, "pathinfo_%s" % self.databaseKind)

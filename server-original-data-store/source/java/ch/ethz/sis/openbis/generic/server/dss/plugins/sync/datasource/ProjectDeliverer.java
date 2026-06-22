@@ -17,13 +17,13 @@ package ch.ethz.sis.openbis.generic.server.dss.plugins.sync.datasource;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.exporter.data.ExportableKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.Project;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.fetchoptions.ProjectFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectPermId;
@@ -37,7 +37,7 @@ public class ProjectDeliverer extends AbstractEntityWithPermIdDeliverer
 
     ProjectDeliverer(DeliveryContext context)
     {
-        super(context, "project", "projects");
+        super(context, "project", ExportableKind.PROJECT);
     }
 
     @Override
@@ -45,33 +45,29 @@ public class ProjectDeliverer extends AbstractEntityWithPermIdDeliverer
     {
         XMLStreamWriter writer = context.getWriter();
         String sessionToken = context.getSessionToken();
-        Set<String> spaces = context.getSpaces();
         IApplicationServerApi v3api = getV3Api();
         List<ProjectPermId> permIds = projectPermIds.stream().map(ProjectPermId::new).collect(Collectors.toList());
         Collection<Project> fullProjects = v3api.getProjects(sessionToken, permIds, createFullFetchOptions()).values();
         int count = 0;
         for (Project project : fullProjects)
         {
-            if (spaces.contains(project.getSpace().getCode()))
-            {
-                String permId = project.getPermId().getPermId();
-                startUrlElement(writer, "PROJECT", permId, project.getModificationDate());
-                startXdElement(writer);
-                writer.writeAttribute("code", project.getCode());
-                addAttributeAndExtractFilePaths(context, writer, "desc", project.getDescription());
-                addAttributeIfSet(writer, "frozen", project.isFrozen());
-                addAttributeIfSet(writer, "frozenForExperiments", project.isFrozenForExperiments());
-                addAttributeIfSet(writer, "frozenForSamples", project.isFrozenForSamples());
-                addKind(writer, "PROJECT");
-                addModifier(writer, project);
-                addRegistrationDate(writer, project);
-                addRegistrator(writer, project);
-                addSpace(writer, project.getSpace());
-                addAttachments(writer, project.getAttachments());
-                writer.writeEndElement();
-                writer.writeEndElement();
-                count++;
-            }
+            String permId = project.getPermId().getPermId();
+            startUrlElement(writer, "PROJECT", permId, project.getModificationDate());
+            startXdElement(writer);
+            writer.writeAttribute("code", project.getCode());
+            addAttributeAndExtractFilePaths(context, writer, "desc", project.getDescription());
+            addAttributeIfSet(writer, "frozen", project.isFrozen());
+            addAttributeIfSet(writer, "frozenForExperiments", project.isFrozenForExperiments());
+            addAttributeIfSet(writer, "frozenForSamples", project.isFrozenForSamples());
+            addKind(writer, "PROJECT");
+            addModifier(writer, project);
+            addRegistrationDate(writer, project);
+            addRegistrator(writer, project);
+            addSpace(writer, project.getSpace());
+            addAttachments(writer, project.getAttachments());
+            writer.writeEndElement();
+            writer.writeEndElement();
+            count++;
         }
         operationLog.info(count + " of " + projectPermIds.size() + " projects have been delivered.");
     }

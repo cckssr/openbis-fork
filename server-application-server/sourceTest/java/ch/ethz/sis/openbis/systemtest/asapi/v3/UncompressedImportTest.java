@@ -223,7 +223,7 @@ public class UncompressedImportTest extends AbstractImportTest
         final Plugin validationPlugin = sampleType.getValidationPlugin();
         final String validationPluginBareName = name.substring(0, name.lastIndexOf("."));
 
-        assertEquals(validationPlugin.getName(), validationPluginBareName);
+        assertEquals(validationPlugin.getName(), "ANTIBODY." + validationPluginBareName);
         assertEquals(validationPlugin.getScript(), source);
     }
 
@@ -255,11 +255,34 @@ public class UncompressedImportTest extends AbstractImportTest
 
         final PropertyAssignment propertyAssignment = sampleType.getPropertyAssignments().get(0);
         final Plugin plugin = propertyAssignment.getPlugin();
-
         final String pluginBareName = name.substring(0, name.lastIndexOf("."));
 
-        assertEquals(plugin.getName(), pluginBareName);
+        assertEquals(plugin.getName(), "CODE." + pluginBareName);
         assertEquals(plugin.getScript(), source);
+    }
+
+    @Test
+    public void testInternalTypesForNormalUser_nothingGetsUpdated() throws Exception
+    {
+        // Step 1: import as system
+        final String systemSessionToken = v3api.loginAsSystem();
+
+        final String[] sessionWorkspaceFiles =
+                uploadToAsSessionWorkspace(systemSessionToken, "import_internal_types_only.xlsx");
+
+        final ImportData importData = new ImportData(ImportFormat.EXCEL, sessionWorkspaceFiles);
+        final ImportOptions importOptions = new ImportOptions(ImportMode.UPDATE_IF_EXISTS);
+
+        v3api.executeImport(systemSessionToken, importData, importOptions);
+
+        // Step 2: regular user imports and nothing is broken
+        final String[] sessionWorkspaceFilesRegular =
+                uploadToAsSessionWorkspace(sessionToken, "import_internal_types_only.xlsx");
+
+        final ImportData importDataRegular = new ImportData(ImportFormat.EXCEL, sessionWorkspaceFilesRegular);
+        final ImportOptions importOptionsRegular = new ImportOptions(ImportMode.UPDATE_IF_EXISTS);
+
+        v3api.executeImport(sessionToken, importDataRegular, importOptionsRegular);
     }
 
     @Test

@@ -55,7 +55,7 @@ class TestCase(systemtest.testcase.TestCase):
 
     def execute(self):
 
-        self.OPENBIS_URL = "https://localhost:8443/openbis"
+        self.OPENBIS_URL = "http://localhost:8080/openbis"
 
         self.installOpenbis()
         self.installPybis()
@@ -63,7 +63,7 @@ class TestCase(systemtest.testcase.TestCase):
         self.openbisController = self.createOpenbisController()
         self.openbisController.createTestDatabase("openbis")
         self.openbisController.asProperties["max-number-of-sessions-per-user"] = "0"
-        self.openbisController.dssProperties["host-address"] = "https://localhost"
+        self.openbisController.dssProperties["host-address"] = "http://localhost"
 
         self.openbisController.allUp()
 
@@ -79,7 +79,7 @@ class TestCase(systemtest.testcase.TestCase):
         # pybis can only be imported after installPybis is called
         import pybis
 
-        o = pybis.Openbis(url="https://localhost:8443", verify_certificates=False)
+        o = pybis.Openbis(url="http://localhost:8080", verify_certificates=False, allow_http_but_do_not_use_this_in_production_and_only_within_safe_networks=True)
         o.login("admin", "admin", save_token=True)
         return o
 
@@ -119,7 +119,7 @@ class TestCase(systemtest.testcase.TestCase):
         cmd(
             "obis config -g set openbis_url="
             + self.OPENBIS_URL
-            + ", user=admin, verify_certificates=false, hostname="
+            + ", user=admin, verify_certificates=false, allow_only_https=false, hostname="
             + socket.gethostname()
         )
         cmd("obis data_set -g set type=UNKNOWN")
@@ -127,6 +127,7 @@ class TestCase(systemtest.testcase.TestCase):
         assert settings["config"]["openbis_url"] == self.OPENBIS_URL
         assert settings["config"]["user"] == "admin"
         assert settings["config"]["verify_certificates"] == False
+        assert settings["config"]["allow_only_https"] == False
         assert settings["config"]["hostname"] == socket.gethostname()
         assert settings["data_set"]["type"] == "UNKNOWN"
 

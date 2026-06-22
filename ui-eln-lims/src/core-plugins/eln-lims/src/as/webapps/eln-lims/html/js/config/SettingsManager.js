@@ -2,6 +2,90 @@ var SettingsManagerUtils = new function() {
     this._defaultProfile = null;
     this._instanceSettings = null;
 
+    this.getDefaultSampleTypeToolbarConfiguration = function() {
+        return {
+            CREATE_FOLDER: true,
+            CREATE_ENTRY: true,
+            CREATE_OTHER: true,
+            EDIT: true,
+            FREEZE: true,
+            MOVE: true,
+            COPY: true,
+            DELETE: true,
+            PRINT: true,
+            HIERARCHY_GRAPH: true,
+            HIERARCHY_TABLE: true,
+            UPLOAD_DATASET: true,
+            UPLOAD_DATASET_HELPER: true,
+            EXPORT_ALL: true,
+            EXPORT_METADATA: true,
+            TEMPLATES: true,
+            BARCODE: true,
+            HISTORY: true
+        };
+    }
+
+    this.getDefaultSpaceToolbarConfiguration = function() {
+        return {
+            CREATE_ENTRY: true,
+            CREATE_FOLDER: true,
+            CREATE_OTHER: true,
+            CREATE_PROJECT: true,
+            DELETE: true,
+            EDIT: true,
+            FREEZE: true,
+            PRINT: true,
+            EXPORT_ALL: true,
+            EXPORT_METADATA: true,
+            MANAGE_ACCESS: true,
+        };
+    }
+
+    this.getDefaultProjectToolbarConfiguration = function() {
+        return {
+            CREATE_FOLDER: true,
+            CREATE_ENTRY: true,
+            CREATE_OTHER: true,
+            DELETE: true,
+            EDIT: true,
+            EXPORT_ALL: true,
+            FREEZE: true,
+            HISTORY: true,
+            MANAGE_ACCESS: true,
+            MOVE: true,
+            PRINT: true,
+        };
+    }
+
+    this.getDefaultDataSetTypeToolbarConfiguration = function() {
+        return  {
+            EDIT : true,
+            FREEZE : true,
+            MOVE : true,
+            ARCHIVE : true,
+            DELETE : true,
+            HIERARCHY_TABLE : true,
+            EXPORT_ALL : true,
+            EXPORT_METADATA : true,
+            HISTORY: true
+        };
+    }
+
+    this.getDefaultExperimentTypeToolbarConfiguration = function() {
+        return  {
+            CREATE: true,
+            FREEZE: true,
+            EDIT: true,
+            MOVE: true,
+            DELETE: true,
+            UPLOAD_DATASET: true,
+            UPLOAD_DATASET_HELPER: true,
+            EXPORT_ALL: true,
+            EXPORT_METADATA: true,
+            HISTORY: true
+        };
+    }
+
 	this.getGroups = function() {
 		return Object.keys(this._instanceSettings);
 	}
@@ -319,6 +403,20 @@ function SettingsManager(serverFacade) {
 
      	    }
 
+             if(settings.rootNodeSettings) {
+                 targetProfile.rootNodeSettings = settings.rootNodeSettings;
+             }
+
+             targetProfile.spaceToolbarSettings = SettingsManagerUtils.getDefaultSpaceToolbarConfiguration();
+             if(settings.spaceToolbarSettings) {
+                 $.extend(targetProfile.spaceToolbarSettings, settings.spaceToolbarSettings);
+             }
+
+             targetProfile.projectToolbarSettings = SettingsManagerUtils.getDefaultProjectToolbarConfiguration();
+             if(settings.projectToolbarSettings) {
+                 $.extend(targetProfile.projectToolbarSettings, settings.projectToolbarSettings);
+             }
+
              // Miscellaneous
              var miscellaneousFields = [{name: "hideSectionsByDefault", defaultValue: true},
                                         {name: "showSemanticAnnotations", defaultValue: false},
@@ -428,15 +526,20 @@ function SettingsManager(serverFacade) {
                      if(targetProfile.sampleTypeDefinitionsExtension[sampleTypeCode][key] === undefined) {
                          targetProfile.sampleTypeDefinitionsExtension[sampleTypeCode][key] = settings.sampleTypeDefinitionsExtension[sampleTypeCode][key];
                      } else { // Existing values are merged or replaced
-                        if(isMergeGroup) {
-                            if(key in sampleTypeDefinitionBooleans) { // Merge with logic OR
-                                targetProfile.sampleTypeDefinitionsExtension[sampleTypeCode][key] = targetProfile.sampleTypeDefinitionsExtension[sampleTypeCode][key] || settings.sampleTypeDefinitionsExtension[sampleTypeCode][key]
-                            } else { // Replace
-                                targetProfile.sampleTypeDefinitionsExtension[sampleTypeCode][key] = settings.sampleTypeDefinitionsExtension[sampleTypeCode][key];
-                            }
-                        } else { // Replace
-                            targetProfile.sampleTypeDefinitionsExtension[sampleTypeCode][key] = settings.sampleTypeDefinitionsExtension[sampleTypeCode][key];
-                        }
+                         if(key === 'TOOLBAR') {
+                             //Toolbar settings ale always merged
+                             $.extend(targetProfile.sampleTypeDefinitionsExtension[sampleTypeCode][key], settings.sampleTypeDefinitionsExtension[sampleTypeCode][key]);
+                         } else {
+                             if (isMergeGroup) {
+                                 if (key in sampleTypeDefinitionBooleans) { // Merge with logic OR
+                                     targetProfile.sampleTypeDefinitionsExtension[sampleTypeCode][key] = targetProfile.sampleTypeDefinitionsExtension[sampleTypeCode][key] || settings.sampleTypeDefinitionsExtension[sampleTypeCode][key]
+                                 } else { // Replace
+                                     targetProfile.sampleTypeDefinitionsExtension[sampleTypeCode][key] = settings.sampleTypeDefinitionsExtension[sampleTypeCode][key];
+                                 }
+                             } else { // Replace
+                                 targetProfile.sampleTypeDefinitionsExtension[sampleTypeCode][key] = settings.sampleTypeDefinitionsExtension[sampleTypeCode][key];
+                             }
+                         }
                      }
                  }
      		}
@@ -449,8 +552,17 @@ function SettingsManager(serverFacade) {
 		this._validateForcedMonospaceFont(settings, errors);
 		this._validateDataSetTypeForFileNameMap(settings, errors);
 		this._validateSampleTypeDefinitionsExtension(settings, errors);
+        this._validateRootNode(settings, errors);
 		return errors;
 	}
+
+    this._validateRootNode = function(settings, errors) {
+       if(settings.rootNodeSettings) {
+           if(settings.rootNodeSettings.type === "identifier" && !settings.rootNodeSettings.value) {
+               errors.push("Empty value found for Root Node Option [identifier], please select an entity before save.")
+           }
+       }
+    }
 
     this._validateSpaces = function(settings, errors) {
         if(settings.inventorySpaces) {
