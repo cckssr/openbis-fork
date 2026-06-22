@@ -202,7 +202,8 @@ public abstract class AbstractEntityPropertyHolder implements Serializable, IPro
         {
             return null;
         }
-        return Arrays.stream(propertyValues).map(Serializable::toString).map(Long::parseLong)
+        return Arrays.stream(propertyValues)
+                .map(x -> x == null ? null : Long.parseLong(x.toString()))
                 .toArray(Long[]::new);
     }
 
@@ -221,7 +222,8 @@ public abstract class AbstractEntityPropertyHolder implements Serializable, IPro
         {
             return null;
         }
-        return Arrays.stream(propertyValues).map(Serializable::toString).map(Double::parseDouble)
+        return Arrays.stream(propertyValues)
+                .map(x -> x == null ? null : Double.parseDouble(x.toString()))
                 .toArray(Double[]::new);
     }
 
@@ -240,7 +242,9 @@ public abstract class AbstractEntityPropertyHolder implements Serializable, IPro
         {
             return null;
         }
-        return Arrays.stream(propertyValues).map(Serializable::toString).toArray(String[]::new);
+        return Arrays.stream(propertyValues)
+                .map(x -> x == null ? null : x.toString())
+                .toArray(String[]::new);
     }
 
     @Override
@@ -258,8 +262,8 @@ public abstract class AbstractEntityPropertyHolder implements Serializable, IPro
         {
             return null;
         }
-        return Arrays.stream(propertyValues).map(Serializable::toString)
-                .map(dateTime -> ZonedDateTime.parse(dateTime,
+        return Arrays.stream(propertyValues)
+                .map(x -> x == null ? null : ZonedDateTime.parse(x.toString(),
                         DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss X")))
                 .toArray(ZonedDateTime[]::new);
     }
@@ -268,7 +272,7 @@ public abstract class AbstractEntityPropertyHolder implements Serializable, IPro
     public void setTimestampArrayProperty(String propertyName, ZonedDateTime[] propertyValue)
     {
         String[] value = (propertyValue == null) ? null : Arrays.stream(propertyValue)
-                .map(dateTime -> dateTime.format(
+                .map(dateTime -> dateTime == null ? null : dateTime.format(
                         DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss Z")))
                 .toArray(String[]::new);
         setProperty(propertyName, value);

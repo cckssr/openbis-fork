@@ -20,13 +20,13 @@ package ch.ethz.sis.openbis.generic.asapi.v3.dto.common.property;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.node.NullNode;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 
 public class PropertiesDeserializer extends JsonDeserializer<Serializable>
 {
@@ -35,9 +35,10 @@ public class PropertiesDeserializer extends JsonDeserializer<Serializable>
             throws IOException
     {
         JsonNode node = p.readValueAsTree();
-        if(node.isArray()) {
+        if (node.isArray()) {
             ArrayList<String> list = new ArrayList<>();
-            node.forEach(value -> list.add(value.isArray() ? value.toString() : value.asText()));
+            node.forEach(value -> list.add(value instanceof NullNode ? null :
+                    (value.isArray() ? value.toString() : value.asText())));
             return list.toArray(new String[0]);
         } else if(node.isObject()) {
             return readValue(node.toString(), HashMap.class);

@@ -27,7 +27,7 @@ public final class TimestampArrayValidator extends ArrayValidator {
                 return null;
             } else {
                 return Arrays.stream(dates)
-                        .map(date -> DateFormatUtils.format(date,
+                        .map(date -> date == null ? null : DateFormatUtils.format(date,
                                 SupportedDateTimePattern.CANONICAL_DATE_PATTERN.getPattern()))
                         .toArray(String[]::new);
             }

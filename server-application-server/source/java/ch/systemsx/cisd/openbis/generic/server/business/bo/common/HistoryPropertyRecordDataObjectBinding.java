@@ -53,7 +53,7 @@ public class HistoryPropertyRecordDataObjectBinding extends NonUpdateCapableData
         if(array != null) {
             Object[] values = (Object[]) array.getArray();
             return Arrays.stream(values)
-                    .map(Object::toString)
+                    .map(v -> v == null ? null : v.toString())
                     .toArray(String[]::new);
         }
         return null;
