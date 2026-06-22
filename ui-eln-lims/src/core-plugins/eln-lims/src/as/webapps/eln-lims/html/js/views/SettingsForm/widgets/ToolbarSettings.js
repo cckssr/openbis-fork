@@ -1,7 +1,6 @@
-function ToolbarSettings(mode,  profileToEdit, toolbarSettings) {
+function ToolbarSettings(mode, toolbarSettings) {
     this._container = null;
     this._mode = mode;
-    this._profileToEdit = profileToEdit;
     this.selected = null;
     this._toolbarSettings = toolbarSettings;
     this._pillButtons = [];
@@ -18,6 +17,7 @@ function ToolbarSettings(mode,  profileToEdit, toolbarSettings) {
                 {name: "CREATE_ENTRY", icon: "ENTRY"},
                 {name: "CREATE_OTHER", icon: "ENTRY"},
                 {name: "UPLOAD_DATASET", icon: "DATA"},
+                {name: "ARCHIVE", icon: "ARCHIVE_NOT_REQUESTED"},
                 {name: "EDIT", icon: "EDIT"},
             ],
         'Dropdown': [
@@ -31,7 +31,6 @@ function ToolbarSettings(mode,  profileToEdit, toolbarSettings) {
             {name: "UPLOAD_DATASET_HELPER", icon: ""},
             {name: "TEMPLATES", icon: ""},
             {name: "EXPORT_ALL", icon: ""},
-            {name: "EXPORT_METADATA", icon: ""},
             {name: "MANAGE_ACCESS", icon: ""},
             {name: "FREEZE", icon: ""},
             {name: "HISTORY", icon: ""},

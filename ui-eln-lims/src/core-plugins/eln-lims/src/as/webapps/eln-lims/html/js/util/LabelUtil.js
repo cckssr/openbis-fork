@@ -17,6 +17,7 @@
 var LabelUtil = new function() {
 
     const _toolbarLabels = {
+        ARCHIVE: { label: "Archive", tooltip: "" },
         BARCODE: { label: "Barcode/QR Code Print", tooltip: "" },
         BARCODE_UPDATE: { label: "Custom Barcode/QR Code Update", tooltip: "" },
         COPY: { label: "Copy", tooltip: "Copy" },
@@ -27,12 +28,13 @@ var LabelUtil = new function() {
         DELETE: { label: "Delete", tooltip: "Delete" },
         DOCS: { label: null, tooltip: "Documentation" },
         EDIT: { label: "Edit", tooltip: "Edit entity" },
+        EDIT_DATA: { label: "Edit", tooltip: "Edit data" },
+        EDIT_COLLECTION: { label: "Edit", tooltip: "Edit collection" },
         EDIT_OBJECT: { label: "Edit", tooltip: "Edit object" },
         EDIT_PROJECT: { label: "Edit", tooltip: "Edit project" },
         EDIT_SPACE: { label: "Edit", tooltip: "Edit space" },
         EXPORT: { label: "Export", tooltip: "" },
         EXPORT_ALL: { label: "Export", tooltip: "" },
-        EXPORT_METADATA: { label: "Export metadata", tooltip: "" },
         FREEZE: { label: "Freeze", tooltip: "Freeze Entity data (Disable further data upload)" },
         FREEZE_ENTITY: { label: "Freeze Entity (Disable further modifications)", tooltip: "" },
         FROZEN: { label: "Frozen", tooltip: "Entity Frozen" },

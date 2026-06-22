@@ -76,6 +76,14 @@ ELNDictionary.settingsView = {
 			title : ELNDictionary.Sample +" Types",
 			info : "This section is used to extend the common openBIS definitions to object types",
 		},
+		experimentTypeDefinitionsExtension : {
+			title : ELNDictionary.ExperimentCollection +" Types",
+			info : "This section is used to extend the common openBIS definitions to collection types",
+		},
+		dataSetTypeDefinitionsExtension : {
+			title : ELNDictionary.Dataset +" Types",
+			info : "This section is used to extend the common openBIS definitions to dataset types",
+		},
 		spaces : {
 			title : "Spaces",
 			info : "Common openBIS ELN definitions to spaces.",

@@ -88,7 +88,6 @@ function DataSetViewerView(dataSetViewerController, dataSetViewerModel) {
                         icon.removeClass("glyphicon-chevron-up");
                         icon.addClass("glyphicon-chevron-down");
                     }
-
                 }, null, "Expand/Collapse all", this._dataSetViewerModel.containerId + "-expand-collapse-view-btn");
                 $filesContainer.append(expandCollapseAll);
 
@@ -98,8 +97,9 @@ function DataSetViewerView(dataSetViewerController, dataSetViewerModel) {
             }
             this.repaintFilesAsTree($filesContainer);
             $filesContainer.refresh = function() {
-                _this.repaintFilesAsTree($filesContainer);
+                _this.repaintFilesAsTree($(this));
             }
+            _refreshableFields = [];
             _refreshableFields.push($filesContainer);
 	}
 

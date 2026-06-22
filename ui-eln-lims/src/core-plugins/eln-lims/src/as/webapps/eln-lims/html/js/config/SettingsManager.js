@@ -18,7 +18,6 @@ var SettingsManagerUtils = new function() {
             UPLOAD_DATASET: true,
             UPLOAD_DATASET_HELPER: true,
             EXPORT_ALL: true,
-            EXPORT_METADATA: true,
             TEMPLATES: true,
             BARCODE: true,
             HISTORY: true
@@ -36,7 +35,6 @@ var SettingsManagerUtils = new function() {
             FREEZE: true,
             PRINT: true,
             EXPORT_ALL: true,
-            EXPORT_METADATA: true,
             MANAGE_ACCESS: true,
         };
     }
@@ -64,26 +62,30 @@ var SettingsManagerUtils = new function() {
             MOVE : true,
             ARCHIVE : true,
             DELETE : true,
+            PRINT: true,
             HIERARCHY_TABLE : true,
             EXPORT_ALL : true,
-            EXPORT_METADATA : true,
             HISTORY: true
         };
     }
 
     this.getDefaultExperimentTypeToolbarConfiguration = function() {
         return  {
-            CREATE: true,
+            CREATE_FOLDER: true,
+            CREATE_ENTRY: true,
+            CREATE_OTHER: true,
             FREEZE: true,
             EDIT: true,
             MOVE: true,
             DELETE: true,
+            PRINT: true,
             UPLOAD_DATASET: true,
             UPLOAD_DATASET_HELPER: true,
             EXPORT_ALL: true,
-            EXPORT_METADATA: true,
             HISTORY: true
         };
+
+
     }
 
 	this.getGroups = function() {
@@ -519,7 +521,7 @@ function SettingsManager(serverFacade) {
      			    targetProfile.sampleTypeDefinitionsExtension[sampleTypeCode] = {};
      			}
 
-     			for(var key in settings.sampleTypeDefinitionsExtension[sampleTypeCode]) { // Key by Key, in case there is new Keys not available in the old config
+     			for(let key in settings.sampleTypeDefinitionsExtension[sampleTypeCode]) { // Key by Key, in case there is new Keys not available in the old config
                      // Known boolean values are merged, others are replaced
 
                      // Missing values are just replaced
@@ -543,6 +545,63 @@ function SettingsManager(serverFacade) {
                      }
                  }
      		}
+
+           if(!settings.experimentTypeDefinitionsExtension) {
+               settings.experimentTypeDefinitionsExtension = {};
+           }
+           for (let experimentTypeCode of Object.keys(settings.experimentTypeDefinitionsExtension)) {
+               if(!targetProfile.experimentTypeDefinitionsExtension[experimentTypeCode]) {
+                   targetProfile.experimentTypeDefinitionsExtension[experimentTypeCode] = {};
+               }
+
+               for(let key in settings.experimentTypeDefinitionsExtension[experimentTypeCode]) { // Key by Key, in case there is new Keys not available in the old config
+                   // Known boolean values are merged, others are replaced
+
+                   // Missing values are just replaced
+                   if(targetProfile.experimentTypeDefinitionsExtension[experimentTypeCode][key] === undefined) {
+                       targetProfile.experimentTypeDefinitionsExtension[experimentTypeCode][key] = settings.experimentTypeDefinitionsExtension[experimentTypeCode][key];
+                   } else { // Existing values are merged or replaced
+                       if(key === 'TOOLBAR') {
+                           //Toolbar settings ale always merged
+                           $.extend(targetProfile.experimentTypeDefinitionsExtension[experimentTypeCode][key], settings.experimentTypeDefinitionsExtension[experimentTypeCode][key]);
+                       } else {
+                           // Replace
+                           targetProfile.experimentTypeDefinitionsExtension[experimentTypeCode][key] = settings.experimentTypeDefinitionsExtension[experimentTypeCode][key];
+                       }
+                   }
+               }
+           }
+
+       if(!settings.dataSetTypeDefinitionsExtension) {
+           settings.dataSetTypeDefinitionsExtension = {};
+       }
+       const defaultDataSetTypeDefinitions = {
+           SHOW: true,
+           SHOW_ON_NAV: true
+       };
+       for (let dataSetTypeCode of Object.keys(settings.dataSetTypeDefinitionsExtension)) {
+           if(!targetProfile.dataSetTypeDefinitionsExtension[dataSetTypeCode]) {
+               targetProfile.dataSetTypeDefinitionsExtension[dataSetTypeCode] = defaultDataSetTypeDefinitions;
+           }
+
+           for(let key in settings.dataSetTypeDefinitionsExtension[dataSetTypeCode]) { // Key by Key, in case there is new Keys not available in the old config
+               // Known boolean values are merged, others are replaced
+
+               // Missing values are just replaced
+               if(targetProfile.dataSetTypeDefinitionsExtension[dataSetTypeCode][key] === undefined) {
+                   targetProfile.dataSetTypeDefinitionsExtension[dataSetTypeCode][key] = settings.dataSetTypeDefinitionsExtension[dataSetTypeCode][key];
+               } else { // Existing values are merged or replaced
+                   if(key === 'TOOLBAR') {
+                       //Toolbar settings ale always merged
+                       $.extend(targetProfile.dataSetTypeDefinitionsExtension[dataSetTypeCode][key], settings.dataSetTypeDefinitionsExtension[dataSetTypeCode][key]);
+                   } else {
+                       // Replace
+                       targetProfile.dataSetTypeDefinitionsExtension[dataSetTypeCode][key] = settings.dataSetTypeDefinitionsExtension[dataSetTypeCode][key];
+                   }
+               }
+           }
+       }
+
      }
 
     this._validateSettings = function(settings) {

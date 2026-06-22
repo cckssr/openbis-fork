@@ -554,6 +554,11 @@ $.extend(DefaultProfile.prototype, {
 			if(this.experimentTypeDefinitionsExtension[experimentTypeCode] && this.experimentTypeDefinitionsExtension[experimentTypeCode]["TOOLBAR"]) {
 				var toolbarOptions = this.experimentTypeDefinitionsExtension[experimentTypeCode]["TOOLBAR"];
 				for(key in toolbarOptions) {
+					if(key === "CREATE") {
+						defaultToolbar["CREATE_FOLDER"] = toolbarOptions[key];
+						defaultToolbar["CREATE_ENTRY"] = toolbarOptions[key];
+						defaultToolbar["CREATE_OTHER"] = toolbarOptions[key];
+					}
 					defaultToolbar[key] = toolbarOptions[key];
 				}
 			}
@@ -565,6 +570,11 @@ $.extend(DefaultProfile.prototype, {
 			if(this.dataSetTypeDefinitionsExtension[dataSetTypeCode] && this.dataSetTypeDefinitionsExtension[dataSetTypeCode]["TOOLBAR"]) {
 				var toolbarOptions = this.dataSetTypeDefinitionsExtension[dataSetTypeCode]["TOOLBAR"];
 				for(key in toolbarOptions) {
+					if(key === "CREATE") {
+						defaultToolbar["CREATE_FOLDER"] = toolbarOptions[key];
+						defaultToolbar["CREATE_ENTRY"] = toolbarOptions[key];
+						defaultToolbar["CREATE_OTHER"] = toolbarOptions[key];
+					}
 					defaultToolbar[key] = toolbarOptions[key];
 				}
 			}
@@ -1210,6 +1220,14 @@ $.extend(DefaultProfile.prototype, {
 
 		this.getAllSampleTypes = function() {
 			return this.allSampleTypes;
+		}
+
+		this.getAllExperimentTypes = function() {
+			return this.allExperimentTypes;
+		}
+
+		this.getAllDataSetTypes = function() {
+			return this.allDataSetTypes;
 		}
 
 		this.datasetViewerImagePreviewIconSize = 25; // width in px
