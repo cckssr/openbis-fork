@@ -82,7 +82,7 @@ if uploadRequired:
 
         line = reader.readLine()
         while line:
-            print(line)
+            print(line.encode('utf-8'))
             line = reader.readLine()
 
         exitCode = process.waitFor()
