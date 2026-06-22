@@ -135,6 +135,8 @@ public class XLSImport
 
     private static final String ZIP_EXTENSION = "." + "zip";
 
+    private String optionalRootEntryFolder = "";
+
     public XLSImport(String sessionToken,
             IApplicationServerApi v3,
             ImportModes mode,
@@ -202,8 +204,11 @@ public class XLSImport
                     ZipEntry entry;
                     while ((entry = zip.getNextEntry()) != null)
                     {
-                        final String entryName = entry.getName().startsWith(XLSX_FOLDER_NAME) ? entry.getName().substring(XLSX_FOLDER_NAME.length())
-                                : entry.getName();
+                        final String entryName = entry.getName().startsWith(
+                                optionalRootEntryFolder + XLSX_FOLDER_NAME) ? entry.getName().substring(
+                                optionalRootEntryFolder.length() + XLSX_FOLDER_NAME.length())
+                                : entry.getName().substring(
+                                optionalRootEntryFolder.length());
                         if (entry.isDirectory())
                         {
                             if (!entryName.isEmpty() &&
@@ -212,7 +217,15 @@ public class XLSImport
                                     !entryName.startsWith(DATA_FOLDER_NAME) &&
                                     !entryName.startsWith(HIERARCHY))
                             {
-                                throw UserFailureException.fromTemplate("Illegal directory '%s' is found inside the imported file.", entryName);
+                                if (optionalRootEntryFolder.isEmpty() &&
+                                        (entry.getName().indexOf(PATH_SEPARATOR) + 1 == entry.getName().length())) {
+                                    optionalRootEntryFolder = entryName;
+                                } else
+                                {
+                                    throw UserFailureException.fromTemplate(
+                                            "Illegal directory '%s' is found inside the imported file.",
+                                            entryName);
+                                }
                             }
                         } else
                         {
@@ -552,18 +565,24 @@ public class XLSImport
                         ZipEntry entry;
                         while ((entry = zip.getNextEntry()) != null)
                         {
-                            final String filePath = entry.getName().startsWith(XLSX_FOLDER_NAME) ? entry.getName().substring(XLSX_FOLDER_NAME.length())
-                                    : entry.getName();
-                            if(filePath.startsWith(HIERARCHY + PATH_SEPARATOR) && filePath.contains(PATH_SEPARATOR + DATA_FOLDER_NAME)) {
+                            final String filePath = entry.getName().startsWith(
+                                    optionalRootEntryFolder + XLSX_FOLDER_NAME) ? entry.getName().substring(
+                                    optionalRootEntryFolder.length() + XLSX_FOLDER_NAME.length())
+                                    : entry.getName().substring(
+                                    optionalRootEntryFolder.length());
+                            if(filePath.isEmpty()) {
+                                // Do nothing
+                            } else if(filePath.startsWith(HIERARCHY + PATH_SEPARATOR) && filePath.contains(PATH_SEPARATOR + DATA_FOLDER_NAME)) {
                                 if(filePath.endsWith(DATA_FOLDER_NAME)) {
                                     dataFilePaths.add(filePath);
                                 }
                                 if (entry.isDirectory())
                                 {
-                                    createDirectory(new File(afsDir, entry.getName()));
+                                    createDirectory(new File(afsDir, entry.getName().substring(
+                                            optionalRootEntryFolder.length())));
                                 } else
                                 {
-                                    createFile(afsDir, zipFile, entry);
+                                    createFile(afsDir, zipFile, entry, optionalRootEntryFolder);
                                 }
                             }
                         }
@@ -598,10 +617,11 @@ public class XLSImport
         }
     }
 
-    private static void createFile(File outputDir, ZipFile zipFile, ZipEntry zipEntry)
+    private static void createFile(File outputDir, ZipFile zipFile, ZipEntry zipEntry, String optionalRootEntryFolder)
             throws IOException
     {
-        File outputFile = new File(outputDir, zipEntry.getName());
+        File outputFile = new File(outputDir, zipEntry.getName().substring(
+                optionalRootEntryFolder.length()));
         File parentDirectory = outputFile.getParentFile();
         if (parentDirectory.exists() == false)
         {
