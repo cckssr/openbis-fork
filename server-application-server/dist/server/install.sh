@@ -86,7 +86,6 @@ mkdir -p "$JETTY_ETC_DIR"
 
 test -f "$installation_folder/web-client.properties" && cp -p "$installation_folder/web-client.properties" "$JETTY_ETC_DIR"
 test -f "$JETTY_ETC_DIR/keystore" && rm "$JETTY_ETC_DIR/keystore"
-cp -p "$installation_folder/openBIS.keystore" "$JETTY_ETC_DIR"
 cp -p $startup_properties_file "$JETTY_ETC_DIR"
 
 

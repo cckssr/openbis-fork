@@ -174,7 +174,6 @@ ext.zipEntries = files(
         project(':server-application-server').file('dist/server/export-master-data.py'),
         project(':server-application-server').file('dist/server/export-master-data.sh'),
         project(':server-application-server').file('dist/server/install.sh'),
-        project(':server-application-server').file('dist/server/openBIS.keystore'),
         project(':server-application-server').file('dist/server/openbis.conf'),
         project(':server-application-server').file('dist/server/passwd.sh'),
         project(':server-application-server').file('dist/server/register-master-data.sh'),
