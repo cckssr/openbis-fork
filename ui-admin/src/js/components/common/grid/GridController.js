@@ -1386,7 +1386,8 @@ export default class GridController {
           [GridExportOptions.EXPORTABLE_KIND.SAMPLE_TYPE]: true,
           [GridExportOptions.EXPORTABLE_KIND.EXPERIMENT_TYPE]: true,
           [GridExportOptions.EXPORTABLE_KIND.DATASET_TYPE]: true,
-          [GridExportOptions.EXPORTABLE_KIND.VOCABULARY_TYPE]: true
+          [GridExportOptions.EXPORTABLE_KIND.VOCABULARY_TYPE]: true,
+          [GridExportOptions.EXPORTABLE_KIND.OBJECT_TYPE_GROUP]: true
         }
 
         exportedRows.forEach(exportedRow => {

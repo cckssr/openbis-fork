@@ -53,7 +53,6 @@ class TypeGroupsGrid extends React.PureComponent {
         exportable={{
           fileFormat: GridExportOptions.FILE_FORMAT.XLS,
           filePrefix: 'type-groups',
-          fileContent: GridExportOptions.FILE_CONTENT.TYPE_GROUPS
         }}
         selectable={true}
         selectedRowId={selectedRowId}

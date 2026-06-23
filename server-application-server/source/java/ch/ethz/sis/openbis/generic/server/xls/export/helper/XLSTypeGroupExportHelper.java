@@ -21,6 +21,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IEntityType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.Person;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.TypeGroup;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.TypeGroupAssignment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.fetchoptions.TypeGroupFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.TypeGroupId;
 import ch.ethz.sis.openbis.generic.server.xls.export.Attribute;
@@ -158,6 +159,36 @@ public class XLSTypeGroupExportHelper extends AbstractXLSExportHelper<IEntityTyp
                 addRow(rowNumber++, false, ExportableKind.TYPE_GROUP, null, warnings,
                         valueFiles, entityValues);
             }
+
+            List<TypeGroupAssignment> assignments = typeGroup.getTypeGroupAssignments();
+            if(!assignments.isEmpty()) {
+                // Headers
+                final Attribute[] possibleAssignmentAttributes = getAssignmentAttributes();
+                final Attribute[] importableAttributes =
+                        Arrays.stream(possibleAssignmentAttributes).filter(Attribute::isImportable)
+                                .toArray(Attribute[]::new);
+                final Attribute[] defaultPossibleAttributes =
+                        Arrays.stream(possibleAssignmentAttributes).filter(Attribute::isIncludeInDefaultList)
+                                .toArray(Attribute[]::new);
+                final Attribute[] attributes =
+                        compatibleWithImport ? importableAttributes : defaultPossibleAttributes;
+                final String[] attributeHeaders =
+                        Arrays.stream(attributes).map(Attribute::getName).toArray(String[]::new);
+
+                addRow(rowNumber++, true, ExportableKind.TYPE_GROUP, null, warnings, valueFiles,
+                        attributeHeaders);
+                for(TypeGroupAssignment assignment : typeGroup.getTypeGroupAssignments())
+                {
+                    // Values
+                    final String[] values = Arrays.stream(attributes)
+                            .map(attribute -> getAssignmentAttributeValue(assignment, attribute))
+                            .toArray(String[]::new);
+                    addRow(rowNumber++, false, ExportableKind.TYPE_GROUP, null, warnings,
+                            valueFiles, values);
+                }
+            }
+
+
             rowNumber++;
         }
 
@@ -170,6 +201,12 @@ public class XLSTypeGroupExportHelper extends AbstractXLSExportHelper<IEntityTyp
         return new Attribute[] { Attribute.CODE, Attribute.INTERNAL,
                 Attribute.REGISTRATOR, Attribute.REGISTRATION_DATE,
                 Attribute.MODIFIER, Attribute.MODIFICATION_DATE };
+    }
+
+    protected Attribute[] getAssignmentAttributes()
+    {
+        return new Attribute[] { Attribute.CODE, Attribute.INTERNAL,
+                Attribute.REGISTRATOR, Attribute.REGISTRATION_DATE };
     }
 
     protected String getAttributeValue(final TypeGroup typeGroup, final Attribute attribute)
@@ -211,6 +248,35 @@ public class XLSTypeGroupExportHelper extends AbstractXLSExportHelper<IEntityTyp
         }
     }
 
+    protected String getAssignmentAttributeValue(final TypeGroupAssignment assignment, final Attribute attribute)
+    {
+        switch (attribute)
+        {
+            case CODE:
+            {
+                return assignment.getSampleType().getCode();
+            }
+            case INTERNAL:
+            {
+                return Boolean.toString(assignment.isManagedInternally()).toUpperCase();
+            }
+            case REGISTRATOR:
+            {
+                final Person registrator = assignment.getRegistrator();
+                return registrator != null ? registrator.getUserId() : null;
+            }
+            case REGISTRATION_DATE:
+            {
+                final Date registrationDate = assignment.getRegistrationDate();
+                return registrationDate != null ? DATE_FORMAT.format(registrationDate) : null;
+            }
+            default:
+            {
+                return null;
+            }
+        }
+    }
+
     private Collection<TypeGroup> getTypeGroups(final IApplicationServerApi api, final String sessionToken,
             final Collection<String> permIds)
     {
@@ -219,6 +285,8 @@ public class XLSTypeGroupExportHelper extends AbstractXLSExportHelper<IEntityTyp
         final TypeGroupFetchOptions fetchOptions = new TypeGroupFetchOptions();
         fetchOptions.withRegistrator();
         fetchOptions.withModifier();
+        fetchOptions.withTypeGroupAssignments().withSampleType();
+        fetchOptions.withTypeGroupAssignments().withTypeGroup();
         return api.getTypeGroups(sessionToken, typeGroupPermIds, fetchOptions).values();
     }
 }

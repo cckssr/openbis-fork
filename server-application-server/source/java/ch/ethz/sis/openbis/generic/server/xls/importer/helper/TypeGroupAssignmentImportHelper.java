@@ -169,6 +169,7 @@ public class TypeGroupAssignmentImportHelper extends BasicImportHelper
         }
         if(!assignmentsToDelete.isEmpty()) {
             TypeGroupAssignmentDeletionOptions deletionOptions = new TypeGroupAssignmentDeletionOptions();
+            deletionOptions.setReason("import delete");
             delayedExecutor.deleteTypeGroupAssignments(assignmentsToDelete, deletionOptions);
             typeGroup = delayedExecutor.getTypeGroup(new TypeGroupId(typeGroupCode), fetchOptions);
             if(typeGroup != null) {
