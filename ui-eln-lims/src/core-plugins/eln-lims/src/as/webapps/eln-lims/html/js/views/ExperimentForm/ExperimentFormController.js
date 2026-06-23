@@ -158,7 +158,7 @@ function ExperimentFormController(mainController, mode, experiment) {
 								return;
 							}
 						} catch (e) {
-							Util.showUserError(errorMessage);
+							// Legacy V1 format — the V3 normalization + validation pass below handles this
 						}
 					}
 				}
