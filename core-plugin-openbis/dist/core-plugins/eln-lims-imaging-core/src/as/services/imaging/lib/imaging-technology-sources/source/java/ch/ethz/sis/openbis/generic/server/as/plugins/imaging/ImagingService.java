@@ -121,7 +121,7 @@ public class ImagingService implements ICustomASServiceExecutor
         } catch (Exception e)
         {
             operationLog.info("Exception during imaging service: " + e.toString());
-            data.setError(e.toString());
+            data.setError(String.format("%s\nCause: %s", e.getMessage(), e.getCause()));
         }
         return data;
     }
