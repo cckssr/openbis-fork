@@ -38,6 +38,7 @@ import org.apache.sshd.sftp.server.SftpSubsystemFactory;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.KeyPair;
@@ -112,6 +113,10 @@ public final class Server {
         String type = "JKS";
         String password = configuration.getStringProperty(AfsSftpServerParameter.keyStorePassword);
         String alias = configuration.getStringProperty(AfsSftpServerParameter.keyStoreKeyAlias);
+
+        if (Files.exists(ksPath) == false) {
+            KeyStoreGenerator.generateKeyStore(ksPath, alias, password);
+        }
 
         KeyStore ks = loadKeyStore(ksPath.toString(), password, type);
         KeyPair kp = loadKeyPair(ks, alias, password);
