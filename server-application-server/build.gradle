@@ -216,7 +216,6 @@ task openBISDevelopmentEnvironmentASStart(type: JavaExec) {
     classpath = sourceSets.asExec.runtimeClasspath
     jvmArgs(['-Dpython.path=../libraries/jython/jython-lib',
              '-Das.logging.configuration=etc/logging.properties',
-             '-Djavax.net.ssl.trustStore=dist/server/openBIS.keystore',
              // config for imaging
              '-Deln-lims-imaging-core.as.services.imaging.storageRoot.dss=../server-original-data-store/targets/store',
              '-Deln-lims-imaging-core.as.services.imaging.storageRoot.afs=../server-data-store/targets/tests/storage',
