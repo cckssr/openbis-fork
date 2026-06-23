@@ -391,7 +391,7 @@ final class EntityPropertyTypeDAO extends AbstractDAO implements IEntityProperty
         {
             valueColumn = "json_value";
             valueObject = property.getJsonValue();
-            valuePlaceHolder = "CAST(:value AS jsonb)";
+            valuePlaceHolder = "CAST(:value AS json)";
         } else if (property instanceof final EntityPropertyWithSampleDataTypePE sampleProperty && sampleProperty.getSampleValue() != null)
         {
             valueColumn = "samp_prop_id";
