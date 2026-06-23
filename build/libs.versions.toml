@@ -100,6 +100,7 @@ org-apache-xmlbeans-xmlbeans = "5.3.0"
 org-aspectj = "1.9.25"
 org-aspectj-aspectjweaver-v18 = "1.8.12"
 org-bouncycastle-bcpg-jdk18on = "1.84"
+org-bouncycastle-bcpkix-jdk18on = "1.84"
 org-controlsfx-controlsfx = "11.2.3"
 org-docx4j-docx4j = "6.1.2"
 org-dom4j-dom4j = "2.1.4"
@@ -252,6 +253,7 @@ org-aspectj-aspectjrt = { module = "org.aspectj:aspectjrt", version.ref = "org-a
 org-aspectj-aspectjweaver = { module = "org.aspectj:aspectjweaver", version.ref = "org-aspectj" }
 org-aspectj-aspectjweaver-v18 = { module = "org.aspectj:aspectjweaver", version.ref = "org-aspectj-aspectjweaver-v18" }
 org-bouncycastle-bcpg-jdk18on = { module = "org.bouncycastle:bcpg-jdk18on", version.ref = "org-bouncycastle-bcpg-jdk18on" }
+org-bouncycastle-bcpkix-jdk18on = { module = "org.bouncycastle:bcpkix-jdk18on", version.ref = "org-bouncycastle-bcpkix-jdk18on" }
 org-controlsfx-controlsfx = { module = "org.controlsfx:controlsfx", version.ref = "org-controlsfx-controlsfx" }
 org-docx4j-docx4j = { module = "org.docx4j:docx4j", version.ref = "org-docx4j-docx4j" }
 org-dom4j-dom4j = { module = "org.dom4j:dom4j", version.ref = "org-dom4j-dom4j" }

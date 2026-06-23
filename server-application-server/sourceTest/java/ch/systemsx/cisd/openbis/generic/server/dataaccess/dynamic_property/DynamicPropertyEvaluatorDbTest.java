@@ -37,7 +37,7 @@ public class DynamicPropertyEvaluatorDbTest extends AbstractDAOTest
     {
         evaluator =
                 new DynamicPropertyEvaluator(daoFactory, null,
-                        new DynamicPropertyCalculatorFactory(null, new TestJythonEvaluatorPool()),
-                        new ManagedPropertyEvaluatorFactory(null, new TestJythonEvaluatorPool()));
+                        new DynamicPropertyCalculatorFactory(new TestJythonEvaluatorPool()),
+                        new ManagedPropertyEvaluatorFactory(new TestJythonEvaluatorPool()));
     }
 }

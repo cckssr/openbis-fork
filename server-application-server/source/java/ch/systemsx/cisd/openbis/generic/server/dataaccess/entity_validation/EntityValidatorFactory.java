@@ -20,24 +20,18 @@ import ch.systemsx.cisd.openbis.generic.server.dataaccess.dynamic_property.calcu
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.entity_validation.api.IEntityValidator;
 import ch.systemsx.cisd.openbis.generic.shared.IJythonEvaluatorPool;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PluginType;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ScriptType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ScriptPE;
-import ch.systemsx.cisd.openbis.generic.shared.hotdeploy_plugins.AbstractCommonPropertyBasedHotDeployPluginFactory;
-import ch.systemsx.cisd.openbis.generic.shared.hotdeploy_plugins.api.IEntityAdaptor;
 
 /**
  * @author Pawel Glyzewski
  */
-public class EntityValidatorFactory extends
-        AbstractCommonPropertyBasedHotDeployPluginFactory<IEntityValidatorHotDeployPlugin>
-        implements IEntityValidatorFactory
+public class EntityValidatorFactory implements IEntityValidatorFactory
 {
     private final IJythonEvaluatorPool jythonEvaluatorPool;
 
-    public EntityValidatorFactory(String pluginDirectoryPath, IJythonEvaluatorPool jythonEvaluatorPool)
+    public EntityValidatorFactory(IJythonEvaluatorPool jythonEvaluatorPool)
     {
-        super(pluginDirectoryPath);
         this.jythonEvaluatorPool = jythonEvaluatorPool;
     }
 
@@ -67,53 +61,9 @@ public class EntityValidatorFactory extends
         {
             case JYTHON:
                 return new JythonEntityValidator(script, jythonEvaluatorPool);
-            case PREDEPLOYED:
-                IEntityValidator entityValidator = tryGetPredeployedPluginByName(scriptName);
-                if (entityValidator != null)
-                {
-                    return entityValidator;
-                }
-                return new IEntityValidator()
-                    {
-                        @Override
-                        public String validate(IEntityAdaptor entity, boolean isNew)
-                        {
-                            return "Couldn't find plugin named '" + scriptName + "'.";
-                        }
-
-                        @Override
-                        public void init(
-                                IValidationRequestDelegate<INonAbstractEntityAdapter> validationRequestedDelegate)
-                        {
-                        }
-                    };
-
         }
 
         return null;
     }
 
-    @Override
-    protected String getPluginDescription()
-    {
-        return "entity validation";
-    }
-
-    @Override
-    protected Class<IEntityValidatorHotDeployPlugin> getPluginClass()
-    {
-        return IEntityValidatorHotDeployPlugin.class;
-    }
-
-    @Override
-    protected ScriptType getScriptType()
-    {
-        return ScriptType.ENTITY_VALIDATION;
-    }
-
-    @Override
-    protected String getDefaultPluginSubDirName()
-    {
-        return "entity-validation";
-    }
 }

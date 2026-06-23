@@ -15,31 +15,23 @@
  */
 package ch.systemsx.cisd.openbis.generic.server.dataaccess.dynamic_property.calculator;
 
-import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.dynamic_property.IDynamicPropertyCalculatorFactory;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.dynamic_property.calculator.api.IDynamicPropertyCalculator;
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.dynamic_property.calculator.api.IDynamicPropertyCalculatorHotDeployPlugin;
 import ch.systemsx.cisd.openbis.generic.shared.IJythonEvaluatorPool;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PluginType;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ScriptType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePropertyTypePE;
-import ch.systemsx.cisd.openbis.generic.shared.hotdeploy_plugins.AbstractCommonPropertyBasedHotDeployPluginFactory;
 
 /**
  * The class is responsible for getting a dynamic property calculator.
- * 
+ *
  * @author Pawel Glyzewski
  */
-public class DynamicPropertyCalculatorFactory
-        extends
-        AbstractCommonPropertyBasedHotDeployPluginFactory<IDynamicPropertyCalculatorHotDeployPlugin>
-        implements IDynamicPropertyCalculatorFactory
+public class DynamicPropertyCalculatorFactory implements IDynamicPropertyCalculatorFactory
 {
     private final IJythonEvaluatorPool evaluationRunnerProvider;
 
-    public DynamicPropertyCalculatorFactory(String pluginDirectoryPath, IJythonEvaluatorPool evaluationRunnerProvider)
+    public DynamicPropertyCalculatorFactory(IJythonEvaluatorPool evaluationRunnerProvider)
     {
-        super(pluginDirectoryPath);
         this.evaluationRunnerProvider = evaluationRunnerProvider;
     }
 
@@ -61,42 +53,9 @@ public class DynamicPropertyCalculatorFactory
         {
             case JYTHON:
                 return JythonDynamicPropertyCalculator.create(script, evaluationRunnerProvider);
-            case PREDEPLOYED:
-                IDynamicPropertyCalculator dynamicPropertyCalculator =
-                        tryGetPredeployedPluginByName(scriptName);
-                if (dynamicPropertyCalculator == null)
-                {
-                    throw new UserFailureException("Couldn't find plugin named '" + scriptName
-                            + "'.");
-                }
-
-                return dynamicPropertyCalculator;
         }
 
         return null;
     }
 
-    @Override
-    protected String getPluginDescription()
-    {
-        return "dynamic property";
-    }
-
-    @Override
-    protected Class<IDynamicPropertyCalculatorHotDeployPlugin> getPluginClass()
-    {
-        return IDynamicPropertyCalculatorHotDeployPlugin.class;
-    }
-
-    @Override
-    protected ScriptType getScriptType()
-    {
-        return ScriptType.DYNAMIC_PROPERTY;
-    }
-
-    @Override
-    protected String getDefaultPluginSubDirName()
-    {
-        return "dynamic-properties";
-    }
 }

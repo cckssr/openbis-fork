@@ -36,7 +36,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.dao.DataAccessException;
-import org.springframework.dao.DataIntegrityViolationException;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.confirm.ConfirmDeletionsOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.id.DeletionTechId;
@@ -95,7 +94,6 @@ import ch.systemsx.cisd.openbis.generic.server.authorization.validator.SampleVal
 import ch.systemsx.cisd.openbis.generic.server.authorization.validator.SearchDomainSearchResultValidator;
 import ch.systemsx.cisd.openbis.generic.server.authorization.validator.SimpleSpaceOrProjectValidator;
 import ch.systemsx.cisd.openbis.generic.server.business.IPropertiesBatchManager;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.DataAccessExceptionTranslator;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.EntityCodeGenerator;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.EntityTypeBO;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.IAttachmentBO;
@@ -161,8 +159,97 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.IEntityInformationHolderWit
 import ch.systemsx.cisd.openbis.generic.shared.basic.IIdHolder;
 import ch.systemsx.cisd.openbis.generic.shared.basic.IdentifierExtractor;
 import ch.systemsx.cisd.openbis.generic.shared.basic.TechId;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.*;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Attachment;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AuthorizationGroup;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AuthorizationGroupUpdates;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.BasicEntityDescription;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.BatchOperationKind;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Code;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.CorePlugin;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.CustomImport;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.CustomImportFile;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetRelatedEntities;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetRelationshipRole;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetType;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetTypePropertyType;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetUpdateResult;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataStore;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataStoreServiceKind;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataType;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DatastoreServiceDescription;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Deletion;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DeletionType;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DetailedSearchCriteria;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DynamicPropertyEvaluationInfo;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityHistory;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityKind;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityType;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityTypePropertyType;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityValidationEvaluationInfo;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Experiment;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExperimentType;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExperimentTypePropertyType;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExperimentUpdateResult;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExternalDataManagementSystem;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Grantee;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.GridCustomFilter;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IExpressionUpdates;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IMetaprojectRegistration;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IMetaprojectUpdates;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IPropertyTypeUpdates;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IScriptUpdates;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ISpaceUpdates;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IVocabularyTermUpdates;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IVocabularyUpdates;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Identifier;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.LastModificationState;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.LinkModel;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ListOrSearchSampleCriteria;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ListSampleCriteria;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ManagedUiActionDescription;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MatchingEntity;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Metaproject;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MetaprojectAssignments;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MetaprojectAssignmentsCount;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MetaprojectAssignmentsFetchOption;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MetaprojectAssignmentsIds;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MetaprojectCriteria;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewAttachment;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewAuthorizationGroup;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewBasicExperiment;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewColumnOrFilter;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewDataSet;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewETNewPTAssigments;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewETPTAssignment;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewPTNewAssigment;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewProject;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewSample;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewVocabulary;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Person;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Project;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PropertyType;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PropertyUpdates;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.RoleAssignment;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.RoleWithHierarchy;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.RoleWithHierarchy.RoleCode;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Sample;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SampleParentWithDerived;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SampleType;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SampleTypePropertyType;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SampleUpdateResult;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Script;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ScriptType;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ScriptUpdateResult;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SearchDomainSearchResultWithFullEntity;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Space;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.TableModel;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.UpdatedBasicExperiment;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.UpdatedDataSet;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.UpdatedSample;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Vocabulary;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.VocabularyTerm;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.VocabularyTermReplacement;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.api.IManagedInputWidgetDescription;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.api.IManagedProperty;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.api.IManagedUiAction;
@@ -238,7 +325,6 @@ import ch.systemsx.cisd.openbis.generic.shared.translator.SampleTranslator;
 import ch.systemsx.cisd.openbis.generic.shared.translator.SampleTypeTranslator;
 import ch.systemsx.cisd.openbis.generic.shared.translator.ScriptTranslator;
 import ch.systemsx.cisd.openbis.generic.shared.translator.SpaceTranslator;
-import ch.systemsx.cisd.openbis.generic.shared.translator.TypeTranslator;
 import ch.systemsx.cisd.openbis.generic.shared.translator.VocabularyTermTranslator;
 import ch.systemsx.cisd.openbis.generic.shared.translator.VocabularyTranslator;
 import ch.systemsx.cisd.openbis.generic.shared.util.EntityHelper;
@@ -2201,30 +2287,9 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
     {
         Session session = getSession(sessionToken);
         IScriptBO scriptBO = businessObjectFactory.createScriptBO(session);
-        List<String> namesOfPredeployedPlugins = new ArrayList<String>();
         for (TechId id : scriptIds)
         {
-            ScriptPE script = scriptBO.deleteByTechId(id);
-            if (script.getPluginType() == PluginType.PREDEPLOYED)
-            {
-                namesOfPredeployedPlugins.add(script.getName());
-            }
-        }
-        if (namesOfPredeployedPlugins.isEmpty())
-        {
-            return;
-        }
-        IHotDeploymentController hotDeploymentController =
-                entityValidationFactory.getHotDeploymentController();
-        if (hotDeploymentController == null)
-        {
-            operationLog
-                    .warn("Can not disable hot-deployed plugins because of missing controller.");
-            return;
-        }
-        for (String name : namesOfPredeployedPlugins)
-        {
-            hotDeploymentController.disablePlugin(name);
+            scriptBO.deleteByTechId(id);
         }
     }
 
@@ -3110,37 +3175,6 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
 
     @Override
     @RolesAllowed(RoleWithHierarchy.INSTANCE_ADMIN)
-    public void registerOrUpdatePredeployedPlugin(String sessionToken, Script script)
-    {
-        Session session = getSession(sessionToken);
-        try
-        {
-            IScriptBO bo = businessObjectFactory.createScriptBO(session);
-            bo.tryDefineOrUpdateIfPossible(script);
-        } catch (IllegalArgumentException e)
-        {
-            operationLog.warn(e.getMessage());
-        }
-    }
-
-    @Override
-    @RolesAllowed(RoleWithHierarchy.INSTANCE_ADMIN)
-    public void invalidatePredeployedPlugin(String sessionToken, String name, ScriptType scriptType)
-    {
-        Session session = getSession(sessionToken);
-
-        try
-        {
-            IScriptBO bo = businessObjectFactory.createScriptBO(session);
-            bo.tryDeleteOrInvalidatePredeployedPlugin(name, scriptType);
-        } catch (IllegalArgumentException e)
-        {
-            operationLog.warn(e.getMessage());
-        }
-    }
-
-    @Override
-    @RolesAllowed(RoleWithHierarchy.INSTANCE_ADMIN)
     public void deleteAuthorizationGroups(String sessionToken, List<TechId> authGroupIds,
             String reason)
     {
@@ -3173,10 +3207,8 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
         final List<ScriptPE> scripts =
                 getDAOFactory().getScriptDAO().listEntities(scriptTypeOrNull, entityKindOrNull);
         Collections.sort(scripts);
-        List<Script> result =
-                ScriptTranslator.enhancePredeployedPlugins(ScriptTranslator.translate(scripts),
-                        entityValidationFactory, dynamicPropertyCalculatorFactory,
-                        managedPropertyEvaluatorFactory);
+        List<Script> result = ScriptTranslator.translate(scripts);
+
         if (entityKindOrNull != null)
         {
             for (Iterator<Script> iterator = result.iterator(); iterator.hasNext(); )
@@ -3432,9 +3464,7 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
     {
         getSession(sessionToken);
         ScriptPE script = getDAOFactory().getScriptDAO().getById(scriptId);
-        return ScriptTranslator.enhancePredeployedPlugin(ScriptTranslator.translate(script),
-                entityValidationFactory, dynamicPropertyCalculatorFactory,
-                managedPropertyEvaluatorFactory);
+        return ScriptTranslator.translate(script);
     }
 
     @Override
@@ -4306,25 +4336,6 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
     private AuthorizationServiceUtils getAuthorizationService(Session session)
     {
         return new AuthorizationServiceUtils(getDAOFactory(), session.tryGetPerson());
-    }
-
-    @Override
-    @RolesAllowed(RoleWithHierarchy.PROJECT_OBSERVER)
-    public List<String> listPredeployedPlugins(String sessionToken, ScriptType scriptType)
-    {
-        checkSession(sessionToken);
-
-        switch (scriptType)
-        {
-            case ENTITY_VALIDATION:
-                return entityValidationFactory.listPredeployedPlugins();
-            case DYNAMIC_PROPERTY:
-                return dynamicPropertyCalculatorFactory.listPredeployedPlugins();
-            case MANAGED_PROPERTY:
-                return managedPropertyEvaluatorFactory.listPredeployedPlugins();
-        }
-
-        return null;
     }
 
     @Override

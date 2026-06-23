@@ -14,8 +14,7 @@ user upon creation or update of the entities (samples etc.).
 In most cases values of properties must be provided directly by the
 user. The default way of handling a property in openBIS can be changed
 by an instance admin defining a property that should be handled by a script
-written in [Jython](http://www.jython.org) or predeployed plugin written
-in Java. Jython plugins use Jython version configured by the
+written in [Jython](http://www.jython.org). Jython version is configured by the
 service.properties property `jython-version` which should be 2.7.
 
 ##### Types of Scripts
@@ -258,16 +257,6 @@ The non-trivial cases are properties with data type:
 -   CONTROLLED VOCABULARY - use code of vocabulary term as string
     representation
 
-
-### Creating and Deploying Java Plugins
-
-To create valid Java plugin for Dynamic Properties, one should create a class that is implementing `ch.systemsx.cisd.openbis.generic.server.dataaccess.dynamic_property.calculator.api.IDynamicPropertyCalculatorHotDeployPlugin` interface. The class should be annotated with `ch.ethz.cisd.hotdeploy.PluginInfo` annotation specifying the name of the plugin, and `ch.systemsx.cisd.openbis.generic.server.dataaccess.dynamic_property.calculator.api.IDynamicPropertyCalculatorHotDeployPlugin` class as a plugin type.
-
-Such a plugin should be exported to a jar file and put
-into `<<openBIS installation directory>>/servers/entity-related-plugins/dynamic-properties`
-directory. The plugin will be detected automatically and will be
-automatically available to openBIS. No restart is needed.
-
 ### Dynamic properties evaluator
 
 Evaluation of dynamic properties may be very time consuming, therefore
@@ -297,8 +286,7 @@ be shown as `(pending evaluation)`.
 Entity validation scripts are a mechanism to ensure metadata
 consistency. For each entity type a user can define a validation
 procedure, which will be performed at each creation or update of the
-entity of that type. There are two ways to define an entity validation
-procedure: Jython scripts and Java plugins.
+entity of that type. Entity validation scripts are written in Jython.
 
 ### Defining a Jython validation script
 
@@ -372,25 +360,6 @@ does not have any properties defined:
     def validate(entity, isNew):
       for s in entity.children():
         requestValidation(s)
-
-
-
-### Creating and Deploying Java Validation Plugins
-
-To create a valid Java plugin for Entity Validation, one should create a
-class that is implementing
-`the ch.systemsx.cisd.openbis.generic.server.dataaccess.entity_validation.IEntityValidatorHotDeployPlugin` interface.
-The class should be annotated with
-`ch.ethz.cisd.hotdeploy.PluginInfo` annotation specifying the name of
-the plugin,
-and `ch.systemsx.cisd.openbis.generic.server.dataaccess.entity_validation.IEntityValidatorHotDeployPlugin` class
-as a plugin type.
-
-All classes needed to run the plugin have to be exported to a jar file
-and put into
-`the directory <<openBIS installation directory>>/servers/entity-related-plugins/entity-validation`.
-The plugin will be detected and made available automatically to openBIS.
-No restart is required for that.
 
 ### When are validations performed
 

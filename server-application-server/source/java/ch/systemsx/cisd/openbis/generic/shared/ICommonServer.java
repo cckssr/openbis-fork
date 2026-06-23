@@ -1446,12 +1446,6 @@ public interface ICommonServer extends IServer
             IMetaprojectUpdates updates);
 
     /**
-     * Lists all the predeployed plugin names for given script type.
-     */
-    @Transactional(readOnly = true)
-    public List<String> listPredeployedPlugins(String sessionToken, ScriptType scriptType);
-
-    /**
      * Gets text for front page if the AS is disabled, null otherwise.
      */
     public String getDisabledText();

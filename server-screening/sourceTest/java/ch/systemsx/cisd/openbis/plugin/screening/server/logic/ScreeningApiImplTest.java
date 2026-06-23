@@ -81,7 +81,7 @@ public class ScreeningApiImplTest extends AbstractServerTestCase
         screeningBOFactory = context.mock(IScreeningBusinessObjectFactory.class);
         screeningApi =
                 new ScreeningApiImpl(session, screeningBOFactory, daoFactory,
-                        new ManagedPropertyEvaluatorFactory(null, new TestJythonEvaluatorPool()));
+                        new ManagedPropertyEvaluatorFactory(new TestJythonEvaluatorPool()));
     }
 
     @Test

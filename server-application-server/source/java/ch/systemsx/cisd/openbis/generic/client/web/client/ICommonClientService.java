@@ -1232,11 +1232,6 @@ public interface ICommonClientService extends IClientService
     public void registerMetaProject(String name) throws UserFailureException;
 
     /**
-     * Lists all the available predeployed plugin names for given script type.
-     */
-    public List<String> listPredeployedPlugins(ScriptType scriptType);
-
-    /**
      * Gets text for front page if the AS is disabled, null otherwise.
      */
     public String getDisabledText();

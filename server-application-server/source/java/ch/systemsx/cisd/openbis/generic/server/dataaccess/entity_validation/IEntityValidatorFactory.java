@@ -20,13 +20,11 @@ import ch.systemsx.cisd.openbis.generic.server.dataaccess.dynamic_property.calcu
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.entity_validation.api.IEntityValidator;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PluginType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePE;
-import ch.systemsx.cisd.openbis.generic.shared.hotdeploy_plugins.ICommonPropertyBasedHotDeployPluginFactory;
 
 /**
  * @author Pawel Glyzewski
  */
-public interface IEntityValidatorFactory extends
-        ICommonPropertyBasedHotDeployPluginFactory<IEntityValidatorHotDeployPlugin>
+public interface IEntityValidatorFactory
 {
     public IEntityValidator createEntityValidator(EntityTypePE entityTypePE,
             IValidationRequestDelegate<INonAbstractEntityAdapter> validationRequestedDelegate);

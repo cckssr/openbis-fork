@@ -71,7 +71,7 @@ public class DataSetTranslatorTest extends AssertJUnit
         externalDataPE.setDataStore(createStore());
         AbstractExternalData data =
                 DataSetTranslator.translate(externalDataPE, BASE_INDEX_URL, null,
-                        new ManagedPropertyEvaluatorFactory(null, new TestJythonEvaluatorPool()), null);
+                        new ManagedPropertyEvaluatorFactory(new TestJythonEvaluatorPool()), null);
 
         PhysicalDataSet translated = data.tryGetAsDataSet();
 
@@ -130,7 +130,7 @@ public class DataSetTranslatorTest extends AssertJUnit
         externalDataPE.setSampleAcquiredFrom(samplePE);
         AbstractExternalData data =
                 DataSetTranslator.translate(externalDataPE, BASE_INDEX_URL, null,
-                        new ManagedPropertyEvaluatorFactory(null, new TestJythonEvaluatorPool()), null);
+                        new ManagedPropertyEvaluatorFactory(new TestJythonEvaluatorPool()), null);
 
         PhysicalDataSet translated = data.tryGetAsDataSet();
 
@@ -183,7 +183,7 @@ public class DataSetTranslatorTest extends AssertJUnit
 
         AbstractExternalData externalData =
                 DataSetTranslator.translate(externalDataPE, BASE_INDEX_URL, null,
-                        new ManagedPropertyEvaluatorFactory(null, new TestJythonEvaluatorPool()), null);
+                        new ManagedPropertyEvaluatorFactory(new TestJythonEvaluatorPool()), null);
 
         assertEquals("my-experiment", externalData.getExperiment().getCode());
         assertEquals(2, externalData.getParents().size());
@@ -230,7 +230,7 @@ public class DataSetTranslatorTest extends AssertJUnit
 
         AbstractExternalData externalData =
                 DataSetTranslator.translate(linkDataPE, BASE_INDEX_URL, null,
-                        new ManagedPropertyEvaluatorFactory(null, new TestJythonEvaluatorPool()), null);
+                        new ManagedPropertyEvaluatorFactory(new TestJythonEvaluatorPool()), null);
 
         assertEquals("my-experiment", externalData.getExperiment().getCode());
         assertEquals(2, externalData.getParents().size());

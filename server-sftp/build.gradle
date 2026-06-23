@@ -30,7 +30,8 @@ dependencies {
             libs.org.apache.sshd.sshd.core,
             libs.org.apache.sshd.sshd.sftp,
             libs.org.apache.sshd.sshd.netty,
-            libs.io.netty.netty.all
+            libs.io.netty.netty.all,
+            libs.org.bouncycastle.bcpkix.jdk18on
     testImplementation libs.org.junit.junit,
             libs.org.mockito.mockito.core,
             libs.org.hamcrest.hamcrest.core,

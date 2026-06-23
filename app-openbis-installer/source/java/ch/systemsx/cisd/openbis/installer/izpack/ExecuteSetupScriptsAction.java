@@ -193,11 +193,6 @@ public class ExecuteSetupScriptsAction extends AbstractScriptExecutor
             try
             {
                 File keyStoreFile = new File(keyStoreFileName);
-                if (Utils.isASInstalled(installDir))
-                {
-                    File keystoreFileAS = Utils.getKeystoreFileForAS(installDir);
-                    FileUtils.copyFile(keyStoreFile, keystoreFileAS);
-                }
                 File keystoreFileDSS = Utils.getKeystoreFileForDSS(installDir);
                 FileUtils.copyFile(keyStoreFile, keystoreFileDSS);
             } catch (IOException ex)

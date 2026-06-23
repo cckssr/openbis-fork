@@ -7,17 +7,6 @@ testDynamicPropertyJythonPlugin.setPluginType(
   openbis.PluginType.DYNAMIC_PROPERTY
 )
 
-const testDynamicPropertyPredeployedPlugin = new openbis.Plugin()
-testDynamicPropertyPredeployedPlugin.setName(
-  'TEST_DYNAMIC_PROPERTY_PREDEPLOYED'
-)
-testDynamicPropertyPredeployedPlugin.setPluginKind(
-  openbis.PluginKind.PREDEPLOYED
-)
-testDynamicPropertyPredeployedPlugin.setPluginType(
-  openbis.PluginType.DYNAMIC_PROPERTY
-)
-
 const testManagedPropertyJythonPlugin = new openbis.Plugin()
 testManagedPropertyJythonPlugin.setName('TEST_MANAGED_PROPERTY_JYTHON')
 testManagedPropertyJythonPlugin.setPluginKind(openbis.PluginKind.JYTHON)
@@ -37,7 +26,6 @@ testQuery.setName('TEST_QUERY')
 
 export default {
   testDynamicPropertyJythonPlugin,
-  testDynamicPropertyPredeployedPlugin,
   testManagedPropertyJythonPlugin,
   testEntityValidationJythonPlugin,
   testQuery

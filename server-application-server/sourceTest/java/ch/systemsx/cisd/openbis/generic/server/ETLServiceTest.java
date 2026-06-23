@@ -209,7 +209,7 @@ public class ETLServiceTest extends AbstractServerTestCase
                 context.mock(ISessionManager.class, "sessionManagerForEntityOperations");
         sessionPerson = new PersonPE();
         session.setPerson(sessionPerson);
-        managedPropertyEvaluatorFactory = new ManagedPropertyEvaluatorFactory(null, new TestJythonEvaluatorPool());
+        managedPropertyEvaluatorFactory = new ManagedPropertyEvaluatorFactory(new TestJythonEvaluatorPool());
         operationsExecutor = context.mock(IOperationsExecutor.class);
         operationLimiter = new ConcurrentOperationLimiter(new ConcurrentOperationLimiterConfig(new Properties()));
 

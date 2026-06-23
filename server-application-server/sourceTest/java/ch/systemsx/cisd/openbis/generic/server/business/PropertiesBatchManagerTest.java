@@ -78,7 +78,7 @@ public class PropertiesBatchManagerTest extends AssertJUnit
         PropertyBuilder p5 = new PropertyBuilder(MANAGED_SUBCOLUMNS + ":2").value("12");
         addProperties(e2, p3, p4, p5);
 
-        new PropertiesBatchManager(new ManagedPropertyEvaluatorFactory(null, new TestJythonEvaluatorPool())).manageProperties(
+        new PropertiesBatchManager(new ManagedPropertyEvaluatorFactory(new TestJythonEvaluatorPool())).manageProperties(
                 builder.getExperimentTypePE(), Arrays.asList(e1, e2), null);
 
         assertProperties("UN-MANAGED:hello, MANAGED-NO-SUBCOLUMNS:hi", e1);
@@ -100,7 +100,7 @@ public class PropertiesBatchManagerTest extends AssertJUnit
         PropertyBuilder p2 = new PropertyBuilder(MANAGED_ACCESS_OTHER_COLUMNS).value("ptr");
         addProperties(e1, p1, p2);
 
-        new PropertiesBatchManager(new ManagedPropertyEvaluatorFactory(null, new TestJythonEvaluatorPool())).manageProperties(
+        new PropertiesBatchManager(new ManagedPropertyEvaluatorFactory(new TestJythonEvaluatorPool())).manageProperties(
                 builder.getExperimentTypePE(), Arrays.asList(e1), null);
 
         assertProperties("UN-MANAGED:hello, MANAGED_ACCESS_OTHER_COLUMNS:hello ptr", e1);
@@ -123,7 +123,7 @@ public class PropertiesBatchManagerTest extends AssertJUnit
 
         try
         {
-            new PropertiesBatchManager(new ManagedPropertyEvaluatorFactory(null, new TestJythonEvaluatorPool())).manageProperties(
+            new PropertiesBatchManager(new ManagedPropertyEvaluatorFactory(new TestJythonEvaluatorPool())).manageProperties(
                     builder.getSampleType(), Arrays.asList(s1, s2), null);
         } catch (UserFailureException ufe)
         {
@@ -152,7 +152,7 @@ public class PropertiesBatchManagerTest extends AssertJUnit
 
         try
         {
-            new PropertiesBatchManager(new ManagedPropertyEvaluatorFactory(null, new TestJythonEvaluatorPool())).manageProperties(
+            new PropertiesBatchManager(new ManagedPropertyEvaluatorFactory(new TestJythonEvaluatorPool())).manageProperties(
                     builder.getExperimentTypePE(), Arrays.asList(e1), null);
             fail("UserFailureException expected");
         } catch (UserFailureException ex)

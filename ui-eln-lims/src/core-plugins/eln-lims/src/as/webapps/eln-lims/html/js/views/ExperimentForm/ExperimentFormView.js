@@ -87,31 +87,37 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		var dropdownOptionsModel = [];
 		if(this._experimentFormModel.mode === FormMode.VIEW) {
 		    var toolbarConfig = profile.getExperimentTypeToolbarConfiguration(_this._experimentFormModel.experiment.experimentTypeCode);
-			if (_this._allowedToCreateSample() && toolbarConfig.CREATE) {
+			if (_this._allowedToCreateSample()) {
 
-                if(!isInventoryExperiment) {
+                if(!isInventoryExperiment && toolbarConfig.CREATE_FOLDER) {
+                    const labelInfo = LabelUtil.getToolbarLabelInfo("CREATE_FOLDER")
                      var $createFolder = FormUtil.getToolbarButton("FOLDER", function() {
                           _this._experimentFormController.createObject("FOLDER");
-                     }, "Folder", "New Folder", "create-folder-btn-"+_this._viewId, 'btn btn-primary btn-secondary');
+                     }, labelInfo.label, labelInfo.tooltip, "create-folder-btn-"+_this._viewId, 'btn btn-primary btn-secondary');
                      toolbarModel.push({ component : $createFolder});
                  }
 
-			     var $createEntry = FormUtil.getToolbarButton("ENTRY", function() {
-                     _this._experimentFormController.createObject("ENTRY");
-                 }, "Entry", "New Entry", "create-entry-btn-"+_this._viewId, 'btn btn-primary btn-secondary');
-                 toolbarModel.push({ component : $createEntry});
+                if(toolbarConfig.CREATE_ENTRY) {
+                    const labelInfo = LabelUtil.getToolbarLabelInfo("CREATE_ENTRY")
+                    var $createEntry = FormUtil.getToolbarButton("ENTRY", function () {
+                        _this._experimentFormController.createObject("ENTRY");
+                    }, labelInfo.label, labelInfo.tooltip, "create-entry-btn-" + _this._viewId, 'btn btn-primary btn-secondary');
+                    toolbarModel.push({component: $createEntry});
+                }
 
-
-                 var $createOther = FormUtil.getToolbarButton("ENTRY", function() {
-                       _this._experimentFormController.createObject();
-                  }, "Other", "Create different object", "create-object-btn-"+_this._viewId, 'btn btn-primary btn-secondary');
-                  toolbarModel.push({ component : $createOther});
-
+                if(toolbarConfig.CREATE_OTHER) {
+                    const labelInfo = LabelUtil.getToolbarLabelInfo("CREATE_OTHER")
+                    var $createOther = FormUtil.getToolbarButton("ENTRY", function () {
+                        _this._experimentFormController.createObject();
+                    }, labelInfo.label, labelInfo.tooltip, "create-object-btn-" + _this._viewId, 'btn btn-primary btn-secondary');
+                    toolbarModel.push({component: $createOther});
+                }
 			}
 			if (_this._allowedToMove() && toolbarConfig.MOVE) {
 				//Move
+                const labelInfo = LabelUtil.getToolbarLabelInfo("MOVE")
 				dropdownOptionsModel.push({
-                    label : "Move",
+                    label : labelInfo.label,
                     action : function() {
                         var moveEntityController = new MoveEntityController("EXPERIMENT", experimentFormModel.experiment.permId);
                         moveEntityController.init();
@@ -224,8 +230,9 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
                     )
 				}
 
+                const labelInfo = LabelUtil.getToolbarLabelInfo("DELETE")
                 dropdownOptionsModel.push({
-                    label : "Delete",
+                    label : labelInfo.label,
                     action : function() {
                         loadDeletionModalData().then(function(modalData){
                             var modalView = new DeleteEntityController(function(reason) {
@@ -241,22 +248,26 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 			}
 
 			//Print
-			dropdownOptionsModel.push(FormUtil.getPrintPDFButtonModel("EXPERIMENT",  _this._experimentFormModel.experiment.permId));
+            if(toolbarConfig.PRINT) {
+                dropdownOptionsModel.push(FormUtil.getPrintPDFButtonModel("EXPERIMENT", _this._experimentFormModel.experiment.permId));
+            }
 
 			if(_this._allowedToRegisterDataSet()) {
 			    if(toolbarConfig.UPLOAD_DATASET) {
 			        //Create Dataset
+                    const labelInfo = LabelUtil.getToolbarLabelInfo("UPLOAD_DATASET")
 			        var $uploadBtn = FormUtil.getToolbarButton("DATA", function() {
                           Util.blockUI();
                           mainController.changeView('showCreateDataSetPageFromExpPermId',_this._experimentFormModel.experiment.permId);
-                     }, "Dataset", "Upload dataset", "upload-btn-"+_this._viewId, 'btn btn-primary btn-secondary');
+                     }, labelInfo.label, labelInfo.tooltip, "upload-btn-"+_this._viewId, 'btn btn-primary btn-secondary');
                      toolbarModel.push({ component : $uploadBtn});
 	            }
 
 	            if(toolbarConfig.UPLOAD_DATASET_HELPER) {
                     //Get dropbox folder name
+                    let labelInfo = LabelUtil.getToolbarLabelInfo("UPLOAD_DATASET_HELPER")
                     dropdownOptionsModel.push({
-                        label : "Dataset upload helper tool for eln-lims dropbox",
+                        label : labelInfo.label,
                         action : function() {
                             var space = IdentifierUtil.getSpaceCodeFromIdentifier(_this._experimentFormModel.experiment.identifier);
                             var project = IdentifierUtil.getProjectCodeFromExperimentIdentifier(_this._experimentFormModel.experiment.identifier);
@@ -270,8 +281,9 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
                         }
                     });
 
+                    labelInfo = LabelUtil.getToolbarLabelInfo("METADATA_IMPORT_TEMPLATE")
 					dropdownOptionsModel.push({
-						label : "Template for metadata import",
+						label : labelInfo.label,
 						action : function() {
 							var templateLink = mainController.serverFacade.getTemplateLink("EXPERIMENT",
 									experimentTypeCode, "REGISTRATION", "json");
@@ -283,21 +295,25 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 
 			if (_this._allowedToEdit() && toolbarConfig.EDIT) {
                 //Edit
+                const labelInfo = LabelUtil.getToolbarLabelInfo("EDIT_COLLECTION");
                 var $editBtn = FormUtil.getToolbarButton("EDIT", function() {
                    Util.blockUI();
                    var exp = _this._experimentFormModel.experiment;
                    var args = encodeURIComponent('["' + exp.identifier + '","' + exp.experimentTypeCode + '"]');
                    mainController.changeView("showEditExperimentPageFromIdentifier", args);
-              }, "Edit", "Edit collection", "edit-collection-btn-"+_this._viewId, 'btn btn-primary btn-secondary');
+              }, labelInfo.label, labelInfo.tooltip, "edit-collection-btn-"+_this._viewId, 'btn btn-primary btn-secondary');
               toolbarModel.push({ component : $editBtn });
             }
-			//Export
-			dropdownOptionsModel.push(FormUtil.getExportButtonModel("EXPERIMENT", _this._experimentFormModel.experiment.permId));
 
+			//Export
+            if(toolbarConfig.EXPORT_ALL) {
+                dropdownOptionsModel.push(FormUtil.getExportButtonModel("EXPERIMENT", _this._experimentFormModel.experiment.permId));
+            }
 			//Jupyter Button
 			if(profile.jupyterIntegrationServerEndpoint) {
+                const labelInfo = LabelUtil.getToolbarLabelInfo("NEW_JUPYTER");
 				dropdownOptionsModel.push({
-                    label : "New Jupyter notebook",
+                    label : labelInfo.label,
                     action : function () {
                         var jupyterNotebook = new JupyterNotebookController(_this._experimentFormModel.experiment);
                         jupyterNotebook.init();
@@ -310,19 +326,21 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
                 var isEntityFrozen = _this._experimentFormModel.v3_experiment.frozen;
                 var isImmutableData = _this._experimentFormModel.v3_experiment.immutableDataDate
                 if(isEntityFrozen) {
+                    const labelInfo = LabelUtil.getToolbarLabelInfo("FROZEN");
                     var $freezeButton = FormUtil.getToolbarButton("LOCKED")
                     $freezeButton.attr("disabled", "disabled");
-                    $freezeButton.append("Frozen");
+                    $freezeButton.append(labelInfo.label);
                     toolbarModel.push({ component : $freezeButton, tooltip: null });
                 } else {
+                    const labelInfo = LabelUtil.getToolbarLabelInfo("FROZEN_DATA");
                     if(profile.isAFSAvailable() && isImmutableData) {
                         var $freezeButton = FormUtil.getToolbarButton("LOCKED_DATA")
                         $freezeButton.attr("disabled", "disabled");
-                        $freezeButton.append("Frozen Data");
+                        $freezeButton.append(labelInfo.label);
                         toolbarModel.push({ component : $freezeButton, tooltip: null });
                     }
                     dropdownOptionsModel.push({
-                        label : "Freeze Entity metadata (Disable further modifications)",
+                        label : labelInfo.tooltip,
                         action : function () {
                             FormUtil.showFreezeForm("EXPERIMENT", _this._experimentFormModel.v3_experiment.permId.permId, _this._experimentFormModel.v3_experiment.code);
                         }
@@ -332,8 +350,9 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 
                 // Entity data freezing
                 if(!isEntityFrozen && profile.isAFSAvailable() && !isImmutableData) {
+                    const labelInfo = LabelUtil.getToolbarLabelInfo("FREEZE");
                     dropdownOptionsModel.push({
-                        label : "Freeze Entity data (Disable further data upload)",
+                        label : labelInfo.label,
                         action : function () {
                             FormUtil.showFreezeAfsDataForm("EXPERIMENT", _this._experimentFormModel.v3_experiment.permId.permId, _this._experimentFormModel.v3_experiment.code);
                         }
@@ -349,20 +368,22 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 
             //History
             if(toolbarConfig.HISTORY) {
+                const labelInfo = LabelUtil.getToolbarLabelInfo("HISTORY");
                 dropdownOptionsModel.push({
-                    label : "History",
+                    label : labelInfo.label,
                     action : function() {
                         mainController.changeView('showExperimentHistoryPage', _this._experimentFormModel.experiment.permId);
                     }
                 });
             }
 		} else { //Create and Edit
+            const labelInfo = LabelUtil.getToolbarLabelInfo("SAVE");
 			var $saveBtn = FormUtil.getToolbarButton("SAVE", function() {
 				_this._experimentFormController.updateExperiment();
 				if(!_this._wasSideMenuCollapsed) {
                     mainController.sideMenu.expandSideMenu();
                 }
-			}, "Save", "Save changes", "save-collection-btn-"+_this._viewId, 'btn btn-primary');
+			}, labelInfo.label, labelInfo.tooltip, "save-collection-btn-"+_this._viewId, 'btn btn-primary');
 			toolbarModel.push({ component : $saveBtn });
 		}
 
@@ -484,9 +505,10 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		FormUtil.addOptionsToToolbar($formColumn, toolbarModel, dropdownOptionsModel, hideShowOptionsModel,
 				"EXPERIMENT-VIEW-" + this._experimentFormModel.experiment.experimentTypeCode, null, false);
 
+        const labelInfoHelp = LabelUtil.getToolbarLabelInfo("DOCS");
         var $helpBtn = FormUtil.getToolbarButton("?", function() {
             mainController.openHelpPage();
-        }, null, "Documentation", "help-collection-btn-"+_this._viewId, 'btn btn-default help');
+        }, labelInfoHelp.label, labelInfoHelp.tooltip, "help-collection-btn-"+_this._viewId, 'btn btn-default help');
         $helpBtn.find("span").css("vertical-align", "middle").css("font-size", "24px")
         toolbarModel.push({ component : $helpBtn });
 

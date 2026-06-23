@@ -15,7 +15,6 @@
  */
 package ch.systemsx.cisd.openbis.generic.shared.managed_property;
 
-import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.generic.shared.IJythonEvaluatorPool;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityTypePropertyType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PluginType;
@@ -23,9 +22,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Script;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ScriptType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePropertyTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ScriptPE;
-import ch.systemsx.cisd.openbis.generic.shared.hotdeploy_plugins.AbstractCommonPropertyBasedHotDeployPluginFactory;
 import ch.systemsx.cisd.openbis.generic.shared.managed_property.api.IManagedPropertyEvaluator;
-import ch.systemsx.cisd.openbis.generic.shared.managed_property.api.IManagedPropertyHotDeployEvaluator;
 
 /**
  * Factory for creating managed property evaluators. (Could do some caching or other cleverness.)
@@ -34,15 +31,12 @@ import ch.systemsx.cisd.openbis.generic.shared.managed_property.api.IManagedProp
  * @author Jakub Straszewski
  * @author Pawel Glyzewski
  */
-public class ManagedPropertyEvaluatorFactory extends
-        AbstractCommonPropertyBasedHotDeployPluginFactory<IManagedPropertyHotDeployEvaluator>
-        implements IManagedPropertyEvaluatorFactory
+public class ManagedPropertyEvaluatorFactory implements IManagedPropertyEvaluatorFactory
 {
     private final IJythonEvaluatorPool jythonEvaluatorPool;
 
-    public ManagedPropertyEvaluatorFactory(String pluginDirectoryPath, IJythonEvaluatorPool jythonEvaluatorPool)
+    public ManagedPropertyEvaluatorFactory(IJythonEvaluatorPool jythonEvaluatorPool)
     {
-        super(pluginDirectoryPath);
         this.jythonEvaluatorPool = jythonEvaluatorPool;
     }
 
@@ -75,43 +69,9 @@ public class ManagedPropertyEvaluatorFactory extends
             case JYTHON:
                 return new JythonManagedPropertyEvaluator(
                         jythonEvaluatorPool.getManagedPropertiesRunner(scriptBody));
-            case PREDEPLOYED:
-                IManagedPropertyEvaluator managedPropertyEvaluator =
-                        tryGetPredeployedPluginByName(scriptName);
-                if (managedPropertyEvaluator == null)
-                {
-                    throw new UserFailureException("Couldn't find plugin named '" + scriptName
-                            + "'.");
-                }
-
-                return managedPropertyEvaluator;
-
         }
 
         return null;
     }
 
-    @Override
-    protected String getPluginDescription()
-    {
-        return "managed property evaluator";
-    }
-
-    @Override
-    protected Class<IManagedPropertyHotDeployEvaluator> getPluginClass()
-    {
-        return IManagedPropertyHotDeployEvaluator.class;
-    }
-
-    @Override
-    protected ScriptType getScriptType()
-    {
-        return ScriptType.MANAGED_PROPERTY;
-    }
-
-    @Override
-    protected String getDefaultPluginSubDirName()
-    {
-        return "managed-properties";
-    }
 }

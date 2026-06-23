@@ -56,31 +56,24 @@ class PluginForm extends React.PureComponent {
     const { plugin, evaluateParameters, evaluateResults, selection, mode } =
       this.state
 
-    if (plugin.pluginKind === openbis.PluginKind.JYTHON) {
-      return (
-        <React.Fragment>
-          <PluginFormScript
-            plugin={plugin}
-            selection={selection}
-            mode={mode}
-            onChange={controller.handleChange}
-            onSelectionChange={controller.handleSelectionChange}
-            onBlur={controller.handleBlur}
-          />
-          <PluginFormEvaluateParameters
-            plugin={plugin}
-            parameters={evaluateParameters}
-            onChange={controller.handleChange}
-          />
-          <PluginFormEvaluateResults
-            plugin={plugin}
-            results={evaluateResults}
-          />
-        </React.Fragment>
-      )
-    } else {
-      return <div></div>
-    }
+    return (
+      <React.Fragment>
+        <PluginFormScript
+          plugin={plugin}
+          selection={selection}
+          mode={mode}
+          onChange={controller.handleChange}
+          onSelectionChange={controller.handleSelectionChange}
+          onBlur={controller.handleBlur}
+        />
+        <PluginFormEvaluateParameters
+          plugin={plugin}
+          parameters={evaluateParameters}
+          onChange={controller.handleChange}
+        />
+        <PluginFormEvaluateResults plugin={plugin} results={evaluateResults} />
+      </React.Fragment>
+    )
   }
 
   renderAdditionalPanel() {

@@ -317,8 +317,9 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 		var dropdownOptionsModel = [];
 		if(this._dataSetFormModel.mode === FormMode.VIEW && !this._dataSetFormModel.isMini) {
 			var toolbarConfig = profile.getDataSetTypeToolbarConfiguration(this._getTypeCode());
-			if (_this._allowedToEdit()) {
+			if (_this._allowedToEdit() && toolbarConfig.EDIT) {
 				//Edit Button
+				const labelInfo = LabelUtil.getToolbarLabelInfo("EDIT_DATA");
 				var $editBtn = FormUtil.getToolbarButton("EDIT", function () {
 				    Util.blockUI();
 				    var arg = {
@@ -326,10 +327,8 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
                             paginationInfo : _this._dataSetFormModel.paginationInfo
                     }
 					mainController.changeView('showEditDataSetPageFromPermId', arg);
-				}, "Edit", "Edit data", "dataset-edit-btn-"+_this._viewId, 'btn btn-primary btn-secondary');
-				if(toolbarConfig.EDIT) {
-					toolbarModel.push({ component : $editBtn });
-				}
+				}, labelInfo.label, labelInfo.tooltip, "dataset-edit-btn-"+_this._viewId, 'btn btn-primary btn-secondary');
+				toolbarModel.push({ component : $editBtn });
 			}
 
 			this._addArchivingButton(toolbarModel, toolbarConfig);
@@ -337,8 +336,9 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 			if(_this._allowedToMove()) {
 				//Move
 				if(toolbarConfig.MOVE) {
+					const labelInfo = LabelUtil.getToolbarLabelInfo("MOVE")
                     dropdownOptionsModel.push({
-                        label : "Move",
+                        label : labelInfo.label,
                         action : function() {
                                 var moveEntityController = new MoveEntityController("DATASET", _this._dataSetFormModel.dataSetV3.code);
                                 moveEntityController.init();
@@ -349,8 +349,9 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 			if(_this._allowedToDelete()) {
 				//Delete Button
 				if(toolbarConfig.DELETE) {
+					const labelInfo = LabelUtil.getToolbarLabelInfo("DELETE")
                     dropdownOptionsModel.push({
-                        label : "Delete",
+                        label : labelInfo.label,
                         action : function() {
                             var modalView = new DeleteEntityController(function(reason) {
 					            _this._dataSetFormController.deleteDataSet(reason);
@@ -363,12 +364,15 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 			}
 
             //Print
-            dropdownOptionsModel.push(FormUtil.getPrintPDFButtonModel("DATASET",  _this._dataSetFormModel.dataSetV3.code));
+			if(toolbarConfig.PRINT) {
+				dropdownOptionsModel.push(FormUtil.getPrintPDFButtonModel("DATASET", _this._dataSetFormModel.dataSetV3.code));
+			}
 
 			//Hierarchy Table
 			if(toolbarConfig.HIERARCHY_TABLE) {
+				const labelInfo = LabelUtil.getToolbarLabelInfo("HIERARCHY_TABLE")
 				dropdownOptionsModel.push({
-                    label : "Hierarchy Table",
+                    label : labelInfo.label,
                     action : function() {
                         mainController.changeView('showDatasetHierarchyTablePage', _this._dataSetFormModel.dataSetV3.code);
                     }
@@ -376,7 +380,9 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 			}
 
 			//Export
-			dropdownOptionsModel.push(FormUtil.getExportButtonModel("DATASET", _this._dataSetFormModel.dataSetV3.code));
+			if(toolbarConfig.EXPORT_ALL) {
+				dropdownOptionsModel.push(FormUtil.getExportButtonModel("DATASET", _this._dataSetFormModel.dataSetV3.code));
+			}
 
             if (this._dataSetFormModel.availableProcessingServices.length > 0) {
                 dropdownOptionsModel.push({
@@ -442,11 +448,13 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
                 var isEntityFrozen = _this._dataSetFormModel.v3_dataset.frozen;
                 if(toolbarConfig.FREEZE) {
                     if(isEntityFrozen) {
+						const labelInfo = LabelUtil.getToolbarLabelInfo("FROZEN");
                         var $freezeButton = FormUtil.getFreezeButton("DATASET", this._dataSetFormModel.v3_dataset.permId.permId, isEntityFrozen);
-                        toolbarModel.push({ component : $freezeButton, tooltip: "Entity Frozen" });
+                        toolbarModel.push({ component : $freezeButton, tooltip: labelInfo.tooltip });
                     } else {
+						const labelInfo = LabelUtil.getToolbarLabelInfo("FREEZE_ENTITY");
                         dropdownOptionsModel.push({
-                            label : "Freeze Entity (Disable further modifications)",
+                            label : labelInfo.label,
                             action : function () {
                                 FormUtil.showFreezeForm("DATASET", _this._dataSetFormModel.v3_dataset.permId.permId, _this._dataSetFormModel.v3_dataset.code);
                             }
@@ -457,20 +465,22 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 
             //History
             if(toolbarConfig.HISTORY) {
+				const labelInfo = LabelUtil.getToolbarLabelInfo("HISTORY");
                 dropdownOptionsModel.push({
-                    label : "History",
+                    label : labelInfo.label,
                     action : function() {
                         mainController.changeView('showDatasetHistoryPage', _this._dataSetFormModel.dataSetV3.code);
                     }
                 });
             }
 		} else if(!this._dataSetFormModel.isMini) {
+			const labelInfo = LabelUtil.getToolbarLabelInfo("SAVE");
 			var $saveBtn = FormUtil.getToolbarButton("SAVE", function() {
 				_this._dataSetFormController.submitDataSet();
 				if(!_this._wasSideMenuCollapsed) {
                     mainController.sideMenu.expandSideMenu();
                 }
-			}, "Save", "Save changes", "save-dataset-btn-"+this._viewId);
+			}, labelInfo.label, labelInfo.tooltip, "save-dataset-btn-"+this._viewId);
 			$saveBtn.removeClass("btn-default");
 			$saveBtn.addClass("btn-primary");
 			toolbarModel.push({ component : $saveBtn });
@@ -499,9 +509,10 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
             }
 
 			FormUtil.addOptionsToToolbar(null, toolbarModel, dropdownOptionsModel, hideShowOptionsModel, "DATA-SET-VIEW");
+			const labelInfoHelp = LabelUtil.getToolbarLabelInfo("DOCS");
 			var $helpBtn = FormUtil.getToolbarButton("?", function() {
                 mainController.openHelpPage();
-            }, null, "Documentation", "help-dataset-btn-"+this._viewId, 'btn btn-default help');
+            }, labelInfoHelp.label, labelInfoHelp.tooltip, "help-dataset-btn-"+this._viewId, 'btn btn-default help');
             $helpBtn.find("span").css("vertical-align", "middle").css("font-size", "24px")
             toolbarModel.push({ component : $helpBtn });
 			$header.append(FormUtil.getToolbar(toolbarModel));

@@ -30,6 +30,8 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 	this._sampleTypeDefinitionsSettingsTableModels = {}; // key: sample type; value: table model
 	this._sampleTypeDefinitionsHintsTableModels = {}; // key: sample type; value: table model
 	this._sampleTypeToolbarSettings = {}; // key: sample type; value: toolbarSettingsWidget
+	this._experimentTypeToolbarSettings = {}; // key: experiment type; value: toolbarSettingsWidget
+	this._dataSetTypeToolbarSettings = {}; // key: dataSet type; value: toolbarSettingsWidget
 	this._projectsToolbarSettings = null;
 	this._spacesToolbarSettings = null;
 	this._miscellaneousTableModel = null;
@@ -69,6 +71,12 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 		}
 		for(let toolbarSetting of Object.keys(this._sampleTypeToolbarSettings)) {
 			this._sampleTypeToolbarSettings[toolbarSetting].refresh();
+		}
+		for(let toolbarSetting of Object.keys(this._experimentTypeToolbarSettings)) {
+			this._experimentTypeToolbarSettings[toolbarSetting].refresh();
+		}
+		for(let toolbarSetting of Object.keys(this._dataSetTypeToolbarSettings)) {
+			this._dataSetTypeToolbarSettings[toolbarSetting].refresh();
 		}
     }
 
@@ -149,6 +157,8 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
             this._paintStoragesSection($formColumn, texts.storages);
 			this._paintTemplateSection($formColumn, texts.templates);
             this._paintSampleTypesDefinition($formColumn,texts.sampleTypeDefinitionsExtension);
+            this._paintExperimentTypesDefinition($formColumn,texts.experimentTypeDefinitionsExtension);
+            this._paintDataSetTypesDefinition($formColumn,texts.dataSetTypeDefinitionsExtension);
             this._paintSpacesSettingsSection($formColumn,texts.spaces);
             this._paintProjectsSettingsSection($formColumn,texts.projects);
             this._paintInventorySpacesSection($formColumn, texts.inventorySpaces);
@@ -189,6 +199,8 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 			rootNodeSettings: this._rootNodeSettings.getValue(),
 			spaceToolbarSettings: this._spacesToolbarSettings.getValue(),
 			projectToolbarSettings: this._projectsToolbarSettings.getValue(),
+			experimentTypeDefinitionsExtension: this._getExperimentTypeDefinitionsExtension(),
+			dataSetTypeDefinitionsExtension: this._getDataSetTypeDefinitionsExtension(),
         };
 
         if(this._settingsFormModel.settingsSample.code === "GENERAL_ELN_SETTINGS") {
@@ -201,10 +213,42 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 		return settings;
 	}
 
+	this._getExperimentTypeDefinitionsExtension = function() {
+		var experimentTypeDefinitionsSettings = {};
+		let experimentTypes = Object.keys(this._experimentTypeToolbarSettings);
+		let defaultToolbarConfigJson = JSON.stringify(SettingsManagerUtils.getDefaultExperimentTypeToolbarConfiguration())
+		for (let experimentType of experimentTypes) {
+			let experimentTypeToolbarSettings = this._experimentTypeToolbarSettings[experimentType].getValue();
+			if(JSON.stringify(experimentTypeToolbarSettings) !== defaultToolbarConfigJson) {
+				experimentTypeDefinitionsSettings[experimentType] = {
+					TOOLBAR: experimentTypeToolbarSettings
+				};
+			}
+		}
+		return experimentTypeDefinitionsSettings;
+	}
+
+	this._getDataSetTypeDefinitionsExtension = function() {
+		var dataSetTypeDefinitionsSettings = {};
+		let dataSetTypes = Object.keys(this._dataSetTypeToolbarSettings);
+		let defaultToolbarConfigJson = JSON.stringify(SettingsManagerUtils.getDefaultDataSetTypeToolbarConfiguration())
+		for (let dataSetType of dataSetTypes) {
+			let dataSetTypeToolbarSettings = this._dataSetTypeToolbarSettings[dataSetType].getValue();
+			if(JSON.stringify(dataSetTypeToolbarSettings) !== defaultToolbarConfigJson) {
+				dataSetTypeDefinitionsSettings[dataSetType] = {
+					TOOLBAR: dataSetTypeToolbarSettings
+				};
+			}
+		}
+		return dataSetTypeDefinitionsSettings;
+	}
+
 	this._getSampleTypeDefinitionsExtension = function() {
 		var sampleTypeDefinitionsSettings = {};
 		var sampleTypes = Object.keys(this._sampleTypeDefinitionsHintsTableModels);
-		for (sampleType of sampleTypes) {
+
+		let defaultToolbarConfigJson = JSON.stringify(SettingsManagerUtils.getDefaultSampleTypeToolbarConfiguration())
+		for (let sampleType of sampleTypes) {
 
 			var sampleTypeSection = {};
 
@@ -224,7 +268,10 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 			}
 			
 			sampleTypeDefinitionsSettings[sampleType] = sampleTypeSection;
-			sampleTypeDefinitionsSettings[sampleType]["TOOLBAR"] = this._sampleTypeToolbarSettings[sampleType].getValue();
+			let sampleTypeToolbarSettings = this._sampleTypeToolbarSettings[sampleType].getValue();
+			if(JSON.stringify(sampleTypeToolbarSettings) !== defaultToolbarConfigJson) {
+				sampleTypeDefinitionsSettings[sampleType]["TOOLBAR"] = this._sampleTypeToolbarSettings[sampleType].getValue();
+			}
 		}
 		return sampleTypeDefinitionsSettings;
 	}
@@ -358,7 +405,7 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 			$.extend(toolbarSettings, this._profileToEdit.spaceToolbarSettings);
 		}
 
-		var toolbarSettingsWidget = new ToolbarSettings(this._settingsFormModel.mode, this._profileToEdit, toolbarSettings);
+		var toolbarSettingsWidget = new ToolbarSettings(this._settingsFormModel.mode, toolbarSettings);
 		toolbarSettingsWidget.init($fieldset);
 		this._spacesToolbarSettings = toolbarSettingsWidget;
 	}
@@ -372,7 +419,7 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 			$.extend(toolbarSettings, this._profileToEdit.projectToolbarSettings);
 		}
 
-		var toolbarSettingsWidget = new ToolbarSettings(this._settingsFormModel.mode, this._profileToEdit, toolbarSettings);
+		var toolbarSettingsWidget = new ToolbarSettings(this._settingsFormModel.mode, toolbarSettings);
 		toolbarSettingsWidget.init($fieldset);
 		this._projectsToolbarSettings = toolbarSettingsWidget;
 	}
@@ -622,7 +669,7 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 			$sampleTypeFieldset.append(miscellaneousSettingsTable);
 			this._sampleTypeDefinitionsMiscellaneousSettingsTableModels[sampleType.code] = miscellaneousSettingsTableModel;
 
-			this._toolbarSettingsSectionForType($sampleTypeFieldset, sampleType.code, sampleTypeSettings);
+			this._sampleTypeToolbarSettings[sampleType.code] = this._toolbarSettingsSectionForType($sampleTypeFieldset, sampleType.code, sampleTypeSettings, profile.getSampleTypeToolbarConfiguration(sampleType.code));
 
 			// table for parents / children settings:
 			// SAMPLE_PARENTS_TITLE, SAMPLE_PARENTS_DISABLED, SAMPLE_PARENTS_ANY_TYPE_DISABLED, 
@@ -640,17 +687,74 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 		}
 	}
 
-	this._toolbarSettingsSectionForType = function($formColumn, sampleTypeCode, sampleTypeSettings) {
 
-		var toolbarSettings = profile.getSampleTypeToolbarConfiguration(sampleTypeCode);
+	//
+	// experiment type definitions
+	//
+	this._paintExperimentTypesDefinition = function($container, text) {
+		var $fieldset = this._getFieldset($container, text.title, "settings-section-experimenttype-definitions");
+		$fieldset.append(FormUtil.getInfoText(text.info));
+		for (var experimentType of profile.getAllExperimentTypes()) {
+			// layout
+			var $div = $("<div>").css("padding-left", "15px");
+			var displayName = Util.getDisplayNameFromCode(experimentType.code);
+			var $experimentTypeFieldset = this._getFieldset($div, displayName, "settings-section-experimenttype-" + experimentType.code, true);
+			$fieldset.append($div);
+
+			var defaultExperimentTypeSettings = SettingsManagerUtils.getDefaultProfile().experimentTypeDefinitionsExtension[experimentType.code];
+			var experimentTypeSettings = null;
+			if(this._profileToEdit.experimentTypeDefinitionsExtension) {
+				experimentTypeSettings = this._profileToEdit.experimentTypeDefinitionsExtension[experimentType.code];
+			}
+			if(!experimentTypeSettings && defaultExperimentTypeSettings) { // Sets the default profile configuration given by plugins
+				experimentTypeSettings = defaultExperimentTypeSettings;
+			}
+			// TODO
+			// experimentTypeSettings = SettingsManagerUtils.getDefaultExperimentTypeToolbarConfiguration();
+
+			this._experimentTypeToolbarSettings[experimentType.code] = this._toolbarSettingsSectionForType($experimentTypeFieldset, experimentType.code, experimentTypeSettings, profile.getExperimentTypeToolbarConfiguration(experimentType.code));
+		}
+	}
+
+	//
+	// dataset type definitions
+	//
+	this._paintDataSetTypesDefinition = function($container, text) {
+		var $fieldset = this._getFieldset($container, text.title, "settings-section-datasettype-definitions");
+		$fieldset.append(FormUtil.getInfoText(text.info));
+		for (var dataSetType of profile.getAllDataSetTypes()) {
+			// layout
+			var $div = $("<div>").css("padding-left", "15px");
+			var displayName = Util.getDisplayNameFromCode(dataSetType.code);
+			var $dataSetTypeFieldset = this._getFieldset($div, displayName, "settings-section-datasettype-" + dataSetType.code, true);
+			$fieldset.append($div);
+
+			var defaultDataSetTypeSettings = SettingsManagerUtils.getDefaultProfile().dataSetTypeDefinitionsExtension[dataSetType.code];
+			var dataSetTypeSettings = null;
+			if(this._profileToEdit.dataSetTypeDefinitionsExtension) {
+				dataSetTypeSettings = this._profileToEdit.dataSetTypeDefinitionsExtension[dataSetType.code];
+			}
+			if(!dataSetTypeSettings && defaultDataSetTypeSettings) { // Sets the default profile configuration given by plugins
+				dataSetTypeSettings = defaultDataSetTypeSettings;
+			}
+			//TODO
+			// dataSetTypeSettings = SettingsManagerUtils.getDefaultDataSetTypeToolbarConfiguration();
+
+			this._dataSetTypeToolbarSettings[dataSetType.code] = this._toolbarSettingsSectionForType($dataSetTypeFieldset, dataSetType.code, dataSetTypeSettings, profile.getDataSetTypeToolbarConfiguration(dataSetType.code));
+		}
+	}
+
+	this._toolbarSettingsSectionForType = function($formColumn, sampleTypeCode, sampleTypeSettings, defaultToolbarSettings) {
+
+		var toolbarSettings = defaultToolbarSettings;
 
 		if(sampleTypeSettings && sampleTypeSettings["TOOLBAR"]) {
 			$.extend(toolbarSettings, sampleTypeSettings["TOOLBAR"]);
 		}
 
-		var toolbarSettingsWidget = new ToolbarSettings(this._settingsFormModel.mode, this._profileToEdit, toolbarSettings);
+		var toolbarSettingsWidget = new ToolbarSettings(this._settingsFormModel.mode, toolbarSettings);
 		toolbarSettingsWidget.init($formColumn);
-		this._sampleTypeToolbarSettings[sampleTypeCode] = toolbarSettingsWidget;
+		return toolbarSettingsWidget;
 	}
 
 	this._paintMiscellaneous = function($container, text) {
