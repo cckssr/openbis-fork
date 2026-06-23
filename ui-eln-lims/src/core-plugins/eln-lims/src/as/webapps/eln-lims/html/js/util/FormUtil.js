@@ -1073,7 +1073,7 @@ var FormUtil = new function() {
 		            if(lineIndex != 0) {
 		                $component.append($("<br>"));
 		            }
-		            var textNode = document.createTextNode(lines[lineIndex]);
+		            var textNode = document.createTextNode(lines[lineIndex].replace(/ /g, '\u00a0'));
                     $component.append(textNode);
 		        }
 		    } else {
