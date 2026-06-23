@@ -538,8 +538,8 @@ function normalizeArrayPropertyValue(value: any, dataType: FormFieldDataType): a
         if (item == null) {
           return null;
         } else {
-          const parsed = Number.parseInt(item, 10);
-          if (isNaN(parsed)) {
+          const parsed = Number(item);
+          if (isNaN(parsed) || !Number.isInteger(parsed)) {
             throw new Error(`Not a valid integer: "${item}"`);
           } else {
             return parsed;
