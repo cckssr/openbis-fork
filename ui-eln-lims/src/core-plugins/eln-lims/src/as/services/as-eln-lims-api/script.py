@@ -186,8 +186,7 @@ def createSpace(context, parameters):
         settingsSample = _getSettingsSample(context, parameters, group)
         settings = settingsSample.getProperty(getInternalNamespacePropertyCode("ELN_SETTINGS"))
         if settings is None:
-            raise UserFailureException("Settings %s not yet defined. Please, edit them first." 
-                                       % settingsSample.getIdentifier())
+            settings = "{\"inventorySpaces\": [    \"METHODS\",    \"MATERIALS\",    \"STOCK_CATALOG\",    \"STORAGE\"  ],  \"inventorySpacesReadOnly\": [    \"ELN_SETTINGS\",    \"PUBLICATIONS\",    \"STOCK_ORDERS\"  ]}"
         settings = json.loads(settings)
         isReadOnly = parameters.get("isReadOnly")
         spaces = settings["inventorySpacesReadOnly" if isReadOnly else "inventorySpaces"]
