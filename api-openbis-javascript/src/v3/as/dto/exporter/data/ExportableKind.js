@@ -19,7 +19,7 @@ define(["stjs", "as/dto/common/Enum"], function (stjs, Enum) {
   var ExportableKind = function() {
     Enum.call(this, ["SAMPLE_TYPE", "EXPERIMENT_TYPE", "DATASET_TYPE",
       "VOCABULARY_TYPE", "SPACE", "PROJECT", "SAMPLE", "EXPERIMENT",
-      "DATASET"]);
+      "DATASET", "TYPE_GROUP"]);
   }
 
   stjs.extend(

@@ -37,6 +37,8 @@ public enum ExportableKind
 
     EXPERIMENT,
 
-    DATASET
+    DATASET,
+
+    TYPE_GROUP,
 
 }

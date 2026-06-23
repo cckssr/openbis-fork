@@ -15,6 +15,9 @@ apply plugin : 'org.owasp.dependencycheck'
 dependencyCheck {
     nvd {
         apiKey = System.getenv('OWASP_NVD_APIKEY')
+        delay = 6000 // 6 seconds
+        maxRetryCount = 15
+        validForHours = 24
     }
     failBuildOnCVSS = 7 // 0 - 4 = low, 4 - 7 = medium, 7 - 9 = high, 9-10 = critical
     suppressionFile = "../owasp/owasp_suppressing_false_positives.xml"

@@ -96,6 +96,10 @@ class SampleTypeInternalExpectations extends Expectations
                 final TypeGroupAssignmentFetchOptions typeGroupAssignmentFetchOptions =
                         fetchOptions.withTypeGroupAssignments();
                 typeGroupAssignmentFetchOptions.withTypeGroup();
+                typeGroupAssignmentFetchOptions.withSampleType();
+
+                SampleType sampleType = new SampleType();
+                sampleType.setCode("INTERNAL_ENTRY");
 
                 final TypeGroupAssignment[] typeGroupAssignments = new TypeGroupAssignment[2];
                 TypeGroupAssignment assignment1 = new TypeGroupAssignment();
@@ -104,6 +108,8 @@ class SampleTypeInternalExpectations extends Expectations
                 group1.setManagedInternally(false);
                 group1.setId(new TypeGroupId("TEST_GROUP_1"));
                 assignment1.setTypeGroup(group1);
+
+                assignment1.setSampleType(sampleType);
                 typeGroupAssignments[0] = assignment1;
 
                 TypeGroupAssignment assignment2 = new TypeGroupAssignment();
@@ -112,6 +118,7 @@ class SampleTypeInternalExpectations extends Expectations
                 group2.setManagedInternally(true);
                 group2.setId(new TypeGroupId("TEST_GROUP_2"));
                 assignment2.setTypeGroup(group2);
+                assignment2.setSampleType(sampleType);
                 typeGroupAssignments[1] = assignment2;
 
                 return List.of(typeGroupAssignments);
@@ -199,9 +206,16 @@ class SampleTypeInternalExpectations extends Expectations
         calendar.set(2023, Calendar.MARCH, 11, 17, 23, 44);
         final Date registrationDate = calendar.getTime();
 
+        SampleType sampleType = new SampleType();
+        sampleType.setCode("INTERNAL_ENTRY");
+
         String code = "TEST_GROUP_1";
         TypeGroupId id = new TypeGroupId(code);
         TypeGroup group = new TypeGroup();
+        TypeGroupFetchOptions fetchOptions = new  TypeGroupFetchOptions();
+        fetchOptions.withTypeGroupAssignments().withSampleType();
+        group.setFetchOptions(fetchOptions);
+
         Person person = new Person();
         person.setUserId("test");
         group.setId(id);
@@ -209,6 +223,13 @@ class SampleTypeInternalExpectations extends Expectations
         group.setManagedInternally(false);
         group.setRegistrator(person);
         group.setRegistrationDate(registrationDate);
+
+        TypeGroupAssignment assignment1 = new TypeGroupAssignment();
+        assignment1.setSampleType(sampleType);
+        assignment1.setTypeGroup(group);
+        assignment1.setRegistrator(person);
+        assignment1.setRegistrationDate(registrationDate);
+        group.setTypeGroupAssignments(List.of(assignment1));
         getTypeGroupsResult.put(id, group);
 
         code = "TEST_GROUP_2";
@@ -219,6 +240,15 @@ class SampleTypeInternalExpectations extends Expectations
         group.setManagedInternally(true);
         group.setRegistrator(person);
         group.setRegistrationDate(registrationDate);
+        group.setFetchOptions(fetchOptions);
+
+        TypeGroupAssignment assignment2 = new TypeGroupAssignment();
+        assignment2.setSampleType(sampleType);
+        assignment2.setTypeGroup(group);
+        assignment2.setRegistrator(person);
+        assignment2.setRegistrationDate(registrationDate);
+        group.setTypeGroupAssignments(List.of(assignment2));
+
         getTypeGroupsResult.put(id, group);
         return getTypeGroupsResult;
     }
