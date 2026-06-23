@@ -34,6 +34,7 @@ import org.hibernate.annotations.JavaType;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.Source;
 import org.hibernate.annotations.SourceType;
+import org.hibernate.annotations.Type;
 import org.hibernate.type.SqlTypes;
 
 import ch.systemsx.cisd.common.reflection.ClassUtils;
@@ -41,6 +42,7 @@ import ch.systemsx.cisd.common.reflection.ModifiedShortPrefixToStringStyle;
 import ch.systemsx.cisd.openbis.generic.shared.IServer;
 import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
 import ch.systemsx.cisd.openbis.generic.shared.util.EqualsHashUtils;
+import ch.systemsx.cisd.openbis.generic.shared.dto.hibernate.JsonStringType;
 import ch.systemsx.cisd.openbis.generic.shared.hibernate.type.DoubleArrayJavaType;
 import ch.systemsx.cisd.openbis.generic.shared.hibernate.type.LongArrayJavaType;
 import ch.systemsx.cisd.openbis.generic.shared.hibernate.type.StringArrayJavaType;
@@ -242,8 +244,8 @@ public abstract class EntityPropertyPE extends HibernateAbstractRegistrationHold
         return stringArrayValue;
     }
 
+    @Type(JsonStringType.class)
     @Column(name = ColumnNames.JSON_VALUE_COLUMN)
-    @JdbcTypeCode(SqlTypes.JSON)
     public String getJsonValue()
     {
         return jsonValue;
