@@ -768,12 +768,12 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 						} else if(propertyType.dataType === "TIMESTAMP" || propertyType.dataType === "DATE") {
 						} else if (propertyType.dataType === "ARRAY_INTEGER" || propertyType.dataType === "ARRAY_REAL") {
                             const valueToRender = value != null
-                                ? "[" + value.map((v) => numberFormat.format(v)).join(", ") + "]"
+                                ? "[" + value.map((v) => v == null ? "null" : numberFormat.format(v)).join(", ") + "]"
                                 : "";
                             $component.val(valueToRender);
                         } else if (propertyType.dataType === "ARRAY_STRING" || propertyType.dataType === "ARRAY_TIMESTAMP") {
                             const valueToRender = value != null
-                                ? "[" + value.map((v) => '"' + v + '"').join(", ") + "]"
+                                ? "[" + value.map((v) => v == null ? "null" : '"' + v + '"').join(", ") + "]"
                                 : "";
                             $component.val(valueToRender);
                         } else if(isMultiValue) {
