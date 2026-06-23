@@ -1025,9 +1025,9 @@ var FormUtil = new function() {
 		} else if (propertyType.dataType === "INTEGER" || propertyType.dataType === "REAL") {
 		    propertyValue = numberFormat.format(propertyValue);
 		} else if (propertyType.dataType === "ARRAY_INTEGER" || propertyType.dataType === "ARRAY_REAL") {
-			propertyValue = "[" + propertyValue.map((value) => numberFormat.format(value)).join(", ") + "]";
+			propertyValue = "[" + propertyValue.map((v) => v == null ? "null" : numberFormat.format(v)).join(", ") + "]";
 		} else if (propertyType.dataType === "ARRAY_STRING" || propertyType.dataType === "ARRAY_TIMESTAMP") {
-			propertyValue = "[" + propertyValue.map((value) => '"' + value + '"').join(", ") + "]";
+			propertyValue = "[" + propertyValue.map((v) => v == null ? "null" : '"' + v + '"').join(", ") + "]";
 		}
         return this._createField(isLink, propertyType.label, propertyValue, propertyType.code, null, null, hyperlinkLabel, $info);
 	}
@@ -2082,13 +2082,16 @@ var FormUtil = new function() {
 			if (!Array.isArray(val)) {
 				return false;
 			} else if (dataType === "ARRAY_INTEGER") {
-				return val.every(v => typeof v === "number" && Number.isInteger(v) ||
-					typeof v === "string" && /^-?\d+$/.test(v.trim()));
+				return val.every(v => v == null
+					|| typeof v === "number" && Number.isInteger(v)
+					|| typeof v === "string" && /^-?\d+$/.test(v.trim()));
 			} else if (dataType === "ARRAY_REAL") {
-				return val.every(v => typeof v === "number"
+				return val.every(v => v == null
+					|| typeof v === "number"
 					|| typeof v === "string" && !isNaN(Number(v.trim())) && v.trim() !== "");
 			} if (dataType === "ARRAY_TIMESTAMP") {
-				return val.every(v => typeof v === "string" && /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}( [+-]\d{4})?$/.test(v.trim()));
+				return val.every(v => v == null
+					|| typeof v === "string" && /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}( [+-]\d{4})?$/.test(v.trim()));
 			} else {
 				return true;
 			}
@@ -3444,11 +3447,11 @@ var FormUtil = new function() {
 		}
 
         if (propertyType.dataType === "ARRAY_STRING") {
-            return '["' + value.join('", "') + '"]';
+            return '[' + value.map(v => v == null ? 'null' : '"' + v + '"').join(', ') + ']';
         } else if (propertyType.dataType === "ARRAY_TIMESTAMP") {
-            return '["' + value.map(this.toUserTimeZoneTimestamp).join('", "') + '"]';
+            return '[' + value.map(v => v == null ? 'null' : '"' + this.toUserTimeZoneTimestamp(v) + '"').join(', ') + ']';
         } else {
-			return "[" + value.join(", ") + "]";
+			return '[' + value.map(v => v == null ? 'null' : v).join(', ') + ']';
 		}
     }
 

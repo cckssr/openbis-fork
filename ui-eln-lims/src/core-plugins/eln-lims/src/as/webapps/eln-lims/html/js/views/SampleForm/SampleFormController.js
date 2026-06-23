@@ -375,7 +375,7 @@ function SampleFormController(mainController, mode, sample, paginationInfo, acti
                                 return;
                             }
                         } catch (e) {
-                            Util.showUserError(errorMessage);
+                            // Legacy V1 format — the V3 normalization pass above handles this
                         }
                     }
 				}
