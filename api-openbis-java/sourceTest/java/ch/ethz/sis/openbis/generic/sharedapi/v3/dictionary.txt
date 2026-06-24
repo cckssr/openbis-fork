@@ -2511,6 +2511,7 @@ TypeGroupSearchCriteria
 TypeGroupSortOptions
 TypeGroupTechId
 TypeGroupUpdate
+TYPE_GROUP
 uglify
 UglifyJS
 UglifyOptions
