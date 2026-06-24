@@ -44,7 +44,6 @@ public class KeyStoreValidator extends AbstractDataValidator
         } else
         {
             File installDir = GlobalInstallationContext.installDir;
-            addKeyStoreFileIfItExists(keyStoreFiles, Utils.getKeystoreFileForAS(installDir));
             addKeyStoreFileIfItExists(keyStoreFiles, Utils.getKeystoreFileForDSS(installDir));
         }
         String keyStorePassword = data.getVariable(GlobalInstallationContext.KEY_STORE_PASSWORD_VARNAME);
