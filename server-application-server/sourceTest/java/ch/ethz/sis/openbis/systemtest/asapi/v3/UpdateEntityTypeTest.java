@@ -1197,7 +1197,7 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
     @Test
     public void testMakeExistingJsonPropertyMandatory()
     {
-        testMakeExistingSimplePropertyMandatory(DataType.JSON, "{\"abc\":\"123\"}", IPropertiesHolder::getJsonProperty,
+        testMakeExistingSimplePropertyMandatory(DataType.JSON, "{\"abc\": \"123\"}", IPropertiesHolder::getJsonProperty,
                 "{\"abc\": \"123\"}");
 
         assertExceptionMessage(() ->

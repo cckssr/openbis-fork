@@ -1650,7 +1650,7 @@ public class CreateSampleTest extends AbstractSampleTest
         sample.setTypeId(sampleType);
         sample.setSpaceId(new SpacePermId("CISD"));
         sample.setProperty(PLATE_GEOMETRY.getPermId(), "384_WELLS_16X24");
-        sample.setJsonProperty(propertyType.getPermId(), "{\"key\": \"value\", \"array\":[1,2,3]}");
+        sample.setJsonProperty(propertyType.getPermId(), "{\"key\": \"value\", \"array\": [1, 2, 3]}");
 
         // When
         List<SamplePermId> sampleIds = v3api.createSamples(sessionToken, Arrays.asList(sample));
@@ -1679,7 +1679,7 @@ public class CreateSampleTest extends AbstractSampleTest
         sample.setTypeId(sampleType);
         sample.setSpaceId(new SpacePermId("CISD"));
         sample.setProperty(PLATE_GEOMETRY.getPermId(), "384_WELLS_16X24");
-        sample.setMultiValueJsonProperty(propertyType.getPermId(), List.of("{\"key\": \"value\", \"array\":[1,2,3]}", "{\"key\": \"value2\", \"array\":[]}"));
+        sample.setMultiValueJsonProperty(propertyType.getPermId(), List.of("{\"key\": \"value\", \"array\": [1, 2, 3]}", "{\"key\": \"value2\", \"array\": []}"));
 
         // When
         List<SamplePermId> sampleIds = v3api.createSamples(sessionToken, Arrays.asList(sample));

@@ -2161,7 +2161,7 @@ public class CreateDataSetTest extends AbstractDataSetTest
         DataSetCreation creation = physicalDataSetCreation();
         creation.setTypeId(dataSetType);
         creation.setProperty(PLATE_GEOMETRY.getPermId(), "384_WELLS_16X24");
-        creation.setJsonProperty(propertyType.getPermId(), "{\"key\": \"value\", \"array\":[1,2,3]}");
+        creation.setJsonProperty(propertyType.getPermId(), "{\"key\": \"value\", \"array\": [1, 2, 3]}");
 
         // When
         List<DataSetPermId> dataSetIds = v3api.createDataSets(sessionToken, Arrays.asList(creation));
@@ -2189,7 +2189,7 @@ public class CreateDataSetTest extends AbstractDataSetTest
         creation.setTypeId(dataSetType);
         creation.setProperty(PLATE_GEOMETRY.getPermId(), "384_WELLS_16X24");
         creation.setMultiValueJsonProperty(propertyType.getPermId(),
-                List.of("{\"key\": \"value\", \"array\":[1,2,3]}", "{\"key\": \"value2\", \"array\":[]}"));
+                List.of("{\"key\": \"value\", \"array\": [1, 2, 3]}", "{\"key\": \"value2\", \"array\": []}"));
 
         // When
         List<DataSetPermId> dataSetIds = v3api.createDataSets(sessionToken, Arrays.asList(creation));

@@ -969,7 +969,7 @@ public class CreateExperimentTest extends AbstractExperimentTest
         creation.setTypeId(experimentType);
         creation.setProjectId(new ProjectIdentifier("/CISD/NEMO"));
         creation.setProperty(PLATE_GEOMETRY.getPermId(), "384_WELLS_16X24");
-        creation.setJsonProperty(propertyType.getPermId(), "{\"key\": \"value\", \"array\":[1,2,3]}");
+        creation.setJsonProperty(propertyType.getPermId(), "{\"key\": \"value\", \"array\": [1, 2, 3]}");
 
         // When
         List<ExperimentPermId> experimentIds = v3api.createExperiments(sessionToken, Arrays.asList(creation));
@@ -998,7 +998,7 @@ public class CreateExperimentTest extends AbstractExperimentTest
         creation.setTypeId(experimentType);
         creation.setProjectId(new ProjectIdentifier("/CISD/NEMO"));
         creation.setProperty(PLATE_GEOMETRY.getPermId(), "384_WELLS_16X24");
-        creation.setMultiValueJsonProperty(propertyType.getPermId(), List.of("{\"key\": \"value\", \"array\":[1,2,3]}", "{\"key\": \"value2\", \"array\":[]}"));
+        creation.setMultiValueJsonProperty(propertyType.getPermId(), List.of("{\"key\": \"value\", \"array\": [1, 2, 3]}", "{\"key\": \"value2\", \"array\": []}"));
 
         // When
         List<ExperimentPermId> experimentIds = v3api.createExperiments(sessionToken, Arrays.asList(creation));
