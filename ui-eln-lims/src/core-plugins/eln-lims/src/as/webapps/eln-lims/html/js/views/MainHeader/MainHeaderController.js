@@ -130,6 +130,8 @@ function MainHeaderController() {
         if(spaceCode) {
             if(SettingsManagerUtils.isLabNotebookSpace(spaceCode)) {
                 return "lab_notebook";
+            } else if(profile.settingsSpaces.includes(spaceCode)) {
+                return "tools";
             } else {
                 return "lims";
             }
