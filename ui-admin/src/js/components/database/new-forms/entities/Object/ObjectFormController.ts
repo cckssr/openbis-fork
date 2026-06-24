@@ -112,7 +112,7 @@ export class ObjectFormController implements IFormController {
 
 
 	async _createObject(form: Form): Promise<any> {
-		const sampleCreation = this._createSample(form);
+		const sampleCreation = await this._createSample(form);
 		const result = await this.openbisFacade.createSamples([sampleCreation]);
 		return Promise.resolve(result[0].getPermId());
 	}
@@ -135,13 +135,26 @@ export class ObjectFormController implements IFormController {
 		return creation;
 	}
 
-	_createSample(form: Form): Promise<any> {
-		const { SampleCreation, EntityTypePermId, ProjectIdentifier, SpacePermId, ExperimentIdentifier, SampleIdentifier } = this.openbisFacade;
+	async _createSample(form: Form): Promise<any> {
+		const { SampleCreation, EntityTypePermId, ProjectIdentifier, SpacePermId, ExperimentIdentifier,
+			SampleIdentifier, SampleFetchOptions } = this.openbisFacade;
 		const creation = new SampleCreation();
 		creation.setCode(form.fields.find((field: any) => field.id === form.entityPermId + '-code')?.value);
 		creation.setTypeId(new EntityTypePermId(form.entityType, EntityKind.SAMPLE.toUpperCase()));
 		const objectId = form.fields.find((field: any) => field.id === form.entityPermId + '-object')?.value;
 		if (objectId) {
+			const sampleFetchOptions = new SampleFetchOptions();
+			sampleFetchOptions.withExperiment();
+
+			const result: any[] = await this.openbisFacade.getSamples([new SampleIdentifier(objectId)],
+				sampleFetchOptions);
+			const sample: any = result[objectId];
+			const experiment: any = sample.getExperiment();
+
+			if (experiment) {
+				creation.setExperimentId(experiment.getIdentifier());
+			}
+
 			const spaceId = getSpaceCodeFromIdentifier(objectId);
 			const projectId = getProjectIdentifierFromSampleIdentifier(objectId);
 			creation.setSpaceId(new SpacePermId(spaceId));
