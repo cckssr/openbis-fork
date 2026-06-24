@@ -29,6 +29,8 @@ REQUEST_RETRIES_COUNT = 3
 DOWNLOAD_RETRIES_COUNT = 3
 FAST_DOWNLOAD_PROTOCOL_VERSION = 2
 
+VERBOSE = True
+
 
 def make_fileserver_body_params(server_information, **params):
     """create a proper pam of key-values for fileserver request"""
@@ -90,6 +92,8 @@ def queue_chunks(session, base_url, download_session_id, chunks, verify_certific
                                                 ranges=comma_separated_items(chunks))
     response = post_request(session, base_url, verify_certificates, queue_request,
                             parse_response=False)
+    if VERBOSE:
+        print("QUEUE_CHUNK", response)
     if response.ok is False:
         raise ValueError(
             "error during queueing for download! Message:" + response["error"]["message"])
@@ -225,6 +229,9 @@ class DownloadThread(Thread):
                 download_response = self.session.post(self.download_url,
                                                       data=json.dumps(download_params), stream=True,
                                                       verify=self.verify_certificates)
+                if VERBOSE:
+                    print("DOWNLOAD_PARAMS", download_params)
+                    print("DOWNLOAD_RESPONSE", download_response)
                 if download_response.ok is True:
                     data = deserialize_chunk(download_response.content)
                     if data['invalid'] is True:
@@ -339,6 +346,8 @@ class FastDownload:
                          self._create_fast_download_session_request())['result']
         download_url = create_fast_download_response['downloadUrl']
         user_session_id = create_fast_download_response['fileTransferUserSessionId']
+        if VERBOSE:
+            print("CREATE_FAST_DOWNLOAD", create_fast_download_response)
 
         # Step 2 - Request fileserver to start the download session
 
@@ -357,12 +366,16 @@ class FastDownload:
         start_download_session = post_request(self.session, download_url,
                                               self.verify_certificates,
                                               start_session_params)
+        if VERBOSE:
+            print("START_DOWNLOAD_SESSION", start_download_session)
         download_session_id = start_download_session['downloadSessionId']
 
 
         # Step 3 - Put files into fileserver download queue
 
         ranges = start_download_session['ranges']
+        if VERBOSE:
+            print("RANGES", ranges)
         self._queue_all_files(download_url, download_session_id, ranges)
 
         # Step 4 & 5 - Download files in chunks and close connection
@@ -473,6 +486,9 @@ class FastDownload:
                 method='finishDownloadSession',
                 downloadSessionId=download_session_id)
 
-            self.session.post(download_url,
+            response = self.session.post(download_url,
                               data=json.dumps(finish_download_session_params),
                               verify=self.verify_certificates)
+            if VERBOSE:
+                print("FINISH_PARAMS", finish_download_session_params)
+                print("FINISH", response)
