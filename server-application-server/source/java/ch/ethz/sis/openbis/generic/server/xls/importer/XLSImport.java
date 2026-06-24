@@ -204,6 +204,11 @@ public class XLSImport
                     ZipEntry entry;
                     while ((entry = zip.getNextEntry()) != null)
                     {
+                        // Skip OS folders
+                        if (entry.getName().startsWith("__MACOSX/")) {
+                            continue;
+                        }
+
                         final String entryName = entry.getName().startsWith(
                                 optionalRootEntryFolder + XLSX_FOLDER_NAME) ? entry.getName().substring(
                                 optionalRootEntryFolder.length() + XLSX_FOLDER_NAME.length())
