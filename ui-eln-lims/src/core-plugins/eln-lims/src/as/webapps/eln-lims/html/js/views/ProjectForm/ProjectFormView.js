@@ -66,9 +66,9 @@ function ProjectFormView(projectFormController, projectFormModel) {
 		var toolbarModel = [];
 		var continuedToolbarModel = [];
 		var dropdownOptionsModel = [];
-        var toolbarConfig = profile.getProjectToolbarConfiguration();
-		if(this._projectFormModel.mode === FormMode.VIEW) {
 
+		if(this._projectFormModel.mode === FormMode.VIEW) {
+            var toolbarConfig = profile.getProjectToolbarConfiguration(this._projectFormModel.project.spaceCode);
             if(!isInventoryProject && toolbarConfig.CREATE_FOLDER) {
                  const labelInfo = LabelUtil.getToolbarLabelInfo("CREATE_FOLDER");
                  var $createFolder = FormUtil.getToolbarButton("FOLDER", function() {

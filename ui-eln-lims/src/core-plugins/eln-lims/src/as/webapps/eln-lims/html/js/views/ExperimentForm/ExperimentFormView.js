@@ -86,7 +86,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		var continuedToolbarModel = [];
 		var dropdownOptionsModel = [];
 		if(this._experimentFormModel.mode === FormMode.VIEW) {
-		    var toolbarConfig = profile.getExperimentTypeToolbarConfiguration(_this._experimentFormModel.experiment.experimentTypeCode);
+		    var toolbarConfig = profile.getExperimentTypeToolbarConfiguration(_this._experimentFormModel.experiment.experimentTypeCode, _this._experimentFormModel.v3_experiment.project.space.code);
 			if (_this._allowedToCreateSample()) {
 
                 if(!isInventoryExperiment && toolbarConfig.CREATE_FOLDER) {

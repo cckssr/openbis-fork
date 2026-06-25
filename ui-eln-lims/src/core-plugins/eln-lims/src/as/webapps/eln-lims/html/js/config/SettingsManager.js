@@ -283,7 +283,7 @@ function SettingsManager(serverFacade) {
 			settingsSample.properties = { [profile.getInternalNamespacePrefix() + "ELN_SETTINGS"] : JSON.stringify(settings) };
 			this._serverFacade.updateSample(settingsSample, function(ok) {
 				if(ok) {
-					_this.applySettingsToProfile(settings, profile);
+					_this.applySettingsToProfile(settings, profile, false, settingsSample.code);
 					doneCallback();
 				}
 			});
@@ -351,7 +351,7 @@ function SettingsManager(serverFacade) {
 								console.log("The settings contain the following errors:");
 								console.log(errors);
 							}
-							this.applySettingsToProfile(settings, (profileToEditOrNull)?profileToEditOrNull:profile, (profile.isMultiGroup && sIdx > 0));
+							this.applySettingsToProfile(settings, (profileToEditOrNull)?profileToEditOrNull:profile, (profile.isMultiGroup && sIdx > 0), settingsObject.code);
 						}
 					}
 				}
@@ -394,7 +394,7 @@ function SettingsManager(serverFacade) {
      *  User belongs to one group: "General Settings" are applied first, the only group second, both with isMergeGroup = false
      *  User belongs to more than one group: "General Settings" are applied first, any additional group with isMergeGroup = true
      */
-   this.applySettingsToProfile = function(settings, targetProfile, isMergeGroup) {
+   this.applySettingsToProfile = function(settings, targetProfile, isMergeGroup, settingCode) {
      	    // Main menu Items
      	    for(var menuItem in settings.mainMenu) {
      	        if(isMergeGroup && targetProfile.mainMenu[menuItem] !== undefined) { // Merge found values
@@ -409,15 +409,23 @@ function SettingsManager(serverFacade) {
                  targetProfile.rootNodeSettings = settings.rootNodeSettings;
              }
 
-             targetProfile.spaceToolbarSettings = SettingsManagerUtils.getDefaultSpaceToolbarConfiguration();
-             if(settings.spaceToolbarSettings) {
-                 $.extend(targetProfile.spaceToolbarSettings, settings.spaceToolbarSettings);
-             }
+            if(!targetProfile.spaceToolbarSettings) {
+               targetProfile.spaceToolbarSettings = {};
+            }
+            let spaceToolbarSettings = SettingsManagerUtils.getDefaultSpaceToolbarConfiguration();
+            if(settings.spaceToolbarSettings) {
+                $.extend(spaceToolbarSettings, settings.spaceToolbarSettings);
+            }
+            targetProfile.spaceToolbarSettings[settingCode] = spaceToolbarSettings;
 
-             targetProfile.projectToolbarSettings = SettingsManagerUtils.getDefaultProjectToolbarConfiguration();
-             if(settings.projectToolbarSettings) {
-                 $.extend(targetProfile.projectToolbarSettings, settings.projectToolbarSettings);
-             }
+            let projectToolbarSettings = SettingsManagerUtils.getDefaultProjectToolbarConfiguration();
+            if(!targetProfile.projectToolbarSettings) {
+                targetProfile.projectToolbarSettings = {};
+            }
+            if(settings.projectToolbarSettings) {
+                $.extend(projectToolbarSettings, settings.projectToolbarSettings);
+            }
+            targetProfile.projectToolbarSettings[settingCode] = projectToolbarSettings;
 
              // Miscellaneous
              var miscellaneousFields = [{name: "hideSectionsByDefault", defaultValue: true},
@@ -529,8 +537,7 @@ function SettingsManager(serverFacade) {
                          targetProfile.sampleTypeDefinitionsExtension[sampleTypeCode][key] = settings.sampleTypeDefinitionsExtension[sampleTypeCode][key];
                      } else { // Existing values are merged or replaced
                          if(key === 'TOOLBAR') {
-                             //Toolbar settings ale always merged
-                             $.extend(targetProfile.sampleTypeDefinitionsExtension[sampleTypeCode][key], settings.sampleTypeDefinitionsExtension[sampleTypeCode][key]);
+                             // skip
                          } else {
                              if (isMergeGroup) {
                                  if (key in sampleTypeDefinitionBooleans) { // Merge with logic OR
@@ -545,6 +552,24 @@ function SettingsManager(serverFacade) {
                      }
                  }
      		}
+
+           if(!targetProfile.sampleTypeToolbarSettings) {
+               targetProfile.sampleTypeToolbarSettings = {};
+           }
+           if(!targetProfile.sampleTypeToolbarSettings[settingCode]) {
+               targetProfile.sampleTypeToolbarSettings[settingCode] = {};
+           }
+           for (let sampleTypeCode of Object.keys(settings.sampleTypeDefinitionsExtension)) {
+               if(!targetProfile.sampleTypeToolbarSettings[settingCode][sampleTypeCode]) {
+                   targetProfile.sampleTypeToolbarSettings[settingCode][sampleTypeCode] = SettingsManagerUtils.getDefaultDataSetTypeToolbarConfiguration();
+               }
+               if(settings.sampleTypeDefinitionsExtension[sampleTypeCode]["TOOLBAR"]) {
+                   for(let key of Object.keys(settings.sampleTypeDefinitionsExtension[sampleTypeCode]["TOOLBAR"])) {
+                       targetProfile.sampleTypeToolbarSettings[settingCode][sampleTypeCode][key] = settings.sampleTypeDefinitionsExtension[sampleTypeCode]["TOOLBAR"][key];
+                   }
+               }
+           }
+
 
            if(!settings.experimentTypeDefinitionsExtension) {
                settings.experimentTypeDefinitionsExtension = {};
@@ -562,8 +587,7 @@ function SettingsManager(serverFacade) {
                        targetProfile.experimentTypeDefinitionsExtension[experimentTypeCode][key] = settings.experimentTypeDefinitionsExtension[experimentTypeCode][key];
                    } else { // Existing values are merged or replaced
                        if(key === 'TOOLBAR') {
-                           //Toolbar settings ale always merged
-                           $.extend(targetProfile.experimentTypeDefinitionsExtension[experimentTypeCode][key], settings.experimentTypeDefinitionsExtension[experimentTypeCode][key]);
+                           // skip
                        } else {
                            // Replace
                            targetProfile.experimentTypeDefinitionsExtension[experimentTypeCode][key] = settings.experimentTypeDefinitionsExtension[experimentTypeCode][key];
@@ -572,35 +596,70 @@ function SettingsManager(serverFacade) {
                }
            }
 
-       if(!settings.dataSetTypeDefinitionsExtension) {
-           settings.dataSetTypeDefinitionsExtension = {};
-       }
-       const defaultDataSetTypeDefinitions = {
-           SHOW: true,
-           SHOW_ON_NAV: true
-       };
-       for (let dataSetTypeCode of Object.keys(settings.dataSetTypeDefinitionsExtension)) {
-           if(!targetProfile.dataSetTypeDefinitionsExtension[dataSetTypeCode]) {
-               targetProfile.dataSetTypeDefinitionsExtension[dataSetTypeCode] = defaultDataSetTypeDefinitions;
+           if(!targetProfile.experimentTypeToolbarSettings) {
+               targetProfile.experimentTypeToolbarSettings = {};
            }
-
-           for(let key in settings.dataSetTypeDefinitionsExtension[dataSetTypeCode]) { // Key by Key, in case there is new Keys not available in the old config
-               // Known boolean values are merged, others are replaced
-
-               // Missing values are just replaced
-               if(targetProfile.dataSetTypeDefinitionsExtension[dataSetTypeCode][key] === undefined) {
-                   targetProfile.dataSetTypeDefinitionsExtension[dataSetTypeCode][key] = settings.dataSetTypeDefinitionsExtension[dataSetTypeCode][key];
-               } else { // Existing values are merged or replaced
-                   if(key === 'TOOLBAR') {
-                       //Toolbar settings ale always merged
-                       $.extend(targetProfile.dataSetTypeDefinitionsExtension[dataSetTypeCode][key], settings.dataSetTypeDefinitionsExtension[dataSetTypeCode][key]);
-                   } else {
-                       // Replace
-                       targetProfile.dataSetTypeDefinitionsExtension[dataSetTypeCode][key] = settings.dataSetTypeDefinitionsExtension[dataSetTypeCode][key];
+           if(!targetProfile.experimentTypeToolbarSettings[settingCode]) {
+               targetProfile.experimentTypeToolbarSettings[settingCode] = {};
+           }
+           for (let experimentTypeCode of Object.keys(settings.experimentTypeDefinitionsExtension)) {
+               if(!targetProfile.experimentTypeToolbarSettings[settingCode][experimentTypeCode]) {
+                   targetProfile.experimentTypeToolbarSettings[settingCode][experimentTypeCode] = SettingsManagerUtils.getDefaultExperimentTypeToolbarConfiguration();
+               }
+               if(settings.experimentTypeDefinitionsExtension[experimentTypeCode]["TOOLBAR"]) {
+                   for(let key of Object.keys(settings.experimentTypeDefinitionsExtension[experimentTypeCode]["TOOLBAR"])) {
+                       targetProfile.experimentTypeToolbarSettings[settingCode][experimentTypeCode][key] = settings.experimentTypeDefinitionsExtension[experimentTypeCode]["TOOLBAR"][key];
                    }
                }
            }
-       }
+
+
+
+           if(!settings.dataSetTypeDefinitionsExtension) {
+               settings.dataSetTypeDefinitionsExtension = {};
+           }
+           const defaultDataSetTypeDefinitions = {
+               SHOW: true,
+               SHOW_ON_NAV: true
+           };
+           for (let dataSetTypeCode of Object.keys(settings.dataSetTypeDefinitionsExtension)) {
+               if(!targetProfile.dataSetTypeDefinitionsExtension[dataSetTypeCode]) {
+                   targetProfile.dataSetTypeDefinitionsExtension[dataSetTypeCode] = defaultDataSetTypeDefinitions;
+               }
+
+               for(let key in settings.dataSetTypeDefinitionsExtension[dataSetTypeCode]) { // Key by Key, in case there is new Keys not available in the old config
+                   // Known boolean values are merged, others are replaced
+
+                   // Missing values are just replaced
+                   if(targetProfile.dataSetTypeDefinitionsExtension[dataSetTypeCode][key] === undefined) {
+                       targetProfile.dataSetTypeDefinitionsExtension[dataSetTypeCode][key] = settings.dataSetTypeDefinitionsExtension[dataSetTypeCode][key];
+                   } else { // Existing values are merged or replaced
+                       if(key === 'TOOLBAR') {
+                           // skip
+                       } else {
+                           // Replace
+                           targetProfile.dataSetTypeDefinitionsExtension[dataSetTypeCode][key] = settings.dataSetTypeDefinitionsExtension[dataSetTypeCode][key];
+                       }
+                   }
+               }
+           }
+
+           if(!targetProfile.dataSetTypeToolbarSettings) {
+               targetProfile.dataSetTypeToolbarSettings = {};
+           }
+           if(!targetProfile.dataSetTypeToolbarSettings[settingCode]) {
+               targetProfile.dataSetTypeToolbarSettings[settingCode] = {};
+           }
+           for (let dataSetTypeCode of Object.keys(settings.dataSetTypeDefinitionsExtension)) {
+               if(!targetProfile.dataSetTypeToolbarSettings[settingCode][dataSetTypeCode]) {
+                   targetProfile.dataSetTypeToolbarSettings[settingCode][dataSetTypeCode] = SettingsManagerUtils.getDefaultDataSetTypeToolbarConfiguration();
+               }
+               if(settings.dataSetTypeDefinitionsExtension[dataSetTypeCode]["TOOLBAR"]) {
+                   for(let key of Object.keys(settings.dataSetTypeDefinitionsExtension[dataSetTypeCode]["TOOLBAR"])) {
+                       targetProfile.dataSetTypeToolbarSettings[settingCode][dataSetTypeCode][key] = settings.dataSetTypeDefinitionsExtension[dataSetTypeCode]["TOOLBAR"][key];
+                   }
+               }
+           }
 
      }
 

@@ -677,7 +677,7 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 			$sampleTypeFieldset.append(miscellaneousSettingsTable);
 			this._sampleTypeDefinitionsMiscellaneousSettingsTableModels[sampleType.code] = miscellaneousSettingsTableModel;
 
-			this._sampleTypeToolbarSettings[sampleType.code] = this._toolbarSettingsSectionForType($sampleTypeFieldset, sampleType.code, sampleTypeSettings, profile.getSampleTypeToolbarConfiguration(sampleType.code));
+			this._sampleTypeToolbarSettings[sampleType.code] = this._toolbarSettingsSectionForType($sampleTypeFieldset, sampleType.code, sampleTypeSettings, profile.getSampleTypeToolbarConfiguration(sampleType.code, this._settingsFormModel.settingsSample.spaceCode));
 
 			// table for parents / children settings:
 			// SAMPLE_PARENTS_TITLE, SAMPLE_PARENTS_DISABLED, SAMPLE_PARENTS_ANY_TYPE_DISABLED, 
@@ -718,7 +718,7 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 				experimentTypeSettings = defaultExperimentTypeSettings;
 			}
 
-			this._experimentTypeToolbarSettings[experimentType.code] = this._toolbarSettingsSectionForType($experimentTypeFieldset, experimentType.code, experimentTypeSettings, profile.getExperimentTypeToolbarConfiguration(experimentType.code));
+			this._experimentTypeToolbarSettings[experimentType.code] = this._toolbarSettingsSectionForType($experimentTypeFieldset, experimentType.code, experimentTypeSettings, profile.getExperimentTypeToolbarConfiguration(experimentType.code, this._settingsFormModel.settingsSample.spaceCode));
 		}
 	}
 
@@ -744,7 +744,7 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 				dataSetTypeSettings = defaultDataSetTypeSettings;
 			}
 
-			this._dataSetTypeToolbarSettings[dataSetType.code] = this._toolbarSettingsSectionForType($dataSetTypeFieldset, dataSetType.code, dataSetTypeSettings, profile.getDataSetTypeToolbarConfiguration(dataSetType.code));
+			this._dataSetTypeToolbarSettings[dataSetType.code] = this._toolbarSettingsSectionForType($dataSetTypeFieldset, dataSetType.code, dataSetTypeSettings, profile.getDataSetTypeToolbarConfiguration(dataSetType.code, this._settingsFormModel.settingsSample.spaceCode));
 		}
 	}
 
