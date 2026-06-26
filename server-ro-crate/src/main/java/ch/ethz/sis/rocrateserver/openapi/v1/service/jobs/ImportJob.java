@@ -33,6 +33,7 @@ import ch.ethz.sis.shared.log.classic.impl.Logger;
 import ch.openbis.rocrate.app.reader.RdfToModel;
 import ch.openbis.rocrate.app.reader.externalfile.FileDownloader;
 import ch.openbis.rocrate.app.reader.externalfile.IFileDownloader;
+import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import edu.kit.datamanager.ro_crate.RoCrate;
 import edu.kit.datamanager.ro_crate.entities.AbstractEntity;
 import edu.kit.datamanager.ro_crate.reader.FolderReader;
@@ -135,9 +136,12 @@ public final class ImportJob implements IAsyncJob
     @Override
     public void run()
     {
+        LOG.debug(String.format("||> DUPA: %s", jobId.toString()));
         try
         {
-
+            LOG.info(String.format("Starting import job: %s", jobId.toString()));
+            LOG.info(String.format("Session token: %s", openBIS.getSessionToken()));
+            LOG.info(String.format("Received parameters: %s", importParams.toString()));
             RoCrate crate = null;
             SchemaFacade schemaFacade = null;
             List<IType> types = null;
@@ -168,6 +172,7 @@ public final class ImportJob implements IAsyncJob
             {
                 entryList.addAll(schemaFacade.getEntries(type.getId()));
             }
+            LOG.info(String.format("Computed entry list: %s", entryList));
 
             Function<URL, URL> mapUrl =
                     Optional.ofNullable(System.getenv().get("RO_CRATE_SERVER_LOCAL_DOWNLOAD_PORT"))
@@ -179,6 +184,7 @@ public final class ImportJob implements IAsyncJob
             Map<AbstractEntity, Path> stringPathMap = fileDownloader.handleDownloads(crate);
 
             // Converting ro-crate model to openBIS model
+            LOG.info("Converting ro-crate model to openBIS model");
             RdfToModel.ConversionResult conversion =
                     RdfToModel.convert(types, propertyTypes, entryList, "DEFAULT", "DEFAULT",
                             schemaFacade, stringPathMap);
@@ -186,7 +192,7 @@ public final class ImportJob implements IAsyncJob
                     conversion.openBisModel();
             ValidationResult validationResult =
                     RoCrateSchemaValidation.validate(conversion);
-
+            LOG.info(String.format("Validation result: %s", validationResult));
             if (!validationResult.isOkay())
             {
                 importResult = new ImportDelegate.OpenBisImportResult(List.of(), Map.of(),
@@ -194,6 +200,7 @@ public final class ImportJob implements IAsyncJob
                 return;
             }
 
+            LOG.info("Converting openBIS model to excel.");
             // Convert openbis model to openbis excel format for import
             byte[] importExcel = ExcelWriter.convert(ExcelWriter.Format.ZIP_EXPORT, model);
             java.nio.file.Path modelAsExcel;
@@ -210,12 +217,16 @@ public final class ImportJob implements IAsyncJob
                 RoCrateExceptions.throwInstance(RoCrateExceptions.SCHEMA_VALIDATION_FAILED);
             }
 
+            LOG.info(String.format("Writing excel to session workspace: %s", modelAsExcel));
             // Import
             SessionWorkSpaceManager.write(openBIS.getSessionToken(), modelAsExcel,
                     new ByteArrayInputStream(importExcel));
             java.nio.file.Path realPath =
                     SessionWorkSpaceManager.getRealPath(openBIS.getSessionToken(), modelAsExcel);
+            LOG.info(String.format("Excel session workspace path: %s",  realPath));
             pathsForDeletion.add(realPath);
+
+            LOG.info("Uploading excel to OpenBIS workspace.");
             openBIS.uploadToSessionWorkspace(realPath);
 
             ImportData importData = new ImportData();
@@ -227,42 +238,44 @@ public final class ImportJob implements IAsyncJob
             importOperation.setImportOptions(getImportOptions(importParams));
             importOperation.setImportData(importData);
 
+            LOG.info("Executing OpenBIS async import.");
             AsynchronousOperationExecutionResults ongoingOperations =
                     (AsynchronousOperationExecutionResults)
                             openBIS.executeOperations(List.of(importOperation),
                                     asynchronousOperationExecutionOptions);
 
-            OperationExecutionFetchOptions ongoingOperationsFechOptions =
+            OperationExecutionFetchOptions ongoingOperationsFetchOptions =
                     new OperationExecutionFetchOptions();
-            ongoingOperationsFechOptions.withDetails();
-            ongoingOperationsFechOptions.withNotification();
-            ongoingOperationsFechOptions.withOwner();
-            ongoingOperationsFechOptions.withSummary();
-            ongoingOperationsFechOptions.withSummary().withError();
-            ongoingOperationsFechOptions.withDetails().withResults();
-            ongoingOperationsFechOptions.withSummary().withResults();
+            ongoingOperationsFetchOptions.withDetails();
+            ongoingOperationsFetchOptions.withNotification();
+            ongoingOperationsFetchOptions.withOwner();
+            ongoingOperationsFetchOptions.withSummary();
+            ongoingOperationsFetchOptions.withSummary().withError();
+            ongoingOperationsFetchOptions.withDetails().withResults();
+            ongoingOperationsFetchOptions.withSummary().withResults();
 
             OperationExecutionPermId executionId = ongoingOperations.getExecutionId();
+            LOG.info(String.format("Import execution id: %s", executionId));
 
             boolean isOperationFinished = false;
             while (isOperationFinished == false)
             {
                 Map<IOperationExecutionId, OperationExecution> operationExecutions =
                         openBIS.getOperationExecutions(List.of(executionId),
-                                ongoingOperationsFechOptions);
+                                ongoingOperationsFetchOptions);
                 OperationExecution operationExecution = operationExecutions.get(executionId);
+                LOG.info(String.format("Import %s status: %s", executionId, operationExecution.getState()));
                 isOperationFinished =
                         operationExecution.getState() == OperationExecutionState.FINISHED || operationExecution.getState() == OperationExecutionState.FAILED;
                 if (operationExecution.getState() == OperationExecutionState.FAILED)
                 {
                     isOperationFinished = true;
+                    LOG.error(String.format("OpenBIS import %s failed: %s", executionId, operationExecution.getSummary().getError()));
                     this.exception =
                             new RuntimeException(operationExecution.getSummary().getError());
 
                 }
                 Thread.sleep(2000);
-
-
             }
             if (this.exception != null)
             {
@@ -271,13 +284,13 @@ public final class ImportJob implements IAsyncJob
 
             Map<IOperationExecutionId, OperationExecution> operationExecutions =
                     openBIS.getOperationExecutions(List.of(executionId),
-                            ongoingOperationsFechOptions);
+                            ongoingOperationsFetchOptions);
             OperationExecution operationExecution = operationExecutions.get(executionId);
             IOperationResult iOperationResult =
                     operationExecution.getDetails().getResults().stream().findFirst()
                             .orElseThrow();
             ImportOperationResult importOperationResult = (ImportOperationResult) iOperationResult;
-
+            LOG.error(String.format("OpenBIS import %s success", executionId));
 
             this.importResult = new ImportDelegate.OpenBisImportResult(
                     importOperationResult.getImportResult().getObjectIds().stream()
@@ -286,10 +299,14 @@ public final class ImportJob implements IAsyncJob
 
         } catch (Exception e)
         {
-            LOG.error("Import did not work", e);
+            LOG.error("Exception during import", e);
             this.exception = e;
+        } catch (Error e) {
+            Log.error("Error during import", e);
+            this.exception = new UserFailureException(e.getMessage());
         } finally
         {
+            LOG.info(String.format("Import job finished: %s", jobId.toString()));
             this.completionOrFailInstant = clock.instant();
         }
     }
