@@ -2,12 +2,19 @@ Data Upload
 ====
 
 
-Data can be uploaded to *Datasets* in openBIS to *Experiments/Collections* and *Objects* (e.g., *Experimental Steps*). openBIS is agnostic of file formats and types.
+In openBIS 7.0 a new data store (AFS) has been introduced. This allows to upload data to *Experiments/Collections* and *Objects* (e.g., *Experimental Steps*) and these data are not immutable. AFS data can be deleted, renamed, and new data can always be uploaded to an entity. The AFS supports the upload of large data files (in the range of low hundreds GB).
+*Datasets* are still avaible in openBIS 7.0 and can be attached to *Experiments/Collections* and *Objects* (e.g., *Experimental Steps*). openBIS is agnostic of file formats and types. openBIS Datasets are immutable.
+For users using openBIS 7.0, we recommend to use AFS data, rather than datasets. Datasets will be removed in openBIS 8.0 (a migration will be provided).
 
-Small data files can be uploaded via the web user interface, larger data files can be uploaded via the openBIS dropbox.
 
  
-## Data upload via web UI
+# Data upload via web UI
+
+## AFS data upload
+
+
+
+## Dataset upload
 
 To upload data via the web interface: 
 
@@ -43,7 +50,7 @@ there are two options:
 2.  Use an external archiver (e.g. Stuffit Deluxe).
 
 
-## Data upload via dropbox
+# Data upload via DSS dropbox
 
 Web upload of data files is only suitable for files of limited size (few GB). To upload larger data, openBIS uses dropbox scripts that run in the background (see [Dropboxes](../../software-developer-documentation/server-side-extensions/dss-dropboxes.md)). A default dropbox script is provided with the openBIS ELN-LIMS plugin, and the dropbox folder needs to be set up by a *system admin*.
 
@@ -95,7 +102,7 @@ on the eln-lims-dropbox folder.
 
  
 
-### Dropbox with markerfile
+### DSS Dropbox with markerfile
  
 
 In case of uploads of data >100GB we recommend to configure the
@@ -156,7 +163,7 @@ other text editor will also work.
 
  
 
-### Dropbox monitor
+### DSS Dropbox monitor
 
  
 It is possible to check the status of the upload via dropbox using the
@@ -231,10 +238,7 @@ the main menu.
 
 ![image info](img/201012-other-tools-metadata-json-file.png)
 
- 
-
-
- 
+  
 
 In **Other Tools**, there is also the **Show available storage space**
 button, which shows the available storage space on the openBIS instance.
