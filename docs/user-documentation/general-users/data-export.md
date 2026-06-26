@@ -151,7 +151,7 @@ This contains the same folder structure as described above. In addition, in this
 
 This contains the same files and folders as described in Example 1. The only difference in this case is that the metadata.xlsx is not import-compatible. It contains some fields which are not compatible with openBIS re-import, as explained above.
 
-![image info](img/7.0-export-nic-xlxs.png)
+![image info](img/7.0-export-nic-xlsx.png)
 
 
 ## Export to ZIP
