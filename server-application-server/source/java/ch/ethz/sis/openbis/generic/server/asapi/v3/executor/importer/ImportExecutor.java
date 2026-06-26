@@ -112,6 +112,7 @@ public class ImportExecutor implements IImportExecutor
                     timeout);
             afsClient.setSessionToken(sessionToken);
             afsClient.setInteractiveSessionKey(interactiveSessionKey);
+            operationLog.info(String.format("AFS config for import: [url=%s, token=%s, timeout=%s]", afsUrl, sessionToken, timeout));
         } else {
             operationLog.info("AFS url configuration not found.");
         }
@@ -141,16 +142,21 @@ public class ImportExecutor implements IImportExecutor
                 {
                     if (transactionId == null)
                     {
-                        operationLog.info("No existing transaction id found");
                         transactionId = UUID.randomUUID();
+                        operationLog.info("No existing transaction id found, creating new transaction with id: " + transactionId);
                         try
                         {
                             transactionCoordinatorApi.beginTransaction(transactionId, sessionToken, interactiveSessionKey);
+                            operationLog.info(String.format("Transaction %s import phase 1: metadata import", transactionId));
                             importMetaData(xlsImport, result);
+                            operationLog.info(String.format("Transaction %s import phase 2: metadata import", transactionId));
                             xlsImport.importZipAfsData();
+                            operationLog.info(String.format("Commiting transaction %s", transactionId));
                             transactionCoordinatorApi.commitTransaction(transactionId, sessionToken, interactiveSessionKey);
+                            operationLog.info(String.format("Transaction %s commited", transactionId));
                         } catch (Exception e)
                         {
+                            operationLog.error(String.format("Transaction %s failed with exception %s", transactionId, e));
                             transactionCoordinatorApi.rollbackTransaction(transactionId, sessionToken, interactiveSessionKey);
                             throw e;
                         }
