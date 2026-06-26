@@ -1127,6 +1127,17 @@ public abstract class BaseApiClientTest
     }
 
     @Test
+    public void list_file() throws Exception
+    {
+        login();
+
+        File[] files = afsClient.list(owner, FILE_A, Boolean.FALSE);
+        assertEquals(1, files.length);
+
+        assertFileEquals(files[0], owner, "/" + FILE_A, FILE_A_NAME, false, (long) DATA.length);
+    }
+
+    @Test
     public void list_rootNonRecursive() throws Exception
     {
         login();
