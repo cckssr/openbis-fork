@@ -69,7 +69,9 @@ var TreeUtil = new function() {
     	    data.result = dfd.promise();
     	    var type = data.node.data.entityType;
     	    var permId = data.node.key;
-    	    
+			var sampleFetchOptions = {
+				only: true,
+			}
     	    switch(type) {
     	    	case "ROOT":
     	    		var spaceRules = { entityKind : "SPACE", logicalOperator : "AND", rules : { } };
@@ -88,7 +90,7 @@ var TreeUtil = new function() {
 						[Util.guid()] : { type : "Attribute", name : "SPACE", value : permId },
 						[Util.guid()] : { type: "Project", name: "NULL.NULL", value: "NULL" }
 					};
-					mainController.serverFacade.searchForSamplesAdvanced({ entityKind : "SAMPLE", logicalOperator : "AND", rules : spaceSampleRules }, null, function(searchResult) {
+					mainController.serverFacade.searchForSamplesAdvanced({ entityKind : "SAMPLE", logicalOperator : "AND", rules : spaceSampleRules }, sampleFetchOptions, function(searchResult) {
 						var results = [];
 						var samples = searchResult.objects;
 						for (var i = 0; i < samples.length; i++) {
@@ -112,7 +114,7 @@ var TreeUtil = new function() {
 						[Util.guid()]: { type: "Attribute", name: "PROJECT_PERM_ID", value: permId },
 						[Util.guid()]: { type: "Experiment", name: "NULL.NULL", value: "NULL" },
 					};
-					mainController.serverFacade.searchForSamplesAdvanced({ entityKind : "SAMPLE", logicalOperator : "AND", rules : projectSampleRules }, null, function(searchResult) {
+					mainController.serverFacade.searchForSamplesAdvanced({ entityKind : "SAMPLE", logicalOperator : "AND", rules : projectSampleRules }, sampleFetchOptions, function(searchResult) {
 						var results = [];
 						var samples = searchResult.objects;
 						for (var i = 0; i < samples.length; i++) {
@@ -132,7 +134,7 @@ var TreeUtil = new function() {
     	    		break;
     	    	case "EXPERIMENT":
     	    		var sampleRules = { "UUIDv4" : { type : "Experiment", name : "ATTR.PERM_ID", value : permId } };
-    	    		mainController.serverFacade.searchForSamplesAdvanced({ entityKind : "SAMPLE", logicalOperator : "AND", rules : sampleRules }, null, function(searchResult) {
+    	    		mainController.serverFacade.searchForSamplesAdvanced({ entityKind : "SAMPLE", logicalOperator : "AND", rules : sampleRules }, sampleFetchOptions, function(searchResult) {
     	    			var results = [];
     	                var samples = searchResult.objects;
     	                for (var i = 0; i < samples.length; i++) {
