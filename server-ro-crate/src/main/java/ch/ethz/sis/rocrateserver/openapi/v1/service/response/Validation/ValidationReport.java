@@ -69,7 +69,7 @@ public class ValidationReport implements IResultPayload
 
         List<ValidationError> validationErrors = new ArrayList<>();
         validationErrors.addAll(
-                validationResult.getEntititesToUndefinedProperties().values().stream().flatMap(
+                validationResult.getEntitiesToUndefinedProperties().values().stream().flatMap(
                                 Collection::stream)
                         .map(x -> new PropertyError(x.getNode(), x.getProperty(), x.getMessage()))
                         .collect(Collectors.toList()));
@@ -78,7 +78,7 @@ public class ValidationReport implements IResultPayload
                 .map(x -> new PropertyError(x.getNode(), x.getProperty(), x.getMessage()))
                 .collect(Collectors.toList()));
         validationErrors.addAll(
-                validationResult.getIdentififersWithMissingFiles().values().stream().flatMap(
+                validationResult.getIdentifiersWithMissingFiles().values().stream().flatMap(
                         Collection::stream).map(x -> new MissingDataError(x.type, x.path)).collect(
                         Collectors.toList()));
 

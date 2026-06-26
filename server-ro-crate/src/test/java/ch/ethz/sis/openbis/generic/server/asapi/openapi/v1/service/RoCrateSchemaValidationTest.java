@@ -43,7 +43,7 @@ public class RoCrateSchemaValidationTest
                 RoCrateSchemaValidation.validate(
                         new RdfToModel.ConversionResult(openBisModel, Map.of()));
         Assert.assertTrue(result.getEntitiesToMissingProperties().isEmpty());
-        Assert.assertTrue(result.getEntititesToUndefinedProperties().isEmpty());
+        Assert.assertTrue(result.getEntitiesToUndefinedProperties().isEmpty());
 
     }
 
@@ -118,7 +118,7 @@ public class RoCrateSchemaValidationTest
                 RoCrateSchemaValidation.validate(
                         new RdfToModel.ConversionResult(openBisModel, Map.of()));
         Assert.assertTrue(result.getEntitiesToMissingProperties().isEmpty());
-        Assert.assertTrue(result.getEntititesToUndefinedProperties().isEmpty());
+        Assert.assertTrue(result.getEntitiesToUndefinedProperties().isEmpty());
 
     }
 
@@ -191,7 +191,7 @@ public class RoCrateSchemaValidationTest
                 RoCrateSchemaValidation.validate(
                         new RdfToModel.ConversionResult(openBisModel, Map.of()));
         Assert.assertTrue(result.getEntitiesToMissingProperties().isEmpty());
-        Assert.assertTrue(result.getEntititesToUndefinedProperties().isEmpty());
+        Assert.assertTrue(result.getEntitiesToUndefinedProperties().isEmpty());
 
     }
 
@@ -264,7 +264,7 @@ public class RoCrateSchemaValidationTest
                 RoCrateSchemaValidation.validate(
                         new RdfToModel.ConversionResult(openBisModel, Map.of()));
         Assert.assertFalse(result.getEntitiesToMissingProperties().isEmpty());
-        Assert.assertTrue(result.getEntititesToUndefinedProperties().isEmpty());
+        Assert.assertTrue(result.getEntitiesToUndefinedProperties().isEmpty());
 
     }
 
@@ -334,7 +334,7 @@ public class RoCrateSchemaValidationTest
                 RoCrateSchemaValidation.validate(
                         new RdfToModel.ConversionResult(openBisModel, Map.of()));
         Assert.assertTrue(result.getEntitiesToMissingProperties().isEmpty());
-        Assert.assertFalse(result.getEntititesToUndefinedProperties().isEmpty());
+        Assert.assertFalse(result.getEntitiesToUndefinedProperties().isEmpty());
 
     }
 
@@ -439,7 +439,7 @@ public class RoCrateSchemaValidationTest
                 RoCrateSchemaValidation.validate(
                         new RdfToModel.ConversionResult(openBisModel, Map.of()));
         Assert.assertTrue(result.getEntitiesToMissingProperties().isEmpty());
-        Assert.assertTrue(result.getEntititesToUndefinedProperties().isEmpty());
+        Assert.assertTrue(result.getEntitiesToUndefinedProperties().isEmpty());
         Assert.assertFalse(result.getWrongDataTypes().isEmpty());
         for (PropertyAssignmentCase propertyAssignmentCase : getPropertyAssignmentInfo())
         {
