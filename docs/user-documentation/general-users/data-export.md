@@ -158,7 +158,7 @@ This contains the same files and folders as described in Example 1. The only dif
 
 If you want to export entities from multiple *Spaces*, you can use the **Export to ZIP** option available under the **Tools** section.
 
-The options for the export are  similar to what is described above. Howver, in this case, only the option to receive the export via email is available. 
+The options for the export are  similar to what is described above. However, in this case, only the option to receive the export via email is available. 
 When export is ready, you will receive an email with a link to download the zip file containing the exported entities.
 
 ![image info](img/7.0-export-to-zip-options.png)
