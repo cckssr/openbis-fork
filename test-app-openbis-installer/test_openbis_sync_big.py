@@ -428,6 +428,7 @@ class TestCase(systemtest.testcase.TestCase):
         openbis_data_source.enableProjectSamples()
         openbis_data_source.setDummyAuthentication()
         openbis_data_source.setDataStoreServerProperty("host-address", "https://localhost")
+        self._applyOpenbisInstanceTemplate(openbis_data_source, 'data_source')
         openbis_data_source.asProperties['max-number-of-sessions-per-user'] = '0'
         openbis_data_source.dssProperties['database.kind'] = openbis_data_source.databaseKind
         openbis_data_source.createTestDatabase('openbis')
@@ -445,6 +446,7 @@ class TestCase(systemtest.testcase.TestCase):
         openbis_harvester.enableProjectSamples()
         openbis_harvester.setDummyAuthentication()
         openbis_harvester.setDataStoreServerProperty("host-address", "https://localhost")
+        self._applyOpenbisInstanceTemplate(openbis_harvester, 'harvester')
         openbis_harvester.asProperties['max-number-of-sessions-per-user'] = '0'
         openbis_harvester.asProperties['code-plugins.allowed-editing-users'] = '.*'
         openbis_harvester.dssProperties['database.kind'] = openbis_harvester.databaseKind
@@ -453,6 +455,21 @@ class TestCase(systemtest.testcase.TestCase):
         openbis_harvester.enableCorePlugin("openbis-sync")
         util.copyFromTo(self.getTemplatesFolder(), openbis_harvester.installPath, "harvester-config.txt")
         return openbis_harvester
+
+    def _applyOpenbisInstanceTemplate(self, openbis, templateFolder):
+        util.copyFromTo("%s/%s" % (self.getTemplatesFolder(), templateFolder),
+                        openbis.installPath,
+                        "servers/openBIS-server/jetty/start.d/http.ini")
+        self._applyPropertiesTemplate(openbis.asProperties, templateFolder,
+                                      "servers/openBIS-server/jetty/etc/service.properties")
+        self._applyPropertiesTemplate(openbis.dssProperties, templateFolder,
+                                      "servers/datastore_server/etc/service.properties")
+
+    def _applyPropertiesTemplate(self, properties, templateFolder, relativePath):
+        templateProperties = util.readProperties("%s/%s/%s" % (self.getTemplatesFolder(),
+                                                               templateFolder,
+                                                               relativePath))
+        properties.update(templateProperties)
 
     def _normalize_legacy_resolution_property_type(self, openbis):
         statements = [

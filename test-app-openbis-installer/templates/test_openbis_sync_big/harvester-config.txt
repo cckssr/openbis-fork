@@ -1,8 +1,8 @@
 [DATASOURCE1]
 
-resource-list-url = https://localhost:9001/datastore_server/re-sync
-data-source-openbis-url = https://localhost:9000/openbis/openbis
-data-source-dss-url = https://localhost:9001/datastore_server
+resource-list-url = http://localhost:9001/datastore_server/re-sync
+data-source-openbis-url = http://localhost:9000/openbis/openbis
+data-source-dss-url = http://localhost:9001/datastore_server
 data-source-alias = DS1
 data-source-auth-realm = OAI-PMH
 data-source-auth-user = admin

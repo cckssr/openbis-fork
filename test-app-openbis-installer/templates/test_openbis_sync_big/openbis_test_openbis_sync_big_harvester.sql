@@ -3700,7 +3700,7 @@ COPY public.data_store_services (id, key, label, kind, data_store_id, reporting_
 --
 
 COPY public.data_stores (id, uuid, code, download_url, remote_url, session_token, registration_timestamp, modification_timestamp, is_archiver_configured, data_source_definitions) FROM stdin;
-1	7F69D222-BB69-48F0-A014-DB17D031C463	DSS1	https://localhost:8444	https://127.0.0.1:8444	201001080347596-80EBA5F27D02BC9CDC110463DE87476E	2020-10-01 08:03:48.005734+02	2020-10-01 08:03:48.038+02	t	code=multi-dataset-archiver-db\tdriverClassName=org.postgresql.Driver\thostPart=localhost\tsid=multi_dataset_archive_test\tusername=felmer\tpassword=\t\ncode=openbis-db\tdriverClassName=org.postgresql.Driver\tsid=openbis_prod\tusername=felmer\tpassword=\t\ncode=path-info-db\tdriverClassName=org.postgresql.Driver\tsid=pathinfo_prod\tusername=felmer\tpassword=\t\n
+1	7F69D222-BB69-48F0-A014-DB17D031C463	DSS1	http://localhost:9003	http://127.0.0.1:9003	201001080347596-80EBA5F27D02BC9CDC110463DE87476E	2020-10-01 08:03:48.005734+02	2020-10-01 08:03:48.038+02	t	code=multi-dataset-archiver-db\tdriverClassName=org.postgresql.Driver\thostPart=localhost\tsid=multi_dataset_archive_test\tusername=felmer\tpassword=\t\ncode=openbis-db\tdriverClassName=org.postgresql.Driver\tsid=openbis_prod\tusername=felmer\tpassword=\t\ncode=path-info-db\tdriverClassName=org.postgresql.Driver\tsid=pathinfo_prod\tusername=felmer\tpassword=\t\n
 \.
 
 
