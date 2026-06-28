@@ -3,8 +3,8 @@ Data Upload
 
 
 In openBIS 7.0 a new data store (AFS) has been introduced. This allows to upload data to *Experiments/Collections* and *Objects* (e.g., *Experimental Steps*) and these data are not immutable. AFS data can be deleted, renamed, and new data can always be uploaded to an entity. The AFS supports the upload of large data files (in the range of low hundreds GB).
-*Datasets* are still avaible in openBIS 7.0 and can be attached to *Experiments/Collections* and *Objects* (e.g., *Experimental Steps*). openBIS is agnostic of file formats and types. openBIS Datasets are immutable.
-For users using openBIS 7.0, we recommend to use AFS data, rather than datasets. Datasets will be removed in openBIS 8.0 (a migration will be provided).
+*Datasets* are still avaible in openBIS 7.0 and can be attached to *Experiments/Collections* and *Objects* (e.g., *Experimental Steps*). openBIS is agnostic of file formats and types. openBIS *Datasets* are immutable.
+For users using openBIS 7.0, we recommend to use AFS data, rather than *Datasets*. *Datasets* will be removed in openBIS 8.0 (a migration will be provided).
 
 
  
@@ -12,6 +12,23 @@ For users using openBIS 7.0, we recommend to use AFS data, rather than datasets.
 
 ## AFS data upload
 
+To upload data to an *Object* or *Experiment/Collection*, click on the **Files** tab of the entity, as shown below.
+
+![image info](img/7.0-object-file-tab.png)
+
+You have the option to upload single files or folders.
+
+![image info](img/7.0-afs-upload-options.png)
+
+After upload, when you select a file or folder, a few options become available, as shown below.
+
+![image info](img/7.0-afs-files-available-options.png)
+
+By default files are shown in list view, however it is possible to switch to gallery view using the button shown below.
+
+![image info](img/7.0-afs-list-view.png)
+
+![image info](img/7.0-afs-gallery-view.png)
 
 
 ## Dataset upload
