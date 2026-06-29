@@ -25,6 +25,7 @@ const SpreadsheetField = ({ value, editable = false, onChange = _v => {} }) => {
   const domRef = useRef(null); // DOM element jspreadsheet attaches to
   const instanceRef = useRef(null); // worksheet instance (instances[0])
   const onChangeRef = useRef(onChange);
+  const isInitializingRef = useRef(true);
 
   // Keep the callback ref current on every render — no stale closures in event handlers
   useEffect(() => {
@@ -52,6 +53,9 @@ const SpreadsheetField = ({ value, editable = false, onChange = _v => {} }) => {
       : undefined;
 
     const handleChange = worksheet => {
+      if (isInitializingRef.current) {
+        return;
+      }
       const ws = worksheet || instanceRef.current;
       if (!ws || !onChangeRef.current) {
         return;
@@ -85,6 +89,7 @@ const SpreadsheetField = ({ value, editable = false, onChange = _v => {} }) => {
       data,
       style,
       minDimensions: DEFAULT_DIMENSIONS,
+      defaultColWidth: DEFAULT_COLUMN_WIDTH,
       editable,
       allowInsertRow: editable,
       allowManualInsertRow: editable,
@@ -129,6 +134,7 @@ const SpreadsheetField = ({ value, editable = false, onChange = _v => {} }) => {
 
     const instances = jspreadsheet(domRef.current, spreadsheetOptions);
     instanceRef.current = instances[0];
+    isInitializingRef.current = false;
 
     return () => {
       if (domRef.current) {
@@ -139,7 +145,11 @@ const SpreadsheetField = ({ value, editable = false, onChange = _v => {} }) => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // runs once per mount; the `key` prop in SpreadsheetFieldRenderer forces remount on mode change
 
-  return <div ref={domRef} />;
+  return (
+    <div style={{ overflowX: 'auto', width: '100%' }}>
+      <div ref={domRef} />
+    </div>
+  );
 };
 
 export default SpreadsheetField;

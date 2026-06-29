@@ -4,14 +4,15 @@ import { Typography } from '@mui/material';
 import { FieldRendererProps } from '@src/js/components/database/new-forms/types/formITypes.ts';
 import { FormMode } from '@src/js/components/database/new-forms/types/formEnums.ts';
 import SpreadsheetField from '@src/js/components/common/form/SpreadsheetField.jsx';
+import MultiValueFieldEditor from '@src/js/components/database/new-forms/components/fields/MultiValueFieldEditor.tsx';
 
 /**
  * Renders a SPREADSHEET property using jspreadsheet community edition.
  *
- * `field.value` is a Spreadsheet DTO instance (or '' when empty) for single-value properties, and
- * an array of such instances for multi-value properties. Changes are emitted back through
- * `onFieldChange` as the plain Spreadsheet model, which the DTO setter serializes to
- * `<DATA>base64</DATA>`.
+ * `field.value` is a plain Spreadsheet model object (or '' when empty) for single-value
+ * properties, and an array of such objects for multi-value properties. Changes are emitted
+ * back through `onFieldChange` as the plain Spreadsheet model, which the DTO setter serializes
+ * to `<DATA>base64</DATA>`.
  */
 export const SpreadsheetFieldRenderer: React.FC<FieldRendererProps> = ({
   field,
@@ -31,8 +32,26 @@ export const SpreadsheetFieldRenderer: React.FC<FieldRendererProps> = ({
     </Typography>
   );
 
-  // Multi-value spreadsheets are rare; render each entry read-only (no multi-value editing UI).
   if (field.isMultiValue) {
+    if (editable) {
+      return (
+        <MultiValueFieldEditor
+          label={field.label}
+          required={field.required}
+          values={Array.isArray(field.value) ? field.value : []}
+          onChange={(vals) => onFieldChange(field.id, vals)}
+          renderInput={(val, handleChange) => (
+            <SpreadsheetField
+              value={val}
+              editable={true}
+              onChange={handleChange}
+            />
+          )}
+          isEmpty={(v) => v === null || v === undefined}
+        />
+      );
+    }
+
     const values: any[] = Array.isArray(field.value) ? field.value : [];
     return (
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
