@@ -3,7 +3,7 @@ Data Upload
 
 
 In openBIS 7.0 a new data store (AFS) has been introduced. This allows to upload data to *Experiments/Collections* and *Objects* (e.g., *Experimental Steps*) and these data are not immutable. AFS data can be deleted, renamed, and new data can always be uploaded to an entity. The AFS supports the upload of large data files (in the range of low hundreds GB).
-*Datasets* are still avaible in openBIS 7.0 and can be attached to *Experiments/Collections* and *Objects* (e.g., *Experimental Steps*). openBIS is agnostic of file formats and types. openBIS *Datasets* are immutable.
+*Datasets* are still avaible in openBIS 7.0 and can be attached to *Experiments/Collections* and *Objects* (e.g., *Experimental Steps*). openBIS *Datasets* are immutable.
 For users using openBIS 7.0, we recommend to use AFS data, rather than *Datasets*. *Datasets* will be removed in openBIS 8.0 (a migration will be provided).
 
 
@@ -29,6 +29,26 @@ By default files are shown in list view, however it is possible to switch to gal
 ![image info](img/7.0-afs-list-view.png)
 
 ![image info](img/7.0-afs-gallery-view.png)
+
+If you delete a file or folder, a new folder called **.afs.trash** is created and all deleted items are moved here.
+
+![image info](img/7.0-afs-trash-folder.png)
+
+From here, items can be either moved back or permanently deleted.
+
+
+
+![image info](img/7.0-afs-trash-folder-content.png)
+
+
+If you upload a modified version of a file that already exists, a folder called **.afs.snapshots** is created. Previous versions of the file are moved here.
+
+![image info](img/7.0-afs-snapshot-folder.png)
+
+If you delete a file, a folder with the name of the file you deleted is created. Inside this folder the previous version of the file is contained.
+
+![image info](img/7.0-afs-snapshot-content.png)
+
 
 
 ## Dataset upload
