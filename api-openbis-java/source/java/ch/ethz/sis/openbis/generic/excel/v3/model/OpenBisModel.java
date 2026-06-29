@@ -156,10 +156,24 @@ public class OpenBisModel
 
     public static String makeOpenBisCodeCompliant(String candiate)
     {
-        return candiate.replaceAll("\\|", CODE_SPECIAL_CHARACTER_REPLACEMENT)
+        String s = candiate.replaceAll("\\|", CODE_SPECIAL_CHARACTER_REPLACEMENT)
                 .replaceAll("%[0-9A-Fa-f]{2}", CODE_SPECIAL_CHARACTER_REPLACEMENT)
                 .replaceAll("\\\\u([0-9A-Fa-f]{2}){6}", CODE_SPECIAL_CHARACTER_REPLACEMENT)
                 .replaceAll("\\\\u([0-9A-Fa-f]{2}){3}", CODE_SPECIAL_CHARACTER_REPLACEMENT);
+        char[] buffer = new char[s.length()];
+        for (int i = 0; i < s.length(); i++)
+        {
+            Character cur = s.charAt(i);
+            if (!cur.toString().matches("[_a-zA-Z0-9]"))
+            {
+                buffer[i] = '_';
+            } else
+            {
+                buffer[i] = cur;
+            }
+        }
+
+        return new String(buffer);
     }
 
     public Map<ObjectIdentifier, List<IFileInfo>> getImageFiles()
