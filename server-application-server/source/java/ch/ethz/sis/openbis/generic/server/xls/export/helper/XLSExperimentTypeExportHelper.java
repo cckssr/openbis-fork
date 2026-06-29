@@ -17,20 +17,14 @@ package ch.ethz.sis.openbis.generic.server.xls.export.helper;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.IEntityTypeId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.ExperimentType;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.Plugin;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.fetchoptions.PropertyAssignmentFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.SemanticAnnotation;
+import ch.ethz.sis.openbis.generic.asapi.v3.exporter.ExportEntityTypeCollector;
 import ch.ethz.sis.openbis.generic.server.xls.export.Attribute;
 import ch.ethz.sis.openbis.generic.server.xls.export.ExportableKind;
 import org.apache.poi.ss.usermodel.Workbook;
 
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import static ch.ethz.sis.openbis.generic.server.xls.export.Attribute.*;
@@ -115,24 +109,7 @@ public class XLSExperimentTypeExportHelper extends AbstractXLSEntityTypeExportHe
     public ExperimentType getEntityType(final IApplicationServerApi api, final String sessionToken,
             final String permId)
     {
-        final ExperimentTypeFetchOptions fetchOptions = new ExperimentTypeFetchOptions();
-        configureFetchOptions(fetchOptions);
-        final Map<IEntityTypeId, ExperimentType> experimentTypes = api.getExperimentTypes(sessionToken,
-                Collections.singletonList(new EntityTypePermId(permId, EntityKind.EXPERIMENT)), fetchOptions);
-
-        assert experimentTypes.size() <= 1;
-
-        final Iterator<ExperimentType> iterator = experimentTypes.values().iterator();
-        return iterator.hasNext() ? iterator.next() : null;
-    }
-
-    static void configureFetchOptions(final ExperimentTypeFetchOptions fetchOptions)
-    {
-        fetchOptions.withValidationPlugin().withScript();
-        final PropertyAssignmentFetchOptions propertyAssignmentFetchOptions = fetchOptions.withPropertyAssignments();
-        propertyAssignmentFetchOptions.withPropertyType().withVocabulary();
-        propertyAssignmentFetchOptions.withPropertyType().withSampleType();
-        propertyAssignmentFetchOptions.withPlugin().withScript();
+        return ExportEntityTypeCollector.fetchExperimentType(api, sessionToken, permId);
     }
 
     @Override

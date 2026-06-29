@@ -119,12 +119,16 @@ public class LogInitializer
         String propertyName = propertyPrefix+"configuration";
         String config = System.getProperty(propertyName);
         LoggerDiagnostics.info(String.format("System property %s=%s", propertyName, config));
+        if(config == null) {
+            config = System.getenv(propertyName);
+        }
+        LoggerDiagnostics.info(String.format("System env %s=%s", propertyName, config));
         if (config != null)
         {
             String trimmed = config.trim();
             if (!trimmed.isEmpty())
             {
-                LoggerDiagnostics.info("Using system property config: " + trimmed);
+                LoggerDiagnostics.info("Using property config: " + trimmed);
                 return trimmed;
             }
         }

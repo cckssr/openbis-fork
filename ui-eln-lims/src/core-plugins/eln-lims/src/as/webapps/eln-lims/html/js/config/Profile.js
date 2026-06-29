@@ -549,10 +549,20 @@ $.extend(DefaultProfile.prototype, {
 		this.searchSamplesUsingV3OnDropbox = false;
 		this.searchSamplesUsingV3OnDropboxRunCustom = false;
 
-        this.getExperimentTypeToolbarConfiguration = function(experimentTypeCode) {
+        this.getExperimentTypeToolbarConfiguration = function(experimentTypeCode, spaceCode) {
+			let settingCode = 'GENERAL_ELN_SETTINGS';
+			let groupCodes = this.getGroupCodes();
+			// First group is always general settings
+			for(let i=1; i<groupCodes.length; i++) {
+				if(spaceCode.startsWith(groupCodes[i])) {
+					settingCode =groupCodes[i] + "ELN_SETTINGS";
+					break;
+				}
+			}
+
 			var defaultToolbar = SettingsManagerUtils.getDefaultExperimentTypeToolbarConfiguration();
-			if(this.experimentTypeDefinitionsExtension[experimentTypeCode] && this.experimentTypeDefinitionsExtension[experimentTypeCode]["TOOLBAR"]) {
-				var toolbarOptions = this.experimentTypeDefinitionsExtension[experimentTypeCode]["TOOLBAR"];
+			if(this.experimentTypeToolbarSettings && this.experimentTypeToolbarSettings[settingCode] && this.experimentTypeToolbarSettings[settingCode][experimentTypeCode]) {
+				var toolbarOptions = this.experimentTypeToolbarSettings[settingCode][experimentTypeCode];
 				for(key in toolbarOptions) {
 					if(key === "CREATE") {
 						defaultToolbar["CREATE_FOLDER"] = toolbarOptions[key];
@@ -565,10 +575,20 @@ $.extend(DefaultProfile.prototype, {
 			return defaultToolbar;
 		}
 
-		this.getDataSetTypeToolbarConfiguration = function(dataSetTypeCode) {
+		this.getDataSetTypeToolbarConfiguration = function(dataSetTypeCode, spaceCode) {
+			let settingCode = 'GENERAL_ELN_SETTINGS';
+			let groupCodes = this.getGroupCodes();
+			// First group is always general settings
+			for(let i=1; i<groupCodes.length; i++) {
+				if(spaceCode.startsWith(groupCodes[i])) {
+					settingCode =groupCodes[i] + "ELN_SETTINGS";
+					break;
+				}
+			}
+
 			var defaultToolbar = SettingsManagerUtils.getDefaultDataSetTypeToolbarConfiguration();
-			if(this.dataSetTypeDefinitionsExtension[dataSetTypeCode] && this.dataSetTypeDefinitionsExtension[dataSetTypeCode]["TOOLBAR"]) {
-				var toolbarOptions = this.dataSetTypeDefinitionsExtension[dataSetTypeCode]["TOOLBAR"];
+			if(this.dataSetTypeToolbarSettings && this.dataSetTypeToolbarSettings[settingCode] && this.dataSetTypeToolbarSettings[settingCode][dataSetTypeCode]) {
+				var toolbarOptions = this.dataSetTypeToolbarSettings[settingCode][dataSetTypeCode];
 				for(key in toolbarOptions) {
 					if(key === "CREATE") {
 						defaultToolbar["CREATE_FOLDER"] = toolbarOptions[key];
@@ -581,10 +601,20 @@ $.extend(DefaultProfile.prototype, {
 			return defaultToolbar;
 		}
 
-		this.getSampleTypeToolbarConfiguration = function(sampleTypeCode) {
+		this.getSampleTypeToolbarConfiguration = function(sampleTypeCode, spaceCode) {
+			let settingCode = 'GENERAL_ELN_SETTINGS';
+			let groupCodes = this.getGroupCodes();
+			// First group is always general settings
+			for(let i=1; i<groupCodes.length; i++) {
+				if(spaceCode.startsWith(groupCodes[i])) {
+					settingCode =groupCodes[i] + "ELN_SETTINGS";
+					break;
+				}
+			}
+
 			var defaultToolbar = SettingsManagerUtils.getDefaultSampleTypeToolbarConfiguration();
-			if(this.sampleTypeDefinitionsExtension[sampleTypeCode] && this.sampleTypeDefinitionsExtension[sampleTypeCode]["TOOLBAR"]) {
-				var toolbarOptions = this.sampleTypeDefinitionsExtension[sampleTypeCode]["TOOLBAR"];
+			if(this.sampleTypeToolbarSettings && this.sampleTypeToolbarSettings[settingCode] && this.sampleTypeToolbarSettings[settingCode][sampleTypeCode]) {
+				var toolbarOptions = this.sampleTypeToolbarSettings[settingCode][sampleTypeCode];
 				for(key in toolbarOptions) {
 					if(key === "CREATE") {
 						defaultToolbar["CREATE_FOLDER"] = toolbarOptions[key];
@@ -597,18 +627,41 @@ $.extend(DefaultProfile.prototype, {
 			return defaultToolbar;
 		}
 
-		this.getProjectToolbarConfiguration = function() {
-			if(!this.projectToolbarSettings) {
-				this.projectToolbarSettings = SettingsManagerUtils.getDefaultProjectToolbarConfiguration();
+
+		this.getProjectToolbarConfiguration = function(spaceCode) {
+			if(this.isMultiGroup()) {
+				let groupCodes = this.getGroupCodes();
+				// First group is always general settings
+				for(let i=1; i<groupCodes.length; i++) {
+					if(spaceCode.startsWith(groupCodes[i])) {
+						return this.projectToolbarSettings[groupCodes[i] + "ELN_SETTINGS"];
+					}
+				}
+				return this.projectToolbarSettings['GENERAL_ELN_SETTINGS'];
+			} else {
+				if(!this.projectToolbarSettings) {
+					this.projectToolbarSettings = { 'GENERAL_ELN_SETTINGS':SettingsManagerUtils.getDefaultProjectToolbarConfiguration() };
+				}
+				return this.projectToolbarSettings['GENERAL_ELN_SETTINGS'];
 			}
-			return this.projectToolbarSettings;
 		}
 
-		this.getSpaceToolbarConfiguration = function() {
-			if(!this.spaceToolbarSettings) {
-				this.spaceToolbarSettings = SettingsManagerUtils.getDefaultSpaceToolbarConfiguration();
+		this.getSpaceToolbarConfiguration = function(spaceCode) {
+			if(this.isMultiGroup()) {
+				let groupCodes = this.getGroupCodes();
+				// First group is always general settings
+				for(let i=1; i<groupCodes.length; i++) {
+					if(spaceCode.startsWith(groupCodes[i])) {
+						return this.spaceToolbarSettings[groupCodes[i] + "ELN_SETTINGS"];
+					}
+				}
+				return this.spaceToolbarSettings['GENERAL_ELN_SETTINGS'];
+			} else {
+				if(!this.spaceToolbarSettings) {
+					this.spaceToolbarSettings = { 'GENERAL_ELN_SETTINGS': SettingsManagerUtils.getDefaultSpaceToolbarConfiguration() };
+				}
+				return this.spaceToolbarSettings['GENERAL_ELN_SETTINGS'];
 			}
-			return this.spaceToolbarSettings;
 		}
 
 		this.isSampleTypeWithStorage = function(sampleTypeCode) {

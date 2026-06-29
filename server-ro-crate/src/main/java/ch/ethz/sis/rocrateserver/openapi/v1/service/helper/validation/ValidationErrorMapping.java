@@ -23,7 +23,7 @@ public class ValidationErrorMapping
                         .map(x -> new PropertyError(x.getNode(), x.getProperty(), x.getMessage()))
                         .collect(Collectors.toList()));
 
-        errors.addAll(validationResult.getEntititesToUndefinedProperties().values().stream()
+        errors.addAll(validationResult.getEntitiesToUndefinedProperties().values().stream()
                 .flatMap(Collection::stream)
                 .map(x -> new PropertyError(x.getNode(), x.getProperty(), x.getMessage()))
                 .collect(Collectors.toList()));

@@ -316,7 +316,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 			var shouldUseTabs = $form && $container && this._dataSetFormModel.mode === FormMode.VIEW && !this._dataSetFormModel.isMini && profile.isAFSAvailable();
 		var dropdownOptionsModel = [];
 		if(this._dataSetFormModel.mode === FormMode.VIEW && !this._dataSetFormModel.isMini) {
-			var toolbarConfig = profile.getDataSetTypeToolbarConfiguration(this._getTypeCode());
+			var toolbarConfig = profile.getDataSetTypeToolbarConfiguration(this._getTypeCode(), IdentifierUtil.getSpaceCodeFromIdentifier(this._getEntityIdentifier()));
 			if (_this._allowedToEdit() && toolbarConfig.EDIT) {
 				//Edit Button
 				const labelInfo = LabelUtil.getToolbarLabelInfo("EDIT_DATA");
@@ -1298,6 +1298,13 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 	    if(this._dataSetFormModel.dataSetV3) {
 	        return this._dataSetFormModel.dataSetV3.getType().getCode();
 	    }
+	}
+
+	this._getEntityIdentifier = function() {
+		if(this._dataSetFormModel.entity.identifier.identifier) {
+			return this._dataSetFormModel.entity.identifier.identifier;
+		}
+		return this._dataSetFormModel.entity.identifier;
 	}
 
 	this._getDataSetProperty = function(key) {

@@ -17,22 +17,14 @@ package ch.ethz.sis.openbis.generic.server.xls.export.helper;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.IEntityTypeId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.Plugin;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.fetchoptions.PropertyAssignmentFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.fetchoptions.PropertyTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.SemanticAnnotation;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.fetchoptions.TypeGroupAssignmentFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.exporter.ExportEntityTypeCollector;
 import ch.ethz.sis.openbis.generic.server.xls.export.Attribute;
 import ch.ethz.sis.openbis.generic.server.xls.export.ExportableKind;
 import org.apache.poi.ss.usermodel.Workbook;
 
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import static ch.ethz.sis.openbis.generic.server.xls.export.Attribute.*;
@@ -48,27 +40,7 @@ public class XLSSampleTypeExportHelper extends AbstractXLSEntityTypeExportHelper
     @Override
     public SampleType getEntityType(final IApplicationServerApi api, final String sessionToken, final String permId)
     {
-        final SampleTypeFetchOptions fetchOptions = new SampleTypeFetchOptions();
-        configureFetchOptions(fetchOptions);
-        final Map<IEntityTypeId, SampleType> sampleTypes = api.getSampleTypes(sessionToken,
-                Collections.singletonList(new EntityTypePermId(permId, EntityKind.SAMPLE)), fetchOptions);
-
-        assert sampleTypes.size() <= 1;
-
-        final Iterator<SampleType> iterator = sampleTypes.values().iterator();
-        return iterator.hasNext() ? iterator.next() : null;
-    }
-
-    static void configureFetchOptions(final SampleTypeFetchOptions fetchOptions)
-    {
-        fetchOptions.withValidationPlugin().withScript();
-        final TypeGroupAssignmentFetchOptions typeGroupAssignmentFetchOptions = fetchOptions.withTypeGroupAssignments();
-        typeGroupAssignmentFetchOptions.withTypeGroup();
-        final PropertyAssignmentFetchOptions propertyAssignmentFetchOptions = fetchOptions.withPropertyAssignments();
-        final PropertyTypeFetchOptions propertyTypeFetchOptions = propertyAssignmentFetchOptions.withPropertyType();
-        propertyTypeFetchOptions.withVocabulary();
-        propertyTypeFetchOptions.withSampleType();
-        propertyAssignmentFetchOptions.withPlugin().withScript();
+        return ExportEntityTypeCollector.fetchSampleType(api, sessionToken, permId);
     }
 
     @Override

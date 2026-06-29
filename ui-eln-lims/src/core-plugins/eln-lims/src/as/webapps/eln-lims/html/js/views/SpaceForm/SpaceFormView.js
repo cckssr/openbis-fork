@@ -54,9 +54,8 @@ function SpaceFormView(spaceFormController, spaceFormModel) {
 		var toolbarModel = [];
 		var continuedToolbarModel = [];
 		var dropdownOptionsModel = [];
-        var toolbarConfig = profile.getSpaceToolbarConfiguration();
         if (this._spaceFormModel.mode === FormMode.VIEW) {
-
+            var toolbarConfig = profile.getSpaceToolbarConfiguration(this._spaceFormModel.space);
             if (_this._allowedToCreateProject() && toolbarConfig.CREATE_PROJECT) {
                 const labelInfo = LabelUtil.getToolbarLabelInfo("CREATE_PROJECT");
                 var $createProj = FormUtil.getToolbarButton("PROJECT", function() {

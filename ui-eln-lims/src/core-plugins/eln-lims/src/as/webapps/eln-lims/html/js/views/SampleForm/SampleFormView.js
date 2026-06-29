@@ -116,8 +116,8 @@
 			var continuedToolbarModel = [];
 			var altRightToolbarModel = [];
 			var dropdownOptionsModel = [];
-			var toolbarConfig = profile.getSampleTypeToolbarConfiguration(_this._sampleFormModel.sample.sampleTypeCode);
-	
+			var toolbarConfig = profile.getSampleTypeToolbarConfiguration(_this._sampleFormModel.sample.sampleTypeCode, _this._sampleFormModel.sample.spaceCode);
+
 			if(this._sampleFormModel.mode === FormMode.VIEW) {
 				// New
 				if(_this._allowedToCreateChild()) {

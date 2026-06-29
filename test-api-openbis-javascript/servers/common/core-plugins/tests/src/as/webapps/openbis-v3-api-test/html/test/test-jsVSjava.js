@@ -42,6 +42,7 @@ define(["jquery", "underscore", "openbis", "test/common", "test/dtos"], function
             FastDownloadResult: "Java class not implemented in JS: ",
             FastDownloadUtils: "Java class not implemented in JS: ",
             ExportEntityCollector: "Java class not implemented in JS: ",
+            ExportEntityTypeCollector: "Java class not implemented in JS: ",
             FastDownloadMethod: "Java class not implemented in JS: ",
             FastDownloadParameter: "Java class not implemented in JS: ",
             RemoteFastDownloadServer: "Java class not implemented in JS: ",

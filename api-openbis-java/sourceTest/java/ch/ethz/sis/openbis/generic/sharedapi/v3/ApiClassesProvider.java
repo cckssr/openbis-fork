@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.property.PropertiesDeserializer;
 import ch.ethz.sis.openbis.generic.asapi.v3.exporter.ExportEntityCollector;
+import ch.ethz.sis.openbis.generic.asapi.v3.exporter.ExportEntityTypeCollector;
 import org.apache.commons.lang3.StringUtils;
 import org.reflections.ReflectionUtils;
 import org.reflections.Reflections;
@@ -63,7 +64,8 @@ public class ApiClassesProvider
     private static final Set<Class<?>> NON_SERIALIZABLE_CLASSES =
             new HashSet<>(Arrays.asList(FastDownloader.class, FastDownloadResult.class,
                     FastDownloadUtils.class, SampleIdDeserializer.class,
-                    PropertiesDeserializer.class, ExportEntityCollector.class));
+                    PropertiesDeserializer.class, ExportEntityCollector.class,
+                    ExportEntityTypeCollector.class));
 
     public static Collection<Class<?>> getPublicClasses()
     {

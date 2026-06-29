@@ -5,3 +5,6 @@
 /targets/
 *.iml
 *.eml
+
+# Ignore automatically generated key-store
+dist/etc/sftp_keystore.jks

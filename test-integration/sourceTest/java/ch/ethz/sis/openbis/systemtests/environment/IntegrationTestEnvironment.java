@@ -140,6 +140,7 @@ public class IntegrationTestEnvironment
     {
         return createRoCrateServer(
                 loadProperties(Path.of("etc/default/ro-crate/service.properties")),
+                Path.of("etc/default/ro-crate/logging.properties").toFile().getAbsolutePath(),
                 roCrateServerArgs);
     }
 
@@ -150,7 +151,7 @@ public class IntegrationTestEnvironment
         return fakeHttpServer;
     }
 
-    public RoCrateServer createRoCrateServer(Properties serviceProperties,
+    public RoCrateServer createRoCrateServer(Properties serviceProperties, String logFilePath,
             RoCrateServerArgs roCrateServerArgs)
     {
         if (serviceProperties != null)
@@ -161,6 +162,7 @@ public class IntegrationTestEnvironment
 
         roCrateServer = new RoCrateServer();
         roCrateServer.configure(serviceProperties);
+        roCrateServer.configureLoggingConfigurationFilePath(logFilePath);
         roCrateServer.setRoCrateServerArgs(roCrateServerArgs);
         return roCrateServer;
     }

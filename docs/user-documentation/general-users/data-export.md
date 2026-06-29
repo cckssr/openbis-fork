@@ -71,7 +71,7 @@ We provide below a couple of examples of the export, to clarify how it works.
 
 We select all options from the export widget, as shown below.
 
- ![image info](img/space-export-all-options-import-compatible.png)
+ ![image info](img/7.0-eln-space-ic-export-options.png)
 
 We export a *Space* called BARILLAC in the Lab Notebook with all its sublevels (see below). 
 
@@ -87,7 +87,7 @@ The exported zip file contains 3 folders:
 This contains the datasets in the correct format to be uploaded via eln-lims dropbox, as shown below.
 
 
-![image info](img/201012-export-data-folder.png)
+![image info](img/7.0-export-ic-data.png)
 
 
 **B.** **hiearchy** folder
@@ -96,41 +96,37 @@ This contains folders that match the openBIS hierarchy (*Space, Project, Experim
 
 In this case 2 *Space* folders are present:
 
-1. **BARILLAC**: is the exported space.
+1. **BARILLAC**: is the exported space. One of the entities in this space contains AFS data, which are exported in a **data** folder inside the entity they belong to.
 
 
-![image info](img/201012-export-hierarchy-barillac.png)
+![image info](img/7.0-export-ic-hierarchy-files.png)
 
-2. **METHODS**: contains a protocol which is parent of a measurement in the *Space* BARILLAC. This was exported because the option **Include Objects and Datasets parents and children from different spaces** was selected for export.
+2. **MATERIALS**: contains a sample which is parent of a measurement in the *Space* BARILLAC. This was exported because we selected the option to Include Objects and Datasets parents and children from other spaces.
 
 
 
-![image info](img/201012-export-hierarchy-methods.png)
+![image info](img/7.0-export-ic-hierarchy-parent.png)
 
 
 Inside each folder, there is a pdf of the corresponding entity. Example: 
 
 - in the Space folder **BARILLAC** there is a **BARILLAC.pdf** file that contains the metadata of the *Space*;
-- in the **Measurement 1 (ENTRY8)** folder there is a **Measurement 1 (ENTRY8).pdf** file that contains the metadata of this *Object*;
+- in the **Measurement 1 (ENTRY1)** folder there is a **Measurement 1 (ENTRY1).pdf** file that contains the metadata of this *Object*;
 - in the Project folder **PROJECT_1** there is a **PROJECT_1.pdf** file that contains the metadata of the Project;
 
 
 
 **C.** **xlsx** folder. 
 
+![image info](img/7.0-export-ic-xlxs.png)
+
 This contains:
 
 - a **metadata.xlsx** file which has the metadata of the exported entities and the corresponding masterdata (types and properties) in the correct format to be re-imported in another openBIS instance;
 
-![image info](img/201012-export-xlsx-folder-xlsx-file.png)
-
 - a **scripts** folder that contains evaluation plugins associated to two types defined in the metadata.xlsx file. This folder is present only if the exported types have plugins associated with them.
 
-![image info](img/201012-export-xlsx-folder-scripts.png)
-
 - a **miscellaneous** folder that contains images that are embedded in text fields of the exported entities. This folder is present only if exported entities contain images embedded in text.
-
-![image info](img/201012-export-xlsx-folder-miscellaneous.png)
 
 
 If the entities you are exporting contain very large txt with more than 32,767 characters (Excel limit for cell size), these are exported separately to a **data** folder inside the **xlsx** folder.
@@ -140,7 +136,7 @@ If the entities you are exporting contain very large txt with more than 32,767 c
 
 We export the same *Space* as described in Example 1, with all options selected, but the export this time is not import-compatible, as shown below.
 
- ![image info](img/space-export-all-options-non-import-compatible.png)
+ ![image info](img/7.0-eln-space-export-nic-options.png)
 
  
 In this case the exported *.zip* file contains only 2 folders: **hierarchy** and **xlsx**. Data are exported inside the **hierachy** folder, instead of being in a separate **data** folder.
@@ -149,21 +145,23 @@ In this case the exported *.zip* file contains only 2 folders: **hierarchy** and
 
 This contains the same folder structure as described above. In addition, in this case, if an *Object* or an *Experiment/Collection* contains a dataset, this is exported in a **data** folder inside the entity it belongs to.
 
-
+![image info](img/7.0-export-nic-data.png)
 
 **B.** **xlsx** folder 
 
 This contains the same files and folders as described in Example 1. The only difference in this case is that the metadata.xlsx is not import-compatible. It contains some fields which are not compatible with openBIS re-import, as explained above.
+
+![image info](img/7.0-export-nic-xlsx.png)
 
 
 ## Export to ZIP
 
 If you want to export entities from multiple *Spaces*, you can use the **Export to ZIP** option available under the **Tools** section.
 
-The options for the export are  similar to what is described above. Howver, in this case, only the option to receive the export via email is available. 
+The options for the export are  similar to what is described above. However, in this case, only the option to receive the export via email is available. 
 When export is ready, you will receive an email with a link to download the zip file containing the exported entities.
 
-![image info](img/space-export-all-options-non-import-compatible.png)
+![image info](img/7.0-export-to-zip-options.png)
 
 
  

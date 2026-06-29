@@ -2,12 +2,56 @@ Data Upload
 ====
 
 
-Data can be uploaded to *Datasets* in openBIS to *Experiments/Collections* and *Objects* (e.g., *Experimental Steps*). openBIS is agnostic of file formats and types.
+In openBIS 7.0 a new data store (AFS) has been introduced. This allows to upload data to *Experiments/Collections* and *Objects* (e.g., *Experimental Steps*) and these data are not immutable. AFS data can be deleted, renamed, and new data can always be uploaded to an entity. The AFS supports the upload of large data files (in the range of low hundreds GB).
+*Datasets* are still avaible in openBIS 7.0 and can be attached to *Experiments/Collections* and *Objects* (e.g., *Experimental Steps*). openBIS *Datasets* are immutable.
+For users using openBIS 7.0, we recommend to use AFS data, rather than *Datasets*. *Datasets* will be removed in openBIS 8.0 (a migration will be provided).
 
-Small data files can be uploaded via the web user interface, larger data files can be uploaded via the openBIS dropbox.
 
  
-## Data upload via web UI
+# Data upload via web UI
+
+## AFS data upload
+
+To upload data to an *Object* or *Experiment/Collection*, click on the **Files** tab of the entity, as shown below.
+
+![image info](img/7.0-object-file-tab.png)
+
+You have the option to upload single files or folders.
+
+![image info](img/7.0-afs-upload-options.png)
+
+After upload, when you select a file or folder, a few options become available, as shown below.
+
+![image info](img/7.0-afs-files-available-options.png)
+
+By default files are shown in list view, however it is possible to switch to gallery view using the button shown below.
+
+![image info](img/7.0-afs-list-view.png)
+
+![image info](img/7.0-afs-gallery-view.png)
+
+If you delete a file or folder, a new folder called **.afs.trash** is created and all deleted items are moved here.
+
+![image info](img/7.0-afs-trash-folder.png)
+
+From here, items can be either moved back or permanently deleted.
+
+
+
+![image info](img/7.0-afs-trash-folder-content.png)
+
+
+If you upload a modified version of a file that already exists, a folder called **.afs.snapshots** is created. Previous versions of the file are moved here.
+
+![image info](img/7.0-afs-snapshot-folder.png)
+
+A folder with the name of the file you replaced is created. Inside this folder the previous version(s) of the file are contained.
+
+![image info](img/7.0-afs-snapshot-content.png)
+
+
+
+## Dataset upload
 
 To upload data via the web interface: 
 
@@ -43,7 +87,7 @@ there are two options:
 2.  Use an external archiver (e.g. Stuffit Deluxe).
 
 
-## Data upload via dropbox
+# Data upload via DSS dropbox
 
 Web upload of data files is only suitable for files of limited size (few GB). To upload larger data, openBIS uses dropbox scripts that run in the background (see [Dropboxes](../../software-developer-documentation/server-side-extensions/dss-dropboxes.md)). A default dropbox script is provided with the openBIS ELN-LIMS plugin, and the dropbox folder needs to be set up by a *system admin*.
 
@@ -95,7 +139,7 @@ on the eln-lims-dropbox folder.
 
  
 
-### Dropbox with markerfile
+### DSS Dropbox with markerfile
  
 
 In case of uploads of data >100GB we recommend to configure the
@@ -156,7 +200,7 @@ other text editor will also work.
 
  
 
-### Dropbox monitor
+### DSS Dropbox monitor
 
  
 It is possible to check the status of the upload via dropbox using the
@@ -231,10 +275,7 @@ the main menu.
 
 ![image info](img/201012-other-tools-metadata-json-file.png)
 
- 
-
-
- 
+  
 
 In **Other Tools**, there is also the **Show available storage space**
 button, which shows the available storage space on the openBIS instance.

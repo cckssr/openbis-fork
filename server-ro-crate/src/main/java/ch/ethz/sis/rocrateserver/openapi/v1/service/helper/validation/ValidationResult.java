@@ -11,35 +11,35 @@ public class ValidationResult implements IResultPayload
 {
     private Map<String, List<PropertyProblem>> entitiesToMissingProperties;
 
-    private Map<String, List<PropertyProblem>> entititesToUndefinedProperties;
+    private Map<String, List<PropertyProblem>> entitiesToUndefinedProperties;
 
     private Map<String, List<PropertyProblem>> wrongDataTypes;
 
     private List<String> entities;
 
-    private Map<String, List<MissingDataError>> identififersWithMissingFiles;
+    private Map<String, List<MissingDataError>> identifiersWithMissingFiles;
 
     public ValidationResult()
     {
     }
 
     public ValidationResult(Map<String, List<PropertyProblem>> entitiesToMissingProperties,
-            Map<String, List<PropertyProblem>> entititesToUndefinedProperties,
+            Map<String, List<PropertyProblem>> entitiesToUndefinedProperties,
             Map<String, List<PropertyProblem>> wrongDataTypes, List<String> entities,
-            Map<String, List<MissingDataError>> identififersWithMissingFiles)
+            Map<String, List<MissingDataError>> identifiersWithMissingFiles)
     {
         this.entitiesToMissingProperties = entitiesToMissingProperties;
-        this.entititesToUndefinedProperties = entititesToUndefinedProperties;
+        this.entitiesToUndefinedProperties = entitiesToUndefinedProperties;
         this.wrongDataTypes = wrongDataTypes;
         this.entities = entities;
-        this.identififersWithMissingFiles = identififersWithMissingFiles;
+        this.identifiersWithMissingFiles = identifiersWithMissingFiles;
     }
 
     @JsonProperty("isValid")
     public boolean isOkay()
     {
-        return entitiesToMissingProperties.isEmpty() && entititesToUndefinedProperties.isEmpty()
-                && wrongDataTypes.isEmpty() && identififersWithMissingFiles.values().stream()
+        return entitiesToMissingProperties.isEmpty() && entitiesToUndefinedProperties.isEmpty()
+                && wrongDataTypes.isEmpty() && identifiersWithMissingFiles.values().stream()
                 .noneMatch(x -> !x.isEmpty());
     }
 
@@ -48,9 +48,9 @@ public class ValidationResult implements IResultPayload
         return entitiesToMissingProperties;
     }
 
-    public Map<String, List<PropertyProblem>> getEntititesToUndefinedProperties()
+    public Map<String, List<PropertyProblem>> getEntitiesToUndefinedProperties()
     {
-        return entititesToUndefinedProperties;
+        return entitiesToUndefinedProperties;
     }
 
     public Map<String, List<PropertyProblem>> getWrongDataTypes()
@@ -63,14 +63,24 @@ public class ValidationResult implements IResultPayload
         return entities;
     }
 
-    public Map<String, List<MissingDataError>> getIdentififersWithMissingFiles()
+    public Map<String, List<MissingDataError>> getIdentifiersWithMissingFiles()
     {
-        return identififersWithMissingFiles;
+        return identifiersWithMissingFiles;
     }
 
-    public void setIdentififersWithMissingFiles(
-            Map<String, List<MissingDataError>> identififersWithMissingFiles)
+    public void setIdentifiersWithMissingFiles(
+            Map<String, List<MissingDataError>> identifiersWithMissingFiles)
     {
-        this.identififersWithMissingFiles = identififersWithMissingFiles;
+        this.identifiersWithMissingFiles = identifiersWithMissingFiles;
+    }
+
+    @Override
+    public String toString()
+    {
+        if(isOkay()) {
+            return "ValidationResult:[]";
+        }
+        return String.format("ValidationResult:[entities=%s, identifiersWithMissingFiles=%s, wrongDataTypes=%s, entitiesToMissingProperties=%s, entitiesToUndefinedProperties=%s]",
+                entities, identifiersWithMissingFiles,  wrongDataTypes, entitiesToMissingProperties, entitiesToUndefinedProperties);
     }
 }

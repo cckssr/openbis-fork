@@ -18,6 +18,7 @@ package ch.ethz.sis.openbis.generic.server.dss.plugins.sync.datasource;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.EnumMap;
 import java.util.Enumeration;
@@ -28,6 +29,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -38,9 +40,19 @@ import javax.xml.stream.XMLStreamWriter;
 import ch.ethz.sis.shared.log.classic.impl.Logger;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.exporter.data.ExportableKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.exporter.data.ExportablePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.exporter.ExportEntityCollector;
+import ch.ethz.sis.openbis.generic.asapi.v3.exporter.ExportEntityTypeCollector;
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
@@ -201,7 +213,91 @@ public class DataSourceRequestHandler implements IRequestHandler
         {
             permIdsByKind.computeIfAbsent(permId.getExportableKind(), k -> new ArrayList<>()).add(permId.getPermId());
         }
+
+        List<ExportablePermId> entityTypeSeeds = collectEntityTypeSeeds(v3api, sessionToken, permIdsByKind);
+        List<ExportablePermId> expandedEntityTypes = ExportEntityTypeCollector.expandReference(v3api, sessionToken, entityTypeSeeds);
+        for (ExportablePermId permId : expandedEntityTypes)
+        {
+            permIdsByKind.computeIfAbsent(permId.getExportableKind(), k -> new ArrayList<>()).add(permId.getPermId());
+        }
+
         return permIdsByKind;
+    }
+
+    static List<ExportablePermId> collectEntityTypeSeeds(IApplicationServerApi v3api, String sessionToken,
+            Map<ExportableKind, List<String>> permIdsByKind)
+    {
+        List<ExportablePermId> seeds = new ArrayList<>();
+        addSampleTypeSeeds(v3api, sessionToken, permIdsByKind, seeds);
+        addExperimentTypeSeeds(v3api, sessionToken, permIdsByKind, seeds);
+        addDataSetTypeSeeds(v3api, sessionToken, permIdsByKind, seeds);
+        return seeds;
+    }
+
+    private static void addSampleTypeSeeds(IApplicationServerApi v3api, String sessionToken,
+            Map<ExportableKind, List<String>> permIdsByKind, List<ExportablePermId> seeds)
+    {
+        List<String> samplePermIds = permIdsByKind.getOrDefault(ExportableKind.SAMPLE, Collections.emptyList());
+        if (samplePermIds.isEmpty())
+        {
+            return;
+        }
+        List<SamplePermId> ids = samplePermIds.stream().map(SamplePermId::new).collect(Collectors.toList());
+        SampleFetchOptions fetchOptions = new SampleFetchOptions();
+        fetchOptions.withType();
+        Set<String> typeCodes = new HashSet<>();
+        for (Sample sample : v3api.getSamples(sessionToken, ids, fetchOptions).values())
+        {
+            typeCodes.add(sample.getType().getCode());
+        }
+        for (String typeCode : typeCodes)
+        {
+            seeds.add(new ExportablePermId(ExportableKind.SAMPLE_TYPE, typeCode));
+        }
+    }
+
+    private static void addExperimentTypeSeeds(IApplicationServerApi v3api, String sessionToken,
+            Map<ExportableKind, List<String>> permIdsByKind, List<ExportablePermId> seeds)
+    {
+        List<String> experimentPermIds = permIdsByKind.getOrDefault(ExportableKind.EXPERIMENT, Collections.emptyList());
+        if (experimentPermIds.isEmpty())
+        {
+            return;
+        }
+        List<ExperimentPermId> ids = experimentPermIds.stream().map(ExperimentPermId::new).collect(Collectors.toList());
+        ExperimentFetchOptions fetchOptions = new ExperimentFetchOptions();
+        fetchOptions.withType();
+        Set<String> typeCodes = new HashSet<>();
+        for (Experiment experiment : v3api.getExperiments(sessionToken, ids, fetchOptions).values())
+        {
+            typeCodes.add(experiment.getType().getCode());
+        }
+        for (String typeCode : typeCodes)
+        {
+            seeds.add(new ExportablePermId(ExportableKind.EXPERIMENT_TYPE, typeCode));
+        }
+    }
+
+    private static void addDataSetTypeSeeds(IApplicationServerApi v3api, String sessionToken,
+            Map<ExportableKind, List<String>> permIdsByKind, List<ExportablePermId> seeds)
+    {
+        List<String> dataSetPermIds = permIdsByKind.getOrDefault(ExportableKind.DATASET, Collections.emptyList());
+        if (dataSetPermIds.isEmpty())
+        {
+            return;
+        }
+        List<DataSetPermId> ids = dataSetPermIds.stream().map(DataSetPermId::new).collect(Collectors.toList());
+        DataSetFetchOptions fetchOptions = new DataSetFetchOptions();
+        fetchOptions.withType();
+        Set<String> typeCodes = new HashSet<>();
+        for (DataSet dataSet : v3api.getDataSets(sessionToken, ids, fetchOptions).values())
+        {
+            typeCodes.add(dataSet.getType().getCode());
+        }
+        for (String typeCode : typeCodes)
+        {
+            seeds.add(new ExportablePermId(ExportableKind.DATASET_TYPE, typeCode));
+        }
     }
 
     static List<ExportablePermId> parseExportablePermIds(List<String> tokens)

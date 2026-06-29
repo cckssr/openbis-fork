@@ -59,7 +59,9 @@ public class ListOperationExecutor implements NonModifyingOperationExecutor<List
 
         if (!IOUtils.isDirectory(operation.getSource())) // Is a file and exists
         {
-            return new File[] { IOUtils.getFile(operation.getSource()) };
+            File file = IOUtils.getFile(operation.getSource());
+            file = file.toBuilder().path(OperationExecutor.getStoragePath(transaction, file.getPath())).build();
+            return new File[] { file };
         } else
         {
             List<File> files = IOUtils.list(operation.getSource(), operation.isRecursively())

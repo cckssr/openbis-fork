@@ -38,6 +38,7 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 	this._rootNodeSettings = null;
 
 	var _refreshableFields = [];
+	var _refreshableGrids = [];
 
     this.refresh = function() {
         Select2Manager.add($("[id='SETTINGS-id'] select"));
@@ -60,6 +61,11 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
             }
         }
         _refreshableFields = temp;
+
+		for(let i=0; i<_refreshableGrids.length; i++) {
+			_refreshableGrids[i].refresh();
+		}
+
 		if(this._rootNodeSettings) {
 			this._rootNodeSettings.refresh();
 		}
@@ -308,6 +314,7 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
         var dataGrid = SampleDataGridUtil.getSampleDataGrid(experimentIdentifier, advancedSampleSearchCriteria, 
                 null, null, null, null, true, null, false, false, false, 40);
 		var extraOptions = [];
+		_refreshableGrids.push(dataGrid);
 		dataGrid.init($gridContainer, extraOptions);
 	}
 	
@@ -337,6 +344,7 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
         var dataGrid = SampleDataGridUtil.getSampleDataGrid(null, advancedSampleSearchCriteria, null, null, null, 
                 null, true, null, false, false, false, 40);
 		var extraOptions = [];
+		_refreshableGrids.push(dataGrid);
 		dataGrid.init($gridContainer, extraOptions);
 	}
 	
@@ -669,7 +677,7 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 			$sampleTypeFieldset.append(miscellaneousSettingsTable);
 			this._sampleTypeDefinitionsMiscellaneousSettingsTableModels[sampleType.code] = miscellaneousSettingsTableModel;
 
-			this._sampleTypeToolbarSettings[sampleType.code] = this._toolbarSettingsSectionForType($sampleTypeFieldset, sampleType.code, sampleTypeSettings, profile.getSampleTypeToolbarConfiguration(sampleType.code));
+			this._sampleTypeToolbarSettings[sampleType.code] = this._toolbarSettingsSectionForType($sampleTypeFieldset, sampleType.code, sampleTypeSettings, profile.getSampleTypeToolbarConfiguration(sampleType.code, this._settingsFormModel.settingsSample.spaceCode));
 
 			// table for parents / children settings:
 			// SAMPLE_PARENTS_TITLE, SAMPLE_PARENTS_DISABLED, SAMPLE_PARENTS_ANY_TYPE_DISABLED, 
@@ -709,10 +717,8 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 			if(!experimentTypeSettings && defaultExperimentTypeSettings) { // Sets the default profile configuration given by plugins
 				experimentTypeSettings = defaultExperimentTypeSettings;
 			}
-			// TODO
-			// experimentTypeSettings = SettingsManagerUtils.getDefaultExperimentTypeToolbarConfiguration();
 
-			this._experimentTypeToolbarSettings[experimentType.code] = this._toolbarSettingsSectionForType($experimentTypeFieldset, experimentType.code, experimentTypeSettings, profile.getExperimentTypeToolbarConfiguration(experimentType.code));
+			this._experimentTypeToolbarSettings[experimentType.code] = this._toolbarSettingsSectionForType($experimentTypeFieldset, experimentType.code, experimentTypeSettings, profile.getExperimentTypeToolbarConfiguration(experimentType.code, this._settingsFormModel.settingsSample.spaceCode));
 		}
 	}
 
@@ -737,10 +743,8 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 			if(!dataSetTypeSettings && defaultDataSetTypeSettings) { // Sets the default profile configuration given by plugins
 				dataSetTypeSettings = defaultDataSetTypeSettings;
 			}
-			//TODO
-			// dataSetTypeSettings = SettingsManagerUtils.getDefaultDataSetTypeToolbarConfiguration();
 
-			this._dataSetTypeToolbarSettings[dataSetType.code] = this._toolbarSettingsSectionForType($dataSetTypeFieldset, dataSetType.code, dataSetTypeSettings, profile.getDataSetTypeToolbarConfiguration(dataSetType.code));
+			this._dataSetTypeToolbarSettings[dataSetType.code] = this._toolbarSettingsSectionForType($dataSetTypeFieldset, dataSetType.code, dataSetTypeSettings, profile.getDataSetTypeToolbarConfiguration(dataSetType.code, this._settingsFormModel.settingsSample.spaceCode));
 		}
 	}
 

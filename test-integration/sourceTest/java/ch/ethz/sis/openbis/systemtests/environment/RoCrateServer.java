@@ -12,6 +12,7 @@ public class RoCrateServer
     private static final Logger log = LogFactory.getLogger(RoCrateServer.class);
 
     private Properties serviceProperties;
+    private String loggingConfigurationFilePath;
 
     private IntegrationTestEnvironment.RoCrateServerArgs roCrateServerArgs;
 
@@ -35,6 +36,11 @@ public class RoCrateServer
         this.serviceProperties = serviceProperties;
     }
 
+    public void configureLoggingConfigurationFilePath(final String loggingConfigurationFilePath)
+    {
+        this.loggingConfigurationFilePath = loggingConfigurationFilePath;
+    }
+
     public void start()
     {
         if (serviceProperties == null)
@@ -52,6 +58,10 @@ public class RoCrateServer
             serviceProperties.store(new FileWriter(tempConfigurationFile), null);
 
             ProcessBuilder processBuilder = new ProcessBuilder();
+            if(loggingConfigurationFilePath != null) {
+                processBuilder.environment().put("ro-crate.logging.configuration",
+                        loggingConfigurationFilePath);
+            }
             processBuilder.command(
                     new String[] { "../test-integration/etc/default/ro-crate/start.sh",
                             tempConfigurationFile.getAbsolutePath() });

@@ -6,6 +6,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.data.ImportFormat;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.options.ImportMode;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.options.ImportOptions;
 import ch.ethz.sis.openbis.systemtests.suite.rocrate.environment.RoCrateServerIntegrationTestEnvironment;
+import ch.ethz.sis.shared.log.classic.impl.LogFactory;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import ch.systemsx.cisd.common.http.JettyHttpClientFactory;
 import ch.systemsx.cisd.openbis.generic.shared.util.TestInstanceHostUtils;
@@ -42,6 +44,7 @@ import static org.testng.Assert.assertFalse;
 
 public class IntegrationRoCrateServerTest
 {
+    private static final Logger log = LogFactory.getLogger(IntegrationRoCrateServerTest.class);
 
     private static final int TIMEOUT = 4 * 60 * 1000;
 
@@ -227,9 +230,10 @@ public class IntegrationRoCrateServerTest
 
     }
 
-    @Test(enabled = false, timeOut = TIMEOUT, priority = 4)
+    @Test(enabled = true, timeOut = 10 * 60 * 1000, priority = 4)
     public void testImportWithExternalFile() throws Exception
     {
+        log.info("[TEST] testImportWithExternalFile");
         OpenBIS openBIS = environment.createOpenBIS(TIMEOUT, false);
         openBIS.login(username, password);
 
@@ -246,11 +250,13 @@ public class IntegrationRoCrateServerTest
         });
         request.body(new BytesRequestContent(Files.readAllBytes(file)));
         request.idleTimeout(TIMEOUT, TimeUnit.MILLISECONDS);
+        log.info("[TEST] Request prepared:" + request);
 
         ContentResponse response = request.send();
         LinkedHashMap asyncJob =
                 objectMapper.readValue(response.getContentAsString(), LinkedHashMap.class);
         String jobId = asyncJob.get("jobId").toString();
+        log.info("[TEST] Response jobId: " + jobId);
 
         assertEquals(response.getStatus(), 202);
 
@@ -268,6 +274,7 @@ public class IntegrationRoCrateServerTest
             ContentResponse pollResponse = pollRequest.send();
             LinkedHashMap asyncResult =
                     objectMapper.readValue(pollResponse.getContentAsString(), LinkedHashMap.class);
+            log.info("[TEST] Polling response: " + asyncResult);
 
             if (asyncResult.get("status").equals("COMPLETED"))
             {
