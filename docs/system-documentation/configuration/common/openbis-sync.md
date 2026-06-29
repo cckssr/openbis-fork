@@ -116,9 +116,13 @@ This includes master data, meta data including file meta data.
 
 The data to deliver is selected by a list of entities (perm ids) plus a set of flags.
 The selection is expanded on the data source into the full closed set of entities (spaces,
-projects, experiments, samples and data sets) and only the master data actually
-used by those entities is delivered. The parent levels of the selected entities
+projects, experiments, samples and data sets). The parent levels of the selected entities
 (e.g. the experiment, project and space of a sample) are always included.
+
+Of the master data, only what is actually referenced by the selected entities is delivered: sample
+types, experiment types, data set types and controlled vocabularies (including types and
+vocabularies reachable transitively), plus the validation plugins, property types and external
+data management systems referenced by those types and data sets.
 
 The following URL parameters control the selection:
 

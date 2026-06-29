@@ -16,9 +16,7 @@
 package ch.ethz.sis.openbis.generic.server.xls.export.helper;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -31,12 +29,11 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.PhysicalData;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.IDataSetId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.Person;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
+import ch.ethz.sis.openbis.generic.asapi.v3.exporter.ExportEntityTypeCollector;
 import ch.ethz.sis.openbis.generic.server.xls.export.Attribute;
 import ch.ethz.sis.openbis.generic.server.xls.export.ExportableKind;
 import ch.ethz.sis.openbis.generic.server.xls.export.XLSExport;
@@ -213,15 +210,7 @@ public class XLSDataSetExportHelper extends AbstractXLSEntityExportHelper<DataSe
     @Override
     public DataSetType getEntityType(final IApplicationServerApi api, final String sessionToken, final String permId)
     {
-        final DataSetFetchOptions fetchOptions = new DataSetFetchOptions();
-        final DataSetTypeFetchOptions dataSetTypeFetchOptions = fetchOptions.withType();
-        XLSDataSetTypeExportHelper.configureFetchOptions(dataSetTypeFetchOptions);
-        final Map<IDataSetId, DataSet> dataSets = api.getDataSets(sessionToken, Collections.singletonList(new DataSetPermId(permId)), fetchOptions);
-
-        assert dataSets.size() <= 1;
-
-        final Iterator<DataSet> iterator = dataSets.values().iterator();
-        return iterator.hasNext() ? iterator.next().getType() : null;
+        return ExportEntityTypeCollector.fetchTypeOfDataSet(api, sessionToken, permId);
     }
 
 }

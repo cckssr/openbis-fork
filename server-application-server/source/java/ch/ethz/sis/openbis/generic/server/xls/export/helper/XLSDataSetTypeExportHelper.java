@@ -17,21 +17,15 @@ package ch.ethz.sis.openbis.generic.server.xls.export.helper;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetType;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.IEntityTypeId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.Plugin;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.fetchoptions.PropertyAssignmentFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.SemanticAnnotation;
+import ch.ethz.sis.openbis.generic.asapi.v3.exporter.ExportEntityTypeCollector;
 import ch.ethz.sis.openbis.generic.server.xls.export.Attribute;
 import ch.ethz.sis.openbis.generic.server.xls.export.ExportableKind;
 import org.apache.poi.ss.usermodel.Workbook;
 
-import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import static ch.ethz.sis.openbis.generic.server.xls.export.Attribute.*;
@@ -50,24 +44,7 @@ public class XLSDataSetTypeExportHelper extends AbstractXLSEntityTypeExportHelpe
     public DataSetType getEntityType(final IApplicationServerApi api, final String sessionToken,
             final String permId)
     {
-        final DataSetTypeFetchOptions fetchOptions = new DataSetTypeFetchOptions();
-        configureFetchOptions(fetchOptions);
-        final Map<IEntityTypeId, DataSetType> dataSetTypes = api.getDataSetTypes(sessionToken,
-                Collections.singletonList(new EntityTypePermId(permId, EntityKind.DATA_SET)), fetchOptions);
-
-        assert dataSetTypes.size() <= 1;
-
-        final Iterator<DataSetType> iterator = dataSetTypes.values().iterator();
-        return iterator.hasNext() ? iterator.next() : null;
-    }
-
-    static void configureFetchOptions(final DataSetTypeFetchOptions fetchOptions)
-    {
-        fetchOptions.withValidationPlugin().withScript();
-        final PropertyAssignmentFetchOptions propertyAssignmentFetchOptions = fetchOptions.withPropertyAssignments();
-        propertyAssignmentFetchOptions.withPropertyType().withVocabulary();
-        propertyAssignmentFetchOptions.withPropertyType().withSampleType();
-        propertyAssignmentFetchOptions.withPlugin().withScript();
+        return ExportEntityTypeCollector.fetchDataSetType(api, sessionToken, permId);
     }
 
     @Override
