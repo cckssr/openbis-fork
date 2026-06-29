@@ -307,9 +307,25 @@ export function getPropertyValue(
         return dto.getMultiValueControlledVocabularyProperty?.(propertyCode) || null;
       case FormFieldDataType.SAMPLE:
         return dto.getMultiValueSampleProperty?.(propertyCode) || null;
-      case FormFieldDataType.SPREADSHEET:
-        // Multi-value spreadsheet uses JSON array
-        return dto.getMultiValueJsonProperty?.(propertyCode) || null;
+      case FormFieldDataType.SPREADSHEET: {
+        const rawValues = dto.getMultiValueXmlProperty?.(propertyCode);
+        if (!rawValues || !Array.isArray(rawValues) || rawValues.length === 0) {
+          return null;
+        }
+        return rawValues
+          .map((rawValue: string) => {
+            if (!rawValue) {
+              return null;
+            }
+            try {
+              const b64 = rawValue.substring('<DATA>'.length, rawValue.length - '</DATA>'.length);
+              return JSON.parse(atob(b64));
+            } catch {
+              return null;
+            }
+          })
+          .filter((v: any) => v !== null);
+      }
       case FormFieldDataType.JSON:
         return dto.getMultiValueJsonProperty?.(propertyCode) || null;
       case FormFieldDataType.XML:
@@ -347,8 +363,16 @@ export function getPropertyValue(
       return dto.getSampleProperty?.(propertyCode) || null;
     case FormFieldDataType.HYPERLINK:
       return dto.getHyperlinkProperty?.(propertyCode) || null;
-    case FormFieldDataType.SPREADSHEET:
-      return dto.getSpreadsheetProperty?.(propertyCode) || null;
+    case FormFieldDataType.SPREADSHEET: {
+      const rawValue = dto.getProperty?.(propertyCode);
+      if (!rawValue) return null;
+      try {
+        const b64 = rawValue.substring('<DATA>'.length, rawValue.length - '</DATA>'.length);
+        return JSON.parse(atob(b64));
+      } catch {
+        return null;
+      }
+    }
     case FormFieldDataType.WORD_PROCESSOR:
     case FormFieldDataType.WORD_PROCESSOR_PAGE:
     case FormFieldDataType.WORD_PROCESSOR_CLASSIC:
@@ -421,10 +445,18 @@ export function setPropertyValue(
       case FormFieldDataType.SAMPLE:
         dto.setMultiValueSampleProperty?.(propertyCode, value);
         return;
-      case FormFieldDataType.SPREADSHEET:
-        // Multi-value spreadsheet uses JSON array
-        dto.setMultiValueJsonProperty?.(propertyCode, value);
+      case FormFieldDataType.SPREADSHEET: {
+        if (!Array.isArray(value) || value.length === 0) {
+          dto.setMultiValueXmlProperty?.(propertyCode, []);
+          return;
+        }
+        const spreadsheetReplacer = (key: string, val: any) => key === '@type' ? undefined : val;
+        const encodedValues = value
+          .filter((v: any) => v !== null && v !== undefined)
+          .map((v: any) => `<DATA>${btoa(JSON.stringify(v, spreadsheetReplacer))}</DATA>`);
+        dto.setMultiValueXmlProperty?.(propertyCode, encodedValues);
         return;
+      }
       case FormFieldDataType.JSON:
         dto.setMultiValueJsonProperty?.(propertyCode, value);
         return;
@@ -577,7 +609,7 @@ function mapDataTypeToFormFieldDataType(dtoDataType: string, customWidget?: stri
     return FormFieldDataType.WORD_PROCESSOR_CLASSIC;
   } else if (dtoDataType === FormFieldDataType.MULTILINE_VARCHAR && customWidget === Widget.MONOSPACE_FONT) {
     return FormFieldDataType.MONOSPACE_FONT;
-  } else if (dtoDataType === FormFieldDataType.MULTILINE_VARCHAR && customWidget === Widget.SPREADSHEET) {
+  } else if (dtoDataType === FormFieldDataType.XML && customWidget === Widget.SPREADSHEET) {
     return FormFieldDataType.SPREADSHEET;
   } else {
     return dtoDataType as FormFieldDataType;  

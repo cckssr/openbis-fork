@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Box, IconButton } from '@mui/material';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 import FormFieldLabel from '@src/js/components/common/form/FormFieldLabel.jsx';
@@ -13,6 +13,8 @@ interface MultiValueFieldEditorProps {
   isEmpty?: (value: any) => boolean;
 }
 
+type Slot = { id: number; value: any };
+
 const defaultIsEmpty = (v: any) => v === null || v === undefined || v === '';
 
 const MultiValueFieldEditor: React.FC<MultiValueFieldEditorProps> = ({
@@ -23,50 +25,55 @@ const MultiValueFieldEditor: React.FC<MultiValueFieldEditorProps> = ({
   renderInput,
   isEmpty = defaultIsEmpty
 }) => {
-  const initSlots = (): any[] => {
-    const base = values && values.length > 0 ? [...values] : [];
-    if (base.length === 0 || !isEmpty(base[base.length - 1])) {
-      base.push(null);
+  const nextIdRef = useRef(0);
+
+  const nextId = (): number => {
+    nextIdRef.current += 1;
+    return nextIdRef.current;
+  };
+
+  const initSlots = (): Slot[] => {
+    const base: Slot[] = values && values.length > 0
+      ? values.map(v => ({ id: nextId(), value: v }))
+      : [];
+    if (base.length === 0 || !isEmpty(base[base.length - 1].value)) {
+      base.push({ id: nextId(), value: null });
     }
     return base;
   };
 
-  const [slots, setSlots] = useState<any[]>(initSlots);
+  const [slots, setSlots] = useState<Slot[]>(initSlots);
 
   // Re-sync slots when the `values` prop changes externally (e.g. auto-save restore from
   // localStorage). Compare by content so the user's own edits — which round-trip through the
   // parent and arrive back as a new `values` reference on every keystroke — don't reset slots.
   useEffect(() => {
-    const nonEmpty = slots.filter(v => !isEmpty(v));
+    const nonEmpty = slots.filter(s => !isEmpty(s.value)).map(s => s.value);
     if (JSON.stringify(nonEmpty) !== JSON.stringify(values)) {
       setSlots(initSlots());
     }
   }, [values]);
 
   const handleChange = (index: number, newVal: any) => {
-    const next = [...slots];
-    next[index] = newVal;
-    // When the user fills the trailing empty slot, append a new empty slot
+    const next = slots.map((s, i) => i === index ? { ...s, value: newVal } : s);
     if (index === next.length - 1 && !isEmpty(newVal)) {
-      next.push(null);
+      next.push({ id: nextId(), value: null });
     }
     setSlots(next);
-    onChange(next.filter(v => !isEmpty(v)));
+    onChange(next.filter(s => !isEmpty(s.value)).map(s => s.value));
   };
 
   const handleRemove = (index: number) => {
     if (slots.length === 1) {
-      // Clear the only row rather than removing it
-      setSlots([null]);
+      setSlots([{ id: nextId(), value: null }]);
       onChange([]);
     } else {
       const next = slots.filter((_, i) => i !== index);
-      // Always keep a trailing empty slot
-      if (!isEmpty(next[next.length - 1])) {
-        next.push(null);
+      if (!isEmpty(next[next.length - 1].value)) {
+        next.push({ id: nextId(), value: null });
       }
       setSlots(next);
-      onChange(next.filter(v => !isEmpty(v)));
+      onChange(next.filter(s => !isEmpty(s.value)).map(s => s.value));
     }
   };
 
@@ -75,9 +82,9 @@ const MultiValueFieldEditor: React.FC<MultiValueFieldEditorProps> = ({
       <Typography variant="body2">
         <FormFieldLabel label={label} mandatory={required} />
       </Typography>
-      {slots.map((val, i) => (
+      {slots.map((slot, i) => (
         <Box
-          key={i}
+          key={slot.id}
           sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5, maxWidth: '44rem',
             marginBottom: 0 }}
         >
@@ -92,7 +99,7 @@ const MultiValueFieldEditor: React.FC<MultiValueFieldEditorProps> = ({
               },
             })
           }}>
-            {renderInput(val, (newVal: any) => handleChange(i, newVal))}
+            {renderInput(slot.value, (newVal: any) => handleChange(i, newVal))}
           </Box>
           <IconButton size="small" onClick={() => handleRemove(i)}>
             <RemoveCircleOutlineIcon fontSize="small" />
