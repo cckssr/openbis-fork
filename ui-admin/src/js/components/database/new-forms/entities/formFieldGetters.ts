@@ -347,8 +347,16 @@ export function getPropertyValue(
       return dto.getSampleProperty?.(propertyCode) || null;
     case FormFieldDataType.HYPERLINK:
       return dto.getHyperlinkProperty?.(propertyCode) || null;
-    case FormFieldDataType.SPREADSHEET:
-      return dto.getSpreadsheetProperty?.(propertyCode) || null;
+    case FormFieldDataType.SPREADSHEET: {
+      const rawValue = dto.getProperty?.(propertyCode);
+      if (!rawValue) return null;
+      try {
+        const b64 = rawValue.substring('<DATA>'.length, rawValue.length - '</DATA>'.length);
+        return JSON.parse(atob(b64));
+      } catch {
+        return null;
+      }
+    }
     case FormFieldDataType.WORD_PROCESSOR:
     case FormFieldDataType.WORD_PROCESSOR_PAGE:
     case FormFieldDataType.WORD_PROCESSOR_CLASSIC:
@@ -577,7 +585,7 @@ function mapDataTypeToFormFieldDataType(dtoDataType: string, customWidget?: stri
     return FormFieldDataType.WORD_PROCESSOR_CLASSIC;
   } else if (dtoDataType === FormFieldDataType.MULTILINE_VARCHAR && customWidget === Widget.MONOSPACE_FONT) {
     return FormFieldDataType.MONOSPACE_FONT;
-  } else if (dtoDataType === FormFieldDataType.MULTILINE_VARCHAR && customWidget === Widget.SPREADSHEET) {
+  } else if (dtoDataType === FormFieldDataType.XML && customWidget === Widget.SPREADSHEET) {
     return FormFieldDataType.SPREADSHEET;
   } else {
     return dtoDataType as FormFieldDataType;  

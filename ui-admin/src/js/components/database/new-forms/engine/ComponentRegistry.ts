@@ -15,6 +15,7 @@ import { DropdownActionRenderer } from '@src/js/components/database/new-forms/co
 import {
   SourceCodeFieldRenderer
 } from "@src/js/components/database/new-forms/components/fields/SourceCodeFieldRenderer.tsx";
+import { SpreadsheetFieldRenderer } from '@src/js/components/database/new-forms/components/fields/SpreadsheetFieldRenderer.tsx';
 
 class ComponentRegistry {
   static getFieldRenderer(dataType: string) {
@@ -45,6 +46,8 @@ class ComponentRegistry {
       case FormFieldDataType.WORD_PROCESSOR_PAGE:
       case FormFieldDataType.WORD_PROCESSOR_CLASSIC:
         return CKEditorFieldRenderer;
+      case FormFieldDataType.SPREADSHEET:
+        return SpreadsheetFieldRenderer;
       case FormFieldDataType.SAMPLE:
         return ObjectFieldRenderer;
       default:
