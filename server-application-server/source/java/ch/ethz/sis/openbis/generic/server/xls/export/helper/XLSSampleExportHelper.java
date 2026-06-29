@@ -16,11 +16,8 @@
 package ch.ethz.sis.openbis.generic.server.xls.export.helper;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -33,10 +30,9 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.Project;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleTypeFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.ISampleId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
+import ch.ethz.sis.openbis.generic.asapi.v3.exporter.ExportEntityTypeCollector;
 import ch.ethz.sis.openbis.generic.server.xls.export.Attribute;
 import ch.ethz.sis.openbis.generic.server.xls.export.ExportableKind;
 
@@ -194,15 +190,7 @@ public class XLSSampleExportHelper extends AbstractXLSEntityExportHelper<Sample,
     @Override
     public SampleType getEntityType(final IApplicationServerApi api, final String sessionToken, final String permId)
     {
-        final SampleFetchOptions fetchOptions = new SampleFetchOptions();
-        final SampleTypeFetchOptions sampleTypeFetchOptions = fetchOptions.withType();
-        XLSSampleTypeExportHelper.configureFetchOptions(sampleTypeFetchOptions);
-        final Map<ISampleId, Sample> samples = api.getSamples(sessionToken, Collections.singletonList(new SamplePermId(permId)), fetchOptions);
-
-        assert samples.size() <= 1;
-
-        final Iterator<Sample> iterator = samples.values().iterator();
-        return iterator.hasNext() ? iterator.next().getType() : null;
+        return ExportEntityTypeCollector.fetchTypeOfSample(api, sessionToken, permId);
     }
 
 }

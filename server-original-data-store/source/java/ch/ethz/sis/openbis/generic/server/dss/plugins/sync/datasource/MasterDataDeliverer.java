@@ -17,8 +17,11 @@ package ch.ethz.sis.openbis.generic.server.dss.plugins.sync.datasource;
 
 import static ch.systemsx.cisd.openbis.generic.shared.basic.BasicConstant.INTERNAL_NAMESPACE_PREFIX;
 
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
@@ -26,30 +29,34 @@ import javax.xml.stream.XMLStreamWriter;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.ICodeHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IDescriptionHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IPropertyAssignmentsHolder;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.ContentCopy;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetType;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.LinkedData;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetTypeFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetTypeSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.ExperimentType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentTypeFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.ExternalDms;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.fetchoptions.ExternalDmsFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.search.ExternalDmsSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.id.ExternalDmsPermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.exporter.data.ExportableKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.Plugin;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.fetchoptions.PluginFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.search.PluginSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.id.PluginPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyAssignment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.fetchoptions.PropertyTypeFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.search.PropertyTypeSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleTypeFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.Vocabulary;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.VocabularyTerm;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.fetchoptions.VocabularyFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.search.VocabularySearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.id.VocabularyPermId;
 import ch.systemsx.cisd.common.shared.basic.string.CommaSeparatedListBuilder;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
 import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.DataType;
@@ -61,16 +68,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.CodeConverter;
  */
 public class MasterDataDeliverer extends AbstractEntityDeliverer<Object>
 {
-    private static final VocabularySearchCriteria VOCABULARY_SEARCH_CRITERIA = new VocabularySearchCriteria();
-
-    private static final PropertyTypeSearchCriteria PROPERTY_TYPE_SEARCH_CRITERIA = new PropertyTypeSearchCriteria();
-
-    private static final ExperimentTypeSearchCriteria EXPERIMENT_TYPE_SEARCH_CRITERIA = new ExperimentTypeSearchCriteria();
-
-    private static final SampleTypeSearchCriteria SAMPLE_TYPE_SEARCH_CRITERIA = new SampleTypeSearchCriteria();
-
-    private static final DataSetTypeSearchCriteria DATA_SET_TYPE_SEARCH_CRITERIA = new DataSetTypeSearchCriteria();
-
     MasterDataDeliverer(DeliveryContext context)
     {
         super(context, "master data");
@@ -85,23 +82,130 @@ public class MasterDataDeliverer extends AbstractEntityDeliverer<Object>
         addLastModificationDate(writer, context.getRequestTimestamp());
         writer.writeStartElement("xmd:masterData");
         String sessionToken = context.getSessionToken();
-        addValidationPlugins(context, writer, sessionToken);
+
+        List<SampleType> sampleTypes = fetchSampleTypes(context, sessionToken);
+        List<ExperimentType> experimentTypes = fetchExperimentTypes(context, sessionToken);
+        List<DataSetType> dataSetTypes = fetchDataSetTypes(context, sessionToken);
+        List<DataSet> dataSets = fetchDataSetsForExternalDms(context, sessionToken);
+
+        addValidationPlugins(context, writer, sessionToken, collectPluginIds(sampleTypes, experimentTypes, dataSetTypes));
         addVocabularies(context, writer, sessionToken);
-        addPropertyTypes(context, writer, sessionToken);
-        addSampleTypes(context, writer, sessionToken);
-        addExperimentTypes(context, writer, sessionToken);
-        addDataSetTypes(context, writer, sessionToken);
-        addExternalDataManagementSystems(context, writer, sessionToken);
+        addPropertyTypes(context, writer, sessionToken, collectPropertyTypeIds(sampleTypes, experimentTypes, dataSetTypes));
+        writeSampleTypes(context, writer, sampleTypes);
+        writeExperimentTypes(context, writer, experimentTypes);
+        writeDataSetTypes(context, writer, dataSetTypes);
+        addExternalDataManagementSystems(context, writer, sessionToken, collectExternalDmsIds(dataSets));
         writer.writeEndElement();
         writer.writeEndElement();
     }
 
-    private void addValidationPlugins(DeliveryExecutionContext executionContext, XMLStreamWriter writer, 
-            String sessionToken) throws XMLStreamException
+    private Set<PluginPermId> collectPluginIds(List<SampleType> sampleTypes, List<ExperimentType> experimentTypes,
+            List<DataSetType> dataSetTypes)
+    {
+        Set<PluginPermId> ids = new LinkedHashSet<>();
+        for (SampleType type : sampleTypes)
+        {
+            addPluginId(ids, type.getValidationPlugin());
+            for (PropertyAssignment assignment : type.getPropertyAssignments())
+            {
+                addPluginId(ids, assignment.getPlugin());
+            }
+        }
+        for (ExperimentType type : experimentTypes)
+        {
+            addPluginId(ids, type.getValidationPlugin());
+            for (PropertyAssignment assignment : type.getPropertyAssignments())
+            {
+                addPluginId(ids, assignment.getPlugin());
+            }
+        }
+        for (DataSetType type : dataSetTypes)
+        {
+            addPluginId(ids, type.getValidationPlugin());
+            for (PropertyAssignment assignment : type.getPropertyAssignments())
+            {
+                addPluginId(ids, assignment.getPlugin());
+            }
+        }
+        return ids;
+    }
+
+    private void addPluginId(Set<PluginPermId> ids, Plugin plugin)
+    {
+        if (plugin != null)
+        {
+            ids.add(plugin.getPermId());
+        }
+    }
+
+    private Set<PropertyTypePermId> collectPropertyTypeIds(List<SampleType> sampleTypes, List<ExperimentType> experimentTypes,
+            List<DataSetType> dataSetTypes)
+    {
+        Set<PropertyTypePermId> ids = new LinkedHashSet<>();
+        for (SampleType type : sampleTypes)
+        {
+            for (PropertyAssignment assignment : type.getPropertyAssignments())
+            {
+                ids.add(assignment.getPropertyType().getPermId());
+            }
+        }
+        for (ExperimentType type : experimentTypes)
+        {
+            for (PropertyAssignment assignment : type.getPropertyAssignments())
+            {
+                ids.add(assignment.getPropertyType().getPermId());
+            }
+        }
+        for (DataSetType type : dataSetTypes)
+        {
+            for (PropertyAssignment assignment : type.getPropertyAssignments())
+            {
+                ids.add(assignment.getPropertyType().getPermId());
+            }
+        }
+        return ids;
+    }
+
+    private Set<ExternalDmsPermId> collectExternalDmsIds(List<DataSet> dataSets)
+    {
+        Set<ExternalDmsPermId> ids = new LinkedHashSet<>();
+        for (DataSet dataSet : dataSets)
+        {
+            LinkedData linkedData = dataSet.getLinkedData();
+            if (linkedData != null && linkedData.getContentCopies() != null)
+            {
+                for (ContentCopy contentCopy : linkedData.getContentCopies())
+                {
+                    if (contentCopy.getExternalDms() != null)
+                    {
+                        ids.add(contentCopy.getExternalDms().getPermId());
+                    }
+                }
+            }
+        }
+        return ids;
+    }
+
+    private List<DataSet> fetchDataSetsForExternalDms(DeliveryExecutionContext executionContext, String sessionToken)
+    {
+        List<String> permIds = executionContext.getPermIds(ExportableKind.DATASET);
+        if (permIds.isEmpty())
+        {
+            return new ArrayList<>();
+        }
+        List<DataSetPermId> ids = permIds.stream().map(DataSetPermId::new).collect(Collectors.toList());
+        DataSetFetchOptions fetchOptions = new DataSetFetchOptions();
+        fetchOptions.withLinkedData().withExternalDms();
+        return new ArrayList<>(context.getV3api().getDataSets(sessionToken, ids, fetchOptions).values());
+    }
+
+    private void addValidationPlugins(DeliveryExecutionContext executionContext, XMLStreamWriter writer,
+            String sessionToken, Set<PluginPermId> pluginIds) throws XMLStreamException
     {
         PluginFetchOptions fetchOptions = new PluginFetchOptions();
         fetchOptions.withScript();
-        List<Plugin> plugins = context.getV3api().searchPlugins(sessionToken, new PluginSearchCriteria(), fetchOptions).getObjects();
+        List<Plugin> plugins = new ArrayList<>(context.getV3api()
+                .getPlugins(sessionToken, new ArrayList<>(pluginIds), fetchOptions).values());
         if (plugins.isEmpty())
         {
             return;
@@ -148,7 +252,9 @@ public class MasterDataDeliverer extends AbstractEntityDeliverer<Object>
         VocabularyFetchOptions fetchOptions = new VocabularyFetchOptions();
         fetchOptions.withTerms().withRegistrator();
         fetchOptions.withRegistrator();
-        List<Vocabulary> vocabularies = context.getV3api().searchVocabularies(sessionToken, VOCABULARY_SEARCH_CRITERIA, fetchOptions).getObjects();
+        List<VocabularyPermId> ids = executionContext.getPermIds(ExportableKind.VOCABULARY_TYPE).stream()
+                .map(VocabularyPermId::new).collect(Collectors.toList());
+        List<Vocabulary> vocabularies = new ArrayList<>(context.getV3api().getVocabularies(sessionToken, ids, fetchOptions).values());
         if (vocabularies.isEmpty())
         {
             return;
@@ -188,14 +294,14 @@ public class MasterDataDeliverer extends AbstractEntityDeliverer<Object>
         writer.writeEndElement();
     }
 
-    private void addPropertyTypes(DeliveryExecutionContext executionContext, XMLStreamWriter writer, 
-            String sessionToken) throws XMLStreamException
+    private void addPropertyTypes(DeliveryExecutionContext executionContext, XMLStreamWriter writer,
+            String sessionToken, Set<PropertyTypePermId> propertyTypeIds) throws XMLStreamException
     {
         PropertyTypeFetchOptions fetchOptions = new PropertyTypeFetchOptions();
         fetchOptions.withVocabulary();
         fetchOptions.withRegistrator();
-        List<PropertyType> propertyTypes =
-                context.getV3api().searchPropertyTypes(sessionToken, PROPERTY_TYPE_SEARCH_CRITERIA, fetchOptions).getObjects();
+        List<PropertyType> propertyTypes = new ArrayList<>(context.getV3api()
+                .getPropertyTypes(sessionToken, new ArrayList<>(propertyTypeIds), fetchOptions).values());
         if (propertyTypes.isEmpty())
         {
             return;
@@ -226,14 +332,20 @@ public class MasterDataDeliverer extends AbstractEntityDeliverer<Object>
         writer.writeEndElement();
     }
 
-    private void addSampleTypes(DeliveryExecutionContext executionContext, XMLStreamWriter writer, 
-            String sessionToken) throws XMLStreamException
+    private List<SampleType> fetchSampleTypes(DeliveryExecutionContext executionContext, String sessionToken)
     {
         SampleTypeFetchOptions fetchOptions = new SampleTypeFetchOptions();
         fetchOptions.withPropertyAssignments().withPropertyType();
         fetchOptions.withPropertyAssignments().withPlugin();
         fetchOptions.withValidationPlugin();
-        List<SampleType> types = context.getV3api().searchSampleTypes(sessionToken, SAMPLE_TYPE_SEARCH_CRITERIA, fetchOptions).getObjects();
+        List<EntityTypePermId> ids = executionContext.getPermIds(ExportableKind.SAMPLE_TYPE).stream()
+                .map(permId -> new EntityTypePermId(permId, EntityKind.SAMPLE)).collect(Collectors.toList());
+        return new ArrayList<>(context.getV3api().getSampleTypes(sessionToken, ids, fetchOptions).values());
+    }
+
+    private void writeSampleTypes(DeliveryExecutionContext executionContext, XMLStreamWriter writer,
+            List<SampleType> types) throws XMLStreamException
+    {
         if (types.isEmpty())
         {
             return;
@@ -257,15 +369,20 @@ public class MasterDataDeliverer extends AbstractEntityDeliverer<Object>
         writer.writeEndElement();
     }
 
-    private void addExperimentTypes(DeliveryExecutionContext executionContext, XMLStreamWriter writer, 
-            String sessionToken) throws XMLStreamException
+    private List<ExperimentType> fetchExperimentTypes(DeliveryExecutionContext executionContext, String sessionToken)
     {
         ExperimentTypeFetchOptions fetchOptions = new ExperimentTypeFetchOptions();
         fetchOptions.withPropertyAssignments().withPropertyType();
         fetchOptions.withPropertyAssignments().withPlugin();
         fetchOptions.withValidationPlugin();
-        List<ExperimentType> types =
-                context.getV3api().searchExperimentTypes(sessionToken, EXPERIMENT_TYPE_SEARCH_CRITERIA, fetchOptions).getObjects();
+        List<EntityTypePermId> ids = executionContext.getPermIds(ExportableKind.EXPERIMENT_TYPE).stream()
+                .map(permId -> new EntityTypePermId(permId, EntityKind.EXPERIMENT)).collect(Collectors.toList());
+        return new ArrayList<>(context.getV3api().getExperimentTypes(sessionToken, ids, fetchOptions).values());
+    }
+
+    private void writeExperimentTypes(DeliveryExecutionContext executionContext, XMLStreamWriter writer,
+            List<ExperimentType> types) throws XMLStreamException
+    {
         if (types.isEmpty())
         {
             return;
@@ -282,14 +399,20 @@ public class MasterDataDeliverer extends AbstractEntityDeliverer<Object>
         writer.writeEndElement();
     }
 
-    private void addDataSetTypes(DeliveryExecutionContext executionContext, XMLStreamWriter writer, 
-            String sessionToken) throws XMLStreamException
+    private List<DataSetType> fetchDataSetTypes(DeliveryExecutionContext executionContext, String sessionToken)
     {
         DataSetTypeFetchOptions fetchOptions = new DataSetTypeFetchOptions();
         fetchOptions.withPropertyAssignments().withPropertyType();
         fetchOptions.withPropertyAssignments().withPlugin();
         fetchOptions.withValidationPlugin();
-        List<DataSetType> types = context.getV3api().searchDataSetTypes(sessionToken, DATA_SET_TYPE_SEARCH_CRITERIA, fetchOptions).getObjects();
+        List<EntityTypePermId> ids = executionContext.getPermIds(ExportableKind.DATASET_TYPE).stream()
+                .map(permId -> new EntityTypePermId(permId, EntityKind.DATA_SET)).collect(Collectors.toList());
+        return new ArrayList<>(context.getV3api().getDataSetTypes(sessionToken, ids, fetchOptions).values());
+    }
+
+    private void writeDataSetTypes(DeliveryExecutionContext executionContext, XMLStreamWriter writer,
+            List<DataSetType> types) throws XMLStreamException
+    {
         if (types.isEmpty())
         {
             return;
@@ -309,13 +432,12 @@ public class MasterDataDeliverer extends AbstractEntityDeliverer<Object>
         writer.writeEndElement();
     }
 
-    private void addExternalDataManagementSystems(DeliveryExecutionContext executionContext, XMLStreamWriter writer, 
-            String sessionToken) throws XMLStreamException
+    private void addExternalDataManagementSystems(DeliveryExecutionContext executionContext, XMLStreamWriter writer,
+            String sessionToken, Set<ExternalDmsPermId> externalDmsIds) throws XMLStreamException
     {
-        ExternalDmsSearchCriteria searchCriteria = new ExternalDmsSearchCriteria();
         ExternalDmsFetchOptions fetchOptions = new ExternalDmsFetchOptions();
-        List<ExternalDms> externalDataManagementSystems =
-                context.getV3api().searchExternalDataManagementSystems(sessionToken, searchCriteria, fetchOptions).getObjects();
+        List<ExternalDms> externalDataManagementSystems = new ArrayList<>(context.getV3api()
+                .getExternalDataManagementSystems(sessionToken, new ArrayList<>(externalDmsIds), fetchOptions).values());
         if (externalDataManagementSystems.isEmpty() == false)
         {
             writer.writeStartElement("xmd:externalDataManagementSystems");

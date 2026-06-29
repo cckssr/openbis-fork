@@ -82,6 +82,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.delete.VocabularyTerm
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.id.VocabularyTermPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.webapp.create.WebAppSettingCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.exporter.ExportEntityCollector;
+import ch.ethz.sis.openbis.generic.asapi.v3.exporter.ExportEntityTypeCollector;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.dataset.create.FullDataSetCreation;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.dataset.create.UploadedDataSetCreation;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.DataSetFile;
@@ -98,7 +99,8 @@ public class ToStringCheck
 {
     private static final Set<Class<?>> IGNORED_CLASSES = new HashSet<>(
             Arrays.asList(FastDownloadUtils.class, SampleIdDeserializer.class,
-                    PropertiesDeserializer.class, ExportEntityCollector.class));
+                    PropertiesDeserializer.class, ExportEntityCollector.class,
+                    ExportEntityTypeCollector.class));
 
     @Test
     public void testMissingToStringMethods() throws Exception

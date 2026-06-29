@@ -2953,3 +2953,14 @@ Create Data Stores Operation Result
 Data Store Creation
 Export Entity Collector
 collect Entities
+Export Entity Type Collector
+expand Reference
+configure Sample Type Fetch Options
+configure Experiment Type Fetch Options
+configure Data Set Type Fetch Options
+fetch Type Of Sample
+fetch Type Of Experiment
+fetch Type Of Data Set
+fetch Sample Type
+fetch Experiment Type
+fetch Data Set Type
