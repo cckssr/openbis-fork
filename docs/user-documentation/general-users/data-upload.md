@@ -45,7 +45,7 @@ If you upload a modified version of a file that already exists, a folder called 
 
 ![image info](img/7.0-afs-snapshot-folder.png)
 
-If you delete a file, a folder with the name of the file you deleted is created. Inside this folder the previous version of the file is contained.
+A folder with the name of the file you replaced is created. Inside this folder the previous version(s) of the file are contained.
 
 ![image info](img/7.0-afs-snapshot-content.png)
 
