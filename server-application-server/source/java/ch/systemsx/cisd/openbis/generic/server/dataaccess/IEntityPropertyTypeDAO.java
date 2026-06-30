@@ -118,6 +118,8 @@ public interface IEntityPropertyTypeDAO
      */
     public void validateUpdatedEntity(EntityTypePropertyTypePE entity);
 
+    public void flush();
+
     /**
      * Deletes specified assignment.
      */
