@@ -1451,6 +1451,11 @@ var FormUtil = new function() {
     }
 
     this.createCkeditor = function($component, componentOnChange, value, placeholder, isReadOnly, toolbarContainer, _refreshableFields) {
+        // Multi-value Word Processor: value is an array of HTML strings; join for display.
+        if (Array.isArray(value)) {
+            value = value.filter(function(v) { return v != null && v !== ''; }).join('<hr>');
+        }
+
         // CKEditor 4 to 5 Image style Migration
         if( value &&
             value.indexOf("<img")  !== -1 &&
