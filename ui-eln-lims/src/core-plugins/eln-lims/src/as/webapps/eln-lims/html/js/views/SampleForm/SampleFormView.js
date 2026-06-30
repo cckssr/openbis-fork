@@ -1091,9 +1091,16 @@
 									JExcelEditorManager.createField($jexcelContainer, this._sampleFormModel.mode, propertyType.code, this._sampleFormModel.sample);
 									$controlGroup = FormUtil.getFieldForComponentWithLabel($jexcelContainer, propertyType.label, null, null, semanticAnnotations);
 								} else if (customWidget === 'Word Processor') {
-									var $component = FormUtil.getFieldForPropertyType(propertyType, value);
-									$component = FormUtil.activateRichTextProperties($component, undefined, propertyType, value, true);
-									$controlGroup = FormUtil.getFieldForComponentWithLabel($component, propertyType.label, null, null, semanticAnnotations);
+									var values = Array.isArray(value) ? value : [value];
+									var $wpContainer = $("<div>");
+									values.forEach(function(singleValue) {
+										if (singleValue != null && singleValue !== '') {
+											var $sub = FormUtil.getFieldForPropertyType(propertyType, singleValue);
+											$sub = FormUtil.activateRichTextProperties($sub, undefined, propertyType, singleValue, true);
+											$wpContainer.append($sub);
+										}
+									});
+									$controlGroup = FormUtil.getFieldForComponentWithLabel($wpContainer, propertyType.label, null, null, semanticAnnotations);
 								}
 							} else if(propertyType.dataType === "SAMPLE") {
 								var $component = new SampleField(false, '', false, value, true, isMultiValue);
