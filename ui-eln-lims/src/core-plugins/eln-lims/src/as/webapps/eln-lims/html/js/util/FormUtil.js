@@ -3466,12 +3466,23 @@ var FormUtil = new function() {
     this.renderCustomWidgetGridValue = function(row, params, propertyType){
         var value = row[propertyType.code]
 
-        if(value === null || value === undefined || value.trim().length === 0){
+        if(value === null || value === undefined || (typeof value === 'string' && value.trim().length === 0)
+				|| (Array.isArray(value) && value.length === 0)){
             return
         }
 
         var customWidget = this.profile.customWidgetSettings[propertyType.code];
         var forceDisableRTF = this.profile.isForcedDisableRTF(propertyType);
+
+        // Multi-value properties supply an array; normalize to a string before branching.
+        // Spreadsheet branch uses `row` directly and doesn't call string methods on value.
+        if (Array.isArray(value)) {
+            if (customWidget === 'Word Processor') {
+                value = value.filter(function(v) { return v != null && v !== ''; }).join('');
+            } else if (customWidget !== 'Spreadsheet') {
+                value = value.filter(function(v) { return v != null && v !== ''; }).join('\n\n');
+            }
+        }
 
         if(!forceDisableRTF) {
             var $value = null
