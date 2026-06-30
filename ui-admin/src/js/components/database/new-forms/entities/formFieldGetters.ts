@@ -646,7 +646,7 @@ function mapAssignmentToFormField(
   // Extract value using the appropriate getter method based on dataType
   const propertyValue = getPropertyValue(dto, propertyCode, dataType, isMultiValue) ?? '';
 
-  const column = determineFieldColumn(dataType, section, assignment.ordinal);
+  const column = determineFieldColumn(dataType, section, assignment.ordinal, isMultiValue);
   const meta = buildFieldMeta(propertyType.metaData, dataType, propertyType);
 
   const readOnly = fieldOverrides.readOnly !== undefined 
@@ -688,19 +688,21 @@ function mapAssignmentToFormField(
 
 /**
  * Determines the column placement for a field based on dataType and section
- * 
+ *
  * @param dataType - The FormFieldDataType
  * @param section - The FormSection
  * @param ordinal - The ordinal position of the assignment
+ * @param isMultiValue - Whether the field is a multi-value property
  * @returns Column placement ('left', 'right', or 'center')
  */
 function determineFieldColumn(
   dataType: FormFieldDataType,
   section: FormSection,
-  ordinal: number
+  ordinal: number,
+  isMultiValue: boolean = false,
 ): 'left' | 'right' | 'center' {
-  // Center column for word processor and spreadsheet types
-  if ([
+  // Center column for word processor and spreadsheet types if they are not multi-value
+  if (!isMultiValue && [
     FormFieldDataType.WORD_PROCESSOR,
     FormFieldDataType.WORD_PROCESSOR_PAGE,
     FormFieldDataType.WORD_PROCESSOR_CLASSIC,
@@ -710,7 +712,7 @@ function determineFieldColumn(
   ].includes(dataType)) {
     return 'center';
   }
-  
+
   // Right column for identification info fields with ordinal > 5
   if (section === FormSection.IDENTIFICATION_INFO && ordinal > 5) {
     return 'right';
