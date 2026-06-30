@@ -326,6 +326,10 @@ export function getPropertyValue(
           })
           .filter((v: any) => v !== null);
       }
+      case FormFieldDataType.WORD_PROCESSOR:
+      case FormFieldDataType.WORD_PROCESSOR_PAGE:
+      case FormFieldDataType.WORD_PROCESSOR_CLASSIC:
+        return dto.getMultiValueStringProperty?.(propertyCode) || null;
       case FormFieldDataType.JSON:
         return dto.getMultiValueJsonProperty?.(propertyCode) || null;
       case FormFieldDataType.XML:
@@ -457,6 +461,11 @@ export function setPropertyValue(
         dto.setMultiValueXmlProperty?.(propertyCode, encodedValues);
         return;
       }
+      case FormFieldDataType.WORD_PROCESSOR:
+      case FormFieldDataType.WORD_PROCESSOR_PAGE:
+      case FormFieldDataType.WORD_PROCESSOR_CLASSIC:
+        dto.setMultiValueStringProperty?.(propertyCode, value);
+        return;
       case FormFieldDataType.JSON:
         dto.setMultiValueJsonProperty?.(propertyCode, value);
         return;

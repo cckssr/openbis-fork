@@ -6,6 +6,7 @@ import { Typography } from '@mui/material';
 import CircularProgress from '@mui/material/CircularProgress';
 import { useMarkdownEditor } from '@src/js/components/database/new-forms/hooks/useMarkdownEditor.ts';
 import ConfirmationDialog from '@src/js/components/common/dialog/ConfirmationDialog.jsx';
+import MultiValueFieldEditor from '@src/js/components/database/new-forms/components/fields/MultiValueFieldEditor.tsx';
 import { HtmlDataProcessor, MarkdownGfmDataProcessor } from 'ckeditor5';
 
 const CKEditorClassic = lazy(() =>
@@ -18,53 +19,67 @@ const CKEditorDocument = lazy(() =>
   import('@src/js/components/database/new-forms/components/fields/CKEditor/CKEditorDocument.jsx')
 )
 
-export const CKEditorFieldRenderer: React.FC<FieldRendererProps> = ({
-  field,
-  mode,
-  onFieldChange,
-  onFieldMetadataChange,
-  params
+interface CKEditorSingleEditorProps {
+  value: string | null;
+  dataType: FormFieldDataType;
+  readOnly: boolean;
+  onChange: (val: string) => void;
+  onMetadataChange?: (meta: any) => void;
+  sessionID?: string;
+  markdownPreferenceKey?: string | null;
+}
+
+const CKEditorSingleEditor: React.FC<CKEditorSingleEditorProps> = ({
+  value,
+  dataType,
+  readOnly,
+  onChange,
+  onMetadataChange,
+  sessionID,
+  markdownPreferenceKey,
 }) => {
-  const [disabledToolbar, setDisabledToolbar] = useState(true);
+  const [disabledToolbar, setDisabledToolbar] = useState(readOnly);
   const [showMarkdownDialog, setShowMarkdownDialog] = useState(false);
   const editorRef = useRef<any>(null);
-  const isEditingMode = mode === FormMode.EDIT || mode === FormMode.CREATE;
-  const isReadOnly = !isEditingMode || field.readOnly;
-  const editorMode = field.dataType === FormFieldDataType.WORD_PROCESSOR ? 'inline' : field.dataType === FormFieldDataType.WORD_PROCESSOR_PAGE ? 'document' : 'classic';
-
-  const markdownPreferenceKey = useMemo(() => {
-    const user = params?.user
-    const entityPermId = params?.entityPermId
-    if (!user || !entityPermId) {
-      return null
-    }
-    // Store only when enabled; key includes entityPermId + field.id for per-entity, per-field scoping.
-    return `new-forms:ckeditor-markdown-enabled:${user}:${entityPermId}:${field.id}`
-  }, [params?.user, params?.entityPermId, field.id])
+  const editorMode = dataType === FormFieldDataType.WORD_PROCESSOR ? 'inline'
+    : dataType === FormFieldDataType.WORD_PROCESSOR_PAGE ? 'document'
+    : 'classic';
 
   const initialIsMarkdown = useMemo(() => {
     if (!markdownPreferenceKey) {
-      return false
+      return false;
     }
     try {
-      return localStorage.getItem(markdownPreferenceKey) === 'true'
+      return localStorage.getItem(markdownPreferenceKey) === 'true';
     } catch {
-      return false
+      return false;
     }
-  }, [markdownPreferenceKey])
+  }, [markdownPreferenceKey]);
 
-  const {
-    editorValue,
-    isMarkdown,
-    toggleMarkdownMode
-  } = useMarkdownEditor({
-    value: field.value,
+  const { editorValue, isMarkdown, toggleMarkdownMode } = useMarkdownEditor({
+    value,
     initialIsMarkdown
   });
 
   useEffect(() => {
-    setDisabledToolbar(isReadOnly);
-  }, [isReadOnly]);
+    setDisabledToolbar(readOnly);
+  }, [readOnly]);
+
+  // Persist markdown preference when it changes
+  useEffect(() => {
+    if (!markdownPreferenceKey) {
+      return;
+    }
+    try {
+      if (isMarkdown) {
+        localStorage.setItem(markdownPreferenceKey, 'true');
+      } else {
+        localStorage.removeItem(markdownPreferenceKey);
+      }
+    } catch {
+      // ignore persistence failures (quota/private mode)
+    }
+  }, [markdownPreferenceKey, isMarkdown]);
 
   const getEditorDataAs = useCallback((format: 'html' | 'markdown'): string | null => {
     const editor: any = editorRef.current;
@@ -86,72 +101,45 @@ export const CKEditorFieldRenderer: React.FC<FieldRendererProps> = ({
     }
   }, []);
 
-  // Persist preference (store only when true; remove when false)
-  useEffect(() => {
-    if (!markdownPreferenceKey) {
-      return
-    }
-    try {
-      if (isMarkdown) {
-        localStorage.setItem(markdownPreferenceKey, 'true')
-      } else {
-        localStorage.removeItem(markdownPreferenceKey)
-      }
-    } catch {
-      // ignore persistence failures (quota/private mode)
-    }
-  }, [markdownPreferenceKey, isMarkdown])
-
-  // Handle editor content changes
-  const handleEditorChange = useCallback((value: string) => {
+  const handleEditorChange = useCallback((val: string) => {
     const metadata: Record<string, any> = {};
-
     if (editorRef.current && (editorMode === 'classic' || editorMode === 'document')) {
       try {
         const titlePlugin = editorRef.current.plugins.get('Title');
         if (titlePlugin) {
-          const title = titlePlugin.getTitle();
-          metadata.title = title;
+          metadata.title = titlePlugin.getTitle();
         }
       } catch (error) {
         console.debug('Title plugin not available:', error);
       }
     }
-
-    if (onFieldMetadataChange && typeof onFieldMetadataChange === 'function') {
-      onFieldMetadataChange(field.id, metadata);
+    if (onMetadataChange) {
+      onMetadataChange(metadata);
     }
-
-    if (onFieldChange && typeof onFieldChange === 'function') {
-      onFieldChange(field.id, value);
-    }
-  }, [editorMode, field.id, onFieldChange, onFieldMetadataChange]);
+    onChange(val);
+  }, [editorMode, onChange, onMetadataChange]);
 
   const handleToggleMarkdown = useCallback(() => {
     setDisabledToolbar(false);
-    // Show confirmation dialog only when enabling markdown (switching from HTML to Markdown)
     if (!isMarkdown) {
       setShowMarkdownDialog(true);
     } else {
-      // Switching back to HTML - no confirmation needed.
-      // Convert markdown -> HTML so the HTML-mode editor doesn't treat markdown as plain text.
       const html = getEditorDataAs('html');
-      if (html !== null && onFieldChange && typeof onFieldChange === 'function') {
-        onFieldChange(field.id, html);
+      if (html !== null) {
+        onChange(html);
       }
       toggleMarkdownMode();
     }
-  }, [field.id, getEditorDataAs, isMarkdown, onFieldChange, toggleMarkdownMode]);
+  }, [getEditorDataAs, isMarkdown, onChange, toggleMarkdownMode]);
 
   const handleConfirmMarkdown = useCallback(() => {
     setShowMarkdownDialog(false);
-    // Convert HTML -> markdown so the markdown-mode editor receives markdown input.
     const markdown = getEditorDataAs('markdown');
-    if (markdown !== null && onFieldChange && typeof onFieldChange === 'function') {
-      onFieldChange(field.id, markdown);
+    if (markdown !== null) {
+      onChange(markdown);
     }
     toggleMarkdownMode();
-  }, [field.id, getEditorDataAs, onFieldChange, toggleMarkdownMode]);
+  }, [getEditorDataAs, onChange, toggleMarkdownMode]);
 
   const handleCancelMarkdown = useCallback(() => {
     setShowMarkdownDialog(false);
@@ -170,28 +158,25 @@ export const CKEditorFieldRenderer: React.FC<FieldRendererProps> = ({
 
   return (
     <>
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-        <Typography variant="body2" component="div" sx={{ color: '#0000008a', fontSize: '0.7rem' }}>{field.label} {field.required ? '*' : ''}</Typography>
-        <Suspense
-          fallback={
-            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '300px' }}>
-              <CircularProgress />
-            </Box>
-          }
-        >
-          <EditorComponent
-            value={editorValue}
-            onEditorContentChange={handleEditorChange}
-            sessionID={params.sessionID}
-            disabled={disabledToolbar}
-            markdownEnabled={isMarkdown}
-            onToggleMarkdown={handleToggleMarkdown}
-            onEditorReady={(editor: any) => {
-              editorRef.current = editor;
-            }}
-          />
-        </Suspense>
-      </Box>
+      <Suspense
+        fallback={
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '300px' }}>
+            <CircularProgress />
+          </Box>
+        }
+      >
+        <EditorComponent
+          value={editorValue}
+          onEditorContentChange={handleEditorChange}
+          sessionID={sessionID}
+          disabled={disabledToolbar}
+          markdownEnabled={isMarkdown}
+          onToggleMarkdown={handleToggleMarkdown}
+          onEditorReady={(editor: any) => {
+            editorRef.current = editor;
+          }}
+        />
+      </Suspense>
       <ConfirmationDialog
         open={showMarkdownDialog}
         type="warning"
@@ -200,6 +185,93 @@ export const CKEditorFieldRenderer: React.FC<FieldRendererProps> = ({
         onConfirm={handleConfirmMarkdown}
         onCancel={handleCancelMarkdown}
       />
+    </>
+  );
+};
+
+export const CKEditorFieldRenderer: React.FC<FieldRendererProps> = ({
+  field,
+  mode,
+  onFieldChange,
+  onFieldMetadataChange,
+  params
+}) => {
+  const isEditingMode = mode === FormMode.EDIT || mode === FormMode.CREATE;
+  const isReadOnly = !isEditingMode || field.readOnly;
+
+  const markdownPreferenceKey = useMemo(() => {
+    const user = params?.user;
+    const entityPermId = params?.entityPermId;
+    if (!user || !entityPermId) {
+      return null;
+    }
+    return `new-forms:ckeditor-markdown-enabled:${user}:${entityPermId}:${field.id}`;
+  }, [params?.user, params?.entityPermId, field.id]);
+
+  const label = (
+    <Typography variant="body2" component="div" sx={{ color: '#0000008a', fontSize: '0.7rem' }}>
+      {field.label} {field.required ? '*' : ''}
+    </Typography>
+  );
+
+  if (field.isMultiValue) {
+    if (isEditingMode && !field.readOnly) {
+      return (
+        <MultiValueFieldEditor
+          label={field.label}
+          required={field.required}
+          values={Array.isArray(field.value) ? field.value : []}
+          onChange={(vals) => onFieldChange(field.id, vals)}
+          renderInput={(val, handleChange) => (
+            <CKEditorSingleEditor
+              value={val ?? ''}
+              dataType={field.dataType}
+              readOnly={false}
+              onChange={handleChange}
+              sessionID={params?.sessionID}
+            />
+          )}
+          isEmpty={(v) => v === null || v === undefined || v === ''}
+        />
+      );
+    }
+
+    // View / read-only mode
+    const values: any[] = Array.isArray(field.value) ? field.value : [];
+    return (
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+        {label}
+        {values.map((val, i) => (
+          <CKEditorSingleEditor
+            key={i}
+            value={val ?? ''}
+            dataType={field.dataType}
+            readOnly={true}
+            onChange={() => {}}
+            sessionID={params?.sessionID}
+          />
+        ))}
+      </Box>
+    );
+  }
+
+  // Single value
+  return (
+    <>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+        {label}
+        <CKEditorSingleEditor
+          value={field.value}
+          dataType={field.dataType}
+          readOnly={isReadOnly}
+          onChange={(val) => onFieldChange(field.id, val)}
+          onMetadataChange={onFieldMetadataChange
+            ? (meta) => onFieldMetadataChange(field.id, meta)
+            : undefined}
+          sessionID={params?.sessionID}
+          markdownPreferenceKey={markdownPreferenceKey}
+        />
+      </Box>
     </>
   );
 };
