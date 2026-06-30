@@ -164,7 +164,7 @@ public class OpenBisModel
         for (int i = 0; i < s.length(); i++)
         {
             Character cur = s.charAt(i);
-            if (!cur.toString().matches("[_a-zA-Z0-9]"))
+            if (!cur.toString().matches("[-_a-zA-Z0-9]"))
             {
                 buffer[i] = '_';
             } else

@@ -80,7 +80,7 @@ public class SciCatExportTest
                 openBisModel.getEntities().values().stream().filter(x -> x instanceof Sample)
                         .map(Sample.class::cast)
                         .filter(x -> x.getCode().contains(
-                                "schema_CreativeWork_scicat_PublishedData_4b55cbae_ac98_445a_a15e_1534b2a8b01f"))
+                                "schema_CreativeWork_scicat_PublishedData_4b55cbae-ac98-445a-a15e-1534b2a8b01f"))
                         .findFirst().orElseThrow();
         assertEquals("0.0", entity.getProperties().get("numberOfFiles").toString());
         assertEquals("4000.0", entity.getProperties().get("sizeOfArchive").toString());

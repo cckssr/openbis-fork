@@ -257,7 +257,7 @@ public class RemoteFileTest
                         entryList.stream().toList(), "DEFAULT",
                         "DEFAULT", schemaFacade, abstractEntityPathMap).openBisModel();
         List<IFileInfo> iFileInfos = openBisModel.getFiles().get(new SampleIdentifier(
-                "/DEFAULT/DEFAULT/SCHEMA_CREATIVEWORK_SCICAT_PUBLISHEDDATA_7EB141D3_11F1_47A6_9D0E_76F8832ED1B2"));
+                "/DEFAULT/DEFAULT/SCHEMA_CREATIVEWORK_SCICAT_PUBLISHEDDATA_7EB141D3-11F1-47A6-9D0E-76F8832ED1B2"));
         Assert.assertFalse(iFileInfos.isEmpty());
 
         System.out.println("lol");
