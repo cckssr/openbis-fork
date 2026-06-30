@@ -112,10 +112,25 @@ public class CreatePropertyAssignmentsExecutor
     public NewETPTAssignment translateAssignment(IOperationContext context, String entityTypeCode,
             ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityKind entityKind, PropertyAssignmentCreation assignmentCreation)
     {
+       return this.translateAssignment(context, entityTypeCode, entityKind, assignmentCreation, null);
+    }
+
+    public NewETPTAssignment translateAssignment(IOperationContext context, String entityTypeCode,
+            ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityKind entityKind, PropertyAssignmentCreation assignmentCreation, Map<String, PropertyTypePE> cachedTypes)
+    {
         NewETPTAssignment assignment = new NewETPTAssignment();
         assignment.setEntityKind(entityKind);
 
-        PropertyTypePE propertyTypePE = findPropertyType(context, assignmentCreation.getPropertyTypeId());
+        PropertyTypePE propertyTypePE;
+        if(cachedTypes != null) {
+            propertyTypePE =  cachedTypes.get(assignmentCreation.getPropertyTypeId().toString());
+            if(propertyTypePE == null) {
+                propertyTypePE = findPropertyType(context, assignmentCreation.getPropertyTypeId());
+            }
+        } else {
+            propertyTypePE = findPropertyType(context, assignmentCreation.getPropertyTypeId());
+        }
+
         assignment.setPropertyTypeCode(propertyTypePE.getCode());
 
         assignment.setEntityTypeCode(entityTypeCode);

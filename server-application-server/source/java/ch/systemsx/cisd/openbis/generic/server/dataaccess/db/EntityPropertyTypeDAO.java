@@ -600,6 +600,14 @@ final class EntityPropertyTypeDAO extends AbstractDAO implements IEntityProperty
     }
 
     @Override
+    public final void validateUpdatedEntity(EntityTypePropertyTypePE entity)
+    {
+        assert entity != null : "entity is null";
+
+        validatePE(entity);
+    }
+
+    @Override
     public int countAssignmentValues(String entityTypeCode, String propertyTypeCode)
     {
         assert entityTypeCode != null : "Unspecified entity type.";

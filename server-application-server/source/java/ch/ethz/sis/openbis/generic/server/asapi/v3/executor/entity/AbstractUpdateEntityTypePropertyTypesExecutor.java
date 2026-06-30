@@ -16,7 +16,9 @@
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.entity;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
+import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
 import jakarta.annotation.Resource;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.operation.IOperation;
@@ -25,12 +27,10 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetc
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.SearchDataSetsOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.SearchDataSetsOperationResult;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.SearchExperimentsOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.SearchExperimentsOperationResult;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyAssignmentPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SearchSamplesOperation;
@@ -38,7 +38,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SearchSamplesOpera
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.dataset.ISearchDataSetsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.experiment.ISearchExperimentsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.sample.ISearchSamplesOperationExecutor;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.entity.EntityKindConverter;
 import ch.systemsx.cisd.common.exceptions.AuthorizationFailureException;
 import ch.systemsx.cisd.openbis.generic.shared.dto.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -95,6 +94,9 @@ public abstract class AbstractUpdateEntityTypePropertyTypesExecutor<UPDATE exten
     private ISearchDataSetsOperationExecutor searchDataSetExecutor;
 
     protected abstract EntityKind getEntityKind();
+
+    @Autowired
+    protected IDAOFactory daoFactory;
 
     @Override
     public void update(IOperationContext context, MapBatch<UPDATE, TYPE_PE> batch)
@@ -198,16 +200,29 @@ public abstract class AbstractUpdateEntityTypePropertyTypesExecutor<UPDATE exten
             }
             if (replacements.isEmpty() == false)
             {
+                List<PropertyTypePE> cachedPropertyTypes =  daoFactory.getPropertyTypeDAO().listAllPropertyTypes();
+                final Map<String, PropertyTypePE> propertyTypeCache = cachedPropertyTypes.stream().collect(Collectors.toMap(
+                        PropertyTypePE::getCode, x -> x));
+                final List<EntityTypePropertyTypePE> cachedAssignments = daoFactory.getEntityPropertyTypeDAO(DtoConverters.convertEntityKind(getEntityKind()))
+                        .listEntityPropertyTypes(typePE);
+                List<IEntityTypePropertyTypeBO> etptBOs = new ArrayList<>();
                 for (PropertyAssignmentCreation replacement : replacements)
                 {
                     NewETPTAssignment translatedAssignment = createPropertyAssignmentsExecutor.translateAssignment(context, typePE.getCode(),
-                            getEntityKind(), replacement);
+                            getEntityKind(), replacement, propertyTypeCache);
                     IEntityTypePropertyTypeBO etptBO =
                             businessObjectFactory.createEntityTypePropertyTypeBO(context.getSession(),
-                                    DtoConverters.convertEntityKind(getEntityKind()));
+                                    DtoConverters.convertEntityKind(getEntityKind()), cachedPropertyTypes, typePE, cachedAssignments);
                     etptBO.loadAssignment(translatedAssignment.getPropertyTypeCode(),
                             translatedAssignment.getEntityTypeCode());
-                    etptBO.updateLoadedAssignment(translatedAssignment);
+                    etptBO.updateLoadedAssignment(translatedAssignment, true);
+                    etptBOs.add(etptBO);
+                }
+                //save changes
+                daoFactory.getEntityPropertyTypeDAO(DtoConverters.convertEntityKind(getEntityKind())).flush();
+                //schedule dynamic properties if script has changed
+                for(IEntityTypePropertyTypeBO etptBO : etptBOs) {
+                    etptBO.scheduleDynamicPropertiesEvaluation();
                 }
             }
         }

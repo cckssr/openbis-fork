@@ -195,7 +195,7 @@ public final class EntityTypePropertyTypeBOTest extends AbstractBOTest
                         propertyType.getCode(), experimentType.getCode(), false, null, "s",
                         etpt.getOrdinal() - 1, true, false, etpt.getModificationDate(),
                         script2.getName(), false, false);
-        bo.updateLoadedAssignment(updatedAssignment);
+        bo.updateLoadedAssignment(updatedAssignment, false);
     }
 
     private void prepareExperimentTypeAndPropertyType(final EntityKind entityKind,
