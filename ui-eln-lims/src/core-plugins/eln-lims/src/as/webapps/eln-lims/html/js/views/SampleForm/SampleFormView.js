@@ -1080,8 +1080,13 @@
 							return FormUtil.toUserTimeZoneTimestamp(v);
 						});
 					}
+
+					// Only for "SAMPLE" and "CONTROLLEDVOCABULARY" data types we enable multi-value properties
+					// editing.
+					var forceView = isMultiValue &&
+						!["SAMPLE", "CONTROLLEDVOCABULARY"].includes(propertyType.dataType)
 	
-					if(this._sampleFormModel.mode === FormMode.VIEW) { //Show values without input boxes if the form is in view mode
+					if(this._sampleFormModel.mode === FormMode.VIEW || forceView) { //Show values without input boxes if the form is in view mode
 						if(Util.getEmptyIfNull(value) !== "") { //Don't show empty fields, whole empty sections will show the title
 							var customWidget = profile.customWidgetSettings[propertyType.code];
 							var forceDisableRTF = profile.isForcedDisableRTF(propertyType);
@@ -1113,7 +1118,7 @@
 						}
 					} else {
 						var $component = FormUtil.getFieldForPropertyType(propertyType, value, isMultiValue);
-						if(['SAMPLE', 'DATE', 'TIMESTAMP', "BOOLEAN", "CONTROLLEDVOCABULARY"].includes(propertyType.dataType)) {
+						if(["SAMPLE", "DATE", "TIMESTAMP", "BOOLEAN", "CONTROLLEDVOCABULARY"].includes(propertyType.dataType)) {
                             _refreshableFields.push($component);
                         }
 						//Update values if is into edit mode

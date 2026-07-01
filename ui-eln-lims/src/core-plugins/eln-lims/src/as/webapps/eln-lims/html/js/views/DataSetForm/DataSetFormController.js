@@ -238,7 +238,7 @@ function DataSetFormController(parentController, mode, entity, dataSet, isMini, 
 		if (dataSetTypeV3) {
 			for (var pa of dataSetTypeV3.propertyAssignments) {
 				var pt = pa.propertyType;
-				if (["ARRAY_INTEGER", "ARRAY_REAL", "ARRAY_STRING", "ARRAY_TIMESTAMP"].includes(pt.dataType)) {
+				if (!pt.multiValue && ["ARRAY_INTEGER", "ARRAY_REAL", "ARRAY_STRING", "ARRAY_TIMESTAMP"].includes(pt.dataType)) {
 					var val = metadata[pt.code];
 					if (!val) {
 						continue;

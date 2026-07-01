@@ -750,7 +750,10 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
                     });
                 }
 
-				if(this._experimentFormModel.mode === FormMode.VIEW) { //Show values without input boxes if the form is in view mode
+                // Only for "SAMPLE" and "CONTROLLEDVOCABULARY" data types we enable multi-value properties editing.
+                var forceView = isMultiValue && !["SAMPLE", "CONTROLLEDVOCABULARY"].includes(propertyType.dataType);
+
+				if(this._experimentFormModel.mode === FormMode.VIEW || forceView) { //Show values without input boxes if the form is in view mode
 		            if(Util.getEmptyIfNull(value) !== "") { //Don't show empty fields, whole empty sections will show the title
                         var customWidget = profile.customWidgetSettings[propertyType.code];
 						var forceDisableRTF = profile.isForcedDisableRTF(propertyType);
