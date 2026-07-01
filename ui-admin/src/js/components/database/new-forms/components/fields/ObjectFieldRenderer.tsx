@@ -26,6 +26,12 @@ export const ObjectFieldRenderer: React.FC<FieldRendererProps> = ({
 	const [value, setValue] = useState<any>(field.value || null);
 	const [multiValues, setMultiValues] = useState<any[]>([]);
 
+	const sampleTypeCode = field.meta?.sampleTypeCode;
+	const typeHint = sampleTypeCode
+		? `Select object of type ${sampleTypeCode}.`
+		: 'Select object of any type.';
+	const noOptionsHint = `Type at least 2 characters to search. ${typeHint}`;
+
 	const searchEntities = async (searchTerm: string) => {
 		if (!searchTerm || searchTerm.length < 2) {
 			setOptions([]);
@@ -236,11 +242,7 @@ export const ObjectFieldRenderer: React.FC<FieldRendererProps> = ({
 						}}
 					/>
 				)}
-				noOptionsText={
-					inputValue.length < 2
-						? 'Type at least 2 characters to search'
-						: 'No objects found'
-				}
+				noOptionsText={inputValue.length < 2 ? noOptionsHint : 'No objects found'}
 			/>
 		</Box>
 	);
@@ -289,7 +291,7 @@ export const ObjectFieldRenderer: React.FC<FieldRendererProps> = ({
 							</Box>
 						);
 					}}
-					noOptionsText={inputValue.length < 2 ? "Type at least 2 characters to search" : "No entities found"}
+					noOptionsText={inputValue.length < 2 ? noOptionsHint : "No entities found"}
 					clearOnEscape
 					selectOnFocus
 					handleHomeEndKeys

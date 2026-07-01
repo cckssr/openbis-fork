@@ -222,7 +222,7 @@ export const AdvancedEntitySearchDropdown: React.FC<AdvancedEntitySearchDropdown
             </Box>
           );
         }}
-        noOptionsText={inputValue.length < 2 ? "Type at least 2 characters to search" : "No entities found"}
+        noOptionsText={inputValue.length < 2 ? "Type at least 2 characters to search. Select object of any type." : "No entities found"}
         clearOnEscape
         selectOnFocus
         handleHomeEndKeys
