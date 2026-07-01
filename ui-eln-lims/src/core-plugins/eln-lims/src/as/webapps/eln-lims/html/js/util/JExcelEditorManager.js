@@ -153,8 +153,31 @@ var JExcelEditorManager = new function() {
     }
 
 	this.createField = function($container, mode, propertyCode, entity) {
+        var _this = this;
+        var rawValue = entity && entity.properties && entity.properties[propertyCode];
+
+        // Multi-value spreadsheet: value is an array of encoded strings.
+        // Render each slot in its own sub-container. For edit mode, proxy the getter/setter
+        // so that onChange writes back to the correct index in the original array.
+        if (Array.isArray(rawValue)) {
+            rawValue.forEach(function(singleValue, idx) {
+                var $subContainer = $('<div>').css('margin-bottom', '8px');
+                $container.append($subContainer);
+                var syntheticEntity = $.extend({}, entity);
+                syntheticEntity.properties = $.extend({}, entity.properties);
+                Object.defineProperty(syntheticEntity.properties, propertyCode, {
+                    get: function() { return entity.properties[propertyCode][idx]; },
+                    set: function(v) { entity.properties[propertyCode][idx] = v; },
+                    configurable: true,
+                    enumerable: true
+                });
+                _this.createField($subContainer, mode, propertyCode, syntheticEntity);
+            });
+            $container.refresh = function() {};
+            return;
+        }
+
 	    $container.attr('style', 'width: 100%; height: 450px; overflow-y: scroll; overflow-x: scroll;');
-	    var _this = this;
 
         var headers = null;
 	    var data = [];

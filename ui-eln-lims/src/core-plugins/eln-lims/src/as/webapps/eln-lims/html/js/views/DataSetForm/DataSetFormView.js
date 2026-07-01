@@ -987,8 +987,11 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 							});
 						}
 					}
+
+					// Only for "SAMPLE" and "CONTROLLEDVOCABULARY" data types we enable multi-value properties editing.
+					var forceView = isMultiValue && !["SAMPLE", "CONTROLLEDVOCABULARY"].includes(propertyType.dataType);
 					
-					if(this._dataSetFormModel.mode === FormMode.VIEW) {
+					if(this._dataSetFormModel.mode === FormMode.VIEW || forceView) {
 						if(Util.getEmptyIfNull(value) !== "") { //Don't show empty fields, whole empty sections will show the title
                             var customWidget = profile.customWidgetSettings[propertyType.code];
 						    var forceDisableRTF = profile.isForcedDisableRTF(propertyType);

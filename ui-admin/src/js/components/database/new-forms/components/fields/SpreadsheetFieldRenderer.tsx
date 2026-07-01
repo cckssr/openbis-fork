@@ -54,24 +54,34 @@ export const SpreadsheetFieldRenderer: React.FC<FieldRendererProps> = ({
 
     const values: any[] = Array.isArray(field.value) ? field.value : [];
     return (
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+      <Box sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 1,
+        fontFamily: '"Helvetica Neue",Helvetica,Arial,sans-serif;'
+      }}>
         {label}
         {values.map((value, index) => (
           <SpreadsheetField key={index} value={value} editable={false} />
         ))}
       </Box>
     );
+  } else {
+    return (
+        <Box sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 0.5,
+          fontFamily: '"Helvetica Neue",Helvetica,Arial,sans-serif;'
+        }}>
+          {label}
+          <SpreadsheetField
+              key={editable ? 'edit' : 'view'}
+              value={field.value}
+              editable={editable}
+              onChange={(spreadsheet: any) => onFieldChange(field.id, spreadsheet)}
+          />
+        </Box>
+    );
   }
-
-  return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-      {label}
-      <SpreadsheetField
-        key={editable ? 'edit' : 'view'}
-        value={field.value}
-        editable={editable}
-        onChange={(spreadsheet: any) => onFieldChange(field.id, spreadsheet)}
-      />
-    </Box>
-  );
 };

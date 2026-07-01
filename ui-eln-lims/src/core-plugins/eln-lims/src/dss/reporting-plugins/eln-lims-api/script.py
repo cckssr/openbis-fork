@@ -23,6 +23,7 @@ from ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SearchCriteria import Ma
 from ch.systemsx.cisd.openbis.generic.shared.basic.dto import DataTypeCode;
 
 from java.util import ArrayList
+from java.util import Collection as JavaCollection
 from java.util import Date;
 from java.text import SimpleDateFormat;
 
@@ -171,7 +172,10 @@ def updateIfIsPropertyRichText(properties, propertyCode, propertyValue):
 def getPropertyValue(propertiesInfo, metadata, key):
 	propertyValue = metadata[key];
 	if propertyValue != None:
-		propertyValue = unicode(propertyValue);
+		if isinstance(propertyValue, JavaCollection):
+			propertyValue = json.dumps([unicode(item) for item in propertyValue]);
+		else:
+			propertyValue = unicode(propertyValue);
 	if propertyValue == "":
 		propertyValue = None;
 	else:

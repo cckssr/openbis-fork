@@ -33,6 +33,7 @@ export class CollectionFormController implements IFormController {
 			const id = new EntityTypePermId(typeCode)
 			const fetchOptions = new ExperimentTypeFetchOptions()
 			fetchOptions.withPropertyAssignments().withPropertyType().withVocabulary().withTerms();
+			fetchOptions.withPropertyAssignments().withPropertyType().withSampleType();
 			const types = await this.openbisFacade.getExperimentTypes([id], fetchOptions)
 			const { ProjectPermId, ProjectFetchOptions } = this.openbisFacade;
 			const projectId = new ProjectPermId(params.parentId);
@@ -50,6 +51,7 @@ export class CollectionFormController implements IFormController {
 		fetchOptions.withProperties()
 		fetchOptions.withDataSets().withProperties()
 		fetchOptions.withType().withPropertyAssignments().withPropertyType().withVocabulary().withTerms();
+		fetchOptions.withType().withPropertyAssignments().withPropertyType().withSampleType();
 		fetchOptions.withProject();
 		fetchOptions.withDataSets();
 		fetchOptions.withModifier();

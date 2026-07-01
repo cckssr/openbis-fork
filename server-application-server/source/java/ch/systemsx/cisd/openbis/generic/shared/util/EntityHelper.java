@@ -234,19 +234,8 @@ public class EntityHelper
         {
             properties.removeIf(
                     prop -> prop.getPropertyType().getCode().equalsIgnoreCase(propertyCode));
-            if (propertyValue != null && propertyValue.startsWith("["))
-            {
-                String[] values = propertyValue.substring(1, propertyValue.length() - 1).split(",");
-                for (String value : values)
-                {
-                    IEntityProperty newProperty = createNewProperty(propertyCode, value.trim());
-                    properties.add(newProperty);
-                }
-            } else
-            {
-                IEntityProperty newProperty = createNewProperty(propertyCode, propertyValue);
-                properties.add(newProperty);
-            }
+            IEntityProperty newProperty = createNewProperty(propertyCode, propertyValue);
+            properties.add(newProperty);
         } else
         {
             IEntityProperty newProperty = createNewProperty(propertyCode, propertyValue);

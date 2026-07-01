@@ -191,7 +191,7 @@ function ExperimentFormController(mainController, mode, experiment) {
 
 		for (var pa of experimentTypeV3.propertyAssignments) {
 			var pt = pa.propertyType;
-			if (["ARRAY_INTEGER", "ARRAY_REAL", "ARRAY_STRING", "ARRAY_TIMESTAMP"].includes(pt.dataType)) {
+			if (!pt.multiValue && ["ARRAY_INTEGER", "ARRAY_REAL", "ARRAY_STRING", "ARRAY_TIMESTAMP"].includes(pt.dataType)) {
 				var val = this._experimentFormModel.experiment.properties[pt.code];
 				if (!val) {
 					continue;

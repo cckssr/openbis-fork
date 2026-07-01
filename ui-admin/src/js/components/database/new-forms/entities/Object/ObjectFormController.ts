@@ -44,6 +44,7 @@ export class ObjectFormController implements IFormController {
 			const id = new EntityTypePermId(typeCode)
 			const fetchOptions = new SampleTypeFetchOptions()
 			fetchOptions.withPropertyAssignments().withPropertyType().withVocabulary().withTerms();
+			fetchOptions.withPropertyAssignments().withPropertyType().withSampleType();
 			const types = await this.openbisFacade.getSampleTypes([id], fetchOptions)
 			const dto = types[typeCode];
 			const { ProjectPermId, ExperimentPermId, SamplePermId, ProjectFetchOptions, ExperimentFetchOptions, SampleFetchOptions } = this.openbisFacade;
@@ -86,6 +87,7 @@ export class ObjectFormController implements IFormController {
 		const fetchOptions = new SampleFetchOptions();
 		fetchOptions.withProperties();
 		fetchOptions.withType().withPropertyAssignments().withPropertyType().withVocabulary().withTerms();
+		fetchOptions.withType().withPropertyAssignments().withPropertyType().withSampleType();
 		fetchOptions.withProject();
 		fetchOptions.withSpace();
 		fetchOptions.withExperiment();

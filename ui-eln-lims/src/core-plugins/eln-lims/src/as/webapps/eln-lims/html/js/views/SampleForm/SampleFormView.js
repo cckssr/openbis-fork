@@ -1080,8 +1080,13 @@
 							return FormUtil.toUserTimeZoneTimestamp(v);
 						});
 					}
+
+					// Only for "SAMPLE" and "CONTROLLEDVOCABULARY" data types we enable multi-value properties
+					// editing.
+					var forceView = isMultiValue &&
+						!["SAMPLE", "CONTROLLEDVOCABULARY"].includes(propertyType.dataType)
 	
-					if(this._sampleFormModel.mode === FormMode.VIEW) { //Show values without input boxes if the form is in view mode
+					if(this._sampleFormModel.mode === FormMode.VIEW || forceView) { //Show values without input boxes if the form is in view mode
 						if(Util.getEmptyIfNull(value) !== "") { //Don't show empty fields, whole empty sections will show the title
 							var customWidget = profile.customWidgetSettings[propertyType.code];
 							var forceDisableRTF = profile.isForcedDisableRTF(propertyType);
@@ -1091,9 +1096,16 @@
 									JExcelEditorManager.createField($jexcelContainer, this._sampleFormModel.mode, propertyType.code, this._sampleFormModel.sample);
 									$controlGroup = FormUtil.getFieldForComponentWithLabel($jexcelContainer, propertyType.label, null, null, semanticAnnotations);
 								} else if (customWidget === 'Word Processor') {
-									var $component = FormUtil.getFieldForPropertyType(propertyType, value);
-									$component = FormUtil.activateRichTextProperties($component, undefined, propertyType, value, true);
-									$controlGroup = FormUtil.getFieldForComponentWithLabel($component, propertyType.label, null, null, semanticAnnotations);
+									var values = Array.isArray(value) ? value : [value];
+									var $wpContainer = $("<div>");
+									values.forEach(function(singleValue) {
+										if (singleValue != null && singleValue !== '') {
+											var $sub = FormUtil.getFieldForPropertyType(propertyType, singleValue);
+											$sub = FormUtil.activateRichTextProperties($sub, undefined, propertyType, singleValue, true);
+											$wpContainer.append($sub);
+										}
+									});
+									$controlGroup = FormUtil.getFieldForComponentWithLabel($wpContainer, propertyType.label, null, null, semanticAnnotations);
 								}
 							} else if(propertyType.dataType === "SAMPLE") {
 								var $component = new SampleField(false, '', false, value, true, isMultiValue);
@@ -1106,7 +1118,7 @@
 						}
 					} else {
 						var $component = FormUtil.getFieldForPropertyType(propertyType, value, isMultiValue);
-						if(['SAMPLE', 'DATE', 'TIMESTAMP', "BOOLEAN", "CONTROLLEDVOCABULARY"].includes(propertyType.dataType)) {
+						if(["SAMPLE", "DATE", "TIMESTAMP", "BOOLEAN", "CONTROLLEDVOCABULARY"].includes(propertyType.dataType)) {
                             _refreshableFields.push($component);
                         }
 						//Update values if is into edit mode

@@ -364,7 +364,7 @@ function SampleFormController(mainController, mode, sample, paginationInfo, acti
 
 			for (var pa of sampleType.propertyAssignments) {
 				var pt = pa.propertyType;
-				if (["ARRAY_INTEGER", "ARRAY_REAL", "ARRAY_STRING", "ARRAY_TIMESTAMP"].includes(pt.dataType)) {
+				if (!pt.multiValue && ["ARRAY_INTEGER", "ARRAY_REAL", "ARRAY_STRING", "ARRAY_TIMESTAMP"].includes(pt.dataType)) {
 					var val = sample.properties[pt.code];
 					if (val) {
                         var errorMessage = "Invalid value for " + pt.label + ": " + val;

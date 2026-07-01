@@ -393,7 +393,13 @@ public final class EntityPropertiesConverter implements IEntityPropertiesConvert
                 return readValue(propertyValue, String[][].class);
             } else
             {
-                return readValue(propertyValue, String[].class);
+                if (propertyValue.startsWith("["))
+                {
+                    return readValue(propertyValue, String[].class);
+                } else
+                {
+                    return new String[] { propertyValue };
+                }
             }
         } else
         {

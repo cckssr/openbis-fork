@@ -1023,11 +1023,29 @@ var FormUtil = new function() {
                 }
 			}
 		} else if (propertyType.dataType === "INTEGER" || propertyType.dataType === "REAL") {
-		    propertyValue = numberFormat.format(propertyValue);
+		    if (Array.isArray(propertyValue)) {
+		        propertyValue = propertyValue.map(function(v) { return v == null ? 'null' : numberFormat.format(v); }).join(', ');
+		    } else {
+		        propertyValue = numberFormat.format(propertyValue);
+		    }
 		} else if (propertyType.dataType === "ARRAY_INTEGER" || propertyType.dataType === "ARRAY_REAL") {
-			propertyValue = "[" + propertyValue.map((v) => v == null ? "null" : numberFormat.format(v)).join(", ") + "]";
+			var formatNumArray = function(arr) {
+				return "[" + arr.map(function(v) { return v == null ? "null" : numberFormat.format(v); }).join(", ") + "]";
+			};
+			if (Array.isArray(propertyValue) && Array.isArray(propertyValue[0])) {
+				propertyValue = propertyValue.map(function(arr) { return arr == null ? "null" : formatNumArray(arr); }).join(', ');
+			} else {
+				propertyValue = formatNumArray(propertyValue);
+			}
 		} else if (propertyType.dataType === "ARRAY_STRING" || propertyType.dataType === "ARRAY_TIMESTAMP") {
-			propertyValue = "[" + propertyValue.map((v) => v == null ? "null" : '"' + v + '"').join(", ") + "]";
+			var formatStrArray = function(arr) {
+				return "[" + arr.map(function(v) { return v == null ? "null" : '"' + v + '"'; }).join(", ") + "]";
+			};
+			if (Array.isArray(propertyValue) && Array.isArray(propertyValue[0])) {
+				propertyValue = propertyValue.map(function(arr) { return arr == null ? "null" : formatStrArray(arr); }).join(', ');
+			} else {
+				propertyValue = formatStrArray(propertyValue);
+			}
 		}
         return this._createField(isLink, propertyType.label, propertyValue, propertyType.code, null, null, hyperlinkLabel, $info);
 	}
@@ -1359,6 +1377,10 @@ var FormUtil = new function() {
     }
 
 	this._getDatePickerField = function(id, alt, isRequired, isDateOnly, value, excludeTimeZone) {
+		// Multi-value date/timestamp: the ELN date picker is single-value; use the first element.
+		if (Array.isArray(value)) {
+			value = value.length > 0 ? value[0] : null;
+		}
 		var $component = $('<div>', {'class' : 'form-group', 'style' : 'margin-left: 0px;', 'placeholder' : alt, 'id' : 'datetimepicker_parent_' + id });
 		var $subComponent = $('<div>', {'class' : 'input-group date', 'id' : 'datetimepicker_' + id });
 		var $input = $('<input>', {'class' : 'form-control', 'type' : 'text', 'id' : id, 'placeholder' : (isDateOnly ? 'yyyy-MM-dd (YEAR-MONTH-DAY)' : (excludeTimeZone ? 'yyyy-MM-dd HH:mm:ss (YEAR-MONTH-DAY HOUR:MINUTE:SECOND)' : 'yyyy-MM-dd HH:mm:ss ZZ (YEAR-MONTH-DAY HOUR:MINUTE:SECOND TIMEZONE)')),
@@ -1451,6 +1473,11 @@ var FormUtil = new function() {
     }
 
     this.createCkeditor = function($component, componentOnChange, value, placeholder, isReadOnly, toolbarContainer, _refreshableFields) {
+        // Multi-value Word Processor: value is an array of HTML strings; join for display.
+        if (Array.isArray(value)) {
+            value = value.filter(function(v) { return v != null && v !== ''; }).join('<hr>');
+        }
+
         // CKEditor 4 to 5 Image style Migration
         if( value &&
             value.indexOf("<img")  !== -1 &&
@@ -3466,12 +3493,23 @@ var FormUtil = new function() {
     this.renderCustomWidgetGridValue = function(row, params, propertyType){
         var value = row[propertyType.code]
 
-        if(value === null || value === undefined || value.trim().length === 0){
+        if(value === null || value === undefined || (typeof value === 'string' && value.trim().length === 0)
+				|| (Array.isArray(value) && value.length === 0)){
             return
         }
 
         var customWidget = this.profile.customWidgetSettings[propertyType.code];
         var forceDisableRTF = this.profile.isForcedDisableRTF(propertyType);
+
+        // Multi-value properties supply an array; normalize to a string before branching.
+        // Spreadsheet branch uses `row` directly and doesn't call string methods on value.
+        if (Array.isArray(value)) {
+            if (customWidget === 'Word Processor') {
+                value = value.filter(function(v) { return v != null && v !== ''; }).join('');
+            } else if (customWidget !== 'Spreadsheet') {
+                value = value.filter(function(v) { return v != null && v !== ''; }).join('\n\n');
+            }
+        }
 
         if(!forceDisableRTF) {
             var $value = null
