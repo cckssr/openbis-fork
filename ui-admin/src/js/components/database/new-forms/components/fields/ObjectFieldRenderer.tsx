@@ -263,7 +263,7 @@ export const ObjectFieldRenderer: React.FC<FieldRendererProps> = ({
 					renderInput={(params) => (
 						<TextField
 							{...params}
-							label="Search object to link to"
+							label={field.label}
 							required={field.required}
 							variant="filled"
 							slotProps={{
