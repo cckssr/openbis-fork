@@ -12,6 +12,8 @@ import edu.kit.datamanager.ro_crate.entities.AbstractEntity;
 
 import java.util.*;
 
+import static ch.openbis.rocrate.app.Constants.FILE_TYPES;
+
 public class DirectoryTraversal
 {
 
@@ -80,7 +82,10 @@ public class DirectoryTraversal
 
             AbstractEntity cur = open.poll();
 
-            if (parseTypes(cur).contains("File"))
+            Set<String> foundFileTypes = new LinkedHashSet<>(parseTypes(cur));
+            foundFileTypes.retainAll(FILE_TYPES);
+
+            if (!foundFileTypes.isEmpty())
             {
                 result.add(cur);
             }
@@ -111,7 +116,11 @@ public class DirectoryTraversal
                 {
                     open.add(curEntity);
                 }
-                if (types.contains("File"))
+
+                foundFileTypes = new LinkedHashSet<>(parseTypes(curEntity));
+                foundFileTypes.retainAll(FILE_TYPES);
+
+                if (!foundFileTypes.isEmpty())
                 {
                     result.add(curEntity);
                 }

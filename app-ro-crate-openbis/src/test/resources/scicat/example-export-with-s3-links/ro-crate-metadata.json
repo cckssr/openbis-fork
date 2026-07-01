@@ -1,0 +1,146 @@
+{
+  "@context": {
+    "expires": "https://schema.org/expires",
+    "Organization": "https://schema.org/Organization",
+    "owl": "http://www.w3.org/2002/07/owl#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "CreativeWork": "https://schema.org/CreativeWork",
+    "about": "https://schema.org/about",
+    "description": "https://schema.org/description",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "dateCreated": "https://schema.org/dateCreated",
+    "rangeIncludes": "https://schema.org/rangeIncludes",
+    "MediaObject": "https://schema.org/MediaObject",
+    "creativeWorkStatus": "https://schema.org/creativeWorkStatus",
+    "identifier": "https://schema.org/identifier",
+    "creator": "https://schema.org/creator",
+    "hasPart": "https://schema.org/hasPart",
+    "Dataset": "https://schema.org/Dataset",
+    "dateModified": "https://schema.org/dateModified",
+    "abstract": "https://schema.org/abstract",
+    "sdDatePublished": "https://schema.org/sdDatePublished",
+    "domainIncludes": "https://schema.org/domainIncludes",
+    "datePublished": "https://schema.org/datePublished",
+    "license": "https://schema.org/license",
+    "additionalType": "https://schema.org/additionalType",
+    "name": "https://schema.org/name",
+    "Collection": "https://schema.org/Collection",
+    "publisher": "https://schema.org/publisher",
+    "encodingFormat": "https://schema.org/encodingFormat",
+    "conformsTo": "http://purl.org/dc/terms/conformsTo",
+    "Person": "https://schema.org/Person"
+  },
+  "@graph": [
+    {
+      "@id": "./",
+      "@type": "Dataset",
+      "name": "A new publication",
+      "description": "Cras ut suscipit tellus, in mollis nibh. Curabitur ex ex, scelerisque sed nunc id, sodales molestie justo. Donec dapibus, lectus luctus posuere sagittis, est nisi pellentesque tortor, non tristique purus sem a turpis. Fusce auctor nisi vel justo dignissim, sit amet semper ante convallis. Aliquam nec maximus lectus. Praesent at purus nunc. Curabitur nec enim efficitur, porta felis vitae, finibus risus. Etiam at eros turpis. Vivamus viverra ullamcorper egestas. Proin dictum libero turpis, a auctor augue aliquet id. In vestibulum felis urna, eu semper turpis pharetra ac. Mauris porttitor suscipit lacus vel accumsan. Nullam a scelerisque diam.",
+      "license": {
+        "@id": "https://creativecommons.org/licenses/by-sa/4.0/"
+      },
+      "datePublished": "2026-01-01",
+      "hasPart": [
+        {
+          "@id": "a6cd5a03-5665-4e9c-98ea-893769463146"
+        },
+        {
+          "@id": "https://rgw.cscs.ch/psi:psi-public-tar-dev/20.500.11935/4022afaa-e4d7-49a0-80f9-d6f98e580a53/4022afaa-e4d7-49a0-80f9-d6f98e580a53_0_2022-07-22-12-40-56.tar"
+        },
+        {
+          "@id": "https://rgw.cscs.ch/psi:psi-public-tar-dev/20.500.11935/4022afaa-e4d7-49a0-80f9-d6f98e580a53/4022afaa-e4d7-49a0-80f9-d6f98e580a53_0_2022-07-22-12-22-40.tar"
+        },
+        {
+          "@id": "1fb48c26-60f7-487f-a0de-bba17fc7d755"
+        },
+        {
+          "@id": "https://doi.org/10.83766/2b8af54b-9aa5-4105-b6e1-8ac951b40809"
+        },
+        {
+          "@id": "https://rgw.cscs.ch/psi:psi-public-tar-dev/20.500.11935/eeae04f3-c4f3-4487-bbb3-500acfa989ee/eeae04f3-c4f3-4487-bbb3-500acfa989ee_0_2022-10-20-10-25-37.tar"
+        }
+      ]
+    },
+    {
+      "about": {
+        "@id": "./"
+      },
+      "conformsTo": {
+        "@id": "https://w3id.org/ro/crate/1.1"
+      },
+      "@id": "ro-crate-metadata.json",
+      "@type": "CreativeWork"
+    },
+    {
+      "name": "Pedro/MoreData",
+      "expires": "2026-07-07T11:49:17.658Z",
+      "hasPart": {
+        "@id": "https://rgw.cscs.ch/psi:psi-public-tar-dev/20.500.11935/eeae04f3-c4f3-4487-bbb3-500acfa989ee/eeae04f3-c4f3-4487-bbb3-500acfa989ee_0_2022-10-20-10-25-37.tar"
+      },
+      "@id": "a6cd5a03-5665-4e9c-98ea-893769463146",
+      "@type": "Dataset"
+    },
+    {
+      "name": "indexing",
+      "description": "All 'hits' in hdf5 files (Cheetah slab format) together with geometries and all CrystFEL .stream files, .hkl files and .mtz files. Also all Phenix .pdb files together with log files. All scripts needed to reproduce the result are also included.",
+      "expires": "2026-07-07T11:49:17.658Z",
+      "hasPart": [
+        {
+          "@id": "https://rgw.cscs.ch/psi:psi-public-tar-dev/20.500.11935/4022afaa-e4d7-49a0-80f9-d6f98e580a53/4022afaa-e4d7-49a0-80f9-d6f98e580a53_0_2022-07-22-12-40-56.tar"
+        },
+        {
+          "@id": "https://rgw.cscs.ch/psi:psi-public-tar-dev/20.500.11935/4022afaa-e4d7-49a0-80f9-d6f98e580a53/4022afaa-e4d7-49a0-80f9-d6f98e580a53_0_2022-07-22-12-22-40.tar"
+        }
+      ],
+      "@id": "1fb48c26-60f7-487f-a0de-bba17fc7d755",
+      "@type": "Dataset"
+    },
+    {
+      "identifier": "10.83766/2b8af54b-9aa5-4105-b6e1-8ac951b40809",
+      "creator": {
+        "@id": "ed381760-8933-4109-bab9-ea7c2f50bb87"
+      },
+      "datePublished": "2026",
+      "name": "A new publication",
+      "abstract": "Cras ut suscipit tellus, in mollis nibh. Curabitur ex ex, scelerisque sed nunc id, sodales molestie justo. Donec dapibus, lectus luctus posuere sagittis, est nisi pellentesque tortor, non tristique purus sem a turpis. Fusce auctor nisi vel justo dignissim, sit amet semper ante convallis. Aliquam nec maximus lectus. Praesent at purus nunc. Curabitur nec enim efficitur, porta felis vitae, finibus risus. Etiam at eros turpis. Vivamus viverra ullamcorper egestas. Proin dictum libero turpis, a auctor augue aliquet id. In vestibulum felis urna, eu semper turpis pharetra ac. Mauris porttitor suscipit lacus vel accumsan. Nullam a scelerisque diam.",
+      "sdDatePublished": "2026-03-24T09:19:11.717Z",
+      "creativeWorkStatus": "REGISTERED",
+      "dateCreated": "2026-03-24T09:19:07.744Z",
+      "dateModified": "2026-03-24T09:19:11.718Z",
+      "expires": "2026-07-07T11:49:17.658Z",
+      "hasPart": [
+        {
+          "@id": "a6cd5a03-5665-4e9c-98ea-893769463146"
+        },
+        {
+          "@id": "1fb48c26-60f7-487f-a0de-bba17fc7d755"
+        }
+      ],
+      "@id": "https://doi.org/10.83766/2b8af54b-9aa5-4105-b6e1-8ac951b40809",
+      "@type": "Collection"
+    },
+    {
+      "encodingFormat": "application/x-tar",
+      "expires": "2026-07-07T11:49:17.658Z",
+      "@id": "https://rgw.cscs.ch/psi:psi-public-tar-dev/20.500.11935/4022afaa-e4d7-49a0-80f9-d6f98e580a53/4022afaa-e4d7-49a0-80f9-d6f98e580a53_0_2022-07-22-12-40-56.tar",
+      "@type": "MediaObject"
+    },
+    {
+      "encodingFormat": "application/x-tar",
+      "expires": "2026-07-07T11:49:17.658Z",
+      "@id": "https://rgw.cscs.ch/psi:psi-public-tar-dev/20.500.11935/4022afaa-e4d7-49a0-80f9-d6f98e580a53/4022afaa-e4d7-49a0-80f9-d6f98e580a53_0_2022-07-22-12-22-40.tar",
+      "@type": "MediaObject"
+    },
+    {
+      "encodingFormat": "application/x-tar",
+      "expires": "2026-07-07T11:49:17.658Z",
+      "@id": "https://rgw.cscs.ch/psi:psi-public-tar-dev/20.500.11935/eeae04f3-c4f3-4487-bbb3-500acfa989ee/eeae04f3-c4f3-4487-bbb3-500acfa989ee_0_2022-10-20-10-25-37.tar",
+      "@type": "MediaObject"
+    },
+    {
+      "name": "Yefanov, Oleksandr",
+      "@id": "ed381760-8933-4109-bab9-ea7c2f50bb87",
+      "@type": "Person"
+    }
+  ]
+}
