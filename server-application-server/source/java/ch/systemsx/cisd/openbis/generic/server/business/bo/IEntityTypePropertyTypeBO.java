@@ -18,6 +18,8 @@ package ch.systemsx.cisd.openbis.generic.server.business.bo;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewETPTAssignment;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePropertyTypePE;
 
+import java.util.List;
+
 /**
  * Business Object dealing with entity type - property type relations.
  * 
@@ -52,8 +54,13 @@ public interface IEntityTypePropertyTypeBO
     void deleteLoadedAssignment();
 
     /**
-     * Updates loaded assignment. Does nothing if no assignment loaded.
+     * Updates loaded assignment. Does nothing if no assignment loaded. If skipSave flag is disabled, it will not flush changes to the database.
      */
-    void updateLoadedAssignment(NewETPTAssignment assignmentUpdates);
+    void updateLoadedAssignment(NewETPTAssignment assignmentUpdates, boolean skipSave);
+
+    /**
+     * Schedules dynamic properties evaluation if script change has been detected in
+     */
+    void scheduleDynamicPropertiesEvaluation();
 
 }

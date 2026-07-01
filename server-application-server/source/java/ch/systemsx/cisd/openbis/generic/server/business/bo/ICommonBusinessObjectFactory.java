@@ -19,8 +19,13 @@ import ch.systemsx.cisd.openbis.generic.server.business.bo.datasetlister.IDatase
 import ch.systemsx.cisd.openbis.generic.server.business.bo.samplelister.ISampleLister;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.db.IEntityResolverQuery;
 import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.impl.IMasterDataScriptRegistrationRunner;
+import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePE;
+import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePropertyTypePE;
+import ch.systemsx.cisd.openbis.generic.shared.dto.PropertyTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.Session;
 import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
+
+import java.util.List;
 
 /**
  * The <i>generic</i> specific <i>Business Object</i> factory. Each method creates one kind of a business object.
@@ -63,6 +68,9 @@ public interface ICommonBusinessObjectFactory extends IAbstractBussinessObjectFa
 
     public IEntityTypePropertyTypeBO createEntityTypePropertyTypeBO(Session session,
             EntityKind entityKind);
+
+    public IEntityTypePropertyTypeBO createEntityTypePropertyTypeBO(Session session,
+            EntityKind entityKind, List<PropertyTypePE> propertyTypeCache, EntityTypePE cachedEntityType, List<EntityTypePropertyTypePE> assignmentsCache);
 
     public IProjectBO createProjectBO(final Session session);
 

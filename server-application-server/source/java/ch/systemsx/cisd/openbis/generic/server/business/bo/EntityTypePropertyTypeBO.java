@@ -16,8 +16,11 @@
 package ch.systemsx.cisd.openbis.generic.server.business.bo;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -66,6 +69,12 @@ public class EntityTypePropertyTypeBO extends AbstractBusinessObject implements
 
     private EntityTypePropertyTypePE assignment;
 
+    private boolean scriptChanged = false;
+
+    private Map<String, PropertyTypePE> propertyTypeCache = null;
+    private EntityTypePE cachedEntityType = null;
+    private Map<String, EntityTypePropertyTypePE> assignmentsCache = null;
+
     @Private
     EntityTypePropertyTypeBO(IDAOFactory daoFactory, Session session, EntityKind entityKind,
             IEntityPropertiesConverter converter,
@@ -82,12 +91,29 @@ public class EntityTypePropertyTypeBO extends AbstractBusinessObject implements
             IEntityInformationProvider entityInformationProvider,
             IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory,
             DataSetTypeWithoutExperimentChecker dataSetTypeChecker,
-            IRelationshipService relationshipService)
+            IRelationshipService relationshipService) {
+        this(daoFactory, session, entityKind, entityInformationProvider, managedPropertyEvaluatorFactory, dataSetTypeChecker, relationshipService, null, null, null);
+    }
+    public EntityTypePropertyTypeBO(IDAOFactory daoFactory, Session session, EntityKind entityKind,
+            IEntityInformationProvider entityInformationProvider,
+            IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory,
+            DataSetTypeWithoutExperimentChecker dataSetTypeChecker,
+            IRelationshipService relationshipService, List<PropertyTypePE> propertyTypes, EntityTypePE entityType, List<EntityTypePropertyTypePE> assignments)
     {
         super(daoFactory, session, managedPropertyEvaluatorFactory, dataSetTypeChecker, relationshipService);
         propertiesConverter =
                 new EntityPropertiesConverter(entityKind, daoFactory, entityInformationProvider,
                         managedPropertyEvaluatorFactory);
+        if(propertyTypes != null) {
+            propertyTypeCache = propertyTypes.stream().collect(Collectors.toMap(
+                    PropertyTypePE::getCode, x -> x));
+        }
+        if(entityType != null) {
+            cachedEntityType = entityType;
+        }
+        if(assignments != null) {
+            assignmentsCache = assignments.stream().collect(Collectors.toMap(x -> x.getPropertyType().getCode(), x -> x));
+        }
         this.entityKind = entityKind;
     }
 
@@ -118,10 +144,21 @@ public class EntityTypePropertyTypeBO extends AbstractBusinessObject implements
     @Override
     public void loadAssignment(String propertyTypeCode, String entityTypeCode)
     {
-        EntityTypePE entityType = findEntityType(entityTypeCode);
-        PropertyTypePE propertyType = findPropertyType(propertyTypeCode);
-        IEntityPropertyTypeDAO entityPropertyTypeDAO = getEntityPropertyTypeDAO(entityKind);
-        assignment = entityPropertyTypeDAO.tryFindAssignment(entityType, propertyType);
+        assignment = findAssignment(propertyTypeCode, entityTypeCode);
+    }
+
+    private EntityTypePropertyTypePE findAssignment(String propertyTypeCode, String entityTypeCode) {
+        EntityTypePropertyTypePE result = null;
+        if(assignmentsCache != null) {
+            result = assignmentsCache.get(propertyTypeCode);
+        }
+        if(result == null) {
+            EntityTypePE entityType = findEntityType(entityTypeCode);
+            PropertyTypePE propertyType = findPropertyType(propertyTypeCode);
+            IEntityPropertyTypeDAO entityPropertyTypeDAO = getEntityPropertyTypeDAO(entityKind);
+            result = entityPropertyTypeDAO.tryFindAssignment(entityType, propertyType);
+        }
+        return result;
     }
 
     @Override
@@ -268,7 +305,7 @@ public class EntityTypePropertyTypeBO extends AbstractBusinessObject implements
     }
 
     @Override
-    public void updateLoadedAssignment(NewETPTAssignment assignmentUpdates)
+    public void updateLoadedAssignment(NewETPTAssignment assignmentUpdates, boolean skipSave)
     {
         if (assignmentUpdates.getModificationDate() != null && // Avoid validation, needed to make multiple modifications with one call
                 assignment.getModificationDate().equals(assignmentUpdates.getModificationDate()) == false)
@@ -331,7 +368,7 @@ public class EntityTypePropertyTypeBO extends AbstractBusinessObject implements
                     assignmentUpdates.getEntityTypeCode(),
                     assignmentUpdates.getPropertyTypeCode()));
         }
-        boolean scriptChanged = false;
+        scriptChanged = false;
         if ((assignment.isDynamic() || assignment.isManaged())
                 && assignment.getScript().getName().equals(assignmentUpdates.getScriptName()) == false)
         {
@@ -358,10 +395,20 @@ public class EntityTypePropertyTypeBO extends AbstractBusinessObject implements
         authorization.canUpdateInternallyManagedFlag(session, assignment, assignmentUpdates);
         assignment.setManagedInternallyNamespace(assignmentUpdates.isManagedInternally());
 
-        validateAndSave();
+        if(skipSave) {
+            getEntityPropertyTypeDAO(entityKind).validateUpdatedEntity(assignment);
+        } else {
+            getEntityPropertyTypeDAO(entityKind).validateAndSaveUpdatedEntity(assignment);
+            if (scriptChanged)
+            {
+                getEntityPropertyTypeDAO(entityKind).scheduleDynamicPropertiesEvaluation(assignment);
+            }
+        }
+    }
 
-        if (scriptChanged)
-        {
+    @Override
+    public void scheduleDynamicPropertiesEvaluation() {
+        if(scriptChanged) {
             getEntityPropertyTypeDAO(entityKind).scheduleDynamicPropertiesEvaluation(assignment);
         }
     }
@@ -371,10 +418,6 @@ public class EntityTypePropertyTypeBO extends AbstractBusinessObject implements
         return (dynamic ? "" : "not ") + "dynamic";
     }
 
-    private void validateAndSave()
-    {
-        getEntityPropertyTypeDAO(entityKind).validateAndSaveUpdatedEntity(assignment);
-    }
 
     private String createPlural(int size)
     {
@@ -436,8 +479,14 @@ public class EntityTypePropertyTypeBO extends AbstractBusinessObject implements
 
     private PropertyTypePE findPropertyType(String propertyTypeCode)
     {
-        PropertyTypePE propertyType =
-                getPropertyTypeDAO().tryFindPropertyTypeByCode(propertyTypeCode);
+        PropertyTypePE propertyType;
+        if(propertyTypeCache != null) {
+            propertyType = propertyTypeCache.get(propertyTypeCode);
+        } else {
+            propertyType =
+                    getPropertyTypeDAO().tryFindPropertyTypeByCode(propertyTypeCode);
+        }
+
         if (propertyType == null)
         {
             throw new UserFailureException(String.format("Property type '%s' does not exist.",
@@ -453,8 +502,14 @@ public class EntityTypePropertyTypeBO extends AbstractBusinessObject implements
 
     private EntityTypePE findEntityType(String entityTypeCode)
     {
-        EntityTypePE entityType =
-                getEntityTypeDAO(entityKind).tryToFindEntityTypeByCode(entityTypeCode);
+        EntityTypePE entityType;
+
+        if(cachedEntityType != null && cachedEntityType.getCode().equalsIgnoreCase(entityTypeCode)) {
+            entityType = cachedEntityType;
+        } else {
+            entityType = getEntityTypeDAO(entityKind).tryToFindEntityTypeByCode(entityTypeCode);
+        }
+
         if (entityType == null)
         {
             throw new UserFailureException(String.format("%s type '%s' does not exist.",

@@ -29,10 +29,15 @@ import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.db.deletion.EntityHistoryCreator;
 import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.impl.IMasterDataScriptRegistrationRunner;
 import ch.systemsx.cisd.openbis.generic.shared.IJythonEvaluatorPool;
+import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePE;
+import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePropertyTypePE;
+import ch.systemsx.cisd.openbis.generic.shared.dto.PropertyTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.Session;
 import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
 import ch.systemsx.cisd.openbis.generic.shared.managed_property.IManagedPropertyEvaluatorFactory;
 import ch.systemsx.cisd.openbis.generic.shared.managed_property.api.IEntityInformationProvider;
+
+import java.util.List;
 
 /**
  * The unique {@link ICommonBusinessObjectFactory} implementation.
@@ -220,6 +225,15 @@ public final class CommonBusinessObjectFactory extends AbstractBusinessObjectFac
         return new EntityTypePropertyTypeBO(getDaoFactory(), session, entityKind,
                 entityInformationProvider, getManagedPropertyEvaluatorFactory(),
                 dataSetTypeWithoutExperimentChecker, relationshipService);
+    }
+    @Override
+    public IEntityTypePropertyTypeBO createEntityTypePropertyTypeBO(Session session,
+            EntityKind entityKind, List<PropertyTypePE> propertyTypeCache, EntityTypePE cachedEntityType,
+            List<EntityTypePropertyTypePE> assignmentsCache)
+    {
+        return new EntityTypePropertyTypeBO(getDaoFactory(), session, entityKind,
+                entityInformationProvider, getManagedPropertyEvaluatorFactory(),
+                dataSetTypeWithoutExperimentChecker, relationshipService, propertyTypeCache, cachedEntityType, assignmentsCache);
     }
 
     @Override

@@ -68,8 +68,7 @@ public class JSON2ExcelTest {
                 openBisModel.getEntityTypes().values().stream().filter(x -> x.getPermId().equals(
                         PUBLICATION_TYPE_PERMID)).findFirst();
         List<String> publicationCodes = List.of("PUBLICATION.PUBLISHER",
-                "PUBLICATION.PUBLICATION_YEAR",
-                "XMLCOMMENTS");
+                "PUBLICATION.PUBLICATION_YEAR");
 
         assertEquals(11, openBisModel.getEntities().size());
         assertTrue(maybePublicatioNType.isPresent());
@@ -132,12 +131,6 @@ public class JSON2ExcelTest {
                     .filter(x -> x.getPropertyType()
                             .getCode().equals("PUBLICATION.PUBLISHER")).findFirst().orElseThrow()
                     .isMandatory());
-            assertFalse(maybePublicatioNType.get().getPropertyAssignments().stream()
-                    .filter(x -> x.getPropertyType()
-                            .getCode().equals("XMLCOMMENTS")).findFirst().orElseThrow()
-                    .isMandatory());
-
-
         }
 
 

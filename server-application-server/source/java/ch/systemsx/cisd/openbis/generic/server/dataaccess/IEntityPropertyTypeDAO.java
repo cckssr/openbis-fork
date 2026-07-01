@@ -114,6 +114,13 @@ public interface IEntityPropertyTypeDAO
     public void validateAndSaveUpdatedEntity(EntityTypePropertyTypePE entity);
 
     /**
+     * validates persistent entity
+     */
+    public void validateUpdatedEntity(EntityTypePropertyTypePE entity);
+
+    public void flush();
+
+    /**
      * Deletes specified assignment.
      */
     public void delete(EntityTypePropertyTypePE assignment);

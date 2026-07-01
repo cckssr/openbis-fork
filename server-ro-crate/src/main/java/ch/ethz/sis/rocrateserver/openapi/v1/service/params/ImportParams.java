@@ -15,6 +15,9 @@ public class ImportParams
     @HeaderParam("openbis.import-mode")
     private String importMode;
 
+    @HeaderParam("openbis.project-identifier")
+    private String projectIdentifier;
+
     public String getApiKey()
     {
         return apiKey;
@@ -42,4 +45,15 @@ public class ImportParams
     public void setImportMode(String importMode) {
         this.importMode = importMode;
     }
+
+    public String getProjectIdentifier()
+    {
+        return projectIdentifier;
+    }
+
+    public void setProjectIdentifier(String projectIdentifier)
+    {
+        this.projectIdentifier = projectIdentifier;
+    }
+
 }

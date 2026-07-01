@@ -230,7 +230,7 @@ public class IntegrationRoCrateServerTest
 
     }
 
-    @Test(enabled = true, timeOut = 10 * 60 * 1000, priority = 4)
+    @Test(enabled = true, timeOut = TIMEOUT, priority = 4)
     public void testImportWithExternalFile() throws Exception
     {
         log.info("[TEST] testImportWithExternalFile");

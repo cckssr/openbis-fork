@@ -202,6 +202,8 @@ public class RdfToModel
                 new OpenBisModel(Map.of(), schema, spaces, projects, metadata, Map.of(), Map.of(),
                         collect,
                         objectIdentifiersToFiles, objectIdentifiersTOImageFiles);
+        PropertyTypePruning.prune(openBisModel.getEntities());
+
 
         return new ConversionResult(openBisModel, identifierToMissingFile);
     }

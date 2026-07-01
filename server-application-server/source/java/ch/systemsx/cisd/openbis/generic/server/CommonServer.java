@@ -1501,7 +1501,7 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
                         DtoConverters.convertEntityKind(assignmentUpdates.getEntityKind()));
         etptBO.loadAssignment(assignmentUpdates.getPropertyTypeCode(),
                 assignmentUpdates.getEntityTypeCode());
-        etptBO.updateLoadedAssignment(assignmentUpdates);
+        etptBO.updateLoadedAssignment(assignmentUpdates, false);
     }
 
     @Override

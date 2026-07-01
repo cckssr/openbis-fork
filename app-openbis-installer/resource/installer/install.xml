@@ -200,6 +200,7 @@
                 <args>
                     <arg value="$INSTALL_OPENBIS_PATH"/>
                     <arg value="$INSTALL_OPENBIS_TMPEXTRACT/service.properties"/>
+                    <arg value="$INSTALL_OPENBIS_TMPEXTRACT/capabilities"/>
                 </args>
             </executable>
         </pack>

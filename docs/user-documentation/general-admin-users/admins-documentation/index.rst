@@ -9,6 +9,7 @@ Admins Documentation
    customise-inventory-of-materials-and-samples
    customise-inventory-of-protocols
    move-collections-to-a-different-project
+   customise-toolbar
    customise-parents-and-children-sections-in-object-forms
    customise-the-main-menu
    associate-file-types-to-dataset-types
