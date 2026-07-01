@@ -34,6 +34,7 @@ export class DatasetFormController implements IFormController {
 			const id = new EntityTypePermId(typeCode)
 			const fetchOptions = new DataSetTypeFetchOptions()
 			fetchOptions.withPropertyAssignments().withPropertyType().withVocabulary().withTerms();
+			fetchOptions.withPropertyAssignments().withPropertyType().withSampleType();
 			const types = await this.openbisFacade.getDataSetTypes([id], fetchOptions)
 			const dto = types[typeCode];
 			console.log('DatasetFormController.load', { dto });
@@ -77,6 +78,7 @@ export class DatasetFormController implements IFormController {
 		fetchOptions.withParents();
 		fetchOptions.withProperties();
 		fetchOptions.withType().withPropertyAssignments().withPropertyType().withVocabulary().withTerms();
+		fetchOptions.withType().withPropertyAssignments().withPropertyType().withSampleType();
 		fetchOptions.withModifier();
 		fetchOptions.withRegistrator();
 		const result = await this.openbisFacade.getDataSets([id], fetchOptions);

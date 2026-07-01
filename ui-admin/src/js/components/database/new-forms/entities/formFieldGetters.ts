@@ -177,7 +177,7 @@ export function getObjectField(dto: any, overrides: FieldOverrides = {}): FormFi
     isMultiValue: false,
     section: FormSection.IDENTIFICATION_INFO,
     column: 'left',
-    meta: {},
+    meta: {sampleTypeCode: dto.sample?.sampleTypeCode},
     ...overrides
   };
 }
