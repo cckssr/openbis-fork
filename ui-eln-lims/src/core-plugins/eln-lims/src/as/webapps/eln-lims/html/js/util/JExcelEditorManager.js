@@ -173,6 +173,7 @@ var JExcelEditorManager = new function() {
                 });
                 _this.createField($subContainer, mode, propertyCode, syntheticEntity);
             });
+            $container.refresh = function() {};
             return;
         }
 
