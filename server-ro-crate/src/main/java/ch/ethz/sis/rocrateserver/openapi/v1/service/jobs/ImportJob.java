@@ -136,7 +136,6 @@ public final class ImportJob implements IAsyncJob
     @Override
     public void run()
     {
-        LOG.debug(String.format("||> DUPA: %s", jobId.toString()));
         try
         {
             LOG.info(String.format("Starting import job: %s", jobId.toString()));
@@ -147,6 +146,8 @@ public final class ImportJob implements IAsyncJob
             List<IType> types = null;
             List<IPropertyType> propertyTypes = null;
             List<IMetadataEntry> entryList = new ArrayList<>();
+
+            validateProjectIdentifier(importParams.getProjectIdentifier());
 
             try
             {
@@ -183,10 +184,13 @@ public final class ImportJob implements IAsyncJob
                     mapUrl, new SessionWorkSpacveSaving(importParams.getApiKey()));
             Map<AbstractEntity, Path> stringPathMap = fileDownloader.handleDownloads(crate);
 
+            final String spaceCode = getSpaceCode(importParams.getProjectIdentifier());
+            final String projectCode = getProjectCode(importParams.getProjectIdentifier());
+
             // Converting ro-crate model to openBIS model
             LOG.info("Converting ro-crate model to openBIS model");
             RdfToModel.ConversionResult conversion =
-                    RdfToModel.convert(types, propertyTypes, entryList, "DEFAULT", "DEFAULT",
+                    RdfToModel.convert(types, propertyTypes, entryList, spaceCode, projectCode,
                             schemaFacade, stringPathMap);
             OpenBisModel model =
                     conversion.openBisModel();
@@ -309,6 +313,42 @@ public final class ImportJob implements IAsyncJob
             LOG.info(String.format("Import job finished: %s", jobId.toString()));
             this.completionOrFailInstant = clock.instant();
         }
+    }
+
+    private void validateProjectIdentifier(String projectIdentifier)
+    {
+        if(projectIdentifier == null || projectIdentifier.isBlank()) {
+            return;
+        }
+        if(!projectIdentifier.startsWith("/"))
+        {
+            throw new UserFailureException(String.format("Identifier '%s' is not a valid project identifier.", projectIdentifier));
+        }
+        String[] parts = projectIdentifier.split("/");
+        if(parts.length != 3) {
+            throw new UserFailureException(String.format("Identifier '%s' is not a valid project identifier.", projectIdentifier));
+        }
+        if(parts[1].isEmpty() || parts[2].isEmpty()) {
+            throw new UserFailureException(String.format("Identifier '%s' is not a valid project identifier.", projectIdentifier));
+        }
+    }
+
+    private String getSpaceCode(String projectIdentifier)
+    {
+        if(projectIdentifier == null || projectIdentifier.isBlank()) {
+             return "DEFAULT";
+        }
+        String[] parts = projectIdentifier.split("/");
+        return parts[1];
+    }
+
+    private String getProjectCode(String projectIdentifier)
+    {
+        if(projectIdentifier == null || projectIdentifier.isBlank()) {
+             return "DEFAULT";
+        }
+        String[] parts = projectIdentifier.split("/");
+        return parts[2];
     }
 
     public static RoCrate getRoCrate(ImportParams headers, InputStream body) throws IOException
