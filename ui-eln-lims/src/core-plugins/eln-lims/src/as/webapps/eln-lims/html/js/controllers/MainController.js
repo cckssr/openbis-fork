@@ -755,6 +755,16 @@ function MainController(profile) {
                     newRoCrateExportView.tabId = tabInfo.id;
                     this.currentView = newRoCrateExportView;
                     break;
+                case "showRoCrateImportPage":
+                    document.title = "RO-CRATE Import Builder";
+                    this.mainHeader.navigateToTab("TOOLS");
+                    var newRoCrateImportView = new RoCrateImportController(this);
+                    var tabInfo = TabContentUtil.getToolTabInfo('RO-CRATE_IMPORT');
+                    var roCrateImportViews = this._getNewViewModel(true, true, false, tabInfo);
+					newRoCrateImportView.init(roCrateImportViews);
+					newRoCrateImportView.tabId = tabInfo.id;
+                    this.currentView = newRoCrateImportView;
+                    break;
 				case "showSciCatExportPage":
                     document.title = "SciCat Export Builder";
                     this.mainHeader.navigateToTab("TOOLS");

@@ -10,6 +10,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
     TYPE_STOCK = "STOCK"
     TYPE_UTILITIES = "UTILITIES"
     TYPE_EXPORTS = "EXPORTS"
+    TYPE_IMPORTS = "IMPORTS"
 
     TYPE_SPACE = "SPACE"
     TYPE_SPACE_SAMPLES = "SPACE_SAMPLES"
@@ -49,6 +50,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
     TYPE_EXPORT_TO_ZENODO = "EXPORT_TO_ZENODO"
     TYPE_EXPORT_TO_RO_CRATE = "TYPE_EXPORT_TO_RO_CRATE"
     TYPE_EXPORT_TO_SCI_CAT = "TYPE_EXPORT_TO_SCI_CAT"
+    TYPE_IMPORT_RO_CRATE = "TYPE_IMPORT_RO_CRATE"
     TYPE_ABOUT = "ABOUT"
 
     SORTINGS_BY_NAME = [
@@ -460,6 +462,9 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
             path.push(this._createUtilitiesNode())
             path.push(this._createExportsNode())
             path.push(this._createExportToSciCatNode())
+        } else if (object.type === this.TYPE_IMPORT_RO_CRATE) {
+            path.push(this._createUtilitiesNode())
+            path.push(this._createImportsNode())
         }
 
         if (path.some((pathItem) => !pathItem)) {
@@ -1661,6 +1666,8 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
             return this._loadNodesUtilities(params)
         } else if (node.object.type === this.TYPE_EXPORTS) {
             return this._loadNodesExports(params)
+        } else if (node.object.type === this.TYPE_IMPORTS) {
+            return this._loadNodesImports(params)
         }
     }
 
@@ -2799,8 +2806,8 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
         results.nodes.push(this._createDropboxMonitorNode())
         results.nodes.push(this._createArchivingHelperNode())
         results.nodes.push(this._createUnarchivingHelperNode())
-        results.nodes.push(this._createCustomImportNode())
         results.nodes.push(this._createExportsNode())
+        results.nodes.push(this._createImportsNode())
         results.nodes.push(this._createStorageManagerNode())
         results.nodes.push(this._createUserManagerNode())
         results.nodes.push(this._createUserManagementConfigNode())
@@ -2852,6 +2859,16 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
 
         await Promise.all([rcEnabledPromise, sciCatEnabledPromise])
 
+        results.nodes = results.nodes.filter((node) => !!node).sort((a,b) => a.text.compareToIgnoreCase(b.text))
+
+        return results
+    }
+
+    async _loadNodesImports(params) {
+        var results = { nodes: [] }
+
+        results.nodes.push(this._createRoCrateImportNode())
+        results.nodes.push(this._createCustomImportNode())
         results.nodes = results.nodes.filter((node) => !!node).sort((a,b) => a.text.compareToIgnoreCase(b.text))
 
         return results
@@ -3148,6 +3165,32 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
         }
     }
 
+    _createRoCrateImportNode() {
+        return {
+            text: "Ro-Crate",
+            object: {
+                type: this.TYPE_IMPORT_RO_CRATE,
+                id: this.TYPE_IMPORT_RO_CRATE,
+            },
+            view: "showRoCrateImportPage",
+            icon: IconUtil.getNavigationIcon(this.TYPE_IMPORT_RO_CRATE),
+        }
+    }
+
+    _createImportsNode() {
+            return {
+                text: "Imports",
+                object: {
+                    type: this.TYPE_IMPORTS,
+                    id: this.TYPE_IMPORTS,
+                },
+                canHaveChildren: true,
+                selectable: false,
+                view: "showBlancPage",
+                icon: IconUtil.getNavigationIcon(this.TYPE_IMPORTS),
+            }
+    }
+
     _createExportsNode() {
         if (
             profile.mainMenu.showExports ||
@@ -3281,7 +3324,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
     _createExportToZipNode() {
         if (profile.mainMenu.showExports && profile.legacyExports.enable) {
             return {
-                text: "Export to ZIP",
+                text: "ZIP",
                 object: {
                     type: this.TYPE_EXPORT_TO_ZIP,
                     id: this.TYPE_EXPORT_TO_ZIP,
@@ -3297,7 +3340,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
     _createExportToResearchCollectionNode() {
         if (profile.mainMenu.showExports) {
             return {
-                text: "Export to Research Collection",
+                text: "Research Collection",
                 object: {
                     type: this.TYPE_EXPORT_TO_RESEARCH_COLLECTION,
                     id: this.TYPE_EXPORT_TO_RESEARCH_COLLECTION,
@@ -3313,7 +3356,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
     _createExportToZenodoNode() {
         if (profile.mainMenu.showZenodoExportBuilder) {
             return {
-                text: "Export to Zenodo",
+                text: "Zenodo",
                 object: {
                     type: this.TYPE_EXPORT_TO_ZENODO,
                     id: this.TYPE_EXPORT_TO_ZENODO,
@@ -3329,7 +3372,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
     _createExportToRoCrateNode() {
         if (profile.mainMenu.showExports) {
             return {
-                text: "Export to RO-Crate",
+                text: "RO-Crate",
                 object: {
                     type: this.TYPE_EXPORT_TO_RO_CRATE,
                     id: this.TYPE_EXPORT_TO_RO_CRATE,
@@ -3345,7 +3388,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
     _createExportToSciCatNode() {
         if (profile.mainMenu.showExports) {
             return {
-                text: "Export to SciCat",
+                text: "SciCat",
                 object: {
                     type: this.TYPE_EXPORT_TO_SCI_CAT,
                     id: this.TYPE_EXPORT_TO_SCI_CAT,
