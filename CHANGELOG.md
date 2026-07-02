@@ -6,7 +6,7 @@
 - `AFS server` allowing for mutable data. AFS stands for Atomic File System, since it allows bundling several operations into the same transaction. Check the API for Java/JavaScript/Python at https://openbis.readthedocs.io/en/latest/software-developer-documentation/apis/java-javascript-v3-api.html#for-java-and-javascript and https://openbis.readthedocs.io/en/latest/software-developer-documentation/apis/python-v3-api.html#operations.
 - `AFS SFTP server`. It allows not only reading data like the old DSS SFTP server but also uploading. It is also faster.
 - `Two-Step Transactions between the AS server and the AFS server`. With this, it is possible to replace Dropboxes with a more modern approach where Dropboxes don't need to run on the same machine as the server. It also allows scripts that mutate data, not only upload it for the first time.
-- ```(Experimental)``` `RO-Crate server`. It provides functionality to export/import metadata and data from openBIS as RO-Crates. It follows the metadata specification provided by https://researchobjectschema.github.io/ro-crate-schema-web/.
+- ```(Experimental) RO-Crate server```. It provides functionality to export/import metadata and data from openBIS as RO-Crates. It follows the metadata specification provided by https://researchobjectschema.github.io/ro-crate-schema-web/.
 
 ### New Apps
 - `openBIS Drive`: Allows uploading/downloading/syncing data directly to AFS.
@@ -25,7 +25,7 @@
 - Provides means to directly update the `JSON metadata field` available in Object, Collection, Dataset, Person, and AuthorizationGroup.
 - `User access can be configured to be revoked` on a certain date.
 - `File Browser` allows downloading/uploading/moving/deleting data from Objects/Collections and allows downloading data from Datasets.
-- ```(Experimental)``` Database now allows not only browsing but also editing metadata.
+- ```(Experimental) Database``` now allows not only browsing but also editing metadata.
 
 ### ELN UI
 - `Toolbar buttons can be configured `to be enabled/disabled by Space/Project/Object Type/Collection Type/Dataset Type.
