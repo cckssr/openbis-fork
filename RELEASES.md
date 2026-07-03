@@ -1,4 +1,4 @@
-# Mockup release 7.0
+# Mockup release 7.0.0
 
 ## Installer
 
@@ -6,7 +6,7 @@ Installing Prerequisites:
 - JDK 21
 - Postgres 17
 
-[openbis-installer-7.0.tar.gz]()
+[openbis-installer-7.0.0.tar.gz]()
 
 ## Release notes
 
