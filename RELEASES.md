@@ -26,17 +26,17 @@ Installing Prerequisites:
 - JDK 21
 - Postgres 17
 
-- [openbis-installer-7.0.0.tar.gz]()
+- [openbis-installer-7.0.0.tar.gz](https://polybox.ethz.ch/index.php/s/eyKK8nBaALwEYEc)
 
 ## Development Libraries
-- [openbis-java-api-7.0.0-dependencies-included.tar.gz]()
-- [openbis-java-api-7.0.0.tar.gz]()
-- [openbis-javascript-api-7.0.0-esm.tar.gz]()
-- [openbis-python3-api-7.0.0.tar.gz]()
+- [openbis-java-api-7.0.0-dependencies-included.tar.gz](https://polybox.ethz.ch/index.php/s/S2EbaDp38pZ2Me2)
+- [openbis-java-api-7.0.0.tar.gz](https://polybox.ethz.ch/index.php/s/NmmmkApA3iZtf9T)
+- [openbis-javascript-api-7.0.0-esm.tar.gz](https://polybox.ethz.ch/index.php/s/EK2iyJEH7m5WrRe)
+- [openbis-python3-api-7.0.0.tar.gz](https://polybox.ethz.ch/index.php/s/caEMneT3EZmaisX)
 
 ## Clients
-- [openbis-command-line-tool-7.0.0.tar.gz]()
-- [openbis-drive-7.0.0.tar.gz]()
+- [openbis-command-line-tool-7.0.0.tar.gz](https://polybox.ethz.ch/index.php/s/7rPWzJCFgPtojtd)
+- [openbis-drive-7.0.0.tar.gz](https://polybox.ethz.ch/index.php/s/MHLsm8wboyWmnn2)
 
 ## Source Code
 - [Source code (tar.gz)](https://sissource.ethz.ch/sispub/openbis/-/archive/7.0.0/openbis-7.0.0.tar.gz?ref_type=tags)
