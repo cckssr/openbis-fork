@@ -59,7 +59,7 @@ public class ValueMapperTest
 
         String res = ValueMapper.mapValue(vocabs, sampleObjectProperty, propertyType, "SPACE",
                 "PROJECT_DATA");
-        assertEquals("/SPACE/PROJECT_DATA/CHE-123.123.123-EXAMPLE-SAMPLERESOURCE-123", res);
+        assertEquals("/SPACE/PROJECT_DATA/CHE-123_123_123-EXAMPLE-SAMPLERESOURCE-123", res);
 
     }
 
