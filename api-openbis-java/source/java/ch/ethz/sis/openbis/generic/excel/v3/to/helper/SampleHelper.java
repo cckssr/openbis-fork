@@ -104,7 +104,10 @@ public class SampleHelper
         int idxName = allColumnList.indexOf("Name");
         if (idxName != -1)
         {
-            propertyRowValues.createCell(idxName).setCellValue(sampleObject.getCode());
+            String val = Optional.ofNullable(sampleObject.getProperties().get("NAME"))
+                    .map(Object::toString)
+                    .orElse("");
+            propertyRowValues.createCell(idxName).setCellValue(val);
         }
 
         List<String> vocabularyOptionList = openBisModel.getVocabularyTypes().values().stream()
