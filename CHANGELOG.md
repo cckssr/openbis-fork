@@ -34,18 +34,18 @@
 - `File Browser` allows downloading/uploading/moving/deleting data from Objects/Collections and allows downloading data from Datasets.
 - `Exports` have been updated with a more intuitive UI for including referenced entities.
 
-## Removed UI Features
+### Removed UI Features
 - Core UI
 - TSV Import in the ELN-LIMS
 
-## Removed Core Features
+### Removed Core Features
 - Internal namespace property codes no longer start with $. It is no longer possible to have Internal namespace and Non-Internal namespace properties with the same name. This could lead to confusion and errors.
 
-## Removed Modeling Features
+### Removed Modeling Features
 - Material: Superseded by the use of Objects. The maintenance task MaterialsMigration should be used in openBIS 20.10 prior to updating to openBIS 7.
 - File: Unused feature
 
-## Removed Apps
+### Removed Apps
 - Data Set Uploader: Superseded by openBIS Drive
 
 ## Version 20.10.12.5 (13 Feb 2026)
