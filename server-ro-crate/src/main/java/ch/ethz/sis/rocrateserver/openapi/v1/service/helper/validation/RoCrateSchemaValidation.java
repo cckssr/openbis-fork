@@ -36,6 +36,20 @@ public class RoCrateSchemaValidation
         Map<String, List<PropertyProblem>> wrongDataTypes = new LinkedHashMap<>();
         Map<String, List<MissingDataError>> missingFiles = new LinkedHashMap<>();
 
+        for (RdfToModel.MissingReferenceValue missingReference : conversionResult.missingReferenceValues())
+        {
+            String key = missingReference.sample().getCode();
+            List<PropertyProblem> res =
+                    wrongDataTypes.getOrDefault(key,
+                            new ArrayList<>());
+
+            PropertyProblem referenceNotFoundInCrate =
+                    new PropertyProblem(missingReference.oldIdentifier(), missingReference.key(),
+                            "Reference not found in crate");
+            res.add(referenceNotFoundInCrate);
+            wrongDataTypes.put(key, res);
+        }
+
 
         for (AbstractEntityPropertyHolder entity : openBisModel.getEntities().values())
         {

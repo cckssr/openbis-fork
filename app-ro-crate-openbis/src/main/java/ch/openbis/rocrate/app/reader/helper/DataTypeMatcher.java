@@ -114,17 +114,21 @@ public class DataTypeMatcher
 
                         identifiers = (String[]) value;
                     }
+                    boolean allGood = true;
                     for (String identifier : identifiers)
                     {
 
                         String[] parts = identifier.toString().split("/");
 
-                        if ((parts.length == 3 || parts.length == 4) && Strings.isStringEmpty(parts[0]))
+                        boolean okay =
+                                (parts.length == 3 || parts.length == 4) && Strings.isStringEmpty(
+                                        parts[0]);
+                        if (!okay)
                         {
-                            return true;
+                            allGood = false;
                         }
                     }
-                    return false;
+                    return allGood;
                 } catch (RuntimeException e)
                 {
                     return false;
