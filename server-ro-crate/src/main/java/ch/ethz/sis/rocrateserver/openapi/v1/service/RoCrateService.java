@@ -421,9 +421,13 @@ public class RoCrateService
                     ImportResponse importResponse = new ImportResponse(
                             openBisImportResult.getExternalToOpenBisIdentifiers());
 
+                    ValidationResult validationResult =
+                            ((ImportJob) job).getResult().getValidationResult();
+
                     AsyncResult asyncResult =
                             new AsyncResult(status.getStatus().toString(), List.of(),
                                     ((ImportJob) job).getResult().getValidationResult(), jobId);
+                    asyncResult.setValidationResult(ValidationReport.from(validationResult));
                     asyncResult.setImportResponse(importResponse);
                     responseBuilder.entity(objectMapper.writeValueAsString(asyncResult));
 
