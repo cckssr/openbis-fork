@@ -135,16 +135,17 @@ public class SampleTypeImportHelper extends BasicImportHelper
     protected boolean isNewVersion(Map<String, Integer> header, List<String> values)
     {
         String internal = getValueByColumnName(header, values, Attribute.Internal);
-        boolean isInternalNamespace = ImportUtils.isTrue(internal);
+        SampleType sampleType = getSampleType(header, values);
+        boolean isInternalNamespace = ImportUtils.isTrue(internal) || (sampleType != null && sampleType.isManagedInternally());
 
         if(isInternalNamespace && !delayedExecutor.isSystem()) {
             //if exists, skip
-            return !isObjectExist(header, values);
+            return sampleType == null;
         }
         return true;
     }
 
-    @Override protected boolean isObjectExist(Map<String, Integer> header, List<String> values)
+    private SampleType getSampleType(Map<String, Integer> header, List<String> values)
     {
         String code = getValueByColumnName(header, values, Attribute.Code);
 
@@ -163,14 +164,14 @@ public class SampleTypeImportHelper extends BasicImportHelper
             }
 
             List<SemanticAnnotationRecord> records =
-                IntStream.range(0, ontologyId.length)
-                        .mapToObj(i -> new SemanticAnnotationRecord(ontologyId[i], ontologyVersion[i], ontologyAnnotationId[i]))
-                        .collect(Collectors.toList());
+                    IntStream.range(0, ontologyId.length)
+                            .mapToObj(i -> new SemanticAnnotationRecord(ontologyId[i], ontologyVersion[i], ontologyAnnotationId[i]))
+                            .collect(Collectors.toList());
             EntityTypePermId permId = new EntityTypePermId(code, EntityKind.SAMPLE);
             SemanticAnnotation annotation = annotationCache.getSemanticAnnotation(records.toArray(new SemanticAnnotationRecord[0]), permId, null);
             if(annotation != null) {
                 // if there is semantic annotation, then there is an associated type
-                return true;
+                return (SampleType) annotation.getEntityType();
             }
         } else {
             if (code == null)
@@ -180,7 +181,12 @@ public class SampleTypeImportHelper extends BasicImportHelper
         }
 
         EntityTypePermId id = new EntityTypePermId(code, EntityKind.SAMPLE);
-        return delayedExecutor.getSampleType(id, new SampleTypeFetchOptions()) != null;
+        return delayedExecutor.getSampleType(id, new SampleTypeFetchOptions());
+    }
+
+    @Override protected boolean isObjectExist(Map<String, Integer> header, List<String> values)
+    {
+        return getSampleType(header, values) != null;
     }
 
     @Override protected void createObject(Map<String, Integer> header, List<String> values, int page, int line)

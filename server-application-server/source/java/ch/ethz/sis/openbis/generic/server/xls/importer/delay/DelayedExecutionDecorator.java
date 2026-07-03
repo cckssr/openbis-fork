@@ -63,14 +63,17 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.IProjectId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.update.ProjectUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyAssignment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.create.PropertyAssignmentCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.create.PropertyTypeCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.fetchoptions.PropertyAssignmentFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.fetchoptions.PropertyTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.IPropertyAssignmentId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.IPropertyTypeId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyAssignmentPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyTypePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.search.PropertyAssignmentSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.update.PropertyTypeUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType;
@@ -1095,6 +1098,32 @@ public class DelayedExecutionDecorator
         // Data type and vocabulary can't be updated. That is mean - no delay.
         v3.updatePropertyTypes(this.sessionToken, List.of(propertyTypeUpdate));
         this.ids.add(propertyTypeUpdate.getTypeId());
+    }
+
+    //
+    // PROPERTY ASSIGNMENT
+    //
+
+    Map<EntityTypePermId, List<PropertyAssignment>> propertyAssignmentCache = new ConcurrentHashMap<>();
+
+    public List<PropertyAssignment> getPropertyAssignments(EntityTypePermId entityTypePermId)
+    {
+        if(!propertyAssignmentCache.containsKey(entityTypePermId)) {
+            PropertyAssignmentSearchCriteria criteria = new PropertyAssignmentSearchCriteria();
+            criteria.withEntityType().withCode().thatEquals(entityTypePermId.getPermId());
+            criteria.withEntityType().withKind().thatEquals(entityTypePermId.getEntityKind());
+            PropertyAssignmentFetchOptions fetchOptions = new PropertyAssignmentFetchOptions();
+            fetchOptions.withPropertyType();
+            List<PropertyAssignment> results = v3.searchPropertyAssignments(this.sessionToken, criteria, fetchOptions).getObjects();
+            propertyAssignmentCache.put(entityTypePermId, results);
+        }
+        return propertyAssignmentCache.get(entityTypePermId);
+    }
+
+    public PropertyAssignment getPropertyAssignment(String propertyTypeId, EntityTypePermId entityTypePermId) {
+        List<PropertyAssignment> assignments = getPropertyAssignments(entityTypePermId);
+        return assignments.stream().filter(x -> x.getPropertyType().getCode().equalsIgnoreCase(propertyTypeId))
+                .findFirst().orElse(null);
     }
 
     //

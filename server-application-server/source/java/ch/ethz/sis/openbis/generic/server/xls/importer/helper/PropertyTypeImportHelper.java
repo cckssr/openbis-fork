@@ -165,12 +165,12 @@ public class PropertyTypeImportHelper extends BasicImportHelper
     @Override
     protected boolean isNewVersion(Map<String, Integer> header, List<String> values)
     {
+        PropertyType propertyType = getPropertyType(header, values);
         String internal = getValueByColumnName(header, values, Attribute.Internal);
-        boolean isInternalNamespace = ImportUtils.isTrue(internal);
+        boolean isInternalNamespace = ImportUtils.isTrue(internal) || (propertyType != null && propertyType.isManagedInternally());
 
         if(isInternalNamespace && !delayedExecutor.isSystem()) {
-            //if exists, skip
-            return !isObjectExist(header, values);
+           return propertyType == null;
         }
         return true;
     }
@@ -232,9 +232,7 @@ public class PropertyTypeImportHelper extends BasicImportHelper
         super.importBlock(page, pageIndex, start, end);
     }
 
-
-    @Override
-    protected boolean isObjectExist(Map<String, Integer> header, List<String> values)
+    private PropertyType getPropertyType(Map<String, Integer> header, List<String> values)
     {
         String code = getValueByColumnName(header, values, Attribute.Code);
 
@@ -260,12 +258,18 @@ public class PropertyTypeImportHelper extends BasicImportHelper
             SemanticAnnotation annotation = annotationCache.getSemanticAnnotation(records.toArray(new SemanticAnnotationRecord[0]), typePermId, code);
             if(annotation != null) {
                 // there is a type for semantic annotation
-                return true;
+                return annotation.getPropertyType();
             }
         }
 
         PropertyTypePermId propertyTypePermId = new PropertyTypePermId(code);
-        return delayedExecutor.getPropertyType(propertyTypePermId) != null;
+        return delayedExecutor.getPropertyType(propertyTypePermId);
+    }
+
+    @Override
+    protected boolean isObjectExist(Map<String, Integer> header, List<String> values)
+    {
+        return getPropertyType(header, values) != null;
     }
 
     @Override

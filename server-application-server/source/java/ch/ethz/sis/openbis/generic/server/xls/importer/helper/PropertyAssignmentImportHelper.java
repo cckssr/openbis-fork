@@ -158,24 +158,25 @@ public class PropertyAssignmentImportHelper extends BasicImportHelper
     protected boolean isNewVersion(Map<String, Integer> header, List<String> values)
     {
         String internal = getValueByColumnName(header, values, Attribute.Internal);
-        boolean isInternalNamespace = ImportUtils.isTrue(internal);
+        PropertyAssignment assignment = getPropertyAssignment(header, values);
+        boolean isInternalNamespace = ImportUtils.isTrue(internal) || (assignment != null && assignment.isManagedInternally());
 
         if(isInternalNamespace && !delayedExecutor.isSystem()) {
             //if exists, skip
-            return !isObjectExist(header, values);
+            return assignment == null;
         }
         return true;
     }
 
-
-    @Override protected boolean isObjectExist(Map<String, Integer> headers, List<String> values)
+    private PropertyAssignment getPropertyAssignment(Map<String, Integer> header,
+            List<String> values)
     {
-        String code = getValueByColumnName(headers, values, Attribute.Code);
+        String code = getValueByColumnName(header, values, Attribute.Code);
 
-        String[] ontologyId = getMultiValueByColumnName(headers, values, Attribute.OntologyId, "\n");
+        String[] ontologyId = getMultiValueByColumnName(header, values, Attribute.OntologyId, "\n");
         if(ontologyId != null) {
-            String[] ontologyVersion = getMultiValueByColumnName(headers, values, Attribute.OntologyVersion, "\n");
-            String[] ontologyAnnotationId =  getMultiValueByColumnName(headers, values, Attribute.OntologyAnnotationId, "\n");
+            String[] ontologyVersion = getMultiValueByColumnName(header, values, Attribute.OntologyVersion, "\n");
+            String[] ontologyAnnotationId =  getMultiValueByColumnName(header, values, Attribute.OntologyAnnotationId, "\n");
             if(ontologyVersion == null) {
                 throw new UserFailureException("Mandatory field is missing or empty: " + Attribute.OntologyVersion);
             }
@@ -193,11 +194,16 @@ public class PropertyAssignmentImportHelper extends BasicImportHelper
             SemanticAnnotation annotation = annotationCache.getSemanticAnnotation(records.toArray(new SemanticAnnotationRecord[0]), this.permId, code);
             if(annotation != null) {
                 // there is a type for semantic annotation
-                return true;
+                return annotation.getPropertyAssignment();
             }
         }
 
-        return existingDynamicPluginsByPropertyCode.containsKey(code);
+        return delayedExecutor.getPropertyAssignment(code, this.permId);
+    }
+
+    @Override protected boolean isObjectExist(Map<String, Integer> headers, List<String> values)
+    {
+        return getPropertyAssignment(headers, values) != null;
     }
 
     @Override protected void createObject(Map<String, Integer> headers, List<String> values, int page, int line)

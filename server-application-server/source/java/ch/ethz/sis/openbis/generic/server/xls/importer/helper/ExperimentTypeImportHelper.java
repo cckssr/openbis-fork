@@ -127,16 +127,17 @@ public class ExperimentTypeImportHelper extends BasicImportHelper
     protected boolean isNewVersion(Map<String, Integer> header, List<String> values)
     {
         String internal = getValueByColumnName(header, values, Attribute.Internal);
-        boolean isInternalNamespace = ImportUtils.isTrue(internal);
+        ExperimentType experimentType = getExperimentType(header, values);
+        boolean isInternalNamespace = ImportUtils.isTrue(internal) || (experimentType != null && experimentType.isManagedInternally());
 
         if(isInternalNamespace && !delayedExecutor.isSystem()) {
             //if exists, skip
-            return !isObjectExist(header, values);
+            return experimentType == null;
         }
         return true;
     }
 
-    @Override protected boolean isObjectExist(Map<String, Integer> header, List<String> values)
+    private ExperimentType getExperimentType(Map<String, Integer> header, List<String> values)
     {
         String code = getValueByColumnName(header, values, Attribute.Code);
 
@@ -162,7 +163,7 @@ public class ExperimentTypeImportHelper extends BasicImportHelper
             SemanticAnnotation annotation = annotationCache.getSemanticAnnotation(records.toArray(new SemanticAnnotationRecord[0]), permId, null);
             if(annotation != null) {
                 // if there is semantic annotation, then there is an associated type
-                return true;
+                return (ExperimentType) annotation.getEntityType();
             }
         } else {
             if (code == null)
@@ -172,7 +173,12 @@ public class ExperimentTypeImportHelper extends BasicImportHelper
         }
 
         EntityTypePermId id = new EntityTypePermId(code, EntityKind.EXPERIMENT);
-        return delayedExecutor.getExperimentType(id, new ExperimentTypeFetchOptions()) != null;
+        return delayedExecutor.getExperimentType(id, new ExperimentTypeFetchOptions());
+    }
+
+    @Override protected boolean isObjectExist(Map<String, Integer> header, List<String> values)
+    {
+        return getExperimentType(header, values) != null;
     }
 
     @Override protected void createObject(Map<String, Integer> header, List<String> values, int page, int line)

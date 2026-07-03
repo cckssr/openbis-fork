@@ -127,16 +127,17 @@ public class DatasetTypeImportHelper extends BasicImportHelper
     protected boolean isNewVersion(Map<String, Integer> header, List<String> values)
     {
         String internal = getValueByColumnName(header, values, Attribute.Internal);
-        boolean isInternalNamespace = ImportUtils.isTrue(internal);
+        DataSetType datasetType = getDatasetType(header, values);
+        boolean isInternalNamespace = ImportUtils.isTrue(internal) || (datasetType != null && datasetType.isManagedInternally());
 
         if(isInternalNamespace && !delayedExecutor.isSystem()) {
             //if exists, skip
-            return !isObjectExist(header, values);
+            return datasetType == null;
         }
         return true;
     }
 
-    @Override protected boolean isObjectExist(Map<String, Integer> header, List<String> values)
+    private DataSetType getDatasetType(Map<String, Integer> header, List<String> values)
     {
         String code = getValueByColumnName(header, values, Attribute.Code);
 
@@ -162,7 +163,7 @@ public class DatasetTypeImportHelper extends BasicImportHelper
             SemanticAnnotation annotation = annotationCache.getSemanticAnnotation(records.toArray(new SemanticAnnotationRecord[0]), permId, null);
             if(annotation != null) {
                 // if there is semantic annotation, then there is an associated type
-                return true;
+                return (DataSetType) annotation.getEntityType();
             }
         } else {
             if (code == null)
@@ -173,7 +174,12 @@ public class DatasetTypeImportHelper extends BasicImportHelper
 
         EntityTypePermId id = new EntityTypePermId(code, EntityKind.DATA_SET);
 
-        return delayedExecutor.getDataSetType(id, new DataSetTypeFetchOptions()) != null;
+        return delayedExecutor.getDataSetType(id, new DataSetTypeFetchOptions());
+    }
+
+    @Override protected boolean isObjectExist(Map<String, Integer> header, List<String> values)
+    {
+        return getDatasetType(header, values) != null;
     }
 
     @Override protected void createObject(Map<String, Integer> header, List<String> values, int page, int line)
