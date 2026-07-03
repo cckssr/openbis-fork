@@ -51,9 +51,7 @@ function RoCrateImportView(importController, importModel) {
 
 
         var component = $("<div>");
-        // component.append($("<legend>", { 'text' : "Upload RO-Crate zip"}))
         component.append($('<br>'));
-        // component.append($("<label>", { 'text' : 'Select RO-Crate zip file to import'}))
 
         var modeLabel = FormUtil.createLabel('Select import mode');
         component.append(modeLabel);
@@ -70,21 +68,11 @@ function RoCrateImportView(importController, importModel) {
 
         component.append($modeDropdown);
 
-        // var fileChooser = $('<input>', { 'type' : 'file', 'id' : 'fileToRegister-roCrateImport' , 'required' : '', 'accept' : 'application/ZIP'});
-        // var file = null;
-        // fileChooser.change(function(event) {
-        //     _this.importModel.file = fileChooser[0].files[0];
-        // });
-
         var fileChooser = $('<input>', { 'type': 'file', 'id': 'fileToRegister', 'required': '', 'accept': 'application/json,application/zip' });
         var fileNameDisplay = $('<span>', { 'id': 'fileNameDisplay' });
         var fileChooserButton = $('<a>', { 'type': 'button', 'class': 'btn btn-default' }).css("margin-left", "4px").text('Choose file...');
 
         fileNameDisplay.css({
-            // "display": "inline-block",
-            // "max-width": "300px",
-            // "white-space": "normal",       /* allow wrapping instead of truncating */
-            // "word-break": "break-all",     /* break long filenames if needed */
             "vertical-align": "middle",
             "margin-left": "8px",
             "font-size": "15px",
@@ -138,27 +126,19 @@ function RoCrateImportView(importController, importModel) {
 
         _this.importModel.searchDropdown = advancedEntitySearchDropdown;
 
+        advancedEntitySearchDropdown.onChange(function(selected) {
+            _this.importModel.entity = selected[0];
+        });
+        advancedEntitySearchDropdown.onUnselect(function(selected) {
+            _this.importModel.entity = null;
+        });
+
         advancedEntitySearchDropdown.init(component);
-
         _refreshableFields.push(advancedEntitySearchDropdown);
-
-        // var fileChooserBoxGroup = FormUtil.getFieldForComponentWithLabel(componentChooser, 'Select RO-Crate zip file to import');
-
 
         $form.append(component);
 
         $container.append($form);
-
-
-        // $formColumn.refresh = function() {
-        //     // $("form[name='roCrateImportForm']").children().remove()
-        //     // var $tree = $('<div>', { 'id' : 'exportsTree-'+_this._viewId });
-        //     // $("form[name='roCrateImportForm']").append(FormUtil.getBox().append($tree));
-        //     // _this.importModel.tree = TreeUtil.getCompleteTree($tree);
-        //     // _this.importModel.tree.fancytree('getTree').rootNode.children[0].setExpanded();
-        // }
-        // _refreshableFields.push($formColumn);
-
 
 
         $container.append($('<br>'));

@@ -33,10 +33,10 @@ function RoCrateImportController(parentController) {
 
     this.importSelected = function() {
         var _this = this;
-
+        var entity = _this.importModel.entity;
         if(_this.importModel.file === null) {
             Util.showInfo("Upload file for import first.");
-        } else if(_this.importModel.searchDropdown.getSelected().length !== 1) {
+        } else if(!entity) {
             Util.showInfo("Select fallback project to import entities.");
         } else {
             var selectedValue = $('#importModeDropdown-roCrate').val();
@@ -56,11 +56,10 @@ function RoCrateImportController(parentController) {
             Util.blockUI();
             mainController.openbisV3.uploadToSessionWorkspace(this.importModel.file)
                 .done(function () {
-                    var selected = _this.importModel.searchDropdown.getSelected()[0];
                     var parameters = {
                         "importMode": importMode,
                         "fileName": _this.importModel.file.name,
-                        "projectIdentifier": selected.identifier.identifier,
+                        "projectIdentifier": entity.identifier.identifier,
                     }
                     mainController.serverFacade.importRoCrate(parameters,
                         function (result) {
@@ -73,10 +72,7 @@ function RoCrateImportController(parentController) {
                             } else {
                                 var jobId = result.result.jobId;
                                 _this.pollForResult(jobId);
-                                // Util.showSuccess("Import " + jobId + " is being processed.", function () { Util.unblockUI(); });
-                                // mainController.refreshView();
                             }
-                            // _this._handleResult(result, "created", experimentIdentifier);
                         });
                 });
         }

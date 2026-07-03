@@ -45,7 +45,12 @@ function AdvancedEntitySearchDropdown(isMultiple,
 	this.onChange = function(onChangeCallbackGiven) {
 		onChangeCallback = onChangeCallbackGiven
 	}
-	
+
+	var onUnselectCallback = null;
+	this.onUnselect = function(onUnselectCallbackGiven) {
+		onUnselectCallback = onUnselectCallbackGiven
+	}
+
     this.clearSelection = function() {
         $select.val(null).trigger("change");
     }
@@ -275,8 +280,13 @@ function AdvancedEntitySearchDropdown(isMultiple,
 		
 		var _this = this;
 		if(onChangeCallback) {
-		    $("body").on('select2:select', "#" + selectId, function (e) {
-    				onChangeCallback(_this.getSelected());
+			$select.on('select2:select', function (e) {
+				onChangeCallback(_this.getSelected());
+			});
+		}
+		if(onUnselectCallback) {
+			$select.on('select2:unselect', function (e) {
+				onUnselectCallback(_this.getSelected());
 			});
 		}
 	}
@@ -286,7 +296,7 @@ function AdvancedEntitySearchDropdown(isMultiple,
 	}
 
 	this.initSelect2 = function() {
-
+		var _this = this;
 	    $select.select2({
             width: '100%',
             theme: "bootstrap",
@@ -369,8 +379,21 @@ function AdvancedEntitySearchDropdown(isMultiple,
                         abort : function () { /*Not implemented*/ }
                     }
                 }
-          }
-    });
+		    }
+		});
+
+		if(onChangeCallback) {
+			$select.off('select2:select');
+			$select.on('select2:select', function (e) {
+				onChangeCallback(_this.getSelected());
+			});
+		}
+		if(onUnselectCallback) {
+			$select.off('select2:unselect');
+			$select.on('select2:unselect', function (e) {
+				onChangeCallback(_this.getSelected());
+			});
+		}
 
 
 	}

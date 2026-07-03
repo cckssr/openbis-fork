@@ -15,5 +15,5 @@
  */
 function RoCrateImportModel() {
     this.file = null;
-    this.searchDropdown = null;
+    this.entity = null;
 }
