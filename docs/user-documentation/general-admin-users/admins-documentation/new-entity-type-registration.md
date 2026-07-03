@@ -230,6 +230,25 @@ are shown.
 
 After creating the vocabulary and registering the terms, remember to **Save**.
 
+## Object Type Groups
+
+From openBIS 7.0 it is possible to have **Object Type Groups**. This feature is currently only available in the admin UI, but will be extended to the ELN UI.
+It is possible to create group of Object Types, and these groups can be used for filtering.
+
+To create a new group, select **Object Type Groups** from the menu and click **ADD** at the bottom of the page. 
+
+![](img/7.0-object-type-groups.png)
+
+Once a group is created, you can Object Types to the group by clicking **EDIT** at the bottom right corner of the page. To remove a group, you can click on **REMOVE** at the bottom left corner of the page.
+
+
+![](img/7.0-object-type-group-sample.png)
+
+You can also add a group to an Object Type in the Object type form.
+
+
+![](img/7.0-object-type-group-object-view.png) 
+
 
 ## Register a new Experiment/Collection type
 
