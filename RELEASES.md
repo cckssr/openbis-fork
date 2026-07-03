@@ -15,7 +15,7 @@ Early Access releases should be considered a checkpoint in the roadmap to the ne
 **We recommend this version for new openBIS users**
 
 **Established openBIS users are strongly encouraged to:**
-- Migrate to the latest 20.10 release available (currently 20.10.12.5) before upgrading to 7.0.0
+- Update to the latest 20.10.x release available before upgrading to 7.0.0
 - Test this release on a staging server before using it in production. A General Availability release will be made available later this year.
 
 **A migration guide for 20.10.x will be made available shortly.**
