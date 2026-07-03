@@ -7,7 +7,7 @@ The chatbot can be enabled for both ELN and admin interfaces from the ELN interf
 
 ![image info](img/7.0-ELN-settings-chatbot-enable.png)
 
-The chatbot can be started by clicking the icon next to the search, bot in the ELN UI, as shown below:
+The chatbot can be started by clicking the icon next to the search, both in the ELN UI, as shown below:
 
 ![image info](img/7.0-ELN-chatbot.png)
 
