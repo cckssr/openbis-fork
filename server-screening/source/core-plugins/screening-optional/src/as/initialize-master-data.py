@@ -55,9 +55,13 @@ data_set_type_HCS_ANALYSIS_CONTAINER_WELL_FEATURES = tr.getOrCreateNewDataSetTyp
 data_set_type_HCS_ANALYSIS_CONTAINER_WELL_FEATURES.setDescription('Container for HCS image analysis well feature vectors.')
 
 # Already exists in the database
-prop_type_DESCRIPTION = tr.getPropertyType('DESCRIPTION')
 prop_type_ANALYSIS_PROCEDURE = tr.getPropertyType('ANALYSIS_PROCEDURE')
 prop_type_RESOLUTION = tr.getPropertyType('RESOLUTION')
+
+prop_type_DESCRIPTION = tr.getOrCreateNewPropertyType('DESCRIPTION', DataType.VARCHAR)
+prop_type_DESCRIPTION.setLabel('Description')
+prop_type_DESCRIPTION.setManagedInternally(False)
+prop_type_DESCRIPTION.setInternalNamespace(False)
 
 prop_type_MICROSCOPE = tr.getOrCreateNewPropertyType('MICROSCOPE', DataType.CONTROLLEDVOCABULARY)
 prop_type_MICROSCOPE.setLabel('Microscope')
