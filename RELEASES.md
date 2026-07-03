@@ -26,7 +26,7 @@ Installing Prerequisites:
 - JDK 21
 - Postgres 17
 
-- [openbis-installer-7.0.0.tar.gz](https://polybox.ethz.ch/index.php/s/eyKK8nBaALwEYEc)
+[openbis-installer-7.0.0.tar.gz](https://polybox.ethz.ch/index.php/s/eyKK8nBaALwEYEc)
 
 ## Development Libraries
 - [openbis-java-api-7.0.0-dependencies-included.tar.gz](https://polybox.ethz.ch/index.php/s/S2EbaDp38pZ2Me2)
