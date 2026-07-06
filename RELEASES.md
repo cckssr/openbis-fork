@@ -29,6 +29,10 @@ Installing Prerequisites:
 ## Clients
 - [openbis-command-line-tool-7.0.0.tar.gz](https://polybox.ethz.ch/index.php/s/7rPWzJCFgPtojtd)
 - [openbis-drive-7.0.0.tar.gz](https://polybox.ethz.ch/index.php/s/MHLsm8wboyWmnn2)
+- [openbis-drive-7.0.0-win.tar.gz](https://polybox.ethz.ch/index.php/s/PeS2yfGwxNDTcW2)
+- [openbis-drive-7.0.0-mac.tar.gz](https://polybox.ethz.ch/index.php/s/m4giC78QQc9HGJH)
+- [openbis-drive-7.0.0-linux.tar.gz](https://polybox.ethz.ch/index.php/s/mYTKyYXyYPifrgg)
+
 
 ## Source Code
 - [Source code (tar.gz)](https://sissource.ethz.ch/sispub/openbis/-/archive/7.0.0/openbis-7.0.0.tar.gz?ref_type=tags)
