@@ -346,18 +346,12 @@ function SampleFormController(mainController, mode, sample, paginationInfo, acti
             }
 
 			var sampleType = _this._sampleFormModel.sampleType;
-			if (_this._sampleFormModel.v3_sample) {
-				for (var pa of sampleType.propertyAssignments) {
-					var pt = pa.propertyType;
-					if (["ARRAY_INTEGER", "ARRAY_REAL", "ARRAY_STRING", "ARRAY_TIMESTAMP"].includes(pt.dataType)) {
-						var currentVal = sample.properties[pt.code];
-						var isNormalized = currentVal == null
-							|| currentVal === ""
-							|| (typeof currentVal === "string" && currentVal.trim().startsWith("["));
-						if (!isNormalized) {
-							var v3Val = _this._sampleFormModel.v3_sample.properties[pt.code];
-							sample.properties[pt.code] = v3Val != null ? JSON.stringify(v3Val) : null;
-						}
+			for (var pa of sampleType.propertyAssignments) {
+				var pt = pa.propertyType;
+				if (["ARRAY_INTEGER", "ARRAY_REAL", "ARRAY_STRING", "ARRAY_TIMESTAMP"].includes(pt.dataType)) {
+					var currentVal = sample.properties[pt.code];
+					if (Array.isArray(currentVal)) {
+						sample.properties[pt.code] = JSON.stringify(currentVal);
 					}
 				}
 			}
@@ -375,7 +369,8 @@ function SampleFormController(mainController, mode, sample, paginationInfo, acti
                                 return;
                             }
                         } catch (e) {
-                            // Legacy V1 format — the V3 normalization pass above handles this
+                            Util.showUserError(errorMessage);
+                            return;
                         }
                     }
 				}
