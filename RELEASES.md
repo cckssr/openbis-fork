@@ -5,11 +5,9 @@ IMPORTANT
 
 We recommend this version for new openBIS users.
 
-Established openBIS users are strongly encouraged to:
-- Update to the latest 20.10.x release available before upgrading to 7.0.0
-- Test this release on a staging server before using it in production. A General Availability release will be made available later this year.
+Established openBIS users are strongly encouraged to follow the migration guide below.
 
-A migration guide for 20.10.x will be made available shortly.
+A General Availability release will be made available later this year.
 ```
 
 ## Server
@@ -41,3 +39,28 @@ Installing Prerequisites:
 ## Useful Links
 - [Documentation](https://openbis.readthedocs.io/en/7.x/)
 - [Change Log](https://sissource.ethz.ch/sispub/openbis/-/blob/7.x/CHANGELOG.md?ref_type=heads)
+
+## 20.10.x Migration Guide
+
+### Important Upgrade Notice
+
+**DO NOT UPGRADE DIRECTLY BETWEEN MAJOR VERSIONS ON YOUR PRODUCTION SYSTEM**
+
+* Upgrade to the latest available **20.10.x** release before upgrading to **7.x**.
+* Test the upgrade on a staging server using a copy of your production database before deploying it to production.
+
+To upgrade to **7.x** is a prerequisite to remove Material entities and File entity types. Otherwise, the openBIS 7.x installation will fail to upgrade the database and terminate with an error.
+
+To prepare for the upgrade:
+
+1. Upgrade to the latest available **20.10.x** release.
+2. Open the Core UI (available only in **20.10.x**), navigate to **File Types**, and delete all file entity types.
+3. Run the **[MaterialsMigration](https://openbis.readthedocs.io/en/20.10.12-plus/system-documentation/configuration/maintenance-tasks.html#materialsmigration)** maintenance task to convert Materials into Objects.
+
+Do **not** reuse configuration files (such as `service.properties`) from **20.10.x**. openBIS **7.x** introduces new configuration files and additional required configuration sections in existing files. Reusing the old configuration will result in a broken installation.
+
+Instead, perform a fresh **7.x** installation:
+
+1. Configure the Application Server (`service.properties`) to connect to the existing **20.10.x** database.
+2. Configure the Data Store Server (`service.properties`) to use the existing data store.
+3. Reapply any custom ELN-LIMS and maintenance task configuration by editing or adding the required settings in the new configuration files.
