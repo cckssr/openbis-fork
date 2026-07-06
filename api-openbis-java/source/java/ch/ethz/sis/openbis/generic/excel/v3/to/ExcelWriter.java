@@ -18,11 +18,13 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-
 
 public class ExcelWriter
 {
@@ -300,8 +302,10 @@ public class ExcelWriter
                     .collect(Collectors.toSet()).stream()
                     .collect(Collectors.toList());
 
-            List<String> allColumnList =
-                    SampleHelper.getAllColumnsList(sampleObjectPropertyLabelList);
+            SampleHelper.PropertyTypeIndexInfo allColumnList =
+                    SampleHelper.getPropertyTypeIndexInfo(
+                            entry.getValue().stream().findFirst().map(Sample::getType)
+                                    .orElseThrow());
 
             rowNum = sampleHelper.createSampleHeaders(sheet, rowNum, headerStyle,
                     entry.getKey().getPermId(),
