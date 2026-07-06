@@ -419,7 +419,7 @@
       "openBIS:hasPUBLICATION.URL": "https://www.nature.com/articles/s41586-020-3010-5#citeas",
       "openBIS:hasNAME": "Global human-made mass exceeds all living biomass",
       "openBIS:hasPUBLICATION.TYPE": "DataPaper",
-      "openBIS:hasPUBLICATION.PUBLICATION_YEAR": "2020-12-09 15:43:20 +0100",
+      "openBIS:hasPUBLICATION.PUBLICATION_YEAR": "2025-03-05T14:54:24.470Z",
       "openBIS:hasPUBLICATION.IDENTIFIER": "https://doi.org/10.1038/s41586-020-3010-5",
       "@id": "/PUBLICATIONS/PUBLIC_REPOSITORIES/PUB25",
       "openBIS:hasSPACE": {
@@ -739,7 +739,7 @@
       "openBIS:hasPUBLICATION.URL": "https://www.science.org/doi/10.1126/science.abe8770",
       "openBIS:hasNAME": "Quantum computational advantage using photons",
       "openBIS:hasPUBLICATION.TYPE": "DataPaper",
-      "openBIS:hasPUBLICATION.PUBLICATION_YEAR": "2020-12-11 15:50:44 +0100",
+      "openBIS:hasPUBLICATION.PUBLICATION_YEAR": "2025-03-05T14:54:24.470Z",
       "openBIS:hasPUBLICATION.IDENTIFIER": "DOI: 10.1126/science.abe8770",
       "@id": "/PUBLICATIONS/PUBLIC_REPOSITORIES/PUB30",
       "openBIS:hasSPACE": {
@@ -1084,7 +1084,7 @@
       "openBIS:hasPUBLICATION.URL": "https://www.nature.com/articles/s41586-020-03065-y#citeas",
       "openBIS:hasNAME": "Genetic mechanisms of critical illness in COVID-19",
       "openBIS:hasPUBLICATION.TYPE": "DataPaper",
-      "openBIS:hasPUBLICATION.PUBLICATION_YEAR": "2020-12-11 15:48:55 +0100",
+      "openBIS:hasPUBLICATION.PUBLICATION_YEAR": "2025-03-05T14:54:24.470Z",
       "openBIS:hasPUBLICATION.IDENTIFIER": "https://doi.org/10.1038/s41586-020-03065-y",
       "@id": "/PUBLICATIONS/PUBLIC_REPOSITORIES/PUB29",
       "openBIS:hasSPACE": {

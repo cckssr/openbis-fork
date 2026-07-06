@@ -1594,7 +1594,7 @@ public class RdfToModel
             Arrays.stream(b).map(x -> handleLiteralValues(b, dataType)).map(x -> x.toString())
                     .collect(Collectors.joining(","));
         }
-        return a;
+        return handleLiteralValues(a, dataType);
 
     }
 

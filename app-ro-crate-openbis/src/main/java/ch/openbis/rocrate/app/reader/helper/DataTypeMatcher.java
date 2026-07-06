@@ -16,6 +16,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import static ch.ethz.sis.rdf.main.mappers.openBis.ValueMapper.CANONICAL_DATE_FORMAT_PATTERN;
+
 public class DataTypeMatcher
 {
 
@@ -40,6 +42,23 @@ public class DataTypeMatcher
         if (dataType == DataType.SAMPLE)
         {
             return entities.containsKey(value.toString());
+        }
+        return matches(value, dataType);
+
+    }
+
+    public static boolean matchesForOpenBis(Serializable value, DataType dataType)
+    {
+        if (dataType == DataType.TIMESTAMP)
+        {
+            try
+            {
+                DateTimeFormatter.ofPattern(CANONICAL_DATE_FORMAT_PATTERN).parse(value.toString());
+                return true;
+            } catch (DateTimeParseException e)
+            {
+                return false;
+            }
         }
         return matches(value, dataType);
 

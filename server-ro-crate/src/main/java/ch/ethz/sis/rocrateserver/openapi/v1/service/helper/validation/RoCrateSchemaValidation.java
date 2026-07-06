@@ -154,7 +154,7 @@ public class RoCrateSchemaValidation
 
     private static boolean validateDataType(DataType dataType, Serializable value)
     {
-        return DataTypeMatcher.matches(value, dataType);
+        return DataTypeMatcher.matchesForOpenBis(value, dataType);
     }
 
     private static PropertyAssignment matchPropertyAssignment(
