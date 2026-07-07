@@ -8,9 +8,5 @@ APIS
    python-v3-api
    matlab-v3-api
    ro-crate-api.md
-
-
-.. toctree::
-  :maxdepth: 2
-
    examples/index
+
