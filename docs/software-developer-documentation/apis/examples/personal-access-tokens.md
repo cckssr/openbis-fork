@@ -66,12 +66,12 @@ Differences:
     transition period from one soon to be expired PAT to a new PAT that
     replaces it without losing the session's state
 
-## Who can create a "Personal access token" ?
+## Who can create a "Personal access token"?
 
 Any openBIS user can manage its own PATs. Instance admin users can
 manage all PATs in the system.
 
-## Where can I use "Personal access tokens" ?
+## Where can I use "Personal access tokens"?
 
 Endpoints that support PATs:
 
