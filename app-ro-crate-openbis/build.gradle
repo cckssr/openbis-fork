@@ -22,6 +22,9 @@ dependencies {
     implementation libs.edu.kit.datamanager.ro.crate.java,
                     libs.com.fasterxml.jackson.core.jackson.core,
                     libs.com.fasterxml.jackson.core.jackson.databind,
+            // jena
+
+            libs.bundles.org.apache.jena.jena,
                     // Command Line App
                     libs.org.apache.commons.commons.collections4,
                     libs.commons.cli.commons.cli.v14,
