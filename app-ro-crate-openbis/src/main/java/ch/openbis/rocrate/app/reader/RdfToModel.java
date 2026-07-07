@@ -1041,6 +1041,10 @@ public class RdfToModel
                     .map(x -> externalIdentifierToSample.get(x.objectIdentifer))
                     .collect(Collectors.toList());
                 sample.setParents(parents);
+                if (!parents.isEmpty())
+                {
+                    sample.getProperties().remove("parents");
+                }
                 for (Sample parent : parents)
                 {
                     List<Sample> children =
