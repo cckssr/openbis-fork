@@ -117,6 +117,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.id.IVocabularyTermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.update.VocabularyTermUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.update.VocabularyUpdate;
 import ch.ethz.sis.openbis.generic.server.xls.importer.enums.ImportTypes;
+import ch.ethz.sis.openbis.generic.server.xls.importer.helper.semanticannotation.SemanticAnnotationHelper;
+import ch.ethz.sis.openbis.generic.server.xls.importer.helper.semanticannotation.SemanticAnnotationRecord;
 import ch.ethz.sis.openbis.generic.server.xls.importer.utils.ImportUtils;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 
@@ -134,6 +136,8 @@ public class DelayedExecutionDecorator
 
     Map<String, PropertyType> propertyTypeCache;
 
+    SemanticAnnotationHelper annotationCache;
+
     public boolean isSystem()
     {
         return sessionToken.startsWith("system");
@@ -148,6 +152,11 @@ public class DelayedExecutionDecorator
         this.delayedExecutions =
                 new LinkedHashMap<>(); // The only reason this is a linked Hash Map is so the list of error messages is on the same order as the delayed executions are added.
         this.propertyTypeCache = new HashMap<>();
+        this.annotationCache = new SemanticAnnotationHelper(this);
+    }
+
+    public SemanticAnnotationHelper getAnnotationCache() {
+        return annotationCache;
     }
 
     private void addIdsAndExecuteDelayed(IObjectId id, ImportTypes importTypes, String variable)

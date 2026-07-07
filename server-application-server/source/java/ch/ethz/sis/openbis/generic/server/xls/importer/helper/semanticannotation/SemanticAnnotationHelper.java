@@ -19,23 +19,19 @@ package ch.ethz.sis.openbis.generic.server.xls.importer.helper.semanticannotatio
 
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IEntityType;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.IEntityTypeId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.EntityType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyAssignment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyType;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.IPropertyTypeId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.SemanticAnnotation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.fetchoptions.SemanticAnnotationFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.search.SemanticAnnotationSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.xls.importer.delay.DelayedExecutionDecorator;
+import ch.ethz.sis.openbis.generic.server.xls.importer.utils.IAttribute;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 /***
  *  map type code to first semantic annotation found in xls
@@ -56,46 +52,89 @@ public final class SemanticAnnotationHelper
         entityTypeToSemanticAnnotationMap = new HashMap<>();
         propertyTypeToSemanticAnnotationMap = new HashMap<>();
         propertyAssignmentToSemanticAnnotationMap = new HashMap<>();
-
         recordToAnnotationMap = new HashMap<>();
-
         this.delayedExecutor = delayedExecutor;
     }
 
-    public SemanticAnnotation getSemanticAnnotation(SemanticAnnotationRecord[] records, EntityTypePermId permIdOrNull, String propertyCodeOrNull)
+    public enum Attribute implements IAttribute
     {
-        SemanticAnnotationType type = null;
-        if(permIdOrNull != null) {
-            if(propertyCodeOrNull != null) {
-                type = SemanticAnnotationType.PropertyAssignment;
-            } else {
-                type = SemanticAnnotationType.EntityType;
-            }
-        } else if(propertyCodeOrNull != null) {
-            type = SemanticAnnotationType.PropertyType;
-        } else {
-            throw new UserFailureException("At least one type for semantic annotation matching needs to be defined!");
+        OntologyId("Ontology Id", false, false),
+        OntologyVersion("Ontology Version", false, false),
+        OntologyAnnotationId("Ontology Annotation Id", false, false);
+
+        private final String headerName;
+
+        private final boolean mandatory;
+
+        private final boolean upperCase;
+
+        Attribute(String headerName, boolean mandatory, boolean upperCase)
+        {
+            this.headerName = headerName;
+            this.mandatory = mandatory;
+            this.upperCase = upperCase;
         }
 
+        public String getHeaderName()
+        {
+            return headerName;
+        }
+
+        @Override
+        public boolean isMandatory()
+        {
+            return mandatory;
+        }
+
+        @Override
+        public boolean isUpperCase()
+        {
+            return upperCase;
+        }
+    }
+
+    public SemanticAnnotation getEntityTypeSemanticAnnotation(List<SemanticAnnotationRecord> records,
+            EntityTypePermId entityTypePermId)
+    {
+        return getSemanticAnnotationFromRecords(records, SemanticAnnotationType.EntityType, entityTypePermId, null);
+    }
+
+    public SemanticAnnotation getPropertyTypeSemanticAnnotation(List<SemanticAnnotationRecord> records,
+            String propertyTypeCode)
+    {
+        return getSemanticAnnotationFromRecords(records, SemanticAnnotationType.PropertyType, null, propertyTypeCode);
+    }
+
+    public SemanticAnnotation getPropertyAssignmentSemanticAnnotation(List<SemanticAnnotationRecord> records,
+            EntityTypePermId entityTypePermId, String propertyTypeCode)
+    {
+        return getSemanticAnnotationFromRecords(records, SemanticAnnotationType.PropertyAssignment, entityTypePermId, propertyTypeCode);
+    }
+
+    private SemanticAnnotation getSemanticAnnotationFromRecords(List<SemanticAnnotationRecord> records,
+            SemanticAnnotationType type, EntityTypePermId entityTypePermIdOrNull,
+            String propertyTypeCodeOrNull) {
         SemanticAnnotation annotation = null;
         boolean multipleFound = false;
+        SemanticAnnotationRecord faultyRecord = null;
         for(SemanticAnnotationRecord record : records)
         {
-            List<SemanticAnnotation> annotations = getSemanticAnnotation(record, type, permIdOrNull, propertyCodeOrNull);
+            List<SemanticAnnotation> annotations = getSemanticAnnotation(record, type, entityTypePermIdOrNull, propertyTypeCodeOrNull);
             if(annotations.size() == 1)
             {
                 annotation = annotations.get(0);
                 break;
             } else if(annotations.size() > 1){
                 multipleFound = true;
+                faultyRecord = record;
             }
         }
-        if(annotation == null && multipleFound) {
-            throw new UserFailureException("Ambiguous import state: multiple semantic annotations were found matching the criteria!");
+        if(multipleFound) {
+            throw new UserFailureException(String.format("Ambiguous import state: multiple semantic annotations were found for record: %s", faultyRecord));
         }
         if(annotation != null)
         {
-            putSemanticAnnotationToCache(annotation, type, permIdOrNull, propertyCodeOrNull);
+            putSemanticAnnotationToCache(annotation, type, entityTypePermIdOrNull, propertyTypeCodeOrNull);
         }
         return annotation;
     }
@@ -210,8 +249,7 @@ public final class SemanticAnnotationHelper
         switch (type) {
             case EntityType:
                 IEntityType entityType = annotation.getEntityType();
-                if(entityType != null && entityType.getPermId() instanceof EntityTypePermId) {
-                    EntityTypePermId entityTypePermId = (EntityTypePermId) entityType.getPermId();
+                if(entityType != null && entityType.getPermId() instanceof EntityTypePermId entityTypePermId) {
                     if(entityTypePermId.equals(permIdOrNull)) {
                         result = annotation;
                     } else if(!exactMatching && entityTypePermId.getEntityKind().equals(permIdOrNull.getEntityKind())) {
