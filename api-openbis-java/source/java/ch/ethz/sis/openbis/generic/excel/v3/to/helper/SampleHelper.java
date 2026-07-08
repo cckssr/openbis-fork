@@ -136,8 +136,14 @@ public class SampleHelper
         propertyRowValues.createCell(5).setCellValue(
                 Optional.ofNullable(sampleObject.getExperiment()).map(x -> x.getIdentifier())
                         .map(x -> x.toString()).orElse(null)); // Experiment
-        //propertyRowValues.createCell(6).setCellValue(""); // Parents
-        //propertyRowValues.createCell(7).setCellValue(""); // Children
+        propertyRowValues.createCell(6)
+                .setCellValue(sampleObject.getParents().stream().map(x -> x.getIdentifier()).
+                        map(x -> x.getIdentifier())
+                        .collect(Collectors.joining(","))); // Parents
+        propertyRowValues.createCell(7)
+                .setCellValue(sampleObject.getChildren().stream().map(x -> x.getIdentifier()).
+                        map(x -> x.getIdentifier())
+                        .collect(Collectors.joining(","))); // Children
 
         int idxName = propertyTypeIndexInfo.findIndex("Name");
         if (idxName != -1)
