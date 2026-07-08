@@ -15,27 +15,27 @@
 | Parent/child           | Linked via `openBIS:parents`, annotated with `schema:isBasedOn`                                        |
 | File                   | `File` entities, referenced via `schema:hasPart`                                                       |
 
+# OpenBIS Concepts
 
-# Space
+## Space
 
 These are nothing special in the crate, one entity per space, of type `openBIS:Space`.
 
-# Project
+## Project
 
 These are of type `openBIS:Project`
 These are also straightforward, nothing huge in the crate.
 
-# Collection
+## Collection
 
 These are of type `openBIS:Collection`
 Collections may have files, see Files.
 
-# OpenBIS Dataset
+## Dataset
 
 Currently not represented, please attach files to Collections or Objects
 
-
-# Object
+## Object
 
 This consists of two types:
 - the base `openBIS:object`
@@ -44,27 +44,36 @@ This consists of two types:
 
 Objects may have files, see Files.
 
-# Files
+## Files
 
 The files themselves are linked using the standard RO-Crate `File` type.
 For export from openBIS to RO-Crate, the paths remain the same, e.g. `/SPACE/PROJECT/SAMPLE1/data/foo.csv`.  
 Files are added using the  `schema:hasPart` property, this is also included in the system schema.
 
 
-# Rich Text and Images
+## Object Parent-Child relationship
+
+This is only reconstructed for openBIS crates. These are linked via the `openBIS:parents` property.
+The property is annotated with `https://schmema.org/isBasedOn` for graph traversal by other systems.
+Only the parents are indicated in the RO-Crate because not all children might be included in the
+openBIS exports.
+We reconstruct the children for re-import.
+
+## Rich Text and Images
 
 While the discussion on rich text has not been resolved: https://ethsis.atlassian.net/browse/BIS-2470, we guess whether something's rich text.
 
 Images are extracted, kept separate in the openBisModel and the paths are updated to a format usable by openBIS.
 
+# Import/Export behaviour
 
-# openBIS -> RO-Crate
+## openBIS -> RO-Crate
 
 
 This is a pretty straightforward mapping of our concepts.
 
 
-# RO-Crate -> openBIS
+## RO-Crate -> openBIS
 
 This is the more complicated one.
 Before the actual conversion, the RO-Crate is searched for entities that require downloads.
@@ -78,16 +87,7 @@ Afterward, the various types of references are resolved. All object references n
 from RO-Crate identifiers to openBIS ones. The really complicated stuff is mapping back the openBIS
 constructs like projects, spaces, collections and parent/child relationships.
 
-# Reconstructing/Creating spaces
+## Reconstructing/Creating spaces
 
-If the crate contains openBIS objects, the import is going to recreate the structure of spaces,
-projects, collections and parents and children.
-For other crates, a space and project can be specified, collections are going to be per object type.
-
-# Parent-Child relationship
-
-This is only reconstructed for openBIS crates. These are linked via the `openBIS:parents` property.
-The property is annotated with `https://schmema.org/isBasedOn` for graph traversal by other systems.
-Only the parents are indicated in the RO-Crate because not all children might be included in the
-openBIS exports.
-We reconstruct the children for re-import. 
+If the crate contains openBIS objects, the import is going to recreate the structure of spaces.
+For other crates, a space and project can be specified, collections per object type will be created.
