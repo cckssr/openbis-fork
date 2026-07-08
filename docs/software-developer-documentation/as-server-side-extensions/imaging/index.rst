@@ -2,7 +2,7 @@ Imaging technology
 ======================
 
 .. toctree::
-   :maxdepth: 5
+   :maxdepth: 4
 
-    as-imaging.md
-    usage.md
+   as-imaging.md
+   usage.md

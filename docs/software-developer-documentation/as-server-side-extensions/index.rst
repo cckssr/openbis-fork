@@ -2,7 +2,7 @@ Application Server Extensions
 ======================
 
 .. toctree::
-   :maxdepth: 5
+   :maxdepth: 4
 
    as-api-listener.md
    core-plugins.md

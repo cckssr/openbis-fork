@@ -16,7 +16,7 @@ The complete solution for managing your research data.
    Legacy Advance Features </user-documentation/legacy-advance-features/index>
 
 .. toctree::
-   :maxdepth: 5
+   :maxdepth: 4
    :hidden:
    :caption: Software Developer Documentation
 
