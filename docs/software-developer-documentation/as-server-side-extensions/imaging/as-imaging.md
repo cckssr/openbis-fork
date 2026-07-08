@@ -1,4 +1,4 @@
-Imaging technology
+Technical documentation
 ==================================
 
 ## Introduction
@@ -252,10 +252,10 @@ Example of `IMAGING _DATA_CONFIG`:
 ```
 
 
-## Imaging Service
+## Extensions
 This section describes how Imaging Service works and how it can be extended.
 
-Imaging service is implemented using Custom Services technology for AS (For more details see [Custom Server Services](./as-services.md)). It is a special service that, when requested, runs "adaptor" java class (specified in IMAGING_DATA_CONFIG) which computes images based on associated dataset files and some input parameters.
+Imaging service is implemented using Custom Services technology for AS (For more details see [Custom Server Services](./../as-services.md)). It is a special service that, when requested, runs "adaptor" java class (specified in IMAGING_DATA_CONFIG) which computes images based on associated dataset files and some input parameters.
 
 ### Adaptors
 Currently, there are 3 types of adaptors that are implemented:
