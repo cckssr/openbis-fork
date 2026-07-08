@@ -5,4 +5,4 @@ Imaging technology
    :maxdepth: 4
 
     as-imaging.md
-..     usage.md
+    usage.md
