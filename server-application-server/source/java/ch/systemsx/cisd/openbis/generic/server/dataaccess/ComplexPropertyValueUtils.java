@@ -105,7 +105,7 @@ public class ComplexPropertyValueUtils {
                 // If no format is suitable, the exception will be thrown at the end of this method.
             }
         }
-        throw new IllegalArgumentException("Wrong date format:" + dateTime);
+        throw new IllegalArgumentException("Wrong date format: " + dateTime);
     }
 
     public static String tryGetJsonValue(final Serializable value, final DataTypeCode dataTypeCode) {
