@@ -573,36 +573,39 @@ function normalizeArrayPropertyValue(value: any, dataType: FormFieldDataType): a
     throw new Error(errorMessage);
   }
 
+  // Validating each value of the array property.
   switch (dataType) {
     case FormFieldDataType.ARRAY_INTEGER:
-      return parsedValue.map(item => {
-        if (item == null) {
-          return null;
-        } else {
-          const parsed = Number(item);
-          if (isNaN(parsed) || !Number.isInteger(parsed)) {
-            throw new Error(`Not a valid integer: "${item}"`);
-          } else {
-            return parsed;
-          }
+      parsedValue.forEach(item => {
+        if (item != null && (typeof item !== 'number' || !Number.isInteger(item))) {
+          throw new Error(`Not a valid integer: ${JSON.stringify(item)}`);
         }
       });
+      break;
     case FormFieldDataType.ARRAY_REAL:
-      return parsedValue.map(item => {
-        if (item == null) {
-          return null;
-        } else {
-          const parsed = Number(item);
-          if (isNaN(parsed)) {
-            throw new Error(`Not a valid real number: "${item}"`);
-          } else {
-            return parsed;
-          }
+      parsedValue.forEach(item => {
+        if (item != null && typeof item !== 'number') {
+          throw new Error(`Not a valid real number: ${JSON.stringify(item)}`);
         }
       });
+      break;
+    case FormFieldDataType.ARRAY_TIMESTAMP:
+      parsedValue.forEach(item => {
+        if (item && (typeof item !== 'string' || !/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}( [+-]\d{4})?$/.test(item))) {
+          throw new Error(`Not a valid timestamp: "${JSON.stringify(item)}"`);
+        }
+      });
+      break;
     default:
-      return parsedValue;
+      parsedValue.forEach(item => {
+        if (item && typeof item !== 'string') {
+          throw new Error(`Not a valid string: "${JSON.stringify(item)}"`);
+        }
+      });
+      break;
   }
+
+  return parsedValue;
 }
 
 /**

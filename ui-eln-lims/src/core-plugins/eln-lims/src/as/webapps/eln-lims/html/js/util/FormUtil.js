@@ -2110,17 +2110,16 @@ var FormUtil = new function() {
 				return false;
 			} else if (dataType === "ARRAY_INTEGER") {
 				return val.every(v => v == null
-					|| typeof v === "number" && Number.isInteger(v)
-					|| typeof v === "string" && /^-?\d+$/.test(v.trim()));
+					|| typeof v === "number" && Number.isInteger(v));
 			} else if (dataType === "ARRAY_REAL") {
 				return val.every(v => v == null
-					|| typeof v === "number"
-					|| typeof v === "string" && !isNaN(Number(v.trim())) && v.trim() !== "");
+					|| typeof v === "number");
 			} if (dataType === "ARRAY_TIMESTAMP") {
 				return val.every(v => v == null
 					|| typeof v === "string" && /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}( [+-]\d{4})?$/.test(v.trim()));
 			} else {
-				return true;
+				// For string arrays, all values should be strings.
+				return val.every(v => v == null || typeof v === "string");
 			}
 		} catch (e) {
 			return false;
