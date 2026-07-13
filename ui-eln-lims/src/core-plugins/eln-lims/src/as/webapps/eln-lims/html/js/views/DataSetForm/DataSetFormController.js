@@ -219,17 +219,13 @@ function DataSetFormController(parentController, mode, entity, dataSet, isMini, 
 				break;
 			}
 		}
-		if (dataSetTypeV3 && this._dataSetFormModel.v3_dataset) {
+		if (dataSetTypeV3) {
 			for (var pa of dataSetTypeV3.propertyAssignments) {
 				var pt = pa.propertyType;
 				if (["ARRAY_INTEGER", "ARRAY_REAL", "ARRAY_STRING", "ARRAY_TIMESTAMP"].includes(pt.dataType)) {
 					var currentVal = metadata[pt.code];
-					var isNormalized = currentVal == null
-						|| currentVal === ""
-						|| (typeof currentVal === "string" && currentVal.trim().startsWith("["));
-					if (!isNormalized) {
-						var v3Val = this._dataSetFormModel.v3_dataset.properties[pt.code];
-						metadata[pt.code] = v3Val != null ? JSON.stringify(v3Val) : null;
+					if (Array.isArray(currentVal)) {
+						metadata[pt.code] = JSON.stringify(currentVal);
 					}
 				}
 			}

@@ -100,6 +100,17 @@ public class RoCrateSchemaValidationRegressionCasesTest
 
     }
 
+    @Test
+    public void testOpenBisParentChild() throws IOException
+    {
+        String location = "validation/parent_child.result-crate.2026-07-02-15-46-49-939.zip";
+
+        ValidationResult validationResult =
+                new RoCrateSchemaValidationRegressionCasesTest().getValidationResult(location);
+        Assert.assertTrue(validationResult.isOkay());
+
+    }
+
 
 
 }

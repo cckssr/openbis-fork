@@ -10,13 +10,14 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Function;
 
+import static ch.openbis.rocrate.app.Constants.FILE_TYPES;
+
 public class FileDownloader implements IFileDownloader
 {
     Function<URL, URL> mapUrl;
 
     IFileDownloadStrategy iFileDownloadStrategy;
 
-    private final static Set<String> TYPES = Set.of("File");
 
     public static Function<URL, URL> getLocalMapping(int port)
     {
@@ -79,7 +80,7 @@ public class FileDownloader implements IFileDownloader
         for (AbstractEntity dataEntity : abstractEntityList)
         {
             String typerooni = dataEntity.getProperty("@type").asText();
-            if (!TYPES.contains(typerooni))
+            if (!FILE_TYPES.contains(typerooni))
             {
                 continue;
             }

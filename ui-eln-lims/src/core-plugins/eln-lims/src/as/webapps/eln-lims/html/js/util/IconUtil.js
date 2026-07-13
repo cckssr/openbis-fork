@@ -237,6 +237,9 @@ var IconUtil = new function() {
         } else if(type === "TYPE_EXPORT_TO_RO_CRATE" || type === 'RO-CRATE_EXPORT') {
              icon.type = "img";
              icon.url = "./img/ro-crate.svg";
+        }  else if(type === "TYPE_IMPORT_RO_CRATE" || type === 'RO-CRATE_IMPORT') {
+             icon.type = "img";
+             icon.url = "./img/ro-crate.svg";
         } else if(type === "TYPE_EXPORT_TO_SCI_CAT" || type === 'SCI-CAT_EXPORT') {
             icon.class = "material-icons";
              icon.text = "delete_forever";
@@ -293,7 +296,7 @@ var IconUtil = new function() {
                          };
         } else if(type === "UNARCHIVING_HELPER") {
             icon.class = "glyphicon glyphicon-open";
-        } else if(type === "CUSTOM_IMPORT" || type === "IMPORT") {
+        } else if(type === "CUSTOM_IMPORT" || type === "IMPORT" || type === "IMPORTS") {
             icon.class = "glyphicon glyphicon-import";
         } else if(type === "USER_MANAGER") {
             icon.class = "fa fa-users";
@@ -314,6 +317,9 @@ var IconUtil = new function() {
         } else if(type === "EXPORT_TO_ZENODO" || type === 'ZENODO_EXPORT') {
             icon.class = "glyphicon glyphicon-export";
         } else if(type === "TYPE_EXPORT_TO_RO_CRATE" || type === 'RO-CRATE_EXPORT') {
+            icon.type = "img";
+            icon.url = "./img/ro-crate.svg";
+        }  else if(type === "TYPE_IMPORT_RO_CRATE" || type === 'RO-CRATE_IMPORT') {
             icon.type = "img";
             icon.url = "./img/ro-crate.svg";
         } else if(type === "TYPE_EXPORT_TO_SCI_CAT" || type === 'SCI-CAT_EXPORT') {

@@ -109,6 +109,7 @@ export default class EntityTypeFormFacade {
     const fo = new openbis.PropertyTypeFetchOptions()
     fo.withVocabulary()
     fo.withRegistrator()
+    fo.withSampleType()
     return openbis.searchPropertyTypes(criteria, fo).then(results => {
       return results.getObjects()
     })

@@ -69,7 +69,7 @@ public class StandardPathLister implements FtpPathLister {
 
                 String afsFilePath = entityDescriptor.afsPath();
                 boolean isAfsEntityDataMutable = entityDescriptor.afsEntity().mutable();
-                String afsEntityPermId = entityDescriptor.afsEntity().identifier();
+                String afsEntityPermId = entityDescriptor.afsEntity().identifier().orElseThrow();
 
                 if ("/".equals(afsFilePath) && isAfsEntityDataMutable) {
                     listUtil.tryToCreateAfsFileRootIfNecessary(
@@ -85,7 +85,7 @@ public class StandardPathLister implements FtpPathLister {
                     return attributes.get();
                 } else {
                     if ("/".equals(afsFilePath) && !isAfsEntityDataMutable) {
-                        return SftpListUtil.getDefaultAbstractDirectoryAttributes();
+                        return SftpListUtil.getDefaultAbstractDirectoryAttributes(false);
                     } else {
                         throw new NoSuchFileException("AFS entity perm-id : " + afsEntityPermId + " AFS file-path : " + afsFilePath);
                     }
@@ -95,7 +95,34 @@ public class StandardPathLister implements FtpPathLister {
                 throw new IllegalStateException("Entity descriptor should be of type AFS_FILE");
             }
         } else {
-            return SftpListUtil.getDefaultAbstractDirectoryAttributes();
+            SftpNode lastNode = nodeChain.getLast().orElse(null);
+
+            if (lastNode != null) {
+                return switch (lastNode.getType()) {
+                    case ROOT -> SftpListUtil.getDefaultAbstractDirectoryAttributes(false);
+                    case SUBLEVEL -> SftpListUtil.getDefaultAbstractDirectoryAttributes(true);
+                    default -> {
+                        Optional<EntityDescriptor> entityDescriptorOpt = toEntityDescriptor(nodeChain);
+                        if (entityDescriptorOpt.isPresent()) {
+                            EntityDescriptor entityDescriptor = entityDescriptorOpt.get();
+                            if (listUtil.checkExistence(entityDescriptor)) {
+                                yield  SftpListUtil.getDefaultAbstractDirectoryAttributes(false);
+                            } else {
+                                throw new NoSuchFileException(
+                                    String.format("Entity of type : %s and identifier : %s",
+                                        entityDescriptor.type(),
+                                        entityDescriptor.identifier()
+                                    )
+                                );
+                            }
+                        } else {
+                            throw new IllegalStateException("Missing entity descriptor");
+                        }
+                    }
+                };
+            } else {
+                return SftpListUtil.getDefaultAbstractDirectoryAttributes(false);
+            }
         }
     }
 
@@ -108,18 +135,27 @@ public class StandardPathLister implements FtpPathLister {
                 case ROOT -> Optional.empty();
                 case SPACE -> Optional.of(new EntityDescriptor(
                         SftpNode.Type.SPACE,
-                        lastNode.getIdentifier().orElseThrow(),
+                        Optional.of(lastNode.getIdentifier().orElseThrow()),
+                        Optional.empty(),
+                        Optional.empty(),
+                        Optional.empty(),
+                        Optional.of(lastNode.getIdentifier().orElseThrow()),
+                        Optional.empty(),
                         false,
                         null,
                         null
                 ));
                 case PROJECT -> Optional.of(new EntityDescriptor(
                         SftpNode.Type.PROJECT,
-                        new ProjectIdentifier(
-                                Optional.ofNullable(nodeChain.lookUpSpaceCode())
-                                        .orElseThrow(),
+                        Optional.of(nodeChain.lookUpSpaceCode()),
+                        Optional.of(lastNode.getIdentifier().orElseThrow()),
+                        Optional.empty(),
+                        Optional.empty(),
+                        Optional.of(new ProjectIdentifier(
+                                Optional.of(nodeChain.lookUpSpaceCode()).get(),
                                 lastNode.getIdentifier().orElseThrow()
-                        ).getIdentifier(),
+                        ).getIdentifier()),
+                        Optional.empty(),
                         false,
                         null,
                         null
@@ -128,10 +164,27 @@ public class StandardPathLister implements FtpPathLister {
                     String entityPermId = SftpListUtil.getEntityPermIdFromDisplayName(
                             lastNode.getIdentifier().orElseThrow()
                     );
+                    String nameProperty = SftpListUtil.getEntityNameFromDisplayName(
+                            lastNode.getIdentifier().orElseThrow()
+                    );
                     yield Optional.of(new EntityDescriptor(
                         lastNodeType,
-                        entityPermId,
-                        listUtil.isAfsEntityMutable(entityPermId, lastNodeType),
+                        Optional.of(nodeChain.lookUpSpaceCode()),
+                        lastNodeType == SftpNode.Type.EXPERIMENT ?
+                                Optional.of(nodeChain.lookUpProjectCode()) :
+                                Optional.ofNullable(nodeChain.lookUpProjectCode()),
+                        lastNodeType == SftpNode.Type.EXPERIMENT ?
+                                Optional.ofNullable(entityPermId) :
+                                Optional.ofNullable(nodeChain.lookUpExperimentPermId()),
+                        switch (lastNodeType) {
+                            case DATA_SET -> Optional.ofNullable(nodeChain.lookUpParentSamplePermId());
+                            case SAMPLE, FOLDER -> Optional.ofNullable(nodeChain.toParent().lookUpParentSamplePermId());
+                            default -> Optional.empty();
+                        },
+                        Optional.ofNullable(entityPermId),
+                        Optional.ofNullable(nameProperty),
+                            entityPermId == null ||
+                                    listUtil.isAfsEntityMutable(entityPermId, lastNodeType),
                         null, null
                     ));
                 }
@@ -139,15 +192,31 @@ public class StandardPathLister implements FtpPathLister {
                     if ( pointsToAfsFile(nodeChain) ) {
                         SftpNode afsEntityNode = validateAndGetAfsEntityNodeFromAfsFileChain(nodeChain);
                         String afsFilePath = validateAndGetAfsFilePathFromAfsFileChain(nodeChain);
-                        String entityPermId = SftpListUtil.getEntityPermIdFromDisplayName(
+                        String entityPermId = Objects.requireNonNull(SftpListUtil.getEntityPermIdFromDisplayName(
                                 afsEntityNode.getIdentifier().orElseThrow()
-                        );
+                        ));
                         yield Optional.of(new EntityDescriptor(
                                 SftpNode.Type.AFS_FILE,
-                                null, false,
+                                Optional.ofNullable(nodeChain.lookUpSpaceCode()),
+                                Optional.ofNullable(nodeChain.lookUpProjectCode()),
+                                afsEntityNode.getType() == SftpNode.Type.EXPERIMENT ?
+                                        Optional.of(entityPermId) :
+                                        Optional.ofNullable(nodeChain.lookUpExperimentPermId()),
+                                Optional.empty(),
+                                Optional.empty(),
+                                Optional.empty(), false,
                                 new EntityDescriptor(
                                     afsEntityNode.getType(),
-                                    entityPermId,
+                                    Optional.ofNullable(nodeChain.lookUpSpaceCode()),
+                                    Optional.ofNullable(nodeChain.lookUpProjectCode()),
+                                    afsEntityNode.getType() == SftpNode.Type.EXPERIMENT ?
+                                            Optional.of(entityPermId) :
+                                            Optional.ofNullable(nodeChain.lookUpExperimentPermId()),
+                                    Optional.empty(),
+                                    Optional.of(entityPermId),
+                                    Optional.ofNullable(SftpListUtil.getEntityNameFromDisplayName(
+                                            afsEntityNode.getIdentifier().orElseThrow()
+                                    )),
                                     listUtil.isAfsEntityMutable(entityPermId, afsEntityNode.getType()),
                                     null, null
                                 ),

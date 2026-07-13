@@ -89,7 +89,7 @@ public class SchemaFacade implements ISchemaFacade
                 new RoCrate.RoCrateBuilder(name, description, dateString,
                         licenseIdentifier);
         roCrateBuilder.addValuePairToContext("schema",
-                "https://schema.org");
+                "https://schema.org/");
         roCrateBuilder.addValuePairToContext("owl",
                 "http://www.w3.org/2002/07/owl#");
         for (Map.Entry<String, String> keyVal : context.entrySet()

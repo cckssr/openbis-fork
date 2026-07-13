@@ -475,7 +475,7 @@ function ServerFacade(openbisServer) {
 	}
 
 	//
-	//
+	// Exports to zip
 	//
 	this.exportAll = function(exportData, callbackFunction) {
         this.customASService({
@@ -484,6 +484,9 @@ function ServerFacade(openbisServer) {
          }, callbackFunction, "exports-api", null);
     };
 
+    //
+    // RO-Crate export/import
+    //
 	this.exportRoCrate = function(exportData, callbackFunction) {
         this.customASService({
                  "method" : "exportRoCrate",
@@ -503,6 +506,23 @@ function ServerFacade(openbisServer) {
         }, callbackFunction, "exports-api", null);
     };
 
+    this.importRoCrate = function(importData, callbackFunction) {
+        this.customASService({
+            "method" : "importRoCrate",
+            "importData" : importData,
+        }, callbackFunction, "imports-api", null);
+    };
+
+    this.statusRoCrateImport = function(jobId, callbackFunction) {
+        this.customASService({
+            "method" : "statusRoCrateImport",
+            "jobId": jobId,
+        }, callbackFunction, "imports-api", null);
+    };
+
+    //
+    // Sci-Cat export
+    //
     this.exportSciCat = function(exportData, accessToken, callbackFunction) {
         this.customASService({
              "method" : "exportSciCat",

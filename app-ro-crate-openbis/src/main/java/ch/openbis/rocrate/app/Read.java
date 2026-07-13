@@ -19,6 +19,7 @@ import org.apache.commons.cli.*;
 import java.io.FileOutputStream;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.function.Function;
 
 public class Read
 {
@@ -75,7 +76,7 @@ public class Read
         IFileDownloader fileDownloader =
                 new FileDownloader(localDownloadConfig.map(
                                 x -> FileDownloader.getLocalMapping(x.protocol, x.host, x.port))
-                        .orElse(FileDownloader.getLocalMapping(8100)), new TempDirSaving());
+                        .orElse(Function.identity()), new TempDirSaving());
         Map<AbstractEntity, Path> abstractEntityPathMap = fileDownloader.handleDownloads(crate);
         OpenBisModel
                 openBisModel =

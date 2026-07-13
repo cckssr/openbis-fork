@@ -128,6 +128,14 @@ public class SftpNodeChain {
         );
     }
 
+    public @NonNull SftpNodeChain toParent() {
+        if (!this.nodes().isEmpty()) {
+            return new SftpNodeChain(this.nodes().subList(0, this.nodes.size() - 1));
+        } else {
+            return this;
+        }
+    }
+
     public String lookUpSpaceCode() {
         return this.nodes().stream().filter(node -> node.getType() == SftpNode.Type.SPACE)
                 .findFirst().flatMap(SftpNode::getIdentifier)
@@ -138,5 +146,20 @@ public class SftpNodeChain {
         return this.nodes().stream().filter(node -> node.getType() == SftpNode.Type.PROJECT)
                 .findFirst().flatMap(SftpNode::getIdentifier)
                 .map(SftpListUtil::getProjectCodeFromDisplayName).orElse(null);
+    }
+
+    public String lookUpExperimentPermId() {
+        return this.nodes().stream().filter(node -> node.getType() == SftpNode.Type.EXPERIMENT)
+                .findFirst().flatMap(SftpNode::getIdentifier)
+                .map(SftpListUtil::getEntityPermIdFromDisplayName).orElse(null);
+    }
+
+    public String lookUpParentSamplePermId() {
+        return this.nodes().reversed().stream().filter(
+                    node ->
+                            node.getType() == SftpNode.Type.SAMPLE ||
+                            node.getType() == SftpNode.Type.FOLDER
+                ).findFirst().flatMap(SftpNode::getIdentifier)
+                .map(SftpListUtil::getEntityPermIdFromDisplayName).orElse(null);
     }
 }

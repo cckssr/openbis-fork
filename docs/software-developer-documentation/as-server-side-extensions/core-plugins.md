@@ -28,7 +28,7 @@ We currently recommend the use of these core plugins.
     - `miscellaneous`: Any additional properties.
 - Data Store (DSS):
     - `drop-boxes`: ETL server threads for registration of data sets.
-    - `services`: Custom services. For more details see [Custom Datastore Server Services](./dss-services.md).
+    - `services`: Custom services. For more details see [Custom Datastore Server Services](./../dss-server-side-extensions/dss-services.md).
     - `maintenance-tasks`: Maintenance tasks triggered by some time schedule. Property `class` denotes fully-qualified class name of a class implementing `ch.systemsx.cisd.common.maintenance.IMaintenanceTask`. For more details see [Maintenance Tasks](../../system-documentation/configuration/maintenance-tasks.md).
     - `miscellaneous`: Any additional properties.
 

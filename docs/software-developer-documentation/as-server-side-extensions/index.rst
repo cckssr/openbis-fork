@@ -4,7 +4,7 @@ Application Server Extensions
 .. toctree::
    :maxdepth: 4
 
-   core-plugins
-   as-services
-   as-imaging
-   as-api-listener
+   as-api-listener.md
+   core-plugins.md
+   as-services.md
+   imaging/index

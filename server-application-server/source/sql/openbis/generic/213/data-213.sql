@@ -225,21 +225,21 @@ values
 --  Purpose:  Insert an initial data set into the table PROPERTY_TYPES
 -----------------------------------------------------------------------
 
-insert into property_types
-(id
-,code
-,description
-,label
-,daty_id
-,pers_id_registerer)
-values 
-(nextval('PROPERTY_TYPE_ID_SEQ')
-,'DESCRIPTION'
-,'A Description'
-,'Description'
-,(select id from data_types where code ='VARCHAR')
-,(select id from persons where user_id ='system')
-);
+-- insert into property_types
+-- (id
+-- ,code
+-- ,description
+-- ,label
+-- ,daty_id
+-- ,pers_id_registerer)
+-- values
+-- (nextval('PROPERTY_TYPE_ID_SEQ')
+-- ,'DESCRIPTION'
+-- ,'A Description'
+-- ,'Description'
+-- ,(select id from data_types where code ='VARCHAR')
+-- ,(select id from persons where user_id ='system')
+-- );
 
 --------------------------------------------------------------------------
 --  Purpose:  Insert an initial data set into the table EXPERIMENT_TYPES

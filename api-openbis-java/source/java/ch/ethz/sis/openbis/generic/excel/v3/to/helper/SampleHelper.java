@@ -1,6 +1,7 @@
 package ch.ethz.sis.openbis.generic.excel.v3.to.helper;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.VocabularyTerm;
 import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
 import ch.ethz.sis.openbis.generic.excel.v3.to.helper.longvals.CellWriter;
@@ -38,6 +39,22 @@ public class SampleHelper
         }
     }
 
+    public record PropertyTypeIndexInfo(List<String> labels, List<String> codes,
+                                        List<String> defaultCols)
+    {
+        int findIndex(String query)
+        {
+            int idx = labels.indexOf(query);
+
+            if (idx >= 0)
+            {
+                return idx;
+            }
+            return defaultCols.size() + codes.indexOf(query);
+        }
+
+    }
+
     public static List<String> getAllColumnsList(List<String> sampleObjectPropertyLabelList)
     {
         List<String> defaultCols = new ArrayList<>(Stream.of(SampleHelper.Attribute.values())
@@ -47,7 +64,28 @@ public class SampleHelper
         return defaultCols;
     }
 
-    public int createSampleHeaders(Sheet sheet, int rowNum, CellStyle headerStyle, String sampleTypeKey, List<String> allColumnList)
+    public static PropertyTypeIndexInfo getPropertyTypeIndexInfo(SampleType sampleType)
+    {
+        List<String> typeLabels =
+                sampleType.getPropertyAssignments().stream().map(x -> x.getPropertyType())
+                        .map(x -> x.getLabel())
+                        .toList();
+        List<String> defaultCols = Stream.of(Attribute.values())
+                .map(Attribute::name)
+                .collect(Collectors.toList());
+        List<String> labels = new ArrayList<>(defaultCols);
+        labels.addAll(typeLabels);
+
+        List<String> codes =
+                sampleType.getPropertyAssignments().stream().map(x -> x.getPropertyType())
+                        .map(x -> x.getCode())
+                        .toList();
+        return new PropertyTypeIndexInfo(labels, codes, defaultCols);
+
+    }
+
+    public int createSampleHeaders(Sheet sheet, int rowNum, CellStyle headerStyle,
+            String sampleTypeKey, PropertyTypeIndexInfo propertyTypeIndexInfo)
     {
 
         // Create header row for SAMPLE
@@ -69,10 +107,10 @@ public class SampleHelper
         // Create header row for Sample Type columns
         Row sampleTypeRowHeaders = sheet.createRow(rowNum++);
 
-        for (int i = 0; i < allColumnList.size(); i++)
+        for (int i = 0; i < propertyTypeIndexInfo.labels.size(); i++)
         {
             Cell cell = sampleTypeRowHeaders.createCell(i);
-            cell.setCellValue(allColumnList.get(i));
+            cell.setCellValue(propertyTypeIndexInfo.labels.get(i));
             cell.setCellStyle(headerStyle);
         }
 
@@ -80,7 +118,7 @@ public class SampleHelper
     }
 
     public RowWriteResult createResourceRows(Sheet sheet, int rowNum, Sample sampleObject,
-            OpenBisModel openBisModel, List<String> allColumnList)
+            OpenBisModel openBisModel, PropertyTypeIndexInfo propertyTypeIndexInfo)
     {
 
         String projectId =
@@ -98,13 +136,22 @@ public class SampleHelper
         propertyRowValues.createCell(5).setCellValue(
                 Optional.ofNullable(sampleObject.getExperiment()).map(x -> x.getIdentifier())
                         .map(x -> x.toString()).orElse(null)); // Experiment
-        //propertyRowValues.createCell(6).setCellValue(""); // Parents
-        //propertyRowValues.createCell(7).setCellValue(""); // Children
+        propertyRowValues.createCell(6)
+                .setCellValue(sampleObject.getParents().stream().map(x -> x.getIdentifier()).
+                        map(x -> x.getIdentifier())
+                        .collect(Collectors.joining(","))); // Parents
+        propertyRowValues.createCell(7)
+                .setCellValue(sampleObject.getChildren().stream().map(x -> x.getIdentifier()).
+                        map(x -> x.getIdentifier())
+                        .collect(Collectors.joining(","))); // Children
 
-        int idxName = allColumnList.indexOf("Name");
+        int idxName = propertyTypeIndexInfo.findIndex("Name");
         if (idxName != -1)
         {
-            propertyRowValues.createCell(idxName).setCellValue(sampleObject.getCode());
+            String val = Optional.ofNullable(sampleObject.getProperties().get("NAME"))
+                    .map(Object::toString)
+                    .orElse("");
+            propertyRowValues.createCell(idxName).setCellValue(val);
         }
 
         List<String> vocabularyOptionList = openBisModel.getVocabularyTypes().values().stream()
@@ -115,12 +162,12 @@ public class SampleHelper
         sampleObject.getType().getPropertyAssignments();
         List<RowWriteResult.LongCell> longCells = new ArrayList<>();
 
-        for (var property : sampleObject.getProperties().entrySet())
+        for (Map.Entry<String, Serializable> property : sampleObject.getProperties().entrySet())
         {
 
             //propertyRowValues.createCell(1).setCellValue(projectId + "/" + sampleObject.code); // Identifier
             //propertyRowValues.createCell(5).setCellValue(projectId + "/" + sampleObject.type.toUpperCase(Locale.ROOT) + "_COLLECTION"); // Experiment
-            int idx = allColumnList.indexOf(property.getKey());
+            int idx = propertyTypeIndexInfo.findIndex(property.getKey());
             if (idx != -1)
             {
                 String val = property.getValue().toString();

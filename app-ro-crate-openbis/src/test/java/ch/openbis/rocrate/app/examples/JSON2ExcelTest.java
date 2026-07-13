@@ -30,7 +30,7 @@ public class JSON2ExcelTest {
 
     static final String INPUT = "src/test/resources/json2excel";
 
-    static final String REFERENCE_EXCEL = "src/test/resources/json2excel/ro_out.xlsx";
+    static final String REFERENCE_EXCEL = "src/test/resources/json2excel/openbis_test_ro_out.xlsx";
 
     public static final String TMP_OPENBIS_TEST_RO_OUT_XLSX = "/tmp/openbis_test_ro_out.xlsx";
 

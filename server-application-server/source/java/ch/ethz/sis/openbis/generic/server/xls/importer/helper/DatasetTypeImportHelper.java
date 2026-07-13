@@ -17,8 +17,6 @@ package ch.ethz.sis.openbis.generic.server.xls.importer.helper;
 
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.DataSetTypeCreation;
@@ -32,7 +30,6 @@ import ch.ethz.sis.openbis.generic.server.xls.importer.delay.DelayedExecutionDec
 import ch.ethz.sis.openbis.generic.server.xls.importer.enums.ImportModes;
 import ch.ethz.sis.openbis.generic.server.xls.importer.enums.ImportTypes;
 import ch.ethz.sis.openbis.generic.server.xls.importer.handler.JSONHandler;
-import ch.ethz.sis.openbis.generic.server.xls.importer.helper.semanticannotation.SemanticAnnotationHelper;
 import ch.ethz.sis.openbis.generic.server.xls.importer.helper.semanticannotation.SemanticAnnotationRecord;
 import ch.ethz.sis.openbis.generic.server.xls.importer.helper.semanticannotation.SemanticAnnotationType;
 import ch.ethz.sis.openbis.generic.server.xls.importer.utils.AttributeValidator;
@@ -92,15 +89,13 @@ public class DatasetTypeImportHelper extends BasicImportHelper
 
     private final AttributeValidator<Attribute> attributeValidator;
 
-    private final SemanticAnnotationHelper annotationCache;
 
-    public DatasetTypeImportHelper(DelayedExecutionDecorator delayedExecutor, ImportModes mode, ImportOptions options, Map<String, Integer> versions, SemanticAnnotationHelper annotationCache)
+    public DatasetTypeImportHelper(DelayedExecutionDecorator delayedExecutor, ImportModes mode, ImportOptions options, Map<String, Integer> versions)
     {
         super(mode, options);
         this.versions = versions;
         this.delayedExecutor = delayedExecutor;
         this.attributeValidator = new AttributeValidator<>(Attribute.class);
-        this.annotationCache = annotationCache;
     }
 
     @Override protected ImportTypes getTypeName()
@@ -127,42 +122,27 @@ public class DatasetTypeImportHelper extends BasicImportHelper
     protected boolean isNewVersion(Map<String, Integer> header, List<String> values)
     {
         String internal = getValueByColumnName(header, values, Attribute.Internal);
-        boolean isInternalNamespace = ImportUtils.isTrue(internal);
+        DataSetType datasetType = getDatasetType(header, values);
+        boolean isInternalNamespace = ImportUtils.isTrue(internal) || (datasetType != null && datasetType.isManagedInternally());
 
         if(isInternalNamespace && !delayedExecutor.isSystem()) {
             //if exists, skip
-            return !isObjectExist(header, values);
+            return datasetType == null;
         }
         return true;
     }
 
-    @Override protected boolean isObjectExist(Map<String, Integer> header, List<String> values)
+    private DataSetType getDatasetType(Map<String, Integer> header, List<String> values)
     {
         String code = getValueByColumnName(header, values, Attribute.Code);
 
-        String[] ontologyId = getMultiValueByColumnName(header, values, SemanticAnnotationImportHelper.Attribute.OntologyId, "\n");
-        if(ontologyId != null) {
-            String[] ontologyVersion = getMultiValueByColumnName(header, values, SemanticAnnotationImportHelper.Attribute.OntologyVersion, "\n");
-            String[] ontologyAnnotationId =  getMultiValueByColumnName(header, values, SemanticAnnotationImportHelper.Attribute.OntologyAnnotationId, "\n");
-            if(ontologyVersion == null) {
-                throw new UserFailureException("Mandatory field is missing or empty: " + Attribute.OntologyVersion);
-            }
-            if(ontologyAnnotationId == null) {
-                throw new UserFailureException("Mandatory field is missing or empty: " + Attribute.OntologyAnnotationId);
-            }
-            if(ontologyId.length != ontologyVersion.length || ontologyId.length != ontologyAnnotationId.length) {
-                throw new UserFailureException("Number of ontology triplets does not match!");
-            }
-
-            List<SemanticAnnotationRecord> records =
-                    IntStream.range(0, ontologyId.length)
-                            .mapToObj(i -> new SemanticAnnotationRecord(ontologyId[i], ontologyVersion[i], ontologyAnnotationId[i]))
-                            .collect(Collectors.toList());
+        if(hasSemanticAnnotations(header, values)) {
+            List<SemanticAnnotationRecord> records = getSemanticAnnotationRecords(header, values);
             EntityTypePermId permId = new EntityTypePermId(code, EntityKind.DATA_SET);
-            SemanticAnnotation annotation = annotationCache.getSemanticAnnotation(records.toArray(new SemanticAnnotationRecord[0]), permId, null);
+            SemanticAnnotation annotation = delayedExecutor.getAnnotationCache().getEntityTypeSemanticAnnotation(records, permId);
             if(annotation != null) {
                 // if there is semantic annotation, then there is an associated type
-                return true;
+                return (DataSetType) annotation.getEntityType();
             }
         } else {
             if (code == null)
@@ -173,7 +153,12 @@ public class DatasetTypeImportHelper extends BasicImportHelper
 
         EntityTypePermId id = new EntityTypePermId(code, EntityKind.DATA_SET);
 
-        return delayedExecutor.getDataSetType(id, new DataSetTypeFetchOptions()) != null;
+        return delayedExecutor.getDataSetType(id, new DataSetTypeFetchOptions());
+    }
+
+    @Override protected boolean isObjectExist(Map<String, Integer> header, List<String> values)
+    {
+        return getDatasetType(header, values) != null;
     }
 
     @Override protected void createObject(Map<String, Integer> header, List<String> values, int page, int line)
@@ -211,7 +196,7 @@ public class DatasetTypeImportHelper extends BasicImportHelper
         DataSetTypeUpdate update = new DataSetTypeUpdate();
         EntityTypePermId permId = new EntityTypePermId(code, EntityKind.DATA_SET);
 
-        SemanticAnnotation annotation = annotationCache.getCachedSemanticAnnotation(
+        SemanticAnnotation annotation = delayedExecutor.getAnnotationCache().getCachedSemanticAnnotation(
                 SemanticAnnotationType.EntityType, permId, null);
 
         if(annotation != null) {

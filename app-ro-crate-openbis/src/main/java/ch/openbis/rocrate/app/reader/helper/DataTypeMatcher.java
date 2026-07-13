@@ -16,6 +16,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import static ch.ethz.sis.rdf.main.mappers.openBis.ValueMapper.CANONICAL_DATE_FORMAT_PATTERN;
+
 public class DataTypeMatcher
 {
 
@@ -40,6 +42,23 @@ public class DataTypeMatcher
         if (dataType == DataType.SAMPLE)
         {
             return entities.containsKey(value.toString());
+        }
+        return matches(value, dataType);
+
+    }
+
+    public static boolean matchesForOpenBis(Serializable value, DataType dataType)
+    {
+        if (dataType == DataType.TIMESTAMP)
+        {
+            try
+            {
+                DateTimeFormatter.ofPattern(CANONICAL_DATE_FORMAT_PATTERN).parse(value.toString());
+                return true;
+            } catch (DateTimeParseException e)
+            {
+                return false;
+            }
         }
         return matches(value, dataType);
 
@@ -114,17 +133,21 @@ public class DataTypeMatcher
 
                         identifiers = (String[]) value;
                     }
+                    boolean allGood = true;
                     for (String identifier : identifiers)
                     {
 
                         String[] parts = identifier.toString().split("/");
 
-                        if ((parts.length == 3 || parts.length == 4) && Strings.isStringEmpty(parts[0]))
+                        boolean okay =
+                                (parts.length == 3 || parts.length == 4) && Strings.isStringEmpty(
+                                        parts[0]);
+                        if (!okay)
                         {
-                            return true;
+                            allGood = false;
                         }
                     }
-                    return false;
+                    return allGood;
                 } catch (RuntimeException e)
                 {
                     return false;

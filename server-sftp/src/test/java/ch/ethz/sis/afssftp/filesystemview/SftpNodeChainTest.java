@@ -255,4 +255,118 @@ public class SftpNodeChainTest extends TestCase {
         );
         assertNull(chainWithoutProject.lookUpProjectCode());
     }
+
+    public void testLookUpExperimentPermId() {
+        SftpNode projectNode = createRandomNodeOfType(SftpNode.Type.PROJECT);
+        SftpNode experimentNode = createRandomNodeOfType(SftpNode.Type.EXPERIMENT);
+
+        SftpNodeChain chainWithExperiment = new SftpNodeChain(
+                List.of(
+                        createRandomNodeOfType(SftpNode.Type.ROOT),
+                        SftpNodeChain.createSublevelNode(StandardPathTranslator.SPACE_TYPE_LABEL),
+                        createRandomNodeOfType(SftpNode.Type.SPACE),
+                        SftpNodeChain.createSublevelNode(StandardPathTranslator.PROJECT_TYPE_LABEL),
+                        projectNode,
+                        SftpNodeChain.createSublevelNode(StandardPathTranslator.EXPERIMENT_TYPE_LABEL),
+                        experimentNode,
+                        SftpNodeChain.createSublevelNode(StandardPathTranslator.SAMPLE_TYPE_LABEL)
+                )
+        );
+        assertEquals(
+                experimentNode.getIdentifier().get().split("\\(")[1].split("\\)")[0],
+                chainWithExperiment.lookUpExperimentPermId()
+        );
+
+        SftpNodeChain chainWithoutExperiment = new SftpNodeChain(
+                List.of(
+                        createRandomNodeOfType(SftpNode.Type.ROOT),
+                        SftpNodeChain.createSublevelNode(StandardPathTranslator.SPACE_TYPE_LABEL),
+                        createRandomNodeOfType(SftpNode.Type.SPACE),
+                        SftpNodeChain.createSublevelNode(StandardPathTranslator.PROJECT_TYPE_LABEL),
+                        projectNode,
+                        SftpNodeChain.createSublevelNode(StandardPathTranslator.SAMPLE_TYPE_LABEL),
+                        createRandomNodeOfType(SftpNode.Type.SAMPLE),
+                        SftpNodeChain.createSublevelNode(StandardPathTranslator.SAMPLE_TYPE_LABEL)
+                )
+        );
+        assertNull(chainWithoutExperiment.lookUpExperimentPermId());
+    }
+
+    public void testLookUpParentSamplePermId() {
+        SftpNode parentSampleNode = createRandomNodeOfType(SftpNode.Type.SAMPLE);
+
+        SftpNodeChain chainWithParentSample = new SftpNodeChain(
+                List.of(
+                        createRandomNodeOfType(SftpNode.Type.ROOT),
+                        SftpNodeChain.createSublevelNode(StandardPathTranslator.SPACE_TYPE_LABEL),
+                        createRandomNodeOfType(SftpNode.Type.SPACE),
+                        SftpNodeChain.createSublevelNode(StandardPathTranslator.PROJECT_TYPE_LABEL),
+                        createRandomNodeOfType(SftpNode.Type.PROJECT),
+                        SftpNodeChain.createSublevelNode(StandardPathTranslator.EXPERIMENT_TYPE_LABEL),
+                        createRandomNodeOfType(SftpNode.Type.EXPERIMENT),
+                        SftpNodeChain.createSublevelNode(StandardPathTranslator.SAMPLE_TYPE_LABEL),
+                        createRandomNodeOfType(SftpNode.Type.SAMPLE),
+                        SftpNodeChain.createSublevelNode(StandardPathTranslator.FOLDER_TYPE_LABEL),
+                        createRandomNodeOfType(SftpNode.Type.FOLDER),
+                        SftpNodeChain.createSublevelNode(StandardPathTranslator.SAMPLE_TYPE_LABEL),
+                        parentSampleNode,
+                        SftpNodeChain.createSublevelNode(StandardPathTranslator.FILE_TYPE_LABEL),
+                        createRandomNodeOfType(SftpNode.Type.AFS_FILE)
+                )
+        );
+        assertEquals(
+                parentSampleNode.getIdentifier().get().split("\\(")[1].split("\\)")[0],
+                chainWithParentSample.lookUpParentSamplePermId()
+        );
+
+        SftpNodeChain chainWithoutParentSample = new SftpNodeChain(
+                List.of(
+                        createRandomNodeOfType(SftpNode.Type.ROOT),
+                        SftpNodeChain.createSublevelNode(StandardPathTranslator.SPACE_TYPE_LABEL),
+                        createRandomNodeOfType(SftpNode.Type.SPACE),
+                        SftpNodeChain.createSublevelNode(StandardPathTranslator.PROJECT_TYPE_LABEL),
+                        createRandomNodeOfType(SftpNode.Type.PROJECT),
+                        SftpNodeChain.createSublevelNode(StandardPathTranslator.EXPERIMENT_TYPE_LABEL),
+                        createRandomNodeOfType(SftpNode.Type.EXPERIMENT),
+                        SftpNodeChain.createSublevelNode(StandardPathTranslator.FILE_TYPE_LABEL),
+                        createRandomNodeOfType(SftpNode.Type.AFS_FILE)
+                )
+        );
+        assertNull(chainWithoutParentSample.lookUpParentSamplePermId());
+    }
+
+    public void testToParent() {
+        SftpNodeChain chain = new SftpNodeChain(
+                List.of(
+                        createRandomNodeOfType(SftpNode.Type.ROOT),
+                        SftpNodeChain.createSublevelNode(StandardPathTranslator.SPACE_TYPE_LABEL),
+                        createRandomNodeOfType(SftpNode.Type.SPACE),
+                        SftpNodeChain.createSublevelNode(StandardPathTranslator.PROJECT_TYPE_LABEL),
+                        createRandomNodeOfType(SftpNode.Type.PROJECT),
+                        SftpNodeChain.createSublevelNode(StandardPathTranslator.EXPERIMENT_TYPE_LABEL),
+                        createRandomNodeOfType(SftpNode.Type.EXPERIMENT),
+                        SftpNodeChain.createSublevelNode(StandardPathTranslator.SAMPLE_TYPE_LABEL),
+                        createRandomNodeOfType(SftpNode.Type.SAMPLE),
+                        SftpNodeChain.createSublevelNode(StandardPathTranslator.FOLDER_TYPE_LABEL),
+                        createRandomNodeOfType(SftpNode.Type.FOLDER),
+                        SftpNodeChain.createSublevelNode(StandardPathTranslator.SAMPLE_TYPE_LABEL),
+                        createRandomNodeOfType(SftpNode.Type.SAMPLE),
+                        SftpNodeChain.createSublevelNode(StandardPathTranslator.FILE_TYPE_LABEL),
+                        createRandomNodeOfType(SftpNode.Type.AFS_FILE)
+                )
+        );
+        assertEquals(
+                chain.nodes().subList(0, chain.size() - 1),
+                chain.toParent().nodes()
+        );
+        assertEquals(
+                chain.size() - 1,
+                chain.toParent().size()
+        );
+
+        assertEquals(
+                new SftpNodeChain(Collections.emptyList()).toParent(),
+                new SftpNodeChain(Collections.emptyList())
+        );
+    }
 }

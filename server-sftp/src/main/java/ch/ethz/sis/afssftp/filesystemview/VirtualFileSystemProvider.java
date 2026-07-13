@@ -88,7 +88,7 @@ public class VirtualFileSystemProvider extends FileSystemProvider {
         FtpPathLister.EntityDescriptor entityDescriptor = ftpPathLister.toEntityDescriptor(sftpNodeChain).orElseThrow();
 
         if (entityDescriptor.type() == SftpNode.Type.AFS_FILE) {
-            String entityId = entityDescriptor.afsEntity().identifier();
+            String entityId = entityDescriptor.afsEntity().identifier().orElseThrow();
             String afsPath = entityDescriptor.afsPath();
             boolean isAfsEntityDataMutable = entityDescriptor.afsEntity().mutable();
 
@@ -134,7 +134,7 @@ public class VirtualFileSystemProvider extends FileSystemProvider {
         FtpPathLister.EntityDescriptor entityDescriptor = ftpPathLister.toEntityDescriptor(sftpNodeChain).orElseThrow();
 
         if (entityDescriptor.type() == SftpNode.Type.AFS_FILE) {
-            String entityId = entityDescriptor.afsEntity().identifier();
+            String entityId = entityDescriptor.afsEntity().identifier().orElseThrow();
             String afsPath = entityDescriptor.afsPath();
             boolean isAfsEntityDataMutable = entityDescriptor.afsEntity().mutable();
 
@@ -148,7 +148,40 @@ public class VirtualFileSystemProvider extends FileSystemProvider {
                 throw new UnsupportedOperationException("Cannot create AFS-directories in immutable entity");
             }
         } else {
-            throw new UnsupportedOperationException("Not AFS-file");
+            switch (entityDescriptor.type()) {
+                case SPACE -> {
+                    String spaceCode = entityDescriptor.identifier().orElseThrow();
+                    sftpListUtil.createSpace(spaceCode);
+                }
+                case PROJECT -> {
+                    String spaceCode = entityDescriptor.spaceCode().orElseThrow();
+                    String projectCode = entityDescriptor.projectCode().orElseThrow();
+                    sftpListUtil.createProject(spaceCode, projectCode);
+                }
+                case EXPERIMENT -> {
+                    String spaceCode = entityDescriptor.spaceCode().orElseThrow();
+                    String projectCode = entityDescriptor.projectCode().orElseThrow();
+                    String experimentName = entityDescriptor.name().orElseThrow();
+                    sftpListUtil.createExperiment(spaceCode, projectCode, experimentName);
+                }
+                case SAMPLE, FOLDER -> {
+                    String spaceCode = entityDescriptor.spaceCode().orElseThrow();
+                    String projectCode = entityDescriptor.projectCode().orElse(null);
+                    String experimentId = entityDescriptor.experimentId().orElse(null);
+                    String parentSampleId = entityDescriptor.parentSampleId().orElse(null);
+                    String sampleName = entityDescriptor.name().orElseThrow();
+                    sftpListUtil.createSample(
+                            spaceCode, projectCode,
+                            experimentId, parentSampleId,
+                            sampleName,
+                            entityDescriptor.type() == SftpNode.Type.FOLDER
+                    );
+                }
+                case DATA_SET -> {
+                    throw new UnsupportedOperationException("Creation of datasets through SFTP not supported");
+                }
+                default -> throw new UnsupportedOperationException("Neither AFS-file nor supported entity type");
+            }
         }
     }
 
@@ -158,7 +191,7 @@ public class VirtualFileSystemProvider extends FileSystemProvider {
         FtpPathLister.EntityDescriptor entityDescriptor = ftpPathLister.toEntityDescriptor(sftpNodeChain).orElseThrow();
 
         if (entityDescriptor.type() == SftpNode.Type.AFS_FILE) {
-            String entityId = entityDescriptor.afsEntity().identifier();
+            String entityId = entityDescriptor.afsEntity().identifier().orElseThrow();
             String afsPath = entityDescriptor.afsPath();
             boolean isAfsEntityDataMutable = entityDescriptor.afsEntity().mutable();
 
@@ -172,7 +205,29 @@ public class VirtualFileSystemProvider extends FileSystemProvider {
                 throw new UnsupportedOperationException("Cannot delete AFS-files in immutable entity");
             }
         } else {
-            throw new UnsupportedOperationException("Not AFS-file");
+            switch (entityDescriptor.type()) {
+                case SPACE -> {
+                    String spaceCode = entityDescriptor.identifier().orElseThrow();
+                    sftpListUtil.deleteSpace(spaceCode);
+                }
+                case PROJECT -> {
+                    String projectId = entityDescriptor.identifier().orElseThrow();
+                    sftpListUtil.deleteProject(projectId);
+                }
+                case EXPERIMENT -> {
+                    String experimentPermId = entityDescriptor.identifier().orElseThrow();
+                    sftpListUtil.deleteExperiment(experimentPermId);
+                }
+                case SAMPLE, FOLDER -> {
+                    String samplePermId = entityDescriptor.identifier().orElseThrow();
+                    sftpListUtil.deleteSample(samplePermId);
+                }
+                case DATA_SET -> {
+                    String dataSetPermId = entityDescriptor.identifier().orElseThrow();
+                    sftpListUtil.deleteDataSet(dataSetPermId);
+                }
+                default -> throw new UnsupportedOperationException("Neither AFS-file nor supported entity type");
+            }
         }
     }
 
@@ -187,10 +242,10 @@ public class VirtualFileSystemProvider extends FileSystemProvider {
         if ( entityDescriptor1.type() == SftpNode.Type.AFS_FILE &&
                 entityDescriptor2.type() == SftpNode.Type.AFS_FILE
         ) {
-            String entityId1 = entityDescriptor1.afsEntity().identifier();
+            String entityId1 = entityDescriptor1.afsEntity().identifier().orElseThrow();
             String afsPath1 = entityDescriptor1.afsPath();
 
-            String entityId2 = entityDescriptor2.afsEntity().identifier();
+            String entityId2 = entityDescriptor2.afsEntity().identifier().orElseThrow();
             String afsPath2 = entityDescriptor2.afsPath();
             boolean isAfsEntity2DataMutable = entityDescriptor2.afsEntity().mutable();
 
@@ -223,11 +278,11 @@ public class VirtualFileSystemProvider extends FileSystemProvider {
         if ( entityDescriptor1.type() == SftpNode.Type.AFS_FILE &&
                 entityDescriptor2.type() == SftpNode.Type.AFS_FILE
         ) {
-            String entityId1 = entityDescriptor1.afsEntity().identifier();
+            String entityId1 = entityDescriptor1.afsEntity().identifier().orElseThrow();
             String afsPath1 = entityDescriptor1.afsPath();
             boolean isAfsEntity1DataMutable = entityDescriptor1.afsEntity().mutable();
 
-            String entityId2 = entityDescriptor2.afsEntity().identifier();
+            String entityId2 = entityDescriptor2.afsEntity().identifier().orElseThrow();
             String afsPath2 = entityDescriptor2.afsPath();
             boolean isAfsEntity2DataMutable = entityDescriptor2.afsEntity().mutable();
 
@@ -245,7 +300,29 @@ public class VirtualFileSystemProvider extends FileSystemProvider {
                 throw new UnsupportedOperationException("Cannot move AFS-files between immutable entities");
             }
         } else {
-            throw new UnsupportedOperationException("Not AFS-files");
+            // Renaming entities
+            if (
+                    entityDescriptor1.type() == entityDescriptor2.type() &&
+                    entityDescriptor1.identifier().isPresent() &&
+                    entityDescriptor1.identifier().equals(entityDescriptor2.identifier())
+            ) {
+                switch (entityDescriptor1.type()) {
+                    case EXPERIMENT -> sftpListUtil.renameExperiment(
+                            entityDescriptor1.identifier().get(),
+                            entityDescriptor2.name().orElse("")
+                    );
+                    case SAMPLE, FOLDER -> sftpListUtil.renameSample(
+                            entityDescriptor1.identifier().get(),
+                            entityDescriptor2.name().orElse("")
+                    );
+                    case DATA_SET -> throw new UnsupportedOperationException("Unsupported renaming of datasets");
+                    default -> throw new UnsupportedOperationException(
+                            String.format("Unsupported renaming for entity-type %s", entityDescriptor1.type())
+                    );
+                }
+            } else {
+                throw new UnsupportedOperationException("Unsupported moving of entities (only renaming)");
+            }
         }
     }
 

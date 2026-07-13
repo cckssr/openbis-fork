@@ -37,7 +37,6 @@ import ch.ethz.sis.openbis.generic.server.xls.importer.delay.DelayedExecutionDec
 import ch.ethz.sis.openbis.generic.server.xls.importer.enums.ImportModes;
 import ch.ethz.sis.openbis.generic.server.xls.importer.enums.ImportTypes;
 import ch.ethz.sis.openbis.generic.server.xls.importer.handler.JSONHandler;
-import ch.ethz.sis.openbis.generic.server.xls.importer.helper.semanticannotation.SemanticAnnotationHelper;
 import ch.ethz.sis.openbis.generic.server.xls.importer.helper.semanticannotation.SemanticAnnotationType;
 import ch.ethz.sis.openbis.generic.server.xls.importer.utils.AttributeValidator;
 import ch.ethz.sis.openbis.generic.server.xls.importer.utils.IAttribute;
@@ -94,14 +93,11 @@ public class ExperimentImportHelper extends BasicImportHelper
 
     private final AttributeValidator<Attribute> attributeValidator;
 
-    private final SemanticAnnotationHelper annotationCache;
-
-    public ExperimentImportHelper(DelayedExecutionDecorator delayedExecutor, ImportModes mode, ImportOptions options, SemanticAnnotationHelper annotationCache)
+    public ExperimentImportHelper(DelayedExecutionDecorator delayedExecutor, ImportModes mode, ImportOptions options)
     {
         super(mode, options);
         this.delayedExecutor = delayedExecutor;
         this.attributeValidator = new AttributeValidator<>(Attribute.class);
-        this.annotationCache = annotationCache;
     }
 
     @Override public void importBlock(List<List<String>> page, int pageIndex, int start, int end)
@@ -117,7 +113,7 @@ public class ExperimentImportHelper extends BasicImportHelper
             String typeCode = getValueByColumnName(header, page.get(lineIndex), EXPERIMENT_TYPE_FIELD);
             experimentType = new EntityTypePermId(typeCode, EntityKind.EXPERIMENT);
             SemanticAnnotation
-                    annotation = annotationCache.getCachedSemanticAnnotation(SemanticAnnotationType.EntityType, experimentType, null);
+                    annotation = delayedExecutor.getAnnotationCache().getCachedSemanticAnnotation(SemanticAnnotationType.EntityType, experimentType, null);
             if(annotation != null)
             {
                 typeCode = annotation.getEntityType().getCode();
@@ -135,7 +131,7 @@ public class ExperimentImportHelper extends BasicImportHelper
             {
                 throw new UserFailureException("Experiment type " + experimentType.getPermId() + " not found.");
             }
-            this.propertyTypeSearcher = new PropertyTypeSearcher(type.getPropertyAssignments(), annotationCache);
+            this.propertyTypeSearcher = new PropertyTypeSearcher(type.getPropertyAssignments(), delayedExecutor.getAnnotationCache());
 
             lineIndex++;
         } catch (Exception e)

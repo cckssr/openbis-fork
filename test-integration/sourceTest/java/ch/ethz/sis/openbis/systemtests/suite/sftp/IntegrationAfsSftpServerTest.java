@@ -1,5 +1,14 @@
 package ch.ethz.sis.openbis.systemtests.suite.sftp;
 
+import ch.ethz.sis.openbis.generic.OpenBIS;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.fetchoptions.ProjectFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectIdentifier;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.fetchoptions.SpaceFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import ch.ethz.sis.openbis.systemtests.suite.sftp.environment.AfsSftpServerIntegrationTestEnvironment;
 
 import org.apache.sshd.client.SshClient;
@@ -795,6 +804,421 @@ public class IntegrationAfsSftpServerTest
                     newEntries = listRemoteDirectory(sftp, sampleFilesRootDirectory);
                     assertFalse(newEntries.contains("newfile.txt"));
                     assertTrue(newEntries.contains("renamed_newfile.txt"));
+                }
+            }
+        }
+    }
+
+    @Test(priority = 6)
+    public void testEntityDirectoriesCreationAndDeletion() throws Exception {
+        OpenBIS openBIS = environment.createOpenBIS();
+        openBIS.login(INSTANCE_ADMIN, PASSWORD);
+
+        try (SshClient client = SshClient.setUpDefaultClient()) {
+            client.start();
+
+            try (ClientSession session = client.connect(USER, SFTP_HOST, SFTP_PORT)
+                    .verify(SFTP_TIMEOUT)
+                    .getSession()) {
+                session.addPasswordIdentity(AfsSftpServerIntegrationTestEnvironment.PASSWORD);
+                session.auth().verify(SFTP_TIMEOUT);
+
+                try (SftpClient sftp = SftpClientFactory.instance().createSftpClient(session)) {
+                    // Create and delete space
+                    assertFalse(listRemoteDirectory(sftp, "/spaces").contains("CREATED_SPACE_1"));
+                    sftp.mkdir("/spaces/CREATED_SPACE_1");
+                    assertTrue(listRemoteDirectory(sftp, "/spaces").contains("CREATED_SPACE_1"));
+                    assertNotNull(openBIS.getSpaces(
+                        List.of(new SpacePermId("CREATED_SPACE_1")
+                        ), new SpaceFetchOptions()
+                    ).get(new SpacePermId("CREATED_SPACE_1")));
+                    sftp.rmdir("/spaces/CREATED_SPACE_1");
+                    assertFalse(listRemoteDirectory(sftp, "/spaces").contains("CREATED_SPACE_1"));
+                    assertNull(openBIS.getSpaces(
+                            List.of(new SpacePermId("CREATED_SPACE_1")
+                            ), new SpaceFetchOptions()
+                    ).get(new SpacePermId("CREATED_SPACE_1")));
+
+                    // Create and delete project
+                    sftp.mkdir("/spaces/CREATED_SPACE");
+                    assertFalse(listRemoteDirectory(sftp, "/spaces/CREATED_SPACE/projects").contains("CREATED_PROJECT_1"));
+                    sftp.mkdir("/spaces/CREATED_SPACE/projects/CREATED_PROJECT_1");
+                    assertTrue(listRemoteDirectory(sftp, "/spaces/CREATED_SPACE/projects").contains("CREATED_PROJECT_1"));
+                    assertNotNull(openBIS.getProjects(
+                            List.of(new ProjectIdentifier("CREATED_SPACE", "CREATED_PROJECT_1")
+                            ), new ProjectFetchOptions()
+                    ).get(new ProjectIdentifier("CREATED_SPACE", "CREATED_PROJECT_1")));
+                    sftp.rmdir("/spaces/CREATED_SPACE/projects/CREATED_PROJECT_1");
+                    assertFalse(listRemoteDirectory(sftp, "/spaces/CREATED_SPACE/projects").contains("CREATED_PROJECT_1"));
+                    assertNull(openBIS.getProjects(
+                            List.of(new ProjectIdentifier("CREATED_SPACE", "CREATED_PROJECT_1")
+                            ), new ProjectFetchOptions()
+                    ).get(new ProjectIdentifier("CREATED_SPACE", "CREATED_PROJECT_1")));
+
+                    // Create and delete experiment
+                    sftp.mkdir("/spaces/CREATED_SPACE/projects/CREATED_PROJECT");
+                    assertFalse(listRemoteDirectory(sftp, "/spaces/CREATED_SPACE/projects/CREATED_PROJECT/experiments")
+                            .stream().anyMatch( entry -> entry.startsWith("CREATED_EXP_1") ));
+                    sftp.mkdir("/spaces/CREATED_SPACE/projects/CREATED_PROJECT/experiments/CREATED_EXP_1");
+                    assertTrue(listRemoteDirectory(sftp, "/spaces/CREATED_SPACE/projects/CREATED_PROJECT/experiments")
+                            .stream().anyMatch( entry -> entry.startsWith("CREATED_EXP_1") ));
+                    String createdExp1PermId = listRemoteDirectory(sftp, "/spaces/CREATED_SPACE/projects/CREATED_PROJECT/experiments")
+                            .stream().filter( entry -> entry.startsWith("CREATED_EXP_1") ).findFirst().get()
+                            .split("\\(")[1].split("\\)")[0].trim();
+                    assertNotNull(openBIS.getExperiments(
+                            List.of(new ExperimentPermId(createdExp1PermId)
+                            ), new ExperimentFetchOptions()
+                    ).get(new ExperimentPermId(createdExp1PermId)));
+                    sftp.rmdir(String.format("/spaces/CREATED_SPACE/projects/CREATED_PROJECT/experiments/(%s)", createdExp1PermId));
+                    assertFalse(listRemoteDirectory(sftp, "/spaces/CREATED_SPACE/projects/CREATED_PROJECT/experiments")
+                            .stream().anyMatch( entry -> entry.startsWith("CREATED_EXP_1") ));
+                    assertNull(openBIS.getExperiments(
+                            List.of(new ExperimentPermId(createdExp1PermId)
+                            ), new ExperimentFetchOptions()
+                    ).get(new ExperimentPermId(createdExp1PermId)));
+
+                    // Create and delete samples
+                    sftp.mkdir("/spaces/CREATED_SPACE/projects/CREATED_PROJECT/experiments/CREATED_EXP");
+                    String createdExpPermId = listRemoteDirectory(sftp, "/spaces/CREATED_SPACE/projects/CREATED_PROJECT/experiments")
+                            .stream().filter( entry -> entry.startsWith("CREATED_EXP") ).findFirst().get()
+                            .split("\\(")[1].split("\\)")[0].trim();
+
+                    assertFalse(listRemoteDirectory(sftp, "/spaces/CREATED_SPACE/samples")
+                            .stream().anyMatch( entry -> entry.startsWith("CREATED_SMP") ));
+                    assertFalse(listRemoteDirectory(sftp, "/spaces/CREATED_SPACE/projects/CREATED_PROJECT/samples")
+                            .stream().anyMatch( entry -> entry.startsWith("CREATED_SMP") ));
+                    assertFalse(listRemoteDirectory(sftp, String.format("/spaces/CREATED_SPACE/projects/CREATED_PROJECT/experiments/(%s)/samples", createdExpPermId))
+                            .stream().anyMatch( entry -> entry.startsWith("CREATED_SMP") ));
+
+                    sftp.mkdir("/spaces/CREATED_SPACE/samples/CREATED_SMP_1");
+                    sftp.mkdir("/spaces/CREATED_SPACE/projects/CREATED_PROJECT/samples/CREATED_SMP_2");
+                    sftp.mkdir(String.format("/spaces/CREATED_SPACE/projects/CREATED_PROJECT/experiments/(%s)/samples/CREATED_SMP_3", createdExpPermId));
+
+                    assertTrue(listRemoteDirectory(sftp, "/spaces/CREATED_SPACE/samples")
+                            .stream().anyMatch( entry -> entry.startsWith("CREATED_SMP_1") ));
+                    assertTrue(listRemoteDirectory(sftp, "/spaces/CREATED_SPACE/projects/CREATED_PROJECT/samples")
+                            .stream().anyMatch( entry -> entry.startsWith("CREATED_SMP_2") ));
+                    assertTrue(listRemoteDirectory(sftp, String.format("/spaces/CREATED_SPACE/projects/CREATED_PROJECT/experiments/(%s)/samples", createdExpPermId))
+                            .stream().anyMatch( entry -> entry.startsWith("CREATED_SMP_3") ));
+
+                    String createdSmp1PermId = listRemoteDirectory(sftp, "/spaces/CREATED_SPACE/samples")
+                            .stream().filter( entry -> entry.startsWith("CREATED_SMP_1") ).findFirst().get()
+                            .split("\\(")[1].split("\\)")[0].trim();
+                    String createdSmp2PermId = listRemoteDirectory(sftp, "/spaces/CREATED_SPACE/projects/CREATED_PROJECT/samples")
+                            .stream().filter( entry -> entry.startsWith("CREATED_SMP_2") ).findFirst().get()
+                            .split("\\(")[1].split("\\)")[0].trim();
+                    String createdSmp3PermId = listRemoteDirectory(sftp, String.format("/spaces/CREATED_SPACE/projects/CREATED_PROJECT/experiments/(%s)/samples", createdExpPermId))
+                            .stream().filter( entry -> entry.startsWith("CREATED_SMP_3") ).findFirst().get()
+                            .split("\\(")[1].split("\\)")[0].trim();
+
+                    {
+                        //SUB-CASE: sample under sample
+                        assertFalse(listRemoteDirectory(sftp, String.format("/spaces/CREATED_SPACE/projects/CREATED_PROJECT/experiments/(%s)/samples/(%s)/samples", createdExpPermId, createdSmp3PermId))
+                                .stream().anyMatch( entry -> entry.startsWith("CREATED_SMP") ));
+
+                        sftp.mkdir(String.format("/spaces/CREATED_SPACE/projects/CREATED_PROJECT/experiments/(%s)/samples/(%s)/samples/CREATED_SMP_4",
+                                createdExpPermId, createdSmp3PermId));
+
+                        assertTrue(listRemoteDirectory(sftp, String.format("/spaces/CREATED_SPACE/projects/CREATED_PROJECT/experiments/(%s)/samples/(%s)/samples", createdExpPermId, createdSmp3PermId))
+                                .stream().anyMatch( entry -> entry.startsWith("CREATED_SMP_4") ));
+
+                        String createdSmp4PermId = listRemoteDirectory(sftp, String.format("/spaces/CREATED_SPACE/projects/CREATED_PROJECT/experiments/(%s)/samples/(%s)/samples", createdExpPermId, createdSmp3PermId))
+                                .stream().filter( entry -> entry.startsWith("CREATED_SMP_4") ).findFirst().get()
+                                .split("\\(")[1].split("\\)")[0].trim();
+
+                        sftp.rmdir(String.format("/spaces/CREATED_SPACE/projects/CREATED_PROJECT/experiments/(%s)/samples/(%s)/samples/CREATED_SMP_4(%s)",
+                                createdExpPermId, createdSmp3PermId, createdSmp4PermId));
+
+                        assertFalse(listRemoteDirectory(sftp, String.format("/spaces/CREATED_SPACE/projects/CREATED_PROJECT/experiments/(%s)/samples/(%s)/samples", createdExpPermId, createdSmp3PermId))
+                                .stream().anyMatch( entry -> entry.startsWith("CREATED_SMP") ));
+                    }
+
+                    assertNotNull(openBIS.getSamples(
+                            List.of(new SamplePermId(createdSmp1PermId)
+                            ), new SampleFetchOptions()
+                    ).get(new SamplePermId(createdSmp1PermId)));
+                    assertNotNull(openBIS.getSamples(
+                            List.of(new SamplePermId(createdSmp2PermId)
+                            ), new SampleFetchOptions()
+                    ).get(new SamplePermId(createdSmp2PermId)));
+                    assertNotNull(openBIS.getSamples(
+                            List.of(new SamplePermId(createdSmp3PermId)
+                            ), new SampleFetchOptions()
+                    ).get(new SamplePermId(createdSmp3PermId)));
+
+                    sftp.rmdir(String.format("/spaces/CREATED_SPACE/samples/(%s)", createdSmp1PermId));
+                    sftp.rmdir(String.format("/spaces/CREATED_SPACE/projects/CREATED_PROJECT/samples/(%s)", createdSmp2PermId));
+                    sftp.rmdir(String.format("/spaces/CREATED_SPACE/projects/CREATED_PROJECT/experiments/(%s)/samples/(%s)", createdExpPermId, createdSmp3PermId));
+
+                    assertFalse(listRemoteDirectory(sftp, "/spaces/CREATED_SPACE/samples")
+                            .stream().anyMatch( entry -> entry.startsWith("CREATED_SMP_1") ));
+                    assertFalse(listRemoteDirectory(sftp, "/spaces/CREATED_SPACE/projects/CREATED_PROJECT/samples")
+                            .stream().anyMatch( entry -> entry.startsWith("CREATED_SMP_2") ));
+                    assertFalse(listRemoteDirectory(sftp, String.format("/spaces/CREATED_SPACE/projects/CREATED_PROJECT/experiments/(%s)/samples", createdExpPermId))
+                            .stream().anyMatch( entry -> entry.startsWith("CREATED_SMP_3") ));
+
+                    assertNull(openBIS.getSamples(
+                            List.of(new SamplePermId(createdSmp1PermId)
+                            ), new SampleFetchOptions()
+                    ).get(new SamplePermId(createdSmp1PermId)));
+                    assertNull(openBIS.getSamples(
+                            List.of(new SamplePermId(createdSmp2PermId)
+                            ), new SampleFetchOptions()
+                    ).get(new SamplePermId(createdSmp2PermId)));
+                    assertNull(openBIS.getSamples(
+                            List.of(new SamplePermId(createdSmp3PermId)
+                            ), new SampleFetchOptions()
+                    ).get(new SamplePermId(createdSmp3PermId)));
+
+                    // Create and delete folders (folder-type samples)
+                    assertFalse(listRemoteDirectory(sftp, "/spaces/CREATED_SPACE/folders")
+                            .stream().anyMatch( entry -> entry.startsWith("CREATED_FLD") ));
+                    assertFalse(listRemoteDirectory(sftp, "/spaces/CREATED_SPACE/projects/CREATED_PROJECT/folders")
+                            .stream().anyMatch( entry -> entry.startsWith("CREATED_FLD") ));
+                    assertFalse(listRemoteDirectory(sftp, String.format("/spaces/CREATED_SPACE/projects/CREATED_PROJECT/experiments/(%s)/folders", createdExpPermId))
+                            .stream().anyMatch( entry -> entry.startsWith("CREATED_FLD") ));
+
+                    sftp.mkdir("/spaces/CREATED_SPACE/folders/CREATED_FLD_1");
+                    sftp.mkdir("/spaces/CREATED_SPACE/projects/CREATED_PROJECT/folders/CREATED_FLD_2");
+                    sftp.mkdir(String.format("/spaces/CREATED_SPACE/projects/CREATED_PROJECT/experiments/(%s)/folders/CREATED_FLD_3", createdExpPermId));
+
+                    assertTrue(listRemoteDirectory(sftp, "/spaces/CREATED_SPACE/folders")
+                            .stream().anyMatch( entry -> entry.startsWith("CREATED_FLD_1") ));
+                    assertTrue(listRemoteDirectory(sftp, "/spaces/CREATED_SPACE/projects/CREATED_PROJECT/folders")
+                            .stream().anyMatch( entry -> entry.startsWith("CREATED_FLD_2") ));
+                    assertTrue(listRemoteDirectory(sftp, String.format("/spaces/CREATED_SPACE/projects/CREATED_PROJECT/experiments/(%s)/folders", createdExpPermId))
+                            .stream().anyMatch( entry -> entry.startsWith("CREATED_FLD_3") ));
+
+                    String createdFld1PermId = listRemoteDirectory(sftp, "/spaces/CREATED_SPACE/folders")
+                            .stream().filter( entry -> entry.startsWith("CREATED_FLD_1") ).findFirst().get()
+                            .split("\\(")[1].split("\\)")[0].trim();
+                    String createdFld2PermId = listRemoteDirectory(sftp, "/spaces/CREATED_SPACE/projects/CREATED_PROJECT/folders")
+                            .stream().filter( entry -> entry.startsWith("CREATED_FLD_2") ).findFirst().get()
+                            .split("\\(")[1].split("\\)")[0].trim();
+                    String createdFld3PermId = listRemoteDirectory(sftp, String.format("/spaces/CREATED_SPACE/projects/CREATED_PROJECT/experiments/(%s)/folders", createdExpPermId))
+                            .stream().filter( entry -> entry.startsWith("CREATED_FLD_3") ).findFirst().get()
+                            .split("\\(")[1].split("\\)")[0].trim();
+
+                    {
+                        //SUB-CASE: sample under folder
+                        assertFalse(listRemoteDirectory(sftp, String.format("/spaces/CREATED_SPACE/projects/CREATED_PROJECT/experiments/(%s)/folders/(%s)/samples", createdExpPermId, createdFld3PermId))
+                                .stream().anyMatch( entry -> entry.startsWith("CREATED_FLD") ));
+
+                        sftp.mkdir(String.format("/spaces/CREATED_SPACE/projects/CREATED_PROJECT/experiments/(%s)/folders/(%s)/samples/CREATED_FLD_4",
+                                createdExpPermId, createdFld3PermId));
+
+                        assertTrue(listRemoteDirectory(sftp, String.format("/spaces/CREATED_SPACE/projects/CREATED_PROJECT/experiments/(%s)/folders/(%s)/samples", createdExpPermId, createdFld3PermId))
+                                .stream().anyMatch( entry -> entry.startsWith("CREATED_FLD_4") ));
+
+                        String createdFld4PermId = listRemoteDirectory(sftp, String.format("/spaces/CREATED_SPACE/projects/CREATED_PROJECT/experiments/(%s)/folders/(%s)/samples", createdExpPermId, createdFld3PermId))
+                                .stream().filter( entry -> entry.startsWith("CREATED_FLD_4") ).findFirst().get()
+                                .split("\\(")[1].split("\\)")[0].trim();
+
+                        sftp.rmdir(String.format("/spaces/CREATED_SPACE/projects/CREATED_PROJECT/experiments/(%s)/folders/(%s)/samples/CREATED_FLD_4(%s)",
+                                createdExpPermId, createdFld3PermId, createdFld4PermId));
+
+                        assertFalse(listRemoteDirectory(sftp, String.format("/spaces/CREATED_SPACE/projects/CREATED_PROJECT/experiments/(%s)/folders/(%s)/samples", createdExpPermId, createdFld3PermId))
+                                .stream().anyMatch( entry -> entry.startsWith("CREATED_FLD") ));
+                    }
+
+                    assertNotNull(openBIS.getSamples(
+                            List.of(new SamplePermId(createdFld1PermId)
+                            ), new SampleFetchOptions()
+                    ).get(new SamplePermId(createdFld1PermId)));
+                    assertNotNull(openBIS.getSamples(
+                            List.of(new SamplePermId(createdFld2PermId)
+                            ), new SampleFetchOptions()
+                    ).get(new SamplePermId(createdFld2PermId)));
+                    assertNotNull(openBIS.getSamples(
+                            List.of(new SamplePermId(createdFld3PermId)
+                            ), new SampleFetchOptions()
+                    ).get(new SamplePermId(createdFld3PermId)));
+
+                    sftp.rmdir(String.format("/spaces/CREATED_SPACE/folders/(%s)", createdFld1PermId));
+                    sftp.rmdir(String.format("/spaces/CREATED_SPACE/projects/CREATED_PROJECT/folders/(%s)", createdFld2PermId));
+                    sftp.rmdir(String.format("/spaces/CREATED_SPACE/projects/CREATED_PROJECT/experiments/(%s)/folders/(%s)", createdExpPermId, createdFld3PermId));
+
+                    assertFalse(listRemoteDirectory(sftp, "/spaces/CREATED_SPACE/folders")
+                            .stream().anyMatch( entry -> entry.startsWith("CREATED_FLD_1") ));
+                    assertFalse(listRemoteDirectory(sftp, "/spaces/CREATED_SPACE/projects/CREATED_PROJECT/folders")
+                            .stream().anyMatch( entry -> entry.startsWith("CREATED_FLD_2") ));
+                    assertFalse(listRemoteDirectory(sftp, String.format("/spaces/CREATED_SPACE/projects/CREATED_PROJECT/experiments/(%s)/folders", createdExpPermId))
+                            .stream().anyMatch( entry -> entry.startsWith("CREATED_FLD_3") ));
+
+                    assertNull(openBIS.getSamples(
+                            List.of(new SamplePermId(createdFld1PermId)
+                            ), new SampleFetchOptions()
+                    ).get(new SamplePermId(createdFld1PermId)));
+                    assertNull(openBIS.getSamples(
+                            List.of(new SamplePermId(createdFld2PermId)
+                            ), new SampleFetchOptions()
+                    ).get(new SamplePermId(createdFld2PermId)));
+                    assertNull(openBIS.getSamples(
+                            List.of(new SamplePermId(createdFld3PermId)
+                            ), new SampleFetchOptions()
+                    ).get(new SamplePermId(createdFld3PermId)));
+
+                    //Delete dataset
+                    String datasetDirectory = String.format("/spaces/S1/projects/P1/experiments/E1 (%s)/samples/X1 (%s)/datasets/D2 (%s)",
+                            getExperimentPermIdByName("S1", "P1", "E1"),
+                            getSampleOrDatasetPermIdByName("S1", "P1_E1_X1"),
+                            getSampleOrDatasetPermIdByName("S1", "P1_E1_X1_D2"));
+
+                    assertTrue(listRemoteDirectory(sftp, datasetDirectory).size() > 2);
+                    sftp.rmdir(datasetDirectory);
+                    assertTrue(listRemoteDirectory(sftp, String.format("/spaces/S1/projects/P1/experiments/E1 (%s)/samples/X1 (%s)/datasets",
+                            getExperimentPermIdByName("S1", "P1", "E1"),
+                            getSampleOrDatasetPermIdByName("S1", "P1_E1_X1"))).stream().noneMatch(
+                                    entry -> entry.startsWith("D2")
+                    ));
+                }
+            }
+        }
+    }
+
+    @Test(priority = 7)
+    public void testEntityDirectoriesRenaming() throws Exception {
+        OpenBIS openBIS = environment.createOpenBIS();
+        openBIS.login(INSTANCE_ADMIN, PASSWORD);
+
+        try (SshClient client = SshClient.setUpDefaultClient()) {
+            client.start();
+
+            try (ClientSession session = client.connect(USER, SFTP_HOST, SFTP_PORT)
+                    .verify(SFTP_TIMEOUT)
+                    .getSession()) {
+                session.addPasswordIdentity(AfsSftpServerIntegrationTestEnvironment.PASSWORD);
+                session.auth().verify(SFTP_TIMEOUT);
+
+                try (SftpClient sftp = SftpClientFactory.instance().createSftpClient(session)) {
+                    try {
+                        sftp.mkdir("/spaces/CREATED_SPACE");
+                        sftp.mkdir("/spaces/CREATED_SPACE/projects/CREATED_PROJECT");
+                    } catch (Exception e) {}
+
+                    // Create and rename experiment
+                    assertFalse(listRemoteDirectory(sftp, "/spaces/CREATED_SPACE/projects/CREATED_PROJECT/experiments")
+                            .stream().anyMatch( entry -> entry.startsWith("CREATED_EXP_2") ));
+                    sftp.mkdir("/spaces/CREATED_SPACE/projects/CREATED_PROJECT/experiments/CREATED_EXP_2");
+                    assertTrue(listRemoteDirectory(sftp, "/spaces/CREATED_SPACE/projects/CREATED_PROJECT/experiments")
+                            .stream().anyMatch( entry -> entry.startsWith("CREATED_EXP_2") ));
+                    String createdExp2PermId = listRemoteDirectory(sftp, "/spaces/CREATED_SPACE/projects/CREATED_PROJECT/experiments")
+                            .stream().filter( entry -> entry.startsWith("CREATED_EXP_2") ).findFirst().get()
+                            .split("\\(")[1].split("\\)")[0].trim();
+
+                    sftp.rename(
+                            String.format("/spaces/CREATED_SPACE/projects/CREATED_PROJECT/experiments/(%s)", createdExp2PermId),
+                            String.format("/spaces/CREATED_SPACE/projects/CREATED_PROJECT/experiments/renamed CREATED_EXP_2 (%s)", createdExp2PermId)
+                    );
+                    assertFalse(listRemoteDirectory(sftp, "/spaces/CREATED_SPACE/projects/CREATED_PROJECT/experiments")
+                            .stream().anyMatch( entry -> entry.startsWith("CREATED_EXP_2") ));
+                    assertTrue(listRemoteDirectory(sftp, "/spaces/CREATED_SPACE/projects/CREATED_PROJECT/experiments")
+                            .stream().anyMatch( entry -> entry.startsWith("renamed CREATED_EXP_2") ));
+
+                    // Create and rename samples
+                    String createdExpPermId = listRemoteDirectory(sftp, "/spaces/CREATED_SPACE/projects/CREATED_PROJECT/experiments")
+                            .stream().filter( entry -> entry.startsWith("renamed CREATED_EXP_2") ).findFirst().get()
+                            .split("\\(")[1].split("\\)")[0].trim();
+
+                    assertFalse(listRemoteDirectory(sftp, "/spaces/CREATED_SPACE/samples")
+                            .stream().anyMatch( entry -> entry.startsWith("CREATED_SMP") ));
+                    assertFalse(listRemoteDirectory(sftp, "/spaces/CREATED_SPACE/projects/CREATED_PROJECT/samples")
+                            .stream().anyMatch( entry -> entry.startsWith("CREATED_SMP") ));
+                    assertFalse(listRemoteDirectory(sftp, String.format("/spaces/CREATED_SPACE/projects/CREATED_PROJECT/experiments/(%s)/samples", createdExpPermId))
+                            .stream().anyMatch( entry -> entry.startsWith("CREATED_SMP") ));
+
+                    sftp.mkdir("/spaces/CREATED_SPACE/samples/CREATED_SMP_b_1");
+                    sftp.mkdir("/spaces/CREATED_SPACE/projects/CREATED_PROJECT/samples/CREATED_SMP_b_2");
+                    sftp.mkdir(String.format("/spaces/CREATED_SPACE/projects/CREATED_PROJECT/experiments/(%s)/samples/CREATED_SMP_b_3", createdExpPermId));
+
+                    assertTrue(listRemoteDirectory(sftp, "/spaces/CREATED_SPACE/samples")
+                            .stream().anyMatch( entry -> entry.startsWith("CREATED_SMP_b_1") ));
+                    assertTrue(listRemoteDirectory(sftp, "/spaces/CREATED_SPACE/projects/CREATED_PROJECT/samples")
+                            .stream().anyMatch( entry -> entry.startsWith("CREATED_SMP_b_2") ));
+                    assertTrue(listRemoteDirectory(sftp, String.format("/spaces/CREATED_SPACE/projects/CREATED_PROJECT/experiments/(%s)/samples", createdExpPermId))
+                            .stream().anyMatch( entry -> entry.startsWith("CREATED_SMP_b_3") ));
+
+                    String createdSmp1PermId = listRemoteDirectory(sftp, "/spaces/CREATED_SPACE/samples")
+                            .stream().filter( entry -> entry.startsWith("CREATED_SMP_b_1") ).findFirst().get()
+                            .split("\\(")[1].split("\\)")[0].trim();
+                    String createdSmp2PermId = listRemoteDirectory(sftp, "/spaces/CREATED_SPACE/projects/CREATED_PROJECT/samples")
+                            .stream().filter( entry -> entry.startsWith("CREATED_SMP_b_2") ).findFirst().get()
+                            .split("\\(")[1].split("\\)")[0].trim();
+                    String createdSmp3PermId = listRemoteDirectory(sftp, String.format("/spaces/CREATED_SPACE/projects/CREATED_PROJECT/experiments/(%s)/samples", createdExpPermId))
+                            .stream().filter( entry -> entry.startsWith("CREATED_SMP_b_3") ).findFirst().get()
+                            .split("\\(")[1].split("\\)")[0].trim();
+
+                    sftp.rename(String.format("/spaces/CREATED_SPACE/samples/(%s)", createdSmp1PermId),
+                            String.format("/spaces/CREATED_SPACE/samples/renamed CREATED_SMP_b_1 (%s)", createdSmp1PermId));
+                    sftp.rename(String.format("/spaces/CREATED_SPACE/projects/CREATED_PROJECT/samples/(%s)", createdSmp2PermId),
+                            String.format("/spaces/CREATED_SPACE/projects/CREATED_PROJECT/samples/renamed CREATED_SMP_b_2 (%s)", createdSmp2PermId));
+                    sftp.rename(String.format("/spaces/CREATED_SPACE/projects/CREATED_PROJECT/experiments/(%s)/samples/(%s)", createdExpPermId, createdSmp3PermId),
+                            String.format("/spaces/CREATED_SPACE/projects/CREATED_PROJECT/experiments/(%s)/samples/renamed CREATED_SMP_b_3 (%s)", createdExpPermId, createdSmp3PermId));
+
+                    assertFalse(listRemoteDirectory(sftp, "/spaces/CREATED_SPACE/samples")
+                            .stream().anyMatch( entry -> entry.startsWith("CREATED_SMP_b_1") ));
+                    assertFalse(listRemoteDirectory(sftp, "/spaces/CREATED_SPACE/projects/CREATED_PROJECT/samples")
+                            .stream().anyMatch( entry -> entry.startsWith("CREATED_SMP_b_2") ));
+                    assertFalse(listRemoteDirectory(sftp, String.format("/spaces/CREATED_SPACE/projects/CREATED_PROJECT/experiments/(%s)/samples", createdExpPermId))
+                            .stream().anyMatch( entry -> entry.startsWith("CREATED_SMP_b_3") ));
+
+                    assertTrue(listRemoteDirectory(sftp, "/spaces/CREATED_SPACE/samples")
+                            .stream().anyMatch( entry -> entry.startsWith("renamed CREATED_SMP_b_1") ));
+                    assertTrue(listRemoteDirectory(sftp, "/spaces/CREATED_SPACE/projects/CREATED_PROJECT/samples")
+                            .stream().anyMatch( entry -> entry.startsWith("renamed CREATED_SMP_b_2") ));
+                    assertTrue(listRemoteDirectory(sftp, String.format("/spaces/CREATED_SPACE/projects/CREATED_PROJECT/experiments/(%s)/samples", createdExpPermId))
+                            .stream().anyMatch( entry -> entry.startsWith("renamed CREATED_SMP_b_3") ));
+
+
+                    // Create and delete folders (folder-type samples)
+                    assertFalse(listRemoteDirectory(sftp, "/spaces/CREATED_SPACE/folders")
+                            .stream().anyMatch( entry -> entry.startsWith("CREATED_FLD") ));
+                    assertFalse(listRemoteDirectory(sftp, "/spaces/CREATED_SPACE/projects/CREATED_PROJECT/folders")
+                            .stream().anyMatch( entry -> entry.startsWith("CREATED_FLD") ));
+                    assertFalse(listRemoteDirectory(sftp, String.format("/spaces/CREATED_SPACE/projects/CREATED_PROJECT/experiments/(%s)/folders", createdExpPermId))
+                            .stream().anyMatch( entry -> entry.startsWith("CREATED_FLD") ));
+
+                    sftp.mkdir("/spaces/CREATED_SPACE/folders/CREATED_FLD_b_1");
+                    sftp.mkdir("/spaces/CREATED_SPACE/projects/CREATED_PROJECT/folders/CREATED_FLD_b_2");
+                    sftp.mkdir(String.format("/spaces/CREATED_SPACE/projects/CREATED_PROJECT/experiments/(%s)/folders/CREATED_FLD_b_3", createdExpPermId));
+
+                    assertTrue(listRemoteDirectory(sftp, "/spaces/CREATED_SPACE/folders")
+                            .stream().anyMatch( entry -> entry.startsWith("CREATED_FLD_b_1") ));
+                    assertTrue(listRemoteDirectory(sftp, "/spaces/CREATED_SPACE/projects/CREATED_PROJECT/folders")
+                            .stream().anyMatch( entry -> entry.startsWith("CREATED_FLD_b_2") ));
+                    assertTrue(listRemoteDirectory(sftp, String.format("/spaces/CREATED_SPACE/projects/CREATED_PROJECT/experiments/(%s)/folders", createdExpPermId))
+                            .stream().anyMatch( entry -> entry.startsWith("CREATED_FLD_b_3") ));
+
+                    String createdFld1PermId = listRemoteDirectory(sftp, "/spaces/CREATED_SPACE/folders")
+                            .stream().filter( entry -> entry.startsWith("CREATED_FLD_b_1") ).findFirst().get()
+                            .split("\\(")[1].split("\\)")[0].trim();
+                    String createdFld2PermId = listRemoteDirectory(sftp, "/spaces/CREATED_SPACE/projects/CREATED_PROJECT/folders")
+                            .stream().filter( entry -> entry.startsWith("CREATED_FLD_b_2") ).findFirst().get()
+                            .split("\\(")[1].split("\\)")[0].trim();
+                    String createdFld3PermId = listRemoteDirectory(sftp, String.format("/spaces/CREATED_SPACE/projects/CREATED_PROJECT/experiments/(%s)/folders", createdExpPermId))
+                            .stream().filter( entry -> entry.startsWith("CREATED_FLD_b_3") ).findFirst().get()
+                            .split("\\(")[1].split("\\)")[0].trim();
+
+                    sftp.rename(String.format("/spaces/CREATED_SPACE/folders/(%s)", createdFld1PermId),
+                            String.format("/spaces/CREATED_SPACE/folders/renamed CREATED_FLD_b_1 (%s)", createdFld1PermId));
+                    sftp.rename(String.format("/spaces/CREATED_SPACE/projects/CREATED_PROJECT/folders/(%s)", createdFld2PermId),
+                            String.format("/spaces/CREATED_SPACE/projects/CREATED_PROJECT/folders/renamed CREATED_FLD_b_2 (%s)", createdFld2PermId));
+                    sftp.rename(String.format("/spaces/CREATED_SPACE/projects/CREATED_PROJECT/experiments/(%s)/folders/(%s)", createdExpPermId, createdFld3PermId),
+                            String.format("/spaces/CREATED_SPACE/projects/CREATED_PROJECT/experiments/(%s)/folders/renamed CREATED_FLD_b_3 (%s)", createdExpPermId, createdFld3PermId));
+
+                    assertFalse(listRemoteDirectory(sftp, "/spaces/CREATED_SPACE/folders")
+                            .stream().anyMatch( entry -> entry.startsWith("CREATED_FLD_b_1") ));
+                    assertFalse(listRemoteDirectory(sftp, "/spaces/CREATED_SPACE/projects/CREATED_PROJECT/folders")
+                            .stream().anyMatch( entry -> entry.startsWith("CREATED_FLD_b_2") ));
+                    assertFalse(listRemoteDirectory(sftp, String.format("/spaces/CREATED_SPACE/projects/CREATED_PROJECT/experiments/(%s)/folders", createdExpPermId))
+                            .stream().anyMatch( entry -> entry.startsWith("CREATED_FLD_b_3") ));
+
+                    assertTrue(listRemoteDirectory(sftp, "/spaces/CREATED_SPACE/folders")
+                            .stream().anyMatch( entry -> entry.startsWith("renamed CREATED_FLD_b_1") ));
+                    assertTrue(listRemoteDirectory(sftp, "/spaces/CREATED_SPACE/projects/CREATED_PROJECT/folders")
+                            .stream().anyMatch( entry -> entry.startsWith("renamed CREATED_FLD_b_2") ));
+                    assertTrue(listRemoteDirectory(sftp, String.format("/spaces/CREATED_SPACE/projects/CREATED_PROJECT/experiments/(%s)/folders", createdExpPermId))
+                            .stream().anyMatch( entry -> entry.startsWith("renamed CREATED_FLD_b_3") ));
                 }
             }
         }

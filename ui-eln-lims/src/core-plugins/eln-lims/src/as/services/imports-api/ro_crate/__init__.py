@@ -1,0 +1,1 @@
+# Do not delete! It is needed to properly split scripts into packages

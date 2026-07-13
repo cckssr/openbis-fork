@@ -1,5 +1,53 @@
 # OpenBIS Change Log
 
+## Version 7.0.0 (2 Jul 2026)
+
+### New Core Functionality Focused on Data
+- `AFS server` allowing for mutable data. AFS stands for Atomic File System, since it allows bundling several operations into the same transaction. Check the API for Java/JavaScript/Python at https://openbis.readthedocs.io/en/latest/software-developer-documentation/apis/java-javascript-v3-api.html#for-java-and-javascript and https://openbis.readthedocs.io/en/latest/software-developer-documentation/apis/python-v3-api.html#operations.
+- `AFS SFTP server`. It allows not only reading data like the old DSS SFTP server but also uploading. It is also faster.
+- `Two-Step Transactions between the AS server and the AFS server`. With this, it is possible to replace Dropboxes with a more modern approach where Dropboxes don't need to run on the same machine as the server. It also allows scripts that mutate data, not only upload it for the first time.
+- ```(Experimental) RO-Crate server```. It provides functionality to export/import metadata and data from openBIS as RO-Crates. It follows the metadata specification provided by https://researchobjectschema.github.io/ro-crate-schema-web/.
+
+### New Apps
+- `openBIS Drive`: Allows uploading/downloading/syncing data directly to AFS.
+
+### New Core Functionality Focused on Metadata
+- `New Data Types`: ARRAY_INTEGER, ARRAY_REAL, ARRAY_STRING, ARRAY_TIMESTAMP, JSON. These data types are aimed at storing metadata that is more useful for machine integrations than for users.
+- `JSON metadata field` available in Object, Collection, Dataset, Person, and AuthorizationGroup. This field is aimed at facilitating integrations when additional information not visible to the user needs to be recorded.
+- `Multivalued properties`: This allows things like multi-choice vocabularies and Objects, among others. For Objects, this is particularly interesting since it allows one-to-many foreign keys without the need to abuse parents/children for this purpose and with a name.
+- `Unique properties`: This ensures unique values for the PropertyAssignment.
+- `Object Type Groups`: Used to group types into groups. The aim is to facilitate filtering by groups in queries and in the UI in the future.
+- `Internal namespace support for Types and Type Assignments`. Only the "system" user can make changes to the internal namespace schema.
+- `XLS Import `has been updated to support all the previously mentioned features and `Semantic Annotations`.
+
+### Admin UI
+- Provides means to directly update `Semantic Annotations` from types.
+- Provides means to directly update the `JSON metadata field` available in Object, Collection, Dataset, Person, and AuthorizationGroup.
+- `User access can be configured to be revoked` on a certain date.
+- `File Browser` allows downloading/uploading/moving/deleting data from Objects/Collections and allows downloading data from Datasets.
+- ```(Experimental) Database``` now allows not only browsing but also editing metadata.
+
+### ELN UI
+- `Toolbar buttons can be configured `to be enabled/disabled by Space/Project/Object Type/Collection Type/Dataset Type.
+- Updated widgets to deal with `multivalued Vocabulary and Object properties`.
+- `Imaging Technology`: https://openbis.readthedocs.io/en/latest/software-developer-documentation/as-server-side-extensions/as-imaging.html
+- `File Browser` allows downloading/uploading/moving/deleting data from Objects/Collections and allows downloading data from Datasets.
+- `Exports` have been updated with a more intuitive UI for including referenced entities.
+
+### Removed UI Features
+- Core UI
+- TSV Import in the ELN-LIMS
+
+### Removed Core Features
+- Internal namespace property codes no longer start with $. It is no longer possible to have Internal namespace and Non-Internal namespace properties with the same name. This could lead to confusion and errors.
+
+### Removed Modeling Features
+- Material: Superseded by the use of Objects. The maintenance task MaterialsMigration should be used in openBIS 20.10 prior to updating to openBIS 7.
+- File: Unused feature
+
+### Removed Apps
+- Data Set Uploader: Superseded by openBIS Drive
+
 ## Version 20.10.12.5 (13 Feb 2026)
 
 ### ELN-LIMS

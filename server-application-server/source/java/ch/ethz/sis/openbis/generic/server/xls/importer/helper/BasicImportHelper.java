@@ -17,7 +17,11 @@ package ch.ethz.sis.openbis.generic.server.xls.importer.helper;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
+import ch.ethz.sis.openbis.generic.server.xls.importer.helper.semanticannotation.SemanticAnnotationHelper;
+import ch.ethz.sis.openbis.generic.server.xls.importer.helper.semanticannotation.SemanticAnnotationRecord;
 import ch.ethz.sis.openbis.generic.server.xls.importer.utils.IAttribute;
 import ch.ethz.sis.openbis.generic.server.xls.importer.utils.ImportUtils;
 import ch.ethz.sis.openbis.generic.server.xls.importer.utils.VersionUtils;
@@ -50,6 +54,40 @@ public abstract class BasicImportHelper extends AbstractImportHelper
     protected boolean isNewVersion(Map<String, Integer> header, List<String> values)
     {
         return true;
+    }
+
+    protected boolean hasSemanticAnnotations(Map<String, Integer> header, List<String> values)
+    {
+        String[] ontologyId = getMultiValueByColumnName(header, values, SemanticAnnotationHelper.Attribute.OntologyId, "\n");
+        return ontologyId != null;
+    }
+
+    protected List<SemanticAnnotationRecord> getSemanticAnnotationRecords(Map<String, Integer> header, List<String> values)
+    {
+        String[] ontologyId = getMultiValueByColumnName(header, values, SemanticAnnotationHelper.Attribute.OntologyId, "\n");
+        String[] ontologyVersion = getMultiValueByColumnName(header, values,
+                SemanticAnnotationHelper.Attribute.OntologyVersion, "\n");
+        String[] ontologyAnnotationId = getMultiValueByColumnName(header, values,
+                SemanticAnnotationHelper.Attribute.OntologyAnnotationId, "\n");
+        if (ontologyVersion == null)
+        {
+            throw new UserFailureException(
+                    "Mandatory field is missing or empty: " + SemanticAnnotationHelper.Attribute.OntologyVersion);
+        }
+        if (ontologyAnnotationId == null)
+        {
+            throw new UserFailureException(
+                    "Mandatory field is missing or empty: " + SemanticAnnotationHelper.Attribute.OntologyAnnotationId);
+        }
+        if (ontologyId.length != ontologyVersion.length || ontologyId.length != ontologyAnnotationId.length)
+        {
+            throw new UserFailureException("Number of ontology triplets does not match!");
+        }
+
+        return IntStream.range(0, ontologyId.length)
+                .mapToObj(i -> new SemanticAnnotationRecord(ontologyId[i],
+                        ontologyVersion[i], ontologyAnnotationId[i]))
+                .collect(Collectors.toList());
     }
 
     protected static boolean isNewVersionWithInternalNamespace(Map<String, Integer> header, List<String> values, Map<String, Integer> versions, boolean isSystem, String type, IAttribute versionAttribute, IAttribute codeAttribute, IAttribute internalAttribute)

@@ -30,7 +30,7 @@ public class Writer
 
         SchemaFacade schemaFacade = new SchemaFacade(
                 "name", "description", "2024-12-04T07:53:11Z", "licenseIdentifier",
-                Map.of("openBIS", "www.openbis.ch")
+                Map.of("openBIS", "https://www.openbis.ch")
 
         );
 

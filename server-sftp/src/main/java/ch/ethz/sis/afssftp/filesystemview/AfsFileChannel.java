@@ -38,8 +38,9 @@ public class AfsFileChannel extends FileChannel {
     ReadCache readCache = new ReadCache();
     SizeCache sizeCache = new SizeCache();
 
-    final static ConcurrentHashMap<User, Integer> fileChannelPerSessionCounters =
-            new ConcurrentHashMap<>();
+    static final ConcurrentHashMap<User, Integer> globalFileChannelPerSessionCounters = new ConcurrentHashMap<>();
+    final ConcurrentHashMap<User, Integer> fileChannelPerSessionCounters;
+
     private final static ScheduledThreadPoolExecutor cacheTimer = new ScheduledThreadPoolExecutor(4);
 
     public AfsFileChannel(
@@ -49,7 +50,27 @@ public class AfsFileChannel extends FileChannel {
             long initialPosition,
             boolean readOpenOption,
             boolean writeOpenOption) {
+        this(
+            entityId,
+            afsPath,
+            user,
+            initialPosition,
+            readOpenOption,
+            writeOpenOption,
+            globalFileChannelPerSessionCounters
+        );
+    }
 
+    AfsFileChannel(
+            @NonNull String entityId,
+            @NonNull String afsPath,
+            @NonNull User user,
+            long initialPosition,
+            boolean readOpenOption,
+            boolean writeOpenOption,
+            ConcurrentHashMap<User, Integer> fileChannelPerSessionCounters) {
+
+        this.fileChannelPerSessionCounters = fileChannelPerSessionCounters;
         incrementFileChannelCounter(user);
 
         this.entityId = entityId;
@@ -657,7 +678,7 @@ public class AfsFileChannel extends FileChannel {
         sizeCache.trackNewWrite(pos, pos + bytes.length);
     }
 
-    static void incrementFileChannelCounter(@NonNull User user) {
+    void incrementFileChannelCounter(@NonNull User user) {
         fileChannelPerSessionCounters.compute(user, (key, currentValue) -> {
             if (currentValue != null) {
                 int newValue = currentValue + 1;
@@ -671,7 +692,7 @@ public class AfsFileChannel extends FileChannel {
         });
     }
 
-    static void decrementFileChannelCounter(@NonNull User user) {
+    void decrementFileChannelCounter(@NonNull User user) {
         fileChannelPerSessionCounters.compute(user, (key, currentValue) -> {
             if (currentValue != null) {
                 int newValue = currentValue - 1;
@@ -702,6 +723,7 @@ public class AfsFileChannel extends FileChannel {
         this.position = position;
         this.readOpenOption = readOpenOption;
         this.writeOpenOption = writeOpenOption;
+        this.fileChannelPerSessionCounters = globalFileChannelPerSessionCounters;
     }
 
     // For unit-tests only

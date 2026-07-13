@@ -30,7 +30,11 @@ function RootNodeSettings(mode, profileToEdit)
                 _this._advancedEntitySearchDropdown = new AdvancedEntitySearchDropdown(false, true, "search entity use as root node",
                     true, false, false, true, true);
                 _this._advancedEntitySearchDropdown.onChange(function(selected) {
-                    _this.selected = {type: value, value: selected[0]};
+                    if(selected.length > 0) {
+                        _this.selected = {type: value, value: selected[0]};
+                    } else {
+                        _this.selected = null;
+                    }
                 });
                 _this._advancedEntitySearchDropdown.init($inputDiv);
                 if(_this._mode === FormMode.VIEW) {

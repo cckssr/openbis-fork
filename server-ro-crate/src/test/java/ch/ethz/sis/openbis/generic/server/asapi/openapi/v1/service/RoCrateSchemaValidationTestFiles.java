@@ -41,11 +41,30 @@ public class RoCrateSchemaValidationTestFiles
                         Map.of(), Map.of(), Map.of(), Map.of());
         ValidationResult result =
                 RoCrateSchemaValidation.validate(
-                        new RdfToModel.ConversionResult(openBisModel, Map.of()));
+                        new RdfToModel.ConversionResult(openBisModel, Map.of(), List.of()));
         Assert.assertTrue(result.getEntitiesToMissingProperties().isEmpty());
         Assert.assertTrue(result.getEntitiesToUndefinedProperties().isEmpty());
 
     }
+
+    @Test
+    public void testExternallyNotedProblemsAreReported()
+    {
+        OpenBisModel openBisModel =
+                new OpenBisModel(Map.of(), Map.of(), Map.of(), Map.of(), Map.of(), Map.of(),
+                        Map.of(), Map.of(), Map.of(), Map.of());
+
+        Sample sample = new Sample();
+        sample.setCode("SAMPLE");
+        ValidationResult result =
+                RoCrateSchemaValidation.validate(
+                        new RdfToModel.ConversionResult(openBisModel, Map.of(),
+                                List.of(new RdfToModel.MissingReferenceValue("oldIdentifier",
+                                        sample, "patiuh machiyotl"))));
+        Assert.assertFalse(result.getWrongDataTypes().isEmpty());
+
+    }
+
 
     @Test
     public void objectWithKnownPropertyIsOkay()
@@ -115,7 +134,7 @@ public class RoCrateSchemaValidationTestFiles
 
         ValidationResult result =
                 RoCrateSchemaValidation.validate(
-                        new RdfToModel.ConversionResult(openBisModel, Map.of()));
+                        new RdfToModel.ConversionResult(openBisModel, Map.of(), List.of()));
         Assert.assertTrue(result.getEntitiesToMissingProperties().isEmpty());
         Assert.assertTrue(result.getEntitiesToUndefinedProperties().isEmpty());
 
@@ -188,7 +207,7 @@ public class RoCrateSchemaValidationTestFiles
 
         ValidationResult result =
                 RoCrateSchemaValidation.validate(
-                        new RdfToModel.ConversionResult(openBisModel, Map.of()));
+                        new RdfToModel.ConversionResult(openBisModel, Map.of(), List.of()));
         Assert.assertTrue(result.getEntitiesToMissingProperties().isEmpty());
         Assert.assertTrue(result.getEntitiesToUndefinedProperties().isEmpty());
 
@@ -261,7 +280,7 @@ public class RoCrateSchemaValidationTestFiles
 
         ValidationResult result =
                 RoCrateSchemaValidation.validate(
-                        new RdfToModel.ConversionResult(openBisModel, Map.of()));
+                        new RdfToModel.ConversionResult(openBisModel, Map.of(), List.of()));
         Assert.assertFalse(result.getEntitiesToMissingProperties().isEmpty());
         Assert.assertTrue(result.getEntitiesToUndefinedProperties().isEmpty());
 
@@ -331,7 +350,7 @@ public class RoCrateSchemaValidationTestFiles
 
         ValidationResult result =
                 RoCrateSchemaValidation.validate(
-                        new RdfToModel.ConversionResult(openBisModel, Map.of()));
+                        new RdfToModel.ConversionResult(openBisModel, Map.of(), List.of()));
         Assert.assertTrue(result.getEntitiesToMissingProperties().isEmpty());
         Assert.assertFalse(result.getEntitiesToUndefinedProperties().isEmpty());
 
@@ -435,7 +454,7 @@ public class RoCrateSchemaValidationTestFiles
 
         ValidationResult result =
                 RoCrateSchemaValidation.validate(
-                        new RdfToModel.ConversionResult(openBisModel, Map.of()));
+                        new RdfToModel.ConversionResult(openBisModel, Map.of(), List.of()));
         Assert.assertTrue(result.getEntitiesToMissingProperties().isEmpty());
         Assert.assertTrue(result.getEntitiesToUndefinedProperties().isEmpty());
         Assert.assertFalse(result.getWrongDataTypes().isEmpty());

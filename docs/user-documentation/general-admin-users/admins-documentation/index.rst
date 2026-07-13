@@ -24,6 +24,7 @@ Admins Documentation
    enable-transfer-to-data-repositories
    enable-barcodes
    enable-archiving-to-long-term-storage
+   chatbot-ui
    history-overview
    space-management
    multi-group-set-up

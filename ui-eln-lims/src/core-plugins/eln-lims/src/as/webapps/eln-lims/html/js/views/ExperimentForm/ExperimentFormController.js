@@ -172,19 +172,12 @@ function ExperimentFormController(mainController, mode, experiment) {
 		var experimentIdentifier = IdentifierUtil.getExperimentIdentifier(experimentSpace, experimentProject, experimentCode);
 
 		var experimentTypeV3 = this._experimentFormModel.experimentType;
-		if (this._experimentFormModel.v3_experiment) {
-			for (var pa of experimentTypeV3.propertyAssignments) {
-				var pt = pa.propertyType;
-				if (["ARRAY_INTEGER", "ARRAY_REAL", "ARRAY_STRING", "ARRAY_TIMESTAMP"].includes(pt.dataType)) {
-					var currentVal = this._experimentFormModel.experiment.properties[pt.code];
-					var isNormalized = currentVal == null
-						|| currentVal === ""
-						|| (typeof currentVal === "string" && currentVal.trim().startsWith("["));
-					if (!isNormalized) {
-						var v3Val = this._experimentFormModel.v3_experiment.properties[pt.code];
-						this._experimentFormModel.experiment.properties[pt.code] =
-							v3Val != null ? JSON.stringify(v3Val) : null;
-					}
+		for (var pa of experimentTypeV3.propertyAssignments) {
+			var pt = pa.propertyType;
+			if (["ARRAY_INTEGER", "ARRAY_REAL", "ARRAY_STRING", "ARRAY_TIMESTAMP"].includes(pt.dataType)) {
+				var currentVal = this._experimentFormModel.experiment.properties[pt.code];
+				if (Array.isArray(currentVal)) {
+					this._experimentFormModel.experiment.properties[pt.code] = JSON.stringify(currentVal);
 				}
 			}
 		}

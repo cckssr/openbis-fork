@@ -164,20 +164,18 @@ public class XLSImport
         this.dbChecker = new DatabaseConsistencyChecker(this.sessionToken, this.v3, this.afterVersions);
         this.delayedExecutor = new DelayedExecutionDecorator(this.sessionToken, this.v3);
 
-        SemanticAnnotationHelper annotationCache = new SemanticAnnotationHelper(delayedExecutor);
-
         this.vocabularyHelper = new VocabularyImportHelper(this.delayedExecutor, mode, options, afterVersions);
         this.vocabularyTermHelper = new VocabularyTermImportHelper(this.delayedExecutor, mode, options, afterVersions);
-        this.sampleTypeHelper = new SampleTypeImportHelper(this.delayedExecutor, mode, options, afterVersions, annotationCache);
-        this.experimentTypeHelper = new ExperimentTypeImportHelper(this.delayedExecutor, mode, options, afterVersions, annotationCache);
-        this.datasetTypeHelper = new DatasetTypeImportHelper(this.delayedExecutor, mode, options, afterVersions, annotationCache);
+        this.sampleTypeHelper = new SampleTypeImportHelper(this.delayedExecutor, mode, options, afterVersions);
+        this.experimentTypeHelper = new ExperimentTypeImportHelper(this.delayedExecutor, mode, options, afterVersions);
+        this.datasetTypeHelper = new DatasetTypeImportHelper(this.delayedExecutor, mode, options, afterVersions);
         this.spaceHelper = new SpaceImportHelper(this.delayedExecutor, mode, options);
         this.projectHelper = new ProjectImportHelper(this.delayedExecutor, mode, options);
-        this.experimentHelper = new ExperimentImportHelper(this.delayedExecutor, mode, options, annotationCache);
-        this.sampleHelper = new SampleImportHelper(this.delayedExecutor, mode, options, annotationCache);
-        this.propertyHelper = new PropertyTypeImportHelper(this.delayedExecutor, mode, options, afterVersions, annotationCache);
-        this.propertyAssignmentHelper = new PropertyAssignmentImportHelper(this.delayedExecutor, mode, options, beforeVersions, annotationCache);
-        this.semanticAnnotationImportHelper = new SemanticAnnotationImportHelper(this.delayedExecutor, mode, options, annotationCache);
+        this.experimentHelper = new ExperimentImportHelper(this.delayedExecutor, mode, options);
+        this.sampleHelper = new SampleImportHelper(this.delayedExecutor, mode, options);
+        this.propertyHelper = new PropertyTypeImportHelper(this.delayedExecutor, mode, options, afterVersions);
+        this.propertyAssignmentHelper = new PropertyAssignmentImportHelper(this.delayedExecutor, mode, options, beforeVersions);
+        this.semanticAnnotationImportHelper = new SemanticAnnotationImportHelper(this.delayedExecutor, mode, options);
         this.typeGroupImportHelper = new TypeGroupImportHelper(this.delayedExecutor, mode, options);
         this.typeGroupAssignmentImportHelper = new TypeGroupAssignmentImportHelper(this.delayedExecutor, mode, options);
         this.shouldCheckVersionsOnDatabase = shouldCheckVersionsOnDatabase;
