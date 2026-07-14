@@ -37,7 +37,7 @@ Installing Prerequisites:
 
 ## Deliverables
 - [Docker image](https://hub.docker.com/layers/openbis/openbis-app/7.0.0/)
-- [VirtualBox appliance)](https://polybox.ethz.ch/index.php/s/Wnr236YSLo4P468)
+- [VirtualBox appliance](https://polybox.ethz.ch/index.php/s/Wnr236YSLo4P468)
 
 ## Useful Links
 - [Documentation](https://openbis.readthedocs.io/en/7.x/)
