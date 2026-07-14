@@ -31,10 +31,13 @@ Installing Prerequisites:
 - [openbis-drive-7.0.0-mac.tar.gz](https://polybox.ethz.ch/index.php/s/m4giC78QQc9HGJH)
 - [openbis-drive-7.0.0-linux.tar.gz](https://polybox.ethz.ch/index.php/s/mYTKyYXyYPifrgg)
 
-
 ## Source Code
 - [Source code (tar.gz)](https://sissource.ethz.ch/sispub/openbis/-/archive/7.0.0/openbis-7.0.0.tar.gz?ref_type=tags)
 - [Source code (tar)](https://sissource.ethz.ch/sispub/openbis/-/archive/7.0.0/openbis-7.0.0.tar?ref_type=tags)
+
+## Deliverables
+- [Docker image](https://hub.docker.com/layers/openbis/openbis-app/7.0.0/)
+- [VirtualBox appliance)](https://polybox.ethz.ch/index.php/s/Wnr236YSLo4P468)
 
 ## Useful Links
 - [Documentation](https://openbis.readthedocs.io/en/7.x/)
