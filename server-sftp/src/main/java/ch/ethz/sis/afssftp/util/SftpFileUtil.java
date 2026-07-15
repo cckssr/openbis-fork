@@ -56,9 +56,16 @@ public class SftpFileUtil {
 
         OpenBIS.AfsServerFacade afsClient = openBISClientUtil.getAfsClient(user);
 
-        //Create if AFS-file does not exist and CREATE or CREATE_NEW open-options are present
+        // Create if AFS-file does not exist and CREATE or CREATE_NEW open-options are present
+        // (raise exception if file already exists and CREATE_NEW is present)
         boolean justCreated = false;
-        if (afsFile == null && isAfsEntityMutable &&
+        if (afsFile != null && options.contains(StandardOpenOption.CREATE_NEW)) {
+            throw new IOException(
+                    String.format("File already exists (entityId: %s, AFS-path: %s)",
+                            entityId, afsPath
+                    )
+            );
+        } else if (afsFile == null && isAfsEntityMutable &&
                 (options.contains(StandardOpenOption.CREATE) ||
                         options.contains(StandardOpenOption.CREATE_NEW)
                 )
@@ -131,7 +138,7 @@ public class SftpFileUtil {
                     throw new IOException("Error deleting AFS-file");
                 }
             } catch (Exception e) {
-                throw new IOException("Error deleting AFS-file");
+                throw new IOException("Error deleting AFS-file", e);
             }
         }
     }
@@ -153,7 +160,7 @@ public class SftpFileUtil {
                     throw new IOException("Error creating AFS-directory");
                 }
             } catch (Exception e) {
-                throw new IOException("Error creating AFS-directory");
+                throw new IOException("Error creating AFS-directory", e);
             }
         } else {
             throw new IOException("Error creating AFS-directory: file already exists");
@@ -186,7 +193,7 @@ public class SftpFileUtil {
                         throw new IOException("Error copying AFS-file");
                     }
                 } catch (Exception e) {
-                    throw new IOException("Error copying AFS-file");
+                    throw new IOException("Error copying AFS-file", e);
                 }
             } else {
                 throw new IOException("Error copying AFS-file: destination already exists");
@@ -221,7 +228,7 @@ public class SftpFileUtil {
                         throw new IOException("Error moving AFS-file");
                     }
                 } catch (Exception e) {
-                    throw new IOException("Error moving AFS-file");
+                    throw new IOException("Error moving AFS-file", e);
                 }
             } else {
                 if (replaceExisting) {

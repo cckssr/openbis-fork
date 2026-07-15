@@ -481,6 +481,8 @@ public class SftpListUtilTest extends TestCase {
     public void testGetEntityNameFromDisplayName() {
         assertEquals("naME Surname", SftpListUtil.getEntityNameFromDisplayName("naME Surname (ENTITY-PERM-ID)"));
         assertEquals("naME Surname", SftpListUtil.getEntityNameFromDisplayName("  naME Surname\t (ENTITY-PERM-ID)"));
+        assertEquals("naME Surname", SftpListUtil.getEntityNameFromDisplayName("  naME Surname\t (ENTITY-PERM-ID)"));
+        assertEquals("naME Su()rname", SftpListUtil.getEntityNameFromDisplayName("  naME Su()rname\t (ENTITY-PERM-ID)"));
         assertEquals(null, SftpListUtil.getEntityNameFromDisplayName("(ENTITY-PERM-ID)"));
         assertEquals(null, SftpListUtil.getEntityNameFromDisplayName("  (ENTITY-PERM-ID)"));
         assertEquals("ENTITY-PERM-ID", SftpListUtil.getEntityNameFromDisplayName("ENTITY-PERM-ID"));

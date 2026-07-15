@@ -56,7 +56,7 @@ public class SftpFileAttributes implements PosixFileAttributes
 
     @Override
     public long size() {
-        return 0;
+        return size;
     }
 
 

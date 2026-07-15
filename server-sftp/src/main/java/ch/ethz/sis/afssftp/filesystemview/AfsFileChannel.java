@@ -93,7 +93,7 @@ public class AfsFileChannel extends FileChannel {
     }
 
     @Override
-    public int read(ByteBuffer dst) throws IOException {
+    synchronized public int read(ByteBuffer dst) throws IOException {
         if (readOpenOption) {
             int destinationBufferSpace = dst.remaining();
             if (destinationBufferSpace > 0) {
@@ -113,7 +113,7 @@ public class AfsFileChannel extends FileChannel {
                     try {
                         bytes = readData(pos, readSize);
                     } catch (Exception e) {
-                        throw new IOException("Error reading from AFS");
+                        throw new IOException("Error reading from AFS", e);
                     }
                     dst.put(bytes);
                     position.set(pos + bytes.length);
@@ -128,7 +128,7 @@ public class AfsFileChannel extends FileChannel {
     }
 
     @Override
-    public long read(ByteBuffer[] dsts, int dstsOffset, int dstsCount) throws IOException {
+    synchronized public long read(ByteBuffer[] dsts, int dstsOffset, int dstsCount) throws IOException {
         if (readOpenOption) {
             long destinationBufferSpace = IntStream.range(dstsOffset, dstsOffset + dstsCount)
                     .mapToLong( index -> dsts[index].remaining() ).sum();
@@ -150,7 +150,7 @@ public class AfsFileChannel extends FileChannel {
                     try {
                         bytes = readData(pos, readSize);
                     } catch (Exception e) {
-                        throw new IOException("Error reading from AFS");
+                        throw new IOException("Error reading from AFS", e);
                     }
                     for (int index = dstsOffset, bytesOffset = 0;
                          index<dstsOffset+dstsCount && bytesOffset < bytes.length;
@@ -174,7 +174,7 @@ public class AfsFileChannel extends FileChannel {
     }
 
     @Override
-    public int write(ByteBuffer src) throws IOException {
+    synchronized public int write(ByteBuffer src) throws IOException {
         if (writeOpenOption) {
             if (src.remaining() > 0) {
                 long size = size();
@@ -198,7 +198,7 @@ public class AfsFileChannel extends FileChannel {
                 try {
                     writeData(bytes, pos);
                 } catch (Exception e) {
-                    throw new IOException("Error writing to AFS");
+                    throw new IOException("Error writing to AFS", e);
                 }
                 position.set(pos + bytesToWrite);
                 return bytes.length;
@@ -211,7 +211,7 @@ public class AfsFileChannel extends FileChannel {
     }
 
     @Override
-    public long write(ByteBuffer[] srcs, int srcsOffset, int srcsCount) throws IOException {
+    synchronized public long write(ByteBuffer[] srcs, int srcsOffset, int srcsCount) throws IOException {
         if (writeOpenOption) {
             long remaining = IntStream.range(srcsOffset, srcsOffset + srcsCount)
                     .mapToLong( index -> srcs[index].remaining() ).sum();
@@ -244,7 +244,7 @@ public class AfsFileChannel extends FileChannel {
                 try {
                     writeData(bytes, pos);
                 } catch (Exception e) {
-                    throw new IOException("Error writing to AFS");
+                    throw new IOException("Error writing to AFS", e);
                 }
                 position.set(pos + bytesToWrite);
                 return bytes.length;
@@ -262,7 +262,7 @@ public class AfsFileChannel extends FileChannel {
     }
 
     @Override
-    public FileChannel position(long newPosition) throws IOException {
+    synchronized public FileChannel position(long newPosition) throws IOException {
         position.set(newPosition);
         return this;
     }
@@ -279,7 +279,7 @@ public class AfsFileChannel extends FileChannel {
     }
 
     @Override
-    public FileChannel truncate(long size) throws IOException {
+    synchronized public FileChannel truncate(long size) throws IOException {
         if (writeOpenOption) {
             writeBuffer.flush(null);
             try {
@@ -287,7 +287,7 @@ public class AfsFileChannel extends FileChannel {
                     throw new IOException("Error truncating AFS-file");
                 }
             } catch (Exception e) {
-                throw new IOException("Error truncating AFS-file");
+                throw new IOException("Error truncating AFS-file", e);
             }
             if (position.get() > size) {
                 position.set(size);
@@ -304,7 +304,7 @@ public class AfsFileChannel extends FileChannel {
     }
 
     @Override
-    public void force(boolean force) throws IOException {
+    synchronized public void force(boolean force) throws IOException {
         writeBuffer.flush(null);
         readCache.clear();
         sizeCache.clear();
@@ -331,7 +331,7 @@ public class AfsFileChannel extends FileChannel {
     }
 
     @Override
-    public long transferFrom(ReadableByteChannel src, long position, long count) throws IOException {
+    synchronized public long transferFrom(ReadableByteChannel src, long position, long count) throws IOException {
         if (writeOpenOption) {
             int maxBytesToBeWrite = IntStream.of(
                     (int) Long.min(count, Integer.MAX_VALUE),
@@ -370,7 +370,7 @@ public class AfsFileChannel extends FileChannel {
                     try {
                         bytes = readData(position, readSize);
                     } catch (Exception e) {
-                        throw new IOException("Error reading from AFS");
+                        throw new IOException("Error reading from AFS", e);
                     }
                     dst.put(bytes);
                     return bytes.length;
@@ -384,7 +384,7 @@ public class AfsFileChannel extends FileChannel {
     }
 
     @Override
-    public int write(ByteBuffer src, long position) throws IOException {
+    synchronized public int write(ByteBuffer src, long position) throws IOException {
         if (writeOpenOption) {
             if (src.remaining() > 0) {
                 long size = size();
@@ -407,7 +407,7 @@ public class AfsFileChannel extends FileChannel {
                 try {
                     writeData(bytes, position);
                 } catch (Exception e) {
-                    throw new IOException("Error writing to AFS");
+                    throw new IOException("Error writing to AFS", e);
                 }
                 return bytes.length;
             } else {
@@ -449,7 +449,7 @@ public class AfsFileChannel extends FileChannel {
                     throw new IOException("Error writing to AFS");
                 }
             } catch (Exception e) {
-                throw new IOException("Error writing to AFS");
+                throw new IOException("Error writing to AFS", e);
             }
             index = index + bytesToWrite;
         }
@@ -522,7 +522,7 @@ public class AfsFileChannel extends FileChannel {
                         throw new IOException("Error writing to AFS");
                     }
                 } catch (Exception e) {
-                    throw new IOException("Error writing to AFS");
+                    throw new IOException("Error writing to AFS", e);
                 }
                 bufferedBytes = null;
                 accSize = 0;
