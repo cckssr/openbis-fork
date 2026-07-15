@@ -705,12 +705,7 @@ public class StandardPathListerTest extends TestCase {
                         type
                 );
 
-                FtpPathLister.EntityDescriptor entityDescriptor = standardPathLister.toEntityDescriptor(entityChain).get();
-                assertEquals(type, entityDescriptor.type());
-                assertEquals(
-                        "fake-perm-id",
-                        entityDescriptor.identifier().get());
-                assertEquals(mutable, entityDescriptor.mutable());
+                assertEquals(Optional.empty(), standardPathLister.toEntityDescriptor(entityChain));
             }
         }
 

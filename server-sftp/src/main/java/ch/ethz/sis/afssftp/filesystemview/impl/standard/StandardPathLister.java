@@ -223,17 +223,7 @@ public class StandardPathLister implements FtpPathLister {
                                 afsFilePath
                         ));
                     } else {
-                        if (nodeChain.size() > 1) {
-                            SftpNode secondLastNode = nodeChain.get(nodeChain.size() - 2);
-                            SftpNode.Type secondLastNodeType = secondLastNode.getType();
-                            if (secondLastNodeType != SftpNode.Type.SUBLEVEL && secondLastNodeType != SftpNode.Type.AFS_FILE) {
-                                yield toEntityDescriptor(new SftpNodeChain(nodeChain.nodes().subList(0, nodeChain.size() - 1)));
-                            } else {
-                                yield Optional.empty();
-                            }
-                        } else {
-                            yield Optional.empty();
-                        }
+                        yield Optional.empty();
                     }
                 }
             };
