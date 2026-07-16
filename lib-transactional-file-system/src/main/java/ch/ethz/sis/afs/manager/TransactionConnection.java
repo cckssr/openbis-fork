@@ -187,7 +187,7 @@ public class TransactionConnection implements TransactionalFileSystem
         if (state == State.New)
         {
             // New just created transaction
-        } else if (state == State.Executed || state == State.Failed || state == State.Rollback || state == State.Prepare)
+        } else if (state == State.Executed || state == State.FailedCommit || state == State.Rollback || state == State.Prepare)
         {
             // Clean transaction, can be reused
             transaction = null;
@@ -255,7 +255,7 @@ public class TransactionConnection implements TransactionalFileSystem
                 {
                     operationExecutors.get(operation.getName()).commit(transaction, operation);
                 } catch (Exception e) {
-                    state = State.Failed;
+                    state = State.FailedCommit;
                     throw new RuntimeException("Commit failed for transaction " + transaction.getUuid() + " operation " + operation.getName() + ".", e);
                 }
             }
