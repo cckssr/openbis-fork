@@ -107,7 +107,18 @@ const SpreadsheetField = ({ value, editable = false, onChange = _v => {} }) => {
     const spreadsheetOptions = {
       worksheets: [worksheetOptions],
       tabs: false,
-      toolbar: false,
+      toolbar: toolbar => {
+        const remove = new Set(['undo', 'redo', 'save', 'web', 'fullscreen']);
+        const itemsCount = toolbar.items.length;
+        toolbar.items = toolbar.items
+          .filter(
+            // The last divisor should be ignored. The border selector too.
+            (item, index) => !(item.type === 'divisor' && index < itemsCount - 1 || remove.has(item.content) ||
+                item.options && item.options.length > 0 &&
+                (item.options[0].startsWith('border_') || item.options[0].startsWith('vertical_')))
+          );
+        return toolbar;
+      }
     };
 
     if (editable) {
