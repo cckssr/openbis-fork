@@ -361,7 +361,19 @@ var JExcelEditorManager = new function() {
                 { content: 'format_align_left',   onclick: makeStyleHandler('text-align', 'left') },
                 { content: 'format_align_center', onclick: makeStyleHandler('text-align', 'center') },
                 { content: 'format_align_right',  onclick: makeStyleHandler('text-align', 'right') },
-                { content: 'format_bold',         onclick: makeStyleHandler('font-weight', 'bold') },
+                { content: 'format_bold',         onclick: function() {
+                    var ws = _this.jExcelEditors[guid];
+                    var sel = ws && ws.getSelected(true);
+                    if (sel) {
+                        var allBold = sel.every(function(c) {
+                            var s = ws.getStyle(c);
+                            return s && s.indexOf('font-weight: bold') !== -1;
+                        });
+                        ws.setStyle(Object.fromEntries(sel.map(function(c) {
+                            return [c, 'font-weight: ' + (allBold ? 'normal' : 'bold')];
+                        })));
+                    }
+                } },
                 { type: 'color', content: 'format_color_text', k: 'color' },
                 { type: 'color', content: 'format_color_fill', k: 'background-color' },
                 { content: 'input', onclick: _this.getObjectFunction(guid) },
