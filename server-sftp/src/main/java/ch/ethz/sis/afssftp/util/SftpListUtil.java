@@ -399,7 +399,7 @@ public class SftpListUtil {
     public static String getEntityPermIdFromDisplayName(@NonNull String displayName) {
         String[] splitByOpeningParenthesis = displayName.split("\\(");
         if (splitByOpeningParenthesis.length > 1) {
-            String[] splitByClosingParenthesis = splitByOpeningParenthesis[1].split("\\)");
+            String[] splitByClosingParenthesis = splitByOpeningParenthesis[splitByOpeningParenthesis.length - 1].split("\\)");
             if (splitByClosingParenthesis.length > 0) {
                 return splitByClosingParenthesis[0].trim();
             } else {
@@ -411,13 +411,14 @@ public class SftpListUtil {
     }
 
     public static String getEntityNameFromDisplayName(@NonNull String displayName) {
-        String[] splitDisplayName = displayName.split("\\(");
-        if (splitDisplayName.length > 0) {
-            return Optional.of(splitDisplayName[0])
-                    .map(String::trim).filter(str -> !str.isEmpty()).orElse(null);
-        } else {
-            return null;
-        }
+        int lastOpenedParenthesis = displayName.lastIndexOf("(");
+        return Optional.of(
+            displayName.substring(
+                    0,
+                    lastOpenedParenthesis > -1 ?
+                            lastOpenedParenthesis : displayName.length()
+            )
+        ).map(String::trim).filter(str -> !str.isEmpty()).orElse(null);
     }
 
     public boolean checkExistence(@NonNull FtpPathLister.EntityDescriptor entityDescriptor) {

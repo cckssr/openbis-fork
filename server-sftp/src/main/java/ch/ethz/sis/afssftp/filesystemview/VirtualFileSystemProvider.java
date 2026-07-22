@@ -85,7 +85,8 @@ public class VirtualFileSystemProvider extends FileSystemProvider {
     @Override
     public FileChannel newFileChannel(Path path, Set<? extends OpenOption> options, FileAttribute<?>... attrs) throws IOException {
         SftpNodeChain sftpNodeChain = getNodeChainFromPath(path);
-        FtpPathLister.EntityDescriptor entityDescriptor = ftpPathLister.toEntityDescriptor(sftpNodeChain).orElseThrow();
+        FtpPathLister.EntityDescriptor entityDescriptor =
+                ftpPathLister.toEntityDescriptor(sftpNodeChain).orElseThrow(UnsupportedOperationException::new);
 
         if (entityDescriptor.type() == SftpNode.Type.AFS_FILE) {
             String entityId = entityDescriptor.afsEntity().identifier().orElseThrow();
@@ -131,7 +132,8 @@ public class VirtualFileSystemProvider extends FileSystemProvider {
     @Override
     public void createDirectory(Path path, FileAttribute<?>... fileAttributes) throws IOException {
         SftpNodeChain sftpNodeChain = getNodeChainFromPath(path);
-        FtpPathLister.EntityDescriptor entityDescriptor = ftpPathLister.toEntityDescriptor(sftpNodeChain).orElseThrow();
+        FtpPathLister.EntityDescriptor entityDescriptor =
+                ftpPathLister.toEntityDescriptor(sftpNodeChain).orElseThrow(UnsupportedOperationException::new);
 
         if (entityDescriptor.type() == SftpNode.Type.AFS_FILE) {
             String entityId = entityDescriptor.afsEntity().identifier().orElseThrow();
@@ -188,7 +190,8 @@ public class VirtualFileSystemProvider extends FileSystemProvider {
     @Override
     public void delete(Path path) throws IOException {
         SftpNodeChain sftpNodeChain = getNodeChainFromPath(path);
-        FtpPathLister.EntityDescriptor entityDescriptor = ftpPathLister.toEntityDescriptor(sftpNodeChain).orElseThrow();
+        FtpPathLister.EntityDescriptor entityDescriptor =
+                ftpPathLister.toEntityDescriptor(sftpNodeChain).orElseThrow(UnsupportedOperationException::new);
 
         if (entityDescriptor.type() == SftpNode.Type.AFS_FILE) {
             String entityId = entityDescriptor.afsEntity().identifier().orElseThrow();
@@ -236,8 +239,10 @@ public class VirtualFileSystemProvider extends FileSystemProvider {
         SftpNodeChain sftpNodeChain1 = getNodeChainFromPath(source);
         SftpNodeChain sftpNodeChain2 = getNodeChainFromPath(destination);
 
-        FtpPathLister.EntityDescriptor entityDescriptor1 = ftpPathLister.toEntityDescriptor(sftpNodeChain1).orElseThrow();
-        FtpPathLister.EntityDescriptor entityDescriptor2 = ftpPathLister.toEntityDescriptor(sftpNodeChain2).orElseThrow();
+        FtpPathLister.EntityDescriptor entityDescriptor1 =
+                ftpPathLister.toEntityDescriptor(sftpNodeChain1).orElseThrow(UnsupportedOperationException::new);
+        FtpPathLister.EntityDescriptor entityDescriptor2 =
+                ftpPathLister.toEntityDescriptor(sftpNodeChain2).orElseThrow(UnsupportedOperationException::new);
 
         if ( entityDescriptor1.type() == SftpNode.Type.AFS_FILE &&
                 entityDescriptor2.type() == SftpNode.Type.AFS_FILE
@@ -272,8 +277,10 @@ public class VirtualFileSystemProvider extends FileSystemProvider {
         SftpNodeChain sftpNodeChain1 = getNodeChainFromPath(source);
         SftpNodeChain sftpNodeChain2 = getNodeChainFromPath(destination);
 
-        FtpPathLister.EntityDescriptor entityDescriptor1 = ftpPathLister.toEntityDescriptor(sftpNodeChain1).orElseThrow();
-        FtpPathLister.EntityDescriptor entityDescriptor2 = ftpPathLister.toEntityDescriptor(sftpNodeChain2).orElseThrow();
+        FtpPathLister.EntityDescriptor entityDescriptor1 =
+                ftpPathLister.toEntityDescriptor(sftpNodeChain1).orElseThrow(UnsupportedOperationException::new);
+        FtpPathLister.EntityDescriptor entityDescriptor2 =
+                ftpPathLister.toEntityDescriptor(sftpNodeChain2).orElseThrow(UnsupportedOperationException::new);
 
         if ( entityDescriptor1.type() == SftpNode.Type.AFS_FILE &&
                 entityDescriptor2.type() == SftpNode.Type.AFS_FILE

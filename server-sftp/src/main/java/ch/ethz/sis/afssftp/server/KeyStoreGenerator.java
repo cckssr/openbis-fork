@@ -17,7 +17,7 @@ import java.util.Date;
 
 public class KeyStoreGenerator {
 
-    public static void generateKeyStore(Path keystoreFilename, String alias, String passwordAsString) {
+    public static void generateKeyStore(Path keystoreFilename, String alias, String passwordAsString) throws Exception {
         char[] password = passwordAsString.toCharArray();
 
         try {
@@ -48,6 +48,7 @@ public class KeyStoreGenerator {
         } catch (Exception e) {
             System.err.println("Error generating KeyStore: " + e.getMessage());
             e.printStackTrace();
+            throw e;
         }
     }
 
