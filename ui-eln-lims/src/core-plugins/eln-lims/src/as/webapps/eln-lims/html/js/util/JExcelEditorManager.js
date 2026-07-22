@@ -334,50 +334,20 @@ var JExcelEditorManager = new function() {
             options.onchangestyle = onChangeHandler;
             options.onchangemeta = onChangeHandler;
 
-            // jspreadsheet v5 toolbar: explicit onclick/onchange handlers required
-            // (v4 shorthand k/v no longer works for button items in v5)
-            var makeStyleHandler = function(cssProp, cssValue) {
-                return function() {
-                    var ws = _this.jExcelEditors[guid];
-                    var sel = ws && ws.getSelected(true);
-                    if (sel) {
-                        ws.setStyle(Object.fromEntries(sel.map(function(c) { return [c, cssProp + ': ' + cssValue]; })));
-                    }
-                };
+            options.toolbar = function(toolbar) {
+                var remove = new Set(['undo', 'redo', 'save', 'web', 'fullscreen']);
+                var itemsCount = toolbar.items.length;
+                toolbar.items = toolbar.items.filter(function(item, index) {
+                    return !(
+                        (item.type === 'divisor' && index < itemsCount - 1) ||
+                        remove.has(item.content) ||
+                        (item.options && item.options.length > 0 &&
+                            (item.options[0].startsWith('border_') || item.options[0].startsWith('vertical_')))
+                    );
+                });
+                toolbar.items.push({ content: 'input', onclick: _this.getObjectFunction(guid) });
+                return toolbar;
             };
-            var makeSelectHandler = function(cssProp) {
-                return function(el, value) {
-                    var ws = _this.jExcelEditors[guid];
-                    var sel = ws && ws.getSelected(true);
-                    if (sel) {
-                        ws.setStyle(Object.fromEntries(sel.map(function(c) { return [c, cssProp + ': ' + value]; })));
-                    }
-                };
-            };
-
-            options.toolbar = [
-                { type: 'select', options: ['Arial', 'Verdana'], onchange: makeSelectHandler('font-family') },
-                { type: 'select', options: ['9px','10px','11px','12px','13px','14px','15px','16px','17px','18px','19px','20px'], onchange: makeSelectHandler('font-size') },
-                { content: 'format_align_left',   onclick: makeStyleHandler('text-align', 'left') },
-                { content: 'format_align_center', onclick: makeStyleHandler('text-align', 'center') },
-                { content: 'format_align_right',  onclick: makeStyleHandler('text-align', 'right') },
-                { content: 'format_bold',         onclick: function() {
-                    var ws = _this.jExcelEditors[guid];
-                    var sel = ws && ws.getSelected(true);
-                    if (sel) {
-                        var allBold = sel.every(function(c) {
-                            var s = ws.getStyle(c);
-                            return s && s.indexOf('font-weight: bold') !== -1;
-                        });
-                        ws.setStyle(Object.fromEntries(sel.map(function(c) {
-                            return [c, 'font-weight: ' + (allBold ? 'normal' : 'bold')];
-                        })));
-                    }
-                } },
-                { type: 'color', content: 'format_color_text', k: 'color' },
-                { type: 'color', content: 'format_color_fill', k: 'background-color' },
-                { content: 'input', onclick: _this.getObjectFunction(guid) },
-            ];
         }
 
         var instances = jspreadsheet($container[0], options);
