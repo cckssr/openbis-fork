@@ -208,113 +208,115 @@ var JExcelEditorManager = new function() {
 
         var guid = Util.guid();
 
-        var options = {
-                    data: data,
-                    style: style,
-                    meta: meta,
-                    editable : mode !== FormMode.VIEW,
-                    minDimensions:[10, 10],
-                    toolbar: null,
-                    onchangeheader: null,
-                    onchange: null,
-                    onchangestyle: null,
-                    onchangemeta: null
+        // jspreadsheet v5: worksheet options are nested under worksheets[]
+        var worksheetOptions = {
+            data: data,
+            style: style,
+            meta: meta,
+            editable: mode !== FormMode.VIEW,
+            minDimensions: [10, 10],
         };
 
         if(headers) {
-            options.colHeaders = headers;
+            worksheetOptions.columns = headers.map(function(h, i) {
+                return { title: h, width: width ? width[i] : undefined };
+            });
         }
 
-        if(width) {
-            options.colWidths = width;
-        }
+        var options = {
+            worksheets: [worksheetOptions],
+            toolbar: null,
+        };
 
         if(mode === FormMode.VIEW) {
-            options.allowInsertRow = false;
-            options.allowManualInsertRow = false;
-            options.allowInsertColumn = false;
-            options.allowManualInsertColumn = false;
-            options.allowDeleteRow = false;
-            options.allowDeleteColumn = false;
-            options.allowRenameColumn = false;
-            options.allowComments = false;
-            options.onload = function(container,spreadsheet) {
-                                    var data = spreadsheet.getData();
-                                    var headers = spreadsheet.getHeaders().split(',');
-                                    var cellsWithIdentifiers = [];
-                                    var cellsWithPermIds = [];
-                                    var identifiers = new Set();
-                                    var permIds = new Set();
-                                    for (let i=0; i<data.length; i++ ) {
-                                        for(let j=0; j < data[i].length; j++) {
-                                            let cellData = data[i][j];
-                                            let permIdsInCell = _this.getPermIdsFromCell(cellData);
-                                            if(permIdsInCell && permIdsInCell.length > 0) {
-                                                let cellIndex = headers[j] + (i+1);
-                                                let cell = spreadsheet.getCell(cellIndex);
-                                                permIdsInCell.forEach(x => permIds.add(x));
-                                                cellsWithPermIds.push({cell: cell, cellData: cellData});
-                                                cell.innerHTML = Util.getProgressBarSVG();
-                                            }
-                                            if(_this._isIdentifierCell(cellData)) {
-                                                let cellIndex = headers[j] + (i+1);
-                                                let cell = spreadsheet.getCell(cellIndex);
-                                                cellsWithIdentifiers.push({cell: cell, cellData: cellData});
-                                                cellData.split(/\s+/)
-                                                    .filter(_this._isIdentifier)
-                                                    .forEach(id => identifiers.add(id));
-                                                cell.innerHTML = Util.getProgressBarSVG();
-                                            }
-                                        }
-                                    }
-                                    _this._searchByIdentifiers(Array.from(identifiers), function(results) {
-
-                                        for(cell of cellsWithIdentifiers) {
-                                            var stringArray = cell.cellData.split(/(\s+)/);
-                                            var cellText = "";
-                                            for (let word of stringArray) {
-                                                if(results[word]) {
-                                                    cellText += results[word][0].outerHTML;
-                                                } else {
-                                                    cellText += word;
-                                                }
-                                            }
-                                            cell.cell.innerHTML = cellText;
-
-                                            cell.cell.onclick = function(event) {
-                                                results[event.target.innerText].click();
-                                            }
-                                        }
-
-                                    });
-                                    _this._searchByPermIds(Array.from(permIds), function(results) {
-                                        for(cell of cellsWithPermIds) {
-                                            var stringArray = cell.cellData.split(/(\s+|,\s*)/);
-                                            var cellText = "";
-                                            for (let word of stringArray) {
-                                                if(results[word]) {
-                                                    cellText += results[word][0].outerHTML;
-                                                } else {
-                                                    cellText += word;
-                                                }
-                                            }
-                                            cell.cell.innerHTML = cellText;
-
-                                            cell.cell.onclick = function(event) {
-                                                results[event.target.innerText].click();
-                                            }
-                                        }
-                                    });
-                                }
-
-            options.contextMenu = function(obj, x, y, e) {
+            worksheetOptions.allowInsertRow = false;
+            worksheetOptions.allowManualInsertRow = false;
+            worksheetOptions.allowInsertColumn = false;
+            worksheetOptions.allowManualInsertColumn = false;
+            worksheetOptions.allowDeleteRow = false;
+            worksheetOptions.allowDeleteColumn = false;
+            worksheetOptions.allowRenameColumn = false;
+            worksheetOptions.allowComments = false;
+            worksheetOptions.contextMenu = function(obj, x, y, e) {
                 return [];
+            };
+            options.onload = function() {
+                var spreadsheet = _this.jExcelEditors[guid];
+                if (!spreadsheet) {
+                    return;
+                }
+                var data = spreadsheet.getData();
+                var headers = spreadsheet.getHeaders().split(',');
+                var cellsWithIdentifiers = [];
+                var cellsWithPermIds = [];
+                var identifiers = new Set();
+                var permIds = new Set();
+                for (let i=0; i<data.length; i++ ) {
+                    for(let j=0; j < data[i].length; j++) {
+                        let cellData = data[i][j];
+                        let permIdsInCell = _this.getPermIdsFromCell(cellData);
+                        if(permIdsInCell && permIdsInCell.length > 0) {
+                            let cellIndex = headers[j] + (i+1);
+                            let cell = spreadsheet.getCell(cellIndex);
+                            permIdsInCell.forEach(x => permIds.add(x));
+                            cellsWithPermIds.push({cell: cell, cellData: cellData});
+                            cell.innerHTML = Util.getProgressBarSVG();
+                        }
+                        if(_this._isIdentifierCell(cellData)) {
+                            let cellIndex = headers[j] + (i+1);
+                            let cell = spreadsheet.getCell(cellIndex);
+                            cellsWithIdentifiers.push({cell: cell, cellData: cellData});
+                            cellData.split(/\s+/)
+                                .filter(_this._isIdentifier)
+                                .forEach(id => identifiers.add(id));
+                            cell.innerHTML = Util.getProgressBarSVG();
+                        }
+                    }
+                }
+                _this._searchByIdentifiers(Array.from(identifiers), function(results) {
+
+                    for(cell of cellsWithIdentifiers) {
+                        var stringArray = cell.cellData.split(/(\s+)/);
+                        var cellText = "";
+                        for (let word of stringArray) {
+                            if(results[word]) {
+                                cellText += results[word][0].outerHTML;
+                            } else {
+                                cellText += word;
+                            }
+                        }
+                        cell.cell.innerHTML = cellText;
+
+                        cell.cell.onclick = function(event) {
+                            results[event.target.innerText].click();
+                        }
+                    }
+
+                });
+                _this._searchByPermIds(Array.from(permIds), function(results) {
+                    for(cell of cellsWithPermIds) {
+                        var stringArray = cell.cellData.split(/(\s+|,\s*)/);
+                        var cellText = "";
+                        for (let word of stringArray) {
+                            if(results[word]) {
+                                cellText += results[word][0].outerHTML;
+                            } else {
+                                cellText += word;
+                            }
+                        }
+                        cell.cell.innerHTML = cellText;
+
+                        cell.cell.onclick = function(event) {
+                            results[event.target.innerText].click();
+                        }
+                    }
+                });
             }
         } else {
             var onChangeHandler = this.getOnChange(guid, propertyCode, entity);
             options.onundo = onChangeHandler;
             options.onredo = onChangeHandler;
-            options.onchange = onChangeHandler; //
+            options.onchange = onChangeHandler;
             options.onafterchanges = onChangeHandler;
             options.oninsertrow = onChangeHandler;
             options.oninsertcolumn = onChangeHandler;
@@ -327,32 +329,31 @@ var JExcelEditorManager = new function() {
             options.onsort = onChangeHandler;
             options.onpaste = onChangeHandler;
             options.onmerge = onChangeHandler;
-            options.onchangeheader = onChangeHandler; //
+            options.onchangeheader = onChangeHandler;
             options.oneditionend = onChangeHandler;
-            options.onchangestyle = onChangeHandler; //
-            options.onchangemeta = onChangeHandler; //
+            options.onchangestyle = onChangeHandler;
+            options.onchangemeta = onChangeHandler;
 
-            options.toolbar = [
-                    { type:'select', k:'font-family', v:['Arial','Verdana'] },
-                    { type:'select', k:'font-size', v:['9px','10px','11px','12px','13px','14px','15px','16px','17px','18px','19px','20px'] },
-                    { type:'i', content:'format_align_left', k:'text-align', v:'left' },
-                    { type:'i', content:'format_align_center', k:'text-align', v:'center' },
-                    { type:'i', content:'format_align_right', k:'text-align', v:'right' },
-                    { type:'i', content:'format_bold', k:'font-weight', v:'bold' },
-                    { type:'color', content:'format_color_text', k:'color' },
-                    { type:'color', content:'format_color_fill', k:'background-color' },
-                    { type:'i', content:'input', onclick: this.getObjectFunction(guid) },
-            ];
+            options.toolbar = function(toolbar) {
+                var remove = new Set(['undo', 'redo', 'save', 'web', 'fullscreen']);
+                var itemsCount = toolbar.items.length;
+                toolbar.items = toolbar.items.filter(function(item, index) {
+                    return !(
+                        (item.type === 'divisor' && index < itemsCount - 1) ||
+                        remove.has(item.content) ||
+                        (item.options && item.options.length > 0 &&
+                            (item.options[0].startsWith('border_') || item.options[0].startsWith('vertical_')))
+                    );
+                });
+                toolbar.items.push({ content: 'input', onclick: _this.getObjectFunction(guid) });
+                return toolbar;
+            };
         }
 
-        var jexcelField = jspreadsheet($container[0], options);
+        var instances = jspreadsheet($container[0], options);
+        _this.jExcelEditors[guid] = instances[0];
 
-        $container.refresh = function() {
-            $container.empty();
-            jexcelField.init();
-        }
-
-        this.jExcelEditors[guid] = jexcelField;
+        $container.refresh = function() {};
 	}
 
 	this._isIdentifierCell = function(cellData) {
