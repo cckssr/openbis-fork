@@ -805,7 +805,15 @@ var Util = new function() {
 	this.getURLFor = function(menuId, view, argsForView) {
 		var viewData = null;
 		if((typeof argsForView) !== "string") {
-			viewData = JSON.stringify(argsForView);
+			viewData = JSON.stringify(argsForView, function(key, value) {
+				// React element objects used as column labels are not needed in the URL and
+				// cause 414 errors when there are many columns. Drop them.
+				if (key === 'label' && value !== null && typeof value === 'object' && ('props' in value)) {
+					return undefined;
+				} else {
+					return value;
+				}
+			});
 		} else {
 		    viewData = argsForView;
 		}
