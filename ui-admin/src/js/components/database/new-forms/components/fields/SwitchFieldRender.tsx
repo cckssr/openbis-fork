@@ -10,7 +10,7 @@ export const SwitchFieldRenderer: React.FC<FieldRendererProps> = ({ field, onFie
 	if (field.isMultiValue && !isEditing) {
 		const values: any[] = Array.isArray(field.value) ? field.value : [];
 		const lines = values.map((v, i) => {
-			const text = v === 'true' || v === true ? 'Yes' : v === 'false' || v === false ? 'No' : '';
+			const text = v === 'true' || v === true ? 'true' : v === 'false' || v === false ? 'true' : '';
 			return <div key={i}>{text}</div>;
 		});
 		return (
@@ -30,8 +30,8 @@ export const SwitchFieldRenderer: React.FC<FieldRendererProps> = ({ field, onFie
 				renderInput={(val, onChange) => (
 					<SelectField
 						reference={field}
-						options={[{label: '', value: null}, {label: 'Yes', value: 'true'},
-							{label: 'No', value: 'false'}]}
+						options={[{label: '', value: null}, {label: 'true', value: 'true'},
+							{label: 'false', value: 'false'}]}
 						id={field.id}
 						name={field.label}
 						mandatory={field.required}
@@ -51,7 +51,7 @@ export const SwitchFieldRenderer: React.FC<FieldRendererProps> = ({ field, onFie
 	} else {
 		return (<SelectField
 				reference={field}
-				options={[{label: '', value: null}, {label: 'Yes', value: 'true'}, {label: 'No', value: 'false'}]}
+				options={[{label: '', value: null}, {label: 'true', value: 'true'}, {label: 'false', value: 'false'}]}
 				id={field.id}
 				name={field.label}
 				mandatory={field.required}

@@ -22,7 +22,10 @@ export const SelectFieldRenderer: React.FC<FieldRendererProps> = ({ field, onFie
 			<Autocomplete
 				multiple
 				disableCloseOnSelect
-				options={field.options || []}
+				options={[
+					{ label: '', value: null },
+					...(field.options || []),
+				]}
 				value={selectedOptions}
 				getOptionLabel={(option) => option.label || option.value}
 				isOptionEqualToValue={(option, val) => option.value === val.value}
@@ -84,7 +87,10 @@ export const SelectFieldRenderer: React.FC<FieldRendererProps> = ({ field, onFie
 				description={field.meta?.helpText}
 				emptyOption={null}
 				disableUnderline={true}
-				options={field.options}
+				options={[
+					{ label: '', value: null },
+					...field.options,
+				]}
 			/>
 		);
 	}

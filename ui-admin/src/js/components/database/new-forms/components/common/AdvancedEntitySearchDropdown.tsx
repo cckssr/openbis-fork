@@ -178,9 +178,7 @@ export const AdvancedEntitySearchDropdown: React.FC<AdvancedEntitySearchDropdown
     return option?.id === value?.id;
   };
 
-
-
-  return ( 
+  return (
     <Box sx={{ width: '100%' }}>
       <Autocomplete
         value={value}
@@ -227,7 +225,6 @@ export const AdvancedEntitySearchDropdown: React.FC<AdvancedEntitySearchDropdown
         selectOnFocus
         handleHomeEndKeys
       />
-      
     </Box>
   );
 };
