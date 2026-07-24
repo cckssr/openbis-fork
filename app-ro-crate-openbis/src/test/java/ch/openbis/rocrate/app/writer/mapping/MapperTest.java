@@ -8,7 +8,9 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IEntityType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.ExperimentType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.Project;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectIdentifier;
@@ -334,11 +336,24 @@ public class MapperTest extends TestCase
 
         ExperimentFetchOptions experimentFetchOptions = new ExperimentFetchOptions();
         experimentFetchOptions.withProperties();
+        experimentFetchOptions.withType();
 
         Experiment experiment = new Experiment();
         experiment.setCode("DEFAULT");
         experiment.setProject(project);
         experiment.setFetchOptions(experimentFetchOptions);
+
+        ExperimentType experimentType = new ExperimentType();
+        String experimenttype = "EXPERIMENTTYPE";
+        experimentType.setCode(experimenttype);
+        experimentType.setPropertyAssignments(new ArrayList<>());
+        ExperimentTypeFetchOptions experimentTypeFetchOptions = new ExperimentTypeFetchOptions();
+        experimentTypeFetchOptions.withPropertyAssignments();
+        experimentType.setFetchOptions(experimentTypeFetchOptions);
+
+        experiment.setType(experimentType);
+        experimentType.setPermId(new EntityTypePermId(experimenttype, EntityKind.EXPERIMENT));
+
         ExperimentIdentifier experimentIdentifier = new ExperimentIdentifier("DEFAULT", "DEFAULT", "DEFAULT");
         experiment.setIdentifier(experimentIdentifier);
         experiment.setProperties(new HashMap<>());
@@ -413,6 +428,7 @@ public class MapperTest extends TestCase
         });
         schema.put(sampleTypePermId, sampleType);
         schema.put(collectionTypePermId, entryType);
+        schema.put(experimentType.getPermId(), experimentType);
 
         OpenBisModel openBisModel =
                 new OpenBisModel(Map.of(), schema, spaces, projects, metadata, Map.of(), Map.of(),
@@ -420,7 +436,7 @@ public class MapperTest extends TestCase
         Mapper mapper = new Mapper();
         MapResult result = mapper.transform(openBisModel);
 
-        assertEquals(4, result.getSchema().getClasses().size());
+        assertEquals(5, result.getSchema().getClasses().size());
         assertEquals(3, result.getSchema().getProperties().size());
         assertEquals(4, result.getMetaDataEntries().size());
         assertEquals(1, result.getFiles().size());

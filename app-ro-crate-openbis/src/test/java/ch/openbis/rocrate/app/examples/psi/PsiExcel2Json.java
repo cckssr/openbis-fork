@@ -7,6 +7,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.entity.AbstractEntityProp
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IEntityType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
 import ch.openbis.rocrate.app.reader.RdfToModel;
 import edu.kit.datamanager.ro_crate.RoCrate;
@@ -60,8 +61,14 @@ public class PsiExcel2Json
         List<String> publicationCodes = List.of("scicatUser", "relatedPublications",
                 "numberOfFiles",
                 "sizeOfArchive");
+        List<Sample> samples =
+                openBisModel.getEntities().values().stream().filter(x -> x instanceof Sample)
+                        .map(Sample.class::cast)
+                        .toList();
 
-        assertEquals(13, openBisModel.getEntities().size());
+        assertEquals(16, openBisModel.getEntities().size());
+        assertEquals(13, samples.size());
+
         assertTrue(maybePublicatioNType.isPresent());
         assertEquals(1, openBisModel.getSpaces().size());
         assertEquals(1, openBisModel.getProjects().size());

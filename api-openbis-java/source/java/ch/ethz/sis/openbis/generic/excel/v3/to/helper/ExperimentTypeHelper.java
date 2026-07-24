@@ -1,5 +1,6 @@
 package ch.ethz.sis.openbis.generic.excel.v3.to.helper;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.ExperimentType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
@@ -7,7 +8,6 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 
 import static ch.ethz.sis.openbis.generic.asapi.v3.dto.exporter.data.ExportableKind.EXPERIMENT_TYPE;
-import static ch.ethz.sis.openbis.generic.excel.v3.to.Constants.COLLECTION_TYPE;
 
 public class ExperimentTypeHelper
 {
@@ -62,7 +62,8 @@ public class ExperimentTypeHelper
         }
     }
 
-    public int addExperimentTypeSection(Sheet sheet, int rowNum, CellStyle headerStyle)
+    public int addExperimentTypeSection(Sheet sheet, int rowNum, CellStyle headerStyle,
+            ExperimentType experimentType)
     {
         Row row = sheet.createRow(rowNum++);
         row.createCell(0).setCellValue(EXPERIMENT_TYPE.name());
@@ -80,7 +81,7 @@ public class ExperimentTypeHelper
 
         Row rowValues = sheet.createRow(rowNum++);
 
-        rowValues.createCell(0).setCellValue(COLLECTION_TYPE);     //Code("Code", true),
+        rowValues.createCell(0).setCellValue(experimentType.getCode());     //Code("Code", true),
         rowValues.createCell(1).setCellValue("");               //Description("Description", true),
         rowValues.createCell(2).setCellValue("");               //ValidationScript("Validation script", true)
 

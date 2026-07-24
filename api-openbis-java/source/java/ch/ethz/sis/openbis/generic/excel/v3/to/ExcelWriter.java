@@ -3,6 +3,8 @@ package ch.ethz.sis.openbis.generic.excel.v3.to;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.entity.AbstractEntityPropertyHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.ObjectIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.ExperimentType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.Vocabulary;
@@ -108,7 +110,7 @@ public class ExcelWriter
             if (writeSchema)
             {
             createObjectTypesSheet(workbook, headerStyle, openBisModel);
-            createExperimentTypesSheet(workbook, headerStyle);
+                createExperimentTypesSheet(workbook, headerStyle, openBisModel);
             }
             createSpaceProjExpSheet(workbook, headerStyle, openBisModel);
             if (!openBisModel.getSampleTypes().isEmpty())
@@ -258,14 +260,20 @@ public class ExcelWriter
         }
     }
 
-    private void createExperimentTypesSheet(Workbook workbook, CellStyle headerStyle)
+    private void createExperimentTypesSheet(Workbook workbook, CellStyle headerStyle,
+            OpenBisModel openBisModel)
     {
         Sheet sheet =
                 workbook.createSheet(Constants.SHEET_TITLE_EXP);  // Create a sheet named "OBJ PROP"
         int rowNum = 0;
 
-        rowNum = rdfExperimentTypeHelper.addExperimentTypeSection(sheet, rowNum, headerStyle);
-        rdfExperimentTypeHelper.addExperimentSection(sheet, rowNum, headerStyle);
+        for (ExperimentType experimentType : openBisModel.getExperimentTypes())
+        {
+            rowNum = rdfExperimentTypeHelper.addExperimentTypeSection(sheet, rowNum, headerStyle,
+                    experimentType);
+            rowNum = propertyTypeHelper.addExperimentProperties(sheet, rowNum, headerStyle,
+                    experimentType);
+        }
 
     }
 
@@ -278,9 +286,28 @@ public class ExcelWriter
 
         rowNum = spaceHelper.addSpaceSection(sheet, rowNum, headerStyle, openBisModel);
         rowNum = projectHelper.addProjectSection(sheet, rowNum, headerStyle, openBisModel);
-        experimentHelper.addExperimentSection(sheet, rowNum, headerStyle,
-                openBisModel);
+        List<RowWriteResult> rowWriteResults = new ArrayList<>();
 
+        for (Map.Entry<EntityTypePermId, List<Experiment>> entry : openBisModel.getExperimentsByType()
+                .entrySet())
+        {
+            ExperimentHelper.PropertyTypeIndexInfo allColumnList =
+                    ExperimentHelper.getPropertyTypeIndexInfo(
+                            entry.getValue().stream().findFirst().map(Experiment::getType)
+                                    .orElseThrow());
+            rowNum = experimentHelper.createExperimentHeaders(sheet, rowNum, headerStyle,
+                    entry.getKey().getPermId(),
+                    allColumnList);
+            for (Experiment experiment : entry.getValue())
+            {
+                rowWriteResults.add(experimentHelper.createResourceRows(sheet, rowNum, experiment,
+                        openBisModel
+                        , allColumnList));
+                rowNum++;
+                checkWriteResult(rowWriteResults);
+            }
+
+        }
     }
 
     private List<RowWriteResult> createObjectsSheet(Workbook workbook, CellStyle headerStyle,

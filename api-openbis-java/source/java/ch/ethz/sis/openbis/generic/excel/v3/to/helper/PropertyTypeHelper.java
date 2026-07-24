@@ -1,5 +1,6 @@
 package ch.ethz.sis.openbis.generic.excel.v3.to.helper;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.ExperimentType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyAssignment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType;
@@ -77,7 +78,32 @@ public class PropertyTypeHelper
             cell.setCellStyle(headerStyle);
         }
 
-        for (var assingment : sampleType.getPropertyAssignments())
+        for (PropertyAssignment assingment : sampleType.getPropertyAssignments())
+            createRow(sheet, rowNum++, assingment);
+
+        rowNum = addDefaultNameRow(sheet, rowNum);
+
+        // add empty row
+        sheet.createRow(rowNum++);
+
+        return rowNum;
+    }
+
+    public int addExperimentProperties(Sheet sheet, int rowNum, CellStyle headerStyle,
+            ExperimentType experimentType)
+    {
+        Row propTypeRowHeaders = sheet.createRow(rowNum++);
+
+        // Populate header row with enum values
+        Attribute[] fields = Attribute.values();
+        for (int i = 0; i < fields.length; i++)
+        {
+            Cell cell = propTypeRowHeaders.createCell(i);
+            cell.setCellValue(fields[i].getHeaderName());
+            cell.setCellStyle(headerStyle);
+        }
+
+        for (PropertyAssignment assingment : experimentType.getPropertyAssignments())
             createRow(sheet, rowNum++, assingment);
 
         rowNum = addDefaultNameRow(sheet, rowNum);

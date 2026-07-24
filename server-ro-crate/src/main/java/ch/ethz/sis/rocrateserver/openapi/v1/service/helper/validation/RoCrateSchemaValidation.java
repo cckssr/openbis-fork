@@ -38,7 +38,7 @@ public class RoCrateSchemaValidation
 
         for (RdfToModel.MissingReferenceValue missingReference : conversionResult.missingReferenceValues())
         {
-            String key = missingReference.sample().getCode();
+            String key = missingReference.holder().toString();
             List<PropertyProblem> res =
                     wrongDataTypes.getOrDefault(key,
                             new ArrayList<>());

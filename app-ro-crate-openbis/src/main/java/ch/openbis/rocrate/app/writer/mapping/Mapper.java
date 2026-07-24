@@ -4,7 +4,6 @@ import ch.eth.sis.rocrate.facade.*;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.entity.AbstractEntityPropertyHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.IObjectId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.ObjectIdentifier;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.ObjectPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IEntityType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetType;
@@ -194,11 +193,23 @@ public class Mapper
                     .distinct()
                     .map(this::mapOpenBisToXsdDataTypes)
                     .forEach(rdfsProperty::addDataType);
-            a.getValue().stream()
+            Stream<IType> iTypeStream = a.getValue().stream()
                     .filter(x -> x.getLeft().getPropertyType().getDataType() == DataType.SAMPLE)
                     .filter(x -> x.getLeft().getPropertyType().getSampleType() != null)
-                    .map(x -> classes.get(x.getLeft().getPropertyType().getSampleType().getCode()))
+                    .map(x -> classes.get(x.getLeft().getPropertyType().getSampleType().getCode()));
+
+            iTypeStream
                     .forEach(rdfsProperty::addType);
+
+            if (a.getValue().stream().findFirst().get().getLeft().getPropertyType()
+                    .getDataType() == DataType.SAMPLE && rdfsProperty.getRange().isEmpty())
+            {
+                Type type = new Type();
+                type.setId("openBIS:Object");
+
+                rdfsProperty.addType(type);
+
+            }
 
 
             List<String> semanticAnnotations = a.getValue().stream().map(x -> x.getLeft())
@@ -300,7 +311,7 @@ public class Mapper
 
                 }
 
-                references.put(Constants.PROPERTY_ID_PARENTS, ((Sample) val).getParents().stream()
+                references.put(Constants.PROPERTY_ID_PARENTS, (sample).getParents().stream()
                         .map(x -> x.getIdentifier().getIdentifier()).collect(Collectors.toList()));
 
                 List<IFileInfo> files =
@@ -344,15 +355,49 @@ public class Mapper
             }
             if (val instanceof Experiment experiment)
             {
-                String type = Constants.GRAPH_ID_Collection;
+
+                Set<String> referenceTypeNames = openBisModel.getEntityTypes().values().stream()
+                        .map(x -> x.getPropertyAssignments())
+                        .flatMap(Collection::stream).map(x -> x.getPropertyType())
+                        .filter(x -> x.getDataType().name().startsWith("SAMPLE"))
+                        .map(x -> x.getCode())
+                        .collect(Collectors.toSet());
+
+                Map<String, DataType> codeToDataType = experiment.getType().getPropertyAssignments()
+                        .stream()
+                        .map(x -> x.getPropertyType())
+                        .collect(Collectors.toMap(x -> x.getCode(), x -> x.getDataType()));
+
+                String type = typeToRdfsName.get(experiment.getType());
                 for (Map.Entry<String, Serializable> a : experiment.getProperties().entrySet())
                 {
+                    if (a.getValue() == null)
+                    {
+                        continue;
+                    }
                     String propName = openBisPropertiesToRdfsProperties.get(a.getKey());
-                    props.put(propName, a.getValue());
+                    DataType dataType = codeToDataType.get(a.getKey());
+                    if (!referenceTypeNames.contains(a.getKey()))
+                    {
+                        String[] vals = extractSerializableList(a.getValue()).stream()
+                                .map(x -> mapValue(x, dataType)).map(x -> x.toString())
+                                .toArray(String[]::new);
+
+                        props.put(propName, vals);
+                    } else
+                    {
+
+                        references.put(propName, extractSerializableList(a.getValue()).stream()
+                                .map(x -> mapValue(x, dataType)).collect(
+                                        Collectors.toList()));
+
+                    }
+
                 }
+
                 MetadataEntry metadataEntry = new MetadataEntry(experiment.getIdentifier().toString(), Set.of(type),
                         props,
-                        new LinkedHashMap<>());
+                        references);
                 idToMetadataEntryMap.put(experiment.getIdentifier(), metadataEntry);
             }
 

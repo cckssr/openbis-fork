@@ -31,6 +31,8 @@ public class Constants
 
     public final static Set<String> FILE_TYPES = Set.of("File", "MediaObject");
 
+    public final static String DEFAULT_COLLECTION_TYPE_CODE = "COLLECTION";
+
 
 
 }
