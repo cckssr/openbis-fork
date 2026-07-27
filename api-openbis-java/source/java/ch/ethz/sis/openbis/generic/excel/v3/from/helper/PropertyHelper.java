@@ -180,6 +180,8 @@ public class PropertyHelper extends BasicImportHelper
             {
                 throw new RuntimeException(e);
             }
+        } else {
+            creation.setMetaData(Map.of());
         }
         accumulator.put(code, creation);
 
