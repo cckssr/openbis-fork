@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import ch.ethz.sis.openbis.generic.server.xls.importer.helper.semanticannotation.SemanticAnnotationHelper;
+import ch.ethz.sis.openbis.generic.server.xls.importer.helper.semanticannotation.SemanticAnnotationAttribute;
 import ch.ethz.sis.openbis.generic.server.xls.importer.helper.semanticannotation.SemanticAnnotationRecord;
 import ch.ethz.sis.openbis.generic.server.xls.importer.utils.IAttribute;
 import ch.ethz.sis.openbis.generic.server.xls.importer.utils.ImportUtils;
@@ -58,26 +58,26 @@ public abstract class BasicImportHelper extends AbstractImportHelper
 
     protected boolean hasSemanticAnnotations(Map<String, Integer> header, List<String> values)
     {
-        String[] ontologyId = getMultiValueByColumnName(header, values, SemanticAnnotationHelper.Attribute.OntologyId, "\n");
+        String[] ontologyId = getMultiValueByColumnName(header, values, SemanticAnnotationAttribute.OntologyId, "\n");
         return ontologyId != null;
     }
 
     protected List<SemanticAnnotationRecord> getSemanticAnnotationRecords(Map<String, Integer> header, List<String> values)
     {
-        String[] ontologyId = getMultiValueByColumnName(header, values, SemanticAnnotationHelper.Attribute.OntologyId, "\n");
+        String[] ontologyId = getMultiValueByColumnName(header, values, SemanticAnnotationAttribute.OntologyId, "\n");
         String[] ontologyVersion = getMultiValueByColumnName(header, values,
-                SemanticAnnotationHelper.Attribute.OntologyVersion, "\n");
+                SemanticAnnotationAttribute.OntologyVersion, "\n");
         String[] ontologyAnnotationId = getMultiValueByColumnName(header, values,
-                SemanticAnnotationHelper.Attribute.OntologyAnnotationId, "\n");
+                SemanticAnnotationAttribute.OntologyAnnotationId, "\n");
         if (ontologyVersion == null)
         {
             throw new UserFailureException(
-                    "Mandatory field is missing or empty: " + SemanticAnnotationHelper.Attribute.OntologyVersion);
+                    "Mandatory field is missing or empty: " + SemanticAnnotationAttribute.OntologyVersion);
         }
         if (ontologyAnnotationId == null)
         {
             throw new UserFailureException(
-                    "Mandatory field is missing or empty: " + SemanticAnnotationHelper.Attribute.OntologyAnnotationId);
+                    "Mandatory field is missing or empty: " + SemanticAnnotationAttribute.OntologyAnnotationId);
         }
         if (ontologyId.length != ontologyVersion.length || ontologyId.length != ontologyAnnotationId.length)
         {

@@ -113,7 +113,7 @@ public class ExperimentImportHelper extends BasicImportHelper
             String typeCode = getValueByColumnName(header, page.get(lineIndex), EXPERIMENT_TYPE_FIELD);
             experimentType = new EntityTypePermId(typeCode, EntityKind.EXPERIMENT);
             SemanticAnnotation
-                    annotation = delayedExecutor.getAnnotationCache().getCachedSemanticAnnotation(SemanticAnnotationType.EntityType, experimentType, null);
+                    annotation = delayedExecutor.getCachedSemanticAnnotation(SemanticAnnotationType.EntityType, experimentType, null);
             if(annotation != null)
             {
                 typeCode = annotation.getEntityType().getCode();
@@ -131,7 +131,7 @@ public class ExperimentImportHelper extends BasicImportHelper
             {
                 throw new UserFailureException("Experiment type " + experimentType.getPermId() + " not found.");
             }
-            this.propertyTypeSearcher = new PropertyTypeSearcher(type.getPropertyAssignments(), delayedExecutor.getAnnotationCache());
+            this.propertyTypeSearcher = new PropertyTypeSearcher(type.getPropertyAssignments(), delayedExecutor);
 
             lineIndex++;
         } catch (Exception e)
