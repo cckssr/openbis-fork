@@ -26,6 +26,12 @@ from java.io import BufferedInputStream, FileOutputStream, OutputStreamWriter
 from java.io import BufferedReader, InputStreamReader, OutputStreamWriter
 from java.io import FileInputStream, BufferedOutputStream
 from java.net import SocketTimeoutException
+
+from java.net import URI
+from java.net.http import HttpClient, HttpRequest, HttpResponse
+from java.nio.file import Paths
+from java.time import Duration
+
 import jarray
 
 import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider as CommonServiceProvider
@@ -76,8 +82,13 @@ def importRoCrate(context, params):
         if code < 300:
             output = json.loads(output)
         else:
-            error = output
-            output = None
+            OPERATION_LOG.error("RO-Crate upload failed with code %s: %s" % (code, output))
+            if output == '':
+                error = "RO-Crate import failed with code: " + str(code)
+                output = None
+            else:
+                error = output
+                output = None
 
         result = {
             "result": output,
@@ -132,52 +143,26 @@ def getRoCrateUrl(context, params):
     ro_crate_url = CommonServiceProvider.tryToGetProperty(RO_CRATE_URL_PROPERTY_KEY)
     return ro_crate_url
 
-
 def https_post_file(url_str, file_path, headers=None):
     try:
-        url = URL(url_str)
-        conn = url.openConnection()
-        conn.setRequestMethod("POST")
-        conn.setDoOutput(True)
+        client = HttpClient.newBuilder() \
+            .connectTimeout(Duration.ofSeconds(30)) \
+            .build()
 
-        timeout = 30 * 1000
-        conn.setConnectTimeout(timeout)
-        conn.setReadTimeout(timeout)
+        builder = HttpRequest.newBuilder() \
+            .uri(URI.create(url_str)) \
+            .timeout(Duration.ofMinutes(5)) \
+            .POST(HttpRequest.BodyPublishers.ofFile(Paths.get(file_path)))
 
         if headers:
             for key, value in headers.items():
-                conn.setRequestProperty(key, value)
+                builder.header(key, value)
 
-        # Stream file contents directly to the request body
-        in_stream = BufferedInputStream(FileInputStream(file_path))
-        out_stream = BufferedOutputStream(conn.getOutputStream())
-        try:
-            buf = jarray.zeros(8192, "b")  # byte array buffer
-            n = in_stream.read(buf)
-            while n != -1:
-                out_stream.write(buf, 0, n)
-                n = in_stream.read(buf)
-            out_stream.flush()
-        finally:
-            in_stream.close()
-            out_stream.close()
-
-        code = conn.getResponseCode()
-
-        output = ""
-        reader = BufferedReader(InputStreamReader(conn.getInputStream(), "UTF-8"))
-        line = reader.readLine()
-        while line is not None:
-            output += line
-            line = reader.readLine()
-        reader.close()
-
-        conn.disconnect()
-
-        return code, output
+        response = client.send(builder.build(), HttpResponse.BodyHandlers.ofString())
+        return response.statusCode(), response.body()
     except Throwable as e:
         OPERATION_LOG.error("Error occurred: %s" % e, e)
-        return 999, e
+        return 999, str(e)
 
 
 def https_get(base_url, headers, message=None):
