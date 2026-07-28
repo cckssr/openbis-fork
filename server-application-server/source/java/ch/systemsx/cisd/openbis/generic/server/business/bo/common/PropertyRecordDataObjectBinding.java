@@ -50,6 +50,7 @@ public class PropertyRecordDataObjectBinding
         }
         into.sample_perm_id = row.getString("sample_perm_id");
         into.modificationTimestamp = row.getTimestamp("modificationTimestamp");
+        into.isMultiValue = row.getBoolean("isMultiValue");
 
         into.integerArrayPropertyValue = convertToArray(
                 row.getArray("integerArrayPropertyValue"), o -> o == null ? null : Long.parseLong(o.toString()),
