@@ -22,10 +22,7 @@ export const SelectFieldRenderer: React.FC<FieldRendererProps> = ({ field, onFie
 			<Autocomplete
 				multiple
 				disableCloseOnSelect
-				options={[
-					{ label: '', value: null },
-					...(field.options || []),
-				]}
+				options={field.options || []}
 				value={selectedOptions}
 				getOptionLabel={(option) => option.label || option.value}
 				isOptionEqualToValue={(option, val) => option.value === val.value}
@@ -72,6 +69,30 @@ export const SelectFieldRenderer: React.FC<FieldRendererProps> = ({ field, onFie
 				disableUnderline={true}
 			/>
 		);
+	}
+
+	if (isEditing && !field.readOnly) {
+		const selectedOption = field.options?.find(o => o.value === field.value) || null;
+
+		return (
+			<Autocomplete
+				options={field.options || []}
+				value={selectedOption}
+				getOptionLabel={(option) => option.label || option.value}
+				isOptionEqualToValue={(option, val) => option.value === val.value}
+				onChange={(_, newValue) =>
+					onFieldChange(field.id, newValue ? newValue.value : null)
+				}
+				renderInput={(params) => (
+					<TextField
+						{...params}
+						label={field.label}
+						variant="filled"
+						required={field.required}
+					/>
+				)}
+			/>
+		);
 	} else {
 		return (
 			<SelectField
@@ -87,10 +108,7 @@ export const SelectFieldRenderer: React.FC<FieldRendererProps> = ({ field, onFie
 				description={field.meta?.helpText}
 				emptyOption={null}
 				disableUnderline={true}
-				options={[
-					{ label: '', value: null },
-					...field.options,
-				]}
+				options={field.options || []}
 			/>
 		);
 	}

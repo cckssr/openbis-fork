@@ -3,6 +3,10 @@ import { FieldRendererProps } from '@src/js/components/database/new-forms/types/
 import SelectField from '@src/js/components/common/form/SelectField.jsx';
 import FormFieldView from '@src/js/components/common/form/FormFieldView.jsx';
 import MultiValueFieldEditor from './MultiValueFieldEditor.tsx';
+import Autocomplete from '@mui/material/Autocomplete';
+import TextField from '@mui/material/TextField';
+
+const BOOLEAN_OPTIONS = [{ label: 'true', value: 'true' }, { label: 'false', value: 'false' }];
 
 export const SwitchFieldRenderer: React.FC<FieldRendererProps> = ({ field, onFieldChange, mode }) => {
 	const isEditing = mode === 'edit' || mode === 'create';
@@ -48,10 +52,32 @@ export const SwitchFieldRenderer: React.FC<FieldRendererProps> = ({ field, onFie
 				isEmpty={(v) => !v}
 			/>
 		);
+	} else if (isEditing && !field.readOnly) {
+		const selectedOption = BOOLEAN_OPTIONS.find(o => o.value === field.value) || null;
+
+		return (
+			<Autocomplete
+				options={BOOLEAN_OPTIONS}
+				value={selectedOption}
+				getOptionLabel={(option) => option.label}
+				isOptionEqualToValue={(option, val) => option.value === val.value}
+				onChange={(_, newValue) =>
+					onFieldChange(field.id, newValue ? newValue.value : null)
+				}
+				renderInput={(params) => (
+					<TextField
+						{...params}
+						label={field.label}
+						variant="filled"
+						required={field.required}
+					/>
+				)}
+			/>
+		);
 	} else {
 		return (<SelectField
 				reference={field}
-				options={[{label: '', value: null}, {label: 'true', value: 'true'}, {label: 'false', value: 'false'}]}
+				options={BOOLEAN_OPTIONS}
 				id={field.id}
 				name={field.label}
 				mandatory={field.required}
