@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
 	Autocomplete,
 	TextField,
@@ -23,6 +23,8 @@ export const ObjectFieldRenderer: React.FC<FieldRendererProps> = ({
 	const [options, setOptions] = useState<any[]>([]);
 	const [loading, setLoading] = useState(false);
 	const [inputValue, setInputValue] = useState('');
+	const [multiInputValue, setMultiInputValue] = useState('');
+	const multiInputRef = useRef<HTMLInputElement | null>(null);
 	const [value, setValue] = useState<any>(field.value || null);
 	const [multiValues, setMultiValues] = useState<any[]>([]);
 
@@ -195,8 +197,23 @@ export const ObjectFieldRenderer: React.FC<FieldRendererProps> = ({
 						newValues.map((v) => v?.permId?.permId).filter(Boolean)
 					);
 				}}
-				inputValue={inputValue}
-				onInputChange={handleInputChange}
+				onInputChange={(_, newValue, reason) => {
+					if (reason === 'clear') {
+						setMultiInputValue('');
+						setInputValue('');
+						if (multiInputRef.current) {
+							multiInputRef.current.value = '';
+						}
+					}
+				}}
+				onClose={() => {
+					setMultiInputValue('');
+					setInputValue('');
+					if (multiInputRef.current) {
+						multiInputRef.current.value = '';
+					}
+				}}
+				filterOptions={(x) => x}
 				options={options}
 				loading={loading}
 				getOptionLabel={getOptionLabel}
@@ -223,26 +240,45 @@ export const ObjectFieldRenderer: React.FC<FieldRendererProps> = ({
 						</Box>
 					);
 				}}
-				renderInput={(params) => (
-					<TextField
-						{...params}
-						label={field.label}
-						required={field.required}
-						variant="filled"
-						slotProps={{
-							input: {
-								...params.InputProps,
-								endAdornment: (
-									<>
-										{loading ? <CircularProgress color="inherit" size={20} /> : null}
-										{params.InputProps.endAdornment}
-									</>
-								),
-							},
-						}}
-					/>
-				)}
-				noOptionsText={inputValue.length < 2 ? noOptionsHint : 'No objects found'}
+				renderInput={(params) => {
+					const { value: _managed, ref: muiInputRef, ...htmlInputProps } = params.inputProps;
+					return (
+						<TextField
+							{...params}
+							inputProps={{
+								...htmlInputProps,
+								ref: (el: HTMLInputElement) => {
+									multiInputRef.current = el;
+									if (typeof muiInputRef === 'function') {
+										muiInputRef(el);
+									} else if (muiInputRef && typeof muiInputRef === 'object') {
+										(muiInputRef as React.MutableRefObject<HTMLInputElement | null>).current = el;
+									}
+								},
+								onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+									setMultiInputValue(e.target.value);
+									setInputValue(e.target.value);
+									(htmlInputProps as any).onChange?.(e);
+								}
+							}}
+							label={field.label}
+							required={field.required}
+							variant="filled"
+							slotProps={{
+								input: {
+									...params.InputProps,
+									endAdornment: (
+										<>
+											{loading ? <CircularProgress color="inherit" size={20} /> : null}
+											{params.InputProps.endAdornment}
+										</>
+									),
+								},
+							}}
+						/>
+					);
+				}}
+				noOptionsText={multiInputValue.length < 2 ? noOptionsHint : 'No objects found'}
 			/>
 		</Box>
 	);

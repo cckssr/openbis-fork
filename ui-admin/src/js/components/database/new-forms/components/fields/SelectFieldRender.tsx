@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import { FieldRendererProps } from '@src/js/components/database/new-forms/types/formITypes.ts';
 import SelectField from '@src/js/components/common/form/SelectField.jsx';
 import FormFieldView from '@src/js/components/common/form/FormFieldView.jsx';
@@ -11,6 +11,8 @@ import CheckBoxIcon from '@mui/icons-material/CheckBox';
 
 export const SelectFieldRenderer: React.FC<FieldRendererProps> = ({ field, onFieldChange, mode }) => {
 	const isEditing = mode === FormMode.EDIT || mode === FormMode.CREATE;
+	const [multiInputValue, setMultiInputValue] = useState('');
+	const multiInputRef = useRef<HTMLInputElement | null>(null);
 
 	if (field.isMultiValue && isEditing && !field.readOnly) {
 		const selectedCodes = Array.isArray(field.value) ? field.value : [];
@@ -24,11 +26,30 @@ export const SelectFieldRenderer: React.FC<FieldRendererProps> = ({ field, onFie
 				disableCloseOnSelect
 				options={field.options || []}
 				value={selectedOptions}
+				filterOptions={(options) => {
+					if (!multiInputValue) return options;
+					const q = multiInputValue.toLowerCase();
+					return options.filter(o => (o.label || o.value).toLowerCase().includes(q));
+				}}
 				getOptionLabel={(option) => option.label || option.value}
 				isOptionEqualToValue={(option, val) => option.value === val.value}
 				onChange={(_, newValue) =>
 					onFieldChange(field.id, newValue.map((o) => o.value))
 				}
+				onInputChange={(_, newValue, reason) => {
+					if (reason === 'clear') {
+						setMultiInputValue('');
+						if (multiInputRef.current) {
+							multiInputRef.current.value = '';
+						}
+					}
+				}}
+				onClose={() => {
+					setMultiInputValue('');
+					if (multiInputRef.current) {
+						multiInputRef.current.value = '';
+					}
+				}}
 				renderOption={(props, option, { selected }) => {
 					const { key, ...optionProps } = props;
 					return (
@@ -43,14 +64,32 @@ export const SelectFieldRenderer: React.FC<FieldRendererProps> = ({ field, onFie
 						</li>
 					);
 				}}
-				renderInput={(params) => (
-					<TextField
-						{...params}
-						label={field.label}
-						variant="filled"
-						required={field.required}
-					/>
-				)}
+				renderInput={(params) => {
+					const { value: _managed, ref: muiInputRef, ...htmlInputProps } = params.inputProps;
+					return (
+						<TextField
+							{...params}
+							inputProps={{
+								...htmlInputProps,
+								ref: (el: HTMLInputElement) => {
+									multiInputRef.current = el;
+									if (typeof muiInputRef === 'function') {
+										muiInputRef(el);
+									} else if (muiInputRef && typeof muiInputRef === 'object') {
+										(muiInputRef as React.MutableRefObject<HTMLInputElement | null>).current = el;
+									}
+								},
+								onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+									setMultiInputValue(e.target.value);
+									(htmlInputProps as any).onChange?.(e);
+								}
+							}}
+							label={field.label}
+							variant="filled"
+							required={field.required}
+						/>
+					);
+				}}
 			/>
 		);
 	}
