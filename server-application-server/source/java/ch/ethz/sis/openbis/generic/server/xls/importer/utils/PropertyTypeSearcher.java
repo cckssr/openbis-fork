@@ -114,15 +114,15 @@ public class PropertyTypeSearcher
         {
             return label2PropertyType.get(code);
         }
-        SemanticAnnotation annotation = annotationCache.getSemanticAnnotation(
+        List<SemanticAnnotation> annotations = annotationCache.getSemanticAnnotations(
                 SemanticAnnotationType.PropertyType, null, code);
-        if(annotation != null) {
-            return annotation.getPropertyType();
+        if(annotations != null && !annotations.isEmpty()) {
+            return annotations.get(0).getPropertyType();
         }
-        annotation = annotationCache.getSemanticAnnotation(
+        annotations = annotationCache.getSemanticAnnotations(
                 SemanticAnnotationType.PropertyAssignment, typePermId, code);
-        if(annotation != null) {
-            return annotation.getPropertyAssignment().getPropertyType();
+        if(annotations != null && !annotations.isEmpty()) {
+            return annotations.get(0).getPropertyAssignment().getPropertyType();
         }
 
         throw new UserFailureException("Can't find property with code or label " + code);

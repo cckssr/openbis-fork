@@ -139,10 +139,10 @@ public class DatasetTypeImportHelper extends BasicImportHelper
         if(hasSemanticAnnotations(header, values)) {
             List<SemanticAnnotationRecord> records = getSemanticAnnotationRecords(header, values);
             EntityTypePermId permId = new EntityTypePermId(code, EntityKind.DATA_SET);
-            SemanticAnnotation annotation = delayedExecutor.findEntityTypeSemanticAnnotationFromRecords(records, permId);
-            if(annotation != null) {
+            Map<SemanticAnnotationRecord, SemanticAnnotation> annotationMap = delayedExecutor.findEntityTypeSemanticAnnotationsFromRecords(records, permId);
+            if(annotationMap != null && !annotationMap.isEmpty()) {
                 // if there is semantic annotation, then there is an associated type
-                return (DataSetType) annotation.getEntityType();
+                return (DataSetType) annotationMap.entrySet().iterator().next().getValue().getEntityType();
             }
         } else {
             if (code == null)
@@ -196,11 +196,11 @@ public class DatasetTypeImportHelper extends BasicImportHelper
         DataSetTypeUpdate update = new DataSetTypeUpdate();
         EntityTypePermId permId = new EntityTypePermId(code, EntityKind.DATA_SET);
 
-        SemanticAnnotation annotation = delayedExecutor.getSemanticAnnotation(
+        List<SemanticAnnotation> annotations = delayedExecutor.getSemanticAnnotations(
                 SemanticAnnotationType.EntityType, permId, null);
 
-        if(annotation != null) {
-            code = annotation.getEntityType().getCode();
+        if(annotations != null && !annotations.isEmpty()) {
+            code = annotations.get(0).getEntityType().getCode();
             permId = new EntityTypePermId(code, EntityKind.DATA_SET);
         }
         update.setTypeId(permId);
