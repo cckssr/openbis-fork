@@ -173,7 +173,10 @@ def getPropertyValue(propertiesInfo, metadata, key):
 	propertyValue = metadata[key];
 	if propertyValue != None:
 		if isinstance(propertyValue, JavaCollection):
-			propertyValue = json.dumps([unicode(item) for item in propertyValue]);
+			if propertiesInfo[key].isMultiValue() == False:
+				propertyValue = unicode(propertyValue[0]) if len(propertyValue) > 0 else ""
+			else:
+				propertyValue = json.dumps([unicode(item) for item in propertyValue]);
 		else:
 			propertyValue = unicode(propertyValue);
 	if propertyValue == "":

@@ -27,7 +27,6 @@ import ch.ethz.sis.afsapi.exception.ThrowableReason;
 import ch.ethz.sis.afsclient.client.AfsClient;
 import ch.ethz.sis.openbis.generic.OpenBIS;
 import ch.ethz.sis.openbis.generic.server.xls.importer.helper.*;
-import ch.ethz.sis.openbis.generic.server.xls.importer.helper.semanticannotation.SemanticAnnotationHelper;
 import ch.ethz.sis.shared.log.classic.impl.Logger;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;

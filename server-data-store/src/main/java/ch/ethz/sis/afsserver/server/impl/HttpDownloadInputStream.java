@@ -1,5 +1,6 @@
 package ch.ethz.sis.afsserver.server.impl;
 
+import ch.ethz.sis.afs.api.TransactionConnectionInformation;
 import ch.ethz.sis.afsserver.server.APIServer;
 import ch.ethz.sis.afsserver.server.Request;
 import ch.ethz.sis.afsserver.server.Response;
@@ -8,7 +9,7 @@ import ch.ethz.sis.afsserver.server.Worker;
 import java.io.IOException;
 import java.io.InputStream;
 
-class HttpDownloadInputStream<CONNECTION, API> extends InputStream
+class HttpDownloadInputStream<CONNECTION extends TransactionConnectionInformation, API> extends InputStream
 {
     final APIServer<CONNECTION, Request, Response, API> server;
     Worker<CONNECTION> connectionWorker;

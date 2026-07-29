@@ -138,7 +138,7 @@ public class ExperimentTypeImportHelper extends BasicImportHelper
         if(hasSemanticAnnotations(header, values)) {
             List<SemanticAnnotationRecord> records = getSemanticAnnotationRecords(header, values);
             EntityTypePermId permId = new EntityTypePermId(code, EntityKind.EXPERIMENT);
-            SemanticAnnotation annotation = delayedExecutor.getAnnotationCache().getEntityTypeSemanticAnnotation(records, permId);
+            SemanticAnnotation annotation = delayedExecutor.findEntityTypeSemanticAnnotationFromRecords(records, permId);
             if(annotation != null) {
                 // if there is semantic annotation, then there is an associated type
                 return (ExperimentType) annotation.getEntityType();
@@ -194,7 +194,7 @@ public class ExperimentTypeImportHelper extends BasicImportHelper
         ExperimentTypeUpdate update = new ExperimentTypeUpdate();
         EntityTypePermId permId = new EntityTypePermId(code, EntityKind.EXPERIMENT);
 
-        SemanticAnnotation annotation = delayedExecutor.getAnnotationCache().getCachedSemanticAnnotation(
+        SemanticAnnotation annotation = delayedExecutor.getSemanticAnnotation(
                 SemanticAnnotationType.EntityType, permId, null);
 
         if(annotation != null) {

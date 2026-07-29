@@ -15,6 +15,7 @@
  */
 package ch.ethz.sis.afsserver.server;
 
+import ch.ethz.sis.afs.api.TransactionConnectionInformation;
 import ch.ethz.sis.afs.exception.AFSExceptions;
 import ch.ethz.sis.afs.manager.LockMapper;
 import ch.ethz.sis.afs.manager.TrashRootProvider;
@@ -42,7 +43,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.UUID;
 
-public final class Server<CONNECTION, API>
+public final class Server<CONNECTION extends TransactionConnectionInformation, API>
 {
 
     private Logger logger;

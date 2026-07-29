@@ -15,6 +15,7 @@
  */
 package ch.ethz.sis.afsserver.server.observer.impl;
 
+import ch.ethz.sis.afs.api.TransactionConnectionInformation;
 import ch.ethz.sis.afsserver.server.APIServer;
 import ch.ethz.sis.afsserver.server.Request;
 import ch.ethz.sis.afsserver.server.Response;
@@ -24,7 +25,7 @@ import ch.ethz.sis.afsserver.server.observer.APIServerObserver;
 import ch.ethz.sis.afsserver.server.observer.ServerObserver;
 import ch.ethz.sis.shared.startup.Configuration;
 
-public class DummyServerObserver<CONNECTION> implements ServerObserver<CONNECTION>, APIServerObserver<CONNECTION>
+public class DummyServerObserver<CONNECTION extends TransactionConnectionInformation> implements ServerObserver<CONNECTION>, APIServerObserver<CONNECTION>
 {
 
     @Override

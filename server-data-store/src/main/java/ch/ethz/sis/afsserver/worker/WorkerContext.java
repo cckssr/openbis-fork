@@ -31,6 +31,8 @@ public class WorkerContext
 
     private UUID transactionId;
 
+    private Long lastAccessedTime;
+
     private TransactionalFileSystem connection;
 
     private String sessionToken;

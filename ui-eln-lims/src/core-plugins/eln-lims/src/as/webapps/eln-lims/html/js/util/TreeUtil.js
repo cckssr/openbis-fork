@@ -71,6 +71,7 @@ var TreeUtil = new function() {
     	    var permId = data.node.key;
 			var sampleFetchOptions = {
 				only: true,
+				withProperties : true,
 			}
     	    switch(type) {
     	    	case "ROOT":
@@ -95,7 +96,9 @@ var TreeUtil = new function() {
 						var samples = searchResult.objects;
 						for (var i = 0; i < samples.length; i++) {
 							var sample = samples[i];
-							results.push({ title : Util.getDisplayNameForEntity(sample), entityType: "SAMPLE", key : sample.permId, folder : true, lazy : true, hideCheckbox: hideCheckboxForFolders });
+							let code = sample.code;
+							let displayName = Util.getDisplayNameForEntity(sample)
+							results.push({ title : displayName === code ? code : code + " (" + displayName + ")", entityType: "SAMPLE", key : sample.permId, folder : true, lazy : true, hideCheckbox: hideCheckboxForFolders });
 						}
 
 						var projectRules = { "UUIDv4" : { type : "Attribute", name : "SPACE", value : permId } };
@@ -119,7 +122,9 @@ var TreeUtil = new function() {
 						var samples = searchResult.objects;
 						for (var i = 0; i < samples.length; i++) {
 							var sample = samples[i];
-							results.push({ title : Util.getDisplayNameForEntity(sample), entityType: "SAMPLE", key : sample.permId, folder : true, lazy : true, hideCheckbox: hideCheckboxForFolders });
+							let code = sample.code;
+							let displayName = Util.getDisplayNameForEntity(sample)
+							results.push({ title : displayName === code ? code : code + " (" + displayName + ")", entityType: "SAMPLE", key : sample.permId, folder : true, lazy : true, hideCheckbox: hideCheckboxForFolders });
 						}
 						var experimentRules = { "UUIDv4" : { type : "Attribute", name : "PROJECT_PERM_ID", value : permId } };
 						mainController.serverFacade.searchForExperimentsAdvanced({ entityKind : "EXPERIMENT", logicalOperator : "AND", rules : experimentRules }, null, function(searchResult) {
@@ -139,7 +144,9 @@ var TreeUtil = new function() {
     	                var samples = searchResult.objects;
     	                for (var i = 0; i < samples.length; i++) {
     	                    var sample = samples[i];
-    	                    results.push({ title : Util.getDisplayNameForEntity(sample), entityType: "SAMPLE", key : sample.permId, folder : true, lazy : true, hideCheckbox: hideCheckboxForFolders });
+							let code = sample.code;
+							let displayName = Util.getDisplayNameForEntity(sample)
+    	                    results.push({ title : displayName === code ? code : code + " (" + displayName + ")", entityType: "SAMPLE", key : sample.permId, folder : true, lazy : true, hideCheckbox: hideCheckboxForFolders });
     	                }
     	                
     	                var datasetRules = { "UUIDv4" : { type : "Experiment", name : "ATTR.PERM_ID", value : permId } };

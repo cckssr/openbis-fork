@@ -24,7 +24,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.SemanticAnnotation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.VocabularyTerm;
 import ch.ethz.sis.openbis.generic.server.sharedapi.v3.json.GenericObjectMapper;
-import ch.ethz.sis.openbis.generic.server.xls.importer.helper.semanticannotation.SemanticAnnotationHelper;
+import ch.ethz.sis.openbis.generic.server.xls.importer.helper.semanticannotation.SemanticAnnotationCache;
 import ch.ethz.sis.openbis.generic.server.xls.importer.helper.semanticannotation.SemanticAnnotationType;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -34,10 +34,8 @@ import java.io.ByteArrayInputStream;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class PropertyTypeSearcher
@@ -75,9 +73,9 @@ public class PropertyTypeSearcher
 
     private Map<String, PropertyType> label2PropertyType;
 
-    private final SemanticAnnotationHelper annotationCache;
+    private final SemanticAnnotationCache annotationCache;
 
-    public PropertyTypeSearcher(List<PropertyAssignment> assignment, SemanticAnnotationHelper annotationCache)
+    public PropertyTypeSearcher(List<PropertyAssignment> assignment, SemanticAnnotationCache annotationCache)
     {
         this.code2PropertyType = new HashMap<>();
         this.label2PropertyType = new HashMap<>();
@@ -116,12 +114,12 @@ public class PropertyTypeSearcher
         {
             return label2PropertyType.get(code);
         }
-        SemanticAnnotation annotation = annotationCache.getCachedSemanticAnnotation(
+        SemanticAnnotation annotation = annotationCache.getSemanticAnnotation(
                 SemanticAnnotationType.PropertyType, null, code);
         if(annotation != null) {
             return annotation.getPropertyType();
         }
-        annotation = annotationCache.getCachedSemanticAnnotation(
+        annotation = annotationCache.getSemanticAnnotation(
                 SemanticAnnotationType.PropertyAssignment, typePermId, code);
         if(annotation != null) {
             return annotation.getPropertyAssignment().getPropertyType();

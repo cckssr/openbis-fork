@@ -15,6 +15,7 @@
  */
 package ch.ethz.sis.afsserver.server.impl;
 
+import ch.ethz.sis.afs.api.TransactionConnectionInformation;
 import ch.ethz.sis.afsjson.JsonObjectMapper;
 import ch.ethz.sis.afsserver.server.APIServer;
 import ch.ethz.sis.afsserver.server.Request;
@@ -34,7 +35,7 @@ import static io.netty.handler.codec.http.HttpMethod.*;
 /*
  * This class is supposed to be called by a TCP or HTTP transport class
  */
-public class ApiServerAdapter<CONNECTION, API> extends AbstractAdapter<CONNECTION, API>
+public class ApiServerAdapter<CONNECTION extends TransactionConnectionInformation, API> extends AbstractAdapter<CONNECTION, API>
 {
 
     private static final Logger logger = LogManager.getLogger(ApiServerAdapter.class);

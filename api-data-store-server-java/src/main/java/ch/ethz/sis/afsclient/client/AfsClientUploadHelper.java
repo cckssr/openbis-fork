@@ -86,7 +86,6 @@ public class AfsClientUploadHelper
         int currentSize = 0;
 
         Semaphore maxThreadLimitSemaphore = new Semaphore(MAX_UPLOAD_THREADS);
-        List<ReadAndUploadRunnable> asyncTransferRunnables = Collections.synchronizedList(new LinkedList<>());
         try
         {
             while (iterator.hasNext())
@@ -148,10 +147,16 @@ public class AfsClientUploadHelper
                                             destinationPath,
                                             transferMonitorListener,
                                             maxThreadLimitSemaphore,
-                                            asyncTransferRunnables, cache, transactional);
-                                    Thread threadHandle = new Thread(readAndUploadRunnable);
-                                    threadHandle.start();
-                                    asyncTransferRunnables.add(readAndUploadRunnable);
+                                            cache, transactional);
+
+                                    if (transactional) {
+                                        // use only the main thread (AFS supports only one worker per transaction)
+                                        readAndUploadRunnable.run();
+                                    } else
+                                    {
+                                        Thread threadHandle = new Thread(readAndUploadRunnable);
+                                        threadHandle.start();
+                                    }
 
                                     // Clean and retrieve next package
                                     chunkBatchToWriteInOneCall.clear();
@@ -395,8 +400,6 @@ public class AfsClientUploadHelper
 
         private final Semaphore maxThreadLimitSemaphore;
 
-        private final List<ReadAndUploadRunnable> asyncTransferRunnables;
-
         private final Cache cache;
 
         private final boolean transactional;
@@ -409,7 +412,7 @@ public class AfsClientUploadHelper
                 Path destinationPath,
                 TransferMonitorListener transferMonitorListener,
                 Semaphore maxThreadLimitSemaphore,
-                List<ReadAndUploadRunnable> asyncTransferRunnables, Cache cache, boolean transactional)
+                Cache cache, boolean transactional)
         {
             this.afsClient = afsClient;
             this.currentsAndTotals = currentsAndTotals;
@@ -419,7 +422,6 @@ public class AfsClientUploadHelper
             this.destinationPath = destinationPath;
             this.transferMonitorListener = transferMonitorListener;
             this.maxThreadLimitSemaphore = maxThreadLimitSemaphore;
-            this.asyncTransferRunnables = asyncTransferRunnables;
             this.cache = cache;
             this.transactional = transactional;
         }
@@ -463,10 +465,10 @@ public class AfsClientUploadHelper
                                     new Chunk(chunk.getOwner(), toServerPathString(chunkServerPath), chunk.getOffset(), chunk.getLimit(), bytes);
                         } else
                         {
-                        requestChunks[i] =
-                                new Chunk(chunk.getOwner(), toServerPathString(TemporaryPathUtil.getTwinTemporaryPath(chunkServerPath)),
-                                        chunk.getOffset(),
-                                        chunk.getLimit(), bytes);
+                            requestChunks[i] =
+                                    new Chunk(chunk.getOwner(), toServerPathString(TemporaryPathUtil.getTwinTemporaryPath(chunkServerPath)),
+                                            chunk.getOffset(),
+                                            chunk.getLimit(), bytes);
                         }
                     }
                     i++;
@@ -517,7 +519,6 @@ public class AfsClientUploadHelper
             } finally
             {
                 maxThreadLimitSemaphore.release();
-                asyncTransferRunnables.remove(this);
             }
         }
     }

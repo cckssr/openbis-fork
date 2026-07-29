@@ -1191,7 +1191,7 @@ public abstract class UpdateEntityTypeTest<CREATION extends IEntityTypeCreation,
                 "Array value 'abc' is not valid. Provided value is a String which could not be parsed to an array.");
         assertExceptionMessage(() ->
                         testMakeExistingSimplePropertyMandatory(DataType.ARRAY_TIMESTAMP, "[\"abc\", \"def\"]", IPropertiesHolder::getProperty, null),
-                "Wrong date format:abc");
+                "Wrong date format: abc");
     }
 
     @Test

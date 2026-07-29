@@ -76,11 +76,22 @@ public class RdfToModel
 
     }
 
-    public static ConversionResult convert(List<IType> types, List<IPropertyType> typeProperties,
-            List<IMetadataEntry> entries, String fallbackSpaceCode, String fallbackProjectCode,
+    public static ConversionResult convert(List<IType> rdfsTypes,
+            List<IPropertyType> rdfsTypeProperties,
+            List<IMetadataEntry> metadataEntries, String fallbackSpaceCode,
+            String fallbackProjectCode,
             SchemaFacade schemaFacade, Map<AbstractEntity, Path> identifiersToExternalFiles)
             throws IOException
     {
+        List<IType> types = rdfsTypes.stream().sorted(Comparator.comparing(IType::getId)).toList();
+        List<IMetadataEntry> entries =
+                metadataEntries.stream().sorted(Comparator.comparing(IMetadataEntry::getId))
+                        .toList();
+        List<IPropertyType> typeProperties =
+                rdfsTypeProperties.stream().sorted(Comparator.comparing(IPropertyType::getId))
+                        .toList();
+
+
 
         Set<SampleType> openBisDerivedTypes = new LinkedHashSet<>();
 

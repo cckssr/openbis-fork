@@ -20,10 +20,7 @@ import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 import ch.ethz.sis.shared.log.classic.impl.Logger;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static ch.ethz.sis.openbis.generic.excel.v3.from.utils.PropertyTypeSearcher.VARIABLE_PREFIX;
@@ -303,14 +300,20 @@ public class ObjectHelper extends BasicImportHelper
         childrenToResolve.forEach((key, value) -> {
             Sample sample = accumulator.get(key);
             List<Sample> children =
-                    value.stream().map(x -> x.getIdentifier()).map(x -> identifierToSample.get(x))
+                    value.stream()
+                            .map(ObjectIdentifier::getIdentifier)
+                            .map(x -> identifierToSample.get(x))
+                            .filter(Objects::nonNull)
                             .collect(Collectors.toList());
             sample.setChildren(children);
         });
         parentsToResolve.forEach((key, value) -> {
             Sample sample = accumulator.get(key);
             List<Sample> parents =
-                    value.stream().map(x -> x.getIdentifier()).map(x -> identifierToSample.get(x))
+                    value.stream()
+                            .map(ObjectIdentifier::getIdentifier)
+                            .map(x -> identifierToSample.get(x))
+                            .filter(Objects::nonNull)
                             .collect(Collectors.toList());
             sample.setParents(parents);
         });

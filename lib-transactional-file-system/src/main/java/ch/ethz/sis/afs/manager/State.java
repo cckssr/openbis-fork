@@ -15,6 +15,6 @@
  */
 package ch.ethz.sis.afs.manager;
 
-enum State {
+public enum State {
     New, Begin, Prepare, Commit, Rollback, Executed, FailedCommit
 }

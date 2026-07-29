@@ -827,9 +827,9 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 			spaceCode = IdentifierUtil.getSpaceCodeFromIdentifier(this._dataSetFormModel.entity.identifier);
 			sampleIdentifier = this._dataSetFormModel.entity.identifier;
 		}
-		var datasetCodeAndPermId = this._getTypeCode();
+		var datasetPermId = this._dataSetFormModel.dataSetV3.code;
 		return FormUtil.getFormPath(spaceCode, projectCode, experimentCode, null, null, sampleCode, 
-				sampleIdentifier, datasetCodeAndPermId);
+				sampleIdentifier, datasetPermId);
 	}
 	
 	this._updateFileOptions = function() {

@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import ch.ethz.sis.afs.api.TransactionConnectionInformation;
 import ch.ethz.sis.afsjson.JsonObjectMapper;
 import ch.ethz.sis.afsserver.server.APIServer;
 import ch.ethz.sis.afsserver.server.Request;
@@ -29,7 +30,7 @@ import ch.ethz.sis.afsserver.server.performance.PerformanceAuditor;
 import ch.ethz.sis.libhttp.http.HttpResponse;
 import io.netty.handler.codec.http.HttpMethod;
 
-public class HttpDownloadAdapter<CONNECTION, API> extends AbstractAdapter<CONNECTION, API>
+public class HttpDownloadAdapter<CONNECTION extends TransactionConnectionInformation, API> extends AbstractAdapter<CONNECTION, API>
 {
     public HttpDownloadAdapter(
             final APIServer<CONNECTION, Request, Response, API> server,

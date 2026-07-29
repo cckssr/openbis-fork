@@ -106,19 +106,19 @@ public class SemanticAnnotationImportHelper extends BasicImportHelper
         switch (type) {
             case EntityType:
                 EntityTypePermId id = new EntityTypePermId(spreadsheetCode, permIdOrNull.getEntityKind());
-                SemanticAnnotation annotation = delayedExecutor.getAnnotationCache().getCachedSemanticAnnotation(type, id, spreadsheetCode);
+                SemanticAnnotation annotation = delayedExecutor.getSemanticAnnotation(type, id, spreadsheetCode);
                 if(annotation != null) {
                     spreadsheetCode = annotation.getEntityType().getCode();
                 }
                 break;
             case PropertyType:
-                SemanticAnnotation propertyAnnotation = delayedExecutor.getAnnotationCache().getCachedSemanticAnnotation(type, null, spreadsheetCode);
+                SemanticAnnotation propertyAnnotation = delayedExecutor.getSemanticAnnotation(type, null, spreadsheetCode);
                 if(propertyAnnotation != null) {
                     spreadsheetCode = propertyAnnotation.getPropertyType().getCode();
                 }
                 break;
             case PropertyAssignment:
-                SemanticAnnotation assignmentAnnotation = delayedExecutor.getAnnotationCache().getCachedSemanticAnnotation(type, permIdOrNull, spreadsheetCode);
+                SemanticAnnotation assignmentAnnotation = delayedExecutor.getSemanticAnnotation(type, permIdOrNull, spreadsheetCode);
                 if(assignmentAnnotation != null) {
                     spreadsheetCode = assignmentAnnotation.getPropertyAssignment().getPropertyType().getCode();
                 }
@@ -182,7 +182,7 @@ public class SemanticAnnotationImportHelper extends BasicImportHelper
 
         for (SemanticAnnotationSearchCriteria criteria : searchCriteria)
         {
-            SemanticAnnotation semanticAnnotation = delayedExecutor.getSemanticAnnotation(criteria, new SemanticAnnotationFetchOptions());
+            List<SemanticAnnotation> semanticAnnotation = delayedExecutor.searchSemanticAnnotations(criteria, new SemanticAnnotationFetchOptions());
             insertSemanticAnnotation = (semanticAnnotation == null); // We insert a semantic annotation
             if (insertSemanticAnnotation)
             {
@@ -198,7 +198,7 @@ public class SemanticAnnotationImportHelper extends BasicImportHelper
     {
         String spreadsheetCode = getValueByColumnName(headers, values, Attribute.Code);
         if(permIdOrNull != null) {
-            SemanticAnnotation annotation = delayedExecutor.getAnnotationCache().getCachedSemanticAnnotation(SemanticAnnotationType.PropertyAssignment, this.permIdOrNull, spreadsheetCode);
+            SemanticAnnotation annotation = delayedExecutor.getSemanticAnnotation(SemanticAnnotationType.PropertyAssignment, this.permIdOrNull, spreadsheetCode);
             if(annotation != null) {
                 spreadsheetCode = annotation.getPropertyAssignment().getPropertyType().getCode();
             }
@@ -255,9 +255,9 @@ public class SemanticAnnotationImportHelper extends BasicImportHelper
         {
             SemanticAnnotationCreation creation = new SemanticAnnotationCreation();
 
-            SemanticAnnotation semanticAnnotation = delayedExecutor.getSemanticAnnotation(criteria,
+            List<SemanticAnnotation> semanticAnnotations = delayedExecutor.searchSemanticAnnotations(criteria,
                     new SemanticAnnotationFetchOptions());
-            if (semanticAnnotation != null)
+            if (semanticAnnotations != null)
             {
                 continue;
             }
@@ -330,7 +330,7 @@ public class SemanticAnnotationImportHelper extends BasicImportHelper
                 throw new RuntimeException("Should never happen!");
         }
 
-        SemanticAnnotation annotation = delayedExecutor.getAnnotationCache().getCachedSemanticAnnotation(SemanticAnnotationType.EntityType, this.permIdOrNull, null);
+        SemanticAnnotation annotation = delayedExecutor.getSemanticAnnotation(SemanticAnnotationType.EntityType, this.permIdOrNull, null);
         if(annotation != null) {
             code = annotation.getEntityType().getCode();
             permIdOrNull = new EntityTypePermId(code, this.permIdOrNull.getEntityKind());
@@ -361,7 +361,7 @@ public class SemanticAnnotationImportHelper extends BasicImportHelper
                 throw new RuntimeException("Should never happen!");
         }
 
-        SemanticAnnotation annotation = delayedExecutor.getAnnotationCache().getCachedSemanticAnnotation(SemanticAnnotationType.EntityType, this.permIdOrNull, null);
+        SemanticAnnotation annotation = delayedExecutor.getSemanticAnnotation(SemanticAnnotationType.EntityType, this.permIdOrNull, null);
         if(annotation != null) {
             code = annotation.getEntityType().getCode();
             permIdOrNull = new EntityTypePermId(code, this.permIdOrNull.getEntityKind());

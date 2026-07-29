@@ -48,7 +48,7 @@ public class JSON2ExcelTest {
         List<IType> types = schemaFacade.getTypes();
 
         Set<IMetadataEntry> entryList = new LinkedHashSet<>();
-        for (var type : types)
+        for (IType type : types)
         {
             entryList.addAll(schemaFacade.getEntries(type.getId()));
 
@@ -148,7 +148,7 @@ public class JSON2ExcelTest {
                 Workbook workbook2 = new XSSFWorkbook(fis2)
         )
         {
-            //assertSameSheets(workbook1, workbook2);
+            assertSameSheets(workbook1, workbook2);
 
         }
     }
