@@ -15,10 +15,15 @@
  */
 package ch.ethz.sis.afsserver.server;
 
+import ch.ethz.sis.afs.api.TransactionConnectionInformation;
 import ch.ethz.sis.afsapi.api.PublicAPI;
 import ch.ethz.sis.afsserver.server.performance.PerformanceAuditor;
+import lombok.Synchronized;
 
-public interface Worker<CONNECTION> extends PublicAPI {
+import java.util.UUID;
+
+public interface Worker<CONNECTION extends TransactionConnectionInformation> extends PublicAPI
+{
     void createContext(PerformanceAuditor performanceAuditor);
 
     void cleanContext();
@@ -41,4 +46,20 @@ public interface Worker<CONNECTION> extends PublicAPI {
 
     boolean isInteractiveSessionMode();
 
+    UUID getTransactionId();
+
+    /*
+     * Synchronized
+     */
+    boolean acquire();
+
+    /*
+     * Synchronized
+     */
+    void release();
+
+    /*
+     * Synchronized
+     */
+    boolean timeout(long timeoutMillis);
 }

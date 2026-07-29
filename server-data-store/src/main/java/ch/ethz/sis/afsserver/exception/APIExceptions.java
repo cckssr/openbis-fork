@@ -35,8 +35,9 @@ public enum APIExceptions implements ExceptionTemplateHolder {
     WRONG_PARAMETER_LIST_LENGTH(                IllegalArgumentException.class,                 List.of(ClientDeveloperCodingError),               30005, "Wrong parameters list length for method"),
     MISSING_METHOD_PARAMETER(                   IllegalArgumentException.class,                 List.of(ClientDeveloperCodingError),               30006, "Missing parameter '%s' for method '%s'"),
     METHOD_PARAMETER_WRONG_TYPE(                IllegalArgumentException.class,                 List.of(ClientDeveloperCodingError),               30007, "Parameter '%' for method '%s' has incorrect type"),
-    METHOD_NOT_FOUND(                           IllegalArgumentException.class,                 List.of(ClientDeveloperCodingError),               30008, "Method '%' not found");
-
+    METHOD_NOT_FOUND(                           IllegalArgumentException.class,                 List.of(ClientDeveloperCodingError),               30008, "Method '%' not found"),
+    SESSION_IN_USE_BY_DIFFERENT_OPERATION(      IllegalStateException.class,                    List.of(ClientDeveloperCodingError),               30009, "Session '%s' is already being used by another concurrent operation within the same transaction."),
+    SESSION_IN_USE_BY_DIFFERENT_TRANSACTION(    IllegalStateException.class,                    List.of(ClientDeveloperCodingError),               30010, "Session '%s' is already being used by another transaction (%s).");
 
     private RuntimeExceptionTemplate template;
 

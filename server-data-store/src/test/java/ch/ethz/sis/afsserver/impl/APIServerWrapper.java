@@ -17,7 +17,7 @@ package ch.ethz.sis.afsserver.impl;
 
 
 import ch.ethz.sis.afsclient.client.ChunkEncoderDecoder;
-import ch.ethz.sis.afsserver.core.AbstractPublicAPIWrapper;
+import ch.ethz.sis.afsserver.server.AbstractPublicAPIWrapper;
 import ch.ethz.sis.afsserver.server.APIServer;
 import ch.ethz.sis.afsserver.server.Response;
 import ch.ethz.sis.afsserver.server.impl.ApiRequest;

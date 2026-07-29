@@ -187,6 +187,9 @@ public class TransactionConnection implements TransactionalFileSystem
         if (state == State.New)
         {
             // New just created transaction
+        } else if(this.transaction != null && transactionId.equals(this.transaction.getUuid())) { // Recovery case for the Transaction Coordinator calls begin before user calls commit or rollback
+            // Do nothing
+            return;
         } else if (state == State.Executed || state == State.FailedCommit || state == State.Rollback || state == State.Prepare)
         {
             // Clean transaction, can be reused

@@ -15,37 +15,25 @@
  */
 package ch.ethz.sis.afsserver.impl;
 
-import ch.ethz.sis.afsserver.ServerClientEnvironmentFS;
 import ch.ethz.sis.afsapi.api.PublicAPI;
+import ch.ethz.sis.afsjson.JsonObjectMapper;
+import ch.ethz.sis.afsserver.ServerClientEnvironmentFS;
 import ch.ethz.sis.afsserver.server.APIServer;
 import ch.ethz.sis.afsserver.server.impl.ApiServerAdapter;
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameter;
-import ch.ethz.sis.afsjson.JsonObjectMapper;
 import ch.ethz.sis.shared.startup.Configuration;
-import org.junit.Test;
 
-import java.util.UUID;
-
-public class ApiServerAdapterTest extends ApiServerTest {
+public class ApiServerAdapterTest extends ApiServerTest
+{
 
     @Override
-    public PublicAPI getPublicAPI(String interactiveSessionKey, String transactionManagerKey) throws Exception {
-        UUID sessionToken = UUID.randomUUID();
-        APIServer apiServer = getAPIServer();
+    public PublicAPI getPublicAPI(APIServer apiServer, String interactiveSessionKey, String transactionManagerKey, String sessionToken)
+            throws Exception
+    {
         Configuration configuration = ServerClientEnvironmentFS.getInstance().getDefaultServerConfiguration();
         JsonObjectMapper jsonObjectMapper = configuration.getSharableInstance(AtomicFileSystemServerParameter.jsonObjectMapperClass);
         ApiServerAdapter apiServerAdapter = new ApiServerAdapter(apiServer, jsonObjectMapper);
-        return new APIServerAdapterWrapper(apiServerAdapter, interactiveSessionKey, transactionManagerKey, sessionToken.toString());
-    }
-
-    @Override
-    public PublicAPI getPublicAPI() throws Exception {
-        UUID sessionToken = UUID.randomUUID();
-        APIServer apiServer = getAPIServer();
-        Configuration configuration = ServerClientEnvironmentFS.getInstance().getDefaultServerConfiguration();
-        JsonObjectMapper jsonObjectMapper = configuration.getSharableInstance(AtomicFileSystemServerParameter.jsonObjectMapperClass);
-        ApiServerAdapter apiServerAdapter = new ApiServerAdapter(apiServer, jsonObjectMapper);
-        return new APIServerAdapterWrapper(apiServerAdapter, null, null, sessionToken.toString());
+        return new APIServerAdapterWrapper(apiServerAdapter, interactiveSessionKey, transactionManagerKey, sessionToken);
     }
 
 }

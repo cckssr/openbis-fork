@@ -16,6 +16,7 @@
 package ch.ethz.sis.afsserver.worker;
 
 import ch.ethz.sis.afs.api.TransactionalFileSystem;
+import ch.ethz.sis.afs.manager.State;
 import ch.ethz.sis.afsapi.dto.Chunk;
 import ch.ethz.sis.afsapi.dto.File;
 import ch.ethz.sis.afsapi.dto.FreeSpace;
@@ -29,8 +30,11 @@ import java.util.UUID;
 
 public abstract class AbstractProxy implements Worker<TransactionalFileSystem> {
 
+    private enum WorkerState { IDLE, PROCESSING, TIMEOUT }
+
     protected AbstractProxy nextProxy;
     protected WorkerContext workerContext;
+    private WorkerState workerState;
 
     public AbstractProxy(AbstractProxy nextProxy) {
         this.nextProxy = nextProxy;
@@ -38,7 +42,7 @@ public abstract class AbstractProxy implements Worker<TransactionalFileSystem> {
 
     @Override
     public void createContext(PerformanceAuditor performanceAuditor) {
-        setWorkerContext(new WorkerContext(performanceAuditor, null, null, null, null, false, false, new HashMap<>()));
+        setWorkerContext(new WorkerContext(performanceAuditor, null, null, null, null, null, false, false, new HashMap<>()));
     }
 
     @Override
@@ -104,6 +108,49 @@ public abstract class AbstractProxy implements Worker<TransactionalFileSystem> {
     @Override public boolean isInteractiveSessionMode()
     {
         return workerContext.isInteractiveSessionMode();
+    }
+
+    @Override public UUID getTransactionId() {
+        return (workerContext != null)?workerContext.getTransactionId():null;
+    }
+
+    private void setLastAccessedTime(long lastAccessedTime)
+    {
+        workerContext.setLastAccessedTime(lastAccessedTime);
+    }
+
+    private Long getLastAccessedTime()
+    {
+        return workerContext.getLastAccessedTime();
+    }
+
+    @Override
+    public synchronized boolean acquire() {
+        if (workerState == WorkerState.IDLE) {
+            workerState = WorkerState.PROCESSING;
+            setLastAccessedTime(System.currentTimeMillis());
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public synchronized void release() {
+        workerState = WorkerState.IDLE;
+        setLastAccessedTime(System.currentTimeMillis());
+    }
+
+    @Override
+    public synchronized boolean timeout(long timeoutMillis) {
+        if (workerState == WorkerState.IDLE && getLastAccessedTime() + timeoutMillis < System.currentTimeMillis() && ! getConnection().getState().equals(
+                State.Prepare)) {
+            workerState = WorkerState.TIMEOUT;
+            return true;
+        } else
+        {
+            return false;
+        }
     }
 
     @Override

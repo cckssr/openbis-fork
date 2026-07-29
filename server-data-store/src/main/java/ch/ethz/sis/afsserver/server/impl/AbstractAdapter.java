@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import ch.ethz.sis.afs.api.TransactionConnectionInformation;
 import ch.ethz.sis.afsapi.dto.Chunk;
 import ch.ethz.sis.afsapi.dto.DTO;
 import ch.ethz.sis.afsapi.dto.File;
@@ -51,7 +52,7 @@ import io.netty.handler.codec.http.HttpMethod;
 /*
  * This class is supposed to be called by a TCP or HTTP transport class
  */
-public abstract class AbstractAdapter<CONNECTION, API> implements HttpServerHandler
+public abstract class AbstractAdapter<CONNECTION extends TransactionConnectionInformation, API> implements HttpServerHandler
 {
 
     private static final Logger logger = LogManager.getLogger(AbstractAdapter.class);

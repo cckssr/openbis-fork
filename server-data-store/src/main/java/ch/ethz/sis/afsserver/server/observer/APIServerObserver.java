@@ -15,12 +15,13 @@
  */
 package ch.ethz.sis.afsserver.server.observer;
 
+import ch.ethz.sis.afs.api.TransactionConnectionInformation;
 import ch.ethz.sis.afsserver.server.Request;
 import ch.ethz.sis.afsserver.server.Response;
 import ch.ethz.sis.afsserver.server.Worker;
 import ch.ethz.sis.shared.startup.Configuration;
 
-public interface APIServerObserver<CONNECTION>
+public interface APIServerObserver<CONNECTION extends TransactionConnectionInformation>
 {
 
     public void init(Configuration configuration) throws Exception;

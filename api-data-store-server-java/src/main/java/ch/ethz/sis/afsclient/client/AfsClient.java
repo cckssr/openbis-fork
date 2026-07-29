@@ -716,7 +716,7 @@ public final class AfsClient implements PublicAPI, ClientAPI
 
         if (response.getError() != null)
         {
-            throw ClientExceptions.API_ERROR.getInstance(response.getError());
+            throw ClientExceptions.API_ERROR.getInstance(response.getError().toString());
         } else
         {
             return (T) response.getResult();
