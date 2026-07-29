@@ -9,7 +9,7 @@ interface MultiValueFieldEditorProps {
   required?: boolean;
   values: any[];
   onChange: (values: any[]) => void;
-  renderInput: (value: any, onChange: (newVal: any) => void) => React.ReactNode;
+  renderInput: (value: any, index: number, onChange: (newVal: any) => void) => React.ReactNode;
   isEmpty?: (value: any) => boolean;
 }
 
@@ -98,7 +98,7 @@ const MultiValueFieldEditor: React.FC<MultiValueFieldEditorProps> = ({
               },
             })
           }}>
-            {renderInput(slot.value, (newVal: any) => handleChange(i, newVal))}
+            {renderInput(slot.value, i, (newVal: any) => handleChange(i, newVal))}
           </Box>
           <IconButton size="small" onClick={() => handleRemove(i)}>
             <RemoveCircleOutlineIcon fontSize="small" />

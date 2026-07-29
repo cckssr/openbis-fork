@@ -27,12 +27,12 @@ export const SwitchFieldRenderer: React.FC<FieldRendererProps> = ({ field, onFie
 	} else if (field.isMultiValue && isEditing && !field.readOnly) {
 		return (
 			<MultiValueFieldEditor
-				label={field.label}
 				required={field.required}
 				values={Array.isArray(field.value) ? field.value : []}
 				onChange={(vals) => onFieldChange(field.id, vals)}
-				renderInput={(val, onChange) => (
+				renderInput={(val, index, onChange) => (
 					<SelectField
+						label={index === 0 ? field.label : null}
 						reference={field}
 						options={[{label: '', value: null}, {label: 'true', value: 'true'},
 							{label: 'false', value: 'false'}]}
@@ -45,7 +45,7 @@ export const SwitchFieldRenderer: React.FC<FieldRendererProps> = ({ field, onFie
 						onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange(e.target.value || null)}
 						description={field.meta?.helpText}
 						emptyOption={field.meta?.emptyOption}
-						hiddenLabel={true}
+						hiddenLabel={index > 0}
 						disableUnderline={true}
 					/>
 				)}

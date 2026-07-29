@@ -29,17 +29,16 @@ export const DateFieldRenderer: React.FC<FieldRendererProps> = ({ field, onField
   } else if (field.isMultiValue && isEditing && !field.readOnly) {
     return (
       <MultiValueFieldEditor
-        label={field.label}
         required={field.required}
         values={Array.isArray(field.value) ? field.value : []}
         onChange={(vals) => onFieldChange(field.id, vals)}
-        renderInput={(val, onChange) => (
+        renderInput={(val, index, onChange) => (
           // @ts-ignore
           <DateField
-            label={null}
+            label={field.label}
             mode="edit"
             disabled={field.readOnly}
-            hiddenLabel
+            hiddenLabel={index > 0}
             value={{ dateObject: val ? new Date(val) : null }}
             onChange={(e: any) => onChange(e.target.value.dateString || null)}
             dateTime={dateTime}

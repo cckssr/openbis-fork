@@ -218,18 +218,18 @@ export const CKEditorFieldRenderer: React.FC<FieldRendererProps> = ({
     if (isEditingMode && !field.readOnly) {
       return (
         <MultiValueFieldEditor
-          label={field.label}
           required={field.required}
           values={Array.isArray(field.value) ? field.value : []}
           onChange={(vals) => onFieldChange(field.id, vals)}
-          renderInput={(val, handleChange) => (
+          renderInput={(val, index, handleChange) => (
+            [index === 0 ? label : null,
             <CKEditorSingleEditor
               value={val ?? ''}
               dataType={field.dataType}
               readOnly={false}
               onChange={handleChange}
               sessionID={params?.sessionID}
-            />
+            />]
           )}
           isEmpty={(v) => v === null || v === undefined || v === ''}
         />

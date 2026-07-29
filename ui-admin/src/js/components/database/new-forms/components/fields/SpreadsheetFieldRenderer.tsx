@@ -22,7 +22,7 @@ export const SpreadsheetFieldRenderer: React.FC<FieldRendererProps> = ({
   const isEditing = mode === FormMode.EDIT || mode === FormMode.CREATE;
   const editable = isEditing && !field.readOnly;
 
-  const label = (
+  const label: React.JSX.Element = (
     <Typography
       variant="body2"
       component="div"
@@ -36,16 +36,16 @@ export const SpreadsheetFieldRenderer: React.FC<FieldRendererProps> = ({
     if (editable) {
       return (
         <MultiValueFieldEditor
-          label={field.label}
           required={field.required}
           values={Array.isArray(field.value) ? field.value : []}
           onChange={(vals) => onFieldChange(field.id, vals)}
-          renderInput={(val, handleChange) => (
+          renderInput={(val, index, handleChange) => (
+            [<>{index === 0 ? label : null}</>,
             <SpreadsheetField
               value={val}
               editable={true}
               onChange={handleChange}
-            />
+            />]
           )}
           isEmpty={(v) => v === null || v === undefined}
         />
