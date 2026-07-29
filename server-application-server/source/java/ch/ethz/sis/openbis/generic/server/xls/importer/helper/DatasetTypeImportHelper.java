@@ -139,7 +139,7 @@ public class DatasetTypeImportHelper extends BasicImportHelper
         if(hasSemanticAnnotations(header, values)) {
             List<SemanticAnnotationRecord> records = getSemanticAnnotationRecords(header, values);
             EntityTypePermId permId = new EntityTypePermId(code, EntityKind.DATA_SET);
-            SemanticAnnotation annotation = delayedExecutor.getEntityTypeSemanticAnnotation(records, permId);
+            SemanticAnnotation annotation = delayedExecutor.findEntityTypeSemanticAnnotationFromRecords(records, permId);
             if(annotation != null) {
                 // if there is semantic annotation, then there is an associated type
                 return (DataSetType) annotation.getEntityType();
@@ -196,7 +196,7 @@ public class DatasetTypeImportHelper extends BasicImportHelper
         DataSetTypeUpdate update = new DataSetTypeUpdate();
         EntityTypePermId permId = new EntityTypePermId(code, EntityKind.DATA_SET);
 
-        SemanticAnnotation annotation = delayedExecutor.getCachedSemanticAnnotation(
+        SemanticAnnotation annotation = delayedExecutor.getSemanticAnnotation(
                 SemanticAnnotationType.EntityType, permId, null);
 
         if(annotation != null) {

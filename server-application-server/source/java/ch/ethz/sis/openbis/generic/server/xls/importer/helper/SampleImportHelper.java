@@ -127,7 +127,7 @@ public class SampleImportHelper extends BasicImportHelper
 
             String typeCode = getValueByColumnName(header, page.get(lineIndex), SAMPLE_TYPE_FIELD);
             sampleType = new EntityTypePermId(typeCode, EntityKind.SAMPLE);
-            SemanticAnnotation annotation = delayedExecutor.getCachedSemanticAnnotation(SemanticAnnotationType.EntityType, sampleType, null);
+            SemanticAnnotation annotation = delayedExecutor.getSemanticAnnotation(SemanticAnnotationType.EntityType, sampleType, null);
             if(annotation != null)
             {
                 typeCode = annotation.getEntityType().getCode();

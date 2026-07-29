@@ -148,7 +148,7 @@ public class SampleTypeImportHelper extends BasicImportHelper
         if(hasSemanticAnnotations(header, values)) {
             List<SemanticAnnotationRecord> records = getSemanticAnnotationRecords(header, values);
             EntityTypePermId permId = new EntityTypePermId(code, EntityKind.SAMPLE);
-            SemanticAnnotation annotation = delayedExecutor.getEntityTypeSemanticAnnotation(records, permId);
+            SemanticAnnotation annotation = delayedExecutor.findEntityTypeSemanticAnnotationFromRecords(records, permId);
             if(annotation != null) {
                 // if there is semantic annotation, then there is an associated type
                 return (SampleType) annotation.getEntityType();
@@ -227,7 +227,7 @@ public class SampleTypeImportHelper extends BasicImportHelper
         SampleTypeUpdate update = new SampleTypeUpdate();
         EntityTypePermId permId = new EntityTypePermId(code, EntityKind.SAMPLE);
 
-        SemanticAnnotation annotation = delayedExecutor.getCachedSemanticAnnotation(SemanticAnnotationType.EntityType, permId, null);
+        SemanticAnnotation annotation = delayedExecutor.getSemanticAnnotation(SemanticAnnotationType.EntityType, permId, null);
 
         if(annotation != null) {
             code = annotation.getEntityType().getCode();

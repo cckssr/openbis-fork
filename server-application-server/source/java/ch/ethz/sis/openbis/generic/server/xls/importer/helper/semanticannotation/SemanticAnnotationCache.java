@@ -9,18 +9,18 @@ import java.util.Set;
 public interface SemanticAnnotationCache
 {
 
-    SemanticAnnotation getCachedSemanticAnnotation(SemanticAnnotationType type,
+    SemanticAnnotation getSemanticAnnotation(SemanticAnnotationType type,
             EntityTypePermId permIdOrNull, String propertyCodeOrNull);
 
     Set<String> getCachedPropertyTypes();
 
-    SemanticAnnotation getPropertyAssignmentSemanticAnnotation(
+    SemanticAnnotation findPropertyAssignmentSemanticAnnotationFromRecords(
             List<SemanticAnnotationRecord> records,
             EntityTypePermId entityTypePermId, String propertyTypeCode);
 
-    SemanticAnnotation getPropertyTypeSemanticAnnotation(List<SemanticAnnotationRecord> records,
+    SemanticAnnotation findPropertyTypeSemanticAnnotationFromRecords(List<SemanticAnnotationRecord> records,
             String propertyTypeCode);
 
-    SemanticAnnotation getEntityTypeSemanticAnnotation(List<SemanticAnnotationRecord> records,
+    SemanticAnnotation findEntityTypeSemanticAnnotationFromRecords(List<SemanticAnnotationRecord> records,
             EntityTypePermId entityTypePermId);
 }

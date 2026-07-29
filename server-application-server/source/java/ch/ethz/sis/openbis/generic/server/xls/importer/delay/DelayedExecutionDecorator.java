@@ -1197,19 +1197,6 @@ public class DelayedExecutionDecorator implements SemanticAnnotationCache
     // SEMANTIC ANNOTATIONS
     //
 
-    public SemanticAnnotation getSemanticAnnotation(SemanticAnnotationSearchCriteria criteria, SemanticAnnotationFetchOptions fetchOptions)
-    {
-        SearchResult<SemanticAnnotation> semanticAnnotationSearchResult = v3.searchSemanticAnnotations(this.sessionToken, criteria, fetchOptions);
-
-        if (semanticAnnotationSearchResult.getTotalCount() > 0)
-        {
-            return semanticAnnotationSearchResult.getObjects().get(0);
-        } else
-        {
-            return null;
-        }
-    }
-
     public List<SemanticAnnotation> searchSemanticAnnotations(SemanticAnnotationSearchCriteria criteria, SemanticAnnotationFetchOptions fetchOptions)
     {
         SearchResult<SemanticAnnotation> semanticAnnotationSearchResult = v3.searchSemanticAnnotations(this.sessionToken, criteria, fetchOptions);
@@ -1221,6 +1208,25 @@ public class DelayedExecutionDecorator implements SemanticAnnotationCache
         {
             return null;
         }
+    }
+
+    private List<SemanticAnnotation> searchSemanticAnnotations(SemanticAnnotationRecord record)
+    {
+        SemanticAnnotationSearchCriteria criteria =
+                new SemanticAnnotationSearchCriteria();
+
+        criteria.withPredicateOntologyId().thatEquals(record.getSemanticAnnotationId());
+        criteria.withPredicateOntologyVersion().thatEquals(record.getSemanticAnnotationVersionId());
+        criteria.withPredicateAccessionId().thatEquals(record.getSemanticAnnotationAccessionId());
+
+        SemanticAnnotationFetchOptions fetchOptions = new SemanticAnnotationFetchOptions();
+        fetchOptions.withEntityType();
+        fetchOptions.withPropertyType();
+        fetchOptions.withPropertyAssignment().withEntityType();
+        fetchOptions.withPropertyAssignment().withPropertyType();
+
+        return searchSemanticAnnotations(criteria,
+                fetchOptions);
     }
 
     public void createSemanticAnnotation(SemanticAnnotationCreation creation, int page, int line)
@@ -1385,27 +1391,27 @@ public class DelayedExecutionDecorator implements SemanticAnnotationCache
 
     // Semantic Annotation - related methods
     @Override
-    public SemanticAnnotation getEntityTypeSemanticAnnotation(List<SemanticAnnotationRecord> records,
+    public SemanticAnnotation findEntityTypeSemanticAnnotationFromRecords(List<SemanticAnnotationRecord> records,
             EntityTypePermId entityTypePermId)
     {
-        return getSemanticAnnotationFromRecords(records, SemanticAnnotationType.EntityType, entityTypePermId, null);
+        return findSemanticAnnotationFromRecords(records, SemanticAnnotationType.EntityType, entityTypePermId, null);
     }
 
     @Override
-    public SemanticAnnotation getPropertyTypeSemanticAnnotation(List<SemanticAnnotationRecord> records,
+    public SemanticAnnotation findPropertyTypeSemanticAnnotationFromRecords(List<SemanticAnnotationRecord> records,
             String propertyTypeCode)
     {
-        return getSemanticAnnotationFromRecords(records, SemanticAnnotationType.PropertyType, null, propertyTypeCode);
+        return findSemanticAnnotationFromRecords(records, SemanticAnnotationType.PropertyType, null, propertyTypeCode);
     }
 
     @Override
-    public SemanticAnnotation getPropertyAssignmentSemanticAnnotation(List<SemanticAnnotationRecord> records,
+    public SemanticAnnotation findPropertyAssignmentSemanticAnnotationFromRecords(List<SemanticAnnotationRecord> records,
             EntityTypePermId entityTypePermId, String propertyTypeCode)
     {
-        return getSemanticAnnotationFromRecords(records, SemanticAnnotationType.PropertyAssignment, entityTypePermId, propertyTypeCode);
+        return findSemanticAnnotationFromRecords(records, SemanticAnnotationType.PropertyAssignment, entityTypePermId, propertyTypeCode);
     }
 
-    private SemanticAnnotation getSemanticAnnotationFromRecords(List<SemanticAnnotationRecord> records,
+    private SemanticAnnotation findSemanticAnnotationFromRecords(List<SemanticAnnotationRecord> records,
             SemanticAnnotationType type, EntityTypePermId entityTypePermIdOrNull,
             String propertyTypeCodeOrNull) {
         SemanticAnnotation annotation = null;
@@ -1413,7 +1419,7 @@ public class DelayedExecutionDecorator implements SemanticAnnotationCache
         SemanticAnnotationRecord faultyRecord = null;
         for(SemanticAnnotationRecord record : records)
         {
-            List<SemanticAnnotation> annotations = getSemanticAnnotation(record, type, entityTypePermIdOrNull, propertyTypeCodeOrNull);
+            List<SemanticAnnotation> annotations = getSemanticAnnotations(record, type, entityTypePermIdOrNull, propertyTypeCodeOrNull);
             if(annotations.size() == 1)
             {
                 annotation = annotations.get(0);
@@ -1443,19 +1449,57 @@ public class DelayedExecutionDecorator implements SemanticAnnotationCache
     }
 
     @Override
-    public SemanticAnnotation getCachedSemanticAnnotation(SemanticAnnotationType type,
+    public SemanticAnnotation getSemanticAnnotation(SemanticAnnotationType type,
             EntityTypePermId permIdOrNull, String propertyCodeOrNull)
     {
+        SemanticAnnotation annotation = null;
+        SemanticAnnotationSearchCriteria criteria = new SemanticAnnotationSearchCriteria();
         switch (type) {
             case EntityType:
-                return entityTypeToSemanticAnnotationMap.get(permIdOrNull);
+                if(entityTypeToSemanticAnnotationMap.containsKey(permIdOrNull)) {
+                    annotation = entityTypeToSemanticAnnotationMap.get(permIdOrNull);
+                } else {
+                    criteria.withEntityType().withCode().thatEquals(permIdOrNull.getPermId());
+                    List<SemanticAnnotation> annotations = searchSemanticAnnotations(criteria, new SemanticAnnotationFetchOptions());
+                    if(annotations != null && !annotations.isEmpty())
+                    {
+                        annotation = annotations.get(0);
+                    }
+                    entityTypeToSemanticAnnotationMap.put(permIdOrNull, annotation);
+                }
+                break;
             case PropertyType:
-                return propertyTypeToSemanticAnnotationMap.get(propertyCodeOrNull);
+                if(propertyTypeToSemanticAnnotationMap.containsKey(propertyCodeOrNull)) {
+                    annotation = propertyTypeToSemanticAnnotationMap.get(propertyCodeOrNull);
+                } else {
+                    criteria.withPropertyType().withCode().thatEquals(propertyCodeOrNull);
+                    List<SemanticAnnotation> annotations = searchSemanticAnnotations(criteria, new SemanticAnnotationFetchOptions());
+                    if(annotations != null && !annotations.isEmpty())
+                    {
+                        annotation = annotations.get(0);
+                    }
+                    propertyTypeToSemanticAnnotationMap.put(propertyCodeOrNull, annotation);
+                }
+                break;
             case PropertyAssignment:
-                return propertyAssignmentToSemanticAnnotationMap.get(Map.entry(permIdOrNull, propertyCodeOrNull));
+                Map.Entry<IEntityTypeId, String> key = Map.entry(permIdOrNull, propertyCodeOrNull);
+                if(propertyAssignmentToSemanticAnnotationMap.containsKey(key)) {
+                    annotation = propertyAssignmentToSemanticAnnotationMap.get(Map.entry(permIdOrNull, propertyCodeOrNull));
+                } else {
+                    criteria.withEntityType().withCode().thatEquals(permIdOrNull.getPermId());
+                    criteria.withPropertyType().withCode().thatEquals(propertyCodeOrNull);
+                    List<SemanticAnnotation> annotations = searchSemanticAnnotations(criteria, new SemanticAnnotationFetchOptions());
+                    if(annotations != null && !annotations.isEmpty())
+                    {
+                        annotation = annotations.get(0);
+                    }
+                    propertyAssignmentToSemanticAnnotationMap.put(key, annotation);
+                }
+                break;
             default:
                 throw new UserFailureException("Unsupported semantic annotation type");
         }
+        return annotation;
     }
 
     private void putSemanticAnnotationToCache(SemanticAnnotation semanticAnnotation, SemanticAnnotationType type,
@@ -1474,7 +1518,7 @@ public class DelayedExecutionDecorator implements SemanticAnnotationCache
         }
     }
 
-    private List<SemanticAnnotation> getSemanticAnnotation(SemanticAnnotationRecord record,
+    private List<SemanticAnnotation> getSemanticAnnotations(SemanticAnnotationRecord record,
             SemanticAnnotationType type, EntityTypePermId permIdOrNull, String codeOrNull)
     {
         List<SemanticAnnotation> result = new ArrayList<>();
@@ -1580,25 +1624,6 @@ public class DelayedExecutionDecorator implements SemanticAnnotationCache
                 break;
         }
         return result;
-    }
-
-    private List<SemanticAnnotation> searchSemanticAnnotations(SemanticAnnotationRecord record)
-    {
-        SemanticAnnotationSearchCriteria criteria =
-                new SemanticAnnotationSearchCriteria();
-
-        criteria.withPredicateOntologyId().thatEquals(record.getSemanticAnnotationId());
-        criteria.withPredicateOntologyVersion().thatEquals(record.getSemanticAnnotationVersionId());
-        criteria.withPredicateAccessionId().thatEquals(record.getSemanticAnnotationAccessionId());
-
-        SemanticAnnotationFetchOptions fetchOptions = new SemanticAnnotationFetchOptions();
-        fetchOptions.withEntityType();
-        fetchOptions.withPropertyType();
-        fetchOptions.withPropertyAssignment().withEntityType();
-        fetchOptions.withPropertyAssignment().withPropertyType();
-
-        return searchSemanticAnnotations(criteria,
-                fetchOptions);
     }
 
 }

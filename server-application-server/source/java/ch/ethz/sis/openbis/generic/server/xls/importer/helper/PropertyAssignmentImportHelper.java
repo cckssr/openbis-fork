@@ -166,7 +166,7 @@ public class PropertyAssignmentImportHelper extends BasicImportHelper
         String code = getValueByColumnName(header, values, Attribute.Code);
         if(hasSemanticAnnotations(header, values)) {
             List<SemanticAnnotationRecord> records = getSemanticAnnotationRecords(header, values);
-            SemanticAnnotation annotation = delayedExecutor.getPropertyAssignmentSemanticAnnotation(records, this.permId, code);
+            SemanticAnnotation annotation = delayedExecutor.findPropertyAssignmentSemanticAnnotationFromRecords(records, this.permId, code);
             if(annotation != null) {
                 // there is a type for semantic annotation
                 return annotation.getPropertyAssignment();
@@ -184,12 +184,12 @@ public class PropertyAssignmentImportHelper extends BasicImportHelper
     @Override protected void createObject(Map<String, Integer> headers, List<String> values, int page, int line)
     {
         String code = getValueByColumnName(headers, values, Attribute.Code);
-        SemanticAnnotation annotation = delayedExecutor.getCachedSemanticAnnotation(SemanticAnnotationType.PropertyAssignment, this.permId, code);
+        SemanticAnnotation annotation = delayedExecutor.getSemanticAnnotation(SemanticAnnotationType.PropertyAssignment, this.permId, code);
         if(annotation != null)
         {
             code = annotation.getPropertyAssignment().getPropertyType().getCode();
         } else {
-            annotation = delayedExecutor.getCachedSemanticAnnotation(SemanticAnnotationType.PropertyType, null, code);
+            annotation = delayedExecutor.getSemanticAnnotation(SemanticAnnotationType.PropertyType, null, code);
             if(annotation != null) {
                 code = annotation.getPropertyType().getCode();
             }
@@ -406,7 +406,7 @@ public class PropertyAssignmentImportHelper extends BasicImportHelper
                 break;
         }
 
-        SemanticAnnotation annotation = delayedExecutor.getCachedSemanticAnnotation(SemanticAnnotationType.EntityType, this.permId, null);
+        SemanticAnnotation annotation = delayedExecutor.getSemanticAnnotation(SemanticAnnotationType.EntityType, this.permId, null);
         if(annotation != null) {
             code = annotation.getEntityType().getCode();
             permId = new EntityTypePermId(code, this.permId.getEntityKind());
