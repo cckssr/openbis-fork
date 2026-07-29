@@ -85,8 +85,7 @@ const MultiValueFieldEditor: React.FC<MultiValueFieldEditorProps> = ({
       {slots.map((slot, i) => (
         <Box
           key={slot.id}
-          sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5, maxWidth: '44rem',
-            marginBottom: 0 }}
+          sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5, marginBottom: 0 }}
         >
           <Box sx={{
             flex: 1, minWidth: 0, fontSize: '0.875rem',
