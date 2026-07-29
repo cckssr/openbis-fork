@@ -67,40 +67,43 @@ public abstract class PropertyTranslator extends
                 properties.put(record.objectId, objectProperties);
             }
 
+            boolean isMultiValue = Boolean.TRUE.equals(record.isMultiValue);
+
             if (record.propertyValue != null)
             {
-                updateObjectProperty(objectProperties, record.propertyCode, record.propertyValue);
+                updateObjectProperty(objectProperties, record.propertyCode, record.propertyValue,
+                        isMultiValue);
             } else if (record.vocabularyPropertyValue != null)
             {
                 updateObjectProperty(objectProperties, record.propertyCode,
-                        record.vocabularyPropertyValue);
+                        record.vocabularyPropertyValue, isMultiValue);
             } else if (record.sample_perm_id != null)
             {
                 if (visibleSamples.contains(record.sample_id))
                 {
                     updateObjectProperty(objectProperties, record.propertyCode,
-                            record.sample_perm_id);
+                            record.sample_perm_id, isMultiValue);
                 }
             } else if (record.integerArrayPropertyValue != null)
             {
                 updateArrayObjectProperty(objectProperties, record.propertyCode,
-                        record.integerArrayPropertyValue);
+                        record.integerArrayPropertyValue, isMultiValue);
             } else if (record.realArrayPropertyValue != null)
             {
                 updateArrayObjectProperty(objectProperties, record.propertyCode,
-                        record.realArrayPropertyValue);
+                        record.realArrayPropertyValue, isMultiValue);
             } else if (record.stringArrayPropertyValue != null)
             {
                 updateArrayObjectProperty(objectProperties, record.propertyCode,
-                        record.stringArrayPropertyValue);
+                        record.stringArrayPropertyValue, isMultiValue);
             } else if (record.timestampArrayPropertyValue != null)
             {
                 updateArrayObjectProperty(objectProperties, record.propertyCode,
-                        record.timestampArrayPropertyValue);
+                        record.timestampArrayPropertyValue, isMultiValue);
             } else if (record.jsonPropertyValue != null)
             {
                 updateObjectProperty(objectProperties, record.propertyCode,
-                        record.jsonPropertyValue);
+                        record.jsonPropertyValue, isMultiValue);
             } else
             {
                 // SAMPLE property with deleted sample. Thus, nothing is put to objectProperties
@@ -111,13 +114,18 @@ public abstract class PropertyTranslator extends
     }
 
     private void updateObjectProperty(Map<String, Serializable> objectProperties,
-            String propertyCode, Serializable propertyValue)
+            String propertyCode, Serializable propertyValue, boolean isMultiValue)
     {
         if (objectProperties.containsKey(propertyCode))
         {
             Serializable current = objectProperties.get(propertyCode);
             Serializable newValue = composeMultiValueProperty(current, propertyValue);
             objectProperties.put(propertyCode, newValue);
+        } else if (isMultiValue)
+        {
+            // Always represent a multi-value property as an array, even when only a single
+            // value/row currently exists, so it doesn't collapse into a bare scalar.
+            objectProperties.put(propertyCode, new Serializable[] { propertyValue });
         } else
         {
             objectProperties.put(propertyCode, propertyValue);
@@ -125,7 +133,7 @@ public abstract class PropertyTranslator extends
     }
 
     private void updateArrayObjectProperty(Map<String, Serializable> objectProperties,
-            String propertyCode, Serializable[] propertyValue)
+            String propertyCode, Serializable[] propertyValue, boolean isMultiValue)
     {
         if (objectProperties.containsKey(propertyCode))
         {
@@ -147,6 +155,11 @@ public abstract class PropertyTranslator extends
                 result = propertyValue;
             }
             objectProperties.put(propertyCode, result);
+        } else if (isMultiValue)
+        {
+            // Always represent a multi-value property as an array of arrays, even when only a
+            // single value/row currently exists, so it doesn't collapse into a bare array.
+            objectProperties.put(propertyCode, new Serializable[] { propertyValue });
         } else
         {
             objectProperties.put(propertyCode, propertyValue);

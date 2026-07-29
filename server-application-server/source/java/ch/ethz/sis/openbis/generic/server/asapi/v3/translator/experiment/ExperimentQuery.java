@@ -67,6 +67,7 @@ public interface ExperimentQuery extends ObjectQuery
     // PropertyQueryGenerator was used to generate this query
     @Select(sql =
             "select p.id as id, p.expe_id as objectId, p.pers_id_author AS authorId, p.modification_timestamp AS modificationTimestamp, pt.code as propertyCode, "
+                    + "pt.is_multi_value as isMultiValue, "
                     + "p.value as propertyValue, "
                     + "s.perm_id as sample_perm_id, p.samp_prop_id as sample_id, "
                     + "cvt.code as vocabularyPropertyValue, "

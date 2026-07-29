@@ -58,11 +58,11 @@ export const SourceCodeFieldRenderer: React.FC<FieldRendererProps> = ({ field, o
                 required={field.required}
                 values={Array.isArray(field.value) ? field.value : []}
                 onChange={(vals) => onFieldChange(field.id, vals)}
-                renderInput={(val, onChange) => (
+                renderInput={(val, index, onChange) => (
                     <SourceCodeField
                         name={field.label}
                         mandatory={field.required}
-                        label={null}
+                        label={index === 0 ? field.label : null}
                         language={language}
                         disabled={false}
                         value={val ?? ''}

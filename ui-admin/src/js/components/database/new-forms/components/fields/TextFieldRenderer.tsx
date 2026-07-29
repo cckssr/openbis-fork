@@ -83,16 +83,16 @@ const TextFieldRendererBase: React.FC<FieldRendererProps & { classes: any }> = (
     };
     return (
       <MultiValueFieldEditor
-        label={field.label}
         required={field.required}
         values={Array.isArray(field.value) ? field.value : []}
         onChange={(vals) => onFieldChange(field.id, vals)}
-        renderInput={(val, onChange) => (
+        renderInput={(val, index, onChange) => (
           <MuiTextField
+            label={index === 0 ? field.label : null}
             variant="filled"
             size="small"
             fullWidth
-            hiddenLabel
+            hiddenLabel={index > 0}
             type={isNumeric ? 'number' : 'text'}
             value={formatInner(val)}
             onChange={(e) => onChange(e.target.value)}

@@ -36,17 +36,17 @@ export const TextAreaFieldRenderer: React.FC<FieldRendererProps> = ({ field, onF
 	} else if (field.isMultiValue && isEditing && !field.readOnly) {
 		return (
 			<MultiValueFieldEditor
-				label={field.label}
 				required={field.required}
 				values={Array.isArray(field.value) ? field.value : []}
 				onChange={(vals) => onFieldChange(field.id, vals)}
-				renderInput={(val, onChange) => (
+				renderInput={(val, index, onChange) => (
 					<MuiTextField
+						label={index === 0 ? field.label : null}
 						variant="filled"
 						size="small"
 						fullWidth
 						multiline
-						hiddenLabel
+						hiddenLabel={index > 0}
 						minRows={2}
 						maxRows={10}
 						value={val ?? ''}

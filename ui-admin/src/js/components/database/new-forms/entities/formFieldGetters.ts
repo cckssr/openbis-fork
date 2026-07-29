@@ -713,25 +713,13 @@ function determineFieldColumn(
   ordinal: number,
   isMultiValue: boolean = false,
 ): 'left' | 'right' | 'center' {
-  // Center column for word processor and spreadsheet types if they are not multi-value
-  if (!isMultiValue && [
-    FormFieldDataType.WORD_PROCESSOR,
-    FormFieldDataType.WORD_PROCESSOR_PAGE,
-    FormFieldDataType.WORD_PROCESSOR_CLASSIC,
-    FormFieldDataType.MONOSPACE_FONT,
-    FormFieldDataType.MULTILINE_VARCHAR,
-    FormFieldDataType.SPREADSHEET
-  ].includes(dataType)) {
+  if (section === FormSection.IDENTIFICATION_INFO && ordinal > 5) {
+    // Right column for identification info fields with ordinal > 5
+    return 'right';
+  } else {
+    // Default to center
     return 'center';
   }
-
-  // Right column for identification info fields with ordinal > 5
-  if (section === FormSection.IDENTIFICATION_INFO && ordinal > 5) {
-    return 'right';
-  }
-  
-  // Default to left
-  return 'left';
 }
 
 /**
