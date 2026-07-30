@@ -98,7 +98,7 @@ var TreeUtil = new function() {
 							var sample = samples[i];
 							let code = sample.code;
 							let displayName = Util.getDisplayNameForEntity(sample)
-							results.push({ title : displayName === code ? code : code + " (" + displayName + ")", entityType: "SAMPLE", key : sample.permId, folder : true, lazy : true, hideCheckbox: hideCheckboxForFolders });
+							results.push({ title : displayName === code ? code : displayName + " (" + code + ")", entityType: "SAMPLE", key : sample.permId, folder : true, lazy : true, hideCheckbox: hideCheckboxForFolders });
 						}
 
 						var projectRules = { "UUIDv4" : { type : "Attribute", name : "SPACE", value : permId } };
@@ -124,14 +124,16 @@ var TreeUtil = new function() {
 							var sample = samples[i];
 							let code = sample.code;
 							let displayName = Util.getDisplayNameForEntity(sample)
-							results.push({ title : displayName === code ? code : code + " (" + displayName + ")", entityType: "SAMPLE", key : sample.permId, folder : true, lazy : true, hideCheckbox: hideCheckboxForFolders });
+							results.push({ title : displayName === code ? code : displayName + " (" + code + ")", entityType: "SAMPLE", key : sample.permId, folder : true, lazy : true, hideCheckbox: hideCheckboxForFolders });
 						}
 						var experimentRules = { "UUIDv4" : { type : "Attribute", name : "PROJECT_PERM_ID", value : permId } };
-						mainController.serverFacade.searchForExperimentsAdvanced({ entityKind : "EXPERIMENT", logicalOperator : "AND", rules : experimentRules }, null, function(searchResult) {
+						mainController.serverFacade.searchForExperimentsAdvanced({ entityKind : "EXPERIMENT", logicalOperator : "AND", rules : experimentRules }, { withProperties : true, }, function(searchResult) {
 							var experiments = searchResult.objects;
 							for (var i = 0; i < experiments.length; i++) {
 								var experiment = experiments[i];
-								results.push({ title : Util.getDisplayNameForEntity(experiment), entityType: "EXPERIMENT", key : experiment.permId, folder : true, lazy : true, hideCheckbox: hideCheckboxForFolders });
+								let code = experiment.code;
+								let displayName = Util.getDisplayNameForEntity(experiment)
+								results.push({ title : displayName === code ? code : displayName + " (" + code + ")", entityType: "EXPERIMENT", key : experiment.permId, folder : true, lazy : true, hideCheckbox: hideCheckboxForFolders });
 							}
 							dfd.resolve(results);
 						});
@@ -146,16 +148,18 @@ var TreeUtil = new function() {
     	                    var sample = samples[i];
 							let code = sample.code;
 							let displayName = Util.getDisplayNameForEntity(sample)
-    	                    results.push({ title : displayName === code ? code : code + " (" + displayName + ")", entityType: "SAMPLE", key : sample.permId, folder : true, lazy : true, hideCheckbox: hideCheckboxForFolders });
+    	                    results.push({ title : displayName === code ? code : displayName + " (" + code + ")", entityType: "SAMPLE", key : sample.permId, folder : true, lazy : true, hideCheckbox: hideCheckboxForFolders });
     	                }
     	                
     	                var datasetRules = { "UUIDv4" : { type : "Experiment", name : "ATTR.PERM_ID", value : permId } };
-        	    		mainController.serverFacade.searchForDataSetsAdvanced({ entityKind : "DATASET", logicalOperator : "AND", rules : datasetRules }, null, function(searchResult) {
+        	    		mainController.serverFacade.searchForDataSetsAdvanced({ entityKind : "DATASET", logicalOperator : "AND", rules : datasetRules }, {  withProperties : true, }, function(searchResult) {
         	                var datasets = searchResult.objects;
         	                for (var i = 0; i < datasets.length; i++) {
         	                    var dataset = datasets[i];
         	                    if(!dataset.sample) {
-        	                    	results.push({ title : Util.getDisplayNameForEntity(dataset), entityType: "DATASET", key : dataset.permId, folder : false, lazy : false, icon : "fa fa-database" });
+									let code = dataset.code;
+									let displayName = Util.getDisplayNameForEntity(dataset)
+        	                    	results.push({ title : displayName === code ? code : displayName + " (" + code + ")", entityType: "DATASET", key : dataset.permId, folder : false, lazy : false, icon : "fa fa-database" });
         	                    }
         	                }
         	                dfd.resolve(results);
@@ -166,12 +170,14 @@ var TreeUtil = new function() {
     	    		break;
     	    	case "SAMPLE":
     	    		var datasetRules = { "UUIDv4" : { type : "Sample", name : "ATTR.PERM_ID", value : permId } };
-    	    		mainController.serverFacade.searchForDataSetsAdvanced({ entityKind : "DATASET", logicalOperator : "AND", rules : datasetRules }, null, function(searchResult) {
+    	    		mainController.serverFacade.searchForDataSetsAdvanced({ entityKind : "DATASET", logicalOperator : "AND", rules : datasetRules }, { only: true, withProperties : true, }, function(searchResult) {
     	    			var results = [];
     	                var datasets = searchResult.objects;
     	                for (var i = 0; i < datasets.length; i++) {
     	                    var dataset = datasets[i];
-    	                    results.push({ title : Util.getDisplayNameForEntity(dataset), entityType: "DATASET", key : dataset.permId, folder : false, lazy : false, icon : "fa fa-database" });
+							let code = dataset.code;
+							let displayName = Util.getDisplayNameForEntity(dataset)
+    	                    results.push({ title : displayName === code ? code : displayName + " (" + code + ")", entityType: "DATASET", key : dataset.permId, folder : false, lazy : false, icon : "fa fa-database" });
     	                }
     	                dfd.resolve(results);
     	    		});

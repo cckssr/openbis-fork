@@ -138,10 +138,10 @@ public class ExperimentTypeImportHelper extends BasicImportHelper
         if(hasSemanticAnnotations(header, values)) {
             List<SemanticAnnotationRecord> records = getSemanticAnnotationRecords(header, values);
             EntityTypePermId permId = new EntityTypePermId(code, EntityKind.EXPERIMENT);
-            SemanticAnnotation annotation = delayedExecutor.findEntityTypeSemanticAnnotationFromRecords(records, permId);
-            if(annotation != null) {
+            Map<SemanticAnnotationRecord, SemanticAnnotation> annotationMap = delayedExecutor.findEntityTypeSemanticAnnotationsFromRecords(records, permId);
+            if(annotationMap != null && !annotationMap.isEmpty()) {
                 // if there is semantic annotation, then there is an associated type
-                return (ExperimentType) annotation.getEntityType();
+                return (ExperimentType) annotationMap.entrySet().iterator().next().getValue().getEntityType();
             }
         } else {
             if (code == null)
@@ -194,11 +194,11 @@ public class ExperimentTypeImportHelper extends BasicImportHelper
         ExperimentTypeUpdate update = new ExperimentTypeUpdate();
         EntityTypePermId permId = new EntityTypePermId(code, EntityKind.EXPERIMENT);
 
-        SemanticAnnotation annotation = delayedExecutor.getSemanticAnnotation(
+        List<SemanticAnnotation> annotations = delayedExecutor.getSemanticAnnotations(
                 SemanticAnnotationType.EntityType, permId, null);
 
-        if(annotation != null) {
-            code = annotation.getEntityType().getCode();
+        if(annotations != null && !annotations.isEmpty()) {
+            code = annotations.get(0).getEntityType().getCode();
             permId = new EntityTypePermId(code, EntityKind.EXPERIMENT);
         }
 

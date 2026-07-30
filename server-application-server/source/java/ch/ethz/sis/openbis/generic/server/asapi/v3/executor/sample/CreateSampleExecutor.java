@@ -315,12 +315,13 @@ public class CreateSampleExecutor extends AbstractCreateEntityExecutor<SampleCre
         setSampleExperimentExecutor.set(context, batch);
         setSampleProjectExecutor.set(context, batch);
         setSampleTypeExecutor.set(context, batch);
-        updateEntityPropertyExecutor.update(context, batch);
     }
 
     @Override
     protected void updateAll(IOperationContext context, MapBatch<SampleCreation, SamplePE> batch)
     {
+        // needed to be here in order to be able to set sample properties from the same call
+        updateEntityPropertyExecutor.update(context, batch);
 
         Map<AttachmentHolderPE, Collection<? extends AttachmentCreation>> attachmentMap =
                 new HashMap<AttachmentHolderPE, Collection<? extends AttachmentCreation>>();

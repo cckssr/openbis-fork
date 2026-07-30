@@ -17,7 +17,6 @@ package ch.ethz.sis.openbis.generic.server.xls.importer.helper;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.search.PropertyAssignmentSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.SemanticAnnotation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.create.SemanticAnnotationCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.fetchoptions.SemanticAnnotationFetchOptions;
@@ -31,8 +30,6 @@ import ch.ethz.sis.openbis.generic.server.xls.importer.helper.semanticannotation
 import ch.ethz.sis.openbis.generic.server.xls.importer.semantic.ApplicationServerSemanticAPIExtensions;
 import ch.ethz.sis.openbis.generic.server.xls.importer.utils.IAttribute;
 import ch.ethz.sis.openbis.generic.server.xls.importer.utils.ImportUtils;
-import ch.systemsx.cisd.common.exceptions.UserFailureException;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -106,89 +103,44 @@ public class SemanticAnnotationImportHelper extends BasicImportHelper
         switch (type) {
             case EntityType:
                 EntityTypePermId id = new EntityTypePermId(spreadsheetCode, permIdOrNull.getEntityKind());
-                SemanticAnnotation annotation = delayedExecutor.getSemanticAnnotation(type, id, spreadsheetCode);
-                if(annotation != null) {
-                    spreadsheetCode = annotation.getEntityType().getCode();
+                List<SemanticAnnotation> annotations = delayedExecutor.getSemanticAnnotations(type, id, null);
+                if(annotations != null && !annotations.isEmpty()) {
+                    spreadsheetCode = annotations.get(0).getEntityType().getCode();
                 }
                 break;
             case PropertyType:
-                SemanticAnnotation propertyAnnotation = delayedExecutor.getSemanticAnnotation(type, null, spreadsheetCode);
-                if(propertyAnnotation != null) {
-                    spreadsheetCode = propertyAnnotation.getPropertyType().getCode();
+                List<SemanticAnnotation> propertyAnnotations = delayedExecutor.getSemanticAnnotations(type, null, spreadsheetCode);
+                if(propertyAnnotations != null && !propertyAnnotations.isEmpty()) {
+                    spreadsheetCode = propertyAnnotations.get(0).getPropertyType().getCode();
                 }
                 break;
             case PropertyAssignment:
-                SemanticAnnotation assignmentAnnotation = delayedExecutor.getSemanticAnnotation(type, permIdOrNull, spreadsheetCode);
-                if(assignmentAnnotation != null) {
-                    spreadsheetCode = assignmentAnnotation.getPropertyAssignment().getPropertyType().getCode();
+                List<SemanticAnnotation> assignmentAnnotations = delayedExecutor.getSemanticAnnotations(type, permIdOrNull, spreadsheetCode);
+                if(assignmentAnnotations != null && !assignmentAnnotations.isEmpty()) {
+                    spreadsheetCode = assignmentAnnotations.get(0).getPropertyAssignment().getPropertyType().getCode();
                 }
                 break;
         }
 
         final String code = spreadsheetCode;
 
-        String ontologyId[] =
-                Optional.ofNullable(getValueByColumnName(header, values, Attribute.OntologyId))
-                        .filter(StringUtils::isNotBlank)
-                        .map(x -> x.split("\n"))
-                        .orElse(new String[] {});
-        String ontologyVersion[] =
-                Optional.ofNullable(getValueByColumnName(header, values, Attribute.OntologyVersion))
-                        .filter(StringUtils::isNotBlank)
-                        .map(x -> x.split("\n"))
-                        .orElse(new String[] {});
-        String ontologyAnnotationId[] = Optional.ofNullable(
-                        getValueByColumnName(header, values, Attribute.OntologyAnnotationId))
-                .filter(StringUtils::isNotBlank)
-                .map(x -> x.split("\n"))
-                .orElse(new String[] {});
+        if(hasSemanticAnnotations(header, values)) {
+            List<SemanticAnnotationRecord> records = getSemanticAnnotationRecords(header, values);
 
-        if (ontologyId.length != ontologyVersion.length || ontologyVersion.length != ontologyAnnotationId.length)
-        {
-            throw new UserFailureException("Different number of entries for ontologies!");
+            Map<SemanticAnnotationRecord, SemanticAnnotation> annotationMap = null;
+            if(type == SemanticAnnotationType.EntityType) {
+                annotationMap = delayedExecutor.findEntityTypeSemanticAnnotationsFromRecords(records, permIdOrNull);
+            } else if(type == SemanticAnnotationType.PropertyType) {
+                annotationMap = delayedExecutor.findPropertyTypeSemanticAnnotationsFromRecords(records, code);
+            } else if(type == SemanticAnnotationType.PropertyAssignment) {
+                annotationMap = delayedExecutor.findPropertyAssignmentSemanticAnnotationsFromRecords(records, permIdOrNull, code);
+            }
 
-        }
-
-        List<SemanticAnnotationSearchCriteria> searchCriteria =
-                IntStream.range(0, ontologyAnnotationId.length)
-                        .mapToObj(i -> {
-                            SemanticAnnotationSearchCriteria criteria =
-                                    new SemanticAnnotationSearchCriteria();
-                            if (type == SemanticAnnotationType.EntityType)
-                            {
-                                criteria.withEntityType().withKind()
-                                        .thatEquals(this.permIdOrNull.getEntityKind());
-                                criteria.withEntityType().withCode()
-                                        .thatEquals(this.permIdOrNull.getPermId());
-                            }
-                            else if (type == SemanticAnnotationType.PropertyType)
-                            {
-                                criteria.withPropertyType().withCode().thatEquals(code);
-                            }
-                            else {
-                                PropertyAssignmentSearchCriteria p = criteria.withPropertyAssignment();
-                                p.withEntityType().withKind()
-                                        .thatEquals(this.permIdOrNull.getEntityKind());
-                                p.withEntityType().withCode()
-                                        .thatEquals(this.permIdOrNull.getPermId());
-                                p.withPropertyType().withCode().thatEquals(code);
-                            }
-                            criteria.withPredicateOntologyId().thatEquals(ontologyId[i]);
-                            criteria.withPredicateOntologyVersion().thatEquals(ontologyVersion[i]);
-                            criteria.withPredicateAccessionId().thatEquals(ontologyAnnotationId[i]);
-                            return criteria;
-
-                        }).collect(Collectors.toList());
-
-        for (SemanticAnnotationSearchCriteria criteria : searchCriteria)
-        {
-            List<SemanticAnnotation> semanticAnnotation = delayedExecutor.searchSemanticAnnotations(criteria, new SemanticAnnotationFetchOptions());
-            insertSemanticAnnotation = (semanticAnnotation == null); // We insert a semantic annotation
+            insertSemanticAnnotation = (annotationMap != null && annotationMap.isEmpty()); // We insert a semantic annotation
             if (insertSemanticAnnotation)
             {
                 return false;
             }
-
         }
 
         return true;
@@ -198,100 +150,63 @@ public class SemanticAnnotationImportHelper extends BasicImportHelper
     {
         String spreadsheetCode = getValueByColumnName(headers, values, Attribute.Code);
         if(permIdOrNull != null) {
-            SemanticAnnotation annotation = delayedExecutor.getSemanticAnnotation(SemanticAnnotationType.PropertyAssignment, this.permIdOrNull, spreadsheetCode);
-            if(annotation != null) {
-                spreadsheetCode = annotation.getPropertyAssignment().getPropertyType().getCode();
+            List<SemanticAnnotation> annotations = delayedExecutor.getSemanticAnnotations(SemanticAnnotationType.PropertyAssignment, this.permIdOrNull, spreadsheetCode);
+            if(annotations != null && !annotations.isEmpty()) {
+                spreadsheetCode = annotations.get(0).getPropertyAssignment().getPropertyType().getCode();
             }
         }
         final String code = spreadsheetCode;
 
-
-        String ontologyId[] =
-                Optional.ofNullable(getValueByColumnName(headers, values, Attribute.OntologyId))
-                        .map(x -> x.split("\n"))
-                        .orElse(new String[] {});
-        String ontologyVersion[] =
-                Optional.ofNullable(
-                                getValueByColumnName(headers, values, Attribute.OntologyVersion))
-                        .map(x -> x.split("\n"))
-                        .orElse(new String[] {});
-        String ontologyAnnotationId[] = Optional.ofNullable(
-                        getValueByColumnName(headers, values, Attribute.OntologyAnnotationId))
-                .map(x -> x.split("\n"))
-                .orElse(new String[] {});
-
-        Map<SemanticAnnotationSearchCriteria, SemanticAnnotationRecord> criteriaToAnnotationInfo =
-                new HashMap<>();
-
-        List<SemanticAnnotationSearchCriteria> searchCriteria =
-                IntStream.range(0, ontologyAnnotationId.length)
-                        .mapToObj(i -> {
-                            SemanticAnnotationSearchCriteria criteria =
-                                    new SemanticAnnotationSearchCriteria();
-                            if (type == SemanticAnnotationType.PropertyAssignment || type == SemanticAnnotationType.EntityType)
-                            {
-                                criteria.withEntityType().withKind()
-                                        .thatEquals(this.permIdOrNull.getEntityKind());
-                                criteria.withEntityType().withCode()
-                                        .thatEquals(this.permIdOrNull.getPermId());
-                            }
-                            if (type == SemanticAnnotationType.PropertyAssignment || type == SemanticAnnotationType.PropertyType)
-                            {
-                                criteria.withPropertyType().withCode().thatEquals(code);
-                            }
-                            criteria.withPredicateOntologyId().thatEquals(ontologyId[i]);
-                            criteria.withPredicateOntologyVersion().thatEquals(ontologyVersion[i]);
-                            criteria.withPredicateAccessionId().thatEquals(ontologyAnnotationId[i]);
-                            criteriaToAnnotationInfo.put(criteria,
-                                    new SemanticAnnotationRecord(ontologyId[i], ontologyVersion[i],
-                                            ontologyAnnotationId[i]));
-
-                            return criteria;
-
-                        }).collect(Collectors.toList());
         List<SemanticAnnotationCreation> creations = new ArrayList<>();
-
-        for (SemanticAnnotationSearchCriteria criteria : searchCriteria)
+        if(hasSemanticAnnotations(headers, values))
         {
-            SemanticAnnotationCreation creation = new SemanticAnnotationCreation();
+            List<SemanticAnnotationRecord> records = getSemanticAnnotationRecords(headers, values);
 
-            List<SemanticAnnotation> semanticAnnotations = delayedExecutor.searchSemanticAnnotations(criteria,
-                    new SemanticAnnotationFetchOptions());
-            if (semanticAnnotations != null)
-            {
-                continue;
+            List<SemanticAnnotation> annotations = delayedExecutor.getSemanticAnnotations(type, permIdOrNull, code);
+            Set<SemanticAnnotationRecord> recordsFromAnnotations = new HashSet<>();
+            if(annotations != null && !annotations.isEmpty()) {
+                annotations.forEach(annotation -> {
+                    SemanticAnnotationRecord r = new SemanticAnnotationRecord(annotation.getPredicateOntologyId(),
+                            annotation.getPredicateOntologyVersion(),
+                            annotation.getPredicateAccessionId());
+                    recordsFromAnnotations.add(r);
+                });
             }
-            SemanticAnnotationRecord record = criteriaToAnnotationInfo.get(criteria);
 
-            switch (type)
-            {
-                case EntityType:
-                    creation = ApplicationServerSemanticAPIExtensions.getSemanticSubjectCreation(
-                            this.permIdOrNull.getEntityKind(),
-                            this.permIdOrNull.getPermId(),// == code
-                            record.getSemanticAnnotationId(),
-                            record.getSemanticAnnotationVersionId(),
-                            record.getSemanticAnnotationAccessionId());
-                    break;
-                case PropertyType:
-                    creation = ApplicationServerSemanticAPIExtensions.getSemanticPredicateCreation(
-                            code, // Property Code
-                            record.getSemanticAnnotationId(),
-                            record.getSemanticAnnotationVersionId(),
-                            record.getSemanticAnnotationAccessionId());
-                    break;
-                case PropertyAssignment:
-                    creation =
-                            ApplicationServerSemanticAPIExtensions.getSemanticPredicateWithSubjectCreation(
+            for(SemanticAnnotationRecord record : records) {
+                if(!recordsFromAnnotations.contains(record)) {
+                    SemanticAnnotationCreation creation = new SemanticAnnotationCreation();
+                    switch (type)
+                    {
+                        case EntityType:
+                            creation = ApplicationServerSemanticAPIExtensions.getSemanticSubjectCreation(
                                     this.permIdOrNull.getEntityKind(),
-                                    this.permIdOrNull.getPermId(),
+                                    this.permIdOrNull.getPermId(),// == code
+                                    record.getSemanticAnnotationId(),
+                                    record.getSemanticAnnotationVersionId(),
+                                    record.getSemanticAnnotationAccessionId());
+                            break;
+                        case PropertyType:
+                            creation = ApplicationServerSemanticAPIExtensions.getSemanticPredicateCreation(
                                     code, // Property Code
                                     record.getSemanticAnnotationId(),
                                     record.getSemanticAnnotationVersionId(),
                                     record.getSemanticAnnotationAccessionId());
-                    break;
+                            break;
+                        case PropertyAssignment:
+                            creation =
+                                    ApplicationServerSemanticAPIExtensions.getSemanticPredicateWithSubjectCreation(
+                                            this.permIdOrNull.getEntityKind(),
+                                            this.permIdOrNull.getPermId(),
+                                            code, // Property Code
+                                            record.getSemanticAnnotationId(),
+                                            record.getSemanticAnnotationVersionId(),
+                                            record.getSemanticAnnotationAccessionId());
+                            break;
+                    }
+                    creations.add(creation);
+                }
             }
-            creations.add(creation);
 
         }
 
@@ -330,9 +245,9 @@ public class SemanticAnnotationImportHelper extends BasicImportHelper
                 throw new RuntimeException("Should never happen!");
         }
 
-        SemanticAnnotation annotation = delayedExecutor.getSemanticAnnotation(SemanticAnnotationType.EntityType, this.permIdOrNull, null);
-        if(annotation != null) {
-            code = annotation.getEntityType().getCode();
+        List<SemanticAnnotation> annotations = delayedExecutor.getSemanticAnnotations(SemanticAnnotationType.EntityType, this.permIdOrNull, null);
+        if(annotations != null && !annotations.isEmpty()) {
+            code = annotations.get(0).getEntityType().getCode();
             permIdOrNull = new EntityTypePermId(code, this.permIdOrNull.getEntityKind());
         }
 
@@ -361,9 +276,9 @@ public class SemanticAnnotationImportHelper extends BasicImportHelper
                 throw new RuntimeException("Should never happen!");
         }
 
-        SemanticAnnotation annotation = delayedExecutor.getSemanticAnnotation(SemanticAnnotationType.EntityType, this.permIdOrNull, null);
-        if(annotation != null) {
-            code = annotation.getEntityType().getCode();
+        List<SemanticAnnotation> annotations = delayedExecutor.getSemanticAnnotations(SemanticAnnotationType.EntityType, this.permIdOrNull, null);
+        if(annotations != null && !annotations.isEmpty()) {
+            code = annotations.get(0).getEntityType().getCode();
             permIdOrNull = new EntityTypePermId(code, this.permIdOrNull.getEntityKind());
         }
 

@@ -5,6 +5,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.ObjectIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IEntityType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.ExperimentType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.Plugin;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.id.PluginPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.Project;
@@ -137,11 +139,37 @@ public class OpenBisModel
 
     }
 
+    public List<Experiment> getCollections()
+    {
+        return entities.values().stream().filter(x -> x instanceof Experiment)
+                .map(Experiment.class::cast)
+                .toList();
+
+    }
+
+    public List<ExperimentType> getExperimentTypes()
+    {
+        return entityTypes.entrySet().stream()
+                .filter(x -> x.getKey().getEntityKind() == EntityKind.EXPERIMENT)
+                .map(x -> x.getValue())
+                .map(ExperimentType.class::cast)
+                .collect(Collectors.toList());
+
+    }
+
     public Map<EntityTypePermId, List<Sample>> getSamplesByType()
     {
         return entities.values().stream().filter(x -> x instanceof Sample).
                 map(Sample.class::cast)
                 .collect(Collectors.groupingBy(x -> new EntityTypePermId(x.getType().getCode(),EntityKind.SAMPLE)));
+    }
+
+    public Map<EntityTypePermId, List<Experiment>> getExperimentsByType()
+    {
+        return entities.values().stream().filter(x -> x instanceof Experiment).
+                map(Experiment.class::cast)
+                .collect(Collectors.groupingBy(
+                        x -> new EntityTypePermId(x.getType().getCode(), EntityKind.EXPERIMENT)));
     }
 
     public Map<String, String> getExternalToOpenBisIdentifiers()

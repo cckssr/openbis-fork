@@ -1,6 +1,9 @@
 package ch.openbis.rocrate.app.reader.helper;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.ExperimentType;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.Project;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectIdentifier;
@@ -11,7 +14,9 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import ch.openbis.rocrate.app.reader.RdfToModel;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.util.ArrayList;
 import java.util.Map;
+import java.util.Optional;
 
 public class OpenBisStructureHelper
 {
@@ -29,14 +34,27 @@ public class OpenBisStructureHelper
             Project project =
                     projects.get(new ProjectIdentifier(space.getCode(), fallbacbProjectCode));
 
+            String collectionCode =
+                    Optional.ofNullable(sampleToResolve.getRight().getCollectionCode())
+                            .orElse(sampleToResolve.getLeft().getType().getCode() + "_COLLECTION");
+
             ExperimentIdentifier experimentIdentifier =
-                    new ExperimentIdentifier(space.getCode(), project.getCode(),
-                            sampleToResolve.getLeft().getType().getCode() + "_COLLECTION");
+                    new ExperimentIdentifier(space.getCode(), project.getCode(), collectionCode
+                    );
             if (!idsToCollections.containsKey(experimentIdentifier))
             {
+
+
                 Experiment experiment = new Experiment();
                 experiment.setIdentifier(experimentIdentifier);
                 idsToCollections.put(experimentIdentifier, experiment);
+                ExperimentFetchOptions experimentFetchOptions = new ExperimentFetchOptions();
+                experimentFetchOptions.withType();
+                experimentFetchOptions.withProject();
+                experimentFetchOptions.withProperties();
+
+                experiment.setType(getDefaultExperimentType());
+                experiment.setFetchOptions(experimentFetchOptions);
             }
 
             Experiment experiment = idsToCollections.get(experimentIdentifier);
@@ -69,6 +87,14 @@ public class OpenBisStructureHelper
                         sampleToResolve.getRight().getProjectCode(),
                         sampleToResolve.getRight().getCollectionCode()));
 
+        for (Experiment experiment1 : idsToCollections.values())
+        {
+            if (experiment1.getType() == null)
+            {
+                experiment1.setType(getDefaultExperimentType());
+            }
+        }
+
         return new Structure(
                 new SampleIdentifier("/" + space.getCode() + "/" + project.getCode() + "/"
                         + sampleToResolve.getLeft().getCode()), space, project, experiment);
@@ -78,6 +104,19 @@ public class OpenBisStructureHelper
     public record Structure(SampleIdentifier sampleIdentifier, Space space, Project project,
                             Experiment experiment)
     {
+    }
+
+    public static ExperimentType getDefaultExperimentType()
+    {
+        ExperimentTypeFetchOptions experimentTypeFetchOptions =
+                new ExperimentTypeFetchOptions();
+        experimentTypeFetchOptions.withPropertyAssignments();
+        ExperimentType experimentType = new ExperimentType();
+        experimentType.setCode("COLLECTION");
+        experimentType.setPropertyAssignments(new ArrayList<>());
+        experimentType.setFetchOptions(experimentTypeFetchOptions);
+
+        return experimentType;
     }
 
 }

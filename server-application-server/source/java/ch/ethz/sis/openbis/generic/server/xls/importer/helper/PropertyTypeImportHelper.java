@@ -212,12 +212,12 @@ public class PropertyTypeImportHelper extends BasicImportHelper
         }
         if(permId != null)
         {
-            SemanticAnnotation annotation =
-                    delayedExecutor.getSemanticAnnotation(SemanticAnnotationType.EntityType,
+            List<SemanticAnnotation> annotations =
+                    delayedExecutor.getSemanticAnnotations(SemanticAnnotationType.EntityType,
                             permId, null);
-            if (annotation != null)
+            if(annotations != null && !annotations.isEmpty())
             {
-                permId = new EntityTypePermId(annotation.getEntityType().getCode(),
+                permId = new EntityTypePermId(annotations.get(0).getEntityType().getCode(),
                         permId.getEntityKind());
             }
         }
@@ -232,10 +232,10 @@ public class PropertyTypeImportHelper extends BasicImportHelper
         if(hasSemanticAnnotations(header, values)) {
 
             List<SemanticAnnotationRecord> records = getSemanticAnnotationRecords(header, values);
-            SemanticAnnotation annotation = delayedExecutor.findPropertyTypeSemanticAnnotationFromRecords(records, code);
-            if(annotation != null) {
+            Map<SemanticAnnotationRecord, SemanticAnnotation> annotationMap = delayedExecutor.findPropertyTypeSemanticAnnotationsFromRecords(records, code);
+            if(annotationMap != null && !annotationMap.isEmpty()) {
                 // there is a type for semantic annotation
-                return annotation.getPropertyType();
+                return annotationMap.entrySet().iterator().next().getValue().getPropertyType();
             }
         }
 
@@ -316,14 +316,14 @@ public class PropertyTypeImportHelper extends BasicImportHelper
         String metadata = getValueByColumnName(header, values, Attribute.Metadata);
         String internal = getValueByColumnName(header, values, Attribute.Internal);
 
-        SemanticAnnotation annotation = delayedExecutor.getSemanticAnnotation(SemanticAnnotationType.PropertyType, null, code);
-        if(annotation != null) {
-            code = annotation.getPropertyType().getCode();
+        List<SemanticAnnotation> annotations = delayedExecutor.getSemanticAnnotations(SemanticAnnotationType.PropertyType, null, code);
+        if(annotations != null && !annotations.isEmpty()) {
+            code = annotations.get(0).getPropertyType().getCode();
         } else if(typePermId != null) {
-            annotation = delayedExecutor.getSemanticAnnotation(SemanticAnnotationType.PropertyAssignment, typePermId, code);
-            if(annotation != null)
+            annotations = delayedExecutor.getSemanticAnnotations(SemanticAnnotationType.PropertyAssignment, typePermId, code);
+            if(annotations != null && !annotations.isEmpty())
             {
-                code = annotation.getPropertyAssignment().getPropertyType().getCode();
+                code = annotations.get(0).getPropertyAssignment().getPropertyType().getCode();
             }
         }
 

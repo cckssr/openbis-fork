@@ -15,10 +15,6 @@
  */
 package ch.ethz.sis.openbis.systemtest.asapi.v3;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertEqualsNoOrder;
-import static org.testng.Assert.assertNull;
-
 import java.io.Serializable;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -68,6 +64,8 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.RoleWithHierarchy;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePE;
 import ch.systemsx.cisd.openbis.systemtest.authorization.ProjectAuthorizationUser;
 import junit.framework.Assert;
+
+import static org.testng.Assert.*;
 
 /**
  * @author pkupczyk
@@ -2499,6 +2497,96 @@ public class CreateSampleTest extends AbstractSampleTest
         Arrays.sort(sampleProps);
         assertEquals(sampleProps, new Serializable[]{"200811050919915-8", testSampleIds.get(0).getPermId()});
         assertEquals(sample2.getProperties().size(), 2);
+    }
+
+    @Test
+    public void testCreateSampleWithSamplePropertyPointingToItself()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        //Create sample
+        PropertyTypePermId propertyType = createASamplePropertyType(sessionToken, null);
+        EntityTypePermId sampleType =
+                createASampleType(sessionToken, true, propertyType);
+
+        String sampleCode = "SAMPLE_WITH_SOME_SAMPLE_PROPERTY-" + System.currentTimeMillis();
+        String sampleIdentifier = "/CISD/" + sampleCode;
+        SampleCreation sampleCreation = new SampleCreation();
+        sampleCreation.setCode(sampleCode);
+        sampleCreation.setTypeId(sampleType);
+        sampleCreation.setSpaceId(new SpacePermId("CISD"));
+        sampleCreation.setProperty(propertyType.getPermId(), sampleIdentifier);
+
+        List<SamplePermId> testSampleIds = v3api.createSamples(sessionToken, Arrays.asList(sampleCreation));
+
+        assertEquals(testSampleIds.size(), 1);
+
+        SampleFetchOptions fetchOptions = new SampleFetchOptions();
+        fetchOptions.withProperties();
+        fetchOptions.withSampleProperties();
+        Sample sample = v3api.getSamples(sessionToken, testSampleIds, fetchOptions).get(testSampleIds.get(0));
+
+        Map<String, Sample[]> sampleProperties = sample.getSampleProperties();
+        Sample[] samples = sampleProperties.get(propertyType.getPermId());
+        assertNotNull(samples);
+        assertEquals(samples.length, 1);
+        assertEquals(samples[0].getPermId().getPermId(), sample.getPermId().getPermId());
+    }
+
+    @Test
+    public void testCreateSamplesWithSamplePropertyPointingToEachOther()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        //Create sample
+        PropertyTypePermId propertyType = createASamplePropertyType(sessionToken, null);
+        EntityTypePermId sampleType =
+                createASampleType(sessionToken, true, propertyType);
+
+        String sampleCode1 = "SAMPLE_WITH_SAMPLE_PROPERTY1-" + System.currentTimeMillis();
+        String sampleIdentifier1 = "/CISD/" + sampleCode1;
+
+        String sampleCode2 = "SAMPLE_WITH_SAMPLE_PROPERTY2-" + System.currentTimeMillis();
+        String sampleIdentifier2 = "/CISD/" + sampleCode2;
+
+        SampleCreation sampleCreation1 = new SampleCreation();
+        sampleCreation1.setCode(sampleCode1);
+        sampleCreation1.setTypeId(sampleType);
+        sampleCreation1.setSpaceId(new SpacePermId("CISD"));
+        sampleCreation1.setProperty(propertyType.getPermId(), sampleIdentifier2);
+
+
+        SampleCreation sampleCreation2 = new SampleCreation();
+        sampleCreation2.setCode(sampleCode2);
+        sampleCreation2.setTypeId(sampleType);
+        sampleCreation2.setSpaceId(new SpacePermId("CISD"));
+        sampleCreation2.setProperty(propertyType.getPermId(), sampleIdentifier1);
+
+        List<SamplePermId> testSampleIds = v3api.createSamples(sessionToken, Arrays.asList(sampleCreation1, sampleCreation2));
+
+        assertEquals(testSampleIds.size(), 2);
+
+        SampleFetchOptions fetchOptions = new SampleFetchOptions();
+        fetchOptions.withProperties();
+        fetchOptions.withSampleProperties();
+        Map<ISampleId, Sample> samples = v3api.getSamples(sessionToken, testSampleIds, fetchOptions);
+
+        Sample sample1 = samples.get(testSampleIds.get(0));
+        Sample sample2 = samples.get(testSampleIds.get(1));
+
+        Map<String, Sample[]> sampleProperties1 = sample1.getSampleProperties();
+        Sample[] sampleProp1 = sampleProperties1.get(propertyType.getPermId());
+        assertNotNull(sampleProp1);
+        assertEquals(sampleProp1.length, 1);
+        assertEquals(sampleProp1[0].getPermId().getPermId(), sample2.getPermId().getPermId());
+
+        Map<String, Sample[]> sampleProperties2 = sample2.getSampleProperties();
+        Sample[] sampleProp2 = sampleProperties2.get(propertyType.getPermId());
+        assertNotNull(sampleProp2);
+        assertEquals(sampleProp2.length, 1);
+        assertEquals(sampleProp2[0].getPermId().getPermId(), sample1.getPermId().getPermId());
     }
 
     @Test

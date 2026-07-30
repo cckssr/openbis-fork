@@ -63,8 +63,13 @@ public class SciCatExportTest
         List<String> publicationCodes = List.of("scicatUser", "relatedPublications",
                 "numberOfFiles",
                 "sizeOfArchive");
+        List<Sample> samples =
+                openBisModel.getEntities().values().stream().filter(x -> x instanceof Sample)
+                        .map(Sample.class::cast)
+                        .toList();
+        assertEquals(6, samples.size());
 
-        assertEquals(6, openBisModel.getEntities().size());
+        assertEquals(10, openBisModel.getEntities().size());
         assertTrue(maybePublicatioNType.isPresent());
         assertEquals(1, openBisModel.getSpaces().size());
         assertEquals(1, openBisModel.getProjects().size());

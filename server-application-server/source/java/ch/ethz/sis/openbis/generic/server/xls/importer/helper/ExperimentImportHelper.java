@@ -112,11 +112,11 @@ public class ExperimentImportHelper extends BasicImportHelper
 
             String typeCode = getValueByColumnName(header, page.get(lineIndex), EXPERIMENT_TYPE_FIELD);
             experimentType = new EntityTypePermId(typeCode, EntityKind.EXPERIMENT);
-            SemanticAnnotation
-                    annotation = delayedExecutor.getSemanticAnnotation(SemanticAnnotationType.EntityType, experimentType, null);
-            if(annotation != null)
+            List<SemanticAnnotation>
+                    annotations = delayedExecutor.getSemanticAnnotations(SemanticAnnotationType.EntityType, experimentType, null);
+            if(annotations != null && !annotations.isEmpty())
             {
-                typeCode = annotation.getEntityType().getCode();
+                typeCode = annotations.get(0).getEntityType().getCode();
                 experimentType = new EntityTypePermId(typeCode, EntityKind.EXPERIMENT);
             }
             if(experimentType.getPermId() == null || experimentType.getPermId().isEmpty()) {

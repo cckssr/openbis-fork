@@ -40,11 +40,13 @@ public class SciLogExampleTest
                         entryList.stream().toList(), "DEFAULT",
                         "DEFAULT", schemaFacade, Map.of()).openBisModel();
 
-        Assert.assertEquals(openBisModel.getEntities().size(), 5);
         List<Sample> samples =
                 openBisModel.getEntities().values().stream().filter(x -> x instanceof Sample)
                         .map(Sample.class::cast)
                         .toList();
+
+        Assert.assertEquals(samples.size(), 5);
+        Assert.assertEquals(openBisModel.getEntities().size(), 10);
 
         Assert.assertTrue(openBisModel.getEntityTypes()
                 .containsKey(new EntityTypePermId("SCHEMA_PERSON", EntityKind.SAMPLE)));
