@@ -9,9 +9,9 @@ import MuiTextField from '@mui/material/TextField'
 import {FormFieldDataType, FormMode} from '@src/js/components/database/new-forms/types/formEnums.ts'
 import date from '@src/js/common/date.js'
 
-const styles = (theme: any) => ({
+const styles = () => ({
   input: {
-    fontSize: theme.typography.body2.fontSize,
+    fontSize: '0.875rem',
     marginTop: 0,
     marginBottom: 0
   }
@@ -101,6 +101,7 @@ const TextFieldRendererBase: React.FC<FieldRendererProps & { classes: any }> = (
             slotProps={{
               htmlInput: { className: classes.input }
             }}
+            sx={{ '& .MuiInputBase-input': { fontSize: '0.875rem' }, '& .MuiInputLabel-root': { fontSize: '0.875rem' } }}
           />
         )}
       />
