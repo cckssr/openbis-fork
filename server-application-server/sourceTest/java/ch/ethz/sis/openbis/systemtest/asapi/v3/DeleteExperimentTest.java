@@ -19,6 +19,7 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertNull;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -359,7 +360,7 @@ public class DeleteExperimentTest extends AbstractDeletionTest
         assertEquals(experiment.getSampleProperties().size(), 1);
         assertSamplePermIdsInOrder(experiment.getSampleProperties().get(propertyTypeMultiValued.getPermId()), propertySampleBPermId.getPermId());
         assertEquals(experiment.getProperties().size(), 1);
-        assertEquals(experiment.getProperties().get(propertyTypeMultiValued.getPermId()), propertySampleBPermId.getPermId());
+        assertEquals(((Serializable[]) experiment.getProperties().get(propertyTypeMultiValued.getPermId()))[0], propertySampleBPermId.getPermId());
         propertiesHistory =
                 experiment.getPropertiesHistory().stream().map(e -> (PropertyHistoryEntry) e).collect(Collectors.toList());
         assertEquals(propertiesHistory.size(), 3);
@@ -388,7 +389,7 @@ public class DeleteExperimentTest extends AbstractDeletionTest
         assertEquals(experiment.getSampleProperties().size(), 1);
         assertSamplePermIdsInOrder(experiment.getSampleProperties().get(propertyTypeMultiValued.getPermId()), propertySampleBPermId.getPermId());
         assertEquals(experiment.getProperties().size(), 1);
-        assertEquals(experiment.getProperties().get(propertyTypeMultiValued.getPermId()), propertySampleBPermId.getPermId());
+        assertEquals(((Serializable[]) experiment.getProperties().get(propertyTypeMultiValued.getPermId()))[0], propertySampleBPermId.getPermId());
         propertiesHistory =
                 experiment.getPropertiesHistory().stream().map(e -> (PropertyHistoryEntry) e).collect(Collectors.toList());
         assertEquals(propertiesHistory.size(), 3);
