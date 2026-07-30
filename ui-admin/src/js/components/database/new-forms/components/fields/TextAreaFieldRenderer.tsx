@@ -52,6 +52,7 @@ export const TextAreaFieldRenderer: React.FC<FieldRendererProps> = ({ field, onF
 						value={val ?? ''}
 						onChange={(e) => onChange(e.target.value)}
 						margin="none"
+						sx={{ '& .MuiInputBase-input': { fontSize: '0.875rem' }, '& .MuiInputLabel-root': { fontSize: '0.875rem' } }}
 					/>
 				)}
 			/>
