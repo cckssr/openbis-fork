@@ -40,12 +40,19 @@ export const SpreadsheetFieldRenderer: React.FC<FieldRendererProps> = ({
           values={Array.isArray(field.value) ? field.value : []}
           onChange={(vals) => onFieldChange(field.id, vals)}
           renderInput={(val, index, handleChange) => (
-            [<>{index === 0 ? label : null}</>,
-            <SpreadsheetField
-              value={val}
-              editable={true}
-              onChange={handleChange}
-            />]
+              <Box sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 1,
+                  fontFamily: '"Helvetica Neue",Helvetica,Arial,sans-serif;'
+              }}>
+                {index === 0 ? label : null}
+                <SpreadsheetField
+                  value={val}
+                  editable={true}
+                  onChange={handleChange}
+                />
+              </Box>
           )}
           isEmpty={(v) => v === null || v === undefined}
         />

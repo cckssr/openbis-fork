@@ -52,9 +52,10 @@ export const SourceCodeFieldRenderer: React.FC<FieldRendererProps> = ({ field, o
             />
         );
     } else if (field.isMultiValue && isEditing && !field.readOnly) {
+        // @ts-ignore
         return (
             <MultiValueFieldEditor
-                label={field.label}
+                label={null}
                 required={field.required}
                 values={Array.isArray(field.value) ? field.value : []}
                 onChange={(vals) => onFieldChange(field.id, vals)}
